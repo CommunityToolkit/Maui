@@ -1,0 +1,41 @@
+﻿#nullable enable
+using Microsoft.Maui.Controls;
+using System;
+using System.Globalization;
+#if NETSTANDARD1_0 || UAP10_0
+using System.Reflection;
+#endif
+
+namespace CommunityToolkit.Maui.Converters
+{
+	/// <summary>
+	/// Converts embedded image resource ID to it ImageSource.
+	/// </summary>
+	public class ImageResourceConverter : IValueConverter
+	{
+		/// <summary>
+		/// Converts embedded image resource ID to it ImageSource.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <param name="targetType">The type of the binding target property. This is not implemented.</param>
+		/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
+		/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
+		/// <returns>The ImageSource related to the provided resource ID of the embedded image. If it's null it will returns null.</returns>
+		public object? Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			if (value == null)
+				return null;
+
+			if (value is not string imageId)
+				throw new ArgumentException("Value is not a string", nameof(value));
+
+			return ImageSource.FromResource(imageId, Application.Current.GetType()
+#if NETSTANDARD1_0 || UAP10_0
+				.GetTypeInfo()
+#endif
+				.Assembly);
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
+	}
+}

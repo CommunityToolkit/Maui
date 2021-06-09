@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.810.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{7910C2F3-2AC9-4A36-BB67-C1B06C7C1DF7}") = "CommunityToolkit.Maui", "CommunityToolkit.Maui\CommunityToolkit.Maui.csproj", "{E1A6ED64-6BCB-4BE2-AAA1-AA0CEFE105A2}"
+EndProject
+Project("{7910C2F3-2AC9-4A36-BB67-C1B06C7C1DF7}") = "CommunityToolkit.Maui.UnitTests", "CommunityToolkit.Maui.UnitTests\CommunityToolkit.Maui.UnitTests.csproj", "{6A93AA5D-4C26-4F1E-8DEE-83C26C03AAF4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{478D53B4-48B3-4100-BF4D-60F3FC77DE81}"
+	ProjectSection(SolutionItems) = preProject
+		NuGet.config = NuGet.config
+		Directory.Build.props = Directory.Build.props
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E1A6ED64-6BCB-4BE2-AAA1-AA0CEFE105A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1A6ED64-6BCB-4BE2-AAA1-AA0CEFE105A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1A6ED64-6BCB-4BE2-AAA1-AA0CEFE105A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1A6ED64-6BCB-4BE2-AAA1-AA0CEFE105A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A93AA5D-4C26-4F1E-8DEE-83C26C03AAF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A93AA5D-4C26-4F1E-8DEE-83C26C03AAF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A93AA5D-4C26-4F1E-8DEE-83C26C03AAF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A93AA5D-4C26-4F1E-8DEE-83C26C03AAF4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {42B065EB-DA54-40BE-B676-3D47D59A81F2}
+	EndGlobalSection
+EndGlobal
