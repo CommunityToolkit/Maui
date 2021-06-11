@@ -6,7 +6,7 @@ variables:
   NugetPackageVersion: '$(CurrentSemanticVersion)'
   #MONO_VERSION: 6_4_0
   #XCODE_VERSION: 11.4
-  NETCORE_VERSION: '5.0.x'
+  NETCORE_VERSION: '6.0.x'
   NETCORE_TEST_VERSION_3_1: '3.1.x'
   NETCORE_TEST_VERSION_2_1: '2.1.x'
   RunPoliCheck: 'false'
@@ -61,7 +61,7 @@ jobs:
         displayName: 'Install .NET SDK'
         inputs:
           version: $(NETCORE_VERSION)
-          includePreviewVersions: false
+          includePreviewVersions: true
       - task: UseDotNet@2
         displayName: 'Install .NET 3.1 Test SDK'
         inputs:
