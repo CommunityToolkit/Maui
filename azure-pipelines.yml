@@ -77,7 +77,7 @@ jobs:
       - task: provisionator@2
         displayName: 'Provision VSWindows'
         inputs:
-          provisioning_script: 
+          provisioning_script: $(provisionator.vs2019)
 
       - task: CmdLine@2
         displayName: 'Clear Local NuGet Cache' #https://github.com/actions/virtual-environments/issues/1090#issuecomment-748452120
