@@ -74,7 +74,7 @@ jobs:
         inputs:
           version: $(NETCORE_TEST_VERSION_2_1)
           includePreviewVersions: false
-      - task: provisionator@2
+      - task: xamops.azdevex.provisionator-task.provisionator@1
         displayName: 'Provision VSWindows'
         inputs:
           provisioning_script: $(provisionator.vs2019)
