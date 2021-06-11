@@ -61,7 +61,8 @@ jobs:
       - task: UseDotNet@2
         displayName: 'Install .NET SDK'
         inputs:
-          version: $(NETCORE_VERSION)
+          version: '$(NETCORE_VERSION)'
+          vsVersion: '16.11'
           includePreviewVersions: true
       - task: UseDotNet@2
         displayName: 'Install .NET 3.1 Test SDK'
