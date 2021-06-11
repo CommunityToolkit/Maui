@@ -56,7 +56,7 @@ jobs:
   - job: build_windows
     displayName: Build Windows Library
     pool:
-      vmImage: windows-2019
+      vmImage: windows-latest
     steps:
       - task: UseDotNet@2
         displayName: 'Install .NET SDK'
