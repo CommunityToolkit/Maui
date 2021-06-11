@@ -14,6 +14,7 @@ variables:
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/Markup/Xamarin.CommunityToolkit.Maui.UnitTests/Xamarin.CommunityToolkit.Maui.UnitTests.csproj'
   PathToMsBuildOnMacOS: 'mono /Applications/Visual\ studio.app/Contents/Resources/lib/monodevelop/bin/MSBuild/Current/bin/MSBuild.dll'
+  provisionator.vs2019: '$(System.DefaultWorkingDirectory)/eng/provisioning/vs2019.csx'
 
 resources:
   repositories:
@@ -73,6 +74,11 @@ jobs:
         inputs:
           version: $(NETCORE_TEST_VERSION_2_1)
           includePreviewVersions: false
+      - task: provisionator@2
+        displayName: 'Provision VSWindows'
+        inputs:
+          provisioning_script: 
+
       - task: CmdLine@2
         displayName: 'Clear Local NuGet Cache' #https://github.com/actions/virtual-environments/issues/1090#issuecomment-748452120
         inputs:
