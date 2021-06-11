@@ -62,7 +62,6 @@ jobs:
         displayName: 'Install .NET SDK'
         inputs:
           version: '$(NETCORE_VERSION)'
-          vsVersion: '16.11'
           includePreviewVersions: true
       - task: UseDotNet@2
         displayName: 'Install .NET 3.1 Test SDK'
@@ -95,8 +94,9 @@ jobs:
       - task: MSBuild@1
         displayName: Build CommunityToolkit.Maui.csproj
         inputs:
-          solution: $(PathToCommunityToolkitCsproj)
-          configuration: Release
+          solution: '$(PathToCommunityToolkitCsproj)'
+          msbuildArchitecture: 'x64'
+          configuration: 'Release'
           msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
       # No need for signing at this point
       #- task: CopyFiles@2
