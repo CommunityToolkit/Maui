@@ -1,0 +1,184 @@
+# See available software and versions on hosted agents here: https://docs.microsoft.com/azure/devops/pipelines/agents/hosted
+variables:
+  CurrentSemanticVersionBase: '0.0.1'
+  PreviewNumber: $[counter(variables['CurrentSemanticVersionBase'], 1001)]
+  CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(PreviewNumber)'
+  NugetPackageVersion: '$(CurrentSemanticVersion)'
+  #MONO_VERSION: 6_4_0
+  #XCODE_VERSION: 11.4
+  NETCORE_VERSION: '5.0.x'
+  NETCORE_TEST_VERSION_3_1: '3.1.x'
+  NETCORE_TEST_VERSION_2_1: '2.1.x'
+  RunPoliCheck: 'false'
+  PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
+  PathToCommunityToolkitUnitTestCsproj: 'src/Markup/Xamarin.CommunityToolkit.Maui.UnitTests/Xamarin.CommunityToolkit.Maui.UnitTests.csproj'
+  PathToMsBuildOnMacOS: 'mono /Applications/Visual\ studio.app/Contents/Resources/lib/monodevelop/bin/MSBuild/Current/bin/MSBuild.dll'
+
+resources:
+  repositories:
+    - repository: internal-templates
+      type: github
+      name: xamarin/yaml-templates
+      endpoint: xamarin
+      ref: refs/heads/main
+
+trigger:
+  branches:
+    include:
+    - main
+    - develop
+  tags:
+    include:
+    - '*'
+  paths:
+    exclude:
+    - README.md
+
+pr:
+  autoCancel: true
+  branches:
+    include:
+    - main
+    - develop
+  paths:
+    exclude:
+    - README.md
+
+schedules:
+- cron: "0 0 * * *"
+  displayName: Daily midnight build
+  branches:
+    include:
+    - develop
+
+jobs:      
+  - job: build_windows
+    displayName: Build Windows Library
+    pool:
+      vmImage: windows-2019
+    steps:
+      - task: UseDotNet@2
+        displayName: 'Install .NET SDK'
+        inputs:
+          version: $(NETCORE_VERSION)
+          includePreviewVersions: false
+      - task: UseDotNet@2
+        displayName: 'Install .NET 3.1 Test SDK'
+        inputs:
+          version: $(NETCORE_TEST_VERSION_3_1)
+          includePreviewVersions: false
+      - task: UseDotNet@2
+        displayName: 'Install .NET 2.1 Test SDK'
+        inputs:
+          version: $(NETCORE_TEST_VERSION_2_1)
+          includePreviewVersions: false
+      - task: CmdLine@2
+        displayName: 'Clear Local NuGet Cache' #https://github.com/actions/virtual-environments/issues/1090#issuecomment-748452120
+        inputs:
+          script: 'nuget locals all -clear'
+      - task: MSBuild@1
+        displayName: 'Clean Solution'
+        inputs:
+          solution: $(PathToSamplesSln)
+          msbuildArguments:  '/t:Clean'
+      # if this is a tagged build, then update the version number
+      - powershell: |
+          $buildSourceBranch = "$(Build.SourceBranch)"
+          $tagVersion = $buildSourceBranch.Substring($buildSourceBranch.LastIndexOf("/") + 1)
+          Write-Host("Branch = $buildSourceBranch, Version = $tagVersion");
+          Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$tagVersion")
+        displayName: Set NuGet Version to Tag Number
+        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+      # restore, build and pack the packages
+      - task: MSBuild@1
+        displayName: Build CommunityToolkit.Maui.csproj
+        inputs:
+          solution: $(PathToCommunityToolkitCsproj)
+          configuration: Release
+          msbuildArguments: '/restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
+      # No need for signing at this point
+      #- task: CopyFiles@2
+      #  inputs:
+      #    Contents: 'SignList.xml'
+      #    TargetFolder: '$(Build.ArtifactStagingDirectory)/nuget'
+      - task: MSBuild@1
+        displayName: Pack Community Toolkit NuGets
+        inputs:
+          solution: $(PathToCommunityToolkitCsproj)
+          configuration: Release
+          msbuildArguments: '/t:Pack /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
+      # publish the packages
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Unsigned NuGets'
+        inputs:
+          artifactName: nuget
+          pathToPublish: '$(Build.ArtifactStagingDirectory)/nuget'
+      # make sure we are following the rules, but only on the main build
+      - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+        - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+          condition: not(startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+          displayName: Component Detection - Log
+          inputs:
+            scanType: LogOnly
+        - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+          condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+          displayName: Component Detection - Report
+        - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
+          condition: eq(variables['RunPoliCheck'], 'true')
+          displayName: 'PoliCheck'
+          inputs:
+            targetType: F
+
+  - job: build_macos
+    displayName: Build macOS Library
+    pool:
+      vmImage: macos-10.15
+    steps:
+      # if this is a tagged build, then update the version number
+      - powershell: |
+          $buildSourceBranch = "$(Build.SourceBranch)"
+          $tagVersion = $buildSourceBranch.Substring($buildSourceBranch.LastIndexOf("/") + 1)
+          Write-Host("Branch = $buildSourceBranch, Version = $tagVersion");
+          Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$tagVersion")
+        displayName: Set NuGet Version to Tag Number
+        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+      # 16feb21 jfversluis: let's not pin this anymore and use latest
+      # make sure to select the correct Xamarin and mono
+      #- bash: sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh $(MONO_VERSION)
+      #  displayName: Switch to the latest Xamarin SDK
+      #- bash: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XCODE_VERSION).app;sudo xcode-select --switch /Applications/Xcode_$(XCODE_VERSION).app/Contents/Developer
+      #  displayName: Switch to the latest Xcode
+      # restore, build and pack the packages
+      - task: UseDotNet@2
+        displayName: 'Install .NET SDK'
+        inputs:
+          version: $(NETCORE_VERSION)
+          includePreviewVersions: false
+      - task: UseDotNet@2
+        displayName: 'Install .NET 3.1 Test SDK'
+        inputs:
+          version: $(NETCORE_TEST_VERSION_3_1)
+          includePreviewVersions: false
+      - task: UseDotNet@2
+        displayName: 'Install .NET 2.1 Test SDK'
+        inputs:
+          version: $(NETCORE_TEST_VERSION_2_1)
+          includePreviewVersions: false
+      - task: CmdLine@2
+        displayName: 'Build Community Toolkit'
+        inputs:
+          script: '$(PathToMsBuildOnMacOS) $(PathToCommunityToolkitCsproj) /p:Configuration=Release /restore /t:Build /p:ContinuousIntegrationBuild=true /p:Deterministic=false'
+      - task: CmdLine@2
+        displayName: 'Run Community Toolkit Unit Tests'
+        inputs:
+          script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release -p:BuildInParallel=false'
+      - task: CmdLine@2
+        displayName: 'Pack CommunityToolkit NuGets'
+        inputs:
+          script: '$(PathToMsBuildOnMacOS) $(PathToCommunityToolkitCsproj) /p:Configuration=Release /t:Pack /p:PackageVersion=$(NugetPackageVersion) /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)/nuget"'
+
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+    - template: sign-artifacts/jobs/v2.yml@internal-templates
+      parameters:
+        dependsOn: [ build_windows ]
+        condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
