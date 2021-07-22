@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project>
+	<PropertyGroup>
+		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
+		<WarningsAsErrors>nullable</WarningsAsErrors>
+		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
+		<GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
+	</PropertyGroup>
+</Project>
