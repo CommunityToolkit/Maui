@@ -2,7 +2,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
+		<UseMaui>true</UseMaui>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -21,7 +22,7 @@
 		<DefineConstants>$(DefineConstants);</DefineConstants>
 		<UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
 		<Title>CommunityToolkit.Maui</Title>
-		<Description>The .NET MAUI Community Toolkit is a collection of Animations, Behaviors, Converters, and Effects for development with .NET MAUI. It simplifies and demonstrates common developer tasks building iOS, Android, macOS and UWP apps with .NET MAUI.</Description>
+		<Description>The .NET MAUI Community Toolkit is a collection of Animations, Behaviors, Converters, and Effects for development with .NET MAUI. It simplifies and demonstrates common developer tasks building iOS, Android, macOS and Windows apps with .NET MAUI.</Description>
 		<PackageIcon>icon.png</PackageIcon>
 		<Product>$(AssemblyName) ($(TargetFramework))</Product>
 		<AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -31,17 +32,16 @@
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 		<PackageTags>dotnet,maui,toolkit,kit,communitytoolkit,dotnetcommunitytoolkit</PackageTags>
 		<Configurations>Debug;Release</Configurations>
-		<RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-ios'">iossimulator-x64</RuntimeIdentifier>
-		<RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">maccatalyst-x64</RuntimeIdentifier>
-		<InvariantGlobalization Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">true</InvariantGlobalization>
 	</PropertyGroup>
 
-	<ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard1.0')) ">
-		<PackageReference Include="System.ValueTuple" Version="4.5.0" />
-	</ItemGroup>
+	<PropertyGroup>
+		<InvariantGlobalization Condition="$(TargetFramework.Contains('-maccatalyst'))">true</InvariantGlobalization>
+		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-ios'))">iossimulator-x64</RuntimeIdentifier>
+		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
+		<UseInterpreter Condition="$(TargetFramework.Contains('-android'))">False</UseInterpreter>
+	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Maui" Version="6.0.100-preview.4.631" />
 		<PackageReference Include="mdoc" Version="5.8.0" PrivateAssets="all" />
 	</ItemGroup>
 
