@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Helpers;
+﻿#nullable enable
+using CommunityToolkit.Maui.Helpers;
 using System;
 
 namespace CommunityToolkit.Maui.UnitTests.Helpers.WeakEventManagerTests

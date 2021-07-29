@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Exceptions;
+﻿#nullable enable
+using CommunityToolkit.Maui.Exceptions;
 using CommunityToolkit.Maui.Helpers;
 using NUnit.Framework;
 using System;

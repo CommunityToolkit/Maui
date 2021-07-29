@@ -1,14 +1,12 @@
-﻿using NUnit.Framework;
+﻿#nullable enable
+using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CommunityToolkit.Maui.UnitTests.ObjectModel
 {
-	public sealed class ObservableObject_Tests
+    public sealed class ObservableObject_Tests
 	{
 		[Test]
 		public void OnPropertyChanged()
