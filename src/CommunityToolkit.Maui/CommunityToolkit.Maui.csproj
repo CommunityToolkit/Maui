@@ -43,6 +43,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="mdoc" Version="5.8.0" PrivateAssets="all" />
+		<PackageReference Include="System.Resources.ResourceManager" Version="4.3.0" />
 	</ItemGroup>
 
 	<Import Project="..\..\mdoc.targets" Condition=" '$(OS)' == 'Windows_NT' AND '$(GenerateApiDocs)' == 'true'" />
