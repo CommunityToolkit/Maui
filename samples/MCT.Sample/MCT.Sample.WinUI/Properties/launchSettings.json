@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "MCT.Sample.WinUI": {
+      "commandName": "MsixPackage"
+    }
+  }
+}

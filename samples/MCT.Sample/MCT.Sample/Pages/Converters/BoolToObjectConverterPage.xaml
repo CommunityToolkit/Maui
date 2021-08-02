@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
+    xmlns:pages="clr-namespace:MCT.Sample.Pages"
+    x:Class="MCT.Sample.Pages.Converters.BoolToObjectConverterPage">
+    <pages:BasePage.Content>
+        <StackLayout>
+            <Label Text="BoolToObjectConverter"
+                VerticalOptions="CenterAndExpand" 
+                HorizontalOptions="CenterAndExpand" />
+        </StackLayout>
+    </pages:BasePage.Content>
+</pages:BasePage>

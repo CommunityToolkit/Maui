@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:pages="clr-namespace:MCT.Sample.Pages"
+    xmlns:mct="clr-namespace:CommunityToolkit.Maui.Behaviors;assembly=CommunityToolkit.Maui"
+    xmlns:vm="clr-namespace:MCT.Sample.ViewModels.Behaviors"
+    x:Class="MCT.Sample.Pages.Behaviors.EventToCommandBehaviorPage">
+    <pages:BasePage.BindingContext>
+        <vm:EventToCommandBehaviorViewModel />
+    </pages:BasePage.BindingContext>
+    <ContentView Padding="{StaticResource ContentPadding}">
+        <StackLayout VerticalOptions="CenterAndExpand"
+                     Spacing="20">
+            <Label Text="This sample demonstrates how to use EventToCommandBehavior. Here we observe Clicked event of the button and trigger IncrementCommand from ViewModel." />
+            <Label Text="{Binding ClickCount, StringFormat='{0} clicks'}" />
+            <Button Text="Click Me"
+                    TextColor="White"
+                    BackgroundColor="{StaticResource NormalButtonBackgroundColor}">
+                <Button.Behaviors>
+                    <mct:EventToCommandBehavior
+                        EventName="Clicked"
+                        Command="{Binding IncrementCommand}" />
+                </Button.Behaviors>
+            </Button>
+        </StackLayout>
+    </ContentView>
+</pages:BasePage>

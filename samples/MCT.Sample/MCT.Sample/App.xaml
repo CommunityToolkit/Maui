@@ -1,0 +1,74 @@
+﻿<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:windows="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;assembly=Microsoft.Maui.Controls"
+             xmlns:local="clr-namespace:MCT.Sample"
+             x:Class="MCT.Sample.App"
+             windows:Application.ImageDirectory="Assets">
+    <Application.Resources>
+        <ResourceDictionary>
+
+            <!--  Colors  -->
+            <Color x:Key="AppBackgroundColor">#FAFAFA</Color>
+            <Color x:Key="PrimaryColor">#FAFAFA</Color>
+            <Color x:Key="NavigationBarTextColor">#5D5D5D</Color>
+            <Color x:Key="NormalButtonBackgroundColor">#1976D2</Color>
+            <Color x:Key="NormalButtonTextColor">#FFFFFF</Color>
+            <Color x:Key="HeadingLabelTextColor">#5D5D5D</Color>
+            <Color x:Key="NormalLabelTextColor">#888888</Color>
+            <Color x:Key="DarkLabelTextColor">#000000</Color>
+            <Color x:Key="DarkLabelPlaceholderColor">#333d47</Color>
+            <Color x:Key="SoftFrameBackgroundColor">#ecf0f9</Color>
+            <Color x:Key="StatusbarColor">#1976D2</Color>
+            <Color x:Key="NavBarColor">#1976D2</Color>
+
+            <!--  Implicit styles  -->
+            <Style ApplyToDerivedTypes="True" TargetType="NavigationPage">
+                <Setter Property="BarBackgroundColor" Value="{StaticResource PrimaryColor}" />
+                <Setter Property="BarTextColor" Value="{StaticResource NavigationBarTextColor}" />
+            </Style>
+
+            <Style ApplyToDerivedTypes="True" TargetType="ContentPage">
+                <Setter Property="BackgroundColor" Value="{StaticResource AppBackgroundColor}" />
+                <Setter Property="NavigationPage.BackButtonTitle" Value="" />
+            </Style>
+
+            <Style TargetType="Button">
+                <Setter Property="FontSize" Value="Medium" />
+                <Setter Property="BackgroundColor" Value="{StaticResource NormalButtonBackgroundColor}" />
+                <Setter Property="TextColor" Value="{StaticResource NormalButtonTextColor}" />
+                <Setter Property="CornerRadius" Value="5" />
+            </Style>
+
+            <Style TargetType="Label">
+                <Setter Property="FontSize" Value="Body" />
+                <Setter Property="TextColor" Value="{StaticResource NormalLabelTextColor}" />
+                <Setter Property="VerticalTextAlignment" Value="Center" />
+                <Setter Property="HorizontalTextAlignment" Value="Start" />
+            </Style>
+
+            <Style TargetType="StackLayout">
+                <Setter Property="Spacing" Value="0" />
+            </Style>
+            
+            <!-- Styles -->
+            <Style x:Key="card" TargetType="Frame">
+                <Setter Property="BackgroundColor" Value="#ffffff" />
+                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="HasShadow" Value="True" />
+            </Style>
+
+            <Style x:Key="label_welcome_header" TargetType="Label">
+                <Setter Property="FontSize" Value="Title" />
+                <Setter Property="TextColor" Value="{StaticResource HeadingLabelTextColor}" />
+            </Style>
+
+            <Style x:Key="label_section_header" TargetType="Label">
+                <Setter Property="TextColor" Value="{StaticResource HeadingLabelTextColor}" />
+            </Style>
+            
+            <!--  Values  -->
+            <Thickness x:Key="ContentPadding">20, 0</Thickness>
+            
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
