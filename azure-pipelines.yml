@@ -83,7 +83,7 @@ jobs:
         condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
       # restore, build and pack the packages
       - task: CmdLine@2
-        displayName: Build CommunityToolkit.Maui.csproj
+        displayName: 'Build Community Toolkit'
         inputs:
           script: 'dotnet build $(PathToCommunityToolkitCsproj) -c Release'
       # No need for signing at this point
