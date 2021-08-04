@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="clr-namespace:CommunityToolkit.Maui.Behaviors;assembly=CommunityToolkit.Maui"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.UserStoppedTypingBehaviorPage">
+    <pages:BasePage.BindingContext>
+        <vm:UserStoppedTypingBehaviorViewModel />
+    </pages:BasePage.BindingContext>
+    <pages:BasePage.Content>
+        <StackLayout Spacing="20">
+
+            <Label Text="This behavior waits for the user to stop typing and then executes a Command. The waiting threshold is adjustable, as well as there is an option to dismiss the keyboard after the user has stopped typing."
+                   Margin="{StaticResource ContentPadding}" />
+
+            <Frame Margin="{StaticResource ContentPadding}"
+                   CornerRadius="10">
+
+                <Grid ColumnDefinitions="2*, *">
+                    <Label Text="User stopped typing time threshold (in ms)"
+                           VerticalTextAlignment="Center" />
+                    <Entry x:Name="TimeThresholdSetting"
+                           Text="1000"
+                           Keyboard="Numeric"
+                           Grid.Column="1" />
+
+                    <Label Text="Minimum length threshold (number of characters)"
+                           VerticalTextAlignment="Center"
+                           Grid.Row="1" />
+                    <Entry x:Name="MinimumLengthThresholdSetting"
+                           Text="0"
+                           Keyboard="Numeric"
+                           Grid.Row="1"
+                           Grid.Column="1" />
+
+                    <Label Text="Should dismiss keyboard automatically"
+                           VerticalTextAlignment="Center"
+                           Grid.Row="2" />
+                    <Switch x:Name="AutoDismissKeyboardSetting"
+                            HorizontalOptions="End"
+                            Grid.Row="2"
+                            Grid.Column="1" />
+                </Grid>
+            </Frame>
+
+            <SearchBar Placeholder="Start searching..." Margin="{StaticResource ContentPadding}">
+                <SearchBar.Behaviors>
+                    <mct:UserStoppedTypingBehavior Command="{Binding SearchCommand}"
+                                                   StoppedTypingTimeThreshold="{Binding Path=Text, Source={x:Reference TimeThresholdSetting}}"
+                                                   MinimumLengthThreshold="{Binding Path=Text, Source={x:Reference MinimumLengthThresholdSetting}}"
+                                                   ShouldDismissKeyboardAutomatically="{Binding Path=IsToggled, Source={x:Reference AutoDismissKeyboardSetting}}" />
+                </SearchBar.Behaviors>
+            </SearchBar>
+
+            <Label Text="{Binding PerformedSearches}" Margin="{StaticResource ContentPadding}" />
+
+        </StackLayout>
+    </pages:BasePage.Content>
+</pages:BasePage>
