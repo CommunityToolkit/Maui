@@ -1,7 +1,0 @@
-{
-  "profiles": {
-    "CommunityToolkit.Maui.Sample.WinUI": {
-      "commandName": "MsixPackage"
-    }
-  }
-}
