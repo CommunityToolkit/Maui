@@ -11,8 +11,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{AE67
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Sample", "CommunityToolkit.Maui.Sample\CommunityToolkit.Maui.Sample.csproj", "{3A795407-604F-4502-8C76-281BE5575A84}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Sample.WinUI", "CommunityToolkit.Maui.Sample.WinUI\CommunityToolkit.Maui.Sample.WinUI.csproj", "{D6175479-3546-4929-9436-C38F2D633040}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,17 +35,12 @@ Global
 		{3A795407-604F-4502-8C76-281BE5575A84}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3A795407-604F-4502-8C76-281BE5575A84}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3A795407-604F-4502-8C76-281BE5575A84}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{D6175479-3546-4929-9436-C38F2D633040}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D6175479-3546-4929-9436-C38F2D633040}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D6175479-3546-4929-9436-C38F2D633040}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D6175479-3546-4929-9436-C38F2D633040}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{3A795407-604F-4502-8C76-281BE5575A84} = {AE67B86A-46F2-4078-BF02-0614B7E0E3F5}
-		{D6175479-3546-4929-9436-C38F2D633040} = {AE67B86A-46F2-4078-BF02-0614B7E0E3F5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1E9E61C1-5CB7-4C8E-87BA-6C1D38238679}
