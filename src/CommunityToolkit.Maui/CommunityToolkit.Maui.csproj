@@ -4,6 +4,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
 		<UseMaui>true</UseMaui>
+    <UseMauiEssentials>true</UseMauiEssentials>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -42,7 +43,55 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="PlatformTools\Contacts\Contacts.android.cs" />
+	  <Compile Remove="PlatformTools\Contacts\Contacts.ios.macos.cs" />
+	  <Compile Remove="PlatformTools\Contacts\Contacts.tizen.cs" />
+	  <Compile Remove="PlatformTools\Contacts\Contacts.uwp.cs" />
+	  <Compile Remove="PlatformTools\FilePicker\FilePicker.android.cs" />
+	  <Compile Remove="PlatformTools\FilePicker\FilePicker.ios.cs" />
+	  <Compile Remove="PlatformTools\FilePicker\FilePicker.macos.cs" />
+	  <Compile Remove="PlatformTools\FilePicker\FilePicker.tizen.cs" />
+	  <Compile Remove="PlatformTools\FilePicker\FilePicker.uwp.cs" />
+	  <Compile Remove="PlatformTools\MediaPicker\MediaPicker.android.cs" />
+	  <Compile Remove="PlatformTools\MediaPicker\MediaPicker.ios.cs" />
+	  <Compile Remove="PlatformTools\MediaPicker\MediaPicker.macos.cs" />
+	  <Compile Remove="PlatformTools\MediaPicker\MediaPicker.tizen.cs" />
+	  <Compile Remove="PlatformTools\MediaPicker\MediaPicker.uwp.cs" />
+	  <Compile Remove="PlatformTools\WebAuthenticator\AppleSignInAuthenticator.ios.cs" />
+	  <Compile Remove="PlatformTools\WebAuthenticator\WebAuthenticator.android.cs" />
+	  <Compile Remove="PlatformTools\WebAuthenticator\WebAuthenticator.ios.tvos.cs" />
+	  <Compile Remove="PlatformTools\WebAuthenticator\WebAuthenticator.macos.cs" />
+	  <Compile Remove="PlatformTools\WebAuthenticator\WebAuthenticator.uwp.cs" />
+	  <Compile Remove="PlatformTools\WebAuthenticator\WebAuthenticatorCallbackActivity.android.cs" />
+	  <Compile Remove="PlatformTools\WebAuthenticator\WebAuthenticatorIntermediateActivity.android.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="mdoc" Version="5.8.0" PrivateAssets="all" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="PlatformTools\Contacts\Contacts.android.cs" />
+	  <None Include="PlatformTools\Contacts\Contacts.ios.macos.cs" />
+	  <None Include="PlatformTools\Contacts\Contacts.tizen.cs" />
+	  <None Include="PlatformTools\Contacts\Contacts.uwp.cs" />
+	  <None Include="PlatformTools\FilePicker\FilePicker.android.cs" />
+	  <None Include="PlatformTools\FilePicker\FilePicker.ios.cs" />
+	  <None Include="PlatformTools\FilePicker\FilePicker.macos.cs" />
+	  <None Include="PlatformTools\FilePicker\FilePicker.tizen.cs" />
+	  <None Include="PlatformTools\FilePicker\FilePicker.uwp.cs" />
+	  <None Include="PlatformTools\MediaPicker\MediaPicker.android.cs" />
+	  <None Include="PlatformTools\MediaPicker\MediaPicker.ios.cs" />
+	  <None Include="PlatformTools\MediaPicker\MediaPicker.macos.cs" />
+	  <None Include="PlatformTools\MediaPicker\MediaPicker.tizen.cs" />
+	  <None Include="PlatformTools\MediaPicker\MediaPicker.uwp.cs" />
+	  <None Include="PlatformTools\WebAuthenticator\AppleSignInAuthenticator.ios.cs" />
+	  <None Include="PlatformTools\WebAuthenticator\WebAuthenticator.android.cs" />
+	  <None Include="PlatformTools\WebAuthenticator\WebAuthenticator.ios.tvos.cs" />
+	  <None Include="PlatformTools\WebAuthenticator\WebAuthenticator.macos.cs" />
+	  <None Include="PlatformTools\WebAuthenticator\WebAuthenticator.uwp.cs" />
+	  <None Include="PlatformTools\WebAuthenticator\WebAuthenticatorCallbackActivity.android.cs" />
+	  <None Include="PlatformTools\WebAuthenticator\WebAuthenticatorIntermediateActivity.android.cs" />
 	</ItemGroup>
 
 	<Import Project="..\..\mdoc.targets" Condition=" '$(OS)' == 'Windows_NT' AND '$(GenerateApiDocs)' == 'true'" />
