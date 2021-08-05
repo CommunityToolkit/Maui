@@ -23,4 +23,24 @@
   <Target Name="ValidateWinUIPlatform" />
   <Target Name="BinPlaceBootstrapDll" />
 
+  <ItemGroup Condition=" $(TargetFramework.Contains(-android)) ">
+    <Compile Include="**\*.android.cs" />
+    <Compile Include="**\*.android.*.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(TargetFramework.Contains(-ios)) ">
+    <Compile Include="**\*.ios.cs" />
+    <Compile Include="**\*.ios.*.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(TargetFramework.Contains('-windows')) ">
+    <Compile Include="**\*.uwp.cs" />
+    <Compile Include="**\*.uwp.*.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(TargetFramework.Contains('-maccatalyst')) ">
+    <Compile Include="**\*.macos.cs" />
+    <Compile Include="**\*.macos.*.cs" />
+  </ItemGroup>
+
 </Project>
