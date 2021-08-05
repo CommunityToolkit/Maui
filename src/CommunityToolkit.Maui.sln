@@ -1,17 +1,23 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.810.0
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31512.422
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui", "CommunityToolkit.Maui\CommunityToolkit.Maui.csproj", "{E1A6ED64-6BCB-4BE2-AAA1-AA0CEFE105A2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui", "CommunityToolkit.Maui\CommunityToolkit.Maui.csproj", "{E1A6ED64-6BCB-4BE2-AAA1-AA0CEFE105A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.UnitTests", "CommunityToolkit.Maui.UnitTests\CommunityToolkit.Maui.UnitTests.csproj", "{6A93AA5D-4C26-4F1E-8DEE-83C26C03AAF4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.UnitTests", "CommunityToolkit.Maui.UnitTests\CommunityToolkit.Maui.UnitTests.csproj", "{6A93AA5D-4C26-4F1E-8DEE-83C26C03AAF4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{478D53B4-48B3-4100-BF4D-60F3FC77DE81}"
 	ProjectSection(SolutionItems) = preProject
+		.nuspec\CommunityToolkit.Maui.MultiTargeting.targets = .nuspec\CommunityToolkit.Maui.MultiTargeting.targets
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
+		global.json = global.json
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Essentials", "CommunityToolkit.Maui.Essentials\CommunityToolkit.Maui.Essentials.csproj", "{51BCF6B5-D0A3-4BEB-B4C2-9B99B736C98F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Essentials-net6", "CommunityToolkit.Maui.Essentials\CommunityToolkit.Maui.Essentials-net6.csproj", "{ACB8EDE4-0855-436D-A398-BFC847D0978E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +33,14 @@ Global
 		{6A93AA5D-4C26-4F1E-8DEE-83C26C03AAF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A93AA5D-4C26-4F1E-8DEE-83C26C03AAF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A93AA5D-4C26-4F1E-8DEE-83C26C03AAF4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51BCF6B5-D0A3-4BEB-B4C2-9B99B736C98F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51BCF6B5-D0A3-4BEB-B4C2-9B99B736C98F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51BCF6B5-D0A3-4BEB-B4C2-9B99B736C98F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51BCF6B5-D0A3-4BEB-B4C2-9B99B736C98F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ACB8EDE4-0855-436D-A398-BFC847D0978E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACB8EDE4-0855-436D-A398-BFC847D0978E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACB8EDE4-0855-436D-A398-BFC847D0978E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ACB8EDE4-0855-436D-A398-BFC847D0978E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,73 @@
+﻿<Project Sdk="MSBuild.Sdk.Extras">
+  <PropertyGroup>
+    <TargetFrameworks>$(NonNet6EssentialsPlatforms)</TargetFrameworks>
+    <AssemblyName>CommunityToolkit.Maui.Essentials</AssemblyName>
+    <RootNamespace>CommunityToolkit.Maui.Essentials</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <LangVersion>9.0</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PackageId>CommunityToolkit.Maui.Essentials</PackageId>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+    <PackageReference Include="Microsoft.Maui.Graphics" />
+    <PackageReference Include="Microsoft.Maui.Essentials" />
+    <None Include="..\..\..\LICENSE" PackagePath="" Pack="true" />
+    <None Include="..\..\..\Assets\xamarin.essentials_128x128.png" PackagePath="icon.png" Pack="true" />
+    <None Include="nugetreadme.txt" PackagePath="readme.txt" Pack="true" />
+    <Compile Include="**\*.shared.cs" />
+    <Compile Include="**\*.shared.*.cs" />
+  </ItemGroup>
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard')) ">
+    <Compile Include="**\*.netstandard.cs" />
+    <Compile Include="**\*.netstandard.*.cs" />
+  </ItemGroup>
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('uap10.0')) ">
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.2.9" PrivateAssets="all" />
+    <Compile Include="**\*.uwp.cs" />
+    <Compile Include="**\*.uwp.*.cs" />
+    <SDKReference Include="WindowsMobile, Version=10.0.16299.0">
+      <Name>Windows Mobile Extensions for the UWP</Name>
+    </SDKReference>
+  </ItemGroup>
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) ">
+    <PackageReference Include="Xamarin.AndroidX.Browser" />
+    <Compile Include="**\*.android.cs" />
+    <Compile Include="**\*.android.*.cs" />
+    <Reference Include="System.Numerics" />
+    <AndroidResource Include="Resources\xml\*.xml" />
+  </ItemGroup>
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
+    <Compile Include="**\*.ios.cs" />
+    <Compile Include="**\*.ios.*.cs" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="OpenTK-1.0" />
+  </ItemGroup>
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.TVOS')) ">
+    <Compile Include="**\*.tvos.cs" />
+    <Compile Include="**\*.tvos.*.cs" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="netstandard" />
+    <Reference Include="OpenTK-1.0" />
+  </ItemGroup>
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.WatchOS')) ">
+    <Compile Include="**\*.watchos.cs" />
+    <Compile Include="**\*.watchos.*.cs" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="netstandard" />
+  </ItemGroup>
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('tizen')) ">
+    <PackageReference Include="Tizen.NET" Version="4.0.0" PrivateAssets="All" />
+    <Compile Include="**\*.tizen.cs" />
+    <Compile Include="**\*.tizen.*.cs" />
+  </ItemGroup>
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.Mac20')) ">
+    <Compile Include="**\*.macos.cs" />
+    <Compile Include="**\*.macos.*.cs" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors" />
+    <Reference Include="OpenTK" />
+  </ItemGroup>
+</Project>

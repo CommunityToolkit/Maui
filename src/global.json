@@ -3,5 +3,10 @@
     "version": "6.0.*",
     "rollForward": "patch",
     "allowPrerelease": true
+  },
+  "msbuild-sdks": {
+    "MSBuild.Sdk.Extras": "3.0.23",
+    "Microsoft.Build.NoTargets": "2.0.1"
   }
 }
+  
