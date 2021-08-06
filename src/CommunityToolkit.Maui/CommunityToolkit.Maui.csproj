@@ -1,99 +1,79 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
-		<UseMaui>true</UseMaui>
-    <UseMauiEssentials>true</UseMauiEssentials>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
+    <UseMaui>true</UseMaui>
+  </PropertyGroup>
 
-	<PropertyGroup>
-		<GitInfoReportImportance>high</GitInfoReportImportance>
-		<PackageId>CommunityToolkit.Maui</PackageId>
-		<Summary>Community-created toolkit with a collection of Animations, Behaviors, Converters, and Effects</Summary>
-		<Authors>Microsoft</Authors>
-		<Owners>Microsoft</Owners>
-		<NeutralLanguage>en</NeutralLanguage>
-		<Product>CommunityToolkit.Maui (net6.0)</Product>
-		<Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageProjectUrl>https://github.com/windows-toolkit/Maui</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/windows-toolkit/Maui</RepositoryUrl>
-		<PackageReleaseNotes>TBD</PackageReleaseNotes>
-		<DefineConstants>$(DefineConstants);</DefineConstants>
-		<UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
-		<Title>CommunityToolkit.Maui</Title>
-		<Description>The .NET MAUI Community Toolkit is a collection of Animations, Behaviors, Converters, and Effects for development with .NET MAUI. It simplifies and demonstrates common developer tasks building iOS, Android, macOS and Windows apps with .NET MAUI.</Description>
-		<PackageIcon>icon.png</PackageIcon>
-		<Product>$(AssemblyName) ($(TargetFramework))</Product>
-		<AssemblyVersion>1.0.0.0</AssemblyVersion>
-		<AssemblyFileVersion>1.0.0.0</AssemblyFileVersion>
-		<Version>1.0.0-pre1</Version>
-		<PackageVersion>$(Version)$(VersionSuffix)</PackageVersion>
-		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-		<PackageTags>dotnet,maui,toolkit,kit,communitytoolkit,dotnetcommunitytoolkit</PackageTags>
-		<Configurations>Debug;Release</Configurations>
-	</PropertyGroup>
+  <PropertyGroup>
+    <GitInfoReportImportance>high</GitInfoReportImportance>
+    <PackageId>CommunityToolkit.Maui</PackageId>
+    <Summary>Community-created toolkit with a collection of Animations, Behaviors, Converters, and Effects</Summary>
+    <Authors>Microsoft</Authors>
+    <Owners>Microsoft</Owners>
+    <NeutralLanguage>en</NeutralLanguage>
+    <Product>CommunityToolkit.Maui (net6.0)</Product>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/windows-toolkit/Maui</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/windows-toolkit/Maui</RepositoryUrl>
+    <PackageReleaseNotes>TBD</PackageReleaseNotes>
+    <DefineConstants>$(DefineConstants);</DefineConstants>
+    <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
+    <Title>CommunityToolkit.Maui</Title>
+    <Description>The .NET MAUI Community Toolkit is a collection of Animations, Behaviors, Converters, and Effects for development with .NET MAUI. It simplifies and demonstrates common developer tasks building iOS, Android, macOS and Windows apps with .NET MAUI.</Description>
+    <PackageIcon>icon.png</PackageIcon>
+    <Product>$(AssemblyName) ($(TargetFramework))</Product>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <AssemblyFileVersion>1.0.0.0</AssemblyFileVersion>
+    <Version>1.0.0-pre1</Version>
+    <PackageVersion>$(Version)$(VersionSuffix)</PackageVersion>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageTags>dotnet,maui,toolkit,kit,communitytoolkit,dotnetcommunitytoolkit</PackageTags>
+    <Configurations>Debug;Release</Configurations>
+  </PropertyGroup>
 
-	<PropertyGroup>
-		<InvariantGlobalization Condition="$(TargetFramework.Contains('-maccatalyst'))">true</InvariantGlobalization>
-		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-ios'))">iossimulator-x64</RuntimeIdentifier>
-		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
-		<UseInterpreter Condition="$(TargetFramework.Contains('-android'))">False</UseInterpreter>
-	</PropertyGroup>
+  <PropertyGroup>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <InvariantGlobalization Condition="$(TargetFramework.Contains('-maccatalyst'))">true</InvariantGlobalization>
+    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-ios'))">iossimulator-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
+    <UseInterpreter Condition="$(TargetFramework.Contains('-android'))">False</UseInterpreter>
+  </PropertyGroup>
 
-	<ItemGroup>
-	  <Compile Remove="PlatformTools\Contacts\Contacts.android.cs" />
-	  <Compile Remove="PlatformTools\Contacts\Contacts.ios.macos.cs" />
-	  <Compile Remove="PlatformTools\Contacts\Contacts.tizen.cs" />
-	  <Compile Remove="PlatformTools\Contacts\Contacts.uwp.cs" />
-	  <Compile Remove="PlatformTools\FilePicker\FilePicker.android.cs" />
-	  <Compile Remove="PlatformTools\FilePicker\FilePicker.ios.cs" />
-	  <Compile Remove="PlatformTools\FilePicker\FilePicker.macos.cs" />
-	  <Compile Remove="PlatformTools\FilePicker\FilePicker.tizen.cs" />
-	  <Compile Remove="PlatformTools\FilePicker\FilePicker.uwp.cs" />
-	  <Compile Remove="PlatformTools\MediaPicker\MediaPicker.android.cs" />
-	  <Compile Remove="PlatformTools\MediaPicker\MediaPicker.ios.cs" />
-	  <Compile Remove="PlatformTools\MediaPicker\MediaPicker.macos.cs" />
-	  <Compile Remove="PlatformTools\MediaPicker\MediaPicker.tizen.cs" />
-	  <Compile Remove="PlatformTools\MediaPicker\MediaPicker.uwp.cs" />
-	  <Compile Remove="PlatformTools\WebAuthenticator\AppleSignInAuthenticator.ios.cs" />
-	  <Compile Remove="PlatformTools\WebAuthenticator\WebAuthenticator.android.cs" />
-	  <Compile Remove="PlatformTools\WebAuthenticator\WebAuthenticator.ios.tvos.cs" />
-	  <Compile Remove="PlatformTools\WebAuthenticator\WebAuthenticator.macos.cs" />
-	  <Compile Remove="PlatformTools\WebAuthenticator\WebAuthenticator.uwp.cs" />
-	  <Compile Remove="PlatformTools\WebAuthenticator\WebAuthenticatorCallbackActivity.android.cs" />
-	  <Compile Remove="PlatformTools\WebAuthenticator\WebAuthenticatorIntermediateActivity.android.cs" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="mdoc" Version="5.8.0" PrivateAssets="all" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="mdoc" Version="5.8.0" PrivateAssets="all" />
-	</ItemGroup>
+  <Import Project="..\..\mdoc.targets" Condition=" '$(OS)' == 'Windows_NT' AND '$(GenerateApiDocs)' == 'true'" />
 
-	<ItemGroup>
-	  <None Include="PlatformTools\Contacts\Contacts.android.cs" />
-	  <None Include="PlatformTools\Contacts\Contacts.ios.macos.cs" />
-	  <None Include="PlatformTools\Contacts\Contacts.tizen.cs" />
-	  <None Include="PlatformTools\Contacts\Contacts.uwp.cs" />
-	  <None Include="PlatformTools\FilePicker\FilePicker.android.cs" />
-	  <None Include="PlatformTools\FilePicker\FilePicker.ios.cs" />
-	  <None Include="PlatformTools\FilePicker\FilePicker.macos.cs" />
-	  <None Include="PlatformTools\FilePicker\FilePicker.tizen.cs" />
-	  <None Include="PlatformTools\FilePicker\FilePicker.uwp.cs" />
-	  <None Include="PlatformTools\MediaPicker\MediaPicker.android.cs" />
-	  <None Include="PlatformTools\MediaPicker\MediaPicker.ios.cs" />
-	  <None Include="PlatformTools\MediaPicker\MediaPicker.macos.cs" />
-	  <None Include="PlatformTools\MediaPicker\MediaPicker.tizen.cs" />
-	  <None Include="PlatformTools\MediaPicker\MediaPicker.uwp.cs" />
-	  <None Include="PlatformTools\WebAuthenticator\AppleSignInAuthenticator.ios.cs" />
-	  <None Include="PlatformTools\WebAuthenticator\WebAuthenticator.android.cs" />
-	  <None Include="PlatformTools\WebAuthenticator\WebAuthenticator.ios.tvos.cs" />
-	  <None Include="PlatformTools\WebAuthenticator\WebAuthenticator.macos.cs" />
-	  <None Include="PlatformTools\WebAuthenticator\WebAuthenticator.uwp.cs" />
-	  <None Include="PlatformTools\WebAuthenticator\WebAuthenticatorCallbackActivity.android.cs" />
-	  <None Include="PlatformTools\WebAuthenticator\WebAuthenticatorIntermediateActivity.android.cs" />
-	</ItemGroup>
+  <ItemGroup>
+    <Compile Include="**\*.shared.cs" />
+    <Compile Include="**\*.shared.*.cs" />
+    <Compile Remove="obj\**" />
+    <EmbeddedResource Remove="obj\**" />
+    <None Remove="obj\**" />
+  </ItemGroup>
 
-	<Import Project="..\..\mdoc.targets" Condition=" '$(OS)' == 'Windows_NT' AND '$(GenerateApiDocs)' == 'true'" />
+  <ItemGroup Condition=" $(TargetFramework.Contains(-android)) ">
+    <Compile Include="**\*.android.cs" />
+    <Compile Include="**\*.android.*.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(TargetFramework.Contains(-ios)) ">
+    <Compile Include="**\*.ios.cs" />
+    <Compile Include="**\*.ios.*.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(TargetFramework.Contains('-windows')) ">
+    <Compile Include="**\*.uwp.cs" />
+    <Compile Include="**\*.uwp.*.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(TargetFramework.Contains('-maccatalyst')) ">
+    <Compile Include="**\*.macos.cs" />
+    <Compile Include="**\*.macos.*.cs" />
+  </ItemGroup>
 
 </Project>
