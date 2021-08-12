@@ -7,7 +7,7 @@ using System;
 
 namespace CommunityToolkit.Maui.Sample.Pages
 {
-    public class BasePage : ContentPage, IPage
+    public class BasePage : ContentPage
     {
         public BasePage()
         {
