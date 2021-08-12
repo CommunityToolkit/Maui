@@ -23,7 +23,8 @@
     <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
     <Title>CommunityToolkit.Maui</Title>
     <Description>The .NET MAUI Community Toolkit is a collection of Animations, Behaviors, Converters, and Effects for development with .NET MAUI. It simplifies and demonstrates common developer tasks building iOS, Android, macOS and Windows apps with .NET MAUI.</Description>
-    <PackageIcon>icon.png</PackageIcon>
+    <!-- TODO: Get a new amazing icon! -->
+    <!--<PackageIcon>icon.png</PackageIcon>-->
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <AssemblyFileVersion>1.0.0.0</AssemblyFileVersion>
