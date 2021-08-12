@@ -145,12 +145,11 @@ jobs:
         displayName: 'Install .NET SDK'
         inputs:
           version: $(NET_VERSION)
-          includePreviewVersions: true
-      - task: DotNetCoreCLI@2
+          includePreviewVersions: true      
+      - task: CmdLine@2
         displayName: 'Install .NET MAUI workload'
         inputs:
-          command: 'custom'
-          custom: 'workload install maui'
+          script: 'dotnet workload install maui'
       - task: CmdLine@2
         displayName: 'Restore NuGet Packages'
         inputs:
