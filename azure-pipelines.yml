@@ -65,11 +65,10 @@ jobs:
       #   inputs:
       #     provisioning_script: $(provisionator.vs2019)
 
-      - task: DotNetCoreCLI@2
+      - task: CmdLine@2
         displayName: 'Install .NET MAUI workload'
         inputs:
-          command: 'custom'
-          custom: 'workload install maui'
+          script: 'dotnet workload install maui'
       - task: CmdLine@2
         displayName: 'Clear Local NuGet Cache' #https://github.com/actions/virtual-environments/issues/1090#issuecomment-748452120
         inputs:
