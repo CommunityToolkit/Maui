@@ -10,15 +10,15 @@ variables:
   PathToSolution: 'src/CommunityToolkit.Maui.sln'
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
-  provisionator.vs2019: '$(System.DefaultWorkingDirectory)/eng/provisioning/vs2019.csx'
+  # provisionator.vs2019: '$(System.DefaultWorkingDirectory)/eng/provisioning/vs2019.csx'
 
-resources:
-  repositories:
-    - repository: internal-templates
-      type: github
-      name: xamarin/yaml-templates
-      endpoint: xamarin
-      ref: refs/heads/main
+# resources:
+#   repositories:
+#     - repository: internal-templates
+#       type: github
+#       name: xamarin/yaml-templates
+#       endpoint: xamarin
+#       ref: refs/heads/main
 
 trigger:
   branches:
@@ -60,10 +60,10 @@ jobs:
         inputs:
           version: '$(NET_VERSION)'
           includePreviewVersions: true
-      - task: xamops.azdevex.provisionator-task.provisionator@1
-        displayName: 'Provision VSWindows'
-        inputs:
-          provisioning_script: $(provisionator.vs2019)
+      # - task: xamops.azdevex.provisionator-task.provisionator@1
+      #   displayName: 'Provision VSWindows'
+      #   inputs:
+      #     provisioning_script: $(provisionator.vs2019)
 
       - task: CmdLine@2
         displayName: 'Clear Local NuGet Cache' #https://github.com/actions/virtual-environments/issues/1090#issuecomment-748452120
@@ -102,20 +102,20 @@ jobs:
           artifactName: nuget
           pathToPublish: '$(Build.ArtifactStagingDirectory)/nuget'
       # make sure we are following the rules, but only on the main build
-      - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-        - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-          condition: not(startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
-          displayName: Component Detection - Log
-          inputs:
-            scanType: LogOnly
-        - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-          condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
-          displayName: Component Detection - Report
-        - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
-          condition: eq(variables['RunPoliCheck'], 'true')
-          displayName: 'PoliCheck'
-          inputs:
-            targetType: F
+      # - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+      #   - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+      #     condition: not(startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+      #     displayName: Component Detection - Log
+      #     inputs:
+      #       scanType: LogOnly
+      #   - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+      #     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+      #     displayName: Component Detection - Report
+      #   - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
+      #     condition: eq(variables['RunPoliCheck'], 'true')
+      #     displayName: 'PoliCheck'
+      #     inputs:
+      #       targetType: F
 
   - job: build_macos
     displayName: Build macOS Library
@@ -159,9 +159,9 @@ jobs:
         inputs:
           script: 'dotnet pack -c Release $(PathToCommunityToolkitCsproj) --version-suffix $(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget'
 
-  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-    - template: sign-artifacts/jobs/v2.yml@internal-templates
-      parameters:
-        dependsOn: [ build_windows ]
-        condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
+  # - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+  #   - template: sign-artifacts/jobs/v2.yml@internal-templates
+  #     parameters:
+  #       dependsOn: [ build_windows ]
+  #       condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
         
