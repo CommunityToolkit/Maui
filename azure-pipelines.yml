@@ -158,10 +158,15 @@ jobs:
         displayName: 'Build Community Toolkit'
         inputs:
           script: 'dotnet build $(PathToCommunityToolkitCsproj) -c Release'
-      - task: CmdLine@2
-        displayName: 'Run Community Toolkit Unit Tests'
+      # - task: CmdLine@2
+      #   displayName: 'Run Community Toolkit Unit Tests'
+      #   inputs:
+      #     script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release -p:BuildInParallel=false'
+      - task: DotNetCoreCLI@2
+        displayName: 'Run Unit Tests'
         inputs:
-          script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release -p:BuildInParallel=false'
+          command: 'test'
+          projects: $(PathToCommunityToolkitCsproj)
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit NuGets'
         inputs:
