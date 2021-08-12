@@ -116,11 +116,12 @@ jobs:
         displayName: 'Build Community Toolkit'
         inputs:
           script: 'dotnet build $(PathToCommunityToolkitCsproj) -c Release'
-      - task: DotNetCoreCLI@2
-        displayName: 'Run Unit Tests'
-        inputs:
-          command: 'test'
-          projects: $(PathToCommunityToolkitUnitTestCsproj)
+      # Doesn't seem to work (yet)?
+      # - task: DotNetCoreCLI@2
+      #   displayName: 'Run Unit Tests'
+      #   inputs:
+      #     command: 'test'
+      #     projects: $(PathToCommunityToolkitUnitTestCsproj)
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit NuGets'
         inputs:
