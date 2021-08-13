@@ -23,7 +23,7 @@
     <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
     <Title>CommunityToolkit.Maui</Title>
     <Description>The .NET MAUI Community Toolkit is a collection of Animations, Behaviors, Converters, and Effects for development with .NET MAUI. It simplifies and demonstrates common developer tasks building iOS, Android, macOS and Windows apps with .NET MAUI.</Description>
-    <PackageIcon>..\..\build\nuget.png</PackageIcon>
+    <PackageIcon>icon.png</PackageIcon>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <AssemblyFileVersion>1.0.0.0</AssemblyFileVersion>
@@ -41,6 +41,11 @@
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
     <UseInterpreter Condition="$(TargetFramework.Contains('-android'))">False</UseInterpreter>
   </PropertyGroup>
+
+  <!-- Files that end up in the nupkg -->
+  <ItemGroup>
+    <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="mdoc" Version="5.8.0" PrivateAssets="all" />
