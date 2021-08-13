@@ -78,7 +78,7 @@ jobs:
       - task: CmdLine@2
         displayName: Pack Community Toolkit NuGets
         inputs:
-          script: 'dotnet pack -c Release $(PathToCommunityToolkitCsproj) --version-suffix $(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget'
+          script: 'dotnet pack -c Release $(PathToCommunityToolkitCsproj) -p:PackageVersion=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget'
       # publish the packages
       - task: PublishBuildArtifacts@1
         displayName: 'Publish Unsigned NuGets'
@@ -125,4 +125,4 @@ jobs:
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit NuGets'
         inputs:
-          script: 'dotnet pack -c Release $(PathToCommunityToolkitCsproj) --version-suffix $(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget'
+          script: 'dotnet pack -c Release $(PathToCommunityToolkitCsproj) -p:PackageVersion=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget'
