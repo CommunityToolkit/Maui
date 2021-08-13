@@ -5,7 +5,7 @@ variables:
   NugetPackageVersion: '$(CurrentSemanticVersion)'
   NET_VERSION: '6.0.x'
   RunPoliCheck: 'false'
-  PathToSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
+  PathToSolution: 'src/CommunityToolkit.Maui.sln'
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
 
@@ -38,35 +38,7 @@ schedules:
     include:
     - develop
 
-jobs:
-  - job: build_windows_samples
-    displayName: Build Windows Samples
-    pool:
-      vmImage: windows-2019
-    steps:
-      - task: UseDotNet@2
-        displayName: 'Install .NET SDK'
-        inputs:
-          version: '$(NET_VERSION)'
-          includePreviewVersions: true
-      - task: CmdLine@2
-        displayName: 'Install .NET MAUI workload'
-        inputs:
-          script: 'dotnet workload install maui'
-      - task: CmdLine@2
-        displayName: 'Clear Local NuGet Cache' #https://github.com/actions/virtual-environments/issues/1090#issuecomment-748452120
-        inputs:
-          script: 'nuget locals all -clear'
-      - task: MSBuild@1
-        displayName: 'Clean Solution'
-        inputs:
-          solution: $(PathToSamplesSln)
-          msbuildArguments:  '/t:Clean'
-      - task: CmdLine@2
-        displayName: Build Solution
-        inputs:
-          script: 'dotnet build $(PathToSamplesSln) -c Release'
-
+jobs:      
   - job: build_windows
     displayName: Build Windows Library
     pool:
