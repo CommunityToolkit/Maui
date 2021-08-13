@@ -2,7 +2,7 @@
 <Project Sdk="MSBuild.Sdk.Extras/2.1.2">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0-ios14.0;net6.0-android;net6.0-maccatalyst13.5</TargetFrameworks>
+    <TargetFrameworks>net6.0-ios10.0;net6.0-android;net6.0-maccatalyst10.13</TargetFrameworks>
     <UseMaui>true</UseMaui>
   </PropertyGroup>
 
