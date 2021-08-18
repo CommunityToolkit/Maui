@@ -1,10 +1,7 @@
-﻿#nullable enable
-using System;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Behaviors.Internals;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
 
 namespace CommunityToolkit.Maui.Behaviors
 {
@@ -123,7 +120,7 @@ namespace CommunityToolkit.Maui.Behaviors
 			eventHandler = null;
 		}
 
-		[Preserve(Conditional = true)]
+		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		protected virtual void OnTriggerHandled(object? sender = null, object? eventArgs = null)
 		{
 			var parameter = CommandParameter

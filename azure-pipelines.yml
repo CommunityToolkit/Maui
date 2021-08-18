@@ -1,0 +1,128 @@
+variables:
+  CurrentSemanticVersionBase: '1.0.0'
+  PreviewNumber: $[counter(variables['CurrentSemanticVersionBase'], 1001)]
+  CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(PreviewNumber)'
+  NugetPackageVersion: '$(CurrentSemanticVersion)'
+  NET_VERSION: '6.0.x'
+  RunPoliCheck: 'false'
+  PathToSolution: 'src/CommunityToolkit.Maui.sln'
+  PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
+  PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
+
+trigger:
+  branches:
+    include:
+    - main
+    - develop
+  tags:
+    include:
+    - '*'
+  paths:
+    exclude:
+    - README.md
+
+pr:
+  autoCancel: true
+  branches:
+    include:
+    - main
+    - develop
+  paths:
+    exclude:
+    - README.md
+
+schedules:
+- cron: "0 0 * * *"
+  displayName: Daily midnight build
+  branches:
+    include:
+    - develop
+
+jobs:      
+  - job: build_windows
+    displayName: Build Windows Library
+    pool:
+      vmImage: windows-latest
+    steps:
+      - task: UseDotNet@2
+        displayName: 'Install .NET SDK'
+        inputs:
+          version: '$(NET_VERSION)'
+          includePreviewVersions: true
+
+      - task: CmdLine@2
+        displayName: 'Install .NET MAUI workload'
+        inputs:
+          script: 'dotnet workload install maui'
+      - task: CmdLine@2
+        displayName: 'Clear Local NuGet Cache' #https://github.com/actions/virtual-environments/issues/1090#issuecomment-748452120
+        inputs:
+          script: 'nuget locals all -clear'
+      - task: CmdLine@2
+        displayName: 'Clean Solution'
+        inputs:
+          script: 'dotnet clean $(PathToSolution)'
+      # if this is a tagged build, then update the version number
+      - powershell: |
+          $buildSourceBranch = "$(Build.SourceBranch)"
+          $tagVersion = $buildSourceBranch.Substring($buildSourceBranch.LastIndexOf("/") + 1)
+          Write-Host("Branch = $buildSourceBranch, Version = $tagVersion");
+          Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$tagVersion")
+        displayName: Set NuGet Version to Tag Number
+        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+      # restore, build and pack the packages
+      - task: CmdLine@2
+        displayName: 'Build Community Toolkit'
+        inputs:
+          script: 'dotnet build $(PathToCommunityToolkitCsproj) -c Release'
+      - task: CmdLine@2
+        displayName: Pack Community Toolkit NuGets
+        inputs:
+          script: 'dotnet pack -c Release $(PathToCommunityToolkitCsproj) -p:PackageVersion=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget'
+      # publish the packages
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Unsigned NuGets'
+        inputs:
+          artifactName: nuget
+          pathToPublish: '$(Build.ArtifactStagingDirectory)/nuget'
+
+  - job: build_macos
+    displayName: Build macOS Library
+    pool:
+      vmImage: macos-10.15
+    steps:
+      # if this is a tagged build, then update the version number
+      - powershell: |
+          $buildSourceBranch = "$(Build.SourceBranch)"
+          $tagVersion = $buildSourceBranch.Substring($buildSourceBranch.LastIndexOf("/") + 1)
+          Write-Host("Branch = $buildSourceBranch, Version = $tagVersion");
+          Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$tagVersion")
+        displayName: Set NuGet Version to Tag Number
+        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+      - task: UseDotNet@2
+        displayName: 'Install .NET SDK'
+        inputs:
+          version: $(NET_VERSION)
+          includePreviewVersions: true      
+      - task: CmdLine@2
+        displayName: 'Install .NET MAUI workload'
+        inputs:
+          script: 'dotnet workload install maui'
+      - task: CmdLine@2
+        displayName: 'Restore NuGet Packages'
+        inputs:
+          script: 'dotnet restore $(PathToCommunityToolkitCsproj)'
+      - task: CmdLine@2
+        displayName: 'Build Community Toolkit'
+        inputs:
+          script: 'dotnet build $(PathToCommunityToolkitCsproj) -c Release'
+      # Doesn't seem to work (yet)?
+      # - task: DotNetCoreCLI@2
+      #   displayName: 'Run Unit Tests'
+      #   inputs:
+      #     command: 'test'
+      #     projects: $(PathToCommunityToolkitUnitTestCsproj)
+      - task: CmdLine@2
+        displayName: 'Pack CommunityToolkit NuGets'
+        inputs:
+          script: 'dotnet pack -c Release $(PathToCommunityToolkitCsproj) -p:PackageVersion=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget'
