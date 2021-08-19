@@ -79,6 +79,16 @@ jobs:
         displayName: Pack Community Toolkit NuGets
         inputs:
           script: 'dotnet pack -c Release $(PathToCommunityToolkitCsproj) -p:PackageVersion=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget'
+      # Sign NuGet Packages
+      - task: PowerShell@2
+        displayName: Authenticode Sign Packages
+        inputs:
+          filePath: build/Sign-Package.ps1
+        env:
+          SignClientUser: $(SignClientUser)
+          SignClientSecret: $(SignClientSecret)
+          ArtifactDirectory: bin\nupkg
+        condition: and(succeeded(), not(eq(variables['build.reason'], 'PullRequest')), not(eq(variables['SignClientSecret'], '')), not(eq(variables['SignClientUser'], '')))
       # publish the packages
       - task: PublishBuildArtifacts@1
         displayName: 'Publish Unsigned NuGets'
