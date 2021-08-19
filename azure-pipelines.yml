@@ -4,7 +4,6 @@ variables:
   CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(PreviewNumber)'
   NugetPackageVersion: '$(CurrentSemanticVersion)'
   NET_VERSION: '6.0.x'
-  RunPoliCheck: 'false'
   PathToSolution: 'src/CommunityToolkit.Maui.sln'
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
@@ -30,13 +29,6 @@ pr:
   paths:
     exclude:
     - README.md
-
-schedules:
-- cron: "0 0 * * *"
-  displayName: Daily midnight build
-  branches:
-    include:
-    - develop
 
 jobs:      
   - job: build_windows
