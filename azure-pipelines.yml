@@ -87,7 +87,7 @@ jobs:
         env:
           SignClientUser: $(SignClientUser)
           SignClientSecret: $(SignClientSecret)
-          ArtifactDirectory: bin\nupkg
+          ArtifactDirectory: $(Build.ArtifactStagingDirectory)/nuget
         condition: and(succeeded(), not(eq(variables['build.reason'], 'PullRequest')), not(eq(variables['SignClientSecret'], '')), not(eq(variables['SignClientUser'], '')))
       # publish the packages
       - task: PublishBuildArtifacts@1
