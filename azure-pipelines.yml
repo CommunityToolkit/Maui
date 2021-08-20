@@ -66,9 +66,9 @@ jobs:
       - powershell: |
           $prNumber = $env:System_PullRequest_PullRequestNumber
           $commitId = "$(Build.SourceVersion)".Substring(0, 7)
-          $fullVersionString = $(CurrentSemanticVersionBase)-build.$prNumber+$commitId")
+          $fullVersionString = $(CurrentSemanticVersionBase)-build.$prNumber+$commitId
           Write-Host("GitHub PR = $prNumber, Commit = $commitId");
-          Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$fullVersionString
+          Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$fullVersionString")
           Write-Host "##vso[build.updatebuildnumber]$fullVersionString"
         displayName: Set NuGet Version to PR Version
         condition: and(succeeded(), eq(variables['build.reason'], 'PullRequest'))
