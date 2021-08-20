@@ -4,7 +4,6 @@ variables:
   CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(PreviewNumber)'
   NugetPackageVersion: '$(CurrentSemanticVersion)'
   NET_VERSION: '6.0.x'
-  RunPoliCheck: 'false'
   PathToSolution: 'src/CommunityToolkit.Maui.sln'
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
@@ -30,13 +29,6 @@ pr:
   paths:
     exclude:
     - README.md
-
-schedules:
-- cron: "0 0 * * *"
-  displayName: Daily midnight build
-  branches:
-    include:
-    - develop
 
 jobs:      
   - job: build_windows
@@ -79,9 +71,19 @@ jobs:
         displayName: Pack Community Toolkit NuGets
         inputs:
           script: 'dotnet pack -c Release $(PathToCommunityToolkitCsproj) -p:PackageVersion=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget'
+      # Sign NuGet Packages
+      - task: PowerShell@2
+        displayName: Authenticode Sign Packages
+        inputs:
+          filePath: build/Sign-Package.ps1
+        env:
+          SignClientUser: $(SignClientUser)
+          SignClientSecret: $(SignClientSecret)
+          ArtifactDirectory: $(Build.ArtifactStagingDirectory)/nuget
+        condition: and(succeeded(), not(eq(variables['build.reason'], 'PullRequest')), not(eq(variables['SignClientSecret'], '')), not(eq(variables['SignClientUser'], '')))
       # publish the packages
       - task: PublishBuildArtifacts@1
-        displayName: 'Publish Unsigned NuGets'
+        displayName: 'Publish NuGets'
         inputs:
           artifactName: nuget
           pathToPublish: '$(Build.ArtifactStagingDirectory)/nuget'
