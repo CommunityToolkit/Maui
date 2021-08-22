@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.DateTimeOffsetConverterPage">
+    <pages:BasePage.BindingContext>
+        <vm:DateTimeOffsetConverterViewModel />
+    </pages:BasePage.BindingContext>
+    <pages:BasePage.Resources>
+        <ResourceDictionary>
+            <mct:DateTimeOffsetConverter x:Key="DateTimeOffsetConverter" />
+        </ResourceDictionary>
+    </pages:BasePage.Resources>
+    <pages:BasePage.Content>
+        <StackLayout>
+            <Label Text="The DatePicker bellow is bound to a Property of type DateTimeOffset."
+                   Margin="16"
+                   HorizontalOptions="Center"
+                   FontAttributes="Bold" />
+
+            <DatePicker Date="{Binding TheDate, Converter={StaticResource DateTimeOffsetConverter}}" 
+                   Margin="16"
+                   HorizontalOptions="Center" />
+
+            <Label Text="{Binding TheDate}"
+                   Margin="16"
+                   HorizontalOptions="Center"
+                   FontAttributes="Bold" />
+        </StackLayout>
+    </pages:BasePage.Content>
+</pages:BasePage>
