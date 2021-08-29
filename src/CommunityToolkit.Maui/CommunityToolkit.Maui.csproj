@@ -1,50 +1,77 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSBuild.Sdk.Extras/2.1.2">
 
-	<PropertyGroup>
-		<TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
-		<UseMaui>true</UseMaui>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
+    <UseMaui>true</UseMaui>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
 
-	<PropertyGroup>
-		<GitInfoReportImportance>high</GitInfoReportImportance>
-		<PackageId>CommunityToolkit.Maui</PackageId>
-		<Summary>Community-created toolkit with a collection of Animations, Behaviors, Converters, and Effects</Summary>
-		<Authors>Microsoft</Authors>
-		<Owners>Microsoft</Owners>
-		<NeutralLanguage>en</NeutralLanguage>
-		<Product>CommunityToolkit.Maui (net6.0)</Product>
-		<Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageProjectUrl>https://github.com/windows-toolkit/Maui</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/windows-toolkit/Maui</RepositoryUrl>
-		<PackageReleaseNotes>TBD</PackageReleaseNotes>
-		<DefineConstants>$(DefineConstants);</DefineConstants>
-		<UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
-		<Title>CommunityToolkit.Maui</Title>
-		<Description>The .NET MAUI Community Toolkit is a collection of Animations, Behaviors, Converters, and Effects for development with .NET MAUI. It simplifies and demonstrates common developer tasks building iOS, Android, macOS and Windows apps with .NET MAUI.</Description>
-		<PackageIcon>icon.png</PackageIcon>
-		<Product>$(AssemblyName) ($(TargetFramework))</Product>
-		<AssemblyVersion>1.0.0.0</AssemblyVersion>
-		<AssemblyFileVersion>1.0.0.0</AssemblyFileVersion>
-		<Version>1.0.0-pre1</Version>
-		<PackageVersion>$(Version)$(VersionSuffix)</PackageVersion>
-		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-		<PackageTags>dotnet,maui,toolkit,kit,communitytoolkit,dotnetcommunitytoolkit</PackageTags>
-		<Configurations>Debug;Release</Configurations>
-	</PropertyGroup>
+  <PropertyGroup>
+    <GitInfoReportImportance>high</GitInfoReportImportance>
+    <PackageId>CommunityToolkit.Maui</PackageId>
+    <Summary>Community-created toolkit with a collection of Animations, Behaviors, Converters, and Effects</Summary>
+    <Authors>Microsoft</Authors>
+    <Owners>Microsoft</Owners>
+    <NeutralLanguage>en</NeutralLanguage>
+    <Product>CommunityToolkit.Maui (net6.0)</Product>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/windows-toolkit/Maui</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/windows-toolkit/Maui</RepositoryUrl>
+    <PackageReleaseNotes>TBD</PackageReleaseNotes>
+    <DefineConstants>$(DefineConstants);</DefineConstants>
+    <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
+    <Title>CommunityToolkit.Maui</Title>
+    <Description>The .NET MAUI Community Toolkit is a collection of Animations, Behaviors, Converters, and Effects for development with .NET MAUI. It simplifies and demonstrates common developer tasks building iOS, Android, macOS and Windows apps with .NET MAUI.</Description>
+    <PackageIcon>icon.png</PackageIcon>
+    <Product>$(AssemblyName) ($(TargetFramework))</Product>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <AssemblyFileVersion>1.0.0.0</AssemblyFileVersion>
+    <Version>1.0.0-pre1</Version>
+    <PackageVersion>$(Version)$(VersionSuffix)</PackageVersion>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageTags>dotnet,maui,toolkit,kit,communitytoolkit,dotnetcommunitytoolkit</PackageTags>
+    <Configurations>Debug;Release</Configurations>
+  </PropertyGroup>
 
-	<PropertyGroup>
-		<InvariantGlobalization Condition="$(TargetFramework.Contains('-maccatalyst'))">true</InvariantGlobalization>
-		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-ios'))">iossimulator-x64</RuntimeIdentifier>
-		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
-		<UseInterpreter Condition="$(TargetFramework.Contains('-android'))">False</UseInterpreter>
-	</PropertyGroup>
+  <!-- Files that end up in the nupkg -->
+  <ItemGroup>
+    <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="mdoc" Version="5.8.0" PrivateAssets="all" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="mdoc" Version="5.8.0" PrivateAssets="all" />
+  </ItemGroup>
 
-	<Import Project="..\..\mdoc.targets" Condition=" '$(OS)' == 'Windows_NT' AND '$(GenerateApiDocs)' == 'true'" />
+  <Import Project="..\..\mdoc.targets" Condition=" '$(OS)' == 'Windows_NT' AND '$(GenerateApiDocs)' == 'true'" />
+
+  <ItemGroup>
+    <Compile Include="**\*.shared.cs" />
+    <Compile Include="**\*.shared.*.cs" />
+    <Compile Remove="obj\**" />
+    <EmbeddedResource Remove="obj\**" />
+    <None Remove="obj\**" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(TargetFramework.Contains(-android)) ">
+    <Compile Include="**\*.android.cs" />
+    <Compile Include="**\*.android.*.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(TargetFramework.Contains(-ios)) ">
+    <Compile Include="**\*.ios.cs" />
+    <Compile Include="**\*.ios.*.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(TargetFramework.Contains('-windows')) ">
+    <Compile Include="**\*.uwp.cs" />
+    <Compile Include="**\*.uwp.*.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(TargetFramework.Contains('-maccatalyst')) ">
+    <Compile Include="**\*.macos.cs" />
+    <Compile Include="**\*.macos.*.cs" />
+  </ItemGroup>
 
 </Project>
