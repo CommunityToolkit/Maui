@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Behaviors
             InitializeComponent();
         }
 
-        void MaxLengthReachedBehavior_MaxLengthReached(object? sender, MaxLengthReachedEventArgs e)
+        void MaxLengthReachedBehavior_MaxLengthReached(object sender, MaxLengthReachedEventArgs e)
         {
             nextEntry.Focus();
         }

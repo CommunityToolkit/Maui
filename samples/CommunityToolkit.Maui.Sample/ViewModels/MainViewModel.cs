@@ -1,8 +1,8 @@
 ﻿using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.Pages.Behaviors;
 using CommunityToolkit.Maui.Sample.Pages.Converters;
+using CommunityToolkit.Maui.Sample.Pages.Views;
 using Microsoft.Maui.Graphics;
-using System.Collections.Generic;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels
 {
@@ -15,6 +15,9 @@ namespace CommunityToolkit.Maui.Sample.ViewModels
 
             new SectionModel(typeof(ConvertersGalleryPage), "Converters", Color.FromArgb("#EA005E"),
                 "Converters let you convert bindings of a certain type to a different value, based on custom logic"),
+
+            new SectionModel(typeof(ViewsGalleryPage), "Views", Color.FromArgb("#EA005E"),
+                "A custom view or control allows for adding custom functionality as if it came out of the .NET MAUI box")
         };
     }
 }

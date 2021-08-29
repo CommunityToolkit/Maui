@@ -39,9 +39,9 @@ namespace CommunityToolkit.Maui.Converters
 		/// <returns>An object of type <see cref="TTo"/>.</returns>
 		public abstract TTo ConvertFrom(TFrom value);
 
-		/// <summary>
-		/// Not implemented, use <see cref="BaseConverter{TFrom, TTo}"/>
-		public virtual object? ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        /// <summary>
+        /// Not implemented, use <see cref="BaseConverter{TFrom, TTo}"/>
+        public virtual object? ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 			=> throw new NotImplementedException("Impossible to revert to original value. Consider setting BindingMode to OneWay.");
 	}
 }

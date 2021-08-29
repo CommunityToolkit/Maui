@@ -1,10 +1,9 @@
 ﻿#nullable enable
-using System;
 using System.Reflection;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Behaviors.Internals;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
+using PreserveAttribute = Microsoft.Maui.Controls.Internals.PreserveAttribute;
 
 namespace CommunityToolkit.Maui.Behaviors
 {

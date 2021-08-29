@@ -1,5 +1,5 @@
-﻿using Microsoft.Maui;
-using Microsoft.Maui.Controls.Compatibility;
+﻿using CommunityToolkit.Maui.Hosting;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Hosting;
@@ -13,7 +13,8 @@ namespace CommunityToolkit.Maui.Sample
         public void Configure(IAppHostBuilder appBuilder)
         {
             appBuilder
-                .UseMauiApp<App>();
+                .UseMauiApp<App>()
+                .ConfigureCommunityToolkit();
         }
     }
 }

@@ -1,13 +1,11 @@
 ﻿using CommunityToolkit.Maui.Sample.Models;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui;
 using System.Diagnostics;
 using System.Windows.Input;
-using System;
 
 namespace CommunityToolkit.Maui.Sample.Pages
 {
-    public class BasePage : ContentPage, IPage
+    public class BasePage : ContentPage
     {
         public BasePage()
         {
