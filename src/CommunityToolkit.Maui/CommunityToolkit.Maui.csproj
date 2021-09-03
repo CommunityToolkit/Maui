@@ -41,8 +41,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="7.0.3" />
     <PackageReference Include="mdoc" Version="5.8.0" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.Toolkit.Mvvm" Version="7.1.0-rc1" />
   </ItemGroup>
 
   <Import Project="..\..\mdoc.targets" Condition=" '$(OS)' == 'Windows_NT' AND '$(GenerateApiDocs)' == 'true'" />
