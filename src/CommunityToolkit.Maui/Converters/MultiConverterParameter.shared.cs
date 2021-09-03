@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls;
+﻿#nullable enable
+using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Converters
 {

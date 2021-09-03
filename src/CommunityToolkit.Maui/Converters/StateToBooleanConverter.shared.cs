@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.UI.Views;
+﻿#nullable enable
+using CommunityToolkit.Maui.UI.Views;
 using Microsoft.Maui.Controls;
 using System.Globalization;
 

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Converters;
+﻿#nullable enable
+using CommunityToolkit.Maui.Converters;
 using Microsoft.Maui.Controls;
 using NUnit.Framework;
 using System.Globalization;

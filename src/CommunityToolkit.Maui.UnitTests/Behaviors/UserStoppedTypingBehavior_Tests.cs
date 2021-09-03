@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Behaviors;
+﻿#nullable enable
+using CommunityToolkit.Maui.Behaviors;
 using Microsoft.Maui.Controls;
 using NUnit.Framework;
 using System.Windows.Input;
