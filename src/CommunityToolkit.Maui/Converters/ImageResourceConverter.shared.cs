@@ -1,5 +1,4 @@
-﻿#nullable enable
-using Microsoft.Maui.Controls;
+﻿using Microsoft.Maui.Controls;
 using System.Globalization;
 #if NETSTANDARD1_0 || UAP10_0
 using System.Reflection;

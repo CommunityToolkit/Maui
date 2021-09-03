@@ -1,4 +1,3 @@
-#nullable enable
 using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters

@@ -1,4 +1,3 @@
-#nullable enable
 using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Converters

@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace CommunityToolkit.Maui.Converters

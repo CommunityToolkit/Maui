@@ -1,5 +1,4 @@
-﻿#nullable enable
-using CommunityToolkit.Maui.Exceptions;
+﻿using CommunityToolkit.Maui.Exceptions;
 using System.Reflection;
 using System.Reflection.Emit;
 

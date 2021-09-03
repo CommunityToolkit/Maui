@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-namespace CommunityToolkit.Maui.Behaviors
+﻿namespace CommunityToolkit.Maui.Behaviors
 {
     /// <summary>
     /// This <see cref="EventToCommandBehavior"/> cast the sender object to a specific type defined by the user.
