@@ -6,11 +6,11 @@ using static System.String;
 // Inspired by AsyncAwaitBestPractices.WeakEventManager: https://github.com/brminnick/AsyncAwaitBestPractices
 namespace CommunityToolkit.Maui.Helpers
 {
-    /// <summary>
-    /// Weak event manager that allows for garbage collection when the EventHandler is still subscribed
-    /// </summary>
-    /// <typeparam name="TEventArgs">Event args type.</typeparam>
-    public class WeakEventManager<TEventArgs>
+	/// <summary>
+	/// Weak event manager that allows for garbage collection when the EventHandler is still subscribed
+	/// </summary>
+	/// <typeparam name="TEventArgs">Event args type.</typeparam>
+	public class WeakEventManager<TEventArgs>
 	{
 		readonly Dictionary<string, List<Subscription>> eventHandlers = new Dictionary<string, List<Subscription>>();
 

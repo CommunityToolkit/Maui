@@ -1,6 +1,6 @@
 ﻿namespace CommunityToolkit.Maui.UI.Views
 {
-    public enum LayoutState
+	public enum LayoutState
 	{
 		None,
 		Loading,

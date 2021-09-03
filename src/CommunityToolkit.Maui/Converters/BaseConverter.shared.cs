@@ -2,12 +2,12 @@ using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters
 {
-    /// <summary>
-    /// Abstract class used to implement converters that implements the ConvertBack logic.
-    /// </summary>
-    /// <typeparam name="TFrom">Type of the input value.</typeparam>
-    /// <typeparam name="TTo">Type of the output value.</typeparam>
-    public abstract class BaseConverter<TFrom, TTo> : BaseConverterOneWay<TFrom, TTo>
+	/// <summary>
+	/// Abstract class used to implement converters that implements the ConvertBack logic.
+	/// </summary>
+	/// <typeparam name="TFrom">Type of the input value.</typeparam>
+	/// <typeparam name="TTo">Type of the output value.</typeparam>
+	public abstract class BaseConverter<TFrom, TTo> : BaseConverterOneWay<TFrom, TTo>
 	{
 		/// <summary>
 		/// Converts the incoming value from <see cref="TTo"/>[] and returns the object of a type <see cref="TFrom"/>.

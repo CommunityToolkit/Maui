@@ -6,10 +6,10 @@ using System.Reflection;
 
 namespace CommunityToolkit.Maui.Converters
 {
-    /// <summary>
-    /// Converts embedded image resource ID to it ImageSource.
-    /// </summary>
-    public class ImageResourceConverter : IValueConverter
+	/// <summary>
+	/// Converts embedded image resource ID to it ImageSource.
+	/// </summary>
+	public class ImageResourceConverter : IValueConverter
 	{
 		/// <summary>
 		/// Converts embedded image resource ID to it ImageSource.

@@ -1,9 +1,9 @@
 ﻿namespace CommunityToolkit.Maui.Helpers
 {
-    /// <summary>
-    /// Different types of conditions that can be used in <see cref="Converters.VariableMultiValueConverter"/>.
-    /// </summary>
-    public enum MultiBindingCondition
+	/// <summary>
+	/// Different types of conditions that can be used in <see cref="Converters.VariableMultiValueConverter"/>.
+	/// </summary>
+	public enum MultiBindingCondition
 	{
 		/// <summary>None of the values should be true.</summary>
 		None,

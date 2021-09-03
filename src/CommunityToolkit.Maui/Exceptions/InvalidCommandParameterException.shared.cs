@@ -1,10 +1,10 @@
 ﻿// Inspired by AsyncAwaitBestPractices.MVVM.InvalidCommandParameterException: https://github.com/brminnick/AsyncAwaitBestPractices
 namespace CommunityToolkit.Maui.Exceptions
 {
-    /// <summary>
-    /// Represents errors that occur during IAsyncCommand execution.
-    /// </summary>
-    public class InvalidCommandParameterException : Exception
+	/// <summary>
+	/// Represents errors that occur during IAsyncCommand execution.
+	/// </summary>
+	public class InvalidCommandParameterException : Exception
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="InvalidCommandParameterException"/> class.

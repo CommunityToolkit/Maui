@@ -3,7 +3,7 @@
 // Inspired by AsyncAwaitBestPractices.Subscription: https://github.com/brminnick/AsyncAwaitBestPractices
 namespace CommunityToolkit.Maui.Helpers
 {
-    struct Subscription
+	struct Subscription
 	{
 		public WeakReference? Subscriber { get; }
 

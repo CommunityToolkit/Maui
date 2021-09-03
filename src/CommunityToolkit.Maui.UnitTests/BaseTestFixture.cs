@@ -5,7 +5,7 @@ using System.Globalization;
 
 namespace CommunityToolkit.Maui.UnitTests
 {
-    public class BaseTestFixture
+	public class BaseTestFixture
 	{
 		CultureInfo? defaultCulture;
 		CultureInfo? defaultUICulture;
