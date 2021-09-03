@@ -1,5 +1,4 @@
-﻿#nullable enable
-namespace CommunityToolkit.Maui.UnitTests.Mocks
+﻿namespace CommunityToolkit.Maui.UnitTests.Mocks
 {
     public class MockItem
     {

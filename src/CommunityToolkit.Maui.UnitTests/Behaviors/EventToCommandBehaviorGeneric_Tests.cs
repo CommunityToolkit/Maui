@@ -1,5 +1,4 @@
-﻿#nullable enable
-using CommunityToolkit.Maui.Behaviors;
+﻿using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using Microsoft.Maui.Controls;
