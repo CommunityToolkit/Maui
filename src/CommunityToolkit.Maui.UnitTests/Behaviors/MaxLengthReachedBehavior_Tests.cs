@@ -1,9 +1,8 @@
 ﻿#nullable enable
-using System;
-using System.Windows.Input;
 using CommunityToolkit.Maui.Behaviors;
 using Microsoft.Maui.Controls;
 using NUnit.Framework;
+using System.Windows.Input;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors
 {

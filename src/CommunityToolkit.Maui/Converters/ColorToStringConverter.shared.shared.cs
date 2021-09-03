@@ -1,6 +1,5 @@
 #nullable enable
 using CommunityToolkit.Maui.Extensions;
-using Microsoft.Maui.Graphics;
 
 namespace CommunityToolkit.Maui.Converters
 {

@@ -1,6 +1,6 @@
 ﻿namespace CommunityToolkit.Maui.Converters
 {
-	enum MathOperatorPrecedence
+    enum MathOperatorPrecedence
 	{
 		Lowest,
 		Low,

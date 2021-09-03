@@ -1,7 +1,6 @@
 ﻿#nullable enable
 using Microsoft.Maui.Controls;
 using System.ComponentModel;
-using System.Linq;
 using System.Reflection;
 
 namespace CommunityToolkit.Maui.Behaviors.Internals

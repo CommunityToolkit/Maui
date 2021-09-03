@@ -1,6 +1,6 @@
 ﻿namespace CommunityToolkit.Maui.UnitTests.Mocks
 {
-	public enum MockEnum
+    public enum MockEnum
 	{
 		Foo,
 		Bar,

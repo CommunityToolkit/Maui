@@ -1,10 +1,9 @@
 ﻿#nullable enable
-using System;
-using System.ComponentModel;
-using System.Windows.Input;
 using CommunityToolkit.Maui.Behaviors.Internals;
 using CommunityToolkit.Maui.Helpers;
 using Microsoft.Maui.Controls;
+using System.ComponentModel;
+using System.Windows.Input;
 
 namespace CommunityToolkit.Maui.Behaviors
 {

@@ -1,13 +1,12 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 
 // Inspired by AsyncAwaitBestPractices.InvalidHandleEventException: https://github.com/brminnick/AsyncAwaitBestPractices
 namespace CommunityToolkit.Maui.Exceptions
 {
-	/// <summary>
-	/// Represents errors that occur during WeakEventManager.HandleEvent execution.
-	/// </summary>
-	public class InvalidHandleEventException : Exception
+    /// <summary>
+    /// Represents errors that occur during WeakEventManager.HandleEvent execution.
+    /// </summary>
+    public class InvalidHandleEventException : Exception
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="InvalidHandleEventException"/> class.

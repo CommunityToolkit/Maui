@@ -1,13 +1,10 @@
 ﻿#nullable enable
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace CommunityToolkit.Maui.Converters
 {
-	sealed class MathExpression
+    sealed class MathExpression
 	{
 		const string regexPattern = @"(?<!\d)\-?(?:\d+\.\d+|\d+)|\+|\-|\/|\*|\(|\)|\^|\%|\,|\w+";
 		const NumberStyles numberStyle = NumberStyles.Float | NumberStyles.AllowThousands;

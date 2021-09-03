@@ -1,6 +1,5 @@
 ﻿#nullable enable
 using Microsoft.Maui.Controls;
-using System;
 using System.Globalization;
 #if NETSTANDARD1_0 || UAP10_0
 using System.Reflection;
@@ -8,10 +7,10 @@ using System.Reflection;
 
 namespace CommunityToolkit.Maui.Converters
 {
-	/// <summary>
-	/// Converts embedded image resource ID to it ImageSource.
-	/// </summary>
-	public class ImageResourceConverter : IValueConverter
+    /// <summary>
+    /// Converts embedded image resource ID to it ImageSource.
+    /// </summary>
+    public class ImageResourceConverter : IValueConverter
 	{
 		/// <summary>
 		/// Converts embedded image resource ID to it ImageSource.

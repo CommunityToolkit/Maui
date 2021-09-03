@@ -1,8 +1,7 @@
 ﻿#nullable enable
-using System;
-using System.Globalization;
 using CommunityToolkit.Maui.Converters;
 using NUnit.Framework;
+using System.Globalization;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters
 {

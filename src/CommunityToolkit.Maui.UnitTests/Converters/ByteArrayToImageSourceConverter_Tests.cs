@@ -1,10 +1,8 @@
 ﻿#nullable enable
-using System;
-using System.Globalization;
-using System.IO;
 using CommunityToolkit.Maui.Converters;
 using Microsoft.Maui.Controls;
 using NUnit.Framework;
+using System.Globalization;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters
 {

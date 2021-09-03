@@ -1,9 +1,7 @@
 ﻿#nullable enable
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using CommunityToolkit.Maui.Behaviors.Internals;
 using Microsoft.Maui.Controls;
+using System.ComponentModel;
 
 namespace CommunityToolkit.Maui.Behaviors
 {
