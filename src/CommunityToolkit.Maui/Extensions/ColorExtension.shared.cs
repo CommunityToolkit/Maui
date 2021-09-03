@@ -1,3 +1,5 @@
+using Microsoft.Maui.Graphics;
+
 namespace CommunityToolkit.Maui.Extensions
 {
     public static class ColorExtension
