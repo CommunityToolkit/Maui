@@ -1,8 +1,6 @@
-﻿#nullable enable
-using CommunityToolkit.Maui.Helpers;
+﻿using CommunityToolkit.Maui.Helpers;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using NUnit.Framework;
-using System;
 using System.Globalization;
 using System.Resources;
 

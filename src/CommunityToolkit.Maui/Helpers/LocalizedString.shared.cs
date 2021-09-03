@@ -1,7 +1,5 @@
-﻿#nullable enable
-using CommunityToolkit.Maui.ObjectModel;
-using Microsoft.Maui.Controls.Internals;
-using System;
+﻿using Microsoft.Maui.Controls.Internals;
+using Microsoft.Toolkit.Mvvm.ComponentModel;
 
 namespace CommunityToolkit.Maui.Helpers
 {
@@ -20,7 +18,7 @@ namespace CommunityToolkit.Maui.Helpers
 
 			// This instance will be unsubscribed and GCed if no one references it
 			// since LocalizationResourceManager uses WeekEventManger
-			localizationManager.PropertyChanged += (sender, e) => OnPropertyChanged(null);
+			localizationManager.PropertyChanged += (sender, e) => OnPropertyChanged((string?)null);
 		}
 
 		[Preserve(Conditional = true)]

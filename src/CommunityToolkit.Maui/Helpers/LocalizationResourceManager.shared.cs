@@ -1,9 +1,6 @@
-﻿#nullable enable
-using CommunityToolkit.Maui.ObjectModel;
-using System;
+﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
 using System.Globalization;
 using System.Resources;
-using System.Threading;
 
 namespace CommunityToolkit.Maui.Helpers
 {
