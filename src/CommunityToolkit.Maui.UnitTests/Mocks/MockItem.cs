@@ -1,6 +1,6 @@
 ﻿namespace CommunityToolkit.Maui.UnitTests.Mocks
 {
-    public class MockItem
+	public class MockItem
 	{
 		public string? Title { get; set; }
 

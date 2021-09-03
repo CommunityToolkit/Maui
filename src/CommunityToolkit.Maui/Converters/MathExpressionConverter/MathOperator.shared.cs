@@ -1,6 +1,6 @@
 ﻿namespace CommunityToolkit.Maui.Converters
 {
-    sealed class MathOperator
+	sealed class MathOperator
 	{
 		public string Name { get; }
 
