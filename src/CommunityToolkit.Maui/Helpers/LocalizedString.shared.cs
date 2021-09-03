@@ -1,7 +1,4 @@
-﻿#if !(IOS || MACCATALYST)
-using Microsoft.Maui.Controls.Internals;
-#endif
-using Microsoft.Toolkit.Mvvm.ComponentModel;
+﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
 
 namespace CommunityToolkit.Maui.Helpers
 {
@@ -23,10 +20,10 @@ namespace CommunityToolkit.Maui.Helpers
 			localizationManager.PropertyChanged += (sender, e) => OnPropertyChanged((string?)null);
 		}
 
-		[Preserve(Conditional = true)]
+		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		public string Localized => generator();
 
-		[Preserve(Conditional = true)]
+		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		public static implicit operator LocalizedString(Func<string> func) => new(func);
 	}
 }
