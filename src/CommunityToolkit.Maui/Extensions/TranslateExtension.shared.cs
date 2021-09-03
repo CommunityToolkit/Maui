@@ -1,8 +1,6 @@
-﻿#nullable enable
-using CommunityToolkit.Maui.Helpers;
+﻿using CommunityToolkit.Maui.Helpers;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
-using System;
 
 namespace CommunityToolkit.Maui.Extensions
 {
