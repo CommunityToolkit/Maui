@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Maui.Behaviors.Internals;
+﻿using System;
+using System.Linq;
+using CommunityToolkit.Maui.Behaviors.Internals;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 
