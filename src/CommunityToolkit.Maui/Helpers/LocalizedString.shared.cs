@@ -1,4 +1,6 @@
-﻿using Microsoft.Maui.Controls.Internals;
+﻿#if !(IOS || MACCATALYST)
+using Microsoft.Maui.Controls.Internals;
+#endif
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 
 namespace CommunityToolkit.Maui.Helpers
