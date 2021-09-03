@@ -1,5 +1,4 @@
 using Microsoft.Maui.Graphics;
-using System;
 
 namespace CommunityToolkit.Maui.Extensions
 {
