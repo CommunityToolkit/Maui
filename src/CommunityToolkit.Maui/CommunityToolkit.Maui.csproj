@@ -41,7 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="mdoc" Version="5.8.0" PrivateAssets="all" />
+    <PackageReference Include="mdoc" Version="5.8.3" PrivateAssets="all" />
   </ItemGroup>
 
   <Import Project="..\..\mdoc.targets" Condition=" '$(OS)' == 'Windows_NT' AND '$(GenerateApiDocs)' == 'true'" />
