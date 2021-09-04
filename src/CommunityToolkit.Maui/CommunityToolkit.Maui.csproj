@@ -2,7 +2,7 @@
 <Project Sdk="MSBuild.Sdk.Extras/2.1.2">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks>net6.0;net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
     <UseMaui>true</UseMaui>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
@@ -41,7 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="mdoc" Version="5.8.0" PrivateAssets="all" />
+    <PackageReference Include="mdoc" Version="5.8.3" PrivateAssets="all" />
   </ItemGroup>
 
   <Import Project="..\..\mdoc.targets" Condition=" '$(OS)' == 'Windows_NT' AND '$(GenerateApiDocs)' == 'true'" />
