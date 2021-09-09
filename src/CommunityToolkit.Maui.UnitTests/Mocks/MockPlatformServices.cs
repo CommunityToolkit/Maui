@@ -1,13 +1,8 @@
-﻿#nullable enable
+﻿using System.Reflection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using System;
-using System.IO;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks
 {

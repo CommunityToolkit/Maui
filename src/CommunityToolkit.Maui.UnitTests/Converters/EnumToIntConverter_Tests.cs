@@ -1,6 +1,4 @@
-﻿#nullable enable
-using System;
-using CommunityToolkit.Maui.Converters;
+﻿using CommunityToolkit.Maui.Converters;
 using NUnit.Framework;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters
