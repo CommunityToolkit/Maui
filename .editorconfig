@@ -1,0 +1,4 @@
+[*.cs]
+
+# Organize usings
+dotnet_sort_system_directives_first = true

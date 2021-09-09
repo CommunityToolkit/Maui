@@ -1,5 +1,4 @@
-﻿using System;
-using CommunityToolkit.Maui.Behaviors;
+﻿using CommunityToolkit.Maui.Behaviors;
 using Microsoft.Maui.Controls;
 using NUnit.Framework;
 
