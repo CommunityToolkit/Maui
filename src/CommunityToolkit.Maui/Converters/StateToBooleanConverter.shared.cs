@@ -1,6 +1,6 @@
-﻿using CommunityToolkit.Maui.UI.Views;
+﻿using System.Globalization;
+using CommunityToolkit.Maui.UI.Views;
 using Microsoft.Maui.Controls;
-using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters
 {

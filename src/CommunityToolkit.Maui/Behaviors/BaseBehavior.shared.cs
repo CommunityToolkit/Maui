@@ -1,6 +1,6 @@
-﻿using Microsoft.Maui.Controls;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Reflection;
+using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Behaviors.Internals
 {

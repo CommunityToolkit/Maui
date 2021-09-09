@@ -1,7 +1,7 @@
-﻿using CommunityToolkit.Maui.Extensions.Internals;
-using Microsoft.Maui.Controls;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Reflection;
+using CommunityToolkit.Maui.Extensions.Internals;
+using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Converters
 {

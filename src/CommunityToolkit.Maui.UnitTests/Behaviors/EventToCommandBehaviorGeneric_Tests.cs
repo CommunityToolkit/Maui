@@ -1,9 +1,9 @@
-﻿using CommunityToolkit.Maui.Behaviors;
+﻿using System.Reflection;
+using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using Microsoft.Maui.Controls;
 using NUnit.Framework;
-using System.Reflection;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors
 {
