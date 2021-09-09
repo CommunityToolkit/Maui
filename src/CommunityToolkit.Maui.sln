@@ -3,12 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.810.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui", "CommunityToolkit.Maui\CommunityToolkit.Maui.csproj", "{E1A6ED64-6BCB-4BE2-AAA1-AA0CEFE105A2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui", "CommunityToolkit.Maui\CommunityToolkit.Maui.csproj", "{E1A6ED64-6BCB-4BE2-AAA1-AA0CEFE105A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.UnitTests", "CommunityToolkit.Maui.UnitTests\CommunityToolkit.Maui.UnitTests.csproj", "{6A93AA5D-4C26-4F1E-8DEE-83C26C03AAF4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.UnitTests", "CommunityToolkit.Maui.UnitTests\CommunityToolkit.Maui.UnitTests.csproj", "{6A93AA5D-4C26-4F1E-8DEE-83C26C03AAF4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{478D53B4-48B3-4100-BF4D-60F3FC77DE81}"
 	ProjectSection(SolutionItems) = preProject
+		..\.editorconfig = ..\.editorconfig
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
 	EndProjectSection
