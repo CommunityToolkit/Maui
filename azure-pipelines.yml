@@ -56,11 +56,11 @@ jobs:
           versionSpec: '11' 
           jdkArchitectureOption: x64
           jdkSourceOption: LocalDirectory
-          jdkDestinationDirectory: 'C:\Propgram Files\Java\
+          jdkDestinationDirectory: 'C:\Propgram Files\Java\'
       - task: CmdLine@2
         displayName: 'Run Maui-Check'
         inputs:
-          script: | 
+          script: |
             dotnet tool install -g Redth.Net.Maui.Check
             maui-check --verbose --fix --ci --non-interactive --skip vswin
       - task: CmdLine@2
