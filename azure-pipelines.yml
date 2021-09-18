@@ -50,10 +50,10 @@ jobs:
         displayName: 'Install .NET MAUI workload'
         inputs:
           script: 'dotnet workload install maui'
-      - task: CmdLine@2
-        displayName: 'Microsoft Build of OpenJDK'
+      - task: JavaToolInstaller@0
+        displayName: 'Install Java SDK 11.0'
         inputs:
-          script: 'winget search Microsoft.OpenJDK'
+          versionSpec: '11' 
       - task: CmdLine@2
         displayName: 'Run Maui-Check'
         inputs:
