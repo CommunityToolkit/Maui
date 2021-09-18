@@ -37,6 +37,10 @@ jobs:
       vmImage: windows-latest
     steps:
       - task: UseDotNet@2
+        displayName: 'Install .NET 5.0 SDK'
+        inputs:
+          version: '5.0.x'
+      - task: UseDotNet@2
         displayName: 'Install .NET SDK'
         inputs:
           version: '$(NET_VERSION)'
