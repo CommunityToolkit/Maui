@@ -46,11 +46,14 @@ jobs:
         inputs:
           version: '$(NET_VERSION)'
           includePreviewVersions: true
-
       - task: CmdLine@2
         displayName: 'Install .NET MAUI workload'
         inputs:
           script: 'dotnet workload install maui'
+      - task: CmdLine@2
+        displayName: 'Microsoft Build of OpenJDK'
+        inputs:
+          script: 'winget search Microsoft.OpenJDK'
       - task: CmdLine@2
         displayName: 'Run Maui-Check'
         inputs:
