@@ -1,4 +1,7 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using CommunityToolkit.Maui.Extensions.Internals;
 using Microsoft.Maui.Controls;

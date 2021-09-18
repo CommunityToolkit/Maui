@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Behaviors.Internals;
+﻿using System.Threading.Tasks;
+using CommunityToolkit.Maui.Behaviors.Internals;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 

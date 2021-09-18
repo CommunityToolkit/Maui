@@ -1,19 +1,19 @@
 ﻿using Microsoft.Maui;
-using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Hosting;
 
 [assembly: XamlCompilationAttribute(XamlCompilationOptions.Compile)]
 
 namespace CommunityToolkit.Maui.Sample
 {
-    public class Startup : IStartup
+    public static class Startup
     {
-        public void Configure(IAppHostBuilder appBuilder)
+        public static MauiApp Create()
         {
-            appBuilder
-                .UseMauiApp<App>();
+            var builder = MauiApp.CreateBuilder();
+            builder.UseMauiApp<App>();
+
+            return builder.Build();
         }
     }
 }

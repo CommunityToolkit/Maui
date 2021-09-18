@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Globalization;
+using System.Linq;
 using CommunityToolkit.Maui.Extensions.Internals;
 using Microsoft.Maui.Controls;
 

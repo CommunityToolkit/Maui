@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using CommunityToolkit.Maui.UI.Views;
 using Microsoft.Maui.Controls;
 

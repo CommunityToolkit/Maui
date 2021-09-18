@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.Converters
+﻿using System;
+
+namespace CommunityToolkit.Maui.Converters
 {
 	sealed class MathOperator
 	{

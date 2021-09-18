@@ -1,4 +1,6 @@
 ﻿// Inspired by AsyncAwaitBestPractices.MVVM.InvalidCommandParameterException: https://github.com/brminnick/AsyncAwaitBestPractices
+using System;
+
 namespace CommunityToolkit.Maui.Exceptions
 {
 	/// <summary>

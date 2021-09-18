@@ -1,4 +1,6 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
+using System.IO;
 using CommunityToolkit.Maui.Converters;
 using Microsoft.Maui.Controls;
 using NUnit.Framework;
@@ -32,7 +34,7 @@ namespace CommunityToolkit.Maui.UnitTests.Converters
 			Assert.Throws<ArgumentException>(() => byteArrayToImageSourceConverter.Convert(value, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture));
 		}
 
-		Stream? GetStreamFromImageSource(ImageSource? imageSource)
+        static Stream? GetStreamFromImageSource(ImageSource? imageSource)
 		{
 			var streamImageSource = (StreamImageSource?)imageSource;
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls;
+﻿using System;
+using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks
 {
