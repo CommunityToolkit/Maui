@@ -57,12 +57,6 @@ jobs:
           jdkArchitectureOption: 'x64'
           jdkSourceOption: 'PreInstalled'
       - task: CmdLine@2
-        displayName: 'Run Maui-Check'
-        inputs:
-          script: |
-            dotnet tool install -g Redth.Net.Maui.Check
-            maui-check --verbose --fix --ci --non-interactive --skip vswin
-      - task: CmdLine@2
         displayName: 'Clear Local NuGet Cache' #https://github.com/actions/virtual-environments/issues/1090#issuecomment-748452120
         inputs:
           script: 'nuget locals all -clear'
@@ -117,7 +111,7 @@ jobs:
   - job: build_macos
     displayName: Build macOS Library
     pool:
-      vmImage: macos-10.15
+      vmImage: macos-latest
     steps:
       # if this is a tagged build, then update the version number
       - powershell: |
