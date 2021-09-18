@@ -36,6 +36,7 @@ jobs:
     pool:
       vmImage: windows-latest
     steps:
+    # .NET 5.0 is required for maui-check
       - task: UseDotNet@2
         displayName: 'Install .NET 5.0 SDK'
         inputs:
@@ -55,7 +56,7 @@ jobs:
         inputs:
           script: |
             dotnet tool install -g Redth.Net.Maui.Check
-            maui-check --fix --ci
+            maui-check --fix --ci --non-interactive
       - task: CmdLine@2
         displayName: 'Clear Local NuGet Cache' #https://github.com/actions/virtual-environments/issues/1090#issuecomment-748452120
         inputs:
