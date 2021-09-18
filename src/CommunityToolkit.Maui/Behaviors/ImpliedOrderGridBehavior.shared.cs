@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Maui.Behaviors.Internals;
+﻿using System;
+using System.Linq;
+using CommunityToolkit.Maui.Behaviors.Internals;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 
@@ -44,7 +46,7 @@ namespace CommunityToolkit.Maui.Behaviors
 
         bool[][] InitMatrix()
         {
-            _ = View ?? throw new NullReferenceException($"{nameof(View)} cannot be null.");
+            ArgumentNullException.ThrowIfNull(View);
 
             rowCount = View.RowDefinitions.Count;
             if (rowCount == 0)

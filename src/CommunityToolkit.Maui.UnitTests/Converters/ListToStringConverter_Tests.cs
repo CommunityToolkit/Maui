@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Maui.Converters;
+﻿using System;
+using System.Collections.Generic;
+using CommunityToolkit.Maui.Converters;
 using NUnit.Framework;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters

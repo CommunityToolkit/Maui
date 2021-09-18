@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 using CommunityToolkit.Maui.Extensions.Internals;
 using Microsoft.Maui.Controls;

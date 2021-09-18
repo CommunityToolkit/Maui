@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Collections.Generic;
+using System.Globalization;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using NUnit.Framework;

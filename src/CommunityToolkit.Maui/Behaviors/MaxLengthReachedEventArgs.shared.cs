@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.Behaviors
+﻿using System;
+
+namespace CommunityToolkit.Maui.Behaviors
 {
 	/// <summary>
 	/// Container object for the event arguments that are provided when the <see cref="MaxLengthReachedBehavior.MaxLengthReached"/> event is triggered.

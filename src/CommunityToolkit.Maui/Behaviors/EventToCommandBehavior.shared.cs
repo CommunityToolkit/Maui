@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Behaviors.Internals;
 using Microsoft.Maui.Controls;
@@ -102,8 +103,8 @@ namespace CommunityToolkit.Maui.Behaviors
 			eventInfo = View.GetType()?.GetRuntimeEvent(eventName) ??
 				throw new ArgumentException($"{nameof(EventToCommandBehavior)}: Couldn't resolve the event.", nameof(EventName));
 
-			_ = eventInfo.EventHandlerType ?? throw new NullReferenceException();
-			_ = eventHandlerMethodInfo ?? throw new NullReferenceException($"{nameof(eventHandlerMethodInfo)} is null, maybe it's a linker issue, please open a bug here: https://github.com/xamarin/XamarinCommunityToolkit/issues/");
+			ArgumentNullException.ThrowIfNull(eventInfo.EventHandlerType);
+			ArgumentNullException.ThrowIfNull(eventHandlerMethodInfo);
 
 			eventHandler = eventHandlerMethodInfo.CreateDelegate(eventInfo.EventHandlerType, this) ??
 				throw new ArgumentException($"{nameof(EventToCommandBehavior)}: Couldn't create event handler.", nameof(EventName));

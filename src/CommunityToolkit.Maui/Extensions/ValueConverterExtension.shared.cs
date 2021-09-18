@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls;
+﻿using System;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace CommunityToolkit.Maui.Extensions.Internals
