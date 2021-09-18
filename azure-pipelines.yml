@@ -56,7 +56,7 @@ jobs:
         inputs:
           script: |
             dotnet tool install -g Redth.Net.Maui.Check
-            maui-check --fix --ci --non-interactive
+            maui-check --verbose --fix --ci --non-interactive --skip vswin
       - task: CmdLine@2
         displayName: 'Clear Local NuGet Cache' #https://github.com/actions/virtual-environments/issues/1090#issuecomment-748452120
         inputs:
