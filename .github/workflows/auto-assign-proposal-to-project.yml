@@ -13,7 +13,9 @@ jobs:
     steps:
     - name: Auto Assign Proposals to "New Feature Proposal" Project Board
       uses: srggrs/assign-one-project-github-action@1.2.1
-      if: github.event.action == 'opened' && contains(github.event.issue.labels.*.name, 'proposal')
+      if: |
+        github.event.action == 'opened' && 
+        contains(github.event.issue.labels.*.name, 'proposal')
       with:
         project: 'https://github.com/communitytoolkit/maui/projects/1'
         column_name: 'Proposal Submitted'
