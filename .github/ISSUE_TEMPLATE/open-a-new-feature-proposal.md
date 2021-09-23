@@ -1,8 +1,9 @@
 ---
-name: Create a language specification
-about: For proposals that have been invited by a team member.
+name: Open a New Feature Proposal
+about: For proposals that have been discussed in the Discussions tab and have been
+  approved by a member of the core .NET MAUI Toolkit team
 title: "[Proposal] "
-labels: proposal, new
+labels: new, proposal
 assignees: ''
 
 ---

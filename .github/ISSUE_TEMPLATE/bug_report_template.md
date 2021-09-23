@@ -1,9 +1,12 @@
 ---
 name: Bug Report
-about: Create a report to help us improve
+about: Report a bug in the .NET MAUI Toolkit
 title: "[Bug] "
-labels: 'bug, unverified'
+labels: bug, unverified
+assignees: ''
+
 ---
+
 <!--
 Hello, and thanks for your interest in contributing to the .NET MAUI Toolkit! 
 
