@@ -68,12 +68,14 @@ New language feature proposals should fully fill out this template. This should 
 
 ### C# Usage
 
+```cs
 var phoneEntry = new Entry();
 phoneEntry.Behaviors.Add(new CharactersValidationBehavior
 {
     CharacterType = CharacterType.Digit,
     MaximumCharacterCount = 10
 });
+```
 
 -->
 
