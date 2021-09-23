@@ -1,10 +1,3 @@
----
-name: Submit a Pull Request for a Bug Fix or a New Feature Proposal
-about: Pull Requests for Bug Fixes or New Feature Proposals that have been reported, verified and reproduced by a member of the core .NET MAUI Toolkit Team
-title: "Fixes: [Issue]"
-labels: 'new'
----
-
 <!--
 Hello, and thanks for your interest in contributing to the .NET MAUI Toolkit! 
 
