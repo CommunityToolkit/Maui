@@ -44,7 +44,7 @@ After a Pull Request has been submitted, it will be reviewed and approved by the
 Every new feature also requires an associated sample to be added to the .NET MAUI Toolkit Sample app.
 
 ### 6. Documentation Complete 
-Before a Pull Request can be merged into the .NET MAUI Toolkit, the Pull Request Author must also submit the documentation to https://docs.microsoft.com
+Before a Pull Request can be merged into the .NET MAUI Toolkit, the Pull Request Author must also submit the documentation to [Add link to Microsoft Docs GitHub Repo Here].
 
 ### 7. Merged
 Once a Pull Request has been reviewed + approved AND the documentation has been written, submitted and approved, the new feature will be merged adding it to the .NET MAUI Toolkit
