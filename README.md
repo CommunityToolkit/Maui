@@ -18,7 +18,7 @@ New features will follow the following steps:
 
 Debate pertaining to new Maui Toolkit features takes place in the form of [Discussions](https://github.com/communitytoolkit/maui/discussions) in this repo.
 
-If you want to suggest a feature, discuss current design notes or proposals, etc., please [open a new Discussion topic](https://github.com/dotnet/csharplang/discussions/new).
+If you want to suggest a feature, discuss current design notes or proposals, etc., please [open a new Discussion topic](https://github.com/communitytoolkit/maui/discussions/new).
 
 Discussions that are short and stay on topic are much more likely to be read. If you leave comment number fifty, chances are that only a few people will read it. To make discussions easier to navigate and benefit from, please observe a few rules of thumb:
 
@@ -31,7 +31,7 @@ Discussions that are short and stay on topic are much more likely to be read. If
 Once you have a fully fleshed out proposal describing a new feature in syntactic and semantic detail, please [open an issue for it](https://github.com/communitytoolkit/maui/issues/new/choose), and it will be labeled as a [Proposal](https://github.com/communitytoolkit/maui/issues?q=is%3Aopen+is%3Aissue+label%3Aproposal). The comment thread on the issue can be used to hash out or briefly discuss details of the proposal, as well as pros and cons of adopting it into the .NET MAUI Toolkit. If an issue does not meet the bar of being a full proposal, we may move it to a discussion, so that it can be further matured. Specific open issues or more expansive discussion with a proposal will often warrant opening a side discussion rather than cluttering the comment section on the issue.
 
 ### 3. Proposal Championed
-When a member of the .NET MAUI Toolkit core team finds that a proposal merits promotion into the Toolkit, they can [Champion](https://github.com/dotnet/csharplang/issues?q=is%3Aopen+is%3Aissue+label%3A%22proposal+champion%22) it, which means that they will bring it to the monthly [.NET MAUI Toolkit Community Standup](https://www.youtube.com/watch?v=0ZBh2Hl54ZY). 
+When a member of the .NET MAUI Toolkit core team finds that a proposal merits promotion into the Toolkit, they can [Champion](https://github.com/communitytoolkit/maui/issues?q=is%3Aopen+is%3Aissue+label%3A%22proposal+champion%22) it, which means that they will bring it to the monthly [.NET MAUI Toolkit Community Standup](https://www.youtube.com/watch?v=0ZBh2Hl54ZY). 
 
 ### 4. Proposal Approved
 The .NET MAUI Toolkit core team will collectively vote to work on adopting and/or modifying the proposal, requiring a majority approval (i.e. greater than 50%) to be added to the Toolkit.
