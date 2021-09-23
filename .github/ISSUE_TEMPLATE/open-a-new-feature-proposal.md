@@ -46,6 +46,37 @@ New language feature proposals should fully fill out this template. This should 
 
 <!-- This is the bulk of the proposal. Explain the design in enough detail for somebody familiar with .NET MAUI to understand, and for somebody familiar with the Community Toolkit to implement, and include examples of how the feature is used. Please include syntax and desired semantics for the change, including linking to the relevant parts of the existing .NET MAUI Toolkit spec to describe the changes necessary to implement this feature. An initial proposal does not need to cover all cases, but it should have enough detail to enable a community member to bring this proposal to design if they so choose. -->
 
+## Usage Syntax
+[usage]: #usage-syntax
+
+<!-- Please provide an example of how an end-user will use this feature. If this is a UI control, please an example of the feature being consumed in both a C# UIand a XAML UI. -->
+
+<!-- Here is an example from CharactersValidationBehavior:
+
+### XAML Usage
+
+```xml
+<Entry>
+    <Entry.Behaviors>
+        <toolkit:CharactersValidationBehavior
+            CharacterType="Digit"
+            MaximumCharacterCount="10"
+        />
+    </Entry.Behaviors>
+</Entry>
+```
+
+### C# Usage
+
+var phoneEntry = new Entry();
+phoneEntry.Behaviors.Add(new CharactersValidationBehavior
+{
+    CharacterType = CharacterType.Digit,
+    MaximumCharacterCount = 10
+});
+
+-->
+
 ## Drawbacks
 [drawbacks]: #drawbacks
 
