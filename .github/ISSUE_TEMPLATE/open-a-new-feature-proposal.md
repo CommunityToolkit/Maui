@@ -20,6 +20,10 @@ New language feature proposals should fully fill out this template. This should 
 * [x] Proposed
 * [ ] Prototype: Not Started
 * [ ] Implementation: Not Started
+  * [ ] iOS Support
+  * [ ] Android Support
+  * [ ] macOS Support
+  * [ ] Windows Support
 * [ ] Documentation: Not Started
 * [ ] Sample: Not Started
 
