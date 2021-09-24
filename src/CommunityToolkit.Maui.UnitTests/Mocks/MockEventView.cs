@@ -1,6 +1,5 @@
-﻿#nullable enable
+﻿using System;
 using Microsoft.Maui.Controls;
-using System;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks
 {

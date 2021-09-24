@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Behaviors;
 using Microsoft.Maui.Controls;

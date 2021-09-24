@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using CommunityToolkit.Maui.Behaviors.Internals;
 using Microsoft.Maui.Controls;
 

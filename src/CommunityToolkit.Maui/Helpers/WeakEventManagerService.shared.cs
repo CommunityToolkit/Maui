@@ -1,10 +1,9 @@
-﻿#nullable enable
-using CommunityToolkit.Maui.Exceptions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using CommunityToolkit.Maui.Exceptions;
 
 // Inspired by AsyncAwaitBestPractices.WeakEventManagerService: https://github.com/brminnick/AsyncAwaitBestPractices
 namespace CommunityToolkit.Maui.Helpers

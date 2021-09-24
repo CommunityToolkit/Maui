@@ -46,7 +46,7 @@ namespace CommunityToolkit.Maui.Behaviors
 
         bool[][] InitMatrix()
         {
-            _ = View ?? throw new NullReferenceException($"{nameof(View)} cannot be null.");
+            ArgumentNullException.ThrowIfNull(View);
 
             rowCount = View.RowDefinitions.Count;
             if (rowCount == 0)

@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.UnitTests.Mocks;

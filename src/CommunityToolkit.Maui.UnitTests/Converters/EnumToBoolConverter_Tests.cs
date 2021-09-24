@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Globalization;
 using System.Linq;
 using CommunityToolkit.Maui.Converters;

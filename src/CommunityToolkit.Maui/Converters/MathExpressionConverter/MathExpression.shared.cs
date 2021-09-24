@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -7,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace CommunityToolkit.Maui.Converters
 {
-	sealed class MathExpression
+    sealed class MathExpression
 	{
 		const string regexPattern = @"(?<!\d)\-?(?:\d+\.\d+|\d+)|\+|\-|\/|\*|\(|\)|\^|\%|\,|\w+";
 		const NumberStyles numberStyle = NumberStyles.Float | NumberStyles.AllowThousands;
@@ -100,7 +99,7 @@ namespace CommunityToolkit.Maui.Converters
 
 				if (@operator.Precedence == MathOperatorPrecedence.Constant)
 				{
-					stack.Push(@operator.CalculateFunc(new double[0]));
+					stack.Push(@operator.CalculateFunc(Array.Empty<double>()));
 					continue;
 				}
 

@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Collections.Generic;
 using CommunityToolkit.Maui.Converters;
 using NUnit.Framework;
@@ -43,7 +42,7 @@ namespace CommunityToolkit.Maui.UnitTests.Converters
 		{
 			var listToStringConverter = new ListToStringConverter();
 
-			Assert.Throws<ArgumentException>(() => listToStringConverter.Convert(new object[0], null, parameter, null));
+			Assert.Throws<ArgumentException>(() => listToStringConverter.Convert(Array.Empty<object>(), null, parameter, null));
 		}
 	}
 }

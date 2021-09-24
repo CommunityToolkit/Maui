@@ -1,11 +1,10 @@
-﻿#nullable enable
-using CommunityToolkit.Maui.Extensions.Internals;
-using Microsoft.Maui.Controls;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using CommunityToolkit.Maui.Extensions.Internals;
+using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Converters
 {

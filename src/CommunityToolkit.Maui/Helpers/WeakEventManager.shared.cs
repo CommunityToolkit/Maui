@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -136,7 +135,7 @@ namespace CommunityToolkit.Maui.Helpers
 		/// <param name="eventName">Event name</param>
 		public static void RaiseEvent(this Microsoft.Maui.Controls.WeakEventManager weakEventManager, object? sender, object eventArgs, string eventName)
 		{
-			_ = weakEventManager ?? throw new ArgumentNullException(nameof(weakEventManager));
+			ArgumentNullException.ThrowIfNull(weakEventManager);
 
 			weakEventManager.HandleEvent(sender, eventArgs, eventName);
 		}

@@ -36,16 +36,26 @@ jobs:
     pool:
       vmImage: windows-latest
     steps:
+    # .NET 5.0 is required for maui-check
+      - task: UseDotNet@2
+        displayName: 'Install .NET 5.0 SDK'
+        inputs:
+          version: '5.0.x'
       - task: UseDotNet@2
         displayName: 'Install .NET SDK'
         inputs:
           version: '$(NET_VERSION)'
           includePreviewVersions: true
-
       - task: CmdLine@2
         displayName: 'Install .NET MAUI workload'
         inputs:
           script: 'dotnet workload install maui'
+      - task: JavaToolInstaller@0
+        displayName: 'Install Java SDK 11.0'
+        inputs:
+          versionSpec: '11'
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
       - task: CmdLine@2
         displayName: 'Clear Local NuGet Cache' #https://github.com/actions/virtual-environments/issues/1090#issuecomment-748452120
         inputs:
@@ -62,6 +72,16 @@ jobs:
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$tagVersion")
         displayName: Set NuGet Version to Tag Number
         condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+      # if this is a PR build, then update the version number
+      - powershell: |
+          $prNumber = $env:System_PullRequest_PullRequestNumber
+          $commitId = "$(Build.SourceVersion)".Substring(0, 7)
+          $fullVersionString = "$(CurrentSemanticVersionBase)-build.$prNumber+$commitId"
+          Write-Host("GitHub PR = $prNumber, Commit = $commitId");
+          Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$fullVersionString")
+          Write-Host "##vso[build.updatebuildnumber]$fullVersionString"
+        displayName: Set NuGet Version to PR Version
+        condition: and(succeeded(), eq(variables['build.reason'], 'PullRequest'))
       # restore, build and pack the packages
       - task: CmdLine@2
         displayName: 'Build Community Toolkit'
@@ -91,7 +111,7 @@ jobs:
   - job: build_macos
     displayName: Build macOS Library
     pool:
-      vmImage: macos-10.15
+      vmImage: macos-latest
     steps:
       # if this is a tagged build, then update the version number
       - powershell: |

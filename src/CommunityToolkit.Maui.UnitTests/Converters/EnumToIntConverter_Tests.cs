@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using CommunityToolkit.Maui.Converters;
 using NUnit.Framework;
 

@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Behaviors.Internals;

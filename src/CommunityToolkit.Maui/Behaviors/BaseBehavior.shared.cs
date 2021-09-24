@@ -1,8 +1,7 @@
-﻿#nullable enable
-using Microsoft.Maui.Controls;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Behaviors.Internals
 {

@@ -1,5 +1,5 @@
-using Microsoft.Maui.Graphics;
 using System;
+using Microsoft.Maui.Graphics;
 
 namespace CommunityToolkit.Maui.Extensions
 {
