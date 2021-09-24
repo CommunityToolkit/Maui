@@ -24,6 +24,7 @@ New language feature proposals should fully fill out this template. This should 
   * [ ] Android Support
   * [ ] macOS Support
   * [ ] Windows Support
+* [ ] Unit Tests
 * [ ] Documentation: Not Started
 * [ ] Sample: Not Started
 
