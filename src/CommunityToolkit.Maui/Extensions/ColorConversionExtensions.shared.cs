@@ -3,7 +3,7 @@ using Microsoft.Maui.Graphics;
 
 namespace CommunityToolkit.Maui.Extensions
 {
-    public static class ColorExtension
+    public static class ColorConversionExtensions
     {
         /// <returns>RGB(255, 255, 255)</returns>
         public static string ToRgbString(this Color c) => $"RGB({c.GetByteRed()},{c.GetByteGreen()},{c.GetByteBlue()})";
