@@ -1,12 +1,12 @@
 ﻿using CommunityToolkit.Maui.Behaviors;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors
 {
-    public class SetFocusOnEntryCompleted_Tests
+    public class SetFocusOnEntryCompleted_Tests : BaseTest
 	{
-		[Test]
+		[Fact]
 		public void DoesNotSetFocusBeforeCompletion()
 		{
 			// arrange
@@ -21,7 +21,7 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			Assert.False(entry2.IsFocused);
 		}
 
-		[Test]
+		[Fact]
 		public void SetsFocusWhenCompleted()
 		{
 			// arrange
@@ -33,7 +33,7 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			entry1.SendCompleted();
 
 			// assert
-			Assert.IsTrue(entry2.IsFocused);
+			Assert.True(entry2.IsFocused);
 		}
 
 		public Entry CreateEntry(VisualElement? nextElement = null)

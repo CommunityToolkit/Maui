@@ -2,17 +2,17 @@
 using System.Windows.Input;
 using CommunityToolkit.Maui.Behaviors;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors
 {
-    public class UserStoppedTypingBehavior_Tests
+    public class UserStoppedTypingBehavior_Tests : BaseTest
 	{
 		const int defaultTimeThreshold = 1000;
 		const int defaultLengthThreshold = 0;
 		const int defaultTimeoutThreshold = defaultTimeThreshold * 2;
 
-		[Test]
+		[Fact]
 		public async Task ShouldExecuteCommandWhenTimeThresholdHasExpired()
 		{
 			// arrange
@@ -24,10 +24,10 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			await Task.Delay(defaultTimeoutThreshold);
 
 			// assert
-			Assert.IsTrue(commandHasBeenExecuted);
+			Assert.True(commandHasBeenExecuted);
 		}
 
-		[Test]
+		[Fact]
 		public async Task ShouldExecuteCommandWithSpecificParameterWhenSpecified()
 		{
 			// arrange
@@ -40,10 +40,10 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			await Task.Delay(defaultTimeoutThreshold);
 
 			// assert
-			Assert.IsTrue(commandHasBeenExecuted);
+			Assert.True(commandHasBeenExecuted);
 		}
 
-		[Test]
+		[Fact]
 		public async Task ShouldNotExecuteCommandBeforeTimeThresholdHasExpired()
 		{
 			// arrange
@@ -58,7 +58,7 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			Assert.False(commandHasBeenExecuted);
 		}
 
-		[Test]
+		[Fact]
 		public async Task ShouldOnlyExectueCommandOnceWhenTextChangedHasOccurredMultipleTimes()
 		{
 			// arrange
@@ -73,10 +73,10 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			await Task.Delay(defaultTimeoutThreshold);
 
 			// assert
-			Assert.AreEqual(1, timesExecuted);
+			Assert.Equal(1, timesExecuted);
 		}
 
-		[Test]
+		[Fact]
 		public async Task ShouldDismissKeyboardWhenTimeThresholdHasExpired()
 		{
 			// arrange
@@ -92,7 +92,7 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			Assert.False(entry.IsFocused);
 		}
 
-		[Test]
+		[Fact]
 		public async Task ShouldExecuteCommandWhenMinimumLengthThreholdHasBeenReached()
 		{
 			// arrange
@@ -107,10 +107,10 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			await Task.Delay(defaultTimeoutThreshold);
 
 			// assert
-			Assert.IsTrue(commandHasBeenExecuted);
+			Assert.True(commandHasBeenExecuted);
 		}
 
-		[Test]
+		[Fact]
 		public async Task ShouldNotExecuteCommandWhenMinimumLengthThreholdHasNotBeenReached()
 		{
 			// arrange
@@ -126,7 +126,7 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			Assert.False(commandHasBeenExecuted);
 		}
 
-		[Test]
+		[Fact]
 		public async Task ShouldNotDismissKeyboardWhenMinimumLengthThreholdHasNotBeenReached()
 		{
 			// arrange
@@ -140,10 +140,10 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			await Task.Delay(defaultTimeoutThreshold);
 
 			// assert
-			Assert.IsTrue(entry.IsFocused);
+			Assert.True(entry.IsFocused);
 		}
 
-		[Test]
+		[Fact]
 		public async Task ShouldExecuteCommandImmediatelyWhenMinimumLengthThreholdHasNotBeenSet()
 		{
 			// arrange
@@ -155,10 +155,10 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			await Task.Delay(defaultTimeoutThreshold);
 
 			// assert
-			Assert.IsTrue(commandHasBeenExecuted);
+			Assert.True(commandHasBeenExecuted);
 		}
 
-		public Entry CreateEntryWithBehavior(int timeThreshold = defaultTimeThreshold,
+		static Entry CreateEntryWithBehavior(int timeThreshold = defaultTimeThreshold,
 											 int lengthThreshold = defaultLengthThreshold,
 											 bool shouldDismissKeyboardAutomatically = false,
 											 ICommand? command = null,

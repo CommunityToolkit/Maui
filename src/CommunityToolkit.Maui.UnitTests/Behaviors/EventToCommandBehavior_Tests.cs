@@ -2,16 +2,13 @@
 using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors
 {
-    public class EventToCommandBehavior_Tests
+    public class EventToCommandBehavior_Tests : BaseTest
 	{
-		[SetUp]
-		public void SetUp() => Device.PlatformServices = new MockPlatformServices();
-
-		[Test]
+		[Fact]
 		public void ArgumentExceptionIfSpecifiedEventDoesNotExist()
 		{
 			var listView = new ListView();
@@ -22,7 +19,7 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			Assert.Throws<ArgumentException>(() => listView.Behaviors.Add(behavior));
 		}
 
-		[Test]
+		[Fact]
 		public void NoExceptionIfSpecifiedEventExists()
 		{
 			var listView = new ListView();
@@ -33,7 +30,7 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			listView.Behaviors.Add(behavior);
 		}
 
-		[Test]
+		[Fact]
 		public void NoExceptionIfAttachedToPage()
 		{
 			var page = new ContentPage();
