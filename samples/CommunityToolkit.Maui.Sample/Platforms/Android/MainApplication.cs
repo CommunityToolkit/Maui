@@ -13,6 +13,6 @@ namespace CommunityToolkit.Maui.Sample
         {
         }
 
-        protected override MauiApp CreateMauiApp() => Startup.Create();
+        protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
     }
 }
