@@ -11,7 +11,7 @@ namespace CommunityToolkit.Maui.Extensions
 	/// <summary>
 	/// Extension methods for <see cref="VisualElement"/>.
 	/// </summary>
-	public static partial class VisualElementExtension
+	public static class VisualElementExtension
 	{
 		/// <summary>
 		/// Display toast with the default visual configuration
