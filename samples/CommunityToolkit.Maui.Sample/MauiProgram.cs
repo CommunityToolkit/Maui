@@ -6,9 +6,9 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace CommunityToolkit.Maui.Sample
 {
-    public static class Startup
+    public static class MauiProgram
     {
-        public static MauiApp Create()
+        public static MauiApp CreateMauiApp()
         {
             var builder = MauiApp.CreateBuilder();
             builder.UseMauiApp<App>();
