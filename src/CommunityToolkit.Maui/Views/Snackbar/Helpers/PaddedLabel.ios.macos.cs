@@ -1,5 +1,4 @@
-﻿#if IOS || MACCATALYST
-using System;
+﻿using System;
 using CoreGraphics;
 using UIKit;
 
@@ -34,4 +33,3 @@ namespace CommunityToolkit.Maui.UI.Views.Helpers
 		}
 	}
 }
-#endif

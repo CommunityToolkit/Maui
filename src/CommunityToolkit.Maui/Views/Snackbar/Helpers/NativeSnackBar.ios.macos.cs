@@ -1,16 +1,15 @@
-﻿#if IOS || MACCATALYST
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.Maui.UI.Views.Helpers.Apple;
+using CommunityToolkit.Maui.UI.Views.Helpers.Apple.SnackBar;
+using CommunityToolkit.Maui.UI.Views.Helpers.Apple.SnackBarViews;
+using CommunityToolkit.Maui.UI.Views.Snackbar.Helpers;
 using CoreGraphics;
 using Foundation;
-using CommunityToolkit.Maui.UI.Views.Helpers.iOS;
-using CommunityToolkit.Maui.UI.Views.Helpers.iOS.SnackBar;
-using CommunityToolkit.Maui.UI.Views.Helpers.iOS.SnackBarViews;
-using AnchorView = UIKit.UIView;
-using CommunityToolkit.Maui.UI.Views.Snackbar.Helpers;
 using Microsoft.Maui;
+using AnchorView = UIKit.UIView;
 
 namespace CommunityToolkit.Maui.UI.Views.Helpers
 {
@@ -96,4 +95,3 @@ namespace CommunityToolkit.Maui.UI.Views.Helpers
 		BaseSnackBarView GetSnackBarView() => Actions.Any() ? new ActionMessageSnackBarView(this) : new MessageSnackBarView(this);
 	}
 }
-#endif

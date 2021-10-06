@@ -1,10 +1,9 @@
-﻿#if IOS || MACCATALYST
-using Microsoft.Maui;
+﻿using Microsoft.Maui;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
-namespace CommunityToolkit.Maui.UI.Views.Helpers.iOS
+namespace CommunityToolkit.Maui.UI.Views.Helpers.Apple
 {
 	class NativeSnackBarAppearance
 	{
@@ -30,4 +29,3 @@ namespace CommunityToolkit.Maui.UI.Views.Helpers.iOS
 		public static UIFont DefaultFont { get; } = Font.Default.ToUIFont();
 	}
 }
-#endif

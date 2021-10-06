@@ -1,7 +1,7 @@
-﻿using Microsoft.Maui;
-using Microsoft.Maui.Graphics;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Maui;
+using Microsoft.Maui.Graphics;
 
 namespace CommunityToolkit.Maui.UI.Views.Options
 {
@@ -52,6 +52,8 @@ namespace CommunityToolkit.Maui.UI.Views.Options
 		/// </summary>
 		public TaskCompletionSource<bool> Result { get; }
 
-		public void SetResult(bool result) => Result.SetResult(result);
+		public bool SetResult(bool result) => Result.TrySetResult(result);
+
+		public bool SetException(Exception exception) => Result.TrySetException(exception);
 	}
 }

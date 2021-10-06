@@ -1,9 +1,6 @@
-﻿#if IOS || MACCATALYST
-using System;
-using System.Threading.Tasks;
+﻿using System;
 using CoreAnimation;
 using CoreGraphics;
-using CommunityToolkit.Maui.UI.Views.Helpers.iOS;
 using UIKit;
 
 namespace CommunityToolkit.Maui.UI.Views.Snackbar.Helpers
@@ -57,4 +54,3 @@ namespace CommunityToolkit.Maui.UI.Views.Snackbar.Helpers
 		}
 	}
 }
-#endif

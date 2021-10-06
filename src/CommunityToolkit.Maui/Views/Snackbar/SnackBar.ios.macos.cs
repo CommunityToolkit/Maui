@@ -1,11 +1,10 @@
-#if IOS || MACCATALYST
 using System;
 using System.Threading.Tasks;
 using CommunityToolkit.Maui.UI.Views.Helpers;
 using CommunityToolkit.Maui.UI.Views.Options;
 using CommunityToolkit.Maui.UI.Views.Snackbar.Helpers;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Graphics;
 using UIKit;
@@ -62,7 +61,7 @@ namespace CommunityToolkit.Maui.UI.Views
 
 			if (sender is not Page)
 			{
-				snackBar.SetAnchor((sender.Handler.NativeView as UIKit.UIView) ?? throw new InvalidOperationException("NativeView is null"));			
+				snackBar.SetAnchor(sender.Handler.NativeView as UIView ?? throw new InvalidOperationException("NativeView is null"));			
 			}
 
 			foreach (var action in arguments.Actions)
@@ -92,10 +91,17 @@ namespace CommunityToolkit.Maui.UI.Views
 				{
 					snackBar.Dismiss();
 
-					if (action.Action != null)
-						await action.Action();
+					try
+					{
+						if (action.Action != null)
+							await action.Action();
 
-					arguments.SetResult(true);
+						arguments.SetResult(true);
+					}
+					catch (Exception ex)
+					{
+						arguments.SetException(ex);
+					}
 				});
 
 				snackBar.Actions.Add(actionButton);
@@ -103,8 +109,7 @@ namespace CommunityToolkit.Maui.UI.Views
 
 			snackBar.Show();
 
-			return default;
+			return ValueTask.CompletedTask;
 		}
 	}
 }
-#endif

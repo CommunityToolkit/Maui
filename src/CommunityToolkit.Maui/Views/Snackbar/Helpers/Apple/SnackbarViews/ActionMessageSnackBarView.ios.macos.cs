@@ -1,9 +1,8 @@
-﻿#if IOS || MACCATALYST
-using System;
+﻿using System;
+using CommunityToolkit.Maui.UI.Views.Helpers.Apple.SnackBarViews;
 using CoreGraphics;
-using CommunityToolkit.Maui.UI.Views.Helpers.iOS.SnackBarViews;
 
-namespace CommunityToolkit.Maui.UI.Views.Helpers.iOS
+namespace CommunityToolkit.Maui.UI.Views.Helpers.Apple
 {
 	class ActionMessageSnackBarView : MessageSnackBarView
 	{
@@ -25,4 +24,3 @@ namespace CommunityToolkit.Maui.UI.Views.Helpers.iOS
 		}
 	}
 }
-#endif

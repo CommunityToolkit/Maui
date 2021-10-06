@@ -1,5 +1,4 @@
-﻿#if IOS || MACCATALYST
-using System;
+﻿using System;
 
 namespace CommunityToolkit.Maui.UI.Views.Helpers
 {
@@ -24,4 +23,3 @@ namespace CommunityToolkit.Maui.UI.Views.Helpers
 		public nfloat Spacing { get; set; } = 10.0f;
 	}
 }
-#endif

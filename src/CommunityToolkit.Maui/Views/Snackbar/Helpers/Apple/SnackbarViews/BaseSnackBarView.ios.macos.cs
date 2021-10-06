@@ -1,12 +1,11 @@
-﻿#if IOS || MACCATALYST
-using System;
+﻿using System;
 using System.Linq;
+using CommunityToolkit.Maui.UI.Views.Helpers.Apple.Extensions;
+using CommunityToolkit.Maui.UI.Views.Snackbar.Helpers;
 using CoreGraphics;
 using UIKit;
-using CommunityToolkit.Maui.UI.Views.Helpers.iOS.Extensions;
-using CommunityToolkit.Maui.UI.Views.Snackbar.Helpers;
 
-namespace CommunityToolkit.Maui.UI.Views.Helpers.iOS.SnackBar
+namespace CommunityToolkit.Maui.UI.Views.Helpers.Apple.SnackBar
 {
 	abstract class BaseSnackBarView : UIView
 	{
@@ -72,4 +71,3 @@ namespace CommunityToolkit.Maui.UI.Views.Helpers.iOS.SnackBar
 		}
 	}
 }
-#endif

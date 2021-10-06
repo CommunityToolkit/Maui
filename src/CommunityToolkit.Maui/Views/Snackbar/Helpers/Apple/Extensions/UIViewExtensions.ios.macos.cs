@@ -1,7 +1,6 @@
-﻿#if IOS || MACCATALYST
-using UIKit;
+﻿using UIKit;
 
-namespace CommunityToolkit.Maui.UI.Views.Helpers.iOS.Extensions
+namespace CommunityToolkit.Maui.UI.Views.Helpers.Apple.Extensions
 {
 	static class UIViewExtensions
 	{
@@ -56,4 +55,3 @@ namespace CommunityToolkit.Maui.UI.Views.Helpers.iOS.Extensions
 				: view.WidthAnchor;
 	}
 }
-#endif

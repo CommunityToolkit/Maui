@@ -1,7 +1,7 @@
-﻿using Microsoft.Maui;
-using Microsoft.Maui.Graphics;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Maui;
+using Microsoft.Maui.Graphics;
 
 namespace CommunityToolkit.Maui.UI.Views.Options
 {

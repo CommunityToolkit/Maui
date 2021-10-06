@@ -1,25 +1,28 @@
-﻿#if ANDROID
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Android.Graphics;
+using Android.Graphics.Drawables;
+using Android.Util;
 using Android.Widget;
 using CommunityToolkit.Maui.UI.Views.Options;
-using Android.Util;
-using Android.Graphics.Drawables;
-using AndroidSnackBar = Google.Android.Material.Snackbar.Snackbar;
+using Google.Android.Material.Snackbar;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
-using Microsoft.Maui;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using AndroidSnackBar = Google.Android.Material.Snackbar.Snackbar;
+using LayoutDirection = Android.Views.LayoutDirection;
+using Object = Java.Lang.Object;
+using View = Android.Views.View;
 
 namespace CommunityToolkit.Maui.UI.Views
 {
 	class SnackBar
 	{
-		internal async ValueTask Show(VisualElement sender, SnackBarOptions arguments)
+		internal ValueTask Show(VisualElement sender, SnackBarOptions arguments)
 		{
-			var view = (sender.Handler.NativeView as Android.Views.View) ?? throw new InvalidOperationException("NativeView is null");
+			var view = (sender.Handler.NativeView as View) ?? throw new InvalidOperationException("NativeView is null");
 			var snackBar = AndroidSnackBar.Make(view, arguments.MessageOptions.Message, (int)arguments.Duration.TotalMilliseconds);
 			var snackBarView = snackBar.View;
 
@@ -73,24 +76,33 @@ namespace CommunityToolkit.Maui.UI.Views
 
 			if (arguments.MessageOptions.Font != Font.Default)
 			{
-				if (arguments.MessageOptions.Font.FontSize > 0)
+				if (arguments.MessageOptions.Font.Size > 0)
 				{
-					snackTextView.SetTextSize(ComplexUnitType.Dip, (float)arguments.MessageOptions.Font.FontSize);
+					snackTextView.SetTextSize(ComplexUnitType.Dip, (float)arguments.MessageOptions.Font.Size);
 				}
 
 				snackTextView.SetTypeface(arguments.MessageOptions.Font.ToTypeface(), TypefaceStyle.Normal);
 			}
 
 			snackTextView.LayoutDirection = arguments.IsRtl
-				? global::Android.Views.LayoutDirection.Rtl
-				: global::Android.Views.LayoutDirection.Inherit;
+				? LayoutDirection.Rtl
+				: LayoutDirection.Inherit;
 
 			foreach (var action in arguments.Actions)
 			{
-				snackBar.SetAction(action.Text, async v =>
+				snackBar.SetAction(action.Text, async _ =>
 				{
-					if (action.Action != null)
-						await action.Action();
+					try
+					{
+						if (action.Action != null)
+							await action.Action();
+
+						arguments.SetResult(true);
+					}
+					catch (Exception ex)
+					{
+						arguments.SetException(ex);
+					}
 				});
 				if (action.ForegroundColor != Colors.White)
 				{
@@ -113,44 +125,39 @@ namespace CommunityToolkit.Maui.UI.Views
 
 				if (action.Font != Font.Default)
 				{
-					if (action.Font.FontSize > 0)
+					if (action.Font.Size > 0)
 					{
-						snackTextView.SetTextSize(ComplexUnitType.Dip, (float)action.Font.FontSize);
+						snackTextView.SetTextSize(ComplexUnitType.Dip, (float)action.Font.Size);
 					}
 
 					snackActionButtonView.SetTypeface(action.Font.ToTypeface(), TypefaceStyle.Normal);
 				}
 
 				snackActionButtonView.LayoutDirection = arguments.IsRtl
-					? global::Android.Views.LayoutDirection.Rtl
-					: global::Android.Views.LayoutDirection.Inherit;
+					? LayoutDirection.Rtl
+					: LayoutDirection.Inherit;
 			}
 
 			snackBar.AddCallback(new SnackBarCallback(arguments));
 			snackBar.Show();
+			return ValueTask.CompletedTask;
 		}
 
-		class SnackBarCallback : AndroidSnackBar.BaseCallback
+		class SnackBarCallback : BaseTransientBottomBar.BaseCallback
 		{
 			readonly SnackBarOptions arguments;
 
 			public SnackBarCallback(SnackBarOptions arguments) => this.arguments = arguments;
 
-			public override void OnDismissed(Java.Lang.Object transientBottomBar, int e)
+			public override void OnDismissed(Object transientBottomBar, int e)
 			{
 				base.OnDismissed(transientBottomBar, e);
 
-				switch (e)
-				{
-					case DismissEventTimeout:
-						arguments.SetResult(false);
-						break;
-					case DismissEventAction:
-						arguments.SetResult(true);
-						break;
-				}
+				if (e == DismissEventAction)
+					return;
+
+				arguments.SetResult(false);
 			}
 		}
 	}
 }
-#endif
