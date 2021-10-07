@@ -18,7 +18,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels
                 "Converters let you convert bindings of a certain type to a different value, based on custom logic"),
 
             new SectionModel(typeof(ViewsGalleryPage), "Views", Color.FromArgb("#EF6950"),
-                "A custom view or control allows for adding custom functionality as if it came out of the Xamarin.Forms box"),
+                "A custom view or control allows for adding custom functionality as if it came out of the Maui box"),
         };
     }
 }
