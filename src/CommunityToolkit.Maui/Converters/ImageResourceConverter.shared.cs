@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using Microsoft.Maui.Controls;
-#if NETSTANDARD1_0 || UAP10_0
-using System.Reflection;
-#endif
 
 namespace CommunityToolkit.Maui.Converters
 {
@@ -28,11 +25,7 @@ namespace CommunityToolkit.Maui.Converters
 			if (value is not string imageId)
 				throw new ArgumentException("Value is not a string", nameof(value));
 
-			return ImageSource.FromResource(imageId, Application.Current.GetType()
-#if NETSTANDARD1_0 || UAP10_0
-				.GetTypeInfo()
-#endif
-				.Assembly);
+			return ImageSource.FromResource(imageId, Application.Current?.GetType()?.Assembly);
 		}
 
 		public object ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture) => throw new NotImplementedException();
