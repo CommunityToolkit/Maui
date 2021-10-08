@@ -3,13 +3,13 @@ using System.Globalization;
 using System.IO;
 using CommunityToolkit.Maui.Converters;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters
 {
-    public class ByteArrayToImageSourceConverter_Tests
+    public class ByteArrayToImageSourceConverter_Tests : BaseTest
 	{
-		[Test]
+		[Fact]
 		public void ByteArrayToImageSourceConverter()
 		{
 			var byteArray = new byte[] { 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20 };
@@ -22,11 +22,11 @@ namespace CommunityToolkit.Maui.UnitTests.Converters
 
 			var result = byteArrayToImageSourceConverter.Convert(byteArray, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture);
 
-			Assert.IsTrue(StreamEquals(GetStreamFromImageSource((ImageSource?)result), memoryStream));
+			Assert.True(StreamEquals(GetStreamFromImageSource((ImageSource?)result), memoryStream));
 		}
 
-
-		[TestCase("Random String Value")]
+		[Theory]
+		[InlineData("Random String Value")]
 		public void InvalidConverterValuesReturnsNull(object value)
 		{
 			var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
@@ -43,7 +43,7 @@ namespace CommunityToolkit.Maui.UnitTests.Converters
 			return task?.Result;
 		}
 
-		bool StreamEquals(Stream? a, Stream? b)
+        static bool StreamEquals(Stream? a, Stream? b)
 		{
 			if (a == b)
 				return true;

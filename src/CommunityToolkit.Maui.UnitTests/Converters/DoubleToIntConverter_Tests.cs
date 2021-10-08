@@ -1,36 +1,39 @@
 ﻿using System;
 using System.Globalization;
 using CommunityToolkit.Maui.Converters;
-using NUnit.Framework;
+using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters
 {
-    public class DoubleToIntConverter_Tests
+    public class DoubleToIntConverter_Tests : BaseTest
 	{
-		[TestCase(2.5, 2)]
-		[TestCase(2.55, 3)]
-		[TestCase(2.555, 3)]
-		[TestCase(2.555, 652, 255)]
+		[Theory]
+		[InlineData(2.5, 2)]
+		[InlineData(2.55, 3)]
+		[InlineData(2.555, 3)]
+		[InlineData(2.555, 652, 255)]
 		public void DoubleToIntConverter(double value, int expectedResult, object? ratio = null)
 		{
 			var doubleToIntConverter = new DoubleToIntConverter();
 
 			var result = doubleToIntConverter.Convert(value, typeof(DoubleToIntConverter_Tests), ratio, CultureInfo.CurrentCulture);
 
-			Assert.AreEqual(result, expectedResult);
+			Assert.Equal(result, expectedResult);
 		}
 
-		[TestCase(2, 2)]
+		[Theory]
+		[InlineData(2, 2)]
 		public void DoubleToIntConverterBack(int value, double expectedResult, object? ratio = null)
 		{
 			var doubleToIntConverter = new DoubleToIntConverter();
 
 			var result = doubleToIntConverter.ConvertBack(value, typeof(DoubleToIntConverter_Tests), ratio, CultureInfo.CurrentCulture);
 
-			Assert.AreEqual(result, expectedResult);
+			Assert.Equal(result, expectedResult);
 		}
 
-		[TestCase("")]
+		[Theory]
+		[InlineData("")]
 		public void DoubleToIntInValidValuesThrowArgumenException(object value)
 		{
 			var doubleToIntConverter = new DoubleToIntConverter();

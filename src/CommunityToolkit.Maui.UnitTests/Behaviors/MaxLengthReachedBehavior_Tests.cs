@@ -2,13 +2,13 @@
 using System.Windows.Input;
 using CommunityToolkit.Maui.Behaviors;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors
 {
     public class MaxLengthReachedBehavior_Tests
 	{
-		[Test]
+		[Fact]
 		public void ShouldExecuteCommandWhenMaxLengthHasBeenReached()
 		{
 			// arrange
@@ -20,10 +20,10 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			entry.Text += "2";
 
 			// assert
-			Assert.IsTrue(commandHasBeenExecuted);
+			Assert.True(commandHasBeenExecuted);
 		}
 
-		[Test]
+		[Fact]
 		public void ShouldInvokeEventHandlerWhenMaxLengthHasBeenReached()
 		{
 			// arrange
@@ -35,10 +35,10 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			entry.Text += "2";
 
 			// assert
-			Assert.IsTrue(eventHandlerHasBeenInvoked);
+			Assert.True(eventHandlerHasBeenInvoked);
 		}
 
-		[Test]
+		[Fact]
 		public void ShouldExecuteCommandWithTextValueNoLargerThenMaxLength()
 		{
 			// arrange
@@ -51,10 +51,10 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			entry.Text = "123456789";
 
 			// assert
-			Assert.AreEqual(expectedLength, actualLength);
+			Assert.Equal(expectedLength, actualLength);
 		}
 
-		[Test]
+		[Fact]
 		public void ShouldInvokeEventHandlerWithTextValueNoLargerThenMaxLength()
 		{
 			// arrange
@@ -67,10 +67,10 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			entry.Text = "123456789";
 
 			// assert
-			Assert.AreEqual(expectedLength, actualLength);
+			Assert.Equal(expectedLength, actualLength);
 		}
 
-		[Test]
+		[Fact]
 		public void ShouldNotExecuteCommandBeforeMaxLengthHasBeenReached()
 		{
 			// arrange
@@ -84,7 +84,7 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			Assert.False(commandHasBeenExecuted);
 		}
 
-		[Test]
+		[Fact]
 		public void ShouldNotInvokeEventHandlerBeforeMaxLengthHasBeenReached()
 		{
 			// arrange
@@ -98,7 +98,7 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			Assert.False(eventHandlerHasBeenInvoked);
 		}
 
-		[Test]
+		[Fact]
 		public void ShouldDismissKeyboardWhenMaxLengthHasBeenReached()
 		{
 			// arrange
@@ -113,7 +113,7 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			Assert.False(entry.IsFocused);
 		}
 
-		[Test]
+		[Fact]
 		public void ShouldNotDismissKeyboardBeforeMaxLengthHasBeenReached()
 		{
 			// arrange
@@ -124,10 +124,10 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			entry.Text = "1";
 
 			// assert
-			Assert.IsTrue(entry.IsFocused);
+			Assert.True(entry.IsFocused);
 		}
 
-		[Test]
+		[Fact]
 		public void ShouldNotDismissKeyboardWhenOptionSetToFalse()
 		{
 			// arrange
@@ -139,10 +139,10 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			entry.Text += "1";
 
 			// assert
-			Assert.IsTrue(entry.IsFocused);
+			Assert.True(entry.IsFocused);
 		}
 
-		Entry CreateEntry(int? maxLength = 2,
+		static Entry CreateEntry(int? maxLength = 2,
 						  bool shouldDismissKeyboardAutomatically = false,
 						  ICommand? command = null,
 						  EventHandler<MaxLengthReachedEventArgs>? eventHandler = null)

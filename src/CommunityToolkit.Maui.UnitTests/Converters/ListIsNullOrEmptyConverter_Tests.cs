@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using CommunityToolkit.Maui.Converters;
-using NUnit.Framework;
+using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters
 {
-    public class ListIsNullOrEmptyConverter_Tests
+    public class ListIsNullOrEmptyConverter_Tests : BaseTest
 	{
-		public static IEnumerable<object?[]> GetData() => new List<object?[]>
+		static readonly IReadOnlyList<object?[]> data = new[]
 		{
 			new object[] { new List<string>(), true },
 			new object[] { new List<string>() { "TestValue" }, false },
@@ -17,17 +17,19 @@ namespace CommunityToolkit.Maui.UnitTests.Converters
 			new object[] { Enumerable.Range(1, 3), false },
 		};
 
-		[TestCaseSource(nameof(GetData))]
+		[Theory]
+		[MemberData(nameof(data))]
 		public void ListIsNullOrEmptyConverter(object value, bool expectedResult)
 		{
 			var listIstNullOrEmptyConverter = new ListIsNullOrEmptyConverter();
 
 			var result = listIstNullOrEmptyConverter.Convert(value, typeof(ListIsNullOrEmptyConverter), null, CultureInfo.CurrentCulture);
 
-			Assert.AreEqual(result, expectedResult);
+			Assert.Equal(result, expectedResult);
 		}
 
-		[TestCase(0)]
+		[Theory]
+		[InlineData(0)]
 		public void InValidConverterValuesThrowArgumenException(object value)
 		{
 			var listIstNullOrEmptyConverter = new ListIsNullOrEmptyConverter();
