@@ -9,6 +9,8 @@ namespace CommunityToolkit.Maui.UnitTests
     {
         readonly CultureInfo? defaultCulture, defaultUICulture;
 
+        bool _isDisposed;
+
         protected BaseTest()
         {
             defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
@@ -16,15 +18,25 @@ namespace CommunityToolkit.Maui.UnitTests
             Device.PlatformServices = new MockPlatformServices();
         }
 
-        public void Dispose()
+        ~BaseTest() => Dispose(false);
+
+        protected virtual void Dispose(bool isDisposing)
         {
-            GC.SuppressFinalize(this);
+            if (_isDisposed)
+                return;
 
             Device.PlatformServices = null;
 
             System.Threading.Thread.CurrentThread.CurrentCulture = defaultCulture ?? throw new NullReferenceException();
             System.Threading.Thread.CurrentThread.CurrentUICulture = defaultUICulture ?? throw new NullReferenceException();
 
+            _isDisposed = true;
+        }
+
+        void IDisposable.Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }
