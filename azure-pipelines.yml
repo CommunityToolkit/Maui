@@ -75,7 +75,7 @@ jobs:
       # if this is a PR build, then update the version number
       - powershell: |
           $prNumber = $env:System_PullRequest_PullRequestNumber
-          $commitId = "$(Build.SourceVersion)".Substring(0, 7)
+          $commitId = "$($env:System_PullRequest_SourceCommitId)".Substring(0, 7)
           $fullVersionString = "$(CurrentSemanticVersionBase)-build.$prNumber+$commitId"
           Write-Host("GitHub PR = $prNumber, Commit = $commitId");
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$fullVersionString")
