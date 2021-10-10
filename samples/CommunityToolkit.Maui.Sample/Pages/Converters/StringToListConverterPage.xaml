@@ -5,11 +5,41 @@
     xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.StringToListConverterPage">
+    <pages:BasePage.Resources>
+        <ResourceDictionary>
+            <mct:StringToListConverter x:Key="StringToListConverter" SplitOptions="RemoveEmptyEntries">
+                <mct:StringToListConverter.Separators>
+                    <x:String>,</x:String>
+                    <x:String>.</x:String>
+                    <x:String>;</x:String>
+                </mct:StringToListConverter.Separators>
+            </mct:StringToListConverter>
+        </ResourceDictionary>
+    </pages:BasePage.Resources>
     <pages:BasePage.Content>
-        <StackLayout>
-            <Label Text="StringToListConverter"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
-        </StackLayout>
+        <Grid Margin="20,0" RowDefinitions="Auto,Auto,*">
+            <Label
+                Grid.Row="0"
+                FontAttributes="Bold"
+                Text="Enter some text separated by ',' or '.' or ';'" />
+            <Entry
+                x:Name="ExampleText"
+                Grid.Row="1"
+                FontSize="Medium"
+                Placeholder="Enter some text separated by ',' or '.' or ';'"
+                Text="Item 1,Item 2,Item 3" />
+            <ListView
+                Grid.Row="2"
+                BindingContext="{x:Reference Name=ExampleText}"
+                ItemsSource="{Binding Path=Text, Converter={StaticResource StringToListConverter}}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <Label FontSize="Medium" Text="{Binding .}" />
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
     </pages:BasePage.Content>
 </pages:BasePage>
