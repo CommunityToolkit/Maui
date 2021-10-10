@@ -10,7 +10,6 @@
     <pages:BasePage.BindingContext>
         <vm:ConvertersGalleryViewModel />
     </pages:BasePage.BindingContext>
-    <StackLayout>
         <ScrollView     
             VerticalOptions="FillAndExpand">
             <StackLayout 
@@ -44,5 +43,4 @@
                 </StackLayout>
             </StackLayout>
         </ScrollView>
-    </StackLayout>
 </pages:BasePage>
