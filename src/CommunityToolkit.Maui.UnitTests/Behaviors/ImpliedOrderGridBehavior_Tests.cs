@@ -1,13 +1,13 @@
 ﻿using System;
 using CommunityToolkit.Maui.Behaviors;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors
 {
-    public class ImpliedOrderGridBehavior_Tests
+    public class ImpliedOrderGridBehavior_Tests : BaseTest
 	{
-		[Test]
+		[Fact]
 		public void CorrectRowColumnAssignment()
 		{
 			var grid = new Grid();
@@ -73,7 +73,7 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			AssertExpectedCoordinates(grid, new Label(), 4, 0);
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsOnManualAssignmentToUsedCell()
 		{
 			var grid = CreateExceptionTestGrid();
@@ -89,7 +89,7 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			Assert.Throws<Exception>(() => grid.Children.Add(throwLabel));
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsOnCellsExceeded()
 		{
 			var grid = CreateExceptionTestGrid();
@@ -110,7 +110,7 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			Assert.Throws<Exception>(() => grid.Children.Add(new Label()));
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsOnSpanExceedsColumns()
 		{
 			var grid = CreateExceptionTestGrid();
@@ -121,7 +121,7 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 			Assert.Throws<Exception>(() => grid.Children.Add(throwLabel));
 		}
 
-		[Test]
+		[Fact]
 		public void ThrowsOnSpanExceedsRows()
 		{
 			var grid = CreateExceptionTestGrid();
@@ -149,8 +149,8 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors
 		void AssertExpectedCoordinates(Grid grid, View view, int row, int column)
 		{
 			grid.Children.Add(view);
-			Assert.AreEqual(row, Grid.GetRow(view));
-			Assert.AreEqual(column, Grid.GetColumn(view));
+			Assert.Equal(row, Grid.GetRow(view));
+			Assert.Equal(column, Grid.GetColumn(view));
 		}
 	}
 }

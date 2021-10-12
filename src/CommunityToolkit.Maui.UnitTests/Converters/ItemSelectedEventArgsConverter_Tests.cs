@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Globalization;
 using CommunityToolkit.Maui.Converters;
-using NUnit.Framework;
+using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters
 {
-    public class ItemSelectedEventArgsConverter_Tests
+    public class ItemSelectedEventArgsConverter_Tests : BaseTest
 	{
-		[TestCase("Random String")]
+		[Theory]
+		[InlineData("Random String")]
 		public void InvalidConverterValuesThrowsArgumenException(object value)
 		{
 			var itemSelectedEventArgsConverter = new ItemSelectedEventArgsConverter();

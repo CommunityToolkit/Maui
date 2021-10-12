@@ -75,7 +75,7 @@ jobs:
       # if this is a PR build, then update the version number
       - powershell: |
           $prNumber = $env:System_PullRequest_PullRequestNumber
-          $commitId = "$(Build.SourceVersion)".Substring(0, 7)
+          $commitId = "$($env:System_PullRequest_SourceCommitId)".Substring(0, 7)
           $fullVersionString = "$(CurrentSemanticVersionBase)-build.$prNumber+$commitId"
           Write-Host("GitHub PR = $prNumber, Commit = $commitId");
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$fullVersionString")
@@ -90,7 +90,7 @@ jobs:
       - task: CmdLine@2
         displayName: Pack Community Toolkit NuGets
         inputs:
-          script: 'dotnet pack -c Release $(PathToCommunityToolkitCsproj) -p:PackageVersion=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget'
+          script: 'dotnet pack -c Release $(PathToCommunityToolkitCsproj) -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'
       # Sign NuGet Packages
       - task: PowerShell@2
         displayName: Authenticode Sign Packages

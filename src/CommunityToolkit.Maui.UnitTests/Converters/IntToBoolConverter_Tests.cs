@@ -1,46 +1,50 @@
 ﻿using System;
 using System.Globalization;
 using CommunityToolkit.Maui.Converters;
-using NUnit.Framework;
+using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters
 {
-    public class IntToBoolConverter_Tests
+    public class IntToBoolConverter_Tests : BaseTest
 	{
-		[TestCase(1, true)]
-		[TestCase(0, false)]
+		[Theory]
+		[InlineData(1, true)]
+		[InlineData(0, false)]
 		public void IndexToArrayConverter(int value, bool expectedResult)
 		{
 			var intToBoolConverter = new IntToBoolConverter();
 
 			var result = intToBoolConverter.Convert(value, typeof(IntToBoolConverter_Tests), null, CultureInfo.CurrentCulture);
 
-			Assert.AreEqual(result, expectedResult);
+			Assert.Equal(result, expectedResult);
 		}
 
-		[TestCase(true, 1)]
-		[TestCase(false, 0)]
+		[Theory]
+		[InlineData(true, 1)]
+		[InlineData(false, 0)]
 		public void IndexToArrayConverterBack(bool value, int expectedResult)
 		{
 			var intToBoolConverter = new IntToBoolConverter();
 
 			var result = intToBoolConverter.ConvertBack(value, typeof(IntToBoolConverter_Tests), null, CultureInfo.CurrentCulture);
 
-			Assert.AreEqual(result, expectedResult);
+			Assert.Equal(result, expectedResult);
 		}
 
-		[TestCase(2.5)]
-		[TestCase("")]
-		[TestCase(null)]
+		[Theory]
+		[InlineData(2.5)]
+		[InlineData("")]
+		[InlineData(null)]
 		public void InValidConverterValuesThrowArgumenException(object value)
 		{
 			var intToBoolConverter = new IntToBoolConverter();
 			Assert.Throws<ArgumentException>(() => intToBoolConverter.Convert(value, typeof(IndexToArrayItemConverter), null, CultureInfo.CurrentCulture));
 		}
 
-		[TestCase(2.5)]
-		[TestCase("")]
-		[TestCase(null)]
+		[Theory]
+		[InlineData(2.5)]
+		[InlineData("")]
+		[InlineData(null)]
 		public void InValidConverterBackValuesThrowArgumenException(object value)
 		{
 			var intToBoolConverter = new IntToBoolConverter();

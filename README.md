@@ -4,6 +4,8 @@
 
 # .NET MAUI Community Toolkit
 
+[![NuGet](https://buildstats.info/nuget/CommunityToolkit.Maui?includePreReleases=true)](https://www.nuget.org/packages/CommunityToolkit.Maui/)
+
 The .NET MAUI Community Toolkit is a collection of common elements for development with .NET MAUI that developers tend to replicate across multiple apps. It simplifies and demonstrates common developer tasks when building apps with .NET MAUI. 
 
 All features are contributed by you, our amazing .NET community, and maintained by a core set of maintainers.

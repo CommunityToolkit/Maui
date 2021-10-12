@@ -10,7 +10,7 @@ using Microsoft.Maui.Graphics;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks
 {
-    class MockPlatformServices : IPlatformServices
+    public class MockPlatformServices : IPlatformServices
     {
         public string GetHash(string input) => string.Empty;
 
