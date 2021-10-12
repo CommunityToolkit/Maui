@@ -1,8 +1,8 @@
 ﻿using System;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 
 namespace CommunityToolkit.Maui.Views
 {
@@ -11,18 +11,23 @@ namespace CommunityToolkit.Maui.Views
 	/// All rows and columns will have the same size.
 	/// Use this when you need the Grid behavior without the need to specify different sizes for the rows and columns.
 	/// </summary>
-	public class UniformGrid : Layout<View>
+	public class UniformGrid : Grid, ILayoutManager
 	{
 		double childWidth;
 
 		double childHeight;
 
-		protected override void LayoutChildren(double x, double y, double width, double height)
-		{
-			Measure(width, height, 0);
-			var columns = GetColumnsCount(Children.Count, width, childWidth);
+        protected override ILayoutManager CreateLayoutManager()
+        {
+            return this;
+        }
+
+        public Size ArrangeChildren(Rectangle rectangle)
+        {
+			Measure(rectangle.Width, rectangle.Height, 0);
+			var columns = GetColumnsCount(Children.Count, rectangle.Width, childWidth);
 			var rows = GetRowsCount(Children.Count, columns);
-			var boundsWidth = width / columns;
+			var boundsWidth = rectangle.Width / columns;
 			var boundsHeight = childHeight;
 			var bounds = new Rectangle(0, 0, boundsWidth, boundsHeight);
 			var count = 0;
@@ -34,31 +39,29 @@ namespace CommunityToolkit.Maui.Views
 					var item = Children[count];
 					bounds.X = j * boundsWidth;
 					bounds.Y = i * boundsHeight;
-					item.Layout(bounds);
+					item.Arrange(bounds);
 					count++;
 				}
 			}
+
+			return new Size(boundsWidth, boundsHeight);
 		}
 
-		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
-		{
+        public Size Measure(double widthConstraint, double heightConstraint)
+        {
 			foreach (var child in Children)
 			{
-				if (!child.IsVisible)
+				if (child.Visibility != Visibility.Visible)
 					continue;
 
-				var sizeRequest = child.Measure(double.PositiveInfinity, double.PositiveInfinity, 0);
-				var minimum = sizeRequest.Minimum;
-				var request = sizeRequest.Request;
-
-				childHeight = Math.Max(minimum.Height, request.Height);
-				childWidth = Math.Max(minimum.Width, request.Width);
+				var sizeRequest = child.Measure(double.PositiveInfinity, double.PositiveInfinity);
+				childHeight = sizeRequest.Height;
+				childWidth = sizeRequest.Width;
 			}
 
 			var columns = GetColumnsCount(Children.Count, widthConstraint, childWidth);
 			var rows = GetRowsCount(Children.Count, columns);
-			var size = new Size(columns * childWidth, rows * childHeight);
-			return new SizeRequest(size, size);
+			return new Size(columns * childWidth, rows * childHeight);
 		}
 
 		int GetColumnsCount(int visibleChildrenCount, double widthConstraint, double maxChildWidth)
