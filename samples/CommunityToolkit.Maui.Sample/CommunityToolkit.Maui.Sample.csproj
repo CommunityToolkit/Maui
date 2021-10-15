@@ -35,8 +35,12 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
+	  <ProjectReference Include="..\..\src\CommunityToolkit.Maui.UnitTests\CommunityToolkit.Maui.UnitTests.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <PackageReference Include="CommunityToolkit.Mvvm" Version="7.0.3" />
+	</ItemGroup>
 	<PropertyGroup>
 		<InvariantGlobalization Condition="$(TargetFramework.Contains('-maccatalyst'))">true</InvariantGlobalization>
 		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-ios'))">iossimulator-x64</RuntimeIdentifier>

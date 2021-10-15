@@ -6,14 +6,17 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.ListIsNotNullOrEmptyConverterPage">
+
     <pages:BasePage.Resources>
         <ResourceDictionary>
             <mct:ListIsNotNullOrEmptyConverter x:Key="ListIsNotNullOrEmptyConverter" />
         </ResourceDictionary>
     </pages:BasePage.Resources>
+
     <pages:BasePage.BindingContext>
         <vm:IsNullOrEmptyConverterViewModel />
     </pages:BasePage.BindingContext>
+
     <pages:BasePage.Content>
         <StackLayout
             Padding="10,10"
@@ -30,7 +33,6 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
-
         </StackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>
