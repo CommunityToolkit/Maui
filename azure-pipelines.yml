@@ -7,6 +7,7 @@ variables:
   PathToSolution: 'src/CommunityToolkit.Maui.sln'
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
+  XcodeVersion: '12.5'
 
 trigger:
   branches:
@@ -86,7 +87,9 @@ jobs:
       - task: CmdLine@2
         displayName: 'Build Community Toolkit'
         inputs:
-          script: 'dotnet build $(PathToCommunityToolkitCsproj) -c Release'
+          script: |
+            /bin/bash -c "sudo xcode-select -s /Applications/Xcode_$(XcodeVersion).app/Contents/Developer" #https://docs.microsoft.com/en-us/azure/devops/pipelines/agents/hosted?view=azure-devops&tabs=yaml#xcode
+            'dotnet build $(PathToCommunityToolkitCsproj) -c Release'
       - task: CmdLine@2
         displayName: Pack Community Toolkit NuGets
         inputs:
