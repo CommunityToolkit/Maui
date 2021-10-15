@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:mct="clr-namespace:CommunityToolkit.Maui.Behaviors;assembly=CommunityToolkit.Maui"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.MultiValidationBehaviorPage">
+
+    <pages:BasePage.Resources>
+        <Style x:Key="InvalidEntryStyle" TargetType="Entry">
+            <Setter Property="TextColor" Value="Red" />
+        </Style>
+    </pages:BasePage.Resources>
+
+
+    <pages:BasePage.Content>
+        <StackLayout Padding="{StaticResource ContentPadding}"
+                 Spacing="50"
+                 VerticalOptions="CenterAndExpand">
+            <Label Text="Number validation : -10 to 5" />
+            <Entry Placeholder="Number">
+                <Entry.Behaviors>
+                    <mct:MultiValidationBehavior x:Name="MultiValidation"
+                                             InvalidStyle="{StaticResource InvalidEntryStyle}">
+                        <mct:MultiValidationBehavior.Children>
+                            <mct:NumericValidationBehavior mct:MultiValidationBehavior.Error="NaN" />
+                            <mct:NumericValidationBehavior MinimumValue="-10"
+                                                   mct:MultiValidationBehavior.Error="Min: -10" />
+                            <mct:NumericValidationBehavior MaximumValue="5"
+                                                   mct:MultiValidationBehavior.Error="Max: 5" />
+                        </mct:MultiValidationBehavior.Children>
+                    </mct:MultiValidationBehavior>
+                </Entry.Behaviors>
+            </Entry>
+            <Label
+            HeightRequest="30"
+            Text="{Binding Errors[0], Source={x:Reference MultiValidation}}"/>
+            <Label Text="Password validation" />
+            <Entry IsPassword="True" Placeholder="Password">
+                <Entry.Behaviors>
+                    <mct:MultiValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"  >
+                        <mct:CharactersValidationBehavior x:Name="digit" CharacterType="Digit" MinimumCharacterCount="1" mct:MultiValidationBehavior.Error="1 chiffre" RegexPattern="" />
+                        <mct:CharactersValidationBehavior x:Name="upper" CharacterType="UppercaseLetter" MinimumCharacterCount="1" mct:MultiValidationBehavior.Error="1 majuscule" RegexPattern="" />
+                        <mct:CharactersValidationBehavior x:Name="symbol" CharacterType="NonAlphanumericSymbol" MinimumCharacterCount="1" mct:MultiValidationBehavior.Error="1 symbole" RegexPattern=""  />
+                        <mct:CharactersValidationBehavior x:Name="any" CharacterType="Any" MinimumCharacterCount="8" mct:MultiValidationBehavior.Error="8 caractères" RegexPattern="" />
+                    </mct:MultiValidationBehavior>
+                </Entry.Behaviors>
+            </Entry>
+            <StackLayout Orientation="Vertical">
+                <Label Text="{Binding IsValid, Source={x:Reference digit}, StringFormat='{}{0} : at least 1 digit'}"/>
+                <Label Text="{Binding IsValid, Source={x:Reference upper}, StringFormat='{}{0} : at least 1 upper'}"/>
+                <Label Text="{Binding IsValid, Source={x:Reference symbol}, StringFormat='{}{0} : at least 1 symbol'}"/>
+                <Label Text="{Binding IsValid, Source={x:Reference any}, StringFormat='{}{0} : at least 8 char'}"/>
+            </StackLayout>
+        </StackLayout>
+
+
+    </pages:BasePage.Content>
+</pages:BasePage>

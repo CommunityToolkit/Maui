@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:mct="clr-namespace:CommunityToolkit.Maui.Behaviors;assembly=CommunityToolkit.Maui"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.EmailValidationBehaviorPage">
+
+    <pages:BasePage.Resources>
+        <Style x:Key="InvalidEntryStyle" TargetType="Entry">
+            <Setter Property="TextColor" Value="Red" />
+        </Style>
+    </pages:BasePage.Resources>
+
+    <StackLayout Padding="{StaticResource ContentPadding}"
+                 Spacing="50"
+                 VerticalOptions="CenterAndExpand">
+        <Label Text="Text color will change accordingly to the style that is configured when a invalid value (email address) is entered." />
+        <StackLayout Spacing="3">
+            <Entry Placeholder="Email">
+                <Entry.Behaviors>
+                    <mct:EmailValidationBehavior
+                        x:Name="EmailValidator"
+                        DecorationFlags="Trim"
+                        InvalidStyle="{StaticResource InvalidEntryStyle}"/>
+                </Entry.Behaviors>
+            </Entry>
+            <Label Text="Invalid email"
+                   TextColor="Red"
+                   FontSize="10"
+                   IsVisible="{Binding IsNotValid, Source={x:Reference EmailValidator}}"
+                   />
+        </StackLayout>
+    </StackLayout>
+
+</pages:BasePage>
