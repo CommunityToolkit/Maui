@@ -1,10 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters
+﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class EqualConverterPage : BasePage
 {
-    public partial class EqualConverterPage : BasePage
+    public EqualConverterPage()
     {
-        public EqualConverterPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

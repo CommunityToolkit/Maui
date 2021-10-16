@@ -1,10 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Behaviors
+﻿namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
+
+public partial class SetFocusOnEntryCompletedBehaviorPage : BasePage
 {
-    public partial class SetFocusOnEntryCompletedBehaviorPage : BasePage
+    public SetFocusOnEntryCompletedBehaviorPage()
     {
-        public SetFocusOnEntryCompletedBehaviorPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }
