@@ -8,6 +8,6 @@ public partial class NotEqualConverterPage : BasePage
     {
         InitializeComponent();
 
-        ExampleText ??= new Entry();
+        ExampleText ??= new();
     }
 }
