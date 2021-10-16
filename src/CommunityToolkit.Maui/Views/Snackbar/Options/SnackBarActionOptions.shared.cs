@@ -47,6 +47,6 @@ namespace CommunityToolkit.Maui.UI.Views.Options
 		/// </summary>
 		public Thickness Padding { get; set; }
 
-		public static Thickness DefaultPadding { get; set; } = new Thickness(0, 0, 0, 0);
+		public static Thickness DefaultPadding { get; set; } = new(0);
 	}
 }
