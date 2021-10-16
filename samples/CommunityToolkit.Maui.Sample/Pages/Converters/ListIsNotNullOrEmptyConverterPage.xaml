@@ -48,7 +48,7 @@
                         <Label Text="{Binding .}" Margin="10" TextColor="Black" />
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
-                </CollectionView>
+            </CollectionView>
         </StackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>
