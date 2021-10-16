@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Sample.Models;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
 
 namespace CommunityToolkit.Maui.Sample.Pages;
 
