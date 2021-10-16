@@ -50,7 +50,7 @@
                     </Entry.Behaviors>
                 </Entry>
 
-                <Entry x:Name="nextEntry"
+                <Entry x:Name="NextEntry"
                        Placeholder="This Entry will then get focus..."
                        Margin="{StaticResource ContentPadding}" />
 

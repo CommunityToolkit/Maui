@@ -1,10 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Behaviors
+﻿namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
+
+public partial class MaskedBehaviorPage : BasePage
 {
-    public partial class MaskedBehaviorPage : BasePage
+    public MaskedBehaviorPage()
     {
-        public MaskedBehaviorPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

@@ -1,10 +1,11 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters
+﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class ConvertersGalleryPage : BasePage
 {
-    public partial class ConvertersGalleryPage : BasePage
+    public ConvertersGalleryPage()
     {
-        public ConvertersGalleryPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
+
+        Page ??= this;
     }
 }
