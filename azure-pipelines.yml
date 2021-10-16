@@ -90,6 +90,7 @@ jobs:
         displayName: 'Build Community Toolkit'
         inputs:
           script: | 
+            dotnet build $(PathToCommunityToolkitCsproj) -f net6.0 -c Release
             dotnet build $(PathToCommunityToolkitCsproj) -f net6.0-ios -c Release
             dotnet build $(PathToCommunityToolkitCsproj) -f net6.0-android -c Release
       # Note: .NET MAUI does not yet support Xcode 13.0 (currently only supports Xcode 13 Beta 5)
@@ -98,8 +99,9 @@ jobs:
         displayName: 'Build Community Toolkit Sample'
         inputs:
           script: | 
-            dotnet build $(PathToCommunityToolkitSampleCsproj) -f net6.0-android -c Release
+            dotnet build $(PathToCommunityToolkitSampleCsproj) -f net6.0 -c Release
             dotnet build $(PathToCommunityToolkitSampleCsproj) -f net6.0-ios -c Release
+            dotnet build $(PathToCommunityToolkitSampleCsproj) -f net6.0-android -c Release
       # `dotnet test` does not yet support optional workloads https://github.com/dotnet/sdk/issues/21845#issuecomment-943270826
       # - task: DotNetCoreCLI@2
       #   displayName: 'Run Unit Tests'
@@ -109,7 +111,6 @@ jobs:
       - task: CmdLine@2
         displayName: Pack Community Toolkit NuGets
         inputs:
-          script: 'dotnet pack -c Release $(PathToCommunityToolkitCsproj) -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'
       # Sign NuGet Packages
       - task: PowerShell@2
         displayName: Authenticode Sign Packages
@@ -159,6 +160,7 @@ jobs:
         displayName: 'Build Community Toolkit'
         inputs:
           script: | 
+            dotnet build $(PathToCommunityToolkitCsproj) -f net6.0 -c Release
             dotnet build $(PathToCommunityToolkitCsproj) -f net6.0-ios -c Release
             dotnet build $(PathToCommunityToolkitCsproj) -f net6.0-android -c Release
       # Note: .NET MAUI does not yet support Xcode 13.0 (currently only supports Xcode 13 Beta 5)
@@ -167,6 +169,7 @@ jobs:
         displayName: 'Build Community Toolkit Sample'
         inputs:
           script: | 
+            dotnet build $(PathToCommunityToolkitSampleCsproj) -f net6.0 -c Release
             dotnet build $(PathToCommunityToolkitSampleCsproj) -f net6.0-ios -c Release
             dotnet build $(PathToCommunityToolkitSampleCsproj) -f net6.0-android -c Release
       # `dotnet test` does not yet support optional workloads https://github.com/dotnet/sdk/issues/21845#issuecomment-943270826
@@ -178,4 +181,3 @@ jobs:
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit NuGets'
         inputs:
-          script: 'dotnet pack -c Release $(PathToCommunityToolkitCsproj) -p:PackageVersion=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget'
