@@ -1,10 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters
+﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class IndexToArrayItemConverterPage : BasePage
 {
-    public partial class IndexToArrayItemConverterPage : BasePage
+    public IndexToArrayItemConverterPage()
     {
-        public IndexToArrayItemConverterPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

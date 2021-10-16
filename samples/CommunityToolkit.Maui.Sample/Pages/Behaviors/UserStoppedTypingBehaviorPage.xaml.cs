@@ -1,10 +1,15 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Behaviors
+﻿using Microsoft.Maui.Controls;
+
+namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
+
+public partial class UserStoppedTypingBehaviorPage : BasePage
 {
-    public partial class UserStoppedTypingBehaviorPage : BasePage
+    public UserStoppedTypingBehaviorPage()
     {
-        public UserStoppedTypingBehaviorPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
+
+        TimeThresholdSetting ??= new Entry();
+        AutoDismissKeyboardSetting ??= new Switch();
+        MinimumLengthThresholdSetting ??= new Entry();
     }
 }

@@ -1,10 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters
+﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class ImageResourceConverterPage : BasePage
 {
-    public partial class ImageResourceConverterPage : BasePage
+    public ImageResourceConverterPage()
     {
-        public ImageResourceConverterPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

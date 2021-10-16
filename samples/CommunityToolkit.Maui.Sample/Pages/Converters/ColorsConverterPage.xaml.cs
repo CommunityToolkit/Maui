@@ -1,10 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters
+﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class ColorsConverterPage : BasePage
 {
-    public partial class ColorsConverterPage : BasePage
+    public ColorsConverterPage()
     {
-        public ColorsConverterPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }
