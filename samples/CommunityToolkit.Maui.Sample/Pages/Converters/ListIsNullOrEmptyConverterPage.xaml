@@ -5,8 +5,8 @@
     xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.ListIsNullOrEmptyPage">
-    
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.ListIsNullOrEmptyConverterPage">
+
     <pages:BasePage.Resources>
         <ResourceDictionary>
             <mct:ListIsNullOrEmptyConverter x:Key="ListIsNullOrEmptyConverter" />
@@ -20,17 +20,17 @@
 
     <pages:BasePage.Content>
         <AbsoluteLayout>
-        <ListView ItemsSource="{Binding Items}"
+            <ListView ItemsSource="{Binding Items}"
                   IsVisible="{Binding Items, Converter={StaticResource ListIsNullOrEmptyConverter}}">
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <ViewCell>
-                        <Label Text="{Binding Name}" />
-                    </ViewCell>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
-        <Label Text="Collection is empty" 
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <Label Text="{Binding Name}" />
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <Label Text="Collection is empty" 
                AbsoluteLayout.LayoutBounds="0,0,1,1" 
                AbsoluteLayout.LayoutFlags="All"
                IsVisible="{Binding Items, Converter={StaticResource ListIsNullOrEmptyConverter}}" 
@@ -38,12 +38,12 @@
                HorizontalOptions="CenterAndExpand"
                HorizontalTextAlignment="Center" />
 
-        <StackLayout Orientation="Horizontal" Margin="5" Spacing="5"
+            <StackLayout Orientation="Horizontal" Margin="5" Spacing="5"
                      AbsoluteLayout.LayoutFlags="PositionProportional"
                      AbsoluteLayout.LayoutBounds="1,1,AutoSize,AutoSize">
-            <Button Text="Add" Command="{Binding AddItemCommand}" />
-            <Button Text="Remove" Command="{Binding RemoveItemCommand}" IsEnabled="{Binding Items, Converter={StaticResource ListIsNotNullOrEmptyConverter}}" />
-        </StackLayout>
-    </AbsoluteLayout>
+                <Button Text="Add" Command="{Binding AddItemCommand}" />
+                <Button Text="Remove" Command="{Binding RemoveItemCommand}" IsEnabled="{Binding Items, Converter={StaticResource ListIsNotNullOrEmptyConverter}}" />
+            </StackLayout>
+        </AbsoluteLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

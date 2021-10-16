@@ -14,7 +14,7 @@
     </pages:BasePage.Resources>
 
     <pages:BasePage.BindingContext>
-        <vm:IsNullOrEmptyConverterViewModel />
+        <vm:ListIsNotNullOrEmptyConverterViewModel />
     </pages:BasePage.BindingContext>
 
     <pages:BasePage.Content>
@@ -23,16 +23,30 @@
             HorizontalOptions="Fill"
             Spacing="10"
             VerticalOptions="Fill">
-            <Label Text="The ListIsNotNullOrEmptyConverter is a converter that allows users to convert an incoming binding that implements IEnumerable to a bool value. This value represents if the incoming binding value is not null or an empty list." TextColor="{StaticResource NormalLabelTextColor}" />
-            <Label VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand" Text="This label should be true if the collection item is not null" TextColor="{StaticResource NormalLabelTextColor}" />
-            <Label Text="{Binding DummyItemSource, Converter={StaticResource ListIsNotNullOrEmptyConverter}}" TextColor="Black" />
-            <CollectionView  VerticalOptions="StartAndExpand" HorizontalOptions="Center" SelectionMode="Single" ItemsSource="{Binding DummyItemSource}" SelectedItem="{Binding SelectedItem}">
+
+            <Label
+                Text="The ListIsNotNullOrEmptyConverter is a converter that allows users to convert an incoming binding that implements IEnumerable to a bool value. This value represents if the incoming binding value is not null or an empty list."
+                TextColor="{StaticResource NormalLabelTextColor}" />
+
+            <BoxView HeightRequest="20" />
+
+            <Label
+                Text="This label should be true if the collection item is not null"
+                TextColor="{StaticResource NormalLabelTextColor}" />
+
+            <Label
+                Text="{Binding StringItemSource, Converter={StaticResource ListIsNotNullOrEmptyConverter}}"
+                TextColor="Black" />
+
+            <Button Text="Clear List" Command="{Binding ClearCollectionCommand}" />
+
+            <CollectionView  VerticalOptions="StartAndExpand" HorizontalOptions="Center" ItemsSource="{Binding StringItemSource}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <Label Text="{Binding .}" Margin="10" TextColor="Black" />
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
-            </CollectionView>
+                </CollectionView>
         </StackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>
