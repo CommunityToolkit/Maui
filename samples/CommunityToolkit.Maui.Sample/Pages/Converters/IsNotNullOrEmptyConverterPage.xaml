@@ -7,7 +7,7 @@
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.IsNotNullOrEmptyConverterPage">
     <pages:BasePage.BindingContext>
-        <vm:IsNullOrEmptyConverterViewModel />
+        <vm:IsNotNullOrEmptyConverterViewModel />
     </pages:BasePage.BindingContext>
     <pages:BasePage.Resources>
         <ResourceDictionary>
