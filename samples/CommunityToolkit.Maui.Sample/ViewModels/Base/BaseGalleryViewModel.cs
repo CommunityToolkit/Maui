@@ -12,7 +12,7 @@ public abstract class BaseGalleryViewModel : BaseViewModel
 
     public BaseGalleryViewModel()
     {
-        Items = CreateItems().ToList();
+        Items = CreateItems().OrderBy(x => x.Title).ToList();
         Filter();
     }
 
