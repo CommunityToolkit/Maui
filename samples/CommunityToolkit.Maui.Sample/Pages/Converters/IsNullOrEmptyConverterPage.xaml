@@ -4,12 +4,33 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.IsNullOrEmptyConverterPage">
+    <pages:BasePage.BindingContext>
+        <vm:IsNullOrEmptyConverterViewModel />
+    </pages:BasePage.BindingContext>
+    <pages:BasePage.Resources>
+        <ResourceDictionary>
+            <mct:IsNullOrEmptyConverter x:Key="IsNullOrEmptyConverter" />
+        </ResourceDictionary>
+    </pages:BasePage.Resources>
     <pages:BasePage.Content>
-        <StackLayout>
-            <Label Text="IsNullOrEmptyConverter"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
+        <StackLayout
+            Padding="10,10"
+            HorizontalOptions="Fill"
+            Spacing="10"
+            VerticalOptions="Fill">
+            <Label Text="The IsNullOrEmptyConverter is a converter that allows users to convert an incoming binding to a bool value. This value represents if the incoming binding value is null or empty." TextColor="{StaticResource NormalLabelTextColor}" />
+            <CollectionView VerticalOptions="StartAndExpand" HorizontalOptions="Center" SelectionMode="Single" ItemsSource="{Binding DummyItemSource}" SelectedItem="{Binding SelectedItem}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Label Text="{Binding .}" Margin="10" TextColor="Black" />
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+            <Button VerticalOptions="CenterAndExpand" Text="Clear Selection" Command="{Binding ClearSelectionCommand}"/>
+            <Label VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand" Text="This label should be true if selected item is null" TextColor="{StaticResource NormalLabelTextColor}" />
+            <Label VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand" Text="{Binding Path=SelectedItem, Converter={StaticResource IsNullOrEmptyConverter}}" />
         </StackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>
