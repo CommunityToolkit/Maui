@@ -95,7 +95,7 @@ jobs:
       - task: CmdLine@2
         displayName: 'Run Unit Tests'
         inputs:
-          script:|
+          script: |
             dotnet build $(PathToCommunityToolkitUnitTestCsproj)
             :: dotnet test $(PathToCommunityToolkitUnitTestCsproj)
       - task: CmdLine@2
@@ -157,7 +157,7 @@ jobs:
       - task: CmdLine@2
         displayName: 'Run Unit Tests'
         inputs:
-          script:|
+          script: |
             dotnet build $(PathToCommunityToolkitUnitTestCsproj)
             # dotnet test $(PathToCommunityToolkitUnitTestCsproj)
       - task: CmdLine@2
