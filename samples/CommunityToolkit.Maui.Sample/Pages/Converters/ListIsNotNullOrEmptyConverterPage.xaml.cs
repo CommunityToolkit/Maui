@@ -1,10 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters
+﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class ListIsNotNullOrEmptyConverterPage : BasePage
 {
-    public partial class ListIsNotNullOrEmptyConverterPage : BasePage
+    public ListIsNotNullOrEmptyConverterPage()
     {
-        public ListIsNotNullOrEmptyConverterPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

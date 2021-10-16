@@ -1,10 +1,13 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters
+﻿using Microsoft.Maui.Controls;
+
+namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class NotEqualConverterPage : BasePage
 {
-    public partial class NotEqualConverterPage : BasePage
+    public NotEqualConverterPage()
     {
-        public NotEqualConverterPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
+
+        ExampleText ??= new Entry();
     }
 }
