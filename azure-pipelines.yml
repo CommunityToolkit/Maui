@@ -83,21 +83,29 @@ jobs:
           Write-Host "##vso[build.updatebuildnumber]$fullVersionString"
         displayName: Set NuGet Version to PR Version
         condition: and(succeeded(), eq(variables['build.reason'], 'PullRequest'))
-      # restore, build and pack the packages
+      # restore, build, test and pack the packages
+      # Note: .NET MAUI does not yet support Xcode 13.0 (currently only supports Xcode 13 Beta 5)
+      # Add this to 'Build Community Toolkit Sample' once Xcode 13.0 is supported: dotnet build $(PathToCommunityToolkitCsproj) -f net6.0-maccatalyst -c Release
       - task: CmdLine@2
         displayName: 'Build Community Toolkit'
         inputs:
           script: | 
-            dotnet build $(PathToCommunityToolkitCsproj) -f net6.0-android -c Release
             dotnet build $(PathToCommunityToolkitCsproj) -f net6.0-ios -c Release
-            # dotnet build $(PathToCommunityToolkitCsproj) -f net6.0-maccatalyst -c Release
+            dotnet build $(PathToCommunityToolkitCsproj) -f net6.0-android -c Release
+      # Note: .NET MAUI does not yet support Xcode 13.0 (currently only supports Xcode 13 Beta 5)
+      # Add this to 'Build Community Toolkit Sample' once Xcode 13.0 is supported: dotnet build $(PathToCommunityToolkitSampleCsproj) -f net6.0-maccatalyst -c Release
       - task: CmdLine@2
         displayName: 'Build Community Toolkit Sample'
         inputs:
           script: | 
             dotnet build $(PathToCommunityToolkitSampleCsproj) -f net6.0-android -c Release
             dotnet build $(PathToCommunityToolkitSampleCsproj) -f net6.0-ios -c Release
-            # dotnet build $(PathToCommunityToolkitSampleCsproj) -f net6.0-maccatalyst -c Release
+      # `dotnet test` does not yet support optional workloads https://github.com/dotnet/sdk/issues/21845#issuecomment-943270826
+      # - task: DotNetCoreCLI@2
+      #   displayName: 'Run Unit Tests'
+      #   inputs:
+      #     command: 'test'
+      #     projects: $(PathToCommunityToolkitUnitTestCsproj)
       - task: CmdLine@2
         displayName: Pack Community Toolkit NuGets
         inputs:
@@ -145,21 +153,23 @@ jobs:
         displayName: 'Restore NuGet Packages'
         inputs:
           script: 'dotnet restore $(PathToCommunityToolkitCsproj)'
+      # Note: .NET MAUI does not yet support Xcode 13.0 (currently only supports Xcode 13 Beta 5)
+      # Add this to 'Build Community Toolkit' once Xcode 13.0 is supported: dotnet build $(PathToCommunityToolkitCsproj) -f net6.0-maccatalyst -c Release
       - task: CmdLine@2
         displayName: 'Build Community Toolkit'
         inputs:
           script: | 
-            dotnet build $(PathToCommunityToolkitCsproj) -f net6.0-android -c Release
             dotnet build $(PathToCommunityToolkitCsproj) -f net6.0-ios -c Release
-            # dotnet build $(PathToCommunityToolkitCsproj) -f net6.0-maccatalyst -c Release
+            dotnet build $(PathToCommunityToolkitCsproj) -f net6.0-android -c Release
+      # Note: .NET MAUI does not yet support Xcode 13.0 (currently only supports Xcode 13 Beta 5)
+      # Add this to 'Build Community Toolkit Sample' once Xcode 13.0 is supported: dotnet build $(PathToCommunityToolkitSampleCsproj) -f net6.0-maccatalyst -c Release
       - task: CmdLine@2
         displayName: 'Build Community Toolkit Sample'
         inputs:
           script: | 
-            dotnet build $(PathToCommunityToolkitSampleCsproj) -f net6.0-android -c Release
             dotnet build $(PathToCommunityToolkitSampleCsproj) -f net6.0-ios -c Release
-            # dotnet build $(PathToCommunityToolkitSampleCsproj) -f net6.0-maccatalyst -c Release
-      # Doesn't seem to work (yet)?
+            dotnet build $(PathToCommunityToolkitSampleCsproj) -f net6.0-android -c Release
+      # `dotnet test` does not yet support optional workloads https://github.com/dotnet/sdk/issues/21845#issuecomment-943270826
       # - task: DotNetCoreCLI@2
       #   displayName: 'Run Unit Tests'
       #   inputs:
