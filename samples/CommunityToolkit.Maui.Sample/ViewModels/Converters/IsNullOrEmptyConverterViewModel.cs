@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls;
 using System.Windows.Input;
+using System.Collections.Generic;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters
 {
@@ -10,14 +11,14 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters
 
 		public IsNullOrEmptyConverterViewModel() => ClearSelectionCommand = new Command(() => SelectedItem = null);
 
-		public ObservableCollection<string> DummyItemSource { get; } = new ObservableCollection<string>
+		public IReadOnlyList<string> DummyItemSource { get; } = new[]
 		{
-			"Dummy Item 0",
-			"Dummy Item 1",
-			"Dummy Item 2",
-			"Dummy Item 3",
-			"Dummy Item 4",
-			"Dummy Item 5",
+			"Item 0",
+			"Item 1",
+			"Item 2",
+			"Item 3",
+			"Item 4",
+			"Item 5",
 		};
 
 		public ICommand ClearSelectionCommand { get; }
