@@ -1,8 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Behaviors
+﻿namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
+
+public partial class NumericValidationBehaviorPage : BasePage
 {
-	public partial class NumericValidationBehaviorPage : BasePage
+	public NumericValidationBehaviorPage()
 	{
-		public NumericValidationBehaviorPage()
-			=> InitializeComponent();
+		InitializeComponent();
 	}
 }

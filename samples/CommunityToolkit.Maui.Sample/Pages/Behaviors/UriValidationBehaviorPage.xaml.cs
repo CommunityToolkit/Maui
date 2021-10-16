@@ -1,8 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Behaviors
+﻿namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
+
+public partial class UriValidationBehaviorPage
 {
-	public partial class UriValidationBehaviorPage
+	public UriValidationBehaviorPage()
 	{
-		public UriValidationBehaviorPage()
-			=> InitializeComponent();
+		InitializeComponent();
 	}
 }
