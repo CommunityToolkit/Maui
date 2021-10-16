@@ -1,10 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters
+﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class BoolToObjectConverterPage : BasePage
 {
-    public partial class BoolToObjectConverterPage : BasePage
+    public BoolToObjectConverterPage()
     {
-        public BoolToObjectConverterPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

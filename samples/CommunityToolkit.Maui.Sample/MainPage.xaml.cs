@@ -1,12 +1,13 @@
 ﻿using CommunityToolkit.Maui.Sample.Pages;
 
-namespace CommunityToolkit.Maui.Sample
+namespace CommunityToolkit.Maui.Sample;
+
+public partial class MainPage : BasePage
 {
-    public partial class MainPage : BasePage
+    public MainPage()
     {
-        public MainPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
+
+        Page ??= this;
     }
 }

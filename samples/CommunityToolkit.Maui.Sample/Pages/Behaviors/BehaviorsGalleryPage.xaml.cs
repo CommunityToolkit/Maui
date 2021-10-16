@@ -1,10 +1,13 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Behaviors
+﻿using Microsoft.Maui.Controls;
+
+namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
+
+public partial class BehaviorsGalleryPage : BasePage
 {
-    public partial class BehaviorsGalleryPage : BasePage
+    public BehaviorsGalleryPage()
     {
-        public BehaviorsGalleryPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
+
+        Page ??= this;
     }
 }
