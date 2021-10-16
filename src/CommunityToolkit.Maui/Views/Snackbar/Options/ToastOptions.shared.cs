@@ -31,7 +31,7 @@ namespace CommunityToolkit.Maui.UI.Views.Options
 		/// </summary>
 		public Thickness CornerRadius { get; set; } = DefaultCornerRadius;
 
-		public static Thickness DefaultCornerRadius { get; set; } = new(4, 4, 4, 4);
+		public static Thickness DefaultCornerRadius { get; set; } = new(4);
 
 		/// <summary>
 		/// Is Right to left

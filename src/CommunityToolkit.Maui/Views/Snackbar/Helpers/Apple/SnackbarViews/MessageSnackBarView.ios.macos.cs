@@ -40,7 +40,7 @@ namespace CommunityToolkit.Maui.UI.Views.Helpers.Apple.SnackBarViews
 				messageLabel.Font = SnackBar.Appearance.Font;
 			}
 
-			_ = StackView ?? throw new NullReferenceException();
+			_ = StackView ?? throw new InvalidOperationException($"{nameof(StackView)} is null");
 			StackView.AddArrangedSubview(messageLabel);
 		}
 	}

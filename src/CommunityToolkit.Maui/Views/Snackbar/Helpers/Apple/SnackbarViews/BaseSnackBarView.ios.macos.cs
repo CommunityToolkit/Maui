@@ -52,6 +52,7 @@ namespace CommunityToolkit.Maui.UI.Views.Helpers.Apple.SnackBar
 			StackView.SafeTopAnchor().ConstraintEqualTo(this.SafeTopAnchor(), SnackBar.Layout.PaddingTop).Active = true;
 		}
 
+		[MemberNotNull(nameof(StackView))]
 		protected virtual void Initialize(CGRect cornerRadius)
 		{
 			StackView = new NativeRoundedStackView(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height);

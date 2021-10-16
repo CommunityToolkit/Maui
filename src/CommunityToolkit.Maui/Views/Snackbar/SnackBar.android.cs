@@ -58,7 +58,7 @@ namespace CommunityToolkit.Maui.UI.Views
 				snackBarView.SetBackground(shape);
 			}
 
-			var snackTextView = snackBarView.FindViewById<TextView>(Resource.Id.snackbar_text) ?? throw new NullReferenceException();
+			var snackTextView = snackBarView.FindViewById<TextView>(Resource.Id.snackbar_text) ?? throw new InvalidOperationException("Unable to find SnackBar text view");
 			snackTextView.SetMaxLines(10);
 
 			if (arguments.MessageOptions.Padding != MessageOptions.DefaultPadding)
@@ -109,7 +109,7 @@ namespace CommunityToolkit.Maui.UI.Views
 					snackBar.SetActionTextColor(action.ForegroundColor.ToAndroid());
 				}
 
-				var snackActionButtonView = snackBarView.FindViewById<TextView>(Resource.Id.snackbar_action) ?? throw new NullReferenceException();
+				var snackActionButtonView = snackBarView.FindViewById<TextView>(Resource.Id.snackbar_action) ?? throw new InvalidOperationException("Unable to find SnackBar action button");
 				if (arguments.BackgroundColor != Colors.Black)
 				{
 					snackActionButtonView.SetBackgroundColor(action.BackgroundColor.ToAndroid());

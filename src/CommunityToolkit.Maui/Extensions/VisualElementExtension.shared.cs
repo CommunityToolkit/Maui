@@ -79,7 +79,8 @@ namespace CommunityToolkit.Maui.Extensions
 			{
 				new ()
 				{
-					Text = actionButtonText, Action = action
+					Text = actionButtonText,
+					Action = action
 				}
 			};
 			var options = new SnackBarOptions

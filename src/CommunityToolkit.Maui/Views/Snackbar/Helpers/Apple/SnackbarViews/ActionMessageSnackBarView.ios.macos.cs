@@ -15,7 +15,7 @@ namespace CommunityToolkit.Maui.UI.Views.Helpers.Apple
 		{
 			base.Initialize(cornerRadius);
 
-			_ = StackView ?? throw new NullReferenceException();
+			_ = StackView ?? throw new InvalidOperationException($"{nameof(StackView)} is null");
 
 			foreach (var actionButton in SnackBar.Actions)
 			{
