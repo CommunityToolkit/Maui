@@ -1,14 +1,12 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
-using CommunityToolkit.Maui.UnitTests.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters
 {
 	public class ListIsNullOrEmptyViewModel : BaseViewModel
 	{
-		public ObservableCollection<Person> Items { get; } = new ObservableCollection<Person>();
-
 		public ListIsNullOrEmptyViewModel()
 		{
 			AddItemCommand = new Command(() =>
@@ -25,8 +23,37 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters
 			Items.CollectionChanged += (sender, e) => OnPropertyChanged(nameof(Items));
 		}
 
-		public Command AddItemCommand { get; }
+		public ObservableCollection<Person> Items { get; } = new ObservableCollection<Person>();
 
-		public Command RemoveItemCommand { get; }
+		public ICommand AddItemCommand { get; }
+
+		public ICommand RemoveItemCommand { get; }
+	}
+
+	public class Person : ObservableObject
+	{
+		int id = 0;
+		string lastName = string.Empty;
+		string firstName = string.Empty;
+
+		public string Group => FirstName[0].ToString().ToUpperInvariant();
+
+		public int Id
+		{
+			get => id;
+			set => SetProperty(ref id, value);
+		}
+
+		public string FirstName
+		{
+			get => firstName;
+			set => SetProperty(ref firstName, value);
+		}
+
+		public string LastName
+		{
+			get => lastName;
+			set => SetProperty(ref lastName, value);
+		}
 	}
 }
