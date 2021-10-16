@@ -20,7 +20,7 @@ public abstract class BaseGalleryViewModel : BaseViewModel
 
     public string FilterValue
     {
-        get { return _filterValue; }
+        get => _filterValue;
         set
         {
             _filterValue = value;
