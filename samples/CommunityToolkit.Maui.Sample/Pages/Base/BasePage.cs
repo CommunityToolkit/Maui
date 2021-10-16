@@ -12,6 +12,8 @@ public abstract class BasePage : ContentPage
 {
     public BasePage()
     {
+        Padding = 20;
+
         NavigateCommand = new AsyncRelayCommand<SectionModel>(parameter => parameter switch
         {
             null => Task.CompletedTask,

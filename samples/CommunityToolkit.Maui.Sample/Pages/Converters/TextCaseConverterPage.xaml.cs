@@ -8,6 +8,6 @@ public partial class TextCaseConverterPage : BasePage
     {
         InitializeComponent();
 
-        ExampleText ??= new Entry();
+        ExampleText ??= new();
     }
 }
