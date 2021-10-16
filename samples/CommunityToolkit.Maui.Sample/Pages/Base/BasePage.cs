@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Sample.Models;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Sample.Pages;
@@ -10,12 +12,10 @@ public abstract class BasePage : ContentPage
 {
     public BasePage()
     {
-        NavigateCommand = new Command(async parameter =>
+        NavigateCommand = new AsyncRelayCommand<SectionModel>(parameter => parameter switch
         {
-            if (parameter != null)
-            {
-                await Navigation.PushAsync(PreparePage(parameter));
-            }
+            null => Task.CompletedTask,
+            _ => Navigation.PushAsync(PreparePage(parameter))
         });
     }
 
@@ -31,14 +31,12 @@ public abstract class BasePage : ContentPage
         Debug.WriteLine($"OnDisappearing: {this}");
     }
 
-    static Page PreparePage(object parameter)
+    static Page PreparePage(SectionModel sectionModel)
     {
-        ArgumentNullException.ThrowIfNull(parameter);
+        ArgumentNullException.ThrowIfNull(sectionModel);
 
-        var model = (SectionModel)parameter;
-
-        var page = (Page)(Activator.CreateInstance(model.Type) ?? throw new ArgumentException("Parameter must of Type Page", nameof(parameter)));
-        page.Title = model.Title;
+        var page = (Page)(Activator.CreateInstance(sectionModel.Type) ?? throw new ArgumentException("Invalid SectionModel"));
+        page.Title = sectionModel.Title;
 
         return page;
     }
