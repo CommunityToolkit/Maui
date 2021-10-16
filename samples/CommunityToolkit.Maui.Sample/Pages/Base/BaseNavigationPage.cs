@@ -8,7 +8,6 @@ public class BaseNavigationPage : NavigationPage
 {
     public BaseNavigationPage(Page page) : base(page)
     {
-        BarTextColor = (Color)(Application.Current?.Resources["NavigationBarTextColor"] ?? throw new InvalidOperationException());
-        BarBackgroundColor = (Color)((Application.Current?.Resources["PrimaryColor"]) ?? throw new InvalidOperationException());
+        
     }
 }

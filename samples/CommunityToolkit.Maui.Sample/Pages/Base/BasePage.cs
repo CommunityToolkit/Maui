@@ -11,8 +11,6 @@ public abstract class BasePage : ContentPage
 {
     public BasePage()
     {
-        BackgroundColor = (Color)(Application.Current?.Resources["AppBackgroundColor"] ?? throw new InvalidOperationException());
-
         NavigateCommand = new Command(async parameter =>
         {
             if (parameter != null)
