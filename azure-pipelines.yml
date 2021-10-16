@@ -95,11 +95,11 @@ jobs:
       - task: CmdLine@2
         displayName: 'Build Community Toolkit'
         inputs:
-          script: 'dotnet build $(PathToCommunityToolkitCsproj)' -c Release 
+          script: 'dotnet build $(PathToCommunityToolkitCsproj) -c Release'
       - task: CmdLine@2
         displayName: 'Build Community Toolkit Sample'
         inputs:
-          script: 'dotnet build $(PathToCommunityToolkitSampleCsproj)' -c Release 
+          script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release'
       - task: CmdLine@2
         displayName: 'Run Unit Tests'
         inputs:
@@ -163,11 +163,11 @@ jobs:
       - task: CmdLine@2
         displayName: 'Build Community Toolkit'
         inputs:
-          script: 'dotnet build $(PathToCommunityToolkitCsproj)' -c Release
+          script: 'dotnet build $(PathToCommunityToolkitCsproj) -c Release'
       - task: CmdLine@2
         displayName: 'Build Community Toolkit Sample'
         inputs:
-          script: 'dotnet build $(PathToCommunityToolkitSampleCsproj)' -c Release
+          script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release'
       # `dotnet test` does not yet support optional workloads https://github.com/dotnet/sdk/issues/21845#issuecomment-943270826
       - task: CmdLine@2
         displayName: 'Run Unit Tests'
