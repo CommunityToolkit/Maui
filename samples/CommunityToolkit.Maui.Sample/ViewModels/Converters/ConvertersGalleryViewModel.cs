@@ -67,7 +67,7 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
             nameof(VariableMultiValueConverter),
             "A converter that allows you to combine multiple boolean bindings into a single binding."),
         new SectionModel(
-            typeof(ListIsNullOrEmptyPage),
+            typeof(ListIsNullOrEmptyConverterPage),
             nameof(ListIsNullOrEmptyConverter),
             "A converter that allows you to check if collection is null or empty"),
         new SectionModel(
