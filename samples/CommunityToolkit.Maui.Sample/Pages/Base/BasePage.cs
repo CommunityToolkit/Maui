@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Sample.Models;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 
 namespace CommunityToolkit.Maui.Sample.Pages;
 
@@ -10,6 +11,8 @@ public abstract class BasePage : ContentPage
 {
     public BasePage()
     {
+        BackgroundColor = (Color)(Application.Current?.Resources["AppBackgroundColor"] ?? throw new InvalidOperationException());
+
         NavigateCommand = new Command(async parameter =>
         {
             if (parameter != null)
