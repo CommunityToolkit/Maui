@@ -1,48 +1,17 @@
-﻿using CommunityToolkit.Maui.Sample.Models;
+﻿using System.Diagnostics;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui;
-using System.Diagnostics;
-using System.Windows.Input;
-using System;
 
-namespace CommunityToolkit.Maui.Sample.Pages
+namespace CommunityToolkit.Maui.Sample.Pages;
+
+public abstract class BasePage : ContentPage
 {
-    public class BasePage : ContentPage
+    protected override void OnAppearing()
     {
-        public BasePage()
-        {
-            NavigateCommand = new Command(async (parameter) =>
-            {
-                if (parameter != null)
-                {
-                    await Navigation.PushAsync(PreparePage(parameter));
-                }
-            });
-        }
+        Debug.WriteLine($"OnAppearing: {this}");
+    }
 
-        protected override void OnAppearing()
-        {
-            Debug.WriteLine($"OnAppearing: {this}");
-        }
-
-        protected override void OnDisappearing()
-        {
-            Debug.WriteLine($"OnDisappearing: {this}");
-        }
-
-        public ICommand NavigateCommand { get; }
-
-        Page PreparePage(object parameter)
-        {
-            SectionModel model = parameter as SectionModel;
-
-            if (model == null)
-                return null;
-
-            var page = (Page)Activator.CreateInstance(model.Type);
-            page.Title = model.Title;
-
-            return page;
-        }
+    protected override void OnDisappearing()
+    {
+        Debug.WriteLine($"OnDisappearing: {this}");
     }
 }
