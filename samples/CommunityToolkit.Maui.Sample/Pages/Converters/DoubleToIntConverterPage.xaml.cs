@@ -1,10 +1,13 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters
+﻿using Microsoft.Maui.Controls;
+
+namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class DoubleToIntConverterPage : BasePage
 {
-    public partial class DoubleToIntConverterPage : BasePage
+    public DoubleToIntConverterPage()
     {
-        public DoubleToIntConverterPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
+
+        ExampleText ??= new Entry();
     }
 }

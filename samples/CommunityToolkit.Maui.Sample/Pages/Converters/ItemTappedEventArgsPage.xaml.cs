@@ -1,10 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters
+﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class ItemTappedEventArgsPage : BasePage
 {
-    public partial class ItemTappedEventArgsPage : BasePage
+    public ItemTappedEventArgsPage()
     {
-        public ItemTappedEventArgsPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

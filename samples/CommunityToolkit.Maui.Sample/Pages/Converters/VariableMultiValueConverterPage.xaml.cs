@@ -1,10 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters
+﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class VariableMultiValueConverterPage : BasePage
 {
-    public partial class VariableMultiValueConverterPage : BasePage
+    public VariableMultiValueConverterPage()
     {
-        public VariableMultiValueConverterPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

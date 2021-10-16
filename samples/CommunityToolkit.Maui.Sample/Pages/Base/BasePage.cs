@@ -1,48 +1,45 @@
-﻿using CommunityToolkit.Maui.Sample.Models;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui;
+﻿using System;
 using System.Diagnostics;
 using System.Windows.Input;
-using System;
+using CommunityToolkit.Maui.Sample.Models;
+using Microsoft.Maui.Controls;
 
-namespace CommunityToolkit.Maui.Sample.Pages
+namespace CommunityToolkit.Maui.Sample.Pages;
+
+public abstract class BasePage : ContentPage
 {
-    public class BasePage : ContentPage
+    public BasePage()
     {
-        public BasePage()
+        NavigateCommand = new Command(async parameter =>
         {
-            NavigateCommand = new Command(async (parameter) =>
+            if (parameter != null)
             {
-                if (parameter != null)
-                {
-                    await Navigation.PushAsync(PreparePage(parameter));
-                }
-            });
-        }
+                await Navigation.PushAsync(PreparePage(parameter));
+            }
+        });
+    }
 
-        protected override void OnAppearing()
-        {
-            Debug.WriteLine($"OnAppearing: {this}");
-        }
+    public ICommand NavigateCommand { get; }
 
-        protected override void OnDisappearing()
-        {
-            Debug.WriteLine($"OnDisappearing: {this}");
-        }
+    protected override void OnAppearing()
+    {
+        Debug.WriteLine($"OnAppearing: {this}");
+    }
 
-        public ICommand NavigateCommand { get; }
+    protected override void OnDisappearing()
+    {
+        Debug.WriteLine($"OnDisappearing: {this}");
+    }
 
-        Page PreparePage(object parameter)
-        {
-            SectionModel model = parameter as SectionModel;
+    static Page PreparePage(object parameter)
+    {
+        ArgumentNullException.ThrowIfNull(parameter);
 
-            if (model == null)
-                return null;
+        var model = (SectionModel)parameter;
 
-            var page = (Page)Activator.CreateInstance(model.Type);
-            page.Title = model.Title;
+        var page = (Page)(Activator.CreateInstance(model.Type) ?? throw new ArgumentException("Parameter must of Type Page", nameof(parameter)));
+        page.Title = model.Title;
 
-            return page;
-        }
+        return page;
     }
 }
