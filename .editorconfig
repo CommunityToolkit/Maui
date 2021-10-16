@@ -3,5 +3,5 @@
 # Organize usings
 dotnet_sort_system_directives_first = true
 
-# IDE0160: Convert to block scoped namespace
+# IDE0160: Use file scoped namespace
 csharp_style_namespace_declarations = file_scoped
