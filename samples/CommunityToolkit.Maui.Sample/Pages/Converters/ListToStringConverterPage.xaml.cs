@@ -1,10 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters
+﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class ListToStringConverterPage : BasePage
 {
-    public partial class ListToStringConverterPage : BasePage
+    public ListToStringConverterPage()
     {
-        public ListToStringConverterPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

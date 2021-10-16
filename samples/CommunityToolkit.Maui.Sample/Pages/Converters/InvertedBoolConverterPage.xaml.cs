@@ -1,10 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters
+﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class InvertedBoolConverterPage : BasePage
 {
-    public partial class InvertedBoolConverterPage : BasePage
+    public InvertedBoolConverterPage()
     {
-        public InvertedBoolConverterPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }
