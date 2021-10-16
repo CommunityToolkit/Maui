@@ -3,10 +3,10 @@ using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
-namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors
+namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
+
+public class BehaviorsGalleryViewModel : BaseGalleryViewModel
 {
-	public class BehaviorsGalleryViewModel : BaseGalleryViewModel
-	{
 		protected override IEnumerable<SectionModel> CreateItems() => new[]
 		{
 			new SectionModel(
@@ -54,5 +54,4 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors
 				nameof(SetFocusOnEntryCompletedBehavior),
 				"Set focus to another element when an entry is completed"),
 		};
-	}
 }

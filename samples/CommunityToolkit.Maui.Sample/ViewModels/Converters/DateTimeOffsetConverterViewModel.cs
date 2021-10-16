@@ -1,15 +1,14 @@
 ﻿using System;
 
-namespace CommunityToolkit.Maui.Sample.ViewModels.Converters
-{
-    public class DateTimeOffsetConverterViewModel : BaseViewModel
-    {
-        DateTimeOffset theDate = DateTimeOffset.Now;
+namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-        public DateTimeOffset TheDate
-        {
-            get => theDate;
-            set => SetProperty(ref theDate, value);
-        }
+public class DateTimeOffsetConverterViewModel : BaseViewModel
+{
+    DateTimeOffset theDate = DateTimeOffset.Now;
+
+    public DateTimeOffset TheDate
+    {
+        get => theDate;
+        set => SetProperty(ref theDate, value);
     }
 }

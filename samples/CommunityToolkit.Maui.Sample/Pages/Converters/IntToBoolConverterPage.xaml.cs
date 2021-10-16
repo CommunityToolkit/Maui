@@ -1,10 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters
+﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class IntToBoolConverterPage : BasePage
 {
-    public partial class IntToBoolConverterPage : BasePage
+    public IntToBoolConverterPage()
     {
-        public IntToBoolConverterPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }
