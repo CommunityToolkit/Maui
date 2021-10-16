@@ -3,47 +3,52 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
-    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.ListIsNullOrEmptyConverterPage">
 
     <pages:BasePage.Resources>
         <ResourceDictionary>
             <mct:ListIsNullOrEmptyConverter x:Key="ListIsNullOrEmptyConverter" />
-            <mct:ListIsNotNullOrEmptyConverter x:Key="ListIsNotNullOrEmptyConverter" />
         </ResourceDictionary>
     </pages:BasePage.Resources>
 
     <pages:BasePage.BindingContext>
-        <vm:ListIsNullOrEmptyViewModel />
+        <vm:ListIsNullOrEmptyConverterViewModel />
     </pages:BasePage.BindingContext>
 
     <pages:BasePage.Content>
-        <AbsoluteLayout>
-            <ListView ItemsSource="{Binding Items}"
-                  IsVisible="{Binding Items, Converter={StaticResource ListIsNullOrEmptyConverter}}">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <ViewCell>
-                            <Label Text="{Binding Name}" />
-                        </ViewCell>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-            <Label Text="Collection is empty" 
-               AbsoluteLayout.LayoutBounds="0,0,1,1" 
-               AbsoluteLayout.LayoutFlags="All"
-               IsVisible="{Binding Items, Converter={StaticResource ListIsNullOrEmptyConverter}}" 
-               VerticalOptions="CenterAndExpand" 
-               HorizontalOptions="CenterAndExpand"
-               HorizontalTextAlignment="Center" />
+        <StackLayout
+            Padding="10,10"
+            HorizontalOptions="Fill"
+            Spacing="10"
+            VerticalOptions="Fill">
 
-            <StackLayout Orientation="Horizontal" Margin="5" Spacing="5"
-                     AbsoluteLayout.LayoutFlags="PositionProportional"
-                     AbsoluteLayout.LayoutBounds="1,1,AutoSize,AutoSize">
-                <Button Text="Add" Command="{Binding AddItemCommand}" />
-                <Button Text="Remove" Command="{Binding RemoveItemCommand}" IsEnabled="{Binding Items, Converter={StaticResource ListIsNotNullOrEmptyConverter}}" />
-            </StackLayout>
-        </AbsoluteLayout>
+            <Label
+                Text="The ListIsNullOrEmptyConverter is a converter that allows users to convert an incoming binding that implements IEnumerable to a bool value. This value represents if the incoming binding value is null or an empty list."
+                TextColor="{StaticResource NormalLabelTextColor}" />
+
+            <BoxView
+                HeightRequest="20"
+                BackgroundColor="Transparent"/>
+
+            <Label
+                Text="This label should be true if the collection item is null or empty"
+                TextColor="{StaticResource NormalLabelTextColor}" />
+
+            <Label
+                Text="{Binding StringItemSource, Converter={StaticResource ListIsNullOrEmptyConverter}}"
+                TextColor="Black" />
+
+            <Button Text="Clear List" Command="{Binding ClearCollectionCommand}" />
+
+            <CollectionView  VerticalOptions="StartAndExpand" HorizontalOptions="Center" ItemsSource="{Binding StringItemSource}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Label Text="{Binding .}" Margin="10" TextColor="Black" />
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </StackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>
