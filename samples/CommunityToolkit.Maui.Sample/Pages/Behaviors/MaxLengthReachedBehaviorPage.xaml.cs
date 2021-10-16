@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Behaviors;
-using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
@@ -9,9 +8,9 @@ partial class MaxLengthReachedBehaviorPage : BasePage
     {
         InitializeComponent();
 
-        NextEntry ??= new Entry();
-        MaxLengthSetting ??= new Entry();
-        AutoDismissKeyboardSetting ??= new Switch();
+        NextEntry ??= new();
+        MaxLengthSetting ??= new();
+        AutoDismissKeyboardSetting ??= new();
     }
 
     void MaxLengthReachedBehavior_MaxLengthReached(object? sender, MaxLengthReachedEventArgs e)
