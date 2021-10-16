@@ -1,10 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters
+﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class MathExpressionConverterPage : BasePage
 {
-    public partial class MathExpressionConverterPage : BasePage
+    public MathExpressionConverterPage()
     {
-        public MathExpressionConverterPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }
