@@ -1,46 +1,42 @@
-﻿using CommunityToolkit.Maui.Sample.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Input;
+using CommunityToolkit.Maui.Sample.Models;
 
-namespace CommunityToolkit.Maui.Sample.ViewModels
+namespace CommunityToolkit.Maui.Sample.ViewModels;
+
+public abstract class BaseGalleryViewModel : BaseViewModel
 {
-    public abstract class BaseGalleryViewModel : BaseViewModel
+    string _filterValue = string.Empty;
+    IEnumerable<SectionModel> _filteredItems = Enumerable.Empty<SectionModel>();
+
+    public BaseGalleryViewModel()
     {
-        string _filterValue;
+        Items = CreateItems().ToList();
+        Filter();
+    }
 
-        public BaseGalleryViewModel()
+    public IReadOnlyList<SectionModel> Items { get; }
+
+    public string FilterValue
+    {
+        get { return _filterValue; }
+        set
         {
-            var items = CreateItems();
-
-            if (items != null)
-                Items = items.ToList();
-
+            _filterValue = value;
             Filter();
         }
-
-        public IReadOnlyList<SectionModel> Items { get; }
-
-        public string FilterValue
-        {
-            get { return _filterValue; }
-            set
-            {
-                _filterValue = value;
-                Filter();
-            }
-        }
-
-        public IEnumerable<SectionModel> FilteredItems { get; private set; } = Enumerable.Empty<SectionModel>();
-
-        protected abstract IEnumerable<SectionModel> CreateItems();
-
-        void Filter()
-        {
-            FilterValue ??= string.Empty;
-            FilteredItems = string.IsNullOrEmpty(FilterValue) ? Items : Items.Where(item => item.Title.IndexOf(FilterValue, StringComparison.InvariantCultureIgnoreCase) >= 0);
-            OnPropertyChanged(nameof(FilteredItems));
-        }
     }
+
+    public IEnumerable<SectionModel> FilteredItems
+    {
+        get => _filteredItems;
+        private set => SetProperty(ref _filteredItems, value);
+    }
+
+    protected abstract IEnumerable<SectionModel> CreateItems();
+
+    void Filter() => FilteredItems = string.IsNullOrEmpty(FilterValue)
+                        ? Items
+                        : Items.Where(item => item.Title.Contains(FilterValue, StringComparison.InvariantCultureIgnoreCase));
 }
