@@ -1,8 +1,8 @@
 ﻿using Microsoft.Maui.Controls;
 
-namespace CommunityToolkit.Maui.Sample.Pages.Convertersl
+namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
-    public partial class NotEqualConverterPage : BasePage
+public partial class NotEqualConverterPage : BasePage
 {
     public NotEqualConverterPage()
     {
