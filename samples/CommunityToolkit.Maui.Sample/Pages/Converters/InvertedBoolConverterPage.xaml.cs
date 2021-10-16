@@ -5,5 +5,7 @@ public partial class InvertedBoolConverterPage : BasePage
     public InvertedBoolConverterPage()
     {
         InitializeComponent();
+
+        ColorToggle ??= new();
     }
 }

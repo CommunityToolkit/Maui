@@ -8,8 +8,8 @@ public partial class UserStoppedTypingBehaviorPage : BasePage
     {
         InitializeComponent();
 
-        TimeThresholdSetting ??= new Entry();
-        AutoDismissKeyboardSetting ??= new Switch();
-        MinimumLengthThresholdSetting ??= new Entry();
+        TimeThresholdSetting ??= new();
+        AutoDismissKeyboardSetting ??= new();
+        MinimumLengthThresholdSetting ??= new();
     }
 }
