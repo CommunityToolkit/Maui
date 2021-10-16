@@ -148,7 +148,17 @@ jobs:
       - task: CmdLine@2
         displayName: 'Build Community Toolkit'
         inputs:
-          script: 'dotnet build $(PathToCommunityToolkitCsproj) -c Release'
+          script: | 
+            dotnet build $(PathToCommunityToolkitCsproj) -f net6.0-android -c Release
+            dotnet build $(PathToCommunityToolkitCsproj) -f net6.0-ios -c Release
+            # dotnet build $(PathToCommunityToolkitCsproj) -f net6.0-maccatalyst -c Release
+      - task: CmdLine@2
+        displayName: 'Build Community Toolkit Sample'
+        inputs:
+          script: | 
+            dotnet build $(PathToCommunityToolkitSampleCsproj) -f net6.0-android -c Release
+            dotnet build $(PathToCommunityToolkitSampleCsproj) -f net6.0-ios -c Release
+            # dotnet build $(PathToCommunityToolkitSampleCsproj) -f net6.0-maccatalyst -c Release
       # Doesn't seem to work (yet)?
       # - task: DotNetCoreCLI@2
       #   displayName: 'Run Unit Tests'
