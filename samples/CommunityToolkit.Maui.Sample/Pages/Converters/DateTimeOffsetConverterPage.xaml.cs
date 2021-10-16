@@ -1,10 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters
+﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class DateTimeOffsetConverterPage : BasePage
 {
-    public partial class DateTimeOffsetConverterPage : BasePage
+    public DateTimeOffsetConverterPage()
     {
-        public DateTimeOffsetConverterPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }
