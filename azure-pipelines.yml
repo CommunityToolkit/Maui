@@ -111,7 +111,7 @@ jobs:
   - job: build_macos
     displayName: Build macOS Library
     pool:
-      vmImage: macos-latest
+      vmImage: macos-11
     steps:
       # if this is a tagged build, then update the version number
       - powershell: |
@@ -125,7 +125,9 @@ jobs:
         displayName: 'Install .NET SDK'
         inputs:
           version: $(NET_VERSION)
-          includePreviewVersions: true      
+          includePreviewVersions: true
+      - script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_13.0_beta.app;sudo xcode-select --switch /Applications/Xcode_13.0_beta.app/Contents/Developer
+        displayName: 'Updating XCode version'
       - task: CmdLine@2
         displayName: 'Install .NET MAUI workload'
         inputs:
