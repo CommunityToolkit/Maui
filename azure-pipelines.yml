@@ -167,7 +167,7 @@ jobs:
       - task: CmdLine@2
         displayName: 'Build Community Toolkit Sample'
         inputs:
-          script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release'
+          script: 'dotnet build $(PathToCommunityToolkitSampleCsproj)'
       # `dotnet test` does not yet support optional workloads https://github.com/dotnet/sdk/issues/21845#issuecomment-943270826
       - task: CmdLine@2
         displayName: 'Run Unit Tests'
