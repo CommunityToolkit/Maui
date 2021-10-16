@@ -149,8 +149,6 @@ jobs:
         inputs:
           version: $(NET_VERSION)
           includePreviewVersions: true
-      - script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_13.0_beta.app;sudo xcode-select --switch /Applications/Xcode_13.0_beta.app/Contents/Developer
-        displayName: 'Updating XCode version'
       - task: CmdLine@2
         displayName: 'Install .NET MAUI workload'
         inputs:

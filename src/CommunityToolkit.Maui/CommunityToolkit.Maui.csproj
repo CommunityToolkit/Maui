@@ -74,8 +74,4 @@
     <Compile Include="**\*.macos.*.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="Behaviors\EventToCommandBehaviorGeneric - Copy.shared.cs" />
-  </ItemGroup>
-
 </Project>
