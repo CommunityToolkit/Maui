@@ -5,16 +5,16 @@
     xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.ListIsNotNullOrEmptyConverterPage">
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.ListIsNullOrEmptyConverterPage">
 
     <pages:BasePage.Resources>
         <ResourceDictionary>
-            <mct:ListIsNotNullOrEmptyConverter x:Key="ListIsNotNullOrEmptyConverter" />
+            <mct:ListIsNullOrEmptyConverter x:Key="ListIsNullOrEmptyConverter" />
         </ResourceDictionary>
     </pages:BasePage.Resources>
 
     <pages:BasePage.BindingContext>
-        <vm:ListIsNotNullOrEmptyConverterViewModel />
+        <vm:ListIsNullOrEmptyConverterViewModel />
     </pages:BasePage.BindingContext>
 
     <pages:BasePage.Content>
@@ -25,7 +25,7 @@
             VerticalOptions="Fill">
 
             <Label
-                Text="The ListIsNotNullOrEmptyConverter is a converter that allows users to convert an incoming binding that implements IEnumerable to a bool value. This value represents if the incoming binding value is not null or an empty list."
+                Text="The ListIsNullOrEmptyConverter is a converter that allows users to convert an incoming binding that implements IEnumerable to a bool value. This value represents if the incoming binding value is null or an empty list."
                 TextColor="{StaticResource NormalLabelTextColor}" />
 
             <BoxView
@@ -33,11 +33,11 @@
                 BackgroundColor="Transparent"/>
 
             <Label
-                Text="This label should be true if the collection item is not null or not empty"
+                Text="This label should be true if the collection item is null or empty"
                 TextColor="{StaticResource NormalLabelTextColor}" />
 
             <Label
-                Text="{Binding StringItemSource, Converter={StaticResource ListIsNotNullOrEmptyConverter}}"
+                Text="{Binding StringItemSource, Converter={StaticResource ListIsNullOrEmptyConverter}}"
                 TextColor="Black" />
 
             <Button Text="Clear List" Command="{Binding ClearCollectionCommand}" />

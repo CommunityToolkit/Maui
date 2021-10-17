@@ -1,48 +1,45 @@
-﻿using CommunityToolkit.Maui.Sample.Models;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui;
+﻿using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Windows.Input;
-using System;
+using CommunityToolkit.Maui.Sample.Models;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.Controls;
 
-namespace CommunityToolkit.Maui.Sample.Pages
+namespace CommunityToolkit.Maui.Sample.Pages;
+
+public abstract class BasePage : ContentPage
 {
-    public class BasePage : ContentPage
+    public BasePage()
     {
-        public BasePage()
+        Padding = 20;
+
+        NavigateCommand = new AsyncRelayCommand<SectionModel>(parameter => parameter switch
         {
-            NavigateCommand = new Command(async (parameter) =>
-            {
-                if (parameter != null)
-                {
-                    await Navigation.PushAsync(PreparePage(parameter));
-                }
-            });
-        }
+            null => Task.CompletedTask,
+            _ => Navigation.PushAsync(PreparePage(parameter))
+        });
+    }
 
-        protected override void OnAppearing()
-        {
-            Debug.WriteLine($"OnAppearing: {this}");
-        }
+    public ICommand NavigateCommand { get; }
 
-        protected override void OnDisappearing()
-        {
-            Debug.WriteLine($"OnDisappearing: {this}");
-        }
+    protected override void OnAppearing()
+    {
+        Debug.WriteLine($"OnAppearing: {this}");
+    }
 
-        public ICommand NavigateCommand { get; }
+    protected override void OnDisappearing()
+    {
+        Debug.WriteLine($"OnDisappearing: {this}");
+    }
 
-        Page PreparePage(object parameter)
-        {
-            SectionModel model = parameter as SectionModel;
+    static Page PreparePage(SectionModel sectionModel)
+    {
+        ArgumentNullException.ThrowIfNull(sectionModel);
 
-            if (model == null)
-                return null;
+        var page = (Page)(Activator.CreateInstance(sectionModel.Type) ?? throw new ArgumentException("Invalid SectionModel"));
+        page.Title = sectionModel.Title;
 
-            var page = (Page)Activator.CreateInstance(model.Type);
-            page.Title = model.Title;
-
-            return page;
-        }
+        return page;
     }
 }

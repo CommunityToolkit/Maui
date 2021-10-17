@@ -1,10 +1,13 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters
+﻿using Microsoft.Maui.Controls;
+
+namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class TextCaseConverterPage : BasePage
 {
-    public partial class TextCaseConverterPage : BasePage
+    public TextCaseConverterPage()
     {
-        public TextCaseConverterPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
+
+        ExampleText ??= new();
     }
 }
