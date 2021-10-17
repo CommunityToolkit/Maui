@@ -1,13 +1,12 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters
-{
-    public class IntToBoolConverterViewModel : BaseViewModel
-	{
-		int index;
+﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-		public int Number
-		{
-			get => index;
-			set => SetProperty(ref index, value);
-		}
-	}
+public class IntToBoolConverterViewModel : BaseViewModel
+{
+    int _index;
+
+    public int Number
+    {
+        get => _index;
+        set => SetProperty(ref _index, value);
+    }
 }

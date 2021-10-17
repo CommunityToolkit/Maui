@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls;
+﻿using Microsoft.Maui.Controls;
 using System.Windows.Input;
 using System.Collections.Generic;
 
@@ -7,7 +6,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
 public class IsNullOrEmptyConverterViewModel : BaseViewModel
 {
-    string? selectedItem;
+    string? _selectedItem;
 
     public IsNullOrEmptyConverterViewModel() => ClearSelectionCommand = new Command(() => SelectedItem = null);
 
@@ -25,7 +24,7 @@ public class IsNullOrEmptyConverterViewModel : BaseViewModel
 
     public string? SelectedItem
     {
-        get => selectedItem;
-        set => SetProperty(ref selectedItem, value);
+        get => _selectedItem;
+        set => SetProperty(ref _selectedItem, value);
     }
 }
