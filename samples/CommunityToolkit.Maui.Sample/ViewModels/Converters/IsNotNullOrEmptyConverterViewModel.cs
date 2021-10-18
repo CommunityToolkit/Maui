@@ -1,5 +1,4 @@
-﻿using System;
-namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
 public class IsNotNullOrEmptyConverterViewModel : IsNullOrEmptyConverterViewModel
 {

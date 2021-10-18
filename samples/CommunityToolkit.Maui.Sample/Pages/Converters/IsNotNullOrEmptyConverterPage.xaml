@@ -20,7 +20,7 @@
             HorizontalOptions="Fill"
             Spacing="16"
             VerticalOptions="Fill">
-            <Label Text="The IsNullOrEmptyConverter is a converter that allows users to convert an incoming binding to a bool value. This value represents if the incoming binding value is null or empty." TextColor="{StaticResource NormalLabelTextColor}" />
+            <Label Text="The IsNotNullOrEmptyConverter is a converter that allows users to convert an incoming binding to a bool value. This value represents if the incoming binding value is null or empty." TextColor="{StaticResource NormalLabelTextColor}" />
             <Button VerticalOptions="CenterAndExpand" Text="Clear Selection" Command="{Binding ClearSelectionCommand}"/>
             <Label VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand" Text="This label should be false if selected item is null" TextColor="{StaticResource NormalLabelTextColor}" />
             <Label VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand" Text="{Binding Path=SelectedItem, Converter={StaticResource IsNotNullOrEmptyConverter }}" />
