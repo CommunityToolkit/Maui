@@ -24,6 +24,10 @@
             <mct:ColorToPercentMagentaConverter x:Key="ColorToPercentMagentaConverter" />
             <mct:ColorToPercentYellowConverter x:Key="ColorToPercentYellowConverter" />
             <mct:ColorToDegreeHueConverter x:Key="ColorToDegreeHueConverter" />
+            <mct:ColorToBlackOrWhiteConverter x:Key="ColorToBlackOrWhiteConverter" />
+            <mct:ColorToColorForTextConverter x:Key="ColorToColorForTextConverter"/>
+            <mct:ColorToGrayScaleColorConverter  x:Key="ColorToGrayScaleColorConverter"/>
+            <mct:ColorToInverseColorConverter   x:Key="ColorToInverseColorConverter"/>
 
             <Style TargetType="Label">
                 <Setter Property="TextColor" Value="Black" />
@@ -69,6 +73,14 @@
 
             <Label Text="{Binding Source={x:Reference boxView}, Path=BackgroundColor, Converter={StaticResource ColorToDegreeHueConverter}, StringFormat='The Degree Hue value of selected color is: {0}'}" />
 
+            <Label Text="{Binding Source={x:Reference boxView}, Path=BackgroundColor, Converter={StaticResource ColorToBlackOrWhiteConverter}, StringFormat='The color to monochrome black or white?: {0}'}" />
+
+            <Label Text="{Binding Source={x:Reference boxView}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}, StringFormat='The color for text is: {0}'}" TextColor="{Binding Source={x:Reference boxView}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}}" BackgroundColor="{Binding Source={x:Reference boxView}, Path=BackgroundColor}"  />
+
+            <Label Text="{Binding Source={x:Reference boxView}, Path=BackgroundColor, Converter={StaticResource ColorToGrayScaleColorConverter}, StringFormat='The color to grayscale is: {0}'}" TextColor="{Binding Source={x:Reference boxView}, Path=BackgroundColor, Converter={StaticResource ColorToGrayScaleColorConverter}}" />
+
+            <Label Text="{Binding Source={x:Reference boxView}, Path=BackgroundColor, Converter={StaticResource ColorToInverseColorConverter}, StringFormat='Inverse color is: {0}'}" TextColor="{Binding Source={x:Reference boxView}, Path=BackgroundColor, Converter={StaticResource ColorToInverseColorConverter}}"  BackgroundColor="{Binding Source={x:Reference boxView}, Path=BackgroundColor}" />
+            
         </StackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>
