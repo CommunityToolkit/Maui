@@ -5,5 +5,7 @@ public partial class StringToListConverterPage : BasePage
     public StringToListConverterPage()
     {
         InitializeComponent();
+
+        ExampleText ??= new();
     }
 }

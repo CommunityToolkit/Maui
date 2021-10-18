@@ -8,6 +8,6 @@ public partial class DoubleToIntConverterPage : BasePage
     {
         InitializeComponent();
 
-        ExampleText ??= new Entry();
+        ExampleText ??= new();
     }
 }
