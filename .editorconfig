@@ -4,4 +4,7 @@
 dotnet_sort_system_directives_first = true
 
 # IDE0160: Use file scoped namespace
-csharp_style_namespace_declarations = file_scoped
+csharp_style_namespace_declarations = file_scoped:error
+
+# CS4014: Because this call is not awaited, execution of the current method continues before the call is completed
+dotnet_diagnostic.CS4014.severity = error
