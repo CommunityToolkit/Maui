@@ -104,7 +104,7 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
             "A converter that allows you to convert embeded ressource image id to an ImageSource"),
         new SectionModel(
             typeof(ColorsConverterPage),
-            "Colors converters",
+            "ColorConverters",
             "A group of converters that convert a Color to your strings values (RGB, HEX, HSL, etc)"),
     };
 }
