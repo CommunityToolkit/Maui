@@ -11,7 +11,7 @@ public partial class ColorsConverterPage : BasePage
 {
     readonly IReadOnlyDictionary<string, Color> _colors = typeof(Colors)
         .GetFields(BindingFlags.Static | BindingFlags.Public)
-        .ToDictionary(c => c.Name, c => (c.GetValue(null) as Color) ?? Colors.White);
+        .ToDictionary(c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()));
 
     public ColorsConverterPage()
     {
