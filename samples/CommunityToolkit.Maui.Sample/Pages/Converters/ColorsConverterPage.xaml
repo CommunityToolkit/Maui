@@ -3,6 +3,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Converters"
+    x:DataType="converters:ColorsConverterPage"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.ColorsConverterPage">
 
     <pages:BasePage.Resources>
@@ -36,8 +38,8 @@
     </pages:BasePage.Resources>
 
     <pages:BasePage.Content>
-        <StackLayout Spacing="10" VerticalOptions="Center">
-            <Picker x:Name="Picker" SelectedIndexChanged="Picker_SelectedIndexChanged"/>
+        <StackLayout Spacing="10">
+            <Picker x:Name="Picker" SelectedIndexChanged="HandleSelectedIndexChanged"/>
 
             <BoxView x:Name="BoxView" HeightRequest="100" BackgroundColor="White" />
             
@@ -75,9 +77,9 @@
 
             <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToBlackOrWhiteConverter}, StringFormat='The color to monochrome black or white?: {0}'}" />
 
-            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}, StringFormat='The color for text is: {0}'}" TextColor="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}}" BackgroundColor="{Binding Source={x:Reference BoxView}, Path=BackgroundColor}"  />
+            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}, StringFormat='The Color For Text is: {0}'}" TextColor="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}}" BackgroundColor="{Binding Source={x:Reference BoxView}, Path=BackgroundColor}"  />
 
-            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToGrayScaleColorConverter}, StringFormat='The color to grayscale is: {0}'}" TextColor="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToGrayScaleColorConverter}}" />
+            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToGrayScaleColorConverter}, StringFormat='The color to grayscale is: {0}'}" TextColor="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToGrayScaleColorConverter}}" BackgroundColor="{Binding Source={x:Reference BoxView}, Path=BackgroundColor}"  />
 
             <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToInverseColorConverter}, StringFormat='Inverse color is: {0}'}" TextColor="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToInverseColorConverter}}"  BackgroundColor="{Binding Source={x:Reference BoxView}, Path=BackgroundColor}" />
             
