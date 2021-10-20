@@ -1,11 +1,10 @@
-﻿namespace CommunityToolkit.Maui.Converters
+﻿namespace CommunityToolkit.Maui.Converters;
+
+enum MathOperatorPrecedence
 {
-	enum MathOperatorPrecedence
-	{
-		Lowest,
-		Low,
-		Medium,
-		High,
-		Constant,
-	}
+	Lowest,
+	Low,
+	Medium,
+	High,
+	Constant,
 }
