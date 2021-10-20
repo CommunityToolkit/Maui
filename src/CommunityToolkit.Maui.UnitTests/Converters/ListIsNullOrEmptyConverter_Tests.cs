@@ -11,11 +11,11 @@ public class ListIsNullOrEmptyConverter_Tests : BaseTest
 {
     static readonly IReadOnlyList<object?[]> data = new[]
     {
-            new object[] { new List<string>(), true },
-            new object[] { new List<string>() { "TestValue" }, false },
-            new object?[] { null, true },
-            new object[] { Enumerable.Range(1, 3), false },
-        };
+        new object[] { new List<string>(), true },
+        new object[] { new List<string>() { "TestValue" }, false },
+        new object?[] { null, true },
+        new object[] { Enumerable.Range(1, 3), false },
+    };
 
     [Theory]
     [MemberData(nameof(data))]
