@@ -4,9 +4,11 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace CommunityToolkit.Maui.Extensions.Internals;
 
+/// <inheritdoc />
 public abstract class ValueConverterExtension : IMarkupExtension<IValueConverter>
 {
-    public IValueConverter ProvideValue(IServiceProvider serviceProvider)
+	/// <inheritdoc />
+	public IValueConverter ProvideValue(IServiceProvider serviceProvider)
         => (IValueConverter)this;
 
     object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)

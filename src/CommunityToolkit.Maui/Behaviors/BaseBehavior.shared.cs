@@ -19,6 +19,9 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
 
     BindingBase? defaultBindingContextBinding;
 
+	/// <summary>
+	/// View used by the Behavior
+	/// </summary>
     protected TView? View { get; private set; }
 
     internal bool TrySetBindingContext(Binding binding)
@@ -45,10 +48,16 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
         return false;
     }
 
+	/// <summary>
+	/// Virtual method that executes when a property on the View has changed
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
     protected virtual void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
     }
 
+	/// <inheritdoc/>
     protected override void OnAttachedTo(TView bindable)
     {
         base.OnAttachedTo(bindable);
@@ -61,7 +70,8 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
         });
     }
 
-    protected override void OnDetachingFrom(TView bindable)
+	/// <inheritdoc/>
+	protected override void OnDetachingFrom(TView bindable)
     {
         base.OnDetachingFrom(bindable);
         TryRemoveBindingContext();
@@ -69,6 +79,12 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
         View = null;
     }
 
+	/// <summary>
+	/// Virtual method that executes when a binding context is set
+	/// </summary>
+	/// <param name="property"></param>
+	/// <param name="defaultBinding"></param>
+	/// <returns></returns>
     protected bool IsBound(BindableProperty property, BindingBase? defaultBinding = null)
     {
         var context = getContextMethod?.Invoke(this, new object[] { property });

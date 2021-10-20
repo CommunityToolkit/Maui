@@ -77,13 +77,15 @@ public class EventToCommandBehavior : BaseBehavior<VisualElement>
         set => SetValue(EventArgsConverterProperty, value);
     }
 
-    protected override void OnAttachedTo(VisualElement bindable)
+	/// <inheritdoc/>
+	protected override void OnAttachedTo(VisualElement bindable)
     {
         base.OnAttachedTo(bindable);
         RegisterEvent();
     }
 
-    protected override void OnDetachingFrom(VisualElement bindable)
+	/// <inheritdoc/>
+	protected override void OnDetachingFrom(VisualElement bindable)
     {
         UnregisterEvent();
         base.OnDetachingFrom(bindable);
@@ -121,6 +123,11 @@ public class EventToCommandBehavior : BaseBehavior<VisualElement>
         eventHandler = null;
     }
 
+	/// <summary>
+	/// Virtual method that executes when a Command is invoked
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="eventArgs"></param>
     [Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
     protected virtual void OnTriggerHandled(object? sender = null, object? eventArgs = null)
     {
