@@ -20,6 +20,7 @@ public class ImpliedOrderGridBehavior : BaseBehavior<Grid>
     /// </summary>
     public bool ThrowOnLayoutWarning { get; set; }
 
+    /// <inheritdoc />
     protected override void OnAttachedTo(Grid bindable)
     {
         base.OnAttachedTo(bindable);
@@ -27,6 +28,7 @@ public class ImpliedOrderGridBehavior : BaseBehavior<Grid>
         bindable.ChildAdded += OnInternalGridChildAdded;
     }
 
+    /// <inheritdoc />
     protected override void OnDetachingFrom(Grid bindable)
     {
         base.OnDetachingFrom(bindable);
