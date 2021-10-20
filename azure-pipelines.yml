@@ -178,4 +178,4 @@ jobs:
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit NuGets'
         inputs:
-          script: 'dotnet pack $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg''
+          script: 'dotnet pack $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'
