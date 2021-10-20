@@ -41,7 +41,7 @@ public class MaxLengthReachedBehavior : BaseBehavior<InputView>
         set => SetValue(ShouldDismissKeyboardAutomaticallyProperty, value);
     }
 
-    readonly WeakEventManager<MaxLengthReachedEventArgs> maxLengthReachedEventManager = new WeakEventManager<MaxLengthReachedEventArgs>();
+    readonly WeakEventManager maxLengthReachedEventManager = new WeakEventManager();
 
     /// <summary>
     /// Event that is triggered when the value configured in <see cref="InputView.MaxLength" /> is reached. Both the <see cref="Command"/> and this event are triggered. This is a bindable property.
@@ -69,7 +69,7 @@ public class MaxLengthReachedBehavior : BaseBehavior<InputView>
 
         var newTextValue = View.Text.Substring(0, View.MaxLength);
 
-        maxLengthReachedEventManager.RaiseEvent(this, new MaxLengthReachedEventArgs(newTextValue), nameof(MaxLengthReached));
+        maxLengthReachedEventManager.HandleEvent(this, new MaxLengthReachedEventArgs(newTextValue), nameof(MaxLengthReached));
 
         if (Command?.CanExecute(newTextValue) ?? false)
             Command.Execute(newTextValue);
