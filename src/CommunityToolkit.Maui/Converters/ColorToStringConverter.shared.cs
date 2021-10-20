@@ -8,7 +8,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// </summary>
 public class ColorToRgbStringConverter : BaseConverterOneWay<Color, string>
 {
-    public override string ConvertFrom(Color value) => value.ToRgbString();
+	/// <inheritdoc/>
+	public override string ConvertFrom(Color value) => value.ToRgbString();
 }
 
 /// <summary>
@@ -16,7 +17,8 @@ public class ColorToRgbStringConverter : BaseConverterOneWay<Color, string>
 /// </summary>
 public class ColorToRgbaStringConverter : BaseConverterOneWay<Color, string>
 {
-    public override string ConvertFrom(Color value) => value.ToRgbaString();
+	/// <inheritdoc/>
+	public override string ConvertFrom(Color value) => value.ToRgbaString();
 }
 
 /// <summary>
@@ -24,9 +26,11 @@ public class ColorToRgbaStringConverter : BaseConverterOneWay<Color, string>
 /// </summary>
 public class ColorToHexRgbStringConverter : BaseConverter<Color, string>
 {
-    public override string ConvertFrom(Color value) => value.ToHexRgbString();
+	/// <inheritdoc/>
+	public override string ConvertFrom(Color value) => value.ToHexRgbString();
 
-    public override Color ConvertBackTo(string value) => Color.FromArgb(value);
+	/// <inheritdoc/>
+	public override Color ConvertBackTo(string value) => Color.FromArgb(value);
 }
 
 /// <summary>
@@ -34,9 +38,11 @@ public class ColorToHexRgbStringConverter : BaseConverter<Color, string>
 /// </summary>
 public class ColorToHexRgbaStringConverter : BaseConverter<Color, string>
 {
-    public override string ConvertFrom(Color value) => value.ToHexRgbaString();
+	/// <inheritdoc/>
+	public override string ConvertFrom(Color value) => value.ToHexRgbaString();
 
-    public override Color ConvertBackTo(string value) => Color.FromArgb(value);
+	/// <inheritdoc/>
+	public override Color ConvertBackTo(string value) => Color.FromArgb(value);
 }
 
 /// <summary>
@@ -44,7 +50,8 @@ public class ColorToHexRgbaStringConverter : BaseConverter<Color, string>
 /// </summary>
 public class ColorToCmykStringConverter : BaseConverterOneWay<Color, string>
 {
-    public override string ConvertFrom(Color value) => value.ToCmykString();
+	/// <inheritdoc/>
+	public override string ConvertFrom(Color value) => value.ToCmykString();
 }
 
 /// <summary>
@@ -52,6 +59,7 @@ public class ColorToCmykStringConverter : BaseConverterOneWay<Color, string>
 /// </summary>
 public class ColorToCmykaStringConverter : BaseConverterOneWay<Color, string>
 {
+	/// <inheritdoc/>
     public override string ConvertFrom(Color value) => value.ToCmykaString();
 }
 
@@ -60,7 +68,8 @@ public class ColorToCmykaStringConverter : BaseConverterOneWay<Color, string>
 /// </summary>
 public class ColorToHslStringConverter : BaseConverterOneWay<Color, string>
 {
-    public override string ConvertFrom(Color value) => value.ToHslString();
+	/// <inheritdoc/>
+	public override string ConvertFrom(Color value) => value.ToHslString();
 }
 
 /// <summary>
@@ -68,5 +77,6 @@ public class ColorToHslStringConverter : BaseConverterOneWay<Color, string>
 /// </summary>
 public class ColorToHslaStringConverter : BaseConverterOneWay<Color, string>
 {
-    public override string ConvertFrom(Color value) => value.ToHslaString();
+	/// <inheritdoc/>
+	public override string ConvertFrom(Color value) => value.ToHslaString();
 }

@@ -28,5 +28,6 @@ public class ImageResourceConverter : IValueConverter
         return ImageSource.FromResource(imageId, Application.Current?.GetType()?.Assembly);
     }
 
-    public object ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture) => throw new NotImplementedException();
+	/// <inheritdoc />
+	public object ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture) => throw new NotImplementedException();
 }

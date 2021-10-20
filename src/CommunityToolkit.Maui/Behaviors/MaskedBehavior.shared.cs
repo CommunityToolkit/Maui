@@ -51,6 +51,7 @@ public class MaskedBehavior : BaseBehavior<InputView>
     static void OnUnMaskedCharacterPropertyChanged(BindableObject bindable, object oldValue, object newValue)
         => ((MaskedBehavior)bindable).OnMaskChanged();
 
+    /// <inheritdoc />
     protected override void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         base.OnViewPropertyChanged(sender, e);

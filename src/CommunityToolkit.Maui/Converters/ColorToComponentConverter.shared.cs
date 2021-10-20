@@ -8,7 +8,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// </summary>
 public class ColorToByteAlphaConverter : BaseConverterOneWay<Color, byte>
 {
-    public override byte ConvertFrom(Color value) => value.GetByteAlpha();
+	/// <inheritdoc/>
+	public override byte ConvertFrom(Color value) => value.GetByteAlpha();
 }
 
 /// <summary>
@@ -16,7 +17,8 @@ public class ColorToByteAlphaConverter : BaseConverterOneWay<Color, byte>
 /// </summary>
 public class ColorToByteRedConverter : BaseConverterOneWay<Color, byte>
 {
-    public override byte ConvertFrom(Color value) => value.GetByteRed();
+	/// <inheritdoc/>
+	public override byte ConvertFrom(Color value) => value.GetByteRed();
 }
 
 /// <summary>
@@ -24,7 +26,8 @@ public class ColorToByteRedConverter : BaseConverterOneWay<Color, byte>
 /// </summary>
 public class ColorToByteGreenConverter : BaseConverterOneWay<Color, byte>
 {
-    public override byte ConvertFrom(Color value) => value.GetByteGreen();
+	/// <inheritdoc/>
+	public override byte ConvertFrom(Color value) => value.GetByteGreen();
 }
 
 /// <summary>
@@ -32,7 +35,8 @@ public class ColorToByteGreenConverter : BaseConverterOneWay<Color, byte>
 /// </summary>
 public class ColorToByteBlueConverter : BaseConverterOneWay<Color, byte>
 {
-    public override byte ConvertFrom(Color value) => value.GetByteBlue();
+	/// <inheritdoc/>
+	public override byte ConvertFrom(Color value) => value.GetByteBlue();
 }
 
 /// <summary>
@@ -40,7 +44,8 @@ public class ColorToByteBlueConverter : BaseConverterOneWay<Color, byte>
 /// </summary>
 public class ColorToPercentCyanConverter : BaseConverterOneWay<Color, double>
 {
-    public override double ConvertFrom(Color value) => value.GetPercentCyan();
+	/// <inheritdoc/>
+	public override double ConvertFrom(Color value) => value.GetPercentCyan();
 }
 
 /// <summary>
@@ -48,7 +53,8 @@ public class ColorToPercentCyanConverter : BaseConverterOneWay<Color, double>
 /// </summary>
 public class ColorToPercentMagentaConverter : BaseConverterOneWay<Color, double>
 {
-    public override double ConvertFrom(Color value) => value.GetPercentMagenta();
+	/// <inheritdoc/>
+	public override double ConvertFrom(Color value) => value.GetPercentMagenta();
 }
 
 /// <summary>
@@ -56,7 +62,8 @@ public class ColorToPercentMagentaConverter : BaseConverterOneWay<Color, double>
 /// </summary>
 public class ColorToPercentYellowConverter : BaseConverterOneWay<Color, double>
 {
-    public override double ConvertFrom(Color value) => value.GetPercentYellow();
+	/// <inheritdoc/>
+	public override double ConvertFrom(Color value) => value.GetPercentYellow();
 }
 
 /// <summary>
@@ -64,7 +71,8 @@ public class ColorToPercentYellowConverter : BaseConverterOneWay<Color, double>
 /// </summary>
 public class ColorToBlackKeyConverter : BaseConverterOneWay<Color, double>
 {
-    public override double ConvertFrom(Color value) => value.GetPercentBlackKey();
+	/// <inheritdoc/>
+	public override double ConvertFrom(Color value) => value.GetPercentBlackKey();
 }
 
 /// <summary>
@@ -73,5 +81,6 @@ public class ColorToBlackKeyConverter : BaseConverterOneWay<Color, double>
 // Hue is a degree on the color wheel from 0 to 360. 0 is red, 120 is green, 240 is blue.
 public class ColorToDegreeHueConverter : BaseConverterOneWay<Color, double>
 {
-    public override double ConvertFrom(Color value) => value.GetDegreeHue();
+	/// <inheritdoc/>
+	public override double ConvertFrom(Color value) => value.GetDegreeHue();
 }

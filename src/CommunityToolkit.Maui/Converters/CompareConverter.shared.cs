@@ -17,14 +17,40 @@ public sealed class CompareConverter : CompareConverter<object>
 /// </summary>
 public abstract class CompareConverter<TObject> : ValueConverterExtension, IValueConverter
 {
+	/// <summary>
+	/// Math operator type
+	/// </summary>
     [Flags]
     public enum OperatorType
     {
+		/// <summary>
+		/// Not Equal Operator
+		/// </summary>
         NotEqual = 0,
+
+		/// <summary>
+		/// Smaller Operator
+		/// </summary>
         Smaller = 1 << 0,
+
+		/// <summary>
+		/// Smaller or Equal Operator
+		/// </summary>
         SmallerOrEqual = 1 << 1,
+
+		/// <summary>
+		/// Equal Operator
+		/// </summary>
         Equal = 1 << 2,
+
+		/// <summary>
+		/// Greater Operator
+		/// </summary>
         Greater = 1 << 3,
+
+		/// <summary>
+		/// Greater or Equal Operator
+		/// </summary>
         GreaterOrEqual = 1 << 4,
     }
 

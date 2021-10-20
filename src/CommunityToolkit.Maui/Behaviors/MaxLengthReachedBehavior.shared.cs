@@ -52,7 +52,8 @@ public class MaxLengthReachedBehavior : BaseBehavior<InputView>
         remove => maxLengthReachedEventManager.RemoveEventHandler(value);
     }
 
-    protected override void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
+	/// <inheritdoc/>
+	protected override void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         base.OnViewPropertyChanged(sender, e);
         if (e.PropertyName == InputView.TextProperty.PropertyName)

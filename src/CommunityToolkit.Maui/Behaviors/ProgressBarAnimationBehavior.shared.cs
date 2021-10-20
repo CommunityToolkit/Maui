@@ -5,6 +5,9 @@ using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
+/// <summary>
+/// Behavior to animate a progress bar
+/// /// </summary>
 public class ProgressBarAnimationBehavior : BaseBehavior<ProgressBar>
 {
     /// <summary>
@@ -13,6 +16,9 @@ public class ProgressBarAnimationBehavior : BaseBehavior<ProgressBar>
     public static readonly BindableProperty AnimateProgressProperty =
         BindableProperty.CreateAttached(nameof(AnimateProgress), typeof(double), typeof(ProgressBar), 0.0d, propertyChanged: OnAnimateProgressPropertyChanged);
 
+	/// <summary>
+	/// Animation Progress, 0-1.0
+	/// </summary>
     public double AnimateProgress
     {
         get => (double)GetValue(AnimateProgressProperty);
