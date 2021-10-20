@@ -1,27 +1,26 @@
 ﻿using System;
 
-namespace CommunityToolkit.Maui.Converters
+namespace CommunityToolkit.Maui.Converters;
+
+sealed class MathOperator
 {
-	sealed class MathOperator
+	public string Name { get; }
+
+	public int NumericCount { get; }
+
+	public MathOperatorPrecedence Precedence { get; }
+
+	public Func<double[], double> CalculateFunc { get; }
+
+	public MathOperator(
+		string name,
+		int numericCount,
+		MathOperatorPrecedence precedence,
+		Func<double[], double> calculateFunc)
 	{
-		public string Name { get; }
-
-		public int NumericCount { get; }
-
-		public MathOperatorPrecedence Precedence { get; }
-
-		public Func<double[], double> CalculateFunc { get; }
-
-		public MathOperator(
-			string name,
-			int numericCount,
-			MathOperatorPrecedence precedence,
-			Func<double[], double> calculateFunc)
-		{
-			Name = name;
-			CalculateFunc = calculateFunc;
-			Precedence = precedence;
-			NumericCount = numericCount;
-		}
+		Name = name;
+		CalculateFunc = calculateFunc;
+		Precedence = precedence;
+		NumericCount = numericCount;
 	}
 }

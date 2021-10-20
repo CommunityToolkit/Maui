@@ -4,29 +4,29 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace CommunityToolkit.Maui.Converters
+namespace CommunityToolkit.Maui.Converters;
+
+sealed class MathExpression
 {
-    sealed class MathExpression
+	const string regexPattern = @"(?<!\d)\-?(?:\d+\.\d+|\d+)|\+|\-|\/|\*|\(|\)|\^|\%|\,|\w+";
+	const NumberStyles numberStyle = NumberStyles.Float | NumberStyles.AllowThousands;
+
+	static readonly IFormatProvider formatProvider = new CultureInfo("en-US");
+
+	readonly IReadOnlyList<MathOperator> operators;
+	readonly IReadOnlyList<double> arguments;
+
+	internal string Expression { get; }
+
+	internal MathExpression(string expression, IEnumerable<double>? arguments = null)
 	{
-		const string regexPattern = @"(?<!\d)\-?(?:\d+\.\d+|\d+)|\+|\-|\/|\*|\(|\)|\^|\%|\,|\w+";
-		const NumberStyles numberStyle = NumberStyles.Float | NumberStyles.AllowThousands;
+		if (string.IsNullOrEmpty(expression))
+			throw new ArgumentNullException(nameof(expression), "Expression can't be null or empty.");
 
-		static readonly IFormatProvider formatProvider = new CultureInfo("en-US");
+		Expression = expression.ToLower();
+		this.arguments = arguments?.ToList() ?? new List<double>();
 
-		readonly IReadOnlyList<MathOperator> operators;
-		readonly IReadOnlyList<double> arguments;
-
-		internal string Expression { get; }
-
-		internal MathExpression(string expression, IEnumerable<double>? arguments = null)
-		{
-			if (string.IsNullOrEmpty(expression))
-				throw new ArgumentNullException(nameof(expression), "Expression can't be null or empty.");
-
-			Expression = expression.ToLower();
-			this.arguments = arguments?.ToList() ?? new List<double>();
-
-			var operators = new List<MathOperator>
+		var operators = new List<MathOperator>
 			{
 				new ("+", 2, MathOperatorPrecedence.Low, x => x[0] + x[1]),
 				new ("-", 2, MathOperatorPrecedence.Low, x => x[0] - x[1]),
@@ -62,183 +62,182 @@ namespace CommunityToolkit.Maui.Converters
 				new ("e", 0, MathOperatorPrecedence.Constant, _ => Math.E),
 			};
 
-			var argumentsCount = this.arguments.Count;
+		var argumentsCount = this.arguments.Count;
 
-			if (argumentsCount > 0)
-			{
-				operators.Add(new MathOperator("x", 0, MathOperatorPrecedence.Constant, _ => this.arguments[0]));
-			}
-
-			for (var i = 0; i < argumentsCount; i++)
-			{
-				var index = i;
-				operators.Add(new MathOperator($"x{i}", 0, MathOperatorPrecedence.Constant, _ => this.arguments[index]));
-			}
-
-			this.operators = operators;
+		if (argumentsCount > 0)
+		{
+			operators.Add(new MathOperator("x", 0, MathOperatorPrecedence.Constant, _ => this.arguments[0]));
 		}
 
-		public double Calculate()
+		for (var i = 0; i < argumentsCount; i++)
 		{
-			var rpn = GetReversePolishNotation(Expression);
+			var index = i;
+			operators.Add(new MathOperator($"x{i}", 0, MathOperatorPrecedence.Constant, _ => this.arguments[index]));
+		}
 
-			var stack = new Stack<double>();
+		this.operators = operators;
+	}
 
-			foreach (var value in rpn)
+	public double Calculate()
+	{
+		var rpn = GetReversePolishNotation(Expression);
+
+		var stack = new Stack<double>();
+
+		foreach (var value in rpn)
+		{
+			if (double.TryParse(value, numberStyle, formatProvider, out var numeric))
 			{
-				if (double.TryParse(value, numberStyle, formatProvider, out var numeric))
+				stack.Push(numeric);
+				continue;
+			}
+
+			var @operator = operators.FirstOrDefault(x => x.Name == value);
+
+			if (@operator == null)
+				throw new ArgumentException($"Invalid math expression. Can't find operator or value with name \"{value}\".");
+
+			if (@operator.Precedence == MathOperatorPrecedence.Constant)
+			{
+				stack.Push(@operator.CalculateFunc(Array.Empty<double>()));
+				continue;
+			}
+
+			var operatorNumericCount = @operator.NumericCount;
+
+			if (stack.Count < operatorNumericCount)
+				throw new ArgumentException("Invalid math expression.");
+
+			var args = new List<double>();
+			for (var j = 0; j < operatorNumericCount; j++)
+			{
+				args.Add(stack.Pop());
+			}
+
+			args.Reverse();
+
+			stack.Push(@operator.CalculateFunc(args.ToArray()));
+		}
+
+		if (stack.Count != 1)
+			throw new ArgumentException("Invalid math expression.");
+
+		return stack.Pop();
+	}
+
+	IEnumerable<string> GetReversePolishNotation(string expression)
+	{
+		var regex = new Regex(regexPattern);
+
+		var matches = regex.Matches(expression);
+		if (matches == null)
+			throw new ArgumentException("Invalid math expression.");
+
+		var output = new List<string>();
+		var stack = new Stack<(string Name, MathOperatorPrecedence Precedence)>();
+
+		foreach (Match? match in matches)
+		{
+			if (match == null || string.IsNullOrEmpty(match.Value))
+				continue;
+
+			var value = match.Value;
+
+			if (double.TryParse(value, numberStyle, formatProvider, out var numeric))
+			{
+				if (numeric < 0)
 				{
-					stack.Push(numeric);
-					continue;
+					var isNegative = output.Count == 0 || stack.Count != 0;
+
+					if (!isNegative)
+					{
+						stack.Push(("-", MathOperatorPrecedence.Low));
+						output.Add(Math.Abs(numeric).ToString());
+						continue;
+					}
 				}
 
-				var @operator = operators.FirstOrDefault(x => x.Name == value);
+				output.Add(value);
+				continue;
+			}
 
-				if (@operator == null)
-					throw new ArgumentException($"Invalid math expression. Can't find operator or value with name \"{value}\".");
-
+			var @operator = operators.FirstOrDefault(x => x.Name == value);
+			if (@operator != null)
+			{
 				if (@operator.Precedence == MathOperatorPrecedence.Constant)
 				{
-					stack.Push(@operator.CalculateFunc(Array.Empty<double>()));
-					continue;
-				}
-
-				var operatorNumericCount = @operator.NumericCount;
-
-				if (stack.Count < operatorNumericCount)
-					throw new ArgumentException("Invalid math expression.");
-
-				var args = new List<double>();
-				for (var j = 0; j < operatorNumericCount; j++)
-				{
-					args.Add(stack.Pop());
-				}
-
-				args.Reverse();
-
-				stack.Push(@operator.CalculateFunc(args.ToArray()));
-			}
-
-			if (stack.Count != 1)
-				throw new ArgumentException("Invalid math expression.");
-
-			return stack.Pop();
-		}
-
-		IEnumerable<string> GetReversePolishNotation(string expression)
-		{
-			var regex = new Regex(regexPattern);
-
-			var matches = regex.Matches(expression);
-			if (matches == null)
-				throw new ArgumentException("Invalid math expression.");
-
-			var output = new List<string>();
-			var stack = new Stack<(string Name, MathOperatorPrecedence Precedence)>();
-
-			foreach (Match? match in matches)
-			{
-				if (match == null || string.IsNullOrEmpty(match.Value))
-					continue;
-
-				var value = match.Value;
-
-				if (double.TryParse(value, numberStyle, formatProvider, out var numeric))
-				{
-					if (numeric < 0)
-					{
-						var isNegative = output.Count == 0 || stack.Count != 0;
-
-						if (!isNegative)
-						{
-							stack.Push(("-", MathOperatorPrecedence.Low));
-							output.Add(Math.Abs(numeric).ToString());
-							continue;
-						}
-					}
-
 					output.Add(value);
 					continue;
 				}
 
-				var @operator = operators.FirstOrDefault(x => x.Name == value);
-				if (@operator != null)
+				while (stack.Count > 0)
 				{
-					if (@operator.Precedence == MathOperatorPrecedence.Constant)
+					var (name, precedence) = stack.Peek();
+					if (precedence >= @operator.Precedence)
 					{
-						output.Add(value);
-						continue;
+						output.Add(stack.Pop().Name);
 					}
-
-					while (stack.Count > 0)
+					else
 					{
-						var (name, precedence) = stack.Peek();
-						if (precedence >= @operator.Precedence)
-						{
-							output.Add(stack.Pop().Name);
-						}
-						else
-						{
-							break;
-						}
-					}
-
-					stack.Push((value, @operator.Precedence));
-				}
-				else if (value == "(")
-				{
-					stack.Push((value, MathOperatorPrecedence.Lowest));
-				}
-				else if (value == ")")
-				{
-					var isFound = false;
-					for (var i = stack.Count - 1; i >= 0; i--)
-					{
-						if (stack.Count == 0)
-							throw new ArgumentException("Invalid math expression.");
-
-						var stackValue = stack.Pop().Name;
-						if (stackValue == "(")
-						{
-							isFound = true;
-							break;
-						}
-
-						output.Add(stackValue);
-					}
-
-					if (!isFound)
-						throw new ArgumentException("Invalid math expression.");
-				}
-				else if (value == ",")
-				{
-					while (stack.Count > 0)
-					{
-						var (name, precedence) = stack.Peek();
-						if (precedence >= MathOperatorPrecedence.Low)
-						{
-							output.Add(stack.Pop().Name);
-						}
-						else
-						{
-							break;
-						}
+						break;
 					}
 				}
+
+				stack.Push((value, @operator.Precedence));
 			}
-
-			for (var i = stack.Count - 1; i >= 0; i--)
+			else if (value == "(")
 			{
-				var (name, precedence) = stack.Pop();
-				if (name == "(")
+				stack.Push((value, MathOperatorPrecedence.Lowest));
+			}
+			else if (value == ")")
+			{
+				var isFound = false;
+				for (var i = stack.Count - 1; i >= 0; i--)
 				{
-					throw new ArgumentException("Invalid math expression.");
+					if (stack.Count == 0)
+						throw new ArgumentException("Invalid math expression.");
+
+					var stackValue = stack.Pop().Name;
+					if (stackValue == "(")
+					{
+						isFound = true;
+						break;
+					}
+
+					output.Add(stackValue);
 				}
 
-				output.Add(name);
+				if (!isFound)
+					throw new ArgumentException("Invalid math expression.");
+			}
+			else if (value == ",")
+			{
+				while (stack.Count > 0)
+				{
+					var (name, precedence) = stack.Peek();
+					if (precedence >= MathOperatorPrecedence.Low)
+					{
+						output.Add(stack.Pop().Name);
+					}
+					else
+					{
+						break;
+					}
+				}
+			}
+		}
+
+		for (var i = stack.Count - 1; i >= 0; i--)
+		{
+			var (name, precedence) = stack.Pop();
+			if (name == "(")
+			{
+				throw new ArgumentException("Invalid math expression.");
 			}
 
-			return output;
+			output.Add(name);
 		}
+
+		return output;
 	}
 }
