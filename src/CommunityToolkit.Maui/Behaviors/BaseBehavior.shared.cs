@@ -3,78 +3,93 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Maui.Controls;
 
-namespace CommunityToolkit.Maui.Behaviors.Internals
+namespace CommunityToolkit.Maui.Behaviors.Internals;
+
+/// <summary>
+/// Abstract class for our behaviors to inherit.
+/// </summary>
+/// <typeparam name="TView">The <see cref="VisualElement"/> that the behavior can be applied to</typeparam>
+public abstract class BaseBehavior<TView> : Behavior<TView> where TView : VisualElement
 {
-    /// <summary>
-    /// Abstract class for our behaviors to inherit.
-    /// </summary>
-    /// <typeparam name="TView">The <see cref="VisualElement"/> that the behavior can be applied to</typeparam>
-    public abstract class BaseBehavior<TView> : Behavior<TView> where TView : VisualElement
-	{
-		static readonly MethodInfo? getContextMethod
-			= typeof(BindableObject).GetRuntimeMethods()?.FirstOrDefault(m => m.Name == "GetContext");
+    static readonly MethodInfo? getContextMethod
+        = typeof(BindableObject).GetRuntimeMethods()?.FirstOrDefault(m => m.Name == "GetContext");
 
-		static readonly FieldInfo? bindingField
-			= getContextMethod?.ReturnType.GetRuntimeField("Binding");
+    static readonly FieldInfo? bindingField
+        = getContextMethod?.ReturnType.GetRuntimeField("Binding");
 
-		BindingBase? defaultBindingContextBinding;
+    BindingBase? defaultBindingContextBinding;
 
-		protected TView? View { get; private set; }
+	/// <summary>
+	/// View used by the Behavior
+	/// </summary>
+    protected TView? View { get; private set; }
 
-		internal bool TrySetBindingContext(Binding binding)
-		{
-			if (!IsBound(BindingContextProperty))
-			{
-				SetBinding(BindingContextProperty, defaultBindingContextBinding = binding);
-				return true;
-			}
+    internal bool TrySetBindingContext(Binding binding)
+    {
+        if (!IsBound(BindingContextProperty))
+        {
+            SetBinding(BindingContextProperty, defaultBindingContextBinding = binding);
+            return true;
+        }
 
-			return false;
-		}
+        return false;
+    }
 
-		internal bool TryRemoveBindingContext()
-		{
-			if (defaultBindingContextBinding != null)
-			{
-				RemoveBinding(BindingContextProperty);
-				defaultBindingContextBinding = null;
+    internal bool TryRemoveBindingContext()
+    {
+        if (defaultBindingContextBinding != null)
+        {
+            RemoveBinding(BindingContextProperty);
+            defaultBindingContextBinding = null;
 
-				return true;
-			}
+            return true;
+        }
 
-			return false;
-		}
+        return false;
+    }
 
-		protected virtual void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
-		{
-		}
+	/// <summary>
+	/// Virtual method that executes when a property on the View has changed
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+    protected virtual void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+    }
 
-		protected override void OnAttachedTo(TView bindable)
-		{
-			base.OnAttachedTo(bindable);
-			View = bindable;
-			bindable.PropertyChanged += OnViewPropertyChanged;
-			TrySetBindingContext(new Binding
-			{
-				Path = BindingContextProperty.PropertyName,
-				Source = bindable
-			});
-		}
+	/// <inheritdoc/>
+    protected override void OnAttachedTo(TView bindable)
+    {
+        base.OnAttachedTo(bindable);
+        View = bindable;
+        bindable.PropertyChanged += OnViewPropertyChanged;
+        TrySetBindingContext(new Binding
+        {
+            Path = BindingContextProperty.PropertyName,
+            Source = bindable
+        });
+    }
 
-		protected override void OnDetachingFrom(TView bindable)
-		{
-			base.OnDetachingFrom(bindable);
-			TryRemoveBindingContext();
-			bindable.PropertyChanged -= OnViewPropertyChanged;
-			View = null;
-		}
+	/// <inheritdoc/>
+	protected override void OnDetachingFrom(TView bindable)
+    {
+        base.OnDetachingFrom(bindable);
+        TryRemoveBindingContext();
+        bindable.PropertyChanged -= OnViewPropertyChanged;
+        View = null;
+    }
 
-		protected bool IsBound(BindableProperty property, BindingBase? defaultBinding = null)
-		{
-			var context = getContextMethod?.Invoke(this, new object[] { property });
-			return context != null
-				&& bindingField?.GetValue(context) is BindingBase binding
-				&& binding != defaultBinding;
-		}
-	}
+	/// <summary>
+	/// Virtual method that executes when a binding context is set
+	/// </summary>
+	/// <param name="property"></param>
+	/// <param name="defaultBinding"></param>
+	/// <returns></returns>
+    protected bool IsBound(BindableProperty property, BindingBase? defaultBinding = null)
+    {
+        var context = getContextMethod?.Invoke(this, new object[] { property });
+        return context != null
+            && bindingField?.GetValue(context) is BindingBase binding
+            && binding != defaultBinding;
+    }
 }

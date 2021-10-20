@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
 public class MaxLengthReachedBehaviorViewModel : BaseViewModel
 {
-    string commandExecutions = string.Empty;
+    string _commandExecutions = string.Empty;
 
     public MaxLengthReachedBehaviorViewModel()
         => MaxLengthReachedCommand = new Command<string>(OnCommandExecuted);
@@ -15,8 +15,8 @@ public class MaxLengthReachedBehaviorViewModel : BaseViewModel
 
     public string CommandExecutions
     {
-        get => commandExecutions;
-        set => SetProperty(ref commandExecutions, value);
+        get => _commandExecutions;
+        set => SetProperty(ref _commandExecutions, value);
     }    
 
     void OnCommandExecuted(string text)

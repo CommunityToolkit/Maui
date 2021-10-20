@@ -1,0 +1,6 @@
+﻿root = false
+
+[*.cs]
+
+# Missing XML comment for publicly visible type or member
+dotnet_diagnostic.CS1591.severity = error
