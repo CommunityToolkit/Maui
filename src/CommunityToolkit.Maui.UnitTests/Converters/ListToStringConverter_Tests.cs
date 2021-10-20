@@ -9,14 +9,14 @@ public class ListToStringConverter_Tests : BaseTest
 {
     static readonly IReadOnlyList<object?[]> testData = new[]
     {
-            new object[] { new string[] { "A", "B", "C" }, "+_+", "A+_+B+_+C" },
-            new object[] { new string[] { "A", string.Empty, "C" }, ",", "A,C" },
-            new object?[] { new string?[] { "A", null, "C" }, ",", "A,C" },
-            new object[] { new string[] { "A" }, ":-:", "A" },
-            new object[] { Array.Empty<string>(), ",", string.Empty },
-            new object?[] { null, ",", string.Empty },
-            new object?[] { new string[] { "A", "B", "C" }, null, "ABC" },
-        };
+        new object[] { new string[] { "A", "B", "C" }, "+_+", "A+_+B+_+C" },
+        new object[] { new string[] { "A", string.Empty, "C" }, ",", "A,C" },
+        new object?[] { new string?[] { "A", null, "C" }, ",", "A,C" },
+        new object[] { new string[] { "A" }, ":-:", "A" },
+        new object[] { Array.Empty<string>(), ",", string.Empty },
+        new object?[] { null, ",", string.Empty },
+        new object?[] { new string[] { "A", "B", "C" }, null, "ABC" },
+    };
 
     [Theory]
     [MemberData(nameof(testData))]
