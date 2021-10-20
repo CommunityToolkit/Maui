@@ -19,23 +19,23 @@ public class DateTimeOffsetConverter_Tests : BaseTest
 
     static readonly IReadOnlyList<object[]> data = new[]
     {
-            new object[] { testDateTimeOffsetNow, testDateTimeNow },
-            new object[] { DateTimeOffset.MinValue, DateTime.MinValue },
-            new object[] { DateTimeOffset.MaxValue, DateTime.MaxValue },
-            new object[] { testDateTimeOffsetLocal, testDateTimeLocal },
-            new object[] { testDateTimeOffsetUtc, testDateTimeUtc },
-            new object[] { testDateTimeOffsetUtc, testDateTimeUnspecified },
-        };
+        new object[] { testDateTimeOffsetNow, testDateTimeNow },
+        new object[] { DateTimeOffset.MinValue, DateTime.MinValue },
+        new object[] { DateTimeOffset.MaxValue, DateTime.MaxValue },
+        new object[] { testDateTimeOffsetLocal, testDateTimeLocal },
+        new object[] { testDateTimeOffsetUtc, testDateTimeUtc },
+        new object[] { testDateTimeOffsetUtc, testDateTimeUnspecified },
+    };
 
     static readonly IReadOnlyList<object[]> dataReverse = new[]
     {
-            new object[] { testDateTimeNow, testDateTimeOffsetNow },
-            new object[] { DateTime.MinValue, DateTimeOffset.MinValue },
-            new object[] { DateTime.MaxValue, DateTimeOffset.MaxValue },
-            new object[] { testDateTimeLocal, testDateTimeOffsetLocal },
-            new object[] { testDateTimeUtc, testDateTimeOffsetUtc },
-            new object[] { testDateTimeUnspecified, testDateTimeOffsetUtc },
-        };
+        new object[] { testDateTimeNow, testDateTimeOffsetNow },
+        new object[] { DateTime.MinValue, DateTimeOffset.MinValue },
+        new object[] { DateTime.MaxValue, DateTimeOffset.MaxValue },
+        new object[] { testDateTimeLocal, testDateTimeOffsetLocal },
+        new object[] { testDateTimeUtc, testDateTimeOffsetUtc },
+        new object[] { testDateTimeUnspecified, testDateTimeOffsetUtc },
+    };
 
     [Theory]
     [MemberData(nameof(data))]
