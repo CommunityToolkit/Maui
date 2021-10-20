@@ -2,22 +2,21 @@
 using CommunityToolkit.Maui.Converters;
 using Xunit;
 
-namespace CommunityToolkit.Maui.UnitTests.Converters
+namespace CommunityToolkit.Maui.UnitTests.Converters;
+
+public class NotEqualConverter_Tests : BaseTest
 {
-    public class NotEqualConverter_Tests : BaseTest
-	{
-		[Theory]
-		[InlineData(true, true, false)]
-		[InlineData(int.MaxValue, int.MinValue, true)]
-		[InlineData("Test", true, true)]
-		[InlineData(null, null, false)]
-		public void NotEqualConverter(object value, object comparedValue, bool expectedResult)
-		{
-			var notEqualConverter = new NotEqualConverter();
+    [Theory]
+    [InlineData(true, true, false)]
+    [InlineData(int.MaxValue, int.MinValue, true)]
+    [InlineData("Test", true, true)]
+    [InlineData(null, null, false)]
+    public void NotEqualConverter(object value, object comparedValue, bool expectedResult)
+    {
+        var notEqualConverter = new NotEqualConverter();
 
-			var result = notEqualConverter.Convert(value, typeof(NotEqualConverter_Tests), comparedValue, CultureInfo.CurrentCulture);
+        var result = notEqualConverter.Convert(value, typeof(NotEqualConverter_Tests), comparedValue, CultureInfo.CurrentCulture);
 
-			Assert.Equal(result, expectedResult);
-		}
-	}
+        Assert.Equal(result, expectedResult);
+    }
 }

@@ -1,18 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using CommunityToolkit.Maui.Converters;
-using CommunityToolkit.Maui.UnitTests.Mocks;
 using Xunit;
 
-namespace CommunityToolkit.Maui.UnitTests.Converters
-{
-    public class TextCaseConverter_Tests : BaseTest
-    {
-        const string test = nameof(test);
-        const string t = nameof(t);
+namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-        readonly static IReadOnlyList<object?[]> data = new[]
-        {
+public class TextCaseConverter_Tests : BaseTest
+{
+    const string test = nameof(test);
+    const string t = nameof(t);
+
+    readonly static IReadOnlyList<object?[]> data = new[]
+    {
             new object?[] { test, TextCaseType.Lower, test },
             new object?[] { test, TextCaseType.Upper, "TEST" },
             new object?[] { test, TextCaseType.None, test },
@@ -29,41 +28,40 @@ namespace CommunityToolkit.Maui.UnitTests.Converters
             new object?[] { new MockItem { Title = "Test Item", Completed = true }, TextCaseType.Upper, "TEST ITEM IS COMPLETED" },
         };
 
-        enum MockEnum { Foo, Bar, Baz }
+    enum MockEnum { Foo, Bar, Baz }
 
-        [Theory]
-        [MemberData(nameof(data))]
-        [InlineData(null, null, null)]
-        public void TextCaseConverterWithParameter(object? value, object? comparedValue, object? expectedResult)
+    [Theory]
+    [MemberData(nameof(data))]
+    [InlineData(null, null, null)]
+    public void TextCaseConverterWithParameter(object? value, object? comparedValue, object? expectedResult)
+    {
+        var textCaseConverter = new TextCaseConverter();
+
+        var result = textCaseConverter.Convert(value, typeof(string), comparedValue, CultureInfo.CurrentCulture);
+
+        Assert.Equal(result, expectedResult);
+    }
+
+    [Theory]
+    [MemberData(nameof(data))]
+    public void TextCaseConverterWithExplicitType(object? value, TextCaseType textCaseType, object? expectedResult)
+    {
+        var textCaseConverter = new TextCaseConverter
         {
-            var textCaseConverter = new TextCaseConverter();
+            Type = textCaseType
+        };
 
-            var result = textCaseConverter.Convert(value, typeof(string), comparedValue, CultureInfo.CurrentCulture);
+        var result = textCaseConverter.Convert(value, typeof(string), null, CultureInfo.CurrentCulture);
 
-            Assert.Equal(result, expectedResult);
-        }
+        Assert.Equal(result, expectedResult);
+    }
 
-        [Theory]
-        [MemberData(nameof(data))]
-        public void TextCaseConverterWithExplicitType(object? value, TextCaseType textCaseType, object? expectedResult)
-        {
-            var textCaseConverter = new TextCaseConverter
-            {
-                Type = textCaseType
-            };
+    class MockItem
+    {
+        public string? Title { get; set; }
 
-            var result = textCaseConverter.Convert(value, typeof(string), null, CultureInfo.CurrentCulture);
+        public bool Completed { get; set; }
 
-            Assert.Equal(result, expectedResult);
-        }
-
-        class MockItem
-        {
-            public string? Title { get; set; }
-
-            public bool Completed { get; set; }
-
-            public override string ToString() => Completed ? $"{Title} is completed" : $"{Title} has yet to be completed";
-        }
+        public override string ToString() => Completed ? $"{Title} is completed" : $"{Title} has yet to be completed";
     }
 }
