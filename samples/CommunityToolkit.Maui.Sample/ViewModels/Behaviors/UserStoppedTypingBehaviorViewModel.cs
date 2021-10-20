@@ -1,6 +1,6 @@
-﻿using Microsoft.Maui.Controls;
-using System;
+﻿using System;
 using System.Windows.Input;
+using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
@@ -16,9 +16,7 @@ public class UserStoppedTypingBehaviorViewModel : BaseViewModel
 
     public ICommand SearchCommand { get; }
 
-    public UserStoppedTypingBehaviorViewModel()
-        => SearchCommand = new Command<string>(PerformSearch);
+    public UserStoppedTypingBehaviorViewModel() => SearchCommand = new Command<string>(PerformSearch);
 
-    void PerformSearch(string searchTerms)
-        => PerformedSearches += string.Format("Performed search for '{0}'.", searchTerms) + Environment.NewLine;
+    void PerformSearch(string searchTerms) => PerformedSearches += string.Format($"Performed search for '{searchTerms}'.") + Environment.NewLine;
 }
