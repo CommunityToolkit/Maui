@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
 public class EventToCommandBehaviorViewModel : BaseViewModel
 {
-    int clickCount;
+    int _clickCount;
 
     public EventToCommandBehaviorViewModel()
     {
@@ -14,8 +14,8 @@ public class EventToCommandBehaviorViewModel : BaseViewModel
 
     public int ClickCount
     {
-        get => clickCount;
-        set => SetProperty(ref clickCount, value);
+        get => _clickCount;
+        set => SetProperty(ref _clickCount, value);
     }
 
     public ICommand IncrementCommand { get; }
