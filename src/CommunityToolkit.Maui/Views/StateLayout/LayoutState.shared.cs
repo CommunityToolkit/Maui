@@ -1,13 +1,12 @@
-﻿namespace CommunityToolkit.Maui.UI.Views
+﻿namespace CommunityToolkit.Maui.UI.Views;
+
+public enum LayoutState
 {
-	public enum LayoutState
-	{
-		None,
-		Loading,
-		Saving,
-		Success,
-		Error,
-		Empty,
-		Custom
-	}
+    None,
+    Loading,
+    Saving,
+    Success,
+    Error,
+    Empty,
+    Custom
 }

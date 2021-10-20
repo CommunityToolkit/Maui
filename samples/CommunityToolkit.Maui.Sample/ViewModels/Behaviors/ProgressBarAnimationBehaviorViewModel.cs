@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
 public class ProgressBarAnimationBehaviorViewModel : BaseViewModel
 {
-    double progress;
+    double _progress;
 
     public ProgressBarAnimationBehaviorViewModel()
     {
@@ -22,8 +22,8 @@ public class ProgressBarAnimationBehaviorViewModel : BaseViewModel
 
     public double Progress
     {
-        get => progress;
-        set => SetProperty(ref progress, value);
+        get => _progress;
+        set => SetProperty(ref _progress, value);
     }
 
     void SetProgress(double progress) => Progress = progress;

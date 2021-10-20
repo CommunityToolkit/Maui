@@ -5,8 +5,8 @@ using CommunityToolkit.Maui.Converters;
 using Microsoft.Maui.Controls;
 using Xunit;
 
-namespace CommunityToolkit.Maui.UnitTests.Converters
-{
+namespace CommunityToolkit.Maui.UnitTests.Converters;
+
     public class ByteArrayToImageSourceConverter_Tests : BaseTest
 	{
 		[Fact]
@@ -43,25 +43,24 @@ namespace CommunityToolkit.Maui.UnitTests.Converters
 			return task?.Result;
 		}
 
-        static bool StreamEquals(Stream? a, Stream? b)
-		{
-			if (a == b)
-				return true;
-
-			if (a == null
-				|| b == null
-				|| a.Length != b.Length)
-			{
-				return false;
-			}
-
-			for (var i = 0; i < a.Length; i++)
-			{
-				if (a.ReadByte() != b.ReadByte())
-					return false;
-			}
-
+	static bool StreamEquals(Stream? a, Stream? b)
+	{
+		if (a == b)
 			return true;
+
+		if (a == null
+			|| b == null
+			|| a.Length != b.Length)
+		{
+			return false;
 		}
+
+		for (var i = 0; i < a.Length; i++)
+		{
+			if (a.ReadByte() != b.ReadByte())
+				return false;
+		}
+
+		return true;
 	}
 }

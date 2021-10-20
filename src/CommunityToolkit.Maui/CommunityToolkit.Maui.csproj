@@ -74,4 +74,8 @@
     <Compile Include="**\*.macos.*.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Exceptions\" />
+  </ItemGroup>
+
 </Project>
