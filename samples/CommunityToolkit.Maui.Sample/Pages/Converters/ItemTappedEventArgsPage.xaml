@@ -3,13 +3,44 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
+    xmlns:mctBehaviors="clr-namespace:CommunityToolkit.Maui.Behaviors;assembly=CommunityToolkit.Maui"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.ItemTappedEventArgsPage">
+    
+    <pages:BasePage.BindingContext>
+        <vm:ItemTappedEventArgsViewModel />
+    </pages:BasePage.BindingContext>
+
+    <pages:BasePage.Resources>
+        <ResourceDictionary>
+            <mct:ItemTappedEventArgsConverter x:Key="ItemTappedEventArgsConverter" />
+        </ResourceDictionary>
+    </pages:BasePage.Resources>
+    
     <pages:BasePage.Content>
-        <StackLayout>
-            <Label Text="ItemTappedEventArgs"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
-        </StackLayout>
+        <ListView ItemsSource="{Binding Items}"
+              HasUnevenRows="True">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <VerticalStackLayout Margin="6">
+
+                            <Label Text="{Binding Id, StringFormat='Id:{0}'}"/>
+
+                            <Label Text="{Binding Name, StringFormat='Name:{0}'}"/>
+
+                        </VerticalStackLayout>
+                    </ViewCell>
+
+                </DataTemplate>
+            </ListView.ItemTemplate>
+
+            <ListView.Behaviors>
+                <mctBehaviors:EventToCommandBehavior EventName="ItemTapped"
+                                              Command="{Binding ItemTappedCommand}"
+                                              EventArgsConverter="{StaticResource ItemTappedEventArgsConverter}" />
+            </ListView.Behaviors>
+        </ListView>
     </pages:BasePage.Content>
 </pages:BasePage>
