@@ -1,15 +1,35 @@
 ﻿using System;
 
-namespace CommunityToolkit.Maui.Behaviors
+namespace CommunityToolkit.Maui.Behaviors;
+
+/// <summary>
+/// Validation flags
+/// </summary>
+[Flags]
+public enum ValidationFlags
 {
-	[Flags]
-	public enum ValidationFlags
-	{
-		None = 0,
-		ValidateOnAttaching = 1,
-		ValidateOnFocusing = 2,
-		ValidateOnUnfocusing = 4,
-		ValidateOnValueChanging = 8,
-		ForceMakeValidWhenFocused = 16
-	}
+	/// <summary>
+	/// No validation
+	/// </summary>
+	None = 0,
+	/// <summary>
+	/// Validate on attaching
+	/// </summary>
+	ValidateOnAttaching = 1,
+	/// <summary>
+	/// Validate on focusing
+	/// </summary>
+	ValidateOnFocusing = 2,
+	/// <summary>
+	/// Validate on unfocusing
+	/// </summary>
+	ValidateOnUnfocusing = 4,
+	/// <summary>
+	/// Validate on value changing
+	/// </summary>
+	ValidateOnValueChanging = 8,
+	/// <summary>
+	/// Force make valid when focused
+	/// </summary>
+	ForceMakeValidWhenFocused = 16
 }
