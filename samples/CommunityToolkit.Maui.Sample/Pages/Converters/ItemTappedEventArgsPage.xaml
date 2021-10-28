@@ -19,8 +19,10 @@
     </pages:BasePage.Resources>
     
     <pages:BasePage.Content>
-        <ListView ItemsSource="{Binding Items}"
-              HasUnevenRows="True">
+        <ListView
+            ItemsSource="{Binding Items}"
+            SelectedItem="{Binding ItemSelected, Mode=TwoWay}"
+            HasUnevenRows="True">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <ViewCell>
