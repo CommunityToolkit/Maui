@@ -4,12 +4,36 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.EqualConverterPage">
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.EqualConverterPage"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
+    x:DataType="vm:EqualsConverterViewModel">
+    <pages:BasePage.BindingContext>
+        <vm:EqualsConverterViewModel />
+    </pages:BasePage.BindingContext>
+    <ContentPage.Resources>
+        <x:String x:Key="MAUI">MAUI</x:String>
+        <mct:EqualConverter x:Key="InputIsEqualConverter" />
+    </ContentPage.Resources>
     <pages:BasePage.Content>
-        <StackLayout>
-            <Label Text="EqualConverter"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
+        <StackLayout Spacing="10">
+            <Label Text="The EqualConverter is a converter that allows users to convert any value binding to a bool depending on whether or not it is equal to a different value. The initial binding contains the object that will be compared and the ConverterParameter contains the object to compare it to."/>
+            <Entry Margin="0"
+                    Text="{Binding InputValue, TargetNullValue={StaticResource MAUI}}" 
+                    HorizontalOptions="FillAndExpand"/>
+            <Label Text="Does the entry text equal &quot;MAUI&quot;?"/>
+            <Label FontSize="Large" 
+                    HorizontalOptions="FillAndExpand"
+                    Text="Yes, it does!"
+                    TextColor="Green">
+                <Label.Triggers>
+                    <DataTrigger TargetType="Label"
+                                    Binding="{Binding InputValue, Converter={StaticResource InputIsEqualConverter}, ConverterParameter={StaticResource MAUI}}"
+                                    Value="False">
+                        <Setter Property="Text" Value="No, it doesn't" />
+                        <Setter Property="TextColor" Value="Red" />
+                    </DataTrigger>
+                </Label.Triggers>
+            </Label>
         </StackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>
