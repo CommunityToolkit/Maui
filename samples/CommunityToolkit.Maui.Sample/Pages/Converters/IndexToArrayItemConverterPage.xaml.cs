@@ -2,9 +2,9 @@
 
 public partial class IndexToArrayItemConverterPage : BasePage
 {
-    public IndexToArrayItemConverterPage()
-    {
-        InitializeComponent();
-		Stepper = new Microsoft.Maui.Controls.Stepper();
-    }
+	public IndexToArrayItemConverterPage()
+	{
+		InitializeComponent();
+		Stepper ??= new();
+	}
 }
