@@ -2,9 +2,9 @@
 
 public class EqualsConverterViewModel : BaseViewModel
 {
-	private string? _inputValue;
+	string _inputValue = string.Empty;
 	
-	public string? InputValue
+	public string InputValue
 	{
 		get => _inputValue;
 		set => SetProperty(ref _inputValue, value);

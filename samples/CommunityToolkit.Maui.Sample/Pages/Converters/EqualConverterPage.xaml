@@ -15,10 +15,10 @@
         <mct:EqualConverter x:Key="InputIsEqualConverter" />
     </ContentPage.Resources>
     <pages:BasePage.Content>
-        <StackLayout Spacing="10">
+        <VerticalStackLayout Spacing="10">
             <Label Text="The EqualConverter is a converter that allows users to convert any value binding to a bool depending on whether or not it is equal to a different value. The initial binding contains the object that will be compared and the ConverterParameter contains the object to compare it to."/>
             <Entry Margin="0"
-                    Text="{Binding InputValue, TargetNullValue={StaticResource MAUI}}" 
+                    Text="{Binding InputValue}" 
                     HorizontalOptions="FillAndExpand"/>
             <Label Text="Does the entry text equal &quot;MAUI&quot;?"/>
             <Label FontSize="Large" 
@@ -34,6 +34,6 @@
                     </DataTrigger>
                 </Label.Triggers>
             </Label>
-        </StackLayout>
+        </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>
