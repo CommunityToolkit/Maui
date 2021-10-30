@@ -10,7 +10,7 @@ using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 
 namespace CommunityToolkit.Maui.Sample.Pages;
 
-public class BaseGalleryPage<TViewModel> : BasePage where TViewModel : BaseGalleryViewModel, new()
+public abstract class BaseGalleryPage<TViewModel> : BasePage where TViewModel : BaseGalleryViewModel, new()
 {
 	public BaseGalleryPage(string title)
 	{
