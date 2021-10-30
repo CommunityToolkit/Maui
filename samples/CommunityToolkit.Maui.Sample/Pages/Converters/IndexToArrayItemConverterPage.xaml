@@ -11,7 +11,7 @@
     </pages:BasePage.BindingContext>
     <ContentPage.Resources>
         <mct:IndexToArrayItemConverter x:Key="IndexToArrayItemConverter" />
-        <x:Array x:Key="MyArray" Type="{x:Type x:String}">
+        <x:Array x:Key="StringArray" Type="{x:Type x:String}">
             <x:String>Value 0</x:String>
             <x:String>Value 1</x:String>
             <x:String>Value 2</x:String>
@@ -48,8 +48,8 @@
             <Label Text="Change SelectedItem to change SelectedIndex" FontAttributes="Italic"/>
             <CollectionView
                 SelectionMode="Single"
-                SelectedItem="{Binding SelectedIndex, Converter={StaticResource IndexToArrayItemConverter}, ConverterParameter={StaticResource MyArray}}"
-                ItemsSource="{StaticResource MyArray}">
+                SelectedItem="{Binding SelectedIndex, Converter={StaticResource IndexToArrayItemConverter}, ConverterParameter={StaticResource StringArray}}"
+                ItemsSource="{StaticResource StringArray}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <ContentView>
