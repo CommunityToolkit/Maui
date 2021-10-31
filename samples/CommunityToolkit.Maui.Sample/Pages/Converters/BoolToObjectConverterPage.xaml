@@ -5,11 +5,65 @@
     xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.BoolToObjectConverterPage">
+   
+    <ContentPage.Resources>
+        <SolidColorBrush x:Key="TrueColorBrush">Green</SolidColorBrush>
+        <SolidColorBrush x:Key="FalseColorBrush">Red</SolidColorBrush>
+        <mct:BoolToObjectConverter x:Key="BoolToColorBrushConverter" 
+                                   TrueObject="{StaticResource TrueColorBrush}" 
+                                   FalseObject="{StaticResource FalseColorBrush}"/>
+    </ContentPage.Resources>
     <pages:BasePage.Content>
-        <StackLayout>
-            <Label Text="BoolToObjectConverter"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
-        </StackLayout>
+        <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto"
+              RowSpacing="5"
+              ColumnSpacing="5"
+              ColumnDefinitions="*, *">
+            
+            <Label Text="The BoolToObjectConverter is a converter that allows users to convert a bool value binding to a specific object. By providing both a TrueObject and a FalseObject in the converter the appropriate object will be used depending on the value of the binding."
+                   GridLayout.Row="0"
+                   GridLayout.ColumnSpan="2"
+                   VerticalOptions="Start" 
+                   HorizontalOptions="FillAndExpand" />
+
+            <Ellipse x:Name="Ellipse"
+                     GridLayout.Row="1"
+                     GridLayout.ColumnSpan="2"
+                     Margin="10"
+                     HorizontalOptions="Center"
+                     HeightRequest="100"
+                     WidthRequest="100"
+                     Fill="{Binding Source={x:Reference CheckBox}, Path=IsChecked, Mode=TwoWay, Converter={StaticResource BoolToColorBrushConverter}}"/>
+
+            <HorizontalStackLayout GridLayout.Row="2" 
+                                   GridLayout.ColumnSpan="2">
+
+                <CheckBox HorizontalOptions="Start"
+                          x:Name="CheckBox"/>
+
+                <Label Text="Change bool value to change object."
+                       VerticalOptions="Center"
+                       FontAttributes="Italic"/>
+            </HorizontalStackLayout>
+
+            <Label Text="Or change object to change bool value." 
+                   GridLayout.Row="3"
+                   GridLayout.ColumnSpan="2"
+                   FontAttributes="Italic"/>
+            
+            <Button CornerRadius="23"
+                    GridLayout.Row="4"
+                    HorizontalOptions="FillAndExpand"
+                    Text="False color"
+                    Clicked="OnButtonClicked"
+                    BackgroundColor="Red"/>
+
+            <Button GridLayout.Row="4"
+                    GridLayout.Column="1"
+                    CornerRadius="23"
+                    HorizontalOptions="FillAndExpand"
+                    Clicked="OnButtonClicked"
+                    Text="True color"
+                    BackgroundColor="Green"/>
+        </Grid>
     </pages:BasePage.Content>
 </pages:BasePage>
