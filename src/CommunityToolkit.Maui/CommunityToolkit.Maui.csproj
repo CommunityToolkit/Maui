@@ -75,4 +75,16 @@
     <Compile Include="**\*.macos.*.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Animations\AnimationBase.shared.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Animations\FadeAnimation.shared.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Behaviors\AnimationBehavior.shared.cs" />
+  </ItemGroup>
+
 </Project>
