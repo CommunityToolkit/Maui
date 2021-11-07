@@ -3,7 +3,7 @@ using System.Windows.Input;
 using CommunityToolkit.Maui.Animations;
 using Microsoft.Maui.Controls;
 
-namespace CommunityToolkit.Maui.Behaviors.Internals;
+namespace CommunityToolkit.Maui.Behaviors;
 
 /// <summary>
 /// The <see cref="AnimationBehavior"/> is a behavior that shows an animation on any <see cref="View"/> when the <see cref="AnimateCommand"/> is called.

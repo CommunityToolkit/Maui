@@ -29,7 +29,7 @@ public abstract class AnimationBase<TView> : BindableObject
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Easing"/> property.
 	/// </summary>
-	public static readonly BindableProperty EasingTypeProperty =
+	public static readonly BindableProperty EasingProperty =
 		BindableProperty.Create(nameof(Easing), typeof(Easing), typeof(AnimationBase<TView>), Easing.Linear,
 			BindingMode.TwoWay);
 
@@ -38,8 +38,8 @@ public abstract class AnimationBase<TView> : BindableObject
 	/// </summary>
 	public Easing Easing
 	{
-		get => (Easing)GetValue(EasingTypeProperty);
-		set => SetValue(EasingTypeProperty, value);
+		get => (Easing)GetValue(EasingProperty);
+		set => SetValue(EasingProperty, value);
 	}
 
 	static object GetDefaultDurationProperty(BindableObject bindable)

@@ -1,8 +1,7 @@
 ﻿using System.Threading.Tasks;
-using CommunityToolkit.Maui.Animations;
 using Microsoft.Maui.Controls;
 
-namespace Xamarin.CommunityToolkit.Behaviors;
+namespace CommunityToolkit.Maui.Animations;
 
 /// <summary>
 /// The <see cref="ShakeAnimation"/> is an animation that shakes a <see cref="View"/>
