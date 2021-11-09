@@ -29,7 +29,7 @@ public class CharactersValidationBehavior : TextValidationBehavior
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="MaximumCharacterTypeCount"/> property.
 	/// </summary>
-	public static readonly BindableProperty MaximumCharacterCountProperty =
+	public static readonly BindableProperty MaximumCharacterTypeCountProperty =
 		BindableProperty.Create(nameof(MaximumCharacterTypeCount), typeof(int), typeof(CharactersValidationBehavior), int.MaxValue, propertyChanged: OnValidationPropertyChanged);
 
 	/// <summary>
@@ -61,8 +61,8 @@ public class CharactersValidationBehavior : TextValidationBehavior
 	/// </summary>
 	public int MaximumCharacterTypeCount
 	{
-		get => (int)GetValue(MaximumCharacterCountProperty);
-		set => SetValue(MaximumCharacterCountProperty, value);
+		get => (int)GetValue(MaximumCharacterTypeCountProperty);
+		set => SetValue(MaximumCharacterTypeCountProperty, value);
 	}
 
 	/// <inheritdoc/>
