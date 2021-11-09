@@ -5,17 +5,20 @@ namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
 public partial class BoolToObjectConverterPage : BasePage
 {
-    public BoolToObjectConverterPage()
-    {
-        InitializeComponent();
+	public BoolToObjectConverterPage()
+	{
+		InitializeComponent();
+
 		CheckBox ??= new();
 		Ellipse ??= new();
 	}
 
-	void OnButtonClicked(object sender, EventArgs args)
+	void OnButtonClicked(object? sender, EventArgs args)
 	{
-		if (sender is not Button button)
-			return;
+		ArgumentNullException.ThrowIfNull(sender);
+
+		var button = (Button)sender;
+
 		Ellipse.Fill = new SolidColorBrush(button.BackgroundColor);
 	}
 }

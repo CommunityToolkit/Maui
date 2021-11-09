@@ -17,48 +17,53 @@
         <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto"
               RowSpacing="5"
               ColumnSpacing="5"
-              ColumnDefinitions="*, *">
+              ColumnDefinitions="24, *, *">
             
             <Label Text="The BoolToObjectConverter is a converter that allows users to convert a bool value binding to a specific object. By providing both a TrueObject and a FalseObject in the converter the appropriate object will be used depending on the value of the binding."
                    GridLayout.Row="0"
-                   GridLayout.ColumnSpan="2"
+                   GridLayout.ColumnSpan="3"
                    VerticalOptions="Start" 
                    HorizontalOptions="FillAndExpand" />
 
             <Ellipse x:Name="Ellipse"
                      GridLayout.Row="1"
-                     GridLayout.ColumnSpan="2"
+                     GridLayout.ColumnSpan="3"
                      Margin="10"
                      HorizontalOptions="Center"
                      HeightRequest="100"
                      WidthRequest="100"
                      Fill="{Binding Source={x:Reference CheckBox}, Path=IsChecked, Mode=TwoWay, Converter={StaticResource BoolToColorBrushConverter}}"/>
 
-            <HorizontalStackLayout GridLayout.Row="2" 
-                                   GridLayout.ColumnSpan="2">
 
-                <CheckBox HorizontalOptions="Start"
-                          x:Name="CheckBox"/>
+            <CheckBox HorizontalOptions="Start"
+                      VerticalOptions="Center"
+                      GridLayout.Row="2"
+                      GridLayout.Column="0"
+                      x:Name="CheckBox"/>
 
-                <Label Text="Change bool value to change object."
-                       VerticalOptions="Center"
-                       FontAttributes="Italic"/>
-            </HorizontalStackLayout>
+            <Label Text="Change bool value to change object."
+                    GridLayout.Row="2"
+                    GridLayout.Column="1"
+                    VerticalOptions="Center"
+                    HorizontalOptions="Start"
+                    HorizontalTextAlignment="Start"
+                    FontAttributes="Italic"/>
 
             <Label Text="Or change object to change bool value." 
                    GridLayout.Row="3"
-                   GridLayout.ColumnSpan="2"
+                   GridLayout.ColumnSpan="3"
                    FontAttributes="Italic"/>
             
             <Button CornerRadius="23"
                     GridLayout.Row="4"
+                    GridLayout.ColumnSpan="2"
                     HorizontalOptions="FillAndExpand"
                     Text="False color"
                     Clicked="OnButtonClicked"
                     BackgroundColor="Red"/>
 
             <Button GridLayout.Row="4"
-                    GridLayout.Column="1"
+                    GridLayout.Column="2"
                     CornerRadius="23"
                     HorizontalOptions="FillAndExpand"
                     Clicked="OnButtonClicked"
