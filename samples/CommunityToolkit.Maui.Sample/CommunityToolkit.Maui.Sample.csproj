@@ -66,14 +66,4 @@
       <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     </PropertyGroup>
 
-    <ItemGroup>
-      <_MauiXamlToRemove Remove="Platforms\Windows\App.xaml" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Page Include="Platforms\Windows\App.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </Page>
-    </ItemGroup>
-
 </Project>
