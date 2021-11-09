@@ -7,13 +7,13 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class MultiConverter_Tests : BaseTest
 {
-    static readonly IReadOnlyList<object[]> data = new[]
+    public static IReadOnlyList<object[]> Data { get; } = new[]
     {
         new object[] { new List<MultiConverterParameter>() { { new MultiConverterParameter() { Value = "Param 1", } }, { new MultiConverterParameter() { Value = "Param 2", } } } },
     };
 
     [Theory]
-    [MemberData(nameof(data))]
+    [MemberData(nameof(Data))]
     public void MultiConverter(object value)
     {
         var multiConverter = new MultiConverter();

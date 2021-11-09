@@ -4,12 +4,74 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.IndexToArrayItemConverterPage">
+    <pages:BasePage.BindingContext>
+        <vm:IndexToArrayItemConverterViewModel />
+    </pages:BasePage.BindingContext>
+    <ContentPage.Resources>
+        <mct:IndexToArrayItemConverter x:Key="IndexToArrayItemConverter" />
+        <x:Array x:Key="StringArray" Type="{x:Type x:String}">
+            <x:String>Value 0</x:String>
+            <x:String>Value 1</x:String>
+            <x:String>Value 2</x:String>
+            <x:String>Value 3</x:String>
+            <x:String>Value 4</x:String>
+            <x:String>Value 5</x:String>
+            <x:String>Value 6</x:String>
+            <x:String>Value 7</x:String>
+        </x:Array>
+    </ContentPage.Resources>
     <pages:BasePage.Content>
-        <StackLayout>
-            <Label Text="IndexToArrayItemConverter"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
-        </StackLayout>
+        <Grid RowDefinitions="Auto, Auto, Auto, Auto, *"
+              ColumnDefinitions="Auto, Auto">
+            
+            <Label Text="The IndexToArrayItemConverter is a converter that allows users to convert a int value binding to an item in an array. The int value being data bound represents the indexer used to access the array. The array is passed in through the ConverterParameter."
+                   VerticalOptions="FillAndExpand"
+                   HorizontalOptions="FillAndExpand" 
+                   GridLayout.ColumnSpan="2"/>
+
+            <Label Text="Change SelectedIndex to change SelectedItem"
+                   FontAttributes="Italic" 
+                   Margin="0,20,0,0"
+                   GridLayout.Row="1"
+                   GridLayout.ColumnSpan="2"/>
+
+            <Stepper x:Name="Stepper" 
+                     Minimum="0" 
+                     Maximum="7"
+                     Value="{Binding SelectedIndex}"
+                     Increment="1"
+                     GridLayout.Column="0"
+                     GridLayout.Row="2"/>
+
+            <Label Text="{Binding Source={x:Reference Stepper},
+                                Path=Value, StringFormat='Selected index: {0}'}"
+                    VerticalOptions="CenterAndExpand"
+                    FontAttributes="Bold"
+                    GridLayout.Row="2"
+                    GridLayout.Column="1"/>
+
+            <Label Text="Change SelectedItem to change SelectedIndex" 
+                   Margin="0,20,0,0"
+                   FontAttributes="Italic"
+                   GridLayout.Row="3"
+                   GridLayout.ColumnSpan="2"/>
+            
+            <CollectionView
+                SelectionMode="Single"
+                SelectedItem="{Binding SelectedIndex, Converter={StaticResource IndexToArrayItemConverter}, ConverterParameter={StaticResource StringArray}}"
+                ItemsSource="{StaticResource StringArray}"
+                GridLayout.Row="4"
+                GridLayout.ColumnSpan="2">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <ContentView>
+                            <Label Padding="5" Text="{Binding}"/>
+                        </ContentView>            
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
     </pages:BasePage.Content>
 </pages:BasePage>
