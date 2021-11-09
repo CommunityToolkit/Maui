@@ -22,11 +22,6 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 	public const string InvalidVisualState = "Invalid";
 
 	/// <summary>
-	/// Initialize a new instance of ValidationBehavior
-	/// </summary>
-	public ValidationBehavior() => DefaultForceValidateCommand = new Command(async () => await ForceValidate());
-
-	/// <summary>
 	/// Backing BindableProperty for the <see cref="IsNotValid"/> property.
 	/// </summary>
 	public static readonly BindableProperty IsNotValidProperty =
@@ -80,13 +75,18 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 	public static readonly BindableProperty ForceValidateCommandProperty =
 		BindableProperty.Create(nameof(ForceValidateCommand), typeof(ICommand), typeof(ValidationBehavior), defaultValueCreator: GetDefaultForceValidateCommand, defaultBindingMode: BindingMode.OneWayToSource);
 
-	ValidationFlags currentStatus;
+	readonly SemaphoreSlim isAttachingSemaphoreSlim = new(1, 1);
 
-	bool isAttaching;
+	ValidationFlags currentStatus;
 
 	BindingBase? defaultValueBinding;
 
 	CancellationTokenSource? validationTokenSource;
+
+	/// <summary>
+	/// Initialize a new instance of ValidationBehavior
+	/// </summary>
+	public ValidationBehavior() => DefaultForceValidateCommand = new Command(async () => await ForceValidate().ConfigureAwait(false));
 
 	/// <summary>
 	/// Indicates whether or not the current value is considered valid. This is a bindable property.
@@ -118,18 +118,18 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 	/// <summary>
 	/// The <see cref="Style"/> to apply to the element when validation is successful. This is a bindable property.
 	/// </summary>
-	public Style ValidStyle
+	public Style? ValidStyle
 	{
-		get => (Style)GetValue(ValidStyleProperty);
+		get => (Style?)GetValue(ValidStyleProperty);
 		set => SetValue(ValidStyleProperty, value);
 	}
 
 	/// <summary>
 	/// The <see cref="Style"/> to apply to the element when validation fails. This is a bindable property.
 	/// </summary>
-	public Style InvalidStyle
+	public Style? InvalidStyle
 	{
-		get => (Style)GetValue(InvalidStyleProperty);
+		get => (Style?)GetValue(InvalidStyleProperty);
 		set => SetValue(InvalidStyleProperty, value);
 	}
 
@@ -172,7 +172,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 	/// <summary>
 	/// Default value property name
 	/// </summary>
-	protected virtual string DefaultValuePropertyName => Entry.TextProperty.PropertyName;
+	protected virtual string DefaultValuePropertyName { get; } = Entry.TextProperty.PropertyName;
 
 	/// <summary>
 	/// Default force validate command
@@ -182,9 +182,9 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 	/// <summary>
 	/// Forces the behavior to make a validation pass.
 	/// </summary>
-	public ValueTask ForceValidate() => UpdateStateAsync(true);
+	public ValueTask ForceValidate() => UpdateStateAsync(View, Flags, true);
 
-	internal ValueTask ValidateNestedAsync(CancellationToken token) => UpdateStateAsync(true, token);
+	internal ValueTask ValidateNestedAsync(CancellationToken token) => UpdateStateAsync(View, Flags, true, token);
 
 	/// <summary>
 	/// Decorate value
@@ -201,12 +201,19 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 	{
 		base.OnAttachedTo(bindable);
 
-		isAttaching = true;
-		currentStatus = ValidationFlags.ValidateOnAttaching;
+		await isAttachingSemaphoreSlim.WaitAsync();
 
-		OnValuePropertyNamePropertyChanged();
-		await UpdateStateAsync(false);
-		isAttaching = false;
+		try
+		{
+			currentStatus = ValidationFlags.ValidateOnAttaching;
+
+			OnValuePropertyNamePropertyChanged();
+			await UpdateStateAsync(View, Flags, false).ConfigureAwait(false);
+		}
+		finally
+		{
+			isAttachingSemaphoreSlim.Release();
+		}
 	}
 
 	/// <inheritdoc/>
@@ -226,25 +233,34 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 	protected override async void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		base.OnViewPropertyChanged(sender, e);
+
+		var view = (VisualElement?)sender;
+
 		if (e.PropertyName == VisualElement.IsFocusedProperty.PropertyName)
 		{
-			currentStatus = View?.IsFocused is true
-				? ValidationFlags.ValidateOnFocusing
-				: ValidationFlags.ValidateOnUnfocusing;
-			await UpdateStateAsync(false);
+			currentStatus = view?.IsFocused switch
+			{
+				true => ValidationFlags.ValidateOnFocusing,
+				_ => ValidationFlags.ValidateOnUnfocusing
+			};
+
+			await UpdateStateAsync(View, Flags, false).ConfigureAwait(false);
 		}
 	}
 
 	/// <inheritdoc/>
 	protected static async void OnValidationPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		=> await ((ValidationBehavior)bindable).UpdateStateAsync(false);
+	{
+		var validationBehavior = (ValidationBehavior)bindable;
+		await validationBehavior.UpdateStateAsync(validationBehavior.View, validationBehavior.Flags, false).ConfigureAwait(false);
+	}
 
 	static void OnIsValidPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		=> ((ValidationBehavior)bindable).OnIsValidPropertyChanged();
 
-	static void OnValuePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	static async void OnValuePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		((ValidationBehavior)bindable).OnValuePropertyChanged();
+		await ((ValidationBehavior)bindable).OnValuePropertyChanged();
 		OnValidationPropertyChanged(bindable, oldValue, newValue);
 	}
 
@@ -260,12 +276,18 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 	void OnIsValidPropertyChanged()
 		=> IsNotValid = !IsValid;
 
-	void OnValuePropertyChanged()
+	async Task OnValuePropertyChanged()
 	{
-		if (isAttaching)
-			return;
+		await isAttachingSemaphoreSlim.WaitAsync();
 
-		currentStatus = ValidationFlags.ValidateOnValueChanging;
+		try
+		{
+			currentStatus = ValidationFlags.ValidateOnValueChanged;
+		}
+		finally
+		{
+			isAttachingSemaphoreSlim.Release();
+		}
 	}
 
 	void OnValuePropertyNamePropertyChanged()
@@ -284,25 +306,28 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 		SetBinding(ValueProperty, defaultValueBinding);
 	}
 
-	async ValueTask UpdateStateAsync(bool isForced, CancellationToken? parentToken = null)
+	async ValueTask UpdateStateAsync(VisualElement? view, ValidationFlags flags, bool isForced, CancellationToken? parentToken = null)
 	{
-		if ((View?.IsFocused ?? false) && Flags.HasFlag(ValidationFlags.ForceMakeValidWhenFocused))
+		if ((view?.IsFocused ?? false) && flags.HasFlag(ValidationFlags.ForceMakeValidWhenFocused))
 		{
 			IsRunning = true;
+
 			ResetValidationTokenSource(null);
+
 			IsValid = true;
 			IsRunning = false;
 		}
 		else if (isForced || (currentStatus != ValidationFlags.None && Flags.HasFlag(currentStatus)))
 		{
 			IsRunning = true;
+
 			using var tokenSource = new CancellationTokenSource();
 			var token = parentToken ?? tokenSource.Token;
 			ResetValidationTokenSource(tokenSource);
 
 			try
 			{
-				var isValid = await ValidateAsync(Decorate(Value), token).ConfigureAwait(false);
+				var isValid = await ValidateAsync(Decorate(Value), token);
 
 				if (token.IsCancellationRequested)
 					return;
@@ -317,20 +342,18 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 			}
 		}
 
-		UpdateStyle();
+		if (view is not null)
+			UpdateStyle(view, IsValid);
 	}
 
-	void UpdateStyle()
+	void UpdateStyle(in VisualElement view, bool isValid)
 	{
-		if (View == null)
-			return;
-
-		VisualStateManager.GoToState(View, IsValid ? ValidVisualState : InvalidVisualState);
+		VisualStateManager.GoToState(view, isValid ? ValidVisualState : InvalidVisualState);
 
 		if ((ValidStyle ?? InvalidStyle) == null)
 			return;
 
-		View.Style = IsValid ? ValidStyle : InvalidStyle;
+		view.Style = isValid ? ValidStyle : InvalidStyle;
 	}
 
 	void ResetValidationTokenSource(CancellationTokenSource? newTokenSource)
