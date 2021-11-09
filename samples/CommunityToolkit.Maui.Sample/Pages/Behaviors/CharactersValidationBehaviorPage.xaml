@@ -36,7 +36,7 @@
                     <Label Text="CharacterType"/>
                     <Picker x:Name="CharacterTypePicker" Grid.Column="1"
                         Title="CharacterType"
-                        ItemsSource="{Binding CharacterTypes, Source={x:Reference Page}}"
+                        ItemsSource="{Binding CharacterTypes, Source={x:Reference Page}, Mode=OneTime}"
                         SelectedIndex="1"/>
                     <Label Grid.Row="1"
                        Text="MinimumCharacterCountEntry"/>
