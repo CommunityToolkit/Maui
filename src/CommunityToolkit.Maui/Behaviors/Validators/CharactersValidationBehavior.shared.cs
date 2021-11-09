@@ -21,16 +21,16 @@ public class CharactersValidationBehavior : TextValidationBehavior
 		BindableProperty.Create(nameof(CharacterType), typeof(CharacterType), typeof(CharactersValidationBehavior), CharacterType.Any, propertyChanged: OnCharacterTypePropertyChanged);
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="MinimumCharacterCount"/> property.
+	/// Backing BindableProperty for the <see cref="MinimumCharacterTypeCount"/> property.
 	/// </summary>
-	public static readonly BindableProperty MinimumCharacterCountProperty =
-		BindableProperty.Create(nameof(MinimumCharacterCount), typeof(int), typeof(CharactersValidationBehavior), 0, propertyChanged: OnValidationPropertyChanged);
+	public static readonly BindableProperty MinimumCharacterTypeCountProperty =
+		BindableProperty.Create(nameof(MinimumCharacterTypeCount), typeof(int), typeof(CharactersValidationBehavior), 0, propertyChanged: OnValidationPropertyChanged);
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="MaximumCharacterCount"/> property.
+	/// Backing BindableProperty for the <see cref="MaximumCharacterTypeCount"/> property.
 	/// </summary>
 	public static readonly BindableProperty MaximumCharacterCountProperty =
-		BindableProperty.Create(nameof(MaximumCharacterCount), typeof(int), typeof(CharactersValidationBehavior), int.MaxValue, propertyChanged: OnValidationPropertyChanged);
+		BindableProperty.Create(nameof(MaximumCharacterTypeCount), typeof(int), typeof(CharactersValidationBehavior), int.MaxValue, propertyChanged: OnValidationPropertyChanged);
 
 	/// <summary>
 	/// Constructor for this behavior
@@ -48,18 +48,18 @@ public class CharactersValidationBehavior : TextValidationBehavior
 	}
 
 	/// <summary>
-	/// The minimum length of the text input that's allowed. This is a bindable property.
+	/// The minimum number of <see cref="CharacterType"/> required. This is a bindable property.
 	/// </summary>
-	public int MinimumCharacterCount
+	public int MinimumCharacterTypeCount
 	{
-		get => (int)GetValue(MinimumCharacterCountProperty);
-		set => SetValue(MinimumCharacterCountProperty, value);
+		get => (int)GetValue(MinimumCharacterTypeCountProperty);
+		set => SetValue(MinimumCharacterTypeCountProperty, value);
 	}
 
 	/// <summary>
-	/// The maximum length of the text input that's allowed. This is a bindable property.
+	/// The maximum number of <see cref="CharacterType"/> allowed. This is a bindable property.
 	/// </summary>
-	public int MaximumCharacterCount
+	public int MaximumCharacterTypeCount
 	{
 		get => (int)GetValue(MaximumCharacterCountProperty);
 		set => SetValue(MaximumCharacterCountProperty, value);
@@ -106,7 +106,7 @@ public class CharactersValidationBehavior : TextValidationBehavior
 	bool Validate(string? value)
 	{
 		var count = value?.ToCharArray().Count(character => characterPredicates.Any(predicate => predicate.Invoke(character))) ?? 0;
-		return count >= MinimumCharacterCount
-			&& count <= MaximumCharacterCount;
+		return count >= MinimumCharacterTypeCount
+			&& count <= MaximumCharacterTypeCount;
 	}
 }

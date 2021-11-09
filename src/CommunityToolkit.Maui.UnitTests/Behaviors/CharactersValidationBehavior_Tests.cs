@@ -41,8 +41,8 @@ public class CharactersValidationBehavior_Tests : BaseTest
         var behavior = new CharactersValidationBehavior
         {
             CharacterType = characterType,
-            MinimumCharacterCount = minimumCharactersNumber,
-            MaximumCharacterCount = maximumCharactersNumber
+            MinimumCharacterTypeCount = minimumCharactersNumber,
+            MaximumCharacterTypeCount = maximumCharactersNumber
         };
 
         var entry = new Entry

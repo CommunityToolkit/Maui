@@ -45,6 +45,21 @@ public class TextValidationBehavior : ValidationBehavior
 	Regex? regex;
 
 	/// <summary>
+	/// Constructor of this behavior.
+	/// </summary>
+	public TextValidationBehavior() => OnRegexPropertyChanged(RegexPattern, RegexOptions);
+
+	/// <summary>
+	/// Default regex pattern
+	/// </summary>
+	protected virtual string DefaultRegexPattern { get; } = string.Empty;
+
+	/// <summary>
+	/// Default regex options
+	/// </summary>
+	protected virtual RegexOptions DefaultRegexOptions => RegexOptions.None;
+
+	/// <summary>
 	/// The minimum length of the value that will be allowed. This is a bindable property.
 	/// </summary>
 	public int MinimumLength
@@ -89,21 +104,6 @@ public class TextValidationBehavior : ValidationBehavior
 		set => SetValue(RegexOptionsProperty, value);
 	}
 
-	/// <summary>
-	/// Constructor of this behavior.
-	/// </summary>
-	public TextValidationBehavior() => OnRegexPropertyChanged();
-
-	/// <summary>
-	/// Default regex pattern
-	/// </summary>
-	protected virtual string DefaultRegexPattern => string.Empty;
-
-	/// <summary>
-	/// Default regex options
-	/// </summary>
-	protected virtual RegexOptions DefaultRegexOptions => RegexOptions.None;
-
 	/// <inheritdoc/>
 	protected override object? Decorate(object? value)
 	{
@@ -141,25 +141,21 @@ public class TextValidationBehavior : ValidationBehavior
 
 	static void OnRegexPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		((TextValidationBehavior)bindable).OnRegexPropertyChanged();
+		var textValidationBehavior = ((TextValidationBehavior)bindable);
+		textValidationBehavior.OnRegexPropertyChanged(textValidationBehavior.RegexPattern, textValidationBehavior.RegexOptions);
 		OnValidationPropertyChanged(bindable, oldValue, newValue);
 	}
 
-	static object GetDefaultRegexPattern(BindableObject bindable)
+	static string GetDefaultRegexPattern(BindableObject bindable)
 		=> ((TextValidationBehavior)bindable).DefaultRegexPattern;
 
 	static object GetDefaultRegexOptions(BindableObject bindable)
 		=> ((TextValidationBehavior)bindable).DefaultRegexOptions;
 
-	void OnRegexPropertyChanged()
-		=> regex = RegexPattern != null
-			? new Regex(RegexPattern, RegexOptions)
-			: null;
-
 	// This method trims down multiple consecutive whitespaces
 	// back to one whitespace.
 	// I.e. "Hello    World" will become "Hello World"
-	string NormalizeWhiteSpace(string value)
+	static string NormalizeWhiteSpace(string value)
 	{
 		var builder = new StringBuilder();
 		var isSpace = false;
@@ -174,4 +170,10 @@ public class TextValidationBehavior : ValidationBehavior
 		}
 		return builder.ToString();
 	}
+
+	void OnRegexPropertyChanged(string? regexPattern, RegexOptions regexOptions) => regex = regexPattern switch
+	{
+		null => null,
+		_ => new Regex(regexPattern, regexOptions)
+	};
 }

@@ -41,8 +41,8 @@ public class MultiValidationBehavior_Tests : BaseTest
         var behavior = new CharactersValidationBehavior
         {
             CharacterType = characterType,
-            MinimumCharacterCount = minimumCharactersNumber,
-            MaximumCharacterCount = maximumCharactersNumber
+            MinimumCharacterTypeCount = minimumCharactersNumber,
+            MaximumCharacterTypeCount = maximumCharactersNumber
         };
 
         var multiBehavior = new MultiValidationBehavior();

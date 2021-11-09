@@ -38,10 +38,10 @@
             <Entry IsPassword="True" Placeholder="Password">
                 <Entry.Behaviors>
                     <mct:MultiValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"  >
-                        <mct:CharactersValidationBehavior x:Name="digit" CharacterType="Digit" MinimumCharacterCount="1" mct:MultiValidationBehavior.Error="1 chiffre" RegexPattern="" />
-                        <mct:CharactersValidationBehavior x:Name="upper" CharacterType="UppercaseLetter" MinimumCharacterCount="1" mct:MultiValidationBehavior.Error="1 majuscule" RegexPattern="" />
-                        <mct:CharactersValidationBehavior x:Name="symbol" CharacterType="NonAlphanumericSymbol" MinimumCharacterCount="1" mct:MultiValidationBehavior.Error="1 symbole" RegexPattern=""  />
-                        <mct:CharactersValidationBehavior x:Name="any" CharacterType="Any" MinimumCharacterCount="8" mct:MultiValidationBehavior.Error="8 caractères" RegexPattern="" />
+                        <mct:CharactersValidationBehavior x:Name="digit" CharacterType="Digit" MinimumCharacterTypeCount="1" mct:MultiValidationBehavior.Error="1 chiffre" RegexPattern="" />
+                        <mct:CharactersValidationBehavior x:Name="upper" CharacterType="UppercaseLetter" MinimumCharacterTypeCount="1" mct:MultiValidationBehavior.Error="1 majuscule" RegexPattern="" />
+                        <mct:CharactersValidationBehavior x:Name="symbol" CharacterType="NonAlphanumericSymbol" MinimumCharacterTypeCount="1" mct:MultiValidationBehavior.Error="1 symbole" RegexPattern=""  />
+                        <mct:CharactersValidationBehavior x:Name="any" CharacterType="Any" MinimumCharacterTypeCount="8" mct:MultiValidationBehavior.Error="8 caractères" RegexPattern="" />
                     </mct:MultiValidationBehavior>
                 </Entry.Behaviors>
             </Entry>
