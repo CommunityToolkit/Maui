@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class StringToListConverter_Tests : BaseTest
 {
-    readonly static IReadOnlyList<object?[]> listData = new[]
+    public static IReadOnlyList<object?[]> ListData { get; } = new[]
     {
         new object?[] { "A,B.C;D", new string[] { ",", ".", ";" }, new string[] { "A", "B", "C", "D" } },
         new object?[] { "A+_+B+_+C", "+_+", new string[] { "A", "B", "C" } },
@@ -20,7 +20,7 @@ public class StringToListConverter_Tests : BaseTest
     };
 
     [Theory]
-    [MemberData(nameof(listData))]
+    [MemberData(nameof(ListData))]
     public void StringToListConverter(object? value, object? parameter, object? expectedResult)
     {
         var stringToListConverter = new StringToListConverter();
