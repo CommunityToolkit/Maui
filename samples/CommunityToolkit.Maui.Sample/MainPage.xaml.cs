@@ -1,13 +1,16 @@
 ﻿using CommunityToolkit.Maui.Sample.Pages;
+using Microsoft.Maui;
 
 namespace CommunityToolkit.Maui.Sample;
 
 public partial class MainPage : BasePage
 {
-    public MainPage()
-    {
-        InitializeComponent();
+	public MainPage()
+	{
+		InitializeComponent();
 
-        Page ??= this;
-    }
+		Page ??= this;
+
+		Padding = new Thickness(20, 0);
+	}
 }
