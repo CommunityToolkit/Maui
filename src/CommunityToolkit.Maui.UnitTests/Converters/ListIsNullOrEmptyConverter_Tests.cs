@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ListIsNullOrEmptyConverter_Tests : BaseTest
 {
-    static readonly IReadOnlyList<object?[]> data = new[]
+    public static IReadOnlyList<object?[]> Data { get; } = new[]
     {
         new object[] { new List<string>(), true },
         new object[] { new List<string>() { "TestValue" }, false },
@@ -18,7 +18,7 @@ public class ListIsNullOrEmptyConverter_Tests : BaseTest
     };
 
     [Theory]
-    [MemberData(nameof(data))]
+    [MemberData(nameof(Data))]
     public void ListIsNullOrEmptyConverter(object value, bool expectedResult)
     {
         var listIstNullOrEmptyConverter = new ListIsNullOrEmptyConverter();
