@@ -36,10 +36,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Remove="Platforms\Windows\App.xaml" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <ProjectReference Include="..\..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
 	</ItemGroup>
 
@@ -48,7 +44,7 @@
 	</ItemGroup>
 	
 	<PropertyGroup>
-      <!-- Required for C# Hot Reload -->
+	  <!-- Required for C# Hot Reload -->
       <UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
 
       <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-ios'">14.2</SupportedOSPlatformVersion>
