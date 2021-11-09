@@ -8,6 +8,7 @@
 		<UseMaui>true</UseMaui>
 		<SingleProject>true</SingleProject>
 		<RootNamespace>CommunityToolkit.Maui.Sample</RootNamespace>
+        <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
 
 		<!-- Display name -->
 		<ApplicationTitle>CommunityToolkit.Maui.Sample</ApplicationTitle>
@@ -47,6 +48,9 @@
 	</ItemGroup>
 	
 	<PropertyGroup>
+      <!-- Required for C# Hot Reload -->
+      <UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
+
       <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-ios'">14.2</SupportedOSPlatformVersion>
       <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">14.0</SupportedOSPlatformVersion>
       <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-android'">21.0</SupportedOSPlatformVersion>
@@ -56,14 +60,14 @@
 
 
     <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-      <!-- Required - WinUI does not yet have buildTransitive for everything -->
-      <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0-preview3" />
-      <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.29-preview3" />
+     <!-- Required - WinUI does not yet have buildTransitive for everything -->
+     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0-preview3" />
+     <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.29-preview3" />
     </ItemGroup>
 
-    <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
-      <OutputType>WinExe</OutputType>
-      <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    </PropertyGroup>
+   <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
+     <OutputType>WinExe</OutputType>
+     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+   </PropertyGroup>
 
 </Project>
