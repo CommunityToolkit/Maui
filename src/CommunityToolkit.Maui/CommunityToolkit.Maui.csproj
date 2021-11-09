@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net6.0;net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full'">$(TargetFrameworks);net6.0-windows10.0.17763.0</TargetFrameworks>
     <UseMaui>true</UseMaui>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -66,8 +67,8 @@
   </ItemGroup>
 
   <ItemGroup Condition=" $(TargetFramework.Contains('-windows')) ">
-    <Compile Include="**\*.uwp.cs" />
-    <Compile Include="**\*.uwp.*.cs" />
+    <Compile Include="**\*.windows.cs" />
+    <Compile Include="**\*.windows.*.cs" />
   </ItemGroup>
 
   <ItemGroup Condition=" $(TargetFramework.Contains('-maccatalyst')) ">
