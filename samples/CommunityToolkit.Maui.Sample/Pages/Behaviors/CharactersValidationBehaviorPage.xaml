@@ -64,7 +64,7 @@
             <Label Text="The same but styling handled by visual state manager."/>
             <Entry Placeholder="Type characters...">
                 <Entry.Behaviors>
-                    <mct:CharactersValidationBehavior Flags="ValidateOnValueChanging"
+                    <mct:CharactersValidationBehavior Flags="ValidateOnValueChanged"
                                                   CharacterType="{Binding SelectedItem, Source={x:Reference CharacterTypePicker}}"
                                                   MaximumCharacterCount="{Binding Text, Source={x:Reference MaximumCharacterCountEntry}}"
                                                   MinimumCharacterCount="{Binding Text, Source={x:Reference MinimumCharacterCountEntry}}"/>

@@ -25,9 +25,9 @@ public enum ValidationFlags
 	/// </summary>
 	ValidateOnUnfocusing = 4,
 	/// <summary>
-	/// Validate on value changing
+	/// Validate upon value changed
 	/// </summary>
-	ValidateOnValueChanging = 8,
+	ValidateOnValueChanged = 8,
 	/// <summary>
 	/// Force make valid when focused
 	/// </summary>
