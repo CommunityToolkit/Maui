@@ -46,6 +46,7 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage where TViewModel : 
 		}
 
 		enum Row { TopPadding, Content, BottomPadding }
+		enum Column { LeftPadding, Content, RightPadding }
 
 		static Grid CreateDataTemplate() => new()
 		{
@@ -56,9 +57,14 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage where TViewModel : 
 				(Row.Content, Star),
 				(Row.BottomPadding, 6)),
 
+			ColumnDefinitions = Columns.Define(
+				(Column.LeftPadding, 6),
+				(Column.Content, Star),
+				(Column.RightPadding, 6)),
+
 			Children =
 			{
-				new Card().Row(Row.Content)
+				new Card().Row(Row.Content).Column(Column.Content)
 			}
 		};
 
@@ -70,7 +76,6 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage where TViewModel : 
 
 				Content = new Grid
 				{
-
 					RowSpacing = 4,
 
 					RowDefinitions = Rows.Define(
@@ -80,12 +85,12 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage where TViewModel : 
 					Children =
 					{
 						new Label { Style = (Style)(Application.Current?.Resources["label_section_header"] ?? throw new InvalidOperationException()) }
-								.Row(CardRow.Title)
-								.Bind(Label.TextProperty, nameof(SectionModel.Title)),
+							.Row(CardRow.Title)
+							.Bind(Label.TextProperty, nameof(SectionModel.Title)),
 
 						new Label()
-								.Row(CardRow.Description)
-								.Bind(Label.TextProperty, nameof(SectionModel.Description))
+							.Row(CardRow.Description)
+							.Bind(Label.TextProperty, nameof(SectionModel.Description))
 					}
 				};
 			}
