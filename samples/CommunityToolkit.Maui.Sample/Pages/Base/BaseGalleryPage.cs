@@ -53,9 +53,9 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage where TViewModel : 
 			BackgroundColor = (Color)(Application.Current?.Resources["AppBackgroundColor"] ?? throw new InvalidOperationException()),
 
 			RowDefinitions = Rows.Define(
-				(Row.TopPadding, 6),
+				(Row.TopPadding, 8),
 				(Row.Content, Star),
-				(Row.BottomPadding, 6)),
+				(Row.BottomPadding, 8)),
 
 			ColumnDefinitions = Columns.Define(
 				(Column.LeftPadding, 6),
@@ -80,7 +80,7 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage where TViewModel : 
 
 					RowDefinitions = Rows.Define(
 						(CardRow.Title, 24),
-						(CardRow.Description, Star)),
+						(CardRow.Description, Auto)),
 
 					Children =
 					{
