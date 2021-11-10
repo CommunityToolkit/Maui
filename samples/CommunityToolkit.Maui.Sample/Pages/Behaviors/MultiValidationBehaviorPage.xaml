@@ -6,6 +6,11 @@
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.MultiValidationBehaviorPage">
 
     <pages:BasePage.Resources>
+        <Style x:Key="ValidEntryStyle"
+               TargetType="Entry">
+            <Setter Property="TextColor" Value="Green"/>
+        </Style>
+        
         <Style x:Key="InvalidEntryStyle" TargetType="Entry">
             <Setter Property="TextColor" Value="Red" />
         </Style>
@@ -20,36 +25,60 @@
             <Entry Placeholder="Number">
                 <Entry.Behaviors>
                     <mct:MultiValidationBehavior x:Name="MultiValidation"
-                                             InvalidStyle="{StaticResource InvalidEntryStyle}">
+                                                    ValidStyle="{StaticResource ValidEntryStyle}"
+                                                    InvalidStyle="{StaticResource InvalidEntryStyle}">
                         <mct:MultiValidationBehavior.Children>
-                            <mct:NumericValidationBehavior mct:MultiValidationBehavior.Error="NaN" />
-                            <mct:NumericValidationBehavior MinimumValue="-10"
-                                                   mct:MultiValidationBehavior.Error="Min: -10" />
-                            <mct:NumericValidationBehavior MaximumValue="5"
-                                                   mct:MultiValidationBehavior.Error="Max: 5" />
+                            <mct:NumericValidationBehavior Flags="ValidateOnValueChanged"
+                                                            mct:MultiValidationBehavior.Error="NaN" />
+                            <mct:NumericValidationBehavior Flags="ValidateOnValueChanged"
+                                                            MinimumValue="-10"
+                                                            mct:MultiValidationBehavior.Error="Min: -10" />
+                            <mct:NumericValidationBehavior Flags="ValidateOnValueChanged"
+                                                            MaximumValue="5"
+                                                            mct:MultiValidationBehavior.Error="Max: 5" />
                         </mct:MultiValidationBehavior.Children>
                     </mct:MultiValidationBehavior>
                 </Entry.Behaviors>
             </Entry>
-            <Label
-            HeightRequest="30"
-            Text="{Binding Errors[0], Source={x:Reference MultiValidation}}"/>
+            <Label HeightRequest="30"
+                    Text="{Binding Errors[0], Source={x:Reference MultiValidation}}"/>
             <Label Text="Password validation" />
             <Entry IsPassword="True" Placeholder="Password">
                 <Entry.Behaviors>
-                    <mct:MultiValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"  >
-                        <mct:CharactersValidationBehavior x:Name="digit" CharacterType="Digit" MinimumCharacterTypeCount="1" mct:MultiValidationBehavior.Error="1 chiffre" RegexPattern="" />
-                        <mct:CharactersValidationBehavior x:Name="upper" CharacterType="UppercaseLetter" MinimumCharacterTypeCount="1" mct:MultiValidationBehavior.Error="1 majuscule" RegexPattern="" />
-                        <mct:CharactersValidationBehavior x:Name="symbol" CharacterType="NonAlphanumericSymbol" MinimumCharacterTypeCount="1" mct:MultiValidationBehavior.Error="1 symbole" RegexPattern=""  />
-                        <mct:CharactersValidationBehavior x:Name="any" CharacterType="Any" MinimumCharacterTypeCount="8" mct:MultiValidationBehavior.Error="8 caractères" RegexPattern="" />
+                    <mct:MultiValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"  
+                                                    ValidStyle="{StaticResource ValidEntryStyle}">
+                        <mct:CharactersValidationBehavior x:Name="DigitValidation" 
+                                                          Flags="ValidateOnValueChanged"
+                                                          CharacterType="Digit" 
+                                                          MinimumCharacterTypeCount="1" 
+                                                          mct:MultiValidationBehavior.Error="1 chiffre" 
+                                                          RegexPattern="" />
+                        <mct:CharactersValidationBehavior x:Name="UpperValidation" 
+                                                          Flags="ValidateOnValueChanged"
+                                                          CharacterType="UppercaseLetter" 
+                                                          MinimumCharacterTypeCount="1" 
+                                                          mct:MultiValidationBehavior.Error="1 majuscule" 
+                                                          RegexPattern="" />
+                        <mct:CharactersValidationBehavior x:Name="SymbolValidation" 
+                                                          Flags="ValidateOnValueChanged"
+                                                          CharacterType="NonAlphanumericSymbol" 
+                                                          MinimumCharacterTypeCount="1" 
+                                                          mct:MultiValidationBehavior.Error="1 symbole" 
+                                                          RegexPattern=""  />
+                        <mct:CharactersValidationBehavior x:Name="AnyValidation" 
+                                                          Flags="ValidateOnValueChanged"
+                                                          CharacterType="Any" 
+                                                          MinimumCharacterTypeCount="8" 
+                                                          mct:MultiValidationBehavior.Error="8 caractères" 
+                                                          RegexPattern="" />
                     </mct:MultiValidationBehavior>
                 </Entry.Behaviors>
             </Entry>
             <StackLayout Orientation="Vertical">
-                <Label Text="{Binding IsValid, Source={x:Reference digit}, StringFormat='{}{0} : at least 1 digit'}"/>
-                <Label Text="{Binding IsValid, Source={x:Reference upper}, StringFormat='{}{0} : at least 1 upper'}"/>
-                <Label Text="{Binding IsValid, Source={x:Reference symbol}, StringFormat='{}{0} : at least 1 symbol'}"/>
-                <Label Text="{Binding IsValid, Source={x:Reference any}, StringFormat='{}{0} : at least 8 char'}"/>
+                <Label Text="{Binding IsValid, Source={x:Reference DigitValidation}, StringFormat='{}{0} : at least 1 digit'}"/>
+                <Label Text="{Binding IsValid, Source={x:Reference UpperValidation}, StringFormat='{}{0} : at least 1 upper'}"/>
+                <Label Text="{Binding IsValid, Source={x:Reference SymbolValidation}, StringFormat='{}{0} : at least 1 symbol'}"/>
+                <Label Text="{Binding IsValid, Source={x:Reference AnyValidation}, StringFormat='{}{0} : at least 8 char'}"/>
             </StackLayout>
         </StackLayout>
 
