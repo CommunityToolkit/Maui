@@ -57,7 +57,7 @@ public class TextValidationBehavior : ValidationBehavior
 	/// <summary>
 	/// Default regex options
 	/// </summary>
-	protected virtual RegexOptions DefaultRegexOptions => RegexOptions.None;
+	protected virtual RegexOptions DefaultRegexOptions { get; } = RegexOptions.None;
 
 	/// <summary>
 	/// The minimum length of the value that will be allowed. This is a bindable property.
