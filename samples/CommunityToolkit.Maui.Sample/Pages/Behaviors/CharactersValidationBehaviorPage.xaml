@@ -60,10 +60,11 @@
             <Entry Placeholder="Type characters...">
                 <Entry.Behaviors>
                     <mct:CharactersValidationBehavior CharacterType="{Binding SelectedItem, Source={x:Reference CharacterTypePicker}}"
-                                                  InvalidStyle="{StaticResource InvalidEntryStyle}"
-                                                  ValidStyle="{StaticResource ValidEntryStyle}"
-                                                  MaximumCharacterTypeCount="{Binding Text, Source={x:Reference MaximumCharacterCountEntry}}"
-                                                  MinimumCharacterTypeCount="{Binding Text, Source={x:Reference MinimumCharacterCountEntry}}"/>
+                                                        Flags="ValidateOnValueChanged"
+                                                        InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                                        ValidStyle="{StaticResource ValidEntryStyle}"
+                                                        MaximumCharacterTypeCount="{Binding Text, Source={x:Reference MaximumCharacterCountEntry}}"
+                                                        MinimumCharacterTypeCount="{Binding Text, Source={x:Reference MinimumCharacterCountEntry}}"/>
                         </Entry.Behaviors>
                     </Entry>
 
