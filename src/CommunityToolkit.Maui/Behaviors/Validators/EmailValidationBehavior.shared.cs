@@ -16,9 +16,8 @@ public class EmailValidationBehavior : TextValidationBehavior
 	readonly Regex normalizerRegex = new Regex(@"(@)(.+)$");
 
 	/// <inheritdoc/>
-	protected override string DefaultRegexPattern
-		=> @"^(?("")("".+?(?<!\\)""@)|(([0-9a-z]((\.(?!\.))|[-!#\$%&'\*\+/=\?\^`\{\}\|~\w])*)(?<=[0-9a-z])@))" +
-			@"(?(\[)(\[(\d{1,3}\.){3}\d{1,3}\])|(([0-9a-z][-0-9a-z]*[0-9a-z]*\.)+[a-z0-9][\-a-z0-9]{0,22}[a-z0-9]))$";
+	protected override string DefaultRegexPattern { get; } = @"^(?("")("".+?(?<!\\)""@)|(([0-9a-z]((\.(?!\.))|[-!#\$%&'\*\+/=\?\^`\{\}\|~\w])*)(?<=[0-9a-z])@))"
+																+ @"(?(\[)(\[(\d{1,3}\.){3}\d{1,3}\])|(([0-9a-z][-0-9a-z]*[0-9a-z]*\.)+[a-z0-9][\-a-z0-9]{0,22}[a-z0-9]))$";
 
 	/// <inheritdoc/>
 	protected override RegexOptions DefaultRegexOptions => RegexOptions.IgnoreCase;
@@ -27,27 +26,28 @@ public class EmailValidationBehavior : TextValidationBehavior
 	protected override object? Decorate(object? value)
 	{
 		var stringValue = base.Decorate(value)?.ToString();
+
 		if (string.IsNullOrWhiteSpace(stringValue))
 			return stringValue;
 
 		try
 		{
-			static string DomainMapper(Match match)
-			{
-				// Use IdnMapping class to convert Unicode domain names.
-				var idn = new IdnMapping();
-
-				// Pull out and process domain name (throws ArgumentException on invalid)
-				var domainName = idn.GetAscii(match.Groups[2].Value);
-				return match.Groups[1].Value + domainName;
-			}
-
 			// Normalize the domain
 			return normalizerRegex.Replace(stringValue, DomainMapper);
 		}
 		catch (ArgumentException)
 		{
 			return stringValue;
+		}
+
+		static string DomainMapper(Match match)
+		{
+			// Use IdnMapping class to convert Unicode domain names.
+			var idn = new IdnMapping();
+
+			// Pull out and process domain name (throws ArgumentException on invalid)
+			var domainName = idn.GetAscii(match.Groups[2].Value);
+			return match.Groups[1].Value + domainName;
 		}
 	}
 }
