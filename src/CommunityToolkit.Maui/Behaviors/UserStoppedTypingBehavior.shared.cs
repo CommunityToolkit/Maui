@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using CommunityToolkit.Maui.Behaviors.Internals;
 using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Behaviors;

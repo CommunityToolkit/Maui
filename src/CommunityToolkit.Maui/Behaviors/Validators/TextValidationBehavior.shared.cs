@@ -3,7 +3,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using CommunityToolkit.Maui.Behaviors.Internals;
 
 namespace CommunityToolkit.Maui.Behaviors;
 

@@ -11,14 +11,14 @@ public enum TextDecorationFlags
 	/// <summary>No text decoration will be applied.</summary>
 	None = 0,
 
-	/// <summary><see cref="string.TrimStart"/> is applied on the value prior to validation.</summary>
+	/// <summary><see cref="string.TrimStart()"/> is applied on the value prior to validation.</summary>
 	TrimStart = 1,
 
-	/// <summary><see cref="string.TrimEnd"/> is applied on the value prior to validation.</summary>
+	/// <summary><see cref="string.TrimEnd()"/> is applied on the value prior to validation.</summary>
 	TrimEnd = 2,
 
-	/// <summary><see cref="string.Trim"/> is applied on the value prior to validation.</summary>
-	Trim = 3,
+	/// <summary><see cref="string.Trim()"/> is applied on the value prior to validation.</summary>
+	Trim = TrimStart | TrimEnd,
 
 	/// <summary>If <see cref="Internals.ValidationBehavior.Value"/> is null, replace the value with <see cref="string.Empty"/></summary>
 	NullToEmpty = 4,

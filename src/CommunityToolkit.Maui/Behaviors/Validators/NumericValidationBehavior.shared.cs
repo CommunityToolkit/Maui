@@ -1,7 +1,7 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using CommunityToolkit.Maui.Behaviors.Internals;
 using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Behaviors;
@@ -78,8 +78,9 @@ public class NumericValidationBehavior : ValidationBehavior
 	/// <inheritdoc/>
 	protected override ValueTask<bool> ValidateAsync(object? value, CancellationToken token)
 	{
-		if (value is not string valueString)
-			return new ValueTask<bool>(false);
+		ArgumentNullException.ThrowIfNull(value);
+
+		var valueString = (string)value;
 
 		if (!(double.TryParse(valueString, out var numeric)
 				&& numeric >= MinimumValue
@@ -99,8 +100,6 @@ public class NumericValidationBehavior : ValidationBehavior
 			? valueString.Substring(decimalDelimeterIndex + 1, valueString.Length - decimalDelimeterIndex - 1).Length
 			: 0;
 
-		return new ValueTask<bool>(
-			decimalPlaces >= MinimumDecimalPlaces &&
-			decimalPlaces <= MaximumDecimalPlaces);
+		return new ValueTask<bool>(decimalPlaces >= MinimumDecimalPlaces && decimalPlaces <= MaximumDecimalPlaces);
 	}
 }

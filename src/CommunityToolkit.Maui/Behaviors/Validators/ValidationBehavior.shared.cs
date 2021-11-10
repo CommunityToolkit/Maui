@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
 
-namespace CommunityToolkit.Maui.Behaviors.Internals;
+namespace CommunityToolkit.Maui.Behaviors;
 
 /// <summary>
 /// The <see cref="ValidationBehavior"/> allows users to create custom validation behaviors. All of the validation behaviors in the Xamarin Community Toolkit inherit from this behavior, to expose a number of shared properties. Users can inherit from this class to create a custom validation behavior currently not supported through the Xamarin Community Toolkit. This behavios cannot be used directly as it's abstract.
