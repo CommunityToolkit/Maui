@@ -9,8 +9,7 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
 {
     protected override IEnumerable<SectionModel> CreateItems() => new[]
     {
-        new SectionModel(
-            typeof(BoolToObjectConverterPage),
+        new SectionModel(typeof(BoolToObjectConverterPage),
             nameof(BoolToObjectConverter),
             "A converter that allows users to convert a bool value binding to a specific object."),
         new SectionModel(
