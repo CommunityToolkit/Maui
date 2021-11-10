@@ -17,7 +17,7 @@
         </Style>
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
-        <StackLayout
+        <VerticalStackLayout
                  Spacing="25"
                  VerticalOptions="StartAndExpand">
             <Label Text="Text color will change accordingly to the style that is configured when an invalid string is entered."/>
@@ -93,6 +93,6 @@
                         </VisualStateManager.VisualStateGroups>
                     </Entry>
 
-        </StackLayout>
+        </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>
