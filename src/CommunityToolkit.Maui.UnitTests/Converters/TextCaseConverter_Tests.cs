@@ -10,7 +10,7 @@ public class TextCaseConverter_Tests : BaseTest
     const string test = nameof(test);
     const string t = nameof(t);
 
-    readonly static IReadOnlyList<object?[]> data = new[]
+    public static IReadOnlyList<object?[]> Data { get; } = new[]
     {
             new object?[] { test, TextCaseType.Lower, test },
             new object?[] { test, TextCaseType.Upper, "TEST" },
@@ -31,7 +31,7 @@ public class TextCaseConverter_Tests : BaseTest
     enum MockEnum { Foo, Bar, Baz }
 
     [Theory]
-    [MemberData(nameof(data))]
+    [MemberData(nameof(Data))]
     [InlineData(null, null, null)]
     public void TextCaseConverterWithParameter(object? value, object? comparedValue, object? expectedResult)
     {
@@ -43,7 +43,7 @@ public class TextCaseConverter_Tests : BaseTest
     }
 
     [Theory]
-    [MemberData(nameof(data))]
+    [MemberData(nameof(Data))]
     public void TextCaseConverterWithExplicitType(object? value, TextCaseType textCaseType, object? expectedResult)
     {
         var textCaseConverter = new TextCaseConverter

@@ -17,7 +17,7 @@ public class DateTimeOffsetConverter_Tests : BaseTest
     static readonly DateTimeOffset testDateTimeOffsetLocal = new(2020, 08, 25, 13, 37, 00, DateTimeOffset.Now.Offset);
     static readonly DateTimeOffset testDateTimeOffsetUtc = new(2020, 08, 25, 13, 37, 00, DateTimeOffset.UtcNow.Offset);
 
-    static readonly IReadOnlyList<object[]> data = new[]
+    public static IReadOnlyList<object[]> Data { get; } = new[]
     {
         new object[] { testDateTimeOffsetNow, testDateTimeNow },
         new object[] { DateTimeOffset.MinValue, DateTime.MinValue },
@@ -27,7 +27,7 @@ public class DateTimeOffsetConverter_Tests : BaseTest
         new object[] { testDateTimeOffsetUtc, testDateTimeUnspecified },
     };
 
-    static readonly IReadOnlyList<object[]> dataReverse = new[]
+    public static IReadOnlyList<object[]> DataReverse { get; } = new[]
     {
         new object[] { testDateTimeNow, testDateTimeOffsetNow },
         new object[] { DateTime.MinValue, DateTimeOffset.MinValue },
@@ -38,7 +38,7 @@ public class DateTimeOffsetConverter_Tests : BaseTest
     };
 
     [Theory]
-    [MemberData(nameof(data))]
+    [MemberData(nameof(Data))]
     public void DateTimeOffsetConverter(DateTimeOffset value, DateTime expectedResult)
     {
         var dateTimeOffsetConverter = new DateTimeOffsetConverter();
@@ -50,7 +50,7 @@ public class DateTimeOffsetConverter_Tests : BaseTest
     }
 
     [Theory]
-    [MemberData(nameof(dataReverse))]
+    [MemberData(nameof(DataReverse))]
     public void DateTimeOffsetConverterBack(DateTime value, DateTimeOffset expectedResult)
     {
         var dateTimeOffsetConverter = new DateTimeOffsetConverter();
