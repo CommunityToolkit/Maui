@@ -8,7 +8,7 @@ variables:
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
-  XcodeVersion: '13.0_beta'
+  XcodeVersion: '13.1'
 
 trigger:
   branches:
@@ -23,7 +23,7 @@ trigger:
     - README.md
 
 pr:
-  autoCancel: true
+  autoCancel: 'true'
   branches:
     include:
     - main
@@ -47,7 +47,6 @@ jobs:
         displayName: 'Install .NET SDK'
         inputs:
           version: '$(NET_VERSION)'
-          includePreviewVersions: true
       - task: CmdLine@2
         displayName: 'Install .NET MAUI workload'
         inputs:
@@ -105,7 +104,7 @@ jobs:
         inputs:
           script: |
             dotnet build $(PathToCommunityToolkitUnitTestCsproj) -c Release
-            :: dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release
+            dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release
       - task: CmdLine@2
         displayName: Pack Community Toolkit NuGets
         inputs:
@@ -130,7 +129,7 @@ jobs:
   - job: build_macos
     displayName: Build macOS Library
     pool:
-      vmImage: macos-11
+      vmImage: macos-latest
     steps:
       # if this is a tagged build, then update the version number
       - powershell: |
@@ -147,8 +146,7 @@ jobs:
       - task: UseDotNet@2
         displayName: 'Install .NET SDK'
         inputs:
-          version: $(NET_VERSION)
-          includePreviewVersions: true      
+          version: $(NET_VERSION)    
       - task: CmdLine@2
         displayName: 'Install .NET MAUI workload'
         inputs:
@@ -168,13 +166,12 @@ jobs:
         displayName: 'Build Community Toolkit Sample'
         inputs:
           script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release'
-      # `dotnet test` does not yet support optional workloads https://github.com/dotnet/sdk/issues/21845#issuecomment-943270826
       - task: CmdLine@2
         displayName: 'Run Unit Tests'
         inputs:
           script: |
             dotnet build $(PathToCommunityToolkitUnitTestCsproj) -c Release
-            # dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release
+            dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit NuGets'
         inputs:
