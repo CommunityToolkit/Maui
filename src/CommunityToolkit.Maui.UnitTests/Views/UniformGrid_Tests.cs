@@ -63,6 +63,17 @@ public class UniformGridTests : BaseTest
 		Assert.Equal(expectedSize, actualSize);
 	}
 
+	[Fact]
+	public void MaxRowsArrangeChildrenUniformGrid()
+	{
+		var expectedSize = new Size(childWidth, childHeight);
+		SetupChildrenSize(expectedSize);
+		uniformGrid.MaxColumns = 1;
+		uniformGrid.MaxRows = 1;
+		var actualSize = uniformGrid.Measure(double.PositiveInfinity, double.PositiveInfinity);
+		Assert.Equal(expectedSize, actualSize);
+	}
+
 	void SetupChildrenSize(Size size)
 	{
 		uniformChild.Measure(double.PositiveInfinity, double.PositiveInfinity).ReturnsForAnyArgs(size);

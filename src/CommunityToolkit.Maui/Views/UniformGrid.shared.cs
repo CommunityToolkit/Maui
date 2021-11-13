@@ -27,6 +27,34 @@ public class UniformGrid : Grid, ILayoutManager
 	}
 
 	/// <summary>
+	/// Backing BindableProperty for the <see cref="MaxRows"/> property.
+	/// </summary>
+	public static readonly BindableProperty MaxRowsProperty = BindableProperty.Create(nameof(MaxRows), typeof(int), typeof(UniformGrid), int.MaxValue);
+
+	/// <summary>
+	/// Backing BindableProperty for the <see cref="MaxColumns"/> property.
+	/// </summary>
+	public static readonly BindableProperty MaxColumnsProperty = BindableProperty.Create(nameof(MaxColumns), typeof(int), typeof(UniformGrid), int.MaxValue);
+
+	/// <summary>
+	/// Max rows
+	/// </summary>
+	public int MaxRows
+	{
+		get { return (int)GetValue(MaxRowsProperty); }
+		set { SetValue(MaxRowsProperty, value); }
+	}
+
+	/// <summary>
+	/// Max columns
+	/// </summary>
+	public int MaxColumns
+	{
+		get { return (int)GetValue(MaxColumnsProperty); }
+		set { SetValue(MaxColumnsProperty, value); }
+	}
+
+	/// <summary>
 	/// Arrange children
 	/// </summary>
 	/// <param name="rectangle">Grid rectangle</param>
@@ -80,10 +108,10 @@ public class UniformGrid : Grid, ILayoutManager
 	}
 
 	int GetColumnsCount(int visibleChildrenCount, double widthConstraint, double maxChildWidth)
-		=> double.IsPositiveInfinity(widthConstraint)
-			? visibleChildrenCount
-			: Math.Min((int)(widthConstraint / maxChildWidth), visibleChildrenCount);
+		=> Math.Min(double.IsPositiveInfinity(widthConstraint)
+				   ? visibleChildrenCount
+				   : Math.Min((int)(widthConstraint / maxChildWidth), visibleChildrenCount), MaxColumns);
 
 	int GetRowsCount(int visibleChildrenCount, int columnsCount)
-		=> (int)Math.Ceiling((double)visibleChildrenCount / columnsCount);
+		=> Math.Min((int)Math.Ceiling((double)visibleChildrenCount / columnsCount), MaxRows);
 }
