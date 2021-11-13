@@ -1,7 +1,7 @@
 <pages:BasePage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="CommunityToolkit.Maui.Sample.MainPage"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.MainPage"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels"
     x:Name="Page"
@@ -33,7 +33,7 @@
                             </Frame.GestureRecognizers>
                             <Grid
                                 RowSpacing="0"
-                                RowDefinitions="Auto, *">
+                                RowDefinitions="Auto, Auto">
                                 <Label
                                     Text="{Binding Title}"
                                     Style="{StaticResource label_section_header}"/>
