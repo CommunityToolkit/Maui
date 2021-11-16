@@ -29,6 +29,10 @@ public class BehaviorsGalleryViewModel : BaseGalleryViewModel
             typeof(UriValidationBehaviorPage),
             nameof(UriValidationBehavior),
             "Changes an Entry's text color when an invalid URI is provided"),
+		new SectionModel(
+            typeof(RequiredStringValidationBehaviorPage),
+            nameof(RequiredStringValidationBehavior),
+            "Changes an Entry's text color when an required string is not provided"),
         new SectionModel(
             typeof(MultiValidationBehaviorPage),
             nameof(MultiValidationBehavior),
