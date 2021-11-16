@@ -74,6 +74,30 @@ public class RequiredStringValidationBehavior_Tests : BaseTest
 	}
 
 	[Fact]
+	public void IsValidTrueWhenExactMatchFalse_Test()
+	{
+		// Arrange
+		var passwordEntry = new Entry
+		{
+			Text = "345"
+		};
+		var confirmPasswordEntry = new Entry();
+		var confirmPasswordBehavior = new RequiredStringValidationBehavior
+		{
+			Flags = ValidationFlags.ValidateOnValueChanged,
+			RequiredString = passwordEntry.Text,
+			ExactMatch = false
+		};
+
+		// Act
+		confirmPasswordEntry.Behaviors.Add(confirmPasswordBehavior);
+		confirmPasswordEntry.Text = "123456";
+
+		// Assert
+		Assert.True(confirmPasswordBehavior.IsValid);
+	}
+
+	[Fact]
 	public void IsValidFalseWhenEnterDifferentText_Test()
 	{
 		// Arrange

@@ -11,7 +11,7 @@
     </pages:BasePage.BindingContext>
     <pages:BasePage.Content>
         <ScrollView>
-            <StackLayout Spacing="20">
+            <VerticalStackLayout Spacing="20">
 
                 <Label Text="When the MaxLength on an Entry field has been reached, any configured EventHandler gets invoked and a Command gets Executed."
                        Margin="{StaticResource ContentPadding}" />
@@ -70,7 +70,7 @@
 
                 <Label Text="{Binding CommandExecutions}" Margin="{StaticResource ContentPadding}" />
 
-            </StackLayout>
+            </VerticalStackLayout>
         </ScrollView>
     </pages:BasePage.Content>
 </pages:BasePage>

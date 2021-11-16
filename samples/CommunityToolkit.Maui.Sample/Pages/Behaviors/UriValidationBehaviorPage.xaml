@@ -11,27 +11,25 @@
         </Style>
     </pages:BasePage.Resources>
 
-    <StackLayout Padding="{StaticResource ContentPadding}"
+    <VerticalStackLayout Padding="{StaticResource ContentPadding}"
                  Spacing="50"
                  VerticalOptions="CenterAndExpand">
         <Label Text="Text color will change accordingly to the style that is configured when a invalid URI is entered." />
-        <StackLayout>
-            <Entry Placeholder="UriKind: Absolute">
-                <Entry.Behaviors>
-                    <mct:UriValidationBehavior UriKind="Absolute" InvalidStyle="{StaticResource InvalidEntryStyle}"/>
-                </Entry.Behaviors>
-            </Entry>
-            <Entry Placeholder="UriKind: Relative">
-                <Entry.Behaviors>
-                    <mct:UriValidationBehavior UriKind="Relative" InvalidStyle="{StaticResource InvalidEntryStyle}"/>
-                </Entry.Behaviors>
-            </Entry>
-            <Entry Placeholder="UriKind: RelativeOrAbsolute">
-                <Entry.Behaviors>
-                    <mct:UriValidationBehavior UriKind="RelativeOrAbsolute" InvalidStyle="{StaticResource InvalidEntryStyle}"/>
-                </Entry.Behaviors>
-            </Entry>
-        </StackLayout>
-    </StackLayout>
+        <Entry Placeholder="UriKind: Absolute">
+            <Entry.Behaviors>
+                <mct:UriValidationBehavior UriKind="Absolute" InvalidStyle="{StaticResource InvalidEntryStyle}"/>
+            </Entry.Behaviors>
+        </Entry>
+        <Entry Placeholder="UriKind: Relative">
+            <Entry.Behaviors>
+                <mct:UriValidationBehavior UriKind="Relative" InvalidStyle="{StaticResource InvalidEntryStyle}"/>
+            </Entry.Behaviors>
+        </Entry>
+        <Entry Placeholder="UriKind: RelativeOrAbsolute">
+            <Entry.Behaviors>
+                <mct:UriValidationBehavior UriKind="RelativeOrAbsolute" InvalidStyle="{StaticResource InvalidEntryStyle}"/>
+            </Entry.Behaviors>
+        </Entry>
+    </VerticalStackLayout>
 
 </pages:BasePage>

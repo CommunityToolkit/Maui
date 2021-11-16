@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using CommunityToolkit.Maui.Behaviors;
-using CommunityToolkit.Maui.UnitTests.Mocks;
-using Microsoft.Maui.Controls;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
@@ -22,17 +20,8 @@ public class UriValidationBehavior_Tests : BaseTest
         var behavior = new UriValidationBehavior
         {
             UriKind = uriKind,
+			Value = value
         };
-
-        var entry = new Entry
-        {
-            Text = value,
-            Behaviors =
-                {
-                    behavior
-                }
-        };
-        entry.Behaviors.Add(behavior);
 
         // Act
         await behavior.ForceValidate();

@@ -24,7 +24,24 @@ public class RequiredStringValidationBehavior : ValidationBehavior
 		set => SetValue(RequiredStringProperty, value);
 	}
 
+	/// <summary>
+	/// Backing BindableProperty for the <see cref="ExactMatch"/> property.
+	/// </summary>
+	public static readonly BindableProperty ExactMatchProperty
+		= BindableProperty.Create(nameof(ExactMatch), typeof(bool), typeof(RequiredStringValidationBehavior), true);
+
+	/// <summary>
+	/// Equals comapre or contains. Equals by default. This is a bindable property.
+	/// </summary>
+	public bool ExactMatch
+	{
+		get => (bool)GetValue(ExactMatchProperty);
+		set => SetValue(ExactMatchProperty, value);
+	}
+
 	/// <inheritdoc/>
 	protected override ValueTask<bool> ValidateAsync(object? value, CancellationToken token)
-		=> new ValueTask<bool>(value?.ToString() == RequiredString);
+	{
+		return new ValueTask<bool>(ExactMatch ? value?.ToString() == RequiredString : value?.ToString()?.Contains(RequiredString ?? string.Empty) ?? false);
+	}
 }
