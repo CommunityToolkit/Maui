@@ -32,7 +32,11 @@ public class BehaviorsGalleryViewModel : BaseGalleryViewModel
 		new SectionModel(
             typeof(RequiredStringValidationBehaviorPage),
             nameof(RequiredStringValidationBehavior),
-            "Changes an Entry's text color when an required string is not provided"),
+            "Changes an Entry's text color when a required string is not provided"),
+		new SectionModel(
+            typeof(TextValidationBehaviorPage),
+            nameof(TextValidationBehavior),
+            "Changes an Entry's text color when text validation is failed (based on regex)"),
         new SectionModel(
             typeof(MultiValidationBehaviorPage),
             nameof(MultiValidationBehavior),
