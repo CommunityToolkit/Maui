@@ -5,25 +5,48 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
+
 namespace CommunityToolkit.Maui.Controls.Snackbar;
 
-public class Snackbar : Toast
+public class Snackbar : BasePopupView
 {
-	public Snackbar():base()
-	{
+#if NET6_0_ANDROID
+	internal Google.Android.Material.Snackbar.Snackbar? nativeSnackbar;
+#endif
 
+	public Snackbar()
+	{
+		this.Parent = Application.Current?.MainPage;
 	}
-	public static readonly BindableProperty ActionProperty = BindableProperty.Create(nameof(Action), typeof(string), typeof(Snackbar), string.Empty, BindingMode.TwoWay);
+
+	public static readonly BindableProperty ActionProperty = BindableProperty.Create(nameof(Action), typeof(Action), typeof(Snackbar), () => { }, BindingMode.TwoWay);
 	public static readonly BindableProperty ActionTextColorProperty = BindableProperty.Create(nameof(ActionTextColor), typeof(Color), typeof(Snackbar), Colors.Black, BindingMode.TwoWay);
 	public static readonly BindableProperty ActionButtonTextProperty = BindableProperty.Create(nameof(ActionButtonText), typeof(string), typeof(Snackbar), "OK", BindingMode.TwoWay);
+	public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(Snackbar), string.Empty, BindingMode.TwoWay);
+	public static readonly BindableProperty DurationProperty = BindableProperty.Create(nameof(Duration), typeof(TimeSpan), typeof(Snackbar), TimeSpan.FromMilliseconds(3000), BindingMode.TwoWay);
+	public static readonly BindableProperty TextColorProperty = BindableProperty.Create(nameof(TextColor), typeof(Color), typeof(Snackbar), Colors.Black, BindingMode.TwoWay);
 
-	public void SetAction(string actionButtonText, Action<IView> action) => (ActionButtonText, Action) = (actionButtonText, action);
-
-
-	public void SetActionTextColor(Color actionTextColor) => ActionTextColor = actionTextColor;
-	public Action<IView>? Action
+	public string Text
 	{
-		get { return (Action<IView>?)GetValue(ActionProperty); }
+		get { return (string)GetValue(TextProperty); }
+		set { SetValue(TextProperty, value); }
+	}
+
+	public Color TextColor
+	{
+		get { return (Color)GetValue(TextColorProperty); }
+		set { SetValue(TextColorProperty, value); }
+	}
+
+	public TimeSpan Duration
+	{
+		get { return (TimeSpan)GetValue(DurationProperty); }
+		set { SetValue(DurationProperty, value); }
+	}
+
+	public Action Action
+	{
+		get { return (Action)GetValue(ActionProperty); }
 		set { SetValue(ActionProperty, value); }
 	}
 
@@ -39,9 +62,20 @@ public class Snackbar : Toast
 		set { SetValue(ActionButtonTextProperty, value); }
 	}
 
-	public static Snackbar Make(string text, TimeSpan duration, IView? anchor = null)
+	public static Snackbar Make(string text, TimeSpan? duration, Action action, IView? anchor = null)
 	{
-		return new Snackbar();
+		var snackbar = new Snackbar
+		{
+			Text = text,
+			Anchor = anchor,
+			Action = action
+		};
+		if (duration is not null)
+		{
+			snackbar.Duration = duration.Value;
+		}
+
+		return snackbar;
 	}
 
 	public override Task Show()
@@ -51,8 +85,9 @@ public class Snackbar : Toast
 			throw new ArgumentNullException(nameof(Parent));
 		}
 
-#if NET6_0_ANDROID || NET6_0_IOS || NET6_0_MACCATALYST
-		PlatformPopupExtensions.Show(this);
+#if NET6_0_ANDROID
+		nativeSnackbar = PlatformPopupExtensions.Show(this);
+		IsShown = true;
 #else
 		throw new PlatformNotSupportedException();
 #endif
@@ -61,6 +96,13 @@ public class Snackbar : Toast
 
 	public override Task Dismiss()
 	{
-		throw new NotImplementedException();
+#if NET6_0_ANDROID
+		PlatformPopupExtensions.Dismiss(this);
+		IsShown = false;
+#else
+		throw new PlatformNotSupportedException();
+#endif
+
+		return Task.CompletedTask;
 	}
 }

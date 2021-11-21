@@ -4,7 +4,6 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Util;
 using Android.Widget;
-using CommunityToolkit.Maui.UI.Views.Options;
 using Google.Android.Material.Snackbar;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
@@ -16,28 +15,27 @@ using LayoutDirection = Android.Views.LayoutDirection;
 using Object = Java.Lang.Object;
 using View = Android.Views.View;
 
-
 namespace CommunityToolkit.Maui.Controls.Snackbar;
 
 public static partial class PlatformPopupExtensions
 {
-	public static void Show(Toast toast)
+	public static void Dismiss(Snackbar snackbar)
 	{
-		var view = (toast.Parent.Handler?.NativeView as View) ?? throw new InvalidOperationException("NativeView is null");
-		var nativeToast = Android.Widget.Toast.MakeText(view.Context, toast.Text, ToastLength.Short);
-		nativeToast?.Show();
+		snackbar.nativeSnackbar?.Dismiss();
 	}
 
-	public static void Show(Snackbar snackBar)
+	public static AndroidSnackBar Show(Snackbar snackBar)
 	{
 		var view = (snackBar.Parent.Handler?.NativeView as View) ?? throw new InvalidOperationException("NativeView is null");
 		var nativeSnackBar = AndroidSnackBar.Make(view, snackBar.Text, (int)snackBar.Duration.TotalMilliseconds);
 		var snackBarView = nativeSnackBar.View;
 
-		if (snackBar.Anchor is not null)
+		if (snackBar.Anchor is not Page)
 		{
-			nativeSnackBar.SetAnchorView(snackBar.Anchor.Handler?.NativeView as View);
+			nativeSnackBar.SetAnchorView(snackBar.Anchor?.Handler?.NativeView as View);
 		}
+
+
 		/*
 		if (snackBar.View.Background is GradientDrawable shape)
 		{
@@ -90,71 +88,26 @@ public static partial class PlatformPopupExtensions
 			}
 
 			snackTextView.SetTypeface(arguments.MessageOptions.Font.ToTypeface(), TypefaceStyle.Normal);
-		}
-
-		snackTextView.LayoutDirection = arguments.IsRtl
-			? LayoutDirection.Rtl
-			: LayoutDirection.Inherit;
-
-		foreach (var action in arguments.Actions)
-		{
-			snackBar.SetAction(action.Text, async _ =>
+		}*/
+			nativeSnackBar.SetAction(snackBar.ActionButtonText, _ =>
 			{
-				try
-				{
-					if (action.Action != null)
-						await action.Action();
-
-					arguments.SetResult(true);
-				}
-				catch (Exception ex)
-				{
-					arguments.SetException(ex);
-				}
+				snackBar.Action();
 			});
-			if (action.ForegroundColor != Colors.White)
-			{
-				snackBar.SetActionTextColor(action.ForegroundColor.ToAndroid());
-			}
+			nativeSnackBar.SetActionTextColor(snackBar.ActionTextColor.ToAndroid());
 
-			var snackActionButtonView = snackBarView.FindViewById<TextView>(Resource.Id.snackbar_action) ?? throw new InvalidOperationException("Unable to find SnackBar action button");
-			if (arguments.BackgroundColor != Colors.Black)
-			{
-				snackActionButtonView.SetBackgroundColor(action.BackgroundColor.ToAndroid());
-			}
-
-			if (action.Padding != SnackBarActionOptions.DefaultPadding)
-			{
-				snackActionButtonView.SetPadding((int)action.Padding.Left,
-					(int)action.Padding.Top,
-					(int)action.Padding.Right,
-					(int)action.Padding.Bottom);
-			}
-
-			if (action.Font != Font.Default)
-			{
-				if (action.Font.Size > 0)
-				{
-					snackTextView.SetTextSize(ComplexUnitType.Dip, (float)action.Font.Size);
-				}
-
-				snackActionButtonView.SetTypeface(action.Font.ToTypeface(), TypefaceStyle.Normal);
-			}
-
-			snackActionButtonView.LayoutDirection = arguments.IsRtl
-				? LayoutDirection.Rtl
-				: LayoutDirection.Inherit;
-		}
-
-		nativeSnackBar.AddCallback(new SnackBarCallback(arguments));*/
+		nativeSnackBar.AddCallback(new SnackBarCallback(snackBar));
 		nativeSnackBar.Show();
+		return nativeSnackBar;
 	}
 
 	class SnackBarCallback : BaseTransientBottomBar.BaseCallback
 	{
-		readonly SnackBarOptions arguments;
+		private readonly Snackbar snackbar;
 
-		public SnackBarCallback(SnackBarOptions arguments) => this.arguments = arguments;
+		public SnackBarCallback(Snackbar snackbar)
+		{
+			this.snackbar = snackbar;
+		}
 
 		public override void OnDismissed(Object transientBottomBar, int e)
 		{
@@ -163,7 +116,7 @@ public static partial class PlatformPopupExtensions
 			if (e == DismissEventAction)
 				return;
 
-			arguments.SetResult(false);
+			snackbar.IsShown = false;
 		}
 	}
 }

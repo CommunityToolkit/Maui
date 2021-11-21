@@ -3,19 +3,22 @@
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Views.SnackBarPage">
-    <StackLayout Spacing="10" Margin="20">
-        <Button Clicked="DisplaySnackBarClicked" Text="Show SnackBar"/>
-        <Button Clicked="DisplayToastClicked" Text="Show toast"/>
-        <Button Clicked="DisplaySnackBarAdvancedClicked" Text="Show Advanced SnackBar"/>
-        <Button Clicked="DisplaySnackBarWithPadding" Text="Show SnackBar with Padding"/>
+    <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto, Auto, Auto" RowSpacing="10" ColumnSpacing="10">
+        <Button Clicked="DisplaySnackBarClicked"
+                Text="Show SnackBar"
+                GridLayout.Column="0" GridLayout.Row="0" GridLayout.ColumnSpan="2"/>
 
         <Button x:Name="Anchor1"
-                Clicked="DisplayToastAnchoredClicked"
-                Text="Show toast with anchor"/>
-        <Button x:Name="Anchor2"
                 Clicked="DisplaySnackbarAnchoredClicked"
+                GridLayout.Column="0"
+                GridLayout.Row="1"
                 Text="Show snackbar with anchor"/>
 
-        <Label x:Name="StatusText"/>
-    </StackLayout>
+        <Button Clicked="DismissSnackbarClicked"
+                GridLayout.Column="1" GridLayout.Row="1"
+                Text="Dismiss snackbar with anchor"/>
+
+        <Label x:Name="StatusText"
+               GridLayout.Column="0" GridLayout.Row="2" GridLayout.ColumnSpan="2"/>
+    </Grid>
 </pages:BasePage>
