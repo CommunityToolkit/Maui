@@ -18,8 +18,8 @@ public partial class SnackBarPage : BasePage
 	public SnackBarPage()
 	{
 		InitializeComponent();
-		this.Anchor1 ??= new Microsoft.Maui.Controls.Button();
-		this.StatusText ??= new Microsoft.Maui.Controls.Label();
+		this.Anchor1 ??= new ();
+		this.StatusText ??= new ();
 	}
 
 	async void DisplaySnackBarClicked(object? sender, EventArgs args)
@@ -32,10 +32,18 @@ public partial class SnackBarPage : BasePage
 
 	async void DisplaySnackbarAnchoredClicked(object? sender, EventArgs args)
 	{
-		snackbarWithAnchor = await Anchor1.DisplaySnackBarAsync(GenerateLongText(5), "Run action", () =>
-		{
-			StatusText.Text = "SnackBar action button clicked";
-		}, TimeSpan.FromSeconds(30));
+		snackbarWithAnchor = Snackbar.Make(
+			GenerateLongText(5),
+			TimeSpan.FromSeconds(30),
+			() => StatusText.Text = "SnackBar action button clicked",
+			Anchor1);
+		snackbarWithAnchor.BackgroundColor = Colors.Red;
+		snackbarWithAnchor.TextColor = Colors.Green;
+		snackbarWithAnchor.ActionTextColor = Colors.Yellow;
+		snackbarWithAnchor.CornerRadius = new CornerRadius(10, 20, 30, 40);
+		snackbarWithAnchor.Font = Font.SystemFontOfSize(20);
+		snackbarWithAnchor.CharacterSpacing = 1;
+		await snackbarWithAnchor.Show();
 	}
 
 	async void DismissSnackbarClicked(System.Object sender, System.EventArgs e)

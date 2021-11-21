@@ -54,7 +54,6 @@
     <Compile Remove="obj\**" />
     <EmbeddedResource Remove="obj\**" />
     <None Remove="obj\**" />
-    <None Remove="Views\Snackbar\Options\" />
   </ItemGroup>
 
   <ItemGroup Condition=" $(TargetFramework.Contains(-android)) ">
@@ -75,8 +74,5 @@
   <ItemGroup Condition=" $(TargetFramework.Contains('-maccatalyst')) ">
     <Compile Include="**\*.macos.cs" />
     <Compile Include="**\*.macos.*.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Views\Snackbar\Options\" />
   </ItemGroup>
 </Project>

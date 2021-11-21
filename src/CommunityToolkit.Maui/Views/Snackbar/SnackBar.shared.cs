@@ -8,7 +8,7 @@ using Microsoft.Maui.Graphics;
 
 namespace CommunityToolkit.Maui.Controls.Snackbar;
 
-public class Snackbar : BasePopupView
+public class Snackbar : BasePopupView, IText
 {
 #if NET6_0_ANDROID
 	internal Google.Android.Material.Snackbar.Snackbar? nativeSnackbar;
@@ -17,14 +17,30 @@ public class Snackbar : BasePopupView
 	public Snackbar()
 	{
 		this.Parent = Application.Current?.MainPage;
+		BackgroundColor = Colors.LightGray;
 	}
 
 	public static readonly BindableProperty ActionProperty = BindableProperty.Create(nameof(Action), typeof(Action), typeof(Snackbar), () => { }, BindingMode.TwoWay);
 	public static readonly BindableProperty ActionTextColorProperty = BindableProperty.Create(nameof(ActionTextColor), typeof(Color), typeof(Snackbar), Colors.Black, BindingMode.TwoWay);
 	public static readonly BindableProperty ActionButtonTextProperty = BindableProperty.Create(nameof(ActionButtonText), typeof(string), typeof(Snackbar), "OK", BindingMode.TwoWay);
-	public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(Snackbar), string.Empty, BindingMode.TwoWay);
 	public static readonly BindableProperty DurationProperty = BindableProperty.Create(nameof(Duration), typeof(TimeSpan), typeof(Snackbar), TimeSpan.FromMilliseconds(3000), BindingMode.TwoWay);
+	public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(Snackbar), string.Empty, BindingMode.TwoWay);
 	public static readonly BindableProperty TextColorProperty = BindableProperty.Create(nameof(TextColor), typeof(Color), typeof(Snackbar), Colors.Black, BindingMode.TwoWay);
+	public static readonly BindableProperty FontProperty = BindableProperty.Create(nameof(Font), typeof(Font), typeof(Snackbar), Font.SystemFontOfSize(14), BindingMode.TwoWay);
+	public static readonly BindableProperty CharacterSpacingProperty = BindableProperty.Create(nameof(CharacterSpacing), typeof(double), typeof(Snackbar), default, BindingMode.TwoWay);
+
+
+	public double CharacterSpacing
+	{
+		get { return (double)GetValue(CharacterSpacingProperty); }
+		set { SetValue(CharacterSpacingProperty, value); }
+	}
+
+	public Font Font
+	{
+		get { return (Font)GetValue(FontProperty); }
+		set { SetValue(FontProperty, value); }
+	}
 
 	public string Text
 	{
@@ -87,14 +103,14 @@ public class Snackbar : BasePopupView
 
 #if NET6_0_ANDROID
 		nativeSnackbar = PlatformPopupExtensions.Show(this);
-		IsShown = true;
+		IsShown = true;		
 #else
 		throw new PlatformNotSupportedException();
 #endif
 		return Task.CompletedTask;
 	}
 
-	public override Task Dismiss()
+	internal override Task DismissInternal()
 	{
 #if NET6_0_ANDROID
 		PlatformPopupExtensions.Dismiss(this);

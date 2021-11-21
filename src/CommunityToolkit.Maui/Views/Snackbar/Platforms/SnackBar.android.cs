@@ -35,69 +35,63 @@ public static partial class PlatformPopupExtensions
 			nativeSnackBar.SetAnchorView(snackBar.Anchor?.Handler?.NativeView as View);
 		}
 
-
-		/*
-		if (snackBar.View.Background is GradientDrawable shape)
+		if (snackBarView.Background is GradientDrawable shape)
 		{
-			if (arguments.BackgroundColor != Colors.Black)
-			{
-				shape?.SetColor(arguments.BackgroundColor.ToAndroid().ToArgb());
-			}
+			shape.SetColor(snackBar.BackgroundColor.ToAndroid().ToArgb());
 
 			var density = view.Context?.Resources?.DisplayMetrics?.Density ?? 1;
 			var defaultAndroidCornerRadius = 4 * density;
-			arguments.CornerRadius = new Thickness(arguments.CornerRadius.Left * density,
-				arguments.CornerRadius.Top * density,
-				arguments.CornerRadius.Right * density,
-				arguments.CornerRadius.Bottom * density);
-			if (arguments.CornerRadius != new Thickness(defaultAndroidCornerRadius, defaultAndroidCornerRadius, defaultAndroidCornerRadius, defaultAndroidCornerRadius))
-			{
-				shape?.SetCornerRadii(new[]
+			var cornerRadius = new Thickness(
+				snackBar.CornerRadius.BottomLeft * density,
+				snackBar.CornerRadius.TopLeft * density,
+				snackBar.CornerRadius.TopRight * density,
+				snackBar.CornerRadius.BottomRight * density);
+			shape.SetCornerRadii(new[]
 				{
-					(float)arguments.CornerRadius.Left, (float)arguments.CornerRadius.Left,
-					(float)arguments.CornerRadius.Top, (float)arguments.CornerRadius.Top,
-					(float)arguments.CornerRadius.Right, (float)arguments.CornerRadius.Right,
-					(float)arguments.CornerRadius.Bottom, (float)arguments.CornerRadius.Bottom
+					(float)cornerRadius.Left, (float)cornerRadius.Left,
+					(float)cornerRadius.Top, (float)cornerRadius.Top,
+					(float)cornerRadius.Right, (float)cornerRadius.Right,
+					(float)cornerRadius.Bottom, (float)cornerRadius.Bottom
 				});
-			}
 
 			snackBarView.SetBackground(shape);
-		}*/
-
-		var snackTextView = snackBarView.FindViewById<TextView>(Resource.Id.snackbar_text) ?? throw new InvalidOperationException("Unable to find SnackBar text view");
-		snackTextView.SetMaxLines(10);
-
-		/*if (arguments.MessageOptions.Padding != MessageOptions.DefaultPadding)
-		{
-			snackBarView.SetPadding((int)arguments.MessageOptions.Padding.Left,
-				(int)arguments.MessageOptions.Padding.Top,
-				(int)arguments.MessageOptions.Padding.Right,
-				(int)arguments.MessageOptions.Padding.Bottom);
 		}
 
-		if (arguments.MessageOptions.Foreground != Colors.White)
-		{
-			snackTextView.SetTextColor(arguments.MessageOptions.Foreground.ToAndroid());
-		}
-
-		if (arguments.MessageOptions.Font != Font.Default)
-		{
-			if (arguments.MessageOptions.Font.Size > 0)
-			{
-				snackTextView.SetTextSize(ComplexUnitType.Dip, (float)arguments.MessageOptions.Font.Size);
-			}
-
-			snackTextView.SetTypeface(arguments.MessageOptions.Font.ToTypeface(), TypefaceStyle.Normal);
-		}*/
-			nativeSnackBar.SetAction(snackBar.ActionButtonText, _ =>
-			{
-				snackBar.Action();
-			});
-			nativeSnackBar.SetActionTextColor(snackBar.ActionTextColor.ToAndroid());
-
-		nativeSnackBar.AddCallback(new SnackBarCallback(snackBar));
+		SetupMessage(snackBar, snackBarView);
+		SetupActions(snackBar, nativeSnackBar);
 		nativeSnackBar.Show();
 		return nativeSnackBar;
+	}
+
+	static void SetupMessage(Snackbar snackBar, View snackBarView)
+	{
+		var snackTextView = snackBarView.FindViewById<TextView>(Resource.Id.snackbar_text) ?? throw new InvalidOperationException("Unable to find SnackBar text view");
+		snackTextView.SetMaxLines(10);
+		snackBarView.SetPadding((int)snackBar.Padding.Left,
+			(int)snackBar.Padding.Top,
+			(int)snackBar.Padding.Right,
+			(int)snackBar.Padding.Bottom);
+
+		snackTextView.SetTextColor(snackBar.TextColor.ToAndroid());
+		if (snackBar.Font.Size > 0)
+		{
+			snackTextView.SetTextSize(ComplexUnitType.Dip, (float)snackBar.Font.Size);
+		}
+
+		snackTextView.LetterSpacing = (float)snackBar.CharacterSpacing;
+
+		snackTextView.SetTypeface(snackBar.Font.ToTypeface(), TypefaceStyle.Normal);
+	}
+
+	static void SetupActions(Snackbar snackBar, AndroidSnackBar nativeSnackBar)
+	{
+		nativeSnackBar.SetAction(snackBar.ActionButtonText, _ =>
+		{
+			snackBar.Action();
+		});
+		nativeSnackBar.SetActionTextColor(snackBar.ActionTextColor.ToAndroid());
+
+		nativeSnackBar.AddCallback(new SnackBarCallback(snackBar));
 	}
 
 	class SnackBarCallback : BaseTransientBottomBar.BaseCallback
@@ -112,10 +106,6 @@ public static partial class PlatformPopupExtensions
 		public override void OnDismissed(Object transientBottomBar, int e)
 		{
 			base.OnDismissed(transientBottomBar, e);
-
-			if (e == DismissEventAction)
-				return;
-
 			snackbar.IsShown = false;
 		}
 	}
