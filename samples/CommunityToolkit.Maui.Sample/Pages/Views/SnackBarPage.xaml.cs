@@ -4,83 +4,96 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
+using CommunityToolkit.Maui.Controls.Snackbar;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.UI.Views.Options;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 
-namespace CommunityToolkit.Maui.Sample.Pages.Views
+namespace CommunityToolkit.Maui.Sample.Pages.Views;
+
+public partial class SnackBarPage : BasePage
 {
-	public partial class SnackBarPage : BasePage
+	public SnackBarPage()
 	{
-		public SnackBarPage() => InitializeComponent();
+		InitializeComponent();
+		this.Anchor1 ??= new Microsoft.Maui.Controls.Button();
+		this.Anchor2 ??= new Microsoft.Maui.Controls.Button();
+		this.StatusText ??= new Microsoft.Maui.Controls.Label();
+	}
 
-		async void DisplaySnackBarClicked(object? sender, EventArgs args)
+	async void DisplaySnackBarClicked(object? sender, EventArgs args)
+	{
+		var snackbar = new Snackbar();
+		snackbar.SetText(GenerateLongText(5));
+		await snackbar.Show();
+		//var result = await this.DisplaySnackBarAsync(GenerateLongText(5), "Run action", () =>
+		//{
+		//	Debug.WriteLine("SnackBar action button clicked");
+		//	return Task.CompletedTask;
+		//});
+		//StatusText.Text = result ? "SnackBar is closed by user" : "SnackBar is closed by timeout";
+	}
+
+	async void DisplaySnackBarWithPadding(object? sender, EventArgs args)
+	{
+		//var options = new SnackBarOptions()
+		//{
+		//	BackgroundColor = Color.FromArgb("#CC0000"),
+		//	MessageOptions = new MessageOptions
+		//	{
+		//		Message = "msg",
+		//		Foreground = Colors.White,
+		//		Font = Font.SystemFontOfSize(16),
+		//		Padding = new Thickness(10, 20, 30, 40)
+		//	}
+		//};
+
+		//await this.DisplaySnackBarAsync(options);
+	}
+
+	async void DisplayToastClicked(object? sender, EventArgs args)
+	{
+		//await this.DisplayToastAsync(GenerateLongText(5));
+		var toast = new Toast();
+		toast.SetText(GenerateLongText(5));
+		await toast.Show();
+		StatusText.Text = "Toast is closed by timeout";
+	}
+
+	async void DisplayToastAnchoredClicked(object? sender, EventArgs args)
+	{
+		var messageOptions = new MessageOptions
 		{
-			var result = await this.DisplaySnackBarAsync(GenerateLongText(5), "Run action", () =>
-			{
-				Debug.WriteLine("SnackBar action button clicked");
-				return Task.CompletedTask;
-			});
-			StatusText.Text = result ? "SnackBar is closed by user" : "SnackBar is closed by timeout";
-		}
+			Message = "Anchored toast",
+			Foreground = Colors.Black
+		};
 
-		async void DisplaySnackBarWithPadding(object? sender, EventArgs args)
+		var options = new ToastOptions
 		{
-			var options = new SnackBarOptions()
-			{
-				BackgroundColor = Color.FromArgb("#CC0000"),
-				MessageOptions = new MessageOptions
-				{
-					Message = "msg",
-					Foreground = Colors.White,
-					Font = Font.SystemFontOfSize(16),
-					Padding = new Thickness(10, 20, 30, 40)
-				}
-			};
+			MessageOptions = messageOptions,
+			Duration = TimeSpan.FromMilliseconds(5000),
+			CornerRadius = new Thickness(10, 20, 30, 40),
+			BackgroundColor = Colors.LightBlue
+		};
 
-			await this.DisplaySnackBarAsync(options);
-		}
+		//await Anchor1.DisplayToastAsync(options);
+	}
 
-		async void DisplayToastClicked(object? sender, EventArgs args)
+	async void DisplaySnackbarAnchoredClicked(object? sender, EventArgs args)
+	{
+		var messageOptions = new MessageOptions
 		{
-			await this.DisplayToastAsync(GenerateLongText(5));
-			StatusText.Text = "Toast is closed by timeout";
-		}
+			Message = GenerateLongText(5),
+			Foreground = Colors.Black
+		};
 
-		async void DisplayToastAnchoredClicked(object? sender, EventArgs args)
+		var options = new SnackBarOptions
 		{
-			var messageOptions = new MessageOptions
-			{
-				Message = "Anchored toast",
-				Foreground = Colors.Black
-			};
-
-			var options = new ToastOptions
-			{
-				MessageOptions = messageOptions,
-				Duration = TimeSpan.FromMilliseconds(5000),
-				CornerRadius = new Thickness(10, 20, 30, 40),
-				BackgroundColor = Colors.LightBlue
-			};
-
-			await Anchor1.DisplayToastAsync(options);
-		}
-
-		async void DisplaySnackbarAnchoredClicked(object? sender, EventArgs args)
-		{
-			var messageOptions = new MessageOptions
-			{
-				Message = GenerateLongText(5),
-				Foreground = Colors.Black
-			};
-
-			var options = new SnackBarOptions
-			{
-				MessageOptions = messageOptions,
-				Duration = TimeSpan.FromMilliseconds(5000),
-				BackgroundColor = Colors.LightBlue,
-				Actions = new List<SnackBarActionOptions>
+			MessageOptions = messageOptions,
+			Duration = TimeSpan.FromMilliseconds(5000),
+			BackgroundColor = Colors.LightBlue,
+			Actions = new List<SnackBarActionOptions>
 				{
 					new SnackBarActionOptions
 					{
@@ -96,29 +109,34 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views
 						}
 					}
 				}
-			};
+		};
 
-			var result = await Anchor2.DisplaySnackBarAsync(options);
-			StatusText.Text = result ? "SnackBar is closed by user" : "SnackBar is closed by timeout";
-		}
+		//var result = await Anchor2.DisplaySnackBarAsync(options);
 
-		async void DisplaySnackBarAdvancedClicked(object? sender, EventArgs args)
+		var snackbar = new Snackbar();
+		snackbar.SetAnchorView(Anchor1);
+		snackbar.SetText(GenerateLongText(5));
+		await snackbar.Show();
+		//StatusText.Text = result ? "SnackBar is closed by user" : "SnackBar is closed by timeout";
+	}
+
+	async void DisplaySnackBarAdvancedClicked(object? sender, EventArgs args)
+	{
+		const string smileIcon = "\uf118";
+		var options = new SnackBarOptions
 		{
-			const string smileIcon = "\uf118";
-			var options = new SnackBarOptions
+			MessageOptions = new MessageOptions
 			{
-				MessageOptions = new MessageOptions
-				{
-					Foreground = Colors.DeepSkyBlue,
-					Font = Font.OfSize("FARegular", 40),
-					Padding = new Thickness(10, 20, 30, 40),
-					Message = smileIcon
-				},
-				CornerRadius = new Thickness(10, 20, 30, 40),
-				Duration = TimeSpan.FromMilliseconds(5000),
-				BackgroundColor = Colors.Coral,
-				IsRtl = CultureInfo.CurrentCulture.TextInfo.IsRightToLeft,
-				Actions = new List<SnackBarActionOptions>
+				Foreground = Colors.DeepSkyBlue,
+				Font = Font.OfSize("FARegular", 40),
+				Padding = new Thickness(10, 20, 30, 40),
+				Message = smileIcon
+			},
+			CornerRadius = new Thickness(10, 20, 30, 40),
+			Duration = TimeSpan.FromMilliseconds(5000),
+			BackgroundColor = Colors.Coral,
+			IsRtl = CultureInfo.CurrentCulture.TextInfo.IsRightToLeft,
+			Actions = new List<SnackBarActionOptions>
 				{
 					new SnackBarActionOptions
 					{
@@ -147,21 +165,20 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views
 						}
 					}
 				}
-			};
-			var result = await this.DisplaySnackBarAsync(options);
-			StatusText.Text = result ? "SnackBar is closed by user" : "SnackBar is closed by timeout";
-		}
+		};
+		/*var result = await this.DisplaySnackBarAsync(options);
+		StatusText.Text = result ? "SnackBar is closed by user" : "SnackBar is closed by timeout";*/
+	}
 
-		string GenerateLongText(int stringDuplicationTimes)
+	string GenerateLongText(int stringDuplicationTimes)
+	{
+		const string message = "It is a very long message to test multiple strings. A B C D E F G H I I J K L M N O P Q R S T U V W X Y Z";
+		var result = new StringBuilder();
+		for (var i = 0; i < stringDuplicationTimes; i++)
 		{
-			const string message = "It is a very long message to test multiple strings. A B C D E F G H I I J K L M N O P Q R S T U V W X Y Z";
-			var result = new StringBuilder();
-			for (var i = 0; i < stringDuplicationTimes; i++)
-			{
-				result.AppendLine(message);
-			}
-
-			return result.ToString();
+			result.AppendLine(message);
 		}
+
+		return result.ToString();
 	}
 }

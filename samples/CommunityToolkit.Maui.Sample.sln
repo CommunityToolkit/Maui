@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31521.260
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui", "..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj", "{71B583D9-470D-476C-BB1A-4AC663D1A339}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui", "..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj", "{71B583D9-470D-476C-BB1A-4AC663D1A339}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.UnitTests", "..\src\CommunityToolkit.Maui.UnitTests\CommunityToolkit.Maui.UnitTests.csproj", "{7D49CC16-93CF-471B-B1FA-0BA44DECC15D}"
 EndProject

@@ -67,4 +67,8 @@
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
 
+  <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
+    <RuntimeIdentifiers>android-arm;android-arm64;android-x86;android-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+
 </Project>

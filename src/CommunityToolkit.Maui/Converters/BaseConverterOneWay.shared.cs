@@ -41,6 +41,6 @@ public abstract class BaseConverterOneWay<TFrom, TTo> : ValueConverterExtension,
 	/// <summary>
 	/// Not implemented, use <see cref="BaseConverter{TFrom, TTo}"/>
 	/// </summary>
-	public virtual object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	public virtual object? ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		=> throw new NotImplementedException("Impossible to revert to original value. Consider setting BindingMode to OneWay.");
 }

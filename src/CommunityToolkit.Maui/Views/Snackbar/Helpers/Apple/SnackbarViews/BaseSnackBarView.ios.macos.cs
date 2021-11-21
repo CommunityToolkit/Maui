@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CommunityToolkit.Maui.UI.Views.Helpers.Apple.Extensions;
 using CommunityToolkit.Maui.UI.Views.Snackbar.Helpers;

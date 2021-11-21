@@ -1,10 +1,10 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Views
+﻿namespace CommunityToolkit.Maui.Sample.Pages.Views;
+
+public partial class ViewsGalleryPage : BasePage
 {
-	public partial class ViewsGalleryPage : BasePage
+	public ViewsGalleryPage()
 	{
-		public ViewsGalleryPage()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+		this.Page ??= this;
 	}
 }
