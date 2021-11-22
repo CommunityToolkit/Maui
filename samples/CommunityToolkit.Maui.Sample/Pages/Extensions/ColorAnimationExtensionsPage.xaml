@@ -3,9 +3,17 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Extensions.ColorAnimationExtensionsPage">
+
+    <pages:BasePage.Resources>
+        <ResourceDictionary>
+            <mct:ColorToColorForTextConverter x:Key="ColorToColorForTextConverter"/>
+        </ResourceDictionary>
+    </pages:BasePage.Resources>
+
     <pages:BasePage.Content>
-        <VerticalStackLayout Margin="10, 5" Spacing="2">
+        <VerticalStackLayout Margin="10, 5" Spacing="12">
             <Label Text="The ColorTo extension method provides an easy way to have an animation to change the BackgroundColor of a VisualElement" />
 
             <Label Text="Color: " />
@@ -20,16 +28,18 @@
             <Label Text="Easing function: " />
             <Picker x:Name="EasingPicker" />
 
-            <Frame x:Name="ColorFrame" 
-                   BorderColor="Black">
-                <Label Text="Watch My Background Color Change"
-                       HeightRequest="200" 
-                       HorizontalOptions="FillAndExpand" 
-                       HorizontalTextAlignment="Center"
-                       VerticalTextAlignment="Center"/>
+            <Frame x:Name="ColorFrame"
+                   BorderColor="Black"
+                   HasShadow="False"
+                   BackgroundColor="White">
+
+                <Label TextColor="{Binding Source={x:Reference ColorFrame}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}}"
+                    Text="Watch My Background Color Change"
+                    HorizontalTextAlignment="Center"
+                    VerticalTextAlignment="Center"/>
             </Frame>
 
-            <Button Text="Start ToColor Animation!" Clicked="Button_Clicked" Margin="5" BackgroundColor="Red" />
+            <Button Text="Animate" Clicked="Button_Clicked" BackgroundColor="DarkGreen" />
 
         </VerticalStackLayout>
     </pages:BasePage.Content>
