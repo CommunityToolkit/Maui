@@ -33,34 +33,4 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
 
         Assert.Throws<ArgumentException>(() => byteArrayToImageSourceConverter.Convert(value, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture));
     }
-
-    static Stream? GetStreamFromImageSource(ImageSource? imageSource)
-    {
-        var streamImageSource = (StreamImageSource?)imageSource;
-
-        var cancellationToken = System.Threading.CancellationToken.None;
-        var task = streamImageSource?.Stream(cancellationToken);
-        return task?.Result;
-    }
-
-    static bool StreamEquals(Stream? a, Stream? b)
-    {
-        if (a == b)
-            return true;
-
-        if (a == null
-            || b == null
-            || a.Length != b.Length)
-        {
-            return false;
-        }
-
-        for (var i = 0; i < a.Length; i++)
-        {
-            if (a.ReadByte() != b.ReadByte())
-                return false;
-        }
-
-        return true;
-    }
 }

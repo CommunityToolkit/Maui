@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.IO;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using Microsoft.Maui.Controls;
@@ -53,31 +52,4 @@ public class ImageResourceConverter_Tests : BaseTest
 		Assert.Throws<ArgumentException>(() => imageResourceConverter.Convert(DateTime.UtcNow, typeof(ImageResourceConverter), null, CultureInfo.CurrentCulture));
 		Assert.Throws<ArgumentException>(() => imageResourceConverter.Convert(new object(), typeof(ImageResourceConverter), null, CultureInfo.CurrentCulture));
 	}
-
-	static Stream GetStreamFromImageSource(ImageSource imageSource)
-	{
-		var streamImageSource = (StreamImageSource)imageSource;
-
-		var cancellationToken = System.Threading.CancellationToken.None;
-		var task = streamImageSource.Stream(cancellationToken);
-		return task.Result;
-	}
-
-	static bool StreamEquals(Stream a, Stream b)
-	{
-		if (a == b)
-			return true;
-
-		if (a.Length != b.Length)
-			return false;
-
-		for (var i = 0; i < a.Length; i++)
-		{
-			if (a.ReadByte() != b.ReadByte())
-				return false;
-		}
-
-		return true;
-	}
-
 }
