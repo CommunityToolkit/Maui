@@ -16,7 +16,6 @@ public class BaseTest : IDisposable
 		defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
 		defaultUICulture = System.Threading.Thread.CurrentThread.CurrentUICulture;
 		Device.PlatformServices = new MockPlatformServices();
-		Application.Current = new MockApplication();
 	}
 
 	~BaseTest() => Dispose(false);
@@ -27,8 +26,7 @@ public class BaseTest : IDisposable
 			return;
 
 		Device.PlatformServices = null;
-		Application.Current = null;
-
+		
 		System.Threading.Thread.CurrentThread.CurrentCulture = defaultCulture ?? throw new NullReferenceException();
 		System.Threading.Thread.CurrentThread.CurrentUICulture = defaultUICulture ?? throw new NullReferenceException();
 
