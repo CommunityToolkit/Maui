@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.UnitTests.Mocks;
@@ -20,6 +21,13 @@ public class ImageResourceConverter_Tests : BaseTest
 
 		base.Dispose(isDisposing);
 	}
+
+	public static IReadOnlyList<object[]> Data { get; } = new[]
+	{
+		new object[] { 3 },
+		new object[] { DateTime.UtcNow },
+		new object[] { new object() }
+	};
 
 	[Fact]
 	public void ImageResourceConverter()
@@ -43,13 +51,12 @@ public class ImageResourceConverter_Tests : BaseTest
 		Assert.Null(imageResourceConverter.Convert(null, typeof(ImageResourceConverter), null, CultureInfo.CurrentCulture));
 	}
 
-	[Fact]
-	public void ThrowsIfNotAString()
+	[Theory]
+	[MemberData(nameof(Data))]
+	public void ThrowsIfNotAString(object value)
 	{
 		var imageResourceConverter = new ImageResourceConverter();
 
-		Assert.Throws<ArgumentException>(() => imageResourceConverter.Convert(3, typeof(ImageResourceConverter), null, CultureInfo.CurrentCulture));
-		Assert.Throws<ArgumentException>(() => imageResourceConverter.Convert(DateTime.UtcNow, typeof(ImageResourceConverter), null, CultureInfo.CurrentCulture));
-		Assert.Throws<ArgumentException>(() => imageResourceConverter.Convert(new object(), typeof(ImageResourceConverter), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => imageResourceConverter.Convert(value, typeof(ImageResourceConverter), null, CultureInfo.CurrentCulture));
 	}
 }
