@@ -1,7 +1,7 @@
-﻿// Inspired by Microsoft.Maui.Controls.Core.UnitTests.AnimationReadyHandler
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.Maui;
 using Microsoft.Maui.Animations;
@@ -10,127 +10,134 @@ using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
-class MockAnimationHandler : ViewHandler<IView, object>
+static class ViewAnimationExtensions
 {
-	MockAnimationHandler(IAnimationManager animationManager) : base(new PropertyMapper<IView>())
+	public static void EnableAnimations(this IView view) => MockAnimationHandler.Prepare(view);
+
+	class MockAnimationHandler : ViewHandler<IView, object>
 	{
-		SetMauiContext(new AnimationReadyMauiContext(animationManager));
-	}
-
-	MockAnimationHandler() : this(new TestAnimationManager(new BlockingTicker()))
-	{
-	}
-
-	public IAnimationManager? AnimationManager => ((AnimationReadyMauiContext?)MauiContext)?.AnimationManager;
-
-	public static T Prepare<T>(T view) where T : IView
-	{
-		view.Handler = new MockAnimationHandler();
-
-		return view;
-	}
-
-	protected override object CreateNativeView() => new();
-
-	class AnimationReadyMauiContext : IMauiContext, IServiceProvider
-	{
-		readonly IAnimationManager _animationManager;
-
-		public AnimationReadyMauiContext(IAnimationManager? manager = null)
+		MockAnimationHandler(IAnimationManager animationManager) : base(new PropertyMapper<IView>())
 		{
-			_animationManager = manager ?? new TestAnimationManager();
+			SetMauiContext(new AnimationReadyMauiContext(animationManager));
 		}
 
-		public IServiceProvider Services => this;
-
-		public IMauiHandlersServiceProvider Handlers => throw new NotImplementedException();
-
-		public IAnimationManager AnimationManager => _animationManager;
-
-		public object GetService(Type serviceType)
+		MockAnimationHandler() : this(new TestAnimationManager(new BlockingTicker()))
 		{
-			if (serviceType == typeof(IAnimationManager))
-				return _animationManager;
-
-			throw new NotSupportedException();
 		}
-	}
 
-	class BlockingTicker : Ticker
-	{
-		bool _enabled;
+		public IAnimationManager? AnimationManager => ((AnimationReadyMauiContext?)MauiContext)?.AnimationManager;
 
-		public override void Start()
+		public static T Prepare<T>(T view) where T : IView
 		{
-			_enabled = true;
+			view.Handler = new MockAnimationHandler();
 
-			while (_enabled)
+			return view;
+		}
+
+		protected override object CreateNativeView() => new();
+
+		class AnimationReadyMauiContext : IMauiContext, IServiceProvider
+		{
+			readonly IAnimationManager _animationManager;
+
+			public AnimationReadyMauiContext(IAnimationManager? manager = null)
 			{
-				Fire?.Invoke();
-				Task.Delay(16).Wait();
+				_animationManager = manager ?? new TestAnimationManager();
+			}
+
+			public IServiceProvider Services => this;
+
+			public IMauiHandlersServiceProvider Handlers => throw new NotImplementedException();
+
+			public IAnimationManager AnimationManager => _animationManager;
+
+			public object GetService(Type serviceType)
+			{
+				if (serviceType == typeof(IAnimationManager))
+					return _animationManager;
+
+				throw new NotSupportedException();
 			}
 		}
 
-		public override void Stop()
+		class BlockingTicker : Ticker
 		{
-			_enabled = false;
-		}
-	}
+			bool _enabled;
 
-	class TestAnimationManager : IAnimationManager
-	{
-		readonly List<Microsoft.Maui.Animations.Animation> _animations = new();
-
-		public TestAnimationManager(ITicker? ticker = null)
-		{
-			Ticker = ticker ?? new BlockingTicker();
-			Ticker.Fire = OnFire;
-		}
-
-		public double SpeedModifier { get; set; } = 1;
-
-		public bool AutoStartTicker { get; set; } = false;
-
-		public ITicker Ticker { get; }
-
-		public void Add(Microsoft.Maui.Animations.Animation animation)
-		{
-			_animations.Add(animation);
-			if (AutoStartTicker && !Ticker.IsRunning)
-				Ticker.Start();
-		}
-
-		public void Remove(Microsoft.Maui.Animations.Animation animation)
-		{
-			_animations.Remove(animation);
-			if (!_animations.Any())
-				Ticker.Stop();
-		}
-
-		void OnFire()
-		{
-			var animations = _animations.ToList();
-			animations.ForEach(animationTick);
-
-			if (!_animations.Any())
-				Ticker.Stop();
-
-			void animationTick(Microsoft.Maui.Animations.Animation animation)
+			public override void Start()
 			{
-				if (animation.HasFinished)
-				{
-					_animations.Remove(animation);
-					animation.RemoveFromParent();
-					return;
-				}
+				_enabled = true;
 
-				animation.Tick(16);
-				if (animation.HasFinished)
+				while (_enabled)
 				{
-					_animations.Remove(animation);
-					animation.RemoveFromParent();
+					Fire?.Invoke();
+					Task.Delay(16).Wait();
+				}
+			}
+
+			public override void Stop()
+			{
+				_enabled = false;
+			}
+		}
+
+		class TestAnimationManager : IAnimationManager
+		{
+			readonly List<Microsoft.Maui.Animations.Animation> _animations = new();
+
+			public TestAnimationManager(ITicker? ticker = null)
+			{
+				Ticker = ticker ?? new BlockingTicker();
+				Ticker.Fire = OnFire;
+			}
+
+			public double SpeedModifier { get; set; } = 1;
+
+			public bool AutoStartTicker { get; set; } = false;
+
+			public ITicker Ticker { get; }
+
+			public void Add(Microsoft.Maui.Animations.Animation animation)
+			{
+				_animations.Add(animation);
+				if (AutoStartTicker && !Ticker.IsRunning)
+					Ticker.Start();
+			}
+
+			public void Remove(Microsoft.Maui.Animations.Animation animation)
+			{
+				_animations.Remove(animation);
+				if (!_animations.Any())
+					Ticker.Stop();
+			}
+
+			void OnFire()
+			{
+				var animations = _animations.ToList();
+				animations.ForEach(animationTick);
+
+				if (!_animations.Any())
+					Ticker.Stop();
+
+				void animationTick(Microsoft.Maui.Animations.Animation animation)
+				{
+					if (animation.HasFinished)
+					{
+						_animations.Remove(animation);
+						animation.RemoveFromParent();
+						return;
+					}
+
+					animation.Tick(16);
+					if (animation.HasFinished)
+					{
+						_animations.Remove(animation);
+						animation.RemoveFromParent();
+					}
 				}
 			}
 		}
 	}
 }
+
+// Inspired by Microsoft.Maui.Controls.Core.UnitTests.AnimationReadyHandler

@@ -18,7 +18,9 @@ public class ColorAnimationExtensions_Test : BaseTest
 	{
 		Color originalBackgroundColor = Colors.Blue, updatedBackgroundColor = Colors.Red;
 
-		VisualElement element = MockAnimationHandler.Prepare(new Label {  BackgroundColor = originalBackgroundColor });
+		VisualElement element = new Label {  BackgroundColor = originalBackgroundColor };
+		element.EnableAnimations();
+
 		Assert.Equal(originalBackgroundColor, element.BackgroundColor);
 
 		var isSuccessful = await element.BackgroundColorTo(updatedBackgroundColor);
