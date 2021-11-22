@@ -20,14 +20,14 @@ static class AnimationExtensions
 	{
 		MockAnimationHandler(IAnimationManager animationManager) : base(new PropertyMapper<IView>())
 		{
-			SetMauiContext(new AnimationReadyMauiContext(animationManager));
+			SetMauiContext(new AnimationEnabledMauiContext(animationManager));
 		}
 
 		MockAnimationHandler() : this(new TestAnimationManager(new AsyncTicker()))
 		{
 		}
 
-		public IAnimationManager? AnimationManager => ((AnimationReadyMauiContext?)MauiContext)?.AnimationManager;
+		public IAnimationManager? AnimationManager => ((AnimationEnabledMauiContext?)MauiContext)?.AnimationManager;
 
 		public static T Prepare<T>(T view) where T : IView
 		{
@@ -38,25 +38,23 @@ static class AnimationExtensions
 
 		protected override object CreateNativeView() => new();
 
-		class AnimationReadyMauiContext : IMauiContext, IServiceProvider
+		class AnimationEnabledMauiContext : IMauiContext, IServiceProvider
 		{
-			readonly IAnimationManager _animationManager;
-
-			public AnimationReadyMauiContext(IAnimationManager? manager = null)
+			public AnimationEnabledMauiContext(IAnimationManager? manager = null)
 			{
-				_animationManager = manager ?? new TestAnimationManager();
+				AnimationManager = manager ?? new TestAnimationManager();
 			}
 
 			public IServiceProvider Services => this;
 
 			public IMauiHandlersServiceProvider Handlers => throw new NotImplementedException();
 
-			public IAnimationManager AnimationManager => _animationManager;
+			public IAnimationManager AnimationManager { get; }
 
 			public object GetService(Type serviceType)
 			{
 				if (serviceType == typeof(IAnimationManager))
-					return _animationManager;
+					return AnimationManager;
 
 				throw new NotSupportedException();
 			}
