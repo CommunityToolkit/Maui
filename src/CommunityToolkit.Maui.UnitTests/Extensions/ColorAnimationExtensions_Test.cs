@@ -47,6 +47,7 @@ public class ColorAnimationExtensions_Test : BaseTest
 	public async Task BackgroundColorTo_VerifyFalseWhenAnimationContextNotSet()
 	{
 		VisualElement element = new Label();
+		Assert.Null(element.BackgroundColor);
 
 		var isSuccessful = await element.BackgroundColorTo(Colors.Red);
 
