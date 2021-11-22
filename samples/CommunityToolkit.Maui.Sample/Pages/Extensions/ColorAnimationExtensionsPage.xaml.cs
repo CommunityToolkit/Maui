@@ -23,14 +23,11 @@ public partial class ColorAnimationExtensionsPage : BasePage
 	{
 		InitializeComponent();
 
-		TestGrid ??= new();
-		ColorPicker ??= new();
-		DurationInput ??= new();
 		RateInput ??= new();
+		ColorFrame ??= new();
+		ColorPicker ??= new();
 		EasingPicker ??= new();
-		TestLbl ??= new();
-		TestBtn ??= new();
-		TestBox ??= new();
+		DurationInput ??= new();
 	}
 
 	protected override void OnAppearing()
@@ -40,33 +37,25 @@ public partial class ColorAnimationExtensionsPage : BasePage
 		SetPickersRandomValue();
 	}
 
-	private void SetPickersRandomValue()
+	void SetPickersRandomValue()
 	{
 		ColorPicker.SelectedIndex = new Random().Next(ColorPicker.ItemsSource.Count);
 		EasingPicker.SelectedIndex = new Random().Next(EasingPicker.ItemsSource.Count);
 	}
 
-	private async void Button_Clicked(object sender, EventArgs e)
+	async void Button_Clicked(object sender, EventArgs e)
 	{
 		var color = _colors.ElementAtOrDefault(ColorPicker.SelectedIndex).Value ?? Colors.Transparent;
 
-		uint duration, rate;
+		if (!uint.TryParse(DurationInput.Text, out var duration))
+			duration = 1500;
 
-		if (!uint.TryParse(DurationInput.Text, out duration))
-			duration = 250;
-
-		if (!uint.TryParse(RateInput.Text, out rate))
+		if (!uint.TryParse(RateInput.Text, out var rate))
 			rate = 16;
 
 		var easing = _easings.ElementAtOrDefault(EasingPicker.SelectedIndex).Value;
 
-
-		await Task.WhenAll(
-			TestGrid.ColorTo(color, rate: rate, length: duration, easing: easing),
-			TestLbl.ColorTo(color, rate: rate, length: duration, easing: easing),
-			TestBtn.ColorTo(color, rate: rate, length: duration, easing: easing),
-			TestBox.ColorTo(color, rate: rate, length: duration, easing: easing)
-			);
+		await ColorFrame.BackgroundColorTo(color, rate, duration, easing);
 
 		SetPickersRandomValue();
 	}

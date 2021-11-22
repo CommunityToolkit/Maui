@@ -5,42 +5,32 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Extensions.ColorAnimationExtensionsPage">
     <pages:BasePage.Content>
-        <ScrollView>
-            <StackLayout>
-                <Label Text="The ColorTo extension method provides an easy way to have an animation to change the BackgroundColor of a VisualElement" />
+        <VerticalStackLayout Margin="10, 5" Spacing="2">
+            <Label Text="The ColorTo extension method provides an easy way to have an animation to change the BackgroundColor of a VisualElement" />
 
-                <StackLayout Margin="10, 5" Spacing="2">
-                    <Label Text="Color: " />
-                    <Picker x:Name="ColorPicker" />
+            <Label Text="Color: " />
+            <Picker x:Name="ColorPicker" />
 
-                    <Label Text="Rate (ms):" />
-                    <Entry Keyboard="Numeric" x:Name="RateInput" Text="16" />
+            <Label Text="Rate (ms):" />
+            <Entry Keyboard="Numeric" x:Name="RateInput" Text="16" />
 
-                    <Label Text="Duration (ms):" />
-                    <Entry Keyboard="Numeric" x:Name="DurationInput" Text="250" />
+            <Label Text="Duration (ms):" />
+            <Entry Keyboard="Numeric" x:Name="DurationInput" Text="1500" />
 
-                    <Label Text="Easing function: " />
-                    <Picker x:Name="EasingPicker" />
+            <Label Text="Easing function: " />
+            <Picker x:Name="EasingPicker" />
 
-                    <GridLayout ColumnDefinitions="*, *" HeightRequest="100">
-                        <Grid x:Name="TestGrid"
-                                Margin="10"
-                                HorizontalOptions="Fill"
-                                VerticalOptions="Fill" />
-                        <BoxView x:Name="TestBox" 
-                                 Margin="10" GridLayout.Column="1"
-                                 HorizontalOptions="Fill"
-                                 VerticalOptions="Fill"  />
-                    </GridLayout>
+            <Frame x:Name="ColorFrame" 
+                   BorderColor="Black">
+                <Label Text="Watch My Background Color Change"
+                       HeightRequest="200" 
+                       HorizontalOptions="FillAndExpand" 
+                       HorizontalTextAlignment="Center"
+                       VerticalTextAlignment="Center"/>
+            </Frame>
 
-                    <Label Text="See my background change!"  x:Name="TestLbl"/>
+            <Button Text="Start ToColor Animation!" Clicked="Button_Clicked" Margin="5" BackgroundColor="Red" />
 
-                    <Button Text="dummy button"  x:Name="TestBtn" />
-
-                    <Button Text="Start ToColor Animation!" Clicked="Button_Clicked" Margin="5" BackgroundColor="Red" />
-                </StackLayout>
-
-            </StackLayout>
-        </ScrollView>
+        </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>
