@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui;
 using Microsoft.Maui.Animations;
@@ -22,7 +23,7 @@ static class ViewAnimationExtensions
 			SetMauiContext(new AnimationReadyMauiContext(animationManager));
 		}
 
-		MockAnimationHandler() : this(new TestAnimationManager(new BlockingTicker()))
+		MockAnimationHandler() : this(new TestAnimationManager(new AsyncTicker()))
 		{
 		}
 
@@ -61,24 +62,43 @@ static class ViewAnimationExtensions
 			}
 		}
 
-		class BlockingTicker : Ticker
+		class AsyncTicker : Ticker
 		{
+			readonly SemaphoreSlim _semaphoreSlim = new(1, 1);
 			bool _enabled;
 
-			public override void Start()
+			public override async void Start()
 			{
-				_enabled = true;
+				await _semaphoreSlim.WaitAsync();
+
+				try
+				{
+					_enabled = true;
+				}
+				finally
+				{
+					_semaphoreSlim.Release();
+				}
 
 				while (_enabled)
 				{
 					Fire?.Invoke();
-					Task.Delay(16).Wait();
+					await Task.Delay(16);
 				}
 			}
 
-			public override void Stop()
+			public override async void Stop()
 			{
-				_enabled = false;
+				await _semaphoreSlim.WaitAsync();
+
+				try
+				{
+					_enabled = false;
+				}
+				finally
+				{
+					_semaphoreSlim.Release();
+				}
 			}
 		}
 
@@ -88,7 +108,7 @@ static class ViewAnimationExtensions
 
 			public TestAnimationManager(ITicker? ticker = null)
 			{
-				Ticker = ticker ?? new BlockingTicker();
+				Ticker = ticker ?? new AsyncTicker();
 				Ticker.Fire = OnFire;
 			}
 

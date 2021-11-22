@@ -50,7 +50,8 @@ public class ColorAnimationExtensions_Test : BaseTest
 	[Fact]
 	public async Task BackgroundColorTo_DoesNotAllowNullColor()
 	{
-		VisualElement element = MockAnimationHandler.Prepare(new Label());
+		VisualElement element = new Label();
+		element.EnableAnimations();
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		await Assert.ThrowsAsync<ArgumentNullException>(() => element.BackgroundColorTo(null));
