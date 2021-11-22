@@ -24,6 +24,10 @@ public static class ColorAnimationExtensions
 	{
 		ArgumentNullException.ThrowIfNull(element);
 
+		//Although BackgroundColor is defined as not-nullable, it CAN be null
+		//If null => set it to Transparent as Animation will crash on null BackgroundColor
+		element.BackgroundColor ??= Colors.Transparent;
+
 		var animationCompletionSource = new TaskCompletionSource<bool>();
 
 		try
