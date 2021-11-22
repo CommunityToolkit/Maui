@@ -18,9 +18,9 @@ public class ImageResourceConverter_Tests : BaseTest
 		var expectedMemoryStream = GetStreamFromImageSource(expectedResource);
 
 		var imageResourceConverter = new ImageResourceConverter();
-		var result = imageResourceConverter.Convert(resourceToLoad, typeof(ImageResourceConverter), null, CultureInfo.CurrentCulture);
+		var result = (ImageSource)imageResourceConverter.Convert(resourceToLoad, typeof(ImageResourceConverter), null, CultureInfo.CurrentCulture);
 
-		Assert.True(StreamEquals(GetStreamFromImageSource((ImageSource?)result), expectedMemoryStream));
+		Assert.True(StreamEquals(GetStreamFromImageSource(result), expectedMemoryStream));
 	}
 
 	[Fact]
@@ -37,6 +37,8 @@ public class ImageResourceConverter_Tests : BaseTest
 		var imageResourceConverter = new ImageResourceConverter();
 
 		Assert.Throws<ArgumentException>(() => imageResourceConverter.Convert(3, typeof(ImageResourceConverter), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => imageResourceConverter.Convert(DateTime.UtcNow, typeof(ImageResourceConverter), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => imageResourceConverter.Convert(new object(), typeof(ImageResourceConverter), null, CultureInfo.CurrentCulture));
 	}
 
 	static Stream? GetStreamFromImageSource(ImageSource? imageSource)
