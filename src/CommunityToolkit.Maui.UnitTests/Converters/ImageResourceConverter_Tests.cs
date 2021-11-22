@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using CommunityToolkit.Maui.Converters;
+using CommunityToolkit.Maui.UnitTests.Mocks;
 using Microsoft.Maui.Controls;
 using Xunit;
 
@@ -9,6 +10,18 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ImageResourceConverter_Tests : BaseTest
 {
+	public ImageResourceConverter_Tests() : base()
+	{
+		Application.Current = new MockApplication();
+	}
+
+	protected override void Dispose(bool isDisposing)
+	{
+		Application.Current = null;
+
+		base.Dispose(isDisposing);
+	}
+
 	[Fact]
 	public void ImageResourceConverter()
 	{
