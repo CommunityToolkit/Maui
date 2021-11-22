@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Extensions;
 /// <summary>
 /// Extension methods for Microsoft.Maui.Graphics.Color animations
 /// </summary>
-public static class ColorAnmiationExtensions
+public static class ColorAnimationExtensions
 {
 	/// <summary>
 	/// Animates the BackgroundColor of a VisualElement to the given color
@@ -41,7 +41,7 @@ public static class ColorAnmiationExtensions
 		{
 			//When creating an Animation too early in the lifecycle of the Page, i.e. in the OnAppearing method,
 			//the Page might not have an 'IAnimationManager' yet, resulting in an ArgumentException.
-			System.Diagnostics.Debug.WriteLine($"{aex.GetType().Name} thrown in {typeof(ColorAnmiationExtensions).FullName}: {aex.Message}");
+			System.Diagnostics.Debug.WriteLine($"{aex.GetType().Name} thrown in {typeof(ColorAnimationExtensions).FullName}: {aex.Message}");
 			animationCompletionSource.SetResult(false);
 		}
 
