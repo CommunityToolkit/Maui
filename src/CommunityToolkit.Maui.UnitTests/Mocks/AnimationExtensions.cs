@@ -11,7 +11,7 @@ using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
-static class ViewAnimationExtensions
+static class AnimationExtensions
 {
 	public static void EnableAnimations(this IView view) => MockAnimationHandler.Prepare(view);
 
