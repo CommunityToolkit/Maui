@@ -14,6 +14,7 @@ static class ViewAnimationExtensions
 {
 	public static void EnableAnimations(this IView view) => MockAnimationHandler.Prepare(view);
 
+	// Inspired by Microsoft.Maui.Controls.Core.UnitTests.AnimationReadyHandler
 	class MockAnimationHandler : ViewHandler<IView, object>
 	{
 		MockAnimationHandler(IAnimationManager animationManager) : base(new PropertyMapper<IView>())
@@ -139,5 +140,3 @@ static class ViewAnimationExtensions
 		}
 	}
 }
-
-// Inspired by Microsoft.Maui.Controls.Core.UnitTests.AnimationReadyHandler
