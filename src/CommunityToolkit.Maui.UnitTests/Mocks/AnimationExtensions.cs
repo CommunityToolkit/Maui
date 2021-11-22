@@ -40,9 +40,9 @@ static class AnimationExtensions
 
 		class AnimationEnabledMauiContext : IMauiContext, IServiceProvider
 		{
-			public AnimationEnabledMauiContext(IAnimationManager? manager = null)
+			public AnimationEnabledMauiContext(IAnimationManager manager)
 			{
-				AnimationManager = manager ?? new TestAnimationManager();
+				AnimationManager = manager;
 			}
 
 			public IServiceProvider Services => this;
@@ -82,11 +82,11 @@ static class AnimationExtensions
 
 		class TestAnimationManager : IAnimationManager
 		{
-			readonly List<Microsoft.Maui.Animations.Animation> _animations = new();
+			readonly List<Animation> _animations = new();
 
-			public TestAnimationManager(ITicker? ticker = null)
+			public TestAnimationManager(ITicker ticker)
 			{
-				Ticker = ticker ?? new AsyncTicker();
+				Ticker = ticker;
 				Ticker.Fire = OnFire;
 			}
 
