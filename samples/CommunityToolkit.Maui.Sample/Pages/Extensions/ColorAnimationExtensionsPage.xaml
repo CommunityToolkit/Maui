@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Extensions.ColorAnimationExtensionsPage">
+
+    <pages:BasePage.Resources>
+        <ResourceDictionary>
+            <mct:ColorToColorForTextConverter x:Key="ColorToColorForTextConverter"/>
+        </ResourceDictionary>
+    </pages:BasePage.Resources>
+
+    <pages:BasePage.Content>
+        <VerticalStackLayout Margin="10, 5" Spacing="12">
+            <Label Text="The BackgroundColorTo extension method provides an easy way to have an animation to change the BackgroundColor of a VisualElement" />
+
+            <Label Text="Color: " />
+            <Picker x:Name="ColorPicker" />
+
+            <Label Text="Rate (ms):" />
+            <Entry Keyboard="Numeric" x:Name="RateInput" Text="16" />
+
+            <Label Text="Duration (ms):" />
+            <Entry Keyboard="Numeric" x:Name="DurationInput" Text="1500" />
+
+            <Label Text="Easing function: " />
+            <Picker x:Name="EasingPicker" />
+
+            <Frame x:Name="ColorFrame"
+                   BorderColor="Black"
+                   HasShadow="False"
+                   BackgroundColor="White">
+
+                <Label TextColor="{Binding Source={x:Reference ColorFrame}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}}"
+                    Text="Watch My Background Color Change"
+                    HorizontalTextAlignment="Center"
+                    VerticalTextAlignment="Center"/>
+            </Frame>
+
+            <Button Text="Animate" Clicked="Button_Clicked" BackgroundColor="DarkGreen" />
+
+        </VerticalStackLayout>
+    </pages:BasePage.Content>
+</pages:BasePage>
