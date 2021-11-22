@@ -18,10 +18,24 @@ public class ColorAnimationExtensions_Test : BaseTest
 	{
 		Color originalBackgroundColor = Colors.Blue, updatedBackgroundColor = Colors.Red;
 
-		VisualElement element = new Label {  BackgroundColor = originalBackgroundColor };
+		VisualElement element = new Label { BackgroundColor = originalBackgroundColor };
 		element.EnableAnimations();
 
 		Assert.Equal(originalBackgroundColor, element.BackgroundColor);
+
+		var isSuccessful = await element.BackgroundColorTo(updatedBackgroundColor);
+
+		Assert.True(isSuccessful);
+		Assert.Equal(updatedBackgroundColor, element.BackgroundColor);
+	}
+
+	[Fact]
+	public async Task BackgroundColorTo_VerifyColorChangedForDefaultBackgroundColor()
+	{
+		Color updatedBackgroundColor = Colors.Yellow;
+
+		VisualElement element = new Label();
+		element.EnableAnimations();
 
 		var isSuccessful = await element.BackgroundColorTo(updatedBackgroundColor);
 
