@@ -54,12 +54,8 @@ public class BaseTest : IDisposable
 		if (a == b)
 			return true;
 
-		if (a == null
-			|| b == null
-			|| a.Length != b.Length)
-		{
+		if (a.Length != b.Length)
 			return false;
-		}
 
 		for (var i = 0; i < a.Length; i++)
 		{
