@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.UnitTests.Mocks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -10,13 +14,35 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions;
 public class ColorAnimationExtensions_Test : BaseTest
 {
 	[Fact]
-	public async Task BackgroundColorTo_VerifyColor()
+	public async Task BackgroundColorTo_VerifyColorChanged()
 	{
-		VisualElement element = new Label();
-		var isSuccessful = await element.BackgroundColorTo(Colors.Aqua);
+		Color originalBackgroundColor = Colors.Blue, updatedBackgroundColor = Colors.Red;
+
+		VisualElement element = MockAnimationHandler.Prepare(new Label {  BackgroundColor = originalBackgroundColor });
+		Assert.Equal(originalBackgroundColor, element.BackgroundColor);
+
+		var isSuccessful = await element.BackgroundColorTo(updatedBackgroundColor);
 
 		Assert.True(isSuccessful);
-		Assert.Equal(Colors.Aqua, element.BackgroundColor);
+		Assert.Equal(updatedBackgroundColor, element.BackgroundColor);
+	}
+
+	[Fact]
+	public async Task BackgroundColorTo_DoesNotAllowNullVisualElement()
+	{
+		VisualElement? element = null;
+
+		await Assert.ThrowsAsync<NullReferenceException>(() => element?.BackgroundColorTo(Colors.Red));
+	}
+
+	[Fact]
+	public async Task BackgroundColorTo_DoesNotAllowNullColor()
+	{
+		VisualElement element = MockAnimationHandler.Prepare(new Label());
+
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		await Assert.ThrowsAsync<ArgumentNullException>(() => element.BackgroundColorTo(null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }
 
