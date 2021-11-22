@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
-public class BaseTest : IDisposable
+public abstract class BaseTest : IDisposable
 {
 	readonly CultureInfo? defaultCulture, defaultUICulture;
 
