@@ -13,30 +13,30 @@ public enum LayoutState
 	/// <summary>
 	/// Layout is Loading
 	/// </summary>
-    Loading,
+	Loading,
 
 	/// <summary>
 	/// Layout is Saving
 	/// </summary>
-    Saving,
+	Saving,
 
 	/// <summary>
 	/// Layout Success
 	/// </summary>
-    Success,
+	Success,
 
 	/// <summary>
 	/// Layout Error
 	/// </summary>
-    Error,
+	Error,
 
 	/// <summary>
 	/// Layout Empty
 	/// </summary>
-    Empty,
+	Empty,
 
 	/// <summary>
 	/// Layout Custom
 	/// </summary>
-    Custom
+	Custom
 }
