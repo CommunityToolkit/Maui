@@ -54,16 +54,16 @@ public class ImageResourceConverter_Tests : BaseTest
 		Assert.Throws<ArgumentException>(() => imageResourceConverter.Convert(new object(), typeof(ImageResourceConverter), null, CultureInfo.CurrentCulture));
 	}
 
-	static Stream? GetStreamFromImageSource(ImageSource? imageSource)
+	static Stream GetStreamFromImageSource(ImageSource imageSource)
 	{
-		var streamImageSource = (StreamImageSource?)imageSource;
+		var streamImageSource = (StreamImageSource)imageSource;
 
 		var cancellationToken = System.Threading.CancellationToken.None;
-		var task = streamImageSource?.Stream(cancellationToken);
-		return task?.Result;
+		var task = streamImageSource.Stream(cancellationToken);
+		return task.Result;
 	}
 
-	static bool StreamEquals(Stream? a, Stream? b)
+	static bool StreamEquals(Stream a, Stream b)
 	{
 		if (a == b)
 			return true;
