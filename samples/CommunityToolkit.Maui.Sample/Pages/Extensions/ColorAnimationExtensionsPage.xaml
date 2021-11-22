@@ -14,7 +14,7 @@
 
     <pages:BasePage.Content>
         <VerticalStackLayout Margin="10, 5" Spacing="12">
-            <Label Text="The ColorTo extension method provides an easy way to have an animation to change the BackgroundColor of a VisualElement" />
+            <Label Text="The BackgroundColorTo extension method provides an easy way to have an animation to change the BackgroundColor of a VisualElement" />
 
             <Label Text="Color: " />
             <Picker x:Name="ColorPicker" />
