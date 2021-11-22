@@ -2,8 +2,8 @@
 
 public partial class EnumToBoolConverterPage : BasePage
 {
-    public EnumToBoolConverterPage()
-    {
-        InitializeComponent();
-    }
+	public EnumToBoolConverterPage()
+	{
+		InitializeComponent();
+	}
 }

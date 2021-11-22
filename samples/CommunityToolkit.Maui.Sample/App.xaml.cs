@@ -5,10 +5,10 @@ namespace CommunityToolkit.Maui.Sample;
 
 public partial class App : Application
 {
-    public App()
-    {
-        InitializeComponent();
+	public App()
+	{
+		InitializeComponent();
 
-        MainPage = new BaseNavigationPage(new MainPage());
-    }
+		MainPage = new BaseNavigationPage(new MainPage());
+	}
 }
