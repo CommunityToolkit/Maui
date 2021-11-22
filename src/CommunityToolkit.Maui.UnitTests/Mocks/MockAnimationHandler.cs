@@ -23,7 +23,7 @@ class MockAnimationHandler : ViewHandler<IView, object>
 
 	public IAnimationManager? AnimationManager => ((AnimationReadyMauiContext?)MauiContext)?.AnimationManager;
 
-	public static T Prepare<T>(T view) where T : View
+	public static T Prepare<T>(T view) where T : IView
 	{
 		view.Handler = new MockAnimationHandler();
 
