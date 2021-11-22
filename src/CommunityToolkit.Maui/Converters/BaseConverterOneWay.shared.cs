@@ -36,7 +36,7 @@ public abstract class BaseConverterOneWay<TFrom, TTo> : ValueConverterExtension,
 	/// </summary>
 	/// <param name="value">Value to be converted from <see cref="TFrom"/> to <see cref="TTo"/>.</param>
 	/// <returns>An object of type <see cref="TTo"/>.</returns>
-	public abstract TTo ConvertFrom(TFrom value);
+	public abstract TTo? ConvertFrom(TFrom value);
 
 	/// <summary>
 	/// Not implemented, use <see cref="BaseConverter{TFrom, TTo}"/>

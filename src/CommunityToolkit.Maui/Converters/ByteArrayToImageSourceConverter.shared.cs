@@ -46,19 +46,17 @@ public class ByteArrayToImageSourceConverter : ValueConverterExtension, IValueCo
 		if (value == null)
 			return null;
 
-		if (value is StreamImageSource streamImageSource)
-		{
-			var streamFromImageSource = streamImageSource.Stream(CancellationToken.None).Result;
+		if (value is not StreamImageSource streamImageSource)
+			throw new ArgumentException("Expected value to be of type StreamImageSource.", nameof(value));
 
-			if (streamFromImageSource == null)
-				return null;
+		var streamFromImageSource = streamImageSource.Stream(CancellationToken.None).Result;
 
-			using var memoryStream = new MemoryStream();
-			streamFromImageSource.CopyTo(memoryStream);
+		if (streamFromImageSource == null)
+			return null;
 
-			return memoryStream.ToArray();
-		}
+		using var memoryStream = new MemoryStream();
+		streamFromImageSource.CopyTo(memoryStream);
 
-		throw new ArgumentException("Expected value to be of type StreamImageSource.", nameof(value));
+		return memoryStream.ToArray();
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Behaviors.Internals;

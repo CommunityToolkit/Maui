@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using CommunityToolkit.Maui.Extensions.Internals;
 using Microsoft.Maui.Controls;
@@ -24,7 +25,8 @@ public class DoubleToIntConverter : ValueConverterExtension, IValueConverter
 	/// <param name="parameter">Multiplier (Equals 1 by default).</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns><see cref="int"/> value.</returns>
-	public object Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	[return: NotNull]
+	public object? Convert([NotNull] object? value, Type? targetType, object? parameter, CultureInfo? culture)
 		=> value is double result
 			? (int)Math.Round(result * GetParameter(parameter))
 			: throw new ArgumentException("Value is not a valid double", nameof(value));
@@ -37,21 +39,20 @@ public class DoubleToIntConverter : ValueConverterExtension, IValueConverter
 	/// <param name="parameter">Denominator (Equals 1 by default).</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns><see cref="double"/> value.</returns>
-	public object ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	[return: NotNull]
+	public object? ConvertBack([NotNull] object? value, Type? targetType, object? parameter, CultureInfo? culture)
 		=> value is int result
 			? result / GetParameter(parameter)
 			: throw new ArgumentException("Value is not a valid integer", nameof(value));
 
-	double GetParameter(object? parameter)
-		=> parameter == null
-		? Ratio
-		: parameter switch
-		{
-			double d => d,
-			int i => i,
-			string s => double.TryParse(s, out var result)
-				? result
-				: throw new ArgumentException("Cannot parse number from the string", nameof(parameter)),
-			_ => 1,
-		};
+	double GetParameter(object? parameter) => parameter switch
+	{
+		null => Ratio,
+		double d => d,
+		int i => i,
+		string s => double.TryParse(s, out var result)
+			? result
+			: throw new ArgumentException("Cannot parse number from the string", nameof(parameter)),
+		_ => 1,
+	};
 }

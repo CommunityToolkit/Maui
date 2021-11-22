@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using CommunityToolkit.Maui.Extensions.Internals;
 using Microsoft.Maui.Controls;
@@ -90,7 +91,9 @@ public abstract class CompareConverter<TObject> : ValueConverterExtension, IValu
 	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter.  This is not implemented.</param>
 	/// <returns>The object assigned to <see cref="TrueObject"/> if (value <see cref="ComparisonOperator"/> <see cref="ComparingValue"/>) equals True and <see cref="TrueObject"/> is not null, if <see cref="TrueObject"/> is null it returns true, otherwise the value assigned to <see cref="FalseObject"/>, if no value is assigned then it returns false.</returns>
-	public virtual object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+	[return: NotNull]
+	[MemberNotNull(nameof(ComparingValue))]
+	public virtual object? Convert(object value, Type targetType, object parameter, CultureInfo culture)
 	{
 		if (ComparingValue == null)
 		{
@@ -128,7 +131,7 @@ public abstract class CompareConverter<TObject> : ValueConverterExtension, IValu
 			OperatorType.NotEqual => EvaluateCondition(result != 0),
 			OperatorType.GreaterOrEqual => EvaluateCondition(result >= 0),
 			OperatorType.Greater => EvaluateCondition(result > 0),
-			_ => throw new ArgumentNullException(nameof(ComparisonOperator), $"\"{ComparisonOperator}\" is not supported."),
+			_ => throw new NotSupportedException($"\"{ComparisonOperator}\" is not supported."),
 		};
 	}
 
@@ -156,6 +159,5 @@ public abstract class CompareConverter<TObject> : ValueConverterExtension, IValu
 	/// <param name="parameter">N/A</param>
 	/// <param name="culture">N/A</param>
 	/// <returns>N/A</returns>
-	public virtual object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-		=> throw new NotImplementedException();
+	public virtual object? ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
 }

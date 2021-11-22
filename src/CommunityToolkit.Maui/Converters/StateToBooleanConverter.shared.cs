@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using CommunityToolkit.Maui.UI.Views;
 using Microsoft.Maui.Controls;
@@ -23,7 +24,8 @@ public class StateToBooleanConverter : IValueConverter
 	/// <param name="parameter">Optionally, a <see cref="StateLayout"/> can be supplied here to compare against.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>True if the provided <see cref="StateLayout"/>s match, otherwise False if they don't match.</returns>
-	public object Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	[return: NotNull]
+	public object? Convert([NotNull] object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value is not LayoutState state)
 			throw new ArgumentException("Value is not a valid State", nameof(value));
@@ -42,6 +44,5 @@ public class StateToBooleanConverter : IValueConverter
 	/// <param name="parameter">N/A</param>
 	/// <param name="culture">N/A</param>
 	/// <returns>N/A</returns>
-	public object ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture)
-				=> throw new NotImplementedException();
+	public object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture) => throw new NotImplementedException();
 }

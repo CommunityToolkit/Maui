@@ -34,5 +34,5 @@ public abstract class BaseConverter<TFrom, TTo> : BaseConverterOneWay<TFrom, TTo
 	/// </summary>
 	/// <param name="value">Value to be converted from <see cref="TTo"/> to <see cref="TFrom"/>.</param>
 	/// <returns>An object of type <see cref="TFrom"/>.</returns>
-	public abstract TFrom ConvertBackTo(TTo value);
+	public abstract TFrom? ConvertBackTo(TTo value);
 }

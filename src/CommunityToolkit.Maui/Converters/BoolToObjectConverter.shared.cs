@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using CommunityToolkit.Maui.Extensions.Internals;
 using Microsoft.Maui.Controls;
@@ -35,7 +36,7 @@ public class BoolToObjectConverter<TObject> : ValueConverterExtension, IValueCon
 	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter.  This is not implemented.</param>
 	/// <returns>The object assigned to <see cref="TrueObject"/> if value equals True, otherwise the value assigned to <see cref="FalseObject"/>.</returns>
-	public object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	public object? Convert([NotNull] object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value is bool result)
 			return result ? TrueObject : FalseObject;
@@ -51,7 +52,8 @@ public class BoolToObjectConverter<TObject> : ValueConverterExtension, IValueCon
 	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter.  This is not implemented.</param>
 	/// <returns>True if value equals <see cref="TrueObject"/>, otherwise False.</returns>
-	public object ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	[return: NotNull]
+	public object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value is TObject result)
 			return result.Equals(TrueObject);

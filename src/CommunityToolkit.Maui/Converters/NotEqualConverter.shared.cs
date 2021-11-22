@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using CommunityToolkit.Maui.Extensions.Internals;
 using Microsoft.Maui.Controls;
@@ -18,7 +19,8 @@ public class NotEqualConverter : ValueConverterExtension, IValueConverter
 	/// <param name="parameter">The second object to compare.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>True if <paramref name="value"/> and <paramref name="parameter"/> are not equal, False if they are equal.</returns>
-	public object Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture) =>
+	[return: NotNull]
+	public object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture) =>
 		!EqualConverter.ConvertInternal(value, parameter);
 
 	/// <summary>
@@ -29,6 +31,5 @@ public class NotEqualConverter : ValueConverterExtension, IValueConverter
 	/// <param name="parameter">N/A</param>
 	/// <param name="culture">N/A</param>
 	/// <returns>N/A</returns>
-	public object ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture)
-	=> throw new NotImplementedException();
+	public object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture) => throw new NotImplementedException();
 }

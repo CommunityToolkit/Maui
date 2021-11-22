@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using CommunityToolkit.Maui.Extensions.Internals;
@@ -30,7 +31,8 @@ public class VariableMultiValueConverter : MultiValueConverterExtension, IMultiV
 	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>A single <see cref="bool"/> value dependant on the configuration for this converter.</returns>
-	public object Convert(object[]? values, Type? targetType, object? parameter, CultureInfo? culture)
+	[return: NotNull]
+	public object? Convert(object[]? values, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (values == null || values.Length == 0)
 			return false;
