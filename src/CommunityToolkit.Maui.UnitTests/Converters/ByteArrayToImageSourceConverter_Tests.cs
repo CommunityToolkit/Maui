@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using CommunityToolkit.Maui.Converters;
@@ -9,6 +10,13 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ByteArrayToImageSourceConverter_Tests : BaseTest
 {
+    public static IReadOnlyList<object[]> NonImageStreamData { get; } = new[]
+{
+        new object[] { 3 }, // primitive type
+		new object[] { DateTime.UtcNow }, // Struct
+		new object[] { new object() } // objects
+	};
+
     [Fact]
     public void ByteArrayToImageSourceConverter()
     {
@@ -32,5 +40,40 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
         var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 
         Assert.Throws<ArgumentException>(() => byteArrayToImageSourceConverter.Convert(value, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture));
+    }
+
+    [Fact]
+    public void ConvertImageSourceBackToByteArray()
+	{
+        var byteArray = new byte[] { 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20 };
+
+        var memoryStream = new MemoryStream(byteArray);
+
+        var expectedValue = ImageSource.FromStream(() => memoryStream);
+
+        var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
+
+        var result = byteArrayToImageSourceConverter.ConvertBack(expectedValue, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture);
+
+        Assert.Equal(result, byteArray);
+    }
+
+    [Fact]
+    public void ConvertingBackNullResultsInNull()
+    {
+        var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
+
+        var result = byteArrayToImageSourceConverter.ConvertBack(null, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture);
+
+        Assert.Null(result);
+    }
+
+    [Theory]
+    [MemberData(nameof(NonImageStreamData))]
+    public void ConvertingNonImageSourceThrows(object value)
+    {
+        var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
+
+        Assert.Throws<ArgumentException>(() => byteArrayToImageSourceConverter.ConvertBack(value, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture));
     }
 }
