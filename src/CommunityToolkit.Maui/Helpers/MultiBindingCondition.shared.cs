@@ -5,21 +5,21 @@
 /// </summary>
 public enum MultiBindingCondition
 {
-    /// <summary>None of the values should be true.</summary>
-    None,
+	/// <summary>None of the values should be true.</summary>
+	None,
 
-    /// <summary>All of the values should be true.</summary>
-    All,
+	/// <summary>All of the values should be true.</summary>
+	All,
 
-    /// <summary>Any of the values should be true.</summary>
-    Any,
+	/// <summary>Any of the values should be true.</summary>
+	Any,
 
-    /// <summary>The exact number as configured in <see cref="Converters.VariableMultiValueConverter.Count"/> should be true.</summary>
-    Exact,
+	/// <summary>The exact number as configured in <see cref="Converters.VariableMultiValueConverter.Count"/> should be true.</summary>
+	Exact,
 
-    /// <summary>At least the number as configured in <see cref="Converters.VariableMultiValueConverter.Count"/> should be true.</summary>
-    GreaterThan,
+	/// <summary>At least the number as configured in <see cref="Converters.VariableMultiValueConverter.Count"/> should be true.</summary>
+	GreaterThan,
 
-    /// <summary>At most the number as configured in <see cref="Converters.VariableMultiValueConverter.Count"/> should be true.</summary>
-    LessThan
+	/// <summary>At most the number as configured in <see cref="Converters.VariableMultiValueConverter.Count"/> should be true.</summary>
+	LessThan
 }

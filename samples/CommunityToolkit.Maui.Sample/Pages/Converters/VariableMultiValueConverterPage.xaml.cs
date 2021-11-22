@@ -2,8 +2,8 @@
 
 public partial class VariableMultiValueConverterPage : BasePage
 {
-    public VariableMultiValueConverterPage()
-    {
-        InitializeComponent();
-    }
+	public VariableMultiValueConverterPage()
+	{
+		InitializeComponent();
+	}
 }
