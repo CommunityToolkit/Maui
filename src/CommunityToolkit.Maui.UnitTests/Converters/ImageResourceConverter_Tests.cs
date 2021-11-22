@@ -10,17 +10,17 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ImageResourceConverter_Tests : BaseTest
 {
+	public ImageResourceConverter_Tests() : base()
+	{
+		Application.Current = new MockApplication();
+	}
+
 	public static IReadOnlyList<object[]> NonStringData { get; } = new[]
 	{
 		new object[] { 3 }, // primitive type
 		new object[] { DateTime.UtcNow }, // Struct
 		new object[] { new object() } // objects
 	};
-
-	public ImageResourceConverter_Tests() : base()
-	{
-		Application.Current = new MockApplication();
-	}
 
 	protected override void Dispose(bool isDisposing)
 	{
