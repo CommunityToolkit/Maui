@@ -10,6 +10,13 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ImageResourceConverter_Tests : BaseTest
 {
+	public static IReadOnlyList<object[]> NonStringData { get; } = new[]
+	{
+		new object[] { 3 }, // primitive type
+		new object[] { DateTime.UtcNow }, // Struct
+		new object[] { new object() } // objects
+	};
+
 	public ImageResourceConverter_Tests() : base()
 	{
 		Application.Current = new MockApplication();
@@ -21,13 +28,6 @@ public class ImageResourceConverter_Tests : BaseTest
 
 		base.Dispose(isDisposing);
 	}
-
-	public static IReadOnlyList<object[]> Data { get; } = new[]
-	{
-		new object[] { 3 },
-		new object[] { DateTime.UtcNow },
-		new object[] { new object() }
-	};
 
 	[Fact]
 	public void ImageResourceConverter()
@@ -52,7 +52,7 @@ public class ImageResourceConverter_Tests : BaseTest
 	}
 
 	[Theory]
-	[MemberData(nameof(Data))]
+	[MemberData(nameof(NonStringData))]
 	public void ThrowsIfNotAString(object value)
 	{
 		var imageResourceConverter = new ImageResourceConverter();

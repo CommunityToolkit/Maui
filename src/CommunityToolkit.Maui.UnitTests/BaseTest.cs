@@ -27,7 +27,7 @@ public class BaseTest : IDisposable
 			return;
 
 		Device.PlatformServices = null;
-		
+
 		System.Threading.Thread.CurrentThread.CurrentCulture = defaultCulture ?? throw new NullReferenceException();
 		System.Threading.Thread.CurrentThread.CurrentUICulture = defaultUICulture ?? throw new NullReferenceException();
 
