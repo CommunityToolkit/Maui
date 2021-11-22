@@ -20,9 +20,9 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
 
         var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 
-        var result = byteArrayToImageSourceConverter.Convert(byteArray, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture);
+        var result = (ImageSource)byteArrayToImageSourceConverter.Convert(byteArray, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture);
 
-        Assert.True(StreamEquals(GetStreamFromImageSource((ImageSource?)result), memoryStream));
+        Assert.True(StreamEquals(GetStreamFromImageSource(result), memoryStream));
     }
 
     [Theory]
