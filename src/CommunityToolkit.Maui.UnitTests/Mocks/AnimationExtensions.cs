@@ -64,42 +64,22 @@ static class ViewAnimationExtensions
 
 		class AsyncTicker : Ticker
 		{
-			readonly SemaphoreSlim _semaphoreSlim = new(1, 1);
-			bool _enabled;
+			CancellationTokenSource? _cancellationTokenSource;
 
 			public override async void Start()
 			{
-				await _semaphoreSlim.WaitAsync();
+				_cancellationTokenSource = new();
 
-				try
-				{
-					_enabled = true;
-				}
-				finally
-				{
-					_semaphoreSlim.Release();
-				}
-
-				while (_enabled)
+				while (!_cancellationTokenSource.IsCancellationRequested)
 				{
 					Fire?.Invoke();
-					await Task.Delay(16);
+
+					if (!_cancellationTokenSource.IsCancellationRequested)
+						await Task.Delay(16);
 				}
 			}
 
-			public override async void Stop()
-			{
-				await _semaphoreSlim.WaitAsync();
-
-				try
-				{
-					_enabled = false;
-				}
-				finally
-				{
-					_semaphoreSlim.Release();
-				}
-			}
+			public override void Stop() => _cancellationTokenSource?.Cancel();
 		}
 
 		class TestAnimationManager : IAnimationManager
