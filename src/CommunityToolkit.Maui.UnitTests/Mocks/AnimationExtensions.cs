@@ -82,7 +82,7 @@ static class AnimationExtensions
 
 		class TestAnimationManager : IAnimationManager
 		{
-			readonly List<Animation> _animations = new();
+			readonly List<Microsoft.Maui.Animations.Animation> _animations = new();
 
 			public TestAnimationManager(ITicker ticker)
 			{
