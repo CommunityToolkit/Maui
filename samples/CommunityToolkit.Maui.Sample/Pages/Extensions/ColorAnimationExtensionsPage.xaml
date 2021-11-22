@@ -2,20 +2,34 @@
 <pages:BasePage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Extensions.ColorAnimationExtensionsPage">
     <pages:BasePage.Content>
         <StackLayout>
-            <Label Text="ColorTo" />
+            <Label Text="The ColorTo extension method provides an easy way to have an animation to change the BackgroundColor of a VisualElement" />
 
-            <Grid x:Name="TestPane"
+            <StackLayout Margin="10, 5">
+                <Label Text="Color: " />
+                <Picker x:Name="ColorPicker" />
+
+                <Label Text="Rate (ms):" />
+                <Entry Keyboard="Numeric" x:Name="RateInput" Text="16" />
+
+                <Label Text="Duration (ms):" />
+                <Entry Keyboard="Numeric" x:Name="DurationInput" Text="250" />
+
+                <Label Text="Easing function: " />
+                <Picker x:Name="EasingPicker" />
+
+                <Grid x:Name="TestPane"
                      Margin="10"
                      HorizontalOptions="Center"
                      HeightRequest="100"
                      WidthRequest="100" />
-            
-            <Button Text="Animate!" Clicked="Button_Clicked" />
+
+                <Button Text="Animate!" Clicked="Button_Clicked" />
+            </StackLayout>
+
         </StackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>
