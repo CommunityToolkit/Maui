@@ -10,18 +10,6 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ImageResourceConverter_Tests : BaseTest
 {
-	public ImageResourceConverter_Tests() : base()
-	{
-		Application.Current = new MockApplication();
-	}
-
-	protected override void Dispose(bool isDisposing)
-	{
-		Application.Current = null;
-
-		base.Dispose(isDisposing);
-	}
-
 	[Fact]
 	public void ImageResourceConverter()
 	{
@@ -40,7 +28,7 @@ public class ImageResourceConverter_Tests : BaseTest
 	public void NullValueReturnsNull()
 	{
 		var imageResourceConverter = new ImageResourceConverter();
-		
+
 		Assert.Null(imageResourceConverter.Convert(null, typeof(ImageResourceConverter), null, CultureInfo.CurrentCulture));
 	}
 
@@ -68,12 +56,8 @@ public class ImageResourceConverter_Tests : BaseTest
 		if (a == b)
 			return true;
 
-		if (a == null
-			|| b == null
-			|| a.Length != b.Length)
-		{
+		if (a.Length != b.Length)
 			return false;
-		}
 
 		for (var i = 0; i < a.Length; i++)
 		{
