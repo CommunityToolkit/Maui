@@ -73,7 +73,7 @@ static class AnimationExtensions
 					Fire?.Invoke();
 
 					if (!_cancellationTokenSource.IsCancellationRequested)
-						await Task.Delay(16);
+						await Task.Delay(TimeSpan.FromMilliseconds(16));
 				}
 			}
 
