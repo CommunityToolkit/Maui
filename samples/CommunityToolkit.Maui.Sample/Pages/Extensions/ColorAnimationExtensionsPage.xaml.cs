@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
@@ -22,11 +23,14 @@ public partial class ColorAnimationExtensionsPage : BasePage
 	{
 		InitializeComponent();
 
-		TestPane ??= new();
+		TestGrid ??= new();
 		ColorPicker ??= new();
 		DurationInput ??= new();
 		RateInput ??= new();
 		EasingPicker ??= new();
+		TestLbl ??= new();
+		TestBtn ??= new();
+		TestBox ??= new();
 	}
 
 	protected override void OnAppearing()
@@ -57,7 +61,12 @@ public partial class ColorAnimationExtensionsPage : BasePage
 		var easing = _easings.ElementAtOrDefault(EasingPicker.SelectedIndex).Value;
 
 
-		await TestPane.ColorTo(color, rate:rate, length: duration, easing: easing);
+		await Task.WhenAll(
+			TestGrid.ColorTo(color, rate: rate, length: duration, easing: easing),
+			TestLbl.ColorTo(color, rate: rate, length: duration, easing: easing),
+			TestBtn.ColorTo(color, rate: rate, length: duration, easing: easing),
+			TestBox.ColorTo(color, rate: rate, length: duration, easing: easing)
+			);
 
 		SetPickersRandomValue();
 	}
