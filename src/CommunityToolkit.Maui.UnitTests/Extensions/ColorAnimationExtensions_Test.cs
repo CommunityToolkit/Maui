@@ -51,6 +51,7 @@ public class ColorAnimationExtensions_Test : BaseTest
 		var isSuccessful = await element.BackgroundColorTo(Colors.Red);
 
 		Assert.False(isSuccessful);
+		Assert.Equal(Colors.Transparent, element.BackgroundColor);
 	}
 
 	[Fact]
