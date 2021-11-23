@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using CommunityToolkit.Maui.Extensions.Internals;
 using Microsoft.Maui.Controls;
@@ -8,7 +9,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts an <see cref="int"/> index to corresponding array item and vice versa.
 /// </summary>
-public class IndexToArrayItemConverter : ValueConverterExtension, IValueConverter
+public class IndexToArrayItemConverter : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// Converts an <see cref="int"/> index to corresponding array item.
@@ -18,7 +19,7 @@ public class IndexToArrayItemConverter : ValueConverterExtension, IValueConverte
 	/// <param name="parameter">The items array.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>The item from the array that corresponds to passed index.</returns>
-	public object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	public object? Convert([NotNull] object? value, Type? targetType, [NotNull] object? parameter, CultureInfo? culture)
 	{
 		if (value is not int index)
 			throw new ArgumentException("Value is not a valid integer", nameof(value));
@@ -40,7 +41,7 @@ public class IndexToArrayItemConverter : ValueConverterExtension, IValueConverte
 	/// <param name="parameter">The items array.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>The index of the item from the array.</returns>
-	public object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	public object? ConvertBack(object? value, Type? targetType, [NotNull] object? parameter, CultureInfo? culture)
 	{
 		if (parameter is not Array array)
 			throw new ArgumentException("Parameter is not a valid array", nameof(parameter));

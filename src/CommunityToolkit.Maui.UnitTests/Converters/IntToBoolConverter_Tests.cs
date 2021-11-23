@@ -14,7 +14,7 @@ public class IntToBoolConverter_Tests : BaseTest
 	{
 		var intToBoolConverter = new IntToBoolConverter();
 
-		var result = intToBoolConverter.Convert(value, typeof(IntToBoolConverter_Tests), null, CultureInfo.CurrentCulture);
+		var result = (bool)intToBoolConverter.Convert(value, typeof(IntToBoolConverter_Tests), null, CultureInfo.CurrentCulture);
 
 		Assert.Equal(result, expectedResult);
 	}
@@ -26,7 +26,7 @@ public class IntToBoolConverter_Tests : BaseTest
 	{
 		var intToBoolConverter = new IntToBoolConverter();
 
-		var result = intToBoolConverter.ConvertBack(value, typeof(IntToBoolConverter_Tests), null, CultureInfo.CurrentCulture);
+		var result = (int)intToBoolConverter.ConvertBack(value, typeof(IntToBoolConverter_Tests), null, CultureInfo.CurrentCulture);
 
 		Assert.Equal(result, expectedResult);
 	}

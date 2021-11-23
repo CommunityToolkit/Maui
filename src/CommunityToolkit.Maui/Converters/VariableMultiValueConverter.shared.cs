@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using CommunityToolkit.Maui.Extensions.Internals;
@@ -10,7 +11,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// The <see cref="VariableMultiValueConverter"/> is a converter that allows users to convert multiple <see cref="bool"/> value bindings to a single <see cref="bool"/>. It does this by enabling them to specify whether All, Any, None or a specific number of values are true as specified in <see cref="ConditionType"/>. This is useful when combined with the <see cref="MultiBinding"/>.
 /// </summary>
-public class VariableMultiValueConverter : MultiValueConverterExtension, IMultiValueConverter
+public class VariableMultiValueConverter : MultiValueConverterExtension, ICommunityToolkitIMultiValueConverter
 {
 	/// <summary>
 	/// Indicates how many values should be true out of the provided boolean values in the <see cref="MultiBinding"/>. Supports the following values: All, None, Any, GreaterThan, LessThan.
@@ -30,7 +31,8 @@ public class VariableMultiValueConverter : MultiValueConverterExtension, IMultiV
 	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>A single <see cref="bool"/> value dependant on the configuration for this converter.</returns>
-	public object Convert(object[]? values, Type? targetType, object? parameter, CultureInfo? culture)
+	[return: NotNull]
+	public object? Convert(object[]? values, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (values == null || values.Length == 0)
 			return false;

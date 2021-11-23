@@ -16,7 +16,7 @@ public class DoubleToIntConverter_Tests : BaseTest
 	{
 		var doubleToIntConverter = new DoubleToIntConverter();
 
-		var result = doubleToIntConverter.Convert(value, typeof(DoubleToIntConverter_Tests), ratio, CultureInfo.CurrentCulture);
+		var result = (int)doubleToIntConverter.Convert(value, typeof(DoubleToIntConverter_Tests), ratio, CultureInfo.CurrentCulture);
 
 		Assert.Equal(result, expectedResult);
 	}
@@ -27,7 +27,7 @@ public class DoubleToIntConverter_Tests : BaseTest
 	{
 		var doubleToIntConverter = new DoubleToIntConverter();
 
-		var result = doubleToIntConverter.ConvertBack(value, typeof(DoubleToIntConverter_Tests), ratio, CultureInfo.CurrentCulture);
+		var result = (double)doubleToIntConverter.ConvertBack(value, typeof(DoubleToIntConverter_Tests), ratio, CultureInfo.CurrentCulture);
 
 		Assert.Equal(result, expectedResult);
 	}
