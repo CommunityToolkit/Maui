@@ -69,9 +69,12 @@ public class MaxLengthReachedBehavior : BaseBehavior<InputView>
 
 		var newTextValue = View.Text.Substring(0, View.MaxLength);
 
-		maxLengthReachedEventManager.HandleEvent(this, new MaxLengthReachedEventArgs(newTextValue), nameof(MaxLengthReached));
+		OnMaxLengthReached(new MaxLengthReachedEventArgs(newTextValue));
 
 		if (Command?.CanExecute(newTextValue) ?? false)
 			Command.Execute(newTextValue);
 	}
+
+	void OnMaxLengthReached(MaxLengthReachedEventArgs maxLengthReachedEventArgs) =>
+		maxLengthReachedEventManager.HandleEvent(this, maxLengthReachedEventArgs, nameof(MaxLengthReached));
 }
