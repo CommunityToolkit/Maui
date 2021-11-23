@@ -10,7 +10,7 @@ public interface ICommunityToolkitIMultiValueConverter : IMultiValueConverter
 	/// <summary>
 	/// Converts the incoming values to a different object
 	/// </summary>
-	/// <param name="value">The array of objects to convert</param>
+	/// <param name="values"></param>
 	/// <param name="targetType">Target Type</param>
 	/// <param name="parameter">Optional Parameters</param>
 	/// <param name="culture">Culture Info</param>
@@ -21,7 +21,7 @@ public interface ICommunityToolkitIMultiValueConverter : IMultiValueConverter
 	/// Converts the object back to the outgoing values
 	/// </summary>
 	/// <param name="value">The object to convert back to an array of values</param>
-	/// <param name="targetType">Target Type</param>
+	/// <param name="targetTypes"></param>
 	/// <param name="parameter">Optional Parameters</param>
 	/// <param name="culture">Culture Info</param>
 	/// <returns>Array of converted objects</returns>
@@ -35,4 +35,3 @@ public interface ICommunityToolkitIMultiValueConverter : IMultiValueConverter
 	object[]? IMultiValueConverter.ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) =>
 		ConvertBack(value, targetTypes, parameter, culture);
 }
-

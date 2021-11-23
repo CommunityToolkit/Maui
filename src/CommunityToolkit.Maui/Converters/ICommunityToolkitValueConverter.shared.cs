@@ -35,4 +35,3 @@ public interface ICommunityToolkitValueConverter : IValueConverter
 	object? IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
 		ConvertBack(value, targetType, parameter, culture);
 }
-
