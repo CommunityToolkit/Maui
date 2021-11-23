@@ -9,8 +9,8 @@ public abstract class ValueConverterExtension : IMarkupExtension<IValueConverter
 {
 	/// <inheritdoc />
 	public IValueConverter ProvideValue(IServiceProvider serviceProvider)
-        => (IValueConverter)this;
+		=> (IValueConverter)this;
 
-    object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)
-        => ((IMarkupExtension<IValueConverter>)this).ProvideValue(serviceProvider);
+	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)
+		=> ((IMarkupExtension<IValueConverter>)this).ProvideValue(serviceProvider);
 }

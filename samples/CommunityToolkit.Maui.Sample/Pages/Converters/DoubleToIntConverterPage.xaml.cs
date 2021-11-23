@@ -4,10 +4,10 @@ namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
 public partial class DoubleToIntConverterPage : BasePage
 {
-    public DoubleToIntConverterPage()
-    {
-        InitializeComponent();
+	public DoubleToIntConverterPage()
+	{
+		InitializeComponent();
 
-        ExampleText ??= new();
-    }
+		ExampleText ??= new();
+	}
 }

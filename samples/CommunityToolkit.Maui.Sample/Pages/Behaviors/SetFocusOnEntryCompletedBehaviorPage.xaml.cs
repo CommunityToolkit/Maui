@@ -2,8 +2,8 @@
 
 public partial class SetFocusOnEntryCompletedBehaviorPage : BasePage
 {
-    public SetFocusOnEntryCompletedBehaviorPage()
-    {
-        InitializeComponent();
-    }
+	public SetFocusOnEntryCompletedBehaviorPage()
+	{
+		InitializeComponent();
+	}
 }

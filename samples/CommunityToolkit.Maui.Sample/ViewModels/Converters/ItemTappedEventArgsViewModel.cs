@@ -42,4 +42,3 @@ public class ItemTappedEventArgsViewModel : BaseViewModel
 
 	public record Person(int Id, string Name);
 }
-

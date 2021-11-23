@@ -2,8 +2,8 @@
 
 public partial class MathExpressionConverterPage : BasePage
 {
-    public MathExpressionConverterPage()
-    {
-        InitializeComponent();
-    }
+	public MathExpressionConverterPage()
+	{
+		InitializeComponent();
+	}
 }

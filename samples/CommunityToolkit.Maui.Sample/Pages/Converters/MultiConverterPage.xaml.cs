@@ -2,8 +2,8 @@
 
 public partial class MultiConverterPage : BasePage
 {
-    public MultiConverterPage()
-    {
-        InitializeComponent();
-    }
+	public MultiConverterPage()
+	{
+		InitializeComponent();
+	}
 }

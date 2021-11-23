@@ -2,8 +2,8 @@
 
 public partial class IsNullOrEmptyConverterPage : BasePage
 {
-    public IsNullOrEmptyConverterPage()
-    {
-        InitializeComponent();
-    }
+	public IsNullOrEmptyConverterPage()
+	{
+		InitializeComponent();
+	}
 }
