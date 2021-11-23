@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Globalization;
+using System.IO;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
-public class BaseTest : IDisposable
+public abstract class BaseTest : IDisposable
 {
 	readonly CultureInfo? defaultCulture, defaultUICulture;
 
@@ -37,5 +38,31 @@ public class BaseTest : IDisposable
 	{
 		Dispose(true);
 		GC.SuppressFinalize(this);
+	}
+
+	protected static Stream GetStreamFromImageSource(ImageSource imageSource)
+	{
+		var streamImageSource = (StreamImageSource)imageSource;
+
+		var cancellationToken = System.Threading.CancellationToken.None;
+		var task = streamImageSource.Stream(cancellationToken);
+		return task.Result;
+	}
+
+	protected static bool StreamEquals(Stream a, Stream b)
+	{
+		if (a == b)
+			return true;
+
+		if (a.Length != b.Length)
+			return false;
+
+		for (var i = 0; i < a.Length; i++)
+		{
+			if (a.ReadByte() != b.ReadByte())
+				return false;
+		}
+
+		return true;
 	}
 }

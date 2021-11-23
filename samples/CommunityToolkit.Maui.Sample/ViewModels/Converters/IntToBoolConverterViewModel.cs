@@ -2,11 +2,11 @@
 
 public class IntToBoolConverterViewModel : BaseViewModel
 {
-    int _index;
+	int _index;
 
-    public int Number
-    {
-        get => _index;
-        set => SetProperty(ref _index, value);
-    }
+	public int Number
+	{
+		get => _index;
+		set => SetProperty(ref _index, value);
+	}
 }

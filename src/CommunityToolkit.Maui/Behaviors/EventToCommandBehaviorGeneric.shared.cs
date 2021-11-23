@@ -8,19 +8,19 @@ public sealed class EventToCommandBehavior<TType> : EventToCommandBehavior
 {
 	/// <inheritdoc/>
 	protected override void OnTriggerHandled(object? sender = null, object? eventArgs = null)
-    {
-        var parameter = CommandParameter
-            ?? EventArgsConverter?.Convert(eventArgs, typeof(object), null, null)
-            ?? eventArgs;
+	{
+		var parameter = CommandParameter
+			?? EventArgsConverter?.Convert(eventArgs, typeof(object), null, null)
+			?? eventArgs;
 
-        if (parameter is not TType)
-        {
-            // changing it to the default value to avoid a cast exception
-            parameter = default(TType);
-        }
+		if (parameter is not TType)
+		{
+			// changing it to the default value to avoid a cast exception
+			parameter = default(TType);
+		}
 
-        var command = Command;
-        if (command?.CanExecute(parameter) ?? false)
-            command.Execute(parameter);
-    }
+		var command = Command;
+		if (command?.CanExecute(parameter) ?? false)
+			command.Execute(parameter);
+	}
 }

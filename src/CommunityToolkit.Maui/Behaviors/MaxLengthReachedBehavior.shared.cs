@@ -11,68 +11,68 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// </summary>
 public class MaxLengthReachedBehavior : BaseBehavior<InputView>
 {
-    /// <summary>
-    /// Backing BindableProperty for the <see cref="Command"/> property.
-    /// </summary>
-    public static readonly BindableProperty CommandProperty
-        = BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(MaxLengthReachedBehavior));
+	readonly WeakEventManager maxLengthReachedEventManager = new();
 
-    /// <summary>
-    /// Command that is triggered when the value configured in <see cref="InputView.MaxLength" /> is reached. Both the <see cref="MaxLengthReached"/> event and this command are triggered. This is a bindable property.
-    /// </summary>
-    public ICommand? Command
-    {
-        get => (ICommand?)GetValue(CommandProperty);
-        set => SetValue(CommandProperty, value);
-    }
+	/// <summary>
+	/// Backing BindableProperty for the <see cref="Command"/> property.
+	/// </summary>
+	public static readonly BindableProperty CommandProperty
+		= BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(MaxLengthReachedBehavior));
 
-    /// <summary>
-    /// Backing BindableProperty for the <see cref="ShouldDismissKeyboardAutomatically"/> property.
-    /// </summary>
-    public static readonly BindableProperty ShouldDismissKeyboardAutomaticallyProperty
-        = BindableProperty.Create(nameof(ShouldDismissKeyboardAutomatically), typeof(bool), typeof(MaxLengthReachedBehavior), false);
+	/// <summary>
+	/// Command that is triggered when the value configured in <see cref="InputView.MaxLength" /> is reached. Both the <see cref="MaxLengthReached"/> event and this command are triggered. This is a bindable property.
+	/// </summary>
+	public ICommand? Command
+	{
+		get => (ICommand?)GetValue(CommandProperty);
+		set => SetValue(CommandProperty, value);
+	}
 
-    /// <summary>
-    /// Indicates whether or not the keyboard should be dismissed automatically after the maximum length is reached. This is a bindable property.
-    /// </summary>
-    public bool ShouldDismissKeyboardAutomatically
-    {
-        get => (bool)GetValue(ShouldDismissKeyboardAutomaticallyProperty);
-        set => SetValue(ShouldDismissKeyboardAutomaticallyProperty, value);
-    }
+	/// <summary>
+	/// Backing BindableProperty for the <see cref="ShouldDismissKeyboardAutomatically"/> property.
+	/// </summary>
+	public static readonly BindableProperty ShouldDismissKeyboardAutomaticallyProperty
+		= BindableProperty.Create(nameof(ShouldDismissKeyboardAutomatically), typeof(bool), typeof(MaxLengthReachedBehavior), false);
 
-    readonly WeakEventManager maxLengthReachedEventManager = new WeakEventManager();
+	/// <summary>
+	/// Indicates whether or not the keyboard should be dismissed automatically after the maximum length is reached. This is a bindable property.
+	/// </summary>
+	public bool ShouldDismissKeyboardAutomatically
+	{
+		get => (bool)GetValue(ShouldDismissKeyboardAutomaticallyProperty);
+		set => SetValue(ShouldDismissKeyboardAutomaticallyProperty, value);
+	}
 
-    /// <summary>
-    /// Event that is triggered when the value configured in <see cref="InputView.MaxLength" /> is reached. Both the <see cref="Command"/> and this event are triggered. This is a bindable property.
-    /// </summary>
-    public event EventHandler<MaxLengthReachedEventArgs> MaxLengthReached
-    {
-        add => maxLengthReachedEventManager.AddEventHandler(value);
-        remove => maxLengthReachedEventManager.RemoveEventHandler(value);
-    }
+	/// <summary>
+	/// Event that is triggered when the value configured in <see cref="InputView.MaxLength" /> is reached. Both the <see cref="Command"/> and this event are triggered. This is a bindable property.
+	/// </summary>
+	public event EventHandler<MaxLengthReachedEventArgs> MaxLengthReached
+	{
+		add => maxLengthReachedEventManager.AddEventHandler(value);
+		remove => maxLengthReachedEventManager.RemoveEventHandler(value);
+	}
 
 	/// <inheritdoc/>
 	protected override void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        base.OnViewPropertyChanged(sender, e);
-        if (e.PropertyName == InputView.TextProperty.PropertyName)
-            OnTextPropertyChanged();
-    }
+	{
+		base.OnViewPropertyChanged(sender, e);
+		if (e.PropertyName == InputView.TextProperty.PropertyName)
+			OnTextPropertyChanged();
+	}
 
-    void OnTextPropertyChanged()
-    {
-        if (View?.Text == null || View.Text.Length < View.MaxLength)
-            return;
+	void OnTextPropertyChanged()
+	{
+		if (View?.Text == null || View.Text.Length < View.MaxLength)
+			return;
 
-        if (ShouldDismissKeyboardAutomatically)
-            View.Unfocus();
+		if (ShouldDismissKeyboardAutomatically)
+			View.Unfocus();
 
-        var newTextValue = View.Text.Substring(0, View.MaxLength);
+		var newTextValue = View.Text[..View.MaxLength];
 
-        maxLengthReachedEventManager.HandleEvent(this, new MaxLengthReachedEventArgs(newTextValue), nameof(MaxLengthReached));
+		maxLengthReachedEventManager.HandleEvent(this, new MaxLengthReachedEventArgs(newTextValue), nameof(MaxLengthReached));
 
-        if (Command?.CanExecute(newTextValue) ?? false)
-            Command.Execute(newTextValue);
-    }
+		if (Command?.CanExecute(newTextValue) ?? false)
+			Command.Execute(newTextValue);
+	}
 }
