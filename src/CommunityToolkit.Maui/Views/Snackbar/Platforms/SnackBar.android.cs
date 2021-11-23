@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Util;
@@ -9,15 +8,13 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Graphics;
 using AndroidSnackBar = Google.Android.Material.Snackbar.Snackbar;
-using LayoutDirection = Android.Views.LayoutDirection;
 using Object = Java.Lang.Object;
 using View = Android.Views.View;
 
 namespace CommunityToolkit.Maui.Controls.Snackbar;
 
-public static partial class PlatformPopupExtensions
+internal static partial class PlatformPopupExtensions
 {
 	public static void Dismiss(Snackbar snackbar)
 	{
@@ -26,26 +23,42 @@ public static partial class PlatformPopupExtensions
 
 	public static AndroidSnackBar Show(Snackbar snackBar)
 	{
-		var view = (snackBar.Parent.Handler?.NativeView as View) ?? throw new InvalidOperationException("NativeView is null");
-		var nativeSnackBar = AndroidSnackBar.Make(view, snackBar.Text, (int)snackBar.Duration.TotalMilliseconds);
+		var rootView = Microsoft.Maui.Essentials.Platform.GetCurrentActivity(true).Window?.DecorView.FindViewById(Android.Resource.Id.Content);
+		if (rootView is null)
+		{
+			throw new NotSupportedException("Unable to retrieve snackbar parent");
+		}
+
+		var nativeSnackBar = AndroidSnackBar.Make(
+			rootView,
+			snackBar.Text, 
+			(int)snackBar.Duration.TotalMilliseconds);
 		var snackBarView = nativeSnackBar.View;
 
 		if (snackBar.Anchor is not Page)
 		{
 			nativeSnackBar.SetAnchorView(snackBar.Anchor?.Handler?.NativeView as View);
-		}
+		}		
 
+		SetupContainer(snackBar.VisualOptions, snackBarView);
+		SetupMessage(snackBar.VisualOptions, snackBarView);
+		SetupActions(snackBar, nativeSnackBar);
+		nativeSnackBar.Show();
+		return nativeSnackBar;
+	}
+
+	static void SetupContainer(SnackbarOptions snackBarOptions, View snackBarView)
+	{
 		if (snackBarView.Background is GradientDrawable shape)
 		{
-			shape.SetColor(snackBar.BackgroundColor.ToAndroid().ToArgb());
+			shape.SetColor(snackBarOptions.BackgroundColor.ToAndroid().ToArgb());
 
-			var density = view.Context?.Resources?.DisplayMetrics?.Density ?? 1;
-			var defaultAndroidCornerRadius = 4 * density;
+			var density = snackBarView.Context?.Resources?.DisplayMetrics?.Density ?? 1;
 			var cornerRadius = new Thickness(
-				snackBar.CornerRadius.BottomLeft * density,
-				snackBar.CornerRadius.TopLeft * density,
-				snackBar.CornerRadius.TopRight * density,
-				snackBar.CornerRadius.BottomRight * density);
+				snackBarOptions.CornerRadius.BottomLeft * density,
+				snackBarOptions.CornerRadius.TopLeft * density,
+				snackBarOptions.CornerRadius.TopRight * density,
+				snackBarOptions.CornerRadius.BottomRight * density);
 			shape.SetCornerRadii(new[]
 				{
 					(float)cornerRadius.Left, (float)cornerRadius.Left,
@@ -56,31 +69,22 @@ public static partial class PlatformPopupExtensions
 
 			snackBarView.SetBackground(shape);
 		}
-
-		SetupMessage(snackBar, snackBarView);
-		SetupActions(snackBar, nativeSnackBar);
-		nativeSnackBar.Show();
-		return nativeSnackBar;
 	}
 
-	static void SetupMessage(Snackbar snackBar, View snackBarView)
+	static void SetupMessage(SnackbarOptions snackBarOptions, View snackBarView)
 	{
 		var snackTextView = snackBarView.FindViewById<TextView>(Resource.Id.snackbar_text) ?? throw new InvalidOperationException("Unable to find SnackBar text view");
 		snackTextView.SetMaxLines(10);
-		snackBarView.SetPadding((int)snackBar.Padding.Left,
-			(int)snackBar.Padding.Top,
-			(int)snackBar.Padding.Right,
-			(int)snackBar.Padding.Bottom);
 
-		snackTextView.SetTextColor(snackBar.TextColor.ToAndroid());
-		if (snackBar.Font.Size > 0)
+		snackTextView.SetTextColor(snackBarOptions.TextColor.ToAndroid());
+		if (snackBarOptions.Font.Size > 0)
 		{
-			snackTextView.SetTextSize(ComplexUnitType.Dip, (float)snackBar.Font.Size);
+			snackTextView.SetTextSize(ComplexUnitType.Dip, (float)snackBarOptions.Font.Size);
 		}
 
-		snackTextView.LetterSpacing = (float)snackBar.CharacterSpacing;
+		snackTextView.LetterSpacing = (float)snackBarOptions.CharacterSpacing;
 
-		snackTextView.SetTypeface(snackBar.Font.ToTypeface(), TypefaceStyle.Normal);
+		snackTextView.SetTypeface(snackBarOptions.Font.ToTypeface(), TypefaceStyle.Normal);
 	}
 
 	static void SetupActions(Snackbar snackBar, AndroidSnackBar nativeSnackBar)
@@ -89,7 +93,7 @@ public static partial class PlatformPopupExtensions
 		{
 			snackBar.Action();
 		});
-		nativeSnackBar.SetActionTextColor(snackBar.ActionTextColor.ToAndroid());
+		nativeSnackBar.SetActionTextColor(snackBar.VisualOptions.ActionTextColor.ToAndroid());
 
 		nativeSnackBar.AddCallback(new SnackBarCallback(snackBar));
 	}
@@ -106,7 +110,7 @@ public static partial class PlatformPopupExtensions
 		public override void OnDismissed(Object transientBottomBar, int e)
 		{
 			base.OnDismissed(transientBottomBar, e);
-			snackbar.IsShown = false;
+			snackbar.OnDismissed();
 		}
 	}
 }

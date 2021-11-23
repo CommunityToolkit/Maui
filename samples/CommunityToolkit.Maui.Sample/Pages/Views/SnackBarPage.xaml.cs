@@ -37,12 +37,14 @@ public partial class SnackBarPage : BasePage
 			TimeSpan.FromSeconds(30),
 			() => StatusText.Text = "SnackBar action button clicked",
 			Anchor1);
-		snackbarWithAnchor.BackgroundColor = Colors.Red;
-		snackbarWithAnchor.TextColor = Colors.Green;
-		snackbarWithAnchor.ActionTextColor = Colors.Yellow;
-		snackbarWithAnchor.CornerRadius = new CornerRadius(10, 20, 30, 40);
-		snackbarWithAnchor.Font = Font.SystemFontOfSize(20);
-		snackbarWithAnchor.CharacterSpacing = 1;
+		var options = new SnackbarOptions();
+		options.BackgroundColor = Colors.Red;
+		options.TextColor = Colors.Green;
+		options.ActionTextColor = Colors.Yellow;
+		options.CornerRadius = new CornerRadius(10, 20, 30, 40);
+		options.Font = Font.SystemFontOfSize(20);
+		options.CharacterSpacing = 1;
+		snackbarWithAnchor.VisualOptions = options;
 		await snackbarWithAnchor.Show();
 	}
 
