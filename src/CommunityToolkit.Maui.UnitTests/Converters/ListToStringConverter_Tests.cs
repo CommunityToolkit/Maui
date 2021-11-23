@@ -24,7 +24,7 @@ public class ListToStringConverter_Tests : BaseTest
 	{
 		var listToStringConverter = new ListToStringConverter();
 
-		var result = listToStringConverter.Convert(value, null, parameter, null);
+		var result = (string)listToStringConverter.Convert(value, null, parameter, null);
 
 		Assert.Equal(result, expectedResult);
 	}

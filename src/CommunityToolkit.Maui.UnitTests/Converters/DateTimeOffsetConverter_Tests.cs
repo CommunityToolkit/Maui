@@ -43,8 +43,7 @@ public class DateTimeOffsetConverter_Tests : BaseTest
 	{
 		var dateTimeOffsetConverter = new DateTimeOffsetConverter();
 
-		var result = dateTimeOffsetConverter.Convert(value, typeof(DateTimeOffsetConverter_Tests), null,
-			CultureInfo.CurrentCulture);
+		var result = DateTime.Parse($"{dateTimeOffsetConverter.Convert(value, typeof(DateTimeOffsetConverter_Tests), null, CultureInfo.CurrentCulture)}");
 
 		Assert.Equal(expectedResult, result);
 	}
@@ -55,8 +54,7 @@ public class DateTimeOffsetConverter_Tests : BaseTest
 	{
 		var dateTimeOffsetConverter = new DateTimeOffsetConverter();
 
-		var result = dateTimeOffsetConverter.ConvertBack(value, typeof(DateTimeOffsetConverter_Tests), null,
-			CultureInfo.CurrentCulture);
+		var result = (DateTimeOffset)dateTimeOffsetConverter.ConvertBack(value, typeof(DateTimeOffsetConverter_Tests), null,CultureInfo.CurrentCulture);
 
 		Assert.Equal(expectedResult, result);
 	}

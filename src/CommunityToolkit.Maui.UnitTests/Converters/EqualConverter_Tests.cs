@@ -15,10 +15,9 @@ public class EqualConverter_Tests : BaseTest
 	{
 		var equalConverter = new EqualConverter();
 
-		var result = equalConverter.Convert(value, typeof(EqualConverter_Tests), comparedValue, CultureInfo.CurrentCulture);
+		var result = (bool)equalConverter.Convert(value, typeof(EqualConverter_Tests), comparedValue, CultureInfo.CurrentCulture);
 
-		Assert.IsType<bool>(result);
-		Assert.True((bool)result);
+		Assert.True(result);
 	}
 
 	[Theory]
@@ -28,9 +27,8 @@ public class EqualConverter_Tests : BaseTest
 	{
 		var equalConverter = new EqualConverter();
 
-		var result = equalConverter.Convert(value, typeof(EqualConverter_Tests), comparedValue, CultureInfo.CurrentCulture);
+		var result = (bool)equalConverter.Convert(value, typeof(EqualConverter_Tests), comparedValue, CultureInfo.CurrentCulture);
 
-		Assert.IsType<bool>(result);
-		Assert.False((bool)result);
+		Assert.False(result);
 	}
 }

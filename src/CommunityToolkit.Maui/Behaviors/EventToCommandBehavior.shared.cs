@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Behaviors.Internals;
+using CommunityToolkit.Maui.Converters;
 using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Behaviors;
@@ -34,7 +34,7 @@ public class EventToCommandBehavior : BaseBehavior<VisualElement>
 	/// Backing BindableProperty for the <see cref="EventArgs"/> property.
 	/// </summary>
 	public static readonly BindableProperty EventArgsConverterProperty =
-		BindableProperty.Create(nameof(EventArgsConverter), typeof(IValueConverter), typeof(EventToCommandBehavior));
+		BindableProperty.Create(nameof(EventArgsConverter), typeof(ICommunityToolkitValueConverter), typeof(EventToCommandBehavior));
 
 	readonly MethodInfo eventHandlerMethodInfo = typeof(EventToCommandBehavior).GetTypeInfo()?.GetDeclaredMethod(nameof(OnTriggerHandled)) ?? throw new NullReferenceException($"Cannot find method {nameof(OnTriggerHandled)}");
 
@@ -70,11 +70,11 @@ public class EventToCommandBehavior : BaseBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// An optional <see cref="IValueConverter"/> that can be used to convert <see cref="EventArgs"/> values, associated with the event configured with <see cref="EventName"/>, to values passed into the <see cref="Command"/>. This is a bindable property.
+	/// An optional <see cref="ICommunityToolkitValueConverter"/> that can be used to convert <see cref="EventArgs"/> values, associated with the event configured with <see cref="EventName"/>, to values passed into the <see cref="Command"/>. This is a bindable property.
 	/// </summary>
-	public IValueConverter EventArgsConverter
+	public ICommunityToolkitValueConverter? EventArgsConverter
 	{
-		get => (IValueConverter)GetValue(EventArgsConverterProperty);
+		get => (ICommunityToolkitValueConverter?)GetValue(EventArgsConverterProperty);
 		set => SetValue(EventArgsConverterProperty, value);
 	}
 

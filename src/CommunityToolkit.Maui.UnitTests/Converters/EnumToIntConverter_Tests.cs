@@ -20,7 +20,7 @@ public class EnumToIntConverter_Tests : BaseTest
 	public void EnumToIntConvert_Validation(object? value, int expectedResult)
 	{
 		var enumToIntConverter = new EnumToIntConverter();
-		var result = enumToIntConverter.Convert(value, targetType: null, parameter: null, culture: null);
+		var result = (int)enumToIntConverter.Convert(value, targetType: null, parameter: null, culture: null);
 		Assert.Equal(expectedResult, result);
 	}
 
@@ -40,7 +40,7 @@ public class EnumToIntConverter_Tests : BaseTest
 	public void EnumToIntConvertBack_Validation(object? value, object expectedResult)
 	{
 		var enumToIntConverter = new EnumToIntConverter();
-		var result = enumToIntConverter.ConvertBack(value, typeof(TestEnumForEnumToIntConverter), parameter: null, culture: null);
+		var result = (object)enumToIntConverter.ConvertBack(value, typeof(TestEnumForEnumToIntConverter), parameter: null, culture: null);
 		Assert.Equal(expectedResult, result);
 	}
 
