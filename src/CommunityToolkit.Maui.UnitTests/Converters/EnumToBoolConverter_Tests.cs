@@ -61,9 +61,9 @@ public class EnumToBoolConverter_Tests : BaseTest
 	{
 		var enumToBoolConverter = new EnumToBoolConverter();
 
-		var result = enumToBoolConverter.Convert(TestEnumForEnumToBoolConverter.Five, typeof(bool), parameter, CultureInfo.InvariantCulture);
+		var result = (bool)enumToBoolConverter.Convert(TestEnumForEnumToBoolConverter.Five, typeof(bool), parameter, CultureInfo.InvariantCulture);
 
-		Assert.False(result as bool?);
+		Assert.False(result);
 	}
 
 	[Theory]
@@ -87,7 +87,7 @@ public class EnumToBoolConverter_Tests : BaseTest
 		var enumToBoolConverter = new EnumToBoolConverter();
 		trueValues?.OfType<Enum>().ToList().ForEach(fe => enumToBoolConverter.TrueValues.Add(fe));
 
-		var result = enumToBoolConverter.Convert(value, typeof(bool), parameter, CultureInfo.InvariantCulture);
+		var result = (bool)enumToBoolConverter.Convert(value, typeof(bool), parameter, CultureInfo.InvariantCulture);
 		Assert.Equal(expectedResult, result);
 	}
 }

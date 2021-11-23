@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts embedded image resource ID to it ImageSource.
 /// </summary>
-public class ImageResourceConverter : IValueConverter
+public class ImageResourceConverter : ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// Converts embedded image resource ID to it ImageSource.
@@ -31,5 +31,5 @@ public class ImageResourceConverter : IValueConverter
 	}
 
 	/// <inheritdoc />
-	public object ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture) => throw new NotImplementedException();
+	public object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture) => throw new NotImplementedException();
 }

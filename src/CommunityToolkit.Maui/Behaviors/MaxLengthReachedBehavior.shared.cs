@@ -10,6 +10,8 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// </summary>
 public class MaxLengthReachedBehavior : BaseBehavior<InputView>
 {
+	readonly WeakEventManager maxLengthReachedEventManager = new();
+
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Command"/> property.
 	/// </summary>
@@ -40,8 +42,6 @@ public class MaxLengthReachedBehavior : BaseBehavior<InputView>
 		set => SetValue(ShouldDismissKeyboardAutomaticallyProperty, value);
 	}
 
-	readonly WeakEventManager maxLengthReachedEventManager = new WeakEventManager();
-
 	/// <summary>
 	/// Event that is triggered when the value configured in <see cref="InputView.MaxLength" /> is reached. Both the <see cref="Command"/> and this event are triggered. This is a bindable property.
 	/// </summary>
@@ -67,7 +67,7 @@ public class MaxLengthReachedBehavior : BaseBehavior<InputView>
 		if (ShouldDismissKeyboardAutomatically)
 			View.Unfocus();
 
-		var newTextValue = View.Text.Substring(0, View.MaxLength);
+		var newTextValue = View.Text[..View.MaxLength];
 
 		OnMaxLengthReached(new MaxLengthReachedEventArgs(newTextValue));
 

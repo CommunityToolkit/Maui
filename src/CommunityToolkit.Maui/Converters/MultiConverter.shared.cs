@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts an incoming value using all of the incoming converters in sequence.
 /// </summary>
-public class MultiConverter : List<IValueConverter>, IValueConverter
+public class MultiConverter : List<ICommunityToolkitValueConverter>, ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// Uses the incoming converters to convert the value.
@@ -18,7 +18,7 @@ public class MultiConverter : List<IValueConverter>, IValueConverter
 	/// <param name="parameter">Parameter to pass into subsequent converters.</param>
 	/// <param name="culture">The culture to use in the converter.</param>
 	/// <returns>The converted value.</returns>
-	public object? Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+	public object? Convert(object? value, Type? targetType, object? parameter, System.Globalization.CultureInfo? culture)
 		=> parameter is IList<MultiConverterParameter> parameters
 		? this.Aggregate(value, (current, converter) => converter.Convert(current, targetType,
 				 parameters.FirstOrDefault(x => x.ConverterType == converter.GetType())?.Value, culture))
@@ -32,6 +32,6 @@ public class MultiConverter : List<IValueConverter>, IValueConverter
 	/// <param name="parameter">N/A</param>
 	/// <param name="culture">N/A</param>
 	/// <returns>N/A</returns>
-	public object? ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+	public object? ConvertBack(object? value, Type? targetType, object? parameter, System.Globalization.CultureInfo? culture)
 		=> throw new NotImplementedException();
 }

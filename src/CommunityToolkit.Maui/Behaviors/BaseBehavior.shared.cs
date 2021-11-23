@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Maui.Controls;
@@ -24,6 +25,7 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
 	/// </summary>
 	protected TView? View { get; private set; }
 
+	[MemberNotNullWhen(true, nameof(defaultBindingContextBinding))]
 	internal bool TrySetBindingContext(Binding binding)
 	{
 		if (!IsBound(BindingContextProperty))
@@ -58,6 +60,7 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
 	}
 
 	/// <inheritdoc/>
+	[MemberNotNull(nameof(View))]
 	protected override void OnAttachedTo(TView bindable)
 	{
 		base.OnAttachedTo(bindable);
@@ -85,6 +88,7 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
 	/// <param name="property"></param>
 	/// <param name="defaultBinding"></param>
 	/// <returns></returns>
+	[MemberNotNullWhen(true, nameof(bindingField), nameof(getContextMethod))]
 	protected bool IsBound(BindableProperty property, BindingBase? defaultBinding = null)
 	{
 		var context = getContextMethod?.Invoke(this, new object[] { property });

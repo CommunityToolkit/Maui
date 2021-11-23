@@ -18,7 +18,7 @@ public abstract class BaseConverter<TFrom, TTo> : BaseConverterOneWay<TFrom, TTo
 	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>An object of the type <see cref="TFrom"/></returns>
-	public sealed override object? ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+	public sealed override object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value is not TTo valueFrom)
 			throw new ArgumentException($"value needs to be of type {typeof(TTo)}", nameof(value));
@@ -34,5 +34,5 @@ public abstract class BaseConverter<TFrom, TTo> : BaseConverterOneWay<TFrom, TTo
 	/// </summary>
 	/// <param name="value">Value to be converted from <see cref="TTo"/> to <see cref="TFrom"/>.</param>
 	/// <returns>An object of type <see cref="TFrom"/>.</returns>
-	public abstract TFrom ConvertBackTo(TTo value);
+	public abstract TFrom? ConvertBackTo(TTo value);
 }

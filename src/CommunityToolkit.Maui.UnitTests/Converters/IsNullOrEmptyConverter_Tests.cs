@@ -15,7 +15,7 @@ public class IsNullOrEmptyConverter_Tests : BaseTest
 	{
 		var isNullOrEmptyConverter = new IsNullOrEmptyConverter();
 
-		var result = isNullOrEmptyConverter.Convert(value, typeof(IsNotNullOrEmptyConverter_Tests), null, CultureInfo.CurrentCulture);
+		var result = (bool)isNullOrEmptyConverter.Convert(value, typeof(IsNotNullOrEmptyConverter_Tests), null, CultureInfo.CurrentCulture);
 
 		Assert.Equal(result, expectedResult);
 	}

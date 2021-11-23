@@ -11,7 +11,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts the incoming value from <see cref="byte"/>[] and returns the object of a type <see cref="ImageSource"/> or vice versa.
 /// </summary>
-public class ByteArrayToImageSourceConverter : ValueConverterExtension, IValueConverter
+public class ByteArrayToImageSourceConverter : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// Converts the incoming value from <see cref="byte"/>[] and returns the object of a type <see cref="ImageSource"/>.
@@ -46,19 +46,17 @@ public class ByteArrayToImageSourceConverter : ValueConverterExtension, IValueCo
 		if (value == null)
 			return null;
 
-		if (value is StreamImageSource streamImageSource)
-		{
-			var streamFromImageSource = streamImageSource.Stream(CancellationToken.None).Result;
+		if (value is not StreamImageSource streamImageSource)
+			throw new ArgumentException("Expected value to be of type StreamImageSource.", nameof(value));
 
-			if (streamFromImageSource == null)
-				return null;
+		var streamFromImageSource = streamImageSource.Stream(CancellationToken.None).Result;
 
-			using var memoryStream = new MemoryStream();
-			streamFromImageSource.CopyTo(memoryStream);
+		if (streamFromImageSource == null)
+			return null;
 
-			return memoryStream.ToArray();
-		}
+		using var memoryStream = new MemoryStream();
+		streamFromImageSource.CopyTo(memoryStream);
 
-		throw new ArgumentException("Expected value to be of type StreamImageSource.", nameof(value));
+		return memoryStream.ToArray();
 	}
 }

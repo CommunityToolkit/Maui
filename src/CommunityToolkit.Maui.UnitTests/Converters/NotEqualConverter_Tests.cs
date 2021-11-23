@@ -15,7 +15,7 @@ public class NotEqualConverter_Tests : BaseTest
 	{
 		var notEqualConverter = new NotEqualConverter();
 
-		var result = notEqualConverter.Convert(value, typeof(NotEqualConverter_Tests), comparedValue, CultureInfo.CurrentCulture);
+		var result = (bool)notEqualConverter.Convert(value, typeof(NotEqualConverter_Tests), comparedValue, CultureInfo.CurrentCulture);
 
 		Assert.Equal(result, expectedResult);
 	}

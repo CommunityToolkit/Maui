@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.Maui.Controls;
 
@@ -7,7 +8,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts a <see cref="TimeSpan"/> to a <see cref="double"/> value expressed in seconds.
 /// </summary>
-public class TimeSpanToDoubleConverter : IValueConverter
+public class TimeSpanToDoubleConverter : ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// Converts a <see cref="TimeSpan"/> to a <see cref="double"/> value expressed in seconds.
@@ -17,7 +18,8 @@ public class TimeSpanToDoubleConverter : IValueConverter
 	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>A <see cref="double"/> value expressed in seconds.</returns>
-	public object Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	[return: NotNull]
+	public object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value is TimeSpan timespan)
 		{
@@ -35,7 +37,8 @@ public class TimeSpanToDoubleConverter : IValueConverter
 	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>The <see cref="TimeSpan"/> value representing the converted <see cref="double"/> value.</returns>
-	public object ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	[return: NotNull]
+	public object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value is double doubleValue)
 		{

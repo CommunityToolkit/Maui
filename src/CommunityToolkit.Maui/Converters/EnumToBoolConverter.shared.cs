@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -11,7 +12,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 ///     Convert an <see cref="Enum" /> to corresponding <see cref="bool" />
 /// </summary>
-public class EnumToBoolConverter : ValueConverterExtension, IValueConverter
+public class EnumToBoolConverter : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
 	///     Enum values, that converts to <c>true</c> (optional)
@@ -33,7 +34,8 @@ public class EnumToBoolConverter : ValueConverterExtension, IValueConverter
 	///     value not equal to parameter.
 	/// </returns>
 	/// <exception cref="ArgumentException">If value is not an <see cref="Enum" /></exception>
-	public object Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	[return: NotNull]
+	public object? Convert([NotNull] object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value is not Enum enumValue)
 			throw new ArgumentException("The value should be of type Enum", nameof(value));
@@ -66,6 +68,5 @@ public class EnumToBoolConverter : ValueConverterExtension, IValueConverter
 	/// <param name="parameter">N/A</param>
 	/// <param name="culture">N/A</param>
 	/// <returns>N/A</returns>
-	public object ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture) =>
-		throw new NotImplementedException();
+	public object ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture) => throw new NotImplementedException();
 }
