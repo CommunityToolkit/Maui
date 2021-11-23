@@ -33,33 +33,33 @@ public class BehaviorsGalleryViewModel : BaseGalleryViewModel
 				typeof(SetFocusOnEntryCompletedBehaviorPage),
 				nameof(SetFocusOnEntryCompletedBehavior),
 				"Set focus to another element when an entry is completed"),
-        new SectionModel(
-            typeof(CharactersValidationBehaviorPage),
-            nameof(CharactersValidationBehavior),
-            "Changes an Entry's text color when an invalid string is provided."),
-            		new SectionModel(
-            typeof(TextValidationBehaviorPage),
-            nameof(TextValidationBehavior),
-            "Changes an Entry's text color when text validation is failed (based on regex)"),
-        new SectionModel(
-            typeof(MultiValidationBehaviorPage),
-            nameof(MultiValidationBehavior),
-            "Combines multiple validation behavior"),
-                    new SectionModel(
-            typeof(UriValidationBehaviorPage),
-            nameof(UriValidationBehavior),
-            "Changes an Entry's text color when an invalid URI is provided"),
 		new SectionModel(
-            typeof(RequiredStringValidationBehaviorPage),
-            nameof(RequiredStringValidationBehavior),
-            "Changes an Entry's text color when a required string is not provided"),
-                    new SectionModel(
-            typeof(NumericValidationBehaviorPage),
-            nameof(NumericValidationBehavior),
-            "Changes an Entry's text color when an invalid number is provided"),
-                    new SectionModel(
-            typeof(EmailValidationBehaviorPage),
-            nameof(EmailValidationBehavior),
-            "Changes an Entry's text color when an invalid e-mail address is provided"),
+			typeof(CharactersValidationBehaviorPage),
+			nameof(CharactersValidationBehavior),
+			"Changes an Entry's text color when an invalid string is provided."),
+					new SectionModel(
+			typeof(TextValidationBehaviorPage),
+			nameof(TextValidationBehavior),
+			"Changes an Entry's text color when text validation is failed (based on regex)"),
+		new SectionModel(
+			typeof(MultiValidationBehaviorPage),
+			nameof(MultiValidationBehavior),
+			"Combines multiple validation behavior"),
+					new SectionModel(
+			typeof(UriValidationBehaviorPage),
+			nameof(UriValidationBehavior),
+			"Changes an Entry's text color when an invalid URI is provided"),
+		new SectionModel(
+			typeof(RequiredStringValidationBehaviorPage),
+			nameof(RequiredStringValidationBehavior),
+			"Changes an Entry's text color when a required string is not provided"),
+					new SectionModel(
+			typeof(NumericValidationBehaviorPage),
+			nameof(NumericValidationBehavior),
+			"Changes an Entry's text color when an invalid number is provided"),
+					new SectionModel(
+			typeof(EmailValidationBehaviorPage),
+			nameof(EmailValidationBehavior),
+			"Changes an Entry's text color when an invalid e-mail address is provided"),
 		};
 }

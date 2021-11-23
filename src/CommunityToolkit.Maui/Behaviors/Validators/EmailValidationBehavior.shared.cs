@@ -15,9 +15,9 @@ namespace CommunityToolkit.Maui.Behaviors;
 public class EmailValidationBehavior : TextValidationBehavior
 {
 	/// <inheritdoc /> 
-	protected override async ValueTask<bool> ValidateAsync(object? value, CancellationToken token) 
+	protected override async ValueTask<bool> ValidateAsync(object? value, CancellationToken token)
 	{
-		var text = (string?)value; 
-		return MailAddress.TryCreate(text ?? string.Empty, out _) && await base.ValidateAsync(value, token); 
+		var text = (string?)value;
+		return MailAddress.TryCreate(text ?? string.Empty, out _) && await base.ValidateAsync(value, token);
 	}
 }

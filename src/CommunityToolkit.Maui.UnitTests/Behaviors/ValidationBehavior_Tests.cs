@@ -99,7 +99,7 @@ public class ValidationBehavior_Tests : BaseTest
 		};
 		var behavior = new MockValidationBehavior()
 		{
-			ExpectedValue = "321" ,
+			ExpectedValue = "321",
 			SimulateValidationDelay = true
 		};
 
