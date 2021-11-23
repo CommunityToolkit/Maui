@@ -25,9 +25,9 @@ public class StringToListConverter_Tests : BaseTest
 	{
 		var stringToListConverter = new StringToListConverter();
 
-		var result = (List<string>)stringToListConverter.Convert(value, null, parameter, null);
+		var result = (IEnumerable<string>)stringToListConverter.Convert(value, null, parameter, null);
 
-		Assert.Equal(result, expectedResult);
+		Assert.Equal(expectedResult, result);
 	}
 
 	[Theory]
