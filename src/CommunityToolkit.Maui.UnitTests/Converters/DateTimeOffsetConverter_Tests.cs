@@ -43,7 +43,7 @@ public class DateTimeOffsetConverter_Tests : BaseTest
 	{
 		var dateTimeOffsetConverter = new DateTimeOffsetConverter();
 
-		var result = DateTime.Parse($"{dateTimeOffsetConverter.Convert(value, typeof(DateTimeOffsetConverter_Tests), null, CultureInfo.CurrentCulture)}");
+		var result = (DateTime)dateTimeOffsetConverter.Convert(value, typeof(DateTimeOffsetConverter_Tests), null, CultureInfo.CurrentCulture);
 
 		Assert.Equal(expectedResult, result);
 	}
