@@ -3,9 +3,9 @@ using Microsoft.Maui.Graphics;
 
 namespace CommunityToolkit.Maui.Views.Popup.SnackBar;
 
-public class SnackbarOptions
+public class SnackbarOptions : ITextStyle
 {
-	public double CharacterSpacing { get; set; }
+	public double CharacterSpacing { get; set; } = 0.0d;
 
 	public Font Font { get; set; } = Font.SystemFontOfSize(14);
 
