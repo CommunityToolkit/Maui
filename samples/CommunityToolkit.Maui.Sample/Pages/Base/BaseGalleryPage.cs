@@ -90,7 +90,7 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage where TViewModel : 
 							.Row(CardRow.Title).FillExpand()
 							.Bind(Label.TextProperty, nameof(SectionModel.Title)),
 
-						new Label { MaxLines = 4, LineBreakMode = LineBreakMode.WordWrap}
+						new Label { MaxLines = 4, LineBreakMode = LineBreakMode.WordWrap }
 							.Row(CardRow.Description).FillExpand().TextStart().TextTop()
 							.Bind(Label.TextProperty, nameof(SectionModel.Description))
 					}
