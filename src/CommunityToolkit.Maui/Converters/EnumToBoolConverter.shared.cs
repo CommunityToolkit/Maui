@@ -12,7 +12,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 ///     Convert an <see cref="Enum" /> to corresponding <see cref="bool" />
 /// </summary>
-public class EnumToBoolConverter : ValueConverterExtension, IValueConverter
+public class EnumToBoolConverter : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
 	///     Enum values, that converts to <c>true</c> (optional)

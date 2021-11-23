@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts/Extracts the incoming value from <see cref="SelectedItemChangedEventArgs"/> object and returns the value of <see cref="SelectedItemChangedEventArgs.SelectedItem"/> property from it.
 /// </summary>
-public class ItemSelectedEventArgsConverter : ValueConverterExtension, IValueConverter
+public class ItemSelectedEventArgsConverter : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// Converts/Extracts the incoming value from <see cref="SelectedItemChangedEventArgs"/> object and returns the value of <see cref="SelectedItemChangedEventArgs.SelectedItem"/> property from it.

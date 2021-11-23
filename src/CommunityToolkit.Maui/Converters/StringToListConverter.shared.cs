@@ -11,7 +11,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Returns a string array that contains the substrings in this string that are delimited by <see cref="Separator"/>.
 /// </summary>
-public class StringToListConverter : ValueConverterExtension, IValueConverter
+public class StringToListConverter : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// The string that delimits the substrings in this string.

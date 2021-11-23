@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts <see cref="DateTimeOffset"/> to <see cref="DateTime"/> and back.
 /// </summary>
-public class DateTimeOffsetConverter : ValueConverterExtension, IValueConverter
+public class DateTimeOffsetConverter : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// Converts <see cref="DateTimeOffset"/> to <see cref="DateTime"/>
@@ -19,7 +19,7 @@ public class DateTimeOffsetConverter : ValueConverterExtension, IValueConverter
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>The <see cref="DateTime"/> value.</returns>
 	[return: NotNull]
-	public object? Convert([NotNull] object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+	public object? Convert([NotNull] object? value, Type? targetType, object? parameter, System.Globalization.CultureInfo? culture)
 		=> value is DateTimeOffset dateTimeOffset
 			? dateTimeOffset.DateTime
 			: throw new ArgumentException("Value is not a valid DateTimeOffset", nameof(value));
@@ -33,7 +33,7 @@ public class DateTimeOffsetConverter : ValueConverterExtension, IValueConverter
 	/// <param name="culture">The culture to use in the converter. This is not implemented..</param>
 	/// <returns>The <see cref="DateTimeOffset"/> value.</returns>
 	[return: NotNull]
-	public object? ConvertBack([NotNull] object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+	public object? ConvertBack([NotNull] object? value, Type? targetType, object? parameter, System.Globalization.CultureInfo? culture)
 		=> value is DateTime dateTime
 			? dateTime.Kind switch
 			{

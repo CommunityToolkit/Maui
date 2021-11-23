@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// This converter can be used with <see cref="StateLayout"/> to determine if a certain state is visible. This can be useful, for instance, in scenarios where you want to show/hide certain elements based on the current <see cref="StateLayout"/>.CurrentState. Additionally a <see cref="StateLayout"/> can be supplied in the parameter of the Convert method to compare against that.
 /// </summary>
-public class StateToBooleanConverter : IValueConverter
+public class StateToBooleanConverter : ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// The <see cref="LayoutState"/> to compare to.

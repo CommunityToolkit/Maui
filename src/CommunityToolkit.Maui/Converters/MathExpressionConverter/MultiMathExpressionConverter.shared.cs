@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converters for multiple math expressions
 /// </summary>
-public class MultiMathExpressionConverter : MultiValueConverterExtension, IMultiValueConverter
+public class MultiMathExpressionConverter : MultiValueConverterExtension, ICommunityToolkitIMultiValueConverter
 {
 	/// <summary>
 	/// Calculate the incoming expression string with variables.
@@ -20,7 +20,7 @@ public class MultiMathExpressionConverter : MultiValueConverterExtension, IMulti
 	/// <param name="parameter">The expression to calculate.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>A <see cref="double"/> The result of calculating an expression.</returns>
-	public object? Convert(object[]? values, Type? targetType, [NotNull] object? parameter, CultureInfo culture)
+	public object? Convert(object[]? values, Type? targetType, [NotNull] object? parameter, CultureInfo? culture)
 	{
 		if (parameter is not string expression)
 			throw new ArgumentException("The parameter should be of type String.");
@@ -54,6 +54,6 @@ public class MultiMathExpressionConverter : MultiValueConverterExtension, IMulti
 	/// <param name="parameter">N/A</param>
 	/// <param name="culture">N/A</param>
 	/// <returns>N/A</returns>
-	public object[]? ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+	public object[]? ConvertBack(object? value, Type[]? targetTypes, object? parameter, CultureInfo? culture)
 		=> throw new NotImplementedException();
 }

@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts an <see cref="int"/> index to corresponding array item and vice versa.
 /// </summary>
-public class IndexToArrayItemConverter : ValueConverterExtension, IValueConverter
+public class IndexToArrayItemConverter : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// Converts an <see cref="int"/> index to corresponding array item.

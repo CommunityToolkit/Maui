@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts the incoming value to a <see cref="bool"/> indicating whether or not the value is null or empty.
 /// </summary>
-public class IsNullOrEmptyConverter : ValueConverterExtension, IValueConverter
+public class IsNullOrEmptyConverter : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// Converts the incoming value to a <see cref="bool"/> indicating whether or not the value is null or empty.

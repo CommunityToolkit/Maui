@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts an <see cref="int"/> to corresponding <see cref="bool"/> and vice versa.
 /// </summary>
-public class IntToBoolConverter : ValueConverterExtension, IValueConverter
+public class IntToBoolConverter : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// Converts an <see cref="int"/> to corresponding <see cref="bool"/>.

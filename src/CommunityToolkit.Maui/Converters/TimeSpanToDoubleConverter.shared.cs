@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts a <see cref="TimeSpan"/> to a <see cref="double"/> value expressed in seconds.
 /// </summary>
-public class TimeSpanToDoubleConverter : IValueConverter
+public class TimeSpanToDoubleConverter : ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// Converts a <see cref="TimeSpan"/> to a <see cref="double"/> value expressed in seconds.

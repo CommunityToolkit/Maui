@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 ///     Converts an <see cref="Enum" /> to its underlying <see cref="int" /> value.
 /// </summary>
-public class EnumToIntConverter : ValueConverterExtension, IValueConverter
+public class EnumToIntConverter : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// Convert a default <see cref="Enum"/> (i.e., extending <see cref="int"/>) to corresponding underlying <see cref="int"/>
@@ -34,6 +34,6 @@ public class EnumToIntConverter : ValueConverterExtension, IValueConverter
 	/// <returns>The underlying <see cref="Enum"/> of the associated targetType</returns>
 	/// <exception cref="ArgumentException">If value is not a valid value in the targetType enum</exception>
 	[return: NotNull]
-	public object? ConvertBack([NotNull] object? value, Type targetType, object? parameter, CultureInfo? culture) =>
-		value is int enumIntVal && Enum.IsDefined(targetType, enumIntVal) ? Enum.ToObject(targetType, enumIntVal) : throw new ArgumentException($"{value} is not valid for {targetType.Name}");
+	public object? ConvertBack([NotNull] object? value, Type? targetType, object? parameter, CultureInfo? culture) =>
+		value is int enumIntVal && targetType is not null && Enum.IsDefined(targetType, enumIntVal) ? Enum.ToObject(targetType, enumIntVal) : throw new ArgumentException($"{value} is not valid for {targetType?.Name ?? "null"}");
 }

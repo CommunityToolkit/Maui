@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// Converts text (string, char) to certain case as specified with <see cref="Type"/> or the parameter of the Convert method.
 /// </summary>
 [ContentProperty(nameof(Type))]
-public class TextCaseConverter : ValueConverterExtension, IValueConverter
+public class TextCaseConverter : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// The desired text case that the text should be converted to.

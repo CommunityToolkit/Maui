@@ -16,7 +16,7 @@ public class BoolToObjectConverter : BoolToObjectConverter<object>
 /// <summary>
 /// Converts <see cref="bool"/> to object and vice versa.
 /// </summary>
-public class BoolToObjectConverter<TObject> : ValueConverterExtension, IValueConverter
+public class BoolToObjectConverter<TObject> : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// The object that corresponds to True value.

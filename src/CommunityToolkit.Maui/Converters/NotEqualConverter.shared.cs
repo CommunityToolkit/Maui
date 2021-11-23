@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Checks whether the incoming value doesn't equal the provided parameter.
 /// </summary>
-public class NotEqualConverter : ValueConverterExtension, IValueConverter
+public class NotEqualConverter : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// Checks whether the incoming value doesn't equal the provided parameter.

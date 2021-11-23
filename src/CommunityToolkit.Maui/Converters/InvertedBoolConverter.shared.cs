@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts true to false and false to true. Simple as that!
 /// </summary>
-public class InvertedBoolConverter : ValueConverterExtension, IValueConverter
+public class InvertedBoolConverter : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// Converts a <see cref="bool"/> to its inverse value.

@@ -11,7 +11,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Concatenates the members of a collection, using the specified separator between each member.
 /// </summary>
-public class ListToStringConverter : ValueConverterExtension, IValueConverter
+public class ListToStringConverter : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// The separator that should be between each item in the collection

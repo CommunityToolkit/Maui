@@ -16,7 +16,7 @@ public sealed class CompareConverter : CompareConverter<object>
 /// <summary>
 /// Converts an object that implements IComparable to an object or a boolean based on a comparison.
 /// </summary>
-public abstract class CompareConverter<TObject> : ValueConverterExtension, IValueConverter
+public abstract class CompareConverter<TObject> : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// Math operator type
@@ -93,12 +93,10 @@ public abstract class CompareConverter<TObject> : ValueConverterExtension, IValu
 	/// <returns>The object assigned to <see cref="TrueObject"/> if (value <see cref="ComparisonOperator"/> <see cref="ComparingValue"/>) equals True and <see cref="TrueObject"/> is not null, if <see cref="TrueObject"/> is null it returns true, otherwise the value assigned to <see cref="FalseObject"/>, if no value is assigned then it returns false.</returns>
 	[return: NotNull]
 	[MemberNotNull(nameof(ComparingValue))]
-	public virtual object? Convert(object value, Type targetType, object parameter, CultureInfo culture)
+	public virtual object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
-		if (ComparingValue == null)
-		{
-			throw new ArgumentNullException(nameof(ComparingValue), $"{nameof(ComparingValue)} and {nameof(ComparisonOperator)} parameters shouldn't be null");
-		}
+		ArgumentNullException.ThrowIfNull(ComparingValue);
+		ArgumentNullException.ThrowIfNull(ComparisonOperator);
 
 		if (value is not IComparable)
 		{
@@ -159,5 +157,5 @@ public abstract class CompareConverter<TObject> : ValueConverterExtension, IValu
 	/// <param name="parameter">N/A</param>
 	/// <param name="culture">N/A</param>
 	/// <returns>N/A</returns>
-	public virtual object? ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
+	public virtual object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture) => throw new NotImplementedException();
 }

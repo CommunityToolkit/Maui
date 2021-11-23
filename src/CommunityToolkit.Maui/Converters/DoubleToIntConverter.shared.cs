@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// Converts <see cref="double"/> to <see cref="int"/> and vice versa.
 /// </summary>
 [ContentProperty(nameof(Ratio))]
-public class DoubleToIntConverter : ValueConverterExtension, IValueConverter
+public class DoubleToIntConverter : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// Multiplier / Denominator (Equals 1 by default).

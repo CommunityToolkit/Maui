@@ -11,7 +11,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts the incoming value from <see cref="byte"/>[] and returns the object of a type <see cref="ImageSource"/> or vice versa.
 /// </summary>
-public class ByteArrayToImageSourceConverter : ValueConverterExtension, IValueConverter
+public class ByteArrayToImageSourceConverter : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// Converts the incoming value from <see cref="byte"/>[] and returns the object of a type <see cref="ImageSource"/>.
