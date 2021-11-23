@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls;
 namespace CommunityToolkit.Maui.Converters;
 
 /// <inheritdoc />
-public interface ICommunityToolkitIMultiValueConverter : IMultiValueConverter
+public interface ICommunityToolkitMultiValueConverter : IMultiValueConverter
 {
 	/// <summary>
 	/// Converts the incoming values to a different object
