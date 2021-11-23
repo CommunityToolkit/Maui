@@ -19,19 +19,24 @@
                 <!-- Settings -->
                 <Frame Margin="{StaticResource ContentPadding}"
                        CornerRadius="10">
-                    <Grid ColumnDefinitions="2*, *">
+                    <Grid RowDefinitions="*,*" ColumnDefinitions="2*, *" RowSpacing="24" ColumnSpacing="8">
                         <Label Text="MaxLength setting on Entry field"
+                               HorizontalOptions="End"
+                               HorizontalTextAlignment="End"
                                VerticalTextAlignment="Center" />
                         <Entry x:Name="MaxLengthSetting"
                                Text="6"
+                               HorizontalOptions="StartAndExpand"
                                Keyboard="Numeric"
                                Grid.Column="1" />
 
                         <Label Text="Should dismiss keyboard automatically"
                                VerticalTextAlignment="Center"
+                               HorizontalOptions="End"
+                               HorizontalTextAlignment="End"
                                Grid.Row="1" />
                         <Switch x:Name="AutoDismissKeyboardSetting"
-                                HorizontalOptions="End"
+                                HorizontalOptions="Start"
                                 Grid.Row="1"
                                 Grid.Column="1" />
                     </Grid>
