@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CommunityToolkit.Maui.Controls.Snackbar;
+namespace CommunityToolkit.Maui.Views.Popup;
 
 public class ShownEventArgs : EventArgs
 {

@@ -1,17 +1,19 @@
 ﻿using System;
 using System.Threading.Tasks;
+using CommunityToolkit.Maui.Views.Popup.SnackBar;
 using Microsoft.Maui;
-using Microsoft.Maui.Controls;
 
-namespace CommunityToolkit.Maui.Controls.Snackbar;
+namespace CommunityToolkit.Maui.Views.Popup.SnackBar;
 
 public class Snackbar : ISnackbar
 {
 #if NET6_0_ANDROID
-	internal Google.Android.Material.Snackbar.Snackbar? nativeSnackbar;
+	Google.Android.Material.Snackbar.Snackbar? nativeSnackbar;
+#elif NET6_0_IOS || NET6_0_MACCATALYST
+	NativeSnackBar? nativeSnackbar;
 #endif
 
-	private bool isShown;
+	bool isShown;
 
 	public Snackbar()
 	{
@@ -65,19 +67,19 @@ public class Snackbar : ISnackbar
 
 	public Task Show()
 	{
-#if NET6_0_ANDROID
-		nativeSnackbar = PlatformPopupExtensions.Show(this);
-		IsShown = true;
+#if NET6_0_ANDROID || NET6_0_IOS || NET6_0_MACCATALYST
+		nativeSnackbar = CommunityToolkit.Maui.Views.Popup.SnackBar.Platforms.PlatformPopupExtensions.Show(this);
 #else
 		throw new PlatformNotSupportedException();
 #endif
+		IsShown = true;
 		return Task.CompletedTask;
 	}
 
 	public Task Dismiss()
 	{
-#if NET6_0_ANDROID
-		PlatformPopupExtensions.Dismiss(this);
+#if NET6_0_ANDROID || NET6_0_IOS || NET6_0_MACCATALYST
+		CommunityToolkit.Maui.Views.Popup.SnackBar.Platforms.PlatformPopupExtensions.Dismiss(nativeSnackbar);
 #else
 		throw new PlatformNotSupportedException();
 #endif

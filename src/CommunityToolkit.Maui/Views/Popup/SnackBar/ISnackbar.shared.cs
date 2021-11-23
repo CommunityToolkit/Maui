@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Maui;
 
-namespace CommunityToolkit.Maui.Controls.Snackbar;
+namespace CommunityToolkit.Maui.Views.Popup.SnackBar;
 
 public interface ISnackbar
 {

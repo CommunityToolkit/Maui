@@ -1,20 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.Text;
-using System.Threading.Tasks;
-using CommunityToolkit.Maui.Controls.Snackbar;
 using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Views.Popup.SnackBar;
 using Microsoft.Maui;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class SnackBarPage : BasePage
 {
-	private Snackbar? snackbarWithAnchor;
+	ISnackbar? snackbarWithAnchor;
 	public SnackBarPage()
 	{
 		InitializeComponent();
@@ -37,13 +32,17 @@ public partial class SnackBarPage : BasePage
 			TimeSpan.FromSeconds(30),
 			() => StatusText.Text = "SnackBar action button clicked",
 			Anchor1);
-		var options = new SnackbarOptions();
-		options.BackgroundColor = Colors.Red;
-		options.TextColor = Colors.Green;
-		options.ActionTextColor = Colors.Yellow;
-		options.CornerRadius = new CornerRadius(10, 20, 30, 40);
-		options.Font = Font.SystemFontOfSize(20);
-		options.CharacterSpacing = 1;
+
+		var options = new SnackbarOptions
+		{
+			BackgroundColor = Colors.Red,
+			TextColor = Colors.Green,
+			ActionTextColor = Colors.Yellow,
+			CornerRadius = new CornerRadius(10, 20, 30, 40),
+			Font = Font.SystemFontOfSize(20),
+			CharacterSpacing = 1
+		};
+
 		snackbarWithAnchor.VisualOptions = options;
 		await snackbarWithAnchor.Show();
 	}

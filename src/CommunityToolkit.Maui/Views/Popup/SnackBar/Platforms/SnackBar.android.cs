@@ -12,16 +12,16 @@ using AndroidSnackBar = Google.Android.Material.Snackbar.Snackbar;
 using Object = Java.Lang.Object;
 using View = Android.Views.View;
 
-namespace CommunityToolkit.Maui.Controls.Snackbar;
+namespace CommunityToolkit.Maui.Views.Popup.SnackBar.Platforms;
 
-internal static partial class PlatformPopupExtensions
+static partial class PlatformPopupExtensions
 {
-	public static void Dismiss(Snackbar snackbar)
+	public static void Dismiss(AndroidSnackBar? snackbar)
 	{
-		snackbar.nativeSnackbar?.Dismiss();
+		snackbar?.Dismiss();
 	}
 
-	public static AndroidSnackBar Show(Snackbar snackBar)
+	public static AndroidSnackBar Show(ISnackbar snackBar)
 	{
 		var rootView = Microsoft.Maui.Essentials.Platform.GetCurrentActivity(true).Window?.DecorView.FindViewById(Android.Resource.Id.Content);
 		if (rootView is null)
@@ -31,14 +31,14 @@ internal static partial class PlatformPopupExtensions
 
 		var nativeSnackBar = AndroidSnackBar.Make(
 			rootView,
-			snackBar.Text, 
+			snackBar.Text,
 			(int)snackBar.Duration.TotalMilliseconds);
 		var snackBarView = nativeSnackBar.View;
 
 		if (snackBar.Anchor is not Page)
 		{
 			nativeSnackBar.SetAnchorView(snackBar.Anchor?.Handler?.NativeView as View);
-		}		
+		}
 
 		SetupContainer(snackBar.VisualOptions, snackBarView);
 		SetupMessage(snackBar.VisualOptions, snackBarView);
@@ -87,7 +87,7 @@ internal static partial class PlatformPopupExtensions
 		snackTextView.SetTypeface(snackBarOptions.Font.ToTypeface(), TypefaceStyle.Normal);
 	}
 
-	static void SetupActions(Snackbar snackBar, AndroidSnackBar nativeSnackBar)
+	static void SetupActions(ISnackbar snackBar, AndroidSnackBar nativeSnackBar)
 	{
 		nativeSnackBar.SetAction(snackBar.ActionButtonText, _ =>
 		{
@@ -100,9 +100,9 @@ internal static partial class PlatformPopupExtensions
 
 	class SnackBarCallback : BaseTransientBottomBar.BaseCallback
 	{
-		private readonly Snackbar snackbar;
+		readonly ISnackbar snackbar;
 
-		public SnackBarCallback(Snackbar snackbar)
+		public SnackBarCallback(ISnackbar snackbar)
 		{
 			this.snackbar = snackbar;
 		}
@@ -110,7 +110,6 @@ internal static partial class PlatformPopupExtensions
 		public override void OnDismissed(Object transientBottomBar, int e)
 		{
 			base.OnDismissed(transientBottomBar, e);
-			snackbar.OnDismissed();
 		}
 	}
 }

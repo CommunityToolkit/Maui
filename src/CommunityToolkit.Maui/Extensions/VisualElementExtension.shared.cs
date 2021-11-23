@@ -1,9 +1,6 @@
-﻿using CommunityToolkit.Maui.Controls.Snackbar;
-using CommunityToolkit.Maui.UI.Views;
+﻿using CommunityToolkit.Maui.Views.Popup.SnackBar;
 using Microsoft.Maui.Controls;
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Threading.Tasks;
 
 namespace CommunityToolkit.Maui.Extensions;
@@ -22,7 +19,7 @@ public static class VisualElementExtension
 	/// <param name="action">Action of the snackbar button</param>
 	/// <param name="duration">Snackbar duration</param>
 	/// <returns><see cref="Snackbar"/></returns>
-	public static async Task<Snackbar> DisplaySnackBarAsync(this VisualElement? visualElement, string message, string actionButtonText, Action action, TimeSpan? duration = null)
+	public static async Task<ISnackbar> DisplaySnackBarAsync(this VisualElement? visualElement, string message, string actionButtonText, Action action, TimeSpan? duration = null)
 	{
 		var snackBar = Snackbar.Make(message, duration, action, visualElement);
 		snackBar.ActionButtonText = actionButtonText;
