@@ -2,8 +2,8 @@
 
 public partial class ImageResourceConverterPage : BasePage
 {
-    public ImageResourceConverterPage()
-    {
-        InitializeComponent();
-    }
+	public ImageResourceConverterPage()
+	{
+		InitializeComponent();
+	}
 }

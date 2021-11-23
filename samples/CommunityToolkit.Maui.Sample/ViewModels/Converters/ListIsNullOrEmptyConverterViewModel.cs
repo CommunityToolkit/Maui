@@ -2,8 +2,8 @@
 
 public class ListIsNullOrEmptyConverterViewModel : ListIsNotNullOrEmptyConverterViewModel
 {
-    public ListIsNullOrEmptyConverterViewModel()
-    {
+	public ListIsNullOrEmptyConverterViewModel()
+	{
 
-    }
+	}
 }

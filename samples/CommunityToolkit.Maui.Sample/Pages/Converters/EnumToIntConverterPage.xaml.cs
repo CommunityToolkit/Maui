@@ -2,8 +2,8 @@
 
 public partial class EnumToIntConverterPage : BasePage
 {
-    public EnumToIntConverterPage()
-    {
-        InitializeComponent();
-    }
+	public EnumToIntConverterPage()
+	{
+		InitializeComponent();
+	}
 }

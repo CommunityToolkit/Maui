@@ -22,22 +22,22 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
     {
         var byteArray = new byte[] { 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20 };
 
-        var memoryStream = new MemoryStream(byteArray);
+		var memoryStream = new MemoryStream(byteArray);
 
-        var expectedValue = ImageSource.FromStream(() => memoryStream);
+		var expectedValue = ImageSource.FromStream(() => memoryStream);
 
-        var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
+		var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 
-        var result = (ImageSource)byteArrayToImageSourceConverter.Convert(byteArray, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture);
+		var result = (ImageSource)byteArrayToImageSourceConverter.Convert(byteArray, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture);
 
-        Assert.True(StreamEquals(GetStreamFromImageSource(result), memoryStream));
-    }
+		Assert.True(StreamEquals(GetStreamFromImageSource(result), memoryStream));
+	}
 
-    [Theory]
-    [InlineData("Random String Value")]
-    public void InvalidConverterValuesReturnsNull(object value)
-    {
-        var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
+	[Theory]
+	[InlineData("Random String Value")]
+	public void InvalidConverterValuesReturnsNull(object value)
+	{
+		var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 
         Assert.Throws<ArgumentException>(() => byteArrayToImageSourceConverter.Convert(value, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture));
     }

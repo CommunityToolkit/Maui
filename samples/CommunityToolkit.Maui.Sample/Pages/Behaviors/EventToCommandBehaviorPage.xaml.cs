@@ -2,8 +2,8 @@
 
 public partial class EventToCommandBehaviorPage : BasePage
 {
-    public EventToCommandBehaviorPage()
-    {
-        InitializeComponent();
-    }
+	public EventToCommandBehaviorPage()
+	{
+		InitializeComponent();
+	}
 }
