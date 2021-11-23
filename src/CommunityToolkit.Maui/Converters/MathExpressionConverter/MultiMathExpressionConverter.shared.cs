@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converters for multiple math expressions
 /// </summary>
-public class MultiMathExpressionConverter : MultiValueConverterExtension, ICommunityToolkitIMultiValueConverter
+public class MultiMathExpressionConverter : MultiValueConverterExtension, ICommunityToolkitMultiValueConverter
 {
 	/// <summary>
 	/// Calculate the incoming expression string with variables.
