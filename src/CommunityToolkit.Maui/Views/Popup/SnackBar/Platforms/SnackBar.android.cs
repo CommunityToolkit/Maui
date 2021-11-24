@@ -89,11 +89,14 @@ static partial class PlatformPopupExtensions
 
 	static void SetupActions(ISnackbar snackBar, AndroidSnackBar nativeSnackBar)
 	{
+		var snackActionButtonView = nativeSnackBar.View.FindViewById<TextView>(Resource.Id.snackbar_action) ?? throw new InvalidOperationException("Unable to find SnackBar action button");
+		snackActionButtonView.SetTypeface(snackBar.VisualOptions.ActionButtonFont.ToTypeface(), TypefaceStyle.Normal);
+
 		nativeSnackBar.SetAction(snackBar.ActionButtonText, _ =>
 		{
 			snackBar.Action();
 		});
-		nativeSnackBar.SetActionTextColor(snackBar.VisualOptions.ActionTextColor.ToAndroid());
+		nativeSnackBar.SetActionTextColor(snackBar.VisualOptions.ActionButtonTextColor.ToAndroid());
 
 		nativeSnackBar.AddCallback(new SnackBarCallback(snackBar));
 	}
