@@ -6,12 +6,12 @@ using Microsoft.Maui.Controls.Xaml;
 namespace CommunityToolkit.Maui.Extensions.Internals;
 
 /// <inheritdoc />
-public class MultiValueConverterExtension : IMarkupExtension<ICommunityToolkitIMultiValueConverter>
+public class MultiValueConverterExtension : IMarkupExtension<ICommunityToolkitMultiValueConverter>
 {
 	/// <inheritdoc />
-	public ICommunityToolkitIMultiValueConverter ProvideValue(IServiceProvider serviceProvider)
-		=> (ICommunityToolkitIMultiValueConverter)this;
+	public ICommunityToolkitMultiValueConverter ProvideValue(IServiceProvider serviceProvider)
+		=> (ICommunityToolkitMultiValueConverter)this;
 
 	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)
-		=> ((IMarkupExtension<ICommunityToolkitIMultiValueConverter>)this).ProvideValue(serviceProvider);
+		=> ((IMarkupExtension<ICommunityToolkitMultiValueConverter>)this).ProvideValue(serviceProvider);
 }
