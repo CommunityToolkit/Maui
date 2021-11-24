@@ -37,7 +37,7 @@ public partial class SnackBarPage : BasePage
 		{
 			BackgroundColor = Colors.Red,
 			TextColor = Colors.Green,
-			ActionTextColor = Colors.Yellow,
+			ActionButtonTextColor = Colors.Yellow,
 			CornerRadius = new CornerRadius(10, 20, 30, 40),
 			Font = Font.SystemFontOfSize(20),
 			CharacterSpacing = 1

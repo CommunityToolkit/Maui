@@ -5,6 +5,7 @@ using Microsoft.Maui;
 
 namespace CommunityToolkit.Maui.Views.Popup.SnackBar;
 
+/// <inheritdoc/>
 public class Snackbar : ISnackbar
 {
 #if NET6_0_ANDROID
@@ -15,6 +16,9 @@ public class Snackbar : ISnackbar
 
 	bool isShown;
 
+	/// <summary>
+	/// Initializes a new instance of <see cref="Snackbar"/>
+	/// </summary>
 	public Snackbar()
 	{
 		Text = string.Empty;
@@ -24,16 +28,22 @@ public class Snackbar : ISnackbar
 		VisualOptions = new SnackbarOptions();
 	}
 
+	/// <inheritdoc/>
 	public SnackbarOptions VisualOptions { get; set; }
 
+	/// <inheritdoc/>
 	public string Text { get; set; }
 
+	/// <inheritdoc/>
 	public TimeSpan Duration { get; set; }
 
+	/// <inheritdoc/>
 	public Action Action { get; set; }
 
+	/// <inheritdoc/>
 	public string ActionButtonText { get; set; }
 
+	/// <inheritdoc/>
 	public bool IsShown
 	{
 		get => isShown;
@@ -44,12 +54,24 @@ public class Snackbar : ISnackbar
 		}
 	}
 
+	/// <inheritdoc/>
 	public IView? Anchor { get; set; }
 
+	/// <inheritdoc/>
 	public event EventHandler<ShownEventArgs>? Shown;
+
+	/// <inheritdoc/>
 	public event EventHandler? Dismissed;
 
-	public static Snackbar Make(string text, TimeSpan? duration, Action action, IView? anchor = null)
+	/// <summary>
+	/// Create new Snackbar
+	/// </summary>
+	/// <param name="text">Snackbar message</param>
+	/// <param name="duration">Snackbar duration</param>
+	/// <param name="action">Snackbar action</param>
+	/// <param name="anchor">Snackbar anchor</param>
+	/// <returns>New instance of Snackbar</returns>
+	public static ISnackbar Make(string text, TimeSpan? duration, Action action, IView? anchor = null)
 	{
 		var snackbar = new Snackbar
 		{
@@ -65,26 +87,27 @@ public class Snackbar : ISnackbar
 		return snackbar;
 	}
 
+	/// <inheritdoc/>
 	public Task Show()
 	{
 #if NET6_0_ANDROID || NET6_0_IOS || NET6_0_MACCATALYST
 		nativeSnackbar = CommunityToolkit.Maui.Views.Popup.SnackBar.Platforms.PlatformPopupExtensions.Show(this);
+		IsShown = true;
+		return Task.CompletedTask;
 #else
 		throw new PlatformNotSupportedException();
 #endif
-		IsShown = true;
-		return Task.CompletedTask;
 	}
 
+	/// <inheritdoc/>
 	public Task Dismiss()
 	{
 #if NET6_0_ANDROID || NET6_0_IOS || NET6_0_MACCATALYST
 		CommunityToolkit.Maui.Views.Popup.SnackBar.Platforms.PlatformPopupExtensions.Dismiss(nativeSnackbar);
+		return Task.CompletedTask;
 #else
 		throw new PlatformNotSupportedException();
 #endif
-
-		return Task.CompletedTask;
 	}
 
 	internal void OnDismissed()

@@ -6,7 +6,7 @@
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full'">$(TargetFrameworks);net6.0-windows10.0.17763.0</TargetFrameworks>
     <UseMaui>true</UseMaui>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup>

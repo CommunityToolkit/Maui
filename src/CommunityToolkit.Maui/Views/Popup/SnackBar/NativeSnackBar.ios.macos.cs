@@ -30,6 +30,19 @@ class NativeSnackBar : NativeToast, IDisposable
 		}
 	}
 
+	public UIFont ActionButtonFont
+	{
+		get
+		{
+			return actionButton.Font;
+		}
+		set
+		{
+			actionButton.Font = value;
+		}
+	}
+
+
 	UIButton actionButton;
 	public NativeSnackBar()
 	{
