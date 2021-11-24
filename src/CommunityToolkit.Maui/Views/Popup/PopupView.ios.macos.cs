@@ -24,9 +24,9 @@ class PopupView : UIView
 
 	public void Dismiss() => RemoveFromSuperview();
 
-	public void Setup(CGRect cornerRadius)
+	public void Setup(CGRect cornerRadius, UIColor backgroundColor)
 	{
-		Initialize(cornerRadius);
+		Initialize(cornerRadius, backgroundColor);
 		ConstraintInParent();
 	}
 
@@ -56,7 +56,7 @@ class PopupView : UIView
 		Container.SafeTopAnchor().ConstraintEqualTo(this.SafeTopAnchor(), defaultSpacing).Active = true;
 	}
 
-	void Initialize(CGRect cornerRadius)
+	void Initialize(CGRect cornerRadius, UIColor backgroundColor)
 	{
 		Container = new NativeRoundedStackView(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height);
 
@@ -64,8 +64,7 @@ class PopupView : UIView
 
 		Container.Axis = UILayoutConstraintAxis.Horizontal;
 		Container.TranslatesAutoresizingMaskIntoConstraints = false;
-		//Container.Spacing = SnackBar.Layout.Spacing;
-		//Container.BackgroundColor = SnackBar.Appearance.Background;
+		Container.BackgroundColor = backgroundColor;
 
 		TranslatesAutoresizingMaskIntoConstraints = false;
 

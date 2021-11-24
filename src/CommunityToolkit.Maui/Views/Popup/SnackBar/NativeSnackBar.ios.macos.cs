@@ -3,13 +3,49 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.Views.Popup.SnackBar;
 
-class NativeSnackBar : NativeToast
+class NativeSnackBar : NativeToast, IDisposable
 {
 	public Action Action { get; set; } = () => { };
+	public string ActionButtonText
+	{
+		get
+		{
+			return actionButton.Title(UIControlState.Normal);
+		}
+		set
+		{
+			actionButton.SetTitle(value, UIControlState.Normal);
+		}
+	}
+
+	public UIColor ActionTextColor
+	{
+		get
+		{
+			return actionButton.TitleColor(UIControlState.Normal);
+		}
+		set
+		{
+			actionButton.SetTitleColor(value, UIControlState.Normal);
+		}
+	}
+
+	UIButton actionButton;
 	public NativeSnackBar()
 	{
-		var actionButton = new UIButton();
-		actionButton.SetTitle("", UIControlState.Normal);
+		actionButton = new UIButton();
+		actionButton.TouchUpInside += ActionButton_TouchUpInside;
 		PopupView.AddChild(actionButton);
+	}
+
+	void ActionButton_TouchUpInside(object? sender, EventArgs e)
+	{
+		Action?.Invoke();
+		PopupView.Dismiss();
+	}
+
+	public void Dispose()
+	{
+		actionButton.TouchUpInside -= ActionButton_TouchUpInside;
 	}
 }

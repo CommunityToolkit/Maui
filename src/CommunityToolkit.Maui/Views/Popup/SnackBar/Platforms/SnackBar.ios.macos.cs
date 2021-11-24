@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Maui;
 using CoreGraphics;
+using UIKit;
 
 namespace CommunityToolkit.Maui.Views.Popup.SnackBar.Platforms;
 
@@ -15,14 +16,20 @@ static partial class PlatformPopupExtensions
 	{
 		var nativeSnackBar = new NativeSnackBar()
 		{
-			Message = snackBar.Text,
-			//Anchor = snackBar.Anchor,
-			CornerRadius = GetCornerRadius(snackBar.VisualOptions.CornerRadius),
 			Action = snackBar.Action,
-			Duration = snackBar.Duration
+			ActionButtonText = snackBar.ActionButtonText,
+			Anchor = snackBar.Anchor?.Handler?.NativeView as UIView,
+			Duration = snackBar.Duration,
+			Message = snackBar.Text,
+			ActionTextColor = snackBar.VisualOptions.ActionTextColor.ToNative(),
+			BackgroundColor = snackBar.VisualOptions.BackgroundColor.ToNative(),
+			CharacterSpacing = snackBar.VisualOptions.CharacterSpacing,
+			CornerRadius = GetCornerRadius(snackBar.VisualOptions.CornerRadius),
+			//Font = snackBar.VisualOptions.Font,
+			TextColor = snackBar.VisualOptions.TextColor.ToNative()
 		};
 
-		snackBar.Show();
+		nativeSnackBar.Show();
 
 		return nativeSnackBar;
 	}

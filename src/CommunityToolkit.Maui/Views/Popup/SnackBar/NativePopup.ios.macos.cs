@@ -10,6 +10,9 @@ class NativePopup
 	public NativePopup()
 	{
 		PopupView = new PopupView();
+
+		PopupView.ParentView?.AddSubview(PopupView);
+		PopupView.ParentView?.BringSubviewToFront(PopupView);
 	}
 
 	NSTimer? timer;
@@ -22,6 +25,8 @@ class NativePopup
 	protected PopupView PopupView { get; }
 
 	public CGRect CornerRadius { get; set; }
+
+	public UIColor BackgroundColor { get; set; } = UIColor.Gray;
 
 	public void Dismiss()
 	{
@@ -39,9 +44,7 @@ class NativePopup
 	{
 		PopupView.AnchorView = Anchor;
 
-		PopupView.ParentView?.AddSubview(PopupView);
-		PopupView.ParentView?.BringSubviewToFront(PopupView);
-		PopupView.Setup(CornerRadius);
+		PopupView.Setup(CornerRadius, BackgroundColor);
 
 		timer = NSTimer.CreateScheduledTimer(Duration, t =>
 		{
