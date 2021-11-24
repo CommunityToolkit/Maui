@@ -18,7 +18,7 @@ static partial class PlatformPopupExtensions
 		{
 			Action = snackBar.Action,
 			ActionButtonText = snackBar.ActionButtonText,
-			ActionButtonFont = UIFont.FromName(snackBar.VisualOptions.ActionButtonFont.Family, (float)snackBar.VisualOptions.ActionButtonFont.Size),
+			ActionButtonFont = UIFont.SystemFontOfSize((float)snackBar.VisualOptions.ActionButtonFont.Size),
 			Anchor = snackBar.Anchor?.Handler?.NativeView as UIView,
 			Duration = snackBar.Duration,
 			Message = snackBar.Text,
@@ -26,7 +26,7 @@ static partial class PlatformPopupExtensions
 			BackgroundColor = snackBar.VisualOptions.BackgroundColor.ToNative(),
 			CharacterSpacing = snackBar.VisualOptions.CharacterSpacing,
 			CornerRadius = GetCornerRadius(snackBar.VisualOptions.CornerRadius),
-			Font = UIFont.FromName(snackBar.VisualOptions.Font.Family, (float)snackBar.VisualOptions.Font.Size),
+			Font = UIFont.SystemFontOfSize((float)snackBar.VisualOptions.Font.Size),
 			TextColor = snackBar.VisualOptions.TextColor.ToNative()
 		};
 
