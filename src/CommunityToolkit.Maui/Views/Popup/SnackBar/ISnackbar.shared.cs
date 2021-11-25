@@ -7,52 +7,37 @@ namespace CommunityToolkit.Maui.Views.Popup.SnackBar;
 /// <summary>
 /// Snackbar
 /// </summary>
-public interface ISnackbar
+public interface ISnackbar: IDisposable
 {
 	/// <summary>
 	/// Action to invoke to action button click
 	/// </summary>
-	Action Action { get; set; }
+	Action Action { get; }
 
 	/// <summary>
 	/// Snackbar action button text
 	/// </summary>
-	string ActionButtonText { get; set; }
+	string ActionButtonText { get; }
 
 	/// <summary>
 	/// Snackbar anchor
 	/// </summary>
-	IView? Anchor { get; set; }
+	IView? Anchor { get; }
 
 	/// <summary>
 	/// Snackbar duration
 	/// </summary>
-	TimeSpan Duration { get; set; }
-
-	/// <summary>
-	/// Returns true if snackbar is shown, otherwise false
-	/// </summary>
-	bool IsShown { get; }
+	TimeSpan Duration { get; }
 
 	/// <summary>
 	/// Snackbar message
 	/// </summary>
-	string Text { get; set; }
+	string Text { get; }
 
 	/// <summary>
 	/// Snackbar visual options
 	/// </summary>
-	SnackbarOptions VisualOptions { get; set; }
-
-	/// <summary>
-	/// Event invokes when snackbar dismissed
-	/// </summary>
-	event EventHandler? Dismissed;
-
-	/// <summary>
-	/// Event invokes when snackbar is shown
-	/// </summary>
-	event EventHandler<ShownEventArgs>? Shown;
+	SnackbarOptions VisualOptions { get; }
 
 	/// <summary>
 	/// Dismiss the snackbar

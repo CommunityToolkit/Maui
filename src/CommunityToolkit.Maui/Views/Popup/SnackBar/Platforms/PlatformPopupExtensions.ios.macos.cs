@@ -5,14 +5,15 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.Views.Popup.SnackBar.Platforms;
 
-static partial class PlatformPopupExtensions
+class PlatformPopupExtensions : IPlatformPopupExtensions
 {
-	public static void Dismiss(NativeSnackBar? snackbar)
+	public void Dismiss(Snackbar snackbar)
 	{
-		snackbar?.Dismiss();
+		snackbar.nativeSnackbar?.Dismiss();
+		snackbar.OnDismissed();
 	}
 
-	public static NativeSnackBar Show(ISnackbar snackBar)
+	public NativeSnackBar Show(Snackbar snackBar)
 	{
 		var nativeSnackBar = new NativeSnackBar()
 		{

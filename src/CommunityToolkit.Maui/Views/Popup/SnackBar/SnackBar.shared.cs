@@ -1,20 +1,23 @@
 ﻿using System;
 using System.Threading.Tasks;
-using CommunityToolkit.Maui.Views.Popup.SnackBar;
+using CommunityToolkit.Maui.Views.Popup.SnackBar.Platforms;
 using Microsoft.Maui;
 
 namespace CommunityToolkit.Maui.Views.Popup.SnackBar;
+#if NET6_0_ANDROID
+using NativeSnackbar = Google.Android.Material.Snackbar.Snackbar;
+#elif NET6_0_IOS || NET6_0_MACCATALYST
+using NativeSnackbar = NativeSnackBar;
+#else
+using NativeSnackbar = System.Object;
+#endif
 
 /// <inheritdoc/>
 public class Snackbar : ISnackbar
 {
-#if NET6_0_ANDROID
-	Google.Android.Material.Snackbar.Snackbar? nativeSnackbar;
-#elif NET6_0_IOS || NET6_0_MACCATALYST
-	NativeSnackBar? nativeSnackbar;
-#endif
+	internal NativeSnackbar? nativeSnackbar;
 
-	bool isShown;
+	static bool isShown;
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="Snackbar"/>
@@ -26,6 +29,9 @@ public class Snackbar : ISnackbar
 		Action = () => { };
 		ActionButtonText = "OK";
 		VisualOptions = new SnackbarOptions();
+#if NET6_0_ANDROID || NET6_0_IOS || NET6_0_MACCATALYST
+		PlatformPopupExtensions = new PlatformPopupExtensions();
+#endif
 	}
 
 	/// <inheritdoc/>
@@ -44,13 +50,13 @@ public class Snackbar : ISnackbar
 	public string ActionButtonText { get; set; }
 
 	/// <inheritdoc/>
-	public bool IsShown
+	public static bool IsShown
 	{
 		get => isShown;
 		internal set
 		{
 			isShown = value;
-			Shown?.Invoke(this, new ShownEventArgs(isShown));
+			Shown?.Invoke(null, new ShownEventArgs(isShown));
 		}
 	}
 
@@ -58,24 +64,35 @@ public class Snackbar : ISnackbar
 	public IView? Anchor { get; set; }
 
 	/// <inheritdoc/>
-	public event EventHandler<ShownEventArgs>? Shown;
+	public static event EventHandler<ShownEventArgs>? Shown;
 
 	/// <inheritdoc/>
-	public event EventHandler? Dismissed;
+	public static event EventHandler? Dismissed;
+
+	internal IPlatformPopupExtensions? PlatformPopupExtensions { get; set; }
 
 	/// <summary>
 	/// Create new Snackbar
 	/// </summary>
-	/// <param name="text">Snackbar message</param>
+	/// <param name="message">Snackbar message</param>
+	/// <param name="actionButtonText">Snackbar action button text</param>
 	/// <param name="duration">Snackbar duration</param>
 	/// <param name="action">Snackbar action</param>
+	/// <param name="visualOptions">Snackbar visual options</param>
 	/// <param name="anchor">Snackbar anchor</param>
 	/// <returns>New instance of Snackbar</returns>
-	public static ISnackbar Make(string text, TimeSpan? duration, Action action, IView? anchor = null)
+	public static ISnackbar Make(
+		string message, 
+		Action action,
+		string actionButtonText = "OK",
+		TimeSpan? duration = null,
+		SnackbarOptions? visualOptions = null, 
+		IView? anchor = null)
 	{
 		var snackbar = new Snackbar
 		{
-			Text = text,
+			Text = message,
+			ActionButtonText = actionButtonText,			
 			Anchor = anchor,
 			Action = action
 		};
@@ -84,35 +101,45 @@ public class Snackbar : ISnackbar
 			snackbar.Duration = duration.Value;
 		}
 
+		if (visualOptions is not null)
+		{
+			snackbar.VisualOptions = visualOptions;
+		}
+
 		return snackbar;
 	}
 
 	/// <inheritdoc/>
 	public Task Show()
 	{
-#if NET6_0_ANDROID || NET6_0_IOS || NET6_0_MACCATALYST
-		nativeSnackbar = CommunityToolkit.Maui.Views.Popup.SnackBar.Platforms.PlatformPopupExtensions.Show(this);
+		if (IsShown)
+		{
+			PlatformPopupExtensions?.Dismiss(this);
+		}
+
+		nativeSnackbar = PlatformPopupExtensions?.Show(this);
 		IsShown = true;
 		return Task.CompletedTask;
-#else
-		throw new PlatformNotSupportedException();
-#endif
 	}
 
 	/// <inheritdoc/>
 	public Task Dismiss()
 	{
-#if NET6_0_ANDROID || NET6_0_IOS || NET6_0_MACCATALYST
-		CommunityToolkit.Maui.Views.Popup.SnackBar.Platforms.PlatformPopupExtensions.Dismiss(nativeSnackbar);
+		PlatformPopupExtensions?.Dismiss(this);
 		return Task.CompletedTask;
-#else
-		throw new PlatformNotSupportedException();
-#endif
 	}
 
 	internal void OnDismissed()
 	{
 		IsShown = false;
 		Dismissed?.Invoke(this, EventArgs.Empty);
+	}
+
+	/// <inheritdoc/>
+	public void Dispose()
+	{
+#if NET6_0_ANDROID || NET6_0_IOS || NET6_0_MACCATALYST
+		nativeSnackbar?.Dispose();
+#endif
 	}
 }

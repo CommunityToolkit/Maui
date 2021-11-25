@@ -14,14 +14,14 @@ using View = Android.Views.View;
 
 namespace CommunityToolkit.Maui.Views.Popup.SnackBar.Platforms;
 
-static partial class PlatformPopupExtensions
+class PlatformPopupExtensions : IPlatformPopupExtensions
 {
-	public static void Dismiss(AndroidSnackBar? snackbar)
+	public void Dismiss(Snackbar snackbar)
 	{
-		snackbar?.Dismiss();
+		snackbar.nativeSnackbar?.Dismiss();
 	}
 
-	public static AndroidSnackBar Show(ISnackbar snackBar)
+	public AndroidSnackBar Show(Snackbar snackBar)
 	{
 		var rootView = Microsoft.Maui.Essentials.Platform.GetCurrentActivity(true).Window?.DecorView.FindViewById(Android.Resource.Id.Content);
 		if (rootView is null)
@@ -87,7 +87,7 @@ static partial class PlatformPopupExtensions
 		snackTextView.SetTypeface(snackBarOptions.Font.ToTypeface(), TypefaceStyle.Normal);
 	}
 
-	static void SetupActions(ISnackbar snackBar, AndroidSnackBar nativeSnackBar)
+	static void SetupActions(Snackbar snackBar, AndroidSnackBar nativeSnackBar)
 	{
 		var snackActionButtonView = nativeSnackBar.View.FindViewById<TextView>(Resource.Id.snackbar_action) ?? throw new InvalidOperationException("Unable to find SnackBar action button");
 		snackActionButtonView.SetTypeface(snackBar.VisualOptions.ActionButtonFont.ToTypeface(), TypefaceStyle.Normal);
@@ -103,9 +103,9 @@ static partial class PlatformPopupExtensions
 
 	class SnackBarCallback : BaseTransientBottomBar.BaseCallback
 	{
-		readonly ISnackbar snackbar;
+		readonly Snackbar snackbar;
 
-		public SnackBarCallback(ISnackbar snackbar)
+		public SnackBarCallback(Snackbar snackbar)
 		{
 			this.snackbar = snackbar;
 		}
@@ -113,6 +113,7 @@ static partial class PlatformPopupExtensions
 		public override void OnDismissed(Object transientBottomBar, int e)
 		{
 			base.OnDismissed(transientBottomBar, e);
+			snackbar.OnDismissed();
 		}
 	}
 }

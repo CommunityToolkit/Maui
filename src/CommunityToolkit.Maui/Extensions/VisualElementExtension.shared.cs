@@ -11,18 +11,24 @@ namespace CommunityToolkit.Maui.Extensions;
 public static class VisualElementExtension
 {
 	/// <summary>
-	/// Display snackbar with the default visual configuration
+	/// Display snackbar with the anchor
 	/// </summary>
 	/// <param name="visualElement">Anchor element</param>
 	/// <param name="message">Text of the snackbar</param>
 	/// <param name="actionButtonText">Text of the snackbar button</param>
 	/// <param name="action">Action of the snackbar button</param>
 	/// <param name="duration">Snackbar duration</param>
+	/// <param name="visualOptions">Snackbar visual options</param>
 	/// <returns><see cref="Snackbar"/></returns>
-	public static async Task<ISnackbar> DisplaySnackBarAsync(this VisualElement? visualElement, string message, string actionButtonText, Action action, TimeSpan? duration = null)
+	public static async Task<ISnackbar> DisplaySnackBar(
+		this VisualElement? visualElement,
+		string message,
+		Action action,
+		string actionButtonText = "OK",
+		TimeSpan? duration = null,
+		SnackbarOptions? visualOptions = null)
 	{
-		var snackBar = Snackbar.Make(message, duration, action, visualElement);
-		snackBar.ActionButtonText = actionButtonText;
+		var snackBar = Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement);
 		await snackBar.Show();
 		return snackBar;
 	}

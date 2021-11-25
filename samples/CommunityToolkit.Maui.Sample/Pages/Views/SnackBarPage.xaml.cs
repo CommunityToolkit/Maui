@@ -13,13 +13,13 @@ public partial class SnackBarPage : BasePage
 	public SnackBarPage()
 	{
 		InitializeComponent();
-		this.Anchor1 ??= new ();
-		this.StatusText ??= new ();
+		Anchor1 ??= new ();
+		StatusText ??= new ();
 	}
 
 	async void DisplaySnackBarClicked(object? sender, EventArgs args)
 	{
-		await this.DisplaySnackBarAsync(GenerateLongText(5), "Run action", () =>
+		await this.DisplaySnackBar(GenerateLongText(5), () =>
 		{
 			StatusText.Text = "SnackBar action button clicked";
 		});
@@ -27,12 +27,6 @@ public partial class SnackBarPage : BasePage
 
 	async void DisplaySnackbarAnchoredClicked(object? sender, EventArgs args)
 	{
-		snackbarWithAnchor = Snackbar.Make(
-			GenerateLongText(5),
-			TimeSpan.FromSeconds(30),
-			() => StatusText.Text = "SnackBar action button clicked",
-			Anchor1);
-
 		var options = new SnackbarOptions
 		{
 			BackgroundColor = Colors.Red,
@@ -43,17 +37,24 @@ public partial class SnackBarPage : BasePage
 			CharacterSpacing = 1
 		};
 
-		snackbarWithAnchor.VisualOptions = options;
+		snackbarWithAnchor = Snackbar.Make(
+			GenerateLongText(5),
+			() => StatusText.Text = "SnackBar action button clicked",
+			"Run action",			
+			TimeSpan.FromSeconds(30),
+			options,
+			Anchor1);
+
 		await snackbarWithAnchor.Show();
 	}
 
-	async void DismissSnackbarClicked(System.Object sender, System.EventArgs e)
+	async void DismissSnackbarClicked(object sender, System.EventArgs e)
 	{
 		if (snackbarWithAnchor is not null)
 			await snackbarWithAnchor.Dismiss();
 	}
 
-	string GenerateLongText(int stringDuplicationTimes)
+	static string GenerateLongText(int stringDuplicationTimes)
 	{
 		const string message = "It is a very long message to test multiple strings. A B C D E F G H I I J K L M N O P Q R S T U V W X Y Z";
 		var result = new StringBuilder();
