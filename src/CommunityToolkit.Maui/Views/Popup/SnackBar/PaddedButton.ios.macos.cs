@@ -1,7 +1,7 @@
 ﻿using System;
 using UIKit;
 
-namespace CommunityToolkit.Maui.Views.Popup.SnackBar;
+namespace CommunityToolkit.Maui.Views.Popup.Snackbar;
 
 class PaddedButton : UIButton
 {

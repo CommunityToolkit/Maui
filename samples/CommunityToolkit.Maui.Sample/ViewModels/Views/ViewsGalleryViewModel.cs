@@ -8,6 +8,6 @@ public class ViewsGalleryViewModel : BaseGalleryViewModel
 {
 	protected override IEnumerable<SectionModel> CreateItems() => new[]
 	{
-		new SectionModel(typeof(SnackBarPage), "SnackBar/Toast", "Show SnackBar, Toast etc")
+		new SectionModel(typeof(SnackbarPage), "Snackbar/Toast", "Show Snackbar, Toast etc")
 	};
 }

@@ -4,15 +4,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.Views.Popup;
-using CommunityToolkit.Maui.Views.Popup.SnackBar;
+using CommunityToolkit.Maui.Views.Popup.Snackbar;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class SnackBar_Tests : BaseTest
+public class Snackbar_Tests : BaseTest
 {
 	Snackbar snackbar;
-	public SnackBar_Tests()
+	public Snackbar_Tests()
 	{
 		snackbar = new Snackbar();
 		snackbar.PlatformPopupExtensions = new MockPlatformPopupExtensions();

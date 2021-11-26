@@ -1,5 +1,5 @@
-﻿using CommunityToolkit.Maui.Views.Popup.SnackBar;
-using CommunityToolkit.Maui.Views.Popup.SnackBar.Platforms;
+﻿using CommunityToolkit.Maui.Views.Popup.Snackbar;
+using CommunityToolkit.Maui.Views.Popup.Snackbar.Platforms;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks;
 

@@ -4,7 +4,7 @@ using CoreGraphics;
 using Microsoft.Maui;
 using UIKit;
 
-namespace CommunityToolkit.Maui.Views.Popup.SnackBar.Platforms;
+namespace CommunityToolkit.Maui.Views.Popup.Snackbar.Platforms;
 
 class PlatformPopupExtensions : IPlatformPopupExtensions
 {
@@ -14,30 +14,30 @@ class PlatformPopupExtensions : IPlatformPopupExtensions
 		snackbar.OnDismissed();
 	}
 
-	public NativeSnackBar Show(Snackbar snackBar)
+	public AppleSnackbar Show(Snackbar snackbar)
 	{
 		nfloat defaultPadding = 10;
-		var cornerRadius = GetCornerRadius(snackBar.VisualOptions.CornerRadius);
+		var cornerRadius = GetCornerRadius(snackbar.VisualOptions.CornerRadius);
 		var padding = LinqExtensions.Max(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + defaultPadding;
-		var nativeSnackBar = new NativeSnackBar(padding)
+		var nativeSnackbar = new AppleSnackbar(padding)
 		{
-			Action = snackBar.Action,
-			ActionButtonText = snackBar.ActionButtonText,
-			ActionButtonFont = UIFont.SystemFontOfSize((float)snackBar.VisualOptions.ActionButtonFont.Size),
-			Anchor = snackBar.Anchor?.Handler?.NativeView as UIView,
-			Duration = snackBar.Duration,
-			Message = snackBar.Text,
-			ActionTextColor = snackBar.VisualOptions.ActionButtonTextColor.ToNative(),
-			BackgroundColor = snackBar.VisualOptions.BackgroundColor.ToNative(),
-			Font = UIFont.SystemFontOfSize((float)snackBar.VisualOptions.Font.Size),
-			CharacterSpacing = snackBar.VisualOptions.CharacterSpacing,
+			Action = snackbar.Action,
+			ActionButtonText = snackbar.ActionButtonText,
+			ActionButtonFont = UIFont.SystemFontOfSize((float)snackbar.VisualOptions.ActionButtonFont.Size),
+			Anchor = snackbar.Anchor?.Handler?.NativeView as UIView,
+			Duration = snackbar.Duration,
+			Message = snackbar.Text,
+			ActionTextColor = snackbar.VisualOptions.ActionButtonTextColor.ToNative(),
+			BackgroundColor = snackbar.VisualOptions.BackgroundColor.ToNative(),
+			Font = UIFont.SystemFontOfSize((float)snackbar.VisualOptions.Font.Size),
+			CharacterSpacing = snackbar.VisualOptions.CharacterSpacing,
 			CornerRadius = cornerRadius,
-			TextColor = snackBar.VisualOptions.TextColor.ToNative()
+			TextColor = snackbar.VisualOptions.TextColor.ToNative()
 		};
 
-		nativeSnackBar.Show();
+		nativeSnackbar.Show();
 
-		return nativeSnackBar;
+		return nativeSnackbar;
 	}
 
 	static CGRect GetCornerRadius(CornerRadius cornerRadius)

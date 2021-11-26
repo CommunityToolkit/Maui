@@ -8,11 +8,11 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Platform;
-using AndroidSnackBar = Google.Android.Material.Snackbar.Snackbar;
+using AndroidSnackbar = Google.Android.Material.Snackbar.Snackbar;
 using Object = Java.Lang.Object;
 using View = Android.Views.View;
 
-namespace CommunityToolkit.Maui.Views.Popup.SnackBar.Platforms;
+namespace CommunityToolkit.Maui.Views.Popup.Snackbar.Platforms;
 
 class PlatformPopupExtensions : IPlatformPopupExtensions
 {
@@ -21,7 +21,7 @@ class PlatformPopupExtensions : IPlatformPopupExtensions
 		snackbar.NativeSnackbar?.Dismiss();
 	}
 
-	public AndroidSnackBar Show(Snackbar snackBar)
+	public AndroidSnackbar Show(Snackbar snackbar)
 	{
 		var rootView = Microsoft.Maui.Essentials.Platform.GetCurrentActivity(true).Window?.DecorView.FindViewById(Android.Resource.Id.Content);
 		if (rootView is null)
@@ -29,36 +29,36 @@ class PlatformPopupExtensions : IPlatformPopupExtensions
 			throw new NotSupportedException("Unable to retrieve snackbar parent");
 		}
 
-		var nativeSnackBar = AndroidSnackBar.Make(
+		var nativeSnackbar = AndroidSnackbar.Make(
 			rootView,
-			snackBar.Text,
-			(int)snackBar.Duration.TotalMilliseconds);
-		var snackBarView = nativeSnackBar.View;
+			snackbar.Text,
+			(int)snackbar.Duration.TotalMilliseconds);
+		var snackbarView = nativeSnackbar.View;
 
-		if (snackBar.Anchor is not Page)
+		if (snackbar.Anchor is not Page)
 		{
-			nativeSnackBar.SetAnchorView(snackBar.Anchor?.Handler?.NativeView as View);
+			nativeSnackbar.SetAnchorView(snackbar.Anchor?.Handler?.NativeView as View);
 		}
 
-		SetupContainer(snackBar.VisualOptions, snackBarView);
-		SetupMessage(snackBar.VisualOptions, snackBarView);
-		SetupActions(snackBar, nativeSnackBar);
-		nativeSnackBar.Show();
-		return nativeSnackBar;
+		SetupContainer(snackbar.VisualOptions, snackbarView);
+		SetupMessage(snackbar.VisualOptions, snackbarView);
+		SetupActions(snackbar, nativeSnackbar);
+		nativeSnackbar.Show();
+		return nativeSnackbar;
 	}
 
-	static void SetupContainer(SnackbarOptions snackBarOptions, View snackBarView)
+	static void SetupContainer(SnackbarOptions snackbarOptions, View snackbarView)
 	{
-		if (snackBarView.Background is GradientDrawable shape)
+		if (snackbarView.Background is GradientDrawable shape)
 		{
-			shape.SetColor(snackBarOptions.BackgroundColor.ToAndroid().ToArgb());
+			shape.SetColor(snackbarOptions.BackgroundColor.ToAndroid().ToArgb());
 
-			var density = snackBarView.Context?.Resources?.DisplayMetrics?.Density ?? 1;
+			var density = snackbarView.Context?.Resources?.DisplayMetrics?.Density ?? 1;
 			var cornerRadius = new Thickness(
-				snackBarOptions.CornerRadius.BottomLeft * density,
-				snackBarOptions.CornerRadius.TopLeft * density,
-				snackBarOptions.CornerRadius.TopRight * density,
-				snackBarOptions.CornerRadius.BottomRight * density);
+				snackbarOptions.CornerRadius.BottomLeft * density,
+				snackbarOptions.CornerRadius.TopLeft * density,
+				snackbarOptions.CornerRadius.TopRight * density,
+				snackbarOptions.CornerRadius.BottomRight * density);
 			shape.SetCornerRadii(new[]
 				{
 					(float)cornerRadius.Left, (float)cornerRadius.Left,
@@ -67,45 +67,45 @@ class PlatformPopupExtensions : IPlatformPopupExtensions
 					(float)cornerRadius.Bottom, (float)cornerRadius.Bottom
 				});
 
-			snackBarView.SetBackground(shape);
+			snackbarView.SetBackground(shape);
 		}
 	}
 
-	static void SetupMessage(SnackbarOptions snackBarOptions, View snackBarView)
+	static void SetupMessage(SnackbarOptions snackbarOptions, View snackbarView)
 	{
-		var snackTextView = snackBarView.FindViewById<TextView>(Resource.Id.snackbar_text) ?? throw new InvalidOperationException("Unable to find SnackBar text view");
+		var snackTextView = snackbarView.FindViewById<TextView>(Resource.Id.snackbar_text) ?? throw new InvalidOperationException("Unable to find Snackbar text view");
 		snackTextView.SetMaxLines(10);
 
-		snackTextView.SetTextColor(snackBarOptions.TextColor.ToAndroid());
-		if (snackBarOptions.Font.Size > 0)
+		snackTextView.SetTextColor(snackbarOptions.TextColor.ToAndroid());
+		if (snackbarOptions.Font.Size > 0)
 		{
-			snackTextView.SetTextSize(ComplexUnitType.Dip, (float)snackBarOptions.Font.Size);
+			snackTextView.SetTextSize(ComplexUnitType.Dip, (float)snackbarOptions.Font.Size);
 		}
 
-		snackTextView.LetterSpacing = (float)snackBarOptions.CharacterSpacing;
+		snackTextView.LetterSpacing = (float)snackbarOptions.CharacterSpacing;
 
-		snackTextView.SetTypeface(snackBarOptions.Font.ToTypeface(), TypefaceStyle.Normal);
+		snackTextView.SetTypeface(snackbarOptions.Font.ToTypeface(), TypefaceStyle.Normal);
 	}
 
-	static void SetupActions(Snackbar snackBar, AndroidSnackBar nativeSnackBar)
+	static void SetupActions(Snackbar snackbar, AndroidSnackbar nativeSnackbar)
 	{
-		var snackActionButtonView = nativeSnackBar.View.FindViewById<TextView>(Resource.Id.snackbar_action) ?? throw new InvalidOperationException("Unable to find SnackBar action button");
-		snackActionButtonView.SetTypeface(snackBar.VisualOptions.ActionButtonFont.ToTypeface(), TypefaceStyle.Normal);
+		var snackActionButtonView = nativeSnackbar.View.FindViewById<TextView>(Resource.Id.snackbar_action) ?? throw new InvalidOperationException("Unable to find Snackbar action button");
+		snackActionButtonView.SetTypeface(snackbar.VisualOptions.ActionButtonFont.ToTypeface(), TypefaceStyle.Normal);
 
-		nativeSnackBar.SetAction(snackBar.ActionButtonText, _ =>
+		nativeSnackbar.SetAction(snackbar.ActionButtonText, _ =>
 		{
-			snackBar.Action();
+			snackbar.Action();
 		});
-		nativeSnackBar.SetActionTextColor(snackBar.VisualOptions.ActionButtonTextColor.ToAndroid());
+		nativeSnackbar.SetActionTextColor(snackbar.VisualOptions.ActionButtonTextColor.ToAndroid());
 
-		nativeSnackBar.AddCallback(new SnackBarCallback(snackBar));
+		nativeSnackbar.AddCallback(new SnackbarCallback(snackbar));
 	}
 
-	class SnackBarCallback : BaseTransientBottomBar.BaseCallback
+	class SnackbarCallback : BaseTransientBottomBar.BaseCallback
 	{
 		readonly Snackbar snackbar;
 
-		public SnackBarCallback(Snackbar snackbar)
+		public SnackbarCallback(Snackbar snackbar)
 		{
 			this.snackbar = snackbar;
 		}

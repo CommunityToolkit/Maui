@@ -1,27 +1,27 @@
 ﻿using System;
 using System.Text;
 using CommunityToolkit.Maui.Extensions;
-using CommunityToolkit.Maui.Views.Popup.SnackBar;
+using CommunityToolkit.Maui.Views.Popup.Snackbar;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
-public partial class SnackBarPage : BasePage
+public partial class SnackbarPage : BasePage
 {
 	ISnackbar? snackbarWithAnchor;
-	public SnackBarPage()
+	public SnackbarPage()
 	{
 		InitializeComponent();
 		Anchor1 ??= new();
 		StatusText ??= new();
 	}
 
-	async void DisplaySnackBarClicked(object? sender, EventArgs args)
+	async void DisplaySnackbarClicked(object? sender, EventArgs args)
 	{
-		await this.DisplaySnackBar(GenerateLongText(5), () =>
+		await this.DisplaySnackbar(GenerateLongText(5), () =>
 		{
-			StatusText.Text = "SnackBar action button clicked";
+			StatusText.Text = "Snackbar action button clicked";
 		});
 	}
 
@@ -39,7 +39,7 @@ public partial class SnackBarPage : BasePage
 
 		snackbarWithAnchor = Snackbar.Make(
 			"Customized snackbar",
-			() => StatusText.Text = "SnackBar action button clicked",
+			() => StatusText.Text = "Snackbar action button clicked",
 			"Run action",
 			TimeSpan.FromSeconds(30),
 			options,

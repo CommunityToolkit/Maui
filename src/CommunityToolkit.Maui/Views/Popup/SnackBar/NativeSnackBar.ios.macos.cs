@@ -2,9 +2,9 @@
 using CommunityToolkit.Maui.Extensions;
 using UIKit;
 
-namespace CommunityToolkit.Maui.Views.Popup.SnackBar;
+namespace CommunityToolkit.Maui.Views.Popup.Snackbar;
 
-class NativeSnackBar : NativeToast, IDisposable
+class AppleSnackbar : NativeToast, IDisposable
 {
 	public Action Action { get; set; } = () => { };
 
@@ -27,7 +27,7 @@ class NativeSnackBar : NativeToast, IDisposable
 	}
 
 	PaddedButton actionButton;
-	public NativeSnackBar(double padding = 10) : base(padding)
+	public AppleSnackbar(double padding = 10) : base(padding)
 	{
 		actionButton = new PaddedButton(padding, padding, padding, padding);
 		actionButton.TouchUpInside += ActionButton_TouchUpInside;

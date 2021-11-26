@@ -4,7 +4,7 @@ using CoreText;
 using Foundation;
 using UIKit;
 
-namespace CommunityToolkit.Maui.Views.Popup.SnackBar;
+namespace CommunityToolkit.Maui.Views.Popup.Snackbar;
 
 class NativeToast : NativePopup
 {

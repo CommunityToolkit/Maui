@@ -2,10 +2,10 @@
 <pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-                x:Class="CommunityToolkit.Maui.Sample.Pages.Views.SnackBarPage">
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Views.SnackbarPage">
     <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto, Auto, Auto" RowSpacing="10" ColumnSpacing="10">
-        <Button Clicked="DisplaySnackBarClicked"
-                Text="Show SnackBar"
+        <Button Clicked="DisplaySnackbarClicked"
+                Text="Show Snackbar"
                 GridLayout.Column="0" GridLayout.Row="0" GridLayout.ColumnSpan="2"/>
 
         <Button x:Name="Anchor1"
