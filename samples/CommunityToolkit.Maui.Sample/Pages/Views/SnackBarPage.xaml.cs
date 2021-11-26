@@ -13,6 +13,7 @@ public partial class SnackbarPage : BasePage
 	public SnackbarPage()
 	{
 		InitializeComponent();
+
 		Anchor1 ??= new();
 		StatusText ??= new();
 	}

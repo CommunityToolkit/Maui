@@ -20,16 +20,11 @@ public static class VisualElementExtension
 	/// <param name="duration">Snackbar duration</param>
 	/// <param name="visualOptions">Snackbar visual options</param>
 	/// <returns><see cref="Snackbar"/></returns>
-	public static async Task<ISnackbar> DisplaySnackbar(
+	public static Task DisplaySnackbar(
 		this VisualElement? visualElement,
 		string message,
 		Action action,
 		string actionButtonText = "OK",
 		TimeSpan? duration = null,
-		SnackbarOptions? visualOptions = null)
-	{
-		var snackbar = Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement);
-		await snackbar.Show();
-		return snackbar;
-	}
+		SnackbarOptions? visualOptions = null) => Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement).Show();
 }

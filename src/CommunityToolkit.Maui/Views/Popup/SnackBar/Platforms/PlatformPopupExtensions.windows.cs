@@ -5,16 +5,18 @@ namespace CommunityToolkit.Maui.Views.Popup.Snackbar.Platforms;
 
 class PlatformPopupExtensions : IPlatformPopupExtensions
 {
-	private Snackbar? snackbar;
+	Snackbar? snackbar;
+
 	public void Dismiss(Snackbar snackbar)
 	{
-		if (snackbar.nativeSnackbar is not null)
+		if (snackbar.NativeSnackbar is not null)
 		{
 			ToastNotificationManagerCompat.History.Clear();
-			snackbar = null;
-			snackbar.nativeSnackbar.Activated -= OnActivated;
-			snackbar.nativeSnackbar.Dismissed -= OnDismissed;
-			snackbar.nativeSnackbar.ExpirationTime = System.DateTimeOffset.Now;
+			this.snackbar = null;
+
+			snackbar.NativeSnackbar.Activated -= OnActivated;
+			snackbar.NativeSnackbar.Dismissed -= OnDismissed;
+			snackbar.NativeSnackbar.ExpirationTime = System.DateTimeOffset.Now;
 		}
 
 		snackbar.OnDismissed();
@@ -31,7 +33,7 @@ class PlatformPopupExtensions : IPlatformPopupExtensions
 		toast.Activated += OnActivated;
 		toast.Dismissed += OnDismissed; 
 		toast.ExpirationTime = System.DateTime.Now.Add(snackbar.Duration);
-		snackbar = snackbar;
+		this.snackbar = snackbar;
 		ToastNotificationManager.CreateToastNotifier().Show(toast);
 		return toast;
 	}
