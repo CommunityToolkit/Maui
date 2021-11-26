@@ -38,7 +38,7 @@ public partial class SnackBarPage : BasePage
 		};
 
 		snackbarWithAnchor = Snackbar.Make(
-			GenerateLongText(5),
+			"Customized snackbar",
 			() => StatusText.Text = "SnackBar action button clicked",
 			"Run action",			
 			TimeSpan.FromSeconds(30),

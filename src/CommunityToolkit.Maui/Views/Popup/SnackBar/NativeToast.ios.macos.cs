@@ -8,54 +8,28 @@ class NativeToast : NativePopup
 {
 	public string? Message
 	{
-		get
-		{
-			return messageLabel.Text;
-		}
-		set
-		{
-			messageLabel.Text = value;
-		}
+		get => messageLabel.Text;
+		set => messageLabel.Text = value;
 	}
 
 	public UIColor? TextColor
 	{
-		get
-		{
-			return messageLabel.TextColor;
-		}
-		set
-		{
-			messageLabel.TextColor = value;
-		}
+		get => messageLabel.TextColor;
+		set => messageLabel.TextColor = value;
 	}
 
 	public double CharacterSpacing
 	{
-		get
-		{
-			return 0;
-			//return messageLabel.AttributedText.GetAttribute(NSAttributedString.Key.kern);
-		}
-		set
-		{
-			messageLabel.AttributedText = new NSAttributedString(Message, new CTStringAttributes() { KerningAdjustment = (float)value});
-		}
+		set => messageLabel.AttributedText = new NSAttributedString(Message, new CTStringAttributes() { KerningAdjustment = (float)value });
 	}
 
 	public UIFont Font
 	{
-		get
-		{
-			return messageLabel.Font;
-		}
-		set
-		{
-			messageLabel.Font = value;
-		}
+		get => messageLabel.Font;
+		set => messageLabel.Font = value;
 	}
 
-	UILabel messageLabel;
+	readonly UILabel messageLabel;
 	public NativeToast()
 	{
 		messageLabel = new UILabel
@@ -65,5 +39,4 @@ class NativeToast : NativePopup
 		};
 		PopupView.AddChild(messageLabel);
 	}
-
 }

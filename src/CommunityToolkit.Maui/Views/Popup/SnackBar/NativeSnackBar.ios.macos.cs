@@ -8,38 +8,20 @@ class NativeSnackBar : NativeToast, IDisposable
 	public Action Action { get; set; } = () => { };
 	public string ActionButtonText
 	{
-		get
-		{
-			return actionButton.Title(UIControlState.Normal);
-		}
-		set
-		{
-			actionButton.SetTitle(value, UIControlState.Normal);
-		}
+		get => actionButton.Title(UIControlState.Normal);
+		set => actionButton.SetTitle(value, UIControlState.Normal);
 	}
 
 	public UIColor ActionTextColor
 	{
-		get
-		{
-			return actionButton.TitleColor(UIControlState.Normal);
-		}
-		set
-		{
-			actionButton.SetTitleColor(value, UIControlState.Normal);
-		}
+		get => actionButton.TitleColor(UIControlState.Normal);
+		set => actionButton.SetTitleColor(value, UIControlState.Normal);
 	}
 
 	public UIFont ActionButtonFont
 	{
-		get
-		{
-			return actionButton.Font;
-		}
-		set
-		{
-			actionButton.Font = value;
-		}
+		get => actionButton.Font;
+		set => actionButton.Font = value;
 	}
 
 
