@@ -13,8 +13,8 @@ public partial class SnackBarPage : BasePage
 	public SnackBarPage()
 	{
 		InitializeComponent();
-		Anchor1 ??= new ();
-		StatusText ??= new ();
+		Anchor1 ??= new();
+		StatusText ??= new();
 	}
 
 	async void DisplaySnackBarClicked(object? sender, EventArgs args)
@@ -40,7 +40,7 @@ public partial class SnackBarPage : BasePage
 		snackbarWithAnchor = Snackbar.Make(
 			"Customized snackbar",
 			() => StatusText.Text = "SnackBar action button clicked",
-			"Run action",			
+			"Run action",
 			TimeSpan.FromSeconds(30),
 			options,
 			Anchor1);

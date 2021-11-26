@@ -3,8 +3,8 @@ using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.Pages.Behaviors;
 using CommunityToolkit.Maui.Sample.Pages.Converters;
 using CommunityToolkit.Maui.Sample.Pages.Extensions;
-using Microsoft.Maui.Graphics;
 using CommunityToolkit.Maui.Sample.Pages.Views;
+using Microsoft.Maui.Graphics;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels;
 
@@ -20,8 +20,8 @@ public class MainViewModel : BaseGalleryViewModel
 
 		new SectionModel(typeof(ExtensionsGalleryPage), "Extensions", Color.FromArgb("#00EA56"),
 			"Extenions lets you add methods to existing types without creating a new derived type, recompiling, or otherwise modifying the original type."),
-            
-            new SectionModel(typeof(ViewsGalleryPage), "Views", Color.FromArgb("#EF6950"),
-                "A custom view or control allows for adding custom functionality as if it came out of the Maui box"),
+
+			new SectionModel(typeof(ViewsGalleryPage), "Views", Color.FromArgb("#EF6950"),
+				"A custom view or control allows for adding custom functionality as if it came out of the Maui box"),
 	};
 }
