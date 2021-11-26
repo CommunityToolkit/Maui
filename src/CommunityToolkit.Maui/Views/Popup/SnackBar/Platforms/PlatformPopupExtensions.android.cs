@@ -18,7 +18,7 @@ class PlatformPopupExtensions : IPlatformPopupExtensions
 {
 	public void Dismiss(Snackbar snackbar)
 	{
-		snackbar.nativeSnackbar?.Dismiss();
+		snackbar.NativeSnackbar?.Dismiss();
 	}
 
 	public AndroidSnackBar Show(Snackbar snackBar)

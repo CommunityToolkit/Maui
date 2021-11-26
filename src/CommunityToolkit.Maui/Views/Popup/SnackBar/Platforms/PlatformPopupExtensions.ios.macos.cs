@@ -1,8 +1,8 @@
 using System;
-using Microsoft.Maui;
-using CoreGraphics;
-using UIKit;
 using CommunityToolkit.Maui.Extensions;
+using CoreGraphics;
+using Microsoft.Maui;
+using UIKit;
 
 namespace CommunityToolkit.Maui.Views.Popup.SnackBar.Platforms;
 
@@ -10,7 +10,7 @@ class PlatformPopupExtensions : IPlatformPopupExtensions
 {
 	public void Dismiss(Snackbar snackbar)
 	{
-		snackbar.nativeSnackbar?.Dismiss();
+		snackbar.NativeSnackbar?.Dismiss();
 		snackbar.OnDismissed();
 	}
 

@@ -17,9 +17,9 @@ using NativeSnackbar = System.Object;
 /// <inheritdoc/>
 public class Snackbar : ISnackbar
 {
-	internal NativeSnackbar? nativeSnackbar;
-
 	static bool isShown;
+
+	bool isDisposed;
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="Snackbar"/>
@@ -35,6 +35,11 @@ public class Snackbar : ISnackbar
 		PlatformPopupExtensions = new PlatformPopupExtensions();
 #endif
 	}
+
+	/// <summary>
+	/// Dispose Snackbar
+	/// </summary>
+	~Snackbar() => Dispose(false);
 
 	/// <inheritdoc/>
 	public SnackbarOptions VisualOptions { get; set; }
@@ -58,20 +63,24 @@ public class Snackbar : ISnackbar
 		internal set
 		{
 			isShown = value;
-			Shown?.Invoke(null, new ShownEventArgs(isShown));
+
+			if (value)
+				Shown?.Invoke(null, new ShownEventArgs(isShown));
 		}
 	}
 
 	/// <inheritdoc/>
 	public IView? Anchor { get; set; }
 
+	internal NativeSnackbar? NativeSnackbar { get; set; }
+
+	internal IPlatformPopupExtensions? PlatformPopupExtensions { get; set; }
+
 	/// <inheritdoc/>
 	public static event EventHandler<ShownEventArgs>? Shown;
 
 	/// <inheritdoc/>
 	public static event EventHandler? Dismissed;
-
-	internal IPlatformPopupExtensions? PlatformPopupExtensions { get; set; }
 
 	/// <summary>
 	/// Create new Snackbar
@@ -84,17 +93,17 @@ public class Snackbar : ISnackbar
 	/// <param name="anchor">Snackbar anchor</param>
 	/// <returns>New instance of Snackbar</returns>
 	public static ISnackbar Make(
-		string message, 
+		string message,
 		Action action,
 		string actionButtonText = "OK",
 		TimeSpan? duration = null,
-		SnackbarOptions? visualOptions = null, 
+		SnackbarOptions? visualOptions = null,
 		IView? anchor = null)
 	{
 		var snackbar = new Snackbar
 		{
 			Text = message,
-			ActionButtonText = actionButtonText,			
+			ActionButtonText = actionButtonText,
 			Anchor = anchor,
 			Action = action
 		};
@@ -111,6 +120,15 @@ public class Snackbar : ISnackbar
 		return snackbar;
 	}
 
+	/// <summary>
+	/// Dispose Snackbar
+	/// </summary>
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
 	/// <inheritdoc/>
 	public Task Show()
 	{
@@ -119,7 +137,7 @@ public class Snackbar : ISnackbar
 			PlatformPopupExtensions?.Dismiss(this);
 		}
 
-		nativeSnackbar = PlatformPopupExtensions?.Show(this);
+		NativeSnackbar = PlatformPopupExtensions?.Show(this);
 		IsShown = true;
 		return Task.CompletedTask;
 	}
@@ -137,11 +155,19 @@ public class Snackbar : ISnackbar
 		Dismissed?.Invoke(this, EventArgs.Empty);
 	}
 
-	/// <inheritdoc/>
-	public void Dispose()
+	/// <summary>
+	/// Dispose Snackbar
+	/// </summary>
+	/// <param name="isDisposing"></param>
+	protected virtual void Dispose(bool isDisposing)
 	{
+		if (isDisposed)
+			return;
+
 #if NET6_0_ANDROID || NET6_0_IOS || NET6_0_MACCATALYST
-		nativeSnackbar?.Dispose();
+		NativeSnackbar?.Dispose();
 #endif
+
+		isDisposed = true;
 	}
 }
