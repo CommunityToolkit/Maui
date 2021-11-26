@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Views.Popup.SnackBar;
 public interface ISnackbar: IDisposable
 {
 	/// <summary>
-	/// Action to invoke to action button click
+	/// Action to invoke on action button click
 	/// </summary>
 	Action Action { get; }
 
@@ -20,7 +20,7 @@ public interface ISnackbar: IDisposable
 	string ActionButtonText { get; }
 
 	/// <summary>
-	/// Snackbar anchor
+	/// Snackbar anchor. Snackbar appears near this view
 	/// </summary>
 	IView? Anchor { get; }
 

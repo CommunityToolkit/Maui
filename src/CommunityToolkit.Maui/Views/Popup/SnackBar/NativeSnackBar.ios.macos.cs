@@ -7,6 +7,7 @@ namespace CommunityToolkit.Maui.Views.Popup.SnackBar;
 class NativeSnackBar : NativeToast, IDisposable
 {
 	public Action Action { get; set; } = () => { };
+
 	public string ActionButtonText
 	{
 		get => actionButton.Title(UIControlState.Normal);
@@ -24,7 +25,6 @@ class NativeSnackBar : NativeToast, IDisposable
 		get => actionButton.Font;
 		set => actionButton.Font = value;
 	}
-
 
 	PaddedButton actionButton;
 	public NativeSnackBar(double padding = 10):base(padding)

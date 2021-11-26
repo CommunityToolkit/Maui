@@ -28,7 +28,6 @@ public class SnackbarOptions : ITextStyle
 	/// </summary>
 	public Font ActionButtonFont { get; set; } = Font.SystemFontOfSize(14);
 
-
 	/// <summary>
 	/// Snackbar action button text color
 	/// </summary>

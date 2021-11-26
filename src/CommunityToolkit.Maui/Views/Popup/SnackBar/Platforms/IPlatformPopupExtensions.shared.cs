@@ -11,6 +11,6 @@ using NativeSnackbar = System.Object;
 
 interface IPlatformPopupExtensions
 {
-	public void Dismiss(Snackbar snackbar);
-	public NativeSnackbar Show(Snackbar snackbar);
+	void Dismiss(Snackbar snackbar);
+	NativeSnackbar Show(Snackbar snackbar);
 }

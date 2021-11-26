@@ -47,11 +47,6 @@ class NativeToast : NativePopup
 
 	nfloat GetEmFromPx(nfloat defaultFontSize, double currentValue)
 	{
-		if (currentValue == 0)
-		{
-			return 0;
-		}
-
 		return 100 * (nfloat)currentValue / defaultFontSize;
 	}
 }
