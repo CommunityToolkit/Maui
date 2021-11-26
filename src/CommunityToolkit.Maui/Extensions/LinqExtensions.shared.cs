@@ -13,4 +13,3 @@ public static class LinqExtensions
 	/// </summary>
 	public static T? Max<T>(params T[] items) => items.Max();
 }
-

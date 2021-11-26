@@ -27,8 +27,8 @@ class NativeSnackBar : NativeToast, IDisposable
 	}
 
 	PaddedButton actionButton;
-	public NativeSnackBar(double padding = 10):base(padding)
-	{		
+	public NativeSnackBar(double padding = 10) : base(padding)
+	{
 		actionButton = new PaddedButton(padding, padding, padding, padding);
 		actionButton.TouchUpInside += ActionButton_TouchUpInside;
 		PopupView.AddChild(actionButton);

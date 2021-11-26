@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using CommunityToolkit.Maui.Extensions.Internals;
 using CoreGraphics;
 using UIKit;
-using CommunityToolkit.Maui.Extensions.Internals;
-using System.Collections.Generic;
 
 namespace CommunityToolkit.Maui.Views.Popup;
 
@@ -15,7 +15,7 @@ class PopupView : UIView
 	}
 
 	public IList<UIView> Children { get; }
-	
+
 	public UIView? AnchorView { get; set; }
 
 	public UIView ParentView => UIApplication.SharedApplication.Windows.First(x => x.IsKeyWindow);
@@ -68,7 +68,7 @@ class PopupView : UIView
 
 		TranslatesAutoresizingMaskIntoConstraints = false;
 
-		foreach(var view in Children)
+		foreach (var view in Children)
 		{
 			Container.AddArrangedSubview(view);
 		}

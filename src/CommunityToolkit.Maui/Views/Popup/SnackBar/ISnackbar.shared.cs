@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.Views.Popup.SnackBar;
 /// <summary>
 /// Snackbar
 /// </summary>
-public interface ISnackbar: IDisposable
+public interface ISnackbar : IDisposable
 {
 	/// <summary>
 	/// Action to invoke on action button click

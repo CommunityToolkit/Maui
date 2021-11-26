@@ -1,7 +1,7 @@
-﻿using CommunityToolkit.Maui.Views.Popup.SnackBar;
-using Microsoft.Maui.Controls;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using CommunityToolkit.Maui.Views.Popup.SnackBar;
+using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Extensions;
 
