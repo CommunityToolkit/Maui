@@ -1,4 +1,6 @@
-﻿using CoreText;
+﻿using System;
+using CommunityToolkit.Maui.Extensions;
+using CoreText;
 using Foundation;
 using UIKit;
 
@@ -20,7 +22,11 @@ class NativeToast : NativePopup
 
 	public double CharacterSpacing
 	{
-		set => messageLabel.AttributedText = new NSAttributedString(Message, new CTStringAttributes() { KerningAdjustment = (float)value });
+		set
+		{
+			var em = GetEmFromPx(Font.PointSize, value);
+			messageLabel.AttributedText = new NSAttributedString(Message, new CTStringAttributes() { KerningAdjustment = (float)em });
+		}
 	}
 
 	public UIFont Font
@@ -29,14 +35,23 @@ class NativeToast : NativePopup
 		set => messageLabel.Font = value;
 	}
 
-	readonly UILabel messageLabel;
-	public NativeToast()
+	readonly PaddedLabel messageLabel;
+	public NativeToast(double padding = 10)
 	{
-		messageLabel = new UILabel
+		messageLabel = new PaddedLabel(padding, padding, padding, padding)
 		{
-			Lines = 0,
-			AdjustsFontSizeToFitWidth = true
+			Lines = 10
 		};
 		PopupView.AddChild(messageLabel);
+	}
+
+	nfloat GetEmFromPx(nfloat defaultFontSize, double currentValue)
+	{
+		if (currentValue == 0)
+		{
+			return 0;
+		}
+
+		return 100 * (nfloat)currentValue / defaultFontSize;
 	}
 }

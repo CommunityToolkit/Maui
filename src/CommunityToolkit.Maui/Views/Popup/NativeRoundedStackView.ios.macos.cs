@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using CoreAnimation;
 using CoreGraphics;
 using UIKit;
@@ -28,11 +28,11 @@ class NativeRoundedStackView : UIStackView
 		ClipsToBounds = true;
 		var path = GetRoundedPath(rect, Left, Top, Right, Bottom);
 		var maskLayer = new CAShapeLayer { Frame = rect, Path = path };
-		Layer!.Mask = maskLayer;
+		Layer.Mask = maskLayer;
 		Layer.MasksToBounds = true;
 	}
 
-	CGPath? GetRoundedPath(CGRect rect, nfloat left, nfloat top, nfloat right, nfloat bottom)
+	static CGPath? GetRoundedPath(CGRect rect, nfloat left, nfloat top, nfloat right, nfloat bottom)
 	{
 		var path = new UIBezierPath();
 		path.MoveTo(new CGPoint(rect.Width - right, rect.Y));

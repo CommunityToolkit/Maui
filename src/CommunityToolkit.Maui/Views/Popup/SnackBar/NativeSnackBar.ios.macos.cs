@@ -1,4 +1,5 @@
 ﻿using System;
+using CommunityToolkit.Maui.Extensions;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Views.Popup.SnackBar;
@@ -25,10 +26,10 @@ class NativeSnackBar : NativeToast, IDisposable
 	}
 
 
-	UIButton actionButton;
-	public NativeSnackBar()
-	{
-		actionButton = new UIButton();
+	PaddedButton actionButton;
+	public NativeSnackBar(double padding = 10):base(padding)
+	{		
+		actionButton = new PaddedButton(padding, padding, padding, padding);
 		actionButton.TouchUpInside += ActionButton_TouchUpInside;
 		PopupView.AddChild(actionButton);
 	}

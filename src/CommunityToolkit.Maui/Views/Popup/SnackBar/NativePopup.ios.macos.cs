@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using CoreGraphics;
 using Foundation;
 using UIKit;
@@ -18,7 +18,6 @@ class NativePopup
 	NSTimer? timer;
 
 	public TimeSpan Duration { get; set; }
-
 
 	public UIView? Anchor { get; set; }
 
