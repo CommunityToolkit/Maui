@@ -93,8 +93,7 @@ jobs:
       - task: CmdLine@2
         displayName: 'Run Unit Tests'
         inputs:
-          script: |
-            dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release
+          script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release'
       - task: CmdLine@2
         displayName: 'Build Community Toolkit Sample'
         inputs:
@@ -159,8 +158,7 @@ jobs:
       - task: CmdLine@2
         displayName: 'Run Unit Tests'
         inputs:
-          script: |
-            dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release
+          script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release'
       - task: CmdLine@2
         displayName: 'Build Community Toolkit Sample'
         inputs:
