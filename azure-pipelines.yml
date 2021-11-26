@@ -72,7 +72,7 @@ jobs:
       - powershell: |
           $prNumber = $env:System_PullRequest_PullRequestNumber
           $commitId = "$($env:System_PullRequest_SourceCommitId)".Substring(0, 7)
-          $fullVersionString = "$(CurrentSemanticVersionBase)-build-$(Build.BuildId)..$prNumber+$commitId"
+          $fullVersionString = "$(CurrentSemanticVersionBase)-build-$prNumber.$(Build.BuildId)+$commitId"
           Write-Host("GitHub PR = $prNumber, Commit = $commitId");
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$fullVersionString")
           Write-Host "##vso[build.updatebuildnumber]$fullVersionString"
