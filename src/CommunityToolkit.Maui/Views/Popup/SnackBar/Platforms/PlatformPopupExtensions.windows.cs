@@ -5,15 +5,19 @@ namespace CommunityToolkit.Maui.Views.Popup.SnackBar.Platforms;
 
 class PlatformPopupExtensions : IPlatformPopupExtensions
 {
-	public void Dismiss(Snackbar snackbar)
+	private Snackbar? snackbar;
+	public void Dismiss(Snackbar snackBar)
 	{
-		if (snackbar.nativeSnackbar is not null)
+		if (snackBar.nativeSnackbar is not null)
 		{
 			ToastNotificationManagerCompat.History.Clear();
-			snackbar.nativeSnackbar.ExpirationTime = System.DateTimeOffset.Now;
+			snackbar = null;
+			snackBar.nativeSnackbar.Activated -= OnActivated;
+			snackBar.nativeSnackbar.Dismissed -= OnDismissed;
+			snackBar.nativeSnackbar.ExpirationTime = System.DateTimeOffset.Now;
 		}
 
-		snackbar.OnDismissed();
+		snackBar.OnDismissed();
 	}
 
 	public ToastNotification Show(Snackbar snackBar)
@@ -24,16 +28,24 @@ class PlatformPopupExtensions : IPlatformPopupExtensions
 		var toastContent = toastContentBuilder.GetToastContent();
 		toastContent.ActivationType = ToastActivationType.Background;
 		var toast = new ToastNotification(toastContent.GetXml());
-		toast.Activated += delegate (ToastNotification sender, object args)
-		{
-			Microsoft.Maui.Controls.Device.BeginInvokeOnMainThread(snackBar.Action);
-		};
-		toast.Dismissed += delegate (ToastNotification sender, ToastDismissedEventArgs args)
-		{
-			snackBar.OnDismissed();
-		};
+		toast.Activated += OnActivated;
+		toast.Dismissed += OnDismissed; 
 		toast.ExpirationTime = System.DateTime.Now.Add(snackBar.Duration);
+		snackbar = snackBar;
 		ToastNotificationManager.CreateToastNotifier().Show(toast);
 		return toast;
+	}
+
+	void OnActivated(ToastNotification sender, object args)
+	{
+		if (snackbar is not null)
+		{
+			Microsoft.Maui.Controls.Device.BeginInvokeOnMainThread(snackbar.Action);
+		}
+	}
+
+	void OnDismissed(ToastNotification sender, ToastDismissedEventArgs args)
+	{
+		snackbar?.OnDismissed();
 	}
 }
