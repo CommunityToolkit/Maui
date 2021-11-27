@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Threading;
+using System.Threading.Tasks;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Util;
@@ -12,39 +15,61 @@ using AndroidSnackbar = Google.Android.Material.Snackbar.Snackbar;
 using Object = Java.Lang.Object;
 using View = Android.Views.View;
 
-namespace CommunityToolkit.Maui.Views.Popup.Snackbar.Platforms;
+namespace CommunityToolkit.Maui.Views.Popup.Snackbar;
 
-class PlatformPopupExtensions : IPlatformPopupExtensions
+public partial class Snackbar
 {
-	public void Dismiss(Snackbar snackbar)
+	readonly static SemaphoreSlim _semaphoreSlim = new(1, 1);
+
+	AndroidSnackbar? _nativeSnackbar;
+	TaskCompletionSource<bool>? _dismissedTCS;
+
+	public async Task Dismiss()
 	{
-		snackbar.NativeSnackbar?.Dismiss();
+		if (_nativeSnackbar is null)
+		{
+			_dismissedTCS = null;
+			return;
+		}
+
+		await _semaphoreSlim.WaitAsync();
+
+		try
+		{
+			_nativeSnackbar.Dismiss();
+			await (_dismissedTCS?.Task ?? Task.CompletedTask);
+
+			OnDismissed();
+		}
+		finally
+		{
+			_semaphoreSlim.Release();
+		}
 	}
 
-	public AndroidSnackbar Show(Snackbar snackbar)
+	public async Task Show()
 	{
+		await Dismiss();
+
 		var rootView = Microsoft.Maui.Essentials.Platform.GetCurrentActivity(true).Window?.DecorView.FindViewById(Android.Resource.Id.Content);
 		if (rootView is null)
-		{
 			throw new NotSupportedException("Unable to retrieve snackbar parent");
-		}
 
-		var nativeSnackbar = AndroidSnackbar.Make(
-			rootView,
-			snackbar.Text,
-			(int)snackbar.Duration.TotalMilliseconds);
-		var snackbarView = nativeSnackbar.View;
+		_nativeSnackbar = AndroidSnackbar.Make(rootView, Text, (int)Duration.TotalMilliseconds);
+		var snackbarView = _nativeSnackbar.View;
 
-		if (snackbar.Anchor is not Page)
+		if (Anchor is not Page)
 		{
-			nativeSnackbar.SetAnchorView(snackbar.Anchor?.Handler?.NativeView as View);
+			_nativeSnackbar.SetAnchorView(Anchor?.Handler?.NativeView as View);
 		}
 
-		SetupContainer(snackbar.VisualOptions, snackbarView);
-		SetupMessage(snackbar.VisualOptions, snackbarView);
-		SetupActions(snackbar, nativeSnackbar);
-		nativeSnackbar.Show();
-		return nativeSnackbar;
+		SetupContainer(VisualOptions, snackbarView);
+		SetupMessage(VisualOptions, snackbarView);
+		SetupActions(_nativeSnackbar);
+
+		_nativeSnackbar.Show();
+
+		OnShown();
 	}
 
 	static void SetupContainer(SnackbarOptions snackbarOptions, View snackbarView)
@@ -87,33 +112,34 @@ class PlatformPopupExtensions : IPlatformPopupExtensions
 		snackTextView.SetTypeface(snackbarOptions.Font.ToTypeface(), TypefaceStyle.Normal);
 	}
 
-	static void SetupActions(Snackbar snackbar, AndroidSnackbar nativeSnackbar)
+	[MemberNotNull(nameof(_dismissedTCS))]
+	void SetupActions(AndroidSnackbar nativeSnackbar)
 	{
 		var snackActionButtonView = nativeSnackbar.View.FindViewById<TextView>(Resource.Id.snackbar_action) ?? throw new InvalidOperationException("Unable to find Snackbar action button");
-		snackActionButtonView.SetTypeface(snackbar.VisualOptions.ActionButtonFont.ToTypeface(), TypefaceStyle.Normal);
+		snackActionButtonView.SetTypeface(VisualOptions.ActionButtonFont.ToTypeface(), TypefaceStyle.Normal);
 
-		nativeSnackbar.SetAction(snackbar.ActionButtonText, _ =>
+		nativeSnackbar.SetAction(ActionButtonText, _ =>
 		{
-			snackbar.Action();
+			Action?.Invoke();
 		});
-		nativeSnackbar.SetActionTextColor(snackbar.VisualOptions.ActionButtonTextColor.ToAndroid());
+		nativeSnackbar.SetActionTextColor(VisualOptions.ActionButtonTextColor.ToAndroid());
 
-		nativeSnackbar.AddCallback(new SnackbarCallback(snackbar));
+		nativeSnackbar.AddCallback(new SnackbarCallback(_dismissedTCS = new()));
 	}
 
 	class SnackbarCallback : BaseTransientBottomBar.BaseCallback
 	{
-		readonly Snackbar snackbar;
+		readonly TaskCompletionSource<bool> _dismissedTCS;
 
-		public SnackbarCallback(Snackbar snackbar)
+		public SnackbarCallback(in TaskCompletionSource<bool> dismissedTCS)
 		{
-			this.snackbar = snackbar;
+			_dismissedTCS = dismissedTCS;
 		}
 
 		public override void OnDismissed(Object transientBottomBar, int e)
 		{
 			base.OnDismissed(transientBottomBar, e);
-			snackbar.OnDismissed();
+			_dismissedTCS.SetResult(true);
 		}
 	}
 }

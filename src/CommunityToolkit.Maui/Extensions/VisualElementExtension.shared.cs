@@ -23,7 +23,7 @@ public static class VisualElementExtension
 	public static Task DisplaySnackbar(
 		this VisualElement? visualElement,
 		string message,
-		Action action,
+		Action? action = null,
 		string actionButtonText = "OK",
 		TimeSpan? duration = null,
 		SnackbarOptions? visualOptions = null) => Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement).Show();

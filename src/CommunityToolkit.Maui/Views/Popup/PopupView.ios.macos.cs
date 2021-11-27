@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CommunityToolkit.Maui.Extensions.Internals;
+using CoreGraphics;
+using UIKit;
+using CoreAnimation;
 using CoreGraphics;
 using UIKit;
 
@@ -9,20 +13,19 @@ namespace CommunityToolkit.Maui.Views.Popup;
 
 class PopupView : UIView
 {
-	public PopupView()
-	{
-		Children = new List<UIView>();
-	}
-
-	public IList<UIView> Children { get; }
-
-	public UIView? AnchorView { get; set; }
+	readonly List<UIView> _children = Array.Empty<UIView>().ToList();
 
 	public UIView ParentView => UIApplication.SharedApplication.Windows.First(x => x.IsKeyWindow);
 
-	protected NativeRoundedStackView? Container { get; set; }
+	public IReadOnlyList<UIView> Children => _children;
+
+	public UIView? AnchorView { get; set; }
+
+	protected UIStackView? Container { get; set; }
 
 	public void Dismiss() => RemoveFromSuperview();
+
+	public void AddChild(UIView child) => _children.Add(child);
 
 	public void Setup(CGRect cornerRadius, UIColor backgroundColor)
 	{
@@ -56,9 +59,10 @@ class PopupView : UIView
 		Container.SafeTopAnchor().ConstraintEqualTo(this.SafeTopAnchor(), defaultSpacing).Active = true;
 	}
 
+	[MemberNotNull(nameof(Container))]
 	void Initialize(CGRect cornerRadius, UIColor backgroundColor)
 	{
-		Container = new NativeRoundedStackView(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height);
+		Container = new RoundedStackView(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height);
 
 		AddSubview(Container);
 
@@ -74,8 +78,52 @@ class PopupView : UIView
 		}
 	}
 
-	public void AddChild(UIView child)
+	class RoundedStackView : UIStackView
 	{
-		Children.Add(child);
+		public nfloat Left { get; }
+
+		public nfloat Top { get; }
+
+		public nfloat Right { get; }
+
+		public nfloat Bottom { get; }
+
+		public RoundedStackView(nfloat left, nfloat top, nfloat right, nfloat bottom)
+		{
+			Left = left;
+			Top = top;
+			Right = right;
+			Bottom = bottom;
+		}
+
+		public override void Draw(CGRect rect)
+		{
+			ClipsToBounds = true;
+			var path = GetRoundedPath(rect, Left, Top, Right, Bottom);
+			var maskLayer = new CAShapeLayer { Frame = rect, Path = path };
+			Layer.Mask = maskLayer;
+			Layer.MasksToBounds = true;
+		}
+
+		static CGPath? GetRoundedPath(CGRect rect, nfloat left, nfloat top, nfloat right, nfloat bottom)
+		{
+			var path = new UIBezierPath();
+			path.MoveTo(new CGPoint(rect.Width - right, rect.Y));
+
+			path.AddArc(new CGPoint((float)rect.X + rect.Width - right, (float)rect.Y + right), (nfloat)right, (float)(Math.PI * 1.5), (float)Math.PI * 2, true);
+			path.AddLineTo(new CGPoint(rect.Width, rect.Height - bottom));
+
+			path.AddArc(new CGPoint((float)rect.X + rect.Width - bottom, (float)rect.Y + rect.Height - bottom), (nfloat)bottom, 0, (float)(Math.PI * .5), true);
+			path.AddLineTo(new CGPoint(left, rect.Height));
+
+			path.AddArc(new CGPoint((float)rect.X + left, (float)rect.Y + rect.Height - left), (nfloat)left, (float)(Math.PI * .5), (float)Math.PI, true);
+			path.AddLineTo(new CGPoint(rect.X, top));
+
+			path.AddArc(new CGPoint((float)rect.X + top, (float)rect.Y + top), (nfloat)top, (float)Math.PI, (float)(Math.PI * 1.5), true);
+
+			path.ClosePath();
+
+			return path.CGPath;
+		}
 	}
 }

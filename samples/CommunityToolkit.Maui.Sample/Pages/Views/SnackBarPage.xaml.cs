@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views.Popup.Snackbar;
 using Microsoft.Maui;
@@ -9,61 +13,66 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class SnackbarPage : BasePage
 {
-	ISnackbar? snackbarWithAnchor;
+	const string _displayCustomSnackbarText = "Display A Custom Snackbar, Anchored to this Button";
+	const string _dismissCustomSnackbarText = "Dismiss Custom Snackbar";
+
+	readonly IReadOnlyList<Color> _colors = typeof(Colors)
+		.GetFields(BindingFlags.Static | BindingFlags.Public)
+		.ToDictionary(c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()))
+		.Values.ToList();
+
+	ISnackbar? _customSnackbar;
+
 	public SnackbarPage()
 	{
 		InitializeComponent();
 
-		Anchor1 ??= new();
-		StatusText ??= new();
+		DisplayCustomSnackbarButton ??= new();
+		DisplayCustomSnackbarButton.Text = _displayCustomSnackbarText;
 	}
 
-	async void DisplaySnackbarClicked(object? sender, EventArgs args)
+	async void DisplayDefaultSnackbarButtonClicked(object? sender, EventArgs args) =>
+		await this.DisplaySnackbar("This is a Snackbar\nIt will dissappear in 3 seconds\nOr click OK to dismiss immediately");
+
+	async void DisplayCustomSnackbarButtonClicked(object? sender, EventArgs args)
 	{
-		await this.DisplaySnackbar(GenerateLongText(5), () =>
+		if (DisplayCustomSnackbarButton.Text is _displayCustomSnackbarText)
 		{
-			StatusText.Text = "Snackbar action button clicked";
-		});
-	}
+			var options = new SnackbarOptions
+			{
+				BackgroundColor = Colors.Red,
+				TextColor = Colors.Green,
+				ActionButtonTextColor = Colors.Yellow,
+				CornerRadius = new CornerRadius(10),
+				Font = Font.SystemFontOfSize(14),
+			};
 
-	async void DisplaySnackbarAnchoredClicked(object? sender, EventArgs args)
-	{
-		var options = new SnackbarOptions
-		{
-			BackgroundColor = Colors.Red,
-			TextColor = Colors.Green,
-			ActionButtonTextColor = Colors.Yellow,
-			CornerRadius = new CornerRadius(10, 20, 30, 40),
-			Font = Font.SystemFontOfSize(20),
-			CharacterSpacing = 1
-		};
+			_customSnackbar = Snackbar.Make(
+				"This is a customized Snackbar",
+				async () =>
+				{
+					await DisplayCustomSnackbarButton.BackgroundColorTo(_colors[new Random().Next(_colors.Count)], length: 500);
+					DisplayCustomSnackbarButton.Text = _displayCustomSnackbarText;
+				},
+				"Change Button Color",
+				TimeSpan.FromSeconds(30),
+				options,
+				DisplayCustomSnackbarButton);
 
-		snackbarWithAnchor = Snackbar.Make(
-			"Customized snackbar",
-			() => StatusText.Text = "Snackbar action button clicked",
-			"Run action",
-			TimeSpan.FromSeconds(30),
-			options,
-			Anchor1);
+			await _customSnackbar.Show();
 
-		await snackbarWithAnchor.Show();
-	}
-
-	async void DismissSnackbarClicked(object sender, System.EventArgs e)
-	{
-		if (snackbarWithAnchor is not null)
-			await snackbarWithAnchor.Dismiss();
-	}
-
-	static string GenerateLongText(int stringDuplicationTimes)
-	{
-		const string message = "It is a very long message to test multiple strings. A B C D E F G H I I J K L M N O P Q R S T U V W X Y Z";
-		var result = new StringBuilder();
-		for (var i = 0; i < stringDuplicationTimes; i++)
-		{
-			result.AppendLine(message);
+			DisplayCustomSnackbarButton.Text = _dismissCustomSnackbarText;
 		}
-
-		return result.ToString();
+		else if (DisplayCustomSnackbarButton.Text is _dismissCustomSnackbarText)
+		{
+			if (_customSnackbar is not null)
+				await _customSnackbar.Dismiss();
+			
+			DisplayCustomSnackbarButton.Text = _displayCustomSnackbarText;
+		}
+		else
+		{
+			throw new NotImplementedException($"{nameof(DisplayCustomSnackbarButton)}.{nameof(ITextButton.Text)} Not Recognized");
+		}
 	}
 }

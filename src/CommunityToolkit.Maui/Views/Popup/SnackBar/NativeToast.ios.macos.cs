@@ -1,5 +1,5 @@
 ﻿using System;
-using CommunityToolkit.Maui.Extensions;
+using CoreGraphics;
 using CoreText;
 using Foundation;
 using UIKit;
@@ -8,45 +8,80 @@ namespace CommunityToolkit.Maui.Views.Popup.Snackbar;
 
 class NativeToast : NativePopup
 {
+	public const double DefaultPadding = 10;
+
+	readonly PaddedLabel _messageLabel;
+
+	public NativeToast(string message, UIColor textColor, UIFont font, double characterSpacing, double padding = DefaultPadding)
+	{
+		_messageLabel = new PaddedLabel(padding, padding, padding, padding)
+		{
+			Lines = 10
+		};
+
+		Message = message;
+		TextColor = textColor;
+		Font = font;
+		CharacterSpacing = characterSpacing;
+
+		PopupView.AddChild(_messageLabel);
+	}
+
 	public string? Message
 	{
-		get => messageLabel.Text;
-		set => messageLabel.Text = value;
+		get => _messageLabel.Text;
+		private init => _messageLabel.Text = value;
 	}
 
 	public UIColor? TextColor
 	{
-		get => messageLabel.TextColor;
-		set => messageLabel.TextColor = value;
-	}
-
-	public double CharacterSpacing
-	{
-		set
-		{
-			var em = GetEmFromPx(Font.PointSize, value);
-			messageLabel.AttributedText = new NSAttributedString(Message, new CTStringAttributes() { KerningAdjustment = (float)em });
-		}
+		get => _messageLabel.TextColor;
+		private init => _messageLabel.TextColor = value;
 	}
 
 	public UIFont Font
 	{
-		get => messageLabel.Font;
-		set => messageLabel.Font = value;
+		get => _messageLabel.Font;
+		private init => _messageLabel.Font = value;
 	}
 
-	readonly PaddedLabel messageLabel;
-	public NativeToast(double padding = 10)
+	public double CharacterSpacing
 	{
-		messageLabel = new PaddedLabel(padding, padding, padding, padding)
+		init
 		{
-			Lines = 10
-		};
-		PopupView.AddChild(messageLabel);
+			var em = NativeToast.GetEmFromPx(Font.PointSize, value);
+			_messageLabel.AttributedText = new NSAttributedString(Message, new CTStringAttributes() { KerningAdjustment = (float)em });
+		}
 	}
 
-	nfloat GetEmFromPx(nfloat defaultFontSize, double currentValue)
+	static nfloat GetEmFromPx(nfloat defaultFontSize, double currentValue) => 100 * (nfloat)currentValue / defaultFontSize;
+
+	class PaddedLabel : UILabel
 	{
-		return 100 * (nfloat)currentValue / defaultFontSize;
+		public PaddedLabel(double left, double top, double right, double bottom)
+		{
+			Left = (nfloat)left;
+			Top = (nfloat)top;
+			Right = (nfloat)right;
+			Bottom = (nfloat)bottom;
+		}
+
+		public nfloat Left { get; }
+
+		public nfloat Top { get; }
+
+		public nfloat Right { get; }
+
+		public nfloat Bottom { get; }
+
+		public override CGSize IntrinsicContentSize => new CGSize(
+			base.IntrinsicContentSize.Width + Left + Right,
+			base.IntrinsicContentSize.Height + Top + Bottom);
+
+		public override void DrawText(CGRect rect)
+		{
+			var insets = new UIEdgeInsets(Top, Left, Bottom, Right);
+			base.DrawText(insets.InsetRect(rect));
+		}
 	}
 }

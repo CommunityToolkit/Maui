@@ -3,7 +3,7 @@ using CoreGraphics;
 using Foundation;
 using UIKit;
 
-namespace CommunityToolkit.Maui.Views.Popup.Snackbar;
+namespace CommunityToolkit.Maui.Views.Popup;
 
 class NativePopup
 {
@@ -21,11 +21,11 @@ class NativePopup
 
 	public UIView? Anchor { get; set; }
 
-	protected PopupView PopupView { get; }
-
 	public CGRect CornerRadius { get; set; }
 
 	public UIColor BackgroundColor { get; set; } = UIColor.Gray;
+
+	protected PopupView PopupView { get; }
 
 	public void Dismiss()
 	{
@@ -39,7 +39,7 @@ class NativePopup
 		PopupView.Dismiss();
 	}
 
-	public NativePopup Show()
+	public void Show()
 	{
 		PopupView.AnchorView = Anchor;
 
@@ -49,7 +49,5 @@ class NativePopup
 		{
 			Dismiss();
 		});
-
-		return this;
 	}
 }

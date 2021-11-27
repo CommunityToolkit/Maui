@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using CommunityToolkit.Maui.UnitTests.Mocks;
-using CommunityToolkit.Maui.Views.Popup;
 using CommunityToolkit.Maui.Views.Popup.Snackbar;
 using Xunit;
 
@@ -15,7 +13,6 @@ public class Snackbar_Tests : BaseTest
 	public Snackbar_Tests()
 	{
 		snackbar = new Snackbar();
-		snackbar.PlatformPopupExtensions = new MockPlatformPopupExtensions();
 	}
 
 	[Fact]
@@ -35,14 +32,13 @@ public class Snackbar_Tests : BaseTest
 	[Fact]
 	public async Task SnackbarShow_ShownEventRaised()
 	{
-		var receivedEvents = new List<ShownEventArgs>();
-		Snackbar.Shown += delegate (object? sender, ShownEventArgs e)
+		var receivedEvents = new List<EventArgs>();
+		Snackbar.Shown += delegate (object? sender, EventArgs e)
 		{
 			receivedEvents.Add(e);
 		};
 		await snackbar.Show();
 		Assert.Single(receivedEvents);
-		Assert.True(receivedEvents.First()?.IsShown);
 	}
 
 	[Fact]
@@ -55,5 +51,12 @@ public class Snackbar_Tests : BaseTest
 		};
 		await snackbar.Show();
 		Assert.Single(receivedEvents);
+	}
+
+	class MockSnackbar : Snackbar
+	{
+		public override Task Dismiss() => throw new NotImplementedException();
+
+		public override Task Show() => throw new NotImplementedException();
 	}
 }
