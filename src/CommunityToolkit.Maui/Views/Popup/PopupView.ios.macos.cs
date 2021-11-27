@@ -11,6 +11,13 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.Views.Popup;
 
+public class PopupViewVisualOptions
+{
+	public CGRect CornerRadius { get; set; }
+
+	public UIColor BackgroundColor { get; set; } = UIColor.Gray;
+}
+
 class PopupView : UIView
 {
 	readonly List<UIView> _children = Array.Empty<UIView>().ToList();
@@ -21,15 +28,17 @@ class PopupView : UIView
 
 	public UIView? AnchorView { get; set; }
 
+	public PopupViewVisualOptions VisualOptions { get; set; } = new();
+
 	protected UIStackView? Container { get; set; }
 
 	public void Dismiss() => RemoveFromSuperview();
 
 	public void AddChild(UIView child) => _children.Add(child);
 
-	public void Setup(CGRect cornerRadius, UIColor backgroundColor)
+	public void Setup()
 	{
-		Initialize(cornerRadius, backgroundColor);
+		Initialize();
 		ConstraintInParent();
 	}
 
@@ -60,15 +69,19 @@ class PopupView : UIView
 	}
 
 	[MemberNotNull(nameof(Container))]
-	void Initialize(CGRect cornerRadius, UIColor backgroundColor)
+	void Initialize()
 	{
-		Container = new RoundedStackView(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height);
+		Container = new RoundedStackView(
+			VisualOptions.CornerRadius.X, 
+			VisualOptions.CornerRadius.Y, 
+			VisualOptions.CornerRadius.Width, 
+			VisualOptions.CornerRadius.Height);
 
 		AddSubview(Container);
 
 		Container.Axis = UILayoutConstraintAxis.Horizontal;
 		Container.TranslatesAutoresizingMaskIntoConstraints = false;
-		Container.BackgroundColor = backgroundColor;
+		Container.BackgroundColor = VisualOptions.BackgroundColor;
 
 		TranslatesAutoresizingMaskIntoConstraints = false;
 

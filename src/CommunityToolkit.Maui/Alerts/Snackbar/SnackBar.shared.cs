@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Alerts.Snackbar;
 /// <inheritdoc/>
 public partial class Snackbar : ISnackbar
 {
-	readonly static WeakEventManager _weakEventManager = new();
+	static readonly WeakEventManager _weakEventManager = new();
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="Snackbar"/>
@@ -89,7 +89,6 @@ public partial class Snackbar : ISnackbar
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	/// <returns></returns>
 	public virtual Task Show()
 	{
 		OnShown();
@@ -99,7 +98,6 @@ public partial class Snackbar : ISnackbar
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
-	/// <returns></returns>
 	public virtual Task Dismiss()
 	{
 		OnDismissed();
@@ -146,7 +144,7 @@ public partial class Snackbar : ISnackbar
 /// <summary>
 /// Extension methods for <see cref="VisualElement"/>.
 /// </summary>
-public static class VisualElementExtension
+public static class SnackbarVisualElementExtension
 {
 	/// <summary>
 	/// Display snackbar with the anchor
@@ -157,7 +155,6 @@ public static class VisualElementExtension
 	/// <param name="action">Action of the snackbar button</param>
 	/// <param name="duration">Snackbar duration</param>
 	/// <param name="visualOptions">Snackbar visual options</param>
-	/// <returns><see cref="Snackbar"/></returns>
 	public static Task DisplaySnackbar(
 		this VisualElement? visualElement,
 		string message,

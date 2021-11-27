@@ -11,7 +11,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Alerts;
 
 public partial class SnackbarPage : BasePage
 {
-	const string _displayCustomSnackbarText = "Display A Custom Snackbar, Anchored to this Button";
+	const string _displayCustomSnackbarText = "Display a Custom Snackbar, Anchored to this Button";
 	const string _dismissCustomSnackbarText = "Dismiss Custom Snackbar";
 	readonly IReadOnlyList<Color> _colors = typeof(Colors)
 		.GetFields(BindingFlags.Static | BindingFlags.Public)
@@ -29,7 +29,7 @@ public partial class SnackbarPage : BasePage
 	}
 
 	async void DisplayDefaultSnackbarButtonClicked(object? sender, EventArgs args) =>
-		await this.DisplaySnackbar("This is a Snackbar\nIt will dissappear in 3 seconds\nOr click OK to dismiss immediately");
+		await this.DisplaySnackbar("This is a Snackbar.\nIt will disappear in 3 seconds.\nOr click OK to dismiss immediately");
 
 	async void DisplayCustomSnackbarButtonClicked(object? sender, EventArgs args)
 	{

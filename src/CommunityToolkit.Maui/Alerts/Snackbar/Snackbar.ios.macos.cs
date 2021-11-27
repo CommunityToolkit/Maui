@@ -12,7 +12,7 @@ public partial class Snackbar
 {
 	readonly SemaphoreSlim _semaphoreSlim = new(1, 1);
 
-	AppleSnackbar? _nativeSnackbar;
+	SnackbarView? _nativeSnackbar;
 
 	/// <summary>
 	/// Dismiss Snacbkar
@@ -47,20 +47,21 @@ public partial class Snackbar
 		await Dismiss();
 
 		var cornerRadius = GetCornerRadius(VisualOptions.CornerRadius);
-		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + AppleSnackbar.DefaultPadding;
-		_nativeSnackbar = new AppleSnackbar(Text,
+		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + SnackbarView.DefaultPadding;
+		_nativeSnackbar = new SnackbarView(Text,
+											VisualOptions.BackgroundColor.ToNative(),
+											cornerRadius,
 											VisualOptions.TextColor.ToNative(),
 											UIFont.SystemFontOfSize((float)VisualOptions.Font.Size),
 											VisualOptions.CharacterSpacing,
 											ActionButtonText,
 											VisualOptions.ActionButtonTextColor.ToNative(),
-											UIFont.SystemFontOfSize((float)VisualOptions.ActionButtonFont.Size))
+											UIFont.SystemFontOfSize((float)VisualOptions.ActionButtonFont.Size),
+											padding)
 		{
 			Action = Action,
 			Anchor = Anchor?.Handler?.NativeView as UIView,
-			Duration = Duration,
-			BackgroundColor = VisualOptions.BackgroundColor.ToNative(),
-			CornerRadius = cornerRadius,
+			Duration = Duration
 		};
 
 		_nativeSnackbar.Show();
@@ -75,12 +76,22 @@ public partial class Snackbar
 		return new CGRect(cornerRadius.BottomLeft, cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomRight);
 	}
 
-	sealed class AppleSnackbar : Views.Toast.Toast, IDisposable
+	sealed class SnackbarView : Views.Toast.ToastView, IDisposable
 	{
 		readonly PaddedButton _actionButton;
 
-		public AppleSnackbar(string message, UIColor textColor, UIFont textFont, double characterSpacing, string actionButtonText, UIColor actionTextColor, UIFont actionButtonFont, double padding = DefaultPadding)
-			: base(message, textColor, textFont, characterSpacing, padding)
+		public SnackbarView(
+			string message,
+			UIColor backgroundColor, 
+			CGRect cornerRadius, 
+			UIColor textColor, 
+			UIFont textFont, 
+			double characterSpacing, 
+			string actionButtonText,
+			UIColor actionTextColor, 
+			UIFont actionButtonFont, 
+			double padding = DefaultPadding)
+			: base(message, backgroundColor, cornerRadius, textColor, textFont, characterSpacing, padding)
 		{
 			_actionButton = new PaddedButton(padding, padding, padding, padding);
 			ActionButtonText = actionButtonText;

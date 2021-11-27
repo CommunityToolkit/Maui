@@ -16,6 +16,15 @@
         <Label Text="The Snackbar is a timed alert that appears at the bottom of the screen by default. It is dismissed after a configurable duration of time. Snackbar is fully customizable and can be anchored to any IView." 
                 LineBreakMode = "WordWrap" />
         
+        <Label Text="Windows uses toast notifications to display snackbar. Make sure you switched off Focus Assist."
+               Visible="false">
+             <OnPlatform x:TypeArguments="Visible">
+                 <OnPlatform.Platforms>
+                     <On Platform="Windows" Value="True" />
+                 </OnPlatform.Platforms>
+            </OnPlatform>
+        </Label>
+        
         <Button Clicked="DisplayDefaultSnackbarButtonClicked"
                 Text="Display Default Snackbar"/>
         

@@ -6,13 +6,20 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.Views.Toast;
 
-class Toast : Popup.Popup
+class ToastView : Popup.Popup
 {
 	public const double DefaultPadding = 10;
 
 	readonly PaddedLabel _messageLabel;
 
-	public Toast(string message, UIColor textColor, UIFont font, double characterSpacing, double padding = DefaultPadding)
+	public ToastView(
+		string message,
+		UIColor backgroundColor, 
+		CGRect cornerRadius, 
+		UIColor textColor, 
+		UIFont font, 
+		double characterSpacing, 
+		double padding = DefaultPadding)
 	{
 		_messageLabel = new PaddedLabel(padding, padding, padding, padding)
 		{
@@ -23,7 +30,8 @@ class Toast : Popup.Popup
 		TextColor = textColor;
 		Font = font;
 		CharacterSpacing = characterSpacing;
-
+		PopupView.VisualOptions.BackgroundColor = backgroundColor;
+		PopupView.VisualOptions.CornerRadius = cornerRadius;
 		PopupView.AddChild(_messageLabel);
 	}
 
@@ -74,7 +82,7 @@ class Toast : Popup.Popup
 
 		public nfloat Bottom { get; }
 
-		public override CGSize IntrinsicContentSize => new CGSize(
+		public override CGSize IntrinsicContentSize => new (
 			base.IntrinsicContentSize.Width + Left + Right,
 			base.IntrinsicContentSize.Height + Top + Bottom);
 
