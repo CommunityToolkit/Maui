@@ -48,3 +48,6 @@ dotnet_diagnostic.CS4014.severity = error
 
 # Remove explicit default access modifiers
 dotnet_style_require_accessibility_modifiers = omit_if_default:error
+
+# CA1063: Implement IDisposable Correctly
+dotnet_diagnostic.CA1063.severity = error
