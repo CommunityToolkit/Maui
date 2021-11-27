@@ -11,7 +11,7 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.Views.Popup;
 
-public class PopupViewVisualOptions
+class PopupViewVisualOptions
 {
 	public CGRect CornerRadius { get; set; }
 
@@ -28,7 +28,7 @@ class PopupView : UIView
 
 	public UIView? AnchorView { get; set; }
 
-	public PopupViewVisualOptions VisualOptions { get; set; } = new();
+	public PopupViewVisualOptions VisualOptions { get; } = new();
 
 	protected UIStackView? Container { get; set; }
 

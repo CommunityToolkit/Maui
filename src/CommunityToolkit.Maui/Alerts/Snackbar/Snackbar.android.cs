@@ -19,11 +19,14 @@ namespace CommunityToolkit.Maui.Alerts.Snackbar;
 
 public partial class Snackbar
 {
-	readonly static SemaphoreSlim _semaphoreSlim = new(1, 1);
+	static readonly SemaphoreSlim _semaphoreSlim = new(1, 1);
 
 	AndroidSnackbar? _nativeSnackbar;
 	TaskCompletionSource<bool>? _dismissedTCS;
 
+	/// <summary>
+	/// Dismiss Snackbar
+	/// </summary>
 	public async Task Dismiss()
 	{
 		if (_nativeSnackbar is null)
@@ -37,7 +40,8 @@ public partial class Snackbar
 		try
 		{
 			_nativeSnackbar.Dismiss();
-			await (_dismissedTCS?.Task ?? Task.CompletedTask);
+			if (_dismissedTCS is not null)
+				await _dismissedTCS.Task;
 
 			OnDismissed();
 		}
@@ -47,6 +51,9 @@ public partial class Snackbar
 		}
 	}
 
+	/// <summary>
+	/// Show Snackbar
+	/// </summary>
 	public async Task Show()
 	{
 		await Dismiss();

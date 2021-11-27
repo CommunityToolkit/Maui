@@ -1,12 +1,13 @@
 ﻿using System;
+using CommunityToolkit.Maui.Views.Popup;
 using CoreGraphics;
 using CoreText;
 using Foundation;
 using UIKit;
 
-namespace CommunityToolkit.Maui.Views.Toast;
+namespace CommunityToolkit.Maui.Alerts.Toast;
 
-class ToastView : Popup.Popup
+class ToastView : Popup
 {
 	public const double DefaultPadding = 10;
 
@@ -57,7 +58,7 @@ class ToastView : Popup.Popup
 	{
 		init
 		{
-			var em = Toast.GetEmFromPx(Font.PointSize, value);
+			var em = GetEmFromPx(Font.PointSize, value);
 			_messageLabel.AttributedText = new NSAttributedString(Message, new CTStringAttributes() { KerningAdjustment = (float)em });
 		}
 	}

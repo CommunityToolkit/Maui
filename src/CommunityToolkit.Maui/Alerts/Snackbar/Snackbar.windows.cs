@@ -9,13 +9,12 @@ public partial class Snackbar
 {
 	readonly static SemaphoreSlim _semaphoreSlim = new(1, 1);
 
-	ToastNotification? _nativeSnackbar;
+	static ToastNotification? _nativeSnackbar;
 	TaskCompletionSource<bool>? _dismissedTCS;
 
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
-	/// <returns></returns>
 	public async Task Dismiss()
 	{
 		if (_nativeSnackbar is null)
@@ -49,7 +48,6 @@ public partial class Snackbar
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	/// <returns></returns>
 	public async Task Show()
 	{
 		await Dismiss();

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommunityToolkit.Maui.Alerts.Toast;
 using CoreGraphics;
 using Microsoft.Maui;
 using UIKit;
@@ -12,12 +13,11 @@ public partial class Snackbar
 {
 	readonly SemaphoreSlim _semaphoreSlim = new(1, 1);
 
-	SnackbarView? _nativeSnackbar;
+	static SnackbarView? _nativeSnackbar;
 
 	/// <summary>
-	/// Dismiss Snacbkar
+	/// Dismiss Snackbar
 	/// </summary>
-	/// <returns></returns>
 	public async Task Dismiss()
 	{
 		if (_nativeSnackbar is null)
@@ -41,7 +41,6 @@ public partial class Snackbar
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	/// <returns></returns>
 	public async Task Show()
 	{
 		await Dismiss();
@@ -76,7 +75,7 @@ public partial class Snackbar
 		return new CGRect(cornerRadius.BottomLeft, cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomRight);
 	}
 
-	sealed class SnackbarView : Views.Toast.ToastView, IDisposable
+	sealed class SnackbarView : ToastView, IDisposable
 	{
 		readonly PaddedButton _actionButton;
 
