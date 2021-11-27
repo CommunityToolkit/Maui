@@ -1,7 +1,7 @@
 ﻿using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 
-namespace CommunityToolkit.Maui.Views.Popup.Snackbar;
+namespace CommunityToolkit.Maui.Alerts.Snackbar;
 
 /// <summary>
 /// Snackbar visual options

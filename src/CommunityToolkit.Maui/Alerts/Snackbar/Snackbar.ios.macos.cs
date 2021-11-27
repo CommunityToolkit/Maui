@@ -2,13 +2,11 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommunityToolkit.Maui.Extensions;
-using CommunityToolkit.Maui.Views.Popup.Snackbar;
 using CoreGraphics;
 using Microsoft.Maui;
 using UIKit;
 
-namespace CommunityToolkit.Maui.Views.Popup.Snackbar;
+namespace CommunityToolkit.Maui.Alerts.Snackbar;
 
 public partial class Snackbar
 {
@@ -77,7 +75,7 @@ public partial class Snackbar
 		return new CGRect(cornerRadius.BottomLeft, cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomRight);
 	}
 
-	sealed class AppleSnackbar : NativeToast, IDisposable
+	sealed class AppleSnackbar : Views.Toast.Toast, IDisposable
 	{
 		readonly PaddedButton _actionButton;
 

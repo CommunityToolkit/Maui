@@ -2,20 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using CommunityToolkit.Maui.Alerts.Snackbar;
 using CommunityToolkit.Maui.Extensions;
-using CommunityToolkit.Maui.Views.Popup.Snackbar;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 
-namespace CommunityToolkit.Maui.Sample.Pages.Views;
+namespace CommunityToolkit.Maui.Sample.Pages.Alerts;
 
 public partial class SnackbarPage : BasePage
 {
 	const string _displayCustomSnackbarText = "Display A Custom Snackbar, Anchored to this Button";
 	const string _dismissCustomSnackbarText = "Dismiss Custom Snackbar";
-
 	readonly IReadOnlyList<Color> _colors = typeof(Colors)
 		.GetFields(BindingFlags.Static | BindingFlags.Public)
 		.ToDictionary(c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()))

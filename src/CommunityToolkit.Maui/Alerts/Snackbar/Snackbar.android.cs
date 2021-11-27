@@ -15,7 +15,7 @@ using AndroidSnackbar = Google.Android.Material.Snackbar.Snackbar;
 using Object = Java.Lang.Object;
 using View = Android.Views.View;
 
-namespace CommunityToolkit.Maui.Views.Popup.Snackbar;
+namespace CommunityToolkit.Maui.Alerts.Snackbar;
 
 public partial class Snackbar
 {

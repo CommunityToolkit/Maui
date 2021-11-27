@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CommunityToolkit.Maui.Extensions.Internals;
-using CoreGraphics;
-using UIKit;
 using CoreAnimation;
 using CoreGraphics;
+using CoreGraphics;
+using UIKit;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Views.Popup;

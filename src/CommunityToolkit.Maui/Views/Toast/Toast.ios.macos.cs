@@ -4,15 +4,15 @@ using CoreText;
 using Foundation;
 using UIKit;
 
-namespace CommunityToolkit.Maui.Views.Popup.Snackbar;
+namespace CommunityToolkit.Maui.Views.Toast;
 
-class NativeToast : NativePopup
+class Toast : Popup.Popup
 {
 	public const double DefaultPadding = 10;
 
 	readonly PaddedLabel _messageLabel;
 
-	public NativeToast(string message, UIColor textColor, UIFont font, double characterSpacing, double padding = DefaultPadding)
+	public Toast(string message, UIColor textColor, UIFont font, double characterSpacing, double padding = DefaultPadding)
 	{
 		_messageLabel = new PaddedLabel(padding, padding, padding, padding)
 		{
@@ -49,7 +49,7 @@ class NativeToast : NativePopup
 	{
 		init
 		{
-			var em = NativeToast.GetEmFromPx(Font.PointSize, value);
+			var em = Toast.GetEmFromPx(Font.PointSize, value);
 			_messageLabel.AttributedText = new NSAttributedString(Message, new CTStringAttributes() { KerningAdjustment = (float)em });
 		}
 	}

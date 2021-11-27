@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Toolkit.Uwp.Notifications;
 using Windows.UI.Notifications;
 
-namespace CommunityToolkit.Maui.Views.Popup.Snackbar;
+namespace CommunityToolkit.Maui.Alerts.Snackbar;
 
 public partial class Snackbar
 {

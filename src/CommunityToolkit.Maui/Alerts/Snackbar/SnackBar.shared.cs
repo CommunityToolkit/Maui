@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
-namespace CommunityToolkit.Maui.Views.Popup.Snackbar;
+namespace CommunityToolkit.Maui.Alerts.Snackbar;
 
 /// <inheritdoc/>
 public partial class Snackbar : ISnackbar
@@ -91,14 +91,22 @@ public partial class Snackbar : ISnackbar
 	/// </summary>
 	/// <returns></returns>
 	/// <exception cref="NotSupportedException"></exception>
-	public virtual System.Threading.Tasks.Task Show() => throw new NotSupportedException($"{nameof(Show)} must be called on a platform");
+	public virtual Task Show()
+	{
+		OnShown();
+		return Task.CompletedTask;
+	}
 
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
 	/// <returns></returns>
 	/// <exception cref="NotSupportedException"></exception>
-	public virtual System.Threading.Tasks.Task Dismiss() => throw new NotSupportedException($"{nameof(Dismiss)} must be called on a platform");
+	public virtual Task Dismiss()
+	{
+		OnDismissed();
+		return Task.CompletedTask;
+	}
 #endif
 
 	/// <summary>
@@ -113,7 +121,6 @@ public partial class Snackbar : ISnackbar
 	/// <summary>
 	/// Dispose Snackbar
 	/// </summary>
-	/// <param name="isDisposing"></param>
 	protected virtual async ValueTask DisposeAsyncCore()
 	{
 #if NET6_0_ANDROID || NET6_0_IOS || NET6_0_MACCATALYST
@@ -136,4 +143,28 @@ public partial class Snackbar : ISnackbar
 		IsShown = false;
 		_weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Dismissed));
 	}
+}
+
+/// <summary>
+/// Extension methods for <see cref="VisualElement"/>.
+/// </summary>
+public static class VisualElementExtension
+{
+	/// <summary>
+	/// Display snackbar with the anchor
+	/// </summary>
+	/// <param name="visualElement">Anchor element</param>
+	/// <param name="message">Text of the snackbar</param>
+	/// <param name="actionButtonText">Text of the snackbar button</param>
+	/// <param name="action">Action of the snackbar button</param>
+	/// <param name="duration">Snackbar duration</param>
+	/// <param name="visualOptions">Snackbar visual options</param>
+	/// <returns><see cref="Snackbar"/></returns>
+	public static Task DisplaySnackbar(
+		this VisualElement? visualElement,
+		string message,
+		Action? action = null,
+		string actionButtonText = "OK",
+		TimeSpan? duration = null,
+		SnackbarOptions? visualOptions = null) => Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement).Show();
 }

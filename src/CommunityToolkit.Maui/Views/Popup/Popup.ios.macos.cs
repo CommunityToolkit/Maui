@@ -5,9 +5,9 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.Views.Popup;
 
-class NativePopup
+class Popup
 {
-	public NativePopup()
+	public Popup()
 	{
 		PopupView = new PopupView();
 
