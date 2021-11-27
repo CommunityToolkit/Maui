@@ -90,7 +90,6 @@ public partial class Snackbar : ISnackbar
 	/// Show Snackbar
 	/// </summary>
 	/// <returns></returns>
-	/// <exception cref="NotSupportedException"></exception>
 	public virtual Task Show()
 	{
 		OnShown();
@@ -101,7 +100,6 @@ public partial class Snackbar : ISnackbar
 	/// Dismiss Snackbar
 	/// </summary>
 	/// <returns></returns>
-	/// <exception cref="NotSupportedException"></exception>
 	public virtual Task Dismiss()
 	{
 		OnDismissed();
