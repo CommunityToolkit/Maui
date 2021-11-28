@@ -15,11 +15,11 @@ class ToastView : Popup
 
 	public ToastView(
 		string message,
-		UIColor backgroundColor, 
-		CGRect cornerRadius, 
-		UIColor textColor, 
-		UIFont font, 
-		double characterSpacing, 
+		UIColor backgroundColor,
+		CGRect cornerRadius,
+		UIColor textColor,
+		UIFont font,
+		double characterSpacing,
 		double padding = DefaultPadding)
 	{
 		_messageLabel = new PaddedLabel(padding, padding, padding, padding)
@@ -83,7 +83,7 @@ class ToastView : Popup
 
 		public nfloat Bottom { get; }
 
-		public override CGSize IntrinsicContentSize => new (
+		public override CGSize IntrinsicContentSize => new(
 			base.IntrinsicContentSize.Width + Left + Right,
 			base.IntrinsicContentSize.Height + Top + Bottom);
 
