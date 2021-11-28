@@ -2,10 +2,10 @@
 
 public partial class StringToListConverterPage : BasePage
 {
-    public StringToListConverterPage()
-    {
-        InitializeComponent();
+	public StringToListConverterPage()
+	{
+		InitializeComponent();
 
-        ExampleText ??= new();
-    }
+		ExampleText ??= new();
+	}
 }

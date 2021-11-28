@@ -75,7 +75,7 @@ public class CompareConverter_Tests : BaseTest
 			ComparingValue = comparingValue
 		};
 
-		var result = compareConverter.Convert(value, typeof(BoolToObjectConverter_Tests), null!, CultureInfo.CurrentCulture);
+		object result = compareConverter.Convert(value, typeof(BoolToObjectConverter_Tests), null!, CultureInfo.CurrentCulture);
 		Assert.Equal(result, expectedResult);
 	}
 

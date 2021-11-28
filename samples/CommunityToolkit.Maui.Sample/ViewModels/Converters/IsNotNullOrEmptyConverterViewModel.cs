@@ -2,7 +2,7 @@
 
 public class IsNotNullOrEmptyConverterViewModel : IsNullOrEmptyConverterViewModel
 {
-    public IsNotNullOrEmptyConverterViewModel()
-    {
-    }
+	public IsNotNullOrEmptyConverterViewModel()
+	{
+	}
 }

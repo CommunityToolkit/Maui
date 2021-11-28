@@ -2,8 +2,8 @@
 
 public partial class MaskedBehaviorPage : BasePage
 {
-    public MaskedBehaviorPage()
-    {
-        InitializeComponent();
-    }
+	public MaskedBehaviorPage()
+	{
+		InitializeComponent();
+	}
 }
