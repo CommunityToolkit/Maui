@@ -75,37 +75,4 @@
     <Compile Include="**\*.macos.cs" />
     <Compile Include="**\*.macos.*.cs" />
   </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Animations\AnimationBase.shared.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Animations\FadeAnimation.shared.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Behaviors\AnimationBehavior.shared.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Animations\FlipHorizontalAnimation.shared.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Animations\RotateAnimation.shared.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Animations\FlipVerticalAnimation.shared.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Animations\ScaleAnimation.shared.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Animations\ShakeAnimation.shared.cs" />
-  </ItemGroup>
-
 </Project>

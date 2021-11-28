@@ -55,7 +55,7 @@ public class AnimationBehavior : EventToCommandBehavior
 	{
 		base.OnAttachedTo(bindable);
 
-		if (!string.IsNullOrWhiteSpace(EventName) || !(bindable is View view))
+		if (!string.IsNullOrWhiteSpace(EventName) || !(bindable is View view && view is not InputView))
 			return;
 
 		tapGestureRecognizer = new TapGestureRecognizer();
@@ -82,7 +82,7 @@ public class AnimationBehavior : EventToCommandBehavior
 	}
 
 	static object CreateAnimateCommand(BindableObject bindable)
-		=> new Command(async () => await ((AnimationBehavior)bindable).OnAnimate()); //TODO replace with AsyncCommand
+		=> new Command(async () => await ((AnimationBehavior)bindable).OnAnimate()); 
 	
 	async Task OnAnimate()
 	{
