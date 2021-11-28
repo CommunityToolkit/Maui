@@ -81,14 +81,14 @@ public partial class Snackbar
 
 		public SnackbarView(
 			string message,
-			UIColor backgroundColor, 
-			CGRect cornerRadius, 
-			UIColor textColor, 
-			UIFont textFont, 
-			double characterSpacing, 
+			UIColor backgroundColor,
+			CGRect cornerRadius,
+			UIColor textColor,
+			UIFont textFont,
+			double characterSpacing,
 			string actionButtonText,
-			UIColor actionTextColor, 
-			UIFont actionButtonFont, 
+			UIColor actionTextColor,
+			UIFont actionButtonFont,
 			double padding = DefaultPadding)
 			: base(message, backgroundColor, cornerRadius, textColor, textFont, characterSpacing, padding)
 		{

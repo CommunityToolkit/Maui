@@ -72,9 +72,9 @@ class PopupView : UIView
 	void Initialize()
 	{
 		Container = new RoundedStackView(
-			VisualOptions.CornerRadius.X, 
-			VisualOptions.CornerRadius.Y, 
-			VisualOptions.CornerRadius.Width, 
+			VisualOptions.CornerRadius.X,
+			VisualOptions.CornerRadius.Y,
+			VisualOptions.CornerRadius.Width,
 			VisualOptions.CornerRadius.Height);
 
 		AddSubview(Container);

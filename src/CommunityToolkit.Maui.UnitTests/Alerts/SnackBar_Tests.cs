@@ -64,7 +64,7 @@ public class Snackbar_Tests : BaseTest
 		await button.DisplaySnackbar("message");
 		Assert.Single(receivedEvents);
 	}
-	
+
 	[Fact]
 	public async Task SnackbarMake_NewSnackbarCreatedWithValidProperties()
 	{
@@ -82,13 +82,13 @@ public class Snackbar_Tests : BaseTest
 				Font = Font.Default,
 				BackgroundColor = Colors.Red,
 				CharacterSpacing = 10,
-				CornerRadius = new CornerRadius(1,2,3,4),
+				CornerRadius = new CornerRadius(1, 2, 3, 4),
 				TextColor = Colors.RosyBrown,
 				ActionButtonFont = Font.SystemFontOfSize(5),
 				ActionButtonTextColor = Colors.Aqua
 			}
 		};
-		
+
 		var currentSnackbar = Snackbar.Make(
 			"Test",
 			action,
@@ -99,7 +99,7 @@ public class Snackbar_Tests : BaseTest
 				Font = Font.Default,
 				BackgroundColor = Colors.Red,
 				CharacterSpacing = 10,
-				CornerRadius = new CornerRadius(1,2,3,4),
+				CornerRadius = new CornerRadius(1, 2, 3, 4),
 				TextColor = Colors.RosyBrown,
 				ActionButtonFont = Font.SystemFontOfSize(5),
 				ActionButtonTextColor = Colors.Aqua
