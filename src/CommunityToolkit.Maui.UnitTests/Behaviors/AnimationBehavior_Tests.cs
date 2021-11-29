@@ -1,7 +1,10 @@
-﻿using CommunityToolkit.Maui.Behaviors;
+﻿using CommunityToolkit.Maui.Animations;
+using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using Microsoft.Maui.Controls;
+using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
@@ -14,7 +17,7 @@ public class AnimationBehavior_Tests : BaseTest
 		var boxView = new BoxView();
 		boxView.Behaviors.Add(new AnimationBehavior());
 		var gestureRecognizers = boxView.GestureRecognizers.ToList();
-		
+
 		Assert.Single(gestureRecognizers);
 		Assert.IsType<TapGestureRecognizer>(gestureRecognizers[0]);
 	}
@@ -22,52 +25,30 @@ public class AnimationBehavior_Tests : BaseTest
 	[Fact]
 	public void TabGestureRecognizerNotAttachedWhenEventSpecified()
 	{
-		var boxView = new BoxView();
-		boxView.Behaviors.Add(new AnimationBehavior()
+		Assert.Throws<InvalidOperationException>(() => new BoxView().Behaviors.Add(new AnimationBehavior()
 		{
 			EventName = nameof(BoxView.Focused),
-		});
-		var gestureRecognizers = boxView.GestureRecognizers.ToList();
-
-		Assert.Empty(gestureRecognizers);
+		}));
 	}
 
 	[Fact]
 	public void TabGestureRecognizerNotAttachedWhenViewIsInputView()
 	{
-		var entry = new Entry();
-		entry.Behaviors.Add(new AnimationBehavior()
-		{
-			EventName = nameof(Entry.Focused),
-		});
-		var gestureRecognizers = entry.GestureRecognizers.ToList();
-
-		Assert.Empty(gestureRecognizers);
+		Assert.Throws<InvalidOperationException>(() => new Entry().Behaviors.Add(new AnimationBehavior()));
 	}
 
 	[Fact]
-	public void CommandIsInvokedOnlyOneTimePerEvent()
+	public async void AnimateCommandStartsAnimation()
 	{
-		var mockView = new MockEventView();
+		bool animationStarted = false, animationEnded = false;
 
-		var commandInvokedCount = 0;
-		mockView.Behaviors.Add(new AnimationBehavior
-		{
-			EventName = nameof(MockEventView.Event),
-			Command = new Command(() => commandInvokedCount++),
-		});
+		var animationStartedTCS = new TaskCompletionSource();
+		var animationEndedTCS = new TaskCompletionSource();
 
+		var mockAnimation = new MockAnimation();
+		mockAnimation.AnimationStarted += HandleAnimationStarted;
+		mockAnimation.AnimationEnded += HandleAnimationEnded;
 
-		mockView.Event += (sender, args) => { };
-		mockView.InvokeEvent();
-
-		Assert.Equal(1, commandInvokedCount);
-	}
-
-	[Fact]
-	public void AnimateCommandStartsAnimation()
-	{
-		var mockAnimation = new MockAnimationType();
 		var behavior = new AnimationBehavior
 		{
 			AnimationType = mockAnimation
@@ -76,10 +57,52 @@ public class AnimationBehavior_Tests : BaseTest
 		new Label
 		{
 			Behaviors = { behavior }
-		};
+		}.EnableAnimations();
 
 		behavior.AnimateCommand.Execute(null);
-		
+
+		await animationStartedTCS.Task;
+		await animationEndedTCS.Task;
+
+		Assert.True(animationEnded);
+		Assert.True(animationStarted);
 		Assert.True(mockAnimation.HasAnimated);
+
+		void HandleAnimationStarted(object? sender, EventArgs e)
+		{
+			mockAnimation.AnimationStarted -= HandleAnimationStarted;
+
+			animationStarted = true;
+			animationStartedTCS.SetResult();
+		}
+
+		void HandleAnimationEnded(object? sender, EventArgs e)
+		{
+			mockAnimation.AnimationEnded -= HandleAnimationEnded;
+
+			animationEnded = true;
+			animationEndedTCS.SetResult();
+		}
+	}
+
+	class MockAnimation : BaseAnimation
+	{
+		public bool HasAnimated { get; private set; }
+
+		public event EventHandler? AnimationStarted;
+		public event EventHandler? AnimationEnded;
+
+		public override async Task Animate(VisualElement? element)
+		{
+			ArgumentNullException.ThrowIfNull(element);
+
+			AnimationStarted?.Invoke(this, EventArgs.Empty);
+
+			await element.RotateTo(70);
+
+			AnimationEnded?.Invoke(this, EventArgs.Empty);
+
+			HasAnimated = true;
+		}
 	}
 }

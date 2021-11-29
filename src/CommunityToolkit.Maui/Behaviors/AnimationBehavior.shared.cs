@@ -1,6 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Animations;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Behaviors;
@@ -14,7 +19,7 @@ public class AnimationBehavior : EventToCommandBehavior
 	/// Backing BindableProperty for the <see cref="AnimationType"/> property.
 	/// </summary>
 	public static readonly BindableProperty AnimationTypeProperty =
-		BindableProperty.Create(nameof(AnimationType), typeof(AnimationBase), typeof(AnimationBehavior));
+		BindableProperty.Create(nameof(AnimationType), typeof(BaseAnimation), typeof(AnimationBehavior));
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="AnimateCommand"/> property.
@@ -27,48 +32,60 @@ public class AnimationBehavior : EventToCommandBehavior
  				default,
  				BindingMode.OneWayToSource,
  				defaultValueCreator: CreateAnimateCommand);
-	
+
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="AnimateCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty AnimateCommandProperty = AnimateCommandPropertyKey.BindableProperty;
 
-	/// <summary>
-	/// The type of animation to perform
-	/// </summary>
-	public AnimationBase? AnimationType
-	{
-		get => (AnimationBase?)GetValue(AnimationTypeProperty);
-		set => SetValue(AnimationTypeProperty, value);
-	}
+	TapGestureRecognizer? _tapGestureRecognizer;
 
 	/// <summary>
 	/// Command on which to perform the animation.
 	/// </summary>
 	public ICommand AnimateCommand => (ICommand)GetValue(AnimateCommandProperty);
 
-	bool isAnimating;
-	TapGestureRecognizer? tapGestureRecognizer;
+	/// <summary>
+	/// The type of animation to perform
+	/// </summary>
+	public BaseAnimation? AnimationType
+	{
+		get => (BaseAnimation?)GetValue(AnimationTypeProperty);
+		set => SetValue(AnimationTypeProperty, value);
+	}
 
 	/// <inheritdoc/>
+	[MemberNotNull(nameof(_tapGestureRecognizer))]
 	protected override void OnAttachedTo(VisualElement bindable)
 	{
 		base.OnAttachedTo(bindable);
 
-		if (!string.IsNullOrWhiteSpace(EventName) || !(bindable is View view && view is not InputView))
-			return;
+		if (!string.IsNullOrWhiteSpace(EventName))
+			throw new InvalidOperationException($"{nameof(EventName)} must be null. It is not used by {nameof(AnimationBehavior)}");
 
-		tapGestureRecognizer = new TapGestureRecognizer();
-		tapGestureRecognizer.Tapped += OnTriggerHandled;
-		view.GestureRecognizers.Clear();
-		view.GestureRecognizers.Add(tapGestureRecognizer);
+		if (bindable is not IGestureRecognizers gestureRecognizers)
+			throw new InvalidOperationException($"VisualElement does not implement {nameof(IGestureRecognizers)}");
+
+		if (bindable is ITextInput)
+			throw new InvalidOperationException($"Animation Behavior can not be attached to {nameof(ITextInput)}");
+
+		_tapGestureRecognizer = new TapGestureRecognizer();
+		_tapGestureRecognizer.Tapped += OnTriggerHandled;
+
+		foreach (var tapGestureRecognizer in gestureRecognizers.GestureRecognizers.OfType<TapGestureRecognizer>())
+			gestureRecognizers.GestureRecognizers.Remove(tapGestureRecognizer);
+
+		gestureRecognizers.GestureRecognizers.Add(_tapGestureRecognizer);
 	}
 
 	/// <inheritdoc/>
 	protected override void OnDetachingFrom(VisualElement bindable)
 	{
-		if (tapGestureRecognizer != null)
-			tapGestureRecognizer.Tapped -= OnTriggerHandled;
+		if (_tapGestureRecognizer != null)
+		{
+			_tapGestureRecognizer.Tapped -= OnTriggerHandled;
+			_tapGestureRecognizer = null;
+		}
 
 		base.OnDetachingFrom(bindable);
 	}
@@ -82,18 +99,16 @@ public class AnimationBehavior : EventToCommandBehavior
 	}
 
 	static object CreateAnimateCommand(BindableObject bindable)
-		=> new Command(async () => await ((AnimationBehavior)bindable).OnAnimate()); 
-	
+		=> new Command(async () => await ((AnimationBehavior)bindable).OnAnimate());
+
 	async Task OnAnimate()
 	{
-		if (isAnimating || View is not View typedView)
+		if (View is null)
 			return;
 
-		isAnimating = true;
+		View.CancelAnimations();
 
 		if (AnimationType != null)
-			await AnimationType.Animate(typedView);
-
-		isAnimating = false;
+			await AnimationType.Animate(View);
 	}
 }
