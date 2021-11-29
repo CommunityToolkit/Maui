@@ -100,9 +100,9 @@ public class AnimationBehavior_Tests : BaseTest
 
 			await element.RotateTo(70);
 
-			AnimationEnded?.Invoke(this, EventArgs.Empty);
-
 			HasAnimated = true;
+
+			AnimationEnded?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }
