@@ -1,10 +1,10 @@
-﻿using CommunityToolkit.Maui.Animations;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using CommunityToolkit.Maui.Animations;
 using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using Microsoft.Maui.Controls;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
@@ -38,7 +38,7 @@ public class AnimationBehavior_Tests : BaseTest
 	}
 
 	[Fact]
-	public async void AnimateCommandStartsAnimation()
+	public async Task AnimateCommandStartsAnimation()
 	{
 		bool animationStarted = false, animationEnded = false;
 
