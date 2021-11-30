@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="6.2.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
     <PackageReference Include="Coverlet.Collector" Version="3.1.0" PrivateAssets="all" />
     <PackageReference Include="Xunit" Version="2.4.1" />
@@ -16,5 +17,11 @@
   <ItemGroup>
     <ProjectReference Include="..\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="xunit.runner.json"> 
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </None>
+</ItemGroup>
 
 </Project>

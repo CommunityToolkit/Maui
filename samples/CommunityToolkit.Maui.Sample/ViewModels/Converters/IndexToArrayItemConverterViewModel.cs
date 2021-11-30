@@ -8,5 +8,5 @@ public class IndexToArrayItemConverterViewModel : BaseViewModel
 	{
 		get => _selectedIndex;
 		set => SetProperty(ref _selectedIndex, value);
-	} 
+	}
 }

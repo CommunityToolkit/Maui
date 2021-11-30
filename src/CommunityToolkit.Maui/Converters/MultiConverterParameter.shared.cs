@@ -8,13 +8,13 @@ namespace CommunityToolkit.Maui.Converters;
 /// </summary>
 public class MultiConverterParameter : BindableObject
 {
-    /// <summary>
-    /// The type of object of this parameter.
-    /// </summary>
-    public Type? ConverterType { get; set; }
+	/// <summary>
+	/// The type of object of this parameter.
+	/// </summary>
+	public Type? ConverterType { get; set; }
 
-    /// <summary>
-    /// The value of this parameter.
-    /// </summary>
-    public object? Value { get; set; }
+	/// <summary>
+	/// The value of this parameter.
+	/// </summary>
+	public object? Value { get; set; }
 }

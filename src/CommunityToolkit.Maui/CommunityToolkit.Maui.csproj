@@ -43,7 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="mdoc" Version="5.8.3" PrivateAssets="all" />
+    <PackageReference Include="mdoc" Version="5.8.5" PrivateAssets="all" />
   </ItemGroup>
 
   <Import Project="..\..\mdoc.targets" Condition=" '$(OS)' == 'Windows_NT' AND '$(GenerateApiDocs)' == 'true'" />
@@ -69,11 +69,11 @@
   <ItemGroup Condition=" $(TargetFramework.Contains('-windows')) ">
     <Compile Include="**\*.windows.cs" />
     <Compile Include="**\*.windows.*.cs" />
+    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
   </ItemGroup>
 
   <ItemGroup Condition=" $(TargetFramework.Contains('-maccatalyst')) ">
     <Compile Include="**\*.macos.cs" />
     <Compile Include="**\*.macos.*.cs" />
   </ItemGroup>
-
 </Project>

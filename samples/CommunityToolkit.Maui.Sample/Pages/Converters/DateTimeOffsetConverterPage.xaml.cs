@@ -2,8 +2,8 @@
 
 public partial class DateTimeOffsetConverterPage : BasePage
 {
-    public DateTimeOffsetConverterPage()
-    {
-        InitializeComponent();
-    }
+	public DateTimeOffsetConverterPage()
+	{
+		InitializeComponent();
+	}
 }
