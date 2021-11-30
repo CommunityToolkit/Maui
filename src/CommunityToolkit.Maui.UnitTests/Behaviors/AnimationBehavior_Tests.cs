@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Maui.Animations;
 using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.UnitTests.Mocks;
+using FluentAssertions;
 using Microsoft.Maui.Controls;
 using Xunit;
 
@@ -18,23 +19,25 @@ public class AnimationBehavior_Tests : BaseTest
 		boxView.Behaviors.Add(new AnimationBehavior());
 		var gestureRecognizers = boxView.GestureRecognizers.ToList();
 
-		Assert.Single(gestureRecognizers);
-		Assert.IsType<TapGestureRecognizer>(gestureRecognizers[0]);
+		gestureRecognizers.Should().HaveCount(1).And.AllBeOfType<TapGestureRecognizer>();
 	}
 
 	[Fact]
 	public void TabGestureRecognizerNotAttachedWhenEventSpecified()
 	{
-		Assert.Throws<InvalidOperationException>(() => new BoxView().Behaviors.Add(new AnimationBehavior()
+		var addBehavior = () => new BoxView().Behaviors.Add(new AnimationBehavior()
 		{
 			EventName = nameof(BoxView.Focused),
-		}));
+		});
+
+		addBehavior.Should().Throw<InvalidOperationException>();
 	}
 
 	[Fact]
 	public void TabGestureRecognizerNotAttachedWhenViewIsInputView()
 	{
-		Assert.Throws<InvalidOperationException>(() => new Entry().Behaviors.Add(new AnimationBehavior()));
+		var addBehavior = () => new Entry().Behaviors.Add(new AnimationBehavior());
+		addBehavior.Should().Throw<InvalidOperationException>();
 	}
 
 	[Fact]
@@ -64,9 +67,9 @@ public class AnimationBehavior_Tests : BaseTest
 		await animationStartedTCS.Task;
 		await animationEndedTCS.Task;
 
-		Assert.True(animationEnded);
-		Assert.True(animationStarted);
-		Assert.True(mockAnimation.HasAnimated);
+		animationEnded.Should().BeTrue();
+		animationStarted.Should().BeTrue();
+		mockAnimation.HasAnimated.Should().BeTrue();
 
 		void HandleAnimationStarted(object? sender, EventArgs e)
 		{
