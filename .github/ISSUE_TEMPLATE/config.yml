@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: Bug Report - Xamarin.CommunityToolkit.MauiCompat
-    url: https://github.com/xamarin/XamarinCommunityToolkit/issues/new?assignees=&labels=bug%2C+unverified%2C+maui-compat&template=bug_report_template.md&title=%5BBug%5D+%5BMauiCompat%5D+
+    url: https://github.com/xamarin/XamarinCommunityToolkit/issues/new?assignees=&labels=bug%2C+unverified%2C+maui-compat&template=bug_report_maui_compat_template.md&title=%5BBug%5D+%5BMauiCompat%5D+
     about: Issues for Xamarin.CommunityToolkit.MauiCompat and Xamarin.CommunityToolkit.Markup.MauiCompat are filed in the the Xamarin Community Toolkit repository
   - name: Propose a New Feature or Ask a Question
     url: https://github.com/communitytoolkit/maui/discussions/new
