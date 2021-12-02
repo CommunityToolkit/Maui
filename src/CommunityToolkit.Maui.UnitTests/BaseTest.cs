@@ -21,6 +21,12 @@ public abstract class BaseTest : IDisposable
 
 	~BaseTest() => Dispose(false);
 
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
 	protected virtual void Dispose(bool isDisposing)
 	{
 		if (_isDisposed)
@@ -32,12 +38,6 @@ public abstract class BaseTest : IDisposable
 		System.Threading.Thread.CurrentThread.CurrentUICulture = defaultUICulture ?? throw new NullReferenceException();
 
 		_isDisposed = true;
-	}
-
-	void IDisposable.Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
 	}
 
 	protected static Stream GetStreamFromImageSource(ImageSource imageSource)
