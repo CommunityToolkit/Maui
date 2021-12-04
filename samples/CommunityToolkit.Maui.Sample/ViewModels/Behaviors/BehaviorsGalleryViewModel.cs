@@ -33,5 +33,9 @@ public class BehaviorsGalleryViewModel : BaseGalleryViewModel
 				typeof(SetFocusOnEntryCompletedBehaviorPage),
 				nameof(SetFocusOnEntryCompletedBehavior),
 				"Set focus to another element when an entry is completed"),
+			new SectionModel(
+				typeof(AnimationBehaviorPage),
+				nameof(AnimationBehavior),
+				"Perform animation when a specified UI element event is triggered"),
 		};
 }
