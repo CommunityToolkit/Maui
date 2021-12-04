@@ -6,16 +6,10 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
 public class AnimationBehaviorViewModel : BaseViewModel
 {
-	public AnimationBehaviorViewModel()
-	{
-		AnimationCommand = new Command(OnAnimationCommand);
-	}
+	public AnimationBehaviorViewModel() => AnimationCommand = new Command(OnAnimationCommand);
 
-	void OnAnimationCommand()
-	{
-		Snackbar.Make($"{nameof(AnimationCommand)} is triggered.")
+	void OnAnimationCommand() => Snackbar.Make($"{nameof(AnimationCommand)} is triggered.")
 			.Show();
-	}
 
 	public ICommand AnimationCommand { get; }
 }
