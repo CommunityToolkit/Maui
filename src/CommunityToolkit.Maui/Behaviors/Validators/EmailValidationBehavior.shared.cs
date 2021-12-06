@@ -84,6 +84,9 @@ public class EmailValidationBehavior : TextValidationBehavior
 				throw new ArgumentException("Invalid IPv4 Address");
 			}
 
+			if (domainName.StartsWith('-'))
+				throw new ArgumentException("Domain Name Cannot Start With Hyphen");
+
 			return match.Groups[1].Value + domainName;
 		}
 	}
