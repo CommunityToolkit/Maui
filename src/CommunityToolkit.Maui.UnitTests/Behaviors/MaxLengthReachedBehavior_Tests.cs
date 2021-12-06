@@ -143,9 +143,9 @@ public class MaxLengthReachedBehavior_Tests : BaseTest
 	}
 
 	static Entry CreateEntry(int? maxLength = 2,
-					  bool shouldDismissKeyboardAutomatically = false,
-					  ICommand? command = null,
-					  EventHandler<MaxLengthReachedEventArgs>? eventHandler = null)
+							  bool shouldDismissKeyboardAutomatically = false,
+							  ICommand? command = null,
+							  EventHandler<MaxLengthReachedEventArgs>? eventHandler = null)
 	{
 		var behavior = new MaxLengthReachedBehavior
 		{
@@ -160,9 +160,9 @@ public class MaxLengthReachedBehavior_Tests : BaseTest
 		{
 			MaxLength = maxLength ?? int.MaxValue,
 			Behaviors =
-				{
-					behavior
-				}
+			{
+				behavior
+			}
 		};
 
 		// We simulate Focus/Unfocus behavior ourselves
