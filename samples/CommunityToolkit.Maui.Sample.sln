@@ -19,6 +19,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\global.json = ..\global.json
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{7C8B8146-1F67-44C6-8C74-E86587B61E40}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controls", "Controls", "{01B19F98-58F9-4B74-939B-7D58AE62A0F1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "..\src\CommunityToolkit.Maui.Core\src\Core\Core.csproj", "{E237AAE3-3F9A-408B-A3C6-C7A748DF37EF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,12 +49,17 @@ Global
 		{3A795407-604F-4502-8C76-281BE5575A84}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3A795407-604F-4502-8C76-281BE5575A84}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3A795407-604F-4502-8C76-281BE5575A84}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{E237AAE3-3F9A-408B-A3C6-C7A748DF37EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E237AAE3-3F9A-408B-A3C6-C7A748DF37EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E237AAE3-3F9A-408B-A3C6-C7A748DF37EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E237AAE3-3F9A-408B-A3C6-C7A748DF37EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{3A795407-604F-4502-8C76-281BE5575A84} = {AE67B86A-46F2-4078-BF02-0614B7E0E3F5}
+		{E237AAE3-3F9A-408B-A3C6-C7A748DF37EF} = {7C8B8146-1F67-44C6-8C74-E86587B61E40}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1E9E61C1-5CB7-4C8E-87BA-6C1D38238679}
