@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using CommunityToolkit.Maui.Behaviors;
 using Microsoft.Maui.Controls;
@@ -14,7 +16,7 @@ public class EmailValidationBehavior_Tests : BaseTest
 		new object?[] { @"email@example.com", true },
 		new object?[] { @"firstname.lastname@example.com", true },
 		new object?[] { @"email@subdomain.example.com", true },
-		new object?[] { @"firstname+lastname @example.com", true },
+		new object?[] { @"firstname+lastname@example.com", true },
 		new object?[] { @"email@123.123.123.123", true },
 		new object?[] { @"email@[123.123.123.123]", true },
 		new object?[] { @"""email""@example.com", true },
@@ -25,9 +27,6 @@ public class EmailValidationBehavior_Tests : BaseTest
 		new object?[] { @"email@example.museum", true },
 		new object?[] { @"email@example.co.jp", true },
 		new object?[] { @"firstname-lastname@example.com", true },
-		new object?[] { @"much.""more\ unusual""@example.com", true },
-		new object?[] { @"very.unusual.""@"".unusual.com@example.com", true },
-		new object?[] { @"very.""(),:;<>[]"".VERY.""very@\\ ""very"".unusual@strange.example.com", true },
 		new object?[] { @"plainaddress", false },
 		new object?[] { @"#@%^%#$@#$@#.com", false },
 		new object?[] { @"@example.com", false },
@@ -37,16 +36,13 @@ public class EmailValidationBehavior_Tests : BaseTest
 		new object?[] { @".email@example.com", false },
 		new object?[] { @"email.@example.com", false },
 		new object?[] { @"email..email@example.com", false },
-		new object?[] { @"あいうえお@example.com", false },
 		new object?[] { @"email@example.com (Joe Smith)", false },
 		new object?[] { @"email@example", false },
 		new object?[] { @"email@-example.com", false },
-		new object?[] { @"email@example.web", false },
 		new object?[] { @"email@111.222.333.44444", false },
 		new object?[] { @"email@example..com", false },
 		new object?[] { @"Abc..123@example.com", false },
 		new object?[] { @"""(),:;<>[\]", false },
-		new object?[] { @"just""not""right@example.com", false },
 		new object?[] { @"this\ is""really""not\allowed@example.co", false },
 		new object?[] { "", false },
 		new object?[] { null, false },
@@ -57,6 +53,9 @@ public class EmailValidationBehavior_Tests : BaseTest
 	public async Task IsValid(string? value, bool expectedValue)
 	{
 		// Arrange
+		Console.WriteLine($"value: {value})");
+		Console.WriteLine($"expectedValue: {expectedValue}");
+
 		var behavior = new EmailValidationBehavior();
 
 		var entry = new Entry
