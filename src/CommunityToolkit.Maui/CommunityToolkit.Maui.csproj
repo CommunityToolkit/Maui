@@ -69,11 +69,11 @@
   <ItemGroup Condition=" $(TargetFramework.Contains('-windows')) ">
     <Compile Include="**\*.windows.cs" />
     <Compile Include="**\*.windows.*.cs" />
+    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
   </ItemGroup>
 
   <ItemGroup Condition=" $(TargetFramework.Contains('-maccatalyst')) ">
     <Compile Include="**\*.macos.cs" />
     <Compile Include="**\*.macos.*.cs" />
   </ItemGroup>
-
 </Project>

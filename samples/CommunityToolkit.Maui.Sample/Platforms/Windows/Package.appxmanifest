@@ -3,8 +3,9 @@
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-  IgnorableNamespaces="uap rescap">
+  IgnorableNamespaces="uap rescap desktop4">
 
   <Identity
     Name="E71AB0A7-18D7-47F1-8F52-55C91EAFA3E8"
@@ -27,7 +28,7 @@
   </Resources>
 
   <Applications>
-    <Application Id="App"
+    <Application Id="App" desktop4:SupportsMultipleInstances="false"
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
