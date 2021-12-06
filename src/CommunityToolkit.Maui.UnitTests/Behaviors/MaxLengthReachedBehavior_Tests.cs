@@ -6,7 +6,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class MaxLengthReachedBehavior_Tests
+public class MaxLengthReachedBehavior_Tests : BaseTest
 {
 	[Fact]
 	public void ShouldExecuteCommandWhenMaxLengthHasBeenReached()

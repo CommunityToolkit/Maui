@@ -35,8 +35,7 @@ public class CharactersValidationBehavior : TextValidationBehavior
 	/// <summary>
 	/// Constructor for this behavior
 	/// </summary>
-	public CharactersValidationBehavior()
-		=> OnCharacterTypePropertyChanged();
+	public CharactersValidationBehavior() => OnCharacterTypePropertyChanged();
 
 	/// <summary>
 	/// Provides an enumerated value to use to set how to handle comparisons. This is a bindable property.
@@ -66,9 +65,8 @@ public class CharactersValidationBehavior : TextValidationBehavior
 	}
 
 	/// <inheritdoc/>
-	protected override async ValueTask<bool> ValidateAsync(object? value, CancellationToken token)
-		=> await base.ValidateAsync(value, token).ConfigureAwait(false)
-			&& Validate(value?.ToString());
+	protected override async ValueTask<bool> ValidateAsync(string? value, CancellationToken token)
+		=> await base.ValidateAsync(value, token).ConfigureAwait(false) && Validate(value?.ToString());
 
 	static void OnCharacterTypePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{

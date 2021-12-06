@@ -26,13 +26,17 @@ public class MultiValidationBehavior : ValidationBehavior
 	public static readonly BindableProperty ErrorProperty =
 		BindableProperty.CreateAttached(nameof(GetError), typeof(object), typeof(MultiValidationBehavior), null);
 
-	readonly ObservableCollection<ValidationBehavior> children = new ObservableCollection<ValidationBehavior>();
+	readonly ObservableCollection<ValidationBehavior> _children = new();
 
 	/// <summary>
 	/// Constructor for this behavior.
 	/// </summary>
-	public MultiValidationBehavior()
-		=> children.CollectionChanged += OnChildrenCollectionChanged;
+	public MultiValidationBehavior() => _children.CollectionChanged += OnChildrenCollectionChanged;
+
+	/// <summary>
+	/// All child behaviors that are part of this <see cref="MultiValidationBehavior"/>. This is a bindable property.
+	/// </summary>
+	public IList<ValidationBehavior> Children => _children;
 
 	/// <summary>
 	/// Holds the errors from all of the nested invalid validators in <see cref="Children"/>. This is a bindable property.
@@ -42,11 +46,6 @@ public class MultiValidationBehavior : ValidationBehavior
 		get => (List<object?>?)GetValue(ErrorsProperty);
 		set => SetValue(ErrorsProperty, value);
 	}
-
-	/// <summary>
-	/// All child behaviors that are part of this <see cref="MultiValidationBehavior"/>. This is a bindable property.
-	/// </summary>
-	public IList<ValidationBehavior> Children => children;
 
 	/// <summary>
 	/// Method to extract the error from the attached property for a child behavior in <see cref="Children"/>.
@@ -60,22 +59,18 @@ public class MultiValidationBehavior : ValidationBehavior
 	/// </summary>
 	/// <param name="bindable">The <see cref="ValidationBehavior"/> on which we set the attached Error property value</param>
 	/// <param name="value">The value to set</param>
-	public static void SetError(BindableObject bindable, object value)
-		=> bindable.SetValue(ErrorProperty, value);
+	public static void SetError(BindableObject bindable, object value) => bindable.SetValue(ErrorProperty, value);
 
 	/// <inheritdoc/>
 	protected override async ValueTask<bool> ValidateAsync(object? value, CancellationToken token)
 	{
-		await Task.WhenAll(children.Select(c =>
+		await Task.WhenAll(_children.Select(c =>
 		{
 			c.Value = value;
 			return c.ValidateNestedAsync(token).AsTask();
 		})).ConfigureAwait(false);
 
-		if (token.IsCancellationRequested)
-			return IsValid;
-
-		var errors = children.Where(c => c.IsNotValid).Select(c => GetError(c));
+		var errors = _children.Where(c => c.IsNotValid).Select(c => GetError(c));
 
 		if (!errors.Any())
 		{

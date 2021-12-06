@@ -66,7 +66,7 @@ public class Snackbar_Tests : BaseTest
 	}
 
 	[Fact]
-	public async Task SnackbarMake_NewSnackbarCreatedWithValidProperties()
+	public void SnackbarMake_NewSnackbarCreatedWithValidProperties()
 	{
 		var action = () => { };
 		var anchor = new Button();

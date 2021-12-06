@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// <summary>
 /// The <see cref="TextValidationBehavior"/> is a behavior that allows the user to validate a given text depending on specified parameters. By adding this behavior to an <see cref="InputView"/> inherited control (i.e. <see cref="Entry"/>) it can be styled differently depending on whether a valid or an invalid text value is provided. It offers various built-in checks such as checking for a certain length or whether or not the input value matches a specific regular expression. Additional properties handling validation are inherited from <see cref="ValidationBehavior"/>.
 /// </summary>
-public class TextValidationBehavior : ValidationBehavior
+public class TextValidationBehavior : ValidationBehavior<string>
 {
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="MinimumLength"/> property.
@@ -41,7 +42,7 @@ public class TextValidationBehavior : ValidationBehavior
 	public static readonly BindableProperty RegexOptionsProperty =
 		BindableProperty.Create(nameof(RegexOptions), typeof(RegexOptions), typeof(TextValidationBehavior), defaultValueCreator: GetDefaultRegexOptions, propertyChanged: OnRegexPropertyChanged);
 
-	Regex? regex;
+	Regex? _regex;
 
 	/// <summary>
 	/// Constructor of this behavior.
@@ -104,7 +105,7 @@ public class TextValidationBehavior : ValidationBehavior
 	}
 
 	/// <inheritdoc/>
-	protected override object? Decorate(object? value)
+	protected override string? Decorate(string? value)
 	{
 		var stringValue = base.Decorate(value)?.ToString();
 		var flags = DecorationFlags;
@@ -128,14 +129,13 @@ public class TextValidationBehavior : ValidationBehavior
 	}
 
 	/// <inheritdoc/>
-	protected override ValueTask<bool> ValidateAsync(object? value, CancellationToken token)
+	protected override ValueTask<bool> ValidateAsync([NotNullWhen(true)] string? value, CancellationToken token)
 	{
-		var text = value?.ToString();
 		return new ValueTask<bool>(
-			text != null &&
-			text.Length >= MinimumLength &&
-			text.Length <= MaximumLength &&
-			(regex?.IsMatch(text) ?? false));
+			value != null &&
+			value.Length >= MinimumLength &&
+			value.Length <= MaximumLength &&
+			(_regex?.IsMatch(value) ?? false));
 	}
 
 	static void OnRegexPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -158,10 +158,13 @@ public class TextValidationBehavior : ValidationBehavior
 	{
 		var builder = new StringBuilder();
 		var isSpace = false;
+
 		foreach (var ch in value)
 		{
 			var wasSpace = isSpace;
+
 			isSpace = char.IsWhiteSpace(ch);
+
 			if (wasSpace && isSpace)
 				continue;
 
@@ -170,7 +173,7 @@ public class TextValidationBehavior : ValidationBehavior
 		return builder.ToString();
 	}
 
-	void OnRegexPropertyChanged(string? regexPattern, RegexOptions regexOptions) => regex = regexPattern switch
+	void OnRegexPropertyChanged(string? regexPattern, RegexOptions regexOptions) => _regex = regexPattern switch
 	{
 		null => null,
 		_ => new Regex(regexPattern, regexOptions)

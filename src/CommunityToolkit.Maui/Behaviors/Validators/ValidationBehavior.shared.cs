@@ -75,13 +75,13 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 	public static readonly BindableProperty ForceValidateCommandProperty =
 		BindableProperty.Create(nameof(ForceValidateCommand), typeof(ICommand), typeof(ValidationBehavior), defaultValueCreator: GetDefaultForceValidateCommand, defaultBindingMode: BindingMode.OneWayToSource);
 
-	readonly SemaphoreSlim isAttachingSemaphoreSlim = new(1, 1);
+	readonly SemaphoreSlim _isAttachingSemaphoreSlim = new(1, 1);
 
-	ValidationFlags currentStatus;
+	ValidationFlags _currentStatus;
 
-	BindingBase? defaultValueBinding;
+	BindingBase? _defaultValueBinding;
 
-	CancellationTokenSource? validationTokenSource;
+	CancellationTokenSource? _validationTokenSource;
 
 	/// <summary>
 	/// Initialize a new instance of ValidationBehavior
@@ -147,7 +147,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 	/// </summary>
 	public object? Value
 	{
-		get => GetValue(ValueProperty);
+		get => (object?)GetValue(ValueProperty);
 		set => SetValue(ValueProperty, value);
 	}
 
@@ -201,31 +201,31 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 	{
 		base.OnAttachedTo(bindable);
 
-		await isAttachingSemaphoreSlim.WaitAsync();
+		await _isAttachingSemaphoreSlim.WaitAsync();
 
 		try
 		{
-			currentStatus = ValidationFlags.ValidateOnAttaching;
+			_currentStatus = ValidationFlags.ValidateOnAttaching;
 
 			OnValuePropertyNamePropertyChanged();
 			await UpdateStateAsync(View, Flags, false).ConfigureAwait(false);
 		}
 		finally
 		{
-			isAttachingSemaphoreSlim.Release();
+			_isAttachingSemaphoreSlim.Release();
 		}
 	}
 
 	/// <inheritdoc/>
 	protected override void OnDetachingFrom(VisualElement bindable)
 	{
-		if (defaultValueBinding != null)
+		if (_defaultValueBinding != null)
 		{
 			RemoveBinding(ValueProperty);
-			defaultValueBinding = null;
+			_defaultValueBinding = null;
 		}
 
-		currentStatus = ValidationFlags.None;
+		_currentStatus = ValidationFlags.None;
 		base.OnDetachingFrom(bindable);
 	}
 
@@ -234,11 +234,11 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 	{
 		base.OnViewPropertyChanged(sender, e);
 
-		var view = (VisualElement?)sender;
-
 		if (e.PropertyName == VisualElement.IsFocusedProperty.PropertyName)
 		{
-			currentStatus = view?.IsFocused switch
+			var view = (VisualElement?)sender;
+
+			_currentStatus = view?.IsFocused switch
 			{
 				true => ValidationFlags.ValidateOnFocusing,
 				_ => ValidationFlags.ValidateOnUnfocusing
@@ -273,41 +273,43 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 	static object GetDefaultValuePropertyName(BindableObject bindable)
 		=> ((ValidationBehavior)bindable).DefaultValuePropertyName;
 
-	void OnIsValidPropertyChanged()
-		=> IsNotValid = !IsValid;
+	void OnIsValidPropertyChanged() => IsNotValid = !IsValid;
 
 	async Task OnValuePropertyChanged()
 	{
-		await isAttachingSemaphoreSlim.WaitAsync();
+		await _isAttachingSemaphoreSlim.WaitAsync();
 
 		try
 		{
-			currentStatus = ValidationFlags.ValidateOnValueChanged;
+			_currentStatus = ValidationFlags.ValidateOnValueChanged;
 		}
 		finally
 		{
-			isAttachingSemaphoreSlim.Release();
+			_isAttachingSemaphoreSlim.Release();
 		}
 	}
 
 	void OnValuePropertyNamePropertyChanged()
 	{
-		if (IsBound(ValueProperty, defaultValueBinding))
+		if (IsBound(ValueProperty, _defaultValueBinding))
 		{
-			defaultValueBinding = null;
+			_defaultValueBinding = null;
 			return;
 		}
 
-		defaultValueBinding = new Binding
+		_defaultValueBinding = new Binding
 		{
 			Path = ValuePropertyName,
 			Source = View
 		};
-		SetBinding(ValueProperty, defaultValueBinding);
+		SetBinding(ValueProperty, _defaultValueBinding);
 	}
 
 	async ValueTask UpdateStateAsync(VisualElement? view, ValidationFlags flags, bool isForced, CancellationToken? parentToken = null)
 	{
+		if (parentToken?.IsCancellationRequested is true)
+			return;
+
 		if ((view?.IsFocused ?? false) && flags.HasFlag(ValidationFlags.ForceMakeValidWhenFocused))
 		{
 			IsRunning = true;
@@ -317,7 +319,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 			IsValid = true;
 			IsRunning = false;
 		}
-		else if (isForced || (currentStatus != ValidationFlags.None && Flags.HasFlag(currentStatus)))
+		else if (isForced || (_currentStatus != ValidationFlags.None && Flags.HasFlag(_currentStatus)))
 		{
 			IsRunning = true;
 
@@ -332,7 +334,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 				if (token.IsCancellationRequested)
 					return;
 
-				validationTokenSource = null;
+				_validationTokenSource = null;
 				IsValid = isValid;
 				IsRunning = false;
 			}
@@ -358,7 +360,36 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 
 	void ResetValidationTokenSource(CancellationTokenSource? newTokenSource)
 	{
-		validationTokenSource?.Cancel();
-		validationTokenSource = newTokenSource;
+		_validationTokenSource?.Cancel();
+		_validationTokenSource = newTokenSource;
 	}
+}
+
+/// <inheritdoc />
+public abstract class ValidationBehavior<T> : ValidationBehavior
+{
+	/// <summary>
+	/// The value to validate. This is a bindable property.
+	/// </summary>
+	public new T? Value
+	{
+		get => (T?)GetValue(ValueProperty);
+		set => SetValue(ValueProperty, value);
+	}
+
+	/// <summary>
+	/// Decorate value
+	/// </summary>
+	protected virtual T? Decorate(T? value) => value;
+
+	/// <inheritdoc />
+	protected override object? Decorate(object? value) => (T?)value;
+
+	/// <summary>
+	/// Validate value
+	/// </summary>
+	protected abstract ValueTask<bool> ValidateAsync(T? value, CancellationToken token);
+
+	/// <inheritdoc />
+	protected override ValueTask<bool> ValidateAsync(object? value, CancellationToken token) => ValidateAsync((T?)value, token);
 }

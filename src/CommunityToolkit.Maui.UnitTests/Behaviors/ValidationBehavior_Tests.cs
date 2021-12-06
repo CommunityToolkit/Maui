@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using CommunityToolkit.Maui.Behaviors;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
@@ -39,10 +40,13 @@ public class ValidationBehavior_Tests : BaseTest
 		{
 			Text = "123"
 		};
+
 		var validStyle = new Style(entry.GetType());
 		validStyle.Setters.Add(new Setter() { Property = Entry.BackgroundColorProperty, Value = Colors.Green });
+
 		var invalidStyle = new Style(entry.GetType());
 		invalidStyle.Setters.Add(new Setter() { Property = Entry.BackgroundColorProperty, Value = Colors.Red });
+
 		var behavior = new MockValidationBehavior()
 		{
 			ExpectedValue = "321",
@@ -68,10 +72,13 @@ public class ValidationBehavior_Tests : BaseTest
 		{
 			Text = "123"
 		};
+
 		var validStyle = new Style(entry.GetType());
 		validStyle.Setters.Add(new Setter() { Property = Entry.BackgroundColorProperty, Value = Colors.Green });
+
 		var invalidStyle = new Style(entry.GetType());
 		invalidStyle.Setters.Add(new Setter() { Property = Entry.BackgroundColorProperty, Value = Colors.Red });
+
 		var behavior = new MockValidationBehavior()
 		{
 			ExpectedValue = "21",
@@ -90,7 +97,7 @@ public class ValidationBehavior_Tests : BaseTest
 	}
 
 	[Fact]
-	public void IsRunning()
+	public async Task IsRunning()
 	{
 		// Arrange
 		var entry = new Entry
@@ -107,11 +114,18 @@ public class ValidationBehavior_Tests : BaseTest
 
 		// Act
 		entry.Text = "321";
+
+		// Assert
 		Assert.False(behavior.IsRunning);
-		behavior.ForceValidate();
+
+		// Act
+		var forceValidateTask = behavior.ForceValidate();
 
 		// Assert
 		Assert.True(behavior.IsRunning);
+
+		// Act
+		await forceValidateTask;
 	}
 
 	[Fact]
@@ -138,5 +152,21 @@ public class ValidationBehavior_Tests : BaseTest
 
 		// Assert
 		Assert.True(behavior.IsValid);
+	}
+
+	class MockValidationBehavior : ValidationBehavior<string>
+	{
+		public string? ExpectedValue { get; set; }
+		public bool SimulateValidationDelay { get; set; } = false;
+
+		protected override async ValueTask<bool> ValidateAsync(string? value, CancellationToken token)
+		{
+			if (SimulateValidationDelay)
+			{
+				await Task.Delay(1000, token);
+			}
+
+			return value == ExpectedValue;
+		}
 	}
 }

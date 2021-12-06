@@ -1,52 +1,59 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using CommunityToolkit.Maui.Behaviors;
 using Microsoft.Maui.Controls;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class EmailValidationBehavior_Tests
+public class EmailValidationBehavior_Tests : BaseTest
 {
+	// Data from https://codefool.tumblr.com/post/15288874550/list-of-valid-and-invalid-email-addresses
+	public static IReadOnlyList<object?[]> TestData { get; } = new[]
+	{
+		new object?[] { @"email@example.com", true },
+		new object?[] { @"firstname.lastname@example.com", true },
+		new object?[] { @"email@subdomain.example.com", true },
+		new object?[] { @"firstname+lastname @example.com", true },
+		new object?[] { @"email@123.123.123.123", true },
+		new object?[] { @"email@[123.123.123.123]", true },
+		new object?[] { @"""email""@example.com", true },
+		new object?[] { @"1234567890@example.com", true },
+		new object?[] { @"email@example-one.com", true },
+		new object?[] { @"_______@example.com", true },
+		new object?[] { @"email@example.name", true },
+		new object?[] { @"email@example.museum", true },
+		new object?[] { @"email@example.co.jp", true },
+		new object?[] { @"firstname-lastname@example.com", true },
+		new object?[] { @"much.""more\ unusual""@example.com", true },
+		new object?[] { @"very.unusual.""@"".unusual.com@example.com", true },
+		new object?[] { @"very.""(),:;<>[]"".VERY.""very@\\ ""very"".unusual@strange.example.com", true },
+		new object?[] { @"plainaddress", false },
+		new object?[] { @"#@%^%#$@#$@#.com", false },
+		new object?[] { @"@example.com", false },
+		new object?[] { @"Joe Smith<email@example.com>", false },
+		new object?[] { @"email.example.com", false },
+		new object?[] { @"email@example@example.com", false },
+		new object?[] { @".email@example.com", false },
+		new object?[] { @"email.@example.com", false },
+		new object?[] { @"email..email@example.com", false },
+		new object?[] { @"あいうえお@example.com", false },
+		new object?[] { @"email@example.com (Joe Smith)", false },
+		new object?[] { @"email@example", false },
+		new object?[] { @"email@-example.com", false },
+		new object?[] { @"email@example.web", false },
+		new object?[] { @"email@111.222.333.44444", false },
+		new object?[] { @"email@example..com", false },
+		new object?[] { @"Abc..123@example.com", false },
+		new object?[] { @"""(),:;<>[\]", false },
+		new object?[] { @"just""not""right@example.com", false },
+		new object?[] { @"this\ is""really""not\allowed@example.co", false },
+		new object?[] { "", false },
+		new object?[] { null, false },
+	};
+
 	[Theory]
-	[InlineData(@"email@example.com", true)]
-	[InlineData(@"firstname.lastname@example.com", true)]
-	[InlineData(@"email@subdomain.example.com", true)]
-	[InlineData(@"firstname+lastname @example.com", true)]
-	[InlineData(@"email@123.123.123.123", true)]
-	[InlineData(@"email@[123.123.123.123]", true)]
-	[InlineData(@"""email""@example.com", true)]
-	[InlineData(@"1234567890@example.com", true)]
-	[InlineData(@"email@example-one.com", true)]
-	[InlineData(@"_______@example.com", true)]
-	[InlineData(@"email@example.name", true)]
-	[InlineData(@"email@example.museum", true)]
-	[InlineData(@"email@example.co.jp", true)]
-	[InlineData(@"firstname-lastname@example.com", true)]
-	[InlineData(@"much.""more\ unusual""@example.com", false)]
-	[InlineData(@"very.unusual.""@"".unusual.com@example.com", false)]
-	[InlineData(@"very.""(),:;<>[]"".VERY.""very@\\ ""very"".unusual@strange.example.com", false)]
-	[InlineData(@"plainaddress", false)]
-	[InlineData(@"#@%^%#$@#$@#.com", false)]
-	[InlineData(@"@example.com", false)]
-	[InlineData(@"Joe Smith<email@example.com>", true)]
-	[InlineData(@"email.example.com", false)]
-	[InlineData(@"email@example@example.com", false)]
-	[InlineData(@".email@example.com", false)]
-	[InlineData(@"email.@example.com", true)]
-	[InlineData(@"email..email@example.com", true)]
-	[InlineData(@"あいうえお@example.com", true)]
-	[InlineData(@"email@example.com (Joe Smith)", true)]
-	[InlineData(@"email@example", true)]
-	[InlineData(@"email@-example.com", true)]
-	[InlineData(@"email@example.web", true)]
-	[InlineData(@"email@111.222.333.44444", true)]
-	[InlineData(@"email@example..com", true)]
-	[InlineData(@"Abc..123@example.com", true)]
-	[InlineData(@"""(),:;<>[\]", false)]
-	[InlineData(@"just""not""right@example.com", false)]
-	[InlineData(@"this\ is""really""not\allowed@example.co", false)]
-	[InlineData("", false)]
-	[InlineData(null, false)]
+	[MemberData(nameof(TestData))]
 	public async Task IsValid(string? value, bool expectedValue)
 	{
 		// Arrange
