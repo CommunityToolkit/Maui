@@ -25,16 +25,15 @@
                 <Entry.Behaviors>
                     <mct:MultiValidationBehavior x:Name="MultiValidation"
                                                     ValidStyle="{StaticResource ValidEntryStyle}"
-                                                    InvalidStyle="{StaticResource InvalidEntryStyle}">
+                                                    InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                                    Flags="ValidateOnValueChanged">
                         <mct:MultiValidationBehavior.Children>
-                            <mct:NumericValidationBehavior Flags="ValidateOnValueChanged"
-                                                            mct:MultiValidationBehavior.Error="NaN" />
-                            <mct:NumericValidationBehavior Flags="ValidateOnValueChanged"
-                                                            MinimumValue="-10"
-                                                            mct:MultiValidationBehavior.Error="Min: -10" />
-                            <mct:NumericValidationBehavior Flags="ValidateOnValueChanged"
-                                                            MaximumValue="5"
-                                                            mct:MultiValidationBehavior.Error="Max: 5" />
+                            <mct:NumericValidationBehavior mct:MultiValidationBehavior.Error="NaN" />
+
+                            <mct:NumericValidationBehavior MinimumValue="-10"
+                                                           mct:MultiValidationBehavior.Error="Min: -10" />
+                            <mct:NumericValidationBehavior MaximumValue="5"
+                                                           mct:MultiValidationBehavior.Error="Max: 5" />
                         </mct:MultiValidationBehavior.Children>
                     </mct:MultiValidationBehavior>
                 </Entry.Behaviors>
@@ -45,27 +44,24 @@
             <Entry IsPassword="True" Placeholder="Password">
                 <Entry.Behaviors>
                     <mct:MultiValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"  
-                                                    ValidStyle="{StaticResource ValidEntryStyle}">
+                                                ValidStyle="{StaticResource ValidEntryStyle}"
+                                                 Flags="ValidateOnValueChanged">
                         <mct:CharactersValidationBehavior x:Name="DigitValidation" 
-                                                          Flags="ValidateOnValueChanged"
                                                           CharacterType="Digit" 
                                                           MinimumCharacterTypeCount="1" 
                                                           mct:MultiValidationBehavior.Error="1 chiffre" 
                                                           RegexPattern="" />
                         <mct:CharactersValidationBehavior x:Name="UpperValidation" 
-                                                          Flags="ValidateOnValueChanged"
                                                           CharacterType="UppercaseLetter" 
                                                           MinimumCharacterTypeCount="1" 
                                                           mct:MultiValidationBehavior.Error="1 majuscule" 
                                                           RegexPattern="" />
                         <mct:CharactersValidationBehavior x:Name="SymbolValidation" 
-                                                          Flags="ValidateOnValueChanged"
                                                           CharacterType="NonAlphanumericSymbol" 
                                                           MinimumCharacterTypeCount="1" 
                                                           mct:MultiValidationBehavior.Error="1 symbole" 
                                                           RegexPattern=""  />
                         <mct:CharactersValidationBehavior x:Name="AnyValidation" 
-                                                          Flags="ValidateOnValueChanged"
                                                           CharacterType="Any" 
                                                           MinimumCharacterTypeCount="8" 
                                                           mct:MultiValidationBehavior.Error="8 caractères" 
