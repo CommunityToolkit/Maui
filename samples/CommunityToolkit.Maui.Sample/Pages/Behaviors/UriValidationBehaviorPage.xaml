@@ -6,6 +6,10 @@
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.UriValidationBehaviorPage">
 
     <pages:BasePage.Resources>
+        <Style x:Key="ValidEntryStyle" TargetType="Entry">
+            <Setter Property="TextColor" Value="Green"/>
+        </Style>
+        
         <Style x:Key="InvalidEntryStyle" TargetType="Entry">
             <Setter Property="TextColor" Value="Red" />
         </Style>
@@ -13,21 +17,30 @@
 
     <VerticalStackLayout Padding="{StaticResource ContentPadding}"
                  Spacing="50"
-                 VerticalOptions="CenterAndExpand">
+                 VerticalOptions="StartAndExpand">
         <Label Text="Text color will change accordingly to the style that is configured when a invalid URI is entered." />
         <Entry Placeholder="UriKind: Absolute">
             <Entry.Behaviors>
-                <mct:UriValidationBehavior UriKind="Absolute" InvalidStyle="{StaticResource InvalidEntryStyle}"/>
+                <mct:UriValidationBehavior UriKind="Absolute"
+                                           InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                           ValidStyle="{StaticResource ValidEntryStyle}"
+                                           Flags="ValidateOnValueChanged"/>
             </Entry.Behaviors>
         </Entry>
         <Entry Placeholder="UriKind: Relative">
             <Entry.Behaviors>
-                <mct:UriValidationBehavior UriKind="Relative" InvalidStyle="{StaticResource InvalidEntryStyle}"/>
+                <mct:UriValidationBehavior UriKind="Relative"
+                                           InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                           ValidStyle="{StaticResource ValidEntryStyle}"
+                                           Flags="ValidateOnValueChanged"/>
             </Entry.Behaviors>
         </Entry>
         <Entry Placeholder="UriKind: RelativeOrAbsolute">
             <Entry.Behaviors>
-                <mct:UriValidationBehavior UriKind="RelativeOrAbsolute" InvalidStyle="{StaticResource InvalidEntryStyle}"/>
+                <mct:UriValidationBehavior UriKind="RelativeOrAbsolute"
+                                           InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                           ValidStyle="{StaticResource ValidEntryStyle}"
+                                           Flags="ValidateOnValueChanged"/>
             </Entry.Behaviors>
         </Entry>
     </VerticalStackLayout>

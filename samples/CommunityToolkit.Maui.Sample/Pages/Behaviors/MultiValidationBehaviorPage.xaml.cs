@@ -6,10 +6,10 @@ public partial class MultiValidationBehaviorPage
 	{
 		InitializeComponent();
 
+		AnyValidation ??= new();
 		MultiValidation ??= new();
 		DigitValidation ??= new();
 		UpperValidation ??= new();
 		SymbolValidation ??= new();
-		AnyValidation ??= new();
 	}
 }

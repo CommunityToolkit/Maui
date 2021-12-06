@@ -6,8 +6,7 @@
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.MultiValidationBehaviorPage">
 
     <pages:BasePage.Resources>
-        <Style x:Key="ValidEntryStyle"
-               TargetType="Entry">
+        <Style x:Key="ValidEntryStyle" TargetType="Entry">
             <Setter Property="TextColor" Value="Green"/>
         </Style>
         
@@ -20,7 +19,7 @@
     <pages:BasePage.Content>
         <StackLayout Padding="{StaticResource ContentPadding}"
                  Spacing="50"
-                 VerticalOptions="CenterAndExpand">
+                 VerticalOptions="StartAndExpand">
             <Label Text="Number validation : -10 to 5" />
             <Entry Placeholder="Number">
                 <Entry.Behaviors>
