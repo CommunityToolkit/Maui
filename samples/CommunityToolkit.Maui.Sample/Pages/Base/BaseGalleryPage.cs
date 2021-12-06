@@ -82,14 +82,16 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage where TViewModel : 
 						(CardRow.Title, 24),
 						(CardRow.Description, Auto)),
 
+					ColumnDefinitions = Columns.Define(Star),
+
 					Children =
 					{
 						new Label { Style = (Style)(Application.Current?.Resources["label_section_header"] ?? throw new InvalidOperationException()) }
-							.Row(CardRow.Title)
+							.Row(CardRow.Title).FillExpand()
 							.Bind(Label.TextProperty, nameof(SectionModel.Title)),
 
-						new Label()
-							.Row(CardRow.Description)
+						new Label { MaxLines = 4, LineBreakMode = LineBreakMode.WordWrap }
+							.Row(CardRow.Description).FillExpand().TextStart().TextTop()
 							.Bind(Label.TextProperty, nameof(SectionModel.Description))
 					}
 				};
