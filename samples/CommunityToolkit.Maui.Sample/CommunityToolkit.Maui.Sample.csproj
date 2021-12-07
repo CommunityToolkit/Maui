@@ -33,15 +33,15 @@
 
     <!-- Custom Fonts -->
     <MauiFont Include="Resources\Fonts\*" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="7.1.2" />
     <PackageReference Include="CommunityToolkit.Maui.Markup" Version="1.0.0-pre2" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Controls\src\Controls\Controls.csproj" />
+    <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Core\src\Core\Core.csproj" />
+
   </ItemGroup>
 
   <PropertyGroup>

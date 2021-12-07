@@ -8,6 +8,7 @@
     <IsPackable>false</IsPackable>
     <SingleProject>true</SingleProject>
     <RootNamespace>CommunityToolkit.Maui</RootNamespace>
+    <AssemblyName>CommunityToolkit.Maui</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) != true AND $(TargetFramework.StartsWith('net6.0-ios')) != true AND $(TargetFramework.StartsWith('net6.0-maccatalyst')) != true ">

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using CommunityToolkit.Maui.Alerts.Snackbar;
+using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
