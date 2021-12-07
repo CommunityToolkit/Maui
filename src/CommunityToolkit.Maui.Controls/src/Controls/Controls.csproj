@@ -9,7 +9,7 @@
     <SingleProject>true</SingleProject>
     <RootNamespace>CommunityToolkit.Maui</RootNamespace>
   </PropertyGroup>
-  
+
   <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) != true AND $(TargetFramework.StartsWith('net6.0-ios')) != true AND $(TargetFramework.StartsWith('net6.0-maccatalyst')) != true ">
     <Compile Remove="**\**\*.ios.cs" />
     <None Include="**\**\*.ios.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
@@ -39,6 +39,22 @@
     <None Include="**\*.windows.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <Compile Remove="**\windows\**\*.cs" />
     <None Include="**\windows\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove=".editorconfig" />
+  </ItemGroup>
+  <ItemGroup>
+    <EditorConfigFiles Include=".editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="mdoc" Version="5.8.5" PrivateAssets="all" />
+  </ItemGroup>
+
+  <Import Project="..\..\..\..\mdoc.targets" Condition=" '$(OS)' == 'Windows_NT' AND '$(GenerateApiDocs)' == 'true'" />
+
+  <ItemGroup>
+    <None Include="..\..\..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
   </ItemGroup>
 
   <ItemGroup>
