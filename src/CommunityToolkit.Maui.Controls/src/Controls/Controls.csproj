@@ -41,13 +41,6 @@
     <None Include="**\windows\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove=".editorconfig" />
-  </ItemGroup>
-  <ItemGroup>
-    <EditorConfigFiles Include=".editorconfig" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="mdoc" Version="5.8.5" PrivateAssets="all" />
   </ItemGroup>
 
