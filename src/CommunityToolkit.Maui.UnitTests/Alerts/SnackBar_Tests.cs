@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using CommunityToolkit.Maui.Alerts.Snackbar;
+using CommunityToolkit.Maui.Alerts;
 using FluentAssertions;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
