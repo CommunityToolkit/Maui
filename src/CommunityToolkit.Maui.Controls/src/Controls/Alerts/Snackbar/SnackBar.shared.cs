@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
-namespace CommunityToolkit.Maui.Alerts.Snackbar;
+namespace CommunityToolkit.Maui.Alerts;
 
 /// <inheritdoc/>
 public partial class Snackbar : ISnackbar
@@ -85,7 +85,7 @@ public partial class Snackbar : ISnackbar
 		};
 	}
 
-#if NET6_0
+#if !(IOS || ANDROID || MACCATALYST)
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>

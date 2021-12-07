@@ -2,12 +2,12 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommunityToolkit.Maui.Alerts.Toast;
+using Core.Platform.iOS;
 using CoreGraphics;
 using Microsoft.Maui;
 using UIKit;
 
-namespace CommunityToolkit.Maui.Alerts.Snackbar;
+namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Snackbar
 {
@@ -130,26 +130,6 @@ public partial class Snackbar
 		public void Dispose()
 		{
 			_actionButton.TouchUpInside -= ActionButton_TouchUpInside;
-		}
-
-		class PaddedButton : UIButton
-		{
-			public PaddedButton(double left, double top, double right, double bottom)
-			{
-				Left = left;
-				Top = top;
-				Right = right;
-				Bottom = bottom;
-				ContentEdgeInsets = new UIEdgeInsets((nfloat)top, (nfloat)left, (nfloat)bottom, (nfloat)right);
-			}
-
-			public double Left { get; }
-
-			public double Top { get; }
-
-			public double Right { get; }
-
-			public double Bottom { get; }
 		}
 	}
 }

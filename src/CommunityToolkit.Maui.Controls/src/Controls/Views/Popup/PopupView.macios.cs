@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using CommunityToolkit.Maui.Extensions.Internals;
+using System.Text;
+using CommunityToolkit.Maui.Controls.Platform;
 using CoreAnimation;
 using CoreGraphics;
 using UIKit;
 
-namespace CommunityToolkit.Maui.Views.Popup;
-
+namespace CommunityToolkit.Maui.Controls;
 class PopupViewVisualOptions
 {
 	public CGRect CornerRadius { get; set; }
