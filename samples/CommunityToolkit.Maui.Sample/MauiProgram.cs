@@ -12,7 +12,7 @@ public static class MauiProgram
 	{
 		var builder = MauiApp.CreateBuilder();
 		builder.UseMauiApp<App>();
-
+		builder.UseCommunityToolkit();
 		return builder.Build();
 	}
 }

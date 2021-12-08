@@ -37,13 +37,6 @@
     <PackageReference Include="CommunityToolkit.Maui.Markup" Version="1.0.0-pre2" />
   </ItemGroup>
 
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Controls\src\Controls\Controls.csproj" />
-    <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Core\src\Core\Core.csproj" />
-
-  </ItemGroup>
-
   <PropertyGroup>
     <!-- Required for C# Hot Reload -->
     <UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
@@ -60,6 +53,12 @@
     <!-- Required - WinUI does not yet have buildTransitive for everything -->
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0" />
     <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.30" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Controls\src\CommunityToolkit.Maui.Controls\CommunityToolkit.Maui.Controls.csproj" />
+    <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Core\src\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj" />
   </ItemGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
