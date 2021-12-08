@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31521.260
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui", "..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj", "{71B583D9-470D-476C-BB1A-4AC663D1A339}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.UnitTests", "..\src\CommunityToolkit.Maui.UnitTests\CommunityToolkit.Maui.UnitTests.csproj", "{7D49CC16-93CF-471B-B1FA-0BA44DECC15D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{AE67B86A-46F2-4078-BF02-0614B7E0E3F5}"
@@ -23,9 +21,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{7C8B8146-1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controls", "Controls", "{01B19F98-58F9-4B74-939B-7D58AE62A0F1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.Controls", "..\src\CommunityToolkit.Maui.Controls\src\CommunityToolkit.Maui.Controls\CommunityToolkit.Maui.Controls.csproj", "{F538E9AC-BBD3-4508-B3E8-CBAC93086B70}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Controls", "..\src\CommunityToolkit.Maui.Controls\src\CommunityToolkit.Maui.Controls\CommunityToolkit.Maui.Controls.csproj", "{F538E9AC-BBD3-4508-B3E8-CBAC93086B70}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.Core", "..\src\CommunityToolkit.Maui.Core\src\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj", "{FB4E6FF9-91D9-45D7-A51D-02E06D4434AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Core", "..\src\CommunityToolkit.Maui.Core\src\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj", "{FB4E6FF9-91D9-45D7-A51D-02E06D4434AD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,12 +31,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{71B583D9-470D-476C-BB1A-4AC663D1A339}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{71B583D9-470D-476C-BB1A-4AC663D1A339}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{71B583D9-470D-476C-BB1A-4AC663D1A339}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{71B583D9-470D-476C-BB1A-4AC663D1A339}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{71B583D9-470D-476C-BB1A-4AC663D1A339}.Release|Any CPU.Build.0 = Release|Any CPU
-		{71B583D9-470D-476C-BB1A-4AC663D1A339}.Release|Any CPU.Deploy.0 = Release|Any CPU
 		{7D49CC16-93CF-471B-B1FA-0BA44DECC15D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7D49CC16-93CF-471B-B1FA-0BA44DECC15D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7D49CC16-93CF-471B-B1FA-0BA44DECC15D}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
