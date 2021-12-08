@@ -107,24 +107,24 @@ public partial class Snackbar
 
 	static void SetupMessage(SnackbarOptions snackbarOptions, View snackbarView)
 	{
-		//var snackTextView = snackbarView.FindViewById<TextView>(Resource.Id.snackbar_text) ?? throw new InvalidOperationException("Unable to find Snackbar text view");
-		//snackTextView.SetMaxLines(10);
+		var snackTextView = snackbarView.FindViewById<TextView>(Controls.Resource.Id.snackbar_text) ?? throw new InvalidOperationException("Unable to find Snackbar text view");
+		snackTextView.SetMaxLines(10);
 
-		//snackTextView.SetTextColor(snackbarOptions.TextColor.ToAndroid());
-		//if (snackbarOptions.Font.Size > 0)
-		//{
-		//	snackTextView.SetTextSize(ComplexUnitType.Dip, (float)snackbarOptions.Font.Size);
-		//}
+		snackTextView.SetTextColor(snackbarOptions.TextColor.ToAndroid());
+		if (snackbarOptions.Font.Size > 0)
+		{
+			snackTextView.SetTextSize(ComplexUnitType.Dip, (float)snackbarOptions.Font.Size);
+		}
 
-		//snackTextView.LetterSpacing = (float)snackbarOptions.CharacterSpacing;
+		snackTextView.LetterSpacing = (float)snackbarOptions.CharacterSpacing;
 
-		//snackTextView.SetTypeface(snackbarOptions.Font.ToTypeface(), TypefaceStyle.Normal);
+		snackTextView.SetTypeface(snackbarOptions.Font.ToTypeface(), TypefaceStyle.Normal);
 	}
 
 	[MemberNotNull(nameof(_dismissedTCS))]
 	void SetupActions(AndroidSnackbar nativeSnackbar)
 	{
-		var snackActionButtonView = nativeSnackbar.View.FindViewById<TextView>(Resource.Id.snackbar_action) ?? throw new InvalidOperationException("Unable to find Snackbar action button");
+		var snackActionButtonView = nativeSnackbar.View.FindViewById<TextView>(Controls.Resource.Id.snackbar_action) ?? throw new InvalidOperationException("Unable to find Snackbar action button");
 		snackActionButtonView.SetTypeface(VisualOptions.ActionButtonFont.ToTypeface(), TypefaceStyle.Normal);
 
 		nativeSnackbar.SetAction(ActionButtonText, _ =>
