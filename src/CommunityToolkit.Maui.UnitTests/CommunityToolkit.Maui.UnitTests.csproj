@@ -15,8 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CommunityToolkit.Maui.Controls\src\Controls\Controls.csproj" />
-    <ProjectReference Include="..\CommunityToolkit.Maui.Core\src\Core\Core.csproj" />
+    <ProjectReference Include="..\CommunityToolkit.Maui.Controls\src\CommunityToolkit.Maui.Controls\CommunityToolkit.Maui.Controls.csproj" />
+    <ProjectReference Include="..\CommunityToolkit.Maui.Core\src\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
