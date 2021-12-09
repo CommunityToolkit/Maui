@@ -61,8 +61,7 @@ public partial class Snackbar
 
 		var rootView = AppBuilderExtensions.Activity?.Window?.DecorView.FindViewById(Android.Resource.Id.Content);
 		if (rootView is null)
-			return;
-			//throw new NotSupportedException("Unable to retrieve snackbar parent");
+			throw new NotSupportedException("Unable to retrieve snackbar parent");
 
 		_nativeSnackbar = AndroidSnackbar.Make(rootView, Text, (int)Duration.TotalMilliseconds);
 		var snackbarView = _nativeSnackbar.View;
