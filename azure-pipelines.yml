@@ -5,7 +5,7 @@ variables:
   NugetPackageVersion: '$(CurrentSemanticVersion)'
   NET_VERSION: '6.0.x'
   PathToSolution: 'src/CommunityToolkit.Maui.sln'
-  PathToCommunityToolkitControlsCsproj: 'src/CommunityToolkit.Maui.Controls/CommunityToolkit.Maui.Controls.csproj'
+  PathToCommunityToolkitControlsCsproj: 'src/CommunityToolkit.Maui.Controls/src/CommunityToolkit.Maui.Controls/CommunityToolkit.Maui.Controls.csproj'
   PathToCommunityToolkitCoreCsproj: 'src/CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
