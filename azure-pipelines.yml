@@ -5,7 +5,8 @@ variables:
   NugetPackageVersion: '$(CurrentSemanticVersion)'
   NET_VERSION: '6.0.x'
   PathToSolution: 'src/CommunityToolkit.Maui.sln'
-  PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
+  PathToCommunityToolkitControlsCsproj: 'src/CommunityToolkit.Maui.Controls/CommunityToolkit.Maui.Controls.csproj'
+  PathToCommunityToolkitCoreCsproj: 'src/CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
   XcodeVersion: '13.1'
@@ -83,13 +84,13 @@ jobs:
         displayName: 'Restore NuGet Packages'
         inputs:
           script: |
-            dotnet restore $(PathToCommunityToolkitCsproj)
+            dotnet restore $(PathToCommunityToolkitControlsCsproj)
             dotnet restore $(PathToCommunityToolkitSampleCsproj)
             dotnet restore $(PathToCommunityToolkitUnitTestCsproj)
       - task: CmdLine@2
         displayName: 'Build Community Toolkit'
         inputs:
-          script: 'dotnet build $(PathToCommunityToolkitCsproj) -c Release'
+          script: 'dotnet build $(PathToCommunityToolkitControlsCsproj) -c Release'
       - task: CmdLine@2
         displayName: 'Run Unit Tests'
         inputs:
@@ -101,7 +102,7 @@ jobs:
       - task: CmdLine@2
         displayName: Pack Community Toolkit NuGets
         inputs:
-          script: 'dotnet pack $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'
+          script: 'dotnet pack $(PathToCommunityToolkitControlsCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'
       # Sign NuGet Packages
       - task: PowerShell@2
         displayName: Authenticode Sign Packages
@@ -148,13 +149,13 @@ jobs:
         displayName: 'Restore NuGet Packages'
         inputs:
           script: |
-            dotnet restore $(PathToCommunityToolkitCsproj)
+            dotnet restore $(PathToCommunityToolkitControlsCsproj)
             dotnet restore $(PathToCommunityToolkitSampleCsproj)
             dotnet restore $(PathToCommunityToolkitUnitTestCsproj)
       - task: CmdLine@2
         displayName: 'Build Community Toolkit'
         inputs:
-          script: 'dotnet build $(PathToCommunityToolkitCsproj) -c Release'
+          script: 'dotnet build $(PathToCommunityToolkitControlsCsproj) -c Release'
       - task: CmdLine@2
         displayName: 'Run Unit Tests'
         inputs:
@@ -166,4 +167,4 @@ jobs:
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit NuGets'
         inputs:
-          script: 'dotnet pack $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget'
+          script: 'dotnet pack $(PathToCommunityToolkitControlsCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget'
