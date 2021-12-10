@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:mct="clr-namespace:CommunityToolkit.Maui.Layouts;assembly=CommunityToolkit.Maui"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Layouts.UniformItemsLayoutPage">
+    <VerticalStackLayout Padding="{StaticResource ContentPadding}">
+
+        <Label Text="The UniformItemsLayout creates a grid where each Row and Column will have the same size" 
+                Margin="0,0,0,12"/>
+
+        <Label Text="UniformItemsLayout with default settings"/>
+        <mct:UniformItemsLayout>
+            <BoxView BackgroundColor="Red" WidthRequest="25" HeightRequest="25"/>
+            <BoxView BackgroundColor="Green" WidthRequest="25" HeightRequest="25"/>
+            <BoxView BackgroundColor="Yellow" WidthRequest="25" HeightRequest="25"/>
+        </mct:UniformItemsLayout>
+        
+        <Label Text="UniformItemsLayout with MaxColumns=1 and MaxRows=1"/>
+        <mct:UniformItemsLayout MaxColumns="1" MaxRows="1">
+            <BoxView BackgroundColor="Red" WidthRequest="25" HeightRequest="25"/>
+            <BoxView BackgroundColor="Green" WidthRequest="25" HeightRequest="25"/>
+            <BoxView BackgroundColor="Yellow" WidthRequest="25" HeightRequest="25"/>
+        </mct:UniformItemsLayout>
+        
+        <Label Text="UniformItemsLayout with MaxRows=1"/>
+        <mct:UniformItemsLayout MaxRows="1">
+            <BoxView BackgroundColor="Red" WidthRequest="25" HeightRequest="25"/>
+            <BoxView BackgroundColor="Green" WidthRequest="25" HeightRequest="25"/>
+            <BoxView BackgroundColor="Yellow" WidthRequest="25" HeightRequest="25"/>
+        </mct:UniformItemsLayout>
+
+        <Label Text="UniformItemsLayout with MaxColumns=1"/>
+        <mct:UniformItemsLayout MaxColumns="1">
+            <BoxView BackgroundColor="Red" WidthRequest="25" HeightRequest="25"/>
+            <BoxView BackgroundColor="Green" WidthRequest="25" HeightRequest="25"/>
+            <BoxView BackgroundColor="Yellow" WidthRequest="25" HeightRequest="25"/>
+        </mct:UniformItemsLayout>
+    </VerticalStackLayout>
+</pages:BasePage>
