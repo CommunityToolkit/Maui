@@ -38,11 +38,6 @@ jobs:
     pool:
       vmImage: windows-latest
     steps:
-    # .NET 5.0 is required for maui-check
-      - task: UseDotNet@2
-        displayName: 'Install .NET 5.0 SDK'
-        inputs:
-          version: '5.0.x'
       - task: UseDotNet@2
         displayName: 'Install .NET SDK'
         inputs:
@@ -77,7 +72,7 @@ jobs:
       - powershell: |
           $prNumber = $env:System_PullRequest_PullRequestNumber
           $commitId = "$($env:System_PullRequest_SourceCommitId)".Substring(0, 7)
-          $fullVersionString = "$(CurrentSemanticVersionBase)-build.$prNumber+$commitId"
+          $fullVersionString = "$(CurrentSemanticVersionBase)-build-$prNumber.$(Build.BuildId)+$commitId"
           Write-Host("GitHub PR = $prNumber, Commit = $commitId");
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$fullVersionString")
           Write-Host "##vso[build.updatebuildnumber]$fullVersionString"
@@ -96,15 +91,13 @@ jobs:
         inputs:
           script: 'dotnet build $(PathToCommunityToolkitCsproj) -c Release'
       - task: CmdLine@2
+        displayName: 'Run Unit Tests'
+        inputs:
+          script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release'
+      - task: CmdLine@2
         displayName: 'Build Community Toolkit Sample'
         inputs:
           script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release'
-      - task: CmdLine@2
-        displayName: 'Run Unit Tests'
-        inputs:
-          script: |
-            dotnet build $(PathToCommunityToolkitUnitTestCsproj) -c Release
-            dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release
       - task: CmdLine@2
         displayName: Pack Community Toolkit NuGets
         inputs:
@@ -129,7 +122,7 @@ jobs:
   - job: build_macos
     displayName: Build macOS Library
     pool:
-      vmImage: macos-latest
+      vmImage: macos-11
     steps:
       # if this is a tagged build, then update the version number
       - powershell: |
@@ -163,15 +156,13 @@ jobs:
         inputs:
           script: 'dotnet build $(PathToCommunityToolkitCsproj) -c Release'
       - task: CmdLine@2
+        displayName: 'Run Unit Tests'
+        inputs:
+          script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release'
+      - task: CmdLine@2
         displayName: 'Build Community Toolkit Sample'
         inputs:
           script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release'
-      - task: CmdLine@2
-        displayName: 'Run Unit Tests'
-        inputs:
-          script: |
-            dotnet build $(PathToCommunityToolkitUnitTestCsproj) -c Release
-            dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit NuGets'
         inputs:

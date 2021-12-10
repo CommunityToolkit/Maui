@@ -3,7 +3,7 @@
 public class EqualsConverterViewModel : BaseViewModel
 {
 	string _inputValue = string.Empty;
-	
+
 	public string InputValue
 	{
 		get => _inputValue;

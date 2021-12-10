@@ -1,7 +1,6 @@
-﻿#warning ImpliedOrderGridBehavior currently broken by .NET MAUI bug: https://github.com/dotnet/maui/issues/3309
+﻿#warning ImpliedOrderGridBehavior currently broken by .NET MAUI bug: https://github.com/dotnet/maui/issues/3309. Fixed in https://github.com/dotnet/maui/pull/3403
 //using System;
 //using System.Linq;
-//using CommunityToolkit.Maui.Behaviors.Internals;
 //using Microsoft.Maui.Controls;
 //using Microsoft.Maui.Controls.Internals;
 
