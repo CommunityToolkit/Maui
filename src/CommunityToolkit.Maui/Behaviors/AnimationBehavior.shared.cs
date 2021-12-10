@@ -101,14 +101,14 @@ public class AnimationBehavior : EventToCommandBehavior
 	static object CreateAnimateCommand(BindableObject bindable)
 		=> new Command(async () => await ((AnimationBehavior)bindable).OnAnimate());
 
-	async Task OnAnimate()
+	Task OnAnimate()
 	{
 		if (View is null)
-			return;
+			return Task.CompletedTask;
 
 		View.CancelAnimations();
 
 		if (AnimationType != null)
-			await AnimationType.Animate(View);
+			return AnimationType.Animate(View);
 	}
 }
