@@ -80,6 +80,7 @@ jobs:
         inputs:
           solution: '$(PathToCommunityToolkitSampleCsproj)'
           configuration: 'Release'
+          msbuildArgs: '/restore'
       # Sign NuGet Packages
       - task: PowerShell@2
         displayName: Authenticode Sign Packages
