@@ -58,7 +58,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj" />
-    <ProjectReference Include="..\..\src\CommunityToolkit.Maui\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
+    <ProjectReference Include="..\..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
   </ItemGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">

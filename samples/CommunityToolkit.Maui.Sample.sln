@@ -23,7 +23,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controls", "Controls", "{01
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Core", "..\src\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj", "{6B572EAD-1581-46BE-A08B-1C7F2246BA2E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui", "..\src\CommunityToolkit.Maui\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj", "{A64479B9-BC8F-4950-B7F8-DF95BE722EAC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui", "..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj", "{1BA2F867-25C1-4D7E-AE51-5466929D467A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,10 +47,10 @@ Global
 		{6B572EAD-1581-46BE-A08B-1C7F2246BA2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B572EAD-1581-46BE-A08B-1C7F2246BA2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6B572EAD-1581-46BE-A08B-1C7F2246BA2E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A64479B9-BC8F-4950-B7F8-DF95BE722EAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A64479B9-BC8F-4950-B7F8-DF95BE722EAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A64479B9-BC8F-4950-B7F8-DF95BE722EAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A64479B9-BC8F-4950-B7F8-DF95BE722EAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1BA2F867-25C1-4D7E-AE51-5466929D467A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BA2F867-25C1-4D7E-AE51-5466929D467A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1BA2F867-25C1-4D7E-AE51-5466929D467A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1BA2F867-25C1-4D7E-AE51-5466929D467A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -58,7 +58,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{3A795407-604F-4502-8C76-281BE5575A84} = {AE67B86A-46F2-4078-BF02-0614B7E0E3F5}
 		{6B572EAD-1581-46BE-A08B-1C7F2246BA2E} = {7C8B8146-1F67-44C6-8C74-E86587B61E40}
-		{A64479B9-BC8F-4950-B7F8-DF95BE722EAC} = {01B19F98-58F9-4B74-939B-7D58AE62A0F1}
+		{1BA2F867-25C1-4D7E-AE51-5466929D467A} = {01B19F98-58F9-4B74-939B-7D58AE62A0F1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1E9E61C1-5CB7-4C8E-87BA-6C1D38238679}
