@@ -59,7 +59,7 @@ public partial class Snackbar
 	{
 		await Dismiss();
 
-		var rootView = AppBuilderExtensions.Activity?.Window?.DecorView.FindViewById(Android.Resource.Id.Content);
+		var rootView = Microsoft.Maui.Essentials.Platform.GetCurrentActivity(true).Window?.DecorView.FindViewById(Android.Resource.Id.Content);
 		if (rootView is null)
 			throw new NotSupportedException("Unable to retrieve snackbar parent");
 
@@ -106,7 +106,7 @@ public partial class Snackbar
 
 	static void SetupMessage(SnackbarOptions snackbarOptions, View snackbarView)
 	{
-		var snackTextView = snackbarView.FindViewById<TextView>(Controls.Resource.Id.snackbar_text) ?? throw new InvalidOperationException("Unable to find Snackbar text view");
+		var snackTextView = snackbarView.FindViewById<TextView>(Resource.Id.snackbar_text) ?? throw new InvalidOperationException("Unable to find Snackbar text view");
 		snackTextView.SetMaxLines(10);
 
 		snackTextView.SetTextColor(snackbarOptions.TextColor.ToAndroid());
@@ -123,7 +123,7 @@ public partial class Snackbar
 	[MemberNotNull(nameof(_dismissedTCS))]
 	void SetupActions(AndroidSnackbar nativeSnackbar)
 	{
-		var snackActionButtonView = nativeSnackbar.View.FindViewById<TextView>(Controls.Resource.Id.snackbar_action) ?? throw new InvalidOperationException("Unable to find Snackbar action button");
+		var snackActionButtonView = nativeSnackbar.View.FindViewById<TextView>(Resource.Id.snackbar_action) ?? throw new InvalidOperationException("Unable to find Snackbar action button");
 		snackActionButtonView.SetTypeface(VisualOptions.ActionButtonFont.ToTypeface(), TypefaceStyle.Normal);
 
 		nativeSnackbar.SetAction(ActionButtonText, _ =>
