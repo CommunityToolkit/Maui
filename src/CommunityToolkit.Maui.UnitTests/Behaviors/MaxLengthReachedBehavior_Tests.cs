@@ -6,7 +6,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class MaxLengthReachedBehavior_Tests
+public class MaxLengthReachedBehavior_Tests : BaseTest
 {
 	[Fact]
 	public void ShouldExecuteCommandWhenMaxLengthHasBeenReached()
@@ -143,9 +143,9 @@ public class MaxLengthReachedBehavior_Tests
 	}
 
 	static Entry CreateEntry(int? maxLength = 2,
-					  bool shouldDismissKeyboardAutomatically = false,
-					  ICommand? command = null,
-					  EventHandler<MaxLengthReachedEventArgs>? eventHandler = null)
+							  bool shouldDismissKeyboardAutomatically = false,
+							  ICommand? command = null,
+							  EventHandler<MaxLengthReachedEventArgs>? eventHandler = null)
 	{
 		var behavior = new MaxLengthReachedBehavior
 		{
@@ -160,9 +160,9 @@ public class MaxLengthReachedBehavior_Tests
 		{
 			MaxLength = maxLength ?? int.MaxValue,
 			Behaviors =
-				{
-					behavior
-				}
+			{
+				behavior
+			}
 		};
 
 		// We simulate Focus/Unfocus behavior ourselves
