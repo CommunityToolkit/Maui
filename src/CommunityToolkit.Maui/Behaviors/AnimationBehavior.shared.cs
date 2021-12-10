@@ -99,7 +99,7 @@ public class AnimationBehavior : EventToCommandBehavior
 	}
 
 	static object CreateAnimateCommand(BindableObject bindable)
-		=> new Command(async () => await ((AnimationBehavior)bindable).OnAnimate());
+		=> new Command(async () => await ((AnimationBehavior)bindable).OnAnimate().ConfigureAwait(false));
 
 	Task OnAnimate()
 	{
