@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Windows.Data.Xml.Dom;
 using CommunityToolkit.WinUI.Notifications;
+using Windows.Data.Xml.Dom;
 using Windows.UI.Notifications;
 
 namespace CommunityToolkit.Maui.Alerts.Snackbar;
@@ -64,6 +64,7 @@ public partial class Snackbar
 
 		var xmlDocument = new XmlDocument();
 		xmlDocument.LoadXml(toastContent.GetContent());
+
 		_nativeSnackbar = new ToastNotification(xmlDocument);
 		_nativeSnackbar.Activated += OnActivated;
 		_nativeSnackbar.Dismissed += OnDismissed;
