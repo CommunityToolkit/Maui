@@ -103,12 +103,10 @@ public class AnimationBehavior : EventToCommandBehavior
 
 	Task OnAnimate()
 	{
-		if (View is null)
+		if (View is null || AnimationType is null)
 			return Task.CompletedTask;
-
+		
 		View.CancelAnimations();
-
-		if (AnimationType != null)
-			return AnimationType.Animate(View);
+		return AnimationType.Animate(View);
 	}
 }

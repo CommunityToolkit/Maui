@@ -16,13 +16,13 @@ public abstract class BaseAnimation<TAnimatable> : BindableObject where TAnimata
 	/// </summary>
 	public static readonly BindableProperty LengthProperty =
 		BindableProperty.Create(nameof(Length), typeof(uint), typeof(BaseAnimation<TAnimatable>), 250u,
-			BindingMode.TwoWay, defaultValueCreator: bindable => ((BaseAnimation<TAnimatable>)bindable)._defaultLength);
+			BindingMode.OneWay, defaultValueCreator: bindable => ((BaseAnimation<TAnimatable>)bindable)._defaultLength);
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Easing"/> property.
 	/// </summary>
 	public static readonly BindableProperty EasingProperty =
-		BindableProperty.Create(nameof(Easing), typeof(Easing), typeof(BaseAnimation<TAnimatable>), Easing.Linear, BindingMode.TwoWay);
+		BindableProperty.Create(nameof(Easing), typeof(Easing), typeof(BaseAnimation<TAnimatable>), Easing.Linear, BindingMode.OneWay);
 
 	/// <summary>
 	/// Initialize BaseAnimation
