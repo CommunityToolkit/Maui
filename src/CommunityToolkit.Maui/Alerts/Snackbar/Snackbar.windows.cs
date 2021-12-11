@@ -1,13 +1,14 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Toolkit.Uwp.Notifications;
+using CommunityToolkit.WinUI.Notifications;
+using Windows.Data.Xml.Dom;
 using Windows.UI.Notifications;
 
 namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Snackbar
 {
-	readonly static SemaphoreSlim _semaphoreSlim = new(1, 1);
+	static readonly SemaphoreSlim _semaphoreSlim = new(1, 1);
 
 	static ToastNotification? _nativeSnackbar;
 	TaskCompletionSource<bool>? _dismissedTCS;
@@ -27,7 +28,7 @@ public partial class Snackbar
 
 		try
 		{
-			ToastNotificationManagerCompat.History.Clear();
+			ToastNotificationManager.History.Clear();
 
 			_nativeSnackbar.Activated -= OnActivated;
 			_nativeSnackbar.Dismissed -= OnDismissed;
@@ -61,7 +62,10 @@ public partial class Snackbar
 
 		_dismissedTCS = new();
 
-		_nativeSnackbar = new ToastNotification(toastContent.GetXml());
+		var xmlDocument = new XmlDocument();
+		xmlDocument.LoadXml(toastContent.GetContent());
+
+		_nativeSnackbar = new ToastNotification(xmlDocument);
 		_nativeSnackbar.Activated += OnActivated;
 		_nativeSnackbar.Dismissed += OnDismissed;
 		_nativeSnackbar.ExpirationTime = System.DateTime.Now.Add(Duration);
