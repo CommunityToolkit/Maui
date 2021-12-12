@@ -57,7 +57,6 @@
 
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
   </ItemGroup>
 
