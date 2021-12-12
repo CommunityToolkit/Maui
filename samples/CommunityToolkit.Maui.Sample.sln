@@ -12,14 +12,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3ED2C978-9DDB-48FE-8C5A-521B254F18A3}"
 	ProjectSection(SolutionItems) = preProject
 		..\.editorconfig = ..\.editorconfig
-		..\azure-pipelines.yml = ..\azure-pipelines.yml
 		..\Directory.Build.props = ..\Directory.Build.props
 		..\global.json = ..\global.json
 	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{7C8B8146-1F67-44C6-8C74-E86587B61E40}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controls", "Controls", "{01B19F98-58F9-4B74-939B-7D58AE62A0F1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Core", "..\src\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj", "{6B572EAD-1581-46BE-A08B-1C7F2246BA2E}"
 EndProject
@@ -57,8 +52,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{3A795407-604F-4502-8C76-281BE5575A84} = {AE67B86A-46F2-4078-BF02-0614B7E0E3F5}
-		{6B572EAD-1581-46BE-A08B-1C7F2246BA2E} = {7C8B8146-1F67-44C6-8C74-E86587B61E40}
-		{1BA2F867-25C1-4D7E-AE51-5466929D467A} = {01B19F98-58F9-4B74-939B-7D58AE62A0F1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1E9E61C1-5CB7-4C8E-87BA-6C1D38238679}
