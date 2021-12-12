@@ -6,10 +6,11 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.UnitTests", "CommunityToolkit.Maui.UnitTests\CommunityToolkit.Maui.UnitTests.csproj", "{6A93AA5D-4C26-4F1E-8DEE-83C26C03AAF4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{478D53B4-48B3-4100-BF4D-60F3FC77DE81}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{4B75ED53-6F44-4F85-BF05-203771B8DA30}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controls", "Controls", "{C558C1A7-9787-4431-B1AB-A4C587811E5F}"
+	ProjectSection(SolutionItems) = preProject
+		..\.editorconfig = ..\.editorconfig
+		..\Directory.Build.props = ..\Directory.Build.props
+		..\global.json = ..\global.json
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui", "CommunityToolkit.Maui\CommunityToolkit.Maui.csproj", "{6BE0563C-9B4D-40EF-838E-8F4D1EAF2A0B}"
 EndProject
@@ -38,8 +39,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{6BE0563C-9B4D-40EF-838E-8F4D1EAF2A0B} = {C558C1A7-9787-4431-B1AB-A4C587811E5F}
-		{32FC3765-AFB9-4EE8-A991-1D1D60154E73} = {4B75ED53-6F44-4F85-BF05-203771B8DA30}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {42B065EB-DA54-40BE-B676-3D47D59A81F2}
