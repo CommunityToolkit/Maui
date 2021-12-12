@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -8,31 +9,68 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
+/// <summary>
+/// Visual Options for <see cref="PopupView"/>
+/// </summary>
 public class PopupViewVisualOptions
 {
+	/// <summary>
+	/// <see cref="PopupView"/> Border Corner Radius
+	/// </summary>
 	public CGRect CornerRadius { get; set; }
 
+	/// <summary>
+	/// <see cref="PopupView"/> Background Color
+	/// </summary>
 	public UIColor BackgroundColor { get; set; } = UIColor.Gray;
 }
 
+/// <summary>
+/// <see cref="UIView"/> for <see cref="Popup"/>
+/// </summary>
 public class PopupView : UIView
 {
 	readonly List<UIView> _children = Array.Empty<UIView>().ToList();
 
+	/// <summary>
+	/// Parent UIView
+	/// </summary>
 	public UIView ParentView => UIApplication.SharedApplication.Windows.First(x => x.IsKeyWindow);
 
+	/// <summary>
+	/// PopupView Children
+	/// </summary>
 	public IReadOnlyList<UIView> Children => _children;
 
+	/// <summary>
+	/// <see cref="UIView"/> on which Popup will appear. When null, <see cref="PopupView"/> will appear at bottom of screen.
+	/// </summary>
 	public UIView? AnchorView { get; set; }
 
+	/// <summary>
+	/// <see cref="PopupViewVisualOptions"/>
+	/// </summary>
 	public PopupViewVisualOptions VisualOptions { get; } = new();
 
+	/// <summary>
+	/// Container of <see cref="PopupView"/>
+	/// </summary>
 	protected UIStackView? Container { get; set; }
 
+	/// <summary>
+	/// Dissmisses the Popup from the screen
+	/// </summary>
 	public void Dismiss() => RemoveFromSuperview();
 
+	/// <summary>
+	/// Adds a <see cref="UIView"/> to <see cref="Children"/>
+	/// </summary>
+	/// <param name="child"></param>
 	public void AddChild(UIView child) => _children.Add(child);
 
+	/// <summary>
+	/// Initializes <see cref="PopupView"/>
+	/// </summary>
 	public void Setup()
 	{
 		Initialize();

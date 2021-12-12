@@ -93,18 +93,18 @@ sealed class MathExpression
 				continue;
 			}
 
-			var @operator = operators.FirstOrDefault(x => x.Name == value);
+			var mathOperator = operators.FirstOrDefault(x => x.Name == value);
 
-			if (@operator == null)
+			if (mathOperator == null)
 				throw new ArgumentException($"Invalid math expression. Can't find operator or value with name \"{value}\".");
 
-			if (@operator.Precedence == MathOperatorPrecedence.Constant)
+			if (mathOperator.Precedence == MathOperatorPrecedence.Constant)
 			{
-				stack.Push(@operator.CalculateFunc(Array.Empty<double>()));
+				stack.Push(mathOperator.CalculateFunc(Array.Empty<double>()));
 				continue;
 			}
 
-			var operatorNumericCount = @operator.NumericCount;
+			var operatorNumericCount = mathOperator.NumericCount;
 
 			if (stack.Count < operatorNumericCount)
 				throw new ArgumentException("Invalid math expression.");
@@ -117,7 +117,7 @@ sealed class MathExpression
 
 			args.Reverse();
 
-			stack.Push(@operator.CalculateFunc(args.ToArray()));
+			stack.Push(mathOperator.CalculateFunc(args.ToArray()));
 		}
 
 		if (stack.Count != 1)
