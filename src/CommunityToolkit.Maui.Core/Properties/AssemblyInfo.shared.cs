@@ -1,3 +1,3 @@
 ﻿using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("CommunityToolkit.Maui.UnitTests")] 
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui.UnitTests")]
