@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 using Foundation;
 using UIKit;
 
-namespace CommunityToolkit.Maui.Controls;
-class Popup
+namespace CommunityToolkit.Maui.Core.Views;
+
+public class Popup
 {
 	public Popup()
 	{

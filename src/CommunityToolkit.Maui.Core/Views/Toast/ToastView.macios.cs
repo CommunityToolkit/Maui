@@ -3,15 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CommunityToolkit.Maui.Controls;
 using CoreGraphics;
 using CoreText;
 using Foundation;
 using UIKit;
 
-namespace CommunityToolkit.Maui.Alerts;
+namespace CommunityToolkit.Maui.Core.Views;
 
-class ToastView : Popup
+public class ToastView : Popup
 {
 	public const double DefaultPadding = 10;
 
