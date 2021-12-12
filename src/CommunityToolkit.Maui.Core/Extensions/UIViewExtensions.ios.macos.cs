@@ -1,6 +1,6 @@
 ﻿using UIKit;
 
-namespace CommunityToolkit.Maui.Extensions;
+namespace CommunityToolkit.Maui.Core.Extensions;
 
 /// <summary>
 /// UIView extensions

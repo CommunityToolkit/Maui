@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Converters;
 
 sealed class MathExpression
 {
-	const string regexPattern = @"(?<!\d)\-?(?:\d+\.\d+|\d+)|\+|\-|\/|\*|\(|\)|\^|\%|\,|\w+";
-	const NumberStyles numberStyle = NumberStyles.Float | NumberStyles.AllowThousands;
+	const string _regexPattern = @"(?<!\d)\-?(?:\d+\.\d+|\d+)|\+|\-|\/|\*|\(|\)|\^|\%|\,|\w+";
+	const NumberStyles _numberStyle = NumberStyles.Float | NumberStyles.AllowThousands;
 
-	static readonly IFormatProvider formatProvider = new CultureInfo("en-US");
+	static readonly IFormatProvider _formatProvider = new CultureInfo("en-US");
 
 	readonly IReadOnlyList<MathOperator> operators;
 	readonly IReadOnlyList<double> arguments;
@@ -27,40 +28,40 @@ sealed class MathExpression
 		this.arguments = arguments?.ToList() ?? new List<double>();
 
 		var operators = new List<MathOperator>
-			{
-				new ("+", 2, MathOperatorPrecedence.Low, x => x[0] + x[1]),
-				new ("-", 2, MathOperatorPrecedence.Low, x => x[0] - x[1]),
-				new ("*", 2, MathOperatorPrecedence.Medium, x => x[0] * x[1]),
-				new ("/", 2, MathOperatorPrecedence.Medium, x => x[0] / x[1]),
-				new ("%", 2, MathOperatorPrecedence.Medium, x => x[0] % x[1]),
-				new ("abs", 1, MathOperatorPrecedence.Medium, x => Math.Abs(x[0])),
-				new ("acos", 1, MathOperatorPrecedence.Medium, x => Math.Acos(x[0])),
-				new ("asin", 1, MathOperatorPrecedence.Medium, x => Math.Asin(x[0])),
-				new ("atan", 1, MathOperatorPrecedence.Medium, x => Math.Atan(x[0])),
-				new ("atan2", 2, MathOperatorPrecedence.Medium, x => Math.Atan2(x[0], x[1])),
-				new ("ceiling", 1, MathOperatorPrecedence.Medium, x => Math.Ceiling(x[0])),
-				new ("cos", 1, MathOperatorPrecedence.Medium, x => Math.Cos(x[0])),
-				new ("cosh", 1, MathOperatorPrecedence.Medium, x => Math.Cosh(x[0])),
-				new ("exp", 1, MathOperatorPrecedence.Medium, x => Math.Exp(x[0])),
-				new ("floor", 1, MathOperatorPrecedence.Medium, x => Math.Floor(x[0])),
-				new ("ieeeremainder", 2, MathOperatorPrecedence.Medium, x => Math.IEEERemainder(x[0], x[1])),
-				new ("log", 2, MathOperatorPrecedence.Medium, x => Math.Log(x[0], x[1])),
-				new ("log10", 1, MathOperatorPrecedence.Medium, x => Math.Log10(x[0])),
-				new ("max", 2, MathOperatorPrecedence.Medium, x => Math.Max(x[0], x[1])),
-				new ("min", 2, MathOperatorPrecedence.Medium, x => Math.Min(x[0], x[1])),
-				new ("pow", 2, MathOperatorPrecedence.Medium, x => Math.Pow(x[0], x[1])),
-				new ("round", 2, MathOperatorPrecedence.Medium, x => Math.Round(x[0], Convert.ToInt32(x[1]))),
-				new ("sign", 1, MathOperatorPrecedence.Medium, x => Math.Sign(x[0])),
-				new ("sin", 1, MathOperatorPrecedence.Medium, x => Math.Sin(x[0])),
-				new ("sinh", 1, MathOperatorPrecedence.Medium, x => Math.Sinh(x[0])),
-				new ("sqrt", 1, MathOperatorPrecedence.Medium, x => Math.Sqrt(x[0])),
-				new ("tan", 1, MathOperatorPrecedence.Medium, x => Math.Tan(x[0])),
-				new ("tanh", 1, MathOperatorPrecedence.Medium, x => Math.Tanh(x[0])),
-				new ("truncate", 1, MathOperatorPrecedence.Medium, x => Math.Truncate(x[0])),
-				new ("^", 2, MathOperatorPrecedence.High, x => Math.Pow(x[0], x[1])),
-				new ("pi", 0, MathOperatorPrecedence.Constant, _ => Math.PI),
-				new ("e", 0, MathOperatorPrecedence.Constant, _ => Math.E),
-			};
+		{
+			new ("+", 2, MathOperatorPrecedence.Low, x => x[0] + x[1]),
+			new ("-", 2, MathOperatorPrecedence.Low, x => x[0] - x[1]),
+			new ("*", 2, MathOperatorPrecedence.Medium, x => x[0] * x[1]),
+			new ("/", 2, MathOperatorPrecedence.Medium, x => x[0] / x[1]),
+			new ("%", 2, MathOperatorPrecedence.Medium, x => x[0] % x[1]),
+			new ("abs", 1, MathOperatorPrecedence.Medium, x => Math.Abs(x[0])),
+			new ("acos", 1, MathOperatorPrecedence.Medium, x => Math.Acos(x[0])),
+			new ("asin", 1, MathOperatorPrecedence.Medium, x => Math.Asin(x[0])),
+			new ("atan", 1, MathOperatorPrecedence.Medium, x => Math.Atan(x[0])),
+			new ("atan2", 2, MathOperatorPrecedence.Medium, x => Math.Atan2(x[0], x[1])),
+			new ("ceiling", 1, MathOperatorPrecedence.Medium, x => Math.Ceiling(x[0])),
+			new ("cos", 1, MathOperatorPrecedence.Medium, x => Math.Cos(x[0])),
+			new ("cosh", 1, MathOperatorPrecedence.Medium, x => Math.Cosh(x[0])),
+			new ("exp", 1, MathOperatorPrecedence.Medium, x => Math.Exp(x[0])),
+			new ("floor", 1, MathOperatorPrecedence.Medium, x => Math.Floor(x[0])),
+			new ("ieeeremainder", 2, MathOperatorPrecedence.Medium, x => Math.IEEERemainder(x[0], x[1])),
+			new ("log", 2, MathOperatorPrecedence.Medium, x => Math.Log(x[0], x[1])),
+			new ("log10", 1, MathOperatorPrecedence.Medium, x => Math.Log10(x[0])),
+			new ("max", 2, MathOperatorPrecedence.Medium, x => Math.Max(x[0], x[1])),
+			new ("min", 2, MathOperatorPrecedence.Medium, x => Math.Min(x[0], x[1])),
+			new ("pow", 2, MathOperatorPrecedence.Medium, x => Math.Pow(x[0], x[1])),
+			new ("round", 2, MathOperatorPrecedence.Medium, x => Math.Round(x[0], Convert.ToInt32(x[1]))),
+			new ("sign", 1, MathOperatorPrecedence.Medium, x => Math.Sign(x[0])),
+			new ("sin", 1, MathOperatorPrecedence.Medium, x => Math.Sin(x[0])),
+			new ("sinh", 1, MathOperatorPrecedence.Medium, x => Math.Sinh(x[0])),
+			new ("sqrt", 1, MathOperatorPrecedence.Medium, x => Math.Sqrt(x[0])),
+			new ("tan", 1, MathOperatorPrecedence.Medium, x => Math.Tan(x[0])),
+			new ("tanh", 1, MathOperatorPrecedence.Medium, x => Math.Tanh(x[0])),
+			new ("truncate", 1, MathOperatorPrecedence.Medium, x => Math.Truncate(x[0])),
+			new ("^", 2, MathOperatorPrecedence.High, x => Math.Pow(x[0], x[1])),
+			new ("pi", 0, MathOperatorPrecedence.Constant, _ => Math.PI),
+			new ("e", 0, MathOperatorPrecedence.Constant, _ => Math.E),
+		};
 
 		var argumentsCount = this.arguments.Count;
 
@@ -86,7 +87,7 @@ sealed class MathExpression
 
 		foreach (var value in rpn)
 		{
-			if (double.TryParse(value, numberStyle, formatProvider, out var numeric))
+			if (double.TryParse(value, _numberStyle, _formatProvider, out var numeric))
 			{
 				stack.Push(numeric);
 				continue;
@@ -127,7 +128,7 @@ sealed class MathExpression
 
 	IEnumerable<string> GetReversePolishNotation(string expression)
 	{
-		var regex = new Regex(regexPattern);
+		var regex = new Regex(_regexPattern);
 
 		var matches = regex.Matches(expression);
 		if (matches == null)
@@ -143,7 +144,7 @@ sealed class MathExpression
 
 			var value = match.Value;
 
-			if (double.TryParse(value, numberStyle, formatProvider, out var numeric))
+			if (double.TryParse(value, _numberStyle, _formatProvider, out var numeric))
 			{
 				if (numeric < 0)
 				{

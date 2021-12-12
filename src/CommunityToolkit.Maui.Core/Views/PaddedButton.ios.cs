@@ -1,8 +1,9 @@
 ﻿using System;
 using UIKit;
 
-namespace Core.Platform.iOS;
-class PaddedButton : UIButton
+namespace CommunityToolkit.Maui.Core.Views;
+
+public class PaddedButton : UIButton
 {
 	public PaddedButton(double left, double top, double right, double bottom)
 	{

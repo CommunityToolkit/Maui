@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Core.Platform.iOS;
+using CommunityToolkit.Maui.Core.Views;
 using CoreGraphics;
 using Microsoft.Maui;
 using UIKit;

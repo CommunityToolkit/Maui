@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace CommunityToolkit.Maui;
+namespace CommunityToolkit.Maui.Core;
 
-sealed class MathOperator
+public sealed class MathOperator
 {
 	public string Name { get; }
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using CoreGraphics;
 using UIKit;
 
-namespace CommunityToolkit.Maui.Platform;
+namespace CommunityToolkit.Maui.Core.Views;
 
 class PaddedLabel : UILabel
 {

@@ -15,6 +15,7 @@ using AndroidSnackbar = Google.Android.Material.Snackbar.Snackbar;
 using Object = Java.Lang.Object;
 using View = Android.Views.View;
 using Core = CommunityToolkit.Maui;
+using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Alerts;
 

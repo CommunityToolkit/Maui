@@ -2,7 +2,7 @@
 using System.Globalization;
 using Microsoft.Maui.Controls;
 
-namespace CommunityToolkit.Maui;
+namespace CommunityToolkit.Maui.Converters;
 
 /// <inheritdoc />
 public interface ICommunityToolkitValueConverter : IValueConverter

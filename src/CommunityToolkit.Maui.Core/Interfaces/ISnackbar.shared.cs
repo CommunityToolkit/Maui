@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Maui;
 
-namespace CommunityToolkit.Maui;
+namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// Snackbar

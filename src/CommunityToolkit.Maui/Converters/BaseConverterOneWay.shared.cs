@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using Microsoft.Maui.Controls;
 
-namespace CommunityToolkit.Maui;
+namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>
 /// Abstract class used to implement converters that implements the ConvertBack logic.

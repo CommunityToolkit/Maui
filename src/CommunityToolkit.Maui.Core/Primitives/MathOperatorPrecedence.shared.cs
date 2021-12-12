@@ -1,6 +1,6 @@
-﻿namespace CommunityToolkit.Maui;
+﻿namespace CommunityToolkit.Maui.Core;
 
-enum MathOperatorPrecedence
+public enum MathOperatorPrecedence
 {
 	Lowest,
 	Low,
