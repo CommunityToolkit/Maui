@@ -1,10 +1,29 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Behaviors;
+
+/// <summary>Validation flags</summary>
+[Flags]
+public enum ValidationFlags
+{
+	/// <summary> No validation</summary>
+	None = 0,
+	/// <summary>Validate on attaching</summary>
+	ValidateOnAttaching = 1,
+	/// <summary> Validate on focusing</summary>
+	ValidateOnFocusing = 2,
+	/// <summary>Validate on unfocusing</summary>
+	ValidateOnUnfocusing = 4,
+	/// <summary>Validate upon value changed</summary>
+	ValidateOnValueChanged = 8,
+	/// <summary>Force make valid when focused</summary>
+	ForceMakeValidWhenFocused = 16
+}
 
 /// <summary>
 /// The <see cref="ValidationBehavior"/> allows users to create custom validation behaviors. All of the validation behaviors in the Xamarin Community Toolkit inherit from this behavior, to expose a number of shared properties. Users can inherit from this class to create a custom validation behavior currently not supported through the Xamarin Community Toolkit. This behavios cannot be used directly as it's abstract.

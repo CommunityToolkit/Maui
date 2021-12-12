@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -6,6 +7,24 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Behaviors;
+
+/// <summary>Flags to indicate what treatment <see cref="Internals.ValidationBehavior.Value"/> should receive prior to validation with <see cref="Internals.ValidationBehavior"/> or subclasses. This can be used to trim or ignore whitespace for instance. This value might be ignored by a behavior if <see cref="Internals.ValidationBehavior.Value"/> isn't of type <see cref="string"/>.</summary>
+[Flags]
+public enum TextDecorationFlags
+{
+	/// <summary>No text decoration will be applied.</summary>
+	None = 0,
+	/// <summary><see cref="string.TrimStart()"/> is applied on the value prior to validation.</summary>
+	TrimStart = 1,
+	/// <summary><see cref="string.TrimEnd()"/> is applied on the value prior to validation.</summary>
+	TrimEnd = 2,
+	/// <summary><see cref="string.Trim()"/> is applied on the value prior to validation.</summary>
+	Trim = TrimStart | TrimEnd,
+	/// <summary>If <see cref="Internals.ValidationBehavior.Value"/> is null, replace the value with <see cref="string.Empty"/></summary>
+	NullToEmpty = 4,
+	/// <summary>Excessive white space is removed from <see cref="Internals.ValidationBehavior.Value"/> prior to validation. I.e. I.e. "Hello    World" will become "Hello World". This applies to whitespace found anywhere.</summary>
+	NormalizeWhiteSpace = 8
+}
 
 /// <summary>
 /// The <see cref="TextValidationBehavior"/> is a behavior that allows the user to validate a given text depending on specified parameters. By adding this behavior to an <see cref="InputView"/> inherited control (i.e. <see cref="Entry"/>) it can be styled differently depending on whether a valid or an invalid text value is provided. It offers various built-in checks such as checking for a certain length or whether or not the input value matches a specific regular expression. Additional properties handling validation are inherited from <see cref="ValidationBehavior"/>.

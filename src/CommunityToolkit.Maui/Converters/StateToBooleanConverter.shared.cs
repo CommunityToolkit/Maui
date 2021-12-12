@@ -1,10 +1,27 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using CommunityToolkit.Maui.Controls;
-using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Converters;
+
+/// <summary>State used by the StateToBooleanConverter </summary>
+public enum LayoutState
+{
+	/// <summary>Default; will show the initial view</summary>
+	None,
+	/// <summary>Layout is Loading</summary>
+	Loading,
+	/// <summary>Layout is Saving</summary>
+	Saving,
+	/// <summary>Layout Success</summary>
+	Success,
+	/// <summary>Layout Error</summary>
+	Error,
+	/// <summary>Layout Empty</summary>
+	Empty,
+	/// <summary>Layout Custom</summary>
+	Custom
+}
 
 /// <summary>
 /// This converter can be used with <see cref="StateLayout"/> to determine if a certain state is visible. This can be useful, for instance, in scenarios where you want to show/hide certain elements based on the current <see cref="StateLayout"/>.CurrentState. Additionally a <see cref="StateLayout"/> can be supplied in the parameter of the Convert method to compare against that.
