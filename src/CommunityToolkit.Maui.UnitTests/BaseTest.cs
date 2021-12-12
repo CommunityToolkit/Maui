@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using Microsoft.Maui.Controls;
 
@@ -40,13 +42,10 @@ public abstract class BaseTest : IDisposable
 		_isDisposed = true;
 	}
 
-	protected static Stream GetStreamFromImageSource(ImageSource imageSource)
+	protected static Task<Stream> GetStreamFromImageSource(ImageSource imageSource, CancellationToken token)
 	{
 		var streamImageSource = (StreamImageSource)imageSource;
-
-		var cancellationToken = System.Threading.CancellationToken.None;
-		var task = streamImageSource.Stream(cancellationToken);
-		return task.Result;
+		return streamImageSource.Stream(token);
 	}
 
 	protected static bool StreamEquals(Stream a, Stream b)

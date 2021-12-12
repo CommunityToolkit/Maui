@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading;
+using System.Threading.Tasks;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using Microsoft.Maui.Controls;
@@ -30,17 +32,19 @@ public class ImageResourceConverter_Tests : BaseTest
 	}
 
 	[Fact]
-	public void ImageResourceConverter()
+	public async Task ImageResourceConverter()
 	{
 		const string resourceToLoad = "CommunityToolkit.Maui.UnitTests.Resources.dotnet-bot.png";
 
 		var expectedResource = ImageSource.FromResource(resourceToLoad);
-		var expectedMemoryStream = GetStreamFromImageSource(expectedResource);
+		var expectedMemoryStream = await GetStreamFromImageSource(expectedResource, CancellationToken.None);
 
 		var imageResourceConverter = new ImageResourceConverter();
 		var result = (ImageSource)imageResourceConverter.Convert(resourceToLoad, typeof(ImageResourceConverter), null, CultureInfo.CurrentCulture);
 
-		Assert.True(StreamEquals(GetStreamFromImageSource(result), expectedMemoryStream));
+		var streamResult = await GetStreamFromImageSource(result, CancellationToken.None);
+
+		Assert.True(StreamEquals(streamResult, expectedMemoryStream));
 	}
 
 	[Fact]
