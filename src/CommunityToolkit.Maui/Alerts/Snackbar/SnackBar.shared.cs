@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Alerts;
 /// <inheritdoc/>
 public partial class Snackbar : ISnackbar
 {
-	static readonly WeakEventManager _weakEventManager = new();
+	readonly static WeakEventManager _weakEventManager = new();
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="Snackbar"/>
