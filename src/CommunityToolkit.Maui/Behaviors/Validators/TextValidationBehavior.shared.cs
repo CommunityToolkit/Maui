@@ -8,7 +8,7 @@ using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
-/// <summary>Flags to indicate what treatment <see cref="Internals.ValidationBehavior.Value"/> should receive prior to validation with <see cref="Internals.ValidationBehavior"/> or subclasses. This can be used to trim or ignore whitespace for instance. This value might be ignored by a behavior if <see cref="Internals.ValidationBehavior.Value"/> isn't of type <see cref="string"/>.</summary>
+/// <summary>Flags to indicate what treatment <see cref="ValidationBehavior.Value"/> should receive prior to validation with <see cref="ValidationBehavior"/> or subclasses. This can be used to trim or ignore whitespace for instance. This value might be ignored by a behavior if <see cref="ValidationBehavior.Value"/> isn't of type <see cref="string"/>.</summary>
 [Flags]
 public enum TextDecorationFlags
 {
@@ -20,9 +20,9 @@ public enum TextDecorationFlags
 	TrimEnd = 2,
 	/// <summary><see cref="string.Trim()"/> is applied on the value prior to validation.</summary>
 	Trim = TrimStart | TrimEnd,
-	/// <summary>If <see cref="Internals.ValidationBehavior.Value"/> is null, replace the value with <see cref="string.Empty"/></summary>
+	/// <summary>If <see cref="ValidationBehavior.Value"/> is null, replace the value with <see cref="string.Empty"/></summary>
 	NullToEmpty = 4,
-	/// <summary>Excessive white space is removed from <see cref="Internals.ValidationBehavior.Value"/> prior to validation. I.e. I.e. "Hello    World" will become "Hello World". This applies to whitespace found anywhere.</summary>
+	/// <summary>Excessive white space is removed from <see cref="ValidationBehavior.Value"/> prior to validation. I.e. I.e. "Hello    World" will become "Hello World". This applies to whitespace found anywhere.</summary>
 	NormalizeWhiteSpace = 8
 }
 

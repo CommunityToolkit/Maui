@@ -13,13 +13,13 @@ namespace CommunityToolkit.Maui.Converters;
 public abstract class BaseConverterOneWay<TFrom, TTo> : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
-	/// Converts the incoming value from <see cref="TFrom"/>[] and returns the object of a type <see cref="TTo"/>.
+	/// Converts the incoming value from <typeparamref name="TFrom"/>[] and returns the object of a type <typeparamref name="TTo"/>.
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
 	/// <param name="targetType">The type of the binding target property. This is not implemented.</param>
 	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
-	/// <returns>An object of type <see cref="TTo"/>.</returns>
+	/// <returns>An object of type <typeparamref name="TTo"/>.</returns>
 	public object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value is not TFrom valueFrom)
@@ -34,8 +34,8 @@ public abstract class BaseConverterOneWay<TFrom, TTo> : ValueConverterExtension,
 	/// <summary>
 	/// Method that will be called by <see cref="Convert(object, Type, object, CultureInfo)"/>.
 	/// </summary>
-	/// <param name="value">Value to be converted from <see cref="TFrom"/> to <see cref="TTo"/>.</param>
-	/// <returns>An object of type <see cref="TTo"/>.</returns>
+	/// <param name="value">Value to be converted from <typeparamref name="TFrom"/> to <typeparamref name="TTo"/>.</param>
+	/// <returns>An object of type <typeparamref name="TTo"/>.</returns>
 	public abstract TTo? ConvertFrom(TFrom value);
 
 	/// <summary>

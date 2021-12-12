@@ -4,7 +4,7 @@ using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters;
 
-/// <summary>State used by the StateToBooleanConverter </summary>
+/// <summary>State used by <see cref="StateToBooleanConverter"/> </summary>
 public enum LayoutState
 {
 	/// <summary>Default; will show the initial view</summary>
@@ -24,7 +24,7 @@ public enum LayoutState
 }
 
 /// <summary>
-/// This converter can be used with <see cref="StateLayout"/> to determine if a certain state is visible. This can be useful, for instance, in scenarios where you want to show/hide certain elements based on the current <see cref="StateLayout"/>.CurrentState. Additionally a <see cref="StateLayout"/> can be supplied in the parameter of the Convert method to compare against that.
+/// This converter can be used to determine if a certain state is visible. This can be useful, for instance, in scenarios where you want to show/hide certain elements based on the current state.
 /// </summary>
 public class StateToBooleanConverter : ICommunityToolkitValueConverter
 {
@@ -34,13 +34,13 @@ public class StateToBooleanConverter : ICommunityToolkitValueConverter
 	public LayoutState StateToCompare { get; set; }
 
 	/// <summary>
-	/// Takes the incoming <see cref="StateLayout"/> in <paramref name="value"/> and compares it to <see cref="StateToCompare"/>. If they are equal it returns True, if they are not equal it returns False. Additionally a state to compare against can be provided in <paramref name="parameter"/>.
+	/// Takes the incoming <see cref="LayoutState"/> in <paramref name="value"/> and compares it to <see cref="StateToCompare"/>. If they are equal it returns True, if they are not equal it returns False. Additionally a state to compare against can be provided in <paramref name="parameter"/>.
 	/// </summary>
-	/// <param name="value">The <see cref="StateLayout"/> to compare.</param>
+	/// <param name="value">The <see cref="LayoutState"/> to compare.</param>
 	/// <param name="targetType">The type of the binding target property. This is not implemented.</param>
-	/// <param name="parameter">Optionally, a <see cref="StateLayout"/> can be supplied here to compare against.</param>
+	/// <param name="parameter">Optionally, a <see cref="LayoutState"/> can be supplied here to compare against.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
-	/// <returns>True if the provided <see cref="StateLayout"/>s match, otherwise False if they don't match.</returns>
+	/// <returns>True if the provided <see cref="LayoutState"/>s match, otherwise False if they don't match.</returns>
 	[return: NotNull]
 	public object? Convert([NotNull] object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
