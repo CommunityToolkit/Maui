@@ -11,7 +11,7 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 public class ByteArrayToImageSourceConverter_Tests : BaseTest
 {
 	public static IReadOnlyList<object[]> NonImageStreamData { get; } = new[]
-{
+	{
 		new object[] { 3 }, // primitive type
 		new object[] { DateTime.UtcNow }, // Struct
 		new object[] { new object() } // objects
