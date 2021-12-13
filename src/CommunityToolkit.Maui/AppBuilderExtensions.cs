@@ -12,7 +12,7 @@ public static class AppBuilderExtensions
 	/// Initializes the .NET Maui Community Toolkit Library
 	/// </summary>
 	/// <param name="builder">MauiAppBuilder</param>
-	/// <returns></returns>
+	/// <returns><see cref="MauiAppBuilder"/> initialized for <see cref="CommunityToolkit.Maui"/></returns>
 	public static MauiAppBuilder UseMauiCommunityToolkit(this MauiAppBuilder builder)
 	{
 		return builder.UseMauiCommunityToolkitCore();
