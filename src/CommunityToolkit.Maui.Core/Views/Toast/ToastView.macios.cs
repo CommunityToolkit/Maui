@@ -11,11 +11,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class ToastView : Popup
 {
-	/// <summary>
-	/// Default Padding for <see cref="ToastView"/>
-	/// </summary>
-	public const double DefaultPadding = 10;
-
 	readonly PaddedLabel _messageLabel;
 
 	/// <summary>
@@ -35,9 +30,11 @@ public class ToastView : Popup
 		UIColor textColor,
 		UIFont font,
 		double characterSpacing,
-		double padding = DefaultPadding)
+		nfloat? padding = null)
 	{
-		_messageLabel = new PaddedLabel((nfloat)padding, (nfloat)padding, (nfloat)padding, (nfloat)padding)
+		padding ??= DefaultPadding;
+
+		_messageLabel = new PaddedLabel(padding.Value, padding.Value, padding.Value, padding.Value)
 		{
 			Lines = 10
 		};
@@ -50,6 +47,11 @@ public class ToastView : Popup
 		PopupView.VisualOptions.CornerRadius = cornerRadius;
 		PopupView.AddChild(_messageLabel);
 	}
+
+	/// <summary>
+	/// Default Padding for <see cref="ToastView"/>
+	/// </summary>
+	public static nfloat DefaultPadding { get; } = 10;
 
 	/// <summary>
 	/// Toast Message

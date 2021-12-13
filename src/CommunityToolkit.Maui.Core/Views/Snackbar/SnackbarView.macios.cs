@@ -41,10 +41,12 @@ public class SnackbarView : ToastView, IDisposable
 		string actionButtonText,
 		UIColor actionTextColor,
 		UIFont actionButtonFont,
-		double padding = DefaultPadding)
+		nfloat? padding = null)
 		: base(message, backgroundColor, cornerRadius, textColor, textFont, characterSpacing, padding)
 	{
-		_actionButton = new PaddedButton((nfloat)padding, (nfloat)padding, (nfloat)padding, (nfloat)padding);
+		padding ??= DefaultPadding;
+
+		_actionButton = new PaddedButton(padding.Value, padding.Value, padding.Value, padding.Value);
 		ActionButtonText = actionButtonText;
 		ActionTextColor = actionTextColor;
 		ActionButtonFont = actionButtonFont;
