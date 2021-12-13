@@ -7,4 +7,8 @@
 		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
 		<GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="CommunityToolkit.Maui.UnitTests" />
+	</ItemGroup>
 </Project>
