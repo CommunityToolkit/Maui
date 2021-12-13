@@ -15,33 +15,33 @@ public class PaddedButton : UIButton
 	/// <param name="topPadding"></param>
 	/// <param name="rightPadding"></param>
 	/// <param name="bottomPadding"></param>
-	public PaddedButton(double leftPadding, double topPadding, double rightPadding, double bottomPadding)
+	public PaddedButton(nfloat leftPadding, nfloat topPadding, nfloat rightPadding, nfloat bottomPadding)
 	{
 		LeftPadding = leftPadding;
 		TopPadding = topPadding;
 		RightPadding = rightPadding;
 		BottomPadding = bottomPadding;
 
-		ContentEdgeInsets = new UIEdgeInsets((nfloat)topPadding, (nfloat)leftPadding, (nfloat)bottomPadding, (nfloat)rightPadding);
+		ContentEdgeInsets = new UIEdgeInsets(topPadding, leftPadding, bottomPadding, rightPadding);
 	}
 
 	/// <summary>
 	/// Left Padding
 	/// </summary>
-	public double LeftPadding { get; }
+	public nfloat LeftPadding { get; }
 
 	/// <summary>
 	/// Top Padding
 	/// </summary>
-	public double TopPadding { get; }
+	public nfloat TopPadding { get; }
 
 	/// <summary>
 	/// Right Padding
 	/// </summary>
-	public double RightPadding { get; }
+	public nfloat RightPadding { get; }
 
 	/// <summary>
 	/// Bottom Padding
 	/// </summary>
-	public double BottomPadding { get; }
+	public nfloat BottomPadding { get; }
 }
