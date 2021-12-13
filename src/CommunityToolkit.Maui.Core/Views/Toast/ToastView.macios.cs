@@ -41,7 +41,7 @@ public class ToastView : Popup
 		double characterSpacing,
 		double padding = DefaultPadding)
 	{
-		_messageLabel = new PaddedLabel(padding, padding, padding, padding)
+		_messageLabel = new PaddedLabel((nfloat)padding, (nfloat)padding, (nfloat)padding, (nfloat)padding)
 		{
 			Lines = 10
 		};

@@ -20,12 +20,12 @@ public class PaddedLabel : UILabel
 	/// <param name="topPadding"></param>
 	/// <param name="rightPadding"></param>
 	/// <param name="bottomPadding"></param>
-	public PaddedLabel(double leftPadding, double topPadding, double rightPadding, double bottomPadding)
+	public PaddedLabel(nfloat leftPadding, nfloat topPadding, nfloat rightPadding, nfloat bottomPadding)
 	{
-		LeftPadding = (nfloat)leftPadding;
-		TopPadding = (nfloat)topPadding;
-		RightPadding = (nfloat)rightPadding;
-		BottomPadding = (nfloat)bottomPadding;
+		LeftPadding = leftPadding;
+		TopPadding = topPadding;
+		RightPadding = rightPadding;
+		BottomPadding = bottomPadding;
 	}
 
 	/// <summary>
