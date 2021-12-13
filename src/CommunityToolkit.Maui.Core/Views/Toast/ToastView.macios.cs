@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CoreGraphics;
 using CoreText;
 using Foundation;
@@ -58,18 +54,18 @@ public class ToastView : Popup
 	/// <summary>
 	/// Toast Message
 	/// </summary>
-	public string? Message
+	public string Message
 	{
-		get => _messageLabel.Text;
+		get => _messageLabel.Text ??= string.Empty;
 		private init => _messageLabel.Text = value;
 	}
 
 	/// <summary>
 	/// Toast Text Color
 	/// </summary>
-	public UIColor? TextColor
+	public UIColor TextColor
 	{
-		get => _messageLabel.TextColor;
+		get => _messageLabel.TextColor ??= UIColor.Black;
 		private init => _messageLabel.TextColor = value;
 	}
 
