@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Maui.Core.Views;
 using CoreGraphics;
 using Microsoft.Maui;
+using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Alerts;

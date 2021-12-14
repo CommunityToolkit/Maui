@@ -1,7 +1,7 @@
-﻿using System;
-using CoreGraphics;
+﻿using CoreGraphics;
 using CoreText;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;

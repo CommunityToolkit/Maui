@@ -13,7 +13,6 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Platform;
 using AndroidSnackbar = Google.Android.Material.Snackbar.Snackbar;
-using Core = CommunityToolkit.Maui;
 using Object = Java.Lang.Object;
 using View = Android.Views.View;
 
