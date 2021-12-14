@@ -11,10 +11,6 @@ public class PaddedButton : UIButton
 	/// <summary>
 	/// Initialize <see cref="PaddedButton"/>
 	/// </summary>
-	/// <param name="leftPadding"></param>
-	/// <param name="topPadding"></param>
-	/// <param name="rightPadding"></param>
-	/// <param name="bottomPadding"></param>
 	public PaddedButton(nfloat leftPadding, nfloat topPadding, nfloat rightPadding, nfloat bottomPadding)
 	{
 		LeftPadding = leftPadding;
