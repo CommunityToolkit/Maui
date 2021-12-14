@@ -1,10 +1,5 @@
 using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using CommunityToolkit.Maui.Core.Views;
 using CoreGraphics;
-using Microsoft.Maui;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
