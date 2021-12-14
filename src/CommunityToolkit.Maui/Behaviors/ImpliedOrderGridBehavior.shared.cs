@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
@@ -35,36 +36,37 @@ public class ImpliedOrderGridBehavior : BaseBehavior<Grid>
 		bindable.ChildAdded -= OnInternalGridChildAdded;
 	}
 
-	void OnInternalGridChildAdded(object? sender, ElementEventArgs e) =>
-		ProcessElement(e.Element);
-
-	void LogWarning(string warning)
+	static void LogWarning(string warning, bool shouldThrowException)
 	{
 		System.Diagnostics.Debug.WriteLine(warning);
 
-		if (ThrowOnLayoutWarning)
+		if (shouldThrowException)
 			throw new Exception(warning);
 	}
+
+	void OnInternalGridChildAdded(object? sender, ElementEventArgs e) => ProcessElement(e.Element);
 
 	bool[][] InitMatrix()
 	{
 		ArgumentNullException.ThrowIfNull(View);
 
 		_rowCount = View.RowDefinitions.Count;
-		if (_rowCount == 0)
+		if (_rowCount is 0)
 			_rowCount = 1;
 
 		_columnCount = View.ColumnDefinitions.Count;
-		if (_columnCount == 0)
+		if (_columnCount is 0)
 			_columnCount = 1;
 
 		var newMatrix = new bool[_rowCount][];
+
 		for (var r = 0; r < _rowCount; r++)
 			newMatrix[r] = new bool[_columnCount];
 
 		return newMatrix;
 	}
 
+	[MemberNotNull(nameof(_usedMatrix))]
 	void FindNextCell(out int rowIndex, out int columnIndex)
 	{
 		_usedMatrix ??= InitMatrix();
@@ -73,11 +75,13 @@ public class ImpliedOrderGridBehavior : BaseBehavior<Grid>
 		var row = _usedMatrix.FirstOrDefault(r => r.Any(c => !c));
 
 		// If no row is found, set cell to origin and log
-		if (row == null)
+		if (row is null)
 		{
-			LogWarning("Defined cells exceeded.");
+			LogWarning("Defined cells exceeded", ThrowOnLayoutWarning);
+
 			rowIndex = Math.Max(_rowCount - 1, 0);
 			columnIndex = Math.Max(_columnCount - 1, 0);
+
 			return;
 		}
 		rowIndex = Array.IndexOf(_usedMatrix, row);
@@ -94,21 +98,21 @@ public class ImpliedOrderGridBehavior : BaseBehavior<Grid>
 		if (columnEnd > _columnCount)
 		{
 			columnEnd = _columnCount;
-			LogWarning($"View at row {row} column {columnEnd} with column span {columnSpan} exceeds the defined grid columns.");
+			LogWarning($"View at row {row} column {columnEnd} with column span {columnSpan} exceeds the defined grid columns.", ThrowOnLayoutWarning);
 		}
 
 		if (rowEnd > _rowCount)
 		{
 			rowEnd = _rowCount;
-			LogWarning($"View at row {row} column {columnEnd} with row span {rowSpan} exceeds the defined grid rows.");
+			LogWarning($"View at row {row} column {columnEnd} with row span {rowSpan} exceeds the defined grid rows.", ThrowOnLayoutWarning);
 		}
 
 		for (var r = row; r < rowEnd; r++)
 		{
 			for (var c = column; c < columnEnd; c++)
 			{
-				if (_usedMatrix?[r][c] ?? throw new NullReferenceException())
-					LogWarning($"Cell at row {r} column {c} has already been used.");
+				if (_usedMatrix?[r][c] ?? throw new InvalidOperationException("Grid Child Not Added"))
+					LogWarning($"Cell at row {r} column {c} has already been used.", ThrowOnLayoutWarning);
 
 				_usedMatrix[r][c] = true;
 			}
@@ -125,6 +129,7 @@ public class ImpliedOrderGridBehavior : BaseBehavior<Grid>
 		// Check to see if the user manually assigned a row or column
 		if (view.IsSet(Grid.ColumnProperty))
 			column = Grid.GetColumn(view);
+
 		if (view.IsSet(Grid.RowProperty))
 			row = Grid.GetRow(view);
 
