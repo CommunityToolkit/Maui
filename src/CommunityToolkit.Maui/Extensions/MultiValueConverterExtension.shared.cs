@@ -3,7 +3,7 @@ using CommunityToolkit.Maui.Converters;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
-namespace CommunityToolkit.Maui.Extensions.Internals;
+namespace CommunityToolkit.Maui.Extensions;
 
 /// <inheritdoc />
 public class MultiValueConverterExtension : IMarkupExtension<ICommunityToolkitMultiValueConverter>

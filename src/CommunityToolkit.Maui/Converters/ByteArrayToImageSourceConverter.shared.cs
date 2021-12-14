@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Threading;
-using CommunityToolkit.Maui.Extensions.Internals;
+using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Converters;

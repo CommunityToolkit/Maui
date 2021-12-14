@@ -2,11 +2,27 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
-using CommunityToolkit.Maui.Extensions.Internals;
-using CommunityToolkit.Maui.Helpers;
+using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Converters;
+
+/// <summary>Different types of conditions that can be used in <see cref="Converters.VariableMultiValueConverter"/>.</summary>
+public enum MultiBindingCondition
+{
+	/// <summary>None of the values should be true.</summary>
+	None,
+	/// <summary>All of the values should be true.</summary>
+	All,
+	/// <summary>Any of the values should be true.</summary>
+	Any,
+	/// <summary>The exact number as configured in <see cref="Converters.VariableMultiValueConverter.Count"/> should be true.</summary>
+	Exact,
+	/// <summary>At least the number as configured in <see cref="Converters.VariableMultiValueConverter.Count"/> should be true.</summary>
+	GreaterThan,
+	/// <summary>At most the number as configured in <see cref="Converters.VariableMultiValueConverter.Count"/> should be true.</summary>
+	LessThan
+}
 
 /// <summary>
 /// The <see cref="VariableMultiValueConverter"/> is a converter that allows users to convert multiple <see cref="bool"/> value bindings to a single <see cref="bool"/>. It does this by enabling them to specify whether All, Any, None or a specific number of values are true as specified in <see cref="ConditionType"/>. This is useful when combined with the <see cref="MultiBinding"/>.

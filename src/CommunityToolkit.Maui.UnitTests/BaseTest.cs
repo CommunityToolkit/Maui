@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Essentials;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
@@ -16,7 +20,11 @@ public abstract class BaseTest : IDisposable
 	{
 		defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
 		defaultUICulture = System.Threading.Thread.CurrentThread.CurrentUICulture;
+
 		Device.PlatformServices = new MockPlatformServices();
+
+		DispatcherProvider.SetCurrent(new DispatcherProviderMock());
+		DeviceDisplay.SetCurrent(null);
 	}
 
 	~BaseTest() => Dispose(false);
@@ -37,16 +45,16 @@ public abstract class BaseTest : IDisposable
 		System.Threading.Thread.CurrentThread.CurrentCulture = defaultCulture ?? throw new NullReferenceException();
 		System.Threading.Thread.CurrentThread.CurrentUICulture = defaultUICulture ?? throw new NullReferenceException();
 
+		DispatcherProvider.SetCurrent(null);
+		DeviceDisplay.SetCurrent(null);
+
 		_isDisposed = true;
 	}
 
-	protected static Stream GetStreamFromImageSource(ImageSource imageSource)
+	protected static Task<Stream> GetStreamFromImageSource(ImageSource imageSource, CancellationToken token)
 	{
 		var streamImageSource = (StreamImageSource)imageSource;
-
-		var cancellationToken = System.Threading.CancellationToken.None;
-		var task = streamImageSource.Stream(cancellationToken);
-		return task.Result;
+		return streamImageSource.Stream(token);
 	}
 
 	protected static bool StreamEquals(Stream a, Stream b)

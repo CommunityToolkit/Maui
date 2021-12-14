@@ -1,10 +1,28 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using CommunityToolkit.Maui.Extensions.Internals;
+using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Converters;
+
+/// <summary>
+/// The text cases that can be used with <see cref="TextCaseConverter"/> to convert text to a specific case.
+/// </summary>
+public enum TextCaseType
+{
+	/// <summary>Should not be converted</summary>
+	None,
+
+	/// <summary>Convert to uppercase</summary>
+	Upper,
+
+	/// <summary>Convert to lowercase</summary>
+	Lower,
+
+	/// <summary>Converts the first letter to upper only</summary>
+	FirstUpperRestLower,
+}
 
 /// <summary>
 /// Converts text (string, char) to certain case as specified with <see cref="Type"/> or the parameter of the Convert method.
