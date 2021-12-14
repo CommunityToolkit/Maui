@@ -5,6 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Essentials;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
@@ -18,7 +20,11 @@ public abstract class BaseTest : IDisposable
 	{
 		defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
 		defaultUICulture = System.Threading.Thread.CurrentThread.CurrentUICulture;
+
 		Device.PlatformServices = new MockPlatformServices();
+
+		DispatcherProvider.SetCurrent(new DispatcherProviderMock());
+		DeviceDisplay.SetCurrent(null);
 	}
 
 	~BaseTest() => Dispose(false);
@@ -38,6 +44,9 @@ public abstract class BaseTest : IDisposable
 
 		System.Threading.Thread.CurrentThread.CurrentCulture = defaultCulture ?? throw new NullReferenceException();
 		System.Threading.Thread.CurrentThread.CurrentUICulture = defaultUICulture ?? throw new NullReferenceException();
+
+		DispatcherProvider.SetCurrent(null);
+		DeviceDisplay.SetCurrent(null);
 
 		_isDisposed = true;
 	}

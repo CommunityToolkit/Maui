@@ -40,7 +40,7 @@ public class ImpliedOrderGridBehavior : BaseBehavior<Grid>
 
 	void LogWarning(string warning)
 	{
-		Console.WriteLine(warning);
+		System.Diagnostics.Debug.WriteLine(warning);
 
 		if (ThrowOnLayoutWarning)
 			throw new Exception(warning);
