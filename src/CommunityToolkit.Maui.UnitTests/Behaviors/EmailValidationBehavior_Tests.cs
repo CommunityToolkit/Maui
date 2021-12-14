@@ -53,9 +53,6 @@ public class EmailValidationBehavior_Tests : BaseTest
 	public async Task IsValid(string? value, bool expectedValue)
 	{
 		// Arrange
-		Console.WriteLine($"value: {value})");
-		Console.WriteLine($"expectedValue: {expectedValue}");
-
 		var behavior = new EmailValidationBehavior();
 
 		var entry = new Entry

@@ -33,15 +33,8 @@
 
     <!-- Custom Fonts -->
     <MauiFont Include="Resources\Fonts\*" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="7.1.2" />
-    <PackageReference Include="CommunityToolkit.Maui.Markup" Version="1.0.0-pre2" />
+    <PackageReference Include="CommunityToolkit.Maui.Markup" Version="1.0.0-pre3" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -60,6 +53,11 @@
     <!-- Required - WinUI does not yet have buildTransitive for everything -->
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0" />
     <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.30" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
   </ItemGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">

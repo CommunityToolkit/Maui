@@ -7,8 +7,46 @@ using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
+/// <summary>The allowed character types used to determine if a value is valid in the <see cref="CharactersValidationBehavior"/>. Since this is a flag, multiple flags cane be combined.</summary>
+[Flags]
+public enum CharacterType
+{
+	/// <summary>Lowercase characters are allowed.</summary>
+	LowercaseLetter = 1,
+
+	/// <summary>Uppercase characters are allowed.</summary>
+	UppercaseLetter = 2,
+
+	/// <summary>Either lowercase characters or uppercase characters are allowed.</summary>
+	Letter = LowercaseLetter | UppercaseLetter,
+
+	/// <summary>Digits are allowed.</summary>
+	Digit = 4,
+
+	/// <summary>Characters and digits are allowed.</summary>
+	Alphanumeric = Letter | Digit,
+
+	/// <summary>Whitespace is allowed.</summary>
+	Whitespace = 8,
+
+	/// <summary>Non-alphanumeric symbols are allowed.</summary>
+	NonAlphanumericSymbol = 16,
+
+	/// <summary>Lowercase latin characters are allowed.</summary>
+	LowercaseLatinLetter = 32,
+
+	/// <summary>Uppercase latin characters are allowed.</summary>
+	UppercaseLatinLetter = 64,
+
+	/// <summary>Either latin lowercase characters or latin uppercase characters are allowed.</summary>
+	LatinLetter = LowercaseLatinLetter | UppercaseLatinLetter,
+
+	/// <summary>Any type of character or digit either lowercase or uppercase, latin or non-latin is allowed.</summary>
+	Any = Alphanumeric | NonAlphanumericSymbol | Whitespace
+}
+
 /// <summary>
-/// The <see cref="CharactersValidationBehavior"/> is a behavior that allows the user to validate text input depending on specified parameters.For example, an <see cref="Entry"/> control can be styled differently depending on whether a valid or an invalid text value is provided. This behavior includes built-in checks such as checking for a certain number of digits or alphanumeric characters. Additional properties handling validation are inherited from <see cref="Internals.ValidationBehavior"/>.
+/// The <see cref="CharactersValidationBehavior"/> is a behavior that allows the user to validate text input depending on specified parameters.For example, an <see cref="Entry"/> control can be styled differently depending on whether a valid or an invalid text value is provided. This behavior includes built-in checks such as checking for a certain number of digits or alphanumeric characters. Additional properties handling validation are inherited from <see cref="ValidationBehavior"/>.
 /// </summary>
 public class CharactersValidationBehavior : TextValidationBehavior
 {

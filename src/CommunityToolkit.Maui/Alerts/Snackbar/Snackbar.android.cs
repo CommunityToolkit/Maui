@@ -6,6 +6,7 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Util;
 using Android.Widget;
+using CommunityToolkit.Maui.Core;
 using Google.Android.Material.Snackbar;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
@@ -15,7 +16,7 @@ using AndroidSnackbar = Google.Android.Material.Snackbar.Snackbar;
 using Object = Java.Lang.Object;
 using View = Android.Views.View;
 
-namespace CommunityToolkit.Maui.Alerts.Snackbar;
+namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Snackbar
 {

@@ -3,8 +3,12 @@
 	<PropertyGroup>
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
-		<WarningsAsErrors>nullable</WarningsAsErrors>
+		<WarningsAsErrors>nullable,CS1574</WarningsAsErrors><!--CS1574: XML comment has cref attribute that could not be resolved-->
 		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
 		<GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="CommunityToolkit.Maui.UnitTests" />
+	</ItemGroup>
 </Project>

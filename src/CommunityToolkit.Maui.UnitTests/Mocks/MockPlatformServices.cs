@@ -41,8 +41,6 @@ public class MockPlatformServices : IPlatformServices
 
 	public Assembly[] GetAssemblies() => Array.Empty<Assembly>();
 
-	public IIsolatedStorageFile? GetUserStoreForApplication() => null;
-
 	public void QuitApplication()
 	{
 	}
