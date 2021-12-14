@@ -1,137 +1,137 @@
-﻿#warning ImpliedOrderGridBehavior currently broken by .NET MAUI bug: https://github.com/dotnet/maui/issues/3309. Fixed in https://github.com/dotnet/maui/pull/3403
-//using System;
-//using System.Linq;
-//using Microsoft.Maui.Controls;
-//using Microsoft.Maui.Controls.Internals;
+﻿using System;
+using System.Linq;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Internals;
 
-//namespace CommunityToolkit.Maui.Behaviors;
+namespace CommunityToolkit.Maui.Behaviors;
 
-///// <summary>
-///// The <see cref="ImpliedOrderGridBehavior"/> enables you to automatically assign a <see cref="Grid"/> row and column to a view based on the order the view is added to the <see cref="Grid"/>. You only need to setup the row and column definitions and then add children to the <see cref="Grid"/>. You may still assign RowSpan and ColumnSpan to views and their values will be taken into account when assigning a row and column to a view. If a view has a user defined row or column value it will be honored.
-///// </summary>
-//public class ImpliedOrderGridBehavior : BaseBehavior<Grid>
-//{
-//    bool[][]? usedMatrix;
-//    int rowCount;
-//    int columnCount;
+/// <summary>
+/// The <see cref="ImpliedOrderGridBehavior"/> enables you to automatically assign a <see cref="Grid"/> row and column to a view based on the order the view is added to the <see cref="Grid"/>. You only need to setup the row and column definitions and then add children to the <see cref="Grid"/>. You may still assign RowSpan and ColumnSpan to views and their values will be taken into account when assigning a row and column to a view. If a view has a user defined row or column value it will be honored.
+/// </summary>
+public class ImpliedOrderGridBehavior : BaseBehavior<Grid>
+{
+	bool[][]? _usedMatrix;
+	int _rowCount;
+	int _columnCount;
 
-//    /// <summary>
-//    /// When set to true, warnings will throw an exception instead of being logged. Defaults to false.
-//    /// </summary>
-//    public bool ThrowOnLayoutWarning { get; set; }
+	/// <summary>
+	/// When set to true, warnings will throw an exception instead of being logged. Defaults to false.
+	/// </summary>
+	public bool ThrowOnLayoutWarning { get; set; }
 
-//    /// <inheritdoc />
-//    protected override void OnAttachedTo(Grid bindable)
-//    {
-//        base.OnAttachedTo(bindable);
+	/// <inheritdoc />
+	protected override void OnAttachedTo(Grid bindable)
+	{
+		base.OnAttachedTo(bindable);
 
-//        bindable.ChildAdded += OnInternalGridChildAdded;
-//    }
+		bindable.ChildAdded += OnInternalGridChildAdded;
+	}
 
-//    /// <inheritdoc />
-//    protected override void OnDetachingFrom(Grid bindable)
-//    {
-//        base.OnDetachingFrom(bindable);
+	/// <inheritdoc />
+	protected override void OnDetachingFrom(Grid bindable)
+	{
+		base.OnDetachingFrom(bindable);
 
-//        bindable.ChildAdded -= OnInternalGridChildAdded;
-//    }
+		bindable.ChildAdded -= OnInternalGridChildAdded;
+	}
 
-//    void OnInternalGridChildAdded(object? sender, ElementEventArgs e) =>
-//        ProcessElement(e.Element);
+	void OnInternalGridChildAdded(object? sender, ElementEventArgs e) =>
+		ProcessElement(e.Element);
 
-//    void LogWarning(string warning)
-//    {
-//        Log.Warning(nameof(ImpliedOrderGridBehavior), warning);
-//        if (ThrowOnLayoutWarning)
-//            throw new Exception(warning);
-//    }
+	void LogWarning(string warning)
+	{
+		Console.WriteLine(warning);
 
-//    bool[][] InitMatrix()
-//    {
-//        ArgumentNullException.ThrowIfNull(View);
+		if (ThrowOnLayoutWarning)
+			throw new Exception(warning);
+	}
 
-//        rowCount = View.RowDefinitions.Count;
-//        if (rowCount == 0)
-//            rowCount = 1;
+	bool[][] InitMatrix()
+	{
+		ArgumentNullException.ThrowIfNull(View);
 
-//        columnCount = View.ColumnDefinitions.Count;
-//        if (columnCount == 0)
-//            columnCount = 1;
+		_rowCount = View.RowDefinitions.Count;
+		if (_rowCount == 0)
+			_rowCount = 1;
 
-//        var newMatrix = new bool[rowCount][];
-//        for (var r = 0; r < rowCount; r++)
-//            newMatrix[r] = new bool[columnCount];
+		_columnCount = View.ColumnDefinitions.Count;
+		if (_columnCount == 0)
+			_columnCount = 1;
 
-//        return newMatrix;
-//    }
+		var newMatrix = new bool[_rowCount][];
+		for (var r = 0; r < _rowCount; r++)
+			newMatrix[r] = new bool[_columnCount];
 
-//    void FindNextCell(out int rowIndex, out int columnIndex)
-//    {
-//        usedMatrix ??= InitMatrix();
+		return newMatrix;
+	}
 
-//        // Find the first available row
-//        var row = usedMatrix.FirstOrDefault(r => r.Any(c => !c));
+	void FindNextCell(out int rowIndex, out int columnIndex)
+	{
+		_usedMatrix ??= InitMatrix();
 
-//        // If no row is found, set cell to origin and log
-//        if (row == null)
-//        {
-//            LogWarning("Defined cells exceeded.");
-//            rowIndex = Math.Max(rowCount - 1, 0);
-//            columnIndex = Math.Max(columnCount - 1, 0);
-//            return;
-//        }
-//        rowIndex = Array.IndexOf(usedMatrix, row);
+		// Find the first available row
+		var row = _usedMatrix.FirstOrDefault(r => r.Any(c => !c));
 
-//        // Find the first available column
-//        columnIndex = Array.IndexOf(row, row.FirstOrDefault(c => !c));
-//    }
+		// If no row is found, set cell to origin and log
+		if (row == null)
+		{
+			LogWarning("Defined cells exceeded.");
+			rowIndex = Math.Max(_rowCount - 1, 0);
+			columnIndex = Math.Max(_columnCount - 1, 0);
+			return;
+		}
+		rowIndex = Array.IndexOf(_usedMatrix, row);
 
-//    void UpdateUsedCells(int row, int column, int rowSpan, int columnSpan)
-//    {
-//        var rowEnd = row + rowSpan;
-//        var columnEnd = column + columnSpan;
+		// Find the first available column
+		columnIndex = Array.IndexOf(row, row.FirstOrDefault(c => !c));
+	}
 
-//        if (columnEnd > columnCount)
-//        {
-//            columnEnd = columnCount;
-//            LogWarning($"View at row {row} column {columnEnd} with column span {columnSpan} exceeds the defined grid columns.");
-//        }
+	void UpdateUsedCells(int row, int column, int rowSpan, int columnSpan)
+	{
+		var rowEnd = row + rowSpan;
+		var columnEnd = column + columnSpan;
 
-//        if (rowEnd > rowCount)
-//        {
-//            rowEnd = rowCount;
-//            LogWarning($"View at row {row} column {columnEnd} with row span {rowSpan} exceeds the defined grid rows.");
-//        }
+		if (columnEnd > _columnCount)
+		{
+			columnEnd = _columnCount;
+			LogWarning($"View at row {row} column {columnEnd} with column span {columnSpan} exceeds the defined grid columns.");
+		}
 
-//        for (var r = row; r < rowEnd; r++)
-//        {
-//            for (var c = column; c < columnEnd; c++)
-//            {
-//                if (usedMatrix?[r][c] ?? throw new NullReferenceException())
-//                    LogWarning($"Cell at row {r} column {c} has already been used.");
+		if (rowEnd > _rowCount)
+		{
+			rowEnd = _rowCount;
+			LogWarning($"View at row {row} column {columnEnd} with row span {rowSpan} exceeds the defined grid rows.");
+		}
 
-//                usedMatrix[r][c] = true;
-//            }
-//        }
-//    }
+		for (var r = row; r < rowEnd; r++)
+		{
+			for (var c = column; c < columnEnd; c++)
+			{
+				if (_usedMatrix?[r][c] ?? throw new NullReferenceException())
+					LogWarning($"Cell at row {r} column {c} has already been used.");
 
-//    void ProcessElement(BindableObject view)
-//    {
-//        var columnSpan = Grid.GetColumnSpan(view);
-//        var rowSpan = Grid.GetRowSpan(view);
+				_usedMatrix[r][c] = true;
+			}
+		}
+	}
 
-//        FindNextCell(out var row, out var column);
+	void ProcessElement(BindableObject view)
+	{
+		var columnSpan = Grid.GetColumnSpan(view);
+		var rowSpan = Grid.GetRowSpan(view);
 
-//        // Check to see if the user manually assigned a row or column
-//        if (view.IsSet(Grid.ColumnProperty))
-//            column = Grid.GetColumn(view);
-//        if (view.IsSet(Grid.RowProperty))
-//            row = Grid.GetRow(view);
+		FindNextCell(out var row, out var column);
 
-//        UpdateUsedCells(row, column, rowSpan, columnSpan);
+		// Check to see if the user manually assigned a row or column
+		if (view.IsSet(Grid.ColumnProperty))
+			column = Grid.GetColumn(view);
+		if (view.IsSet(Grid.RowProperty))
+			row = Grid.GetRow(view);
 
-//        // Set attributes
-//        view.SetValue(Grid.ColumnProperty, column);
-//        view.SetValue(Grid.RowProperty, row);
-//    }
-//}
+		UpdateUsedCells(row, column, rowSpan, columnSpan);
+
+		// Set attributes
+		view.SetValue(Grid.ColumnProperty, column);
+		view.SetValue(Grid.RowProperty, row);
+	}
+}
