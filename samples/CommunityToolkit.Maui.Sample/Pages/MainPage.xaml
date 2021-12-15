@@ -4,6 +4,7 @@
     x:Class="CommunityToolkit.Maui.Sample.Pages.MainPage"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels"
+    xmlns:b="clr-namespace:CommunityToolkit.Maui.Behaviors;assembly=CommunityToolkit.Maui"
     x:Name="Page"
     Title="Welcome">
     <pages:BasePage.BindingContext>
@@ -11,10 +12,14 @@
     </pages:BasePage.BindingContext>
     <ScrollView VerticalOptions="FillAndExpand">
         <StackLayout Spacing="16">
-            <Label
+            <Entry
                 Margin="20,32,20,0"
-                Style="{StaticResource label_welcome_header}"
-                Text="Introducing the .NET MAUI Community Toolkit" />
+                Text="Introducing the .NET MAUI Community Toolkit" 
+                b:SelectAllTextAP.ShouldSelectAllText="True">
+                <!--<Entry.Behaviors>
+                    <b:SelectAllTextBehavior/>
+                </Entry.Behaviors>-->
+            </Entry>
             <Label 
                 Margin="20,0,20,28" 
                 Text="The .NET MAUI Community Toolkit is a collection of Animations, Behaviors, Converters, and Effects for mobile development with .NET MAUI. It simplifies and demonstrates common developer tasks building iOS, Android, macOS and Windows apps with .NET MAUI." />
