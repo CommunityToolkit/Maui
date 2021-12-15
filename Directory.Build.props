@@ -6,7 +6,7 @@
 		<!--CS1574: XML comment has cref attribute that could not be resolved-->
  		<!--CS1573: Parameter has no matching param tag in the XML comment -->
  		<!--CS1734: XML comment has a paramref tag, but there is no parameter by that name-->
- 		<WarningsAsErrors>nullable,CS1574,CS1573,CS137</WarningsAsErrors>
+ 		<WarningsAsErrors>nullable,CS1574,CS1573,CS1734</WarningsAsErrors>
 		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
 		<GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
 	</PropertyGroup>
