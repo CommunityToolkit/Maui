@@ -4,7 +4,7 @@ using CommunityToolkit.WinUI.Notifications;
 using Windows.Data.Xml.Dom;
 using Windows.UI.Notifications;
 
-namespace CommunityToolkit.Maui.Alerts.Snackbar;
+namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Snackbar
 {

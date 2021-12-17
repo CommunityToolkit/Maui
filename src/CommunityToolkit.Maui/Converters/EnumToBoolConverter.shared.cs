@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using CommunityToolkit.Maui.Extensions.Internals;
+using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Converters;

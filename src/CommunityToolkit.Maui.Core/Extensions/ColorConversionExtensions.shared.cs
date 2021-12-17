@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui.Graphics;
 
-namespace CommunityToolkit.Maui.Extensions;
+namespace CommunityToolkit.Maui.Core.Extensions;
 
 /// <summary>
 /// Extension methods for Microsoft.Maui.Graphics.Color
