@@ -9,16 +9,17 @@ public static class ColorConversionExtensions
 	/// Converts Color to RGB
 	/// </summary>
 	/// <param name="c"></param>
-	/// <returns>RGB(255, 255, 255)</returns>
-	public static string ToRgbString(this Color c) => $"RGB({c.GetByteRed()},{c.GetByteGreen()},{c.GetByteBlue()})";
+	/// <returns>RGB(255,255,255)</returns>
+	public static string ToRgbString(this Color c) => 
+		$"RGB({c.GetByteRed()},{c.GetByteGreen()},{c.GetByteBlue()})";
 
 	/// <summary>
 	/// Converts Color to RGBA
 	/// </summary>
 	/// <param name="c"></param>
-	/// <returns>RGBA(255, 255, 255, 255)</returns>
+	/// <returns>RGBA(255,255,255,255)</returns>
 	public static string ToRgbaString(this Color c) =>
-		$"RGBA({c.GetByteRed()}, {c.GetByteGreen()}, {c.GetByteBlue()}, {c.GetByteAlpha()})";
+        $"RGBA({c.GetByteRed()},{c.GetByteGreen()},{c.GetByteBlue()},{c.GetByteAlpha()})";
 
 	/// <summary>
 	/// Converts Color to Hex RGB
@@ -42,7 +43,7 @@ public static class ColorConversionExtensions
 	/// <param name="c"></param>
 	/// <returns>CMYK(100%,100%,100%,100%)</returns>
 	public static string ToCmykString(this Color c) =>
-		$"CMYK({c.GetPercentCyan():P},{c.GetPercentMagenta():P},{c.GetPercentYellow():P},{c.GetPercentBlackKey():P})";
+        $"CMYK({c.GetPercentCyan():P0},{c.GetPercentMagenta():P0},{c.GetPercentYellow():P0},{c.GetPercentBlackKey():P0})";
 
 	/// <summary>
 	/// Converts Color to CMYKA
@@ -50,14 +51,14 @@ public static class ColorConversionExtensions
 	/// <param name="c"></param>
 	/// <returns>CMYK(100%,100%,100%,100%,100%)</returns>
 	public static string ToCmykaString(this Color c) =>
-		$"CMYKA({c.GetPercentCyan():P},{c.GetPercentMagenta():P},{c.GetPercentYellow():P},{c.GetPercentBlackKey():P},{c.Alpha:P})";
+        $"CMYKA({c.GetPercentCyan():P0},{c.GetPercentMagenta():P0},{c.GetPercentYellow():P0},{c.GetPercentBlackKey():P0},{c.Alpha:P0})";
 
 	/// <summary>
 	/// Converts Color to HSL
 	/// </summary>
 	/// <param name="c"></param>
-	/// <returns>HSLA(360,100%,100%)</returns>
-	public static string ToHslString(this Color c) => $"HSL({c.GetHue():P},{c.GetSaturation():P},{c.GetLuminosity():P})";
+	/// <returns>HSLA(360°,100%,100%)</returns>
+	public static string ToHslString(this Color c) => $"HSL({c.GetDegreeHue():0}°,{c.GetSaturation():P0},{c.GetLuminosity():P0})";
 
 	/// <summary>
 	/// Converts Color to HSLA
@@ -65,7 +66,7 @@ public static class ColorConversionExtensions
 	/// <param name="c"></param>
 	///  <returns>HSLA(360°,100%,100%,100%)</returns>
 	public static string ToHslaString(this Color c) =>
-		$"HSLA({c.GetDegreeHue()}°,{c.GetSaturation():P},{c.GetLuminosity():P},{c.Alpha:P})";
+        $"HSLA({c.GetDegreeHue():0}°,{c.GetSaturation():P0},{c.GetLuminosity():P0},{c.Alpha:P0})";
 
 	/// <summary>
 	/// Sets Red
@@ -230,14 +231,15 @@ public static class ColorConversionExtensions
 	/// <param name="c"></param>
 	/// <returns>Percentage Black</returns>
 	// Note : double Percent R, G and B are simply Color.R, Color.G and Color.B
-	public static double GetPercentBlackKey(this Color c) => 1 - Math.Max(Math.Max(c.Red, c.Green), c.Blue);
+	public static float GetPercentBlackKey(this Color c) => 1 - Math.Max(Math.Max(c.Red, c.Green), c.Blue);
 
 	/// <summary>
 	/// Gets percentage Cyan for Color
 	/// </summary>
 	/// <param name="c"></param>
 	/// <returns>Percentage Cyan</returns>
-	public static double GetPercentCyan(this Color c) =>
+	public static float GetPercentCyan(this Color c) =>
+		(1- c.GetPercentBlackKey() == 0) ? 0 : 
 		(1 - c.Red - c.GetPercentBlackKey()) / (1 - c.GetPercentBlackKey());
 
 	/// <summary>
@@ -245,7 +247,8 @@ public static class ColorConversionExtensions
 	/// </summary>
 	/// <param name="c"></param>
 	/// <returns>Percentage Magenta</returns>
-	public static double GetPercentMagenta(this Color c) =>
+    public static float GetPercentMagenta(this Color c) =>
+		(1 - c.GetPercentBlackKey() == 0) ? 0 :
 		(1 - c.Green - c.GetPercentBlackKey()) / (1 - c.GetPercentBlackKey());
 
 	/// <summary>
@@ -253,7 +256,8 @@ public static class ColorConversionExtensions
 	/// </summary>
 	/// <param name="c"></param>
 	/// <returns>Percentage Yellow</returns>
-	public static double GetPercentYellow(this Color c) =>
+    public static float GetPercentYellow(this Color c) =>
+		(1 - c.GetPercentBlackKey() == 0) ? 0 :
 		(1 - c.Blue - c.GetPercentBlackKey()) / (1 - c.GetPercentBlackKey());
 
 	/// <summary>
@@ -302,7 +306,7 @@ public static class ColorConversionExtensions
 	/// Determines whether a Color is dark
 	/// </summary>
 	/// <param name="c"></param>
-	/// <returns>Is Color Dar</returns>
+	/// <returns>Is Color Dark</returns>
 	public static bool IsDark(this Color c) => c.GetByteRed() + c.GetByteGreen() + c.GetByteBlue() <= 127 * 3;
 
 	static byte ToByte(double input)
@@ -319,4 +323,5 @@ public static class ColorConversionExtensions
 
 		return (byte)Math.Round(input);
 	}
+}
 }
