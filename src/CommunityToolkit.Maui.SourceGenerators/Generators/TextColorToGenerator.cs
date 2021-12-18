@@ -4,13 +4,14 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using CommunityToolkit.Maui.SourceGenerators.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
-namespace CommunityToolkit.Maui.SourceGenerators;
+namespace CommunityToolkit.Maui.SourceGenerators.Generators;
 
 [Generator]
-public class TextColorToGenerator : ISourceGenerator
+class TextColorToGenerator : ISourceGenerator
 {
 	public void Execute(GeneratorExecutionContext context)
 	{

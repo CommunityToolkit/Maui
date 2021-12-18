@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.CodeAnalysis;
 
-namespace CommunityToolkit.Maui.SourceGenerators;
+namespace CommunityToolkit.Maui.SourceGenerators.Extensions;
 
-public static class NamedTypeSymbolExtensions
+static class NamedTypeSymbolExtensions
 {
 	public static bool ImplementsInterfaceOrBaseClass(this INamedTypeSymbol typeSymbol, in string typeToCheck)
 	{

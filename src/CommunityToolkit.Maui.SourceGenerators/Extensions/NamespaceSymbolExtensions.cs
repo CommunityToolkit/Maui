@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
-namespace CommunityToolkit.Maui.SourceGenerators;
+namespace CommunityToolkit.Maui.SourceGenerators.Extensions;
 
-public static class NamespaceSymbolExtensions
+static class NamespaceSymbolExtensions
 {
 	public static IEnumerable<INamedTypeSymbol> GetNamedTypeSymbols(this INamespaceSymbol namespaceSymbol)
 	{
@@ -13,9 +13,9 @@ public static class NamespaceSymbolExtensions
 
 		while (stack.Count > 0)
 		{
-			var namespaceSymbol = stack.Pop();
+			var namespaceSymbolFromStack = stack.Pop();
 
-			foreach (var member in namespaceSymbol.GetMembers())
+			foreach (var member in namespaceSymbolFromStack.GetMembers())
 			{
 				if (member is INamespaceSymbol memberAsNamespace)
 				{
