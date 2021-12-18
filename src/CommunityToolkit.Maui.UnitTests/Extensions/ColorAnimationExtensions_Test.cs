@@ -14,63 +14,63 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions;
 public class ColorAnimationExtensions_Test : BaseTest
 {
 	[Fact]
-	public async Task TextColorTo_VerifyColorChanged()
+	public async Task LabelTextColorTo_VerifyColorChanged()
 	{
 		Color originalBackgroundColor = Colors.Blue, updatedBackgroundColor = Colors.Red;
 
-		VisualElement element = new Label { BackgroundColor = originalBackgroundColor };
-		element.EnableAnimations();
+		var label = new Label { BackgroundColor = originalBackgroundColor };
+		label.EnableAnimations();
 
-		Assert.Equal(originalBackgroundColor, element.BackgroundColor);
+		Assert.Equal(originalBackgroundColor, label.BackgroundColor);
 
-		var isSuccessful = await element.TextColorTo(updatedBackgroundColor);
+		var isSuccessful = await label.TextColorTo(updatedBackgroundColor);
 
 		Assert.True(isSuccessful);
-		Assert.Equal(updatedBackgroundColor, element.BackgroundColor);
+		Assert.Equal(updatedBackgroundColor, label.BackgroundColor);
 	}
 
 	[Fact]
-	public async Task TextColorTo_VerifyColorChangedForDefaultBackgroundColor()
+	public async Task LabelTextColorTo_VerifyColorChangedForDefaultBackgroundColor()
 	{
 		Color updatedBackgroundColor = Colors.Yellow;
 
-		VisualElement element = new Label();
-		element.EnableAnimations();
+		var label = new Label();
+		label.EnableAnimations();
 
-		var isSuccessful = await element.BackgroundColorTo(updatedBackgroundColor);
+		var isSuccessful = await label.TextColorTo(updatedBackgroundColor);
 
 		Assert.True(isSuccessful);
-		Assert.Equal(updatedBackgroundColor, element.BackgroundColor);
+		Assert.Equal(updatedBackgroundColor, label.BackgroundColor);
 	}
 
 	[Fact]
-	public async Task TextColorTo_VerifyFalseWhenAnimationContextNotSet()
+	public async Task LabelTextColorTo_VerifyFalseWhenAnimationContextNotSet()
 	{
-		VisualElement element = new Label();
-		Assert.Null(element.BackgroundColor);
+		var label = new Label();
+		Assert.Null(label.BackgroundColor);
 
-		var isSuccessful = await element.BackgroundColorTo(Colors.Red);
+		var isSuccessful = await label.TextColorTo(Colors.Red);
 
 		Assert.False(isSuccessful);
-		Assert.Equal(Colors.Transparent, element.BackgroundColor);
+		Assert.Equal(Colors.Transparent, label.BackgroundColor);
 	}
 
 	[Fact]
-	public async Task TextColorTo_DoesNotAllowNullVisualElement()
+	public async Task LabelTextColorTo_DoesNotAllowNullVisualElement()
 	{
-		VisualElement? element = null;
+		Label? label = null;
 
-		await Assert.ThrowsAsync<NullReferenceException>(() => element?.BackgroundColorTo(Colors.Red));
+		await Assert.ThrowsAsync<NullReferenceException>(() => label?.TextColorTo(Colors.Red));
 	}
 
 	[Fact]
-	public async Task TextColorTo_DoesNotAllowNullColor()
+	public async Task LabelTextColorTo_DoesNotAllowNullColor()
 	{
-		VisualElement element = new Label();
-		element.EnableAnimations();
+		var label = new Label();
+		label.EnableAnimations();
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		await Assert.ThrowsAsync<ArgumentNullException>(() => element.BackgroundColorTo(null));
+		await Assert.ThrowsAsync<ArgumentNullException>(() => label.TextColorTo(null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 

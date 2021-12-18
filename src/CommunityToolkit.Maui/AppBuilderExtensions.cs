@@ -1,4 +1,9 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using System;
+using System.Threading.Tasks;
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Hosting;
 
 namespace CommunityToolkit.Maui;
@@ -17,4 +22,5 @@ public static class AppBuilderExtensions
 	{
 		return builder.UseMauiCommunityToolkitCore();
 	}
+
 }
