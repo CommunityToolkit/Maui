@@ -59,11 +59,11 @@ public static partial class ColorAnimationExtensions
 		ArgumentNullException.ThrowIfNull(color);
 
 		if(element is not ITextStyle)
-			throw new ArgumentException($""Element must implement { nameof(ITextStyle)}"", nameof(element));
+			throw new ArgumentException($""Element must implement {nameof(ITextStyle)}"", nameof(element));
 
 		//Although TextColor is defined as not-nullable, it CAN be null
 		//If null => set it to Transparent as Animation will crash on null BackgroundColor
-			element.TextColor ??= Colors.Transparent;
+		element.TextColor ??= Colors.Transparent;
 
 		var animationCompletionSource = new TaskCompletionSource<bool>();
 

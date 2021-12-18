@@ -28,6 +28,7 @@ public partial class ColorAnimationExtensionsPage : BasePage
 		ColorPicker ??= new();
 		EasingPicker ??= new();
 		DurationInput ??= new();
+		TextColorToDescriptionLabel ??= new();
 	}
 
 	protected override void OnAppearing()
@@ -55,7 +56,8 @@ public partial class ColorAnimationExtensionsPage : BasePage
 
 		var easing = _easings.ElementAtOrDefault(EasingPicker.SelectedIndex).Value;
 
-		await ColorFrame.BackgroundColorTo(color, rate, duration, easing);
+		await Task.WhenAll(ColorFrame.BackgroundColorTo(color, rate, duration, easing),
+							TextColorToDescriptionLabel.TextColorTo(color, rate, duration, easing));
 
 		SetPickersRandomValue();
 	}
