@@ -2,14 +2,5 @@
 
 public partial class MultiValidationBehaviorPage
 {
-	public MultiValidationBehaviorPage()
-	{
-		InitializeComponent();
-
-		AnyValidation ??= new();
-		MultiValidation ??= new();
-		DigitValidation ??= new();
-		UpperValidation ??= new();
-		SymbolValidation ??= new();
-	}
+	public MultiValidationBehaviorPage() => InitializeComponent();
 }

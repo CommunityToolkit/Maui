@@ -19,17 +19,7 @@ public partial class ColorAnimationExtensionsPage : BasePage
 		.GetFields(BindingFlags.Static | BindingFlags.Public)
 		.ToDictionary(c => c.Name, c => (Easing)(c.GetValue(null) ?? throw new InvalidOperationException()));
 
-	public ColorAnimationExtensionsPage()
-	{
-		InitializeComponent();
-
-		RateInput ??= new();
-		ColorFrame ??= new();
-		ColorPicker ??= new();
-		EasingPicker ??= new();
-		DurationInput ??= new();
-		TextColorToDescriptionLabel ??= new();
-	}
+	public ColorAnimationExtensionsPage() => InitializeComponent();
 
 	protected override void OnAppearing()
 	{

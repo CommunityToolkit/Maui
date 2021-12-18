@@ -2,9 +2,5 @@
 
 public partial class IndexToArrayItemConverterPage : BasePage
 {
-	public IndexToArrayItemConverterPage()
-	{
-		InitializeComponent();
-		Stepper ??= new();
-	}
+	public IndexToArrayItemConverterPage() => InitializeComponent();
 }
