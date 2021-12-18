@@ -5,7 +5,13 @@ namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
 public partial class BoolToObjectConverterPage : BasePage
 {
-	public BoolToObjectConverterPage() => InitializeComponent();
+	public BoolToObjectConverterPage()
+	{
+		InitializeComponent();
+
+		CheckBox ??= new();
+		Ellipse ??= new();
+	}
 
 	void OnButtonClicked(object? sender, EventArgs args)
 	{

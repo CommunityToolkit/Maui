@@ -9,6 +9,8 @@ public partial class MainPage : BasePage
 	{
 		InitializeComponent();
 
+		Page ??= this;
+
 		Padding = new Thickness(20, 0);
 	}
 }

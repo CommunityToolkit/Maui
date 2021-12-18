@@ -13,7 +13,13 @@ public partial class ColorsConverterPage : BasePage
 		.GetFields(BindingFlags.Static | BindingFlags.Public)
 		.ToDictionary(c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()));
 
-	public ColorsConverterPage() => InitializeComponent();
+	public ColorsConverterPage()
+	{
+		InitializeComponent();
+
+		Picker ??= new();
+		BoxView ??= new();
+	}
 
 	protected override void OnAppearing()
 	{

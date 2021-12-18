@@ -24,6 +24,8 @@ public partial class SnackbarPage : BasePage
 	public SnackbarPage()
 	{
 		InitializeComponent();
+
+		DisplayCustomSnackbarButton ??= new();
 		DisplayCustomSnackbarButton.Text = _displayCustomSnackbarText;
 	}
 

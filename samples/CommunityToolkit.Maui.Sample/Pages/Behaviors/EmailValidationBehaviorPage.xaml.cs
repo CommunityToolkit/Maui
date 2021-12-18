@@ -2,5 +2,9 @@
 
 public partial class EmailValidationBehaviorPage : BasePage
 {
-	public EmailValidationBehaviorPage() => InitializeComponent();
+	public EmailValidationBehaviorPage()
+	{
+		InitializeComponent();
+		EmailValidator ??= new();
+	}
 }
