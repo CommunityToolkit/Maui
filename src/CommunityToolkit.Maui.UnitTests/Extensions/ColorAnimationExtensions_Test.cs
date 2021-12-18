@@ -16,43 +16,43 @@ public class ColorAnimationExtensions_Test : BaseTest
 	[Fact]
 	public async Task LabelTextColorTo_VerifyColorChanged()
 	{
-		Color originalBackgroundColor = Colors.Blue, updatedBackgroundColor = Colors.Red;
+		Color originalTextColor = Colors.Blue, updatedTextColor = Colors.Red;
 
-		var label = new Label { BackgroundColor = originalBackgroundColor };
+		var label = new Label { TextColor = originalTextColor };
 		label.EnableAnimations();
 
-		Assert.Equal(originalBackgroundColor, label.BackgroundColor);
+		Assert.Equal(originalTextColor, label.TextColor);
 
-		var isSuccessful = await label.TextColorTo(updatedBackgroundColor);
+		var isSuccessful = await label.TextColorTo(updatedTextColor);
 
 		Assert.True(isSuccessful);
-		Assert.Equal(updatedBackgroundColor, label.BackgroundColor);
+		Assert.Equal(updatedTextColor, label.TextColor);
 	}
 
 	[Fact]
 	public async Task LabelTextColorTo_VerifyColorChangedForDefaultBackgroundColor()
 	{
-		Color updatedBackgroundColor = Colors.Yellow;
+		Color updatedTextColor = Colors.Yellow;
 
 		var label = new Label();
 		label.EnableAnimations();
 
-		var isSuccessful = await label.TextColorTo(updatedBackgroundColor);
+		var isSuccessful = await label.TextColorTo(updatedTextColor);
 
 		Assert.True(isSuccessful);
-		Assert.Equal(updatedBackgroundColor, label.BackgroundColor);
+		Assert.Equal(updatedTextColor, label.TextColor);
 	}
 
 	[Fact]
 	public async Task LabelTextColorTo_VerifyFalseWhenAnimationContextNotSet()
 	{
 		var label = new Label();
-		Assert.Null(label.BackgroundColor);
+		Assert.Null(label.TextColor);
 
 		var isSuccessful = await label.TextColorTo(Colors.Red);
 
 		Assert.False(isSuccessful);
-		Assert.Equal(Colors.Transparent, label.BackgroundColor);
+		Assert.Equal(Colors.Transparent, label.TextColor);
 	}
 
 	[Fact]
