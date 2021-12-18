@@ -1,19 +1,19 @@
-﻿using Microsoft.Maui;
-using Microsoft.Maui.Controls;
+﻿using Microsoft.Maui.Controls;
 using Android.Widget;
 
 namespace CommunityToolkit.Maui.Behaviors;
-public partial class SelectAllTextBehavior
+public partial class SelectAllTextBehavior : BasePlatformBehavior<InputView, EditText>
 {
-	EditText? nativeControl;
-	partial void OnPlatformkAttachedBehavior(InputView view)
-	{
-		nativeControl = view.ToNative(view.Handler.MauiContext!) as EditText;
+	/// <inheritdoc />
 
-		nativeControl?.SetSelectAllOnFocus(true);
-	}
-	partial void OnPlatformDeattachedBehavior(InputView view)
+	protected override void OnPlatformAttachedBehavior(InputView view)
 	{
-		nativeControl?.SetSelectAllOnFocus(false);
+		NativeView?.SetSelectAllOnFocus(true);
+	}
+	/// <inheritdoc />
+
+	protected override void OnPlatformDeattachedBehavior(InputView view)
+	{
+		NativeView?.SetSelectAllOnFocus(false);
 	}
 }

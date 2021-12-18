@@ -6,23 +6,18 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// <summary>
 /// This behaviors allows you to select all text at once.
 /// </summary>
-public partial class SelectAllTextBehavior : BaseBehavior<InputView>
+public partial class SelectAllTextBehavior
 {
-	/// <inheritdoc />
-	protected override async void OnAttachedTo(InputView bindable)
-	{
-		base.OnAttachedTo(bindable);
-		await Task.Delay(5000);
-		OnPlatformkAttachedBehavior(bindable);
-	}
+	///// <inheritdoc />
 
-	/// <inheritdoc />
-	protected override void OnDetachingFrom(InputView bindable)
-	{
-		base.OnDetachingFrom(bindable);
-		OnPlatformDeattachedBehavior(bindable);
-	}
+	//protected override void OnPlatformAttachedBehavior(InputView view)
+	//{
+	//	throw new System.NotImplementedException();
+	//}
+	///// <inheritdoc />
 
-	partial void OnPlatformkAttachedBehavior(InputView view);
-	partial void OnPlatformDeattachedBehavior(InputView view);
+	//protected override void OnPlatformDeattachedBehavior(InputView view)
+	//{
+	//	throw new System.NotImplementedException();
+	//}
 }
