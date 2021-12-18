@@ -20,9 +20,9 @@ public sealed class SectionModel
 
 	public Type Type { get; }
 
-	public string Title { get; } = string.Empty;
+	public string Title { get; }
 
-	public string Description { get; } = string.Empty;
+	public string Description { get; }
 
-	public Color Color { get; } = new Color();
+	public Color Color { get; }
 }

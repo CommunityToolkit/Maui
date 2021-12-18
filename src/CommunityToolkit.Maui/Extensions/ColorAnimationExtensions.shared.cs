@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Extensions;
 /// <summary>
 /// Extension methods for Microsoft.Maui.Graphics.Color animations
 /// </summary>
-public static class ColorAnimationExtensions
+public static partial class ColorAnimationExtensions
 {
 	/// <summary>
 	/// Animates the BackgroundColor of a VisualElement to the given color
@@ -52,17 +52,18 @@ public static class ColorAnimationExtensions
 		}
 
 		return animationCompletionSource.Task;
+
+
+		static Animation GetRedTransformAnimation(VisualElement element, float targetRed) =>
+			new(v => element.BackgroundColor = element.BackgroundColor.WithRed(v), element.BackgroundColor.Red, targetRed);
+
+		static Animation GetGreenTransformAnimation(VisualElement element, float targetGreen) =>
+			new(v => element.BackgroundColor = element.BackgroundColor.WithGreen(v), element.BackgroundColor.Green, targetGreen);
+
+		static Animation GetBlueTransformAnimation(VisualElement element, float targetBlue) =>
+			new(v => element.BackgroundColor = element.BackgroundColor.WithBlue(v), element.BackgroundColor.Blue, targetBlue);
+
+		static Animation GetAlphaTransformAnimation(VisualElement element, float targetAlpha) =>
+			new(v => element.BackgroundColor = element.BackgroundColor.WithAlpha(v), element.BackgroundColor.Alpha, targetAlpha);
 	}
-
-	static Animation GetRedTransformAnimation(VisualElement element, float targetRed) =>
-		new(v => element.BackgroundColor = element.BackgroundColor.WithRed(v), element.BackgroundColor.Red, targetRed);
-
-	static Animation GetGreenTransformAnimation(VisualElement element, float targetGreen) =>
-		new(v => element.BackgroundColor = element.BackgroundColor.WithGreen(v), element.BackgroundColor.Green, targetGreen);
-
-	static Animation GetBlueTransformAnimation(VisualElement element, float targetBlue) =>
-		new(v => element.BackgroundColor = element.BackgroundColor.WithBlue(v), element.BackgroundColor.Blue, targetBlue);
-
-	static Animation GetAlphaTransformAnimation(VisualElement element, float targetAlpha) =>
-		new(v => element.BackgroundColor = element.BackgroundColor.WithAlpha(v), element.BackgroundColor.Alpha, targetAlpha);
 }

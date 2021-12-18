@@ -85,4 +85,7 @@
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="4.0.1" PrivateAssets="all"/>
+  </ItemGroup>
 </Project>
