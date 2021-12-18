@@ -18,9 +18,9 @@ public class TextColorToGenerator : ISourceGenerator
 
 		var mauiControlsAssemblySymbol = context.Compilation.SourceModule.ReferencedAssemblySymbols.Single(q => q.Name == "Microsoft.Maui.Controls");
 
-		foreach (var namedTypeSymbol in GetNamedTypeSymbols(mauiControlsAssemblySymbol.GlobalNamespace))
+		foreach (var namedTypeSymbol in mauiControlsAssemblySymbol.GlobalNamespace.GetNamedTypeSymbols())
 		{
-			if(DoesImplementInterfaceOrBaseClass(namedTypeSymbol, "ITextStyle"))
+			if(namedTypeSymbol.ImplementsInterfaceOrBaseClass("ITextStyle"))
 			{
 				textStyleClassNameList.Add(namedTypeSymbol.Name);
 			}
@@ -107,75 +107,6 @@ public static partial class ColorAnimationExtensions
 
 	void ISourceGenerator.Initialize(GeneratorInitializationContext context)
 	{
-#if DEBUG
-		if (!System.Diagnostics.Debugger.IsAttached)
-		{
-			System.Diagnostics.Debugger.Launch();
-		}
-#endif
-	}
 
-	static IEnumerable<INamedTypeSymbol> GetNamedTypeSymbols(INamespaceSymbol namespaceSymbol)
-	{
-		var stack = new Stack<INamespaceSymbol>();
-		stack.Push(namespaceSymbol);
-
-		while (stack.Count > 0)
-		{
-			var @namespace = stack.Pop();
-
-			foreach (var member in @namespace.GetMembers())
-			{
-				if (member is INamespaceSymbol memberAsNamespace)
-				{
-					stack.Push(memberAsNamespace);
-				}
-				else if (member is INamedTypeSymbol memberAsNamedTypeSymbol)
-				{
-					yield return memberAsNamedTypeSymbol;
-				}
-			}
-		}
-	}
-
-	static bool DoesImplementInterfaceOrBaseClass(in INamedTypeSymbol typeSymbol, in string typeToCheck)
-	{
-		if (typeSymbol is null)
-		{
-			return false;
-		}
-
-		if (typeSymbol.MetadataName == typeToCheck)
-		{
-			return true;
-		}
-
-		if (typeSymbol.BaseType?.MetadataName == typeToCheck)
-		{
-			return true;
-		}
-
-		foreach (var @interface in typeSymbol.AllInterfaces)
-		{
-			if (@interface.MetadataName == typeToCheck)
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	class GetAllSymbolsVisitor : SymbolVisitor
-	{
-		public override void VisitNamespace(INamespaceSymbol symbol)
-		{
-			Parallel.ForEach(symbol.GetMembers(), s => s.Accept(this));
-		}
-
-		public override void VisitNamedType(INamedTypeSymbol symbol)
-		{
-			// Do what you need to here (add to collection, etc.)
-		}
 	}
 }
