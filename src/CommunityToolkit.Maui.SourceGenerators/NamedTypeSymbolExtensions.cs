@@ -33,4 +33,3 @@ public static class NamedTypeSymbolExtensions
 		return false;
 	}
 }
-

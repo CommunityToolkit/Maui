@@ -20,7 +20,7 @@ public class TextColorToGenerator : ISourceGenerator
 
 		foreach (var namedTypeSymbol in mauiControlsAssemblySymbol.GlobalNamespace.GetNamedTypeSymbols())
 		{
-			if(namedTypeSymbol.ImplementsInterfaceOrBaseClass("ITextStyle"))
+			if (namedTypeSymbol.ImplementsInterfaceOrBaseClass("ITextStyle"))
 			{
 				textStyleClassNameList.Add(namedTypeSymbol.Name);
 			}
