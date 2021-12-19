@@ -1,11 +1,6 @@
-﻿using System;
-using System.Globalization;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Globalization;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Essentials;
 
 namespace CommunityToolkit.Maui.UnitTests;

@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Maui.Hosting;
+﻿using Microsoft.Maui.Hosting;
 
 namespace CommunityToolkit.Maui.Core;
 

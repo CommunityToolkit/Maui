@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using CommunityToolkit.Maui.Sample.Models;
+﻿using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.Pages.Alerts;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Alerts;

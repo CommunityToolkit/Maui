@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;

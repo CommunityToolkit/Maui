@@ -1,7 +1,4 @@
-﻿using System;
-using UIKit;
-
-namespace CommunityToolkit.Maui.Core.Extensions;
+﻿namespace CommunityToolkit.Maui.Core.Extensions;
 
 /// <summary>
 /// Extensions for <see cref="UIView"/>

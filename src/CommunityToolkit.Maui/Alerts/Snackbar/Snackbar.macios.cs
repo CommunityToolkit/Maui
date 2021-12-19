@@ -1,11 +1,5 @@
-﻿using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using CommunityToolkit.Maui.Core.Views;
-using CoreGraphics;
+﻿using CommunityToolkit.Maui.Core.Views;
 using Microsoft.Maui;
-using Microsoft.Maui.Platform;
-using UIKit;
 
 namespace CommunityToolkit.Maui.Alerts;
 

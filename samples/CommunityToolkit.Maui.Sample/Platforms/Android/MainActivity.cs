@@ -1,6 +1,4 @@
-﻿using Android.App;
-using Android.Content.PM;
-using Android.OS;
+﻿using Android.Content.PM;
 using Microsoft.Maui;
 
 namespace CommunityToolkit.Maui.Sample;

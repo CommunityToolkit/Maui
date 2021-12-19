@@ -1,6 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using CommunityToolkit.Maui.Behaviors;
+﻿using CommunityToolkit.Maui.Behaviors;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Xunit;

@@ -1,8 +1,4 @@
-﻿using CoreGraphics;
-using CoreText;
-using Foundation;
-using ObjCRuntime;
-using UIKit;
+﻿using CoreText;
 
 namespace CommunityToolkit.Maui.Core.Views;
 

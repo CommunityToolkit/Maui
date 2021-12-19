@@ -1,5 +1,4 @@
 ﻿using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using CommunityToolkit.Maui.Behaviors;
 using Microsoft.Maui.Controls;
 using Xunit;

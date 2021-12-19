@@ -1,6 +1,4 @@
-﻿using System;
-using CommunityToolkit.Maui.Converters;
-using Microsoft.Maui.Controls;
+﻿using CommunityToolkit.Maui.Converters;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace CommunityToolkit.Maui.Extensions;

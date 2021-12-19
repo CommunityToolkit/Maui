@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Behaviors;
-using CommunityToolkit.Maui.UnitTests.Mocks;
 using Microsoft.Maui.Controls;
 using Xunit;
 

@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Maui.Sample.Pages;
-using Microsoft.Maui;
+﻿using Microsoft.Maui;
 
 namespace CommunityToolkit.Maui.Sample.Pages;
 

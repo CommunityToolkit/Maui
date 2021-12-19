@@ -1,11 +1,7 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Diagnostics.CodeAnalysis;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Util;
-using Android.Widget;
 using CommunityToolkit.Maui.Core;
 using Google.Android.Material.Snackbar;
 using Microsoft.Maui;

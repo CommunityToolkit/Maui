@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Graphics;
 
 namespace CommunityToolkit.Maui.Sample.Models;
 
