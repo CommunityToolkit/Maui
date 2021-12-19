@@ -20,35 +20,35 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Snackbar
 {
-	static readonly SemaphoreSlim _semaphoreSlim = new(1, 1);
+	static readonly SemaphoreSlim semaphoreSlim = new(1, 1);
 
-	AndroidSnackbar? _nativeSnackbar;
-	TaskCompletionSource<bool>? _dismissedTCS;
+	AndroidSnackbar? nativeSnackbar;
+	TaskCompletionSource<bool>? dismissedTCS;
 
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
 	public async Task Dismiss()
 	{
-		if (_nativeSnackbar is null)
+		if (nativeSnackbar is null)
 		{
-			_dismissedTCS = null;
+			dismissedTCS = null;
 			return;
 		}
 
-		await _semaphoreSlim.WaitAsync();
+		await semaphoreSlim.WaitAsync();
 
 		try
 		{
-			_nativeSnackbar.Dismiss();
-			if (_dismissedTCS is not null)
-				await _dismissedTCS.Task;
+			nativeSnackbar.Dismiss();
+			if (dismissedTCS is not null)
+				await dismissedTCS.Task;
 
 			OnDismissed();
 		}
 		finally
 		{
-			_semaphoreSlim.Release();
+			semaphoreSlim.Release();
 		}
 	}
 
@@ -63,19 +63,19 @@ public partial class Snackbar
 		if (rootView is null)
 			throw new NotSupportedException("Unable to retrieve snackbar parent");
 
-		_nativeSnackbar = AndroidSnackbar.Make(rootView, Text, (int)Duration.TotalMilliseconds);
-		var snackbarView = _nativeSnackbar.View;
+		nativeSnackbar = AndroidSnackbar.Make(rootView, Text, (int)Duration.TotalMilliseconds);
+		var snackbarView = nativeSnackbar.View;
 
 		if (Anchor is not Page)
 		{
-			_nativeSnackbar.SetAnchorView(Anchor?.Handler?.NativeView as View);
+			nativeSnackbar.SetAnchorView(Anchor?.Handler?.NativeView as View);
 		}
 
 		SetupContainer(VisualOptions, snackbarView);
 		SetupMessage(VisualOptions, snackbarView);
-		SetupActions(_nativeSnackbar);
+		SetupActions(nativeSnackbar);
 
-		_nativeSnackbar.Show();
+		nativeSnackbar.Show();
 
 		OnShown();
 	}
@@ -120,7 +120,7 @@ public partial class Snackbar
 		snackTextView.SetTypeface(snackbarOptions.Font.ToTypeface(), TypefaceStyle.Normal);
 	}
 
-	[MemberNotNull(nameof(_dismissedTCS))]
+	[MemberNotNull(nameof(dismissedTCS))]
 	void SetupActions(AndroidSnackbar nativeSnackbar)
 	{
 		var snackActionButtonView = nativeSnackbar.View.FindViewById<TextView>(Resource.Id.snackbar_action) ?? throw new InvalidOperationException("Unable to find Snackbar action button");
@@ -132,22 +132,22 @@ public partial class Snackbar
 		});
 		nativeSnackbar.SetActionTextColor(VisualOptions.ActionButtonTextColor.ToAndroid());
 
-		nativeSnackbar.AddCallback(new SnackbarCallback(_dismissedTCS = new()));
+		nativeSnackbar.AddCallback(new SnackbarCallback(dismissedTCS = new()));
 	}
 
 	class SnackbarCallback : BaseTransientBottomBar.BaseCallback
 	{
-		readonly TaskCompletionSource<bool> _dismissedTCS;
+		readonly TaskCompletionSource<bool> dismissedTCS;
 
 		public SnackbarCallback(in TaskCompletionSource<bool> dismissedTCS)
 		{
-			_dismissedTCS = dismissedTCS;
+			this.dismissedTCS = dismissedTCS;
 		}
 
 		public override void OnDismissed(Object transientBottomBar, int e)
 		{
 			base.OnDismissed(transientBottomBar, e);
-			_dismissedTCS.SetResult(true);
+			dismissedTCS.SetResult(true);
 		}
 	}
 }

@@ -11,30 +11,30 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Snackbar
 {
-	readonly SemaphoreSlim _semaphoreSlim = new(1, 1);
+	readonly SemaphoreSlim semaphoreSlim = new(1, 1);
 
-	static SnackbarView? _nativeSnackbar;
+	static SnackbarView? nativeSnackbar;
 
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
 	public async Task Dismiss()
 	{
-		if (_nativeSnackbar is null)
+		if (nativeSnackbar is null)
 			return;
 
-		await _semaphoreSlim.WaitAsync();
+		await semaphoreSlim.WaitAsync();
 
 		try
 		{
-			_nativeSnackbar.Dismiss();
-			_nativeSnackbar = null;
+			nativeSnackbar.Dismiss();
+			nativeSnackbar = null;
 
 			OnDismissed();
 		}
 		finally
 		{
-			_semaphoreSlim.Release();
+			semaphoreSlim.Release();
 		}
 	}
 
@@ -47,7 +47,7 @@ public partial class Snackbar
 
 		var cornerRadius = GetCornerRadius(VisualOptions.CornerRadius);
 		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + SnackbarView.DefaultPadding;
-		_nativeSnackbar = new SnackbarView(Text,
+		nativeSnackbar = new SnackbarView(Text,
 											VisualOptions.BackgroundColor.ToNative(),
 											cornerRadius,
 											VisualOptions.TextColor.ToNative(),
@@ -63,7 +63,7 @@ public partial class Snackbar
 			Duration = Duration
 		};
 
-		_nativeSnackbar.Show();
+		nativeSnackbar.Show();
 
 		OnShown();
 
