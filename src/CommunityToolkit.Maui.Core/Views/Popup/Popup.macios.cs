@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class Popup
 {
-	NSTimer? _timer;
+	NSTimer? timer;
 
 	/// <summary>
 	/// Initialize Popup
@@ -42,11 +42,11 @@ public class Popup
 	/// </summary>
 	public void Dismiss()
 	{
-		if (_timer != null)
+		if (timer != null)
 		{
-			_timer.Invalidate();
-			_timer.Dispose();
-			_timer = null;
+			timer.Invalidate();
+			timer.Dispose();
+			timer = null;
 		}
 
 		PopupView.Dismiss();
@@ -61,7 +61,7 @@ public class Popup
 
 		PopupView.Setup();
 
-		_timer = NSTimer.CreateScheduledTimer(Duration, t =>
+		timer = NSTimer.CreateScheduledTimer(Duration, t =>
 		{
 			Dismiss();
 		});

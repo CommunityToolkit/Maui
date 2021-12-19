@@ -10,9 +10,9 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class SnackbarView : ToastView, IDisposable
 {
-	readonly PaddedButton _actionButton;
+	readonly PaddedButton actionButton;
 
-	bool _isDisposed;
+	bool isDisposed;
 
 	/// <summary>
 	/// Initialize <see cref="SnackbarView"/>
@@ -42,13 +42,13 @@ public class SnackbarView : ToastView, IDisposable
 	{
 		padding ??= DefaultPadding;
 
-		_actionButton = new PaddedButton(padding.Value, padding.Value, padding.Value, padding.Value);
+		actionButton = new PaddedButton(padding.Value, padding.Value, padding.Value, padding.Value);
 		ActionButtonText = actionButtonText;
 		ActionTextColor = actionTextColor;
 		ActionButtonFont = actionButtonFont;
 
-		_actionButton.TouchUpInside += ActionButton_TouchUpInside;
-		PopupView.AddChild(_actionButton);
+		actionButton.TouchUpInside += ActionButton_TouchUpInside;
+		PopupView.AddChild(actionButton);
 	}
 
 	/// <summary>
@@ -66,8 +66,8 @@ public class SnackbarView : ToastView, IDisposable
 	/// </summary>
 	public string ActionButtonText
 	{
-		get => _actionButton.Title(UIControlState.Normal);
-		private init => _actionButton.SetTitle(value, UIControlState.Normal);
+		get => actionButton.Title(UIControlState.Normal);
+		private init => actionButton.SetTitle(value, UIControlState.Normal);
 	}
 
 	/// <summary>
@@ -75,8 +75,8 @@ public class SnackbarView : ToastView, IDisposable
 	/// </summary>
 	public UIColor ActionTextColor
 	{
-		get => _actionButton.TitleColor(UIControlState.Normal);
-		private init => _actionButton.SetTitleColor(value, UIControlState.Normal);
+		get => actionButton.TitleColor(UIControlState.Normal);
+		private init => actionButton.SetTitleColor(value, UIControlState.Normal);
 	}
 
 	/// <summary>
@@ -84,8 +84,8 @@ public class SnackbarView : ToastView, IDisposable
 	/// </summary>
 	public UIFont ActionButtonFont
 	{
-		get => _actionButton.Font;
-		private init => _actionButton.Font = value;
+		get => actionButton.Font;
+		private init => actionButton.Font = value;
 	}
 
 	/// <summary>
@@ -103,12 +103,12 @@ public class SnackbarView : ToastView, IDisposable
 	/// <param name="isDisposing"></param>
 	protected virtual void Dispose(bool isDisposing)
 	{
-		if (_isDisposed)
+		if (isDisposed)
 			return;
 
-		_actionButton.TouchUpInside -= ActionButton_TouchUpInside;
+		actionButton.TouchUpInside -= ActionButton_TouchUpInside;
 
-		_isDisposed = true;
+		isDisposed = true;
 	}
 
 	void ActionButton_TouchUpInside(object? sender, EventArgs e)
