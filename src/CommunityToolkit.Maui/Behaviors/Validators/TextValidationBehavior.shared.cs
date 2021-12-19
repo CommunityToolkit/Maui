@@ -61,7 +61,7 @@ public class TextValidationBehavior : ValidationBehavior<string>
 	public static readonly BindableProperty RegexOptionsProperty =
 		BindableProperty.Create(nameof(RegexOptions), typeof(RegexOptions), typeof(TextValidationBehavior), defaultValueCreator: GetDefaultRegexOptions, propertyChanged: OnRegexPropertyChanged);
 
-	Regex? _regex;
+	Regex? regex;
 
 	/// <summary>
 	/// Constructor of this behavior.
@@ -154,7 +154,7 @@ public class TextValidationBehavior : ValidationBehavior<string>
 			value != null &&
 			value.Length >= MinimumLength &&
 			value.Length <= MaximumLength &&
-			(_regex?.IsMatch(value) ?? false));
+			(regex?.IsMatch(value) ?? false));
 	}
 
 	static void OnRegexPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -192,7 +192,7 @@ public class TextValidationBehavior : ValidationBehavior<string>
 		return builder.ToString();
 	}
 
-	void OnRegexPropertyChanged(string? regexPattern, RegexOptions regexOptions) => _regex = regexPattern switch
+	void OnRegexPropertyChanged(string? regexPattern, RegexOptions regexOptions) => regex = regexPattern switch
 	{
 		null => null,
 		_ => new Regex(regexPattern, regexOptions)

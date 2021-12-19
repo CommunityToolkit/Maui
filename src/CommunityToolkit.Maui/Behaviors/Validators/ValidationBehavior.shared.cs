@@ -94,13 +94,13 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 	public static readonly BindableProperty ForceValidateCommandProperty =
 		BindableProperty.Create(nameof(ForceValidateCommand), typeof(ICommand), typeof(ValidationBehavior), defaultValueCreator: GetDefaultForceValidateCommand, defaultBindingMode: BindingMode.OneWayToSource);
 
-	readonly SemaphoreSlim _isAttachingSemaphoreSlim = new(1, 1);
+	readonly SemaphoreSlim isAttachingSemaphoreSlim = new(1, 1);
 
-	ValidationFlags _currentStatus;
+	ValidationFlags currentStatus;
 
-	BindingBase? _defaultValueBinding;
+	BindingBase? defaultValueBinding;
 
-	CancellationTokenSource? _validationTokenSource;
+	CancellationTokenSource? validationTokenSource;
 
 	/// <summary>
 	/// Initialize a new instance of ValidationBehavior
@@ -220,31 +220,31 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 	{
 		base.OnAttachedTo(bindable);
 
-		await _isAttachingSemaphoreSlim.WaitAsync();
+		await isAttachingSemaphoreSlim.WaitAsync();
 
 		try
 		{
-			_currentStatus = ValidationFlags.ValidateOnAttaching;
+			currentStatus = ValidationFlags.ValidateOnAttaching;
 
 			OnValuePropertyNamePropertyChanged();
 			await UpdateStateAsync(View, Flags, false).ConfigureAwait(false);
 		}
 		finally
 		{
-			_isAttachingSemaphoreSlim.Release();
+			isAttachingSemaphoreSlim.Release();
 		}
 	}
 
 	/// <inheritdoc/>
 	protected override void OnDetachingFrom(VisualElement bindable)
 	{
-		if (_defaultValueBinding != null)
+		if (defaultValueBinding != null)
 		{
 			RemoveBinding(ValueProperty);
-			_defaultValueBinding = null;
+			defaultValueBinding = null;
 		}
 
-		_currentStatus = ValidationFlags.None;
+		currentStatus = ValidationFlags.None;
 		base.OnDetachingFrom(bindable);
 	}
 
@@ -257,7 +257,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 		{
 			var view = (VisualElement?)sender;
 
-			_currentStatus = view?.IsFocused switch
+			currentStatus = view?.IsFocused switch
 			{
 				true => ValidationFlags.ValidateOnFocusing,
 				_ => ValidationFlags.ValidateOnUnfocusing
@@ -296,32 +296,32 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 
 	async Task OnValuePropertyChanged()
 	{
-		await _isAttachingSemaphoreSlim.WaitAsync();
+		await isAttachingSemaphoreSlim.WaitAsync();
 
 		try
 		{
-			_currentStatus = ValidationFlags.ValidateOnValueChanged;
+			currentStatus = ValidationFlags.ValidateOnValueChanged;
 		}
 		finally
 		{
-			_isAttachingSemaphoreSlim.Release();
+			isAttachingSemaphoreSlim.Release();
 		}
 	}
 
 	void OnValuePropertyNamePropertyChanged()
 	{
-		if (IsBound(ValueProperty, _defaultValueBinding))
+		if (IsBound(ValueProperty, defaultValueBinding))
 		{
-			_defaultValueBinding = null;
+			defaultValueBinding = null;
 			return;
 		}
 
-		_defaultValueBinding = new Binding
+		defaultValueBinding = new Binding
 		{
 			Path = ValuePropertyName,
 			Source = View
 		};
-		SetBinding(ValueProperty, _defaultValueBinding);
+		SetBinding(ValueProperty, defaultValueBinding);
 	}
 
 	async ValueTask UpdateStateAsync(VisualElement? view, ValidationFlags flags, bool isForced, CancellationToken? parentToken = null)
@@ -338,7 +338,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 			IsValid = true;
 			IsRunning = false;
 		}
-		else if (isForced || (_currentStatus != ValidationFlags.None && Flags.HasFlag(_currentStatus)))
+		else if (isForced || (currentStatus != ValidationFlags.None && Flags.HasFlag(currentStatus)))
 		{
 			IsRunning = true;
 
@@ -353,7 +353,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 				if (token.IsCancellationRequested)
 					return;
 
-				_validationTokenSource = null;
+				validationTokenSource = null;
 				IsValid = isValid;
 				IsRunning = false;
 			}
@@ -379,8 +379,8 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 
 	void ResetValidationTokenSource(CancellationTokenSource? newTokenSource)
 	{
-		_validationTokenSource?.Cancel();
-		_validationTokenSource = newTokenSource;
+		validationTokenSource?.Cancel();
+		validationTokenSource = newTokenSource;
 	}
 }
 
