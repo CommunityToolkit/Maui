@@ -9,10 +9,10 @@ namespace CommunityToolkit.Maui.Converters;
 
 sealed class MathExpression
 {
-	const string _regexPattern = @"(?<!\d)\-?(?:\d+\.\d+|\d+)|\+|\-|\/|\*|\(|\)|\^|\%|\,|\w+";
-	const NumberStyles _numberStyle = NumberStyles.Float | NumberStyles.AllowThousands;
+	const string regexPattern = @"(?<!\d)\-?(?:\d+\.\d+|\d+)|\+|\-|\/|\*|\(|\)|\^|\%|\,|\w+";
+	const NumberStyles numberStyle = NumberStyles.Float | NumberStyles.AllowThousands;
 
-	static readonly IFormatProvider _formatProvider = new CultureInfo("en-US");
+	static readonly IFormatProvider formatProvider = new CultureInfo("en-US");
 
 	readonly IReadOnlyList<MathOperator> operators;
 	readonly IReadOnlyList<double> arguments;
@@ -87,7 +87,7 @@ sealed class MathExpression
 
 		foreach (var value in rpn)
 		{
-			if (double.TryParse(value, _numberStyle, _formatProvider, out var numeric))
+			if (double.TryParse(value, numberStyle, formatProvider, out var numeric))
 			{
 				stack.Push(numeric);
 				continue;
@@ -128,7 +128,7 @@ sealed class MathExpression
 
 	IEnumerable<string> GetReversePolishNotation(string expression)
 	{
-		var regex = new Regex(_regexPattern);
+		var regex = new Regex(regexPattern);
 
 		var matches = regex.Matches(expression);
 		if (matches == null)
@@ -144,7 +144,7 @@ sealed class MathExpression
 
 			var value = match.Value;
 
-			if (double.TryParse(value, _numberStyle, _formatProvider, out var numeric))
+			if (double.TryParse(value, numberStyle, formatProvider, out var numeric))
 			{
 				if (numeric < 0)
 				{
