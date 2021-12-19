@@ -60,27 +60,27 @@ static class AnimationExtensions
 
 		class AsyncTicker : Ticker
 		{
-			CancellationTokenSource? _cancellationTokenSource;
+			CancellationTokenSource? cancellationTokenSource;
 
 			public override async void Start()
 			{
-				_cancellationTokenSource = new();
+				cancellationTokenSource = new();
 
-				while (!_cancellationTokenSource.IsCancellationRequested)
+				while (!cancellationTokenSource.IsCancellationRequested)
 				{
 					Fire?.Invoke();
 
-					if (!_cancellationTokenSource.IsCancellationRequested)
+					if (!cancellationTokenSource.IsCancellationRequested)
 						await Task.Delay(TimeSpan.FromMilliseconds(16));
 				}
 			}
 
-			public override void Stop() => _cancellationTokenSource?.Cancel();
+			public override void Stop() => cancellationTokenSource?.Cancel();
 		}
 
 		class TestAnimationManager : IAnimationManager
 		{
-			readonly List<Microsoft.Maui.Animations.Animation> _animations = new();
+			readonly List<Microsoft.Maui.Animations.Animation> animations = new();
 
 			public TestAnimationManager(ITicker ticker)
 			{
@@ -96,31 +96,31 @@ static class AnimationExtensions
 
 			public void Add(Microsoft.Maui.Animations.Animation animation)
 			{
-				_animations.Add(animation);
+				animations.Add(animation);
 				if (AutoStartTicker && !Ticker.IsRunning)
 					Ticker.Start();
 			}
 
 			public void Remove(Microsoft.Maui.Animations.Animation animation)
 			{
-				_animations.Remove(animation);
-				if (!_animations.Any())
+				animations.Remove(animation);
+				if (!animations.Any())
 					Ticker.Stop();
 			}
 
 			void OnFire()
 			{
-				var animations = _animations.ToList();
+				var animations = this.animations.ToList();
 				animations.ForEach(animationTick);
 
-				if (!_animations.Any())
+				if (!this.animations.Any())
 					Ticker.Stop();
 
 				void animationTick(Microsoft.Maui.Animations.Animation animation)
 				{
 					if (animation.HasFinished)
 					{
-						_animations.Remove(animation);
+						this.animations.Remove(animation);
 						animation.RemoveFromParent();
 						return;
 					}
@@ -128,7 +128,7 @@ static class AnimationExtensions
 					animation.Tick(16);
 					if (animation.HasFinished)
 					{
-						_animations.Remove(animation);
+						this.animations.Remove(animation);
 						animation.RemoveFromParent();
 					}
 				}

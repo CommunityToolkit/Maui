@@ -14,7 +14,7 @@ public abstract class BaseTest : IDisposable
 {
 	readonly CultureInfo? defaultCulture, defaultUICulture;
 
-	bool _isDisposed;
+	bool isDisposed;
 
 	protected BaseTest()
 	{
@@ -37,7 +37,7 @@ public abstract class BaseTest : IDisposable
 
 	protected virtual void Dispose(bool isDisposing)
 	{
-		if (_isDisposed)
+		if (isDisposed)
 			return;
 
 		Device.PlatformServices = null;
@@ -48,7 +48,7 @@ public abstract class BaseTest : IDisposable
 		DispatcherProvider.SetCurrent(null);
 		DeviceDisplay.SetCurrent(null);
 
-		_isDisposed = true;
+		isDisposed = true;
 	}
 
 	protected static Task<Stream> GetStreamFromImageSource(ImageSource imageSource, CancellationToken token)

@@ -8,13 +8,13 @@ namespace CommunityToolkit.Maui.UnitTests.Mocks;
 // Inspired by https://github.com/dotnet/maui/blob/main/src/Core/tests/UnitTests/TestClasses/DispatcherStub.cs
 sealed class DispatcherProviderMock : IDispatcherProvider, IDisposable
 {
-	readonly static DispatcherMock _dispatcherMock = new();
+	readonly static DispatcherMock dispatcherMock = new();
 
-	readonly ThreadLocal<IDispatcher> _dispatcherInstance = new(() => _dispatcherMock);
+	readonly ThreadLocal<IDispatcher> dispatcherInstance = new(() => dispatcherMock);
 
-	public IDispatcher GetForCurrentThread() => _dispatcherInstance.Value ?? throw new InvalidOperationException();
+	public IDispatcher GetForCurrentThread() => dispatcherInstance.Value ?? throw new InvalidOperationException();
 
-	void IDisposable.Dispose() => _dispatcherInstance.Dispose();
+	void IDisposable.Dispose() => dispatcherInstance.Dispose();
 
 	sealed class DispatcherMock : IDispatcher
 	{

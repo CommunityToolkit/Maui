@@ -13,19 +13,19 @@ namespace CommunityToolkit.Maui.UnitTests.Alerts;
 
 public class Snackbar_Tests : BaseTest
 {
-	readonly ISnackbar _snackbar = new Snackbar();
+	readonly ISnackbar snackbar = new Snackbar();
 
 	[Fact]
 	public async Task SnackbarShow_IsShownTrue()
 	{
-		await _snackbar.Show();
+		await snackbar.Show();
 		Assert.True(Snackbar.IsShown);
 	}
 
 	[Fact]
 	public async Task SnackbarDismissed_IsShownFalse()
 	{
-		await _snackbar.Dismiss();
+		await snackbar.Dismiss();
 		Assert.False(Snackbar.IsShown);
 	}
 
@@ -37,7 +37,7 @@ public class Snackbar_Tests : BaseTest
 		{
 			receivedEvents.Add(e);
 		};
-		await _snackbar.Show();
+		await snackbar.Show();
 		Assert.Single(receivedEvents);
 	}
 
@@ -49,7 +49,7 @@ public class Snackbar_Tests : BaseTest
 		{
 			receivedEvents.Add(e);
 		};
-		await _snackbar.Dismiss();
+		await snackbar.Dismiss();
 		Assert.Single(receivedEvents);
 	}
 
