@@ -77,6 +77,7 @@ dotnet_naming_symbols.instance_fields.applicable_kinds = field
 
 dotnet_naming_style.instance_field_style.capitalization = camel_case
 dotnet_naming_style.instance_field_style.required_prefix = 
+dotnet_diagnostic.IDE1006.severity = error
 
 # Static fields are camelCase
 dotnet_naming_rule.static_fields_should_be_camel_case.severity = error
