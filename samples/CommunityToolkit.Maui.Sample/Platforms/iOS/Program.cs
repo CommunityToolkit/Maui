@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.Sample;
+﻿using UIKit;
+
+namespace CommunityToolkit.Maui.Sample;
 
 public class Program
 {

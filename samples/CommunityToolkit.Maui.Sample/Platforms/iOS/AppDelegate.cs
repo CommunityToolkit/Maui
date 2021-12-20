@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.Sample;
+﻿using Foundation;
+
+namespace CommunityToolkit.Maui.Sample;
 
 [Register(nameof(AppDelegate))]
 public class AppDelegate : MauiUIApplicationDelegate
