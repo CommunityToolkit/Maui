@@ -2,7 +2,6 @@
 using System.Windows.Input;
 using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Sample.Pages;
 

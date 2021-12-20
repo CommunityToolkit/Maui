@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Hosting;
-
-namespace CommunityToolkit.Maui.Core;
+﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// <see cref="MauiAppBuilder"/> Extensions

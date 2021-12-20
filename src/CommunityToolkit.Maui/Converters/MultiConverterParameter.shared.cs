@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-
-namespace CommunityToolkit.Maui.Converters;
+﻿namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>
 /// Represents a parameter to be used in the <see cref="MultiConverter"/>.

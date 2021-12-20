@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using System.Security.Cryptography;
-using Microsoft.Maui.Graphics;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 

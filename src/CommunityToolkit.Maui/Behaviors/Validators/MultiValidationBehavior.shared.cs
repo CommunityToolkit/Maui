@@ -1,6 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Behaviors;
 

@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui;
-
-namespace CommunityToolkit.Maui.Core;
+﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// Snackbar

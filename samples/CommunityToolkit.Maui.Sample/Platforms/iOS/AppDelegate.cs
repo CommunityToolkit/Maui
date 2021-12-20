@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Hosting;
-
-namespace CommunityToolkit.Maui.Sample;
+﻿namespace CommunityToolkit.Maui.Sample;
 
 [Register(nameof(AppDelegate))]
 public class AppDelegate : MauiUIApplicationDelegate

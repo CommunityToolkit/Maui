@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui;
-
-namespace CommunityToolkit.Maui.Sample.Pages;
+﻿namespace CommunityToolkit.Maui.Sample.Pages;
 
 public partial class MainPage : BasePage
 {

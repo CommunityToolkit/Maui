@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Microsoft.Maui.Essentials;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels;
 

@@ -1,6 +1,5 @@
-﻿using Android.Runtime;
-using Microsoft.Maui;
-using Microsoft.Maui.Hosting;
+﻿using Android.App;
+using Android.Runtime;
 
 namespace CommunityToolkit.Maui.Sample;
 

@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.Windows.Input;
-using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Behaviors;
 

@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using ProgressBar = Microsoft.Maui.Controls.ProgressBar;
+﻿using ProgressBar = Microsoft.Maui.Controls.ProgressBar;
 
 namespace CommunityToolkit.Maui.Behaviors;
 

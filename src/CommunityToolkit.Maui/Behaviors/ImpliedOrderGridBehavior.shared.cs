@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Behaviors;
 

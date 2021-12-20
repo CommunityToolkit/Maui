@@ -1,4 +1,7 @@
 ﻿using CoreAnimation;
+using CoreGraphics;
+using ObjCRuntime;
+using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
 

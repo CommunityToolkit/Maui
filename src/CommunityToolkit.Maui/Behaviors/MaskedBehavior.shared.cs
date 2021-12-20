@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Behaviors;
 

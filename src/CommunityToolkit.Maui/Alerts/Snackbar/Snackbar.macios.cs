@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Maui.Core.Views;
-using Microsoft.Maui;
+using CoreGraphics;
+using Microsoft.Maui.Platform;
+using UIKit;
 
 namespace CommunityToolkit.Maui.Alerts;
 

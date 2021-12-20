@@ -1,6 +1,4 @@
 ﻿using CommunityToolkit.Maui.Core;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Alerts;
 

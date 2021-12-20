@@ -1,4 +1,7 @@
-﻿namespace CommunityToolkit.Maui.Core.Views;
+﻿using Foundation;
+using UIKit;
+
+namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// Popup for iOS + MacCatalyst

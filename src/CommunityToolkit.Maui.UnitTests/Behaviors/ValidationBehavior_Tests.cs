@@ -1,6 +1,4 @@
 ﻿using CommunityToolkit.Maui.Behaviors;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;

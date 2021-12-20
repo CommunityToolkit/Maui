@@ -1,6 +1,5 @@
 ﻿using System.Windows.Input;
 using CommunityToolkit.Maui.Behaviors;
-using Microsoft.Maui.Controls;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;

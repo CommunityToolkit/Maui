@@ -1,4 +1,8 @@
-﻿namespace CommunityToolkit.Maui.Core.Views;
+﻿using CoreGraphics;
+using ObjCRuntime;
+using UIKit;
+
+namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// <see cref="UILabel"/> with Left, Top, Right and Bottom Padding

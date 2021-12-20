@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Converters;
-using Microsoft.Maui.Controls;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;

@@ -1,4 +1,7 @@
-﻿namespace CommunityToolkit.Maui.Core.Views;
+﻿using ObjCRuntime;
+using UIKit;
+
+namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// <see cref="UIButton"/> with Left, Top, Right and Bottom Padding
