@@ -3,6 +3,10 @@ using Microsoft.Maui.Controls;
 using Microsoft.UI.Xaml.Controls;
 
 namespace CommunityToolkit.Maui.Behaviors;
+
+/// <summary>
+/// 
+/// </summary>
 public partial class SelectAllTextBehavior : BasePlatformBehavior<InputView, TextBox>
 {
 	/// <inheritdoc />

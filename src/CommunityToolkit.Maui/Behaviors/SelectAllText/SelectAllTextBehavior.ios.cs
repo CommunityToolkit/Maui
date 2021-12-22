@@ -12,10 +12,8 @@ public partial class SelectAllTextBehavior
 		nativeView = view.ToNative(view.Handler.MauiContext!);
 		ApplyEffect(true);
 	}
-	partial void OnPlatformDeattachedBehavior(InputView view)
-	{
+	partial void OnPlatformDeattachedBehavior(InputView view) =>
 		ApplyEffect(false);
-	}
 
 	void ApplyEffect(bool apply) => ApplyToControl(nativeView, apply);
 
@@ -50,7 +48,7 @@ public partial class SelectAllTextBehavior
 
 	bool ApplyToUITextField(UITextField textField, bool apply)
 	{
-		if (textField == null)
+		if (textField is null)
 			return false;
 
 		if (apply)
