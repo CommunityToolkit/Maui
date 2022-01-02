@@ -1,31 +1,36 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="MSBuild.Sdk.Extras/2.1.2">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks>net6.0;net6.0-android;net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full'">$(TargetFrameworks);net6.0-windows10.0.17763.0</TargetFrameworks>
     <UseMaui>true</UseMaui>
-    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <SingleProject>true</SingleProject>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-ios'">14.2</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">14.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-android'">21.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
   </PropertyGroup>
 
   <PropertyGroup>
     <GitInfoReportImportance>high</GitInfoReportImportance>
     <PackageId>CommunityToolkit.Maui</PackageId>
-    <Summary>Community-created toolkit with a collection of Animations, Behaviors, Converters, and Effects</Summary>
+    <Summary>Community-created toolkit for .NET MAUI containing a collection of Animations, Behaviors, Converters, and Custom Views</Summary>
     <Authors>Microsoft</Authors>
     <Owners>Microsoft</Owners>
     <NeutralLanguage>en</NeutralLanguage>
     <Product>CommunityToolkit.Maui (net6.0)</Product>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/windows-toolkit/Maui</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/windows-toolkit/Maui</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/CommunityToolkit/Maui</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/CommunityToolkit/Maui</RepositoryUrl>
     <PackageReleaseNotes>TBD</PackageReleaseNotes>
     <DefineConstants>$(DefineConstants);</DefineConstants>
     <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
     <Title>CommunityToolkit.Maui</Title>
-    <Description>The .NET MAUI Community Toolkit is a collection of Animations, Behaviors, Converters, and Effects for development with .NET MAUI. It simplifies and demonstrates common developer tasks building iOS, Android, macOS and Windows apps with .NET MAUI.</Description>
+    <Description>The .NET MAUI Community Toolkit is a collection of Animations, Behaviors, Converters, and Custom Views for development with .NET MAUI. It simplifies and demonstrates common developer tasks building iOS, Android, macOS and Windows apps with .NET MAUI.</Description>
     <PackageIcon>icon.png</PackageIcon>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -37,43 +42,46 @@
     <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
-  <!-- Files that end up in the nupkg -->
+  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) != true AND $(TargetFramework.StartsWith('net6.0-ios')) != true AND $(TargetFramework.StartsWith('net6.0-maccatalyst')) != true ">
+    <Compile Remove="**\**\*.ios.cs" />
+    <None Include="**\**\*.ios.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\ios\**\*.cs" />
+    <None Include="**\ios\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.Mac')) != true ">
+    <Compile Remove="**\*.macos.cs" />
+    <Compile Remove="**\macos\**\*.cs" />
+    <None Include="**\macos\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.Mac')) != true AND $(TargetFramework.StartsWith('Xamarin.iOS')) != true AND $(TargetFramework.StartsWith('net6.0-ios')) != true AND $(TargetFramework.StartsWith('net6.0-maccatalyst')) != true">
+    <Compile Remove="**\*.macios.cs" />
+    <None Include="**\*.macios.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\macios\**\*.cs" />
+    <None Include="**\macios\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) != true AND $(TargetFramework.StartsWith('net6.0-android')) != true ">
+    <Compile Remove="**\**\*.android.cs" />
+    <None Include="**\**\*.android.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\android\**\*.cs" />
+    <None Include="**\android\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows')) != true ">
+    <Compile Remove="**\*.windows.cs" />
+    <None Include="**\*.windows.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\windows\**\*.cs" />
+    <None Include="**\windows\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <PackageReference Include="CommunityToolkit.WinUI.Notifications" Version="7.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj" />
+  </ItemGroup>
+
   <ItemGroup>
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="mdoc" Version="5.8.5" PrivateAssets="all" />
-  </ItemGroup>
-
-  <Import Project="..\..\mdoc.targets" Condition=" '$(OS)' == 'Windows_NT' AND '$(GenerateApiDocs)' == 'true'" />
-
-  <ItemGroup>
-    <Compile Include="**\*.shared.cs" />
-    <Compile Include="**\*.shared.*.cs" />
-    <Compile Remove="obj\**" />
-    <EmbeddedResource Remove="obj\**" />
-    <None Remove="obj\**" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" $(TargetFramework.Contains(-android)) ">
-    <Compile Include="**\*.android.cs" />
-    <Compile Include="**\*.android.*.cs" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" $(TargetFramework.Contains(-ios)) ">
-    <Compile Include="**\*.ios.cs" />
-    <Compile Include="**\*.ios.*.cs" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" $(TargetFramework.Contains('-windows')) ">
-    <Compile Include="**\*.windows.cs" />
-    <Compile Include="**\*.windows.*.cs" />
-    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" $(TargetFramework.Contains('-maccatalyst')) ">
-    <Compile Include="**\*.macos.cs" />
-    <Compile Include="**\*.macos.*.cs" />
-  </ItemGroup>
 </Project>

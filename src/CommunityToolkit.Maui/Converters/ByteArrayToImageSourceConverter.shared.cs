@@ -1,10 +1,6 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.IO;
-using System.Threading;
-using CommunityToolkit.Maui.Extensions.Internals;
-using Microsoft.Maui.Controls;
+using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Converters;
 

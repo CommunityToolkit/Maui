@@ -11,7 +11,7 @@
     </pages:BasePage.BindingContext>
     <pages:BasePage.Content>
         <ScrollView>
-            <StackLayout Spacing="20">
+            <VerticalStackLayout Spacing="20">
 
                 <Label Text="When the MaxLength on an Entry field has been reached, any configured EventHandler gets invoked and a Command gets Executed."
                        Margin="{StaticResource ContentPadding}" />
@@ -19,19 +19,24 @@
                 <!-- Settings -->
                 <Frame Margin="{StaticResource ContentPadding}"
                        CornerRadius="10">
-                    <Grid ColumnDefinitions="2*, *">
+                    <Grid RowDefinitions="*,*" ColumnDefinitions="2*, *" RowSpacing="24" ColumnSpacing="8">
                         <Label Text="MaxLength setting on Entry field"
+                               HorizontalOptions="End"
+                               HorizontalTextAlignment="Start"
                                VerticalTextAlignment="Center" />
                         <Entry x:Name="MaxLengthSetting"
                                Text="6"
+                               HorizontalOptions="StartAndExpand"
                                Keyboard="Numeric"
                                Grid.Column="1" />
 
                         <Label Text="Should dismiss keyboard automatically"
                                VerticalTextAlignment="Center"
+                               HorizontalOptions="End"
+                               HorizontalTextAlignment="Start"
                                Grid.Row="1" />
                         <Switch x:Name="AutoDismissKeyboardSetting"
-                                HorizontalOptions="End"
+                                HorizontalOptions="Start"
                                 Grid.Row="1"
                                 Grid.Column="1" />
                     </Grid>
@@ -70,7 +75,7 @@
 
                 <Label Text="{Binding CommandExecutions}" Margin="{StaticResource ContentPadding}" />
 
-            </StackLayout>
+            </VerticalStackLayout>
         </ScrollView>
     </pages:BasePage.Content>
 </pages:BasePage>

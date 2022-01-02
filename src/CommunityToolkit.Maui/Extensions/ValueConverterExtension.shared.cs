@@ -1,9 +1,6 @@
-﻿using System;
-using CommunityToolkit.Maui.Converters;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
+﻿using CommunityToolkit.Maui.Converters;
 
-namespace CommunityToolkit.Maui.Extensions.Internals;
+namespace CommunityToolkit.Maui.Extensions;
 
 /// <inheritdoc />
 public abstract class ValueConverterExtension : IMarkupExtension<ICommunityToolkitValueConverter>

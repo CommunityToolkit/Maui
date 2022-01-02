@@ -1,9 +1,6 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Windows.Input;
-using CommunityToolkit.Maui.Behaviors.Internals;
 using CommunityToolkit.Maui.Converters;
-using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Behaviors;
 

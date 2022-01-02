@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using CommunityToolkit.Maui.Alerts.Snackbar;
+﻿using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
 using FluentAssertions;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Alerts;
@@ -66,7 +61,7 @@ public class Snackbar_Tests : BaseTest
 	}
 
 	[Fact]
-	public async Task SnackbarMake_NewSnackbarCreatedWithValidProperties()
+	public void SnackbarMake_NewSnackbarCreatedWithValidProperties()
 	{
 		var action = () => { };
 		var anchor = new Button();

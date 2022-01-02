@@ -1,4 +1,3 @@
-using System;
 using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters;
@@ -11,13 +10,13 @@ namespace CommunityToolkit.Maui.Converters;
 public abstract class BaseConverter<TFrom, TTo> : BaseConverterOneWay<TFrom, TTo>
 {
 	/// <summary>
-	/// Converts the incoming value from <see cref="TTo"/>[] and returns the object of a type <see cref="TFrom"/>.
+	/// Converts the incoming value from <typeparamref name="TTo"/>[] and returns the object of a type <typeparamref name="TFrom"/>.
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
 	/// <param name="targetType">The type of the binding target property. This is not implemented.</param>
 	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
-	/// <returns>An object of the type <see cref="TFrom"/></returns>
+	/// <returns>An object of the type <typeparamref name="TFrom"/></returns>
 	public sealed override object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value is not TTo valueFrom)
@@ -32,7 +31,7 @@ public abstract class BaseConverter<TFrom, TTo> : BaseConverterOneWay<TFrom, TTo
 	/// <summary>
 	/// Method that will be called by <see cref="ConvertBack(object, Type, object, CultureInfo)"/>.
 	/// </summary>
-	/// <param name="value">Value to be converted from <see cref="TTo"/> to <see cref="TFrom"/>.</param>
-	/// <returns>An object of type <see cref="TFrom"/>.</returns>
+	/// <param name="value">Value to be converted from <typeparamref name="TTo"/> to <typeparamref name="TFrom"/>.</param>
+	/// <returns>An object of type <typeparamref name="TFrom"/>.</returns>
 	public abstract TFrom? ConvertBackTo(TTo value);
 }

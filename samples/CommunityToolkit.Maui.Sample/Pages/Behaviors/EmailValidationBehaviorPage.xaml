@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:mct="clr-namespace:CommunityToolkit.Maui.Behaviors;assembly=CommunityToolkit.Maui"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.EmailValidationBehaviorPage">
+
+    <pages:BasePage.Resources>
+        <Style x:Key="InvalidEntryStyle" TargetType="Entry">
+            <Setter Property="TextColor" Value="Red" />
+        </Style>
+        <Style x:Key="ValidEntryStyle"
+               TargetType="Entry">
+            <Setter Property="TextColor" Value="Green"/>
+        </Style>
+    </pages:BasePage.Resources>
+
+    <VerticalStackLayout Padding="{StaticResource ContentPadding}"
+            Spacing="24"
+            VerticalOptions="StartAndExpand">
+        <Label Text="Text color will change accordingly to the style that is configured when a invalid value (email address) is entered." />
+        <Entry Placeholder="Email"
+               HorizontalOptions="FillAndExpand"
+               VerticalOptions="Center">
+            <Entry.Behaviors>
+                <mct:EmailValidationBehavior
+                    x:Name="EmailValidator"
+                    Flags="ValidateOnValueChanged"
+                    DecorationFlags="Trim"
+                    ValidStyle="{StaticResource ValidEntryStyle}"
+                    InvalidStyle="{StaticResource InvalidEntryStyle}"/>
+            </Entry.Behaviors>
+        </Entry>
+        <Label Text="Invalid Email"
+            VerticalTextAlignment="Start"
+            HorizontalTextAlignment="Start"
+            HorizontalOptions="Start"
+            VerticalOptions="Start"
+            TextColor="Red"
+            FontSize="25"
+            IsVisible="{Binding IsNotValid, Source={x:Reference EmailValidator}}"/>
+    </VerticalStackLayout>
+
+</pages:BasePage>

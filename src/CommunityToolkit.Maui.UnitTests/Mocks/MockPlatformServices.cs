@@ -1,12 +1,5 @@
-﻿using System;
-using System.IO;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
+﻿using System.Reflection;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
@@ -40,8 +33,6 @@ public class MockPlatformServices : IPlatformServices
 		=> Task.FromResult<Stream>(new MemoryStream());
 
 	public Assembly[] GetAssemblies() => Array.Empty<Assembly>();
-
-	public IIsolatedStorageFile? GetUserStoreForApplication() => null;
 
 	public void QuitApplication()
 	{

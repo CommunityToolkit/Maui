@@ -1,8 +1,5 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Windows.Input;
-using CommunityToolkit.Maui.Behaviors.Internals;
-using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -70,9 +67,12 @@ public class MaxLengthReachedBehavior : BaseBehavior<InputView>
 
 		var newTextValue = View.Text[..View.MaxLength];
 
-		maxLengthReachedEventManager.HandleEvent(this, new MaxLengthReachedEventArgs(newTextValue), nameof(MaxLengthReached));
+		OnMaxLengthReached(new MaxLengthReachedEventArgs(newTextValue));
 
 		if (Command?.CanExecute(newTextValue) ?? false)
 			Command.Execute(newTextValue);
 	}
+
+	void OnMaxLengthReached(MaxLengthReachedEventArgs maxLengthReachedEventArgs) =>
+		maxLengthReachedEventManager.HandleEvent(this, maxLengthReachedEventArgs, nameof(MaxLengthReached));
 }

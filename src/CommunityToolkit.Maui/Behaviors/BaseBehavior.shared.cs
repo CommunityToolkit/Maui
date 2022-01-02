@@ -1,10 +1,8 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
-using Microsoft.Maui.Controls;
 
-namespace CommunityToolkit.Maui.Behaviors.Internals;
+namespace CommunityToolkit.Maui.Behaviors;
 
 /// <summary>
 /// Abstract class for our behaviors to inherit.

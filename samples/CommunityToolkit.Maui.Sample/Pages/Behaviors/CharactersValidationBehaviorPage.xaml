@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<pages:BasePage x:Name="Page"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.CharactersValidationBehaviorPage"
+                xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:mct="clr-namespace:CommunityToolkit.Maui.Behaviors;assembly=CommunityToolkit.Maui"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages">
+    <pages:BasePage.Resources>
+        <Style x:Key="InvalidEntryStyle"
+               TargetType="Entry">
+            <Setter Property="TextColor" Value="IndianRed"/>
+        </Style>
+
+        <Style x:Key="ValidEntryStyle"
+               TargetType="Entry">
+            <Setter Property="TextColor" Value="Green"/>
+        </Style>
+    </pages:BasePage.Resources>
+    <pages:BasePage.Content>
+        <VerticalStackLayout
+                 Spacing="25"
+                 VerticalOptions="StartAndExpand">
+            <Label Text="Text color will change accordingly to the style that is configured when an invalid string is entered."/>
+            <Frame
+               CornerRadius="10">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Text="CharacterType"/>
+                    <Picker x:Name="CharacterTypePicker" Grid.Column="1"
+                        Title="CharacterType"
+                        ItemsSource="{Binding CharacterTypes, Source={x:Reference Page}, Mode=OneTime}"
+                        SelectedIndex="1"/>
+                    <Label Grid.Row="1"
+                        VerticalOptions="FillAndExpand"
+                        VerticalTextAlignment="Center"
+                        Text="MinimumCharacterCountEntry"/>
+                    <Entry x:Name="MinimumCharacterCountEntry" Grid.Row="1" Grid.Column="1"
+                        Keyboard="Numeric"
+                        Text="2"
+                        VerticalOptions="FillAndExpand"/>
+                    <Label Grid.Row="2"
+                        VerticalOptions="FillAndExpand"
+                        VerticalTextAlignment="Center"
+                        Text="MaximumCharacterCountEntry"/>
+                    <Entry x:Name="MaximumCharacterCountEntry" Grid.Row="2" Grid.Column="1"
+                        Keyboard="Numeric"
+                        Text="20"
+                        VerticalOptions="FillAndExpand"/>
+                </Grid>
+            </Frame>
+            <Label Text="Type characters for validation behavior according to the settings you set upon."/>
+            <Entry Placeholder="Type characters...">
+                <Entry.Behaviors>
+                    <mct:CharactersValidationBehavior CharacterType="{Binding SelectedItem, Source={x:Reference CharacterTypePicker}}"
+                                                        Flags="ValidateOnValueChanged"
+                                                        InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                                        ValidStyle="{StaticResource ValidEntryStyle}"
+                                                        MaximumCharacterTypeCount="{Binding Text, Source={x:Reference MaximumCharacterCountEntry}}"
+                                                        MinimumCharacterTypeCount="{Binding Text, Source={x:Reference MinimumCharacterCountEntry}}"/>
+                        </Entry.Behaviors>
+                    </Entry>
+
+                    <Label Text="The same but styling handled by visual state manager."/>
+                    <Entry Placeholder="Type characters...">
+                        <Entry.Behaviors>
+                            <mct:CharactersValidationBehavior Flags="ValidateOnValueChanged"
+                                                  CharacterType="{Binding SelectedItem, Source={x:Reference CharacterTypePicker}}"
+                                                  MaximumCharacterTypeCount="{Binding Text, Source={x:Reference MaximumCharacterCountEntry}}"
+                                                  MinimumCharacterTypeCount="{Binding Text, Source={x:Reference MinimumCharacterCountEntry}}"/>
+                        </Entry.Behaviors>
+
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Valid">
+                                    <VisualState.Setters>
+                                        <Setter Property="TextColor" Value="Green"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Invalid">
+                                    <VisualState.Setters>
+                                        <Setter Property="TextColor" Value="IndianRed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Entry>
+
+        </VerticalStackLayout>
+    </pages:BasePage.Content>
+</pages:BasePage>
