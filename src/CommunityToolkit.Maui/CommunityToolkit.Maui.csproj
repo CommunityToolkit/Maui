@@ -86,6 +86,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\CommunityToolkit.Maui.SourceGenerators\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.SourceGenerators.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
   </ItemGroup>
 
