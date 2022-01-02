@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
+﻿using System.Globalization;
 using CommunityToolkit.Maui.Converters;
-using Microsoft.Maui.Controls;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
@@ -18,7 +14,7 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
 	};
 
 	[Fact]
-	public void ByteArrayToImageSourceConverter()
+	public async Task ByteArrayToImageSourceConverter()
 	{
 		var byteArray = new byte[] { 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20 };
 
@@ -29,8 +25,9 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
 		var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 
 		var result = (ImageSource)byteArrayToImageSourceConverter.Convert(byteArray, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture);
+		var streamResult = await GetStreamFromImageSource(result, CancellationToken.None);
 
-		Assert.True(StreamEquals(GetStreamFromImageSource(result), memoryStream));
+		Assert.True(StreamEquals(streamResult, memoryStream));
 	}
 
 	[Theory]

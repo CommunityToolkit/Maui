@@ -1,14 +1,11 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
+﻿using CommunityToolkit.Maui.Core;
 
-namespace CommunityToolkit.Maui.Alerts.Snackbar;
+namespace CommunityToolkit.Maui.Alerts;
 
 /// <inheritdoc/>
 public partial class Snackbar : ISnackbar
 {
-	static readonly WeakEventManager _weakEventManager = new();
+	readonly static WeakEventManager _weakEventManager = new();
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="Snackbar"/>
@@ -85,7 +82,7 @@ public partial class Snackbar : ISnackbar
 		};
 	}
 
-#if NET6_0
+#if !(IOS || ANDROID || MACCATALYST || WINDOWS)
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>

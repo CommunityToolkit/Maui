@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using CommunityToolkit.Maui.Behaviors;
-using Microsoft.Maui.Controls;
+﻿using CommunityToolkit.Maui.Behaviors;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
@@ -53,9 +48,6 @@ public class EmailValidationBehavior_Tests : BaseTest
 	public async Task IsValid(string? value, bool expectedValue)
 	{
 		// Arrange
-		Console.WriteLine($"value: {value})");
-		Console.WriteLine($"expectedValue: {expectedValue}");
-
 		var behavior = new EmailValidationBehavior();
 
 		var entry = new Entry

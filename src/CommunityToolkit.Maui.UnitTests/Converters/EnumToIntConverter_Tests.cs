@@ -1,5 +1,4 @@
-﻿using System;
-using CommunityToolkit.Maui.Converters;
+﻿using CommunityToolkit.Maui.Converters;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;

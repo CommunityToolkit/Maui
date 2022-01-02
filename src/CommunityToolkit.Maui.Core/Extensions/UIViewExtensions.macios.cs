@@ -1,9 +1,9 @@
 ﻿using UIKit;
 
-namespace CommunityToolkit.Maui.Extensions.Internals;
+namespace CommunityToolkit.Maui.Core.Extensions;
 
 /// <summary>
-/// UIView extensions
+/// Extensions for <see cref="UIView"/>
 /// </summary>
 public static class UIViewExtensions
 {

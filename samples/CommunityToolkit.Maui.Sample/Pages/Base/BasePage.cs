@@ -1,10 +1,7 @@
-﻿using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Sample.Pages;
 

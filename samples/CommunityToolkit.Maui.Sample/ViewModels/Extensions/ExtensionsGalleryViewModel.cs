@@ -1,8 +1,5 @@
-﻿using System.Collections.Generic;
-using CommunityToolkit.Maui.Converters;
-using CommunityToolkit.Maui.Extensions;
+﻿using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Sample.Models;
-using CommunityToolkit.Maui.Sample.Pages.Converters;
 using CommunityToolkit.Maui.Sample.Pages.Extensions;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;

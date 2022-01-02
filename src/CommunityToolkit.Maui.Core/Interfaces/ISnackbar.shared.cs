@@ -1,8 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Maui;
-
-namespace CommunityToolkit.Maui.Alerts.Snackbar;
+﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// Snackbar

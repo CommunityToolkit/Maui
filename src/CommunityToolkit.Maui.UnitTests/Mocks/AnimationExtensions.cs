@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Maui;
-using Microsoft.Maui.Animations;
-using Microsoft.Maui.Controls;
+﻿using Microsoft.Maui.Animations;
 using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks;
@@ -47,9 +39,9 @@ static class AnimationExtensions
 
 			public IServiceProvider Services => this;
 
-			public IMauiHandlersServiceProvider Handlers => throw new NotImplementedException();
-
 			public IAnimationManager AnimationManager { get; }
+
+			IMauiHandlersFactory IMauiContext.Handlers => throw new NotImplementedException();
 
 			public object GetService(Type serviceType)
 			{
