@@ -42,6 +42,7 @@ public abstract partial class BasePlatformBehavior<TView, TNativeView> : BaseBeh
 	protected override async void OnAttachedTo(TView bindable)
 	{
 		base.OnAttachedTo(bindable);
+		//hack for MAUI bug
 		await System.Threading.Tasks.Task.Delay(5000);
 		OnPlatformAttachedBehavior(bindable);
 	}
