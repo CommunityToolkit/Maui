@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-
-namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
+﻿namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
 public partial class UserStoppedTypingBehaviorPage : BasePage
 {

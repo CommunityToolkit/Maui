@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using CommunityToolkit.Maui.Behaviors;
+﻿using CommunityToolkit.Maui.Behaviors;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;

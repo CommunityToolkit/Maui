@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using CommunityToolkit.Maui.Sample.Models;
+﻿using CommunityToolkit.Maui.Sample.Models;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels;
 

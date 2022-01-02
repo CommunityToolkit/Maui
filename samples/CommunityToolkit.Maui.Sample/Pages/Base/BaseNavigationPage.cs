@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+﻿using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
 namespace CommunityToolkit.Maui.Sample.Pages;
 

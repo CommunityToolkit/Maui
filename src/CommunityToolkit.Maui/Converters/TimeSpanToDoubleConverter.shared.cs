@@ -1,7 +1,5 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Converters;
 
