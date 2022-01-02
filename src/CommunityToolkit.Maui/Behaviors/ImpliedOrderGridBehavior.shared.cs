@@ -1,8 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace CommunityToolkit.Maui.Behaviors;
 

@@ -1,7 +1,6 @@
 ﻿using Android.App;
 using Android.Content.PM;
 using Android.OS;
-using Microsoft.Maui;
 
 namespace CommunityToolkit.Maui.Sample;
 
@@ -12,6 +11,6 @@ public class MainActivity : MauiAppCompatActivity
 	protected override void OnCreate(Bundle? savedInstanceState)
 	{
 		base.OnCreate(savedInstanceState);
-		Microsoft.Maui.Essentials.Platform.Init(this, savedInstanceState);
+		Platform.Init(this, savedInstanceState);
 	}
 }

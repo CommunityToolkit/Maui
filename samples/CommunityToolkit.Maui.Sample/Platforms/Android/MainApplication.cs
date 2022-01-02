@@ -1,8 +1,5 @@
-﻿using System;
-using Android.App;
+﻿using Android.App;
 using Android.Runtime;
-using Microsoft.Maui;
-using Microsoft.Maui.Hosting;
 
 namespace CommunityToolkit.Maui.Sample;
 
