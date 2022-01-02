@@ -1,12 +1,8 @@
-﻿using System;
-using System.Linq;
-using CommunityToolkit.Maui.Markup;
+﻿using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.ViewModels;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
+using Application = Microsoft.Maui.Controls.Application;
 
 namespace CommunityToolkit.Maui.Sample.Pages;
 

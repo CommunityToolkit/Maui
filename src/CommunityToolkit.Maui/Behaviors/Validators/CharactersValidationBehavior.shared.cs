@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-
-namespace CommunityToolkit.Maui.Behaviors;
+﻿namespace CommunityToolkit.Maui.Behaviors;
 
 /// <summary>The allowed character types used to determine if a value is valid in the <see cref="CharactersValidationBehavior"/>. Since this is a flag, multiple flags cane be combined.</summary>
 [Flags]

@@ -8,6 +8,7 @@
     <OutputType>Exe</OutputType>
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
+
     <RootNamespace>CommunityToolkit.Maui.Sample</RootNamespace>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
 

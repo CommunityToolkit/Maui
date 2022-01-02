@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using CommunityToolkit.Maui.Behaviors;
-using Microsoft.Maui.Controls;
+﻿using CommunityToolkit.Maui.Behaviors;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 

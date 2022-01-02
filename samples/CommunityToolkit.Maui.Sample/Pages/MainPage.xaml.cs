@@ -1,9 +1,4 @@
-﻿using System;
-using CommunityToolkit.Maui.Sample.Pages;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-
-namespace CommunityToolkit.Maui.Sample.Pages;
+﻿namespace CommunityToolkit.Maui.Sample.Pages;
 
 public partial class MainPage : BasePage
 {

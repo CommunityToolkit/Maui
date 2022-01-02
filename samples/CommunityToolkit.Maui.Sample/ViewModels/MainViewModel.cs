@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-using CommunityToolkit.Maui.Sample.Models;
+﻿using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.Pages.Alerts;
 using CommunityToolkit.Maui.Sample.Pages.Behaviors;
 using CommunityToolkit.Maui.Sample.Pages.Converters;
 using CommunityToolkit.Maui.Sample.Pages.Extensions;
-using Microsoft.Maui.Graphics;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels;
 

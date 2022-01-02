@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Maui.Controls;
+﻿using Button = Microsoft.Maui.Controls.Button;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 

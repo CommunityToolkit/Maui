@@ -1,7 +1,4 @@
-﻿using System;
-using Microsoft.Maui.Graphics;
-
-namespace CommunityToolkit.Maui.Sample.Models;
+﻿namespace CommunityToolkit.Maui.Sample.Models;
 
 public sealed class SectionModel
 {
