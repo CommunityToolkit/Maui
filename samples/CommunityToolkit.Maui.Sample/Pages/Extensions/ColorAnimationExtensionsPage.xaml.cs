@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Extensions;
