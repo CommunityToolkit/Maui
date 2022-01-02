@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
 using CommunityToolkit.Maui.Extensions;
-using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Converters;
 

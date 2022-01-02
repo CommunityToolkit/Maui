@@ -1,7 +1,4 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-
-namespace CommunityToolkit.Maui.Behaviors;
+﻿namespace CommunityToolkit.Maui.Behaviors;
 
 /// <summary>
 /// The <see cref="SetFocusOnEntryCompletedBehavior"/> is an attached property for entries that allows the user to specify what <see cref="VisualElement"/> should gain focus after the user completes that entry.

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using CommunityToolkit.Maui.Behaviors;
+﻿using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.Pages.Behaviors;
 

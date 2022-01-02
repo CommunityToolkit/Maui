@@ -1,6 +1,3 @@
-using System;
-using Microsoft.Maui.Graphics;
-
 namespace CommunityToolkit.Maui.Core.Extensions;
 
 /// <summary>

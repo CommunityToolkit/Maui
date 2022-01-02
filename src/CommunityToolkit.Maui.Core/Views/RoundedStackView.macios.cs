@@ -1,5 +1,4 @@
-﻿using System;
-using CoreAnimation;
+﻿using CoreAnimation;
 using CoreGraphics;
 using ObjCRuntime;
 using UIKit;
