@@ -1,5 +1,4 @@
-using CommunityToolkit.Maui.Extensions;
-using Microsoft.Maui.Graphics;
+using CommunityToolkit.Maui.Core.Extensions;
 
 namespace CommunityToolkit.Maui.Converters;
 

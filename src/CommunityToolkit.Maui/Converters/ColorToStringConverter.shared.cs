@@ -1,5 +1,4 @@
-using CommunityToolkit.Maui.Extensions;
-using Microsoft.Maui.Graphics;
+using CommunityToolkit.Maui.Core.Extensions;
 
 namespace CommunityToolkit.Maui.Converters;
 
@@ -60,7 +59,7 @@ public class ColorToCmykStringConverter : BaseConverterOneWay<Color, string>
 public class ColorToCmykaStringConverter : BaseConverterOneWay<Color, string>
 {
 	/// <inheritdoc/>
-    public override string ConvertFrom(Color value) => value.ToCmykaString();
+	public override string ConvertFrom(Color value) => value.ToCmykaString();
 }
 
 /// <summary>

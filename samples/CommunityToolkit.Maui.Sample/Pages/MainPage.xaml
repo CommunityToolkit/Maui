@@ -1,0 +1,56 @@
+<pages:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.MainPage"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels"
+    x:Name="Page"
+    Title="Welcome">
+    <pages:BasePage.BindingContext>
+        <vm:MainViewModel />
+    </pages:BasePage.BindingContext>
+    <ScrollView VerticalOptions="FillAndExpand">
+        <StackLayout Spacing="16">
+            <Label
+                Margin="20,32,20,0"
+                Style="{StaticResource label_welcome_header}"
+                Text="Introducing the .NET MAUI Community Toolkit" />
+            <Label 
+                Margin="20,0,20,28" 
+                Text="The .NET MAUI Community Toolkit is a collection of Animations, Behaviors, Converters, and Effects for mobile development with .NET MAUI. It simplifies and demonstrates common developer tasks building iOS, Android, macOS and Windows apps with .NET MAUI." />
+            <StackLayout 
+                BindableLayout.ItemsSource="{Binding Items}"
+                Margin="6, 12, 6, 0">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate>
+                        <Frame
+                            Style="{StaticResource card}"
+                            Margin="0, 0, 0, 6">
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer 
+                                    Command="{Binding NavigateCommand, Source={x:Reference Page}}"
+                                    CommandParameter="{Binding .}" />
+                            </Frame.GestureRecognizers>
+                            <Grid
+                                RowSpacing="0"
+                                RowDefinitions="Auto, Auto">
+                                <Label
+                                    Text="{Binding Title}"
+                                    Style="{StaticResource label_section_header}"/>
+                                <Label
+                                    Grid.Row="1"
+                                    Text="{Binding Description}"/>
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </StackLayout>
+            <Label
+                Margin="0,32"
+                FontSize="Small"
+                HorizontalOptions="Center"
+                Text="Microsoft Corporation 2021"
+                VerticalOptions="End" />
+        </StackLayout>
+    </ScrollView>
+</pages:BasePage>

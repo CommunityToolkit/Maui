@@ -1,16 +1,14 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
+﻿using CommunityToolkit.Maui.Converters;
 
-namespace CommunityToolkit.Maui.Extensions.Internals;
+namespace CommunityToolkit.Maui.Extensions;
 
 /// <inheritdoc />
-public class MultiValueConverterExtension : IMarkupExtension<IMultiValueConverter>
+public class MultiValueConverterExtension : IMarkupExtension<ICommunityToolkitMultiValueConverter>
 {
-    /// <inheritdoc />
-    public IMultiValueConverter ProvideValue(IServiceProvider serviceProvider)
-        => (IMultiValueConverter)this;
+	/// <inheritdoc />
+	public ICommunityToolkitMultiValueConverter ProvideValue(IServiceProvider serviceProvider)
+		=> (ICommunityToolkitMultiValueConverter)this;
 
-    object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)
-        => ((IMarkupExtension<IMultiValueConverter>)this).ProvideValue(serviceProvider);
+	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)
+		=> ((IMarkupExtension<ICommunityToolkitMultiValueConverter>)this).ProvideValue(serviceProvider);
 }

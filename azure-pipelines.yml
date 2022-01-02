@@ -6,9 +6,10 @@ variables:
   NET_VERSION: '6.0.x'
   PathToSolution: 'src/CommunityToolkit.Maui.sln'
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
+  PathToCommunityToolkitCoreCsproj: 'src/CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
-  XcodeVersion: '13.0_beta'
+  XcodeVersion: '13.1'
 
 trigger:
   branches:
@@ -23,7 +24,7 @@ trigger:
     - README.md
 
 pr:
-  autoCancel: true
+  autoCancel: 'true'
   branches:
     include:
     - main
@@ -36,36 +37,16 @@ jobs:
   - job: build_windows
     displayName: Build Windows Library
     pool:
-      vmImage: windows-latest
+      vmImage: windows-2022
     steps:
-    # .NET 5.0 is required for maui-check
-      - task: UseDotNet@2
-        displayName: 'Install .NET 5.0 SDK'
-        inputs:
-          version: '5.0.x'
       - task: UseDotNet@2
         displayName: 'Install .NET SDK'
         inputs:
           version: '$(NET_VERSION)'
-          includePreviewVersions: true
       - task: CmdLine@2
         displayName: 'Install .NET MAUI workload'
         inputs:
           script: 'dotnet workload install maui'
-      - task: JavaToolInstaller@0
-        displayName: 'Install Java SDK 11.0'
-        inputs:
-          versionSpec: '11'
-          jdkArchitectureOption: 'x64'
-          jdkSourceOption: 'PreInstalled'
-      - task: CmdLine@2
-        displayName: 'Clear Local NuGet Cache' #https://github.com/actions/virtual-environments/issues/1090#issuecomment-748452120
-        inputs:
-          script: 'nuget locals all -clear'
-      - task: CmdLine@2
-        displayName: 'Clean Solution'
-        inputs:
-          script: 'dotnet clean $(PathToSolution)'
       # if this is a tagged build, then update the version number
       - powershell: |
           $buildSourceBranch = "$(Build.SourceBranch)"
@@ -78,38 +59,29 @@ jobs:
       - powershell: |
           $prNumber = $env:System_PullRequest_PullRequestNumber
           $commitId = "$($env:System_PullRequest_SourceCommitId)".Substring(0, 7)
-          $fullVersionString = "$(CurrentSemanticVersionBase)-build.$prNumber+$commitId"
+          $fullVersionString = "$(CurrentSemanticVersionBase)-build-$prNumber.$(Build.BuildId)+$commitId"
           Write-Host("GitHub PR = $prNumber, Commit = $commitId");
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$fullVersionString")
           Write-Host "##vso[build.updatebuildnumber]$fullVersionString"
         displayName: Set NuGet Version to PR Version
         condition: and(succeeded(), eq(variables['build.reason'], 'PullRequest'))
-      # restore, build, test and pack the packages
-      - task: CmdLine@2
-        displayName: 'Restore NuGet Packages'
+      # build, test and pack the packages
+      - task: VSBuild@1
+        displayName: 'Build and pack Community Toolkit'
         inputs:
-          script: |
-            dotnet restore $(PathToCommunityToolkitCsproj)
-            dotnet restore $(PathToCommunityToolkitSampleCsproj)
-            dotnet restore $(PathToCommunityToolkitUnitTestCsproj)
-      - task: CmdLine@2
-        displayName: 'Build Community Toolkit'
-        inputs:
-          script: 'dotnet build $(PathToCommunityToolkitCsproj) -c Release'
-      - task: CmdLine@2
-        displayName: 'Build Community Toolkit Sample'
-        inputs:
-          script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release'
+          solution: '$(PathToCommunityToolkitCsproj)'
+          configuration: 'Release'
+          msbuildArgs: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'     
       - task: CmdLine@2
         displayName: 'Run Unit Tests'
         inputs:
-          script: |
-            dotnet build $(PathToCommunityToolkitUnitTestCsproj) -c Release
-            :: dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release
-      - task: CmdLine@2
-        displayName: Pack Community Toolkit NuGets
+          script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release'
+      - task: VSBuild@1
+        displayName: 'Build Community Toolkit Sample'
         inputs:
-          script: 'dotnet pack $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'
+          solution: '$(PathToCommunityToolkitSampleCsproj)'
+          configuration: 'Release'
+          msbuildArgs: '/restore'
       # Sign NuGet Packages
       - task: PowerShell@2
         displayName: Authenticode Sign Packages
@@ -147,34 +119,23 @@ jobs:
       - task: UseDotNet@2
         displayName: 'Install .NET SDK'
         inputs:
-          version: $(NET_VERSION)
-          includePreviewVersions: true      
+          version: $(NET_VERSION)    
       - task: CmdLine@2
         displayName: 'Install .NET MAUI workload'
         inputs:
           script: 'dotnet workload install maui'
       - task: CmdLine@2
-        displayName: 'Restore NuGet Packages'
-        inputs:
-          script: |
-            dotnet restore $(PathToCommunityToolkitCsproj)
-            dotnet restore $(PathToCommunityToolkitSampleCsproj)
-            dotnet restore $(PathToCommunityToolkitUnitTestCsproj)
-      - task: CmdLine@2
         displayName: 'Build Community Toolkit'
         inputs:
           script: 'dotnet build $(PathToCommunityToolkitCsproj) -c Release'
       - task: CmdLine@2
+        displayName: 'Run Unit Tests'
+        inputs:
+          script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release'
+      - task: CmdLine@2
         displayName: 'Build Community Toolkit Sample'
         inputs:
           script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release'
-      # `dotnet test` does not yet support optional workloads https://github.com/dotnet/sdk/issues/21845#issuecomment-943270826
-      - task: CmdLine@2
-        displayName: 'Run Unit Tests'
-        inputs:
-          script: |
-            dotnet build $(PathToCommunityToolkitUnitTestCsproj) -c Release
-            # dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit NuGets'
         inputs:

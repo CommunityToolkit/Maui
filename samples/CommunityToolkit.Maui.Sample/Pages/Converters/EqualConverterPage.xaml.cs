@@ -2,8 +2,8 @@
 
 public partial class EqualConverterPage : BasePage
 {
-    public EqualConverterPage()
-    {
-        InitializeComponent();
-    }
+	public EqualConverterPage()
+	{
+		InitializeComponent();
+	}
 }

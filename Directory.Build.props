@@ -1,10 +1,18 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <Project>
-	<PropertyGroup>
-		<LangVersion>latest</LangVersion>
-		<Nullable>enable</Nullable>
-		<WarningsAsErrors>nullable</WarningsAsErrors>
-		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
-		<GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
-	</PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!--CS1574: XML comment has cref attribute that could not be resolved-->
+    <!--CS1573: Parameter has no matching param tag in the XML comment -->
+    <!--CS1734: XML comment has a paramref tag, but there is no parameter by that name-->
+    <WarningsAsErrors>nullable,CS1574,CS1573,CS1734</WarningsAsErrors>
+    <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
+    <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="CommunityToolkit.Maui.UnitTests" />
+  </ItemGroup>
 </Project>

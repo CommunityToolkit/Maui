@@ -1,0 +1,86 @@
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
+
+namespace CommunityToolkit.Maui.Behaviors;
+
+/// <summary>
+/// The <see cref="EmailValidationBehavior"/> is a behavior that allows users to determine whether or not text input is a valid e-mail address. 
+/// For example, an <see cref="Entry"/> control can be styled differently depending on whether a valid or an invalid e-mail address is provided.
+/// The validation is achieved through a regular expression that is used to verify whether or not the text input is a valid e-mail address.
+/// It can be overridden to customize the validation through the properties it inherits from <see cref="ValidationBehavior"/>.
+/// </summary>
+public class EmailValidationBehavior : TextValidationBehavior
+{
+	/// <inheritdoc /> 
+	protected override async ValueTask<bool> ValidateAsync(string? value, CancellationToken token)
+	{
+		if (string.IsNullOrWhiteSpace(value))
+			return false;
+
+		if (value.StartsWith('.'))
+			return false;
+
+		if (value.Contains(".."))
+			return false;
+
+		if (value.Contains(".@"))
+			return false;
+
+		return IsValidEmail(value) && await base.ValidateAsync(value, token);
+	}
+
+	// https://docs.microsoft.com/dotnet/standard/base-types/how-to-verify-that-strings-are-in-valid-email-format
+	static bool IsValidEmail(string? email)
+	{
+		if (string.IsNullOrWhiteSpace(email))
+			return false;
+
+		try
+		{
+			// Normalize the domain
+			email = Regex.Replace(email, @"(@)(.+)$", domainMapper, RegexOptions.None, TimeSpan.FromMilliseconds(200));
+		}
+		catch (RegexMatchTimeoutException)
+		{
+			return false;
+		}
+		catch (ArgumentException)
+		{
+			return false;
+		}
+
+		try
+		{
+			return Regex.IsMatch(email,
+				@"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+				RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
+		}
+		catch (RegexMatchTimeoutException)
+		{
+			return false;
+		}
+
+		// Examines the domain part of the email and normalizes it.
+		static string domainMapper(Match match)
+		{
+			// Use IdnMapping class to convert Unicode domain names.
+			var idn = new IdnMapping();
+
+			// Pull out and process domain name (throws ArgumentException on invalid)
+			string domainName = idn.GetAscii(match.Groups[2].Value);
+
+			if (domainName.All(x => char.IsDigit(x) || x is '.')
+				&& !Regex.IsMatch(domainName, @"^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}$"))
+			{
+				throw new ArgumentException("Invalid IPv4 Address");
+			}
+
+			if (domainName.StartsWith('-'))
+				throw new ArgumentException("Domain Name Cannot Start With Hyphen");
+
+			return match.Groups[1].Value + domainName;
+		}
+	}
+
+
+}

@@ -2,8 +2,8 @@
 
 public partial class IntToBoolConverterPage : BasePage
 {
-    public IntToBoolConverterPage()
-    {
-        InitializeComponent();
-    }
+	public IntToBoolConverterPage()
+	{
+		InitializeComponent();
+	}
 }

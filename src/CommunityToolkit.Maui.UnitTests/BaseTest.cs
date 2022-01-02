@@ -1,42 +1,70 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using CommunityToolkit.Maui.UnitTests.Mocks;
-using Microsoft.Maui.Controls;
+using Microsoft.Maui.Dispatching;
 
-namespace CommunityToolkit.Maui.UnitTests
+namespace CommunityToolkit.Maui.UnitTests;
+
+public abstract class BaseTest : IDisposable
 {
-     public class  BaseTest : IDisposable
-    {
-        readonly CultureInfo? defaultCulture, defaultUICulture;
+	readonly CultureInfo? defaultCulture, defaultUICulture;
 
-        bool _isDisposed;
+	bool _isDisposed;
 
-        protected BaseTest()
-        {
-            defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
-            defaultUICulture = System.Threading.Thread.CurrentThread.CurrentUICulture;
-            Device.PlatformServices = new MockPlatformServices();
-        }
+	protected BaseTest()
+	{
+		defaultCulture = Thread.CurrentThread.CurrentCulture;
+		defaultUICulture = Thread.CurrentThread.CurrentUICulture;
 
-        ~BaseTest() => Dispose(false);
+		Device.PlatformServices = new MockPlatformServices();
 
-        protected virtual void Dispose(bool isDisposing)
-        {
-            if (_isDisposed)
-                return;
+		DispatcherProvider.SetCurrent(new DispatcherProviderMock());
+		DeviceDisplay.SetCurrent(null);
+	}
 
-            Device.PlatformServices = null;
+	~BaseTest() => Dispose(false);
 
-            System.Threading.Thread.CurrentThread.CurrentCulture = defaultCulture ?? throw new NullReferenceException();
-            System.Threading.Thread.CurrentThread.CurrentUICulture = defaultUICulture ?? throw new NullReferenceException();
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
 
-            _isDisposed = true;
-        }
+	protected virtual void Dispose(bool isDisposing)
+	{
+		if (_isDisposed)
+			return;
 
-        void IDisposable.Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-    }
+		Device.PlatformServices = null;
+
+		Thread.CurrentThread.CurrentCulture = defaultCulture ?? throw new NullReferenceException();
+		Thread.CurrentThread.CurrentUICulture = defaultUICulture ?? throw new NullReferenceException();
+
+		DispatcherProvider.SetCurrent(null);
+		DeviceDisplay.SetCurrent(null);
+
+		_isDisposed = true;
+	}
+
+	protected static Task<Stream> GetStreamFromImageSource(ImageSource imageSource, CancellationToken token)
+	{
+		var streamImageSource = (StreamImageSource)imageSource;
+		return streamImageSource.Stream(token);
+	}
+
+	protected static bool StreamEquals(Stream a, Stream b)
+	{
+		if (a == b)
+			return true;
+
+		if (a.Length != b.Length)
+			return false;
+
+		for (var i = 0; i < a.Length; i++)
+		{
+			if (a.ReadByte() != b.ReadByte())
+				return false;
+		}
+
+		return true;
+	}
 }

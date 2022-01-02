@@ -2,8 +2,8 @@
 
 public partial class ItemTappedEventArgsPage : BasePage
 {
-    public ItemTappedEventArgsPage()
-    {
-        InitializeComponent();
-    }
+	public ItemTappedEventArgsPage()
+	{
+		InitializeComponent();
+	}
 }
