@@ -1,12 +1,6 @@
-﻿using System;
-using System.Globalization;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Globalization;
 using CommunityToolkit.Maui.UnitTests.Mocks;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Dispatching;
-using Microsoft.Maui.Essentials;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
@@ -18,8 +12,8 @@ public abstract class BaseTest : IDisposable
 
 	protected BaseTest()
 	{
-		defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
-		defaultUICulture = System.Threading.Thread.CurrentThread.CurrentUICulture;
+		defaultCulture = Thread.CurrentThread.CurrentCulture;
+		defaultUICulture = Thread.CurrentThread.CurrentUICulture;
 
 		Device.PlatformServices = new MockPlatformServices();
 
@@ -42,8 +36,8 @@ public abstract class BaseTest : IDisposable
 
 		Device.PlatformServices = null;
 
-		System.Threading.Thread.CurrentThread.CurrentCulture = defaultCulture ?? throw new NullReferenceException();
-		System.Threading.Thread.CurrentThread.CurrentUICulture = defaultUICulture ?? throw new NullReferenceException();
+		Thread.CurrentThread.CurrentCulture = defaultCulture ?? throw new NullReferenceException();
+		Thread.CurrentThread.CurrentUICulture = defaultUICulture ?? throw new NullReferenceException();
 
 		DispatcherProvider.SetCurrent(null);
 		DeviceDisplay.SetCurrent(null);

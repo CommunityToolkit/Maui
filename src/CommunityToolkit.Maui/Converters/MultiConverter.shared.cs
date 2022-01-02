@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Maui.Controls;
-
-namespace CommunityToolkit.Maui.Converters;
+﻿namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>
 /// Converts an incoming value using all of the incoming converters in sequence.

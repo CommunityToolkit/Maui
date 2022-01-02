@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace CommunityToolkit.Maui.Core;
+﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// Precedence for Math Opertator

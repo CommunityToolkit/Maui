@@ -1,5 +1,4 @@
-﻿using System;
-using CommunityToolkit.Maui.Sample.ViewModels.Converters;
+﻿using CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 

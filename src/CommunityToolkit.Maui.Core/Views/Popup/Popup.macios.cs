@@ -1,5 +1,4 @@
-﻿using System;
-using Foundation;
+﻿using Foundation;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;

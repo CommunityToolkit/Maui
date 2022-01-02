@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
 public class ListToStringConverterViewModel : BaseViewModel
 {
