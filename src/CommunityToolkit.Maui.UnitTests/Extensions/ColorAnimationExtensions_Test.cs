@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.UnitTests.Mocks;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -13,6 +11,22 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions;
 
 public class ColorAnimationExtensions_Test : BaseTest
 {
+	[Fact]
+	public async Task CustomTextColorTo_VerifyColorChanged()
+	{
+		Color originalTextColor = Colors.Blue, updatedTextColor = Colors.Red;
+
+		var customTextStyleView = new CustomTextStyleView { TextColor = originalTextColor };
+		customTextStyleView.EnableAnimations();
+
+		Assert.Equal(originalTextColor, customTextStyleView.TextColor);
+
+		var isSuccessful = await customTextStyleView.TextColorTo(updatedTextColor);
+
+		Assert.True(isSuccessful);
+		Assert.Equal(updatedTextColor, customTextStyleView.TextColor);
+	}
+
 	[Fact]
 	public async Task LabelTextColorTo_VerifyColorChanged()
 	{
@@ -134,4 +148,14 @@ public class ColorAnimationExtensions_Test : BaseTest
 		await Assert.ThrowsAsync<ArgumentNullException>(() => element.BackgroundColorTo(null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
+
+}
+
+public class CustomTextStyleView : View, ITextStyle
+{
+	public Color TextColor { get; set; } = new();
+
+	public Font Font { get; set; }
+
+	public double CharacterSpacing { get; set; }
 }
