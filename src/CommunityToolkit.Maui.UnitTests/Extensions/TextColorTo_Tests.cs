@@ -103,7 +103,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 
 namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
 {
-	public class PublicTextStyleView : View, ITextStyle
+	public class PublicTextStyleView : View, ICustomTextStyle
 	{
 		public Color TextColor { get; set; } = new();
 
@@ -112,12 +112,18 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
 		public double CharacterSpacing { get; set; }
 	}
 
-	class InternalTextStyleView : View, ITextStyle
+	class InternalTextStyleView : View, ICustomTextStyle
 	{
 		public Color TextColor { get; set; } = new();
 
 		public Font Font { get; set; }
 
 		public double CharacterSpacing { get; set; }
+	}
+
+	// Ensures custom ITextStyle interfaces are supported
+	interface ICustomTextStyle : ITextStyle
+	{
+
 	}
 }

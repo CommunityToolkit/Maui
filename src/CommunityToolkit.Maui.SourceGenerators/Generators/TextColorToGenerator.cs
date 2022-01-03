@@ -14,8 +14,13 @@ class TextColorToGenerator : IIncrementalGenerator
 	{
 		// Get All Classes in User Library
 		var userGeneratedClassesProvider = context.SyntaxProvider.CreateSyntaxProvider(
-			(syntaxNode, cancellationToken) => syntaxNode is ClassDeclarationSyntax classDeclarationSyntax,
+			(syntaxNode, cancellationToken) => syntaxNode is ClassDeclarationSyntax,
 			(context, cancellationToken) => (ClassDeclarationSyntax)context.Node);
+
+		// Get All Interfaces in User Library
+		var userGeneratedInterfacesProvider = context.SyntaxProvider.CreateSyntaxProvider(
+			(syntaxNode, cancellationToken) => syntaxNode is InterfaceDeclarationSyntax,
+			(context, cancellationToken) => (InterfaceDeclarationSyntax)context.Node);
 
 		// Get Microsoft.Maui.Controls Assymbly Symbol
 		var mauiControlsAssemblySymbolProvider = context.CompilationProvider.Select(
@@ -23,16 +28,29 @@ class TextColorToGenerator : IIncrementalGenerator
 
 		var inputs = userGeneratedClassesProvider.Collect()
 						.Combine(mauiControlsAssemblySymbolProvider)
-						.Select((combined, cancellationToken) => (UserGeneratedClassesProvider: combined.Left, MauiControlsAssemblySymbolProvider: combined.Right));
+						.Select((combined, cancellationToken) => (UserGeneratedClassesProvider: combined.Left, MauiControlsAssemblySymbolProvider: combined.Right))
+						.Combine(userGeneratedInterfacesProvider.Collect())
+						.Select((combined, cancellationToken) => (combined.Left.UserGeneratedClassesProvider, combined.Left.MauiControlsAssemblySymbolProvider, UserGeneratedInterfacesProvider: combined.Right));
 
 		context.RegisterSourceOutput(inputs, (context, collectedValues) =>
 		{
+			const string textStyleInterface = "ITextStyle";
+
+			var textStyleInterfaceList = new List<string> { textStyleInterface };
+
+			// Find All User-Generated Interfaces that Implement ITextStyle
+			foreach (var interfaceDeclarationSyntax in collectedValues.UserGeneratedInterfacesProvider)
+			{
+				if (interfaceDeclarationSyntax.BaseList?.Types.Any(x => x.ToString() == textStyleInterface) is true)
+					textStyleInterfaceList.Add(interfaceDeclarationSyntax.Identifier.ToString());
+			}
+
 			var textStyleClassList = new List<(string ClassName, string ClassAcessModifier, string Namespace)>();
 
 			// Collect Microsoft.Maui.Controls that Implement ITextStyle
 			foreach (var namedTypeSymbol in collectedValues.MauiControlsAssemblySymbolProvider.GlobalNamespace.GetNamedTypeSymbols())
 			{
-				if (namedTypeSymbol.ImplementsInterfaceOrBaseClass("ITextStyle"))
+				if (namedTypeSymbol.ImplementsInterfaceOrBaseClass(textStyleInterface))
 				{
 					textStyleClassList.Add((namedTypeSymbol.Name, "public", namedTypeSymbol.ContainingNamespace.ToString()));
 				}
@@ -41,7 +59,7 @@ class TextColorToGenerator : IIncrementalGenerator
 			// Collect All Classes in User Library that Implement ITextStyle
 			foreach (var classDeclarationSyntax in collectedValues.UserGeneratedClassesProvider)
 			{
-				if (classDeclarationSyntax.BaseList?.Types.Any(x => x.ToString() == "ITextStyle") is true)
+				if (classDeclarationSyntax.BaseList?.Types.Any(x => textStyleInterfaceList.Contains(x.ToString())) is true)
 				{
 					textStyleClassList.Add((classDeclarationSyntax.Identifier.ToString(), GetClassAccessModifier(classDeclarationSyntax), GetNamespace(classDeclarationSyntax)));
 				}
