@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Extensions
 {
-	public class TextColorTo_Tests
+	public class TextColorTo_Tests : BaseTest
 	{
 		[Fact]
 		public async Task PublicTextColorTo_VerifyColorChanged()
