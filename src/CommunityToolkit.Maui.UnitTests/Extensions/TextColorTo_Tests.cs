@@ -4,7 +4,6 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Extensions
 {
-
 	public class TextColorTo_Tests
 	{
 		[Fact]
