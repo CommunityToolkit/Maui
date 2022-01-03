@@ -13,7 +13,7 @@ class TextColorToGenerator : IIncrementalGenerator
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
 		// Get All Classes in User Library
-		var candidateClassesProvider = context.SyntaxProvider.CreateSyntaxProvider(
+		var userGeneratedClassesProvider = context.SyntaxProvider.CreateSyntaxProvider(
 			(syntaxNode, cancellationToken) => syntaxNode is ClassDeclarationSyntax classDeclarationSyntax,
 			(context, cancellationToken) => (ClassDeclarationSyntax)context.Node);
 
@@ -21,9 +21,9 @@ class TextColorToGenerator : IIncrementalGenerator
 		var mauiControlsAssemblySymbolProvider = context.CompilationProvider.Select(
 			(compilation, token) => compilation.SourceModule.ReferencedAssemblySymbols.Single(q => q.Name == "Microsoft.Maui.Controls"));
 
-		var inputs = candidateClassesProvider.Collect()
+		var inputs = userGeneratedClassesProvider.Collect()
 						.Combine(mauiControlsAssemblySymbolProvider)
-						.Select((combined, cancellationToken) => (CandidateClassesProvider: combined.Left, MauiControlsAssemblySymbolProvider: combined.Right));
+						.Select((combined, cancellationToken) => (UserGeneratedClassesProvider: combined.Left, MauiControlsAssemblySymbolProvider: combined.Right));
 
 		context.RegisterSourceOutput(inputs, (context, collectedValues) =>
 		{
@@ -39,7 +39,7 @@ class TextColorToGenerator : IIncrementalGenerator
 			}
 
 			// Collect All Classes in User Library that Implement ITextStyle
-			foreach (var classDeclarationSyntax in collectedValues.CandidateClassesProvider)
+			foreach (var classDeclarationSyntax in collectedValues.UserGeneratedClassesProvider)
 			{
 				if (classDeclarationSyntax.BaseList?.Types.Any(x => x.ToString() == "ITextStyle") is true)
 				{
