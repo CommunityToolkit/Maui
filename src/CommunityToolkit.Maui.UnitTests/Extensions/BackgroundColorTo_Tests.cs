@@ -66,5 +66,4 @@ public class BackgroundColorTo_Tests : BaseTest
 		await Assert.ThrowsAsync<ArgumentNullException>(() => element.BackgroundColorTo(null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
-
 }
