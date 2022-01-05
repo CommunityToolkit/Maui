@@ -7,8 +7,8 @@ namespace CommunityToolkit.Maui.Sample.ViewModels;
 
 public abstract class BaseGalleryViewModel : BaseViewModel
 {
-	string _filterValue = string.Empty;
-	IEnumerable<SectionModel> _filteredItems = Enumerable.Empty<SectionModel>();
+	string filterValue = string.Empty;
+	IEnumerable<SectionModel> filteredItems = Enumerable.Empty<SectionModel>();
 
 	public BaseGalleryViewModel()
 	{
@@ -20,18 +20,18 @@ public abstract class BaseGalleryViewModel : BaseViewModel
 
 	public string FilterValue
 	{
-		get => _filterValue;
+		get => filterValue;
 		set
 		{
-			_filterValue = value;
+			filterValue = value;
 			Filter();
 		}
 	}
 
 	public IEnumerable<SectionModel> FilteredItems
 	{
-		get => _filteredItems;
-		private set => SetProperty(ref _filteredItems, value);
+		get => filteredItems;
+		private set => SetProperty(ref filteredItems, value);
 	}
 
 	protected abstract IEnumerable<SectionModel> CreateItems();

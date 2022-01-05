@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
 public class IsNullOrEmptyConverterViewModel : BaseViewModel
 {
-	string? _selectedItem;
+	string? selectedItem;
 
 	public IsNullOrEmptyConverterViewModel() => ClearSelectionCommand = new Command(() => SelectedItem = null);
 
@@ -24,7 +24,7 @@ public class IsNullOrEmptyConverterViewModel : BaseViewModel
 
 	public string? SelectedItem
 	{
-		get => _selectedItem;
-		set => SetProperty(ref _selectedItem, value);
+		get => selectedItem;
+		set => SetProperty(ref selectedItem, value);
 	}
 }

@@ -12,21 +12,21 @@ namespace CommunityToolkit.Maui.Sample.Pages.Alerts;
 
 public partial class SnackbarPage : BasePage
 {
-	const string _displayCustomSnackbarText = "Display a Custom Snackbar, Anchored to this Button";
-	const string _dismissCustomSnackbarText = "Dismiss Custom Snackbar";
-	readonly IReadOnlyList<Color> _colors = typeof(Colors)
+	const string displayCustomSnackbarText = "Display a Custom Snackbar, Anchored to this Button";
+	const string dismissCustomSnackbarText = "Dismiss Custom Snackbar";
+	readonly IReadOnlyList<Color> colors = typeof(Colors)
 		.GetFields(BindingFlags.Static | BindingFlags.Public)
 		.ToDictionary(c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()))
 		.Values.ToList();
 
-	ISnackbar? _customSnackbar;
+	ISnackbar? customSnackbar;
 
 	public SnackbarPage()
 	{
 		InitializeComponent();
 
 		DisplayCustomSnackbarButton ??= new();
-		DisplayCustomSnackbarButton.Text = _displayCustomSnackbarText;
+		DisplayCustomSnackbarButton.Text = displayCustomSnackbarText;
 	}
 
 	async void DisplayDefaultSnackbarButtonClicked(object? sender, EventArgs args) =>
@@ -34,7 +34,7 @@ public partial class SnackbarPage : BasePage
 
 	async void DisplayCustomSnackbarButtonClicked(object? sender, EventArgs args)
 	{
-		if (DisplayCustomSnackbarButton.Text is _displayCustomSnackbarText)
+		if (DisplayCustomSnackbarButton.Text is displayCustomSnackbarText)
 		{
 			var options = new SnackbarOptions
 			{
@@ -45,28 +45,28 @@ public partial class SnackbarPage : BasePage
 				Font = Font.SystemFontOfSize(14),
 			};
 
-			_customSnackbar = Snackbar.Make(
+			customSnackbar = Snackbar.Make(
 				"This is a customized Snackbar",
 				async () =>
 				{
-					await DisplayCustomSnackbarButton.BackgroundColorTo(_colors[new Random().Next(_colors.Count)], length: 500);
-					DisplayCustomSnackbarButton.Text = _displayCustomSnackbarText;
+					await DisplayCustomSnackbarButton.BackgroundColorTo(colors[new Random().Next(colors.Count)], length: 500);
+					DisplayCustomSnackbarButton.Text = displayCustomSnackbarText;
 				},
 				"Change Button Color",
 				TimeSpan.FromSeconds(30),
 				options,
 				DisplayCustomSnackbarButton);
 
-			await _customSnackbar.Show();
+			await customSnackbar.Show();
 
-			DisplayCustomSnackbarButton.Text = _dismissCustomSnackbarText;
+			DisplayCustomSnackbarButton.Text = dismissCustomSnackbarText;
 		}
-		else if (DisplayCustomSnackbarButton.Text is _dismissCustomSnackbarText)
+		else if (DisplayCustomSnackbarButton.Text is dismissCustomSnackbarText)
 		{
-			if (_customSnackbar is not null)
-				await _customSnackbar.Dismiss();
+			if (customSnackbar is not null)
+				await customSnackbar.Dismiss();
 
-			DisplayCustomSnackbarButton.Text = _displayCustomSnackbarText;
+			DisplayCustomSnackbarButton.Text = displayCustomSnackbarText;
 		}
 		else
 		{

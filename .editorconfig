@@ -68,6 +68,18 @@ csharp_style_conditional_delegate_call = true:suggestions
 
 # Naming rules
 
+dotnet_diagnostic.IDE1006.severity = error
+
+## Public Fields are kept Pascal Case
+dotnet_naming_symbols.public_symbols.applicable_kinds           = field
+dotnet_naming_symbols.public_symbols.applicable_accessibilities = public
+
+dotnet_naming_style.first_word_upper_case_style.capitalization = first_word_upper
+
+dotnet_naming_rule.public_members_must_be_capitalized.symbols   = public_symbols
+dotnet_naming_rule.public_members_must_be_capitalized.style    = first_word_upper_case_style
+dotnet_naming_rule.public_members_must_be_capitalized.severity = suggestion
+
 ## Instance fields are camelCase
 dotnet_naming_rule.instance_fields_should_be_camel_case.severity = error
 dotnet_naming_rule.instance_fields_should_be_camel_case.symbols = instance_fields
@@ -77,15 +89,15 @@ dotnet_naming_symbols.instance_fields.applicable_kinds = field
 
 dotnet_naming_style.instance_field_style.capitalization = camel_case
 dotnet_naming_style.instance_field_style.required_prefix = 
-dotnet_diagnostic.IDE1006.severity = error
 
-# Static fields are camelCase
+## Static fields are camelCase
 dotnet_naming_rule.static_fields_should_be_camel_case.severity = error
 dotnet_naming_rule.static_fields_should_be_camel_case.symbols = static_fields
 dotnet_naming_rule.static_fields_should_be_camel_case.style = static_field_style
 
 dotnet_naming_symbols.static_fields.applicable_kinds = field
 dotnet_naming_symbols.static_fields.required_modifiers = static
+dotnet_naming_symbols.static_fields.applicable_accessibilities = internal, private, protected, protected_internal, private_protected
 
 dotnet_naming_style.static_field_style.capitalization = camel_case
 dotnet_naming_style.static_field_style.required_prefix = 

@@ -5,14 +5,14 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
 public class EnumToIntConverterViewModel : BaseViewModel
 {
-	IssueState _selectedState = IssueState.None;
+	IssueState selectedState = IssueState.None;
 
 	public IReadOnlyList<string> AllStates { get; } = Enum.GetNames(typeof(IssueState));
 
 	public IssueState SelectedState
 	{
-		get => _selectedState;
-		set => SetProperty(ref _selectedState, value);
+		get => selectedState;
+		set => SetProperty(ref selectedState, value);
 	}
 
 	public enum IssueState
