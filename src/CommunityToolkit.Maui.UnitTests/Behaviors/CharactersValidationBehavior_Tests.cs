@@ -1,7 +1,4 @@
-﻿using System.Threading.Tasks;
-using CommunityToolkit.Maui.Behaviors;
-using CommunityToolkit.Maui.UnitTests.Mocks;
-using Microsoft.Maui.Controls;
+﻿using CommunityToolkit.Maui.Behaviors;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;

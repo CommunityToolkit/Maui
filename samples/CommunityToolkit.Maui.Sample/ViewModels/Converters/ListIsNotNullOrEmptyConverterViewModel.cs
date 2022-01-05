@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Windows.Input;
-using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 

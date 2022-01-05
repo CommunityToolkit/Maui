@@ -1,8 +1,4 @@
-﻿using System;
-using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
+﻿using System.Globalization;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
