@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Generators;
 
-[Generator]
+[Generator(LanguageNames.CSharp)]
 class TextColorToGenerator : IIncrementalGenerator
 {
 	public void Initialize(IncrementalGeneratorInitializationContext context)
