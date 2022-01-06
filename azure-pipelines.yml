@@ -67,13 +67,13 @@ jobs:
         condition: and(succeeded(), eq(variables['build.reason'], 'PullRequest'))
       # build, test and pack the packages
       - task: VSBuild@1
-        displayName: 'Build and pack CommunityToolkit.Maui.Core'
+        displayName: 'Build and Pack CommunityToolkit.Maui.Core'
         inputs:
           solution: '$(PathToCommunityToolkitCoreCsproj)'
           configuration: 'Release'
           msbuildArgs: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'     
       - task: VSBuild@1
-        displayName: 'Build and pack CommunityToolkit.Maui'
+        displayName: 'Build and Pack CommunityToolkit.Maui'
         inputs:
           solution: '$(PathToCommunityToolkitCsproj)'
           configuration: 'Release'
