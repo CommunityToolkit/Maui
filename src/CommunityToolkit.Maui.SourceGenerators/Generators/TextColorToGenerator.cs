@@ -1,5 +1,7 @@
-﻿using System.Text;
+﻿using System.Collections.Immutable;
+using System.Text;
 using CommunityToolkit.Maui.SourceGenerators.Extensions;
+using CommunityToolkit.Maui.SourceGenerators.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -10,64 +12,65 @@ namespace CommunityToolkit.Maui.SourceGenerators.Generators;
 [Generator(LanguageNames.CSharp)]
 class TextColorToGenerator : IIncrementalGenerator
 {
+	const string iTextStyleInterface = "Microsoft.Maui.ITextStyle";
+	const string iAnimatableInterface = "Microsoft.Maui.Controls.IAnimatable";
+	const string mauiControlsAssembly = "Microsoft.Maui.Controls";
+
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
 		// Get All Classes in User Library
 		var userGeneratedClassesProvider = context.SyntaxProvider.CreateSyntaxProvider(
-			(syntaxNode, cancellationToken) => syntaxNode is ClassDeclarationSyntax,
-			(context, cancellationToken) => (ClassDeclarationSyntax)context.Node);
-
-		// Get All Interfaces in User Library
-		var userGeneratedInterfacesProvider = context.SyntaxProvider.CreateSyntaxProvider(
-			(syntaxNode, cancellationToken) => syntaxNode is InterfaceDeclarationSyntax,
-			(context, cancellationToken) => (InterfaceDeclarationSyntax)context.Node);
+			static (syntaxNode, cancellationToken) => syntaxNode is ClassDeclarationSyntax { BaseList: not null },
+			static (context, cancellationToken) => (ClassDeclarationSyntax)context.Node);
 
 		// Get Microsoft.Maui.Controls Assymbly Symbol
 		var mauiControlsAssemblySymbolProvider = context.CompilationProvider.Select(
-			(compilation, token) => compilation.SourceModule.ReferencedAssemblySymbols.Single(q => q.Name == "Microsoft.Maui.Controls"));
+			static (compilation, token) => compilation.SourceModule.ReferencedAssemblySymbols.Single(q => q.Name == mauiControlsAssembly));
 
 		var inputs = userGeneratedClassesProvider.Collect()
 						.Combine(mauiControlsAssemblySymbolProvider)
-						.Select((combined, cancellationToken) => (UserGeneratedClassesProvider: combined.Left, MauiControlsAssemblySymbolProvider: combined.Right))
-						.Combine(userGeneratedInterfacesProvider.Collect())
-						.Select((combined, cancellationToken) => (combined.Left.UserGeneratedClassesProvider, combined.Left.MauiControlsAssemblySymbolProvider, UserGeneratedInterfacesProvider: combined.Right));
+						.Select(static (combined, cancellationToken) => (UserGeneratedClassesProvider: combined.Left, MauiControlsAssemblySymbolProvider: combined.Right))
+						.Combine(context.CompilationProvider)
+						.Select(static (combined, cancellationToken) => (combined.Left.UserGeneratedClassesProvider, combined.Left.MauiControlsAssemblySymbolProvider, Compilation: combined.Right));
 
 		context.RegisterSourceOutput(inputs, (context, collectedValues) =>
+		Execute(context, collectedValues.Compilation, collectedValues.UserGeneratedClassesProvider, collectedValues.MauiControlsAssemblySymbolProvider));
+	}
+
+	static void Execute(SourceProductionContext context, Compilation compilation, ImmutableArray<ClassDeclarationSyntax> userGeneratedClassesProvider, IAssemblySymbol mauiControlsAssemblySymbolProvider)
+	{
+		var textStyleSymbol = compilation.GetTypeByMetadataName(iTextStyleInterface);
+		var iAnimatableSymbol = compilation.GetTypeByMetadataName(iAnimatableInterface);
+
+		if (textStyleSymbol is null || iAnimatableSymbol is null)
+			return;
+
+		var textStyleClassList = new List<(string ClassName, string ClassAcessModifier, string Namespace)>();
+
+		// Collect Microsoft.Maui.Controls that Implement ITextStyle
+		var mauiTextStyleImplementors = mauiControlsAssemblySymbolProvider.GlobalNamespace.GetNamedTypeSymbols().Where(x => x.AllInterfaces.Contains(textStyleSymbol, SymbolEqualityComparer.Default)
+				&& x.AllInterfaces.Contains(iAnimatableSymbol, SymbolEqualityComparer.Default));
+
+		foreach (var namedTypeSymbol in mauiTextStyleImplementors)
+			textStyleClassList.Add((namedTypeSymbol.Name, "public", namedTypeSymbol.ContainingNamespace.ToDisplayString()));
+
+		// Collect All Classes in User Library that Implement ITextStyle
+		foreach (var classDeclarationSyntax in userGeneratedClassesProvider)
 		{
-			const string textStyleInterface = "ITextStyle";
-
-			var textStyleInterfaceList = new List<string> { textStyleInterface };
-
-			// Find All User-Generated Interfaces that Implement ITextStyle
-			foreach (var interfaceDeclarationSyntax in collectedValues.UserGeneratedInterfacesProvider)
+			var declarationSymbol = compilation.GetSymbol<INamedTypeSymbol>(classDeclarationSyntax);
+			if (declarationSymbol is null)
+				continue;
+			if (declarationSymbol.AllInterfaces.Contains(textStyleSymbol, SymbolEqualityComparer.Default)
+				&& declarationSymbol.AllInterfaces.Contains(iAnimatableSymbol, SymbolEqualityComparer.Default))
 			{
-				if (interfaceDeclarationSyntax.BaseList?.Types.Any(x => x.ToString() == textStyleInterface) is true)
-					textStyleInterfaceList.Add(interfaceDeclarationSyntax.Identifier.ToString());
+				textStyleClassList.Add((declarationSymbol.Name, GetClassAccessModifier(declarationSymbol), declarationSymbol.ContainingNamespace.ToDisplayString()));
 			}
+		}
 
-			var textStyleClassList = new List<(string ClassName, string ClassAcessModifier, string Namespace)>();
-
-			// Collect Microsoft.Maui.Controls that Implement ITextStyle
-			foreach (var namedTypeSymbol in collectedValues.MauiControlsAssemblySymbolProvider.GlobalNamespace.GetNamedTypeSymbols())
-			{
-				if (namedTypeSymbol.ImplementsInterfaceOrBaseClass(textStyleInterface))
-				{
-					textStyleClassList.Add((namedTypeSymbol.Name, "public", namedTypeSymbol.ContainingNamespace.ToString()));
-				}
-			}
-
-			// Collect All Classes in User Library that Implement ITextStyle
-			foreach (var classDeclarationSyntax in collectedValues.UserGeneratedClassesProvider)
-			{
-				if (classDeclarationSyntax.BaseList?.Types.Any(x => textStyleInterfaceList.Contains(x.ToString())) is true)
-				{
-					textStyleClassList.Add((classDeclarationSyntax.Identifier.ToString(), GetClassAccessModifier(classDeclarationSyntax), GetNamespace(classDeclarationSyntax)));
-				}
-			}
-
-			foreach (var textStyleClass in textStyleClassList)
-			{
-				var textColorToBuilder = new StringBuilder(@"
+		var options = ((CSharpCompilation)compilation).SyntaxTrees[0].Options as CSharpParseOptions;
+		foreach (var textStyleClass in textStyleClassList)
+		{
+			var textColorToBuilder = new StringBuilder(@"
 // AutoGenerated Code
 // See: CommunityToolkit.Maui.SourceGenerators.TextColorToGenerator
 
@@ -83,10 +86,10 @@ namespace " + textStyleClass.Namespace + @";
 " + textStyleClass.ClassAcessModifier + @" static partial class ColorAnimationExtensions_" + textStyleClass.ClassName + @"
 {
 	/// <summary>
-	/// Animates the TextColor of an <see cref=""ITextStyle""/> to the given color
+	/// Animates the TextColor of an <see cref=""Microsoft.Maui.ITextStyle""/> to the given color
 	/// </summary>
 	/// <param name=""element""></param>
-	/// <param name=""color"">The target color to animate the <see cref=""ITextStyle.TextColor""/> to</param>
+	/// <param name=""color"">The target color to animate the <see cref=""Microsoft.Maui.ITextStyle.TextColor""/> to</param>
 	/// <param name=""rate"">The time, in milliseconds, between the frames of the animation</param>
 	/// <param name=""length"">The duration, in milliseconds, of the animation</param>
 	/// <param name=""easing"">The easing function to be used in the animation</param>
@@ -96,8 +99,8 @@ namespace " + textStyleClass.Namespace + @";
 		ArgumentNullException.ThrowIfNull(element);
 		ArgumentNullException.ThrowIfNull(color);
 
-		if(element is not ITextStyle)
-			throw new ArgumentException($""Element must implement {nameof(ITextStyle)}"", nameof(element));
+		if(element is not Microsoft.Maui.ITextStyle)
+			throw new ArgumentException($""Element must implement {nameof(Microsoft.Maui.ITextStyle)}"", nameof(element));
 
 		//Although TextColor is defined as not-nullable, it CAN be null
 		//If null => set it to Transparent as Animation will crash on null BackgroundColor
@@ -140,37 +143,16 @@ namespace " + textStyleClass.Namespace + @";
 			new(v => element.TextColor = element.TextColor.WithAlpha(v), element.TextColor.Alpha, targetAlpha);
 	}
 }");
-				context.AddSource($"{textStyleClass.ClassName}TextColorTo.g.shared.cs", SourceText.From(textColorToBuilder.ToString(), Encoding.UTF8));
-			}
-		});
-	}
-
-	static string GetNamespace(ClassDeclarationSyntax source)
-	{
-		SyntaxNode parent = source.Parent ?? throw new ArgumentException("ClassDeclarationSyntax must have a parent node");
-
-		while (parent.IsKind(SyntaxKind.ClassDeclaration))
-		{
-			parent = parent.Parent ?? throw new ArgumentException("ClassDeclarationSyntax must have a parent node");
+			var source = textColorToBuilder.ToString();
+			SourceGeneratorHelpers.FormatText(ref source, options);
+			context.AddSource($"{textStyleClass.ClassName}TextColorTo.g.shared.cs", SourceText.From(source, Encoding.UTF8));
 		}
-
-		var namespaceDeclarationSyntax = (BaseNamespaceDeclarationSyntax)parent;
-
-		return namespaceDeclarationSyntax.Name.ToString();
 	}
 
-	static string GetClassAccessModifier(ClassDeclarationSyntax source)
+	static string GetClassAccessModifier(INamedTypeSymbol namedTypeSymbol) => namedTypeSymbol.DeclaredAccessibility switch
 	{
-		var modifiers = source.Modifiers;
-
-		if (!modifiers.Any() || modifiers.Any(x => x.IsKind(SyntaxKind.InternalKeyword)))
-			return "internal";
-
-		if (modifiers.Any(x => x.IsKind(SyntaxKind.PublicKeyword)))
-			return "public";
-
-		// "Classes, records, and structs declared directly within a namespace (in other words, that aren't nested within other classes or structs) can be either public or internal"
-		//  Source: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/access-modifiers#class-record-and-struct-accessibility
-		throw new NotSupportedException("TextColorTo only supports public and internal classes ineriting from ITextStyle");
-	}
+		Accessibility.Public => "public",
+		Accessibility.Internal => "internal",
+		_ => throw new NotSupportedException("TextColorTo only supports public and internal classes ineriting from ITextStyle")
+	};
 }
