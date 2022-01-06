@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net6.0</TargetFrameworks>
@@ -18,10 +18,5 @@
     <ProjectReference Include="..\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="xunit.runner.json"> 
-    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-  </None>
-</ItemGroup>
-
+  <Import Project="..\CommunityToolkit.Maui.UnitTests\CommunityToolkit.Maui.UnitTests.projitems" Label="Shared" Condition="Exists('..\CommunityToolkit.Maui.UnitTests\CommunityToolkit.Maui.UnitTests.projitems')" />
 </Project>

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0</TargetFrameworks>
+    <UseMaui>true</UseMaui>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="6.2.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
+    <PackageReference Include="Coverlet.Collector" Version="3.1.0" PrivateAssets="all" />
+    <PackageReference Include="Xunit" Version="2.4.1" />
+    <PackageReference Include="Xunit.Runner.VisualStudio" Version="2.4.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\CommunityToolkit.Maui.UnitTests\CommunityToolkit.Maui.UnitTests.projitems" Label="Shared" Condition="Exists('..\CommunityToolkit.Maui.UnitTests\CommunityToolkit.Maui.UnitTests.projitems')" />
+</Project>

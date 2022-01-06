@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31521.260
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.UnitTests", "..\src\CommunityToolkit.Maui.UnitTests\CommunityToolkit.Maui.UnitTests.csproj", "{7D49CC16-93CF-471B-B1FA-0BA44DECC15D}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{AE67B86A-46F2-4078-BF02-0614B7E0E3F5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Sample", "CommunityToolkit.Maui.Sample\CommunityToolkit.Maui.Sample.csproj", "{3A795407-604F-4502-8C76-281BE5575A84}"
@@ -16,9 +14,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\global.json = ..\global.json
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Core", "..\src\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj", "{6B572EAD-1581-46BE-A08B-1C7F2246BA2E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.Core", "..\src\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj", "{6B572EAD-1581-46BE-A08B-1C7F2246BA2E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui", "..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj", "{1BA2F867-25C1-4D7E-AE51-5466929D467A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{680B14CE-2F1C-4C98-B85D-24B200223C40}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.UnitTests.Csharp", "..\src\CommunityToolkit.Maui.UnitTests.Csharp\CommunityToolkit.Maui.UnitTests.Csharp.csproj", "{7878E574-CF10-4AEE-BE6C-193321D38A24}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "CommunityToolkit.Maui.UnitTests.Fsharp", "..\src\CommunityToolkit.Maui.UnitTests.Fsharp\CommunityToolkit.Maui.UnitTests.Fsharp.fsproj", "{00A88711-0E05-4454-B3B6-24855E966EAC}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "CommunityToolkit.Maui.UnitTests", "..\src\CommunityToolkit.Maui.UnitTests\CommunityToolkit.Maui.UnitTests.shproj", "{495986B0-5C89-4682-AF3E-4815E6FAA0AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,12 +32,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7D49CC16-93CF-471B-B1FA-0BA44DECC15D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7D49CC16-93CF-471B-B1FA-0BA44DECC15D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7D49CC16-93CF-471B-B1FA-0BA44DECC15D}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{7D49CC16-93CF-471B-B1FA-0BA44DECC15D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7D49CC16-93CF-471B-B1FA-0BA44DECC15D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7D49CC16-93CF-471B-B1FA-0BA44DECC15D}.Release|Any CPU.Deploy.0 = Release|Any CPU
 		{3A795407-604F-4502-8C76-281BE5575A84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3A795407-604F-4502-8C76-281BE5575A84}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3A795407-604F-4502-8C76-281BE5575A84}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
@@ -46,12 +46,23 @@ Global
 		{1BA2F867-25C1-4D7E-AE51-5466929D467A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1BA2F867-25C1-4D7E-AE51-5466929D467A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1BA2F867-25C1-4D7E-AE51-5466929D467A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7878E574-CF10-4AEE-BE6C-193321D38A24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7878E574-CF10-4AEE-BE6C-193321D38A24}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7878E574-CF10-4AEE-BE6C-193321D38A24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7878E574-CF10-4AEE-BE6C-193321D38A24}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00A88711-0E05-4454-B3B6-24855E966EAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00A88711-0E05-4454-B3B6-24855E966EAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00A88711-0E05-4454-B3B6-24855E966EAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00A88711-0E05-4454-B3B6-24855E966EAC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{3A795407-604F-4502-8C76-281BE5575A84} = {AE67B86A-46F2-4078-BF02-0614B7E0E3F5}
+		{7878E574-CF10-4AEE-BE6C-193321D38A24} = {680B14CE-2F1C-4C98-B85D-24B200223C40}
+		{00A88711-0E05-4454-B3B6-24855E966EAC} = {680B14CE-2F1C-4C98-B85D-24B200223C40}
+		{495986B0-5C89-4682-AF3E-4815E6FAA0AF} = {680B14CE-2F1C-4C98-B85D-24B200223C40}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1E9E61C1-5CB7-4C8E-87BA-6C1D38238679}
