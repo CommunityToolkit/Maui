@@ -74,7 +74,9 @@ public class MultiValidationBehavior : ValidationBehavior
 		}
 
 		if (!Errors?.SequenceEqual(errors) ?? true)
+		{
 			Errors = (errors ?? Enumerable.Empty<object?>()).ToList();
+		}
 
 		return false;
 	}
@@ -96,7 +98,9 @@ public class MultiValidationBehavior : ValidationBehavior
 		if (e.OldItems != null)
 		{
 			foreach (var child in e.OldItems.OfType<ValidationBehavior>())
+			{
 				child.TryRemoveBindingContext();
+			}
 		}
 	}
 }

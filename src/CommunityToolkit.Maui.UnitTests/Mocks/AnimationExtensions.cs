@@ -46,7 +46,9 @@ static class AnimationExtensions
 			public object GetService(Type serviceType)
 			{
 				if (serviceType == typeof(IAnimationManager))
+				{
 					return AnimationManager;
+				}
 
 				throw new NotSupportedException();
 			}
@@ -65,7 +67,9 @@ static class AnimationExtensions
 					Fire?.Invoke();
 
 					if (!cancellationTokenSource.IsCancellationRequested)
+					{
 						await Task.Delay(TimeSpan.FromMilliseconds(16));
+					}
 				}
 			}
 
@@ -92,14 +96,18 @@ static class AnimationExtensions
 			{
 				animations.Add(animation);
 				if (AutoStartTicker && !Ticker.IsRunning)
+				{
 					Ticker.Start();
+				}
 			}
 
 			public void Remove(Microsoft.Maui.Animations.Animation animation)
 			{
 				animations.Remove(animation);
 				if (!animations.Any())
+				{
 					Ticker.Stop();
+				}
 			}
 
 			void OnFire()
@@ -108,7 +116,9 @@ static class AnimationExtensions
 				animations.ForEach(animationTick);
 
 				if (!this.animations.Any())
+				{
 					Ticker.Stop();
+				}
 
 				void animationTick(Microsoft.Maui.Animations.Animation animation)
 				{

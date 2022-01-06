@@ -152,7 +152,9 @@ public class MaxLengthReachedBehavior_Tests : BaseTest
 		};
 
 		if (eventHandler != null)
+		{
 			behavior.MaxLengthReached += eventHandler;
+		}
 
 		var entry = new Entry
 		{

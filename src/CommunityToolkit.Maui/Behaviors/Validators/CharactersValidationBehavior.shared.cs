@@ -108,25 +108,39 @@ public class CharactersValidationBehavior : TextValidationBehavior
 	static IEnumerable<Predicate<char>> GetCharacterPredicates(CharacterType characterType)
 	{
 		if (characterType.HasFlag(CharacterType.LowercaseLetter))
+		{
 			yield return char.IsLower;
+		}
 
 		if (characterType.HasFlag(CharacterType.UppercaseLetter))
+		{
 			yield return char.IsUpper;
+		}
 
 		if (characterType.HasFlag(CharacterType.Digit))
+		{
 			yield return char.IsDigit;
+		}
 
 		if (characterType.HasFlag(CharacterType.Whitespace))
+		{
 			yield return char.IsWhiteSpace;
+		}
 
 		if (characterType.HasFlag(CharacterType.NonAlphanumericSymbol))
+		{
 			yield return c => !char.IsLetterOrDigit(c) && !char.IsWhiteSpace(c);
+		}
 
 		if (characterType.HasFlag(CharacterType.LowercaseLatinLetter))
+		{
 			yield return c => c >= 'a' && c <= 'z';
+		}
 
 		if (characterType.HasFlag(CharacterType.UppercaseLatinLetter))
+		{
 			yield return c => c >= 'A' && c <= 'Z';
+		}
 	}
 
 	void OnCharacterTypePropertyChanged()

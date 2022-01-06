@@ -17,7 +17,9 @@ public partial class Snackbar
 	public async Task Dismiss()
 	{
 		if (nativeSnackbar is null)
+		{
 			return;
+		}
 
 		await semaphoreSlim.WaitAsync();
 

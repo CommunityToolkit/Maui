@@ -76,7 +76,9 @@ public partial class Snackbar
 	void OnActivated(ToastNotification sender, object args)
 	{
 		if (nativeSnackbar is not null && Action is not null)
+		{
 			Microsoft.Maui.Controls.Device.BeginInvokeOnMainThread(Action);
+		}
 	}
 
 	void OnDismissed(ToastNotification sender, ToastDismissedEventArgs args) => dismissedTCS?.TrySetResult(true);

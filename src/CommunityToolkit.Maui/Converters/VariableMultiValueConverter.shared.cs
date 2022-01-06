@@ -48,12 +48,16 @@ public class VariableMultiValueConverter : MultiValueConverterExtension, ICommun
 	public object? Convert(object[]? values, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (values == null || values.Length == 0)
+		{
 			return false;
+		}
 
 		var boolValues = values.OfType<bool>().ToArray();
 
 		if (boolValues.Length != values.Length)
+		{
 			return false;
+		}
 
 		var count = boolValues.Count(v => v);
 
@@ -79,7 +83,9 @@ public class VariableMultiValueConverter : MultiValueConverterExtension, ICommun
 	public object[]? ConvertBack(object? value, Type[]? targetTypes, object? parameter, CultureInfo? culture)
 	{
 		if (value is not bool boolValue || targetTypes?.Any(t => !t.IsAssignableFrom(typeof(bool))) is true)
+		{
 			return null;
+		}
 
 		return boolValue ? targetTypes?.Select(t => ConditionType == MultiBindingCondition.All).OfType<object>().ToArray() : null;
 	}

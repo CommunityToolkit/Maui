@@ -19,7 +19,9 @@ sealed class MathExpression
 	internal MathExpression(string expression, IEnumerable<double>? arguments = null)
 	{
 		if (string.IsNullOrEmpty(expression))
+		{
 			throw new ArgumentNullException(nameof(expression), "Expression can't be null or empty.");
+		}
 
 		Expression = expression.ToLower();
 		this.arguments = arguments?.ToList() ?? new List<double>();
@@ -90,9 +92,7 @@ sealed class MathExpression
 				continue;
 			}
 
-			var mathOperator = operators.FirstOrDefault(x => x.Name == value);
-
-			if (mathOperator == null)
+			var mathOperator = operators.FirstOrDefault(x => x.Name == value) ??
 				throw new ArgumentException($"Invalid math expression. Can't find operator or value with name \"{value}\".");
 
 			if (mathOperator.Precedence == MathOperatorPrecedence.Constant)
@@ -104,7 +104,9 @@ sealed class MathExpression
 			var operatorNumericCount = mathOperator.NumericCount;
 
 			if (stack.Count < operatorNumericCount)
+			{
 				throw new ArgumentException("Invalid math expression.");
+			}
 
 			var args = new List<double>();
 			for (var j = 0; j < operatorNumericCount; j++)
@@ -118,7 +120,9 @@ sealed class MathExpression
 		}
 
 		if (stack.Count != 1)
+		{
 			throw new ArgumentException("Invalid math expression.");
+		}
 
 		return stack.Pop();
 	}
@@ -129,7 +133,9 @@ sealed class MathExpression
 
 		var matches = regex.Matches(expression);
 		if (matches == null)
+		{
 			throw new ArgumentException("Invalid math expression.");
+		}
 
 		var output = new List<string>();
 		var stack = new Stack<(string Name, MathOperatorPrecedence Precedence)>();
@@ -137,7 +143,9 @@ sealed class MathExpression
 		foreach (Match? match in matches)
 		{
 			if (match == null || string.IsNullOrEmpty(match.Value))
+			{
 				continue;
+			}
 
 			var value = match.Value;
 
@@ -193,7 +201,9 @@ sealed class MathExpression
 				for (var i = stack.Count - 1; i >= 0; i--)
 				{
 					if (stack.Count == 0)
+					{
 						throw new ArgumentException("Invalid math expression.");
+					}
 
 					var stackValue = stack.Pop().Name;
 					if (stackValue == "(")
@@ -206,7 +216,9 @@ sealed class MathExpression
 				}
 
 				if (!isFound)
+				{
 					throw new ArgumentException("Invalid math expression.");
+				}
 			}
 			else if (value == ",")
 			{

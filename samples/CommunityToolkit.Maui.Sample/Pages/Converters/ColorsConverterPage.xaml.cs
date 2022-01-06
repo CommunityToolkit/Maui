@@ -26,6 +26,8 @@ public partial class ColorsConverterPage : BasePage
 	void HandleSelectedIndexChanged(object? sender, EventArgs e)
 	{
 		if (colors.TryGetValue((string)Picker.SelectedItem, out var color))
+		{
 			BoxView.BackgroundColor = color;
+		}
 	}
 }

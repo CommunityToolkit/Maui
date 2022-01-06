@@ -32,7 +32,9 @@ public abstract class BaseTest : IDisposable
 	protected virtual void Dispose(bool isDisposing)
 	{
 		if (isDisposed)
+		{
 			return;
+		}
 
 		Device.PlatformServices = null;
 
@@ -54,15 +56,21 @@ public abstract class BaseTest : IDisposable
 	protected static bool StreamEquals(Stream a, Stream b)
 	{
 		if (a == b)
+		{
 			return true;
+		}
 
 		if (a.Length != b.Length)
+		{
 			return false;
+		}
 
 		for (var i = 0; i < a.Length; i++)
 		{
 			if (a.ReadByte() != b.ReadByte())
+			{
 				return false;
+			}
 		}
 
 		return true;

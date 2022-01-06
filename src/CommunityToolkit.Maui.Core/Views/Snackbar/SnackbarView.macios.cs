@@ -103,7 +103,9 @@ public class SnackbarView : ToastView, IDisposable
 	protected virtual void Dispose(bool isDisposing)
 	{
 		if (isDisposed)
+		{
 			return;
+		}
 
 		actionButton.TouchUpInside -= ActionButton_TouchUpInside;
 

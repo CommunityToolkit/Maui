@@ -126,19 +126,29 @@ public class TextValidationBehavior : ValidationBehavior<string>
 		var flags = DecorationFlags;
 
 		if (flags.HasFlag(TextDecorationFlags.NullToEmpty))
+		{
 			stringValue ??= string.Empty;
+		}
 
 		if (stringValue == null)
+		{
 			return null;
+		}
 
 		if (flags.HasFlag(TextDecorationFlags.TrimStart))
+		{
 			stringValue = stringValue.TrimStart();
+		}
 
 		if (flags.HasFlag(TextDecorationFlags.TrimEnd))
+		{
 			stringValue = stringValue.TrimEnd();
+		}
 
 		if (flags.HasFlag(TextDecorationFlags.NormalizeWhiteSpace))
+		{
 			stringValue = NormalizeWhiteSpace(stringValue);
+		}
 
 		return stringValue;
 	}
@@ -181,7 +191,9 @@ public class TextValidationBehavior : ValidationBehavior<string>
 			isSpace = char.IsWhiteSpace(ch);
 
 			if (wasSpace && isSpace)
+			{
 				continue;
+			}
 
 			builder.Append(ch);
 		}

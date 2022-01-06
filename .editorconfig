@@ -52,6 +52,10 @@ dotnet_style_require_accessibility_modifiers = omit_if_default:error
 # CA1063: Implement IDisposable Correctly
 dotnet_diagnostic.CA1063.severity = error
 
+# Add braces (IDE0011)
+csharp_prefer_braces = true
+dotnet_diagnostic.IDE0011.severity = error
+
 # Pattern matching
 dotnet_style_object_initializer = true:suggestion
 dotnet_style_collection_initializer = true:suggestion

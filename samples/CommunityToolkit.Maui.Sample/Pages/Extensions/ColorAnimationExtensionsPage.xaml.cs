@@ -42,10 +42,14 @@ public partial class ColorAnimationExtensionsPage : BasePage
 		var color = colors.ElementAtOrDefault(ColorPicker.SelectedIndex).Value ?? Colors.Transparent;
 
 		if (!uint.TryParse(DurationInput.Text, out var duration))
+		{
 			duration = 1500;
+		}
 
 		if (!uint.TryParse(RateInput.Text, out var rate))
+		{
 			rate = 16;
+		}
 
 		var easing = easings.ElementAtOrDefault(EasingPicker.SelectedIndex).Value;
 

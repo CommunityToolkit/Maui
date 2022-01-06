@@ -37,7 +37,9 @@ public class ImpliedOrderGridBehavior : BaseBehavior<Grid>
 		System.Diagnostics.Debug.WriteLine(warning);
 
 		if (shouldThrowException)
+		{
 			throw new Exception(warning);
+		}
 	}
 
 	void OnInternalGridChildAdded(object? sender, ElementEventArgs e) => ProcessElement(e.Element);
@@ -48,16 +50,22 @@ public class ImpliedOrderGridBehavior : BaseBehavior<Grid>
 
 		rowCount = View.RowDefinitions.Count;
 		if (rowCount is 0)
+		{
 			rowCount = 1;
+		}
 
 		columnCount = View.ColumnDefinitions.Count;
 		if (columnCount is 0)
+		{
 			columnCount = 1;
+		}
 
 		var newMatrix = new bool[rowCount][];
 
 		for (var r = 0; r < rowCount; r++)
+		{
 			newMatrix[r] = new bool[columnCount];
+		}
 
 		return newMatrix;
 	}
@@ -108,7 +116,9 @@ public class ImpliedOrderGridBehavior : BaseBehavior<Grid>
 			for (var c = column; c < columnEnd; c++)
 			{
 				if (usedMatrix?[r][c] ?? throw new InvalidOperationException("Grid Child Not Added"))
+				{
 					LogWarning($"Cell at row {r} column {c} has already been used.", ThrowOnLayoutWarning);
+				}
 
 				usedMatrix[r][c] = true;
 			}
@@ -124,10 +134,14 @@ public class ImpliedOrderGridBehavior : BaseBehavior<Grid>
 
 		// Check to see if the user manually assigned a row or column
 		if (view.IsSet(Grid.ColumnProperty))
+		{
 			column = Grid.GetColumn(view);
+		}
 
 		if (view.IsSet(Grid.RowProperty))
+		{
 			row = Grid.GetRow(view);
+		}
 
 		UpdateUsedCells(row, column, rowSpan, columnSpan);
 

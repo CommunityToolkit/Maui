@@ -59,7 +59,9 @@ public partial class SnackbarPage : BasePage
 		else if (DisplayCustomSnackbarButton.Text is dismissCustomSnackbarText)
 		{
 			if (customSnackbar is not null)
+			{
 				await customSnackbar.Dismiss();
+			}
 
 			DisplayCustomSnackbarButton.Text = displayCustomSnackbarText;
 		}
