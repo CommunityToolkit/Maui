@@ -107,35 +107,35 @@ public class Snackbar_Tests : BaseTest
 	[Fact]
 	public async Task SnackbarShow_CancellationTokenCancelled_ReceiveException()
 	{
-		var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = new CancellationTokenSource();
+
 		cancellationTokenSource.Cancel();
+
 		await _snackbar.Invoking(x => x.Show(cancellationTokenSource.Token)).Should().ThrowExactlyAsync<OperationCanceledException>();
-		cancellationTokenSource.Dispose();
 	}
 
 	[Fact]
 	public async Task SnackbarDismiss_CancellationTokenCancelled_ReceiveException()
 	{
-		var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = new CancellationTokenSource();
+
 		cancellationTokenSource.Cancel();
+
 		await _snackbar.Invoking(x => x.Dismiss(cancellationTokenSource.Token)).Should().ThrowExactlyAsync<OperationCanceledException>();
-		cancellationTokenSource.Dispose();
 	}
 
 	[Fact]
 	public async Task SnackbarShow_CancellationTokenNotCancelled_NotReceiveException()
 	{
-		var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = new CancellationTokenSource();
 		await _snackbar.Invoking(x => x.Show(cancellationTokenSource.Token)).Should().NotThrowAsync<OperationCanceledException>();
-		cancellationTokenSource.Dispose();
 	}
 
 	[Fact]
 	public async Task SnackbarDismiss_CancellationTokenNotCancelled_NotReceiveException()
 	{
-		var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = new CancellationTokenSource();
 		await _snackbar.Invoking(x => x.Dismiss(cancellationTokenSource.Token)).Should().NotThrowAsync<OperationCanceledException>();
-		cancellationTokenSource.Dispose();
 	}
 
 	[Fact]

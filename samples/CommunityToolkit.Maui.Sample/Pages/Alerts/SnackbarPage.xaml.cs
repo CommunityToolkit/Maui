@@ -72,7 +72,7 @@ public partial class SnackbarPage : BasePage
 			throw new NotImplementedException($"{nameof(DisplayCustomSnackbarButton)}.{nameof(ITextButton.Text)} Not Recognized");
 		}
 	}
-	
+
 	void Snackbar_Dismissed(object? sender, EventArgs e)
 	{
 		SnackbarShownStatus.Text = $"Snackbar dismissed. Snackbar.IsShown={Snackbar.IsShown}";

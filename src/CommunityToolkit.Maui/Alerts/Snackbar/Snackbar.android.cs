@@ -36,7 +36,9 @@ public partial class Snackbar
 		try
 		{
 			token.ThrowIfCancellationRequested();
+
 			_nativeSnackbar.Dismiss();
+
 			if (_dismissedTCS is not null)
 				await _dismissedTCS.Task;
 		}
@@ -130,26 +132,26 @@ public partial class Snackbar
 
 	class SnackbarCallback : BaseTransientBottomBar.BaseCallback
 	{
-		readonly Snackbar snackbar;
+		readonly Snackbar _snackbar;
 		readonly TaskCompletionSource<bool> _dismissedTCS;
 
 		public SnackbarCallback(in Snackbar snackbar, in TaskCompletionSource<bool> dismissedTCS)
 		{
-			this.snackbar = snackbar;
+			_snackbar = snackbar;
 			_dismissedTCS = dismissedTCS;
 		}
 
 		public override void OnShown(Object transientBottomBar)
 		{
 			base.OnShown(transientBottomBar);
-			snackbar.OnShown();
+			_snackbar.OnShown();
 		}
 
 		public override void OnDismissed(Object transientBottomBar, int e)
 		{
 			base.OnDismissed(transientBottomBar, e);
 			_dismissedTCS.SetResult(true);
-			snackbar.OnDismissed();
+			_snackbar.OnDismissed();
 		}
 	}
 }
