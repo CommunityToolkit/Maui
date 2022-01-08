@@ -26,6 +26,7 @@ public partial class Snackbar
 
 		try
 		{
+			token.ThrowIfCancellationRequested();
 			ToastNotificationManager.History.Clear();
 
 			_nativeSnackbar.Activated -= OnActivated;
@@ -48,6 +49,7 @@ public partial class Snackbar
 	public virtual async partial Task Show(CancellationToken token)
 	{
 		await Dismiss(token);
+		token.ThrowIfCancellationRequested();
 
 		var toastContentBuilder = new ToastContentBuilder()
 										.AddText(Text)

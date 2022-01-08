@@ -35,6 +35,7 @@ public partial class Snackbar
 
 		try
 		{
+			token.ThrowIfCancellationRequested();
 			_nativeSnackbar.Dismiss();
 			if (_dismissedTCS is not null)
 				await _dismissedTCS.Task;
@@ -51,6 +52,7 @@ public partial class Snackbar
 	public virtual async partial Task Show(CancellationToken token)
 	{
 		await Dismiss(token);
+		token.ThrowIfCancellationRequested();
 
 		var rootView = Microsoft.Maui.Essentials.Platform.GetCurrentActivity(true).Window?.DecorView.FindViewById(Android.Resource.Id.Content);
 		if (rootView is null)
@@ -131,7 +133,7 @@ public partial class Snackbar
 		readonly Snackbar snackbar;
 		readonly TaskCompletionSource<bool> _dismissedTCS;
 
-		public SnackbarCallback(Snackbar snackbar, in TaskCompletionSource<bool> dismissedTCS)
+		public SnackbarCallback(in Snackbar snackbar, in TaskCompletionSource<bool> dismissedTCS)
 		{
 			this.snackbar = snackbar;
 			_dismissedTCS = dismissedTCS;

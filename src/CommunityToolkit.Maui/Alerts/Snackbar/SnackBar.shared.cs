@@ -95,12 +95,14 @@ public partial class Snackbar : ISnackbar
 #if !(IOS || ANDROID || MACCATALYST || WINDOWS)
 	public virtual partial Task Show(CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
 		OnShown();
 		return Task.CompletedTask;
 	}
 
 	public virtual partial Task Dismiss(CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
 		OnDismissed();
 		return Task.CompletedTask;
 	}

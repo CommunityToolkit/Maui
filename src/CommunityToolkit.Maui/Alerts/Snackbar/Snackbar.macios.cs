@@ -23,6 +23,7 @@ public partial class Snackbar
 
 		try
 		{
+			token.ThrowIfCancellationRequested();
 			_nativeSnackbar.Dismiss();
 			_nativeSnackbar = null;
 		}
@@ -38,6 +39,7 @@ public partial class Snackbar
 	public virtual async partial Task Show(CancellationToken token)
 	{
 		await Dismiss(token);
+		token.ThrowIfCancellationRequested();
 
 		var cornerRadius = GetCornerRadius(VisualOptions.CornerRadius);
 		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + ToastView.DefaultPadding;
