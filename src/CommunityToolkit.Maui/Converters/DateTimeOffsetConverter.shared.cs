@@ -40,8 +40,8 @@ public class DateTimeOffsetConverter : ValueConverterExtension, ICommunityToolki
 			DateTimeKind.Utc => DateTimeOffset.UtcNow.Offset,
 			_ => TimeSpan.Zero,
 		};
-		return culture is null ?  
-			new DateTimeOffset(dateTime, offset) : 
+		return culture is null ?
+			new DateTimeOffset(dateTime, offset) :
 			new DateTimeOffset(dateTime.Year, dateTime.Month, dateTime.Day, dateTime.Hour, dateTime.Minute, dateTime.Second, dateTime.Millisecond, culture.Calendar, offset);
 
 	}
