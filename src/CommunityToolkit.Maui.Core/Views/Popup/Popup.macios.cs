@@ -32,6 +32,16 @@ public class Popup
 	public UIView? Anchor { get; set; }
 
 	/// <summary>
+	/// Action to execute on popup dismissed
+	/// </summary>
+	public Action? OnDismissed { get; set; }
+
+	/// <summary>
+	/// Action to execute on popup shown
+	/// </summary>
+	public Action? OnShown { get; set; }
+
+	/// <summary>
 	/// <see cref="UIView"/> for <see cref="Popup"/>
 	/// </summary>
 	protected PopupView PopupView { get; }
@@ -49,6 +59,7 @@ public class Popup
 		}
 
 		PopupView.Dismiss();
+		OnDismissed?.Invoke();
 	}
 
 	/// <summary>
@@ -64,5 +75,7 @@ public class Popup
 		{
 			Dismiss();
 		});
+
+		OnShown?.Invoke();
 	}
 }

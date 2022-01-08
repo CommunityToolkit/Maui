@@ -38,10 +38,10 @@ public interface ISnackbar : IAsyncDisposable
 	/// <summary>
 	/// Dismiss the snackbar
 	/// </summary>
-	Task Dismiss();
+	Task Dismiss(CancellationToken token = default);
 
 	/// <summary>
 	/// Show the snackbar
 	/// </summary>
-	Task Show();
+	Task Show(CancellationToken token = default);
 }

@@ -20,8 +20,12 @@ public partial class SnackbarPage : BasePage
 	{
 		InitializeComponent();
 
+		SnackbarShownStatus ??= new();
 		DisplayCustomSnackbarButton ??= new();
 		DisplayCustomSnackbarButton.Text = _displayCustomSnackbarText;
+
+		Snackbar.Shown += Snackbar_Shown;
+		Snackbar.Dismissed += Snackbar_Dismissed;
 	}
 
 	async void DisplayDefaultSnackbarButtonClicked(object? sender, EventArgs args) =>
@@ -67,5 +71,15 @@ public partial class SnackbarPage : BasePage
 		{
 			throw new NotImplementedException($"{nameof(DisplayCustomSnackbarButton)}.{nameof(ITextButton.Text)} Not Recognized");
 		}
+	}
+
+	void Snackbar_Dismissed(object? sender, EventArgs e)
+	{
+		SnackbarShownStatus.Text = $"Snackbar dismissed. Snackbar.IsShown={Snackbar.IsShown}";
+	}
+
+	void Snackbar_Shown(object? sender, EventArgs e)
+	{
+		SnackbarShownStatus.Text = $"Snackbar shown. Snackbar.IsShown={Snackbar.IsShown}";
 	}
 }
