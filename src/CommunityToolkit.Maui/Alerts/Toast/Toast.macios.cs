@@ -16,6 +16,8 @@ public partial class Toast
 		if (_nativeToast is null)
 			return Task.CompletedTask;
 
+
+		token.ThrowIfCancellationRequested();
 		_nativeToast.Dismiss();
 		_nativeToast = null;
 		return Task.CompletedTask;
@@ -27,6 +29,7 @@ public partial class Toast
 	public virtual async partial Task Show(CancellationToken token)
 	{
 		await Dismiss(token);
+		token.ThrowIfCancellationRequested();
 
 		var cornerRadius = GetCornerRadius();
 		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + ToastView.DefaultPadding;

@@ -39,14 +39,21 @@ public partial class Toast : IToast
 	public virtual partial Task Dismiss(CancellationToken token = default);
 
 #if !(IOS || ANDROID || MACCATALYST || WINDOWS)
-	
+	/// <summary>
+	/// Show Toast
+	/// </summary>
 	public virtual partial Task Show(CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
 		return Task.CompletedTask;
 	}
 
+	/// <summary>
+	/// Dismiss Toast
+	/// </summary>
 	public virtual partial Task Dismiss(CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
 		return Task.CompletedTask;
 	}
 #endif

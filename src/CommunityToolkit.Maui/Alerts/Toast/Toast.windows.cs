@@ -18,6 +18,7 @@ public partial class Toast
 			return Task.CompletedTask;
 		}
 
+		token.ThrowIfCancellationRequested();
 		ToastNotificationManager.History.Clear();
 
 		_nativeToast.ExpirationTime = DateTimeOffset.Now;
@@ -32,6 +33,7 @@ public partial class Toast
 	public virtual async partial Task Show(CancellationToken token)
 	{
 		await Dismiss(token);
+		token.ThrowIfCancellationRequested();
 
 		var toastContentBuilder = new ToastContentBuilder()
 										.AddText(Text);

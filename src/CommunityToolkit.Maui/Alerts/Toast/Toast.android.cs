@@ -12,6 +12,7 @@ public partial class Toast
 	/// </summary>
 	public virtual partial Task Dismiss(CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
 		_nativeToast?.Cancel();
 		return Task.CompletedTask;
 	}
@@ -22,7 +23,8 @@ public partial class Toast
 	public virtual async partial Task Show(CancellationToken token)
 	{
 		await Dismiss(token);
-		
+		token.ThrowIfCancellationRequested();
+
 		_nativeToast = AndroidToast.MakeText(Platform.AppContext, Text, (ToastLength)(int)Duration)
 		                  ?? throw new Exception("Unable to create toast");
 		_nativeToast.Show();
