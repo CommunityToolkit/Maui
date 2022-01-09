@@ -5,10 +5,8 @@
     xmlns:mct="clr-namespace:CommunityToolkit.Maui.Behaviors;assembly=CommunityToolkit.Maui"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.MaxLengthReachedBehaviorPage">
-    <pages:BasePage.BindingContext>
-        <vm:MaxLengthReachedBehaviorViewModel />
-    </pages:BasePage.BindingContext>
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.MaxLengthReachedBehaviorPage"
+    x:TypeArguments="vm:MaxLengthReachedBehaviorViewModel">
     <pages:BasePage.Content>
         <ScrollView>
             <VerticalStackLayout Spacing="20">

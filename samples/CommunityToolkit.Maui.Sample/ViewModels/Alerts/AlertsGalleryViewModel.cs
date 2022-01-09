@@ -5,8 +5,15 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 
 public class AlertsGalleryViewModel : BaseGalleryViewModel
 {
+	readonly SnackbarPage _snackbarPage;
+
+	public AlertsGalleryViewModel(SnackbarPage snackbarPage)
+	{
+		_snackbarPage = snackbarPage;
+	}
+
 	protected override IEnumerable<SectionModel> CreateItems() => new[]
 	{
-		new SectionModel(typeof(SnackbarPage), "Snackbar", "Show Snackbar")
+		new SectionModel(_snackbarPage, "Snackbar", "Show Snackbar")
 	};
 }

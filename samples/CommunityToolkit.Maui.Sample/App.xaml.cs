@@ -5,10 +5,12 @@ namespace CommunityToolkit.Maui.Sample;
 
 public partial class App : Application
 {
-	public App()
+	public App(MainGalleryPage mainGalleryPage)
 	{
 		InitializeComponent();
 
-		MainPage = new BaseNavigationPage(new MainPage());
+		Resources.Add("ContentPadding", new Thickness(20, 0));
+
+		MainPage = new BaseNavigationPage(mainGalleryPage);
 	}
 }

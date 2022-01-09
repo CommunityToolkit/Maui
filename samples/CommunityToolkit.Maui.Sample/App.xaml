@@ -1,7 +1,7 @@
 ﻿<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:windows="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;assembly=Microsoft.Maui.Controls"
-             xmlns:local="clr-namespace:CommunityToolkit.Maui.Sample"
+             xmlns:local="clr-namespace:CommunityToolkit.Maui.Sample" xmlns:maui="clr-namespace:Microsoft.Maui;assembly=Microsoft.Maui"
              x:Class="CommunityToolkit.Maui.Sample.App"
              windows:Application.ImageDirectory="Assets">
     <Application.Resources>
@@ -65,9 +65,6 @@
             <Style x:Key="label_section_header" TargetType="Label">
                 <Setter Property="TextColor" Value="{StaticResource HeadingLabelTextColor}" />
             </Style>
-            
-            <!--  Values  -->
-            <Thickness x:Key="ContentPadding">20, 0</Thickness>
             
         </ResourceDictionary>
     </Application.Resources>

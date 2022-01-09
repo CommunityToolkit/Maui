@@ -38,7 +38,7 @@
     </pages:BasePage.Resources>
 
     <pages:BasePage.Content>
-        <StackLayout Spacing="10">
+        <VerticalStackLayout Spacing="10">
             <Picker x:Name="Picker" SelectedIndexChanged="HandleSelectedIndexChanged"/>
 
             <BoxView x:Name="BoxView" HeightRequest="100" BackgroundColor="White" />
@@ -83,6 +83,6 @@
 
             <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToInverseColorConverter}, StringFormat='Inverse color is: {0}'}" TextColor="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToInverseColorConverter}}"  BackgroundColor="{Binding Source={x:Reference BoxView}, Path=BackgroundColor}" />
             
-        </StackLayout>
+        </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

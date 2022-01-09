@@ -6,10 +6,10 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.MultiConverterPage">
     <pages:BasePage.Content>
-        <StackLayout>
+        <VerticalStackLayout>
             <Label Text="MultiConverter"
                 VerticalOptions="CenterAndExpand" 
                 HorizontalOptions="CenterAndExpand" />
-        </StackLayout>
+        </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

@@ -1,25 +1,27 @@
-﻿namespace CommunityToolkit.Maui.Sample.Models;
+﻿using CommunityToolkit.Maui.Sample.Pages;
+
+namespace CommunityToolkit.Maui.Sample.Models;
 
 public sealed class SectionModel
 {
-	public SectionModel(Type type, string title, string description)
-		: this(type, title, new Color(), description)
+	public SectionModel(in ContentPage page, in string title, in string description)
+		: this(page, title, new Color(), description)
 	{
 	}
 
-	public SectionModel(Type type, string title, Color color, string description)
+	public SectionModel(in ContentPage page, in string title, in Color color, in string description)
 	{
-		Type = type;
+		Page = page;
 		Title = title;
 		Description = description;
 		Color = color;
 	}
 
-	public Type Type { get; }
+	public ContentPage Page { get; }
 
-	public string Title { get; } = string.Empty;
+	public string Title { get; }
 
-	public string Description { get; } = string.Empty;
+	public string Description { get; }
 
-	public Color Color { get; } = new Color();
+	public Color Color { get; }
 }
