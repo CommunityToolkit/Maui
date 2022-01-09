@@ -6,7 +6,7 @@ using CommunityToolkit.Maui.Sample.Pages.Extensions;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels;
 
-public class MainViewModel : BaseGalleryViewModel
+public class MainGalleryViewModel : BaseGalleryViewModel
 {
 	protected override IEnumerable<SectionModel> CreateItems() => new[]
 	{

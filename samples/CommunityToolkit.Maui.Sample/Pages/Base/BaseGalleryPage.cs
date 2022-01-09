@@ -49,9 +49,9 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage where TViewModel : 
 			BackgroundColor = (Color)(Application.Current?.Resources["AppBackgroundColor"] ?? throw new InvalidOperationException()),
 
 			RowDefinitions = Rows.Define(
-				(Row.TopPadding, 8),
+				(Row.TopPadding, 12),
 				(Row.Content, Star),
-				(Row.BottomPadding, 8)),
+				(Row.BottomPadding, 12)),
 
 			ColumnDefinitions = Columns.Define(
 				(Column.LeftPadding, 6),
