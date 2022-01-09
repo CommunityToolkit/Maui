@@ -6,7 +6,7 @@ using Application = Microsoft.Maui.Controls.Application;
 
 namespace CommunityToolkit.Maui.Sample.Pages;
 
-public abstract class BaseGalleryPage<TViewModel> : BasePage where TViewModel : BaseGalleryViewModel
+public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where TViewModel : BaseGalleryViewModel
 {
 	public BaseGalleryPage(string title, TViewModel viewModel) : base(viewModel)
 	{
@@ -18,7 +18,7 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage where TViewModel : 
 		{
 			SelectionMode = SelectionMode.Single,
 			ItemTemplate = new GalleryDataTemplate()
-		}.Bind(CollectionView.ItemsSourceProperty, nameof(BaseGalleryViewModel.FilteredItems))
+		}.Bind(CollectionView.ItemsSourceProperty, nameof(BaseGalleryViewModel.Items))
 		 .Invoke(collectionView => collectionView.SelectionChanged += HandleSelectionChanged);
 	}
 
