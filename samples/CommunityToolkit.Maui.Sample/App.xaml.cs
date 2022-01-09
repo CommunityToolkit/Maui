@@ -9,8 +9,6 @@ public partial class App : Application
 	{
 		InitializeComponent();
 
-		Resources.Add("ContentPadding", new Thickness(20, 0));
-
 		MainPage = new BaseNavigationPage(mainGalleryPage);
 	}
 }
