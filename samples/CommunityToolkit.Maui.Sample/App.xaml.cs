@@ -5,10 +5,11 @@ namespace CommunityToolkit.Maui.Sample;
 
 public partial class App : Application
 {
-	public App(MainGalleryPage mainGalleryPage)
+	public App()
 	{
 		InitializeComponent();
 
+		var mainGalleryPage = ServiceProvider.GetRequiredService<MainGalleryPage>();
 		MainPage = new BaseNavigationPage(mainGalleryPage);
 	}
 }

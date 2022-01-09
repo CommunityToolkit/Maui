@@ -19,9 +19,6 @@ public static class MauiProgram
 		var builder = MauiApp.CreateBuilder();
 		builder.UseMauiApp<App>().UseMauiCommunityToolkit();
 
-		// Add Application
-		builder.Services.AddSingleton<App>();
-
 		// Add Gallery Pages
 		builder.Services.AddTransient<AlertsGalleryPage>();
 		builder.Services.AddTransient<BehaviorsGalleryPage>();
