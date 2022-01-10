@@ -68,6 +68,42 @@ We like quality as much as the next person, so please provide tests.
 
 In addition, we would want a new feature or change to be as clear as possible for other developers. Please add a sample to the sample app as part of your PR and also provide a PR to our [Add link to Microsoft Docs GitHub Repo Here]
 
+## Where to make your changes?
+
+If you are unsure on where to locate the changes you need to make then please use the following section and flowchart.
+
+![](structure.png)
+
+### CommunityToolkit.Maui.Core
+
+In general, this project will have all the basement to develop our Toolkit, including some primitive types, interfaces and base classes, base views, and common code. This will be referenced by other Frameworks/Toolkit based on .NET MAUI that wants to have the same features that us.
+
+Here we will have some:
+
+- BaseViews, could be Views that will be used by other Views, like PaddingButton (that's used by Snackbar) or the MCTPopup that will be a native control implemented in a way that can work with our handler. This same approach is used here
+
+- Primitives, which will be base types that can be used by everyone, like our MathOperator. So other frameworks may not have the concept of Behavior or Converter but they can mimic them as helper classes/methods and use our primitives.
+
+- Common Code, this will be all generic code (platform-specific or not) that can be used by other Frameworks/Toolkits
+
+- Layout Managers, were introduced on .NET MAUI and they live on Microsoft.Maui.Core so makes sense to have our managers on Core as well.
+
+- Handlers, on Core will be the most general Handler with the majority of features.
+
+### CommunityToolkit.Maui:
+
+This project has a reference to the Core project. Here will live the implementation of our Controls, Views, Behaviors, Animations, etc. In other words, this project will work with the .NET MAUI and will be MVVM friendly. Also, other Toolkits/Frameworks can reference this package if needed.
+
+Here we will have some:
+
+- View Implementation, with BindableProperties, support to attach effects, behaviors, triggers, and all that jazz.
+
+- Platform Configuration, that is Platform-specific features, that can relate to some control - like the ArrowDirection that is part of Popup and works just on iOS - or the application itself - like the StatusBarColorEffect from XCT.
+
+- Handlers Implementation, We will add to our PropertyMapper and/or CommandMapper any Platform Configuration that some Handler/View may have. We also can implement here some features that we think will not be great to have on Core. Here is a reference for this
+
+- Layout, will be the implementation of ours custom layouts and will use the Layout Managers on Core
+
 ## Contributing Code - Best Practices
 
 ### Enums
@@ -130,6 +166,19 @@ using System;
 
 class BoolToObjectConverter
 {
+}
+```
+
+### Braces
+
+Please use `{ }` after `if`, `for`, `foreach`, `do`, `while`, etc.
+
+e.g.
+
+```csharp
+if (something is not null)
+{
+   ActOnIt();
 }
 ```
 
