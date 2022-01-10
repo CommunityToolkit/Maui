@@ -14,7 +14,7 @@ public partial class Snackbar
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
-	public async Task Dismiss()
+	public virtual async partial Task Dismiss(CancellationToken token)
 	{
 		if (_nativeSnackbar is null)
 		{
@@ -22,21 +22,20 @@ public partial class Snackbar
 			return;
 		}
 
-		await _semaphoreSlim.WaitAsync();
+		await _semaphoreSlim.WaitAsync(token);
 
 		try
 		{
+			token.ThrowIfCancellationRequested();
 			ToastNotificationManager.History.Clear();
 
 			_nativeSnackbar.Activated -= OnActivated;
 			_nativeSnackbar.Dismissed -= OnDismissed;
-			_nativeSnackbar.ExpirationTime = System.DateTimeOffset.Now;
+			_nativeSnackbar.ExpirationTime = DateTimeOffset.Now;
 
 			_nativeSnackbar = null;
 
 			await (_dismissedTCS?.Task ?? Task.CompletedTask);
-
-			OnDismissed();
 		}
 		finally
 		{
@@ -47,9 +46,10 @@ public partial class Snackbar
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	public async Task Show()
+	public virtual async partial Task Show(CancellationToken token)
 	{
-		await Dismiss();
+		await Dismiss(token);
+		token.ThrowIfCancellationRequested();
 
 		var toastContentBuilder = new ToastContentBuilder()
 										.AddText(Text)
@@ -66,7 +66,7 @@ public partial class Snackbar
 		_nativeSnackbar = new ToastNotification(xmlDocument);
 		_nativeSnackbar.Activated += OnActivated;
 		_nativeSnackbar.Dismissed += OnDismissed;
-		_nativeSnackbar.ExpirationTime = System.DateTime.Now.Add(Duration);
+		_nativeSnackbar.ExpirationTime = DateTimeOffset.Now.Add(Duration);
 
 		ToastNotificationManager.CreateToastNotifier().Show(_nativeSnackbar);
 
@@ -76,8 +76,12 @@ public partial class Snackbar
 	void OnActivated(ToastNotification sender, object args)
 	{
 		if (_nativeSnackbar is not null && Action is not null)
-			Microsoft.Maui.Controls.Device.BeginInvokeOnMainThread(Action);
+			Device.BeginInvokeOnMainThread(Action);
 	}
 
-	void OnDismissed(ToastNotification sender, ToastDismissedEventArgs args) => _dismissedTCS?.TrySetResult(true);
+	void OnDismissed(ToastNotification sender, ToastDismissedEventArgs args)
+	{
+		_dismissedTCS?.TrySetResult(true);
+		Device.BeginInvokeOnMainThread(OnDismissed);
+	}
 }
