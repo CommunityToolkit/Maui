@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Alerts;
 /// <inheritdoc/>
 public partial class Snackbar : ISnackbar
 {
-	readonly static WeakEventManager weakEventManager = new();
+	static readonly WeakEventManager weakEventManager = new();
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="Snackbar"/>
@@ -82,22 +82,34 @@ public partial class Snackbar : ISnackbar
 		};
 	}
 
-#if !(IOS || ANDROID || MACCATALYST || WINDOWS)
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	public virtual Task Show()
-	{
-		OnShown();
-		return Task.CompletedTask;
-	}
+	public virtual partial Task Show(CancellationToken token = default);
 
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
-	public virtual Task Dismiss()
+	public virtual partial Task Dismiss(CancellationToken token = default);
+
+#if !(IOS || ANDROID || MACCATALYST || WINDOWS)
+	/// <inheritdoc/>
+	public virtual partial Task Show(CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
+
+		OnShown();
+
+		return Task.CompletedTask;
+	}
+
+	/// <inheritdoc/>
+	public virtual partial Task Dismiss(CancellationToken token)
+	{
+		token.ThrowIfCancellationRequested();
+
 		OnDismissed();
+
 		return Task.CompletedTask;
 	}
 #endif
@@ -116,8 +128,9 @@ public partial class Snackbar : ISnackbar
 	/// </summary>
 	protected virtual async ValueTask DisposeAsyncCore()
 	{
-#if NET6_0_ANDROID || NET6_0_IOS || NET6_0_MACCATALYST
-		await Microsoft.Maui.Controls.Device.InvokeOnMainThreadAsync(() => _nativeSnackbar?.Dispose());
+#if ANDROID || IOS || MACCATALYST
+		if(_nativeSnackbar is not null)
+			await Device.InvokeOnMainThreadAsync(() => _nativeSnackbar.Dispose());
 #else
 		await Task.CompletedTask;
 #endif
@@ -152,11 +165,13 @@ public static class SnackbarVisualElementExtension
 	/// <param name="action">Action of the snackbar button</param>
 	/// <param name="duration">Snackbar duration</param>
 	/// <param name="visualOptions">Snackbar visual options</param>
+	/// <param name="token">Cancellation token</param>
 	public static Task DisplaySnackbar(
 		this VisualElement? visualElement,
 		string message,
 		Action? action = null,
 		string actionButtonText = "OK",
 		TimeSpan? duration = null,
-		SnackbarOptions? visualOptions = null) => Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement).Show();
+		SnackbarOptions? visualOptions = null,
+		CancellationToken token = default) => Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement).Show(token);
 }

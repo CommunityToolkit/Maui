@@ -17,13 +17,13 @@ public partial class Snackbar
 {
 	static readonly SemaphoreSlim semaphoreSlim = new(1, 1);
 
-	AndroidSnackbar? nativeSnackbar;
+	static AndroidSnackbar? nativeSnackbar;
 	TaskCompletionSource<bool>? dismissedTCS;
 
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
-	public async Task Dismiss()
+	public virtual async partial Task Dismiss(CancellationToken token)
 	{
 		if (nativeSnackbar is null)
 		{
@@ -31,15 +31,18 @@ public partial class Snackbar
 			return;
 		}
 
-		await semaphoreSlim.WaitAsync();
+		await semaphoreSlim.WaitAsync(token);
 
 		try
 		{
-			nativeSnackbar.Dismiss();
-			if (dismissedTCS is not null)
-				await dismissedTCS.Task;
+			token.ThrowIfCancellationRequested();
 
-			OnDismissed();
+			nativeSnackbar.Dismiss();
+
+			if (dismissedTCS is not null)
+      {
+        await dismissedTCS.Task;
+      }
 		}
 		finally
 		{
@@ -50,9 +53,10 @@ public partial class Snackbar
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	public async Task Show()
+	public virtual async partial Task Show(CancellationToken token)
 	{
-		await Dismiss();
+		await Dismiss(token);
+		token.ThrowIfCancellationRequested();
 
 		var rootView = Microsoft.Maui.Essentials.Platform.GetCurrentActivity(true).Window?.DecorView.FindViewById(Android.Resource.Id.Content);
 		if (rootView is null)
@@ -71,8 +75,6 @@ public partial class Snackbar
 		SetupActions(nativeSnackbar);
 
 		nativeSnackbar.Show();
-
-		OnShown();
 	}
 
 	static void SetupContainer(SnackbarOptions snackbarOptions, View snackbarView)
@@ -127,22 +129,32 @@ public partial class Snackbar
 		});
 		nativeSnackbar.SetActionTextColor(VisualOptions.ActionButtonTextColor.ToAndroid());
 
-		nativeSnackbar.AddCallback(new SnackbarCallback(dismissedTCS = new()));
+		nativeSnackbar.AddCallback(new SnackbarCallback(this, dismissedTCS = new()));
 	}
 
 	class SnackbarCallback : BaseTransientBottomBar.BaseCallback
 	{
+		readonly Snackbar snackbar;
 		readonly TaskCompletionSource<bool> dismissedTCS;
 
-		public SnackbarCallback(in TaskCompletionSource<bool> dismissedTCS)
+		public SnackbarCallback(in Snackbar snackbar, in TaskCompletionSource<bool> dismissedTCS)
 		{
+			snackbar = snackbar;
 			this.dismissedTCS = dismissedTCS;
+		}
+
+		public override void OnShown(Object transientBottomBar)
+		{
+			base.OnShown(transientBottomBar);
+			snackbar.OnShown();
 		}
 
 		public override void OnDismissed(Object transientBottomBar, int e)
 		{
 			base.OnDismissed(transientBottomBar, e);
+
 			dismissedTCS.SetResult(true);
+			snackbar.OnDismissed();
 		}
 	}
 }

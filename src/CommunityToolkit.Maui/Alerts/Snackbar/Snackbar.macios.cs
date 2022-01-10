@@ -14,19 +14,20 @@ public partial class Snackbar
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
-	public async Task Dismiss()
+	public virtual async partial Task Dismiss(CancellationToken token)
 	{
 		if (nativeSnackbar is null)
+    {
 			return;
-
-		await semaphoreSlim.WaitAsync();
+    }
+    
+		await semaphoreSlim.WaitAsync(token);
 
 		try
 		{
+			token.ThrowIfCancellationRequested();
 			nativeSnackbar.Dismiss();
 			nativeSnackbar = null;
-
-			OnDismissed();
 		}
 		finally
 		{
@@ -37,12 +38,14 @@ public partial class Snackbar
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	public async Task Show()
+	public virtual async partial Task Show(CancellationToken token)
 	{
-		await Dismiss();
+		await Dismiss(token);
+		token.ThrowIfCancellationRequested();
 
 		var cornerRadius = GetCornerRadius(VisualOptions.CornerRadius);
-		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + SnackbarView.DefaultPadding;
+
+		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + ToastView.DefaultPadding;
 		nativeSnackbar = new SnackbarView(Text,
 											VisualOptions.BackgroundColor.ToNative(),
 											cornerRadius,
@@ -56,12 +59,12 @@ public partial class Snackbar
 		{
 			Action = Action,
 			Anchor = Anchor?.Handler?.NativeView as UIView,
-			Duration = Duration
+			Duration = Duration,
+			OnDismissed = OnDismissed,
+			OnShown = OnShown
 		};
 
 		nativeSnackbar.Show();
-
-		OnShown();
 
 		static T? GetMaximum<T>(params T[] items) => items.Max();
 	}
