@@ -9,6 +9,6 @@ public partial class App : Application
 	{
 		InitializeComponent();
 
-		MainPage = new BaseNavigationPage(new MainPage());
+		MainPage = new BaseNavigationPage(new MainGalleryPage());
 	}
 }
