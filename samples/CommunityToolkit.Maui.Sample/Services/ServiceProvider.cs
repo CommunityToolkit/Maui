@@ -16,4 +16,3 @@ public static class ServiceProvider
 	public static TService GetRequiredService<TService>() where TService : notnull
 		=> Current.GetRequiredService<TService>();
 }
-

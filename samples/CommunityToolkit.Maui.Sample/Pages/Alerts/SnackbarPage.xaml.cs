@@ -23,7 +23,7 @@ public partial class SnackbarPage : BasePage
 		SnackbarShownStatus ??= new();
 		DisplayCustomSnackbarButton ??= new();
 		DisplayCustomSnackbarButton.Text = displayCustomSnackbarText;
-    
+
 		Snackbar.Shown += Snackbar_Shown;
 		Snackbar.Dismissed += Snackbar_Dismissed;
 	}

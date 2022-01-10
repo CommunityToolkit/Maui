@@ -89,5 +89,5 @@ public class BehaviorsGalleryViewModel : BaseGalleryViewModel
 		)
 	{
 
-	}		
+	}
 }

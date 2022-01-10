@@ -29,7 +29,7 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
 										ListIsNullOrEmptyConverterPage listIsNullOrEmptyConverterPage,
 										VariableMultiValueConverterPage variableMultiValueConverterPage,
 										ListIsNotNullOrEmptyConverterPage listIsNotNullOrEmptyConverterPage)
-		:base(new[]
+		: base(new[]
 		{
 			new SectionModel(
 				boolToObjectConverterPage,

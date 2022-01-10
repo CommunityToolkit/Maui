@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 public class ExtensionsGalleryViewModel : BaseGalleryViewModel
 {
 	public ExtensionsGalleryViewModel(ColorAnimationExtensionsPage colorAnimationExtensionsPage)
-		: base (new[]
+		: base(new[]
 		{
 			new SectionModel(
 				colorAnimationExtensionsPage,

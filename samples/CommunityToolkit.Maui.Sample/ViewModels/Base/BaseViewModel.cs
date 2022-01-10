@@ -5,12 +5,12 @@ namespace CommunityToolkit.Maui.Sample.ViewModels;
 
 public abstract class BaseViewModel : INotifyPropertyChanged
 {
-	readonly WeakEventManager _propertyChangedEventManager = new();
+	readonly WeakEventManager propertyChangedEventManager = new();
 
 	event PropertyChangedEventHandler? INotifyPropertyChanged.PropertyChanged
 	{
-		add => _propertyChangedEventManager.AddEventHandler(value);
-		remove => _propertyChangedEventManager.RemoveEventHandler(value);
+		add => propertyChangedEventManager.AddEventHandler(value);
+		remove => propertyChangedEventManager.RemoveEventHandler(value);
 	}
 
 	protected bool SetProperty<T>(ref T backingStore, T value, Action? onChanged = null, [CallerMemberName] string propertyName = "")
@@ -29,5 +29,5 @@ public abstract class BaseViewModel : INotifyPropertyChanged
 		return true;
 	}
 
-	protected void OnPropertyChanged([CallerMemberName] string propertyName = "") => _propertyChangedEventManager.HandleEvent(this, new PropertyChangedEventArgs(propertyName), nameof(INotifyPropertyChanged.PropertyChanged));
+	protected void OnPropertyChanged([CallerMemberName] string propertyName = "") => propertyChangedEventManager.HandleEvent(this, new PropertyChangedEventArgs(propertyName), nameof(INotifyPropertyChanged.PropertyChanged));
 }
