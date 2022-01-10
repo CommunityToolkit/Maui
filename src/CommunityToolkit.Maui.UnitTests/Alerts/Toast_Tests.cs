@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.UnitTests.Alerts;
 
 public class Toast_Tests : BaseTest
 {
-	IToast _toast = new Toast();
+	IToast toast = new Toast();
 
 	[Fact]
 	public void ToastMake_NewToastCreatedWithValidProperties()
@@ -30,7 +30,7 @@ public class Toast_Tests : BaseTest
 	{
 		var cancellationTokenSource = new CancellationTokenSource();
 		cancellationTokenSource.Cancel();
-		await _toast.Invoking(x => x.Show(cancellationTokenSource.Token)).Should().ThrowExactlyAsync<OperationCanceledException>();
+		await toast.Invoking(x => x.Show(cancellationTokenSource.Token)).Should().ThrowExactlyAsync<OperationCanceledException>();
 		cancellationTokenSource.Dispose();
 	}
 
@@ -39,7 +39,7 @@ public class Toast_Tests : BaseTest
 	{
 		var cancellationTokenSource = new CancellationTokenSource();
 		cancellationTokenSource.Cancel();
-		await _toast.Invoking(x => x.Dismiss(cancellationTokenSource.Token)).Should().ThrowExactlyAsync<OperationCanceledException>();
+		await toast.Invoking(x => x.Dismiss(cancellationTokenSource.Token)).Should().ThrowExactlyAsync<OperationCanceledException>();
 		cancellationTokenSource.Dispose();
 	}
 
@@ -47,7 +47,7 @@ public class Toast_Tests : BaseTest
 	public async Task ToastShow_CancellationTokenNotCancelled_NotReceiveException()
 	{
 		var cancellationTokenSource = new CancellationTokenSource();
-		await _toast.Invoking(x => x.Show(cancellationTokenSource.Token)).Should().NotThrowAsync<OperationCanceledException>();
+		await toast.Invoking(x => x.Show(cancellationTokenSource.Token)).Should().NotThrowAsync<OperationCanceledException>();
 		cancellationTokenSource.Dispose();
 	}
 
@@ -55,19 +55,19 @@ public class Toast_Tests : BaseTest
 	public async Task ToastDismiss_CancellationTokenNotCancelled_NotReceiveException()
 	{
 		var cancellationTokenSource = new CancellationTokenSource();
-		await _toast.Invoking(x => x.Dismiss(cancellationTokenSource.Token)).Should().NotThrowAsync<OperationCanceledException>();
+		await toast.Invoking(x => x.Dismiss(cancellationTokenSource.Token)).Should().NotThrowAsync<OperationCanceledException>();
 		cancellationTokenSource.Dispose();
 	}
 
 	[Fact]
 	public async Task ToastShow_CancellationTokenNone_NotReceiveException()
 	{
-		await _toast.Invoking(x => x.Show(CancellationToken.None)).Should().NotThrowAsync<OperationCanceledException>();
+		await toast.Invoking(x => x.Show(CancellationToken.None)).Should().NotThrowAsync<OperationCanceledException>();
 	}
 
 	[Fact]
 	public async Task ToastDismiss_CancellationTokenNone_NotReceiveException()
 	{
-		await _toast.Invoking(x => x.Dismiss(CancellationToken.None)).Should().NotThrowAsync<OperationCanceledException>();
+		await toast.Invoking(x => x.Dismiss(CancellationToken.None)).Should().NotThrowAsync<OperationCanceledException>();
 	}
 }
