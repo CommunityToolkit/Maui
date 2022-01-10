@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Toast
 {
-	static AndroidToast? _nativeToast;
+	static AndroidToast? nativeToast;
 
 	/// <summary>
 	/// Dismiss Toast
@@ -13,7 +13,7 @@ public partial class Toast
 	public virtual partial Task Dismiss(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
-		_nativeToast?.Cancel();
+		nativeToast?.Cancel();
 		return Task.CompletedTask;
 	}
 
@@ -25,8 +25,8 @@ public partial class Toast
 		await Dismiss(token);
 		token.ThrowIfCancellationRequested();
 
-		_nativeToast = AndroidToast.MakeText(Platform.AppContext, Text, (ToastLength)(int)Duration)
+		nativeToast = AndroidToast.MakeText(Platform.AppContext, Text, (ToastLength)(int)Duration)
 						  ?? throw new Exception("Unable to create toast");
-		_nativeToast.Show();
+		nativeToast.Show();
 	}
 }

@@ -6,21 +6,21 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Toast
 {
-	static ToastView? _nativeToast;
+	static ToastView? nativeToast;
 
 	/// <summary>
 	/// Dismiss Toast
 	/// </summary>
 	public virtual partial Task Dismiss(CancellationToken token)
 	{
-		if (_nativeToast is null)
+		if (nativeToast is null)
 		{
 			return Task.CompletedTask;
 		}
 
 		token.ThrowIfCancellationRequested();
-		_nativeToast.Dismiss();
-		_nativeToast = null;
+		nativeToast.Dismiss();
+		nativeToast = null;
 		return Task.CompletedTask;
 	}
 
@@ -34,7 +34,7 @@ public partial class Toast
 
 		var cornerRadius = GetCornerRadius();
 		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + ToastView.DefaultPadding;
-		_nativeToast = new ToastView(Text,
+		nativeToast = new ToastView(Text,
 											UIColor.LightGray,
 											cornerRadius,
 											UIColor.DarkTextColor,
@@ -45,7 +45,7 @@ public partial class Toast
 			Duration = GetDuration(Duration)
 		};
 
-		_nativeToast.Show();
+		nativeToast.Show();
 
 		static T? GetMaximum<T>(params T[] items) => items.Max();
 	}
