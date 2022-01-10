@@ -11,7 +11,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class ToastView : Popup
 {
-	readonly PaddedLabel _messageLabel;
+	readonly PaddedLabel messageLabel;
 
 	/// <summary>
 	/// Initialize <see cref="ToastView"/>
@@ -34,7 +34,7 @@ public class ToastView : Popup
 	{
 		padding ??= DefaultPadding;
 
-		_messageLabel = new PaddedLabel(padding.Value, padding.Value, padding.Value, padding.Value)
+		messageLabel = new PaddedLabel(padding.Value, padding.Value, padding.Value, padding.Value)
 		{
 			Lines = 10
 		};
@@ -45,7 +45,7 @@ public class ToastView : Popup
 		CharacterSpacing = characterSpacing;
 		PopupView.VisualOptions.BackgroundColor = backgroundColor;
 		PopupView.VisualOptions.CornerRadius = cornerRadius;
-		PopupView.AddChild(_messageLabel);
+		PopupView.AddChild(messageLabel);
 	}
 
 	/// <summary>
@@ -58,8 +58,8 @@ public class ToastView : Popup
 	/// </summary>
 	public string Message
 	{
-		get => _messageLabel.Text ??= string.Empty;
-		private init => _messageLabel.Text = value;
+		get => messageLabel.Text ??= string.Empty;
+		private init => messageLabel.Text = value;
 	}
 
 	/// <summary>
@@ -67,8 +67,8 @@ public class ToastView : Popup
 	/// </summary>
 	public UIColor TextColor
 	{
-		get => _messageLabel.TextColor ??= UIColor.Black;
-		private init => _messageLabel.TextColor = value;
+		get => messageLabel.TextColor ??= UIColor.Black;
+		private init => messageLabel.TextColor = value;
 	}
 
 	/// <summary>
@@ -76,8 +76,8 @@ public class ToastView : Popup
 	/// </summary>
 	public UIFont Font
 	{
-		get => _messageLabel.Font;
-		private init => _messageLabel.Font = value;
+		get => messageLabel.Font;
+		private init => messageLabel.Font = value;
 	}
 
 	/// <summary>
@@ -88,7 +88,7 @@ public class ToastView : Popup
 		init
 		{
 			var em = GetEmFromPx(Font.PointSize, value);
-			_messageLabel.AttributedText = new NSAttributedString(Message, new CTStringAttributes() { KerningAdjustment = (float)em });
+			messageLabel.AttributedText = new NSAttributedString(Message, new CTStringAttributes() { KerningAdjustment = (float)em });
 		}
 	}
 

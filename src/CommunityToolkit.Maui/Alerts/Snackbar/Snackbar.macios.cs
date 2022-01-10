@@ -7,43 +7,46 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Snackbar
 {
-	readonly SemaphoreSlim _semaphoreSlim = new(1, 1);
+	readonly SemaphoreSlim semaphoreSlim = new(1, 1);
 
-	static SnackbarView? _nativeSnackbar;
+	static SnackbarView? nativeSnackbar;
 
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
-	public async Task Dismiss()
+	public virtual async partial Task Dismiss(CancellationToken token)
 	{
-		if (_nativeSnackbar is null)
+		if (nativeSnackbar is null)
+		{
 			return;
-
-		await _semaphoreSlim.WaitAsync();
+		}
+    
+		await semaphoreSlim.WaitAsync(token);
 
 		try
 		{
-			_nativeSnackbar.Dismiss();
-			_nativeSnackbar = null;
-
-			OnDismissed();
+			token.ThrowIfCancellationRequested();
+			nativeSnackbar.Dismiss();
+			nativeSnackbar = null;
 		}
 		finally
 		{
-			_semaphoreSlim.Release();
+			semaphoreSlim.Release();
 		}
 	}
 
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	public async Task Show()
+	public virtual async partial Task Show(CancellationToken token)
 	{
-		await Dismiss();
+		await Dismiss(token);
+		token.ThrowIfCancellationRequested();
 
 		var cornerRadius = GetCornerRadius(VisualOptions.CornerRadius);
-		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + SnackbarView.DefaultPadding;
-		_nativeSnackbar = new SnackbarView(Text,
+
+		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + ToastView.DefaultPadding;
+		nativeSnackbar = new SnackbarView(Text,
 											VisualOptions.BackgroundColor.ToNative(),
 											cornerRadius,
 											VisualOptions.TextColor.ToNative(),
@@ -56,12 +59,12 @@ public partial class Snackbar
 		{
 			Action = Action,
 			Anchor = Anchor?.Handler?.NativeView as UIView,
-			Duration = Duration
+			Duration = Duration,
+			OnDismissed = OnDismissed,
+			OnShown = OnShown
 		};
 
-		_nativeSnackbar.Show();
-
-		OnShown();
+		nativeSnackbar.Show();
 
 		static T? GetMaximum<T>(params T[] items) => items.Max();
 	}

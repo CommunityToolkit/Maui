@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class Popup
 {
-	NSTimer? _timer;
+	NSTimer? timer;
 
 	/// <summary>
 	/// Initialize Popup
@@ -32,6 +32,16 @@ public class Popup
 	public UIView? Anchor { get; set; }
 
 	/// <summary>
+	/// Action to execute on popup dismissed
+	/// </summary>
+	public Action? OnDismissed { get; set; }
+
+	/// <summary>
+	/// Action to execute on popup shown
+	/// </summary>
+	public Action? OnShown { get; set; }
+
+	/// <summary>
 	/// <see cref="UIView"/> for <see cref="Popup"/>
 	/// </summary>
 	protected PopupView PopupView { get; }
@@ -41,14 +51,15 @@ public class Popup
 	/// </summary>
 	public void Dismiss()
 	{
-		if (_timer != null)
+		if (timer != null)
 		{
-			_timer.Invalidate();
-			_timer.Dispose();
-			_timer = null;
+			timer.Invalidate();
+			timer.Dispose();
+			timer = null;
 		}
 
 		PopupView.Dismiss();
+		OnDismissed?.Invoke();
 	}
 
 	/// <summary>
@@ -60,9 +71,11 @@ public class Popup
 
 		PopupView.Setup();
 
-		_timer = NSTimer.CreateScheduledTimer(Duration, t =>
+		timer = NSTimer.CreateScheduledTimer(Duration, t =>
 		{
 			Dismiss();
 		});
+
+		OnShown?.Invoke();
 	}
 }

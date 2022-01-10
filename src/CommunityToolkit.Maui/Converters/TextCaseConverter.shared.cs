@@ -46,7 +46,9 @@ public class TextCaseConverter : ValueConverterExtension, ICommunityToolkitValue
 	{
 		var str = value?.ToString();
 		if (str == null || string.IsNullOrWhiteSpace(str))
+		{
 			return str;
+		}
 
 		return GetParameter(parameter) switch
 		{

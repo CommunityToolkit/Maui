@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using FluentAssertions;
 using Xunit;
@@ -7,19 +7,19 @@ namespace CommunityToolkit.Maui.UnitTests.Alerts;
 
 public class Snackbar_Tests : BaseTest
 {
-	readonly ISnackbar _snackbar = new Snackbar();
+	readonly ISnackbar snackbar = new Snackbar();
 
 	[Fact]
 	public async Task SnackbarShow_IsShownTrue()
 	{
-		await _snackbar.Show();
+		await snackbar.Show();
 		Assert.True(Snackbar.IsShown);
 	}
 
 	[Fact]
 	public async Task SnackbarDismissed_IsShownFalse()
 	{
-		await _snackbar.Dismiss();
+		await snackbar.Dismiss();
 		Assert.False(Snackbar.IsShown);
 	}
 
@@ -31,7 +31,7 @@ public class Snackbar_Tests : BaseTest
 		{
 			receivedEvents.Add(e);
 		};
-		await _snackbar.Show();
+		await snackbar.Show();
 		Assert.Single(receivedEvents);
 	}
 
@@ -43,7 +43,7 @@ public class Snackbar_Tests : BaseTest
 		{
 			receivedEvents.Add(e);
 		};
-		await _snackbar.Dismiss();
+		await snackbar.Dismiss();
 		Assert.Single(receivedEvents);
 	}
 
@@ -102,5 +102,51 @@ public class Snackbar_Tests : BaseTest
 			anchor);
 
 		currentSnackbar.Should().BeEquivalentTo(expectedSnackbar);
+	}
+
+	[Fact]
+	public async Task SnackbarShow_CancellationTokenCancelled_ReceiveException()
+	{
+		using var cancellationTokenSource = new CancellationTokenSource();
+
+		cancellationTokenSource.Cancel();
+
+		await snackbar.Invoking(x => x.Show(cancellationTokenSource.Token)).Should().ThrowExactlyAsync<OperationCanceledException>();
+	}
+
+	[Fact]
+	public async Task SnackbarDismiss_CancellationTokenCancelled_ReceiveException()
+	{
+		using var cancellationTokenSource = new CancellationTokenSource();
+
+		cancellationTokenSource.Cancel();
+
+		await snackbar.Invoking(x => x.Dismiss(cancellationTokenSource.Token)).Should().ThrowExactlyAsync<OperationCanceledException>();
+	}
+
+	[Fact]
+	public async Task SnackbarShow_CancellationTokenNotCancelled_NotReceiveException()
+	{
+		using var cancellationTokenSource = new CancellationTokenSource();
+		await snackbar.Invoking(x => x.Show(cancellationTokenSource.Token)).Should().NotThrowAsync<OperationCanceledException>();
+	}
+
+	[Fact]
+	public async Task SnackbarDismiss_CancellationTokenNotCancelled_NotReceiveException()
+	{
+		using var cancellationTokenSource = new CancellationTokenSource();
+		await snackbar.Invoking(x => x.Dismiss(cancellationTokenSource.Token)).Should().NotThrowAsync<OperationCanceledException>();
+	}
+
+	[Fact]
+	public async Task SnackbarShow_CancellationTokenNone_NotReceiveException()
+	{
+		await snackbar.Invoking(x => x.Show(CancellationToken.None)).Should().NotThrowAsync<OperationCanceledException>();
+	}
+
+	[Fact]
+	public async Task SnackbarDismiss_CancellationTokenNone_NotReceiveException()
+	{
+		await snackbar.Invoking(x => x.Dismiss(CancellationToken.None)).Should().NotThrowAsync<OperationCanceledException>();
 	}
 }

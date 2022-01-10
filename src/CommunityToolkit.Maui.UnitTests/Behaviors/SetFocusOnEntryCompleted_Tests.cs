@@ -45,7 +45,9 @@ public class SetFocusOnEntryCompleted_Tests : BaseTest
 		entry.FocusChangeRequested += (s, e) => entry.SetValue(VisualElement.IsFocusedPropertyKey, e.Focus);
 
 		if (nextElement != null)
+		{
 			SetFocusOnEntryCompletedBehavior.SetNextElement(entry, nextElement);
+		}
 
 		return entry;
 	}

@@ -21,7 +21,9 @@ public class ItemTappedEventArgsConverter : ValueConverterExtension, ICommunityT
 	public object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value == null)
+		{
 			return null;
+		}
 
 		return value is ItemTappedEventArgs itemTappedEventArgs
 			? itemTappedEventArgs.Item

@@ -88,7 +88,9 @@ public class NumericValidationBehavior : ValidationBehavior<string>
 
 		// If MaximumDecimalPlaces equals zero, ".5" or "14." should be considered as invalid inputs.
 		if (hasDecimalDelimeter && MaximumDecimalPlaces == 0)
+		{
 			return new ValueTask<bool>(false);
+		}
 
 		var decimalPlaces = hasDecimalDelimeter
 			? value.Substring(decimalDelimeterIndex + 1, value.Length - decimalDelimeterIndex - 1).Length
