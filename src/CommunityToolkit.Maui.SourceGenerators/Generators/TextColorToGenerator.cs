@@ -43,7 +43,9 @@ class TextColorToGenerator : IIncrementalGenerator
 		var iAnimatableSymbol = compilation.GetTypeByMetadataName(iAnimatableInterface);
 
 		if (textStyleSymbol is null || iAnimatableSymbol is null)
+		{
 			return;
+		}
 
 		var textStyleClassList = new List<(string ClassName, string ClassAcessModifier, string Namespace)>();
 
@@ -52,14 +54,19 @@ class TextColorToGenerator : IIncrementalGenerator
 				&& x.AllInterfaces.Contains(iAnimatableSymbol, SymbolEqualityComparer.Default));
 
 		foreach (var namedTypeSymbol in mauiTextStyleImplementors)
+		{
 			textStyleClassList.Add((namedTypeSymbol.Name, "public", namedTypeSymbol.ContainingNamespace.ToDisplayString()));
+		}
 
 		// Collect All Classes in User Library that Implement ITextStyle
 		foreach (var classDeclarationSyntax in userGeneratedClassesProvider)
 		{
 			var declarationSymbol = compilation.GetSymbol<INamedTypeSymbol>(classDeclarationSyntax);
 			if (declarationSymbol is null)
+			{
 				continue;
+			}
+
 			if (declarationSymbol.AllInterfaces.Contains(textStyleSymbol, SymbolEqualityComparer.Default)
 				&& declarationSymbol.AllInterfaces.Contains(iAnimatableSymbol, SymbolEqualityComparer.Default))
 			{

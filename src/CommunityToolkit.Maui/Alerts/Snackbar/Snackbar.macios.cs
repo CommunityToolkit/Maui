@@ -20,7 +20,7 @@ public partial class Snackbar
 		{
 			return;
 		}
-    
+
 		await semaphoreSlim.WaitAsync(token);
 
 		try
