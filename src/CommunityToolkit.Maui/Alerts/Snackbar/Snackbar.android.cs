@@ -15,36 +15,38 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Snackbar
 {
-	static readonly SemaphoreSlim _semaphoreSlim = new(1, 1);
+	static readonly SemaphoreSlim semaphoreSlim = new(1, 1);
 
-	static AndroidSnackbar? _nativeSnackbar;
-	TaskCompletionSource<bool>? _dismissedTCS;
+	static AndroidSnackbar? nativeSnackbar;
+	TaskCompletionSource<bool>? dismissedTCS;
 
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
 	public virtual async partial Task Dismiss(CancellationToken token)
 	{
-		if (_nativeSnackbar is null)
+		if (nativeSnackbar is null)
 		{
-			_dismissedTCS = null;
+			dismissedTCS = null;
 			return;
 		}
 
-		await _semaphoreSlim.WaitAsync(token);
+		await semaphoreSlim.WaitAsync(token);
 
 		try
 		{
 			token.ThrowIfCancellationRequested();
 
-			_nativeSnackbar.Dismiss();
+			nativeSnackbar.Dismiss();
 
-			if (_dismissedTCS is not null)
-				await _dismissedTCS.Task;
+			if (dismissedTCS is not null)
+			{
+				await dismissedTCS.Task;
+			}
 		}
 		finally
 		{
-			_semaphoreSlim.Release();
+			semaphoreSlim.Release();
 		}
 	}
 
@@ -56,23 +58,22 @@ public partial class Snackbar
 		await Dismiss(token);
 		token.ThrowIfCancellationRequested();
 
-		var rootView = Microsoft.Maui.Essentials.Platform.GetCurrentActivity(true).Window?.DecorView.FindViewById(Android.Resource.Id.Content);
-		if (rootView is null)
-			throw new NotSupportedException("Unable to retrieve snackbar parent");
+		var rootView = Microsoft.Maui.Essentials.Platform.GetCurrentActivity(true).Window?.DecorView.FindViewById(Android.Resource.Id.Content)
+			?? throw new NotSupportedException("Unable to retrieve snackbar parent");
 
-		_nativeSnackbar = AndroidSnackbar.Make(rootView, Text, (int)Duration.TotalMilliseconds);
-		var snackbarView = _nativeSnackbar.View;
+		nativeSnackbar = AndroidSnackbar.Make(rootView, Text, (int)Duration.TotalMilliseconds);
+		var snackbarView = nativeSnackbar.View;
 
 		if (Anchor is not Page)
 		{
-			_nativeSnackbar.SetAnchorView(Anchor?.Handler?.NativeView as View);
+			nativeSnackbar.SetAnchorView(Anchor?.Handler?.NativeView as View);
 		}
 
 		SetupContainer(VisualOptions, snackbarView);
 		SetupMessage(VisualOptions, snackbarView);
-		SetupActions(_nativeSnackbar);
+		SetupActions(nativeSnackbar);
 
-		_nativeSnackbar.Show();
+		nativeSnackbar.Show();
 	}
 
 	static void SetupContainer(SnackbarOptions snackbarOptions, View snackbarView)
@@ -115,7 +116,7 @@ public partial class Snackbar
 		snackTextView.SetTypeface(snackbarOptions.Font.ToTypeface(), TypefaceStyle.Normal);
 	}
 
-	[MemberNotNull(nameof(_dismissedTCS))]
+	[MemberNotNull(nameof(dismissedTCS))]
 	void SetupActions(AndroidSnackbar nativeSnackbar)
 	{
 		var snackActionButtonView = nativeSnackbar.View.FindViewById<TextView>(Resource.Id.snackbar_action) ?? throw new InvalidOperationException("Unable to find Snackbar action button");
@@ -127,31 +128,32 @@ public partial class Snackbar
 		});
 		nativeSnackbar.SetActionTextColor(VisualOptions.ActionButtonTextColor.ToAndroid());
 
-		nativeSnackbar.AddCallback(new SnackbarCallback(this, _dismissedTCS = new()));
+		nativeSnackbar.AddCallback(new SnackbarCallback(this, dismissedTCS = new()));
 	}
 
 	class SnackbarCallback : BaseTransientBottomBar.BaseCallback
 	{
-		readonly Snackbar _snackbar;
-		readonly TaskCompletionSource<bool> _dismissedTCS;
+		readonly Snackbar snackbar;
+		readonly TaskCompletionSource<bool> dismissedTCS;
 
 		public SnackbarCallback(in Snackbar snackbar, in TaskCompletionSource<bool> dismissedTCS)
 		{
-			_snackbar = snackbar;
-			_dismissedTCS = dismissedTCS;
+			this.snackbar = snackbar;
+			this.dismissedTCS = dismissedTCS;
 		}
 
 		public override void OnShown(Object transientBottomBar)
 		{
 			base.OnShown(transientBottomBar);
-			_snackbar.OnShown();
+			snackbar.OnShown();
 		}
 
 		public override void OnDismissed(Object transientBottomBar, int e)
 		{
 			base.OnDismissed(transientBottomBar, e);
-			_dismissedTCS.SetResult(true);
-			_snackbar.OnDismissed();
+
+			dismissedTCS.SetResult(true);
+			snackbar.OnDismissed();
 		}
 	}
 }

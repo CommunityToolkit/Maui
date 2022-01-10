@@ -34,7 +34,9 @@ public class EnumToBoolConverter : ValueConverterExtension, ICommunityToolkitVal
 	public object? Convert([NotNull] object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value is not Enum enumValue)
+		{
 			throw new ArgumentException("The value should be of type Enum", nameof(value));
+		}
 
 		return TrueValues.Count == 0
 			? CompareTwoEnums(enumValue, parameter as Enum)
@@ -43,14 +45,20 @@ public class EnumToBoolConverter : ValueConverterExtension, ICommunityToolkitVal
 		static bool CompareTwoEnums(Enum valueToCheck, object? referenceValue)
 		{
 			if (referenceValue is not Enum referenceEnumValue)
+			{
 				return false;
+			}
 
 			var valueToCheckType = valueToCheck.GetType();
 			if (valueToCheckType != referenceEnumValue.GetType())
+			{
 				return false;
+			}
 
 			if (valueToCheckType.GetTypeInfo().GetCustomAttribute<FlagsAttribute>() != null)
+			{
 				return referenceEnumValue.HasFlag(valueToCheck);
+			}
 
 			return Equals(valueToCheck, referenceEnumValue);
 		}

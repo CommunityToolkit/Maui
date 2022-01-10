@@ -7,29 +7,31 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Snackbar
 {
-	readonly SemaphoreSlim _semaphoreSlim = new(1, 1);
+	readonly SemaphoreSlim semaphoreSlim = new(1, 1);
 
-	static SnackbarView? _nativeSnackbar;
+	static SnackbarView? nativeSnackbar;
 
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
 	public virtual async partial Task Dismiss(CancellationToken token)
 	{
-		if (_nativeSnackbar is null)
+		if (nativeSnackbar is null)
+		{
 			return;
-
-		await _semaphoreSlim.WaitAsync(token);
+		}
+    
+		await semaphoreSlim.WaitAsync(token);
 
 		try
 		{
 			token.ThrowIfCancellationRequested();
-			_nativeSnackbar.Dismiss();
-			_nativeSnackbar = null;
+			nativeSnackbar.Dismiss();
+			nativeSnackbar = null;
 		}
 		finally
 		{
-			_semaphoreSlim.Release();
+			semaphoreSlim.Release();
 		}
 	}
 
@@ -42,8 +44,9 @@ public partial class Snackbar
 		token.ThrowIfCancellationRequested();
 
 		var cornerRadius = GetCornerRadius(VisualOptions.CornerRadius);
+
 		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + ToastView.DefaultPadding;
-		_nativeSnackbar = new SnackbarView(Text,
+		nativeSnackbar = new SnackbarView(Text,
 											VisualOptions.BackgroundColor.ToNative(),
 											cornerRadius,
 											VisualOptions.TextColor.ToNative(),
@@ -61,7 +64,7 @@ public partial class Snackbar
 			OnShown = OnShown
 		};
 
-		_nativeSnackbar.Show();
+		nativeSnackbar.Show();
 
 		static T? GetMaximum<T>(params T[] items) => items.Max();
 	}

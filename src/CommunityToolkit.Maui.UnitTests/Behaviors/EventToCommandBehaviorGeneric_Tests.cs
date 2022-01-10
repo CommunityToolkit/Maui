@@ -155,7 +155,9 @@ public class EventToCommandBehaviorGeneric_Tests : BaseTest
 		void Selected(Coffee coffee)
 		{
 			if (coffee == null)
+			{
 				return;
+			}
 
 			CoffeeName = coffee?.Name;
 		}

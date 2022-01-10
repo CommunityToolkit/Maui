@@ -21,17 +21,17 @@ public class MultiValidationBehavior : ValidationBehavior
 	public static readonly BindableProperty ErrorProperty =
 		BindableProperty.CreateAttached(nameof(GetError), typeof(object), typeof(MultiValidationBehavior), null);
 
-	readonly ObservableCollection<ValidationBehavior> _children = new();
+	readonly ObservableCollection<ValidationBehavior> children = new();
 
 	/// <summary>
 	/// Constructor for this behavior.
 	/// </summary>
-	public MultiValidationBehavior() => _children.CollectionChanged += OnChildrenCollectionChanged;
+	public MultiValidationBehavior() => children.CollectionChanged += OnChildrenCollectionChanged;
 
 	/// <summary>
 	/// All child behaviors that are part of this <see cref="MultiValidationBehavior"/>. This is a bindable property.
 	/// </summary>
-	public IList<ValidationBehavior> Children => _children;
+	public IList<ValidationBehavior> Children => children;
 
 	/// <summary>
 	/// Holds the errors from all of the nested invalid validators in <see cref="Children"/>. This is a bindable property.
@@ -59,13 +59,13 @@ public class MultiValidationBehavior : ValidationBehavior
 	/// <inheritdoc/>
 	protected override async ValueTask<bool> ValidateAsync(object? value, CancellationToken token)
 	{
-		await Task.WhenAll(_children.Select(c =>
+		await Task.WhenAll(children.Select(c =>
 		{
 			c.Value = value;
 			return c.ValidateNestedAsync(token).AsTask();
 		})).ConfigureAwait(false);
 
-		var errors = _children.Where(c => c.IsNotValid).Select(c => GetError(c));
+		var errors = children.Where(c => c.IsNotValid).Select(c => GetError(c));
 
 		if (!errors.Any())
 		{
@@ -74,7 +74,9 @@ public class MultiValidationBehavior : ValidationBehavior
 		}
 
 		if (!Errors?.SequenceEqual(errors) ?? true)
+		{
 			Errors = (errors ?? Enumerable.Empty<object?>()).ToList();
+		}
 
 		return false;
 	}
@@ -96,7 +98,9 @@ public class MultiValidationBehavior : ValidationBehavior
 		if (e.OldItems != null)
 		{
 			foreach (var child in e.OldItems.OfType<ValidationBehavior>())
+			{
 				child.TryRemoveBindingContext();
+			}
 		}
 	}
 }

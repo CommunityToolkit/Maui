@@ -31,7 +31,9 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage where TViewModel : 
 		collectionView.SelectedItem = null;
 
 		if (e.CurrentSelection.FirstOrDefault() is SectionModel sectionModel)
+		{
 			await Navigation.PushAsync(PreparePage(sectionModel));
+		}
 	}
 
 	class GalleryDataTemplate : DataTemplate

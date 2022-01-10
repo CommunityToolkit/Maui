@@ -37,7 +37,9 @@ public class BoolToObjectConverter<TObject> : ValueConverterExtension, ICommunit
 	public object? Convert([NotNull] object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value is bool result)
+		{
 			return result ? TrueObject : FalseObject;
+		}
 
 		throw new ArgumentException("Value is not a valid boolean", nameof(value));
 	}
@@ -54,10 +56,14 @@ public class BoolToObjectConverter<TObject> : ValueConverterExtension, ICommunit
 	public object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value is TObject result)
+		{
 			return result.Equals(TrueObject);
+		}
 
 		if (default(TObject) == null && value == null && TrueObject == null)
+		{
 			return true;
+		}
 
 		throw new ArgumentException($"Value is not a valid {typeof(TObject).Name}", nameof(value));
 	}

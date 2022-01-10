@@ -53,13 +53,17 @@ public class MaskedBehavior : BaseBehavior<InputView>
 		base.OnViewPropertyChanged(sender, e);
 
 		if (e.PropertyName == InputView.TextProperty.PropertyName)
+		{
 			OnTextPropertyChanged();
+		}
 	}
 
 	void OnTextPropertyChanged()
 	{
 		if (applyingMask)
+		{
 			return;
+		}
 
 		applyingMask = true;
 		ApplyMask(View?.Text);
@@ -80,7 +84,9 @@ public class MaskedBehavior : BaseBehavior<InputView>
 			for (var i = 0; i < Mask.Length; i++)
 			{
 				if (Mask[i] != UnMaskedCharacter)
+				{
 					list.Add(i, Mask[i]);
+				}
 			}
 		}
 
@@ -103,7 +109,9 @@ public class MaskedBehavior : BaseBehavior<InputView>
 	string? RemoveMaskNullableString(string? text)
 	{
 		if (text == null || string.IsNullOrEmpty(text))
+		{
 			return text;
+		}
 
 		return RemoveMask(text);
 	}
@@ -123,23 +131,31 @@ public class MaskedBehavior : BaseBehavior<InputView>
 		if (text != null && !string.IsNullOrWhiteSpace(text) && positions != null)
 		{
 			if (text.Length > (Mask?.Length ?? 0))
+			{
 				text = text.Remove(text.Length - 1);
+			}
 
 			text = RemoveMask(text);
 			foreach (var position in positions)
 			{
 				if (text.Length < position.Key + 1)
+				{
 					continue;
+				}
 
 				var value = position.Value.ToString();
 
 				// !important - If user types in masked value, don't add masked value
 				if (text.Substring(position.Key, 1) != value)
+				{
 					text = text.Insert(position.Key, value);
+				}
 			}
 		}
 
 		if (View != null)
+		{
 			View.Text = text;
+		}
 	}
 }

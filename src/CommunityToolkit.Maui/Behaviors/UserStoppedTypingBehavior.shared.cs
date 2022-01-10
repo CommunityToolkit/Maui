@@ -90,7 +90,9 @@ public class UserStoppedTypingBehavior : BaseBehavior<InputView>
 	{
 		base.OnViewPropertyChanged(sender, e);
 		if (e.PropertyName == InputView.TextProperty.PropertyName)
+		{
 			OnTextPropertyChanged();
+		}
 	}
 
 	void OnTextPropertyChanged()
@@ -106,17 +108,25 @@ public class UserStoppedTypingBehavior : BaseBehavior<InputView>
 			.ContinueWith(task =>
 			{
 				if (task.IsFaulted && task.Exception != null)
+				{
 					throw task.Exception;
+				}
 
 				if (task.Status == TaskStatus.Canceled ||
 					View?.Text?.Length < MinimumLengthThreshold)
+				{
 					return;
+				}
 
 				if (View != null && ShouldDismissKeyboardAutomatically)
+				{
 					Device.BeginInvokeOnMainThread(View.Unfocus);
+				}
 
 				if (View != null && Command?.CanExecute(CommandParameter ?? View.Text) is true)
+				{
 					Command.Execute(CommandParameter ?? View.Text);
+				}
 			});
 	}
 }

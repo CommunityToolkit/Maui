@@ -54,23 +54,31 @@ public class MaxLengthReachedBehavior : BaseBehavior<InputView>
 	{
 		base.OnViewPropertyChanged(sender, e);
 		if (e.PropertyName == InputView.TextProperty.PropertyName)
+		{
 			OnTextPropertyChanged();
+		}
 	}
 
 	void OnTextPropertyChanged()
 	{
 		if (View?.Text == null || View.Text.Length < View.MaxLength)
+		{
 			return;
+		}
 
 		if (ShouldDismissKeyboardAutomatically)
+		{
 			View.Unfocus();
+		}
 
 		var newTextValue = View.Text[..View.MaxLength];
 
 		OnMaxLengthReached(new MaxLengthReachedEventArgs(newTextValue));
 
 		if (Command?.CanExecute(newTextValue) ?? false)
+		{
 			Command.Execute(newTextValue);
+		}
 	}
 
 	void OnMaxLengthReached(MaxLengthReachedEventArgs maxLengthReachedEventArgs) =>
