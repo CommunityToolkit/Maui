@@ -6,11 +6,15 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
 public class ExtensionsGalleryViewModel : BaseGalleryViewModel
 {
-	protected override IEnumerable<SectionModel> CreateItems() => new[]
+	public ExtensionsGalleryViewModel(ColorAnimationExtensionsPage colorAnimationExtensionsPage)
+		: base(new[]
+		{
+			new SectionModel(
+				colorAnimationExtensionsPage,
+				nameof(ColorAnimationExtensions),
+				"Extension methods that provide color animations"),
+		})
 	{
-		new SectionModel(
-			typeof(ColorAnimationExtensionsPage),
-			nameof(ColorAnimationExtensions),
-			"Extension methods that provide color animations"),
-	};
+
+	}
 }

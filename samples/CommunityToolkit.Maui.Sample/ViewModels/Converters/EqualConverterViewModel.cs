@@ -1,6 +1,6 @@
 ﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-public class EqualsConverterViewModel : BaseViewModel
+public class EqualConverterViewModel : BaseViewModel
 {
 	string inputValue = string.Empty;
 

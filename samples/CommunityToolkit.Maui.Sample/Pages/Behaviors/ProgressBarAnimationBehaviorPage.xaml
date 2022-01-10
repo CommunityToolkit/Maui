@@ -5,13 +5,9 @@
     xmlns:mct="clr-namespace:CommunityToolkit.Maui.Behaviors;assembly=CommunityToolkit.Maui"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.ProgressBarAnimationBehaviorPage">
-    <pages:BasePage.BindingContext>
-        <vm:ProgressBarAnimationBehaviorViewModel />
-    </pages:BasePage.BindingContext>
-    <StackLayout Padding="{StaticResource ContentPadding}"
-                 Spacing="50"
-                 VerticalOptions="CenterAndExpand">
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.ProgressBarAnimationBehaviorPage"
+    x:TypeArguments="vm:ProgressBarAnimationBehaviorViewModel">
+    <VerticalStackLayout Padding="{StaticResource ContentPadding}" Spacing="50">
         <ProgressBar>
             <ProgressBar.Behaviors>
                 <mct:ProgressBarAnimationBehavior AnimateProgress="{Binding Progress}" />
@@ -21,5 +17,5 @@
         <Button Text="Set to 0" Command="{Binding SetTo0Command}"  />
         <Button Text="Set to 50" Command="{Binding SetTo50Command}" />
         <Button Text="Set to 100" Command="{Binding SetTo100Command}" />
-    </StackLayout>
+    </VerticalStackLayout>
 </pages:BasePage>

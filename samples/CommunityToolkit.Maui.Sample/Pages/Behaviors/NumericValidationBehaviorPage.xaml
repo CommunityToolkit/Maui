@@ -15,7 +15,7 @@
         </Style>
     </pages:BasePage.Resources>
 
-    <StackLayout Padding="{StaticResource ContentPadding}"
+    <VerticalStackLayout Padding="{StaticResource ContentPadding}"
                  Spacing="24"
                  VerticalOptions="StartAndExpand">
         <Label Text="Text color will be changed according to the configured style in case of an invalid numeric format or when the numeric value is outside of the configured boundaries (min: 1.0, max: 100.0). Maximum decimal places value equals 2." />
@@ -29,6 +29,6 @@
                                                MaximumDecimalPlaces="2"/>
             </Entry.Behaviors>
         </Entry>
-    </StackLayout>
+    </VerticalStackLayout>
 
 </pages:BasePage>
