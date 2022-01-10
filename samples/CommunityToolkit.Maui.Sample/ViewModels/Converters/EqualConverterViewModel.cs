@@ -2,11 +2,11 @@
 
 public class EqualConverterViewModel : BaseViewModel
 {
-	string _inputValue = string.Empty;
+	string inputValue = string.Empty;
 
 	public string InputValue
 	{
-		get => _inputValue;
-		set => SetProperty(ref _inputValue, value);
+		get => inputValue;
+		set => SetProperty(ref inputValue, value);
 	}
 }

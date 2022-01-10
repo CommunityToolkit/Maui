@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class PopupView : UIView
 {
-	readonly List<UIView> _children = Array.Empty<UIView>().ToList();
+	readonly List<UIView> children = Array.Empty<UIView>().ToList();
 
 	/// <summary>
 	/// Parent UIView
@@ -20,7 +20,7 @@ public class PopupView : UIView
 	/// <summary>
 	/// PopupView Children
 	/// </summary>
-	public IReadOnlyList<UIView> Children => _children;
+	public IReadOnlyList<UIView> Children => children;
 
 	/// <summary>
 	/// <see cref="UIView"/> on which Popup will appear. When null, <see cref="PopupView"/> will appear at bottom of screen.
@@ -46,7 +46,7 @@ public class PopupView : UIView
 	/// Adds a <see cref="UIView"/> to <see cref="Children"/>
 	/// </summary>
 	/// <param name="child"></param>
-	public void AddChild(UIView child) => _children.Add(child);
+	public void AddChild(UIView child) => children.Add(child);
 
 	/// <summary>
 	/// Initializes <see cref="PopupView"/>

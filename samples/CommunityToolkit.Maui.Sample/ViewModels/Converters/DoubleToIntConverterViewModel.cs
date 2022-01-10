@@ -2,11 +2,11 @@
 
 public class DoubleToIntConverterViewModel : BaseViewModel
 {
-	double _index;
+	double index;
 
 	public double Input
 	{
-		get => _index;
-		set => SetProperty(ref _index, value);
+		get => index;
+		set => SetProperty(ref index, value);
 	}
 }

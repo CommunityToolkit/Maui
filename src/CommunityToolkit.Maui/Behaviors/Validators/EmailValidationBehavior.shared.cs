@@ -15,16 +15,24 @@ public class EmailValidationBehavior : TextValidationBehavior
 	protected override async ValueTask<bool> ValidateAsync(string? value, CancellationToken token)
 	{
 		if (string.IsNullOrWhiteSpace(value))
+		{
 			return false;
+		}
 
 		if (value.StartsWith('.'))
+		{
 			return false;
+		}
 
 		if (value.Contains(".."))
+		{
 			return false;
+		}
 
 		if (value.Contains(".@"))
+		{
 			return false;
+		}
 
 		return IsValidEmail(value) && await base.ValidateAsync(value, token);
 	}
@@ -33,7 +41,9 @@ public class EmailValidationBehavior : TextValidationBehavior
 	static bool IsValidEmail(string? email)
 	{
 		if (string.IsNullOrWhiteSpace(email))
+		{
 			return false;
+		}
 
 		try
 		{
@@ -76,7 +86,9 @@ public class EmailValidationBehavior : TextValidationBehavior
 			}
 
 			if (domainName.StartsWith('-'))
+			{
 				throw new ArgumentException("Domain Name Cannot Start With Hyphen");
+			}
 
 			return match.Groups[1].Value + domainName;
 		}

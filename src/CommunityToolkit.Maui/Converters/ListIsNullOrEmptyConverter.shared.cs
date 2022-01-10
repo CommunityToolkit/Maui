@@ -35,10 +35,14 @@ public class ListIsNullOrEmptyConverter : ValueConverterExtension, ICommunityToo
 	internal static bool ConvertInternal([NotNullWhen(false)] object? value)
 	{
 		if (value == null)
+		{
 			return true;
+		}
 
 		if (value is IEnumerable list)
+		{
 			return !list.GetEnumerator().MoveNext();
+		}
 
 		throw new ArgumentException("Value is not a valid IEnumerable or null", nameof(value));
 	}
