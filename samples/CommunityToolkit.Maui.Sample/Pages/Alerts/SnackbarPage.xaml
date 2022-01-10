@@ -31,7 +31,8 @@
         <Button x:Name="DisplayCustomSnackbarButton"
                 Clicked="DisplayCustomSnackbarButtonClicked"
                 TextColor="{Binding Source={RelativeSource Self}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}}"/>
-        
+
+        <Label x:Name="SnackbarShownStatus" />
     </VerticalStackLayout>
     
 </pages:BasePage>
