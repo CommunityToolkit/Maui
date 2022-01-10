@@ -11,7 +11,8 @@ public sealed class SectionModel
 
 	public SectionModel(in ContentPage page, in string title, in Color color, in string description)
 	{
-		page.Title = title;
+		if (string.IsNullOrWhiteSpace(page.Title))
+			page.Title = title;
 
 		Page = page;
 		Title = title;
