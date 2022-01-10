@@ -138,7 +138,7 @@ public partial class Snackbar
 
 		public SnackbarCallback(in Snackbar snackbar, in TaskCompletionSource<bool> dismissedTCS)
 		{
-			snackbar = snackbar;
+			this.snackbar = snackbar;
 			this.dismissedTCS = dismissedTCS;
 		}
 

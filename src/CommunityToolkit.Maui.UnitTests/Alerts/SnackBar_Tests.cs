@@ -111,7 +111,7 @@ public class Snackbar_Tests : BaseTest
 
 		cancellationTokenSource.Cancel();
 
-		await _snackbar.Invoking(x => x.Show(cancellationTokenSource.Token)).Should().ThrowExactlyAsync<OperationCanceledException>();
+		await snackbar.Invoking(x => x.Show(cancellationTokenSource.Token)).Should().ThrowExactlyAsync<OperationCanceledException>();
 	}
 
 	[Fact]
@@ -121,32 +121,32 @@ public class Snackbar_Tests : BaseTest
 
 		cancellationTokenSource.Cancel();
 
-		await _snackbar.Invoking(x => x.Dismiss(cancellationTokenSource.Token)).Should().ThrowExactlyAsync<OperationCanceledException>();
+		await snackbar.Invoking(x => x.Dismiss(cancellationTokenSource.Token)).Should().ThrowExactlyAsync<OperationCanceledException>();
 	}
 
 	[Fact]
 	public async Task SnackbarShow_CancellationTokenNotCancelled_NotReceiveException()
 	{
 		using var cancellationTokenSource = new CancellationTokenSource();
-		await _snackbar.Invoking(x => x.Show(cancellationTokenSource.Token)).Should().NotThrowAsync<OperationCanceledException>();
+		await snackbar.Invoking(x => x.Show(cancellationTokenSource.Token)).Should().NotThrowAsync<OperationCanceledException>();
 	}
 
 	[Fact]
 	public async Task SnackbarDismiss_CancellationTokenNotCancelled_NotReceiveException()
 	{
 		using var cancellationTokenSource = new CancellationTokenSource();
-		await _snackbar.Invoking(x => x.Dismiss(cancellationTokenSource.Token)).Should().NotThrowAsync<OperationCanceledException>();
+		await snackbar.Invoking(x => x.Dismiss(cancellationTokenSource.Token)).Should().NotThrowAsync<OperationCanceledException>();
 	}
 
 	[Fact]
 	public async Task SnackbarShow_CancellationTokenNone_NotReceiveException()
 	{
-		await _snackbar.Invoking(x => x.Show(CancellationToken.None)).Should().NotThrowAsync<OperationCanceledException>();
+		await snackbar.Invoking(x => x.Show(CancellationToken.None)).Should().NotThrowAsync<OperationCanceledException>();
 	}
 
 	[Fact]
 	public async Task SnackbarDismiss_CancellationTokenNone_NotReceiveException()
 	{
-		await _snackbar.Invoking(x => x.Dismiss(CancellationToken.None)).Should().NotThrowAsync<OperationCanceledException>();
+		await snackbar.Invoking(x => x.Dismiss(CancellationToken.None)).Should().NotThrowAsync<OperationCanceledException>();
 	}
 }
