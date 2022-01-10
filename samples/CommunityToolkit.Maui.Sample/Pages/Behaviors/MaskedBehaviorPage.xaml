@@ -6,7 +6,7 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.MaskedBehaviorPage">
     <ScrollView>
-        <VerticalStackLayout Padding="{StaticResource ContentPadding}" Spacing="5">
+        <StackLayout Padding="{StaticResource ContentPadding}" Spacing="5">
 
             <Label Padding="10,10,10,50" Text="This sample demonstrates how to use MaskedBehavior" />
 
@@ -72,6 +72,6 @@
                 </Entry.Behaviors>
             </Entry>
             <Label Padding="10,0,10,50" FontSize="Small" Text="e.g. Phone Number '(XXX) XXX-XXXX'" />
-        </VerticalStackLayout>
+        </StackLayout>
     </ScrollView>
 </pages:BasePage>

@@ -5,15 +5,17 @@
     xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.IntToBoolConverterPage"
-    x:TypeArguments="vm:IntToBoolConverterViewModel">
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.IntToBoolConverterPage">
+    <pages:BasePage.BindingContext>
+        <vm:IntToBoolConverterViewModel />
+    </pages:BasePage.BindingContext>
     <pages:BasePage.Resources>
         <ResourceDictionary>
             <mct:IntToBoolConverter x:Key="IntToBoolConverter" />
         </ResourceDictionary>
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
-        <VerticalStackLayout
+        <StackLayout
             Padding="10,10"
             HorizontalOptions="Fill"
             Spacing="10"
@@ -28,6 +30,6 @@
                 Padding="7,0,0,0"
                 Text="{Binding Path=Number, Converter={StaticResource IntToBoolConverter}}"
                 TextColor="{StaticResource NormalLabelTextColor}" />
-        </VerticalStackLayout>
+        </StackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

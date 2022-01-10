@@ -6,10 +6,10 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.MathExpressionConverterPage">
     <pages:BasePage.Content>
-        <VerticalStackLayout>
+        <StackLayout>
             <Label Text="MathExpressionConverter"
                 VerticalOptions="CenterAndExpand" 
                 HorizontalOptions="CenterAndExpand" />
-        </VerticalStackLayout>
+        </StackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

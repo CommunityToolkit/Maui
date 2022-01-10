@@ -11,7 +11,7 @@
         </ResourceDictionary>
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
-        <VerticalStackLayout
+        <StackLayout
             Padding="10,10"
             HorizontalOptions="Fill"
             Spacing="10"
@@ -28,6 +28,6 @@
                 BindingContext="{x:Reference Name=ExampleText}"
                 Text="{Binding Path=Text, Converter={StaticResource TextCaseConverter}}"
                 TextColor="{StaticResource NormalLabelTextColor}" />
-        </VerticalStackLayout>
+        </StackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

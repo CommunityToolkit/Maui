@@ -6,11 +6,12 @@ using Application = Microsoft.Maui.Controls.Application;
 
 namespace CommunityToolkit.Maui.Sample.Pages;
 
-public abstract class BaseGalleryPage<TViewModel> : BasePage where TViewModel : BaseGalleryViewModel
+public abstract class BaseGalleryPage<TViewModel> : BasePage where TViewModel : BaseGalleryViewModel, new()
 {
-	public BaseGalleryPage(string title, TViewModel viewModel) : base(viewModel)
+	public BaseGalleryPage(string title)
 	{
 		Title = title;
+		BindingContext = new TViewModel();
 
 		Padding = new Thickness(20, 0);
 
@@ -30,7 +31,7 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage where TViewModel : 
 		collectionView.SelectedItem = null;
 
 		if (e.CurrentSelection.FirstOrDefault() is SectionModel sectionModel)
-			await Navigation.PushAsync(sectionModel.Page);
+			await Navigation.PushAsync(PreparePage(sectionModel));
 	}
 
 	class GalleryDataTemplate : DataTemplate

@@ -5,8 +5,10 @@
     xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.IndexToArrayItemConverterPage"
-    x:TypeArguments="vm:IndexToArrayItemConverterViewModel">
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.IndexToArrayItemConverterPage">
+    <pages:BasePage.BindingContext>
+        <vm:IndexToArrayItemConverterViewModel />
+    </pages:BasePage.BindingContext>
     <ContentPage.Resources>
         <mct:IndexToArrayItemConverter x:Key="IndexToArrayItemConverter" />
         <x:Array x:Key="StringArray" Type="{x:Type x:String}">

@@ -11,23 +11,24 @@
         </ResourceDictionary>
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
-        <VerticalStackLayout
+        <StackLayout
             Padding="10,10"
             HorizontalOptions="Fill"
             Spacing="10"
             VerticalOptions="Fill">
             <Label Text="The InvertedBoolConverter is a converter that allows users to convert a bool value binding to its inverted value." TextColor="{StaticResource NormalLabelTextColor}" />
-            <HorizontalStackLayout
+            <StackLayout
                 HorizontalOptions="CenterAndExpand"
+                Orientation="Horizontal"
                 Spacing="10">
                 <Label Text="False" TextColor="{StaticResource NormalLabelTextColor}" />
                 <Switch x:Name="ColorToggle" IsToggled="False" />
                 <Label Text="True" TextColor="{StaticResource NormalLabelTextColor}" />
-            </HorizontalStackLayout>
+            </StackLayout>
             <Label Text="This string should represet the opposite state of the picker" TextColor="{StaticResource NormalLabelTextColor}" />
             <Label
                 BindingContext="{x:Reference Name=ColorToggle}"
                 Text="{Binding Path=IsToggled, Converter={StaticResource InvertedBoolConverter}}" />
-        </VerticalStackLayout>
+        </StackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

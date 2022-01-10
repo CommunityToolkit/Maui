@@ -1,11 +1,8 @@
-﻿using CommunityToolkit.Maui.Sample.ViewModels.Converters;
+﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
-namespace CommunityToolkit.Maui.Sample.Pages.Converters;
-
-public partial class DateTimeOffsetConverterPage : BasePage<DateTimeOffsetConverterViewModel>
+public partial class DateTimeOffsetConverterPage : BasePage
 {
-	public DateTimeOffsetConverterPage(DateTimeOffsetConverterViewModel dateTimeOffsetConverterViewModel)
-		: base(dateTimeOffsetConverterViewModel)
+	public DateTimeOffsetConverterPage()
 	{
 		InitializeComponent();
 	}

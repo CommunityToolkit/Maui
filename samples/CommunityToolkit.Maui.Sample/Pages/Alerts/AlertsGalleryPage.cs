@@ -4,7 +4,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Alerts;
 
 public class AlertsGalleryPage : BaseGalleryPage<AlertsGalleryViewModel>
 {
-	public AlertsGalleryPage(AlertsGalleryViewModel alertsGalleryViewModel) : base("Alerts", alertsGalleryViewModel)
+	public AlertsGalleryPage() : base("Alerts")
 	{
 	}
 }

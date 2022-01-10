@@ -1,6 +1,6 @@
 ﻿namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
-public partial class TextValidationBehaviorPage : BasePage
+public partial class TextValidationBehaviorPage
 {
 	public TextValidationBehaviorPage()
 	{

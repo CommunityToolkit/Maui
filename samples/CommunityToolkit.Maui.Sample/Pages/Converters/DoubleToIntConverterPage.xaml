@@ -5,15 +5,17 @@
     xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.DoubleToIntConverterPage"
-    x:TypeArguments="vm:DoubleToIntConverterViewModel">
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.DoubleToIntConverterPage">
+    <pages:BasePage.BindingContext>
+        <vm:DoubleToIntConverterViewModel />
+    </pages:BasePage.BindingContext>
     <pages:BasePage.Resources>
         <ResourceDictionary>
             <mct:DoubleToIntConverter x:Key="DoubleToIntConverter" />
         </ResourceDictionary>
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
-        <VerticalStackLayout
+        <StackLayout
             Padding="10,10"
             HorizontalOptions="Fill"
             Spacing="10"
@@ -29,6 +31,6 @@
                 Padding="7,0,0,0"
                 Text="{Binding Path=Input, Converter={StaticResource DoubleToIntConverter}, ConverterParameter=1}"
                 TextColor="{StaticResource NormalLabelTextColor}" />
-        </VerticalStackLayout>
+        </StackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

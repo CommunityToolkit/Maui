@@ -17,7 +17,7 @@
 
 
     <pages:BasePage.Content>
-        <VerticalStackLayout Padding="{StaticResource ContentPadding}"
+        <StackLayout Padding="{StaticResource ContentPadding}"
                  Spacing="50"
                  VerticalOptions="StartAndExpand">
             <Label Text="Number validation : -10 to 5" />
@@ -69,13 +69,13 @@
                     </mct:MultiValidationBehavior>
                 </Entry.Behaviors>
             </Entry>
-            <VerticalStackLayout>
+            <StackLayout Orientation="Vertical">
                 <Label Text="{Binding IsValid, Source={x:Reference DigitValidation}, StringFormat='{}{0} : at least 1 digit'}"/>
                 <Label Text="{Binding IsValid, Source={x:Reference UpperValidation}, StringFormat='{}{0} : at least 1 upper'}"/>
                 <Label Text="{Binding IsValid, Source={x:Reference SymbolValidation}, StringFormat='{}{0} : at least 1 symbol'}"/>
                 <Label Text="{Binding IsValid, Source={x:Reference AnyValidation}, StringFormat='{}{0} : at least 8 char'}"/>
-            </VerticalStackLayout>
-        </VerticalStackLayout>
+            </StackLayout>
+        </StackLayout>
 
 
     </pages:BasePage.Content>

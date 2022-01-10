@@ -5,15 +5,17 @@
     xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.IsNotNullOrEmptyConverterPage"
-    x:TypeArguments="vm:IsNotNullOrEmptyConverterViewModel">
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.IsNotNullOrEmptyConverterPage">
+    <pages:BasePage.BindingContext>
+        <vm:IsNotNullOrEmptyConverterViewModel />
+    </pages:BasePage.BindingContext>
     <pages:BasePage.Resources>
         <ResourceDictionary>
             <mct:IsNotNullOrEmptyConverter x:Key="IsNotNullOrEmptyConverter" />
         </ResourceDictionary>
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
-        <VerticalStackLayout
+        <StackLayout
             Padding="10,10"
             HorizontalOptions="Fill"
             Spacing="16"
@@ -29,6 +31,6 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
-        </VerticalStackLayout>
+        </StackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

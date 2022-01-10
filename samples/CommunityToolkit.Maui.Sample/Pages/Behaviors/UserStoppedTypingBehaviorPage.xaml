@@ -5,10 +5,12 @@
     xmlns:mct="clr-namespace:CommunityToolkit.Maui.Behaviors;assembly=CommunityToolkit.Maui"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.UserStoppedTypingBehaviorPage"
-    x:TypeArguments="vm:UserStoppedTypingBehaviorViewModel">
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.UserStoppedTypingBehaviorPage">
+    <pages:BasePage.BindingContext>
+        <vm:UserStoppedTypingBehaviorViewModel />
+    </pages:BasePage.BindingContext>
     <pages:BasePage.Content>
-        <VerticalStackLayout Spacing="20">
+        <StackLayout Spacing="20">
 
             <Label Text="This behavior waits for the user to stop typing and then executes a Command. The waiting threshold is adjustable, as well as there is an option to dismiss the keyboard after the user has stopped typing."
                    Margin="{StaticResource ContentPadding}" />
@@ -54,6 +56,6 @@
 
             <Label Text="{Binding PerformedSearches}" Margin="{StaticResource ContentPadding}" />
 
-        </VerticalStackLayout>
+        </StackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

@@ -6,11 +6,14 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.EqualConverterPage"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
-    x:TypeArguments="vm:EqualConverterViewModel">
-    <pages:BasePage.Resources>
+    x:DataType="vm:EqualsConverterViewModel">
+    <pages:BasePage.BindingContext>
+        <vm:EqualsConverterViewModel />
+    </pages:BasePage.BindingContext>
+    <ContentPage.Resources>
         <x:String x:Key="MAUI">MAUI</x:String>
         <mct:EqualConverter x:Key="InputIsEqualConverter" />
-    </pages:BasePage.Resources>
+    </ContentPage.Resources>
     <pages:BasePage.Content>
         <VerticalStackLayout Spacing="10">
             <Label Text="The EqualConverter is a converter that allows users to convert any value binding to a bool depending on whether or not it is equal to a different value. The initial binding contains the object that will be compared and the ConverterParameter contains the object to compare it to."/>
