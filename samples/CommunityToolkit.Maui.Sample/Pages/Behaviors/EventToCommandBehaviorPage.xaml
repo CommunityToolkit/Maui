@@ -7,8 +7,7 @@
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.EventToCommandBehaviorPage"
     x:TypeArguments="vm:EventToCommandBehaviorViewModel">
-    <VerticalStackLayout VerticalOptions="CenterAndExpand"
-                     Spacing="20">
+    <VerticalStackLayout Spacing="20">
         <Label Text="This sample demonstrates how to use EventToCommandBehavior. Here we observe Clicked event of the button and trigger IncrementCommand from ViewModel." />
         <Label Text="{Binding ClickCount, StringFormat='{0} clicks'}" />
         <Button Text="Click Me"

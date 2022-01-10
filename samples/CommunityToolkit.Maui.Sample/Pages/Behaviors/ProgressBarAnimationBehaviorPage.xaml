@@ -7,9 +7,7 @@
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.ProgressBarAnimationBehaviorPage"
     x:TypeArguments="vm:ProgressBarAnimationBehaviorViewModel">
-    <VerticalStackLayout Padding="{StaticResource ContentPadding}"
-                 Spacing="50"
-                 VerticalOptions="CenterAndExpand">
+    <VerticalStackLayout Padding="{StaticResource ContentPadding}" Spacing="50">
         <ProgressBar>
             <ProgressBar.Behaviors>
                 <mct:ProgressBarAnimationBehavior AnimateProgress="{Binding Progress}" />
