@@ -12,7 +12,7 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 	{
 		Title = title;
 
-		Padding = new Thickness(20, 0);
+		Padding = 0;
 
 		Content = new CollectionView
 		{
@@ -53,9 +53,9 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 				(Row.BottomPadding, 12)),
 
 			ColumnDefinitions = Columns.Define(
-				(Column.LeftPadding, 6),
+				(Column.LeftPadding, 24),
 				(Column.Content, Star),
-				(Column.RightPadding, 6)),
+				(Column.RightPadding, 24)),
 
 			Children =
 			{
