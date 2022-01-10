@@ -9,6 +9,7 @@ public partial class App : Application
 	{
 		InitializeComponent();
 
-		MainPage = new BaseNavigationPage(new MainGalleryPage());
+		var mainGalleryPage = ServiceProvider.GetRequiredService<MainGalleryPage>();
+		MainPage = new BaseNavigationPage(mainGalleryPage);
 	}
 }

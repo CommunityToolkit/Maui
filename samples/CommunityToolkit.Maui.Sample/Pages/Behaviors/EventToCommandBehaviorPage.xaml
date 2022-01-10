@@ -5,24 +5,19 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:mct="clr-namespace:CommunityToolkit.Maui.Behaviors;assembly=CommunityToolkit.Maui"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.EventToCommandBehaviorPage">
-    <pages:BasePage.BindingContext>
-        <vm:EventToCommandBehaviorViewModel />
-    </pages:BasePage.BindingContext>
-    <ContentView Padding="{StaticResource ContentPadding}">
-        <StackLayout VerticalOptions="CenterAndExpand"
-                     Spacing="20">
-            <Label Text="This sample demonstrates how to use EventToCommandBehavior. Here we observe Clicked event of the button and trigger IncrementCommand from ViewModel." />
-            <Label Text="{Binding ClickCount, StringFormat='{0} clicks'}" />
-            <Button Text="Click Me"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.EventToCommandBehaviorPage"
+    x:TypeArguments="vm:EventToCommandBehaviorViewModel">
+    <VerticalStackLayout Spacing="20">
+        <Label Text="This sample demonstrates how to use EventToCommandBehavior. Here we observe Clicked event of the button and trigger IncrementCommand from ViewModel." />
+        <Label Text="{Binding ClickCount, StringFormat='{0} clicks'}" />
+        <Button Text="Click Me"
                     TextColor="White"
                     BackgroundColor="{StaticResource NormalButtonBackgroundColor}">
-                <Button.Behaviors>
-                    <mct:EventToCommandBehavior
+            <Button.Behaviors>
+                <mct:EventToCommandBehavior
                         EventName="Clicked"
                         Command="{Binding IncrementCommand}" />
-                </Button.Behaviors>
-            </Button>
-        </StackLayout>
-    </ContentView>
+            </Button.Behaviors>
+        </Button>
+    </VerticalStackLayout>
 </pages:BasePage>

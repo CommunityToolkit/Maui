@@ -65,7 +65,7 @@
             <Style x:Key="label_section_header" TargetType="Label">
                 <Setter Property="TextColor" Value="{StaticResource HeadingLabelTextColor}" />
             </Style>
-            
+
             <!--  Values  -->
             <Thickness x:Key="ContentPadding">20, 0</Thickness>
             

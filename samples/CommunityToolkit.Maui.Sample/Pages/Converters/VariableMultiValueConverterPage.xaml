@@ -6,10 +6,10 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.VariableMultiValueConverterPage">
     <pages:BasePage.Content>
-        <StackLayout>
+        <VerticalStackLayout>
             <Label Text="VariableMultiValueConverter"
                 VerticalOptions="CenterAndExpand" 
                 HorizontalOptions="CenterAndExpand" />
-        </StackLayout>
+        </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

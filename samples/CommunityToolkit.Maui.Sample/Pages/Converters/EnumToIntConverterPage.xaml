@@ -5,22 +5,20 @@
     xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.EnumToIntConverterPage">
-    <pages:BasePage.BindingContext>
-        <vm:EnumToIntConverterViewModel />
-    </pages:BasePage.BindingContext>
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.EnumToIntConverterPage"
+    x:TypeArguments="vm:EnumToIntConverterViewModel">
     <pages:BasePage.Resources>
         <ResourceDictionary>
             <mct:EnumToIntConverter x:Key="EnumToIntConverter" />
         </ResourceDictionary>
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
-        <StackLayout Padding="10,10" Spacing="10">
+        <VerticalStackLayout Padding="10,10" Spacing="10">
             <Label Text="The EnumToIntConverter is a converter that allows users to convert a standard enum (extending int) to its underlying primitive int type." TextColor="{StaticResource NormalLabelTextColor}" />
             <Label Text="Selecting a value from the picker will change the enum property in the view model" TextColor="{StaticResource NormalLabelTextColor}" />
             <Picker ItemsSource="{Binding AllStates}" SelectedIndex="{Binding SelectedState, Converter={StaticResource EnumToIntConverter}}" TextColor="{StaticResource NormalLabelTextColor}" />
             <Label Text="This label binds to the SelectedIndex property of the picker, both use EnumToIntConverter, so no int properties are necessary in ViewModel" TextColor="{StaticResource NormalLabelTextColor}" />
             <Label Text="{Binding Path=SelectedState, Converter={StaticResource EnumToIntConverter}}" TextColor="{StaticResource NormalLabelTextColor}" />
-        </StackLayout>
+        </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

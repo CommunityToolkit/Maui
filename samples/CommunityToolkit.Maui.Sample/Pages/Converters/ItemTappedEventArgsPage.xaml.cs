@@ -1,8 +1,11 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+﻿using CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-public partial class ItemTappedEventArgsPage : BasePage
+namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class ItemTappedEventArgsPage : BasePage<ItemTappedEventArgsViewModel>
 {
-	public ItemTappedEventArgsPage()
+	public ItemTappedEventArgsPage(ItemTappedEventArgsViewModel itemTappedEventArgsViewModel)
+		: base(itemTappedEventArgsViewModel)
 	{
 		InitializeComponent();
 	}

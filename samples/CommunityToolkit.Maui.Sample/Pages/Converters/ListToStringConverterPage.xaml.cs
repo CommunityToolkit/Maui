@@ -1,8 +1,11 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+﻿using CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-public partial class ListToStringConverterPage : BasePage
+namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class ListToStringConverterPage : BasePage<ListToStringConverterViewModel>
 {
-	public ListToStringConverterPage()
+	public ListToStringConverterPage(ListToStringConverterViewModel listToStringConverterViewModel)
+		: base(listToStringConverterViewModel)
 	{
 		InitializeComponent();
 	}
