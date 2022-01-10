@@ -14,7 +14,7 @@ public interface IToast : IAsyncDisposable
 	/// Toast message
 	/// </summary>
 	string Text { get; }
-	
+
 	/// <summary>
 	/// Dismiss the toast
 	/// </summary>

@@ -14,8 +14,9 @@ public partial class Toast
 	public virtual partial Task Dismiss(CancellationToken token)
 	{
 		if (_nativeToast is null)
+		{
 			return Task.CompletedTask;
-
+		}
 
 		token.ThrowIfCancellationRequested();
 		_nativeToast.Dismiss();

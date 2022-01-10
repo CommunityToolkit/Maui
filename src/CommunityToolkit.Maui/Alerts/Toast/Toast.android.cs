@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Alerts;
 public partial class Toast
 {
 	static AndroidToast? _nativeToast;
-	
+
 	/// <summary>
 	/// Dismiss Toast
 	/// </summary>
@@ -26,7 +26,7 @@ public partial class Toast
 		token.ThrowIfCancellationRequested();
 
 		_nativeToast = AndroidToast.MakeText(Platform.AppContext, Text, (ToastLength)(int)Duration)
-		                  ?? throw new Exception("Unable to create toast");
+						  ?? throw new Exception("Unable to create toast");
 		_nativeToast.Show();
 	}
 }
