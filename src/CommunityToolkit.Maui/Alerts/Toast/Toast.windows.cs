@@ -6,14 +6,14 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Toast
 {
-	static ToastNotification? _nativeToast;
+	static ToastNotification? nativeToast;
 
 	/// <summary>
 	/// Dismiss Toast
 	/// </summary>
 	public virtual partial Task Dismiss(CancellationToken token)
 	{
-		if (_nativeToast is null)
+		if (nativeToast is null)
 		{
 			return Task.CompletedTask;
 		}
@@ -21,9 +21,9 @@ public partial class Toast
 		token.ThrowIfCancellationRequested();
 		ToastNotificationManager.History.Clear();
 
-		_nativeToast.ExpirationTime = DateTimeOffset.Now;
+		nativeToast.ExpirationTime = DateTimeOffset.Now;
 
-		_nativeToast = null;
+		nativeToast = null;
 		return Task.CompletedTask;
 	}
 
@@ -44,11 +44,11 @@ public partial class Toast
 		var xmlDocument = new XmlDocument();
 		xmlDocument.LoadXml(toastContent.GetContent());
 
-		_nativeToast = new ToastNotification(xmlDocument)
+		nativeToast = new ToastNotification(xmlDocument)
 		{
 			ExpirationTime = DateTimeOffset.Now.Add(GetDuration(Duration))
 		};
 
-		ToastNotificationManager.CreateToastNotifier().Show(_nativeToast);
+		ToastNotificationManager.CreateToastNotifier().Show(nativeToast);
 	}
 }
