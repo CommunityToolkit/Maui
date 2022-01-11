@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.SourceGenerators
 		public static readonly DiagnosticDescriptor GlobalNamespace = new(
 			   "MCT001",
 			   "Global namespace is not support for this Source Generator",
-			   "Please put {0} inside a valid namespace",
+			   "Please put '{0}' inside a valid namespace",
 			   category,
 			   DiagnosticSeverity.Warning,
 			   true);
@@ -23,8 +23,8 @@ namespace CommunityToolkit.Maui.SourceGenerators
 
 		public static readonly DiagnosticDescriptor InvalidClassDeclarationSyntax = new(
 			   "MCT003",
-			   "Was not possible to get information from {0}",
-			   "Please make sure that the code inside {0} has not error, the TextColorTo methods will not be generated for this file",
+			   "Was not possible to get information from the Class",
+			   "Please make sure that the code inside '{0}' has not error, the TextColorTo methods will not be generated for this file",
 			   category,
 			   DiagnosticSeverity.Info,
 			   true);
@@ -32,7 +32,7 @@ namespace CommunityToolkit.Maui.SourceGenerators
 		public static readonly DiagnosticDescriptor InvalidModifierAccess = new(
 			   "MCT004",
 			   "Class marked with invalid modifier access",
-			   "TextColorTo only supports public and internal classes ineriting from ITextStyle, please fix {0}",
+			   "TextColorTo only supports public and internal classes ineriting from ITextStyle, please fix '{0}'",
 			   category,
 			   DiagnosticSeverity.Info,
 			   true);
