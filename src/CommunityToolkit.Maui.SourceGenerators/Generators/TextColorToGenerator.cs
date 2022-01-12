@@ -173,7 +173,7 @@ namespace " + textStyleClass.Namespace + @";
 }";
 			var source = textColorToBuilder.ToString();
 			SourceStringExtensions.FormatText(ref source, options);
-			context.AddSource($"{textStyleClass.ClassName}TextColorTo.g.shared.cs", SourceText.From(source, Encoding.UTF8));
+			context.AddSource($"{textStyleClass.ClassName}TextColorTo_{Guid.NewGuid()}.g.shared.cs", SourceText.From(source, Encoding.UTF8));
 		}
 	}
 
