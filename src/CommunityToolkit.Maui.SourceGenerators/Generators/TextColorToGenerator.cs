@@ -74,13 +74,13 @@ class TextColorToGenerator : IIncrementalGenerator
 			if (declarationSymbol.AllInterfaces.Contains(textStyleSymbol, SymbolEqualityComparer.Default)
 				&& declarationSymbol.AllInterfaces.Contains(iAnimatableSymbol, SymbolEqualityComparer.Default))
 			{
-				var nameSpace = declarationSymbol.ContainingNamespace.ToDisplayString();
-				if (nameSpace == "<global namespace>")
+				if (declarationSymbol.ContainingNamespace.IsGlobalNamespace)
 				{
 					var diag = Diagnostic.Create(TextColorToDiagnostic.GlobalNamespace, Location.None, declarationSymbol.Name);
 					context.ReportDiagnostic(diag);
 					continue;
 				}
+				var nameSpace = declarationSymbol.ContainingNamespace.ToDisplayString();
 
 				var accessModifier = GetClassAccessModifier(declarationSymbol);
 
