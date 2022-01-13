@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
 public class ItemTappedEventArgsViewModel : BaseViewModel
 {
-	Person? _selectedItem = null;
+	Person? selectedItem = null;
 
 	public ItemTappedEventArgsViewModel()
 	{
@@ -24,8 +24,8 @@ public class ItemTappedEventArgsViewModel : BaseViewModel
 
 	public Person? ItemSelected
 	{
-		get => _selectedItem;
-		set => SetProperty(ref _selectedItem, value);
+		get => selectedItem;
+		set => SetProperty(ref selectedItem, value);
 	}
 
 	Task ExecuteItemSelectedCommand(Person? person)

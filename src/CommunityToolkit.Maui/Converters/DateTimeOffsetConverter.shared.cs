@@ -33,7 +33,11 @@ public class DateTimeOffsetConverter : ValueConverterExtension, ICommunityToolki
 	[return: NotNull]
 	public object? ConvertBack([NotNull] object? value, Type? targetType, object? parameter, System.Globalization.CultureInfo? culture)
 	{
-		if (value is not DateTime dateTime) throw new ArgumentException("Value is not a valid DateTime", nameof(value));
+		if (value is not DateTime dateTime)
+		{
+			throw new ArgumentException("Value is not a valid DateTime", nameof(value));
+		}
+
 		var offset = dateTime.Kind switch
 		{
 			DateTimeKind.Local => DateTimeOffset.Now.Offset,

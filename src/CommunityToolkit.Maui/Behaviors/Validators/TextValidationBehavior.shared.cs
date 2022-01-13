@@ -57,7 +57,7 @@ public class TextValidationBehavior : ValidationBehavior<string>
 	public static readonly BindableProperty RegexOptionsProperty =
 		BindableProperty.Create(nameof(RegexOptions), typeof(RegexOptions), typeof(TextValidationBehavior), defaultValueCreator: GetDefaultRegexOptions, propertyChanged: OnRegexPropertyChanged);
 
-	Regex? _regex;
+	Regex? regex;
 
 	/// <summary>
 	/// Constructor of this behavior.
@@ -126,19 +126,29 @@ public class TextValidationBehavior : ValidationBehavior<string>
 		var flags = DecorationFlags;
 
 		if (flags.HasFlag(TextDecorationFlags.NullToEmpty))
+		{
 			stringValue ??= string.Empty;
+		}
 
 		if (stringValue == null)
+		{
 			return null;
+		}
 
 		if (flags.HasFlag(TextDecorationFlags.TrimStart))
+		{
 			stringValue = stringValue.TrimStart();
+		}
 
 		if (flags.HasFlag(TextDecorationFlags.TrimEnd))
+		{
 			stringValue = stringValue.TrimEnd();
+		}
 
 		if (flags.HasFlag(TextDecorationFlags.NormalizeWhiteSpace))
+		{
 			stringValue = NormalizeWhiteSpace(stringValue);
+		}
 
 		return stringValue;
 	}
@@ -150,7 +160,7 @@ public class TextValidationBehavior : ValidationBehavior<string>
 			value != null &&
 			value.Length >= MinimumLength &&
 			value.Length <= MaximumLength &&
-			(_regex?.IsMatch(value) ?? false));
+			(regex?.IsMatch(value) ?? false));
 	}
 
 	static void OnRegexPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -181,14 +191,16 @@ public class TextValidationBehavior : ValidationBehavior<string>
 			isSpace = char.IsWhiteSpace(ch);
 
 			if (wasSpace && isSpace)
+			{
 				continue;
+			}
 
 			builder.Append(ch);
 		}
 		return builder.ToString();
 	}
 
-	void OnRegexPropertyChanged(string? regexPattern, RegexOptions regexOptions) => _regex = regexPattern switch
+	void OnRegexPropertyChanged(string? regexPattern, RegexOptions regexOptions) => regex = regexPattern switch
 	{
 		null => null,
 		_ => new Regex(regexPattern, regexOptions)

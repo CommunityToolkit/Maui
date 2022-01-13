@@ -98,7 +98,9 @@ public class EventToCommandBehavior : BaseBehavior<VisualElement>
 
 		var eventName = EventName;
 		if (View == null || string.IsNullOrWhiteSpace(eventName))
+		{
 			return;
+		}
 
 		eventInfo = View.GetType()?.GetRuntimeEvent(eventName) ??
 			throw new ArgumentException($"{nameof(EventToCommandBehavior)}: Couldn't resolve the event.", nameof(EventName));
@@ -115,7 +117,9 @@ public class EventToCommandBehavior : BaseBehavior<VisualElement>
 	void UnregisterEvent()
 	{
 		if (eventInfo != null && eventHandler != null)
+		{
 			eventInfo.RemoveEventHandler(View, eventHandler);
+		}
 
 		eventInfo = null;
 		eventHandler = null;
@@ -135,6 +139,8 @@ public class EventToCommandBehavior : BaseBehavior<VisualElement>
 
 		var command = Command;
 		if (command?.CanExecute(parameter) ?? false)
+		{
 			command.Execute(parameter);
+		}
 	}
 }

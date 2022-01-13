@@ -21,10 +21,14 @@ public class ImageResourceConverter : ICommunityToolkitValueConverter
 	public object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value == null)
+		{
 			return null;
+		}
 
 		if (value is not string imageId)
+		{
 			throw new ArgumentException("Value is not a string", nameof(value));
+		}
 
 		return ImageSource.FromResource(imageId, Application.Current?.GetType()?.Assembly);
 	}

@@ -2,11 +2,11 @@
 
 public class IndexToArrayItemConverterViewModel : BaseViewModel
 {
-	int _selectedIndex;
+	int selectedIndex;
 
 	public int SelectedIndex
 	{
-		get => _selectedIndex;
-		set => SetProperty(ref _selectedIndex, value);
+		get => selectedIndex;
+		set => SetProperty(ref selectedIndex, value);
 	}
 }

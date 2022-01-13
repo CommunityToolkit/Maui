@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Alerts;
 /// <inheritdoc/>
 public partial class Snackbar : ISnackbar
 {
-	static readonly WeakEventManager _weakEventManager = new();
+	static readonly WeakEventManager weakEventManager = new();
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="Snackbar"/>
@@ -42,15 +42,15 @@ public partial class Snackbar : ISnackbar
 	/// <inheritdoc/>
 	public static event EventHandler Shown
 	{
-		add => _weakEventManager.AddEventHandler(value);
-		remove => _weakEventManager.RemoveEventHandler(value);
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
 	}
 
 	/// <inheritdoc/>
 	public static event EventHandler Dismissed
 	{
-		add => _weakEventManager.AddEventHandler(value);
-		remove => _weakEventManager.RemoveEventHandler(value);
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
 	}
 
 	/// <summary>
@@ -129,8 +129,10 @@ public partial class Snackbar : ISnackbar
 	protected virtual async ValueTask DisposeAsyncCore()
 	{
 #if ANDROID || IOS || MACCATALYST
-		if(_nativeSnackbar is not null)
-			await Device.InvokeOnMainThreadAsync(() => _nativeSnackbar.Dispose());
+		if (nativeSnackbar is not null)
+		{
+			await Device.InvokeOnMainThreadAsync(() => nativeSnackbar.Dispose());
+		}
 #else
 		await Task.CompletedTask;
 #endif
@@ -141,13 +143,13 @@ public partial class Snackbar : ISnackbar
 	void OnShown()
 	{
 		IsShown = true;
-		_weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Shown));
+		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Shown));
 	}
 
 	void OnDismissed()
 	{
 		IsShown = false;
-		_weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Dismissed));
+		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Dismissed));
 	}
 }
 

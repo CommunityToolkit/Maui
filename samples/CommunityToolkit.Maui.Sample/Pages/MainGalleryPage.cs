@@ -4,7 +4,7 @@ namespace CommunityToolkit.Maui.Sample.Pages;
 
 public class MainGalleryPage : BaseGalleryPage<MainGalleryViewModel>
 {
-	public MainGalleryPage() : base("Samples")
+	public MainGalleryPage(MainGalleryViewModel mainGalleryViewModel) : base("Samples", mainGalleryViewModel)
 	{
 	}
 }

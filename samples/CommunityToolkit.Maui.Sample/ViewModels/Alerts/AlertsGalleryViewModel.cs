@@ -5,8 +5,11 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 
 public class AlertsGalleryViewModel : BaseGalleryViewModel
 {
-	protected override IEnumerable<SectionModel> CreateItems() => new[]
+	public AlertsGalleryViewModel(SnackbarPage snackbarPage)
+		: base(new[]
+		{
+			new SectionModel(snackbarPage, "Snackbar", "Show Snackbar")
+		})
 	{
-		new SectionModel(typeof(SnackbarPage), "Snackbar", "Show Snackbar")
-	};
+	}
 }

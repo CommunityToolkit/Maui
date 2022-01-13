@@ -2,11 +2,11 @@
 
 public class DateTimeOffsetConverterViewModel : BaseViewModel
 {
-	DateTimeOffset _theDate = DateTimeOffset.Now;
+	DateTimeOffset theDate = DateTimeOffset.Now;
 
 	public DateTimeOffset TheDate
 	{
-		get => _theDate;
-		set => SetProperty(ref _theDate, value);
+		get => theDate;
+		set => SetProperty(ref theDate, value);
 	}
 }

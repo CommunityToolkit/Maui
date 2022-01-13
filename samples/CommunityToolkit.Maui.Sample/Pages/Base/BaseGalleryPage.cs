@@ -6,20 +6,19 @@ using Application = Microsoft.Maui.Controls.Application;
 
 namespace CommunityToolkit.Maui.Sample.Pages;
 
-public abstract class BaseGalleryPage<TViewModel> : BasePage where TViewModel : BaseGalleryViewModel, new()
+public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where TViewModel : BaseGalleryViewModel
 {
-	public BaseGalleryPage(string title)
+	public BaseGalleryPage(string title, TViewModel viewModel) : base(viewModel)
 	{
 		Title = title;
-		BindingContext = new TViewModel();
 
-		Padding = new Thickness(20, 0);
+		Padding = 0;
 
 		Content = new CollectionView
 		{
 			SelectionMode = SelectionMode.Single,
 			ItemTemplate = new GalleryDataTemplate()
-		}.Bind(CollectionView.ItemsSourceProperty, nameof(BaseGalleryViewModel.FilteredItems))
+		}.Bind(CollectionView.ItemsSourceProperty, nameof(BaseGalleryViewModel.Items))
 		 .Invoke(collectionView => collectionView.SelectionChanged += HandleSelectionChanged);
 	}
 
@@ -31,7 +30,9 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage where TViewModel : 
 		collectionView.SelectedItem = null;
 
 		if (e.CurrentSelection.FirstOrDefault() is SectionModel sectionModel)
-			await Navigation.PushAsync(PreparePage(sectionModel));
+		{
+			await Navigation.PushAsync(sectionModel.Page);
+		}
 	}
 
 	class GalleryDataTemplate : DataTemplate
@@ -54,9 +55,9 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage where TViewModel : 
 				(Row.BottomPadding, 12)),
 
 			ColumnDefinitions = Columns.Define(
-				(Column.LeftPadding, 6),
+				(Column.LeftPadding, 24),
 				(Column.Content, Star),
-				(Column.RightPadding, 6)),
+				(Column.RightPadding, 24)),
 
 			Children =
 			{

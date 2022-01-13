@@ -1,8 +1,11 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
+﻿using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
-public partial class ProgressBarAnimationBehaviorPage : BasePage
+namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
+
+public partial class ProgressBarAnimationBehaviorPage : BasePage<ProgressBarAnimationBehaviorViewModel>
 {
-	public ProgressBarAnimationBehaviorPage()
+	public ProgressBarAnimationBehaviorPage(ProgressBarAnimationBehaviorViewModel progressBarAnimationBehaviorViewModel)
+		: base(progressBarAnimationBehaviorViewModel)
 	{
 		InitializeComponent();
 	}

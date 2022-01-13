@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
 public partial class ColorsConverterPage : BasePage
 {
-	readonly IReadOnlyDictionary<string, Color> _colors = typeof(Colors)
+	readonly IReadOnlyDictionary<string, Color> colors = typeof(Colors)
 		.GetFields(BindingFlags.Static | BindingFlags.Public)
 		.ToDictionary(c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()));
 
@@ -19,13 +19,15 @@ public partial class ColorsConverterPage : BasePage
 
 	protected override void OnAppearing()
 	{
-		Picker.ItemsSource = _colors.Keys.ToList();
+		Picker.ItemsSource = colors.Keys.ToList();
 		Picker.SelectedIndex = RandomNumberGenerator.GetInt32(Picker.ItemsSource.Count);
 	}
 
 	void HandleSelectedIndexChanged(object? sender, EventArgs e)
 	{
-		if (_colors.TryGetValue((string)Picker.SelectedItem, out var color))
+		if (colors.TryGetValue((string)Picker.SelectedItem, out var color))
+		{
 			BoxView.BackgroundColor = color;
+		}
 	}
 }

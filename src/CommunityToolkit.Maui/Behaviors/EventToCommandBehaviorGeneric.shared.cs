@@ -21,6 +21,8 @@ public sealed class EventToCommandBehavior<TType> : EventToCommandBehavior
 
 		var command = Command;
 		if (command?.CanExecute(parameter) ?? false)
+		{
 			command.Execute(parameter);
+		}
 	}
 }

@@ -28,6 +28,8 @@ public class ProgressBarAnimationBehavior : BaseBehavior<ProgressBar>
 	async Task Animate()
 	{
 		if (View != null)
+		{
 			await View.ProgressTo(AnimateProgress, 500, Easing.Linear);
+		}
 	}
 }

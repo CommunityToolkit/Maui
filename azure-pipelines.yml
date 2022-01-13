@@ -67,6 +67,12 @@ jobs:
         condition: and(succeeded(), eq(variables['build.reason'], 'PullRequest'))
       # build, test and pack the packages
       - task: VSBuild@1
+        displayName: 'Build Community Toolkit Sample'
+        inputs:
+          solution: '$(PathToCommunityToolkitSampleCsproj)'
+          configuration: 'Release'
+          msbuildArgs: '/restore'
+      - task: VSBuild@1
         displayName: 'Build and Pack CommunityToolkit.Maui.Core'
         inputs:
           solution: '$(PathToCommunityToolkitCoreCsproj)'
@@ -83,11 +89,11 @@ jobs:
         inputs:
           script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release'
       - task: VSBuild@1
-        displayName: 'Build Community Toolkit Sample'
+        displayName: 'Pack Community Toolkit'
         inputs:
-          solution: '$(PathToCommunityToolkitSampleCsproj)'
+          solution: '$(PathToCommunityToolkitCsproj)'
           configuration: 'Release'
-          msbuildArgs: '/restore'
+          msbuildArgs: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'     
       # Sign NuGet Packages
       - task: PowerShell@2
         displayName: Authenticode Sign Packages

@@ -10,6 +10,7 @@
 
     <RootNamespace>CommunityToolkit.Maui.Sample</RootNamespace>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
     <!-- Display name -->
     <ApplicationTitle>CommunityToolkit.Maui.Sample</ApplicationTitle>
@@ -20,6 +21,9 @@
     <!-- Versions -->
     <ApplicationVersion>1</ApplicationVersion>
     <AndroidVersionCode>1</AndroidVersionCode>
+
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -59,6 +63,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
+    <ProjectReference Include="..\..\src\CommunityToolkit.Maui.SourceGenerators\CommunityToolkit.Maui.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
