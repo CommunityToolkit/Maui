@@ -17,7 +17,7 @@ public abstract class BaseTest : IDisposable
 
 		Device.PlatformServices = new MockPlatformServices();
 
-		DispatcherProvider.SetCurrent(new DispatcherProviderMock());
+		DispatcherProvider.SetCurrent(new MockDispatcherProvider());
 		DeviceDisplay.SetCurrent(null);
 	}
 
