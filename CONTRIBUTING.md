@@ -66,7 +66,7 @@ We love your enthusiasm, but small changes and small PRs are easier to digest. W
 #### Added features should have tests, a sample and documentation
 We like quality as much as the next person, so please provide tests.
 
-In addition, we would want a new feature or change to be as clear as possible for other developers. Please add a sample to the sample app as part of your PR and also provide a PR to our [Add link to Microsoft Docs GitHub Repo Here]
+In addition, we would want a new feature or change to be as clear as possible for other developers. Please add a sample to the sample app as part of your PR and also provide a PR to our [documentation repository](https://github.com/MicrosoftDocs/CommunityToolkit).
 
 ## Where to make your changes?
 
