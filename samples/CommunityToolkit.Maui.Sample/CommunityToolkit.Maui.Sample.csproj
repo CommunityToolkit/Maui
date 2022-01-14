@@ -10,7 +10,6 @@
 
     <RootNamespace>CommunityToolkit.Maui.Sample</RootNamespace>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
     <!-- Display name -->
     <ApplicationTitle>CommunityToolkit.Maui.Sample</ApplicationTitle>
