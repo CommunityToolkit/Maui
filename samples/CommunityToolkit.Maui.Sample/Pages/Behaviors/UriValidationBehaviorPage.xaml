@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                xmlns:mct="clr-namespace:CommunityToolkit.Maui.Behaviors;assembly=CommunityToolkit.Maui"
+                xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/tookit"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.UriValidationBehaviorPage">
 
@@ -21,26 +21,26 @@
         <Label Text="Text color will change accordingly to the style that is configured when a invalid URI is entered." />
         <Entry Placeholder="UriKind: Absolute">
             <Entry.Behaviors>
-                <mct:UriValidationBehavior UriKind="Absolute"
-                                           InvalidStyle="{StaticResource InvalidEntryStyle}"
-                                           ValidStyle="{StaticResource ValidEntryStyle}"
-                                           Flags="ValidateOnValueChanged"/>
+                <toolkit:UriValidationBehavior UriKind="Absolute"
+                                               InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                               ValidStyle="{StaticResource ValidEntryStyle}"
+                                               Flags="ValidateOnValueChanged"/>
             </Entry.Behaviors>
         </Entry>
         <Entry Placeholder="UriKind: Relative">
             <Entry.Behaviors>
-                <mct:UriValidationBehavior UriKind="Relative"
-                                           InvalidStyle="{StaticResource InvalidEntryStyle}"
-                                           ValidStyle="{StaticResource ValidEntryStyle}"
-                                           Flags="ValidateOnValueChanged"/>
+                <toolkit:UriValidationBehavior UriKind="Relative"
+                                               InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                               ValidStyle="{StaticResource ValidEntryStyle}"
+                                               Flags="ValidateOnValueChanged"/>
             </Entry.Behaviors>
         </Entry>
         <Entry Placeholder="UriKind: RelativeOrAbsolute">
             <Entry.Behaviors>
-                <mct:UriValidationBehavior UriKind="RelativeOrAbsolute"
-                                           InvalidStyle="{StaticResource InvalidEntryStyle}"
-                                           ValidStyle="{StaticResource ValidEntryStyle}"
-                                           Flags="ValidateOnValueChanged"/>
+                <toolkit:UriValidationBehavior UriKind="RelativeOrAbsolute"
+                                               InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                               ValidStyle="{StaticResource ValidEntryStyle}"
+                                               Flags="ValidateOnValueChanged"/>
             </Entry.Behaviors>
         </Entry>
     </VerticalStackLayout>

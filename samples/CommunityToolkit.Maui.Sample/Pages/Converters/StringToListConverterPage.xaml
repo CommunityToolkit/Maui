@@ -2,18 +2,18 @@
 <pages:BasePage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/tookit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.StringToListConverterPage">
     <pages:BasePage.Resources>
         <ResourceDictionary>
-            <mct:StringToListConverter x:Key="StringToListConverter" SplitOptions="RemoveEmptyEntries">
-                <mct:StringToListConverter.Separators>
+            <toolkit:StringToListConverter x:Key="StringToListConverter" SplitOptions="RemoveEmptyEntries">
+                <toolkit:StringToListConverter.Separators>
                     <x:String>,</x:String>
                     <x:String>.</x:String>
                     <x:String>;</x:String>
-                </mct:StringToListConverter.Separators>
-            </mct:StringToListConverter>
+                </toolkit:StringToListConverter.Separators>
+            </toolkit:StringToListConverter>
         </ResourceDictionary>
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
