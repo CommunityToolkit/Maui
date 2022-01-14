@@ -2,16 +2,16 @@
 <pages:BasePage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/tookit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.BoolToObjectConverterPage">
    
     <ContentPage.Resources>
         <SolidColorBrush x:Key="TrueColorBrush">Green</SolidColorBrush>
         <SolidColorBrush x:Key="FalseColorBrush">Red</SolidColorBrush>
-        <mct:BoolToObjectConverter x:Key="BoolToColorBrushConverter" 
-                                   TrueObject="{StaticResource TrueColorBrush}" 
-                                   FalseObject="{StaticResource FalseColorBrush}"/>
+        <toolkit:BoolToObjectConverter x:Key="BoolToColorBrushConverter" 
+                                       TrueObject="{StaticResource TrueColorBrush}" 
+                                       FalseObject="{StaticResource FalseColorBrush}"/>
     </ContentPage.Resources>
     <pages:BasePage.Content>
         <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto"

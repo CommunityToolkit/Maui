@@ -3,7 +3,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-    xmlns:mct="clr-namespace:CommunityToolkit.Maui.Behaviors;assembly=CommunityToolkit.Maui"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/tookit"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.EventToCommandBehaviorPage"
     x:TypeArguments="vm:EventToCommandBehaviorViewModel">
@@ -14,7 +14,7 @@
                     TextColor="White"
                     BackgroundColor="{StaticResource NormalButtonBackgroundColor}">
             <Button.Behaviors>
-                <mct:EventToCommandBehavior
+                <toolkit:EventToCommandBehavior
                         EventName="Clicked"
                         Command="{Binding IncrementCommand}" />
             </Button.Behaviors>
