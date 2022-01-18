@@ -1,28 +1,21 @@
-﻿using CommunityToolkit.Maui.Sample.Pages;
-
-namespace CommunityToolkit.Maui.Sample.Models;
+﻿namespace CommunityToolkit.Maui.Sample.Models;
 
 public sealed class SectionModel
 {
-	public SectionModel(in ContentPage page, in string title, in string description)
-		: this(page, title, new Color(), description)
+	public SectionModel(in string pagePath, in string title, in string description)
+		: this(pagePath, title, new Color(), description)
 	{
 	}
 
-	public SectionModel(in ContentPage page, in string title, in Color color, in string description)
+	public SectionModel(in string pagePath, in string title, in Color color, in string description)
 	{
-		if (string.IsNullOrWhiteSpace(page.Title))
-		{
-			page.Title = title;
-		}
-
-		Page = page;
+		PagePath = pagePath;
 		Title = title;
 		Description = description;
 		Color = color;
 	}
 
-	public ContentPage Page { get; }
+	public string PagePath { get; }
 
 	public string Title { get; }
 

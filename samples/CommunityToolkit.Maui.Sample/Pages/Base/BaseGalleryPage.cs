@@ -8,6 +8,20 @@ namespace CommunityToolkit.Maui.Sample.Pages;
 
 public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where TViewModel : BaseGalleryViewModel
 {
+	public BaseGalleryPage(string title)
+	{
+		Title = title;
+
+		Padding = 0;
+
+		Content = new CollectionView
+			{
+				SelectionMode = SelectionMode.Single,
+				ItemTemplate = new GalleryDataTemplate()
+			}.Bind(ItemsView.ItemsSourceProperty, nameof(BaseGalleryViewModel.Items))
+			.Invoke(collectionView => collectionView.SelectionChanged += HandleSelectionChanged);
+	}
+
 	public BaseGalleryPage(string title, TViewModel viewModel) : base(viewModel)
 	{
 		Title = title;
@@ -18,7 +32,7 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 		{
 			SelectionMode = SelectionMode.Single,
 			ItemTemplate = new GalleryDataTemplate()
-		}.Bind(CollectionView.ItemsSourceProperty, nameof(BaseGalleryViewModel.Items))
+		}.Bind(ItemsView.ItemsSourceProperty, nameof(BaseGalleryViewModel.Items))
 		 .Invoke(collectionView => collectionView.SelectionChanged += HandleSelectionChanged);
 	}
 
@@ -31,7 +45,7 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 
 		if (e.CurrentSelection.FirstOrDefault() is SectionModel sectionModel)
 		{
-			await Navigation.PushAsync(sectionModel.Page);
+			await Shell.Current.GoToAsync(sectionModel.PagePath);
 		}
 	}
 

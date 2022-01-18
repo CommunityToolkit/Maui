@@ -5,10 +5,10 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 
 public class AlertsGalleryViewModel : BaseGalleryViewModel
 {
-	public AlertsGalleryViewModel(SnackbarPage snackbarPage)
+	public AlertsGalleryViewModel()
 		: base(new[]
 		{
-			new SectionModel(snackbarPage, "Snackbar", "Show Snackbar")
+			new SectionModel("//alerts/SnackbarPage", "Snackbar", "Show Snackbar")
 		})
 	{
 	}

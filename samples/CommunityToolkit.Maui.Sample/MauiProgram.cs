@@ -34,7 +34,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<MainGalleryViewModel>();
 
 		// Add Alerts Pages
-		builder.Services.AddTransient<SnackbarPage>();
+		//builder.Services.AddTransient<SnackbarPage>();
 
 		// Add Alerts View Models
 
