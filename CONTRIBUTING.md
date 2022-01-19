@@ -72,7 +72,7 @@ In addition, we would want a new feature or change to be as clear as possible fo
 
 If you are unsure on where to locate the changes you need to make then please use the following section and flowchart.
 
-![](structure.png)
+![](https://user-images.githubusercontent.com/13558917/145694198-7addbd35-0e5f-4816-b351-759a01ec2672.png)
 
 ### CommunityToolkit.Maui.Core
 
