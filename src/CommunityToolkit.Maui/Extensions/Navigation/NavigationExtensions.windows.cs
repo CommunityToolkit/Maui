@@ -1,9 +1,6 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions.Workarounds;
 using CommunityToolkit.Maui.Views;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Extensions;
@@ -14,8 +11,12 @@ public static partial class NavigationExtensions
 	{
 		var window = mauiContext.GetNativeWindow().GetWindow();
 		popup.Parent = GetCurrentPage((Page)window!.Content);
-		CreateRenderer(popup, mauiContext);
+		//CreateRenderer(popup, mauiContext);
 		// https://github.com/xamarin/Xamarin.Forms/blob/0c95d0976cc089fe72476fb037851a64987de83c/Xamarin.Forms.Platform.iOS/PageExtensions.cs#L44
+		var native = popup.ToHandlerMCT(mauiContext);
+		//(native as PopupViewHandler)!.NativeView.Show();
+		native?.Invoke(nameof(IBasePopup.OnOpened));
+		//popupNative.Invoke(nameof(IBasePopup.OnOpened));
 		Page GetCurrentPage(Page currentPage)
 		{
 			if (currentPage.NavigationProxy.ModalStack.LastOrDefault() is Page modal)
@@ -62,6 +63,6 @@ public static partial class NavigationExtensions
 			throw new ArgumentNullException(nameof(element));
 		}
 
-		_ = element.ToNative(mauiContext);
+		//_ = element.ToHandler(mauiContext);
 	}
 }

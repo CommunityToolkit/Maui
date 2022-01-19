@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.PlatformConfiguration;
+﻿using WindowsPlatform = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 using MCTElement = CommunityToolkit.Maui.Views.BasePopup;
 using CommunityToolkit.Maui.Views;
 
@@ -16,7 +15,7 @@ public static class PopUp
 	public static Color GetBorderColor(BindableObject element) =>
 		(Color)element.GetValue(BorderColorProperty);
 
-	public static IPlatformElementConfiguration<Windows, MCTElement> SetBorderColor(this IPlatformElementConfiguration<Windows, MCTElement> config, Color value)
+	public static IPlatformElementConfiguration<WindowsPlatform, MCTElement> SetBorderColor(this IPlatformElementConfiguration<WindowsPlatform, MCTElement> config, Color value)
 	{
 		SetBorderColor(config.Element, value);
 		return config;
