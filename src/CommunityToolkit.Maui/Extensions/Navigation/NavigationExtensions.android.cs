@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Extensions.Workarounds;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui;
 using Microsoft.Maui.Platform;
