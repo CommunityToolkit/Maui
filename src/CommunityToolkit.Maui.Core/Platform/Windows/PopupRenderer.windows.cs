@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Core.Extensions.Workarounds;
-using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
@@ -11,7 +10,6 @@ using XamlStyle = Microsoft.UI.Xaml.Style;
 
 namespace CommunityToolkit.Core.Platform;
 
-
 public class PopupRenderer : Flyout
 {
 	const double defaultBorderThickness = 2;
@@ -22,7 +20,7 @@ public class PopupRenderer : Flyout
 	internal XamlStyle FlyoutStyle { get; set; } = new XamlStyle(typeof(FlyoutPresenter));
 	internal XamlStyle PanelStyle { get; set; } = new XamlStyle(typeof(Panel));
 
-	internal WrapperControl? Control { get; set; }
+	internal ViewToHandlerConverter.WrapperControl? Control { get; set; }
 	public IBasePopup? VirtualView { get; private set; }
 
 	public PopupRenderer(IMauiContext mauiContext)
@@ -34,8 +32,6 @@ public class PopupRenderer : Flyout
 	{
 		VirtualView = element;
 
-		var result = this.Content as FlyoutPresenter;
-
 		CreateControl();
 		ConfigureControl();
 		//Show();
@@ -45,7 +41,7 @@ public class PopupRenderer : Flyout
 	{
 		if (Control == null && VirtualView?.Content != null)
 		{
-			Control = new WrapperControl((View)VirtualView.Content, mauiContext);
+			Control = new ViewToHandlerConverter.WrapperControl((View)VirtualView.Content);
 			Content = Control;
 		}
 	}
@@ -54,7 +50,7 @@ public class PopupRenderer : Flyout
 	{
 		//InitializeStyles();
 		SetEvents();
-		SetColor();
+		SetFlyoutColor();
 		SetBorderColor();
 		SetSize();
 		//SetLayout();
@@ -130,7 +126,7 @@ public class PopupRenderer : Flyout
 		}
 	}
 
-	void SetColor()
+	void SetFlyoutColor()
 	{
 		_ = VirtualView?.Content ?? throw new NullReferenceException();
 
@@ -147,7 +143,7 @@ public class PopupRenderer : Flyout
 	public void ApplyStyles()
 	{
 		ArgumentNullException.ThrowIfNull(Control);
-		Control.Style = PanelStyle;
+		//Control.Style = PanelStyle;
 		FlyoutPresenterStyle = FlyoutStyle;
 	}
 
@@ -162,14 +158,14 @@ public class PopupRenderer : Flyout
 		if (VirtualView?.Anchor is not null)
 		{
 
-			var anchor = Microsoft.Maui.Platform.HandlerExtensions.ToNative(VirtualView.Anchor, mauiContext);
+			var anchor = VirtualView.Anchor.ToNative(mauiContext);
 			SetAttachedFlyout(anchor, this);
 			ShowAttachedFlyout(anchor);
 		}
 		else
 		{
 			ArgumentNullException.ThrowIfNull(VirtualView);
-			var frameworkElement = Microsoft.Maui.Platform.HandlerExtensions.ToNative(VirtualView.Parent, mauiContext);
+			var frameworkElement = VirtualView.Parent.ToNative(mauiContext);
 			frameworkElement.ContextFlyout = this;
 			SetAttachedFlyout(frameworkElement, this);
 			ShowAttachedFlyout(frameworkElement);

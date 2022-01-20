@@ -1,4 +1,5 @@
-﻿using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
+﻿using IElement = Microsoft.Maui.IElement;
+using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
 namespace CommunityToolkit.Maui.Core;
 
