@@ -20,7 +20,7 @@ public static partial class NavigationExtensions
 	/// The <see cref="BasePopup"/> to display.
 	/// </param>
 	public static void ShowPopup(this INavigation navigation, BasePopup popup) =>
-		PlatformShowPopup(popup, navigation.NavigationStack[0].Handler.MauiContext!);
+		PlatformShowPopup(popup, navigation.NavigationStack[0].Handler?.MauiContext ?? throw new NullReferenceException(nameof(MauiContext)));
 
 	/// <summary>
 	/// Displays a popup and returns a result.
@@ -38,5 +38,5 @@ public static partial class NavigationExtensions
 	/// A task that will complete once the <see cref="Popup{T}"/> is dismissed.
 	/// </returns>
 	public static Task<T?> ShowPopupAsync<T>(this INavigation navigation, Popup<T?> popup) =>
-		PlatformShowPopupAsync(popup, navigation.NavigationStack[0].Handler.MauiContext!);
+		PlatformShowPopupAsync(popup, navigation.NavigationStack[0].Handler?.MauiContext ?? throw new NullReferenceException(nameof(MauiContext)));
 }

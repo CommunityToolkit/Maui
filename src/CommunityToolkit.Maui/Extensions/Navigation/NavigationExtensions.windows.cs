@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Extensions.Workarounds;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Platform;
 
@@ -13,7 +12,7 @@ public static partial class NavigationExtensions
 		popup.Parent = GetCurrentPage((Page)window!.Content);
 		//CreateRenderer(popup, mauiContext);
 		// https://github.com/xamarin/Xamarin.Forms/blob/0c95d0976cc089fe72476fb037851a64987de83c/Xamarin.Forms.Platform.iOS/PageExtensions.cs#L44
-		var native = popup.ToHandlerMCT(mauiContext);
+		var native = popup.ToHandler(mauiContext);
 		//(native as PopupViewHandler)!.NativeView.Show();
 		native?.Invoke(nameof(IBasePopup.OnOpened));
 		//popupNative.Invoke(nameof(IBasePopup.OnOpened));
