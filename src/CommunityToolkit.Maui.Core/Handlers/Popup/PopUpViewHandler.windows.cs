@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Core.Platform;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Handlers;
-using Microsoft.UI.Xaml.Controls;
 
 namespace CommunityToolkit.Core.Handlers;
 
@@ -18,8 +17,11 @@ public partial class PopupViewHandler : ElementHandler<IBasePopup, PopupRenderer
 		nativeView.SetElement(VirtualView);
 		base.ConnectHandler(nativeView);
 	}
+
 	public static void MapOnDismissed(PopupViewHandler handler, IBasePopup view, object? result)
 	{
+
+		handler.DisconnectHandler(handler.NativeView);
 	}
 
 	public static void MapOnOpened(PopupViewHandler handler, IBasePopup view, object? result)
@@ -29,15 +31,8 @@ public partial class PopupViewHandler : ElementHandler<IBasePopup, PopupRenderer
 
 	public static void MapOnLightDismiss(PopupViewHandler handler, IBasePopup view, object? result)
 	{
-		if (handler.NativeView is not PopupRenderer nativeView)
-		{
-			return;
-		}
-
-		if (nativeView.LightDismissOverlayMode != LightDismissOverlayMode.Off && nativeView.IsOpen)
-		{
-			view.LightDismiss();
-		}
+		view.LightDismiss();
+		handler.DisconnectHandler(handler.NativeView);
 	}
 
 	public static void MapAnchor(PopupViewHandler handler, IBasePopup view)
@@ -56,7 +51,7 @@ public partial class PopupViewHandler : ElementHandler<IBasePopup, PopupRenderer
 
 	protected override void DisconnectHandler(PopupRenderer nativeView)
 	{
-		base.DisconnectHandler(nativeView);
+		nativeView.CleanUp();
 	}
 
 	public static void MapSize(PopupViewHandler handler, IBasePopup view)

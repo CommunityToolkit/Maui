@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Core.Extensions.Workarounds;
+using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
@@ -15,12 +16,10 @@ public class PopupRenderer : Flyout
 	const double defaultBorderThickness = 2;
 	const double defaultSize = 600;
 	readonly IMauiContext mauiContext;
-	bool isDisposed = false;
 
 	internal XamlStyle FlyoutStyle { get; set; } = new XamlStyle(typeof(FlyoutPresenter));
-	internal XamlStyle PanelStyle { get; set; } = new XamlStyle(typeof(Panel));
 
-	internal ViewToHandlerConverter.WrapperControl? Control { get; set; }
+	internal WrapperControl? Control { get; set; }
 	public IBasePopup? VirtualView { get; private set; }
 
 	public PopupRenderer(IMauiContext mauiContext)
@@ -34,21 +33,20 @@ public class PopupRenderer : Flyout
 
 		CreateControl();
 		ConfigureControl();
-		//Show();
 	}
 
 	void CreateControl()
 	{
 		if (Control == null && VirtualView?.Content != null)
 		{
-			Control = new ViewToHandlerConverter.WrapperControl((View)VirtualView.Content);
+			VirtualView.Handler?.SetMauiContext(mauiContext);
+			Control = new WrapperControl((View)VirtualView.Content, mauiContext);
 			Content = Control;
 		}
 	}
 
 	void ConfigureControl()
 	{
-		//InitializeStyles();
 		SetEvents();
 		SetFlyoutColor();
 		SetBorderColor();
@@ -59,17 +57,7 @@ public class PopupRenderer : Flyout
 
 	void SetEvents()
 	{
-		if (VirtualView?.IsLightDismissEnabled is true)
-		{
-			//Closing += OnClosing;
-		}
-
-		if (VirtualView != null)
-		{
-			//Element.Dismissed += OnDismissed;
-		}
-
-		Opened += OnOpened;
+		Closing += OnClosing;
 	}
 
 	void SetSize()
@@ -90,10 +78,10 @@ public class PopupRenderer : Flyout
 
 	void SetLayout()
 	{
-		this.Closing += (sender, e) =>
-		  {
-			  e.Cancel = true;
-		  };
+		//this.Closing += (sender, e) =>
+		//  {
+
+		//  };
 
 		LightDismissOverlayMode = LightDismissOverlayMode.On;
 		if (VirtualView is not null)
@@ -104,14 +92,11 @@ public class PopupRenderer : Flyout
 
 	void SetBorderColor()
 	{
-		_ = FlyoutStyle ?? throw new NullReferenceException();
-
 		FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.PaddingProperty, 0));
 		FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.BorderThicknessProperty, new UWPThickness(defaultBorderThickness)));
 
 		if (VirtualView is null)
 		{
-			//Log.Warning("warning", "The PopUpView is null.");
 			return;
 		}
 
@@ -128,7 +113,7 @@ public class PopupRenderer : Flyout
 
 	void SetFlyoutColor()
 	{
-		_ = VirtualView?.Content ?? throw new NullReferenceException();
+		_ = VirtualView?.Content ?? throw new NullReferenceException(nameof(IBasePopup.Content));
 
 		var color = VirtualView.Color ?? Colors.Transparent;
 
@@ -227,75 +212,30 @@ public class PopupRenderer : Flyout
 		bool IsLeft() => verticalOptions == LayoutAlignment.Center && horizontalOptions == LayoutAlignment.Start;
 	}
 
-	//SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
-	//{
-	//	if (isDisposed || Control == null)
-	//	{
-	//		return default(SizeRequest);
-	//	}
-
-	//	var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
-	//	Control.Measure(constraint);
-
-	//	var size = new Size(Math.Ceiling(Control.DesiredSize.Width), Math.Ceiling(Control.DesiredSize.Height));
-	//	return new SizeRequest(size);
-	//}
-
-	// The UWP PopupRenderer needs to maintain it's own version of
-	// `isOpen` because our popup lifecycle differs slightly from
-	// the UWP version of `IsOpen`. Without this variable usages
-	// in OnDismissed and OnClosing will not work as expected.
-	bool isOpen = true;
-
-	void OnDismissed(object? sender, PopupDismissedEventArgs e)
+	void OnClosing(object? sender, FlyoutBaseClosingEventArgs e)
 	{
-		if (!isOpen)
+		var isLightDismissEnabled = VirtualView?.IsLightDismissEnabled is true;
+		if (!isLightDismissEnabled)
 		{
-			return;
+			e.Cancel = true;
 		}
 
-		isOpen = false;
-		Hide();
-	}
-
-	void OnClosing(object? sender, object e)
-	{
-		if (isOpen && VirtualView?.IsLightDismissEnabled is true)
+		if (IsOpen && isLightDismissEnabled)
 		{
-			VirtualView.LightDismiss();
+			VirtualView?.Handler?.Invoke(nameof(IBasePopup.LightDismiss));
 		}
 	}
 
-	void OnOpened(object? sender, object e) =>
-		isOpen = true;
-
-	public void Dispose()
+	public void CleanUp()
 	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
-	}
-
-	protected virtual void Dispose(bool disposing)
-	{
-		if (!isDisposed && disposing)
+		if (Control is not null)
 		{
-			if (VirtualView != null)
-			{
-				//	Element.Dismissed -= OnDismissed;
-			}
-
-			if (Control != null)
-			{
-				Control.CleanUp();
-			}
-
-			VirtualView = null;
-			Control = null;
-
-			//Closing -= OnClosing;
-			Opened -= OnOpened;
+			Control.CleanUp();
 		}
 
-		isDisposed = true;
+		VirtualView = null;
+		Control = null;
+
+		Closing -= OnClosing;
 	}
 }

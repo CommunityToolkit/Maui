@@ -12,10 +12,7 @@ public partial class PopupViewHandler : ElementHandler<IBasePopup, MCTPopup>
 
 	public static void MapOnDismissed(PopupViewHandler handler, IBasePopup view, object? result)
 	{
-		if (handler.NativeView is not MCTPopup popup)
-		{
-			return;
-		}
+		var popup = handler.NativeView;
 
 		if (popup.IsShowing)
 		{
