@@ -43,8 +43,9 @@ jobs:
     steps:
       - powershell: |
             wget https://dot.net/v1/dotnet-install.ps1 -OutFile C:\dotnet-install.ps1
-            C:\dotnet-install.ps1 -Version 6.0.200-preview.22055.15 -InstallDir 'C:\Program Files\dotnet\sdk'
+            C:\dotnet-install.ps1 -Version 6.0.200-preview.22055.15
             dotnet --info
+            Write-Host "##vso[task.prependpath]C:\\Users\\VssAdministrator\\AppData\\Local\\Microsoft\\dotnet"
         displayName: Install .NET 6.0.200-preview.22055.15
       - task: CmdLine@2
         displayName: 'Install .NET MAUI Workload'
