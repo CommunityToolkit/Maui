@@ -52,10 +52,10 @@ jobs:
             dotnet workload install maui
         displayName: 'Install .NET MAUI workload'
       - task: PowerShell@2
-        displayName: 'Global Json'
+        displayName: 'Set Global JSON for 6.0.200-preview.22055.15'
         inputs:
           targetType: 'inline'
-          script: 'dotnet new globaljson --sdk-version 3.0.100-preview9-014004'
+          script: 'dotnet new globaljson --sdk-version 6.0.200-preview.22055.15 --force'
       # if this is a tagged build, then update the version number
       - powershell: |
           $buildSourceBranch = "$(Build.SourceBranch)"
