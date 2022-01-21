@@ -9,6 +9,7 @@ variables:
   PathToCommunityToolkitCoreCsproj: 'src/CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
+  VisualStudioVersion: '17.1.0'
   XcodeVersion: '13.2'
 
 trigger:
@@ -73,6 +74,7 @@ jobs:
         inputs:
           solution: '$(PathToCommunityToolkitSampleCsproj)'
           configuration: 'Release'
+          vsVersion: '$(VisualStudioVersion)'
           msbuildArgs: '/restore'
       - task: VSBuild@1
         displayName: 'Build and Pack CommunityToolkit.Maui.Core'
