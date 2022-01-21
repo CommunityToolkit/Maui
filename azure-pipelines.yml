@@ -135,10 +135,7 @@ jobs:
           script: |
             curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 6.0.200-preview.22055.15 --quality preview
             dotnet --info
-      - task: CmdLine@2
-        displayName: 'Install .NET MAUI workload'
-        inputs:
-          script: 'dotnet workload install maui'
+            dotnet workload install maui
       - task: CmdLine@2
         displayName: 'Build Community Toolkit'
         inputs:
