@@ -16,6 +16,9 @@ public static class AppBuilderExtensions
 	/// <returns><see cref="MauiAppBuilder"/> initialized for <see cref="CommunityToolkit.Maui"/></returns>
 	public static MauiAppBuilder UseMauiCommunityToolkit(this MauiAppBuilder builder)
 	{
+#if WINDOWS
+		Popup.RemapForControls();
+#endif
 		builder.ConfigureMauiHandlers(h =>
 		{
 		   h.AddHandler(typeof(BasePopup), typeof(PopupViewHandler));

@@ -20,7 +20,6 @@ public partial class PopupViewHandler : ElementHandler<IBasePopup, PopupRenderer
 
 	public static void MapOnDismissed(PopupViewHandler handler, IBasePopup view, object? result)
 	{
-
 		handler.DisconnectHandler(handler.NativeView);
 	}
 

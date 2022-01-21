@@ -18,7 +18,6 @@ public class PopupRenderer : Flyout
 	readonly IMauiContext mauiContext;
 
 	internal XamlStyle FlyoutStyle { get; set; } = new XamlStyle(typeof(FlyoutPresenter));
-
 	internal WrapperControl? Control { get; set; }
 	public IBasePopup? VirtualView { get; private set; }
 
@@ -37,9 +36,8 @@ public class PopupRenderer : Flyout
 
 	void CreateControl()
 	{
-		if (Control == null && VirtualView?.Content != null)
+		if (Control is null && VirtualView?.Content is not null)
 		{
-			VirtualView.Handler?.SetMauiContext(mauiContext);
 			Control = new WrapperControl((View)VirtualView.Content, mauiContext);
 			Content = Control;
 		}
@@ -49,9 +47,8 @@ public class PopupRenderer : Flyout
 	{
 		SetEvents();
 		SetFlyoutColor();
-		SetBorderColor();
+		//SetBorderColor();
 		SetSize();
-		//SetLayout();
 		ApplyStyles();
 	}
 
@@ -78,11 +75,6 @@ public class PopupRenderer : Flyout
 
 	void SetLayout()
 	{
-		//this.Closing += (sender, e) =>
-		//  {
-
-		//  };
-
 		LightDismissOverlayMode = LightDismissOverlayMode.On;
 		if (VirtualView is not null)
 		{
@@ -90,7 +82,7 @@ public class PopupRenderer : Flyout
 		}
 	}
 
-	void SetBorderColor()
+	public void SetBorderColor(Color borderColor)
 	{
 		FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.PaddingProperty, 0));
 		FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.BorderThicknessProperty, new UWPThickness(defaultBorderThickness)));
@@ -100,8 +92,8 @@ public class PopupRenderer : Flyout
 			return;
 		}
 
-		var borderColor = Colors.Red; // Specific.GetBorderColor(Element);
-		if (borderColor == default(Color))
+		//var borderColor = Colors.Red; // Specific.GetBorderColor(Element);
+		if (borderColor is null)
 		{
 			FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.BorderBrushProperty, Color.FromHex("#2e6da0").ToNative()));
 		}
@@ -128,7 +120,6 @@ public class PopupRenderer : Flyout
 	public void ApplyStyles()
 	{
 		ArgumentNullException.ThrowIfNull(Control);
-		//Control.Style = PanelStyle;
 		FlyoutPresenterStyle = FlyoutStyle;
 	}
 
@@ -138,18 +129,17 @@ public class PopupRenderer : Flyout
 		{
 			return;
 		}
+
 		ArgumentNullException.ThrowIfNull(VirtualView.Parent);
 
-		if (VirtualView?.Anchor is not null)
+		if (VirtualView.Anchor is not null)
 		{
-
 			var anchor = VirtualView.Anchor.ToNative(mauiContext);
 			SetAttachedFlyout(anchor, this);
 			ShowAttachedFlyout(anchor);
 		}
 		else
 		{
-			ArgumentNullException.ThrowIfNull(VirtualView);
 			var frameworkElement = VirtualView.Parent.ToNative(mauiContext);
 			frameworkElement.ContextFlyout = this;
 			SetAttachedFlyout(frameworkElement, this);
