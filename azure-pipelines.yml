@@ -9,7 +9,6 @@ variables:
   PathToCommunityToolkitCoreCsproj: 'src/CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
-  VisualStudioVersion: '17.1.0'
   XcodeVersion: '13.2'
 
 trigger:
@@ -39,6 +38,8 @@ jobs:
     displayName: Build Windows Library
     pool:
       vmImage: windows-2022
+    variables: 
+      MSBuildSDKsPath: 'C:\\hostedtoolcache\\windows\\dotnet\\sdk\\6.0.200-preview.22055.15\\sdks'
     steps:
       - powershell: |
             wget https://dot.net/v1/dotnet-install.ps1 -OutFile C:\dotnet-install.ps1
@@ -50,6 +51,11 @@ jobs:
             dotnet --info
             dotnet workload install maui
         displayName: 'Install .NET MAUI workload'
+      - task: PowerShell@2
+        displayName: 'Global Json'
+        inputs:
+          targetType: 'inline'
+          script: 'dotnet new globaljson --sdk-version 3.0.100-preview9-014004'
       # if this is a tagged build, then update the version number
       - powershell: |
           $buildSourceBranch = "$(Build.SourceBranch)"
@@ -74,7 +80,6 @@ jobs:
         inputs:
           solution: '$(PathToCommunityToolkitSampleCsproj)'
           configuration: 'Release'
-          vsVersion: '$(VisualStudioVersion)'
           msbuildArgs: '/restore'
       - task: VSBuild@1
         displayName: 'Build and Pack CommunityToolkit.Maui.Core'
