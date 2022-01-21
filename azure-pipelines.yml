@@ -38,8 +38,6 @@ jobs:
     displayName: Build Windows Library
     pool:
       vmImage: windows-2022
-    variables: 
-      MSBuildSDKsPath: '/c/Users/VssAdministrator/AppData/Local/Microsoft/dotnet/6.0.200-preview.22055.15/sdks'
     steps:
       - powershell: |
             wget https://dot.net/v1/dotnet-install.ps1 -OutFile C:\dotnet-install.ps1
