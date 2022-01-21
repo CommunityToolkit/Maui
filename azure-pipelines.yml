@@ -44,13 +44,11 @@ jobs:
             C:\dotnet-install.ps1 -Version 6.0.200-preview.22055.15
             dotnet --info
         displayName: Install .NET 6.0.200-preview.22055.15
-      - task: CmdLine@2
-        displayName: 'Install .NET MAUI workload'
-        inputs:
-          script: |
+      - bash: |
             export PATH=/c/Users/VssAdministrator/AppData/Local/Microsoft/dotnet:$PATH
             dotnet --info
             dotnet workload install maui
+        displayName: 'Install .NET MAUI workload'
       # if this is a tagged build, then update the version number
       - powershell: |
           $buildSourceBranch = "$(Build.SourceBranch)"
