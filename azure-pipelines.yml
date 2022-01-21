@@ -41,7 +41,7 @@ jobs:
     steps:
       - powershell: |
             wget https://dot.net/v1/dotnet-install.ps1 -OutFile C:\dotnet-install.ps1
-            ./dotnet-install.ps1 -Quality preview
+            C:\dotnet-install.ps1 -Quality preview
             dotnet --info
         displayName: Install .NET 6.0.200-preview
       - task: CmdLine@2
