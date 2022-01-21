@@ -39,11 +39,6 @@ jobs:
     pool:
       vmImage: windows-2022
     steps:
-      - task: UseDotNet@2
-        displayName: 'Install .NET SDK'
-        inputs:
-          version: 6.0.200-preview.22069.5
-          includePreviewVersions: true
       - powershell: |
             wget https://dot.net/v1/dotnet-install.ps1
             ./dotnet-install.ps1 -Version 6.0.200-preview.22069.5 -Quality preview
