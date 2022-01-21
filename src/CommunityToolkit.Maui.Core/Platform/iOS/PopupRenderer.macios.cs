@@ -12,7 +12,7 @@ public class PopupRenderer : UIViewController
 
 	public PageHandler? Control { get; private set; }
 
-	public IBasePopup? Element { get; private set; }
+	public IBasePopup? VirtualView { get; private set; }
 
 	public UIView? NativeView => View;
 
@@ -40,8 +40,8 @@ public class PopupRenderer : UIViewController
 	{
 		base.ViewDidAppear(animated);
 
-		_ = Element ?? throw new InvalidOperationException($"{nameof(Element)} cannot be null");
-		ModalInPopover = !Element.IsLightDismissEnabled;
+		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null");
+		ModalInPopover = !VirtualView.IsLightDismissEnabled;
 	}
 
 	//public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint) =>
@@ -49,12 +49,7 @@ public class PopupRenderer : UIViewController
 
 	public void SetElement(IBasePopup element)
 	{
-		if (element is not IBasePopup)
-		{
-			throw new ArgumentException(nameof(element), "Element is not of type " + typeof(IBasePopup));
-		}
-
-		Element = element;
+		VirtualView = element;
 		ModalPresentationStyle = UIModalPresentationStyle.Popover;
 		CreateControl();
 		SetViewController();
@@ -65,15 +60,14 @@ public class PopupRenderer : UIViewController
 
 	void CreateControl()
 	{
-		_ = Element ?? throw new NullReferenceException($"{nameof(Element)} cannot be null.");
+		_ = VirtualView ?? throw new NullReferenceException($"{nameof(VirtualView)} cannot be null.");
 
-		var view = (View?)Element.Content;
-		var contentPage = new ContentPage { Content = view };
-
-		Control = (PageHandler)contentPage.ToHandler(mauiContext);
+		var view = (View?)VirtualView.Content;
+		var contentPage = new ContentPage { Content = view, BackgroundColor = Colors.Orange };
 
 		contentPage.Parent = Application.Current?.MainPage;
-		contentPage.SetBinding(VisualElement.BindingContextProperty, new Binding { Source = Element, Path = VisualElement.BindingContextProperty.PropertyName });
+		//contentPage.SetBinding(VisualElement.BindingContextProperty, new Binding { Source = VirtualView, Path = VisualElement.BindingContextProperty.PropertyName });
+		Control = (PageHandler)contentPage.ToHandler(mauiContext);
 	}
 
 	void SetViewController()
@@ -124,22 +118,22 @@ public class PopupRenderer : UIViewController
 
 	void HandlePopoverDelegateDismissed(object? sender, UIPresentationController e)
 	{
-		_ = Element ?? throw new NullReferenceException($"{nameof(Element)} cannot be null.");
+		_ = VirtualView ?? throw new NullReferenceException($"{nameof(VirtualView)} cannot be null.");
 
-		if (Element.Handler is null)
+		if (VirtualView.Handler is null)
 		{
 			return;
 		}
 
-		Element.Handler.Invoke(nameof(IBasePopup.LightDismiss));
+		VirtualView.Handler.Invoke(nameof(IBasePopup.LightDismiss));
 	}
 
 	void AddToCurrentPageViewController()
 	{
 		_ = ViewController ?? throw new NullReferenceException($"{nameof(ViewController)} cannot be null.");
-		_ = Element ?? throw new NullReferenceException($"{nameof(Element)} cannot be null.");
+		_ = VirtualView ?? throw new NullReferenceException($"{nameof(VirtualView)} cannot be null.");
 
-		ViewController.PresentViewController(this, true, () => Element.Handler?.Invoke(nameof(IBasePopup.OnOpened)));
+		ViewController.PresentViewController(this, true, () => VirtualView.Handler?.Invoke(nameof(IBasePopup.OnOpened)));
 	}
 
 	protected override void Dispose(bool disposing)
@@ -152,9 +146,9 @@ public class PopupRenderer : UIViewController
 		isDisposed = true;
 		if (disposing)
 		{
-			if (Element != null)
+			if (VirtualView != null)
 			{
-				Element = null;
+				VirtualView = null;
 
 				var presentationController = (UIPopoverPresentationController)PresentationController;
 				if (presentationController != null)

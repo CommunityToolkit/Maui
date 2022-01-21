@@ -10,7 +10,7 @@ using UIKit;
 namespace CommunityToolkit.Core.Platform;
 public static class PopupExtensions
 {
-	public static void SetSize(this UIViewController popup, in IBasePopup basepopup)
+	public static void SetSize(this PopupRenderer popup, in IBasePopup basepopup)
 	{
 		if (!basepopup.Size.IsZero)
 		{
@@ -18,17 +18,17 @@ public static class PopupExtensions
 		}
 	}
 
-	public static void SetBackgroundColor(this UIViewController popup, in IBasePopup basePopup)
+	public static void SetBackgroundColor(this PopupRenderer popup, in IBasePopup basePopup)
 	{
-		if (popup.View is null || basePopup.Color is null)
+		if (popup.Control is null || basePopup.Color is null)
 		{
 			return;
 		}
 
-		popup.View.BackgroundColor = basePopup.Color.ToNative();
+		popup.Control.NativeView.BackgroundColor = basePopup.Color.ToNative();
 	}
 
-	public static void SetLayout(this UIViewController popup, in IBasePopup basepopup)
+	public static void SetLayout(this PopupRenderer popup, in IBasePopup basepopup)
 	{
 		var presentationController = popup.PresentationController;
 		var preferredContentSize = popup.PreferredContentSize;
