@@ -43,11 +43,8 @@ jobs:
             wget https://dot.net/v1/dotnet-install.ps1 -OutFile C:\dotnet-install.ps1
             C:\dotnet-install.ps1 -Version 6.0.200-preview.22055.15
             dotnet --info
+            dotnet workload install maui
         displayName: Install .NET 6.0.200-preview.22055.15
-      - task: CmdLine@2
-        displayName: 'Install .NET MAUI workload'
-        inputs:
-          script: 'dotnet workload install maui'
       # if this is a tagged build, then update the version number
       - powershell: |
           $buildSourceBranch = "$(Build.SourceBranch)"
@@ -135,7 +132,10 @@ jobs:
           script: |
             curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 6.0.200-preview.22055.15 --quality preview
             dotnet --info
-            dotnet workload install maui
+      - task: CmdLine@2
+        displayName: 'Install .NET MAUI workload'
+        inputs:
+          script: 'dotnet workload install maui'
       - task: CmdLine@2
         displayName: 'Build Community Toolkit'
         inputs:
