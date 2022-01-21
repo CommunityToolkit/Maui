@@ -43,7 +43,7 @@ jobs:
     steps:
       - powershell: |
             wget https://dot.net/v1/dotnet-install.ps1 -OutFile C:\dotnet-install.ps1
-            C:\dotnet-install.ps1 -Version 6.0.200-preview.22055.15
+            C:\dotnet-install.ps1 -Version 6.0.200-preview.22055.15 --install-dir C:\Program Files\dotnet\sdk
             dotnet --info
         displayName: Install .NET 6.0.200-preview.22055.15
       - bash: |
