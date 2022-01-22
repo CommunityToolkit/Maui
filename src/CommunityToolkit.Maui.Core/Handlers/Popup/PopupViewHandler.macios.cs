@@ -47,6 +47,7 @@ public partial class PopupViewHandler : ElementHandler<IBasePopup, PopupRenderer
 
 	public static void MapLightDismiss(PopupViewHandler handler, IBasePopup view)
 	{
+		handler.NativeView?.SetLightDismiss(view);
 	}
 
 	public static void MapColor(PopupViewHandler handler, IBasePopup view)

@@ -19,7 +19,6 @@ public abstract class BasePopup : Element, IElementConfiguration<BasePopup>, IBa
 	{
 		VerticalOptions = LayoutAlignment.Center;
 		HorizontalOptions = LayoutAlignment.Center;
-		IsLightDismissEnabled = true;
 		platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<BasePopup>>(() => new(this));
 	}
 
@@ -32,6 +31,7 @@ public abstract class BasePopup : Element, IElementConfiguration<BasePopup>, IBa
 
 	public static readonly BindableProperty ColorProperty = BindableProperty.Create(nameof(Color), typeof(Color), typeof(BasePopup), default);
 	public static readonly BindableProperty SizeProperty = BindableProperty.Create(nameof(Size), typeof(Size), typeof(BasePopup), default(Size));
+	public static readonly BindableProperty IsLightDismissEnabledProperty = BindableProperty.Create(nameof(IsLightDismissEnabled), typeof(bool), typeof(BasePopup), true);
 
 	public static readonly BindableProperty VerticalOptionsProperty = BindableProperty.Create(nameof(VerticalOptions), typeof(LayoutAlignment), typeof(BasePopup), LayoutAlignment.Center);
 	
@@ -112,7 +112,11 @@ public abstract class BasePopup : Element, IElementConfiguration<BasePopup>, IBa
 	/// When true and the user taps outside of the popup it will dismiss.
 	/// On Android - when false the hardware back button is disabled.
 	/// </remarks>
-	public bool IsLightDismissEnabled { get; set; }
+	public bool IsLightDismissEnabled
+	{
+		get => (bool)GetValue(IsLightDismissEnabledProperty);
+		set => SetValue(IsLightDismissEnabledProperty, value);
+	}
 
 	IView? IBasePopup.Anchor => Anchor;
 
