@@ -22,7 +22,6 @@ public class PopupRenderer : UIViewController
 	public PopupRenderer(IMauiContext mauiContext)
 	{
 		this.mauiContext = mauiContext;
-		ModalInPopover = true;
 	}
 
 	public void SetElementSize(Size size) =>
@@ -35,17 +34,6 @@ public class PopupRenderer : UIViewController
 		_ = View ?? throw new InvalidOperationException($"{nameof(View)} cannot be null");
 		SetElementSize(new Size(View.Bounds.Width, View.Bounds.Height));
 	}
-
-	public override void ViewDidAppear(bool animated)
-	{
-		base.ViewDidAppear(animated);
-
-		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null");
-		ModalInPopover = !VirtualView.IsLightDismissEnabled;
-	}
-
-	//public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint) =>
-	//	NativeView.GetSizeRequest(widthConstraint, heightConstraint);
 
 	public void SetElement(IBasePopup element)
 	{

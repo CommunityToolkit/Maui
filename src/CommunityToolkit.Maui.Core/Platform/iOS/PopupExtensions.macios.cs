@@ -24,6 +24,11 @@ public static class PopupExtensions
 		popup.Control.NativeView.BackgroundColor = color;
 	}
 
+	public static void SetLightDismiss(this PopupRenderer popup, in IBasePopup basepopup)
+	{
+		popup.ModalInPopover = !basepopup.IsLightDismissEnabled;
+	}
+
 	public static void SetLayout(this PopupRenderer popup, in IBasePopup basepopup)
 	{
 		var presentationController = popup.PresentationController;
