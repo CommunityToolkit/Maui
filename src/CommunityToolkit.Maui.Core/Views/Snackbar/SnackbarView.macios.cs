@@ -83,8 +83,8 @@ public class SnackbarView : ToastView, IDisposable
 	/// </summary>
 	public UIFont ActionButtonFont
 	{
-		get => actionButton.Font;
-		private init => actionButton.Font = value;
+		get => actionButton.TitleLabel.Font;
+		private init => actionButton.TitleLabel.Font = value;
 	}
 
 	/// <summary>
