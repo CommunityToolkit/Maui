@@ -66,7 +66,7 @@ public class PopupRenderer : UIViewController
 		var contentPage = new ContentPage { Content = view, BackgroundColor = Colors.Orange };
 
 		contentPage.Parent = Application.Current?.MainPage;
-		//contentPage.SetBinding(VisualElement.BindingContextProperty, new Binding { Source = VirtualView, Path = VisualElement.BindingContextProperty.PropertyName });
+		contentPage.SetBinding(VisualElement.BindingContextProperty, new Binding { Source = VirtualView, Path = VisualElement.BindingContextProperty.PropertyName });
 		Control = (PageHandler)contentPage.ToHandler(mauiContext);
 	}
 

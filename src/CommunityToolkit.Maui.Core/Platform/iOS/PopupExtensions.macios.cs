@@ -1,11 +1,7 @@
 ﻿using CommunityToolkit.Maui.Core;
-//using CommunityToolkit.Maui.Extensions.Workarounds;
 using CoreGraphics;
 using Microsoft.Maui.Platform;
-using Microsoft.Maui.Primitives;
 using UIKit;
-//using PopoverArrowDirection = CommunityToolkit.Maui.PlatformConfiguration.iOSSpecific.PopoverArrowDirection;
-//using Specifics = CommunityToolkit.Maui.PlatformConfiguration.iOSSpecific.PopUp;
 
 namespace CommunityToolkit.Core.Platform;
 public static class PopupExtensions
@@ -20,12 +16,12 @@ public static class PopupExtensions
 
 	public static void SetBackgroundColor(this PopupRenderer popup, in IBasePopup basePopup)
 	{
-		if (popup.Control is null || basePopup.Color is null)
+		if (popup.Control is null)
 		{
 			return;
 		}
-
-		popup.Control.NativeView.BackgroundColor = basePopup.Color.ToNative();
+		var color = basePopup.Color?.ToNative() ?? null;
+		popup.Control.NativeView.BackgroundColor = color;
 	}
 
 	public static void SetLayout(this PopupRenderer popup, in IBasePopup basepopup)
@@ -56,27 +52,9 @@ public static class PopupExtensions
 		}
 		else
 		{
-			//if (basepopup is not BasePopup bp)
-			//{
-			//	throw new ArgumentException(nameof(basepopup), $"{nameof(basepopup)} must be an {typeof(BasePopup)}.");
-			//}
-
-			//popup.SetLayout(basepopup);
-			//var view = basepopup.Anchor.ToNative(basepopup.Handler?.MauiContext ?? throw new NullReferenceException());
-			//popup.PopoverPresentationController.SourceView = view;
-			//popup.PopoverPresentationController.SourceRect = view.Bounds;
-
-			//var arrowDirection = Specifics.GetArrowDirection(bp);
-			//popup.PopoverPresentationController.PermittedArrowDirections = arrowDirection switch
-			//{
-			//	PopoverArrowDirection.Up => UIPopoverArrowDirection.Up,
-			//	PopoverArrowDirection.Down => UIPopoverArrowDirection.Down,
-			//	PopoverArrowDirection.Left => UIPopoverArrowDirection.Left,
-			//	PopoverArrowDirection.Right => UIPopoverArrowDirection.Right,
-			//	PopoverArrowDirection.Any => UIPopoverArrowDirection.Any,
-			//	PopoverArrowDirection.Unknown => UIPopoverArrowDirection.Unknown,
-			//	_ => 0
-			//};
+			var view = basepopup.Anchor.ToNative(basepopup.Handler?.MauiContext ?? throw new NullReferenceException());
+			popup.PopoverPresentationController.SourceView = view;
+			popup.PopoverPresentationController.SourceRect = view.Bounds;
 		}
 	}
 }

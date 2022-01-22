@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Core;
 public interface IBasePopup : IElement
 {
 	IView? Anchor { get; }
-	Color Color { get; }
+	Color? Color { get; }
 	IView? Content { get; }
 	LayoutAlignment HorizontalOptions { get; }
 	bool IsLightDismissEnabled { get; }
