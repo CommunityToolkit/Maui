@@ -29,9 +29,7 @@ class WrapperControl : Panel
 		this.view = view;
 		this.view.MeasureInvalidated += OnMeasureInvalidated;
 
-		//TODO: When p12 releases uncomment this line
-		//FrameworkElement = view.ToNative(mauiContext, true);
-		FrameworkElement = view.ToNative(mauiContext);
+		FrameworkElement = view.ToNative(mauiContext, true);
 		Children.Add(FrameworkElement);
 
 		// make sure we re-measure once the template is applied
