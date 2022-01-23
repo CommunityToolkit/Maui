@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CommunityToolkit.Maui.Sample.PopupPositionPage"
+             xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views.Popups"
+             Title="PopupPositionPage"
+             BackgroundColor="White">
+
+    <ContentPage.BindingContext>
+        <viewModels:PopupPositionViewModel />
+    </ContentPage.BindingContext>
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Style x:Key="Header" TargetType="Label">
+                <Setter Property="VerticalOptions" Value="CenterAndExpand" />
+                <Setter Property="HorizontalOptions" Value="CenterAndExpand" />
+                <Setter Property="Margin" Value="15, 10" />
+            </Style>
+            <Style TargetType="ScrollView">
+                <Setter Property="VerticalOptions" Value="FillAndExpand" />
+            </Style>
+            <Style x:Key="ItemsLayout" TargetType="StackLayout">
+                <Setter Property="Spacing" Value="16" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <VerticalStackLayout>
+        <ScrollView>
+            <VerticalStackLayout>
+                <Label Style="{StaticResource Header}"
+                           Text="Popup's can be positioned anywhere on the screen using VerticalOptions and HorizontalOptions. Tap the arrows below to see how this works." />
+                <Grid HorizontalOptions="CenterAndExpand"
+                          VerticalOptions="CenterAndExpand">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Row="0"
+                                Grid.Column="0"
+                                Text="&#x2196;"
+                                FontSize="18" 
+                                Command="{Binding DisplayPopup}"
+                                CommandParameter="{x:Static viewModels:PopupPositionViewModel+PopupPosition.TopLeft}" />
+
+                    <Button Grid.Row="0"
+                                Grid.Column="1"
+                                Text="&#x2191;"
+                                FontSize="18"
+                                Command="{Binding DisplayPopup}"
+                                CommandParameter="{x:Static viewModels:PopupPositionViewModel+PopupPosition.Top}" />
+
+                    <Button Grid.Row="0"
+                                Grid.Column="2"
+                                Text="&#x2197;"
+                                FontSize="18"
+                                Command="{Binding DisplayPopup}"
+                                CommandParameter="{x:Static viewModels:PopupPositionViewModel+PopupPosition.TopRight}" />
+
+                    <Button Grid.Row="1"
+                                Grid.Column="0"
+                                Text="&#x2190;"
+                                FontSize="18"
+                                Command="{Binding DisplayPopup}"
+                                CommandParameter="{x:Static viewModels:PopupPositionViewModel+PopupPosition.Left}" />
+
+                    <Button Grid.Row="1"
+                                Grid.Column="1"
+                                Text="&#x26AC;"
+                                FontSize="18"
+                                Command="{Binding DisplayPopup}"
+                                CommandParameter="{x:Static viewModels:PopupPositionViewModel+PopupPosition.Center}" />
+
+                    <Button Grid.Row="1"
+                                Grid.Column="2"
+                                Text="&#x2192;"
+                                FontSize="18"
+                                Command="{Binding DisplayPopup}"
+                                CommandParameter="{x:Static viewModels:PopupPositionViewModel+PopupPosition.Right}" />
+
+                    <Button Grid.Row="2"
+                                Grid.Column="0"
+                                Text="&#x2199;"
+                                FontSize="18"
+                                Command="{Binding DisplayPopup}"
+                                CommandParameter="{x:Static viewModels:PopupPositionViewModel+PopupPosition.BottomLeft}" />
+
+                    <Button Grid.Row="2"
+                                Grid.Column="1"
+                                Text="&#x2193;"
+                                FontSize="18"
+                                Command="{Binding DisplayPopup}"
+                                CommandParameter="{x:Static viewModels:PopupPositionViewModel+PopupPosition.Bottom}" />
+
+                    <Button Grid.Row="2"
+                                Grid.Column="2"
+                                Text="&#x2198;"
+                                FontSize="18"
+                                Command="{Binding DisplayPopup}"
+                                CommandParameter="{x:Static viewModels:PopupPositionViewModel+PopupPosition.BottomRight}" />
+
+                </Grid>
+            </VerticalStackLayout>
+        </ScrollView>
+    </VerticalStackLayout>
+
+</ContentPage>
