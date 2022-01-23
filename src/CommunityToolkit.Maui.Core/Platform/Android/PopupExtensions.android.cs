@@ -70,6 +70,11 @@ public static class PopupExtensions
 
 	public static void SetColor(this Dialog dialog, IBasePopup basePopup)
 	{
+		if (basePopup.Color is null)
+		{
+			return;
+		}
+
 		var window = GetWindow(dialog);
 		window?.SetBackgroundDrawable(new ColorDrawable(basePopup.Color.ToNative(AColorRes.BackgroundLight, dialog.Context)));
 	}

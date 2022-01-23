@@ -5,7 +5,6 @@ using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
-//using Specific = CommunityToolkit.Maui.PlatformConfiguration.WindowsSpecific.PopUp;
 using UWPThickness = Microsoft.UI.Xaml.Thickness;
 using XamlStyle = Microsoft.UI.Xaml.Style;
 
@@ -17,7 +16,7 @@ public class PopupRenderer : Flyout
 	const double defaultSize = 600;
 	readonly IMauiContext mauiContext;
 
-	internal XamlStyle FlyoutStyle { get; set; } = new XamlStyle(typeof(FlyoutPresenter));
+	internal XamlStyle FlyoutStyle { get; set; } = new (typeof(FlyoutPresenter));
 	internal WrapperControl? Control { get; set; }
 	public IBasePopup? VirtualView { get; private set; }
 
@@ -41,13 +40,13 @@ public class PopupRenderer : Flyout
 			Control = new WrapperControl((View)VirtualView.Content, mauiContext);
 			Content = Control;
 		}
+
+		SetEvents();
 	}
 
-	void ConfigureControl()
+	public void ConfigureControl()
 	{
-		SetEvents();
 		SetFlyoutColor();
-		//SetBorderColor();
 		SetSize();
 		ApplyStyles();
 	}
@@ -63,7 +62,7 @@ public class PopupRenderer : Flyout
 		_ = Control ?? throw new InvalidOperationException($"{nameof(Element)} cannot be null");
 		var standardSize = new Size { Width = defaultSize, Height = defaultSize / 2 };
 
-		var currentSize = VirtualView.Size != default(Size) ? VirtualView.Size : standardSize;
+		var currentSize = VirtualView.Size != default ? VirtualView.Size : standardSize;
 		Control.Width = currentSize.Width;
 		Control.Height = currentSize.Height;
 
@@ -82,8 +81,14 @@ public class PopupRenderer : Flyout
 		}
 	}
 
-	public void SetBorderColor(Color borderColor)
+	internal void ResetStyle()
 	{
+		FlyoutStyle = new(typeof(FlyoutPresenter));
+	}
+
+	public void SetBorderColor(Color? borderColor = null)
+	{
+		ResetStyle();
 		FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.PaddingProperty, 0));
 		FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.BorderThicknessProperty, new UWPThickness(defaultBorderThickness)));
 
@@ -92,7 +97,6 @@ public class PopupRenderer : Flyout
 			return;
 		}
 
-		//var borderColor = Colors.Red; // Specific.GetBorderColor(Element);
 		if (borderColor is null)
 		{
 			FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.BorderBrushProperty, Color.FromHex("#2e6da0").ToNative()));
@@ -101,6 +105,7 @@ public class PopupRenderer : Flyout
 		{
 			FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.BorderBrushProperty, borderColor.ToNative()));
 		}
+		ConfigureControl();
 	}
 
 	void SetFlyoutColor()

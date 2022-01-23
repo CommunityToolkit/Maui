@@ -12,7 +12,6 @@ public static class PopUpConfiguration
 	public static void SetBorderColor(BindableObject element, Color color)
 	{
 		element.SetValue(BorderColorProperty, color);
-		(element as View)?.Handler?.UpdateValue("BorderColor");
 	}
 
 	public static Color GetBorderColor(BindableObject element) =>

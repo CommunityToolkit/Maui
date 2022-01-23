@@ -27,26 +27,6 @@ public static class PopupExtensions
 		}
 	}
 
-	public static void SetSize(this PopupRenderer flyout, IBasePopup basePopup)
-	{
-		if (flyout.Control is null)
-		{
-			return;
-		}
-
-		var standardSize = new Size { Width = defaultSize, Height = defaultSize / 2 };
-
-		var currentSize = basePopup.Size != default ? basePopup.Size : standardSize;
-		flyout.Control.Width = currentSize.Width;
-		flyout.Control.Height = currentSize.Height;
-		var doubleDefaultBordThickness = defaultBorderThickness * 2;
-
-		flyout.FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.MinHeightProperty, currentSize.Height + doubleDefaultBordThickness));
-		flyout.FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.MinWidthProperty, currentSize.Width + doubleDefaultBordThickness));
-		flyout.FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.MaxHeightProperty, currentSize.Height + doubleDefaultBordThickness));
-		flyout.FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.MaxWidthProperty, currentSize.Width + doubleDefaultBordThickness));
-	}
-
 	public static void SetLayout(this PopupRenderer flyout, IBasePopup basePopup)
 	{
 		flyout.LightDismissOverlayMode = LightDismissOverlayMode.On;
