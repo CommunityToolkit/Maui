@@ -8,21 +8,7 @@ namespace CommunityToolkit.Maui.Sample.Pages;
 
 public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where TViewModel : BaseGalleryViewModel
 {
-	public BaseGalleryPage(string title)
-	{
-		Title = title;
-
-		Padding = 0;
-
-		Content = new CollectionView
-			{
-				SelectionMode = SelectionMode.Single,
-				ItemTemplate = new GalleryDataTemplate()
-			}.Bind(ItemsView.ItemsSourceProperty, nameof(BaseGalleryViewModel.Items))
-			.Invoke(collectionView => collectionView.SelectionChanged += HandleSelectionChanged);
-	}
-
-	public BaseGalleryPage(string title, TViewModel viewModel) : base(viewModel)
+	protected BaseGalleryPage(string title, TViewModel viewModel) : base(viewModel)
 	{
 		Title = title;
 
@@ -45,8 +31,24 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 
 		if (e.CurrentSelection.FirstOrDefault() is SectionModel sectionModel)
 		{
-			await Shell.Current.GoToAsync(sectionModel.PagePath);
+			await Shell.Current.GoToAsync(BuildRoot(sectionModel.ViewModelType));
 		}
+	}
+
+	static string BuildRoot(Type viewModelType)
+	{
+		var uri = new UriBuilder("", GetPagePathForViewModel(viewModelType));
+		return uri.Uri.OriginalString[..^1];
+	}
+
+	static string GetPagePathForViewModel(Type viewModelType)
+	{
+		if (!ViewModelLocator.mappings.ContainsKey(viewModelType))
+		{
+			throw new KeyNotFoundException($"No map for ${viewModelType} was found on navigation mappings");
+		}
+
+		return ViewModelLocator.mappings[viewModelType];
 	}
 
 	class GalleryDataTemplate : DataTemplate

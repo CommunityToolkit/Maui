@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Shell
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:alerts="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Alerts"
+    xmlns:behaviors="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Behaviors"
+    xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Converters"
+    xmlns:extensions="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Extensions"
+    xmlns:sys="clr-namespace:System;assembly=netstandard"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.AppShell">
+    <Shell.FlyoutHeader>
+        <Grid BackgroundColor="Black">
+            <Image Aspect="AspectFill"
+                   Source="dotnet_bot.png"
+                   Opacity="0.5" />
+            <Label Text="MAUI Community Toolkit"
+                   FontSize="Large"
+                   TextColor="White"
+                   FontAttributes="Bold"
+                   HorizontalTextAlignment="Center"
+                   VerticalTextAlignment="Center" />
+        </Grid>
+    </Shell.FlyoutHeader>
+
+    <FlyoutItem Title="Alerts" Route="AlertsGalleryPage">
+        <ShellContent ContentTemplate="{DataTemplate alerts:AlertsGalleryPage}" />
+    </FlyoutItem>
+    <FlyoutItem Title="Behaviors" Route="BehaviorsGalleryPage">
+        <ShellContent ContentTemplate="{DataTemplate behaviors:BehaviorsGalleryPage}" />
+    </FlyoutItem>
+    <FlyoutItem Title="Converters" Route="ConvertersGalleryPage">
+        <ShellContent ContentTemplate="{DataTemplate converters:ConvertersGalleryPage}" />
+    </FlyoutItem>
+    <FlyoutItem Title="Extensions" Route="ExtensionsGalleryPage">
+        <ShellContent ContentTemplate="{DataTemplate extensions:ExtensionsGalleryPage}" />
+    </FlyoutItem>
+
+    <Shell.FlyoutFooter>
+        <Label Text="{Binding Source={x:Static sys:DateTime.Now}, StringFormat='{0:yyyy}'}"
+               HorizontalOptions="Center" />
+    </Shell.FlyoutFooter>
+</Shell>

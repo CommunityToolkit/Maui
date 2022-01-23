@@ -5,10 +5,10 @@ namespace CommunityToolkit.Maui.Sample;
 
 public partial class App : Application
 {
-	public App(MainGalleryPage mainGalleryPage)
+	public App()
 	{
 		InitializeComponent();
 		
-		MainPage = new BaseShell(mainGalleryPage);
+		MainPage = new AppShell();
 	}
 }

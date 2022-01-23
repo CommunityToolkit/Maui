@@ -10,11 +10,16 @@ public class ExtensionsGalleryViewModel : BaseGalleryViewModel
 		: base(new[]
 		{
 			new SectionModel(
-				"colorAnimationExtensionsPage",
+				typeof(ColorAnimationExtensionsViewModel),
 				nameof(ColorAnimationExtensions),
 				"Extension methods that provide color animations"),
 		})
 	{
 
 	}
+}
+
+public class ColorAnimationExtensionsViewModel : BaseViewModel
+{
+
 }

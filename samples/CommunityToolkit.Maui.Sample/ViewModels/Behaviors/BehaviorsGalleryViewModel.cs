@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Sample.Models;
-using CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
@@ -10,67 +9,67 @@ public class BehaviorsGalleryViewModel : BaseGalleryViewModel
 		: base(new[]
 		{
 			new SectionModel(
-				"eventToCommandBehaviorPage",
+				typeof(EventToCommandBehaviorViewModel),
 				nameof(EventToCommandBehavior),
 				"Turns any event into a command that can be bound to"),
 
 			new SectionModel(
-				"maskedBehaviorPage",
+				typeof(MaskedBehaviorViewModel),
 				nameof(MaskedBehavior),
 				"Masked text in entry with specific pattern"),
 
 			new SectionModel(
-				"userStoppedTypingBehaviorPage",
+				typeof(UserStoppedTypingBehaviorViewModel),
 				nameof(UserStoppedTypingBehavior),
 				"This behavior waits for the user to stop typing and then executes a Command"),
 
 			new SectionModel(
-				"maxLengthReachedBehaviorPage",
+				typeof(MaxLengthReachedBehaviorViewModel),
 				nameof(MaxLengthReachedBehavior),
 				"This behavior invokes an EventHandler and executes a Command when the MaxLength of an InputView has been reached"),
 
 			new SectionModel(
-				"progressBarAnimationBehaviorPage",
+				typeof(ProgressBarAnimationBehaviorViewModel),
 				nameof(ProgressBarAnimationBehavior),
 				"Animate the progress for the ProgressBar"),
 
 			new SectionModel(
-				"setFocusOnEntryCompletedBehaviorPage",
+				typeof(SetFocusOnEntryCompletedBehaviorViewModel),
 				nameof(SetFocusOnEntryCompletedBehavior),
 				"Set focus to another element when an entry is completed"),
 
 			new SectionModel(
-				"charactersValidationBehaviorPage",
+				typeof(CharactersValidationBehaviorViewModel),
 				nameof(CharactersValidationBehavior),
 				"Changes an Entry's text color when an invalid string is provided."),
 
 			new SectionModel(
-				"textValidationBehaviorPage",
+				typeof(TextValidationBehaviorViewModel),
 				nameof(TextValidationBehavior),
 				"Changes an Entry's text color when text validation is failed (based on regex)"),
 
 			new SectionModel(
-				"multiValidationBehaviorPage",
+				typeof(MultiValidationBehaviorViewModel),
 				nameof(MultiValidationBehavior),
 				"Combines multiple validation behavior"),
 
 			new SectionModel(
-				"uriValidationBehaviorPage",
+				typeof(UriValidationBehaviorViewModel),
 				nameof(UriValidationBehavior),
 				"Changes an Entry's text color when an invalid URI is provided"),
 
 			new SectionModel(
-				"requiredStringValidationBehaviorPage",
+				typeof(RequiredStringValidationBehaviorViewModel),
 				nameof(RequiredStringValidationBehavior),
 				"Changes an Entry's text color when a required string is not provided"),
 
 			new SectionModel(
-				"numericValidationBehaviorPage",
+				typeof(NumericValidationBehaviorViewModel),
 				nameof(NumericValidationBehavior),
 				"Changes an Entry's text color when an invalid number is provided"),
 
 			new SectionModel(
-				"emailValidationBehaviorPage",
+				typeof(EmailValidationBehaviorViewModel),
 				nameof(EmailValidationBehavior),
 				"Changes an Entry's text color when an invalid e-mail address is provided"),
 			}
@@ -78,4 +77,42 @@ public class BehaviorsGalleryViewModel : BaseGalleryViewModel
 	{
 
 	}
+}
+
+public class UriValidationBehaviorViewModel:BaseViewModel
+{
+}
+
+public class RequiredStringValidationBehaviorViewModel : BaseViewModel
+{
+}
+
+public class NumericValidationBehaviorViewModel : BaseViewModel
+{
+}
+
+public class MultiValidationBehaviorViewModel : BaseViewModel
+{
+}
+
+public class TextValidationBehaviorViewModel : BaseViewModel
+{
+}
+
+public class CharactersValidationBehaviorViewModel : BaseViewModel
+{
+}
+
+public class SetFocusOnEntryCompletedBehaviorViewModel : BaseViewModel
+{
+}
+
+public class EmailValidationBehaviorViewModel : BaseViewModel
+{
+
+}
+
+public class MaskedBehaviorViewModel : BaseViewModel
+{
+
 }
