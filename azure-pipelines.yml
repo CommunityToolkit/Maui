@@ -9,7 +9,7 @@ variables:
   PathToCommunityToolkitCoreCsproj: 'src/CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
-  XcodeVersion: '13.1'
+  XcodeVersion: '13.2'
 
 trigger:
   branches:
@@ -39,14 +39,19 @@ jobs:
     pool:
       vmImage: windows-2022
     steps:
-      - task: UseDotNet@2
-        displayName: 'Install .NET SDK'
-        inputs:
-          version: '$(NET_VERSION)'
+      - powershell: |
+            wget https://dot.net/v1/dotnet-install.ps1 -OutFile C:\dotnet-install.ps1
+            C:\dotnet-install.ps1 -Version 6.0.200-preview.22055.15
+            dotnet --info
+            Write-Host "##vso[task.prependpath]C:\\Users\\VssAdministrator\\AppData\\Local\\Microsoft\\dotnet"
+        displayName: Install .NET 6.0.200-preview.22055.15
       - task: CmdLine@2
-        displayName: 'Install .NET MAUI workload'
+        displayName: 'Install .NET MAUI Workload'
         inputs:
-          script: 'dotnet workload install maui'
+            script : |
+              dotnet --info
+              dotnet workload install maui
+              dotnet new globaljson --sdk-version 6.0.200-preview.22055.15 --force
       # if this is a tagged build, then update the version number
       - powershell: |
           $buildSourceBranch = "$(Build.SourceBranch)"
@@ -128,10 +133,12 @@ jobs:
         displayName: 'Set Xcode Version'
         inputs:
           script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XcodeVersion).app;sudo xcode-select --switch /Applications/Xcode_$(XcodeVersion).app/Contents/Developer
-      - task: UseDotNet@2
-        displayName: 'Install .NET SDK'
+      - task: CmdLine@2
+        displayName: Install .NET 6.0.200-preview.22055.15
         inputs:
-          version: $(NET_VERSION)    
+          script: |
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 6.0.200-preview.22055.15 --quality preview
+            dotnet --info
       - task: CmdLine@2
         displayName: 'Install .NET MAUI workload'
         inputs:
