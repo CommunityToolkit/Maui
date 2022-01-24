@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Sample.Pages;
 
 public abstract class BasePage<TViewModel> : BasePage where TViewModel : BaseViewModel
 {
-	public BasePage(TViewModel viewModel) : base(viewModel)
+	protected BasePage(TViewModel viewModel) : base(viewModel)
 	{
 
 	}

@@ -4,25 +4,28 @@ namespace CommunityToolkit.Maui.Sample.Models;
 
 public sealed class SectionModel
 {
-	public SectionModel(in ContentPage page, in string title, in string description)
-		: this(page, title, new Color(), description)
+	// Use a private constructor to enforce the Factory Pattern
+	// This requires us to use the `Create` methods to instantiate SectionModel
+	// The Create methods allow us to 
+	SectionModel(in Type pageType, in string title, in Color color, in string description)
 	{
-	}
-
-	public SectionModel(in ContentPage page, in string title, in Color color, in string description)
-	{
-		if (string.IsNullOrWhiteSpace(page.Title))
-		{
-			page.Title = title;
-		}
-
-		Page = page;
+		PageType = pageType;
 		Title = title;
 		Description = description;
 		Color = color;
 	}
 
-	public ContentPage Page { get; }
+	// Use constrained generic to ensure TPage inherits from BasePage
+	public static SectionModel Create<TPage>(in string title, in string description) where TPage : BasePage
+		=> Create<TPage>(title, new Color(), description);
+
+	// Use constrained generic to ensure TPage inherits from BasePage
+	public static SectionModel Create<TPage>(in string title, in Color color, in string description) where TPage : BasePage
+	{
+		return new SectionModel(typeof(TPage), title, color, description);
+	}
+
+	public Type PageType { get; }
 
 	public string Title { get; }
 

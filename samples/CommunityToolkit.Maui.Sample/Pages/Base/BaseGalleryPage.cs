@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Sample.Pages;
 
 public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where TViewModel : BaseGalleryViewModel
 {
-	public BaseGalleryPage(string title, TViewModel viewModel) : base(viewModel)
+	protected BaseGalleryPage(string title, TViewModel viewModel) : base(viewModel)
 	{
 		Title = title;
 
@@ -31,7 +31,13 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 
 		if (e.CurrentSelection.FirstOrDefault() is SectionModel sectionModel)
 		{
-			await Navigation.PushAsync(sectionModel.Page);
+			var page = ServiceProvider.GetRequiredService<BasePage>(sectionModel.PageType);
+			if (string.IsNullOrWhiteSpace(page.Title))
+			{
+				page.Title = sectionModel.Title;
+			}
+
+			await Navigation.PushAsync(page);
 		}
 	}
 
