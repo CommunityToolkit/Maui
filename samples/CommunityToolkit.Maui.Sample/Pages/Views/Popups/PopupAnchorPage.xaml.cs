@@ -5,6 +5,7 @@ public partial class PopupAnchorPage
 	public PopupAnchorPage()
 	{
 		InitializeComponent();
+		Indicator ??= new();
 	}
 
 	void OnPanUpdated(object? sender, PanUpdatedEventArgs e)

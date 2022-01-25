@@ -3,10 +3,12 @@ using CommunityToolkit.Maui.Sample.Pages.Alerts;
 using CommunityToolkit.Maui.Sample.Pages.Behaviors;
 using CommunityToolkit.Maui.Sample.Pages.Converters;
 using CommunityToolkit.Maui.Sample.Pages.Extensions;
+using CommunityToolkit.Maui.Sample.Pages.Views;
 using CommunityToolkit.Maui.Sample.ViewModels;
 using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
+using CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 [assembly: XamlCompilationAttribute(XamlCompilationOptions.Compile)]
 
@@ -25,6 +27,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<ConvertersGalleryPage>();
 		builder.Services.AddTransient<ExtensionsGalleryPage>();
 		builder.Services.AddTransient<MainGalleryPage>();
+		builder.Services.AddTransient<PopupGalleryPage>();
 
 		// Add Gallery View Models
 		builder.Services.AddTransient<AlertsGalleryViewModel>();
@@ -32,6 +35,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<ConvertersGalleryViewModel>();
 		builder.Services.AddTransient<ExtensionsGalleryViewModel>();
 		builder.Services.AddTransient<MainGalleryViewModel>();
+		builder.Services.AddTransient<PopupGalleryViewModel>();
 
 		// Add Alerts Pages
 		builder.Services.AddTransient<SnackbarPage>();
@@ -97,6 +101,13 @@ public static class MauiProgram
 		builder.Services.AddTransient<ListIsNotNullOrEmptyConverterViewModel>();
 		builder.Services.AddTransient<ListIsNullOrEmptyConverterViewModel>();
 		builder.Services.AddTransient<ListToStringConverterViewModel>();
+
+
+
+		builder.Services.AddTransient<PopupPositionPage>();
+		builder.Services.AddTransient<PopupAnchorPage>();
+
+		
 
 		// Add Extensions Pages
 		builder.Services.AddTransient<ColorAnimationExtensionsPage>();

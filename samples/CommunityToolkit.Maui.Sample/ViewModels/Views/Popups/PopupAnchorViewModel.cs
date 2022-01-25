@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Sample.Pages.Views.Popups;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views.Popups;
 public sealed class PopupAnchorViewModel
@@ -20,8 +21,20 @@ public sealed class PopupAnchorViewModel
 
 	void OnShowPopup(View anchor)
 	{
-		var popup = new TransparentPopup();
-		popup.Anchor = anchor;
+		// This works
+
+		//var popup = new TransparentPopupCSharp
+		//{
+		//	Anchor = anchor
+		//};
+
+		// This doesn't work
+
+		var popup = new TransparentPopup
+		{
+			Anchor = anchor
+		};
+
 		Navigation?.ShowPopup(popup);
 	}
 }

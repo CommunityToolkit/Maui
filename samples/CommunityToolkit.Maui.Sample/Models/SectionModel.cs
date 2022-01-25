@@ -9,6 +9,15 @@ public sealed class SectionModel
 	{
 	}
 
+	public SectionModel(in Type type, in string title, in Color color, in string description)
+	{
+		Type = type;
+		Title = title;
+		Description = description;
+		Color = color;
+		Page = new();
+	}
+
 	public SectionModel(in ContentPage page, in string title, in Color color, in string description)
 	{
 		if (string.IsNullOrWhiteSpace(page.Title))
@@ -20,6 +29,7 @@ public sealed class SectionModel
 		Title = title;
 		Description = description;
 		Color = color;
+		Type = page.GetType();
 	}
 
 	public ContentPage Page { get; }
@@ -29,4 +39,5 @@ public sealed class SectionModel
 	public string Description { get; }
 
 	public Color Color { get; }
+	public Type Type { get; }
 }

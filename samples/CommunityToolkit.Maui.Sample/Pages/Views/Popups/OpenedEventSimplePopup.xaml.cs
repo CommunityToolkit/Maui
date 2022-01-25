@@ -9,6 +9,9 @@ public partial class OpenedEventSimplePopup
 	{
 		InitializeComponent();
 		Opened += OnOpened;
+		Title ??= new();
+		Message ??= new();
+
 	}
 
 	void OnOpened(object? sender, PopupOpenedEventArgs e)

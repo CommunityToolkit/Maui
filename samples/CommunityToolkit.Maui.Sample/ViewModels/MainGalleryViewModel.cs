@@ -3,6 +3,7 @@ using CommunityToolkit.Maui.Sample.Pages.Alerts;
 using CommunityToolkit.Maui.Sample.Pages.Behaviors;
 using CommunityToolkit.Maui.Sample.Pages.Converters;
 using CommunityToolkit.Maui.Sample.Pages.Extensions;
+using CommunityToolkit.Maui.Sample.Pages.Views;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels;
 
@@ -11,7 +12,8 @@ public class MainGalleryViewModel : BaseGalleryViewModel
 	public MainGalleryViewModel(AlertsGalleryPage alertsGalleryPage,
 								BehaviorsGalleryPage behaviorsGalleryPage,
 								ConvertersGalleryPage convertersGalleryPage,
-								ExtensionsGalleryPage extensionsGalleryPage)
+								ExtensionsGalleryPage extensionsGalleryPage,
+								PopupGalleryPage popupGalleryPage)
 		: base(new[]
 		{
 			 new SectionModel(alertsGalleryPage, "Alerts", Color.FromArgb("#EF6950"),
@@ -25,6 +27,9 @@ public class MainGalleryViewModel : BaseGalleryViewModel
 
 			 new SectionModel(extensionsGalleryPage, "Extensions", Color.FromArgb("#00EA56"),
 				 "Extenions lets you add methods to existing types without creating a new derived type, recompiling, or otherwise modifying the original type."),
+
+			 new SectionModel(popupGalleryPage, "Popup", Color.FromArgb("#FF0000"),
+				 "Popup samples."),
 		})
 	{
 	}
