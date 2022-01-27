@@ -71,13 +71,8 @@ jobs:
         displayName: Set NuGet Version to PR Version
         condition: and(succeeded(), eq(variables['build.reason'], 'PullRequest'))
       # build, test and pack the packages
-      # Build the Sample App first via the CLI to generate Source Generators which VSBuild@1 does not currently achieve
-      - task: CmdLine@2 
-        displayName: 'Build Community Toolkit Sample via CLI'
-        inputs:
-          script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release'
       - task: VSBuild@1
-        displayName: 'Build Community Toolkit Sample via VSBuild Task'
+        displayName: 'Build Community Toolkit Sample'
         inputs:
           solution: '$(PathToCommunityToolkitSampleCsproj)'
           configuration: 'Release'
