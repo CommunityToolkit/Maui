@@ -16,7 +16,9 @@ public class PopupPositionViewModel
 
 	void OnDisplayPopup(PopupPosition position)
 	{
-		var popup = new SimplePopup();
+		// Using the C# version of Popup until this get fixed
+		// https://github.com/dotnet/maui/issues/4300
+		var popup = new TransparentPopupCSharp();
 
 		switch (position)
 		{

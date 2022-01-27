@@ -21,19 +21,23 @@ public sealed class PopupAnchorViewModel
 
 	void OnShowPopup(View anchor)
 	{
+
+		// Using the C# version of Popup until this get fixed
+		// https://github.com/dotnet/maui/issues/4300
+
 		// This works
 
-		//var popup = new TransparentPopupCSharp
-		//{
-		//	Anchor = anchor
-		//};
-
-		// This doesn't work
-
-		var popup = new TransparentPopup
+		var popup = new TransparentPopupCSharp
 		{
 			Anchor = anchor
 		};
+
+		// This doesn't work
+
+		//var popup = new TransparentPopup
+		//{
+		//	Anchor = anchor
+		//};
 
 		Navigation?.ShowPopup(popup);
 	}

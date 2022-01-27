@@ -1,6 +1,7 @@
-﻿using CommunityToolkit.Maui.Views;
+﻿using CommunityToolkit.Maui.Sample.Pages.Views.Popups;
+using CommunityToolkit.Maui.Views;
 
-namespace CommunityToolkit.Maui.Sample.Pages.Views.Popups;
+namespace CommunityToolkit.Maui.Sample;
 public class TransparentPopupCSharp : Popup
 {
 	public TransparentPopupCSharp()
