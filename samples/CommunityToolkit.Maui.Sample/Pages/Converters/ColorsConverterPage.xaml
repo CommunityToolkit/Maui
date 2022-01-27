@@ -1,7 +1,7 @@
 ﻿<pages:BasePage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/tookit"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Converters"
     x:DataType="converters:ColorsConverterPage"
