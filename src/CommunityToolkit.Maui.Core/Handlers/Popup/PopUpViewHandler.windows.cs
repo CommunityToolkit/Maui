@@ -36,16 +36,18 @@ public partial class PopupViewHandler : ElementHandler<IBasePopup, PopupRenderer
 
 	public static void MapAnchor(PopupViewHandler handler, IBasePopup view)
 	{
-		handler?.NativeView.SetLayout(view);
+		handler?.NativeView.ConfigureControl();
 	}
 
 	public static void MapLightDismiss(PopupViewHandler handler, IBasePopup view)
 	{
+		handler?.NativeView.ConfigureControl();
 	}
 
 	public static void MapColor(PopupViewHandler handler, IBasePopup view)
 	{
 		handler?.NativeView.SetColor(view);
+		handler?.NativeView.ConfigureControl();
 	}
 
 	protected override void DisconnectHandler(PopupRenderer nativeView)
@@ -55,7 +57,6 @@ public partial class PopupViewHandler : ElementHandler<IBasePopup, PopupRenderer
 
 	public static void MapSize(PopupViewHandler handler, IBasePopup view)
 	{
-		//handler?.NativeView.SetSize(view);
-		handler?.NativeView.SetLayout(view);
+		handler?.NativeView.ConfigureControl();
 	}
 }

@@ -46,8 +46,15 @@ public class PopupRenderer : Flyout
 
 	public void ConfigureControl()
 	{
+		if (VirtualView is null)
+		{
+			return;
+		}
+		SetEvents();
+		SetBorderColor();
 		SetFlyoutColor();
 		SetSize();
+		SetLayout();
 		ApplyStyles();
 	}
 
@@ -81,14 +88,8 @@ public class PopupRenderer : Flyout
 		}
 	}
 
-	internal void ResetStyle()
-	{
-		FlyoutStyle = new(typeof(FlyoutPresenter));
-	}
-
 	public void SetBorderColor(Color? borderColor = null)
 	{
-		ResetStyle();
 		FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.PaddingProperty, 0));
 		FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.BorderThicknessProperty, new UWPThickness(defaultBorderThickness)));
 
@@ -99,13 +100,12 @@ public class PopupRenderer : Flyout
 
 		if (borderColor is null)
 		{
-			FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.BorderBrushProperty, Color.FromHex("#2e6da0").ToNative()));
+			FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.BorderBrushProperty, Color.FromArgb("#2e6da0").ToNative()));
 		}
 		else
 		{
 			FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.BorderBrushProperty, borderColor.ToNative()));
 		}
-		ConfigureControl();
 	}
 
 	void SetFlyoutColor()
@@ -223,6 +223,8 @@ public class PopupRenderer : Flyout
 
 	public void CleanUp()
 	{
+		Closing -= OnClosing;
+		Hide();
 		if (Control is not null)
 		{
 			Control.CleanUp();
@@ -230,7 +232,5 @@ public class PopupRenderer : Flyout
 
 		VirtualView = null;
 		Control = null;
-
-		Closing -= OnClosing;
 	}
 }
