@@ -8,9 +8,5 @@ public partial class UserStoppedTypingBehaviorPage : BasePage<UserStoppedTypingB
 		: base(userStoppedTypingBehaviorViewModel)
 	{
 		InitializeComponent();
-
-		TimeThresholdSetting ??= new();
-		AutoDismissKeyboardSetting ??= new();
-		MinimumLengthThresholdSetting ??= new();
 	}
 }

@@ -5,7 +5,5 @@ public partial class NotEqualConverterPage : BasePage
 	public NotEqualConverterPage()
 	{
 		InitializeComponent();
-
-		ExampleText ??= new();
 	}
 }

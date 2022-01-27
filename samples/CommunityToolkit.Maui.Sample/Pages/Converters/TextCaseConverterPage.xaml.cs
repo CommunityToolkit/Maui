@@ -5,7 +5,5 @@ public partial class TextCaseConverterPage : BasePage
 	public TextCaseConverterPage()
 	{
 		InitializeComponent();
-
-		ExampleText ??= new();
 	}
 }

@@ -12,9 +12,6 @@ public partial class ColorsConverterPage : BasePage
 	public ColorsConverterPage()
 	{
 		InitializeComponent();
-
-		Picker ??= new();
-		BoxView ??= new();
 	}
 
 	protected override void OnAppearing()

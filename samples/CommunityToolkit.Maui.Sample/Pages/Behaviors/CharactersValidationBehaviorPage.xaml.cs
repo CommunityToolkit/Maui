@@ -8,11 +8,6 @@ public partial class CharactersValidationBehaviorPage : BasePage
 	public CharactersValidationBehaviorPage()
 	{
 		InitializeComponent();
-
-		Page ??= this;
-		CharacterTypePicker ??= new Picker();
-		MinimumCharacterCountEntry ??= new Entry();
-		MaximumCharacterCountEntry ??= new Entry();
 	}
 
 	public IReadOnlyList<CharacterType> CharacterTypes { get; } =

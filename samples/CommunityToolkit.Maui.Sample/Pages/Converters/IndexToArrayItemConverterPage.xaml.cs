@@ -8,6 +8,5 @@ public partial class IndexToArrayItemConverterPage : BasePage<IndexToArrayItemCo
 		: base(indexToArrayItemConverterViewModel)
 	{
 		InitializeComponent();
-		Stepper ??= new();
 	}
 }
