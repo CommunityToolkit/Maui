@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Core;
 using CoreGraphics;
 using Microsoft.Maui.Platform;
+using ObjCRuntime;
 using UIKit;
 
 namespace CommunityToolkit.Core.Platform;
@@ -26,7 +27,7 @@ public static class PopupExtensions
 
 	public static void SetLightDismiss(this PopupRenderer popup, in IBasePopup basepopup)
 	{
-		popup.ModalInPopover = !basepopup.IsLightDismissEnabled;
+			popup.ModalInPresentation = !basepopup.IsLightDismissEnabled;
 	}
 
 	public static void SetLayout(this PopupRenderer popup, in IBasePopup basepopup)
