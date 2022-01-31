@@ -6,15 +6,30 @@ namespace CommunityToolkit.Maui.Alerts;
 public partial class Toast
 {
 	static AndroidToast? nativeToast;
+	static readonly SemaphoreSlim semaphoreSlim = new(1, 1);
 
 	/// <summary>
 	/// Dismiss Toast
 	/// </summary>
-	public virtual partial Task Dismiss(CancellationToken token)
+	public virtual async partial Task Dismiss(CancellationToken token)
 	{
-		token.ThrowIfCancellationRequested();
-		nativeToast?.Cancel();
-		return Task.CompletedTask;
+		if (nativeToast is null)
+		{
+			return;
+		}
+
+		await semaphoreSlim.WaitAsync(token);
+
+		try
+		{
+			token.ThrowIfCancellationRequested();
+
+			nativeToast.Cancel();
+		}
+		finally
+		{
+			semaphoreSlim.Release();
+		}
 	}
 
 	/// <summary>
@@ -25,8 +40,13 @@ public partial class Toast
 		await Dismiss(token);
 		token.ThrowIfCancellationRequested();
 
-		nativeToast = AndroidToast.MakeText(Platform.AppContext, Text, (ToastLength)(int)Duration)
+		nativeToast = AndroidToast.MakeText(Platform.AppContext, Text, GetToastLength(Duration))
 						  ?? throw new Exception("Unable to create toast");
 		nativeToast.Show();
+	}
+
+	static ToastLength GetToastLength(Core.ToastDuration duration)
+	{
+		return (ToastLength)(int)duration;
 	}
 }

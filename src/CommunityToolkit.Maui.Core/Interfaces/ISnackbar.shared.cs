@@ -3,7 +3,7 @@
 /// <summary>
 /// Snackbar
 /// </summary>
-public interface ISnackbar : IAsyncDisposable
+public interface ISnackbar : IAlert
 {
 	/// <summary>
 	/// Action to invoke on action button click
@@ -26,22 +26,7 @@ public interface ISnackbar : IAsyncDisposable
 	TimeSpan Duration { get; }
 
 	/// <summary>
-	/// Snackbar message
-	/// </summary>
-	string Text { get; }
-
-	/// <summary>
 	/// Snackbar visual options
 	/// </summary>
 	SnackbarOptions VisualOptions { get; }
-
-	/// <summary>
-	/// Dismiss the snackbar
-	/// </summary>
-	Task Dismiss(CancellationToken token = default);
-
-	/// <summary>
-	/// Show the snackbar
-	/// </summary>
-	Task Show(CancellationToken token = default);
 }

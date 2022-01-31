@@ -7,21 +7,30 @@ namespace CommunityToolkit.Maui.Alerts;
 public partial class Toast
 {
 	static ToastView? nativeToast;
+	static readonly SemaphoreSlim semaphoreSlim = new(1, 1);
 
 	/// <summary>
 	/// Dismiss Toast
 	/// </summary>
-	public virtual partial Task Dismiss(CancellationToken token)
+	public virtual async partial Task Dismiss(CancellationToken token)
 	{
 		if (nativeToast is null)
 		{
-			return Task.CompletedTask;
+			return;
 		}
 
-		token.ThrowIfCancellationRequested();
-		nativeToast.Dismiss();
-		nativeToast = null;
-		return Task.CompletedTask;
+		await semaphoreSlim.WaitAsync(token);
+
+		try
+		{
+			token.ThrowIfCancellationRequested();
+
+			nativeToast.Dismiss();
+		}
+		finally
+		{
+			semaphoreSlim.Release();
+		}
 	}
 
 	/// <summary>
@@ -32,7 +41,7 @@ public partial class Toast
 		await Dismiss(token);
 		token.ThrowIfCancellationRequested();
 
-		var cornerRadius = GetCornerRadius();
+		var cornerRadius = CreateCornerRadius();
 		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + ToastView.DefaultPadding;
 		nativeToast = new ToastView(Text,
 											UIColor.LightGray,
@@ -50,8 +59,8 @@ public partial class Toast
 		static T? GetMaximum<T>(params T[] items) => items.Max();
 	}
 
-	static CGRect GetCornerRadius(int defaultRadius = 4)
+	static CGRect CreateCornerRadius(int radius = 4)
 	{
-		return new CGRect(defaultRadius, defaultRadius, defaultRadius, defaultRadius);
+		return new CGRect(radius, radius, radius, radius);
 	}
 }

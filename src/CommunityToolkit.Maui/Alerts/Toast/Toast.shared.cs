@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core;
+using System.ComponentModel;
 
 namespace CommunityToolkit.Maui.Alerts;
 
@@ -9,7 +10,7 @@ public partial class Toast : IToast
 	public string Text { get; set; } = string.Empty;
 
 	/// <inheritdoc/>
-	public ToastDuration Duration { get; set; }
+	public ToastDuration Duration { get; set; } = ToastDuration.Short;
 
 	/// <summary>
 	/// Create new Toast
@@ -21,6 +22,13 @@ public partial class Toast : IToast
 		string message,
 		ToastDuration duration = ToastDuration.Short)
 	{
+		ArgumentNullException.ThrowIfNull(message);
+
+		if (!Enum.IsDefined(typeof(ToastDuration), duration))
+		{
+			throw new InvalidEnumArgumentException(nameof(duration), (int)duration, typeof(ToastDuration));
+		}
+
 		return new Toast()
 		{
 			Text = message,
@@ -86,7 +94,7 @@ public partial class Toast : IToast
 		{
 			ToastDuration.Short => TimeSpan.FromSeconds(2),
 			ToastDuration.Long => TimeSpan.FromSeconds(3.5),
-			_ => throw new ArgumentOutOfRangeException(nameof(duration), duration, null)
+			_ => throw new InvalidEnumArgumentException(nameof(Duration), (int)duration, typeof(ToastDuration))
 		};
 	}
 #endif

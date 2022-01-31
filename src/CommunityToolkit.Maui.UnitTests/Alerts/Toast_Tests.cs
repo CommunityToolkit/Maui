@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Alerts;
+﻿using System.ComponentModel;
+using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using FluentAssertions;
 using Xunit;
@@ -7,7 +8,7 @@ namespace CommunityToolkit.Maui.UnitTests.Alerts;
 
 public class Toast_Tests : BaseTest
 {
-	IToast toast = new Toast();
+	readonly IToast toast = new Toast();
 
 	[Fact]
 	public void ToastMake_NewToastCreatedWithValidProperties()
@@ -69,5 +70,28 @@ public class Toast_Tests : BaseTest
 	public async Task ToastDismiss_CancellationTokenNone_NotReceiveException()
 	{
 		await toast.Invoking(x => x.Dismiss(CancellationToken.None)).Should().NotThrowAsync<OperationCanceledException>();
+	}
+
+	[Fact]
+	public void ToastMake_NewToastCreatedWithDefaultValues()
+	{
+		toast.Text.Should().BeEmpty();
+		toast.Duration.Should().Be(ToastDuration.Short);
+	}
+
+	[Fact]
+	public void ToastMake_NewToastCreatedWithNullString_ShouldThrowArgumentNullException()
+	{
+		Assert.Throws<ArgumentNullException>(() => Toast.Make(null!));
+	}
+
+	[Theory]
+	[InlineData(int.MinValue)]
+	[InlineData(-1)]
+	[InlineData(2)]
+	[InlineData(int.MaxValue)]
+	public void ToastMake_NewToastCreatedWithInvalidToastDuration_ShouldThrowInvalidEnumArgumentException(int duration)
+	{
+		Assert.Throws<InvalidEnumArgumentException>(() => Toast.Make("Invalid Duration", (ToastDuration)duration));
 	}
 }

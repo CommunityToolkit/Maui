@@ -7,8 +7,6 @@ namespace CommunityToolkit.Maui.Sample.Pages.Alerts;
 
 public partial class ToastPage : BasePage
 {
-	IToast? toast;
-
 	public ToastPage()
 	{
 		InitializeComponent();
@@ -16,7 +14,7 @@ public partial class ToastPage : BasePage
 
 	async void ShowToastButtonClicked(object? sender, EventArgs args)
 	{
-		toast = Toast.Make("This is a Toast.", ToastDuration.Long);
+		var toast = Toast.Make("This is a Toast.", ToastDuration.Long);
 		await toast.Show();
 	}
 }

@@ -3,27 +3,12 @@
 /// <summary>
 /// Toast
 /// </summary>
-public interface IToast : IAsyncDisposable
+public interface IToast : IAlert
 {
 	/// <summary>
 	/// Toast duration
 	/// </summary>
 	ToastDuration Duration { get; }
-
-	/// <summary>
-	/// Toast message
-	/// </summary>
-	string Text { get; }
-
-	/// <summary>
-	/// Dismiss the toast
-	/// </summary>
-	Task Dismiss(CancellationToken token = default);
-
-	/// <summary>
-	/// Show the toast
-	/// </summary>
-	Task Show(CancellationToken token = default);
 }
 
 /// <summary>
@@ -32,12 +17,12 @@ public interface IToast : IAsyncDisposable
 public enum ToastDuration
 {
 	/// <summary>
-	/// Short
+	/// Displays Toast for a short time
 	/// </summary>
 	Short,
 
 	/// <summary>
-	/// Long
+	/// Displays Toast for a long time
 	/// </summary>
 	Long
 }

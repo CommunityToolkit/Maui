@@ -7,24 +7,31 @@ namespace CommunityToolkit.Maui.Alerts;
 public partial class Toast
 {
 	static ToastNotification? nativeToast;
+	static readonly SemaphoreSlim semaphoreSlim = new(1, 1);
 
 	/// <summary>
 	/// Dismiss Toast
 	/// </summary>
-	public virtual partial Task Dismiss(CancellationToken token)
+	public virtual async partial Task Dismiss(CancellationToken token)
 	{
 		if (nativeToast is null)
 		{
-			return Task.CompletedTask;
+			return;
 		}
 
-		token.ThrowIfCancellationRequested();
-		ToastNotificationManager.History.Clear();
+		await semaphoreSlim.WaitAsync(token);
 
-		nativeToast.ExpirationTime = DateTimeOffset.Now;
-
-		nativeToast = null;
-		return Task.CompletedTask;
+		try
+		{
+			token.ThrowIfCancellationRequested();
+			ToastNotificationManager.History.Clear();
+			nativeToast.ExpirationTime = DateTimeOffset.Now;
+			nativeToast = null;
+		}
+		finally
+		{
+			semaphoreSlim.Release();
+		}
 	}
 
 	/// <summary>
