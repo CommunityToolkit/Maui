@@ -9,6 +9,11 @@ public class Snackbar_Tests : BaseTest
 {
 	readonly ISnackbar snackbar = new Snackbar();
 
+	public Snackbar_Tests()
+	{
+		Assert.IsAssignableFrom<IAlert>(snackbar);
+	}
+
 	[Fact]
 	public async Task SnackbarShow_IsShownTrue()
 	{

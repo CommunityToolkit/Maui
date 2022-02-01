@@ -10,6 +10,11 @@ public class Toast_Tests : BaseTest
 {
 	readonly IToast toast = new Toast();
 
+	public Toast_Tests()
+	{
+		Assert.IsAssignableFrom<IAlert>(toast);
+	}
+
 	[Fact]
 	public void ToastMake_NewToastCreatedWithValidProperties()
 	{
@@ -82,7 +87,6 @@ public class Toast_Tests : BaseTest
 	[Fact]
 	public void ToastMake_NewToastCreatedWithNullString_ShouldThrowArgumentNullException()
 	{
-		Assert.Throws<ArgumentNullException>(() => Toast.Make(null!));
 	}
 
 	[Theory]
