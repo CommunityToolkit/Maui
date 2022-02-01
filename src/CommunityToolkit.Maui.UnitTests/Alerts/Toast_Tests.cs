@@ -87,6 +87,9 @@ public class Toast_Tests : BaseTest
 	[Fact]
 	public void ToastMake_NewToastCreatedWithNullString_ShouldThrowArgumentNullException()
 	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => Toast.Make(null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
 	[Theory]
