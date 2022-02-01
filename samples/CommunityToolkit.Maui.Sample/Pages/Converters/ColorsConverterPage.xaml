@@ -1,7 +1,7 @@
 ﻿<pages:BasePage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/tookit"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Converters"
     x:DataType="converters:ColorsConverterPage"
@@ -9,27 +9,27 @@
 
     <pages:BasePage.Resources>
         <ResourceDictionary>
-            <toolkit:ColorToRgbStringConverter x:Key="ColorToRgbStringConverter" />
-            <toolkit:ColorToRgbaStringConverter x:Key="ColorToRgbaStringConverter" />
-            <toolkit:ColorToHexRgbStringConverter x:Key="ColorToHexRgbStringConverter" />
-            <toolkit:ColorToHexRgbaStringConverter x:Key="ColorToHexRgbaStringConverter" />
-            <toolkit:ColorToCmykStringConverter x:Key="ColorToCmykStringConverter" />
-            <toolkit:ColorToCmykaStringConverter x:Key="ColorToCmykaStringConverter" />
-            <toolkit:ColorToHslStringConverter x:Key="ColorToHslStringConverter" />
-            <toolkit:ColorToHslaStringConverter x:Key="ColorToHslaStringConverter" />
-            <toolkit:ColorToBlackKeyConverter x:Key="ColorToBlackKeyConverter" />
-            <toolkit:ColorToByteAlphaConverter x:Key="ColorToByteAlphaConverter" />
-            <toolkit:ColorToByteRedConverter x:Key="ColorToByteRedConverter" />
-            <toolkit:ColorToByteGreenConverter x:Key="ColorToByteGreenConverter" />
-            <toolkit:ColorToByteBlueConverter x:Key="ColorToByteBlueConverter" />
-            <toolkit:ColorToPercentCyanConverter x:Key="ColorToPercentCyanConverter" />
-            <toolkit:ColorToPercentMagentaConverter x:Key="ColorToPercentMagentaConverter" />
-            <toolkit:ColorToPercentYellowConverter x:Key="ColorToPercentYellowConverter" />
-            <toolkit:ColorToDegreeHueConverter x:Key="ColorToDegreeHueConverter" />
-            <toolkit:ColorToBlackOrWhiteConverter x:Key="ColorToBlackOrWhiteConverter" />
-            <toolkit:ColorToColorForTextConverter x:Key="ColorToColorForTextConverter"/>
-            <toolkit:ColorToGrayScaleColorConverter  x:Key="ColorToGrayScaleColorConverter"/>
-            <toolkit:ColorToInverseColorConverter   x:Key="ColorToInverseColorConverter"/>
+            <mct:ColorToRgbStringConverter x:Key="ColorToRgbStringConverter" />
+            <mct:ColorToRgbaStringConverter x:Key="ColorToRgbaStringConverter" />
+            <mct:ColorToHexRgbStringConverter x:Key="ColorToHexRgbStringConverter" />
+            <mct:ColorToHexRgbaStringConverter x:Key="ColorToHexRgbaStringConverter" />
+            <mct:ColorToCmykStringConverter x:Key="ColorToCmykStringConverter" />
+            <mct:ColorToCmykaStringConverter x:Key="ColorToCmykaStringConverter" />
+            <mct:ColorToHslStringConverter x:Key="ColorToHslStringConverter" />
+            <mct:ColorToHslaStringConverter x:Key="ColorToHslaStringConverter" />
+            <mct:ColorToBlackKeyConverter x:Key="ColorToBlackKeyConverter" />
+            <mct:ColorToByteAlphaConverter x:Key="ColorToByteAlphaConverter" />
+            <mct:ColorToByteRedConverter x:Key="ColorToByteRedConverter" />
+            <mct:ColorToByteGreenConverter x:Key="ColorToByteGreenConverter" />
+            <mct:ColorToByteBlueConverter x:Key="ColorToByteBlueConverter" />
+            <mct:ColorToPercentCyanConverter x:Key="ColorToPercentCyanConverter" />
+            <mct:ColorToPercentMagentaConverter x:Key="ColorToPercentMagentaConverter" />
+            <mct:ColorToPercentYellowConverter x:Key="ColorToPercentYellowConverter" />
+            <mct:ColorToDegreeHueConverter x:Key="ColorToDegreeHueConverter" />
+            <mct:ColorToBlackOrWhiteConverter x:Key="ColorToBlackOrWhiteConverter" />
+            <mct:ColorToColorForTextConverter x:Key="ColorToColorForTextConverter"/>
+            <mct:ColorToGrayScaleColorConverter  x:Key="ColorToGrayScaleColorConverter"/>
+            <mct:ColorToInverseColorConverter   x:Key="ColorToInverseColorConverter"/>
 
             <Style TargetType="Label">
                 <Setter Property="TextColor" Value="Black" />

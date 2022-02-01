@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/tookit"
+                xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.MultiValidationBehaviorPage">
 
@@ -23,19 +23,19 @@
             <Label Text="Number validation : -10 to 5" />
             <Entry Placeholder="Number">
                 <Entry.Behaviors>
-                    <toolkit:MultiValidationBehavior x:Name="MultiValidation"
+                    <mct:MultiValidationBehavior x:Name="MultiValidation"
                                                      ValidStyle="{StaticResource ValidEntryStyle}"
                                                      InvalidStyle="{StaticResource InvalidEntryStyle}"
                                                      Flags="ValidateOnValueChanged">
-                        <toolkit:MultiValidationBehavior.Children>
-                            <toolkit:NumericValidationBehavior toolkit:MultiValidationBehavior.Error="NaN" />
+                        <mct:MultiValidationBehavior.Children>
+                            <mct:NumericValidationBehavior mct:MultiValidationBehavior.Error="NaN" />
 
-                            <toolkit:NumericValidationBehavior MinimumValue="-10"
-                                                               toolkit:MultiValidationBehavior.Error="Min: -10" />
-                            <toolkit:NumericValidationBehavior MaximumValue="5"
-                                                               toolkit:MultiValidationBehavior.Error="Max: 5" />
-                        </toolkit:MultiValidationBehavior.Children>
-                    </toolkit:MultiValidationBehavior>
+                            <mct:NumericValidationBehavior MinimumValue="-10"
+                                                           mct:MultiValidationBehavior.Error="Min: -10" />
+                            <mct:NumericValidationBehavior MaximumValue="5"
+                                                           mct:MultiValidationBehavior.Error="Max: 5" />
+                        </mct:MultiValidationBehavior.Children>
+                    </mct:MultiValidationBehavior>
                 </Entry.Behaviors>
             </Entry>
             <Label HeightRequest="30"
@@ -43,30 +43,30 @@
             <Label Text="Password validation" />
             <Entry IsPassword="True" Placeholder="Password">
                 <Entry.Behaviors>
-                    <toolkit:MultiValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"  
-                                                     ValidStyle="{StaticResource ValidEntryStyle}"
-                                                     Flags="ValidateOnValueChanged">
-                        <toolkit:CharactersValidationBehavior x:Name="DigitValidation" 
-                                                              CharacterType="Digit" 
-                                                              MinimumCharacterTypeCount="1" 
-                                                              toolkit:MultiValidationBehavior.Error="1 chiffre" 
-                                                              RegexPattern="" />
-                        <toolkit:CharactersValidationBehavior x:Name="UpperValidation" 
-                                                              CharacterType="UppercaseLetter" 
-                                                              MinimumCharacterTypeCount="1" 
-                                                              toolkit:MultiValidationBehavior.Error="1 majuscule" 
-                                                              RegexPattern="" />
-                        <toolkit:CharactersValidationBehavior x:Name="SymbolValidation" 
-                                                              CharacterType="NonAlphanumericSymbol" 
-                                                              MinimumCharacterTypeCount="1" 
-                                                              toolkit:MultiValidationBehavior.Error="1 symbole" 
-                                                              RegexPattern=""  />
-                        <toolkit:CharactersValidationBehavior x:Name="AnyValidation" 
-                                                              CharacterType="Any" 
-                                                              MinimumCharacterTypeCount="8" 
-                                                              toolkit:MultiValidationBehavior.Error="8 caractères" 
-                                                              RegexPattern="" />
-                    </toolkit:MultiValidationBehavior>
+                    <mct:MultiValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"  
+                                                 ValidStyle="{StaticResource ValidEntryStyle}"
+                                                 Flags="ValidateOnValueChanged">
+                        <mct:CharactersValidationBehavior x:Name="DigitValidation" 
+                                                          CharacterType="Digit" 
+                                                          MinimumCharacterTypeCount="1" 
+                                                          mct:MultiValidationBehavior.Error="1 chiffre" 
+                                                          RegexPattern="" />
+                        <mct:CharactersValidationBehavior x:Name="UpperValidation" 
+                                                          CharacterType="UppercaseLetter" 
+                                                          MinimumCharacterTypeCount="1" 
+                                                          mct:MultiValidationBehavior.Error="1 majuscule" 
+                                                          RegexPattern="" />
+                        <mct:CharactersValidationBehavior x:Name="SymbolValidation" 
+                                                          CharacterType="NonAlphanumericSymbol" 
+                                                          MinimumCharacterTypeCount="1" 
+                                                          mct:MultiValidationBehavior.Error="1 symbole" 
+                                                          RegexPattern=""  />
+                        <mct:CharactersValidationBehavior x:Name="AnyValidation" 
+                                                          CharacterType="Any" 
+                                                          MinimumCharacterTypeCount="8" 
+                                                          mct:MultiValidationBehavior.Error="8 caractères" 
+                                                          RegexPattern="" />
+                    </mct:MultiValidationBehavior>
                 </Entry.Behaviors>
             </Entry>
             <VerticalStackLayout>
