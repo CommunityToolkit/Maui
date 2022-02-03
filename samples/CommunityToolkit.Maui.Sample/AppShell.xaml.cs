@@ -76,7 +76,7 @@ public partial class AppShell : Shell
 	{
 		if (!viewModelMappings.ContainsKey(viewModelType))
 		{
-			throw new KeyNotFoundException($"No map for ${viewModelType} was found on navigation mappings");
+			throw new KeyNotFoundException($"No map for ${viewModelType} was found on navigation mappings. Please register your ViewModel in {nameof(AppShell)}.{nameof(viewModelMappings)}");
 		}
 
 		return viewModelMappings[viewModelType];
