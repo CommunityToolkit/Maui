@@ -31,24 +31,8 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 
 		if (e.CurrentSelection.FirstOrDefault() is SectionModel sectionModel)
 		{
-			await Shell.Current.GoToAsync(BuildRoot(sectionModel.ViewModelType));
+			await Shell.Current.GoToAsync(AppShell.GetPageRoute(sectionModel.ViewModelType));
 		}
-	}
-
-	static string BuildRoot(Type viewModelType)
-	{
-		var uri = new UriBuilder("", GetPagePathForViewModel(viewModelType));
-		return uri.Uri.OriginalString[..^1];
-	}
-
-	static string GetPagePathForViewModel(Type viewModelType)
-	{
-		if (!ViewModelLocator.mappings.ContainsKey(viewModelType))
-		{
-			throw new KeyNotFoundException($"No map for ${viewModelType} was found on navigation mappings");
-		}
-
-		return ViewModelLocator.mappings[viewModelType];
 	}
 
 	class GalleryDataTemplate : DataTemplate
@@ -100,11 +84,11 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 					Children =
 					{
 						new Label { Style = (Style)(Application.Current?.Resources["label_section_header"] ?? throw new InvalidOperationException()) }
-							.Row(CardRow.Title).FillExpand()
+							.Row(CardRow.Title)
 							.Bind(Label.TextProperty, nameof(SectionModel.Title)),
 
 						new Label { MaxLines = 4, LineBreakMode = LineBreakMode.WordWrap }
-							.Row(CardRow.Description).FillExpand().TextStart().TextTop()
+							.Row(CardRow.Description).TextStart().TextTop()
 							.Bind(Label.TextProperty, nameof(SectionModel.Description))
 					}
 				};

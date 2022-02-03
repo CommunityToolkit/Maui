@@ -15,4 +15,14 @@ public static class ServiceProvider
 
 	public static TService GetRequiredService<TService>() where TService : notnull
 		=> Current.GetRequiredService<TService>();
+
+	public static TService GetRequiredService<TService>(Type type) where TService : notnull
+	{
+		if (typeof(TService) != type)
+		{
+			throw new InvalidCastException($"{nameof(type)} must be of Type TService");
+		}
+
+		return (TService)Current.GetRequiredService(type);
+	}
 }

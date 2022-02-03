@@ -7,7 +7,7 @@ public class AlertsGalleryViewModel : BaseGalleryViewModel
 	public AlertsGalleryViewModel()
 		: base(new[]
 		{
-			new SectionModel(typeof(SnackbarViewModel), "Snackbar", "Show Snackbar")
+			SectionModel.Create<SnackbarViewModel>("Snackbar", "Show Snackbar")
 		})
 	{
 	}

@@ -19,14 +19,14 @@ public static class MauiProgram
 		var builder = MauiApp.CreateBuilder();
 		builder.UseMauiApp<App>().UseMauiCommunityToolkit();
 
-		// Add Gallery
+		// Add Gallery View Models
 		builder.Services.AddTransient<AlertsGalleryViewModel>();
 		builder.Services.AddTransient<BehaviorsGalleryViewModel>();
 		builder.Services.AddTransient<ConvertersGalleryViewModel>();
 		builder.Services.AddTransient<ExtensionsGalleryViewModel>();
 		builder.Services.AddTransient<MainGalleryViewModel>();
-		
-		// Add Behaviors
+
+		// Add Behaviors View Models
 		builder.Services.AddTransient<EventToCommandBehaviorViewModel>();
 		builder.Services.AddTransient<MaxLengthReachedBehaviorViewModel>();
 		builder.Services.AddTransient<ProgressBarAnimationBehaviorViewModel>();

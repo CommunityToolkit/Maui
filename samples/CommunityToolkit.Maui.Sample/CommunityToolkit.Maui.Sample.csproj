@@ -36,8 +36,8 @@
 
     <!-- Custom Fonts -->
     <MauiFont Include="Resources\Fonts\*" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="7.1.2" />
-    <PackageReference Include="CommunityToolkit.Maui.Markup" Version="1.0.0-pre3" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0-preview1" />
+    <PackageReference Include="CommunityToolkit.Maui.Markup" Version="1.0.0-pre5" />
   </ItemGroup>
 
   <PropertyGroup>
