@@ -1,5 +1,4 @@
-﻿using System;
-using CommunityToolkit.Maui.Markup;
+﻿using CommunityToolkit.Maui.Markup;
 
 namespace CommunityToolkit.Maui.Sample.Pages;
 

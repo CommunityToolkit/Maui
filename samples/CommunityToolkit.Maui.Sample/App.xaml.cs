@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Maui.Sample.Pages;
-using Application = Microsoft.Maui.Controls.Application;
+﻿using Application = Microsoft.Maui.Controls.Application;
 
 namespace CommunityToolkit.Maui.Sample;
 

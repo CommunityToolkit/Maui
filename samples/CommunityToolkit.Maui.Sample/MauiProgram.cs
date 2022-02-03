@@ -1,14 +1,9 @@
-﻿using CommunityToolkit.Maui.Sample.Pages;
-using CommunityToolkit.Maui.Sample.Pages.Alerts;
-using CommunityToolkit.Maui.Sample.Pages.Behaviors;
-using CommunityToolkit.Maui.Sample.Pages.Converters;
-using CommunityToolkit.Maui.Sample.Pages.Extensions;
-using CommunityToolkit.Maui.Sample.ViewModels;
+﻿using CommunityToolkit.Maui.Sample.ViewModels;
 using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-[assembly: XamlCompilationAttribute(XamlCompilationOptions.Compile)]
+[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
 namespace CommunityToolkit.Maui.Sample;
 

@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Sample.Models;
-using CommunityToolkit.Maui.Sample.Pages.Converters;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
