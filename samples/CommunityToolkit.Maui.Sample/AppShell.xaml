@@ -7,18 +7,22 @@
     xmlns:behaviors="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Behaviors"
     xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Converters"
     xmlns:extensions="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Extensions"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:sys="clr-namespace:System;assembly=netstandard"
     x:Class="CommunityToolkit.Maui.Sample.AppShell">
 
     <Shell.FlyoutHeader>
-        <Label Text=".NET MAUI Community Toolkit"
+        <Label Text="Toolkit Features"
                VerticalTextAlignment="Center"
-               HorizontalTextAlignment="Center"
+               HorizontalTextAlignment="Start"
                FontSize="24"
                Padding="4,0"
                Margin="0,0,0,12" />
     </Shell.FlyoutHeader>
 
+    <FlyoutItem Title="Welcome" Route="WelcomePage" Icon="dotnet_bot.png">
+        <ShellContent ContentTemplate="{DataTemplate pages:WelcomePage}" />
+    </FlyoutItem>
     <FlyoutItem Title="Alerts" Route="AlertsGalleryPage" Icon="dotnet_bot.png">
         <ShellContent ContentTemplate="{DataTemplate alerts:AlertsGalleryPage}" />
     </FlyoutItem>
