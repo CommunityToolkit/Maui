@@ -32,5 +32,5 @@ public class IsNullOrEmptyConverter : ValueConverterExtension, ICommunityToolkit
 		=> throw new NotImplementedException();
 
 	internal static bool ConvertInternal(object? value) =>
-		value == null || (value is string str && string.IsNullOrWhiteSpace(str));
+		value == null || (value is string str && string.IsNullOrEmpty(str));
 }
