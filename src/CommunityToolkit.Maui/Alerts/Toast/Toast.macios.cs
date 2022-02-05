@@ -1,5 +1,8 @@
-﻿using CommunityToolkit.Maui.Core.Views;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Views;
 using CoreGraphics;
+using Microsoft.Maui.Platform;
+using ObjCRuntime;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Alerts;
@@ -43,12 +46,13 @@ public partial class Toast
 
 		var cornerRadius = CreateCornerRadius();
 		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + ToastView.DefaultPadding;
+		
 		nativeToast = new ToastView(Text,
-											UIColor.LightGray,
+											Defaults.BackgroundColor.ToNative(),
 											cornerRadius,
-											UIColor.DarkTextColor,
-											UIFont.SystemFontOfSize(UIFont.LabelFontSize),
-											1,
+											Defaults.TextColor.ToNative(),
+											UIFont.SystemFontOfSize((nfloat)TextSize),
+											Defaults.CharacterSpacing,
 											padding)
 		{
 			Duration = GetDuration(Duration)

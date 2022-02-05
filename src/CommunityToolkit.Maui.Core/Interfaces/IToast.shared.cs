@@ -9,6 +9,11 @@ public interface IToast : IAlert
 	/// Toast duration
 	/// </summary>
 	ToastDuration Duration { get; }
+
+	/// <summary>
+	/// Toast font size
+	/// </summary>
+	double TextSize { get; }
 }
 
 /// <summary>

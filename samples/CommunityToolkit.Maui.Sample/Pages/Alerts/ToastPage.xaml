@@ -28,6 +28,9 @@
         <Button Clicked="ShowToastButtonClicked"
                 Text="Display Toast"/>
 
+         <Button Clicked="ShowCustomToastButtonClicked"
+                Text="Display Custom Toast"/>
+
     </VerticalStackLayout>
     
 </pages:BasePage>

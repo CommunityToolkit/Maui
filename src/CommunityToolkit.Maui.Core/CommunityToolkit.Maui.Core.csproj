@@ -81,4 +81,8 @@
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="CommunityToolkit.Maui" />
+  </ItemGroup>
+
 </Project>

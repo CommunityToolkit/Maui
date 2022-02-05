@@ -12,15 +12,20 @@ public partial class Toast : IToast
 	/// <inheritdoc/>
 	public ToastDuration Duration { get; set; } = ToastDuration.Short;
 
+	/// <inheritdoc/>
+	public double TextSize { get; set; } = Defaults.FontSize;
+
 	/// <summary>
 	/// Create new Toast
 	/// </summary>
 	/// <param name="message">Toast message</param>
 	/// <param name="duration">Toast duration</param>
+	/// <param name="textSize">Toast font size</param>
 	/// <returns>New instance of Toast</returns>
 	public static IToast Make(
 		string message,
-		ToastDuration duration = ToastDuration.Short)
+		ToastDuration duration = ToastDuration.Short,
+		double textSize = Defaults.FontSize)
 	{
 		ArgumentNullException.ThrowIfNull(message);
 
@@ -32,7 +37,8 @@ public partial class Toast : IToast
 		return new Toast()
 		{
 			Text = message,
-			Duration = duration
+			Duration = duration,
+			TextSize = textSize
 		};
 	}
 

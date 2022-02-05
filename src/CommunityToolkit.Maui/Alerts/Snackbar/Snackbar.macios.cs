@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Core.Views;
 using CoreGraphics;
 using Microsoft.Maui.Platform;
+using ObjCRuntime;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Alerts;
@@ -50,11 +51,11 @@ public partial class Snackbar
 											VisualOptions.BackgroundColor.ToNative(),
 											cornerRadius,
 											VisualOptions.TextColor.ToNative(),
-											UIFont.SystemFontOfSize((float)VisualOptions.Font.Size),
+											UIFont.SystemFontOfSize((nfloat)VisualOptions.Font.Size),
 											VisualOptions.CharacterSpacing,
 											ActionButtonText,
 											VisualOptions.ActionButtonTextColor.ToNative(),
-											UIFont.SystemFontOfSize((float)VisualOptions.ActionButtonFont.Size),
+											UIFont.SystemFontOfSize((nfloat)VisualOptions.ActionButtonFont.Size),
 											padding)
 		{
 			Action = Action,

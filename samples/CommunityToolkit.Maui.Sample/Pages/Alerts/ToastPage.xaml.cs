@@ -14,7 +14,13 @@ public partial class ToastPage : BasePage
 
 	async void ShowToastButtonClicked(object? sender, EventArgs args)
 	{
-		var toast = Toast.Make("This is a Toast.", ToastDuration.Long);
+		var toast = Toast.Make("This is a default Toast.");
+		await toast.Show();
+	}
+
+	async void ShowCustomToastButtonClicked(object? sender, EventArgs args)
+	{
+		var toast = Toast.Make("This is a big Toast.", ToastDuration.Long, 30d);
 		await toast.Show();
 	}
 }
