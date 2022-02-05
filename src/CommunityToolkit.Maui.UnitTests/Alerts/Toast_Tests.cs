@@ -20,13 +20,15 @@ public class Toast_Tests : BaseTest
 	{
 		var expectedToast = new Toast
 		{
+			TextSize = 30,
 			Duration = ToastDuration.Long,
 			Text = "Test"
 		};
 
 		var currentToast = Toast.Make(
 			"Test",
-			ToastDuration.Long);
+			ToastDuration.Long,
+			30);
 
 		currentToast.Should().BeEquivalentTo(expectedToast);
 	}
@@ -100,5 +102,14 @@ public class Toast_Tests : BaseTest
 	public void ToastMake_NewToastCreatedWithInvalidToastDuration_ShouldThrowInvalidEnumArgumentException(int duration)
 	{
 		Assert.Throws<InvalidEnumArgumentException>(() => Toast.Make("Invalid Duration", (ToastDuration)duration));
+	}
+
+	[Theory]
+	[InlineData(int.MinValue)]
+	[InlineData(-1)]
+	[InlineData(0)]
+	public void ToastMake_NewToastCreatedWithInvalidFontSize_ShouldThrowArgumentOutOfRangeException(int textSize)
+	{
+		Assert.Throws<ArgumentOutOfRangeException>(() => Toast.Make("Invalid text size", ToastDuration.Short, textSize));
 	}
 }

@@ -34,6 +34,11 @@ public partial class Toast : IToast
 			throw new InvalidEnumArgumentException(nameof(duration), (int)duration, typeof(ToastDuration));
 		}
 
+		if (textSize <= 0)
+		{
+			throw new ArgumentOutOfRangeException(nameof(textSize), "Toast font size must be positive");
+		}
+
 		return new Toast()
 		{
 			Text = message,
