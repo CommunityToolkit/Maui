@@ -29,6 +29,11 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
+            
+            <Label Text="Converter parameter allows to assume WhiteSpace is empty (if parameter is true)" TextColor="{StaticResource NormalLabelTextColor}" />
+            <Entry x:Name="InputEntry"/>
+            <Label Text="{Binding Source={x:Reference InputEntry}, Path=Text, Converter={StaticResource IsNullOrEmptyConverter}, ConverterParameter=true}"/>
+            <Label Text="{Binding Source={x:Reference InputEntry}, Path=Text, Converter={StaticResource IsNullOrEmptyConverter}, ConverterParameter=false}"/>
         </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

@@ -14,11 +14,15 @@ public class IsNullOrEmptyConverter : ValueConverterExtension, ICommunityToolkit
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
 	/// <param name="targetType">The type of the binding target property. This is not implemented.</param>
-	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
+	/// <param name="parameter">Additional parameter for the converter to check for WhiteSpace (true) instead of Empty (default. false) string in case the value is string.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>A <see cref="bool"/> indicating if the incoming value is null or empty.</returns>
 	[return: NotNull]
-	public object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture) => ConvertInternal(value);
+	public object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	{
+		var assumeWhiteSpaceIsEmpty = System.Convert.ToBoolean(parameter);
+		return ConvertInternal(value, assumeWhiteSpaceIsEmpty);
+	}
 
 	/// <summary>
 	/// This method is not implemented and will throw a <see cref="NotImplementedException"/>.
@@ -31,6 +35,6 @@ public class IsNullOrEmptyConverter : ValueConverterExtension, ICommunityToolkit
 	public object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 		=> throw new NotImplementedException();
 
-	internal static bool ConvertInternal(object? value) =>
-		value == null || (value is string str && string.IsNullOrEmpty(str));
+	internal static bool ConvertInternal(object? value, bool assumeWhiteSpaceIsEmpty) =>
+		value == null || (value is string str && (assumeWhiteSpaceIsEmpty ? string.IsNullOrWhiteSpace(str) : string.IsNullOrEmpty(str)));
 }
