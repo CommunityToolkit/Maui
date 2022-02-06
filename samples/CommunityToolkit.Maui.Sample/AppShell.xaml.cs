@@ -12,54 +12,54 @@ namespace CommunityToolkit.Maui.Sample;
 
 public partial class AppShell : Shell
 {
-	static readonly IReadOnlyDictionary<Type, string> viewModelMappings = new Dictionary<Type, string>()
+	static readonly IReadOnlyDictionary<Type, (Type GalleryPageType, Type ContentPageType)> viewModelMappings = new Dictionary<Type, (Type, Type)>()
 	{
 		// Add Alerts View Models
-		{ typeof(SnackbarViewModel), $"//{nameof(AlertsGalleryPage)}/{nameof(SnackbarPage)}" },
+		{ typeof(SnackbarViewModel), (typeof(AlertsGalleryPage), typeof(SnackbarPage)) },
 
 		// Add Behaviors View Models
-		{ typeof(CharactersValidationBehaviorViewModel), $"//{nameof(BehaviorsGalleryPage)}/{nameof(CharactersValidationBehaviorPage)}" },
-		{ typeof(EmailValidationBehaviorViewModel), $"//{nameof(BehaviorsGalleryPage)}/{nameof(EmailValidationBehaviorPage)}" },
-		{ typeof(EventToCommandBehaviorViewModel), $"//{nameof(BehaviorsGalleryPage)}/{nameof(EventToCommandBehaviorPage)}" },
-		{ typeof(MaskedBehaviorViewModel), $"//{nameof(BehaviorsGalleryPage)}/{nameof(MaskedBehaviorPage)}" },
-		{ typeof(MaxLengthReachedBehaviorViewModel), $"//{nameof(BehaviorsGalleryPage)}/{nameof(MaxLengthReachedBehaviorPage)}" },
-		{ typeof(MultiValidationBehaviorViewModel), $"//{nameof(BehaviorsGalleryPage)}/{nameof(MultiValidationBehaviorPage)}" },
-		{ typeof(NumericValidationBehaviorViewModel), $"//{nameof(BehaviorsGalleryPage)}/{nameof(NumericValidationBehaviorPage)}" },
-		{ typeof(ProgressBarAnimationBehaviorViewModel), $"//{nameof(BehaviorsGalleryPage)}/{nameof(ProgressBarAnimationBehaviorPage)}" },
-		{ typeof(RequiredStringValidationBehaviorViewModel), $"//{nameof(BehaviorsGalleryPage)}/{nameof(RequiredStringValidationBehaviorPage)}" },
-		{ typeof(SetFocusOnEntryCompletedBehaviorViewModel), $"//{nameof(BehaviorsGalleryPage)}/{nameof(SetFocusOnEntryCompletedBehaviorPage)}" },
-		{ typeof(TextValidationBehaviorViewModel), $"//{nameof(BehaviorsGalleryPage)}/{nameof(TextValidationBehaviorPage)}" },
-		{ typeof(UriValidationBehaviorViewModel), $"//{nameof(BehaviorsGalleryPage)}/{nameof(UriValidationBehaviorPage)}" },
-		{ typeof(UserStoppedTypingBehaviorViewModel), $"//{nameof(BehaviorsGalleryPage)}/{nameof(UserStoppedTypingBehaviorPage)}" },
+		{ typeof(CharactersValidationBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(CharactersValidationBehaviorPage)) },
+		{ typeof(EmailValidationBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(EmailValidationBehaviorPage)) },
+		{ typeof(EventToCommandBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(EventToCommandBehaviorPage)) },
+		{ typeof(MaskedBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(MaskedBehaviorPage)) },
+		{ typeof(MaxLengthReachedBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(MaxLengthReachedBehaviorPage)) },
+		{ typeof(MultiValidationBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(MultiValidationBehaviorPage)) },
+		{ typeof(NumericValidationBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(NumericValidationBehaviorPage)) },
+		{ typeof(ProgressBarAnimationBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(ProgressBarAnimationBehaviorPage)) },
+		{ typeof(RequiredStringValidationBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(RequiredStringValidationBehaviorPage)) },
+		{ typeof(SetFocusOnEntryCompletedBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(SetFocusOnEntryCompletedBehaviorPage)) },
+		{ typeof(TextValidationBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(TextValidationBehaviorPage)) },
+		{ typeof(UriValidationBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(UriValidationBehaviorPage)) },
+		{ typeof(UserStoppedTypingBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(UserStoppedTypingBehaviorPage)) },
 
 		// Add Converters View Models
-		{ typeof(BoolToObjectConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(BoolToObjectConverterPage)}" },
-		{ typeof(ColorsConvertersViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(ColorsConverterPage)}" },
-		{ typeof(DateTimeOffsetConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(DateTimeOffsetConverterPage)}" },
-		{ typeof(DoubleToIntConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(DoubleToIntConverterPage)}" },
-		{ typeof(EnumToBoolConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(EnumToBoolConverterPage)}" },
-		{ typeof(EnumToIntConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(EnumToIntConverterPage)}" },
-		{ typeof(EqualConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(EqualConverterPage)}" },
-		{ typeof(NotEqualConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(NotEqualConverterPage)}" },
-		{ typeof(ImageResourceConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(ImageResourceConverterPage)}" },
-		{ typeof(IndexToArrayItemConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(IndexToArrayItemConverterPage)}" },
-		{ typeof(IntToBoolConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(IntToBoolConverterPage)}" },
-		{ typeof(InvertedBoolConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(InvertedBoolConverterPage)}" },
-		{ typeof(IsNotNullOrEmptyConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(IsNotNullOrEmptyConverterPage)}" },
-		{ typeof(IsNullOrEmptyConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(IsNullOrEmptyConverterPage)}" },
-		{ typeof(ItemSelectedEventArgsConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(ItemSelectedEventArgsConverterPage)}" },
-		{ typeof(ItemTappedEventArgsConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(ItemTappedEventArgsConverterPage)}" },
-		{ typeof(ListIsNotNullOrEmptyConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(ListIsNotNullOrEmptyConverterPage)}" },
-		{ typeof(ListIsNullOrEmptyConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(ListIsNullOrEmptyConverterPage)}" },
-		{ typeof(ListToStringConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(ListToStringConverterPage)}" },
-		{ typeof(MathExpressionConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(MathExpressionConverterPage)}" },
-		{ typeof(MultiConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(MultiConverterPage)}" },
-		{ typeof(StringToListConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(StringToListConverterPage)}" },
-		{ typeof(TextCaseConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(TextCaseConverterPage)}" },
-		{ typeof(VariableMultiValueConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(VariableMultiValueConverterPage)}" },
+		{ typeof(BoolToObjectConverterViewModel), (typeof(ConvertersGalleryPage), typeof(BoolToObjectConverterPage)) },
+		{ typeof(ColorsConvertersViewModel), (typeof(ConvertersGalleryPage), typeof(ColorsConverterPage)) },
+		{ typeof(DateTimeOffsetConverterViewModel), (typeof(ConvertersGalleryPage), typeof(DateTimeOffsetConverterPage)) },
+		{ typeof(DoubleToIntConverterViewModel), (typeof(ConvertersGalleryPage), typeof(DoubleToIntConverterPage)) },
+		{ typeof(EnumToBoolConverterViewModel), (typeof(ConvertersGalleryPage), typeof(EnumToBoolConverterPage)) },
+		{ typeof(EnumToIntConverterViewModel), (typeof(ConvertersGalleryPage), typeof(EnumToIntConverterPage)) },
+		{ typeof(EqualConverterViewModel), (typeof(ConvertersGalleryPage), typeof(EqualConverterPage)) },
+		{ typeof(NotEqualConverterViewModel), (typeof(ConvertersGalleryPage), typeof(NotEqualConverterPage)) },
+		{ typeof(ImageResourceConverterViewModel), (typeof(ConvertersGalleryPage), typeof(ImageResourceConverterPage)) },
+		{ typeof(IndexToArrayItemConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IndexToArrayItemConverterPage)) },
+		{ typeof(IntToBoolConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IntToBoolConverterPage)) },
+		{ typeof(InvertedBoolConverterViewModel), (typeof(ConvertersGalleryPage), typeof(InvertedBoolConverterPage)) },
+		{ typeof(IsNotNullOrEmptyConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IsNotNullOrEmptyConverterPage)) },
+		{ typeof(IsNullOrEmptyConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IsNullOrEmptyConverterPage)) },
+		{ typeof(ItemSelectedEventArgsConverterViewModel), (typeof(ConvertersGalleryPage), typeof(ItemSelectedEventArgsConverterPage)) },
+		{ typeof(ItemTappedEventArgsConverterViewModel), (typeof(ConvertersGalleryPage), typeof(ItemTappedEventArgsConverterPage)) },
+		{ typeof(ListIsNotNullOrEmptyConverterViewModel), (typeof(ConvertersGalleryPage), typeof(ListIsNotNullOrEmptyConverterPage)) },
+		{ typeof(ListIsNullOrEmptyConverterViewModel), (typeof(ConvertersGalleryPage), typeof(ListIsNullOrEmptyConverterPage)) },
+		{ typeof(ListToStringConverterViewModel), (typeof(ConvertersGalleryPage), typeof(ListToStringConverterPage)) },
+		{ typeof(MathExpressionConverterViewModel), (typeof(ConvertersGalleryPage), typeof(MathExpressionConverterPage)) },
+		{ typeof(MultiConverterViewModel), (typeof(ConvertersGalleryPage), typeof(MultiConverterPage)) },
+		{ typeof(StringToListConverterViewModel), (typeof(ConvertersGalleryPage), typeof(StringToListConverterPage)) },
+		{ typeof(TextCaseConverterViewModel), (typeof(ConvertersGalleryPage), typeof(TextCaseConverterPage)) },
+		{ typeof(VariableMultiValueConverterViewModel), (typeof(ConvertersGalleryPage), typeof(VariableMultiValueConverterPage)) },
 
 		// Add Extensions View Models
-		{ typeof(ColorAnimationExtensionsViewModel), $"//{nameof(ExtensionsGalleryPage)}/{nameof(ColorAnimationExtensionsPage)}" },
+		{ typeof(ColorAnimationExtensionsViewModel), (typeof(ExtensionsGalleryPage), typeof(ColorAnimationExtensionsPage)) },
 	};
 
 	public AppShell()
@@ -71,67 +71,24 @@ public partial class AppShell : Shell
 
 	public static string GetPageRoute(Type viewModelType)
 	{
-		var uri = new UriBuilder("", GetPagePathForViewModel(viewModelType));
-		return uri.Uri.OriginalString[..^1];
-	}
-
-	static string GetPagePathForViewModel(Type viewModelType)
-	{
 		if (!viewModelMappings.ContainsKey(viewModelType))
 		{
 			throw new KeyNotFoundException($"No map for ${viewModelType} was found on navigation mappings. Please register your ViewModel in {nameof(AppShell)}.{nameof(viewModelMappings)}");
 		}
 
-		return viewModelMappings[viewModelType];
+		(Type GalleryPageType, Type ContentPageType) = viewModelMappings[viewModelType];
+
+		var uri = new UriBuilder("", GetPageRoute(GalleryPageType, ContentPageType));
+		return uri.Uri.OriginalString[..^1];
 	}
+
+	static string GetPageRoute(Type GalleryPageType, Type ContentPageType) => $"//{GalleryPageType.Name}/{ContentPageType.Name}";
 
 	static void RegisterRouting()
 	{
-		// Register Alerts Pages
-		Routing.RegisterRoute($"//{nameof(AlertsGalleryPage)}/{nameof(SnackbarPage)}", typeof(SnackbarPage));
-
-		// Register Behaviors Pages
-		Routing.RegisterRoute($"//{nameof(BehaviorsGalleryPage)}/{nameof(CharactersValidationBehaviorPage)}", typeof(CharactersValidationBehaviorPage));
-		Routing.RegisterRoute($"//{nameof(BehaviorsGalleryPage)}/{nameof(EmailValidationBehaviorPage)}", typeof(EmailValidationBehaviorPage));
-		Routing.RegisterRoute($"//{nameof(BehaviorsGalleryPage)}/{nameof(EventToCommandBehaviorPage)}", typeof(EventToCommandBehaviorPage));
-		Routing.RegisterRoute($"//{nameof(BehaviorsGalleryPage)}/{nameof(MaskedBehaviorPage)}", typeof(MaskedBehaviorPage));
-		Routing.RegisterRoute($"//{nameof(BehaviorsGalleryPage)}/{nameof(MaxLengthReachedBehaviorPage)}", typeof(MaxLengthReachedBehaviorPage));
-		Routing.RegisterRoute($"//{nameof(BehaviorsGalleryPage)}/{nameof(MultiValidationBehaviorPage)}", typeof(MultiValidationBehaviorPage));
-		Routing.RegisterRoute($"//{nameof(BehaviorsGalleryPage)}/{nameof(NumericValidationBehaviorPage)}", typeof(NumericValidationBehaviorPage));
-		Routing.RegisterRoute($"//{nameof(BehaviorsGalleryPage)}/{nameof(ProgressBarAnimationBehaviorPage)}", typeof(ProgressBarAnimationBehaviorPage));
-		Routing.RegisterRoute($"//{nameof(BehaviorsGalleryPage)}/{nameof(RequiredStringValidationBehaviorPage)}", typeof(RequiredStringValidationBehaviorPage));
-		Routing.RegisterRoute($"//{nameof(BehaviorsGalleryPage)}/{nameof(SetFocusOnEntryCompletedBehaviorPage)}", typeof(SetFocusOnEntryCompletedBehaviorPage));
-		Routing.RegisterRoute($"//{nameof(BehaviorsGalleryPage)}/{nameof(TextValidationBehaviorPage)}", typeof(TextValidationBehaviorPage));
-		Routing.RegisterRoute($"//{nameof(BehaviorsGalleryPage)}/{nameof(UriValidationBehaviorPage)}", typeof(UriValidationBehaviorPage));
-		Routing.RegisterRoute($"//{nameof(BehaviorsGalleryPage)}/{nameof(UserStoppedTypingBehaviorPage)}", typeof(UserStoppedTypingBehaviorPage));
-
-		// Register Converters Pages
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(BoolToObjectConverterPage)}", typeof(BoolToObjectConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(ColorsConverterPage)}", typeof(ColorsConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(DateTimeOffsetConverterPage)}", typeof(DateTimeOffsetConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(DoubleToIntConverterPage)}", typeof(DoubleToIntConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(EnumToBoolConverterPage)}", typeof(EnumToBoolConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(EnumToIntConverterPage)}", typeof(EnumToIntConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(EqualConverterPage)}", typeof(EqualConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(NotEqualConverterPage)}", typeof(NotEqualConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(ImageResourceConverterPage)}", typeof(ImageResourceConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(IndexToArrayItemConverterPage)}", typeof(IndexToArrayItemConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(IntToBoolConverterPage)}", typeof(IntToBoolConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(InvertedBoolConverterPage)}", typeof(InvertedBoolConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(IsNotNullOrEmptyConverterPage)}", typeof(IsNotNullOrEmptyConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(IsNullOrEmptyConverterPage)}", typeof(IsNullOrEmptyConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(ItemTappedEventArgsConverterPage)}", typeof(ItemTappedEventArgsConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(ItemSelectedEventArgsConverterPage)}", typeof(ItemSelectedEventArgsConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(ListIsNotNullOrEmptyConverterPage)}", typeof(ListIsNotNullOrEmptyConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(ListIsNullOrEmptyConverterPage)}", typeof(ListIsNotNullOrEmptyConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(ListToStringConverterPage)}", typeof(ListToStringConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(MathExpressionConverterPage)}", typeof(MathExpressionConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(MultiConverterPage)}", typeof(MultiConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(StringToListConverterPage)}", typeof(StringToListConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(TextCaseConverterPage)}", typeof(TextCaseConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(VariableMultiValueConverterPage)}", typeof(VariableMultiValueConverterPage));
-
-		// Register Extensions Pages
-		Routing.RegisterRoute($"//{nameof(ExtensionsGalleryPage)}/{nameof(ColorAnimationExtensionsPage)}", typeof(ColorAnimationExtensionsPage));
+		foreach(KeyValuePair<Type, (Type GalleryPageType, Type ContentPageType)> viewModelKeyValuePair in viewModelMappings)
+		{
+			Routing.RegisterRoute(GetPageRoute(viewModelKeyValuePair.Value.GalleryPageType, viewModelKeyValuePair.Value.ContentPageType), viewModelKeyValuePair.Value.ContentPageType);
+		}
 	}
 }
