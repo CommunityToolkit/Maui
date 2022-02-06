@@ -5,7 +5,6 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
 public class ConvertersGalleryViewModel : BaseGalleryViewModel
 {
-	public ConvertersGalleryViewModel()
 		: base(new[]
 		{
 			SectionModel.Create<BoolToObjectConverterViewModel>(nameof(BoolToObjectConverter),
@@ -76,6 +75,9 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
 
 			SectionModel.Create<ColorsConvertersViewModel>("ColorConverters",
 				"A group of converters that convert a Color to your strings values (RGB, HEX, HSL, etc)"),
+
+			SectionModel.Create<ItemSelectedEventArgsConverterViewModel>(nameof(ItemSelectedEventArgsConverter),
+				"A converter that allows you to extract the selected item in a ListView from the ItemSelectedChangedEventArgs object.")
 		})
 	{
 	}

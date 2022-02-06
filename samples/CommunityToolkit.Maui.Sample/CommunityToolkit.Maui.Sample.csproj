@@ -34,7 +34,6 @@
     <!-- Images -->
     <MauiImage Include="Resources\Images\*" />
 
-    <!-- Custom Fonts -->
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0-preview1" />
     <PackageReference Include="CommunityToolkit.Maui.Markup" Version="1.0.0-pre5" />
   </ItemGroup>
@@ -50,13 +49,11 @@
     <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
   </PropertyGroup>
 
-
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
     <!-- Required - WinUI does not yet have buildTransitive for everything -->
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0" />
     <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.30" />
   </ItemGroup>
-
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />

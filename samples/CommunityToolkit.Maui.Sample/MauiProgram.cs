@@ -26,7 +26,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<MaxLengthReachedBehaviorViewModel>();
 		builder.Services.AddTransient<ProgressBarAnimationBehaviorViewModel>();
 		builder.Services.AddTransient<UserStoppedTypingBehaviorViewModel>();
-		
+
 		// Add Converters View Models
 		builder.Services.AddTransient<DateTimeOffsetConverterViewModel>();
 		builder.Services.AddTransient<DoubleToIntConverterViewModel>();
@@ -36,6 +36,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<IntToBoolConverterViewModel>();
 		builder.Services.AddTransient<IsNotNullOrEmptyConverterViewModel>();
 		builder.Services.AddTransient<IsNullOrEmptyConverterViewModel>();
+		builder.Services.AddTransient<ItemSelectedEventArgsConverterViewModel>();
 		builder.Services.AddTransient<ItemTappedEventArgsViewModel>();
 		builder.Services.AddTransient<ListIsNotNullOrEmptyConverterViewModel>();
 		builder.Services.AddTransient<ListIsNullOrEmptyConverterViewModel>();
