@@ -28,7 +28,8 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
 										IndexToArrayItemConverterPage indexToArrayItemConverterPage,
 										ListIsNullOrEmptyConverterPage listIsNullOrEmptyConverterPage,
 										VariableMultiValueConverterPage variableMultiValueConverterPage,
-										ListIsNotNullOrEmptyConverterPage listIsNotNullOrEmptyConverterPage)
+										ListIsNotNullOrEmptyConverterPage listIsNotNullOrEmptyConverterPage,
+										ItemSelectedEventArgsConverterPage itemSelectedEventArgsConverterPage)
 		: base(new[]
 		{
 			new SectionModel(
@@ -149,6 +150,11 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
 				colorsConverterPage,
 				"ColorConverters",
 				"A group of converters that convert a Color to your strings values (RGB, HEX, HSL, etc)"),
+
+			new SectionModel(
+				itemSelectedEventArgsConverterPage,
+				nameof(ItemSelectedEventArgsConverter),
+				"A converter that allows you to extract the selected item in a ListView from the ItemSelectedChangedEventArgs object.")
 		})
 	{
 	}
