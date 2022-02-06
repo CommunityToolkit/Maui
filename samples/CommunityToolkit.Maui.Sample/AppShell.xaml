@@ -17,7 +17,24 @@
                HorizontalTextAlignment="Start"
                FontSize="24"
                Padding="4,0"
-               Margin="0,0,0,12" />
+               Margin="0,0,0,12">
+            <Label.Padding>
+                <OnPlatform x:TypeArguments="Thickness">
+                    <OnPlatform.Platforms>
+                        <!--Work-around to ensure content doesn't get clipped by iOS Status Bar + Naviagtion Bar-->
+                        <On Platform="iOS" Value="4, 100, 4, 0" />
+                    </OnPlatform.Platforms>
+                </OnPlatform>
+            </Label.Padding>
+            <Label.Margin>
+                <OnPlatform x:TypeArguments="Thickness">
+                    <OnPlatform.Platforms>
+                        <!--Work-around to ensure content doesn't get clipped by iOS Status Bar + Naviagtion Bar-->
+                        <On Platform="iOS" Value="0, 0, 0, 0" />
+                    </OnPlatform.Platforms>
+                </OnPlatform>
+            </Label.Margin>
+        </Label>
     </Shell.FlyoutHeader>
 
     <FlyoutItem Title="Welcome" Route="WelcomePage" Icon="dotnet_bot.png">
