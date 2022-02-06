@@ -14,32 +14,43 @@
             <mct:ItemTappedEventArgsConverter x:Key="ItemTappedEventArgsConverter" />
         </ResourceDictionary>
     </pages:BasePage.Resources>
-    
+
     <pages:BasePage.Content>
-        <ListView
-            ItemsSource="{Binding Items}"
-            SelectedItem="{Binding ItemSelected, Mode=TwoWay}"
-            HasUnevenRows="True">
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <ViewCell>
-                        <VerticalStackLayout Margin="6">
+        <FlexLayout
+        Direction="Column"
+        Padding="10">
 
-                            <Label Text="{Binding Id, StringFormat='Id:{0}'}"/>
+            <Label
+            Text="The ItemSelectedEventArgsConverter is a converter that allows users to extract the SelectedItem value from an SelectedItemChangedEventArgs object. It can subsequently be used in combination with EventToCommandBehavior."
+            TextColor="{StaticResource NormalLabelTextColor}"
+            Margin="0, 0, 0, 20" />
 
-                            <Label Text="{Binding Name, StringFormat='Name:{0}'}"/>
+            <ListView
+                BackgroundColor="Transparent"
+                ItemsSource="{Binding Items}"
+                SelectedItem="{Binding ItemSelected, Mode=TwoWay}"
+                HasUnevenRows="True">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <VerticalStackLayout Margin="6">
 
-                        </VerticalStackLayout>
-                    </ViewCell>
+                                <Label Text="{Binding Id, StringFormat='Id:{0}'}"/>
 
-                </DataTemplate>
-            </ListView.ItemTemplate>
+                                <Label Text="{Binding Name, StringFormat='Name:{0}'}"/>
 
-            <ListView.Behaviors>
-                <mctBehaviors:EventToCommandBehavior EventName="ItemTapped"
+                            </VerticalStackLayout>
+                        </ViewCell>
+
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+
+                <ListView.Behaviors>
+                    <mctBehaviors:EventToCommandBehavior EventName="ItemTapped"
                                               Command="{Binding ItemTappedCommand}"
                                               EventArgsConverter="{StaticResource ItemTappedEventArgsConverter}" />
-            </ListView.Behaviors>
-        </ListView>
+                </ListView.Behaviors>
+            </ListView>
+        </FlexLayout>
     </pages:BasePage.Content>
 </pages:BasePage>
