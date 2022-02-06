@@ -61,11 +61,6 @@
   </ItemGroup>
 
 
-  <ItemGroup>
-    <MauiXaml Update="Pages\Converters\ItemSelectedEventArgsConverterPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </MauiXaml>
-  </ItemGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
     <OutputType>WinExe</OutputType>
