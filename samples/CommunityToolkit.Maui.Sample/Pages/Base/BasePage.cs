@@ -10,6 +10,8 @@ public abstract class BasePage<TViewModel> : BasePage where TViewModel : BaseVie
 	protected BasePage(TViewModel viewModel) : base(viewModel)
 	{
 	}
+
+	public new TViewModel BindingContext => (TViewModel)base.BindingContext;
 }
 
 public abstract class BasePage : ContentPage
@@ -17,8 +19,13 @@ public abstract class BasePage : ContentPage
 	protected BasePage(object? viewModel = null)
 	{
 		BindingContext = viewModel;
-		Padding = 12;
-		On<iOS>().SetLargeTitleDisplay(LargeTitleDisplayMode.Always);
+
+		Padding = Device.RuntimePlatform switch
+		{
+			// Work-around to ensure content doesn't get clipped by iOS Status Bar + Naviagtion Bar
+			Device.iOS => new Thickness(12, 108, 12, 12),
+			_ => 12
+		};
 	}
 
 	protected override void OnAppearing()

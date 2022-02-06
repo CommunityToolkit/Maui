@@ -12,7 +12,13 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 	{
 		Title = title;
 
-		Padding = 0;
+		Padding = (Device.RuntimePlatform, Device.Idiom) switch
+		{
+			// Work-around to ensure content doesn't get clipped by iOS Status Bar + Naviagtion Bar
+			(Device.iOS, TargetIdiom.Phone) => new Thickness(0, 96, 0, 0),
+			(Device.iOS, _) => new Thickness(0, 84, 0, 0),
+			_ => 0
+		};
 
 		Content = new CollectionView
 		{
