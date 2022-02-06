@@ -13,6 +13,12 @@ public class ItemSelectedEventArgsConverterViewModel : BaseViewModel
 
 	public ICommand ItemSelectedCommand { get; }
 
+	public ItemSelectedEventArgsConverterViewModel()
+	{
+		labelText = "This label will display the selected item";
+		ItemSelectedCommand = new Command<string>(UpdateLabelText);
+	}
+
 	public string LabelText
 	{
 		get => labelText;
@@ -29,15 +35,8 @@ public class ItemSelectedEventArgsConverterViewModel : BaseViewModel
 		"Item 5",
 	};
 
-	public ItemSelectedEventArgsConverterViewModel()
-	{
-		labelText = "This label will display the selected item";
-		ItemSelectedCommand = new Command<string>(UpdateLabelText);
-	}
-
 	void UpdateLabelText(string text)
 	{
-		LabelText = $"{text} has been selected.";
+		LabelText = $"{text} has been selected";
 	}
-
 }

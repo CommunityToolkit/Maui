@@ -6,15 +6,14 @@
              xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
              x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.ItemSelectedEventArgsConverterPage"
              x:TypeArguments="vm:ItemSelectedEventArgsConverterViewModel"
-             x:DataType="vm:ItemSelectedEventArgsConverterViewModel"
-             >
+             x:DataType="vm:ItemSelectedEventArgsConverterViewModel">
 
     <pages:BasePage.Resources>
         <ResourceDictionary>
             <mct:ItemSelectedEventArgsConverter x:Key="ItemSelectedEventArgsConverter" />
         </ResourceDictionary>
     </pages:BasePage.Resources>
-    
+
     <FlexLayout
         Direction="Column"
         Padding="10">

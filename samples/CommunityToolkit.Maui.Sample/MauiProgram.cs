@@ -71,6 +71,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<IndexToArrayItemConverterPage>();
 		builder.Services.AddTransient<IntToBoolConverterPage>();
 		builder.Services.AddTransient<InvertedBoolConverterPage>();
+		builder.Services.AddTransient<ItemSelectedEventArgsConverterPage>();
 		builder.Services.AddTransient<IsNotNullOrEmptyConverterPage>();
 		builder.Services.AddTransient<IsNullOrEmptyConverterPage>();
 		builder.Services.AddTransient<ItemTappedEventArgsPage>();
@@ -83,7 +84,6 @@ public static class MauiProgram
 		builder.Services.AddTransient<StringToListConverterPage>();
 		builder.Services.AddTransient<TextCaseConverterPage>();
 		builder.Services.AddTransient<VariableMultiValueConverterPage>();
-		builder.Services.AddTransient<ItemSelectedEventArgsConverterPage>();
 
 		// Add Converters View Models
 		builder.Services.AddTransient<DateTimeOffsetConverterViewModel>();
@@ -94,11 +94,11 @@ public static class MauiProgram
 		builder.Services.AddTransient<IntToBoolConverterViewModel>();
 		builder.Services.AddTransient<IsNotNullOrEmptyConverterViewModel>();
 		builder.Services.AddTransient<IsNullOrEmptyConverterViewModel>();
+		builder.Services.AddTransient<ItemSelectedEventArgsConverterViewModel>();
 		builder.Services.AddTransient<ItemTappedEventArgsViewModel>();
 		builder.Services.AddTransient<ListIsNotNullOrEmptyConverterViewModel>();
 		builder.Services.AddTransient<ListIsNullOrEmptyConverterViewModel>();
 		builder.Services.AddTransient<ListToStringConverterViewModel>();
-		builder.Services.AddTransient<ItemSelectedEventArgsConverterViewModel>();
 
 		// Add Extensions Pages
 		builder.Services.AddTransient<ColorAnimationExtensionsPage>();
