@@ -7,17 +7,17 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+
 public class ItemSelectedEventArgsConverterViewModel : BaseViewModel
 {
-	string labelText;
-
-	public ICommand ItemSelectedCommand { get; }
+	string labelText = "This label will display the selected item";
 
 	public ItemSelectedEventArgsConverterViewModel()
 	{
-		labelText = "This label will display the selected item";
 		ItemSelectedCommand = new Command<string>(UpdateLabelText);
 	}
+
+	public ICommand ItemSelectedCommand { get; }
 
 	public string LabelText
 	{

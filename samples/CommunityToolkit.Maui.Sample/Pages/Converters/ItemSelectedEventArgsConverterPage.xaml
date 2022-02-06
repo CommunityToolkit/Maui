@@ -28,7 +28,7 @@
             TextColor="{StaticResource NormalLabelTextColor}"
             Margin="0, 0, 0, 20"/>
 
-        <ListView 
+        <ListView BackgroundColor="Transparent"
             ItemsSource="{Binding StringItemSource, Mode=OneWay}">
             <ListView.ItemTemplate>
                 <DataTemplate>
