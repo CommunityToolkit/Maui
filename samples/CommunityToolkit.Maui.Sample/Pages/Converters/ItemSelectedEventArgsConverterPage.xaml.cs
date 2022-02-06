@@ -9,6 +9,4 @@ public partial class ItemSelectedEventArgsConverterPage : BasePage<ItemSelectedE
 	{
 		InitializeComponent();
 	}
-
-
 }
