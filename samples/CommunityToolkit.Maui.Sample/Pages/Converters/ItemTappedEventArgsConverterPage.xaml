@@ -6,8 +6,8 @@
     xmlns:mctBehaviors="clr-namespace:CommunityToolkit.Maui.Behaviors;assembly=CommunityToolkit.Maui"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.ItemTappedEventArgsPage"
-    x:TypeArguments="vm:ItemTappedEventArgsViewModel">
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.ItemTappedEventArgsConverterPage"
+    x:TypeArguments="vm:ItemTappedEventArgsConverterViewModel">
 
     <pages:BasePage.Resources>
         <ResourceDictionary>

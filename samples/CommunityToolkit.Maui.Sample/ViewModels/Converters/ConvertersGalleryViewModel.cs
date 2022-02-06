@@ -5,6 +5,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
 public class ConvertersGalleryViewModel : BaseGalleryViewModel
 {
+	public ConvertersGalleryViewModel()
 		: base(new[]
 		{
 			SectionModel.Create<BoolToObjectConverterViewModel>(nameof(BoolToObjectConverter),
@@ -34,7 +35,7 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
 			SectionModel.Create<IntToBoolConverterViewModel>(nameof(IntToBoolConverter),
 				"A converter that allows users to convert an incoming int value to a bool."),
 
-			SectionModel.Create<ItemTappedEventArgsViewModel>(nameof(ItemTappedEventArgsConverter),
+			SectionModel.Create<ItemTappedEventArgsConverterViewModel>(nameof(ItemTappedEventArgsConverter),
 				"A converter that allows you to extract the value from ItemTappedEventArgs that can be used in combination with EventToCommandBehavior"),
 
 			SectionModel.Create<TextCaseConverterViewModel>(nameof(TextCaseConverter),

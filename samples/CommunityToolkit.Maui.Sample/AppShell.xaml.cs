@@ -5,6 +5,8 @@ using CommunityToolkit.Maui.Sample.Pages.Extensions;
 using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
+using Microsoft.Maui.Controls.PlatformConfiguration;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
 namespace CommunityToolkit.Maui.Sample;
 
@@ -45,7 +47,8 @@ public partial class AppShell : Shell
 		{ typeof(InvertedBoolConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(InvertedBoolConverterPage)}" },
 		{ typeof(IsNotNullOrEmptyConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(IsNotNullOrEmptyConverterPage)}" },
 		{ typeof(IsNullOrEmptyConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(IsNullOrEmptyConverterPage)}" },
-		{ typeof(ItemTappedEventArgsViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(ItemTappedEventArgsPage)}" },
+		{ typeof(ItemSelectedEventArgsConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(ItemSelectedEventArgsConverterPage)}" },
+		{ typeof(ItemTappedEventArgsConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(ItemTappedEventArgsConverterPage)}" },
 		{ typeof(ListIsNotNullOrEmptyConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(ListIsNotNullOrEmptyConverterPage)}" },
 		{ typeof(ListIsNullOrEmptyConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(ListIsNullOrEmptyConverterPage)}" },
 		{ typeof(ListToStringConverterViewModel), $"//{nameof(ConvertersGalleryPage)}/{nameof(ListToStringConverterPage)}" },
@@ -117,7 +120,8 @@ public partial class AppShell : Shell
 		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(InvertedBoolConverterPage)}", typeof(InvertedBoolConverterPage));
 		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(IsNotNullOrEmptyConverterPage)}", typeof(IsNotNullOrEmptyConverterPage));
 		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(IsNullOrEmptyConverterPage)}", typeof(IsNullOrEmptyConverterPage));
-		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(ItemTappedEventArgsPage)}", typeof(ItemTappedEventArgsPage));
+		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(ItemTappedEventArgsConverterPage)}", typeof(ItemTappedEventArgsConverterPage));
+		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(ItemSelectedEventArgsConverterPage)}", typeof(ItemSelectedEventArgsConverterPage));
 		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(ListIsNotNullOrEmptyConverterPage)}", typeof(ListIsNotNullOrEmptyConverterPage));
 		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(ListIsNullOrEmptyConverterPage)}", typeof(ListIsNotNullOrEmptyConverterPage));
 		Routing.RegisterRoute($"//{nameof(ConvertersGalleryPage)}/{nameof(ListToStringConverterPage)}", typeof(ListToStringConverterPage));
