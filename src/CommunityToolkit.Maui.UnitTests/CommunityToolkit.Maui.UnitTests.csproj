@@ -1,120 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-
-
-
-
-
-
   <PropertyGroup>
-
-
-
     <TargetFrameworks>net6.0</TargetFrameworks>
-
-
-
     <UseMaui>true</UseMaui>
-
-
-
     <IsPackable>false</IsPackable>
-
-
-
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-
-
-
-    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles</CompilerGeneratedFilesOutputPath>
-
-
-
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GF</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
 
-
-
-
-
-
-
   <ItemGroup>
-
-
-
     <PackageReference Include="FluentAssertions" Version="6.4.0" />
-
-
-
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
-
-
-
     <PackageReference Include="Coverlet.Collector" Version="3.1.2" PrivateAssets="all" />
-
-
-
     <PackageReference Include="Xunit" Version="2.4.1" />
-
-
-
     <PackageReference Include="Xunit.Runner.VisualStudio" Version="2.4.3" />
-
-
-
   </ItemGroup>
 
-
-
-
-
-
-
   <ItemGroup>
-
-
-
     <ProjectReference Include="..\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
-
-
-
     <ProjectReference Include="..\CommunityToolkit.Maui.SourceGenerators\CommunityToolkit.Maui.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-
-
-
   </ItemGroup>
 
-
-
-
-
-
-
   <ItemGroup>
-
-
-
-    <None Update="xunit.runner.json"> 
-
-
-
-    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-
-
-
-  </None>
-
-
-
-</ItemGroup>
-
-
-
-
-
-
+    <None Update="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
 </Project>
-
-
-

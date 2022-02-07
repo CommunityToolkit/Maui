@@ -13,14 +13,3 @@ public class AlertsGalleryViewModel : BaseGalleryViewModel
 	{
 	}
 }
-
-
-public class SnackbarViewModel : BaseViewModel
-{
-
-}
-
-public class ToastViewModel : BaseViewModel
-{
-
-}
