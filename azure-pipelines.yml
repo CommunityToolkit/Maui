@@ -81,6 +81,10 @@ jobs:
         displayName: 'Run Unit Tests'
         inputs:
           script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release'
+      - task: CmdLine@2
+        displayName: 'View MSBuild Version'
+        inputs:
+          script: 'dotnet msbuild --version'
       - task: VSBuild@1
         displayName: 'Build and Pack CommunityToolkit.Maui.Core'
         inputs:
