@@ -76,8 +76,8 @@ jobs:
         displayName: Set NuGet Version to PR Version
         condition: and(succeeded(), eq(variables['build.reason'], 'PullRequest'))
       # build, test and pack the packages
-      - script: msbuild "$(PathToCommunityToolkitCoreCsproj)" -r /property:Configuration=Release /restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'     
-      - script: msbuild "$(PathToCommunityToolkitCsproj)" -r /property:Configuration=Release /restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'     
+      - script: msbuild "$(PathToCommunityToolkitCoreCsproj)" -r /property:Configuration=Release /restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg     
+      - script: msbuild "$(PathToCommunityToolkitCsproj)" -r /property:Configuration=Release /restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg   
       # Sign NuGet Packages
       - task: PowerShell@2
         displayName: Authenticode Sign Packages
