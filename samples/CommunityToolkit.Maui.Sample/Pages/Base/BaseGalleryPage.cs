@@ -8,17 +8,23 @@ namespace CommunityToolkit.Maui.Sample.Pages;
 
 public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where TViewModel : BaseGalleryViewModel
 {
-	public BaseGalleryPage(string title, TViewModel viewModel) : base(viewModel)
+	protected BaseGalleryPage(string title, TViewModel viewModel) : base(viewModel)
 	{
 		Title = title;
 
-		Padding = 0;
+		Padding = (Device.RuntimePlatform, Device.Idiom) switch
+		{
+			// Work-around to ensure content doesn't get clipped by iOS Status Bar + Naviagtion Bar
+			(Device.iOS, TargetIdiom.Phone) => new Thickness(0, 96, 0, 0),
+			(Device.iOS, _) => new Thickness(0, 84, 0, 0),
+			_ => 0
+		};
 
 		Content = new CollectionView
 		{
 			SelectionMode = SelectionMode.Single,
 			ItemTemplate = new GalleryDataTemplate()
-		}.Bind(CollectionView.ItemsSourceProperty, nameof(BaseGalleryViewModel.Items))
+		}.Bind(ItemsView.ItemsSourceProperty, nameof(BaseGalleryViewModel.Items))
 		 .Invoke(collectionView => collectionView.SelectionChanged += HandleSelectionChanged);
 	}
 
@@ -31,7 +37,7 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 
 		if (e.CurrentSelection.FirstOrDefault() is SectionModel sectionModel)
 		{
-			await Navigation.PushAsync(sectionModel.Page);
+			await Shell.Current.GoToAsync(AppShell.GetPageRoute(sectionModel.ViewModelType));
 		}
 	}
 
