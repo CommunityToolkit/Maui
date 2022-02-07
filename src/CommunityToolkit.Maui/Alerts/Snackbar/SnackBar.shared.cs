@@ -129,7 +129,7 @@ public partial class Snackbar : ISnackbar
 #if ANDROID || IOS || MACCATALYST
 	protected virtual async ValueTask DisposeAsyncCore()
 	{
-		if (NativeSnackbar is not null)
+		if (nativeSnackbar is not null)
 		{
 			await Device.InvokeOnMainThreadAsync(() => NativeSnackbar.Dispose());
 		}
