@@ -93,12 +93,6 @@ jobs:
         displayName: 'Run Unit Tests'
         inputs:
           script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release'
-      - task: CmdLine@2
-        displayName: 'Prepare Community Toolkit for Packaging'
-        inputs:
-          script: |
-            dotnet clean $(PathToCommunityToolkitCsproj) -c Release
-            dotnet build $(PathToCommunityToolkitCsproj) -c Release
       - task: VSBuild@1
         displayName: 'Pack Community Toolkit'
         inputs:
