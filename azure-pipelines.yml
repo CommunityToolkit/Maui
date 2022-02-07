@@ -47,7 +47,7 @@ jobs:
         displayName: Install .NET 6.0.200-preview.22055.15
       - script: dotnet tool update -g dotnet-vs
       - pwsh: echo "##vso[task.setvariable variable=MSB]$(vs where preview --prop=InstallationPath)"
-      - script: vs install preview --quiet +Microsoft.VisualStudio.Component.ManagedDesktop.Core +Microsoft.NetCore.Component.DevelopmentTools
+      - script: vs install preview --quiet +Microsoft.VisualStudio.Component.ManagedDesktop.Core +Microsoft.NetCore.Component.DevelopmentTools +Microsoft.VisualStudio.Workload.Universal +Microsoft.VisualStudio.Workload.NetCrossPlat
         condition: eq(variables['MSB'], '')
       - pwsh: echo "##vso[task.prependpath]$(vs where preview --prop=InstallationPath)\MSBuild\Current\Bin"
       - task: CmdLine@2
