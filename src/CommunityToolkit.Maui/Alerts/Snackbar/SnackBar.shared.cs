@@ -134,7 +134,7 @@ public partial class Snackbar : ISnackbar
 			await Device.InvokeOnMainThreadAsync(() => NativeSnackbar.Dispose());
 		}
 #else
-		await Task.CompletedTask;
+		await ValueTask.CompletedTask;
 #endif
 	}
 

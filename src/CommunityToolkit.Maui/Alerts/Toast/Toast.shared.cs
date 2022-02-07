@@ -95,7 +95,7 @@ public partial class Toast : IToast
 			await Device.InvokeOnMainThreadAsync(() => NativeToast.Dispose());
 		}
 #else
-		await Task.CompletedTask;
+		await ValueTask.CompletedTask;
 #endif
 	}
 
