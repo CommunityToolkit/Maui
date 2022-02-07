@@ -86,14 +86,12 @@ jobs:
         inputs:
           solution: '$(PathToCommunityToolkitCoreCsproj)'
           configuration: 'Release'
-          vsVersion: "17.1"
           msbuildArgs: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'     
       - task: VSBuild@1
         displayName: 'Build and Pack CommunityToolkit.Maui'
         inputs:
           solution: '$(PathToCommunityToolkitCsproj)'
           configuration: 'Release'
-          vsVersion: "17.1"
           msbuildArgs: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'           
       # Sign NuGet Packages
       - task: PowerShell@2
