@@ -76,28 +76,8 @@ jobs:
         displayName: Set NuGet Version to PR Version
         condition: and(succeeded(), eq(variables['build.reason'], 'PullRequest'))
       # build, test and pack the packages
-      - task: CmdLine@2
-        displayName: 'Run Unit Tests'
-        inputs:
-          script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release'
-      - task: MSBuild@1
-        displayName: 'Build Community Toolkit Sample'
-        inputs:
-          solution: '$(PathToCommunityToolkitSampleCsproj)'
-          configuration: 'Release'      
-          msbuildArguments: '/restore'
-      - task: MSBuild@1
-        displayName: 'Build and Pack CommunityToolkit.Maui.Core'
-        inputs:
-          solution: '$(PathToCommunityToolkitCoreCsproj)'
-          configuration: 'Release'
-          msbuildArguments: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'     
-      - task: MSBuild@1
-        displayName: 'Build and Pack CommunityToolkit.Maui'
-        inputs:
-          solution: '$(PathToCommunityToolkitCsproj)'
-          configuration: 'Release'
-          msbuildArguments: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'
+      - script: msbuild "$(PathToCommunityToolkitCoreCsproj)" -r /property:Configuration=Release /restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'     
+      - script: msbuild "$(PathToCommunityToolkitCsproj)" -r /property:Configuration=Release /restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'     
       # Sign NuGet Packages
       - task: PowerShell@2
         displayName: Authenticode Sign Packages
