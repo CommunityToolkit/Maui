@@ -84,11 +84,11 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 					Children =
 					{
 						new Label { Style = (Style)(Application.Current?.Resources["label_section_header"] ?? throw new InvalidOperationException()) }
-							.Row(CardRow.Title).FillExpand()
+							.Row(CardRow.Title)
 							.Bind(Label.TextProperty, nameof(SectionModel.Title)),
 
 						new Label { MaxLines = 4, LineBreakMode = LineBreakMode.WordWrap }
-							.Row(CardRow.Description).FillExpand().TextStart().TextTop()
+							.Row(CardRow.Description).TextStart().TextTop()
 							.Bind(Label.TextProperty, nameof(SectionModel.Description))
 					}
 				};
