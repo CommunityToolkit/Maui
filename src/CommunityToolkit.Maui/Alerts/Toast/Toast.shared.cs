@@ -90,7 +90,7 @@ public partial class Toast : IToast
 #if ANDROID
 	protected virtual async ValueTask DisposeAsyncCore()
 	{
-		if (NativeToast is not null)
+		if (nativeToast is not null)
 		{
 			await Device.InvokeOnMainThreadAsync(() => NativeToast.Dispose());
 		}
