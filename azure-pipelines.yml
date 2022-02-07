@@ -84,7 +84,7 @@ jobs:
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.Core'
         inputs:
-          script: 'dotnet build $(PathToCommunityToolkitCoreCsproj) -c Release'
+          script: 'dotnet build $(PathToCommunityToolkitCoreCsproj) -c Release --no-incremental'
       - task: VSBuild@1
         displayName: 'Pack CommunityToolkit.Maui.Core'
         inputs:
@@ -95,7 +95,7 @@ jobs:
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui'
         inputs:
-          script: 'dotnet build $(PathToCommunityToolkitCsproj) -c Release'
+          script: 'dotnet build $(PathToCommunityToolkitCsproj) -c Release --no-incremental'
       - task: VSBuild@1
         displayName: 'Pack CommunityToolkit.Maui'
         inputs:
