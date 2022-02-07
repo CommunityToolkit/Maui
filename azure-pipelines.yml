@@ -45,6 +45,11 @@ jobs:
             dotnet --info
             Write-Host "##vso[task.prependpath]C:\\Users\\VssAdministrator\\AppData\\Local\\Microsoft\\dotnet"
         displayName: Install .NET 6.0.200-preview.22055.15
+      - script: dotnet tool update -g dotnet-vs
+      - pwsh: echo "##vso[task.setvariable variable=MSB]$(vs where preview --prop=InstallationPath)"
+      - script: vs install preview --quiet +Microsoft.VisualStudio.Component.ManagedDesktop.Core +Microsoft.NetCore.Component.DevelopmentTools
+        condition: eq(variables['MSB'], '')
+      - pwsh: echo "##vso[task.prependpath]$(vs where preview --prop=InstallationPath)\MSBuild\Current\Bin"
       - task: CmdLine@2
         displayName: 'Install .NET MAUI Workload'
         inputs:
@@ -79,22 +84,20 @@ jobs:
         displayName: 'Build Community Toolkit Sample'
         inputs:
           solution: '$(PathToCommunityToolkitSampleCsproj)'
-          configuration: 'Release'
-          restoreNugetPackages: 'true'          
+          configuration: 'Release'      
+          msbuildArguments: '/restore'
       - task: MSBuild@1
         displayName: 'Build and Pack CommunityToolkit.Maui.Core'
         inputs:
           solution: '$(PathToCommunityToolkitCoreCsproj)'
           configuration: 'Release'
-          restoreNugetPackages: 'true'
           msbuildArguments: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'     
       - task: MSBuild@1
         displayName: 'Build and Pack CommunityToolkit.Maui'
         inputs:
           solution: '$(PathToCommunityToolkitCsproj)'
           configuration: 'Release'
-          restoreNugetPackages: 'true'
-          msbuildArguments: '-t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'
+          msbuildArguments: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'
       # Sign NuGet Packages
       - task: PowerShell@2
         displayName: Authenticode Sign Packages
