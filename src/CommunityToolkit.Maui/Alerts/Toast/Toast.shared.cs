@@ -87,17 +87,20 @@ public partial class Toast : IToast
 	/// <summary>
 	/// Dispose Toast
 	/// </summary>
+#if ANDROID
 	protected virtual async ValueTask DisposeAsyncCore()
 	{
-#if ANDROID
-		if(NativeToast is not null)
+		if (NativeToast is not null)
 		{
 			await Device.InvokeOnMainThreadAsync(() => NativeToast.Dispose());
 		}
-#else
-		await ValueTask.CompletedTask;
-#endif
 	}
+#else
+	protected virtual ValueTask DisposeAsyncCore()
+	{
+		return ValueTask.CompletedTask;
+    }
+#endif
 
 #if IOS || MACCATALYST || WINDOWS
 	static TimeSpan GetDuration(ToastDuration duration)

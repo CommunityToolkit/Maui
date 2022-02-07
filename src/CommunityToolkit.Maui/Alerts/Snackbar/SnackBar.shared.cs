@@ -126,17 +126,20 @@ public partial class Snackbar : ISnackbar
 	/// <summary>
 	/// Dispose Snackbar
 	/// </summary>
+#if ANDROID || IOS || MACCATALYST
 	protected virtual async ValueTask DisposeAsyncCore()
 	{
-#if ANDROID || IOS || MACCATALYST
 		if (NativeSnackbar is not null)
 		{
 			await Device.InvokeOnMainThreadAsync(() => NativeSnackbar.Dispose());
 		}
-#else
-		await ValueTask.CompletedTask;
-#endif
 	}
+#else
+	protected virtual ValueTask DisposeAsyncCore()
+	{
+		return ValueTask.CompletedTask;
+    }
+#endif
 
 	static TimeSpan GetDefaultTimeSpan() => TimeSpan.FromSeconds(3);
 
