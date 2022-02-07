@@ -4,7 +4,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels;
 
 public abstract class BaseGalleryViewModel : BaseViewModel
 {
-	public BaseGalleryViewModel(IEnumerable<SectionModel> items)
+	protected BaseGalleryViewModel(IEnumerable<SectionModel> items)
 	{
 		Items = items.OrderBy(x => x.Title).ToList();
 	}

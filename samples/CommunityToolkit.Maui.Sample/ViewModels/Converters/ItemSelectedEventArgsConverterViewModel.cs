@@ -10,6 +10,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
 public class ItemSelectedEventArgsConverterViewModel : BaseViewModel
 {
+	string? itemSelected;
 	string labelText = "This label will display the selected item";
 
 	public ItemSelectedEventArgsConverterViewModel()
@@ -18,6 +19,12 @@ public class ItemSelectedEventArgsConverterViewModel : BaseViewModel
 	}
 
 	public ICommand ItemSelectedCommand { get; }
+
+	public string? ItemSelected
+	{
+		get => itemSelected;
+		set => SetProperty(ref itemSelected, value);
+	}
 
 	public string LabelText
 	{
@@ -38,5 +45,6 @@ public class ItemSelectedEventArgsConverterViewModel : BaseViewModel
 	void UpdateLabelText(string text)
 	{
 		LabelText = $"{text} has been selected";
+		ItemSelected = null;
 	}
 }
