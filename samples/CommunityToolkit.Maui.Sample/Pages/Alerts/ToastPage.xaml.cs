@@ -1,7 +1,5 @@
-﻿using System.Reflection;
-using CommunityToolkit.Maui.Alerts;
+﻿using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Alerts;
 
