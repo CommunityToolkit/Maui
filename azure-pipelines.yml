@@ -93,6 +93,15 @@ jobs:
           solution: '$(PathToCommunityToolkitCsproj)'
           configuration: 'Release'
           msbuildArgs: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'
+      - task: PowerShell@2
+        displayName: 'Publish result'
+        inputs:
+          targetType: 'inline'
+          script: |
+            $source = ".\src"
+            $filter = "nupkg"
+            Get-ChildItem -Path $source -Recurse | Where-Object { $_.Extension -match $filter } | Copy-Item -Destination "$(Build.ArtifactStagingDirectory)/nuget2"
+          pwsh: true
       # Sign NuGet Packages
       - task: PowerShell@2
         displayName: Authenticode Sign Packages
@@ -109,6 +118,11 @@ jobs:
         inputs:
           artifactName: nuget
           pathToPublish: '$(Build.ArtifactStagingDirectory)/nuget'
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish NuGets'
+        inputs:
+          artifactName: nuget2
+          pathToPublish: '$(Build.ArtifactStagingDirectory)/nuget2'
 
   - job: build_macos
     displayName: Build macOS Library
@@ -148,8 +162,27 @@ jobs:
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit.Maui.Core NuGet'
         inputs:
-          script: 'dotnet pack $(PathToCommunityToolkitCoreCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget'
+          script: 'dotnet pack $(PathToCommunityToolkitCoreCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nugetmac'
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit.Maui NuGet'
         inputs:
-          script: 'dotnet pack $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget'
+          script: 'dotnet pack $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nugetmac'
+      - task: PowerShell@2
+        displayName: 'Publish result'
+        inputs:
+          targetType: 'inline'
+          script: |
+            $source = ".\src"
+            $filter = "nupkg"
+            Get-ChildItem -Path $source -Recurse | Where-Object { $_.Extension -match $filter } | Copy-Item -Destination "$(Build.ArtifactStagingDirectory)/nugetmac2"
+          pwsh: true
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish NuGets'
+        inputs:
+          artifactName: nugetmac
+          pathToPublish: '$(Build.ArtifactStagingDirectory)/nugetmac'
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish NuGets'
+        inputs:
+          artifactName: nugetmac2
+          pathToPublish: '$(Build.ArtifactStagingDirectory)/nugetmac2'
