@@ -27,10 +27,7 @@ public partial class Toast
 		}
 	}
 
-	/// <summary>
-	/// Dismiss Toast
-	/// </summary>
-	public virtual async partial Task Dismiss(CancellationToken token)
+	private partial void DismissNative(CancellationToken token)
 	{
 		if (NativeToast is not null)
 		{
@@ -42,10 +39,7 @@ public partial class Toast
 		}
 	}
 
-	/// <summary>
-	/// Show Toast
-	/// </summary>
-	public partial void Show(CancellationToken token)
+	private partial void ShowNative(CancellationToken token)
 	{
 		DismissNative(token);
 		token.ThrowIfCancellationRequested();
