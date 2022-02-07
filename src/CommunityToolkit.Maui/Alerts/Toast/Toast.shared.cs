@@ -1,5 +1,5 @@
-﻿using CommunityToolkit.Maui.Core;
-using System.ComponentModel;
+﻿using System.ComponentModel;
+using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Alerts;
 
@@ -50,30 +50,28 @@ public partial class Toast : IToast
 	/// <summary>
 	/// Show Toast
 	/// </summary>
-	public virtual partial Task Show(CancellationToken token = default);
+	public virtual Task Show(CancellationToken token = default) => Device.InvokeOnMainThreadAsync(() => ShowNative(token));
 
 	/// <summary>
 	/// Dismiss Toast
 	/// </summary>
-	public virtual partial Task Dismiss(CancellationToken token = default);
+	public virtual Task Dismiss(CancellationToken token = default) => Device.InvokeOnMainThreadAsync(() => DismissNative(token));
 
 #if !(IOS || ANDROID || MACCATALYST || WINDOWS)
 	/// <summary>
 	/// Show Toast
 	/// </summary>
-	public virtual partial Task Show(CancellationToken token)
+	private partial void ShowNative(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
-		return Task.CompletedTask;
 	}
 
 	/// <summary>
 	/// Dismiss Toast
 	/// </summary>
-	public virtual partial Task Dismiss(CancellationToken token)
+	private partial void DismissNative(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
-		return Task.CompletedTask;
 	}
 #endif
 
@@ -92,7 +90,10 @@ public partial class Toast : IToast
 	protected virtual async ValueTask DisposeAsyncCore()
 	{
 #if ANDROID
-		await Device.InvokeOnMainThreadAsync(() => nativeToast?.Dispose());
+		if(NativeToast is not null)
+		{
+			await Device.InvokeOnMainThreadAsync(() => NativeToast.Dispose());
+		}
 #else
 		await Task.CompletedTask;
 #endif
@@ -109,4 +110,7 @@ public partial class Toast : IToast
 		};
 	}
 #endif
+
+	private partial void ShowNative(CancellationToken token);
+	private partial void DismissNative(CancellationToken token);
 }

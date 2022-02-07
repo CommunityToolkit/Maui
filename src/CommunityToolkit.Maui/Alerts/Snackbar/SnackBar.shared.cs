@@ -85,16 +85,16 @@ public partial class Snackbar : ISnackbar
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	public virtual partial Task Show(CancellationToken token = default);
+	public virtual Task Show(CancellationToken token = default) => Device.InvokeOnMainThreadAsync(() => ShowNative(token));
 
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
-	public virtual partial Task Dismiss(CancellationToken token = default);
+	public virtual Task Dismiss(CancellationToken token = default) => Device.InvokeOnMainThreadAsync(() => DismissNative(token));
 
 #if !(IOS || ANDROID || MACCATALYST || WINDOWS)
 	/// <inheritdoc/>
-	public virtual partial Task Show(CancellationToken token)
+	private partial Task ShowNative(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 
@@ -104,7 +104,7 @@ public partial class Snackbar : ISnackbar
 	}
 
 	/// <inheritdoc/>
-	public virtual partial Task Dismiss(CancellationToken token)
+	private partial Task DismissNative(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 
@@ -129,9 +129,9 @@ public partial class Snackbar : ISnackbar
 	protected virtual async ValueTask DisposeAsyncCore()
 	{
 #if ANDROID || IOS || MACCATALYST
-		if (nativeSnackbar is not null)
+		if (NativeSnackbar is not null)
 		{
-			await Device.InvokeOnMainThreadAsync(() => nativeSnackbar.Dispose());
+			await Device.InvokeOnMainThreadAsync(() => NativeSnackbar.Dispose());
 		}
 #else
 		await Task.CompletedTask;
@@ -139,6 +139,9 @@ public partial class Snackbar : ISnackbar
 	}
 
 	static TimeSpan GetDefaultTimeSpan() => TimeSpan.FromSeconds(3);
+
+	private partial Task ShowNative(CancellationToken token);
+	private partial Task DismissNative(CancellationToken token);
 
 	void OnShown()
 	{

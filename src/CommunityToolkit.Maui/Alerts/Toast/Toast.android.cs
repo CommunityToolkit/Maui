@@ -8,45 +8,49 @@ namespace CommunityToolkit.Maui.Alerts;
 public partial class Toast
 {
 	static AndroidToast? nativeToast;
-	static readonly SemaphoreSlim semaphoreSlim = new(1, 1);
 
-	/// <summary>
-	/// Dismiss Toast
-	/// </summary>
-	public virtual async partial Task Dismiss(CancellationToken token)
+	static AndroidToast? NativeToast
 	{
-		if (nativeToast is null)
+		get
 		{
-			return;
+			return MainThread.IsMainThread
+				? nativeToast
+				: throw new InvalidOperationException($"{nameof(nativeToast)} can only be called from the Main Thread");
 		}
-
-		await semaphoreSlim.WaitAsync(token);
-
-		try
+		set
 		{
-			token.ThrowIfCancellationRequested();
+			if (!MainThread.IsMainThread)
+			{
+				throw new InvalidOperationException($"{nameof(nativeToast)} can only be called from the Main Thread");
+			}
 
-			nativeToast.Cancel();
-		}
-		finally
-		{
-			semaphoreSlim.Release();
+			nativeToast = value;
 		}
 	}
 
-	/// <summary>
-	/// Show Toast
-	/// </summary>
-	public virtual async partial Task Show(CancellationToken token)
+	private partial void DismissNative(CancellationToken token)
 	{
-		await Dismiss(token);
+		if (NativeToast is not null)
+		{
+			token.ThrowIfCancellationRequested();
+
+			NativeToast.Cancel();
+		}
+	}
+
+	private partial void ShowNative(CancellationToken token)
+	{
+		DismissNative(token);
+
 		token.ThrowIfCancellationRequested();
 
 		var styledText = new SpannableStringBuilder(Text);
-		styledText.SetSpan( new AbsoluteSizeSpan((int)TextSize, true), 0, Text.Length, 0);
-		nativeToast = AndroidToast.MakeText(Platform.AppContext, styledText, GetToastLength(Duration))
+		styledText.SetSpan(new AbsoluteSizeSpan((int)TextSize, true), 0, Text.Length, 0);
+
+		NativeToast = Android.Widget.Toast.MakeText(Platform.AppContext, styledText, GetToastLength(Duration))
 						  ?? throw new Exception("Unable to create toast");
-		nativeToast.Show();
+
+		NativeToast.Show();
 	}
 
 	static ToastLength GetToastLength(Core.ToastDuration duration)

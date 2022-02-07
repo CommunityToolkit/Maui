@@ -8,46 +8,54 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Snackbar
 {
-	readonly SemaphoreSlim semaphoreSlim = new(1, 1);
-
 	static SnackbarView? nativeSnackbar;
+
+	static SnackbarView? NativeSnackbar
+	{
+		get
+		{
+			return MainThread.IsMainThread
+				? nativeSnackbar
+				: throw new InvalidOperationException($"{nameof(nativeSnackbar)} can only be called from the Main Thread");
+		}
+		set
+		{
+			if (!MainThread.IsMainThread)
+			{
+				throw new InvalidOperationException($"{nameof(nativeSnackbar)} can only be called from the Main Thread");
+			}
+
+			nativeSnackbar = value;
+		}
+	}
 
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
-	public virtual async partial Task Dismiss(CancellationToken token)
+	private partial Task DismissNative(CancellationToken token)
 	{
-		if (nativeSnackbar is null)
-		{
-			return;
-		}
-
-		await semaphoreSlim.WaitAsync(token);
-
-		try
+		if (NativeSnackbar is not null)
 		{
 			token.ThrowIfCancellationRequested();
-			nativeSnackbar.Dismiss();
-			nativeSnackbar = null;
+			NativeSnackbar.Dismiss();
+			NativeSnackbar = null;
 		}
-		finally
-		{
-			semaphoreSlim.Release();
-		}
+
+		return Task.CompletedTask;
 	}
 
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	public virtual async partial Task Show(CancellationToken token)
+	private partial async Task ShowNative(CancellationToken token)
 	{
-		await Dismiss(token);
+		await DismissNative(token);
 		token.ThrowIfCancellationRequested();
 
 		var cornerRadius = GetCornerRadius(VisualOptions.CornerRadius);
 
 		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + ToastView.DefaultPadding;
-		nativeSnackbar = new SnackbarView(Text,
+		NativeSnackbar = new SnackbarView(Text,
 											VisualOptions.BackgroundColor.ToNative(),
 											cornerRadius,
 											VisualOptions.TextColor.ToNative(),
@@ -65,7 +73,7 @@ public partial class Snackbar
 			OnShown = OnShown
 		};
 
-		nativeSnackbar.Show();
+		NativeSnackbar.Show();
 
 		static T? GetMaximum<T>(params T[] items) => items.Max();
 	}

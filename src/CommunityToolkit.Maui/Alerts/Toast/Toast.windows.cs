@@ -7,39 +7,47 @@ namespace CommunityToolkit.Maui.Alerts;
 public partial class Toast
 {
 	static ToastNotification? nativeToast;
-	static readonly SemaphoreSlim semaphoreSlim = new(1, 1);
+
+	static ToastNotification? NativeToast
+	{
+		get
+		{
+			return MainThread.IsMainThread
+				? nativeToast
+				: throw new InvalidOperationException($"{nameof(nativeToast)} can only be called from the Main Thread");
+		}
+		set
+		{
+			if (!MainThread.IsMainThread)
+			{
+				throw new InvalidOperationException($"{nameof(nativeToast)} can only be called from the Main Thread");
+			}
+
+			nativeToast = value;
+		}
+	}
 
 	/// <summary>
 	/// Dismiss Toast
 	/// </summary>
 	public virtual async partial Task Dismiss(CancellationToken token)
 	{
-		if (nativeToast is null)
-		{
-			return;
-		}
-
-		await semaphoreSlim.WaitAsync(token);
-
-		try
+		if (NativeToast is not null)
 		{
 			token.ThrowIfCancellationRequested();
 			ToastNotificationManager.History.Clear();
-			nativeToast.ExpirationTime = DateTimeOffset.Now;
-			nativeToast = null;
-		}
-		finally
-		{
-			semaphoreSlim.Release();
+
+			NativeToast.ExpirationTime = DateTimeOffset.Now;
+			NativeToast = null;
 		}
 	}
 
 	/// <summary>
 	/// Show Toast
 	/// </summary>
-	public virtual async partial Task Show(CancellationToken token)
+	public partial void Show(CancellationToken token)
 	{
-		await Dismiss(token);
+		DismissNative(token);
 		token.ThrowIfCancellationRequested();
 
 		var toastContentBuilder = new ToastContentBuilder()
@@ -51,11 +59,11 @@ public partial class Toast
 		var xmlDocument = new XmlDocument();
 		xmlDocument.LoadXml(toastContent.GetContent());
 
-		nativeToast = new ToastNotification(xmlDocument)
+		NativeToast = new ToastNotification(xmlDocument)
 		{
 			ExpirationTime = DateTimeOffset.Now.Add(GetDuration(Duration))
 		};
 
-		ToastNotificationManager.CreateToastNotifier().Show(nativeToast);
+		ToastNotificationManager.CreateToastNotifier().Show(NativeToast);
 	}
 }

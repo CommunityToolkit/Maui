@@ -10,44 +10,48 @@ namespace CommunityToolkit.Maui.Alerts;
 public partial class Toast
 {
 	static ToastView? nativeToast;
-	static readonly SemaphoreSlim semaphoreSlim = new(1, 1);
 
-	/// <summary>
-	/// Dismiss Toast
-	/// </summary>
-	public virtual async partial Task Dismiss(CancellationToken token)
+	static ToastView? NativeToast
 	{
-		if (nativeToast is null)
+		get
 		{
-			return;
+			return MainThread.IsMainThread
+				? nativeToast
+				: throw new InvalidOperationException($"{nameof(nativeToast)} can only be called from the Main Thread");
 		}
+		set
+		{
+			if (!MainThread.IsMainThread)
+			{
+				throw new InvalidOperationException($"{nameof(nativeToast)} can only be called from the Main Thread");
+			}
 
-		await semaphoreSlim.WaitAsync(token);
+			nativeToast = value;
+		}
+	}
 
-		try
+	private partial void DismissNative(CancellationToken token)
+	{
+		if (NativeToast is not null)
 		{
 			token.ThrowIfCancellationRequested();
 
-			nativeToast.Dismiss();
-		}
-		finally
-		{
-			semaphoreSlim.Release();
+			NativeToast.Dismiss();
 		}
 	}
 
 	/// <summary>
 	/// Show Toast
 	/// </summary>
-	public virtual async partial Task Show(CancellationToken token)
+	private partial void ShowNative(CancellationToken token)
 	{
-		await Dismiss(token);
+		DismissNative(token);
 		token.ThrowIfCancellationRequested();
 
 		var cornerRadius = CreateCornerRadius();
 		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + ToastView.DefaultPadding;
-		
-		nativeToast = new ToastView(Text,
+
+		NativeToast = new ToastView(Text,
 											Defaults.BackgroundColor.ToNative(),
 											cornerRadius,
 											Defaults.TextColor.ToNative(),
@@ -58,7 +62,7 @@ public partial class Toast
 			Duration = GetDuration(Duration)
 		};
 
-		nativeToast.Show();
+		NativeToast.Show();
 
 		static T? GetMaximum<T>(params T[] items) => items.Max();
 	}

@@ -15,65 +15,69 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Snackbar
 {
-	static readonly SemaphoreSlim semaphoreSlim = new(1, 1);
-
 	static AndroidSnackbar? nativeSnackbar;
 	TaskCompletionSource<bool>? dismissedTCS;
 
-	/// <summary>
-	/// Dismiss Snackbar
-	/// </summary>
-	public virtual async partial Task Dismiss(CancellationToken token)
+	static AndroidSnackbar? NativeSnackbar
 	{
-		if (nativeSnackbar is null)
+		get
+		{
+			return MainThread.IsMainThread
+				? nativeSnackbar
+				: throw new InvalidOperationException($"{nameof(nativeSnackbar)} can only be called from the Main Thread");
+		}
+		set
+		{
+			if (!MainThread.IsMainThread)
+			{
+				throw new InvalidOperationException($"{nameof(nativeSnackbar)} can only be called from the Main Thread");
+			}
+
+			nativeSnackbar = value;
+		}
+	}
+
+	private async partial Task DismissNative(CancellationToken token)
+	{
+		if (NativeSnackbar is null)
 		{
 			dismissedTCS = null;
 			return;
 		}
+		token.ThrowIfCancellationRequested();
 
-		await semaphoreSlim.WaitAsync(token);
+		NativeSnackbar.Dismiss();
 
-		try
+		if (dismissedTCS is not null)
 		{
-			token.ThrowIfCancellationRequested();
-
-			nativeSnackbar.Dismiss();
-
-			if (dismissedTCS is not null)
-			{
-				await dismissedTCS.Task;
-			}
-		}
-		finally
-		{
-			semaphoreSlim.Release();
+			await dismissedTCS.Task;
 		}
 	}
 
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	public virtual async partial Task Show(CancellationToken token)
+	private async partial Task ShowNative(CancellationToken token)
 	{
-		await Dismiss(token);
+		await DismissNative(token);
 		token.ThrowIfCancellationRequested();
 
 		var rootView = Microsoft.Maui.Essentials.Platform.GetCurrentActivity(true).Window?.DecorView.FindViewById(Android.Resource.Id.Content)
 			?? throw new NotSupportedException("Unable to retrieve snackbar parent");
 
-		nativeSnackbar = AndroidSnackbar.Make(rootView, Text, (int)Duration.TotalMilliseconds);
-		var snackbarView = nativeSnackbar.View;
+		NativeSnackbar = AndroidSnackbar.Make(rootView, Text, (int)Duration.TotalMilliseconds);
+		var snackbarView = NativeSnackbar.View;
 
 		if (Anchor is not Page)
 		{
-			nativeSnackbar.SetAnchorView(Anchor?.Handler?.NativeView as View);
+			NativeSnackbar.SetAnchorView(Anchor?.Handler?.NativeView as View);
 		}
 
 		SetupContainer(VisualOptions, snackbarView);
 		SetupMessage(VisualOptions, snackbarView);
-		SetupActions(nativeSnackbar);
+		SetupActions(NativeSnackbar);
 
-		nativeSnackbar.Show();
+		NativeSnackbar.Show();
 	}
 
 	static void SetupContainer(SnackbarOptions snackbarOptions, View snackbarView)
@@ -117,7 +121,7 @@ public partial class Snackbar
 	}
 
 	[MemberNotNull(nameof(dismissedTCS))]
-	void SetupActions(AndroidSnackbar nativeSnackbar)
+	void SetupActions(Google.Android.Material.Snackbar.Snackbar nativeSnackbar)
 	{
 		var snackActionButtonView = nativeSnackbar.View.FindViewById<TextView>(Resource.Id.snackbar_action) ?? throw new InvalidOperationException("Unable to find Snackbar action button");
 		snackActionButtonView.SetTypeface(VisualOptions.ActionButtonFont.ToTypeface(), TypefaceStyle.Normal);
