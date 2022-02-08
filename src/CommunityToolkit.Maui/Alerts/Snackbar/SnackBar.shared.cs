@@ -129,10 +129,7 @@ public partial class Snackbar : ISnackbar
 #if ANDROID || IOS || MACCATALYST
 	protected virtual async ValueTask DisposeAsyncCore()
 	{
-		if (nativeSnackbar is not null)
-		{
-			await Device.InvokeOnMainThreadAsync(() => NativeSnackbar.Dispose());
-		}
+		await Device.InvokeOnMainThreadAsync(() => NativeSnackbar?.Dispose());
 	}
 #else
 	protected virtual ValueTask DisposeAsyncCore()
@@ -142,9 +139,6 @@ public partial class Snackbar : ISnackbar
 #endif
 
 	static TimeSpan GetDefaultTimeSpan() => TimeSpan.FromSeconds(3);
-
-	private partial Task ShowNative(CancellationToken token);
-	private partial Task DismissNative(CancellationToken token);
 
 	void OnShown()
 	{
@@ -157,6 +151,10 @@ public partial class Snackbar : ISnackbar
 		IsShown = false;
 		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Dismissed));
 	}
+
+	private partial Task ShowNative(CancellationToken token);
+
+	private partial Task DismissNative(CancellationToken token);
 }
 
 /// <summary>
