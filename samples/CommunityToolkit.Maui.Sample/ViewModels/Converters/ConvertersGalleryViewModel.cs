@@ -78,7 +78,10 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
 				"A group of converters that convert a Color to your strings values (RGB, HEX, HSL, etc)"),
 
 			SectionModel.Create<ItemSelectedEventArgsConverterViewModel>(nameof(ItemSelectedEventArgsConverter),
-				"A converter that allows you to extract the selected item in a ListView from the ItemSelectedChangedEventArgs object.")
+				"A converter that allows you to extract the selected item in a ListView from the ItemSelectedChangedEventArgs object."),
+
+			SectionModel.Create<CompareConverterViewModel>(nameof(CompareConverter),
+				"A converter that compares two IComparable objects and returns a boolean value or one of two specified objects.")
 		})
 	{
 	}
