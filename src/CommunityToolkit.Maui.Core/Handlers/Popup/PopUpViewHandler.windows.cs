@@ -4,15 +4,15 @@ using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Core.Handlers;
 
-public partial class PopupViewHandler : ElementHandler<IBasePopup, PopupRenderer>
+public partial class PopupViewHandler : ElementHandler<IBasePopup, MCTPopup>
 {
-	protected override PopupRenderer CreateNativeElement()
+	protected override MCTPopup CreateNativeElement()
 	{
 		ArgumentNullException.ThrowIfNull(MauiContext);
-		return new PopupRenderer(MauiContext);
+		return new MCTPopup(MauiContext);
 	}
 
-	protected override void ConnectHandler(PopupRenderer nativeView)
+	protected override void ConnectHandler(MCTPopup nativeView)
 	{
 		nativeView.SetElement(VirtualView);
 		base.ConnectHandler(nativeView);
@@ -50,7 +50,7 @@ public partial class PopupViewHandler : ElementHandler<IBasePopup, PopupRenderer
 		handler?.NativeView.ConfigureControl();
 	}
 
-	protected override void DisconnectHandler(PopupRenderer nativeView)
+	protected override void DisconnectHandler(MCTPopup nativeView)
 	{
 		nativeView.CleanUp();
 	}

@@ -12,7 +12,7 @@ namespace CommunityToolkit.Core.Platform;
 
 public static class PopupExtensions
 {
-	public static void SetColor(this PopupRenderer flyout, IBasePopup basePopup)
+	public static void SetColor(this MCTPopup flyout, IBasePopup basePopup)
 	{
 		ArgumentNullException.ThrowIfNull(basePopup.Content);
 

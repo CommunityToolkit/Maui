@@ -3,7 +3,7 @@ using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Core.Handlers;
-public partial class PopupViewHandler : ElementHandler<IBasePopup, PopupRenderer>
+public partial class PopupViewHandler : ElementHandler<IBasePopup, MCTPopup>
 {
 	public static async void MapOnDismissed(PopupViewHandler handler, IBasePopup view, object? result)
 	{
@@ -28,7 +28,7 @@ public partial class PopupViewHandler : ElementHandler<IBasePopup, PopupRenderer
 
 	public static void MapOnLightDismiss(PopupViewHandler handler, IBasePopup view, object? result)
 	{
-		if (handler.NativeView is not PopupRenderer popupRenderer)
+		if (handler.NativeView is not MCTPopup popupRenderer)
 		{
 			return;
 		}
@@ -61,20 +61,20 @@ public partial class PopupViewHandler : ElementHandler<IBasePopup, PopupRenderer
 		handler.NativeView?.SetLayout(view);
 	}
 
-	protected override void ConnectHandler(PopupRenderer nativeView)
+	protected override void ConnectHandler(MCTPopup nativeView)
 	{
 		base.ConnectHandler(nativeView);
 		nativeView.SetElement(VirtualView);
 	}
 
-	protected override PopupRenderer CreateNativeElement()
+	protected override MCTPopup CreateNativeElement()
 	{
-		return new PopupRenderer(MauiContext ?? throw new NullReferenceException(nameof(MauiContext)));
+		return new MCTPopup(MauiContext ?? throw new NullReferenceException(nameof(MauiContext)));
 	}
 
-	protected override void DisconnectHandler(PopupRenderer nativeView)
+	protected override void DisconnectHandler(MCTPopup nativeView)
 	{
 		base.DisconnectHandler(nativeView);
-		nativeView?.Dispose();
+		nativeView?.CleanUp();
 	}
 }

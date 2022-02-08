@@ -7,7 +7,7 @@ using UIKit;
 namespace CommunityToolkit.Core.Platform;
 public static class PopupExtensions
 {
-	public static void SetSize(this PopupRenderer popup, in IBasePopup basepopup)
+	public static void SetSize(this MCTPopup popup, in IBasePopup basepopup)
 	{
 		if (!basepopup.Size.IsZero)
 		{
@@ -15,7 +15,7 @@ public static class PopupExtensions
 		}
 	}
 
-	public static void SetBackgroundColor(this PopupRenderer popup, in IBasePopup basePopup)
+	public static void SetBackgroundColor(this MCTPopup popup, in IBasePopup basePopup)
 	{
 		if (popup.Control is null)
 		{
@@ -25,12 +25,12 @@ public static class PopupExtensions
 		popup.Control.NativeView.BackgroundColor = color;
 	}
 
-	public static void SetLightDismiss(this PopupRenderer popup, in IBasePopup basepopup)
+	public static void SetLightDismiss(this MCTPopup popup, in IBasePopup basepopup)
 	{
 			popup.ModalInPresentation = !basepopup.IsLightDismissEnabled;
 	}
 
-	public static void SetLayout(this PopupRenderer popup, in IBasePopup basepopup)
+	public static void SetLayout(this MCTPopup popup, in IBasePopup basepopup)
 	{
 		var presentationController = popup.PresentationController;
 		var preferredContentSize = popup.PreferredContentSize;

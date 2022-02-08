@@ -5,9 +5,8 @@ using UIKit;
 
 namespace CommunityToolkit.Core.Platform;
 
-public class PopupRenderer : UIViewController
+public class MCTPopup : UIViewController
 {
-	bool isDisposed;
 	readonly IMauiContext mauiContext;
 
 	public PageHandler? Control { get; private set; }
@@ -18,8 +17,7 @@ public class PopupRenderer : UIViewController
 
 	public UIViewController? ViewController { get; private set; }
 
-	//	[Preserve(Conditional = true)]
-	public PopupRenderer(IMauiContext mauiContext)
+	public MCTPopup(IMauiContext mauiContext)
 	{
 		this.mauiContext = mauiContext;
 	}
@@ -108,12 +106,7 @@ public class PopupRenderer : UIViewController
 	{
 		_ = VirtualView ?? throw new NullReferenceException($"{nameof(VirtualView)} cannot be null.");
 
-		if (VirtualView.Handler is null)
-		{
-			return;
-		}
-
-		VirtualView.Handler.Invoke(nameof(IBasePopup.LightDismiss));
+		VirtualView.Handler?.Invoke(nameof(IBasePopup.LightDismiss));
 	}
 
 	void AddToCurrentPageViewController()
@@ -124,29 +117,20 @@ public class PopupRenderer : UIViewController
 		ViewController.PresentViewController(this, true, () => VirtualView.Handler?.Invoke(nameof(IBasePopup.OnOpened)));
 	}
 
-	protected override void Dispose(bool disposing)
+	public void CleanUp()
 	{
-		if (isDisposed)
+		if (VirtualView is null)
 		{
 			return;
 		}
 
-		isDisposed = true;
-		if (disposing)
+		VirtualView = null;
+
+		var presentationController = (UIPopoverPresentationController)PresentationController;
+		if (presentationController is not null)
 		{
-			if (VirtualView != null)
-			{
-				VirtualView = null;
-
-				var presentationController = (UIPopoverPresentationController)PresentationController;
-				if (presentationController != null)
-				{
-					presentationController.Delegate = null;
-				}
-			}
+			presentationController.Delegate = null;
 		}
-
-		base.Dispose(disposing);
 	}
 
 	sealed class PopoverDelegate : UIPopoverPresentationControllerDelegate

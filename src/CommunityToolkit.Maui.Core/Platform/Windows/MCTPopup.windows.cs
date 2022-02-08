@@ -10,7 +10,7 @@ using XamlStyle = Microsoft.UI.Xaml.Style;
 
 namespace CommunityToolkit.Core.Platform;
 
-public class PopupRenderer : Flyout
+public class MCTPopup : Flyout
 {
 	const double defaultBorderThickness = 2;
 	const double defaultSize = 600;
@@ -20,7 +20,7 @@ public class PopupRenderer : Flyout
 	internal WrapperControl? Control { get; set; }
 	public IBasePopup? VirtualView { get; private set; }
 
-	public PopupRenderer(IMauiContext mauiContext)
+	public MCTPopup(IMauiContext mauiContext)
 	{
 		this.mauiContext = mauiContext;
 	}
@@ -92,11 +92,6 @@ public class PopupRenderer : Flyout
 	{
 		FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.PaddingProperty, 0));
 		FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.BorderThicknessProperty, new UWPThickness(defaultBorderThickness)));
-
-		if (VirtualView is null)
-		{
-			return;
-		}
 
 		if (borderColor is null)
 		{
