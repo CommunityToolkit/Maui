@@ -6,11 +6,11 @@ using AView = Android.Views.View;
 
 namespace CommunityToolkit.Core.Handlers;
 
-public partial class PopupViewHandler : ElementHandler<IBasePopup, MCTPopup>
+public partial class PopupViewHandler : ElementHandler<IPopup, MCTPopup>
 {
 	internal AView? Container { get; set; }
 
-	public static void MapOnDismissed(PopupViewHandler handler, IBasePopup view, object? result)
+	public static void MapOnDismissed(PopupViewHandler handler, IPopup view, object? result)
 	{
 		var popup = handler.NativeView;
 
@@ -22,12 +22,12 @@ public partial class PopupViewHandler : ElementHandler<IBasePopup, MCTPopup>
 		handler.DisconnectHandler(popup);
 	}
 
-	public static void MapOnOpened(PopupViewHandler handler, IBasePopup view, object? result)
+	public static void MapOnOpened(PopupViewHandler handler, IPopup view, object? result)
 	{
 		handler.NativeView?.Show();
 	}
 
-	public static void MapOnLightDismiss(PopupViewHandler handler, IBasePopup view, object? result)
+	public static void MapOnLightDismiss(PopupViewHandler handler, IPopup view, object? result)
 	{
 		if (view.IsLightDismissEnabled)
 		{
@@ -35,22 +35,22 @@ public partial class PopupViewHandler : ElementHandler<IBasePopup, MCTPopup>
 		}
 	}
 
-	public static void MapAnchor(PopupViewHandler handler, IBasePopup view)
+	public static void MapAnchor(PopupViewHandler handler, IPopup view)
 	{
 		handler.NativeView?.SetAnchor(view);
 	}
 
-	public static void MapLightDismiss(PopupViewHandler handler, IBasePopup view)
+	public static void MapLightDismiss(PopupViewHandler handler, IPopup view)
 	{
 		handler.NativeView?.SetLightDismiss(view);
 	}
 
-	public static void MapColor(PopupViewHandler handler, IBasePopup view)
+	public static void MapColor(PopupViewHandler handler, IPopup view)
 	{
 		handler.NativeView?.SetColor(view);
 	}
 
-	public static void MapSize(PopupViewHandler handler, IBasePopup view)
+	public static void MapSize(PopupViewHandler handler, IPopup view)
 	{
 		handler.NativeView?.SetSize(view, handler.Container);
 		handler.NativeView?.SetAnchor(view);

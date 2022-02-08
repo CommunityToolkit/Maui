@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Views;
 
 public partial class Popup
 {
-	public static PropertyMapper<IBasePopup, PopupViewHandler> ControlsPopupMapper = new(PopupViewHandler.PopUpMapper)
+	public static PropertyMapper<IPopup, PopupViewHandler> ControlsPopupMapper = new(PopupViewHandler.PopUpMapper)
 	{
 		["BorderColor"] = MapBorderColor
 	};
@@ -16,7 +16,7 @@ public partial class Popup
 		PopupViewHandler.PopUpMapper = ControlsPopupMapper;
 	}
 
-	public static void MapBorderColor(PopupViewHandler handler, IBasePopup view)
+	public static void MapBorderColor(PopupViewHandler handler, IPopup view)
 	{
 		var borderColor = PopUpConfiguration.GetBorderColor((BindableObject)view);
 		handler.NativeView.SetBorderColor(borderColor);

@@ -5,11 +5,13 @@ using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
-using UWPThickness = Microsoft.UI.Xaml.Thickness;
 using XamlStyle = Microsoft.UI.Xaml.Style;
 
 namespace CommunityToolkit.Core.Platform;
 
+/// <summary>
+/// The navite implementation of Popup control.
+/// </summary>
 public class MCTPopup : Flyout
 {
 	const double defaultBorderThickness = 2;
@@ -18,14 +20,26 @@ public class MCTPopup : Flyout
 
 	internal XamlStyle FlyoutStyle { get; set; } = new (typeof(FlyoutPresenter));
 	internal WrapperControl? Control { get; set; }
-	public IBasePopup? VirtualView { get; private set; }
+	/// <summary>
+	/// An instace of the <see cref="IPopup"/>.
+	/// </summary>
+	public IPopup? VirtualView { get; private set; }
 
+	/// <summary>
+	/// Constructor of <see cref="MCTPopup"/>.
+	/// </summary>
+	/// <param name="mauiContext">An instace of <see cref="IMauiContext"/>.</param>
+	/// <exception cref="ArgumentNullException">If <paramref name="mauiContext"/> is null an exception will be thrown. </exception>
 	public MCTPopup(IMauiContext mauiContext)
 	{
-		this.mauiContext = mauiContext;
+		this.mauiContext = mauiContext ?? throw new ArgumentNullException(nameof(mauiContext));
 	}
 
-	public void SetElement(IBasePopup element)
+	/// <summary>
+	/// Method to initialize the native implementation.
+	/// </summary>
+	/// <param name="element">An instance of <see cref="IPopup"/>.</param>
+	public void SetElement(IPopup element)
 	{
 		VirtualView = element;
 
@@ -44,14 +58,17 @@ public class MCTPopup : Flyout
 		SetEvents();
 	}
 
+	/// <summary>
+	/// Method to update all the values of the Popup Control.
+	/// </summary>
 	public void ConfigureControl()
 	{
 		if (VirtualView is null)
 		{
 			return;
 		}
+
 		SetEvents();
-		SetBorderColor();
 		SetFlyoutColor();
 		SetSize();
 		SetLayout();
@@ -88,24 +105,9 @@ public class MCTPopup : Flyout
 		}
 	}
 
-	public void SetBorderColor(Color? borderColor = null)
-	{
-		FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.PaddingProperty, 0));
-		FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.BorderThicknessProperty, new UWPThickness(defaultBorderThickness)));
-
-		if (borderColor is null)
-		{
-			FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.BorderBrushProperty, Color.FromArgb("#2e6da0").ToNative()));
-		}
-		else
-		{
-			FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.BorderBrushProperty, borderColor.ToNative()));
-		}
-	}
-
 	void SetFlyoutColor()
 	{
-		_ = VirtualView?.Content ?? throw new NullReferenceException(nameof(IBasePopup.Content));
+		_ = VirtualView?.Content ?? throw new NullReferenceException(nameof(IPopup.Content));
 
 		var color = VirtualView.Color ?? Colors.Transparent;
 
@@ -117,12 +119,15 @@ public class MCTPopup : Flyout
 		}
 	}
 
-	public void ApplyStyles()
+	void ApplyStyles()
 	{
 		ArgumentNullException.ThrowIfNull(Control);
 		FlyoutPresenterStyle = FlyoutStyle;
 	}
 
+	/// <summary>
+	/// Method to show the Popup.
+	/// </summary>
 	public void Show()
 	{
 		if (VirtualView is null)
@@ -212,10 +217,13 @@ public class MCTPopup : Flyout
 
 		if (IsOpen && isLightDismissEnabled)
 		{
-			VirtualView?.Handler?.Invoke(nameof(IBasePopup.LightDismiss));
+			VirtualView?.Handler?.Invoke(nameof(IPopup.LightDismiss));
 		}
 	}
 
+	/// <summary>
+	/// Method to CleanUp the resources of the <see cref="MCTPopup"/>.
+	/// </summary>
 	public void CleanUp()
 	{
 		Closing -= OnClosing;

@@ -1,23 +1,29 @@
-﻿using System;
-using Android.App;
-using Microsoft.Maui;
-using Android.Views;
-using Microsoft.Maui.Controls;
+﻿using Android.App;
 using Android.Graphics.Drawables;
-using AColorRes = Android.Resource.Color;
+using Android.Views;
 using Android.Widget;
-using static Android.App.ActionBar;
-using AView = Android.Views.View;
-using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Platform;
+using static Android.App.ActionBar;
+using AColorRes = Android.Resource.Color;
+using AView = Android.Views.View;
+using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 //using CommunityToolkit.Maui.Extensions.Workarounds;
 
 namespace CommunityToolkit.Core.Platform;
 
+/// <summary>
+/// Extension class where Helper methods for Popup lives.
+/// </summary>
 public static class PopupExtensions
 {
-	public static void SetAnchor(this Dialog dialog, IBasePopup basePopup)
+	/// <summary>
+	/// Method to update the <see cref="IPopup.Anchor"/> view.
+	/// </summary>
+	/// <param name="dialog">An instance of <see cref="Dialog"/>.</param>
+	/// <param name="basePopup">An instance of <see cref="IPopup"/>.</param>
+	/// <exception cref="NullReferenceException">if the <see cref="Android.Views.Window"/> is null an exception will be thrown.</exception>
+	public static void SetAnchor(this Dialog dialog, in IPopup basePopup)
 	{
 		var window = GetWindow(dialog);
 
@@ -27,7 +33,7 @@ public static class PopupExtensions
 		}
 
 		var mauiContext = basePopup.Handler.MauiContext;
-		if (basePopup.Anchor != null)
+		if (basePopup.Anchor is not null)
 		{
 			var anchorView = basePopup.Anchor?.ToNative(mauiContext);
 
@@ -61,14 +67,12 @@ public static class PopupExtensions
 		}
 	}
 
-	static Android.Views.Window GetWindow(Dialog dialog)
-	{
-		var window = dialog.Window ?? throw new Exception("Android.Views.Window is null!");
-
-		return window;
-	}
-
-	public static void SetColor(this Dialog dialog, IBasePopup basePopup)
+	/// <summary>
+	/// Method to update the <see cref="IPopup.Color"/> property.
+	/// </summary>
+	/// <param name="dialog">An instance of <see cref="Dialog"/>.</param>
+	/// <param name="basePopup">An instance of <see cref="IPopup"/>.</param>
+	public static void SetColor(this Dialog dialog, in IPopup basePopup)
 	{
 		if (basePopup.Color is null)
 		{
@@ -79,7 +83,12 @@ public static class PopupExtensions
 		window?.SetBackgroundDrawable(new ColorDrawable(basePopup.Color.ToNative(AColorRes.BackgroundLight, dialog.Context)));
 	}
 
-	public static void SetLightDismiss(this Dialog dialog, IBasePopup basePopup)
+	/// <summary>
+	/// Method to update the <see cref="IPopup.IsLightDismissEnabled"/> property.
+	/// </summary>
+	/// <param name="dialog">An instance of <see cref="Dialog"/>.</param>
+	/// <param name="basePopup">An instance of <see cref="IPopup"/>.</param>
+	public static void SetLightDismiss(this Dialog dialog, in IPopup basePopup)
 	{
 		if (basePopup.IsLightDismissEnabled)
 		{
@@ -90,11 +99,18 @@ public static class PopupExtensions
 		dialog.SetCanceledOnTouchOutside(false);
 	}
 
-	public static void SetSize(this Dialog dialog, IBasePopup basePopup, AView? container)
+	/// <summary>
+	/// Method to update the <see cref="IPopup.Size"/> property.
+	/// </summary>
+	/// <param name="dialog">An instance of <see cref="Dialog"/>.</param>
+	/// <param name="basePopup">An instance of <see cref="IPopup"/>.</param>
+	/// <param name="container">The native representation of <see cref="IPopup.Content"/>.</param>
+	/// <exception cref="NullReferenceException">if the <see cref="Android.Views.Window"/> is null an exception will be thrown. If the <paramref name="container"/> is null an exception will be thrown.</exception>
+	public static void SetSize(this Dialog dialog, in IPopup basePopup, in AView? container)
 	{
 		var window = GetWindow(dialog);
 		var context = dialog.Context;
-		if (basePopup.Content != null && basePopup.Size != default)
+		if (basePopup.Content is not null && basePopup.Size != default)
 		{
 			var decorView = (ViewGroup)(window?.DecorView ?? throw new NullReferenceException());
 			var child = decorView?.GetChildAt(0) ?? throw new NullReferenceException();
@@ -113,26 +129,26 @@ public static class PopupExtensions
 			var horizontalParams = -1;
 			switch (basePopup.Content.HorizontalLayoutAlignment)
 			{
-				case Microsoft.Maui.Primitives.LayoutAlignment.Center:
-				case Microsoft.Maui.Primitives.LayoutAlignment.End:
-				case Microsoft.Maui.Primitives.LayoutAlignment.Start:
-					horizontalParams = LayoutParams.WrapContent;
+				case LayoutAlignment.Center:
+				case LayoutAlignment.End:
+				case LayoutAlignment.Start:
+					horizontalParams = ViewGroup.LayoutParams.WrapContent;
 					break;
-				case Microsoft.Maui.Primitives.LayoutAlignment.Fill:
-					horizontalParams = LayoutParams.MatchParent;
+				case LayoutAlignment.Fill:
+					horizontalParams = ViewGroup.LayoutParams.MatchParent;
 					break;
 			}
 
 			var verticalParams = -1;
 			switch (basePopup.Content.VerticalLayoutAlignment)
 			{
-				case Microsoft.Maui.Primitives.LayoutAlignment.Center:
-				case Microsoft.Maui.Primitives.LayoutAlignment.End:
-				case Microsoft.Maui.Primitives.LayoutAlignment.Start:
-					verticalParams = LayoutParams.WrapContent;
+				case LayoutAlignment.Center:
+				case LayoutAlignment.End:
+				case LayoutAlignment.Start:
+					verticalParams = ViewGroup.LayoutParams.WrapContent;
 					break;
-				case Microsoft.Maui.Primitives.LayoutAlignment.Fill:
-					verticalParams = LayoutParams.MatchParent;
+				case LayoutAlignment.Fill:
+					verticalParams = ViewGroup.LayoutParams.MatchParent;
 					break;
 			}
 
@@ -167,32 +183,32 @@ public static class PopupExtensions
 
 			switch (basePopup.Content.VerticalLayoutAlignment)
 			{
-				case Microsoft.Maui.Primitives.LayoutAlignment.Start:
+				case LayoutAlignment.Start:
 					containerLayoutParams.Gravity = GravityFlags.Top;
 					break;
-				case Microsoft.Maui.Primitives.LayoutAlignment.Center:
-				case Microsoft.Maui.Primitives.LayoutAlignment.Fill:
+				case LayoutAlignment.Center:
+				case LayoutAlignment.Fill:
 					containerLayoutParams.Gravity = GravityFlags.FillVertical;
 					containerLayoutParams.Height = realHeight;
 					//container.MatchHeight = true;
 					break;
-				case Microsoft.Maui.Primitives.LayoutAlignment.End:
+				case LayoutAlignment.End:
 					containerLayoutParams.Gravity = GravityFlags.Bottom;
 					break;
 			}
 
 			switch (basePopup.Content.HorizontalLayoutAlignment)
 			{
-				case Microsoft.Maui.Primitives.LayoutAlignment.Start:
+				case LayoutAlignment.Start:
 					containerLayoutParams.Gravity |= GravityFlags.Left;
 					break;
-				case Microsoft.Maui.Primitives.LayoutAlignment.Center:
-				case Microsoft.Maui.Primitives.LayoutAlignment.Fill:
+				case LayoutAlignment.Center:
+				case LayoutAlignment.Fill:
 					containerLayoutParams.Gravity |= GravityFlags.FillHorizontal;
 					containerLayoutParams.Width = realWidth;
 					//container.MatchWidth = true;
 					break;
-				case Microsoft.Maui.Primitives.LayoutAlignment.End:
+				case LayoutAlignment.End:
 					containerLayoutParams.Gravity |= GravityFlags.Right;
 					break;
 			}
@@ -201,7 +217,7 @@ public static class PopupExtensions
 		}
 	}
 
-	static void SetDialogPosition(in IBasePopup basePopup, Android.Views.Window window)
+	static void SetDialogPosition(in IPopup basePopup, Android.Views.Window window)
 	{
 		var gravityFlags = basePopup.VerticalOptions switch
 		{
@@ -216,5 +232,12 @@ public static class PopupExtensions
 			_ => GravityFlags.CenterHorizontal,
 		};
 		window?.SetGravity(gravityFlags);
+	}
+
+	static Android.Views.Window GetWindow(in Dialog dialog)
+	{
+		var window = dialog.Window ?? throw new Exception("Android.Views.Window is null!");
+
+		return window;
 	}
 }

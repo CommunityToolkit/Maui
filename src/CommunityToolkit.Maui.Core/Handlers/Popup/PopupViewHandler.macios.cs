@@ -3,9 +3,9 @@ using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Core.Handlers;
-public partial class PopupViewHandler : ElementHandler<IBasePopup, MCTPopup>
+public partial class PopupViewHandler : ElementHandler<IPopup, MCTPopup>
 {
-	public static async void MapOnDismissed(PopupViewHandler handler, IBasePopup view, object? result)
+	public static async void MapOnDismissed(PopupViewHandler handler, IPopup view, object? result)
 	{
 		if (handler.NativeView is null)
 		{
@@ -21,12 +21,12 @@ public partial class PopupViewHandler : ElementHandler<IBasePopup, MCTPopup>
 		handler.DisconnectHandler(handler.NativeView);
 	}
 
-	public static void MapOnOpened(PopupViewHandler handler, IBasePopup view, object? result)
+	public static void MapOnOpened(PopupViewHandler handler, IPopup view, object? result)
 	{
 		view.OnOpened();
 	}
 
-	public static void MapOnLightDismiss(PopupViewHandler handler, IBasePopup view, object? result)
+	public static void MapOnLightDismiss(PopupViewHandler handler, IPopup view, object? result)
 	{
 		if (handler.NativeView is not MCTPopup popupRenderer)
 		{
@@ -39,23 +39,23 @@ public partial class PopupViewHandler : ElementHandler<IBasePopup, MCTPopup>
 		}
 	}
 
-	public static void MapAnchor(PopupViewHandler handler, IBasePopup view)
+	public static void MapAnchor(PopupViewHandler handler, IPopup view)
 	{
 		handler.NativeView?.SetSize(view);
 		handler.NativeView?.SetLayout(view);
 	}
 
-	public static void MapLightDismiss(PopupViewHandler handler, IBasePopup view)
+	public static void MapLightDismiss(PopupViewHandler handler, IPopup view)
 	{
 		handler.NativeView?.SetLightDismiss(view);
 	}
 
-	public static void MapColor(PopupViewHandler handler, IBasePopup view)
+	public static void MapColor(PopupViewHandler handler, IPopup view)
 	{
 		handler.NativeView?.SetBackgroundColor(view);
 	}
 
-	public static void MapSize(PopupViewHandler handler, IBasePopup view)
+	public static void MapSize(PopupViewHandler handler, IPopup view)
 	{
 		handler.NativeView?.SetSize(view);
 		handler.NativeView?.SetLayout(view);

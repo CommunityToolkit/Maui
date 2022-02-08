@@ -1,32 +1,48 @@
 ﻿using CommunityToolkit.Maui.Core;
-using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Core.Handlers;
+
+/// <summary>
+/// Handler Popup control
+/// </summary>
 public partial class PopupViewHandler
 {
-	public static PropertyMapper<IBasePopup, PopupViewHandler> PopUpMapper = new(ElementMapper)
+	/// <summary>
+	/// PropertyMapper for Popup Control
+	/// </summary>
+	public static PropertyMapper<IPopup, PopupViewHandler> PopUpMapper = new(ElementMapper)
 	{
-		[nameof(IBasePopup.Anchor)] = MapAnchor,
-		[nameof(IBasePopup.Color)] = MapColor,
-		[nameof(IBasePopup.Size)] = MapSize,
-		[nameof(IBasePopup.VerticalOptions)] = MapSize,
-		[nameof(IBasePopup.HorizontalOptions)] = MapSize,
-		[nameof(IBasePopup.IsLightDismissEnabled)] = MapLightDismiss
+		[nameof(IPopup.Anchor)] = MapAnchor,
+		[nameof(IPopup.Color)] = MapColor,
+		[nameof(IPopup.Size)] = MapSize,
+		[nameof(IPopup.VerticalOptions)] = MapSize,
+		[nameof(IPopup.HorizontalOptions)] = MapSize,
+		[nameof(IPopup.IsLightDismissEnabled)] = MapLightDismiss
 	};
 
-	public static CommandMapper<IBasePopup, PopupViewHandler> PopUpCommandMapper = new(ElementCommandMapper)
+	/// <summary>
+	/// <see cref ="CommandMapper"/> for Popup Control.
+	/// </summary>
+	public static CommandMapper<IPopup, PopupViewHandler> PopUpCommandMapper = new(ElementCommandMapper)
 	{
-		[nameof(IBasePopup.OnDismissed)] = MapOnDismissed,
-		[nameof(IBasePopup.OnOpened)] = MapOnOpened,
-		[nameof(IBasePopup.LightDismiss)] = MapOnLightDismiss
+		[nameof(IPopup.OnDismissed)] = MapOnDismissed,
+		[nameof(IPopup.OnOpened)] = MapOnOpened,
+		[nameof(IPopup.LightDismiss)] = MapOnLightDismiss
 	};
 
+	/// <summary>
+	/// Constructor for <see cref="PopupViewHandler"/>.
+	/// </summary>
+	/// <param name="mapper">Custom instance of <see cref="PropertyMapper"/>, if it's null the <see cref="PopUpMapper"/> will be used</param>
+	/// <param name="commandMapper">Custom instance of <see cref="CommandMapper"/>, if it's null the <see cref="PopUpCommandMapper"/> will be used</param>
 	public PopupViewHandler(PropertyMapper? mapper, CommandMapper? commandMapper)
 		: base(mapper ?? PopUpMapper, commandMapper ?? PopUpCommandMapper)
 	{
 	}
 
-
+	/// <summary>
+	/// Default Constructor for <see cref="PopupViewHandler"/>.
+	/// </summary>
 	public PopupViewHandler()
 		: base(PopUpMapper, PopUpCommandMapper)
 	{

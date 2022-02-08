@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.Views;
 /// The popup control's base implementation.
 /// </summary>
 [ContentProperty(nameof(Content))]
-public abstract class BasePopup : Element, IElementConfiguration<BasePopup>, IBasePopup
+public abstract class BasePopup : Element, IElementConfiguration<BasePopup>, IPopup
 {
 	readonly WeakEventManager dismissWeakEventManager = new();
 	readonly WeakEventManager openedWeakEventManager = new();
@@ -118,9 +118,9 @@ public abstract class BasePopup : Element, IElementConfiguration<BasePopup>, IBa
 		set => SetValue(IsLightDismissEnabledProperty, value);
 	}
 
-	IView? IBasePopup.Anchor => Anchor;
+	IView? IPopup.Anchor => Anchor;
 
-	IView? IBasePopup.Content => Content;
+	IView? IPopup.Content => Content;
 
 
 	/// <summary>
@@ -149,7 +149,7 @@ public abstract class BasePopup : Element, IElementConfiguration<BasePopup>, IBa
 	/// </param>
 	protected void OnDismissed(object? result)
 	{
-		(this as IBasePopup)?.OnDismissed(result);
+		(this as IPopup)?.OnDismissed(result);
 		dismissWeakEventManager.HandleEvent(this, new PopupDismissedEventArgs(result, false), nameof(Dismissed));
 	}
 
@@ -187,17 +187,17 @@ public abstract class BasePopup : Element, IElementConfiguration<BasePopup>, IBa
 		}
 	}
 
-	void IBasePopup.OnDismissed(object? result)
+	void IPopup.OnDismissed(object? result)
 	{
-		Handler.Invoke(nameof(IBasePopup.OnDismissed), result);
+		Handler.Invoke(nameof(IPopup.OnDismissed), result);
 	}
 
-	void IBasePopup.OnOpened()
+	void IPopup.OnOpened()
 	{
 		OnOpened();
 	}
 
-	void IBasePopup.LightDismiss()
+	void IPopup.LightDismiss()
 	{
 		LightDismiss();
 	}

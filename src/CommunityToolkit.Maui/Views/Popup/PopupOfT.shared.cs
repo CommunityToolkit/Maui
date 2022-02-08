@@ -3,7 +3,7 @@ using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Views;
 
-public interface IPopup<T> : IBasePopup
+public interface IPopup<T> : IPopup
 {
 	Task<T?> Result { get; }
 

@@ -6,6 +6,8 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace CommunityToolkit.Core.Extensions.Workarounds;
 
+// We still have to keep this class, due to some random exceptions that occours when the 
+// .NET MAUI implementation is used.
 class WrapperControl : Panel
 {
 	readonly View view;
@@ -16,8 +18,6 @@ class WrapperControl : Panel
 
 	internal void CleanUp()
 	{
-		//view?.Cleanup();
-
 		if (view is not null)
 		{
 			view.MeasureInvalidated -= OnMeasureInvalidated;

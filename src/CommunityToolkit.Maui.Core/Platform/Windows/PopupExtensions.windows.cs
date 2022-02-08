@@ -5,14 +5,21 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 //using Specific = CommunityToolkit.Maui.PlatformConfiguration.WindowsSpecific.PopUp;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 using UWPThickness = Microsoft.UI.Xaml.Thickness;
-using CommunityToolkit.Maui.Core.Platform;
 using XamlStyle = Microsoft.UI.Xaml.Style;
 
 namespace CommunityToolkit.Core.Platform;
 
+/// <summary>
+/// Extension class where Helper methods for Popup lives.
+/// </summary>
 public static class PopupExtensions
 {
-	public static void SetColor(this MCTPopup flyout, IBasePopup basePopup)
+	/// <summary>
+	/// Method to update the <see cref="Maui.Core.IPopup.Content"/> based on the <see cref="Maui.Core.IPopup.Color"/>.
+	/// </summary>
+	/// <param name="flyout">An instance of <see cref="MCTPopup"/>.</param>
+	/// <param name="basePopup">An instance of <see cref="Maui.Core.IPopup"/>.</param>
+	public static void SetColor(this MCTPopup flyout, IPopup basePopup)
 	{
 		ArgumentNullException.ThrowIfNull(basePopup.Content);
 

@@ -5,26 +5,43 @@ using UIKit;
 
 namespace CommunityToolkit.Core.Platform;
 
+/// <summary>
+/// The navite implementation of Popup control.
+/// </summary>
 public class MCTPopup : UIViewController
 {
 	readonly IMauiContext mauiContext;
 
+	/// <summary>
+	/// An instance of the <see cref="PageHandler"/> that holds the <see cref="IPopup.Content"/>.
+	/// </summary>
 	public PageHandler? Control { get; private set; }
 
-	public IBasePopup? VirtualView { get; private set; }
+	/// <summary>
+	/// An instace of the <see cref="IPopup"/>.
+	/// </summary>
+	public IPopup? VirtualView { get; private set; }
 
-	public UIView? NativeView => View;
+	internal UIViewController? ViewController { get; private set; }
 
-	public UIViewController? ViewController { get; private set; }
-
+	/// <summary>
+	/// Constructor of <see cref="MCTPopup"/>.
+	/// </summary>
+	/// <param name="mauiContext">An instace of <see cref="IMauiContext"/>.</param>
+	/// <exception cref="ArgumentNullException">If <paramref name="mauiContext"/> is null an exception will be thrown. </exception>
 	public MCTPopup(IMauiContext mauiContext)
 	{
-		this.mauiContext = mauiContext;
+		this.mauiContext = mauiContext ?? throw new ArgumentNullException(nameof(mauiContext));
 	}
 
+	/// <summary>
+	/// Method to update the Popup's size.
+	/// </summary>
+	/// <param name="size"></param>
 	public void SetElementSize(Size size) =>
 		Control?.ContainerView?.SizeThatFits(size);
 
+	/// <inheritdoc/>
 	public override void ViewDidLayoutSubviews()
 	{
 		base.ViewDidLayoutSubviews();
@@ -33,7 +50,11 @@ public class MCTPopup : UIViewController
 		SetElementSize(new Size(View.Bounds.Width, View.Bounds.Height));
 	}
 
-	public void SetElement(IBasePopup element)
+	/// <summary>
+	/// Method to initialize the native implementation.
+	/// </summary>
+	/// <param name="element">An instance of <see cref="IPopup"/>.</param>
+	public void SetElement(IPopup element)
 	{
 		VirtualView = element;
 		ModalPresentationStyle = UIModalPresentationStyle.Popover;
@@ -106,7 +127,7 @@ public class MCTPopup : UIViewController
 	{
 		_ = VirtualView ?? throw new NullReferenceException($"{nameof(VirtualView)} cannot be null.");
 
-		VirtualView.Handler?.Invoke(nameof(IBasePopup.LightDismiss));
+		VirtualView.Handler?.Invoke(nameof(IPopup.LightDismiss));
 	}
 
 	void AddToCurrentPageViewController()
@@ -114,9 +135,12 @@ public class MCTPopup : UIViewController
 		_ = ViewController ?? throw new NullReferenceException($"{nameof(ViewController)} cannot be null.");
 		_ = VirtualView ?? throw new NullReferenceException($"{nameof(VirtualView)} cannot be null.");
 
-		ViewController.PresentViewController(this, true, () => VirtualView.Handler?.Invoke(nameof(IBasePopup.OnOpened)));
+		ViewController.PresentViewController(this, true, () => VirtualView.Handler?.Invoke(nameof(IPopup.OnOpened)));
 	}
 
+	/// <summary>
+	/// Method to CleanUp the resources of the <see cref="MCTPopup"/>.
+	/// </summary>
 	public void CleanUp()
 	{
 		if (VirtualView is null)
