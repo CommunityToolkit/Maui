@@ -94,7 +94,7 @@ jobs:
           configuration: 'Release'
           msbuildArgs: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'
       - task: PowerShell@2
-        displayName: 'Publish result'
+        displayName: 'Copy NuGet Packages to Staging Directory'
         inputs:
           targetType: 'inline'
           script: |
