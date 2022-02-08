@@ -8,6 +8,7 @@ variables:
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
   PathToCommunityToolkitCoreCsproj: 'src/CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
+  PathToCommunityToolkitSampleSln: 'samples/CommunityToolkit.Maui.Sample.sln'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
   XcodeVersion: '13.2'
 
@@ -76,6 +77,7 @@ jobs:
         displayName: Set NuGet Version to PR Version
         condition: and(succeeded(), eq(variables['build.reason'], 'PullRequest'))
       # build, test and pack the packages
+      - script: msbuild "$(PathToCommunityToolkitSampleSln)" -r /property:Configuration=Release /restore
       - script: msbuild "$(PathToCommunityToolkitCoreCsproj)" -r /property:Configuration=Release /restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg     
       - script: msbuild "$(PathToCommunityToolkitCsproj)" -r /property:Configuration=Release /restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg   
       # Sign NuGet Packages
