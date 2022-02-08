@@ -8,7 +8,6 @@ variables:
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
   PathToCommunityToolkitCoreCsproj: 'src/CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
-  PathToCommunityToolkitSampleSln: 'samples/CommunityToolkit.Maui.Sample.sln'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
   XcodeVersion: '13.2'
 
@@ -46,11 +45,6 @@ jobs:
             dotnet --info
             Write-Host "##vso[task.prependpath]C:\\Users\\VssAdministrator\\AppData\\Local\\Microsoft\\dotnet"
         displayName: Install .NET 6.0.200-preview.22055.15
-      - script: dotnet tool update -g dotnet-vs
-      - pwsh: echo "##vso[task.setvariable variable=MSB]$(vs where preview --prop=InstallationPath)"
-      - script: vs install preview --quiet +Microsoft.VisualStudio.Component.ManagedDesktop.Core +Microsoft.NetCore.Component.DevelopmentTools +Microsoft.VisualStudio.Workload.Universal +Microsoft.VisualStudio.Workload.NetCrossPlat
-        condition: eq(variables['MSB'], '')
-      - pwsh: echo "##vso[task.prependpath]$(vs where preview --prop=InstallationPath)\MSBuild\Current\Bin"
       - task: CmdLine@2
         displayName: 'Install .NET MAUI Workload'
         inputs:
@@ -77,9 +71,37 @@ jobs:
         displayName: Set NuGet Version to PR Version
         condition: and(succeeded(), eq(variables['build.reason'], 'PullRequest'))
       # build, test and pack the packages
-      - script: msbuild "$(PathToCommunityToolkitSampleSln)" -r /property:Configuration=Release /restore
-      - script: msbuild "$(PathToCommunityToolkitCoreCsproj)" -r /property:Configuration=Release /restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg     
-      - script: msbuild "$(PathToCommunityToolkitCsproj)" -r /property:Configuration=Release /restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg   
+      - task: CmdLine@2
+        displayName: 'Run Unit Tests'
+        inputs:
+          script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release'
+      - task: VSBuild@1
+        displayName: 'Build Community Toolkit Sample'
+        inputs:
+          solution: '$(PathToCommunityToolkitSampleCsproj)'
+          configuration: 'Release'
+          msbuildArgs: '/restore'
+      - task: VSBuild@1
+        displayName: 'Build and Pack CommunityToolkit.Maui.Core'
+        inputs:
+          solution: '$(PathToCommunityToolkitCoreCsproj)'
+          configuration: 'Release'
+          msbuildArgs: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'     
+      - task: VSBuild@1
+        displayName: 'Build and Pack CommunityToolkit.Maui'
+        inputs:
+          solution: '$(PathToCommunityToolkitCsproj)'
+          configuration: 'Release'
+          msbuildArgs: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'
+      - task: PowerShell@2
+        displayName: 'Publish result'
+        inputs:
+          targetType: 'inline'
+          script: |
+            $source = ".\src"
+            $filter = "nupkg"
+            Get-ChildItem -Path $source -Recurse | Where-Object { $_.Extension -match $filter } | Copy-Item -Destination "$(Build.ArtifactStagingDirectory)/nuget"
+          pwsh: true
       # Sign NuGet Packages
       - task: PowerShell@2
         displayName: Authenticode Sign Packages
