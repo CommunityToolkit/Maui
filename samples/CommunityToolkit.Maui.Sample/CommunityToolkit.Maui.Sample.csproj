@@ -63,8 +63,6 @@
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.SourceGenerators\CommunityToolkit.Maui.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
-
-
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
     <OutputType>WinExe</OutputType>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
