@@ -28,6 +28,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<UserStoppedTypingBehaviorViewModel>();
 
 		// Add Converters View Models
+		builder.Services.AddTransient<CompareConverterViewModel>();
 		builder.Services.AddTransient<DateTimeOffsetConverterViewModel>();
 		builder.Services.AddTransient<DoubleToIntConverterViewModel>();
 		builder.Services.AddTransient<EnumToIntConverterViewModel>();
