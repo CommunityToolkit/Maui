@@ -100,7 +100,7 @@ jobs:
           script: |
             $source = ".\src"
             $filter = "nupkg"
-            Get-ChildItem -Path $source -Recurse | Where-Object { $_.Extension -match $filter } | Copy-Item -Destination "$(Build.ArtifactStagingDirectory)/nuget"
+            Get-ChildItem -Path $source -Recurse | Where-Object { $_.Extension -match $filter } | Copy-Item -Destination "$(Build.ArtifactStagingDirectory)"
           pwsh: true
       # Sign NuGet Packages
       - task: PowerShell@2
@@ -110,14 +110,14 @@ jobs:
         env:
           SignClientUser: $(SignClientUser)
           SignClientSecret: $(SignClientSecret)
-          ArtifactDirectory: $(Build.ArtifactStagingDirectory)/nuget
+          ArtifactDirectory: $(Build.ArtifactStagingDirectory)
         condition: and(succeeded(), not(eq(variables['build.reason'], 'PullRequest')), not(eq(variables['SignClientSecret'], '')), not(eq(variables['SignClientUser'], '')))
       # publish the packages
       - task: PublishBuildArtifacts@1
         displayName: 'Publish NuGets'
         inputs:
           artifactName: nuget
-          pathToPublish: '$(Build.ArtifactStagingDirectory)/nuget'
+          pathToPublish: '$(Build.ArtifactStagingDirectory)'
 
   - job: build_macos
     displayName: Build macOS Library
@@ -157,8 +157,8 @@ jobs:
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit.Maui.Core NuGet'
         inputs:
-          script: 'dotnet pack $(PathToCommunityToolkitCoreCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget'
+          script: 'dotnet pack $(PathToCommunityToolkitCoreCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit.Maui NuGet'
         inputs:
-          script: 'dotnet pack $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget'
+          script: 'dotnet pack $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
