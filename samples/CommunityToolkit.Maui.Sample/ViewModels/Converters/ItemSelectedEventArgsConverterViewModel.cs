@@ -7,11 +7,24 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+
 public class ItemSelectedEventArgsConverterViewModel : BaseViewModel
 {
-	string labelText;
+	string? itemSelected;
+	string labelText = "This label will display the selected item";
+
+	public ItemSelectedEventArgsConverterViewModel()
+	{
+		ItemSelectedCommand = new Command<string>(UpdateLabelText);
+	}
 
 	public ICommand ItemSelectedCommand { get; }
+
+	public string? ItemSelected
+	{
+		get => itemSelected;
+		set => SetProperty(ref itemSelected, value);
+	}
 
 	public string LabelText
 	{
@@ -29,15 +42,9 @@ public class ItemSelectedEventArgsConverterViewModel : BaseViewModel
 		"Item 5",
 	};
 
-	public ItemSelectedEventArgsConverterViewModel()
-	{
-		labelText = "This label will display the selected item";
-		ItemSelectedCommand = new Command<string>(UpdateLabelText);
-	}
-
 	void UpdateLabelText(string text)
 	{
-		LabelText = $"{text} has been selected.";
+		LabelText = $"{text} has been selected";
+		ItemSelected = null;
 	}
-
 }
