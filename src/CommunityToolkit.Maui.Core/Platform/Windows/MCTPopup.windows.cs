@@ -6,6 +6,8 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 using XamlStyle = Microsoft.UI.Xaml.Style;
+using WindowsThickness = Microsoft.UI.Xaml.Thickness;
+using System.Diagnostics;
 
 namespace CommunityToolkit.Core.Platform;
 
@@ -86,7 +88,12 @@ public class MCTPopup : Flyout
 		_ = Control ?? throw new InvalidOperationException($"{nameof(Element)} cannot be null");
 		var standardSize = new Size { Width = defaultSize, Height = defaultSize / 2 };
 
-		var currentSize = VirtualView.Size != default ? VirtualView.Size : standardSize;
+		var desiredSize = VirtualView.Size != default ? VirtualView.Size : standardSize;
+
+		var content = VirtualView.Content;
+
+		var currentSize = content is null ? desiredSize : VirtualView.Content!.Measure(desiredSize.Width, desiredSize.Height);
+
 		Control.Width = currentSize.Width;
 		Control.Height = currentSize.Height;
 
@@ -117,6 +124,12 @@ public class MCTPopup : Flyout
 		{
 			FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.IsDefaultShadowEnabledProperty, false));
 		}
+
+		//Configure border
+
+		FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.PaddingProperty, 0));
+		FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.BorderThicknessProperty, new WindowsThickness(defaultBorderThickness)));
+		FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.BorderBrushProperty, Color.FromArgb("#2e6da0").ToWindowsColor()));
 	}
 
 	void ApplyStyles()
