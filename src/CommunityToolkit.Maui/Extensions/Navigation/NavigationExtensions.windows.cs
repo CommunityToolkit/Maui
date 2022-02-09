@@ -41,27 +41,9 @@ public static partial class NavigationExtensions
 		}
 	}
 
-	static Task<T?> PlatformShowPopupAsync<T>(Popup<T> popup, IMauiContext mauiContext)
+	static Task<object?> PlatformShowPopupAsync(Popup popup, IMauiContext mauiContext)
 	{
 		PlatformShowPopup(popup, mauiContext);
 		return popup.Result;
-	}
-
-	/// <summary>
-	/// ATTENTION: Create the Renderer for UWP Don't use the one Provided by Xamarin.Forms, Causes a crash in Native Compiled Code
-	/// 1. DefaultRenderer is PopupRenderer instead of DefaultRenderer()
-	/// 2. No Invalid Cast Exceptions in UWP Native when the Xamarin Forms Renderer Functions is used.
-	/// </summary>
-	/// <param name="element">Element for getting the renderer</param>
-	/// <param name="mauiContext"></param>
-	// https://github.com/xamarin/Xamarin.Forms/blob/5.0.0/Xamarin.Forms.Platform.UAP/Platform.cs
-	static void CreateRenderer(Element element, IMauiContext mauiContext)
-	{
-		if (element == null)
-		{
-			throw new ArgumentNullException(nameof(element));
-		}
-
-		//_ = element.ToHandler(mauiContext);
 	}
 }

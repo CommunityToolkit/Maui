@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.Views;
 /// The popup control's base implementation.
 /// </summary>
 [ContentProperty(nameof(Content))]
-public abstract class BasePopup : Element, IElementConfiguration<BasePopup>, IPopup
+public abstract class BasePopup : Element, IPopup
 {
 	readonly WeakEventManager dismissWeakEventManager = new();
 	readonly WeakEventManager openedWeakEventManager = new();
@@ -24,17 +24,34 @@ public abstract class BasePopup : Element, IElementConfiguration<BasePopup>, IPo
 
 	readonly Lazy<PlatformConfigurationRegistry<BasePopup>> platformConfigurationRegistry;
 
-	public IPlatformElementConfiguration<T, BasePopup> On<T>() where T : IConfigPlatform =>
-		platformConfigurationRegistry.Value.On<T>();
-
+	/// <summary>
+	///  Backing BindableProperty for the <see cref="Content"/> property.
+	/// </summary>
 	public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View), typeof(BasePopup), propertyChanged: OnContentChanged);
 
+	/// <summary>
+	///  Backing BindableProperty for the <see cref="Color"/> property.
+	/// </summary>
 	public static readonly BindableProperty ColorProperty = BindableProperty.Create(nameof(Color), typeof(Color), typeof(BasePopup), default);
+
+	/// <summary>
+	///  Backing BindableProperty for the <see cref="Size"/> property.
+	/// </summary>
 	public static readonly BindableProperty SizeProperty = BindableProperty.Create(nameof(Size), typeof(Size), typeof(BasePopup), default(Size));
+
+	/// <summary>
+	///  Backing BindableProperty for the <see cref="IsLightDismissEnabled"/> property.
+	/// </summary>
 	public static readonly BindableProperty IsLightDismissEnabledProperty = BindableProperty.Create(nameof(IsLightDismissEnabled), typeof(bool), typeof(BasePopup), true);
 
+	/// <summary>
+	///  Backing BindableProperty for the <see cref="VerticalOptions"/> property.
+	/// </summary>
 	public static readonly BindableProperty VerticalOptionsProperty = BindableProperty.Create(nameof(VerticalOptions), typeof(LayoutAlignment), typeof(BasePopup), LayoutAlignment.Center);
-	
+
+	/// <summary>
+	///  Backing BindableProperty for the <see cref="HorizontalOptions"/> property.
+	/// </summary>
 	public static readonly BindableProperty HorizontalOptionsProperty = BindableProperty.Create(nameof(HorizontalOptions), typeof(LayoutAlignment), typeof(BasePopup), LayoutAlignment.Center);
 
 	/// <summary>

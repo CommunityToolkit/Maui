@@ -14,7 +14,7 @@ public static partial class NavigationExtensions
 		popupNative.Invoke(nameof(IPopup.OnOpened));
 	}
 
-	static Task<T?> PlatformShowPopupAsync<T>(Popup<T> popup, IMauiContext mauiContext)
+	static Task<object?> PlatformShowPopupAsync(Popup popup, IMauiContext mauiContext)
 	{
 		PlatformShowPopup(popup, mauiContext);
 		
