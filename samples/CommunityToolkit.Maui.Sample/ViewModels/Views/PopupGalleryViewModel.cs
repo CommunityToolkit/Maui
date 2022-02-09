@@ -44,14 +44,13 @@ public sealed class PopupGalleryViewModel : BaseGalleryViewModel
 
 		var view = (Element?)Activator.CreateInstance(popupType);
 
-		if (view is Popup<string?> popup)
+		if (view is Popup popup)
 		{
 			var result = await mainPage!.Navigation.ShowPopupAsync(popup);
-			await mainPage.DisplayAlert("Popup Result", result, "OKAY");
-		}
-		else if (view is BasePopup basePopup)
-		{
-			mainPage.Navigation.ShowPopup(basePopup);
+			if (result is string s)
+			{
+				await mainPage.DisplayAlert("Popup Result", s, "OKAY");
+			}
 		}
 		else if (view is Page page)
 		{
