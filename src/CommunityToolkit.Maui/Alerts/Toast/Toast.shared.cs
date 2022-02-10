@@ -118,9 +118,6 @@ public partial class Toast : IToast
 	}
 #endif
 
-	private partial void ShowNative(CancellationToken token);
-
-	private partial void DismissNative(CancellationToken token);
 #if ANDROID || IOS || MACCATALYST || WINDOWS
 	static NativeToast? nativeToast;
 
@@ -143,4 +140,9 @@ public partial class Toast : IToast
 		}
 	}
 #endif
+
+
+	private partial void ShowNative(CancellationToken token);
+
+	private partial void DismissNative(CancellationToken token);
 }

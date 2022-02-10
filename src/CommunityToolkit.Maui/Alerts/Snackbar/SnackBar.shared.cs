@@ -148,22 +148,6 @@ public partial class Snackbar : ISnackbar
 
 	static TimeSpan GetDefaultTimeSpan() => TimeSpan.FromSeconds(3);
 
-	void OnShown()
-	{
-		IsShown = true;
-		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Shown));
-	}
-
-	void OnDismissed()
-	{
-		IsShown = false;
-		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Dismissed));
-	}
-
-	private partial Task ShowNative(CancellationToken token);
-
-	private partial Task DismissNative(CancellationToken token);
-
 #if ANDROID || IOS || MACCATALYST || WINDOWS
 
 	static NativeSnackbar? nativeSnackbar;
@@ -187,6 +171,22 @@ public partial class Snackbar : ISnackbar
 		}
 	}
 #endif
+
+	void OnShown()
+	{
+		IsShown = true;
+		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Shown));
+	}
+
+	void OnDismissed()
+	{
+		IsShown = false;
+		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Dismissed));
+	}
+
+	private partial Task ShowNative(CancellationToken token);
+
+	private partial Task DismissNative(CancellationToken token);
 }
 
 /// <summary>
