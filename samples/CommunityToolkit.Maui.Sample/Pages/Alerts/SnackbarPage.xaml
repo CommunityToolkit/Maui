@@ -2,12 +2,12 @@
 <pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-                xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/tookit"
+                xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Alerts.SnackbarPage">
 
     <pages:BasePage.Resources>
         <ResourceDictionary>
-            <toolkit:ColorToColorForTextConverter x:Key="ColorToColorForTextConverter"/>
+            <mct:ColorToColorForTextConverter x:Key="ColorToColorForTextConverter"/>
         </ResourceDictionary>
     </pages:BasePage.Resources>
     

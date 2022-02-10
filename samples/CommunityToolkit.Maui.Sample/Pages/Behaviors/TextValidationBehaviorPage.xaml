@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/tookit"
+                xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.TextValidationBehaviorPage">
 
@@ -21,11 +21,11 @@
         <Label Text="Text color will change accordingly to the style that is configured when a text validation is failed." />
         <Entry Placeholder="Only numbers allowed">
             <Entry.Behaviors>
-                <toolkit:TextValidationBehavior RegexPattern="^[0-9]*$"
-                                                DecorationFlags="Trim"
-                                                InvalidStyle="{StaticResource InvalidEntryStyle}"
-                                                ValidStyle="{StaticResource ValidEntryStyle}"
-                                                Flags="ValidateOnValueChanged"/>
+                <mct:TextValidationBehavior RegexPattern="^[0-9]*$"
+                                            DecorationFlags="Trim"
+                                            InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                            ValidStyle="{StaticResource ValidEntryStyle}"
+                                            Flags="ValidateOnValueChanged"/>
             </Entry.Behaviors>
         </Entry>
     </VerticalStackLayout>

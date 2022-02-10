@@ -3,7 +3,7 @@
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.CharactersValidationBehaviorPage"
                 xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/tookit"
+                xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages">
     <pages:BasePage.Resources>
         <Style x:Key="InvalidEntryStyle"
@@ -59,7 +59,7 @@
             <Label Text="Type characters for validation behavior according to the settings you set upon."/>
             <Entry Placeholder="Type characters...">
                 <Entry.Behaviors>
-                    <toolkit:CharactersValidationBehavior CharacterType="{Binding SelectedItem, Source={x:Reference CharacterTypePicker}}"
+                    <mct:CharactersValidationBehavior CharacterType="{Binding SelectedItem, Source={x:Reference CharacterTypePicker}}"
                         Flags="ValidateOnValueChanged"
                         InvalidStyle="{StaticResource InvalidEntryStyle}"
                         ValidStyle="{StaticResource ValidEntryStyle}"
@@ -71,7 +71,7 @@
             <Label Text="The same but styling handled by visual state manager."/>
             <Entry Placeholder="Type characters...">
                 <Entry.Behaviors>
-                    <toolkit:CharactersValidationBehavior Flags="ValidateOnValueChanged"
+                    <mct:CharactersValidationBehavior Flags="ValidateOnValueChanged"
                         CharacterType="{Binding SelectedItem, Source={x:Reference CharacterTypePicker}}"
                         MaximumCharacterTypeCount="{Binding Text, Source={x:Reference MaximumCharacterCountEntry}}"
                         MinimumCharacterTypeCount="{Binding Text, Source={x:Reference MinimumCharacterCountEntry}}"/>

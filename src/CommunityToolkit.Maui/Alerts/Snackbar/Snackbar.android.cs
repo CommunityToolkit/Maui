@@ -152,7 +152,7 @@ public partial class Snackbar
 		{
 			base.OnDismissed(transientBottomBar, e);
 
-			dismissedTCS.SetResult(true);
+			dismissedTCS.TrySetResult(true);
 			snackbar.OnDismissed();
 		}
 	}

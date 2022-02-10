@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/tookit"
+                xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.RequiredStringValidationBehaviorPage">
 
@@ -21,18 +21,18 @@
         <Label Text="Text color will change accordingly to the style that is configured when a required string is not entered." />
         <Entry Placeholder="Required String: 123. Exact match">
             <Entry.Behaviors>
-                <toolkit:RequiredStringValidationBehavior RequiredString="123"
-                                                          InvalidStyle="{StaticResource InvalidEntryStyle}"
-                                                          ValidStyle="{StaticResource ValidEntryStyle}"
-                                                          Flags="ValidateOnValueChanged"/>
+                <mct:RequiredStringValidationBehavior RequiredString="123"
+                                                      InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                                      ValidStyle="{StaticResource ValidEntryStyle}"
+                                                      Flags="ValidateOnValueChanged"/>
             </Entry.Behaviors>
         </Entry>
         <Entry Placeholder="Required substring: 123">
             <Entry.Behaviors>
-                <toolkit:RequiredStringValidationBehavior RequiredString="123" ExactMatch="False"
-                                                          InvalidStyle="{StaticResource InvalidEntryStyle}"
-                                                          ValidStyle="{StaticResource ValidEntryStyle}"
-                                                          Flags="ValidateOnValueChanged"/>
+                <mct:RequiredStringValidationBehavior RequiredString="123" ExactMatch="False"
+                                                      InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                                      ValidStyle="{StaticResource ValidEntryStyle}"
+                                                      Flags="ValidateOnValueChanged"/>
             </Entry.Behaviors>
         </Entry>
     </VerticalStackLayout>

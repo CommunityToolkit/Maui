@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/tookit"
+                xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.NumericValidationBehaviorPage">
 
@@ -21,12 +21,12 @@
         <Label Text="Text color will be changed according to the configured style in case of an invalid numeric format or when the numeric value is outside of the configured boundaries (min: 1.0, max: 100.0). Maximum decimal places value equals 2." />
         <Entry Placeholder="Number">
             <Entry.Behaviors>
-                <toolkit:NumericValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"
-                                                   ValidStyle="{StaticResource ValidEntryStyle}"
-                                                   Flags="ValidateOnValueChanged"
-                                                   MinimumValue="1.0"
-                                                   MaximumValue="100.0"
-                                                   MaximumDecimalPlaces="2"/>
+                <mct:NumericValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                               ValidStyle="{StaticResource ValidEntryStyle}"
+                                               Flags="ValidateOnValueChanged"
+                                               MinimumValue="1.0"
+                                               MaximumValue="100.0"
+                                               MaximumDecimalPlaces="2"/>
             </Entry.Behaviors>
         </Entry>
     </VerticalStackLayout>

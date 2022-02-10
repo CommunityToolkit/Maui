@@ -71,6 +71,10 @@ jobs:
         displayName: Set NuGet Version to PR Version
         condition: and(succeeded(), eq(variables['build.reason'], 'PullRequest'))
       # build, test and pack the packages
+      - task: CmdLine@2
+        displayName: 'Run Unit Tests'
+        inputs:
+          script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release'
       - task: VSBuild@1
         displayName: 'Build Community Toolkit Sample'
         inputs:
@@ -82,23 +86,22 @@ jobs:
         inputs:
           solution: '$(PathToCommunityToolkitCoreCsproj)'
           configuration: 'Release'
-          msbuildArgs: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'     
+          msbuildArgs: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'     
       - task: VSBuild@1
         displayName: 'Build and Pack CommunityToolkit.Maui'
         inputs:
           solution: '$(PathToCommunityToolkitCsproj)'
           configuration: 'Release'
-          msbuildArgs: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'           
-      - task: CmdLine@2
-        displayName: 'Run Unit Tests'
+          msbuildArgs: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'
+      - task: PowerShell@2
+        displayName: 'Copy NuGet Packages to Staging Directory'
         inputs:
-          script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release'
-      - task: VSBuild@1
-        displayName: 'Pack Community Toolkit'
-        inputs:
-          solution: '$(PathToCommunityToolkitCsproj)'
-          configuration: 'Release'
-          msbuildArgs: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) /p:OutputPath=$(Build.ArtifactStagingDirectory)/nuget -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'     
+          targetType: 'inline'
+          script: |
+            $source = ".\src"
+            $filter = "nupkg"
+            Get-ChildItem -Path $source -Recurse | Where-Object { $_.Extension -match $filter } | Copy-Item -Destination "$(Build.ArtifactStagingDirectory)"
+          pwsh: true
       # Sign NuGet Packages
       - task: PowerShell@2
         displayName: Authenticode Sign Packages
@@ -107,14 +110,14 @@ jobs:
         env:
           SignClientUser: $(SignClientUser)
           SignClientSecret: $(SignClientSecret)
-          ArtifactDirectory: $(Build.ArtifactStagingDirectory)/nuget
+          ArtifactDirectory: $(Build.ArtifactStagingDirectory)
         condition: and(succeeded(), not(eq(variables['build.reason'], 'PullRequest')), not(eq(variables['SignClientSecret'], '')), not(eq(variables['SignClientUser'], '')))
       # publish the packages
       - task: PublishBuildArtifacts@1
         displayName: 'Publish NuGets'
         inputs:
           artifactName: nuget
-          pathToPublish: '$(Build.ArtifactStagingDirectory)/nuget'
+          pathToPublish: '$(Build.ArtifactStagingDirectory)'
 
   - job: build_macos
     displayName: Build macOS Library
@@ -144,10 +147,6 @@ jobs:
         inputs:
           script: 'dotnet workload install maui'
       - task: CmdLine@2
-        displayName: 'Build Community Toolkit'
-        inputs:
-          script: 'dotnet build $(PathToCommunityToolkitCsproj) -c Release'
-      - task: CmdLine@2
         displayName: 'Run Unit Tests'
         inputs:
           script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release'
@@ -158,8 +157,8 @@ jobs:
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit.Maui.Core NuGet'
         inputs:
-          script: 'dotnet pack $(PathToCommunityToolkitCoreCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget'
+          script: 'dotnet pack $(PathToCommunityToolkitCoreCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit.Maui NuGet'
         inputs:
-          script: 'dotnet pack $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion) --output $(Build.ArtifactStagingDirectory)/nuget'
+          script: 'dotnet pack $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'

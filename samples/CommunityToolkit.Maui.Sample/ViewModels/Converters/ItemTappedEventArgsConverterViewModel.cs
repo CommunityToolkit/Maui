@@ -4,11 +4,11 @@ using Application = Microsoft.Maui.Controls.Application;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-public class ItemTappedEventArgsViewModel : BaseViewModel
+public class ItemTappedEventArgsConverterViewModel : BaseViewModel
 {
 	Person? selectedItem = null;
 
-	public ItemTappedEventArgsViewModel()
+	public ItemTappedEventArgsConverterViewModel()
 	{
 		ItemTappedCommand = new AsyncRelayCommand<Person>(ExecuteItemSelectedCommand);
 	}
