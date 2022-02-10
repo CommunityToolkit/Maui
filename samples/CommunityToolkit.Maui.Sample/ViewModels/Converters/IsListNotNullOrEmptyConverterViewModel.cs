@@ -4,9 +4,9 @@ using System.Windows.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-public class ListIsNotNullOrEmptyConverterViewModel : BaseViewModel
+public class IsListNotNullOrEmptyConverterViewModel : BaseViewModel
 {
-	public ListIsNotNullOrEmptyConverterViewModel()
+	public IsListNotNullOrEmptyConverterViewModel()
 	{
 		ClearCollectionCommand = new Command(StringItemSource.Clear);
 		StringItemSource.CollectionChanged += HandleCollectionChanged;

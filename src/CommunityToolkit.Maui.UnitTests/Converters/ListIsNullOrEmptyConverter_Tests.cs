@@ -18,9 +18,9 @@ public class ListIsNullOrEmptyConverter_Tests : BaseTest
 	[MemberData(nameof(Data))]
 	public void ListIsNullOrEmptyConverter(object value, bool expectedResult)
 	{
-		var listIstNullOrEmptyConverter = new ListIsNullOrEmptyConverter();
+		var listIstNullOrEmptyConverter = new IsListNullOrEmptyConverter();
 
-		var result = (bool)listIstNullOrEmptyConverter.Convert(value, typeof(ListIsNullOrEmptyConverter), null, CultureInfo.CurrentCulture);
+		var result = (bool)listIstNullOrEmptyConverter.Convert(value, typeof(IsListNullOrEmptyConverter), null, CultureInfo.CurrentCulture);
 
 		Assert.Equal(result, expectedResult);
 	}
@@ -29,8 +29,8 @@ public class ListIsNullOrEmptyConverter_Tests : BaseTest
 	[InlineData(0)]
 	public void InValidConverterValuesThrowArgumenException(object value)
 	{
-		var listIstNullOrEmptyConverter = new ListIsNullOrEmptyConverter();
+		var listIstNullOrEmptyConverter = new IsListNullOrEmptyConverter();
 
-		Assert.Throws<ArgumentException>(() => listIstNullOrEmptyConverter.Convert(value, typeof(ListIsNullOrEmptyConverter), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => listIstNullOrEmptyConverter.Convert(value, typeof(IsListNullOrEmptyConverter), null, CultureInfo.CurrentCulture));
 	}
 }
