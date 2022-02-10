@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class ListIsNullOrEmptyConverter_Tests : BaseTest
+public class IsListNullOrEmptyConverter_Tests : BaseTest
 {
 	public static IReadOnlyList<object?[]> Data { get; } = new[]
 	{
@@ -16,7 +16,7 @@ public class ListIsNullOrEmptyConverter_Tests : BaseTest
 
 	[Theory]
 	[MemberData(nameof(Data))]
-	public void ListIsNullOrEmptyConverter(object value, bool expectedResult)
+	public void IsListNullOrEmptyConverter(object value, bool expectedResult)
 	{
 		var listIstNullOrEmptyConverter = new IsListNullOrEmptyConverter();
 
