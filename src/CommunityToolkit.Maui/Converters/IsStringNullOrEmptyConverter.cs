@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Converters;
 public class IsStringNullOrEmptyConverter : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
-	/// Converts the incoming string to a <see cref="bool"/> indicating whether or not the string is null and not empty using string.IsNullOrEmpty.
+	/// Converts the incoming string to a <see cref="bool"/> indicating whether or not the string is null or empty using string.IsNullOrEmpty.
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
 	/// <param name="targetType">The type of the binding target property. This is not implemented.</param>
