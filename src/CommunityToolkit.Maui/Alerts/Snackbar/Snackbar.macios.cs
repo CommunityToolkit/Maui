@@ -1,60 +1,48 @@
 ﻿using CommunityToolkit.Maui.Core.Views;
 using CoreGraphics;
 using Microsoft.Maui.Platform;
+using ObjCRuntime;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Snackbar
 {
-	readonly SemaphoreSlim semaphoreSlim = new(1, 1);
-
-	static SnackbarView? nativeSnackbar;
-
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
-	public virtual async partial Task Dismiss(CancellationToken token)
+	private partial Task DismissNative(CancellationToken token)
 	{
-		if (nativeSnackbar is null)
-		{
-			return;
-		}
-
-		await semaphoreSlim.WaitAsync(token);
-
-		try
+		if (NativeSnackbar is not null)
 		{
 			token.ThrowIfCancellationRequested();
-			nativeSnackbar.Dismiss();
-			nativeSnackbar = null;
+			NativeSnackbar.Dismiss();
+			NativeSnackbar = null;
 		}
-		finally
-		{
-			semaphoreSlim.Release();
-		}
+
+		return Task.CompletedTask;
 	}
 
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	public virtual async partial Task Show(CancellationToken token)
+	private partial async Task ShowNative(CancellationToken token)
 	{
-		await Dismiss(token);
+		await DismissNative(token);
 		token.ThrowIfCancellationRequested();
 
 		var cornerRadius = GetCornerRadius(VisualOptions.CornerRadius);
 
 		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + ToastView.DefaultPadding;
-		nativeSnackbar = new SnackbarView(Text,
+		NativeSnackbar = new SnackbarView(Text,
 											VisualOptions.BackgroundColor.ToNative(),
 											cornerRadius,
 											VisualOptions.TextColor.ToNative(),
-											UIFont.SystemFontOfSize((float)VisualOptions.Font.Size),
+											UIFont.SystemFontOfSize((nfloat)VisualOptions.Font.Size),
 											VisualOptions.CharacterSpacing,
 											ActionButtonText,
 											VisualOptions.ActionButtonTextColor.ToNative(),
-											UIFont.SystemFontOfSize((float)VisualOptions.ActionButtonFont.Size),
+											UIFont.SystemFontOfSize((nfloat)VisualOptions.ActionButtonFont.Size),
 											padding)
 		{
 			Action = Action,
@@ -64,7 +52,7 @@ public partial class Snackbar
 			OnShown = OnShown
 		};
 
-		nativeSnackbar.Show();
+		NativeSnackbar.Show();
 
 		static T? GetMaximum<T>(params T[] items) => items.Max();
 	}

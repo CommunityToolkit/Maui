@@ -5,8 +5,6 @@ using CommunityToolkit.Maui.Sample.Pages.Extensions;
 using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
-using Microsoft.Maui.Controls.PlatformConfiguration;
-using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
 namespace CommunityToolkit.Maui.Sample;
 
@@ -16,6 +14,7 @@ public partial class AppShell : Shell
 	{
 		// Add Alerts View Models
 		{ typeof(SnackbarViewModel), (typeof(AlertsGalleryPage), typeof(SnackbarPage)) },
+		{ typeof(ToastViewModel), (typeof(AlertsGalleryPage), typeof(ToastPage)) },
 
 		// Add Behaviors View Models
 		{ typeof(CharactersValidationBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(CharactersValidationBehaviorPage)) },

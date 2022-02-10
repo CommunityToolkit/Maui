@@ -1,5 +1,13 @@
 ﻿using CommunityToolkit.Maui.Core;
 
+#if ANDROID
+using NativeSnackbar = Google.Android.Material.Snackbar.Snackbar;
+#elif IOS || MACCATALYST
+using NativeSnackbar = CommunityToolkit.Maui.Core.Views.SnackbarView;
+#elif WINDOWS
+using NativeSnackbar = Windows.UI.Notifications.ToastNotification;
+#endif
+
 namespace CommunityToolkit.Maui.Alerts;
 
 /// <inheritdoc/>
@@ -19,25 +27,25 @@ public partial class Snackbar : ISnackbar
 	}
 
 	/// <inheritdoc/>
-	public SnackbarOptions VisualOptions { get; set; }
+	public SnackbarOptions VisualOptions { get; init; }
 
 	/// <inheritdoc/>
-	public string Text { get; set; }
+	public string Text { get; init; }
 
 	/// <inheritdoc/>
-	public TimeSpan Duration { get; set; }
+	public TimeSpan Duration { get; init; }
 
 	/// <inheritdoc/>
-	public Action? Action { get; set; }
+	public Action? Action { get; init; }
 
 	/// <inheritdoc/>
-	public string ActionButtonText { get; set; }
+	public string ActionButtonText { get; init; }
 
 	/// <inheritdoc/>
 	public static bool IsShown { get; private set; }
 
 	/// <inheritdoc/>
-	public IView? Anchor { get; set; }
+	public IView? Anchor { get; init; }
 
 	/// <inheritdoc/>
 	public static event EventHandler Shown
@@ -85,16 +93,16 @@ public partial class Snackbar : ISnackbar
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	public virtual partial Task Show(CancellationToken token = default);
+	public virtual Task Show(CancellationToken token = default) => Device.InvokeOnMainThreadAsync(() => ShowNative(token));
 
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
-	public virtual partial Task Dismiss(CancellationToken token = default);
+	public virtual Task Dismiss(CancellationToken token = default) => Device.InvokeOnMainThreadAsync(() => DismissNative(token));
 
 #if !(IOS || ANDROID || MACCATALYST || WINDOWS)
 	/// <inheritdoc/>
-	public virtual partial Task Show(CancellationToken token)
+	private partial Task ShowNative(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 
@@ -104,7 +112,7 @@ public partial class Snackbar : ISnackbar
 	}
 
 	/// <inheritdoc/>
-	public virtual partial Task Dismiss(CancellationToken token)
+	private partial Task DismissNative(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 
@@ -126,19 +134,43 @@ public partial class Snackbar : ISnackbar
 	/// <summary>
 	/// Dispose Snackbar
 	/// </summary>
+#if ANDROID || IOS || MACCATALYST
 	protected virtual async ValueTask DisposeAsyncCore()
 	{
-#if ANDROID || IOS || MACCATALYST
-		if (nativeSnackbar is not null)
-		{
-			await Device.InvokeOnMainThreadAsync(() => nativeSnackbar.Dispose());
-		}
-#else
-		await Task.CompletedTask;
-#endif
+		await Device.InvokeOnMainThreadAsync(() => NativeSnackbar?.Dispose());
 	}
+#else
+	protected virtual ValueTask DisposeAsyncCore()
+	{
+		return ValueTask.CompletedTask;
+    }
+#endif
 
 	static TimeSpan GetDefaultTimeSpan() => TimeSpan.FromSeconds(3);
+
+#if ANDROID || IOS || MACCATALYST || WINDOWS
+
+	static NativeSnackbar? nativeSnackbar;
+
+	static NativeSnackbar? NativeSnackbar
+	{
+		get
+		{
+			return MainThread.IsMainThread
+				? nativeSnackbar
+				: throw new InvalidOperationException($"{nameof(nativeSnackbar)} can only be called from the Main Thread");
+		}
+		set
+		{
+			if (!MainThread.IsMainThread)
+			{
+				throw new InvalidOperationException($"{nameof(nativeSnackbar)} can only be called from the Main Thread");
+			}
+
+			nativeSnackbar = value;
+		}
+	}
+#endif
 
 	void OnShown()
 	{
@@ -151,6 +183,10 @@ public partial class Snackbar : ISnackbar
 		IsShown = false;
 		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Dismissed));
 	}
+
+	private partial Task ShowNative(CancellationToken token);
+
+	private partial Task DismissNative(CancellationToken token);
 }
 
 /// <summary>
