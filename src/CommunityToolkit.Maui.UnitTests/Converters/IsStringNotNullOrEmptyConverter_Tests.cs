@@ -17,7 +17,7 @@ public class IsStringNotNullOrEmptyConverter_Tests : BaseTest
 
 		var result = (bool)isNotNullOrEmptyConverter.Convert(value, null, null, null);
 
-		Assert.Equal(result, expectedResult);
+		Assert.Equal(expectedResult, result);
 	}
 
 	[Theory]
