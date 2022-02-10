@@ -18,7 +18,7 @@ public class IsStringNullOrEmptyConverter : ValueConverterExtension, ICommunityT
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>A <see cref="bool"/> indicating if the incoming value is null or empty.</returns>
 	[return: NotNull]
-	public object Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	public object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		var stringValue = (string?)value;
 
