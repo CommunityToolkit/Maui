@@ -35,6 +35,7 @@ public partial class AppShell : Shell
 		// Add Converters View Models
 		{ typeof(BoolToObjectConverterViewModel), (typeof(ConvertersGalleryPage), typeof(BoolToObjectConverterPage)) },
 		{ typeof(ColorsConvertersViewModel), (typeof(ConvertersGalleryPage), typeof(ColorsConverterPage)) },
+		{ typeof(CompareConverterViewModel), (typeof(ConvertersGalleryPage), typeof(CompareConverterPage)) },
 		{ typeof(DateTimeOffsetConverterViewModel), (typeof(ConvertersGalleryPage), typeof(DateTimeOffsetConverterPage)) },
 		{ typeof(DoubleToIntConverterViewModel), (typeof(ConvertersGalleryPage), typeof(DoubleToIntConverterPage)) },
 		{ typeof(EnumToBoolConverterViewModel), (typeof(ConvertersGalleryPage), typeof(EnumToBoolConverterPage)) },
