@@ -19,7 +19,11 @@ public class IsStringNullOrEmptyConverter : ValueConverterExtension, ICommunityT
 	/// <returns>A <see cref="bool"/> indicating if the incoming value is null or empty.</returns>
 	[return: NotNull]
 	public object Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
-		=> value is string stringValue ? string.IsNullOrEmpty(stringValue) : throw new ArgumentException("Binding must be of type string", nameof(value));
+	{
+		var stringValue = (string?)value;
+
+		return string.IsNullOrEmpty(stringValue);
+	}
 
 	/// <summary>
 	/// This method is not implemented and will throw a <see cref="NotImplementedException"/>.
