@@ -22,7 +22,7 @@ public class IsListNullOrEmptyConverter_Tests : BaseTest
 
 		var result = (bool)listIstNullOrEmptyConverter.Convert(value, typeof(IsListNullOrEmptyConverter), null, CultureInfo.CurrentCulture);
 
-		Assert.Equal(result, expectedResult);
+		Assert.Equal(expectedResult, result);
 	}
 
 	[Theory]
