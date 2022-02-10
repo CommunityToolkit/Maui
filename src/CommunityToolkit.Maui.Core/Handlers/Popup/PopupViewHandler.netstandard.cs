@@ -5,6 +5,7 @@ namespace CommunityToolkit.Core.Handlers;
 
 public partial class PopupViewHandler : ElementHandler<IPopup, object>
 {
+	/// <inheritdoc/>
 	protected override object CreateNativeElement() => throw new NotImplementedException();
 
 	/// <summary>
