@@ -64,24 +64,6 @@ public partial class Toast : IToast
 	/// </summary>
 	public virtual Task Dismiss(CancellationToken token = default) => Device.InvokeOnMainThreadAsync(() => DismissNative(token));
 
-#if !(IOS || ANDROID || MACCATALYST || WINDOWS)
-	/// <summary>
-	/// Show Toast
-	/// </summary>
-	private partial void ShowNative(CancellationToken token)
-	{
-		token.ThrowIfCancellationRequested();
-	}
-
-	/// <summary>
-	/// Dismiss Toast
-	/// </summary>
-	private partial void DismissNative(CancellationToken token)
-	{
-		token.ThrowIfCancellationRequested();
-	}
-#endif
-
 	/// <summary>
 	/// Dispose Toast
 	/// </summary>
@@ -145,4 +127,22 @@ public partial class Toast : IToast
 	private partial void ShowNative(CancellationToken token);
 
 	private partial void DismissNative(CancellationToken token);
+
+#if !(IOS || ANDROID || MACCATALYST || WINDOWS)
+	/// <summary>
+	/// Show Toast
+	/// </summary>
+	private partial void ShowNative(CancellationToken token)
+	{
+		token.ThrowIfCancellationRequested();
+	}
+
+	/// <summary>
+	/// Dismiss Toast
+	/// </summary>
+	private partial void DismissNative(CancellationToken token)
+	{
+		token.ThrowIfCancellationRequested();
+	}
+#endif
 }
