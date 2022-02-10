@@ -13,7 +13,15 @@ public sealed class SectionModel
 		Title = title;
 		Description = description;
 		Color = color;
-		Type = page.GetType();
+	}
+
+	SectionModel(in Type viewModelType, in string title, in Color color, in string description, in Type type)
+	{
+		ViewModelType = viewModelType;
+		Title = title;
+		Description = description;
+		Color = color;
+		Type = type;
 	}
 
 	// Factory pattern using constrained generic to ensure TViewModel inherits from BaseViewModel
@@ -26,6 +34,12 @@ public sealed class SectionModel
 		return new SectionModel(typeof(TViewModel), title, color, description);
 	}
 
+	// Factory pattern for Popup
+	public static SectionModel Create<TViewModel>(in Type type, in string title, in Color color, in string description)
+	{
+		return new SectionModel(typeof(TViewModel), title, color, description, type);
+	}
+
 	public Type ViewModelType { get; }
 
 	public string Title { get; }
@@ -33,5 +47,6 @@ public sealed class SectionModel
 	public string Description { get; }
 
 	public Color Color { get; }
-	public Type Type { get; }
+
+	public Type? Type { get; }
 }

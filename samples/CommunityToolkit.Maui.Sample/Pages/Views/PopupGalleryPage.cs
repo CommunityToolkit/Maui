@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-namespace CommunityToolkit.Maui.Sample.Pages.Views;
+namespace CommunityToolkit.Maui.Sample.Pages.Views.Popups;
 public class PopupGalleryPage : BaseGalleryPage<PopupGalleryViewModel>
 {
 

@@ -8,6 +8,7 @@
     xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Converters"
     xmlns:extensions="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Extensions"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:popup="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Views.Popups"
     xmlns:sys="clr-namespace:System;assembly=netstandard"
     x:Class="CommunityToolkit.Maui.Sample.AppShell">
 
@@ -16,25 +17,9 @@
                VerticalTextAlignment="Center"
                HorizontalTextAlignment="Start"
                FontSize="24"
-               Padding="4,0"
-               Margin="0,0,0,12">
-            <Label.Padding>
-                <OnPlatform x:TypeArguments="Thickness">
-                    <OnPlatform.Platforms>
-                        <!--Work-around to ensure content doesn't get clipped by iOS Status Bar + Naviagtion Bar-->
-                        <On Platform="iOS" Value="4, 100, 4, 0" />
-                    </OnPlatform.Platforms>
-                </OnPlatform>
-            </Label.Padding>
-            <Label.Margin>
-                <OnPlatform x:TypeArguments="Thickness">
-                    <OnPlatform.Platforms>
-                        <!--Work-around to ensure content doesn't get clipped by iOS Status Bar + Naviagtion Bar-->
-                        <On Platform="iOS" Value="0, 0, 0, 0" />
-                    </OnPlatform.Platforms>
-                </OnPlatform>
-            </Label.Margin>
-        </Label>
+               Padding="{OnPlatform Default='4,0', iOS='4, 100, 4, 0'}"
+               Margin="{OnPlatform Default='0,0,0,12', iOS='0'}"/>
+
     </Shell.FlyoutHeader>
 
     <FlyoutItem Title="Welcome" Route="WelcomePage" Icon="dotnet_bot.png">
@@ -51,6 +36,9 @@
     </FlyoutItem>
     <FlyoutItem Title="Extensions" Route="ExtensionsGalleryPage" Icon="dotnet_bot.png">
         <ShellContent ContentTemplate="{DataTemplate extensions:ExtensionsGalleryPage}" />
+    </FlyoutItem>
+    <FlyoutItem Title="Popups" Route="PopupGalleryPage" Icon="dotnet_bot.png">
+        <ShellContent ContentTemplate="{DataTemplate popup:PopupGalleryPage}" />
     </FlyoutItem>
 
     <Shell.FlyoutFooter>
