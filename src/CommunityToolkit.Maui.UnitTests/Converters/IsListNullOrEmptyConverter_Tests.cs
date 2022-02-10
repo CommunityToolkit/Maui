@@ -27,7 +27,7 @@ public class IsListNullOrEmptyConverter_Tests : BaseTest
 
 	[Theory]
 	[InlineData(0)]
-	public void InvalidConverterValuesThrowArgumenException(object value)
+	public void InvalidConverterValuesThrowArgumentException(object value)
 	{
 		var listIstNullOrEmptyConverter = new IsListNullOrEmptyConverter();
 
