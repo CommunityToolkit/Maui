@@ -1,6 +1,7 @@
 ﻿using CoreGraphics;
 using CoreText;
 using Foundation;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 
@@ -67,7 +68,7 @@ public class ToastView : Popup
 	/// </summary>
 	public UIColor TextColor
 	{
-		get => messageLabel.TextColor ??= UIColor.Black;
+		get => messageLabel.TextColor ??= Defaults.TextColor.ToNative();
 		private init => messageLabel.TextColor = value;
 	}
 
@@ -87,7 +88,7 @@ public class ToastView : Popup
 	{
 		init
 		{
-			var em = GetEmFromPx(Font.PointSize, value);
+			var em = Font.PointSize > 0 ? GetEmFromPx(Font.PointSize, value) : 0;
 			messageLabel.AttributedText = new NSAttributedString(Message, new CTStringAttributes() { KerningAdjustment = (float)em });
 		}
 	}

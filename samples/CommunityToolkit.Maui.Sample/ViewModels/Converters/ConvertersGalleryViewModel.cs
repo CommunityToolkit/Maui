@@ -50,10 +50,10 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
 			SectionModel.Create<VariableMultiValueConverterViewModel>(nameof(VariableMultiValueConverter),
 				"A converter that allows you to combine multiple boolean bindings into a single binding."),
 
-			SectionModel.Create<ListIsNullOrEmptyConverterViewModel>(nameof(ListIsNullOrEmptyConverter),
+			SectionModel.Create<IsListNullOrEmptyConverterViewModel>(nameof(IsListNullOrEmptyConverter),
 				"A converter that allows you to check if collection is null or empty"),
 
-			SectionModel.Create<ListIsNotNullOrEmptyConverterViewModel>(nameof(ListIsNotNullOrEmptyConverter),
+			SectionModel.Create<IsListNotNullOrEmptyConverterViewModel>(nameof(IsListNotNullOrEmptyConverter),
 				"A converter that allows you to check if collection is not null or empty"),
 
 			SectionModel.Create<ListToStringConverterViewModel>(nameof(ListToStringConverter),
@@ -78,7 +78,10 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
 				"A group of converters that convert a Color to your strings values (RGB, HEX, HSL, etc)"),
 
 			SectionModel.Create<ItemSelectedEventArgsConverterViewModel>(nameof(ItemSelectedEventArgsConverter),
-				"A converter that allows you to extract the selected item in a ListView from the ItemSelectedChangedEventArgs object.")
+				"A converter that allows you to extract the selected item in a ListView from the ItemSelectedChangedEventArgs object."),
+
+			SectionModel.Create<CompareConverterViewModel>(nameof(CompareConverter),
+				"A converter that compares two IComparable objects and returns a boolean value or one of two specified objects.")
 		})
 	{
 	}

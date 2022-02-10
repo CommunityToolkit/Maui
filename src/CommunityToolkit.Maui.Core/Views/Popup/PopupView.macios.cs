@@ -90,7 +90,11 @@ public class PopupView : UIView
 			VisualOptions.CornerRadius.X,
 			VisualOptions.CornerRadius.Y,
 			VisualOptions.CornerRadius.Width,
-			VisualOptions.CornerRadius.Height);
+			VisualOptions.CornerRadius.Height)
+		{
+			Alignment = UIStackViewAlignment.Fill,
+			Distribution = UIStackViewDistribution.EqualCentering
+		};
 
 		AddSubview(Container);
 
