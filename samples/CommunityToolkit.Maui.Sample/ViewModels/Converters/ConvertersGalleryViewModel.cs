@@ -11,10 +11,10 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
 			SectionModel.Create<BoolToObjectConverterViewModel>(nameof(BoolToObjectConverter),
 				"A converter that allows users to convert a bool value binding to a specific object."),
 
-			SectionModel.Create<IsNullOrEmptyConverterViewModel>(nameof(IsNullOrEmptyConverter),
+			SectionModel.Create<IsNullOrEmptyConverterViewModel>(nameof(IsStringNullOrEmptyConverter),
 				"A converter that allows users to convert an incoming binding to a bool value. This value represents if the incoming binding value is null or empty."),
 
-			SectionModel.Create<IsNotNullOrEmptyConverterViewModel>(nameof(IsNotNullOrEmptyConverter),
+			SectionModel.Create<IsNotNullOrEmptyConverterViewModel>(nameof(IsStringNotNullOrEmptyConverter),
 				"A converter that allows users to convert an incoming binding to a bool value. This value represents if the incoming binding value is Not null or empty."),
 
 			SectionModel.Create<InvertedBoolConverterViewModel>(nameof(InvertedBoolConverter),

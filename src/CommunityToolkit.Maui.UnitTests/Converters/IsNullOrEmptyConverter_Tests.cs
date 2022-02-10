@@ -10,10 +10,10 @@ public class IsNullOrEmptyConverter_Tests : BaseTest
 	[InlineData(null, true)]
 	[InlineData("", true)]
 	[InlineData("Test", false)]
-	[InlineData(typeof(IsNullOrEmptyConverter), false)]
+	[InlineData(typeof(IsStringNullOrEmptyConverter), false)]
 	public void IsNullOrEmptyConverter(object value, bool expectedResult)
 	{
-		var isNullOrEmptyConverter = new IsNullOrEmptyConverter();
+		var isNullOrEmptyConverter = new IsStringNullOrEmptyConverter();
 
 		var result = (bool)isNullOrEmptyConverter.Convert(value, typeof(IsNotNullOrEmptyConverter_Tests), null, CultureInfo.CurrentCulture);
 
