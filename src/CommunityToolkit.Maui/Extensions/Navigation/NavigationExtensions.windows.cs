@@ -10,12 +10,9 @@ public static partial class NavigationExtensions
 	{
 		var window = mauiContext.GetNativeWindow().GetWindow();
 		popup.Parent = GetCurrentPage((Page)window!.Content);
-		//CreateRenderer(popup, mauiContext);
 		// https://github.com/xamarin/Xamarin.Forms/blob/0c95d0976cc089fe72476fb037851a64987de83c/Xamarin.Forms.Platform.iOS/PageExtensions.cs#L44
 		var native = popup.ToHandler(mauiContext);
-		//(native as PopupViewHandler)!.NativeView.Show();
 		native?.Invoke(nameof(IPopup.OnOpened));
-		//popupNative.Invoke(nameof(IBasePopup.OnOpened));
 		Page GetCurrentPage(Page currentPage)
 		{
 			if (currentPage.NavigationProxy.ModalStack.LastOrDefault() is Page modal)

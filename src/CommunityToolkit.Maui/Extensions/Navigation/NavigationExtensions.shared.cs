@@ -1,7 +1,9 @@
 ﻿
 using System.Threading.Tasks;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Extensions;
 
@@ -19,8 +21,15 @@ public static partial class NavigationExtensions
 	/// <param name="popup">
 	/// The <see cref="BasePopup"/> to display.
 	/// </param>
-	public static void ShowPopup(this INavigation navigation, BasePopup popup) =>
-		PlatformShowPopup(popup, navigation.NavigationStack[0].Handler?.MauiContext ?? throw new NullReferenceException(nameof(MauiContext)));
+	public static void ShowPopup(this INavigation navigation, BasePopup popup)
+	{
+#if WINDOWS
+		PlatformShowPopup(popup, GetMauiContext(navigation));
+#else
+		CreatePopup(navigation, popup);
+#endif
+
+	}
 
 	/// <summary>
 	/// Displays a popup and returns a result.
@@ -34,6 +43,28 @@ public static partial class NavigationExtensions
 	/// <returns>
 	/// A task that will complete once the <see cref="Popup"/> is dismissed.
 	/// </returns>
-	public static Task<object?> ShowPopupAsync(this INavigation navigation, Popup popup) =>
-		PlatformShowPopupAsync(popup, navigation.NavigationStack[0].Handler?.MauiContext ?? throw new NullReferenceException(nameof(MauiContext)));
+	public static Task<object?> ShowPopupAsync(this INavigation navigation, Popup popup)
+	{
+#if WINDOWS
+		return PlatformShowPopupAsync(popup, GetMauiContext(navigation));
+#else
+
+		CreatePopup(navigation, popup);
+		return popup.Result;
+#endif
+	}
+
+	static void CreatePopup(INavigation navigation, BasePopup popup)
+	{
+		var mauiContext = GetMauiContext(navigation);
+		var popupNative = popup.ToHandler(mauiContext);
+		popupNative.Invoke(nameof(IPopup.OnOpened));
+	}
+
+	static IMauiContext GetMauiContext(INavigation navigation)
+	{
+		return (Shell.Current is null ? 
+			navigation.NavigationStack[0].Handler?.MauiContext
+			: Shell.Current.Handler?.MauiContext) ?? throw new NullReferenceException(nameof(MauiContext));
+	}
 }

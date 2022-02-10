@@ -86,13 +86,16 @@ public class MCTPopup : Flyout
 	{
 		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(Element)} cannot be null");
 		_ = Control ?? throw new InvalidOperationException($"{nameof(Element)} cannot be null");
+
 		var standardSize = new Size { Width = defaultSize, Height = defaultSize / 2 };
 
-		var desiredSize = VirtualView.Size != default ? VirtualView.Size : standardSize;
-
-		var content = VirtualView.Content;
-
-		var currentSize = content is null ? desiredSize : VirtualView.Content!.Measure(desiredSize.Width, desiredSize.Height);
+		var currentSize = VirtualView.Size != default ? VirtualView.Size : standardSize;
+		
+		if (VirtualView.Content is not null && VirtualView.Size == default)
+		{
+			var content = VirtualView.Content;
+			currentSize = new Size(content.Width, content.Height);
+		}
 
 		Control.Width = currentSize.Width;
 		Control.Height = currentSize.Height;
