@@ -7,7 +7,6 @@ using CommunityToolkit.Maui.Core;
 using Google.Android.Material.Snackbar;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Platform;
-using AndroidSnackbar = Google.Android.Material.Snackbar.Snackbar;
 using Object = Java.Lang.Object;
 using View = Android.Views.View;
 
@@ -15,28 +14,8 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Snackbar
 {
-	static AndroidSnackbar? nativeSnackbar;
 	TaskCompletionSource<bool>? dismissedTCS;
-
-	static AndroidSnackbar? NativeSnackbar
-	{
-		get
-		{
-			return MainThread.IsMainThread
-				? nativeSnackbar
-				: throw new InvalidOperationException($"{nameof(nativeSnackbar)} can only be called from the Main Thread");
-		}
-		set
-		{
-			if (!MainThread.IsMainThread)
-			{
-				throw new InvalidOperationException($"{nameof(nativeSnackbar)} can only be called from the Main Thread");
-			}
-
-			nativeSnackbar = value;
-		}
-	}
-
+	
 	private async partial Task DismissNative(CancellationToken token)
 	{
 		if (NativeSnackbar is null)
@@ -65,7 +44,7 @@ public partial class Snackbar
 		var rootView = Microsoft.Maui.Essentials.Platform.GetCurrentActivity(true).Window?.DecorView.FindViewById(Android.Resource.Id.Content)
 			?? throw new NotSupportedException("Unable to retrieve snackbar parent");
 
-		NativeSnackbar = AndroidSnackbar.Make(rootView, Text, (int)Duration.TotalMilliseconds);
+		NativeSnackbar = Google.Android.Material.Snackbar.Snackbar.Make(rootView, Text, (int)Duration.TotalMilliseconds);
 		var snackbarView = NativeSnackbar.View;
 
 		if (Anchor is not Page)

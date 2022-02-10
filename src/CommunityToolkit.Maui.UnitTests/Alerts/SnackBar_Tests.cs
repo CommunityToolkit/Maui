@@ -56,7 +56,7 @@ public class Snackbar_Tests : BaseTest
 	public async Task VisualElement_DisplaySnackbar_ShownEventReceived()
 	{
 		var receivedEvents = new List<EventArgs>();
-		Snackbar.Shown += (sender, e) =>
+		Snackbar.Shown += (_, e) =>
 		{
 			receivedEvents.Add(e);
 		};

@@ -1,5 +1,12 @@
 ﻿using System.ComponentModel;
 using CommunityToolkit.Maui.Core;
+#if ANDROID
+using NativeToast = Android.Widget.Toast;
+#elif IOS || MACCATALYST
+using NativeToast = CommunityToolkit.Maui.Core.Views.ToastView;
+#elif WINDOWS
+using NativeToast = Windows.UI.Notifications.ToastNotification;
+#endif
 
 namespace CommunityToolkit.Maui.Alerts;
 
@@ -7,13 +14,13 @@ namespace CommunityToolkit.Maui.Alerts;
 public partial class Toast : IToast
 {
 	/// <inheritdoc/>
-	public string Text { get; set; } = string.Empty;
+	public string Text { get; init; } = string.Empty;
 
 	/// <inheritdoc/>
-	public ToastDuration Duration { get; set; } = ToastDuration.Short;
+	public ToastDuration Duration { get; init; } = ToastDuration.Short;
 
 	/// <inheritdoc/>
-	public double TextSize { get; set; } = Defaults.FontSize;
+	public double TextSize { get; init; } = Defaults.FontSize;
 
 	/// <summary>
 	/// Create new Toast
@@ -39,7 +46,7 @@ public partial class Toast : IToast
 			throw new ArgumentOutOfRangeException(nameof(textSize), "Toast font size must be positive");
 		}
 
-		return new Toast()
+		return new Toast
 		{
 			Text = message,
 			Duration = duration,
@@ -114,4 +121,26 @@ public partial class Toast : IToast
 	private partial void ShowNative(CancellationToken token);
 
 	private partial void DismissNative(CancellationToken token);
+#if ANDROID || IOS || MACCATALYST || WINDOWS
+	static NativeToast? nativeToast;
+
+	static NativeToast? NativeToast
+	{
+		get
+		{
+			return MainThread.IsMainThread
+				? nativeToast
+				: throw new InvalidOperationException($"{nameof(nativeToast)} can only be called from the Main Thread");
+		}
+		set
+		{
+			if (!MainThread.IsMainThread)
+			{
+				throw new InvalidOperationException($"{nameof(nativeToast)} can only be called from the Main Thread");
+			}
+
+			nativeToast = value;
+		}
+	}
+#endif
 }

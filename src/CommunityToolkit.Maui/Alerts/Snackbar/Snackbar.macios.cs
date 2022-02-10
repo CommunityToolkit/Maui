@@ -8,27 +8,6 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Snackbar
 {
-	static SnackbarView? nativeSnackbar;
-
-	static SnackbarView? NativeSnackbar
-	{
-		get
-		{
-			return MainThread.IsMainThread
-				? nativeSnackbar
-				: throw new InvalidOperationException($"{nameof(nativeSnackbar)} can only be called from the Main Thread");
-		}
-		set
-		{
-			if (!MainThread.IsMainThread)
-			{
-				throw new InvalidOperationException($"{nameof(nativeSnackbar)} can only be called from the Main Thread");
-			}
-
-			nativeSnackbar = value;
-		}
-	}
-
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>

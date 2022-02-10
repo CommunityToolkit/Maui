@@ -9,27 +9,6 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Toast
 {
-	static ToastView? nativeToast;
-
-	static ToastView? NativeToast
-	{
-		get
-		{
-			return MainThread.IsMainThread
-				? nativeToast
-				: throw new InvalidOperationException($"{nameof(nativeToast)} can only be called from the Main Thread");
-		}
-		set
-		{
-			if (!MainThread.IsMainThread)
-			{
-				throw new InvalidOperationException($"{nameof(nativeToast)} can only be called from the Main Thread");
-			}
-
-			nativeToast = value;
-		}
-	}
-
 	private partial void DismissNative(CancellationToken token)
 	{
 		if (NativeToast is not null)
