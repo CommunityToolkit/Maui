@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// Toast for iOS + MacCatalyst
 /// </summary>
-public class ToastView : Popup
+public class ToastView : Alert
 {
 	readonly PaddedLabel messageLabel;
 

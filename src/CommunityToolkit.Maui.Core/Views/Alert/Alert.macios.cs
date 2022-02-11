@@ -6,28 +6,28 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// Popup for iOS + MacCatalyst
 /// </summary>
-public class Popup
+public class Alert
 {
 	NSTimer? timer;
 
 	/// <summary>
 	/// Initialize Popup
 	/// </summary>
-	public Popup()
+	public Alert()
 	{
-		PopupView = new PopupView();
+		PopupView = new AlertView();
 
 		PopupView.ParentView.AddSubview(PopupView);
 		PopupView.ParentView.BringSubviewToFront(PopupView);
 	}
 
 	/// <summary>
-	/// Duration of time before <see cref="Popup"/> disappears
+	/// Duration of time before <see cref="Alert"/> disappears
 	/// </summary>
 	public TimeSpan Duration { get; set; }
 
 	/// <summary>
-	/// <see cref="UIView"/> on which Popup will appear. When null, <see cref="Popup"/> will appear at bottom of screen.
+	/// <see cref="UIView"/> on which Popup will appear. When null, <see cref="Alert"/> will appear at bottom of screen.
 	/// </summary>
 	public UIView? Anchor { get; set; }
 
@@ -42,12 +42,12 @@ public class Popup
 	public Action? OnShown { get; set; }
 
 	/// <summary>
-	/// <see cref="UIView"/> for <see cref="Popup"/>
+	/// <see cref="UIView"/> for <see cref="Alert"/>
 	/// </summary>
-	protected PopupView PopupView { get; }
+	protected AlertView PopupView { get; }
 
 	/// <summary>
-	/// Dismiss the <see cref="Popup"/> from the screen
+	/// Dismiss the <see cref="Alert"/> from the screen
 	/// </summary>
 	public void Dismiss()
 	{
@@ -63,7 +63,7 @@ public class Popup
 	}
 
 	/// <summary>
-	/// Show the <see cref="Popup"/> on the screen
+	/// Show the <see cref="Alert"/> on the screen
 	/// </summary>
 	public void Show()
 	{

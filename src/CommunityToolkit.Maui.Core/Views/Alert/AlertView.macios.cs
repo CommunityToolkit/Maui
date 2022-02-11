@@ -6,9 +6,9 @@ using UIKit;
 namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
-/// <see cref="UIView"/> for <see cref="Popup"/>
+/// <see cref="UIView"/> for <see cref="Alert"/>
 /// </summary>
-public class PopupView : UIView
+public class AlertView : UIView
 {
 	readonly List<UIView> children = Array.Empty<UIView>().ToList();
 
@@ -23,17 +23,17 @@ public class PopupView : UIView
 	public IReadOnlyList<UIView> Children => children;
 
 	/// <summary>
-	/// <see cref="UIView"/> on which Popup will appear. When null, <see cref="PopupView"/> will appear at bottom of screen.
+	/// <see cref="UIView"/> on which Popup will appear. When null, <see cref="AlertView"/> will appear at bottom of screen.
 	/// </summary>
 	public UIView? AnchorView { get; set; }
 
 	/// <summary>
-	/// <see cref="PopupViewVisualOptions"/>
+	/// <see cref="AlertViewVisualOptions"/>
 	/// </summary>
-	public PopupViewVisualOptions VisualOptions { get; } = new();
+	public AlertViewVisualOptions VisualOptions { get; } = new();
 
 	/// <summary>
-	/// Container of <see cref="PopupView"/>
+	/// Container of <see cref="AlertView"/>
 	/// </summary>
 	protected UIStackView? Container { get; set; }
 
@@ -49,7 +49,7 @@ public class PopupView : UIView
 	public void AddChild(UIView child) => children.Add(child);
 
 	/// <summary>
-	/// Initializes <see cref="PopupView"/>
+	/// Initializes <see cref="AlertView"/>
 	/// </summary>
 	public void Setup()
 	{
@@ -59,8 +59,8 @@ public class PopupView : UIView
 
 	void ConstraintInParent()
 	{
-		_ = ParentView ?? throw new InvalidOperationException($"{nameof(PopupView)}.{nameof(Initialize)} not called");
-		_ = Container ?? throw new InvalidOperationException($"{nameof(PopupView)}.{nameof(Initialize)} not called");
+		_ = ParentView ?? throw new InvalidOperationException($"{nameof(AlertView)}.{nameof(Initialize)} not called");
+		_ = Container ?? throw new InvalidOperationException($"{nameof(AlertView)}.{nameof(Initialize)} not called");
 
 		const int defaultSpacing = 10;
 		if (AnchorView is null)
