@@ -15,10 +15,10 @@ public class Alert
 	/// </summary>
 	public Alert()
 	{
-		PopupView = new AlertView();
+		AlertView = new AlertView();
 
-		PopupView.ParentView.AddSubview(PopupView);
-		PopupView.ParentView.BringSubviewToFront(PopupView);
+		AlertView.ParentView.AddSubview(AlertView);
+		AlertView.ParentView.BringSubviewToFront(AlertView);
 	}
 
 	/// <summary>
@@ -44,7 +44,7 @@ public class Alert
 	/// <summary>
 	/// <see cref="UIView"/> for <see cref="Alert"/>
 	/// </summary>
-	protected AlertView PopupView { get; }
+	protected AlertView AlertView { get; }
 
 	/// <summary>
 	/// Dismiss the <see cref="Alert"/> from the screen
@@ -58,7 +58,7 @@ public class Alert
 			timer = null;
 		}
 
-		PopupView.Dismiss();
+		AlertView.Dismiss();
 		OnDismissed?.Invoke();
 	}
 
@@ -67,9 +67,9 @@ public class Alert
 	/// </summary>
 	public void Show()
 	{
-		PopupView.AnchorView = Anchor;
+		AlertView.AnchorView = Anchor;
 
-		PopupView.Setup();
+		AlertView.Setup();
 
 		timer = NSTimer.CreateScheduledTimer(Duration, t =>
 		{

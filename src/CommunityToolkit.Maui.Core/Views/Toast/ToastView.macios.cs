@@ -44,9 +44,9 @@ public class ToastView : Alert
 		TextColor = textColor;
 		Font = font;
 		CharacterSpacing = characterSpacing;
-		PopupView.VisualOptions.BackgroundColor = backgroundColor;
-		PopupView.VisualOptions.CornerRadius = cornerRadius;
-		PopupView.AddChild(messageLabel);
+		AlertView.VisualOptions.BackgroundColor = backgroundColor;
+		AlertView.VisualOptions.CornerRadius = cornerRadius;
+		AlertView.AddChild(messageLabel);
 	}
 
 	/// <summary>
