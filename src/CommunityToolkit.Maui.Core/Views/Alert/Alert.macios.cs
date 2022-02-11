@@ -27,7 +27,7 @@ public class Alert
 	public TimeSpan Duration { get; set; }
 
 	/// <summary>
-	/// <see cref="UIView"/> on which Popup will appear. When null, <see cref="Alert"/> will appear at bottom of screen.
+	/// <see cref="UIView"/> on which Alert will appear. When null, <see cref="Alert"/> will appear at bottom of screen.
 	/// </summary>
 	public UIView? Anchor { get; set; }
 
