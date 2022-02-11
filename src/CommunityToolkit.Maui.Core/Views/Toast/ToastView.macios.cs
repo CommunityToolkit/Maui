@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// Toast for iOS + MacCatalyst
 /// </summary>
-public class ToastView : Popup
+public class ToastView : Alert
 {
 	readonly PaddedLabel messageLabel;
 
@@ -44,9 +44,9 @@ public class ToastView : Popup
 		TextColor = textColor;
 		Font = font;
 		CharacterSpacing = characterSpacing;
-		PopupView.VisualOptions.BackgroundColor = backgroundColor;
-		PopupView.VisualOptions.CornerRadius = cornerRadius;
-		PopupView.AddChild(messageLabel);
+		AlertView.VisualOptions.BackgroundColor = backgroundColor;
+		AlertView.VisualOptions.CornerRadius = cornerRadius;
+		AlertView.AddChild(messageLabel);
 	}
 
 	/// <summary>
