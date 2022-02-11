@@ -11,7 +11,7 @@ public class Alert
 	NSTimer? timer;
 
 	/// <summary>
-	/// Initialize Popup
+	/// Initialize Alert
 	/// </summary>
 	public Alert()
 	{
