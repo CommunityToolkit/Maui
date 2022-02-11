@@ -1,16 +1,15 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<pages:BasePage 
+﻿<pages:BasePage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.ListIsNotNullOrEmptyConverterPage"
-    x:TypeArguments="vm:ListIsNotNullOrEmptyConverterViewModel">
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.IsListNotNullOrEmptyConverterPage"
+    x:TypeArguments="vm:IsListNotNullOrEmptyConverterViewModel">
 
     <pages:BasePage.Resources>
         <ResourceDictionary>
-            <mct:ListIsNotNullOrEmptyConverter x:Key="ListIsNotNullOrEmptyConverter" />
+            <mct:IsListNotNullOrEmptyConverter x:Key="IsListNotNullOrEmptyConverter" />
         </ResourceDictionary>
     </pages:BasePage.Resources>
 
@@ -22,7 +21,7 @@
             VerticalOptions="Fill">
 
             <Label
-                Text="The ListIsNotNullOrEmptyConverter is a converter that allows users to convert an incoming binding that implements IEnumerable to a bool value. This value represents if the incoming binding value is not null or an empty list."
+                Text="The IsListNotNullOrEmptyConverter is a converter that allows users to convert an incoming binding that implements IEnumerable to a bool value. This value represents if the incoming binding value is not null or an empty list."
                 TextColor="{StaticResource NormalLabelTextColor}" />
 
             <BoxView
@@ -34,7 +33,7 @@
                 TextColor="{StaticResource NormalLabelTextColor}" />
 
             <Label
-                Text="{Binding StringItemSource, Converter={StaticResource ListIsNotNullOrEmptyConverter}}"
+                Text="{Binding StringItemSource, Converter={StaticResource IsListNotNullOrEmptyConverter}}"
                 TextColor="Black" />
 
             <Button Text="Clear List" Command="{Binding ClearCollectionCommand}" />

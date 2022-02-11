@@ -47,7 +47,7 @@ public class SnackbarView : ToastView, IDisposable
 		ActionButtonFont = actionButtonFont;
 
 		actionButton.TouchUpInside += ActionButton_TouchUpInside;
-		PopupView.AddChild(actionButton);
+		AlertView.AddChild(actionButton);
 	}
 
 	/// <summary>
@@ -115,6 +115,6 @@ public class SnackbarView : ToastView, IDisposable
 	void ActionButton_TouchUpInside(object? sender, EventArgs e)
 	{
 		Action?.Invoke();
-		PopupView.Dismiss();
+		AlertView.Dismiss();
 	}
 }

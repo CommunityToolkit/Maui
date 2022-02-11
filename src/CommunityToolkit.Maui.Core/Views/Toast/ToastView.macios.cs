@@ -1,6 +1,7 @@
 ﻿using CoreGraphics;
 using CoreText;
 using Foundation;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 
@@ -9,7 +10,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// Toast for iOS + MacCatalyst
 /// </summary>
-public class ToastView : Popup
+public class ToastView : Alert
 {
 	readonly PaddedLabel messageLabel;
 
@@ -43,9 +44,9 @@ public class ToastView : Popup
 		TextColor = textColor;
 		Font = font;
 		CharacterSpacing = characterSpacing;
-		PopupView.VisualOptions.BackgroundColor = backgroundColor;
-		PopupView.VisualOptions.CornerRadius = cornerRadius;
-		PopupView.AddChild(messageLabel);
+		AlertView.VisualOptions.BackgroundColor = backgroundColor;
+		AlertView.VisualOptions.CornerRadius = cornerRadius;
+		AlertView.AddChild(messageLabel);
 	}
 
 	/// <summary>
@@ -67,7 +68,7 @@ public class ToastView : Popup
 	/// </summary>
 	public UIColor TextColor
 	{
-		get => messageLabel.TextColor ??= UIColor.Black;
+		get => messageLabel.TextColor ??= Defaults.TextColor.ToNative();
 		private init => messageLabel.TextColor = value;
 	}
 
@@ -87,7 +88,7 @@ public class ToastView : Popup
 	{
 		init
 		{
-			var em = GetEmFromPx(Font.PointSize, value);
+			var em = Font.PointSize > 0 ? GetEmFromPx(Font.PointSize, value) : 0;
 			messageLabel.AttributedText = new NSAttributedString(Message, new CTStringAttributes() { KerningAdjustment = (float)em });
 		}
 	}

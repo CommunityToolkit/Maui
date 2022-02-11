@@ -50,10 +50,10 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
 			SectionModel.Create<VariableMultiValueConverterViewModel>(nameof(VariableMultiValueConverter),
 				"A converter that allows you to combine multiple boolean bindings into a single binding."),
 
-			SectionModel.Create<ListIsNullOrEmptyConverterViewModel>(nameof(ListIsNullOrEmptyConverter),
+			SectionModel.Create<IsListNullOrEmptyConverterViewModel>(nameof(IsListNullOrEmptyConverter),
 				"A converter that allows you to check if collection is null or empty"),
 
-			SectionModel.Create<ListIsNotNullOrEmptyConverterViewModel>(nameof(ListIsNotNullOrEmptyConverter),
+			SectionModel.Create<IsListNotNullOrEmptyConverterViewModel>(nameof(IsListNotNullOrEmptyConverter),
 				"A converter that allows you to check if collection is not null or empty"),
 
 			SectionModel.Create<ListToStringConverterViewModel>(nameof(ListToStringConverter),

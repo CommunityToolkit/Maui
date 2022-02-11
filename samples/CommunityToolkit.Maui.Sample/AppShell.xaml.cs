@@ -5,8 +5,6 @@ using CommunityToolkit.Maui.Sample.Pages.Extensions;
 using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
-using Microsoft.Maui.Controls.PlatformConfiguration;
-using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
 namespace CommunityToolkit.Maui.Sample;
 
@@ -16,6 +14,7 @@ public partial class AppShell : Shell
 	{
 		// Add Alerts View Models
 		{ typeof(SnackbarViewModel), (typeof(AlertsGalleryPage), typeof(SnackbarPage)) },
+		{ typeof(ToastViewModel), (typeof(AlertsGalleryPage), typeof(ToastPage)) },
 
 		// Add Behaviors View Models
 		{ typeof(CharactersValidationBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(CharactersValidationBehaviorPage)) },
@@ -46,12 +45,12 @@ public partial class AppShell : Shell
 		{ typeof(IndexToArrayItemConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IndexToArrayItemConverterPage)) },
 		{ typeof(IntToBoolConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IntToBoolConverterPage)) },
 		{ typeof(InvertedBoolConverterViewModel), (typeof(ConvertersGalleryPage), typeof(InvertedBoolConverterPage)) },
+		{ typeof(IsListNotNullOrEmptyConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IsListNotNullOrEmptyConverterPage)) },
+		{ typeof(IsListNullOrEmptyConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IsListNullOrEmptyConverterPage)) },
 		{ typeof(IsStringNotNullOrEmptyConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IsStringNotNullOrEmptyConverterPage)) },
 		{ typeof(IsStringNullOrEmptyConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IsStringNullOrEmptyConverterPage)) },
 		{ typeof(ItemSelectedEventArgsConverterViewModel), (typeof(ConvertersGalleryPage), typeof(ItemSelectedEventArgsConverterPage)) },
 		{ typeof(ItemTappedEventArgsConverterViewModel), (typeof(ConvertersGalleryPage), typeof(ItemTappedEventArgsConverterPage)) },
-		{ typeof(ListIsNotNullOrEmptyConverterViewModel), (typeof(ConvertersGalleryPage), typeof(ListIsNotNullOrEmptyConverterPage)) },
-		{ typeof(ListIsNullOrEmptyConverterViewModel), (typeof(ConvertersGalleryPage), typeof(ListIsNullOrEmptyConverterPage)) },
 		{ typeof(ListToStringConverterViewModel), (typeof(ConvertersGalleryPage), typeof(ListToStringConverterPage)) },
 		{ typeof(MathExpressionConverterViewModel), (typeof(ConvertersGalleryPage), typeof(MathExpressionConverterPage)) },
 		{ typeof(MultiConverterViewModel), (typeof(ConvertersGalleryPage), typeof(MultiConverterPage)) },

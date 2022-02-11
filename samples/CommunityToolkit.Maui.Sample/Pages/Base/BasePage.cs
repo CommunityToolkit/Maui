@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics;
 using CommunityToolkit.Maui.Sample.ViewModels;
-using Microsoft.Maui.Controls.PlatformConfiguration;
-using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
 namespace CommunityToolkit.Maui.Sample.Pages;
 

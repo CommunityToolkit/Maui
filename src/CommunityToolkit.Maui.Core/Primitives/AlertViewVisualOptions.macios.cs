@@ -4,17 +4,17 @@ using UIKit;
 namespace CommunityToolkit.Maui.Core.Primitives;
 
 /// <summary>
-/// Visual Options for <see cref="CommunityToolkit.Maui.Core.Views.PopupView"/>
+/// Visual Options for <see cref="CommunityToolkit.Maui.Core.Views.AlertView"/>
 /// </summary>
-public class PopupViewVisualOptions
+public class AlertViewVisualOptions
 {
 	/// <summary>
-	/// <see cref="CommunityToolkit.Maui.Core.Views.PopupView"/> Border Corner Radius
+	/// <see cref="CommunityToolkit.Maui.Core.Views.AlertView"/> Border Corner Radius
 	/// </summary>
 	public CGRect CornerRadius { get; set; }
 
 	/// <summary>
-	/// <see cref="CommunityToolkit.Maui.Core.Views.PopupView"/> Background Color
+	/// <see cref="CommunityToolkit.Maui.Core.Views.AlertView"/> Background Color
 	/// </summary>
 	public UIColor BackgroundColor { get; set; } = UIColor.Gray;
 }
