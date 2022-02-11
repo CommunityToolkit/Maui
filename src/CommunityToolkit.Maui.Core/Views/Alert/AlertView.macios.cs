@@ -23,7 +23,7 @@ public class AlertView : UIView
 	public IReadOnlyList<UIView> Children => children;
 
 	/// <summary>
-	/// <see cref="UIView"/> on which Popup will appear. When null, <see cref="AlertView"/> will appear at bottom of screen.
+	/// <see cref="UIView"/> on which Alert will appear. When null, <see cref="AlertView"/> will appear at bottom of screen.
 	/// </summary>
 	public UIView? AnchorView { get; set; }
 
