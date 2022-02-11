@@ -1,0 +1,34 @@
+﻿<pages:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.IsStringNullOrEmptyConverterPage"
+    x:TypeArguments="vm:IsStringNullOrEmptyConverterViewModel">
+
+    <pages:BasePage.Resources>
+        <ResourceDictionary>
+            <mct:IsStringNullOrEmptyConverter x:Key="IsStringNullOrEmptyConverter" />
+        </ResourceDictionary>
+    </pages:BasePage.Resources>
+
+    <pages:BasePage.Content>
+        <VerticalStackLayout
+            Padding="10,10"
+            HorizontalOptions="Fill"
+            Spacing="16"
+            VerticalOptions="Fill">
+
+            <Label Text="The IsStringNullOrEmptyConverter is a converter that allows usersc to convert an incoming string binding to a bool value. This value represents if the incoming string binding value is null or empty using string.IsNullOrEmpty." TextColor="{StaticResource NormalLabelTextColor}" />
+
+            <Label Text="Enter text into the Entry, below. If the text is null or empty, the value will be true." TextColor="{StaticResource NormalLabelTextColor}" FontAttributes="Bold" />
+
+            <Entry VerticalOptions="CenterAndExpand" HorizontalOptions="Fill" Text="{Binding Path=LabelText, Mode=OneWayToSource}" TextColor="{StaticResource NormalLabelTextColor}" />
+
+            <Label VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand" Text="{Binding Path=LabelText, Mode=OneWay, Converter={StaticResource IsStringNullOrEmptyConverter}}" />
+
+        </VerticalStackLayout>
+    </pages:BasePage.Content>
+
+</pages:BasePage>
