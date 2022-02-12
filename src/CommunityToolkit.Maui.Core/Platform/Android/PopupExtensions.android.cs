@@ -8,7 +8,6 @@ using static Android.App.ActionBar;
 using AColorRes = Android.Resource.Color;
 using AView = Android.Views.View;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
-//using CommunityToolkit.Maui.Extensions.Workarounds;
 
 namespace CommunityToolkit.Core.Platform;
 
