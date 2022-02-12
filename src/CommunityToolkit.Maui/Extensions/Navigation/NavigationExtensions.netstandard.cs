@@ -12,5 +12,5 @@ public static partial class NavigationExtensions
 		throw new NotSupportedException($"The current platform '{Device.RuntimePlatform}' does not support CommunityToolkit.Maui.Core.BasePopup");
 
 	static Task<object?> PlatformShowPopupAsync(Popup popup, IMauiContext mauiContext) =>
-		throw new NotSupportedException($"The current platform '{Device.RuntimePlatform}' does not support Xamarin.CommunityToolkit.Popup.");
+		throw new NotSupportedException($"The current platform '{Device.RuntimePlatform}' does not support CommunityToolkit.Maui.Core.Popup.");
 }
