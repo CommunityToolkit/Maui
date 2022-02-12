@@ -204,7 +204,7 @@ public class MCTPopup : Flyout
 		{
 			Placement = FlyoutPlacementMode.Left;
 		}
-		else if (VirtualView != null && VirtualView.Anchor == null)
+		else if (VirtualView is not null && VirtualView.Anchor is null)
 		{
 			Placement = FlyoutPlacementMode.Full;
 		}
