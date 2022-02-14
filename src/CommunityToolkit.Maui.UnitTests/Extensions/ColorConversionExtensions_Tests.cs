@@ -412,7 +412,7 @@ public class ColorConversionExtensions_Tests
 
 		Assert.Equal(def.ExpectedPctBlack, result);
 	}
-	
+
 	[Theory]
 	[MemberData(nameof(ColorTestData))]
 	public void GetDegreeHue(ColorTestDefinition def)
@@ -540,7 +540,7 @@ public class ColorConversionExtensions_Tests
 	[Fact]
 	public void WithRed_Double_RedGeaterThan1ShouldThrowAgumentOutOfRangeException()
 	{
-		Color c = new ();
+		Color c = new();
 		var red = new Random().Next(2, int.MaxValue);
 
 		Assert.Throws<ArgumentOutOfRangeException>(() =>
@@ -552,7 +552,7 @@ public class ColorConversionExtensions_Tests
 	[Fact]
 	public void WithRed_Double_RedNegativeShouldThrowAgumentOutOfRangeException()
 	{
-		Color c = new ();
+		Color c = new();
 		var red = -new Random().NextDouble();
 
 		Assert.Throws<ArgumentOutOfRangeException>(() =>
@@ -574,7 +574,7 @@ public class ColorConversionExtensions_Tests
 	[Fact]
 	public void WithGreen_Double_GreenGeaterThan1ShouldThrowAgumentOutOfRangeException()
 	{
-		Color c = new ();
+		Color c = new();
 		var green = new Random().Next(2, int.MaxValue);
 
 		Assert.Throws<ArgumentOutOfRangeException>(() =>
@@ -586,7 +586,7 @@ public class ColorConversionExtensions_Tests
 	[Fact]
 	public void WithGreen_Double_GreenNegativeShouldThrowAgumentOutOfRangeException()
 	{
-		Color c = new ();
+		Color c = new();
 		var green = -new Random().NextDouble();
 
 		Assert.Throws<ArgumentOutOfRangeException>(() =>
@@ -608,7 +608,7 @@ public class ColorConversionExtensions_Tests
 	[Fact]
 	public void WithBlue_Double_BlueGeaterThan1ShouldThrowAgumentOutOfRangeException()
 	{
-		Color c = new ();
+		Color c = new();
 
 		var blue = new Random().Next(2, int.MaxValue);
 
@@ -621,7 +621,7 @@ public class ColorConversionExtensions_Tests
 	[Fact]
 	public void WithBlue_Double_BlueNegativeShouldThrowAgumentOutOfRangeException()
 	{
-		Color c = new ();
+		Color c = new();
 
 		var blue = -new Random().NextDouble();
 
@@ -724,28 +724,84 @@ public class ColorConversionExtensions_Tests
 	}
 
 
-public record ColorTestDefinition(
-	float R, float G, float B, float A,
-	byte ExpectedByteR, byte ExpectedByteG, byte ExpectedByteB, byte ExpectedByteA,
-	float ExpectedPctBlack, float ExpectedPctCyan, float ExpectedPctMagenta, float ExpectedPctYellow,
-	float ExpectedInverseR, float ExpectedInverseG, float ExpectedInverseB,
-	float ExpectedAvgColor,
-	bool ExpectedIsDark,
-	bool ExpectedIsDarkForEye,
-	Color ExpectedToBlackOrWhite, Color ExpectedToBlackOrWhiteForText)
-{
-	internal Color Color => new Color(R, G, B, A);
-	internal Color ExpectedGreyScale => new Color(ExpectedAvgColor, ExpectedAvgColor, ExpectedAvgColor);
-	internal Color ExpectedInverse => new Color(ExpectedInverseR, ExpectedInverseG, ExpectedInverseB);
-	internal string ExpectedRGB => $"RGB({ExpectedByteR},{ExpectedByteG},{ExpectedByteB})";
-	internal string ExpectedRGBA => $"RGBA({ExpectedByteR},{ExpectedByteG},{ExpectedByteB},{A})";
-	internal string ExpectedHEXRGB => $"#{ExpectedByteR:X2}{ExpectedByteG:X2}{ExpectedByteB:X2}";
-	internal string ExpectedHEXRGBA => $"#{ExpectedByteR:X2}{ExpectedByteG:X2}{ExpectedByteB:X2}{ExpectedByteA:X2}";
-	internal string ExpectedHEXARGB => $"#{ExpectedByteA:X2}{ExpectedByteR:X2}{ExpectedByteG:X2}{ExpectedByteB:X2}";
-	internal string ExpectedCMYK => $"CMYK({ExpectedPctCyan:P0},{ExpectedPctMagenta:P0},{ExpectedPctYellow:P0},{ExpectedPctBlack:P0})";
-	internal string ExpectedCMYKA => $"CMYKA({ExpectedPctCyan:P0},{ExpectedPctMagenta:P0},{ExpectedPctYellow:P0},{ExpectedPctBlack:P0},{A})";
-	internal string ExpectedHslString => $"HSL({ExpectedDegreeHue:0},{Color.GetSaturation():P0},{Color.GetLuminosity():P0})";
-	internal string ExpectedHslaString => $"HSLA({ExpectedDegreeHue:0},{Color.GetSaturation():P0},{Color.GetLuminosity():P0},{A})";
-	internal double ExpectedDegreeHue => Color.GetHue() * 360;
-}
+	public class ColorTestDefinition
+	{
+		internal ColorTestDefinition(float r, float g, float b, float a,
+			byte expectedByteR, byte expectedByteG, byte expectedByteB, byte expectedByteA,
+			float expectedPctBlack, float expectedPctCyan, float expectedPctMagenta, float expectedPctYellow,
+			float expectedInverseR, float expectedInverseG, float expectedInverseB,
+			float expectedAvgColor, bool expectedIsDark, bool expectedIsDarkForEye,
+			Color expectedToBlackOrWhite, Color expectedToBlackOrWhiteForText)
+		{
+			R = r;
+			G = g;
+			B = b;
+			A = a;
+			
+			ExpectedByteR = expectedByteR;
+			ExpectedByteG = expectedByteG;
+			ExpectedByteB = expectedByteB;
+			ExpectedByteA = expectedByteA;
+			ExpectedPctBlack = expectedPctBlack;
+			ExpectedPctCyan = expectedPctCyan;
+			ExpectedPctMagenta = expectedPctMagenta;
+			ExpectedPctYellow = expectedPctYellow;
+			ExpectedInverseR = expectedInverseR;
+			ExpectedInverseG = expectedInverseG;
+			ExpectedInverseB = expectedInverseB;
+			ExpectedAvgColor = expectedAvgColor;
+			ExpectedIsDark = expectedIsDark;
+			ExpectedIsDarkForEye = expectedIsDarkForEye;
+			ExpectedToBlackOrWhite = expectedToBlackOrWhite;
+			ExpectedToBlackOrWhiteForText = expectedToBlackOrWhiteForText;
+			ExpectedGreyScale = new Color(expectedAvgColor, expectedAvgColor, expectedAvgColor);
+			ExpectedInverse = new Color(expectedInverseR, expectedInverseG, expectedInverseB);
+			ExpectedRGB = $"RGB({expectedByteR},{expectedByteG},{expectedByteB})";
+			ExpectedRGBA = $"RGBA({expectedByteR},{expectedByteG},{expectedByteB},{A})";
+			ExpectedHEXRGB = $"#{expectedByteR:X2}{expectedByteG:X2}{expectedByteB:X2}";
+			ExpectedHEXRGBA = $"#{expectedByteR:X2}{expectedByteG:X2}{expectedByteB:X2}{expectedByteA:X2}";
+			ExpectedHEXARGB = $"#{expectedByteA:X2}{expectedByteR:X2}{expectedByteG:X2}{expectedByteB:X2}";
+			ExpectedCMYK = $"CMYK({expectedPctCyan:P0},{expectedPctMagenta:P0},{expectedPctYellow:P0},{expectedPctBlack:P0})";
+			ExpectedCMYKA = $"CMYKA({expectedPctCyan:P0},{expectedPctMagenta:P0},{expectedPctYellow:P0},{expectedPctBlack:P0},{A})";
+
+			Color = new Color(r, g, b, a);
+			ExpectedDegreeHue = Color.GetHue() * 360;
+			ExpectedHslString = $"HSL({ExpectedDegreeHue:0},{Color.GetSaturation():P0},{Color.GetLuminosity():P0})";
+			ExpectedHslaString = $"HSLA({ExpectedDegreeHue:0},{Color.GetSaturation():P0},{Color.GetLuminosity():P0},{A})";
+		}
+
+		internal float R { get; }
+		internal float G { get; }
+		internal float B { get; }
+		internal float A { get; }
+		internal Color Color { get; }
+		internal byte ExpectedByteR { get; }
+		internal byte ExpectedByteG { get; }
+		internal byte ExpectedByteB { get; }
+		internal byte ExpectedByteA { get; }
+		internal float ExpectedPctBlack { get; }
+		internal float ExpectedPctCyan { get; }
+		internal float ExpectedPctMagenta { get; }
+		internal float ExpectedPctYellow { get; }
+		internal float ExpectedInverseR { get; }
+		internal float ExpectedInverseG { get; }
+		internal float ExpectedInverseB { get; }
+		internal float ExpectedAvgColor { get; }
+		internal bool ExpectedIsDark { get; }
+		internal bool ExpectedIsDarkForEye { get; }
+		internal Color ExpectedToBlackOrWhite { get; }
+		internal Color ExpectedToBlackOrWhiteForText { get; }
+		internal Color ExpectedGreyScale { get; }
+		internal Color ExpectedInverse { get; }
+		internal string ExpectedRGB { get; }
+		internal string ExpectedRGBA { get; }
+		internal string ExpectedHEXRGB { get; }
+		internal string ExpectedHEXRGBA { get; }
+		internal string ExpectedHEXARGB { get; }
+		internal string ExpectedCMYK { get; }
+		internal string ExpectedCMYKA { get; }
+		internal string ExpectedHslString { get; }
+		internal string ExpectedHslaString { get; }
+		internal double ExpectedDegreeHue { get; }
+	}
 }
