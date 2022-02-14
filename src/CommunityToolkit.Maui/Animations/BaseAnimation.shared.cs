@@ -1,22 +1,18 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-
-namespace CommunityToolkit.Maui.Animations;
+﻿namespace CommunityToolkit.Maui.Animations;
 /// <summary>
 /// Abstract class for animation types to inherit.
 /// </summary>
 /// <typeparam name="TAnimatable">The <see cref="VisualElement"/> that the behavior can be applied to</typeparam>
 public abstract class BaseAnimation<TAnimatable> : BindableObject where TAnimatable : IAnimatable
 {
-	readonly uint _defaultLength;
+	readonly uint defaultLength;
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Length"/> property.
 	/// </summary>
 	public static readonly BindableProperty LengthProperty =
 		BindableProperty.Create(nameof(Length), typeof(uint), typeof(BaseAnimation<TAnimatable>), 250u,
-			BindingMode.OneWay, defaultValueCreator: bindable => ((BaseAnimation<TAnimatable>)bindable)._defaultLength);
+			BindingMode.OneWay, defaultValueCreator: bindable => ((BaseAnimation<TAnimatable>)bindable).defaultLength);
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Easing"/> property.
@@ -28,7 +24,7 @@ public abstract class BaseAnimation<TAnimatable> : BindableObject where TAnimata
 	/// Initialize BaseAnimation
 	/// </summary>
 	/// <param name="defaultLength">The default time, in milliseconds, over which to animate the transition</param>
-	protected BaseAnimation(uint defaultLength = 250u) => _defaultLength = defaultLength;
+	protected BaseAnimation(uint defaultLength = 250u) => this.defaultLength = defaultLength;
 
 	/// <summary>
 	/// The time, in milliseconds, over which to animate the transition.

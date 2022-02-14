@@ -17,6 +17,7 @@ public partial class AppShell : Shell
 		{ typeof(ToastViewModel), (typeof(AlertsGalleryPage), typeof(ToastPage)) },
 
 		// Add Behaviors View Models
+		{ typeof(AnimationBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(ProgressBarAnimationBehaviorPage)) },
 		{ typeof(CharactersValidationBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(CharactersValidationBehaviorPage)) },
 		{ typeof(EmailValidationBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(EmailValidationBehaviorPage)) },
 		{ typeof(EventToCommandBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(EventToCommandBehaviorPage)) },

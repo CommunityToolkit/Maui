@@ -1,12 +1,6 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Animations;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -24,7 +18,7 @@ public class AnimationBehavior : EventToCommandBehavior
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="AnimateCommand"/> property.
 	/// </summary>
-	internal static readonly BindablePropertyKey AnimateCommandPropertyKey =
+	internal static readonly BindablePropertyKey animateCommandPropertyKey =
  			BindableProperty.CreateReadOnly(
  				nameof(AnimateCommand),
  				typeof(ICommand),
@@ -36,9 +30,9 @@ public class AnimationBehavior : EventToCommandBehavior
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="AnimateCommand"/> property.
 	/// </summary>
-	public static readonly BindableProperty AnimateCommandProperty = AnimateCommandPropertyKey.BindableProperty;
+	public static readonly BindableProperty AnimateCommandProperty = animateCommandPropertyKey.BindableProperty;
 
-	TapGestureRecognizer? _tapGestureRecognizer;
+	TapGestureRecognizer? tapGestureRecognizer;
 
 	/// <summary>
 	/// Command on which to perform the animation.
@@ -55,36 +49,46 @@ public class AnimationBehavior : EventToCommandBehavior
 	}
 
 	/// <inheritdoc/>
-	[MemberNotNull(nameof(_tapGestureRecognizer))]
+	[MemberNotNull(nameof(tapGestureRecognizer))]
 	protected override void OnAttachedTo(VisualElement bindable)
 	{
 		base.OnAttachedTo(bindable);
 
 		if (!string.IsNullOrWhiteSpace(EventName))
+		{
 			throw new InvalidOperationException($"{nameof(EventName)} must be null. It is not used by {nameof(AnimationBehavior)}");
+		}
 
 		if (bindable is not IGestureRecognizers gestureRecognizers)
+		{
 			throw new InvalidOperationException($"VisualElement does not implement {nameof(IGestureRecognizers)}");
+		}
 
-		if (bindable is ITextInput)
+		if (bindable is not ITextInput)
+		{
+			tapGestureRecognizer = new TapGestureRecognizer();
+			tapGestureRecognizer.Tapped += OnTriggerHandled;
+
+			foreach (var recognizer in gestureRecognizers.GestureRecognizers.OfType<TapGestureRecognizer>())
+			{
+				gestureRecognizers.GestureRecognizers.Remove(recognizer);
+			}
+
+			gestureRecognizers.GestureRecognizers.Add(tapGestureRecognizer);
+		}
+		else
+		{
 			throw new InvalidOperationException($"Animation Behavior can not be attached to {nameof(ITextInput)}");
-
-		_tapGestureRecognizer = new TapGestureRecognizer();
-		_tapGestureRecognizer.Tapped += OnTriggerHandled;
-
-		foreach (var tapGestureRecognizer in gestureRecognizers.GestureRecognizers.OfType<TapGestureRecognizer>())
-			gestureRecognizers.GestureRecognizers.Remove(tapGestureRecognizer);
-
-		gestureRecognizers.GestureRecognizers.Add(_tapGestureRecognizer);
+		}
 	}
 
 	/// <inheritdoc/>
 	protected override void OnDetachingFrom(VisualElement bindable)
 	{
-		if (_tapGestureRecognizer != null)
+		if (tapGestureRecognizer != null)
 		{
-			_tapGestureRecognizer.Tapped -= OnTriggerHandled;
-			_tapGestureRecognizer = null;
+			tapGestureRecognizer.Tapped -= OnTriggerHandled;
+			tapGestureRecognizer = null;
 		}
 
 		base.OnDetachingFrom(bindable);
@@ -104,8 +108,10 @@ public class AnimationBehavior : EventToCommandBehavior
 	Task OnAnimate()
 	{
 		if (View is null || AnimationType is null)
+		{
 			return Task.CompletedTask;
-		
+		}
+
 		View.CancelAnimations();
 		return AnimationType.Animate(View);
 	}
