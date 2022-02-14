@@ -652,10 +652,10 @@ public class ColorConversionExtensions_Tests
 
 		var expectedRed = (1 - pctCyan) * (1 - testDef.ExpectedPctBlack);
 
-		Assert.Equal(Math.Round(expectedRed, 4), Math.Round(newColor.Red, 4));
-		Assert.Equal(Math.Round(testDef.G, 4), Math.Round(newColor.Green, 4));
-		Assert.Equal(Math.Round(testDef.B, 4), Math.Round(newColor.Blue, 4));
-		Assert.Equal(Math.Round(testDef.A, 4), Math.Round(newColor.Alpha, 4));
+		Assert.Equal(Math.Round(expectedRed, 2), Math.Round(newColor.Red, 2));
+		Assert.Equal(Math.Round(testDef.G, 2), Math.Round(newColor.Green, 2));
+		Assert.Equal(Math.Round(testDef.B, 2), Math.Round(newColor.Blue, 2));
+		Assert.Equal(Math.Round(testDef.A, 2), Math.Round(newColor.Alpha, 2));
 	}
 
 	[Theory]
@@ -667,10 +667,10 @@ public class ColorConversionExtensions_Tests
 
 		var expectedGreen = (1 - pctMagenta) * (1 - testDef.ExpectedPctBlack);
 
-		Assert.Equal(Math.Round(expectedGreen, 4), Math.Round(newColor.Green, 4));
-		Assert.Equal(Math.Round(testDef.R, 4), Math.Round(newColor.Red, 4));
-		Assert.Equal(Math.Round(testDef.B, 4), Math.Round(newColor.Blue, 4));
-		Assert.Equal(Math.Round(testDef.A, 4), Math.Round(newColor.Alpha, 4));
+		Assert.Equal(Math.Round(expectedGreen, 2), Math.Round(newColor.Green, 2));
+		Assert.Equal(Math.Round(testDef.R, 2), Math.Round(newColor.Red, 2));
+		Assert.Equal(Math.Round(testDef.B, 2), Math.Round(newColor.Blue, 2));
+		Assert.Equal(Math.Round(testDef.A, 2), Math.Round(newColor.Alpha, 2));
 	}
 
 	[Theory]
@@ -682,10 +682,10 @@ public class ColorConversionExtensions_Tests
 
 		var expectedBlue = (1 - pctYellow) * (1 - testDef.ExpectedPctBlack);
 
-		Assert.Equal(Math.Round(expectedBlue, 4), Math.Round(newColor.Blue, 4));
-		Assert.Equal(Math.Round(testDef.R, 4), Math.Round(newColor.Red, 4));
-		Assert.Equal(Math.Round(testDef.G, 4), Math.Round(newColor.Green, 4));
-		Assert.Equal(Math.Round(testDef.A, 4), Math.Round(newColor.Alpha, 4));
+		Assert.Equal(Math.Round(expectedBlue, 2), Math.Round(newColor.Blue, 2));
+		Assert.Equal(Math.Round(testDef.R, 2), Math.Round(newColor.Red, 2));
+		Assert.Equal(Math.Round(testDef.G, 2), Math.Round(newColor.Green, 2));
+		Assert.Equal(Math.Round(testDef.A, 2), Math.Round(newColor.Alpha, 2));
 	}
 
 	[Theory]
@@ -699,9 +699,9 @@ public class ColorConversionExtensions_Tests
 		var expectedGreen = (1 - testDef.ExpectedPctMagenta) * (1 - pctBlack);
 		var expectedBlue = (1 - testDef.ExpectedPctYellow) * (1 - pctBlack);
 
-		Assert.Equal(Math.Round(expectedRed, 4), Math.Round(newColor.Red, 4));
-		Assert.Equal(Math.Round(expectedGreen, 4), Math.Round(newColor.Green, 4));
-		Assert.Equal(Math.Round(expectedBlue, 4), Math.Round(newColor.Blue, 4));
+		Assert.Equal(Math.Round(expectedRed, 2), Math.Round(newColor.Red, 2));
+		Assert.Equal(Math.Round(expectedGreen, 2), Math.Round(newColor.Green, 2));
+		Assert.Equal(Math.Round(expectedBlue, 2), Math.Round(newColor.Blue, 2));
 		Assert.Equal(testDef.A, newColor.Alpha);
 	}
 
