@@ -49,6 +49,8 @@ public partial class AppShell : Shell
 		{ typeof(IsListNullOrEmptyConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IsListNullOrEmptyConverterPage)) },
 		{ typeof(IsStringNotNullOrEmptyConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IsStringNotNullOrEmptyConverterPage)) },
 		{ typeof(IsStringNullOrEmptyConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IsStringNullOrEmptyConverterPage)) },
+		{ typeof(IsStringNotNullOrWhiteSpaceConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IsStringNotNullOrWhiteSpaceConverterPage)) },
+		{ typeof(IsStringNullOrWhiteSpaceConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IsStringNullOrWhiteSpaceConverterPage)) },
 		{ typeof(ItemSelectedEventArgsConverterViewModel), (typeof(ConvertersGalleryPage), typeof(ItemSelectedEventArgsConverterPage)) },
 		{ typeof(ItemTappedEventArgsConverterViewModel), (typeof(ConvertersGalleryPage), typeof(ItemTappedEventArgsConverterPage)) },
 		{ typeof(ListToStringConverterViewModel), (typeof(ConvertersGalleryPage), typeof(ListToStringConverterPage)) },

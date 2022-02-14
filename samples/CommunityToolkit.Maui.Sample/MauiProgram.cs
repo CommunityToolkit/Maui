@@ -37,6 +37,8 @@ public static class MauiProgram
 		builder.Services.AddTransient<IntToBoolConverterViewModel>();
 		builder.Services.AddTransient<IsStringNotNullOrEmptyConverterViewModel>();
 		builder.Services.AddTransient<IsStringNullOrEmptyConverterViewModel>();
+		builder.Services.AddTransient<IsStringNotNullOrWhiteSpaceConverterViewModel>();
+		builder.Services.AddTransient<IsStringNullOrWhiteSpaceConverterViewModel>();
 		builder.Services.AddTransient<ItemSelectedEventArgsConverterViewModel>();
 		builder.Services.AddTransient<ItemTappedEventArgsConverterViewModel>();
 		builder.Services.AddTransient<IsListNotNullOrEmptyConverterViewModel>();
