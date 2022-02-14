@@ -762,7 +762,7 @@ public class ColorConversionExtensions_Tests
 			ExpectedHEXRGBA = $"#{expectedByteR:X2}{expectedByteG:X2}{expectedByteB:X2}{expectedByteA:X2}";
 			ExpectedHEXARGB = $"#{expectedByteA:X2}{expectedByteR:X2}{expectedByteG:X2}{expectedByteB:X2}";
 			ExpectedCMYK = $"CMYK({expectedPctCyan:P0},{expectedPctMagenta:P0},{expectedPctYellow:P0},{expectedPctBlack:P0})";
-			ExpectedCMYKA = $"CMYKA({expectedPctCyan:P0},{expectedPctMagenta:P0},{expectedPctYellow:P0},{expectedPctBlack:P0},{A})";
+			ExpectedCMYKA = $"CMYKA({expectedPctCyan:P0},{expectedPctMagenta:P0},{expectedPctYellow:P0},{expectedPctBlack:P0},{a})";
 
 			Color = new Color(r, g, b, a);
 			ExpectedDegreeHue = Color.GetHue() * 360;
