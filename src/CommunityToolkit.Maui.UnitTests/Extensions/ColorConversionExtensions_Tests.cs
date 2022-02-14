@@ -543,10 +543,7 @@ public class ColorConversionExtensions_Tests
 		Color c = new();
 		var red = new Random().Next(2, int.MaxValue);
 
-		Assert.Throws<ArgumentOutOfRangeException>(() =>
-		{
-			c.WithRed(red);
-		});
+		Assert.Throws<ArgumentOutOfRangeException>(() => c.WithRed(red));
 	}
 
 	[Fact]
@@ -555,10 +552,7 @@ public class ColorConversionExtensions_Tests
 		Color c = new();
 		var red = -new Random().NextDouble();
 
-		Assert.Throws<ArgumentOutOfRangeException>(() =>
-		{
-			c.WithRed(red);
-		});
+		Assert.Throws<ArgumentOutOfRangeException>(() => c.WithRed(red));
 	}
 
 	[Theory]
@@ -577,10 +571,7 @@ public class ColorConversionExtensions_Tests
 		Color c = new();
 		var green = new Random().Next(2, int.MaxValue);
 
-		Assert.Throws<ArgumentOutOfRangeException>(() =>
-		{
-			c.WithGreen(green);
-		});
+		Assert.Throws<ArgumentOutOfRangeException>(() => c.WithGreen(green));
 	}
 
 	[Fact]
@@ -589,10 +580,7 @@ public class ColorConversionExtensions_Tests
 		Color c = new();
 		var green = -new Random().NextDouble();
 
-		Assert.Throws<ArgumentOutOfRangeException>(() =>
-		{
-			c.WithGreen(green);
-		});
+		Assert.Throws<ArgumentOutOfRangeException>(() => c.WithGreen(green));
 	}
 
 	[Theory]
@@ -612,10 +600,7 @@ public class ColorConversionExtensions_Tests
 
 		var blue = new Random().Next(2, int.MaxValue);
 
-		Assert.Throws<ArgumentOutOfRangeException>(() =>
-		{
-			c.WithBlue(blue);
-		});
+		Assert.Throws<ArgumentOutOfRangeException>(() => c.WithBlue(blue));
 	}
 
 	[Fact]
@@ -625,10 +610,7 @@ public class ColorConversionExtensions_Tests
 
 		var blue = -new Random().NextDouble();
 
-		Assert.Throws<ArgumentOutOfRangeException>(() =>
-		{
-			c.WithBlue(blue);
-		});
+		Assert.Throws<ArgumentOutOfRangeException>(() => c.WithBlue(blue));
 	}
 
 	[Theory]
@@ -737,7 +719,7 @@ public class ColorConversionExtensions_Tests
 			G = g;
 			B = b;
 			A = a;
-			
+
 			ExpectedByteR = expectedByteR;
 			ExpectedByteG = expectedByteG;
 			ExpectedByteB = expectedByteB;
