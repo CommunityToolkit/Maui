@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Layouts;
+﻿using CommunityToolkit.Maui.Core.Interfaces;
+using Microsoft.Maui.Layouts;
 
 namespace CommunityToolkit.Maui.Layouts;
 
@@ -7,7 +8,7 @@ namespace CommunityToolkit.Maui.Layouts;
 /// All rows and columns will have the same size.
 /// Use this when you need the Grid behavior without the need to specify different sizes for the rows and columns.
 /// </summary>
-public class UniformItemsLayout : Layout, ILayoutManager
+public class UniformItemsLayout : Layout, IUniformItemsLayout
 {
 	double childWidth, childHeight;
 
