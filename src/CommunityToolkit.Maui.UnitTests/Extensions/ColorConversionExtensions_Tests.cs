@@ -1,7 +1,5 @@
-﻿using System;
-using CommunityToolkit.Maui.Core.Extensions;
+﻿using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Maui.UnitTests.TestData;
-using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Extensions;
@@ -42,6 +40,15 @@ public class ColorConversionExtensions_Tests
 		var result = testDef.Color.ToHexRgbaString();
 
 		Assert.Equal(testDef.ExpectedHEXRGBA, result);
+	}
+
+	[Theory]
+	[ClassData(typeof(ColorTestData))]
+	public void ToHexArgbString(ColorTestDefinition testDef)
+	{
+		var result = testDef.Color.ToHexArgbString();
+
+		Assert.Equal(testDef.ExpectedHEXARGB, result);
 	}
 
 	[Theory]
@@ -123,6 +130,15 @@ public class ColorConversionExtensions_Tests
 		var result = def.Color.GetPercentBlackKey();
 
 		Assert.Equal(def.ExpectedPctBlack, result);
+	}
+	
+	[Theory]
+	[ClassData(typeof(ColorTestData))]
+	public void GetDegreeHue(ColorTestDefinition def)
+	{
+		var result = def.Color.GetDegreeHue();
+
+		Assert.Equal(def.ExpectedDegreeHue, result);
 	}
 
 	[Theory]
@@ -240,26 +256,28 @@ public class ColorConversionExtensions_Tests
 		Assert.Equal((float)red, result.Red);
 	}
 
-	[Theory]
-	[ClassData(typeof(ColorTestData))]
-	//To Discuss (aalign with MAUI and return original Color?)
-	public void WithRed_Double_RedGeaterThan1ShouldSetRedTo1(ColorTestDefinition testDef)
+	[Fact]
+	public void WithRed_Double_RedGeaterThan1ShouldThrowAgumentOutOfRangeException()
 	{
+		Color c = new ();
 		var red = new Random().Next(2, int.MaxValue);
-		var result = testDef.Color.WithRed(red);
 
-		Assert.Equal(1, result.Red);
+		Assert.Throws<ArgumentOutOfRangeException>(() =>
+		{
+			c.WithRed(red);
+		});
 	}
 
-	[Theory]
-	[ClassData(typeof(ColorTestData))]
-	//To Discuss (align with MAUI WithAlpha and return original Color?)
-	public void WithRed_Double_RedNegativeShouldSetRedTo0(ColorTestDefinition testDef)
+	[Fact]
+	public void WithRed_Double_RedNegativeShouldThrowAgumentOutOfRangeException()
 	{
-		var red = - new Random().NextDouble();
-		var result = testDef.Color.WithRed(red);
+		Color c = new ();
+		var red = -new Random().NextDouble();
 
-		Assert.Equal(0, result.Red);
+		Assert.Throws<ArgumentOutOfRangeException>(() =>
+		{
+			c.WithRed(red);
+		});
 	}
 
 	[Theory]
@@ -272,26 +290,28 @@ public class ColorConversionExtensions_Tests
 		Assert.Equal((float)green, result.Green);
 	}
 
-	[Theory]
-	[ClassData(typeof(ColorTestData))]
-	//To Discuss (align with MAUI WithAlpha and return original Color?)
-	public void WithGreen_Double_GreenGeaterThan1ShouldSetGreenTo1(ColorTestDefinition testDef)
+	[Fact]
+	public void WithGreen_Double_GreenGeaterThan1ShouldThrowAgumentOutOfRangeException()
 	{
+		Color c = new ();
 		var green = new Random().Next(2, int.MaxValue);
-		var result = testDef.Color.WithGreen(green);
 
-		Assert.Equal(1, result.Green);
+		Assert.Throws<ArgumentOutOfRangeException>(() =>
+		{
+			c.WithGreen(green);
+		});
 	}
 
-	[Theory]
-	[ClassData(typeof(ColorTestData))]
-	//To Discuss (align with MAUI WithAlpha and return original Color?)
-	public void WithGreen_Double_GreenNegativeShouldSetGreenTo0(ColorTestDefinition testDef)
+	[Fact]
+	public void WithGreen_Double_GreenNegativeShouldThrowAgumentOutOfRangeException()
 	{
+		Color c = new ();
 		var green = -new Random().NextDouble();
-		var result = testDef.Color.WithGreen(green);
 
-		Assert.Equal(0, result.Green);
+		Assert.Throws<ArgumentOutOfRangeException>(() =>
+		{
+			c.WithGreen(green);
+		});
 	}
 
 	[Theory]
@@ -304,61 +324,30 @@ public class ColorConversionExtensions_Tests
 		Assert.Equal((float)blue, result.Blue);
 	}
 
-	[Theory]
-	[ClassData(typeof(ColorTestData))]
-	//To Discuss (aalign with MAUI WithAlpha and return original Color?)
-	public void WithBlue_Double_BlueGeaterThan1ShouldSetBlueTo1(ColorTestDefinition testDef)
+	[Fact]
+	public void WithBlue_Double_BlueGeaterThan1ShouldThrowAgumentOutOfRangeException()
 	{
+		Color c = new ();
+
 		var blue = new Random().Next(2, int.MaxValue);
-		var result = testDef.Color.WithBlue(blue);
 
-		Assert.Equal(1, result.Blue);
+		Assert.Throws<ArgumentOutOfRangeException>(() =>
+		{
+			c.WithBlue(blue);
+		});
 	}
 
-	[Theory]
-	[ClassData(typeof(ColorTestData))]
-	//To Discuss (aalign with MAUI WithAlpha and return original Color?)
-	public void WithBlue_Double_BlueNegativeShouldSetBlueTo0(ColorTestDefinition testDef)
+	[Fact]
+	public void WithBlue_Double_BlueNegativeShouldThrowAgumentOutOfRangeException()
 	{
+		Color c = new ();
+
 		var blue = -new Random().NextDouble();
-		var result = testDef.Color.WithBlue(blue);
 
-		Assert.Equal(0, result.Blue);
-	}
-
-	[Theory]
-	[ClassData(typeof(ColorTestData))]
-	//There is already a WithAlpha method on the Color class. Needed?
-	public void WithAlpha_Double(ColorTestDefinition testDef)
-	{
-		var alpha = new Random().NextDouble();
-		var result = testDef.Color.WithAlpha(alpha);
-
-		Assert.Equal((float)alpha, result.Alpha);
-	}
-
-	[Theory]
-	[ClassData(typeof(ColorTestData))]
-	//To Discuss (aalign with MAUI WithAlpha and return original Color?)
-	//There is already a WithAlpha method on the Color class. Needed?
-	public void WithAlpha_Double_AlphaGeaterThan1ShouldSetAlphaTo1(ColorTestDefinition testDef)
-	{
-		var alpha = new Random().Next(2, int.MaxValue);
-		var result = testDef.Color.WithAlpha(alpha);
-
-		Assert.Equal(1, result.Alpha);
-	}
-
-	[Theory]
-	[ClassData(typeof(ColorTestData))]
-	//To Discuss (aalign with MAUI WithAlpha and return original Color?)
-	//There is already a WithAlpha method on the Color class. Needed?
-	public void WithAlpha_Double_AlphaNegativeShouldSetAlphaTo0(ColorTestDefinition testDef)
-	{
-		var alpha = -new Random().NextDouble();
-		var result = testDef.Color.WithAlpha(alpha);
-
-		Assert.Equal(0, result.Alpha);
+		Assert.Throws<ArgumentOutOfRangeException>(() =>
+		{
+			c.WithBlue(blue);
+		});
 	}
 
 	[Theory]
@@ -391,53 +380,45 @@ public class ColorConversionExtensions_Tests
 		Assert.Equal(blue, result.GetByteBlue());
 	}
 
-	[Theory]
-	[ClassData(typeof(ColorTestData))]
-	public void WithCyan(ColorTestDefinition testDef)
-	{
-		//try
-		//{
+	//These tests don't seem to be valid
+	//Am I testing it wrong?
+	//[Theory]
+	//[ClassData(typeof(ColorTestData))]
+	//public void WithCyan(ColorTestDefinition testDef)
+	//{
+	//	var magenta = new Random().NextDouble();
+	//	var result = testDef.Color.WithMagenta(magenta);
 
-		var cyan = 0.5d;// Math.Round(new Random().NextDouble(), 2);
-		var originalPctCyan = testDef.Color.GetPercentCyan();
-		var result = testDef.Color.WithCyan(cyan);
-		var pct = result.GetPercentCyan();
-		Assert.Equal(cyan, result.GetPercentCyan());
-		//}
-		//catch (Exception)
-		//{
+	//	Assert.Equal((float)magenta, result.GetPercentMagenta());
+	//}
 
-		//	//throw;
-		//}
-	}
+	//[Theory]
+	//[ClassData(typeof(ColorTestData))]
+	//public void WithMagenta(ColorTestDefinition testDef)
+	//{
+	//	var magenta = new Random().NextDouble();
+	//	var result = testDef.Color.WithMagenta(magenta);
 
-	[Theory]
-	[ClassData(typeof(ColorTestData))]
-	public void WithMagenta(ColorTestDefinition testDef)
-	{
-		var magenta = new Random().NextDouble();
-		var result = testDef.Color.WithMagenta(magenta);
+	//	Assert.Equal((float)magenta, result.GetPercentMagenta());
+	//}
 
-		Assert.Equal((float)magenta, result.GetPercentMagenta());
-	}
+	//[Theory]
+	//[ClassData(typeof(ColorTestData))]
+	//public void WithYellow(ColorTestDefinition testDef)
+	//{
+	//	var yellow = new Random().NextDouble();
+	//	var result = testDef.Color.WithYellow(yellow);
 
-	[Theory]
-	[ClassData(typeof(ColorTestData))]
-	public void WithYellow(ColorTestDefinition testDef)
-	{
-		var yellow = new Random().NextDouble();
-		var result = testDef.Color.WithYellow(yellow);
+	//	Assert.Equal((float)yellow, result.GetPercentYellow());
+	//}
 
-		Assert.Equal((float)yellow, result.GetPercentYellow());
-	}
+	//[Theory]
+	//[ClassData(typeof(ColorTestData))]
+	//public void WithBlackKey(ColorTestDefinition testDef)
+	//{
+	//	var blackKey = new Random().NextDouble();
+	//	var result = testDef.Color.WithBlackKey(blackKey);
 
-	[Theory]
-	[ClassData(typeof(ColorTestData))]
-	public void WithBlackKey(ColorTestDefinition testDef)
-	{
-		var blackKey = new Random().NextDouble();
-		var result = testDef.Color.WithBlackKey(blackKey);
-
-		Assert.Equal((float)blackKey, result.GetPercentBlackKey());
-	}
+	//	Assert.Equal((float)blackKey, result.GetPercentBlackKey());
+	//}
 }

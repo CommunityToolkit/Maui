@@ -17,9 +17,9 @@ public static class ColorConversionExtensions
 	/// Converts Color to RGBA
 	/// </summary>
 	/// <param name="c"></param>
-	/// <returns>RGBA(255,255,255,255)</returns>
+	/// <returns>RGBA(255,255,255,1)</returns>
 	public static string ToRgbaString(this Color c) =>
-        $"RGBA({c.GetByteRed()},{c.GetByteGreen()},{c.GetByteBlue()},{c.GetByteAlpha()})";
+        $"RGBA({c.GetByteRed()},{c.GetByteGreen()},{c.GetByteBlue()},{c.Alpha})";
 
 	/// <summary>
 	/// Converts Color to Hex RGB
@@ -38,6 +38,14 @@ public static class ColorConversionExtensions
 		$"#{c.GetByteRed():X2}{c.GetByteGreen():X2}{c.GetByteBlue():X2}{c.GetByteAlpha():X2}";
 
 	/// <summary>
+	/// Converts Color to Hex ARGB
+	/// </summary>
+	/// <param name="c"></param>
+	/// <returns>#FFFFFFFF</returns>
+	public static string ToHexArgbString(this Color c) =>
+		$"#{c.GetByteAlpha():X2}{c.GetByteRed():X2}{c.GetByteGreen():X2}{c.GetByteBlue():X2}";
+
+	/// <summary>
 	/// Converts Color to CMYK
 	/// </summary>
 	/// <param name="c"></param>
@@ -49,24 +57,24 @@ public static class ColorConversionExtensions
 	/// Converts Color to CMYKA
 	/// </summary>
 	/// <param name="c"></param>
-	/// <returns>CMYK(100%,100%,100%,100%,100%)</returns>
+	/// <returns>CMYKA(100%,100%,100%,100%,1)</returns>
 	public static string ToCmykaString(this Color c) =>
-        $"CMYKA({c.GetPercentCyan():P0},{c.GetPercentMagenta():P0},{c.GetPercentYellow():P0},{c.GetPercentBlackKey():P0},{c.Alpha:P0})";
+        $"CMYKA({c.GetPercentCyan():P0},{c.GetPercentMagenta():P0},{c.GetPercentYellow():P0},{c.GetPercentBlackKey():P0},{c.Alpha})";
 
 	/// <summary>
 	/// Converts Color to HSL
 	/// </summary>
 	/// <param name="c"></param>
-	/// <returns>HSLA(360°,100%,100%)</returns>
-	public static string ToHslString(this Color c) => $"HSL({c.GetDegreeHue():0}°,{c.GetSaturation():P0},{c.GetLuminosity():P0})";
+	/// <returns>HSLA(360,100%,100%)</returns>
+	public static string ToHslString(this Color c) => $"HSL({c.GetDegreeHue():0},{c.GetSaturation():P0},{c.GetLuminosity():P0})";
 
 	/// <summary>
 	/// Converts Color to HSLA
 	/// </summary>
 	/// <param name="c"></param>
-	///  <returns>HSLA(360°,100%,100%,100%)</returns>
+	///  <returns>HSLA(360,100%,100%,1)</returns>
 	public static string ToHslaString(this Color c) =>
-        $"HSLA({c.GetDegreeHue():0}°,{c.GetSaturation():P0},{c.GetLuminosity():P0},{c.Alpha:P0})";
+        $"HSLA({c.GetDegreeHue():0},{c.GetSaturation():P0},{c.GetLuminosity():P0},{c.Alpha})";
 
 	/// <summary>
 	/// Sets Red
@@ -75,7 +83,10 @@ public static class ColorConversionExtensions
 	/// <param name="newR"></param>
 	/// <returns>Color with updated Red</returns>
 	public static Color WithRed(this Color baseColor, double newR) =>
-		Color.FromRgba(newR, baseColor.Green, baseColor.Blue, baseColor.Alpha);
+		newR < 0 || newR > 1 
+			? throw new ArgumentOutOfRangeException(nameof(newR)) 
+			: Color.FromRgba(newR, baseColor.Green, baseColor.Blue, baseColor.Alpha); 
+		
 
 	/// <summary>
 	/// Sets Green
@@ -84,7 +95,9 @@ public static class ColorConversionExtensions
 	/// <param name="newG"></param>
 	/// <returns>Color with updated Green</returns>
 	public static Color WithGreen(this Color baseColor, double newG) =>
-		Color.FromRgba(baseColor.Red, newG, baseColor.Blue, baseColor.Alpha);
+		newG < 0 || newG > 1
+			? throw new ArgumentOutOfRangeException(nameof(newG))
+			: Color.FromRgba(baseColor.Red, newG, baseColor.Blue, baseColor.Alpha);
 
 	/// <summary>
 	/// Sets Blue
@@ -93,16 +106,9 @@ public static class ColorConversionExtensions
 	/// <param name="newB"></param>
 	/// <returns>Color with updated Blue</returns>
 	public static Color WithBlue(this Color baseColor, double newB) =>
-		Color.FromRgba(baseColor.Red, baseColor.Green, newB, baseColor.Alpha);
-
-	/// <summary>
-	/// Sets Alpha
-	/// </summary>
-	/// <param name="baseColor"></param>
-	/// <param name="newA"></param>
-	/// <returns>Color with updated alpha</returns>
-	public static Color WithAlpha(this Color baseColor, double newA) =>
-		Color.FromRgba(baseColor.Red, baseColor.Green, baseColor.Blue, newA);
+		newB < 0 || newB > 1
+			? throw new ArgumentOutOfRangeException(nameof(newB))
+			: Color.FromRgba(baseColor.Red, baseColor.Green, newB, baseColor.Alpha);
 
 	/// <summary>
 	/// Sets Red
@@ -323,5 +329,4 @@ public static class ColorConversionExtensions
 
 		return (byte)Math.Round(input);
 	}
-}
 }
