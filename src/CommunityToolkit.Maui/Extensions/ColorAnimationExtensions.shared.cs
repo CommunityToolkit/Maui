@@ -59,6 +59,6 @@ public static partial class ColorAnimationExtensions
 			new(v => element.BackgroundColor = element.BackgroundColor.WithBlue(v), element.BackgroundColor.Blue, targetBlue);
 
 		static Animation GetAlphaTransformAnimation(VisualElement element, float targetAlpha) =>
-			new(v => element.BackgroundColor = element.BackgroundColor.WithAlpha(v), element.BackgroundColor.Alpha, targetAlpha);
+			new(v => element.BackgroundColor = element.BackgroundColor.WithAlpha((float)v), element.BackgroundColor.Alpha, targetAlpha);
 	}
 }
