@@ -4,11 +4,11 @@ using CommunityToolkit.Maui.Extensions;
 namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>
-/// Abstract class used to implement converters that implements the ConvertBack logic.
+/// Abstract class used to implement converters that implements the Convert logic.
 /// </summary>
 /// <typeparam name="TFrom">Type of the input value</typeparam>
 /// <typeparam name="TTo">Type of the output value</typeparam>
-public abstract class BaseConverterOneWay<TFrom, TTo> : ValueConverterExtension, ICommunityToolkitValueConverter
+public abstract class BaseConverterOneWay<TFrom, TTo> : BaseConverterOneWay
 {
 	/// <summary>
 	/// Converts the incoming value from <typeparamref name="TFrom"/>[] and returns the object of a type <typeparamref name="TTo"/>.
@@ -18,7 +18,7 @@ public abstract class BaseConverterOneWay<TFrom, TTo> : ValueConverterExtension,
 	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>An object of type <typeparamref name="TTo"/>.</returns>
-	public object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	public override object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value is not TFrom valueFrom)
 		{
@@ -39,10 +39,26 @@ public abstract class BaseConverterOneWay<TFrom, TTo> : ValueConverterExtension,
 	/// <param name="value">Value to be converted from <typeparamref name="TFrom"/> to <typeparamref name="TTo"/>.</param>
 	/// <returns>An object of type <typeparamref name="TTo"/>.</returns>
 	public abstract TTo? ConvertFrom(TFrom value);
+}
+
+/// <summary>
+/// Abstract class used to implement converters that implements the Convert logic.
+/// </summary>
+public abstract class BaseConverterOneWay : ValueConverterExtension, ICommunityToolkitValueConverter
+{
+	/// <summary>
+	/// Converts the incoming value and returns the result.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <param name="targetType">The type of the binding target property.</param>
+	/// <param name="parameter">Additional parameter for the converter to handle.</param>
+	/// <param name="culture">The culture to use in the converter.</param>
+	/// <returns>The value converted.</returns>
+	public abstract object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture);
 
 	/// <summary>
-	/// Not implemented, use <see cref="BaseConverter{TFrom, TTo}"/>
+	/// Not supported, use <see cref="BaseConverter{TFrom, TTo}"/>
 	/// </summary>
-	public virtual object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture)
-		=> throw new NotImplementedException("Impossible to revert to original value. Consider setting BindingMode to OneWay.");
+	public virtual object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture) => 
+		throw new NotSupportedException("Impossible to revert to original value. Consider setting BindingMode to OneWay.");
 }

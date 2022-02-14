@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts embedded image resource ID to it ImageSource.
 /// </summary>
-public class ImageResourceConverter : ICommunityToolkitValueConverter
+public class ImageResourceConverter : BaseConverterOneWay
 {
 	/// <summary>
 	/// Converts embedded image resource ID to it ImageSource.
@@ -18,7 +18,7 @@ public class ImageResourceConverter : ICommunityToolkitValueConverter
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>The ImageSource related to the provided resource ID of the embedded image. If it's null it will returns null.</returns>
 	[return: NotNullIfNotNull("value")]
-	public object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	public override object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value == null)
 		{
@@ -32,7 +32,4 @@ public class ImageResourceConverter : ICommunityToolkitValueConverter
 
 		return ImageSource.FromResource(imageId, Application.Current?.GetType()?.Assembly);
 	}
-
-	/// <inheritdoc />
-	public object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture) => throw new NotImplementedException();
 }
