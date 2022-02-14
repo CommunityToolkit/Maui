@@ -749,7 +749,7 @@ public class ColorConversionExtensions_Tests
 			Color = new Color(r, g, b, a);
 			ExpectedDegreeHue = Color.GetHue() * 360;
 			ExpectedHslString = $"HSL({ExpectedDegreeHue:0},{Color.GetSaturation():P0},{Color.GetLuminosity():P0})";
-			ExpectedHslaString = $"HSLA({ExpectedDegreeHue:0},{Color.GetSaturation():P0},{Color.GetLuminosity():P0},{A})";
+			ExpectedHslaString = $"HSLA({ExpectedDegreeHue:0},{Color.GetSaturation():P0},{Color.GetLuminosity():P0},{a})";
 		}
 
 		internal float R { get; }
