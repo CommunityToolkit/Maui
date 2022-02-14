@@ -380,45 +380,65 @@ public class ColorConversionExtensions_Tests
 		Assert.Equal(blue, result.GetByteBlue());
 	}
 
-	//These tests don't seem to be valid
-	//Am I testing it wrong?
-	//[Theory]
-	//[ClassData(typeof(ColorTestData))]
-	//public void WithCyan(ColorTestDefinition testDef)
-	//{
-	//	var magenta = new Random().NextDouble();
-	//	var result = testDef.Color.WithMagenta(magenta);
+	[Theory]
+	[ClassData(typeof(ColorTestData))]
+	public void WithCyan(ColorTestDefinition testDef)
+	{
+		var pctCyan = new Random().NextDouble();
+		var newColor = testDef.Color.WithCyan(pctCyan);
 
-	//	Assert.Equal((float)magenta, result.GetPercentMagenta());
-	//}
+		var expectedRed = (1 - pctCyan) * (1 - testDef.ExpectedPctBlack);
 
-	//[Theory]
-	//[ClassData(typeof(ColorTestData))]
-	//public void WithMagenta(ColorTestDefinition testDef)
-	//{
-	//	var magenta = new Random().NextDouble();
-	//	var result = testDef.Color.WithMagenta(magenta);
+		Assert.Equal(Math.Round(expectedRed, 4), Math.Round(newColor.Red, 4));
+		Assert.Equal(Math.Round(testDef.G, 4), Math.Round(newColor.Green, 4));
+		Assert.Equal(Math.Round(testDef.B, 4), Math.Round(newColor.Blue, 4));
+		Assert.Equal(Math.Round(testDef.A, 4), Math.Round(newColor.Alpha, 4));
+	}
 
-	//	Assert.Equal((float)magenta, result.GetPercentMagenta());
-	//}
+	[Theory]
+	[ClassData(typeof(ColorTestData))]
+	public void WithMagenta(ColorTestDefinition testDef)
+	{
+		var pctMagenta = new Random().NextDouble();
+		var newColor = testDef.Color.WithMagenta(pctMagenta);
 
-	//[Theory]
-	//[ClassData(typeof(ColorTestData))]
-	//public void WithYellow(ColorTestDefinition testDef)
-	//{
-	//	var yellow = new Random().NextDouble();
-	//	var result = testDef.Color.WithYellow(yellow);
+		var expectedGreen = (1 - pctMagenta) * (1 - testDef.ExpectedPctBlack);
 
-	//	Assert.Equal((float)yellow, result.GetPercentYellow());
-	//}
+		Assert.Equal(Math.Round(expectedGreen, 4), Math.Round(newColor.Green, 4));
+		Assert.Equal(Math.Round(testDef.R, 4), Math.Round(newColor.Red, 4));
+		Assert.Equal(Math.Round(testDef.B, 4), Math.Round(newColor.Blue, 4));
+		Assert.Equal(Math.Round(testDef.A, 4), Math.Round(newColor.Alpha, 4));
+	}
 
-	//[Theory]
-	//[ClassData(typeof(ColorTestData))]
-	//public void WithBlackKey(ColorTestDefinition testDef)
-	//{
-	//	var blackKey = new Random().NextDouble();
-	//	var result = testDef.Color.WithBlackKey(blackKey);
+	[Theory]
+	[ClassData(typeof(ColorTestData))]
+	public void WithYellow(ColorTestDefinition testDef)
+	{
+		var pctYellow = new Random().NextDouble();
+		var newColor = testDef.Color.WithYellow(pctYellow);
 
-	//	Assert.Equal((float)blackKey, result.GetPercentBlackKey());
-	//}
+		var expectedBlue = (1 - pctYellow) * (1 - testDef.ExpectedPctBlack);
+
+		Assert.Equal(Math.Round(expectedBlue, 4), Math.Round(newColor.Blue, 4));
+		Assert.Equal(Math.Round(testDef.R, 4), Math.Round(newColor.Red, 4));
+		Assert.Equal(Math.Round(testDef.G, 4), Math.Round(newColor.Green, 4));
+		Assert.Equal(Math.Round(testDef.A, 4), Math.Round(newColor.Alpha, 4));
+	}
+
+	[Theory]
+	[ClassData(typeof(ColorTestData))]
+	public void WithBlackKey(ColorTestDefinition testDef)
+	{
+		var pctBlack = new Random().NextDouble();
+		var newColor = testDef.Color.WithBlackKey(pctBlack);
+
+		var expectedRed = (1 - testDef.ExpectedPctCyan) * (1 - pctBlack);
+		var expectedGreen = (1 - testDef.ExpectedPctMagenta) * (1 - pctBlack);
+		var expectedBlue = (1 - testDef.ExpectedPctYellow) * (1 - pctBlack);
+
+		Assert.Equal(Math.Round(expectedRed, 4), Math.Round(newColor.Red, 4));
+		Assert.Equal(Math.Round(expectedGreen, 4), Math.Round(newColor.Green, 4));
+		Assert.Equal(Math.Round(expectedBlue, 4), Math.Round(newColor.Blue, 4));
+		Assert.Equal(testDef.A, newColor.Alpha);
+	}
 }
