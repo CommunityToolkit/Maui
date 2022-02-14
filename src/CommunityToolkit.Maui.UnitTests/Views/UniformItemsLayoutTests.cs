@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Layouts;
-using NSubstitute;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
@@ -11,11 +10,30 @@ public class UniformItemsLayoutTests : BaseTest
 	const double childHeight = 10;
 
 	readonly UniformItemsLayout uniformItemsLayout;
-	readonly IView uniformChild;
+	IView uniformChild;
+
+	class TestView : View
+	{
+		readonly Size size;
+
+		public TestView(Size size)
+		{
+			this.size = size;
+		}
+
+		public TestView(double width, double height) : this(new Size(width, height))
+		{
+		}
+
+		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+		{
+			return size;
+		}
+	}
 
 	public UniformItemsLayoutTests()
 	{
-		uniformChild = Substitute.For<IView>();
+		uniformChild = new TestView(childWidth, childHeight);
 
 		uniformItemsLayout = new UniformItemsLayout()
 		{
@@ -33,8 +51,7 @@ public class UniformItemsLayoutTests : BaseTest
 	{
 		var expectedSize = new Size(childWidth * childCount, childHeight);
 		var childSize = new Size(childWidth, childHeight);
-
-		SetupChildrenSize(childSize);
+		uniformChild = new TestView(childSize);
 
 		var actualSize = uniformItemsLayout.Measure(childWidth * childCount, childHeight * childCount);
 
@@ -46,22 +63,9 @@ public class UniformItemsLayoutTests : BaseTest
 	{
 		var expectedSize = new Size(childWidth, childHeight * childCount);
 		var childSize = new Size(childWidth, childHeight);
-
-		SetupChildrenSize(childSize);
+		uniformChild = new TestView(childSize);
 
 		var actualSize = uniformItemsLayout.Measure(childWidth, childHeight * childCount);
-
-		Assert.Equal(expectedSize, actualSize);
-	}
-
-	[Fact]
-	public void ArrangeChildrenUniformItemsLayout()
-	{
-		var expectedSize = new Size(childWidth, childHeight);
-
-		SetupChildrenSize(expectedSize);
-
-		var actualSize = uniformItemsLayout.ArrangeChildren(new Rectangle(0, 0, childWidth * childCount, childHeight * childCount));
 
 		Assert.Equal(expectedSize, actualSize);
 	}
@@ -70,8 +74,7 @@ public class UniformItemsLayoutTests : BaseTest
 	public void MaxRowsArrangeChildrenUniformItemsLayout()
 	{
 		var expectedSize = new Size(childWidth, childHeight);
-
-		SetupChildrenSize(expectedSize);
+		uniformChild = new TestView(expectedSize);
 
 		uniformItemsLayout.MaxColumns = 1;
 		uniformItemsLayout.MaxRows = 1;
@@ -81,9 +84,15 @@ public class UniformItemsLayoutTests : BaseTest
 		Assert.Equal(expectedSize, actualSize);
 	}
 
-	void SetupChildrenSize(Size size)
+	[Fact]
+	public void ArrangeChildrenUniformItemsLayout()
 	{
-		uniformChild.Measure(double.PositiveInfinity, double.PositiveInfinity).ReturnsForAnyArgs(size);
-		uniformItemsLayout.Measure(childWidth * childCount, childHeight * childCount);
+		var expectedSize = new Size(childWidth, childHeight);
+		uniformChild = new TestView(expectedSize);
+		uniformItemsLayout.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+		var actualSize = uniformItemsLayout.ArrangeChildren(new Rectangle(0, 0, childWidth * childCount, childHeight * childCount));
+
+		Assert.Equal(expectedSize, actualSize);
 	}
 }
