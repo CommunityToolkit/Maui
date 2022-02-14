@@ -2,7 +2,7 @@
 <pages:BasePage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.InvertedBoolConverterPage">
     <pages:BasePage.Resources>
@@ -11,24 +11,23 @@
         </ResourceDictionary>
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
-        <StackLayout
+        <VerticalStackLayout
             Padding="10,10"
             HorizontalOptions="Fill"
             Spacing="10"
             VerticalOptions="Fill">
             <Label Text="The InvertedBoolConverter is a converter that allows users to convert a bool value binding to its inverted value." TextColor="{StaticResource NormalLabelTextColor}" />
-            <StackLayout
+            <HorizontalStackLayout
                 HorizontalOptions="CenterAndExpand"
-                Orientation="Horizontal"
                 Spacing="10">
                 <Label Text="False" TextColor="{StaticResource NormalLabelTextColor}" />
                 <Switch x:Name="ColorToggle" IsToggled="False" />
                 <Label Text="True" TextColor="{StaticResource NormalLabelTextColor}" />
-            </StackLayout>
+            </HorizontalStackLayout>
             <Label Text="This string should represet the opposite state of the picker" TextColor="{StaticResource NormalLabelTextColor}" />
             <Label
                 BindingContext="{x:Reference Name=ColorToggle}"
                 Text="{Binding Path=IsToggled, Converter={StaticResource InvertedBoolConverter}}" />
-        </StackLayout>
+        </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

@@ -1,8 +1,11 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+﻿using CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-public partial class DoubleToIntConverterPage : BasePage
+namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class DoubleToIntConverterPage : BasePage<DoubleToIntConverterViewModel>
 {
-	public DoubleToIntConverterPage()
+	public DoubleToIntConverterPage(DoubleToIntConverterViewModel doubleToIntConverterViewModel)
+		: base(doubleToIntConverterViewModel)
 	{
 		InitializeComponent();
 

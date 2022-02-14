@@ -6,20 +6,25 @@ using Application = Microsoft.Maui.Controls.Application;
 
 namespace CommunityToolkit.Maui.Sample.Pages;
 
-public abstract class BaseGalleryPage<TViewModel> : BasePage where TViewModel : BaseGalleryViewModel, new()
+public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where TViewModel : BaseGalleryViewModel
 {
-	public BaseGalleryPage(string title)
+	protected BaseGalleryPage(string title, TViewModel viewModel) : base(viewModel)
 	{
 		Title = title;
-		BindingContext = new TViewModel();
 
-		Padding = new Thickness(20, 0);
+		Padding = (Device.RuntimePlatform, Device.Idiom) switch
+		{
+			// Work-around to ensure content doesn't get clipped by iOS Status Bar + Naviagtion Bar
+			(Device.iOS, TargetIdiom.Phone) => new Thickness(0, 96, 0, 0),
+			(Device.iOS, _) => new Thickness(0, 84, 0, 0),
+			_ => 0
+		};
 
 		Content = new CollectionView
 		{
 			SelectionMode = SelectionMode.Single,
 			ItemTemplate = new GalleryDataTemplate()
-		}.Bind(CollectionView.ItemsSourceProperty, nameof(BaseGalleryViewModel.FilteredItems))
+		}.Bind(ItemsView.ItemsSourceProperty, nameof(BaseGalleryViewModel.Items))
 		 .Invoke(collectionView => collectionView.SelectionChanged += HandleSelectionChanged);
 	}
 
@@ -31,7 +36,9 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage where TViewModel : 
 		collectionView.SelectedItem = null;
 
 		if (e.CurrentSelection.FirstOrDefault() is SectionModel sectionModel)
-			await Navigation.PushAsync(PreparePage(sectionModel));
+		{
+			await Shell.Current.GoToAsync(AppShell.GetPageRoute(sectionModel.ViewModelType));
+		}
 	}
 
 	class GalleryDataTemplate : DataTemplate
@@ -49,14 +56,14 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage where TViewModel : 
 			BackgroundColor = (Color)(Application.Current?.Resources["AppBackgroundColor"] ?? throw new InvalidOperationException()),
 
 			RowDefinitions = Rows.Define(
-				(Row.TopPadding, 8),
+				(Row.TopPadding, 12),
 				(Row.Content, Star),
-				(Row.BottomPadding, 8)),
+				(Row.BottomPadding, 12)),
 
 			ColumnDefinitions = Columns.Define(
-				(Column.LeftPadding, 6),
+				(Column.LeftPadding, 24),
 				(Column.Content, Star),
-				(Column.RightPadding, 6)),
+				(Column.RightPadding, 24)),
 
 			Children =
 			{
@@ -83,11 +90,11 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage where TViewModel : 
 					Children =
 					{
 						new Label { Style = (Style)(Application.Current?.Resources["label_section_header"] ?? throw new InvalidOperationException()) }
-							.Row(CardRow.Title).FillExpand()
+							.Row(CardRow.Title)
 							.Bind(Label.TextProperty, nameof(SectionModel.Title)),
 
 						new Label { MaxLines = 4, LineBreakMode = LineBreakMode.WordWrap }
-							.Row(CardRow.Description).FillExpand().TextStart().TextTop()
+							.Row(CardRow.Description).TextStart().TextTop()
 							.Bind(Label.TextProperty, nameof(SectionModel.Description))
 					}
 				};

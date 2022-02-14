@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                xmlns:mct="clr-namespace:CommunityToolkit.Maui.Behaviors;assembly=CommunityToolkit.Maui"
+                xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.MultiValidationBehaviorPage">
 
@@ -17,16 +17,16 @@
 
 
     <pages:BasePage.Content>
-        <StackLayout Padding="{StaticResource ContentPadding}"
+        <VerticalStackLayout Padding="{StaticResource ContentPadding}"
                  Spacing="50"
                  VerticalOptions="StartAndExpand">
             <Label Text="Number validation : -10 to 5" />
             <Entry Placeholder="Number">
                 <Entry.Behaviors>
                     <mct:MultiValidationBehavior x:Name="MultiValidation"
-                                                    ValidStyle="{StaticResource ValidEntryStyle}"
-                                                    InvalidStyle="{StaticResource InvalidEntryStyle}"
-                                                    Flags="ValidateOnValueChanged">
+                                                     ValidStyle="{StaticResource ValidEntryStyle}"
+                                                     InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                                     Flags="ValidateOnValueChanged">
                         <mct:MultiValidationBehavior.Children>
                             <mct:NumericValidationBehavior mct:MultiValidationBehavior.Error="NaN" />
 
@@ -44,7 +44,7 @@
             <Entry IsPassword="True" Placeholder="Password">
                 <Entry.Behaviors>
                     <mct:MultiValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"  
-                                                ValidStyle="{StaticResource ValidEntryStyle}"
+                                                 ValidStyle="{StaticResource ValidEntryStyle}"
                                                  Flags="ValidateOnValueChanged">
                         <mct:CharactersValidationBehavior x:Name="DigitValidation" 
                                                           CharacterType="Digit" 
@@ -69,13 +69,13 @@
                     </mct:MultiValidationBehavior>
                 </Entry.Behaviors>
             </Entry>
-            <StackLayout Orientation="Vertical">
+            <VerticalStackLayout>
                 <Label Text="{Binding IsValid, Source={x:Reference DigitValidation}, StringFormat='{}{0} : at least 1 digit'}"/>
                 <Label Text="{Binding IsValid, Source={x:Reference UpperValidation}, StringFormat='{}{0} : at least 1 upper'}"/>
                 <Label Text="{Binding IsValid, Source={x:Reference SymbolValidation}, StringFormat='{}{0} : at least 1 symbol'}"/>
                 <Label Text="{Binding IsValid, Source={x:Reference AnyValidation}, StringFormat='{}{0} : at least 8 char'}"/>
-            </StackLayout>
-        </StackLayout>
+            </VerticalStackLayout>
+        </VerticalStackLayout>
 
 
     </pages:BasePage.Content>

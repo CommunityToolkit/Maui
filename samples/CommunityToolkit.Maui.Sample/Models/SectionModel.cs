@@ -1,25 +1,35 @@
-﻿namespace CommunityToolkit.Maui.Sample.Models;
+﻿using CommunityToolkit.Maui.Sample.ViewModels;
+
+namespace CommunityToolkit.Maui.Sample.Models;
 
 public sealed class SectionModel
 {
-	public SectionModel(Type type, string title, string description)
-		: this(type, title, new Color(), description)
+	// Use a private constructor to enforce the Factory Pattern
+	// This requires us to use the `Create` methods to instantiate SectionModel
+	// The Create methods allow us to use a constrained generic to ensure TViewModel inherits from BaseViewModel
+	SectionModel(in Type viewModelType, in string title, in Color color, in string description)
 	{
-	}
-
-	public SectionModel(Type type, string title, Color color, string description)
-	{
-		Type = type;
+		ViewModelType = viewModelType;
 		Title = title;
 		Description = description;
 		Color = color;
 	}
 
-	public Type Type { get; }
+	// Factory pattern using constrained generic to ensure TViewModel inherits from BaseViewModel
+	public static SectionModel Create<TViewModel>(in string title, in string description) where TViewModel : BaseViewModel
+ 		=> Create<TViewModel>(title, new Color(), description);
 
-	public string Title { get; } = string.Empty;
+	// Factory pattern using constrained generic to ensure TViewModel inherits from BaseViewModel
+	public static SectionModel Create<TViewModel>(in string title, in Color color, in string description) where TViewModel : BaseViewModel
+	{
+		return new SectionModel(typeof(TViewModel), title, color, description);
+	}
 
-	public string Description { get; } = string.Empty;
+	public Type ViewModelType { get; }
 
-	public Color Color { get; } = new Color();
+	public string Title { get; }
+
+	public string Description { get; }
+
+	public Color Color { get; }
 }

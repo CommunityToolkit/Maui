@@ -1,24 +1,30 @@
 ﻿using System.Diagnostics;
-using System.Windows.Input;
-using CommunityToolkit.Maui.Sample.Models;
-using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Maui.Sample.ViewModels;
 
 namespace CommunityToolkit.Maui.Sample.Pages;
 
-public abstract class BasePage : ContentPage
+public abstract class BasePage<TViewModel> : BasePage where TViewModel : BaseViewModel
 {
-	public BasePage()
+	protected BasePage(TViewModel viewModel) : base(viewModel)
 	{
-		Padding = 20;
-
-		NavigateCommand = new AsyncRelayCommand<SectionModel>(parameter => parameter switch
-		{
-			null => Task.CompletedTask,
-			_ => Navigation.PushAsync(PreparePage(parameter))
-		});
 	}
 
-	public ICommand NavigateCommand { get; }
+	public new TViewModel BindingContext => (TViewModel)base.BindingContext;
+}
+
+public abstract class BasePage : ContentPage
+{
+	protected BasePage(object? viewModel = null)
+	{
+		BindingContext = viewModel;
+
+		Padding = Device.RuntimePlatform switch
+		{
+			// Work-around to ensure content doesn't get clipped by iOS Status Bar + Naviagtion Bar
+			Device.iOS => new Thickness(12, 108, 12, 12),
+			_ => 12
+		};
+	}
 
 	protected override void OnAppearing()
 	{
@@ -28,15 +34,5 @@ public abstract class BasePage : ContentPage
 	protected override void OnDisappearing()
 	{
 		Debug.WriteLine($"OnDisappearing: {this}");
-	}
-
-	protected static Page PreparePage(SectionModel sectionModel)
-	{
-		ArgumentNullException.ThrowIfNull(sectionModel);
-
-		var page = (Page)(Activator.CreateInstance(sectionModel.Type) ?? throw new ArgumentException("Invalid SectionModel"));
-		page.Title = sectionModel.Title;
-
-		return page;
 	}
 }

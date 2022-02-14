@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CommunityToolkit.Maui.SourceGenerators": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\CommunityToolkit.Maui.UnitTests\\CommunityToolkit.Maui.UnitTests.csproj"
+    }
+  }
+}

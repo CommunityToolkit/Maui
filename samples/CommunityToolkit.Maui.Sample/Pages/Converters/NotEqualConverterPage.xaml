@@ -2,7 +2,7 @@
 <pages:BasePage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.NotEqualConverterPage">
     <pages:BasePage.Resources>
@@ -11,7 +11,7 @@
         </ResourceDictionary>
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
-        <StackLayout
+        <VerticalStackLayout
             Padding="10,10"
             HorizontalOptions="Fill"
             Spacing="10"
@@ -28,6 +28,6 @@
                 BindingContext="{x:Reference Name=ExampleText}"
                 Text="{Binding Path=Text, Converter={StaticResource NotEqualConverter}, ConverterParameter=100}"
                 TextColor="{StaticResource NormalLabelTextColor}" />
-        </StackLayout>
+        </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

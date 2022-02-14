@@ -27,13 +27,19 @@ public class ListToStringConverter : ValueConverterExtension, ICommunityToolkitV
 	public object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value == null)
+		{
 			return string.Empty;
+		}
 
 		if (value is not IEnumerable enumerable)
+		{
 			throw new ArgumentException("Value cannot be casted to IEnumerable", nameof(value));
+		}
 
 		if ((parameter ?? Separator ?? string.Empty) is not string separator)
+		{
 			throw new ArgumentException("Parameter cannot be casted to string", nameof(parameter));
+		}
 
 		var collection = enumerable
 			.OfType<object>()

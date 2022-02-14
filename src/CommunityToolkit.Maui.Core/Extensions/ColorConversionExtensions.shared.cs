@@ -308,9 +308,15 @@ public static class ColorConversionExtensions
 	static byte ToByte(double input)
 	{
 		if (input < 0)
+		{
 			return 0;
+		}
+
 		if (input > 255)
+		{
 			return 255;
+		}
+
 		return (byte)Math.Round(input);
 	}
 }
