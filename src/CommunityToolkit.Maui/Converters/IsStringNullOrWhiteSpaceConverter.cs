@@ -18,14 +18,9 @@ public class IsStringNullOrWhiteSpaceConverter : ValueConverterExtension, ICommu
 	/// <returns>A <see cref="bool"/> indicating if the incoming value is null or white space.</returns>
 	public object Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
-		if (value is null)
-		{
-			return true;
-		}
+		var stringValue = (string?)value;
 
-		return value is string stringValue ? 
-			string.IsNullOrWhiteSpace(stringValue) : 
-			throw new ArgumentException("Binding must be of type string");
+		return string.IsNullOrWhiteSpace(stringValue);
 	}
 
 	/// <summary>

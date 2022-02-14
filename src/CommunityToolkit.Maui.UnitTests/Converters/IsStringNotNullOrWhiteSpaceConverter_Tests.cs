@@ -28,6 +28,6 @@ public class IsStringNotNullOrWhiteSpaceConverter_Tests : BaseTest
 	{
 		var isNotNullOrWhiteSpaceConverter = new IsStringNotNullOrWhiteSpaceConverter();
 
-		Assert.Throws<ArgumentException>(() => isNotNullOrWhiteSpaceConverter.Convert(value, null, null, null));
+		Assert.Throws<InvalidCastException>(() => isNotNullOrWhiteSpaceConverter.Convert(value, null, null, null));
 	}
 }

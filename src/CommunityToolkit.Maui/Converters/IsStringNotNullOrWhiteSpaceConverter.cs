@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Converters;
@@ -19,14 +18,9 @@ public class IsStringNotNullOrWhiteSpaceConverter : ValueConverterExtension, ICo
 	/// <returns>A <see cref="bool"/> indicating if the incoming value is not null and not white space.</returns>
 	public object Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
-		if (value is null)
-		{
-			return false;
-		}
+		var stringValue = (string?)value;
 
-		return value is string stringValue ?
-			!string.IsNullOrWhiteSpace(stringValue) :
-			throw new ArgumentException("Binding must be of type string");
+		return !string.IsNullOrWhiteSpace(stringValue);
 	}
 
 	/// <summary>
