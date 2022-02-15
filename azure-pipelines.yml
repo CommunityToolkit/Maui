@@ -39,19 +39,16 @@ jobs:
     pool:
       vmImage: windows-2022
     steps:
-      - powershell: |
-            wget https://dot.net/v1/dotnet-install.ps1 -OutFile C:\dotnet-install.ps1
-            C:\dotnet-install.ps1 -Version 6.0.200-preview.22055.15
-            dotnet --info
-            Write-Host "##vso[task.prependpath]C:\\Users\\VssAdministrator\\AppData\\Local\\Microsoft\\dotnet"
-        displayName: Install .NET 6.0.200-preview.22055.15
+      - task: UseDotNet@2
+        displayName: 'Install .NET SDK'
+        inputs:
+          version: '$(NET_VERSION)'
       - task: CmdLine@2
         displayName: 'Install .NET MAUI Workload'
         inputs:
             script : |
               dotnet --info
               dotnet workload install maui
-              dotnet new globaljson --sdk-version 6.0.200-preview.22055.15 --force
       # if this is a tagged build, then update the version number
       - powershell: |
           $buildSourceBranch = "$(Build.SourceBranch)"
@@ -71,10 +68,17 @@ jobs:
         displayName: Set NuGet Version to PR Version
         condition: and(succeeded(), eq(variables['build.reason'], 'PullRequest'))
       # build, test and pack the packages
+      - task: DotNetCoreCLI@2
+        displayName: 'Check Dependencies'
+        inputs:
+          command: 'custom'
+          custom: 'list'
+          arguments: 'package --vulnerable --include-transitive'
+          projects: $(PathToSolution)
       - task: CmdLine@2
         displayName: 'Run Unit Tests'
         inputs:
-          script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release'
+          script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release --collect "XPlat code coverage" --settings ".runsettings"'
       - task: VSBuild@1
         displayName: 'Build Community Toolkit Sample'
         inputs:
@@ -136,12 +140,10 @@ jobs:
         displayName: 'Set Xcode Version'
         inputs:
           script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XcodeVersion).app;sudo xcode-select --switch /Applications/Xcode_$(XcodeVersion).app/Contents/Developer
-      - task: CmdLine@2
-        displayName: Install .NET 6.0.200-preview.22055.15
+      - task: UseDotNet@2
+        displayName: 'Install .NET SDK'
         inputs:
-          script: |
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 6.0.200-preview.22055.15 --quality preview
-            dotnet --info
+          version: '$(NET_VERSION)'
       - task: CmdLine@2
         displayName: 'Install .NET MAUI workload'
         inputs:
