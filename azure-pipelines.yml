@@ -50,7 +50,7 @@ jobs:
         inputs:
             script : |
               dotnet --info
-              dotnet workload install maui --source https://aka.ms/dotnet6/nuget/index.json --source https://api.nuget.org/v3/index.json
+              dotnet workload install maui
               dotnet new globaljson --sdk-version 6.0.200-preview.22055.15 --force
       # if this is a tagged build, then update the version number
       - powershell: |
@@ -76,7 +76,7 @@ jobs:
         inputs:
           targetType: 'inline'
           script: |
-            dotnet restore $(PathToSolution) --configfile "./nuget.config"
+            dotnet restore $(PathToSolution) --source "https://api.nuget.org/v3/index.json" --source "https://aka.ms/dotnet6/nuget/index.json"
           pwsh: true
       - task: DotNetCoreCLI@2
         displayName: 'Check Dependencies'
@@ -167,7 +167,7 @@ jobs:
         inputs:
           targetType: 'inline'
           script: |
-            dotnet restore $(PathToSolution) --configfile "./nuget.config"
+            dotnet restore $(PathToSolution) --source "https://api.nuget.org/v3/index.json" --source "https://aka.ms/dotnet6/nuget/index.json"
           pwsh: true
       - task: CmdLine@2
         displayName: 'Run Unit Tests'
