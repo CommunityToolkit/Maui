@@ -15,21 +15,33 @@
             <Label Text="UniformItemsLayout with default settings"/>
             <mct:UniformItemsLayout x:Name="UniformItemsLayout_Default">
                 <BoxView BackgroundColor="Black" HeightRequest="25" WidthRequest="25"/>
+                <BoxView BackgroundColor="Green" HeightRequest="25" WidthRequest="25"/>
+                <BoxView BackgroundColor="Purple" HeightRequest="25" WidthRequest="25"/>
+                <BoxView BackgroundColor="Orange" HeightRequest="25" WidthRequest="25"/>
             </mct:UniformItemsLayout>
 
             <Label Text="UniformItemsLayout with MaxColumns=2 and MaxRows=2"/>
             <mct:UniformItemsLayout x:Name="UniformItemsLayout_MaxRows2MaxColumns2" MaxColumns="2" MaxRows="2">
                 <BoxView BackgroundColor="Black" HeightRequest="25" WidthRequest="25"/>
+                <BoxView BackgroundColor="Green" HeightRequest="25" WidthRequest="25"/>
+                <BoxView BackgroundColor="Purple" HeightRequest="25" WidthRequest="25"/>
+                <BoxView BackgroundColor="Orange" HeightRequest="25" WidthRequest="25"/>
             </mct:UniformItemsLayout>
 
             <Label Text="UniformItemsLayout with MaxRows=1"/>
             <mct:UniformItemsLayout x:Name="UniformItemsLayout_MaxRows1" MaxRows="1">
                 <BoxView BackgroundColor="Black" HeightRequest="25" WidthRequest="25"/>
+                <BoxView BackgroundColor="Green" HeightRequest="25" WidthRequest="25"/>
+                <BoxView BackgroundColor="Purple" HeightRequest="25" WidthRequest="25"/>
+                <BoxView BackgroundColor="Orange" HeightRequest="25" WidthRequest="25"/>
             </mct:UniformItemsLayout>
 
             <Label Text="UniformItemsLayout with MaxColumns=1"/>
             <mct:UniformItemsLayout x:Name="UniformItemsLayout_MaxColumns1" MaxColumns="1">
                 <BoxView BackgroundColor="Black" HeightRequest="25" WidthRequest="25"/>
+                <BoxView BackgroundColor="Green" HeightRequest="25" WidthRequest="25"/>
+                <BoxView BackgroundColor="Purple" HeightRequest="25" WidthRequest="25"/>
+                <BoxView BackgroundColor="Orange" HeightRequest="25" WidthRequest="25"/>
             </mct:UniformItemsLayout>
         </VerticalStackLayout>
     </ScrollView>

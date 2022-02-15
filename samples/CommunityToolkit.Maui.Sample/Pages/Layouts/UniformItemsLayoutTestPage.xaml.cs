@@ -44,14 +44,14 @@ public partial class UniformItemsLayoutTestPage : BasePage
 			WidthRequest = heightRequest,
 			Color = randomColor
 		});
+
 		var boxView = new BoxView
 		{
 			HeightRequest = widthRequest,
 			WidthRequest = heightRequest,
 			Color = randomColor
 		};
-		Grid.SetRow(boxView, 1);
-		Grid.SetColumn(boxView, 1);
+
 		UniformItemsLayout_MaxRows2MaxColumns2.Children.Add(boxView);
 	}
 }
