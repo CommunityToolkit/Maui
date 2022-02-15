@@ -148,7 +148,6 @@ jobs:
         displayName: 'Install .NET MAUI workload'
         inputs:
           script: 'dotnet workload install maui'
-          pwsh: true
       - task: CmdLine@2
         displayName: 'Run Unit Tests'
         inputs:
