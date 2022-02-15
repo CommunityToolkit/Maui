@@ -2,6 +2,7 @@
 using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
+using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels;
 
@@ -21,6 +22,9 @@ public class MainGalleryViewModel : BaseGalleryViewModel
 
 			 SectionModel.Create<ExtensionsGalleryViewModel>("Extensions", Color.FromArgb("#00EA56"),
 				 "Extensions lets you add methods to existing types without creating a new derived type, recompiling, or otherwise modifying the original type."),
+			 
+			 SectionModel.Create<LayoutsGalleryViewModel>("Layouts", Color.FromArgb("#00EA56"),
+				 "Layouts"),
 		})
 	{
 	}
