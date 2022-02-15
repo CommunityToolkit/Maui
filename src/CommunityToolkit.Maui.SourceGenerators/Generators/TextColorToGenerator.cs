@@ -168,7 +168,7 @@ namespace " + textStyleClass.Namespace + @";
 			new(v => element.TextColor = element.TextColor.WithBlue(v), element.TextColor.Blue, targetBlue);
 
 		static Animation GetAlphaTransformAnimation(" + textStyleClass.Namespace + "." + textStyleClass.ClassName + @"  element, float targetAlpha) =>
-			new(v => element.TextColor = element.TextColor.WithAlpha(v), element.TextColor.Alpha, targetAlpha);
+			new(v => element.TextColor = element.TextColor.WithAlpha((float)v), element.TextColor.Alpha, targetAlpha);
 	}
 }";
 			var source = textColorToBuilder.ToString();
