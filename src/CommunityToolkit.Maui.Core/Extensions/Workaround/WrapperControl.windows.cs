@@ -29,7 +29,7 @@ class WrapperControl : Panel
 		this.view = view;
 		this.view.MeasureInvalidated += OnMeasureInvalidated;
 
-		FrameworkElement = view.ToNative(mauiContext, true);
+		FrameworkElement = view.ToNative(mauiContext);
 		Children.Add(FrameworkElement);
 
 		// make sure we re-measure once the template is applied
