@@ -67,7 +67,6 @@ public partial class AppShell : Shell
 
 		// Add Layouts View Models
 		{ typeof(UniformItemsLayoutViewModel), (typeof(LayoutsGalleryPage), typeof(UniformItemsLayoutPage)) },
-		{ typeof(UniformItemsLayoutTestViewModel), (typeof(LayoutsGalleryPage), typeof(UniformItemsLayoutTestPage)) },
 	};
 
 	public AppShell()
@@ -94,7 +93,7 @@ public partial class AppShell : Shell
 
 	static void RegisterRouting()
 	{
-		foreach(KeyValuePair<Type, (Type GalleryPageType, Type ContentPageType)> viewModelKeyValuePair in viewModelMappings)
+		foreach(var viewModelKeyValuePair in viewModelMappings)
 		{
 			Routing.RegisterRoute(GetPageRoute(viewModelKeyValuePair.Value.GalleryPageType, viewModelKeyValuePair.Value.ContentPageType), viewModelKeyValuePair.Value.ContentPageType);
 		}

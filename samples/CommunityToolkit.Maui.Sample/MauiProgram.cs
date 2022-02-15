@@ -50,6 +50,9 @@ public static class MauiProgram
 		// Add Extensions
 		builder.Services.AddTransient<ColorAnimationExtensionsViewModel>();
 
+		// Add Layouts
+		builder.Services.AddTransient<UniformItemsLayoutViewModel>();
+
 		return builder.Build();
 	}
 }
