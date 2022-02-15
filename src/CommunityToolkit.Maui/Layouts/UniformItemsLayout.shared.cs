@@ -13,12 +13,6 @@ public class UniformItemsLayout : Layout, IUniformItemsLayout
 	double childWidth, childHeight;
 
 	/// <summary>
-	/// Assign this as a LayoutManager
-	/// </summary>
-	/// <returns><see cref="ILayoutManager"/></returns>
-	protected override ILayoutManager CreateLayoutManager() => this;
-
-	/// <summary>
 	/// Backing BindableProperty for the <see cref="MaxRows"/> property.
 	/// </summary>
 	public static readonly BindableProperty MaxRowsProperty = BindableProperty.Create(nameof(MaxRows), typeof(int), typeof(UniformItemsLayout), int.MaxValue);
@@ -102,6 +96,9 @@ public class UniformItemsLayout : Layout, IUniformItemsLayout
 
 		return new Size(columns * childWidth, rows * childHeight);
 	}
+
+	/// <inheritdoc	/>
+	protected override ILayoutManager CreateLayoutManager() => this;
 
 	int GetColumnsCount(int visibleChildrenCount, double widthConstraint, double maxChildWidth)
 		=> Math.Min(double.IsPositiveInfinity(widthConstraint)

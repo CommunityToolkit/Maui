@@ -5,13 +5,14 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 
 public class LayoutsGalleryViewModel : BaseGalleryViewModel
 {
-	public LayoutsGalleryViewModel() : base(new []
-    {
-	    SectionModel.Create<UniformItemsLayoutViewModel>(nameof(UniformItemsLayoutPage),
-			"A Grid where all rows and columns have the same size"),
-	    SectionModel.Create<UniformItemsLayoutTestViewModel>(nameof(UniformItemsLayoutTestPage),
-			"A test page that adds new views to UniformItemsLayout"),
-	})
+	public LayoutsGalleryViewModel()
+		: base(new []
+		{
+			SectionModel.Create<UniformItemsLayoutViewModel>(nameof(UniformItemsLayoutPage),
+				"A Grid where all rows and columns have the same size"),
+			SectionModel.Create<UniformItemsLayoutTestViewModel>(nameof(UniformItemsLayoutTestPage),
+				"A test page that adds new views to UniformItemsLayout"),
+		})
     {
     }
 }

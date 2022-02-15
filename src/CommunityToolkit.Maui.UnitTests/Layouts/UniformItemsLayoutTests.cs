@@ -12,25 +12,6 @@ public class UniformItemsLayoutTests : BaseTest
 	readonly UniformItemsLayout uniformItemsLayout;
 	IView uniformChild;
 
-	class TestView : View
-	{
-		readonly Size size;
-
-		public TestView(Size size)
-		{
-			this.size = size;
-		}
-
-		public TestView(double width, double height) : this(new Size(width, height))
-		{
-		}
-
-		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
-		{
-			return size;
-		}
-	}
-
 	public UniformItemsLayoutTests()
 	{
 		uniformChild = new TestView(childWidth, childHeight);
@@ -94,5 +75,24 @@ public class UniformItemsLayoutTests : BaseTest
 		var actualSize = uniformItemsLayout.ArrangeChildren(new Rectangle(0, 0, childWidth * childCount, childHeight * childCount));
 
 		Assert.Equal(expectedSize, actualSize);
+	}
+
+	class TestView : View
+	{
+		readonly Size size;
+
+		public TestView(Size size)
+		{
+			this.size = size;
+		}
+
+		public TestView(double width, double height) : this(new Size(width, height))
+		{
+		}
+
+		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+		{
+			return size;
+		}
 	}
 }
