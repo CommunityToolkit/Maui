@@ -78,7 +78,7 @@ jobs:
       - task: CmdLine@2
         displayName: 'Run Unit Tests'
         inputs:
-          script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release --no-restore --collect "XPlat code coverage" --settings ".runsettings"'
+          script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release --collect "XPlat code coverage" --settings ".runsettings"'
       - task: VSBuild@1
         displayName: 'Build Community Toolkit Sample'
         inputs:
