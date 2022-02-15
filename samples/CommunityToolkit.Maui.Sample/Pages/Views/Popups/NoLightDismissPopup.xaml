@@ -1,50 +1,50 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<mct:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<mct:Popup x:Class="CommunityToolkit.Maui.Sample.NoLightDismissPopup"
+           xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
            xmlns:local="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Views.Popups"
-           Size="{x:Static local:PopupSize.Medium}"
+           xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui"
            IsLightDismissEnabled="False"
-           x:Class="CommunityToolkit.Maui.Sample.NoLightDismissPopup"
-           xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui">
+           Size="{x:Static local:PopupSize.Medium}">
 
     <VerticalStackLayout Style="{StaticResource PopupLayout}">
         <VerticalStackLayout.Resources>
             <ResourceDictionary>
-                <Style x:Key="Title" TargetType="Label">
+                <Style x:Key="Title"
+                       TargetType="Label">
                     <Setter Property="FontSize" Value="26" />
                     <Setter Property="FontAttributes" Value="Bold" />
                     <Setter Property="TextColor" Value="#000" />
                     <Setter Property="VerticalTextAlignment" Value="Center" />
                     <Setter Property="HorizontalTextAlignment" Value="Center" />
                 </Style>
-                <Style x:Key="Divider" TargetType="BoxView">
+                <Style x:Key="Divider"
+                       TargetType="BoxView">
                     <Setter Property="HeightRequest" Value="1" />
                     <Setter Property="Margin" Value="50, 25" />
                     <Setter Property="Color" Value="#c3c3c3" />
                 </Style>
-                <Style x:Key="Content" TargetType="Label">
+                <Style x:Key="Content"
+                       TargetType="Label">
                     <Setter Property="HorizontalTextAlignment" Value="Start" />
                     <Setter Property="VerticalTextAlignment" Value="Center" />
                 </Style>
-                <Style x:Key="PopupLayout" TargetType="VerticalStackLayout">
+                <Style x:Key="PopupLayout"
+                       TargetType="VerticalStackLayout">
                     <Setter Property="Padding" Value="{OnPlatform Android=20, UWP=20, iOS=5}" />
                 </Style>
             </ResourceDictionary>
         </VerticalStackLayout.Resources>
 
-        <Label 
-            Style="{StaticResource Title}" 
-            Text="Simple Popup Without Light Dismiss" />
+        <Label Style="{StaticResource Title}"
+               Text="Simple Popup Without Light Dismiss" />
         <BoxView Style="{StaticResource Divider}" />
-        <Label 
-            Style="{StaticResource Content}"
-            Text="{OnPlatform
-                Android='This is a native popup with a Xamarin.Forms View being rendered. The behaviors of the popup will confirm to 100% native look and feel, but still allows you to use your Xamarin.Forms controls.',
-                iOS='This is a native popup with a Xamarin.Forms View being rendered. The behaviors of the popup will confirm to 100% native look and feel, but still allows you to use your Xamarin.Forms controls.',
-                UWP='UWP Flyouts do not have native support for toggling light dismiss mode. On UWP this will disrupt the closing of the flyout if you tap outside of the control'}" />
-        <Button 
-            Text="Close"
-            VerticalOptions="EndAndExpand"
-            Clicked="Button_Clicked" />
+        <Label Style="{StaticResource Content}"
+               Text="{OnPlatform Android='This is a native popup with a .NET MAUI View being rendered. The behaviors of the popup will confirm to 100% native look and feel, but still allows you to use your .NET MAUI Controls.',
+                                 iOS='This is a native popup with a .NET MAUI View being rendered. The behaviors of the popup will confirm to 100% native look and feel, but still allows you to use your .NET MAUI Controls.',
+                                 UWP='UWP Flyouts do not have native support for toggling light dismiss mode. On UWP this will disrupt the closing of the flyout if you tap outside of the control'}" />
+        <Button Clicked="Button_Clicked"
+                Text="Close"
+                VerticalOptions="EndAndExpand" />
     </VerticalStackLayout>
 </mct:Popup>
