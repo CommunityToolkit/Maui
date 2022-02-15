@@ -4,8 +4,3 @@ public class UniformItemsLayoutViewModel : BaseViewModel
 {
 
 }
-
-public class UniformItemsLayoutTestViewModel : BaseViewModel
-{
-
-}
