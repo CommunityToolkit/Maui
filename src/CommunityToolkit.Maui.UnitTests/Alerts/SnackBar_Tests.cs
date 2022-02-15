@@ -1,3 +1,4 @@
+using Font = Microsoft.Maui.Font;
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using FluentAssertions;

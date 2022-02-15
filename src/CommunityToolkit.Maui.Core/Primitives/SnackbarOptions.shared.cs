@@ -1,4 +1,5 @@
-﻿namespace CommunityToolkit.Maui.Core;
+﻿using Font = Microsoft.Maui.Font;
+namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// Snackbar visual options
