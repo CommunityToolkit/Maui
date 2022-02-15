@@ -11,7 +11,7 @@ using NativeSnackbar = Windows.UI.Notifications.ToastNotification;
 namespace CommunityToolkit.Maui.Alerts;
 
 /// <inheritdoc/>
-public partial class Snackbar : ISnackbar
+public partial class Snackbar : Element, ISnackbar
 {
 	static readonly WeakEventManager weakEventManager = new();
 

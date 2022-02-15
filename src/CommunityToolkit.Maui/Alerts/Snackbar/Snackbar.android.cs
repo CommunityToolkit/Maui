@@ -83,7 +83,7 @@ public partial class Snackbar
 		}
 	}
 
-	static void SetupMessage(SnackbarOptions snackbarOptions, View snackbarView)
+	void SetupMessage(SnackbarOptions snackbarOptions, View snackbarView)
 	{
 		var snackTextView = snackbarView.FindViewById<TextView>(Resource.Id.snackbar_text) ?? throw new InvalidOperationException("Unable to find Snackbar text view");
 		snackTextView.SetMaxLines(10);
@@ -96,14 +96,14 @@ public partial class Snackbar
 
 		snackTextView.LetterSpacing = (float)snackbarOptions.CharacterSpacing;
 
-		snackTextView.SetTypeface(snackbarOptions.Font.ToTypeface(), TypefaceStyle.Normal);
+		snackTextView.SetTypeface(snackbarOptions.Font.ToTypeface(this.RequireFontManager()), TypefaceStyle.Normal);
 	}
 
 	[MemberNotNull(nameof(dismissedTCS))]
 	void SetupActions(Google.Android.Material.Snackbar.Snackbar nativeSnackbar)
 	{
 		var snackActionButtonView = nativeSnackbar.View.FindViewById<TextView>(Resource.Id.snackbar_action) ?? throw new InvalidOperationException("Unable to find Snackbar action button");
-		snackActionButtonView.SetTypeface(VisualOptions.ActionButtonFont.ToTypeface(), TypefaceStyle.Normal);
+		snackActionButtonView.SetTypeface(VisualOptions.ActionButtonFont.ToTypeface(this.RequireFontManager()), TypefaceStyle.Normal);
 
 		nativeSnackbar.SetAction(ActionButtonText, _ =>
 		{
