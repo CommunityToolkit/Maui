@@ -159,7 +159,7 @@ jobs:
       - task: CmdLine@2
         displayName: 'Install .NET MAUI workload'
         inputs:
-          script: 'dotnet workload install maui --source https://aka.ms/dotnet6/nuget/index.json --source https://api.nuget.org/v3/index.json'
+          script: 'dotnet workload install maui'
       - task: PowerShell@2
         displayName: 'Restore package'
         inputs:
