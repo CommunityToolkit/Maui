@@ -31,10 +31,9 @@ public static class PopupExtensions
 			return;
 		}
 
-		var mauiContext = basePopup.Handler.MauiContext;
 		if (basePopup.Anchor is not null)
 		{
-			var anchorView = basePopup.Anchor?.ToNative(mauiContext);
+			var anchorView = basePopup.Anchor?.ToNative(basePopup.Handler.MauiContext);
 
 			if (anchorView is null)
 			{
@@ -235,7 +234,7 @@ public static class PopupExtensions
 
 	static Android.Views.Window GetWindow(in Dialog dialog)
 	{
-		var window = dialog.Window ?? throw new Exception("Android.Views.Window is null!");
+		var window = dialog.Window ?? throw new NullReferenceException("Android.Views.Window is null!");
 
 		return window;
 	}
