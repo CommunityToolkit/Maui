@@ -69,16 +69,18 @@ jobs:
         condition: and(succeeded(), eq(variables['build.reason'], 'PullRequest'))
       # build, test and pack the packages
       - task: DotNetCoreCLI@2
+        displayName: 'Run Unit Tests'
+        inputs:
+          command: test
+          projects: '$(PathToCommunityToolkitUnitTestCsproj)'
+          arguments: '--configuration Release --settings ".runsettings" --collect "Code coverage"'
+      - task: DotNetCoreCLI@2
         displayName: 'Check Dependencies'
         inputs:
           command: 'custom'
           custom: 'list'
           arguments: 'package --vulnerable --include-transitive'
           projects: $(PathToSolution)
-      - task: CmdLine@2
-        displayName: 'Run Unit Tests'
-        inputs:
-          script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release --collect "XPlat code coverage" --settings ".runsettings"'
       - task: VSBuild@1
         displayName: 'Build Community Toolkit Sample'
         inputs:
