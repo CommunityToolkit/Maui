@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Maui.Core;
 using CoreGraphics;
 using Microsoft.Maui.Platform;
-using ObjCRuntime;
 using UIKit;
 
 namespace CommunityToolkit.Core.Platform;
