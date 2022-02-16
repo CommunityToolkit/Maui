@@ -98,9 +98,7 @@ public class MCTPopup : UIViewController
 			currentPageRenderer = mainPage;
 		}
 
-		var viewController = (currentPageRenderer.Handler as PageHandler)?.ViewController;
-
-		ViewController = viewController;
+		ViewController ??= currentPageRenderer?.ToUIViewController(mauiContext);
 	}
 
 	void SetView()
