@@ -5,12 +5,10 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 {
-	public MultiplePopupPage(MultiplePopupViewModel multiplePopupViewModel) 
+	public MultiplePopupPage(MultiplePopupViewModel multiplePopupViewModel)
 		: base(multiplePopupViewModel)
 	{
 		InitializeComponent();
-
-		//	SectionModel.Create<CsharpBindingPopupViewModel>(typeof(CsharpBindingPopup), "C# Binding Popup", Colors.Red, "A simple popup that uses C# BindingContext")
 	}
 
 	async void HandleSimplePopupButtonClicked(object sender, EventArgs e)
