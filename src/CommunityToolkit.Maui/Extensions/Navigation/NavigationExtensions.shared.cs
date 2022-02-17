@@ -63,8 +63,19 @@ public static partial class NavigationExtensions
 
 	static IMauiContext GetMauiContext(INavigation navigation)
 	{
-		return (Shell.Current is null ? 
+		return (Shell.Current is null ?
 			navigation.NavigationStack[0].Handler?.MauiContext
 			: Shell.Current.Handler?.MauiContext) ?? throw new NullReferenceException(nameof(MauiContext));
 	}
 }
+
+#if !(ANDROID || IOS || MACCATALYST || WINDOWS)
+public static partial class NavigationExtensions
+{
+	static void PlatformShowPopup(BasePopup popup, IMauiContext mauiContext) =>
+		throw new NotSupportedException($"The current platform '{Device.RuntimePlatform}' does not support CommunityToolkit.Maui.Core.BasePopup");
+
+	static Task<object?> PlatformShowPopupAsync(Popup popup, IMauiContext mauiContext) =>
+		throw new NotSupportedException($"The current platform '{Device.RuntimePlatform}' does not support CommunityToolkit.Maui.Core.Popup.");
+}
+#endif
