@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Core;
-using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Core.Handlers;
 
@@ -51,7 +50,7 @@ public partial class PopupViewHandler
 }
 
 #if !(ANDROID || IOS || MACCATALYST || WINDOWS)
-public partial class PopupViewHandler : ElementHandler<IPopup, object>
+public partial class PopupViewHandler : Microsoft.Maui.Handlers.ElementHandler<IPopup, object>
 {
 	/// <inheritdoc/>
 	protected override object CreateNativeElement() => throw new NotImplementedException();
