@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views.Popups"
-             x:Class="CommunityToolkit.Maui.Sample.PopupAnchorPage"
-             Title="PopupAnchorPage">
-
-    <ContentPage.BindingContext>
-        <viewModels:PopupAnchorViewModel />
-    </ContentPage.BindingContext>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views.Popups"
+                x:Class="namespace CommunityToolkit.Maui.Sample.Pages.Views.PopupAnchorPage"
+                Title="PopupAnchorPage"
+                x:TypeArguments="viewModels:PopupAnchorViewModel"
+                x:DataType="viewModels:PopupAnchorViewModel">
 
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -36,6 +35,7 @@
     <VerticalStackLayout>
         <Label Style="{StaticResource Header}"
                    Text="Popup's can be anchored to other Views on the page. Tap and drag the X to change where the popup will be centered." />
+
         <Label x:Name="Indicator" 
                    Style="{StaticResource Indicator}" 
                    Text="❌">
@@ -43,9 +43,10 @@
                 <PanGestureRecognizer PanUpdated="OnPanUpdated" />
             </Label.GestureRecognizers>
         </Label>
+
         <Button Text="Show Popup"
                     Command="{Binding ShowPopup}"
                     CommandParameter="{x:Reference Indicator}"/>
     </VerticalStackLayout>
 
-</ContentPage>
+</pages:BasePage>

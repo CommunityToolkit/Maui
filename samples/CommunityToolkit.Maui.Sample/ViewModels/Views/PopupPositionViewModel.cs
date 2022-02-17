@@ -2,7 +2,8 @@
 using CommunityToolkit.Maui.Extensions;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
-namespace CommunityToolkit.Maui.Sample.ViewModels.Views.Popups;
+namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
+
 public class PopupPositionViewModel
 {
 	public PopupPositionViewModel()

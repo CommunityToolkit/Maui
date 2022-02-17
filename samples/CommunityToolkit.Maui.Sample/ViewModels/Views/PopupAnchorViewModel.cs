@@ -5,9 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Extensions;
-using CommunityToolkit.Maui.Sample.Pages.Views.Popups;
+using CommunityToolkit.Maui.Sample.Pages.Views;
 
-namespace CommunityToolkit.Maui.Sample.ViewModels.Views.Popups;
+namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
+
 public sealed class PopupAnchorViewModel
 {
 	public PopupAnchorViewModel()

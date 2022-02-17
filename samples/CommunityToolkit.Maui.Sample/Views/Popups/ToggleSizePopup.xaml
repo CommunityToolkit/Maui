@@ -3,8 +3,9 @@
            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
            x:Class="CommunityToolkit.Maui.Sample.ToggleSizePopup"
            xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui"
-           xmlns:local="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Views.Popups"
-           Size="{x:Static local:PopupSize.Medium}">
+           xmlns:models="clr-namespace:CommunityToolkit.Maui.Sample.Models"
+           Size="{x:Static models:PopupSizeConstants.Medium}">
+
     <VerticalStackLayout Style="{StaticResource PopupLayout}">
 
         <VerticalStackLayout.Resources>

@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Views.Popups;
+﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public sealed class CsharpBindingPopupViewModel
 {

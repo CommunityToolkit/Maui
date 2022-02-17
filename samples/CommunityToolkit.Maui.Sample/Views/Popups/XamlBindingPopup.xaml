@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <mct:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="CommunityToolkit.Maui.Sample.OpenedEventSimplePopup"
-             xmlns:local="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Views.Popups"
-             Size="{x:Static local:PopupSize.Medium}"
-             xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui">
+           xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+           x:Class="CommunityToolkit.Maui.Sample.XamlBindingPopup"
+           xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui"
+           xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views.Popups"
+           xmlns:models="clr-namespace:CommunityToolkit.Maui.Sample.Models"
+           Size="{x:Static models:PopupSizeConstants.Large}">
 
+    <mct:Popup.BindingContext>
+        <viewModels:XamlBindingPopupViewModel />
+    </mct:Popup.BindingContext>
+    
+    
     <VerticalStackLayout Style="{StaticResource PopupLayout}">
         <VerticalStackLayout.Resources>
             <ResourceDictionary>
@@ -31,11 +37,10 @@
             </ResourceDictionary>
         </VerticalStackLayout.Resources>
 
-
-        <Label x:Name="Title" 
-                Style="{StaticResource Title}" />
+        <Label Style="{StaticResource Title}" 
+               Text="{Binding Title}" />
         <BoxView Style="{StaticResource Divider}" />
-        <Label x:Name="Message" 
-                Style="{StaticResource Content}" />
+        <Label Style="{StaticResource Content}" 
+               Text="{Binding Message}" />
     </VerticalStackLayout>
 </mct:Popup>

@@ -1,7 +1,6 @@
-﻿
-namespace CommunityToolkit.Maui.Sample.Pages.Views.Popups;
+﻿namespace CommunityToolkit.Maui.Sample.Models;
 
-static class PopupSize
+static class PopupSizeConstants
 {
 	// examples for fixed sizes
 	public static Size Tiny { get; } = new(100, 100);

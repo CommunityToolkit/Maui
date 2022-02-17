@@ -1,0 +1,10 @@
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views.Popups"
+                x:Class="CommunityToolkit.Maui.Sample.PopupAnchorPage"
+                Title="PopupAnchorPage"
+                x:TypeArguments="viewModels:PopupAnchorViewModel"
+                x:DataType="viewModels:PopupAnchorViewModel">
+
+</pages:BasePage>

@@ -3,9 +3,10 @@
     x:Class="CommunityToolkit.Maui.Sample.SimplePopup"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Views.Popups"
+    xmlns:models="clr-namespace:CommunityToolkit.Maui.Sample.Models"
     xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui"
-    Size="{x:Static local:PopupSize.Small}">
+    Size="{x:Static models:PopupSizeConstants.Small}">
+
     <VerticalStackLayout Style="{StaticResource PopupLayout}">
 
         <VerticalStackLayout.Resources>
