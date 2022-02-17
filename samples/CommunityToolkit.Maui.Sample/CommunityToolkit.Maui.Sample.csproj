@@ -38,7 +38,7 @@
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0-preview1" />
-    <PackageReference Include="CommunityToolkit.Maui.Markup" Version="1.0.0-pre5" />
+    <PackageReference Include="CommunityToolkit.Maui.Markup" Version="1.0.0-pre7" />
   </ItemGroup>
 
   <PropertyGroup>
