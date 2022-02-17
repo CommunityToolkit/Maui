@@ -49,15 +49,15 @@
                 Route="ExtensionsGalleryPage">
         <ShellContent ContentTemplate="{DataTemplate extensions:ExtensionsGalleryPage}" />
     </FlyoutItem>
-    <FlyoutItem Title="Popups"
-                Icon="dotnet_bot.png"
-                Route="PopupGalleryPage">
-        <ShellContent ContentTemplate="{DataTemplate popup:PopupGalleryPage}" />
-    </FlyoutItem>
     <FlyoutItem Title="Layouts"
                 Icon="dotnet_bot.png"
                 Route="LayoutsGalleryPage">
         <ShellContent ContentTemplate="{DataTemplate layouts:LayoutsGalleryPage}" />
+    </FlyoutItem>
+    <FlyoutItem Title="Popups"
+                Icon="dotnet_bot.png"
+                Route="PopupGalleryPage">
+        <ShellContent ContentTemplate="{DataTemplate popup:PopupGalleryPage}" />
     </FlyoutItem>
 
     <Shell.FlyoutFooter>
