@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Maui.Layouts;
 using Xunit;
 
-namespace CommunityToolkit.Maui.UnitTests.Views;
+namespace CommunityToolkit.Maui.UnitTests.Layouts;
 
 public class UniformItemsLayoutTests : BaseTest
 {
