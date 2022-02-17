@@ -4,7 +4,7 @@ using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public class PopupPositionViewModel
+public class PopupPositionViewModel : BaseViewModel
 {
 	public PopupPositionViewModel()
 	{
