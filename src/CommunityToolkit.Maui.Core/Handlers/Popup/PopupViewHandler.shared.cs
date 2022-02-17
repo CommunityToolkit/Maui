@@ -64,6 +64,7 @@ public partial class PopupViewHandler : Microsoft.Maui.Handlers.ElementHandler<I
 	public static void MapOnDismissed(PopupViewHandler handler, IPopup view, object? result)
 	{
 	}
+
 	/// <summary>
 	/// Action that's triggered when the Popup is Opened.
 	/// </summary>
@@ -73,6 +74,7 @@ public partial class PopupViewHandler : Microsoft.Maui.Handlers.ElementHandler<I
 	public static void MapOnOpened(PopupViewHandler handler, IPopup view, object? result)
 	{
 	}
+
 	/// <summary>
 	/// Action that's triggered when the Popup is LightDismissed.
 	/// </summary>
@@ -82,6 +84,7 @@ public partial class PopupViewHandler : Microsoft.Maui.Handlers.ElementHandler<I
 	public static void MapOnLightDismiss(PopupViewHandler handler, IPopup view, object? result)
 	{
 	}
+
 	/// <summary>
 	/// Action that's triggered when the Popup <see cref="IPopup.Anchor"/> property changes.
 	/// </summary>
@@ -90,6 +93,7 @@ public partial class PopupViewHandler : Microsoft.Maui.Handlers.ElementHandler<I
 	public static void MapAnchor(PopupViewHandler handler, IPopup view)
 	{
 	}
+
 	/// <summary>
 	/// Action that's triggered when the Popup <see cref="IPopup.IsLightDismissEnabled"/> property changes.
 	/// </summary>
@@ -98,6 +102,7 @@ public partial class PopupViewHandler : Microsoft.Maui.Handlers.ElementHandler<I
 	public static void MapLightDismiss(PopupViewHandler handler, IPopup view)
 	{
 	}
+
 	/// <summary>
 	/// Action that's triggered when the Popup <see cref="IPopup.Color"/> property changes.
 	/// </summary>
@@ -106,6 +111,7 @@ public partial class PopupViewHandler : Microsoft.Maui.Handlers.ElementHandler<I
 	public static void MapColor(PopupViewHandler handler, IPopup view)
 	{
 	}
+
 	/// <summary>
 	/// Action that's triggered when the Popup <see cref="IPopup.Size"/> property changes.
 	/// </summary>
