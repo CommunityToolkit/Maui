@@ -63,6 +63,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<UniformItemsLayoutViewModel>();
 
 		// Add Views View Models
+		builder.Services.AddTransient<MultiplePopupViewModel>();
 		builder.Services.AddTransient<PopupAnchorViewModel>();
 		builder.Services.AddTransient<PopupPositionViewModel>();
 

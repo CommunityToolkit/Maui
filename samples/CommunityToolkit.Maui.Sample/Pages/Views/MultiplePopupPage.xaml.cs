@@ -21,4 +21,9 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 		//	SectionModel.Create<XamlBindingPopupViewModel>(typeof(XamlBindingPopup), "Xaml Binding Popup", Colors.Red, "A simple popup that uses XAML BindingContext"),
 		//	SectionModel.Create<CsharpBindingPopupViewModel>(typeof(CsharpBindingPopup), "C# Binding Popup", Colors.Red, "A simple popup that uses C# BindingContext")
 	}
+
+	void HandleSimplePopupButtonClicked(object sender, EventArgs e)
+	{
+
+	}
 }

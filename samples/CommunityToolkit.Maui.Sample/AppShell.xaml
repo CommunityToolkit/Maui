@@ -9,7 +9,7 @@
        xmlns:extensions="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Extensions"
        xmlns:layouts="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Layouts"
        xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-       xmlns:popup="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Views.Popups"
+       xmlns:views="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Views"
        xmlns:sys="clr-namespace:System;assembly=netstandard">
 
     <Shell.FlyoutHeader>
@@ -54,10 +54,10 @@
                 Route="LayoutsGalleryPage">
         <ShellContent ContentTemplate="{DataTemplate layouts:LayoutsGalleryPage}" />
     </FlyoutItem>
-    <FlyoutItem Title="Popups"
+    <FlyoutItem Title="Views"
                 Icon="dotnet_bot.png"
-                Route="PopupGalleryPage">
-        <ShellContent ContentTemplate="{DataTemplate popup:PopupGalleryPage}" />
+                Route="ViewsGalleryPage">
+        <ShellContent ContentTemplate="{DataTemplate views:ViewsGalleryPage}" />
     </FlyoutItem>
 
     <Shell.FlyoutFooter>
