@@ -5,7 +5,8 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class PopupAnchorPage : BasePage<PopupAnchorViewModel>
 {
-	public PopupAnchorPage()
+	public PopupAnchorPage(PopupAnchorViewModel popupAnchorViewModel)
+		: base(popupAnchorViewModel)
 	{
 		InitializeComponent();
 		Indicator ??= new();
