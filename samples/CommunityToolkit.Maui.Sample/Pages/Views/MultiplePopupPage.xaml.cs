@@ -10,12 +10,6 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 	{
 		InitializeComponent();
 
-		// Todo Put these views inside a page
-		//	SectionModel.Create<PopupGalleryViewModel>(typeof(ToggleSizePopup), "Toggle Size Popup", Colors.Red, "Displays a popup that can have it's size updated by pressing a button"),
-		//	SectionModel.Create<PopupGalleryViewModel>(typeof(TransparentPopup), "Transparent Popup", Colors.Red, "Displays a popup with a transparent background"),
-		//	SectionModel.Create<PopupGalleryViewModel>(typeof(OpenedEventSimplePopup), "Opened Event Popup", Colors.Red, "Popup with opened event"),
-		//	SectionModel.Create<PopupGalleryViewModel>(typeof(ReturnResultPopup), "Return Result Popup", Colors.Red, "A popup that returns a string message when dismissed"),
-		//	SectionModel.Create<XamlBindingPopupViewModel>(typeof(XamlBindingPopup), "Xaml Binding Popup", Colors.Red, "A simple popup that uses XAML BindingContext"),
 		//	SectionModel.Create<CsharpBindingPopupViewModel>(typeof(CsharpBindingPopup), "C# Binding Popup", Colors.Red, "A simple popup that uses C# BindingContext")
 	}
 
@@ -47,5 +41,35 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 	{
 		var toggleSizePopup = new ToggleSizePopup();
 		await Navigation.ShowPopupAsync(toggleSizePopup);
+	}
+
+	async void HandleTransparentPopupButtonClicked(object sender, EventArgs e)
+	{
+		var transparentPopup = new TransparentPopup();
+		await Navigation.ShowPopupAsync(transparentPopup);
+	}
+
+	async void HandleOpenedEventSimplePopupButtonClicked(object sender, EventArgs e)
+	{
+		var openedEventSimplePopup = new OpenedEventSimplePopup();
+		await Navigation.ShowPopupAsync(openedEventSimplePopup);
+	}
+
+	async void HandleReturnResultPopupButtonClicked(object sender, EventArgs e)
+	{
+		var returnResultPopup = new ReturnResultPopup();
+		await Navigation.ShowPopupAsync(returnResultPopup);
+	}
+
+	async void HandleXamlBindingPopupPopupButtonClicked(object sender, EventArgs e)
+	{
+		var xamlBindingPopup = new XamlBindingPopup();
+		await Navigation.ShowPopupAsync(xamlBindingPopup);
+	}
+
+	async void HandleCsharpBindingPopupButtonClicked(object sender, EventArgs e)
+	{
+		var csharpBindingPopup = new CsharpBindingPopup();
+		await Navigation.ShowPopupAsync(csharpBindingPopup);
 	}
 }
