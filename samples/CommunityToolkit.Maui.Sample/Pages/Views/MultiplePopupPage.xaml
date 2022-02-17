@@ -7,4 +7,20 @@
                 x:TypeArguments="viewModels:MultiplePopupViewModel"
                 x:DataType="viewModels:MultiplePopupViewModel">
 
+    <ContentPage.Content>
+        <ScrollView>
+            <VerticalStackLayout Spacing="12">
+                <Button Text="Simple Popup" Clicked="HandleSimplePopupButtonClicked" />
+
+                <Button Text="Button Popup" Clicked="HandleButtonPopupButtonClicked" />
+
+                <Button Text="Multiple Button Popup" Clicked="HandleMultipleButtonPopupButtonClicked" />
+
+                <Button Text="No Light Dismiss Popup" Clicked="HandleNoLightDismissPopupButtonClicked" />
+
+                <Button Text="Toggle Size Popup" Clicked="HandleToggleSizePopupButtonClicked" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </ContentPage.Content>
+
 </pages:BasePage>

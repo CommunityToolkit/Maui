@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
@@ -10,10 +11,6 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 		InitializeComponent();
 
 		// Todo Put these views inside a page
-		//SectionModel.Create<PopupGalleryViewModel>(typeof(SimplePopup), "Simple Popup", Colors.Red, "Displays a basic popup centered on the screen"),
-		//	SectionModel.Create<PopupGalleryViewModel>(typeof(ButtonPopup), "Popup With 1 Button", Colors.Red, "Displays a basic popup with a confirm button"),
-		//	SectionModel.Create<PopupGalleryViewModel>(typeof(MultipleButtonPopup), "Popup With Multiple Buttons", Colors.Red, "Displays a basic popup with a cancel and confirm button"),
-		//	SectionModel.Create<PopupGalleryViewModel>(typeof(NoLightDismissPopup), "Simple Popup Without Light Dismiss", Colors.Red, "Displays a basic popup but does not allow the user to close it if they tap outside of the popup. In other words the LightDismiss is set to false."),
 		//	SectionModel.Create<PopupGalleryViewModel>(typeof(ToggleSizePopup), "Toggle Size Popup", Colors.Red, "Displays a popup that can have it's size updated by pressing a button"),
 		//	SectionModel.Create<PopupGalleryViewModel>(typeof(TransparentPopup), "Transparent Popup", Colors.Red, "Displays a popup with a transparent background"),
 		//	SectionModel.Create<PopupGalleryViewModel>(typeof(OpenedEventSimplePopup), "Opened Event Popup", Colors.Red, "Popup with opened event"),
@@ -22,8 +19,33 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 		//	SectionModel.Create<CsharpBindingPopupViewModel>(typeof(CsharpBindingPopup), "C# Binding Popup", Colors.Red, "A simple popup that uses C# BindingContext")
 	}
 
-	void HandleSimplePopupButtonClicked(object sender, EventArgs e)
+	async void HandleSimplePopupButtonClicked(object sender, EventArgs e)
 	{
+		var simplePopup = new SimplePopup();
+		await Navigation.ShowPopupAsync(simplePopup);
+	}
 
+	async void HandleButtonPopupButtonClicked(object sender, EventArgs e)
+	{
+		var buttonPopup = new ButtonPopup();
+		await Navigation.ShowPopupAsync(buttonPopup);
+	}
+
+	async void HandleMultipleButtonPopupButtonClicked(object sender, EventArgs e)
+	{
+		var multipleButtonPopup = new MultipleButtonPopup();
+		await Navigation.ShowPopupAsync(multipleButtonPopup);
+	}
+
+	async void HandleNoLightDismissPopupButtonClicked(object sender, EventArgs e)
+	{
+		var noLightDismissPopup = new NoLightDismissPopup();
+		await Navigation.ShowPopupAsync(noLightDismissPopup);
+	}
+
+	async void HandleToggleSizePopupButtonClicked(object sender, EventArgs e)
+	{
+		var toggleSizePopup = new ToggleSizePopup();
+		await Navigation.ShowPopupAsync(toggleSizePopup);
 	}
 }
