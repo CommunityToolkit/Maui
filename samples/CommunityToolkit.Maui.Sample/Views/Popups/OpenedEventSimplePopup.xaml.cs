@@ -3,14 +3,16 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample;
 
-public partial class OpenedEventSimplePopup
+public partial class OpenedEventSimplePopup : Popup
 {
 	public OpenedEventSimplePopup()
 	{
 		InitializeComponent();
-		Opened += OnOpened;
+
 		Title ??= new();
 		Message ??= new();
+
+		Opened += OnOpened;
 
 	}
 

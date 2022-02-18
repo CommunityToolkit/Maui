@@ -1,5 +1,5 @@
-﻿using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
-using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core;
+using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -135,10 +135,6 @@ public abstract class BasePopup : Element, IPopup
 		set => SetValue(IsLightDismissEnabledProperty, value);
 	}
 
-	IView? IPopup.Anchor => Anchor;
-
-	IView? IPopup.Content => Content;
-
 
 	/// <summary>
 	/// Dismissed event is invoked when the popup is closed.
@@ -158,6 +154,12 @@ public abstract class BasePopup : Element, IPopup
 		remove => openedWeakEventManager.RemoveEventHandler(value);
 	}
 
+	/// <inheritdoc/>
+	IView? IPopup.Anchor => Anchor;
+
+	/// <inheritdoc/>
+	IView? IPopup.Content => Content;
+
 	/// <summary>
 	/// Invokes the <see cref="Dismissed"/> event.
 	/// </summary>
@@ -166,7 +168,7 @@ public abstract class BasePopup : Element, IPopup
 	/// </param>
 	protected void OnDismissed(object? result)
 	{
-		(this as IPopup)?.OnDismissed(result);
+		((IPopup)this).OnDismissed(result);
 		dismissWeakEventManager.HandleEvent(this, new PopupDismissedEventArgs(result, false), nameof(Dismissed));
 	}
 

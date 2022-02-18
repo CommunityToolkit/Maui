@@ -2,7 +2,7 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample;
 
-public partial class MultipleButtonPopup
+public partial class MultipleButtonPopup : Popup
 {
 	public MultipleButtonPopup()
 	{

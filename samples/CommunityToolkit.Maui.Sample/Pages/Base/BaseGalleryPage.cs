@@ -40,14 +40,8 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 		{
 			return;
 		}
-		if (BindingContext is PopupGalleryViewModel vm)
-		{
-			vm.DisplayPopup.Execute(sectionModel.Type);
-		}
-		else
-		{
-			await Shell.Current.GoToAsync(AppShell.GetPageRoute(sectionModel.ViewModelType));
-		}
+
+		await Shell.Current.GoToAsync(AppShell.GetPageRoute(sectionModel.ViewModelType));
 	}
 
 	class GalleryDataTemplate : DataTemplate

@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <mct:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="CommunityToolkit.Maui.Sample.OpenedEventSimplePopup"
-             xmlns:local="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Views.Popups"
-             Size="{x:Static local:PopupSize.Medium}"
-             xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui">
+           xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+           x:Class="CommunityToolkit.Maui.Sample.ToggleSizePopup"
+           xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui"
+           xmlns:models="clr-namespace:CommunityToolkit.Maui.Sample.Models"
+           Size="{x:Static models:PopupSizeConstants.Medium}">
 
     <VerticalStackLayout Style="{StaticResource PopupLayout}">
+
         <VerticalStackLayout.Resources>
             <ResourceDictionary>
                 <Style x:Key="Title" TargetType="Label">
@@ -28,14 +29,19 @@
                 <Style x:Key="PopupLayout" TargetType="StackLayout">
                     <Setter Property="Padding" Value="{OnPlatform Android=20, UWP=20, iOS=5}" />
                 </Style>
+                <Style x:Key="ConfirmButton" TargetType="Button">
+                    <Setter Property="VerticalOptions" Value="EndAndExpand" />
+                </Style>
             </ResourceDictionary>
         </VerticalStackLayout.Resources>
 
-
-        <Label x:Name="Title" 
-                Style="{StaticResource Title}" />
+        <Label Style="{StaticResource Title}" 
+                Text="Button Popup" />
         <BoxView Style="{StaticResource Divider}" />
-        <Label x:Name="Message" 
-                Style="{StaticResource Content}" />
+        <Label Style="{StaticResource Content}" 
+                Text="This is a native popup with a .NET MAUI View being rendered. The behaviors of the popup will confirm to 100% native look and feel, but still allows you to use your .NET MAUI Controls." />
+        <Button Text="Toggle Size"
+                Style="{StaticResource ConfirmButton}"
+                Clicked="Button_Clicked" />
     </VerticalStackLayout>
 </mct:Popup>

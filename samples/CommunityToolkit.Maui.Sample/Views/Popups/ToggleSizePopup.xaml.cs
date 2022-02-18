@@ -1,8 +1,10 @@
+using CommunityToolkit.Maui.Views;
+
 namespace CommunityToolkit.Maui.Sample;
 
-public partial class ToggleSizePopup
+public partial class ToggleSizePopup : Popup
 {
-	Size originalSize;
+	readonly Size originalSize;
 
 	public ToggleSizePopup()
 	{

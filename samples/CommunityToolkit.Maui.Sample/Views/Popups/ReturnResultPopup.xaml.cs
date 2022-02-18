@@ -2,7 +2,7 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample;
 
-public partial class ReturnResultPopup
+public partial class ReturnResultPopup : Popup
 {
 	public ReturnResultPopup()
 	{

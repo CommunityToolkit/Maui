@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using CommunityToolkit.Maui.Extensions;
-using CommunityToolkit.Maui.Sample.Pages.Views.Popups;
 
-namespace CommunityToolkit.Maui.Sample.ViewModels.Views.Popups;
-public sealed class PopupAnchorViewModel
+namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
+
+public sealed class PopupAnchorViewModel : BaseViewModel
 {
 	public PopupAnchorViewModel()
 	{

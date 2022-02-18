@@ -5,19 +5,12 @@ namespace CommunityToolkit.Maui.Views;
 /// <inheritdoc/>
 public abstract class Popup : BasePopup, IPopup
 {
-	TaskCompletionSource<object?> taskCompletionSource;
-
-	/// <summary>
-	/// Initalizes a default implementation of <see cref="Popup"/>.
-	/// </summary>
-	protected Popup() =>
-		taskCompletionSource = new TaskCompletionSource<object?>();
+	TaskCompletionSource<object?> taskCompletionSource = new();
 
 	/// <summary>
 	/// Resets the Popup.
 	/// </summary>
-	public void Reset() =>
-		taskCompletionSource = new TaskCompletionSource<object?>();
+	public void Reset() => taskCompletionSource = new TaskCompletionSource<object?>();
 
 	/// <summary>
 	/// Dismiss the current popup.

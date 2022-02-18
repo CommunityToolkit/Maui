@@ -3,7 +3,6 @@ using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
-using CommunityToolkit.Maui.Sample.ViewModels.Views.Popups;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
@@ -24,7 +23,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<ExtensionsGalleryViewModel>();
 		builder.Services.AddTransient<LayoutsGalleryViewModel>();
 		builder.Services.AddTransient<MainGalleryViewModel>();
-		builder.Services.AddTransient<PopupGalleryViewModel>();
+		builder.Services.AddTransient<ViewsGalleryViewModel>();
 
 		// Add Behaviors View Models
 		builder.Services.AddTransient<EventToCommandBehaviorViewModel>();
@@ -60,9 +59,13 @@ public static class MauiProgram
 		builder.Services.AddTransient<PopupPositionViewModel>();
 		builder.Services.AddTransient<XamlBindingPopupViewModel>();
 
-		// Add Layouts
+		// Add Layouts View Models
 		builder.Services.AddTransient<UniformItemsLayoutViewModel>();
 
+		// Add Views View Models
+		builder.Services.AddTransient<MultiplePopupViewModel>();
+		builder.Services.AddTransient<PopupAnchorViewModel>();
+		builder.Services.AddTransient<PopupPositionViewModel>();
 
 		return builder.Build();
 	}

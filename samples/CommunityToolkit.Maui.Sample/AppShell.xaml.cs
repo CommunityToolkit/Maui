@@ -3,10 +3,12 @@ using CommunityToolkit.Maui.Sample.Pages.Behaviors;
 using CommunityToolkit.Maui.Sample.Pages.Converters;
 using CommunityToolkit.Maui.Sample.Pages.Extensions;
 using CommunityToolkit.Maui.Sample.Pages.Layouts;
+using CommunityToolkit.Maui.Sample.Pages.Views;
 using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
+using CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 namespace CommunityToolkit.Maui.Sample;
 
@@ -67,6 +69,11 @@ public partial class AppShell : Shell
 
 		// Add Layouts View Models
 		{ typeof(UniformItemsLayoutViewModel), (typeof(LayoutsGalleryPage), typeof(UniformItemsLayoutPage)) },
+
+		// Add Views View Models
+		{ typeof(MultiplePopupViewModel), (typeof(ViewsGalleryPage), typeof(MultiplePopupPage)) },
+		{ typeof(PopupAnchorViewModel), (typeof(ViewsGalleryPage), typeof(PopupAnchorPage)) },
+		{ typeof(PopupPositionViewModel), (typeof(ViewsGalleryPage), typeof(PopupPositionPage)) },
 	};
 
 	public AppShell()

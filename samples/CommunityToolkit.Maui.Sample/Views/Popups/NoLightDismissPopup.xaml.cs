@@ -2,7 +2,7 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample;
 
-public partial class NoLightDismissPopup
+public partial class NoLightDismissPopup : Popup
 {
 	public NoLightDismissPopup()
 	{
