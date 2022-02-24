@@ -89,7 +89,7 @@
 
   <ItemGroup>
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
-    <None Include="readme.txt" pack="true" PackagePath="." />
+    <None Include="ReadMe.txt" pack="true" PackagePath="." />
   </ItemGroup>
 
 </Project>
