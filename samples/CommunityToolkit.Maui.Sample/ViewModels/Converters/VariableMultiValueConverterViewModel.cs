@@ -2,16 +2,8 @@
 
 public class VariableMultiValueConverterViewModel : BaseViewModel
 {
-	bool isAllGroupSwitch1On = false;
-	bool isAllGroupSwitch2On = false;
-
-	bool isAnyGroupSwitch1On = false;
-	bool isAnyGroupSwitch2On = false;
-
-	bool isGreaterThanGroupSwitch1On = false;
-	bool isGreaterThanGroupSwitch2On = false;
-	bool isGreaterThanGroupSwitch3On = false;
-	bool isGreaterThanGroupSwitch4On = false;
+	bool isAllGroupSwitch1On, isAllGroupSwitch2On, isAnyGroupSwitch1On, isAnyGroupSwitch2On,
+		isGreaterThanGroupSwitch1On, isGreaterThanGroupSwitch2On, isGreaterThanGroupSwitch3On, isGreaterThanGroupSwitch4On;
 
 	public bool IsAllGroupSwitch1On
 	{
