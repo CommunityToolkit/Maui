@@ -18,125 +18,158 @@
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
         <ScrollView>
-            <VerticalStackLayout Spacing="4">
+            <Grid RowDefinitions="auto, auto, auto, 40, 36, 36, auto, auto, 40, 36, 36, auto, auto, 40, 36, 36, 36, 36"
+                  ColumnDefinitions="40, *"
+                  ColumnSpacing="12"
+                  RowSpacing="4">
                 <Label Text="The VariableMultiValueConverter is a converter that allows users to convert multiple bool value bindings to a single bool. It does this by enabling them to specify whether All, Any, None or a specific number of values are true as specified in ConditionType. This is useful when combined with MultiBinding."
-                       TextColor="{StaticResource NormalLabelTextColor}" />
+                       TextColor="{StaticResource NormalLabelTextColor}"
+                       Grid.ColumnSpan="2" />
 
                 <!-- The All Condition Type -->
                 <Label Text="The All Condition Type"
                        Style="{StaticResource label_section_header}"
-                       Margin="0, 8, 0, 0" />
+                       Margin="0, 8, 0, 0"
+                       Grid.Row="1"
+                       Grid.ColumnSpan="2" />
                 <Label Text="The box and label below will change when all the following switches are set to on."
-                       TextColor="{StaticResource NormalLabelTextColor}" />
-                <HorizontalStackLayout Spacing="12">
-                    <BoxView BackgroundColor="Red"
-                             HeightRequest="40"
-                             WidthRequest="40">
-                        <BoxView.Triggers>
-                            <DataTrigger TargetType="BoxView"
-                                         Value="true">
-                                <DataTrigger.Binding>
-                                    <MultiBinding Converter="{StaticResource AllTrueConverter}">
-                                        <Binding Path="IsAllGroupSwitch1On" />
-                                        <Binding Path="IsAllGroupSwitch2On" />
-                                    </MultiBinding>
-                                </DataTrigger.Binding>
-                                <Setter Property="BackgroundColor"
-                                        Value="Green" />
-                            </DataTrigger>
-                        </BoxView.Triggers>
-                    </BoxView>
-                    <Label>
-                        <Label.Text>
-                            <MultiBinding Converter="{StaticResource AllTrueConverter}">
-                                <Binding Path="IsAllGroupSwitch1On" />
-                                <Binding Path="IsAllGroupSwitch2On" />
-                            </MultiBinding>
-                        </Label.Text>
-                    </Label>
-                </HorizontalStackLayout>
-                <Switch IsToggled="{Binding IsAllGroupSwitch1On, Mode=TwoWay}" />
-                <Switch IsToggled="{Binding IsAllGroupSwitch2On, Mode=TwoWay}" />
+                       TextColor="{StaticResource NormalLabelTextColor}"
+                       Grid.Row="2"
+                       Grid.ColumnSpan="2" />
+                <BoxView BackgroundColor="Red"
+                         HeightRequest="40"
+                         WidthRequest="40"
+                         Grid.Row="3">
+                    <BoxView.Triggers>
+                        <DataTrigger TargetType="BoxView"
+                                     Value="true">
+                            <DataTrigger.Binding>
+                                <MultiBinding Converter="{StaticResource AllTrueConverter}">
+                                    <Binding Path="IsAllGroupSwitch1On" />
+                                    <Binding Path="IsAllGroupSwitch2On" />
+                                </MultiBinding>
+                            </DataTrigger.Binding>
+                            <Setter Property="BackgroundColor"
+                                    Value="Green" />
+                        </DataTrigger>
+                    </BoxView.Triggers>
+                </BoxView>
+                <Label Grid.Row="3"
+                       Grid.Column="1">
+                    <Label.Text>
+                        <MultiBinding Converter="{StaticResource AllTrueConverter}">
+                            <Binding Path="IsAllGroupSwitch1On" />
+                            <Binding Path="IsAllGroupSwitch2On" />
+                        </MultiBinding>
+                    </Label.Text>
+                </Label>
+                <Switch IsToggled="{Binding IsAllGroupSwitch1On, Mode=TwoWay}"
+                        Grid.Row="4"
+                        Grid.ColumnSpan="2" />
+                <Switch IsToggled="{Binding IsAllGroupSwitch2On, Mode=TwoWay}"
+                        Grid.Row="5"
+                        Grid.ColumnSpan="2" />
 
                 <!-- The Any Condition Type -->
                 <Label Text="The Any Condition Type"
                        Style="{StaticResource label_section_header}"
-                       Margin="0, 8, 0, 0" />
+                       Margin="0, 8, 0, 0"
+                       Grid.Row="6"
+                       Grid.ColumnSpan="2" />
                 <Label Text="The box and label below will change when any of the following switches are set to on."
-                       TextColor="{StaticResource NormalLabelTextColor}" />
-                <HorizontalStackLayout Spacing="12">
-                    <BoxView BackgroundColor="Red"
-                             HeightRequest="40"
-                             WidthRequest="40">
-                        <BoxView.Triggers>
-                            <DataTrigger TargetType="BoxView"
-                                         Value="true">
-                                <DataTrigger.Binding>
-                                    <MultiBinding Converter="{StaticResource AnyTrueConverter}">
-                                        <Binding Path="IsAnyGroupSwitch1On" />
-                                        <Binding Path="IsAnyGroupSwitch2On" />
-                                    </MultiBinding>
-                                </DataTrigger.Binding>
-                                <Setter Property="BackgroundColor"
-                                        Value="Green" />
-                            </DataTrigger>
-                        </BoxView.Triggers>
-                    </BoxView>
-                    <Label>
-                        <Label.Text>
-                            <MultiBinding Converter="{StaticResource AnyTrueConverter}">
-                                <Binding Path="IsAnyGroupSwitch1On" />
-                                <Binding Path="IsAnyGroupSwitch2On" />
-                            </MultiBinding>
-                        </Label.Text>
-                    </Label>
-                </HorizontalStackLayout>
-                <Switch IsToggled="{Binding IsAnyGroupSwitch1On, Mode=TwoWay}" />
-                <Switch IsToggled="{Binding IsAnyGroupSwitch2On, Mode=TwoWay}" />
+                       TextColor="{StaticResource NormalLabelTextColor}"
+                       Grid.Row="7"
+                       Grid.ColumnSpan="2" />
+                <BoxView BackgroundColor="Red"
+                         HeightRequest="40"
+                         WidthRequest="40"
+                         Grid.Row="8">
+                    <BoxView.Triggers>
+                        <DataTrigger TargetType="BoxView"
+                                     Value="true">
+                            <DataTrigger.Binding>
+                                <MultiBinding Converter="{StaticResource AnyTrueConverter}">
+                                    <Binding Path="IsAnyGroupSwitch1On" />
+                                    <Binding Path="IsAnyGroupSwitch2On" />
+                                </MultiBinding>
+                            </DataTrigger.Binding>
+                            <Setter Property="BackgroundColor"
+                                    Value="Green" />
+                        </DataTrigger>
+                    </BoxView.Triggers>
+                </BoxView>
+                <Label Grid.Row="8"
+                       Grid.Column="1">
+                    <Label.Text>
+                        <MultiBinding Converter="{StaticResource AnyTrueConverter}">
+                            <Binding Path="IsAnyGroupSwitch1On" />
+                            <Binding Path="IsAnyGroupSwitch2On" />
+                        </MultiBinding>
+                    </Label.Text>
+                </Label>
+                <Switch IsToggled="{Binding IsAnyGroupSwitch1On, Mode=TwoWay}"
+                        Grid.Row="9"
+                        Grid.ColumnSpan="2" />
+                <Switch IsToggled="{Binding IsAnyGroupSwitch2On, Mode=TwoWay}"
+                        Grid.Row="10"
+                        Grid.ColumnSpan="2" />
 
                 <!-- The Greater Than Condition Type -->
                 <Label Text="The Greater Than Condition Type"
                        Style="{StaticResource label_section_header}"
-                       Margin="0, 8, 0, 0" />
+                       Margin="0, 8, 0, 0"
+                       Grid.Row="11"
+                       Grid.ColumnSpan="2" />
                 <Label Text="The box and label below will change when more than two of the following switches are set to on."
-                       TextColor="{StaticResource NormalLabelTextColor}" />
-                <HorizontalStackLayout Spacing="12">
-                    <BoxView BackgroundColor="Red"
-                             HeightRequest="40"
-                             WidthRequest="40">
-                        <BoxView.Triggers>
-                            <DataTrigger TargetType="BoxView"
-                                         Value="true">
-                                <DataTrigger.Binding>
-                                    <MultiBinding Converter="{StaticResource GreaterThanConverter}">
-                                        <Binding Path="IsGreaterThanGroupSwitch1On" />
-                                        <Binding Path="IsGreaterThanGroupSwitch2On" />
-                                        <Binding Path="IsGreaterThanGroupSwitch3On" />
-                                        <Binding Path="IsGreaterThanGroupSwitch4On" />
-                                    </MultiBinding>
-                                </DataTrigger.Binding>
-                                <Setter Property="BackgroundColor"
-                                        Value="Green" />
-                            </DataTrigger>
-                        </BoxView.Triggers>
-                    </BoxView>
-                    <Label>
-                        <Label.Text>
-                            <MultiBinding Converter="{StaticResource GreaterThanConverter}">
-                                <Binding Path="IsGreaterThanGroupSwitch1On" />
-                                <Binding Path="IsGreaterThanGroupSwitch2On" />
-                                <Binding Path="IsGreaterThanGroupSwitch3On" />
-                                <Binding Path="IsGreaterThanGroupSwitch4On" />
-                            </MultiBinding>
-                        </Label.Text>
-                    </Label>
-                </HorizontalStackLayout>
-                <Switch IsToggled="{Binding IsGreaterThanGroupSwitch1On, Mode=TwoWay}" />
-                <Switch IsToggled="{Binding IsGreaterThanGroupSwitch2On, Mode=TwoWay}" />
-                <Switch IsToggled="{Binding IsGreaterThanGroupSwitch3On, Mode=TwoWay}" />
-                <Switch IsToggled="{Binding IsGreaterThanGroupSwitch4On, Mode=TwoWay}" />
+                       TextColor="{StaticResource NormalLabelTextColor}"
+                       Grid.Row="12"
+                       Grid.ColumnSpan="2" />
 
-            </VerticalStackLayout>
+                <BoxView BackgroundColor="Red"
+                         HeightRequest="40"
+                         WidthRequest="40"
+                         Grid.Row="13">
+                    <BoxView.Triggers>
+                        <DataTrigger TargetType="BoxView"
+                                     Value="true">
+                            <DataTrigger.Binding>
+                                <MultiBinding Converter="{StaticResource GreaterThanConverter}">
+                                    <Binding Path="IsGreaterThanGroupSwitch1On" />
+                                    <Binding Path="IsGreaterThanGroupSwitch2On" />
+                                    <Binding Path="IsGreaterThanGroupSwitch3On" />
+                                    <Binding Path="IsGreaterThanGroupSwitch4On" />
+                                </MultiBinding>
+                            </DataTrigger.Binding>
+                            <Setter Property="BackgroundColor"
+                                    Value="Green" />
+                        </DataTrigger>
+                    </BoxView.Triggers>
+                </BoxView>
+                <Label Grid.Row="13"
+                       Grid.Column="1">
+                    <Label.Text>
+                        <MultiBinding Converter="{StaticResource GreaterThanConverter}">
+                            <Binding Path="IsGreaterThanGroupSwitch1On" />
+                            <Binding Path="IsGreaterThanGroupSwitch2On" />
+                            <Binding Path="IsGreaterThanGroupSwitch3On" />
+                            <Binding Path="IsGreaterThanGroupSwitch4On" />
+                        </MultiBinding>
+                    </Label.Text>
+                </Label>
+                <Switch IsToggled="{Binding IsGreaterThanGroupSwitch1On, Mode=TwoWay}"
+                        Grid.Row="14"
+                        Grid.ColumnSpan="2" />
+                <Switch IsToggled="{Binding IsGreaterThanGroupSwitch2On, Mode=TwoWay}"
+                        Grid.Row="15"
+                        Grid.ColumnSpan="2" />
+                <Switch IsToggled="{Binding IsGreaterThanGroupSwitch3On, Mode=TwoWay}"
+                        Grid.Row="16"
+                        Grid.ColumnSpan="2" />
+                <Switch IsToggled="{Binding IsGreaterThanGroupSwitch4On, Mode=TwoWay}"
+                        Grid.Row="17"
+                        Grid.ColumnSpan="2" />
+
+            </Grid>
         </ScrollView>
     </pages:BasePage.Content>
 </pages:BasePage>
