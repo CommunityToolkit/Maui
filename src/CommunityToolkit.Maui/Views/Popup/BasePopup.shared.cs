@@ -11,18 +11,18 @@ public abstract class BasePopup : Element, IPopup
 {
 	readonly WeakEventManager dismissWeakEventManager = new();
 	readonly WeakEventManager openedWeakEventManager = new();
+	readonly Lazy<PlatformConfigurationRegistry<BasePopup>> platformConfigurationRegistry;
 
 	/// <summary>
 	/// Instantiates a new instance of <see cref="BasePopup"/>.
 	/// </summary>
 	protected BasePopup()
 	{
+		platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<BasePopup>>(() => new(this));
+
 		VerticalOptions = LayoutAlignment.Center;
 		HorizontalOptions = LayoutAlignment.Center;
-		platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<BasePopup>>(() => new(this));
 	}
-
-	readonly Lazy<PlatformConfigurationRegistry<BasePopup>> platformConfigurationRegistry;
 
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="Content"/> property.
@@ -135,7 +135,6 @@ public abstract class BasePopup : Element, IPopup
 		set => SetValue(IsLightDismissEnabledProperty, value);
 	}
 
-
 	/// <summary>
 	/// Dismissed event is invoked when the popup is closed.
 	/// </summary>
@@ -161,6 +160,12 @@ public abstract class BasePopup : Element, IPopup
 	IView? IPopup.Content => Content;
 
 	/// <summary>
+	/// Invokes the <see cref="Opened"/> event.
+	/// </summary>
+	internal virtual void OnOpened() =>
+		openedWeakEventManager.HandleEvent(this, PopupOpenedEventArgs.Empty, nameof(Opened));
+
+	/// <summary>
 	/// Invokes the <see cref="Dismissed"/> event.
 	/// </summary>
 	/// <param name="result">
@@ -171,12 +176,6 @@ public abstract class BasePopup : Element, IPopup
 		((IPopup)this).OnDismissed(result);
 		dismissWeakEventManager.HandleEvent(this, new PopupDismissedEventArgs(result, false), nameof(Dismissed));
 	}
-
-	/// <summary>
-	/// Invokes the <see cref="Opened"/> event.
-	/// </summary>
-	internal virtual void OnOpened() =>
-		openedWeakEventManager.HandleEvent(this, PopupOpenedEventArgs.Empty, nameof(Opened));
 
 	/// <summary>
 	/// Invoked when the popup is light dismissed. In other words when the
@@ -200,24 +199,13 @@ public abstract class BasePopup : Element, IPopup
 
 	static void OnContentChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		if (bindable is BasePopup popup)
-		{
-			popup.OnBindingContextChanged();
-		}
+		var popup = (BasePopup)bindable;
+		popup.OnBindingContextChanged();
 	}
 
-	void IPopup.OnDismissed(object? result)
-	{
-		Handler.Invoke(nameof(IPopup.OnDismissed), result);
-	}
+	void IPopup.OnDismissed(object? result) => Handler.Invoke(nameof(IPopup.OnDismissed), result);
 
-	void IPopup.OnOpened()
-	{
-		OnOpened();
-	}
+	void IPopup.OnOpened() => OnOpened();
 
-	void IPopup.LightDismiss()
-	{
-		LightDismiss();
-	}
+	void IPopup.LightDismiss() => LightDismiss();
 }
