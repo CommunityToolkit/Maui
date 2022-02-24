@@ -10,13 +10,16 @@
     <Grid>
         <Frame
             BackgroundColor="Red"
-            CornerRadius="{OnPlatform Android='50',
-                                      UWP='50',
-                                      iOS='25',
-                                      MacCatalyst='25'}"
-            HeightRequest="{OnPlatform Android='100',
-                                       UWP='50'}"
-            WidthRequest="{OnPlatform Android='100',
-                                      UWP='50'}" />
+
+            HorizontalOptions="Center"
+            VerticalOptions="Center"
+
+            CornerRadius="{OnPlatform Default='25',
+                                      Android='50',
+                                      UWP='50'}"
+            HeightRequest="{OnPlatform Default='50',
+                                       Android='100'}"
+            WidthRequest="{OnPlatform Default='50',
+                                      Android='100'}" />
     </Grid>
 </mct:Popup>
