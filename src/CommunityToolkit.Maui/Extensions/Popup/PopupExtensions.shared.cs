@@ -1,17 +1,26 @@
-﻿
-using System.Threading.Tasks;
-using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Platform;
 
-namespace CommunityToolkit.Maui.Extensions;
+namespace Microsoft.Maui.Controls;
 
 /// <summary>
-/// Extension methods for <see cref="INavigation"/>.
+/// Extension methods for <see cref="Popup"/>.
 /// </summary>
-public static partial class NavigationExtensions
+public static partial class PopupExtensions
 {
+	/// <summary>
+	/// Displays a popup.
+	/// </summary>
+	/// <param name="page">
+	/// The current <see cref="Page"/>.
+	/// </param>
+	/// <param name="popup">
+	/// The <see cref="BasePopup"/> to display.
+	/// </param>
+	public static void ShowPopup<TPopup>(this Page page, TPopup popup) where TPopup : BasePopup
+		=> ShowPopup(page.Navigation, popup);
+
 	/// <summary>
 	/// Displays a popup.
 	/// </summary>
@@ -21,7 +30,7 @@ public static partial class NavigationExtensions
 	/// <param name="popup">
 	/// The <see cref="BasePopup"/> to display.
 	/// </param>
-	public static void ShowPopup(this INavigation navigation, BasePopup popup)
+	public static void ShowPopup<TPopup>(this INavigation navigation, TPopup popup) where TPopup : BasePopup
 	{
 #if WINDOWS
 		PlatformShowPopup(popup, GetMauiContext(navigation));
@@ -30,6 +39,21 @@ public static partial class NavigationExtensions
 #endif
 
 	}
+
+	/// <summary>
+	/// Displays a popup and returns a result.
+	/// </summary>
+	/// <param name="page">
+	/// The current <see cref="Page"/>.
+	/// </param>
+	/// <param name="popup">
+	/// The <see cref="Popup"/> to display.
+	/// </param>
+	/// <returns>
+	/// A task that will complete once the <see cref="Popup"/> is dismissed.
+	/// </returns>
+	public static Task<object?> ShowPopupAsync<TPopup>(this Page page, TPopup popup) where TPopup : Popup
+		=> ShowPopupAsync(page.Navigation, popup);
 
 	/// <summary>
 	/// Displays a popup and returns a result.
@@ -43,7 +67,7 @@ public static partial class NavigationExtensions
 	/// <returns>
 	/// A task that will complete once the <see cref="Popup"/> is dismissed.
 	/// </returns>
-	public static Task<object?> ShowPopupAsync(this INavigation navigation, Popup popup)
+	public static Task<object?> ShowPopupAsync<TPopup>(this INavigation navigation, TPopup popup) where TPopup : Popup
 	{
 #if WINDOWS
 		return PlatformShowPopupAsync(popup, GetMauiContext(navigation));
@@ -65,11 +89,14 @@ public static partial class NavigationExtensions
 	{
 		return (Shell.Current is null ?
 			navigation.NavigationStack[0].Handler?.MauiContext
-			: Shell.Current.Handler?.MauiContext) ?? throw new NullReferenceException(nameof(MauiContext));
+			: Shell.Current.Handler?.MauiContext) ?? throw new InvalidOperationException("Could locate MauiContext");
 	}
 }
 
 #if !(ANDROID || IOS || MACCATALYST || WINDOWS)
+/// <summary>
+/// Extension methods for <see cref="Popup"/>.
+/// </summary>
 public static partial class NavigationExtensions
 {
 	static void PlatformShowPopup(BasePopup popup, IMauiContext mauiContext) =>

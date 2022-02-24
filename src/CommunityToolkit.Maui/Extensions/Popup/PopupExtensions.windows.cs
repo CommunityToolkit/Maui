@@ -5,7 +5,7 @@ using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Extensions;
 
-public static partial class NavigationExtensions
+public static partial class PopupExtensions
 {
 	static void PlatformShowPopup(BasePopup popup, IMauiContext mauiContext)
 	{
