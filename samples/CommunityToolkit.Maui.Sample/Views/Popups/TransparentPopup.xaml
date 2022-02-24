@@ -12,7 +12,8 @@
             BackgroundColor="Red"
             CornerRadius="{OnPlatform Android='50',
                                       UWP='50',
-                                      iOS='25'}"
+                                      iOS='25',
+                                      MacCatalyst='25'}"
             HeightRequest="{OnPlatform Android='100',
                                        UWP='50'}"
             WidthRequest="{OnPlatform Android='100',
