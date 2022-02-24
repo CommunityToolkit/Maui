@@ -2,7 +2,7 @@
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Platform;
 
-namespace Microsoft.Maui.Controls;
+namespace CommunityToolkit.Maui.Extensions;
 
 /// <summary>
 /// Extension methods for <see cref="Popup"/>.

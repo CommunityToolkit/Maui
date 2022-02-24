@@ -5,6 +5,9 @@ using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Extensions;
 
+/// <summary>
+/// Extension methods for <see cref="Popup"/>.
+/// </summary>
 public static partial class PopupExtensions
 {
 	static void PlatformShowPopup(BasePopup popup, IMauiContext mauiContext)
