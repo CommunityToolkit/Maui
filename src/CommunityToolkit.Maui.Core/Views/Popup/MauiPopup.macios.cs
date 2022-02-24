@@ -3,12 +3,12 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using UIKit;
 
-namespace CommunityToolkit.Core.Platform;
+namespace CommunityToolkit.Core.Views;
 
 /// <summary>
 /// The navite implementation of Popup control.
 /// </summary>
-public class MCTPopup : UIViewController
+public class MauiPopup : UIViewController
 {
 	readonly IMauiContext mauiContext;
 
@@ -25,11 +25,11 @@ public class MCTPopup : UIViewController
 	internal UIViewController? ViewController { get; private set; }
 
 	/// <summary>
-	/// Constructor of <see cref="MCTPopup"/>.
+	/// Constructor of <see cref="MauiPopup"/>.
 	/// </summary>
 	/// <param name="mauiContext">An instace of <see cref="IMauiContext"/>.</param>
 	/// <exception cref="ArgumentNullException">If <paramref name="mauiContext"/> is null an exception will be thrown. </exception>
-	public MCTPopup(IMauiContext mauiContext)
+	public MauiPopup(IMauiContext mauiContext)
 	{
 		this.mauiContext = mauiContext ?? throw new ArgumentNullException(nameof(mauiContext));
 	}
@@ -137,7 +137,7 @@ public class MCTPopup : UIViewController
 	}
 
 	/// <summary>
-	/// Method to CleanUp the resources of the <see cref="MCTPopup"/>.
+	/// Method to CleanUp the resources of the <see cref="MauiPopup"/>.
 	/// </summary>
 	public void CleanUp()
 	{

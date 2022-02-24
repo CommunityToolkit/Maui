@@ -1,10 +1,10 @@
-﻿using CommunityToolkit.Core.Platform;
+﻿using CommunityToolkit.Core.Views;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Core.Handlers;
 
-public partial class PopupViewHandler : ElementHandler<IPopup, MCTPopup>
+public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 {
 	/// <summary>
 	/// Action that's triggered when the Popup is Dismissed.
@@ -82,20 +82,20 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MCTPopup>
 	}
 
 	/// <inheritdoc/>
-	protected override void DisconnectHandler(MCTPopup nativeView)
+	protected override void DisconnectHandler(MauiPopup nativeView)
 	{
 		nativeView.CleanUp();
 	}
 
 	/// <inheritdoc/>
-	protected override MCTPopup CreateNativeElement()
+	protected override MauiPopup CreateNativeElement()
 	{
 		ArgumentNullException.ThrowIfNull(MauiContext);
-		return new MCTPopup(MauiContext);
+		return new MauiPopup(MauiContext);
 	}
 
 	/// <inheritdoc/>
-	protected override void ConnectHandler(MCTPopup nativeView)
+	protected override void ConnectHandler(MauiPopup nativeView)
 	{
 		nativeView.SetElement(VirtualView);
 		base.ConnectHandler(nativeView);

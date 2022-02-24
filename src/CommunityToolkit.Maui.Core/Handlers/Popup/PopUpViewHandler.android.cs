@@ -1,12 +1,12 @@
 ﻿using System;
-using CommunityToolkit.Core.Platform;
+using CommunityToolkit.Core.Views;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Handlers;
 using AView = Android.Views.View;
 
 namespace CommunityToolkit.Core.Handlers;
 
-public partial class PopupViewHandler : ElementHandler<IPopup, MCTPopup>
+public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 {
 	internal AView? Container { get; set; }
 
@@ -95,16 +95,16 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MCTPopup>
 	}
 
 	/// <inheritdoc/>
-	protected override MCTPopup CreateNativeElement()
+	protected override MauiPopup CreateNativeElement()
 	{
 		_ = MauiContext ?? throw new NullReferenceException("MauiContext is null, please check your MauiApplication.");
 		_ = MauiContext.Context ?? throw new NullReferenceException("Android Context is null, please check your MauiApplication.");
 
-		return new MCTPopup(MauiContext.Context, MauiContext);
+		return new MauiPopup(MauiContext.Context, MauiContext);
 	}
 
 	/// <inheritdoc/>
-	protected override void ConnectHandler(MCTPopup nativeView)
+	protected override void ConnectHandler(MauiPopup nativeView)
 	{
 		Container = nativeView.SetElement(VirtualView);
 	}
@@ -116,7 +116,7 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MCTPopup>
 	}
 
 	/// <inheritdoc/>
-	protected override void DisconnectHandler(MCTPopup nativeView)
+	protected override void DisconnectHandler(MauiPopup nativeView)
 	{
 		nativeView.Dispose();
 	}

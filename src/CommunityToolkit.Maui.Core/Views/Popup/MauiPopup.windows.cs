@@ -9,12 +9,12 @@ using XamlStyle = Microsoft.UI.Xaml.Style;
 using WindowsThickness = Microsoft.UI.Xaml.Thickness;
 using System.Diagnostics;
 
-namespace CommunityToolkit.Core.Platform;
+namespace CommunityToolkit.Core.Views;
 
 /// <summary>
 /// The navite implementation of Popup control.
 /// </summary>
-public class MCTPopup : Flyout
+public class MauiPopup : Flyout
 {
 	const double defaultBorderThickness = 2;
 	const double defaultSize = 600;
@@ -28,11 +28,11 @@ public class MCTPopup : Flyout
 	public IPopup? VirtualView { get; private set; }
 
 	/// <summary>
-	/// Constructor of <see cref="MCTPopup"/>.
+	/// Constructor of <see cref="MauiPopup"/>.
 	/// </summary>
 	/// <param name="mauiContext">An instace of <see cref="IMauiContext"/>.</param>
 	/// <exception cref="ArgumentNullException">If <paramref name="mauiContext"/> is null an exception will be thrown. </exception>
-	public MCTPopup(IMauiContext mauiContext)
+	public MauiPopup(IMauiContext mauiContext)
 	{
 		this.mauiContext = mauiContext ?? throw new ArgumentNullException(nameof(mauiContext));
 	}
@@ -238,7 +238,7 @@ public class MCTPopup : Flyout
 	}
 
 	/// <summary>
-	/// Method to CleanUp the resources of the <see cref="MCTPopup"/>.
+	/// Method to CleanUp the resources of the <see cref="MauiPopup"/>.
 	/// </summary>
 	public void CleanUp()
 	{

@@ -3,7 +3,7 @@ using CoreGraphics;
 using Microsoft.Maui.Platform;
 using UIKit;
 
-namespace CommunityToolkit.Core.Platform;
+namespace CommunityToolkit.Core.Views;
 /// <summary>
 /// Extension class where Helper methods for Popup lives.
 /// </summary>
@@ -12,9 +12,9 @@ public static class PopupExtensions
 	/// <summary>
 	/// Method to update the <see cref="IPopup.Size"/> of the Popup.
 	/// </summary>
-	/// <param name="popup">An instance of <see cref="MCTPopup"/>.</param>
+	/// <param name="popup">An instance of <see cref="MauiPopup"/>.</param>
 	/// <param name="basePopup">An istance of <see cref="IPopup"/>.</param>
-	public static void SetSize(this MCTPopup popup, in IPopup basePopup)
+	public static void SetSize(this MauiPopup popup, in IPopup basePopup)
 	{
 		if (!basePopup.Size.IsZero)
 		{
@@ -25,9 +25,9 @@ public static class PopupExtensions
 	/// <summary>
 	/// Method to update the <see cref="IPopup.Color"/> of the Popup.
 	/// </summary>
-	/// <param name="popup">An instance of <see cref="MCTPopup"/>.</param>
+	/// <param name="popup">An instance of <see cref="MauiPopup"/>.</param>
 	/// <param name="basePopup">An istance of <see cref="IPopup"/>.</param>
-	public static void SetBackgroundColor(this MCTPopup popup, in IPopup basePopup)
+	public static void SetBackgroundColor(this MauiPopup popup, in IPopup basePopup)
 	{
 		if (popup.Control is null)
 		{
@@ -40,9 +40,9 @@ public static class PopupExtensions
 	/// <summary>
 	/// Method to update the <see cref="IPopup.IsLightDismissEnabled"/> property of the Popup.
 	/// </summary>
-	/// <param name="popup">An instance of <see cref="MCTPopup"/>.</param>
+	/// <param name="popup">An instance of <see cref="MauiPopup"/>.</param>
 	/// <param name="basePopup">An istance of <see cref="IPopup"/>.</param>
-	public static void SetLightDismiss(this MCTPopup popup, in IPopup basePopup)
+	public static void SetLightDismiss(this MauiPopup popup, in IPopup basePopup)
 	{
 			popup.ModalInPresentation = !basePopup.IsLightDismissEnabled;
 	}
@@ -50,9 +50,9 @@ public static class PopupExtensions
 	/// <summary>
 	/// Method to update the layout of the Popup and <see cref="IPopup.Content"/>.
 	/// </summary>
-	/// <param name="popup">An instance of <see cref="MCTPopup"/>.</param>
+	/// <param name="popup">An instance of <see cref="MauiPopup"/>.</param>
 	/// <param name="basepopup">An istance of <see cref="IPopup"/>.</param>
-	public static void SetLayout(this MCTPopup popup, in IPopup basepopup)
+	public static void SetLayout(this MauiPopup popup, in IPopup basepopup)
 	{
 		var presentationController = popup.PresentationController;
 		var preferredContentSize = popup.PreferredContentSize;

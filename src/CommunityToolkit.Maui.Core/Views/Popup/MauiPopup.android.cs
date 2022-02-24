@@ -5,12 +5,12 @@ using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
 
-namespace CommunityToolkit.Core.Platform;
+namespace CommunityToolkit.Core.Views;
 
 /// <summary>
 /// The navite implementation of Popup control.
 /// </summary>
-public class MCTPopup : Dialog, IDialogInterfaceOnCancelListener
+public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 {
 	AView? container;
 
@@ -22,12 +22,12 @@ public class MCTPopup : Dialog, IDialogInterfaceOnCancelListener
 	public IPopup? VirtualView { get; private set; }
 
 	/// <summary>
-	/// Constructor of <see cref="MCTPopup"/>.
+	/// Constructor of <see cref="MauiPopup"/>.
 	/// </summary>
 	/// <param name="context">An instance of <see cref="Context"/>.</param>
 	/// <param name="mauiContext">An instace of <see cref="IMauiContext"/>.</param>
 	/// <exception cref="ArgumentNullException">If <paramref name="mauiContext"/> is null an exception will be thrown. </exception>
-	public MCTPopup(Context context, IMauiContext mauiContext)
+	public MauiPopup(Context context, IMauiContext mauiContext)
 		: base(context)
 	{
 		this.mauiContext = mauiContext ?? throw new ArgumentNullException(nameof(mauiContext));
@@ -83,7 +83,7 @@ public class MCTPopup : Dialog, IDialogInterfaceOnCancelListener
 	}
 
 	/// <summary>
-	/// Method to CleanUp the resources of the <see cref="MCTPopup"/>.
+	/// Method to CleanUp the resources of the <see cref="MauiPopup"/>.
 	/// </summary>
 	public void ClenaUp()
 	{

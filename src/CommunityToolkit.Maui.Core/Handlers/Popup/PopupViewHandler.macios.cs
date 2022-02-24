@@ -1,9 +1,9 @@
-﻿using CommunityToolkit.Core.Platform;
+﻿using CommunityToolkit.Core.Views;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Core.Handlers;
-public partial class PopupViewHandler : ElementHandler<IPopup, MCTPopup>
+public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 {
 	/// <summary>
 	/// Action that's triggered when the Popup is Dismissed.
@@ -46,7 +46,7 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MCTPopup>
 	/// <param name="result">The result that should return from this Popup.</param>
 	public static void MapOnLightDismiss(PopupViewHandler handler, IPopup view, object? result)
 	{
-		if (handler.NativeView is not MCTPopup popupRenderer)
+		if (handler.NativeView is not MauiPopup popupRenderer)
 		{
 			return;
 		}
@@ -101,20 +101,20 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MCTPopup>
 	}
 
 	/// <inheritdoc/>
-	protected override void ConnectHandler(MCTPopup nativeView)
+	protected override void ConnectHandler(MauiPopup nativeView)
 	{
 		base.ConnectHandler(nativeView);
 		nativeView.SetElement(VirtualView);
 	}
 
 	/// <inheritdoc/>
-	protected override MCTPopup CreateNativeElement()
+	protected override MauiPopup CreateNativeElement()
 	{
-		return new MCTPopup(MauiContext ?? throw new NullReferenceException(nameof(MauiContext)));
+		return new MauiPopup(MauiContext ?? throw new NullReferenceException(nameof(MauiContext)));
 	}
 
 	/// <inheritdoc/>
-	protected override void DisconnectHandler(MCTPopup nativeView)
+	protected override void DisconnectHandler(MauiPopup nativeView)
 	{
 		base.DisconnectHandler(nativeView);
 		nativeView?.CleanUp();
