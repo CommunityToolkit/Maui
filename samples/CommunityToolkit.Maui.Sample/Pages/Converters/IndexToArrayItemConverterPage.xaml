@@ -27,41 +27,41 @@
             <Label Text="The IndexToArrayItemConverter is a converter that allows users to convert a int value binding to an item in an array. The int value being data bound represents the indexer used to access the array. The array is passed in through the ConverterParameter."
                    VerticalOptions="FillAndExpand"
                    HorizontalOptions="FillAndExpand" 
-                   GridLayout.ColumnSpan="2"/>
+                   Grid.ColumnSpan="2"/>
 
             <Label Text="Change SelectedIndex to change SelectedItem"
                    FontAttributes="Italic" 
                    Margin="0,20,0,0"
-                   GridLayout.Row="1"
-                   GridLayout.ColumnSpan="2"/>
+                   Grid.Row="1"
+                   Grid.ColumnSpan="2"/>
 
             <Stepper x:Name="Stepper" 
                      Minimum="0" 
                      Maximum="7"
                      Value="{Binding SelectedIndex}"
                      Increment="1"
-                     GridLayout.Column="0"
-                     GridLayout.Row="2"/>
+                     Grid.Column="0"
+                     Grid.Row="2"/>
 
             <Label Text="{Binding Source={x:Reference Stepper},
                                 Path=Value, StringFormat='Selected index: {0}'}"
                     VerticalOptions="CenterAndExpand"
                     FontAttributes="Bold"
-                    GridLayout.Row="2"
-                    GridLayout.Column="1"/>
+                    Grid.Row="2"
+                    Grid.Column="1"/>
 
             <Label Text="Change SelectedItem to change SelectedIndex" 
                    Margin="0,20,0,0"
                    FontAttributes="Italic"
-                   GridLayout.Row="3"
-                   GridLayout.ColumnSpan="2"/>
+                   Grid.Row="3"
+                   Grid.ColumnSpan="2"/>
             
             <CollectionView
                 SelectionMode="Single"
                 SelectedItem="{Binding SelectedIndex, Converter={StaticResource IndexToArrayItemConverter}, ConverterParameter={StaticResource StringArray}}"
                 ItemsSource="{StaticResource StringArray}"
-                GridLayout.Row="4"
-                GridLayout.ColumnSpan="2">
+                Grid.Row="4"
+                Grid.ColumnSpan="2">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <ContentView>
