@@ -1,14 +1,175 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<pages:BasePage 
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.VariableMultiValueConverterPage">
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
+                xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.VariableMultiValueConverterPage"
+                x:TypeArguments="vm:VariableMultiValueConverterViewModel"
+                x:DataType="vm:VariableMultiValueConverterViewModel">
+    <pages:BasePage.Resources>
+        <mct:VariableMultiValueConverter x:Key="AllTrueConverter"
+                                         ConditionType="All" />
+        <mct:VariableMultiValueConverter x:Key="AnyTrueConverter"
+                                         ConditionType="Any" />
+        <mct:VariableMultiValueConverter x:Key="GreaterThanConverter"
+                                         ConditionType="GreaterThan"
+                                         Count="2" />
+    </pages:BasePage.Resources>
     <pages:BasePage.Content>
-        <VerticalStackLayout>
-            <Label Text="VariableMultiValueConverter"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
-        </VerticalStackLayout>
+        <ScrollView>
+            <Grid RowDefinitions="auto, auto, auto, 40, 36, 36, auto, auto, 40, 36, 36, auto, auto, 40, 36, 36, 36, 36"
+                  ColumnDefinitions="40, *"
+                  ColumnSpacing="12"
+                  RowSpacing="4">
+                <Label Text="The VariableMultiValueConverter is a converter that allows users to convert multiple bool value bindings to a single bool. It does this by enabling them to specify whether All, Any, None or a specific number of values are true as specified in ConditionType. This is useful when combined with MultiBinding."
+                       TextColor="{StaticResource NormalLabelTextColor}"
+                       Grid.ColumnSpan="2" />
+
+                <!-- The All Condition Type -->
+                <Label Text="The All Condition Type"
+                       Style="{StaticResource label_section_header}"
+                       Margin="0, 8, 0, 0"
+                       Grid.Row="1"
+                       Grid.ColumnSpan="2" />
+                <Label Text="The box and label below will change when all the following switches are set to on."
+                       TextColor="{StaticResource NormalLabelTextColor}"
+                       Grid.Row="2"
+                       Grid.ColumnSpan="2" />
+                <BoxView BackgroundColor="Red"
+                         HeightRequest="40"
+                         WidthRequest="40"
+                         Grid.Row="3">
+                    <BoxView.Triggers>
+                        <DataTrigger TargetType="BoxView"
+                                     Value="true">
+                            <DataTrigger.Binding>
+                                <MultiBinding Converter="{StaticResource AllTrueConverter}">
+                                    <Binding Path="IsAllGroupSwitch1On" />
+                                    <Binding Path="IsAllGroupSwitch2On" />
+                                </MultiBinding>
+                            </DataTrigger.Binding>
+                            <Setter Property="BackgroundColor"
+                                    Value="Green" />
+                        </DataTrigger>
+                    </BoxView.Triggers>
+                </BoxView>
+                <Label Grid.Row="3"
+                       Grid.Column="1">
+                    <Label.Text>
+                        <MultiBinding Converter="{StaticResource AllTrueConverter}">
+                            <Binding Path="IsAllGroupSwitch1On" />
+                            <Binding Path="IsAllGroupSwitch2On" />
+                        </MultiBinding>
+                    </Label.Text>
+                </Label>
+                <Switch IsToggled="{Binding IsAllGroupSwitch1On, Mode=TwoWay}"
+                        Grid.Row="4"
+                        Grid.ColumnSpan="2" />
+                <Switch IsToggled="{Binding IsAllGroupSwitch2On, Mode=TwoWay}"
+                        Grid.Row="5"
+                        Grid.ColumnSpan="2" />
+
+                <!-- The Any Condition Type -->
+                <Label Text="The Any Condition Type"
+                       Style="{StaticResource label_section_header}"
+                       Margin="0, 8, 0, 0"
+                       Grid.Row="6"
+                       Grid.ColumnSpan="2" />
+                <Label Text="The box and label below will change when any of the following switches are set to on."
+                       TextColor="{StaticResource NormalLabelTextColor}"
+                       Grid.Row="7"
+                       Grid.ColumnSpan="2" />
+                <BoxView BackgroundColor="Red"
+                         HeightRequest="40"
+                         WidthRequest="40"
+                         Grid.Row="8">
+                    <BoxView.Triggers>
+                        <DataTrigger TargetType="BoxView"
+                                     Value="true">
+                            <DataTrigger.Binding>
+                                <MultiBinding Converter="{StaticResource AnyTrueConverter}">
+                                    <Binding Path="IsAnyGroupSwitch1On" />
+                                    <Binding Path="IsAnyGroupSwitch2On" />
+                                </MultiBinding>
+                            </DataTrigger.Binding>
+                            <Setter Property="BackgroundColor"
+                                    Value="Green" />
+                        </DataTrigger>
+                    </BoxView.Triggers>
+                </BoxView>
+                <Label Grid.Row="8"
+                       Grid.Column="1">
+                    <Label.Text>
+                        <MultiBinding Converter="{StaticResource AnyTrueConverter}">
+                            <Binding Path="IsAnyGroupSwitch1On" />
+                            <Binding Path="IsAnyGroupSwitch2On" />
+                        </MultiBinding>
+                    </Label.Text>
+                </Label>
+                <Switch IsToggled="{Binding IsAnyGroupSwitch1On, Mode=TwoWay}"
+                        Grid.Row="9"
+                        Grid.ColumnSpan="2" />
+                <Switch IsToggled="{Binding IsAnyGroupSwitch2On, Mode=TwoWay}"
+                        Grid.Row="10"
+                        Grid.ColumnSpan="2" />
+
+                <!-- The Greater Than Condition Type -->
+                <Label Text="The Greater Than Condition Type"
+                       Style="{StaticResource label_section_header}"
+                       Margin="0, 8, 0, 0"
+                       Grid.Row="11"
+                       Grid.ColumnSpan="2" />
+                <Label Text="The box and label below will change when more than two of the following switches are set to on."
+                       TextColor="{StaticResource NormalLabelTextColor}"
+                       Grid.Row="12"
+                       Grid.ColumnSpan="2" />
+
+                <BoxView BackgroundColor="Red"
+                         HeightRequest="40"
+                         WidthRequest="40"
+                         Grid.Row="13">
+                    <BoxView.Triggers>
+                        <DataTrigger TargetType="BoxView"
+                                     Value="true">
+                            <DataTrigger.Binding>
+                                <MultiBinding Converter="{StaticResource GreaterThanConverter}">
+                                    <Binding Path="IsGreaterThanGroupSwitch1On" />
+                                    <Binding Path="IsGreaterThanGroupSwitch2On" />
+                                    <Binding Path="IsGreaterThanGroupSwitch3On" />
+                                    <Binding Path="IsGreaterThanGroupSwitch4On" />
+                                </MultiBinding>
+                            </DataTrigger.Binding>
+                            <Setter Property="BackgroundColor"
+                                    Value="Green" />
+                        </DataTrigger>
+                    </BoxView.Triggers>
+                </BoxView>
+                <Label Grid.Row="13"
+                       Grid.Column="1">
+                    <Label.Text>
+                        <MultiBinding Converter="{StaticResource GreaterThanConverter}">
+                            <Binding Path="IsGreaterThanGroupSwitch1On" />
+                            <Binding Path="IsGreaterThanGroupSwitch2On" />
+                            <Binding Path="IsGreaterThanGroupSwitch3On" />
+                            <Binding Path="IsGreaterThanGroupSwitch4On" />
+                        </MultiBinding>
+                    </Label.Text>
+                </Label>
+                <Switch IsToggled="{Binding IsGreaterThanGroupSwitch1On, Mode=TwoWay}"
+                        Grid.Row="14"
+                        Grid.ColumnSpan="2" />
+                <Switch IsToggled="{Binding IsGreaterThanGroupSwitch2On, Mode=TwoWay}"
+                        Grid.Row="15"
+                        Grid.ColumnSpan="2" />
+                <Switch IsToggled="{Binding IsGreaterThanGroupSwitch3On, Mode=TwoWay}"
+                        Grid.Row="16"
+                        Grid.ColumnSpan="2" />
+                <Switch IsToggled="{Binding IsGreaterThanGroupSwitch4On, Mode=TwoWay}"
+                        Grid.Row="17"
+                        Grid.ColumnSpan="2" />
+
+            </Grid>
+        </ScrollView>
     </pages:BasePage.Content>
 </pages:BasePage>
