@@ -3,14 +3,19 @@
 namespace CommunityToolkit.Maui.Views;
 
 /// <inheritdoc/>
-public abstract class Popup : BasePopup, IPopup
+public abstract class Popup : BasePopup
 {
 	TaskCompletionSource<object?> taskCompletionSource = new();
 
 	/// <summary>
+	/// Gets the final result of the dismissed popup.
+	/// </summary>
+	public Task<object?> Result => taskCompletionSource.Task;
+
+	/// <summary>
 	/// Resets the Popup.
 	/// </summary>
-	public void Reset() => taskCompletionSource = new TaskCompletionSource<object?>();
+	public void Reset() => taskCompletionSource = new();
 
 	/// <summary>
 	/// Dismiss the current popup.
@@ -23,11 +28,6 @@ public abstract class Popup : BasePopup, IPopup
 		taskCompletionSource.TrySetResult(result);
 		OnDismissed(result);
 	}
-
-	/// <summary>
-	/// Gets the final result of the dismissed popup.
-	/// </summary>
-	public Task<object?> Result => taskCompletionSource.Task;
 
 	/// <inheritdoc/>
 	protected internal override void LightDismiss()
