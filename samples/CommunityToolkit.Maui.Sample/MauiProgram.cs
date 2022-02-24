@@ -48,6 +48,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<IsListNotNullOrEmptyConverterViewModel>();
 		builder.Services.AddTransient<IsListNullOrEmptyConverterViewModel>();
 		builder.Services.AddTransient<ListToStringConverterViewModel>();
+		builder.Services.AddTransient<VariableMultiValueConverterViewModel>();
 
 		// Add Extensions
 		builder.Services.AddTransient<ColorAnimationExtensionsViewModel>();

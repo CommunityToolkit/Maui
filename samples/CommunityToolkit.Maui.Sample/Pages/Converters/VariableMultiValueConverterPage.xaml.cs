@@ -1,8 +1,11 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+﻿using CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-public partial class VariableMultiValueConverterPage : BasePage
+namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class VariableMultiValueConverterPage : BasePage<VariableMultiValueConverterViewModel>
 {
-	public VariableMultiValueConverterPage()
+	public VariableMultiValueConverterPage(VariableMultiValueConverterViewModel variableMultiValueConverterViewModel)
+		: base(variableMultiValueConverterViewModel)
 	{
 		InitializeComponent();
 	}

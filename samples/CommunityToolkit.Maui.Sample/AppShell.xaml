@@ -28,8 +28,7 @@
 
     <FlyoutItem Title="Welcome"
                 Route="WelcomePage"
-                Icon="{OnPlatform Default='dotnet_bot.png',
-                                    MacCatalyst=''}">
+                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst=''}">
         <ShellContent ContentTemplate="{DataTemplate pages:WelcomePage}" />
     </FlyoutItem>
 
