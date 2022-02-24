@@ -22,7 +22,7 @@ public sealed class PopupAnchorViewModel : BaseViewModel
 
 		// This works
 
-		var popup = new TransparentPopupCSharp
+		var popup = new ButtonPopup
 		{
 			Anchor = anchor
 		};

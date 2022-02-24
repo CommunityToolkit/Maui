@@ -19,7 +19,7 @@ public class PopupPositionViewModel : BaseViewModel
 	{
 		// Using the C# version of Popup until this get fixed
 		// https://github.com/dotnet/maui/issues/4300
-		var popup = new TransparentPopupCSharp();
+		var popup = new ButtonPopup();
 
 		switch (position)
 		{

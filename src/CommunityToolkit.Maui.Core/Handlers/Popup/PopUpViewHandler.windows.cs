@@ -25,7 +25,7 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="result">We don't need to provide the result parameter here.</param>
 	public static void MapOnOpened(PopupViewHandler handler, IPopup view, object? result)
 	{
-		handler?.NativeView.Show();
+		handler.NativeView.Show();
 	}
 
 	/// <summary>
@@ -57,7 +57,7 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapLightDismiss(PopupViewHandler handler, IPopup view)
 	{
-		handler?.NativeView.ConfigureControl();
+		handler.NativeView.ConfigureControl();
 	}
 
 	/// <summary>
@@ -67,8 +67,8 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapColor(PopupViewHandler handler, IPopup view)
 	{
-		handler?.NativeView.SetColor(view);
-		handler?.NativeView.ConfigureControl();
+		handler.NativeView.SetColor(view);
+		handler.NativeView.ConfigureControl();
 	}
 
 	/// <summary>
@@ -78,7 +78,7 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapSize(PopupViewHandler handler, IPopup view)
 	{
-		handler?.NativeView.ConfigureControl();
+		handler.NativeView.ConfigureControl();
 	}
 
 	/// <inheritdoc/>

@@ -3,6 +3,7 @@ using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Core.Handlers;
+
 public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 {
 	/// <summary>
@@ -13,11 +14,6 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="result">The result that should return from this Popup.</param>
 	public static async void MapOnDismissed(PopupViewHandler handler, IPopup view, object? result)
 	{
-		if (handler.NativeView is null)
-		{
-			return;
-		}
-
 		var vc = handler.NativeView.ViewController;
 		if (vc is not null)
 		{
@@ -65,8 +61,8 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 
 	public static void MapAnchor(PopupViewHandler handler, IPopup view)
 	{
-		handler.NativeView?.SetSize(view);
-		handler.NativeView?.SetLayout(view);
+		handler.NativeView.SetSize(view);
+		handler.NativeView.SetLayout(view);
 	}
 
 	/// <summary>
@@ -76,7 +72,7 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapLightDismiss(PopupViewHandler handler, IPopup view)
 	{
-		handler.NativeView?.SetLightDismiss(view);
+		handler.NativeView.SetLightDismiss(view);
 	}
 
 	/// <summary>
@@ -86,7 +82,7 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapColor(PopupViewHandler handler, IPopup view)
 	{
-		handler.NativeView?.SetBackgroundColor(view);
+		handler.NativeView.SetBackgroundColor(view);
 	}
 
 	/// <summary>
@@ -96,8 +92,8 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapSize(PopupViewHandler handler, IPopup view)
 	{
-		handler.NativeView?.SetSize(view);
-		handler.NativeView?.SetLayout(view);
+		handler.NativeView.SetSize(view);
+		handler.NativeView.SetLayout(view);
 	}
 
 	/// <inheritdoc/>
@@ -117,6 +113,6 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 	protected override void DisconnectHandler(MauiPopup nativeView)
 	{
 		base.DisconnectHandler(nativeView);
-		nativeView?.CleanUp();
+		NativeView.CleanUp();
 	}
 }
