@@ -1,5 +1,6 @@
 ﻿using System.Windows.Input;
 using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Sample.Models;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
@@ -22,7 +23,7 @@ public sealed class PopupAnchorViewModel : BaseViewModel
 
 		// This works
 
-		var popup = new TransparentPopupCSharp
+		var popup = new TransparentPopupCSharp()
 		{
 			Anchor = anchor
 		};

@@ -4,7 +4,6 @@ using Android.Views;
 using Android.Widget;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Platform;
-using static Android.App.ActionBar;
 using AColorRes = Android.Resource.Color;
 using AView = Android.Views.View;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
@@ -108,7 +107,7 @@ public static class PopupExtensions
 	{
 		var window = GetWindow(dialog);
 		var context = dialog.Context;
-		if (basePopup.Content is not null && basePopup.Size != default)
+		if (basePopup.Content is not null)
 		{
 			var decorView = (ViewGroup)(window?.DecorView ?? throw new NullReferenceException());
 			var child = decorView?.GetChildAt(0) ?? throw new NullReferenceException();
@@ -118,6 +117,9 @@ public static class PopupExtensions
 
 			var realContentWidth = (int)context.ToPixels(basePopup.Content.Width);
 			var realContentHeight = (int)context.ToPixels(basePopup.Content.Height);
+
+			realWidth = realWidth is 0 ? realContentWidth : realWidth;
+			realHeight = realHeight is 0 ? realContentHeight : realHeight;
 
 			var childLayoutParams = (FrameLayout.LayoutParams)(child?.LayoutParameters ?? throw new NullReferenceException());
 			childLayoutParams.Width = realWidth;
