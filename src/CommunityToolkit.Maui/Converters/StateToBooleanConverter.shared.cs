@@ -44,10 +44,14 @@ public class StateToBooleanConverter : ICommunityToolkitValueConverter
 	public object? Convert([NotNull] object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value is not LayoutState state)
+		{
 			throw new ArgumentException("Value is not a valid State", nameof(value));
+		}
 
 		if (parameter is LayoutState stateToCompare)
+		{
 			return state == stateToCompare;
+		}
 
 		return state == StateToCompare;
 	}

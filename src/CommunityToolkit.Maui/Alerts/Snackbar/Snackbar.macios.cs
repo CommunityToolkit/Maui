@@ -1,67 +1,58 @@
 ﻿using CommunityToolkit.Maui.Core.Views;
 using CoreGraphics;
 using Microsoft.Maui.Platform;
+using ObjCRuntime;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Snackbar
 {
-	readonly SemaphoreSlim _semaphoreSlim = new(1, 1);
-
-	static SnackbarView? _nativeSnackbar;
-
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
-	public async Task Dismiss()
+	private partial Task DismissNative(CancellationToken token)
 	{
-		if (_nativeSnackbar is null)
-			return;
-
-		await _semaphoreSlim.WaitAsync();
-
-		try
+		if (NativeSnackbar is not null)
 		{
-			_nativeSnackbar.Dismiss();
-			_nativeSnackbar = null;
+			token.ThrowIfCancellationRequested();
+			NativeSnackbar.Dismiss();
+			NativeSnackbar = null;
+		}
 
-			OnDismissed();
-		}
-		finally
-		{
-			_semaphoreSlim.Release();
-		}
+		return Task.CompletedTask;
 	}
 
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	public async Task Show()
+	private partial async Task ShowNative(CancellationToken token)
 	{
-		await Dismiss();
+		await DismissNative(token);
+		token.ThrowIfCancellationRequested();
 
 		var cornerRadius = GetCornerRadius(VisualOptions.CornerRadius);
-		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + SnackbarView.DefaultPadding;
-		_nativeSnackbar = new SnackbarView(Text,
+
+		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + ToastView.DefaultPadding;
+		NativeSnackbar = new SnackbarView(Text,
 											VisualOptions.BackgroundColor.ToNative(),
 											cornerRadius,
 											VisualOptions.TextColor.ToNative(),
-											UIFont.SystemFontOfSize((float)VisualOptions.Font.Size),
+											UIFont.SystemFontOfSize((nfloat)VisualOptions.Font.Size),
 											VisualOptions.CharacterSpacing,
 											ActionButtonText,
 											VisualOptions.ActionButtonTextColor.ToNative(),
-											UIFont.SystemFontOfSize((float)VisualOptions.ActionButtonFont.Size),
+											UIFont.SystemFontOfSize((nfloat)VisualOptions.ActionButtonFont.Size),
 											padding)
 		{
 			Action = Action,
 			Anchor = Anchor?.Handler?.NativeView as UIView,
-			Duration = Duration
+			Duration = Duration,
+			OnDismissed = OnDismissed,
+			OnShown = OnShown
 		};
 
-		_nativeSnackbar.Show();
-
-		OnShown();
+		NativeSnackbar.Show();
 
 		static T? GetMaximum<T>(params T[] items) => items.Max();
 	}

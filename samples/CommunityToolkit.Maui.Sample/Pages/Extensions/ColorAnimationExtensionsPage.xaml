@@ -13,34 +13,37 @@
     </pages:BasePage.Resources>
 
     <pages:BasePage.Content>
-        <VerticalStackLayout Margin="10, 5" Spacing="12">
-            <Label Text="The BackgroundColorTo extension method provides an easy way to have an animation to change the BackgroundColor of a VisualElement" />
+        <ScrollView>
+            <VerticalStackLayout Spacing="12">
+                <Label Text="The BackgroundColorTo extension method provides an easy way to have an animation to change the BackgroundColor of a VisualElement" />
+                <Label x:Name="TextColorToDescriptionLabel" Text="The TextColorTo extension method provides an easy way to have an animation to change the TextColor of an element that implements ITextStyle" />
 
-            <Label Text="Color: " />
-            <Picker x:Name="ColorPicker" />
+                <Label Text="Color: " FontSize="12" VerticalOptions="End" VerticalTextAlignment="End"/>
+                <Picker x:Name="ColorPicker" />
 
-            <Label Text="Rate (ms):" />
-            <Entry Keyboard="Numeric" x:Name="RateInput" Text="16" />
+                <Label Text="Rate (ms):" FontSize="12" VerticalOptions="End" VerticalTextAlignment="End"/>
+                <Entry Keyboard="Numeric" x:Name="RateInput" Text="16" />
 
-            <Label Text="Duration (ms):" />
-            <Entry Keyboard="Numeric" x:Name="DurationInput" Text="1500" />
+                <Label Text="Duration (ms):" FontSize="12" VerticalOptions="End" VerticalTextAlignment="End"/>
+                <Entry Keyboard="Numeric" x:Name="DurationInput" Text="1500" />
 
-            <Label Text="Easing function: " />
-            <Picker x:Name="EasingPicker" />
+                <Label Text="Easing function: " FontSize="12" VerticalOptions="End" VerticalTextAlignment="End"/>
+                <Picker x:Name="EasingPicker" />
 
-            <Frame x:Name="ColorFrame"
-                   BorderColor="Black"
-                   HasShadow="False"
-                   BackgroundColor="White">
+                <Button Text="Animate" Clicked="Button_Clicked" BackgroundColor="DarkGreen" />
 
-                <Label TextColor="{Binding Source={x:Reference ColorFrame}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}}"
-                    Text="Watch My Background Color Change"
-                    HorizontalTextAlignment="Center"
-                    VerticalTextAlignment="Center"/>
-            </Frame>
+                <Frame x:Name="ColorFrame"
+                       BorderColor="Black"
+                       HasShadow="False"
+                       BackgroundColor="White">
 
-            <Button Text="Animate" Clicked="Button_Clicked" BackgroundColor="DarkGreen" />
+                    <Label TextColor="{Binding Source={x:Reference ColorFrame}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}}"
+                            Text="Watch My Background Color Change"
+                            HorizontalTextAlignment="Center"
+                            VerticalTextAlignment="Center"/>
+                </Frame>
 
-        </VerticalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>   
     </pages:BasePage.Content>
 </pages:BasePage>

@@ -16,6 +16,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui", "Co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Core", "CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj", "{32FC3765-AFB9-4EE8-A991-1D1D60154E73}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source Generators", "Source Generators", "{D6DE0F68-F76A-4D16-968C-9FE5FC6A459C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.SourceGenerators", "CommunityToolkit.Maui.SourceGenerators\CommunityToolkit.Maui.SourceGenerators.csproj", "{79BD87E6-60A9-471D-B9D5-4A16E5742F33}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,11 +38,16 @@ Global
 		{32FC3765-AFB9-4EE8-A991-1D1D60154E73}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{32FC3765-AFB9-4EE8-A991-1D1D60154E73}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{32FC3765-AFB9-4EE8-A991-1D1D60154E73}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79BD87E6-60A9-471D-B9D5-4A16E5742F33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79BD87E6-60A9-471D-B9D5-4A16E5742F33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79BD87E6-60A9-471D-B9D5-4A16E5742F33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79BD87E6-60A9-471D-B9D5-4A16E5742F33}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{79BD87E6-60A9-471D-B9D5-4A16E5742F33} = {D6DE0F68-F76A-4D16-968C-9FE5FC6A459C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {42B065EB-DA54-40BE-B676-3D47D59A81F2}

@@ -1,0 +1,50 @@
+﻿<pages:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.IsListNullOrEmptyConverterPage"
+    x:TypeArguments="vm:IsListNullOrEmptyConverterViewModel">
+
+    <pages:BasePage.Resources>
+        <ResourceDictionary>
+            <mct:IsListNullOrEmptyConverter x:Key="IsListNullOrEmptyConverter" />
+        </ResourceDictionary>
+    </pages:BasePage.Resources>
+
+    <pages:BasePage.Content>
+        <VerticalStackLayout
+            Padding="10,10"
+            HorizontalOptions="Fill"
+            Spacing="10"
+            VerticalOptions="Fill">
+
+            <Label
+                Text="The IsListNullOrEmptyConverter is a converter that allows users to convert an incoming binding that implements IEnumerable to a bool value. This value represents if the incoming binding value is null or an empty list."
+                TextColor="{StaticResource NormalLabelTextColor}" />
+
+            <BoxView
+                HeightRequest="20"
+                BackgroundColor="Transparent"/>
+
+            <Label
+                Text="This label should be true if the collection item is null or empty"
+                TextColor="{StaticResource NormalLabelTextColor}" />
+
+            <Label
+                Text="{Binding StringItemSource, Converter={StaticResource IsListNullOrEmptyConverter}}"
+                TextColor="Black" />
+
+            <Button Text="Clear List" Command="{Binding ClearCollectionCommand}" />
+
+            <CollectionView  VerticalOptions="StartAndExpand" HorizontalOptions="Center" ItemsSource="{Binding StringItemSource}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Label Text="{Binding .}" Margin="10" TextColor="Black" />
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+    </pages:BasePage.Content>
+</pages:BasePage>

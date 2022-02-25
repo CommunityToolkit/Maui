@@ -54,7 +54,7 @@ public class DateTimeOffsetConverter_Tests : BaseTest
 
 		var result = (DateTimeOffset)dateTimeOffsetConverter.ConvertBack(value, typeof(DateTimeOffsetConverter_Tests), null, CultureInfo.CurrentCulture);
 
-		Assert.Equal(expectedResult, result);
+		Assert.Equal(expectedResult, result, new DateTimeOffsetComparer());
 	}
 
 	[Fact]
@@ -75,5 +75,18 @@ public class DateTimeOffsetConverter_Tests : BaseTest
 		Assert.Throws<ArgumentException>(() => dateTimeOffsetConverter.ConvertBack("Not a DateTime",
 			typeof(DateTimeOffsetConverter_Tests), null,
 			CultureInfo.CurrentCulture));
+	}
+
+	class DateTimeOffsetComparer : IEqualityComparer<DateTimeOffset>
+	{
+		public bool Equals(DateTimeOffset x, DateTimeOffset y)
+		{
+			return x.Year == y.Year && x.Month == y.Month && x.Day == y.Day && x.Hour == y.Hour && x.Minute == y.Minute && x.Second == y.Second;
+		}
+
+		public int GetHashCode(DateTimeOffset obj)
+		{
+			return HashCode.Combine(obj.Year, obj.Month, obj.Day, obj.Hour, obj.Minute, obj.Second);
+		}
 	}
 }

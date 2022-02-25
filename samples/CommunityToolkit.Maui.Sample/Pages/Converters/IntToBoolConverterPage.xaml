@@ -2,20 +2,18 @@
 <pages:BasePage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.IntToBoolConverterPage">
-    <pages:BasePage.BindingContext>
-        <vm:IntToBoolConverterViewModel />
-    </pages:BasePage.BindingContext>
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.IntToBoolConverterPage"
+    x:TypeArguments="vm:IntToBoolConverterViewModel">
     <pages:BasePage.Resources>
         <ResourceDictionary>
             <mct:IntToBoolConverter x:Key="IntToBoolConverter" />
         </ResourceDictionary>
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
-        <StackLayout
+        <VerticalStackLayout
             Padding="10,10"
             HorizontalOptions="Fill"
             Spacing="10"
@@ -30,6 +28,6 @@
                 Padding="7,0,0,0"
                 Text="{Binding Path=Number, Converter={StaticResource IntToBoolConverter}}"
                 TextColor="{StaticResource NormalLabelTextColor}" />
-        </StackLayout>
+        </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

@@ -36,22 +36,34 @@ public class StringToListConverter : ValueConverterExtension, ICommunityToolkitV
 	public object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value == null)
+		{
 			return Enumerable.Empty<string>();
+		}
 
 		if (value is not string valueToSplit)
+		{
 			throw new ArgumentException("Value cannot be casted to string", nameof(value));
+		}
 
 		if (parameter is string[] separators)
+		{
 			return Split(valueToSplit, separators);
+		}
 
 		if (parameter is string separator)
+		{
 			return Split(valueToSplit, separator);
+		}
 
 		if (parameter != null)
+		{
 			throw new ArgumentException("Parameter cannot be casted to string nor string[]", nameof(parameter));
+		}
 
 		if (Separators.Count > 1)
+		{
 			return Split(valueToSplit, Separators.ToArray());
+		}
 
 		return Split(valueToSplit, Separator);
 	}
