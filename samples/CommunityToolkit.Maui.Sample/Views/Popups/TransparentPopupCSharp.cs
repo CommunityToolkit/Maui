@@ -5,10 +5,14 @@ namespace CommunityToolkit.Maui.Sample;
 
 public class TransparentPopupCSharp : Popup
 {
+	public TransparentPopupCSharp(Size popupSize)
+		:this()
+	{
+		Size = popupSize;
+	}
+
 	public TransparentPopupCSharp()
 	{
-		Size = PopupSizeConstants.Small; 
-
 		Content = new Frame
 		{
 			CornerRadius = 25,

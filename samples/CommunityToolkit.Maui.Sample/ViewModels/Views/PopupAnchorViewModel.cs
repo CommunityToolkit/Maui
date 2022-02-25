@@ -10,7 +10,7 @@ public sealed class PopupAnchorViewModel : BaseViewModel
 		ShowPopup = new Command<View>(OnShowPopup);
 	}
 
-	INavigation Navigation => Application.Current?.MainPage?.Navigation ?? throw new NullReferenceException();
+	Page Page => Application.Current?.MainPage ?? throw new NullReferenceException();
 
 	public ICommand ShowPopup { get; }
 
@@ -22,7 +22,7 @@ public sealed class PopupAnchorViewModel : BaseViewModel
 
 		// This works
 
-		var popup = new ButtonPopup
+		var popup = new TransparentPopupCSharp
 		{
 			Anchor = anchor
 		};
@@ -34,6 +34,6 @@ public sealed class PopupAnchorViewModel : BaseViewModel
 		//	Anchor = anchor
 		//};
 
-		Navigation.ShowPopup(popup);
+		Page.ShowPopup(popup);
 	}
 }

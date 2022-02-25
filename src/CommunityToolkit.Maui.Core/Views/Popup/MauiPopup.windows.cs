@@ -94,7 +94,8 @@ public class MauiPopup : Flyout
 		if (VirtualView.Content is not null && VirtualView.Size == default)
 		{
 			var content = VirtualView.Content;
-			// There are some situations when the Widht and Height values will be NaN
+			// There are some situations when the Width and Height values will be NaN
+			// normally when the dev doesn't set the HeightRequest and WidthRequest
 			// and we can't use comparasion on those, so the only to prevent the application to crash
 			// is using this try/catch
 			try

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using System.Runtime.CompilerServices;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Platform;
 
@@ -19,23 +20,11 @@ public static partial class PopupExtensions
 	/// The <see cref="BasePopup"/> to display.
 	/// </param>
 	public static void ShowPopup<TPopup>(this Page page, TPopup popup) where TPopup : BasePopup
-		=> ShowPopup(page.Navigation, popup);
-
-	/// <summary>
-	/// Displays a popup.
-	/// </summary>
-	/// <param name="navigation">
-	/// The current <see cref="INavigation"/>.
-	/// </param>
-	/// <param name="popup">
-	/// The <see cref="BasePopup"/> to display.
-	/// </param>
-	public static void ShowPopup<TPopup>(this INavigation navigation, TPopup popup) where TPopup : BasePopup
 	{
 #if WINDOWS
-		PlatformShowPopup(popup, GetMauiContext(navigation));
+		PlatformShowPopup(popup, GetMauiContext(page));
 #else
-		CreatePopup(navigation, popup);
+		CreatePopup(page, popup);
 #endif
 
 	}
@@ -53,43 +42,27 @@ public static partial class PopupExtensions
 	/// A task that will complete once the <see cref="Popup"/> is dismissed.
 	/// </returns>
 	public static Task<object?> ShowPopupAsync<TPopup>(this Page page, TPopup popup) where TPopup : Popup
-		=> ShowPopupAsync(page.Navigation, popup);
-
-	/// <summary>
-	/// Displays a popup and returns a result.
-	/// </summary>
-	/// <param name="navigation">
-	/// The current <see cref="INavigation"/>.
-	/// </param>
-	/// <param name="popup">
-	/// The <see cref="Popup"/> to display.
-	/// </param>
-	/// <returns>
-	/// A task that will complete once the <see cref="Popup"/> is dismissed.
-	/// </returns>
-	public static Task<object?> ShowPopupAsync<TPopup>(this INavigation navigation, TPopup popup) where TPopup : Popup
 	{
 #if WINDOWS
-		return PlatformShowPopupAsync(popup, GetMauiContext(navigation));
+		return PlatformShowPopupAsync(popup, GetMauiContext(page));
 #else
 
-		CreatePopup(navigation, popup);
+		CreatePopup(page, popup);
 		return popup.Result;
 #endif
 	}
 
-	static void CreatePopup(INavigation navigation, BasePopup popup)
+	static void CreatePopup(Page page, BasePopup popup)
 	{
-		var mauiContext = GetMauiContext(navigation);
+		var mauiContext = GetMauiContext(page);
 		var popupNative = popup.ToHandler(mauiContext);
 		popupNative.Invoke(nameof(IPopup.OnOpened));
 	}
 
-	static IMauiContext GetMauiContext(INavigation navigation)
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	static IMauiContext GetMauiContext(Page page)
 	{
-		return (Shell.Current is null ?
-			navigation.NavigationStack[0].Handler?.MauiContext
-			: Shell.Current.Handler?.MauiContext) ?? throw new InvalidOperationException("Could locate MauiContext");
+		return page.Handler?.MauiContext ?? throw new InvalidOperationException("Could locate MauiContext");
 	}
 }
 

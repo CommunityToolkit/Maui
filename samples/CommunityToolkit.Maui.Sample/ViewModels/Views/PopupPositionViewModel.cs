@@ -11,7 +11,7 @@ public class PopupPositionViewModel : BaseViewModel
 		DisplayPopup = new Command<PopupPosition>(OnDisplayPopup);
 	}
 
-	INavigation Navigation => Application.Current?.MainPage?.Navigation ?? throw new NullReferenceException();
+	Page Page => Application.Current?.MainPage ?? throw new NullReferenceException();
 
 	public ICommand DisplayPopup { get; }
 
@@ -19,7 +19,7 @@ public class PopupPositionViewModel : BaseViewModel
 	{
 		// Using the C# version of Popup until this get fixed
 		// https://github.com/dotnet/maui/issues/4300
-		var popup = new ButtonPopup();
+		var popup = new TransparentPopupCSharp();
 
 		switch (position)
 		{
@@ -61,7 +61,7 @@ public class PopupPositionViewModel : BaseViewModel
 				break;
 		}
 
-		Navigation.ShowPopup(popup);
+		Page.ShowPopup(popup);
 	}
 
 	public enum PopupPosition
