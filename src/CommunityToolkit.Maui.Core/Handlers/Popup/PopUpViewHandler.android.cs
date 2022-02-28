@@ -97,8 +97,8 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 	/// <inheritdoc/>
 	protected override MauiPopup CreateNativeElement()
 	{
-		_ = MauiContext ?? throw new NullReferenceException("MauiContext is null, please check your MauiApplication.");
-		_ = MauiContext.Context ?? throw new NullReferenceException("Android Context is null, please check your MauiApplication.");
+		_ = MauiContext ?? throw new InvalidOperationException("MauiContext is null, please check your MauiApplication.");
+		_ = MauiContext.Context ?? throw new InvalidOperationException("Android Context is null, please check your MauiApplication.");
 
 		return new MauiPopup(MauiContext.Context, MauiContext);
 	}
@@ -110,14 +110,15 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 	}
 
 	/// <inheritdoc/>
-	void OnShowed(object? sender, EventArgs args)
-	{
-		VirtualView?.OnOpened();
-	}
-
-	/// <inheritdoc/>
 	protected override void DisconnectHandler(MauiPopup nativeView)
 	{
 		nativeView.Dispose();
+	}
+
+	void OnShowed(object? sender, EventArgs args)
+	{
+		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null");
+
+		VirtualView?.OnOpened();
 	}
 }

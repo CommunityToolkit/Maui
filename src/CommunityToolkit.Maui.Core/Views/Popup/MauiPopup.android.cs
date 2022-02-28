@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Android.App;
 using Android.Content;
 using CommunityToolkit.Maui.Core;
@@ -12,14 +13,7 @@ namespace CommunityToolkit.Core.Views;
 /// </summary>
 public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 {
-	AView? container;
-
 	readonly IMauiContext mauiContext;
-
-	/// <summary>
-	/// An instace of the <see cref="IPopup"/>.
-	/// </summary>
-	public IPopup? VirtualView { get; private set; }
 
 	/// <summary>
 	/// Constructor of <see cref="MauiPopup"/>.
@@ -34,19 +28,25 @@ public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 	}
 
 	/// <summary>
+	/// An instace of the <see cref="IPopup"/>.
+	/// </summary>
+	public IPopup? VirtualView { get; private set; }
+
+	/// <summary>
 	/// Method to initialize the native implementation.
 	/// </summary>
 	/// <param name="element">An instance of <see cref="IPopup"/>.</param>
 	public AView? SetElement(IPopup? element)
 	{
-		if (element is null)
-		{
-			throw new ArgumentNullException(nameof(element));
-		}
+		ArgumentNullException.ThrowIfNull(element);
 
 		VirtualView = element;
-		CreateControl(VirtualView);
-		SetEvents();
+
+		if (TryCreateContainer(VirtualView, out var container))
+		{
+			SubscribeEvents();
+		}
+
 		return container;
 	}
 
@@ -56,21 +56,10 @@ public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 	public override void Show()
 	{
 		base.Show();
-		VirtualView?.OnOpened();
-	}
 
-	void CreateControl(in IPopup basePopup)
-	{
-		if (basePopup.Content != null)
-		{
-			container = basePopup.Content.ToNative(mauiContext);
-			SetContentView(container);
-		}
-	}
+		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null");
 
-	void SetEvents()
-	{
-		SetOnCancelListener(this);
+		VirtualView.OnOpened();
 	}
 
 	/// <summary>
@@ -79,14 +68,37 @@ public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 	/// <param name="dialog">An instance of the <see cref="IDialogInterface"/>.</param>
 	public void OnCancel(IDialogInterface? dialog)
 	{
-		VirtualView?.Handler?.Invoke(nameof(IPopup.LightDismiss));
+		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null");
+		_ = VirtualView.Handler ?? throw new InvalidOperationException($"{nameof(VirtualView.Handler)} cannot be null");
+
+		VirtualView.Handler.Invoke(nameof(IPopup.LightDismiss));
 	}
 
 	/// <summary>
 	/// Method to CleanUp the resources of the <see cref="MauiPopup"/>.
 	/// </summary>
-	public void ClenaUp()
+	public void CleanUp()
 	{
 		VirtualView = null;
+	}
+
+	bool TryCreateContainer(in IPopup basePopup, [NotNullWhen(true)] out AView? container)
+	{
+		container = null;
+
+		if (basePopup.Content is null)
+		{
+			return false;
+		}
+
+		container = basePopup.Content.ToNative(mauiContext);
+		SetContentView(container);
+
+		return true;
+	}
+
+	void SubscribeEvents()
+	{
+		SetOnCancelListener(this);
 	}
 }

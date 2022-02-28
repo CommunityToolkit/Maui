@@ -13,6 +13,16 @@ public class MauiPopup : UIViewController
 	readonly IMauiContext mauiContext;
 
 	/// <summary>
+	/// Constructor of <see cref="MauiPopup"/>.
+	/// </summary>
+	/// <param name="mauiContext">An instace of <see cref="IMauiContext"/>.</param>
+	/// <exception cref="ArgumentNullException">If <paramref name="mauiContext"/> is null an exception will be thrown. </exception>
+	public MauiPopup(IMauiContext mauiContext)
+	{
+		this.mauiContext = mauiContext ?? throw new ArgumentNullException(nameof(mauiContext));
+	}
+
+	/// <summary>
 	/// An instance of the <see cref="PageHandler"/> that holds the <see cref="IPopup.Content"/>.
 	/// </summary>
 	public PageHandler? Control { get; private set; }
@@ -23,16 +33,6 @@ public class MauiPopup : UIViewController
 	public IPopup? VirtualView { get; private set; }
 
 	internal UIViewController? ViewController { get; private set; }
-
-	/// <summary>
-	/// Constructor of <see cref="MauiPopup"/>.
-	/// </summary>
-	/// <param name="mauiContext">An instace of <see cref="IMauiContext"/>.</param>
-	/// <exception cref="ArgumentNullException">If <paramref name="mauiContext"/> is null an exception will be thrown. </exception>
-	public MauiPopup(IMauiContext mauiContext)
-	{
-		this.mauiContext = mauiContext ?? throw new ArgumentNullException(nameof(mauiContext));
-	}
 
 	/// <summary>
 	/// Method to update the Popup's size.
@@ -56,84 +56,20 @@ public class MauiPopup : UIViewController
 	/// <param name="element">An instance of <see cref="IPopup"/>.</param>
 	public void SetElement(IPopup element)
 	{
+		var mainPage = Application.Current?.MainPage ?? throw new InvalidOperationException($"{nameof(Application.Current.MainPage)} cannot be null");
+
 		VirtualView = element;
 		ModalPresentationStyle = UIModalPresentationStyle.Popover;
-		CreateControl();
-		SetViewController();
+
+		_ = View ?? throw new InvalidOperationException($"{nameof(View)} cannot be null");
+		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null.");
+
+		Control = CreateControl(VirtualView);
+		ViewController ??= CreateViewController(mainPage);
+
 		SetPresentationController();
-		SetView();
-		AddToCurrentPageViewController();
-	}
-
-	void CreateControl()
-	{
-		_ = VirtualView ?? throw new NullReferenceException($"{nameof(VirtualView)} cannot be null.");
-
-		var view = (View?)VirtualView.Content;
-		var contentPage = new ContentPage { Content = view, BackgroundColor = Colors.Orange };
-
-		contentPage.Parent = Application.Current?.MainPage;
-		contentPage.SetBinding(VisualElement.BindingContextProperty, new Binding { Source = VirtualView, Path = VisualElement.BindingContextProperty.PropertyName });
-		Control = (PageHandler)contentPage.ToHandler(mauiContext);
-	}
-
-	void SetViewController()
-	{
-		Page currentPageRenderer;
-		var modalStackCount = Application.Current?.MainPage?.Navigation?.ModalStack?.Count ?? 0;
-		var stackCount = Application.Current?.MainPage?.Navigation?.NavigationStack?.Count ?? 0;
-		var mainPage = Application.Current?.MainPage ?? throw new NullReferenceException(nameof(Application.Current.MainPage));
-		if (modalStackCount > 0)
-		{
-			var index = modalStackCount - 1;
-			currentPageRenderer = mainPage.Navigation.ModalStack[index];
-		}
-		else if (stackCount > 0)
-		{
-			var index = stackCount - 1;
-			currentPageRenderer = mainPage.Navigation.NavigationStack[index];
-		}
-		else
-		{
-			currentPageRenderer = mainPage;
-		}
-
-		ViewController ??= currentPageRenderer?.ToUIViewController(mauiContext);
-	}
-
-	void SetView()
-	{
-		_ = View ?? throw new NullReferenceException($"{nameof(View)} cannot be null");
-		_ = Control ?? throw new NullReferenceException($"{nameof(Control)} cannot be null");
-
-		View.AddSubview(Control.ViewController?.View ?? throw new NullReferenceException());
-		View.Bounds = new(0, 0, PreferredContentSize.Width, PreferredContentSize.Height);
-		AddChildViewController(Control.ViewController);
-	}
-
-	void SetPresentationController()
-	{
-		var popOverDelegate = new PopoverDelegate();
-		popOverDelegate.PopoverDismissed += HandlePopoverDelegateDismissed;
-
-		((UIPopoverPresentationController)PresentationController).SourceView = ViewController?.View ?? throw new NullReferenceException();
-
-		((UIPopoverPresentationController)PresentationController).Delegate = popOverDelegate;
-	}
-
-	void HandlePopoverDelegateDismissed(object? sender, UIPresentationController e)
-	{
-		_ = VirtualView ?? throw new NullReferenceException($"{nameof(VirtualView)} cannot be null.");
-
-		VirtualView.Handler?.Invoke(nameof(IPopup.LightDismiss));
-	}
-
-	void AddToCurrentPageViewController()
-	{
-		_ = ViewController ?? throw new NullReferenceException($"{nameof(ViewController)} cannot be null.");
-		_ = VirtualView ?? throw new NullReferenceException($"{nameof(VirtualView)} cannot be null.");
-
-		ViewController.PresentViewController(this, true, () => VirtualView.Handler?.Invoke(nameof(IPopup.OnOpened)));
+		SetView(View, Control);
+		AddToCurrentPageViewController(ViewController, VirtualView);
 	}
 
 	/// <summary>
@@ -153,6 +89,71 @@ public class MauiPopup : UIViewController
 		{
 			presentationController.Delegate = null;
 		}
+	}
+
+	PageHandler CreateControl(in IPopup virtualView)
+	{
+		var view = (View?)virtualView.Content;
+		var contentPage = new ContentPage { Content = view, BackgroundColor = Colors.Orange };
+
+		contentPage.Parent = Application.Current?.MainPage;
+		contentPage.SetBinding(VisualElement.BindingContextProperty, new Binding { Source = virtualView, Path = VisualElement.BindingContextProperty.PropertyName });
+
+		return (PageHandler)contentPage.ToHandler(mauiContext);
+	}
+
+	UIViewController CreateViewController(Page mainPage)
+	{
+		Page currentPageRenderer;
+
+		var modalStackCount = mainPage.Navigation.ModalStack.Count;
+		var stackCount = mainPage.Navigation.NavigationStack.Count;
+
+		if (modalStackCount > 0)
+		{
+			var index = modalStackCount - 1;
+			currentPageRenderer = mainPage.Navigation.ModalStack[index];
+		}
+		else if (stackCount > 0)
+		{
+			var index = stackCount - 1;
+			currentPageRenderer = mainPage.Navigation.NavigationStack[index];
+		}
+		else
+		{
+			currentPageRenderer = mainPage;
+		}
+
+		return currentPageRenderer.ToUIViewController(mauiContext);
+	}
+
+	void SetView(UIView view, PageHandler control)
+	{
+		view.AddSubview(control.ViewController?.View ?? throw new InvalidOperationException($"{nameof(control.ViewController.View)} cannot be null"));
+		view.Bounds = new(0, 0, PreferredContentSize.Width, PreferredContentSize.Height);
+		AddChildViewController(control.ViewController);
+	}
+
+	void SetPresentationController()
+	{
+		var popOverDelegate = new PopoverDelegate();
+		popOverDelegate.PopoverDismissed += HandlePopoverDelegateDismissed;
+
+		((UIPopoverPresentationController)PresentationController).SourceView = ViewController?.View ?? throw new InvalidOperationException($"{nameof(ViewController.View)} cannot be null");
+
+		((UIPopoverPresentationController)PresentationController).Delegate = popOverDelegate;
+	}
+
+	void HandlePopoverDelegateDismissed(object? sender, UIPresentationController e)
+	{
+		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null.");
+
+		VirtualView.Handler?.Invoke(nameof(IPopup.LightDismiss));
+	}
+
+	void AddToCurrentPageViewController(UIViewController viewController, IPopup virtualView)
+	{
+		viewController.PresentViewController(this, true, () => virtualView.Handler?.Invoke(nameof(IPopup.OnOpened)));
 	}
 
 	sealed class PopoverDelegate : UIPopoverPresentationControllerDelegate

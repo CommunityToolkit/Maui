@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.UnitTests.Mocks;
 
 namespace CommunityToolkit.Maui.UnitTests;
+
 public abstract class BaseHandlerTest : BaseTest
 {
 	public BaseHandlerTest()
@@ -9,10 +10,11 @@ public abstract class BaseHandlerTest : BaseTest
 	}
 
 	protected TElementHandler CreateElementHandler<TElementHandler>(Microsoft.Maui.IElement view, bool hasMauiContext = true)
-		where TElementHandler : IElementHandler,new()
+		where TElementHandler : IElementHandler, new()
 	{
 		var mockElementHandler = new TElementHandler();
 		mockElementHandler.SetVirtualView(view);
+
 		if (hasMauiContext)
 		{
 			mockElementHandler.SetMauiContext(Application.Current?.Handler.MauiContext ?? throw new NullReferenceException());
@@ -26,6 +28,7 @@ public abstract class BaseHandlerTest : BaseTest
 	{
 		var mockViewHandler = new TViewHandler();
 		mockViewHandler.SetVirtualView(view);
+
 		if (hasMauiContext)
 		{
 			mockViewHandler.SetMauiContext(Application.Current?.Handler.MauiContext ?? throw new NullReferenceException());

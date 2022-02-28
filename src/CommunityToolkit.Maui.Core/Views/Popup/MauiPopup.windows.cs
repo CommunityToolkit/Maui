@@ -5,9 +5,8 @@ using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
-using XamlStyle = Microsoft.UI.Xaml.Style;
 using WindowsThickness = Microsoft.UI.Xaml.Thickness;
-using System.Diagnostics;
+using XamlStyle = Microsoft.UI.Xaml.Style;
 
 namespace CommunityToolkit.Core.Views;
 
@@ -18,14 +17,8 @@ public class MauiPopup : Flyout
 {
 	const double defaultBorderThickness = 2;
 	const double defaultSize = 600;
-	readonly IMauiContext mauiContext;
 
-	internal XamlStyle FlyoutStyle { get; set; } = new (typeof(FlyoutPresenter));
-	internal WrapperControl? Control { get; set; }
-	/// <summary>
-	/// An instace of the <see cref="IPopup"/>.
-	/// </summary>
-	public IPopup? VirtualView { get; private set; }
+	readonly IMauiContext mauiContext;
 
 	/// <summary>
 	/// Constructor of <see cref="MauiPopup"/>.
@@ -36,6 +29,14 @@ public class MauiPopup : Flyout
 	{
 		this.mauiContext = mauiContext ?? throw new ArgumentNullException(nameof(mauiContext));
 	}
+
+	/// <summary>
+	/// An instace of the <see cref="IPopup"/>.
+	/// </summary>
+	public IPopup? VirtualView { get; private set; }
+
+	internal XamlStyle FlyoutStyle { get; } = new(typeof(FlyoutPresenter));
+	internal WrapperControl? Control { get; set; }
 
 	/// <summary>
 	/// Method to initialize the native implementation.
@@ -49,17 +50,6 @@ public class MauiPopup : Flyout
 		ConfigureControl();
 	}
 
-	void CreateControl()
-	{
-		if (Control is null && VirtualView?.Content is not null)
-		{
-			Control = new WrapperControl((View)VirtualView.Content, mauiContext);
-			Content = Control;
-		}
-
-		SetEvents();
-	}
-
 	/// <summary>
 	/// Method to update all the values of the Popup Control.
 	/// </summary>
@@ -70,14 +60,72 @@ public class MauiPopup : Flyout
 			return;
 		}
 
-		SetEvents();
+		SubscribeEvents();
 		SetFlyoutColor();
 		SetSize();
 		SetLayout();
 		ApplyStyles();
 	}
 
-	void SetEvents()
+	/// <summary>
+	/// Method to show the Popup.
+	/// </summary>
+	public void Show()
+	{
+		if (VirtualView is null)
+		{
+			return;
+		}
+
+		ArgumentNullException.ThrowIfNull(VirtualView.Parent);
+
+		if (VirtualView.Anchor is not null)
+		{
+			var anchor = VirtualView.Anchor.ToNative(mauiContext);
+			SetAttachedFlyout(anchor, this);
+			ShowAttachedFlyout(anchor);
+		}
+		else
+		{
+			var frameworkElement = VirtualView.Parent.ToNative(mauiContext);
+			frameworkElement.ContextFlyout = this;
+			SetAttachedFlyout(frameworkElement, this);
+			ShowAttachedFlyout(frameworkElement);
+		}
+
+		VirtualView.OnOpened();
+	}
+
+	/// <summary>
+	/// Method to CleanUp the resources of the <see cref="MauiPopup"/>.
+	/// </summary>
+	public void CleanUp()
+	{
+		Closing -= OnClosing;
+
+		Hide();
+
+		if (Control is not null)
+		{
+			Control.CleanUp();
+		}
+
+		VirtualView = null;
+		Control = null;
+	}
+
+	void CreateControl()
+	{
+		if (Control is null && VirtualView?.Content is not null)
+		{
+			Control = new WrapperControl((View)VirtualView.Content, mauiContext);
+			Content = Control;
+		}
+
+		SubscribeEvents();
+	}
+
+	void SubscribeEvents()
 	{
 		Closing += OnClosing;
 	}
@@ -119,6 +167,7 @@ public class MauiPopup : Flyout
 	void SetLayout()
 	{
 		LightDismissOverlayMode = LightDismissOverlayMode.On;
+
 		if (VirtualView is not null)
 		{
 			this.SetDialogPosition(VirtualView.VerticalOptions, VirtualView.HorizontalOptions);
@@ -147,70 +196,41 @@ public class MauiPopup : Flyout
 
 	void ApplyStyles()
 	{
-		ArgumentNullException.ThrowIfNull(Control);
+		_ = Control ?? throw new InvalidOperationException($"{nameof(Control)} cannot be null");
 		FlyoutPresenterStyle = FlyoutStyle;
-	}
-
-	/// <summary>
-	/// Method to show the Popup.
-	/// </summary>
-	public void Show()
-	{
-		if (VirtualView is null)
-		{
-			return;
-		}
-
-		ArgumentNullException.ThrowIfNull(VirtualView.Parent);
-
-		if (VirtualView.Anchor is not null)
-		{
-			var anchor = VirtualView.Anchor.ToNative(mauiContext);
-			SetAttachedFlyout(anchor, this);
-			ShowAttachedFlyout(anchor);
-		}
-		else
-		{
-			var frameworkElement = VirtualView.Parent.ToNative(mauiContext);
-			frameworkElement.ContextFlyout = this;
-			SetAttachedFlyout(frameworkElement, this);
-			ShowAttachedFlyout(frameworkElement);
-		}
-
-		VirtualView?.OnOpened();
 	}
 
 	void SetDialogPosition(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions)
 	{
-		if (IsTopLeft())
+		if (IsTopLeft(verticalOptions, horizontalOptions))
 		{
 			Placement = FlyoutPlacementMode.TopEdgeAlignedLeft;
 		}
-		else if (IsTop())
+		else if (IsTop(verticalOptions, horizontalOptions))
 		{
 			Placement = FlyoutPlacementMode.Top;
 		}
-		else if (IsTopRight())
+		else if (IsTopRight(verticalOptions, horizontalOptions))
 		{
 			Placement = FlyoutPlacementMode.TopEdgeAlignedRight;
 		}
-		else if (IsRight())
+		else if (IsRight(verticalOptions, horizontalOptions))
 		{
 			Placement = FlyoutPlacementMode.Right;
 		}
-		else if (IsBottomRight())
+		else if (IsBottomRight(verticalOptions, horizontalOptions))
 		{
 			Placement = FlyoutPlacementMode.BottomEdgeAlignedRight;
 		}
-		else if (IsBottom())
+		else if (IsBottom(verticalOptions, horizontalOptions))
 		{
 			Placement = FlyoutPlacementMode.Bottom;
 		}
-		else if (IsBottomLeft())
+		else if (IsBottomLeft(verticalOptions, horizontalOptions))
 		{
 			Placement = FlyoutPlacementMode.BottomEdgeAlignedLeft;
 		}
-		else if (IsLeft())
+		else if (IsLeft(verticalOptions, horizontalOptions))
 		{
 			Placement = FlyoutPlacementMode.Left;
 		}
@@ -223,14 +243,14 @@ public class MauiPopup : Flyout
 			Placement = FlyoutPlacementMode.Top;
 		}
 
-		bool IsTopLeft() => verticalOptions == LayoutAlignment.Start && horizontalOptions == LayoutAlignment.Start;
-		bool IsTop() => verticalOptions == LayoutAlignment.Start && horizontalOptions == LayoutAlignment.Center;
-		bool IsTopRight() => verticalOptions == LayoutAlignment.Start && horizontalOptions == LayoutAlignment.End;
-		bool IsRight() => verticalOptions == LayoutAlignment.Center && horizontalOptions == LayoutAlignment.End;
-		bool IsBottomRight() => verticalOptions == LayoutAlignment.End && horizontalOptions == LayoutAlignment.End;
-		bool IsBottom() => verticalOptions == LayoutAlignment.End && horizontalOptions == LayoutAlignment.Center;
-		bool IsBottomLeft() => verticalOptions == LayoutAlignment.End && horizontalOptions == LayoutAlignment.Start;
-		bool IsLeft() => verticalOptions == LayoutAlignment.Center && horizontalOptions == LayoutAlignment.Start;
+		static bool IsTopLeft(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Start && horizontalOptions == LayoutAlignment.Start;
+		static bool IsTop(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Start && horizontalOptions == LayoutAlignment.Center;
+		static bool IsTopRight(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Start && horizontalOptions == LayoutAlignment.End;
+		static bool IsRight(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Center && horizontalOptions == LayoutAlignment.End;
+		static bool IsBottomRight(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.End && horizontalOptions == LayoutAlignment.End;
+		static bool IsBottom(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.End && horizontalOptions == LayoutAlignment.Center;
+		static bool IsBottomLeft(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.End && horizontalOptions == LayoutAlignment.Start;
+		static bool IsLeft(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Center && horizontalOptions == LayoutAlignment.Start;
 	}
 
 	void OnClosing(object? sender, FlyoutBaseClosingEventArgs e)
@@ -245,21 +265,5 @@ public class MauiPopup : Flyout
 		{
 			VirtualView?.Handler?.Invoke(nameof(IPopup.LightDismiss));
 		}
-	}
-
-	/// <summary>
-	/// Method to CleanUp the resources of the <see cref="MauiPopup"/>.
-	/// </summary>
-	public void CleanUp()
-	{
-		Closing -= OnClosing;
-		Hide();
-		if (Control is not null)
-		{
-			Control.CleanUp();
-		}
-
-		VirtualView = null;
-		Control = null;
 	}
 }
