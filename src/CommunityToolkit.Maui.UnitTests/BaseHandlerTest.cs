@@ -9,7 +9,7 @@ public abstract class BaseHandlerTest : BaseTest
 		CreateAndSetMockApplication();
 	}
 
-	protected TElementHandler CreateElementHandler<TElementHandler>(Microsoft.Maui.IElement view, bool hasMauiContext = true)
+	protected static TElementHandler CreateElementHandler<TElementHandler>(Microsoft.Maui.IElement view, bool hasMauiContext = true)
 		where TElementHandler : IElementHandler, new()
 	{
 		var mockElementHandler = new TElementHandler();
@@ -23,7 +23,7 @@ public abstract class BaseHandlerTest : BaseTest
 		return mockElementHandler;
 	}
 
-	protected TViewHandler CreateViewHandler<TViewHandler>(IView view, bool hasMauiContext = true)
+	protected static TViewHandler CreateViewHandler<TViewHandler>(IView view, bool hasMauiContext = true)
 		where TViewHandler : IViewHandler, new()
 	{
 		var mockViewHandler = new TViewHandler();

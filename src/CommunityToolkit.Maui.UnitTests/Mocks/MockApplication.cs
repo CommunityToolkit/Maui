@@ -15,13 +15,12 @@ public class MockApplication : Application
 //https://github.com/dotnet/maui/blob/main/src/Controls/tests/Core.UnitTests/TestClasses/ApplicationHandlerStub.cs
 class ApplicationHandlerStub : ElementHandler<IApplication, object>
 {
-	public static IPropertyMapper<IApplication, ApplicationHandlerStub> Mapper = new PropertyMapper<IApplication, ApplicationHandlerStub>(ElementMapper)
-	{
-	};
 	public ApplicationHandlerStub()
-		: base(Mapper)
+	: base(Mapper)
 	{
 	}
+
+	public static IPropertyMapper<IApplication, ApplicationHandlerStub> Mapper = new PropertyMapper<IApplication, ApplicationHandlerStub>(ElementMapper);
 
 	protected override object CreateNativeElement()
 	{

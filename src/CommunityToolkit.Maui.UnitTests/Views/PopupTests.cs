@@ -4,11 +4,12 @@ using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.Views;
 using Xunit;
 
-namespace CommunityToolkit.Maui.UnitTests;
+namespace CommunityToolkit.Maui.UnitTests.Views;
 
 public class PopupTests : BaseHandlerTest
 {
 	readonly IPopup popup = new MockPopup();
+
 	public PopupTests()
 	{
 		Assert.IsAssignableFrom<IPopup>(new MockPopup());
@@ -29,7 +30,7 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void OnOnpenedMapperIsCalled()
+	public async Task OnOnpenedMapperIsCalled()
 	{
 		var app = Application.Current ?? throw new NullReferenceException();
 
@@ -42,7 +43,7 @@ public class PopupTests : BaseHandlerTest
 		};
 
 		// Make sure that our page will have a Handler
-		_ = CreateViewHandler<MockPageHandler>(page);
+		CreateViewHandler<MockPageHandler>(page);
 
 		app.MainPage = page;
 
@@ -52,8 +53,15 @@ public class PopupTests : BaseHandlerTest
 		Assert.NotNull(page.Handler);
 
 		page.ShowPopup((MockPopup)popup);
-
 		Assert.Equal(1, popupHandler.OnOpenedCount);
+		popup.LightDismiss();
+
+		var popupTask = page.ShowPopupAsync((MockPopup)popup);
+		popup.LightDismiss();
+
+		await popupTask;
+
+		Assert.Equal(2, popupHandler.OnOpenedCount);
 	}
 
 	[Fact]
@@ -71,16 +79,16 @@ public class PopupTests : BaseHandlerTest
 		};
 
 		// Make sure that our page will have a Handler
-		_ = CreateViewHandler<MockPageHandler>(page);
+		CreateViewHandler<MockPageHandler>(page);
 
 		app.MainPage = page;
 
-		_ = CreateElementHandler<MockPopupHandler>(popup);
+		CreateElementHandler<MockPopupHandler>(popup);
 
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
 
-		((MockPopup)popup).Dismissed += (_, __) =>
+		((MockPopup)popup).Dismissed += (_, _) =>
 		{
 			isPopupDismissed = true;
 		};
@@ -92,8 +100,8 @@ public class PopupTests : BaseHandlerTest
 	[Fact]
 	public void OnDismissedWithResult()
 	{
-		var isPopupDismissed = false;
 		object? result = null;
+		var isPopupDismissed = false;
 		var app = Application.Current ?? throw new NullReferenceException();
 
 		var page = new ContentPage
@@ -105,24 +113,23 @@ public class PopupTests : BaseHandlerTest
 		};
 
 		// Make sure that our page will have a Handler
-		_ = CreateViewHandler<MockPageHandler>(page);
+		CreateViewHandler<MockPageHandler>(page);
 
 		app.MainPage = page;
-		
+
 		// Make sure that our popup will have a Handler
-		_ = CreateElementHandler<MockPopupHandler>(popup);
+		CreateElementHandler<MockPopupHandler>(popup);
 
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
 
-		((MockPopup)popup).Dismissed += (s, e) =>
+		((MockPopup)popup).Dismissed += (_, e) =>
 		{
 			result = e.Result;
 			isPopupDismissed = true;
 		};
 
 		((MockPopup)popup).Dismiss(new object());
-
 
 		Assert.True(isPopupDismissed);
 		Assert.NotNull(result);
@@ -132,8 +139,8 @@ public class PopupTests : BaseHandlerTest
 	[Fact]
 	public void OnDismissedWithoutResult()
 	{
-		var isPopupDismissed = false;
 		object? result = null;
+		var isPopupDismissed = false;
 		var app = Application.Current ?? throw new NullReferenceException();
 
 		var page = new ContentPage
@@ -145,24 +152,23 @@ public class PopupTests : BaseHandlerTest
 		};
 
 		// Make sure that our page will have a Handler
-		_ = CreateViewHandler<MockPageHandler>(page);
+		CreateViewHandler<MockPageHandler>(page);
 
 		app.MainPage = page;
 
 		// Make sure that our popup will have a Handler
-		_ = CreateElementHandler<MockPopupHandler>(popup);
+		CreateElementHandler<MockPopupHandler>(popup);
 
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
 
-		((MockPopup)popup).Dismissed += (s, e) =>
+		((MockPopup)popup).Dismissed += (_, e) =>
 		{
 			result = e.Result;
 			isPopupDismissed = true;
 		};
 
 		((MockPopup)popup).Dismiss(null);
-
 
 		Assert.True(isPopupDismissed);
 		Assert.Null(result);
