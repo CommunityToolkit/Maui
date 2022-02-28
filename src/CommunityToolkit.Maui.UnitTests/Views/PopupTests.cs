@@ -1,12 +1,12 @@
-﻿using System;
-using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.Views;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
-public class PopupTests : BaseTest
+public class PopupTests : BaseHandlerTest
 {
 	readonly IPopup popup = new MockPopup();
 	public PopupTests()
@@ -16,8 +16,23 @@ public class PopupTests : BaseTest
 	}
 
 	[Fact]
-	public void PlaceholderTest()
+	public void GetRequiredServiceThrowsOnNoContext()
 	{
+		var handlerStub = new MockPopupHandler();
+
+		Assert.Null((handlerStub as IElementHandler).MauiContext);
+
+		var ex = Assert.Throws<InvalidOperationException>(() => handlerStub.GetRequiredService<IFooService>());
+
+		Assert.Contains("the context", ex.Message);
+		Assert.Contains("MauiContext", ex.Message);
+	}
+
+	[Fact]
+	public void OnOnpenedMapperIsCalled()
+	{
+		var app = Application.Current ?? throw new NullReferenceException();
+
 		var page = new ContentPage
 		{
 			Content = new Label
@@ -25,13 +40,132 @@ public class PopupTests : BaseTest
 				Text = "Hello there"
 			}
 		};
-		var np = new NavigationPage(page);
-		_ = page.Navigation;
+
+		// Make sure that our page will have a Handler
+		_ = CreateViewHandler<MockPageHandler>(page);
+
+		app.MainPage = page;
+
+		var popupHandler = CreateElementHandler<MockPopupHandler>(popup);
+
+		Assert.NotNull(popup.Handler);
+		Assert.NotNull(page.Handler);
+
 		page.ShowPopup((MockPopup)popup);
-		Assert.True(true);
-		// This is a place holder to remind us to implement Unit Tests for Popup
-		// This test should be deleted once Popup Unit Tests are added
-		//throw new NotImplementedException("Popup Unit Tests Not completed");
+
+		Assert.Equal(1, popupHandler.OnOpenedCount);
+	}
+
+	[Fact]
+	public void OnLightDismissedHappens()
+	{
+		var isPopupDismissed = false;
+		var app = Application.Current ?? throw new NullReferenceException();
+
+		var page = new ContentPage
+		{
+			Content = new Label
+			{
+				Text = "Hello there"
+			}
+		};
+
+		// Make sure that our page will have a Handler
+		_ = CreateViewHandler<MockPageHandler>(page);
+
+		app.MainPage = page;
+
+		_ = CreateElementHandler<MockPopupHandler>(popup);
+
+		Assert.NotNull(popup.Handler);
+		Assert.NotNull(page.Handler);
+
+		((MockPopup)popup).Dismissed += (_, __) =>
+		{
+			isPopupDismissed = true;
+		};
+
+		popup.LightDismiss();
+		Assert.True(isPopupDismissed);
+	}
+
+	[Fact]
+	public void OnDismissedWithResult()
+	{
+		var isPopupDismissed = false;
+		object? result = null;
+		var app = Application.Current ?? throw new NullReferenceException();
+
+		var page = new ContentPage
+		{
+			Content = new Label
+			{
+				Text = "Hello there"
+			}
+		};
+
+		// Make sure that our page will have a Handler
+		_ = CreateViewHandler<MockPageHandler>(page);
+
+		app.MainPage = page;
+		
+		// Make sure that our popup will have a Handler
+		_ = CreateElementHandler<MockPopupHandler>(popup);
+
+		Assert.NotNull(popup.Handler);
+		Assert.NotNull(page.Handler);
+
+		((MockPopup)popup).Dismissed += (s, e) =>
+		{
+			result = e.Result;
+			isPopupDismissed = true;
+		};
+
+		((MockPopup)popup).Dismiss(new object());
+
+
+		Assert.True(isPopupDismissed);
+		Assert.NotNull(result);
+	}
+
+
+	[Fact]
+	public void OnDismissedWithoutResult()
+	{
+		var isPopupDismissed = false;
+		object? result = null;
+		var app = Application.Current ?? throw new NullReferenceException();
+
+		var page = new ContentPage
+		{
+			Content = new Label
+			{
+				Text = "Hello there"
+			}
+		};
+
+		// Make sure that our page will have a Handler
+		_ = CreateViewHandler<MockPageHandler>(page);
+
+		app.MainPage = page;
+
+		// Make sure that our popup will have a Handler
+		_ = CreateElementHandler<MockPopupHandler>(popup);
+
+		Assert.NotNull(popup.Handler);
+		Assert.NotNull(page.Handler);
+
+		((MockPopup)popup).Dismissed += (s, e) =>
+		{
+			result = e.Result;
+			isPopupDismissed = true;
+		};
+
+		((MockPopup)popup).Dismiss(null);
+
+
+		Assert.True(isPopupDismissed);
+		Assert.Null(result);
 	}
 
 	class MockPopup : Popup
@@ -42,6 +176,11 @@ public class PopupTests : BaseTest
 	class MockBasePopup : BasePopup
 	{
 
+	}
+
+	interface IFooService
+	{
+		public int MyProperty { get; set; }
 	}
 }
 
