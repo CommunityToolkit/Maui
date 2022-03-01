@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Extensions;
@@ -55,6 +56,7 @@ public static partial class PopupExtensions
 	static void CreatePopup(Page page, BasePopup popup)
 	{
 		var mauiContext = GetMauiContext(page);
+		popup.Parent = PageExtensions.GetCurrentPage(page);
 		var popupNative = popup.ToHandler(mauiContext);
 		popupNative.Invoke(nameof(IPopup.OnOpened));
 	}

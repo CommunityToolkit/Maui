@@ -56,7 +56,10 @@ public class MauiPopup : UIViewController
 	/// <param name="element">An instance of <see cref="IPopup"/>.</param>
 	public void SetElement(IPopup element)
 	{
-		var mainPage = Application.Current?.MainPage ?? throw new InvalidOperationException($"{nameof(Application.Current.MainPage)} cannot be null");
+		if (element.Parent?.Handler is not PageHandler mainPage)
+		{
+			throw new InvalidOperationException($"The {nameof(element.Parent)} must be of type {typeof(PageHandler)}");
+		}
 
 		VirtualView = element;
 		ModalPresentationStyle = UIModalPresentationStyle.Popover;
@@ -65,7 +68,7 @@ public class MauiPopup : UIViewController
 		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null.");
 
 		Control = CreateControl(VirtualView);
-		ViewController ??= CreateViewController(mainPage);
+		ViewController ??= mainPage.ViewController ?? throw new InvalidOperationException($"{nameof(mainPage.ViewController)} cannot be null"); ;
 
 		SetPresentationController();
 		SetView(View, Control);
@@ -100,31 +103,6 @@ public class MauiPopup : UIViewController
 		contentPage.SetBinding(VisualElement.BindingContextProperty, new Binding { Source = virtualView, Path = VisualElement.BindingContextProperty.PropertyName });
 
 		return (PageHandler)contentPage.ToHandler(mauiContext);
-	}
-
-	UIViewController CreateViewController(Page mainPage)
-	{
-		Page currentPageRenderer;
-
-		var modalStackCount = mainPage.Navigation.ModalStack.Count;
-		var stackCount = mainPage.Navigation.NavigationStack.Count;
-
-		if (modalStackCount > 0)
-		{
-			var index = modalStackCount - 1;
-			currentPageRenderer = mainPage.Navigation.ModalStack[index];
-		}
-		else if (stackCount > 0)
-		{
-			var index = stackCount - 1;
-			currentPageRenderer = mainPage.Navigation.NavigationStack[index];
-		}
-		else
-		{
-			currentPageRenderer = mainPage;
-		}
-
-		return currentPageRenderer.ToUIViewController(mauiContext);
 	}
 
 	void SetView(UIView view, PageHandler control)
