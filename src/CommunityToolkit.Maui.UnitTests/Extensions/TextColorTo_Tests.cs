@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.UnitTests.Extensions.TextStyle;
+﻿using Font = Microsoft.Maui.Font;
+using CommunityToolkit.Maui.UnitTests.Extensions.TextStyle;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using Xunit;
 

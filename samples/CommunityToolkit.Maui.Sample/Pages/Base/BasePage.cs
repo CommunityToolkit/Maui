@@ -21,7 +21,7 @@ public abstract class BasePage : ContentPage
 		Padding = Device.RuntimePlatform switch
 		{
 			// Work-around to ensure content doesn't get clipped by iOS Status Bar + Naviagtion Bar
-			Device.iOS => new Thickness(12, 108, 12, 12),
+			Device.iOS or Device.MacCatalyst => new Thickness(12, 108, 12, 12),
 			_ => 12
 		};
 	}

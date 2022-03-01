@@ -2,6 +2,7 @@
 using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
+using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
@@ -19,6 +20,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<BehaviorsGalleryViewModel>();
 		builder.Services.AddTransient<ConvertersGalleryViewModel>();
 		builder.Services.AddTransient<ExtensionsGalleryViewModel>();
+		builder.Services.AddTransient<LayoutsGalleryViewModel>();
 		builder.Services.AddTransient<MainGalleryViewModel>();
 
 		// Add Behaviors View Models
@@ -36,15 +38,21 @@ public static class MauiProgram
 		builder.Services.AddTransient<IndexToArrayItemConverterViewModel>();
 		builder.Services.AddTransient<IntToBoolConverterViewModel>();
 		builder.Services.AddTransient<IsStringNotNullOrEmptyConverterViewModel>();
+		builder.Services.AddTransient<IsStringNotNullOrWhiteSpaceConverterViewModel>();
 		builder.Services.AddTransient<IsStringNullOrEmptyConverterViewModel>();
+		builder.Services.AddTransient<IsStringNullOrWhiteSpaceConverterViewModel>();
 		builder.Services.AddTransient<ItemSelectedEventArgsConverterViewModel>();
 		builder.Services.AddTransient<ItemTappedEventArgsConverterViewModel>();
 		builder.Services.AddTransient<IsListNotNullOrEmptyConverterViewModel>();
 		builder.Services.AddTransient<IsListNullOrEmptyConverterViewModel>();
 		builder.Services.AddTransient<ListToStringConverterViewModel>();
+		builder.Services.AddTransient<VariableMultiValueConverterViewModel>();
 
 		// Add Extensions
 		builder.Services.AddTransient<ColorAnimationExtensionsViewModel>();
+
+		// Add Layouts
+		builder.Services.AddTransient<UniformItemsLayoutViewModel>();
 
 		return builder.Build();
 	}

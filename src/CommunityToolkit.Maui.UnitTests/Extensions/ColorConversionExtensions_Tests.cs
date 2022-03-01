@@ -660,6 +660,15 @@ public class ColorConversionExtensions_Tests
 
 	[Theory]
 	[MemberData(nameof(ColorTestData))]
+	public void WithAlpha(ColorTestDefinition testDef)
+	{
+		var newColor = testDef.Color.WithAlpha(testDef.A);
+
+		Assert.Equal(testDef.ExpectedByteA, newColor.GetByteAlpha());
+	}
+
+	[Theory]
+	[MemberData(nameof(ColorTestData))]
 	public void WithMagenta(ColorTestDefinition testDef)
 	{
 		var pctMagenta = new Random().NextDouble();
@@ -703,6 +712,18 @@ public class ColorConversionExtensions_Tests
 		Assert.Equal(Math.Round(expectedGreen, 2), Math.Round(newColor.Green, 2));
 		Assert.Equal(Math.Round(expectedBlue, 2), Math.Round(newColor.Blue, 2));
 		Assert.Equal(testDef.A, newColor.Alpha);
+	}
+
+
+	[Theory]
+	[InlineData(-1, 0)]
+	[InlineData(256, 255)]
+	public void ColorRange(int requestColor, int realColor)
+	{
+		var newColor = new Color(requestColor, requestColor, requestColor);
+		Assert.Equal(realColor, newColor.GetByteRed());
+		Assert.Equal(realColor, newColor.GetByteBlue());
+		Assert.Equal(realColor, newColor.GetByteGreen());
 	}
 
 

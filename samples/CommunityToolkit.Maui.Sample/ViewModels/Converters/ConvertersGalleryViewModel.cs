@@ -16,9 +16,15 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
 
 			SectionModel.Create<IsStringNotNullOrEmptyConverterViewModel>(nameof(IsStringNotNullOrEmptyConverter),
 				"A converter that allows users to convert an incoming binding to a bool value. This value represents if the incoming binding value is Not null or empty."),
+			
+			SectionModel.Create<IsStringNullOrWhiteSpaceConverterViewModel>(nameof(IsStringNullOrWhiteSpaceConverter),
+				"A converter that allows users to convert an incoming binding to a bool value. This value represents if the incoming binding value is null or white space."),
+
+			SectionModel.Create<IsStringNotNullOrWhiteSpaceConverterViewModel>(nameof(IsStringNotNullOrWhiteSpaceConverter),
+				"A converter that allows users to convert an incoming binding to a bool value. This value represents if the incoming binding value is not null or white space."),
 
 			SectionModel.Create<InvertedBoolConverterViewModel>(nameof(InvertedBoolConverter),
-				"A converter that allows users to convert a bool value binding to its inverted value.."),
+				"A converter that allows users to convert a bool value binding to its inverted value."),
 
 			SectionModel.Create<EqualConverterViewModel>(nameof(EqualConverter),
 				"A converter that allows users to convert any value binding to a bool depending on whether or not it is equal to a different value. "),

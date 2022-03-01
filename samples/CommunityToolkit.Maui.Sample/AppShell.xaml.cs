@@ -2,9 +2,11 @@
 using CommunityToolkit.Maui.Sample.Pages.Behaviors;
 using CommunityToolkit.Maui.Sample.Pages.Converters;
 using CommunityToolkit.Maui.Sample.Pages.Extensions;
+using CommunityToolkit.Maui.Sample.Pages.Layouts;
 using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
+using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 
 namespace CommunityToolkit.Maui.Sample;
 
@@ -48,7 +50,9 @@ public partial class AppShell : Shell
 		{ typeof(IsListNotNullOrEmptyConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IsListNotNullOrEmptyConverterPage)) },
 		{ typeof(IsListNullOrEmptyConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IsListNullOrEmptyConverterPage)) },
 		{ typeof(IsStringNotNullOrEmptyConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IsStringNotNullOrEmptyConverterPage)) },
+		{ typeof(IsStringNotNullOrWhiteSpaceConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IsStringNotNullOrWhiteSpaceConverterPage)) },
 		{ typeof(IsStringNullOrEmptyConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IsStringNullOrEmptyConverterPage)) },
+		{ typeof(IsStringNullOrWhiteSpaceConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IsStringNullOrWhiteSpaceConverterPage)) },
 		{ typeof(ItemSelectedEventArgsConverterViewModel), (typeof(ConvertersGalleryPage), typeof(ItemSelectedEventArgsConverterPage)) },
 		{ typeof(ItemTappedEventArgsConverterViewModel), (typeof(ConvertersGalleryPage), typeof(ItemTappedEventArgsConverterPage)) },
 		{ typeof(ListToStringConverterViewModel), (typeof(ConvertersGalleryPage), typeof(ListToStringConverterPage)) },
@@ -60,6 +64,9 @@ public partial class AppShell : Shell
 
 		// Add Extensions View Models
 		{ typeof(ColorAnimationExtensionsViewModel), (typeof(ExtensionsGalleryPage), typeof(ColorAnimationExtensionsPage)) },
+
+		// Add Layouts View Models
+		{ typeof(UniformItemsLayoutViewModel), (typeof(LayoutsGalleryPage), typeof(UniformItemsLayoutPage)) },
 	};
 
 	public AppShell()
@@ -86,7 +93,7 @@ public partial class AppShell : Shell
 
 	static void RegisterRouting()
 	{
-		foreach(KeyValuePair<Type, (Type GalleryPageType, Type ContentPageType)> viewModelKeyValuePair in viewModelMappings)
+		foreach(var viewModelKeyValuePair in viewModelMappings)
 		{
 			Routing.RegisterRoute(GetPageRoute(viewModelKeyValuePair.Value.GalleryPageType, viewModelKeyValuePair.Value.ContentPageType), viewModelKeyValuePair.Value.ContentPageType);
 		}
