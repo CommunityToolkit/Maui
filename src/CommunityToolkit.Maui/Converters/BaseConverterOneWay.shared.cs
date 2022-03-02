@@ -28,7 +28,7 @@ public abstract class BaseConverterOneWay<TFrom, TTo> : BaseConverterOneWay
 		}
 		else if (value is null && !IsNullable<TFrom>())
 		{
-			throw new ArgumentException($"value cannot be null because {nameof(TFrom)} is not Nullable");
+			throw new ArgumentNullException(nameof(value), $"value cannot be null because {nameof(TFrom)} is not Nullable");
 		}
 
 		if (value is not TFrom convertedValue)
