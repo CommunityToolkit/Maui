@@ -11,12 +11,17 @@ public class IsStringNotNullOrEmptyConverter_Tests : BaseTest
 	[InlineData(null, false)]
 	[InlineData("", false)]
 	[InlineData(" ", true)]
-	public void IsNotNullOrEmptyConverter_ValidStringValue(string? value, bool expectedResult)
+	public void IsStringNotNullOrEmptyConverter_ValidStringValue(string? value, bool expectedResult)
 	{
 		var isNotNullOrEmptyConverter = new IsStringNotNullOrEmptyConverter();
 
-		var result = (bool)isNotNullOrEmptyConverter.Convert(value, null, null, null);
+#pragma warning disable CS8605 // Unboxing a possibly null value.
+		var baseResult = (bool)isNotNullOrEmptyConverter.Convert(value, typeof(bool), null, null);
+#pragma warning restore CS8605 // Unboxing a possibly null value.
 
+		var result = isNotNullOrEmptyConverter.ConvertFrom(value);
+
+		Assert.Equal(expectedResult, baseResult);
 		Assert.Equal(expectedResult, result);
 	}
 
@@ -24,10 +29,10 @@ public class IsStringNotNullOrEmptyConverter_Tests : BaseTest
 	[InlineData(17)]
 	[InlineData(true)]
 	[InlineData('c')]
-	public void IsNotNullOrEmptyConverter_InvalidValue(object value)
+	public void IsStringNotNullOrEmptyConverter_InvalidValue(object value)
 	{
 		var isNotNullOrEmptyConverter = new IsStringNotNullOrEmptyConverter();
 
-		Assert.Throws<InvalidCastException>(() => isNotNullOrEmptyConverter.Convert(value, null, null, null));
+		Assert.Throws<ArgumentException>(() => isNotNullOrEmptyConverter.Convert(value, typeof(bool), null, null));
 	}
 }

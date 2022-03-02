@@ -35,11 +35,14 @@ public class ImageResourceConverter_Tests : BaseTest
 		var expectedMemoryStream = await GetStreamFromImageSource(expectedResource, CancellationToken.None);
 
 		var imageResourceConverter = new ImageResourceConverter();
-		var result = (ImageSource)imageResourceConverter.Convert(resourceToLoad, typeof(ImageResourceConverter), null, CultureInfo.CurrentCulture);
+		var convertResult = (ImageSource)(imageResourceConverter.Convert(resourceToLoad, typeof(ImageSource), null, CultureInfo.CurrentCulture) ?? throw new NullReferenceException());
+		var streamResult = await GetStreamFromImageSource(convertResult, CancellationToken.None);
 
-		var streamResult = await GetStreamFromImageSource(result, CancellationToken.None);
+		var convertFromResult = imageResourceConverter.ConvertFrom(resourceToLoad);
+		var streamFromResult = await GetStreamFromImageSource(convertFromResult, CancellationToken.None);
 
-		Assert.True(StreamEquals(streamResult, expectedMemoryStream));
+		Assert.True(StreamEquals(expectedMemoryStream, streamResult));
+		Assert.True(StreamEquals(expectedMemoryStream, streamFromResult));
 	}
 
 	[Fact]
@@ -47,7 +50,8 @@ public class ImageResourceConverter_Tests : BaseTest
 	{
 		var imageResourceConverter = new ImageResourceConverter();
 
-		Assert.Null(imageResourceConverter.Convert(null, typeof(ImageResourceConverter), null, CultureInfo.CurrentCulture));
+		Assert.Null(imageResourceConverter.Convert(null, typeof(ImageSource), null, CultureInfo.CurrentCulture));
+		Assert.Null(imageResourceConverter.ConvertFrom(null));
 	}
 
 	[Theory]
@@ -56,6 +60,6 @@ public class ImageResourceConverter_Tests : BaseTest
 	{
 		var imageResourceConverter = new ImageResourceConverter();
 
-		Assert.Throws<ArgumentException>(() => imageResourceConverter.Convert(value, typeof(ImageResourceConverter), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => imageResourceConverter.Convert(value, typeof(ImageSource), null, CultureInfo.CurrentCulture));
 	}
 }
