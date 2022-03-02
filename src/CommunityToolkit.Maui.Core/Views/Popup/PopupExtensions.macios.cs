@@ -44,7 +44,7 @@ public static class PopupExtensions
 	/// <param name="basePopup">An istance of <see cref="IPopup"/>.</param>
 	public static void SetLightDismiss(this MauiPopup popup, in IPopup basePopup)
 	{
-			popup.ModalInPresentation = !basePopup.IsLightDismissEnabled;
+		popup.ModalInPresentation = !basePopup.IsLightDismissEnabled;
 	}
 
 	/// <summary>
