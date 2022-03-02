@@ -7,18 +7,25 @@ namespace CommunityToolkit.Maui.Views;
 /// The popup control's base implementation.
 /// </summary>
 [ContentProperty(nameof(Content))]
-public abstract partial class BasePopup : Element, IPopup
+public partial class Popup : Element, IPopup
 {
-	readonly WeakEventManager dismissWeakEventManager = new();
-	readonly WeakEventManager openedWeakEventManager = new();
-	readonly Lazy<PlatformConfigurationRegistry<BasePopup>> platformConfigurationRegistry;
+	TaskCompletionSource<object?> taskCompletionSource = new();
 
 	/// <summary>
-	/// Instantiates a new instance of <see cref="BasePopup"/>.
+	/// Gets the final result of the dismissed popup.
 	/// </summary>
-	protected BasePopup()
+	public Task<object?> Result => taskCompletionSource.Task;
+
+	readonly WeakEventManager dismissWeakEventManager = new();
+	readonly WeakEventManager openedWeakEventManager = new();
+	readonly Lazy<PlatformConfigurationRegistry<Popup>> platformConfigurationRegistry;
+
+	/// <summary>
+	/// Instantiates a new instance of <see cref="Popup"/>.
+	/// </summary>
+	public Popup()
 	{
-		platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<BasePopup>>(() => new(this));
+		platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Popup>>(() => new(this));
 
 		VerticalOptions = LayoutAlignment.Center;
 		HorizontalOptions = LayoutAlignment.Center;
@@ -27,32 +34,32 @@ public abstract partial class BasePopup : Element, IPopup
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="Content"/> property.
 	/// </summary>
-	public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View), typeof(BasePopup), propertyChanged: OnContentChanged);
+	public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View), typeof(Popup), propertyChanged: OnContentChanged);
 
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="Color"/> property.
 	/// </summary>
-	public static readonly BindableProperty ColorProperty = BindableProperty.Create(nameof(Color), typeof(Color), typeof(BasePopup), default);
+	public static readonly BindableProperty ColorProperty = BindableProperty.Create(nameof(Color), typeof(Color), typeof(Popup), default);
 
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="Size"/> property.
 	/// </summary>
-	public static readonly BindableProperty SizeProperty = BindableProperty.Create(nameof(Size), typeof(Size), typeof(BasePopup), default(Size));
+	public static readonly BindableProperty SizeProperty = BindableProperty.Create(nameof(Size), typeof(Size), typeof(Popup), default(Size));
 
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="IsLightDismissEnabled"/> property.
 	/// </summary>
-	public static readonly BindableProperty IsLightDismissEnabledProperty = BindableProperty.Create(nameof(IsLightDismissEnabled), typeof(bool), typeof(BasePopup), true);
+	public static readonly BindableProperty IsLightDismissEnabledProperty = BindableProperty.Create(nameof(IsLightDismissEnabled), typeof(bool), typeof(Popup), true);
 
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="VerticalOptions"/> property.
 	/// </summary>
-	public static readonly BindableProperty VerticalOptionsProperty = BindableProperty.Create(nameof(VerticalOptions), typeof(LayoutAlignment), typeof(BasePopup), LayoutAlignment.Center);
+	public static readonly BindableProperty VerticalOptionsProperty = BindableProperty.Create(nameof(VerticalOptions), typeof(LayoutAlignment), typeof(Popup), LayoutAlignment.Center);
 
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="HorizontalOptions"/> property.
 	/// </summary>
-	public static readonly BindableProperty HorizontalOptionsProperty = BindableProperty.Create(nameof(HorizontalOptions), typeof(LayoutAlignment), typeof(BasePopup), LayoutAlignment.Center);
+	public static readonly BindableProperty HorizontalOptionsProperty = BindableProperty.Create(nameof(HorizontalOptions), typeof(LayoutAlignment), typeof(Popup), LayoutAlignment.Center);
 
 	/// <summary>
 	/// Gets or sets the <see cref="View"/> content to render in the Popup.
@@ -181,8 +188,11 @@ public abstract partial class BasePopup : Element, IPopup
 	/// Invoked when the popup is light dismissed. In other words when the
 	/// user taps outside of the popup and it closes.
 	/// </summary>
-	protected internal virtual void LightDismiss() =>
+	protected internal virtual void LightDismiss()
+	{
+		taskCompletionSource.TrySetResult(GetLightDismissResult());
 		dismissWeakEventManager.HandleEvent(this, new PopupDismissedEventArgs(null, true), nameof(Dismissed));
+	}
 
 	/// <summary>
 	///<inheritdoc/>
@@ -199,9 +209,39 @@ public abstract partial class BasePopup : Element, IPopup
 
 	static void OnContentChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		var popup = (BasePopup)bindable;
+		var popup = (Popup)bindable;
 		popup.OnBindingContextChanged();
 	}
+
+
+	/// <summary>
+	/// Resets the Popup.
+	/// </summary>
+	public void Reset() => taskCompletionSource = new();
+
+	/// <summary>
+	/// Dismiss the current popup.
+	/// </summary>
+	/// <param name="result">
+	/// The result to return.
+	/// </param>
+	public void Dismiss(object? result)
+	{
+		taskCompletionSource.TrySetResult(result);
+		OnDismissed(result);
+	}
+
+	/// <summary>
+	/// Gets the light dismiss default result.
+	/// </summary>
+	/// <returns>
+	/// The light dismiss value.
+	/// </returns>
+	/// <remarks>
+	/// When a user dismisses the Popup via the light dismiss, this
+	/// method will return a default value.
+	/// </remarks>
+	protected virtual object? GetLightDismissResult() => default;
 
 	void IPopup.OnDismissed(object? result) => Handler.Invoke(nameof(IPopup.OnDismissed), result);
 

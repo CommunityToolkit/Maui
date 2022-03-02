@@ -13,7 +13,6 @@ public class PopupTests : BaseHandlerTest
 	public PopupTests()
 	{
 		Assert.IsAssignableFrom<IPopup>(new MockPopup());
-		Assert.IsAssignableFrom<IPopup>(new MockBasePopup());
 	}
 
 	[Fact]
@@ -175,11 +174,6 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	class MockPopup : Popup
-	{
-
-	}
-
-	class MockBasePopup : BasePopup
 	{
 
 	}

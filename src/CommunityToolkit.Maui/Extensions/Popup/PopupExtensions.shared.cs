@@ -18,9 +18,9 @@ public static partial class PopupExtensions
 	/// The current <see cref="Page"/>.
 	/// </param>
 	/// <param name="popup">
-	/// The <see cref="BasePopup"/> to display.
+	/// The <see cref="Popup"/> to display.
 	/// </param>
-	public static void ShowPopup<TPopup>(this Page page, TPopup popup) where TPopup : BasePopup
+	public static void ShowPopup<TPopup>(this Page page, TPopup popup) where TPopup : Popup
 	{
 #if WINDOWS
 		PlatformShowPopup(popup, GetMauiContext(page));
@@ -53,7 +53,7 @@ public static partial class PopupExtensions
 #endif
 	}
 
-	static void CreatePopup(Page page, BasePopup popup)
+	static void CreatePopup(Page page, Popup popup)
 	{
 		var mauiContext = GetMauiContext(page);
 		popup.Parent = PageExtensions.GetCurrentPage(page);
@@ -74,7 +74,7 @@ public static partial class PopupExtensions
 /// </summary>
 public static partial class NavigationExtensions
 {
-	static void PlatformShowPopup(BasePopup popup, IMauiContext mauiContext) =>
+	static void PlatformShowPopup(Popup popup, IMauiContext mauiContext) =>
 		throw new NotSupportedException($"The current platform '{Device.RuntimePlatform}' does not support CommunityToolkit.Maui.Core.BasePopup");
 
 	static Task<object?> PlatformShowPopupAsync(Popup popup, IMauiContext mauiContext) =>

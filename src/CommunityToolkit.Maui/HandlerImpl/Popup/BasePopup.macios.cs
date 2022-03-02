@@ -4,7 +4,7 @@ using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.Views;
 
-public partial class BasePopup
+public partial class Popup
 {
 	/// <summary>
 	/// Action that's triggered when the Popup is Opened.

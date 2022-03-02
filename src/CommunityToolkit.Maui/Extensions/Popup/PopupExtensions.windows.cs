@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Extensions;
 /// </summary>
 public static partial class PopupExtensions
 {
-	static void PlatformShowPopup(BasePopup popup, IMauiContext mauiContext)
+	static void PlatformShowPopup(Popup popup, IMauiContext mauiContext)
 	{
 		var window = mauiContext.GetNativeWindow().GetWindow() ?? throw new NullReferenceException("Window is null.");
 		popup.Parent = PageExtensions.GetCurrentPage((Page)window.Content);

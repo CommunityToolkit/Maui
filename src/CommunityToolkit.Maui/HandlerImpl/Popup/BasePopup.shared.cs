@@ -7,7 +7,7 @@ using CommunityToolkit.Core.Handlers;
 using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Views;
-public abstract partial class BasePopup
+public partial class Popup
 {
 	/// <summary>
 	/// 
