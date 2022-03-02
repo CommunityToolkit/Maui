@@ -18,5 +18,5 @@ public class NotEqualConverter : BaseConverterOneWay
 	/// <returns>True if <paramref name="value"/> and <paramref name="parameter"/> are not equal, False if they are equal.</returns>
 	[return: NotNull]
 	public override object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture) =>
-		!EqualConverter.ConvertInternal(value, parameter);
+		!EqualConverter.IsEqual(value, parameter);
 }

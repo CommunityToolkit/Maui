@@ -17,8 +17,8 @@ public class EqualConverter : BaseConverterOneWay
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>True if <paramref name="value"/> and <paramref name="parameter"/> are equal, False if they are not equal.</returns>
 	[return: NotNull]
-	public override object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture) => ConvertInternal(value, parameter);
+	public override object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture) => IsEqual(value, parameter);
 
-	internal static bool ConvertInternal(object? value, object? parameter) =>
+	internal static bool IsEqual(object? value, object? parameter) =>
 		(value != null && value.Equals(parameter)) || (value == null && parameter == null);
 }
