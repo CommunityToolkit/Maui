@@ -1,7 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-
-namespace CommunityToolkit.Maui.Converters;
+﻿namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>
 /// Converts the incoming value to a <see cref="bool"/> indicating whether or not the value is not null and not empty.
@@ -12,10 +9,5 @@ public class IsStringNotNullOrEmptyConverter : BaseConverterOneWay<string?, bool
 	/// Converts the incoming string to a <see cref="bool"/> indicating whether or not the value is not null and not empty using string.IsNullOrEmpty.
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
-	public override bool ConvertFrom(string? value)
-	{
-		var stringValue = value;
-
-		return !string.IsNullOrEmpty(stringValue);
-	}
+	public override bool ConvertFrom(string? value) => !string.IsNullOrEmpty(value);
 }
