@@ -27,7 +27,7 @@ public abstract class BaseConverterOneWay<TFrom, TTo> : BaseConverterOneWay
 #pragma warning restore CS8604 // Possible null reference argument.
 		}
 
-		if (value is not TFrom)
+		if (value is not TFrom convertedValue)
 		{
 			throw new ArgumentException($"value needs to be of type {typeof(TFrom)}");
 		}
@@ -37,7 +37,7 @@ public abstract class BaseConverterOneWay<TFrom, TTo> : BaseConverterOneWay
 			throw new ArgumentException($"targetType needs to be typeof {typeof(TTo)}");
 		}
 
-		return ConvertFrom((TFrom)value);
+		return ConvertFrom(convertedValue);
 	}
 
 	/// <summary>
