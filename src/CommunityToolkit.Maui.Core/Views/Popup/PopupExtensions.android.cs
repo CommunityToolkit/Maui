@@ -111,7 +111,6 @@ public static class PopupExtensions
 		{
 			var decorView = (ViewGroup)(window?.DecorView ?? throw new NullReferenceException());
 			var child = decorView?.GetChildAt(0) ?? throw new NullReferenceException();
-
 			var realWidth = (int)context.ToPixels(basePopup.Size.Width);
 			var realHeight = (int)context.ToPixels(basePopup.Size.Height);
 
@@ -120,7 +119,11 @@ public static class PopupExtensions
 
 			realWidth = realWidth is 0 ? realContentWidth : realWidth;
 			realHeight = realHeight is 0 ? realContentHeight : realHeight;
-
+			if (realHeight is 0 || realWidth is 0)
+			{
+				realWidth = (int?)(context.Resources?.DisplayMetrics?.WidthPixels * 0.8) ?? throw new NullReferenceException();
+				realHeight = (int?)(context.Resources?.DisplayMetrics?.HeightPixels * 0.6) ?? throw new NullReferenceException();
+			}
 			var childLayoutParams = (FrameLayout.LayoutParams)(child?.LayoutParameters ?? throw new NullReferenceException());
 			childLayoutParams.Width = realWidth;
 			childLayoutParams.Height = realHeight;
