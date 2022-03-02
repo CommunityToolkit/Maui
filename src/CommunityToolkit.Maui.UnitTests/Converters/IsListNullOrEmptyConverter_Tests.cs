@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Collections;
+using System.Globalization;
 using CommunityToolkit.Maui.Converters;
 using Xunit;
 
@@ -20,7 +21,7 @@ public class IsListNullOrEmptyConverter_Tests : BaseTest
 	{
 		var listIstNullOrEmptyConverter = new IsListNullOrEmptyConverter();
 
-		var result = (bool)listIstNullOrEmptyConverter.Convert(value, typeof(IsListNullOrEmptyConverter), null, CultureInfo.CurrentCulture);
+		var result = (bool)(listIstNullOrEmptyConverter.Convert(value, typeof(IEnumerable), null, CultureInfo.CurrentCulture) ?? throw new NullReferenceException());
 
 		Assert.Equal(expectedResult, result);
 	}
@@ -31,6 +32,6 @@ public class IsListNullOrEmptyConverter_Tests : BaseTest
 	{
 		var listIstNullOrEmptyConverter = new IsListNullOrEmptyConverter();
 
-		Assert.Throws<ArgumentException>(() => listIstNullOrEmptyConverter.Convert(value, typeof(IsListNullOrEmptyConverter), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => listIstNullOrEmptyConverter.Convert(value, typeof(IEnumerable), null, CultureInfo.CurrentCulture));
 	}
 }
