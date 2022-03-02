@@ -56,7 +56,7 @@ public abstract class BaseConverterOneWay<TFrom, TTo> : BaseConverterOneWay
 			return true; // ref-type
 		}
 
-		if (Nullable.GetUnderlyingType(type) != null)
+		if (Nullable.GetUnderlyingType(type) is not null)
 		{
 			return true; // Nullable<T>
 		}
