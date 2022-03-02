@@ -51,17 +51,17 @@ public abstract class BaseConverterOneWay<TFrom, TTo> : BaseConverterOneWay
 	{
 		var type = typeof(T);
 
-		if (!type.IsValueType)
+		if (type.IsValueType)
 		{
-			return true; // ref-type
+			return true; // value type
 		}
 
-		if (Nullable.GetUnderlyingType(type) != null)
+		if (Nullable.GetUnderlyingType(type) is not null)
 		{
 			return true; // Nullable<T>
 		}
 
-		return false; // value-type
+		return true; // ref type
 	}
 }
 
