@@ -67,12 +67,7 @@ public class MauiPopup : UIViewController
 		_ = View ?? throw new InvalidOperationException($"{nameof(View)} cannot be null");
 		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null.");
 
-		Control = CreateControl(VirtualView);
 		ViewController ??= mainPage.ViewController ?? throw new InvalidOperationException($"{nameof(mainPage.ViewController)} cannot be null"); ;
-
-		SetPresentationController();
-		SetView(View, Control);
-		AddToCurrentPageViewController(ViewController, VirtualView);
 	}
 
 	/// <summary>
@@ -94,15 +89,20 @@ public class MauiPopup : UIViewController
 		}
 	}
 
-	PageHandler CreateControl(in IPopup virtualView)
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="func"></param>
+	/// <param name="virtualView"></param>
+	/// <returns></returns>
+	public void CreateControl(Func<IPopup ,PageHandler> func, in IPopup virtualView)
 	{
-		var view = (View?)virtualView.Content;
-		var contentPage = new ContentPage { Content = view, BackgroundColor = Colors.Orange };
+		Control = func(virtualView);
 
-		contentPage.Parent = Application.Current?.MainPage;
-		contentPage.SetBinding(VisualElement.BindingContextProperty, new Binding { Source = virtualView, Path = VisualElement.BindingContextProperty.PropertyName });
-
-		return (PageHandler)contentPage.ToHandler(mauiContext);
+		SetPresentationController();
+		SetView(View!, Control);
+		AddToCurrentPageViewController(ViewController!, VirtualView!);
+		this.SetLayout(virtualView);
 	}
 
 	void SetView(UIView view, PageHandler control)
@@ -131,7 +131,7 @@ public class MauiPopup : UIViewController
 
 	void AddToCurrentPageViewController(UIViewController viewController, IPopup virtualView)
 	{
-		viewController.PresentViewController(this, true, () => virtualView.Handler?.Invoke(nameof(IPopup.OnOpened)));
+		viewController.PresentViewController(this, true, null);
 	}
 
 	sealed class PopoverDelegate : UIPopoverPresentationControllerDelegate

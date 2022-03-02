@@ -24,17 +24,6 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 	}
 
 	/// <summary>
-	/// Action that's triggered when the Popup is Opened.
-	/// </summary>
-	/// <param name="handler">An instance of <see cref="PopupViewHandler"/>.</param>
-	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
-	/// <param name="result">We don't need to provide the result parameter here.</param>
-	public static void MapOnOpened(PopupViewHandler handler, IPopup view, object? result)
-	{
-		view.OnOpened();
-	}
-
-	/// <summary>
 	/// Action that's triggered when the Popup is LightDismissed.
 	/// </summary>
 	/// <param name="handler">An instance of <see cref="PopupViewHandler"/>.</param>

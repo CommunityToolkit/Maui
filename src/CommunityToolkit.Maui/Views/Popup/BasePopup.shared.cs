@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.Views;
 /// The popup control's base implementation.
 /// </summary>
 [ContentProperty(nameof(Content))]
-public abstract class BasePopup : Element, IPopup
+public abstract partial class BasePopup : Element, IPopup
 {
 	readonly WeakEventManager dismissWeakEventManager = new();
 	readonly WeakEventManager openedWeakEventManager = new();
