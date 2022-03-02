@@ -21,7 +21,7 @@ public class IsListNotNullOrEmptyConverter_Tests : BaseTest
 	{
 		var listIsNotNullOrEmptyConverter = new IsListNotNullOrEmptyConverter();
 
-		var convertResult = (bool)(listIsNotNullOrEmptyConverter.Convert(value, typeof(IEnumerable), null, CultureInfo.CurrentCulture) ?? throw new NullReferenceException());
+		var convertResult = (bool?)listIsNotNullOrEmptyConverter.Convert(value, typeof(IEnumerable), null, CultureInfo.CurrentCulture);
 		var convertFromResult = listIsNotNullOrEmptyConverter.ConvertFrom(value);
 
 		Assert.Equal(expectedResult, convertResult);

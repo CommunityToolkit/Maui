@@ -17,13 +17,15 @@ public class IsListNullOrEmptyConverter_Tests : BaseTest
 
 	[Theory]
 	[MemberData(nameof(Data))]
-	public void IsListNullOrEmptyConverter(object value, bool expectedResult)
+	public void IsListNullOrEmptyConverter(IEnumerable? value, bool expectedResult)
 	{
 		var listIstNullOrEmptyConverter = new IsListNullOrEmptyConverter();
 
-		var result = (bool)(listIstNullOrEmptyConverter.Convert(value, typeof(IEnumerable), null, CultureInfo.CurrentCulture) ?? throw new NullReferenceException());
+		var convertResult = (bool?)listIstNullOrEmptyConverter.Convert(value, typeof(IEnumerable), null, CultureInfo.CurrentCulture);
+		var convertFromResult = listIstNullOrEmptyConverter.ConvertFrom(value);
 
-		Assert.Equal(expectedResult, result);
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
 	}
 
 	[Theory]
