@@ -18,9 +18,16 @@ public abstract class BaseConverterOneWay<TFrom, TTo> : BaseConverterOneWay
 	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>An object of type <typeparamref name="TTo"/>.</returns>
-	public override object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	public override sealed object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
-		if (value is not TFrom valueFrom)
+		if (value is null && IsNullable<TFrom>())
+		{
+#pragma warning disable CS8604 // Possible null reference argument.
+			return ConvertFrom(default);
+#pragma warning restore CS8604 // Possible null reference argument.
+		}
+
+		if (value?.GetType() != typeof(TFrom))
 		{
 			throw new ArgumentException($"value needs to be of type {typeof(TFrom)}");
 		}
@@ -30,7 +37,7 @@ public abstract class BaseConverterOneWay<TFrom, TTo> : BaseConverterOneWay
 			throw new ArgumentException($"targetType needs to be typeof {typeof(TTo)}");
 		}
 
-		return ConvertFrom(valueFrom);
+		return ConvertFrom((TFrom)value);
 	}
 
 	/// <summary>
@@ -39,6 +46,23 @@ public abstract class BaseConverterOneWay<TFrom, TTo> : BaseConverterOneWay
 	/// <param name="value">Value to be converted from <typeparamref name="TFrom"/> to <typeparamref name="TTo"/>.</param>
 	/// <returns>An object of type <typeparamref name="TTo"/>.</returns>
 	public abstract TTo? ConvertFrom(TFrom value);
+
+	static bool IsNullable<T>()
+	{
+		var type = typeof(T);
+
+		if (!type.IsValueType)
+		{
+			return true; // ref-type
+		}
+
+		if (Nullable.GetUnderlyingType(type) != null)
+		{
+			return true; // Nullable<T>
+		}
+
+		return false; // value-type
+	}
 }
 
 /// <summary>
@@ -59,6 +83,6 @@ public abstract class BaseConverterOneWay : ValueConverterExtension, ICommunityT
 	/// <summary>
 	/// Not supported, use <see cref="BaseConverter{TFrom, TTo}"/>
 	/// </summary>
-	public virtual object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture) => 
+	public virtual object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture) =>
 		throw new NotSupportedException("Impossible to revert to original value. Consider setting BindingMode to OneWay.");
 }
