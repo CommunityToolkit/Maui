@@ -60,6 +60,6 @@ public class ImageResourceConverter_Tests : BaseTest
 	{
 		var imageResourceConverter = new ImageResourceConverter();
 
-		Assert.Throws<ArgumentException>(() => imageResourceConverter.Convert(value, typeof(ImageResourceConverter), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => imageResourceConverter.Convert(value, typeof(ImageSource), null, CultureInfo.CurrentCulture));
 	}
 }

@@ -27,7 +27,7 @@ public abstract class BaseConverterOneWay<TFrom, TTo> : BaseConverterOneWay
 #pragma warning restore CS8604 // Possible null reference argument.
 		}
 
-		if (value?.GetType() != typeof(TFrom))
+		if (value is not TFrom)
 		{
 			throw new ArgumentException($"value needs to be of type {typeof(TFrom)}");
 		}
