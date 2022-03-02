@@ -26,6 +26,10 @@ public abstract class BaseConverterOneWay<TFrom, TTo> : BaseConverterOneWay
 			return ConvertFrom(default);
 #pragma warning restore CS8604 // Possible null reference argument.
 		}
+		else if (value is null && !IsNullable<TFrom>())
+		{
+			throw new ArgumentException($"value cannot be null because {nameof(TFrom)} is not Nullable");
+		}
 
 		if (value is not TFrom convertedValue)
 		{
