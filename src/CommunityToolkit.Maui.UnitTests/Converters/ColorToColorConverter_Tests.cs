@@ -90,11 +90,10 @@ public class ColorToColorConverter_Tests : BaseTest
 	}
 
 	[Theory]
-	[InlineData(null)]
 	[InlineData(2)]
 	[InlineData('c')]
 	[InlineData(true)]
-	public void ColorToBlackOrWhiteConverterConvertInvalidArgumentsTest(object? value)
+	public void ColorToBlackOrWhiteConverterConvertInvalidArgumentsTest(object value)
 	{
 		var converter = new ColorToBlackOrWhiteConverter();
 
@@ -102,11 +101,13 @@ public class ColorToColorConverter_Tests : BaseTest
 	}
 
 	[Fact]
-	public void ColorToBlackOrWhiteConverterConvertFromInvalidArgumentsTest()
+	public void ColorToBlackOrWhiteConverterNullArgumentsTest()
 	{
 		var converter = new ColorToBlackOrWhiteConverter();
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => converter.Convert(null, typeof(Color), null, null));
+		Assert.Throws<ArgumentNullException>(() => converter.Convert(default, typeof(Color), null, null));
 		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(null));
 		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(default));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
@@ -126,11 +127,10 @@ public class ColorToColorConverter_Tests : BaseTest
 	}
 
 	[Theory]
-	[InlineData(null)]
 	[InlineData(2)]
 	[InlineData('c')]
 	[InlineData(true)]
-	public void ColorToColorForTextConverterConvertInvalidArgumentsTest(object? value)
+	public void ColorToColorForTextConverterConvertInvalidArgumentsTest(object value)
 	{
 		var converter = new ColorToColorForTextConverter();
 
@@ -138,11 +138,13 @@ public class ColorToColorConverter_Tests : BaseTest
 	}
 
 	[Fact]
-	public void ColorToColorForTextConverterConvertFromInvalidArgumentsTest()
+	public void ColorToColorForTextConverterNullArgumentsTest()
 	{
 		var converter = new ColorToColorForTextConverter();
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => converter.Convert(null, typeof(Color), null, null));
+		Assert.Throws<ArgumentNullException>(() => converter.Convert(default, typeof(Color), null, null));
 		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(null));
 		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(default));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
@@ -162,11 +164,10 @@ public class ColorToColorConverter_Tests : BaseTest
 	}
 
 	[Theory]
-	[InlineData(null)]
 	[InlineData(2)]
 	[InlineData('c')]
 	[InlineData(true)]
-	public void ColorToGrayScaleColorConverterConvertInvalidArgumentsTest(object? value)
+	public void ColorToGrayScaleColorConverterConvertInvalidArgumentsTest(object value)
 	{
 		var converter = new ColorToGrayScaleColorConverter();
 
@@ -174,11 +175,13 @@ public class ColorToColorConverter_Tests : BaseTest
 	}
 
 	[Fact]
-	public void ColorToGrayScaleColorConverterConvertFromInvalidArgumentsTest()
+	public void ColorToGrayScaleColorConverterNullInvalidArgumentsTest()
 	{
 		var converter = new ColorToGrayScaleColorConverter();
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => converter.Convert(null, typeof(Color), null, null));
+		Assert.Throws<ArgumentNullException>(() => converter.Convert(default, typeof(Color), null, null));
 		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(null));
 		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(default));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
@@ -198,11 +201,10 @@ public class ColorToColorConverter_Tests : BaseTest
 	}
 
 	[Theory]
-	[InlineData(null)]
 	[InlineData(2)]
 	[InlineData('c')]
 	[InlineData(true)]
-	public void ColorToInverseColorConverterConvertInvalidArgumentsTest(object? value)
+	public void ColorToInverseColorConverterConvertInvalidArgumentsTest(object value)
 	{
 		var converter = new ColorToInverseColorConverter();
 
@@ -210,11 +212,13 @@ public class ColorToColorConverter_Tests : BaseTest
 	}
 
 	[Fact]
-	public void ColorToInverseColorConverterConvertFromInvalidArgumentsTest()
+	public void ColorToInverseColorConverteNullArgumentsTest()
 	{
 		var converter = new ColorToInverseColorConverter();
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => converter.Convert(null, typeof(Color), null, null));
+		Assert.Throws<ArgumentNullException>(() => converter.Convert(default, typeof(Color), null, null));
 		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(null));
 		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(default));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
