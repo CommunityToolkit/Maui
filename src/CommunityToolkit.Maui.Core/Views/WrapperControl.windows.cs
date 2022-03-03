@@ -1,28 +1,16 @@
 ﻿using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using WRect = Windows.Foundation.Rect;
 using Microsoft.Maui.Controls.Platform;
+using WRect = Windows.Foundation.Rect;
 
-namespace CommunityToolkit.Core.Extensions.Workarounds;
+namespace CommunityToolkit.Core.Views;
 
 // We still have to keep this class, due to some random exceptions that occours when the 
 // .NET MAUI implementation is used.
 class WrapperControl : Panel
 {
 	readonly View view;
-	IView View => view;
-	INativeViewHandler? Handler => View.Handler as INativeViewHandler;
-
-	FrameworkElement FrameworkElement { get; }
-
-	internal void CleanUp()
-	{
-		if (view is not null)
-		{
-			view.MeasureInvalidated -= OnMeasureInvalidated;
-		}
-	}
 
 	public WrapperControl(View view, IMauiContext mauiContext)
 	{
@@ -44,9 +32,17 @@ class WrapperControl : Panel
 		};
 	}
 
-	void OnMeasureInvalidated(object? sender, EventArgs e)
+	IView View => view;
+	INativeViewHandler? Handler => View.Handler as INativeViewHandler;
+
+	FrameworkElement FrameworkElement { get; }
+
+	internal void CleanUp()
 	{
-		InvalidateMeasure();
+		if (view is not null)
+		{
+			view.MeasureInvalidated -= OnMeasureInvalidated;
+		}
 	}
 
 	protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
@@ -93,5 +89,10 @@ class WrapperControl : Panel
 		}
 
 		return result;
+	}
+
+	void OnMeasureInvalidated(object? sender, EventArgs e)
+	{
+		InvalidateMeasure();
 	}
 }
