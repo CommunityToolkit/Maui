@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Globalization;
 using CommunityToolkit.Maui.Extensions;
 
@@ -10,6 +11,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// <typeparam name="TTo">Type of the output value</typeparam>
 public abstract class BaseConverterOneWay<TFrom, TTo> : BaseConverterOneWay
 {
+	readonly bool isInitializedInXaml = new StackTrace().GetFrames().Any(x => x.GetMethod()?.Name is "LoadFromXaml");
+
 	/// <summary>
 	/// Converts the incoming value from <typeparamref name="TFrom"/>[] and returns the object of a type <typeparamref name="TTo"/>.
 	/// </summary>
@@ -36,12 +39,16 @@ public abstract class BaseConverterOneWay<TFrom, TTo> : BaseConverterOneWay
 			throw new ArgumentException($"value needs to be of type {typeof(TFrom)}");
 		}
 
-		if (targetType != typeof(TTo) && !(typeof(TFrom) != typeof(string)))
+		// This validation only works for Converters called in C#, not XAML 
+		if (targetType != typeof(TTo) && !IsValidXamlTargetType())
 		{
 			throw new ArgumentException($"targetType needs to be typeof {typeof(TTo)}");
 		}
 
 		return ConvertFrom(convertedValue);
+
+		// Every targetType called from XAML is typeof(string)
+		bool IsValidXamlTargetType() => isInitializedInXaml && targetType == typeof(string);
 	}
 
 	/// <summary>
