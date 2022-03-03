@@ -29,7 +29,10 @@ public static class PopupExtensions
 	/// <param name="basePopup">An istance of <see cref="IPopup"/>.</param>
 	public static void SetBackgroundColor(this MauiPopup popup, in IPopup basePopup)
 	{
-		ArgumentNullException.ThrowIfNull(popup.Control);
+		if (popup.Control is null)
+		{
+			return;
+		}
 
 		var color = basePopup.Color?.ToNative();
 		popup.Control.NativeView.BackgroundColor = color;
