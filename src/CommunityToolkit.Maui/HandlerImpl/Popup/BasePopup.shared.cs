@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CommunityToolkit.Core.Handlers;
+﻿using CommunityToolkit.Core.Handlers;
 using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Views;
+
 public partial class Popup
 {
 	/// <summary>
