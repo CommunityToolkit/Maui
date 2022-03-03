@@ -90,6 +90,8 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapSize(PopupViewHandler handler, IPopup view)
 	{
+		ArgumentNullException.ThrowIfNull(handler.Container);
+
 		handler.NativeView?.SetSize(view, handler.Container);
 		handler.NativeView?.SetAnchor(view);
 	}
@@ -119,6 +121,6 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 	{
 		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null");
 
-		VirtualView?.OnOpened();
+		VirtualView.OnOpened();
 	}
 }
