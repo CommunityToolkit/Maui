@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using UIKit;
@@ -54,6 +55,7 @@ public class MauiPopup : UIViewController
 	/// Method to initialize the native implementation.
 	/// </summary>
 	/// <param name="element">An instance of <see cref="IPopup"/>.</param>
+	[MemberNotNull(nameof(VirtualView), nameof(ViewController))]
 	public void SetElement(IPopup element)
 	{
 		if (element.Parent?.Handler is not PageHandler mainPage)
@@ -95,13 +97,19 @@ public class MauiPopup : UIViewController
 	/// <param name="func"></param>
 	/// <param name="virtualView"></param>
 	/// <returns></returns>
+	[MemberNotNull(nameof(Control))]
 	public void CreateControl(Func<IPopup ,PageHandler> func, in IPopup virtualView)
 	{
 		Control = func(virtualView);
 
 		SetPresentationController();
-		SetView(View!, Control);
-		AddToCurrentPageViewController(ViewController!, VirtualView!);
+
+		_ = View ?? throw new InvalidOperationException($"{nameof(View)} cannot be null");
+		SetView(View, Control);
+
+		_ = ViewController ?? throw new InvalidOperationException($"{nameof(ViewController)} cannot be null");
+		AddToCurrentPageViewController(ViewController);
+
 		this.SetLayout(virtualView);
 	}
 
@@ -129,7 +137,7 @@ public class MauiPopup : UIViewController
 		VirtualView.Handler?.Invoke(nameof(IPopup.LightDismiss));
 	}
 
-	void AddToCurrentPageViewController(UIViewController viewController, IPopup virtualView)
+	void AddToCurrentPageViewController(UIViewController viewController)
 	{
 		viewController.PresentViewController(this, true, null);
 	}
