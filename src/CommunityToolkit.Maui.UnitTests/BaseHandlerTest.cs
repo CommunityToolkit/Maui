@@ -4,7 +4,7 @@ namespace CommunityToolkit.Maui.UnitTests;
 
 public abstract class BaseHandlerTest : BaseTest
 {
-	public BaseHandlerTest()
+	protected BaseHandlerTest()
 	{
 		CreateAndSetMockApplication();
 	}

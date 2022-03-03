@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Android.App;
 using Android.Content;
 using CommunityToolkit.Maui.Core;
