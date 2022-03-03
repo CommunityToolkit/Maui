@@ -72,7 +72,7 @@ public static partial class PopupExtensions
 /// <summary>
 /// Extension methods for <see cref="Popup"/>.
 /// </summary>
-public static partial class NavigationExtensions
+public static partial class PopupExtensions
 {
 	static void PlatformShowPopup(Popup popup, IMauiContext mauiContext) =>
 		throw new NotSupportedException($"The current platform '{Device.RuntimePlatform}' does not support CommunityToolkit.Maui.Core.BasePopup");
