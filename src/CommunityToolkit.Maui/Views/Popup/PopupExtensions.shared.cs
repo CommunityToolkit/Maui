@@ -4,7 +4,7 @@ using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Platform;
 
-namespace CommunityToolkit.Maui.Extensions;
+namespace CommunityToolkit.Maui.Views;
 
 /// <summary>
 /// Extension methods for <see cref="Popup"/>.
@@ -64,7 +64,7 @@ public static partial class PopupExtensions
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static IMauiContext GetMauiContext(Page page)
 	{
-		return page.Handler?.MauiContext ?? throw new InvalidOperationException("Could locate MauiContext");
+		return page.Handler?.MauiContext ?? throw new InvalidOperationException("Could not locate MauiContext");
 	}
 }
 
