@@ -39,7 +39,7 @@ public partial class Popup : Element, IPopup
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="Color"/> property.
 	/// </summary>
-	public static readonly BindableProperty ColorProperty = BindableProperty.Create(nameof(Color), typeof(Color), typeof(Popup), default);
+	public static readonly BindableProperty ColorProperty = BindableProperty.Create(nameof(Color), typeof(Color), typeof(Popup), Colors.Transparent);
 
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="Size"/> property.
@@ -167,10 +167,39 @@ public partial class Popup : Element, IPopup
 	IView? IPopup.Content => Content;
 
 	/// <summary>
+	/// Resets the Popup.
+	/// </summary>
+	public void Reset() => taskCompletionSource = new();
+
+	/// <summary>
+	/// Dismiss the current popup.
+	/// </summary>
+	/// <param name="result">
+	/// The result to return.
+	/// </param>
+	public void Dismiss(object? result)
+	{
+		taskCompletionSource.TrySetResult(result);
+		OnDismissed(result);
+	}
+
+	/// <summary>
 	/// Invokes the <see cref="Opened"/> event.
 	/// </summary>
 	internal virtual void OnOpened() =>
 		openedWeakEventManager.HandleEvent(this, PopupOpenedEventArgs.Empty, nameof(Opened));
+
+	/// <summary>
+	/// Gets the light dismiss default result.
+	/// </summary>
+	/// <returns>
+	/// The light dismiss value.
+	/// </returns>
+	/// <remarks>
+	/// When a user dismisses the Popup via the light dismiss, this
+	/// method will return a default value.
+	/// </remarks>
+	protected virtual object? GetLightDismissResult() => default;
 
 	/// <summary>
 	/// Invokes the <see cref="Dismissed"/> event.
@@ -212,36 +241,6 @@ public partial class Popup : Element, IPopup
 		var popup = (Popup)bindable;
 		popup.OnBindingContextChanged();
 	}
-
-
-	/// <summary>
-	/// Resets the Popup.
-	/// </summary>
-	public void Reset() => taskCompletionSource = new();
-
-	/// <summary>
-	/// Dismiss the current popup.
-	/// </summary>
-	/// <param name="result">
-	/// The result to return.
-	/// </param>
-	public void Dismiss(object? result)
-	{
-		taskCompletionSource.TrySetResult(result);
-		OnDismissed(result);
-	}
-
-	/// <summary>
-	/// Gets the light dismiss default result.
-	/// </summary>
-	/// <returns>
-	/// The light dismiss value.
-	/// </returns>
-	/// <remarks>
-	/// When a user dismisses the Popup via the light dismiss, this
-	/// method will return a default value.
-	/// </remarks>
-	protected virtual object? GetLightDismissResult() => default;
 
 	void IPopup.OnDismissed(object? result) => Handler.Invoke(nameof(IPopup.OnDismissed), result);
 
