@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Core.Extensions.Workarounds;
-using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
