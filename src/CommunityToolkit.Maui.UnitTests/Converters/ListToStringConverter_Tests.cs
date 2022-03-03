@@ -22,7 +22,7 @@ public class ListToStringConverter_Tests : BaseTest
 	{
 		var listToStringConverter = new ListToStringConverter();
 
-		var result = (string)listToStringConverter.Convert(value, null, parameter, null);
+		var result = (string)listToStringConverter.Convert(value, typeof(string), parameter, null);
 
 		Assert.Equal(result, expectedResult);
 	}
@@ -33,7 +33,7 @@ public class ListToStringConverter_Tests : BaseTest
 	{
 		var listToStringConverter = new ListToStringConverter();
 
-		Assert.Throws<ArgumentException>(() => listToStringConverter.Convert(value, null, null, null));
+		Assert.Throws<ArgumentException>(() => listToStringConverter.Convert(value, typeof(string), null, null));
 	}
 
 	[Theory]
@@ -42,6 +42,6 @@ public class ListToStringConverter_Tests : BaseTest
 	{
 		var listToStringConverter = new ListToStringConverter();
 
-		Assert.Throws<ArgumentException>(() => listToStringConverter.Convert(Array.Empty<object>(), null, parameter, null));
+		Assert.Throws<ArgumentException>(() => listToStringConverter.Convert(Array.Empty<object>(), typeof(string), parameter, null));
 	}
 }

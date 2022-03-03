@@ -15,7 +15,7 @@ public class IsStringNullOrEmptyConverter_Tests : BaseTest
 	{
 		var isNullOrEmptyConverter = new IsStringNullOrEmptyConverter();
 
-		var result = (bool)isNullOrEmptyConverter.Convert(value, null, null, null);
+		var result = (bool)isNullOrEmptyConverter.Convert(value, typeof(bool), null, null);
 
 		Assert.Equal(expectedResult, result);
 	}
@@ -28,6 +28,6 @@ public class IsStringNullOrEmptyConverter_Tests : BaseTest
 	{
 		var isNotNullOrEmptyConverter = new IsStringNullOrEmptyConverter();
 
-		Assert.Throws<InvalidCastException>(() => isNotNullOrEmptyConverter.Convert(value, null, null, null));
+		Assert.Throws<InvalidCastException>(() => isNotNullOrEmptyConverter.Convert(value, typeof(bool), null, null));
 	}
 }

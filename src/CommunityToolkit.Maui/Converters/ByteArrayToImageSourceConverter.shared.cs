@@ -20,7 +20,7 @@ public class ByteArrayToImageSourceConverter : ValueConverterExtension, ICommuni
 	[return: NotNullIfNotNull("value")]
 	public object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
-		if (value == null)
+		if (value is null)
 		{
 			return null;
 		}
@@ -43,7 +43,7 @@ public class ByteArrayToImageSourceConverter : ValueConverterExtension, ICommuni
 	/// <returns>An object of type <see cref="ImageSource"/>.</returns>
 	public object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
-		if (value == null)
+		if (value is null)
 		{
 			return null;
 		}
@@ -55,7 +55,7 @@ public class ByteArrayToImageSourceConverter : ValueConverterExtension, ICommuni
 
 		var streamFromImageSource = streamImageSource.Stream(CancellationToken.None).Result;
 
-		if (streamFromImageSource == null)
+		if (streamFromImageSource is null)
 		{
 			return null;
 		}

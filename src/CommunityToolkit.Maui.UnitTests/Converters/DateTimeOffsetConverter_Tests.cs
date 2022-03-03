@@ -41,7 +41,7 @@ public class DateTimeOffsetConverter_Tests : BaseTest
 	{
 		var dateTimeOffsetConverter = new DateTimeOffsetConverter();
 
-		var result = (DateTime)dateTimeOffsetConverter.Convert(value, typeof(DateTimeOffsetConverter_Tests), null, CultureInfo.CurrentCulture);
+		var result = (DateTime)dateTimeOffsetConverter.Convert(value, typeof(DateTime), null, CultureInfo.CurrentCulture);
 
 		Assert.Equal(expectedResult, result);
 	}
@@ -52,7 +52,7 @@ public class DateTimeOffsetConverter_Tests : BaseTest
 	{
 		var dateTimeOffsetConverter = new DateTimeOffsetConverter();
 
-		var result = (DateTimeOffset)dateTimeOffsetConverter.ConvertBack(value, typeof(DateTimeOffsetConverter_Tests), null, CultureInfo.CurrentCulture);
+		var result = (DateTimeOffset)dateTimeOffsetConverter.ConvertBack(value, typeof(DateTime), null, CultureInfo.CurrentCulture);
 
 		Assert.Equal(expectedResult, result, new DateTimeOffsetComparer());
 	}
@@ -63,7 +63,7 @@ public class DateTimeOffsetConverter_Tests : BaseTest
 		var dateTimeOffsetConverter = new DateTimeOffsetConverter();
 
 		Assert.Throws<ArgumentException>(() => dateTimeOffsetConverter.Convert("Not a DateTimeOffset",
-			typeof(DateTimeOffsetConverter_Tests), null,
+			typeof(DateTime), null,
 			CultureInfo.CurrentCulture));
 	}
 
@@ -73,7 +73,7 @@ public class DateTimeOffsetConverter_Tests : BaseTest
 		var dateTimeOffsetConverter = new DateTimeOffsetConverter();
 
 		Assert.Throws<ArgumentException>(() => dateTimeOffsetConverter.ConvertBack("Not a DateTime",
-			typeof(DateTimeOffsetConverter_Tests), null,
+			typeof(DateTime), null,
 			CultureInfo.CurrentCulture));
 	}
 

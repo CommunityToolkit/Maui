@@ -15,7 +15,7 @@ public class EqualConverter_Tests : BaseTest
 	{
 		var equalConverter = new EqualConverter();
 
-		var result = (bool)equalConverter.Convert(value, typeof(EqualConverter_Tests), comparedValue, CultureInfo.CurrentCulture);
+		var result = (bool)equalConverter.Convert(value, typeof(bool), comparedValue, CultureInfo.CurrentCulture);
 
 		Assert.True(result);
 	}
@@ -27,7 +27,7 @@ public class EqualConverter_Tests : BaseTest
 	{
 		var equalConverter = new EqualConverter();
 
-		var result = (bool)equalConverter.Convert(value, typeof(EqualConverter_Tests), comparedValue, CultureInfo.CurrentCulture);
+		var result = (bool)equalConverter.Convert(value, typeof(bool), comparedValue, CultureInfo.CurrentCulture);
 
 		Assert.False(result);
 	}

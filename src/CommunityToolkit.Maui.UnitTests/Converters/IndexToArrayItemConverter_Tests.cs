@@ -14,7 +14,7 @@ public class IndexToArrayItemConverter_Tests : BaseTest
 	{
 		var indexToArrayConverter = new IndexToArrayItemConverter();
 
-		var result = indexToArrayConverter.Convert(position, typeof(IndexToArrayItemConverter_Tests), value, CultureInfo.CurrentCulture);
+		var result = indexToArrayConverter.Convert(position, typeof(Array), value, CultureInfo.CurrentCulture);
 
 		Assert.Equal(result, expectedResult);
 	}
@@ -25,7 +25,7 @@ public class IndexToArrayItemConverter_Tests : BaseTest
 	public void IndexToArrayInValidValuesThrowArgumenException(object value, object position)
 	{
 		var indexToArrayConverter = new IndexToArrayItemConverter();
-		Assert.Throws<ArgumentException>(() => indexToArrayConverter.Convert(position, typeof(IndexToArrayItemConverter), value, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => indexToArrayConverter.Convert(position, typeof(Array), value, CultureInfo.CurrentCulture));
 	}
 
 	[Theory]
@@ -34,6 +34,6 @@ public class IndexToArrayItemConverter_Tests : BaseTest
 	public void IndexToArrayInValidValuesThrowArgumenOutOfRangeException(object value, object position)
 	{
 		var indexToArrayConverter = new IndexToArrayItemConverter();
-		Assert.Throws<ArgumentOutOfRangeException>(() => indexToArrayConverter.Convert(position, typeof(IndexToArrayItemConverter), value, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentOutOfRangeException>(() => indexToArrayConverter.Convert(position, typeof(Array), value, CultureInfo.CurrentCulture));
 	}
 }

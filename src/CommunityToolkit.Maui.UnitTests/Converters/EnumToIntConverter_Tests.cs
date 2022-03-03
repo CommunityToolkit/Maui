@@ -5,21 +5,14 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class EnumToIntConverter_Tests : BaseTest
 {
-	enum TestEnumForEnumToIntConverter
-	{
-		None,
-		One,
-		FortyTwo = 42,
-	}
-
 	[Theory]
-	[InlineData(TestEnumForEnumToIntConverter.None, 0)]
-	[InlineData(TestEnumForEnumToIntConverter.One, 1)]
-	[InlineData(TestEnumForEnumToIntConverter.FortyTwo, 42)]
+	[InlineData(TestEnum.None, 0)]
+	[InlineData(TestEnum.One, 1)]
+	[InlineData(TestEnum.FortyTwo, 42)]
 	public void EnumToIntConvert_Validation(object? value, int expectedResult)
 	{
 		var enumToIntConverter = new EnumToIntConverter();
-		var result = (int)enumToIntConverter.Convert(value, targetType: null, parameter: null, culture: null);
+		var result = (int)enumToIntConverter.Convert(value, typeof(int), null, null);
 		Assert.Equal(expectedResult, result);
 	}
 
@@ -29,17 +22,17 @@ public class EnumToIntConverter_Tests : BaseTest
 	public void EnumToIntConvert_ValueNotEnum_ThrowsArgumentException(object value)
 	{
 		var enumToIntConverter = new EnumToIntConverter();
-		Assert.Throws<ArgumentException>(() => enumToIntConverter.Convert(value, targetType: null, parameter: null, culture: null));
+		Assert.Throws<ArgumentException>(() => enumToIntConverter.Convert(value, typeof(int), null, null));
 	}
 
 	[Theory]
-	[InlineData(0, TestEnumForEnumToIntConverter.None)]
-	[InlineData(1, TestEnumForEnumToIntConverter.One)]
-	[InlineData(42, TestEnumForEnumToIntConverter.FortyTwo)]
+	[InlineData(0, TestEnum.None)]
+	[InlineData(1, TestEnum.One)]
+	[InlineData(42, TestEnum.FortyTwo)]
 	public void EnumToIntConvertBack_Validation(object? value, object expectedResult)
 	{
 		var enumToIntConverter = new EnumToIntConverter();
-		var result = (object)enumToIntConverter.ConvertBack(value, typeof(TestEnumForEnumToIntConverter), parameter: null, culture: null);
+		var result = enumToIntConverter.ConvertBack(value, typeof(TestEnum), null, null);
 		Assert.Equal(expectedResult, result);
 	}
 
@@ -50,6 +43,13 @@ public class EnumToIntConverter_Tests : BaseTest
 	public void EnumToIntConvertBack_ValueNotInEnum_ThrowsArgumentException(object value)
 	{
 		var enumToIntConverter = new EnumToIntConverter();
-		Assert.Throws<ArgumentException>(() => enumToIntConverter.ConvertBack(value, typeof(TestEnumForEnumToIntConverter), parameter: null, culture: null));
+		Assert.Throws<ArgumentException>(() => enumToIntConverter.ConvertBack(value, typeof(TestEnum), null, null));
+	}
+
+	enum TestEnum
+	{
+		None,
+		One,
+		FortyTwo = 42,
 	}
 }
