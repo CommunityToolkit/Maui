@@ -1,5 +1,5 @@
 ﻿using System.Windows.Input;
-using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Views;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
