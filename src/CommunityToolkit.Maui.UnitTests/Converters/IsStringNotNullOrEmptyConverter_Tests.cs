@@ -15,14 +15,11 @@ public class IsStringNotNullOrEmptyConverter_Tests : BaseTest
 	{
 		var isNotNullOrEmptyConverter = new IsStringNotNullOrEmptyConverter();
 
-#pragma warning disable CS8605 // Unboxing a possibly null value.
-		var baseResult = (bool)isNotNullOrEmptyConverter.Convert(value, typeof(bool), null, null);
-#pragma warning restore CS8605 // Unboxing a possibly null value.
+		var convertResult = (bool?)isNotNullOrEmptyConverter.Convert(value, typeof(bool), null, null);
+		var convertFromResult = isNotNullOrEmptyConverter.ConvertFrom(value);
 
-		var result = isNotNullOrEmptyConverter.ConvertFrom(value);
-
-		Assert.Equal(expectedResult, baseResult);
-		Assert.Equal(expectedResult, result);
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
 	}
 
 	[Theory]
