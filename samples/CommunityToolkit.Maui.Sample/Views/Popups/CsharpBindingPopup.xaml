@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <mct:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui"
-             x:Class="CommunityToolkit.Maui.Sample.CsharpBindingPopup">
+           xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+           x:Class="CommunityToolkit.Maui.Sample.CsharpBindingPopup"
+           xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui"
+           xmlns:models="clr-namespace:CommunityToolkit.Maui.Sample.Models"
+           Size="{x:Static models:PopupSizeConstants.Large}">
+    
     
     <VerticalStackLayout Style="{StaticResource PopupLayout}">
-
         <VerticalStackLayout.Resources>
             <ResourceDictionary>
                 <Style x:Key="Title" TargetType="Label">
@@ -29,7 +31,7 @@
                 </Style>
             </ResourceDictionary>
         </VerticalStackLayout.Resources>
-        
+
         <Label Style="{StaticResource Title}" 
                Text="{Binding Title}" />
         <BoxView Style="{StaticResource Divider}" />
