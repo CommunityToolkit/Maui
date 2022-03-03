@@ -44,7 +44,7 @@ public class ColorToColorConverter_Tests : BaseTest
 	};
 
 	public static IReadOnlyList<object?[]> ColorToGrayScaleColorData { get; } = new[]
-{
+	{
 		new object[] { Colors.White, Colors.White},
 		new object[] { Colors.Yellow, new Color(2f/3f, 2f/3f, 2f/3f, 1) },
 		new object[] { Colors.Pink, new Color(0.8496732f, 0.8496732f, 0.8496732f, 1) },
