@@ -11,9 +11,9 @@ public class PopupPositionViewModel : BaseViewModel
 		DisplayPopup = new Command<PopupPosition>(OnDisplayPopup);
 	}
 
-	Page Page => Application.Current?.MainPage ?? throw new NullReferenceException();
-
 	public ICommand DisplayPopup { get; }
+
+	static Page Page => Application.Current?.MainPage ?? throw new NullReferenceException();
 
 	void OnDisplayPopup(PopupPosition position)
 	{

@@ -1,6 +1,5 @@
 ﻿using System.Windows.Input;
 using CommunityToolkit.Maui.Extensions;
-using CommunityToolkit.Maui.Sample.Models;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
@@ -11,9 +10,9 @@ public sealed class PopupAnchorViewModel : BaseViewModel
 		ShowPopup = new Command<View>(OnShowPopup);
 	}
 
-	Page Page => Application.Current?.MainPage ?? throw new NullReferenceException();
-
 	public ICommand ShowPopup { get; }
+
+	static Page Page => Application.Current?.MainPage ?? throw new NullReferenceException();
 
 	void OnShowPopup(View anchor)
 	{
