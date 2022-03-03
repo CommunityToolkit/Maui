@@ -1,8 +1,6 @@
-﻿using CommunityToolkit.Maui.Core.Views;
-
-namespace CommunityToolkit.Maui.Views;
+﻿namespace CommunityToolkit.Maui.Core.Views;
 #if !(IOS || ANDROID || MACCATALYST || WINDOWS)
-static partial class DrawingViewService
+public static partial class DrawingViewService
 {
 	/// <summary>
 	/// Get image stream from points

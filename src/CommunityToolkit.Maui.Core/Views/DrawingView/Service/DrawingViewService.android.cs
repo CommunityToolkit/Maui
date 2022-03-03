@@ -1,14 +1,13 @@
 ﻿using Android.Graphics;
-using CommunityToolkit.Maui.Core.Views;
-using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Platform;
 using Color = Microsoft.Maui.Graphics.Color;
 using Math = System.Math;
 using Paint = Android.Graphics.Paint;
 using Point = Microsoft.Maui.Graphics.Point;
 
-namespace CommunityToolkit.Maui.Views;
+namespace CommunityToolkit.Maui.Core.Views;
 
-static partial class DrawingViewService
+public static partial class DrawingViewService
 {
 	public static Stream GetImageStream(IList<ILine>? lines,
 		Size imageSize,
@@ -100,12 +99,12 @@ static partial class DrawingViewService
 		using var canvas = new Canvas(image);
 
 		// background
-		canvas.DrawColor(backgroundColor.ToAndroid());
+		canvas.DrawColor(backgroundColor.ToNative());
 
 		// strokes
 		using var paint = new Paint
 		{
-			Color = strokeColor.ToAndroid(),
+			Color = strokeColor.ToNative(),
 			StrokeWidth = lineWidth,
 			StrokeJoin = Paint.Join.Round,
 			StrokeCap = Paint.Cap.Round,
@@ -144,13 +143,13 @@ static partial class DrawingViewService
 		using var canvas = new Canvas(image);
 
 		// background
-		canvas.DrawColor(backgroundColor.ToAndroid());
+		canvas.DrawColor(backgroundColor.ToNative());
 
 		foreach (var line in lines)
 		{
 			using var paint = new Paint
 			{
-				Color = line.LineColor.ToAndroid(),
+				Color = line.LineColor.ToNative(),
 				StrokeWidth = line.LineWidth,
 				StrokeJoin = Paint.Join.Round,
 				StrokeCap = Paint.Cap.Round,

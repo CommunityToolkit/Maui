@@ -3,9 +3,9 @@ using CoreGraphics;
 using Microsoft.Maui.Platform;
 using UIKit;
 
-namespace CommunityToolkit.Maui.Views;
+namespace CommunityToolkit.Maui.Core.Views;
 
-static partial class DrawingViewService
+public static partial class DrawingViewService
 {
 	public static Stream GetImageStream(IList<ILine>? lines,
 		Size imageSize,

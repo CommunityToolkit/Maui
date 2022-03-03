@@ -1,10 +1,9 @@
 ﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Maui.Core.Views;
 
-namespace CommunityToolkit.Maui.Views;
+namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
-/// The Line object is used to describe the lines that are drawn on a <see cref="DrawingView"/>.
+/// The Line object is used to describe the lines that are drawn on a <see cref="IDrawingView"/>.
 /// </summary>
 public class Line : BindableObject, ILine
 {
@@ -48,7 +47,7 @@ public class Line : BindableObject, ILine
 	public Line() => Points = new ObservableCollection<Point>();
 
 	/// <summary>
-	/// The <see cref="Color"/> that is used to draw this line on the <see cref="DrawingView"/>. This is a bindable property.
+	/// The <see cref="Color"/> that is used to draw this line on the <see cref="IDrawingView"/>. This is a bindable property.
 	/// </summary>
 	public Color LineColor
 	{
@@ -57,7 +56,7 @@ public class Line : BindableObject, ILine
 	}
 
 	/// <summary>
-	/// The width that is used to draw this line on the <see cref="DrawingView"/>. This is a bindable property.
+	/// The width that is used to draw this line on the <see cref="IDrawingView"/>. This is a bindable property.
 	/// </summary>
 	public float LineWidth
 	{
@@ -66,7 +65,7 @@ public class Line : BindableObject, ILine
 	}
 
 	/// <summary>
-	/// The collection of <see cref="Point"/> that makes up this line on the <see cref="DrawingView"/>. This is a bindable property.
+	/// The collection of <see cref="Point"/> that makes up this line on the <see cref="IDrawingView"/>. This is a bindable property.
 	/// </summary>
 	public ObservableCollection<Point> Points
 	{
@@ -103,7 +102,7 @@ public class Line : BindableObject, ILine
 	/// <param name="imageSizeWidth">Desired width of the image that is returned.</param>
 	/// <param name="imageSizeHeight">Desired heigth of the image that is returned.</param>
 	/// <param name="backgroundColor">Background color of the generated image.</param>
-	/// <returns><see cref="Stream"/> containing the data of the requested image with data that's currently on the <see cref="DrawingView"/>.</returns>
+	/// <returns><see cref="Stream"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
 	public Stream GetImageStream(double imageSizeWidth, double imageSizeHeight, Color backgroundColor) =>
 		DrawingViewService.GetImageStream(Points.ToList(), new Size(imageSizeWidth, imageSizeHeight), LineWidth,
 			LineColor,
