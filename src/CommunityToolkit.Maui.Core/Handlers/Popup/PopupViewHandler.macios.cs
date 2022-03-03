@@ -33,7 +33,7 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 	{
 		if (handler.NativeView is not MauiPopup popupRenderer)
 		{
-			throw new InvalidOperationException($"{nameof(handler.NativeView)} must be of type {typeof(PopupViewHandler)}")
+			throw new InvalidOperationException($"{nameof(handler.NativeView)} must be of type {typeof(PopupViewHandler)}");
 		}
 
 		if (popupRenderer.IsViewLoaded && view.IsLightDismissEnabled)
