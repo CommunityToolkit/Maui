@@ -60,6 +60,11 @@ public static partial class DrawingViewService
 		Color strokeColor,
 		Color backgroundColor)
 	{
+		if (points.Count == 0)
+		{
+			return null;
+		}
+
 		var minPointX = points.Min(p => p.X);
 		var minPointY = points.Min(p => p.Y);
 		var drawingWidth = points.Max(p => p.X) - minPointX;
@@ -99,6 +104,11 @@ public static partial class DrawingViewService
 		Color backgroundColor)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
+		if (points.Count == 0)
+		{
+			return null;
+		}
+		
 		var minPointX = points.Min(p => p.X);
 		var minPointY = points.Min(p => p.Y);
 		var drawingWidth = points.Max(p => p.X) - minPointX;

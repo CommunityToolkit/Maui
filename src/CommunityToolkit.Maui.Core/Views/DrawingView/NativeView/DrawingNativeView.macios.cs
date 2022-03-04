@@ -48,9 +48,9 @@ public class DrawingNativeView : UIView
 		currentLine = new Line()
 		{
 			Points = new ObservableCollection<Point>()
-				{
-					new Point(previousPoint.X, previousPoint.Y)
-				}
+			{
+				new Point(previousPoint.X, previousPoint.Y)
+			}
 		};
 
 		SetNeedsDisplay();
@@ -235,7 +235,7 @@ public class DrawingNativeView : UIView
 	
 	UIColor GetBackgroundColor()
 	{
-		var background = VirtualView.Background?.BackgroundColor ?? Colors.Yellow;
+		var background = VirtualView.Background?.BackgroundColor ?? Colors.White;
 		return background.ToNative();
 	}
 

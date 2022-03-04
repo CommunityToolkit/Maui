@@ -254,7 +254,7 @@ public class DrawingNativeView : View
 
 	Android.Graphics.Color GetBackgroundColor()
 	{
-		var background = VirtualView.Background?.BackgroundColor ??  Colors.Yellow ;
+		var background = VirtualView.Background?.BackgroundColor ??  Colors.White;
 		return background.ToNative();
 	}
 
