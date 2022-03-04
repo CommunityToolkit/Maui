@@ -1,8 +1,10 @@
-﻿using CommunityToolkit.Maui.Sample.Pages.Alerts;
+﻿using CommunityToolkit.Maui.Sample.Pages;
+using CommunityToolkit.Maui.Sample.Pages.Alerts;
 using CommunityToolkit.Maui.Sample.Pages.Behaviors;
 using CommunityToolkit.Maui.Sample.Pages.Converters;
 using CommunityToolkit.Maui.Sample.Pages.Extensions;
 using CommunityToolkit.Maui.Sample.Pages.Layouts;
+using CommunityToolkit.Maui.Sample.ViewModels;
 using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
@@ -12,62 +14,59 @@ namespace CommunityToolkit.Maui.Sample;
 
 public partial class AppShell : Shell
 {
-	static readonly IReadOnlyDictionary<Type, (Type GalleryPageType, Type ContentPageType)> viewModelMappings = new Dictionary<Type, (Type, Type)>()
+	static readonly IReadOnlyDictionary<Type, (Type GalleryPageType, Type ContentPageType)> viewModelMappings = new Dictionary<Type, (Type, Type)>(new []
 	{
 		// Add Alerts View Models
-		{ typeof(SnackbarViewModel), (typeof(AlertsGalleryPage), typeof(SnackbarPage)) },
-		{ typeof(ToastViewModel), (typeof(AlertsGalleryPage), typeof(ToastPage)) },
+		CreateViewModelMapping<SnackbarPage, SnackbarViewModel, AlertsGalleryPage, AlertsGalleryViewModel>(),
+		CreateViewModelMapping<ToastPage, ToastViewModel, AlertsGalleryPage, AlertsGalleryViewModel>(),
 
 		// Add Behaviors View Models
-		{ typeof(CharactersValidationBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(CharactersValidationBehaviorPage)) },
-		{ typeof(EmailValidationBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(EmailValidationBehaviorPage)) },
-		{ typeof(EventToCommandBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(EventToCommandBehaviorPage)) },
-		{ typeof(MaskedBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(MaskedBehaviorPage)) },
-		{ typeof(MaxLengthReachedBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(MaxLengthReachedBehaviorPage)) },
-		{ typeof(MultiValidationBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(MultiValidationBehaviorPage)) },
-		{ typeof(NumericValidationBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(NumericValidationBehaviorPage)) },
-		{ typeof(ProgressBarAnimationBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(ProgressBarAnimationBehaviorPage)) },
-		{ typeof(RequiredStringValidationBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(RequiredStringValidationBehaviorPage)) },
-		{ typeof(SetFocusOnEntryCompletedBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(SetFocusOnEntryCompletedBehaviorPage)) },
-		{ typeof(TextValidationBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(TextValidationBehaviorPage)) },
-		{ typeof(UriValidationBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(UriValidationBehaviorPage)) },
-		{ typeof(UserStoppedTypingBehaviorViewModel), (typeof(BehaviorsGalleryPage), typeof(UserStoppedTypingBehaviorPage)) },
+		CreateViewModelMapping<CharactersValidationBehaviorPage, CharactersValidationBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
+		CreateViewModelMapping<EmailValidationBehaviorPage, EmailValidationBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
+		CreateViewModelMapping<EventToCommandBehaviorPage, EventToCommandBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
+		CreateViewModelMapping<MaskedBehaviorPage, MaskedBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
+		CreateViewModelMapping<MaxLengthReachedBehaviorPage, MaxLengthReachedBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
+		CreateViewModelMapping<MultiValidationBehaviorPage, MultiValidationBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
+		CreateViewModelMapping<NumericValidationBehaviorPage, NumericValidationBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
+		CreateViewModelMapping<ProgressBarAnimationBehaviorPage, ProgressBarAnimationBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
+		CreateViewModelMapping<RequiredStringValidationBehaviorPage, RequiredStringValidationBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
+		CreateViewModelMapping<SetFocusOnEntryCompletedBehaviorPage, SetFocusOnEntryCompletedBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
+		CreateViewModelMapping<TextValidationBehaviorPage, TextValidationBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
+		CreateViewModelMapping<UserStoppedTypingBehaviorPage, UserStoppedTypingBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
 
 		// Add Converters View Models
-		{ typeof(BoolToObjectConverterViewModel), (typeof(ConvertersGalleryPage), typeof(BoolToObjectConverterPage)) },
-		{ typeof(ColorsConvertersViewModel), (typeof(ConvertersGalleryPage), typeof(ColorsConverterPage)) },
-		{ typeof(CompareConverterViewModel), (typeof(ConvertersGalleryPage), typeof(CompareConverterPage)) },
-		{ typeof(DateTimeOffsetConverterViewModel), (typeof(ConvertersGalleryPage), typeof(DateTimeOffsetConverterPage)) },
-		{ typeof(DoubleToIntConverterViewModel), (typeof(ConvertersGalleryPage), typeof(DoubleToIntConverterPage)) },
-		{ typeof(EnumToBoolConverterViewModel), (typeof(ConvertersGalleryPage), typeof(EnumToBoolConverterPage)) },
-		{ typeof(EnumToIntConverterViewModel), (typeof(ConvertersGalleryPage), typeof(EnumToIntConverterPage)) },
-		{ typeof(EqualConverterViewModel), (typeof(ConvertersGalleryPage), typeof(EqualConverterPage)) },
-		{ typeof(NotEqualConverterViewModel), (typeof(ConvertersGalleryPage), typeof(NotEqualConverterPage)) },
-		{ typeof(ImageResourceConverterViewModel), (typeof(ConvertersGalleryPage), typeof(ImageResourceConverterPage)) },
-		{ typeof(IndexToArrayItemConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IndexToArrayItemConverterPage)) },
-		{ typeof(IntToBoolConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IntToBoolConverterPage)) },
-		{ typeof(InvertedBoolConverterViewModel), (typeof(ConvertersGalleryPage), typeof(InvertedBoolConverterPage)) },
-		{ typeof(IsListNotNullOrEmptyConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IsListNotNullOrEmptyConverterPage)) },
-		{ typeof(IsListNullOrEmptyConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IsListNullOrEmptyConverterPage)) },
-		{ typeof(IsStringNotNullOrEmptyConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IsStringNotNullOrEmptyConverterPage)) },
-		{ typeof(IsStringNotNullOrWhiteSpaceConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IsStringNotNullOrWhiteSpaceConverterPage)) },
-		{ typeof(IsStringNullOrEmptyConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IsStringNullOrEmptyConverterPage)) },
-		{ typeof(IsStringNullOrWhiteSpaceConverterViewModel), (typeof(ConvertersGalleryPage), typeof(IsStringNullOrWhiteSpaceConverterPage)) },
-		{ typeof(ItemSelectedEventArgsConverterViewModel), (typeof(ConvertersGalleryPage), typeof(ItemSelectedEventArgsConverterPage)) },
-		{ typeof(ItemTappedEventArgsConverterViewModel), (typeof(ConvertersGalleryPage), typeof(ItemTappedEventArgsConverterPage)) },
-		{ typeof(ListToStringConverterViewModel), (typeof(ConvertersGalleryPage), typeof(ListToStringConverterPage)) },
-		{ typeof(MathExpressionConverterViewModel), (typeof(ConvertersGalleryPage), typeof(MathExpressionConverterPage)) },
-		{ typeof(MultiConverterViewModel), (typeof(ConvertersGalleryPage), typeof(MultiConverterPage)) },
-		{ typeof(StringToListConverterViewModel), (typeof(ConvertersGalleryPage), typeof(StringToListConverterPage)) },
-		{ typeof(TextCaseConverterViewModel), (typeof(ConvertersGalleryPage), typeof(TextCaseConverterPage)) },
-		{ typeof(VariableMultiValueConverterViewModel), (typeof(ConvertersGalleryPage), typeof(VariableMultiValueConverterPage)) },
+		CreateViewModelMapping<ByteArrayToImageSourceConverterPage, ByteArrayToImageSourceConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<BoolToObjectConverterPage, BoolToObjectConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<ColorsConverterPage, ColorsConvertersViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<CompareConverterPage, CompareConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<DateTimeOffsetConverterPage, DateTimeOffsetConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<EnumToBoolConverterPage, EnumToBoolConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<EnumToIntConverterPage, EnumToIntConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<EqualConverterPage, EqualConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<NotEqualConverterPage, NotEqualConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<ImageResourceConverterPage, ImageResourceConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<IndexToArrayItemConverterPage, IndexToArrayItemConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<IntToBoolConverterPage, IntToBoolConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<IsListNotNullOrEmptyConverterPage, IsListNotNullOrEmptyConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<IsListNullOrEmptyConverterPage, IsListNullOrEmptyConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<IsStringNotNullOrEmptyConverterPage, IsStringNotNullOrEmptyConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<IsStringNotNullOrWhiteSpaceConverterPage, IsStringNotNullOrWhiteSpaceConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<IsStringNullOrEmptyConverterPage, IsStringNullOrEmptyConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<IsStringNullOrWhiteSpaceConverterPage, IsStringNullOrWhiteSpaceConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<ItemSelectedEventArgsConverterViewModel, ItemSelectedEventArgsConverterPage, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<ItemTappedEventArgsConverterPage, ItemTappedEventArgsConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<ListToStringConverterPage, ListToStringConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<MultiConverterPage, MultiConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<StringToListConverterPage, StringToListConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<TextCaseConverterPage, TextCaseConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<VariableMultiValueConverterPage, VariableMultiValueConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 
 		// Add Extensions View Models
-		{ typeof(ColorAnimationExtensionsViewModel), (typeof(ExtensionsGalleryPage), typeof(ColorAnimationExtensionsPage)) },
+		CreateViewModelMapping<ColorAnimationExtensionsPage, ColorAnimationExtensionsViewModel, ExtensionsGalleryPage, ExtensionsGalleryViewModel>(),
 
 		// Add Layouts View Models
-		{ typeof(UniformItemsLayoutViewModel), (typeof(LayoutsGalleryPage), typeof(UniformItemsLayoutPage)) },
-	};
+		CreateViewModelMapping<UniformItemsLayoutPage, UniformItemsLayoutViewModel, LayoutsGalleryPage, LayoutsGalleryViewModel>(),
+	});
 
 	public AppShell()
 	{
@@ -93,9 +92,17 @@ public partial class AppShell : Shell
 
 	static void RegisterRouting()
 	{
-		foreach(var viewModelKeyValuePair in viewModelMappings)
+		foreach (var viewModelKeyValuePair in viewModelMappings)
 		{
 			Routing.RegisterRoute(GetPageRoute(viewModelKeyValuePair.Value.GalleryPageType, viewModelKeyValuePair.Value.ContentPageType), viewModelKeyValuePair.Value.ContentPageType);
 		}
+	}
+
+	static KeyValuePair<Type, (Type GalleryPageType, Type ContentPageType)> CreateViewModelMapping<TPage, TViewModel, TGalleryPage, TGalleryViewModel>() where TPage : BasePage<TViewModel>
+																																							where TViewModel : BaseViewModel
+																																							where TGalleryPage : BaseGalleryPage<TGalleryViewModel>
+																																							where TGalleryViewModel : BaseGalleryViewModel
+	{
+		return new KeyValuePair<Type, (Type GalleryPageType, Type ContentPageType)>(typeof(TViewModel), (typeof(TGalleryPage), typeof(TPage)));
 	}
 }

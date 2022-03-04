@@ -84,7 +84,7 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
 
 		var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 
-		var result = (byte[]?)byteArrayToImageSourceConverter.ConvertBack(expectedValue, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture);
+		var result = byteArrayToImageSourceConverter.ConvertBack(expectedValue, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture);
 
 		Assert.Null(result);
 	}

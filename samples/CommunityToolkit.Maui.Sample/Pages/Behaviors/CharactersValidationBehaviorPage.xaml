@@ -4,7 +4,11 @@
                 xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages">
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
+                x:TypeArguments="vm:CharactersValidationBehaviorViewModel"
+                x:DataType="vm:CharactersValidationBehaviorViewModel">
+
     <pages:BasePage.Resources>
         <Style x:Key="InvalidEntryStyle"
                TargetType="Entry">

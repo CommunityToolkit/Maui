@@ -4,7 +4,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.MaskedBehaviorPage">
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.MaskedBehaviorPage"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
+    x:TypeArguments="vm:MaskedBehaviorViewModel"
+    x:DataType="vm:MaskedBehaviorViewModel">
     <ScrollView>
         <VerticalStackLayout Padding="{StaticResource ContentPadding}" Spacing="5">
 

@@ -23,13 +23,27 @@ public static class MauiProgram
 		builder.Services.AddTransient<LayoutsGalleryViewModel>();
 		builder.Services.AddTransient<MainGalleryViewModel>();
 
+		// Add Alerts View Models
+		builder.Services.AddTransient<SnackbarViewModel>();
+		builder.Services.AddTransient<ToastViewModel>();
+
 		// Add Behaviors View Models
+		builder.Services.AddTransient<CharactersValidationBehaviorViewModel>();
+		builder.Services.AddTransient<EmailValidationBehaviorViewModel>();
 		builder.Services.AddTransient<EventToCommandBehaviorViewModel>();
+		builder.Services.AddTransient<MaskedBehaviorViewModel>();
 		builder.Services.AddTransient<MaxLengthReachedBehaviorViewModel>();
+		builder.Services.AddTransient<MultiValidationBehaviorViewModel>();
+		builder.Services.AddTransient<NumericValidationBehaviorViewModel>();
 		builder.Services.AddTransient<ProgressBarAnimationBehaviorViewModel>();
+		builder.Services.AddTransient<RequiredStringValidationBehaviorViewModel>();
+		builder.Services.AddTransient<SetFocusOnEntryCompletedBehaviorViewModel>();
+		builder.Services.AddTransient<TextValidationBehaviorViewModel>();
+		builder.Services.AddTransient<UriValidationBehaviorViewModel>();
 		builder.Services.AddTransient<UserStoppedTypingBehaviorViewModel>();
 
 		// Add Converters View Models
+		builder.Services.AddTransient<ByteArrayToImageSourceConverterViewModel>();
 		builder.Services.AddTransient<CompareConverterViewModel>();
 		builder.Services.AddTransient<DateTimeOffsetConverterViewModel>();
 		builder.Services.AddTransient<DoubleToIntConverterViewModel>();
