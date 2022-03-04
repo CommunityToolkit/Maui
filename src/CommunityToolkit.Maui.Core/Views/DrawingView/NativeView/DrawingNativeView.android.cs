@@ -34,6 +34,7 @@ public class DrawingNativeView : View
 	public DrawingNativeView(IDrawingView virtualView, Context? context) : base(context)
 	{
 		VirtualView = virtualView;
+		VirtualView.Lines.CollectionChanged += OnLinesCollectionChanged;
 		drawPath = new Path();
 		drawPaint = new Paint
 		{
@@ -203,10 +204,7 @@ public class DrawingNativeView : View
 		drawCanvas.DrawColor(GetBackgroundColor());
 		drawPath.Reset();
 		var lines = VirtualView.Lines;
-		if (lines.Count > 0)
-		{
-			Draw(lines, drawCanvas, drawPath);
-		}
+		Draw(lines, drawCanvas, drawPath);
 
 		Invalidate();
 	}
@@ -256,15 +254,15 @@ public class DrawingNativeView : View
 
 	Android.Graphics.Color GetBackgroundColor()
 	{
-		var background = VirtualView.Background ?? new SolidPaint(Colors.White);
-		return background.BackgroundColor.ToNative();
+		var background = VirtualView.Background?.BackgroundColor ??  Colors.Yellow ;
+		return background.ToNative();
 	}
 
 	/// <summary>
 	/// Executes DrawingLineCompleted event and DrawingLineCompletedCommand
 	/// </summary>
 	/// <param name="lastDrawingLine">Last drawing line</param>
-	internal void OnDrawingLineCompleted(ILine? lastDrawingLine)
+	void OnDrawingLineCompleted(ILine? lastDrawingLine)
 	{
 		if (VirtualView.DrawingLineCompletedCommand?.CanExecute(lastDrawingLine) ?? false)
 		{

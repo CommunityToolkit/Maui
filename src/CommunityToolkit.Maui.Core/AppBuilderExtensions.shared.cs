@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core.Views;
+
+namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// <see cref="MauiAppBuilder"/> Extensions
@@ -12,6 +14,10 @@ public static class AppBuilderExtensions
 	/// <returns><see cref="MauiAppBuilder"/> initialized for <see cref="CommunityToolkit.Maui.Core"/></returns>
 	public static MauiAppBuilder UseMauiCommunityToolkitCore(this MauiAppBuilder builder)
 	{
+		builder.ConfigureMauiHandlers(handlers =>
+		{
+			handlers.AddHandler<IDrawingView, DrawingViewHandler>();
+		});
 		return builder;
 	}
 }

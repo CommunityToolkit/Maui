@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Views.DrawingViewPage"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages">
+
+    <ScrollView>
+        <VerticalStackLayout>
+            <HorizontalStackLayout Margin="5">
+                <Label Text="Clear on Finish" Margin="0,0,5,0" />
+                <Switch x:Name="ClearOnFinish" />
+            </HorizontalStackLayout>
+            <HorizontalStackLayout Margin="5">
+                <Label Text="Multi-Line Mode" Margin="0,0,5,0" />
+                <Switch x:Name="MultiLineMode" />
+            </HorizontalStackLayout>
+            <Button
+                BackgroundColor="White"
+                Clicked="AddNewLine"
+                Text="Add new line"
+                TextColor="Black" />
+            <Button
+                BackgroundColor="White"
+                Clicked="LoadPointsButtonClicked"
+                Text="Load points"
+                TextColor="Black" />
+            <VerticalStackLayout x:Name="HiddenPanel"
+                HorizontalOptions="CenterAndExpand"
+                IsVisible="False">
+                <Label Text="Draw &amp; GO" />
+                <Button Text="Clear all lines"
+                        Clicked="ClearLines_Clicked"/>
+            </VerticalStackLayout>
+            <Button
+                BackgroundColor="White"
+                Clicked="DisplayHiddenLabelButtonClicked"
+                Text="Display hidden label"
+                TextColor="Black" />
+            <Button
+                BackgroundColor="White"
+                Clicked="GetCurrentDrawingViewImageClicked"
+                Text="Display current gesture pad image"
+                TextColor="Black" />
+            <Button
+                BackgroundColor="White"
+                Clicked="GetImageClicked"
+                Text="Display image"
+                TextColor="Black" />
+            <Image
+                x:Name="GestureImage"
+                HeightRequest="100"
+                WidthRequest="100" />
+
+            <Label Text="DrawingView (Code behind)"/>
+            <mct:DrawingView x:Name="DrawingViewControl" 
+                               BackgroundColor="LightGray" 
+                               HeightRequest="200"
+                               DefaultLineColor="Red"
+                               DefaultLineWidth="3"
+                               Lines="{Binding Lines, Mode=TwoWay}"
+                               ClearOnFinish="{Binding Source={x:Reference ClearOnFinish}, Path=IsToggled}"
+                               MultiLineMode="{Binding Source={x:Reference MultiLineMode}, Path=IsToggled}"/>
+
+            <Editor x:Name="Logs" HeightRequest="50" />
+        </VerticalStackLayout>
+    </ScrollView>
+</pages:BasePage>
