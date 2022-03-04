@@ -4,8 +4,18 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
+/// <summary>
+/// Drawing view service
+/// </summary>
 public static partial class DrawingViewService
 {
+	/// <summary>
+	/// Get image stream from lines
+	/// </summary>
+	/// <param name="lines">Drawing lines</param>
+	/// <param name="imageSize">Image size</param>
+	/// <param name="backgroundColor">Image background color</param>
+	/// <returns>Image stream</returns>
 	public static Stream GetImageStream(IList<ILine>? lines,
 		Size imageSize,
 		Color backgroundColor)
@@ -55,7 +65,7 @@ public static partial class DrawingViewService
 		return resizedImage.AsJPEG().AsStream();
 	}
 
-	static UIImage? GetImageInternal(IList<Point> points,
+	static UIImage? GetImageInternal(ICollection<Point> points,
 		float lineWidth,
 		Color strokeColor,
 		Color backgroundColor)

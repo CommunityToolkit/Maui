@@ -10,7 +10,7 @@ using Point = Microsoft.Maui.Graphics.Point;
 namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
-/// 
+/// DrawingView Native Control
 /// </summary>
 public class DrawingNativeView : View
 {
@@ -19,22 +19,18 @@ public class DrawingNativeView : View
 	readonly Paint canvasPaint;
 	readonly Paint drawPaint;
 	readonly Path drawPath;
+	readonly IDrawingView virtualView;
 	Bitmap? canvasBitmap;
 	Canvas? drawCanvas;
 	ILine? currentLine;
 
 	/// <summary>
-	/// 
-	/// </summary>
-	public IDrawingView VirtualView { get; }
-
-	/// <summary>
-	/// 
+	/// Initialize a new instance of <see cref="DrawingNativeView" />.
 	/// </summary>
 	public DrawingNativeView(IDrawingView virtualView, Context? context) : base(context)
 	{
-		VirtualView = virtualView;
-		VirtualView.Lines.CollectionChanged += OnLinesCollectionChanged;
+		this.virtualView = virtualView;
+		this.virtualView.Lines.CollectionChanged += OnLinesCollectionChanged;
 		drawPath = new Path();
 		drawPaint = new Paint
 		{
@@ -49,20 +45,13 @@ public class DrawingNativeView : View
 		{
 			Dither = true
 		};
-		drawPaint.Color = VirtualView.DefaultLineColor.ToNative();
-		drawPaint.StrokeWidth = VirtualView.DefaultLineWidth;
+		drawPaint.Color = this.virtualView.DefaultLineColor.ToNative();
+		drawPaint.StrokeWidth = this.virtualView.DefaultLineWidth;
 	}
 
 	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => LoadLines();
 
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="w"></param>
-	/// <param name="h"></param>
-	/// <param name="oldw"></param>
-	/// <param name="oldh"></param>
-	/// <exception cref="NullReferenceException"></exception>
+	/// <inheritdoc />
 	protected override void OnSizeChanged(int w, int h, int oldw, int oldh)
 	{
 		const int minW = 1;
@@ -80,28 +69,21 @@ public class DrawingNativeView : View
 		}
 	}
 
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="canvas"></param>
+	/// <inheritdoc />
 	protected override void OnDraw(Canvas? canvas)
 	{
 		base.OnDraw(canvas);
 
 		if (canvas is not null && canvasBitmap is not null)
 		{
-			Draw(VirtualView.Lines, canvas);
+			Draw(virtualView.Lines, canvas);
 
 			canvas.DrawBitmap(canvasBitmap, 0, 0, canvasPaint);
 			canvas.DrawPath(drawPath, drawPaint);
 		}
 	}
 
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="e"></param>
-	/// <returns></returns>
+	/// <inheritdoc />
 	public override bool OnTouchEvent(MotionEvent? e)
 	{
 		ArgumentNullException.ThrowIfNull(e);
@@ -112,9 +94,9 @@ public class DrawingNativeView : View
 		{
 			case MotionEventActions.Down:
 				Parent?.RequestDisallowInterceptTouchEvent(true);
-				if (!VirtualView.MultiLineMode)
+				if (!virtualView.MultiLineMode)
 				{
-					VirtualView.Lines.Clear();
+					virtualView.Lines.Clear();
 				}
 
 				currentLine = new Line()
@@ -142,13 +124,13 @@ public class DrawingNativeView : View
 				drawPath.Reset();
 				if (currentLine != null)
 				{
-					VirtualView.Lines.Add(currentLine);
+					virtualView.Lines.Add(currentLine);
 					OnDrawingLineCompleted(currentLine);
 				}
 
-				if (VirtualView.ClearOnFinish)
+				if (virtualView.ClearOnFinish)
 				{
-					VirtualView.Lines.Clear();
+					virtualView.Lines.Clear();
 				}
 
 				break;
@@ -203,7 +185,7 @@ public class DrawingNativeView : View
 		
 		drawCanvas.DrawColor(GetBackgroundColor());
 		drawPath.Reset();
-		var lines = VirtualView.Lines;
+		var lines = virtualView.Lines;
 		Draw(lines, drawCanvas, drawPath);
 
 		Invalidate();
@@ -244,7 +226,7 @@ public class DrawingNativeView : View
 			drawPath.Dispose();
 			canvasBitmap?.Dispose();
 			canvasPaint.Dispose();
-			VirtualView.Lines.CollectionChanged -= OnLinesCollectionChanged;
+			virtualView.Lines.CollectionChanged -= OnLinesCollectionChanged;
 		}
 
 		disposed = true;
@@ -254,19 +236,15 @@ public class DrawingNativeView : View
 
 	Android.Graphics.Color GetBackgroundColor()
 	{
-		var background = VirtualView.Background?.BackgroundColor ??  Colors.White;
+		var background = virtualView.Background?.BackgroundColor ??  Colors.White;
 		return background.ToNative();
 	}
-
-	/// <summary>
-	/// Executes DrawingLineCompleted event and DrawingLineCompletedCommand
-	/// </summary>
-	/// <param name="lastDrawingLine">Last drawing line</param>
+	
 	void OnDrawingLineCompleted(ILine? lastDrawingLine)
 	{
-		if (VirtualView.DrawingLineCompletedCommand?.CanExecute(lastDrawingLine) ?? false)
+		if (virtualView.DrawingLineCompletedCommand?.CanExecute(lastDrawingLine) ?? false)
 		{
-			VirtualView.DrawingLineCompletedCommand.Execute(lastDrawingLine);
+			virtualView.DrawingLineCompletedCommand.Execute(lastDrawingLine);
 		}
 	}
 }

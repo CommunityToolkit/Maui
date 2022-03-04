@@ -7,88 +7,95 @@ using UIKit;
 namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
-/// 
+/// DrawingView Native Control
 /// </summary>
 public class DrawingNativeView : UIView
 {
-	bool disposed;
-	UIBezierPath currentPath;
-	UIColor? lineColor;
+	readonly UIBezierPath currentPath;
+	readonly UIColor? lineColor;
+	readonly IDrawingView virtualView;
 	CGPoint previousPoint;
 	Line? currentLine;
+	bool disposed;
 
-	public IDrawingView VirtualView { get; }
-
+	/// <summary>
+	/// Initialize a new instance of <see cref="DrawingNativeView" />.
+	/// </summary>
 	public DrawingNativeView(IDrawingView virtualView)
 	{
-		VirtualView = virtualView;
+		this.virtualView = virtualView;
 		currentPath = new UIBezierPath();
 		BackgroundColor = GetBackgroundColor();
-		currentPath.LineWidth = VirtualView.DefaultLineWidth;
-		lineColor = VirtualView.DefaultLineColor.ToNative();
-		VirtualView.Lines.CollectionChanged += OnLinesCollectionChanged;
+		currentPath.LineWidth = this.virtualView.DefaultLineWidth;
+		lineColor = this.virtualView.DefaultLineColor.ToNative();
+		this.virtualView.Lines.CollectionChanged += OnLinesCollectionChanged;
 	}
 
 	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => LoadPoints();
 
+	/// <inheritdoc />
 	public override void TouchesBegan(NSSet touches, UIEvent? evt)
 	{
 		SetParentTouches(false);
 
-		VirtualView.Lines.CollectionChanged -= OnLinesCollectionChanged;
-		if (!VirtualView.MultiLineMode)
+		virtualView.Lines.CollectionChanged -= OnLinesCollectionChanged;
+		if (!virtualView.MultiLineMode)
 		{
-			VirtualView.Lines.Clear();
+			virtualView.Lines.Clear();
 			currentPath.RemoveAllPoints();
 		}
 
 		var touch = (UITouch)touches.AnyObject;
 		previousPoint = touch.PreviousLocationInView(this);
 		currentPath.MoveTo(previousPoint);
-		currentLine = new Line()
+		currentLine = new Line
 		{
 			Points = new ObservableCollection<Point>()
 			{
-				new Point(previousPoint.X, previousPoint.Y)
+				new (previousPoint.X, previousPoint.Y)
 			}
 		};
 
 		SetNeedsDisplay();
 
-		VirtualView.Lines.CollectionChanged += OnLinesCollectionChanged;
+		virtualView.Lines.CollectionChanged += OnLinesCollectionChanged;
 	}
 
+	/// <inheritdoc />
 	public override void TouchesMoved(NSSet touches, UIEvent? evt)
 	{
 		var touch = (UITouch)touches.AnyObject;
 		var currentPoint = touch.LocationInView(this);
 		AddPointToPath(currentPoint);
-		currentLine?.Points.Add(currentPoint.ToPoint());
+		currentLine?.Points.Add(CoreGraphicsExtensions.ToPoint(currentPoint));
 	}
 
+	/// <inheritdoc />
 	public override void TouchesEnded(NSSet touches, UIEvent? evt)
 	{
 		if (currentLine != null)
 		{
 			UpdatePath(currentLine);
-			VirtualView.Lines.Add(currentLine);
+			virtualView.Lines.Add(currentLine);
 			OnDrawingLineCompleted(currentLine);
 		}
 
-		if (VirtualView.ClearOnFinish)
+		if (virtualView.ClearOnFinish)
 		{
-			VirtualView.Lines.Clear();
+			virtualView.Lines.Clear();
 		}
 
 		SetParentTouches(true);
 	}
 
+	/// <inheritdoc />
 	public override void TouchesCancelled(NSSet touches, UIEvent? evt)
 	{
 		InvokeOnMainThread(SetNeedsDisplay);
 		SetParentTouches(true);
 	}
 
+	/// <inheritdoc />
 	public override void Draw(CGRect rect)
 	{
 		lineColor?.SetStroke();
@@ -104,7 +111,7 @@ public class DrawingNativeView : UIView
 	void LoadPoints()
 	{
 		currentPath.RemoveAllPoints();
-		foreach (var line in VirtualView.Lines)
+		foreach (var line in virtualView.Lines)
 		{
 			UpdatePath(line);
 			var stylusPoints = line.Points.Select(point => new CGPoint(point.X, point.Y)).ToList();
@@ -124,7 +131,7 @@ public class DrawingNativeView : UIView
 
 	void UpdatePath(ILine line)
 	{
-		VirtualView.Lines.CollectionChanged -= OnLinesCollectionChanged;
+		virtualView.Lines.CollectionChanged -= OnLinesCollectionChanged;
 		var smoothedPoints = line.EnableSmoothedPath
 			? SmoothedPathWithGranularity(line.Points, line.Granularity)
 			: new ObservableCollection<Point>(line.Points);
@@ -136,7 +143,7 @@ public class DrawingNativeView : UIView
 			line.Points.Add(point);
 		}
 
-		VirtualView.Lines.CollectionChanged += OnLinesCollectionChanged;
+		virtualView.Lines.CollectionChanged += OnLinesCollectionChanged;
 	}
 
 	ObservableCollection<Point> SmoothedPathWithGranularity(ObservableCollection<Point> currentPoints,
@@ -202,6 +209,7 @@ public class DrawingNativeView : UIView
 				 (((3 * p1.Y) - p0.Y - (3 * p2.Y) + p3.Y) * ttt))
 		};
 
+	/// <inheritdoc />
 	protected override void Dispose(bool disposing)
 	{
 		if (disposed)
@@ -212,7 +220,7 @@ public class DrawingNativeView : UIView
 		if (disposing)
 		{
 			currentPath.Dispose();
-			VirtualView.Lines.CollectionChanged -= OnLinesCollectionChanged;
+			virtualView.Lines.CollectionChanged -= OnLinesCollectionChanged;
 		}
 
 		disposed = true;
@@ -226,8 +234,10 @@ public class DrawingNativeView : UIView
 
 		while (parent != null)
 		{
-			//if (parent.GetType() == typeof(ScrollViewRenderer))
-			//	((ScrollViewRenderer)parent).ScrollEnabled = enabled;
+			if (parent.GetType() == typeof(UIScrollView))
+			{
+				((UIScrollView)parent).ScrollEnabled = enabled;
+			}
 
 			parent = parent.Superview;
 		}
@@ -235,7 +245,7 @@ public class DrawingNativeView : UIView
 	
 	UIColor GetBackgroundColor()
 	{
-		var background = VirtualView.Background?.BackgroundColor ?? Colors.White;
+		var background = virtualView.Background?.BackgroundColor ?? Colors.White;
 		return background.ToNative();
 	}
 
@@ -245,9 +255,9 @@ public class DrawingNativeView : UIView
 	/// <param name="lastDrawingLine">Last drawing line</param>
 	void OnDrawingLineCompleted(ILine? lastDrawingLine)
 	{
-		if (VirtualView.DrawingLineCompletedCommand?.CanExecute(lastDrawingLine) ?? false)
+		if (virtualView.DrawingLineCompletedCommand?.CanExecute(lastDrawingLine) ?? false)
 		{
-			VirtualView.DrawingLineCompletedCommand.Execute(lastDrawingLine);
+			virtualView.DrawingLineCompletedCommand.Execute(lastDrawingLine);
 		}
 	}
 }

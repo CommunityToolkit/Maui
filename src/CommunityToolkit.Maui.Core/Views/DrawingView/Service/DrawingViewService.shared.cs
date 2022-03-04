@@ -1,5 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Core.Views;
-#if !(IOS || ANDROID || MACCATALYST || WINDOWS)
+﻿#if !(IOS || ANDROID || MACCATALYST || WINDOWS)
+namespace CommunityToolkit.Maui.Core.Views;
+
+/// <summary>
+/// Drawing view service
+/// </summary>
 public static partial class DrawingViewService
 {
 	/// <summary>

@@ -13,6 +13,15 @@ public partial class DrawingViewHandler
 	public DrawingViewHandler() : base(ViewMapper)
 	{
 	}
+
+	/// <summary>
+	/// Initialize new instance of <see cref="DrawingViewHandler"/>.
+	/// </summary>
+	/// <param name="mapper">Custom instance of <see cref="IPropertyMapper"/></param>
+	/// <param name="commandMapper">Custom instance of <see cref="CommandMapper"/></param>
+	public DrawingViewHandler(IPropertyMapper mapper, CommandMapper? commandMapper) : base(mapper, commandMapper)
+	{
+	}
 }
 
 #if !(ANDROID || IOS || MACCATALYST || WINDOWS)
