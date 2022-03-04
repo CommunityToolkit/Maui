@@ -20,7 +20,7 @@ public class MultiConverter : List<ICommunityToolkitValueConverter>, ICommunityT
 		: this.Aggregate(value, (current, converter) => converter.Convert(current, targetType, parameter, culture));
 
 	/// <summary>
-	/// This method is not implemented and will throw a <see cref="NotSupportedException"/>.
+	/// This method is not supported and will throw a <see cref="NotSupportedException"/>.
 	/// </summary>
 	/// <param name="value">N/A</param>
 	/// <param name="targetType">N/A</param>
