@@ -50,7 +50,7 @@ public class MultiMathExpressionConverter : MultiValueConverterExtension, ICommu
 	}
 
 	/// <summary>
-	/// This method is not implemented and will throw a <see cref="NotSupportedException"/>.
+	/// This method is not supported and will throw a <see cref="NotSupportedException"/>.
 	/// </summary>
 	/// <param name="value">N/A</param>
 	/// <param name="targetTypes">N/A</param>
