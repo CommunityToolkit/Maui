@@ -28,6 +28,6 @@ public partial class DrawingViewHandler
 public partial class DrawingViewHandler : ViewHandler<IDrawingView, object>
 {
 	/// <inheritdoc />
-	protected override object CreateNativeView() => throw new NotImplementedException();
+	protected override object CreateNativeView() => throw new NotSupportedException();
 }
 #endif
