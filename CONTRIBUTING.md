@@ -182,6 +182,12 @@ if (something is not null)
 }
 ```
 
+### `NotImplementedException`
+
+Please avoid adding new code that throws a `NotImplementedException`. According to the [Microsoft Docs](https://docs.microsoft.com/dotnet/api/system.notimplementedexception?WT.mc_id=mobile-0000-bramin), we should only "throw a `NotImplementedException` exception in properties or methods in your own types when the that member is still in development and will only later be implemented in production code. In other words, a NotImplementedException exception should be synonymous with 'still in development.'"
+
+In other words, `NotImplementedException` implies that a feature is still in development, indicating that the Pull Request is incomplete.
+
 ### Bug Fixes
 
 If you're looking for something to fix, please browse [open issues](https://github.com/CommunityToolkit/Maui/issues). 
