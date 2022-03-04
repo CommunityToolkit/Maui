@@ -1,17 +1,19 @@
 ﻿using Microsoft.UI.Xaml;
-using WinRT;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
-/// 
+/// DrawingView Native Control
 /// </summary>
 public class DrawingNativeView : FrameworkElement
 {
-	public IDrawingView VirtualView { get; }
+	readonly IDrawingView virtualView;
 
+	/// <summary>
+	/// Initialize a new instance of <see cref="DrawingNativeView" />.
+	/// </summary>
 	public DrawingNativeView(IDrawingView virtualView)
 	{
-		VirtualView = virtualView;
+		this.virtualView = virtualView;
 	}
 }
