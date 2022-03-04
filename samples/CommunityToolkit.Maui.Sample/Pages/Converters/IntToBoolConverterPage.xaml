@@ -7,6 +7,7 @@
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.IntToBoolConverterPage"
     x:TypeArguments="vm:IntToBoolConverterViewModel">
+
     <pages:BasePage.Resources>
         <ResourceDictionary>
             <mct:IntToBoolConverter x:Key="IntToBoolConverter" />

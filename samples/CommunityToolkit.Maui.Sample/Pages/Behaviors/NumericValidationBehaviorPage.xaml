@@ -21,7 +21,12 @@
     <VerticalStackLayout Padding="{StaticResource ContentPadding}"
                  Spacing="24"
                  VerticalOptions="StartAndExpand">
+
+        <Label Text="The NumericValidationBehavior is a behavior that allows the user to determine if text input is a valid numeric value. For example, an Entry control can be styled differently depending on whether a valid or an invalid numeric input is provided. Additional properties handling validation are inherited from ValidationBehavior"
+               TextColor="{StaticResource NormalLabelTextColor}" />
+
         <Label Text="Text color will be changed according to the configured style in case of an invalid numeric format or when the numeric value is outside of the configured boundaries (min: 1.0, max: 100.0). Maximum decimal places value equals 2." />
+
         <Entry Placeholder="Number">
             <Entry.Behaviors>
                 <mct:NumericValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"

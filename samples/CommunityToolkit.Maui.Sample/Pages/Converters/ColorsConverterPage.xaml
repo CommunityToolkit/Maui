@@ -4,8 +4,10 @@
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Converters"
-    x:DataType="converters:ColorsConverterPage"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.ColorsConverterPage">
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.ColorsConverterPage"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
+    x:TypeArguments="vm:ColorsConverterViewModel"
+    x:DataType="vm:ColorsConverterViewModel">
 
     <pages:BasePage.Resources>
         <ResourceDictionary>

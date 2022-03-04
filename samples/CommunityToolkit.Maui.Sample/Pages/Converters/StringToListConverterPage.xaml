@@ -4,7 +4,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.StringToListConverterPage">
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.StringToListConverterPage"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
+    x:TypeArguments="vm:StringToListConverterViewModel"
+    x:DataType="vm:StringToListConverterViewModel">
+    
     <pages:BasePage.Resources>
         <ResourceDictionary>
             <mct:StringToListConverter x:Key="StringToListConverter" SplitOptions="RemoveEmptyEntries">
@@ -17,7 +21,8 @@
         </ResourceDictionary>
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
-        <Grid Margin="20,0" RowDefinitions="Auto,Auto,*">
+        <Grid Margin="20,0" RowDefinitions="Auto,Auto,Auto,*">
+            <Label Text="The StringToListConverter returns a string array that contains the substrings in this string that are delimited by Separator" TextColor="{StaticResource NormalLabelTextColor}" />
             <Label
                 Grid.Row="0"
                 FontAttributes="Bold"
@@ -30,8 +35,7 @@
                 Text="Item 1,Item 2,Item 3" />
             <ListView
                 Grid.Row="2"
-                BindingContext="{x:Reference Name=ExampleText}"
-                ItemsSource="{Binding Path=Text, Converter={StaticResource StringToListConverter}}">
+                ItemsSource="{Binding Source=ExampleText, Path=Text, Converter={StaticResource StringToListConverter}}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>

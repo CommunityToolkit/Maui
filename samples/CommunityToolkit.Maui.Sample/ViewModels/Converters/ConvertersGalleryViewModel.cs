@@ -80,7 +80,7 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
 			SectionModel.Create<StringToListConverterViewModel>(nameof(StringToListConverter),
 				"A converter that splits a string by the separator and returns the enumerable sequence of strings as the result."),
 
-			SectionModel.Create<ColorsConvertersViewModel>("ColorConverters",
+			SectionModel.Create<ColorsConverterViewModel>("ColorConverters",
 				"A group of converters that convert a Color to your strings values (RGB, HEX, HSL, etc)"),
 
 			SectionModel.Create<ItemSelectedEventArgsConverterViewModel>(nameof(ItemSelectedEventArgsConverter),

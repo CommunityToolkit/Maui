@@ -10,9 +10,10 @@
 
     <pages:BasePage.Content>
         <VerticalStackLayout>
-            <Label Text="SetFocusOnEntryCompletedBehavior"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
+
+            <Label Text="The SetFocusOnEntryCompletedBehavior is an attached property for entries that allows the user to specify what VisualElement should gain focus after the user completes that entry."
+               TextColor="{StaticResource NormalLabelTextColor}" />
+
         </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>
