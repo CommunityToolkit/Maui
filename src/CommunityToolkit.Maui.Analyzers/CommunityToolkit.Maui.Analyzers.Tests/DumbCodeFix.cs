@@ -18,5 +18,10 @@ namespace CommunityToolkit.Maui.Analyzers.Tests
 		{
 			return Task.CompletedTask;
 		}
+
+		public override FixAllProvider? GetFixAllProvider()
+		{
+			return null;
+		}
 	}
 }

@@ -20,7 +20,7 @@ namespace Analyzers.Tests
         }
 
         [TestMethod]
-        public async Task TestMethod2()
+        public async Task DiagnosticForAllNotImplementedExceptionInCode()
         {
             var test = @"
     using System;
