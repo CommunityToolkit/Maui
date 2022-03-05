@@ -12,6 +12,6 @@ public partial class ByteArrayToImageSourceConverterPage : BasePage<ByteArrayToI
 	}
 
 	async void HandleImageDownloadFailed(object? sender, string e) =>
-		await Device.InvokeOnMainThreadAsync(() => DisplayAlert("Image Download Failed", e, "OK"));
+		await MainThread.InvokeOnMainThreadAsync(() => DisplayAlert("Image Download Failed", e, "OK"));
 }
 
