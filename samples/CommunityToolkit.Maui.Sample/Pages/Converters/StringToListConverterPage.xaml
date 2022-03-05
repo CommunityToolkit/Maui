@@ -8,7 +8,7 @@
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:TypeArguments="vm:StringToListConverterViewModel"
     x:DataType="vm:StringToListConverterViewModel">
-    
+
     <pages:BasePage.Resources>
         <ResourceDictionary>
             <mct:StringToListConverter x:Key="StringToListConverter" SplitOptions="RemoveEmptyEntries">
@@ -41,14 +41,11 @@
                 Text="{Binding LabelText}" />
 
             <CollectionView
-                BackgroundColor="Green"
                 Grid.Row="3"
                 ItemsSource="{Binding LabelText, Converter={StaticResource StringToListConverter}}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <ViewCell>
-                            <Label FontSize="Medium" Text="{Binding .}" />
-                        </ViewCell>
+                        <Label FontSize="Medium" Text="{Binding .}" />
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
