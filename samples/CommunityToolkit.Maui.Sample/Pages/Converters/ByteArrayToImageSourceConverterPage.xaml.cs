@@ -11,7 +11,10 @@ public partial class ByteArrayToImageSourceConverterPage : BasePage<ByteArrayToI
 		BindingContext.ImageDownloadFailed += HandleImageDownloadFailed;
 	}
 
-	async void HandleImageDownloadFailed(object? sender, string e) =>
+	async void HandleImageDownloadFailed(object? sender, string e)
+	{
+		ArgumentNullException.ThrowIfNull(sender);
 		await MainThread.InvokeOnMainThreadAsync(() => DisplayAlert("Image Download Failed", e, "OK"));
+	}
 }
 
