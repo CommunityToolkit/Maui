@@ -15,6 +15,9 @@ public static class MauiProgram
 		var builder = MauiApp.CreateBuilder();
 		builder.UseMauiApp<App>().UseMauiCommunityToolkit();
 
+		// Add HttpClient
+		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>();
+
 		// Add Gallery View Models
 		builder.Services.AddTransient<AlertsGalleryViewModel>();
 		builder.Services.AddTransient<BehaviorsGalleryViewModel>();

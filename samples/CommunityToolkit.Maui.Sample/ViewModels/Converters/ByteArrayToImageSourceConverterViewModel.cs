@@ -1,44 +1,69 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+﻿using CommunityToolkit.Mvvm.Input;
+
+namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
 public sealed class ByteArrayToImageSourceConverterViewModel : BaseViewModel, IDisposable
 {
-	public ByteArrayToImageSourceConverterViewModel()
+	readonly HttpClient client;
+
+	bool isDownloadingImage;
+	byte[]? dotNetBotImageByteArray;
+	string labelText = "Tap the Download Image Button to download an Image as a byte[]";
+
+	public ByteArrayToImageSourceConverterViewModel(HttpClient httpClient)
 	{
-		InitializeDotnetBotByteArray();
+		client = httpClient;
+		DownloadDotNetBotImageCommand = new AsyncRelayCommand(ExecuteDownloadDotNetBotImageCommand, () => !IsDownloadingImage && dotNetBotImageByteArray is null, false);
 	}
 
-	public byte[]? DotNetBotImageByteArray { get; private set; }
+	public AsyncRelayCommand DownloadDotNetBotImageCommand { get; }
+
+	public bool IsDownloadingImage
+	{
+		get => isDownloadingImage;
+		set
+		{
+			SetProperty(ref isDownloadingImage, value);
+			MainThread.BeginInvokeOnMainThread(DownloadDotNetBotImageCommand.NotifyCanExecuteChanged);
+		}
+	}
+
+	public byte[]? DotNetBotImageByteArray
+	{
+		get => dotNetBotImageByteArray;
+		set => SetProperty(ref dotNetBotImageByteArray, value);
+	}
+
+	public string LabelText
+	{
+		get => labelText;
+		set => SetProperty(ref labelText, value);
+	}
 
 	public void Dispose()
 	{
 		DotNetBotImageByteArray = null;
 	}
 
-	async void InitializeDotnetBotByteArray()
+	async Task ExecuteDownloadDotNetBotImageCommand()
 	{
-		var imageSource = new Image { Source = "dotnet-bot" }.Source;
-		int totalPixelBytes = imageSource.LoadImage().BytesPerLine * e.Image.Height;
+		IsDownloadingImage = true;
 
-		byte[] byteArray = new byte[totalPixelBytes];
-		e.Image.GetRow(0, byteArray, 0, totalPixelBytes);
+		// Ensure Activity Indicator appears on screen for a minumum of 1.5 seconds when the uses taps the Download Button
+		var minimumDownloadTimeTask = Task.Delay(TimeSpan.FromSeconds(1.5));
 
-		var dotnetBotImageAsStream = await streamImageSource.Stream(CancellationToken.None);
+		try
+		{
+			DotNetBotImageByteArray = await client.GetByteArrayAsync("https://user-images.githubusercontent.com/13558917/137551073-ac8958bf-83e3-4ae3-8623-4db6dce49d02.png").ConfigureAwait(false);
 
-		DotNetBotImageByteArray = ConvertStreamToByteArrary(dotnetBotImageAsStream);
-	}
+			await minimumDownloadTimeTask.ConfigureAwait(false);
 
-	static byte[] ToByteArray(this Image imageIn)
-	{
-		var ms = new MemoryStream();
-		imageIn.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-		return ms.ToArray();
-	}
-
-	static byte[] ConvertStreamToByteArrary(Stream stream)
-	{
-		using var memoryStream = new MemoryStream();
-		stream.CopyTo(memoryStream);
-		return memoryStream.ToArray();
+			LabelText = "The above image was downloaded as a byte[]";
+		}
+		finally
+		{
+			IsDownloadingImage = false;
+		}
 	}
 }
 
