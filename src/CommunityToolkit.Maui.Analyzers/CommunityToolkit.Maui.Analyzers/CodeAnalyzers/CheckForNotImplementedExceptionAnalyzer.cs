@@ -29,8 +29,6 @@ namespace CommunityToolkit.Maui.Analyzer
 		{
 			context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 			context.EnableConcurrentExecution();
-			//context.RegisterSyntaxNodeAction()
-			Debugger.Launch();
 
 			context.RegisterSyntaxTreeAction(SyntaxTreeAnalyzer);
 		}

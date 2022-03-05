@@ -17,6 +17,7 @@ namespace CommunityToolkit.Maui.Analyzer
 
 		// You can change these strings in the Resources.resx file. If you do not want your analyzer to be localize-able, you can use regular strings for Title and MessageFormat.
 		// See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/Localizing%20Analyzers.md for more on localization
+
 		static readonly LocalizableString title = new LocalizableResourceString(nameof(Resources.NullArgumentAnalyzerTitle), Resources.ResourceManager, typeof(Resources));
 		static readonly LocalizableString messageFormat = new LocalizableResourceString(nameof(Resources.NullArgumentAnalyzerMessageFormat), Resources.ResourceManager, typeof(Resources));
 		static readonly LocalizableString description = new LocalizableResourceString(nameof(Resources.NullArgumentAnalyzerDescription), Resources.ResourceManager, typeof(Resources));
@@ -28,7 +29,6 @@ namespace CommunityToolkit.Maui.Analyzer
 
 		public override void Initialize(AnalysisContext context)
 		{
-			//Debugger.Launch();
 			context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 			context.EnableConcurrentExecution();
 
