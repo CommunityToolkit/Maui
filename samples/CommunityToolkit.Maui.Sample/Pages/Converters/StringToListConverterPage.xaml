@@ -21,29 +21,37 @@
         </ResourceDictionary>
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
-        <Grid Margin="20,0" RowDefinitions="Auto,Auto,Auto,*">
-            <Label Text="The StringToListConverter returns a string array that contains the substrings in this string that are delimited by Separator" TextColor="{StaticResource NormalLabelTextColor}" />
+        <Grid Margin="20,0"
+              RowDefinitions="Auto,Auto,Auto,Auto"
+              RowSpacing="8">
+
+            <Label Text="The StringToListConverter returns a string array that contains the substrings in this string that are delimited by Separator"
+                   TextColor="{StaticResource NormalLabelTextColor}"
+                   Grid.Row="0"/>
+
             <Label
-                Grid.Row="0"
+                Grid.Row="1"
                 FontAttributes="Bold"
                 Text="Enter some text separated by ',' or '.' or ';'" />
+
             <Entry
-                x:Name="ExampleText"
-                Grid.Row="1"
+                Grid.Row="2"
                 FontSize="Medium"
                 Placeholder="Enter some text separated by ',' or '.' or ';'"
-                Text="Item 1,Item 2,Item 3" />
-            <ListView
-                Grid.Row="2"
-                ItemsSource="{Binding Source=ExampleText, Path=Text, Converter={StaticResource StringToListConverter}}">
-                <ListView.ItemTemplate>
+                Text="{Binding LabelText}" />
+
+            <CollectionView
+                BackgroundColor="Green"
+                Grid.Row="3"
+                ItemsSource="{Binding LabelText, Converter={StaticResource StringToListConverter}}">
+                <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>
                             <Label FontSize="Medium" Text="{Binding .}" />
                         </ViewCell>
                     </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
         </Grid>
     </pages:BasePage.Content>
 </pages:BasePage>

@@ -2,13 +2,11 @@
 
 public class StringToListConverterViewModel : BaseViewModel
 {
-	public IReadOnlyList<string> DummyItemSource { get; } = new[]
+	string labelText = "Item 1,Item 2,Item 3";
+
+	public string LabelText
 	{
-			"Item 0",
-			"Item 1",
-			"Item 2",
-			"Item 3",
-			"Item 4",
-			"Item 5",
-	};
+		get => labelText;
+		set => SetProperty(ref labelText, value);
+	}
 }

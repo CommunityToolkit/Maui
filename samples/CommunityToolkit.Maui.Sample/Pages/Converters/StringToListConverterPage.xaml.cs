@@ -8,7 +8,5 @@ public partial class StringToListConverterPage : BasePage<StringToListConverterV
 		: base(stringToListConverterViewModel)
 	{
 		InitializeComponent();
-
-		ExampleText ??= new();
 	}
 }
