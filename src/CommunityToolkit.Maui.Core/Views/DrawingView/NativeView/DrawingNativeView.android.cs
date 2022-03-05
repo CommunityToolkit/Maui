@@ -1,10 +1,14 @@
-﻿using Android.Content;
+﻿using System.Collections.ObjectModel;
+using System.Windows.Input;
+using Android.Content;
 using Android.Graphics;
+using Android.Graphics.Drawables;
 using Android.Views;
 using Microsoft.Maui.Platform;
 using APaint = Android.Graphics.Paint;
 using APath = Android.Graphics.Path;
 using AView = Android.Views.View;
+using AColor = Android.Graphics.Color;
 using Point = Microsoft.Maui.Graphics.Point;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -17,17 +21,53 @@ public class DrawingNativeView : AView
 	readonly APaint canvasPaint;
 	readonly APaint drawPaint;
 	readonly APath drawPath;
-	readonly IDrawingView virtualView;
 	Bitmap? canvasBitmap;
 	Canvas? drawCanvas;
-	ILine? currentLine;
+	DrawingNativeLine? currentLine;
+	
+	/// <summary>
+	/// Event raised when drawing line completed 
+	/// </summary>
+	public event EventHandler<DrawingNativeLineCompletedEventArgs>? DrawingLineCompleted;
+
+	/// <summary>
+	/// Line color
+	/// </summary>
+	public AColor LineColor { get; set; }
+
+	/// <summary>
+	/// Line width
+	/// </summary>
+	public float LineWidth { get; set; }
+
+	/// <summary>
+	/// Command executed when drawing line completed
+	/// </summary>
+	public ICommand? DrawingLineCompletedCommand { get; set; }
+
+	/// <summary>
+	/// Drawing Lines
+	/// </summary>
+	public ObservableCollection<DrawingNativeLine> Lines { get; }
+
+	/// <summary>
+	/// Enable or disable multiline mode
+	/// </summary>
+	public bool MultiLineMode { get; set; }
+
+	/// <summary>
+	/// Clear drawing on finish
+	/// </summary>
+	public bool ClearOnFinish { get; set; }
 
 	/// <summary>
 	/// Initialize a new instance of <see cref="DrawingNativeView" />.
 	/// </summary>
-	public DrawingNativeView(IDrawingView virtualView, Context? context) : base(context)
+	public DrawingNativeView(Context? context) : base(context)
 	{
-		this.virtualView = virtualView;
+		Lines = new ObservableCollection<DrawingNativeLine>();
+		LineColor = Colors.Black.ToNative();
+		LineWidth = 5;
 		drawPath = new APath();
 		drawPaint = new APaint
 		{
@@ -42,8 +82,6 @@ public class DrawingNativeView : AView
 		{
 			Dither = true
 		};
-		drawPaint.Color = this.virtualView.DefaultLineColor.ToNative();
-		drawPaint.StrokeWidth = this.virtualView.DefaultLineWidth;
 	}
 
 	/// <summary>
@@ -51,7 +89,7 @@ public class DrawingNativeView : AView
 	/// </summary>
 	public void Initialize()
 	{
-		virtualView.Lines.CollectionChanged += OnLinesCollectionChanged;
+		Lines.CollectionChanged += OnLinesCollectionChanged;
 	}
 
 	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => LoadLines();
@@ -81,7 +119,7 @@ public class DrawingNativeView : AView
 
 		if (canvas is not null && canvasBitmap is not null)
 		{
-			Draw(virtualView.Lines, canvas);
+			Draw(Lines, canvas);
 
 			canvas.DrawBitmap(canvasBitmap, 0, 0, canvasPaint);
 			canvas.DrawPath(drawPath, drawPaint);
@@ -99,14 +137,14 @@ public class DrawingNativeView : AView
 		{
 			case MotionEventActions.Down:
 				Parent?.RequestDisallowInterceptTouchEvent(true);
-				if (!virtualView.MultiLineMode)
+				if (!MultiLineMode)
 				{
-					virtualView.Lines.Clear();
+					Lines.Clear();
 				}
 
-				currentLine = new Line()
+				currentLine = new DrawingNativeLine()
 				{
-					Points = new System.Collections.ObjectModel.ObservableCollection<Point>()
+					Points = new ObservableCollection<Point>
 						{
 							new (touchX, touchY)
 						}
@@ -129,13 +167,13 @@ public class DrawingNativeView : AView
 				drawPath.Reset();
 				if (currentLine != null)
 				{
-					virtualView.Lines.Add(currentLine);
+					Lines.Add(currentLine);
 					OnDrawingLineCompleted(currentLine);
 				}
 
-				if (virtualView.ClearOnFinish)
+				if (ClearOnFinish)
 				{
-					virtualView.Lines.Clear();
+					Lines.Clear();
 				}
 
 				break;
@@ -190,14 +228,16 @@ public class DrawingNativeView : AView
 
 		drawCanvas.DrawColor(GetBackgroundColor());
 		drawPath.Reset();
-		var lines = virtualView.Lines;
+		var lines = Lines;
 		Draw(lines, drawCanvas, drawPath);
 
 		Invalidate();
 	}
 
-	void Draw(IEnumerable<ILine> lines, in Canvas canvas, APath? path = null)
+	void Draw(IEnumerable<DrawingNativeLine> lines, in Canvas canvas, APath? path = null)
 	{
+		drawPaint.Color = LineColor;
+		drawPaint.StrokeWidth = LineWidth;
 		foreach (var line in lines)
 		{
 			path ??= new APath();
@@ -215,7 +255,7 @@ public class DrawingNativeView : AView
 			path.Reset();
 		}
 	}
-	
+
 	/// <summary>
 	/// Clean up resources
 	/// </summary>
@@ -226,20 +266,25 @@ public class DrawingNativeView : AView
 		drawPath.Dispose();
 		canvasBitmap?.Dispose();
 		canvasPaint.Dispose();
-		virtualView.Lines.CollectionChanged -= OnLinesCollectionChanged;
+		Lines.CollectionChanged -= OnLinesCollectionChanged;
 	}
 
-	Android.Graphics.Color GetBackgroundColor()
+	AColor GetBackgroundColor()
 	{
-		var background = virtualView.Background?.BackgroundColor ?? Colors.White;
-		return background.ToNative();
-	}
-
-	void OnDrawingLineCompleted(ILine? lastDrawingLine)
-	{
-		if (virtualView.DrawingLineCompletedCommand?.CanExecute(lastDrawingLine) ?? false)
+		if (Background is ColorDrawable colorDrawable)
 		{
-			virtualView.DrawingLineCompletedCommand.Execute(lastDrawingLine);
+			return colorDrawable.Color;
+		}
+
+		return AColor.White;
+	}
+
+	void OnDrawingLineCompleted(DrawingNativeLine? lastDrawingLine)
+	{
+		DrawingLineCompleted?.Invoke(this, new DrawingNativeLineCompletedEventArgs(lastDrawingLine));
+		if (DrawingLineCompletedCommand?.CanExecute(lastDrawingLine) ?? false)
+		{
+			DrawingLineCompletedCommand.Execute(lastDrawingLine);
 		}
 	}
 }

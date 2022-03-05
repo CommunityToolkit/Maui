@@ -16,12 +16,12 @@ public interface IDrawingView : IView
 	/// <summary>
 	/// The <see cref="Color"/> that is used by default to draw a line on the <see cref="IDrawingView"/>. This is a bindable property.
 	/// </summary>
-	Color DefaultLineColor { get; }
+	Color LineColor { get; }
 
 	/// <summary>
 	/// The width that is used by default to draw a line on the <see cref="IDrawingView"/>. This is a bindable property.
 	/// </summary>
-	float DefaultLineWidth { get; }
+	float LineWidth { get; }
 
 	/// <summary>
 	/// This command is invoked whenever the drawing of a line on <see cref="IDrawingView"/> has completed.

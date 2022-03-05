@@ -56,8 +56,8 @@
             <mct:DrawingView x:Name="DrawingViewControl" 
                                BackgroundColor="LightGray" 
                                HeightRequest="200"
-                               DefaultLineColor="Red"
-                               DefaultLineWidth="3"
+                               LineColor="Red"
+                               LineWidth="3"
                                Lines="{Binding Lines, Mode=TwoWay}"
                                ClearOnFinish="{Binding Source={x:Reference ClearOnFinish}, Path=IsToggled}"
                                MultiLineMode="{Binding Source={x:Reference MultiLineMode}, Path=IsToggled}"/>

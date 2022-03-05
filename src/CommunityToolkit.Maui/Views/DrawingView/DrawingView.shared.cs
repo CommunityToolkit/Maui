@@ -34,16 +34,16 @@ public class DrawingView : View, IDrawingView
 	public static readonly BindableProperty DrawingLineCompletedCommandProperty = BindableProperty.Create(nameof(DrawingLineCompletedCommand), typeof(ICommand), typeof(DrawingView));
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="DefaultLineColor"/> property.
+	/// Backing BindableProperty for the <see cref="LineColor"/> property.
 	/// </summary>
 	public static readonly BindableProperty DefaultLineColorProperty =
-		BindableProperty.Create(nameof(DefaultLineColor), typeof(Color), typeof(DrawingView), Colors.Black);
+		BindableProperty.Create(nameof(LineColor), typeof(Color), typeof(DrawingView), Colors.Black);
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="DefaultLineWidth"/> property.
+	/// Backing BindableProperty for the <see cref="LineWidth"/> property.
 	/// </summary>
 	public static readonly BindableProperty DefaultLineWidthProperty =
-		BindableProperty.Create(nameof(DefaultLineWidth), typeof(float), typeof(DrawingView), 5f);
+		BindableProperty.Create(nameof(LineWidth), typeof(float), typeof(DrawingView), 5f);
 
 	/// <summary>
 	/// Event occurred when drawing line completed
@@ -58,7 +58,7 @@ public class DrawingView : View, IDrawingView
 	/// <summary>
 	/// The <see cref="Color"/> that is used by default to draw a line on the <see cref="DrawingView"/>. This is a bindable property.
 	/// </summary>
-	public Color DefaultLineColor
+	public Color LineColor
 	{
 		get => (Color)GetValue(DefaultLineColorProperty);
 		set => SetValue(DefaultLineColorProperty, value);
@@ -67,7 +67,7 @@ public class DrawingView : View, IDrawingView
 	/// <summary>
 	/// The width that is used by default to draw a line on the <see cref="DrawingView"/>. This is a bindable property.
 	/// </summary>
-	public float DefaultLineWidth
+	public float LineWidth
 	{
 		get => (float)GetValue(DefaultLineWidthProperty);
 		set => SetValue(DefaultLineWidthProperty, value);

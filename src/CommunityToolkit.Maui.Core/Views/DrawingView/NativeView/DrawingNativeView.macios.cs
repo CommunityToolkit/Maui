@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Platform;
@@ -12,21 +13,54 @@ namespace CommunityToolkit.Maui.Core.Views;
 public class DrawingNativeView : UIView
 {
 	readonly UIBezierPath currentPath;
-	readonly UIColor? lineColor;
-	readonly IDrawingView virtualView;
 	CGPoint previousPoint;
-	Line? currentLine;
+	DrawingNativeLine? currentLine;
+
+	/// <summary>
+	/// Event raised when drawing line completed 
+	/// </summary>
+	public event EventHandler<DrawingNativeLineCompletedEventArgs>? DrawingLineCompleted;
+
+	/// <summary>
+	/// Line color
+	/// </summary>
+	public UIColor LineColor { get; set; }
+
+	/// <summary>
+	/// Line width
+	/// </summary>
+	public float LineWidth { get; set; }
+
+	/// <summary>
+	/// Command executed when drawing line completed
+	/// </summary>
+	public ICommand? DrawingLineCompletedCommand { get; set; }
+
+	/// <summary>
+	/// Drawing Lines
+	/// </summary>
+	public ObservableCollection<DrawingNativeLine> Lines { get; }
+
+	/// <summary>
+	/// Enable or disable multiline mode
+	/// </summary>
+	public bool MultiLineMode { get; set; }
+
+	/// <summary>
+	/// Clear drawing on finish
+	/// </summary>
+	public bool ClearOnFinish { get; set; }
 
 	/// <summary>
 	/// Initialize a new instance of <see cref="DrawingNativeView" />.
 	/// </summary>
-	public DrawingNativeView(IDrawingView virtualView)
+	public DrawingNativeView()
 	{
-		this.virtualView = virtualView;
+		LineColor = Colors.Black.ToNative();
+		LineWidth = 5;
+		Lines = new ObservableCollection<DrawingNativeLine>();
+
 		currentPath = new UIBezierPath();
-		BackgroundColor = GetBackgroundColor();
-		currentPath.LineWidth = this.virtualView.DefaultLineWidth;
-		lineColor = this.virtualView.DefaultLineColor.ToNative();
 	}
 
 	/// <summary>
@@ -34,7 +68,7 @@ public class DrawingNativeView : UIView
 	/// </summary>
 	public void Initialize()
 	{
-		virtualView.Lines.CollectionChanged += OnLinesCollectionChanged;
+		Lines.CollectionChanged += OnLinesCollectionChanged;
 	}
 
 	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => LoadPoints();
@@ -44,17 +78,17 @@ public class DrawingNativeView : UIView
 	{
 		SetParentTouches(false);
 
-		virtualView.Lines.CollectionChanged -= OnLinesCollectionChanged;
-		if (!virtualView.MultiLineMode)
+		Lines.CollectionChanged -= OnLinesCollectionChanged;
+		if (!MultiLineMode)
 		{
-			virtualView.Lines.Clear();
+			Lines.Clear();
 			currentPath.RemoveAllPoints();
 		}
 
 		var touch = (UITouch)touches.AnyObject;
 		previousPoint = touch.PreviousLocationInView(this);
 		currentPath.MoveTo(previousPoint);
-		currentLine = new Line
+		currentLine = new DrawingNativeLine
 		{
 			Points = new ObservableCollection<Point>()
 			{
@@ -64,7 +98,7 @@ public class DrawingNativeView : UIView
 
 		SetNeedsDisplay();
 
-		virtualView.Lines.CollectionChanged += OnLinesCollectionChanged;
+		Lines.CollectionChanged += OnLinesCollectionChanged;
 	}
 
 	/// <inheritdoc />
@@ -73,7 +107,7 @@ public class DrawingNativeView : UIView
 		var touch = (UITouch)touches.AnyObject;
 		var currentPoint = touch.LocationInView(this);
 		AddPointToPath(currentPoint);
-		currentLine?.Points.Add(CoreGraphicsExtensions.ToPoint(currentPoint));
+		currentLine?.Points.Add(currentPoint.ToPoint());
 	}
 
 	/// <inheritdoc />
@@ -82,13 +116,13 @@ public class DrawingNativeView : UIView
 		if (currentLine != null)
 		{
 			UpdatePath(currentLine);
-			virtualView.Lines.Add(currentLine);
+			Lines.Add(currentLine);
 			OnDrawingLineCompleted(currentLine);
 		}
 
-		if (virtualView.ClearOnFinish)
+		if (ClearOnFinish)
 		{
-			virtualView.Lines.Clear();
+			Lines.Clear();
 		}
 
 		SetParentTouches(true);
@@ -104,7 +138,8 @@ public class DrawingNativeView : UIView
 	/// <inheritdoc />
 	public override void Draw(CGRect rect)
 	{
-		lineColor?.SetStroke();
+		currentPath.LineWidth = LineWidth;
+		LineColor.SetStroke();
 		currentPath.Stroke();
 	}
 
@@ -117,7 +152,7 @@ public class DrawingNativeView : UIView
 	void LoadPoints()
 	{
 		currentPath.RemoveAllPoints();
-		foreach (var line in virtualView.Lines)
+		foreach (var line in Lines)
 		{
 			UpdatePath(line);
 			var stylusPoints = line.Points.Select(point => new CGPoint(point.X, point.Y)).ToList();
@@ -135,9 +170,9 @@ public class DrawingNativeView : UIView
 		SetNeedsDisplay();
 	}
 
-	void UpdatePath(ILine line)
+	void UpdatePath(DrawingNativeLine line)
 	{
-		virtualView.Lines.CollectionChanged -= OnLinesCollectionChanged;
+		Lines.CollectionChanged -= OnLinesCollectionChanged;
 		var smoothedPoints = line.EnableSmoothedPath
 			? SmoothedPathWithGranularity(line.Points, line.Granularity)
 			: new ObservableCollection<Point>(line.Points);
@@ -149,7 +184,7 @@ public class DrawingNativeView : UIView
 			line.Points.Add(point);
 		}
 
-		virtualView.Lines.CollectionChanged += OnLinesCollectionChanged;
+		Lines.CollectionChanged += OnLinesCollectionChanged;
 	}
 
 	ObservableCollection<Point> SmoothedPathWithGranularity(ObservableCollection<Point> currentPoints,
@@ -221,7 +256,7 @@ public class DrawingNativeView : UIView
 	public void CleanUp()
 	{
 		currentPath.Dispose();
-		virtualView.Lines.CollectionChanged -= OnLinesCollectionChanged;
+		Lines.CollectionChanged -= OnLinesCollectionChanged;
 	}
 
 	void SetParentTouches(bool enabled)
@@ -239,21 +274,16 @@ public class DrawingNativeView : UIView
 		}
 	}
 
-	UIColor GetBackgroundColor()
-	{
-		var background = virtualView.Background?.BackgroundColor ?? Colors.White;
-		return background.ToNative();
-	}
-
 	/// <summary>
 	/// Executes DrawingLineCompleted event and DrawingLineCompletedCommand
 	/// </summary>
 	/// <param name="lastDrawingLine">Last drawing line</param>
-	void OnDrawingLineCompleted(ILine? lastDrawingLine)
+	void OnDrawingLineCompleted(DrawingNativeLine? lastDrawingLine)
 	{
-		if (virtualView.DrawingLineCompletedCommand?.CanExecute(lastDrawingLine) ?? false)
+		DrawingLineCompleted?.Invoke(this, new DrawingNativeLineCompletedEventArgs(lastDrawingLine));
+		if (DrawingLineCompletedCommand?.CanExecute(lastDrawingLine) ?? false)
 		{
-			virtualView.DrawingLineCompletedCommand.Execute(lastDrawingLine);
+			DrawingLineCompletedCommand.Execute(lastDrawingLine);
 		}
 	}
 }
