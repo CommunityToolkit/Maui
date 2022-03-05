@@ -8,6 +8,10 @@ public partial class ByteArrayToImageSourceConverterPage : BasePage<ByteArrayToI
 		: base(byteArrayToImageSourceConverterViewModel)
 	{
 		InitializeComponent();
+		BindingContext.ImageDownloadFailed += HandleImageDownloadFailed;
 	}
+
+	async void HandleImageDownloadFailed(object? sender, string e) =>
+		await Device.InvokeOnMainThreadAsync(() => DisplayAlert("Image Download Failed", e, "OK"));
 }
 
