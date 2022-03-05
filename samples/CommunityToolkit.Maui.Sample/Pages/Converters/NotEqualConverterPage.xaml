@@ -11,6 +11,7 @@
 
     <pages:BasePage.Resources>
         <ResourceDictionary>
+            <x:String x:Key="MAUI">MAUI</x:String>
             <mct:NotEqualConverter x:Key="NotEqualConverter" />
         </ResourceDictionary>
     </pages:BasePage.Resources>
@@ -33,7 +34,7 @@
                 <Label.Triggers>
                     <DataTrigger TargetType="Label"
                                     Binding="{Binding InputValue, Converter={StaticResource NotEqualConverter}, ConverterParameter={StaticResource MAUI}}"
-                                    Value="False">
+                                    Value="true">
                         <Setter Property="Text" Value="Yes, it does!" />
                         <Setter Property="TextColor" Value="Green" />
                     </DataTrigger>
