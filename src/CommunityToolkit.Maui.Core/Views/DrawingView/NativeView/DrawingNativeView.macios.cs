@@ -16,7 +16,6 @@ public class DrawingNativeView : UIView
 	readonly IDrawingView virtualView;
 	CGPoint previousPoint;
 	Line? currentLine;
-	bool disposed;
 
 	/// <summary>
 	/// Initialize a new instance of <see cref="DrawingNativeView" />.
@@ -28,7 +27,14 @@ public class DrawingNativeView : UIView
 		BackgroundColor = GetBackgroundColor();
 		currentPath.LineWidth = this.virtualView.DefaultLineWidth;
 		lineColor = this.virtualView.DefaultLineColor.ToNative();
-		this.virtualView.Lines.CollectionChanged += OnLinesCollectionChanged;
+	}
+
+	/// <summary>
+	/// Initialize resources
+	/// </summary>
+	public void Initialize()
+	{
+		virtualView.Lines.CollectionChanged += OnLinesCollectionChanged;
 	}
 
 	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => LoadPoints();
@@ -209,23 +215,13 @@ public class DrawingNativeView : UIView
 				 (((3 * p1.Y) - p0.Y - (3 * p2.Y) + p3.Y) * ttt))
 		};
 
-	/// <inheritdoc />
-	protected override void Dispose(bool disposing)
+	/// <summary>
+	/// Clean up resources
+	/// </summary>
+	public void CleanUp()
 	{
-		if (disposed)
-		{
-			return;
-		}
-
-		if (disposing)
-		{
-			currentPath.Dispose();
-			virtualView.Lines.CollectionChanged -= OnLinesCollectionChanged;
-		}
-
-		disposed = true;
-
-		base.Dispose(disposing);
+		currentPath.Dispose();
+		virtualView.Lines.CollectionChanged -= OnLinesCollectionChanged;
 	}
 
 	void SetParentTouches(bool enabled)
@@ -242,7 +238,7 @@ public class DrawingNativeView : UIView
 			parent = parent.Superview;
 		}
 	}
-	
+
 	UIColor GetBackgroundColor()
 	{
 		var background = virtualView.Background?.BackgroundColor ?? Colors.White;

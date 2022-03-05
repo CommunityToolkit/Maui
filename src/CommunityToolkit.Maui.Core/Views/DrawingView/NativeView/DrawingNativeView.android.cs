@@ -2,9 +2,9 @@
 using Android.Graphics;
 using Android.Views;
 using Microsoft.Maui.Platform;
-using Paint = Android.Graphics.Paint;
-using Path = Android.Graphics.Path;
-using View = Android.Views.View;
+using APaint = Android.Graphics.Paint;
+using APath = Android.Graphics.Path;
+using AView = Android.Views.View;
 using Point = Microsoft.Maui.Graphics.Point;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -12,13 +12,11 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// DrawingView Native Control
 /// </summary>
-public class DrawingNativeView : View
+public class DrawingNativeView : AView
 {
-	bool disposed;
-
-	readonly Paint canvasPaint;
-	readonly Paint drawPaint;
-	readonly Path drawPath;
+	readonly APaint canvasPaint;
+	readonly APaint drawPaint;
+	readonly APath drawPath;
 	readonly IDrawingView virtualView;
 	Bitmap? canvasBitmap;
 	Canvas? drawCanvas;
@@ -30,23 +28,30 @@ public class DrawingNativeView : View
 	public DrawingNativeView(IDrawingView virtualView, Context? context) : base(context)
 	{
 		this.virtualView = virtualView;
-		this.virtualView.Lines.CollectionChanged += OnLinesCollectionChanged;
-		drawPath = new Path();
-		drawPaint = new Paint
+		drawPath = new APath();
+		drawPaint = new APaint
 		{
 			AntiAlias = true
 		};
 
-		drawPaint.SetStyle(Paint.Style.Stroke);
-		drawPaint.StrokeJoin = Paint.Join.Round;
-		drawPaint.StrokeCap = Paint.Cap.Round;
+		drawPaint.SetStyle(APaint.Style.Stroke);
+		drawPaint.StrokeJoin = APaint.Join.Round;
+		drawPaint.StrokeCap = APaint.Cap.Round;
 
-		canvasPaint = new Paint
+		canvasPaint = new APaint
 		{
 			Dither = true
 		};
 		drawPaint.Color = this.virtualView.DefaultLineColor.ToNative();
 		drawPaint.StrokeWidth = this.virtualView.DefaultLineWidth;
+	}
+
+	/// <summary>
+	/// Initialize resources
+	/// </summary>
+	public void Initialize()
+	{
+		virtualView.Lines.CollectionChanged += OnLinesCollectionChanged;
 	}
 
 	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => LoadLines();
@@ -182,7 +187,7 @@ public class DrawingNativeView : View
 		{
 			return;
 		}
-		
+
 		drawCanvas.DrawColor(GetBackgroundColor());
 		drawPath.Reset();
 		var lines = virtualView.Lines;
@@ -191,11 +196,11 @@ public class DrawingNativeView : View
 		Invalidate();
 	}
 
-	void Draw(IEnumerable<ILine> lines, in Canvas canvas, Path? path = null)
+	void Draw(IEnumerable<ILine> lines, in Canvas canvas, APath? path = null)
 	{
 		foreach (var line in lines)
 		{
-			path ??= new Path();
+			path ??= new APath();
 			var points = NormalizePoints(line.Points);
 			path.MoveTo((float)points[0].X, (float)points[0].Y);
 			foreach (var (x, y) in points)
@@ -210,36 +215,26 @@ public class DrawingNativeView : View
 			path.Reset();
 		}
 	}
-
-	/// <inheritdoc />
-	protected override void Dispose(bool disposing)
+	
+	/// <summary>
+	/// Clean up resources
+	/// </summary>
+	public void CleanUp()
 	{
-		if (disposed)
-		{
-			return;
-		}
-
-		if (disposing)
-		{
-			drawCanvas?.Dispose();
-			drawPaint.Dispose();
-			drawPath.Dispose();
-			canvasBitmap?.Dispose();
-			canvasPaint.Dispose();
-			virtualView.Lines.CollectionChanged -= OnLinesCollectionChanged;
-		}
-
-		disposed = true;
-
-		base.Dispose(disposing);
+		drawCanvas?.Dispose();
+		drawPaint.Dispose();
+		drawPath.Dispose();
+		canvasBitmap?.Dispose();
+		canvasPaint.Dispose();
+		virtualView.Lines.CollectionChanged -= OnLinesCollectionChanged;
 	}
 
 	Android.Graphics.Color GetBackgroundColor()
 	{
-		var background = virtualView.Background?.BackgroundColor ??  Colors.White;
+		var background = virtualView.Background?.BackgroundColor ?? Colors.White;
 		return background.ToNative();
 	}
-	
+
 	void OnDrawingLineCompleted(ILine? lastDrawingLine)
 	{
 		if (virtualView.DrawingLineCompletedCommand?.CanExecute(lastDrawingLine) ?? false)

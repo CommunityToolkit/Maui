@@ -16,4 +16,18 @@ public class DrawingNativeView : FrameworkElement
 	{
 		this.virtualView = virtualView;
 	}
+
+	/// <summary>
+	/// Initialize resources
+	/// </summary>
+	public void Initialize()
+	{
+	}
+
+	/// <summary>
+	/// Clean up resources
+	/// </summary>
+	public void CleanUp()
+	{
+	}
 }

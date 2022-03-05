@@ -1,4 +1,4 @@
-﻿#if !(IOS || ANDROID || MACCATALYST || WINDOWS)
+﻿#if !(IOS || ANDROID || MACCATALYST)
 namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>

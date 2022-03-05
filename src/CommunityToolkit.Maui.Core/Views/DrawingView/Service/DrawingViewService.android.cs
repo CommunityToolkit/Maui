@@ -95,7 +95,7 @@ public static partial class DrawingViewService
 		Color strokeColor,
 		Color backgroundColor)
 	{
-		if (points.Count == 0)
+		if (!points.Any())
 		{
 			return null;
 		}
@@ -110,7 +110,17 @@ public static partial class DrawingViewService
 			return null;
 		}
 
-		var image = Bitmap.CreateBitmap((int)drawingWidth, (int)drawingHeight, Bitmap.Config.Argb8888!)!;
+		if (Bitmap.Config.Argb8888 is null)
+		{
+			return null;
+		}
+
+		var image = Bitmap.CreateBitmap((int)drawingWidth, (int)drawingHeight, Bitmap.Config.Argb8888);
+		if (image is null)
+		{
+			return null;
+		}
+
 		using var canvas = new Canvas(image);
 
 		// background
@@ -144,7 +154,7 @@ public static partial class DrawingViewService
 		Color backgroundColor)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
-		if (points.Count == 0)
+		if (!points.Any())
 		{
 			return null;
 		}
@@ -159,7 +169,17 @@ public static partial class DrawingViewService
 			return null;
 		}
 
-		var image = Bitmap.CreateBitmap((int)drawingWidth, (int)drawingHeight, Bitmap.Config.Argb8888!)!;
+		if (Bitmap.Config.Argb8888 is null)
+		{
+			return null;
+		}
+
+		var image = Bitmap.CreateBitmap((int)drawingWidth, (int)drawingHeight, Bitmap.Config.Argb8888);
+		if (image is null)
+		{
+			return null;
+		}
+
 		using var canvas = new Canvas(image);
 
 		// background

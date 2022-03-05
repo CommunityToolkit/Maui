@@ -70,7 +70,7 @@ public static partial class DrawingViewService
 		Color strokeColor,
 		Color backgroundColor)
 	{
-		if (points.Count == 0)
+		if (!points.Any())
 		{
 			return null;
 		}
@@ -114,7 +114,7 @@ public static partial class DrawingViewService
 		Color backgroundColor)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
-		if (points.Count == 0)
+		if (!points.Any())
 		{
 			return null;
 		}
@@ -147,8 +147,8 @@ public static partial class DrawingViewService
 			context.SetLineCap(CGLineCap.Round);
 			context.SetLineJoin(CGLineJoin.Round);
 
-			var startPoint = line.Points.First();
-			context.MoveTo((float)startPoint.X, (float)startPoint.Y);
+			var (startPointX, startPointY) = line.Points[0];
+			context.MoveTo((float)startPointX, (float)startPointY);
 			context.AddLines(line.Points.Select(p => new CGPoint(p.X - minPointX, p.Y - minPointY)).ToArray());
 		}
 
