@@ -21,9 +21,7 @@
         </ResourceDictionary>
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
-        <Grid Margin="20,0"
-              RowDefinitions="Auto,Auto,Auto,Auto"
-              RowSpacing="8">
+        <VerticalStackLayout Spacing="8">
 
             <Label Text="The StringToListConverter returns a string array that contains the substrings in this string that are delimited by Separator"
                    TextColor="{StaticResource NormalLabelTextColor}"
@@ -49,6 +47,6 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
-        </Grid>
+        </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>
