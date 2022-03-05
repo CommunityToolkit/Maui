@@ -14,7 +14,7 @@ namespace CommunityToolkit.Maui.Sample;
 
 public partial class AppShell : Shell
 {
-	static readonly IReadOnlyDictionary<Type, (Type GalleryPageType, Type ContentPageType)> viewModelMappings = new Dictionary<Type, (Type, Type)>(new []
+	static readonly IReadOnlyDictionary<Type, (Type GalleryPageType, Type ContentPageType)> viewModelMappings = new Dictionary<Type, (Type, Type)>(new[]
 	{
 		// Add Alerts View Models
 		CreateViewModelMapping<SnackbarPage, SnackbarViewModel, AlertsGalleryPage, AlertsGalleryViewModel>(),
@@ -48,6 +48,7 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<ImageResourceConverterPage, ImageResourceConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<IndexToArrayItemConverterPage, IndexToArrayItemConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<IntToBoolConverterPage, IntToBoolConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<InvertedBoolConverterPage, InvertedBoolConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<IsListNotNullOrEmptyConverterPage, IsListNotNullOrEmptyConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<IsListNullOrEmptyConverterPage, IsListNullOrEmptyConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<IsStringNotNullOrEmptyConverterPage, IsStringNotNullOrEmptyConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),

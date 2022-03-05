@@ -57,6 +57,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<EqualConverterViewModel>();
 		builder.Services.AddTransient<IndexToArrayItemConverterViewModel>();
 		builder.Services.AddTransient<IntToBoolConverterViewModel>();
+		builder.Services.AddTransient<InvertedBoolConverterViewModel>();
 		builder.Services.AddTransient<IsListNotNullOrEmptyConverterViewModel>();
 		builder.Services.AddTransient<IsListNullOrEmptyConverterViewModel>();
 		builder.Services.AddTransient<IsStringNotNullOrEmptyConverterViewModel>();
