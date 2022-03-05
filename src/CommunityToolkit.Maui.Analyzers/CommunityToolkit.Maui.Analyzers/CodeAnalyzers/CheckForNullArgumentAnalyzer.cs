@@ -62,20 +62,11 @@ namespace CommunityToolkit.Maui.Analyzer
 		{
 			foreach (var item in throwStatementSyntaxCollection)
 			{
-				var descendantNodes = item.Parent.DescendantNodes();
-				var binaryExpression = descendantNodes.OfType<BinaryExpressionSyntax>().Where(x => x.IsKind(SyntaxKind.EqualsExpression)).FirstOrDefault();
+				var descendantNodes = item.Parent.Parent.DescendantNodesAndSelf();
 				var patternExpression = descendantNodes.OfType<IsPatternExpressionSyntax>().FirstOrDefault();
-
-
-				if (binaryExpression is not null)
-				{
-					CheckForBinaryExpression(parameters, binaryExpression, context);
-				}
 
 				if (patternExpression is not null)
 				{
-					var compilation = context.SemanticModel.Compilation;
-					var namedTypeSymbol = compilation.GetSemanticModel(patternExpression.SyntaxTree);
 					CheckForNullPatternMatching(parameters, patternExpression, context);
 				}
 			}
@@ -91,24 +82,6 @@ namespace CommunityToolkit.Maui.Analyzer
 				if (leftToken.ValueText == parameter.Identifier.ValueText && right.IsKind(SyntaxKind.NullKeyword))
 				{
 					var diagnostic = Diagnostic.Create(rule, patternExpression.Parent.GetLocation(), leftToken.ValueText);
-					context.ReportDiagnostic(diagnostic);
-				}
-			}
-		}
-
-		static void CheckForBinaryExpression(SeparatedSyntaxList<ParameterSyntax> parameters, BinaryExpressionSyntax expression, CodeBlockAnalysisContext context)
-		{
-			var leftToken = expression.Left.GetFirstToken();
-			var rightToken = expression.Right.GetFirstToken();
-
-			foreach (var parameter in parameters)
-			{
-				var checkLeftToken = leftToken.ValueText == parameter.Identifier.ValueText || leftToken.IsKind(SyntaxKind.NullKeyword);
-				var checkRightToken = rightToken.ValueText == parameter.Identifier.ValueText || rightToken.IsKind(SyntaxKind.NullKeyword);
-
-				if (checkRightToken && checkLeftToken)
-				{
-					var diagnostic = Diagnostic.Create(rule, expression.Parent.GetLocation(), leftToken.ValueText);
 					context.ReportDiagnostic(diagnostic);
 				}
 			}
