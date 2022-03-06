@@ -10,7 +10,7 @@ public partial class Popup
 	/// </summary>
 	public static CommandMapper<IPopup, PopupViewHandler> ControlPopUpCommandMapper = new(PopupViewHandler.PopUpCommandMapper)
 	{
-#if IOS
+#if IOS || MACCATALYST
 		[nameof(IPopup.OnOpened)] = MapOnOpened
 #endif
 	};
