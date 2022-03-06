@@ -32,11 +32,10 @@
                     <Setter Property="BorderColor" Value="Blue" />
                     <Setter Property="TextColor" Value="Blue" />
                 </Style>
-                <Style x:Key="ButtonGroup" TargetType="StackLayout">
+                <Style x:Key="ButtonGroup" TargetType="HorizontalStackLayout">
                     <Setter Property="VerticalOptions" Value="EndAndExpand" />
                     <Setter Property="HorizontalOptions" Value="CenterAndExpand" />
                     <Setter Property="Spacing" Value="20" />
-                    <Setter Property="Orientation" Value="Horizontal" />
                 </Style>
             </ResourceDictionary>
         </VerticalStackLayout.Resources>
@@ -47,13 +46,13 @@
         <BoxView Style="{StaticResource Divider}" />
         <Label Style="{StaticResource Content}" 
                 Text="This is a native popup with a .NET MAUI View being rendered. The behaviors of the popup will confirm to 100% native look and feel, but still allows you to use your .NET MAUI Controls." />
-        <StackLayout Style="{StaticResource ButtonGroup}">
+        <HorizontalStackLayout Style="{StaticResource ButtonGroup}">
             <Button Text="Cancel"
                     Style="{StaticResource CancelButton}"
                     Clicked="Cancel_Clicked" />
             <Button Text="OKAY"
                     Clicked="Okay_Clicked" />
-        </StackLayout>
+        </HorizontalStackLayout>
 
     </VerticalStackLayout>
 </mct:Popup>

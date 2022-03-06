@@ -7,19 +7,17 @@
     xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui"
     Size="{x:Static models:PopupSizeConstants.Small}">
 
-    <Grid>
-        <Frame
-            BackgroundColor="Red"
+    <Frame
+        BackgroundColor="Red"
 
-            HorizontalOptions="Center"
-            VerticalOptions="Center"
+        HorizontalOptions="Center"
+        VerticalOptions="Center"
 
-            CornerRadius="{OnPlatform Default='25',
-                                      Android='50',
-                                      UWP='50'}"
-            HeightRequest="{OnPlatform Default='50',
-                                       Android='100'}"
-            WidthRequest="{OnPlatform Default='50',
+        CornerRadius="{OnPlatform Default='25',
+                                    Android='50',
+                                    UWP='50'}"
+        HeightRequest="{OnPlatform Default='50',
+                                    Android='100'}"
+        WidthRequest="{OnPlatform Default='50',
                                       Android='100'}" />
-    </Grid>
 </mct:Popup>
