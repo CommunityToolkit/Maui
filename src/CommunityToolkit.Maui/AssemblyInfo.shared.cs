@@ -2,7 +2,7 @@
 [assembly: XmlnsDefinition(Constants.XamlNamespace, Constants.CommunityToolkitNamespacePrefix + nameof(CommunityToolkit.Maui.Behaviors))]
 [assembly: XmlnsDefinition(Constants.XamlNamespace, Constants.CommunityToolkitNamespacePrefix + nameof(CommunityToolkit.Maui.Converters))]
 
-[assembly: Microsoft.Maui.Controls.XmlnsPrefix(Constants.XamlNamespace, "mct")]
+[assembly: Microsoft.Maui.Controls.XmlnsPrefix(Constants.XamlNamespace, "toolkit")]
 
 class Constants
 {
