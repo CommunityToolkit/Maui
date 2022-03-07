@@ -2,14 +2,13 @@
 <pages:BasePage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-    xmlns:mct="clr-namespace:CommunityToolkit.Maui.Behaviors;assembly=CommunityToolkit.Maui"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.AnimationBehaviorPage"
-    xmlns:behaviorPages="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Behaviors">
-    <pages:BasePage.BindingContext>
-        <vm:AnimationBehaviorViewModel />
-    </pages:BasePage.BindingContext>
+    xmlns:behaviorPages="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Behaviors"
+    x:TypeArguments="vm:AnimationBehaviorViewModel:"
+    x:DataType="vm:AnimationBehaviorViewModel">
 
     <VerticalStackLayout Spacing="15" Padding="12">
         <Label Text="AnimationBehavor is a Behavior that can be attached to any VisualElement, allowing developers to trigger animations via ICommand AnimateCommand."/>

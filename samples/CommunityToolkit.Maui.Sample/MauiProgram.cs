@@ -31,6 +31,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<ToastViewModel>();
 
 		// Add Behaviors View Models
+		builder.Services.AddTransient<AnimationBehaviorViewModel>();
 		builder.Services.AddTransient<CharactersValidationBehaviorViewModel>();
 		builder.Services.AddTransient<EmailValidationBehaviorViewModel>();
 		builder.Services.AddTransient<EventToCommandBehaviorViewModel>();
