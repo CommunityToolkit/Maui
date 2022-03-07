@@ -13,7 +13,7 @@ public class IntToBoolConverter_Tests : BaseTest
 	{
 		var intToBoolConverter = new IntToBoolConverter();
 
-		var result = (bool)intToBoolConverter.Convert(value, typeof(IntToBoolConverter_Tests), null, CultureInfo.CurrentCulture);
+		var result = (bool)intToBoolConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
 
 		Assert.Equal(result, expectedResult);
 	}
@@ -25,7 +25,7 @@ public class IntToBoolConverter_Tests : BaseTest
 	{
 		var intToBoolConverter = new IntToBoolConverter();
 
-		var result = (int)intToBoolConverter.ConvertBack(value, typeof(IntToBoolConverter_Tests), null, CultureInfo.CurrentCulture);
+		var result = (int)intToBoolConverter.ConvertBack(value, typeof(bool), null, CultureInfo.CurrentCulture);
 
 		Assert.Equal(result, expectedResult);
 	}
@@ -37,7 +37,7 @@ public class IntToBoolConverter_Tests : BaseTest
 	public void InValidConverterValuesThrowArgumenException(object value)
 	{
 		var intToBoolConverter = new IntToBoolConverter();
-		Assert.Throws<ArgumentException>(() => intToBoolConverter.Convert(value, typeof(IndexToArrayItemConverter), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => intToBoolConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
 	}
 
 	[Theory]
@@ -47,6 +47,6 @@ public class IntToBoolConverter_Tests : BaseTest
 	public void InValidConverterBackValuesThrowArgumenException(object value)
 	{
 		var intToBoolConverter = new IntToBoolConverter();
-		Assert.Throws<ArgumentException>(() => intToBoolConverter.ConvertBack(value, typeof(IndexToArrayItemConverter), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => intToBoolConverter.ConvertBack(value, typeof(bool), null, CultureInfo.CurrentCulture));
 	}
 }

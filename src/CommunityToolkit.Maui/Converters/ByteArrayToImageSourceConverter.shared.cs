@@ -55,7 +55,7 @@ public class ByteArrayToImageSourceConverter : ValueConverterExtension, ICommuni
 
 		var streamFromImageSource = streamImageSource.Stream(CancellationToken.None).Result;
 
-		if (streamFromImageSource == null)
+		if (streamFromImageSource is null)
 		{
 			return null;
 		}

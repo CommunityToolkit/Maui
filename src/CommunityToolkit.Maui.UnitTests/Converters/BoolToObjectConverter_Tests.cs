@@ -18,7 +18,7 @@ public class BoolToObjectConverter_Tests : BaseTest
 		boolObjectConverter.TrueObject = trueObject;
 		boolObjectConverter.FalseObject = falseObject;
 
-		var result = boolObjectConverter.Convert(value, typeof(BoolToObjectConverter_Tests), null, CultureInfo.CurrentCulture);
+		var result = boolObjectConverter.Convert(value, typeof(object), null, CultureInfo.CurrentCulture);
 
 		Assert.NotNull(result);
 		Assert.Equal(result, expectedResult);
@@ -33,7 +33,7 @@ public class BoolToObjectConverter_Tests : BaseTest
 		boolObjectConverter.TrueObject = trueObject;
 		boolObjectConverter.FalseObject = falseObject;
 
-		var result = (bool)boolObjectConverter.ConvertBack(value, typeof(BoolToObjectConverter_Tests), null, CultureInfo.CurrentCulture);
+		var result = (bool)boolObjectConverter.ConvertBack(value, typeof(object), null, CultureInfo.CurrentCulture);
 
 		Assert.Equal(result, expectedResult);
 	}
@@ -43,6 +43,6 @@ public class BoolToObjectConverter_Tests : BaseTest
 	public void BoolToObjectInValidValuesThrowArgumenException(object value)
 	{
 		var boolObjectConverter = new BoolToObjectConverter();
-		Assert.Throws<ArgumentException>(() => boolObjectConverter.Convert(value, typeof(BoolToObjectConverter_Tests), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => boolObjectConverter.Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
 	}
 }

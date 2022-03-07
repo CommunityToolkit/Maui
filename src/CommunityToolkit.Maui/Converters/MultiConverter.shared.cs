@@ -20,7 +20,7 @@ public class MultiConverter : List<ICommunityToolkitValueConverter>, ICommunityT
 		: this.Aggregate(value, (current, converter) => converter.Convert(current, targetType, parameter, culture));
 
 	/// <summary>
-	/// This method is not implemented and will throw a <see cref="NotImplementedException"/>.
+	/// This method is not supported and will throw a <see cref="NotSupportedException"/>.
 	/// </summary>
 	/// <param name="value">N/A</param>
 	/// <param name="targetType">N/A</param>
@@ -28,5 +28,5 @@ public class MultiConverter : List<ICommunityToolkitValueConverter>, ICommunityT
 	/// <param name="culture">N/A</param>
 	/// <returns>N/A</returns>
 	public object? ConvertBack(object? value, Type? targetType, object? parameter, System.Globalization.CultureInfo? culture)
-		=> throw new NotImplementedException();
+		=> throw new NotSupportedException("Impossible to revert to original value. Consider setting BindingMode to OneWay.");
 }

@@ -17,7 +17,7 @@ public class MultiConverter_Tests : BaseTest
 	{
 		var multiConverter = new MultiConverter();
 
-		var result = multiConverter.Convert(value, typeof(MultiConverter), null, CultureInfo.CurrentCulture);
+		var result = multiConverter.Convert(value, typeof(object), null, CultureInfo.CurrentCulture);
 
 		Assert.Equal(result, value);
 	}
