@@ -16,7 +16,7 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 		{
 			// Work-around to ensure content doesn't get clipped by iOS Status Bar + Naviagtion Bar
 			(Device.iOS, TargetIdiom.Phone) => new Thickness(0, 96, 0, 0),
-			(Device.iOS, _) => new Thickness(0, 84, 0, 0),
+			(Device.iOS or Device.MacCatalyst, _) => new Thickness(0, 84, 0, 0),
 			_ => 0
 		};
 

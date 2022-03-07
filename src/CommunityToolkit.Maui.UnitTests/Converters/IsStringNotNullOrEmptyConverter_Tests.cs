@@ -11,23 +11,25 @@ public class IsStringNotNullOrEmptyConverter_Tests : BaseTest
 	[InlineData(null, false)]
 	[InlineData("", false)]
 	[InlineData(" ", true)]
-	public void IsNotNullOrEmptyConverter_ValidStringValue(string? value, bool expectedResult)
+	public void IsStringNotNullOrEmptyConverter_ValidStringValue(string? value, bool expectedResult)
 	{
 		var isNotNullOrEmptyConverter = new IsStringNotNullOrEmptyConverter();
 
-		var result = (bool)isNotNullOrEmptyConverter.Convert(value, null, null, null);
+		var convertResult = (bool?)isNotNullOrEmptyConverter.Convert(value, typeof(bool), null, null);
+		var convertFromResult = isNotNullOrEmptyConverter.ConvertFrom(value);
 
-		Assert.Equal(expectedResult, result);
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
 	}
 
 	[Theory]
 	[InlineData(17)]
 	[InlineData(true)]
 	[InlineData('c')]
-	public void IsNotNullOrEmptyConverter_InvalidValue(object value)
+	public void IsStringNotNullOrEmptyConverter_InvalidValue(object value)
 	{
 		var isNotNullOrEmptyConverter = new IsStringNotNullOrEmptyConverter();
 
-		Assert.Throws<InvalidCastException>(() => isNotNullOrEmptyConverter.Convert(value, null, null, null));
+		Assert.Throws<ArgumentException>(() => isNotNullOrEmptyConverter.Convert(value, typeof(bool), null, null));
 	}
 }

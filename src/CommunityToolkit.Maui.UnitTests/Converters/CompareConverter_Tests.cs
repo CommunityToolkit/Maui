@@ -73,7 +73,7 @@ public class CompareConverter_Tests : BaseTest
 			ComparingValue = comparingValue
 		};
 
-		object result = compareConverter.Convert(value, typeof(BoolToObjectConverter_Tests), null!, CultureInfo.CurrentCulture);
+		object result = compareConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
 		Assert.Equal(result, expectedResult);
 	}
 
@@ -86,7 +86,7 @@ public class CompareConverter_Tests : BaseTest
 			ComparingValue = 20d
 		};
 
-		Assert.Throws<ArgumentException>(() => compareConverter.Convert(value, typeof(BoolToObjectConverter_Tests), null!, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => compareConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
 	}
 
 	[Theory]
@@ -102,7 +102,7 @@ public class CompareConverter_Tests : BaseTest
 			TrueObject = trueObject
 		};
 
-		Assert.Throws<ArgumentNullException>(() => compareConverter.Convert(value, typeof(BoolToObjectConverter_Tests), null!, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentNullException>(() => compareConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
 	}
 
 	[Theory]
@@ -115,6 +115,6 @@ public class CompareConverter_Tests : BaseTest
 			ComparingValue = comparingValue
 		};
 
-		Assert.Throws<ArgumentOutOfRangeException>(() => compareConverter.Convert(value, typeof(BoolToObjectConverter_Tests), null!, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentOutOfRangeException>(() => compareConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
 	}
 }

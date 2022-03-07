@@ -1,13 +1,12 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>
 /// Converters for Math expressions
 /// </summary>
-public class MathExpressionConverter : ValueConverterExtension, ICommunityToolkitValueConverter
+public class MathExpressionConverter : BaseConverterOneWay
 {
 	/// <summary>
 	/// Calculate the incoming expression string with one variable.
@@ -17,7 +16,7 @@ public class MathExpressionConverter : ValueConverterExtension, ICommunityToolki
 	/// <param name="parameter">The expression to calculate.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>A <see cref="double"/> The result of calculating an expression.</returns>
-	public object? Convert(object? value, Type? targetType, [NotNull] object? parameter, CultureInfo? culture)
+	public override object? Convert(object? value, Type? targetType, [NotNull] object? parameter, CultureInfo? culture)
 	{
 		if (parameter is not string expression)
 		{
@@ -34,15 +33,4 @@ public class MathExpressionConverter : ValueConverterExtension, ICommunityToolki
 		var result = math.Calculate();
 		return result;
 	}
-
-	/// <summary>
-	/// This method is not implemented and will throw a <see cref="NotImplementedException"/>.
-	/// </summary>
-	/// <param name="value">N/A</param>
-	/// <param name="targetType">N/A</param>
-	/// <param name="parameter">N/A</param>
-	/// <param name="culture">N/A</param>
-	/// <returns>N/A</returns>
-	public object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture)
-		=> throw new NotImplementedException();
 }

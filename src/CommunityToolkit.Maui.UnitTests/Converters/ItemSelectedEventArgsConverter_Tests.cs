@@ -11,6 +11,6 @@ public class ItemSelectedEventArgsConverter_Tests : BaseTest
 	public void InvalidConverterValuesThrowsArgumenException(object value)
 	{
 		var itemSelectedEventArgsConverter = new ItemSelectedEventArgsConverter();
-		Assert.Throws<ArgumentException>(() => itemSelectedEventArgsConverter.Convert(value, typeof(ItemSelectedEventArgsConverter), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => itemSelectedEventArgsConverter.Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
 	}
 }
