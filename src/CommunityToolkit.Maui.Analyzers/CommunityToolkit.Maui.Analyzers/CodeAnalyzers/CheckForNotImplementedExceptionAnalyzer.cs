@@ -21,7 +21,7 @@ namespace CommunityToolkit.Maui.Analyzer
 
 		const string notImplementExceptionString = "NotImplementedException";
 
-		static readonly DiagnosticDescriptor rule = new(DiagnosticId, title, messageFormat, Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: description);
+		static readonly DiagnosticDescriptor rule = new(DiagnosticId, title, messageFormat, Category, DiagnosticSeverity.Error, isEnabledByDefault: true, description: description);
 
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(rule);
 
