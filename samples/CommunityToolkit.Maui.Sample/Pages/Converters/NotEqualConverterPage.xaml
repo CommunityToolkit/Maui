@@ -4,12 +4,18 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.NotEqualConverterPage">
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.NotEqualConverterPage"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
+    x:TypeArguments="vm:NotEqualConverterViewModel"
+    x:DataType="vm:NotEqualConverterViewModel">
+
     <pages:BasePage.Resources>
         <ResourceDictionary>
+            <x:String x:Key="MAUI">MAUI</x:String>
             <mct:NotEqualConverter x:Key="NotEqualConverter" />
         </ResourceDictionary>
     </pages:BasePage.Resources>
+
     <pages:BasePage.Content>
         <VerticalStackLayout
             Padding="10,10"
@@ -17,17 +23,23 @@
             Spacing="10"
             VerticalOptions="Fill">
             <Label Text="The NotEqualConverter is a converter that allows users to convert any value binding to a boolean depending on whether or not it is equal to a different value. The initial binding contains the object that will be compared and the ConverterParameter contains the object to compare it to." TextColor="{StaticResource NormalLabelTextColor}" />
-            <Label Text="Please enter 100 for true anyting else for false" TextColor="{StaticResource NormalLabelTextColor}" />
-            <Entry
-                x:Name="ExampleText"
-                Placeholder="100 for false other for true"
-                Text="{Binding Input}"
-                TextColor="{StaticResource NormalLabelTextColor}" />
-            <Label
-                Padding="7,0,0,0"
-                BindingContext="{x:Reference Name=ExampleText}"
-                Text="{Binding Path=Text, Converter={StaticResource NotEqualConverter}, ConverterParameter=100}"
-                TextColor="{StaticResource NormalLabelTextColor}" />
+            <Entry Margin="0"
+                    Text="{Binding InputValue}" 
+                    HorizontalOptions="FillAndExpand"/>
+            <Label Text="Does the entry text not equal &quot;MAUI&quot;?"/>
+            <Label FontSize="Large" 
+                    HorizontalOptions="FillAndExpand"
+                    Text="No, it does not"
+                    TextColor="Red">
+                <Label.Triggers>
+                    <DataTrigger TargetType="Label"
+                                    Binding="{Binding InputValue, Converter={StaticResource NotEqualConverter}, ConverterParameter={StaticResource MAUI}}"
+                                    Value="true">
+                        <Setter Property="Text" Value="Yes, it does!" />
+                        <Setter Property="TextColor" Value="Green" />
+                    </DataTrigger>
+                </Label.Triggers>
+            </Label>
         </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

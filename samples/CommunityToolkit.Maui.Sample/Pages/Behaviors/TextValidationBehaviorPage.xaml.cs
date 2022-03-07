@@ -1,8 +1,11 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
+﻿using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
-public partial class TextValidationBehaviorPage : BasePage
+namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
+
+public partial class TextValidationBehaviorPage : BasePage<TextValidationBehaviorViewModel>
 {
-	public TextValidationBehaviorPage()
+	public TextValidationBehaviorPage(TextValidationBehaviorViewModel textValidationBehaviorViewModel)
+		: base(textValidationBehaviorViewModel)
 	{
 		InitializeComponent();
 	}

@@ -6,6 +6,8 @@ public class WelcomePage : BasePage
 {
 	public WelcomePage()
 	{
+		Title = "Welcome";
+
 		Content = new VerticalStackLayout
 		{
 			Spacing = 12,

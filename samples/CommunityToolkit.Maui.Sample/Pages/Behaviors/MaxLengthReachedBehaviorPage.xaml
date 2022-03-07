@@ -7,9 +7,13 @@
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.MaxLengthReachedBehaviorPage"
     x:TypeArguments="vm:MaxLengthReachedBehaviorViewModel">
+
     <pages:BasePage.Content>
         <ScrollView>
             <VerticalStackLayout Spacing="20">
+
+                <Label Text="The MaxLengthReachedBehavior is a behavior that allows the user to trigger an action when a user has reached the maximum length allowed on an InputView. It can either trigger a ICommand or an event depending on the user's preferred scenario."
+                       TextColor="{StaticResource NormalLabelTextColor}" />
 
                 <Label Text="When the MaxLength on an Entry field has been reached, any configured EventHandler gets invoked and a Command gets Executed."
                        Margin="{StaticResource ContentPadding}" />

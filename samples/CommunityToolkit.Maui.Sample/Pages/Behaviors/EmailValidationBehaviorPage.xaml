@@ -3,7 +3,10 @@
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-                x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.EmailValidationBehaviorPage">
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.EmailValidationBehaviorPage"
+                xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
+                x:TypeArguments="vm:EmailValidationBehaviorViewModel"
+                x:DataType="vm:EmailValidationBehaviorViewModel">
 
     <pages:BasePage.Resources>
         <Style x:Key="InvalidEntryStyle" TargetType="Entry">
@@ -18,6 +21,7 @@
     <VerticalStackLayout Padding="{StaticResource ContentPadding}"
             Spacing="24"
             VerticalOptions="StartAndExpand">
+        <Label Text="The EmailValidationBehavior is a behavior that allows users to determine whether or not text input is a valid e-mail address. " TextColor="{StaticResource NormalLabelTextColor}" />
         <Label Text="Text color will change accordingly to the style that is configured when a invalid value (email address) is entered." />
         <Entry Placeholder="Email"
                HorizontalOptions="FillAndExpand"

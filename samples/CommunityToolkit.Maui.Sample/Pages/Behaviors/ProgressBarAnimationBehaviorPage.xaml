@@ -6,8 +6,13 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.ProgressBarAnimationBehaviorPage"
-    x:TypeArguments="vm:ProgressBarAnimationBehaviorViewModel">
+    x:TypeArguments="vm:ProgressBarAnimationBehaviorViewModel"
+    x:DataType="vm:ProgressBarAnimationBehaviorViewModel">
     <VerticalStackLayout Padding="{StaticResource ContentPadding}" Spacing="50">
+
+        <Label Text="The ProgressBarAnimationBehavior is a behavior that behavior that animates a ProgressBar"
+               TextColor="{StaticResource NormalLabelTextColor}" />
+
         <ProgressBar>
             <ProgressBar.Behaviors>
                 <mct:ProgressBarAnimationBehavior AnimateProgress="{Binding Progress}" />
@@ -15,7 +20,9 @@
         </ProgressBar>
 
         <Button Text="Set to 0" Command="{Binding SetTo0Command}"  />
+
         <Button Text="Set to 50" Command="{Binding SetTo50Command}" />
+
         <Button Text="Set to 100" Command="{Binding SetTo100Command}" />
     </VerticalStackLayout>
 </pages:BasePage>

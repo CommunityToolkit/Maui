@@ -1,8 +1,11 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
+﻿using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
-public partial class EmailValidationBehaviorPage : BasePage
+namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
+
+public partial class EmailValidationBehaviorPage : BasePage<EmailValidationBehaviorViewModel>
 {
-	public EmailValidationBehaviorPage()
+	public EmailValidationBehaviorPage(EmailValidationBehaviorViewModel emailValidationBehaviorViewModel)
+		: base(emailValidationBehaviorViewModel)
 	{
 		InitializeComponent();
 		EmailValidator ??= new();

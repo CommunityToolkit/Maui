@@ -1,9 +1,10 @@
 ﻿using System.Reflection;
 using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Extensions;
 
-public partial class ColorAnimationExtensionsPage : BasePage
+public partial class ColorAnimationExtensionsPage : BasePage<ColorAnimationExtensionsViewModel>
 {
 	readonly IReadOnlyDictionary<string, Color> colors = typeof(Colors)
 		.GetFields(BindingFlags.Static | BindingFlags.Public)
@@ -13,7 +14,8 @@ public partial class ColorAnimationExtensionsPage : BasePage
 		.GetFields(BindingFlags.Static | BindingFlags.Public)
 		.ToDictionary(c => c.Name, c => (Easing)(c.GetValue(null) ?? throw new InvalidOperationException()));
 
-	public ColorAnimationExtensionsPage()
+	public ColorAnimationExtensionsPage(ColorAnimationExtensionsViewModel colorAnimationExtensionsViewModel)
+		: base(colorAnimationExtensionsViewModel)
 	{
 		InitializeComponent();
 

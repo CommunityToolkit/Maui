@@ -6,10 +6,12 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.EqualConverterPage"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
-    x:TypeArguments="vm:EqualConverterViewModel">
+    x:TypeArguments="vm:EqualConverterViewModel"
+    x:DataType="vm:EqualConverterViewModel">
+
     <pages:BasePage.Resources>
         <x:String x:Key="MAUI">MAUI</x:String>
-        <mct:EqualConverter x:Key="InputIsEqualConverter" />
+        <mct:EqualConverter x:Key="EqualConverter" />
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
         <VerticalStackLayout Spacing="10">
@@ -24,7 +26,7 @@
                     TextColor="Green">
                 <Label.Triggers>
                     <DataTrigger TargetType="Label"
-                                    Binding="{Binding InputValue, Converter={StaticResource InputIsEqualConverter}, ConverterParameter={StaticResource MAUI}}"
+                                    Binding="{Binding InputValue, Converter={StaticResource EqualConverter}, ConverterParameter={StaticResource MAUI}}"
                                     Value="False">
                         <Setter Property="Text" Value="No, it doesn't" />
                         <Setter Property="TextColor" Value="Red" />

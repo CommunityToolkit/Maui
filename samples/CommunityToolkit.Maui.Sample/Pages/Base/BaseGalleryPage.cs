@@ -56,7 +56,7 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 
 		static Grid CreateDataTemplate() => new()
 		{
-			BackgroundColor = (Color)(Application.Current?.Resources["AppBackgroundColor"] ?? throw new InvalidOperationException()),
+			BackgroundColor = (Color)(Application.Current?.Resources["AppBackgroundColor"] ?? throw new InvalidOperationException("Application.Current cannot be null")),
 
 			RowDefinitions = Rows.Define(
 				(Row.TopPadding, 12),
