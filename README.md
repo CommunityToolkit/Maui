@@ -17,14 +17,19 @@ And – the best part – the features you add to the .NET MAUI Toolkit may one 
 In order to use the .NET MAUI Community Toolkit you need to call the extension method in your `MauiProgram.cs` file as follows:
 
 ```csharp
-public static MauiApp CreateMauiApp()
+using CommunityToolkit.Maui;
+
+public static class MauiProgram
 {
-    var builder = MauiApp.CreateBuilder();
+	public static MauiApp CreateMauiApp()
+	{
+		var builder = MauiApp.CreateBuilder();
+		
+		// Initialise the toolkit
+		builder.UseMauiApp<App>().UseMauiCommunityToolkit();
 
-    // Initialise the toolkit
-	builder.UseMauiApp<App>().UseMauiCommunityToolkit();
-
-    // the rest of your logic...
+		// the rest of your logic...
+	}
 }
 ```
 
