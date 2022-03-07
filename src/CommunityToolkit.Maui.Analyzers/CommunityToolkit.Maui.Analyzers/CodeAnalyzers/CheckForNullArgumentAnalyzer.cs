@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -56,6 +57,33 @@ namespace CommunityToolkit.Maui.Analyzer
 			}
 
 			CheckForIfEqualStatements(throwStatementSyntaxCollection, parameters, context);
+			CheckForExpressions(throwExpressionSyntaxCollection, parameters, context);
+		}
+
+		static void CheckForExpressions(IEnumerable<ThrowExpressionSyntax> throwStatementSyntaxCollection, SeparatedSyntaxList<ParameterSyntax> parameters, CodeBlockAnalysisContext context)
+		{
+			foreach (var item in throwStatementSyntaxCollection)
+			{
+				var descendantTokens = item.Parent.DescendantTokens();
+				var hasNREReference = descendantTokens.Any(x => x.ValueText == "NullReferenceException");
+				
+				if (!hasNREReference)
+				{
+					continue;
+				}
+				string name = string.Empty;
+				foreach (var parameter in parameters)
+				{
+					name = descendantTokens.FirstOrDefault(x => x.ValueText == parameter.Identifier.ValueText).ValueText;
+					if (!string.IsNullOrEmpty(name))
+					{
+						break;
+					}
+				}
+
+				var diagnostic = Diagnostic.Create(rule, item.Parent.GetLocation(), name);
+				context.ReportDiagnostic(diagnostic);
+			}
 		}
 
 		static void CheckForIfEqualStatements(IEnumerable<SyntaxNode> throwStatementSyntaxCollection, SeparatedSyntaxList<ParameterSyntax> parameters, CodeBlockAnalysisContext context)

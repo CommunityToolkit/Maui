@@ -48,5 +48,34 @@ namespace CommunityToolkit.Maui.Analyzers.Tests
 			var diagnosticResult = VerifyCS.Diagnostic(CheckForNullArgumentAnalyzer.DiagnosticId).WithSpan(16, 5, 19, 6).WithArguments("name");
 			await VerifyCS.VerifyAnalyzerAsync(test, diagnosticResult);
 		}
+
+
+		[TestMethod]
+		public async Task CheckForNullUsingDoubleEvilsOperator()
+		{
+			var test = @"
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Diagnostics;
+
+namespace ConsoleApplication1
+{
+	class TYPENAME
+	{
+
+		public void Foo(string name)
+		{
+			_ = name ?? throw new NullReferenceException();
+		}
+	}
+}
+";
+
+			var diagnosticResult = VerifyCS.Diagnostic(CheckForNullArgumentAnalyzer.DiagnosticId).WithSpan(16, 8, 16, 50).WithArguments("name");
+			await VerifyCS.VerifyAnalyzerAsync(test, diagnosticResult);
+		}
 	}
 }
