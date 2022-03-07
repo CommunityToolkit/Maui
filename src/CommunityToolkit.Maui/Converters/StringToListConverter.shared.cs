@@ -1,13 +1,12 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>
 /// Returns a string array that contains the substrings in this string that are delimited by <see cref="Separator"/>.
 /// </summary>
-public class StringToListConverter : ValueConverterExtension, ICommunityToolkitValueConverter
+public class StringToListConverter : BaseConverterOneWay
 {
 	/// <summary>
 	/// The string that delimits the substrings in this string.
@@ -33,7 +32,7 @@ public class StringToListConverter : ValueConverterExtension, ICommunityToolkitV
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>An array whose elements contain the substrings in this string that are delimited by <see cref="Separator"/> or, if set, <see cref="Separators"/> or, if set, <paramref name="parameter"/>.</returns>
 	[return: NotNull]
-	public object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	public override object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value == null)
 		{
@@ -67,16 +66,6 @@ public class StringToListConverter : ValueConverterExtension, ICommunityToolkitV
 
 		return Split(valueToSplit, Separator);
 	}
-
-	/// <summary>
-	/// This method is not implemented and will throw a <see cref="NotImplementedException"/>.
-	/// </summary>
-	/// <param name="value">N/A</param>
-	/// <param name="targetType">N/A</param>
-	/// <param name="parameter">N/A</param>
-	/// <param name="culture">N/A</param>
-	/// <returns>N/A</returns>
-	public object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture) => throw new NotImplementedException();
 
 	string[] Split(string valueToSplit, params string[] separators) => valueToSplit.Split(separators, SplitOptions);
 }

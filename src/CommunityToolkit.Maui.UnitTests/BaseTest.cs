@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.UnitTests;
 
 public abstract class BaseTest : IDisposable
 {
-	readonly CultureInfo? defaultCulture, defaultUICulture;
+	readonly CultureInfo defaultCulture, defaultUICulture;
 
 	bool isDisposed;
 
@@ -38,8 +38,8 @@ public abstract class BaseTest : IDisposable
 
 		Device.PlatformServices = null;
 
-		Thread.CurrentThread.CurrentCulture = defaultCulture ?? throw new NullReferenceException();
-		Thread.CurrentThread.CurrentUICulture = defaultUICulture ?? throw new NullReferenceException();
+		Thread.CurrentThread.CurrentCulture = defaultCulture;
+		Thread.CurrentThread.CurrentUICulture = defaultUICulture;
 
 		DispatcherProvider.SetCurrent(null);
 		DeviceDisplay.SetCurrent(null);

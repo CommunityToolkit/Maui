@@ -25,7 +25,7 @@ public enum LayoutState
 /// <summary>
 /// This converter can be used to determine if a certain state is visible. This can be useful, for instance, in scenarios where you want to show/hide certain elements based on the current state.
 /// </summary>
-public class StateToBooleanConverter : ICommunityToolkitValueConverter
+public class StateToBooleanConverter : BaseConverterOneWay
 {
 	/// <summary>
 	/// The <see cref="LayoutState"/> to compare to.
@@ -41,7 +41,7 @@ public class StateToBooleanConverter : ICommunityToolkitValueConverter
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>True if the provided <see cref="LayoutState"/>s match, otherwise False if they don't match.</returns>
 	[return: NotNull]
-	public object? Convert([NotNull] object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	public override object? Convert([NotNull] object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value is not LayoutState state)
 		{
@@ -55,14 +55,4 @@ public class StateToBooleanConverter : ICommunityToolkitValueConverter
 
 		return state == StateToCompare;
 	}
-
-	/// <summary>
-	/// This method is not implemented and will throw a <see cref="NotImplementedException"/>.
-	/// </summary>
-	/// <param name="value">N/A</param>
-	/// <param name="targetType">N/A</param>
-	/// <param name="parameter">N/A</param>
-	/// <param name="culture">N/A</param>
-	/// <returns>N/A</returns>
-	public object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture) => throw new NotImplementedException();
 }

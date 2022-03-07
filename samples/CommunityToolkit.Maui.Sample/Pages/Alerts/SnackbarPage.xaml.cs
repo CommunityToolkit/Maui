@@ -72,7 +72,7 @@ public partial class SnackbarPage : BasePage
 		}
 		else
 		{
-			throw new NotImplementedException($"{nameof(DisplayCustomSnackbarButton)}.{nameof(ITextButton.Text)} Not Recognized");
+			throw new NotSupportedException($"{nameof(DisplayCustomSnackbarButton)}.{nameof(ITextButton.Text)} Not Recognized");
 		}
 	}
 

@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Converters;
 
@@ -26,7 +25,7 @@ public enum TextCaseType
 /// Converts text (string, char) to certain case as specified with <see cref="Type"/> or the parameter of the Convert method.
 /// </summary>
 [ContentProperty(nameof(Type))]
-public class TextCaseConverter : ValueConverterExtension, ICommunityToolkitValueConverter
+public class TextCaseConverter : BaseConverterOneWay
 {
 	/// <summary>
 	/// The desired text case that the text should be converted to.
@@ -42,7 +41,7 @@ public class TextCaseConverter : ValueConverterExtension, ICommunityToolkitValue
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>The converted text representation with the desired casing.</returns>
 	[return: NotNullIfNotNull("value")]
-	public object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	public override object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		var str = value?.ToString();
 		if (str == null || string.IsNullOrWhiteSpace(str))
@@ -58,16 +57,6 @@ public class TextCaseConverter : ValueConverterExtension, ICommunityToolkitValue
 			_ => str
 		};
 	}
-
-	/// <summary>
-	/// This method is not implemented and will throw a <see cref="NotImplementedException"/>.
-	/// </summary>
-	/// <param name="value">N/A</param>
-	/// <param name="targetType">N/A</param>
-	/// <param name="parameter">N/A</param>
-	/// <param name="culture">N/A</param>
-	/// <returns>N/A</returns>
-	public object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture) => throw new NotImplementedException();
 
 	TextCaseType GetParameter(object? parameter) => parameter switch
 	{

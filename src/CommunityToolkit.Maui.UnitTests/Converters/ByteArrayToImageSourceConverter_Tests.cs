@@ -24,7 +24,7 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
 
 		var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 
-		var result = (ImageSource)byteArrayToImageSourceConverter.Convert(byteArray, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture);
+		var result = (ImageSource)byteArrayToImageSourceConverter.Convert(byteArray, typeof(ImageSource), null, CultureInfo.CurrentCulture);
 		var streamResult = await GetStreamFromImageSource(result, CancellationToken.None);
 
 		Assert.True(StreamEquals(streamResult, memoryStream));
@@ -36,7 +36,7 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
 	{
 		var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 
-		Assert.Throws<ArgumentException>(() => byteArrayToImageSourceConverter.Convert(value, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => byteArrayToImageSourceConverter.Convert(value, typeof(ImageSource), null, CultureInfo.CurrentCulture));
 	}
 
 	[Fact]
@@ -50,7 +50,7 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
 
 		var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 
-		var result = (byte[]?)byteArrayToImageSourceConverter.ConvertBack(expectedValue, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture);
+		var result = (byte[]?)byteArrayToImageSourceConverter.ConvertBack(expectedValue, typeof(ImageSource), null, CultureInfo.CurrentCulture);
 
 		Assert.NotNull(result);
 
@@ -69,7 +69,7 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
 
 		var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 
-		var result = (byte[]?)byteArrayToImageSourceConverter.ConvertBack(expectedValue, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture);
+		var result = (byte[]?)byteArrayToImageSourceConverter.ConvertBack(expectedValue, typeof(ImageSource), null, CultureInfo.CurrentCulture);
 
 		Assert.NotNull(result);
 
@@ -84,7 +84,7 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
 
 		var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 
-		var result = (byte[]?)byteArrayToImageSourceConverter.ConvertBack(expectedValue, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture);
+		var result = (byte[]?)byteArrayToImageSourceConverter.ConvertBack(expectedValue, typeof(ImageSource), null, CultureInfo.CurrentCulture);
 
 		Assert.Null(result);
 	}
@@ -94,7 +94,7 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
 	{
 		var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 
-		var result = (byte[]?)byteArrayToImageSourceConverter.ConvertBack(null, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture);
+		var result = (byte[]?)byteArrayToImageSourceConverter.ConvertBack(null, typeof(ImageSource), null, CultureInfo.CurrentCulture);
 
 		Assert.Null(result);
 	}
@@ -105,6 +105,6 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
 	{
 		var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 
-		Assert.Throws<ArgumentException>(() => byteArrayToImageSourceConverter.ConvertBack(value, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => byteArrayToImageSourceConverter.ConvertBack(value, typeof(ImageSource), null, CultureInfo.CurrentCulture));
 	}
 }
