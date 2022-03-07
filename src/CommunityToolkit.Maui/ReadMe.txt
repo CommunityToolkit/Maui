@@ -20,7 +20,7 @@ public static MauiApp CreateMauiApp()
 
 In order to make use of the toolkit within XAML you can use this namespace:
 
-xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
 
 ## Further information
 
