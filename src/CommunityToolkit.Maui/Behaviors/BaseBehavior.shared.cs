@@ -62,8 +62,10 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
 	protected override void OnAttachedTo(TView bindable)
 	{
 		base.OnAttachedTo(bindable);
+
 		View = bindable;
 		bindable.PropertyChanged += OnViewPropertyChanged;
+
 		TrySetBindingContext(new Binding
 		{
 			Path = BindingContextProperty.PropertyName,
@@ -75,8 +77,11 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
 	protected override void OnDetachingFrom(TView bindable)
 	{
 		base.OnDetachingFrom(bindable);
+
 		TryRemoveBindingContext();
+
 		bindable.PropertyChanged -= OnViewPropertyChanged;
+
 		View = null;
 	}
 
