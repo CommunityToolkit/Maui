@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
@@ -53,8 +54,9 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
-	protected virtual void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
+	protected virtual void OnViewPropertyChanged(TView sender, PropertyChangedEventArgs e)
 	{
+
 	}
 
 	/// <inheritdoc/>
@@ -98,5 +100,15 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
 		return context != null
 			&& bindingField?.GetValue(context) is BindingBase binding
 			&& binding != defaultBinding;
+	}
+
+	void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
+	{
+		if (sender is not TView view)
+		{
+			throw new ArgumentException($"Behavior Cann Only Be Attached to {typeof(TView)}");
+		}
+
+		OnViewPropertyChanged(view, e);
 	}
 }

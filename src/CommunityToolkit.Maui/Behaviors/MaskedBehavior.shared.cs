@@ -43,7 +43,7 @@ public class MaskedBehavior : BaseBehavior<InputView>
 	}
 
 	/// <inheritdoc />
-	protected override async void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
+	protected override async void OnViewPropertyChanged(InputView sender, PropertyChangedEventArgs e)
 	{
 		base.OnViewPropertyChanged(sender, e);
 
@@ -134,7 +134,7 @@ public class MaskedBehavior : BaseBehavior<InputView>
 		{
 			if (!string.IsNullOrWhiteSpace(text) && maskPositions is not null)
 			{
-				if (text.Length > (Mask?.Length ?? 0))
+				if (Mask is not null && text.Length > Mask.Length)
 				{
 					text = text.Remove(text.Length - 1);
 				}
