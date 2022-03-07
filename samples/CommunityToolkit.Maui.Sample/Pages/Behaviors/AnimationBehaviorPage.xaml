@@ -7,7 +7,7 @@
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.AnimationBehaviorPage"
     xmlns:behaviorPages="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Behaviors"
-    x:TypeArguments="vm:AnimationBehaviorViewModel:"
+    x:TypeArguments="vm:AnimationBehaviorViewModel"
     x:DataType="vm:AnimationBehaviorViewModel">
 
     <VerticalStackLayout Spacing="15" Padding="12">
