@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 public class MathExpressionConverter_Tests : BaseTest
 {
 	const double tolerance = 0.00001d;
-	readonly Type type = typeof(MathExpressionConverter_Tests);
+	readonly Type type = typeof(double);
 	readonly CultureInfo cultureInfo = CultureInfo.CurrentCulture;
 
 	[Theory]

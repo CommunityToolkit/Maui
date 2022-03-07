@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Collections;
+using System.Globalization;
 using CommunityToolkit.Maui.Converters;
 using Xunit;
 
@@ -16,21 +17,25 @@ public class IsListNotNullOrEmptyConverter_Tests : BaseTest
 
 	[Theory]
 	[MemberData(nameof(Data))]
-	public void IsListNotNullOrEmptyConverter(object value, bool expectedResult)
+	public void IsListNotNullOrEmptyConverter(IEnumerable? value, bool expectedResult)
 	{
 		var listIsNotNullOrEmptyConverter = new IsListNotNullOrEmptyConverter();
 
-		var result = (bool)listIsNotNullOrEmptyConverter.Convert(value, typeof(IsListNotNullOrEmptyConverter), null, CultureInfo.CurrentCulture);
+		var convertResult = (bool?)listIsNotNullOrEmptyConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
+		var convertFromResult = listIsNotNullOrEmptyConverter.ConvertFrom(value);
 
-		Assert.Equal(expectedResult, result);
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
 	}
 
 	[Theory]
-	[InlineData(0)]
-	public void InvalidConverterValuesThrowArgumentException(object value)
+	[InlineData(7)]
+	[InlineData('c')]
+	[InlineData(true)]
+	public void InvalidConverterValuesThrowArgumentException(object? value)
 	{
 		var listIsNotNullOrEmptyConverter = new IsListNotNullOrEmptyConverter();
 
-		Assert.Throws<ArgumentException>(() => listIsNotNullOrEmptyConverter.Convert(value, typeof(IsListNotNullOrEmptyConverter), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => listIsNotNullOrEmptyConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
 	}
 }

@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using CommunityToolkit.Maui.Converters;
+﻿using CommunityToolkit.Maui.Converters;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
@@ -15,9 +14,11 @@ public class IsStringNullOrEmptyConverter_Tests : BaseTest
 	{
 		var isNullOrEmptyConverter = new IsStringNullOrEmptyConverter();
 
-		var result = (bool)isNullOrEmptyConverter.Convert(value, null, null, null);
+		var convertResult = (bool?)isNullOrEmptyConverter.Convert(value, typeof(bool), null, null);
+		var convertFromResult = isNullOrEmptyConverter.ConvertFrom(value);
 
-		Assert.Equal(expectedResult, result);
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
 	}
 
 	[Theory]
@@ -28,6 +29,6 @@ public class IsStringNullOrEmptyConverter_Tests : BaseTest
 	{
 		var isNotNullOrEmptyConverter = new IsStringNullOrEmptyConverter();
 
-		Assert.Throws<InvalidCastException>(() => isNotNullOrEmptyConverter.Convert(value, null, null, null));
+		Assert.Throws<ArgumentException>(() => isNotNullOrEmptyConverter.Convert(value, typeof(bool), null, null));
 	}
 }
