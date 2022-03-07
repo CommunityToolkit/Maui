@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+             xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
+             x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.ItemSelectedEventArgsConverterPage"
+             x:TypeArguments="vm:ItemSelectedEventArgsConverterViewModel"
+             x:DataType="vm:ItemSelectedEventArgsConverterViewModel">
+
+    <pages:BasePage.Resources>
+        <ResourceDictionary>
+            <mct:ItemSelectedEventArgsConverter x:Key="ItemSelectedEventArgsConverter" />
+        </ResourceDictionary>
+    </pages:BasePage.Resources>
+
+    <FlexLayout
+        Direction="Column"
+        Padding="10">
+
+        <Label
+            Text="The ItemSelectedEventArgsConverter is a converter that allows users to extract the SelectedItem value from an SelectedItemChangedEventArgs object. It can subsequently be used in combination with EventToCommandBehavior."
+            TextColor="{StaticResource NormalLabelTextColor}"
+            Margin="0, 0, 0, 20" />
+
+        <Label 
+            Text="{Binding LabelText, Mode=OneWay}"
+            TextColor="{StaticResource NormalLabelTextColor}"
+            Margin="0, 0, 0, 20"/>
+
+        <ListView BackgroundColor="Transparent"
+            SelectedItem="{Binding ItemSelected, Mode=TwoWay}"
+            ItemsSource="{Binding StringItemSource, Mode=OneWay}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <Label 
+                            Text="{Binding .}"
+                            TextColor="Black"
+                            Margin="10"/>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+            <ListView.Behaviors>
+                <mct:EventToCommandBehavior 
+                    EventName="ItemSelected"
+                    Command="{Binding ItemSelectedCommand}"
+                    EventArgsConverter="{StaticResource ItemSelectedEventArgsConverter}" />
+            </ListView.Behaviors>
+        </ListView>
+
+    </FlexLayout>
+</pages:BasePage>

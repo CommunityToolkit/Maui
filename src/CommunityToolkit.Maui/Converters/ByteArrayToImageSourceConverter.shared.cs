@@ -20,11 +20,15 @@ public class ByteArrayToImageSourceConverter : ValueConverterExtension, ICommuni
 	[return: NotNullIfNotNull("value")]
 	public object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
-		if (value == null)
+		if (value is null)
+		{
 			return null;
+		}
 
 		if (value is byte[] imageBytes)
+		{
 			return ImageSource.FromStream(() => new MemoryStream(imageBytes));
+		}
 
 		throw new ArgumentException("Expected value to be of type byte[].", nameof(value));
 	}
@@ -39,16 +43,22 @@ public class ByteArrayToImageSourceConverter : ValueConverterExtension, ICommuni
 	/// <returns>An object of type <see cref="ImageSource"/>.</returns>
 	public object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
-		if (value == null)
+		if (value is null)
+		{
 			return null;
+		}
 
 		if (value is not StreamImageSource streamImageSource)
+		{
 			throw new ArgumentException("Expected value to be of type StreamImageSource.", nameof(value));
+		}
 
 		var streamFromImageSource = streamImageSource.Stream(CancellationToken.None).Result;
 
-		if (streamFromImageSource == null)
+		if (streamFromImageSource is null)
+		{
 			return null;
+		}
 
 		using var memoryStream = new MemoryStream();
 		streamFromImageSource.CopyTo(memoryStream);

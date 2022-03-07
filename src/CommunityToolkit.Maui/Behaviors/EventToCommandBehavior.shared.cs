@@ -33,7 +33,7 @@ public class EventToCommandBehavior : BaseBehavior<VisualElement>
 	public static readonly BindableProperty EventArgsConverterProperty =
 		BindableProperty.Create(nameof(EventArgsConverter), typeof(ICommunityToolkitValueConverter), typeof(EventToCommandBehavior));
 
-	readonly MethodInfo eventHandlerMethodInfo = typeof(EventToCommandBehavior).GetTypeInfo()?.GetDeclaredMethod(nameof(OnTriggerHandled)) ?? throw new NullReferenceException($"Cannot find method {nameof(OnTriggerHandled)}");
+	readonly MethodInfo eventHandlerMethodInfo = typeof(EventToCommandBehavior).GetTypeInfo()?.GetDeclaredMethod(nameof(OnTriggerHandled)) ?? throw new InvalidOperationException($"Cannot find method {nameof(OnTriggerHandled)}");
 
 	Delegate? eventHandler;
 
@@ -98,7 +98,9 @@ public class EventToCommandBehavior : BaseBehavior<VisualElement>
 
 		var eventName = EventName;
 		if (View == null || string.IsNullOrWhiteSpace(eventName))
+		{
 			return;
+		}
 
 		eventInfo = View.GetType()?.GetRuntimeEvent(eventName) ??
 			throw new ArgumentException($"{nameof(EventToCommandBehavior)}: Couldn't resolve the event.", nameof(EventName));
@@ -115,7 +117,9 @@ public class EventToCommandBehavior : BaseBehavior<VisualElement>
 	void UnregisterEvent()
 	{
 		if (eventInfo != null && eventHandler != null)
+		{
 			eventInfo.RemoveEventHandler(View, eventHandler);
+		}
 
 		eventInfo = null;
 		eventHandler = null;
@@ -135,6 +139,8 @@ public class EventToCommandBehavior : BaseBehavior<VisualElement>
 
 		var command = Command;
 		if (command?.CanExecute(parameter) ?? false)
+		{
 			command.Execute(parameter);
+		}
 	}
 }

@@ -13,7 +13,7 @@ public class InvertedBoolConverter_Tests : BaseTest
 	{
 		var inverterBoolConverter = new InvertedBoolConverter();
 
-		var result = (bool)inverterBoolConverter.Convert(value, typeof(InvertedBoolConverter_Tests), null, CultureInfo.CurrentCulture);
+		var result = (bool)inverterBoolConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
 
 		Assert.Equal(result, expectedResult);
 	}
@@ -25,6 +25,6 @@ public class InvertedBoolConverter_Tests : BaseTest
 	public void InValidConverterValuesThrowArgumenException(object? value)
 	{
 		var inverterBoolConverter = new InvertedBoolConverter();
-		Assert.Throws<ArgumentException>(() => inverterBoolConverter.Convert(value, typeof(IndexToArrayItemConverter), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => inverterBoolConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
 	}
 }

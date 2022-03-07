@@ -2,20 +2,18 @@
 <pages:BasePage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.DoubleToIntConverterPage">
-    <pages:BasePage.BindingContext>
-        <vm:DoubleToIntConverterViewModel />
-    </pages:BasePage.BindingContext>
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.DoubleToIntConverterPage"
+    x:TypeArguments="vm:DoubleToIntConverterViewModel">
     <pages:BasePage.Resources>
         <ResourceDictionary>
             <mct:DoubleToIntConverter x:Key="DoubleToIntConverter" />
         </ResourceDictionary>
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
-        <StackLayout
+        <VerticalStackLayout
             Padding="10,10"
             HorizontalOptions="Fill"
             Spacing="10"
@@ -31,6 +29,6 @@
                 Padding="7,0,0,0"
                 Text="{Binding Path=Input, Converter={StaticResource DoubleToIntConverter}, ConverterParameter=1}"
                 TextColor="{StaticResource NormalLabelTextColor}" />
-        </StackLayout>
+        </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

@@ -6,9 +6,9 @@ namespace CommunityToolkit.Maui.UnitTests;
 
 public abstract class BaseTest : IDisposable
 {
-	readonly CultureInfo? defaultCulture, defaultUICulture;
+	readonly CultureInfo defaultCulture, defaultUICulture;
 
-	bool _isDisposed;
+	bool isDisposed;
 
 	protected BaseTest()
 	{
@@ -17,7 +17,7 @@ public abstract class BaseTest : IDisposable
 
 		Device.PlatformServices = new MockPlatformServices();
 
-		DispatcherProvider.SetCurrent(new DispatcherProviderMock());
+		DispatcherProvider.SetCurrent(new MockDispatcherProvider());
 		DeviceDisplay.SetCurrent(null);
 	}
 
@@ -31,18 +31,20 @@ public abstract class BaseTest : IDisposable
 
 	protected virtual void Dispose(bool isDisposing)
 	{
-		if (_isDisposed)
+		if (isDisposed)
+		{
 			return;
+		}
 
 		Device.PlatformServices = null;
 
-		Thread.CurrentThread.CurrentCulture = defaultCulture ?? throw new NullReferenceException();
-		Thread.CurrentThread.CurrentUICulture = defaultUICulture ?? throw new NullReferenceException();
+		Thread.CurrentThread.CurrentCulture = defaultCulture;
+		Thread.CurrentThread.CurrentUICulture = defaultUICulture;
 
 		DispatcherProvider.SetCurrent(null);
 		DeviceDisplay.SetCurrent(null);
 
-		_isDisposed = true;
+		isDisposed = true;
 	}
 
 	protected static Task<Stream> GetStreamFromImageSource(ImageSource imageSource, CancellationToken token)
@@ -54,15 +56,21 @@ public abstract class BaseTest : IDisposable
 	protected static bool StreamEquals(Stream a, Stream b)
 	{
 		if (a == b)
+		{
 			return true;
+		}
 
 		if (a.Length != b.Length)
+		{
 			return false;
+		}
 
 		for (var i = 0; i < a.Length; i++)
 		{
 			if (a.ReadByte() != b.ReadByte())
+			{
 				return false;
+			}
 		}
 
 		return true;

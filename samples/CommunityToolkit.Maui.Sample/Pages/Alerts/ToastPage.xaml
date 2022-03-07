@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                xmlns:converters="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Alerts.ToastPage">
+
+    <pages:BasePage.Resources>
+        <ResourceDictionary>
+            <converters:ColorToColorForTextConverter x:Key="ColorToColorForTextConverter"/>
+        </ResourceDictionary>
+    </pages:BasePage.Resources>
+    
+    <VerticalStackLayout Spacing="12">
+        
+        <Label Text="The Toast is a timed alert that appears at the bottom of the screen by default. It is dismissed after a configurable duration of time." 
+                LineBreakMode = "WordWrap" />
+        
+        <Label Text="Windows uses toast notifications to display toast. Make sure you switched off Focus Assist."
+               IsVisible="false">
+            <Label.IsVisible>
+                <OnPlatform x:TypeArguments="x:Boolean">
+                    <On Platform="UWP" Value="true" />
+                </OnPlatform>
+            </Label.IsVisible>
+        </Label>
+
+        <Button Clicked="ShowToastButtonClicked"
+                Text="Display Toast"/>
+
+         <Button Clicked="ShowCustomToastButtonClicked"
+                Text="Display Custom Toast"/>
+
+    </VerticalStackLayout>
+    
+</pages:BasePage>

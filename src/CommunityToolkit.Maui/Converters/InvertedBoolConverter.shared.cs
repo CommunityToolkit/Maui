@@ -41,7 +41,9 @@ public class InvertedBoolConverter : ValueConverterExtension, ICommunityToolkitV
 	static bool InverseBool([NotNull] object? value)
 	{
 		if (value is bool result)
+		{
 			return !result;
+		}
 
 		throw new ArgumentException("Value is not a valid boolean", nameof(value));
 	}

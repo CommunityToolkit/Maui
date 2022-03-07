@@ -2,23 +2,21 @@
 <pages:BasePage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.ListToStringConverterPage">
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.ListToStringConverterPage"
+    x:TypeArguments="vm:ListToStringConverterViewModel">
     <ContentPage.Resources>
         <ResourceDictionary>
             <mct:ListToStringConverter x:Key="ListToStringConverter" Separator=", " />
         </ResourceDictionary>
     </ContentPage.Resources>    
-    <ContentPage.BindingContext>
-        <vm:ListToStringConverterViewModel />
-    </ContentPage.BindingContext>
     <pages:BasePage.Content>
-        <StackLayout Spacing="16">
+        <VerticalStackLayout Spacing="16">
             <Label Text="The ListToStringConverter is a converter that allows users to convert an incoming binding that implements IEnumerable to a single string value. The Separator property is used to join the items in the IEnumerable." TextColor="{StaticResource NormalLabelTextColor}" />
             <Label Text="Output" TextColor="{StaticResource NormalLabelTextColor}" />
             <Label Text="{Binding DummyItemSource, Converter={StaticResource ListToStringConverter}}" TextColor="Black"/> 
-        </StackLayout>
+        </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

@@ -1,11 +1,19 @@
 ﻿using CommunityToolkit.Maui.Core;
 
+#if ANDROID
+using NativeSnackbar = Google.Android.Material.Snackbar.Snackbar;
+#elif IOS || MACCATALYST
+using NativeSnackbar = CommunityToolkit.Maui.Core.Views.SnackbarView;
+#elif WINDOWS
+using NativeSnackbar = Windows.UI.Notifications.ToastNotification;
+#endif
+
 namespace CommunityToolkit.Maui.Alerts;
 
 /// <inheritdoc/>
 public partial class Snackbar : ISnackbar
 {
-	readonly static WeakEventManager _weakEventManager = new();
+	static readonly WeakEventManager weakEventManager = new();
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="Snackbar"/>
@@ -19,38 +27,38 @@ public partial class Snackbar : ISnackbar
 	}
 
 	/// <inheritdoc/>
-	public SnackbarOptions VisualOptions { get; set; }
+	public SnackbarOptions VisualOptions { get; init; }
 
 	/// <inheritdoc/>
-	public string Text { get; set; }
+	public string Text { get; init; }
 
 	/// <inheritdoc/>
-	public TimeSpan Duration { get; set; }
+	public TimeSpan Duration { get; init; }
 
 	/// <inheritdoc/>
-	public Action? Action { get; set; }
+	public Action? Action { get; init; }
 
 	/// <inheritdoc/>
-	public string ActionButtonText { get; set; }
+	public string ActionButtonText { get; init; }
 
 	/// <inheritdoc/>
 	public static bool IsShown { get; private set; }
 
 	/// <inheritdoc/>
-	public IView? Anchor { get; set; }
+	public IView? Anchor { get; init; }
 
 	/// <inheritdoc/>
 	public static event EventHandler Shown
 	{
-		add => _weakEventManager.AddEventHandler(value);
-		remove => _weakEventManager.RemoveEventHandler(value);
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
 	}
 
 	/// <inheritdoc/>
 	public static event EventHandler Dismissed
 	{
-		add => _weakEventManager.AddEventHandler(value);
-		remove => _weakEventManager.RemoveEventHandler(value);
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
 	}
 
 	/// <summary>
@@ -82,22 +90,34 @@ public partial class Snackbar : ISnackbar
 		};
 	}
 
-#if !(IOS || ANDROID || MACCATALYST || WINDOWS)
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	public virtual Task Show()
-	{
-		OnShown();
-		return Task.CompletedTask;
-	}
+	public virtual Task Show(CancellationToken token = default) => Device.InvokeOnMainThreadAsync(() => ShowNative(token));
 
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
-	public virtual Task Dismiss()
+	public virtual Task Dismiss(CancellationToken token = default) => Device.InvokeOnMainThreadAsync(() => DismissNative(token));
+
+#if !(IOS || ANDROID || MACCATALYST || WINDOWS)
+	/// <inheritdoc/>
+	private partial Task ShowNative(CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
+
+		OnShown();
+
+		return Task.CompletedTask;
+	}
+
+	/// <inheritdoc/>
+	private partial Task DismissNative(CancellationToken token)
+	{
+		token.ThrowIfCancellationRequested();
+
 		OnDismissed();
+
 		return Task.CompletedTask;
 	}
 #endif
@@ -114,28 +134,59 @@ public partial class Snackbar : ISnackbar
 	/// <summary>
 	/// Dispose Snackbar
 	/// </summary>
+#if ANDROID || IOS || MACCATALYST
 	protected virtual async ValueTask DisposeAsyncCore()
 	{
-#if NET6_0_ANDROID || NET6_0_IOS || NET6_0_MACCATALYST
-		await Microsoft.Maui.Controls.Device.InvokeOnMainThreadAsync(() => _nativeSnackbar?.Dispose());
-#else
-		await Task.CompletedTask;
-#endif
+		await Device.InvokeOnMainThreadAsync(() => NativeSnackbar?.Dispose());
 	}
+#else
+	protected virtual ValueTask DisposeAsyncCore()
+	{
+		return ValueTask.CompletedTask;
+    }
+#endif
 
 	static TimeSpan GetDefaultTimeSpan() => TimeSpan.FromSeconds(3);
+
+#if ANDROID || IOS || MACCATALYST || WINDOWS
+
+	static NativeSnackbar? nativeSnackbar;
+
+	static NativeSnackbar? NativeSnackbar
+	{
+		get
+		{
+			return MainThread.IsMainThread
+				? nativeSnackbar
+				: throw new InvalidOperationException($"{nameof(nativeSnackbar)} can only be called from the Main Thread");
+		}
+		set
+		{
+			if (!MainThread.IsMainThread)
+			{
+				throw new InvalidOperationException($"{nameof(nativeSnackbar)} can only be called from the Main Thread");
+			}
+
+			nativeSnackbar = value;
+		}
+	}
+#endif
 
 	void OnShown()
 	{
 		IsShown = true;
-		_weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Shown));
+		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Shown));
 	}
 
 	void OnDismissed()
 	{
 		IsShown = false;
-		_weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Dismissed));
+		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Dismissed));
 	}
+
+	private partial Task ShowNative(CancellationToken token);
+
+	private partial Task DismissNative(CancellationToken token);
 }
 
 /// <summary>
@@ -152,11 +203,13 @@ public static class SnackbarVisualElementExtension
 	/// <param name="action">Action of the snackbar button</param>
 	/// <param name="duration">Snackbar duration</param>
 	/// <param name="visualOptions">Snackbar visual options</param>
+	/// <param name="token">Cancellation token</param>
 	public static Task DisplaySnackbar(
 		this VisualElement? visualElement,
 		string message,
 		Action? action = null,
 		string actionButtonText = "OK",
 		TimeSpan? duration = null,
-		SnackbarOptions? visualOptions = null) => Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement).Show();
+		SnackbarOptions? visualOptions = null,
+		CancellationToken token = default) => Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement).Show(token);
 }

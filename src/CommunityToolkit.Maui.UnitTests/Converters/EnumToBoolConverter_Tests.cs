@@ -28,11 +28,11 @@ public class EnumToBoolConverter_Tests : BaseTest
 	}
 
 	[Fact]
-	public void EnumToBoolConvertBack_ThrowsNotImplementedException()
+	public void EnumToBoolConvertBack_ThrowsNotSupportedException()
 	{
 		var enumToBoolConverter = new EnumToBoolConverter();
 
-		Assert.Throws<NotImplementedException>(() =>
+		Assert.Throws<NotSupportedException>(() =>
 			enumToBoolConverter.ConvertBack(TestEnumForEnumToBoolConverter.Five, typeof(bool), null, CultureInfo.InvariantCulture));
 	}
 

@@ -34,7 +34,7 @@ public class VariableMultiValueConverter_Tests : BaseTest
 	public void VariableMultiConverter(object[] value, MultiBindingCondition type, object expectedResult, int count = 0)
 	{
 		var variableMultiConverter = new VariableMultiValueConverter() { ConditionType = type, Count = count };
-		var result = (object)variableMultiConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
+		var result = variableMultiConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
 		Assert.Equal(result, expectedResult);
 	}
 }

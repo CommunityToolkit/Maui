@@ -35,7 +35,9 @@ public class IntToBoolConverter : ValueConverterExtension, ICommunityToolkitValu
 	public object? ConvertBack([NotNull] object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value is bool result)
+		{
 			return result ? 1 : 0;
+		}
 
 		throw new ArgumentException("Value is not a valid boolean", nameof(value));
 	}

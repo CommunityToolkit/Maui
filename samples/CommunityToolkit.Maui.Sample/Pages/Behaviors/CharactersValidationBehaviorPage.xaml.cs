@@ -2,7 +2,7 @@
 
 namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
-public partial class CharactersValidationBehaviorPage
+public partial class CharactersValidationBehaviorPage : BasePage
 {
 	public CharactersValidationBehaviorPage()
 	{
