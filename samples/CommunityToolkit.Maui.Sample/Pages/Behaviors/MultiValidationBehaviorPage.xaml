@@ -3,7 +3,10 @@
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-                x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.MultiValidationBehaviorPage">
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.MultiValidationBehaviorPage"
+                xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
+                x:TypeArguments="vm:MultiValidationBehaviorViewModel"
+                x:DataType="vm:MultiValidationBehaviorViewModel">
 
     <pages:BasePage.Resources>
         <Style x:Key="ValidEntryStyle" TargetType="Entry">
@@ -20,7 +23,13 @@
         <VerticalStackLayout Padding="{StaticResource ContentPadding}"
                  Spacing="50"
                  VerticalOptions="StartAndExpand">
-            <Label Text="Number validation : -10 to 5" />
+
+            <Label Text="The MultiValidationBehavior is a behavior that allows the user to combine multiple validators to validate text input depending on specified parameters. For example, an Entry control can be styled differently depending on whether a valid or an invalid text input is provided. By allowing the user to chain multiple existing validators together, it offers a high degree of customizability when it comes to validation. Additional properties handling validation are inherited from ValidationBehavior"
+                   TextColor="{StaticResource NormalLabelTextColor}" />
+
+            <Label Text="Number validation : -10 to 5"
+                   TextColor="{StaticResource NormalLabelTextColor}" />
+
             <Entry Placeholder="Number">
                 <Entry.Behaviors>
                     <mct:MultiValidationBehavior x:Name="MultiValidation"

@@ -4,30 +4,54 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.InvertedBoolConverterPage">
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.InvertedBoolConverterPage"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
+    x:TypeArguments="vm:InvertedBoolConverterViewModel"
+    x:DataType="vm:InvertedBoolConverterViewModel">
+
     <pages:BasePage.Resources>
         <ResourceDictionary>
             <mct:InvertedBoolConverter x:Key="InvertedBoolConverter" />
         </ResourceDictionary>
     </pages:BasePage.Resources>
+
     <pages:BasePage.Content>
         <VerticalStackLayout
             Padding="10,10"
-            HorizontalOptions="Fill"
             Spacing="10"
+            HorizontalOptions="Fill"
             VerticalOptions="Fill">
+
             <Label Text="The InvertedBoolConverter is a converter that allows users to convert a bool value binding to its inverted value." TextColor="{StaticResource NormalLabelTextColor}" />
+
             <HorizontalStackLayout
                 HorizontalOptions="CenterAndExpand"
                 Spacing="10">
+
                 <Label Text="False" TextColor="{StaticResource NormalLabelTextColor}" />
-                <Switch x:Name="ColorToggle" IsToggled="False" />
+
+                <Switch IsToggled="{Binding IsToggled, Mode=OneWayToSource}"
+                        IsEnabled="false"/>
+
                 <Label Text="True" TextColor="{StaticResource NormalLabelTextColor}" />
+
             </HorizontalStackLayout>
-            <Label Text="This string should represet the opposite state of the picker" TextColor="{StaticResource NormalLabelTextColor}" />
-            <Label
-                BindingContext="{x:Reference Name=ColorToggle}"
-                Text="{Binding Path=IsToggled, Converter={StaticResource InvertedBoolConverter}}" />
+
+            <Label Text="The following switch represents the opposite bool of the above switch" TextColor="{StaticResource NormalLabelTextColor}" />
+
+            <HorizontalStackLayout
+                HorizontalOptions="CenterAndExpand"
+                Spacing="10">
+
+                <Label Text="False" TextColor="{StaticResource NormalLabelTextColor}" />
+
+                <Switch IsToggled="{Binding IsToggled, Mode=OneWay, Converter={StaticResource InvertedBoolConverter}}"
+                        IsEnabled="false"/>
+
+                <Label Text="True" TextColor="{StaticResource NormalLabelTextColor}" />
+
+            </HorizontalStackLayout>
+
         </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

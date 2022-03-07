@@ -4,7 +4,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.TextCaseConverterPage">
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.TextCaseConverterPage"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
+    x:TypeArguments="vm:TextCaseConverterViewModel"
+    x:DataType="vm:TextCaseConverterViewModel">
+
     <pages:BasePage.Resources>
         <ResourceDictionary>
             <mct:TextCaseConverter x:Key="TextCaseConverter" Type="Upper" />
@@ -25,8 +29,7 @@
                 TextColor="{StaticResource NormalLabelTextColor}" />
             <Label
                 Padding="7,0,0,0"
-                BindingContext="{x:Reference Name=ExampleText}"
-                Text="{Binding Path=Text, Converter={StaticResource TextCaseConverter}}"
+                Text="{Binding Source=ExampleText, Path=Text, Converter={StaticResource TextCaseConverter}}"
                 TextColor="{StaticResource NormalLabelTextColor}" />
         </VerticalStackLayout>
     </pages:BasePage.Content>

@@ -3,7 +3,10 @@
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-                x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.RequiredStringValidationBehaviorPage">
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.RequiredStringValidationBehaviorPage"
+                xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
+                x:TypeArguments="vm:RequiredStringValidationBehaviorViewModel"
+                x:DataType="vm:RequiredStringValidationBehaviorViewModel">
 
     <pages:BasePage.Resources>
         <Style x:Key="ValidEntryStyle" TargetType="Entry">
@@ -18,7 +21,12 @@
     <VerticalStackLayout Padding="{StaticResource ContentPadding}"
                  Spacing="50"
                  VerticalOptions="StartAndExpand">
+
+        <Label Text="The RequiredStringValidationBehavior is a behavior that allows the user to determine if text input is equal to specific text. For example, an Entry control can be styled differently depending on whether a valid or an invalid text input is provided. Additional properties handling validation are inherited from ValidationBehavior"
+               TextColor="{StaticResource NormalLabelTextColor}" />
+
         <Label Text="Text color will change accordingly to the style that is configured when a required string is not entered." />
+
         <Entry Placeholder="Required String: 123. Exact match">
             <Entry.Behaviors>
                 <mct:RequiredStringValidationBehavior RequiredString="123"
@@ -27,6 +35,7 @@
                                                       Flags="ValidateOnValueChanged"/>
             </Entry.Behaviors>
         </Entry>
+
         <Entry Placeholder="Required substring: 123">
             <Entry.Behaviors>
                 <mct:RequiredStringValidationBehavior RequiredString="123" ExactMatch="False"

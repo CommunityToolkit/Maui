@@ -1,8 +1,11 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
+﻿using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
-public partial class NumericValidationBehaviorPage : BasePage
+namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
+
+public partial class NumericValidationBehaviorPage : BasePage<NumericValidationBehaviorViewModel>
 {
-	public NumericValidationBehaviorPage()
+	public NumericValidationBehaviorPage(NumericValidationBehaviorViewModel numericValidationBehaviorViewModel)
+		: base(numericValidationBehaviorViewModel)
 	{
 		InitializeComponent();
 	}
