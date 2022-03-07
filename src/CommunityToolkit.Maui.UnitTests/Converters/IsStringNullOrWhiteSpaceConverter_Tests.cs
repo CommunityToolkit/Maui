@@ -15,9 +15,11 @@ public class IsStringNullOrWhiteSpaceConverter_Tests : BaseTest
 	{
 		var isNullOrWhiteSpaceConverter = new IsStringNullOrWhiteSpaceConverter();
 
-		var result = (bool)isNullOrWhiteSpaceConverter.Convert(value, null, null, null);
+		var convertResult = (bool?)isNullOrWhiteSpaceConverter.Convert(value, typeof(bool), null, null);
+		var convertFromResult = isNullOrWhiteSpaceConverter.ConvertFrom(value);
 
-		Assert.Equal(expectedResult, result);
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
 	}
 
 	[Theory]
@@ -28,6 +30,6 @@ public class IsStringNullOrWhiteSpaceConverter_Tests : BaseTest
 	{
 		var isNotNullOrWhiteSpaceConverter = new IsStringNullOrWhiteSpaceConverter();
 
-		Assert.Throws<InvalidCastException>(() => isNotNullOrWhiteSpaceConverter.Convert(value, null, null, null));
+		Assert.Throws<ArgumentException>(() => isNotNullOrWhiteSpaceConverter.Convert(value, typeof(bool), null, null));
 	}
 }

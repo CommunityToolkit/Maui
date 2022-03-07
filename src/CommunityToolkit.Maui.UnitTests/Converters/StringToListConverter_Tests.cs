@@ -23,7 +23,7 @@ public class StringToListConverter_Tests : BaseTest
 	{
 		var stringToListConverter = new StringToListConverter();
 
-		var result = (IEnumerable<string>)stringToListConverter.Convert(value, null, parameter, null);
+		var result = (IEnumerable<string>)stringToListConverter.Convert(value, typeof(IEnumerable<string>), parameter, null);
 
 		Assert.Equal(expectedResult, result);
 	}
@@ -34,7 +34,7 @@ public class StringToListConverter_Tests : BaseTest
 	{
 		var listToStringConverter = new ListToStringConverter();
 
-		Assert.Throws<ArgumentException>(() => listToStringConverter.Convert(value, null, null, null));
+		Assert.Throws<ArgumentException>(() => listToStringConverter.Convert(value, typeof(IEnumerable<string>), null, null));
 	}
 
 	[Theory]
@@ -43,6 +43,6 @@ public class StringToListConverter_Tests : BaseTest
 	{
 		var listToStringConverter = new ListToStringConverter();
 
-		Assert.Throws<ArgumentException>(() => listToStringConverter.Convert(Array.Empty<object>(), null, parameter, null));
+		Assert.Throws<ArgumentException>(() => listToStringConverter.Convert(Array.Empty<object>(), typeof(IEnumerable<string>), parameter, null));
 	}
 }

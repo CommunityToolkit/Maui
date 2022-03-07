@@ -24,7 +24,7 @@ public class MultiMathExpressionConverter : MultiValueConverterExtension, ICommu
 			throw new ArgumentException("The parameter should be of type String.");
 		}
 
-		if (values == null)
+		if (values is null)
 		{
 			return null;
 		}
@@ -32,7 +32,7 @@ public class MultiMathExpressionConverter : MultiValueConverterExtension, ICommu
 		var args = new List<double>();
 		foreach (var value in values)
 		{
-			if (value == null)
+			if (value is null)
 			{
 				return null;
 			}
@@ -50,7 +50,7 @@ public class MultiMathExpressionConverter : MultiValueConverterExtension, ICommu
 	}
 
 	/// <summary>
-	/// This method is not implemented and will throw a <see cref="NotImplementedException"/>.
+	/// This method is not supported and will throw a <see cref="NotSupportedException"/>.
 	/// </summary>
 	/// <param name="value">N/A</param>
 	/// <param name="targetTypes">N/A</param>
@@ -58,5 +58,5 @@ public class MultiMathExpressionConverter : MultiValueConverterExtension, ICommu
 	/// <param name="culture">N/A</param>
 	/// <returns>N/A</returns>
 	public object[]? ConvertBack(object? value, Type[]? targetTypes, object? parameter, CultureInfo? culture)
-		=> throw new NotImplementedException();
+		=> throw new NotSupportedException("Impossible to revert to original value. Consider setting BindingMode to OneWay.");
 }

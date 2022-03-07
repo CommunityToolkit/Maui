@@ -41,7 +41,7 @@ static class AnimationExtensions
 
 			public IAnimationManager AnimationManager { get; }
 
-			IMauiHandlersFactory IMauiContext.Handlers => throw new NotImplementedException();
+			IMauiHandlersFactory IMauiContext.Handlers => throw new NotSupportedException();
 
 			public object GetService(Type serviceType)
 			{
