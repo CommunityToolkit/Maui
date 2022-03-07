@@ -17,11 +17,10 @@ namespace CommunityToolkit.Maui.Analyzer
 		public const string DiagnosticId = "CheckFileNameAnalyzer";
 
 		static readonly LocalizableString title = new LocalizableResourceString(nameof(Resources.CheckFileNameAnalyzerTitle), Resources.ResourceManager, typeof(Resources));
-		//static readonly LocalizableString messageFormat = new LocalizableResourceString(nameof(Resources.NotImplementedMessageFormat), Resources.ResourceManager, typeof(Resources));
 		static readonly LocalizableString description = new LocalizableResourceString(nameof(Resources.CheckFileNameAnalyzerDescription), Resources.ResourceManager, typeof(Resources));
 
 
-		static readonly DiagnosticDescriptor rule = new(DiagnosticId, title, string.Empty, Category, DiagnosticSeverity.Error, isEnabledByDefault: true, description: description);
+		static readonly DiagnosticDescriptor rule = new(DiagnosticId, title, description, Category, DiagnosticSeverity.Error, isEnabledByDefault: true, description: description);
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(rule);
 
 		public override void Initialize(AnalysisContext context)
