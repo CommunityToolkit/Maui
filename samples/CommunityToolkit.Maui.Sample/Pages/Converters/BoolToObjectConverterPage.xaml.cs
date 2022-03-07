@@ -1,10 +1,12 @@
-﻿using Button = Microsoft.Maui.Controls.Button;
+﻿using CommunityToolkit.Maui.Sample.ViewModels.Converters;
+using Button = Microsoft.Maui.Controls.Button;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
-public partial class BoolToObjectConverterPage : BasePage
+public partial class BoolToObjectConverterPage : BasePage<BoolToObjectConverterViewModel>
 {
-	public BoolToObjectConverterPage()
+	public BoolToObjectConverterPage(BoolToObjectConverterViewModel boolToObjectConverterViewModel)
+		: base(boolToObjectConverterViewModel)
 	{
 		InitializeComponent();
 

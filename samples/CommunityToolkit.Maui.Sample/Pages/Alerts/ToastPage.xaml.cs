@@ -1,11 +1,12 @@
 ﻿using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Alerts;
 
-public partial class ToastPage : BasePage
+public partial class ToastPage : BasePage<ToastViewModel>
 {
-	public ToastPage()
+	public ToastPage(ToastViewModel toastViewModel) : base(toastViewModel)
 	{
 		InitializeComponent();
 	}

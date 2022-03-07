@@ -1,8 +1,11 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+﻿using CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-public partial class TextCaseConverterPage : BasePage
+namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class TextCaseConverterPage : BasePage<TextCaseConverterViewModel>
 {
-	public TextCaseConverterPage()
+	public TextCaseConverterPage(TextCaseConverterViewModel textCaseConverterViewModel)
+		: base(textCaseConverterViewModel)
 	{
 		InitializeComponent();
 

@@ -4,7 +4,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.StringToListConverterPage">
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.StringToListConverterPage"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
+    x:TypeArguments="vm:StringToListConverterViewModel"
+    x:DataType="vm:StringToListConverterViewModel">
+
     <pages:BasePage.Resources>
         <ResourceDictionary>
             <mct:StringToListConverter x:Key="StringToListConverter" SplitOptions="RemoveEmptyEntries">
@@ -17,29 +21,32 @@
         </ResourceDictionary>
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
-        <Grid Margin="20,0" RowDefinitions="Auto,Auto,*">
+        <VerticalStackLayout Spacing="8">
+
+            <Label Text="The StringToListConverter returns a string array that contains the substrings in this string that are delimited by Separator"
+                   TextColor="{StaticResource NormalLabelTextColor}"
+                   Grid.Row="0"/>
+
             <Label
-                Grid.Row="0"
+                Grid.Row="1"
                 FontAttributes="Bold"
                 Text="Enter some text separated by ',' or '.' or ';'" />
+
             <Entry
-                x:Name="ExampleText"
-                Grid.Row="1"
+                Grid.Row="2"
                 FontSize="Medium"
                 Placeholder="Enter some text separated by ',' or '.' or ';'"
-                Text="Item 1,Item 2,Item 3" />
-            <ListView
-                Grid.Row="2"
-                BindingContext="{x:Reference Name=ExampleText}"
-                ItemsSource="{Binding Path=Text, Converter={StaticResource StringToListConverter}}">
-                <ListView.ItemTemplate>
+                Text="{Binding LabelText}" />
+
+            <CollectionView
+                Grid.Row="3"
+                ItemsSource="{Binding LabelText, Converter={StaticResource StringToListConverter}}">
+                <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <ViewCell>
-                            <Label FontSize="Medium" Text="{Binding .}" />
-                        </ViewCell>
+                        <Label FontSize="Medium" Text="{Binding .}" />
                     </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </Grid>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

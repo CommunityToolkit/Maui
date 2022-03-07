@@ -1,8 +1,11 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+﻿using CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-public partial class MultiConverterPage : BasePage
+namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class MultiConverterPage : BasePage<MultiConverterViewModel>
 {
-	public MultiConverterPage()
+	public MultiConverterPage(MultiConverterViewModel multiConverterViewModel)
+		: base(multiConverterViewModel)
 	{
 		InitializeComponent();
 	}

@@ -3,7 +3,10 @@
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-                x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.UriValidationBehaviorPage">
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.UriValidationBehaviorPage"
+                xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
+                x:TypeArguments="vm:UriValidationBehaviorViewModel"
+                x:DataType="vm:UriValidationBehaviorViewModel">
 
     <pages:BasePage.Resources>
         <Style x:Key="ValidEntryStyle" TargetType="Entry">
@@ -18,7 +21,12 @@
     <VerticalStackLayout Padding="{StaticResource ContentPadding}"
                  Spacing="50"
                  VerticalOptions="StartAndExpand">
+
+        <Label Text="The UriValidationBehavior is a behavior that allows users to determine whether or not text input is a valid URI. For example, an Entry control can be styled differently depending on whether a valid or an invalid URI is provided. Additional properties handling validation are inherited from ValidationBehavior"
+               TextColor="{StaticResource NormalLabelTextColor}" />
+
         <Label Text="Text color will change accordingly to the style that is configured when a invalid URI is entered." />
+
         <Entry Placeholder="UriKind: Absolute">
             <Entry.Behaviors>
                 <mct:UriValidationBehavior UriKind="Absolute"
@@ -27,6 +35,7 @@
                                            Flags="ValidateOnValueChanged"/>
             </Entry.Behaviors>
         </Entry>
+
         <Entry Placeholder="UriKind: Relative">
             <Entry.Behaviors>
                 <mct:UriValidationBehavior UriKind="Relative"
@@ -35,6 +44,7 @@
                                            Flags="ValidateOnValueChanged"/>
             </Entry.Behaviors>
         </Entry>
+
         <Entry Placeholder="UriKind: RelativeOrAbsolute">
             <Entry.Behaviors>
                 <mct:UriValidationBehavior UriKind="RelativeOrAbsolute"

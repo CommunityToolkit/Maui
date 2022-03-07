@@ -80,14 +80,17 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
 			SectionModel.Create<StringToListConverterViewModel>(nameof(StringToListConverter),
 				"A converter that splits a string by the separator and returns the enumerable sequence of strings as the result."),
 
-			SectionModel.Create<ColorsConvertersViewModel>("ColorConverters",
+			SectionModel.Create<ColorsConverterViewModel>("ColorConverters",
 				"A group of converters that convert a Color to your strings values (RGB, HEX, HSL, etc)"),
 
 			SectionModel.Create<ItemSelectedEventArgsConverterViewModel>(nameof(ItemSelectedEventArgsConverter),
 				"A converter that allows you to extract the selected item in a ListView from the ItemSelectedChangedEventArgs object."),
 
 			SectionModel.Create<CompareConverterViewModel>(nameof(CompareConverter),
-				"A converter that compares two IComparable objects and returns a boolean value or one of two specified objects.")
+				"A converter that compares two IComparable objects and returns a boolean value or one of two specified objects."),
+
+			SectionModel.Create<ByteArrayToImageSourceConverterViewModel>(nameof(ByteArrayToImageSourceConverter),
+				"A converter that allows the user to convert an incoming value from byte array and returns an object of type ImageSource. This object can then be used as the Source of an Image control..")
 		})
 	{
 	}
