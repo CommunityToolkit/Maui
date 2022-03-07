@@ -3,7 +3,10 @@
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
                 xmlns:converters="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
-                x:Class="CommunityToolkit.Maui.Sample.Pages.Alerts.ToastPage">
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Alerts.ToastPage"
+                xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Alerts"
+                x:TypeArguments="vm:ToastViewModel"
+                x:DataType="vm:ToastViewModel">
 
     <pages:BasePage.Resources>
         <ResourceDictionary>

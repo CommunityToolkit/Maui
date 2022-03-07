@@ -1,11 +1,12 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+﻿using CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-public partial class InvertedBoolConverterPage : BasePage
+namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class InvertedBoolConverterPage : BasePage<InvertedBoolConverterViewModel>
 {
-	public InvertedBoolConverterPage()
+	public InvertedBoolConverterPage(InvertedBoolConverterViewModel invertedBoolConverterViewModel)
+		: base(invertedBoolConverterViewModel)
 	{
 		InitializeComponent();
-
-		ColorToggle ??= new();
 	}
 }

@@ -1,8 +1,11 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+﻿using CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-public partial class ImageResourceConverterPage : BasePage
+namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+
+public partial class ImageResourceConverterPage : BasePage<ImageResourceConverterViewModel>
 {
-	public ImageResourceConverterPage()
+	public ImageResourceConverterPage(ImageResourceConverterViewModel imageResourceConverterViewModel)
+		: base(imageResourceConverterViewModel)
 	{
 		InitializeComponent();
 	}

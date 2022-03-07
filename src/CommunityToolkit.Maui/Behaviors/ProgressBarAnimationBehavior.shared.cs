@@ -3,7 +3,7 @@
 namespace CommunityToolkit.Maui.Behaviors;
 
 /// <summary>
-/// Behavior to animate a progress bar
+/// The <see cref="ProgressBarAnimationBehavior"/> is a behavior that behavior that animates a <see cref="ProgressBar"/>
 /// /// </summary>
 public class ProgressBarAnimationBehavior : BaseBehavior<ProgressBar>
 {
