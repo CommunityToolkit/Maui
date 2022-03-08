@@ -33,13 +33,21 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 		progressBarAnimationBehavior.Easing = easing;
 		progressBarAnimationBehavior.Progress = progress;
 
-		// Wait for ProgressTo animation to complete
-		await Task.Delay(TimeSpan.FromMilliseconds(length * 2));
+		await ensureProgressToAnimationCompleted(progress, length, easing);
 
 		Assert.Equal(progress, progressBar.Progress);
 		Assert.Equal(progress, progressBarAnimationBehavior.Progress);
 		Assert.Equal(length, progressBarAnimationBehavior.Length);
 		Assert.Equal(easing, progressBarAnimationBehavior.Easing);
+
+		static Task ensureProgressToAnimationCompleted(double progress, uint length, Easing easing)
+		{
+			// Use a throw-away ProgressBar as a timer to wait for ProgressTo animation to complete
+			var throwAwayProgressBar = new ProgressBar();
+			throwAwayProgressBar.EnableAnimations();
+
+			return throwAwayProgressBar.ProgressTo(progress, length, easing);
+		}
 	}
 
 	[Theory]
