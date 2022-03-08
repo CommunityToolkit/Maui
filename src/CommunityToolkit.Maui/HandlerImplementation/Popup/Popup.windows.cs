@@ -1,0 +1,32 @@
+﻿using CommunityToolkit.Core.Handlers;
+using CommunityToolkit.Core.Views;
+using CommunityToolkit.Maui.Core;
+using Microsoft.UI.Xaml.Controls;
+
+namespace CommunityToolkit.Maui.Views;
+public partial class Popup
+{
+	void OnPopupHandlerChanged(object? sender, EventArgs e)
+	{
+		if (this.Handler is null || Handler.NativeView is null)
+		{
+			return;
+		}
+
+		((MauiPopup)Handler.NativeView).SetUpPlatformView(CleanUp, CreateWrapperContent);
+
+		static void CleanUp(Panel wrapper)
+		{
+			((WrapperControl)wrapper).CleanUp();
+		}
+
+		static Panel? CreateWrapperContent(PopupViewHandler handler)
+		{
+			if (handler.VirtualView.Content is null || handler.MauiContext is null)
+			{
+				return null;
+			}
+			return new WrapperControl((View)handler.VirtualView.Content, handler.MauiContext);
+		}
+	}
+}

@@ -29,6 +29,10 @@ public partial class Popup : Element, IPopup
 
 		VerticalOptions = LayoutAlignment.Center;
 		HorizontalOptions = LayoutAlignment.Center;
+
+#if WINDOWS
+		this.HandlerChanged += OnPopupHandlerChanged;
+#endif
 	}
 
 	/// <summary>

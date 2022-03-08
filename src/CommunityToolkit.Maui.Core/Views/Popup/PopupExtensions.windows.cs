@@ -23,8 +23,8 @@ public static class PopupExtensions
 		ArgumentNullException.ThrowIfNull(basePopup.Content);
 
 		var color = basePopup.Color ?? Colors.Transparent;
-		var view = (View)basePopup.Content;
-		if (view.BackgroundColor is null && flyout.Control is not null)
+		var view = basePopup.Content;
+		if (view.Background is null && flyout.Control is not null)
 		{
 			flyout.Control.Background = color.ToNative();
 		}

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Core.Handlers;
+using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
@@ -35,7 +36,10 @@ public class MauiPopup : Flyout
 	public IPopup? VirtualView { get; private set; }
 
 	internal XamlStyle FlyoutStyle { get; } = new(typeof(FlyoutPresenter));
-	internal WrapperControl? Control { get; set; }
+	internal Panel? Control { get; set; }
+
+	Action<Panel>? panelCleanUp;
+	Func<PopupViewHandler, Panel?>? createControl;
 
 	/// <summary>
 	/// Method to initialize the native implementation.
@@ -44,7 +48,19 @@ public class MauiPopup : Flyout
 	public void SetElement(IPopup element)
 	{
 		VirtualView = element;
+	}
 
+	/// <summary>
+	/// Method to setup the Content of the Popup using a WrapperControl
+	/// </summary>
+	/// <param name="panelCleanUp">Action to be executed when the Handler discconect</param>
+	/// <param name="createControl">Function to be executed during the create of the popup content</param>
+	public void SetUpPlatformView(Action<Panel> panelCleanUp, Func<PopupViewHandler, Panel?> createControl)
+	{
+		ArgumentNullException.ThrowIfNull(panelCleanUp);
+		ArgumentNullException.ThrowIfNull(createControl);
+		this.panelCleanUp = panelCleanUp;
+		this.createControl = createControl;
 		CreateControl();
 		ConfigureControl();
 	}
@@ -106,7 +122,7 @@ public class MauiPopup : Flyout
 
 		if (Control is not null)
 		{
-			Control.CleanUp();
+			panelCleanUp?.Invoke(Control);
 		}
 
 		VirtualView = null;
@@ -115,9 +131,9 @@ public class MauiPopup : Flyout
 
 	void CreateControl()
 	{
-		if (Control is null && VirtualView?.Content is not null)
+		if (Control is null && VirtualView?.Content is not null && createControl is not null && VirtualView.Handler is PopupViewHandler handler)
 		{
-			Control = new WrapperControl((View)VirtualView.Content, mauiContext);
+			Control = createControl(handler);
 			Content = Control;
 		}
 
@@ -131,13 +147,17 @@ public class MauiPopup : Flyout
 
 	void SetSize()
 	{
-		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(Element)} cannot be null");
-		_ = Control ?? throw new InvalidOperationException($"{nameof(Element)} cannot be null");
+		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null");
+
+		if (Control is null)
+		{
+			return;
+		}
 
 		var standardSize = new Size { Width = defaultSize, Height = defaultSize / 2 };
 
 		var currentSize = VirtualView.Size != default ? VirtualView.Size : standardSize;
-		
+
 		if (VirtualView.Content is not null && VirtualView.Size == default)
 		{
 			var content = VirtualView.Content;
@@ -195,7 +215,12 @@ public class MauiPopup : Flyout
 
 	void ApplyStyles()
 	{
-		_ = Control ?? throw new InvalidOperationException($"{nameof(Control)} cannot be null");
+		if(Control is null)
+		{
+			return;
+		}
+
+		//_ = Control ?? throw new InvalidOperationException($"{nameof(Control)} cannot be null");
 		FlyoutPresenterStyle = FlyoutStyle;
 	}
 
