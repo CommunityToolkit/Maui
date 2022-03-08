@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using CommunityToolkit.Maui.Behaviors;
+using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
@@ -60,7 +61,7 @@ public class MaskedBehavior_Tests : BaseTest
 	[Fact]
 	public void AttachedToInvalidElementTest()
 	{
-		IReadOnlyList<VisualElement> invalidVisualElements = new[] 
+		IReadOnlyList<VisualElement> invalidVisualElements = new[]
 		{
 			new Button(),
 			new Frame(),
@@ -74,6 +75,25 @@ public class MaskedBehavior_Tests : BaseTest
 		{
 			Assert.Throws<InvalidOperationException>(() => invalidVisualElement.Behaviors.Add(new MaskedBehavior()));
 		}
+	}
+
+	[Fact]
+	public void AttachedToValidElementTest()
+	{
+		var entry = new Entry();
+		var editor = new Editor();
+		var inputView = new InputView();
+		var customInputView = new CustomInputView();
+
+		entry.Invoking(x => x.Behaviors.Add(new MaskedBehavior())).Should().NotThrow<InvalidOperationException>();
+		editor.Invoking(x => x.Behaviors.Add(new MaskedBehavior())).Should().NotThrow<InvalidOperationException>();
+		inputView.Invoking(x => x.Behaviors.Add(new MaskedBehavior())).Should().NotThrow<InvalidOperationException>();
+		customInputView.Invoking(x => x.Behaviors.Add(new MaskedBehavior())).Should().NotThrow<InvalidOperationException>();
+	}
+
+	class CustomInputView : InputView
+	{
+
 	}
 }
 
