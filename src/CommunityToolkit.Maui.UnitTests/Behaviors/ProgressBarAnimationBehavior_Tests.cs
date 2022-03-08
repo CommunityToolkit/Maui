@@ -11,7 +11,7 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 	{
 		new object[] { 0.5, 50, Easing.BounceIn },
 		new object[] { 1, 1500, Easing.Default },
-		new object[] { 0, 250, Easing.CubicOut }
+		new object[] { 0, 750, Easing.CubicOut }
 	};
 
 	[Theory]
@@ -21,7 +21,6 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 		var progressBar = new ProgressBar();
 		progressBar.EnableAnimations();
 
-		var didAnimationComplete = false;
 		var progressBarAnimationCompletedTCS = new TaskCompletionSource();
 
 		var progressBarAnimationBehavior = new ProgressBarAnimationBehavior();
@@ -37,9 +36,11 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 		progressBarAnimationBehavior.Easing = easing;
 		progressBarAnimationBehavior.Progress = progress;
 
-		await progressBarAnimationCompletedTCS.Task.ConfigureAwait(false);
+		if (progressBar.Progress != progress)
+		{
+			await progressBarAnimationCompletedTCS.Task;
+		}
 
-		Assert.True(didAnimationComplete);
 		Assert.Equal(progress, progressBar.Progress);
 		Assert.Equal(progress, progressBarAnimationBehavior.Progress);
 		Assert.Equal(length, progressBarAnimationBehavior.Length);
@@ -48,7 +49,6 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 		void HandleAnimationComplted(object? sender, EventArgs e)
 		{
 			ArgumentNullException.ThrowIfNull(sender);
-			didAnimationComplete = true;
 			progressBarAnimationCompletedTCS.SetResult();
 		}
 	}
