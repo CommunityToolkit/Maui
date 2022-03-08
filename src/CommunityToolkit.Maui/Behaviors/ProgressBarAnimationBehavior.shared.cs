@@ -7,6 +7,8 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// /// </summary>
 public class ProgressBarAnimationBehavior : BaseBehavior<ProgressBar>
 {
+	readonly WeakEventManager animationCompletedEventManager = new();
+
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Progress"/> property.
 	/// </summary>
@@ -24,6 +26,15 @@ public class ProgressBarAnimationBehavior : BaseBehavior<ProgressBar>
 	/// </summary>
 	public static readonly BindableProperty EasingProperty =
 		BindableProperty.CreateAttached(nameof(Easing), typeof(Easing), typeof(ProgressBarAnimationBehavior), Easing.Linear);
+
+	/// <summary>
+	/// Event that is triggered when the ProgressBar.ProgressTo() animation completes
+	/// </summary>
+	public event EventHandler AnimationCompleted
+	{
+		add => animationCompletedEventManager.AddEventHandler(value);
+		remove => animationCompletedEventManager.RemoveEventHandler(value);
+	}
 
 	/// <summary>
 	/// Progress, 0-1.0
@@ -70,6 +81,8 @@ public class ProgressBarAnimationBehavior : BaseBehavior<ProgressBar>
 									progressBarAnimationBehavior.Progress,
 									progressBarAnimationBehavior.Length,
 									progressBarAnimationBehavior.Easing);
+
+			progressBarAnimationBehavior.OnAnimationCompleted();
 		}
 	}
 
@@ -78,4 +91,6 @@ public class ProgressBarAnimationBehavior : BaseBehavior<ProgressBar>
 		token.ThrowIfCancellationRequested();
 		return progressBar.ProgressTo(progress, animationLength, animationEasing);
 	}
+
+	void OnAnimationCompleted() => animationCompletedEventManager.HandleEvent(this, EventArgs.Empty, nameof(AnimationCompleted));
 }

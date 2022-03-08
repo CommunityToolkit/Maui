@@ -21,7 +21,11 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 		var progressBar = new ProgressBar();
 		progressBar.EnableAnimations();
 
+		var didAnimationComplete = false;
+		var progressBarAnimationCompletedTCS = new TaskCompletionSource();
+
 		var progressBarAnimationBehavior = new ProgressBarAnimationBehavior();
+		progressBarAnimationBehavior.AnimationCompleted += HandleAnimationComplted;
 		progressBar.Behaviors.Add(progressBarAnimationBehavior);
 
 		Assert.Equal(0.0d, progressBar.Progress);
@@ -33,22 +37,19 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 		progressBarAnimationBehavior.Easing = easing;
 		progressBarAnimationBehavior.Progress = progress;
 
-		await ensureProgressToAnimationCompleted(progress, length, easing);
+		await progressBarAnimationCompletedTCS.Task.ConfigureAwait(false);
 
+		Assert.True(didAnimationComplete);
 		Assert.Equal(progress, progressBar.Progress);
 		Assert.Equal(progress, progressBarAnimationBehavior.Progress);
 		Assert.Equal(length, progressBarAnimationBehavior.Length);
 		Assert.Equal(easing, progressBarAnimationBehavior.Easing);
 
-		static Task ensureProgressToAnimationCompleted(in double progress, in uint length, in Easing easing)
+		void HandleAnimationComplted(object? sender, EventArgs e)
 		{
-			// Use a throw-away ProgressBar as a timer to wait for ProgressTo animation to complete
-			// Because of the combination of Xunit's Synchronization Context with the MockAnimationHandler, Task.Delay(length) will always return before ProgressTo(progress, length, easing) is finished
-			var throwAwayProgressBar = new ProgressBar();
-			throwAwayProgressBar.EnableAnimations();
-
-			// Ensure the length is longer than the length of the test
-			return throwAwayProgressBar.ProgressTo(progress, (uint)Math.Round(length * 1.5, MidpointRounding.ToPositiveInfinity), easing);
+			ArgumentNullException.ThrowIfNull(sender);
+			didAnimationComplete = true;
+			progressBarAnimationCompletedTCS.SetResult();
 		}
 	}
 
