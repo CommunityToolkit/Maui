@@ -67,7 +67,7 @@ public class MaskedBehavior : BaseBehavior<InputView>
 		await maskedBehavior.OnMaskChanged(maskedBehavior.Mask).ConfigureAwait(false);
 	}
 
-	Task OnTextPropertyChanged() => ApplyMask(View?.Text);
+	Task OnTextPropertyChanged(CancellationToken token = default) => ApplyMask(View?.Text, token);
 
 	void SetMaskPositions(in string? mask)
 	{
@@ -90,7 +90,7 @@ public class MaskedBehavior : BaseBehavior<InputView>
 		maskPositions = list;
 	}
 
-	async ValueTask OnMaskChanged(string? mask)
+	async ValueTask OnMaskChanged(string? mask, CancellationToken token = default)
 	{
 		if (string.IsNullOrEmpty(mask))
 		{
@@ -102,20 +102,15 @@ public class MaskedBehavior : BaseBehavior<InputView>
 
 		SetMaskPositions(mask);
 
-		await ApplyMask(originalText);
+		await ApplyMask(originalText, token);
 	}
 
 	[return: NotNullIfNotNull("text")]
 	string? RemoveMask(string? text)
 	{
-		if (text is null)
+		if (string.IsNullOrEmpty(text))
 		{
-			return null;
-		}
-
-		if (text == string.Empty)
-		{
-			return string.Empty;
+			return text;
 		}
 
 		var maskChars = maskPositions?
@@ -126,9 +121,9 @@ public class MaskedBehavior : BaseBehavior<InputView>
 		return string.Join(string.Empty, text.Split(maskChars));
 	}
 
-	async Task ApplyMask(string? text)
+	async Task ApplyMask(string? text, CancellationToken token = default)
 	{
-		await applyMaskSemaphoreSlim.WaitAsync();
+		await applyMaskSemaphoreSlim.WaitAsync(token);
 
 		try
 		{
