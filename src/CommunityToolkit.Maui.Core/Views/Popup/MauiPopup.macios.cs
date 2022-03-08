@@ -123,12 +123,12 @@ public class MauiPopup : UIViewController
 	void SetPresentationController()
 	{
 		var popOverDelegate = new PopoverDelegate();
-		popOverDelegate.PopoverDismissed += HandlePopoverDelegateDismissed;
-
+		popOverDelegate.PopoverDismissedEvent += HandlePopoverDelegateDismissed;
 		((UIPopoverPresentationController)PresentationController).SourceView = ViewController?.View ?? throw new InvalidOperationException($"{nameof(ViewController.View)} cannot be null");
 
 		((UIPopoverPresentationController)PresentationController).Delegate = popOverDelegate;
 	}
+
 
 	void HandlePopoverDelegateDismissed(object? sender, UIPresentationController e)
 	{
@@ -144,18 +144,13 @@ public class MauiPopup : UIViewController
 
 	sealed class PopoverDelegate : UIPopoverPresentationControllerDelegate
 	{
-		readonly WeakEventManager popoverDismissedWeakEventManager = new();
+		public event EventHandler<UIPresentationController>? PopoverDismissedEvent;
 
-		public event EventHandler<UIPresentationController> PopoverDismissed
-		{
-			add => popoverDismissedWeakEventManager.AddEventHandler(value);
-			remove => popoverDismissedWeakEventManager.RemoveEventHandler(value);
-		}
 
 		public override UIModalPresentationStyle GetAdaptivePresentationStyle(UIPresentationController forPresentationController) =>
 			UIModalPresentationStyle.None;
 
 		public override void DidDismiss(UIPresentationController presentationController) =>
-			popoverDismissedWeakEventManager.HandleEvent(this, presentationController, nameof(PopoverDismissed));
+			PopoverDismissedEvent?.Invoke(this, presentationController);
 	}
 }
