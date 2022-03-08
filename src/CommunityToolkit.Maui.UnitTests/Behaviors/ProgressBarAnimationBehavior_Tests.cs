@@ -46,7 +46,7 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 			var throwAwayProgressBar = new ProgressBar();
 			throwAwayProgressBar.EnableAnimations();
 
-			return throwAwayProgressBar.ProgressTo(progress, length, easing);
+			return throwAwayProgressBar.ProgressTo(progress, (uint)(length * 1.1), easing);
 		}
 	}
 
