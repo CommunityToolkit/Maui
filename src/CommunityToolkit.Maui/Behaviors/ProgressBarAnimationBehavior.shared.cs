@@ -37,7 +37,7 @@ public class ProgressBarAnimationBehavior : BaseBehavior<ProgressBar>
 	}
 
 	/// <summary>
-	/// Progress, 0-1.0
+	/// Value of <see cref="ProgressBar.Progress"/>, can have a minimum value of 0 and a maximum value of 1
 	/// </summary>
 	public double Progress
 	{
