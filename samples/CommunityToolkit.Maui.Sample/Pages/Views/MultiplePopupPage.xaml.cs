@@ -14,49 +14,49 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 	async void HandleSimplePopupButtonClicked(object sender, EventArgs e)
 	{
 		var simplePopup = new SimplePopup();
-		await this.ShowPopupAsync(simplePopup);
+		await simplePopup.ShowPopupAsync();
 	}
 
 	async void HandleButtonPopupButtonClicked(object sender, EventArgs e)
 	{
 		var buttonPopup = new ButtonPopup();
-		await this.ShowPopupAsync(buttonPopup);
+		await buttonPopup.ShowPopupAsync();
 	}
 
 	async void HandleMultipleButtonPopupButtonClicked(object sender, EventArgs e)
 	{
 		var multipleButtonPopup = new MultipleButtonPopup();
-		await this.ShowPopupAsync(multipleButtonPopup);
+		await multipleButtonPopup.ShowPopupAsync();
 	}
 
 	async void HandleNoLightDismissPopupButtonClicked(object sender, EventArgs e)
 	{
 		var noLightDismissPopup = new NoLightDismissPopup();
-		await this.ShowPopupAsync(noLightDismissPopup);
+		await noLightDismissPopup.ShowPopupAsync();
 	}
 
 	async void HandleToggleSizePopupButtonClicked(object sender, EventArgs e)
 	{
 		var toggleSizePopup = new ToggleSizePopup();
-		await this.ShowPopupAsync(toggleSizePopup);
+		await toggleSizePopup.ShowPopupAsync();
 	}
 
 	async void HandleTransparentPopupButtonClicked(object sender, EventArgs e)
 	{
 		var transparentPopup = new TransparentPopup();
-		await this.ShowPopupAsync(transparentPopup);
+		await transparentPopup.ShowPopupAsync();
 	}
 
 	async void HandleOpenedEventSimplePopupButtonClicked(object sender, EventArgs e)
 	{
 		var openedEventSimplePopup = new OpenedEventSimplePopup();
-		await this.ShowPopupAsync(openedEventSimplePopup);
+		await openedEventSimplePopup.ShowPopupAsync();
 	}
 
 	async void HandleReturnResultPopupButtonClicked(object sender, EventArgs e)
 	{
 		var returnResultPopup = new ReturnResultPopup();
-		var result = await this.ShowPopupAsync(returnResultPopup);
+		var result = await returnResultPopup.ShowPopupAsync();
 
 		await DisplayAlert("Pop Result Returned", $"Result: {result}", "OK");
 	}
@@ -64,12 +64,12 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 	async void HandleXamlBindingPopupPopupButtonClicked(object sender, EventArgs e)
 	{
 		var xamlBindingPopup = new XamlBindingPopup();
-		await this.ShowPopupAsync(xamlBindingPopup);
+		await xamlBindingPopup.ShowPopupAsync();
 	}
 
 	async void HandleCsharpBindingPopupButtonClicked(object sender, EventArgs e)
 	{
 		var csharpBindingPopup = new CsharpBindingPopup();
-		await this.ShowPopupAsync(csharpBindingPopup);
+		await csharpBindingPopup.ShowPopupAsync();
 	}
 }

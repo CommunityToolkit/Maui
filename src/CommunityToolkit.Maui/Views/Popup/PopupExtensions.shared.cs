@@ -1,6 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Platform;
 

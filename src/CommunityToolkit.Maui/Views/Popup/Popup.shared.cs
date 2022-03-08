@@ -1,4 +1,6 @@
 ﻿using CommunityToolkit.Maui.Core;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Platform;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
 namespace CommunityToolkit.Maui.Views;
@@ -170,6 +172,34 @@ public partial class Popup : Element, IPopup
 	/// Resets the Popup.
 	/// </summary>
 	public void Reset() => taskCompletionSource = new();
+
+	/// <summary>
+	/// Displays a Popup and returns a result
+	/// </summary>
+	/// <returns></returns>
+	/// <exception cref="InvalidOperationException">Thrown when either <see cref="IMauiContext"/> or <see cref="Application.Current"/> is not initalized</exception>
+	public Task<object?> ShowPopupAsync()
+	{
+		ShowPopup();
+
+		return Result;
+	}
+
+	/// <summary>
+	/// Displays a Popop
+	/// </summary>
+	/// <exception cref="InvalidOperationException">Thrown when either <see cref="IMauiContext"/> or <see cref="Application.Current"/> is not initalized</exception>
+	public void ShowPopup()
+	{
+		var mainPage = Application.Current?.MainPage ?? throw new InvalidOperationException($"{nameof(ShowPopupAsync)} requires {nameof(Application.Current.MainPage)} to be initiazlied");
+		var mauiContext = Application.Current?.FindMauiContext() ?? throw new InvalidOperationException($"{nameof(ShowPopupAsync)} requires {nameof(IMauiContext)}");
+
+		var currentPage = PageExtensions.GetCurrentPage(mainPage);
+		Parent ??= PageExtensions.GetCurrentPage(mainPage);
+
+		var popupNative = this.ToHandler(mauiContext);
+		popupNative.Invoke(nameof(IPopup.OnOpened));
+	}
 
 	/// <summary>
 	/// Dismiss the current popup.
