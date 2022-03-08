@@ -40,7 +40,7 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 		Assert.Equal(length, progressBarAnimationBehavior.Length);
 		Assert.Equal(easing, progressBarAnimationBehavior.Easing);
 
-		static Task ensureProgressToAnimationCompleted(double progress, uint length, Easing easing)
+		static Task ensureProgressToAnimationCompleted(in double progress, in uint length, in Easing easing)
 		{
 			// Use a throw-away ProgressBar as a timer to wait for ProgressTo animation to complete
 			var throwAwayProgressBar = new ProgressBar();
