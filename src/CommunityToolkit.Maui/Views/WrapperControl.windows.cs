@@ -37,7 +37,7 @@ class WrapperControl : Panel
 
 	FrameworkElement FrameworkElement { get; }
 
-	internal void CleanUp()
+	public void CleanUp()
 	{
 		if (view is not null)
 		{
