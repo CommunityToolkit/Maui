@@ -56,7 +56,9 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 	async void HandleReturnResultPopupButtonClicked(object sender, EventArgs e)
 	{
 		var returnResultPopup = new ReturnResultPopup();
-		await this.ShowPopupAsync(returnResultPopup);
+		var result = await this.ShowPopupAsync(returnResultPopup);
+
+		await DisplayAlert("Pop Result Returned", $"Result: {result}", "OK");
 	}
 
 	async void HandleXamlBindingPopupPopupButtonClicked(object sender, EventArgs e)
