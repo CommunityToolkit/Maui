@@ -22,7 +22,7 @@
 
             <Entry Keyboard="Numeric">
                 <Entry.Behaviors>
-                    <mct:MaskedBehavior Mask="AA-AA-AA" UnMaskedCharacter="A" />
+                    <mct:MaskedBehavior Mask="AA-AA-AA" UnmaskedCharacter="A" />
                 </Entry.Behaviors>
             </Entry>
             <Label Padding="10,0,10,50" FontSize="Small" Text="e.g. Sort code 'AA-AA-AA'" />

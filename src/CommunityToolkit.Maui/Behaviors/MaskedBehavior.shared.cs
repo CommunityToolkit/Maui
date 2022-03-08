@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -8,20 +9,20 @@ namespace CommunityToolkit.Maui.Behaviors;
 public class MaskedBehavior : BaseBehavior<InputView>
 {
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="Mask"/> property.
+	/// BindableProperty for the <see cref="Mask"/> property.
 	/// </summary>
 	public static readonly BindableProperty MaskProperty =
 		BindableProperty.Create(nameof(Mask), typeof(string), typeof(MaskedBehavior), propertyChanged: OnMaskPropertyChanged);
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="UnMaskedCharacter"/> property.
+	/// BindableProperty for the <see cref="UnmaskedCharacter"/> property.
 	/// </summary>
-	public static readonly BindableProperty UnMaskedCharacterProperty =
-		BindableProperty.Create(nameof(UnMaskedCharacter), typeof(char), typeof(MaskedBehavior), 'X', propertyChanged: OnUnMaskedCharacterPropertyChanged);
+	public static readonly BindableProperty UnmaskedCharacterProperty =
+		BindableProperty.Create(nameof(UnmaskedCharacter), typeof(char), typeof(MaskedBehavior), 'X', propertyChanged: OnUnmaskedCharacterPropertyChanged);
 
-	IDictionary<int, char>? positions;
+	readonly SemaphoreSlim applyMaskSemaphoreSlim = new(1, 1);
 
-	bool applyingMask;
+	IReadOnlyDictionary<int, char>? maskPositions;
 
 	/// <summary>
 	/// The mask that the input value needs to match. This is a bindable property.
@@ -35,90 +36,84 @@ public class MaskedBehavior : BaseBehavior<InputView>
 	/// <summary>
 	/// The placeholder character for when no input has been given yet. This is a bindable property.
 	/// </summary>
-	public char UnMaskedCharacter
+	public char UnmaskedCharacter
 	{
-		get => (char)GetValue(UnMaskedCharacterProperty);
-		set => SetValue(UnMaskedCharacterProperty, value);
+		get => (char)GetValue(UnmaskedCharacterProperty);
+		set => SetValue(UnmaskedCharacterProperty, value);
 	}
 
-	static void OnMaskPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		=> ((MaskedBehavior)bindable).SetPositions();
-
-	static void OnUnMaskedCharacterPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		=> ((MaskedBehavior)bindable).OnMaskChanged();
-
 	/// <inheritdoc />
-	protected override void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
+	protected override async void OnViewPropertyChanged(InputView sender, PropertyChangedEventArgs e)
 	{
 		base.OnViewPropertyChanged(sender, e);
 
 		if (e.PropertyName == InputView.TextProperty.PropertyName)
 		{
-			OnTextPropertyChanged();
+			await OnTextPropertyChanged();
 		}
 	}
 
-	void OnTextPropertyChanged()
+	static void OnMaskPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		if (applyingMask)
-		{
-			return;
-		}
+		var mask = (string?)newValue;
+		var maskedBehavior = (MaskedBehavior)bindable;
 
-		applyingMask = true;
-		ApplyMask(View?.Text);
-		applyingMask = false;
+		maskedBehavior.SetMaskPositions(mask);
 	}
 
-	void SetPositions()
+	static async void OnUnmaskedCharacterPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		if (string.IsNullOrEmpty(Mask))
+		var maskedBehavior = (MaskedBehavior)bindable;
+		await maskedBehavior.OnMaskChanged(maskedBehavior.Mask).ConfigureAwait(false);
+	}
+
+	Task OnTextPropertyChanged(CancellationToken token = default) => ApplyMask(View?.Text, token);
+
+	void SetMaskPositions(in string? mask)
+	{
+		if (string.IsNullOrEmpty(mask))
 		{
-			positions = null;
+			maskPositions = null;
 			return;
 		}
 
 		var list = new Dictionary<int, char>();
-		if (Mask != null)
+
+		for (var i = 0; i < mask.Length; i++)
 		{
-			for (var i = 0; i < Mask.Length; i++)
+			if (mask[i] != UnmaskedCharacter)
 			{
-				if (Mask[i] != UnMaskedCharacter)
-				{
-					list.Add(i, Mask[i]);
-				}
+				list.Add(i, mask[i]);
 			}
 		}
 
-		positions = list;
+		maskPositions = list;
 	}
 
-	void OnMaskChanged()
+	async ValueTask OnMaskChanged(string? mask, CancellationToken token = default)
 	{
-		if (string.IsNullOrEmpty(Mask))
+		if (string.IsNullOrEmpty(mask))
 		{
-			positions = null;
+			maskPositions = null;
 			return;
 		}
 
-		var originalText = RemoveMaskNullableString(View?.Text);
-		SetPositions();
-		ApplyMask(originalText);
+		var originalText = RemoveMask(View?.Text);
+
+		SetMaskPositions(mask);
+
+		await ApplyMask(originalText, token);
 	}
 
-	string? RemoveMaskNullableString(string? text)
+	[return: NotNullIfNotNull("text")]
+	string? RemoveMask(string? text)
 	{
-		if (text == null || string.IsNullOrEmpty(text))
+		if (string.IsNullOrEmpty(text))
 		{
 			return text;
 		}
 
-		return RemoveMask(text);
-	}
-
-	string RemoveMask(string text)
-	{
-		var maskChars = positions?
+		var maskChars = maskPositions?
 			.Select(c => c.Value)
 			.Distinct()
 			.ToArray();
@@ -126,36 +121,45 @@ public class MaskedBehavior : BaseBehavior<InputView>
 		return string.Join(string.Empty, text.Split(maskChars));
 	}
 
-	void ApplyMask(string? text)
+	async Task ApplyMask(string? text, CancellationToken token = default)
 	{
-		if (text != null && !string.IsNullOrWhiteSpace(text) && positions != null)
+		await applyMaskSemaphoreSlim.WaitAsync(token);
+
+		try
 		{
-			if (text.Length > (Mask?.Length ?? 0))
+			if (!string.IsNullOrWhiteSpace(text) && maskPositions is not null)
 			{
-				text = text.Remove(text.Length - 1);
+				if (Mask is not null && text.Length > Mask.Length)
+				{
+					text = text.Remove(text.Length - 1);
+				}
+
+				text = RemoveMask(text);
+				foreach (var position in maskPositions)
+				{
+					if (text.Length < position.Key + 1)
+					{
+						continue;
+					}
+
+					var value = position.Value.ToString();
+
+					// !important - If user types in masked value, don't add masked value
+					if (text.Substring(position.Key, 1) != value)
+					{
+						text = text.Insert(position.Key, value);
+					}
+				}
 			}
 
-			text = RemoveMask(text);
-			foreach (var position in positions)
+			if (View != null)
 			{
-				if (text.Length < position.Key + 1)
-				{
-					continue;
-				}
-
-				var value = position.Value.ToString();
-
-				// !important - If user types in masked value, don't add masked value
-				if (text.Substring(position.Key, 1) != value)
-				{
-					text = text.Insert(position.Key, value);
-				}
+				View.Text = text;
 			}
 		}
-
-		if (View != null)
+		finally
 		{
-			View.Text = text;
+			applyMaskSemaphoreSlim.Release();
 		}
 	}
 }
