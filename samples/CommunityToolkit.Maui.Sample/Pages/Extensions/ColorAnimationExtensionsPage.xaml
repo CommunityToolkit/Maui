@@ -4,7 +4,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Extensions.ColorAnimationExtensionsPage">
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Extensions.ColorAnimationExtensionsPage"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
+    x:TypeArguments="vm:ColorAnimationExtensionsViewModel"
+    x:DataType="vm:TextCaseConverteColorAnimationExtensionsViewModelrViewModel">
 
     <pages:BasePage.Resources>
         <ResourceDictionary>

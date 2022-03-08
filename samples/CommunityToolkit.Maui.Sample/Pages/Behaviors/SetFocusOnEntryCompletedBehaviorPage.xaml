@@ -3,12 +3,17 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.SetFocusOnEntryCompletedBehaviorPage">
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.SetFocusOnEntryCompletedBehaviorPage"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
+    x:TypeArguments="vm:SetFocusOnEntryCompletedBehaviorViewModel"
+    x:DataType="vm:SetFocusOnEntryCompletedBehaviorViewModel">
+
     <pages:BasePage.Content>
         <VerticalStackLayout>
-            <Label Text="SetFocusOnEntryCompletedBehavior"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
+
+            <Label Text="The SetFocusOnEntryCompletedBehavior is an attached property for entries that allows the user to specify what VisualElement should gain focus after the user completes that entry."
+               TextColor="{StaticResource NormalLabelTextColor}" />
+
         </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

@@ -3,7 +3,10 @@
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-                x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.TextValidationBehaviorPage">
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.TextValidationBehaviorPage"
+                xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
+                x:TypeArguments="vm:TextValidationBehaviorViewModel"
+                x:DataType="vm:TextValidationBehaviorViewModel">
 
     <pages:BasePage.Resources>
         <Style x:Key="ValidEntryStyle" TargetType="Entry">
@@ -18,7 +21,12 @@
     <VerticalStackLayout Padding="{StaticResource ContentPadding}"
                  Spacing="50"
                  VerticalOptions="StartAndExpand">
+
+        <Label Text="The TextValidationBehavior is a behavior that allows the user to validate a given text depending on specified parameters. By adding this behavior to an InputView inherited control (i.e. Entry) it can be styled differently depending on whether a valid or an invalid text value is provided. It offers various built-in checks such as checking for a certain length or whether or not the input value matches a specific regular expression. Additional properties handling validation are inherited from ValidationBehavior"
+               TextColor="{StaticResource NormalLabelTextColor}" />
+
         <Label Text="Text color will change accordingly to the style that is configured when a text validation is failed." />
+
         <Entry Placeholder="Only numbers allowed">
             <Entry.Behaviors>
                 <mct:TextValidationBehavior RegexPattern="^[0-9]*$"

@@ -245,15 +245,13 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 	}
 
 	/// <inheritdoc/>
-	protected override async void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
+	protected override async void OnViewPropertyChanged(VisualElement sender, PropertyChangedEventArgs e)
 	{
 		base.OnViewPropertyChanged(sender, e);
 
 		if (e.PropertyName == VisualElement.IsFocusedProperty.PropertyName)
 		{
-			var view = (VisualElement?)sender;
-
-			currentStatus = view?.IsFocused switch
+			currentStatus = sender.IsFocused switch
 			{
 				true => ValidationFlags.ValidateOnFocusing,
 				_ => ValidationFlags.ValidateOnUnfocusing

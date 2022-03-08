@@ -4,11 +4,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.MaskedBehaviorPage">
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.MaskedBehaviorPage"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
+    x:TypeArguments="vm:MaskedBehaviorViewModel"
+    x:DataType="vm:MaskedBehaviorViewModel">
     <ScrollView>
         <VerticalStackLayout Padding="{StaticResource ContentPadding}" Spacing="5">
 
-            <Label Padding="10,10,10,50" Text="This sample demonstrates how to use MaskedBehavior" />
+            <Label Text="The MaskedBehavior is a behavior that allows the user to define an input mask for data entry. Adding this behavior to an InputView (i.e. Entry) control will force the user to only input values matching a given mask. Examples of its usage include input of a credit card number or a phone number." TextColor="{StaticResource NormalLabelTextColor}" />
 
             <Entry Keyboard="Numeric">
                 <Entry.Behaviors>
@@ -19,7 +22,7 @@
 
             <Entry Keyboard="Numeric">
                 <Entry.Behaviors>
-                    <mct:MaskedBehavior Mask="AA-AA-AA" UnMaskedCharacter="A" />
+                    <mct:MaskedBehavior Mask="AA-AA-AA" UnmaskedCharacter="A" />
                 </Entry.Behaviors>
             </Entry>
             <Label Padding="10,0,10,50" FontSize="Small" Text="e.g. Sort code 'AA-AA-AA'" />

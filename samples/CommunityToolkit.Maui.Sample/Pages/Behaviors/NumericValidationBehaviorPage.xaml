@@ -3,7 +3,10 @@
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-                x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.NumericValidationBehaviorPage">
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.NumericValidationBehaviorPage"
+                xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
+                x:TypeArguments="vm:NumericValidationBehaviorViewModel"
+                x:DataType="vm:NumericValidationBehaviorViewModel">
 
     <pages:BasePage.Resources>
         <Style x:Key="InvalidEntryStyle" TargetType="Entry">
@@ -18,7 +21,12 @@
     <VerticalStackLayout Padding="{StaticResource ContentPadding}"
                  Spacing="24"
                  VerticalOptions="StartAndExpand">
+
+        <Label Text="The NumericValidationBehavior is a behavior that allows the user to determine if text input is a valid numeric value. For example, an Entry control can be styled differently depending on whether a valid or an invalid numeric input is provided. Additional properties handling validation are inherited from ValidationBehavior"
+               TextColor="{StaticResource NormalLabelTextColor}" />
+
         <Label Text="Text color will be changed according to the configured style in case of an invalid numeric format or when the numeric value is outside of the configured boundaries (min: 1.0, max: 100.0). Maximum decimal places value equals 2." />
+
         <Entry Placeholder="Number">
             <Entry.Behaviors>
                 <mct:NumericValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"
