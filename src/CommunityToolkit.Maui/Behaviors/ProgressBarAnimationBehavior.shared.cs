@@ -37,20 +37,12 @@ public class ProgressBarAnimationBehavior : BaseBehavior<ProgressBar>
 	}
 
 	/// <summary>
-	/// Value of <see cref="ProgressBar.Progress"/>, can have a minimum value of 0 and a maximum value of 1
+	/// Value of <see cref="ProgressBar.Progress"/>, clamped to a minimum value of 0 and a maximum value of 1
 	/// </summary>
 	public double Progress
 	{
 		get => (double)GetValue(ProgressProperty);
-		set
-		{
-			if (value < 0 || value > 1)
-			{
-				throw new ArgumentOutOfRangeException(nameof(Progress), $"{nameof(Progress)} can have a minimum value of 0 and a maximum value of 1");
-			}
-
-			SetValue(ProgressProperty, value);
-		}
+		set => SetValue(ProgressProperty, Math.Clamp(value, 0, 1));
 	}
 
 	/// <summary>

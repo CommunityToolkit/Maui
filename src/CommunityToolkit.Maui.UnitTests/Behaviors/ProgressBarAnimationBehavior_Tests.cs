@@ -9,7 +9,7 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 {
 	public static readonly IReadOnlyList<object[]> ValidData = new[]
 	{
-		new object[] { 0.5, 50, Easing.BounceIn },
+		new object[] { 0.5, 175, Easing.BounceIn },
 		new object[] { 1, 1500, Easing.Default },
 		new object[] { 0, 750, Easing.CubicOut }
 	};
@@ -54,16 +54,19 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 	}
 
 	[Theory]
-	[InlineData(double.MinValue)]
-	[InlineData(-1)]
-	[InlineData(-0.0000000000001)]
-	[InlineData(1.0000000000001)]
-	[InlineData(double.MaxValue)]
-	public void InvalidProgressValuesTest(double progress)
+	[InlineData(double.MinValue, 0)]
+	[InlineData(-1, 0)]
+	[InlineData(-0.0000000000001, 0)]
+	[InlineData(1.0000000000001, 1)]
+	[InlineData(double.MaxValue, 1)]
+	public void InvalidProgressValuesTest(double inputProgressValue, double expectedProgressValue)
 	{
-		var progressBarAnimationBehavior = new ProgressBarAnimationBehavior();
+		var progressBarAnimationBehavior = new ProgressBarAnimationBehavior
+		{
+			Progress = inputProgressValue
+		};
 
-		Assert.Throws<ArgumentOutOfRangeException>(() => progressBarAnimationBehavior.Progress = progress);
+		Assert.Equal(expectedProgressValue, progressBarAnimationBehavior.Progress);
 	}
 
 	[Fact]
