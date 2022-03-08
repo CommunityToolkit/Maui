@@ -76,7 +76,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<TextCaseConverterViewModel>();
 		builder.Services.AddTransient<VariableMultiValueConverterViewModel>();
 
-		// Add Extensions
+		// Add Extensions View Models
 		builder.Services.AddTransient<ColorAnimationExtensionsViewModel>();
 
 		// Add Layouts View Models
