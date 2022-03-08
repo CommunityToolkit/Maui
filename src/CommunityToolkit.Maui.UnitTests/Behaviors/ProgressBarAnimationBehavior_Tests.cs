@@ -3,7 +3,7 @@ using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
 
-namespace CommunityToolkit.Maui.UnitTests;
+namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
 public class ProgressBarAnimationBehavior_Tests : BaseTest
 {
@@ -89,13 +89,25 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 	}
 
 	[Fact]
-	public void AttachedToValidElementTest()
+	public void AttachedToRemovedFromValidElementTest()
 	{
 		var progressBar = new ProgressBar();
 		var customProgressBar = new CustomProgressBar();
 
-		progressBar.Invoking(x => x.Behaviors.Add(new ProgressBarAnimationBehavior())).Should().NotThrow<InvalidOperationException>();
-		customProgressBar.Invoking(x => x.Behaviors.Add(new ProgressBarAnimationBehavior())).Should().NotThrow<InvalidOperationException>();
+		var progressBarAnimationBehavior_ProgressBar = new ProgressBarAnimationBehavior();
+		var progressBarAnimationBehavior_CustomProgressBar = new ProgressBarAnimationBehavior();
+
+		progressBar.Invoking(x => x.Behaviors.Add(progressBarAnimationBehavior_ProgressBar)).Should().NotThrow<InvalidOperationException>();
+		customProgressBar.Invoking(x => x.Behaviors.Add(progressBarAnimationBehavior_CustomProgressBar)).Should().NotThrow<InvalidOperationException>();
+
+		Assert.Single(progressBar.Behaviors.OfType<ProgressBarAnimationBehavior>());
+		Assert.Single(customProgressBar.Behaviors.OfType<ProgressBarAnimationBehavior>());
+
+		progressBar.Invoking(x => x.Behaviors.Remove(progressBarAnimationBehavior_ProgressBar)).Should().NotThrow<InvalidOperationException>();
+		customProgressBar.Invoking(x => x.Behaviors.Remove(progressBarAnimationBehavior_CustomProgressBar)).Should().NotThrow<InvalidOperationException>();
+
+		Assert.Empty(progressBar.Behaviors);
+		Assert.Empty(customProgressBar.Behaviors);
 	}
 
 	class CustomProgressBar : ProgressBar
