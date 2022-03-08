@@ -25,7 +25,6 @@ public static class MauiProgram
 		builder.Services.AddTransient<ConvertersGalleryViewModel>();
 		builder.Services.AddTransient<ExtensionsGalleryViewModel>();
 		builder.Services.AddTransient<LayoutsGalleryViewModel>();
-		builder.Services.AddTransient<MainGalleryViewModel>();
 		builder.Services.AddTransient<ViewsGalleryViewModel>();
 
 		// Add Alerts View Models
