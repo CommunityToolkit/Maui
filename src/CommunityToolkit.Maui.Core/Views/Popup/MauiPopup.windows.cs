@@ -35,7 +35,7 @@ public class MauiPopup : Flyout
 	/// </summary>
 	public IPopup? VirtualView { get; private set; }
 
-	internal XamlStyle FlyoutStyle { get; } = new(typeof(FlyoutPresenter));
+	internal XamlStyle FlyoutStyle { get; private set; } = new(typeof(FlyoutPresenter));
 	internal Panel? Control { get; set; }
 
 	Action<Panel>? panelCleanUp;
@@ -76,6 +76,7 @@ public class MauiPopup : Flyout
 		}
 
 		SubscribeEvents();
+		FlyoutStyle = new(typeof(FlyoutPresenter));
 		SetFlyoutColor();
 		SetSize();
 		SetLayout();
@@ -220,7 +221,6 @@ public class MauiPopup : Flyout
 			return;
 		}
 
-		//_ = Control ?? throw new InvalidOperationException($"{nameof(Control)} cannot be null");
 		FlyoutPresenterStyle = FlyoutStyle;
 	}
 
