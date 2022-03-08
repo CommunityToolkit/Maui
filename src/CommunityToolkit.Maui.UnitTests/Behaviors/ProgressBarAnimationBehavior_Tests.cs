@@ -5,13 +5,13 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
-public class ProgressBarAnimationBehavior_Tests
+public class ProgressBarAnimationBehavior_Tests : BaseTest
 {
 	public static readonly IReadOnlyList<object[]> ValidData = new[]
 	{
-		new object[] { 0.5, 1000, Easing.BounceIn },
+		new object[] { 0.5, 50, Easing.BounceIn },
 		new object[] { 1, 1500, Easing.Default },
-		new object[] { 0, 1250, Easing.CubicOut }
+		new object[] { 0, 250, Easing.CubicOut }
 	};
 
 	[Theory]
@@ -33,14 +33,8 @@ public class ProgressBarAnimationBehavior_Tests
 		progressBarAnimationBehavior.Easing = easing;
 		progressBarAnimationBehavior.Progress = progress;
 
-		if (progressBar.Progress != progress)
-		{
-			Assert.True(progressBar.AnimationIsRunning(nameof(ProgressBar.ProgressTo)));
-			await Task.Delay(TimeSpan.FromMilliseconds(length));
-		}
-
-
-		Assert.False(progressBar.AnimationIsRunning(nameof(ProgressBar.ProgressTo)));
+		// Wait for ProgressTo animation to complete
+		await Task.Delay(TimeSpan.FromMilliseconds(length * 1.1));
 
 		Assert.Equal(progress, progressBar.Progress);
 		Assert.Equal(progress, progressBarAnimationBehavior.Progress);
