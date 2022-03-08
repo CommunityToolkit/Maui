@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
@@ -12,7 +11,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 public abstract class BaseBehavior<TView> : Behavior<TView> where TView : VisualElement
 {
 	static readonly MethodInfo? getContextMethod
-		= typeof(BindableObject).GetRuntimeMethods()?.FirstOrDefault(m => m.Name == "GetContext");
+		= typeof(BindableObject).GetRuntimeMethods()?.FirstOrDefault(m => m.Name is "GetContext");
 
 	static readonly FieldInfo? bindingField
 		= getContextMethod?.ReturnType.GetRuntimeField("Binding");
