@@ -79,20 +79,15 @@ public static class MauiProgram
 		// Add Extensions
 		builder.Services.AddTransient<ColorAnimationExtensionsViewModel>();
 
-
-		// Add Popup View Models
-		builder.Services.AddTransient<CsharpBindingPopupViewModel>();
-		builder.Services.AddTransient<PopupAnchorViewModel>();
-		builder.Services.AddTransient<PopupPositionViewModel>();
-		builder.Services.AddTransient<XamlBindingPopupViewModel>();
-
 		// Add Layouts View Models
 		builder.Services.AddTransient<UniformItemsLayoutViewModel>();
 
 		// Add Views View Models
+		builder.Services.AddTransient<CsharpBindingPopupViewModel>();
 		builder.Services.AddTransient<MultiplePopupViewModel>();
 		builder.Services.AddTransient<PopupAnchorViewModel>();
 		builder.Services.AddTransient<PopupPositionViewModel>();
+		builder.Services.AddTransient<XamlBindingPopupViewModel>();
 
 		return builder.Build();
 	}
