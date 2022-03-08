@@ -8,6 +8,7 @@
     x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.ProgressBarAnimationBehaviorPage"
     x:TypeArguments="vm:ProgressBarAnimationBehaviorViewModel"
     x:DataType="vm:ProgressBarAnimationBehaviorViewModel">
+
     <VerticalStackLayout Padding="{StaticResource ContentPadding}" Spacing="50">
 
         <Label Text="The ProgressBarAnimationBehavior is a behavior that behavior that animates a ProgressBar"
@@ -15,7 +16,10 @@
 
         <ProgressBar>
             <ProgressBar.Behaviors>
-                <mct:ProgressBarAnimationBehavior AnimateProgress="{Binding Progress}" />
+                <mct:ProgressBarAnimationBehavior
+                    x:Name="ProgressBarAnimationBehavior"
+                    Progress="{Binding Progress}"
+                    Length="250"/>
             </ProgressBar.Behaviors>
         </ProgressBar>
 
