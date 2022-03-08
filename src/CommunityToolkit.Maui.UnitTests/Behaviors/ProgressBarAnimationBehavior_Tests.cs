@@ -34,7 +34,7 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 		progressBarAnimationBehavior.Progress = progress;
 
 		// Wait for ProgressTo animation to complete
-		await Task.Delay(TimeSpan.FromMilliseconds(length * 1.25));
+		await Task.Delay(TimeSpan.FromMilliseconds(length * 2));
 
 		Assert.Equal(progress, progressBar.Progress);
 		Assert.Equal(progress, progressBarAnimationBehavior.Progress);
