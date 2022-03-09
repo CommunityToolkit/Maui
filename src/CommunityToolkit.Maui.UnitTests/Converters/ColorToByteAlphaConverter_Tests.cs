@@ -5,15 +5,17 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToByteAlphaConverter_Tests : BaseTest
 {
-	public static IReadOnlyList<object[]> ValidInputData = new[]
+	public readonly static IReadOnlyList<object[]> ValidInputData = new[]
 	{
 		new object[] { float.MinValue, (byte)0 },
 		new object[] { -0.01f, (byte)0 },
 		new object[] { -0f, (byte)0 },
 		new object[] { 0f, (byte)0 },
-		new object[] { 100f, (byte)100 },
-		new object[] { 255f, (byte)255 },
-		new object[] { 255.01f, (byte)255 },
+		new object[] { 0.25f, (byte)64 },
+		new object[] { 0.5f, (byte)128 },
+		new object[] { 0.75f, (byte)191 },
+		new object[] { 1f, (byte)255 },
+		new object[] { 1.001f, (byte)255 },
 		new object[] { float.MaxValue, (byte)255 },
 	};
 
