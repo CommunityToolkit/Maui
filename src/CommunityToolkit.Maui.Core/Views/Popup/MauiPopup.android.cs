@@ -70,7 +70,7 @@ public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null");
 		_ = VirtualView.Handler ?? throw new InvalidOperationException($"{nameof(VirtualView.Handler)} cannot be null");
 
-		VirtualView.Handler.Invoke(nameof(IPopup.LightDismiss));
+		VirtualView.Handler.Invoke(nameof(IPopup.OnLightDismissed));
 	}
 
 	/// <summary>

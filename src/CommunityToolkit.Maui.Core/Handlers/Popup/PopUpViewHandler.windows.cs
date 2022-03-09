@@ -34,9 +34,9 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="handler">An instance of <see cref="PopupViewHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	/// <param name="result">The result that should return from this Popup.</param>
-	public static void MapOnLightDismiss(PopupViewHandler handler, IPopup view, object? result)
+	public static void MapOnLightDismissed(PopupViewHandler handler, IPopup view, object? result)
 	{
-		view.LightDismiss();
+		view.OnLightDismiss();
 		handler.DisconnectHandler(handler.NativeView);
 	}
 

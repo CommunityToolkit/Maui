@@ -53,10 +53,10 @@ public class PopupTests : BaseHandlerTest
 
 		page.ShowPopup((MockPopup)popup);
 		Assert.Equal(1, popupHandler.OnOpenedCount);
-		popup.LightDismiss();
+		popup.OnLightDismissed();
 
 		var popupTask = page.ShowPopupAsync((MockPopup)popup);
-		popup.LightDismiss();
+		popup.OnLightDismissed();
 
 		await popupTask;
 
@@ -92,7 +92,7 @@ public class PopupTests : BaseHandlerTest
 			isPopupDismissed = true;
 		};
 
-		popup.LightDismiss();
+		popup.OnLightDismissed();
 		Assert.True(isPopupDismissed);
 	}
 

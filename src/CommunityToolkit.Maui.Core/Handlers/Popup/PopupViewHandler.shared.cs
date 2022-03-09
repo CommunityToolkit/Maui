@@ -29,7 +29,7 @@ public partial class PopupViewHandler
 #if !(IOS || MACCATALYST)
 		[nameof(IPopup.OnOpened)] = MapOnOpened,
 #endif
-		[nameof(IPopup.LightDismiss)] = MapOnLightDismiss
+		[nameof(IPopup.OnLightDismissed)] = MapOnLightDismissed
 	};
 
 	/// <summary>
@@ -83,7 +83,7 @@ public partial class PopupViewHandler : Microsoft.Maui.Handlers.ElementHandler<I
 	/// <param name="handler">An instance of <see cref="PopupViewHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	/// <param name="result">The result that should return from this Popup.</param>
-	public static void MapOnLightDismiss(PopupViewHandler handler, IPopup view, object? result)
+	public static void MapOnLightDismissed(PopupViewHandler handler, IPopup view, object? result)
 	{
 	}
 

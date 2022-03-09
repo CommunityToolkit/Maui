@@ -221,7 +221,7 @@ public partial class Popup : Element, IPopup
 	/// Invoked when the popup is light dismissed. In other words when the
 	/// user taps outside of the popup and it closes.
 	/// </summary>
-	protected internal virtual void LightDismiss()
+	protected internal virtual void OnLightDismissed()
 	{
 		taskCompletionSource.TrySetResult(GetLightDismissResult());
 		dismissWeakEventManager.HandleEvent(this, new PopupDismissedEventArgs(null, true), nameof(Dismissed));
@@ -250,5 +250,5 @@ public partial class Popup : Element, IPopup
 
 	void IPopup.OnOpened() => OnOpened();
 
-	void IPopup.LightDismiss() => LightDismiss();
+	void IPopup.OnLightDismissed() => OnLightDismissed();
 }

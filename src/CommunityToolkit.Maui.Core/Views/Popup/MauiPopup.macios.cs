@@ -134,7 +134,7 @@ public class MauiPopup : UIViewController
 	{
 		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null.");
 
-		VirtualView.Handler?.Invoke(nameof(IPopup.LightDismiss));
+		VirtualView.Handler?.Invoke(nameof(IPopup.OnLightDismissed));
 	}
 
 	void AddToCurrentPageViewController(UIViewController viewController)

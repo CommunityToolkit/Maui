@@ -29,7 +29,7 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="handler">An instance of <see cref="PopupViewHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	/// <param name="result">The result that should return from this Popup.</param>
-	public static void MapOnLightDismiss(PopupViewHandler handler, IPopup view, object? result)
+	public static void MapOnLightDismissed(PopupViewHandler handler, IPopup view, object? result)
 	{
 		if (handler.NativeView is not MauiPopup popupRenderer)
 		{
@@ -38,7 +38,7 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 
 		if (popupRenderer.IsViewLoaded && view.IsLightDismissEnabled)
 		{
-			view.LightDismiss();
+			view.OnLightDismissed();
 		}
 	}
 
