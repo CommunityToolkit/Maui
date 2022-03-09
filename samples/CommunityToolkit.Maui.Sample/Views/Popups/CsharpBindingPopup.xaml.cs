@@ -5,9 +5,9 @@ namespace CommunityToolkit.Maui.Sample;
 
 public partial class CsharpBindingPopup : Popup
 {
-	public CsharpBindingPopup()
+	public CsharpBindingPopup(CsharpBindingPopupViewModel csharpBindingPopupViewModel)
 	{
 		InitializeComponent();
-		BindingContext = new CsharpBindingPopupViewModel();
+		BindingContext = csharpBindingPopupViewModel;
 	}
 }
