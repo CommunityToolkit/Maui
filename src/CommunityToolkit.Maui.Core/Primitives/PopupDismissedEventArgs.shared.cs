@@ -11,13 +11,13 @@ public class PopupDismissedEventArgs
 	/// <param name="result">
 	/// The result of the popup.
 	/// </param>
-	/// <param name="isLightDismissed">
+	/// <param name="wasLightDismissed">
 	/// If the popup was dismissed by tapping outside of the Popup.
 	/// </param>
-	public PopupDismissedEventArgs(object? result, bool isLightDismissed)
+	public PopupDismissedEventArgs(object? result, bool wasLightDismissed)
 	{
 		Result = result;
-		IsLightDismissed = isLightDismissed;
+		WasLightDismissed = wasLightDismissed;
 	}
 
 	/// <summary>
@@ -31,5 +31,5 @@ public class PopupDismissedEventArgs
 	/// the popup (a light dismiss). If false, then the
 	/// popup was dismissed by user action or code.
 	/// </summary>
-	public bool IsLightDismissed { get; }
+	public bool WasLightDismissed { get; }
 }
