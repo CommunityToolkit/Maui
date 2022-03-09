@@ -10,7 +10,7 @@ public static class ColorConversionExtensions
 	/// </summary>
 	/// <param name="c"></param>
 	/// <returns>RGB(255,255,255)</returns>
-	public static string ToRgbString(this Color c) => 
+	public static string ToRgbString(this Color c) =>
 		$"RGB({c.GetByteRed()},{c.GetByteGreen()},{c.GetByteBlue()})";
 
 	/// <summary>
@@ -19,7 +19,7 @@ public static class ColorConversionExtensions
 	/// <param name="c"></param>
 	/// <returns>RGBA(255,255,255,1)</returns>
 	public static string ToRgbaString(this Color c) =>
-        $"RGBA({c.GetByteRed()},{c.GetByteGreen()},{c.GetByteBlue()},{c.Alpha})";
+		$"RGBA({c.GetByteRed()},{c.GetByteGreen()},{c.GetByteBlue()},{c.Alpha})";
 
 	/// <summary>
 	/// Converts Color to Hex RGB
@@ -51,7 +51,7 @@ public static class ColorConversionExtensions
 	/// <param name="c"></param>
 	/// <returns>CMYK(100%,100%,100%,100%)</returns>
 	public static string ToCmykString(this Color c) =>
-        $"CMYK({c.GetPercentCyan():P0},{c.GetPercentMagenta():P0},{c.GetPercentYellow():P0},{c.GetPercentBlackKey():P0})";
+		$"CMYK({c.GetPercentCyan():P0},{c.GetPercentMagenta():P0},{c.GetPercentYellow():P0},{c.GetPercentBlackKey():P0})";
 
 	/// <summary>
 	/// Converts Color to CMYKA
@@ -59,7 +59,7 @@ public static class ColorConversionExtensions
 	/// <param name="c"></param>
 	/// <returns>CMYKA(100%,100%,100%,100%,1)</returns>
 	public static string ToCmykaString(this Color c) =>
-        $"CMYKA({c.GetPercentCyan():P0},{c.GetPercentMagenta():P0},{c.GetPercentYellow():P0},{c.GetPercentBlackKey():P0},{c.Alpha})";
+		$"CMYKA({c.GetPercentCyan():P0},{c.GetPercentMagenta():P0},{c.GetPercentYellow():P0},{c.GetPercentBlackKey():P0},{c.Alpha})";
 
 	/// <summary>
 	/// Converts Color to HSL
@@ -74,7 +74,7 @@ public static class ColorConversionExtensions
 	/// <param name="c"></param>
 	///  <returns>HSLA(360,100%,100%,1)</returns>
 	public static string ToHslaString(this Color c) =>
-        $"HSLA({c.GetDegreeHue():0},{c.GetSaturation():P0},{c.GetLuminosity():P0},{c.Alpha})";
+		$"HSLA({c.GetDegreeHue():0},{c.GetSaturation():P0},{c.GetLuminosity():P0},{c.Alpha})";
 
 	/// <summary>
 	/// Sets Red
@@ -83,10 +83,10 @@ public static class ColorConversionExtensions
 	/// <param name="newR"></param>
 	/// <returns>Color with updated Red</returns>
 	public static Color WithRed(this Color baseColor, double newR) =>
-		newR < 0 || newR > 1 
-			? throw new ArgumentOutOfRangeException(nameof(newR)) 
-			: Color.FromRgba(newR, baseColor.Green, baseColor.Blue, baseColor.Alpha); 
-		
+		newR < 0 || newR > 1
+			? throw new ArgumentOutOfRangeException(nameof(newR))
+			: Color.FromRgba(newR, baseColor.Green, baseColor.Blue, baseColor.Alpha);
+
 
 	/// <summary>
 	/// Sets Green
@@ -245,7 +245,7 @@ public static class ColorConversionExtensions
 	/// <param name="c"></param>
 	/// <returns>Percentage Cyan</returns>
 	public static float GetPercentCyan(this Color c) =>
-		(1- c.GetPercentBlackKey() == 0) ? 0 : 
+		(1 - c.GetPercentBlackKey() == 0) ? 0 :
 		(1 - c.Red - c.GetPercentBlackKey()) / (1 - c.GetPercentBlackKey());
 
 	/// <summary>
@@ -253,7 +253,7 @@ public static class ColorConversionExtensions
 	/// </summary>
 	/// <param name="c"></param>
 	/// <returns>Percentage Magenta</returns>
-    public static float GetPercentMagenta(this Color c) =>
+	public static float GetPercentMagenta(this Color c) =>
 		(1 - c.GetPercentBlackKey() == 0) ? 0 :
 		(1 - c.Green - c.GetPercentBlackKey()) / (1 - c.GetPercentBlackKey());
 
@@ -262,7 +262,7 @@ public static class ColorConversionExtensions
 	/// </summary>
 	/// <param name="c"></param>
 	/// <returns>Percentage Yellow</returns>
-    public static float GetPercentYellow(this Color c) =>
+	public static float GetPercentYellow(this Color c) =>
 		(1 - c.GetPercentBlackKey() == 0) ? 0 :
 		(1 - c.Blue - c.GetPercentBlackKey()) / (1 - c.GetPercentBlackKey());
 
@@ -315,18 +315,5 @@ public static class ColorConversionExtensions
 	/// <returns>Is Color Dark</returns>
 	public static bool IsDark(this Color c) => c.GetByteRed() + c.GetByteGreen() + c.GetByteBlue() <= 127 * 3;
 
-	static byte ToByte(double input)
-	{
-		if (input < 0)
-		{
-			return 0;
-		}
-
-		if (input > 255)
-		{
-			return 255;
-		}
-
-		return (byte)Math.Round(input);
-	}
+	static byte ToByte(double input) => (byte)Math.Round(Math.Clamp(input, 0, 255));
 }
