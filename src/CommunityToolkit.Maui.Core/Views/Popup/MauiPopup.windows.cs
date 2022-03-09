@@ -14,9 +14,8 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiPopup : Flyout
 {
-	const double defaultBorderThickness = 2;
+	const double defaultBorderThickness = 0;
 	const double defaultSize = 600;
-
 	readonly IMauiContext mauiContext;
 
 	/// <summary>
@@ -47,6 +46,7 @@ public class MauiPopup : Flyout
 	public void SetElement(IPopup element)
 	{
 		VirtualView = element;
+		Closing += OnClosing;
 	}
 
 	/// <summary>
@@ -75,8 +75,6 @@ public class MauiPopup : Flyout
 		{
 			return;
 		}
-
-		SubscribeEvents();
 		FlyoutStyle = new(typeof(FlyoutPresenter));
 		SetFlyoutColor();
 		SetSize();
@@ -109,7 +107,6 @@ public class MauiPopup : Flyout
 			SetAttachedFlyout(frameworkElement, this);
 			ShowAttachedFlyout(frameworkElement);
 		}
-
 		VirtualView.OnOpened();
 	}
 
@@ -119,8 +116,8 @@ public class MauiPopup : Flyout
 	public void CleanUp()
 	{
 		Closing -= OnClosing;
-
 		Hide();
+
 
 		if (Control is not null)
 		{
@@ -138,13 +135,6 @@ public class MauiPopup : Flyout
 			Control = createControl(handler);
 			Content = Control;
 		}
-
-		SubscribeEvents();
-	}
-
-	void SubscribeEvents()
-	{
-		Closing += OnClosing;
 	}
 
 	void SetSize()
