@@ -14,7 +14,7 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 		new object[] { 0, 750, Easing.CubicOut }
 	};
 
-	[Theory]
+	[Theory(Timeout = 5000)]
 	[MemberData(nameof(ValidData))]
 	public async Task ValidPropertiesTests(double progress, uint length, Easing easing)
 	{

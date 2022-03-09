@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class ColorToByteAlphaConverter_Tests : BaseTest
+public class ColorToByteRedConverter_Tests : BaseTest
 {
 	public static IReadOnlyList<object[]> ValidInputData = new[]
 	{
@@ -19,23 +19,23 @@ public class ColorToByteAlphaConverter_Tests : BaseTest
 
 	[Theory]
 	[MemberData(nameof(ValidInputData))]
-	public void ColorToByteAlphaConverterValidInputTest(float alpha, byte expectedResult)
+	public void ColorToByteRedConverterValidInputTest(float red, byte expectedResult)
 	{
-		var converter = new ColorToByteAlphaConverter();
+		var converter = new ColorToByteRedConverter();
 
-		var resultConvertFrom = converter.ConvertFrom(new Color(0, 0, 0, alpha));
-		var resultConvert = converter.Convert(new Color(0, 0, 0, alpha), typeof(byte), null, null);
+		var resultConvertFrom = converter.ConvertFrom(new Color(red, 0, 0, 1));
+		var resultConvert = converter.Convert(new Color(red, 0, 0, 1), typeof(byte), null, null);
 
 		Assert.Equal(expectedResult, resultConvertFrom);
 		Assert.Equal(expectedResult, resultConvert);
 	}
 
 	[Fact]
-	public void ColorToByteAlphaConverterNullInputTest()
+	public void ColorToByteRedConverterNullInputTest()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => new ColorToByteAlphaConverter().ConvertFrom(null));
-		Assert.Throws<ArgumentNullException>(() => new ColorToByteAlphaConverter().Convert(null, typeof(byte), null, null));
+		Assert.Throws<ArgumentNullException>(() => new ColorToByteRedConverter().ConvertFrom(null));
+		Assert.Throws<ArgumentNullException>(() => new ColorToByteRedConverter().Convert(null, typeof(byte), null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }
