@@ -315,5 +315,17 @@ public static class ColorConversionExtensions
 	/// <returns>Is Color Dark</returns>
 	public static bool IsDark(this Color c) => c.GetByteRed() + c.GetByteGreen() + c.GetByteBlue() <= 127 * 3;
 
-	static byte ToByte(double input) => (byte)Math.Round(Math.Clamp(input, 0, 255));
+	static byte ToByte(float input)
+	{
+		if (input < 0)
+		{
+			return 0;
+		}
+		if (input > 255)
+		{
+			return 255;
+		}
+
+		return (byte)Math.Round(input);
+	}
 }

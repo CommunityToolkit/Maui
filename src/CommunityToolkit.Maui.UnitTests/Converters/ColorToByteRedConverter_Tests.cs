@@ -22,9 +22,10 @@ public class ColorToByteRedConverter_Tests : BaseTest
 	public void ColorToByteRedConverterValidInputTest(float red, byte expectedResult)
 	{
 		var converter = new ColorToByteRedConverter();
+		var color = new Color(red, 0, 0, 0);
 
-		var resultConvertFrom = converter.ConvertFrom(new Color(red, 0, 0, 1));
-		var resultConvert = converter.Convert(new Color(red, 0, 0, 1), typeof(byte), null, null);
+		var resultConvertFrom = converter.ConvertFrom(color);
+		var resultConvert = converter.Convert(color, typeof(byte), null, null);
 
 		Assert.Equal(expectedResult, resultConvertFrom);
 		Assert.Equal(expectedResult, resultConvert);

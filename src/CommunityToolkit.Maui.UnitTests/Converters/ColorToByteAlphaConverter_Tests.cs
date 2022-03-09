@@ -21,10 +21,11 @@ public class ColorToByteAlphaConverter_Tests : BaseTest
 	[MemberData(nameof(ValidInputData))]
 	public void ColorToByteAlphaConverterValidInputTest(float alpha, byte expectedResult)
 	{
+		var color = new Color(0, 0, 0, alpha);
 		var converter = new ColorToByteAlphaConverter();
 
-		var resultConvertFrom = converter.ConvertFrom(new Color(0, 0, 0, alpha));
-		var resultConvert = converter.Convert(new Color(0, 0, 0, alpha), typeof(byte), null, null);
+		var resultConvertFrom = converter.ConvertFrom(color);
+		var resultConvert = converter.Convert(color, typeof(byte), null, null);
 
 		Assert.Equal(expectedResult, resultConvertFrom);
 		Assert.Equal(expectedResult, resultConvert);
