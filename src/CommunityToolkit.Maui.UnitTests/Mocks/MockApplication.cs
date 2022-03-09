@@ -2,12 +2,12 @@
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
-public class MockApplication : Application
+class MockApplication : Application
 {
 	public new Application? Current = null;
 }
 
-//https://github.com/dotnet/maui/blob/main/src/Controls/tests/Core.UnitTests/TestClasses/ApplicationHandlerStub.cs
+// Inspired by https://github.com/dotnet/maui/blob/main/src/Controls/tests/Core.UnitTests/TestClasses/ApplicationHandlerStub.cs
 class ApplicationHandlerStub : ElementHandler<IApplication, object>
 {
 	public ApplicationHandlerStub() : base(Mapper)
