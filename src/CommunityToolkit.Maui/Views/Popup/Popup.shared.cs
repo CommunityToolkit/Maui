@@ -43,7 +43,7 @@ public partial class Popup : Element, IPopup
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="Color"/> property.
 	/// </summary>
-	public static readonly BindableProperty ColorProperty = BindableProperty.Create(nameof(Color), typeof(Color), typeof(Popup), Colors.Transparent);
+	public static readonly BindableProperty ColorProperty = BindableProperty.Create(nameof(Color), typeof(Color), typeof(Popup), Colors.LightGray);
 
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="Size"/> property.
