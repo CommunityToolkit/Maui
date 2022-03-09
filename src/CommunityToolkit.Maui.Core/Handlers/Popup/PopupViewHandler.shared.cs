@@ -1,6 +1,4 @@
-﻿using CommunityToolkit.Maui.Core;
-
-namespace CommunityToolkit.Core.Handlers;
+﻿namespace CommunityToolkit.Maui.Core.Handlers;
 
 /// <summary>
 /// Handler Popup control

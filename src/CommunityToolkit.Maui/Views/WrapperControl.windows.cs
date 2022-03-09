@@ -1,10 +1,10 @@
-﻿using Microsoft.Maui.Platform;
+﻿using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.Maui.Controls.Platform;
 using WRect = Windows.Foundation.Rect;
 
-namespace CommunityToolkit.Core.Views;
+namespace CommunityToolkit.Maui.Core.Views;
 
 // We still have to keep this class, due to some random exceptions that occours when the 
 // .NET MAUI implementation is used.

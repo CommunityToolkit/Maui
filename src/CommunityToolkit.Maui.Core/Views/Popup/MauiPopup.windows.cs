@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Core.Handlers;
-using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core.Handlers;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
@@ -8,7 +7,7 @@ using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 using WindowsThickness = Microsoft.UI.Xaml.Thickness;
 using XamlStyle = Microsoft.UI.Xaml.Style;
 
-namespace CommunityToolkit.Core.Views;
+namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// The navite implementation of Popup control.

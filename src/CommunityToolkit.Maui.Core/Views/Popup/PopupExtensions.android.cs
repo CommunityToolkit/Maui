@@ -8,7 +8,7 @@ using AColorRes = Android.Resource.Color;
 using AView = Android.Views.View;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
-namespace CommunityToolkit.Core.Views;
+namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// Extension class where Helper methods for Popup lives.

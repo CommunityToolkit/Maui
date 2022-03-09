@@ -1,10 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Platform;
 using UIKit;
 
-namespace CommunityToolkit.Core.Views;
+namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// The navite implementation of Popup control.

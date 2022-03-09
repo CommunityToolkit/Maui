@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Core.Handlers;
+﻿using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Handlers;
 

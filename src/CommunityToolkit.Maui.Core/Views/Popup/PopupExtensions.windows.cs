@@ -1,12 +1,6 @@
-﻿using CommunityToolkit.Maui.Core;
-using Microsoft.Maui.Platform;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
-using UWPThickness = Microsoft.UI.Xaml.Thickness;
-using XamlStyle = Microsoft.UI.Xaml.Style;
+﻿using Microsoft.Maui.Platform;
 
-namespace CommunityToolkit.Core.Views;
+namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// Extension class where Helper methods for Popup lives.

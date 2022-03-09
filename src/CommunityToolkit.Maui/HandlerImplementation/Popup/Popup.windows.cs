@@ -1,5 +1,5 @@
-﻿using CommunityToolkit.Core.Handlers;
-using CommunityToolkit.Core.Views;
+﻿using CommunityToolkit.Maui.Core.Handlers;
+using CommunityToolkit.Maui.Core.Views;
 using Microsoft.UI.Xaml.Controls;
 
 namespace CommunityToolkit.Maui.Views;

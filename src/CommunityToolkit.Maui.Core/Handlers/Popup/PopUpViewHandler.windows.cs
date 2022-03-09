@@ -1,8 +1,7 @@
-﻿using CommunityToolkit.Core.Views;
-using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core.Views;
 using Microsoft.Maui.Handlers;
 
-namespace CommunityToolkit.Core.Handlers;
+namespace CommunityToolkit.Maui.Core.Handlers;
 
 public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 {

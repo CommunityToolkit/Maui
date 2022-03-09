@@ -1,11 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Android.App;
 using Android.Content;
-using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
 
-namespace CommunityToolkit.Core.Views;
+namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// The navite implementation of Popup control.

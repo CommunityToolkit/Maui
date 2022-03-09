@@ -3,7 +3,7 @@ using CoreGraphics;
 using Microsoft.Maui.Platform;
 using UIKit;
 
-namespace CommunityToolkit.Core.Views;
+namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// Extension class where Helper methods for Popup lives.
 /// </summary>
