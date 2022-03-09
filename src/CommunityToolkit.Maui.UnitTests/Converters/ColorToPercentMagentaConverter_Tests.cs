@@ -56,7 +56,7 @@ public class ColorToPercentMagentaConverter_Tests : BaseTest
 	}
 
 	[Fact]
-	public void ColorToPercentMagentaCyanConverterNullInputTest()
+	public void ColorToPercentMagentaConverterNullInputTest()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		Assert.Throws<ArgumentNullException>(() => new ColorToPercentMagentaConverter().ConvertFrom(null));
