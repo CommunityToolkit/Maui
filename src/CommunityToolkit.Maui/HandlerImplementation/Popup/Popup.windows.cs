@@ -1,14 +1,14 @@
 ﻿using CommunityToolkit.Core.Handlers;
 using CommunityToolkit.Core.Views;
-using CommunityToolkit.Maui.Core;
 using Microsoft.UI.Xaml.Controls;
 
 namespace CommunityToolkit.Maui.Views;
+
 public partial class Popup
 {
 	void OnPopupHandlerChanged(object? sender, EventArgs e)
 	{
-		if (this.Handler is null || Handler.NativeView is null)
+		if (Handler is null || Handler.NativeView is null)
 		{
 			return;
 		}
@@ -26,6 +26,7 @@ public partial class Popup
 			{
 				return null;
 			}
+
 			return new WrapperControl((View)handler.VirtualView.Content, handler.MauiContext);
 		}
 	}

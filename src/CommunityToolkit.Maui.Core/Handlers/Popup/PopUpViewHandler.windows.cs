@@ -36,7 +36,7 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="result">The result that should return from this Popup.</param>
 	public static void MapOnLightDismissed(PopupViewHandler handler, IPopup view, object? result)
 	{
-		view.OnLightDismiss();
+		view.OnLightDismissed();
 		handler.DisconnectHandler(handler.NativeView);
 	}
 

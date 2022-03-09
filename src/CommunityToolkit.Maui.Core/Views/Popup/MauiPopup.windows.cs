@@ -35,8 +35,8 @@ public class MauiPopup : Flyout
 	/// </summary>
 	public IPopup? VirtualView { get; private set; }
 
-	internal XamlStyle FlyoutStyle { get; private set; } = new(typeof(FlyoutPresenter));
 	internal Panel? Control { get; set; }
+	internal XamlStyle FlyoutStyle { get; private set; } = new(typeof(FlyoutPresenter));
 
 	Action<Panel>? panelCleanUp;
 	Func<PopupViewHandler, Panel?>? createControl;
@@ -59,8 +59,10 @@ public class MauiPopup : Flyout
 	{
 		ArgumentNullException.ThrowIfNull(panelCleanUp);
 		ArgumentNullException.ThrowIfNull(createControl);
+
 		this.panelCleanUp = panelCleanUp;
 		this.createControl = createControl;
+
 		CreateControl();
 		ConfigureControl();
 	}
@@ -287,7 +289,7 @@ public class MauiPopup : Flyout
 
 		if (IsOpen && isLightDismissEnabled)
 		{
-			VirtualView?.Handler?.Invoke(nameof(IPopup.LightDismiss));
+			VirtualView?.Handler?.Invoke(nameof(IPopup.OnLightDismissed));
 		}
 	}
 }
