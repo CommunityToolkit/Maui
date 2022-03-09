@@ -19,20 +19,20 @@ public static class PopupExtensions
 	/// Method to update the <see cref="IPopup.Anchor"/> view.
 	/// </summary>
 	/// <param name="dialog">An instance of <see cref="Dialog"/>.</param>
-	/// <param name="basePopup">An instance of <see cref="IPopup"/>.</param>
+	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
 	/// <exception cref="NullReferenceException">if the <see cref="Android.Views.Window"/> is null an exception will be thrown.</exception>
-	public static void SetAnchor(this Dialog dialog, in IPopup basePopup)
+	public static void SetAnchor(this Dialog dialog, in IPopup popup)
 	{
 		var window = GetWindow(dialog);
 
-		if (basePopup.Handler is null || basePopup.Handler.MauiContext is null)
+		if (popup.Handler is null || popup.Handler.MauiContext is null)
 		{
 			return;
 		}
 
-		if (basePopup.Anchor is not null)
+		if (popup.Anchor is not null)
 		{
-			var anchorView = basePopup.Anchor.ToNative(basePopup.Handler.MauiContext);
+			var anchorView = popup.Anchor.ToNative(popup.Handler.MauiContext);
 
 			var locationOnScreen = new int[2];
 			anchorView.GetLocationOnScreen(locationOnScreen);
@@ -55,7 +55,7 @@ public static class PopupExtensions
 		}
 		else
 		{
-			SetDialogPosition(basePopup, window);
+			SetDialogPosition(popup, window);
 		}
 	}
 
@@ -63,26 +63,26 @@ public static class PopupExtensions
 	/// Method to update the <see cref="IPopup.Color"/> property.
 	/// </summary>
 	/// <param name="dialog">An instance of <see cref="Dialog"/>.</param>
-	/// <param name="basePopup">An instance of <see cref="IPopup"/>.</param>
-	public static void SetColor(this Dialog dialog, in IPopup basePopup)
+	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
+	public static void SetColor(this Dialog dialog, in IPopup popup)
 	{
-		if (basePopup.Color is null)
+		if (popup.Color is null)
 		{
 			return;
 		}
 
 		var window = GetWindow(dialog);
-		window.SetBackgroundDrawable(new ColorDrawable(basePopup.Color.ToNative(AColorRes.BackgroundLight, dialog.Context)));
+		window.SetBackgroundDrawable(new ColorDrawable(popup.Color.ToNative(AColorRes.BackgroundLight, dialog.Context)));
 	}
 
 	/// <summary>
 	/// Method to update the <see cref="IPopup.IsLightDismissEnabled"/> property.
 	/// </summary>
 	/// <param name="dialog">An instance of <see cref="Dialog"/>.</param>
-	/// <param name="basePopup">An instance of <see cref="IPopup"/>.</param>
-	public static void SetLightDismiss(this Dialog dialog, in IPopup basePopup)
+	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
+	public static void SetLightDismiss(this Dialog dialog, in IPopup popup)
 	{
-		if (basePopup.IsLightDismissEnabled)
+		if (popup.IsLightDismissEnabled)
 		{
 			return;
 		}
@@ -95,12 +95,12 @@ public static class PopupExtensions
 	/// Method to update the <see cref="IPopup.Size"/> property.
 	/// </summary>
 	/// <param name="dialog">An instance of <see cref="Dialog"/>.</param>
-	/// <param name="basePopup">An instance of <see cref="IPopup"/>.</param>
+	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
 	/// <param name="container">The native representation of <see cref="IPopup.Content"/>.</param>
 	/// <exception cref="NullReferenceException">if the <see cref="Android.Views.Window"/> is null an exception will be thrown. If the <paramref name="container"/> is null an exception will be thrown.</exception>
-	public static void SetSize(this Dialog dialog, in IPopup basePopup, in AView container)
+	public static void SetSize(this Dialog dialog, in IPopup popup, in AView container)
 	{
-		ArgumentNullException.ThrowIfNull(basePopup.Content);
+		ArgumentNullException.ThrowIfNull(popup.Content);
 
 		int horizontalParams, verticalParams;
 
@@ -109,11 +109,11 @@ public static class PopupExtensions
 
 		var decorView = (ViewGroup)window.DecorView;
 		var child = decorView.GetChildAt(0) ?? throw new NullReferenceException();
-		var realWidth = (int)context.ToPixels(basePopup.Size.Width);
-		var realHeight = (int)context.ToPixels(basePopup.Size.Height);
+		var realWidth = (int)context.ToPixels(popup.Size.Width);
+		var realHeight = (int)context.ToPixels(popup.Size.Height);
 
-		var realContentWidth = (int)context.ToPixels(basePopup.Content.Width);
-		var realContentHeight = (int)context.ToPixels(basePopup.Content.Height);
+		var realContentWidth = (int)context.ToPixels(popup.Content.Width);
+		var realContentHeight = (int)context.ToPixels(popup.Content.Height);
 
 		realWidth = realWidth is 0 ? realContentWidth : realWidth;
 		realHeight = realHeight is 0 ? realContentHeight : realHeight;
@@ -154,7 +154,7 @@ public static class PopupExtensions
 
 		var containerLayoutParams = new FrameLayout.LayoutParams(horizontalParams, verticalParams);
 
-		switch (basePopup.Content.VerticalLayoutAlignment)
+		switch (popup.Content.VerticalLayoutAlignment)
 		{
 			case LayoutAlignment.Start:
 				containerLayoutParams.Gravity = GravityFlags.Top;
@@ -171,7 +171,7 @@ public static class PopupExtensions
 				throw new NotSupportedException();
 		}
 
-		switch (basePopup.Content.HorizontalLayoutAlignment)
+		switch (popup.Content.HorizontalLayoutAlignment)
 		{
 			case LayoutAlignment.Start:
 				containerLayoutParams.Gravity |= GravityFlags.Left;
@@ -191,16 +191,16 @@ public static class PopupExtensions
 		container.LayoutParameters = containerLayoutParams;
 	}
 
-	static void SetDialogPosition(in IPopup basePopup, Android.Views.Window window)
+	static void SetDialogPosition(in IPopup popup, Android.Views.Window window)
 	{
-		var gravityFlags = basePopup.VerticalOptions switch
+		var gravityFlags = popup.VerticalOptions switch
 		{
 			LayoutAlignment.Start => GravityFlags.Top,
 			LayoutAlignment.End => GravityFlags.Bottom,
 			_ => GravityFlags.CenterVertical,
 		};
 
-		gravityFlags |= basePopup.HorizontalOptions switch
+		gravityFlags |= popup.HorizontalOptions switch
 		{
 			LayoutAlignment.Start => GravityFlags.Left,
 			LayoutAlignment.End => GravityFlags.Right,

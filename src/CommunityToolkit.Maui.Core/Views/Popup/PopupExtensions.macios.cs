@@ -12,25 +12,25 @@ public static class PopupExtensions
 	/// <summary>
 	/// Method to update the <see cref="IPopup.Size"/> of the Popup.
 	/// </summary>
-	/// <param name="popup">An instance of <see cref="MauiPopup"/>.</param>
-	/// <param name="basePopup">An istance of <see cref="IPopup"/>.</param>
-	public static void SetSize(this MauiPopup popup, in IPopup basePopup)
+	/// <param name="mauiPopup">An instance of <see cref="MauiPopup"/>.</param>
+	/// <param name="popup">An istance of <see cref="IPopup"/>.</param>
+	public static void SetSize(this MauiPopup mauiPopup, in IPopup popup)
 	{
-		if (!basePopup.Size.IsZero)
+		if (!popup.Size.IsZero)
 		{
-			popup.PreferredContentSize = new CGSize(basePopup.Size.Width, basePopup.Size.Height);
+			mauiPopup.PreferredContentSize = new CGSize(popup.Size.Width, popup.Size.Height);
 		}
-		else if (basePopup.Content is not null)
+		else if (popup.Content is not null)
 		{
-			if (!basePopup.Content.DesiredSize.IsZero)
+			if (!popup.Content.DesiredSize.IsZero)
 			{
-				var contentSize = basePopup.Content.DesiredSize;
-				popup.PreferredContentSize = new CGSize(contentSize.Width, contentSize.Height);
+				var contentSize = popup.Content.DesiredSize;
+				mauiPopup.PreferredContentSize = new CGSize(contentSize.Width, contentSize.Height);
 			}
 			else
 			{
-				var measure = basePopup.Content.Measure(double.PositiveInfinity, double.PositiveInfinity);
-				popup.PreferredContentSize = new CGSize(measure.Width, measure.Height);
+				var measure = popup.Content.Measure(double.PositiveInfinity, double.PositiveInfinity);
+				mauiPopup.PreferredContentSize = new CGSize(measure.Width, measure.Height);
 			}
 		}
 	}
@@ -38,65 +38,65 @@ public static class PopupExtensions
 	/// <summary>
 	/// Method to update the <see cref="IPopup.Color"/> of the Popup.
 	/// </summary>
-	/// <param name="popup">An instance of <see cref="MauiPopup"/>.</param>
-	/// <param name="basePopup">An istance of <see cref="IPopup"/>.</param>
-	public static void SetBackgroundColor(this MauiPopup popup, in IPopup basePopup)
+	/// <param name="mauiPopup">An instance of <see cref="MauiPopup"/>.</param>
+	/// <param name="popup">An istance of <see cref="IPopup"/>.</param>
+	public static void SetBackgroundColor(this MauiPopup mauiPopup, in IPopup popup)
 	{
-		if (popup.Control is null)
+		if (mauiPopup.Control is null)
 		{
 			return;
 		}
 
-		var color = basePopup.Color?.ToNative();
-		popup.Control.NativeView.BackgroundColor = color;
+		var color = popup.Color?.ToNative();
+		mauiPopup.Control.NativeView.BackgroundColor = color;
 	}
 
 	/// <summary>
 	/// Method to update the <see cref="IPopup.IsLightDismissEnabled"/> property of the Popup.
 	/// </summary>
-	/// <param name="popup">An instance of <see cref="MauiPopup"/>.</param>
-	/// <param name="basePopup">An istance of <see cref="IPopup"/>.</param>
-	public static void SetLightDismiss(this MauiPopup popup, in IPopup basePopup)
+	/// <param name="mauiPopup">An instance of <see cref="MauiPopup"/>.</param>
+	/// <param name="popup">An istance of <see cref="IPopup"/>.</param>
+	public static void SetLightDismiss(this MauiPopup mauiPopup, in IPopup popup)
 	{
-		popup.ModalInPresentation = !basePopup.IsLightDismissEnabled;
+		mauiPopup.ModalInPresentation = !popup.IsLightDismissEnabled;
 	}
 
 	/// <summary>
 	/// Method to update the layout of the Popup and <see cref="IPopup.Content"/>.
 	/// </summary>
-	/// <param name="popup">An instance of <see cref="MauiPopup"/>.</param>
-	/// <param name="basepopup">An istance of <see cref="IPopup"/>.</param>
-	public static void SetLayout(this MauiPopup popup, in IPopup basepopup)
+	/// <param name="mauiPopup">An instance of <see cref="MauiPopup"/>.</param>
+	/// <param name="popup">An istance of <see cref="IPopup"/>.</param>
+	public static void SetLayout(this MauiPopup mauiPopup, in IPopup popup)
 	{
-		var presentationController = popup.PresentationController;
-		var preferredContentSize = popup.PreferredContentSize;
+		var presentationController = mauiPopup.PresentationController;
+		var preferredContentSize = mauiPopup.PreferredContentSize;
 
 		((UIPopoverPresentationController)presentationController).SourceRect = new CGRect(0, 0, preferredContentSize.Width, preferredContentSize.Height);
 
-		if (basepopup.Anchor is null)
+		if (popup.Anchor is null)
 		{
-			var originY = basepopup.VerticalOptions switch
+			var originY = popup.VerticalOptions switch
 			{
 				Microsoft.Maui.Primitives.LayoutAlignment.End => UIScreen.MainScreen.Bounds.Height,
 				Microsoft.Maui.Primitives.LayoutAlignment.Center => UIScreen.MainScreen.Bounds.Height / 2,
 				_ => 0f
 			};
 
-			var originX = basepopup.HorizontalOptions switch
+			var originX = popup.HorizontalOptions switch
 			{
 				Microsoft.Maui.Primitives.LayoutAlignment.End => UIScreen.MainScreen.Bounds.Width,
 				Microsoft.Maui.Primitives.LayoutAlignment.Center => UIScreen.MainScreen.Bounds.Width / 2,
 				_ => 0f
 			};
 
-			popup.PopoverPresentationController.SourceRect = new CGRect(originX, originY, 0, 0);
-			popup.PopoverPresentationController.PermittedArrowDirections = 0;
+			mauiPopup.PopoverPresentationController.SourceRect = new CGRect(originX, originY, 0, 0);
+			mauiPopup.PopoverPresentationController.PermittedArrowDirections = 0;
 		}
 		else
 		{
-			var view = basepopup.Anchor.ToNative(basepopup.Handler?.MauiContext ?? throw new NullReferenceException());
-			popup.PopoverPresentationController.SourceView = view;
-			popup.PopoverPresentationController.SourceRect = view.Bounds;
+			var view = popup.Anchor.ToNative(popup.Handler?.MauiContext ?? throw new NullReferenceException());
+			mauiPopup.PopoverPresentationController.SourceView = view;
+			mauiPopup.PopoverPresentationController.SourceRect = view.Bounds;
 		}
 
 	}

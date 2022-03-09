@@ -81,16 +81,16 @@ public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 		VirtualView = null;
 	}
 
-	bool TryCreateContainer(in IPopup basePopup, [NotNullWhen(true)] out AView? container)
+	bool TryCreateContainer(in IPopup popup, [NotNullWhen(true)] out AView? container)
 	{
 		container = null;
 
-		if (basePopup.Content is null)
+		if (popup.Content is null)
 		{
 			return false;
 		}
 
-		container = basePopup.Content.ToNative(mauiContext);
+		container = popup.Content.ToNative(mauiContext);
 		SetContentView(container);
 
 		return true;
