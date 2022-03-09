@@ -78,7 +78,7 @@ public partial class PopupViewHandler : Microsoft.Maui.Handlers.ElementHandler<I
 	}
 
 	/// <summary>
-	/// Action that's triggered when the Popup is LightDismissed.
+	/// Action that's triggered when the Popup is dismissed by tapping outside of the Popup.
 	/// </summary>
 	/// <param name="handler">An instance of <see cref="PopupViewHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>

@@ -62,7 +62,7 @@ public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 	}
 
 	/// <summary>
-	/// Method triggered when the Popup is LightDismissed.
+	/// Method triggered when the Popup is dismissed by tapping outside of the Popup.
 	/// </summary>
 	/// <param name="dialog">An instance of the <see cref="IDialogInterface"/>.</param>
 	public void OnCancel(IDialogInterface? dialog)

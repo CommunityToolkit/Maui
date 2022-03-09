@@ -55,7 +55,7 @@ public interface IPopup : IElement
 	void OnOpened();
 
 	/// <summary>
-	/// Occurs when the Popup is closed by a LightDismiss.
+	/// Occurs when the Popup is closed by tapping outside of the Popup.
 	/// </summary>
 	void LightDismiss();
 }
