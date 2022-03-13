@@ -31,7 +31,7 @@ public interface IPopup : IElement
 	/// <summary>
 	/// Gets the LightDimiss property.
 	/// </summary>
-	bool IsLightDismissEnabled { get; }
+	bool CanBeDismissedByTappingOutsideOfPopup { get; }
 	
 	/// <summary>
 	/// Gets the Popup's size.
@@ -44,18 +44,18 @@ public interface IPopup : IElement
 	LayoutAlignment VerticalOptions { get; }
 
 	/// <summary>
-	/// Occurs when the Popup is Closed.
+	/// Occurs when the Popup is closed.
 	/// </summary>
 	/// <param name="result">Return value from the Popup.</param>
-	void OnDismissed(object? result);
+	void OnClosed(object? result = null);
 
 	/// <summary>
-	/// Occurs when the Popup is Opened.
+	/// Occurs when the Popup is opened.
 	/// </summary>
 	void OnOpened();
 
 	/// <summary>
-	/// Occurs when the Popup is closed by tapping outside of the Popup.
+	/// Occurs when the Popup is dismissed by a user tapping outside of the Popup.
 	/// </summary>
-	void OnLightDismissed();
+	void OnDismissedByTappingOutsideOfPopup();
 }

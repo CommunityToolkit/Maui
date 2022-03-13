@@ -9,12 +9,12 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	internal AView? Container { get; set; }
 
 	/// <summary>
-	/// Action that's triggered when the Popup is Dismissed.
+	/// Action that's triggered when the Popup is closed
 	/// </summary>
 	/// <param name="handler">An instance of <see cref="PopupHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	/// <param name="result">The result that should return from this Popup.</param>
-	public static void MapOnDismissed(PopupHandler handler, IPopup view, object? result)
+	public static void MapOnClosed(PopupHandler handler, IPopup view, object? result)
 	{
 		var popup = handler.NativeView;
 
@@ -38,16 +38,16 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	}
 
 	/// <summary>
-	/// Action that's triggered when the Popup is dismissed by tapping outside of the Popup.
+	/// Action that's triggered when the Popup is dismissed by tapping outside of the popup.
 	/// </summary>
 	/// <param name="handler">An instance of <see cref="PopupHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	/// <param name="result">The result that should return from this Popup.</param>
-	public static void MapOnLightDismissed(PopupHandler handler, IPopup view, object? result)
+	public static void MapOnDismissedByTappingOutsideOfPopup(PopupHandler handler, IPopup view, object? result)
 	{
-		if (view.IsLightDismissEnabled)
+		if (view.CanBeDismissedByTappingOutsideOfPopup)
 		{
-			view.OnLightDismissed();
+			view.OnDismissedByTappingOutsideOfPopup();
 		}
 	}
 
@@ -62,13 +62,13 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	}
 
 	/// <summary>
-	/// Action that's triggered when the Popup <see cref="IPopup.IsLightDismissEnabled"/> property changes.
+	/// Action that's triggered when the Popup <see cref="IPopup.CanBeDismissedByTappingOutsideOfPopup"/> property changes.
 	/// </summary>
 	/// <param name="handler">An instance of <see cref="PopupHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
-	public static void MapLightDismiss(PopupHandler handler, IPopup view)
+	public static void MapCanBeDismissedByTappingOutsideOfPopup(PopupHandler handler, IPopup view)
 	{
-		handler.NativeView?.SetLightDismiss(view);
+		handler.NativeView?.SetCanBeDismissedByTappingOutsideOfPopup(view);
 	}
 
 	/// <summary>

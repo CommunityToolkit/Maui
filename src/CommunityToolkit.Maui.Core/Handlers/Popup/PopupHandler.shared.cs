@@ -15,7 +15,7 @@ public partial class PopupHandler
 		[nameof(IPopup.Size)] = MapSize,
 		[nameof(IPopup.VerticalOptions)] = MapSize,
 		[nameof(IPopup.HorizontalOptions)] = MapSize,
-		[nameof(IPopup.IsLightDismissEnabled)] = MapLightDismiss
+		[nameof(IPopup.CanBeDismissedByTappingOutsideOfPopup)] = MapCanBeDismissedByTappingOutsideOfPopup
 	};
 
 	/// <summary>
@@ -23,11 +23,11 @@ public partial class PopupHandler
 	/// </summary>
 	public static CommandMapper<IPopup, PopupHandler> PopUpCommandMapper = new(ElementCommandMapper)
 	{
-		[nameof(IPopup.OnDismissed)] = MapOnDismissed,
+		[nameof(IPopup.OnClosed)] = MapOnClosed,
 #if !(IOS || MACCATALYST)
 		[nameof(IPopup.OnOpened)] = MapOnOpened,
 #endif
-		[nameof(IPopup.OnLightDismissed)] = MapOnLightDismissed
+		[nameof(IPopup.OnDismissedByTappingOutsideOfPopup)] = MapOnDismissedByTappingOutsideOfPopup
 	};
 
 	/// <summary>
@@ -56,12 +56,12 @@ public partial class PopupHandler : Microsoft.Maui.Handlers.ElementHandler<IPopu
 	protected override object CreateNativeElement() => throw new NotSupportedException();
 
 	/// <summary>
-	/// Action that's triggered when the Popup is Dismissed.
+	/// Action that's triggered when the Popup is closed.
 	/// </summary>
 	/// <param name="handler">An instance of <see cref="PopupHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	/// <param name="result">The result that should return from this Popup.</param>
-	public static void MapOnDismissed(PopupHandler handler, IPopup view, object? result)
+	public static void MapOnClosed(PopupHandler handler, IPopup view, object? result)
 	{
 	}
 
@@ -81,7 +81,7 @@ public partial class PopupHandler : Microsoft.Maui.Handlers.ElementHandler<IPopu
 	/// <param name="handler">An instance of <see cref="PopupHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	/// <param name="result">The result that should return from this Popup.</param>
-	public static void MapOnLightDismissed(PopupHandler handler, IPopup view, object? result)
+	public static void MapOnDismissedByTappingOutsideOfPopup(PopupHandler handler, IPopup view, object? result)
 	{
 	}
 
@@ -95,11 +95,11 @@ public partial class PopupHandler : Microsoft.Maui.Handlers.ElementHandler<IPopu
 	}
 
 	/// <summary>
-	/// Action that's triggered when the Popup <see cref="IPopup.IsLightDismissEnabled"/> property changes.
+	/// Action that's triggered when the Popup <see cref="IPopup.CanBeDismissedByTappingOutsideOfPopup"/> property changes.
 	/// </summary>
 	/// <param name="handler">An instance of <see cref="PopupHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
-	public static void MapLightDismiss(PopupHandler handler, IPopup view)
+	public static void MapCanBeDismissedByTappingOutsideOfPopup(PopupHandler handler, IPopup view)
 	{
 	}
 

@@ -64,12 +64,12 @@ public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 	/// Method triggered when the Popup is dismissed by tapping outside of the Popup.
 	/// </summary>
 	/// <param name="dialog">An instance of the <see cref="IDialogInterface"/>.</param>
-	public void OnCancel(IDialogInterface? dialog)
+	public void OnDismissedByTappingOutsideOfPopup(IDialogInterface dialog)
 	{
 		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null");
 		_ = VirtualView.Handler ?? throw new InvalidOperationException($"{nameof(VirtualView.Handler)} cannot be null");
 
-		VirtualView.Handler.Invoke(nameof(IPopup.OnLightDismissed));
+		VirtualView.Handler.Invoke(nameof(IPopup.OnDismissedByTappingOutsideOfPopup));
 	}
 
 	/// <summary>
@@ -99,4 +99,6 @@ public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 	{
 		SetOnCancelListener(this);
 	}
+
+	void IDialogInterfaceOnCancelListener.OnCancel(IDialogInterface? dialog) => OnDismissedByTappingOutsideOfPopup(this);
 }

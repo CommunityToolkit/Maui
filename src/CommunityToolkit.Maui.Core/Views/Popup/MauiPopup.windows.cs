@@ -270,7 +270,7 @@ public class MauiPopup : Flyout
 
 	void OnClosing(object? sender, FlyoutBaseClosingEventArgs e)
 	{
-		var isLightDismissEnabled = VirtualView?.IsLightDismissEnabled is true;
+		var isLightDismissEnabled = VirtualView?.CanBeDismissedByTappingOutsideOfPopup is true;
 		if (!isLightDismissEnabled)
 		{
 			e.Cancel = true;
@@ -278,7 +278,7 @@ public class MauiPopup : Flyout
 
 		if (IsOpen && isLightDismissEnabled)
 		{
-			VirtualView?.Handler?.Invoke(nameof(IPopup.OnLightDismissed));
+			VirtualView?.Handler?.Invoke(nameof(IPopup.OnDismissedByTappingOutsideOfPopup));
 		}
 	}
 }

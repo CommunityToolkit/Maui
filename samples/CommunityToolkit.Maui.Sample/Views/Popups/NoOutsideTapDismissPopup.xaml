@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<mct:Popup x:Class="CommunityToolkit.Maui.Sample.NoLightDismissPopup"
+<mct:Popup x:Class="CommunityToolkit.Maui.Sample.NoOutsideTapDismissPopup"
            xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
            xmlns:models="clr-namespace:CommunityToolkit.Maui.Sample.Models"
            xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui"
-           IsLightDismissEnabled="False"
+           CanBeDismissedByTappingOutsideOfPopup="False"
            Size="{x:Static models:PopupSizeConstants.Medium}">
 
     <VerticalStackLayout Style="{StaticResource PopupLayout}">
@@ -37,7 +37,7 @@
         </VerticalStackLayout.Resources>
 
         <Label Style="{StaticResource Title}"
-               Text="Simple Popup Without Light Dismiss" />
+               Text="Simple Popup That Cannot Be Dismissed By Tapping Outside of the Popup" />
         <BoxView Style="{StaticResource Divider}" />
         <Label Style="{StaticResource Content}"
                Text="{OnPlatform Android='This is a native popup with a .NET MAUI View being rendered. The behaviors of the popup will confirm to 100% native look and feel, but still allows you to use your .NET MAUI Controls.',

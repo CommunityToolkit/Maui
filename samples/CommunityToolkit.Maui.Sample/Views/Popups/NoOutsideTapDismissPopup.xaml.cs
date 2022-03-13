@@ -2,9 +2,9 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample;
 
-public partial class ButtonPopup : Popup
+public partial class NoOutsideTapDismissPopup : Popup
 {
-	public ButtonPopup()
+	public NoOutsideTapDismissPopup()
 	{
 		InitializeComponent();
 	}

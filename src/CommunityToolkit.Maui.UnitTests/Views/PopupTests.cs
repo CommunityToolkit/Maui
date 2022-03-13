@@ -8,6 +8,7 @@ namespace CommunityToolkit.Maui.UnitTests.Views;
 
 public class PopupTests : BaseHandlerTest
 {
+	const string resultWhenUserTapsOutsideOfPopup = "User Tapped Outside of Popup";
 	readonly IPopup popup = new MockPopup();
 
 	public PopupTests()
@@ -53,10 +54,10 @@ public class PopupTests : BaseHandlerTest
 
 		page.ShowPopup((MockPopup)popup);
 		Assert.Equal(1, popupHandler.OnOpenedCount);
-		popup.OnLightDismissed();
+		popup.OnDismissedByTappingOutsideOfPopup();
 
 		var popupTask = page.ShowPopupAsync((MockPopup)popup);
-		popup.OnLightDismissed();
+		popup.OnDismissedByTappingOutsideOfPopup();
 
 		await popupTask;
 
@@ -64,9 +65,10 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void OnLightDismissedHappens()
+	public void PopupDismissedByTappingOutsideOfPopup()
 	{
-		var isPopupDismissed = false;
+		string? dismissedByTappingOutsideOfPopupResult = null;
+		var isPopupDismissedByTappingOutsideOfPopup = false;
 		var app = Application.Current ?? throw new NullReferenceException();
 
 		var page = new ContentPage
@@ -75,6 +77,14 @@ public class PopupTests : BaseHandlerTest
 			{
 				Text = "Hello there"
 			}
+		};
+
+		((MockPopup)popup).Closed += (s, e) =>
+		{
+			Assert.Equal(popup, s);
+
+			isPopupDismissedByTappingOutsideOfPopup = e.WasDismissedByTappingOutsideOfPopup;
+			dismissedByTappingOutsideOfPopupResult = (string?)e.Result;
 		};
 
 		// Make sure that our page will have a Handler
@@ -87,13 +97,10 @@ public class PopupTests : BaseHandlerTest
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
 
-		((MockPopup)popup).Dismissed += (_, _) =>
-		{
-			isPopupDismissed = true;
-		};
+		popup.OnDismissedByTappingOutsideOfPopup();
 
-		popup.OnLightDismissed();
-		Assert.True(isPopupDismissed);
+		Assert.True(isPopupDismissedByTappingOutsideOfPopup);
+		Assert.Equal(resultWhenUserTapsOutsideOfPopup, dismissedByTappingOutsideOfPopupResult);
 	}
 
 	[Fact]
@@ -122,13 +129,13 @@ public class PopupTests : BaseHandlerTest
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
 
-		((MockPopup)popup).Dismissed += (_, e) =>
+		((MockPopup)popup).Closed += (_, e) =>
 		{
 			result = e.Result;
 			isPopupDismissed = true;
 		};
 
-		((MockPopup)popup).Dismiss(new object());
+		((MockPopup)popup).Close(new object());
 
 		Assert.True(isPopupDismissed);
 		Assert.NotNull(result);
@@ -161,13 +168,13 @@ public class PopupTests : BaseHandlerTest
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
 
-		((MockPopup)popup).Dismissed += (_, e) =>
+		((MockPopup)popup).Closed += (_, e) =>
 		{
 			result = e.Result;
 			isPopupDismissed = true;
 		};
 
-		((MockPopup)popup).Dismiss(null);
+		((MockPopup)popup).Close();
 
 		Assert.True(isPopupDismissed);
 		Assert.Null(result);
@@ -175,7 +182,10 @@ public class PopupTests : BaseHandlerTest
 
 	class MockPopup : Popup
 	{
-
+		public MockPopup()
+		{
+			ResultWhenUserTapsOutsideOfPopup = resultWhenUserTapsOutsideOfPopup;
+		}
 	}
 
 	interface IFooService

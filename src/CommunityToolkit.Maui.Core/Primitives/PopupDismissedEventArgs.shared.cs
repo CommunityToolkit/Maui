@@ -11,13 +11,13 @@ public class PopupDismissedEventArgs
 	/// <param name="result">
 	/// The result of the popup.
 	/// </param>
-	/// <param name="wasLightDismissed">
+	/// <param name="wasDismissedByTappingOutsideOfPopup">
 	/// If the popup was dismissed by tapping outside of the Popup.
 	/// </param>
-	public PopupDismissedEventArgs(object? result, bool wasLightDismissed)
+	public PopupDismissedEventArgs(object? result, bool wasDismissedByTappingOutsideOfPopup)
 	{
 		Result = result;
-		WasLightDismissed = wasLightDismissed;
+		WasDismissedByTappingOutsideOfPopup = wasDismissedByTappingOutsideOfPopup;
 	}
 
 	/// <summary>
@@ -26,10 +26,9 @@ public class PopupDismissedEventArgs
 	public object? Result { get; }
 
 	/// <summary>
-	/// Gets if the popup was dismissed via light dismiss.
 	/// If true, then the user tapped outside the bounds of
 	/// the popup (a light dismiss). If false, then the
 	/// popup was dismissed by user action or code.
 	/// </summary>
-	public bool WasLightDismissed { get; }
+	public bool WasDismissedByTappingOutsideOfPopup { get; }
 }

@@ -76,13 +76,13 @@ public static class PopupExtensions
 	}
 
 	/// <summary>
-	/// Method to update the <see cref="IPopup.IsLightDismissEnabled"/> property.
+	/// Method to update the <see cref="IPopup.CanBeDismissedByTappingOutsideOfPopup"/> property.
 	/// </summary>
 	/// <param name="dialog">An instance of <see cref="Dialog"/>.</param>
 	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
-	public static void SetLightDismiss(this Dialog dialog, in IPopup popup)
+	public static void SetCanBeDismissedByTappingOutsideOfPopup(this Dialog dialog, in IPopup popup)
 	{
-		if (popup.IsLightDismissEnabled)
+		if (popup.CanBeDismissedByTappingOutsideOfPopup)
 		{
 			return;
 		}
