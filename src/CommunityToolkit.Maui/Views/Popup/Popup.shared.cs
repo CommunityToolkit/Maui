@@ -9,32 +9,6 @@ namespace CommunityToolkit.Maui.Views;
 [ContentProperty(nameof(Content))]
 public partial class Popup : Element, IPopup
 {
-	TaskCompletionSource<object?> taskCompletionSource = new();
-
-	/// <summary>
-	/// Gets the final result of the dismissed popup.
-	/// </summary>
-	public Task<object?> Result => taskCompletionSource.Task;
-
-	readonly WeakEventManager dismissWeakEventManager = new();
-	readonly WeakEventManager openedWeakEventManager = new();
-	readonly Lazy<PlatformConfigurationRegistry<Popup>> platformConfigurationRegistry;
-
-	/// <summary>
-	/// Instantiates a new instance of <see cref="Popup"/>.
-	/// </summary>
-	public Popup()
-	{
-		platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Popup>>(() => new(this));
-
-		VerticalOptions = LayoutAlignment.Center;
-		HorizontalOptions = LayoutAlignment.Center;
-
-#if WINDOWS
-		this.HandlerChanged += OnPopupHandlerChanged;
-#endif
-	}
-
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="Content"/> property.
 	/// </summary>
