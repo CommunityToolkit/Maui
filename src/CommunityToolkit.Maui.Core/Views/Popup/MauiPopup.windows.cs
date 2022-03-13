@@ -37,7 +37,7 @@ public class MauiPopup : Flyout
 	internal XamlStyle FlyoutStyle { get; private set; } = new(typeof(FlyoutPresenter));
 
 	Action<Panel>? panelCleanUp;
-	Func<PopupViewHandler, Panel?>? createControl;
+	Func<PopupHandler, Panel?>? createControl;
 
 	/// <summary>
 	/// Method to initialize the native implementation.
@@ -54,7 +54,7 @@ public class MauiPopup : Flyout
 	/// </summary>
 	/// <param name="panelCleanUp">Action to be executed when the Handler discconect</param>
 	/// <param name="createControl">Function to be executed during the create of the popup content</param>
-	public void SetUpPlatformView(Action<Panel> panelCleanUp, Func<PopupViewHandler, Panel?> createControl)
+	public void SetUpPlatformView(Action<Panel> panelCleanUp, Func<PopupHandler, Panel?> createControl)
 	{
 		ArgumentNullException.ThrowIfNull(panelCleanUp);
 		ArgumentNullException.ThrowIfNull(createControl);
@@ -130,7 +130,7 @@ public class MauiPopup : Flyout
 
 	void CreateControl()
 	{
-		if (Control is null && VirtualView?.Content is not null && createControl is not null && VirtualView.Handler is PopupViewHandler handler)
+		if (Control is null && VirtualView?.Content is not null && createControl is not null && VirtualView.Handler is PopupHandler handler)
 		{
 			Control = createControl(handler);
 			Content = Control;

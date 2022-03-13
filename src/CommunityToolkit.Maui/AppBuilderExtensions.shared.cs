@@ -18,7 +18,7 @@ public static class AppBuilderExtensions
 	{
 		builder.ConfigureMauiHandlers(h =>
 		{
-		   h.AddHandler(typeof(Popup), typeof(PopupViewHandler));
+		   h.AddHandler(typeof(Popup), typeof(PopupHandler));
 		});
 		Popup.RemapForControls();
 		return builder.UseMauiCommunityToolkitCore();
