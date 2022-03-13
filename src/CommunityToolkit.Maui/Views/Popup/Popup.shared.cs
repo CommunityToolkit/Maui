@@ -65,6 +65,32 @@ public partial class Popup : Element, IPopup
 	/// </summary>
 	public static readonly BindableProperty HorizontalOptionsProperty = BindableProperty.Create(nameof(HorizontalOptions), typeof(LayoutAlignment), typeof(Popup), LayoutAlignment.Center);
 
+	readonly WeakEventManager dismissWeakEventManager = new();
+	readonly WeakEventManager openedWeakEventManager = new();
+	readonly Lazy<PlatformConfigurationRegistry<Popup>> platformConfigurationRegistry;
+
+	TaskCompletionSource<object?> taskCompletionSource = new();
+
+	/// <summary>
+	/// Instantiates a new instance of <see cref="Popup"/>.
+	/// </summary>
+	public Popup()
+	{
+		platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Popup>>(() => new(this));
+
+		VerticalOptions = LayoutAlignment.Center;
+		HorizontalOptions = LayoutAlignment.Center;
+
+#if WINDOWS
+		this.HandlerChanged += OnPopupHandlerChanged;
+#endif
+	}
+
+	/// <summary>
+	/// Gets the final result of the dismissed popup.
+	/// </summary>
+	public Task<object?> Result => taskCompletionSource.Task;
+
 	/// <summary>
 	/// Gets or sets the <see cref="View"/> content to render in the Popup.
 	/// </summary>
