@@ -8,7 +8,7 @@ public partial class Popup
 	/// <summary>
 	/// 
 	/// </summary>
-	public static CommandMapper<IPopup, PopupViewHandler> ControlPopUpCommandMapper = new(PopupViewHandler.PopUpCommandMapper)
+	public static CommandMapper<IPopup, PopupHandler> ControlPopUpCommandMapper = new(PopupHandler.PopUpCommandMapper)
 	{
 #if IOS || MACCATALYST
 		[nameof(IPopup.OnOpened)] = MapOnOpened
@@ -17,6 +17,6 @@ public partial class Popup
 
 	internal static void RemapForControls()
 	{
-		PopupViewHandler.PopUpCommandMapper = ControlPopUpCommandMapper;
+		PopupHandler.PopUpCommandMapper = ControlPopUpCommandMapper;
 	}
 }

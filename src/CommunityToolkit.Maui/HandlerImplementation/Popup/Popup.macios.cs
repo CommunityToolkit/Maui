@@ -9,10 +9,10 @@ public partial class Popup
 	/// <summary>
 	/// Action that's triggered when the Popup is Opened.
 	/// </summary>
-	/// <param name="handler">An instance of <see cref="PopupViewHandler"/>.</param>
+	/// <param name="handler">An instance of <see cref="PopupHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	/// <param name="result">We don't need to provide the result parameter here.</param>
-	public static void MapOnOpened(PopupViewHandler handler, IPopup view, object? result)
+	public static void MapOnOpened(PopupHandler handler, IPopup view, object? result)
 	{
 		handler.NativeView?.CreateControl(CreatePageHandler, view);
 		view.OnOpened();

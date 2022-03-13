@@ -20,7 +20,7 @@ public partial class Popup
 			((WrapperControl)wrapper).CleanUp();
 		}
 
-		static Panel? CreateWrapperContent(PopupViewHandler handler)
+		static Panel? CreateWrapperContent(PopupHandler handler)
 		{
 			if (handler.VirtualView.Content is null || handler.MauiContext is null)
 			{

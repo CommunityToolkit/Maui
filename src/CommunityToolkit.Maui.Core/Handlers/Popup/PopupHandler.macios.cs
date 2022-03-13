@@ -3,15 +3,15 @@ using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
 
-public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
+public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 {
 	/// <summary>
 	/// Action that's triggered when the Popup is Dismissed.
 	/// </summary>
-	/// <param name="handler">An instance of <see cref="PopupViewHandler"/>.</param>
+	/// <param name="handler">An instance of <see cref="PopupHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	/// <param name="result">The result that should return from this Popup.</param>
-	public static async void MapOnDismissed(PopupViewHandler handler, IPopup view, object? result)
+	public static async void MapOnDismissed(PopupHandler handler, IPopup view, object? result)
 	{
 		var vc = handler.NativeView.ViewController;
 		if (vc is not null)
@@ -25,14 +25,14 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 	/// <summary>
 	/// Action that's triggered when the Popup is dismissed by tapping outside of the Popup.
 	/// </summary>
-	/// <param name="handler">An instance of <see cref="PopupViewHandler"/>.</param>
+	/// <param name="handler">An instance of <see cref="PopupHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	/// <param name="result">The result that should return from this Popup.</param>
-	public static void MapOnLightDismissed(PopupViewHandler handler, IPopup view, object? result)
+	public static void MapOnLightDismissed(PopupHandler handler, IPopup view, object? result)
 	{
 		if (handler.NativeView is not MauiPopup popupRenderer)
 		{
-			throw new InvalidOperationException($"{nameof(handler.NativeView)} must be of type {typeof(PopupViewHandler)}");
+			throw new InvalidOperationException($"{nameof(handler.NativeView)} must be of type {typeof(PopupHandler)}");
 		}
 
 		if (popupRenderer.IsViewLoaded && view.IsLightDismissEnabled)
@@ -44,10 +44,10 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 	/// <summary>
 	/// Action that's triggered when the Popup <see cref="IPopup.Anchor"/> property changes.
 	/// </summary>
-	/// <param name="handler">An instance of <see cref="PopupViewHandler"/>.</param>
+	/// <param name="handler">An instance of <see cref="PopupHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 
-	public static void MapAnchor(PopupViewHandler handler, IPopup view)
+	public static void MapAnchor(PopupHandler handler, IPopup view)
 	{
 		handler.NativeView.SetSize(view);
 		handler.NativeView.SetLayout(view);
@@ -56,9 +56,9 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 	/// <summary>
 	/// Action that's triggered when the Popup <see cref="IPopup.IsLightDismissEnabled"/> property changes.
 	/// </summary>
-	/// <param name="handler">An instance of <see cref="PopupViewHandler"/>.</param>
+	/// <param name="handler">An instance of <see cref="PopupHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
-	public static void MapLightDismiss(PopupViewHandler handler, IPopup view)
+	public static void MapLightDismiss(PopupHandler handler, IPopup view)
 	{
 		handler.NativeView.SetLightDismiss(view);
 	}
@@ -66,9 +66,9 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 	/// <summary>
 	/// Action that's triggered when the Popup <see cref="IPopup.Color"/> property changes.
 	/// </summary>
-	/// <param name="handler">An instance of <see cref="PopupViewHandler"/>.</param>
+	/// <param name="handler">An instance of <see cref="PopupHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
-	public static void MapColor(PopupViewHandler handler, IPopup view)
+	public static void MapColor(PopupHandler handler, IPopup view)
 	{
 		handler.NativeView.SetBackgroundColor(view);
 	}
@@ -76,9 +76,9 @@ public partial class PopupViewHandler : ElementHandler<IPopup, MauiPopup>
 	/// <summary>
 	/// Action that's triggered when the Popup <see cref="IPopup.Size"/> property changes.
 	/// </summary>
-	/// <param name="handler">An instance of <see cref="PopupViewHandler"/>.</param>
+	/// <param name="handler">An instance of <see cref="PopupHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
-	public static void MapSize(PopupViewHandler handler, IPopup view)
+	public static void MapSize(PopupHandler handler, IPopup view)
 	{
 		handler.NativeView.SetSize(view);
 		handler.NativeView.SetLayout(view);
