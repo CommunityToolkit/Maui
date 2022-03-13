@@ -27,9 +27,9 @@ public interface IPopup : IElement
 	/// Gets the horizontal aspect of this element's arrangement in a container.
 	/// </summary>
 	LayoutAlignment HorizontalOptions { get; }
-	
+
 	/// <summary>
-	/// Gets the LightDimiss property.
+	/// Gets the CanBeDismissedByTappingOutsideOfPopup property.
 	/// </summary>
 	bool CanBeDismissedByTappingOutsideOfPopup { get; }
 	

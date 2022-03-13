@@ -3,10 +3,10 @@
 /// <summary>
 /// Popup dismissed event arguments used when a popup is dismissed.
 /// </summary>
-public class PopupDismissedEventArgs
+public class PopupClosedEventArgs
 {
 	/// <summary>
-	/// Initialization an instance of <see cref="PopupDismissedEventArgs"/>.
+	/// Initialization an instance of <see cref="PopupClosedEventArgs"/>.
 	/// </summary>
 	/// <param name="result">
 	/// The result of the popup.
@@ -14,7 +14,7 @@ public class PopupDismissedEventArgs
 	/// <param name="wasDismissedByTappingOutsideOfPopup">
 	/// If the popup was dismissed by tapping outside of the Popup.
 	/// </param>
-	public PopupDismissedEventArgs(object? result, bool wasDismissedByTappingOutsideOfPopup)
+	public PopupClosedEventArgs(object? result, bool wasDismissedByTappingOutsideOfPopup)
 	{
 		Result = result;
 		WasDismissedByTappingOutsideOfPopup = wasDismissedByTappingOutsideOfPopup;

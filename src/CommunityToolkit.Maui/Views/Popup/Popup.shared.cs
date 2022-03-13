@@ -62,7 +62,7 @@ public partial class Popup : Element, IPopup
 	/// <summary>
 	/// Dismissed event is invoked when the popup is closed.
 	/// </summary>
-	public event EventHandler<PopupDismissedEventArgs> Closed
+	public event EventHandler<PopupClosedEventArgs> Closed
 	{
 		add => dismissWeakEventManager.AddEventHandler(value);
 		remove => dismissWeakEventManager.RemoveEventHandler(value);
@@ -201,15 +201,15 @@ public partial class Popup : Element, IPopup
 	/// Invokes the <see cref="Closed"/> event.
 	/// </summary>
 	/// <param name="result">
-	/// Sets the <see cref="PopupDismissedEventArgs"/> Property of <see cref="PopupDismissedEventArgs.Result"/>.
+	/// Sets the <see cref="PopupClosedEventArgs"/> Property of <see cref="PopupClosedEventArgs.Result"/>.
 	/// </param>
 	/// /// <param name="wasDismissedByTappingOutsideOfPopup">
-	/// Sets the <see cref="PopupDismissedEventArgs"/> Property of <see cref="PopupDismissedEventArgs.WasDismissedByTappingOutsideOfPopup"/>/>.
+	/// Sets the <see cref="PopupClosedEventArgs"/> Property of <see cref="PopupClosedEventArgs.WasDismissedByTappingOutsideOfPopup"/>/>.
 	/// </param>
 	protected void OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup)
 	{
 		((IPopup)this).OnClosed(result);
-		dismissWeakEventManager.HandleEvent(this, new PopupDismissedEventArgs(result, wasDismissedByTappingOutsideOfPopup), nameof(Closed));
+		dismissWeakEventManager.HandleEvent(this, new PopupClosedEventArgs(result, wasDismissedByTappingOutsideOfPopup), nameof(Closed));
 	}
 
 	/// <summary>
