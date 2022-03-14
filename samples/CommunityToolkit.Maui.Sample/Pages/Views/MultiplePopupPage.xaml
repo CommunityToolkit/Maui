@@ -1,0 +1,36 @@
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Views.MultiplePopupPage"
+                Title="MultiplePopupPage"
+                x:TypeArguments="viewModels:MultiplePopupViewModel"
+                x:DataType="viewModels:MultiplePopupViewModel">
+
+    <ContentPage.Content>
+        <ScrollView>
+            <VerticalStackLayout Spacing="12">
+                <Button Text="Simple Popup" Clicked="HandleSimplePopupButtonClicked" />
+
+                <Button Text="Button Popup" Clicked="HandleButtonPopupButtonClicked" />
+
+                <Button Text="Multiple Button Popup" Clicked="HandleMultipleButtonPopupButtonClicked" />
+
+                <Button Text="Cannot Be Dismissed By Tapping Outside Popup" Clicked="HandleNoOutsideTapDismissPopupClicked" />
+
+                <Button Text="Toggle Size Popup" Clicked="HandleToggleSizePopupButtonClicked" />
+
+                <Button Text="Transparent Popup" Clicked="HandleTransparentPopupButtonClicked" />
+
+                <Button Text="Opened Event Simple Popup" Clicked="HandleOpenedEventSimplePopupButtonClicked" />
+
+                <Button Text="Handle Return Result Popup" Clicked="HandleReturnResultPopupButtonClicked" />
+
+                <Button Text="XAML Binding Popup" Clicked="HandleXamlBindingPopupPopupButtonClicked" />
+
+                <Button Text="C# Binding Popup" Clicked="HandleCsharpBindingPopupButtonClicked" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </ContentPage.Content>
+
+</pages:BasePage>

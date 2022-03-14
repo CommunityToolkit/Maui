@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<mct:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CommunityToolkit.Maui.Sample.OpenedEventSimplePopup"
+             xmlns:models="clr-namespace:CommunityToolkit.Maui.Sample.Models"
+             Size="{x:Static models:PopupSizeConstants.Medium}"
+             xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui">
+
+    <VerticalStackLayout Style="{StaticResource PopupLayout}">
+        <VerticalStackLayout.Resources>
+            <ResourceDictionary>
+                <Style x:Key="Title" TargetType="Label">
+                    <Setter Property="FontSize" Value="26" />
+                    <Setter Property="FontAttributes" Value="Bold" />
+                    <Setter Property="TextColor" Value="#000" />
+                    <Setter Property="VerticalTextAlignment" Value="Center" />
+                    <Setter Property="HorizontalTextAlignment" Value="Center" />
+                </Style>
+                <Style x:Key="Divider" TargetType="BoxView">
+                    <Setter Property="HeightRequest" Value="1" />
+                    <Setter Property="Margin" Value="50, 25" />
+                    <Setter Property="Color" Value="#c3c3c3" />
+                </Style>
+                <Style x:Key="Content" TargetType="Label">
+                    <Setter Property="HorizontalTextAlignment" Value="Start" />
+                    <Setter Property="VerticalTextAlignment" Value="Center" />
+                </Style>
+                <Style x:Key="PopupLayout" TargetType="StackLayout">
+                    <Setter Property="Padding" Value="{OnPlatform Android=20, UWP=20, iOS=5, MacCatalyst=5}" />
+                </Style>
+            </ResourceDictionary>
+        </VerticalStackLayout.Resources>
+
+
+        <Label x:Name="Title" 
+                Style="{StaticResource Title}" />
+        <BoxView Style="{StaticResource Divider}" />
+        <Label x:Name="Message" 
+                Style="{StaticResource Content}" />
+    </VerticalStackLayout>
+</mct:Popup>

@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.ViewModels;
+using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 using Application = Microsoft.Maui.Controls.Application;
 
@@ -35,10 +36,12 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 		var collectionView = (CollectionView)sender;
 		collectionView.SelectedItem = null;
 
-		if (e.CurrentSelection.FirstOrDefault() is SectionModel sectionModel)
+		if (e.CurrentSelection.FirstOrDefault() is not SectionModel sectionModel)
 		{
-			await Shell.Current.GoToAsync(AppShell.GetPageRoute(sectionModel.ViewModelType));
+			return;
 		}
+
+		await Shell.Current.GoToAsync(AppShell.GetPageRoute(sectionModel.ViewModelType));
 	}
 
 	class GalleryDataTemplate : DataTemplate

@@ -80,7 +80,7 @@ In general, this project will have all the basement to develop our Toolkit, incl
 
 Here we will have some:
 
-- BaseViews, could be Views that will be used by other Views, like PaddingButton (that's used by Snackbar) or the MCTPopup that will be a native control implemented in a way that can work with our handler. This same approach is used here
+- BaseViews, could be Views that will be used by other Views, like PaddingButton (that's used by Snackbar) or the MauiPopup (used by Popup) that will be a native control implemented in a way that can work with our handler. This same approach is used here
 
 - Primitives, which will be base types that can be used by everyone, like our MathOperator. So other frameworks may not have the concept of Behavior or Converter but they can mimic them as helper classes/methods and use our primitives.
 
