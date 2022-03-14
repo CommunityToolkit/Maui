@@ -8,7 +8,12 @@ namespace CommunityToolkit.Maui.Converters;
 public class ColorToByteAlphaConverter : BaseConverterOneWay<Color, byte>
 {
 	/// <inheritdoc/>
-	public override byte ConvertFrom(Color value) => value.GetByteAlpha();
+	public override byte ConvertFrom(Color value)
+	{
+		ArgumentNullException.ThrowIfNull(value);
+
+		return value.GetByteAlpha();
+	}
 }
 
 /// <summary>
@@ -17,7 +22,12 @@ public class ColorToByteAlphaConverter : BaseConverterOneWay<Color, byte>
 public class ColorToByteRedConverter : BaseConverterOneWay<Color, byte>
 {
 	/// <inheritdoc/>
-	public override byte ConvertFrom(Color value) => value.GetByteRed();
+	public override byte ConvertFrom(Color value)
+	{
+		ArgumentNullException.ThrowIfNull(value);
+
+		return value.GetByteRed();
+	}
 }
 
 /// <summary>
@@ -26,7 +36,12 @@ public class ColorToByteRedConverter : BaseConverterOneWay<Color, byte>
 public class ColorToByteGreenConverter : BaseConverterOneWay<Color, byte>
 {
 	/// <inheritdoc/>
-	public override byte ConvertFrom(Color value) => value.GetByteGreen();
+	public override byte ConvertFrom(Color value)
+	{
+		ArgumentNullException.ThrowIfNull(value);
+
+		return value.GetByteGreen();
+	}
 }
 
 /// <summary>
@@ -35,7 +50,12 @@ public class ColorToByteGreenConverter : BaseConverterOneWay<Color, byte>
 public class ColorToByteBlueConverter : BaseConverterOneWay<Color, byte>
 {
 	/// <inheritdoc/>
-	public override byte ConvertFrom(Color value) => value.GetByteBlue();
+	public override byte ConvertFrom(Color value)
+	{
+		ArgumentNullException.ThrowIfNull(value);
+
+		return value.GetByteBlue();
+	}
 }
 
 /// <summary>
@@ -44,7 +64,12 @@ public class ColorToByteBlueConverter : BaseConverterOneWay<Color, byte>
 public class ColorToPercentCyanConverter : BaseConverterOneWay<Color, double>
 {
 	/// <inheritdoc/>
-	public override double ConvertFrom(Color value) => value.GetPercentCyan();
+	public override double ConvertFrom(Color value)
+	{
+		ArgumentNullException.ThrowIfNull(value);
+
+		return value.GetPercentCyan();
+	}
 }
 
 /// <summary>
@@ -53,7 +78,12 @@ public class ColorToPercentCyanConverter : BaseConverterOneWay<Color, double>
 public class ColorToPercentMagentaConverter : BaseConverterOneWay<Color, double>
 {
 	/// <inheritdoc/>
-	public override double ConvertFrom(Color value) => value.GetPercentMagenta();
+	public override double ConvertFrom(Color value)
+	{
+		ArgumentNullException.ThrowIfNull(value);
+
+		return value.GetPercentMagenta();
+	}
 }
 
 /// <summary>
@@ -62,7 +92,12 @@ public class ColorToPercentMagentaConverter : BaseConverterOneWay<Color, double>
 public class ColorToPercentYellowConverter : BaseConverterOneWay<Color, double>
 {
 	/// <inheritdoc/>
-	public override double ConvertFrom(Color value) => value.GetPercentYellow();
+	public override double ConvertFrom(Color value)
+	{
+		ArgumentNullException.ThrowIfNull(value);
+
+		return value.GetPercentYellow();
+	}
 }
 
 /// <summary>
@@ -71,7 +106,12 @@ public class ColorToPercentYellowConverter : BaseConverterOneWay<Color, double>
 public class ColorToBlackKeyConverter : BaseConverterOneWay<Color, double>
 {
 	/// <inheritdoc/>
-	public override double ConvertFrom(Color value) => value.GetPercentBlackKey();
+	public override double ConvertFrom(Color value)
+	{
+		ArgumentNullException.ThrowIfNull(value);
+
+		return value.GetPercentBlackKey();
+	}
 }
 
 /// <summary>
@@ -81,5 +121,10 @@ public class ColorToBlackKeyConverter : BaseConverterOneWay<Color, double>
 public class ColorToDegreeHueConverter : BaseConverterOneWay<Color, double>
 {
 	/// <inheritdoc/>
-	public override double ConvertFrom(Color value) => value.GetDegreeHue();
+	public override double ConvertFrom(Color value)
+	{
+		ArgumentNullException.ThrowIfNull(value);
+
+		return value.GetDegreeHue();
+	}
 }

@@ -10,11 +10,11 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 	public static readonly IReadOnlyList<object[]> ValidData = new[]
 	{
 		new object[] { 0.5, 175, Easing.BounceIn },
-		new object[] { 1, 1500, Easing.Default },
+		new object[] { 1, 500, Easing.Default },
 		new object[] { 0, 750, Easing.CubicOut }
 	};
 
-	[Theory]
+	[Theory(Timeout = 5000)]
 	[MemberData(nameof(ValidData))]
 	public async Task ValidPropertiesTests(double progress, uint length, Easing easing)
 	{
