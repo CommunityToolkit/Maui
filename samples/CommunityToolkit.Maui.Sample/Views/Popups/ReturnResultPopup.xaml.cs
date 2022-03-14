@@ -7,10 +7,8 @@ public partial class ReturnResultPopup : Popup
 	public ReturnResultPopup()
 	{
 		InitializeComponent();
+		ResultWhenUserTapsOutsideOfPopup = "User Tapped Outside of Popup";
 	}
 
-
-	protected override object GetLightDismissResult() => "Light Dismiss";
-
-	void Button_Clicked(object? sender, System.EventArgs e) => Dismiss("Close button tapped");
+	void Button_Clicked(object? sender, EventArgs e) => Close("Close button tapped");
 }

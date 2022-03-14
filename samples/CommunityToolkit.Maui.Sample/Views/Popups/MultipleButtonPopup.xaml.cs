@@ -9,7 +9,7 @@ public partial class MultipleButtonPopup : Popup
 		InitializeComponent();
 	}
 
-	void Cancel_Clicked(object? sender, System.EventArgs e) => Dismiss(false);
+	void Cancel_Clicked(object? sender, System.EventArgs e) => Close(false);
 
-	void Okay_Clicked(object? sender, System.EventArgs e) => Dismiss(true);
+	void Okay_Clicked(object? sender, System.EventArgs e) => Close(true);
 }

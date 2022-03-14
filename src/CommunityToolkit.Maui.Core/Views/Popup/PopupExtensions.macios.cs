@@ -52,13 +52,13 @@ public static class PopupExtensions
 	}
 
 	/// <summary>
-	/// Method to update the <see cref="IPopup.IsLightDismissEnabled"/> property of the Popup.
+	/// Method to update the <see cref="IPopup.CanBeDismissedByTappingOutsideOfPopup"/> property of the Popup.
 	/// </summary>
 	/// <param name="mauiPopup">An instance of <see cref="MauiPopup"/>.</param>
 	/// <param name="popup">An istance of <see cref="IPopup"/>.</param>
-	public static void SetLightDismiss(this MauiPopup mauiPopup, in IPopup popup)
+	public static void SetCanBeDismissedByTappingOutsideOfPopup(this MauiPopup mauiPopup, in IPopup popup)
 	{
-		mauiPopup.ModalInPresentation = !popup.IsLightDismissEnabled;
+		mauiPopup.ModalInPresentation = !popup.CanBeDismissedByTappingOutsideOfPopup;
 	}
 
 	/// <summary>

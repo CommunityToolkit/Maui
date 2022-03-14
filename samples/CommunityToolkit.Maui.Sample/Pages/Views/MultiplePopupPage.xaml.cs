@@ -32,10 +32,10 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 		await this.ShowPopupAsync(multipleButtonPopup);
 	}
 
-	async void HandleNoLightDismissPopupButtonClicked(object sender, EventArgs e)
+	async void HandleNoOutsideTapDismissPopupClicked(object sender, EventArgs e)
 	{
-		var noLightDismissPopup = new NoLightDismissPopup();
-		await this.ShowPopupAsync(noLightDismissPopup);
+		var noOutsideTapDismissPopup = new NoOutsideTapDismissPopup();
+		await this.ShowPopupAsync(noOutsideTapDismissPopup);
 	}
 
 	async void HandleToggleSizePopupButtonClicked(object sender, EventArgs e)
