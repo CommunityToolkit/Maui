@@ -82,8 +82,7 @@ public class MauiPopup : UIViewController
 
 		VirtualView = null;
 
-		var presentationController = (UIPopoverPresentationController)PresentationController;
-		if (presentationController is not null)
+		if (PresentationController is UIPopoverPresentationController presentationController)
 		{
 			presentationController.Delegate = null;
 		}
@@ -95,7 +94,7 @@ public class MauiPopup : UIViewController
 	/// <param name="func"></param>
 	/// <param name="virtualView"></param>
 	/// <returns></returns>
-	[MemberNotNull(nameof(Control))]
+	[MemberNotNull(nameof(Control), nameof(View), nameof(ViewController)]
 	public void CreateControl(Func<IPopup ,PageHandler> func, in IPopup virtualView)
 	{
 		Control = func(virtualView);
@@ -143,7 +142,6 @@ public class MauiPopup : UIViewController
 	sealed class PopoverDelegate : UIPopoverPresentationControllerDelegate
 	{
 		public event EventHandler<UIPresentationController>? PopoverDismissedEvent;
-
 
 		public override UIModalPresentationStyle GetAdaptivePresentationStyle(UIPresentationController forPresentationController) =>
 			UIModalPresentationStyle.None;
