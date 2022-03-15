@@ -22,21 +22,27 @@ public partial class Toast
 	{
 		DismissNative(token);
 		token.ThrowIfCancellationRequested();
-
-		var toastContentBuilder = new ToastContentBuilder()
-										.AddText(Text);
-
-		var toastContent = toastContentBuilder.GetToastContent();
-		toastContent.ActivationType = ToastActivationType.Background;
-
-		var xmlDocument = new XmlDocument();
-		xmlDocument.LoadXml(toastContent.GetContent());
-
-		NativeToast = new ToastNotification(xmlDocument)
+#if WINDOWS10_0_18362_0_OR_GREATER
+		if (Environment.OSVersion.Version.Build >= 18362)
 		{
-			ExpirationTime = DateTimeOffset.Now.Add(GetDuration(Duration))
-		};
+#pragma warning disable CA1416 // Validate platform compatibility
+			var toastContentBuilder = new ToastContentBuilder()
+				.AddText(Text);
 
-		ToastNotificationManager.CreateToastNotifier().Show(NativeToast);
+			var toastContent = toastContentBuilder.GetToastContent();
+			toastContent.ActivationType = ToastActivationType.Background;
+
+			var xmlDocument = new XmlDocument();
+			xmlDocument.LoadXml(toastContent.GetContent());
+
+			NativeToast = new ToastNotification(xmlDocument)
+			{
+				ExpirationTime = DateTimeOffset.Now.Add(GetDuration(Duration))
+			};
+
+			ToastNotificationManager.CreateToastNotifier().Show(NativeToast);
+		}
+#pragma warning restore CA1416 // Validate platform compatibility
+#endif
 	}
 }

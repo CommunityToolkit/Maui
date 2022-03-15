@@ -2,7 +2,6 @@
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
-using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Platform;
 using AColorRes = Android.Resource.Color;
 using AView = Android.Views.View;
@@ -25,7 +24,7 @@ public static class PopupExtensions
 	{
 		var window = GetWindow(dialog);
 
-		if (popup.Handler is null || popup.Handler.MauiContext is null)
+		if (popup.Handler?.MauiContext is null)
 		{
 			return;
 		}

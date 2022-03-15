@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Maui.Core;
-using CoreGraphics;
+﻿using CoreGraphics;
 using Microsoft.Maui.Platform;
 using UIKit;
 
@@ -13,7 +12,7 @@ public static class PopupExtensions
 	/// Method to update the <see cref="IPopup.Size"/> of the Popup.
 	/// </summary>
 	/// <param name="mauiPopup">An instance of <see cref="MauiPopup"/>.</param>
-	/// <param name="popup">An istance of <see cref="IPopup"/>.</param>
+	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
 	public static void SetSize(this MauiPopup mauiPopup, in IPopup popup)
 	{
 		if (!popup.Size.IsZero)
@@ -39,7 +38,7 @@ public static class PopupExtensions
 	/// Method to update the <see cref="IPopup.Color"/> of the Popup.
 	/// </summary>
 	/// <param name="mauiPopup">An instance of <see cref="MauiPopup"/>.</param>
-	/// <param name="popup">An istance of <see cref="IPopup"/>.</param>
+	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
 	public static void SetBackgroundColor(this MauiPopup mauiPopup, in IPopup popup)
 	{
 		if (mauiPopup.Control is null)
@@ -55,7 +54,7 @@ public static class PopupExtensions
 	/// Method to update the <see cref="IPopup.CanBeDismissedByTappingOutsideOfPopup"/> property of the Popup.
 	/// </summary>
 	/// <param name="mauiPopup">An instance of <see cref="MauiPopup"/>.</param>
-	/// <param name="popup">An istance of <see cref="IPopup"/>.</param>
+	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
 	public static void SetCanBeDismissedByTappingOutsideOfPopup(this MauiPopup mauiPopup, in IPopup popup)
 	{
 		mauiPopup.ModalInPresentation = !popup.CanBeDismissedByTappingOutsideOfPopup;
@@ -65,7 +64,7 @@ public static class PopupExtensions
 	/// Method to update the layout of the Popup and <see cref="IPopup.Content"/>.
 	/// </summary>
 	/// <param name="mauiPopup">An instance of <see cref="MauiPopup"/>.</param>
-	/// <param name="popup">An istance of <see cref="IPopup"/>.</param>
+	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
 	public static void SetLayout(this MauiPopup mauiPopup, in IPopup popup)
 	{
 		var presentationController = mauiPopup.PresentationController;

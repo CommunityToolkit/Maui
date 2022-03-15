@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.ViewModels;
-using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 using Application = Microsoft.Maui.Controls.Application;
 

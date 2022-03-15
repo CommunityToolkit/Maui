@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Platform;
+﻿using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WRect = Windows.Foundation.Rect;

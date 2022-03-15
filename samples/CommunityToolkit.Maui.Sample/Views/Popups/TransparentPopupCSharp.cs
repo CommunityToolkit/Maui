@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Maui.Sample.Models;
-using CommunityToolkit.Maui.Views;
+﻿using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample;
 

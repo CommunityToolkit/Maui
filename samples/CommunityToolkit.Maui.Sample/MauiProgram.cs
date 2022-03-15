@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Maui.Sample.ViewModels;
-using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
+﻿using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
