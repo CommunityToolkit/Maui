@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
+using CommunityToolkit.Maui.Core.Extensions;
 using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
@@ -119,8 +120,6 @@ public class DrawingNativeView : AView
 
 		if (canvas is not null && canvasBitmap is not null)
 		{
-			Draw(Lines, canvas);
-
 			canvas.DrawBitmap(canvasBitmap, 0, 0, canvasPaint);
 			canvas.DrawPath(drawPath, drawPaint);
 		}
@@ -150,7 +149,6 @@ public class DrawingNativeView : AView
 						}
 				};
 
-				drawCanvas?.DrawColor(GetBackgroundColor(), PorterDuff.Mode.Clear!);
 				drawPath.MoveTo(touchX, touchY);
 				break;
 			case MotionEventActions.Move:
@@ -176,6 +174,7 @@ public class DrawingNativeView : AView
 					Lines.Clear();
 				}
 
+				currentLine = null;
 				break;
 			default:
 				return false;
@@ -241,7 +240,9 @@ public class DrawingNativeView : AView
 		foreach (var line in lines)
 		{
 			path ??= new APath();
-			var points = NormalizePoints(line.Points);
+			var points = NormalizePoints(line.EnableSmoothedPath
+					? line.Points.SmoothedPathWithGranularity(line.Granularity)
+					: line.Points);
 			path.MoveTo((float)points[0].X, (float)points[0].Y);
 			foreach (var (x, y) in points)
 			{
