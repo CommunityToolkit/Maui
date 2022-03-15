@@ -119,7 +119,6 @@ public class DrawingNativeView : UIView
 	{
 		if (currentLine != null)
 		{
-			UpdatePath(currentLine);
 			Lines.Add(currentLine);
 			OnDrawingLineCompleted(currentLine);
 		}
@@ -185,8 +184,10 @@ public class DrawingNativeView : UIView
 
 	void DetectScrollViews()
 	{
-		if (scrollViewParentRenderers.Any())
+		if (scrollViewParents.Any())
+		{
 			return;
+		}
 
 		var parent = Superview;
 

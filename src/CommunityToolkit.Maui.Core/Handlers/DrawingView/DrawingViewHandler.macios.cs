@@ -27,7 +27,6 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, DrawingNativ
 		VirtualView.Lines.CollectionChanged -= Lines_CollectionChanged;
 	}
 
-
 	/// <summary>
 	/// Action that's triggered when the DrawingView <see cref="IDrawingView.Lines"/> property changes.
 	/// </summary>

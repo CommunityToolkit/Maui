@@ -31,7 +31,7 @@ public partial class DrawingViewHandler
 	/// </summary>
 	/// <param name="mapper">Custom instance of <see cref="PropertyMapper"/>, if it's null the <see cref="DrawingViewMapper"/> will be used</param>
 	/// <param name="commandMapper">Custom instance of <see cref="CommandMapper"/>, if it's null the <see cref="DrawingViewMapper"/> will be used</param>
-	public DrawingViewHandler(IPropertyMapper mapper, CommandMapper? commandMapper)
+	public DrawingViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
 		: base(mapper ?? DrawingViewMapper, commandMapper ?? DrawingViewCommandMapper)
 	{
 	}
@@ -48,7 +48,7 @@ public partial class DrawingViewHandler
 public partial class DrawingViewHandler : Microsoft.Maui.Handlers.ViewHandler<IDrawingView, object>
 {
 	/// <inheritdoc />
-	protected override object CreateNativeView() => throw new NotImplementedException();
+	protected override object CreateNativeView() => throw new NotSupportedException();
 
 	/// <summary>
 	/// Action that's triggered when the DrawingView <see cref="IDrawingView.Lines"/> property changes.

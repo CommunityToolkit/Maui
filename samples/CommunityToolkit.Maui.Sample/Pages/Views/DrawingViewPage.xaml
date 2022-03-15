@@ -3,7 +3,11 @@
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui"
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Views.DrawingViewPage"
-                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages">
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+                x:TypeArguments="viewModels:DrawingViewViewModel"
+                x:DataType="viewModels:DrawingViewViewModel"
+                Title="DrawingView">
 
     <ScrollView>
         <VerticalStackLayout>
@@ -17,7 +21,7 @@
             </HorizontalStackLayout>
             <Button
                 BackgroundColor="White"
-                Clicked="AddNewLine"
+                Command="{Binding AddNewLineCommand}"
                 Text="Add new line"
                 TextColor="Black" />
             <Button
@@ -29,8 +33,9 @@
                 HorizontalOptions="CenterAndExpand"
                 IsVisible="False">
                 <Label Text="Draw &amp; GO" />
-                <Button Text="Clear all lines"
-                        Clicked="ClearLines_Clicked"/>
+                <Button 
+                    Text="Clear all lines"
+                    Command="{Binding ClearLinesCommand}"/>
             </VerticalStackLayout>
             <Button
                 BackgroundColor="White"
@@ -52,17 +57,17 @@
                 HeightRequest="100"
                 WidthRequest="100" />
 
-            <Label Text="DrawingView (Code behind)"/>
+            <Label Text="DrawingView"/>
             <mct:DrawingView x:Name="DrawingViewControl" 
-                               BackgroundColor="LightGray" 
+                               BackgroundColor="Yellow" 
                                HeightRequest="200"
-                               LineColor="Red"
-                               LineWidth="3"
+                               LineColor="Blue"
+                               LineWidth="5"
                                Lines="{Binding Lines, Mode=TwoWay}"
                                ClearOnFinish="{Binding Source={x:Reference ClearOnFinish}, Path=IsToggled}"
                                MultiLineMode="{Binding Source={x:Reference MultiLineMode}, Path=IsToggled}"/>
 
-            <Editor x:Name="Logs" HeightRequest="50" />
+            <Editor HeightRequest="50" Text="{Binding Logs}" />
         </VerticalStackLayout>
     </ScrollView>
 </pages:BasePage>

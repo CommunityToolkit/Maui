@@ -1,24 +1,18 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Maui.Core.Views;
+using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
-public partial class DrawingViewPage : BasePage
+public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 {
-	static readonly Random random = new();
+	readonly DrawingViewViewModel viewModel;
 
-	public DrawingViewPage()
+	public DrawingViewPage(DrawingViewViewModel viewModel) : base(viewModel)
 	{
+		this.viewModel = viewModel;
 		InitializeComponent();
-		DrawingViewControl.DrawingLineCompletedCommand = new Command<Line>(line =>
-		{
-			Logs.Text += "GestureCompletedCommand executed" + Environment.NewLine;
-			var stream = Line.GetImageStream(line.Points.ToList(), new Size(GestureImage.Width, GestureImage.Height), 10, Colors.White, Colors.Black);
-			GestureImage.Source = ImageSource.FromStream(() => stream);
-		});
-
-		BindingContext = this;
 	}
 
 	void LoadPointsButtonClicked(object sender, EventArgs e)
@@ -45,15 +39,15 @@ public partial class DrawingViewPage : BasePage
 		DrawImage(lines.ToList());
 	}
 
-	ObservableCollection<Line> GenerateLines(int count)
+	ObservableCollection<ILine> GenerateLines(int count)
 	{
-		var lines = new ObservableCollection<Line>();
+		var lines = new ObservableCollection<ILine>();
 		for (var i = 0; i < count; i++)
 		{
 			lines.Add(new Line()
 			{
-				Points = GeneratePoints(10),
-				LineColor = Color.FromRgb(random.Next(255), random.Next(255), random.Next(255)),
+				Points = viewModel.GeneratePoints(10),
+				LineColor = Color.FromRgb(Random.Shared.Next(255), Random.Shared.Next(255), Random.Shared.Next(255)),
 				LineWidth = 10,
 				EnableSmoothedPath = false,
 				Granularity = 5
@@ -63,32 +57,9 @@ public partial class DrawingViewPage : BasePage
 		return lines;
 	}
 
-	ObservableCollection<Point> GeneratePoints(int count)
-	{
-		var points = new ObservableCollection<Point>();
-		for (var i = 0; i < count; i++)
-		{
-			points.Add(new Point(random.Next(1, (int)DrawingViewControl.Width), random.Next(1, (int)DrawingViewControl.Height)));
-		}
-
-		return points;
-	}
-
-	void DrawImage(List<Line> lines)
+	void DrawImage(IEnumerable<ILine> lines)
 	{
 		var stream = DrawingView.GetImageStream(lines, new Size(GestureImage.Width, GestureImage.Height), Colors.Gray);
 		GestureImage.Source = ImageSource.FromStream(() => stream);
 	}
-
-	void AddNewLine(object sender, EventArgs e) =>
-		DrawingViewControl.Lines.Add(new Line()
-		{
-			Points = GeneratePoints(10),
-			LineColor = Color.FromRgb(random.Next(255), random.Next(255), random.Next(255)),
-			LineWidth = 10,
-			EnableSmoothedPath = true,
-			Granularity = 5
-		});
-
-	void ClearLines_Clicked(object sender, EventArgs e) => DrawingViewControl.Lines.Clear();
 }

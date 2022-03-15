@@ -1,9 +1,10 @@
 using System.Collections.ObjectModel;
+using CommunityToolkit.Maui.Core.Views;
 
 namespace CommunityToolkit.Maui.Core.Extensions;
 
 /// <summary>
-/// Extension methods to support <see cref="DrawingView"/>
+/// Extension methods to support <see cref="IDrawingView"/>
 /// </summary>
 public static class DrawingViewExtensions
 {
@@ -17,13 +18,15 @@ public static class DrawingViewExtensions
 
         // not enough points to smooth effectively, so return the original path and points.
         if (currentPointsCopy.Count < granularity + 2)
-            return currentPointsCopy;
+        {
+	        return currentPointsCopy;
+        }
 
         var smoothedPoints = new ObservableCollection<Point>();
 
         // duplicate the first and last points as control points.
         currentPointsCopy.Insert(0, currentPointsCopy[0]);
-        currentPointsCopy.Add(currentPointsCopy[currentPointsCopy.Count - 1]);
+        currentPointsCopy.Add(currentPointsCopy[^1]);
 
         // add the first point
         smoothedPoints.Add(currentPointsCopy[0]);
@@ -53,13 +56,13 @@ public static class DrawingViewExtensions
         }
 
         // add the last point
-        var last = currentPointsCopy[currentPointsCopy.Count - 1];
+        var last = currentPointsCopy[^1];
         smoothedPoints.Add(last);
         return smoothedPoints;
     }
 
     static Point GetIntermediatePoint(Point p0, Point p1, Point p2, Point p3, in float t, in float tt, in float ttt) =>
-        new Point
+        new()
         {
             X = 0.5f *
                 ((2f * p1.X) +
