@@ -6,10 +6,13 @@ namespace CommunityToolkit.Maui.Core.Extensions;
 public static class ColorConversionExtensions
 {
 	/// <summary>
-	/// Converts Color to RGB
+	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the red, green and blue components.
 	/// </summary>
-	/// <param name="color"></param>
-	/// <returns>RGB(255,255,255)</returns>
+	/// <param name="color">The <see cref="Color"/> to convert.</param>
+	/// <returns>
+	/// A <see cref="string"/> in the format: <c>RGB(red,green,blue)</c> where <b>red</b>, <b>green</b> and <b>blue</b> will be a value between 0 and 255.
+	/// (e.g. <c>RGB(255,0,0)</c> for <see cref="Color.Red"/>).
+	/// </returns>
 	public static string ToRgbString(this Color color)
 	{
 		ArgumentNullException.ThrowIfNull(color);
@@ -17,10 +20,13 @@ public static class ColorConversionExtensions
 	}
 
 	/// <summary>
-	/// Converts Color to RGBA
+	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the red, green, blue and alpha components.
 	/// </summary>
-	/// <param name="color"></param>
-	/// <returns>RGBA(255,255,255,1)</returns>
+	/// <param name="color">The <see cref="Color"/> to convert.</param>
+	/// <returns>
+	/// A <see cref="string"/> in the format: <c>RGBA(red,green,blue,alpha)</c> where <b>red</b>, <b>green</b> and <b>blue</b> will be a value between 0 and 255,
+	/// and <b>alpha</b> is a value between 0 and 1. (e.g. <c>RGBA(255,0,0,1)</c> for <see cref="Color.Red"/>).
+	/// </returns>
 	public static string ToRgbaString(this Color color)
 	{
 		ArgumentNullException.ThrowIfNull(color);
@@ -28,10 +34,13 @@ public static class ColorConversionExtensions
 	}
 
 	/// <summary>
-	/// Converts Color to Hex RGB
+	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the red, green and blue components in hexadecimal.
 	/// </summary>
-	/// <param name="color"></param>
-	/// <returns>#FFFFFF</returns>
+	/// <param name="color">The <see cref="Color"/> to convert.</param>
+	/// <returns>
+	/// A <see cref="string"/> in the format: <c>#redgreenblue</c> where <b>red</b>, <b>green</b> and <b>blue</b> will be a value between 00 and FF.
+	/// (e.g. <c>#FF0000</c> for <see cref="Color.Red"/>).
+	/// </returns>
 	public static string ToHexRgbString(this Color color)
 	{
 		ArgumentNullException.ThrowIfNull(color);
@@ -39,10 +48,13 @@ public static class ColorConversionExtensions
 	}
 
 	/// <summary>
-	/// Converts Color to Hex RGBA
+	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the red, green, blue and alpha components in hexadecimal.
 	/// </summary>
-	/// <param name="color"></param>
-	/// <returns>#FFFFFFFF</returns>
+	/// <param name="color">The <see cref="Color"/> to convert.</param>
+	/// <returns>
+	/// A <see cref="string"/> in the format: <c>#redgreenbluealpha</c> where <b>red</b>, <b>green</b>, <b>blue</b> and <b>alpha</b> will be a value between 00 and FF.
+	/// e.g. <c>#FF000000</c> for <see cref="Color.Red"/>).
+	/// </returns>
 	public static string ToHexRgbaString(this Color color)
 	{
 		ArgumentNullException.ThrowIfNull(color);
@@ -50,10 +62,13 @@ public static class ColorConversionExtensions
 	}
 
 	/// <summary>
-	/// Converts Color to Hex ARGB
+	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the red, green, blue and alpha components in hexadecimal.
 	/// </summary>
-	/// <param name="color"></param>
-	/// <returns>#FFFFFFFF</returns>
+	/// <param name="color">The <see cref="Color"/> to convert.</param>
+	/// <returns>
+	/// A <see cref="string"/> in the format: <c>#alpharedgreenblue</c> where <b>alpha</b>, <b>red</b>, <b>green</b> and <b>blue</b> will be a value between 00 and FF.
+	/// e.g. <c>#00FF0000</c> for <see cref="Color.Red"/>).
+	/// </returns>
 	public static string ToHexArgbString(this Color color)
 	{
 		ArgumentNullException.ThrowIfNull(color);
@@ -61,10 +76,13 @@ public static class ColorConversionExtensions
 	}
 
 	/// <summary>
-	/// Converts Color to CMYK
+	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the cyan, magenta, yellow and key components.
 	/// </summary>
-	/// <param name="color"></param>
-	/// <returns>CMYK(100%,100%,100%,100%)</returns>
+	/// <param name="color">The <see cref="Color"/> to convert.</param>
+	/// <returns>
+	/// A <see cref="string"/> in the format: <c>CMYK(cyan,magenta,yellow,key)</c> where <b>cyan</b>, <b>magenta</b>, <b>yellow</b> and <b>key</b> will be a value between 0% and 100%.
+	/// (e.g. <c>CMYK(0,100,100,0)</c> for <see cref="Color.Red"/>).
+	/// </returns>
 	public static string ToCmykString(this Color color)
 	{
 		ArgumentNullException.ThrowIfNull(color);
@@ -72,10 +90,13 @@ public static class ColorConversionExtensions
 	}
 
 	/// <summary>
-	/// Converts Color to CMYKA
+	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the cyan, magenta, yellow, key and alpha components.
 	/// </summary>
-	/// <param name="color"></param>
-	/// <returns>CMYKA(100%,100%,100%,100%,1)</returns>
+	/// <param name="color">The <see cref="Color"/> to convert.</param>
+	/// <returns>
+	/// A <see cref="string"/> in the format: <c>CMYKA(cyan,magenta,yellow,key,alpha)</c> where <b>cyan</b>, <b>magenta</b>, <b>yellow </b>and <b>key</b> will be a value between
+	/// 0% and 100% and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>CMYKA(100%,100%,0%,100%,1)</c> for <see cref="Color.Red"/>).
+	/// </returns>
 	public static string ToCmykaString(this Color color)
 	{
 		ArgumentNullException.ThrowIfNull(color);
@@ -83,10 +104,13 @@ public static class ColorConversionExtensions
 	}
 
 	/// <summary>
-	/// Converts Color to HSL
+	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the hue, saturation and lightness components.
 	/// </summary>
-	/// <param name="color"></param>
-	/// <returns>HSLA(360,100%,100%)</returns>
+	/// <param name="color">The <see cref="Color"/> to convert.</param>
+	/// <returns>
+	/// A <see cref="string"/> in the format: <c>HSL(hue,saturation,lightness)</c> where <b>hue</b> will be a value between 0 and 360, and <b>saturation</b> and <b>lightness</b>
+	/// will be a value between 0% and 100%. (e.g. <c>HSL(0,100%,50%)</c> for <see cref="Color.Red"/>).
+	/// </returns>
 	public static string ToHslString(this Color color)
 	{
 		ArgumentNullException.ThrowIfNull(color);
@@ -94,10 +118,13 @@ public static class ColorConversionExtensions
 	}
 
 	/// <summary>
-	/// Converts Color to HSLA
+	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the hue, saturation, lightness and alpha components.
 	/// </summary>
-	/// <param name="color"></param>
-	///  <returns>HSLA(360,100%,100%,1)</returns>
+	/// <param name="color">The <see cref="Color"/> to convert.</param>
+	/// <returns>
+	/// A <see cref="string"/> in the format: <c>HSLA(hue,saturation,lightness,alpha)</c> where <b>hue</b> will be a value between 0 and 360, <b>saturation</b> and <b>lightness</b>
+	/// will be a value between 0% and 100%, and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>HSLA(0,100%,50%,1)</c> for <see cref="Color.Red"/>).
+	/// </returns>
 	public static string ToHslaString(this Color color)
 	{
 		ArgumentNullException.ThrowIfNull(color);
