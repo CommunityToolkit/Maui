@@ -1,4 +1,5 @@
-﻿using CoreGraphics;
+﻿using System.Runtime.InteropServices;
+using CoreGraphics;
 using ObjCRuntime;
 using UIKit;
 
@@ -12,7 +13,7 @@ public class PaddedLabel : UILabel
 	/// <summary>
 	/// Initialize <see cref="PaddedLabel"/>
 	/// </summary>
-	public PaddedLabel(nfloat leftPadding, nfloat topPadding, nfloat rightPadding, nfloat bottomPadding)
+	public PaddedLabel(NFloat leftPadding, NFloat topPadding, NFloat rightPadding, NFloat bottomPadding)
 	{
 		LeftPadding = leftPadding;
 		TopPadding = topPadding;
@@ -23,22 +24,22 @@ public class PaddedLabel : UILabel
 	/// <summary>
 	/// Left Padding
 	/// </summary>
-	public nfloat LeftPadding { get; }
+	public NFloat LeftPadding { get; }
 
 	/// <summary>
 	/// Top Padding
 	/// </summary>
-	public nfloat TopPadding { get; }
+	public NFloat TopPadding { get; }
 
 	/// <summary>
 	/// Right Padding
 	/// </summary>
-	public nfloat RightPadding { get; }
+	public NFloat RightPadding { get; }
 
 	/// <summary>
 	/// Bottom Padding
 	/// </summary>
-	public nfloat BottomPadding { get; }
+	public NFloat BottomPadding { get; }
 
 	/// <inheritdoc/>
 	public override CGSize IntrinsicContentSize => new(

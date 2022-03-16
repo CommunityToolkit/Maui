@@ -53,7 +53,7 @@ public partial class PopupHandler
 public partial class PopupHandler : Microsoft.Maui.Handlers.ElementHandler<IPopup, object>
 {
 	/// <inheritdoc/>
-	protected override object CreateNativeElement() => throw new NotSupportedException();
+	protected override object CreatePlatformElement() => throw new NotSupportedException();
 
 	/// <summary>
 	/// Action that's triggered when the Popup is closed.

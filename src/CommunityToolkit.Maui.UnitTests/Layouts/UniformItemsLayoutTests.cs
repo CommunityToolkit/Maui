@@ -72,7 +72,7 @@ public class UniformItemsLayoutTests : BaseTest
 		uniformChild = new TestView(expectedSize);
 		uniformItemsLayout.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
-		var actualSize = uniformItemsLayout.ArrangeChildren(new Rectangle(0, 0, childWidth * childCount, childHeight * childCount));
+		var actualSize = uniformItemsLayout.ArrangeChildren(new Rect(0, 0, childWidth * childCount, childHeight * childCount));
 
 		Assert.Equal(expectedSize, actualSize);
 	}

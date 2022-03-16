@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using CoreGraphics;
 using ObjCRuntime;
 using UIKit;
@@ -36,7 +37,7 @@ public class SnackbarView : ToastView, IDisposable
 		string actionButtonText,
 		UIColor actionTextColor,
 		UIFont actionButtonFont,
-		nfloat? padding = null)
+		NFloat? padding = null)
 		: base(message, backgroundColor, cornerRadius, textColor, textFont, characterSpacing, padding)
 	{
 		padding ??= DefaultPadding;

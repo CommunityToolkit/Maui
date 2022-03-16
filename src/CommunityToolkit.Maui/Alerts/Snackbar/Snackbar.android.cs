@@ -47,7 +47,7 @@ public partial class Snackbar
 
 		if (Anchor is not Page)
 		{
-			NativeSnackbar.SetAnchorView(Anchor?.Handler?.NativeView as View);
+			NativeSnackbar.SetAnchorView(Anchor?.Handler?.PlatformView as View);
 		}
 
 		SetupContainer(snackbarView);

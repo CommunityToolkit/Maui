@@ -89,7 +89,7 @@ public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 			return false;
 		}
 
-		container = popup.Content.ToNative(mauiContext);
+		container = popup.Content.ToPlatform(mauiContext);
 		SetContentView(container);
 
 		return true;

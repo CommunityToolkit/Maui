@@ -31,7 +31,7 @@ public static class PopupExtensions
 
 		if (popup.Anchor is not null)
 		{
-			var anchorView = popup.Anchor.ToNative(popup.Handler.MauiContext);
+			var anchorView = popup.Anchor.ToPlatform(popup.Handler.MauiContext);
 
 			var locationOnScreen = new int[2];
 			anchorView.GetLocationOnScreen(locationOnScreen);
@@ -71,7 +71,7 @@ public static class PopupExtensions
 		}
 
 		var window = GetWindow(dialog);
-		window.SetBackgroundDrawable(new ColorDrawable(popup.Color.ToNative(AColorRes.BackgroundLight, dialog.Context)));
+		window.SetBackgroundDrawable(new ColorDrawable(popup.Color.ToPlatform(AColorRes.BackgroundLight, dialog.Context)));
 	}
 
 	/// <summary>

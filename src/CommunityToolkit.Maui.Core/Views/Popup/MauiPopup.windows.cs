@@ -95,13 +95,13 @@ public class MauiPopup : Flyout
 
 		if (VirtualView.Anchor is not null)
 		{
-			var anchor = VirtualView.Anchor.ToNative(mauiContext);
+			var anchor = VirtualView.Anchor.ToPlatform(mauiContext);
 			SetAttachedFlyout(anchor, this);
 			ShowAttachedFlyout(anchor);
 		}
 		else
 		{
-			var frameworkElement = VirtualView.Parent.ToNative(mauiContext);
+			var frameworkElement = VirtualView.Parent.ToPlatform(mauiContext);
 			frameworkElement.ContextFlyout = this;
 			SetAttachedFlyout(frameworkElement, this);
 			ShowAttachedFlyout(frameworkElement);

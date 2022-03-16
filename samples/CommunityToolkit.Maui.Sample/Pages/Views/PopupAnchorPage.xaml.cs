@@ -17,7 +17,7 @@ public partial class PopupAnchorPage : BasePage<PopupAnchorViewModel>
 
 		var label = (Label)sender;
 
-		if (Device.RuntimePlatform is Device.Android)
+		if (DeviceInfo.Platform == DevicePlatform.Android)
 		{
 			label.TranslationX += e.TotalX;
 			label.TranslationY += e.TotalY;

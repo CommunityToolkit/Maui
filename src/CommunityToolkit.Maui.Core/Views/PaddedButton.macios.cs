@@ -1,4 +1,5 @@
-﻿using ObjCRuntime;
+﻿using System.Runtime.InteropServices;
+using ObjCRuntime;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -11,7 +12,7 @@ public sealed class PaddedButton : UIButton
 	/// <summary>
 	/// Initialize <see cref="PaddedButton"/>
 	/// </summary>
-	public PaddedButton(nfloat leftPadding, nfloat topPadding, nfloat rightPadding, nfloat bottomPadding)
+	public PaddedButton(NFloat leftPadding, NFloat topPadding, NFloat rightPadding, NFloat bottomPadding)
 	{
 		LeftPadding = leftPadding;
 		TopPadding = topPadding;
@@ -35,20 +36,20 @@ public sealed class PaddedButton : UIButton
 	/// <summary>
 	/// Left Padding
 	/// </summary>
-	public nfloat LeftPadding { get; }
+	public NFloat LeftPadding { get; }
 
 	/// <summary>
 	/// Top Padding
 	/// </summary>
-	public nfloat TopPadding { get; }
+	public NFloat TopPadding { get; }
 
 	/// <summary>
 	/// Right Padding
 	/// </summary>
-	public nfloat RightPadding { get; }
+	public NFloat RightPadding { get; }
 
 	/// <summary>
 	/// Bottom Padding
 	/// </summary>
-	public nfloat BottomPadding { get; }
+	public NFloat BottomPadding { get; }
 }

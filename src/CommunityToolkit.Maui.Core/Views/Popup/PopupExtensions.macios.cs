@@ -46,8 +46,8 @@ public static class PopupExtensions
 			return;
 		}
 
-		var color = popup.Color?.ToNative();
-		mauiPopup.Control.NativeView.BackgroundColor = color;
+		var color = popup.Color?.ToPlatform();
+		mauiPopup.Control.PlatformView.BackgroundColor = color;
 	}
 
 	/// <summary>
@@ -93,7 +93,7 @@ public static class PopupExtensions
 		}
 		else
 		{
-			var view = popup.Anchor.ToNative(popup.Handler?.MauiContext ?? throw new NullReferenceException());
+			var view = popup.Anchor.ToPlatform(popup.Handler?.MauiContext ?? throw new NullReferenceException());
 			mauiPopup.PopoverPresentationController.SourceView = view;
 			mauiPopup.PopoverPresentationController.SourceRect = view.Bounds;
 		}
