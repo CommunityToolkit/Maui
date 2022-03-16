@@ -13,9 +13,11 @@ public class IntToBoolConverter_Tests : BaseTest
 	{
 		var intToBoolConverter = new IntToBoolConverter();
 
-		var result = (bool)intToBoolConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
+		var result = intToBoolConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
+		var typedResult = intToBoolConverter.ConvertFrom(value);
 
 		Assert.Equal(result, expectedResult);
+		Assert.Equal(typedResult, expectedResult);
 	}
 
 	[Theory]
@@ -25,16 +27,17 @@ public class IntToBoolConverter_Tests : BaseTest
 	{
 		var intToBoolConverter = new IntToBoolConverter();
 
-		var result = (int)intToBoolConverter.ConvertBack(value, typeof(bool), null, CultureInfo.CurrentCulture);
+		var result = intToBoolConverter.ConvertBack(value, typeof(bool), null, CultureInfo.CurrentCulture);
+		var typedResult = intToBoolConverter.ConvertBackTo(value);
 
 		Assert.Equal(result, expectedResult);
+		Assert.Equal(typedResult, expectedResult);
 	}
 
 	[Theory]
 	[InlineData(2.5)]
 	[InlineData("")]
-	[InlineData(null)]
-	public void InValidConverterValuesThrowArgumenException(object value)
+	public void InValidConverterValuesThrowArgumentException(object value)
 	{
 		var intToBoolConverter = new IntToBoolConverter();
 		Assert.Throws<ArgumentException>(() => intToBoolConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
@@ -44,9 +47,16 @@ public class IntToBoolConverter_Tests : BaseTest
 	[InlineData(2.5)]
 	[InlineData("")]
 	[InlineData(null)]
-	public void InValidConverterBackValuesThrowArgumenException(object value)
+	public void InValidConverterBackValuesThrowArgumentException(object value)
 	{
 		var intToBoolConverter = new IntToBoolConverter();
 		Assert.Throws<ArgumentException>(() => intToBoolConverter.ConvertBack(value, typeof(bool), null, CultureInfo.CurrentCulture));
+	}
+
+	[Fact]
+	public void NullConverterValueThrowsArgumentNullException()
+	{
+		var intToBoolConverter = new IntToBoolConverter();
+		Assert.Throws<ArgumentNullException>(() => intToBoolConverter.Convert(null, typeof(bool), null, CultureInfo.CurrentCulture));
 	}
 }
