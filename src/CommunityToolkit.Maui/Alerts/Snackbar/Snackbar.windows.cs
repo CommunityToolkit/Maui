@@ -38,34 +38,27 @@ public partial class Snackbar
 	{
 		await DismissNative(token);
 		token.ThrowIfCancellationRequested();
-#if WINDOWS10_0_18362_0_OR_GREATER
-		if (Environment.OSVersion.Version.Build >= 18362)
-		{
-#pragma warning disable CA1416 // Validate platform compatibility
-			var toastContentBuilder = new ToastContentBuilder()
-				.AddText(Text)
-				.AddButton(
-					new ToastButton {ActivationType = ToastActivationType.Foreground}.SetContent(ActionButtonText));
+		var toastContentBuilder = new ToastContentBuilder()
+			.AddText(Text)
+			.AddButton(
+				new ToastButton { ActivationType = ToastActivationType.Foreground }.SetContent(ActionButtonText));
 
-			var toastContent = toastContentBuilder.GetToastContent();
-			toastContent.ActivationType = ToastActivationType.Background;
+		var toastContent = toastContentBuilder.GetToastContent();
+		toastContent.ActivationType = ToastActivationType.Background;
 
-			dismissedTCS = new();
+		dismissedTCS = new();
 
-			var xmlDocument = new XmlDocument();
-			xmlDocument.LoadXml(toastContent.GetContent());
+		var xmlDocument = new XmlDocument();
+		xmlDocument.LoadXml(toastContent.GetContent());
 
-			NativeSnackbar = new ToastNotification(xmlDocument);
-			NativeSnackbar.Activated += OnActivated;
-			NativeSnackbar.Dismissed += OnDismissed;
-			NativeSnackbar.ExpirationTime = DateTimeOffset.Now.Add(Duration);
+		NativeSnackbar = new ToastNotification(xmlDocument);
+		NativeSnackbar.Activated += OnActivated;
+		NativeSnackbar.Dismissed += OnDismissed;
+		NativeSnackbar.ExpirationTime = DateTimeOffset.Now.Add(Duration);
 
-			ToastNotificationManager.CreateToastNotifier().Show(nativeSnackbar);
+		ToastNotificationManager.CreateToastNotifier().Show(nativeSnackbar);
 
-			OnShown();
-		}
-#pragma warning restore CA1416 // Validate platform compatibility
-#endif
+		OnShown();
 	}
 
 	void OnActivated(ToastNotification sender, object args)

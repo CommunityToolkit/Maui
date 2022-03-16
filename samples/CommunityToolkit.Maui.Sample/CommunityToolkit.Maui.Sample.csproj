@@ -17,8 +17,8 @@
     <ApplicationId>com.microsoft.CommunityToolkit.Maui.Sample</ApplicationId>
 
     <!-- Versions -->
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
-    <AndroidVersionCode>1</AndroidVersionCode>
 
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles</CompilerGeneratedFilesOutputPath>

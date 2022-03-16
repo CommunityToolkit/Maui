@@ -19,18 +19,7 @@ public sealed class PaddedButton : UIButton
 		RightPadding = rightPadding;
 		BottomPadding = bottomPadding;
 
-#if IOS15_0_OR_GREATER || MACCATALYST15_0_OR_GREATER
-		if (UIDevice.CurrentDevice.CheckSystemVersion(15, 0))
-		{
-#pragma warning disable CA1416 // Validate platform compatibility
-			var filled = UIButtonConfiguration.FilledButtonConfiguration;
-			filled.ContentInsets = new NSDirectionalEdgeInsets(topPadding, leftPadding, bottomPadding, rightPadding);
-			Configuration = filled;
-#pragma warning restore CA1416 // Validate platform compatibility
-		}
-#else
 		ContentEdgeInsets = new UIEdgeInsets(topPadding, leftPadding, bottomPadding, rightPadding);
-#endif
 	}
 
 	/// <summary>
