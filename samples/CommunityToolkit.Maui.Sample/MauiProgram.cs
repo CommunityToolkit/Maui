@@ -9,6 +9,7 @@ using CommunityToolkit.Maui.Sample.Pages.Converters;
 using CommunityToolkit.Maui.Sample.Pages.Extensions;
 using CommunityToolkit.Maui.Sample.Pages.Views;
 using CommunityToolkit.Maui.Sample.Pages.Layouts;
+using CommunityToolkit.Maui.Markup;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
@@ -19,7 +20,7 @@ public static class MauiProgram
 	public static MauiApp CreateMauiApp()
 	{
 		var builder = MauiApp.CreateBuilder();
-		builder.UseMauiApp<App>().UseMauiCommunityToolkit();
+		builder.UseMauiApp<App>().UseMauiCommunityToolkit().UseMauiCommunityToolkitMarkup();
 
 		// Add HttpClient
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>();
