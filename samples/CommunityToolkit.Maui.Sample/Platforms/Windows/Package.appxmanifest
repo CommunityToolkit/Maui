@@ -8,7 +8,7 @@
   <Identity Publisher="CN=Microsoft" />
 
   <Properties>
-    <PublisherDisplayName>Microsoft</PublisherDisplayName>
+    <PublisherDisplayName>CommunityToolkit</PublisherDisplayName>
   </Properties>
 
   <Dependencies>
