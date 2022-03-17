@@ -1,7 +1,7 @@
-﻿using CommunityToolkit.Maui.Core.Views;
+﻿using System.Runtime.InteropServices;
+using CommunityToolkit.Maui.Core.Views;
 using CoreGraphics;
 using Microsoft.Maui.Platform;
-using ObjCRuntime;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Alerts;
@@ -35,18 +35,18 @@ public partial class Snackbar
 
 		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + ToastView.DefaultPadding;
 		NativeSnackbar = new SnackbarView(Text,
-											VisualOptions.BackgroundColor.ToNative(),
+											VisualOptions.BackgroundColor.ToPlatform(),
 											cornerRadius,
-											VisualOptions.TextColor.ToNative(),
-											UIFont.SystemFontOfSize((nfloat)VisualOptions.Font.Size),
+											VisualOptions.TextColor.ToPlatform(),
+											UIFont.SystemFontOfSize((NFloat)VisualOptions.Font.Size),
 											VisualOptions.CharacterSpacing,
 											ActionButtonText,
-											VisualOptions.ActionButtonTextColor.ToNative(),
-											UIFont.SystemFontOfSize((nfloat)VisualOptions.ActionButtonFont.Size),
+											VisualOptions.ActionButtonTextColor.ToPlatform(),
+											UIFont.SystemFontOfSize((NFloat)VisualOptions.ActionButtonFont.Size),
 											padding)
 		{
 			Action = Action,
-			Anchor = Anchor?.Handler?.NativeView as UIView,
+			Anchor = Anchor?.Handler?.PlatformView as UIView,
 			Duration = Duration,
 			OnDismissed = OnDismissed,
 			OnShown = OnShown

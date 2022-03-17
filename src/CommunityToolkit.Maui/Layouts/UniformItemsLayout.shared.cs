@@ -45,7 +45,7 @@ public class UniformItemsLayout : Layout, IUniformItemsLayout
 	/// </summary>
 	/// <param name="rectangle">Grid rectangle</param>
 	/// <returns>Child size</returns>
-	public Size ArrangeChildren(Rectangle rectangle)
+	public Size ArrangeChildren(Rect rectangle)
 	{
 		Measure(rectangle.Width, rectangle.Height, MeasureFlags.None);
 
@@ -53,7 +53,7 @@ public class UniformItemsLayout : Layout, IUniformItemsLayout
 		var rows = GetRowsCount(Children.Count, columns);
 		var boundsWidth = rectangle.Width / columns;
 		var boundsHeight = childHeight;
-		var bounds = new Rectangle(0, 0, boundsWidth, boundsHeight);
+		var bounds = new Rect(0, 0, boundsWidth, boundsHeight);
 		var count = 0;
 
 		for (var i = 0; i < rows; i++)

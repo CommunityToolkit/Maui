@@ -8,325 +8,445 @@ public static class ColorConversionExtensions
 	/// <summary>
 	/// Converts Color to RGB
 	/// </summary>
-	/// <param name="c"></param>
+	/// <param name="color"></param>
 	/// <returns>RGB(255,255,255)</returns>
-	public static string ToRgbString(this Color c) => 
-		$"RGB({c.GetByteRed()},{c.GetByteGreen()},{c.GetByteBlue()})";
+	public static string ToRgbString(this Color color)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+		return $"RGB({color.GetByteRed()},{color.GetByteGreen()},{color.GetByteBlue()})";
+	}
 
 	/// <summary>
 	/// Converts Color to RGBA
 	/// </summary>
-	/// <param name="c"></param>
+	/// <param name="color"></param>
 	/// <returns>RGBA(255,255,255,1)</returns>
-	public static string ToRgbaString(this Color c) =>
-        $"RGBA({c.GetByteRed()},{c.GetByteGreen()},{c.GetByteBlue()},{c.Alpha})";
+	public static string ToRgbaString(this Color color)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+		return $"RGBA({color.GetByteRed()},{color.GetByteGreen()},{color.GetByteBlue()},{color.Alpha})";
+	}
 
 	/// <summary>
 	/// Converts Color to Hex RGB
 	/// </summary>
-	/// <param name="c"></param>
+	/// <param name="color"></param>
 	/// <returns>#FFFFFF</returns>
-	public static string ToHexRgbString(this Color c) =>
-		$"#{c.GetByteRed():X2}{c.GetByteGreen():X2}{c.GetByteBlue():X2}";
+	public static string ToHexRgbString(this Color color)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+		return $"#{color.GetByteRed():X2}{color.GetByteGreen():X2}{color.GetByteBlue():X2}";
+	}
 
 	/// <summary>
 	/// Converts Color to Hex RGBA
 	/// </summary>
-	/// <param name="c"></param>
+	/// <param name="color"></param>
 	/// <returns>#FFFFFFFF</returns>
-	public static string ToHexRgbaString(this Color c) =>
-		$"#{c.GetByteRed():X2}{c.GetByteGreen():X2}{c.GetByteBlue():X2}{c.GetByteAlpha():X2}";
+	public static string ToHexRgbaString(this Color color)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+		return $"#{color.GetByteRed():X2}{color.GetByteGreen():X2}{color.GetByteBlue():X2}{color.GetByteAlpha():X2}";
+	}
 
 	/// <summary>
 	/// Converts Color to Hex ARGB
 	/// </summary>
-	/// <param name="c"></param>
+	/// <param name="color"></param>
 	/// <returns>#FFFFFFFF</returns>
-	public static string ToHexArgbString(this Color c) =>
-		$"#{c.GetByteAlpha():X2}{c.GetByteRed():X2}{c.GetByteGreen():X2}{c.GetByteBlue():X2}";
+	public static string ToHexArgbString(this Color color)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+		return $"#{color.GetByteAlpha():X2}{color.GetByteRed():X2}{color.GetByteGreen():X2}{color.GetByteBlue():X2}";
+	}
 
 	/// <summary>
 	/// Converts Color to CMYK
 	/// </summary>
-	/// <param name="c"></param>
+	/// <param name="color"></param>
 	/// <returns>CMYK(100%,100%,100%,100%)</returns>
-	public static string ToCmykString(this Color c) =>
-        $"CMYK({c.GetPercentCyan():P0},{c.GetPercentMagenta():P0},{c.GetPercentYellow():P0},{c.GetPercentBlackKey():P0})";
+	public static string ToCmykString(this Color color)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+		return $"CMYK({color.GetPercentCyan():P0},{color.GetPercentMagenta():P0},{color.GetPercentYellow():P0},{color.GetPercentBlackKey():P0})";
+	}
 
 	/// <summary>
 	/// Converts Color to CMYKA
 	/// </summary>
-	/// <param name="c"></param>
+	/// <param name="color"></param>
 	/// <returns>CMYKA(100%,100%,100%,100%,1)</returns>
-	public static string ToCmykaString(this Color c) =>
-        $"CMYKA({c.GetPercentCyan():P0},{c.GetPercentMagenta():P0},{c.GetPercentYellow():P0},{c.GetPercentBlackKey():P0},{c.Alpha})";
+	public static string ToCmykaString(this Color color)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+		return $"CMYKA({color.GetPercentCyan():P0},{color.GetPercentMagenta():P0},{color.GetPercentYellow():P0},{color.GetPercentBlackKey():P0},{color.Alpha})";
+	}
 
 	/// <summary>
 	/// Converts Color to HSL
 	/// </summary>
-	/// <param name="c"></param>
+	/// <param name="color"></param>
 	/// <returns>HSLA(360,100%,100%)</returns>
-	public static string ToHslString(this Color c) => $"HSL({c.GetDegreeHue():0},{c.GetSaturation():P0},{c.GetLuminosity():P0})";
+	public static string ToHslString(this Color color)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+		return $"HSL({color.GetDegreeHue():0},{color.GetSaturation():P0},{color.GetLuminosity():P0})";
+	}
 
 	/// <summary>
 	/// Converts Color to HSLA
 	/// </summary>
-	/// <param name="c"></param>
+	/// <param name="color"></param>
 	///  <returns>HSLA(360,100%,100%,1)</returns>
-	public static string ToHslaString(this Color c) =>
-        $"HSLA({c.GetDegreeHue():0},{c.GetSaturation():P0},{c.GetLuminosity():P0},{c.Alpha})";
+	public static string ToHslaString(this Color color)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+		return $"HSLA({color.GetDegreeHue():0},{color.GetSaturation():P0},{color.GetLuminosity():P0},{color.Alpha})";
+	}
 
 	/// <summary>
 	/// Sets Red
 	/// </summary>
-	/// <param name="baseColor"></param>
+	/// <param name="color"></param>
 	/// <param name="newR"></param>
 	/// <returns>Color with updated Red</returns>
-	public static Color WithRed(this Color baseColor, double newR) =>
-		newR < 0 || newR > 1 
-			? throw new ArgumentOutOfRangeException(nameof(newR)) 
-			: Color.FromRgba(newR, baseColor.Green, baseColor.Blue, baseColor.Alpha); 
-		
+	public static Color WithRed(this Color color, double newR)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+
+		return newR < 0 || newR > 1
+				? throw new ArgumentOutOfRangeException(nameof(newR))
+				: Color.FromRgba(newR, color.Green, color.Blue, color.Alpha);
+	}
+
 
 	/// <summary>
 	/// Sets Green
 	/// </summary>
-	/// <param name="baseColor"></param>
+	/// <param name="color"></param>
 	/// <param name="newG"></param>
 	/// <returns>Color with updated Green</returns>
-	public static Color WithGreen(this Color baseColor, double newG) =>
-		newG < 0 || newG > 1
-			? throw new ArgumentOutOfRangeException(nameof(newG))
-			: Color.FromRgba(baseColor.Red, newG, baseColor.Blue, baseColor.Alpha);
+	public static Color WithGreen(this Color color, double newG)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+		return newG < 0 || newG > 1
+				? throw new ArgumentOutOfRangeException(nameof(newG))
+				: Color.FromRgba(color.Red, newG, color.Blue, color.Alpha);
+	}
 
 	/// <summary>
 	/// Sets Blue
 	/// </summary>
-	/// <param name="baseColor"></param>
+	/// <param name="color"></param>
 	/// <param name="newB"></param>
 	/// <returns>Color with updated Blue</returns>
-	public static Color WithBlue(this Color baseColor, double newB) =>
-		newB < 0 || newB > 1
-			? throw new ArgumentOutOfRangeException(nameof(newB))
-			: Color.FromRgba(baseColor.Red, baseColor.Green, newB, baseColor.Alpha);
+	public static Color WithBlue(this Color color, double newB)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+
+		return newB < 0 || newB > 1
+				? throw new ArgumentOutOfRangeException(nameof(newB))
+				: Color.FromRgba(color.Red, color.Green, newB, color.Alpha);
+	}
 
 	/// <summary>
 	/// Sets Red
 	/// </summary>
-	/// <param name="baseColor"></param>
+	/// <param name="color"></param>
 	/// <param name="newR"></param>
 	/// <returns>Color with updated red</returns>
-	public static Color WithRed(this Color baseColor, byte newR) =>
-		Color.FromRgba((double)newR / 255, baseColor.Green, baseColor.Blue, baseColor.Alpha);
+	public static Color WithRed(this Color color, byte newR)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+
+		return Color.FromRgba((double)newR / 255, color.Green, color.Blue, color.Alpha);
+	}
 
 	/// <summary>
 	/// Sets Green
 	/// </summary>
-	/// <param name="baseColor"></param>
+	/// <param name="color"></param>
 	/// <param name="newG"></param>
 	/// <returns>Color with updated Green</returns>
-	public static Color WithGreen(this Color baseColor, byte newG) =>
-		Color.FromRgba(baseColor.Red, (double)newG / 255, baseColor.Blue, baseColor.Alpha);
+	public static Color WithGreen(this Color color, byte newG)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+
+		return Color.FromRgba(color.Red, (double)newG / 255, color.Blue, color.Alpha);
+	}
 
 	/// <summary>
 	/// Sets Blue
 	/// </summary>
-	/// <param name="baseColor"></param>
+	/// <param name="color"></param>
 	/// <param name="newB"></param>
 	/// <returns>Color with updated Blue</returns>
-	public static Color WithBlue(this Color baseColor, byte newB) =>
-		Color.FromRgba(baseColor.Red, baseColor.Green, (double)newB / 255, baseColor.Alpha);
+	public static Color WithBlue(this Color color, byte newB)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+
+		return Color.FromRgba(color.Red, color.Green, (double)newB / 255, color.Alpha);
+	}
+
 
 	/// <summary>
 	/// Sets Alpha
 	/// </summary>
-	/// <param name="baseColor"></param>
+	/// <param name="color"></param>
 	/// <param name="newA"></param>
 	/// <returns>Color with updated alpha</returns>
-	public static Color WithAlpha(this Color baseColor, byte newA) =>
-		Color.FromRgba(baseColor.Red, baseColor.Green, baseColor.Blue, (double)newA / 255);
+	public static Color WithAlpha(this Color color, byte newA)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+
+		return Color.FromRgba(color.Red, color.Green, color.Blue, (double)newA / 255);
+	}
 
 	/// <summary>
 	/// Sets Cyan CMYK 
 	/// </summary>
-	/// <param name="baseColor"></param>
+	/// <param name="color"></param>
 	/// <param name="newC"></param>
 	/// <returns>Color with additional cyan</returns>
-	public static Color WithCyan(this Color baseColor, double newC) =>
-		Color.FromRgba((1 - newC) * (1 - baseColor.GetPercentBlackKey()),
-					   (1 - baseColor.GetPercentMagenta()) * (1 - baseColor.GetPercentBlackKey()),
-					   (1 - baseColor.GetPercentYellow()) * (1 - baseColor.GetPercentBlackKey()),
-					   baseColor.Alpha);
+	public static Color WithCyan(this Color color, double newC)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+
+		return Color.FromRgba((1 - newC) * (1 - color.GetPercentBlackKey()),
+								(1 - color.GetPercentMagenta()) * (1 - color.GetPercentBlackKey()),
+								(1 - color.GetPercentYellow()) * (1 - color.GetPercentBlackKey()),
+								color.Alpha);
+	}
 
 	/// <summary>
 	/// Sets Magenta CMYK Value
 	/// </summary>
-	/// <param name="baseColor"></param>
+	/// <param name="color"></param>
 	/// <param name="newM"></param>
 	/// <returns>Color with Magenta value</returns>
-	public static Color WithMagenta(this Color baseColor, double newM) =>
-		Color.FromRgba((1 - baseColor.GetPercentCyan()) * (1 - baseColor.GetPercentBlackKey()),
-					   (1 - newM) * (1 - baseColor.GetPercentBlackKey()),
-					   (1 - baseColor.GetPercentYellow()) * (1 - baseColor.GetPercentBlackKey()),
-					   baseColor.Alpha);
+	public static Color WithMagenta(this Color color, double newM)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+
+		return Color.FromRgba((1 - color.GetPercentCyan()) * (1 - color.GetPercentBlackKey()),
+								(1 - newM) * (1 - color.GetPercentBlackKey()),
+								(1 - color.GetPercentYellow()) * (1 - color.GetPercentBlackKey()),
+								color.Alpha);
+	}
 
 	/// <summary>
 	/// Sets Yellow CMYK value
 	/// </summary>
-	/// <param name="baseColor"></param>
+	/// <param name="color"></param>
 	/// <param name="newY"></param>
 	/// <returns>Color with Yellow value</returns>
-	public static Color WithYellow(this Color baseColor, double newY) =>
-		Color.FromRgba((1 - baseColor.GetPercentCyan()) * (1 - baseColor.GetPercentBlackKey()),
-					   (1 - baseColor.GetPercentMagenta()) * (1 - baseColor.GetPercentBlackKey()),
-					   (1 - newY) * (1 - baseColor.GetPercentBlackKey()),
-					   baseColor.Alpha);
+	public static Color WithYellow(this Color color, double newY)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+
+		return Color.FromRgba((1 - color.GetPercentCyan()) * (1 - color.GetPercentBlackKey()),
+								(1 - color.GetPercentMagenta()) * (1 - color.GetPercentBlackKey()),
+								(1 - newY) * (1 - color.GetPercentBlackKey()),
+								color.Alpha);
+	}
 
 	/// <summary>
 	/// Sets Black CMYK Key
 	/// </summary>
-	/// <param name="baseColor"></param>
+	/// <param name="color"></param>
 	/// <param name="newK"></param>
 	/// <returns>Color with Black Key</returns>
-	public static Color WithBlackKey(this Color baseColor, double newK) =>
-		Color.FromRgba((1 - baseColor.GetPercentCyan()) * (1 - newK),
-					   (1 - baseColor.GetPercentMagenta()) * (1 - newK),
-					   (1 - baseColor.GetPercentYellow()) * (1 - newK),
-					   baseColor.Alpha);
+	public static Color WithBlackKey(this Color color, double newK)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+
+		return Color.FromRgba((1 - color.GetPercentCyan()) * (1 - newK),
+								(1 - color.GetPercentMagenta()) * (1 - newK),
+								(1 - color.GetPercentYellow()) * (1 - newK),
+								color.Alpha);
+	}
 
 	/// <summary>
 	/// Gets Red
 	/// </summary>
-	/// <param name="c"></param>
+	/// <param name="color"></param>
 	/// <returns>Red</returns>
-	public static byte GetByteRed(this Color c) => ToByte(c.Red * 255);
+	public static byte GetByteRed(this Color color)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+		return ToByte(color.Red * 255);
+	}
 
 	/// <summary>
 	/// Gets Green
 	/// </summary>
-	/// <param name="c"></param>
+	/// <param name="color"></param>
 	/// <returns>Green</returns>
-	public static byte GetByteGreen(this Color c) => ToByte(c.Green * 255);
+	public static byte GetByteGreen(this Color color)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+		return ToByte(color.Green * 255);
+	}
 
 	/// <summary>
 	/// Gets Blue
 	/// </summary>
-	/// <param name="c"></param>
+	/// <param name="color"></param>
 	/// <returns>BLue</returns>
-	public static byte GetByteBlue(this Color c) => ToByte(c.Blue * 255);
+	public static byte GetByteBlue(this Color color)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+		return ToByte(color.Blue * 255);
+	}
 
 	/// <summary>
 	/// Gets Alpha
 	/// </summary>
-	/// <param name="c"></param>
+	/// <param name="color"></param>
 	/// <returns>Alpha</returns>
-	public static byte GetByteAlpha(this Color c) => ToByte(c.Alpha * 255);
+	public static byte GetByteAlpha(this Color color)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+		return ToByte(color.Alpha * 255);
+	}
 
 	/// <summary>
 	/// Gets Degree Hue
 	/// </summary>
-	/// <param name="c"></param>
+	/// <param name="color"></param>
 	/// <returns>Degree Hue</returns>
 	// Hue is a degree on the color wheel from 0 to 360. 0 is red, 120 is green, 240 is blue.
-	public static double GetDegreeHue(this Color c) => c.GetHue() * 360;
+	public static double GetDegreeHue(this Color color)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+		return color.GetHue() * 360;
+	}
 
 
 	/// <summary>
 	/// Get percentage Black for Color
 	/// </summary>
-	/// <param name="c"></param>
+	/// <param name="color"></param>
 	/// <returns>Percentage Black</returns>
 	// Note : double Percent R, G and B are simply Color.R, Color.G and Color.B
-	public static float GetPercentBlackKey(this Color c) => 1 - Math.Max(Math.Max(c.Red, c.Green), c.Blue);
+	public static float GetPercentBlackKey(this Color color)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+		return 1 - Math.Max(Math.Max(color.Red, color.Green), color.Blue);
+	}
 
 	/// <summary>
 	/// Gets percentage Cyan for Color
 	/// </summary>
-	/// <param name="c"></param>
+	/// <param name="color"></param>
 	/// <returns>Percentage Cyan</returns>
-	public static float GetPercentCyan(this Color c) =>
-		(1- c.GetPercentBlackKey() == 0) ? 0 : 
-		(1 - c.Red - c.GetPercentBlackKey()) / (1 - c.GetPercentBlackKey());
+	public static float GetPercentCyan(this Color color)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+
+		return (1 - color.GetPercentBlackKey() is 0)
+				? 0
+				: (1 - color.Red - color.GetPercentBlackKey()) / (1 - color.GetPercentBlackKey());
+	}
 
 	/// <summary>
 	/// Gets percentage Magenta for Color
 	/// </summary>
-	/// <param name="c"></param>
+	/// <param name="color"></param>
 	/// <returns>Percentage Magenta</returns>
-    public static float GetPercentMagenta(this Color c) =>
-		(1 - c.GetPercentBlackKey() == 0) ? 0 :
-		(1 - c.Green - c.GetPercentBlackKey()) / (1 - c.GetPercentBlackKey());
+	public static float GetPercentMagenta(this Color color)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+
+		return (1 - color.GetPercentBlackKey() is 0)
+				? 0
+				: (1 - color.Green - color.GetPercentBlackKey()) / (1 - color.GetPercentBlackKey());
+	}
 
 	/// <summary>
 	/// G
 	/// </summary>
-	/// <param name="c"></param>
+	/// <param name="color"></param>
 	/// <returns>Percentage Yellow</returns>
-    public static float GetPercentYellow(this Color c) =>
-		(1 - c.GetPercentBlackKey() == 0) ? 0 :
-		(1 - c.Blue - c.GetPercentBlackKey()) / (1 - c.GetPercentBlackKey());
+	public static float GetPercentYellow(this Color color)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+		return (1 - color.GetPercentBlackKey() is 0)
+				? 0
+				: (1 - color.Blue - color.GetPercentBlackKey()) / (1 - color.GetPercentBlackKey());
+	}
 
 	/// <summary>
 	/// Inverts the Color
 	/// </summary>
-	/// <param name="baseColor"></param>
+	/// <param name="color"></param>
 	/// <returns>Inverse Color</returns>
-	public static Color ToInverseColor(this Color baseColor) =>
-		Color.FromRgb(1 - baseColor.Red, 1 - baseColor.Green, 1 - baseColor.Blue);
+	public static Color ToInverseColor(this Color color)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+		return Color.FromRgb(1 - color.Red, 1 - color.Green, 1 - color.Blue);
+	}
 
 	/// <summary>
 	/// Converts dark colors to Colors.Black; coonverts light colors to Colors.White
 	/// </summary>
-	/// <param name="baseColor"></param>
+	/// <param name="color"></param>
 	/// <returns>Black or White Color</returns>
-	public static Color ToBlackOrWhite(this Color baseColor) => baseColor.IsDark() ? Colors.Black : Colors.White;
+	public static Color ToBlackOrWhite(this Color color)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+		return color.IsDark() ? Colors.Black : Colors.White;
+	}
 
 	/// <summary>
 	/// Converts Color to Colors.Black or Colors.White for text
 	/// </summary>
-	/// <param name="baseColor"></param>
+	/// <param name="color"></param>
 	/// <returns>Black or White Text Color</returns>
-	public static Color ToBlackOrWhiteForText(this Color baseColor) =>
-		baseColor.IsDarkForTheEye() ? Colors.White : Colors.Black;
+	public static Color ToBlackOrWhiteForText(this Color color)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+		return color.IsDarkForTheEye() ? Colors.White : Colors.Black;
+	}
 
 	/// <summary>
 	/// Converts a Color to Grayscale
 	/// </summary>
-	/// <param name="baseColor"></param>
+	/// <param name="color"></param>
 	/// <returns>Gray Scale Color</returns>
-	public static Color ToGrayScale(this Color baseColor)
+	public static Color ToGrayScale(this Color color)
 	{
-		var avg = (baseColor.Red + baseColor.Blue + baseColor.Green) / 3;
+		ArgumentNullException.ThrowIfNull(color);
+
+		var avg = (color.Red + color.Blue + color.Green) / 3;
 		return Color.FromRgb(avg, avg, avg);
 	}
 
 	/// <summary>
 	/// Determines if a Color is dark for the eye
 	/// </summary>
-	/// <param name="c"></param>
+	/// <param name="color"></param>
 	/// <returns>Whether the Color is dark</returns>
-	public static bool IsDarkForTheEye(this Color c) =>
-		(c.GetByteRed() * 0.299) + (c.GetByteGreen() * 0.587) + (c.GetByteBlue() * 0.114) <= 186;
+	public static bool IsDarkForTheEye(this Color color)
+	{
+		ArgumentNullException.ThrowIfNull(color);
+		return (color.GetByteRed() * 0.299) + (color.GetByteGreen() * 0.587) + (color.GetByteBlue() * 0.114) <= 186;
+	}
 
 	/// <summary>
 	/// Determines whether a Color is dark
 	/// </summary>
-	/// <param name="c"></param>
+	/// <param name="color"></param>
 	/// <returns>Is Color Dark</returns>
-	public static bool IsDark(this Color c) => c.GetByteRed() + c.GetByteGreen() + c.GetByteBlue() <= 127 * 3;
-
-	static byte ToByte(double input)
+	public static bool IsDark(this Color color)
 	{
-		if (input < 0)
-		{
-			return 0;
-		}
+		ArgumentNullException.ThrowIfNull(color);
+		return	color.GetByteRed() + color.GetByteGreen() + color.GetByteBlue() <= 127 * 3;
+	}
 
-		if (input > 255)
-		{
-			return 255;
-		}
-
-		return (byte)Math.Round(input);
+	static byte ToByte(float input)
+	{
+		var clampedInput = Math.Clamp(input, 0, 255);
+		return (byte)Math.Round(clampedInput);
 	}
 }

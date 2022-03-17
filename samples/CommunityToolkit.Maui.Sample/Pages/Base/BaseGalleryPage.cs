@@ -12,13 +12,18 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 	{
 		Title = title;
 
-		Padding = (Device.RuntimePlatform, Device.Idiom) switch
+		if (DeviceInfo.Platform == DevicePlatform.iOS && DeviceInfo.Idiom == DeviceIdiom.Phone)
 		{
-			// Work-around to ensure content doesn't get clipped by iOS Status Bar + Naviagtion Bar
-			(Device.iOS, TargetIdiom.Phone) => new Thickness(0, 96, 0, 0),
-			(Device.iOS or Device.MacCatalyst, _) => new Thickness(0, 84, 0, 0),
-			_ => 0
-		};
+			Padding = new Thickness(0, 96, 0, 0);
+		}
+		else if (DeviceInfo.Platform == DevicePlatform.iOS || DeviceInfo.Platform == DevicePlatform.MacCatalyst)
+		{
+			Padding = new Thickness(0, 84, 0, 0);
+		}
+		else
+		{
+			Padding = 0;
+		}
 
 		Content = new CollectionView
 		{
@@ -35,10 +40,12 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 		var collectionView = (CollectionView)sender;
 		collectionView.SelectedItem = null;
 
-		if (e.CurrentSelection.FirstOrDefault() is SectionModel sectionModel)
+		if (e.CurrentSelection.FirstOrDefault() is not SectionModel sectionModel)
 		{
-			await Shell.Current.GoToAsync(AppShell.GetPageRoute(sectionModel.ViewModelType));
+			return;
 		}
+
+		await Shell.Current.GoToAsync(AppShell.GetPageRoute(sectionModel.ViewModelType));
 	}
 
 	class GalleryDataTemplate : DataTemplate

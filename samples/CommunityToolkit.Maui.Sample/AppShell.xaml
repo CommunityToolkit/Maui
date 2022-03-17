@@ -9,6 +9,7 @@
        xmlns:extensions="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Extensions"
        xmlns:layouts="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Layouts"
        xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+       xmlns:views="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Views"
        xmlns:sys="clr-namespace:System;assembly=netstandard">
 
     <Shell.FlyoutHeader>
@@ -59,6 +60,12 @@
                 Route="LayoutsGalleryPage"
                 Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst=''}">
         <ShellContent ContentTemplate="{DataTemplate layouts:LayoutsGalleryPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Views"
+                Route="ViewsGalleryPage"
+                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst=''}">
+        <ShellContent ContentTemplate="{DataTemplate views:ViewsGalleryPage}" />
     </FlyoutItem>
 
     <Shell.FlyoutFooter>

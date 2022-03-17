@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<mct:Popup
+    x:Class="CommunityToolkit.Maui.Sample.TransparentPopup"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:CommunityToolkit.Maui.Sample.Models"
+    xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui"
+    Size="{x:Static models:PopupSizeConstants.Small}">
+
+    <Frame
+        BackgroundColor="Red"
+
+        HorizontalOptions="Center"
+        VerticalOptions="Center"
+
+        CornerRadius="{OnPlatform Default='25',
+                                    Android='50',
+                                    UWP='50'}"
+        HeightRequest="{OnPlatform Default='50',
+                                    Android='100'}"
+        WidthRequest="{OnPlatform Default='50',
+                                      Android='100'}" />
+</mct:Popup>

@@ -22,9 +22,8 @@ public partial class Toast
 	{
 		DismissNative(token);
 		token.ThrowIfCancellationRequested();
-
 		var toastContentBuilder = new ToastContentBuilder()
-										.AddText(Text);
+			.AddText(Text);
 
 		var toastContent = toastContentBuilder.GetToastContent();
 		toastContent.ActivationType = ToastActivationType.Background;

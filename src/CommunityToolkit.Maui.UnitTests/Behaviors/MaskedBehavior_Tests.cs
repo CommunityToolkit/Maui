@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using CommunityToolkit.Maui.Behaviors;
+﻿using CommunityToolkit.Maui.Behaviors;
 using FluentAssertions;
 using Xunit;
 
@@ -78,17 +77,37 @@ public class MaskedBehavior_Tests : BaseTest
 	}
 
 	[Fact]
-	public void AttachedToValidElementTest()
+	public void AttachedToRemovedFromValidElementTest()
 	{
 		var entry = new Entry();
 		var editor = new Editor();
 		var inputView = new InputView();
 		var customInputView = new CustomInputView();
 
-		entry.Invoking(x => x.Behaviors.Add(new MaskedBehavior())).Should().NotThrow<InvalidOperationException>();
-		editor.Invoking(x => x.Behaviors.Add(new MaskedBehavior())).Should().NotThrow<InvalidOperationException>();
-		inputView.Invoking(x => x.Behaviors.Add(new MaskedBehavior())).Should().NotThrow<InvalidOperationException>();
-		customInputView.Invoking(x => x.Behaviors.Add(new MaskedBehavior())).Should().NotThrow<InvalidOperationException>();
+		var entryMaskedBehavior = new MaskedBehavior();
+		var editorMaskedBehavior = new MaskedBehavior();
+		var inputViewMaskedBehavior = new MaskedBehavior();
+		var customInputViewMaskedBehavior = new MaskedBehavior();
+
+		entry.Invoking(x => x.Behaviors.Add(entryMaskedBehavior)).Should().NotThrow<InvalidOperationException>();
+		editor.Invoking(x => x.Behaviors.Add(editorMaskedBehavior)).Should().NotThrow<InvalidOperationException>();
+		inputView.Invoking(x => x.Behaviors.Add(inputViewMaskedBehavior)).Should().NotThrow<InvalidOperationException>();
+		customInputView.Invoking(x => x.Behaviors.Add(customInputViewMaskedBehavior)).Should().NotThrow<InvalidOperationException>();
+
+		Assert.Single(entry.Behaviors.OfType<MaskedBehavior>());
+		Assert.Single(editor.Behaviors.OfType<MaskedBehavior>());
+		Assert.Single(inputView.Behaviors.OfType<MaskedBehavior>());
+		Assert.Single(customInputView.Behaviors.OfType<MaskedBehavior>());
+
+		entry.Invoking(x => x.Behaviors.Remove(entryMaskedBehavior)).Should().NotThrow<InvalidOperationException>();
+		editor.Invoking(x => x.Behaviors.Remove(editorMaskedBehavior)).Should().NotThrow<InvalidOperationException>();
+		inputView.Invoking(x => x.Behaviors.Remove(inputViewMaskedBehavior)).Should().NotThrow<InvalidOperationException>();
+		customInputView.Invoking(x => x.Behaviors.Remove(customInputViewMaskedBehavior)).Should().NotThrow<InvalidOperationException>();
+
+		Assert.Empty(entry.Behaviors);
+		Assert.Empty(editor.Behaviors);
+		Assert.Empty(inputView.Behaviors);
+		Assert.Empty(customInputView.Behaviors);
 	}
 
 	class CustomInputView : InputView

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using CommunityToolkit.Maui.Core;
+using Microsoft.Maui.Dispatching;
 #if ANDROID
 using NativeToast = Android.Widget.Toast;
 #elif IOS || MACCATALYST
@@ -57,12 +58,12 @@ public partial class Toast : IToast
 	/// <summary>
 	/// Show Toast
 	/// </summary>
-	public virtual Task Show(CancellationToken token = default) => Device.InvokeOnMainThreadAsync(() => ShowNative(token));
+	public virtual Task Show(CancellationToken token = default) => Dispatcher.GetForCurrentThread().DispatchIfRequiredAsync(() => ShowNative(token));
 
 	/// <summary>
 	/// Dismiss Toast
 	/// </summary>
-	public virtual Task Dismiss(CancellationToken token = default) => Device.InvokeOnMainThreadAsync(() => DismissNative(token));
+	public virtual Task Dismiss(CancellationToken token = default) => Dispatcher.GetForCurrentThread().DispatchIfRequiredAsync(() => DismissNative(token));
 
 	/// <summary>
 	/// Dispose Toast
@@ -79,7 +80,7 @@ public partial class Toast : IToast
 #if ANDROID
 	protected virtual async ValueTask DisposeAsyncCore()
 	{
-		await Device.InvokeOnMainThreadAsync(() => NativeToast?.Dispose());
+		await Dispatcher.GetForCurrentThread().DispatchIfRequiredAsync(() => NativeToast?.Dispose());
 	}
 #else
 	protected virtual ValueTask DisposeAsyncCore()
