@@ -2,7 +2,7 @@
 
 namespace CommunityToolkit.Maui.Sample.Pages;
 
-public class WelcomePage : BasePage
+public class WelcomePage : ContentPage
 {
 	public WelcomePage()
 	{
@@ -23,5 +23,3 @@ public class WelcomePage : BasePage
 		}.CenterHorizontal();
 	}
 }
-
-

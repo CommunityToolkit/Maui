@@ -6,11 +6,11 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 public class LayoutsGalleryViewModel : BaseGalleryViewModel
 {
 	public LayoutsGalleryViewModel()
-		: base(new []
+		: base(new[]
 		{
 			SectionModel.Create<UniformItemsLayoutViewModel>(nameof(UniformItemsLayoutPage),
 				"A Grid where all rows and columns have the same size"),
 		})
-    {
-    }
+	{
+	}
 }

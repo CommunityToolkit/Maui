@@ -1,13 +1,16 @@
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample;
 
 public partial class OpenedEventSimplePopup : Popup
 {
-	public OpenedEventSimplePopup()
+	public OpenedEventSimplePopup(PopupSizeConstants popupSizeConstants)
 	{
 		InitializeComponent();
+
+		Size = popupSizeConstants.Medium;
 
 		Title ??= new();
 		Message ??= new();

@@ -18,7 +18,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 
 	ISnackbar? customSnackbar;
 
-	public SnackbarPage(SnackbarViewModel snackbarViewModel) : base(snackbarViewModel)
+	public SnackbarPage(IDeviceInfo deviceInfo, SnackbarViewModel snackbarViewModel) : base(deviceInfo, snackbarViewModel)
 	{
 		InitializeComponent();
 

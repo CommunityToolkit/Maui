@@ -8,15 +8,15 @@ namespace CommunityToolkit.Maui.Sample.Pages;
 
 public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where TViewModel : BaseGalleryViewModel
 {
-	protected BaseGalleryPage(string title, TViewModel viewModel) : base(viewModel)
+	protected BaseGalleryPage(string title, IDeviceInfo deviceInfo, TViewModel viewModel) : base(deviceInfo, viewModel)
 	{
 		Title = title;
 
-		if (DeviceInfo.Platform == DevicePlatform.iOS && DeviceInfo.Idiom == DeviceIdiom.Phone)
+		if (deviceInfo.Platform == DevicePlatform.iOS && DeviceInfo.Idiom == DeviceIdiom.Phone) // iOS Phones
 		{
 			Padding = new Thickness(0, 96, 0, 0);
 		}
-		else if (DeviceInfo.Platform == DevicePlatform.iOS || DeviceInfo.Platform == DevicePlatform.MacCatalyst)
+		else if (deviceInfo.Platform == DevicePlatform.iOS || DeviceInfo.Platform == DevicePlatform.MacCatalyst) //iOS Tablets + MacCatalyst
 		{
 			Padding = new Thickness(0, 84, 0, 0);
 		}

@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Sample;
 public class TransparentPopupCSharp : Popup
 {
 	public TransparentPopupCSharp(Size popupSize)
-		:this()
+		: this()
 	{
 		Size = popupSize;
 	}
