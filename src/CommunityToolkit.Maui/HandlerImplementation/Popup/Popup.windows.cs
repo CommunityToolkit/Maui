@@ -8,12 +8,12 @@ public partial class Popup
 {
 	void OnPopupHandlerChanged(object? sender, EventArgs e)
 	{
-		if (Handler is null || Handler.NativeView is null)
+		if (Handler?.PlatformView is null)
 		{
 			return;
 		}
 
-		((MauiPopup)Handler.NativeView).SetUpPlatformView(CleanUp, CreateWrapperContent);
+		((MauiPopup)Handler.PlatformView).SetUpPlatformView(CleanUp, CreateWrapperContent);
 
 		static void CleanUp(Panel wrapper)
 		{

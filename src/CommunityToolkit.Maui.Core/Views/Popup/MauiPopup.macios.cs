@@ -5,7 +5,7 @@ using UIKit;
 namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
-/// The navite implementation of Popup control.
+/// The native implementation of Popup control.
 /// </summary>
 public class MauiPopup : UIViewController
 {
@@ -14,7 +14,7 @@ public class MauiPopup : UIViewController
 	/// <summary>
 	/// Constructor of <see cref="MauiPopup"/>.
 	/// </summary>
-	/// <param name="mauiContext">An instace of <see cref="IMauiContext"/>.</param>
+	/// <param name="mauiContext">An instance of <see cref="IMauiContext"/>.</param>
 	/// <exception cref="ArgumentNullException">If <paramref name="mauiContext"/> is null an exception will be thrown. </exception>
 	public MauiPopup(IMauiContext mauiContext)
 	{
@@ -27,7 +27,7 @@ public class MauiPopup : UIViewController
 	public PageHandler? Control { get; private set; }
 
 	/// <summary>
-	/// An instace of the <see cref="IPopup"/>.
+	/// An instance of the <see cref="IPopup"/>.
 	/// </summary>
 	public IPopup? VirtualView { get; private set; }
 

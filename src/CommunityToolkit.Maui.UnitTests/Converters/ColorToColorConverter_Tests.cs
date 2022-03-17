@@ -65,14 +65,14 @@ public class ColorToColorConverter_Tests : BaseTest
 	public static IReadOnlyList<object?[]> ColorToInverseColorConverterData { get; } = new[]
 	{
 		new object[] { Colors.White, Colors.Black},
-		new object[] { new Color(0,0,0), new Color(1,1,1) },
-		new object[] { new Color(0,0,1), new Color(1,1,0) },
-		new object[] { new Color(0,1,0), new Color(1,0,1) },
-		new object[] { new Color(0,1,1), new Color(1,0,0) },
-		new object[] { new Color(1,0,0), new Color(0,1,1) },
-		new object[] { new Color(1,0,1), new Color(0,1,0) },
-		new object[] { new Color(1,1,0), new Color(0,0,1) },
-		new object[] { new Color(1,1,1), new Color(0,0,0) },
+		new object[] { new Color(0f,0f,0f), new Color(1f,1f,1f) },
+		new object[] { new Color(0f,0f,1f), new Color(1f,1f,0f) },
+		new object[] { new Color(0f,1f,0f), new Color(1f,0f,1f) },
+		new object[] { new Color(0f,1f,1f), new Color(1f,0f,0f) },
+		new object[] { new Color(1f,0f,0f), new Color(0f,1f,1f) },
+		new object[] { new Color(1f,0f,1f), new Color(0f,1f,0f) },
+		new object[] { new Color(1f,1f,0f), new Color(0f,0f,1f) },
+		new object[] { new Color(1f,1f,1f), new Color(0f,0f,0f) },
 		new object[] { Colors.Black, Colors.White },
 	};
 

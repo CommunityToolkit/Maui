@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Core.Handlers;
-using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -10,7 +9,7 @@ using XamlStyle = Microsoft.UI.Xaml.Style;
 namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
-/// The navite implementation of Popup control.
+/// The native implementation of Popup control.
 /// </summary>
 public class MauiPopup : Flyout
 {
@@ -21,7 +20,7 @@ public class MauiPopup : Flyout
 	/// <summary>
 	/// Constructor of <see cref="MauiPopup"/>.
 	/// </summary>
-	/// <param name="mauiContext">An instace of <see cref="IMauiContext"/>.</param>
+	/// <param name="mauiContext">An instance of <see cref="IMauiContext"/>.</param>
 	/// <exception cref="ArgumentNullException">If <paramref name="mauiContext"/> is null an exception will be thrown. </exception>
 	public MauiPopup(IMauiContext mauiContext)
 	{
@@ -29,7 +28,7 @@ public class MauiPopup : Flyout
 	}
 
 	/// <summary>
-	/// An instace of the <see cref="IPopup"/>.
+	/// An instance of the <see cref="IPopup"/>.
 	/// </summary>
 	public IPopup? VirtualView { get; private set; }
 
@@ -96,13 +95,13 @@ public class MauiPopup : Flyout
 
 		if (VirtualView.Anchor is not null)
 		{
-			var anchor = VirtualView.Anchor.ToNative(mauiContext);
+			var anchor = VirtualView.Anchor.ToPlatform(mauiContext);
 			SetAttachedFlyout(anchor, this);
 			ShowAttachedFlyout(anchor);
 		}
 		else
 		{
-			var frameworkElement = VirtualView.Parent.ToNative(mauiContext);
+			var frameworkElement = VirtualView.Parent.ToPlatform(mauiContext);
 			frameworkElement.ContextFlyout = this;
 			SetAttachedFlyout(frameworkElement, this);
 			ShowAttachedFlyout(frameworkElement);
