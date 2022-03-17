@@ -8,6 +8,7 @@ public class TransparentPopupCSharp : Popup
 		: this()
 	{
 		Size = popupSize;
+		Color = Colors.Transparent;
 	}
 
 	public TransparentPopupCSharp()
