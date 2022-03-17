@@ -19,7 +19,7 @@ public class AlertView : UIView
 		.Where(x => x.ActivationState == UISceneActivationState.ForegroundActive)
 		.Select(x => x as UIWindowScene)
 		.FirstOrDefault()?
-		.Windows.FirstOrDefault(x => x.IsKeyWindow) ?? throw new NullReferenceException("KeyWindow is not found");
+		.Windows.FirstOrDefault(x => x.IsKeyWindow) ?? throw new InvalidOperationException("KeyWindow is not found");
 
 	/// <summary>
 	/// PopupView Children

@@ -3,7 +3,6 @@ using CoreGraphics;
 using CoreText;
 using Foundation;
 using Microsoft.Maui.Platform;
-using ObjCRuntime;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;

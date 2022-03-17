@@ -2,7 +2,6 @@
 using CommunityToolkit.Maui.Core.Views;
 using CoreGraphics;
 using Microsoft.Maui.Platform;
-using ObjCRuntime;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Alerts;

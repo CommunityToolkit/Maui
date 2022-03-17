@@ -8,7 +8,7 @@ public partial class Popup
 {
 	void OnPopupHandlerChanged(object? sender, EventArgs e)
 	{
-		if (Handler is null || Handler.PlatformView is null)
+		if (Handler?.PlatformView is null)
 		{
 			return;
 		}

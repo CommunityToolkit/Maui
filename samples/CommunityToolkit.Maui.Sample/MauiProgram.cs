@@ -22,17 +22,15 @@ public static class MauiProgram
 		var builder = MauiApp.CreateBuilder();
 		builder.UseMauiApp<App>().UseMauiCommunityToolkit().UseMauiCommunityToolkitMarkup();
 
-		// Add HttpClient
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>();
 
-		// Add Gallery View Models
 		RegisterPages(builder.Services);
 		RegisterViewModels(builder.Services);
 
 		return builder.Build();
 	}
 
-	static void RegisterPages(IServiceCollection services)
+	static void RegisterPages(in IServiceCollection services)
 	{
 		// Add Gallery Pages
 		services.AddTransient<AlertsGalleryPage>();
@@ -105,7 +103,7 @@ public static class MauiProgram
 		services.AddTransient<XamlBindingPopup>();
 	}
 
-	static void RegisterViewModels(IServiceCollection services)
+	static void RegisterViewModels(in IServiceCollection services)
 	{
 		// Add Gallery View Models
 		services.AddTransient<AlertsGalleryPage>();

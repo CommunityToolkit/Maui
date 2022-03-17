@@ -1,7 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using CoreAnimation;
 using CoreGraphics;
-using ObjCRuntime;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -63,16 +62,16 @@ public class RoundedStackView : UIStackView
 		var path = new UIBezierPath();
 		path.MoveTo(new CGPoint(rect.Width - right, rect.Y));
 
-		path.AddArc(new CGPoint((float)rect.X + rect.Width - right, (float)rect.Y + right), (NFloat)right, (float)(Math.PI * 1.5), (float)Math.PI * 2, true);
+		path.AddArc(new CGPoint(rect.X + rect.Width - right, rect.Y + right), right, (NFloat)(Math.PI * 1.5), (NFloat)Math.PI * 2, true);
 		path.AddLineTo(new CGPoint(rect.Width, rect.Height - bottom));
 
-		path.AddArc(new CGPoint((float)rect.X + rect.Width - bottom, (float)rect.Y + rect.Height - bottom), (NFloat)bottom, 0, (float)(Math.PI * .5), true);
+		path.AddArc(new CGPoint(rect.X + rect.Width - bottom, rect.Y + rect.Height - bottom), bottom, 0, (NFloat)(Math.PI * .5), true);
 		path.AddLineTo(new CGPoint(left, rect.Height));
 
-		path.AddArc(new CGPoint((float)rect.X + left, (float)rect.Y + rect.Height - left), (NFloat)left, (float)(Math.PI * .5), (float)Math.PI, true);
+		path.AddArc(new CGPoint(rect.X + left, rect.Y + rect.Height - left), left, (NFloat)(Math.PI * .5), (NFloat)Math.PI, true);
 		path.AddLineTo(new CGPoint(rect.X, top));
 
-		path.AddArc(new CGPoint((float)rect.X + top, (float)rect.Y + top), (NFloat)top, (float)Math.PI, (float)(Math.PI * 1.5), true);
+		path.AddArc(new CGPoint(rect.X + top, rect.Y + top), top, (NFloat)Math.PI, (NFloat)(Math.PI * 1.5), true);
 
 		path.ClosePath();
 

@@ -46,7 +46,6 @@ class WrapperControl : Panel
 
 	protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 	{
-		//view.IsInNativeLayout = true;
 		view.Frame = new Rect(0, 0, finalSize.Width, finalSize.Height);
 		FrameworkElement?.Arrange(new WRect(0, 0, finalSize.Width, finalSize.Height));
 
@@ -60,8 +59,6 @@ class WrapperControl : Panel
 		{
 			Opacity = 1;
 		}
-
-		//view.IsInNativeLayout = false;
 
 		return finalSize;
 	}
