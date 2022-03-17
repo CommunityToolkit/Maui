@@ -20,7 +20,7 @@ public static class PopupExtensions
 		var view = popup.Content;
 		if (view.Background is null && flyout.Control is not null)
 		{
-			flyout.Control.Background = color.ToNative();
+			flyout.Control.Background = color.ToPlatform();
 		}
 	}
 }

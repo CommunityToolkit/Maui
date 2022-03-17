@@ -16,7 +16,7 @@ class ApplicationHandlerStub : ElementHandler<IApplication, object>
 
 	public static IPropertyMapper<IApplication, ApplicationHandlerStub> Mapper = new PropertyMapper<IApplication, ApplicationHandlerStub>(ElementMapper);
 
-	protected override object CreateNativeElement()
+	protected override object CreatePlatformElement()
 	{
 		return new object();
 	}

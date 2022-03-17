@@ -15,7 +15,11 @@ public class AlertView : UIView
 	/// <summary>
 	/// Parent UIView
 	/// </summary>
-	public UIView ParentView => UIApplication.SharedApplication.Windows.First(x => x.IsKeyWindow);
+	public UIView ParentView => UIApplication.SharedApplication.ConnectedScenes.ToArray()
+		.Where(x => x.ActivationState == UISceneActivationState.ForegroundActive)
+		.Select(x => x as UIWindowScene)
+		.FirstOrDefault()?
+		.Windows.FirstOrDefault(x => x.IsKeyWindow) ?? throw new InvalidOperationException("KeyWindow is not found");
 
 	/// <summary>
 	/// PopupView Children
@@ -38,7 +42,7 @@ public class AlertView : UIView
 	protected UIStackView? Container { get; set; }
 
 	/// <summary>
-	/// Dissmisses the Popup from the screen
+	/// Dismisses the Popup from the screen
 	/// </summary>
 	public void Dismiss() => RemoveFromSuperview();
 

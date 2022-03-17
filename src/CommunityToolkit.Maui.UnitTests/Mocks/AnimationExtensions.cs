@@ -28,7 +28,7 @@ static class AnimationExtensions
 			return view;
 		}
 
-		protected override object CreateNativeView() => new();
+		protected override object CreatePlatformView() => new();
 
 		class AnimationEnabledMauiContext : IMauiContext, IServiceProvider
 		{

@@ -13,13 +13,13 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="result">The result that should return from this Popup.</param>
 	public static async void MapOnClosed(PopupHandler handler, IPopup view, object? result)
 	{
-		var vc = handler.NativeView.ViewController;
+		var vc = handler.PlatformView.ViewController;
 		if (vc is not null)
 		{
 			await vc.DismissViewControllerAsync(true);
 		}
 
-		handler.DisconnectHandler(handler.NativeView);
+		handler.DisconnectHandler(handler.PlatformView);
 	}
 
 	/// <summary>
@@ -30,9 +30,9 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="result">The result that should return from this Popup.</param>
 	public static void MapOnDismissedByTappingOutsideOfPopup(PopupHandler handler, IPopup view, object? result)
 	{
-		if (handler.NativeView is not MauiPopup popupRenderer)
+		if (handler.PlatformView is not MauiPopup popupRenderer)
 		{
-			throw new InvalidOperationException($"{nameof(handler.NativeView)} must be of type {typeof(PopupHandler)}");
+			throw new InvalidOperationException($"{nameof(handler.PlatformView)} must be of type {typeof(PopupHandler)}");
 		}
 
 		if (popupRenderer.IsViewLoaded && view.CanBeDismissedByTappingOutsideOfPopup)
@@ -49,8 +49,8 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 
 	public static void MapAnchor(PopupHandler handler, IPopup view)
 	{
-		handler.NativeView.SetSize(view);
-		handler.NativeView.SetLayout(view);
+		handler.PlatformView.SetSize(view);
+		handler.PlatformView.SetLayout(view);
 	}
 
 	/// <summary>
@@ -60,7 +60,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapCanBeDismissedByTappingOutsideOfPopup(PopupHandler handler, IPopup view)
 	{
-		handler.NativeView.SetCanBeDismissedByTappingOutsideOfPopup(view);
+		handler.PlatformView.SetCanBeDismissedByTappingOutsideOfPopup(view);
 	}
 
 	/// <summary>
@@ -70,7 +70,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapColor(PopupHandler handler, IPopup view)
 	{
-		handler.NativeView.SetBackgroundColor(view);
+		handler.PlatformView.SetBackgroundColor(view);
 	}
 
 	/// <summary>
@@ -80,8 +80,8 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapSize(PopupHandler handler, IPopup view)
 	{
-		handler.NativeView.SetSize(view);
-		handler.NativeView.SetLayout(view);
+		handler.PlatformView.SetSize(view);
+		handler.PlatformView.SetLayout(view);
 	}
 
 	/// <inheritdoc/>
@@ -92,7 +92,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	}
 
 	/// <inheritdoc/>
-	protected override MauiPopup CreateNativeElement()
+	protected override MauiPopup CreatePlatformElement()
 	{
 		return new MauiPopup(MauiContext ?? throw new NullReferenceException(nameof(MauiContext)));
 	}
@@ -101,6 +101,6 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	protected override void DisconnectHandler(MauiPopup nativeView)
 	{
 		base.DisconnectHandler(nativeView);
-		NativeView.CleanUp();
+		PlatformView.CleanUp();
 	}
 }
