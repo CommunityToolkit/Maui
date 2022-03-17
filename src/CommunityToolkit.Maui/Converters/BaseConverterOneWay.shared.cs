@@ -21,7 +21,7 @@ public abstract class BaseConverterOneWay<TFrom, TTo> : BaseConverterOneWay
 	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>An object of type <typeparamref name="TTo"/>.</returns>
-	public override sealed object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	public sealed override object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value is null && IsNullable<TFrom>())
 		{
@@ -40,15 +40,12 @@ public abstract class BaseConverterOneWay<TFrom, TTo> : BaseConverterOneWay
 		}
 
 		// This validation only works for Converters called in C#, not XAML 
-		if (targetType != typeof(TTo) && !IsValidXamlTargetType())
+		if (targetType != typeof(TTo) && !IsValidXamlTargetType(targetType))
 		{
 			throw new ArgumentException($"targetType needs to be typeof {typeof(TTo)}");
 		}
 
 		return ConvertFrom(convertedValue);
-
-		// Every targetType called from XAML is typeof(string)
-		bool IsValidXamlTargetType() => isInitializedInXaml && targetType == typeof(string);
 	}
 
 	/// <summary>
@@ -58,7 +55,9 @@ public abstract class BaseConverterOneWay<TFrom, TTo> : BaseConverterOneWay
 	/// <returns>An object of type <typeparamref name="TTo"/>.</returns>
 	public abstract TTo? ConvertFrom(TFrom value);
 
-	static bool IsNullable<T>()
+	private protected bool IsValidXamlTargetType(in Type? targetType) => isInitializedInXaml && targetType == typeof(string);
+
+	private protected static bool IsNullable<T>()
 	{
 		var type = typeof(T);
 
