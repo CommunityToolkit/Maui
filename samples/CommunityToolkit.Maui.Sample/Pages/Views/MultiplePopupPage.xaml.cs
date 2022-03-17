@@ -29,13 +29,13 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 
 	async void HandleButtonPopupButtonClicked(object sender, EventArgs e)
 	{
-		var buttonPopup = new ButtonPopup();
+		var buttonPopup = new ButtonPopup(popupSizeConstants);
 		await this.ShowPopupAsync(buttonPopup);
 	}
 
 	async void HandleMultipleButtonPopupButtonClicked(object sender, EventArgs e)
 	{
-		var multipleButtonPopup = new MultipleButtonPopup();
+		var multipleButtonPopup = new MultipleButtonPopup(popupSizeConstants);
 		await this.ShowPopupAsync(multipleButtonPopup);
 	}
 

@@ -8,7 +8,5 @@ public partial class TextCaseConverterPage : BasePage<TextCaseConverterViewModel
 		: base(deviceInfo, textCaseConverterViewModel)
 	{
 		InitializeComponent();
-
-		ExampleText ??= new();
 	}
 }

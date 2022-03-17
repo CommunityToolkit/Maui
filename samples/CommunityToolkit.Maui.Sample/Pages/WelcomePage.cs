@@ -8,6 +8,8 @@ public class WelcomePage : ContentPage
 	{
 		Title = "Welcome";
 
+		Padding = 12;
+
 		Content = new VerticalStackLayout
 		{
 			Spacing = 12,
