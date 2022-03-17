@@ -48,7 +48,7 @@ public partial class DrawingViewHandler
 public partial class DrawingViewHandler : Microsoft.Maui.Handlers.ViewHandler<IDrawingView, object>
 {
 	/// <inheritdoc />
-	protected override object CreateNativeView() => throw new NotSupportedException();
+	protected override object CreatePlatformView() => throw new NotSupportedException();
 
 	/// <summary>
 	/// Action that's triggered when the DrawingView <see cref="IDrawingView.Lines"/> property changes.

@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class DrawingViewHandler : ViewHandler<IDrawingView, DrawingNativeView>
 {
 	/// <inheritdoc />
-	protected override DrawingNativeView CreateNativeView()
+	protected override DrawingNativeView CreatePlatformView()
 	{
 		return new DrawingNativeView();
 	}
@@ -44,7 +44,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, DrawingNativ
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
 	public static void MapClearOnFinish(DrawingViewHandler handler, IDrawingView view)
 	{
-		handler.NativeView.ClearOnFinish = view.ClearOnFinish;
+		handler.PlatformView.ClearOnFinish = view.ClearOnFinish;
 	}
 
 	/// <summary>
@@ -54,7 +54,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, DrawingNativ
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
 	public static void MapLineColor(DrawingViewHandler handler, IDrawingView view)
 	{
-		handler.NativeView.LineColor = view.LineColor.ToNative();
+		handler.PlatformView.LineColor = view.LineColor.ToPlatform();
 	}
 
 	/// <summary>
@@ -64,7 +64,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, DrawingNativ
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
 	public static void MapLineWidth(DrawingViewHandler handler, IDrawingView view)
 	{
-		handler.NativeView.LineWidth = view.LineWidth;
+		handler.PlatformView.LineWidth = view.LineWidth;
 	}
 
 	/// <summary>
@@ -74,7 +74,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, DrawingNativ
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
 	public static void MapMultiLineMode(DrawingViewHandler handler, IDrawingView view)
 	{
-		handler.NativeView.MultiLineMode = view.MultiLineMode;
+		handler.PlatformView.MultiLineMode = view.MultiLineMode;
 	}
 
 	/// <summary>
@@ -84,7 +84,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, DrawingNativ
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
 	public static void MapDrawingLineCompletedCommand(DrawingViewHandler handler, IDrawingView view)
 	{
-		handler.NativeView.DrawingLineCompletedCommand = view.DrawingLineCompletedCommand;
+		handler.PlatformView.DrawingLineCompletedCommand = view.DrawingLineCompletedCommand;
 	}
 
 	/// <summary>
@@ -99,10 +99,10 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, DrawingNativ
 
 	void Lines_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 	{
-		NativeView.Lines.Clear();
+		PlatformView.Lines.Clear();
 		foreach (var line in VirtualView.Lines)
 		{
-			NativeView.Lines.Add(new DrawingNativeLine()
+			PlatformView.Lines.Add(new DrawingNativeLine()
 			{
 				LineColor = line.LineColor,
 				EnableSmoothedPath = line.EnableSmoothedPath,

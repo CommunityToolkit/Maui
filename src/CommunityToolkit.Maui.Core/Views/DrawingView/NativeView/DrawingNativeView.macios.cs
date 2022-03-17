@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Runtime.InteropServices;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core.Extensions;
 using CoreGraphics;
@@ -31,7 +32,7 @@ public class DrawingNativeView : UIView
 	/// <summary>
 	/// Line width
 	/// </summary>
-	public float LineWidth { get; set; }
+	public NFloat LineWidth { get; set; }
 
 	/// <summary>
 	/// Command executed when drawing line completed
@@ -58,8 +59,8 @@ public class DrawingNativeView : UIView
 	/// </summary>
 	public DrawingNativeView()
 	{
-		LineColor = Colors.Black.ToNative();
-		LineWidth = 5;
+		LineColor = Colors.Black.ToPlatform();
+		LineWidth = new NFloat(5);
 		Lines = new ObservableCollection<DrawingNativeLine>();
 
 		currentPath = new UIBezierPath();
@@ -95,7 +96,7 @@ public class DrawingNativeView : UIView
 		{
 			Points = new ObservableCollection<Point>()
 			{
-				new (previousPoint.X, previousPoint.Y)
+				new (previousPoint.X.Value, previousPoint.Y.Value)
 			}
 		};
 

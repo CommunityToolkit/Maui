@@ -124,12 +124,12 @@ public static partial class DrawingViewService
 		using var canvas = new Canvas(image);
 
 		// background
-		canvas.DrawColor(backgroundColor.ToNative());
+		canvas.DrawColor(backgroundColor.ToPlatform());
 
 		// strokes
 		using var paint = new Paint
 		{
-			Color = strokeColor.ToNative(),
+			Color = strokeColor.ToPlatform(),
 			StrokeWidth = lineWidth,
 			StrokeJoin = Paint.Join.Round,
 			StrokeCap = Paint.Cap.Round,
@@ -183,13 +183,13 @@ public static partial class DrawingViewService
 		using var canvas = new Canvas(image);
 
 		// background
-		canvas.DrawColor(backgroundColor.ToNative());
+		canvas.DrawColor(backgroundColor.ToPlatform());
 
 		foreach (var line in lines)
 		{
 			using var paint = new Paint
 			{
-				Color = line.LineColor.ToNative(),
+				Color = line.LineColor.ToPlatform(),
 				StrokeWidth = line.LineWidth,
 				StrokeJoin = Paint.Join.Round,
 				StrokeCap = Paint.Cap.Round,

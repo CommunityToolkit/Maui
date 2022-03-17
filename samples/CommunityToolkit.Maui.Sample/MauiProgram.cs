@@ -101,6 +101,7 @@ public static class MauiProgram
 		services.AddTransient<PopupAnchorPage>();
 		services.AddTransient<PopupPositionPage>();
 		services.AddTransient<XamlBindingPopup>();
+		services.AddTransient<DrawingViewPage>();
 	}
 
 	static void RegisterViewModels(in IServiceCollection services)
@@ -175,5 +176,6 @@ public static class MauiProgram
 		services.AddTransient<PopupAnchorViewModel>();
 		services.AddTransient<PopupPositionViewModel>();
 		services.AddTransient<XamlBindingPopupViewModel>();
+		services.AddTransient<DrawingViewViewModel>();
 	}
 }

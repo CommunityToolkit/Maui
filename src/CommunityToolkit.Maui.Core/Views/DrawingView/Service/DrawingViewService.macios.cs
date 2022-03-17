@@ -1,4 +1,5 @@
-﻿using CoreGraphics;
+﻿using System.Runtime.InteropServices;
+using CoreGraphics;
 using Microsoft.Maui.Platform;
 using UIKit;
 
@@ -31,7 +32,7 @@ public static partial class DrawingViewService
 			return Stream.Null;
 		}
 
-		var resizedImage = MaxResizeImage(image, (float)imageSize.Width, (float)imageSize.Height);
+		var resizedImage = MaxResizeImage(image, imageSize.Width, imageSize.Height);
 		return resizedImage.AsJPEG().AsStream();
 	}
 
@@ -55,7 +56,7 @@ public static partial class DrawingViewService
 			return Stream.Null;
 		}
 
-		var image = GetImageInternal(points, lineWidth, strokeColor, backgroundColor);
+		var image = GetImageInternal(points, new NFloat(lineWidth), strokeColor, backgroundColor);
 		if (image is null)
 		{
 			return Stream.Null;
@@ -66,7 +67,7 @@ public static partial class DrawingViewService
 	}
 
 	static UIImage? GetImageInternal(ICollection<Point> points,
-		float lineWidth,
+		NFloat lineWidth,
 		Color strokeColor,
 		Color backgroundColor)
 	{
@@ -86,7 +87,7 @@ public static partial class DrawingViewService
 		}
 
 		var imageSize = new CGSize(drawingWidth, drawingHeight);
-		UIGraphics.BeginImageContextWithOptions(imageSize, false, 1);
+		UIGraphics.BeginImageContextWithOptions(imageSize, false, new NFloat(1));
 
 		var context = UIGraphics.GetCurrentContext();
 		if (context is null)
@@ -130,7 +131,7 @@ public static partial class DrawingViewService
 		}
 
 		var imageSize = new CGSize(drawingWidth, drawingHeight);
-		UIGraphics.BeginImageContextWithOptions(imageSize, false, 1);
+		UIGraphics.BeginImageContextWithOptions(imageSize, false, new NFloat(1));
 
 		var context = UIGraphics.GetCurrentContext();
 		if (context is null)
@@ -143,12 +144,12 @@ public static partial class DrawingViewService
 		foreach (var line in lines)
 		{
 			context.SetStrokeColor(line.LineColor.ToCGColor());
-			context.SetLineWidth(line.LineWidth);
+			context.SetLineWidth(new NFloat(line.LineWidth));
 			context.SetLineCap(CGLineCap.Round);
 			context.SetLineJoin(CGLineJoin.Round);
 
 			var (startPointX, startPointY) = line.Points[0];
-			context.MoveTo((float)startPointX, (float)startPointY);
+			context.MoveTo(new NFloat(startPointX), new NFloat(startPointY));
 			context.AddLines(line.Points.Select(p => new CGPoint(p.X - minPointX, p.Y - minPointY)).ToArray());
 		}
 
@@ -158,17 +159,17 @@ public static partial class DrawingViewService
 		return image;
 	}
 
-	static UIImage MaxResizeImage(UIImage sourceImage, float maxWidth, float maxHeight)
+	static UIImage MaxResizeImage(UIImage sourceImage, double maxWidth, double maxHeight)
 	{
 		var sourceSize = sourceImage.Size;
-		var maxResizeFactor = Math.Max(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
+		var maxResizeFactor = Math.Max(maxWidth / sourceSize.Width.Value, maxHeight / sourceSize.Height.Value);
 		if (maxResizeFactor > 1)
 		{
 			return sourceImage;
 		}
 
-		var width = maxResizeFactor * sourceSize.Width;
-		var height = maxResizeFactor * sourceSize.Height;
+		var width = maxResizeFactor * sourceSize.Width.Value;
+		var height = maxResizeFactor * sourceSize.Height.Value;
 		UIGraphics.BeginImageContext(new CGSize(width, height));
 		sourceImage.Draw(new CGRect(0, 0, width, height));
 		var resultImage = UIGraphics.GetImageFromCurrentImageContext();

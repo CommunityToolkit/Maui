@@ -71,7 +71,7 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>
 		arg1.MapMultiLineModeCount++;
 	}
 
-	protected override object CreateNativeView()
+	protected override object CreatePlatformView()
 	{
 		return new object();
 	}

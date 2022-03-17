@@ -67,7 +67,7 @@ public class DrawingNativeView : AView
 	public DrawingNativeView(Context? context) : base(context)
 	{
 		Lines = new ObservableCollection<DrawingNativeLine>();
-		LineColor = Colors.Black.ToNative();
+		LineColor = Colors.Black.ToPlatform();
 		LineWidth = 5;
 		drawPath = new APath();
 		drawPaint = new APaint
