@@ -1,5 +1,5 @@
-﻿using System.Windows.Input;
-using CommunityToolkit.Maui.Core.Views;
+﻿using System.Collections.ObjectModel;
+using System.Windows.Input;
 using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -19,6 +19,20 @@ public partial class MauiDrawingView
 		add => weakeventmanager.AddEventHandler(value);
 		remove => weakeventmanager.RemoveEventHandler(value);
 	}
+
+	/// <summary>
+	/// Drawing Lines
+	/// </summary>
+	public ObservableCollection<MauiDrawingLine> Lines { get; } = new();
+
+	/// <summary>
+	/// Enable or disable multiline mode
+	/// </summary>
+	public bool MultiLineMode { get; set; }
+	/// <summary>
+	/// Clear drawing on finish
+	/// </summary>
+	public bool ClearOnFinish { get; set; }
 
 	/// <summary>
 	/// Command executed when drawing line completed

@@ -25,11 +25,6 @@ public partial class MauiDrawingView : AView
 	MauiDrawingLine? currentLine;
 
 	/// <summary>
-	/// Drawing Lines
-	/// </summary>
-	public ObservableCollection<MauiDrawingLine> Lines { get; } = new();
-
-	/// <summary>
 	/// Line color
 	/// </summary>
 	public AColor LineColor { get; set; } = Colors.Black.ToPlatform();
@@ -38,16 +33,6 @@ public partial class MauiDrawingView : AView
 	/// Line width
 	/// </summary>
 	public float LineWidth { get; set; } = 5;
-
-	/// <summary>
-	/// Enable or disable multiline mode
-	/// </summary>
-	public bool MultiLineMode { get; set; }
-
-	/// <summary>
-	/// Clear drawing on finish
-	/// </summary>
-	public bool ClearOnFinish { get; set; }
 
 	/// <summary>
 	/// Initialize a new instance of <see cref="MauiDrawingView" />.

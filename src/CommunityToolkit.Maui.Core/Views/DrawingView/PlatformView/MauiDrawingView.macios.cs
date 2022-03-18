@@ -17,11 +17,6 @@ public partial class MauiDrawingView : UIView
 	MauiDrawingLine? currentLine;
 
 	/// <summary>
-	/// Drawing Lines
-	/// </summary>
-	public ObservableCollection<MauiDrawingLine> Lines { get; } = new();
-
-	/// <summary>
 	/// Line color
 	/// </summary>
 	public UIColor LineColor { get; set; } = Colors.Black.ToPlatform();
@@ -30,15 +25,6 @@ public partial class MauiDrawingView : UIView
 	/// Line width
 	/// </summary>
 	public NFloat LineWidth { get; set; } = new NFloat(5);
-
-	/// <summary>
-	/// Enable or disable multiline mode
-	/// </summary>
-	public bool MultiLineMode { get; set; }
-	/// <summary>
-	/// Clear drawing on finish
-	/// </summary>
-	public bool ClearOnFinish { get; set; }
 
 	/// <inheritdoc />
 	public override void TouchesBegan(NSSet touches, UIEvent? evt)

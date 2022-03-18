@@ -12,11 +12,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MauiDrawingView : FrameworkElement
 {
 	/// <summary>
-	/// Drawing Lines
-	/// </summary>
-	public ObservableCollection<MauiDrawingLine> Lines { get; } = new();
-
-	/// <summary>
 	/// Line color
 	/// </summary>
 	public WBrush LineColor { get; set; } = new WSolidColorBrush();
@@ -25,16 +20,6 @@ public partial class MauiDrawingView : FrameworkElement
 	/// Line width
 	/// </summary>
 	public float LineWidth { get; set; } = 5;
-
-	/// <summary>
-	/// Enable or disable multiline mode
-	/// </summary>
-	public bool MultiLineMode { get; set; }
-
-	/// <summary>
-	/// Clear drawing on finish
-	/// </summary>
-	public bool ClearOnFinish { get; set; }
 
 	/// <summary>
 	/// Initialize resources
