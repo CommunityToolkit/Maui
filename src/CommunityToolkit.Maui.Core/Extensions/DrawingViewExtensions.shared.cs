@@ -11,18 +11,17 @@ public static class DrawingViewExtensions
 	/// <summary>
 	/// Get smoothed path.
 	/// </summary>
-	public static ObservableCollection<Point> SmoothedPathWithGranularity(this ObservableCollection<Point> currentPoints,
-		int granularity)
+	public static ObservableCollection<Point> SmoothedPathWithGranularity(this IEnumerable<Point> currentPoints, int granularity)
 	{
-		var currentPointsCopy = new ObservableCollection<Point>(currentPoints);
+		var currentPointsCopy = new List<Point>(currentPoints);
 
 		// not enough points to smooth effectively, so return the original path and points.
 		if (currentPointsCopy.Count < granularity + 2)
 		{
-			return currentPointsCopy;
+			return new(currentPointsCopy);
 		}
 
-		var smoothedPoints = new ObservableCollection<Point>();
+		var smoothedPoints = new List<Point>();
 
 		// duplicate the first and last points as control points.
 		currentPointsCopy.Insert(0, currentPointsCopy[0]);
@@ -58,21 +57,21 @@ public static class DrawingViewExtensions
 		// add the last point
 		var last = currentPointsCopy[^1];
 		smoothedPoints.Add(last);
-		return smoothedPoints;
+
+		return new(smoothedPoints);
 	}
 
-	static Point GetIntermediatePoint(Point p0, Point p1, Point p2, Point p3, in float t, in float tt, in float ttt) =>
-		new()
-		{
-			X = 0.5f *
-				((2f * p1.X) +
-					((p2.X - p0.X) * t) +
-					(((2f * p0.X) - (5f * p1.X) + (4f * p2.X) - p3.X) * tt) +
-					(((3f * p1.X) - p0.X - (3f * p2.X) + p3.X) * ttt)),
-			Y = 0.5f *
-				((2 * p1.Y) +
-					((p2.Y - p0.Y) * t) +
-					(((2 * p0.Y) - (5 * p1.Y) + (4 * p2.Y) - p3.Y) * tt) +
-					(((3 * p1.Y) - p0.Y - (3 * p2.Y) + p3.Y) * ttt))
-		};
+	static Point GetIntermediatePoint(Point p0, Point p1, Point p2, Point p3, in float t, in float tt, in float ttt) => new()
+	{
+		X = 0.5f *
+			((2f * p1.X) +
+				((p2.X - p0.X) * t) +
+				(((2f * p0.X) - (5f * p1.X) + (4f * p2.X) - p3.X) * tt) +
+				(((3f * p1.X) - p0.X - (3f * p2.X) + p3.X) * ttt)),
+		Y = 0.5f *
+			((2 * p1.Y) +
+				((p2.Y - p0.Y) * t) +
+				(((2 * p0.Y) - (5 * p1.Y) + (4 * p2.Y) - p3.Y) * tt) +
+				(((3 * p1.Y) - p0.Y - (3 * p2.Y) + p3.Y) * ttt))
+	};
 }
