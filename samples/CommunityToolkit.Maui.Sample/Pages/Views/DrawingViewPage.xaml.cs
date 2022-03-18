@@ -7,11 +7,8 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 {
-	readonly DrawingViewViewModel viewModel;
-
-	public DrawingViewPage(DrawingViewViewModel viewModel) : base(viewModel)
+	public DrawingViewPage(IDeviceInfo deviceInfo, DrawingViewViewModel viewModel) : base(deviceInfo, viewModel)
 	{
-		this.viewModel = viewModel;
 		InitializeComponent();
 	}
 
@@ -46,7 +43,7 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 		{
 			lines.Add(new Line()
 			{
-				Points = viewModel.GeneratePoints(10),
+				Points = BindingContext.GeneratePoints(10),
 				LineColor = Color.FromRgb(Random.Shared.Next(255), Random.Shared.Next(255), Random.Shared.Next(255)),
 				LineWidth = 10,
 				EnableSmoothedPath = false,
