@@ -119,7 +119,7 @@ public static partial class DrawingViewService
 		{
 			return null;
 		}
-		
+
 		var minPointX = points.Min(p => p.X);
 		var minPointY = points.Min(p => p.Y);
 		var drawingWidth = points.Max(p => p.X) - minPointX;

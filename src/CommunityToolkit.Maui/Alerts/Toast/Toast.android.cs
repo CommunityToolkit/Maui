@@ -1,6 +1,6 @@
-﻿using Android.Widget;
-using Android.Text;
+﻿using Android.Text;
 using Android.Text.Style;
+using Android.Widget;
 
 namespace CommunityToolkit.Maui.Alerts;
 

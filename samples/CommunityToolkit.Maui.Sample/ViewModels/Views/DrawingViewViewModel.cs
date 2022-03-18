@@ -43,7 +43,7 @@ public class DrawingViewViewModel : BaseViewModel
 		get => logs;
 		set => SetProperty(ref logs, value);
 	}
-	
+
 	public ObservableCollection<Point> GeneratePoints(int count)
 	{
 		var points = new ObservableCollection<Point>();

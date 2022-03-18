@@ -18,7 +18,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, DrawingNativ
 		nativeView.Initialize();
 		VirtualView.Lines.CollectionChanged += Lines_CollectionChanged;
 	}
-	
+
 	/// <inheritdoc />
 	protected override void DisconnectHandler(DrawingNativeView nativeView)
 	{

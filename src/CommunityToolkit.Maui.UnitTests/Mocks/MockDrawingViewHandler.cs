@@ -14,7 +14,7 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>
 		[nameof(IDrawingView.ClearOnFinish)] = MapClearOnFinish,
 		[nameof(IDrawingView.MultiLineMode)] = MapMultiLineMode
 	};
-	
+
 	public MockDrawingViewHandler() : base(DrawingViewPropertyMapper)
 	{
 
@@ -75,7 +75,7 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>
 	{
 		return new object();
 	}
-	
+
 	void Lines_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 	{
 		Lines.Clear();
@@ -92,4 +92,3 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>
 		}
 	}
 }
-

@@ -1,15 +1,15 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
-using CommunityToolkit.Maui.Core.Extensions;
 using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Views;
+using CommunityToolkit.Maui.Core.Extensions;
 using Microsoft.Maui.Platform;
+using AColor = Android.Graphics.Color;
 using APaint = Android.Graphics.Paint;
 using APath = Android.Graphics.Path;
 using AView = Android.Views.View;
-using AColor = Android.Graphics.Color;
 using Point = Microsoft.Maui.Graphics.Point;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -25,7 +25,7 @@ public class DrawingNativeView : AView
 	Bitmap? canvasBitmap;
 	Canvas? drawCanvas;
 	DrawingNativeLine? currentLine;
-	
+
 	/// <summary>
 	/// Event raised when drawing line completed 
 	/// </summary>

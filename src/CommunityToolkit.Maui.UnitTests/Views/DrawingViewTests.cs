@@ -48,8 +48,8 @@ public class DrawingViewTests : BaseHandlerTest
 		Assert.NotNull(drawingView.Handler);
 
 		Assert.Equal(1, drawingViewHandler.OnDrawingLineCompletedCount);
-		
-		((DrawingView) drawingView).DrawingLineCompletedCommand = new Command(() => { });
+
+		((DrawingView)drawingView).DrawingLineCompletedCommand = new Command(() => { });
 		Assert.Equal(2, drawingViewHandler.OnDrawingLineCompletedCount);
 	}
 
@@ -60,8 +60,8 @@ public class DrawingViewTests : BaseHandlerTest
 		Assert.NotNull(drawingView.Handler);
 
 		Assert.Equal(1, drawingViewHandler.MapLineWidthCount);
-		
-		((DrawingView) drawingView).LineWidth = 1;
+
+		((DrawingView)drawingView).LineWidth = 1;
 		Assert.Equal(2, drawingViewHandler.MapLineWidthCount);
 	}
 
@@ -72,8 +72,8 @@ public class DrawingViewTests : BaseHandlerTest
 		Assert.NotNull(drawingView.Handler);
 
 		Assert.Equal(1, drawingViewHandler.MapClearOnFinishCount);
-		
-		((DrawingView) drawingView).ClearOnFinish = true;
+
+		((DrawingView)drawingView).ClearOnFinish = true;
 		Assert.Equal(2, drawingViewHandler.MapClearOnFinishCount);
 	}
 
@@ -84,8 +84,8 @@ public class DrawingViewTests : BaseHandlerTest
 		Assert.NotNull(drawingView.Handler);
 
 		Assert.Equal(1, drawingViewHandler.MapLineColorCount);
-		
-		((DrawingView) drawingView).LineColor = Colors.Blue;
+
+		((DrawingView)drawingView).LineColor = Colors.Blue;
 		Assert.Equal(2, drawingViewHandler.MapLineColorCount);
 	}
 
@@ -96,8 +96,8 @@ public class DrawingViewTests : BaseHandlerTest
 		Assert.NotNull(drawingView.Handler);
 
 		Assert.Equal(1, drawingViewHandler.MapMultiLineModeCount);
-		
-		((DrawingView) drawingView).MultiLineMode = true;
+
+		((DrawingView)drawingView).MultiLineMode = true;
 		Assert.Equal(2, drawingViewHandler.MapMultiLineModeCount);
 	}
 
@@ -108,4 +108,3 @@ public class DrawingViewTests : BaseHandlerTest
 		Assert.Equal(Stream.Null, stream);
 	}
 }
-
