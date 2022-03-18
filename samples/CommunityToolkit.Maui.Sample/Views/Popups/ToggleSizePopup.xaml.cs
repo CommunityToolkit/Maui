@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample;
@@ -6,13 +7,14 @@ public partial class ToggleSizePopup : Popup
 {
 	readonly Size originalSize;
 
-	public ToggleSizePopup()
+	public ToggleSizePopup(PopupSizeConstants popupSizeConstants)
 	{
 		InitializeComponent();
-		originalSize = Size;
+
+		Size = originalSize = popupSizeConstants.Medium;
 	}
 
-	void Button_Clicked(object? sender, System.EventArgs e)
+	void Button_Clicked(object? sender, EventArgs e)
 	{
 		if (originalSize == Size)
 		{

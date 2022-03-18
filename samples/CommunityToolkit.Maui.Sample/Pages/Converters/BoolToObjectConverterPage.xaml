@@ -47,6 +47,7 @@
             <Label Text="Change bool value to change object."
                     Grid.Row="2"
                     Grid.Column="1"
+                    Grid.ColumnSpan="2"
                     VerticalOptions="Center"
                     HorizontalOptions="Start"
                     HorizontalTextAlignment="Start"

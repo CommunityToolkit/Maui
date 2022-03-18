@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.Dispatching;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
@@ -6,14 +7,17 @@ public sealed class ByteArrayToImageSourceConverterViewModel : BaseViewModel, ID
 {
 	readonly WeakEventManager imageDownloadFailedEventManager = new();
 	readonly HttpClient client;
+	readonly IDispatcher dispatcher;
 
 	bool isDownloadingImage;
 	byte[]? dotNetBotImageByteArray;
 	string labelText = "Tap the Download Image Button to download an Image as a byte[]";
 
-	public ByteArrayToImageSourceConverterViewModel(HttpClient httpClient)
+	public ByteArrayToImageSourceConverterViewModel(HttpClient client, IDispatcher dispatcher)
 	{
-		client = httpClient;
+		this.client = client;
+		this.dispatcher = dispatcher;
+
 		DownloadDotNetBotImageCommand = new AsyncRelayCommand(ExecuteDownloadDotNetBotImageCommand, () => !IsDownloadingImage && dotNetBotImageByteArray is null, false);
 	}
 
@@ -31,7 +35,7 @@ public sealed class ByteArrayToImageSourceConverterViewModel : BaseViewModel, ID
 		set
 		{
 			SetProperty(ref isDownloadingImage, value);
-			MainThread.BeginInvokeOnMainThread(DownloadDotNetBotImageCommand.NotifyCanExecuteChanged);
+			dispatcher.Dispatch(() => DownloadDotNetBotImageCommand.NotifyCanExecuteChanged());
 		}
 	}
 
@@ -84,4 +88,3 @@ public sealed class ByteArrayToImageSourceConverterViewModel : BaseViewModel, ID
 
 	void OnImageDownloadFailed(in string message) => imageDownloadFailedEventManager.HandleEvent(this, message, nameof(ImageDownloadFailed));
 }
-

@@ -1,15 +1,17 @@
-﻿using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
-using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
-using CommunityToolkit.Maui.Sample.ViewModels.Converters;
-using CommunityToolkit.Maui.Sample.ViewModels.Views;
-using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
+﻿using CommunityToolkit.Maui.Markup;
+using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.Pages.Alerts;
 using CommunityToolkit.Maui.Sample.Pages.Behaviors;
 using CommunityToolkit.Maui.Sample.Pages.Converters;
 using CommunityToolkit.Maui.Sample.Pages.Extensions;
-using CommunityToolkit.Maui.Sample.Pages.Views;
 using CommunityToolkit.Maui.Sample.Pages.Layouts;
-using CommunityToolkit.Maui.Markup;
+using CommunityToolkit.Maui.Sample.Pages.Views;
+using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
+using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
+using CommunityToolkit.Maui.Sample.ViewModels.Converters;
+using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
+using CommunityToolkit.Maui.Sample.ViewModels.Views;
+using Microsoft.Maui.Essentials.Implementations;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
@@ -19,13 +21,17 @@ public static class MauiProgram
 {
 	public static MauiApp CreateMauiApp()
 	{
-		var builder = MauiApp.CreateBuilder();
-		builder.UseMauiApp<App>().UseMauiCommunityToolkit().UseMauiCommunityToolkitMarkup();
+		var builder = MauiApp.CreateBuilder()
+								.UseMauiApp<App>()
+								.UseMauiCommunityToolkit()
+								.UseMauiCommunityToolkitMarkup();
 
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>();
+		builder.Services.AddSingleton<PopupSizeConstants>();
 
 		RegisterPages(builder.Services);
 		RegisterViewModels(builder.Services);
+		RegisterEssentials(builder.Services);
 
 		return builder.Build();
 	}
@@ -175,5 +181,11 @@ public static class MauiProgram
 		services.AddTransient<PopupAnchorViewModel>();
 		services.AddTransient<PopupPositionViewModel>();
 		services.AddTransient<XamlBindingPopupViewModel>();
+	}
+
+	static void RegisterEssentials(in IServiceCollection services)
+	{
+		services.AddSingleton<IDeviceInfo, DeviceInfoImplementation>();
+		services.AddSingleton<IDeviceDisplay, DeviceDisplayImplementation>();
 	}
 }
