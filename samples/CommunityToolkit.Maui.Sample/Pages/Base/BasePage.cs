@@ -20,7 +20,7 @@ public abstract class BasePage : ContentPage
 
 		BackgroundColor = (Color)(Application.Current?.Resources["AppBackgroundColor"] ?? throw new InvalidOperationException("Application.Current cannot be null"));
 
-		if (deviceInfo.Platform == DevicePlatform.iOS || DeviceInfo.Platform == DevicePlatform.MacCatalyst)
+		if (deviceInfo.Platform == DevicePlatform.iOS || deviceInfo.Platform == DevicePlatform.MacCatalyst)
 		{
 			Padding = new Thickness(12, 108, 12, 12);
 		}
