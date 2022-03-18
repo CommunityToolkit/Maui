@@ -44,7 +44,7 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>
 	public int MapLineColorCount { get; private set; }
 	public int MapClearOnFinishCount { get; private set; }
 	public int MapMultiLineModeCount { get; private set; }
-	public List<DrawingNativeLine> Lines { get; } = new();
+	public List<MauiDrawingLine> Lines { get; } = new();
 
 	static void MapDrawingLineCompletedCommand(MockDrawingViewHandler arg1, IDrawingView arg2)
 	{
@@ -81,7 +81,7 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>
 		Lines.Clear();
 		foreach (var line in VirtualView.Lines)
 		{
-			Lines.Add(new DrawingNativeLine()
+			Lines.Add(new MauiDrawingLine()
 			{
 				LineColor = line.LineColor,
 				EnableSmoothedPath = line.EnableSmoothedPath,

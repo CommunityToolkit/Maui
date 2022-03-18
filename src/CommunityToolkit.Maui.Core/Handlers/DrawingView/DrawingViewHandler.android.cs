@@ -3,16 +3,16 @@ using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
-public partial class DrawingViewHandler : ViewHandler<IDrawingView, DrawingNativeView>
+public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingView>
 {
 	/// <inheritdoc />
-	protected override DrawingNativeView CreatePlatformView()
+	protected override MauiDrawingView CreatePlatformView()
 	{
-		return new DrawingNativeView(Context);
+		return new MauiDrawingView(Context);
 	}
 
 	/// <inheritdoc />
-	protected override void ConnectHandler(DrawingNativeView nativeView)
+	protected override void ConnectHandler(MauiDrawingView nativeView)
 	{
 		base.ConnectHandler(nativeView);
 		nativeView.Initialize();
@@ -20,7 +20,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, DrawingNativ
 	}
 
 	/// <inheritdoc />
-	protected override void DisconnectHandler(DrawingNativeView nativeView)
+	protected override void DisconnectHandler(MauiDrawingView nativeView)
 	{
 		base.DisconnectHandler(nativeView);
 		nativeView.CleanUp();
@@ -102,7 +102,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, DrawingNativ
 		PlatformView.Lines.Clear();
 		foreach (var line in VirtualView.Lines)
 		{
-			PlatformView.Lines.Add(new DrawingNativeLine()
+			PlatformView.Lines.Add(new MauiDrawingLine()
 			{
 				LineColor = line.LineColor,
 				EnableSmoothedPath = line.EnableSmoothedPath,

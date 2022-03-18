@@ -14,42 +14,35 @@ using Point = Microsoft.Maui.Graphics.Point;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
-/// <summary>
-/// DrawingView Native Control
-/// </summary>
-public class DrawingNativeView : AView
+public partial class MauiDrawingView : AView
 {
-	readonly APaint canvasPaint;
-	readonly APaint drawPaint;
-	readonly APath drawPath;
+	readonly APaint canvasPaint = new() { Dither = true };
+	readonly APaint drawPaint = new() { AntiAlias = true };
+	readonly APath drawPath = new();
+
 	Bitmap? canvasBitmap;
 	Canvas? drawCanvas;
-	DrawingNativeLine? currentLine;
+	MauiDrawingLine? currentLine;
 
 	/// <summary>
-	/// Event raised when drawing line completed 
+	/// Drawing Lines
 	/// </summary>
-	public event EventHandler<DrawingNativeLineCompletedEventArgs>? DrawingLineCompleted;
+	public ObservableCollection<MauiDrawingLine> Lines { get; } = new();
 
 	/// <summary>
 	/// Line color
 	/// </summary>
-	public AColor LineColor { get; set; }
+	public AColor LineColor { get; set; } = Colors.Black.ToPlatform();
 
 	/// <summary>
 	/// Line width
 	/// </summary>
-	public float LineWidth { get; set; }
+	public float LineWidth { get; set; } = 5;
 
 	/// <summary>
 	/// Command executed when drawing line completed
 	/// </summary>
 	public ICommand? DrawingLineCompletedCommand { get; set; }
-
-	/// <summary>
-	/// Drawing Lines
-	/// </summary>
-	public ObservableCollection<DrawingNativeLine> Lines { get; }
 
 	/// <summary>
 	/// Enable or disable multiline mode
@@ -62,27 +55,77 @@ public class DrawingNativeView : AView
 	public bool ClearOnFinish { get; set; }
 
 	/// <summary>
-	/// Initialize a new instance of <see cref="DrawingNativeView" />.
+	/// Initialize a new instance of <see cref="MauiDrawingView" />.
 	/// </summary>
-	public DrawingNativeView(Context? context) : base(context)
+	public MauiDrawingView(Context? context) : base(context)
 	{
-		Lines = new ObservableCollection<DrawingNativeLine>();
-		LineColor = Colors.Black.ToPlatform();
-		LineWidth = 5;
-		drawPath = new APath();
-		drawPaint = new APaint
-		{
-			AntiAlias = true
-		};
-
 		drawPaint.SetStyle(APaint.Style.Stroke);
 		drawPaint.StrokeJoin = APaint.Join.Round;
 		drawPaint.StrokeCap = APaint.Cap.Round;
+	}
 
-		canvasPaint = new APaint
+	/// <inheritdoc />
+	public override bool OnTouchEvent(MotionEvent? e)
+	{
+		ArgumentNullException.ThrowIfNull(e);
+
+		var touchX = e.GetX();
+		var touchY = e.GetY();
+
+		switch (e.Action)
 		{
-			Dither = true
-		};
+			case MotionEventActions.Down:
+				Parent?.RequestDisallowInterceptTouchEvent(true);
+				if (!MultiLineMode)
+				{
+					Lines.Clear();
+				}
+
+				currentLine = new MauiDrawingLine()
+				{
+					Points = new ObservableCollection<Point>
+						{
+							new (touchX, touchY)
+						}
+				};
+
+				drawPath.MoveTo(touchX, touchY);
+				break;
+
+			case MotionEventActions.Move:
+				if (touchX > 0 && touchY > 0 && touchX < drawCanvas?.Width && touchY < drawCanvas?.Height)
+				{
+					drawPath.LineTo(touchX, touchY);
+				}
+
+				currentLine?.Points.Add(new Point(touchX, touchY));
+				break;
+
+			case MotionEventActions.Up:
+				Parent?.RequestDisallowInterceptTouchEvent(false);
+				drawCanvas?.DrawPath(drawPath, drawPaint);
+				drawPath.Reset();
+				if (currentLine != null)
+				{
+					Lines.Add(currentLine);
+					OnDrawingLineCompleted(currentLine);
+				}
+
+				if (ClearOnFinish)
+				{
+					Lines.Clear();
+				}
+
+				currentLine = null;
+				break;
+
+			default:
+				return false;
+		}
+
+		Invalidate();
+
+		return true;
 	}
 
 	/// <summary>
@@ -93,19 +136,32 @@ public class DrawingNativeView : AView
 		Lines.CollectionChanged += OnLinesCollectionChanged;
 	}
 
-	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => LoadLines();
+	/// <summary>
+	/// Clean up resources
+	/// </summary>
+	public void CleanUp()
+	{
+		drawCanvas?.Dispose();
+		drawPaint.Dispose();
+		drawPath.Dispose();
+		canvasBitmap?.Dispose();
+		canvasPaint.Dispose();
+		Lines.CollectionChanged -= OnLinesCollectionChanged;
+	}
 
 	/// <inheritdoc />
 	protected override void OnSizeChanged(int w, int h, int oldw, int oldh)
 	{
 		const int minW = 1;
 		const int minH = 1;
+
 		w = w < minW ? minW : w;
 		h = h < minH ? minH : h;
 
 		base.OnSizeChanged(w, h, oldw, oldh);
 
 		canvasBitmap = Bitmap.CreateBitmap(w, h, Bitmap.Config.Argb8888 ?? throw new NullReferenceException("Unable to create Bitmap config"));
+
 		if (canvasBitmap is not null)
 		{
 			drawCanvas = new Canvas(canvasBitmap);
@@ -125,65 +181,7 @@ public class DrawingNativeView : AView
 		}
 	}
 
-	/// <inheritdoc />
-	public override bool OnTouchEvent(MotionEvent? e)
-	{
-		ArgumentNullException.ThrowIfNull(e);
-		var touchX = e.GetX();
-		var touchY = e.GetY();
-
-		switch (e.Action)
-		{
-			case MotionEventActions.Down:
-				Parent?.RequestDisallowInterceptTouchEvent(true);
-				if (!MultiLineMode)
-				{
-					Lines.Clear();
-				}
-
-				currentLine = new DrawingNativeLine()
-				{
-					Points = new ObservableCollection<Point>
-						{
-							new (touchX, touchY)
-						}
-				};
-
-				drawPath.MoveTo(touchX, touchY);
-				break;
-			case MotionEventActions.Move:
-				if (touchX > 0 && touchY > 0 && touchX < drawCanvas?.Width && touchY < drawCanvas?.Height)
-				{
-					drawPath.LineTo(touchX, touchY);
-				}
-
-				currentLine?.Points.Add(new Point(touchX, touchY));
-				break;
-			case MotionEventActions.Up:
-				Parent?.RequestDisallowInterceptTouchEvent(false);
-				drawCanvas?.DrawPath(drawPath, drawPaint);
-				drawPath.Reset();
-				if (currentLine != null)
-				{
-					Lines.Add(currentLine);
-					OnDrawingLineCompleted(currentLine);
-				}
-
-				if (ClearOnFinish)
-				{
-					Lines.Clear();
-				}
-
-				currentLine = null;
-				break;
-			default:
-				return false;
-		}
-
-		Invalidate();
-
-		return true;
-	}
+	partial void OnDrawingLineCompleted(MauiDrawingLine lastDrawingLine);
 
 	IList<Point> NormalizePoints(IEnumerable<Point> points)
 	{
@@ -233,7 +231,7 @@ public class DrawingNativeView : AView
 		Invalidate();
 	}
 
-	void Draw(IEnumerable<DrawingNativeLine> lines, in Canvas canvas, APath? path = null)
+	void Draw(IEnumerable<MauiDrawingLine> lines, in Canvas canvas, APath? path = null)
 	{
 		drawPaint.Color = LineColor;
 		drawPaint.StrokeWidth = LineWidth;
@@ -257,35 +255,11 @@ public class DrawingNativeView : AView
 		}
 	}
 
-	/// <summary>
-	/// Clean up resources
-	/// </summary>
-	public void CleanUp()
+	AColor GetBackgroundColor() => Background switch
 	{
-		drawCanvas?.Dispose();
-		drawPaint.Dispose();
-		drawPath.Dispose();
-		canvasBitmap?.Dispose();
-		canvasPaint.Dispose();
-		Lines.CollectionChanged -= OnLinesCollectionChanged;
-	}
+		ColorDrawable colorDrawable => colorDrawable.Color,
+		_ => AColor.White
+	};
 
-	AColor GetBackgroundColor()
-	{
-		if (Background is ColorDrawable colorDrawable)
-		{
-			return colorDrawable.Color;
-		}
-
-		return AColor.White;
-	}
-
-	void OnDrawingLineCompleted(DrawingNativeLine? lastDrawingLine)
-	{
-		DrawingLineCompleted?.Invoke(this, new DrawingNativeLineCompletedEventArgs(lastDrawingLine));
-		if (DrawingLineCompletedCommand?.CanExecute(lastDrawingLine) ?? false)
-		{
-			DrawingLineCompletedCommand.Execute(lastDrawingLine);
-		}
-	}
+	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => LoadLines();
 }

@@ -1,6 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
-using System.Windows.Input;
 using CommunityToolkit.Maui.Core.Extensions;
 using CoreGraphics;
 using Foundation;
@@ -9,72 +8,37 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
-/// <summary>
-/// DrawingView Native Control
-/// </summary>
-public class DrawingNativeView : UIView
+public partial class MauiDrawingView : UIView
 {
-	readonly UIBezierPath currentPath;
-	CGPoint previousPoint;
-	DrawingNativeLine? currentLine;
+	readonly UIBezierPath currentPath = new();
 	readonly List<UIScrollView> scrollViewParents = new();
 
-	/// <summary>
-	/// Event raised when drawing line completed 
-	/// </summary>
-	public event EventHandler<DrawingNativeLineCompletedEventArgs>? DrawingLineCompleted;
-
-	/// <summary>
-	/// Line color
-	/// </summary>
-	public UIColor LineColor { get; set; }
-
-	/// <summary>
-	/// Line width
-	/// </summary>
-	public NFloat LineWidth { get; set; }
-
-	/// <summary>
-	/// Command executed when drawing line completed
-	/// </summary>
-	public ICommand? DrawingLineCompletedCommand { get; set; }
+	CGPoint previousPoint;
+	MauiDrawingLine? currentLine;
 
 	/// <summary>
 	/// Drawing Lines
 	/// </summary>
-	public ObservableCollection<DrawingNativeLine> Lines { get; }
+	public ObservableCollection<MauiDrawingLine> Lines { get; } = new();
+
+	/// <summary>
+	/// Line color
+	/// </summary>
+	public UIColor LineColor { get; set; } = Colors.Black.ToPlatform();
+
+	/// <summary>
+	/// Line width
+	/// </summary>
+	public NFloat LineWidth { get; set; } = new NFloat(5);
 
 	/// <summary>
 	/// Enable or disable multiline mode
 	/// </summary>
 	public bool MultiLineMode { get; set; }
-
 	/// <summary>
 	/// Clear drawing on finish
 	/// </summary>
 	public bool ClearOnFinish { get; set; }
-
-	/// <summary>
-	/// Initialize a new instance of <see cref="DrawingNativeView" />.
-	/// </summary>
-	public DrawingNativeView()
-	{
-		LineColor = Colors.Black.ToPlatform();
-		LineWidth = new NFloat(5);
-		Lines = new ObservableCollection<DrawingNativeLine>();
-
-		currentPath = new UIBezierPath();
-	}
-
-	/// <summary>
-	/// Initialize resources
-	/// </summary>
-	public void Initialize()
-	{
-		Lines.CollectionChanged += OnLinesCollectionChanged;
-	}
-
-	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => LoadPoints();
 
 	/// <inheritdoc />
 	public override void TouchesBegan(NSSet touches, UIEvent? evt)
@@ -83,6 +47,7 @@ public class DrawingNativeView : UIView
 		SetParentTouches(false);
 
 		Lines.CollectionChanged -= OnLinesCollectionChanged;
+
 		if (!MultiLineMode)
 		{
 			Lines.Clear();
@@ -92,7 +57,7 @@ public class DrawingNativeView : UIView
 		var touch = (UITouch)touches.AnyObject;
 		previousPoint = touch.PreviousLocationInView(this);
 		currentPath.MoveTo(previousPoint);
-		currentLine = new DrawingNativeLine
+		currentLine = new MauiDrawingLine
 		{
 			Points = new ObservableCollection<Point>()
 			{
@@ -110,8 +75,10 @@ public class DrawingNativeView : UIView
 	{
 		var touch = (UITouch)touches.AnyObject;
 		var currentPoint = touch.LocationInView(this);
+
 		AddPointToPath(currentPoint);
 		SetNeedsDisplay();
+
 		currentLine?.Points.Add(currentPoint.ToPoint());
 	}
 
@@ -149,6 +116,25 @@ public class DrawingNativeView : UIView
 		currentPath.Stroke();
 	}
 
+	/// <summary>
+	/// Initialize resources
+	/// </summary>
+	public void Initialize()
+	{
+		Lines.CollectionChanged += OnLinesCollectionChanged;
+	}
+
+	/// <summary>
+	/// Clean up resources
+	/// </summary>
+	public void CleanUp()
+	{
+		currentPath.Dispose();
+		Lines.CollectionChanged -= OnLinesCollectionChanged;
+	}
+
+	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => LoadPoints();
+
 	void AddPointToPath(CGPoint currentPoint) => currentPath.AddLineTo(currentPoint);
 
 	void LoadPoints()
@@ -160,7 +146,7 @@ public class DrawingNativeView : UIView
 					? line.Points.SmoothedPathWithGranularity(line.Granularity)
 					: line.Points;
 			var stylusPoints = newPointsPath.Select(point => new CGPoint(point.X, point.Y)).ToList();
-			if (stylusPoints.Count > 0)
+			if (stylusPoints.Any())
 			{
 				previousPoint = stylusPoints[0];
 				currentPath.MoveTo(previousPoint);
@@ -172,15 +158,6 @@ public class DrawingNativeView : UIView
 		}
 
 		SetNeedsDisplay();
-	}
-
-	/// <summary>
-	/// Clean up resources
-	/// </summary>
-	public void CleanUp()
-	{
-		currentPath.Dispose();
-		Lines.CollectionChanged -= OnLinesCollectionChanged;
 	}
 
 	void DetectScrollViews()
@@ -211,16 +188,5 @@ public class DrawingNativeView : UIView
 		}
 	}
 
-	/// <summary>
-	/// Executes DrawingLineCompleted event and DrawingLineCompletedCommand
-	/// </summary>
-	/// <param name="lastDrawingLine">Last drawing line</param>
-	void OnDrawingLineCompleted(DrawingNativeLine? lastDrawingLine)
-	{
-		DrawingLineCompleted?.Invoke(this, new DrawingNativeLineCompletedEventArgs(lastDrawingLine));
-		if (DrawingLineCompletedCommand?.CanExecute(lastDrawingLine) ?? false)
-		{
-			DrawingLineCompletedCommand.Execute(lastDrawingLine);
-		}
-	}
+	partial void OnDrawingLineCompleted(MauiDrawingLine lastDrawingLine);
 }

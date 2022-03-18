@@ -14,7 +14,7 @@ public class Line : BindableObject, ILine
 	/// </summary>
 	public static readonly BindableProperty GranularityProperty =
 		BindableProperty.Create(nameof(Granularity), typeof(int), typeof(Line), minValueGranularity,
-			coerceValue: CoerceValue);
+			coerceValue: CoerceGranularityProperty);
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="EnableSmoothedPath"/> property.
@@ -42,17 +42,16 @@ public class Line : BindableObject, ILine
 		BindableProperty.Create(nameof(LineWidth), typeof(float), typeof(Line), 5f);
 
 	/// <summary>
-	/// Initializes a new Line object.
-	/// </summary>
-	public Line() => Points = new ObservableCollection<Point>();
-
-	/// <summary>
 	/// The <see cref="Color"/> that is used to draw this line on the <see cref="IDrawingView"/>. This is a bindable property.
 	/// </summary>
 	public Color LineColor
 	{
 		get => (Color)GetValue(LineColorProperty);
-		set => SetValue(LineColorProperty, value);
+		set
+		{
+			ArgumentNullException.ThrowIfNull(value);
+			SetValue(LineColorProperty, value);
+		}
 	}
 
 	/// <summary>
@@ -91,11 +90,6 @@ public class Line : BindableObject, ILine
 		set => SetValue(EnableSmoothedPathProperty, value);
 	}
 
-	static object CoerceValue(BindableObject bindable, object value)
-		=> ((Line)bindable).CoerceValue((int)value);
-
-	int CoerceValue(int value) => value < minValueGranularity ? minValueGranularity : value;
-
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of this line, based on the <see cref="Points"/> data.
 	/// </summary>
@@ -104,9 +98,7 @@ public class Line : BindableObject, ILine
 	/// <param name="backgroundColor">Background color of the generated image.</param>
 	/// <returns><see cref="Stream"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
 	public Stream GetImageStream(double imageSizeWidth, double imageSizeHeight, Color backgroundColor) =>
-		DrawingViewService.GetImageStream(Points.ToList(), new Size(imageSizeWidth, imageSizeHeight), LineWidth,
-			LineColor,
-			backgroundColor);
+		DrawingViewService.GetImageStream(Points.ToList(), new Size(imageSizeWidth, imageSizeHeight), LineWidth, LineColor, backgroundColor);
 
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of the collection of <see cref="Point"/> that is provided as a parameter.
@@ -118,9 +110,13 @@ public class Line : BindableObject, ILine
 	/// <param name="backgroundColor">Background color of the generated image.</param>
 	/// <returns><see cref="Stream"/> containing the data of the requested image with data that's provided through the <paramref name="points"/> parameter.</returns>
 	public static Stream GetImageStream(IEnumerable<Point> points,
-		Size imageSize,
-		float lineWidth,
-		Color strokeColor,
-		Color backgroundColor) =>
-		DrawingViewService.GetImageStream(points.ToList(), imageSize, lineWidth, strokeColor, backgroundColor);
+										Size imageSize,
+										float lineWidth,
+										Color strokeColor,
+										Color backgroundColor)
+		=> DrawingViewService.GetImageStream(points.ToList(), imageSize, lineWidth, strokeColor, backgroundColor);
+
+	static object CoerceGranularityProperty(BindableObject bindable, object value) => CoerceGranularityProperty((int)value);
+
+	static int CoerceGranularityProperty(int value) => value < minValueGranularity ? minValueGranularity : value;
 }

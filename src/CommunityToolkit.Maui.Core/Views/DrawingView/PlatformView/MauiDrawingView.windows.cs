@@ -9,32 +9,22 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// DrawingView Native Control
 /// </summary>
-public class DrawingNativeView : FrameworkElement
+public partial class MauiDrawingView : FrameworkElement
 {
 	/// <summary>
-	/// Event raised when drawing line completed 
+	/// Drawing Lines
 	/// </summary>
-	public event EventHandler<DrawingNativeLineCompletedEventArgs>? DrawingLineCompleted;
+	public ObservableCollection<MauiDrawingLine> Lines { get; } = new();
 
 	/// <summary>
 	/// Line color
 	/// </summary>
-	public WBrush LineColor { get; set; }
+	public WBrush LineColor { get; set; } = new WSolidColorBrush();
 
 	/// <summary>
 	/// Line width
 	/// </summary>
-	public float LineWidth { get; set; }
-
-	/// <summary>
-	/// Command executed when drawing line completed
-	/// </summary>
-	public ICommand? DrawingLineCompletedCommand { get; set; }
-
-	/// <summary>
-	/// Drawing Lines
-	/// </summary>
-	public ObservableCollection<DrawingNativeLine> Lines { get; }
+	public float LineWidth { get; set; } = 5;
 
 	/// <summary>
 	/// Enable or disable multiline mode
@@ -45,16 +35,6 @@ public class DrawingNativeView : FrameworkElement
 	/// Clear drawing on finish
 	/// </summary>
 	public bool ClearOnFinish { get; set; }
-
-	/// <summary>
-	/// Initialize a new instance of <see cref="DrawingNativeView" />.
-	/// </summary>
-	public DrawingNativeView()
-	{
-		Lines = new ObservableCollection<DrawingNativeLine>();
-		LineColor = new WSolidColorBrush();
-		LineWidth = 5;
-	}
 
 	/// <summary>
 	/// Initialize resources
@@ -69,4 +49,6 @@ public class DrawingNativeView : FrameworkElement
 	public void CleanUp()
 	{
 	}
+
+	partial void OnDrawingLineCompleted(MauiDrawingLine lastDrawingLine);
 }

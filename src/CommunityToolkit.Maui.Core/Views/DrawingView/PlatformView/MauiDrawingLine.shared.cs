@@ -5,15 +5,16 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// The Line object is used to describe the lines that are drawn on a <see cref="IDrawingView"/>.
 /// </summary>
-public class DrawingNativeLine
+public class MauiDrawingLine
 {
-	int granularity;
 	const int minValueGranularity = 5;
+
+	int granularity;
 
 	/// <summary>
 	/// Initializes a new Line object.
 	/// </summary>
-	public DrawingNativeLine()
+	public MauiDrawingLine()
 	{
 		Points = new ObservableCollection<Point>();
 		LineColor = Colors.Black;
@@ -37,12 +38,12 @@ public class DrawingNativeLine
 	public ObservableCollection<Point> Points { get; set; }
 
 	/// <summary>
-	/// The granularity of this line. This is a bindable property.
+	/// The granularity of this line. This is a bindable property. Clamped to a minimum value of 5.
 	/// </summary>
 	public int Granularity
 	{
 		get => granularity;
-		set => granularity = value < minValueGranularity ? minValueGranularity : value;
+		set => granularity = Math.Clamp(value, minValueGranularity, value);
 	}
 
 	/// <summary>

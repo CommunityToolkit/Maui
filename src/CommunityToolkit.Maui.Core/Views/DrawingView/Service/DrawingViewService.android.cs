@@ -19,22 +19,18 @@ public static partial class DrawingViewService
 	/// <param name="imageSize">Image size</param>
 	/// <param name="backgroundColor">Image background color</param>
 	/// <returns>Image stream</returns>
-	public static Stream GetImageStream(IList<ILine>? lines,
-		Size imageSize,
-		Color backgroundColor)
+	public static Stream GetImageStream(in IList<ILine> lines,
+										in Size imageSize,
+										in Color backgroundColor)
 	{
-		if (lines is null)
-		{
-			return Stream.Null;
-		}
 
-		var image = GetImageInternal(lines, backgroundColor);
+		var image = GetBitmapForLines(lines, backgroundColor);
 		if (image is null)
 		{
 			return Stream.Null;
 		}
 
-		using var resizedImage = MaxResizeImage(image, (float)imageSize.Width, (float)imageSize.Height);
+		using var resizedImage = GetMaximumBitmap(image, (float)imageSize.Width, (float)imageSize.Height);
 		var stream = new MemoryStream();
 		var compressResult = resizedImage.Compress(Bitmap.CompressFormat.Jpeg, 100, stream);
 
@@ -58,24 +54,24 @@ public static partial class DrawingViewService
 	/// <param name="strokeColor">Line color</param>
 	/// <param name="backgroundColor">Image background color</param>
 	/// <returns>Image stream</returns>
-	public static Stream GetImageStream(IList<Point>? points,
-		Size imageSize,
-		float lineWidth,
-		Color strokeColor,
-		Color backgroundColor)
+	public static Stream GetImageStream(in IList<Point> points,
+										in Size imageSize,
+										in float lineWidth,
+										in Color strokeColor,
+										in Color backgroundColor)
 	{
-		if (points is null || points.Count < 2)
+		if (points.Count < 2)
 		{
 			return Stream.Null;
 		}
 
-		var image = GetImageInternal(points, lineWidth, strokeColor, backgroundColor);
+		var image = GetBitmapForPoints(points, lineWidth, strokeColor, backgroundColor);
 		if (image is null)
 		{
 			return Stream.Null;
 		}
 
-		using var resizedImage = MaxResizeImage(image, (float)imageSize.Width, (float)imageSize.Height);
+		using var resizedImage = GetMaximumBitmap(image, (float)imageSize.Width, (float)imageSize.Height);
 		var stream = new MemoryStream();
 		var compressResult = resizedImage.Compress(Bitmap.CompressFormat.Jpeg, 100, stream);
 
@@ -90,7 +86,7 @@ public static partial class DrawingViewService
 		return stream;
 	}
 
-	static Bitmap? GetImageInternal(ICollection<Point> points,
+	static Bitmap? GetBitmapForPoints(ICollection<Point> points,
 		float lineWidth,
 		Color strokeColor,
 		Color backgroundColor)
@@ -150,7 +146,7 @@ public static partial class DrawingViewService
 		return image;
 	}
 
-	static Bitmap? GetImageInternal(IList<ILine> lines,
+	static Bitmap? GetBitmapForLines(IList<ILine> lines,
 		Color backgroundColor)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
@@ -211,7 +207,7 @@ public static partial class DrawingViewService
 		return image;
 	}
 
-	static Bitmap MaxResizeImage(Bitmap sourceImage, float maxWidth, float maxHeight)
+	static Bitmap GetMaximumBitmap(in Bitmap sourceImage, in float maxWidth, in float maxHeight)
 	{
 		var sourceSize = new Size(sourceImage.Width, sourceImage.Height);
 		var maxResizeFactor = Math.Max(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);

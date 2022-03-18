@@ -9,6 +9,8 @@ namespace CommunityToolkit.Maui.Views;
 /// </summary>
 public class DrawingView : View, IDrawingView
 {
+	readonly WeakEventManager drawingLineCompletedEventManager = new();
+
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="ClearOnFinish"/> property.
 	/// </summary>
@@ -25,8 +27,7 @@ public class DrawingView : View, IDrawingView
 	/// Backing BindableProperty for the <see cref="Lines"/> property.
 	/// </summary>
 	public static readonly BindableProperty LinesProperty = BindableProperty.Create(
-		nameof(Lines), typeof(ObservableCollection<ILine>), typeof(DrawingView), new ObservableCollection<ILine>(),
-		BindingMode.TwoWay);
+		nameof(Lines), typeof(ObservableCollection<ILine>), typeof(DrawingView), new ObservableCollection<ILine>(), BindingMode.TwoWay);
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="DrawingLineCompletedCommand"/> property.
@@ -48,12 +49,11 @@ public class DrawingView : View, IDrawingView
 	/// <summary>
 	/// Event occurred when drawing line completed
 	/// </summary>
-	public event EventHandler<DrawingLineCompletedEventArgs>? DrawingLineCompleted;
-
-	/// <summary>
-	/// Initializes the DrawingView
-	/// </summary>
-	public DrawingView() => Lines = new ObservableCollection<ILine>();
+	public event EventHandler<DrawingLineCompletedEventArgs> DrawingLineCompleted
+	{
+		add => drawingLineCompletedEventManager.AddEventHandler(value);
+		remove => drawingLineCompletedEventManager.RemoveEventHandler(value);
+	}
 
 	/// <summary>
 	/// The <see cref="Color"/> that is used by default to draw a line on the <see cref="DrawingView"/>. This is a bindable property.
@@ -143,7 +143,8 @@ public class DrawingView : View, IDrawingView
 	/// <param name="lastDrawingLine">Last drawing line</param>
 	internal void OnDrawingLineCompleted(ILine? lastDrawingLine)
 	{
-		DrawingLineCompleted?.Invoke(this, new DrawingLineCompletedEventArgs(lastDrawingLine));
+		drawingLineCompletedEventManager.HandleEvent(this, new DrawingLineCompletedEventArgs(lastDrawingLine), nameof(DrawingLineCompleted));
+
 		if (DrawingLineCompletedCommand?.CanExecute(lastDrawingLine) ?? false)
 		{
 			DrawingLineCompletedCommand.Execute(lastDrawingLine);
