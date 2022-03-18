@@ -5,8 +5,8 @@ namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
 public partial class BoolToObjectConverterPage : BasePage<BoolToObjectConverterViewModel>
 {
-	public BoolToObjectConverterPage(BoolToObjectConverterViewModel boolToObjectConverterViewModel)
-		: base(boolToObjectConverterViewModel)
+	public BoolToObjectConverterPage(IDeviceInfo deviceInfo, BoolToObjectConverterViewModel boolToObjectConverterViewModel)
+		: base(deviceInfo, boolToObjectConverterViewModel)
 	{
 		InitializeComponent();
 

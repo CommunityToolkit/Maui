@@ -14,6 +14,7 @@
             <mct:TextCaseConverter x:Key="TextCaseConverter" Type="Upper" />
         </ResourceDictionary>
     </pages:BasePage.Resources>
+
     <pages:BasePage.Content>
         <VerticalStackLayout
             Padding="10,10"
@@ -23,14 +24,14 @@
             <Label Text="The TextCaseConverter is a converter that allows users to convert the casing of an incoming string type binding. The Type property is used to define what kind of casing will be applied to the string." TextColor="{StaticResource NormalLabelTextColor}" />
             <Label Text="The Entered Text will be converted to upper case" TextColor="{StaticResource NormalLabelTextColor}" />
             <Entry
-                x:Name="ExampleText"
                 Placeholder="Enter text here"
                 Text="{Binding Input}"
                 TextColor="{StaticResource NormalLabelTextColor}" />
             <Label
                 Padding="7,0,0,0"
-                Text="{Binding Source=ExampleText, Path=Text, Converter={StaticResource TextCaseConverter}}"
+                Text="{Binding Input, Mode=OneWay, Converter={StaticResource TextCaseConverter}}"
                 TextColor="{StaticResource NormalLabelTextColor}" />
         </VerticalStackLayout>
     </pages:BasePage.Content>
+
 </pages:BasePage>

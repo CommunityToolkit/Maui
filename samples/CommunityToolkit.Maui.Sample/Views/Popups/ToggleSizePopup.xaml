@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<mct:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<mct:Popup x:Class="CommunityToolkit.Maui.Sample.ToggleSizePopup"
+           xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-           x:Class="CommunityToolkit.Maui.Sample.ToggleSizePopup"
-           xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui"
-           xmlns:models="clr-namespace:CommunityToolkit.Maui.Sample.Models"
-           Size="{x:Static models:PopupSizeConstants.Medium}">
+           xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit">
 
     <VerticalStackLayout Style="{StaticResource PopupLayout}">
 

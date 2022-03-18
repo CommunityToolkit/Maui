@@ -1,15 +1,18 @@
+using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample;
 
 public partial class MultipleButtonPopup : Popup
 {
-	public MultipleButtonPopup()
+	public MultipleButtonPopup(PopupSizeConstants popupSizeConstants)
 	{
 		InitializeComponent();
+
+		Size = popupSizeConstants.Medium;
 	}
 
-	void Cancel_Clicked(object? sender, System.EventArgs e) => Close(false);
+	void Cancel_Clicked(object? sender, EventArgs e) => Close(false);
 
-	void Okay_Clicked(object? sender, System.EventArgs e) => Close(true);
+	void Okay_Clicked(object? sender, EventArgs e) => Close(true);
 }
