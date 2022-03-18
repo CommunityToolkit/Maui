@@ -33,30 +33,27 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 	void GetImageClicked(object sender, EventArgs e)
 	{
 		var lines = GenerateLines(2);
-		DrawImage(lines.ToList());
+		DrawImage(lines);
 	}
 
-	ObservableCollection<ILine> GenerateLines(int count)
+	void DrawImage(in IEnumerable<ILine> lines)
 	{
-		var lines = new ObservableCollection<ILine>();
+		var stream = DrawingView.GetImageStream(lines, new Size(GestureImage.Width, GestureImage.Height), Colors.Gray);
+		GestureImage.Source = ImageSource.FromStream(() => stream);
+	}
+
+	IEnumerable<ILine> GenerateLines(int count)
+	{
 		for (var i = 0; i < count; i++)
 		{
-			lines.Add(new Line()
+			yield return new Line()
 			{
-				Points = BindingContext.GeneratePoints(10),
+				Points = new(BindingContext.GeneratePoints(10, DrawingViewControl.Width, DrawingViewControl.Height)),
 				LineColor = Color.FromRgb(Random.Shared.Next(255), Random.Shared.Next(255), Random.Shared.Next(255)),
 				LineWidth = 10,
 				EnableSmoothedPath = false,
 				Granularity = 5
-			});
+			};
 		}
-
-		return lines;
-	}
-
-	void DrawImage(IEnumerable<ILine> lines)
-	{
-		var stream = DrawingView.GetImageStream(lines, new Size(GestureImage.Width, GestureImage.Height), Colors.Gray);
-		GestureImage.Source = ImageSource.FromStream(() => stream);
 	}
 }

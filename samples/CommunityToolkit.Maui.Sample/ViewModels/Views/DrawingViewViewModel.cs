@@ -1,26 +1,30 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core.Views;
+using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public class DrawingViewViewModel : BaseViewModel
 {
-	ObservableCollection<ILine> lines;
-	string logs;
+	readonly IDeviceDisplay deviceDisplay;
 
-	public DrawingViewViewModel()
+	string logs = string.Empty;
+
+	public DrawingViewViewModel(IDeviceDisplay deviceDisplay)
 	{
-		lines = new();
-		logs = string.Empty;
+		this.deviceDisplay = deviceDisplay;
+
 		DrawingLineCompletedCommand = new Command<ILine>(line =>
 		{
 			Logs += $"GestureCompletedCommand executed. Line points count: {line.Points.Count}" + Environment.NewLine;
 		});
+
 		ClearLinesCommand = new Command(Lines.Clear);
-		AddNewLineCommand = new Command(() => Lines.Add(new Line()
+
+		AddNewLineCommand = new Command<DrawingView>(drawingView => Lines.Add(new Line()
 		{
-			Points = GeneratePoints(10),
+			Points = new(GeneratePoints(10, drawingView.Width, drawingView.Height)),
 			LineColor = Color.FromRgb(Random.Shared.Next(255), Random.Shared.Next(255), Random.Shared.Next(255)),
 			LineWidth = 10,
 			EnableSmoothedPath = true,
@@ -28,15 +32,11 @@ public class DrawingViewViewModel : BaseViewModel
 		}));
 	}
 
-	public ObservableCollection<ILine> Lines
-	{
-		get => lines;
-		set => SetProperty(ref lines, value);
-	}
+	public ObservableCollection<ILine> Lines { get; } = new();
 
-	public ICommand DrawingLineCompletedCommand { get; set; }
-	public ICommand ClearLinesCommand { get; set; }
-	public ICommand AddNewLineCommand { get; set; }
+	public ICommand DrawingLineCompletedCommand { get; }
+	public ICommand ClearLinesCommand { get; }
+	public ICommand AddNewLineCommand { get; }
 
 	public string Logs
 	{
@@ -44,14 +44,14 @@ public class DrawingViewViewModel : BaseViewModel
 		set => SetProperty(ref logs, value);
 	}
 
-	public ObservableCollection<Point> GeneratePoints(int count)
+	public IEnumerable<Point> GeneratePoints(int count, double viewWidth, double viewHeight)
 	{
-		var points = new ObservableCollection<Point>();
+		var maxWidthInt = (int)Math.Round(viewWidth * deviceDisplay.GetMainDisplayInfo().Density, MidpointRounding.ToZero);
+		var maxHeightInt = (int)Math.Round(viewHeight * deviceDisplay.GetMainDisplayInfo().Density, MidpointRounding.ToZero);
+
 		for (var i = 0; i < count; i++)
 		{
-			points.Add(new Point(Random.Shared.Next(1, 200), Random.Shared.Next(1, 200)));
+			yield return new Point(Random.Shared.Next(1, maxWidthInt), Random.Shared.Next(1, maxHeightInt));
 		}
-
-		return points;
 	}
 }

@@ -22,6 +22,7 @@
             <Button
                 BackgroundColor="White"
                 Command="{Binding AddNewLineCommand}"
+                CommandParameter="{x:Reference Name=DrawingViewControl}"
                 Text="Add new line"
                 TextColor="Black" />
             <Button
