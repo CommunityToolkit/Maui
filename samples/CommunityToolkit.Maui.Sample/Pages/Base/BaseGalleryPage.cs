@@ -16,7 +16,7 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 		{
 			Padding = new Thickness(0, 96, 0, 0);
 		}
-		else if (deviceInfo.Platform == DevicePlatform.iOS || DeviceInfo.Platform == DevicePlatform.MacCatalyst) //iOS Tablets + MacCatalyst
+		else if (deviceInfo.Platform == DevicePlatform.iOS || deviceInfo.Platform == DevicePlatform.MacCatalyst) //iOS Tablets + MacCatalyst
 		{
 			Padding = new Thickness(0, 84, 0, 0);
 		}
