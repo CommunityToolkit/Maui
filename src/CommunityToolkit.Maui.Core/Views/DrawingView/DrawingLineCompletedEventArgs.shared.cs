@@ -14,5 +14,5 @@ public class DrawingLineCompletedEventArgs : EventArgs
 	/// <summary>
 	/// Last drawing line
 	/// </summary>
-	public ILine? Line { get; }
+	public ILine Line { get; }
 }
