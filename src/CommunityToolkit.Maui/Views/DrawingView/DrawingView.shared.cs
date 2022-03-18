@@ -141,7 +141,7 @@ public class DrawingView : View, IDrawingView
 	/// Executes DrawingLineCompleted event and DrawingLineCompletedCommand
 	/// </summary>
 	/// <param name="lastDrawingLine">Last drawing line</param>
-	internal void OnDrawingLineCompleted(ILine? lastDrawingLine)
+	internal void OnDrawingLineCompleted(ILine lastDrawingLine)
 	{
 		drawingLineCompletedEventManager.HandleEvent(this, new DrawingLineCompletedEventArgs(lastDrawingLine), nameof(DrawingLineCompleted));
 
