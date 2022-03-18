@@ -12,7 +12,7 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 	{
 		Title = title;
 
-		if (deviceInfo.Platform == DevicePlatform.iOS && DeviceInfo.Idiom == DeviceIdiom.Phone) // iOS Phones
+		if (deviceInfo.Platform == DevicePlatform.iOS && deviceInfo.Idiom == DeviceIdiom.Phone) // iOS Phones
 		{
 			Padding = new Thickness(0, 96, 0, 0);
 		}
