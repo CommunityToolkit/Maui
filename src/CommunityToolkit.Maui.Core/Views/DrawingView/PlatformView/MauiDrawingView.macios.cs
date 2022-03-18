@@ -187,6 +187,4 @@ public partial class MauiDrawingView : UIView
 			scrollViewParent.ScrollEnabled = enabled;
 		}
 	}
-
-	partial void OnDrawingLineCompleted(MauiDrawingLine lastDrawingLine);
 }

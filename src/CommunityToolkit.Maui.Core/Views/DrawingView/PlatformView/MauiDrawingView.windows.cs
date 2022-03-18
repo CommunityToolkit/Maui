@@ -49,6 +49,4 @@ public partial class MauiDrawingView : FrameworkElement
 	public void CleanUp()
 	{
 	}
-
-	partial void OnDrawingLineCompleted(MauiDrawingLine lastDrawingLine);
 }

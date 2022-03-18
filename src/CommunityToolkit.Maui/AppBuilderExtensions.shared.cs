@@ -20,7 +20,9 @@ public static class AppBuilderExtensions
 		{
 			h.AddHandler(typeof(Popup), typeof(PopupHandler));
 		});
+
 		Popup.RemapForControls();
+
 		return builder.UseMauiCommunityToolkitCore();
 	}
 }

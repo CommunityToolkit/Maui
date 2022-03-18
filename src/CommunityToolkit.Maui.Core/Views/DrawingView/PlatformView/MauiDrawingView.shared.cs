@@ -2,7 +2,7 @@
 using CommunityToolkit.Maui.Core.Views;
 using Microsoft.Maui.Controls;
 
-namespace CommunityToolkit.Maui.Core;
+namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// DrawingView Platform Control

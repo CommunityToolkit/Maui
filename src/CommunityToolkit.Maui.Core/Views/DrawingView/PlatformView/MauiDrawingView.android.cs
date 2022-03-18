@@ -40,11 +40,6 @@ public partial class MauiDrawingView : AView
 	public float LineWidth { get; set; } = 5;
 
 	/// <summary>
-	/// Command executed when drawing line completed
-	/// </summary>
-	public ICommand? DrawingLineCompletedCommand { get; set; }
-
-	/// <summary>
 	/// Enable or disable multiline mode
 	/// </summary>
 	public bool MultiLineMode { get; set; }
@@ -180,8 +175,6 @@ public partial class MauiDrawingView : AView
 			canvas.DrawPath(drawPath, drawPaint);
 		}
 	}
-
-	partial void OnDrawingLineCompleted(MauiDrawingLine lastDrawingLine);
 
 	IList<Point> NormalizePoints(IEnumerable<Point> points)
 	{

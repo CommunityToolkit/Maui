@@ -100,7 +100,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 		PlatformView.Lines.Clear();
 		foreach (var line in VirtualView.Lines)
 		{
-			PlatformView.Lines.Add(new DrawingNativeLine()
+			PlatformView.Lines.Add(new MauiDrawingLine()
 			{
 				LineColor = line.LineColor,
 				EnableSmoothedPath = line.EnableSmoothedPath,
