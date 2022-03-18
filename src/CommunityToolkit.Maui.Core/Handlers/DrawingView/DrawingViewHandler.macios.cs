@@ -5,28 +5,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingView>
 {
-	/// <inheritdoc />
-	protected override MauiDrawingView CreatePlatformView()
-	{
-		return new MauiDrawingView();
-	}
-
-	/// <inheritdoc />
-	protected override void ConnectHandler(MauiDrawingView nativeView)
-	{
-		base.ConnectHandler(nativeView);
-		nativeView.Initialize();
-		VirtualView.Lines.CollectionChanged += Lines_CollectionChanged;
-	}
-
-	/// <inheritdoc />
-	protected override void DisconnectHandler(MauiDrawingView nativeView)
-	{
-		base.DisconnectHandler(nativeView);
-		nativeView.CleanUp();
-		VirtualView.Lines.CollectionChanged -= Lines_CollectionChanged;
-	}
-
 	/// <summary>
 	/// Action that's triggered when the DrawingView <see cref="IDrawingView.Lines"/> property changes.
 	/// </summary>
@@ -95,6 +73,25 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	/// <param name="parameter">Command argument</param>
 	public static void MapDrawingLineCompletedEvent(DrawingViewHandler handler, IDrawingView view, object? parameter)
 	{
+	}
+
+	/// <inheritdoc />
+	protected override MauiDrawingView CreatePlatformView() => new MauiDrawingView();
+
+	/// <inheritdoc />
+	protected override void ConnectHandler(MauiDrawingView nativeView)
+	{
+		base.ConnectHandler(nativeView);
+		nativeView.Initialize();
+		VirtualView.Lines.CollectionChanged += Lines_CollectionChanged;
+	}
+
+	/// <inheritdoc />
+	protected override void DisconnectHandler(MauiDrawingView nativeView)
+	{
+		base.DisconnectHandler(nativeView);
+		nativeView.CleanUp();
+		VirtualView.Lines.CollectionChanged -= Lines_CollectionChanged;
 	}
 
 	void Lines_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
