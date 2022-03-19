@@ -132,7 +132,7 @@ public partial class MauiDrawingView : UIView
 					? line.Points.SmoothedPathWithGranularity(line.Granularity)
 					: line.Points;
 			var stylusPoints = newPointsPath.Select(point => new CGPoint(point.X, point.Y)).ToList();
-			if (stylusPoints.Any())
+			if (stylusPoints.Count > 0)
 			{
 				previousPoint = stylusPoints[0];
 				currentPath.MoveTo(previousPoint);
@@ -148,14 +148,14 @@ public partial class MauiDrawingView : UIView
 
 	void DetectScrollViews()
 	{
-		if (scrollViewParents.Any())
+		if (scrollViewParents.Count > 0)
 		{
 			return;
 		}
 
 		var parent = Superview;
 
-		while (parent != null)
+		while (parent is not null)
 		{
 			if (parent.GetType() == typeof(UIScrollView))
 			{
