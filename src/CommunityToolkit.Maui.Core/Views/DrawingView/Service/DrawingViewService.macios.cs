@@ -49,7 +49,7 @@ public static partial class DrawingViewService
 			return Stream.Null;
 		}
 
-		var image = GetUIImageForPoints(points, new NFloat(lineWidth), strokeColor, backgroundColor);
+		var image = GetUIImageForPoints(points, lineWidth, strokeColor, backgroundColor);
 		if (image is null)
 		{
 			return Stream.Null;
@@ -81,7 +81,7 @@ public static partial class DrawingViewService
 		}
 
 		var imageSize = new CGSize(drawingWidth, drawingHeight);
-		UIGraphics.BeginImageContextWithOptions(imageSize, false, new NFloat(1));
+		UIGraphics.BeginImageContextWithOptions(imageSize, false, 1);
 
 		if (UIGraphics.GetCurrentContext() is not CGContext context)
 		{
@@ -126,7 +126,7 @@ public static partial class DrawingViewService
 		}
 
 		var imageSize = new CGSize(drawingWidth, drawingHeight);
-		UIGraphics.BeginImageContextWithOptions(imageSize, false, new NFloat(1));
+		UIGraphics.BeginImageContextWithOptions(imageSize, false, 1);
 
 		if (UIGraphics.GetCurrentContext() is not CGContext context)
 		{
@@ -139,7 +139,7 @@ public static partial class DrawingViewService
 		foreach (var line in lines)
 		{
 			context.SetStrokeColor(line.LineColor.ToCGColor());
-			context.SetLineWidth(new NFloat(line.LineWidth));
+			context.SetLineWidth(line.LineWidth);
 			context.SetLineCap(CGLineCap.Round);
 			context.SetLineJoin(CGLineJoin.Round);
 

@@ -24,7 +24,7 @@ public partial class MauiDrawingView : UIView
 	/// <summary>
 	/// Line width
 	/// </summary>
-	public NFloat LineWidth { get; set; } = new NFloat(5);
+	public NFloat LineWidth { get; set; } = 5;
 
 	/// <inheritdoc />
 	public override void TouchesBegan(NSSet touches, UIEvent? evt)
