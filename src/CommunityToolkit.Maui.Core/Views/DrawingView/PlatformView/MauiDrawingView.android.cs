@@ -27,7 +27,7 @@ public partial class MauiDrawingView : AView
 	/// <summary>
 	/// Line color
 	/// </summary>
-	public AColor LineColor { get; set; } = Colors.Black.ToPlatform();
+	public AColor LineColor { get; set; } = AColor.Black;
 
 	/// <summary>
 	/// Line width
