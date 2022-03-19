@@ -79,6 +79,7 @@
                              LineColor="Blue"
                              LineWidth="5"
                              Lines="{Binding Lines, Mode=TwoWay}"
+                             DrawingLineCompleted="OnDrawingLineCompleted"
                              DrawingLineCompletedCommand="{Binding DrawingLineCompletedCommand}"
                              ClearOnFinish="{Binding Source={x:Reference ClearOnFinish}, Path=IsToggled}"
                              MultiLineMode="{Binding Source={x:Reference MultiLineMode}, Path=IsToggled}"/>

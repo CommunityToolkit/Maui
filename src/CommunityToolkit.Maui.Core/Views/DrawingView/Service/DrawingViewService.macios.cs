@@ -66,7 +66,7 @@ public static partial class DrawingViewService
 	{
 		const int minSize = 1;
 
-		if (!points.Any())
+		if (points.Count is 0)
 		{
 			return null;
 		}
@@ -110,7 +110,7 @@ public static partial class DrawingViewService
 		const int minSize = 1;
 
 		var points = lines.SelectMany(x => x.Points).ToList();
-		if (!points.Any())
+		if (points.Count is 0)
 		{
 			return null;
 		}

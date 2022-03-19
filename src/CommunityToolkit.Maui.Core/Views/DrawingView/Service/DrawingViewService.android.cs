@@ -91,7 +91,7 @@ public static partial class DrawingViewService
 		Color strokeColor,
 		Color backgroundColor)
 	{
-		if (!points.Any())
+		if (points.Count is 0)
 		{
 			return null;
 		}
@@ -150,7 +150,7 @@ public static partial class DrawingViewService
 		Color backgroundColor)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
-		if (!points.Any())
+		if (points.Count is 0)
 		{
 			return null;
 		}

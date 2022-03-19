@@ -12,7 +12,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
 	public static void MapLines(DrawingViewHandler handler, IDrawingView view)
 	{
-
+		UpdateLines(view, handler.PlatformView);
 	}
 
 	/// <summary>
@@ -73,6 +73,10 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	/// <param name="parameter">Command argument</param>
 	public static void MapDrawingLineCompletedEvent(DrawingViewHandler handler, IDrawingView view, object? parameter)
 	{
+		if (parameter is ILine line)
+		{
+			view.DrawingLineCompleted(line);
+		}
 	}
 
 	/// <inheritdoc />
@@ -80,7 +84,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	{
 		base.ConnectHandler(nativeView);
 		nativeView.Initialize();
-		VirtualView.Lines.CollectionChanged += Lines_CollectionChanged;
+		VirtualView.Lines.CollectionChanged += OnLinesCollectionChanged;
 	}
 
 
@@ -89,23 +93,28 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	{
 		base.DisconnectHandler(nativeView);
 		nativeView.CleanUp();
-		VirtualView.Lines.CollectionChanged -= Lines_CollectionChanged;
+		VirtualView.Lines.CollectionChanged -= OnLinesCollectionChanged;
 	}
 
 	/// <inheritdoc />
 	protected override MauiDrawingView CreatePlatformView() => new();
 
-	void Lines_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 	{
-		PlatformView.Lines.Clear();
-		if (!VirtualView.MultiLineMode && VirtualView.Lines.Count > 1)
+		UpdateLines(VirtualView, PlatformView);
+	}
+
+	static void UpdateLines(IDrawingView virtualView, MauiDrawingView platformView)
+	{
+		platformView.Lines.Clear();
+		if (!virtualView.MultiLineMode && virtualView.Lines.Count > 1)
 		{
 			throw new InvalidOperationException("Only 1 line is allowed with multiline mode");
 		}
 
-		foreach (var line in VirtualView.Lines)
+		foreach (var line in virtualView.Lines)
 		{
-			PlatformView.Lines.Add(new MauiDrawingLine()
+			platformView.Lines.Add(new MauiDrawingLine()
 			{
 				LineColor = line.LineColor,
 				EnableSmoothedPath = line.EnableSmoothedPath,

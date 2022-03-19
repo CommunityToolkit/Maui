@@ -57,4 +57,10 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 			};
 		}
 	}
+
+	void OnDrawingLineCompleted(object sender, DrawingLineCompletedEventArgs e)
+	{
+		var stream = e.Line.GetImageStream(GestureImage.Width, GestureImage.Height, Colors.Gray);
+		GestureImage.Source = ImageSource.FromStream(() => stream);
+	}
 }

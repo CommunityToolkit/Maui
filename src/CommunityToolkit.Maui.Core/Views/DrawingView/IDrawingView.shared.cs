@@ -11,7 +11,8 @@ public interface IDrawingView : IView
 	/// <summary>
 	/// Event occurred when drawing line completed
 	/// </summary>
-	event EventHandler<DrawingLineCompletedEventArgs> DrawingLineCompleted;
+	/// <param name="lastDrawingLine">Last drawing <see cref="ILine"/></param>
+	void DrawingLineCompleted(ILine lastDrawingLine);
 
 	/// <summary>
 	/// The <see cref="Color"/> that is used by default to draw a line on the <see cref="IDrawingView"/>. This is a bindable property.
