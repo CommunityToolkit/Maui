@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -92,11 +92,16 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	}
 
 	/// <inheritdoc />
-	protected override MauiDrawingView CreatePlatformView() => new MauiDrawingView(Context);
+	protected override MauiDrawingView CreatePlatformView() => new(Context);
 
 	void Lines_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 	{
 		PlatformView.Lines.Clear();
+		if(!VirtualView.MultiLineMode && VirtualView.Lines.Count > 1)
+		{
+			throw new InvalidOperationException("Only 1 line is allowed with multiline mode");
+		}
+
 		foreach (var line in VirtualView.Lines)
 		{
 			PlatformView.Lines.Add(new MauiDrawingLine()

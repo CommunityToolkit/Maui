@@ -9,15 +9,15 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public partial class MauiDrawingView
 {
-	readonly WeakEventManager weakeventmanager = new();
+	readonly WeakEventManager weakEventManager = new();
 
 	/// <summary>
 	/// Event raised when drawing line completed 
 	/// </summary>
 	public event EventHandler<MauiDrawingLineCompletedEventArgs> DrawingLineCompleted
 	{
-		add => weakeventmanager.AddEventHandler(value);
-		remove => weakeventmanager.RemoveEventHandler(value);
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
 	}
 
 	/// <summary>
@@ -41,7 +41,7 @@ public partial class MauiDrawingView
 
 	void OnDrawingLineCompleted(MauiDrawingLine lastDrawingLine)
 	{
-		weakeventmanager.HandleEvent(this, new MauiDrawingLineCompletedEventArgs(lastDrawingLine), nameof(DrawingLineCompleted));
+		weakEventManager.HandleEvent(this, new MauiDrawingLineCompletedEventArgs(lastDrawingLine), nameof(DrawingLineCompleted));
 
 		if (DrawingLineCompletedCommand?.CanExecute(lastDrawingLine) ?? false)
 		{

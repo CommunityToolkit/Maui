@@ -10,65 +10,82 @@
                 Title="DrawingView">
 
     <ScrollView>
-        <VerticalStackLayout>
-            <HorizontalStackLayout Margin="5">
-                <Label Text="Clear on Finish" Margin="0,0,5,0" />
-                <Switch x:Name="ClearOnFinish" />
-            </HorizontalStackLayout>
-            <HorizontalStackLayout Margin="5">
-                <Label Text="Multi-Line Mode" Margin="0,0,5,0" />
-                <Switch x:Name="MultiLineMode" />
-            </HorizontalStackLayout>
+        <Grid RowDefinitions="40,40,40,40,Auto,40,40,40,100,40,200,100" ColumnDefinitions="*,*">
+            <Label Grid.Row="0" Grid.Column="0" Text="Clear on Finish" Margin="0,0,5,0" />
+            <Switch  Grid.Row="0" Grid.Column="1" x:Name="ClearOnFinish" />
+            <Label  Grid.Row="1" Grid.Column="0" Text="Multi-Line Mode" Margin="0,0,5,0" />
+            <Switch  Grid.Row="1" Grid.Column="1" x:Name="MultiLineMode" />
             <Button
+                Grid.Row="2" Grid.Column="0"
+                Grid.ColumnSpan="2"
                 BackgroundColor="White"
                 Command="{Binding AddNewLineCommand}"
                 CommandParameter="{x:Reference Name=DrawingViewControl}"
                 Text="Add new line"
                 TextColor="Black" />
             <Button
+                Grid.Row="3" Grid.Column="0"
+                Grid.ColumnSpan="2"
                 BackgroundColor="White"
                 Clicked="LoadPointsButtonClicked"
                 Text="Load points"
                 TextColor="Black" />
             <VerticalStackLayout x:Name="HiddenPanel"
                 HorizontalOptions="CenterAndExpand"
-                IsVisible="False">
+                IsVisible="False"
+                Grid.Row="4" Grid.Column="0"
+                Grid.ColumnSpan="2">
                 <Label Text="Draw &amp; GO" />
                 <Button 
                     Text="Clear all lines"
                     Command="{Binding ClearLinesCommand}"/>
             </VerticalStackLayout>
             <Button
+                Grid.Row="5" Grid.Column="0"
+                Grid.ColumnSpan="2"
                 BackgroundColor="White"
                 Clicked="DisplayHiddenLabelButtonClicked"
                 Text="Display hidden label"
                 TextColor="Black" />
             <Button
+                Grid.Row="6" Grid.Column="0"
+                Grid.ColumnSpan="2"
                 BackgroundColor="White"
                 Clicked="GetCurrentDrawingViewImageClicked"
                 Text="Display current gesture pad image"
                 TextColor="Black" />
             <Button
+                Grid.Row="7" Grid.Column="0"
+                Grid.ColumnSpan="2"
                 BackgroundColor="White"
                 Clicked="GetImageClicked"
                 Text="Display image"
                 TextColor="Black" />
             <Image
+                Grid.Row="8" Grid.Column="0"
+                Grid.ColumnSpan="2"
                 x:Name="GestureImage"
                 HeightRequest="100"
                 WidthRequest="100" />
 
-            <Label Text="DrawingView"/>
+            <Label Text="DrawingView"
+                   Grid.Row="9" Grid.Column="0"
+                   Grid.ColumnSpan="2"/>
             <mct:DrawingView x:Name="DrawingViewControl" 
-                               BackgroundColor="Yellow" 
-                               HeightRequest="200"
-                               LineColor="Blue"
-                               LineWidth="5"
-                               Lines="{Binding Lines, Mode=TwoWay}"
-                               ClearOnFinish="{Binding Source={x:Reference ClearOnFinish}, Path=IsToggled}"
-                               MultiLineMode="{Binding Source={x:Reference MultiLineMode}, Path=IsToggled}"/>
+                             Grid.Row="10" Grid.Column="0"
+                             Grid.ColumnSpan="2"
+                             BackgroundColor="Yellow" 
+                             HeightRequest="200"
+                             LineColor="Blue"
+                             LineWidth="5"
+                             Lines="{Binding Lines, Mode=TwoWay}"
+                             DrawingLineCompletedCommand="{Binding DrawingLineCompletedCommand}"
+                             ClearOnFinish="{Binding Source={x:Reference ClearOnFinish}, Path=IsToggled}"
+                             MultiLineMode="{Binding Source={x:Reference MultiLineMode}, Path=IsToggled}"/>
 
-            <Editor HeightRequest="50" Text="{Binding Logs}" />
-        </VerticalStackLayout>
+            <Editor Grid.Row="11" Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    HeightRequest="100" Text="{Binding Logs}" />
+        </Grid>
     </ScrollView>
 </pages:BasePage>

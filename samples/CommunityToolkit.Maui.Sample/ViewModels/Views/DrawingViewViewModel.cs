@@ -2,19 +2,18 @@
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Views;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public class DrawingViewViewModel : BaseViewModel
+public partial class DrawingViewViewModel : BaseViewModel
 {
 	readonly IDeviceDisplay deviceDisplay;
-
-	string logs = string.Empty;
 
 	public DrawingViewViewModel(IDeviceDisplay deviceDisplay)
 	{
 		this.deviceDisplay = deviceDisplay;
-
+		
 		DrawingLineCompletedCommand = new Command<ILine>(line =>
 		{
 			Logs += $"GestureCompletedCommand executed. Line points count: {line.Points.Count}" + Environment.NewLine;
@@ -22,27 +21,29 @@ public class DrawingViewViewModel : BaseViewModel
 
 		ClearLinesCommand = new Command(Lines.Clear);
 
-		AddNewLineCommand = new Command<DrawingView>(drawingView => Lines.Add(new Line()
-		{
-			Points = new(GeneratePoints(10, drawingView.Width, drawingView.Height)),
-			LineColor = Color.FromRgb(Random.Shared.Next(255), Random.Shared.Next(255), Random.Shared.Next(255)),
-			LineWidth = 10,
-			EnableSmoothedPath = true,
-			Granularity = 5
-		}));
+		AddNewLineCommand = new Command<IDrawingView>(drawingView => {
+			var width = double.IsNaN(drawingView.Width) ? 200 : drawingView.Width;
+			var height = double.IsNaN(drawingView.Height) ? 200 : drawingView.Height;
+			Lines.Add(new Line()
+			{
+				Points = new(GeneratePoints(10, width, height)),
+				LineColor = Color.FromRgb(Random.Shared.Next(255), Random.Shared.Next(255), Random.Shared.Next(255)),
+				LineWidth = 10,
+				EnableSmoothedPath = true,
+				Granularity = 5
+			});
+		});
 	}
 
-	public ObservableCollection<ILine> Lines { get; } = new();
+	[ObservableProperty]
+	ObservableCollection<ILine> lines = new();
+
+	[ObservableProperty]
+	string logs = string.Empty;
 
 	public ICommand DrawingLineCompletedCommand { get; }
 	public ICommand ClearLinesCommand { get; }
 	public ICommand AddNewLineCommand { get; }
-
-	public string Logs
-	{
-		get => logs;
-		set => SetProperty(ref logs, value);
-	}
 
 	public IEnumerable<Point> GeneratePoints(int count, double viewWidth, double viewHeight)
 	{

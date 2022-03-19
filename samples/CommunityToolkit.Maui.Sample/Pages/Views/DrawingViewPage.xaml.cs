@@ -43,11 +43,13 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 
 	IEnumerable<ILine> GenerateLines(int count)
 	{
+		var width = double.IsNaN(DrawingViewControl.Width) ? 200 : DrawingViewControl.Width;
+		var height = double.IsNaN(DrawingViewControl.Height) ? 200 : DrawingViewControl.Height;
 		for (var i = 0; i < count; i++)
 		{
 			yield return new Line()
 			{
-				Points = new(BindingContext.GeneratePoints(10, DrawingViewControl.Width, DrawingViewControl.Height)),
+				Points = new(BindingContext.GeneratePoints(10, width, height)),
 				LineColor = Color.FromRgb(Random.Shared.Next(255), Random.Shared.Next(255), Random.Shared.Next(255)),
 				LineWidth = 10,
 				EnableSmoothedPath = false,
