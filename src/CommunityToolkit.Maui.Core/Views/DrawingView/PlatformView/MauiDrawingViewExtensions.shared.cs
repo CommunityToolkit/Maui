@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Core.Extensions;
 /// <summary>
 /// Extension methods to support <see cref="IDrawingView"/>
 /// </summary>
-static class MauiDrawingViewExtensions
+static partial class MauiDrawingViewExtensions
 {
 	/// <summary>
 	/// Get smoothed path.

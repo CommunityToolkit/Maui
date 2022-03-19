@@ -1,5 +1,6 @@
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using CommunityToolkit.Maui.Core.Extensions;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -22,7 +23,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
 	public static void MapClearOnFinish(DrawingViewHandler handler, IDrawingView view)
 	{
-		handler.PlatformView.ClearOnFinish = view.ClearOnFinish;
+		handler.PlatformView.SetClearOnFinish(view.ClearOnFinish);
 	}
 
 	/// <summary>
@@ -32,7 +33,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
 	public static void MapLineColor(DrawingViewHandler handler, IDrawingView view)
 	{
-		handler.PlatformView.LineColor = view.LineColor.ToPlatform();
+		handler.PlatformView.SetLineColor(view.LineColor);
 	}
 
 	/// <summary>
@@ -42,7 +43,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
 	public static void MapLineWidth(DrawingViewHandler handler, IDrawingView view)
 	{
-		handler.PlatformView.LineWidth = view.LineWidth;
+		handler.PlatformView.SetLineWidth(view.LineWidth);
 	}
 
 	/// <summary>
@@ -52,7 +53,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
 	public static void MapMultiLineMode(DrawingViewHandler handler, IDrawingView view)
 	{
-		handler.PlatformView.MultiLineMode = view.MultiLineMode;
+		handler.PlatformView.SetMultiLineMode(view.MultiLineMode);
 	}
 
 	/// <summary>
@@ -62,7 +63,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
 	public static void MapDrawingLineCompletedCommand(DrawingViewHandler handler, IDrawingView view)
 	{
-		handler.PlatformView.DrawingLineCompletedCommand = view.DrawingLineCompletedCommand;
+		handler.PlatformView.SetDrawingLineCompletedCommand(view.DrawingLineCompletedCommand);
 	}
 
 	/// <summary>
