@@ -48,7 +48,7 @@ public abstract class BaseAnimation<TAnimatable> : BindableObject where TAnimata
 	/// Performs the animation on the View
 	/// </summary>
 	/// <param name="view">The view to perform the animation on.</param>
-	public abstract Task Animate(TAnimatable? view);
+	public abstract Task Animate(TAnimatable view);
 }
 
 /// <inheritdoc/>
