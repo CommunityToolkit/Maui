@@ -8,8 +8,12 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 public class IntToBoolConverter_Tests : BaseTest
 {
 	[Theory]
+	[InlineData(int.MaxValue, true)]
+	[InlineData(2, true)]
 	[InlineData(1, true)]
 	[InlineData(0, false)]
+	[InlineData(-1, true)]
+	[InlineData(int.MinValue, true)]
 	public void IntToBoolConverter(int value, bool expectedResult)
 	{
 		var intToBoolConverter = new IntToBoolConverter();
@@ -17,8 +21,8 @@ public class IntToBoolConverter_Tests : BaseTest
 		var result = intToBoolConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
 		var typedResult = intToBoolConverter.ConvertFrom(value);
 
-		result.Should().BeEquivalentTo(expectedResult);
-		typedResult.Should().Be(expectedResult);
+		Assert.Equal(expectedResult, result);
+		Assert.Equal(expectedResult, typedResult);
 	}
 
 	[Theory]
@@ -28,36 +32,38 @@ public class IntToBoolConverter_Tests : BaseTest
 	{
 		var intToBoolConverter = new IntToBoolConverter();
 
-		var result = intToBoolConverter.ConvertBack(value, typeof(bool), null, CultureInfo.CurrentCulture);
+		var result = intToBoolConverter.ConvertBack(value, typeof(int), null, CultureInfo.CurrentCulture);
 		var typedResult = intToBoolConverter.ConvertBackTo(value);
 
-		result.Should().BeEquivalentTo(expectedResult);
-		typedResult.Should().Be(expectedResult);
+		Assert.Equal(expectedResult, result);
+		Assert.Equal(expectedResult, typedResult);
 	}
 
 	[Theory]
 	[InlineData(2.5)]
 	[InlineData("")]
+	[InlineData('c')]
 	public void InvalidConverterValuesThrowArgumentException(object value)
 	{
 		var intToBoolConverter = new IntToBoolConverter();
-		intToBoolConverter.ConvertShouldThrow<ArgumentException>(value, typeof(bool), null, CultureInfo.CurrentCulture);
-	}
-
-	[Theory]
-	[InlineData(2.5)]
-	[InlineData("")]
-	[InlineData(null)]
-	public void InvalidConverterBackValuesThrowArgumentException(object value)
-	{
-		var intToBoolConverter = new IntToBoolConverter();
-		intToBoolConverter.ConvertBackShouldThrow<ArgumentException>(value, typeof(bool), null, CultureInfo.CurrentCulture);
+		Assert.Throws<ArgumentException>(() => intToBoolConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
 	}
 
 	[Fact]
 	public void NullConverterValueThrowsArgumentNullException()
 	{
 		var intToBoolConverter = new IntToBoolConverter();
-		intToBoolConverter.ConvertShouldThrow<ArgumentNullException>(null, typeof(bool), null, CultureInfo.CurrentCulture);
-	}	
+		Assert.Throws<ArgumentNullException>(() => intToBoolConverter.Convert(null, typeof(bool), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentNullException>(() => intToBoolConverter.ConvertBack(null, typeof(bool), null, CultureInfo.CurrentCulture)); ;
+	}
+
+	[Theory]
+	[InlineData(2.5)]
+	[InlineData("")]
+	[InlineData('c')]
+	public void InvalidConverterBackValuesThrowArgumentException(object value)
+	{
+		var intToBoolConverter = new IntToBoolConverter();
+		Assert.Throws<ArgumentException>(() => intToBoolConverter.ConvertBack(value, typeof(int), null, CultureInfo.CurrentCulture));
+	}
 }
