@@ -71,7 +71,7 @@ public partial class MauiDrawingView : UIView
 	/// <inheritdoc />
 	public override void TouchesEnded(NSSet touches, UIEvent? evt)
 	{
-		if (currentLine != null)
+		if (currentLine is not null)
 		{
 			Lines.Add(currentLine);
 			OnDrawingLineCompleted(currentLine);
