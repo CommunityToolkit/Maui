@@ -1,11 +1,7 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using CommunityToolkit.Maui.Animations;
+﻿using CommunityToolkit.Maui.Animations;
 using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
-using Microsoft.Maui.Controls;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
@@ -95,7 +91,7 @@ public class AnimationBehavior_Tests : BaseTest
 		public event EventHandler? AnimationStarted;
 		public event EventHandler? AnimationEnded;
 
-		public override async Task Animate(VisualElement? element)
+		public override async Task Animate(VisualElement element)
 		{
 			ArgumentNullException.ThrowIfNull(element);
 
