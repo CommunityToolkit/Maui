@@ -1,6 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Platform;
 
@@ -75,9 +74,9 @@ public static partial class PopupExtensions
 public static partial class PopupExtensions
 {
 	static void PlatformShowPopup(Popup popup, IMauiContext mauiContext) =>
-		throw new NotSupportedException($"The current platform '{Device.RuntimePlatform}' does not support CommunityToolkit.Maui.Core.Popup");
+		throw new NotSupportedException($"The current platform '{DeviceInfo.Platform}' does not support CommunityToolkit.Maui.Core.Popup");
 
 	static Task<object?> PlatformShowPopupAsync(Popup popup, IMauiContext mauiContext) =>
-		throw new NotSupportedException($"The current platform '{Device.RuntimePlatform}' does not support CommunityToolkit.Maui.Core.Popup.");
+		throw new NotSupportedException($"The current platform '{DeviceInfo.Platform}' does not support CommunityToolkit.Maui.Core.Popup.");
 }
 #endif

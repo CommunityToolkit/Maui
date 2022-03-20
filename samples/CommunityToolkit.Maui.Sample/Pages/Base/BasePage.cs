@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Sample.Pages;
 
 public abstract class BasePage<TViewModel> : BasePage where TViewModel : BaseViewModel
 {
-	protected BasePage(TViewModel viewModel) : base(viewModel)
+	protected BasePage(IDeviceInfo deviceInfo, TViewModel viewModel) : base(deviceInfo, viewModel)
 	{
 	}
 
@@ -14,20 +14,22 @@ public abstract class BasePage<TViewModel> : BasePage where TViewModel : BaseVie
 
 public abstract class BasePage : ContentPage
 {
-	protected BasePage(object? viewModel = null)
+	protected BasePage(IDeviceInfo deviceInfo, object? viewModel = null)
 	{
 		BindingContext = viewModel;
 
 		BackgroundColor = (Color)(Application.Current?.Resources["AppBackgroundColor"] ?? throw new InvalidOperationException("Application.Current cannot be null"));
 
-		Padding = Device.RuntimePlatform switch
+		if (deviceInfo.Platform == DevicePlatform.iOS || deviceInfo.Platform == DevicePlatform.MacCatalyst)
 		{
-			// Work-around to ensure content doesn't get clipped by iOS Status Bar + Naviagtion Bar
-			Device.iOS or Device.MacCatalyst => new Thickness(12, 108, 12, 12),
-			_ => 12
-		};
+			Padding = new Thickness(12, 108, 12, 12);
+		}
+		else
+		{
+			Padding = 12;
+		}
 
-		if(string.IsNullOrWhiteSpace(Title))
+		if (string.IsNullOrWhiteSpace(Title))
 		{
 			Title = this.GetType().Name;
 		}

@@ -1,14 +1,14 @@
-﻿using CommunityToolkit.Maui.Sample.Models;
-using CommunityToolkit.Maui.Views;
+﻿using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample;
 
 public class TransparentPopupCSharp : Popup
 {
 	public TransparentPopupCSharp(Size popupSize)
-		:this()
+		: this()
 	{
 		Size = popupSize;
+		Color = Colors.Transparent;
 	}
 
 	public TransparentPopupCSharp()

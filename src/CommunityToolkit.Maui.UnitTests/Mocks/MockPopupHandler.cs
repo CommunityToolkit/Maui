@@ -22,7 +22,7 @@ public class MockPopupHandler : ElementHandler<IPopup, object>
 
 	public int OnOpenedCount { get; private set; }
 
-	protected override object CreateNativeElement()
+	protected override object CreatePlatformElement()
 	{
 		return new object();
 	}

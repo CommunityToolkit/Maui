@@ -1,9 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Util;
 using Android.Widget;
-using CommunityToolkit.Maui.Core;
 using Google.Android.Material.Snackbar;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Platform;
@@ -49,7 +47,7 @@ public partial class Snackbar
 
 		if (Anchor is not Page)
 		{
-			NativeSnackbar.SetAnchorView(Anchor?.Handler?.NativeView as View);
+			NativeSnackbar.SetAnchorView(Anchor?.Handler?.PlatformView as View);
 		}
 
 		SetupContainer(snackbarView);

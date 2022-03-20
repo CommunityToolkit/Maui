@@ -2,9 +2,8 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-    xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Converters"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.ColorsConverterPage"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:TypeArguments="vm:ColorsConverterViewModel"
     x:DataType="vm:ColorsConverterViewModel">
@@ -40,51 +39,53 @@
     </pages:BasePage.Resources>
 
     <pages:BasePage.Content>
-        <VerticalStackLayout Spacing="10">
-            <Picker x:Name="Picker" SelectedIndexChanged="HandleSelectedIndexChanged"/>
+        <ScrollView>
+            <VerticalStackLayout Spacing="10">
+                <Picker x:Name="Picker" SelectedIndexChanged="HandleSelectedIndexChanged"/>
 
-            <BoxView x:Name="BoxView" HeightRequest="100" BackgroundColor="White" />
-            
-            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToRgbStringConverter}, StringFormat='The RGB value of selected color is: {0}'}"/>
+                <BoxView x:Name="BoxView" HeightRequest="100" BackgroundColor="White" />
 
-            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToHexRgbStringConverter}, StringFormat='The HEX value of selected color is: {0}'}"/>
+                <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToRgbStringConverter}, StringFormat='The RGB value of selected color is: {0}'}"/>
 
-            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToHexRgbaStringConverter}, StringFormat='The HEX RGBa value of selected color is: {0}'}"/>
+                <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToHexRgbStringConverter}, StringFormat='The HEX value of selected color is: {0}'}"/>
 
-            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToCmykStringConverter}, StringFormat='The CMYK value of selected color is: {0}'}" />
+                <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToHexRgbaStringConverter}, StringFormat='The HEX RGBa value of selected color is: {0}'}"/>
 
-            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToCmykaStringConverter}, StringFormat='The CMYKa value of selected color is: {0}'}" />
+                <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToCmykStringConverter}, StringFormat='The CMYK value of selected color is: {0}'}" />
 
-            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToHslStringConverter}, StringFormat='The HSL value of selected color is: {0}'}"/>
+                <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToCmykaStringConverter}, StringFormat='The CMYKa value of selected color is: {0}'}" />
 
-            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToHslaStringConverter}, StringFormat='The HSLa value of selected color is: {0}'}" />
+                <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToHslStringConverter}, StringFormat='The HSL value of selected color is: {0}'}"/>
 
-            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToBlackKeyConverter}, StringFormat='The Black key value of selected color is: {0}'}"/>
+                <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToHslaStringConverter}, StringFormat='The HSLa value of selected color is: {0}'}" />
 
-            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToByteAlphaConverter}, StringFormat='The byte alpha value of selected color is: {0}'}" />
-                  
-            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToByteRedConverter}, StringFormat='The byte red value of selected color is: {0}'}" />
+                <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToBlackKeyConverter}, StringFormat='The Black key value of selected color is: {0}'}"/>
 
-            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToByteGreenConverter}, StringFormat='The byte green value of selected color is: {0}'}" />
+                <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToByteAlphaConverter}, StringFormat='The byte alpha value of selected color is: {0}'}" />
 
-            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToByteBlueConverter}, StringFormat='The byte blue value of selected color is: {0}'}" />
-                  
-            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToPercentCyanConverter}, StringFormat='The Percent Cyan value of selected color is: {0}'}" />
+                <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToByteRedConverter}, StringFormat='The byte red value of selected color is: {0}'}" />
 
-            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToPercentMagentaConverter},StringFormat='The Percent Magenta value of selected color is: {0}'}" />
+                <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToByteGreenConverter}, StringFormat='The byte green value of selected color is: {0}'}" />
 
-            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToPercentYellowConverter}, StringFormat='The Percent Yellow value of selected color is: {0}'}" />
+                <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToByteBlueConverter}, StringFormat='The byte blue value of selected color is: {0}'}" />
 
-            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToDegreeHueConverter}, StringFormat='The Degree Hue value of selected color is: {0}'}" />
+                <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToPercentCyanConverter}, StringFormat='The Percent Cyan value of selected color is: {0}'}" />
 
-            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToBlackOrWhiteConverter}, StringFormat='The color to monochrome black or white?: {0}'}" />
+                <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToPercentMagentaConverter},StringFormat='The Percent Magenta value of selected color is: {0}'}" />
 
-            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}, StringFormat='The Color For Text is: {0}'}" TextColor="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}}" BackgroundColor="{Binding Source={x:Reference BoxView}, Path=BackgroundColor}"  />
+                <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToPercentYellowConverter}, StringFormat='The Percent Yellow value of selected color is: {0}'}" />
 
-            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToGrayScaleColorConverter}, StringFormat='The color to grayscale is: {0}'}" TextColor="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToGrayScaleColorConverter}}" BackgroundColor="{Binding Source={x:Reference BoxView}, Path=BackgroundColor}"  />
+                <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToDegreeHueConverter}, StringFormat='The Degree Hue value of selected color is: {0}'}" />
 
-            <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToInverseColorConverter}, StringFormat='Inverse color is: {0}'}" TextColor="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToInverseColorConverter}}"  BackgroundColor="{Binding Source={x:Reference BoxView}, Path=BackgroundColor}" />
-            
-        </VerticalStackLayout>
+                <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToBlackOrWhiteConverter}, StringFormat='The color to monochrome black or white?: {0}'}" />
+
+                <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}, StringFormat='The Color For Text is: {0}'}" TextColor="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}}" BackgroundColor="{Binding Source={x:Reference BoxView}, Path=BackgroundColor}"  />
+
+                <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToGrayScaleColorConverter}, StringFormat='The color to grayscale is: {0}'}" TextColor="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToGrayScaleColorConverter}}" BackgroundColor="{Binding Source={x:Reference BoxView}, Path=BackgroundColor}"  />
+
+                <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToInverseColorConverter}, StringFormat='Inverse color is: {0}'}" TextColor="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToInverseColorConverter}}"  BackgroundColor="{Binding Source={x:Reference BoxView}, Path=BackgroundColor}" />
+
+            </VerticalStackLayout>
+        </ScrollView>
     </pages:BasePage.Content>
 </pages:BasePage>
