@@ -18,19 +18,8 @@ public class AnimationBehavior : EventToCommandBehavior
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="AnimateCommand"/> property.
 	/// </summary>
-	internal static readonly BindablePropertyKey animateCommandPropertyKey =
- 			BindableProperty.CreateReadOnly(
- 				nameof(AnimateCommand),
- 				typeof(ICommand),
- 				typeof(AnimationBehavior),
- 				default,
- 				BindingMode.OneWayToSource,
- 				defaultValueCreator: CreateAnimateCommand);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="AnimateCommand"/> property.
-	/// </summary>
-	public static readonly BindableProperty AnimateCommandProperty = animateCommandPropertyKey.BindableProperty;
+	public static readonly BindableProperty AnimateCommandProperty =
+		BindableProperty.CreateReadOnly(nameof(AnimateCommand), typeof(ICommand), typeof(AnimationBehavior), default, BindingMode.OneWayToSource, defaultValueCreator: CreateAnimateCommand).BindableProperty;
 
 	TapGestureRecognizer? tapGestureRecognizer;
 
