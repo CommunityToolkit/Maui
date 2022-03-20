@@ -46,9 +46,10 @@ public class BehaviorsGalleryViewModel : BaseGalleryViewModel
 
 			SectionModel.Create<EmailValidationBehaviorViewModel>(nameof(EmailValidationBehavior),
 				"Changes an Entry's text color when an invalid e-mail address is provided"),
-			}
-		)
-	{
 
+			SectionModel.Create<AnimationBehaviorViewModel>(nameof(AnimationBehavior),
+				"Perform animation when a specified UI element event is triggered"),
+		})
+	{
 	}
 }
