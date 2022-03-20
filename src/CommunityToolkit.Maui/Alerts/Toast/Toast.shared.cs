@@ -86,7 +86,7 @@ public partial class Toast : IToast
 	protected virtual ValueTask DisposeAsyncCore()
 	{
 		return ValueTask.CompletedTask;
-    }
+	}
 #endif
 
 #if IOS || MACCATALYST || WINDOWS

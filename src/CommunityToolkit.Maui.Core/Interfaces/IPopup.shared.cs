@@ -12,7 +12,7 @@ public interface IPopup : IElement
 	/// Gets the View that Popup will be anchored.
 	/// </summary>
 	IView? Anchor { get; }
-	
+
 	/// <summary>
 	/// Gets the Popup's color.
 	/// </summary>
@@ -32,7 +32,7 @@ public interface IPopup : IElement
 	/// Gets the CanBeDismissedByTappingOutsideOfPopup property.
 	/// </summary>
 	bool CanBeDismissedByTappingOutsideOfPopup { get; }
-	
+
 	/// <summary>
 	/// Gets the Popup's size.
 	/// </summary>

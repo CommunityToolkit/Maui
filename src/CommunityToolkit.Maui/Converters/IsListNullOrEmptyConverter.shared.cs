@@ -20,7 +20,7 @@ public class IsListNullOrEmptyConverter : BaseConverterOneWay<IEnumerable?, bool
 		{
 			return true;
 		}
-		
+
 		return !value.GetEnumerator().MoveNext();
 	}
 }

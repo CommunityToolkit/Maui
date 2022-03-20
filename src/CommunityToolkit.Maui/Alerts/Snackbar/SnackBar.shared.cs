@@ -144,7 +144,7 @@ public partial class Snackbar : ISnackbar
 	protected virtual ValueTask DisposeAsyncCore()
 	{
 		return ValueTask.CompletedTask;
-    }
+	}
 #endif
 
 	static TimeSpan GetDefaultTimeSpan() => TimeSpan.FromSeconds(3);
