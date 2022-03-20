@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Alerts;
 
 public partial class ToastPage : BasePage<ToastViewModel>
 {
-	public ToastPage(ToastViewModel toastViewModel) : base(toastViewModel)
+	public ToastPage(IDeviceInfo deviceInfo, ToastViewModel toastViewModel) : base(deviceInfo, toastViewModel)
 	{
 		InitializeComponent();
 	}

@@ -121,7 +121,7 @@ public class UserStoppedTypingBehavior : BaseBehavior<InputView>
 
 				if (View != null && ShouldDismissKeyboardAutomatically)
 				{
-					Device.BeginInvokeOnMainThread(View.Unfocus);
+					Dispatcher.DispatchIfRequired(View.Unfocus);
 				}
 
 				if (View != null && Command?.CanExecute(CommandParameter ?? View.Text) is true)

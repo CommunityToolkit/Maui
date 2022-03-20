@@ -10,8 +10,8 @@ public partial class UniformItemsLayoutPage : BasePage<UniformItemsLayoutViewMod
 											.ToDictionary(c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()))
 											.Values.ToList();
 
-	public UniformItemsLayoutPage(UniformItemsLayoutViewModel uniformItemsLayoutViewModel)
-		: base(uniformItemsLayoutViewModel)
+	public UniformItemsLayoutPage(IDeviceInfo deviceInfo, UniformItemsLayoutViewModel uniformItemsLayoutViewModel)
+		: base(deviceInfo, uniformItemsLayoutViewModel)
 	{
 		InitializeComponent();
 		UniformItemsLayout_Default ??= new();

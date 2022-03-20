@@ -1,8 +1,8 @@
-﻿using CoreGraphics;
+﻿using System.Runtime.InteropServices;
+using CoreGraphics;
 using CoreText;
 using Foundation;
 using Microsoft.Maui.Platform;
-using ObjCRuntime;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -31,7 +31,7 @@ public class ToastView : Alert
 		UIColor textColor,
 		UIFont font,
 		double characterSpacing,
-		nfloat? padding = null)
+		NFloat? padding = null)
 	{
 		padding ??= DefaultPadding;
 
@@ -52,7 +52,7 @@ public class ToastView : Alert
 	/// <summary>
 	/// Default Padding for <see cref="ToastView"/>
 	/// </summary>
-	public static nfloat DefaultPadding { get; } = 10;
+	public static NFloat DefaultPadding { get; } = 10;
 
 	/// <summary>
 	/// Toast Message
@@ -68,7 +68,7 @@ public class ToastView : Alert
 	/// </summary>
 	public UIColor TextColor
 	{
-		get => messageLabel.TextColor ??= Defaults.TextColor.ToNative();
+		get => messageLabel.TextColor ??= Defaults.TextColor.ToPlatform();
 		private init => messageLabel.TextColor = value;
 	}
 
@@ -93,5 +93,5 @@ public class ToastView : Alert
 		}
 	}
 
-	static nfloat GetEmFromPx(nfloat defaultFontSize, double currentValue) => 100 * (nfloat)currentValue / defaultFontSize;
+	static NFloat GetEmFromPx(NFloat defaultFontSize, double currentValue) => 100 * (NFloat)currentValue / defaultFontSize;
 }

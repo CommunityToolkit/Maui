@@ -4,7 +4,8 @@ namespace CommunityToolkit.Maui.Sample.Pages.Layouts;
 
 public class LayoutsGalleryPage : BaseGalleryPage<LayoutsGalleryViewModel>
 {
-	public LayoutsGalleryPage(LayoutsGalleryViewModel layoutGalleryViewModel) : base("Layouts", layoutGalleryViewModel)
+	public LayoutsGalleryPage(IDeviceInfo deviceInfo, LayoutsGalleryViewModel layoutGalleryViewModel)
+		: base("Layouts", deviceInfo, layoutGalleryViewModel)
 	{
 	}
 }
