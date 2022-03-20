@@ -1,6 +1,4 @@
-﻿using System.Windows.Input;
-
-namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
 public class IsStringNotNullOrEmptyConverterViewModel : BaseViewModel
 {

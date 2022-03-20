@@ -38,10 +38,10 @@ public partial class Snackbar
 	{
 		await DismissNative(token);
 		token.ThrowIfCancellationRequested();
-
 		var toastContentBuilder = new ToastContentBuilder()
-										.AddText(Text)
-										.AddButton(new ToastButton { ActivationType = ToastActivationType.Foreground }.SetContent(ActionButtonText));
+			.AddText(Text)
+			.AddButton(
+				new ToastButton { ActivationType = ToastActivationType.Foreground }.SetContent(ActionButtonText));
 
 		var toastContent = toastContentBuilder.GetToastContent();
 		toastContent.ActivationType = ToastActivationType.Background;

@@ -4,11 +4,15 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class PopupAnchorPage : BasePage<PopupAnchorViewModel>
 {
-	public PopupAnchorPage(PopupAnchorViewModel popupAnchorViewModel)
-		: base(popupAnchorViewModel)
+	readonly IDeviceInfo deviceinfo;
+
+	public PopupAnchorPage(IDeviceInfo deviceInfo, PopupAnchorViewModel popupAnchorViewModel)
+		: base(deviceInfo, popupAnchorViewModel)
 	{
 		InitializeComponent();
 		Indicator ??= new();
+
+		deviceinfo = deviceInfo;
 	}
 
 	void OnPanUpdated(object? sender, PanUpdatedEventArgs e)
@@ -17,7 +21,7 @@ public partial class PopupAnchorPage : BasePage<PopupAnchorViewModel>
 
 		var label = (Label)sender;
 
-		if (Device.RuntimePlatform is Device.Android)
+		if (deviceinfo.Platform == DevicePlatform.Android)
 		{
 			label.TranslationX += e.TotalX;
 			label.TranslationY += e.TotalY;

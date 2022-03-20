@@ -4,8 +4,8 @@ namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
 public partial class DoubleToIntConverterPage : BasePage<DoubleToIntConverterViewModel>
 {
-	public DoubleToIntConverterPage(DoubleToIntConverterViewModel doubleToIntConverterViewModel)
-		: base(doubleToIntConverterViewModel)
+	public DoubleToIntConverterPage(IDeviceInfo deviceInfo, DoubleToIntConverterViewModel doubleToIntConverterViewModel)
+		: base(deviceInfo, doubleToIntConverterViewModel)
 	{
 		InitializeComponent();
 

@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Platform;
+﻿using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WRect = Windows.Foundation.Rect;
@@ -17,7 +16,7 @@ class WrapperControl : Panel
 		this.view = view;
 		this.view.MeasureInvalidated += OnMeasureInvalidated;
 
-		FrameworkElement = view.ToNative(mauiContext);
+		FrameworkElement = view.ToPlatform(mauiContext);
 		Children.Add(FrameworkElement);
 
 		// make sure we re-measure once the template is applied
@@ -27,13 +26,13 @@ class WrapperControl : Panel
 			// If the view is a layout (stacklayout, grid, etc) we need to trigger a layout pass
 			// with all the controls in a consistent native state (i.e., loaded) so they'll actually
 			// have Bounds set
-			Handler?.NativeView?.InvalidateMeasure(View);
+			Handler?.PlatformView?.InvalidateMeasure(View);
 			InvalidateMeasure();
 		};
 	}
 
 	IView View => view;
-	INativeViewHandler? Handler => View.Handler as INativeViewHandler;
+	IPlatformViewHandler? Handler => View.Handler as IPlatformViewHandler;
 
 	FrameworkElement FrameworkElement { get; }
 
@@ -47,8 +46,7 @@ class WrapperControl : Panel
 
 	protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 	{
-		view.IsInNativeLayout = true;
-		view.Frame = new Rectangle(0, 0, finalSize.Width, finalSize.Height);
+		view.Frame = new Rect(0, 0, finalSize.Width, finalSize.Height);
 		FrameworkElement?.Arrange(new WRect(0, 0, finalSize.Width, finalSize.Height));
 
 		if (view.Width <= 0 || view.Height <= 0)
@@ -61,8 +59,6 @@ class WrapperControl : Panel
 		{
 			Opacity = 1;
 		}
-
-		view.IsInNativeLayout = false;
 
 		return finalSize;
 	}

@@ -7,7 +7,7 @@ using AView = Android.Views.View;
 namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
-/// The navite implementation of Popup control.
+/// The native implementation of Popup control.
 /// </summary>
 public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 {
@@ -17,7 +17,7 @@ public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 	/// Constructor of <see cref="MauiPopup"/>.
 	/// </summary>
 	/// <param name="context">An instance of <see cref="Context"/>.</param>
-	/// <param name="mauiContext">An instace of <see cref="IMauiContext"/>.</param>
+	/// <param name="mauiContext">An instance of <see cref="IMauiContext"/>.</param>
 	/// <exception cref="ArgumentNullException">If <paramref name="mauiContext"/> is null an exception will be thrown. </exception>
 	public MauiPopup(Context context, IMauiContext mauiContext)
 		: base(context)
@@ -26,7 +26,7 @@ public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 	}
 
 	/// <summary>
-	/// An instace of the <see cref="IPopup"/>.
+	/// An instance of the <see cref="IPopup"/>.
 	/// </summary>
 	public IPopup? VirtualView { get; private set; }
 
@@ -89,7 +89,7 @@ public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 			return false;
 		}
 
-		container = popup.Content.ToNative(mauiContext);
+		container = popup.Content.ToPlatform(mauiContext);
 		SetContentView(container);
 
 		return true;

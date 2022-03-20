@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using CommunityToolkit.Maui.Behaviors;
+﻿using CommunityToolkit.Maui.Behaviors;
 using FluentAssertions;
 using Xunit;
 

@@ -16,7 +16,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="result">The result that should return from this Popup.</param>
 	public static void MapOnClosed(PopupHandler handler, IPopup view, object? result)
 	{
-		var popup = handler.NativeView;
+		var popup = handler.PlatformView;
 
 		if (popup.IsShowing)
 		{
@@ -34,7 +34,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="result">We don't need to provide the result parameter here.</param>
 	public static void MapOnOpened(PopupHandler handler, IPopup view, object? result)
 	{
-		handler.NativeView?.Show();
+		handler.PlatformView?.Show();
 	}
 
 	/// <summary>
@@ -58,7 +58,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapAnchor(PopupHandler handler, IPopup view)
 	{
-		handler.NativeView?.SetAnchor(view);
+		handler.PlatformView?.SetAnchor(view);
 	}
 
 	/// <summary>
@@ -68,7 +68,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapCanBeDismissedByTappingOutsideOfPopup(PopupHandler handler, IPopup view)
 	{
-		handler.NativeView?.SetCanBeDismissedByTappingOutsideOfPopup(view);
+		handler.PlatformView?.SetCanBeDismissedByTappingOutsideOfPopup(view);
 	}
 
 	/// <summary>
@@ -78,7 +78,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapColor(PopupHandler handler, IPopup view)
 	{
-		handler.NativeView?.SetColor(view);
+		handler.PlatformView?.SetColor(view);
 	}
 
 	/// <summary>
@@ -90,12 +90,12 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	{
 		ArgumentNullException.ThrowIfNull(handler.Container);
 
-		handler.NativeView?.SetSize(view, handler.Container);
-		handler.NativeView?.SetAnchor(view);
+		handler.PlatformView?.SetSize(view, handler.Container);
+		handler.PlatformView?.SetAnchor(view);
 	}
 
 	/// <inheritdoc/>
-	protected override MauiPopup CreateNativeElement()
+	protected override MauiPopup CreatePlatformElement()
 	{
 		_ = MauiContext ?? throw new InvalidOperationException("MauiContext is null, please check your MauiApplication.");
 		_ = MauiContext.Context ?? throw new InvalidOperationException("Android Context is null, please check your MauiApplication.");

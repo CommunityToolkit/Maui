@@ -2,7 +2,6 @@
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
-using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Platform;
 using AColorRes = Android.Resource.Color;
 using AView = Android.Views.View;
@@ -25,14 +24,14 @@ public static class PopupExtensions
 	{
 		var window = GetWindow(dialog);
 
-		if (popup.Handler is null || popup.Handler.MauiContext is null)
+		if (popup.Handler?.MauiContext is null)
 		{
 			return;
 		}
 
 		if (popup.Anchor is not null)
 		{
-			var anchorView = popup.Anchor.ToNative(popup.Handler.MauiContext);
+			var anchorView = popup.Anchor.ToPlatform(popup.Handler.MauiContext);
 
 			var locationOnScreen = new int[2];
 			anchorView.GetLocationOnScreen(locationOnScreen);
@@ -72,7 +71,7 @@ public static class PopupExtensions
 		}
 
 		var window = GetWindow(dialog);
-		window.SetBackgroundDrawable(new ColorDrawable(popup.Color.ToNative(AColorRes.BackgroundLight, dialog.Context)));
+		window.SetBackgroundDrawable(new ColorDrawable(popup.Color.ToPlatform(AColorRes.BackgroundLight, dialog.Context)));
 	}
 
 	/// <summary>

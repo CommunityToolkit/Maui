@@ -4,7 +4,8 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public class ViewsGalleryPage : BaseGalleryPage<ViewsGalleryViewModel>
 {
-	public ViewsGalleryPage(ViewsGalleryViewModel viewsGalleryViewModel) : base("Views", viewsGalleryViewModel)
+	public ViewsGalleryPage(IDeviceInfo deviceInfo, ViewsGalleryViewModel viewsGalleryViewModel)
+		: base("Views", deviceInfo, viewsGalleryViewModel)
 	{
 	}
 }

@@ -15,8 +15,6 @@ public abstract class BaseTest : IDisposable
 		defaultCulture = Thread.CurrentThread.CurrentCulture;
 		defaultUICulture = Thread.CurrentThread.CurrentUICulture;
 
-		Device.PlatformServices = new MockPlatformServices();
-
 		DispatcherProvider.SetCurrent(new MockDispatcherProvider());
 		DeviceDisplay.SetCurrent(null);
 	}
@@ -35,8 +33,6 @@ public abstract class BaseTest : IDisposable
 		{
 			return;
 		}
-
-		Device.PlatformServices = null;
 
 		Thread.CurrentThread.CurrentCulture = defaultCulture;
 		Thread.CurrentThread.CurrentUICulture = defaultUICulture;

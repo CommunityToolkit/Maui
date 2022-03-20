@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.ViewModels;
-using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 using Application = Microsoft.Maui.Controls.Application;
 
@@ -9,17 +8,22 @@ namespace CommunityToolkit.Maui.Sample.Pages;
 
 public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where TViewModel : BaseGalleryViewModel
 {
-	protected BaseGalleryPage(string title, TViewModel viewModel) : base(viewModel)
+	protected BaseGalleryPage(string title, IDeviceInfo deviceInfo, TViewModel viewModel) : base(deviceInfo, viewModel)
 	{
 		Title = title;
 
-		Padding = (Device.RuntimePlatform, Device.Idiom) switch
+		if (deviceInfo.Platform == DevicePlatform.iOS && deviceInfo.Idiom == DeviceIdiom.Phone) // iOS Phones
 		{
-			// Work-around to ensure content doesn't get clipped by iOS Status Bar + Naviagtion Bar
-			(Device.iOS, TargetIdiom.Phone) => new Thickness(0, 96, 0, 0),
-			(Device.iOS or Device.MacCatalyst, _) => new Thickness(0, 84, 0, 0),
-			_ => 0
-		};
+			Padding = new Thickness(0, 96, 0, 0);
+		}
+		else if (deviceInfo.Platform == DevicePlatform.iOS || deviceInfo.Platform == DevicePlatform.MacCatalyst) //iOS Tablets + MacCatalyst
+		{
+			Padding = new Thickness(0, 84, 0, 0);
+		}
+		else
+		{
+			Padding = 0;
+		}
 
 		Content = new CollectionView
 		{

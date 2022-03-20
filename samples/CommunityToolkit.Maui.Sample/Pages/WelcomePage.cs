@@ -2,11 +2,13 @@
 
 namespace CommunityToolkit.Maui.Sample.Pages;
 
-public class WelcomePage : BasePage
+public class WelcomePage : ContentPage
 {
 	public WelcomePage()
 	{
 		Title = "Welcome";
+
+		Padding = 12;
 
 		Content = new VerticalStackLayout
 		{
@@ -23,5 +25,3 @@ public class WelcomePage : BasePage
 		}.CenterHorizontal();
 	}
 }
-
-
