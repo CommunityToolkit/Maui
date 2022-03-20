@@ -16,8 +16,6 @@ class SampleScaleAnimation : BaseAnimation
 {
 	public override async Task Animate(VisualElement view)
 	{
-		ArgumentNullException.ThrowIfNull(view);
-
 		await view.ScaleTo(1.2, Length, Easing);
 		await view.ScaleTo(1, Length, Easing);
 	}
