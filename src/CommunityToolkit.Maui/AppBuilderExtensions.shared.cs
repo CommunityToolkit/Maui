@@ -1,5 +1,5 @@
-﻿using CommunityToolkit.Maui.Core.Handlers;
-using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui;
@@ -18,7 +18,7 @@ public static class AppBuilderExtensions
 	{
 		builder.ConfigureMauiHandlers(h =>
 		{
-		   h.AddHandler(typeof(Popup), typeof(PopupHandler));
+			h.AddHandler(typeof(Popup), typeof(PopupHandler));
 		});
 		Popup.RemapForControls();
 		return builder.UseMauiCommunityToolkitCore();

@@ -19,12 +19,24 @@ public abstract class BaseConverter<TFrom, TTo> : BaseConverterOneWay<TFrom, TTo
 	/// <returns>An object of the type <typeparamref name="TFrom"/></returns>
 	public sealed override object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
+		if (value is null && IsNullable<TFrom>())
+		{
+#pragma warning disable CS8604 // Possible null reference argument.
+			return ConvertBackTo(default);
+#pragma warning restore CS8604 // Possible null reference argument.
+		}
+		else if (value is null && !IsNullable<TFrom>())
+		{
+			throw new ArgumentNullException(nameof(value), $"value cannot be null because {nameof(TFrom)} is not Nullable");
+		}
+
 		if (value is not TTo valueFrom)
 		{
 			throw new ArgumentException($"value needs to be of type {typeof(TTo)}", nameof(value));
 		}
 
-		if (targetType != typeof(TFrom) && !(typeof(TFrom) != typeof(string)))
+		// This validation only works for Converters called in C#, not XAML 
+		if (targetType != typeof(TFrom) && !IsValidXamlTargetType(targetType))
 		{
 			throw new ArgumentException($"targetType needs to be typeof {typeof(TFrom)}", nameof(targetType));
 		}

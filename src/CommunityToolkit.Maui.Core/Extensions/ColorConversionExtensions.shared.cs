@@ -514,7 +514,7 @@ public static class ColorConversionExtensions
 	public static bool IsDark(this Color color)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return	color.GetByteRed() + color.GetByteGreen() + color.GetByteBlue() <= 127 * 3;
+		return color.GetByteRed() + color.GetByteGreen() + color.GetByteBlue() <= 127 * 3;
 	}
 
 	static byte ToByte(float input)
