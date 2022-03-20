@@ -4,8 +4,8 @@ namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
 public partial class MultiValidationBehaviorPage : BasePage<MultiValidationBehaviorViewModel>
 {
-	public MultiValidationBehaviorPage(MultiValidationBehaviorViewModel multiValidationBehaviorViewModel)
-		: base(multiValidationBehaviorViewModel)
+	public MultiValidationBehaviorPage(IDeviceInfo deviceInfo, MultiValidationBehaviorViewModel multiValidationBehaviorViewModel)
+		: base(deviceInfo, multiValidationBehaviorViewModel)
 	{
 		InitializeComponent();
 

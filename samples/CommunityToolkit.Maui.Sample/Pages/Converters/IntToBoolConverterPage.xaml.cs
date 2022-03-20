@@ -4,8 +4,8 @@ namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
 public partial class IntToBoolConverterPage : BasePage<IntToBoolConverterViewModel>
 {
-	public IntToBoolConverterPage(IntToBoolConverterViewModel intToBoolConverterViewModel)
-		: base(intToBoolConverterViewModel)
+	public IntToBoolConverterPage(IDeviceInfo deviceInfo, IntToBoolConverterViewModel intToBoolConverterViewModel)
+		: base(deviceInfo, intToBoolConverterViewModel)
 	{
 		InitializeComponent();
 	}
