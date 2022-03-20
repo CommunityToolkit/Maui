@@ -1,7 +1,7 @@
-﻿using Font = Microsoft.Maui.Font;
-using CommunityToolkit.Maui.UnitTests.Extensions.TextStyle;
+﻿using CommunityToolkit.Maui.UnitTests.Extensions.TextStyle;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using Xunit;
+using Font = Microsoft.Maui.Font;
 
 namespace CommunityToolkit.Maui.UnitTests.Extensions
 {

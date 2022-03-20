@@ -32,4 +32,3 @@ public class MockPopupHandler : ElementHandler<IPopup, object>
 		arg1.OnOpenedCount++;
 	}
 }
-

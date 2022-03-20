@@ -115,4 +115,3 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 
 	}
 }
-
