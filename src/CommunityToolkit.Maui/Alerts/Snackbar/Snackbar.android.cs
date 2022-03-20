@@ -13,7 +13,7 @@ namespace CommunityToolkit.Maui.Alerts;
 public partial class Snackbar
 {
 	TaskCompletionSource<bool>? dismissedTCS;
-	
+
 	private async partial Task DismissNative(CancellationToken token)
 	{
 		if (NativeSnackbar is null)
@@ -99,7 +99,7 @@ public partial class Snackbar
 	void SetupActions(Google.Android.Material.Snackbar.Snackbar nativeSnackbar)
 	{
 		var snackActionButtonView = nativeSnackbar.View.FindViewById<TextView>(Resource.Id.snackbar_action) ?? throw new InvalidOperationException("Unable to find Snackbar action button");
-		
+
 		nativeSnackbar.SetActionTextColor(VisualOptions.ActionButtonTextColor.ToAndroid());
 		if (VisualOptions.ActionButtonFont.Size > 0)
 		{

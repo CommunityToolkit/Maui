@@ -192,4 +192,3 @@ public class PopupTests : BaseHandlerTest
 		public int MyProperty { get; set; }
 	}
 }
-
