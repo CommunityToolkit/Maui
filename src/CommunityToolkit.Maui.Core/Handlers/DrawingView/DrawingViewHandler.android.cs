@@ -78,6 +78,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 
 	void OnPlatformViewDrawingLineCompleted(object? sender, MauiDrawingLineCompletedEventArgs e)
 	{
+		// TODO we need somehow to map from platform view to virtual view (MauiDrawingLine -> ILine)
 		if (e.Line is ILine line)
 		{
 			VirtualView.DrawingLineCompleted(line);
@@ -99,14 +100,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 
 		foreach (var line in virtualView.Lines)
 		{
-			platformView.Lines.Add(new MauiDrawingLine()
-			{
-				LineColor = line.LineColor,
-				EnableSmoothedPath = line.EnableSmoothedPath,
-				Granularity = line.Granularity,
-				LineWidth = line.LineWidth,
-				Points = line.Points
-			});
+			platformView.Lines.Add((MauiDrawingLine)line.ToPlatform());
 		}
 	}
 }

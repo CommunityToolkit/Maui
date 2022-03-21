@@ -3,14 +3,15 @@
 namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
-/// The Line object is used to describe the lines that are drawn on a <see cref="IDrawingView"/>.
+/// The Line object is used to describe the lines that are drawn on a <see cref="MauiDrawingView"/>.
 /// </summary>
-public class MauiDrawingLine
+public partial class MauiDrawingLine
 {
 	const int minValueGranularity = 5;
 
 	int granularity;
 
+#if !ANDROID
 	/// <summary>
 	/// Initializes a new Line object.
 	/// </summary>
@@ -21,6 +22,7 @@ public class MauiDrawingLine
 		LineWidth = 5;
 		Granularity = minValueGranularity;
 	}
+#endif
 
 	/// <summary>
 	/// The <see cref="Color"/> that is used to draw this line on the <see cref="IDrawingView"/>. This is a bindable property.

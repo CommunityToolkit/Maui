@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// The Line object is used to describe the lines that are drawn on a <see cref="IDrawingView"/>.
 /// </summary>
-public interface ILine
+public interface ILine : IElement
 {
 	/// <summary>
 	/// The <see cref="Color"/> that is used to draw this line on the <see cref="IDrawingView"/>. This is a bindable property.
