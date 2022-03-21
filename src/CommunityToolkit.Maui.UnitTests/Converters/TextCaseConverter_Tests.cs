@@ -45,12 +45,12 @@ public class TextCaseConverter_Tests : BaseTest
 	[Theory]
 	[MemberData(nameof(Data))]
 	[InlineData(null, null, null)]
-	public void TextCaseConverterWithParameter(string? value, object? comparedValue, object? expectedResult)
+	public void TextCaseConverterWithParameter(object? value, object? comparedValue, object? expectedResult)
 	{
 		var textCaseConverter = new TextCaseConverter();
 
-		var convertResult = ((ICommunityToolkitValueConverter)textCaseConverter).Convert(value, typeof(string), comparedValue, CultureInfo.CurrentCulture);
-		var convertFromResult = textCaseConverter.ConvertFrom(value, typeof(string), comparedValue, CultureInfo.CurrentCulture);
+		var convertResult = ((ICommunityToolkitValueConverter)textCaseConverter).Convert(value?.ToString(), typeof(string), comparedValue, CultureInfo.CurrentCulture);
+		var convertFromResult = textCaseConverter.ConvertFrom(value?.ToString(), typeof(string), comparedValue, CultureInfo.CurrentCulture);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
