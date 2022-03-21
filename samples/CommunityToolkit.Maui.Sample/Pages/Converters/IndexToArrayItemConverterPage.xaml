@@ -23,7 +23,7 @@
     <pages:BasePage.Content>
         <Grid RowDefinitions="Auto, Auto, Auto, Auto, *"
               ColumnDefinitions="Auto, Auto">
-            
+
             <Label Text="The IndexToArrayItemConverter is a converter that allows users to convert a int value binding to an item in an array. The int value being data bound represents the indexer used to access the array. The array is passed in through the ConverterParameter."
                    VerticalOptions="FillAndExpand"
                    HorizontalOptions="FillAndExpand" 
@@ -55,7 +55,7 @@
                    FontAttributes="Italic"
                    Grid.Row="3"
                    Grid.ColumnSpan="2"/>
-            
+
             <CollectionView
                 SelectionMode="Single"
                 SelectedItem="{Binding SelectedIndex, Converter={StaticResource IndexToArrayItemConverter}, ConverterParameter={StaticResource StringArray}}"
@@ -64,9 +64,9 @@
                 Grid.ColumnSpan="2">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <ContentView>
+                        <ContentView BackgroundColor="{StaticResource AppBackgroundColor}">
                             <Label Padding="5" Text="{Binding}"/>
-                        </ContentView>            
+                        </ContentView>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
