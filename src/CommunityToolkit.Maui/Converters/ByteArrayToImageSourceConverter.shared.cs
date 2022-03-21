@@ -37,7 +37,7 @@ public class ByteArrayToImageSourceConverter : BaseConverter<byte[]?, ImageSourc
 	/// <returns>An object of type <see cref="ImageSource"/>.</returns>
 	public override byte[]? ConvertBackTo(ImageSource? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
-		if(value is null)
+		if (value is null)
 		{
 			return null;
 		}
