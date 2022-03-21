@@ -104,7 +104,7 @@ public class CompareConverter_Tests : BaseTest
 
 	[Theory]
 	[InlineData(20d, null, TrueTestObject, FalseTestObject)]
-	public void CompareConverterInvalidValuesThrowArgumentException(IComparable value, IComparable comparingValue, object trueObject, object falseObject)
+	public void CompareConverterInvalidValuesThrowArgumentNullException(IComparable value, IComparable comparingValue, object trueObject, object falseObject)
 	{
 		var compareConverter = new CompareConverter()
 		{
