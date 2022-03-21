@@ -50,8 +50,6 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 		return false; // value-type
 	}
 
-	static bool IsConvertingToValidEnum<T>(Type? targetType) => targetType?.IsEnum is true && typeof(T) == typeof(Enum);
-
 	bool IsValidXamlTargetType(in Type? targetType) => isInitializedInXaml && targetType == typeof(string);
 
 	/// <inheritdoc/>
@@ -74,8 +72,7 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 		}
 
 		// This validation only works for Converters called in C#, not XAML
-		// Enums must be validated differently because typeof(MyEnum) != typeof(Enum) always resolves to true
-		if (!typeof(TFrom).IsAssignableFrom(targetType) && !IsValidXamlTargetType(targetType) && !IsConvertingToValidEnum<TFrom>(targetType))
+		if (!typeof(TFrom).IsAssignableFrom(targetType) && !IsValidXamlTargetType(targetType))
 		{
 			throw new ArgumentException($"targetType needs to be typeof {typeof(TFrom)}", nameof(targetType));
 		}
@@ -103,8 +100,7 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 		}
 
 		// This validation only works for Converters called in C#, not XAML
-		// Enums must be validated differently because typeof(MyEnum) != typeof(Enum) always resolves to true
-		if (!typeof(TTo).IsAssignableFrom(targetType) && !IsValidXamlTargetType(targetType) && !IsConvertingToValidEnum<TTo>(targetType))
+		if (!typeof(TTo).IsAssignableFrom(targetType) && !IsValidXamlTargetType(targetType))
 		{
 			throw new ArgumentException($"targetType needs to be typeof {typeof(TTo)}");
 		}
