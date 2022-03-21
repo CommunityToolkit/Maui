@@ -15,7 +15,7 @@ public class ByteArrayToImageSourceConverter : BaseConverter<byte[]?, StreamImag
 	/// <param name="targetType">The type of the binding target property. This is not implemented.</param>
 	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
-	/// <returns>An object of type <see cref="ImageSource"/>.</returns>
+	/// <returns>An object of type <see cref="StreamImageSource"/>.</returns>
 	[return: NotNullIfNotNull("value")]
 	public override StreamImageSource? ConvertFrom(byte[]? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{

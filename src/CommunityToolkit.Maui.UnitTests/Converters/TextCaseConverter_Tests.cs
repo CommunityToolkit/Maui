@@ -37,7 +37,9 @@ public class TextCaseConverter_Tests : BaseTest
 	public void InvalidTextCaseEnumThrowsNotSupportedException(TextCaseType textCaseType)
 	{
 		var textCaseConverter = new TextCaseConverter();
-		Assert.Throws<NotSupportedException>(() => textCaseConverter.ConvertFrom(string.Empty, typeof(string), textCaseType, null));
+
+		Assert.Throws<NotSupportedException>(() => textCaseConverter.ConvertFrom("Hello World", typeof(string), textCaseType, null));
+		Assert.Throws<NotSupportedException>(() => ((ICommunityToolkitValueConverter)textCaseConverter).Convert("Hello World", typeof(string), textCaseType, null));
 	}
 
 	[Theory]

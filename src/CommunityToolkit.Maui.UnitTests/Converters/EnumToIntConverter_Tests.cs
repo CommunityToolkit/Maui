@@ -21,12 +21,22 @@ public class EnumToIntConverter_Tests : BaseTest
 	}
 
 	[Theory]
-	[InlineData(null)]
-	[InlineData("a string")]
+	[InlineData(0)]
+	[InlineData(5.5)]
+	[InlineData('c')]
+	[InlineData("abc")]
+	[InlineData(true)]
 	public void EnumToIntConvert_ValueNotEnum_ThrowsArgumentException(object value)
 	{
 		var enumToIntConverter = new EnumToIntConverter();
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)enumToIntConverter).Convert(value, typeof(int), null, null));
+	}
+
+	[Fact]
+	public void EnumToIntConvert_ValueNull_ThrowsArgumentNullException()
+	{
+		var enumToIntConverter = new EnumToIntConverter();
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)enumToIntConverter).Convert(null, typeof(int), null, null));
 	}
 
 	[Theory]
@@ -56,8 +66,8 @@ public class EnumToIntConverter_Tests : BaseTest
 
 	public enum TestEnum
 	{
-		None,
-		One,
+		None = 0,
+		One = 1,
 		FortyTwo = 42,
 	}
 }

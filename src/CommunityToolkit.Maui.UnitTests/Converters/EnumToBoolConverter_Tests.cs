@@ -33,22 +33,12 @@ public class EnumToBoolConverter_Tests : BaseTest
 		var enumToBoolConverter = new EnumToBoolConverter();
 
 		Assert.Throws<NotSupportedException>(() =>
-		 ((ICommunityToolkitValueConverter)enumToBoolConverter).ConvertBack(TestEnumForEnumToBoolConverter.Five, typeof(bool), null, CultureInfo.InvariantCulture));
-	}
-
-	[Fact]
-	public void EnumToBoolConverBackt_ValueNull_ThrowsArgumentNullException()
-	{
-		var enumToBoolConverter = new EnumToBoolConverter();
-
-		Assert.Throws<ArgumentNullException>(() =>
-			((ICommunityToolkitValueConverter)enumToBoolConverter).ConvertBack(null, typeof(bool), TestEnumForEnumToBoolConverter.Five, CultureInfo.InvariantCulture));
+		 ((ICommunityToolkitValueConverter)enumToBoolConverter).ConvertBack(true, typeof(Enum), null, CultureInfo.InvariantCulture));
 	}
 
 	[Theory]
 	[InlineData("a string")]
 	[InlineData(42)]
-	[InlineData(null)]
 	[InlineData(false)]
 	public void EnumToBoolConvert_ValueNotEnum_ThrowsArgumentException(object value)
 	{
@@ -59,7 +49,7 @@ public class EnumToBoolConverter_Tests : BaseTest
 	}
 
 	[Fact]
-	public void EnumToBoolConvert_ValueNull_ThrowsArgumentNullException()
+	public void EnumToBoolConvert_NullValue_ThrowsArgumentNullException()
 	{
 		var enumToBoolConverter = new EnumToBoolConverter();
 

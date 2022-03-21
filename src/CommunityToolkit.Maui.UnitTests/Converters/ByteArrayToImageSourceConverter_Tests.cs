@@ -18,20 +18,16 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
 	{
 		var byteArray = new byte[] { 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20 };
 
-		var memoryStream = new MemoryStream(byteArray);
-
-		var expectedValue = ImageSource.FromStream(() => memoryStream);
-
 		var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 
-		var convertFromResult = byteArrayToImageSourceConverter.ConvertFrom(byteArray, typeof(ImageSource), null, CultureInfo.CurrentCulture);
-		var convertResult = (StreamImageSource)(((ICommunityToolkitValueConverter)byteArrayToImageSourceConverter).Convert(byteArray, typeof(ImageSource), null, CultureInfo.CurrentCulture) ?? throw new InvalidOperationException());
+		var convertFromResult = byteArrayToImageSourceConverter.ConvertFrom(byteArray, typeof(StreamImageSource), null, CultureInfo.CurrentCulture);
+		var convertResult = (StreamImageSource)(((ICommunityToolkitValueConverter)byteArrayToImageSourceConverter).Convert(byteArray, typeof(StreamImageSource), null, CultureInfo.CurrentCulture) ?? throw new InvalidOperationException());
 
 		var convertFromResultStream = await GetStreamFromImageSource(convertFromResult, CancellationToken.None);
 		var convertResultStream = await GetStreamFromImageSource(convertResult, CancellationToken.None);
 
-		Assert.True(StreamEquals(convertFromResultStream, memoryStream));
-		Assert.True(StreamEquals(convertResultStream, memoryStream));
+		Assert.True(StreamEquals(convertFromResultStream, new MemoryStream(byteArray)));
+		Assert.True(StreamEquals(convertResultStream, new MemoryStream(byteArray)));
 	}
 
 	[Theory]
@@ -50,16 +46,12 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
 	[Fact]
 	public void ConvertImageSourceBackToByteArray()
 	{
-		var byteArray = new byte[] { 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20 };
-
-		var memoryStream = new MemoryStream(byteArray);
-
-		var expectedValue = (StreamImageSource)ImageSource.FromStream(() => memoryStream);
+		var byteArray = new byte[] { 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20 };;
 
 		var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 
-		var convertBackResult = (byte[]?)((ICommunityToolkitValueConverter)byteArrayToImageSourceConverter).ConvertBack(expectedValue, typeof(ImageSource), null, CultureInfo.CurrentCulture);
-		var convertBackToResult = byteArrayToImageSourceConverter.ConvertBackTo(expectedValue, typeof(ImageSource), null, CultureInfo.CurrentCulture);
+		var convertBackResult = (byte[]?)((ICommunityToolkitValueConverter)byteArrayToImageSourceConverter).ConvertBack((StreamImageSource)ImageSource.FromStream(() => new MemoryStream(byteArray)), typeof(byte[]), null, CultureInfo.CurrentCulture);
+		var convertBackToResult = byteArrayToImageSourceConverter.ConvertBackTo((StreamImageSource)ImageSource.FromStream(() => new MemoryStream(byteArray)), typeof(byte[]), null, CultureInfo.CurrentCulture);
 
 		Assert.NotNull(convertBackResult);
 		Assert.NotNull(convertBackToResult);
@@ -67,8 +59,8 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
 		Assert.NotEmpty(convertBackResult);
 		Assert.NotEmpty(convertBackToResult);
 
-		Assert.Equal(convertBackResult, byteArray);
-		Assert.Equal(convertBackToResult, byteArray);
+		Assert.Equal(byteArray, convertBackResult);
+		Assert.Equal(byteArray, convertBackToResult);
 	}
 
 	[Fact]
@@ -82,8 +74,8 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
 
 		var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 
-		var convertBackResult = (byte[]?)((ICommunityToolkitValueConverter)byteArrayToImageSourceConverter).ConvertBack(expectedValue, typeof(ImageSource), null, CultureInfo.CurrentCulture);
-		var convertBackToResult = byteArrayToImageSourceConverter.ConvertBackTo(expectedValue, typeof(ImageSource), null, CultureInfo.CurrentCulture);
+		var convertBackResult = (byte[]?)((ICommunityToolkitValueConverter)byteArrayToImageSourceConverter).ConvertBack(expectedValue, typeof(byte[]), null, CultureInfo.CurrentCulture);
+		var convertBackToResult = byteArrayToImageSourceConverter.ConvertBackTo(expectedValue, typeof(byte[]), null, CultureInfo.CurrentCulture);
 
 		Assert.NotNull(convertBackResult);
 		Assert.NotNull(convertBackToResult);
@@ -102,8 +94,8 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
 
 		var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 
-		var convertBackToResult = byteArrayToImageSourceConverter.ConvertBackTo(nullStream, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture);
-		var convertBackResult = ((ICommunityToolkitValueConverter)byteArrayToImageSourceConverter).ConvertBack(nullStream, typeof(ByteArrayToImageSourceConverter), null, CultureInfo.CurrentCulture);
+		var convertBackToResult = byteArrayToImageSourceConverter.ConvertBackTo(nullStream, typeof(byte[]), null, CultureInfo.CurrentCulture);
+		var convertBackResult = ((ICommunityToolkitValueConverter)byteArrayToImageSourceConverter).ConvertBack(nullStream, typeof(byte[]), null, CultureInfo.CurrentCulture);
 
 		Assert.Null(convertBackToResult);
 		Assert.Null(convertBackResult);
@@ -114,8 +106,8 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
 	{
 		var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 
-		var convertBackResult = (byte[]?)((ICommunityToolkitValueConverter)byteArrayToImageSourceConverter).ConvertBack(null, typeof(ImageSource), null, CultureInfo.CurrentCulture);
-		var convertBackToResult = byteArrayToImageSourceConverter.ConvertBackTo(null, typeof(ImageSource), null, CultureInfo.CurrentCulture);
+		var convertBackResult = (byte[]?)((ICommunityToolkitValueConverter)byteArrayToImageSourceConverter).ConvertBack(null, typeof(byte[]), null, CultureInfo.CurrentCulture);
+		var convertBackToResult = byteArrayToImageSourceConverter.ConvertBackTo(null, typeof(byte[]), null, CultureInfo.CurrentCulture);
 
 		Assert.Null(convertBackResult);
 		Assert.Null(convertBackToResult);
@@ -127,6 +119,6 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
 	{
 		var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 
-		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)byteArrayToImageSourceConverter).ConvertBack(value, typeof(ImageSource), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)byteArrayToImageSourceConverter).ConvertBack(value, typeof(StreamImageSource), null, CultureInfo.CurrentCulture));
 	}
 }

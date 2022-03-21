@@ -20,8 +20,8 @@ public class SelectedItemEventArgsConverter_Tests : BaseTest
 	{
 		var selectedItemEventArgsConverter = new SelectedItemEventArgsConverter();
 
-		var convertResult = ((ICommunityToolkitValueConverter)selectedItemEventArgsConverter).Convert(value, typeof(DateTime), null, CultureInfo.CurrentCulture);
-		var convertFromResult = selectedItemEventArgsConverter.ConvertFrom(value, typeof(DateTime), null, CultureInfo.CurrentCulture);
+		var convertResult = ((ICommunityToolkitValueConverter)selectedItemEventArgsConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture);
+		var convertFromResult = selectedItemEventArgsConverter.ConvertFrom(value, typeof(object), null, CultureInfo.CurrentCulture);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
@@ -32,7 +32,7 @@ public class SelectedItemEventArgsConverter_Tests : BaseTest
 	[InlineData('c')]
 	[InlineData(true)]
 	[InlineData("abc")]
-	public void InvalidConverterValuesThrowsArgumenException(object value)
+	public void InvalidConverterValuesThrowsArgumentException(object value)
 	{
 		var itemSelectedEventArgsConverter = new SelectedItemEventArgsConverter();
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)itemSelectedEventArgsConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));

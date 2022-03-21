@@ -23,10 +23,18 @@ public class InvertedBoolConverter_Tests : BaseTest
 	[Theory]
 	[InlineData(2)]
 	[InlineData("")]
-	[InlineData(null)]
-	public void InvalidConverterValuesThrowArgumenException(object? value)
+	[InlineData('c')]
+	[InlineData(5.5)]
+	public void InvalidConverterValuesThrowArgumentException(object? value)
 	{
 		var invertedBoolConverter = new InvertedBoolConverter();
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)invertedBoolConverter).Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
+	}
+
+	[Fact]
+	public void NullConverterValuesThrowArgumentException()
+	{
+		var invertedBoolConverter = new InvertedBoolConverter();
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)invertedBoolConverter).Convert(null, typeof(bool), null, CultureInfo.CurrentCulture));
 	}
 }

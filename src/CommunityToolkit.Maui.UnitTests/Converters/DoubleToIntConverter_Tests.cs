@@ -29,8 +29,8 @@ public class DoubleToIntConverter_Tests : BaseTest
 	{
 		var doubleToIntConverter = new DoubleToIntConverter();
 
-		var convertBackResult = (double?)((ICommunityToolkitValueConverter)doubleToIntConverter).ConvertBack(value, typeof(int), ratio, CultureInfo.CurrentCulture);
-		var convertBackToResult = doubleToIntConverter.ConvertBackTo(value, typeof(int), ratio, CultureInfo.CurrentCulture);
+		var convertBackResult = (double?)((ICommunityToolkitValueConverter)doubleToIntConverter).ConvertBack(value, typeof(double), ratio, CultureInfo.CurrentCulture);
+		var convertBackToResult = doubleToIntConverter.ConvertBackTo(value, typeof(double), ratio, CultureInfo.CurrentCulture);
 
 		Assert.Equal(expectedResult, convertBackResult);
 		Assert.Equal(expectedResult, convertBackToResult);
@@ -41,7 +41,7 @@ public class DoubleToIntConverter_Tests : BaseTest
 	[InlineData('c')]
 	[InlineData(true)]
 	[InlineData("abc")]
-	public void DoubleToIntInvalidValuesThrowArgumenException(object value)
+	public void DoubleToIntInvalidValuesThrowArgumentException(object value)
 	{
 		var doubleToIntConverter = new DoubleToIntConverter();
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)doubleToIntConverter).Convert(value, typeof(BoolToObjectConverter_Tests), null, CultureInfo.CurrentCulture));

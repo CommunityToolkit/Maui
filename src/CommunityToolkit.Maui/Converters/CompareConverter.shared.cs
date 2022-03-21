@@ -52,12 +52,6 @@ public abstract class CompareConverter<TObject> : BaseConverterOneWay<IComparabl
 		GreaterOrEqual = 1 << 4,
 	}
 
-	enum Modes
-	{
-		Boolean,
-		Object
-	}
-
 	/// <summary>
 	/// The comparing value.
 	/// </summary>
@@ -89,6 +83,7 @@ public abstract class CompareConverter<TObject> : BaseConverterOneWay<IComparabl
 	[MemberNotNull(nameof(ComparingValue))]
 	public override object ConvertFrom(IComparable value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
+		ArgumentNullException.ThrowIfNull(value);
 		ArgumentNullException.ThrowIfNull(ComparingValue);
 		ArgumentNullException.ThrowIfNull(ComparisonOperator);
 

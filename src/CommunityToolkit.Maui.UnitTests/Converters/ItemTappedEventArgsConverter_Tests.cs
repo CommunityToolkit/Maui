@@ -20,8 +20,8 @@ public class ItemTappedEventArgsConverter_Tests : BaseTest
 	{
 		var itemTappedEventArgsConverter = new ItemTappedEventArgsConverter();
 
-		var convertResult = ((ICommunityToolkitValueConverter)itemTappedEventArgsConverter).Convert(value, typeof(DateTime), null, CultureInfo.CurrentCulture);
-		var convertFromResult = itemTappedEventArgsConverter.ConvertFrom(value, typeof(DateTime), null, CultureInfo.CurrentCulture);
+		var convertResult = ((ICommunityToolkitValueConverter)itemTappedEventArgsConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture);
+		var convertFromResult = itemTappedEventArgsConverter.ConvertFrom(value, typeof(object), null, CultureInfo.CurrentCulture);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
@@ -32,7 +32,7 @@ public class ItemTappedEventArgsConverter_Tests : BaseTest
 	[InlineData('c')]
 	[InlineData(true)]
 	[InlineData("abc")]
-	public void InvalidConverterValuesThrowArgumenException(object value)
+	public void InvalidConverterValuesThrowArgumentException(object value)
 	{
 		var itemTappedEventArgsConverter = new ItemTappedEventArgsConverter();
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)itemTappedEventArgsConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));

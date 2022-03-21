@@ -23,6 +23,8 @@ public class ListToStringConverter : BaseConverterOneWay<IEnumerable, string>
 	/// <returns>Concatenated members string separated by <see cref="Separator"/> or, if set, <paramref name="parameter"/>.</returns>
 	public override string ConvertFrom(IEnumerable value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
+		ArgumentNullException.ThrowIfNull(value);
+
 		if ((parameter ?? Separator ?? string.Empty) is not string separator)
 		{
 			throw new ArgumentException("Parameter cannot be casted to string", nameof(parameter));

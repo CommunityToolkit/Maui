@@ -49,7 +49,7 @@ public class IndexToArrayItemConverter : BaseConverter<int, object?>
 		for (var i = 0; i < array.Length; i++)
 		{
 			var item = array.GetValue(i);
-			if ((item != null && item.Equals(value)) || (item is null && value is null))
+			if ((item is not null && item.Equals(value)) || (item is null && value is null))
 			{
 				return i;
 			}

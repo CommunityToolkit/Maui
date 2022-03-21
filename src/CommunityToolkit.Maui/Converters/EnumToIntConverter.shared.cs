@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters;
 
@@ -17,7 +16,12 @@ public class EnumToIntConverter : BaseConverter<Enum, int>
 	/// <param name="culture">Unused: Culture to use in the converter</param>
 	/// <returns>The underlying <see cref="int"/> value of the passed enum value</returns>
 	/// <exception cref="ArgumentException">If value is not an enumeration type</exception>
-	public override int ConvertFrom(Enum value, Type? targetType, object? parameter, CultureInfo? culture) => Convert.ToInt32(value);
+	public override int ConvertFrom(Enum value, Type? targetType, object? parameter, CultureInfo? culture)
+	{
+		ArgumentNullException.ThrowIfNull(value);
+
+		return Convert.ToInt32(value);
+	}
 
 	/// <summary>
 	/// Returns the <see cref="Enum"/> associated with the specified <see cref="int"/> value defined in the targetType
@@ -28,6 +32,15 @@ public class EnumToIntConverter : BaseConverter<Enum, int>
 	/// <param name="culture">Unused: Culture to use in the converter</param>
 	/// <returns>The underlying <see cref="Enum"/> of the associated targetType</returns>
 	/// <exception cref="ArgumentException">If value is not a valid value in the targetType enum</exception>
-	public override Enum ConvertBackTo(int value, Type? targetType, object? parameter, CultureInfo? culture) =>
-		targetType is not null && Enum.IsDefined(targetType, value) ? (Enum)Enum.ToObject(targetType, value) : throw new ArgumentException($"{value} is not valid for {targetType?.Name ?? "null"}");
+	public override Enum ConvertBackTo(int value, Type? targetType, object? parameter, CultureInfo? culture)
+	{
+		ArgumentNullException.ThrowIfNull(value);
+
+		if (targetType is null || !Enum.IsDefined(targetType, value))
+		{
+			throw new ArgumentException($"{value} is not valid for {targetType?.Name ?? "null"}");
+		}
+
+		return (Enum)Enum.ToObject(targetType, value);
+	}
 }

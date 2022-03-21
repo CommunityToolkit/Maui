@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters;
 
@@ -16,8 +15,11 @@ public class TimeSpanToSecondsConverter : BaseConverter<TimeSpan, double>
 	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>A <see cref="double"/> value expressed in seconds.</returns>
-	public override double ConvertFrom(TimeSpan value, Type? targetType, object? parameter, CultureInfo? culture) =>
-		value.TotalSeconds;
+	public override double ConvertFrom(TimeSpan value, Type? targetType, object? parameter, CultureInfo? culture)
+	{
+		ArgumentNullException.ThrowIfNull(value);
+		return value.TotalSeconds;
+	}
 
 	/// <summary>
 	/// Converts a <see cref="double"/> (value should be in seconds) to a <see cref="TimeSpan"/> value.
@@ -27,6 +29,9 @@ public class TimeSpanToSecondsConverter : BaseConverter<TimeSpan, double>
 	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>The <see cref="TimeSpan"/> value representing the converted <see cref="double"/> value.</returns>
-	public override TimeSpan ConvertBackTo(double value, Type? targetType, object? parameter, CultureInfo? culture) =>
-		TimeSpan.FromSeconds(value);
+	public override TimeSpan ConvertBackTo(double value, Type? targetType, object? parameter, CultureInfo? culture)
+	{
+		ArgumentNullException.ThrowIfNull(value);
+		return TimeSpan.FromSeconds(value);
+	}
 }

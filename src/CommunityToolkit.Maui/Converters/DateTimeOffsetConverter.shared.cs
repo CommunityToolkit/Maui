@@ -17,7 +17,10 @@ public class DateTimeOffsetConverter : BaseConverter<DateTimeOffset, DateTime>
 	/// <returns>The <see cref="DateTime"/> value.</returns>
 	[return: NotNull]
 	public override DateTime ConvertFrom(DateTimeOffset value, Type? targetType, object? parameter, System.Globalization.CultureInfo? culture)
-		=> value.DateTime;
+	{
+		ArgumentNullException.ThrowIfNull(value);
+		return value.DateTime;
+	}
 
 	/// <summary>
 	/// Converts <see cref="DateTime"/> back to <see cref="DateTimeOffset"/>.
@@ -29,6 +32,8 @@ public class DateTimeOffsetConverter : BaseConverter<DateTimeOffset, DateTime>
 	/// <returns>The <see cref="DateTimeOffset"/> value.</returns>
 	public override DateTimeOffset ConvertBackTo(DateTime value, Type? targetType, object? parameter, System.Globalization.CultureInfo? culture)
 	{
+		ArgumentNullException.ThrowIfNull(value);
+
 		var offset = value.Kind switch
 		{
 			DateTimeKind.Local => DateTimeOffset.Now.Offset,

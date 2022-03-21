@@ -41,6 +41,8 @@ public class StateToBooleanConverter : BaseConverterOneWay<LayoutState, bool>
 	/// <returns>True if the provided <see cref="LayoutState"/>s match, otherwise False if they don't match.</returns>
 	public override bool ConvertFrom(LayoutState value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
+		ArgumentNullException.ThrowIfNull(value);
+
 		if (parameter is LayoutState stateToCompare)
 		{
 			return value == stateToCompare;

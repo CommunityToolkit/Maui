@@ -23,8 +23,8 @@ public class StringToListConverter_Tests : BaseTest
 	{
 		var stringToListConverter = new StringToListConverter();
 
-		var convertFromResult = stringToListConverter.ConvertFrom(value, typeof(IEnumerable<string>), parameter, null);
-		var convertResult = (IEnumerable<string>?)((ICommunityToolkitValueConverter)stringToListConverter).Convert(value, typeof(IEnumerable<string>), parameter, null);
+		var convertFromResult = stringToListConverter.ConvertFrom(value, typeof(IList<string>), parameter, null);
+		var convertResult = (IEnumerable<string>?)((ICommunityToolkitValueConverter)stringToListConverter).Convert(value, typeof(IList<string>), parameter, null);
 
 		Assert.Equal(expectedResult, convertFromResult);
 		Assert.Equal(expectedResult, convertResult);
@@ -36,11 +36,11 @@ public class StringToListConverter_Tests : BaseTest
 	[InlineData('c')]
 	[InlineData(true)]
 	[InlineData("abc")]
-	public void InvalidConverterValuesThrowArgumenException(object value)
+	public void InvalidConverterValuesThrowArgumentException(object value)
 	{
 		var listToStringConverter = new ListToStringConverter();
 
-		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)listToStringConverter).Convert(value, typeof(IEnumerable<string>), null, null));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)listToStringConverter).Convert(value, typeof(IList<string>), null, null));
 	}
 
 	[Theory]
@@ -49,10 +49,10 @@ public class StringToListConverter_Tests : BaseTest
 	[InlineData('c')]
 	[InlineData(true)]
 	[InlineData("abc")]
-	public void InvalidConverterParametersThrowArgumenException(object parameter)
+	public void InvalidConverterParametersThrowArgumentException(object parameter)
 	{
 		var listToStringConverter = new ListToStringConverter();
 
-		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)listToStringConverter).Convert(Array.Empty<object>(), typeof(IEnumerable<string>), parameter, null));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)listToStringConverter).Convert(Array.Empty<object>(), typeof(IList<string>), parameter, null));
 	}
 }

@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class NotEqualConverter_Tests : BaseTest
+public class IsNotEqualConverter_Tests : BaseTest
 {
 	[Theory]
 	[InlineData(true, true, false)]
