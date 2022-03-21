@@ -1,13 +1,12 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>
 /// Converts the incoming value from <see cref="byte"/>[] and returns the object of a type <see cref="ImageSource"/> or vice versa.
 /// </summary>
-public class ByteArrayToImageSourceConverter : ValueConverterExtension, ICommunityToolkitValueConverter
+public class ByteArrayToImageSourceConverter : BaseConverter<byte[]?, StreamImageSource?>
 {
 	/// <summary>
 	/// Converts the incoming value from <see cref="byte"/>[] and returns the object of a type <see cref="ImageSource"/>.
@@ -18,19 +17,14 @@ public class ByteArrayToImageSourceConverter : ValueConverterExtension, ICommuni
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>An object of type <see cref="ImageSource"/>.</returns>
 	[return: NotNullIfNotNull("value")]
-	public object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	public override StreamImageSource? ConvertFrom(byte[]? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value is null)
 		{
 			return null;
 		}
 
-		if (value is byte[] imageBytes)
-		{
-			return ImageSource.FromStream(() => new MemoryStream(imageBytes));
-		}
-
-		throw new ArgumentException("Expected value to be of type byte[].", nameof(value));
+		return (StreamImageSource)ImageSource.FromStream(() => new MemoryStream(value));
 	}
 
 	/// <summary>
@@ -41,19 +35,9 @@ public class ByteArrayToImageSourceConverter : ValueConverterExtension, ICommuni
 	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>An object of type <see cref="ImageSource"/>.</returns>
-	public object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	public override byte[]? ConvertBackTo(StreamImageSource? value, Type? targetType, object? parameter, CultureInfo? culture)
 	{
-		if (value is null)
-		{
-			return null;
-		}
-
-		if (value is not StreamImageSource streamImageSource)
-		{
-			throw new ArgumentException("Expected value to be of type StreamImageSource.", nameof(value));
-		}
-
-		var streamFromImageSource = streamImageSource.Stream(CancellationToken.None).Result;
+		var streamFromImageSource = value?.Stream(CancellationToken.None).GetAwaiter().GetResult();
 
 		if (streamFromImageSource is null)
 		{

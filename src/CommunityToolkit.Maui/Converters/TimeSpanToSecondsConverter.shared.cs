@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts a <see cref="TimeSpan"/> to a <see cref="double"/> value expressed in seconds.
 /// </summary>
-public class TimeSpanToDoubleConverter : ICommunityToolkitValueConverter
+public class TimeSpanToSecondsConverter : BaseConverter<TimeSpan, double>
 {
 	/// <summary>
 	/// Converts a <see cref="TimeSpan"/> to a <see cref="double"/> value expressed in seconds.
@@ -16,16 +16,8 @@ public class TimeSpanToDoubleConverter : ICommunityToolkitValueConverter
 	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>A <see cref="double"/> value expressed in seconds.</returns>
-	[return: NotNull]
-	public object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
-	{
-		if (value is TimeSpan timespan)
-		{
-			return timespan.TotalSeconds;
-		}
-
-		return 1.0;
-	}
+	public override double ConvertFrom(TimeSpan value, Type? targetType, object? parameter, CultureInfo? culture) =>
+		value.TotalSeconds;
 
 	/// <summary>
 	/// Converts a <see cref="double"/> (value should be in seconds) to a <see cref="TimeSpan"/> value.
@@ -35,14 +27,6 @@ public class TimeSpanToDoubleConverter : ICommunityToolkitValueConverter
 	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>The <see cref="TimeSpan"/> value representing the converted <see cref="double"/> value.</returns>
-	[return: NotNull]
-	public object? ConvertBack(object? value, Type? targetType, object? parameter, CultureInfo? culture)
-	{
-		if (value is double doubleValue)
-		{
-			return TimeSpan.FromSeconds(doubleValue);
-		}
-
-		return TimeSpan.Zero;
-	}
+	public override TimeSpan ConvertBackTo(double value, Type? targetType, object? parameter, CultureInfo? culture) =>
+		TimeSpan.FromSeconds(value);
 }
