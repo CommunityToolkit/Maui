@@ -9,7 +9,6 @@ public class ItemTappedEventArgsConverter_Tests : BaseTest
 	public static IReadOnlyList<object[]> Data { get; } = new[]
 	{
 		new object[] { new ItemTappedEventArgs("", 1, 1), 1},
-		new object[] { new ItemTappedEventArgs("", new object(), 1), new object()},
 		new object[] { new ItemTappedEventArgs("", 'c', 1), 'c'},
 		new object[] { new ItemTappedEventArgs("", Colors.Black, 1), Colors.Black},
 	};

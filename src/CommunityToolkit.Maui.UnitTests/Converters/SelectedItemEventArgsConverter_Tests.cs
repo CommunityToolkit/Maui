@@ -9,7 +9,6 @@ public class SelectedItemEventArgsConverter_Tests : BaseTest
 	public static IReadOnlyList<object[]> Data { get; } = new[]
 	{
 		new object[] { new SelectedItemChangedEventArgs(1, 1), 1},
-		new object[] { new SelectedItemChangedEventArgs(new object(), 1), new object()},
 		new object[] { new SelectedItemChangedEventArgs('c', 1), 'c'},
 		new object[] { new SelectedItemChangedEventArgs(Colors.Black, 1), Colors.Black},
 	};

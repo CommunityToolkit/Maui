@@ -57,8 +57,7 @@ public class CompareConverter_Tests : BaseTest
 
 	public static IReadOnlyList<object?[]> ThrowArgumentExceptionTestData { get; } = new[]
 	{
-		new object?[] { new { Name = "Not IComparable" } },
-		new object?[] { null }
+		new object?[] { new { Name = "Not IComparable" } }
 	};
 
 	[Theory]
@@ -82,7 +81,7 @@ public class CompareConverter_Tests : BaseTest
 
 	[Theory]
 	[MemberData(nameof(ThrowArgumentExceptionTestData))]
-	public void CompareConverterInvalidValuesThrowsInvalidOperationException(object value)
+	public void CompareConverterInvalidValuesThrowsArgumentException(object value)
 	{
 		var compareConverter = new CompareConverter()
 		{
@@ -90,6 +89,17 @@ public class CompareConverter_Tests : BaseTest
 		};
 
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)compareConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
+	}
+
+	[Fact]
+	public void CompareConverterNullValuesThrowsArgumentNullException()
+	{
+		var compareConverter = new CompareConverter()
+		{
+			ComparingValue = 20d
+		};
+
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)compareConverter).Convert(null, typeof(object), null, CultureInfo.CurrentCulture));
 	}
 
 	[Theory]

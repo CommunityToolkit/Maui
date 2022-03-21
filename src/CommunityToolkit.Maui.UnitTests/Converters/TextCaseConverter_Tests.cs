@@ -58,15 +58,15 @@ public class TextCaseConverter_Tests : BaseTest
 
 	[Theory]
 	[MemberData(nameof(Data))]
-	public void TextCaseConverterWithExplicitType(string? value, TextCaseType textCaseType, object? expectedResult)
+	public void TextCaseConverterWithExplicitType(object? value, TextCaseType textCaseType, object? expectedResult)
 	{
 		var textCaseConverter = new TextCaseConverter
 		{
 			Type = textCaseType
 		};
 
-		var convertResult = ((ICommunityToolkitValueConverter)textCaseConverter).Convert(value, typeof(string), null, CultureInfo.CurrentCulture);
-		var convertFromResult = textCaseConverter.ConvertFrom(value, typeof(string), null, CultureInfo.CurrentCulture);
+		var convertResult = ((ICommunityToolkitValueConverter)textCaseConverter).Convert(value?.ToString(), typeof(string), null, CultureInfo.CurrentCulture);
+		var convertFromResult = textCaseConverter.ConvertFrom(value?.ToString(), typeof(string), null, CultureInfo.CurrentCulture);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
