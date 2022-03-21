@@ -20,7 +20,7 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
 
 		var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 
-		var convertFromResult = byteArrayToImageSourceConverter.ConvertFrom(byteArray, typeof(StreamImageSource), null, CultureInfo.CurrentCulture);
+		var convertFromResult = (StreamImageSource)byteArrayToImageSourceConverter.ConvertFrom(byteArray, typeof(StreamImageSource), null, CultureInfo.CurrentCulture);
 		var convertResult = (StreamImageSource)(((ICommunityToolkitValueConverter)byteArrayToImageSourceConverter).Convert(byteArray, typeof(StreamImageSource), null, CultureInfo.CurrentCulture) ?? throw new InvalidOperationException());
 
 		var convertFromResultStream = await GetStreamFromImageSource(convertFromResult, CancellationToken.None);
