@@ -18,5 +18,5 @@ public class IsEqualConverter : BaseConverterOneWay<object?, bool>
 	public override bool ConvertFrom(object? value, Type? targetType, object? parameter, CultureInfo? culture) => IsEqual(value, parameter);
 
 	internal static bool IsEqual(object? value, object? parameter) =>
-		(value != null && value.Equals(parameter)) || (value == null && parameter == null);
+		(value is not null && value.Equals(parameter)) || (value is null && parameter is null);
 }
