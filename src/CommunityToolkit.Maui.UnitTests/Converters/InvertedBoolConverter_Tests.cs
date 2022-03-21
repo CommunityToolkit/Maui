@@ -32,7 +32,7 @@ public class InvertedBoolConverter_Tests : BaseTest
 	}
 
 	[Fact]
-	public void NullConverterValuesThrowArgumentException()
+	public void NullConverterValuesThrowArgumentNullException()
 	{
 		var invertedBoolConverter = new InvertedBoolConverter();
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)invertedBoolConverter).Convert(null, typeof(bool), null, CultureInfo.CurrentCulture));
