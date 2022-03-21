@@ -4,13 +4,13 @@
              xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
              xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
-             x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.ItemSelectedEventArgsConverterPage"
-             x:TypeArguments="vm:ItemSelectedEventArgsConverterViewModel"
-             x:DataType="vm:ItemSelectedEventArgsConverterViewModel">
+             x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.SelectedItemEventArgsConverterPage"
+             x:TypeArguments="vm:SelectedItemEventArgsConverterViewModel"
+             x:DataType="vm:SelectedItemEventArgsConverterViewModel">
 
     <pages:BasePage.Resources>
         <ResourceDictionary>
-            <mct:ItemSelectedEventArgsConverter x:Key="ItemSelectedEventArgsConverter" />
+            <mct:SelectedItemEventArgsConverter x:Key="SelectedItemEventArgsConverter" />
         </ResourceDictionary>
     </pages:BasePage.Resources>
 
@@ -43,7 +43,7 @@
                 <mct:EventToCommandBehavior 
                     EventName="ItemSelected"
                     Command="{Binding ItemSelectedCommand}"
-                    EventArgsConverter="{StaticResource ItemSelectedEventArgsConverter}" />
+                    EventArgsConverter="{StaticResource SelectedItemEventArgsConverter}" />
             </ListView.Behaviors>
         </ListView>
 

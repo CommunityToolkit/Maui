@@ -4,14 +4,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.EqualConverterPage"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.IsEqualConverterPage"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
-    x:TypeArguments="vm:EqualConverterViewModel"
-    x:DataType="vm:EqualConverterViewModel">
+    x:TypeArguments="vm:IsEqualConverterViewModel"
+    x:DataType="vm:IsEqualConverterViewModel">
 
     <pages:BasePage.Resources>
         <x:String x:Key="MAUI">MAUI</x:String>
-        <mct:EqualConverter x:Key="EqualConverter" />
+        <mct:IsEqualConverter x:Key="IsEqualConverter" />
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
         <VerticalStackLayout Spacing="10">
@@ -26,7 +26,7 @@
                     TextColor="Green">
                 <Label.Triggers>
                     <DataTrigger TargetType="Label"
-                                    Binding="{Binding InputValue, Converter={StaticResource EqualConverter}, ConverterParameter={StaticResource MAUI}}"
+                                    Binding="{Binding InputValue, Converter={StaticResource IsEqualConverter}, ConverterParameter={StaticResource MAUI}}"
                                     Value="False">
                         <Setter Property="Text" Value="No, it doesn't" />
                         <Setter Property="TextColor" Value="Red" />
