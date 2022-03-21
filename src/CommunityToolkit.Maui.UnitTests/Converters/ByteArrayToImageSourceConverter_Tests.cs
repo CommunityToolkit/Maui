@@ -46,7 +46,7 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
 	[Fact]
 	public void ConvertImageSourceBackToByteArray()
 	{
-		var byteArray = new byte[] { 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20 };;
+		var byteArray = new byte[] { 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20 };
 
 		var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 

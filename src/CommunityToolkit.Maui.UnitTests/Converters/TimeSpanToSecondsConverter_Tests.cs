@@ -50,4 +50,3 @@ public class TimeSpanToSecondsConverter_Tests
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)converter).ConvertBack(null, typeof(TimeSpan), null, null));
 	}
 }
-
