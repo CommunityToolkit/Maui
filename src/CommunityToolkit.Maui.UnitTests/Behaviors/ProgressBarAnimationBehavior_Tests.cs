@@ -23,7 +23,7 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 		var progressBarAnimationCompletedTCS = new TaskCompletionSource();
 
 		var progressBarAnimationBehavior = new ProgressBarAnimationBehavior();
-		progressBarAnimationBehavior.AnimationCompleted += HandleAnimationComplted;
+		progressBarAnimationBehavior.AnimationCompleted += HandleAnimationCompleted;
 		progressBar.Behaviors.Add(progressBarAnimationBehavior);
 
 		Assert.Equal(0.0d, progressBar.Progress);
@@ -45,7 +45,7 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 		Assert.Equal(length, progressBarAnimationBehavior.Length);
 		Assert.Equal(easing, progressBarAnimationBehavior.Easing);
 
-		void HandleAnimationComplted(object? sender, EventArgs e)
+		void HandleAnimationCompleted(object? sender, EventArgs e)
 		{
 			ArgumentNullException.ThrowIfNull(sender);
 
