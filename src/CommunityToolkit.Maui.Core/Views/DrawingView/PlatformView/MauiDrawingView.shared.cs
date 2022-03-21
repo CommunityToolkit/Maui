@@ -34,18 +34,8 @@ public partial class MauiDrawingView
 	/// </summary>
 	public bool ClearOnFinish { get; set; }
 
-	/// <summary>
-	/// Command executed when drawing line completed
-	/// </summary>
-	public ICommand? DrawingLineCompletedCommand { get; set; }
-
 	void OnDrawingLineCompleted(MauiDrawingLine lastDrawingLine)
 	{
 		weakEventManager.HandleEvent(this, new MauiDrawingLineCompletedEventArgs(lastDrawingLine), nameof(DrawingLineCompleted));
-
-		if (DrawingLineCompletedCommand?.CanExecute(lastDrawingLine) ?? false)
-		{
-			DrawingLineCompletedCommand.Execute(lastDrawingLine);
-		}
 	}
 }

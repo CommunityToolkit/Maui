@@ -49,14 +49,4 @@ public static partial class MauiDrawingViewExtensions
 	{
 		mauiDrawingView.LineWidth = lineWidth;
 	}
-
-	/// <summary>
-	/// Set DrawingLineCompletedCommand
-	/// </summary>
-	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/></param>
-	/// <param name="drawingLineCompletedCommand">command</param>
-	public static void SetDrawingLineCompletedCommand(this MauiDrawingView mauiDrawingView, ICommand? drawingLineCompletedCommand)
-	{
-		mauiDrawingView.DrawingLineCompletedCommand = drawingLineCompletedCommand;
-	}
 }

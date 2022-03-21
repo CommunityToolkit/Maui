@@ -56,49 +56,34 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 		handler.PlatformView.SetMultiLineMode(view.MultiLineMode);
 	}
 
-	/// <summary>
-	/// Action that's triggered when the DrawingView <see cref="IDrawingView.DrawingLineCompletedCommand"/> property changes.
-	/// </summary>
-	/// <param name="handler">An instance of <see cref="DrawingViewHandler"/>.</param>
-	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
-	public static void MapDrawingLineCompletedCommand(DrawingViewHandler handler, IDrawingView view)
-	{
-		handler.PlatformView.SetDrawingLineCompletedCommand(view.DrawingLineCompletedCommand);
-	}
-
-	/// <summary>
-	/// Action that's triggered when the DrawingView <see cref="IDrawingView.DrawingLineCompletedCommand"/> property changes.
-	/// </summary>
-	/// <param name="handler">An instance of <see cref="DrawingViewHandler"/>.</param>
-	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
-	/// <param name="parameter">Command argument</param>
-	public static void MapDrawingLineCompletedEvent(DrawingViewHandler handler, IDrawingView view, object? parameter)
-	{
-		if (parameter is ILine line)
-		{
-			view.DrawingLineCompleted(line);
-		}
-	}
-
 	/// <inheritdoc />
 	protected override void ConnectHandler(MauiDrawingView nativeView)
 	{
 		base.ConnectHandler(nativeView);
 		nativeView.Initialize();
 		VirtualView.Lines.CollectionChanged += OnLinesCollectionChanged;
+		PlatformView.DrawingLineCompleted += OnPlatformViewDrawingLineCompleted;
 	}
-
 
 	/// <inheritdoc />
 	protected override void DisconnectHandler(MauiDrawingView nativeView)
 	{
-		base.DisconnectHandler(nativeView);
-		nativeView.CleanUp();
+		PlatformView.DrawingLineCompleted -= OnPlatformViewDrawingLineCompleted;
 		VirtualView.Lines.CollectionChanged -= OnLinesCollectionChanged;
+		nativeView.CleanUp();
+		base.DisconnectHandler(nativeView);
 	}
 
 	/// <inheritdoc />
 	protected override MauiDrawingView CreatePlatformView() => new();
+
+	void OnPlatformViewDrawingLineCompleted(object? sender, MauiDrawingLineCompletedEventArgs e)
+	{
+		if (e.Line is ILine line)
+		{
+			VirtualView.DrawingLineCompleted(line);
+		}
+	}
 
 	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 	{
