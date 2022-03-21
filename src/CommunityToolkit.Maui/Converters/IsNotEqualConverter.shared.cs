@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Checks whether the incoming value doesn't equal the provided parameter.
 /// </summary>
-public class NotEqualConverter : BaseConverterOneWay<object?, bool>
+public class IsNotEqualConverter : BaseConverterOneWay<object?, bool>
 {
 	/// <summary>
 	/// Checks whether the incoming value doesn't equal the provided parameter.
@@ -16,5 +16,5 @@ public class NotEqualConverter : BaseConverterOneWay<object?, bool>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>True if <paramref name="value"/> and <paramref name="parameter"/> are not equal, False if they are equal.</returns>
 	public override bool ConvertFrom(object? value, Type? targetType, object? parameter, CultureInfo? culture) =>
-		!EqualConverter.IsEqual(value, parameter);
+		!IsEqualConverter.IsEqual(value, parameter);
 }

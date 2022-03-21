@@ -26,9 +26,11 @@ public class MathExpressionConverter_Tests : BaseTest
 	{
 		var mathExpressionConverter = new MathExpressionConverter();
 
-		var result = mathExpressionConverter.Convert(x, type, expression, cultureInfo) ?? throw new NullReferenceException();
+		var convertResult = ((ICommunityToolkitValueConverter)mathExpressionConverter).Convert(x, type, expression, cultureInfo) ?? throw new NullReferenceException();
+		var convertFromResult = mathExpressionConverter.ConvertFrom(x, type, expression, cultureInfo);
 
-		Assert.True(Math.Abs((double)result - expectedResult) < tolerance);
+		Assert.True(Math.Abs((double)convertResult - expectedResult) < tolerance);
+		Assert.True(Math.Abs((double)convertFromResult - expectedResult) < tolerance);
 	}
 
 	[Theory]
@@ -54,6 +56,7 @@ public class MathExpressionConverter_Tests : BaseTest
 	{
 		var mathExpressionConverter = new MathExpressionConverter();
 
-		Assert.Throws<ArgumentException>(() => mathExpressionConverter.Convert(0d, type, expression, cultureInfo));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)mathExpressionConverter).Convert(0d, type, expression, cultureInfo));
+		Assert.Throws<ArgumentException>(() => mathExpressionConverter.ConvertFrom(0d, type, expression, cultureInfo));
 	}
 }

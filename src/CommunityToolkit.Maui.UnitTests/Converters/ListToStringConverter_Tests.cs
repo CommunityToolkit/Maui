@@ -18,30 +18,40 @@ public class ListToStringConverter_Tests : BaseTest
 
 	[Theory]
 	[MemberData(nameof(TestData))]
-	public void ListToStringConverter(object value, object parameter, object expectedResult)
+	public void ListToStringConverter(string[] value, string? parameter, string expectedResult)
 	{
 		var listToStringConverter = new ListToStringConverter();
 
-		var result = (string)listToStringConverter.Convert(value, typeof(string), parameter, null);
+		var convertResult = (string?)((ICommunityToolkitValueConverter)listToStringConverter).Convert(value, typeof(string), parameter, null);
+		var convertFromResult = listToStringConverter.ConvertFrom(value, typeof(string), parameter, null);
 
-		Assert.Equal(result, expectedResult);
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
 	}
 
 	[Theory]
 	[InlineData(0)]
-	public void InValidConverterValuesThrowArgumenException(object value)
+	[InlineData(5.5)]
+	[InlineData('c')]
+	[InlineData(true)]
+	[InlineData("abc")]
+	public void InvalidConverterValuesThrowArgumenException(object value)
 	{
 		var listToStringConverter = new ListToStringConverter();
 
-		Assert.Throws<ArgumentException>(() => listToStringConverter.Convert(value, typeof(string), null, null));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)listToStringConverter).Convert(value, typeof(string), null, null));
 	}
 
 	[Theory]
 	[InlineData(0)]
-	public void InValidConverterParametersThrowArgumenException(object parameter)
+	[InlineData(5.5)]
+	[InlineData('c')]
+	[InlineData(true)]
+	[InlineData("abc")]
+	public void InvalidConverterParametersThrowArgumenException(object parameter)
 	{
 		var listToStringConverter = new ListToStringConverter();
 
-		Assert.Throws<ArgumentException>(() => listToStringConverter.Convert(Array.Empty<object>(), typeof(string), parameter, null));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)listToStringConverter).Convert(Array.Empty<object>(), typeof(string), parameter, null));
 	}
 }

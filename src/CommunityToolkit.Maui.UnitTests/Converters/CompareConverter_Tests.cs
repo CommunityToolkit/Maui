@@ -73,27 +73,31 @@ public class CompareConverter_Tests : BaseTest
 			ComparingValue = comparingValue
 		};
 
-		object result = compareConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
-		Assert.Equal(result, expectedResult);
+		var convertResult = ((ICommunityToolkitValueConverter)compareConverter).Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
+		var convertFromResult = compareConverter.ConvertFrom(value, typeof(bool), null, CultureInfo.CurrentCulture);
+
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
 	}
 
 	[Theory]
 	[MemberData(nameof(ThrowArgumenExceptionTestData))]
-	public void CompareConverterInValidValuesThrowArgumenException(object value)
+	public void CompareConverterInvalidValuesThrowArgumenException(IComparable value)
 	{
 		var compareConverter = new CompareConverter()
 		{
 			ComparingValue = 20d
 		};
 
-		Assert.Throws<ArgumentException>(() => compareConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)compareConverter).Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => compareConverter.ConvertFrom(value, typeof(bool), null, CultureInfo.CurrentCulture));
 	}
 
 	[Theory]
 	[InlineData(20d, null, TrueTestObject, FalseTestObject)]
 	[InlineData(20d, 20d, TrueTestObject, null)]
 	[InlineData(20d, 20d, null, FalseTestObject)]
-	public void CompareConverterInValidValuesThrowArgumentNullException(object value, IComparable comparingValue, object trueObject, object falseObject)
+	public void CompareConverterInvalidValuesThrowArgumentNullException(IComparable value, IComparable comparingValue, object trueObject, object falseObject)
 	{
 		var compareConverter = new CompareConverter()
 		{
@@ -102,12 +106,13 @@ public class CompareConverter_Tests : BaseTest
 			TrueObject = trueObject
 		};
 
-		Assert.Throws<ArgumentNullException>(() => compareConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)compareConverter).Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentNullException>(() => compareConverter.ConvertFrom(value, typeof(bool), null, CultureInfo.CurrentCulture));
 	}
 
 	[Theory]
 	[InlineData(20d, (CompareConverter.OperatorType)10, 20d)]
-	public void CompareConverterInValidValuesThrowArgumentOutOfRangeException(object value, CompareConverter.OperatorType comparisonOperator, IComparable comparingValue)
+	public void CompareConverterInvalidValuesThrowArgumentOutOfRangeException(IComparable value, CompareConverter.OperatorType comparisonOperator, IComparable comparingValue)
 	{
 		var compareConverter = new CompareConverter
 		{
@@ -115,6 +120,7 @@ public class CompareConverter_Tests : BaseTest
 			ComparingValue = comparingValue
 		};
 
-		Assert.Throws<ArgumentOutOfRangeException>(() => compareConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentOutOfRangeException>(() => ((ICommunityToolkitValueConverter)compareConverter).Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentOutOfRangeException>(() => compareConverter.ConvertFrom(value, typeof(bool), null, CultureInfo.CurrentCulture));
 	}
 }

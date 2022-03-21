@@ -14,9 +14,11 @@ public class BoolToObjectConverter_Tests : BaseTest
 	[InlineData(false, TrueTestObject, FalseTestObject, FalseTestObject)]
 	public void BoolToObjectConvert(bool value, object trueObject, object falseObject, object expectedResult)
 	{
-		var boolObjectConverter = new BoolToObjectConverter();
-		boolObjectConverter.TrueObject = trueObject;
-		boolObjectConverter.FalseObject = falseObject;
+		var boolObjectConverter = new BoolToObjectConverter
+		{
+			TrueObject = trueObject,
+			FalseObject = falseObject
+		};
 
 		var result = boolObjectConverter.Convert(value, typeof(object), null, CultureInfo.CurrentCulture);
 
@@ -29,9 +31,11 @@ public class BoolToObjectConverter_Tests : BaseTest
 	[InlineData(FalseTestObject, TrueTestObject, FalseTestObject, false)]
 	public void BoolToObjectConvertBack(object value, object trueObject, object falseObject, bool expectedResult)
 	{
-		var boolObjectConverter = new BoolToObjectConverter();
-		boolObjectConverter.TrueObject = trueObject;
-		boolObjectConverter.FalseObject = falseObject;
+		var boolObjectConverter = new BoolToObjectConverter
+		{
+			TrueObject = trueObject,
+			FalseObject = falseObject
+		};
 
 		var result = (bool)boolObjectConverter.ConvertBack(value, typeof(object), null, CultureInfo.CurrentCulture);
 
@@ -40,7 +44,7 @@ public class BoolToObjectConverter_Tests : BaseTest
 
 	[Theory]
 	[InlineData("")]
-	public void BoolToObjectInValidValuesThrowArgumenException(object value)
+	public void BoolToObjectInvalidValuesThrowArgumenException(object value)
 	{
 		var boolObjectConverter = new BoolToObjectConverter();
 		Assert.Throws<ArgumentException>(() => boolObjectConverter.Convert(value, typeof(object), null, CultureInfo.CurrentCulture));

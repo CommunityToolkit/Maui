@@ -11,20 +11,22 @@ public class InvertedBoolConverter_Tests : BaseTest
 	[InlineData(false, true)]
 	public void InverterBoolConverter(bool value, bool expectedResult)
 	{
-		var inverterBoolConverter = new InvertedBoolConverter();
+		var invertedBoolConverter = new InvertedBoolConverter();
 
-		var result = (bool)inverterBoolConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
+		var convertResult = (bool?)((ICommunityToolkitValueConverter)invertedBoolConverter).Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
+		var convertFromResult = invertedBoolConverter.ConvertFrom(value, typeof(bool), null, CultureInfo.CurrentCulture);
 
-		Assert.Equal(result, expectedResult);
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
 	}
 
 	[Theory]
 	[InlineData(2)]
 	[InlineData("")]
 	[InlineData(null)]
-	public void InValidConverterValuesThrowArgumenException(object? value)
+	public void InvalidConverterValuesThrowArgumenException(object? value)
 	{
-		var inverterBoolConverter = new InvertedBoolConverter();
-		Assert.Throws<ArgumentException>(() => inverterBoolConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
+		var invertedBoolConverter = new InvertedBoolConverter();
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)invertedBoolConverter).Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
 	}
 }

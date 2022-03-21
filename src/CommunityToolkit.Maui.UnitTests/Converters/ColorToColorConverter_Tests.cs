@@ -5,75 +5,75 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToColorConverter_Tests : BaseTest
 {
-	public static IReadOnlyList<object?[]> ColorToBlackOrWhiteData { get; } = new[]
+	public static IReadOnlyList<Color[]> ColorToBlackOrWhiteData { get; } = new[]
 	{
-		new object[] { Colors.Black, Colors.Black },
-		new object[] { Colors.DarkBlue, Colors.Black },
-		new object[] { Colors.DarkCyan, Colors.Black },
-		new object[] { Colors.Brown, Colors.Black },
-		new object[] { Colors.DarkGreen, Colors.Black },
-		new object[] { Colors.DarkSlateGray, Colors.Black },
-		new object[] { Colors.Transparent, Colors.Black},
-		new object[] { Colors.White, Colors.White},
-		new object[] { Colors.DarkSalmon, Colors.White },
-		new object[] { Colors.DarkOrchid, Colors.White },
-		new object[] { Colors.DarkGrey, Colors.White },
-		new object[] { Colors.Yellow, Colors.White },
-		new object[] { Colors.Pink, Colors.White },
-		new object[] { Colors.LightBlue, Colors.White },
-		new object[] { Colors.Wheat, Colors.White }
+		new[] { Colors.Black, Colors.Black },
+		new[] { Colors.DarkBlue, Colors.Black },
+		new[] { Colors.DarkCyan, Colors.Black },
+		new[] { Colors.Brown, Colors.Black },
+		new[] { Colors.DarkGreen, Colors.Black },
+		new[] { Colors.DarkSlateGray, Colors.Black },
+		new[] { Colors.Transparent, Colors.Black},
+		new[] { Colors.White, Colors.White},
+		new[] { Colors.DarkSalmon, Colors.White },
+		new[] { Colors.DarkOrchid, Colors.White },
+		new[] { Colors.DarkGrey, Colors.White },
+		new[] { Colors.Yellow, Colors.White },
+		new[] { Colors.Pink, Colors.White },
+		new[] { Colors.LightBlue, Colors.White },
+		new[] { Colors.Wheat, Colors.White }
 	};
 
-	public static IReadOnlyList<object?[]> ColorToColorForTextData { get; } = new[]
+	public static IReadOnlyList<Color[]> ColorToColorForTextData { get; } = new[]
 	{
-		new object[] { Colors.White, Colors.Black},
-		new object[] { Colors.Yellow, Colors.Black },
-		new object[] { Colors.Pink, Colors.Black },
-		new object[] { Colors.LightBlue, Colors.Black },
-		new object[] { Colors.Wheat, Colors.Black },
-		new object[] { Colors.Black, Colors.White },
-		new object[] { Colors.DarkBlue, Colors.White },
-		new object[] { Colors.DarkCyan, Colors.White },
-		new object[] { Colors.Brown, Colors.White },
-		new object[] { Colors.DarkGreen, Colors.White },
-		new object[] { Colors.DarkSlateGray, Colors.White },
-		new object[] { Colors.Transparent, Colors.White},
-		new object[] { Colors.DarkSalmon, Colors.White },
-		new object[] { Colors.DarkOrchid, Colors.White },
-		new object[] { Colors.DarkGrey, Colors.White }
+		new[] { Colors.White, Colors.Black},
+		new[] { Colors.Yellow, Colors.Black },
+		new[] { Colors.Pink, Colors.Black },
+		new[] { Colors.LightBlue, Colors.Black },
+		new[] { Colors.Wheat, Colors.Black },
+		new[] { Colors.Black, Colors.White },
+		new[] { Colors.DarkBlue, Colors.White },
+		new[] { Colors.DarkCyan, Colors.White },
+		new[] { Colors.Brown, Colors.White },
+		new[] { Colors.DarkGreen, Colors.White },
+		new[] { Colors.DarkSlateGray, Colors.White },
+		new[] { Colors.Transparent, Colors.White},
+		new[] { Colors.DarkSalmon, Colors.White },
+		new[] { Colors.DarkOrchid, Colors.White },
+		new[] { Colors.DarkGrey, Colors.White }
 	};
 
-	public static IReadOnlyList<object?[]> ColorToGrayScaleColorData { get; } = new[]
+	public static IReadOnlyList<Color[]> ColorToGrayScaleColorData { get; } = new[]
 	{
-		new object[] { Colors.White, Colors.White},
-		new object[] { Colors.Yellow, new Color(2f/3f, 2f/3f, 2f/3f, 1) },
-		new object[] { Colors.Pink, new Color(0.8496732f, 0.8496732f, 0.8496732f, 1) },
-		new object[] { Colors.LightBlue, new Color(0.8091503f, 0.8091503f, 0.8091503f, 1) },
-		new object[] { Colors.Wheat, new Color(0.84444445f, 0.84444445f, 0.84444445f, 1) },
-		new object[] { Colors.Black, Colors.Black },
-		new object[] { Colors.DarkBlue, new Color(0.18169935f, 0.18169935f, 0.18169935f, 1) },
-		new object[] { Colors.DarkCyan, new Color(0.3633987f, 0.3633987f, 0.3633987f, 1) },
-		new object[] { Colors.Brown, new Color(0.3254902f, 0.3254902f, 0.3254902f, 1) },
-		new object[] { Colors.DarkGreen, new Color(0.13071896f, 0.13071896f, 0.13071896f, 1) },
-		new object[] { Colors.DarkSlateGray, new Color(0.26797387f, 0.26797387f, 0.26797387f, 1) },
-		new object[] { Colors.Transparent, Colors.Black},
-		new object[] { Colors.DarkSalmon, new Color(0.66013074f, 0.66013074f, 0.66013074f, 1) },
-		new object[] { Colors.DarkOrchid, new Color(0.5320262f, 0.5320262f, 0.5320262f, 1) },
-		new object[] { Colors.DarkGrey, new Color(0.6627451f, 0.6627451f, 0.6627451f, 1) }
+		new[] { Colors.White, Colors.White},
+		new[] { Colors.Yellow, new Color(2f/3f, 2f/3f, 2f/3f, 1) },
+		new[] { Colors.Pink, new Color(0.8496732f, 0.8496732f, 0.8496732f, 1) },
+		new[] { Colors.LightBlue, new Color(0.8091503f, 0.8091503f, 0.8091503f, 1) },
+		new[] { Colors.Wheat, new Color(0.84444445f, 0.84444445f, 0.84444445f, 1) },
+		new[] { Colors.Black, Colors.Black },
+		new[] { Colors.DarkBlue, new Color(0.18169935f, 0.18169935f, 0.18169935f, 1) },
+		new[] { Colors.DarkCyan, new Color(0.3633987f, 0.3633987f, 0.3633987f, 1) },
+		new[] { Colors.Brown, new Color(0.3254902f, 0.3254902f, 0.3254902f, 1) },
+		new[] { Colors.DarkGreen, new Color(0.13071896f, 0.13071896f, 0.13071896f, 1) },
+		new[] { Colors.DarkSlateGray, new Color(0.26797387f, 0.26797387f, 0.26797387f, 1) },
+		new[] { Colors.Transparent, Colors.Black},
+		new[] { Colors.DarkSalmon, new Color(0.66013074f, 0.66013074f, 0.66013074f, 1) },
+		new[] { Colors.DarkOrchid, new Color(0.5320262f, 0.5320262f, 0.5320262f, 1) },
+		new[] { Colors.DarkGrey, new Color(0.6627451f, 0.6627451f, 0.6627451f, 1) }
 	};
 
-	public static IReadOnlyList<object?[]> ColorToInverseColorConverterData { get; } = new[]
+	public static IReadOnlyList<Color[]> ColorToInverseColorConverterData { get; } = new[]
 	{
-		new object[] { Colors.White, Colors.Black},
-		new object[] { new Color(0f,0f,0f), new Color(1f,1f,1f) },
-		new object[] { new Color(0f,0f,1f), new Color(1f,1f,0f) },
-		new object[] { new Color(0f,1f,0f), new Color(1f,0f,1f) },
-		new object[] { new Color(0f,1f,1f), new Color(1f,0f,0f) },
-		new object[] { new Color(1f,0f,0f), new Color(0f,1f,1f) },
-		new object[] { new Color(1f,0f,1f), new Color(0f,1f,0f) },
-		new object[] { new Color(1f,1f,0f), new Color(0f,0f,1f) },
-		new object[] { new Color(1f,1f,1f), new Color(0f,0f,0f) },
-		new object[] { Colors.Black, Colors.White },
+		new[] { Colors.White, Colors.Black},
+		new[] { new Color(0f,0f,0f), new Color(1f,1f,1f) },
+		new[] { new Color(0f,0f,1f), new Color(1f,1f,0f) },
+		new[] { new Color(0f,1f,0f), new Color(1f,0f,1f) },
+		new[] { new Color(0f,1f,1f), new Color(1f,0f,0f) },
+		new[] { new Color(1f,0f,0f), new Color(0f,1f,1f) },
+		new[] { new Color(1f,0f,1f), new Color(0f,1f,0f) },
+		new[] { new Color(1f,1f,0f), new Color(0f,0f,1f) },
+		new[] { new Color(1f,1f,1f), new Color(0f,0f,0f) },
+		new[] { Colors.Black, Colors.White },
 	};
 
 	[Theory]
@@ -82,8 +82,8 @@ public class ColorToColorConverter_Tests : BaseTest
 	{
 		var converter = new ColorToBlackOrWhiteConverter();
 
-		var convertedColor = converter.Convert(initialColor, typeof(Color), null, null);
-		var convertedColorFrom = converter.ConvertFrom(initialColor);
+		var convertedColor = ((ICommunityToolkitValueConverter)converter).Convert(initialColor, typeof(Color), null, null);
+		var convertedColorFrom = converter.ConvertFrom(initialColor, typeof(Color), null, null);
 
 		Assert.Equal(expectedColor, convertedColor);
 		Assert.Equal(expectedColor, convertedColorFrom);
@@ -97,7 +97,7 @@ public class ColorToColorConverter_Tests : BaseTest
 	{
 		var converter = new ColorToBlackOrWhiteConverter();
 
-		Assert.Throws<ArgumentException>(() => converter.Convert(value, typeof(Color), null, null));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)converter).Convert(value, typeof(Color), null, null));
 	}
 
 	[Fact]
@@ -106,10 +106,10 @@ public class ColorToColorConverter_Tests : BaseTest
 		var converter = new ColorToBlackOrWhiteConverter();
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => converter.Convert(null, typeof(Color), null, null));
-		Assert.Throws<ArgumentNullException>(() => converter.Convert(default, typeof(Color), null, null));
-		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(null));
-		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(default));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)converter).Convert(null, typeof(Color), null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)converter).Convert(default, typeof(Color), null, null));
+		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(null, typeof(Color), null, null));
+		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(default, typeof(Color), null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
@@ -119,8 +119,8 @@ public class ColorToColorConverter_Tests : BaseTest
 	{
 		var converter = new ColorToColorForTextConverter();
 
-		var convertedColor = converter.Convert(initialColor, typeof(Color), null, null);
-		var convertedColorFrom = converter.ConvertFrom(initialColor);
+		var convertedColor = ((ICommunityToolkitValueConverter)converter).Convert(initialColor, typeof(Color), null, null);
+		var convertedColorFrom = converter.ConvertFrom(initialColor, typeof(Color), null, null);
 
 		Assert.Equal(expectedColor, convertedColor);
 		Assert.Equal(expectedColor, convertedColorFrom);
@@ -134,7 +134,7 @@ public class ColorToColorConverter_Tests : BaseTest
 	{
 		var converter = new ColorToColorForTextConverter();
 
-		Assert.Throws<ArgumentException>(() => converter.Convert(value, typeof(Color), null, null));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)converter).Convert(value, typeof(Color), null, null));
 	}
 
 	[Fact]
@@ -143,10 +143,10 @@ public class ColorToColorConverter_Tests : BaseTest
 		var converter = new ColorToColorForTextConverter();
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => converter.Convert(null, typeof(Color), null, null));
-		Assert.Throws<ArgumentNullException>(() => converter.Convert(default, typeof(Color), null, null));
-		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(null));
-		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(default));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)converter).Convert(null, typeof(Color), null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)converter).Convert(default, typeof(Color), null, null));
+		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(null, typeof(Color), null, null));
+		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(default, typeof(Color), null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
@@ -156,8 +156,8 @@ public class ColorToColorConverter_Tests : BaseTest
 	{
 		var converter = new ColorToGrayScaleColorConverter();
 
-		var convertedColor = converter.Convert(initialColor, typeof(Color), null, null);
-		var convertedColorFrom = converter.ConvertFrom(initialColor);
+		var convertedColor = ((ICommunityToolkitValueConverter)converter).Convert(initialColor, typeof(Color), null, null);
+		var convertedColorFrom = converter.ConvertFrom(initialColor, typeof(Color), null, null);
 
 		Assert.Equal(expectedColor, convertedColor);
 		Assert.Equal(expectedColor, convertedColorFrom);
@@ -171,7 +171,7 @@ public class ColorToColorConverter_Tests : BaseTest
 	{
 		var converter = new ColorToGrayScaleColorConverter();
 
-		Assert.Throws<ArgumentException>(() => converter.Convert(value, typeof(Color), null, null));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)converter).Convert(value, typeof(Color), null, null));
 	}
 
 	[Fact]
@@ -180,10 +180,10 @@ public class ColorToColorConverter_Tests : BaseTest
 		var converter = new ColorToGrayScaleColorConverter();
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => converter.Convert(null, typeof(Color), null, null));
-		Assert.Throws<ArgumentNullException>(() => converter.Convert(default, typeof(Color), null, null));
-		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(null));
-		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(default));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)converter).Convert(null, typeof(Color), null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)converter).Convert(default, typeof(Color), null, null));
+		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(null, typeof(Color), null, null));
+		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(default, typeof(Color), null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
@@ -193,8 +193,8 @@ public class ColorToColorConverter_Tests : BaseTest
 	{
 		var converter = new ColorToInverseColorConverter();
 
-		var convertedColor = converter.Convert(initialColor, typeof(Color), null, null);
-		var convertedColorFrom = converter.ConvertFrom(initialColor);
+		var convertedColor = ((ICommunityToolkitValueConverter)converter).Convert(initialColor, typeof(Color), null, null);
+		var convertedColorFrom = converter.ConvertFrom(initialColor, typeof(Color), null, null);
 
 		Assert.Equal(expectedColor, convertedColor);
 		Assert.Equal(expectedColor, convertedColorFrom);
@@ -208,7 +208,7 @@ public class ColorToColorConverter_Tests : BaseTest
 	{
 		var converter = new ColorToInverseColorConverter();
 
-		Assert.Throws<ArgumentException>(() => converter.Convert(value, typeof(Color), null, null));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)converter).Convert(value, typeof(Color), null, null));
 	}
 
 	[Fact]
@@ -217,10 +217,10 @@ public class ColorToColorConverter_Tests : BaseTest
 		var converter = new ColorToInverseColorConverter();
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => converter.Convert(null, typeof(Color), null, null));
-		Assert.Throws<ArgumentNullException>(() => converter.Convert(default, typeof(Color), null, null));
-		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(null));
-		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(default));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)converter).Convert(null, typeof(Color), null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)converter).Convert(default, typeof(Color), null, null));
+		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(null, typeof(Color), null, null));
+		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(default, typeof(Color), null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }

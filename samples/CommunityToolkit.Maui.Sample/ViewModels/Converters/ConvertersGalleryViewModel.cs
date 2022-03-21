@@ -29,7 +29,7 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
 			SectionModel.Create<EqualConverterViewModel>(nameof(EqualConverter),
 				"A converter that allows users to convert any value binding to a bool depending on whether or not it is equal to a different value. "),
 
-			SectionModel.Create<NotEqualConverterViewModel>(nameof(NotEqualConverter),
+			SectionModel.Create<NotEqualConverterViewModel>(nameof(IsNotEqualConverter),
 				"A converter that allows users to convert any value binding to a bool depending on whether or not it is not equal to a different value. "),
 
 			SectionModel.Create<DoubleToIntConverterViewModel>(nameof(DoubleToIntConverter),
@@ -83,7 +83,7 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
 			SectionModel.Create<ColorsConverterViewModel>("ColorConverters",
 				"A group of converters that convert a Color to your strings values (RGB, HEX, HSL, etc)"),
 
-			SectionModel.Create<ItemSelectedEventArgsConverterViewModel>(nameof(ItemSelectedEventArgsConverter),
+			SectionModel.Create<ItemSelectedEventArgsConverterViewModel>(nameof(SelectedItemEventArgsConverter),
 				"A converter that allows you to extract the selected item in a ListView from the ItemSelectedChangedEventArgs object."),
 
 			SectionModel.Create<CompareConverterViewModel>(nameof(CompareConverter),
