@@ -16,7 +16,7 @@ public class MathExpressionConverter : BaseConverterOneWay<double, double>
 	/// <param name="parameter">The expression to calculate.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>A <see cref="double"/> The result of calculating an expression.</returns>
-	public override double ConvertFrom(double value, Type? targetType, [NotNull] object? parameter, CultureInfo? culture)
+	public override double ConvertFrom(double value, Type targetType, [NotNull] object? parameter, CultureInfo? culture)
 	{
 		if (parameter is not string expression)
 		{

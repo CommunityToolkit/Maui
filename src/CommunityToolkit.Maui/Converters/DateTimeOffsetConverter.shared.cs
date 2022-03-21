@@ -16,7 +16,7 @@ public class DateTimeOffsetConverter : BaseConverter<DateTimeOffset, DateTime>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>The <see cref="DateTime"/> value.</returns>
 	[return: NotNull]
-	public override DateTime ConvertFrom(DateTimeOffset value, Type? targetType, object? parameter, System.Globalization.CultureInfo? culture)
+	public override DateTime ConvertFrom(DateTimeOffset value, Type targetType, object? parameter, System.Globalization.CultureInfo? culture)
 	{
 		ArgumentNullException.ThrowIfNull(value);
 		return value.DateTime;
@@ -30,7 +30,7 @@ public class DateTimeOffsetConverter : BaseConverter<DateTimeOffset, DateTime>
 	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented..</param>
 	/// <returns>The <see cref="DateTimeOffset"/> value.</returns>
-	public override DateTimeOffset ConvertBackTo(DateTime value, Type? targetType, object? parameter, System.Globalization.CultureInfo? culture)
+	public override DateTimeOffset ConvertBackTo(DateTime value, Type targetType, object? parameter, System.Globalization.CultureInfo? culture)
 	{
 		ArgumentNullException.ThrowIfNull(value);
 

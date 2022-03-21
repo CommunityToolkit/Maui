@@ -45,7 +45,7 @@ public class VariableMultiValueConverter : MultiValueConverterExtension, ICommun
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>A single <see cref="bool"/> value dependant on the configuration for this converter.</returns>
 	[return: NotNull]
-	public object? Convert(object[]? values, Type? targetType, object? parameter, CultureInfo? culture)
+	public object? Convert(object[]? values, Type targetType, object? parameter, CultureInfo? culture)
 	{
 		if (values == null || values.Length == 0)
 		{

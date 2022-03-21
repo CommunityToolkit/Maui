@@ -15,6 +15,6 @@ public class IsStringNullOrEmptyConverter : BaseConverterOneWay<string?, bool>
 	/// <param name="parameter">(Not Used)</param>
 	/// <param name="culture">(Not Used)</param>
 	/// <returns>A <see cref="bool"/> indicating if the incoming value is null or empty.</returns>
-	public override bool ConvertFrom(string? value, Type? targetType, object? parameter, CultureInfo? culture)
+	public override bool ConvertFrom(string? value, Type targetType, object? parameter, CultureInfo? culture)
 		=> string.IsNullOrEmpty(value);
 }

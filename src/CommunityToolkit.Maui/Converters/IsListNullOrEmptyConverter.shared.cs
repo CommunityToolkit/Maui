@@ -16,7 +16,7 @@ public class IsListNullOrEmptyConverter : BaseConverterOneWay<IEnumerable?, bool
 	/// <param name="parameter">(Not Used)</param>
 	/// <param name="culture">(Not Used)</param>
 	/// <returns>A <see cref="bool"/> indicating if the incoming value is null or empty.</returns>
-	public override bool ConvertFrom(IEnumerable? value, Type? targetType, object? parameter, CultureInfo? culture) => IsListNullOrEmpty(value);
+	public override bool ConvertFrom(IEnumerable? value, Type targetType, object? parameter, CultureInfo? culture) => IsListNullOrEmpty(value);
 
 	internal static bool IsListNullOrEmpty(IEnumerable? value) => value switch
 	{

@@ -16,7 +16,7 @@ public class IndexToArrayItemConverter : BaseConverter<int, object?>
 	/// <param name="parameter">The items array.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>The item from the array that corresponds to passed index.</returns>
-	public override object? ConvertFrom(int value, Type? targetType, [NotNull] object? parameter, CultureInfo? culture)
+	public override object? ConvertFrom(int value, Type targetType, [NotNull] object? parameter, CultureInfo? culture)
 	{
 		if (parameter is not Array array)
 		{
@@ -39,7 +39,7 @@ public class IndexToArrayItemConverter : BaseConverter<int, object?>
 	/// <param name="parameter">The items array.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>The index of the item from the array.</returns>
-	public override int ConvertBackTo(object? value, Type? targetType, [NotNull] object? parameter, CultureInfo? culture)
+	public override int ConvertBackTo(object? value, Type targetType, [NotNull] object? parameter, CultureInfo? culture)
 	{
 		if (parameter is not Array array)
 		{

@@ -10,6 +10,6 @@ namespace CommunityToolkit.Maui.Converters;
 public abstract class BaseConverterOneWay<TFrom, TTo> : BaseConverter<TFrom, TTo>
 {
 	/// <inheritdoc/>
-	public override TFrom ConvertBackTo(TTo value, Type? targetType, object? parameter, CultureInfo? culture) =>
+	public sealed override TFrom ConvertBackTo(TTo value, Type targetType, object? parameter, CultureInfo? culture) =>
 		throw new NotSupportedException("Impossible to revert to original value. Consider setting BindingMode to OneWay.");
 }

@@ -15,6 +15,6 @@ public class IsNotEqualConverter : BaseConverterOneWay<object?, bool>
 	/// <param name="parameter">The second object to compare.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>True if <paramref name="value"/> and <paramref name="parameter"/> are not equal, False if they are equal.</returns>
-	public override bool ConvertFrom(object? value, Type? targetType, object? parameter, CultureInfo? culture) =>
+	public override bool ConvertFrom(object? value, Type targetType, object? parameter, CultureInfo? culture) =>
 		!IsEqualConverter.IsEqual(value, parameter);
 }

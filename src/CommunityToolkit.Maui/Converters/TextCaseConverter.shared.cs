@@ -41,7 +41,7 @@ public class TextCaseConverter : BaseConverterOneWay<string?, string?>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>The converted text representation with the desired casing.</returns>
 	[return: NotNullIfNotNull("value")]
-	public override string? ConvertFrom(string? value, Type? targetType, object? parameter, CultureInfo? culture)
+	public override string? ConvertFrom(string? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
 		if (string.IsNullOrWhiteSpace(value))
 		{
