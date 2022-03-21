@@ -49,7 +49,7 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 		{
 			ArgumentNullException.ThrowIfNull(sender);
 
-			progressBarAnimationBehavior.AnimationCompleted -= HandleAnimationComplted;
+			progressBarAnimationBehavior.AnimationCompleted -= HandleAnimationCompleted;
 			progressBarAnimationCompletedTCS.SetResult();
 		}
 	}
