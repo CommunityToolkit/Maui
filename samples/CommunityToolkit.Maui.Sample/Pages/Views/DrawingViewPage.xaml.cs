@@ -60,7 +60,15 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 
 	void OnDrawingLineCompleted(object sender, DrawingLineCompletedEventArgs e)
 	{
-		var stream = e.Line.GetImageStream(GestureImage.Width, GestureImage.Height, Colors.Gray);
+		var line = new Line()
+		{
+			Points = e.Points,
+			LineWidth = e.LineWidth,
+			Granularity = e.Granularity,
+			EnableSmoothedPath = e.EnableSmoothedPath,
+			LineColor = e.LineColor
+		};
+		var stream = line.GetImageStream(GestureImage.Width, GestureImage.Height, Colors.Gray);
 		GestureImage.Source = ImageSource.FromStream(() => stream);
 	}
 }

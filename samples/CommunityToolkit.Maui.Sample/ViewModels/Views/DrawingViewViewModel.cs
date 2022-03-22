@@ -14,7 +14,7 @@ public partial class DrawingViewViewModel : BaseViewModel
 	{
 		this.deviceDisplay = deviceDisplay;
 		
-		DrawingLineCompletedCommand = new Command<ILine>(line =>
+		DrawingLineCompletedCommand = new Command<DrawingLineCompletedEventArgs>(line =>
 		{
 			Logs += $"GestureCompletedCommand executed. Line points count: {line.Points.Count}" + Environment.NewLine;
 		});

@@ -86,6 +86,8 @@
 
             <Editor Grid.Row="11" Grid.Column="0"
                     Grid.ColumnSpan="2"
+                    BackgroundColor="Gray"
+                    TextColor="Black"
                     HeightRequest="100" Text="{Binding Logs}" />
         </Grid>
     </ScrollView>

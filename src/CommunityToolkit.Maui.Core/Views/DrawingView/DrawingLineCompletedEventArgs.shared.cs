@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.Core.Views;
+﻿using System.Collections.ObjectModel;
+
+namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// Contains last drawing line
@@ -6,13 +8,27 @@
 public class DrawingLineCompletedEventArgs : EventArgs
 {
 	/// <summary>
-	/// Initializes last drawing line
+	/// The <see cref="Color"/> that is used to draw this line on the <see cref="IDrawingView"/>. This is a bindable property.
 	/// </summary>
-	/// <param name="line">Last drawing line</param>
-	public DrawingLineCompletedEventArgs(ILine line) => Line = line;
+	public Color LineColor { get; init; } = Colors.Black;
 
 	/// <summary>
-	/// Last drawing line
+	/// The width that is used to draw this line on the <see cref="IDrawingView"/>. This is a bindable property.
 	/// </summary>
-	public ILine Line { get; }
+	public float LineWidth { get; init; }
+
+	/// <summary>
+	/// The collection of <see cref="Point"/> that makes up this line on the <see cref="IDrawingView"/>. This is a bindable property.
+	/// </summary>
+	public ObservableCollection<Point> Points { get; init; } = new();
+
+	/// <summary>
+	/// The granularity of this line. This is a bindable property.
+	/// </summary>
+	public int Granularity { get; init; }
+
+	/// <summary>
+	/// Enables or disabled if this line is smoothed (anti-aliased) when drawn. This is a bindable property.
+	/// </summary>
+	public bool EnableSmoothedPath { get; init; }
 }

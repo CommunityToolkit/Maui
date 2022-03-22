@@ -79,10 +79,14 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 
 	void OnPlatformViewDrawingLineCompleted(object? sender, MauiDrawingLineCompletedEventArgs e)
 	{
-		if (e.Line is ILine line)
+		VirtualView.DrawingLineCompleted(new DrawingLineCompletedEventArgs()
 		{
-			VirtualView.DrawingLineCompleted(line);
-		}
+			LineColor = e.Line.LineColor,
+			EnableSmoothedPath = e.Line.EnableSmoothedPath,
+			Granularity = e.Line.Granularity,
+			LineWidth = e.Line.LineWidth,
+			Points = e.Line.Points
+		});
 	}
 
 	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)

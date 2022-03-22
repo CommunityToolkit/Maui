@@ -140,14 +140,14 @@ public class DrawingView : View, IDrawingView
 	/// <summary>
 	/// Executes DrawingLineCompleted event and DrawingLineCompletedCommand
 	/// </summary>
-	/// <param name="lastDrawingLine">Last drawing line</param>
-	void IDrawingView.DrawingLineCompleted(ILine lastDrawingLine)
+	/// <param name="drawingLineCompletedEventArgs">Last drawing line</param>
+	void IDrawingView.DrawingLineCompleted(DrawingLineCompletedEventArgs drawingLineCompletedEventArgs)
 	{
-		drawingLineCompletedEventManager.HandleEvent(this, new DrawingLineCompletedEventArgs(lastDrawingLine), nameof(DrawingLineCompleted));
+		drawingLineCompletedEventManager.HandleEvent(this, drawingLineCompletedEventArgs, nameof(DrawingLineCompleted));
 
-		if (DrawingLineCompletedCommand?.CanExecute(lastDrawingLine) ?? false)
+		if (DrawingLineCompletedCommand?.CanExecute(drawingLineCompletedEventArgs) ?? false)
 		{
-			DrawingLineCompletedCommand.Execute(lastDrawingLine);
+			DrawingLineCompletedCommand.Execute(drawingLineCompletedEventArgs);
 		}
 	}
 }
