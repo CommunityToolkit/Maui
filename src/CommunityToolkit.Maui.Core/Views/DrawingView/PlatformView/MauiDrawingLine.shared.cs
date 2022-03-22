@@ -11,7 +11,6 @@ public partial class MauiDrawingLine
 
 	int granularity;
 
-#if !ANDROID
 	/// <summary>
 	/// Initializes a new Line object.
 	/// </summary>
@@ -22,7 +21,6 @@ public partial class MauiDrawingLine
 		LineWidth = 5;
 		Granularity = minValueGranularity;
 	}
-#endif
 
 	/// <summary>
 	/// The <see cref="Color"/> that is used to draw this line on the <see cref="IDrawingView"/>. This is a bindable property.

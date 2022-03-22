@@ -103,7 +103,14 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 
 		foreach (var line in virtualView.Lines)
 		{
-			platformView.Lines.Add((MauiDrawingLine)line.ToPlatform());
+			platformView.Lines.Add(new MauiDrawingLine()
+			{
+				LineColor = line.LineColor,
+				EnableSmoothedPath = line.EnableSmoothedPath,
+				Granularity = line.Granularity,
+				LineWidth = line.LineWidth,
+				Points = line.Points
+			});
 		}
 	}
 }

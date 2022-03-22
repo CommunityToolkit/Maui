@@ -61,7 +61,7 @@ public partial class MauiDrawingView : AView
 					Lines.Clear();
 				}
 
-				currentLine = new MauiDrawingLine(Context)
+				currentLine = new MauiDrawingLine()
 				{
 					Points = new ObservableCollection<Point>
 						{
