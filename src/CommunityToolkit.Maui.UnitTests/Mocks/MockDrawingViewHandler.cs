@@ -8,7 +8,6 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>
 
 	public static PropertyMapper<IDrawingView, MockDrawingViewHandler> DrawingViewPropertyMapper = new(ViewMapper)
 	{
-		[nameof(IDrawingView.DrawingLineCompletedCommand)] = MapDrawingLineCompletedCommand,
 		[nameof(IDrawingView.LineWidth)] = MapLineWidth,
 		[nameof(IDrawingView.LineColor)] = MapLineColor,
 		[nameof(IDrawingView.ClearOnFinish)] = MapClearOnFinish,
@@ -39,17 +38,11 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>
 		VirtualView.Lines.CollectionChanged -= Lines_CollectionChanged;
 	}
 
-	public int OnDrawingLineCompletedCount { get; private set; }
 	public int MapLineWidthCount { get; private set; }
 	public int MapLineColorCount { get; private set; }
 	public int MapClearOnFinishCount { get; private set; }
 	public int MapMultiLineModeCount { get; private set; }
 	public List<MauiDrawingLine> Lines { get; } = new();
-
-	static void MapDrawingLineCompletedCommand(MockDrawingViewHandler arg1, IDrawingView arg2)
-	{
-		arg1.OnDrawingLineCompletedCount++;
-	}
 
 	static void MapLineWidth(MockDrawingViewHandler arg1, IDrawingView arg2)
 	{

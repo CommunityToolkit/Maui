@@ -42,18 +42,6 @@ public class DrawingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void OnDrawingLineCompletedCommandMapperIsCalled()
-	{
-		var drawingViewHandler = CreateElementHandler<MockDrawingViewHandler>(drawingView);
-		Assert.NotNull(drawingView.Handler);
-
-		Assert.Equal(1, drawingViewHandler.OnDrawingLineCompletedCount);
-
-		((DrawingView)drawingView).DrawingLineCompletedCommand = new Command(() => { });
-		Assert.Equal(2, drawingViewHandler.OnDrawingLineCompletedCount);
-	}
-
-	[Fact]
 	public void LineWidthMapperIsCalled()
 	{
 		var drawingViewHandler = CreateElementHandler<MockDrawingViewHandler>(drawingView);

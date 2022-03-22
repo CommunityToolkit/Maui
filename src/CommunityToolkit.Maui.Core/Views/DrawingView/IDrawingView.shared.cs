@@ -25,14 +25,6 @@ public interface IDrawingView : IView
 	float LineWidth { get; }
 
 	/// <summary>
-	/// This command is invoked whenever the drawing of a line on <see cref="IDrawingView"/> has completed.
-	/// Note that this is fired after the tap or click is lifted. When <see cref="MultiLineMode"/> is enabled
-	/// this command is fired multiple times.
-	/// This is a bindable property.
-	/// </summary>
-	ICommand? DrawingLineCompletedCommand { get; }
-
-	/// <summary>
 	/// The collection of lines that are currently on the <see cref="IDrawingView"/>. This is a bindable property.
 	/// </summary>
 	ObservableCollection<ILine> Lines { get; }
@@ -40,7 +32,7 @@ public interface IDrawingView : IView
 	/// <summary>
 	/// Toggles multi-line mode. When true, multiple lines can be drawn on the <see cref="IDrawingView"/> while the tap/click is released in-between lines.
 	/// Note: when <see cref="ClearOnFinish"/> is also enabled, the lines are cleared after the tap/click is released.
-	/// Additionally, <see cref="DrawingLineCompletedCommand"/> will be fired after each line that is drawn.
+	/// Additionally, <see cref="DrawingLineCompleted"/> will be fired after each line that is drawn.
 	/// This is a bindable property.
 	/// </summary>
 	bool MultiLineMode { get; }
