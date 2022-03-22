@@ -9,7 +9,7 @@ public class InvertedBoolConverter_Tests : BaseTest
 	[Theory]
 	[InlineData(true, false)]
 	[InlineData(false, true)]
-	public void InverterBoolConverter(bool value, bool expectedResult)
+	public void InvertedBoolConverter(bool value, bool expectedResult)
 	{
 		var invertedBoolConverter = new InvertedBoolConverter();
 
