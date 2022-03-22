@@ -18,8 +18,8 @@ public class IntToBoolConverter_Tests : BaseTest
 	{
 		var intToBoolConverter = new IntToBoolConverter();
 
-		var result = intToBoolConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
-		var typedResult = intToBoolConverter.ConvertFrom(value);
+		var result = ((ICommunityToolkitValueConverter)intToBoolConverter).Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
+		var typedResult = intToBoolConverter.ConvertFrom(value, typeof(bool), null, CultureInfo.CurrentCulture);
 
 		Assert.Equal(expectedResult, result);
 		Assert.Equal(expectedResult, typedResult);
@@ -32,8 +32,8 @@ public class IntToBoolConverter_Tests : BaseTest
 	{
 		var intToBoolConverter = new IntToBoolConverter();
 
-		var result = intToBoolConverter.ConvertBack(value, typeof(int), null, CultureInfo.CurrentCulture);
-		var typedResult = intToBoolConverter.ConvertBackTo(value);
+		var result = ((ICommunityToolkitValueConverter)intToBoolConverter).ConvertBack(value, typeof(int), null, CultureInfo.CurrentCulture);
+		var typedResult = intToBoolConverter.ConvertBackTo(value, typeof(bool), null, CultureInfo.CurrentCulture);
 
 		Assert.Equal(expectedResult, result);
 		Assert.Equal(expectedResult, typedResult);
@@ -46,15 +46,15 @@ public class IntToBoolConverter_Tests : BaseTest
 	public void InvalidConverterValuesThrowArgumentException(object value)
 	{
 		var intToBoolConverter = new IntToBoolConverter();
-		Assert.Throws<ArgumentException>(() => intToBoolConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)intToBoolConverter).Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
 	}
 
 	[Fact]
 	public void NullConverterValueThrowsArgumentNullException()
 	{
 		var intToBoolConverter = new IntToBoolConverter();
-		Assert.Throws<ArgumentNullException>(() => intToBoolConverter.Convert(null, typeof(bool), null, CultureInfo.CurrentCulture));
-		Assert.Throws<ArgumentNullException>(() => intToBoolConverter.ConvertBack(null, typeof(bool), null, CultureInfo.CurrentCulture)); ;
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)intToBoolConverter).Convert(null, typeof(bool), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)intToBoolConverter).ConvertBack(null, typeof(bool), null, CultureInfo.CurrentCulture)); ;
 	}
 
 	[Theory]
@@ -64,6 +64,6 @@ public class IntToBoolConverter_Tests : BaseTest
 	public void InvalidConverterBackValuesThrowArgumentException(object value)
 	{
 		var intToBoolConverter = new IntToBoolConverter();
-		Assert.Throws<ArgumentException>(() => intToBoolConverter.ConvertBack(value, typeof(int), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)intToBoolConverter).ConvertBack(value, typeof(int), null, CultureInfo.CurrentCulture));
 	}
 }

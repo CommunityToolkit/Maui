@@ -13,7 +13,7 @@ public interface ICommunityToolkitMultiValueConverter : IMultiValueConverter
 	/// <param name="parameter">Optional Parameters</param>
 	/// <param name="culture">Culture Info</param>
 	/// <returns>Converted object</returns>
-	new object? Convert(object[]? values, Type? targetType, object? parameter, CultureInfo? culture);
+	new object? Convert(object[]? values, Type targetType, object? parameter, CultureInfo? culture);
 
 	/// <summary>
 	/// Converts the object back to the outgoing values
@@ -23,7 +23,7 @@ public interface ICommunityToolkitMultiValueConverter : IMultiValueConverter
 	/// <param name="parameter">Optional Parameters</param>
 	/// <param name="culture">Culture Info</param>
 	/// <returns>Array of converted objects</returns>
-	new object[]? ConvertBack(object? value, Type[]? targetTypes, object? parameter, CultureInfo? culture);
+	new object[]? ConvertBack(object? value, Type[] targetTypes, object? parameter, CultureInfo? culture);
 
 	/// <inheritdoc />
 	object? IMultiValueConverter.Convert(object[] values, Type targetType, object parameter, CultureInfo culture) =>

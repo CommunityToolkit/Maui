@@ -30,15 +30,30 @@ public class TextCaseConverter_Tests : BaseTest
 	enum MockEnum { Foo, Bar, Baz }
 
 	[Theory]
+	[InlineData((TextCaseType)int.MinValue)]
+	[InlineData((TextCaseType)(-1))]
+	[InlineData((TextCaseType)4)]
+	[InlineData((TextCaseType)int.MaxValue)]
+	public void InvalidTextCaseEnumThrowsNotSupportedException(TextCaseType textCaseType)
+	{
+		var textCaseConverter = new TextCaseConverter();
+
+		Assert.Throws<NotSupportedException>(() => textCaseConverter.ConvertFrom("Hello World", typeof(string), textCaseType, null));
+		Assert.Throws<NotSupportedException>(() => ((ICommunityToolkitValueConverter)textCaseConverter).Convert("Hello World", typeof(string), textCaseType, null));
+	}
+
+	[Theory]
 	[MemberData(nameof(Data))]
 	[InlineData(null, null, null)]
 	public void TextCaseConverterWithParameter(object? value, object? comparedValue, object? expectedResult)
 	{
 		var textCaseConverter = new TextCaseConverter();
 
-		var result = textCaseConverter.Convert(value, typeof(string), comparedValue, CultureInfo.CurrentCulture);
+		var convertResult = ((ICommunityToolkitValueConverter)textCaseConverter).Convert(value?.ToString(), typeof(string), comparedValue, CultureInfo.CurrentCulture);
+		var convertFromResult = textCaseConverter.ConvertFrom(value?.ToString(), typeof(string), comparedValue, CultureInfo.CurrentCulture);
 
-		Assert.Equal(result, expectedResult);
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
 	}
 
 	[Theory]
@@ -50,9 +65,11 @@ public class TextCaseConverter_Tests : BaseTest
 			Type = textCaseType
 		};
 
-		var result = textCaseConverter.Convert(value, typeof(string), null, CultureInfo.CurrentCulture);
+		var convertResult = ((ICommunityToolkitValueConverter)textCaseConverter).Convert(value?.ToString(), typeof(string), null, CultureInfo.CurrentCulture);
+		var convertFromResult = textCaseConverter.ConvertFrom(value?.ToString(), typeof(string), null, CultureInfo.CurrentCulture);
 
-		Assert.Equal(result, expectedResult);
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
 	}
 
 	class MockItem

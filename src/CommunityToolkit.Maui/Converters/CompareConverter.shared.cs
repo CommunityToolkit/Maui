@@ -13,7 +13,7 @@ public sealed class CompareConverter : CompareConverter<object>
 /// <summary>
 /// Converts an object that implements IComparable to an object or a boolean based on a comparison.
 /// </summary>
-public abstract class CompareConverter<TObject> : BaseConverterOneWay
+public abstract class CompareConverter<TObject> : BaseConverterOneWay<IComparable, object>
 {
 	/// <summary>
 	/// Math operator type
@@ -52,14 +52,6 @@ public abstract class CompareConverter<TObject> : BaseConverterOneWay
 		GreaterOrEqual = 1 << 4,
 	}
 
-	enum Modes
-	{
-		Boolean,
-		Object
-	}
-
-	Modes mode;
-
 	/// <summary>
 	/// The comparing value.
 	/// </summary>
@@ -88,61 +80,43 @@ public abstract class CompareConverter<TObject> : BaseConverterOneWay
 	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter.  This is not implemented.</param>
 	/// <returns>The object assigned to <see cref="TrueObject"/> if (value <see cref="ComparisonOperator"/> <see cref="ComparingValue"/>) equals True and <see cref="TrueObject"/> is not null, if <see cref="TrueObject"/> is null it returns true, otherwise the value assigned to <see cref="FalseObject"/>, if no value is assigned then it returns false.</returns>
-	[return: NotNull]
 	[MemberNotNull(nameof(ComparingValue))]
-	public override object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	public override object ConvertFrom(IComparable value, Type targetType, object? parameter, CultureInfo? culture)
 	{
+		ArgumentNullException.ThrowIfNull(value);
 		ArgumentNullException.ThrowIfNull(ComparingValue);
 		ArgumentNullException.ThrowIfNull(ComparisonOperator);
-
-		if (value is not IComparable)
-		{
-			throw new ArgumentException("is expected to implement IComparable interface.", nameof(value));
-		}
 
 		if (!Enum.IsDefined(typeof(OperatorType), ComparisonOperator))
 		{
 			throw new ArgumentOutOfRangeException($"is expected to be of type {nameof(OperatorType)}", nameof(ComparisonOperator));
 		}
 
-		if (!(TrueObject == null ^ FalseObject != null))
+		if (!(TrueObject is null ^ FalseObject is not null))
 		{
-			throw new ArgumentNullException(nameof(TrueObject), $"{nameof(TrueObject)} and {nameof(FalseObject)} should be either defined both or omitted both.");
+			throw new InvalidOperationException($"{nameof(TrueObject)} and {nameof(FalseObject)} should either be both defined both or both omitted.");
 		}
 
-		if (TrueObject != null)
-		{
-			mode = Modes.Object;
-		}
-
-		var valueIComparable = (IComparable)value;
-		var result = valueIComparable.CompareTo(ComparingValue);
+		var result = value.CompareTo(ComparingValue);
+		var shouldReturnObjectResult = TrueObject is not null && FalseObject is not null;
 
 		return ComparisonOperator switch
 		{
-			OperatorType.Smaller => EvaluateCondition(result < 0),
-			OperatorType.SmallerOrEqual => EvaluateCondition(result <= 0),
-			OperatorType.Equal => EvaluateCondition(result == 0),
-			OperatorType.NotEqual => EvaluateCondition(result != 0),
-			OperatorType.GreaterOrEqual => EvaluateCondition(result >= 0),
-			OperatorType.Greater => EvaluateCondition(result > 0),
+			OperatorType.Smaller => EvaluateCondition(result < 0, shouldReturnObjectResult),
+			OperatorType.SmallerOrEqual => EvaluateCondition(result <= 0, shouldReturnObjectResult),
+			OperatorType.Equal => EvaluateCondition(result is 0, shouldReturnObjectResult),
+			OperatorType.NotEqual => EvaluateCondition(result is not 0, shouldReturnObjectResult),
+			OperatorType.GreaterOrEqual => EvaluateCondition(result >= 0, shouldReturnObjectResult),
+			OperatorType.Greater => EvaluateCondition(result > 0, shouldReturnObjectResult),
 			_ => throw new NotSupportedException($"\"{ComparisonOperator}\" is not supported."),
 		};
 	}
 
-	object EvaluateCondition(bool comparisonResult)
+	object EvaluateCondition(bool comparisonResult, bool shouldReturnObject) => (comparisonResult, shouldReturnObject) switch
 	{
-		if (comparisonResult)
-		{
-			return mode == Modes.Object ? TrueObject! : true;
-		}
-		else if (mode == Modes.Object)
-		{
-			return FalseObject!;
-		}
-		else
-		{
-			return false;
-		}
-	}
+		(true, true) => TrueObject ?? throw new InvalidOperationException($"{nameof(TrueObject)} cannot be null"),
+		(false, true) => FalseObject ?? throw new InvalidOperationException($"{nameof(FalseObject)} cannot be null"),
+		(true, _) => true,
+		_ => false
+	};
 }

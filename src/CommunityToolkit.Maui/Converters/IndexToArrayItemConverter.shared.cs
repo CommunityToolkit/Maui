@@ -1,13 +1,12 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>
 /// Converts an <see cref="int"/> index to corresponding array item and vice versa.
 /// </summary>
-public class IndexToArrayItemConverter : ValueConverterExtension, ICommunityToolkitValueConverter
+public class IndexToArrayItemConverter : BaseConverter<int, object?>
 {
 	/// <summary>
 	/// Converts an <see cref="int"/> index to corresponding array item.
@@ -17,24 +16,19 @@ public class IndexToArrayItemConverter : ValueConverterExtension, ICommunityTool
 	/// <param name="parameter">The items array.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>The item from the array that corresponds to passed index.</returns>
-	public object? Convert([NotNull] object? value, Type? targetType, [NotNull] object? parameter, CultureInfo? culture)
+	public override object? ConvertFrom(int value, Type targetType, [NotNull] object? parameter, CultureInfo? culture)
 	{
-		if (value is not int index)
-		{
-			throw new ArgumentException("Value is not a valid integer", nameof(value));
-		}
-
 		if (parameter is not Array array)
 		{
 			throw new ArgumentException("Parameter is not a valid array", nameof(parameter));
 		}
 
-		if (index < 0 || index >= array.Length)
+		if (value < 0 || value >= array.Length)
 		{
 			throw new ArgumentOutOfRangeException(nameof(value), "Index was out of range");
 		}
 
-		return array.GetValue(index);
+		return array.GetValue(value);
 	}
 
 	/// <summary>
@@ -45,7 +39,7 @@ public class IndexToArrayItemConverter : ValueConverterExtension, ICommunityTool
 	/// <param name="parameter">The items array.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>The index of the item from the array.</returns>
-	public object? ConvertBack(object? value, Type? targetType, [NotNull] object? parameter, CultureInfo? culture)
+	public override int ConvertBackTo(object? value, Type targetType, [NotNull] object? parameter, CultureInfo? culture)
 	{
 		if (parameter is not Array array)
 		{
@@ -55,7 +49,7 @@ public class IndexToArrayItemConverter : ValueConverterExtension, ICommunityTool
 		for (var i = 0; i < array.Length; i++)
 		{
 			var item = array.GetValue(i);
-			if ((item != null && item.Equals(value)) || (item == null && value == null))
+			if ((item is not null && item.Equals(value)) || (item is null && value is null))
 			{
 				return i;
 			}

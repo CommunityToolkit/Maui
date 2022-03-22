@@ -14,8 +14,8 @@ public class IsStringNullOrEmptyConverter_Tests : BaseTest
 	{
 		var isNullOrEmptyConverter = new IsStringNullOrEmptyConverter();
 
-		var convertResult = (bool?)isNullOrEmptyConverter.Convert(value, typeof(bool), null, null);
-		var convertFromResult = isNullOrEmptyConverter.ConvertFrom(value);
+		var convertResult = (bool?)((ICommunityToolkitValueConverter)isNullOrEmptyConverter).Convert(value, typeof(bool), null, null);
+		var convertFromResult = isNullOrEmptyConverter.ConvertFrom(value, typeof(bool), null, null);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
@@ -27,8 +27,8 @@ public class IsStringNullOrEmptyConverter_Tests : BaseTest
 	[InlineData('c')]
 	public void IsNullOrEmptyConverter_InvalidValue(object value)
 	{
-		var isNotNullOrEmptyConverter = new IsStringNullOrEmptyConverter();
+		var isNullOrEmptyConverter = new IsStringNullOrEmptyConverter();
 
-		Assert.Throws<ArgumentException>(() => isNotNullOrEmptyConverter.Convert(value, typeof(bool), null, null));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)isNullOrEmptyConverter).Convert(value, typeof(bool), null, null));
 	}
 }
