@@ -57,6 +57,6 @@ public class MultiMathExpressionConverter : MultiValueConverterExtension, ICommu
 	/// <param name="parameter">N/A</param>
 	/// <param name="culture">N/A</param>
 	/// <returns>N/A</returns>
-	public object[]? ConvertBack(object? value, Type[]? targetTypes, object? parameter, CultureInfo? culture)
+	public object[]? ConvertBack(object? value, Type[] targetTypes, object? parameter, CultureInfo? culture)
 		=> throw new NotSupportedException("Impossible to revert to original value. Consider setting BindingMode to OneWay.");
 }
