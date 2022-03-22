@@ -9,11 +9,6 @@ public partial class CharactersValidationBehaviorPage : BasePage<CharactersValid
 		: base(deviceInfo, charactersValidationBehaviorViewModel)
 	{
 		InitializeComponent();
-
-		Page ??= this;
-		CharacterTypePicker ??= new Picker();
-		MinimumCharacterCountEntry ??= new Entry();
-		MaximumCharacterCountEntry ??= new Entry();
 	}
 
 	public IReadOnlyList<CharacterType> CharacterTypes { get; } =
