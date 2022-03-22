@@ -21,8 +21,8 @@ public class IsListNotNullOrEmptyConverter_Tests : BaseTest
 	{
 		var listIsNotNullOrEmptyConverter = new IsListNotNullOrEmptyConverter();
 
-		var convertResult = (bool?)listIsNotNullOrEmptyConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
-		var convertFromResult = listIsNotNullOrEmptyConverter.ConvertFrom(value);
+		var convertResult = (bool?)((ICommunityToolkitValueConverter)listIsNotNullOrEmptyConverter).Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
+		var convertFromResult = listIsNotNullOrEmptyConverter.ConvertFrom(value, typeof(bool), null, CultureInfo.CurrentCulture);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
@@ -36,6 +36,6 @@ public class IsListNotNullOrEmptyConverter_Tests : BaseTest
 	{
 		var listIsNotNullOrEmptyConverter = new IsListNotNullOrEmptyConverter();
 
-		Assert.Throws<ArgumentException>(() => listIsNotNullOrEmptyConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)listIsNotNullOrEmptyConverter).Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
 	}
 }

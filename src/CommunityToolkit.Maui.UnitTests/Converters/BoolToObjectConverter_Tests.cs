@@ -14,14 +14,20 @@ public class BoolToObjectConverter_Tests : BaseTest
 	[InlineData(false, TrueTestObject, FalseTestObject, FalseTestObject)]
 	public void BoolToObjectConvert(bool value, object trueObject, object falseObject, object expectedResult)
 	{
-		var boolObjectConverter = new BoolToObjectConverter();
-		boolObjectConverter.TrueObject = trueObject;
-		boolObjectConverter.FalseObject = falseObject;
+		var boolObjectConverter = new BoolToObjectConverter
+		{
+			TrueObject = trueObject,
+			FalseObject = falseObject
+		};
 
-		var result = boolObjectConverter.Convert(value, typeof(object), null, CultureInfo.CurrentCulture);
+		var convertResult = ((ICommunityToolkitValueConverter)boolObjectConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture);
+		var convertFromResult = boolObjectConverter.ConvertFrom(value, typeof(object), null, CultureInfo.CurrentCulture);
 
-		Assert.NotNull(result);
-		Assert.Equal(result, expectedResult);
+		Assert.NotNull(convertResult);
+		Assert.NotNull(convertFromResult);
+
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
 	}
 
 	[Theory]
@@ -29,20 +35,27 @@ public class BoolToObjectConverter_Tests : BaseTest
 	[InlineData(FalseTestObject, TrueTestObject, FalseTestObject, false)]
 	public void BoolToObjectConvertBack(object value, object trueObject, object falseObject, bool expectedResult)
 	{
-		var boolObjectConverter = new BoolToObjectConverter();
-		boolObjectConverter.TrueObject = trueObject;
-		boolObjectConverter.FalseObject = falseObject;
+		var boolObjectConverter = new BoolToObjectConverter
+		{
+			TrueObject = trueObject,
+			FalseObject = falseObject
+		};
 
-		var result = (bool)boolObjectConverter.ConvertBack(value, typeof(object), null, CultureInfo.CurrentCulture);
+		var convertBackResult = (bool?)((ICommunityToolkitValueConverter)boolObjectConverter).ConvertBack(value, typeof(bool), null, CultureInfo.CurrentCulture);
+		var convertBackToResult = boolObjectConverter.ConvertBackTo(value, typeof(bool), null, CultureInfo.CurrentCulture);
 
-		Assert.Equal(result, expectedResult);
+		Assert.Equal(expectedResult, convertBackResult);
+		Assert.Equal(expectedResult, convertBackToResult);
 	}
 
 	[Theory]
-	[InlineData("")]
-	public void BoolToObjectInValidValuesThrowArgumenException(object value)
+	[InlineData(0)]
+	[InlineData(5.5)]
+	[InlineData('c')]
+	[InlineData("abc")]
+	public void BoolToObjectInvalidValuesThrowArgumentException(object value)
 	{
 		var boolObjectConverter = new BoolToObjectConverter();
-		Assert.Throws<ArgumentException>(() => boolObjectConverter.Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)boolObjectConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
 	}
 }
