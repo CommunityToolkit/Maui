@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core.Views;
-using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
@@ -14,7 +13,7 @@ public partial class DrawingViewViewModel : BaseViewModel
 	{
 		this.deviceDisplay = deviceDisplay;
 		
-		DrawingLineCompletedCommand = new Command<DrawingLineCompletedEventArgs>(line =>
+		DrawingLineCompletedCommand = new Command<DrawingLine> (line =>
 		{
 			Logs += $"GestureCompletedCommand executed. Line points count: {line.Points.Count}" + Environment.NewLine;
 		});
@@ -24,7 +23,7 @@ public partial class DrawingViewViewModel : BaseViewModel
 		AddNewLineCommand = new Command<IDrawingView>(drawingView => {
 			var width = double.IsNaN(drawingView.Width) ? 200 : drawingView.Width;
 			var height = double.IsNaN(drawingView.Height) ? 200 : drawingView.Height;
-			Lines.Add(new Line()
+			Lines.Add(new DrawingLine()
 			{
 				Points = new(GeneratePoints(10, width, height)),
 				LineColor = Color.FromRgb(Random.Shared.Next(255), Random.Shared.Next(255), Random.Shared.Next(255)),
@@ -36,7 +35,7 @@ public partial class DrawingViewViewModel : BaseViewModel
 	}
 
 	[ObservableProperty]
-	ObservableCollection<ILine> lines = new();
+	ObservableCollection<DrawingLine> lines = new();
 
 	[ObservableProperty]
 	string logs = string.Empty;

@@ -45,7 +45,7 @@ public partial class MauiDrawingView : UIView
 		currentPath.MoveTo(previousPoint);
 		currentLine = new MauiDrawingLine
 		{
-			Points = new ObservableCollection<Point>()
+			Points = new ObservableCollection<CGPoint>()
 			{
 				new (previousPoint.X.Value, previousPoint.Y.Value)
 			}

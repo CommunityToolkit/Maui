@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using CommunityToolkit.Maui.Converters;
-using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;

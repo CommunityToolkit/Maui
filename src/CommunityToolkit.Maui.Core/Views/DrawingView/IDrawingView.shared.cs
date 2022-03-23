@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Windows.Input;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -11,8 +10,8 @@ public interface IDrawingView : IView
 	/// <summary>
 	/// Event occurred when drawing line completed
 	/// </summary>
-	/// <param name="drawingLineCompletedEventArgs">Last drawing <see cref="ILine"/></param>
-	void DrawingLineCompleted(DrawingLineCompletedEventArgs drawingLineCompletedEventArgs);
+	/// <param name="lastDrawingLine">Last drawing line</param>
+	void DrawingLineCompleted(DrawingLine lastDrawingLine);
 
 	/// <summary>
 	/// The <see cref="Color"/> that is used by default to draw a line on the <see cref="IDrawingView"/>. This is a bindable property.
@@ -27,7 +26,7 @@ public interface IDrawingView : IView
 	/// <summary>
 	/// The collection of lines that are currently on the <see cref="IDrawingView"/>. This is a bindable property.
 	/// </summary>
-	ObservableCollection<ILine> Lines { get; }
+	ObservableCollection<DrawingLine> Lines { get; }
 
 	/// <summary>
 	/// Toggles multi-line mode. When true, multiple lines can be drawn on the <see cref="IDrawingView"/> while the tap/click is released in-between lines.

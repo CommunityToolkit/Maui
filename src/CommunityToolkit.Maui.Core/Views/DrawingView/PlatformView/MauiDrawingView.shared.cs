@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Windows.Input;
 using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Core.Views;

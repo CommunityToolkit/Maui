@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.Core.Views;
+﻿using CommunityToolkit.Maui.Core.Views;
+
+namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// Contains last drawing line

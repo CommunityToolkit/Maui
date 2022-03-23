@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core.Views;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
 
@@ -35,19 +36,19 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 		DrawImage(lines);
 	}
 
-	void DrawImage(in IEnumerable<ILine> lines)
+	void DrawImage(in IEnumerable<DrawingLine> lines)
 	{
 		var stream = DrawingView.GetImageStream(lines, new Size(GestureImage.Width, GestureImage.Height), Colors.Gray);
 		GestureImage.Source = ImageSource.FromStream(() => stream);
 	}
 
-	IEnumerable<ILine> GenerateLines(int count)
+	IEnumerable<DrawingLine> GenerateLines(int count)
 	{
 		var width = double.IsNaN(DrawingViewControl.Width) ? 200 : DrawingViewControl.Width;
 		var height = double.IsNaN(DrawingViewControl.Height) ? 200 : DrawingViewControl.Height;
 		for (var i = 0; i < count; i++)
 		{
-			yield return new Line()
+			yield return new DrawingLine()
 			{
 				Points = new(BindingContext.GeneratePoints(10, width, height)),
 				LineColor = Color.FromRgb(Random.Shared.Next(255), Random.Shared.Next(255), Random.Shared.Next(255)),
@@ -60,15 +61,7 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 
 	void OnDrawingLineCompleted(object sender, DrawingLineCompletedEventArgs e)
 	{
-		var line = new Line()
-		{
-			Points = e.Points,
-			LineWidth = e.LineWidth,
-			Granularity = e.Granularity,
-			EnableSmoothedPath = e.EnableSmoothedPath,
-			LineColor = e.LineColor
-		};
-		var stream = line.GetImageStream(GestureImage.Width, GestureImage.Height, Colors.Gray);
+		var stream = e.LastDrawingLine.GetImageStream(GestureImage.Width, GestureImage.Height, Colors.Gray);
 		GestureImage.Source = ImageSource.FromStream(() => stream);
 	}
 }

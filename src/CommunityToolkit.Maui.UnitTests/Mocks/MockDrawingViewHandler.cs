@@ -76,11 +76,9 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>
 		{
 			Lines.Add(new MauiDrawingLine()
 			{
-				LineColor = line.LineColor,
 				EnableSmoothedPath = line.EnableSmoothedPath,
 				Granularity = line.Granularity,
-				LineWidth = line.LineWidth,
-				Points = line.Points
+				LineWidth = line.LineWidth
 			});
 		}
 	}

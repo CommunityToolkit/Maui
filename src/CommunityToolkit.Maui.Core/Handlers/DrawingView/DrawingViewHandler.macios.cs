@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Core.Extensions;
+using CoreGraphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 
@@ -79,13 +80,13 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 
 	void OnPlatformViewDrawingLineCompleted(object? sender, MauiDrawingLineCompletedEventArgs e)
 	{
-		VirtualView.DrawingLineCompleted(new DrawingLineCompletedEventArgs()
+		VirtualView.DrawingLineCompleted(new DrawingLine
 		{
-			LineColor = e.Line.LineColor,
+			LineColor = e.Line.LineColor.ToColor() ?? Colors.Black,
 			EnableSmoothedPath = e.Line.EnableSmoothedPath,
 			Granularity = e.Line.Granularity,
 			LineWidth = e.Line.LineWidth,
-			Points = e.Line.Points
+			Points = e.Line.Points.Select(p => new Point(p.X, p.Y)).ToObservableCollection()
 		});
 	}
 
@@ -96,21 +97,22 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 
 	static void UpdateLines(IDrawingView virtualView, MauiDrawingView platformView)
 	{
-		platformView.Lines.Clear();
+		var lines = virtualView.Lines;
 		if (!virtualView.MultiLineMode && virtualView.Lines.Count > 1)
 		{
-			throw new InvalidOperationException("Only 1 line is allowed with multiline mode");
+			lines = lines.TakeLast(1).ToObservableCollection();
 		}
 
-		foreach (var line in virtualView.Lines)
+		platformView.Lines.Clear();
+		foreach (var line in lines)
 		{
 			platformView.Lines.Add(new MauiDrawingLine()
 			{
-				LineColor = line.LineColor,
+				LineColor = line.LineColor.ToPlatform(),
 				EnableSmoothedPath = line.EnableSmoothedPath,
 				Granularity = line.Granularity,
 				LineWidth = line.LineWidth,
-				Points = line.Points
+				Points = line.Points.Select(p => new CGPoint(p.X, p.Y)).ToObservableCollection()
 			});
 		}
 	}

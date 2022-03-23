@@ -1,14 +1,13 @@
 ﻿using System.Collections.ObjectModel;
-using System.Windows.Input;
 using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Views;
 using CommunityToolkit.Maui.Core.Extensions;
-using Microsoft.Maui.Platform;
 using AColor = Android.Graphics.Color;
 using APaint = Android.Graphics.Paint;
 using APath = Android.Graphics.Path;
+using APoint = Android.Graphics.PointF;
 using AView = Android.Views.View;
 using Point = Microsoft.Maui.Graphics.Point;
 
@@ -63,7 +62,7 @@ public partial class MauiDrawingView : AView
 
 				currentLine = new MauiDrawingLine()
 				{
-					Points = new ObservableCollection<Point>
+					Points = new ObservableCollection<APoint>
 						{
 							new (touchX, touchY)
 						}
@@ -161,9 +160,9 @@ public partial class MauiDrawingView : AView
 		}
 	}
 
-	IList<Point> NormalizePoints(IEnumerable<Point> points)
+	IList<APoint> NormalizePoints(IEnumerable<APoint> points)
 	{
-		var newPoints = new List<Point>();
+		var newPoints = new List<APoint>();
 		foreach (var point in points)
 		{
 			var pointX = point.X;
@@ -220,12 +219,9 @@ public partial class MauiDrawingView : AView
 					? line.Points.SmoothedPathWithGranularity(line.Granularity)
 					: line.Points);
 			path.MoveTo((float)points[0].X, (float)points[0].Y);
-			foreach (var (x, y) in points)
+			foreach (var point in points)
 			{
-				var pointX = (float)x;
-				var pointY = (float)y;
-
-				path.LineTo(pointX, pointY);
+				path.LineTo(point.X, point.Y);
 			}
 
 			canvas.DrawPath(path, drawPaint);

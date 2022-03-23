@@ -1,5 +1,3 @@
-using System.Collections.ObjectModel;
-using System.Windows.Input;
 using CommunityToolkit.Maui.Core.Views;
 using Microsoft.Maui.Platform;
 

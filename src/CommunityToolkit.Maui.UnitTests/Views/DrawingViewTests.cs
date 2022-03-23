@@ -34,10 +34,10 @@ public class DrawingViewTests : BaseHandlerTest
 
 		Assert.NotNull(drawingView.Handler);
 
-		drawingView.Lines.Add(new Line());
+		drawingView.Lines.Add(new DrawingLine());
 		Assert.Single(drawingViewHandler.Lines);
 
-		drawingView.Lines.Add(new Line());
+		drawingView.Lines.Add(new DrawingLine());
 		Assert.Equal(2, drawingViewHandler.Lines.Count);
 	}
 

@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
 
 namespace CommunityToolkit.Maui.Views;
@@ -27,7 +28,7 @@ public class DrawingView : View, IDrawingView
 	/// Backing BindableProperty for the <see cref="Lines"/> property.
 	/// </summary>
 	public static readonly BindableProperty LinesProperty = BindableProperty.Create(
-		nameof(Lines), typeof(ObservableCollection<ILine>), typeof(DrawingView), new ObservableCollection<ILine>(), BindingMode.TwoWay);
+		nameof(Lines), typeof(ObservableCollection<DrawingLine>), typeof(DrawingView), new ObservableCollection<DrawingLine>(), BindingMode.TwoWay);
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="DrawingLineCompletedCommand"/> property.
@@ -88,9 +89,9 @@ public class DrawingView : View, IDrawingView
 	/// <summary>
 	/// The collection of lines that are currently on the <see cref="DrawingView"/>. This is a bindable property.
 	/// </summary>
-	public ObservableCollection<ILine> Lines
+	public ObservableCollection<DrawingLine> Lines
 	{
-		get => (ObservableCollection<ILine>)GetValue(LinesProperty);
+		get => (ObservableCollection<DrawingLine>)GetValue(LinesProperty);
 		set => SetValue(LinesProperty, value);
 	}
 
@@ -126,13 +127,13 @@ public class DrawingView : View, IDrawingView
 	public Stream GetImageStream(double imageSizeWidth, double imageSizeHeight) => DrawingViewService.GetImageStream(Lines.ToList(), new Size(imageSizeWidth, imageSizeHeight), BackgroundColor);
 
 	/// <summary>
-	/// Retrieves a <see cref="Stream"/> containing an image of the collection of <see cref="Line"/> that is provided as a parameter.
+	/// Retrieves a <see cref="Stream"/> containing an image of the collection of <see cref="DrawingLine"/> that is provided as a parameter.
 	/// </summary>
-	/// <param name="lines">A collection of <see cref="Line"/> that a image is generated from.</param>
+	/// <param name="lines">A collection of <see cref="DrawingLine"/> that a image is generated from.</param>
 	/// <param name="imageSize">The desired dimensions of the generated image.</param>
 	/// <param name="backgroundColor">Background color of the generated image.</param>
 	/// <returns><see cref="Stream"/> containing the data of the requested image with data that's provided through the <paramref name="lines"/> parameter.</returns>
-	public static Stream GetImageStream(IEnumerable<ILine> lines,
+	public static Stream GetImageStream(IEnumerable<DrawingLine> lines,
 		Size imageSize,
 		Color backgroundColor) =>
 		DrawingViewService.GetImageStream(lines.ToList(), imageSize, backgroundColor);
@@ -140,14 +141,14 @@ public class DrawingView : View, IDrawingView
 	/// <summary>
 	/// Executes DrawingLineCompleted event and DrawingLineCompletedCommand
 	/// </summary>
-	/// <param name="drawingLineCompletedEventArgs">Last drawing line</param>
-	void IDrawingView.DrawingLineCompleted(DrawingLineCompletedEventArgs drawingLineCompletedEventArgs)
+	/// <param name="lastDrawingLine">Last drawing line</param>
+	void IDrawingView.DrawingLineCompleted(DrawingLine lastDrawingLine)
 	{
-		drawingLineCompletedEventManager.HandleEvent(this, drawingLineCompletedEventArgs, nameof(DrawingLineCompleted));
+		drawingLineCompletedEventManager.HandleEvent(this, new DrawingLineCompletedEventArgs(lastDrawingLine), nameof(DrawingLineCompleted));
 
-		if (DrawingLineCompletedCommand?.CanExecute(drawingLineCompletedEventArgs) ?? false)
+		if (DrawingLineCompletedCommand?.CanExecute(lastDrawingLine) ?? false)
 		{
-			DrawingLineCompletedCommand.Execute(drawingLineCompletedEventArgs);
+			DrawingLineCompletedCommand.Execute(lastDrawingLine);
 		}
 	}
 }

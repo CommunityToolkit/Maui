@@ -1,5 +1,10 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Maui.Core.Views;
+#if ANDROID
+using Point = Android.Graphics.PointF;
+# elif IOS || MACCATALYST
+using Point = CoreGraphics.CGPoint;
+#endif
 
 namespace CommunityToolkit.Maui.Core.Extensions;
 

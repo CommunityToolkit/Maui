@@ -29,7 +29,7 @@ public static partial class DrawingViewService
 	/// <param name="imageSize">Image size</param>
 	/// <param name="backgroundColor">Image background color</param>
 	/// <returns>Image stream</returns>
-	public static Stream GetImageStream(IList<ILine> lines,
+	public static Stream GetImageStream(IList<DrawingLine> lines,
 		Size imageSize,
 		Color backgroundColor) =>
 		Stream.Null;
