@@ -3,12 +3,12 @@ using System.Windows.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-public class ItemSelectedEventArgsConverterViewModel : BaseViewModel
+public class SelectedItemEventArgsConverterViewModel : BaseViewModel
 {
 	string? itemSelected;
 	string labelText = "This label will display the selected item";
 
-	public ItemSelectedEventArgsConverterViewModel()
+	public SelectedItemEventArgsConverterViewModel()
 	{
 		ItemSelectedCommand = new Command<string>(UpdateLabelText);
 	}

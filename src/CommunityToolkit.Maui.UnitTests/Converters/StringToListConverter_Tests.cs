@@ -19,30 +19,40 @@ public class StringToListConverter_Tests : BaseTest
 
 	[Theory]
 	[MemberData(nameof(ListData))]
-	public void StringToListConverter(object? value, object? parameter, object? expectedResult)
+	public void StringToListConverter(string? value, object? parameter, object? expectedResult)
 	{
 		var stringToListConverter = new StringToListConverter();
 
-		var result = (IEnumerable<string>)stringToListConverter.Convert(value, typeof(IEnumerable<string>), parameter, null);
+		var convertFromResult = stringToListConverter.ConvertFrom(value, typeof(IList<string>), parameter, null);
+		var convertResult = (IEnumerable<string>?)((ICommunityToolkitValueConverter)stringToListConverter).Convert(value, typeof(IList<string>), parameter, null);
 
-		Assert.Equal(expectedResult, result);
+		Assert.Equal(expectedResult, convertFromResult);
+		Assert.Equal(expectedResult, convertResult);
 	}
 
 	[Theory]
 	[InlineData(0)]
-	public void InValidConverterValuesThrowArgumenException(object value)
+	[InlineData(5.5)]
+	[InlineData('c')]
+	[InlineData(true)]
+	[InlineData("abc")]
+	public void InvalidConverterValuesThrowArgumentException(object value)
 	{
 		var listToStringConverter = new ListToStringConverter();
 
-		Assert.Throws<ArgumentException>(() => listToStringConverter.Convert(value, typeof(IEnumerable<string>), null, null));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)listToStringConverter).Convert(value, typeof(IList<string>), null, null));
 	}
 
 	[Theory]
 	[InlineData(0)]
-	public void InValidConverterParametersThrowArgumenException(object parameter)
+	[InlineData(5.5)]
+	[InlineData('c')]
+	[InlineData(true)]
+	[InlineData("abc")]
+	public void InvalidConverterParametersThrowArgumentException(object parameter)
 	{
 		var listToStringConverter = new ListToStringConverter();
 
-		Assert.Throws<ArgumentException>(() => listToStringConverter.Convert(Array.Empty<object>(), typeof(IEnumerable<string>), parameter, null));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)listToStringConverter).Convert(Array.Empty<object>(), typeof(IList<string>), parameter, null));
 	}
 }

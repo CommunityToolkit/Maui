@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converters for Math expressions
 /// </summary>
-public class MathExpressionConverter : BaseConverterOneWay
+public class MathExpressionConverter : BaseConverterOneWay<double, double>
 {
 	/// <summary>
 	/// Calculate the incoming expression string with one variable.
@@ -16,19 +16,14 @@ public class MathExpressionConverter : BaseConverterOneWay
 	/// <param name="parameter">The expression to calculate.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>A <see cref="double"/> The result of calculating an expression.</returns>
-	public override object? Convert(object? value, Type? targetType, [NotNull] object? parameter, CultureInfo? culture)
+	public override double ConvertFrom(double value, Type targetType, [NotNull] object? parameter, CultureInfo? culture)
 	{
 		if (parameter is not string expression)
 		{
 			throw new ArgumentException("The parameter should be of type String");
 		}
 
-		if (value == null || !double.TryParse(value.ToString(), out var xValue))
-		{
-			return null;
-		}
-
-		var math = new MathExpression(expression, new[] { xValue });
+		var math = new MathExpression(expression, new[] { value });
 
 		var result = math.Calculate();
 		return result;

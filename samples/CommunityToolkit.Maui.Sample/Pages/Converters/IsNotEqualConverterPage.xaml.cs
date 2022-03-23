@@ -2,9 +2,9 @@
 
 namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
-public partial class NotEqualConverterPage : BasePage<NotEqualConverterViewModel>
+public partial class IsNotEqualConverterPage : BasePage<IsNotEqualConverterViewModel>
 {
-	public NotEqualConverterPage(IDeviceInfo deviceInfo, NotEqualConverterViewModel notEqualConverterViewModel)
+	public IsNotEqualConverterPage(IDeviceInfo deviceInfo, IsNotEqualConverterViewModel notEqualConverterViewModel)
 		: base(deviceInfo, notEqualConverterViewModel)
 	{
 		InitializeComponent();

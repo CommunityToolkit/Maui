@@ -15,8 +15,8 @@ public class IsStringNotNullOrWhiteSpaceConverter_Tests : BaseTest
 	{
 		var isNotNullOrWhiteSpaceConverter = new IsStringNotNullOrWhiteSpaceConverter();
 
-		var convertResult = (bool?)isNotNullOrWhiteSpaceConverter.Convert(value, typeof(bool), null, null);
-		var convertFromResult = isNotNullOrWhiteSpaceConverter.ConvertFrom(value);
+		var convertResult = (bool?)((ICommunityToolkitValueConverter)isNotNullOrWhiteSpaceConverter).Convert(value, typeof(bool), null, null);
+		var convertFromResult = isNotNullOrWhiteSpaceConverter.ConvertFrom(value, typeof(bool), null, null);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
@@ -30,6 +30,6 @@ public class IsStringNotNullOrWhiteSpaceConverter_Tests : BaseTest
 	{
 		var isNotNullOrWhiteSpaceConverter = new IsStringNotNullOrWhiteSpaceConverter();
 
-		Assert.Throws<ArgumentException>(() => isNotNullOrWhiteSpaceConverter.Convert(value, typeof(bool), null, null));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)isNotNullOrWhiteSpaceConverter).Convert(value, typeof(bool), null, null));
 	}
 }

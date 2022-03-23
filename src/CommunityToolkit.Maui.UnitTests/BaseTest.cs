@@ -43,11 +43,8 @@ public abstract class BaseTest : IDisposable
 		isDisposed = true;
 	}
 
-	protected static Task<Stream> GetStreamFromImageSource(ImageSource imageSource, CancellationToken token)
-	{
-		var streamImageSource = (StreamImageSource)imageSource;
-		return streamImageSource.Stream(token);
-	}
+	protected static Task<Stream> GetStreamFromImageSource(StreamImageSource imageSource, CancellationToken token)
+		=> imageSource.Stream(token);
 
 	protected static bool StreamEquals(Stream a, Stream b)
 	{
