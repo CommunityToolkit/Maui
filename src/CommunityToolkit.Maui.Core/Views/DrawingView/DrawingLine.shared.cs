@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 public class DrawingLine
 {
 	const int minValueGranularity = 5;
-	int granularity;
+	int granularity = 5;
 
 	/// <summary>
 	/// The <see cref="Color"/> that is used to draw this line on the <see cref="IDrawingView"/>.

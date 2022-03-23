@@ -47,4 +47,31 @@ public static partial class MauiDrawingViewExtensions
 	{
 		mauiDrawingView.LineWidth = lineWidth;
 	}
+
+	/// <summary>
+	/// Set Lines
+	/// </summary>
+	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/><see cref="MauiDrawingView"/></param>
+	/// <param name="drawingView"><see cref="IDrawingView"/></param>
+	public static void SetLines(this MauiDrawingView mauiDrawingView, IDrawingView drawingView)
+	{
+		var lines = drawingView.Lines;
+		if (!drawingView.MultiLineMode && drawingView.Lines.Count > 1)
+		{
+			lines = lines.TakeLast(1).ToObservableCollection();
+		}
+
+		mauiDrawingView.Lines.Clear();
+		foreach (var line in lines)
+		{
+			mauiDrawingView.Lines.Add(new MauiDrawingLine()
+			{
+				LineColor = line.LineColor.ToPlatform(),
+				EnableSmoothedPath = line.EnableSmoothedPath,
+				Granularity = line.Granularity,
+				LineWidth = line.LineWidth,
+				Points = line.Points.Select(p => new Point((float)p.X, (float)p.Y)).ToObservableCollection()
+			});
+		}
+	}
 }
