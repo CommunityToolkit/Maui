@@ -170,9 +170,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	{
 		VirtualView.DrawingLineCompleted(new DrawingLine
 		{
-#if !WINDOWS
 			LineColor = e.Line.LineColor.ToColor() ?? Colors.Black,
-#endif
 			EnableSmoothedPath = e.Line.EnableSmoothedPath,
 			Granularity = e.Line.Granularity,
 			LineWidth = e.Line.LineWidth,
