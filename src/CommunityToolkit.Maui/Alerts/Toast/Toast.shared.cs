@@ -78,12 +78,12 @@ public partial class Toast : IToast
 	/// <summary>
 	/// Show Toast
 	/// </summary>
-	public virtual Task Show(CancellationToken token = default) => Dispatcher.GetForCurrentThread().DispatchIfRequiredAsync(() => ShowNative(token));
+	public virtual Task Show(CancellationToken token = default) => MainThread.InvokeOnMainThreadAsync(() => ShowNative(token));
 
 	/// <summary>
 	/// Dismiss Toast
 	/// </summary>
-	public virtual Task Dismiss(CancellationToken token = default) => Dispatcher.GetForCurrentThread().DispatchIfRequiredAsync(() => DismissNative(token));
+	public virtual Task Dismiss(CancellationToken token = default) => MainThread.InvokeOnMainThreadAsync(() => DismissNative(token));
 
 	/// <summary>
 	/// Dispose Toast
@@ -100,7 +100,7 @@ public partial class Toast : IToast
 #if ANDROID
 	protected virtual async ValueTask DisposeAsyncCore()
 	{
-		await Dispatcher.GetForCurrentThread().DispatchIfRequiredAsync(() => NativeToast?.Dispose());
+		await MainThread.InvokeOnMainThreadAsync(() => NativeToast?.Dispose());
 	}
 #else
 	protected virtual ValueTask DisposeAsyncCore()

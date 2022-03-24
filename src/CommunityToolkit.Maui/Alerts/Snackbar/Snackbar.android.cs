@@ -39,7 +39,7 @@ public partial class Snackbar
 		await DismissNative(token);
 		token.ThrowIfCancellationRequested();
 
-		var rootView = Microsoft.Maui.Essentials.Platform.GetCurrentActivity(true).Window?.DecorView.FindViewById(Android.Resource.Id.Content)
+		var rootView = Microsoft.Maui.Essentials.Platform.CurrentActivity.Window?.DecorView.FindViewById(Android.Resource.Id.Content)?.RootView
 			?? throw new NotSupportedException("Unable to retrieve snackbar parent");
 
 		NativeSnackbar = Google.Android.Material.Snackbar.Snackbar.Make(rootView, Text, (int)Duration.TotalMilliseconds);
