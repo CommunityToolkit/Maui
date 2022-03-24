@@ -2,11 +2,11 @@
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Dispatching;
 #if ANDROID
-using NativeToast = Android.Widget.Toast;
+using PlatformToast = Android.Widget.Toast;
 #elif IOS || MACCATALYST
-using NativeToast = CommunityToolkit.Maui.Core.Views.ToastView;
+using PlatformToast = CommunityToolkit.Maui.Core.Views.ToastView;
 #elif WINDOWS
-using NativeToast = Windows.UI.Notifications.ToastNotification;
+using PlatformToast = Windows.UI.Notifications.ToastNotification;
 #endif
 
 namespace CommunityToolkit.Maui.Alerts;
@@ -78,12 +78,12 @@ public partial class Toast : IToast
 	/// <summary>
 	/// Show Toast
 	/// </summary>
-	public virtual Task Show(CancellationToken token = default) => MainThread.InvokeOnMainThreadAsync(() => ShowNative(token));
+	public virtual Task Show(CancellationToken token = default) => MainThread.InvokeOnMainThreadAsync(() => ShowPlatform(token));
 
 	/// <summary>
 	/// Dismiss Toast
 	/// </summary>
-	public virtual Task Dismiss(CancellationToken token = default) => MainThread.InvokeOnMainThreadAsync(() => DismissNative(token));
+	public virtual Task Dismiss(CancellationToken token = default) => MainThread.InvokeOnMainThreadAsync(() => DismissPlatform(token));
 
 	/// <summary>
 	/// Dispose Toast
@@ -100,7 +100,7 @@ public partial class Toast : IToast
 #if ANDROID
 	protected virtual async ValueTask DisposeAsyncCore()
 	{
-		await MainThread.InvokeOnMainThreadAsync(() => NativeToast?.Dispose());
+		await MainThread.InvokeOnMainThreadAsync<>(() => PlatformToast?.Dispose());
 	}
 #else
 	protected virtual ValueTask DisposeAsyncCore()
@@ -122,38 +122,38 @@ public partial class Toast : IToast
 #endif
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS
-	static NativeToast? nativeToast;
+	static PlatformToast? platformToast;
 
-	static NativeToast? NativeToast
+	static PlatformToast? PlatformToast
 	{
 		get
 		{
 			return MainThread.IsMainThread
-				? nativeToast
-				: throw new InvalidOperationException($"{nameof(nativeToast)} can only be called from the Main Thread");
+				? platformToast
+				: throw new InvalidOperationException($"{nameof(platformToast)} can only be called from the Main Thread");
 		}
 		set
 		{
 			if (!MainThread.IsMainThread)
 			{
-				throw new InvalidOperationException($"{nameof(nativeToast)} can only be called from the Main Thread");
+				throw new InvalidOperationException($"{nameof(platformToast)} can only be called from the Main Thread");
 			}
 
-			nativeToast = value;
+			platformToast = value;
 		}
 	}
 #endif
 
 
-	private partial void ShowNative(CancellationToken token);
+	private partial void ShowPlatform(CancellationToken token);
 
-	private partial void DismissNative(CancellationToken token);
+	private partial void DismissPlatform(CancellationToken token);
 
 #if !(IOS || ANDROID || MACCATALYST || WINDOWS)
 	/// <summary>
 	/// Show Toast
 	/// </summary>
-	private partial void ShowNative(CancellationToken token)
+	private partial void ShowPlatform(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 	}
@@ -161,7 +161,7 @@ public partial class Toast : IToast
 	/// <summary>
 	/// Dismiss Toast
 	/// </summary>
-	private partial void DismissNative(CancellationToken token)
+	private partial void DismissPlatform(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 	}

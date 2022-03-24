@@ -2,11 +2,11 @@ using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Dispatching;
 
 #if ANDROID
-using NativeSnackbar = Google.Android.Material.Snackbar.Snackbar;
+using PlatformSnackbar = Google.Android.Material.Snackbar.Snackbar;
 #elif IOS || MACCATALYST
-using NativeSnackbar = CommunityToolkit.Maui.Core.Views.SnackbarView;
+using PlatformSnackbar = CommunityToolkit.Maui.Core.Views.SnackbarView;
 #elif WINDOWS
-using NativeSnackbar = Windows.UI.Notifications.ToastNotification;
+using PlatformSnackbar = Windows.UI.Notifications.ToastNotification;
 #endif
 
 namespace CommunityToolkit.Maui.Alerts;
@@ -103,18 +103,18 @@ public partial class Snackbar : ISnackbar
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	public virtual Task Show(CancellationToken token = default) => MainThread.InvokeOnMainThreadAsync(() => ShowNative(token));
+	public virtual Task Show(CancellationToken token = default) => MainThread.InvokeOnMainThreadAsync(() => ShowPlatform(token));
 
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
-	public virtual Task Dismiss(CancellationToken token = default) => MainThread.InvokeOnMainThreadAsync(() => DismissNative(token));
+	public virtual Task Dismiss(CancellationToken token = default) => MainThread.InvokeOnMainThreadAsync(() => DismissPlatform(token));
 
 	internal static TimeSpan GetDefaultTimeSpan() => TimeSpan.FromSeconds(3);
 
 #if !(IOS || ANDROID || MACCATALYST || WINDOWS)
 	/// <inheritdoc/>
-	private partial Task ShowNative(CancellationToken token)
+	private partial Task ShowPlatform(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 
@@ -124,7 +124,7 @@ public partial class Snackbar : ISnackbar
 	}
 
 	/// <inheritdoc/>
-	private partial Task DismissNative(CancellationToken token)
+	private partial Task DismissPlatform(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 
@@ -149,7 +149,7 @@ public partial class Snackbar : ISnackbar
 #if ANDROID || IOS || MACCATALYST
 	protected virtual async ValueTask DisposeAsyncCore()
 	{
-		await MainThread.InvokeOnMainThreadAsync(() => NativeSnackbar?.Dispose());
+		await MainThread.InvokeOnMainThreadAsync<>(() => PlatformSnackbar?.Dispose());
 	}
 #else
 	protected virtual ValueTask DisposeAsyncCore()
@@ -160,24 +160,24 @@ public partial class Snackbar : ISnackbar
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS
 
-	static NativeSnackbar? nativeSnackbar;
+	static PlatformSnackbar? platformSnackbar;
 
-	static NativeSnackbar? NativeSnackbar
+	static PlatformSnackbar? PlatformSnackbar
 	{
 		get
 		{
 			return MainThread.IsMainThread
-				? nativeSnackbar
-				: throw new InvalidOperationException($"{nameof(nativeSnackbar)} can only be called from the Main Thread");
+				? platformSnackbar
+				: throw new InvalidOperationException($"{nameof(platformSnackbar)} can only be called from the Main Thread");
 		}
 		set
 		{
 			if (!MainThread.IsMainThread)
 			{
-				throw new InvalidOperationException($"{nameof(nativeSnackbar)} can only be called from the Main Thread");
+				throw new InvalidOperationException($"{nameof(platformSnackbar)} can only be called from the Main Thread");
 			}
 
-			nativeSnackbar = value;
+			platformSnackbar = value;
 		}
 	}
 #endif
@@ -194,9 +194,9 @@ public partial class Snackbar : ISnackbar
 		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Dismissed));
 	}
 
-	private partial Task ShowNative(CancellationToken token);
+	private partial Task ShowPlatform(CancellationToken token);
 
-	private partial Task DismissNative(CancellationToken token);
+	private partial Task DismissPlatform(CancellationToken token);
 }
 
 /// <summary>
