@@ -7,7 +7,7 @@ public partial class MauiDrawingLine
 {
 	const int minValueGranularity = 5;
 
-	int granularity = 5;
+	int granularity = minValueGranularity;
 
 	/// <summary>
 	/// The width that is used to draw this line on the <see cref="MauiDrawingView"/>. This is a bindable property.
