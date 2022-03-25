@@ -8,16 +8,18 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public partial class DrawingViewViewModel : BaseViewModel
 {
+	readonly IDeviceInfo deviceInfo;
 	readonly IDeviceDisplay deviceDisplay;
 
 	[ObservableProperty]
 	string logs = string.Empty;
 
-	public DrawingViewViewModel(IDeviceDisplay deviceDisplay)
+	public DrawingViewViewModel(IDeviceInfo deviceInfo, IDeviceDisplay deviceDisplay)
 	{
+		this.deviceInfo = deviceInfo;
 		this.deviceDisplay = deviceDisplay;
 
-		DrawingLineCompletedCommand = new Command<DrawingLine>(line => Logs += $"GestureCompletedCommand executed. Line points count: {line.Points.Count}" + Environment.NewLine);
+		DrawingLineCompletedCommand = new Command<DrawingLine>(line => Logs = "GestureCompletedCommand executed." + Environment.NewLine + $"Line points count: {line.Points.Count}" + Environment.NewLine + Environment.NewLine + Logs);
 
 		ClearLinesCommand = new Command(Lines.Clear);
 
@@ -45,8 +47,22 @@ public partial class DrawingViewViewModel : BaseViewModel
 
 	public IEnumerable<Point> GeneratePoints(int count, double viewWidth, double viewHeight)
 	{
-		var maxWidthInt = (int)Math.Round(viewWidth * deviceDisplay.GetMainDisplayInfo().Density, MidpointRounding.ToZero);
-		var maxHeightInt = (int)Math.Round(viewHeight * deviceDisplay.GetMainDisplayInfo().Density, MidpointRounding.ToZero);
+		int maxWidthInt, maxHeightInt;
+
+		if (deviceInfo.Platform == DevicePlatform.Android)
+		{
+			maxWidthInt = (int)Math.Round(viewWidth * deviceDisplay.GetMainDisplayInfo().Density, MidpointRounding.ToZero);
+			maxHeightInt = (int)Math.Round(viewHeight * deviceDisplay.GetMainDisplayInfo().Density, MidpointRounding.ToZero);
+		}
+		else if (deviceInfo.Platform == DevicePlatform.iOS || deviceInfo.Platform == DevicePlatform.MacCatalyst)
+		{
+			maxWidthInt = (int)Math.Round(viewWidth, MidpointRounding.ToZero);
+			maxHeightInt = (int)Math.Round(viewHeight, MidpointRounding.ToZero);
+		}
+		else
+		{
+			throw new NotImplementedException();
+		}
 
 		for (var i = 0; i < count; i++)
 		{
