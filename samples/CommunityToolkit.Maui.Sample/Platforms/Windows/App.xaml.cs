@@ -1,7 +1,5 @@
-﻿
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+﻿using System.Diagnostics;
+using Microsoft.UI.Xaml;
 
 namespace CommunityToolkit.Maui.Sample.Windows;
 
@@ -20,4 +18,22 @@ public partial class App : MauiWinUIApplication
 	}
 
 	protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
+
+	static Mutex? mutex;
+
+	protected override void OnLaunched(LaunchActivatedEventArgs args)
+	{
+		const string applicationId = "1F9C3A44-059B-4FBC-9D92-476E59FB937A";
+
+		mutex = new Mutex(true, applicationId, out var createdNew);
+
+		if (!createdNew)
+		{
+			Process.GetCurrentProcess().Kill();
+		}
+		else
+		{
+			base.OnLaunched(args);
+		}
+	}
 }
