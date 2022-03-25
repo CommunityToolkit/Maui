@@ -55,23 +55,76 @@ public static partial class MauiDrawingViewExtensions
 	/// <param name="drawingView"><see cref="IDrawingView"/></param>
 	public static void SetLines(this MauiDrawingView mauiDrawingView, IDrawingView drawingView)
 	{
-		var lines = drawingView.Lines;
-		if (!drawingView.MultiLineMode && drawingView.Lines.Count > 1)
+		if (mauiDrawingView.Lines.Count == drawingView.Lines.Count)
 		{
-			lines = lines.TakeLast(1).ToObservableCollection();
+			return;
 		}
 
-		mauiDrawingView.Lines.Clear();
-		foreach (var line in lines)
+		IReadOnlyList<MauiDrawingLine> lines = drawingView.Lines.ToList();
+		if (!drawingView.MultiLineMode && drawingView.Lines.Count > 1)
 		{
-			mauiDrawingView.Lines.Add(new MauiDrawingLine()
+			lines = lines.TakeLast(1);
+		}
+
+		try
+		{
+			mauiDrawingView.Lines.Clear();
+
+			foreach (var line in lines)
 			{
-				LineColor = line.LineColor.ToPlatform(),
-				EnableSmoothedPath = line.EnableSmoothedPath,
-				Granularity = line.Granularity,
-				LineWidth = line.LineWidth,
-				Points = line.Points.Select(p => new Point((float)p.X, (float)p.Y)).ToObservableCollection()
-			});
+				mauiDrawingView.Lines.Add(new MauiDrawingLine()
+				{
+					LineColor = line.LineColor.ToPlatform(),
+					EnableSmoothedPath = line.EnableSmoothedPath,
+					Granularity = line.Granularity,
+					LineWidth = line.LineWidth,
+					Points = line.Points.Select(p => new Point((float)p.X, (float)p.Y)).ToObservableCollection()
+				});
+			}
+		}
+		catch (InvalidOperationException e) 
+		{
+			// Ignore System.InvalidOperationException: Cannot change ObservableCollection during a CollectionChanged event.
+		}
+	}
+
+	/// <summary>
+	/// Set Lines
+	/// </summary>
+	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/><see cref="MauiDrawingView"/></param>
+	/// <param name="drawingView"><see cref="IDrawingView"/></param>
+	public static void SetLines(this IDrawingView drawingView, MauiDrawingView mauiDrawingView)
+	{
+		if (mauiDrawingView.Lines.Count == drawingView.Lines.Count)
+		{
+			return;
+		}
+
+		IReadOnlyList<DrawingLine> lines = drawingView.Lines.ToList();
+		if (!mauiDrawingView.MultiLineMode && mauiDrawingView.Lines.Count > 1)
+		{
+			lines = lines.TakeLast(1).ToList();
+		}
+
+		try
+		{ 
+			drawingView.Lines.Clear();
+
+			foreach (var line in lines)
+			{
+				drawingView.Lines.Add(new MauiDrawingLine()
+				{
+					LineColor = line.LineColor.ToColor(),
+					EnableSmoothedPath = line.EnableSmoothedPath,
+					Granularity = line.Granularity,
+					LineWidth = line.LineWidth,
+					Points = line.Points.Select(p => new Point(p.X, p.Y)).ToObservableCollection()
+				});
+			}
+		}
+		catch (InvalidOperationException e) 
+		{
+			// Ignore System.InvalidOperationException: Cannot change ObservableCollection during a CollectionChanged event.
 		}
 	}
 }

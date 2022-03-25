@@ -1,7 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Core.Views;
+﻿using System.Collections.Specialized;
+using CommunityToolkit.Maui.Core.Extensions;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
-using CommunityToolkit.Maui.Core.Extensions;
+
+namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// DrawingView handler
@@ -146,15 +148,18 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	{
 		base.ConnectHandler(nativeView);
 		nativeView.Initialize();
-		VirtualView.Lines.CollectionChanged += OnLinesCollectionChanged;
+
 		PlatformView.DrawingLineCompleted += OnPlatformViewDrawingLineCompleted;
+		VirtualView.Lines.CollectionChanged += OnVirtualViewLinesCollectionChanged;
+		PlatformView.Lines.CollectionChanged += OnPlatformViewLinesCollectionChanged;
 	}
 
 	/// <inheritdoc />
 	protected override void DisconnectHandler(MauiDrawingView nativeView)
 	{
 		PlatformView.DrawingLineCompleted -= OnPlatformViewDrawingLineCompleted;
-		VirtualView.Lines.CollectionChanged -= OnLinesCollectionChanged;
+		VirtualView.Lines.CollectionChanged -= OnVirtualViewLinesCollectionChanged;
+		PlatformView.Lines.CollectionChanged -= OnPlatformViewLinesCollectionChanged;
 		nativeView.CleanUp();
 		base.DisconnectHandler(nativeView);
 	}
@@ -178,9 +183,14 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 		});
 	}
 
-	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+	void OnVirtualViewLinesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 	{
 		PlatformView.SetLines(VirtualView);
-	}	
+	}
+
+	void OnPlatformViewLinesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+	{
+		VirtualView.SetLines(PlatformView);
+	}
 }
 #endif
