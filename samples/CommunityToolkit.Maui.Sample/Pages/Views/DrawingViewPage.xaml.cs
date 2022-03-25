@@ -21,9 +21,6 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 		}
 	}
 
-	void DisplayHiddenLabelButtonClicked(object sender, EventArgs e) =>
-		HiddenPanel.IsVisible = !HiddenPanel.IsVisible;
-
 	void GetCurrentDrawingViewImageClicked(object sender, EventArgs e)
 	{
 		var stream = DrawingViewControl.GetImageStream(GestureImage.Width, GestureImage.Height);
