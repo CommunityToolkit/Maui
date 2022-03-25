@@ -64,7 +64,7 @@ public static partial class MauiDrawingViewExtensions
 		IReadOnlyList<DrawingLine> lines = drawingView.Lines.ToList();
 		if (!drawingView.MultiLineMode && drawingView.Lines.Count > 1)
 		{
-			lines = lines.TakeLast(1).ToObservableCollection();
+			lines = lines.TakeLast(1).ToList();
 		}
 
 		try
@@ -115,7 +115,7 @@ public static partial class MauiDrawingViewExtensions
 			{
 				drawingView.Lines.Add(new DrawingLine()
 				{
-					LineColor = line.LineColor.ToColor(),
+					LineColor = line.LineColor.ToColor() ?? Colors.Transparent,
 					EnableSmoothedPath = line.EnableSmoothedPath,
 					Granularity = line.Granularity,
 					LineWidth = line.LineWidth,

@@ -60,10 +60,10 @@ public static partial class MauiDrawingViewExtensions
 			return;
 		}
 
-		IReadOnlyList<MauiDrawingLine> lines = drawingView.Lines.ToList();
+		IReadOnlyList<DrawingLine> lines = drawingView.Lines.ToList();
 		if (!drawingView.MultiLineMode && drawingView.Lines.Count > 1)
 		{
-			lines = lines.TakeLast(1);
+			lines = lines.TakeLast(1).ToList();
 		}
 
 		try
@@ -82,7 +82,7 @@ public static partial class MauiDrawingViewExtensions
 				});
 			}
 		}
-		catch (InvalidOperationException e) 
+		catch (InvalidOperationException) 
 		{
 			// Ignore System.InvalidOperationException: Cannot change ObservableCollection during a CollectionChanged event.
 		}
@@ -100,7 +100,7 @@ public static partial class MauiDrawingViewExtensions
 			return;
 		}
 
-		IReadOnlyList<DrawingLine> lines = drawingView.Lines.ToList();
+		IReadOnlyList<MauiDrawingLine> lines = mauiDrawingView.Lines.ToList();
 		if (!mauiDrawingView.MultiLineMode && mauiDrawingView.Lines.Count > 1)
 		{
 			lines = lines.TakeLast(1).ToList();
@@ -112,9 +112,9 @@ public static partial class MauiDrawingViewExtensions
 
 			foreach (var line in lines)
 			{
-				drawingView.Lines.Add(new MauiDrawingLine()
+				drawingView.Lines.Add(new DrawingLine()
 				{
-					LineColor = line.LineColor.ToColor(),
+					LineColor = line.LineColor.ToColor() ?? Colors.Transparent,
 					EnableSmoothedPath = line.EnableSmoothedPath,
 					Granularity = line.Granularity,
 					LineWidth = line.LineWidth,
@@ -122,7 +122,7 @@ public static partial class MauiDrawingViewExtensions
 				});
 			}
 		}
-		catch (InvalidOperationException e) 
+		catch (InvalidOperationException) 
 		{
 			// Ignore System.InvalidOperationException: Cannot change ObservableCollection during a CollectionChanged event.
 		}
