@@ -146,8 +146,7 @@ public static partial class DrawingViewService
 		return image;
 	}
 
-	static Bitmap? GetBitmapForLines(IList<DrawingLine> lines,
-		Color backgroundColor)
+	static Bitmap? GetBitmapForLines(IList<DrawingLine> lines, Color backgroundColor)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
 		if (points.Count is 0)
