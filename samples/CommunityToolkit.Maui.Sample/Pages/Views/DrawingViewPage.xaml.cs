@@ -27,7 +27,7 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 		GestureImage.Source = ImageSource.FromStream(() => stream);
 	}
 
-	void GetImageClicked(object sender, EventArgs e)
+	void GenerateImageButtonClicked(object sender, EventArgs e)
 	{
 		var lines = GenerateLines(2);
 		DrawImage(lines);

@@ -48,7 +48,7 @@
                 Grid.Row="7" Grid.Column="0"
                 Grid.ColumnSpan="2"
                 BackgroundColor="White"
-                Clicked="GetImageClicked"
+                Clicked="GenerateImageButtonClicked"
                 Text="Generate Image with Random Lines"
                 TextColor="Black" />
             <Image

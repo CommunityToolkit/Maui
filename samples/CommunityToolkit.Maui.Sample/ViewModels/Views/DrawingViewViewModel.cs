@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core.Views;
+using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
@@ -9,20 +10,22 @@ public partial class DrawingViewViewModel : BaseViewModel
 {
 	readonly IDeviceDisplay deviceDisplay;
 
+	[ObservableProperty]
+	string logs = string.Empty;
+
 	public DrawingViewViewModel(IDeviceDisplay deviceDisplay)
 	{
 		this.deviceDisplay = deviceDisplay;
-		
-		DrawingLineCompletedCommand = new Command<DrawingLine> (line =>
-		{
-			Logs += $"GestureCompletedCommand executed. Line points count: {line.Points.Count}" + Environment.NewLine;
-		});
+
+		DrawingLineCompletedCommand = new Command<DrawingLine>(line => Logs += $"GestureCompletedCommand executed. Line points count: {line.Points.Count}" + Environment.NewLine);
 
 		ClearLinesCommand = new Command(Lines.Clear);
 
-		AddNewLineCommand = new Command<IDrawingView>(drawingView => {
+		AddNewLineCommand = new Command<DrawingView>(drawingView =>
+		{
 			var width = double.IsNaN(drawingView.Width) ? 200 : drawingView.Width;
 			var height = double.IsNaN(drawingView.Height) ? 200 : drawingView.Height;
+
 			Lines.Add(new DrawingLine()
 			{
 				Points = new(GeneratePoints(10, width, height)),
@@ -34,11 +37,7 @@ public partial class DrawingViewViewModel : BaseViewModel
 		});
 	}
 
-	[ObservableProperty]
-	ObservableCollection<DrawingLine> lines = new();
-
-	[ObservableProperty]
-	string logs = string.Empty;
+	public ObservableCollection<DrawingLine> Lines { get; } = new();
 
 	public ICommand DrawingLineCompletedCommand { get; }
 	public ICommand ClearLinesCommand { get; }
