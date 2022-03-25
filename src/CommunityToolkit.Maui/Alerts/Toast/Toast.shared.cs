@@ -78,12 +78,12 @@ public partial class Toast : IToast
 	/// <summary>
 	/// Show Toast
 	/// </summary>
-	public virtual Task Show(CancellationToken token = default) => MainThread.InvokeOnMainThreadAsync(() => ShowPlatform(token));
+	public virtual Task Show(CancellationToken token = default) => Dispatcher.GetForCurrentThread().DispatchIfRequiredAsync(() => ShowPlatform(token));
 
 	/// <summary>
 	/// Dismiss Toast
 	/// </summary>
-	public virtual Task Dismiss(CancellationToken token = default) => MainThread.InvokeOnMainThreadAsync(() => DismissPlatform(token));
+	public virtual Task Dismiss(CancellationToken token = default) => Dispatcher.GetForCurrentThread().DispatchIfRequiredAsync(() => DismissPlatform(token));
 
 	/// <summary>
 	/// Dispose Toast
@@ -100,7 +100,7 @@ public partial class Toast : IToast
 #if ANDROID
 	protected virtual async ValueTask DisposeAsyncCore()
 	{
-		await MainThread.InvokeOnMainThreadAsync<>(() => PlatformToast?.Dispose());
+		await Dispatcher.GetForCurrentThread().DispatchIfRequiredAsync(() => PlatformToast?.Dispose());
 	}
 #else
 	protected virtual ValueTask DisposeAsyncCore()
@@ -122,26 +122,7 @@ public partial class Toast : IToast
 #endif
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS
-	static PlatformToast? platformToast;
-
-	static PlatformToast? PlatformToast
-	{
-		get
-		{
-			return MainThread.IsMainThread
-				? platformToast
-				: throw new InvalidOperationException($"{nameof(platformToast)} can only be called from the Main Thread");
-		}
-		set
-		{
-			if (!MainThread.IsMainThread)
-			{
-				throw new InvalidOperationException($"{nameof(platformToast)} can only be called from the Main Thread");
-			}
-
-			platformToast = value;
-		}
-	}
+	static PlatformToast? PlatformToast { get; set; }
 #endif
 
 

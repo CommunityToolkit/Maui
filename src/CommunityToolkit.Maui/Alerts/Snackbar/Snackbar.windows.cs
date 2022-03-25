@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.WinUI.Notifications;
+using Microsoft.Maui.Dispatching;
 using Windows.Data.Xml.Dom;
 using Windows.UI.Notifications;
 
@@ -56,7 +57,7 @@ public partial class Snackbar
 		PlatformSnackbar.Dismissed += OnDismissed;
 		PlatformSnackbar.ExpirationTime = DateTimeOffset.Now.Add(Duration);
 
-		ToastNotificationManager.CreateToastNotifier().Show(platformSnackbar);
+		ToastNotificationManager.CreateToastNotifier().Show(PlatformSnackbar);
 
 		OnShown();
 	}
@@ -65,13 +66,13 @@ public partial class Snackbar
 	{
 		if (PlatformSnackbar is not null && Action is not null)
 		{
-			MainThread.BeginInvokeOnMainThread(Action);
+			Dispatcher.GetForCurrentThread().DispatchIfRequired(Action);
 		}
 	}
 
 	void OnDismissed(ToastNotification sender, ToastDismissedEventArgs args)
 	{
 		dismissedTCS?.TrySetResult(true);
-		MainThread.BeginInvokeOnMainThread(OnDismissed);
+		Dispatcher.GetForCurrentThread().DispatchIfRequired(OnDismissed);
 	}
 }
