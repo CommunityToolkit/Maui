@@ -23,17 +23,37 @@ public partial class App : MauiWinUIApplication
 
 	protected override void OnLaunched(LaunchActivatedEventArgs args)
 	{
-		const string applicationId = "1F9C3A44-059B-4FBC-9D92-476E59FB937A";
-
-		mutex = new Mutex(true, applicationId, out var createdNew);
-
-		if (!createdNew)
+		if (!IsSingleInstance())
 		{
 			Process.GetCurrentProcess().Kill();
 		}
 		else
 		{
 			base.OnLaunched(args);
+		}
+	}
+
+
+	static bool IsSingleInstance()
+	{
+		const string applicationId = "1F9C3A44-059B-4FBC-9D92-476E59FB937A";
+		mutex = new Mutex(false, applicationId);
+
+		// keep the mutex reference alive until the normal 
+		// termination of the program
+		GC.KeepAlive(mutex);
+
+		try
+		{
+			return mutex.WaitOne(0, false);
+		}
+		catch (AbandonedMutexException)
+		{
+			// if one thread acquires a Mutex object 
+			// that another thread has abandoned 
+			// by exiting without releasing it
+			mutex.ReleaseMutex();
+			return mutex.WaitOne(0, false);
 		}
 	}
 }
