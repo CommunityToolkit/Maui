@@ -20,7 +20,7 @@ public partial class MauiDrawingLine
 	public int Granularity
 	{
 		get => granularity;
-		set => granularity = Math.Clamp(value, minValueGranularity, value);
+		set => granularity = Math.Clamp(value, minValueGranularity, int.MaxValue);
 	}
 
 	/// <summary>
