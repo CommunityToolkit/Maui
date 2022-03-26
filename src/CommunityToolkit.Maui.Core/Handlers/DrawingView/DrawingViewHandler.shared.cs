@@ -185,12 +185,16 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 
 	void OnVirtualViewLinesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 	{
+		PlatformView.Lines.CollectionChanged -= OnPlatformViewLinesCollectionChanged;
 		PlatformView.SetLines(VirtualView);
+		PlatformView.Lines.CollectionChanged += OnPlatformViewLinesCollectionChanged;
 	}
 
 	void OnPlatformViewLinesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 	{
+		VirtualView.Lines.CollectionChanged -= OnVirtualViewLinesCollectionChanged;
 		VirtualView.SetLines(PlatformView);
+		VirtualView.Lines.CollectionChanged += OnVirtualViewLinesCollectionChanged;
 	}
 }
 #endif

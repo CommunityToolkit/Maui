@@ -62,30 +62,23 @@ public static partial class MauiDrawingViewExtensions
 		}
 
 		IReadOnlyList<DrawingLine> lines = drawingView.Lines.ToList();
-		if (!drawingView.MultiLineMode && drawingView.Lines.Count > 1)
+		if (!drawingView.MultiLineMode && lines.Count > 1)
 		{
 			lines = lines.TakeLast(1).ToList();
 		}
 
-		try
-		{
-			mauiDrawingView.Lines.Clear();
+		mauiDrawingView.Lines.Clear();
 
-			foreach (var line in lines)
-			{
-				mauiDrawingView.Lines.Add(new MauiDrawingLine()
-				{
-					LineColor = line.LineColor.ToPlatform(),
-					EnableSmoothedPath = line.EnableSmoothedPath,
-					Granularity = line.Granularity,
-					LineWidth = line.LineWidth,
-					Points = line.Points.Select(p => new APoint((float)p.X, (float)p.Y)).ToObservableCollection()
-				});
-			}
-		}
-		catch (InvalidOperationException)
+		foreach (var line in lines)
 		{
-			// Ignore  System.InvalidOperationException: Cannot change ObservableCollection during a CollectionChanged event.
+			mauiDrawingView.Lines.Add(new MauiDrawingLine()
+			{
+				LineColor = line.LineColor.ToPlatform(),
+				EnableSmoothedPath = line.EnableSmoothedPath,
+				Granularity = line.Granularity,
+				LineWidth = line.LineWidth,
+				Points = line.Points.Select(p => new APoint((float)p.X, (float)p.Y)).ToObservableCollection()
+			});
 		}
 	}
 
@@ -107,25 +100,18 @@ public static partial class MauiDrawingViewExtensions
 			lines = lines.TakeLast(1).ToList();
 		}
 
-		try
-		{
-			drawingView.Lines.Clear();
+		drawingView.Lines.Clear();
 
-			foreach (var line in lines)
-			{
-				drawingView.Lines.Add(new DrawingLine()
-				{
-					LineColor = line.LineColor.ToColor() ?? Colors.Transparent,
-					EnableSmoothedPath = line.EnableSmoothedPath,
-					Granularity = line.Granularity,
-					LineWidth = line.LineWidth,
-					Points = line.Points.Select(p => new Point(p.X, p.Y)).ToObservableCollection()
-				});
-			}
-		}
-		catch (InvalidOperationException)
+		foreach (var line in lines)
 		{
-			// Ignore System.InvalidOperationException: Cannot change ObservableCollection during a CollectionChanged event.
+			drawingView.Lines.Add(new DrawingLine()
+			{
+				LineColor = line.LineColor.ToColor() ?? Colors.Transparent,
+				EnableSmoothedPath = line.EnableSmoothedPath,
+				Granularity = line.Granularity,
+				LineWidth = line.LineWidth,
+				Points = line.Points.Select(p => new Point(p.X, p.Y)).ToObservableCollection()
+			});
 		}
 	}
 }
