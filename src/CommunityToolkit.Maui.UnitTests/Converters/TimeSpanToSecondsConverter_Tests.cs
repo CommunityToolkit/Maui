@@ -49,4 +49,15 @@ public class TimeSpanToSecondsConverter_Tests
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)converter).Convert(null, typeof(double), null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)converter).ConvertBack(null, typeof(TimeSpan), null, null));
 	}
+
+	[Fact]
+	public void TimeSpanToSecondsConverterNullInputTest()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new TimeSpanToSecondsConverter()).Convert(TimeSpan.Zero, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new TimeSpanToSecondsConverter()).Convert(null, typeof(double), null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new TimeSpanToSecondsConverter()).ConvertBack(0.0, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new TimeSpanToSecondsConverter()).ConvertBack(null, typeof(TimeSpan), null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
 }

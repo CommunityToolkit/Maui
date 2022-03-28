@@ -36,4 +36,13 @@ public class SelectedItemEventArgsConverter_Tests : BaseTest
 		var itemSelectedEventArgsConverter = new SelectedItemEventArgsConverter();
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)itemSelectedEventArgsConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
 	}
+
+	[Fact]
+	public void SelectedItemEventArgsConverterNullInputTest()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new SelectedItemEventArgsConverter()).Convert(new SelectedItemChangedEventArgs("", 1), null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new SelectedItemEventArgsConverter()).ConvertBack(0.0, null, null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
 }

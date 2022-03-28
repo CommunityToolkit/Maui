@@ -101,4 +101,13 @@ public class EnumToBoolConverter_Tests : BaseTest
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
 	}
+
+	[Fact]
+	public void EnumToBoolConverterNullInputTest()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new EnumToBoolConverter()).Convert(TestEnumForEnumToBoolConverter.Five, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new EnumToBoolConverter()).Convert(null, typeof(bool), null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
 }

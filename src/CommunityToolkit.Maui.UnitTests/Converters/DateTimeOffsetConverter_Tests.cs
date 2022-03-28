@@ -85,6 +85,15 @@ public class DateTimeOffsetConverter_Tests : BaseTest
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)dateTimeOffsetConverter).ConvertBack(invalidData, typeof(DateTimeOffset), null, CultureInfo.CurrentCulture));
 	}
 
+	[Fact]
+	public void DateTimeOffsetConverterNullInputTest()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new DateTimeOffsetConverter()).Convert(DateTimeOffset.UtcNow, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new DateTimeOffsetConverter()).ConvertBack(DateTimeOffset.UtcNow, null, null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
 	class DateTimeOffsetComparer : IEqualityComparer<DateTimeOffset>
 	{
 		public bool Equals(DateTimeOffset x, DateTimeOffset y)

@@ -59,8 +59,9 @@ public class ColorToBlackKeyConverter_Tests : BaseTest
 	public void ColorToBlackKeyConverterNullInputTest()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToBlackKeyConverter()).Convert(null, typeof(double), null, null));
 		Assert.Throws<ArgumentNullException>(() => new ColorToBlackKeyConverter().ConvertFrom(null, typeof(double), null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToBlackKeyConverter()).Convert(null, typeof(double), null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToBlackKeyConverter()).Convert(new Color(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }
