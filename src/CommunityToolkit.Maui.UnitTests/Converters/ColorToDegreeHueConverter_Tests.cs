@@ -61,6 +61,7 @@ public class ColorToDegreeHueConverter_Tests : BaseTest
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		Assert.Throws<ArgumentNullException>(() => new ColorToDegreeHueConverter().ConvertFrom(null, typeof(double), null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToDegreeHueConverter()).Convert(null, typeof(double), null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToDegreeHueConverter()).Convert(new Color(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }

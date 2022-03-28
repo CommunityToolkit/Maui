@@ -76,6 +76,8 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 	/// <inheritdoc/>
 	object? ICommunityToolkitValueConverter.ConvertBack(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
+		ArgumentNullException.ThrowIfNull(targetType);
+
 		// Ensure TFrom can be assigned to the given Target Type
 		if (!typeof(TFrom).IsAssignableFrom(targetType) && !IsValidTargetType<TFrom>(targetType))
 		{
@@ -104,6 +106,8 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 	/// <inheritdoc/>
 	object? ICommunityToolkitValueConverter.Convert(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
+		ArgumentNullException.ThrowIfNull(targetType);
+
 		// Ensure TTo can be assigned to the given Target Type
 		if (!typeof(TTo).IsAssignableFrom(targetType) && !IsValidTargetType<TTo>(targetType))
 		{

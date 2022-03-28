@@ -32,4 +32,14 @@ public class IsStringNotNullOrWhiteSpaceConverter_Tests : BaseTest
 
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)isNotNullOrWhiteSpaceConverter).Convert(value, typeof(bool), null, null));
 	}
+
+	[Fact]
+	public void IsStringNotNullOrWhiteSpaceConverterNullInputTest()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new IsStringNotNullOrWhiteSpaceConverter()).Convert(string.Empty, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new IsStringNotNullOrWhiteSpaceConverter()).ConvertBack(true, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new IsStringNotNullOrWhiteSpaceConverter()).ConvertBack(null, typeof(string), null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
 }

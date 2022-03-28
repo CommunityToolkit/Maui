@@ -40,17 +40,6 @@ public class ListToStringConverter_Tests : BaseTest
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)listToStringConverter).Convert(value, typeof(string), null, null));
 	}
 
-	[Fact]
-	public void NullConverterValuesThrowArgumentNullException()
-	{
-		var listToStringConverter = new ListToStringConverter();
-
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)listToStringConverter).Convert(null, typeof(string), null, null));
-		Assert.Throws<ArgumentNullException>(() => listToStringConverter.ConvertFrom(null, typeof(string), null, null));
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-	}
-
 	[Theory]
 	[InlineData(0)]
 	[InlineData(5.5)]
@@ -61,5 +50,15 @@ public class ListToStringConverter_Tests : BaseTest
 		var listToStringConverter = new ListToStringConverter();
 
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)listToStringConverter).Convert(Array.Empty<object>(), typeof(string), parameter, null));
+	}
+
+	[Fact]
+	public void ListToStringConverterConverterNullInputTest()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ListToStringConverter()).Convert(true, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ListToStringConverter()).Convert(null, typeof(string), null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ListToStringConverter()).ConvertBack(string.Empty, null, null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }

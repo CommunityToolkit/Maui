@@ -65,4 +65,15 @@ public class IntToBoolConverter_Tests : BaseTest
 		var intToBoolConverter = new IntToBoolConverter();
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)intToBoolConverter).ConvertBack(value, typeof(int), null, CultureInfo.CurrentCulture));
 	}
+
+	[Fact]
+	public void IntToBoolConverterNullInputTest()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new IntToBoolConverter()).Convert(1, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new IntToBoolConverter()).Convert(null, typeof(bool), null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new IntToBoolConverter()).ConvertBack(true, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new IntToBoolConverter()).ConvertBack(null, typeof(int), null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
 }

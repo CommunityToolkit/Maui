@@ -39,6 +39,7 @@ public class ColorToByteAlphaConverter_Tests : BaseTest
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		Assert.Throws<ArgumentNullException>(() => new ColorToByteAlphaConverter().ConvertFrom(null, typeof(byte), null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToByteAlphaConverter()).Convert(null, typeof(byte), null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToByteAlphaConverter()).Convert(new Color(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }
