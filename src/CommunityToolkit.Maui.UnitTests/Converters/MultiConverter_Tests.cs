@@ -21,6 +21,4 @@ public class MultiConverter_Tests : BaseTest
 
 		Assert.Equal(result, value);
 	}
-
-
 }
