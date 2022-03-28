@@ -9,30 +9,28 @@ public class IsEqualConverter_Tests : BaseTest
 	public const string TestValue = nameof(TestValue);
 
 	[Theory]
-	[InlineData(200, 200)]
-	[InlineData(TestValue, TestValue)]
-	public void IsEqual(object value, object comparedValue)
+	[InlineData(true, true, true)]
+	[InlineData(int.MaxValue, int.MinValue, false)]
+	[InlineData("Test", true, false)]
+	[InlineData(null, null, true)]
+	[InlineData(null, true, false)]
+	public void IsEqualConverterValidInputTest(object? value, object? comparedValue, bool expectedResult)
 	{
-		var isEqualConverter = new IsEqualConverter();
+		var notEqualConverter = new IsEqualConverter();
 
-		var convertResult = (bool?)((ICommunityToolkitValueConverter)isEqualConverter).Convert(value, typeof(bool), comparedValue, CultureInfo.CurrentCulture);
-		var covertFromResult = isEqualConverter.ConvertFrom(value, typeof(bool), comparedValue, CultureInfo.CurrentCulture);
+		var convertResult = (bool?)((ICommunityToolkitValueConverter)notEqualConverter).Convert(value, typeof(bool), comparedValue, CultureInfo.CurrentCulture);
+		var convertFromResult = notEqualConverter.ConvertFrom(value, typeof(bool), comparedValue, CultureInfo.CurrentCulture);
 
-		Assert.True(convertResult);
-		Assert.True(covertFromResult);
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
 	}
 
-	[Theory]
-	[InlineData(200, 400)]
-	[InlineData(TestValue, "")]
-	public void IsNotEqual(object value, object comparedValue)
+	[Fact]
+	public void IsEqualConverterNullInputTest()
 	{
-		var isEqualConverter = new IsEqualConverter();
-
-		var convertResult = (bool?)((ICommunityToolkitValueConverter)isEqualConverter).Convert(value, typeof(bool), comparedValue, CultureInfo.CurrentCulture);
-		var covertFromResult = isEqualConverter.ConvertFrom(value, typeof(bool), comparedValue, CultureInfo.CurrentCulture);
-
-		Assert.False(convertResult);
-		Assert.False(covertFromResult);
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new IsEqualConverter()).Convert(true, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new IsEqualConverter()).ConvertBack(true, null, null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }

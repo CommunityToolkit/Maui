@@ -71,6 +71,7 @@ public class ColorToRgbaStringConverter_Tests : BaseTest
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		Assert.Throws<ArgumentNullException>(() => new ColorToRgbaStringConverter().ConvertFrom(null, typeof(string), null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToRgbaStringConverter()).Convert(null, typeof(string), null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToRgbaStringConverter()).Convert(new Color(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }

@@ -64,6 +64,17 @@ public class EnumToIntConverter_Tests : BaseTest
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)enumToIntConverter).ConvertBack(value, typeof(TestEnum), null, null));
 	}
 
+	[Fact]
+	public void EnumToIntConverterNullInputTest()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new EnumToIntConverter()).Convert(TestEnum.FortyTwo, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new EnumToIntConverter()).Convert(null, typeof(int), null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new EnumToIntConverter()).ConvertBack(1, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new EnumToIntConverter()).ConvertBack(null, typeof(TestEnum), null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
 	public enum TestEnum
 	{
 		None = 0,

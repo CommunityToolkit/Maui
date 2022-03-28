@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Returns a string array that contains the substrings in this string that are delimited by <see cref="Separator"/>.
 /// </summary>
-public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable>
+public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable<string>>
 {
 	/// <summary>
 	/// The string that delimits the substrings in this string.
@@ -31,7 +31,7 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable>
 	/// <param name="parameter">The string or strings that delimits the substrings in this string. This overrides the value in <see cref="Separator"/> and <see cref="Separators"/>.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>An array whose elements contain the substrings in this string that are delimited by <see cref="Separator"/> or, if set, <see cref="Separators"/> or, if set, <paramref name="parameter"/>.</returns>
-	public override IEnumerable ConvertFrom(string? value, Type targetType, object? parameter, CultureInfo? culture)
+	public override IEnumerable<string> ConvertFrom(string? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value is null)
 		{

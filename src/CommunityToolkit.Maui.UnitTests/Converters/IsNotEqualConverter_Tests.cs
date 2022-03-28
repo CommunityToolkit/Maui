@@ -11,7 +11,8 @@ public class IsNotEqualConverter_Tests : BaseTest
 	[InlineData(int.MaxValue, int.MinValue, true)]
 	[InlineData("Test", true, true)]
 	[InlineData(null, null, false)]
-	public void NotEqualConverter(object? value, object? comparedValue, bool expectedResult)
+	[InlineData(null, true, true)]
+	public void IsNotEqualConverterValidInputTest(object? value, object? comparedValue, bool expectedResult)
 	{
 		var notEqualConverter = new IsNotEqualConverter();
 
@@ -20,5 +21,14 @@ public class IsNotEqualConverter_Tests : BaseTest
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
+	}
+
+	[Fact]
+	public void IsNotEqualConverterNullInputTest()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new IsNotEqualConverter()).Convert(true, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new IsNotEqualConverter()).ConvertBack(true, null, null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }

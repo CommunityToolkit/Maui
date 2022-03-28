@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Converters;
+﻿using System.Collections;
+using CommunityToolkit.Maui.Converters;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
@@ -35,12 +36,11 @@ public class StringToListConverter_Tests : BaseTest
 	[InlineData(5.5)]
 	[InlineData('c')]
 	[InlineData(true)]
-	[InlineData("abc")]
 	public void InvalidConverterValuesThrowArgumentException(object value)
 	{
-		var listToStringConverter = new ListToStringConverter();
+		var stringToListConverter = new StringToListConverter();
 
-		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)listToStringConverter).Convert(value, typeof(IList<string>), null, null));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)stringToListConverter).Convert(value, typeof(IList<string>), null, null));
 	}
 
 	[Theory]
@@ -51,8 +51,17 @@ public class StringToListConverter_Tests : BaseTest
 	[InlineData("abc")]
 	public void InvalidConverterParametersThrowArgumentException(object parameter)
 	{
-		var listToStringConverter = new ListToStringConverter();
+		var stringToListConverter = new StringToListConverter();
 
-		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)listToStringConverter).Convert(Array.Empty<object>(), typeof(IList<string>), parameter, null));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)stringToListConverter).Convert(Array.Empty<object>(), typeof(IList<string>), parameter, null));
+	}
+
+	[Fact]
+	public void StringToListConverterNullInputTest()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new StringToListConverter()).Convert(string.Empty, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new StringToListConverter()).ConvertBack(new List<string>(), null, null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }

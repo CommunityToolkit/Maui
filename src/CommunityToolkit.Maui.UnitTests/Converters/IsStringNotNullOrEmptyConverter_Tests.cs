@@ -31,4 +31,13 @@ public class IsStringNotNullOrEmptyConverter_Tests : BaseTest
 
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)isNotNullOrEmptyConverter).Convert(value, typeof(bool), null, null));
 	}
+
+	[Fact]
+	public void IsStringNotNullOrEmptyConverterNullInputTest()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new IsStringNotNullOrEmptyConverter()).Convert(true, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new IsStringNotNullOrEmptyConverter()).ConvertBack(true, null, null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
 }

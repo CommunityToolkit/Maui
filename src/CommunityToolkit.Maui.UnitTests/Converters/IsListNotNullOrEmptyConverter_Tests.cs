@@ -38,4 +38,13 @@ public class IsListNotNullOrEmptyConverter_Tests : BaseTest
 
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)listIsNotNullOrEmptyConverter).Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
 	}
+
+	[Fact]
+	public void IsListNotNullOrEmptyConverterNullInputTest()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new IsListNotNullOrEmptyConverter()).Convert(true, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new IsListNotNullOrEmptyConverter()).ConvertBack(true, null, null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
 }

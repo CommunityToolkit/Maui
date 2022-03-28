@@ -62,4 +62,13 @@ public class ImageResourceConverter_Tests : BaseTest
 
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)imageResourceConverter).Convert(value, typeof(ImageSource), null, CultureInfo.CurrentCulture));
 	}
+
+	[Fact]
+	public void ImageResourceConverterNullInputTest()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ImageResourceConverter()).Convert(string.Empty, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ImageResourceConverter()).ConvertBack(ImageSource.FromStream(() => Stream.Null), null, null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
 }
