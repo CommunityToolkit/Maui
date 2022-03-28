@@ -121,4 +121,13 @@ public class ByteArrayToImageSourceConverter_Tests : BaseTest
 
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)byteArrayToImageSourceConverter).ConvertBack(value, typeof(StreamImageSource), null, CultureInfo.CurrentCulture));
 	}
+
+	[Fact]
+	public void ByteArrayToImageSourceConverterNullInputTest()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ByteArrayToImageSourceConverter()).Convert(new byte(), null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ByteArrayToImageSourceConverter()).ConvertBack(ImageSource.FromStream(() => Stream.Null), null, null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
 }
