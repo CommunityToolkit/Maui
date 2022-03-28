@@ -7,6 +7,15 @@ public class ColorToRgbStringConverter_Tests : BaseTest
 {
 	public readonly static IReadOnlyList<object[]> ValidInputData = new[]
 	{
+		new object[] { int.MinValue, int.MinValue, int.MinValue, int.MinValue, "RGB(0,0,0)" },
+		new object[] { 0, 0, 0, int.MinValue, "RGB(0,0,0)" },
+		new object[] { 0, 0, 0, -0.5, "RGB(0,0,0)" },
+		new object[] { 0, 0, 0, 0, "RGB(0,0,0)" },
+		new object[] { 0, 0, 0, 0.5, "RGB(0,0,0)" },
+		new object[] { 0, 0, 0, 1, "RGB(0,0,0)" },
+		new object[] { 0, 0, 0, int.MaxValue, "RGB(0,0,0)" },
+		new object[] { int.MaxValue, int.MaxValue, int.MaxValue, int.MinValue, "RGB(255,255,255)" },
+		new object[] { int.MaxValue, int.MaxValue, int.MaxValue, int.MaxValue, "RGB(255,255,255)" },
 		new object[] { 0, 0, 0, 0, "RGB(0,0,0)" },
 		new object[] { 0, 0, 0, 1, "RGB(0,0,0)" },
 		new object[] { 0, 0, 1, 0, "RGB(0,0,255)" },
