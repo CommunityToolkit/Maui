@@ -95,7 +95,7 @@ public class MauiPopup : UIViewController
 	/// <param name="virtualView"></param>
 	/// <returns></returns>
 	[MemberNotNull(nameof(Control), nameof(ViewController))]
-	public void CreateControl(Func<IPopup ,PageHandler> func, in IPopup virtualView)
+	public void CreateControl(Func<IPopup, PageHandler> func, in IPopup virtualView)
 	{
 		Control = func(virtualView);
 

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters;
 
@@ -25,7 +24,7 @@ public enum LayoutState
 /// <summary>
 /// This converter can be used to determine if a certain state is visible. This can be useful, for instance, in scenarios where you want to show/hide certain elements based on the current state.
 /// </summary>
-public class StateToBooleanConverter : BaseConverterOneWay
+public class StateToBooleanConverter : BaseConverterOneWay<LayoutState, bool>
 {
 	/// <summary>
 	/// The <see cref="LayoutState"/> to compare to.
@@ -40,19 +39,15 @@ public class StateToBooleanConverter : BaseConverterOneWay
 	/// <param name="parameter">Optionally, a <see cref="LayoutState"/> can be supplied here to compare against.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>True if the provided <see cref="LayoutState"/>s match, otherwise False if they don't match.</returns>
-	[return: NotNull]
-	public override object? Convert([NotNull] object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	public override bool ConvertFrom(LayoutState value, Type targetType, object? parameter, CultureInfo? culture)
 	{
-		if (value is not LayoutState state)
-		{
-			throw new ArgumentException("Value is not a valid State", nameof(value));
-		}
+		ArgumentNullException.ThrowIfNull(value);
 
 		if (parameter is LayoutState stateToCompare)
 		{
-			return state == stateToCompare;
+			return value == stateToCompare;
 		}
 
-		return state == StateToCompare;
+		return value == StateToCompare;
 	}
 }

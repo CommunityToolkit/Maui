@@ -47,7 +47,7 @@ public class EventToCommandBehaviorGeneric_Tests : BaseTest
 		var behavior = new EventToCommandBehavior<Coffee>
 		{
 			EventName = nameof(ListView.ItemTapped),
-			EventArgsConverter = new ItemSelectedEventArgsConverter(),
+			EventArgsConverter = new SelectedItemEventArgsConverter(),
 			Command = vm.SelectedCommand
 		};
 
@@ -69,7 +69,7 @@ public class EventToCommandBehaviorGeneric_Tests : BaseTest
 		var behavior = new EventToCommandBehavior<Coffee>
 		{
 			EventName = nameof(ListView.ItemTapped),
-			EventArgsConverter = new ItemSelectedEventArgsConverter(),
+			EventArgsConverter = new SelectedItemEventArgsConverter(),
 			Command = vm.SelectedCommand
 		};
 
@@ -107,7 +107,7 @@ public class EventToCommandBehaviorGeneric_Tests : BaseTest
 		var behavior = new EventToCommandBehavior<Coffee>
 		{
 			EventName = nameof(ListView.ItemTapped),
-			EventArgsConverter = new ItemSelectedEventArgsConverter(),
+			EventArgsConverter = new SelectedItemEventArgsConverter(),
 			Command = vm.SelectedCommand
 		};
 

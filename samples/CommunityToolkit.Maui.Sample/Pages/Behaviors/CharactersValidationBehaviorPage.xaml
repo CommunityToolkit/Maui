@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" ?>
-<pages:BasePage x:Name="Page"
-                x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.CharactersValidationBehaviorPage"
+<pages:BasePage x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.CharactersValidationBehaviorPage"
                 xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
@@ -38,7 +37,7 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Label Text="CharacterType"/>
-                    <Picker x:Name="CharacterTypePicker" Grid.Column="1"
+                    <Picker Grid.Column="1"
                         Title="CharacterType"
                         ItemsSource="{Binding CharacterTypes, Source={x:Reference Page}, Mode=OneTime}"
                         SelectedIndex="1"/>
@@ -46,7 +45,7 @@
                         VerticalOptions="FillAndExpand"
                         VerticalTextAlignment="Center"
                         Text="MinimumCharacterCountEntry"/>
-                    <Entry x:Name="MinimumCharacterCountEntry" Grid.Row="1" Grid.Column="1"
+                    <Entry Grid.Row="1" Grid.Column="1"
                         Keyboard="Numeric"
                         Text="2"
                         VerticalOptions="FillAndExpand"/>
@@ -54,7 +53,7 @@
                         VerticalOptions="FillAndExpand"
                         VerticalTextAlignment="Center"
                         Text="MaximumCharacterCountEntry"/>
-                    <Entry x:Name="MaximumCharacterCountEntry" Grid.Row="2" Grid.Column="1"
+                    <Entry Grid.Row="2" Grid.Column="1"
                         Keyboard="Numeric"
                         Text="20"
                         VerticalOptions="FillAndExpand"/>

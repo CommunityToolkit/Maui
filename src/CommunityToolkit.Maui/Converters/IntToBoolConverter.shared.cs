@@ -1,44 +1,29 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using CommunityToolkit.Maui.Extensions;
+﻿using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>
-/// Converts an <see cref="int"/> to corresponding <see cref="bool"/> and vice versa.
+/// Converts an <see cref="int"/> to a corresponding <see cref="bool"/> and vice versa.
 /// </summary>
-public class IntToBoolConverter : ValueConverterExtension, ICommunityToolkitValueConverter
+public class IntToBoolConverter : BaseConverter<int, bool>
 {
 	/// <summary>
-	/// Converts an <see cref="int"/> to corresponding <see cref="bool"/>.
+	/// Converts the incoming <see cref="int"/> to a <see cref="bool"/> indicating whether or not the value is not equal to 0.
 	/// </summary>
-	/// <param name="value"><see cref="int"/> value.</param>
-	/// <param name="targetType">The type of the binding target property. This is not implemented.</param>
-	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
-	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
-	/// <returns>False if the value is 0, otherwise if the value is anything but 0 it returns True.</returns>
-	[return: NotNull]
-	public object? Convert([NotNull] object? value, Type? targetType, object? parameter, CultureInfo? culture)
-		=> value is int result
-			? result != 0
-			: throw new ArgumentException("Value is not a valid integer", nameof(value));
+	/// <param name="value">The value to convert.</param>
+	/// <param name="targetType">(Not Used)</param>
+	/// <param name="parameter">(Not Used)</param>
+	/// <param name="culture">(Not Used)</param>
+	/// <returns><c>false</c> if the supplied <paramref name="value"/> is equal to <c>0</c> and <c>true</c> otherwise.</returns>
+	public override bool ConvertFrom(int value, Type targetType, object? parameter, CultureInfo? culture) => value != 0;
 
 	/// <summary>
-	/// Converts back <see cref="bool"/> to corresponding <see cref="int"/>.
+	/// Converts the incoming <see cref="bool"/> to an <see cref="int"/> indicating whether or not the value is true.
 	/// </summary>
-	/// <param name="value"><see cref="bool"/> value.</param>
-	/// <param name="targetType">The type of the binding target property. This is not implemented.</param>
-	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
-	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
-	/// <returns>0 if the value is False, otherwise 1 if the value is True.</returns>
-	[return: NotNull]
-	public object? ConvertBack([NotNull] object? value, Type? targetType, object? parameter, CultureInfo? culture)
-	{
-		if (value is bool result)
-		{
-			return result ? 1 : 0;
-		}
-
-		throw new ArgumentException("Value is not a valid boolean", nameof(value));
-	}
+	/// <param name="value">The value to convert.</param>
+	/// <param name="targetType">(Not Used)</param>
+	/// <param name="parameter">(Not Used)</param>
+	/// <param name="culture">(Not Used)</param>
+	/// <returns><c>1</c> if the supplied <paramref name="value"/> is <c>true</c> and <c>0</c> otherwise.</returns>
+	public override int ConvertBackTo(bool value, Type targetType, object? parameter, CultureInfo? culture) => value ? 1 : 0;
 }

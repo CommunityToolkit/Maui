@@ -74,23 +74,23 @@ public static class MauiProgram
 		services.AddTransient<DoubleToIntConverterPage>();
 		services.AddTransient<EnumToBoolConverterPage>();
 		services.AddTransient<EnumToIntConverterPage>();
-		services.AddTransient<EqualConverterPage>();
 		services.AddTransient<ImageResourceConverterPage>();
 		services.AddTransient<IndexToArrayItemConverterPage>();
 		services.AddTransient<IntToBoolConverterPage>();
 		services.AddTransient<InvertedBoolConverterPage>();
+		services.AddTransient<IsEqualConverterPage>();
 		services.AddTransient<IsListNotNullOrEmptyConverterPage>();
 		services.AddTransient<IsListNullOrEmptyConverterPage>();
+		services.AddTransient<IsNotEqualConverterPage>();
 		services.AddTransient<IsStringNotNullOrEmptyConverterPage>();
 		services.AddTransient<IsStringNotNullOrWhiteSpaceConverterPage>();
 		services.AddTransient<IsStringNullOrEmptyConverterPage>();
 		services.AddTransient<IsStringNullOrWhiteSpaceConverterPage>();
-		services.AddTransient<ItemSelectedEventArgsConverterPage>();
 		services.AddTransient<ItemTappedEventArgsConverterPage>();
 		services.AddTransient<ListToStringConverterPage>();
 		services.AddTransient<MathExpressionConverterPage>();
 		services.AddTransient<MultiConverterPage>();
-		services.AddTransient<NotEqualConverterPage>();
+		services.AddTransient<SelectedItemEventArgsConverterPage>();
 		services.AddTransient<StringToListConverterPage>();
 		services.AddTransient<TextCaseConverterPage>();
 		services.AddTransient<VariableMultiValueConverterPage>();
@@ -125,6 +125,7 @@ public static class MauiProgram
 		services.AddTransient<ToastViewModel>();
 
 		// Add Behaviors View Models
+		services.AddTransient<AnimationBehaviorViewModel>();
 		services.AddTransient<CharactersValidationBehaviorViewModel>();
 		services.AddTransient<EmailValidationBehaviorViewModel>();
 		services.AddTransient<EventToCommandBehaviorViewModel>();
@@ -148,7 +149,7 @@ public static class MauiProgram
 		services.AddTransient<DoubleToIntConverterViewModel>();
 		services.AddTransient<EnumToBoolConverterViewModel>();
 		services.AddTransient<EnumToIntConverterViewModel>();
-		services.AddTransient<EqualConverterViewModel>();
+		services.AddTransient<IsEqualConverterViewModel>();
 		services.AddTransient<ImageResourceConverterViewModel>();
 		services.AddTransient<IndexToArrayItemConverterViewModel>();
 		services.AddTransient<IntToBoolConverterViewModel>();
@@ -159,12 +160,12 @@ public static class MauiProgram
 		services.AddTransient<IsStringNotNullOrWhiteSpaceConverterViewModel>();
 		services.AddTransient<IsStringNullOrEmptyConverterViewModel>();
 		services.AddTransient<IsStringNullOrWhiteSpaceConverterViewModel>();
-		services.AddTransient<ItemSelectedEventArgsConverterViewModel>();
 		services.AddTransient<ItemTappedEventArgsConverterViewModel>();
 		services.AddTransient<ListToStringConverterViewModel>();
 		services.AddTransient<MathExpressionConverterViewModel>();
 		services.AddTransient<MultiConverterViewModel>();
-		services.AddTransient<NotEqualConverterViewModel>();
+		services.AddTransient<IsNotEqualConverterViewModel>();
+		services.AddTransient<SelectedItemEventArgsConverterViewModel>();
 		services.AddTransient<StringToListConverterViewModel>();
 		services.AddTransient<TextCaseConverterViewModel>();
 		services.AddTransient<VariableMultiValueConverterViewModel>();
