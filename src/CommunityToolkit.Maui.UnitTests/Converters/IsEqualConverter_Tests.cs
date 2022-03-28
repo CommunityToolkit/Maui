@@ -16,10 +16,10 @@ public class IsEqualConverter_Tests : BaseTest
 	[InlineData(null, true, false)]
 	public void IsEqualConverterValidInputTest(object? value, object? comparedValue, bool expectedResult)
 	{
-		var notEqualConverter = new IsEqualConverter();
+		var isEqualConverter = new IsEqualConverter();
 
-		var convertResult = (bool?)((ICommunityToolkitValueConverter)notEqualConverter).Convert(value, typeof(bool), comparedValue, CultureInfo.CurrentCulture);
-		var convertFromResult = notEqualConverter.ConvertFrom(value, typeof(bool), comparedValue, CultureInfo.CurrentCulture);
+		var convertResult = (bool?)((ICommunityToolkitValueConverter)isEqualConverter).Convert(value, typeof(bool), comparedValue, CultureInfo.CurrentCulture);
+		var convertFromResult = isEqualConverter.ConvertFrom(value, typeof(bool), comparedValue, CultureInfo.CurrentCulture);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
