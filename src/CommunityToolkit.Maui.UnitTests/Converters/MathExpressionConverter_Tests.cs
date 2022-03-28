@@ -26,9 +26,11 @@ public class MathExpressionConverter_Tests : BaseTest
 	{
 		var mathExpressionConverter = new MathExpressionConverter();
 
-		var result = mathExpressionConverter.Convert(x, type, expression, cultureInfo) ?? throw new NullReferenceException();
+		var convertResult = ((ICommunityToolkitValueConverter)mathExpressionConverter).Convert(x, type, expression, cultureInfo) ?? throw new NullReferenceException();
+		var convertFromResult = mathExpressionConverter.ConvertFrom(x, type, expression, cultureInfo);
 
-		Assert.True(Math.Abs((double)result - expectedResult) < tolerance);
+		Assert.True(Math.Abs((double)convertResult - expectedResult) < tolerance);
+		Assert.True(Math.Abs((double)convertFromResult - expectedResult) < tolerance);
 	}
 
 	[Theory]
@@ -54,6 +56,18 @@ public class MathExpressionConverter_Tests : BaseTest
 	{
 		var mathExpressionConverter = new MathExpressionConverter();
 
-		Assert.Throws<ArgumentException>(() => mathExpressionConverter.Convert(0d, type, expression, cultureInfo));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)mathExpressionConverter).Convert(0d, type, expression, cultureInfo));
+		Assert.Throws<ArgumentException>(() => mathExpressionConverter.ConvertFrom(0d, type, expression, cultureInfo));
+	}
+
+	[Fact]
+	public void MathExpressionConverterNullInputTest()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new MathExpressionConverter()).Convert(0.0, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new MathExpressionConverter()).Convert(null, typeof(bool), null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new MathExpressionConverter()).ConvertBack(0.0, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new MathExpressionConverter()).ConvertBack(null, typeof(bool), null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }

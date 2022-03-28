@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.AnimationBehaviorPage"
+    xmlns:behaviorPages="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Behaviors"
+    x:TypeArguments="vm:AnimationBehaviorViewModel"
+    x:DataType="vm:AnimationBehaviorViewModel">
+
+    <VerticalStackLayout Spacing="15" Padding="12">
+        <Label Text="AnimationBehavor is a Behavior that can be attached to any VisualElement, allowing developers to trigger animations via ICommand AnimateCommand."/>
+
+        <Button Text="Click this Button" Margin="16,0">
+            <Button.Behaviors>
+                <mct:AnimationBehavior Command="{Binding AnimationCommand}">
+                    <mct:AnimationBehavior.AnimationType>
+                        <behaviorPages:SampleScaleAnimation 
+                                Easing="{x:Static Easing.Linear}"
+                                Length="100"/>
+                    </mct:AnimationBehavior.AnimationType>
+                </mct:AnimationBehavior>
+            </Button.Behaviors>
+        </Button>
+
+        <Label Text="Click this Label" Margin="16,0" HorizontalOptions="Center">
+            <Label.Behaviors>
+                <mct:AnimationBehavior Command="{Binding AnimationCommand}">
+                    <mct:AnimationBehavior.AnimationType>
+                        <behaviorPages:SampleScaleAnimation 
+                            Easing="{x:Static Easing.Linear}"
+                            Length="100"/>
+                    </mct:AnimationBehavior.AnimationType>
+                </mct:AnimationBehavior>
+            </Label.Behaviors>
+        </Label>
+
+        <Frame BackgroundColor="LightGreen" Margin="16,0">
+            <Frame.Behaviors>
+                <mct:AnimationBehavior Command="{Binding AnimationCommand}">
+                    <mct:AnimationBehavior.AnimationType>
+                        <behaviorPages:SampleScaleAnimation 
+                                Easing="{x:Static Easing.Linear}"
+                                Length="100"/>
+                    </mct:AnimationBehavior.AnimationType>
+                </mct:AnimationBehavior>
+            </Frame.Behaviors>
+            <Label Text="Click this Frame" HorizontalOptions="Center"/>
+        </Frame>
+    </VerticalStackLayout>
+</pages:BasePage>

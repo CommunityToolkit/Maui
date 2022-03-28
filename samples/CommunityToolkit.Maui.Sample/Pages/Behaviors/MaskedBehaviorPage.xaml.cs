@@ -4,8 +4,8 @@ namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
 public partial class MaskedBehaviorPage : BasePage<MaskedBehaviorViewModel>
 {
-	public MaskedBehaviorPage(MaskedBehaviorViewModel maskedBehaviorViewModel)
-		: base(maskedBehaviorViewModel)
+	public MaskedBehaviorPage(IDeviceInfo deviceInfo, MaskedBehaviorViewModel maskedBehaviorViewModel)
+		: base(deviceInfo, maskedBehaviorViewModel)
 	{
 		InitializeComponent();
 	}

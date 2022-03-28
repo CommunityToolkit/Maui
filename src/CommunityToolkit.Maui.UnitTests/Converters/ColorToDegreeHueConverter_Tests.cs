@@ -48,8 +48,8 @@ public class ColorToDegreeHueConverter_Tests : BaseTest
 		var converter = new ColorToDegreeHueConverter();
 		var color = new Color(red, green, blue, alpha);
 
-		var resultConvertFrom = converter.ConvertFrom(color);
-		var resultConvert = converter.Convert(color, typeof(double), null, null);
+		var resultConvertFrom = converter.ConvertFrom(color, typeof(double), null, null);
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(double), null, null);
 
 		Assert.Equal(expectedResult, resultConvertFrom);
 		Assert.Equal(expectedResult, resultConvert);
@@ -59,8 +59,9 @@ public class ColorToDegreeHueConverter_Tests : BaseTest
 	public void ColorToDegreeHueConverterNullInputTest()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => new ColorToDegreeHueConverter().ConvertFrom(null));
-		Assert.Throws<ArgumentNullException>(() => new ColorToDegreeHueConverter().Convert(null, typeof(double), null, null));
+		Assert.Throws<ArgumentNullException>(() => new ColorToDegreeHueConverter().ConvertFrom(null, typeof(double), null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToDegreeHueConverter()).Convert(null, typeof(double), null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToDegreeHueConverter()).Convert(new Color(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }

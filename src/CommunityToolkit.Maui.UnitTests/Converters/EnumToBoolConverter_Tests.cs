@@ -33,20 +33,28 @@ public class EnumToBoolConverter_Tests : BaseTest
 		var enumToBoolConverter = new EnumToBoolConverter();
 
 		Assert.Throws<NotSupportedException>(() =>
-			enumToBoolConverter.ConvertBack(TestEnumForEnumToBoolConverter.Five, typeof(bool), null, CultureInfo.InvariantCulture));
+		 ((ICommunityToolkitValueConverter)enumToBoolConverter).ConvertBack(true, typeof(Enum), null, CultureInfo.InvariantCulture));
 	}
 
 	[Theory]
 	[InlineData("a string")]
 	[InlineData(42)]
-	[InlineData(null)]
 	[InlineData(false)]
 	public void EnumToBoolConvert_ValueNotEnum_ThrowsArgumentException(object value)
 	{
 		var enumToBoolConverter = new EnumToBoolConverter();
 
 		Assert.Throws<ArgumentException>(() =>
-			enumToBoolConverter.Convert(value, typeof(bool), TestEnumForEnumToBoolConverter.Five, CultureInfo.InvariantCulture));
+			((ICommunityToolkitValueConverter)enumToBoolConverter).Convert(value, typeof(bool), TestEnumForEnumToBoolConverter.Five, CultureInfo.InvariantCulture));
+	}
+
+	[Fact]
+	public void EnumToBoolConvert_NullValue_ThrowsArgumentNullException()
+	{
+		var enumToBoolConverter = new EnumToBoolConverter();
+
+		Assert.Throws<ArgumentNullException>(() =>
+			((ICommunityToolkitValueConverter)enumToBoolConverter).Convert(null, typeof(bool), TestEnumForEnumToBoolConverter.Five, CultureInfo.InvariantCulture));
 	}
 
 	[Theory]
@@ -59,9 +67,11 @@ public class EnumToBoolConverter_Tests : BaseTest
 	{
 		var enumToBoolConverter = new EnumToBoolConverter();
 
-		var result = (bool)enumToBoolConverter.Convert(TestEnumForEnumToBoolConverter.Five, typeof(bool), parameter, CultureInfo.InvariantCulture);
+		var convertResult = (bool?)((ICommunityToolkitValueConverter)enumToBoolConverter).Convert(TestEnumForEnumToBoolConverter.Five, typeof(bool), parameter, CultureInfo.InvariantCulture);
+		var convertFromResult = enumToBoolConverter.ConvertFrom(TestEnumForEnumToBoolConverter.Five, typeof(bool), parameter, CultureInfo.InvariantCulture);
 
-		Assert.False(result);
+		Assert.False(convertResult);
+		Assert.False(convertFromResult);
 	}
 
 	[Theory]
@@ -80,12 +90,24 @@ public class EnumToBoolConverter_Tests : BaseTest
 	[InlineData(null, TestFlaggedEnumForEnumToBoolConverter.Two, TestFlaggedEnumForEnumToBoolConverter.One | TestFlaggedEnumForEnumToBoolConverter.Three, false)]
 	[InlineData(null, TestFlaggedEnumForEnumToBoolConverter.One | TestFlaggedEnumForEnumToBoolConverter.Three, TestFlaggedEnumForEnumToBoolConverter.One | TestFlaggedEnumForEnumToBoolConverter.Three, true)]
 	[InlineData(null, TestFlaggedEnumForEnumToBoolConverter.One | TestFlaggedEnumForEnumToBoolConverter.Two | TestFlaggedEnumForEnumToBoolConverter.Three, TestFlaggedEnumForEnumToBoolConverter.One | TestFlaggedEnumForEnumToBoolConverter.Three, false)]
-	public void EnumToBoolConvert_Validation(object?[]? trueValues, object? value, object parameter, bool expectedResult)
+	public void EnumToBoolConvert_Validation(object?[]? trueValues, Enum value, Enum parameter, bool expectedResult)
 	{
 		var enumToBoolConverter = new EnumToBoolConverter();
 		trueValues?.OfType<Enum>().ToList().ForEach(fe => enumToBoolConverter.TrueValues.Add(fe));
 
-		var result = (bool)enumToBoolConverter.Convert(value, typeof(bool), parameter, CultureInfo.InvariantCulture);
-		Assert.Equal(expectedResult, result);
+		var convertResult = (bool?)((ICommunityToolkitValueConverter)enumToBoolConverter).Convert(value, typeof(bool), parameter, CultureInfo.InvariantCulture);
+		var convertFromResult = enumToBoolConverter.ConvertFrom(value, typeof(bool), parameter, CultureInfo.InvariantCulture);
+
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
+	}
+
+	[Fact]
+	public void EnumToBoolConverterNullInputTest()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new EnumToBoolConverter()).Convert(TestEnumForEnumToBoolConverter.Five, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new EnumToBoolConverter()).Convert(null, typeof(bool), null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }

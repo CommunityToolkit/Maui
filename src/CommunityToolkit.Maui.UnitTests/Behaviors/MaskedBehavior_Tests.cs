@@ -115,4 +115,3 @@ public class MaskedBehavior_Tests : BaseTest
 
 	}
 }
-

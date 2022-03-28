@@ -14,8 +14,8 @@ public partial class ColorAnimationExtensionsPage : BasePage<ColorAnimationExten
 		.GetFields(BindingFlags.Static | BindingFlags.Public)
 		.ToDictionary(c => c.Name, c => (Easing)(c.GetValue(null) ?? throw new InvalidOperationException()));
 
-	public ColorAnimationExtensionsPage(ColorAnimationExtensionsViewModel colorAnimationExtensionsViewModel)
-		: base(colorAnimationExtensionsViewModel)
+	public ColorAnimationExtensionsPage(IDeviceInfo deviceInfo, ColorAnimationExtensionsViewModel colorAnimationExtensionsViewModel)
+		: base(deviceInfo, colorAnimationExtensionsViewModel)
 	{
 		InitializeComponent();
 

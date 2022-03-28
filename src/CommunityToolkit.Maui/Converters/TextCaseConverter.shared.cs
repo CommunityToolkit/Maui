@@ -25,7 +25,7 @@ public enum TextCaseType
 /// Converts text (string, char) to certain case as specified with <see cref="Type"/> or the parameter of the Convert method.
 /// </summary>
 [ContentProperty(nameof(Type))]
-public class TextCaseConverter : BaseConverterOneWay
+public class TextCaseConverter : BaseConverterOneWay<string?, string?>
 {
 	/// <summary>
 	/// The desired text case that the text should be converted to.
@@ -41,20 +41,20 @@ public class TextCaseConverter : BaseConverterOneWay
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>The converted text representation with the desired casing.</returns>
 	[return: NotNullIfNotNull("value")]
-	public override object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	public override string? ConvertFrom(string? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
-		var str = value?.ToString();
-		if (str == null || string.IsNullOrWhiteSpace(str))
+		if (string.IsNullOrWhiteSpace(value))
 		{
-			return str;
+			return value;
 		}
 
 		return GetParameter(parameter) switch
 		{
-			TextCaseType.Lower => str.ToLowerInvariant(),
-			TextCaseType.Upper => str.ToUpperInvariant(),
-			TextCaseType.FirstUpperRestLower => str.Substring(0, 1).ToUpperInvariant() + str.ToString().Substring(1).ToLowerInvariant(),
-			_ => str
+			TextCaseType.Lower => value.ToLowerInvariant(),
+			TextCaseType.Upper => value.ToUpperInvariant(),
+			TextCaseType.FirstUpperRestLower => value.Substring(0, 1).ToUpperInvariant() + value.ToString().Substring(1).ToLowerInvariant(),
+			TextCaseType.None => value,
+			_ => throw new NotSupportedException()
 		};
 	}
 

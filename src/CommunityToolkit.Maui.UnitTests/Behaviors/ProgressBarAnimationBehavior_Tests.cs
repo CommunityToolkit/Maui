@@ -9,7 +9,6 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 {
 	public static readonly IReadOnlyList<object[]> ValidData = new[]
 	{
-		new object[] { 0.5, 175, Easing.BounceIn },
 		new object[] { 1, 500, Easing.Default },
 		new object[] { 0, 750, Easing.CubicOut }
 	};
@@ -24,7 +23,7 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 		var progressBarAnimationCompletedTCS = new TaskCompletionSource();
 
 		var progressBarAnimationBehavior = new ProgressBarAnimationBehavior();
-		progressBarAnimationBehavior.AnimationCompleted += HandleAnimationComplted;
+		progressBarAnimationBehavior.AnimationCompleted += HandleAnimationCompleted;
 		progressBar.Behaviors.Add(progressBarAnimationBehavior);
 
 		Assert.Equal(0.0d, progressBar.Progress);
@@ -46,9 +45,11 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 		Assert.Equal(length, progressBarAnimationBehavior.Length);
 		Assert.Equal(easing, progressBarAnimationBehavior.Easing);
 
-		void HandleAnimationComplted(object? sender, EventArgs e)
+		void HandleAnimationCompleted(object? sender, EventArgs e)
 		{
 			ArgumentNullException.ThrowIfNull(sender);
+
+			progressBarAnimationBehavior.AnimationCompleted -= HandleAnimationCompleted;
 			progressBarAnimationCompletedTCS.SetResult();
 		}
 	}
@@ -115,4 +116,3 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 
 	}
 }
-

@@ -31,14 +31,14 @@ public class ImageResourceConverter_Tests : BaseTest
 	{
 		const string resourceToLoad = "CommunityToolkit.Maui.UnitTests.Resources.dotnet-bot.png";
 
-		var expectedResource = ImageSource.FromResource(resourceToLoad);
+		var expectedResource = (StreamImageSource)ImageSource.FromResource(resourceToLoad);
 		var expectedMemoryStream = await GetStreamFromImageSource(expectedResource, CancellationToken.None);
 
 		var imageResourceConverter = new ImageResourceConverter();
-		var convertResult = (ImageSource)(imageResourceConverter.Convert(resourceToLoad, typeof(ImageSource), null, CultureInfo.CurrentCulture) ?? throw new NullReferenceException());
+		var convertResult = (StreamImageSource)(((ICommunityToolkitValueConverter)imageResourceConverter).Convert(resourceToLoad, typeof(ImageSource), null, CultureInfo.CurrentCulture) ?? throw new NullReferenceException());
 		var streamResult = await GetStreamFromImageSource(convertResult, CancellationToken.None);
 
-		var convertFromResult = imageResourceConverter.ConvertFrom(resourceToLoad);
+		var convertFromResult = (StreamImageSource)imageResourceConverter.ConvertFrom(resourceToLoad, typeof(ImageSource), null, CultureInfo.CurrentCulture);
 		var streamFromResult = await GetStreamFromImageSource(convertFromResult, CancellationToken.None);
 
 		Assert.True(StreamEquals(expectedMemoryStream, streamResult));
@@ -50,8 +50,8 @@ public class ImageResourceConverter_Tests : BaseTest
 	{
 		var imageResourceConverter = new ImageResourceConverter();
 
-		Assert.Null(imageResourceConverter.Convert(null, typeof(ImageSource), null, CultureInfo.CurrentCulture));
-		Assert.Null(imageResourceConverter.ConvertFrom(null));
+		Assert.Null(((ICommunityToolkitValueConverter)imageResourceConverter).Convert(null, typeof(ImageSource), null, CultureInfo.CurrentCulture));
+		Assert.Null(imageResourceConverter.ConvertFrom(null, typeof(ImageSource), null, CultureInfo.CurrentCulture));
 	}
 
 	[Theory]
@@ -60,6 +60,15 @@ public class ImageResourceConverter_Tests : BaseTest
 	{
 		var imageResourceConverter = new ImageResourceConverter();
 
-		Assert.Throws<ArgumentException>(() => imageResourceConverter.Convert(value, typeof(ImageSource), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)imageResourceConverter).Convert(value, typeof(ImageSource), null, CultureInfo.CurrentCulture));
+	}
+
+	[Fact]
+	public void ImageResourceConverterNullInputTest()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ImageResourceConverter()).Convert(string.Empty, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ImageResourceConverter()).ConvertBack(ImageSource.FromStream(() => Stream.Null), null, null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }

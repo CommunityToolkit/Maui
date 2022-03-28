@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Reflection;
 
 namespace CommunityToolkit.Maui.Converters;
@@ -7,7 +6,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 ///     Convert an <see cref="Enum" /> to corresponding <see cref="bool" />
 /// </summary>
-public class EnumToBoolConverter : BaseConverterOneWay
+public class EnumToBoolConverter : BaseConverterOneWay<Enum, bool>
 {
 	/// <summary>
 	///     Enum values, that converts to <c>true</c> (optional)
@@ -29,17 +28,13 @@ public class EnumToBoolConverter : BaseConverterOneWay
 	///     value not equal to parameter.
 	/// </returns>
 	/// <exception cref="ArgumentException">If value is not an <see cref="Enum" /></exception>
-	[return: NotNull]
-	public override object? Convert([NotNull] object? value, Type? targetType, object? parameter, CultureInfo? culture)
+	public override bool ConvertFrom(Enum value, Type targetType, object? parameter, CultureInfo? culture)
 	{
-		if (value is not Enum enumValue)
-		{
-			throw new ArgumentException("The value should be of type Enum", nameof(value));
-		}
+		ArgumentNullException.ThrowIfNull(value);
 
 		return TrueValues.Count == 0
-			? CompareTwoEnums(enumValue, parameter as Enum)
-			: TrueValues.Any(item => CompareTwoEnums(enumValue, item));
+			? CompareTwoEnums(value, parameter as Enum)
+			: TrueValues.Any(item => CompareTwoEnums(value, item));
 
 		static bool CompareTwoEnums(Enum valueToCheck, object? referenceValue)
 		{

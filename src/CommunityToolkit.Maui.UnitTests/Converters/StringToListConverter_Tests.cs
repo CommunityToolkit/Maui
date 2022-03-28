@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Converters;
+﻿using System.Collections;
+using CommunityToolkit.Maui.Converters;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
@@ -19,30 +20,48 @@ public class StringToListConverter_Tests : BaseTest
 
 	[Theory]
 	[MemberData(nameof(ListData))]
-	public void StringToListConverter(object? value, object? parameter, object? expectedResult)
+	public void StringToListConverter(string? value, object? parameter, object? expectedResult)
 	{
 		var stringToListConverter = new StringToListConverter();
 
-		var result = (IEnumerable<string>)stringToListConverter.Convert(value, typeof(IEnumerable<string>), parameter, null);
+		var convertFromResult = stringToListConverter.ConvertFrom(value, typeof(IList<string>), parameter, null);
+		var convertResult = (IEnumerable<string>?)((ICommunityToolkitValueConverter)stringToListConverter).Convert(value, typeof(IList<string>), parameter, null);
 
-		Assert.Equal(expectedResult, result);
+		Assert.Equal(expectedResult, convertFromResult);
+		Assert.Equal(expectedResult, convertResult);
 	}
 
 	[Theory]
 	[InlineData(0)]
-	public void InValidConverterValuesThrowArgumenException(object value)
+	[InlineData(5.5)]
+	[InlineData('c')]
+	[InlineData(true)]
+	public void InvalidConverterValuesThrowArgumentException(object value)
 	{
-		var listToStringConverter = new ListToStringConverter();
+		var stringToListConverter = new StringToListConverter();
 
-		Assert.Throws<ArgumentException>(() => listToStringConverter.Convert(value, typeof(IEnumerable<string>), null, null));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)stringToListConverter).Convert(value, typeof(IList<string>), null, null));
 	}
 
 	[Theory]
 	[InlineData(0)]
-	public void InValidConverterParametersThrowArgumenException(object parameter)
+	[InlineData(5.5)]
+	[InlineData('c')]
+	[InlineData(true)]
+	[InlineData("abc")]
+	public void InvalidConverterParametersThrowArgumentException(object parameter)
 	{
-		var listToStringConverter = new ListToStringConverter();
+		var stringToListConverter = new StringToListConverter();
 
-		Assert.Throws<ArgumentException>(() => listToStringConverter.Convert(Array.Empty<object>(), typeof(IEnumerable<string>), parameter, null));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)stringToListConverter).Convert(Array.Empty<object>(), typeof(IList<string>), parameter, null));
+	}
+
+	[Fact]
+	public void StringToListConverterNullInputTest()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new StringToListConverter()).Convert(string.Empty, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new StringToListConverter()).ConvertBack(new List<string>(), null, null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }

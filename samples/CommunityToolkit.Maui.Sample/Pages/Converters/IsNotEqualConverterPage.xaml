@@ -4,15 +4,15 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.NotEqualConverterPage"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.IsNotEqualConverterPage"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
-    x:TypeArguments="vm:NotEqualConverterViewModel"
-    x:DataType="vm:NotEqualConverterViewModel">
+    x:TypeArguments="vm:IsNotEqualConverterViewModel"
+    x:DataType="vm:IsNotEqualConverterViewModel">
 
     <pages:BasePage.Resources>
         <ResourceDictionary>
             <x:String x:Key="MAUI">MAUI</x:String>
-            <mct:NotEqualConverter x:Key="NotEqualConverter" />
+            <mct:IsNotEqualConverter x:Key="IsNotEqualConverter" />
         </ResourceDictionary>
     </pages:BasePage.Resources>
 
@@ -22,7 +22,7 @@
             HorizontalOptions="Fill"
             Spacing="10"
             VerticalOptions="Fill">
-            <Label Text="The NotEqualConverter is a converter that allows users to convert any value binding to a boolean depending on whether or not it is equal to a different value. The initial binding contains the object that will be compared and the ConverterParameter contains the object to compare it to." TextColor="{StaticResource NormalLabelTextColor}" />
+            <Label Text="The IsNotEqualConverter is a converter that allows users to convert any value binding to a boolean depending on whether or not it is equal to a different value. The initial binding contains the object that will be compared and the ConverterParameter contains the object to compare it to." TextColor="{StaticResource NormalLabelTextColor}" />
             <Entry Margin="0"
                     Text="{Binding InputValue}" 
                     HorizontalOptions="FillAndExpand"/>
@@ -33,7 +33,7 @@
                     TextColor="Red">
                 <Label.Triggers>
                     <DataTrigger TargetType="Label"
-                                    Binding="{Binding InputValue, Converter={StaticResource NotEqualConverter}, ConverterParameter={StaticResource MAUI}}"
+                                    Binding="{Binding InputValue, Converter={StaticResource IsNotEqualConverter}, ConverterParameter={StaticResource MAUI}}"
                                     Value="true">
                         <Setter Property="Text" Value="Yes, it does!" />
                         <Setter Property="TextColor" Value="Green" />

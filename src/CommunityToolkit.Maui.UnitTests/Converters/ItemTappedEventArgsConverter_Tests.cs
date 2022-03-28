@@ -6,11 +6,43 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ItemTappedEventArgsConverter_Tests : BaseTest
 {
+	public static IReadOnlyList<object[]> Data { get; } = new[]
+	{
+		new object[] { new ItemTappedEventArgs("", 1, 1), 1},
+		new object[] { new ItemTappedEventArgs("", 'c', 1), 'c'},
+		new object[] { new ItemTappedEventArgs("", Colors.Black, 1), Colors.Black},
+	};
+
 	[Theory]
-	[InlineData("Random String")]
-	public void InValidConverterValuesThrowArgumenException(object value)
+	[MemberData(nameof(Data))]
+	public void ItemTappedEventArgsConverter(ItemTappedEventArgs value, object? expectedResult)
 	{
 		var itemTappedEventArgsConverter = new ItemTappedEventArgsConverter();
-		Assert.Throws<ArgumentException>(() => itemTappedEventArgsConverter.Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
+
+		var convertResult = ((ICommunityToolkitValueConverter)itemTappedEventArgsConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture);
+		var convertFromResult = itemTappedEventArgsConverter.ConvertFrom(value, typeof(object), null, CultureInfo.CurrentCulture);
+
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
+	}
+
+	[Theory]
+	[InlineData(5.5)]
+	[InlineData('c')]
+	[InlineData(true)]
+	[InlineData("abc")]
+	public void InvalidConverterValuesThrowArgumentException(object value)
+	{
+		var itemTappedEventArgsConverter = new ItemTappedEventArgsConverter();
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)itemTappedEventArgsConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
+	}
+
+	[Fact]
+	public void ItemTappedEventArgsConverterNullInputTest()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ItemTappedEventArgsConverter()).Convert(new ItemTappedEventArgs("", "", 1), null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ItemTappedEventArgsConverter()).ConvertBack(true, null, null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }

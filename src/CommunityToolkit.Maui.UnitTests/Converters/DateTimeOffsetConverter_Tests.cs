@@ -41,9 +41,11 @@ public class DateTimeOffsetConverter_Tests : BaseTest
 	{
 		var dateTimeOffsetConverter = new DateTimeOffsetConverter();
 
-		var result = (DateTime)dateTimeOffsetConverter.Convert(value, typeof(DateTime), null, CultureInfo.CurrentCulture);
+		var convertResult = ((ICommunityToolkitValueConverter)dateTimeOffsetConverter).Convert(value, typeof(DateTime), null, CultureInfo.CurrentCulture);
+		var convertFromResult = dateTimeOffsetConverter.ConvertFrom(value, typeof(DateTime), null, CultureInfo.CurrentCulture);
 
-		Assert.Equal(expectedResult, result);
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
 	}
 
 	[Theory]
@@ -52,29 +54,44 @@ public class DateTimeOffsetConverter_Tests : BaseTest
 	{
 		var dateTimeOffsetConverter = new DateTimeOffsetConverter();
 
-		var result = (DateTimeOffset)dateTimeOffsetConverter.ConvertBack(value, typeof(DateTime), null, CultureInfo.CurrentCulture);
+		var convertBackResult = (DateTimeOffset)(((ICommunityToolkitValueConverter)dateTimeOffsetConverter).ConvertBack(value, typeof(DateTimeOffset), null, CultureInfo.CurrentCulture) ?? throw new InvalidOperationException());
+		var convertBackToResult = dateTimeOffsetConverter.ConvertBackTo(value, typeof(DateTimeOffset), null, CultureInfo.CurrentCulture);
 
-		Assert.Equal(expectedResult, result, new DateTimeOffsetComparer());
+		Assert.Equal(expectedResult, convertBackResult, new DateTimeOffsetComparer());
+		Assert.Equal(expectedResult, convertBackToResult, new DateTimeOffsetComparer());
 	}
 
-	[Fact]
-	public void DateTimeOffsetConverter_GivenInvalidParameters_ThrowsException()
+	[Theory]
+	[InlineData(5.5)]
+	[InlineData('c')]
+	[InlineData(true)]
+	[InlineData("abc")]
+	public void DateTimeOffsetConverter_GivenInvalidParameters_ThrowsException(object invalidData)
 	{
 		var dateTimeOffsetConverter = new DateTimeOffsetConverter();
 
-		Assert.Throws<ArgumentException>(() => dateTimeOffsetConverter.Convert("Not a DateTimeOffset",
-			typeof(DateTime), null,
-			CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)dateTimeOffsetConverter).Convert(invalidData, typeof(DateTime), null, CultureInfo.CurrentCulture));
 	}
 
-	[Fact]
-	public void DateTimeOffsetConverterBack_GivenInvalidParameters_ThrowsException()
+	[Theory]
+	[InlineData(5.5)]
+	[InlineData('c')]
+	[InlineData(true)]
+	[InlineData("abc")]
+	public void DateTimeOffsetConverterBack_GivenInvalidParameters_ThrowsException(object invalidData)
 	{
 		var dateTimeOffsetConverter = new DateTimeOffsetConverter();
 
-		Assert.Throws<ArgumentException>(() => dateTimeOffsetConverter.ConvertBack("Not a DateTime",
-			typeof(DateTime), null,
-			CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)dateTimeOffsetConverter).ConvertBack(invalidData, typeof(DateTimeOffset), null, CultureInfo.CurrentCulture));
+	}
+
+	[Fact]
+	public void DateTimeOffsetConverterNullInputTest()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new DateTimeOffsetConverter()).Convert(DateTimeOffset.UtcNow, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new DateTimeOffsetConverter()).ConvertBack(DateTimeOffset.UtcNow, null, null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
 	class DateTimeOffsetComparer : IEqualityComparer<DateTimeOffset>

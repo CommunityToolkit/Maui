@@ -9,22 +9,43 @@ public class InvertedBoolConverter_Tests : BaseTest
 	[Theory]
 	[InlineData(true, false)]
 	[InlineData(false, true)]
-	public void InverterBoolConverter(bool value, bool expectedResult)
+	public void InvertedBoolConverter(bool value, bool expectedResult)
 	{
-		var inverterBoolConverter = new InvertedBoolConverter();
+		var invertedBoolConverter = new InvertedBoolConverter();
 
-		var result = (bool)inverterBoolConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
+		var convertResult = (bool?)((ICommunityToolkitValueConverter)invertedBoolConverter).Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
+		var convertFromResult = invertedBoolConverter.ConvertFrom(value, typeof(bool), null, CultureInfo.CurrentCulture);
 
-		Assert.Equal(result, expectedResult);
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
 	}
 
 	[Theory]
 	[InlineData(2)]
 	[InlineData("")]
-	[InlineData(null)]
-	public void InValidConverterValuesThrowArgumenException(object? value)
+	[InlineData('c')]
+	[InlineData(5.5)]
+	public void InvalidConverterValuesThrowArgumentException(object? value)
 	{
-		var inverterBoolConverter = new InvertedBoolConverter();
-		Assert.Throws<ArgumentException>(() => inverterBoolConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
+		var invertedBoolConverter = new InvertedBoolConverter();
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)invertedBoolConverter).Convert(value, typeof(bool), null, CultureInfo.CurrentCulture));
+	}
+
+	[Fact]
+	public void NullConverterValuesThrowArgumentNullException()
+	{
+		var invertedBoolConverter = new InvertedBoolConverter();
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)invertedBoolConverter).Convert(null, typeof(bool), null, CultureInfo.CurrentCulture));
+	}
+
+	[Fact]
+	public void InvertedBoolConverterNullInputTest()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new InvertedBoolConverter()).Convert(true, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new InvertedBoolConverter()).Convert(null, typeof(bool), null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new InvertedBoolConverter()).ConvertBack(true, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new InvertedBoolConverter()).ConvertBack(null, typeof(bool), null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }

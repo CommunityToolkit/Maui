@@ -14,8 +14,8 @@ public class IsStringNotNullOrEmptyConverter_Tests : BaseTest
 	{
 		var isNotNullOrEmptyConverter = new IsStringNotNullOrEmptyConverter();
 
-		var convertResult = (bool?)isNotNullOrEmptyConverter.Convert(value, typeof(bool), null, null);
-		var convertFromResult = isNotNullOrEmptyConverter.ConvertFrom(value);
+		var convertResult = (bool?)((ICommunityToolkitValueConverter)isNotNullOrEmptyConverter).Convert(value, typeof(bool), null, null);
+		var convertFromResult = isNotNullOrEmptyConverter.ConvertFrom(value, typeof(bool), null, null);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
@@ -29,6 +29,15 @@ public class IsStringNotNullOrEmptyConverter_Tests : BaseTest
 	{
 		var isNotNullOrEmptyConverter = new IsStringNotNullOrEmptyConverter();
 
-		Assert.Throws<ArgumentException>(() => isNotNullOrEmptyConverter.Convert(value, typeof(bool), null, null));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)isNotNullOrEmptyConverter).Convert(value, typeof(bool), null, null));
+	}
+
+	[Fact]
+	public void IsStringNotNullOrEmptyConverterNullInputTest()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new IsStringNotNullOrEmptyConverter()).Convert(true, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new IsStringNotNullOrEmptyConverter()).ConvertBack(true, null, null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }

@@ -1,12 +1,11 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>
 /// Checks whether the incoming value doesn't equal the provided parameter.
 /// </summary>
-public class NotEqualConverter : BaseConverterOneWay
+public class IsNotEqualConverter : BaseConverterOneWay<object?, bool>
 {
 	/// <summary>
 	/// Checks whether the incoming value doesn't equal the provided parameter.
@@ -16,7 +15,5 @@ public class NotEqualConverter : BaseConverterOneWay
 	/// <param name="parameter">The second object to compare.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>True if <paramref name="value"/> and <paramref name="parameter"/> are not equal, False if they are equal.</returns>
-	[return: NotNull]
-	public override object? Convert(object? value, Type? targetType, object? parameter, CultureInfo? culture) =>
-		!EqualConverter.IsEqual(value, parameter);
+	public override bool ConvertFrom(object? value, Type targetType, object? parameter, CultureInfo? culture) => !EqualityComparer<object?>.Default.Equals(value, parameter);
 }
