@@ -1,10 +1,8 @@
-[![Build Status](https://dev.azure.com/dotnet/CommunityToolkit/_apis/build/status/CommunityToolkit.Maui?branchName=main)](https://dev.azure.com/dotnet/CommunityToolkit/_build/latest?definitionId=169&branchName=main)
+<img src="https://user-images.githubusercontent.com/13558917/137551073-ac8958bf-83e3-4ae3-8623-4db6dce49d02.png" alt="..NET Bot" width=125>  [<img src="https://raw.githubusercontent.com/dotnet-foundation/swag/master/logo/dotnetfoundation_v4.svg" alt=".NET Foundation" width=100>](https://dotnetfoundation.org) 
 
-[<img src="https://raw.githubusercontent.com/dotnet-foundation/swag/master/logo/dotnetfoundation_v4.svg" alt=".NET Foundation" width=100>](https://dotnetfoundation.org)
+[![Build Status](https://dev.azure.com/dotnet/CommunityToolkit/_apis/build/status/CommunityToolkit.Maui?branchName=main)](https://dev.azure.com/dotnet/CommunityToolkit/_build/latest?definitionId=169&branchName=main) [![NuGet](https://buildstats.info/nuget/CommunityToolkit.Maui?includePreReleases=true)](https://www.nuget.org/packages/CommunityToolkit.Maui/)
 
 # .NET MAUI Community Toolkit
-
-[![NuGet](https://buildstats.info/nuget/CommunityToolkit.Maui?includePreReleases=true)](https://www.nuget.org/packages/CommunityToolkit.Maui/)
 
 The .NET MAUI Community Toolkit is a collection of common elements for development with .NET MAUI that developers tend to replicate across multiple apps. It simplifies and demonstrates common developer tasks when building apps with .NET MAUI. 
 
