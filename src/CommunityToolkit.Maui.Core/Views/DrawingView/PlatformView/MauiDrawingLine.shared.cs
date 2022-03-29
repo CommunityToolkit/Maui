@@ -10,12 +10,12 @@ public partial class MauiDrawingLine
 	int granularity = minValueGranularity;
 
 	/// <summary>
-	/// The width that is used to draw this line on the <see cref="MauiDrawingView"/>. This is a bindable property.
+	/// The width that is used to draw this line on the <see cref="MauiDrawingView"/>.
 	/// </summary>
 	public float LineWidth { get; set; } = 5;
 
 	/// <summary>
-	/// The granularity of this line. This is a bindable property. Clamped to a minimum value of 5.
+	/// The granularity of this line. Clamped to a minimum value of 5.
 	/// </summary>
 	public int Granularity
 	{
@@ -24,7 +24,7 @@ public partial class MauiDrawingLine
 	}
 
 	/// <summary>
-	/// Enables or disabled if this line is smoothed (anti-aliased) when drawn. This is a bindable property.
+	/// Enables or disabled if this line is smoothed (anti-aliased) when drawn.
 	/// </summary>
 	public bool EnableSmoothedPath { get; set; } = true;
 }

@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace CommunityToolkit.Maui.Converters;
+﻿namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>
 /// Converts <see cref="DateTimeOffset"/> to <see cref="DateTime"/> and back.

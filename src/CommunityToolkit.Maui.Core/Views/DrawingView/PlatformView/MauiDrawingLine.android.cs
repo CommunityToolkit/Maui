@@ -10,12 +10,12 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MauiDrawingLine
 {
 	/// <summary>
-	/// The <see cref="Color"/> that is used to draw this line on the <see cref="MauiDrawingView"/>. This is a bindable property.
+	/// The <see cref="Color"/> that is used to draw this line on the <see cref="MauiDrawingView"/>.
 	/// </summary>
 	public AColor LineColor { get; set; } = AColor.Black;
 
 	/// <summary>
-	/// The collection of <see cref="Point"/> that makes up this line on the <see cref="MauiDrawingView"/>. This is a bindable property.
+	/// The collection of <see cref="Point"/> that makes up this line on the <see cref="MauiDrawingView"/>.
 	/// </summary>
 	public ObservableCollection<APoint> Points { get; set; } = new();
 }

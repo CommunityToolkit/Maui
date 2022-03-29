@@ -1,8 +1,9 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Maui.Core.Views;
+using Microsoft.Maui.Platform;
 #if ANDROID
 using Point = Android.Graphics.PointF;
-# elif IOS || MACCATALYST
+#elif IOS || MACCATALYST
 using Point = CoreGraphics.CGPoint;
 #endif
 
@@ -79,4 +80,112 @@ public static partial class MauiDrawingViewExtensions
 				(((2 * p0.Y) - (5 * p1.Y) + (4 * p2.Y) - p3.Y) * tt) +
 				(((3 * p1.Y) - p0.Y - (3 * p2.Y) + p3.Y) * ttt))
 	};
+
+#if (ANDROID || IOS || MACCATALYST || WINDOWS)
+	/// <summary>
+	/// Set MultiLine mode
+	/// </summary>
+	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/></param>
+	/// <param name="multiLineMode">value</param>
+	public static void SetMultiLineMode(this MauiDrawingView mauiDrawingView, bool multiLineMode)
+	{
+		mauiDrawingView.MultiLineMode = multiLineMode;
+	}
+
+	/// <summary>
+	/// Set ClearOnFinish
+	/// </summary>
+	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/></param>
+	/// <param name="clearOnFinish">value</param>
+	public static void SetClearOnFinish(this MauiDrawingView mauiDrawingView, bool clearOnFinish)
+	{
+		mauiDrawingView.ClearOnFinish = clearOnFinish;
+	}
+
+	/// <summary>
+	/// Set LineColor
+	/// </summary>
+	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/></param>
+	/// <param name="lineColor">line color</param>
+	public static void SetLineColor(this MauiDrawingView mauiDrawingView, Color lineColor)
+	{
+		mauiDrawingView.LineColor = lineColor.ToPlatform();
+	}
+
+	/// <summary>
+	/// Set LineWidth
+	/// </summary>
+	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/></param>
+	/// <param name="lineWidth">line width</param>
+	public static void SetLineWidth(this MauiDrawingView mauiDrawingView, float lineWidth)
+	{
+		mauiDrawingView.LineWidth = lineWidth;
+	}
+
+	/// <summary>
+	/// Set Lines
+	/// </summary>
+	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/><see cref="MauiDrawingView"/></param>
+	/// <param name="drawingView"><see cref="IDrawingView"/></param>
+	public static void SetLines(this MauiDrawingView mauiDrawingView, IDrawingView drawingView)
+	{
+		if (mauiDrawingView.Lines.Count == drawingView.Lines.Count)
+		{
+			return;
+		}
+
+		IReadOnlyList<DrawingLine> lines = drawingView.Lines.ToList();
+		if (!drawingView.MultiLineMode && lines.Count > 1)
+		{
+			lines = lines.TakeLast(1).ToList();
+		}
+
+		mauiDrawingView.Lines.Clear();
+
+		foreach (var line in lines)
+		{
+			mauiDrawingView.Lines.Add(new MauiDrawingLine()
+			{
+				LineColor = line.LineColor.ToPlatform(),
+				EnableSmoothedPath = line.EnableSmoothedPath,
+				Granularity = line.Granularity,
+				LineWidth = line.LineWidth,
+				Points = line.Points.Select(p => new Point((float)p.X, (float)p.Y)).ToObservableCollection()
+			});
+		}
+	}
+
+	/// <summary>
+	/// Set Lines
+	/// </summary>
+	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/><see cref="MauiDrawingView"/></param>
+	/// <param name="drawingView"><see cref="IDrawingView"/></param>
+	public static void SetLines(this IDrawingView drawingView, MauiDrawingView mauiDrawingView)
+	{
+		if (mauiDrawingView.Lines.Count == drawingView.Lines.Count)
+		{
+			return;
+		}
+
+		IReadOnlyList<MauiDrawingLine> lines = mauiDrawingView.Lines.ToList();
+		if (!mauiDrawingView.MultiLineMode && mauiDrawingView.Lines.Count > 1)
+		{
+			lines = lines.TakeLast(1).ToList();
+		}
+
+		drawingView.Lines.Clear();
+
+		foreach (var line in lines)
+		{
+			drawingView.Lines.Add(new DrawingLine()
+			{
+				LineColor = line.LineColor.ToColor() ?? Colors.Transparent,
+				EnableSmoothedPath = line.EnableSmoothedPath,
+				Granularity = line.Granularity,
+				LineWidth = line.LineWidth,
+				Points = line.Points.Select(p => new Microsoft.Maui.Graphics.Point(p.X, p.Y)).ToObservableCollection()
+			});
+		}
+	}
+#endif
 }
