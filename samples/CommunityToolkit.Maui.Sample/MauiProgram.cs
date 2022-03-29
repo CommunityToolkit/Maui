@@ -113,7 +113,6 @@ public static class MauiProgram
 	static void RegisterViewModels(in IServiceCollection services)
 	{
 		// Add Gallery View Models
-		services.AddTransient<AlertsGalleryPage>();
 		services.AddTransient<AlertsGalleryViewModel>();
 		services.AddTransient<BehaviorsGalleryViewModel>();
 		services.AddTransient<ConvertersGalleryViewModel>();
