@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
-    xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views.BadgeView"
+    xmlns:badgeView="clr-namespace:CommunityToolkit.Maui.Views.BadgeView;assembly=CommunityToolkit.Maui"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Views.BadgeViewPage"
     Title="MultiplePopupPage"
     x:TypeArguments="viewModels:BadgeViewViewModel"
@@ -27,24 +27,24 @@
                 <Label
                     Text="Getting started"
                     Style="{StaticResource SectionStyle}"/>
-                <mct:BadgeView
+                <badgeView:BadgeView
                     BackgroundColor="Red"
                     TextColor="White"
                     Text="1">
                     <Label
                         Text="BadgeView"/>
-                </mct:BadgeView>
+                </badgeView:BadgeView>
                 <Label
                     Text="Customization options"
                     Style="{StaticResource SectionStyle}"/>
-                <mct:BadgeView
+                <badgeView:BadgeView
                     BackgroundColor="Blue"
                     TextColor="White"
                     Text="99">
                     <Label
                         Text="Long Text"/>
-                </mct:BadgeView>
-                <mct:BadgeView
+                </badgeView:BadgeView>
+                <badgeView:BadgeView
                     BackgroundColor="Red"
                     FontAttributes="Bold"
                     FontSize="8"
@@ -52,8 +52,8 @@
                     Text="1">
                     <Label
                         Text="Font Customization"/>
-                </mct:BadgeView>
-                <mct:BadgeView
+                </badgeView:BadgeView>
+                <badgeView:BadgeView
                     BackgroundColor="Red"
                     FontAttributes="Bold"
                     FontSize="Medium"
@@ -61,16 +61,16 @@
                     Text="1">
                     <Label
                         Text="Named Font Size"/>
-                </mct:BadgeView>
-                <mct:BadgeView
+                </badgeView:BadgeView>
+                <badgeView:BadgeView
                     BackgroundColor="Red"
                     BorderColor="Orange"
                     TextColor="White"
                     Text="1">
                     <Label
                         Text="Border Customization"/>
-                </mct:BadgeView>
-                <mct:BadgeView
+                </badgeView:BadgeView>
+                <badgeView:BadgeView
                     BackgroundColor="Red"
                     BorderColor="Orange"
                     HasShadow="True"
@@ -78,12 +78,12 @@
                     Text="1">
                     <Label
                         Text="Shadow Customization"/>
-                </mct:BadgeView>
+                </badgeView:BadgeView>
                 <Grid
                     RowDefinitions="auto,auto"
                     ColumnDefinitions="*,*"
                     ColumnSpacing="30">
-                    <mct:BadgeView
+                    <badgeView:BadgeView
                         Grid.Row="0"
                         Grid.Column="0"
                         HorizontalOptions="Start"
@@ -101,8 +101,8 @@
                                 VerticalOptions="Center"
                                 Text="TopLeft"/>
                         </Grid>
-                    </mct:BadgeView>
-                    <mct:BadgeView
+                    </badgeView:BadgeView>
+                    <badgeView:BadgeView
                         Grid.Row="0"
                         Grid.Column="1"
                         HorizontalOptions="Start"
@@ -120,8 +120,8 @@
                                 VerticalOptions="Center"
                                 Text="TopRight"/>
                         </Grid>
-                    </mct:BadgeView>
-                    <mct:BadgeView
+                    </badgeView:BadgeView>
+                    <badgeView:BadgeView
                         Grid.Row="1"
                         Grid.Column="0"
                         HorizontalOptions="Start"
@@ -139,8 +139,8 @@
                                 VerticalOptions="Center"
                                 Text="BottomLeft"/>
                         </Grid>
-                    </mct:BadgeView>
-                    <mct:BadgeView
+                    </badgeView:BadgeView>
+                    <badgeView:BadgeView
                         Grid.Row="1"
                         Grid.Column="1"
                         HorizontalOptions="Start"
@@ -158,12 +158,12 @@
                                 VerticalOptions="Center"
                                 Text="BottomRight"/>
                         </Grid>
-                    </mct:BadgeView>
+                    </badgeView:BadgeView>
                 </Grid>
                 <Label
                     Text="Badge animations"
                     Style="{StaticResource SectionStyle}"/>
-                <mct:BadgeView
+                <badgeView:BadgeView
                     BackgroundColor="Red"
                     Text="{Binding Counter}"
                     TextColor="White">
@@ -178,7 +178,7 @@
                             Command="{Binding DecreaseCommand}"
                             Text="Decrease"/>
                     </StackLayout>
-                </mct:BadgeView>
+                </badgeView:BadgeView>
             </StackLayout>
         </ScrollView>
     </pages:BasePage.Content>
