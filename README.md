@@ -41,7 +41,9 @@ xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
 
 ## Submitting A New Feature
 
-New features will follow the following steps:
+New features will follow the below workflow, described in more detail in the steps below
+
+![New Feature Workflow](https://user-images.githubusercontent.com/13558917/160728690-a0e206f5-d37e-472e-a1bd-8fe686eb37fb.png)
 
 ### 1. Discussion Started
 
