@@ -43,7 +43,7 @@ xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
 
 New features will follow the below workflow, described in more detail in the steps below
 
-![New Feature Workflow](https://user-images.githubusercontent.com/13558917/160728690-a0e206f5-d37e-472e-a1bd-8fe686eb37fb.png)
+[![New Feature Workflow](https://user-images.githubusercontent.com/13558917/160910778-1e61f478-f1f6-48b4-8d37-8016eae1bd12.png)](./build/workflow.sketch)
 
 ### 1. Discussion Started
 
