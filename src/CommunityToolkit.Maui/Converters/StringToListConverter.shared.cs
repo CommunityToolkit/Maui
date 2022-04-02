@@ -30,7 +30,17 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable<st
 	public IList<string> Separators
 	{
 		get => separators;
-		set => separators = value ?? throw new ArgumentNullException(nameof(value));
+		set
+		{
+			ArgumentNullException.ThrowIfNull(value);
+
+			if (value.Any(x => x == null))
+			{
+				throw new ArgumentNullException(nameof(value), $"{nameof(value)} cannot contain null strings");
+			}
+
+			separators = value;
+		}
 	}
 
 	/// <summary>
