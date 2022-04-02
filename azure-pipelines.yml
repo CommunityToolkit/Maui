@@ -67,13 +67,6 @@ jobs:
           Write-Host "##vso[build.updatebuildnumber]$fullVersionString"
         displayName: Set NuGet Version to PR Version
         condition: and(succeeded(), eq(variables['build.reason'], 'PullRequest'))
-      - task: DotNetCoreCLI@2
-        displayName: 'Check Dependencies'
-        inputs:
-          command: 'custom'
-          custom: 'list'
-          arguments: 'package --vulnerable --include-transitive'
-          projects: $(PathToSolution)
       # test
       - task: DotNetCoreCLI@2
         displayName: 'Run Unit Tests'
@@ -114,6 +107,14 @@ jobs:
           solution: '$(PathToCommunityToolkitCsproj)'
           configuration: 'Release'
           msbuildArgs: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'
+      # check vulnerabilities
+      - task: DotNetCoreCLI@2
+        displayName: 'Check Dependencies'
+        inputs:
+          command: 'custom'
+          custom: 'list'
+          arguments: 'package --vulnerable --include-transitive'
+          projects: $(PathToSolution)
       # publish
       - task: PowerShell@2
         displayName: 'Copy NuGet Packages to Staging Directory'
