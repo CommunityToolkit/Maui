@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Platform;
+﻿using System;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WRect = Windows.Foundation.Rect;
@@ -13,6 +14,9 @@ class WrapperControl : Panel
 
 	public WrapperControl(View view, IMauiContext mauiContext)
 	{
+		ArgumentNullException.ThrowIfNull(view);
+		ArgumentNullException.ThrowIfNull(mauiContext);
+
 		this.view = view;
 		this.view.MeasureInvalidated += OnMeasureInvalidated;
 
