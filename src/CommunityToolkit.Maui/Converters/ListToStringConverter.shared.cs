@@ -9,7 +9,9 @@ namespace CommunityToolkit.Maui.Converters;
 public class ListToStringConverter : BaseConverterOneWay<IEnumerable, string>
 {
 	/// <summary>
-	/// The separator that should be between each item in the collection
+	/// The separator value that separates each item in the collection
+	/// This value is superceded by the ConverterParameter, if provided
+	/// If ConverterParameter is null, this Separator property will be used for the <see cref="ListToStringConverter"/>
 	/// </summary>
 	public string Separator { get; set; } = string.Empty;
 
@@ -25,7 +27,7 @@ public class ListToStringConverter : BaseConverterOneWay<IEnumerable, string>
 	{
 		ArgumentNullException.ThrowIfNull(value);
 
-		parameter ??= Separator; // if parameter is not assigned (aka parameter is null), default to the Separator property. 
+		parameter ??= Separator; // if the ConverterParameter is not assigned (aka parameter is null), we will default to the Separator property. 
 
 		if (parameter is not string separator)
 		{
