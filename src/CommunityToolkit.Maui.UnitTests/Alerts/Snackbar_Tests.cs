@@ -155,4 +155,17 @@ public class Snackbar_Tests : BaseTest
 	{
 		await snackbar.Invoking(x => x.Dismiss(CancellationToken.None)).Should().NotThrowAsync<OperationCanceledException>();
 	}
+
+	[Fact]
+	public void SnackbarNullValuesThrowArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => new Snackbar { Text = null });
+		Assert.Throws<ArgumentNullException>(() => new Snackbar { ActionButtonText = null });
+		Assert.Throws<ArgumentNullException>(() => Snackbar.Make(null));
+		Assert.Throws<ArgumentNullException>(() => Snackbar.Make(string.Empty, actionButtonText: null));
+		Assert.ThrowsAsync<ArgumentNullException>(() => new Button().DisplaySnackbar(null));
+		Assert.ThrowsAsync<ArgumentNullException>(() => new Button().DisplaySnackbar(string.Empty, actionButtonText: null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
 }

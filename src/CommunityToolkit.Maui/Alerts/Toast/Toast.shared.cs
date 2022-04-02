@@ -14,8 +14,14 @@ namespace CommunityToolkit.Maui.Alerts;
 /// <inheritdoc/>
 public partial class Toast : IToast
 {
+	string text = string.Empty;
+
 	/// <inheritdoc/>
-	public string Text { get; init; } = string.Empty;
+	public string Text
+	{
+		get => text;
+		init => text = value ?? throw new ArgumentNullException(nameof(value));
+	}
 
 	/// <inheritdoc/>
 	public ToastDuration Duration { get; init; } = ToastDuration.Short;

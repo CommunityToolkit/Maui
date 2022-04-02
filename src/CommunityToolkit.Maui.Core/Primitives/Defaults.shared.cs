@@ -5,6 +5,7 @@ namespace CommunityToolkit.Maui.Core;
 /// <summary>
 /// Default Values for CommunityToolkit.Maui
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
 public static class Defaults
 {
 	/// <summary>

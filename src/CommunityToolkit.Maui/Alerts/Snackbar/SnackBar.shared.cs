@@ -14,36 +14,46 @@ namespace CommunityToolkit.Maui.Alerts;
 /// <inheritdoc/>
 public partial class Snackbar : ISnackbar
 {
+	internal const string defaultActionButtonText = "OK";
 	static readonly WeakEventManager weakEventManager = new();
+
+	string text = string.Empty;
+	string actionButtonText = defaultActionButtonText;
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="Snackbar"/>
 	/// </summary>
 	public Snackbar()
 	{
-		Text = string.Empty;
 		Duration = GetDefaultTimeSpan();
-		ActionButtonText = "OK";
 		VisualOptions = new SnackbarOptions();
 	}
+
+	/// <inheritdoc/>
+	public static bool IsShown { get; private set; }
 
 	/// <inheritdoc/>
 	public SnackbarOptions VisualOptions { get; init; }
 
 	/// <inheritdoc/>
-	public string Text { get; init; }
+	public string Text
+	{
+		get => text;
+		init => text = value ?? throw new ArgumentNullException(nameof(value));
+	}
+
+	/// <inheritdoc/>
+	public string ActionButtonText
+	{
+		get => actionButtonText;
+		init => actionButtonText = value ?? throw new ArgumentNullException(nameof(value));
+	}
 
 	/// <inheritdoc/>
 	public TimeSpan Duration { get; init; }
 
 	/// <inheritdoc/>
 	public Action? Action { get; init; }
-
-	/// <inheritdoc/>
-	public string ActionButtonText { get; init; }
-
-	/// <inheritdoc/>
-	public static bool IsShown { get; private set; }
 
 	/// <inheritdoc/>
 	public IView? Anchor { get; init; }
@@ -75,11 +85,14 @@ public partial class Snackbar : ISnackbar
 	public static ISnackbar Make(
 		string message,
 		Action? action = null,
-		string actionButtonText = "OK",
+		string actionButtonText = defaultActionButtonText,
 		TimeSpan? duration = null,
 		SnackbarOptions? visualOptions = null,
 		IView? anchor = null)
 	{
+		ArgumentNullException.ThrowIfNull(message);
+		ArgumentNullException.ThrowIfNull(actionButtonText);
+
 		return new Snackbar
 		{
 			Text = message,
@@ -209,8 +222,14 @@ public static class SnackbarVisualElementExtension
 		this VisualElement? visualElement,
 		string message,
 		Action? action = null,
-		string actionButtonText = "OK",
+		string actionButtonText = Snackbar.defaultActionButtonText,
 		TimeSpan? duration = null,
 		SnackbarOptions? visualOptions = null,
-		CancellationToken token = default) => Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement).Show(token);
+		CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(message);
+		ArgumentNullException.ThrowIfNull(actionButtonText);
+
+		return Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement).Show(token);
+	}
 }

@@ -112,4 +112,12 @@ public class Toast_Tests : BaseTest
 	{
 		Assert.Throws<ArgumentOutOfRangeException>(() => Toast.Make("Invalid text size", ToastDuration.Short, textSize));
 	}
+
+	[Fact]
+	public void ToastNullValuesThrowArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => new Toast { Text = null });
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
 }
