@@ -12,7 +12,7 @@ public class ListToStringConverter : BaseConverterOneWay<IEnumerable, string>
 
 	/// <summary>
 	/// The value that separates each item in the collection
-	/// This value is superceded by the ConverterParameter, if provided
+	/// This value is superseded by the ConverterParameter, if provided
 	/// If ConverterParameter is null, this Separator property will be used for the <see cref="ListToStringConverter"/>
 	/// </summary>
 	public string Separator
