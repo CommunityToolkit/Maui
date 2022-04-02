@@ -100,6 +100,10 @@ public class StringToListConverter_Tests : BaseTest
 	public void StringToListConverterNullInputTest()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => new StringToListConverter { Separator = null });
+		Assert.Throws<ArgumentNullException>(() => new StringToListConverter().Separator = null);
+		Assert.Throws<ArgumentNullException>(() => new StringToListConverter { Separators = null });
+		Assert.Throws<ArgumentNullException>(() => new StringToListConverter().Separators = null);
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new StringToListConverter()).Convert(string.Empty, null, null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new StringToListConverter()).ConvertBack(new List<string>(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
