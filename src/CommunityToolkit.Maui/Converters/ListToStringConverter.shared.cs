@@ -25,7 +25,9 @@ public class ListToStringConverter : BaseConverterOneWay<IEnumerable, string>
 	{
 		ArgumentNullException.ThrowIfNull(value);
 
-		if ((parameter ?? Separator ?? string.Empty) is not string separator)
+		parameter ??= Separator; // if parameter is not assigned (aka parameter is null), default to the Separator property. 
+
+		if (parameter is not string separator)
 		{
 			throw new ArgumentException("Parameter cannot be casted to string", nameof(parameter));
 		}
