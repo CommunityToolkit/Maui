@@ -16,6 +16,23 @@ public class Snackbar_Tests : BaseTest
 	}
 
 	[Fact]
+	public void SnackbarDefautValues()
+	{
+		Assert.Null(snackbar.Action);
+		Assert.Equal(Snackbar.defaultActionButtonText, snackbar.ActionButtonText);
+		Assert.Null(snackbar.Anchor);
+		Assert.Equal(Snackbar.GetDefaultTimeSpan(), snackbar.Duration);
+		Assert.Equal(string.Empty, snackbar.Text);
+
+		Assert.Equal(Font.SystemFontOfSize(Defaults.FontSize), snackbar.VisualOptions.ActionButtonFont);
+		Assert.Equal(Defaults.BackgroundColor, snackbar.VisualOptions.BackgroundColor);
+		Assert.Equal(Defaults.CharacterSpacing, snackbar.VisualOptions.CharacterSpacing);
+		Assert.Equal(new CornerRadius(4, 4, 4, 4), snackbar.VisualOptions.CornerRadius);
+		Assert.Equal(Font.SystemFontOfSize(Defaults.FontSize), snackbar.VisualOptions.Font);
+		Assert.Equal(Defaults.TextColor, snackbar.VisualOptions.TextColor);
+	}
+
+	[Fact]
 	public async Task SnackbarShow_IsShownTrue()
 	{
 		await snackbar.Show();

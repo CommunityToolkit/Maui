@@ -114,6 +114,8 @@ public partial class Snackbar : ISnackbar
 	/// </summary>
 	public virtual Task Dismiss(CancellationToken token = default) => Dispatcher.GetForCurrentThread().DispatchIfRequiredAsync(() => DismissNative(token));
 
+	internal static TimeSpan GetDefaultTimeSpan() => TimeSpan.FromSeconds(3);
+
 #if !(IOS || ANDROID || MACCATALYST || WINDOWS)
 	/// <inheritdoc/>
 	private partial Task ShowNative(CancellationToken token)
@@ -159,8 +161,6 @@ public partial class Snackbar : ISnackbar
 		return ValueTask.CompletedTask;
 	}
 #endif
-
-	static TimeSpan GetDefaultTimeSpan() => TimeSpan.FromSeconds(3);
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS
 

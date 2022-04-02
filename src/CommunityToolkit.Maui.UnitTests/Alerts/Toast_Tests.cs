@@ -16,6 +16,14 @@ public class Toast_Tests : BaseTest
 	}
 
 	[Fact]
+	public void ToastDefaultValues()
+	{
+		Assert.Equal(string.Empty, toast.Text);
+		Assert.Equal(ToastDuration.Short, toast.Duration);
+		Assert.Equal(Defaults.FontSize, toast.TextSize);
+	}
+
+	[Fact]
 	public void ToastMake_NewToastCreatedWithValidProperties()
 	{
 		var expectedToast = new Toast
