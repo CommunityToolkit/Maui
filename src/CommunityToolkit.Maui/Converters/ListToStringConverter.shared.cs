@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Converters;
 public class ListToStringConverter : BaseConverterOneWay<IEnumerable, string>
 {
 	/// <summary>
-	/// The separator value that separates each item in the collection
+	/// The value that separates each item in the collection
 	/// This value is superceded by the ConverterParameter, if provided
 	/// If ConverterParameter is null, this Separator property will be used for the <see cref="ListToStringConverter"/>
 	/// </summary>
