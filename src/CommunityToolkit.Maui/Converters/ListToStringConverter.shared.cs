@@ -8,12 +8,18 @@ namespace CommunityToolkit.Maui.Converters;
 /// </summary>
 public class ListToStringConverter : BaseConverterOneWay<IEnumerable, string>
 {
+	string separator = string.Empty;
+
 	/// <summary>
 	/// The value that separates each item in the collection
 	/// This value is superceded by the ConverterParameter, if provided
 	/// If ConverterParameter is null, this Separator property will be used for the <see cref="ListToStringConverter"/>
 	/// </summary>
-	public string Separator { get; set; } = string.Empty;
+	public string Separator
+	{
+		get => separator;
+		set => separator = value ?? throw new ArgumentNullException(nameof(value));
+	}
 
 	/// <summary>
 	/// Concatenates the items of a collection, using the specified <see cref="Separator"/> between each item. On each item ToString() will be called.
