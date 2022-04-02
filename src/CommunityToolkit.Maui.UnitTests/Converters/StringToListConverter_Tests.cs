@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using CommunityToolkit.Maui.Converters;
+﻿using CommunityToolkit.Maui.Converters;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
@@ -20,15 +19,56 @@ public class StringToListConverter_Tests : BaseTest
 
 	[Theory]
 	[MemberData(nameof(ListData))]
-	public void StringToListConverter(string? value, object? parameter, object? expectedResult)
+	public void StringToListConverterConverterParameterTest(string? value, object? parameter, object? expectedResult)
 	{
-		var stringToListConverter = new StringToListConverter();
+		var stringToListConverter = new StringToListConverter
+		{
+			Separator = "~",
+			Separators = new[] { "@", "*" }
+		};
 
 		var convertFromResult = stringToListConverter.ConvertFrom(value, typeof(IList<string>), parameter, null);
 		var convertResult = (IEnumerable<string>?)((ICommunityToolkitValueConverter)stringToListConverter).Convert(value, typeof(IList<string>), parameter, null);
 
 		Assert.Equal(expectedResult, convertFromResult);
 		Assert.Equal(expectedResult, convertResult);
+	}
+
+	[Fact]
+	public void StringToListConverterSeparatorsTest()
+	{
+		const string valueToConvert = "MAUI@Toolkit*Converter@Test";
+		var expectedResult = new[] { "MAUI", "Toolkit", "Converter", "Test" };
+
+		var stringToListConverter = new StringToListConverter
+		{
+			Separator = "~",
+			Separators = new[] { "@", "*" }
+		};
+
+		var convertFromResult = stringToListConverter.ConvertFrom(valueToConvert, typeof(IList<string>), null, null);
+		var convertResult = (IEnumerable<string>?)((ICommunityToolkitValueConverter)stringToListConverter).Convert(valueToConvert, typeof(IList<string>), null, null);
+
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
+	}
+
+	[Fact]
+	public void StringToListConverterSeparatorTest()
+	{
+		const string valueToConvert = "MAUI~Toolkit~Converter~Test";
+		var expectedResult = new[] { "MAUI", "Toolkit", "Converter", "Test" };
+
+		var stringToListConverter = new StringToListConverter
+		{
+			Separator = "~",
+		};
+
+		var convertFromResult = stringToListConverter.ConvertFrom(valueToConvert, typeof(IList<string>), null, null);
+		var convertResult = (IEnumerable<string>?)((ICommunityToolkitValueConverter)stringToListConverter).Convert(valueToConvert, typeof(IList<string>), null, null);
+
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
 	}
 
 	[Theory]

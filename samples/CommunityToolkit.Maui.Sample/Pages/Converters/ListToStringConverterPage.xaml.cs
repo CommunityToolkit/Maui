@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Maui.Sample.ViewModels.Converters;
+﻿using CommunityToolkit.Maui.Converters;
+using CommunityToolkit.Maui.Markup;
+using CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
