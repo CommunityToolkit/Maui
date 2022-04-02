@@ -33,9 +33,6 @@ public partial class Snackbar : ISnackbar
 	public static bool IsShown { get; private set; }
 
 	/// <inheritdoc/>
-	public SnackbarOptions VisualOptions { get; init; }
-
-	/// <inheritdoc/>
 	public string Text
 	{
 		get => text;
@@ -48,6 +45,9 @@ public partial class Snackbar : ISnackbar
 		get => actionButtonText;
 		init => actionButtonText = value ?? throw new ArgumentNullException(nameof(value));
 	}
+
+	/// <inheritdoc/>
+	public SnackbarOptions VisualOptions { get; init; }
 
 	/// <inheritdoc/>
 	public TimeSpan Duration { get; init; }
