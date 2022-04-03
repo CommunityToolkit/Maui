@@ -103,7 +103,7 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable<st
 		{
 			if (string.IsNullOrEmpty(separator))
 			{
-				throw new ArgumentException("An empty string is not a vald separator", nameof(value));
+				throw new ArgumentException("An empty string is not a valid separator", nameof(value));
 			}
 
 			return Split(value, separator);
