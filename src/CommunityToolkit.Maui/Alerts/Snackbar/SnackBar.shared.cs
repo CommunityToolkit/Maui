@@ -90,9 +90,6 @@ public partial class Snackbar : ISnackbar
 		SnackbarOptions? visualOptions = null,
 		IView? anchor = null)
 	{
-		ArgumentNullException.ThrowIfNull(message);
-		ArgumentNullException.ThrowIfNull(actionButtonText);
-
 		return new Snackbar
 		{
 			Text = message,
@@ -225,11 +222,5 @@ public static class SnackbarVisualElementExtension
 		string actionButtonText = Snackbar.defaultActionButtonText,
 		TimeSpan? duration = null,
 		SnackbarOptions? visualOptions = null,
-		CancellationToken token = default)
-	{
-		ArgumentNullException.ThrowIfNull(message);
-		ArgumentNullException.ThrowIfNull(actionButtonText);
-
-		return Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement).Show(token);
-	}
+		CancellationToken token = default) => Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement).Show(token);
 }

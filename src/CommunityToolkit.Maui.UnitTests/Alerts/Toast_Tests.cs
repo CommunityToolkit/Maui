@@ -16,14 +16,6 @@ public class Toast_Tests : BaseTest
 	}
 
 	[Fact]
-	public void ToastDefaultValues()
-	{
-		Assert.Equal(string.Empty, toast.Text);
-		Assert.Equal(ToastDuration.Short, toast.Duration);
-		Assert.Equal(Defaults.FontSize, toast.TextSize);
-	}
-
-	[Fact]
 	public void ToastMake_NewToastCreatedWithValidProperties()
 	{
 		var expectedToast = new Toast
@@ -92,6 +84,7 @@ public class Toast_Tests : BaseTest
 	{
 		toast.Text.Should().BeEmpty();
 		toast.Duration.Should().Be(ToastDuration.Short);
+		toast.TextSize.Should().Be(Defaults.FontSize);
 	}
 
 	[Fact]
@@ -99,6 +92,7 @@ public class Toast_Tests : BaseTest
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		Assert.Throws<ArgumentNullException>(() => Toast.Make(null));
+		Assert.Throws<ArgumentNullException>(() => new Toast { Text = null });
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
@@ -110,6 +104,7 @@ public class Toast_Tests : BaseTest
 	public void ToastMake_NewToastCreatedWithInvalidToastDuration_ShouldThrowInvalidEnumArgumentException(int duration)
 	{
 		Assert.Throws<InvalidEnumArgumentException>(() => Toast.Make("Invalid Duration", (ToastDuration)duration));
+		Assert.Throws<InvalidEnumArgumentException>(() => new Toast { Duration = (ToastDuration)duration });
 	}
 
 	[Theory]
@@ -119,14 +114,6 @@ public class Toast_Tests : BaseTest
 	public void ToastMake_NewToastCreatedWithInvalidFontSize_ShouldThrowArgumentOutOfRangeException(int textSize)
 	{
 		Assert.Throws<ArgumentOutOfRangeException>(() => Toast.Make("Invalid text size", ToastDuration.Short, textSize));
-	}
-
-	[Fact]
-	public void ToastNullValuesThrowArgumentNullException()
-	{
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => new Toast { Text = null });
-		Assert.Throws<ArgumentNullException>(() => Toast.Make(null));
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentOutOfRangeException>(() => new Toast { TextSize = textSize });
 	}
 }
