@@ -121,6 +121,8 @@ public class StringToListConverter_Tests : BaseTest
 		Assert.Throws<ArgumentException>(() => new StringToListConverter { Separators = new List<string> { ",", string.Empty } });
 		Assert.Throws<ArgumentException>(() => new StringToListConverter().Separators = new List<string> { ",", string.Empty });
 		Assert.Throws<ArgumentException>(() => new StringToListConverter().ConvertFrom(string.Empty, typeof(IList<string>), string.Empty, null));
+		Assert.Throws<ArgumentException>(() => new StringToListConverter().ConvertFrom(string.Empty, typeof(IList<string>), new[] { ",", "" }, null));
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)new StringToListConverter()).Convert(string.Empty, typeof(IList<string>), string.Empty, null));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)new StringToListConverter()).Convert(string.Empty, typeof(IList<string>), new[] { ",", "" }, null));
 	}
 }

@@ -53,7 +53,7 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable<st
 				{
 					throw new ArgumentNullException(nameof(value), $"{nameof(value)} cannot contain null strings");
 				}
-				else if(string.IsNullOrEmpty(stringValue))
+				else if (string.IsNullOrEmpty(stringValue))
 				{
 					throw new ArgumentException("An empty string is not a vald separator", nameof(value));
 				}
@@ -85,6 +85,18 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable<st
 
 		if (parameter is string[] separators)
 		{
+			foreach (var stringValue in separators)
+			{
+				if (stringValue is null)
+				{
+					throw new ArgumentNullException(nameof(value), $"{nameof(value)} cannot contain null strings");
+				}
+				else if (string.IsNullOrEmpty(stringValue))
+				{
+					throw new ArgumentException("An empty string is not a vald separator", nameof(value));
+				}
+			}
+
 			return Split(value, separators);
 		}
 		else if (parameter is string separator)
