@@ -17,7 +17,7 @@ public partial class Popup : Element, IPopup
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="Color"/> property.
 	/// </summary>
-	public static readonly BindableProperty ColorProperty = BindableProperty.Create(nameof(Color), typeof(Color), typeof(Popup), Colors.LightGray);
+	public static readonly BindableProperty ColorProperty = BindableProperty.Create(nameof(Color), typeof(Color), typeof(Popup), Colors.LightGray, propertyChanged: OnColorChanged);
 
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="Size"/> property.
@@ -238,6 +238,11 @@ public partial class Popup : Element, IPopup
 	{
 		var popup = (Popup)bindable;
 		popup.OnBindingContextChanged();
+	}
+
+	static void OnColorChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		ArgumentNullException.ThrowIfNull(newValue);
 	}
 
 	void IPopup.OnClosed(object? result) => Handler.Invoke(nameof(IPopup.OnClosed), result);
