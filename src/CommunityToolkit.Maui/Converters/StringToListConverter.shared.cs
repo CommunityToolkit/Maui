@@ -55,7 +55,7 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable<st
 				}
 				else if (string.IsNullOrEmpty(stringValue))
 				{
-					throw new ArgumentException("An empty string is not a vald separator", nameof(value));
+					throw new ArgumentException("An empty string is not a valid separator", nameof(value));
 				}
 			}
 
