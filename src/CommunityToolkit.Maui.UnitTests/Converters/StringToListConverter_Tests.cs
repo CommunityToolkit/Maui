@@ -112,4 +112,15 @@ public class StringToListConverter_Tests : BaseTest
 #pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
+
+	[Fact]
+	public void StringToListConverterEmptyStringInputTest()
+	{
+		Assert.Throws<ArgumentException>(() => new StringToListConverter { Separator = string.Empty });
+		Assert.Throws<ArgumentException>(() => new StringToListConverter().Separator = string.Empty);
+		Assert.Throws<ArgumentException>(() => new StringToListConverter { Separators = new List<string> { ",", string.Empty } });
+		Assert.Throws<ArgumentException>(() => new StringToListConverter().Separators = new List<string> { ",", string.Empty });
+		Assert.Throws<ArgumentException>(() => new StringToListConverter().ConvertFrom(string.Empty, typeof(IList<string>), string.Empty, null));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)new StringToListConverter()).Convert(string.Empty, typeof(IList<string>), string.Empty, null));
+	}
 }

@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// </summary>
 public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable<string>>
 {
-	string separator = string.Empty;
+	string separator = " ";
 	IList<string> separators = Array.Empty<string>();
 
 	/// <summary>
@@ -19,7 +19,20 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable<st
 	public string Separator
 	{
 		get => separator;
-		set => separator = value ?? throw new ArgumentNullException(nameof(value));
+		set
+		{
+			if (value is null)
+			{
+				throw new ArgumentNullException(nameof(value));
+			}
+
+			if (string.IsNullOrEmpty(value))
+			{
+				throw new ArgumentException("An empty string is not a vald separator", nameof(value));
+			}
+
+			separator = value;
+		}
 	}
 
 	/// <summary>
@@ -34,9 +47,16 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable<st
 		{
 			ArgumentNullException.ThrowIfNull(value);
 
-			if (value.Any(x => x == null))
+			foreach (var stringValue in value)
 			{
-				throw new ArgumentNullException(nameof(value), $"{nameof(value)} cannot contain null strings");
+				if (stringValue is null)
+				{
+					throw new ArgumentNullException(nameof(value), $"{nameof(value)} cannot contain null strings");
+				}
+				else if(string.IsNullOrEmpty(stringValue))
+				{
+					throw new ArgumentException("An empty string is not a vald separator", nameof(value));
+				}
 			}
 
 			separators = value;
@@ -69,6 +89,11 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable<st
 		}
 		else if (parameter is string separator)
 		{
+			if (string.IsNullOrEmpty(separator))
+			{
+				throw new ArgumentException("An empty string is not a vald separator", nameof(value));
+			}
+
 			return Split(value, separator);
 		}
 		else if (parameter is not null)
