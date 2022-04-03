@@ -7,15 +7,61 @@ namespace CommunityToolkit.Maui.Converters;
 /// </summary>
 public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable<string>>
 {
-	/// <summary>
-	/// The string that delimits the substrings in this string.
-	/// </summary>
-	public string Separator { get; set; } = string.Empty;
+	string separator = " ";
+	IList<string> separators = Array.Empty<string>();
 
 	/// <summary>
-	/// The strings that delimits the substrings in this string.
+	/// The string that delimits the substrings in this string
+	/// This value is superseded by the ConverterParameter, if provided
+	/// This value is also superseded by <see cref="Separators"/>, if provided
+	/// If ConverterParameter is null and <see cref="Separators"/> is not assigned, this property will be used to delimit the substrings
 	/// </summary>
-	public IList<string> Separators { get; } = new List<string>();
+	public string Separator
+	{
+		get => separator;
+		set
+		{
+			if (value is null)
+			{
+				throw new ArgumentNullException(nameof(value));
+			}
+
+			if (string.IsNullOrEmpty(value))
+			{
+				throw new ArgumentException("An empty string is not a valid separator", nameof(value));
+			}
+
+			separator = value;
+		}
+	}
+
+	/// <summary>
+	/// The strings that delimit the substrings in this string
+	/// This value is superseded by the ConverterParameter, if provided
+	/// If ConverterParameter is null, this property will be used to delimit the substrings
+	/// </summary>
+	public IList<string> Separators
+	{
+		get => separators;
+		set
+		{
+			ArgumentNullException.ThrowIfNull(value);
+
+			foreach (var stringValue in value)
+			{
+				if (stringValue is null)
+				{
+					throw new ArgumentNullException(nameof(value), $"{nameof(value)} cannot contain null strings");
+				}
+				else if (string.IsNullOrEmpty(stringValue))
+				{
+					throw new ArgumentException("An empty string is not a valid separator", nameof(value));
+				}
+			}
+
+			separators = value;
+		}
+	}
 
 	/// <summary>
 	/// A bitwise combination of the enumeration values that specifies whether to trim substrings and include empty substrings.
@@ -39,15 +85,30 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable<st
 
 		if (parameter is string[] separators)
 		{
+			foreach (var stringValue in separators)
+			{
+				if (stringValue is null)
+				{
+					throw new ArgumentNullException(nameof(value), $"{nameof(value)} cannot contain null strings");
+				}
+				else if (string.IsNullOrEmpty(stringValue))
+				{
+					throw new ArgumentException("An empty string is not a valid separator", nameof(value));
+				}
+			}
+
 			return Split(value, separators);
 		}
-
-		if (parameter is string separator)
+		else if (parameter is string separator)
 		{
+			if (string.IsNullOrEmpty(separator))
+			{
+				throw new ArgumentException("An empty string is not a valid separator", nameof(value));
+			}
+
 			return Split(value, separator);
 		}
-
-		if (parameter != null)
+		else if (parameter is not null)
 		{
 			throw new ArgumentException("Parameter cannot be casted to string nor string[]", nameof(parameter));
 		}

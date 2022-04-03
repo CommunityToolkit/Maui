@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using System.ComponentModel;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.Views;
 using Xunit;
@@ -179,11 +180,48 @@ public class PopupTests : BaseHandlerTest
 		Assert.Null(result);
 	}
 
+	[Fact]
+	public void NullColorThrowsArgumentNullException()
+	{
+		var popupViewModel = new PopupViewModel();
+		var popupWithBinding = new Popup
+		{
+			BindingContext = popupViewModel
+		};
+		popupWithBinding.SetBinding(Popup.ColorProperty, nameof(PopupViewModel.Color));
+
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => new Popup { Color = null });
+		Assert.Throws<ArgumentNullException>(() => new Popup().Color = null);
+		Assert.Throws<ArgumentNullException>(() => popupViewModel.Color = null);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
 	class MockPopup : Popup
 	{
 		public MockPopup()
 		{
 			ResultWhenUserTapsOutsideOfPopup = resultWhenUserTapsOutsideOfPopup;
+		}
+	}
+
+	class PopupViewModel : INotifyPropertyChanged
+	{
+		Color? color = new();
+
+		public event PropertyChangedEventHandler? PropertyChanged;
+
+		public Color? Color
+		{
+			get => color;
+			set
+			{
+				if(value != color)
+				{
+					color = value;
+					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Color)));
+				}
+			}
 		}
 	}
 
