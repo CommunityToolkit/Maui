@@ -21,6 +21,12 @@ public static class Defaults
 	public const double CharacterSpacing = 0.0d;
 
 	/// <summary>
+	/// Default Character Spacing
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public const string ActionButtonText = "OK";
+
+	/// <summary>
 	/// Default Text Color
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]

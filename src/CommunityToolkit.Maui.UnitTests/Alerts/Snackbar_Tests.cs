@@ -19,7 +19,7 @@ public class Snackbar_Tests : BaseTest
 	public void SnackbarDefautValues()
 	{
 		Assert.Null(snackbar.Action);
-		Assert.Equal(Snackbar.defaultActionButtonText, snackbar.ActionButtonText);
+		Assert.Equal(Defaults.ActionButtonText, snackbar.ActionButtonText);
 		Assert.Null(snackbar.Anchor);
 		Assert.Equal(Snackbar.GetDefaultTimeSpan(), snackbar.Duration);
 		Assert.Equal(string.Empty, snackbar.Text);

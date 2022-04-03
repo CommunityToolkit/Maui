@@ -14,11 +14,10 @@ namespace CommunityToolkit.Maui.Alerts;
 /// <inheritdoc/>
 public partial class Snackbar : ISnackbar
 {
-	internal const string defaultActionButtonText = "OK";
 	static readonly WeakEventManager weakEventManager = new();
 
 	string text = string.Empty;
-	string actionButtonText = defaultActionButtonText;
+	string actionButtonText = Defaults.ActionButtonText;
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="Snackbar"/>
@@ -85,7 +84,7 @@ public partial class Snackbar : ISnackbar
 	public static ISnackbar Make(
 		string message,
 		Action? action = null,
-		string actionButtonText = defaultActionButtonText,
+		string actionButtonText = Defaults.ActionButtonText,
 		TimeSpan? duration = null,
 		SnackbarOptions? visualOptions = null,
 		IView? anchor = null)
@@ -206,7 +205,7 @@ public partial class Snackbar : ISnackbar
 public static class SnackbarVisualElementExtension
 {
 	/// <summary>
-	/// Display snackbar with the anchor
+	/// Display snackbar anchored to <see cref="VisualElement"/>
 	/// </summary>
 	/// <param name="visualElement">Anchor element</param>
 	/// <param name="message">Text of the snackbar</param>
@@ -219,7 +218,7 @@ public static class SnackbarVisualElementExtension
 		this VisualElement? visualElement,
 		string message,
 		Action? action = null,
-		string actionButtonText = Snackbar.defaultActionButtonText,
+		string actionButtonText = Defaults.ActionButtonText,
 		TimeSpan? duration = null,
 		SnackbarOptions? visualOptions = null,
 		CancellationToken token = default) => Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement).Show(token);
