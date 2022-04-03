@@ -36,7 +36,7 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable<st
 	}
 
 	/// <summary>
-	/// The strings that delimits the substrings in this string
+	/// The strings that delimit the substrings in this string
 	/// This value is superseded by the ConverterParameter, if provided
 	/// If ConverterParameter is null, this property will be used to delimit the substrings
 	/// </summary>
