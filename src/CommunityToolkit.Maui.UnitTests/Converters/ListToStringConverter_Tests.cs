@@ -28,6 +28,17 @@ public class ListToStringConverter_Tests : BaseTest
 		Assert.Equal(expectedResult, convertFromResult);
 	}
 
+	[Fact]
+	public void NullSeparatorValueThrowArgumentNullException()
+	{
+		var listToStringConverter = new ListToStringConverter();
+
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => listToStringConverter.Separator = null);
+		Assert.Throws<ArgumentNullException>(() => new ListToStringConverter { Separator = null });
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
 	[Theory]
 	[InlineData(0)]
 	[InlineData(5.5)]
