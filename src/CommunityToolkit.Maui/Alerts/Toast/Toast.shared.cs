@@ -14,14 +14,46 @@ namespace CommunityToolkit.Maui.Alerts;
 /// <inheritdoc/>
 public partial class Toast : IToast
 {
-	/// <inheritdoc/>
-	public string Text { get; init; } = string.Empty;
+	string text = string.Empty;
+	ToastDuration duration = ToastDuration.Short;
+	double textSize = Defaults.FontSize;
 
 	/// <inheritdoc/>
-	public ToastDuration Duration { get; init; } = ToastDuration.Short;
+	public string Text
+	{
+		get => text;
+		init => text = value ?? throw new ArgumentNullException(nameof(value));
+	}
 
 	/// <inheritdoc/>
-	public double TextSize { get; init; } = Defaults.FontSize;
+	public ToastDuration Duration
+	{
+		get => duration;
+		init
+		{
+			if (!Enum.IsDefined(typeof(ToastDuration), value))
+			{
+				throw new InvalidEnumArgumentException(nameof(value), (int)value, typeof(ToastDuration));
+			}
+
+			duration = value;
+		}
+	}
+
+	/// <inheritdoc/>
+	public double TextSize
+	{
+		get => textSize;
+		init
+		{
+			if (value <= 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(value), "Toast font size must be positive");
+			}
+
+			textSize = value;
+		}
+	}
 
 	/// <summary>
 	/// Create new Toast
@@ -34,19 +66,7 @@ public partial class Toast : IToast
 		string message,
 		ToastDuration duration = ToastDuration.Short,
 		double textSize = Defaults.FontSize)
-	{
-		ArgumentNullException.ThrowIfNull(message);
-
-		if (!Enum.IsDefined(typeof(ToastDuration), duration))
-		{
-			throw new InvalidEnumArgumentException(nameof(duration), (int)duration, typeof(ToastDuration));
-		}
-
-		if (textSize <= 0)
-		{
-			throw new ArgumentOutOfRangeException(nameof(textSize), "Toast font size must be positive");
-		}
-
+	{	
 		return new Toast
 		{
 			Text = message,

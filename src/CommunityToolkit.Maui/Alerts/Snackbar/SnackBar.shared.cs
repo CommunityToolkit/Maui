@@ -16,34 +16,43 @@ public partial class Snackbar : ISnackbar
 {
 	static readonly WeakEventManager weakEventManager = new();
 
+	string text = string.Empty;
+	string actionButtonText = Defaults.ActionButtonText;
+
 	/// <summary>
 	/// Initializes a new instance of <see cref="Snackbar"/>
 	/// </summary>
 	public Snackbar()
 	{
-		Text = string.Empty;
 		Duration = GetDefaultTimeSpan();
-		ActionButtonText = "OK";
 		VisualOptions = new SnackbarOptions();
+	}
+
+	/// <inheritdoc/>
+	public static bool IsShown { get; private set; }
+
+	/// <inheritdoc/>
+	public string Text
+	{
+		get => text;
+		init => text = value ?? throw new ArgumentNullException(nameof(value));
+	}
+
+	/// <inheritdoc/>
+	public string ActionButtonText
+	{
+		get => actionButtonText;
+		init => actionButtonText = value ?? throw new ArgumentNullException(nameof(value));
 	}
 
 	/// <inheritdoc/>
 	public SnackbarOptions VisualOptions { get; init; }
 
 	/// <inheritdoc/>
-	public string Text { get; init; }
-
-	/// <inheritdoc/>
 	public TimeSpan Duration { get; init; }
 
 	/// <inheritdoc/>
 	public Action? Action { get; init; }
-
-	/// <inheritdoc/>
-	public string ActionButtonText { get; init; }
-
-	/// <inheritdoc/>
-	public static bool IsShown { get; private set; }
 
 	/// <inheritdoc/>
 	public IView? Anchor { get; init; }
@@ -75,7 +84,7 @@ public partial class Snackbar : ISnackbar
 	public static ISnackbar Make(
 		string message,
 		Action? action = null,
-		string actionButtonText = "OK",
+		string actionButtonText = Defaults.ActionButtonText,
 		TimeSpan? duration = null,
 		SnackbarOptions? visualOptions = null,
 		IView? anchor = null)
@@ -100,6 +109,8 @@ public partial class Snackbar : ISnackbar
 	/// Dismiss Snackbar
 	/// </summary>
 	public virtual Task Dismiss(CancellationToken token = default) => Dispatcher.GetForCurrentThread().DispatchIfRequiredAsync(() => DismissNative(token));
+
+	internal static TimeSpan GetDefaultTimeSpan() => TimeSpan.FromSeconds(3);
 
 #if !(IOS || ANDROID || MACCATALYST || WINDOWS)
 	/// <inheritdoc/>
@@ -146,8 +157,6 @@ public partial class Snackbar : ISnackbar
 		return ValueTask.CompletedTask;
 	}
 #endif
-
-	static TimeSpan GetDefaultTimeSpan() => TimeSpan.FromSeconds(3);
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS
 
@@ -196,7 +205,7 @@ public partial class Snackbar : ISnackbar
 public static class SnackbarVisualElementExtension
 {
 	/// <summary>
-	/// Display snackbar with the anchor
+	/// Display snackbar anchored to <see cref="VisualElement"/>
 	/// </summary>
 	/// <param name="visualElement">Anchor element</param>
 	/// <param name="message">Text of the snackbar</param>
@@ -209,7 +218,7 @@ public static class SnackbarVisualElementExtension
 		this VisualElement? visualElement,
 		string message,
 		Action? action = null,
-		string actionButtonText = "OK",
+		string actionButtonText = Defaults.ActionButtonText,
 		TimeSpan? duration = null,
 		SnackbarOptions? visualOptions = null,
 		CancellationToken token = default) => Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement).Show(token);
