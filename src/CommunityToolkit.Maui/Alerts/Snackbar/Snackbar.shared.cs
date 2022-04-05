@@ -206,5 +206,5 @@ public static class SnackbarVisualElementExtension
 		string actionButtonText = Defaults.ActionButtonText,
 		TimeSpan? duration = null,
 		SnackbarOptions? visualOptions = null,
-		CancellationToken token = default) => Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement).Show();
+		CancellationToken token = default) => Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement).Show(token);
 }

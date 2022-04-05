@@ -1,4 +1,6 @@
-﻿using Application = Microsoft.Maui.Controls.Application;
+﻿using CommunityToolkit.Maui.Sample.Pages.Alerts;
+using Microsoft.Maui.Essentials.Implementations;
+using Application = Microsoft.Maui.Controls.Application;
 
 namespace CommunityToolkit.Maui.Sample;
 
