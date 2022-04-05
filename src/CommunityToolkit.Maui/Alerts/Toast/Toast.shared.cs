@@ -13,6 +13,8 @@ namespace CommunityToolkit.Maui.Alerts;
 /// <inheritdoc/>
 public partial class Toast : IToast
 {
+	bool isDisposed;
+
 	string text = string.Empty;
 	ToastDuration duration = ToastDuration.Short;
 	double textSize = Defaults.FontSize;
@@ -65,7 +67,7 @@ public partial class Toast : IToast
 		string message,
 		ToastDuration duration = ToastDuration.Short,
 		double textSize = Defaults.FontSize)
-	{	
+	{
 		return new Toast
 		{
 			Text = message,
@@ -95,21 +97,28 @@ public partial class Toast : IToast
 	/// <summary>
 	/// Dispose Toast
 	/// </summary>
-	public async ValueTask DisposeAsync()
+	public void Dispose()
 	{
-		await DisposeAsyncCore();
+		Dispose(true);
 		GC.SuppressFinalize(this);
 	}
 
 	/// <summary>
 	/// Dispose Toast
 	/// </summary>
-	protected virtual ValueTask DisposeAsyncCore()
+	protected virtual void Dispose(bool isDisposing)
 	{
+		if (isDisposed)
+		{
+			return;
+		}
+
+		if (isDisposing)
+		{
 #if ANDROID
-		PlatformToast?.Dispose();
+			PlatformToast?.Dispose();
 #endif
-		return ValueTask.CompletedTask;
+		}
 	}
 
 #if IOS || MACCATALYST || WINDOWS

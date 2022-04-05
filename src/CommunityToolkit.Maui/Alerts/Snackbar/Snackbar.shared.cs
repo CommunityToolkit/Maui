@@ -15,6 +15,7 @@ public partial class Snackbar : ISnackbar
 {
 	static readonly WeakEventManager weakEventManager = new();
 
+	bool isDisposed;
 	string text = string.Empty;
 	string actionButtonText = Defaults.ActionButtonText;
 
@@ -136,21 +137,30 @@ public partial class Snackbar : ISnackbar
 	/// <summary>
 	/// Dispose Snackbar
 	/// </summary>
-	public async ValueTask DisposeAsync()
+	public void Dispose()
 	{
-		await DisposeAsyncCore();
+		Dispose(true);
 		GC.SuppressFinalize(this);
 	}
 
 	/// <summary>
 	/// Dispose Snackbar
 	/// </summary>
-	protected virtual ValueTask DisposeAsyncCore()
+	protected virtual void Dispose(bool isDisposing)
 	{
+		if (isDisposed)
+		{
+			return;
+		}
+
+		if (isDisposing)
+		{
 #if ANDROID || IOS || MACCATALYST
-		PlatformSnackbar?.Dispose();
+			PlatformSnackbar?.Dispose();
 #endif
-		return ValueTask.CompletedTask;
+		}
+
+		isDisposed = true;
 	}
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS
@@ -189,17 +199,12 @@ public static class SnackbarVisualElementExtension
 	/// <param name="duration">Snackbar duration</param>
 	/// <param name="visualOptions">Snackbar visual options</param>
 	/// <param name="token">Cancellation token</param>
-	public static async Task DisplaySnackbar(
+	public static Task DisplaySnackbar(
 		this VisualElement? visualElement,
 		string message,
 		Action? action = null,
 		string actionButtonText = Defaults.ActionButtonText,
 		TimeSpan? duration = null,
 		SnackbarOptions? visualOptions = null,
-		CancellationToken token = default)
-	{
-		var snackbar =  Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement);
-		await snackbar.Show(token);
-		await snackbar.DisposeAsync();
-	}
+		CancellationToken token = default) => Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement).Show();
 }
