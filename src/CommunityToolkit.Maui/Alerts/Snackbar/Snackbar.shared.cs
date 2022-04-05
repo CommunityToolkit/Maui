@@ -1,5 +1,4 @@
 using CommunityToolkit.Maui.Core;
-using Microsoft.Maui.Dispatching;
 
 #if ANDROID
 using PlatformSnackbar = Google.Android.Material.Snackbar.Snackbar;
@@ -103,12 +102,12 @@ public partial class Snackbar : ISnackbar
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	public virtual Task Show(CancellationToken token = default) => Dispatcher.GetForCurrentThread().DispatchIfRequiredAsync(() => ShowPlatform(token));
+	public virtual Task Show(CancellationToken token = default) => ShowPlatform(token);
 
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
-	public virtual Task Dismiss(CancellationToken token = default) => Dispatcher.GetForCurrentThread().DispatchIfRequiredAsync(() => DismissPlatform(token));
+	public virtual Task Dismiss(CancellationToken token = default) => DismissPlatform(token);
 
 	internal static TimeSpan GetDefaultTimeSpan() => TimeSpan.FromSeconds(3);
 
@@ -146,17 +145,13 @@ public partial class Snackbar : ISnackbar
 	/// <summary>
 	/// Dispose Snackbar
 	/// </summary>
-#if ANDROID || IOS || MACCATALYST
-	protected virtual async ValueTask DisposeAsyncCore()
-	{
-		await Dispatcher.GetForCurrentThread().DispatchIfRequiredAsync(() => PlatformSnackbar?.Dispose());
-	}
-#else
 	protected virtual ValueTask DisposeAsyncCore()
 	{
+#if ANDROID || IOS || MACCATALYST
+		PlatformSnackbar?.Dispose();
+#endif
 		return ValueTask.CompletedTask;
 	}
-#endif
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS
 	static PlatformSnackbar? PlatformSnackbar { get; set; }

@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using CommunityToolkit.Maui.Core;
-using Microsoft.Maui.Dispatching;
 #if ANDROID
 using PlatformToast = Android.Widget.Toast;
 #elif IOS || MACCATALYST
@@ -78,12 +77,20 @@ public partial class Toast : IToast
 	/// <summary>
 	/// Show Toast
 	/// </summary>
-	public virtual Task Show(CancellationToken token = default) => Dispatcher.GetForCurrentThread().DispatchIfRequiredAsync(() => ShowPlatform(token));
+	public virtual Task Show(CancellationToken token = default)
+	{
+		ShowPlatform(token);
+		return Task.CompletedTask;
+	}
 
 	/// <summary>
 	/// Dismiss Toast
 	/// </summary>
-	public virtual Task Dismiss(CancellationToken token = default) => Dispatcher.GetForCurrentThread().DispatchIfRequiredAsync(() => DismissPlatform(token));
+	public virtual Task Dismiss(CancellationToken token = default)
+	{
+		DismissPlatform(token);
+		return Task.CompletedTask;
+	}
 
 	/// <summary>
 	/// Dispose Toast
@@ -97,17 +104,13 @@ public partial class Toast : IToast
 	/// <summary>
 	/// Dispose Toast
 	/// </summary>
-#if ANDROID
-	protected virtual async ValueTask DisposeAsyncCore()
-	{
-		await Dispatcher.GetForCurrentThread().DispatchIfRequiredAsync(() => PlatformToast?.Dispose());
-	}
-#else
 	protected virtual ValueTask DisposeAsyncCore()
 	{
+#if ANDROID
+		PlatformToast?.Dispose();
+#endif
 		return ValueTask.CompletedTask;
 	}
-#endif
 
 #if IOS || MACCATALYST || WINDOWS
 	static TimeSpan GetDuration(ToastDuration duration)
