@@ -23,7 +23,10 @@ public partial class Snackbar
 		}
 		token.ThrowIfCancellationRequested();
 
-		PlatformSnackbar.Dismiss();
+		if (!PlatformSnackbar.IsDisposed())
+		{
+			PlatformSnackbar.Dismiss();
+		}
 
 		if (dismissedTCS is not null)
 		{

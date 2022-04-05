@@ -189,12 +189,17 @@ public static class SnackbarVisualElementExtension
 	/// <param name="duration">Snackbar duration</param>
 	/// <param name="visualOptions">Snackbar visual options</param>
 	/// <param name="token">Cancellation token</param>
-	public static Task DisplaySnackbar(
+	public static async Task DisplaySnackbar(
 		this VisualElement? visualElement,
 		string message,
 		Action? action = null,
 		string actionButtonText = Defaults.ActionButtonText,
 		TimeSpan? duration = null,
 		SnackbarOptions? visualOptions = null,
-		CancellationToken token = default) => Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement).Show(token);
+		CancellationToken token = default)
+	{
+		var snackbar =  Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement);
+		await snackbar.Show(token);
+		await snackbar.DisposeAsync();
+	}
 }
