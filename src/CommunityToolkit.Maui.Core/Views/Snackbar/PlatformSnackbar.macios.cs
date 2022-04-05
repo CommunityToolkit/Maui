@@ -7,14 +7,14 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// UIView for Snackbar on iOS
 /// </summary>
-public class SnackbarView : ToastView, IDisposable
+public class PlatformSnackbar : PlatformToast, IDisposable
 {
 	readonly PaddedButton actionButton;
 
 	bool isDisposed;
 
 	/// <summary>
-	/// Initialize <see cref="SnackbarView"/>
+	/// Initialize <see cref="PlatformSnackbar"/>
 	/// </summary>
 	/// <param name="message">Snackbar Message Text</param>
 	/// <param name="backgroundColor">Snackbar Background Color</param>
@@ -26,7 +26,7 @@ public class SnackbarView : ToastView, IDisposable
 	/// <param name="actionTextColor">Snackbar Action Button Text Color</param>
 	/// <param name="actionButtonFont">Snackbar Action Button Font</param>
 	/// <param name="padding">Snackbar Padding</param>
-	public SnackbarView(
+	public PlatformSnackbar(
 		string message,
 		UIColor backgroundColor,
 		CGRect cornerRadius,
@@ -42,6 +42,8 @@ public class SnackbarView : ToastView, IDisposable
 		padding ??= DefaultPadding;
 
 		actionButton = new PaddedButton(padding.Value, padding.Value, padding.Value, padding.Value);
+		actionButton.SetContentCompressionResistancePriority((float)UILayoutPriority.Required, UILayoutConstraintAxis.Horizontal);
+		actionButton.SetContentHuggingPriority((float)UILayoutPriority.Required, UILayoutConstraintAxis.Horizontal);
 		ActionButtonText = actionButtonText;
 		ActionTextColor = actionTextColor;
 		ActionButtonFont = actionButtonFont;
@@ -51,9 +53,9 @@ public class SnackbarView : ToastView, IDisposable
 	}
 
 	/// <summary>
-	/// Finalizer for <see cref="SnackbarView"/>
+	/// Finalizer for <see cref="PlatformSnackbar"/>
 	/// </summary>
-	~SnackbarView() => Dispose(false);
+	~PlatformSnackbar() => Dispose(false);
 
 	/// <summary>
 	/// Action that executes when the user clicks the Snackbar Action Button 
@@ -88,7 +90,7 @@ public class SnackbarView : ToastView, IDisposable
 	}
 
 	/// <summary>
-	/// Dispose <see cref="SnackbarView"/>
+	/// Dispose <see cref="PlatformSnackbar"/>
 	/// </summary>
 	public void Dispose()
 	{
@@ -97,7 +99,7 @@ public class SnackbarView : ToastView, IDisposable
 	}
 
 	/// <summary>
-	/// Dispose <see cref="SnackbarView"/>
+	/// Dispose <see cref="PlatformSnackbar"/>
 	/// </summary>
 	/// <param name="isDisposing"></param>
 	protected virtual void Dispose(bool isDisposing)

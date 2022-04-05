@@ -4,7 +4,7 @@ using Microsoft.Maui.Dispatching;
 #if ANDROID
 using PlatformToast = Android.Widget.Toast;
 #elif IOS || MACCATALYST
-using PlatformToast = CommunityToolkit.Maui.Core.Views.ToastView;
+using PlatformToast = CommunityToolkit.Maui.Core.Views.PlatformToast;
 #elif WINDOWS
 using PlatformToast = Windows.UI.Notifications.ToastNotification;
 #endif

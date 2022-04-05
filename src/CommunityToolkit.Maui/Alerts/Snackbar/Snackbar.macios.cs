@@ -33,8 +33,8 @@ public partial class Snackbar
 
 		var cornerRadius = GetCornerRadius(VisualOptions.CornerRadius);
 
-		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + ToastView.DefaultPadding;
-		PlatformSnackbar = new SnackbarView(Text,
+		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + PlatformToast.DefaultPadding;
+		PlatformSnackbar = new PlatformSnackbar(Text,
 											VisualOptions.BackgroundColor.ToPlatform(),
 											cornerRadius,
 											VisualOptions.TextColor.ToPlatform(),

@@ -4,7 +4,7 @@ using Microsoft.Maui.Dispatching;
 #if ANDROID
 using PlatformSnackbar = Google.Android.Material.Snackbar.Snackbar;
 #elif IOS || MACCATALYST
-using PlatformSnackbar = CommunityToolkit.Maui.Core.Views.SnackbarView;
+using PlatformSnackbar = CommunityToolkit.Maui.Core.Views.PlatformSnackbar;
 #elif WINDOWS
 using PlatformSnackbar = Windows.UI.Notifications.ToastNotification;
 #endif

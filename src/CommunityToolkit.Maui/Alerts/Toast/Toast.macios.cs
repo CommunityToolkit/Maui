@@ -28,9 +28,9 @@ public partial class Toast
 		token.ThrowIfCancellationRequested();
 
 		var cornerRadius = CreateCornerRadius();
-		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + ToastView.DefaultPadding;
+		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + PlatformToast.DefaultPadding;
 
-		PlatformToast = new ToastView(Text,
+		PlatformToast = new PlatformToast(Text,
 											Defaults.BackgroundColor.ToPlatform(),
 											cornerRadius,
 											Defaults.TextColor.ToPlatform(),

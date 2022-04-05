@@ -10,12 +10,12 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// Toast for iOS + MacCatalyst
 /// </summary>
-public class ToastView : Alert
+public class PlatformToast : Alert
 {
 	readonly PaddedLabel messageLabel;
 
 	/// <summary>
-	/// Initialize <see cref="ToastView"/>
+	/// Initialize <see cref="PlatformToast"/>
 	/// </summary>
 	/// <param name="message">Toast Message</param>
 	/// <param name="backgroundColor">Toast Background Color</param>
@@ -24,7 +24,7 @@ public class ToastView : Alert
 	/// <param name="font">Toast Font</param>
 	/// <param name="characterSpacing">Toast Message Character Spacing</param>
 	/// <param name="padding">Toast Padding</param>
-	public ToastView(
+	public PlatformToast(
 		string message,
 		UIColor backgroundColor,
 		CGRect cornerRadius,
@@ -37,7 +37,7 @@ public class ToastView : Alert
 
 		messageLabel = new PaddedLabel(padding.Value, padding.Value, padding.Value, padding.Value)
 		{
-			Lines = 10
+			Lines = 0
 		};
 
 		Message = message;
@@ -50,7 +50,7 @@ public class ToastView : Alert
 	}
 
 	/// <summary>
-	/// Default Padding for <see cref="ToastView"/>
+	/// Default Padding for <see cref="PlatformToast"/>
 	/// </summary>
 	public static NFloat DefaultPadding { get; } = 10;
 
