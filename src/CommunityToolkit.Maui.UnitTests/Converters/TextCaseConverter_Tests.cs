@@ -11,21 +11,21 @@ public class TextCaseConverter_Tests : BaseTest
 
 	public static IReadOnlyList<object?[]> Data { get; } = new[]
 	{
-			new object?[] { test, TextCaseType.Lower, test },
-			new object?[] { test, TextCaseType.Upper, "TEST" },
-			new object?[] { test, TextCaseType.None, test },
-			new object?[] { test, TextCaseType.FirstUpperRestLower, "Test" },
-			new object?[] { t, TextCaseType.Upper, "T" },
-			new object?[] { t, TextCaseType.Lower, t },
-			new object?[] { t, TextCaseType.None, t },
-			new object?[] { t, TextCaseType.FirstUpperRestLower, "T" },
-			new object?[] { string.Empty, TextCaseType.FirstUpperRestLower, string.Empty },
-			new object?[] { null, TextCaseType.None, null },
-			new object?[] { MockEnum.Foo, TextCaseType.Lower, "foo" },
-			new object?[] { MockEnum.Bar, TextCaseType.None, "Bar" },
-			new object?[] { MockEnum.Baz, TextCaseType.Upper, "BAZ" },
-			new object?[] { new MockItem { Title = "Test Item", Completed = true }, TextCaseType.Upper, "TEST ITEM IS COMPLETED" },
-		};
+		new object?[] { test, TextCaseType.Lower, test },
+		new object?[] { test, TextCaseType.Upper, "TEST" },
+		new object?[] { test, TextCaseType.None, test },
+		new object?[] { test, TextCaseType.FirstUpperRestLower, "Test" },
+		new object?[] { t, TextCaseType.Upper, "T" },
+		new object?[] { t, TextCaseType.Lower, t },
+		new object?[] { t, TextCaseType.None, t },
+		new object?[] { t, TextCaseType.FirstUpperRestLower, "T" },
+		new object?[] { string.Empty, TextCaseType.FirstUpperRestLower, string.Empty },
+		new object?[] { null, TextCaseType.None, null },
+		new object?[] { MockEnum.Foo, TextCaseType.Lower, "foo" },
+		new object?[] { MockEnum.Bar, TextCaseType.None, "Bar" },
+		new object?[] { MockEnum.Baz, TextCaseType.Upper, "BAZ" },
+		new object?[] { new MockItem("Test Item", true), TextCaseType.Upper, "TEST ITEM IS COMPLETED" },
+	};
 
 	enum MockEnum { Foo, Bar, Baz }
 
@@ -81,12 +81,8 @@ public class TextCaseConverter_Tests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	class MockItem
+	record MockItem(string Title, bool Completed)
 	{
-		public string? Title { get; set; }
-
-		public bool Completed { get; set; }
-
 		public override string ToString() => Completed ? $"{Title} is completed" : $"{Title} has yet to be completed";
 	}
 }
