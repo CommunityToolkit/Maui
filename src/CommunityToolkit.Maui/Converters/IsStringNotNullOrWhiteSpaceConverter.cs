@@ -14,6 +14,6 @@ public class IsStringNotNullOrWhiteSpaceConverter : BaseConverterOneWay<string?,
 	/// <param name="culture">(Not Used)</param>
 	/// <returns>Whether the the list is not null or empty</returns>
 	/// <returns>A <see cref="bool"/> indicating if the incoming value is not null and not white space.</returns>
-	public override bool ConvertFrom(string? value, CultureInfo? culture)
+	public override bool ConvertFrom(string? value, CultureInfo? culture = null)
 		=> !string.IsNullOrWhiteSpace(value);
 }

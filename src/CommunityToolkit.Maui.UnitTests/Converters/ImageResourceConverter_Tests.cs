@@ -51,7 +51,7 @@ public class ImageResourceConverter_Tests : BaseTest
 		var imageResourceConverter = new ImageResourceConverter();
 
 		Assert.Null(((ICommunityToolkitValueConverter)imageResourceConverter).Convert(null, typeof(ImageSource), null, CultureInfo.CurrentCulture));
-		Assert.Null(imageResourceConverter.ConvertFrom(null, CultureInfo.CurrentCulture));
+		Assert.Null(imageResourceConverter.ConvertFrom(null));
 	}
 
 	[Theory]

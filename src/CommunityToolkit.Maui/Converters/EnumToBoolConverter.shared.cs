@@ -27,7 +27,7 @@ public class EnumToBoolConverter : BaseConverterOneWay<Enum, bool, Enum?>
 	///     value not equal to parameter.
 	/// </returns>
 	/// <exception cref="ArgumentException">If value is not an <see cref="Enum" /></exception>
-	public override bool ConvertFrom(Enum value, Enum? parameter, CultureInfo? culture)
+	public override bool ConvertFrom(Enum value, Enum? parameter = null, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(value);
 

@@ -27,7 +27,7 @@ public class StringToListConverter_Tests : BaseTest
 			Separators = new[] { "@", "*" }
 		};
 
-		var convertFromResult = stringToListConverter.ConvertFrom(value, parameter, null);
+		var convertFromResult = stringToListConverter.ConvertFrom(value, parameter);
 		var convertResult = (IEnumerable<string>?)((ICommunityToolkitValueConverter)stringToListConverter).Convert(value, typeof(IList<string>), parameter, null);
 
 		Assert.Equal(expectedResult, convertFromResult);
@@ -39,10 +39,10 @@ public class StringToListConverter_Tests : BaseTest
 	{
 		var converter = new StringToListConverter { Separators = new[] { ",", " " } };
 
-		var parameterResult = converter.ConvertFrom("maui/toolkit tests", new[] { "/", " " }, null);
+		var parameterResult = converter.ConvertFrom("maui/toolkit tests", new[] { "/", " " });
 		Assert.Equal(new[] { "maui", "toolkit", "tests" }, parameterResult);
 
-		var propertyResult = converter.ConvertFrom("maui,toolkit tests", null, null);
+		var propertyResult = converter.ConvertFrom("maui,toolkit tests");
 		Assert.Equal(new[] { "maui", "toolkit", "tests" }, propertyResult);
 	}
 
@@ -58,7 +58,7 @@ public class StringToListConverter_Tests : BaseTest
 			Separators = new[] { "@", "*" }
 		};
 
-		var convertFromResult = stringToListConverter.ConvertFrom(valueToConvert, null, null);
+		var convertFromResult = stringToListConverter.ConvertFrom(valueToConvert);
 		var convertResult = (IEnumerable<string>?)((ICommunityToolkitValueConverter)stringToListConverter).Convert(valueToConvert, typeof(IList<string>), null, null);
 
 		Assert.Equal(expectedResult, convertResult);
@@ -76,7 +76,7 @@ public class StringToListConverter_Tests : BaseTest
 			Separator = "~",
 		};
 
-		var convertFromResult = stringToListConverter.ConvertFrom(valueToConvert, null, null);
+		var convertFromResult = stringToListConverter.ConvertFrom(valueToConvert);
 		var convertResult = (IEnumerable<string>?)((ICommunityToolkitValueConverter)stringToListConverter).Convert(valueToConvert, typeof(IList<string>), null, null);
 
 		Assert.Equal(expectedResult, convertResult);
@@ -137,8 +137,8 @@ public class StringToListConverter_Tests : BaseTest
 		Assert.Throws<ArgumentException>(() => new StringToListConverter().Separator = string.Empty);
 		Assert.Throws<ArgumentException>(() => new StringToListConverter { Separators = new List<string> { ",", string.Empty } });
 		Assert.Throws<ArgumentException>(() => new StringToListConverter().Separators = new List<string> { ",", string.Empty });
-		Assert.Throws<ArgumentException>(() => new StringToListConverter().ConvertFrom(string.Empty, string.Empty, null));
-		Assert.Throws<ArgumentException>(() => new StringToListConverter().ConvertFrom(string.Empty, new[] { ",", "" }, null));
+		Assert.Throws<ArgumentException>(() => new StringToListConverter().ConvertFrom(string.Empty, string.Empty));
+		Assert.Throws<ArgumentException>(() => new StringToListConverter().ConvertFrom(string.Empty, new[] { ",", "" }));
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)new StringToListConverter()).Convert(string.Empty, typeof(IList<string>), string.Empty, null));
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)new StringToListConverter()).Convert(string.Empty, typeof(IList<string>), new[] { ",", "" }, null));
 	}

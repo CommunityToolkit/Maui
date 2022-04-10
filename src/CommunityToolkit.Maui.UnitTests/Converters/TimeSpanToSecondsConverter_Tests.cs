@@ -22,7 +22,7 @@ public class TimeSpanToSecondsConverter_Tests
 		var converter = new TimeSpanToSecondsConverter();
 
 		var convertResult = ((ICommunityToolkitValueConverter)converter).Convert(value, typeof(double), null, null);
-		var convertFromResult = converter.ConvertFrom(value, null);
+		var convertFromResult = converter.ConvertFrom(value);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
@@ -35,7 +35,7 @@ public class TimeSpanToSecondsConverter_Tests
 		var converter = new TimeSpanToSecondsConverter();
 
 		var convertBackResult = ((ICommunityToolkitValueConverter)converter).ConvertBack(value, typeof(TimeSpan), null, null);
-		var convertBackToResult = converter.ConvertBackTo(value, null);
+		var convertBackToResult = converter.ConvertBackTo(value);
 
 		Assert.Equal(expectedResult, convertBackResult);
 		Assert.Equal(expectedResult, convertBackToResult);

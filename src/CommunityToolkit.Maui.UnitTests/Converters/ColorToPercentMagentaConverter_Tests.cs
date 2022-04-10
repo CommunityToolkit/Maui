@@ -48,7 +48,7 @@ public class ColorToPercentMagentaConverter_Tests : BaseTest
 		var converter = new ColorToPercentMagentaConverter();
 		var color = new Color(red, green, blue, alpha);
 
-		var resultConvertFrom = converter.ConvertFrom(color, null);
+		var resultConvertFrom = converter.ConvertFrom(color);
 		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(double), null, null);
 
 		Assert.Equal(expectedResult, resultConvertFrom);
@@ -59,7 +59,7 @@ public class ColorToPercentMagentaConverter_Tests : BaseTest
 	public void ColorToPercentMagentaConverterNullInputTest()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => new ColorToPercentMagentaConverter().ConvertFrom(null, null));
+		Assert.Throws<ArgumentNullException>(() => new ColorToPercentMagentaConverter().ConvertFrom(null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToPercentMagentaConverter()).Convert(null, typeof(double), null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToPercentMagentaConverter()).Convert(new Color(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.

@@ -54,7 +54,7 @@ public class StateToBooleanConverter : BaseConverterOneWay<LayoutState, bool, La
 	/// <param name="parameter">Optionally, a <see cref="LayoutState"/> can be supplied here to compare against.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>True if the provided <see cref="LayoutState"/>s match, otherwise False if they don't match.</returns>
-	public override bool ConvertFrom(LayoutState value, LayoutState? parameter, CultureInfo? culture)
+	public override bool ConvertFrom(LayoutState value, LayoutState? parameter = null, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(value);
 

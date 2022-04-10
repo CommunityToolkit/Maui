@@ -59,7 +59,7 @@ public class ColorToCmykaStringConverter_Tests : BaseTest
 		var color = new Color(red, green, blue, alpha);
 
 		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, null);
-		var resultConvertFrom = converter.ConvertFrom(color, null);
+		var resultConvertFrom = converter.ConvertFrom(color);
 
 		Assert.Equal(expectedResult, resultConvert);
 		Assert.Equal(expectedResult, resultConvertFrom);
@@ -69,7 +69,7 @@ public class ColorToCmykaStringConverter_Tests : BaseTest
 	public void ColorToCmykaStringConverterNullInputTest()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => new ColorToCmykaStringConverter().ConvertFrom(null, null));
+		Assert.Throws<ArgumentNullException>(() => new ColorToCmykaStringConverter().ConvertFrom(null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToCmykaStringConverter()).Convert(null, typeof(string), null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToCmykaStringConverter()).Convert(new Color(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.

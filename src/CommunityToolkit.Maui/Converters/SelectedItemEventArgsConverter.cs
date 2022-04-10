@@ -15,7 +15,7 @@ public class SelectedItemEventArgsConverter : BaseConverterOneWay<SelectedItemCh
 	/// <param name="culture">(Not Used)</param>
 	/// <returns>A <see cref="SelectedItemChangedEventArgs.SelectedItem"/> object from object of type <see cref="SelectedItemChangedEventArgs"/>.</returns>
 	[return: NotNullIfNotNull("value")]
-	public override object? ConvertFrom(SelectedItemChangedEventArgs? value, CultureInfo? culture) => value switch
+	public override object? ConvertFrom(SelectedItemChangedEventArgs? value, CultureInfo? culture = null) => value switch
 	{
 		null => null,
 		_ => value.SelectedItem

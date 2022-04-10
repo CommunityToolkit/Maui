@@ -28,7 +28,7 @@ public class ListToStringConverter : BaseConverterOneWay<IEnumerable, string, st
 	/// <param name="parameter">The separator that should be between each collection item. This overrides the value in <see cref="Separator"/>.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>Concatenated members string separated by <see cref="Separator"/> or, if set, <paramref name="parameter"/>.</returns>
-	public override string ConvertFrom(IEnumerable value, string? parameter, CultureInfo? culture)
+	public override string ConvertFrom(IEnumerable value, string? parameter, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(value);
 		

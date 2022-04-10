@@ -42,7 +42,7 @@ public class TextCaseConverter_Tests : BaseTest
 		Assert.Throws<InvalidEnumArgumentException>(() => new TextCaseConverter { Type = textCaseType });
 		Assert.Throws<InvalidEnumArgumentException>(() => textCaseConverter.Type = textCaseType);
 		Assert.Throws<InvalidEnumArgumentException>(() => ((ICommunityToolkitValueConverter)textCaseConverter).Convert("Hello World", typeof(string), textCaseType, null));
-		Assert.Throws<InvalidEnumArgumentException>(() => textCaseConverter.ConvertFrom("Hello World", textCaseType, null));
+		Assert.Throws<InvalidEnumArgumentException>(() => textCaseConverter.ConvertFrom("Hello World", textCaseType));
 		Assert.Throws<InvalidEnumArgumentException>(() => ((ICommunityToolkitValueConverter)textCaseConverter).Convert("Hello World", typeof(string), textCaseType, null));
 	}
 
@@ -62,7 +62,7 @@ public class TextCaseConverter_Tests : BaseTest
 		var textCaseConverter = new TextCaseConverter();
 
 		var convertResult = ((ICommunityToolkitValueConverter)textCaseConverter).Convert(value?.ToString(), typeof(string), comparedValue, CultureInfo.CurrentCulture);
-		var convertFromResult = textCaseConverter.ConvertFrom(value?.ToString(), comparedValue, CultureInfo.CurrentCulture);
+		var convertFromResult = textCaseConverter.ConvertFrom(value?.ToString(), comparedValue);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
@@ -78,7 +78,7 @@ public class TextCaseConverter_Tests : BaseTest
 		};
 
 		var convertResult = ((ICommunityToolkitValueConverter)textCaseConverter).Convert(value?.ToString(), typeof(string), null, CultureInfo.CurrentCulture);
-		var convertFromResult = textCaseConverter.ConvertFrom(value?.ToString(), null, CultureInfo.CurrentCulture);
+		var convertFromResult = textCaseConverter.ConvertFrom(value?.ToString());
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);

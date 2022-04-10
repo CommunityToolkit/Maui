@@ -26,7 +26,7 @@ public class ColorToByteGreenConverter_Tests : BaseTest
 		var color = new Color(0, green, 0, 0);
 		var converter = new ColorToByteGreenConverter();
 
-		var resultConvertFrom = converter.ConvertFrom(color, null);
+		var resultConvertFrom = converter.ConvertFrom(color);
 		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(byte), null, null);
 
 		Assert.Equal(expectedResult, resultConvertFrom);

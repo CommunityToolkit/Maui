@@ -68,7 +68,7 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable<st
 	/// <param name="parameter">The string or strings that delimits the substrings in this string. This overrides the value in <see cref="Separator"/> and <see cref="Separators"/>.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>An array whose elements contain the substrings in this string that are delimited by <see cref="Separator"/> or, if set, <see cref="Separators"/> or, if set, <paramref name="parameter"/>.</returns>
-	public override IEnumerable<string> ConvertFrom(string? value, object? parameter, CultureInfo? culture)
+	public override IEnumerable<string> ConvertFrom(string? value, object? parameter = null, CultureInfo? culture = null)
 	{
 		if (value is null)
 		{
@@ -92,14 +92,14 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable<st
 				return Split(value, separator);
 
 			default:
-			{
-				if (parameter is not null)
 				{
-					throw new ArgumentException("Parameter cannot be casted to string nor string[]", nameof(parameter));
-				}
+					if (parameter is not null)
+					{
+						throw new ArgumentException("Parameter cannot be casted to string nor string[]", nameof(parameter));
+					}
 
-				break;
-			}
+					break;
+				}
 		}
 
 		return Separators.Count > 1 ? Split(value, Separators.ToArray()) : Split(value, Separator);

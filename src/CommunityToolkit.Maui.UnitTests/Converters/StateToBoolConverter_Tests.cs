@@ -31,7 +31,7 @@ public class StateToBooleanConverter_Tests : BaseTest
 		var stateToBooleanConverter = new StateToBooleanConverter();
 
 		var convertResult = ((ICommunityToolkitValueConverter)stateToBooleanConverter).Convert(value, typeof(bool), comparedValue, CultureInfo.CurrentCulture);
-		var convertFromResult = stateToBooleanConverter.ConvertFrom(value, comparedValue, CultureInfo.CurrentCulture);
+		var convertFromResult = stateToBooleanConverter.ConvertFrom(value, comparedValue);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
@@ -61,7 +61,7 @@ public class StateToBooleanConverter_Tests : BaseTest
 		};
 
 		var convertResult = ((ICommunityToolkitValueConverter)stateToBooleanConverter).Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
-		var convertFromResult = stateToBooleanConverter.ConvertFrom(value, null, CultureInfo.CurrentCulture);
+		var convertFromResult = stateToBooleanConverter.ConvertFrom(value);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);

@@ -13,6 +13,6 @@ public class IsStringNotNullOrEmptyConverter : BaseConverterOneWay<string?, bool
 	/// <param name="value">The string to convert.</param>
 	/// <param name="culture">(Not Used)</param>
 	/// <returns>Whether the the string is not null or empty</returns>
-	public override bool ConvertFrom(string? value, CultureInfo? culture)
+	public override bool ConvertFrom(string? value, CultureInfo? culture = null)
 		=> !string.IsNullOrEmpty(value);
 }

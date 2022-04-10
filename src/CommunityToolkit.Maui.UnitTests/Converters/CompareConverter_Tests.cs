@@ -73,7 +73,7 @@ public class CompareConverter_Tests : BaseTest
 		};
 
 		var convertResult = ((ICommunityToolkitValueConverter)compareConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture);
-		var convertFromResult = compareConverter.ConvertFrom(value, CultureInfo.CurrentCulture);
+		var convertFromResult = compareConverter.ConvertFrom(value);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
@@ -114,7 +114,7 @@ public class CompareConverter_Tests : BaseTest
 		};
 
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)compareConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
-		Assert.Throws<ArgumentNullException>(() => compareConverter.ConvertFrom(value, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentNullException>(() => compareConverter.ConvertFrom(value));
 	}
 
 	[Theory]
@@ -130,7 +130,7 @@ public class CompareConverter_Tests : BaseTest
 		};
 
 		Assert.Throws<InvalidOperationException>(() => ((ICommunityToolkitValueConverter)compareConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
-		Assert.Throws<InvalidOperationException>(() => compareConverter.ConvertFrom(value, CultureInfo.CurrentCulture));
+		Assert.Throws<InvalidOperationException>(() => compareConverter.ConvertFrom(value));
 	}
 
 	[Theory]
@@ -144,7 +144,7 @@ public class CompareConverter_Tests : BaseTest
 		};
 
 		Assert.Throws<ArgumentOutOfRangeException>(() => ((ICommunityToolkitValueConverter)compareConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
-		Assert.Throws<ArgumentOutOfRangeException>(() => compareConverter.ConvertFrom(value, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentOutOfRangeException>(() => compareConverter.ConvertFrom(value));
 	}
 
 	[Fact]

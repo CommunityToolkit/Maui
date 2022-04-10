@@ -16,7 +16,7 @@ public class IsStringNotNullOrWhiteSpaceConverter_Tests : BaseTest
 		var isNotNullOrWhiteSpaceConverter = new IsStringNotNullOrWhiteSpaceConverter();
 
 		var convertResult = (bool?)((ICommunityToolkitValueConverter)isNotNullOrWhiteSpaceConverter).Convert(value, typeof(bool), null, null);
-		var convertFromResult = isNotNullOrWhiteSpaceConverter.ConvertFrom(value, null);
+		var convertFromResult = isNotNullOrWhiteSpaceConverter.ConvertFrom(value);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);

@@ -18,7 +18,7 @@ public class MultiMathExpressionConverter : MultiValueConverterExtension, ICommu
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>A <see cref="double"/> The result of calculating an expression.</returns>
 	[return: NotNullIfNotNull("values")]
-	public object? Convert(object[]? values, Type targetType, [NotNull] object? parameter, CultureInfo? culture)
+	public object? Convert(object[]? values, Type targetType, [NotNull] object? parameter, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(targetType);
 		ArgumentNullException.ThrowIfNull(parameter);

@@ -20,7 +20,7 @@ public class DoubleToIntConverter : BaseConverter<double, int, object?>
 	/// <param name="parameter">Multiplier (Equals 1 by default).</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns><see cref="int"/> value.</returns>
-	public override int ConvertFrom(double value, object? parameter, CultureInfo? culture)
+	public override int ConvertFrom(double value, object? parameter = null, CultureInfo? culture = null)
 		=> (int)Math.Round(value * GetParameter(parameter));
 
 	/// <summary>
@@ -30,7 +30,7 @@ public class DoubleToIntConverter : BaseConverter<double, int, object?>
 	/// <param name="parameter">Denominator (Equals 1 by default).</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns><see cref="double"/> value.</returns>
-	public override double ConvertBackTo(int value, object? parameter, CultureInfo? culture)
+	public override double ConvertBackTo(int value, object? parameter = null, CultureInfo? culture = null)
 		=> value / GetParameter(parameter);
 
 	double GetParameter(object? parameter) => parameter switch
