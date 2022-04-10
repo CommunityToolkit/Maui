@@ -1,6 +1,6 @@
-﻿using CommunityToolkit.WinUI.Notifications;
-using Windows.Data.Xml.Dom;
+﻿using Microsoft.Maui.Dispatching;
 using Windows.UI.Notifications;
+using static CommunityToolkit.Maui.Extensions.ToastNotificationExtensions;
 
 namespace CommunityToolkit.Maui.Alerts;
 
@@ -11,9 +11,9 @@ public partial class Snackbar
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
-	private partial async Task DismissNative(CancellationToken token)
+	private partial async Task DismissPlatform(CancellationToken token)
 	{
-		if (NativeSnackbar is null)
+		if (PlatformSnackbar is null)
 		{
 			dismissedTCS = null;
 			return;
@@ -22,11 +22,11 @@ public partial class Snackbar
 		token.ThrowIfCancellationRequested();
 		ToastNotificationManager.History.Clear();
 
-		NativeSnackbar.Activated -= OnActivated;
-		NativeSnackbar.Dismissed -= OnDismissed;
-		NativeSnackbar.ExpirationTime = DateTimeOffset.Now;
+		PlatformSnackbar.Activated -= OnActivated;
+		PlatformSnackbar.Dismissed -= OnDismissed;
+		PlatformSnackbar.ExpirationTime = DateTimeOffset.Now;
 
-		NativeSnackbar = null;
+		PlatformSnackbar = null;
 
 		await (dismissedTCS?.Task ?? Task.CompletedTask);
 	}
@@ -34,44 +34,34 @@ public partial class Snackbar
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	private partial async Task ShowNative(CancellationToken token)
+	private partial async Task ShowPlatform(CancellationToken token)
 	{
-		await DismissNative(token);
+		await DismissPlatform(token);
 		token.ThrowIfCancellationRequested();
-		var toastContentBuilder = new ToastContentBuilder()
-			.AddText(Text)
-			.AddButton(
-				new ToastButton { ActivationType = ToastActivationType.Foreground }.SetContent(ActionButtonText));
-
-		var toastContent = toastContentBuilder.GetToastContent();
-		toastContent.ActivationType = ToastActivationType.Background;
-
+		
 		dismissedTCS = new();
+		
+		PlatformSnackbar = new ToastNotification(BuildToastNotificationContent(Text, ActionButtonText));
+		PlatformSnackbar.Activated += OnActivated;
+		PlatformSnackbar.Dismissed += OnDismissed;
+		PlatformSnackbar.ExpirationTime = DateTimeOffset.Now.Add(Duration);
 
-		var xmlDocument = new XmlDocument();
-		xmlDocument.LoadXml(toastContent.GetContent());
-
-		NativeSnackbar = new ToastNotification(xmlDocument);
-		NativeSnackbar.Activated += OnActivated;
-		NativeSnackbar.Dismissed += OnDismissed;
-		NativeSnackbar.ExpirationTime = DateTimeOffset.Now.Add(Duration);
-
-		ToastNotificationManager.CreateToastNotifier().Show(nativeSnackbar);
+		ToastNotificationManager.CreateToastNotifier().Show(PlatformSnackbar);
 
 		OnShown();
 	}
 
 	void OnActivated(ToastNotification sender, object args)
 	{
-		if (NativeSnackbar is not null && Action is not null)
+		if (PlatformSnackbar is not null && Action is not null)
 		{
-			MainThread.BeginInvokeOnMainThread(Action);
+			Dispatcher.GetForCurrentThread().DispatchIfRequired(Action);
 		}
 	}
 
 	void OnDismissed(ToastNotification sender, ToastDismissedEventArgs args)
 	{
 		dismissedTCS?.TrySetResult(true);
-		MainThread.BeginInvokeOnMainThread(OnDismissed);
+		Dispatcher.GetForCurrentThread().DispatchIfRequired(OnDismissed);
 	}
 }
