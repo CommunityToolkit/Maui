@@ -20,7 +20,6 @@ public class StateToBooleanConverter_Tests : BaseTest
 		Assert.Throws<InvalidEnumArgumentException>(() => stateToBooleanConverter.StateToCompare = layoutState);
 		Assert.Throws<InvalidEnumArgumentException>(() => ((ICommunityToolkitValueConverter)stateToBooleanConverter).Convert(LayoutState.None, typeof(bool), layoutState, null));
 		Assert.Throws<InvalidEnumArgumentException>(() => stateToBooleanConverter.ConvertFrom(LayoutState.None, layoutState, null));
-		Assert.Throws<InvalidEnumArgumentException>(() => ((ICommunityToolkitValueConverter)stateToBooleanConverter).Convert(LayoutState.None, typeof(bool), layoutState, null));
 	}
 
 	[Theory]

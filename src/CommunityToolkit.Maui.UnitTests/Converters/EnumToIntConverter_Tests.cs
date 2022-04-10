@@ -1,10 +1,25 @@
-﻿using CommunityToolkit.Maui.Converters;
+﻿using System.ComponentModel;
+using CommunityToolkit.Maui.Converters;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class EnumToIntConverter_Tests : BaseTest
 {
+	[Theory]
+	[InlineData(int.MinValue)]
+	[InlineData((-1))]
+	[InlineData(2)]
+	[InlineData(41)]
+	[InlineData(43)]
+	[InlineData(int.MaxValue)]
+	public void InvalidEnumToIntConverterEnumThrowsNotSupportedException(int enumIndex)
+	{
+		var enumToIntConverter = new EnumToIntConverter();
+		Assert.Throws<InvalidEnumArgumentException>(() => ((ICommunityToolkitValueConverter)enumToIntConverter).ConvertBack(enumIndex, typeof(TestEnum), typeof(TestEnum), null));
+		Assert.Throws<InvalidEnumArgumentException>(() => enumToIntConverter.ConvertBackTo(enumIndex, typeof(TestEnum), null));
+	}
+
 	[Theory]
 	[InlineData(TestEnum.None, 0)]
 	[InlineData(TestEnum.One, 1)]
