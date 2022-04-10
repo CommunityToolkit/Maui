@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Maui.Core.Primitives;
 using UIKit;
@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class AlertView : UIView
 {
-	readonly List<UIView> children = Array.Empty<UIView>().ToList();
+	readonly List<UIView> children = Enumerable.Empty<UIView>().ToList();
 
 	/// <summary>
 	/// Parent UIView
@@ -97,20 +97,18 @@ public class AlertView : UIView
 			VisualOptions.CornerRadius.Height)
 		{
 			Alignment = UIStackViewAlignment.Fill,
-			Distribution = UIStackViewDistribution.EqualCentering
+			Distribution = UIStackViewDistribution.EqualSpacing,
+			Axis = UILayoutConstraintAxis.Horizontal,
+			BackgroundColor = VisualOptions.BackgroundColor,
+			TranslatesAutoresizingMaskIntoConstraints = false
 		};
-
-		AddSubview(Container);
-
-		Container.Axis = UILayoutConstraintAxis.Horizontal;
-		Container.TranslatesAutoresizingMaskIntoConstraints = false;
-		Container.BackgroundColor = VisualOptions.BackgroundColor;
-
-		TranslatesAutoresizingMaskIntoConstraints = false;
 
 		foreach (var view in Children)
 		{
 			Container.AddArrangedSubview(view);
 		}
+
+		TranslatesAutoresizingMaskIntoConstraints = false;
+		AddSubview(Container);
 	}
 }

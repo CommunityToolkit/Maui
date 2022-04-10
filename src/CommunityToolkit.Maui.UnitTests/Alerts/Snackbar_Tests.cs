@@ -16,6 +16,23 @@ public class Snackbar_Tests : BaseTest
 	}
 
 	[Fact]
+	public void SnackbarDefautValues()
+	{
+		Assert.Null(snackbar.Action);
+		Assert.Equal(Defaults.ActionButtonText, snackbar.ActionButtonText);
+		Assert.Null(snackbar.Anchor);
+		Assert.Equal(Snackbar.GetDefaultTimeSpan(), snackbar.Duration);
+		Assert.Equal(string.Empty, snackbar.Text);
+
+		Assert.Equal(Font.SystemFontOfSize(Defaults.FontSize), snackbar.VisualOptions.ActionButtonFont);
+		Assert.Equal(Defaults.BackgroundColor, snackbar.VisualOptions.BackgroundColor);
+		Assert.Equal(Defaults.CharacterSpacing, snackbar.VisualOptions.CharacterSpacing);
+		Assert.Equal(new CornerRadius(4, 4, 4, 4), snackbar.VisualOptions.CornerRadius);
+		Assert.Equal(Font.SystemFontOfSize(Defaults.FontSize), snackbar.VisualOptions.Font);
+		Assert.Equal(Defaults.TextColor, snackbar.VisualOptions.TextColor);
+	}
+
+	[Fact]
 	public async Task SnackbarShow_IsShownTrue()
 	{
 		await snackbar.Show();
@@ -154,5 +171,18 @@ public class Snackbar_Tests : BaseTest
 	public async Task SnackbarDismiss_CancellationTokenNone_NotReceiveException()
 	{
 		await snackbar.Invoking(x => x.Dismiss(CancellationToken.None)).Should().NotThrowAsync<OperationCanceledException>();
+	}
+
+	[Fact]
+	public void SnackbarNullValuesThrowArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => new Snackbar { Text = null });
+		Assert.Throws<ArgumentNullException>(() => new Snackbar { ActionButtonText = null });
+		Assert.Throws<ArgumentNullException>(() => Snackbar.Make(null));
+		Assert.Throws<ArgumentNullException>(() => Snackbar.Make(string.Empty, actionButtonText: null));
+		Assert.ThrowsAsync<ArgumentNullException>(() => new Button().DisplaySnackbar(null));
+		Assert.ThrowsAsync<ArgumentNullException>(() => new Button().DisplaySnackbar(string.Empty, actionButtonText: null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }
