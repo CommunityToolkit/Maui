@@ -52,8 +52,8 @@ public class DoubleToIntConverter_Tests : BaseTest
 	public void DoubleToIntInvalidConverterNullInputTest()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new DoubleToIntConverter()).Convert(0.0, null, null, null));
-		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new DoubleToIntConverter()).Convert(null, typeof(double), null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new DoubleToIntConverter()).Convert(0.0, null, 0, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new DoubleToIntConverter()).Convert(null, typeof(double), 0, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new DoubleToIntConverter()).ConvertBack(0, null, null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new DoubleToIntConverter()).ConvertBack(null, typeof(int), null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
