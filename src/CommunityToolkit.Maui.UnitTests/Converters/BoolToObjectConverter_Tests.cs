@@ -21,7 +21,7 @@ public class BoolToObjectConverter_Tests : BaseTest
 		};
 
 		var convertResult = ((ICommunityToolkitValueConverter)boolObjectConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture);
-		var convertFromResult = boolObjectConverter.ConvertFrom(value, typeof(object), null, CultureInfo.CurrentCulture);
+		var convertFromResult = boolObjectConverter.ConvertFrom(value, CultureInfo.CurrentCulture);
 
 		Assert.NotNull(convertResult);
 		Assert.NotNull(convertFromResult);
@@ -42,7 +42,7 @@ public class BoolToObjectConverter_Tests : BaseTest
 		};
 
 		var convertBackResult = (bool?)((ICommunityToolkitValueConverter)boolObjectConverter).ConvertBack(value, typeof(bool), null, CultureInfo.CurrentCulture);
-		var convertBackToResult = boolObjectConverter.ConvertBackTo(value, typeof(bool), null, CultureInfo.CurrentCulture);
+		var convertBackToResult = boolObjectConverter.ConvertBackTo(value, CultureInfo.CurrentCulture);
 
 		Assert.Equal(expectedResult, convertBackResult);
 		Assert.Equal(expectedResult, convertBackToResult);

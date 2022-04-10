@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Returns a string array that contains the substrings in this string that are delimited by <see cref="Separator"/>.
 /// </summary>
-public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable<string>>
+public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable<string>, object?>
 {
 	string separator = " ";
 	IList<string> separators = Array.Empty<string>();
@@ -47,16 +47,9 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable<st
 		{
 			ArgumentNullException.ThrowIfNull(value);
 
-			foreach (var stringValue in value)
+			if (value.Any(string.IsNullOrEmpty))
 			{
-				if (stringValue is null)
-				{
-					throw new ArgumentNullException(nameof(value), $"{nameof(value)} cannot contain null strings");
-				}
-				else if (string.IsNullOrEmpty(stringValue))
-				{
-					throw new ArgumentException("An empty string is not a valid separator", nameof(value));
-				}
+				throw new ArgumentException("A null or an empty string is not a valid separator", nameof(value));
 			}
 
 			separators = value;
@@ -72,53 +65,37 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable<st
 	/// Returns a string array that contains the substrings in this string that are delimited by <see cref="Separators"/>.
 	/// </summary>
 	/// <param name="value">The string to split.</param>
-	/// <param name="targetType">The type of the binding target property. This is not implemented.</param>
 	/// <param name="parameter">The string or strings that delimits the substrings in this string. This overrides the value in <see cref="Separator"/> and <see cref="Separators"/>.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>An array whose elements contain the substrings in this string that are delimited by <see cref="Separator"/> or, if set, <see cref="Separators"/> or, if set, <paramref name="parameter"/>.</returns>
-	public override IEnumerable<string> ConvertFrom(string? value, Type targetType, object? parameter, CultureInfo? culture)
+	public override IEnumerable<string> ConvertFrom(string? value, object? parameter, CultureInfo? culture)
 	{
 		if (value is null)
 		{
 			return Array.Empty<string>();
 		}
 
-		if (parameter is string[] separators)
+		switch (parameter)
 		{
-			foreach (var stringValue in separators)
-			{
-				if (stringValue is null)
-				{
-					throw new ArgumentNullException(nameof(value), $"{nameof(value)} cannot contain null strings");
-				}
-				else if (string.IsNullOrEmpty(stringValue))
-				{
-					throw new ArgumentException("An empty string is not a valid separator", nameof(value));
-				}
-			}
-
-			return Split(value, separators);
-		}
-		else if (parameter is string separator)
-		{
-			if (string.IsNullOrEmpty(separator))
-			{
+			case string[] separators:
+				Separators = separators;
+				return Split(value, Separators.ToArray());
+			case string separator when string.IsNullOrEmpty(separator):
 				throw new ArgumentException("An empty string is not a valid separator", nameof(value));
+			case string separator:
+				return Split(value, separator);
+			default:
+			{
+				if (parameter is not null)
+				{
+					throw new ArgumentException("Parameter cannot be casted to string nor string[]", nameof(parameter));
+				}
+
+				break;
 			}
-
-			return Split(value, separator);
-		}
-		else if (parameter is not null)
-		{
-			throw new ArgumentException("Parameter cannot be casted to string nor string[]", nameof(parameter));
 		}
 
-		if (Separators.Count > 1)
-		{
-			return Split(value, Separators.ToArray());
-		}
-
-		return Split(value, Separator);
+		return Separators.Count > 1 ? Split(value, Separators.ToArray()) : Split(value, Separator);
 	}
 
 	string[] Split(string valueToSplit, params string[] separators) => valueToSplit.Split(separators, SplitOptions);

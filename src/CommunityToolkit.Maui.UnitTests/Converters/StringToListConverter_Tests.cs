@@ -27,7 +27,7 @@ public class StringToListConverter_Tests : BaseTest
 			Separators = new[] { "@", "*" }
 		};
 
-		var convertFromResult = stringToListConverter.ConvertFrom(value, typeof(IList<string>), parameter, null);
+		var convertFromResult = stringToListConverter.ConvertFrom(value, parameter, null);
 		var convertResult = (IEnumerable<string>?)((ICommunityToolkitValueConverter)stringToListConverter).Convert(value, typeof(IList<string>), parameter, null);
 
 		Assert.Equal(expectedResult, convertFromResult);
@@ -46,7 +46,7 @@ public class StringToListConverter_Tests : BaseTest
 			Separators = new[] { "@", "*" }
 		};
 
-		var convertFromResult = stringToListConverter.ConvertFrom(valueToConvert, typeof(IList<string>), null, null);
+		var convertFromResult = stringToListConverter.ConvertFrom(valueToConvert, null, null);
 		var convertResult = (IEnumerable<string>?)((ICommunityToolkitValueConverter)stringToListConverter).Convert(valueToConvert, typeof(IList<string>), null, null);
 
 		Assert.Equal(expectedResult, convertResult);
@@ -64,7 +64,7 @@ public class StringToListConverter_Tests : BaseTest
 			Separator = "~",
 		};
 
-		var convertFromResult = stringToListConverter.ConvertFrom(valueToConvert, typeof(IList<string>), null, null);
+		var convertFromResult = stringToListConverter.ConvertFrom(valueToConvert, null, null);
 		var convertResult = (IEnumerable<string>?)((ICommunityToolkitValueConverter)stringToListConverter).Convert(valueToConvert, typeof(IList<string>), null, null);
 
 		Assert.Equal(expectedResult, convertResult);
@@ -105,8 +105,8 @@ public class StringToListConverter_Tests : BaseTest
 		Assert.Throws<ArgumentNullException>(() => new StringToListConverter().Separator = null);
 		Assert.Throws<ArgumentNullException>(() => new StringToListConverter { Separators = null });
 		Assert.Throws<ArgumentNullException>(() => new StringToListConverter().Separators = null);
-		Assert.Throws<ArgumentNullException>(() => new StringToListConverter { Separators = new List<string?> { ",", null } });
-		Assert.Throws<ArgumentNullException>(() => new StringToListConverter().Separators = new List<string?> { ",", null });
+		Assert.Throws<ArgumentException>(() => new StringToListConverter { Separators = new List<string?> { ",", null } });
+		Assert.Throws<ArgumentException>(() => new StringToListConverter().Separators = new List<string?> { ",", null });
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new StringToListConverter()).Convert(string.Empty, null, null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new StringToListConverter()).ConvertBack(new List<string>(), null, null, null));
 #pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
@@ -120,8 +120,8 @@ public class StringToListConverter_Tests : BaseTest
 		Assert.Throws<ArgumentException>(() => new StringToListConverter().Separator = string.Empty);
 		Assert.Throws<ArgumentException>(() => new StringToListConverter { Separators = new List<string> { ",", string.Empty } });
 		Assert.Throws<ArgumentException>(() => new StringToListConverter().Separators = new List<string> { ",", string.Empty });
-		Assert.Throws<ArgumentException>(() => new StringToListConverter().ConvertFrom(string.Empty, typeof(IList<string>), string.Empty, null));
-		Assert.Throws<ArgumentException>(() => new StringToListConverter().ConvertFrom(string.Empty, typeof(IList<string>), new[] { ",", "" }, null));
+		Assert.Throws<ArgumentException>(() => new StringToListConverter().ConvertFrom(string.Empty, string.Empty, null));
+		Assert.Throws<ArgumentException>(() => new StringToListConverter().ConvertFrom(string.Empty, new[] { ",", "" }, null));
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)new StringToListConverter()).Convert(string.Empty, typeof(IList<string>), string.Empty, null));
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)new StringToListConverter()).Convert(string.Empty, typeof(IList<string>), new[] { ",", "" }, null));
 	}

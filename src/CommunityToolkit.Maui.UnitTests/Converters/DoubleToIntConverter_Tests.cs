@@ -16,7 +16,7 @@ public class DoubleToIntConverter_Tests : BaseTest
 		var doubleToIntConverter = new DoubleToIntConverter();
 
 		var convertResult = (int?)((ICommunityToolkitValueConverter)doubleToIntConverter).Convert(value, typeof(int), ratio, CultureInfo.CurrentCulture);
-		var convertFromResult = doubleToIntConverter.ConvertFrom(value, typeof(int), ratio, CultureInfo.CurrentCulture);
+		var convertFromResult = doubleToIntConverter.ConvertFrom(value, ratio, CultureInfo.CurrentCulture);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
@@ -30,7 +30,7 @@ public class DoubleToIntConverter_Tests : BaseTest
 		var doubleToIntConverter = new DoubleToIntConverter();
 
 		var convertBackResult = (double?)((ICommunityToolkitValueConverter)doubleToIntConverter).ConvertBack(value, typeof(double), ratio, CultureInfo.CurrentCulture);
-		var convertBackToResult = doubleToIntConverter.ConvertBackTo(value, typeof(double), ratio, CultureInfo.CurrentCulture);
+		var convertBackToResult = doubleToIntConverter.ConvertBackTo(value, ratio, CultureInfo.CurrentCulture);
 
 		Assert.Equal(expectedResult, convertBackResult);
 		Assert.Equal(expectedResult, convertBackToResult);

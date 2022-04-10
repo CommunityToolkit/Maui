@@ -14,7 +14,7 @@ public class InvertedBoolConverter_Tests : BaseTest
 		var invertedBoolConverter = new InvertedBoolConverter();
 
 		var convertResult = (bool?)((ICommunityToolkitValueConverter)invertedBoolConverter).Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
-		var convertFromResult = invertedBoolConverter.ConvertFrom(value, typeof(bool), null, CultureInfo.CurrentCulture);
+		var convertFromResult = invertedBoolConverter.ConvertFrom(value, CultureInfo.CurrentCulture);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);

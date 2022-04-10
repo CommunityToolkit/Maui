@@ -15,20 +15,12 @@ public class IndexToArrayItemConverter_Tests : BaseTest
 		var indexToArrayConverter = new IndexToArrayItemConverter();
 
 		var convertResult = ((ICommunityToolkitValueConverter)indexToArrayConverter).Convert(position, typeof(object), value, CultureInfo.CurrentCulture);
-		var convertFromResult = indexToArrayConverter.ConvertFrom(position, typeof(object), value, CultureInfo.CurrentCulture);
+		var convertFromResult = indexToArrayConverter.ConvertFrom(position, value, CultureInfo.CurrentCulture);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
 	}
-
-	[Theory]
-	[InlineData(null, 100)]
-	public void IndexToArrayInvalidValuesThrowArgumentException(object? value, object? position)
-	{
-		var indexToArrayConverter = new IndexToArrayItemConverter();
-		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)indexToArrayConverter).Convert(position, typeof(object), value, CultureInfo.CurrentCulture));
-	}
-
+	
 	[Fact]
 	public void IndexToArrayNullValuesThrowArgumentNullException()
 	{
@@ -43,7 +35,7 @@ public class IndexToArrayItemConverter_Tests : BaseTest
 	{
 		var indexToArrayConverter = new IndexToArrayItemConverter();
 		Assert.Throws<ArgumentOutOfRangeException>(() => ((ICommunityToolkitValueConverter)indexToArrayConverter).Convert(position, typeof(object), value, CultureInfo.CurrentCulture));
-		Assert.Throws<ArgumentOutOfRangeException>(() => indexToArrayConverter.ConvertFrom(position, typeof(object), value, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentOutOfRangeException>(() => indexToArrayConverter.ConvertFrom(position, value, CultureInfo.CurrentCulture));
 	}
 
 	[Fact]

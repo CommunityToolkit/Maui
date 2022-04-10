@@ -26,7 +26,7 @@ public class ColorToByteGreenConverter_Tests : BaseTest
 		var color = new Color(0, green, 0, 0);
 		var converter = new ColorToByteGreenConverter();
 
-		var resultConvertFrom = converter.ConvertFrom(color, typeof(byte), null, null);
+		var resultConvertFrom = converter.ConvertFrom(color, null);
 		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(byte), null, null);
 
 		Assert.Equal(expectedResult, resultConvertFrom);
@@ -37,7 +37,7 @@ public class ColorToByteGreenConverter_Tests : BaseTest
 	public void ColorToByteGreenConverterNullInputTest()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => new ColorToByteGreenConverter().ConvertFrom(null, typeof(byte), null, null));
+		Assert.Throws<ArgumentNullException>(() => new ColorToByteGreenConverter().ConvertFrom(null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToByteGreenConverter()).Convert(null, typeof(byte), null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToByteGreenConverter()).Convert(new Color(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.

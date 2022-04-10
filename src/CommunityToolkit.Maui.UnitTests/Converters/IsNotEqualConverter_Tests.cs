@@ -17,7 +17,7 @@ public class IsNotEqualConverter_Tests : BaseTest
 		var notEqualConverter = new IsNotEqualConverter();
 
 		var convertResult = (bool?)((ICommunityToolkitValueConverter)notEqualConverter).Convert(value, typeof(bool), comparedValue, CultureInfo.CurrentCulture);
-		var convertFromResult = notEqualConverter.ConvertFrom(value, typeof(bool), comparedValue, CultureInfo.CurrentCulture);
+		var convertFromResult = notEqualConverter.ConvertFrom(value, comparedValue, CultureInfo.CurrentCulture);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);

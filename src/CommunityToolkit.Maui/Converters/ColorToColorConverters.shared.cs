@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Converters;
 public class ColorToBlackOrWhiteConverter : BaseConverterOneWay<Color, Color>
 {
 	/// <inheritdoc/>
-	public override Color ConvertFrom(Color value, Type targetType, object? parameter, CultureInfo? culture)
+	public override Color ConvertFrom(Color value, CultureInfo? culture)
 	{
 		ArgumentNullException.ThrowIfNull(value);
 		return value.ToBlackOrWhite();
@@ -22,7 +22,7 @@ public class ColorToBlackOrWhiteConverter : BaseConverterOneWay<Color, Color>
 public class ColorToColorForTextConverter : BaseConverterOneWay<Color, Color>
 {
 	/// <inheritdoc/>
-	public override Color ConvertFrom(Color value, Type targetType, object? parameter, CultureInfo? culture)
+	public override Color ConvertFrom(Color value, CultureInfo? culture)
 	{
 		ArgumentNullException.ThrowIfNull(value);
 		return value.ToBlackOrWhiteForText();
@@ -35,7 +35,7 @@ public class ColorToColorForTextConverter : BaseConverterOneWay<Color, Color>
 public class ColorToGrayScaleColorConverter : BaseConverterOneWay<Color, Color>
 {
 	/// <inheritdoc/>
-	public override Color ConvertFrom(Color value, Type targetType, object? parameter, CultureInfo? culture)
+	public override Color ConvertFrom(Color value, CultureInfo? culture)
 	{
 		ArgumentNullException.ThrowIfNull(value);
 		return value.ToGrayScale();
@@ -48,7 +48,7 @@ public class ColorToGrayScaleColorConverter : BaseConverterOneWay<Color, Color>
 public class ColorToInverseColorConverter : BaseConverterOneWay<Color, Color>
 {
 	/// <inheritdoc/>
-	public override Color ConvertFrom(Color value, Type targetType, object? parameter, CultureInfo? culture)
+	public override Color ConvertFrom(Color value, CultureInfo? culture)
 	{
 		ArgumentNullException.ThrowIfNull(value);
 		return value.ToInverseColor();

@@ -32,11 +32,6 @@ public class MultiMathExpressionConverter : MultiValueConverterExtension, ICommu
 		var args = new List<double>();
 		foreach (var value in values)
 		{
-			if (value is null)
-			{
-				return null;
-			}
-
 			if (double.TryParse(value.ToString(), out var xValue))
 			{
 				args.Add(xValue);

@@ -76,12 +76,10 @@ public abstract class CompareConverter<TObject> : BaseConverterOneWay<IComparabl
 	/// Converts an object that implements IComparable to a specified object or a boolean based on a comparaison result.
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
-	/// <param name="targetType">The type of the binding target property. This is not implemented.</param>
-	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter.  This is not implemented.</param>
 	/// <returns>The object assigned to <see cref="TrueObject"/> if (value <see cref="ComparisonOperator"/> <see cref="ComparingValue"/>) equals True and <see cref="TrueObject"/> is not null, if <see cref="TrueObject"/> is null it returns true, otherwise the value assigned to <see cref="FalseObject"/>, if no value is assigned then it returns false.</returns>
 	[MemberNotNull(nameof(ComparingValue))]
-	public override object ConvertFrom(IComparable value, Type targetType, object? parameter, CultureInfo? culture)
+	public override object ConvertFrom(IComparable value, CultureInfo? culture)
 	{
 		ArgumentNullException.ThrowIfNull(value);
 		ArgumentNullException.ThrowIfNull(ComparingValue);

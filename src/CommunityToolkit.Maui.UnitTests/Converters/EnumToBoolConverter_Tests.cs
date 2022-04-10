@@ -58,17 +58,15 @@ public class EnumToBoolConverter_Tests : BaseTest
 	}
 
 	[Theory]
-	[InlineData("a string")]
-	[InlineData(42)]
+	[InlineData(TextCaseType.Lower)]
 	[InlineData(null)]
-	[InlineData(false)]
 	[InlineData(TestFlaggedEnumForEnumToBoolConverter.Four)]
-	public void EnumToBoolConvert_ParameterNotSameEnum_ReturnsFalse(object parameter)
+	public void EnumToBoolConvert_ParameterNotSameEnum_ReturnsFalse(Enum? parameter)
 	{
 		var enumToBoolConverter = new EnumToBoolConverter();
 
 		var convertResult = (bool?)((ICommunityToolkitValueConverter)enumToBoolConverter).Convert(TestEnumForEnumToBoolConverter.Five, typeof(bool), parameter, CultureInfo.InvariantCulture);
-		var convertFromResult = enumToBoolConverter.ConvertFrom(TestEnumForEnumToBoolConverter.Five, typeof(bool), parameter, CultureInfo.InvariantCulture);
+		var convertFromResult = enumToBoolConverter.ConvertFrom(TestEnumForEnumToBoolConverter.Five, parameter, CultureInfo.InvariantCulture);
 
 		Assert.False(convertResult);
 		Assert.False(convertFromResult);
@@ -96,7 +94,7 @@ public class EnumToBoolConverter_Tests : BaseTest
 		trueValues?.OfType<Enum>().ToList().ForEach(fe => enumToBoolConverter.TrueValues.Add(fe));
 
 		var convertResult = (bool?)((ICommunityToolkitValueConverter)enumToBoolConverter).Convert(value, typeof(bool), parameter, CultureInfo.InvariantCulture);
-		var convertFromResult = enumToBoolConverter.ConvertFrom(value, typeof(bool), parameter, CultureInfo.InvariantCulture);
+		var convertFromResult = enumToBoolConverter.ConvertFrom(value, parameter, CultureInfo.InvariantCulture);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);

@@ -38,19 +38,19 @@ public class TextCaseConverter_Tests : BaseTest
 	{
 		var textCaseConverter = new TextCaseConverter();
 
-		Assert.Throws<NotSupportedException>(() => textCaseConverter.ConvertFrom("Hello World", typeof(string), textCaseType, null));
+		Assert.Throws<NotSupportedException>(() => textCaseConverter.ConvertFrom("Hello World", textCaseType, null));
 		Assert.Throws<NotSupportedException>(() => ((ICommunityToolkitValueConverter)textCaseConverter).Convert("Hello World", typeof(string), textCaseType, null));
 	}
 
 	[Theory]
 	[MemberData(nameof(Data))]
 	[InlineData(null, null, null)]
-	public void TextCaseConverterWithParameter(object? value, object? comparedValue, object? expectedResult)
+	public void TextCaseConverterWithParameter(object? value, TextCaseType? comparedValue, object? expectedResult)
 	{
 		var textCaseConverter = new TextCaseConverter();
 
 		var convertResult = ((ICommunityToolkitValueConverter)textCaseConverter).Convert(value?.ToString(), typeof(string), comparedValue, CultureInfo.CurrentCulture);
-		var convertFromResult = textCaseConverter.ConvertFrom(value?.ToString(), typeof(string), comparedValue, CultureInfo.CurrentCulture);
+		var convertFromResult = textCaseConverter.ConvertFrom(value?.ToString(), comparedValue, CultureInfo.CurrentCulture);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
@@ -66,7 +66,7 @@ public class TextCaseConverter_Tests : BaseTest
 		};
 
 		var convertResult = ((ICommunityToolkitValueConverter)textCaseConverter).Convert(value?.ToString(), typeof(string), null, CultureInfo.CurrentCulture);
-		var convertFromResult = textCaseConverter.ConvertFrom(value?.ToString(), typeof(string), null, CultureInfo.CurrentCulture);
+		var convertFromResult = textCaseConverter.ConvertFrom(value?.ToString(), null, CultureInfo.CurrentCulture);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
