@@ -25,7 +25,7 @@ public static class ToastNotificationExtensions
 	/// Build Toast Text Notification with actions
 	/// </summary>
 	/// <param name="text">Notification text</param>
-	/// <param name="actionText"></param>
+	/// <param name="actionText">Action Button text</param>
 	/// <returns><see cref="XmlDocument"/></returns>
 	public static XmlDocument BuildToastNotificationContent(string text, string actionText)
 	{
@@ -57,6 +57,5 @@ public static class ToastNotificationExtensions
 		actions.AppendChild(action);
 		action.SetAttribute("content", text);
 		action.SetAttribute("arguments", text);
-		action.SetActivationType(false);
 	}
 }
