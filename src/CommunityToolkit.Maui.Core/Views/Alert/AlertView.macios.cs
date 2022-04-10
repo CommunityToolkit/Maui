@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// <see cref="UIView"/> for <see cref="Alert"/>
 /// </summary>
-public sealed class AlertView : UIView
+public class AlertView : UIView
 {
 	readonly List<UIView> children = Enumerable.Empty<UIView>().ToList();
 

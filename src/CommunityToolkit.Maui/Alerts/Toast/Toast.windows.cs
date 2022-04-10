@@ -1,6 +1,5 @@
-﻿using CommunityToolkit.WinUI.Notifications;
-using Windows.Data.Xml.Dom;
-using Windows.UI.Notifications;
+﻿using Windows.UI.Notifications;
+using static CommunityToolkit.Maui.Extensions.ToastNotificationExtensions;
 
 namespace CommunityToolkit.Maui.Alerts;
 
@@ -22,16 +21,8 @@ public partial class Toast
 	{
 		DismissPlatform(token);
 		token.ThrowIfCancellationRequested();
-		var toastContentBuilder = new ToastContentBuilder()
-			.AddText(Text);
-
-		var toastContent = toastContentBuilder.GetToastContent();
-		toastContent.ActivationType = ToastActivationType.Background;
-
-		var xmlDocument = new XmlDocument();
-		xmlDocument.LoadXml(toastContent.GetContent());
-
-		PlatformToast = new ToastNotification(xmlDocument)
+		
+		PlatformToast = new ToastNotification(BuildToastNotificationContent(Text))
 		{
 			ExpirationTime = DateTimeOffset.Now.Add(GetDuration(Duration))
 		};

@@ -1,7 +1,6 @@
-﻿using CommunityToolkit.WinUI.Notifications;
-using Microsoft.Maui.Dispatching;
-using Windows.Data.Xml.Dom;
+﻿using Microsoft.Maui.Dispatching;
 using Windows.UI.Notifications;
+using static CommunityToolkit.Maui.Extensions.ToastNotificationExtensions;
 
 namespace CommunityToolkit.Maui.Alerts;
 
@@ -39,20 +38,10 @@ public partial class Snackbar
 	{
 		await DismissPlatform(token);
 		token.ThrowIfCancellationRequested();
-		var toastContentBuilder = new ToastContentBuilder()
-			.AddText(Text)
-			.AddButton(
-				new ToastButton { ActivationType = ToastActivationType.Foreground }.SetContent(ActionButtonText));
-
-		var toastContent = toastContentBuilder.GetToastContent();
-		toastContent.ActivationType = ToastActivationType.Background;
-
+		
 		dismissedTCS = new();
-
-		var xmlDocument = new XmlDocument();
-		xmlDocument.LoadXml(toastContent.GetContent());
-
-		PlatformSnackbar = new ToastNotification(xmlDocument);
+		
+		PlatformSnackbar = new ToastNotification(BuildToastNotificationContent(Text, ActionButtonText));
 		PlatformSnackbar.Activated += OnActivated;
 		PlatformSnackbar.Dismissed += OnDismissed;
 		PlatformSnackbar.ExpirationTime = DateTimeOffset.Now.Add(Duration);
