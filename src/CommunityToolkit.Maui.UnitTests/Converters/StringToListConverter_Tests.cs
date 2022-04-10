@@ -97,19 +97,24 @@ public class StringToListConverter_Tests : BaseTest
 	}
 
 	[Fact]
+	public void StringToListConverterNullStringsInListTest()
+	{
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
+		Assert.Throws<ArgumentException>(() => new StringToListConverter { Separators = new List<string?> { ",", null } });
+		Assert.Throws<ArgumentException>(() => new StringToListConverter().Separators = new List<string?> { ",", null });
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
+	}
+
+	[Fact]
 	public void StringToListConverterNullInputTest()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
 		Assert.Throws<ArgumentNullException>(() => new StringToListConverter { Separator = null });
 		Assert.Throws<ArgumentNullException>(() => new StringToListConverter().Separator = null);
 		Assert.Throws<ArgumentNullException>(() => new StringToListConverter { Separators = null });
 		Assert.Throws<ArgumentNullException>(() => new StringToListConverter().Separators = null);
-		Assert.Throws<ArgumentException>(() => new StringToListConverter { Separators = new List<string?> { ",", null } });
-		Assert.Throws<ArgumentException>(() => new StringToListConverter().Separators = new List<string?> { ",", null });
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new StringToListConverter()).Convert(string.Empty, null, null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new StringToListConverter()).ConvertBack(new List<string>(), null, null, null));
-#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
