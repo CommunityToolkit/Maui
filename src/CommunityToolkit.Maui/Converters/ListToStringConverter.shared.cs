@@ -31,14 +31,12 @@ public class ListToStringConverter : BaseConverterOneWay<IEnumerable, string, st
 	public override string ConvertFrom(IEnumerable value, string? parameter, CultureInfo? culture)
 	{
 		ArgumentNullException.ThrowIfNull(value);
-
-		parameter ??= Separator; // if the ConverterParameter is not assigned (aka parameter is null), we will default to the Separator property. 
 		
 		var collection = value
 			.OfType<object>()
 			.Select(x => x.ToString())
 			.Where(x => !string.IsNullOrWhiteSpace(x));
 
-		return string.Join(parameter, collection);
+		return string.Join(parameter ?? Separator, collection); // if the ConverterParameter is not assigned (aka parameter is null), we will default to the Separator property. 
 	}
 }
