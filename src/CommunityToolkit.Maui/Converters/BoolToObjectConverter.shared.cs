@@ -30,8 +30,7 @@ public class BoolToObjectConverter<TObject> : BaseConverter<bool, TObject?>
 	/// <param name="value">The value to convert.</param>
 	/// <param name="culture">The culture to use in the converter.  This is not implemented.</param>
 	/// <returns>The object assigned to <see cref="TrueObject"/> if value equals True, otherwise the value assigned to <see cref="FalseObject"/>.</returns>
-	public override TObject? ConvertFrom(bool value, CultureInfo? culture) =>
-		value ? TrueObject : FalseObject;
+	public override TObject? ConvertFrom(bool value, CultureInfo? culture) => value ? TrueObject : FalseObject;
 
 	/// <summary>
 	/// Converts back object to <see cref="bool"/>.
@@ -45,10 +44,10 @@ public class BoolToObjectConverter<TObject> : BaseConverter<bool, TObject?>
 		{
 			return true;
 		}
-		
-		if (value is { } result)
+
+		if (value is not null)
 		{
-			return result.Equals(TrueObject);
+			return value.Equals(TrueObject);
 		}
 
 		throw new ArgumentException($"Value is not a valid {typeof(TObject).Name}", nameof(value));
