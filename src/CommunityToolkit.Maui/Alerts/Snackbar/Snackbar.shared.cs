@@ -1,12 +1,11 @@
-﻿using CommunityToolkit.Maui.Core;
-using Microsoft.Maui.Dispatching;
+using CommunityToolkit.Maui.Core;
 
 #if ANDROID
-using NativeSnackbar = Google.Android.Material.Snackbar.Snackbar;
+using PlatformSnackbar = Google.Android.Material.Snackbar.Snackbar;
 #elif IOS || MACCATALYST
-using NativeSnackbar = CommunityToolkit.Maui.Core.Views.SnackbarView;
+using PlatformSnackbar = CommunityToolkit.Maui.Core.Views.PlatformSnackbar;
 #elif WINDOWS
-using NativeSnackbar = Windows.UI.Notifications.ToastNotification;
+using PlatformSnackbar = Windows.UI.Notifications.ToastNotification;
 #endif
 
 namespace CommunityToolkit.Maui.Alerts;
@@ -16,34 +15,44 @@ public partial class Snackbar : ISnackbar
 {
 	static readonly WeakEventManager weakEventManager = new();
 
+	bool isDisposed;
+	string text = string.Empty;
+	string actionButtonText = Defaults.ActionButtonText;
+
 	/// <summary>
 	/// Initializes a new instance of <see cref="Snackbar"/>
 	/// </summary>
 	public Snackbar()
 	{
-		Text = string.Empty;
 		Duration = GetDefaultTimeSpan();
-		ActionButtonText = "OK";
 		VisualOptions = new SnackbarOptions();
+	}
+
+	/// <inheritdoc/>
+	public static bool IsShown { get; private set; }
+
+	/// <inheritdoc/>
+	public string Text
+	{
+		get => text;
+		init => text = value ?? throw new ArgumentNullException(nameof(value));
+	}
+
+	/// <inheritdoc/>
+	public string ActionButtonText
+	{
+		get => actionButtonText;
+		init => actionButtonText = value ?? throw new ArgumentNullException(nameof(value));
 	}
 
 	/// <inheritdoc/>
 	public SnackbarOptions VisualOptions { get; init; }
 
 	/// <inheritdoc/>
-	public string Text { get; init; }
-
-	/// <inheritdoc/>
 	public TimeSpan Duration { get; init; }
 
 	/// <inheritdoc/>
 	public Action? Action { get; init; }
-
-	/// <inheritdoc/>
-	public string ActionButtonText { get; init; }
-
-	/// <inheritdoc/>
-	public static bool IsShown { get; private set; }
 
 	/// <inheritdoc/>
 	public IView? Anchor { get; init; }
@@ -75,7 +84,7 @@ public partial class Snackbar : ISnackbar
 	public static ISnackbar Make(
 		string message,
 		Action? action = null,
-		string actionButtonText = "OK",
+		string actionButtonText = Defaults.ActionButtonText,
 		TimeSpan? duration = null,
 		SnackbarOptions? visualOptions = null,
 		IView? anchor = null)
@@ -94,16 +103,18 @@ public partial class Snackbar : ISnackbar
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	public virtual Task Show(CancellationToken token = default) => Dispatcher.GetForCurrentThread().DispatchIfRequiredAsync(() => ShowNative(token));
+	public virtual Task Show(CancellationToken token = default) => ShowPlatform(token);
 
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
-	public virtual Task Dismiss(CancellationToken token = default) => Dispatcher.GetForCurrentThread().DispatchIfRequiredAsync(() => DismissNative(token));
+	public virtual Task Dismiss(CancellationToken token = default) => DismissPlatform(token);
+
+	internal static TimeSpan GetDefaultTimeSpan() => TimeSpan.FromSeconds(3);
 
 #if !(IOS || ANDROID || MACCATALYST || WINDOWS)
 	/// <inheritdoc/>
-	private partial Task ShowNative(CancellationToken token)
+	private partial Task ShowPlatform(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 
@@ -113,7 +124,7 @@ public partial class Snackbar : ISnackbar
 	}
 
 	/// <inheritdoc/>
-	private partial Task DismissNative(CancellationToken token)
+	private partial Task DismissPlatform(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 
@@ -126,51 +137,34 @@ public partial class Snackbar : ISnackbar
 	/// <summary>
 	/// Dispose Snackbar
 	/// </summary>
-	public async ValueTask DisposeAsync()
+	public void Dispose()
 	{
-		await DisposeAsyncCore();
+		Dispose(true);
 		GC.SuppressFinalize(this);
 	}
 
 	/// <summary>
 	/// Dispose Snackbar
 	/// </summary>
-#if ANDROID || IOS || MACCATALYST
-	protected virtual async ValueTask DisposeAsyncCore()
+	protected virtual void Dispose(bool isDisposing)
 	{
-		await Dispatcher.GetForCurrentThread().DispatchIfRequiredAsync(() => NativeSnackbar?.Dispose());
-	}
-#else
-	protected virtual ValueTask DisposeAsyncCore()
-	{
-		return ValueTask.CompletedTask;
-	}
-#endif
+		if (isDisposed)
+		{
+			return;
+		}
 
-	static TimeSpan GetDefaultTimeSpan() => TimeSpan.FromSeconds(3);
+		if (isDisposing)
+		{
+#if ANDROID || IOS || MACCATALYST
+			PlatformSnackbar?.Dispose();
+#endif
+		}
+
+		isDisposed = true;
+	}
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS
-
-	static NativeSnackbar? nativeSnackbar;
-
-	static NativeSnackbar? NativeSnackbar
-	{
-		get
-		{
-			return MainThread.IsMainThread
-				? nativeSnackbar
-				: throw new InvalidOperationException($"{nameof(nativeSnackbar)} can only be called from the Main Thread");
-		}
-		set
-		{
-			if (!MainThread.IsMainThread)
-			{
-				throw new InvalidOperationException($"{nameof(nativeSnackbar)} can only be called from the Main Thread");
-			}
-
-			nativeSnackbar = value;
-		}
-	}
+	static PlatformSnackbar? PlatformSnackbar { get; set; }
 #endif
 
 	void OnShown()
@@ -185,9 +179,9 @@ public partial class Snackbar : ISnackbar
 		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Dismissed));
 	}
 
-	private partial Task ShowNative(CancellationToken token);
+	private partial Task ShowPlatform(CancellationToken token);
 
-	private partial Task DismissNative(CancellationToken token);
+	private partial Task DismissPlatform(CancellationToken token);
 }
 
 /// <summary>
@@ -196,7 +190,7 @@ public partial class Snackbar : ISnackbar
 public static class SnackbarVisualElementExtension
 {
 	/// <summary>
-	/// Display snackbar with the anchor
+	/// Display snackbar anchored to <see cref="VisualElement"/>
 	/// </summary>
 	/// <param name="visualElement">Anchor element</param>
 	/// <param name="message">Text of the snackbar</param>
@@ -209,7 +203,7 @@ public static class SnackbarVisualElementExtension
 		this VisualElement? visualElement,
 		string message,
 		Action? action = null,
-		string actionButtonText = "OK",
+		string actionButtonText = Defaults.ActionButtonText,
 		TimeSpan? duration = null,
 		SnackbarOptions? visualOptions = null,
 		CancellationToken token = default) => Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement).Show(token);

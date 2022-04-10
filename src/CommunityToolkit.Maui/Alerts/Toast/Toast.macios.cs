@@ -9,28 +9,28 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Toast
 {
-	private partial void DismissNative(CancellationToken token)
+	private partial void DismissPlatform(CancellationToken token)
 	{
-		if (NativeToast is not null)
+		if (PlatformToast is not null)
 		{
 			token.ThrowIfCancellationRequested();
 
-			NativeToast.Dismiss();
+			PlatformToast.Dismiss();
 		}
 	}
 
 	/// <summary>
 	/// Show Toast
 	/// </summary>
-	private partial void ShowNative(CancellationToken token)
+	private partial void ShowPlatform(CancellationToken token)
 	{
-		DismissNative(token);
+		DismissPlatform(token);
 		token.ThrowIfCancellationRequested();
 
 		var cornerRadius = CreateCornerRadius();
-		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + ToastView.DefaultPadding;
+		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height);
 
-		NativeToast = new ToastView(Text,
+		PlatformToast = new PlatformToast(Text,
 											Defaults.BackgroundColor.ToPlatform(),
 											cornerRadius,
 											Defaults.TextColor.ToPlatform(),
@@ -41,7 +41,7 @@ public partial class Toast
 			Duration = GetDuration(Duration)
 		};
 
-		NativeToast.Show();
+		PlatformToast.Show();
 
 		static T? GetMaximum<T>(params T[] items) => items.Max();
 	}

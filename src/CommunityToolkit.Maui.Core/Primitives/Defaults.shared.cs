@@ -5,6 +5,7 @@ namespace CommunityToolkit.Maui.Core;
 /// <summary>
 /// Default Values for CommunityToolkit.Maui
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
 public static class Defaults
 {
 	/// <summary>
@@ -18,6 +19,12 @@ public static class Defaults
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const double CharacterSpacing = 0.0d;
+
+	/// <summary>
+	/// Default Character Spacing
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public const string ActionButtonText = "OK";
 
 	/// <summary>
 	/// Default Text Color

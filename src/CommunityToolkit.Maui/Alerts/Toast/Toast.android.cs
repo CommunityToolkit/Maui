@@ -6,29 +6,29 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Toast
 {
-	private partial void DismissNative(CancellationToken token)
+	private partial void DismissPlatform(CancellationToken token)
 	{
-		if (NativeToast is not null)
+		if (PlatformToast is not null)
 		{
 			token.ThrowIfCancellationRequested();
 
-			NativeToast.Cancel();
+			PlatformToast.Cancel();
 		}
 	}
 
-	private partial void ShowNative(CancellationToken token)
+	private partial void ShowPlatform(CancellationToken token)
 	{
-		DismissNative(token);
+		DismissPlatform(token);
 
 		token.ThrowIfCancellationRequested();
 
 		var styledText = new SpannableStringBuilder(Text);
 		styledText.SetSpan(new AbsoluteSizeSpan((int)TextSize, true), 0, Text.Length, 0);
 
-		NativeToast = Android.Widget.Toast.MakeText(Platform.AppContext, styledText, GetToastLength(Duration))
+		PlatformToast = Android.Widget.Toast.MakeText(Platform.CurrentActivity.Window?.DecorView.FindViewById(Android.Resource.Id.Content)?.RootView?.Context, styledText, GetToastLength(Duration))
 						  ?? throw new Exception("Unable to create toast");
 
-		NativeToast.Show();
+		PlatformToast.Show();
 	}
 
 	static ToastLength GetToastLength(Core.ToastDuration duration)

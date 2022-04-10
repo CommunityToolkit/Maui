@@ -3,7 +3,7 @@
 /// <summary>
 /// Alert
 /// </summary>
-public interface IAlert : IAsyncDisposable
+public interface IAlert : IDisposable
 {
 	/// <summary>
 	/// Message text

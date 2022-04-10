@@ -75,9 +75,6 @@
     <None Include="**\windows\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <PackageReference Include="CommunityToolkit.WinUI.Notifications" Version="7.1.2" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj" />
   </ItemGroup>
