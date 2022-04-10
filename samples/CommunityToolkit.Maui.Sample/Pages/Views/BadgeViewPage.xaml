@@ -22,7 +22,7 @@
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
         <ScrollView>
-            <StackLayout
+            <VerticalStackLayout
                 Padding="12">
                 <Label
                     Text="Getting started"
@@ -179,7 +179,7 @@
                             Text="Decrease"/>
                     </StackLayout>
                 </badgeView:BadgeView>
-            </StackLayout>
+            </VerticalStackLayout>
         </ScrollView>
     </pages:BasePage.Content>
 </pages:BasePage>
