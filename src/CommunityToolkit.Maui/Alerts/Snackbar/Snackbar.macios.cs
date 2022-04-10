@@ -11,13 +11,13 @@ public partial class Snackbar
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
-	private partial Task DismissNative(CancellationToken token)
+	private partial Task DismissPlatform(CancellationToken token)
 	{
-		if (NativeSnackbar is not null)
+		if (PlatformSnackbar is not null)
 		{
 			token.ThrowIfCancellationRequested();
-			NativeSnackbar.Dismiss();
-			NativeSnackbar = null;
+			PlatformSnackbar.Dismiss();
+			PlatformSnackbar = null;
 		}
 
 		return Task.CompletedTask;
@@ -26,15 +26,15 @@ public partial class Snackbar
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	private partial async Task ShowNative(CancellationToken token)
+	private partial async Task ShowPlatform(CancellationToken token)
 	{
-		await DismissNative(token);
+		await DismissPlatform(token);
 		token.ThrowIfCancellationRequested();
 
 		var cornerRadius = GetCornerRadius(VisualOptions.CornerRadius);
 
-		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height) + ToastView.DefaultPadding;
-		NativeSnackbar = new SnackbarView(Text,
+		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height);
+		PlatformSnackbar = new PlatformSnackbar(Text,
 											VisualOptions.BackgroundColor.ToPlatform(),
 											cornerRadius,
 											VisualOptions.TextColor.ToPlatform(),
@@ -52,7 +52,7 @@ public partial class Snackbar
 			OnShown = OnShown
 		};
 
-		NativeSnackbar.Show();
+		PlatformSnackbar.Show();
 
 		static T? GetMaximum<T>(params T[] items) => items.Max();
 	}

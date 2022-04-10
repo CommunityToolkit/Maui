@@ -1,12 +1,11 @@
 ﻿using System.ComponentModel;
 using CommunityToolkit.Maui.Core;
-using Microsoft.Maui.Dispatching;
 #if ANDROID
-using NativeToast = Android.Widget.Toast;
+using PlatformToast = Android.Widget.Toast;
 #elif IOS || MACCATALYST
-using NativeToast = CommunityToolkit.Maui.Core.Views.ToastView;
+using PlatformToast = CommunityToolkit.Maui.Core.Views.PlatformToast;
 #elif WINDOWS
-using NativeToast = Windows.UI.Notifications.ToastNotification;
+using PlatformToast = Windows.UI.Notifications.ToastNotification;
 #endif
 
 namespace CommunityToolkit.Maui.Alerts;
@@ -14,6 +13,8 @@ namespace CommunityToolkit.Maui.Alerts;
 /// <inheritdoc/>
 public partial class Toast : IToast
 {
+	bool isDisposed;
+
 	string text = string.Empty;
 	ToastDuration duration = ToastDuration.Short;
 	double textSize = Defaults.FontSize;
@@ -66,7 +67,7 @@ public partial class Toast : IToast
 		string message,
 		ToastDuration duration = ToastDuration.Short,
 		double textSize = Defaults.FontSize)
-	{	
+	{
 		return new Toast
 		{
 			Text = message,
@@ -78,36 +79,49 @@ public partial class Toast : IToast
 	/// <summary>
 	/// Show Toast
 	/// </summary>
-	public virtual Task Show(CancellationToken token = default) => Dispatcher.GetForCurrentThread().DispatchIfRequiredAsync(() => ShowNative(token));
+	public virtual Task Show(CancellationToken token = default)
+	{
+		ShowPlatform(token);
+		return Task.CompletedTask;
+	}
 
 	/// <summary>
 	/// Dismiss Toast
 	/// </summary>
-	public virtual Task Dismiss(CancellationToken token = default) => Dispatcher.GetForCurrentThread().DispatchIfRequiredAsync(() => DismissNative(token));
+	public virtual Task Dismiss(CancellationToken token = default)
+	{
+		DismissPlatform(token);
+		return Task.CompletedTask;
+	}
 
 	/// <summary>
 	/// Dispose Toast
 	/// </summary>
-	public async ValueTask DisposeAsync()
+	public void Dispose()
 	{
-		await DisposeAsyncCore();
+		Dispose(true);
 		GC.SuppressFinalize(this);
 	}
 
 	/// <summary>
 	/// Dispose Toast
 	/// </summary>
+	protected virtual void Dispose(bool isDisposing)
+	{
+		if (isDisposed)
+		{
+			return;
+		}
+
+		if (isDisposing)
+		{
 #if ANDROID
-	protected virtual async ValueTask DisposeAsyncCore()
-	{
-		await Dispatcher.GetForCurrentThread().DispatchIfRequiredAsync(() => NativeToast?.Dispose());
-	}
-#else
-	protected virtual ValueTask DisposeAsyncCore()
-	{
-		return ValueTask.CompletedTask;
-	}
+			PlatformToast?.Dispose();
 #endif
+		}
+		
+		isDisposed = true;
+	}
 
 #if IOS || MACCATALYST || WINDOWS
 	static TimeSpan GetDuration(ToastDuration duration)
@@ -122,38 +136,19 @@ public partial class Toast : IToast
 #endif
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS
-	static NativeToast? nativeToast;
-
-	static NativeToast? NativeToast
-	{
-		get
-		{
-			return MainThread.IsMainThread
-				? nativeToast
-				: throw new InvalidOperationException($"{nameof(nativeToast)} can only be called from the Main Thread");
-		}
-		set
-		{
-			if (!MainThread.IsMainThread)
-			{
-				throw new InvalidOperationException($"{nameof(nativeToast)} can only be called from the Main Thread");
-			}
-
-			nativeToast = value;
-		}
-	}
+	static PlatformToast? PlatformToast { get; set; }
 #endif
 
 
-	private partial void ShowNative(CancellationToken token);
+	private partial void ShowPlatform(CancellationToken token);
 
-	private partial void DismissNative(CancellationToken token);
+	private partial void DismissPlatform(CancellationToken token);
 
 #if !(IOS || ANDROID || MACCATALYST || WINDOWS)
 	/// <summary>
 	/// Show Toast
 	/// </summary>
-	private partial void ShowNative(CancellationToken token)
+	private partial void ShowPlatform(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 	}
@@ -161,7 +156,7 @@ public partial class Toast : IToast
 	/// <summary>
 	/// Dismiss Toast
 	/// </summary>
-	private partial void DismissNative(CancellationToken token)
+	private partial void DismissPlatform(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 	}
