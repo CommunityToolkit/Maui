@@ -42,8 +42,10 @@ public class IndexToArrayItemConverter_Tests : BaseTest
 	public void IndexToArrayItemConverterNullInputTest()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => new IndexToArrayItemConverter().ConvertFrom(1, null, null));
+		Assert.Throws<ArgumentNullException>(() => new IndexToArrayItemConverter().ConvertBackTo(1, null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new IndexToArrayItemConverter()).Convert(1, null, null, null));
-		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new IndexToArrayItemConverter()).Convert(null, typeof(object), null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new IndexToArrayItemConverter()).Convert(null, typeof(object), Array.Empty<string>(), null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new IndexToArrayItemConverter()).ConvertBack(new object(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}

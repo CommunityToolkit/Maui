@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using CommunityToolkit.Maui.Converters;
+﻿using CommunityToolkit.Maui.Converters;
 
 namespace CommunityToolkit.Maui.Extensions;
 
@@ -55,7 +54,7 @@ public abstract class ValueConverterExtension : IMarkupExtension<ICommunityToolk
 		static bool CanBeConvertedToString() => typeof(T).GetMethods().Any(x => x.Name is nameof(ToString) && x.ReturnType == typeof(string));
 	}
 
-	private protected static void ValidateTargetType<TTarget>([NotNull] Type? targetType)
+	private protected static void ValidateTargetType<TTarget>(Type targetType)
 	{
 		ArgumentNullException.ThrowIfNull(targetType);
 
@@ -66,28 +65,23 @@ public abstract class ValueConverterExtension : IMarkupExtension<ICommunityToolk
 		}
 	}
 
-	private protected static TParam ConvertParameter<TParam>(object? parameter)
-	{
 #pragma warning disable CS8603 // Possible null reference return. If TParam is null (e.g. `string?`), a null return value is expected
-		return parameter switch
-		{
-			null when IsNullable<TParam>() => default,
-			TParam convertedParameter => convertedParameter,
-			_ => throw new ArgumentException($"parameter needs to be of type {typeof(TParam)}", nameof(parameter))
-		};
-#pragma warning restore CS8603 // Possible null reference return.
-	}
-
-	private protected static TValue ConvertValue<TValue>(object? value)
+	private protected static TParam ConvertParameter<TParam>(object? parameter) => parameter switch
 	{
-#pragma warning disable CS8603 // Possible null reference return. If TValue is null (e.g. `string?`), a null return value is expected
-		return value switch
-		{
-			null when IsNullable<TValue>() => default,
-			null when !IsNullable<TValue>() => throw new ArgumentNullException(nameof(value), $"value cannot be null because {nameof(TValue)} is not Nullable"),
-			TValue convertedValue => convertedValue,
-			_ => throw new ArgumentException($"value needs to be of type {typeof(TValue)}", nameof(value))
-		};
+		null when IsNullable<TParam>() => default,
+		null when !IsNullable<TParam>() => throw new ArgumentNullException(nameof(parameter), $"value cannot be null because {nameof(TParam)} is not Nullable"),
+		TParam convertedParameter => convertedParameter,
+		_ => throw new ArgumentException($"parameter needs to be of type {typeof(TParam)}", nameof(parameter))
+	};
 #pragma warning restore CS8603 // Possible null reference return.
-	}
+
+#pragma warning disable CS8603 // Possible null reference return. If TValue is null (e.g. `string?`), a null return value is expected
+	private protected static TValue ConvertValue<TValue>(object? value) => value switch
+	{
+		null when IsNullable<TValue>() => default,
+		null when !IsNullable<TValue>() => throw new ArgumentNullException(nameof(value), $"value cannot be null because {nameof(TValue)} is not Nullable"),
+		TValue convertedValue => convertedValue,
+		_ => throw new ArgumentException($"value needs to be of type {typeof(TValue)}", nameof(value))
+	};
+#pragma warning restore CS8603 // Possible null reference return.
 }
