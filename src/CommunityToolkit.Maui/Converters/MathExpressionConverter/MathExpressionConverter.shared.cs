@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters;
 
@@ -15,11 +14,11 @@ public class MathExpressionConverter : BaseConverterOneWay<double, double, strin
 	/// <param name="parameter">The expression to calculate.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>A <see cref="double"/> The result of calculating an expression.</returns>
-	public override double ConvertFrom(double value, [NotNull] string? parameter, CultureInfo? culture)
+	public override double ConvertFrom(double value, string parameter, CultureInfo? culture)
 	{
 		ArgumentNullException.ThrowIfNull(parameter);
-		var math = new MathExpression(parameter, new[] { value });
-		var result = math.Calculate();
-		return result;
+
+		var mathExpression = new MathExpression(parameter, new[] { value });
+		return mathExpression.Calculate();
 	}
 }
