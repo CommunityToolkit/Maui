@@ -16,18 +16,9 @@ public class ImageResourceConverter : BaseConverterOneWay<string?, ImageSource?>
 	/// <param name="culture">(Not Used)</param>
 	/// <returns>The ImageSource related to the provided resource ID of the embedded image. If it's null it will returns null.</returns>
 	[return: NotNullIfNotNull("value")]
-	public override ImageSource? ConvertFrom(string? value, CultureInfo? culture)
+	public override ImageSource? ConvertFrom(string? value, CultureInfo? culture) => value switch
 	{
-		if (value is null)
-		{
-			return null;
-		}
-
-		if (value is not { } imageId)
-		{
-			throw new ArgumentException("Value is not a string", nameof(value));
-		}
-
-		return ImageSource.FromResource(imageId, Application.Current?.GetType()?.Assembly);
-	}
+		null => null,
+		_ => ImageSource.FromResource(value, Application.Current?.GetType()?.Assembly)
+	};
 }
