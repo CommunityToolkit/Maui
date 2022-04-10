@@ -32,91 +32,23 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 	/// <inheritdoc/>
 	object? ICommunityToolkitValueConverter.ConvertBack(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
-		ArgumentNullException.ThrowIfNull(targetType);
+		ValidateTargetType<TFrom>(targetType);
 
-		// Ensure TFrom can be assigned to the given Target Type
-		if (!typeof(TFrom).IsAssignableFrom(targetType) && !IsValidTargetType<TFrom>(targetType))
-		{
-			throw new ArgumentException($"targetType needs to be typeof {typeof(TFrom)}", nameof(targetType));
-		}
+		var converterParameter = ConvertParameter<TParam>(parameter);
+		var converterValue = ConvertValue<TTo>(value);
 
-		TParam? param;
-		if (parameter is null && IsNullable<TParam>())
-		{
-			param = default;
-		}
-		else if (parameter is not TParam parameterFrom)
-		{
-			throw new ArgumentException($"parameter needs to be of type {typeof(TParam)}", nameof(parameter));
-		}
-		else
-		{
-			param = parameterFrom;
-		}
-
-		if (value is null && IsNullable<TTo>())
-		{
-#pragma warning disable CS8604 // Possible null reference argument.
-			return ConvertBackTo(default, param, culture);
-#pragma warning restore CS8604 // Possible null reference argument.
-		}
-
-		if (value is null && !IsNullable<TTo>())
-		{
-			throw new ArgumentNullException(nameof(value), $"value cannot be null because {nameof(TFrom)} is not Nullable");
-		}
-
-		if (value is not TTo valueFrom)
-		{
-			throw new ArgumentException($"value needs to be of type {typeof(TTo)}", nameof(value));
-		}
-
-		return ConvertBackTo(valueFrom, param, culture);
+		return ConvertBackTo(converterValue, converterParameter, culture);
 	}
 
 	/// <inheritdoc/>
 	object? ICommunityToolkitValueConverter.Convert(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
-		ArgumentNullException.ThrowIfNull(targetType);
+		ValidateTargetType<TTo>(targetType);
 
-		// Ensure TTo can be assigned to the given Target Type
-		if (!typeof(TTo).IsAssignableFrom(targetType) && !IsValidTargetType<TTo>(targetType))
-		{
-			throw new ArgumentException($"targetType needs to be assignable from {typeof(TTo)}", nameof(targetType));
-		}
+		var converterParameter = ConvertParameter<TParam>(parameter);
+		var converterValue = ConvertValue<TFrom>(value);
 
-		TParam? param;
-		if (parameter is null && IsNullable<TParam>())
-		{
-			param = default;
-		}
-		else if (parameter is not TParam parameterFrom)
-		{
-			throw new ArgumentException($"parameter needs to be of type {typeof(TParam)}", nameof(parameter));
-		}
-		else
-		{
-			param = parameterFrom;
-		}
-		
-		if (value is null && IsNullable<TFrom>())
-		{
-#pragma warning disable CS8604 // Possible null reference argument.
-			return ConvertFrom(default, param, culture);
-#pragma warning restore CS8604 // Possible null reference argument.
-		}
-
-		if (value is null && !IsNullable<TFrom>())
-		{
-			throw new ArgumentNullException(nameof(value), $"value cannot be null because {nameof(TFrom)} is not Nullable");
-		}
-
-		if (value is not TFrom convertedValue)
-		{
-			throw new ArgumentException($"value needs to be of type {typeof(TFrom)}");
-		}
-
-		return ConvertFrom(convertedValue, param, culture);
+		return ConvertFrom(converterValue, converterParameter, culture);
 	}	
 }
 
@@ -146,62 +78,20 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 	/// <inheritdoc/>
 	object? ICommunityToolkitValueConverter.ConvertBack(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
-		ArgumentNullException.ThrowIfNull(targetType);
+		ValidateTargetType<TFrom>(targetType);
 
-		// Ensure TFrom can be assigned to the given Target Type
-		if (!typeof(TFrom).IsAssignableFrom(targetType) && !IsValidTargetType<TFrom>(targetType))
-		{
-			throw new ArgumentException($"targetType needs to be typeof {typeof(TFrom)}", nameof(targetType));
-		}
+		var converterValue = ConvertValue<TTo>(value);
 
-		if (value is null && IsNullable<TTo>())
-		{
-#pragma warning disable CS8604 // Possible null reference argument.
-			return ConvertBackTo(default, culture);
-#pragma warning restore CS8604 // Possible null reference argument.
-		}
-
-		if (value is null && !IsNullable<TTo>())
-		{
-			throw new ArgumentNullException(nameof(value), $"value cannot be null because {nameof(TFrom)} is not Nullable");
-		}
-
-		if (value is not TTo valueFrom)
-		{
-			throw new ArgumentException($"value needs to be of type {typeof(TTo)}", nameof(value));
-		}
-
-		return ConvertBackTo(valueFrom, culture);
+		return ConvertBackTo(converterValue, culture);
 	}
 
 	/// <inheritdoc/>
 	object? ICommunityToolkitValueConverter.Convert(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
-		ArgumentNullException.ThrowIfNull(targetType);
+		ValidateTargetType<TTo>(targetType);
 
-		// Ensure TTo can be assigned to the given Target Type
-		if (!typeof(TTo).IsAssignableFrom(targetType) && !IsValidTargetType<TTo>(targetType))
-		{
-			throw new ArgumentException($"targetType needs to be assignable from {typeof(TTo)}", nameof(targetType));
-		}
+		var converterValue = ConvertValue<TFrom>(value);
 
-		if (value is null && IsNullable<TFrom>())
-		{
-#pragma warning disable CS8604 // Possible null reference argument.
-			return ConvertFrom(default, culture);
-#pragma warning restore CS8604 // Possible null reference argument.
-		}
-
-		if (value is null && !IsNullable<TFrom>())
-		{
-			throw new ArgumentNullException(nameof(value), $"value cannot be null because {nameof(TFrom)} is not Nullable");
-		}
-
-		if (value is not TFrom convertedValue)
-		{
-			throw new ArgumentException($"value needs to be of type {typeof(TFrom)}");
-		}
-
-		return ConvertFrom(convertedValue, culture);
+		return ConvertFrom(converterValue, culture);
 	}
 }
