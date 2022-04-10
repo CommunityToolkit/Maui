@@ -16,16 +16,6 @@ public partial class BadgeViewViewModel : BaseViewModel
 		DecreaseCommand = new Command(Decrease);
 	}
 
-	//public int Counter
-	//{
-	//	get => counter;
-	//	set
-	//	{
-	//		counter = value;
-	//		OnPropertyChanged();
-	//	}
-	//}
-
 	public ICommand IncreaseCommand { get; }
 
 	public ICommand DecreaseCommand { get; }
