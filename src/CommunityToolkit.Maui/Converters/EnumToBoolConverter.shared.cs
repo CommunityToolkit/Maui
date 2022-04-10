@@ -35,7 +35,7 @@ public class EnumToBoolConverter : BaseConverterOneWay<Enum, bool, Enum?>
 			? CompareTwoEnums(value, parameter)
 			: TrueValues.Any(item => CompareTwoEnums(value, item));
 
-		static bool CompareTwoEnums(Enum valueToCheck, Enum? referenceEnumValue)
+		static bool CompareTwoEnums(in Enum valueToCheck, in Enum? referenceEnumValue)
 		{
 			if (referenceEnumValue is null)
 			{
