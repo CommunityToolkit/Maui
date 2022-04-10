@@ -29,7 +29,7 @@ public class EnumToIntConverter_Tests : BaseTest
 		var enumToIntConverter = new EnumToIntConverter();
 
 		var convertResult = (int?)((ICommunityToolkitValueConverter)enumToIntConverter).Convert(value, typeof(int), null, null);
-		var convertFromResult = enumToIntConverter.ConvertFrom(value, typeof(TestEnum));
+		var convertFromResult = enumToIntConverter.ConvertFrom(value);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
