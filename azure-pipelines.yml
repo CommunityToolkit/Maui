@@ -67,26 +67,34 @@ jobs:
           Write-Host "##vso[build.updatebuildnumber]$fullVersionString"
         displayName: Set NuGet Version to PR Version
         condition: and(succeeded(), eq(variables['build.reason'], 'PullRequest'))
-      # build, test and pack the packages
+      # test
       - task: DotNetCoreCLI@2
         displayName: 'Run Unit Tests'
         inputs:
-          command: test
+          command: 'test'
           projects: '$(PathToCommunityToolkitUnitTestCsproj)'
-          arguments: '--configuration Release --settings ".runsettings" --collect "Code coverage"'
-      - task: DotNetCoreCLI@2
-        displayName: 'Check Dependencies'
+          arguments: '--configuration Release --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory $(Agent.TempDirectory)'
+          publishTestResults: false    
+      - task: PublishTestResults@2
+        displayName: 'Publish Test Results'
         inputs:
-          command: 'custom'
-          custom: 'list'
-          arguments: 'package --vulnerable --include-transitive'
-          projects: $(PathToSolution)
+          testResultsFormat: VSTest
+          testResultsFiles: '**/*.trx'
+          searchFolder: $(Agent.TempDirectory)
+      - task: PublishCodeCoverageResults@1
+        displayName: 'Publish Code Coverage Results'
+        inputs:
+          codeCoverageTool: 'Cobertura'
+          summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
+          failIfCoverageEmpty: true
+      # build sample
       - task: VSBuild@1
         displayName: 'Build Community Toolkit Sample'
         inputs:
           solution: '$(PathToCommunityToolkitSampleCsproj)'
           configuration: 'Release'
           msbuildArgs: '/restore'
+      # pack
       - task: VSBuild@1
         displayName: 'Build and Pack CommunityToolkit.Maui.Core'
         inputs:
@@ -99,6 +107,15 @@ jobs:
           solution: '$(PathToCommunityToolkitCsproj)'
           configuration: 'Release'
           msbuildArgs: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'
+      # check vulnerabilities
+      - task: DotNetCoreCLI@2
+        displayName: 'Check Dependencies'
+        inputs:
+          command: 'custom'
+          custom: 'list'
+          arguments: 'package --vulnerable --include-transitive'
+          projects: $(PathToSolution)
+      # publish
       - task: PowerShell@2
         displayName: 'Copy NuGet Packages to Staging Directory'
         inputs:

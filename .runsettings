@@ -6,20 +6,11 @@
 
   <DataCollectionRunSettings>
     <DataCollectors>
-      <DataCollector friendlyName="Code Coverage" uri="datacollector://Microsoft/CodeCoverage/2.0" assemblyQualifiedName="Microsoft.VisualStudio.Coverage.DynamicCoverageDataCollector, Microsoft.VisualStudio.TraceCollector, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <DataCollector friendlyName="XPlat code coverage">
         <Configuration>
-          <CodeCoverage>
-            <Functions>              
-              <Include>                
-                <Function>.*CommunityToolkit.Maui\..*</Function>
-              </Include>
-              <Exclude>                
-                <Function>.*Tests.*</Function>
-                <Function>.*get_.*</Function>
-                <Function>.*set_.*</Function>
-              </Exclude>
-            </Functions>
-          </CodeCoverage>
+          <Format>cobertura</Format>
+          <SkipAutoProps>true</SkipAutoProps>          
+          <IncludeTestAssembly>false</IncludeTestAssembly>
         </Configuration>
       </DataCollector>
     </DataCollectors>
