@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters;
@@ -27,10 +28,24 @@ public enum TextCaseType
 [ContentProperty(nameof(Type))]
 public class TextCaseConverter : BaseConverterOneWay<string?, string?, TextCaseType?>
 {
+	TextCaseType type = TextCaseType.None;
+
 	/// <summary>
 	/// The desired text case that the text should be converted to.
 	/// </summary>
-	public TextCaseType Type { get; set; }
+	public TextCaseType Type
+	{
+		get => type;
+		set
+		{
+			if (!Enum.IsDefined(typeof(TextCaseType), value))
+			{
+				throw new InvalidEnumArgumentException(nameof(value), (int)value, typeof(TextCaseType));
+			}
+
+			type = value;
+		}
+	}
 
 	/// <summary>
 	/// Converts text (string, char) to certain case.
@@ -47,7 +62,18 @@ public class TextCaseConverter : BaseConverterOneWay<string?, string?, TextCaseT
 			return value;
 		}
 
-		parameter ??= Type;
+		if (parameter is not null)
+		{
+			if (!Enum.IsDefined(typeof(TextCaseType), parameter))
+			{
+				throw new InvalidEnumArgumentException(nameof(parameter), (int)parameter, typeof(TextCaseType));
+			}
+		}
+		else
+		{
+			parameter = Type;
+		}
+
 
 		return parameter switch
 		{

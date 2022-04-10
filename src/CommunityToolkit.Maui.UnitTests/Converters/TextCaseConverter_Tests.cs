@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.ComponentModel;
+using System.Globalization;
 using CommunityToolkit.Maui.Converters;
 using Xunit;
 
@@ -38,8 +39,19 @@ public class TextCaseConverter_Tests : BaseTest
 	{
 		var textCaseConverter = new TextCaseConverter();
 
-		Assert.Throws<NotSupportedException>(() => textCaseConverter.ConvertFrom("Hello World", textCaseType, null));
-		Assert.Throws<NotSupportedException>(() => ((ICommunityToolkitValueConverter)textCaseConverter).Convert("Hello World", typeof(string), textCaseType, null));
+		Assert.Throws<InvalidEnumArgumentException>(() => new TextCaseConverter { Type = textCaseType });
+		Assert.Throws<InvalidEnumArgumentException>(() => textCaseConverter.Type = textCaseType);
+		Assert.Throws<InvalidEnumArgumentException>(() => ((ICommunityToolkitValueConverter)textCaseConverter).Convert("Hello World", typeof(string), textCaseType, null));
+		Assert.Throws<InvalidEnumArgumentException>(() => textCaseConverter.ConvertFrom("Hello World", textCaseType, null));
+		Assert.Throws<InvalidEnumArgumentException>(() => ((ICommunityToolkitValueConverter)textCaseConverter).Convert("Hello World", typeof(string), textCaseType, null));
+	}
+
+	[Fact]
+	public void TextCaseConverterDefaultValues()
+	{
+		var textCaseConverter = new TextCaseConverter();
+
+		Assert.Equal(TextCaseType.None, textCaseConverter.Type);
 	}
 
 	[Theory]
