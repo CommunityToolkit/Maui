@@ -13,7 +13,7 @@ public class IntToBoolConverter : BaseConverter<int, bool>
 	/// <param name="value">The value to convert.</param>
 	/// <param name="culture">(Not Used)</param>
 	/// <returns><c>false</c> if the supplied <paramref name="value"/> is equal to <c>0</c> and <c>true</c> otherwise.</returns>
-	public override bool ConvertFrom(int value, CultureInfo? culture) => value != 0;
+	public override bool ConvertFrom(int value, CultureInfo? culture) => value is not 0;
 
 	/// <summary>
 	/// Converts the incoming <see cref="bool"/> to an <see cref="int"/> indicating whether or not the value is true.
