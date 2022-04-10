@@ -15,7 +15,7 @@ public class EnumToIntConverter : BaseConverter<Enum, int, Type>
 	/// <param name="culture">Unused: Culture to use in the converter</param>
 	/// <returns>The underlying <see cref="int"/> value of the passed enum value</returns>
 	/// <exception cref="ArgumentException">If value is not an enumeration type</exception>
-	public override int ConvertFrom(Enum value, Type? parameter, CultureInfo? culture)
+	public override int ConvertFrom(Enum value, Type parameter, CultureInfo? culture)
 	{
 		ArgumentNullException.ThrowIfNull(value);
 
@@ -30,13 +30,14 @@ public class EnumToIntConverter : BaseConverter<Enum, int, Type>
 	/// <param name="culture">Unused: Culture to use in the converter</param>
 	/// <returns>The underlying <see cref="Enum"/> of the associated targetType</returns>
 	/// <exception cref="ArgumentException">If value is not a valid value in the targetType enum</exception>
-	public override Enum ConvertBackTo(int value, Type? parameter, CultureInfo? culture)
+	public override Enum ConvertBackTo(int value, Type parameter, CultureInfo? culture)
 	{
 		ArgumentNullException.ThrowIfNull(value);
+		ArgumentNullException.ThrowIfNull(parameter);
 
-		if (parameter is null || !Enum.IsDefined(parameter, value))
+		if (!Enum.IsDefined(parameter, value))
 		{
-			throw new ArgumentException($"{value} is not valid for {parameter?.Name ?? "null"}");
+			throw new ArgumentException($"{value} is not valid for {parameter.Name}");
 		}
 
 		return (Enum)Enum.ToObject(parameter, value);
