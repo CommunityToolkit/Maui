@@ -35,6 +35,18 @@ public class StringToListConverter_Tests : BaseTest
 	}
 
 	[Fact]
+	public void StringToListConverter_EnsureParameterDoesNotOverrideProperty()
+	{
+		var converter = new StringToListConverter { Separators = new[] { ",", " " } };
+
+		var parameterResult = converter.ConvertFrom("maui/toolkit tests", new[] { "/", " " }, null);
+		Assert.Equal(new[] { "maui", "toolkit", "tests" }, parameterResult);
+
+		var propertyResult = converter.ConvertFrom("maui,toolkit tests", null, null);
+		Assert.Equal(new[] { "maui", "toolkit", "tests" }, propertyResult);
+	}
+
+	[Fact]
 	public void StringToListConverterSeparatorsTest()
 	{
 		const string valueToConvert = "MAUI@Toolkit*Converter@Test";
