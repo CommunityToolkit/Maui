@@ -6,27 +6,6 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class EnumToBoolConverter_Tests : BaseTest
 {
-	enum TestEnumForEnumToBoolConverter
-	{
-		None = 0,
-		One = 1,
-		Two = 2,
-		Three = 3,
-		Four = 4,
-		Five = 5,
-		Six = 6
-	}
-
-	[Flags]
-	enum TestFlaggedEnumForEnumToBoolConverter
-	{
-		None = 0b0000,
-		One = 0b0001,
-		Two = 0b0010,
-		Three = 0b0100,
-		Four = 0b1000
-	}
-
 	[Fact]
 	public void EnumToBoolConvertBack_ThrowsNotSupportedException()
 	{
@@ -107,5 +86,26 @@ public class EnumToBoolConverter_Tests : BaseTest
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new EnumToBoolConverter()).Convert(TestEnumForEnumToBoolConverter.Five, null, null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new EnumToBoolConverter()).Convert(null, typeof(bool), null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	enum TestEnumForEnumToBoolConverter
+	{
+		None = 0,
+		One = 1,
+		Two = 2,
+		Three = 3,
+		Four = 4,
+		Five = 5,
+		Six = 6
+	}
+
+	[Flags]
+	enum TestFlaggedEnumForEnumToBoolConverter
+	{
+		None = 0b0000,
+		One = 0b0001,
+		Two = 0b0010,
+		Three = 0b0100,
+		Four = 0b1000
 	}
 }
