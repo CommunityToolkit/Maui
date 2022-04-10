@@ -17,8 +17,12 @@ public class MultiMathExpressionConverter : MultiValueConverterExtension, ICommu
 	/// <param name="parameter">The expression to calculate.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>A <see cref="double"/> The result of calculating an expression.</returns>
+	[return: NotNullIfNotNull("values")]
 	public object? Convert(object[]? values, Type targetType, [NotNull] object? parameter, CultureInfo? culture)
 	{
+		ArgumentNullException.ThrowIfNull(targetType);
+		ArgumentNullException.ThrowIfNull(parameter);
+
 		if (parameter is not string expression)
 		{
 			throw new ArgumentException("The parameter should be of type String.");
@@ -32,16 +36,14 @@ public class MultiMathExpressionConverter : MultiValueConverterExtension, ICommu
 		var args = new List<double>();
 		foreach (var value in values)
 		{
-			if (double.TryParse(value.ToString(), out var xValue))
-			{
-				args.Add(xValue);
-			}
+			var valueString = value?.ToString() ?? throw new ArgumentException("values cannot be null");
+
+			var xValue = double.Parse(valueString);
+			args.Add(xValue);
 		}
 
 		var math = new MathExpression(expression, args);
-
-		var result = math.Calculate();
-		return result;
+		return math.Calculate();
 	}
 
 	/// <summary>
