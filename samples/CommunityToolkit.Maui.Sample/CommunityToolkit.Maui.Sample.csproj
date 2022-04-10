@@ -65,13 +65,6 @@
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.SourceGenerators\CommunityToolkit.Maui.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
-  <ItemGroup>
-    <MauiXaml Update="Pages\Views\BadgeViewPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </MauiXaml>
-  </ItemGroup>
-
-
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
     <OutputType>WinExe</OutputType>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
