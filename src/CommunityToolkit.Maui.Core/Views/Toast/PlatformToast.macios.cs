@@ -13,6 +13,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 public class PlatformToast : Alert
 {
 	readonly PaddedLabel messageLabel;
+	internal const float defaultPadding = 10;
 
 	/// <summary>
 	/// Initialize <see cref="PlatformToast"/>
@@ -31,11 +32,11 @@ public class PlatformToast : Alert
 		UIColor textColor,
 		UIFont font,
 		double characterSpacing,
-		NFloat? padding = null)
+		NFloat padding)
 	{
-		padding ??= DefaultPadding;
+		padding += defaultPadding;
 
-		messageLabel = new PaddedLabel(padding.Value, padding.Value, padding.Value, padding.Value)
+		messageLabel = new PaddedLabel(padding, padding, padding, padding)
 		{
 			Lines = 0
 		};
@@ -48,12 +49,7 @@ public class PlatformToast : Alert
 		AlertView.VisualOptions.CornerRadius = cornerRadius;
 		AlertView.AddChild(messageLabel);
 	}
-
-	/// <summary>
-	/// Default Padding for <see cref="PlatformToast"/>
-	/// </summary>
-	public static NFloat DefaultPadding { get; } = 10;
-
+	
 	/// <summary>
 	/// Toast Message
 	/// </summary>

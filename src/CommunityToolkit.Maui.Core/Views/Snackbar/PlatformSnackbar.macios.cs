@@ -36,12 +36,12 @@ public class PlatformSnackbar : PlatformToast, IDisposable
 		string actionButtonText,
 		UIColor actionTextColor,
 		UIFont actionButtonFont,
-		NFloat? padding = null)
+		NFloat padding)
 		: base(message, backgroundColor, cornerRadius, textColor, textFont, characterSpacing, padding)
 	{
-		padding ??= DefaultPadding;
+		padding += defaultPadding;
 
-		actionButton = new PaddedButton(padding.Value, padding.Value, padding.Value, padding.Value);
+		actionButton = new PaddedButton(padding, padding, padding, padding);
 		actionButton.SetContentCompressionResistancePriority((float)UILayoutPriority.Required, UILayoutConstraintAxis.Horizontal);
 		actionButton.SetContentHuggingPriority((float)UILayoutPriority.Required, UILayoutConstraintAxis.Horizontal);
 		ActionButtonText = actionButtonText;
