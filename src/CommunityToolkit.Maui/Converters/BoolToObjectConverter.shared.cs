@@ -50,6 +50,8 @@ public class BoolToObjectConverter<TObject> : BaseConverter<bool, TObject?>
 			return value.Equals(TrueObject);
 		}
 
+		ArgumentNullException.ThrowIfNull(value);
+
 		throw new ArgumentException($"Value is not a valid {typeof(TObject).Name}", nameof(value));
 	}
 }
