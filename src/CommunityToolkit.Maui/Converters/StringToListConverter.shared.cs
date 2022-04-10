@@ -80,10 +80,13 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable<st
 			case string[] separators:
 				Separators = separators;
 				return Split(value, Separators.ToArray());
+
 			case string separator when string.IsNullOrEmpty(separator):
 				throw new ArgumentException("An empty string is not a valid separator", nameof(value));
+
 			case string separator:
 				return Split(value, separator);
+
 			default:
 			{
 				if (parameter is not null)
