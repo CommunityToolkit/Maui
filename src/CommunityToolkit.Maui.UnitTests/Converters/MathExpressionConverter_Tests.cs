@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 public class MathExpressionConverter_Tests : BaseTest
 {
 	const double tolerance = 0.00001d;
-	readonly Type type = typeof(double);
+	readonly Type mathExpressionTargetType = typeof(double);
 	readonly CultureInfo cultureInfo = CultureInfo.CurrentCulture;
 
 	[Theory]
@@ -26,8 +26,8 @@ public class MathExpressionConverter_Tests : BaseTest
 	{
 		var mathExpressionConverter = new MathExpressionConverter();
 
-		var convertResult = ((ICommunityToolkitValueConverter)mathExpressionConverter).Convert(x, type, expression, cultureInfo) ?? throw new NullReferenceException();
-		var convertFromResult = mathExpressionConverter.ConvertFrom(x, type, expression, cultureInfo);
+		var convertResult = ((ICommunityToolkitValueConverter)mathExpressionConverter).Convert(x, mathExpressionTargetType, expression, cultureInfo) ?? throw new NullReferenceException();
+		var convertFromResult = mathExpressionConverter.ConvertFrom(x, expression);
 
 		Assert.True(Math.Abs((double)convertResult - expectedResult) < tolerance);
 		Assert.True(Math.Abs((double)convertFromResult - expectedResult) < tolerance);
@@ -38,12 +38,11 @@ public class MathExpressionConverter_Tests : BaseTest
 	[InlineData("(x1 + x) * x1", new object[] { 2d, 3d }, 15d)]
 	[InlineData("3 + x * x1 / (1 - 5)^x1", new object[] { 4d, 2d }, 3.5d)]
 	[InlineData("3 + 4 * 2 + cos(100 + x) / (x1 - 5)^2 + pow(x0, 2)", new object[] { 20d, 1d }, 411.05088631065792d)]
-	public void MathExpressionConverter_WithMultiplyVariable_ReturnsCorrectResult(
-		string expression, object[] variables, double expectedResult)
+	public void MathExpressionConverter_WithMultiplyVariable_ReturnsCorrectResult(string expression, object[] variables, double expectedResult)
 	{
 		var mathExpressionConverter = new MultiMathExpressionConverter();
 
-		var result = mathExpressionConverter.Convert(variables, type, expression, cultureInfo) ?? throw new NullReferenceException();
+		var result = mathExpressionConverter.Convert(variables, mathExpressionTargetType, expression);
 
 		Assert.True(Math.Abs((double)result - expectedResult) < tolerance);
 	}
@@ -56,18 +55,48 @@ public class MathExpressionConverter_Tests : BaseTest
 	{
 		var mathExpressionConverter = new MathExpressionConverter();
 
-		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)mathExpressionConverter).Convert(0d, type, expression, cultureInfo));
-		Assert.Throws<ArgumentException>(() => mathExpressionConverter.ConvertFrom(0d, type, expression, cultureInfo));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)mathExpressionConverter).Convert(0d, mathExpressionTargetType, expression, cultureInfo));
+		Assert.Throws<ArgumentException>(() => mathExpressionConverter.ConvertFrom(0d, expression));
+	}
+
+	[Theory]
+	[InlineData(2.5)]
+	[InlineData('c')]
+	[InlineData(true)]
+	public void MultiMathExpressionConverterInvalidParameterThrowsArgumentException(object parameter)
+	{
+		var mathExpressionConverter = new MultiMathExpressionConverter();
+
+		Assert.Throws<ArgumentException>(() => mathExpressionConverter.Convert(new object[] { 0d }, mathExpressionTargetType, parameter, cultureInfo));
+	}
+
+	[Fact]
+	public void MultiMathExpressionConverterInvalidValuesThrowsArgumentException()
+	{
+#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
+		var mathExpressionConverter = new MultiMathExpressionConverter();
+		Assert.Throws<ArgumentException>(() => mathExpressionConverter.Convert(new object?[] { 0d, null }, mathExpressionTargetType, "x", cultureInfo));
+#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
 	}
 
 	[Fact]
 	public void MathExpressionConverterNullInputTest()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new MathExpressionConverter()).Convert(0.0, null, null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new MathExpressionConverter()).Convert(0.0, null, "x", null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new MathExpressionConverter()).Convert(null, typeof(bool), "x", null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new MathExpressionConverter()).Convert(null, typeof(bool), null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new MathExpressionConverter()).ConvertBack(0.0, null, null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new MathExpressionConverter()).ConvertBack(null, typeof(bool), null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Fact]
+	public void MultiMathExpressionConverterNullInputTest()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => new MultiMathExpressionConverter().Convert(new object[] { 0.0, 7 }, null, "x", null));
+		Assert.Throws<ArgumentNullException>(() => new MultiMathExpressionConverter().Convert(new object[] { 0.0, 7 }, typeof(bool), null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }
