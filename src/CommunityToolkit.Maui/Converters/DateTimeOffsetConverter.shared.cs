@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>
