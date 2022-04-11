@@ -16,7 +16,7 @@ public class DoubleToIntConverter_Tests : BaseTest
 		var doubleToIntConverter = new DoubleToIntConverter();
 
 		var convertResult = (int?)((ICommunityToolkitValueConverter)doubleToIntConverter).Convert(value, typeof(int), ratio, CultureInfo.CurrentCulture);
-		var convertFromResult = doubleToIntConverter.ConvertFrom(value, typeof(int), ratio, CultureInfo.CurrentCulture);
+		var convertFromResult = doubleToIntConverter.ConvertFrom(value, ratio);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
@@ -25,12 +25,12 @@ public class DoubleToIntConverter_Tests : BaseTest
 	[Theory]
 	[InlineData(2, 2.0)]
 	[InlineData(5, 5.0)]
-	public void DoubleToIntConverterBack(int value, double expectedResult, object? ratio = null)
+	public void DoubleToIntConverterBack(int value, double expectedResult)
 	{
 		var doubleToIntConverter = new DoubleToIntConverter();
 
-		var convertBackResult = (double?)((ICommunityToolkitValueConverter)doubleToIntConverter).ConvertBack(value, typeof(double), ratio, CultureInfo.CurrentCulture);
-		var convertBackToResult = doubleToIntConverter.ConvertBackTo(value, typeof(double), ratio, CultureInfo.CurrentCulture);
+		var convertBackResult = (double?)((ICommunityToolkitValueConverter)doubleToIntConverter).ConvertBack(value, typeof(double), null, CultureInfo.CurrentCulture);
+		var convertBackToResult = doubleToIntConverter.ConvertBackTo(value);
 
 		Assert.Equal(expectedResult, convertBackResult);
 		Assert.Equal(expectedResult, convertBackToResult);
@@ -52,8 +52,8 @@ public class DoubleToIntConverter_Tests : BaseTest
 	public void DoubleToIntInvalidConverterNullInputTest()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new DoubleToIntConverter()).Convert(0.0, null, null, null));
-		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new DoubleToIntConverter()).Convert(null, typeof(double), null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new DoubleToIntConverter()).Convert(0.0, null, 0, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new DoubleToIntConverter()).Convert(null, typeof(double), 0, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new DoubleToIntConverter()).ConvertBack(0, null, null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new DoubleToIntConverter()).ConvertBack(null, typeof(int), null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.

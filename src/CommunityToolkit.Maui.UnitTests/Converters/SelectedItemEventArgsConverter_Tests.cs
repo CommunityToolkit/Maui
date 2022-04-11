@@ -20,7 +20,7 @@ public class SelectedItemEventArgsConverter_Tests : BaseTest
 		var selectedItemEventArgsConverter = new SelectedItemEventArgsConverter();
 
 		var convertResult = ((ICommunityToolkitValueConverter)selectedItemEventArgsConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture);
-		var convertFromResult = selectedItemEventArgsConverter.ConvertFrom(value, typeof(object), null, CultureInfo.CurrentCulture);
+		var convertFromResult = selectedItemEventArgsConverter.ConvertFrom(value);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
