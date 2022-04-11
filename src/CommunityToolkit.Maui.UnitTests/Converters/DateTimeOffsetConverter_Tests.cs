@@ -42,7 +42,7 @@ public class DateTimeOffsetConverter_Tests : BaseTest
 		var dateTimeOffsetConverter = new DateTimeOffsetConverter();
 
 		var convertResult = ((ICommunityToolkitValueConverter)dateTimeOffsetConverter).Convert(value, typeof(DateTime), null, CultureInfo.CurrentCulture);
-		var convertFromResult = dateTimeOffsetConverter.ConvertFrom(value, typeof(DateTime), null, CultureInfo.CurrentCulture);
+		var convertFromResult = dateTimeOffsetConverter.ConvertFrom(value);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
@@ -55,7 +55,7 @@ public class DateTimeOffsetConverter_Tests : BaseTest
 		var dateTimeOffsetConverter = new DateTimeOffsetConverter();
 
 		var convertBackResult = (DateTimeOffset)(((ICommunityToolkitValueConverter)dateTimeOffsetConverter).ConvertBack(value, typeof(DateTimeOffset), null, CultureInfo.CurrentCulture) ?? throw new InvalidOperationException());
-		var convertBackToResult = dateTimeOffsetConverter.ConvertBackTo(value, typeof(DateTimeOffset), null, CultureInfo.CurrentCulture);
+		var convertBackToResult = dateTimeOffsetConverter.ConvertBackTo(value);
 
 		Assert.Equal(expectedResult, convertBackResult, new DateTimeOffsetComparer());
 		Assert.Equal(expectedResult, convertBackToResult, new DateTimeOffsetComparer());

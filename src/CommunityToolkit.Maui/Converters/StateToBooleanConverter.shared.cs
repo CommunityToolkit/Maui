@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.ComponentModel;
+using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters;
 
@@ -24,28 +25,47 @@ public enum LayoutState
 /// <summary>
 /// This converter can be used to determine if a certain state is visible. This can be useful, for instance, in scenarios where you want to show/hide certain elements based on the current state.
 /// </summary>
-public class StateToBooleanConverter : BaseConverterOneWay<LayoutState, bool>
+public class StateToBooleanConverter : BaseConverterOneWay<LayoutState, bool, LayoutState?>
 {
+	LayoutState stateToCompare = LayoutState.None;
+
 	/// <summary>
 	/// The <see cref="LayoutState"/> to compare to.
 	/// </summary>
-	public LayoutState StateToCompare { get; set; }
+	public LayoutState StateToCompare
+	{
+		get => stateToCompare;
+		set
+		{
+			if (!Enum.IsDefined(typeof(LayoutState), value))
+			{
+				throw new InvalidEnumArgumentException(nameof(value), (int)value, typeof(LayoutState));
+			}
+
+			stateToCompare = value;
+		}
+
+	}
 
 	/// <summary>
 	/// Takes the incoming <see cref="LayoutState"/> in <paramref name="value"/> and compares it to <see cref="StateToCompare"/>. If they are equal it returns True, if they are not equal it returns False. Additionally a state to compare against can be provided in <paramref name="parameter"/>.
 	/// </summary>
 	/// <param name="value">The <see cref="LayoutState"/> to compare.</param>
-	/// <param name="targetType">The type of the binding target property. This is not implemented.</param>
 	/// <param name="parameter">Optionally, a <see cref="LayoutState"/> can be supplied here to compare against.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>True if the provided <see cref="LayoutState"/>s match, otherwise False if they don't match.</returns>
-	public override bool ConvertFrom(LayoutState value, Type targetType, object? parameter, CultureInfo? culture)
+	public override bool ConvertFrom(LayoutState value, LayoutState? parameter = null, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(value);
 
-		if (parameter is LayoutState stateToCompare)
+		if (parameter is not null)
 		{
-			return value == stateToCompare;
+			if (!Enum.IsDefined(typeof(LayoutState), parameter))
+			{
+				throw new InvalidEnumArgumentException(nameof(parameter), (int)parameter, typeof(LayoutState));
+			}
+
+			return value == parameter;
 		}
 
 		return value == StateToCompare;

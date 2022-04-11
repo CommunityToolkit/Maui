@@ -18,7 +18,7 @@ public class IntToBoolConverter_Tests : BaseTest
 		var intToBoolConverter = new IntToBoolConverter();
 
 		var result = ((ICommunityToolkitValueConverter)intToBoolConverter).Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
-		var typedResult = intToBoolConverter.ConvertFrom(value, typeof(bool), null, CultureInfo.CurrentCulture);
+		var typedResult = intToBoolConverter.ConvertFrom(value);
 
 		Assert.Equal(expectedResult, result);
 		Assert.Equal(expectedResult, typedResult);
@@ -32,7 +32,7 @@ public class IntToBoolConverter_Tests : BaseTest
 		var intToBoolConverter = new IntToBoolConverter();
 
 		var result = ((ICommunityToolkitValueConverter)intToBoolConverter).ConvertBack(value, typeof(int), null, CultureInfo.CurrentCulture);
-		var typedResult = intToBoolConverter.ConvertBackTo(value, typeof(bool), null, CultureInfo.CurrentCulture);
+		var typedResult = intToBoolConverter.ConvertBackTo(value);
 
 		Assert.Equal(expectedResult, result);
 		Assert.Equal(expectedResult, typedResult);

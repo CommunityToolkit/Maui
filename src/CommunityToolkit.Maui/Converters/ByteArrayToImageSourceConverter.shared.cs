@@ -12,12 +12,10 @@ public class ByteArrayToImageSourceConverter : BaseConverter<byte[]?, ImageSourc
 	/// Converts the incoming value from <see cref="byte"/>[] and returns the object of a type <see cref="ImageSource"/>.
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
-	/// <param name="targetType">The type of the binding target property. This is not implemented.</param>
-	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>An object of type <see cref="ImageSource"/>.</returns>
 	[return: NotNullIfNotNull("value")]
-	public override ImageSource? ConvertFrom(byte[]? value, Type targetType, object? parameter, CultureInfo? culture)
+	public override ImageSource? ConvertFrom(byte[]? value, CultureInfo? culture = null)
 	{
 		if (value is null)
 		{
@@ -31,11 +29,9 @@ public class ByteArrayToImageSourceConverter : BaseConverter<byte[]?, ImageSourc
 	/// Converts the incoming value from <see cref="StreamImageSource"/> and returns a <see cref="byte"/>[].
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
-	/// <param name="targetType">The type of the binding target property. This is not implemented.</param>
-	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>An object of type <see cref="ImageSource"/>.</returns>
-	public override byte[]? ConvertBackTo(ImageSource? value, Type targetType, object? parameter, CultureInfo? culture)
+	public override byte[]? ConvertBackTo(ImageSource? value, CultureInfo? culture = null)
 	{
 		if (value is null)
 		{

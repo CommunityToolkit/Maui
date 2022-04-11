@@ -43,9 +43,9 @@ public class VariableMultiValueConverter : MultiValueConverterExtension, ICommun
 	/// <param name="targetType">The type of the binding target property. This is not implemented.</param>
 	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
-	/// <returns>A single <see cref="bool"/> value dependant on the configuration for this converter.</returns>
+	/// <returns>A single <see cref="bool"/> value dependent on the configuration for this converter.</returns>
 	[return: NotNull]
-	public object? Convert(object[]? values, Type targetType, object? parameter, CultureInfo? culture)
+	public object? Convert(object[]? values, Type targetType, object? parameter = null, CultureInfo? culture = null)
 	{
 		if (values == null || values.Length == 0)
 		{
@@ -68,7 +68,7 @@ public class VariableMultiValueConverter : MultiValueConverterExtension, ICommun
 			MultiBindingCondition.Exact => count == Count,
 			MultiBindingCondition.GreaterThan => count > Count,
 			MultiBindingCondition.LessThan => count < Count,
-			_ => count == boolValues.Count(),
+			_ => count == boolValues.Length,
 		};
 	}
 

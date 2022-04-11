@@ -19,7 +19,7 @@ public class IsEqualConverter_Tests : BaseTest
 		var isEqualConverter = new IsEqualConverter();
 
 		var convertResult = (bool?)((ICommunityToolkitValueConverter)isEqualConverter).Convert(value, typeof(bool), comparedValue, CultureInfo.CurrentCulture);
-		var convertFromResult = isEqualConverter.ConvertFrom(value, typeof(bool), comparedValue, CultureInfo.CurrentCulture);
+		var convertFromResult = isEqualConverter.ConvertFrom(value, comparedValue);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
