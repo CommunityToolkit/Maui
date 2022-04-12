@@ -156,10 +156,10 @@ jobs:
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$tagVersion")
         displayName: Set NuGet Version to Tag Number
         condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
-      - task: CmdLine@2
-        displayName: 'Set Xcode Version'
-        inputs:
-          script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XcodeVersion).app;sudo xcode-select --switch /Applications/Xcode_$(XcodeVersion).app/Contents/Developer
+      # - task: CmdLine@2
+      #   displayName: 'Set Xcode Version'
+      #   inputs:
+      #     script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XcodeVersion).app;sudo xcode-select --switch /Applications/Xcode_$(XcodeVersion).app/Contents/Developer
       # - task: UseDotNet@2
       #   displayName: 'Install .NET SDK'
       #   inputs:
@@ -175,10 +175,10 @@ jobs:
         displayName: 'Run Unit Tests'
         inputs:
           script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release'
-      - task: CmdLine@2
-        displayName: 'Build Community Toolkit Sample'
-        inputs:
-          script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release'
+      # - task: CmdLine@2
+      #   displayName: 'Build Community Toolkit Sample'
+      #   inputs:
+      #     script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release'
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit.Maui.Core NuGet'
         inputs:
