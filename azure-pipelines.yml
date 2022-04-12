@@ -43,13 +43,13 @@ jobs:
       #   displayName: 'Install .NET SDK'
       #   inputs:
       #     version: '$(NET_VERSION)'
-      - task: CmdLine@2
+      - powershell: |
+          wget https://dot.net/v1/dotnet-install.ps1 -OutFile C:\dotnet-install.ps1
+          C:\dotnet-install.ps1 -Version 6.0.300-preview.22204.3
+          dotnet --info
+          Write-Host "##vso[task.prependpath]C:\\Users\\VssAdministrator\\AppData\\Local\\Microsoft\\dotnet"
+          dotnet workload install maui;
         displayName: 'Install .NET MAUI Workload'
-        inputs:
-            script : |
-              curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 6.0.300-preview.22204.3 --quality preview;
-              dotnet --info;
-              dotnet workload install maui;
       # if this is a tagged build, then update the version number
       - powershell: |
           $buildSourceBranch = "$(Build.SourceBranch)"
