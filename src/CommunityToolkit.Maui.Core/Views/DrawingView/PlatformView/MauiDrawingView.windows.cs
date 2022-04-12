@@ -27,7 +27,7 @@ public partial class MauiDrawingView : FrameworkElement
 	/// </summary>
 	public void Initialize()
 	{
-		throw new NotSupportedException("DrawingView is supported on Windows untill InkCanvas is migrated to WinUI 3");
+		throw new NotSupportedException("DrawingView is not supported on Windows until InkCanvas is migrated to WinUI 3");
 	}
 
 	/// <summary>
