@@ -37,7 +37,7 @@ jobs:
   - job: build_windows
     displayName: Build Windows Library
     pool:
-      vmImage: windows-2022
+      vmImage: windows-latest
     steps:
       # - task: UseDotNet@2
       #   displayName: 'Install .NET SDK'
@@ -146,7 +146,7 @@ jobs:
   - job: build_macos
     displayName: Build macOS Library
     pool:
-      vmImage: macos-11
+      vmImage: macos-12
     steps:
       # if this is a tagged build, then update the version number
       - powershell: |
