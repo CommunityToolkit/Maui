@@ -156,6 +156,7 @@ jobs:
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$tagVersion")
         displayName: Set NuGet Version to Tag Number
         condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+# Temporarily disable "Set Xcode Version" until Xcode 13.3.1 is available on Azure Pipelines (required for .NET MAUI RC)
       # - task: CmdLine@2
       #   displayName: 'Set Xcode Version'
       #   inputs:
@@ -165,20 +166,23 @@ jobs:
       #   inputs:
       #     version: '$(NET_VERSION)'
       - task: CmdLine@2
-        displayName: 'Install .NET MAUI workload'
+        displayName: Install .NET 6.0.300-preview.22204.3
         inputs:
           script: |
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 6.0.300-preview.22204.3 --quality preview;
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 6.0.300-preview.22204.3 --quality preview
             dotnet --info;
-            dotnet workload install maui;
+      - task: CmdLine@2
+        displayName: 'Install .NET MAUI workload'
+        inputs:
+          script: dotnet workload install maui;
       - task: CmdLine@2
         displayName: 'Run Unit Tests'
         inputs:
           script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release'
-      # - task: CmdLine@2
-      #   displayName: 'Build Community Toolkit Sample'
-      #   inputs:
-      #     script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release'
+      - task: CmdLine@2
+        displayName: 'Build Community Toolkit Sample'
+        inputs:
+          script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release -f:net6.0-android' # Remove -f:net6.0-android once Xcode 13.3.1 is available on Azure Pipelines (required for .NET MAUI RC)
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit.Maui.Core NuGet'
         inputs:
