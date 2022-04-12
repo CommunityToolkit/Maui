@@ -11,7 +11,6 @@ using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
-using Microsoft.Maui.Essentials.Implementations;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
@@ -187,7 +186,7 @@ public static class MauiProgram
 
 	static void RegisterEssentials(in IServiceCollection services)
 	{
-		services.AddSingleton<IDeviceInfo, DeviceInfoImplementation>();
-		services.AddSingleton<IDeviceDisplay, DeviceDisplayImplementation>();
+		services.AddSingleton<IDeviceInfo>(DeviceInfo.Current);
+		services.AddSingleton<IDeviceDisplay>(DeviceDisplay.Current);
 	}
 }
