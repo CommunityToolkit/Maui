@@ -39,16 +39,17 @@ jobs:
     pool:
       vmImage: windows-2022
     steps:
-      - task: UseDotNet@2
-        displayName: 'Install .NET SDK'
-        inputs:
-          version: '$(NET_VERSION)'
+      # - task: UseDotNet@2
+      #   displayName: 'Install .NET SDK'
+      #   inputs:
+      #     version: '$(NET_VERSION)'
       - task: CmdLine@2
         displayName: 'Install .NET MAUI Workload'
         inputs:
             script : |
-              dotnet --info
-              dotnet workload install maui
+              curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 6.0.300-preview.22204.3 --quality preview;
+              dotnet --info;
+              dotnet workload install maui;
       # if this is a tagged build, then update the version number
       - powershell: |
           $buildSourceBranch = "$(Build.SourceBranch)"
@@ -159,14 +160,17 @@ jobs:
         displayName: 'Set Xcode Version'
         inputs:
           script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XcodeVersion).app;sudo xcode-select --switch /Applications/Xcode_$(XcodeVersion).app/Contents/Developer
-      - task: UseDotNet@2
-        displayName: 'Install .NET SDK'
-        inputs:
-          version: '$(NET_VERSION)'
+      # - task: UseDotNet@2
+      #   displayName: 'Install .NET SDK'
+      #   inputs:
+      #     version: '$(NET_VERSION)'
       - task: CmdLine@2
         displayName: 'Install .NET MAUI workload'
         inputs:
-          script: 'dotnet workload install maui'
+          script: |
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 6.0.300-preview.22204.3 --quality preview;
+            dotnet --info;
+            dotnet workload install maui;
       - task: CmdLine@2
         displayName: 'Run Unit Tests'
         inputs:

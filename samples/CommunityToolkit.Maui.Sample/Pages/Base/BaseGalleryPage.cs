@@ -64,12 +64,12 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 
 			RowDefinitions = Rows.Define(
 				(Row.TopPadding, 12),
-				(Row.Content, Star),
+				(Row.Content, GridLength.Star),
 				(Row.BottomPadding, 12)),
 
 			ColumnDefinitions = Columns.Define(
 				(Column.LeftPadding, 24),
-				(Column.Content, Star),
+				(Column.Content, GridLength.Star),
 				(Column.RightPadding, 24)),
 
 			Children =
@@ -90,9 +90,9 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 
 					RowDefinitions = Rows.Define(
 						(CardRow.Title, 24),
-						(CardRow.Description, Auto)),
+						(CardRow.Description, GridLength.Auto)),
 
-					ColumnDefinitions = Columns.Define(Star),
+					ColumnDefinitions = Columns.Define(GridLength.Star),
 
 					Children =
 					{
