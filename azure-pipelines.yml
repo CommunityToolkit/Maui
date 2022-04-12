@@ -39,17 +39,13 @@ jobs:
     pool:
       vmImage: windows-latest
     steps:
-      # - task: UseDotNet@2
-      #   displayName: 'Install .NET SDK'
-      #   inputs:
-      #     version: '$(NET_VERSION)'
       - powershell: |
           wget https://dot.net/v1/dotnet-install.ps1 -OutFile C:\dotnet-install.ps1
           C:\dotnet-install.ps1 -Version 6.0.300-preview.22204.3
           dotnet --info
           Write-Host "##vso[task.prependpath]C:\\Users\\VssAdministrator\\AppData\\Local\\Microsoft\\dotnet"
           dotnet workload install maui;
-        displayName: 'Install .NET MAUI Workload'
+        displayName: Install .NET 6.0.300-preview.22204.3
       # if this is a tagged build, then update the version number
       - powershell: |
           $buildSourceBranch = "$(Build.SourceBranch)"
