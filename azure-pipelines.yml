@@ -9,7 +9,7 @@ variables:
   PathToCommunityToolkitCoreCsproj: 'src/CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
-  XcodeVersion: '13.2'
+  XcodeVersion: '13.3.1'
 
 trigger:
   branches:
@@ -37,18 +37,15 @@ jobs:
   - job: build_windows
     displayName: Build Windows Library
     pool:
-      vmImage: windows-2022
+      vmImage: windows-latest
     steps:
-      - task: UseDotNet@2
-        displayName: 'Install .NET SDK'
-        inputs:
-          version: '$(NET_VERSION)'
-      - task: CmdLine@2
-        displayName: 'Install .NET MAUI Workload'
-        inputs:
-            script : |
-              dotnet --info
-              dotnet workload install maui
+      - powershell: |
+          wget https://dot.net/v1/dotnet-install.ps1 -OutFile C:\dotnet-install.ps1
+          C:\dotnet-install.ps1 -Version 6.0.300-preview.22204.3
+          dotnet --info
+          Write-Host "##vso[task.prependpath]C:\\Users\\VssAdministrator\\AppData\\Local\\Microsoft\\dotnet"
+          dotnet workload install maui;
+        displayName: Install .NET 6.0.300-preview.22204.3 + .NET MAUI
       # if this is a tagged build, then update the version number
       - powershell: |
           $buildSourceBranch = "$(Build.SourceBranch)"
@@ -145,7 +142,7 @@ jobs:
   - job: build_macos
     displayName: Build macOS Library
     pool:
-      vmImage: macos-11
+      vmImage: macos-latest
     steps:
       # if this is a tagged build, then update the version number
       - powershell: |
@@ -155,18 +152,25 @@ jobs:
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$tagVersion")
         displayName: Set NuGet Version to Tag Number
         condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+# Temporarily disable "Set Xcode Version" until Xcode 13.3.1 is available on Azure Pipelines (required for .NET MAUI RC)
+      # - task: CmdLine@2
+      #   displayName: 'Set Xcode Version'
+      #   inputs:
+      #     script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XcodeVersion).app;sudo xcode-select --switch /Applications/Xcode_$(XcodeVersion).app/Contents/Developer
+      # - task: UseDotNet@2
+      #   displayName: 'Install .NET SDK'
+      #   inputs:
+      #     version: '$(NET_VERSION)'
       - task: CmdLine@2
-        displayName: 'Set Xcode Version'
+        displayName: Install .NET 6.0.300-preview.22204.3
         inputs:
-          script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XcodeVersion).app;sudo xcode-select --switch /Applications/Xcode_$(XcodeVersion).app/Contents/Developer
-      - task: UseDotNet@2
-        displayName: 'Install .NET SDK'
-        inputs:
-          version: '$(NET_VERSION)'
+          script: |
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 6.0.300-preview.22204.3 --quality preview
+            dotnet --info
       - task: CmdLine@2
         displayName: 'Install .NET MAUI workload'
         inputs:
-          script: 'dotnet workload install maui'
+          script: dotnet workload install maui
       - task: CmdLine@2
         displayName: 'Run Unit Tests'
         inputs:
@@ -174,7 +178,7 @@ jobs:
       - task: CmdLine@2
         displayName: 'Build Community Toolkit Sample'
         inputs:
-          script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release'
+          script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release -f:net6.0-android' # Remove -f:net6.0-android once Xcode 13.3.1 is available on Azure Pipelines (required for .NET MAUI RC)
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit.Maui.Core NuGet'
         inputs:
