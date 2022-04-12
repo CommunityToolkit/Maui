@@ -170,11 +170,11 @@ jobs:
         inputs:
           script: |
             curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 6.0.300-preview.22204.3 --quality preview
-            dotnet --info;
+            dotnet --info
       - task: CmdLine@2
         displayName: 'Install .NET MAUI workload'
         inputs:
-          script: dotnet workload install maui;
+          script: dotnet workload install maui
       - task: CmdLine@2
         displayName: 'Run Unit Tests'
         inputs:
