@@ -73,11 +73,6 @@
     <None Include="**\windows\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0" />
-    <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.30" />
-  </ItemGroup>
-
   <ItemGroup>
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
     <None Include="ReadMe.txt" pack="true" PackagePath="." />
