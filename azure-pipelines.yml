@@ -45,7 +45,7 @@ jobs:
           dotnet --info
           Write-Host "##vso[task.prependpath]C:\\Users\\VssAdministrator\\AppData\\Local\\Microsoft\\dotnet"
           dotnet workload install maui;
-        displayName: Install .NET 6.0.300-preview.22204.3
+        displayName: Install .NET 6.0.300-preview.22204.3 + .NET MAUI
       # if this is a tagged build, then update the version number
       - powershell: |
           $buildSourceBranch = "$(Build.SourceBranch)"
