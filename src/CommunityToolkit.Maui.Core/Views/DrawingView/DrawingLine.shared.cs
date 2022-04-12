@@ -35,7 +35,7 @@ public class DrawingLine
 	}
 
 	/// <summary>
-	/// Enables or disabled if this line is smoothed (anti-aliased) when drawn.
+	/// Enables or disables if this line is smoothed (anti-aliased) when drawn.
 	/// </summary>
 	public bool EnableSmoothedPath { get; set; }
 

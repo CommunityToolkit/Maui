@@ -7,7 +7,7 @@ using CommunityToolkit.Maui.Core.Views;
 namespace CommunityToolkit.Maui.Views;
 
 /// <summary>
-/// The DrawingView allows you to draw one or multiple lines on a canvas
+/// The DrawingView allows you to draw one or multiple lines on a canvas.
 /// </summary>
 [UnsupportedOSPlatform("windows")]
 public class DrawingView : View, IDrawingView
@@ -50,7 +50,7 @@ public class DrawingView : View, IDrawingView
 		BindableProperty.Create(nameof(LineWidth), typeof(float), typeof(DrawingView), 5f);
 
 	/// <summary>
-	/// Event occurred when drawing line completed
+	/// Event occurred when drawing line completed.
 	/// </summary>
 	public event EventHandler<DrawingLineCompletedEventArgs> DrawingLineCompleted
 	{
