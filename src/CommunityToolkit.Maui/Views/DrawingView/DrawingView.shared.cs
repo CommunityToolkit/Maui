@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Runtime.Versioning;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
@@ -8,6 +9,7 @@ namespace CommunityToolkit.Maui.Views;
 /// <summary>
 /// The DrawingView allows you to draw one or multiple lines on a canvas
 /// </summary>
+[UnsupportedOSPlatform("windows")]
 public class DrawingView : View, IDrawingView
 {
 	readonly WeakEventManager drawingLineCompletedEventManager = new();

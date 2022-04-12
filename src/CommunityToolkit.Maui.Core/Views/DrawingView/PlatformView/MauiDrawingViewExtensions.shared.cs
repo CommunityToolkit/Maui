@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Runtime.Versioning;
 using CommunityToolkit.Maui.Core.Views;
 using Microsoft.Maui.Platform;
 #if ANDROID
@@ -12,6 +13,7 @@ namespace CommunityToolkit.Maui.Core.Extensions;
 /// <summary>
 /// Extension methods to support <see cref="IDrawingView"/>
 /// </summary>
+[UnsupportedOSPlatform("windows")]
 public static partial class MauiDrawingViewExtensions
 {
 	/// <summary>

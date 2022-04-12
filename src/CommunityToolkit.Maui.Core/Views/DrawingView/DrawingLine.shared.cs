@@ -43,7 +43,7 @@ public class DrawingLine
 	/// Retrieves a <see cref="Stream"/> containing an image of this line, based on the <see cref="Points"/> data.
 	/// </summary>
 	/// <param name="imageSizeWidth">Desired width of the image that is returned.</param>
-	/// <param name="imageSizeHeight">Desired heigth of the image that is returned.</param>
+	/// <param name="imageSizeHeight">Desired height of the image that is returned.</param>
 	/// <param name="backgroundColor">Background color of the generated image.</param>
 	/// <returns><see cref="Stream"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
 	public Stream GetImageStream(double imageSizeWidth, double imageSizeHeight, Color backgroundColor) =>
