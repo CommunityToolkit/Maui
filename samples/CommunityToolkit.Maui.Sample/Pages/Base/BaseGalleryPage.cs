@@ -58,31 +58,29 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 		enum Row { TopPadding, Content, BottomPadding }
 		enum Column { LeftPadding, Content, RightPadding }
 
-		static Grid CreateDataTemplate() => new()
+		static Grid CreateDataTemplate() => new Grid
 		{
-			BackgroundColor = (Color)(Application.Current?.Resources["AppBackgroundColor"] ?? throw new InvalidOperationException("Application.Current cannot be null")),
-
 			RowDefinitions = Rows.Define(
 				(Row.TopPadding, 12),
-				(Row.Content, Star),
+				(Row.Content, GridLength.Star),
 				(Row.BottomPadding, 12)),
 
 			ColumnDefinitions = Columns.Define(
 				(Column.LeftPadding, 24),
-				(Column.Content, Star),
+				(Column.Content, GridLength.Star),
 				(Column.RightPadding, 24)),
 
 			Children =
 			{
 				new Card().Row(Row.Content).Column(Column.Content)
 			}
-		};
+		}.DynamicResource(Grid.BackgroundColorProperty, "AppBackgroundColor");
 
 		class Card : Frame
 		{
 			public Card()
 			{
-				Style = (Style)(Application.Current?.Resources["card"] ?? throw new InvalidOperationException());
+				SetDynamicResource(Card.StyleProperty, "card");
 
 				Content = new Grid
 				{
@@ -90,9 +88,9 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 
 					RowDefinitions = Rows.Define(
 						(CardRow.Title, 24),
-						(CardRow.Description, Auto)),
+						(CardRow.Description, GridLength.Auto)),
 
-					ColumnDefinitions = Columns.Define(Star),
+					ColumnDefinitions = Columns.Define(GridLength.Star),
 
 					Children =
 					{
