@@ -29,7 +29,7 @@
  - [ ] Has samples (if omitted, state reason in description)
  - [ ] Rebased on top of `main` at time of PR
  - [ ] Changes adhere to [coding standard](https://github.com/CommunityToolkit/Maui/blob/main/CONTRIBUTING.md#contributing-code---best-practices)
- - [ ] Documentation created or updated: https://github.com/MicrosoftDocs/CommunityToolkit/pulls/XYZ <!-- Replace XYZ with your docs PR #. The checkbox will be automatically checked once the docs PR has been merged -->
+ - [ ] Documentation created or updated: https://github.com/MicrosoftDocs/CommunityToolkit/pull/XYZ <!-- Replace XYZ with your docs PR #. The checkbox will be automatically checked once the docs PR has been merged -->
 
 
  ### Additional information ###
