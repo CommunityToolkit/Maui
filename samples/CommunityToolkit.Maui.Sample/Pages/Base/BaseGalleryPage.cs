@@ -40,12 +40,10 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 		var collectionView = (CollectionView)sender;
 		collectionView.SelectedItem = null;
 
-		if (e.CurrentSelection.FirstOrDefault() is not SectionModel sectionModel)
+		if (e.CurrentSelection.FirstOrDefault() is SectionModel sectionModel)
 		{
-			return;
+			await Shell.Current.GoToAsync(AppShell.GetPageRoute(sectionModel.ViewModelType));
 		}
-
-		await Shell.Current.GoToAsync(AppShell.GetPageRoute(sectionModel.ViewModelType));
 	}
 
 	class GalleryDataTemplate : DataTemplate
@@ -62,25 +60,25 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 		{
 			RowDefinitions = Rows.Define(
 				(Row.TopPadding, 12),
-				(Row.Content, GridLength.Star),
+				(Row.Content, Star),
 				(Row.BottomPadding, 12)),
 
 			ColumnDefinitions = Columns.Define(
 				(Column.LeftPadding, 24),
-				(Column.Content, GridLength.Star),
+				(Column.Content, Star),
 				(Column.RightPadding, 24)),
 
 			Children =
 			{
 				new Card().Row(Row.Content).Column(Column.Content)
 			}
-		}.DynamicResource(Grid.BackgroundColorProperty, "AppBackgroundColor");
+		}.DynamicResource(BackgroundColorProperty, "AppBackgroundColor");
 
 		class Card : Frame
 		{
 			public Card()
 			{
-				SetDynamicResource(Card.StyleProperty, "card");
+				SetDynamicResource(StyleProperty, "card");
 
 				Content = new Grid
 				{
@@ -88,13 +86,14 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 
 					RowDefinitions = Rows.Define(
 						(CardRow.Title, 24),
-						(CardRow.Description, GridLength.Auto)),
+						(CardRow.Description, Auto)),
 
-					ColumnDefinitions = Columns.Define(GridLength.Star),
+					ColumnDefinitions = Columns.Define(Star),
 
 					Children =
 					{
-						new Label { Style = (Style)(Application.Current?.Resources["label_section_header"] ?? throw new InvalidOperationException()) }
+						new Label()
+							.DynamicResource(StyleProperty, "label_section_header")
 							.Row(CardRow.Title)
 							.Bind(Label.TextProperty, nameof(SectionModel.Title)),
 
