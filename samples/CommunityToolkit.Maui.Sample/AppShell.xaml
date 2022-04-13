@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 
 <Shell x:Class="CommunityToolkit.Maui.Sample.AppShell"
        xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -10,7 +10,8 @@
        xmlns:layouts="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Layouts"
        xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
        xmlns:views="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Views"
-       xmlns:sys="clr-namespace:System;assembly=netstandard">
+       xmlns:sys="clr-namespace:System;assembly=netstandard"
+       Padding="4,0,0,0">
 
     <Shell.FlyoutHeader>
         <Label Margin="{OnPlatform Default='0,0,0,12',
