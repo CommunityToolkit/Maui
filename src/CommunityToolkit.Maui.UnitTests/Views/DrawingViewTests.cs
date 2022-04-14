@@ -91,9 +91,9 @@ public class DrawingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void GetImageStreamReturnsNullStream()
+	public async Task GetImageStreamReturnsNullStream()
 	{
-		var stream = drawingView.GetImageStream(10, 10);
+		var stream = await drawingView.GetImageStream(10, 10);
 		Assert.Equal(Stream.Null, stream);
 	}
 }

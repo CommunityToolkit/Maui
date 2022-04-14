@@ -1,4 +1,4 @@
-﻿#if !(IOS || ANDROID || MACCATALYST)
+﻿#if !(IOS || ANDROID || MACCATALYST || WINDOWS)
 namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
@@ -15,12 +15,12 @@ public static partial class DrawingViewService
 	/// <param name="strokeColor">Line color</param>
 	/// <param name="backgroundColor">Image background color</param>
 	/// <returns>Image stream</returns>
-	public static Stream GetImageStream(IList<Point> points,
+	public static Task<Stream> GetImageStream(IList<Point> points,
 		Size imageSize,
 		float lineWidth,
 		Color strokeColor,
 		Color backgroundColor) =>
-		Stream.Null;
+		Task.FromResult(Stream.Null);
 
 	/// <summary>
 	/// Get image stream from lines
@@ -29,9 +29,9 @@ public static partial class DrawingViewService
 	/// <param name="imageSize">Image size</param>
 	/// <param name="backgroundColor">Image background color</param>
 	/// <returns>Image stream</returns>
-	public static Stream GetImageStream(IList<DrawingLine> lines,
+	public static Task<Stream> GetImageStream(IList<DrawingLine> lines,
 		Size imageSize,
 		Color backgroundColor) =>
-		Stream.Null;
+		Task.FromResult(Stream.Null);
 }
 #endif

@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -45,8 +45,8 @@ public class DrawingLine
 	/// <param name="imageSizeWidth">Desired width of the image that is returned.</param>
 	/// <param name="imageSizeHeight">Desired height of the image that is returned.</param>
 	/// <param name="backgroundColor">Background color of the generated image.</param>
-	/// <returns><see cref="Stream"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
-	public Stream GetImageStream(double imageSizeWidth, double imageSizeHeight, Color backgroundColor) =>
+	/// <returns><see cref="Task{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
+	public Task<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Color backgroundColor) =>
 		DrawingViewService.GetImageStream(Points.ToList(), new Size(imageSizeWidth, imageSizeHeight), LineWidth, LineColor, backgroundColor);
 
 	/// <summary>
@@ -57,8 +57,8 @@ public class DrawingLine
 	/// <param name="lineWidth">The desired line width to be used in the generated image.</param>
 	/// <param name="strokeColor">The desired color of the line to be used in the generated image.</param>
 	/// <param name="backgroundColor">Background color of the generated image.</param>
-	/// <returns><see cref="Stream"/> containing the data of the requested image with data that's provided through the <paramref name="points"/> parameter.</returns>
-	public static Stream GetImageStream(IEnumerable<Point> points,
+	/// <returns><see cref="Task{Stream}"/> containing the data of the requested image with data that's provided through the <paramref name="points"/> parameter.</returns>
+	public static Task<Stream> GetImageStream(IEnumerable<Point> points,
 										Size imageSize,
 										float lineWidth,
 										Color strokeColor,

@@ -1,11 +1,12 @@
 using System.Collections.ObjectModel;
-using System.Runtime.Versioning;
 using CommunityToolkit.Maui.Core.Views;
 using Microsoft.Maui.Platform;
 #if ANDROID
 using Point = Android.Graphics.PointF;
 #elif IOS || MACCATALYST
 using Point = CoreGraphics.CGPoint;
+#elif WINDOWS
+using Point = Windows.Foundation.Point;
 #endif
 
 namespace CommunityToolkit.Maui.Core.Extensions;
@@ -13,7 +14,6 @@ namespace CommunityToolkit.Maui.Core.Extensions;
 /// <summary>
 /// Extension methods to support <see cref="IDrawingView"/>
 /// </summary>
-[UnsupportedOSPlatform("windows")]
 public static partial class MauiDrawingViewExtensions
 {
 	/// <summary>

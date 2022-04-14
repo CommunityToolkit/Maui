@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Runtime.Versioning;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
@@ -9,7 +8,6 @@ namespace CommunityToolkit.Maui.Views;
 /// <summary>
 /// The DrawingView allows you to draw one or multiple lines on a canvas.
 /// </summary>
-[UnsupportedOSPlatform("windows")]
 public class DrawingView : View, IDrawingView
 {
 	readonly WeakEventManager drawingLineCompletedEventManager = new();
@@ -126,7 +124,7 @@ public class DrawingView : View, IDrawingView
 	/// <param name="imageSizeWidth">Desired width of the image that is returned.</param>
 	/// <param name="imageSizeHeight">Desired height of the image that is returned.</param>
 	/// <returns><see cref="Stream"/> containing the data of the requested image with data that's currently on the <see cref="DrawingView"/>.</returns>
-	public Stream GetImageStream(double imageSizeWidth, double imageSizeHeight) => DrawingViewService.GetImageStream(Lines.ToList(), new Size(imageSizeWidth, imageSizeHeight), BackgroundColor);
+	public Task<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight) => DrawingViewService.GetImageStream(Lines.ToList(), new Size(imageSizeWidth, imageSizeHeight), BackgroundColor);
 
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of the collection of <see cref="DrawingLine"/> that is provided as a parameter.
@@ -135,7 +133,7 @@ public class DrawingView : View, IDrawingView
 	/// <param name="imageSize">The desired dimensions of the generated image.</param>
 	/// <param name="backgroundColor">Background color of the generated image.</param>
 	/// <returns><see cref="Stream"/> containing the data of the requested image with data that's provided through the <paramref name="lines"/> parameter.</returns>
-	public static Stream GetImageStream(IEnumerable<DrawingLine> lines,
+	public static Task<Stream> GetImageStream(IEnumerable<DrawingLine> lines,
 		Size imageSize,
 		Color backgroundColor) =>
 		DrawingViewService.GetImageStream(lines.ToList(), imageSize, backgroundColor);

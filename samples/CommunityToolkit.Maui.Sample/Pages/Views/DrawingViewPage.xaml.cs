@@ -21,21 +21,21 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 		}
 	}
 
-	void GetCurrentDrawingViewImageClicked(object sender, EventArgs e)
+	async void GetCurrentDrawingViewImageClicked(object sender, EventArgs e)
 	{
-		var stream = DrawingViewControl.GetImageStream(GestureImage.Width, GestureImage.Height);
+		var stream = await DrawingViewControl.GetImageStream(GestureImage.Width, GestureImage.Height);
 		GestureImage.Source = ImageSource.FromStream(() => stream);
 	}
 
-	void GenerateImageButtonClicked(object sender, EventArgs e)
+	async void GenerateImageButtonClicked(object sender, EventArgs e)
 	{
 		var lines = GenerateLines(2);
-		DrawImage(lines);
+		await DrawImage(lines);
 	}
 
-	void DrawImage(in IEnumerable<DrawingLine> lines)
+	async Task DrawImage(IEnumerable<DrawingLine> lines)
 	{
-		var stream = DrawingView.GetImageStream(lines, new Size(GestureImage.Width, GestureImage.Height), Colors.Gray);
+		var stream = await DrawingView.GetImageStream(lines, new Size(GestureImage.Width, GestureImage.Height), Colors.Gray);
 		GestureImage.Source = ImageSource.FromStream(() => stream);
 	}
 
@@ -45,7 +45,7 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 		var height = double.IsNaN(DrawingViewControl.Height) ? 200 : DrawingViewControl.Height;
 		for (var i = 0; i < count; i++)
 		{
-			yield return new DrawingLine()
+			yield return new DrawingLine
 			{
 				Points = new(BindingContext.GeneratePoints(10, width, height)),
 				LineColor = Color.FromRgb(Random.Shared.Next(255), Random.Shared.Next(255), Random.Shared.Next(255)),
@@ -56,9 +56,9 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 		}
 	}
 
-	void OnDrawingLineCompleted(object sender, DrawingLineCompletedEventArgs e)
+	async void OnDrawingLineCompleted(object sender, DrawingLineCompletedEventArgs e)
 	{
-		var stream = e.LastDrawingLine.GetImageStream(GestureImage.Width, GestureImage.Height, Colors.Gray);
+		var stream = await e.LastDrawingLine.GetImageStream(GestureImage.Width, GestureImage.Height, Colors.Gray);
 		GestureImage.Source = ImageSource.FromStream(() => stream);
 	}
 }

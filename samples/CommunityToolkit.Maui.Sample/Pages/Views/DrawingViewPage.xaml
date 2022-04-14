@@ -10,7 +10,7 @@
                 Title="DrawingView">
 
     <ScrollView>
-        <Grid RowDefinitions="40,40,40,40,Auto,40,40,40,100,40,200,100" ColumnDefinitions="*,*">
+        <Grid RowDefinitions="40,40,40,40,Auto,40,40,40,200,40,200,100" ColumnDefinitions="*,*">
             <Label Grid.Row="0" Grid.Column="0" Text="Clear on Finish" Margin="0,0,5,0" />
             <Switch  Grid.Row="0" Grid.Column="1" x:Name="ClearOnFinish" />
             <Label  Grid.Row="1" Grid.Column="0" Text="Multi-Line Mode" Margin="0,0,5,0" />
@@ -55,8 +55,8 @@
                 Grid.Row="8" Grid.Column="0"
                 Grid.ColumnSpan="2"
                 x:Name="GestureImage"
-                HeightRequest="100"
-                WidthRequest="100" />
+                HeightRequest="200"
+                WidthRequest="200" />
 
             <Label Text="DrawingView"
                    Grid.Row="9" Grid.Column="0"

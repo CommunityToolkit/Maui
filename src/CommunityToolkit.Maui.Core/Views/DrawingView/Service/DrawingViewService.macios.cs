@@ -17,16 +17,16 @@ public static partial class DrawingViewService
 	/// <param name="imageSize">Image size</param>
 	/// <param name="backgroundColor">Image background color</param>
 	/// <returns>Image stream</returns>
-	public static Stream GetImageStream(in IList<DrawingLine> lines, in Size imageSize, in Color backgroundColor)
+	public static Task<Stream> GetImageStream(in IList<DrawingLine> lines, in Size imageSize, in Color backgroundColor)
 	{
 		var image = GetUIImageForLines(lines, backgroundColor);
 		if (image is null)
 		{
-			return Stream.Null;
+			return Task.FromResult(Stream.Null);
 		}
 
 		var resizedImage = GetMaximumUIImage(image, imageSize.Width, imageSize.Height);
-		return resizedImage.AsJPEG().AsStream();
+		return Task.FromResult(resizedImage.AsJPEG().AsStream());
 	}
 
 	/// <summary>
@@ -38,7 +38,7 @@ public static partial class DrawingViewService
 	/// <param name="strokeColor">Line color</param>
 	/// <param name="backgroundColor">Image background color</param>
 	/// <returns>Image stream</returns>
-	public static Stream GetImageStream(in IList<Point> points,
+	public static Task<Stream> GetImageStream(in IList<Point> points,
 										in Size imageSize,
 										in float lineWidth,
 										in Color strokeColor,
@@ -46,17 +46,17 @@ public static partial class DrawingViewService
 	{
 		if (points.Count < 2)
 		{
-			return Stream.Null;
+			return Task.FromResult(Stream.Null);
 		}
 
 		var image = GetUIImageForPoints(points, lineWidth, strokeColor, backgroundColor);
 		if (image is null)
 		{
-			return Stream.Null;
+			return Task.FromResult(Stream.Null);
 		}
 
 		var resizedImage = GetMaximumUIImage(image, (float)imageSize.Width, (float)imageSize.Height);
-		return resizedImage.AsJPEG().AsStream();
+		return Task.FromResult(resizedImage.AsJPEG().AsStream());
 	}
 
 	static UIImage? GetUIImageForPoints(ICollection<Point> points,

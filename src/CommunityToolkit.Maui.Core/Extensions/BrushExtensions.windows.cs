@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml.Media;
+﻿using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml.Media;
 
 namespace CommunityToolkit.Maui.Core.Extensions;
 
@@ -14,7 +15,7 @@ public static class BrushExtensions
 	{
 		if (brush is SolidColorBrush solidColorBrush)
 		{
-			return solidColorBrush.ToColor();
+			return solidColorBrush.Color.ToColor();
 		}
 
 		return null;

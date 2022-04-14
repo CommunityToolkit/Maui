@@ -49,10 +49,10 @@ public partial class DrawingViewViewModel : BaseViewModel
 	{
 		int maxWidthInt, maxHeightInt;
 
-		if (deviceInfo.Platform == DevicePlatform.Android)
+		if (deviceInfo.Platform == DevicePlatform.Android || deviceInfo.Platform == DevicePlatform.WinUI)
 		{
-			maxWidthInt = (int)Math.Round(viewWidth * deviceDisplay.GetMainDisplayInfo().Density, MidpointRounding.ToZero);
-			maxHeightInt = (int)Math.Round(viewHeight * deviceDisplay.GetMainDisplayInfo().Density, MidpointRounding.ToZero);
+			maxWidthInt = (int)Math.Round(viewWidth * deviceDisplay.MainDisplayInfo.Density, MidpointRounding.ToZero);
+			maxHeightInt = (int)Math.Round(viewHeight * deviceDisplay.MainDisplayInfo.Density, MidpointRounding.ToZero);
 		}
 		else if (deviceInfo.Platform == DevicePlatform.iOS || deviceInfo.Platform == DevicePlatform.MacCatalyst)
 		{

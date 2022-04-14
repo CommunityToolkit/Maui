@@ -47,6 +47,6 @@ public interface IDrawingView : IView
 	/// </summary>
 	/// <param name="imageSizeWidth">Desired width of the image that is returned.</param>
 	/// <param name="imageSizeHeight">Desired height of the image that is returned.</param>
-	/// <returns><see cref="Stream"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
-	Stream GetImageStream(double imageSizeWidth, double imageSizeHeight);
+	/// <returns><see cref="Task{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
+	Task<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight);
 }
