@@ -93,6 +93,16 @@ public static partial class MauiDrawingViewExtensions
 	{
 		mauiDrawingView.MultiLineMode = multiLineMode;
 	}
+	
+	/// <summary>
+	/// Set Draw action
+	/// </summary>
+	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/></param>
+	/// <param name="draw">value</param>
+	public static void SetDrawAction(this MauiDrawingView mauiDrawingView, Action<ICanvas, RectF>? draw)
+	{
+		mauiDrawingView.Draw = draw;
+	}
 
 	/// <summary>
 	/// Set ClearOnFinish

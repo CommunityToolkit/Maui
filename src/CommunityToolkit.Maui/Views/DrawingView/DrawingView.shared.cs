@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
@@ -117,6 +117,11 @@ public class DrawingView : View, IDrawingView
 		get => (bool)GetValue(ClearOnFinishProperty);
 		set => SetValue(ClearOnFinishProperty, value);
 	}
+
+	/// <summary>
+	/// Allows to draw on the <see cref="IDrawingView"/>.
+	/// </summary>
+	public Action<ICanvas, RectF>? Draw { get; set; }
 
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of the <see cref="Lines"/> that are currently drawn on the <see cref="DrawingView"/>.

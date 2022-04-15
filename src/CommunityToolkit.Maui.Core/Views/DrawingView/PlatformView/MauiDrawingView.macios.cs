@@ -1,6 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Runtime.InteropServices;
-using CommunityToolkit.Maui.Core.Extensions;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Platform;
@@ -8,41 +6,33 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
-public partial class MauiDrawingView : UIView
+public partial class MauiDrawingView : PlatformTouchGraphicsView
 {
-	readonly UIBezierPath currentPath = new();
 	readonly List<UIScrollView> scrollViewParents = new();
-
-	CGPoint previousPoint;
-	MauiDrawingLine? currentLine;
 
 	/// <summary>
 	/// Line color
 	/// </summary>
 	public UIColor LineColor { get; set; } = UIColor.Black;
-
-	/// <summary>
-	/// Line width
-	/// </summary>
-	public NFloat LineWidth { get; set; } = 5;
-
+	
 	/// <inheritdoc />
 	public override void TouchesBegan(NSSet touches, UIEvent? evt)
 	{
-		DetectScrollViews();
-		SetParentTouches(false);
+		base.TouchesBegan(touches, evt);
+		//DetectScrollViews();
+		//SetParentTouches(false);
 
 		Lines.CollectionChanged -= OnLinesCollectionChanged;
 
 		if (!MultiLineMode)
 		{
 			Lines.Clear();
-			currentPath.RemoveAllPoints();
+			currentPath = new();
 		}
 
 		var touch = (UITouch)touches.AnyObject;
 		previousPoint = touch.PreviousLocationInView(this);
-		currentPath.MoveTo(previousPoint);
+		currentPath.MoveTo((float)previousPoint.X, (float)previousPoint.Y);
 		currentLine = new MauiDrawingLine
 		{
 			Points = new ObservableCollection<CGPoint>()
@@ -51,7 +41,7 @@ public partial class MauiDrawingView : UIView
 			}
 		};
 
-		SetNeedsDisplay();
+		Invalidate();
 
 		Lines.CollectionChanged += OnLinesCollectionChanged;
 	}
@@ -59,11 +49,12 @@ public partial class MauiDrawingView : UIView
 	/// <inheritdoc />
 	public override void TouchesMoved(NSSet touches, UIEvent? evt)
 	{
+		base.TouchesMoved(touches, evt);
 		var touch = (UITouch)touches.AnyObject;
 		var currentPoint = touch.LocationInView(this);
 
 		AddPointToPath(currentPoint);
-		SetNeedsDisplay();
+		Invalidate();
 
 		currentLine?.Points.Add(currentPoint.ToPoint());
 	}
@@ -71,6 +62,7 @@ public partial class MauiDrawingView : UIView
 	/// <inheritdoc />
 	public override void TouchesEnded(NSSet touches, UIEvent? evt)
 	{
+		base.TouchesEnded(touches, evt);
 		if (currentLine is not null)
 		{
 			Lines.Add(currentLine);
@@ -83,67 +75,16 @@ public partial class MauiDrawingView : UIView
 		}
 
 		currentLine = null;
-		SetParentTouches(true);
+		//SetParentTouches(true);
 	}
 
 	/// <inheritdoc />
 	public override void TouchesCancelled(NSSet touches, UIEvent? evt)
 	{
+		base.TouchesCancelled(touches, evt);
 		currentLine = null;
-		SetNeedsDisplay();
-		SetParentTouches(true);
-	}
-
-	/// <inheritdoc />
-	public override void Draw(CGRect rect)
-	{
-		currentPath.LineWidth = LineWidth;
-		LineColor.SetStroke();
-		currentPath.Stroke();
-	}
-
-	/// <summary>
-	/// Initialize resources
-	/// </summary>
-	public void Initialize()
-	{
-		Lines.CollectionChanged += OnLinesCollectionChanged;
-	}
-
-	/// <summary>
-	/// Clean up resources
-	/// </summary>
-	public void CleanUp()
-	{
-		currentPath.Dispose();
-		Lines.CollectionChanged -= OnLinesCollectionChanged;
-	}
-
-	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => LoadPoints();
-
-	void AddPointToPath(CGPoint currentPoint) => currentPath.AddLineTo(currentPoint);
-
-	void LoadPoints()
-	{
-		currentPath.RemoveAllPoints();
-		foreach (var line in Lines)
-		{
-			var newPointsPath = line.EnableSmoothedPath
-					? line.Points.SmoothedPathWithGranularity(line.Granularity)
-					: line.Points;
-			var stylusPoints = newPointsPath.Select(point => new CGPoint(point.X, point.Y)).ToList();
-			if (stylusPoints.Count > 0)
-			{
-				previousPoint = stylusPoints[0];
-				currentPath.MoveTo(previousPoint);
-				foreach (var point in stylusPoints)
-				{
-					AddPointToPath(point);
-				}
-			}
-		}
-
-		SetNeedsDisplay();
+		InvalidateDrawable();
+		//SetParentTouches(true);
 	}
 
 	void DetectScrollViews()
@@ -172,5 +113,10 @@ public partial class MauiDrawingView : UIView
 		{
 			scrollViewParent.ScrollEnabled = enabled;
 		}
+	}
+
+	void Invalidate()
+	{
+		SetNeedsDisplay();
 	}
 }

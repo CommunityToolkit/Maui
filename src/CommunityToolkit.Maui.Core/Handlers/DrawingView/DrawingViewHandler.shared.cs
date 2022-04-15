@@ -19,7 +19,8 @@ public partial class DrawingViewHandler
 		[nameof(IDrawingView.ClearOnFinish)] = MapClearOnFinish,
 		[nameof(IDrawingView.LineColor)] = MapLineColor,
 		[nameof(IDrawingView.LineWidth)] = MapLineWidth,
-		[nameof(IDrawingView.MultiLineMode)] = MapMultiLineMode
+		[nameof(IDrawingView.MultiLineMode)] = MapMultiLineMode,
+		[nameof(IDrawingView.Draw)] = MapDraw
 	};
 
 	/// <summary>
@@ -92,11 +93,22 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	{
 		handler.PlatformView.SetMultiLineMode(view.MultiLineMode);
 	}
-	/// <inheritdoc />
-	protected override void ConnectHandler(MauiDrawingView nativeView)
+
+	/// <summary>
+	/// Action that's triggered when the DrawingView <see cref="IDrawingView.Draw"/> property changes.
+	/// </summary>
+	/// <param name="handler">An instance of <see cref="DrawingViewHandler"/>.</param>
+	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
+	public static void MapDraw(DrawingViewHandler handler, IDrawingView view)
 	{
-		base.ConnectHandler(nativeView);
-		nativeView.Initialize();
+		handler.PlatformView.SetDrawAction(view.Draw);
+	}
+	
+	/// <inheritdoc />
+	protected override void ConnectHandler(MauiDrawingView platformView)
+	{
+		base.ConnectHandler(platformView);
+		platformView.Initialize();
 
 		PlatformView.DrawingLineCompleted += OnPlatformViewDrawingLineCompleted;
 		VirtualView.Lines.CollectionChanged += OnVirtualViewLinesCollectionChanged;
@@ -104,13 +116,13 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	}
 
 	/// <inheritdoc />
-	protected override void DisconnectHandler(MauiDrawingView nativeView)
+	protected override void DisconnectHandler(MauiDrawingView platformView)
 	{
 		PlatformView.DrawingLineCompleted -= OnPlatformViewDrawingLineCompleted;
 		VirtualView.Lines.CollectionChanged -= OnVirtualViewLinesCollectionChanged;
 		PlatformView.Lines.CollectionChanged -= OnPlatformViewLinesCollectionChanged;
-		nativeView.CleanUp();
-		base.DisconnectHandler(nativeView);
+		platformView.CleanUp();
+		base.DisconnectHandler(platformView);
 	}
 
 	/// <inheritdoc />
@@ -194,6 +206,15 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, object>
 	/// <param name="handler">An instance of <see cref="DrawingViewHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
 	public static void MapMultiLineMode(DrawingViewHandler handler, IDrawingView view)
+	{
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="handler">An instance of <see cref="DrawingViewHandler"/>.</param>
+	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
+	public static void MapDraw(DrawingViewHandler handler, IDrawingView view)
 	{
 	}
 }
