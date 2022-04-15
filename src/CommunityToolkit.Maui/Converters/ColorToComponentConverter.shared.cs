@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using CommunityToolkit.Maui.Core.Extensions;
 
 namespace CommunityToolkit.Maui.Converters;
@@ -104,7 +104,7 @@ public class ColorToPercentYellowConverter : BaseConverterOneWay<Color, double>
 /// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="double"/>.
 /// </summary>
-public class ColorToBlackKeyConverter : BaseConverterOneWay<Color, double>
+public class ColorToPercentKeyConverter : BaseConverterOneWay<Color, double>
 {
 	/// <inheritdoc/>
 	public override double ConvertFrom(Color value, CultureInfo? culture = null)

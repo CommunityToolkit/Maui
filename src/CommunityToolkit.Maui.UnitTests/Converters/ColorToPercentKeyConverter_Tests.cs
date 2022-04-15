@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class ColorToBlackKeyConverter_Tests : BaseTest
+public class ColorToPercentKeyConverter_Tests : BaseTest
 {
 	public readonly static IReadOnlyList<object[]> ValidInputData = new[]
 	{
@@ -43,9 +43,9 @@ public class ColorToBlackKeyConverter_Tests : BaseTest
 
 	[Theory]
 	[MemberData(nameof(ValidInputData))]
-	public void ColorToBlackKeyConverterValidInputTest(float red, float green, float blue, float alpha, double expectedResult)
+	public void ColorToPercentKeyConverterValidInputTest(float red, float green, float blue, float alpha, double expectedResult)
 	{
-		var converter = new ColorToBlackKeyConverter();
+		var converter = new ColorToPercentKeyConverter();
 		var color = new Color(red, green, blue, alpha);
 
 		var resultConvertFrom = converter.ConvertFrom(color);
@@ -56,12 +56,12 @@ public class ColorToBlackKeyConverter_Tests : BaseTest
 	}
 
 	[Fact]
-	public void ColorToBlackKeyConverterNullInputTest()
+	public void ColorToPercentKeyConverterNullInputTest()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => new ColorToBlackKeyConverter().ConvertFrom(null));
-		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToBlackKeyConverter()).Convert(null, typeof(double), null, null));
-		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToBlackKeyConverter()).Convert(new Color(), null, null, null));
+		Assert.Throws<ArgumentNullException>(() => new ColorToPercentKeyConverter().ConvertFrom(null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToPercentKeyConverter()).Convert(null, typeof(double), null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToPercentKeyConverter()).Convert(new Color(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }
