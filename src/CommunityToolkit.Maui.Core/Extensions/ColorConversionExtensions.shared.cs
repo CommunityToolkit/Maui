@@ -1,4 +1,4 @@
-namespace CommunityToolkit.Maui.Core.Extensions;
+﻿namespace CommunityToolkit.Maui.Core.Extensions;
 
 /// <summary>
 /// Extension methods for Microsoft.Maui.Graphics.Color
@@ -11,7 +11,7 @@ public static class ColorConversionExtensions
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>RGB(red,green,blue)</c> where <b>red</b>, <b>green</b> and <b>blue</b> will be a value between 0 and 255.
-	/// (e.g. <c>RGB(255,0,0)</c> for <see cref="Color.Red"/>).
+	/// (e.g. <c>RGB(255,0,0)</c> for <see cref="Colors.Red"/>).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
 	public static string ToRgbString(this Color color)
@@ -26,7 +26,7 @@ public static class ColorConversionExtensions
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>RGBA(red,green,blue,alpha)</c> where <b>red</b>, <b>green</b> and <b>blue</b> will be a value between 0 and 255,
-	/// and <b>alpha</b> is a value between 0 and 1. (e.g. <c>RGBA(255,0,0,1)</c> for <see cref="Color.Red"/>).
+	/// and <b>alpha</b> is a value between 0 and 1. (e.g. <c>RGBA(255,0,0,1)</c> for <see cref="Colors.Red"/>).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
 	public static string ToRgbaString(this Color color)
@@ -41,7 +41,7 @@ public static class ColorConversionExtensions
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>#redgreenblue</c> where <b>red</b>, <b>green</b> and <b>blue</b> will be a value between 00 and FF.
-	/// (e.g. <c>#FF0000</c> for <see cref="Color.Red"/>).
+	/// (e.g. <c>#FF0000</c> for <see cref="Colors.Red"/>).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
 	public static string ToHexRgbString(this Color color)
@@ -56,7 +56,7 @@ public static class ColorConversionExtensions
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>#redgreenbluealpha</c> where <b>red</b>, <b>green</b>, <b>blue</b> and <b>alpha</b> will be a value between 00 and FF.
-	/// e.g. <c>#FF000000</c> for <see cref="Color.Red"/>).
+	/// e.g. <c>#FF0000FF</c> for <see cref="Colors.Red"/>).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
 	public static string ToHexRgbaString(this Color color)
@@ -71,7 +71,7 @@ public static class ColorConversionExtensions
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>#alpharedgreenblue</c> where <b>alpha</b>, <b>red</b>, <b>green</b> and <b>blue</b> will be a value between 00 and FF.
-	/// e.g. <c>#00FF0000</c> for <see cref="Color.Red"/>).
+	/// e.g. <c>#FFFF0000</c> for <see cref="Colors.Red"/>).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
 	public static string ToHexArgbString(this Color color)
@@ -86,7 +86,7 @@ public static class ColorConversionExtensions
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>CMYK(cyan,magenta,yellow,key)</c> where <b>cyan</b>, <b>magenta</b>, <b>yellow</b> and <b>key</b> will be a value between 0% and 100%.
-	/// (e.g. <c>CMYK(0,100,100,0)</c> for <see cref="Color.Red"/>).
+	/// (e.g. <c>CMYK(0%,100%,100%,0%)</c> for <see cref="Colors.Red"/>).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
 	public static string ToCmykString(this Color color)
@@ -101,7 +101,7 @@ public static class ColorConversionExtensions
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>CMYKA(cyan,magenta,yellow,key,alpha)</c> where <b>cyan</b>, <b>magenta</b>, <b>yellow </b>and <b>key</b> will be a value between
-	/// 0% and 100% and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>CMYKA(100%,100%,0%,100%,1)</c> for <see cref="Color.Red"/>).
+	/// 0% and 100% and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>CMYKA(100%,100%,0%,100%,1)</c> for <see cref="Colors.Red"/>).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
 	public static string ToCmykaString(this Color color)
@@ -116,7 +116,7 @@ public static class ColorConversionExtensions
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>HSL(hue,saturation,lightness)</c> where <b>hue</b> will be a value between 0 and 360, and <b>saturation</b> and <b>lightness</b>
-	/// will be a value between 0% and 100%. (e.g. <c>HSL(0,100%,50%)</c> for <see cref="Color.Red"/>).
+	/// will be a value between 0% and 100%. (e.g. <c>HSL(0,100%,50%)</c> for <see cref="Colors.Red"/>).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
 	public static string ToHslString(this Color color)
@@ -131,7 +131,7 @@ public static class ColorConversionExtensions
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>HSLA(hue,saturation,lightness,alpha)</c> where <b>hue</b> will be a value between 0 and 360, <b>saturation</b> and <b>lightness</b>
-	/// will be a value between 0% and 100%, and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>HSLA(0,100%,50%,1)</c> for <see cref="Color.Red"/>).
+	/// will be a value between 0% and 100%, and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>HSLA(0,100%,50%,1)</c> for <see cref="Colors.Red"/>).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
 	public static string ToHslaString(this Color color)
