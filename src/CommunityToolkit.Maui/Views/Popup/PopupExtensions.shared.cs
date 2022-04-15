@@ -56,8 +56,8 @@ public static partial class PopupExtensions
 	{
 		var mauiContext = GetMauiContext(page);
 		popup.Parent = PageExtensions.GetCurrentPage(page);
-		var popupNative = popup.ToHandler(mauiContext);
-		popupNative.Invoke(nameof(IPopup.OnOpened));
+		var platformPopup = popup.ToHandler(mauiContext);
+		platformPopup.Invoke(nameof(IPopup.OnOpened));
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
