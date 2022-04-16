@@ -41,7 +41,7 @@ public partial class DrawingViewHandler
 	}
 }
 
-#if __MOBILE__ || WINDOWS
+#if ANDROID || IOS || MACCATALYST || WINDOWS
 public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingView>
 {
 	/// <summary>
@@ -103,7 +103,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	{
 		handler.PlatformView.SetDrawAction(view.DrawAction);
 	}
-	
+
 	/// <inheritdoc />
 	protected override void ConnectHandler(MauiDrawingView platformView)
 	{
@@ -210,7 +210,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, object>
 	}
 
 	/// <summary>
-	/// 
+	/// Action that's triggered when the DrawingView <see cref="IDrawingView.DrawAction"/> property changes.
 	/// </summary>
 	/// <param name="handler">An instance of <see cref="DrawingViewHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>

@@ -64,17 +64,25 @@
             <mct:DrawingView x:Name="DrawingViewControl" 
                              Grid.Row="10" Grid.Column="0"
                              Grid.ColumnSpan="2"
-                             BackgroundColor="Yellow" 
-                             HeightRequest="200"
-                             LineColor="Blue"
+                             LineColor="Green"
                              LineWidth="5"
                              Lines="{Binding Lines, Mode=TwoWay}"
                              DrawingLineCompleted="OnDrawingLineCompleted"
                              DrawingLineCompletedCommand="{Binding DrawingLineCompletedCommand}"
                              ClearOnFinish="{Binding Source={x:Reference ClearOnFinish}, Path=IsToggled}"
-                             MultiLineMode="{Binding Source={x:Reference MultiLineMode}, Path=IsToggled}"/>
+                             MultiLineMode="{Binding Source={x:Reference MultiLineMode}, Path=IsToggled}">
+                <mct:DrawingView.Background>
+                    <LinearGradientBrush StartPoint="0,0"
+                                             EndPoint="1,1">
+                            <GradientStop Color="Blue"
+                                          Offset="0"/>
+                            <GradientStop Color="Yellow"
+                                          Offset="1"/>
+                        </LinearGradientBrush>
+                    </mct:DrawingView.Background>
+                </mct:DrawingView>
 
-            <Label Grid.Row="11" Grid.Column="0"
+                <Label Grid.Row="11" Grid.Column="0"
                     Grid.ColumnSpan="2"
                     BackgroundColor="Gray"
                     TextColor="Black"

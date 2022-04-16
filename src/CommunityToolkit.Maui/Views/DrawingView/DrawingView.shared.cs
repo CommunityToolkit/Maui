@@ -139,7 +139,7 @@ public class DrawingView : View, IDrawingView
 	/// </summary>
 	/// <param name="imageSizeWidth">Desired width of the image that is returned.</param>
 	/// <param name="imageSizeHeight">Desired height of the image that is returned.</param>
-	/// <returns><see cref="Stream"/> containing the data of the requested image with data that's currently on the <see cref="DrawingView"/>.</returns>
+	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="DrawingView"/>.</returns>
 	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight) => DrawingViewService.GetImageStream(Lines.ToList(), new Size(imageSizeWidth, imageSizeHeight), BackgroundColor);
 
 	/// <summary>
@@ -147,11 +147,11 @@ public class DrawingView : View, IDrawingView
 	/// </summary>
 	/// <param name="lines">A collection of <see cref="DrawingLine"/> that a image is generated from.</param>
 	/// <param name="imageSize">The desired dimensions of the generated image.</param>
-	/// <param name="backgroundColor">Background color of the generated image.</param>
-	/// <returns><see cref="Stream"/> containing the data of the requested image with data that's provided through the <paramref name="lines"/> parameter.</returns>
+	/// <param name="backgroundColor">Background color of the generated image. If color is null, default background color is used.</param>
+	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's provided through the <paramref name="lines"/> parameter.</returns>
 	public static ValueTask<Stream> GetImageStream(IEnumerable<DrawingLine> lines,
 		Size imageSize,
-		Color backgroundColor) =>
+		Color? backgroundColor) =>
 		DrawingViewService.GetImageStream(lines.ToList(), imageSize, backgroundColor);
 
 	/// <summary>

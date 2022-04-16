@@ -1,4 +1,4 @@
-﻿using Android.Graphics;
+using Android.Graphics;
 using Microsoft.Maui.Platform;
 using Color = Microsoft.Maui.Graphics.Color;
 using Math = System.Math;
@@ -21,7 +21,7 @@ public static partial class DrawingViewService
 	/// <returns>Image stream</returns>
 	public static ValueTask<Stream> GetImageStream(in IList<DrawingLine> lines,
 										in Size imageSize,
-										in Color backgroundColor)
+										in Color? backgroundColor)
 	{
 
 		var image = GetBitmapForLines(lines, backgroundColor);
@@ -58,7 +58,7 @@ public static partial class DrawingViewService
 										in Size imageSize,
 										in float lineWidth,
 										in Color strokeColor,
-										in Color backgroundColor)
+										in Color? backgroundColor)
 	{
 		if (points.Count < 2)
 		{
@@ -89,7 +89,7 @@ public static partial class DrawingViewService
 	static Bitmap? GetBitmapForPoints(ICollection<PointF> points,
 		float lineWidth,
 		Color strokeColor,
-		Color backgroundColor)
+		Color? backgroundColor)
 	{
 		if (points.Count is 0)
 		{
@@ -120,7 +120,7 @@ public static partial class DrawingViewService
 		using var canvas = new Canvas(image);
 
 		// background
-		canvas.DrawColor(backgroundColor.ToPlatform());
+		canvas.DrawColor(backgroundColor.ToPlatform(Defaults.BackgroundColor));
 
 		// strokes
 		using var paint = new Paint
@@ -139,14 +139,14 @@ public static partial class DrawingViewService
 		{
 			var p1 = points.ElementAt(i);
 			var p2 = points.ElementAt(i + 1);
-			canvas.DrawLine((float)(p1.X - minPointX), (float)(p1.Y - minPointY), (float)(p2.X - minPointX),
-				(float)(p2.Y - minPointY), paint);
+			canvas.DrawLine(p1.X - minPointX, p1.Y - minPointY, p2.X - minPointX,
+				p2.Y - minPointY, paint);
 		}
 
 		return image;
 	}
 
-	static Bitmap? GetBitmapForLines(IList<DrawingLine> lines, Color backgroundColor)
+	static Bitmap? GetBitmapForLines(IList<DrawingLine> lines, Color? backgroundColor)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
 		if (points.Count is 0)
@@ -178,7 +178,7 @@ public static partial class DrawingViewService
 		using var canvas = new Canvas(image);
 
 		// background
-		canvas.DrawColor(backgroundColor.ToPlatform());
+		canvas.DrawColor(backgroundColor.ToPlatform(Defaults.BackgroundColor));
 
 		foreach (var line in lines)
 		{
@@ -198,8 +198,7 @@ public static partial class DrawingViewService
 			{
 				var p1 = line.Points.ElementAt(i);
 				var p2 = line.Points.ElementAt(i + 1);
-				canvas.DrawLine((float)(p1.X - minPointX), (float)(p1.Y - minPointY), (float)(p2.X - minPointX),
-					(float)(p2.Y - minPointY), paint);
+				canvas.DrawLine(p1.X - minPointX, p1.Y - minPointY, p2.X - minPointX, p2.Y - minPointY, paint);
 			}
 		}
 

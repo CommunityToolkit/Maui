@@ -19,7 +19,7 @@ public static partial class DrawingViewService
 		Size imageSize,
 		float lineWidth,
 		Color strokeColor,
-		Color backgroundColor) =>
+		Color? backgroundColor) =>
 		ValueTask.FromResult(Stream.Null);
 
 	/// <summary>
@@ -31,7 +31,7 @@ public static partial class DrawingViewService
 	/// <returns>Image stream</returns>
 	public static ValueTask<Stream> GetImageStream(IList<DrawingLine> lines,
 		Size imageSize,
-		Color backgroundColor) =>
+		Color? backgroundColor) =>
 		ValueTask.FromResult(Stream.Null);
 }
 #endif

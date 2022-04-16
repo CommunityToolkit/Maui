@@ -1,12 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Maui.Core.Extensions;
-using Microsoft.Maui.Platform;
-#if IOS || MACCATALYST
-using PlatformPoint = CoreGraphics.CGPoint;
-#elif WINDOWS
-using Microsoft.Maui.Graphics.Win2D;
-using PlatformPoint = Windows.Foundation.Point;
-#endif
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -61,7 +54,7 @@ public partial class MauiDrawingView
 	/// </summary>
 	public Action<ICanvas, RectF>? DrawAction;
 
-#if __MOBILE__ || WINDOWS
+#if ANDROID || IOS || MACCATALYST || WINDOWS
 
 	PointF previousPoint;
 	PathF currentPath = new();
@@ -72,15 +65,14 @@ public partial class MauiDrawingView
 	/// </summary>
 	public void Initialize()
 	{
-#if __MOBILE__
+#if ANDROID || IOS || MACCATALYST
 		Drawable = new DrawingViewDrawable(this);
 #elif WINDOWS
-		((W2DGraphicsView)Content).Drawable = new DrawingViewDrawable(this);
+		((Microsoft.Maui.Graphics.Win2D.W2DGraphicsView)Content).Drawable = new DrawingViewDrawable(this);
 #endif
 		Lines.CollectionChanged += OnLinesCollectionChanged;
 	}
-
-
+	
 	bool isDrawing;
 	void OnStart(PointF point)
 	{
@@ -117,8 +109,11 @@ public partial class MauiDrawingView
 		{
 			return;
 		}
-		
+
+#if !ANDROID
 		AddPointToPath(currentPath, currentPoint);
+#endif
+		
 		Redraw();
 		currentLine?.Points.Add(currentPoint);
 	}
@@ -228,4 +223,4 @@ public partial class MauiDrawingView
 		}
 	}
 #endif
-}
+	}

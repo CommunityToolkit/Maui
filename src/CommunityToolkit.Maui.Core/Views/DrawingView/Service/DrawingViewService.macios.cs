@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using CoreGraphics;
 using Microsoft.Maui.Platform;
 using UIKit;
@@ -17,7 +17,7 @@ public static partial class DrawingViewService
 	/// <param name="imageSize">Image size</param>
 	/// <param name="backgroundColor">Image background color</param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(in IList<DrawingLine> lines, in Size imageSize, in Color backgroundColor)
+	public static ValueTask<Stream> GetImageStream(in IList<DrawingLine> lines, in Size imageSize, in Color? backgroundColor)
 	{
 		var image = GetUIImageForLines(lines, backgroundColor);
 		if (image is null)
@@ -42,7 +42,7 @@ public static partial class DrawingViewService
 										in Size imageSize,
 										in float lineWidth,
 										in Color strokeColor,
-										in Color backgroundColor)
+										in Color? backgroundColor)
 	{
 		if (points.Count < 2)
 		{
@@ -62,7 +62,7 @@ public static partial class DrawingViewService
 	static UIImage? GetUIImageForPoints(ICollection<PointF> points,
 		NFloat lineWidth,
 		Color strokeColor,
-		Color backgroundColor)
+		Color? backgroundColor)
 	{
 		const int minSize = 1;
 
@@ -83,12 +83,8 @@ public static partial class DrawingViewService
 		var imageSize = new CGSize(drawingWidth, drawingHeight);
 		UIGraphics.BeginImageContextWithOptions(imageSize, false, 1);
 
-		if (UIGraphics.GetCurrentContext() is not CGContext context)
-		{
-			throw new InvalidOperationException("Current Context cannot be null");
-		}
-
-		context.SetFillColor(backgroundColor.ToCGColor());
+		var context = UIGraphics.GetCurrentContext();
+		context.SetFillColor(backgroundColor?.ToCGColor() ?? Defaults.BackgroundColor.ToCGColor());
 		context.FillRect(new CGRect(CGPoint.Empty, imageSize));
 
 		context.SetStrokeColor(strokeColor.ToCGColor());
@@ -105,7 +101,7 @@ public static partial class DrawingViewService
 		return image;
 	}
 
-	static UIImage? GetUIImageForLines(in IList<DrawingLine> lines, in Color backgroundColor)
+	static UIImage? GetUIImageForLines(in IList<DrawingLine> lines, in Color? backgroundColor)
 	{
 		const int minSize = 1;
 
@@ -128,12 +124,9 @@ public static partial class DrawingViewService
 		var imageSize = new CGSize(drawingWidth, drawingHeight);
 		UIGraphics.BeginImageContextWithOptions(imageSize, false, 1);
 
-		if (UIGraphics.GetCurrentContext() is not CGContext context)
-		{
-			throw new InvalidOperationException("Current Context cannot be null");
-		}
+		var context = UIGraphics.GetCurrentContext();
 
-		context.SetFillColor(backgroundColor.ToCGColor());
+		context.SetFillColor(backgroundColor?.ToCGColor() ?? Defaults.BackgroundColor.ToCGColor());
 		context.FillRect(new CGRect(CGPoint.Empty, imageSize));
 
 		foreach (var line in lines)

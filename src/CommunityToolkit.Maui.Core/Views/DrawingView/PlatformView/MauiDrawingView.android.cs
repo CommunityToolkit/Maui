@@ -28,18 +28,18 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 
 		var touchX = e.GetX();
 		var touchY = e.GetY();
-
+		var point = new PointF(touchX, touchY);
 		switch (e.Action)
 		{
 			case MotionEventActions.Down:
 				Parent?.RequestDisallowInterceptTouchEvent(true);
-				OnStart(new PointF(touchX, touchY));
+				OnStart(point);
 				break;
 
 			case MotionEventActions.Move:
 				if (touchX > 0 && touchY > 0 && touchX < Width && touchY < Height)
 				{
-					currentPath.LineTo(touchX, touchY);
+					AddPointToPath(currentPath, point);
 				}
 				
 				OnMoving(new Point(touchX, touchY));

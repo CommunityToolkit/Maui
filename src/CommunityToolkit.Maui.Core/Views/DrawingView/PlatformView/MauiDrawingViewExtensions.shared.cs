@@ -192,4 +192,4 @@ public static class MauiDrawingViewExtensions
 		}
 	}
 #endif
-}
+		}

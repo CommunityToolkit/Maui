@@ -18,7 +18,7 @@ public static partial class DrawingViewService
 	/// <param name="imageSize">Image size</param>
 	/// <param name="backgroundColor">Image background color</param>
 	/// <returns>Image stream</returns>
-	public static async ValueTask<Stream> GetImageStream(IList<DrawingLine> lines, Size imageSize, Color backgroundColor)
+	public static async ValueTask<Stream> GetImageStream(IList<DrawingLine> lines, Size imageSize, Color? backgroundColor)
 	{
 		var image = GetImageInternal(lines, backgroundColor);
 		if (image == null)
@@ -52,7 +52,7 @@ public static partial class DrawingViewService
 		Size imageSize,
 		float lineWidth,
 		Color strokeColor,
-		Color backgroundColor)
+		Color? backgroundColor)
 	{
 		if (points.Count < 2)
 		{
@@ -80,7 +80,7 @@ public static partial class DrawingViewService
 	static CanvasRenderTarget? GetImageInternal(ICollection<PointF> points,
 		float lineWidth,
 		Color lineColor,
-		Color backgroundColor)
+		Color? backgroundColor)
 	{
 		const int minSize = 1;
 
@@ -102,7 +102,7 @@ public static partial class DrawingViewService
 		var offscreen = new CanvasRenderTarget(device, (int)drawingWidth, (int)drawingHeight, 96);
 
 		using var session = offscreen.CreateDrawingSession();
-		session.Clear(backgroundColor.ToWindowsColor());
+		session.Clear(backgroundColor?.ToWindowsColor() ?? Defaults.BackgroundColor.ToWindowsColor());
 		var strokeBuilder = new InkStrokeBuilder();
 		var inkDrawingAttributes = new InkDrawingAttributes
 		{
@@ -120,8 +120,7 @@ public static partial class DrawingViewService
 		return offscreen;
 	}
 
-	static CanvasRenderTarget? GetImageInternal(IList<DrawingLine> lines,
-		Color backgroundColor)
+	static CanvasRenderTarget? GetImageInternal(IList<DrawingLine> lines, Color? backgroundColor)
 	{
 		const int minSize = 1;
 
@@ -146,7 +145,7 @@ public static partial class DrawingViewService
 		var offscreen = new CanvasRenderTarget(device, (int)drawingWidth, (int)drawingHeight, 96);
 
 		using var session = offscreen.CreateDrawingSession();
-		session.Clear(backgroundColor.ToWindowsColor());
+		session.Clear(backgroundColor?.ToWindowsColor() ?? Defaults.BackgroundColor.ToWindowsColor());
 
 		foreach (var line in lines)
 		{
