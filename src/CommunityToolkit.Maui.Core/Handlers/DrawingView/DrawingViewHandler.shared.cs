@@ -11,7 +11,7 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 public partial class DrawingViewHandler
 {
 	/// <summary>
-	/// <see cref ="CommandMapper"/> for DrawingView Control.
+	/// <see cref ="PropertyMapper"/> for DrawingView Control.
 	/// </summary>
 	public static readonly PropertyMapper<IDrawingView, DrawingViewHandler> DrawingViewMapper = new(ViewMapper)
 	{
@@ -23,9 +23,14 @@ public partial class DrawingViewHandler
 		[nameof(IDrawingView.DrawAction)] = MapDrawAction,
 		[nameof(IDrawingView.Background)] = MapDrawingViewBackground,
 	};
-public static CommandMapper<IDrawingView, DrawingViewHandler> DrawingViewCommandMapper = new(ViewCommandMapper)
+
+        /// <summary>
+	/// <see cref ="CommandMapper"/> for DrawingView Control.
+	/// </summary>
+        public static CommandMapper<IDrawingView, DrawingViewHandler> DrawingViewCommandMapper = new(ViewCommandMapper)
 		{
 		};
+
 	/// <summary>
 	/// Initialize new instance of <see cref="DrawingViewHandler"/>.
 	/// </summary>
