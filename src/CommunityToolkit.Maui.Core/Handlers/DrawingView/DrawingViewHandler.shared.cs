@@ -20,7 +20,8 @@ public partial class DrawingViewHandler
 		[nameof(IDrawingView.LineColor)] = MapLineColor,
 		[nameof(IDrawingView.LineWidth)] = MapLineWidth,
 		[nameof(IDrawingView.MultiLineMode)] = MapMultiLineMode,
-		[nameof(IDrawingView.DrawAction)] = MapDrawAction
+		[nameof(IDrawingView.DrawAction)] = MapDrawAction,
+		[nameof(IDrawingView.Background)] = MapDrawingViewBackground,
 	};
 
 	/// <summary>
@@ -102,6 +103,16 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	public static void MapDrawAction(DrawingViewHandler handler, IDrawingView view)
 	{
 		handler.PlatformView.SetDrawAction(view.DrawAction);
+	}	
+
+	/// <summary>
+	/// Action that's triggered when the DrawingView Background property changes.
+	/// </summary>
+	/// <param name="handler">An instance of <see cref="DrawingViewHandler"/>.</param>
+	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
+	public static void MapDrawingViewBackground(DrawingViewHandler handler, IDrawingView view)
+	{
+		handler.PlatformView.SetPaint(view.Background ?? new SolidPaint(Defaults.BackgroundColor));
 	}
 
 	/// <inheritdoc />
@@ -215,6 +226,15 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, object>
 	/// <param name="handler">An instance of <see cref="DrawingViewHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
 	public static void MapDrawAction(DrawingViewHandler handler, IDrawingView view)
+	{
+	}
+
+	/// <summary>
+	/// Action that's triggered when the DrawingView Background property changes.
+	/// </summary>
+	/// <param name="handler">An instance of <see cref="DrawingViewHandler"/>.</param>
+	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
+	public static void MapDrawingViewBackground(DrawingViewHandler handler, IDrawingView view)
 	{
 	}
 }

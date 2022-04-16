@@ -71,7 +71,7 @@
                              DrawingLineCompletedCommand="{Binding DrawingLineCompletedCommand}"
                              ClearOnFinish="{Binding Source={x:Reference ClearOnFinish}, Path=IsToggled}"
                              MultiLineMode="{Binding Source={x:Reference MultiLineMode}, Path=IsToggled}">
-                    <!--<mct:DrawingView.Background>
+                    <mct:DrawingView.Background>
                         <LinearGradientBrush StartPoint="0,0"
                                              EndPoint="0,1">
                             <GradientStop Color="Blue"
@@ -79,7 +79,7 @@
                             <GradientStop Color="Yellow"
                                           Offset="1"/>
                         </LinearGradientBrush>
-                    </mct:DrawingView.Background>-->
+                    </mct:DrawingView.Background>
                 </mct:DrawingView>
 
                 <Label Grid.Row="11" Grid.Column="0"

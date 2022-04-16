@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Maui.Core.Extensions;
+using Microsoft.Maui.Graphics;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -53,6 +54,11 @@ public partial class MauiDrawingView
 	/// Used to draw any shape on the canvas
 	/// </summary>
 	public Action<ICanvas, RectF>? DrawAction;
+
+	/// <summary>
+	/// Drawable background
+	/// </summary>
+	public Paint Paint { get; set; } = new SolidPaint(Defaults.BackgroundColor);
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS
 
@@ -185,6 +191,8 @@ public partial class MauiDrawingView
 
 		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
+			canvas.SetFillPaint(drawingView.Paint, dirtyRect);
+			canvas.FillRectangle(dirtyRect);
 			drawingView.DrawAction?.Invoke(canvas, dirtyRect);
 			DrawCurrentLines(canvas);
 			SetStroke(canvas, drawingView.LineWidth, drawingView.LineColor);

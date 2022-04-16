@@ -125,6 +125,16 @@ public static class MauiDrawingViewExtensions
 	{
 		mauiDrawingView.LineWidth = lineWidth;
 	}
+	
+	/// <summary>
+	/// Set Paint
+	/// </summary>
+	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/></param>
+	/// <param name="background">background</param>
+	public static void SetPaint(this MauiDrawingView mauiDrawingView, Paint background)
+	{
+		mauiDrawingView.Paint = background;
+	}
 
 	/// <summary>
 	/// Set Lines
