@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class ColorToBlackKeyConverter_Tests : BaseTest
+public class ColorToPercentBlackKeyConverter_Tests : BaseTest
 {
 	public readonly static IReadOnlyList<object[]> ValidInputData = new[]
 	{
@@ -43,9 +43,9 @@ public class ColorToBlackKeyConverter_Tests : BaseTest
 
 	[Theory]
 	[MemberData(nameof(ValidInputData))]
-	public void ColorToBlackKeyConverterValidInputTest(float red, float green, float blue, float alpha, double expectedResult)
+	public void ColorToPercentBlackKeyConverterValidInputTest(float red, float green, float blue, float alpha, double expectedResult)
 	{
-		var converter = new ColorToBlackKeyConverter();
+		var converter = new ColorToPercentBlackKeyConverter();
 		var color = new Color(red, green, blue, alpha);
 
 		var resultConvertFrom = converter.ConvertFrom(color);
@@ -56,12 +56,12 @@ public class ColorToBlackKeyConverter_Tests : BaseTest
 	}
 
 	[Fact]
-	public void ColorToBlackKeyConverterNullInputTest()
+	public void ColorToPercentBlackKeyConverterNullInputTest()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => new ColorToBlackKeyConverter().ConvertFrom(null));
-		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToBlackKeyConverter()).Convert(null, typeof(double), null, null));
-		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToBlackKeyConverter()).Convert(new Color(), null, null, null));
+		Assert.Throws<ArgumentNullException>(() => new ColorToPercentBlackKeyConverter().ConvertFrom(null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToPercentBlackKeyConverter()).Convert(null, typeof(double), null, null));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToPercentBlackKeyConverter()).Convert(new Color(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }
