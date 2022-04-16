@@ -12,7 +12,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 public partial class StateToBooleanConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	LayoutState layoutstate = LayoutState.None;
+	LayoutState layoutState = LayoutState.None;
 
 	public ICommand ChangeLayoutCommand { get; }
 
@@ -23,6 +23,6 @@ public partial class StateToBooleanConverterViewModel : BaseViewModel
 	
 	public void ChangeLayout()
 	{
-		Layoutstate = Layoutstate == LayoutState.None ? LayoutState.Success : LayoutState.None;
+		LayoutState = LayoutState == LayoutState.None ? LayoutState.Success : LayoutState.None;
 	}
 }

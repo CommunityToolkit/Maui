@@ -19,7 +19,7 @@
 	<VerticalStackLayout VerticalOptions="Center">
 		<Label
 			HorizontalOptions="Center"
-			IsVisible="{Binding Layoutstate, Converter={StaticResource StateToBooleanConverter}}"
+			IsVisible="{Binding LayoutState, Converter={StaticResource StateToBooleanConverter}}"
 			Text="The state is Success!"
 			VerticalOptions="Center" />
 		<Button Command="{Binding ChangeLayoutCommand}" Text="Change state" />
