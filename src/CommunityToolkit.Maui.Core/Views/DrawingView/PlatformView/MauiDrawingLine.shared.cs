@@ -1,9 +1,11 @@
-﻿namespace CommunityToolkit.Maui.Core.Views;
+﻿using System.Collections.ObjectModel;
+
+namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// The Line object is used to describe the lines that are drawn on a <see cref="MauiDrawingView"/>.
 /// </summary>
-public partial class MauiDrawingLine
+public class MauiDrawingLine
 {
 	const int minValueGranularity = 5;
 
@@ -13,6 +15,16 @@ public partial class MauiDrawingLine
 	/// The width that is used to draw this line on the <see cref="MauiDrawingView"/>.
 	/// </summary>
 	public float LineWidth { get; set; } = 5;
+
+	/// <summary>
+	/// The <see cref="Color"/> that is used to draw this line on the <see cref="MauiDrawingView"/>.
+	/// </summary>
+	public Color LineColor { get; set; } = Colors.Black;
+	
+	/// <summary>
+	/// The collection of <see cref="PointF"/> that makes up this line on the <see cref="MauiDrawingView"/>.
+	/// </summary>
+	public ObservableCollection<PointF> Points { get; set; } = new();
 
 	/// <summary>
 	/// The granularity of this line. Clamped to a minimum value of 5.

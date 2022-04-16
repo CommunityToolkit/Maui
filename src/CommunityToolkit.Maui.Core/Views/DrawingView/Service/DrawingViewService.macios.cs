@@ -17,16 +17,16 @@ public static partial class DrawingViewService
 	/// <param name="imageSize">Image size</param>
 	/// <param name="backgroundColor">Image background color</param>
 	/// <returns>Image stream</returns>
-	public static Task<Stream> GetImageStream(in IList<DrawingLine> lines, in Size imageSize, in Color backgroundColor)
+	public static ValueTask<Stream> GetImageStream(in IList<DrawingLine> lines, in Size imageSize, in Color backgroundColor)
 	{
 		var image = GetUIImageForLines(lines, backgroundColor);
 		if (image is null)
 		{
-			return Task.FromResult(Stream.Null);
+			return ValueTask.FromResult(Stream.Null);
 		}
 
 		var resizedImage = GetMaximumUIImage(image, imageSize.Width, imageSize.Height);
-		return Task.FromResult(resizedImage.AsJPEG().AsStream());
+		return ValueTask.FromResult(resizedImage.AsJPEG().AsStream());
 	}
 
 	/// <summary>
@@ -38,7 +38,7 @@ public static partial class DrawingViewService
 	/// <param name="strokeColor">Line color</param>
 	/// <param name="backgroundColor">Image background color</param>
 	/// <returns>Image stream</returns>
-	public static Task<Stream> GetImageStream(in IList<Point> points,
+	public static ValueTask<Stream> GetImageStream(in IList<PointF> points,
 										in Size imageSize,
 										in float lineWidth,
 										in Color strokeColor,
@@ -46,20 +46,20 @@ public static partial class DrawingViewService
 	{
 		if (points.Count < 2)
 		{
-			return Task.FromResult(Stream.Null);
+			return ValueTask.FromResult(Stream.Null);
 		}
 
 		var image = GetUIImageForPoints(points, lineWidth, strokeColor, backgroundColor);
 		if (image is null)
 		{
-			return Task.FromResult(Stream.Null);
+			return ValueTask.FromResult(Stream.Null);
 		}
 
 		var resizedImage = GetMaximumUIImage(image, (float)imageSize.Width, (float)imageSize.Height);
-		return Task.FromResult(resizedImage.AsJPEG().AsStream());
+		return ValueTask.FromResult(resizedImage.AsJPEG().AsStream());
 	}
 
-	static UIImage? GetUIImageForPoints(ICollection<Point> points,
+	static UIImage? GetUIImageForPoints(ICollection<PointF> points,
 		NFloat lineWidth,
 		Color strokeColor,
 		Color backgroundColor)

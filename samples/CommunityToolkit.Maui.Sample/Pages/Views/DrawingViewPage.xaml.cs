@@ -10,7 +10,7 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 	public DrawingViewPage(IDeviceInfo deviceInfo, DrawingViewViewModel viewModel) : base(deviceInfo, viewModel)
 	{
 		InitializeComponent();
-		DrawingViewControl.Draw = (canvas, rect) =>
+		DrawingViewControl.DrawAction = (canvas, rect) =>
 		{
 			canvas.DrawString("Draw & GO", 0, 0, 200, 200, HorizontalAlignment.Left, VerticalAlignment.Center);
 		};

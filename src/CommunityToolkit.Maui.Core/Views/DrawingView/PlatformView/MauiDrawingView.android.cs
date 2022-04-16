@@ -6,19 +6,12 @@ using Microsoft.Maui.Platform;
 using AColor = Android.Graphics.Color;
 using APaint = Android.Graphics.Paint;
 using APath = Android.Graphics.Path;
-using APoint = Android.Graphics.PointF;
 using AView = Android.Views.View;
-using Point = Microsoft.Maui.Graphics.Point;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MauiDrawingView : PlatformTouchGraphicsView
 {
-	/// <summary>
-	/// Line color
-	/// </summary>
-	public AColor LineColor { get; set; } = AColor.Black;
-
 	/// <summary>
 	/// Initialize a new instance of <see cref="MauiDrawingView" />.
 	/// </summary>
@@ -40,20 +33,7 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 		{
 			case MotionEventActions.Down:
 				Parent?.RequestDisallowInterceptTouchEvent(true);
-				if (!MultiLineMode)
-				{
-					Lines.Clear();
-				}
-
-				currentLine = new MauiDrawingLine()
-				{
-					Points = new ObservableCollection<APoint>
-						{
-							new (touchX, touchY)
-						}
-				};
-
-				currentPath.MoveTo(touchX, touchY);
+				OnStart(new PointF(touchX, touchY));
 				break;
 
 			case MotionEventActions.Move:
@@ -61,39 +41,31 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 				{
 					currentPath.LineTo(touchX, touchY);
 				}
-
-				currentLine?.Points.Add(new Point(touchX, touchY));
+				
+				OnMoving(new Point(touchX, touchY));
 				break;
 
 			case MotionEventActions.Up:
 				Parent?.RequestDisallowInterceptTouchEvent(false);
-				currentPath = new();
-				if (currentLine != null)
-				{
-					Lines.Add(currentLine);
-					OnDrawingLineCompleted(currentLine);
-				}
-
-				if (ClearOnFinish)
-				{
-					Lines.Clear();
-				}
-
-				currentLine = null;
+				OnFinish();
+				break;
+			case MotionEventActions.Cancel:
+				Parent?.RequestDisallowInterceptTouchEvent(false);
+				OnCancel();
 				break;
 
 			default:
 				return false;
 		}
 
-		Invalidate();
+		Redraw();
 
 		return true;
 	}
 
-	ObservableCollection<APoint> NormalizePoints(IEnumerable<APoint> points)
+	ObservableCollection<PointF> NormalizePoints(IEnumerable<PointF> points)
 	{
-		var newPoints = new List<APoint>();
+		var newPoints = new List<PointF>();
 		foreach (var point in points)
 		{
 			var pointX = point.X;
@@ -118,7 +90,7 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 				pointY = Height;
 			}
 
-			newPoints.Add(new Point(pointX, pointY));
+			newPoints.Add(new PointF(pointX, pointY));
 		}
 
 		return newPoints.ToObservableCollection();

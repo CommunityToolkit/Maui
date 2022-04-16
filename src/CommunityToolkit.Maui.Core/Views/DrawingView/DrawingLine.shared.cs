@@ -21,9 +21,9 @@ public class DrawingLine
 	public float LineWidth { get; set; } = 5;
 
 	/// <summary>
-	/// The collection of <see cref="Point"/> that makes up this line on the <see cref="IDrawingView"/>.
+	/// The collection of <see cref="PointF"/> that makes up this line on the <see cref="IDrawingView"/>.
 	/// </summary>
-	public ObservableCollection<Point> Points { get; set; } = new();
+	public ObservableCollection<PointF> Points { get; set; } = new();
 
 	/// <summary>
 	/// The granularity of this line. Min value is 5. The higher the value, the smoother the line, the slower the program.
@@ -46,7 +46,7 @@ public class DrawingLine
 	/// <param name="imageSizeHeight">Desired height of the image that is returned.</param>
 	/// <param name="backgroundColor">Background color of the generated image.</param>
 	/// <returns><see cref="Task{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
-	public Task<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Color backgroundColor) =>
+	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Color backgroundColor) =>
 		DrawingViewService.GetImageStream(Points.ToList(), new Size(imageSizeWidth, imageSizeHeight), LineWidth, LineColor, backgroundColor);
 
 	/// <summary>
@@ -58,7 +58,7 @@ public class DrawingLine
 	/// <param name="strokeColor">The desired color of the line to be used in the generated image.</param>
 	/// <param name="backgroundColor">Background color of the generated image.</param>
 	/// <returns><see cref="Task{Stream}"/> containing the data of the requested image with data that's provided through the <paramref name="points"/> parameter.</returns>
-	public static Task<Stream> GetImageStream(IEnumerable<Point> points,
+	public static ValueTask<Stream> GetImageStream(IEnumerable<PointF> points,
 										Size imageSize,
 										float lineWidth,
 										Color strokeColor,

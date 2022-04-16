@@ -13,6 +13,12 @@ public class DrawingView : View, IDrawingView
 	readonly WeakEventManager drawingLineCompletedEventManager = new();
 
 	/// <summary>
+	/// Backing BindableProperty for the <see cref="DrawAction"/> property.
+	/// </summary>
+	public static readonly BindableProperty DrawActionProperty =
+		BindableProperty.Create(nameof(DrawAction), typeof(Action<ICanvas, RectF>), typeof(DrawingView));
+	
+	/// <summary>
 	/// Backing BindableProperty for the <see cref="ClearOnFinish"/> property.
 	/// </summary>
 	public static readonly BindableProperty ClearOnFinishProperty =
@@ -120,16 +126,21 @@ public class DrawingView : View, IDrawingView
 
 	/// <summary>
 	/// Allows to draw on the <see cref="IDrawingView"/>.
+	/// This is a bindable property.
 	/// </summary>
-	public Action<ICanvas, RectF>? Draw { get; set; }
-
+	public Action<ICanvas, RectF>? DrawAction
+	{
+		get => (Action<ICanvas, RectF>?)GetValue(DrawActionProperty);
+		set => SetValue(DrawActionProperty, value);
+	}
+	
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of the <see cref="Lines"/> that are currently drawn on the <see cref="DrawingView"/>.
 	/// </summary>
 	/// <param name="imageSizeWidth">Desired width of the image that is returned.</param>
 	/// <param name="imageSizeHeight">Desired height of the image that is returned.</param>
 	/// <returns><see cref="Stream"/> containing the data of the requested image with data that's currently on the <see cref="DrawingView"/>.</returns>
-	public Task<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight) => DrawingViewService.GetImageStream(Lines.ToList(), new Size(imageSizeWidth, imageSizeHeight), BackgroundColor);
+	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight) => DrawingViewService.GetImageStream(Lines.ToList(), new Size(imageSizeWidth, imageSizeHeight), BackgroundColor);
 
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of the collection of <see cref="DrawingLine"/> that is provided as a parameter.
@@ -138,7 +149,7 @@ public class DrawingView : View, IDrawingView
 	/// <param name="imageSize">The desired dimensions of the generated image.</param>
 	/// <param name="backgroundColor">Background color of the generated image.</param>
 	/// <returns><see cref="Stream"/> containing the data of the requested image with data that's provided through the <paramref name="lines"/> parameter.</returns>
-	public static Task<Stream> GetImageStream(IEnumerable<DrawingLine> lines,
+	public static ValueTask<Stream> GetImageStream(IEnumerable<DrawingLine> lines,
 		Size imageSize,
 		Color backgroundColor) =>
 		DrawingViewService.GetImageStream(lines.ToList(), imageSize, backgroundColor);

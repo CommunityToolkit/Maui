@@ -18,7 +18,7 @@ public static partial class DrawingViewService
 	/// <param name="imageSize">Image size</param>
 	/// <param name="backgroundColor">Image background color</param>
 	/// <returns>Image stream</returns>
-	public static async Task<Stream> GetImageStream(IList<DrawingLine> lines, Size imageSize, Color backgroundColor)
+	public static async ValueTask<Stream> GetImageStream(IList<DrawingLine> lines, Size imageSize, Color backgroundColor)
 	{
 		var image = GetImageInternal(lines, backgroundColor);
 		if (image == null)
@@ -47,8 +47,8 @@ public static partial class DrawingViewService
 	/// <param name="strokeColor">Line color</param>
 	/// <param name="backgroundColor">Image background color</param>
 	/// <returns>Image stream</returns>
-	public static async Task<Stream> GetImageStream(
-		IList<Point> points,
+	public static async ValueTask<Stream> GetImageStream(
+		IList<PointF> points,
 		Size imageSize,
 		float lineWidth,
 		Color strokeColor,
@@ -77,7 +77,7 @@ public static partial class DrawingViewService
 		}
 	}
 
-	static CanvasRenderTarget? GetImageInternal(ICollection<Point> points,
+	static CanvasRenderTarget? GetImageInternal(ICollection<PointF> points,
 		float lineWidth,
 		Color lineColor,
 		Color backgroundColor)

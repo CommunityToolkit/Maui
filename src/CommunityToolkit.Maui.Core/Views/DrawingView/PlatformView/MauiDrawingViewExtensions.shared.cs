@@ -1,13 +1,5 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Maui.Core.Views;
-using Microsoft.Maui.Platform;
-#if ANDROID
-using Point = Android.Graphics.PointF;
-#elif IOS || MACCATALYST
-using Point = CoreGraphics.CGPoint;
-#elif WINDOWS
-using Point = Windows.Foundation.Point;
-#endif
 
 namespace CommunityToolkit.Maui.Core.Extensions;
 
@@ -19,9 +11,9 @@ public static partial class MauiDrawingViewExtensions
 	/// <summary>
 	/// Get smoothed path.
 	/// </summary>
-	public static ObservableCollection<Point> SmoothedPathWithGranularity(this IEnumerable<Point> currentPoints, int granularity)
+	public static ObservableCollection<PointF> SmoothedPathWithGranularity(this IEnumerable<PointF> currentPoints, int granularity)
 	{
-		var currentPointsCopy = new List<Point>(currentPoints);
+		var currentPointsCopy = new List<PointF>(currentPoints);
 
 		// not enough points to smooth effectively, so return the original path and points.
 		if (currentPointsCopy.Count < granularity + 2)
@@ -29,7 +21,7 @@ public static partial class MauiDrawingViewExtensions
 			return new(currentPointsCopy);
 		}
 
-		var smoothedPoints = new List<Point>();
+		var smoothedPoints = new List<PointF>();
 
 		// duplicate the first and last points as control points.
 		currentPointsCopy.Insert(0, currentPointsCopy[0]);
@@ -69,18 +61,18 @@ public static partial class MauiDrawingViewExtensions
 		return new(smoothedPoints);
 	}
 
-	static Point GetIntermediatePoint(Point p0, Point p1, Point p2, Point p3, in float t, in float tt, in float ttt) => new()
+	static Point GetIntermediatePoint(PointF p0, PointF p1, PointF p2, PointF p3, in float t, in float tt, in float ttt) => new()
 	{
 		X = 0.5f *
-			((2f * p1.X) +
-				((p2.X - p0.X) * t) +
-				(((2f * p0.X) - (5f * p1.X) + (4f * p2.X) - p3.X) * tt) +
-				(((3f * p1.X) - p0.X - (3f * p2.X) + p3.X) * ttt)),
+			(2f * p1.X +
+				(p2.X - p0.X) * t +
+				(2f * p0.X - 5f * p1.X + 4f * p2.X - p3.X) * tt +
+				(3f * p1.X - p0.X - 3f * p2.X + p3.X) * ttt),
 		Y = 0.5f *
-			((2 * p1.Y) +
-				((p2.Y - p0.Y) * t) +
-				(((2 * p0.Y) - (5 * p1.Y) + (4 * p2.Y) - p3.Y) * tt) +
-				(((3 * p1.Y) - p0.Y - (3 * p2.Y) + p3.Y) * ttt))
+			(2 * p1.Y +
+				(p2.Y - p0.Y) * t +
+				(2 * p0.Y - 5 * p1.Y + 4 * p2.Y - p3.Y) * tt +
+				(3 * p1.Y - p0.Y - 3 * p2.Y + p3.Y) * ttt)
 	};
 
 #if (ANDROID || IOS || MACCATALYST || WINDOWS)
@@ -95,13 +87,13 @@ public static partial class MauiDrawingViewExtensions
 	}
 	
 	/// <summary>
-	/// Set Draw action
+	/// Set DrawAction action
 	/// </summary>
 	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/></param>
 	/// <param name="draw">value</param>
 	public static void SetDrawAction(this MauiDrawingView mauiDrawingView, Action<ICanvas, RectF>? draw)
 	{
-		mauiDrawingView.Draw = draw;
+		mauiDrawingView.DrawAction = draw;
 	}
 
 	/// <summary>
@@ -121,7 +113,7 @@ public static partial class MauiDrawingViewExtensions
 	/// <param name="lineColor">line color</param>
 	public static void SetLineColor(this MauiDrawingView mauiDrawingView, Color lineColor)
 	{
-		mauiDrawingView.LineColor = lineColor.ToPlatform();
+		mauiDrawingView.LineColor = lineColor;
 	}
 
 	/// <summary>
@@ -158,11 +150,11 @@ public static partial class MauiDrawingViewExtensions
 		{
 			mauiDrawingView.Lines.Add(new MauiDrawingLine()
 			{
-				LineColor = line.LineColor.ToPlatform(),
+				LineColor = line.LineColor,
 				EnableSmoothedPath = line.EnableSmoothedPath,
 				Granularity = line.Granularity,
 				LineWidth = line.LineWidth,
-				Points = line.Points.Select(p => new Point((float)p.X, (float)p.Y)).ToObservableCollection()
+				Points = line.Points.ToObservableCollection()
 			});
 		}
 	}
@@ -189,13 +181,13 @@ public static partial class MauiDrawingViewExtensions
 
 		foreach (var line in lines)
 		{
-			drawingView.Lines.Add(new DrawingLine()
+			drawingView.Lines.Add(new DrawingLine
 			{
-				LineColor = line.LineColor.ToColor() ?? Colors.Transparent,
+				LineColor = line.LineColor,
 				EnableSmoothedPath = line.EnableSmoothedPath,
 				Granularity = line.Granularity,
 				LineWidth = line.LineWidth,
-				Points = line.Points.Select(p => new Microsoft.Maui.Graphics.Point(p.X, p.Y)).ToObservableCollection()
+				Points = line.Points.ToObservableCollection()
 			});
 		}
 	}

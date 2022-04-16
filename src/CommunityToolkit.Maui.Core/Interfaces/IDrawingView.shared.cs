@@ -48,10 +48,10 @@ public interface IDrawingView : IView
 	/// <param name="imageSizeWidth">Desired width of the image that is returned.</param>
 	/// <param name="imageSizeHeight">Desired height of the image that is returned.</param>
 	/// <returns><see cref="Task{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
-	Task<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight);
+	ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight);
 
 	/// <summary>
 	/// Allows to draw on the <see cref="IDrawingView"/>.
 	/// </summary>
-	Action<ICanvas, RectF>? Draw { get; }
+	Action<ICanvas, RectF>? DrawAction { get; }
 }

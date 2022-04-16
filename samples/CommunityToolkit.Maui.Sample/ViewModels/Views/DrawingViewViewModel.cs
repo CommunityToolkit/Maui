@@ -45,7 +45,7 @@ public partial class DrawingViewViewModel : BaseViewModel
 	public ICommand ClearLinesCommand { get; }
 	public ICommand AddNewLineCommand { get; }
 
-	public IEnumerable<Point> GeneratePoints(int count, double viewWidth, double viewHeight)
+	public IEnumerable<PointF> GeneratePoints(int count, double viewWidth, double viewHeight)
 	{
 		int maxWidthInt, maxHeightInt;
 
@@ -66,7 +66,7 @@ public partial class DrawingViewViewModel : BaseViewModel
 
 		for (var i = 0; i < count; i++)
 		{
-			yield return new Point(Random.Shared.Next(1, maxWidthInt), Random.Shared.Next(1, maxHeightInt));
+			yield return new PointF(Random.Shared.Next(1, maxWidthInt), Random.Shared.Next(1, maxHeightInt));
 		}
 	}
 }

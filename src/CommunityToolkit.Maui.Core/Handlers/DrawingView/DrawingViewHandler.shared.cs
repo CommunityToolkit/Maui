@@ -1,9 +1,9 @@
 ﻿using System.Collections.Specialized;
 using CommunityToolkit.Maui.Core.Extensions;
+using CommunityToolkit.Maui.Core.Views;
 using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Platform;
 
-namespace CommunityToolkit.Maui.Core.Views;
+namespace CommunityToolkit.Maui.Core.Handlers;
 
 /// <summary>
 /// DrawingView handler
@@ -20,7 +20,7 @@ public partial class DrawingViewHandler
 		[nameof(IDrawingView.LineColor)] = MapLineColor,
 		[nameof(IDrawingView.LineWidth)] = MapLineWidth,
 		[nameof(IDrawingView.MultiLineMode)] = MapMultiLineMode,
-		[nameof(IDrawingView.Draw)] = MapDraw
+		[nameof(IDrawingView.DrawAction)] = MapDrawAction
 	};
 
 	/// <summary>
@@ -41,7 +41,7 @@ public partial class DrawingViewHandler
 	}
 }
 
-#if ANDROID || IOS || MACCATALYST || WINDOWS
+#if __MOBILE__ || WINDOWS
 public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingView>
 {
 	/// <summary>
@@ -95,13 +95,13 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	}
 
 	/// <summary>
-	/// Action that's triggered when the DrawingView <see cref="IDrawingView.Draw"/> property changes.
+	/// Action that's triggered when the DrawingView <see cref="IDrawingView.DrawAction"/> property changes.
 	/// </summary>
 	/// <param name="handler">An instance of <see cref="DrawingViewHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
-	public static void MapDraw(DrawingViewHandler handler, IDrawingView view)
+	public static void MapDrawAction(DrawingViewHandler handler, IDrawingView view)
 	{
-		handler.PlatformView.SetDrawAction(view.Draw);
+		handler.PlatformView.SetDrawAction(view.DrawAction);
 	}
 	
 	/// <inheritdoc />
@@ -136,11 +136,11 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	{
 		VirtualView.DrawingLineCompleted(new DrawingLine
 		{
-			LineColor = e.Line.LineColor.ToColor() ?? Colors.Black,
+			LineColor = e.Line.LineColor,
 			EnableSmoothedPath = e.Line.EnableSmoothedPath,
 			Granularity = e.Line.Granularity,
 			LineWidth = e.Line.LineWidth,
-			Points = e.Line.Points.Select(x => new Point(x.X, x.Y)).ToObservableCollection()
+			Points = e.Line.Points.ToObservableCollection()
 		});
 	}
 
@@ -214,7 +214,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, object>
 	/// </summary>
 	/// <param name="handler">An instance of <see cref="DrawingViewHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
-	public static void MapDraw(DrawingViewHandler handler, IDrawingView view)
+	public static void MapDrawAction(DrawingViewHandler handler, IDrawingView view)
 	{
 	}
 }

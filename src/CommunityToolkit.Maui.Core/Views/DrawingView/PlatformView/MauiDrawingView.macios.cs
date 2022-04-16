@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
-using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Platform;
 using UIKit;
 
@@ -9,11 +9,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MauiDrawingView : PlatformTouchGraphicsView
 {
 	readonly List<UIScrollView> scrollViewParents = new();
-
-	/// <summary>
-	/// Line color
-	/// </summary>
-	public UIColor LineColor { get; set; } = UIColor.Black;
 	
 	/// <inheritdoc />
 	public override void TouchesBegan(NSSet touches, UIEvent? evt)
@@ -22,28 +17,8 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 		//DetectScrollViews();
 		//SetParentTouches(false);
 
-		Lines.CollectionChanged -= OnLinesCollectionChanged;
-
-		if (!MultiLineMode)
-		{
-			Lines.Clear();
-			currentPath = new();
-		}
-
 		var touch = (UITouch)touches.AnyObject;
-		previousPoint = touch.PreviousLocationInView(this);
-		currentPath.MoveTo((float)previousPoint.X, (float)previousPoint.Y);
-		currentLine = new MauiDrawingLine
-		{
-			Points = new ObservableCollection<CGPoint>()
-			{
-				new (previousPoint.X.Value, previousPoint.Y.Value)
-			}
-		};
-
-		Invalidate();
-
-		Lines.CollectionChanged += OnLinesCollectionChanged;
+		OnStart(touch.PreviousLocationInView(this).AsPointF());
 	}
 
 	/// <inheritdoc />
@@ -52,29 +27,14 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 		base.TouchesMoved(touches, evt);
 		var touch = (UITouch)touches.AnyObject;
 		var currentPoint = touch.LocationInView(this);
-
-		AddPointToPath(currentPoint);
-		Invalidate();
-
-		currentLine?.Points.Add(currentPoint.ToPoint());
+		OnMoving(currentPoint.AsPointF());
 	}
 
 	/// <inheritdoc />
 	public override void TouchesEnded(NSSet touches, UIEvent? evt)
 	{
 		base.TouchesEnded(touches, evt);
-		if (currentLine is not null)
-		{
-			Lines.Add(currentLine);
-			OnDrawingLineCompleted(currentLine);
-		}
-
-		if (ClearOnFinish)
-		{
-			Lines.Clear();
-		}
-
-		currentLine = null;
+		OnFinish();
 		//SetParentTouches(true);
 	}
 
@@ -82,8 +42,7 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 	public override void TouchesCancelled(NSSet touches, UIEvent? evt)
 	{
 		base.TouchesCancelled(touches, evt);
-		currentLine = null;
-		InvalidateDrawable();
+		OnCancel();
 		//SetParentTouches(true);
 	}
 

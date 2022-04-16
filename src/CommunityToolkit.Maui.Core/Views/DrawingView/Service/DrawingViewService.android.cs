@@ -3,7 +3,7 @@ using Microsoft.Maui.Platform;
 using Color = Microsoft.Maui.Graphics.Color;
 using Math = System.Math;
 using Paint = Android.Graphics.Paint;
-using Point = Microsoft.Maui.Graphics.Point;
+using PointF = Microsoft.Maui.Graphics.PointF;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -19,7 +19,7 @@ public static partial class DrawingViewService
 	/// <param name="imageSize">Image size</param>
 	/// <param name="backgroundColor">Image background color</param>
 	/// <returns>Image stream</returns>
-	public static Task<Stream> GetImageStream(in IList<DrawingLine> lines,
+	public static ValueTask<Stream> GetImageStream(in IList<DrawingLine> lines,
 										in Size imageSize,
 										in Color backgroundColor)
 	{
@@ -27,7 +27,7 @@ public static partial class DrawingViewService
 		var image = GetBitmapForLines(lines, backgroundColor);
 		if (image is null)
 		{
-			return Task.FromResult(Stream.Null);
+			return ValueTask.FromResult(Stream.Null);
 		}
 
 		using var resizedImage = GetMaximumBitmap(image, (float)imageSize.Width, (float)imageSize.Height);
@@ -38,11 +38,11 @@ public static partial class DrawingViewService
 
 		if (!compressResult)
 		{
-			return Task.FromResult(Stream.Null);
+			return ValueTask.FromResult(Stream.Null);
 		}
 
 		stream.Position = 0;
-		return Task.FromResult<Stream>(stream);
+		return ValueTask.FromResult<Stream>(stream);
 	}
 
 	/// <summary>
@@ -54,7 +54,7 @@ public static partial class DrawingViewService
 	/// <param name="strokeColor">Line color</param>
 	/// <param name="backgroundColor">Image background color</param>
 	/// <returns>Image stream</returns>
-	public static Task<Stream> GetImageStream(in IList<Point> points,
+	public static ValueTask<Stream> GetImageStream(in IList<PointF> points,
 										in Size imageSize,
 										in float lineWidth,
 										in Color strokeColor,
@@ -62,13 +62,13 @@ public static partial class DrawingViewService
 	{
 		if (points.Count < 2)
 		{
-			return Task.FromResult(Stream.Null);
+			return ValueTask.FromResult(Stream.Null);
 		}
 
 		var image = GetBitmapForPoints(points, lineWidth, strokeColor, backgroundColor);
 		if (image is null)
 		{
-			return Task.FromResult(Stream.Null);
+			return ValueTask.FromResult(Stream.Null);
 		}
 
 		using var resizedImage = GetMaximumBitmap(image, (float)imageSize.Width, (float)imageSize.Height);
@@ -79,14 +79,14 @@ public static partial class DrawingViewService
 
 		if (!compressResult)
 		{
-			return Task.FromResult(Stream.Null);
+			return ValueTask.FromResult(Stream.Null);
 		}
 
 		stream.Position = 0;
-		return Task.FromResult<Stream>(stream);
+		return ValueTask.FromResult<Stream>(stream);
 	}
 
-	static Bitmap? GetBitmapForPoints(ICollection<Point> points,
+	static Bitmap? GetBitmapForPoints(ICollection<PointF> points,
 		float lineWidth,
 		Color strokeColor,
 		Color backgroundColor)

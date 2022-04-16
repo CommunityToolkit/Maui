@@ -1,9 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Maui.Core.Extensions;
 using Microsoft.Maui.Platform;
-#if ANDROID
-using PlatformPoint = Android.Graphics.PointF;
-#elif IOS || MACCATALYST
+#if IOS || MACCATALYST
 using PlatformPoint = CoreGraphics.CGPoint;
 #elif WINDOWS
 using Microsoft.Maui.Graphics.Win2D;
@@ -37,10 +35,16 @@ public partial class MauiDrawingView
 	/// Enable or disable multiline mode
 	/// </summary>
 	public bool MultiLineMode { get; set; }
+
 	/// <summary>
 	/// Clear drawing on finish
 	/// </summary>
 	public bool ClearOnFinish { get; set; }
+	
+	/// <summary>
+	/// Line color
+	/// </summary>
+	public Color LineColor { get; set; } = Colors.Black;
 
 	/// <summary>
 	/// Line width
@@ -55,11 +59,11 @@ public partial class MauiDrawingView
 	/// <summary>
 	/// Used to draw any shape on the canvas
 	/// </summary>
-	public Action<ICanvas, RectF>? Draw;
+	public Action<ICanvas, RectF>? DrawAction;
 
 #if __MOBILE__ || WINDOWS
 
-	PlatformPoint previousPoint;
+	PointF previousPoint;
 	PathF currentPath = new();
 	MauiDrawingLine? currentLine;
 
@@ -76,6 +80,75 @@ public partial class MauiDrawingView
 		Lines.CollectionChanged += OnLinesCollectionChanged;
 	}
 
+
+	bool isDrawing;
+	void OnStart(PointF point)
+	{
+		isDrawing = true;
+
+		Lines.CollectionChanged -= OnLinesCollectionChanged;
+
+		if (!MultiLineMode)
+		{
+			Lines.Clear();
+			ClearPath();
+		}
+
+		previousPoint = point;
+		currentPath.MoveTo(previousPoint.X, previousPoint.Y);
+		currentLine = new MauiDrawingLine
+		{
+			Points = new ObservableCollection<PointF>
+			{
+				new(previousPoint.X, previousPoint.Y)
+			},
+			LineColor = LineColor,
+			LineWidth = LineWidth
+		};
+
+		Redraw();
+
+		Lines.CollectionChanged += OnLinesCollectionChanged;
+	}
+
+	void OnMoving(PointF currentPoint)
+	{
+		if (!isDrawing)
+		{
+			return;
+		}
+		
+		AddPointToPath(currentPath, currentPoint);
+		Redraw();
+		currentLine?.Points.Add(currentPoint);
+	}
+
+	void OnFinish()
+	{
+		if (currentLine is not null)
+		{
+			Lines.Add(currentLine);
+			OnDrawingLineCompleted(currentLine);
+		}
+
+		if (ClearOnFinish)
+		{
+			Lines.Clear();
+			ClearPath();
+		}
+
+		currentLine = null;
+		isDrawing = false;
+	}
+
+	void OnCancel()
+	{
+		currentLine = null;
+		ClearPath();
+		Redraw();
+		isDrawing = false;
+	}
+
 	/// <summary>
 	/// Clean up resources
 	/// </summary>
@@ -88,35 +161,11 @@ public partial class MauiDrawingView
 	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) =>
 		LoadPoints();
 
-	void AddPointToPath(PlatformPoint currentPoint)
-	{
-		var curPoint = new PointF((float)currentPoint.X, (float)currentPoint.Y);
-		currentPath.LineTo(curPoint);
-	}
+	void AddPointToPath(PathF path, PointF currentPoint) => path.LineTo(currentPoint);
 
 	void LoadPoints()
 	{
 		ClearPath();
-		foreach (var line in Lines)
-		{
-			var newPoints = line.EnableSmoothedPath
-				? line.Points.SmoothedPathWithGranularity(line.Granularity)
-				: line.Points;
-#if ANDROID
-			newPoints = NormalizePoints(newPoints);
-#endif
-			var stylusPoints = newPoints.Select(point => new PlatformPoint(point.X, point.Y)).ToList();
-			if (stylusPoints.Count > 0)
-			{
-				previousPoint = stylusPoints[0];
-				currentPath.MoveTo((float)previousPoint.X, (float)previousPoint.Y);
-				foreach (var point in stylusPoints)
-				{
-					AddPointToPath(point);
-				}
-			}
-		}
-
 		Redraw();
 	}
 
@@ -141,10 +190,41 @@ public partial class MauiDrawingView
 
 		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
-			drawingView.Draw?.Invoke(canvas, dirtyRect);
-			canvas.StrokeColor = drawingView.LineColor.ToColor();
-			canvas.StrokeSize = drawingView.LineWidth;
+			drawingView.DrawAction?.Invoke(canvas, dirtyRect);
+			DrawCurrentLines(canvas);
+			SetStroke(canvas, drawingView.LineWidth, drawingView.LineColor);
 			canvas.DrawPath(drawingView.currentPath);
+		}
+
+		void SetStroke(ICanvas canvas, float lineWidth, Color lineColor)
+		{
+			canvas.StrokeColor = lineColor;
+			canvas.StrokeSize = lineWidth;
+		}
+
+		void DrawCurrentLines(ICanvas canvas)
+		{
+			foreach (var line in drawingView.Lines)
+			{
+				var path = new PathF();
+				var newPoints = line.EnableSmoothedPath
+					? line.Points.SmoothedPathWithGranularity(line.Granularity)
+					: line.Points;
+#if ANDROID
+				newPoints = drawingView.NormalizePoints(newPoints);
+#endif
+				if (newPoints.Count > 0)
+				{
+					path.MoveTo(newPoints[0].X, newPoints[0].Y);
+					foreach (var point in newPoints)
+					{
+						drawingView.AddPointToPath(path, point);
+					}
+				}
+
+				SetStroke(canvas, line.LineWidth, line.LineColor);
+				canvas.DrawPath(path);
+			}
 		}
 	}
 #endif

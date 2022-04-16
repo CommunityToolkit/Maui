@@ -1,0 +1,202 @@
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Views;
+using CommunityToolkit.Maui.UnitTests.Mocks;
+using FluentAssertions;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace CommunityToolkit.Maui.UnitTests.Views.DrawingView;
+
+public class DrawingViewTests : BaseHandlerTest
+{
+	readonly ITestOutputHelper testOutputHelper;
+	readonly Maui.Views.DrawingView drawingView = new();
+
+	public DrawingViewTests(ITestOutputHelper testOutputHelper)
+	{
+		this.testOutputHelper = testOutputHelper;
+	}
+
+	[Fact]
+	public void DrawingViewShouldBeAssignedToIDrawingView()
+	{
+		new Maui.Views.DrawingView().Should().BeAssignableTo<IDrawingView>();
+	}
+
+	[Fact]
+	public void GetRequiredServiceThrowsOnNoContext()
+	{
+		var handlerStub = new MockDrawingViewHandler();
+
+		(handlerStub as IElementHandler).MauiContext.Should().BeNull();
+
+		var ex = Assert.Throws<InvalidOperationException>(() => handlerStub.GetRequiredService<IDrawingView>());
+
+		ex.Message.Should().Be("Unable to find the context. The MauiContext property should have been set by the host.");
+	}
+
+	[Fact]
+	public void OnLinesCollectionChangedHandlerIsCalled()
+	{
+		var drawingViewHandler = CreateElementHandler<MockDrawingViewHandler>(drawingView);
+		drawingView.Handler.Should().NotBeNull();
+
+		drawingView.Lines.Add(new DrawingLine());
+		drawingViewHandler.Lines.Count.Should().Be(1);
+
+		drawingView.Lines.Add(new DrawingLine());
+		drawingViewHandler.Lines.Count.Should().Be(2);
+	}
+
+	[Fact]
+	public void LineWidthMapperIsCalled()
+	{
+		var drawingViewHandler = CreateElementHandler<MockDrawingViewHandler>(drawingView);
+		drawingView.Handler.Should().NotBeNull();
+
+		drawingViewHandler.MapLineWidthCount.Should().Be(1);
+
+		drawingView.LineWidth = 1;
+		drawingViewHandler.MapLineWidthCount.Should().Be(2);
+	}
+
+	[Fact]
+	public void ClearOnFinishMapperIsCalled()
+	{
+		var drawingViewHandler = CreateElementHandler<MockDrawingViewHandler>(drawingView);
+		drawingView.Handler.Should().NotBeNull();
+
+		drawingViewHandler.MapClearOnFinishCount.Should().Be(1);
+
+		drawingView.ClearOnFinish = true;
+		drawingViewHandler.MapClearOnFinishCount.Should().Be(2);
+	}
+
+	[Fact]
+	public void LineColorMapperIsCalled()
+	{
+		var drawingViewHandler = CreateElementHandler<MockDrawingViewHandler>(drawingView);
+		drawingView.Handler.Should().NotBeNull();
+
+		drawingViewHandler.MapLineColorCount.Should().Be(1);
+
+		drawingView.LineColor = Colors.Blue;
+		drawingViewHandler.MapLineColorCount.Should().Be(2);
+	}
+
+	[Fact]
+	public void MultiLineModeMapperIsCalled()
+	{
+		var drawingViewHandler = CreateElementHandler<MockDrawingViewHandler>(drawingView);
+		drawingView.Handler.Should().NotBeNull();
+
+		drawingViewHandler.MapMultiLineModeCount.Should().Be(1);
+
+		drawingView.MultiLineMode = true;
+		drawingViewHandler.MapMultiLineModeCount.Should().Be(2);
+	}
+
+
+	[Fact]
+	public void DrawMapperIsCalled()
+	{
+		var drawingViewHandler = CreateElementHandler<MockDrawingViewHandler>(drawingView);
+		drawingView.Handler.Should().NotBeNull();
+
+		drawingViewHandler.MapDrawCount.Should().Be(1);
+
+		drawingView.DrawAction = (_, _) => { testOutputHelper.WriteLine("DrawActionCalled"); };
+		drawingViewHandler.MapDrawCount.Should().Be(2);
+	}
+
+	[Fact]
+	public void CheckDefaultValues()
+	{
+		var expectedDefaultValue = new Maui.Views.DrawingView
+		{
+			LineColor = Colors.Black,
+			LineWidth = 5f,
+			MultiLineMode = false,
+			ClearOnFinish = false,
+			Lines = new ObservableCollection<DrawingLine>(),
+			DrawAction = null
+		};
+
+		drawingView.Should().BeEquivalentTo(expectedDefaultValue, config => config.Excluding(ctx => ctx.Id));
+	}
+
+	[Fact]
+	public async Task GetImageStreamReturnsNullStream()
+	{
+		var stream = await drawingView.GetImageStream(10, 10);
+		stream.Should().BeSameAs(Stream.Null);
+	}
+
+	[Fact]
+	public async Task GetImageStreamStaticReturnsNullStream()
+	{
+		var stream = await Maui.Views.DrawingView.GetImageStream(new[] { new DrawingLine() }, Size.Zero, Colors.Blue);
+		stream.Should().BeSameAs(Stream.Null);
+	}
+
+	[Fact]
+	public void DrawingLineCompletedLastDrawingLinePassedWithCommand()
+	{
+		var expectedDrawingLine = new DrawingLine
+		{
+			LineColor = Colors.Black,
+			LineWidth = 5f,
+			EnableSmoothedPath = false,
+			Granularity = 5,
+			Points = new ObservableCollection<PointF>(new[] { new PointF(10, 10) })
+		};
+
+		DrawingLine? currentLine = null;
+		drawingView.DrawingLineCompletedCommand = new Command<DrawingLine>(line => currentLine = line);
+		((IDrawingView)drawingView).DrawingLineCompleted(expectedDrawingLine);
+
+		currentLine.Should().BeEquivalentTo(expectedDrawingLine);
+	}
+
+	[Fact]
+	public void DrawingLineCompleted_CommandIsNull_LastDrawingLineNotPassed()
+	{
+		DrawingLine? currentLine = null;
+		drawingView.DrawingLineCompletedCommand = null;
+		((IDrawingView)drawingView).DrawingLineCompleted(new DrawingLine());
+
+		currentLine.Should().BeNull();
+	}
+
+	[Fact]
+	public void DrawingLineCompleted_CommandIsNotAllowedExecute_LastDrawingLineNotPassed()
+	{
+		DrawingLine? currentLine = null;
+		drawingView.DrawingLineCompletedCommand = new Command<DrawingLine>(line => currentLine = line, _ => false);
+		((IDrawingView)drawingView).DrawingLineCompleted(new DrawingLine());
+
+		currentLine.Should().BeNull();
+	}
+
+	[Fact]
+	public void DrawingLineCompletedLastDrawingLinePassedWithEvent()
+	{
+		var expectedDrawingLine = new DrawingLine
+		{
+			LineColor = Colors.Black,
+			LineWidth = 5f,
+			EnableSmoothedPath = false,
+			Granularity = 5,
+			Points = new ObservableCollection<PointF>(new[] { new PointF(10, 10) })
+		};
+
+		DrawingLine? currentLine = null;
+		var action = new EventHandler<DrawingLineCompletedEventArgs>((_, e) => { currentLine = e.LastDrawingLine; });
+		drawingView.DrawingLineCompleted += action;
+		((IDrawingView)drawingView).DrawingLineCompleted(expectedDrawingLine);
+		drawingView.DrawingLineCompleted -= action;
+		
+		currentLine.Should().BeEquivalentTo(expectedDrawingLine);
+	}
+}

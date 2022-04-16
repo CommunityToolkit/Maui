@@ -7,12 +7,13 @@ namespace CommunityToolkit.Maui.UnitTests.Mocks;
 public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>
 {
 
-	public static PropertyMapper<IDrawingView, MockDrawingViewHandler> DrawingViewPropertyMapper = new(ViewMapper)
+	public static readonly PropertyMapper<IDrawingView, MockDrawingViewHandler> DrawingViewPropertyMapper = new(ViewMapper)
 	{
 		[nameof(IDrawingView.LineWidth)] = MapLineWidth,
 		[nameof(IDrawingView.LineColor)] = MapLineColor,
 		[nameof(IDrawingView.ClearOnFinish)] = MapClearOnFinish,
-		[nameof(IDrawingView.MultiLineMode)] = MapMultiLineMode
+		[nameof(IDrawingView.MultiLineMode)] = MapMultiLineMode,
+		[nameof(IDrawingView.DrawAction)] = MapDrawAction
 	};
 
 	public MockDrawingViewHandler() : base(DrawingViewPropertyMapper)
@@ -43,6 +44,7 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>
 	public int MapLineColorCount { get; private set; }
 	public int MapClearOnFinishCount { get; private set; }
 	public int MapMultiLineModeCount { get; private set; }
+	public int MapDrawCount { get; private set; }
 	public List<MauiDrawingLine> Lines { get; } = new();
 
 	static void MapLineWidth(MockDrawingViewHandler arg1, IDrawingView arg2)
@@ -63,6 +65,11 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>
 	static void MapMultiLineMode(MockDrawingViewHandler arg1, IDrawingView arg2)
 	{
 		arg1.MapMultiLineModeCount++;
+	}
+
+	static void MapDrawAction(MockDrawingViewHandler arg1, IDrawingView arg2)
+	{
+		arg1.MapDrawCount++;
 	}
 
 	protected override object CreatePlatformView()
