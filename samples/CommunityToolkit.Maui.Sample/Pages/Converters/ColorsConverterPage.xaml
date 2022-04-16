@@ -18,7 +18,7 @@
             <mct:ColorToCmykaStringConverter x:Key="ColorToCmykaStringConverter" />
             <mct:ColorToHslStringConverter x:Key="ColorToHslStringConverter" />
             <mct:ColorToHslaStringConverter x:Key="ColorToHslaStringConverter" />
-            <mct:ColorToPercentKeyConverter x:Key="ColorToPercentKeyConverter" />
+            <mct:ColorToPercentBlackKeyConverter x:Key="ColorToPercentBlackKeyConverter" />
             <mct:ColorToByteAlphaConverter x:Key="ColorToByteAlphaConverter" />
             <mct:ColorToByteRedConverter x:Key="ColorToByteRedConverter" />
             <mct:ColorToByteGreenConverter x:Key="ColorToByteGreenConverter" />
@@ -59,7 +59,7 @@
 
                 <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToHslaStringConverter}, StringFormat='The HSLa value of selected color is: {0}'}" />
 
-                <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToPercentKeyConverter}, StringFormat='The Black key value of selected color is: {0}'}"/>
+                <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToPercentBlackKeyConverter}, StringFormat='The Black key value of selected color is: {0}'}"/>
 
                 <Label Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToByteAlphaConverter}, StringFormat='The byte alpha value of selected color is: {0}'}" />
 
