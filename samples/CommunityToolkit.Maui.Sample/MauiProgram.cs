@@ -66,6 +66,7 @@ public static class MauiProgram
 
 		// Add Converters Pages
 		services.AddTransient<BoolToObjectConverterPage>();
+		services.AddTransient<StateToBooleanConverterPage>();
 		services.AddTransient<ByteArrayToImageSourceConverterPage>();
 		services.AddTransient<ColorsConverterPage>();
 		services.AddTransient<CompareConverterPage>();
@@ -164,6 +165,7 @@ public static class MauiProgram
 		services.AddTransient<MultiConverterViewModel>();
 		services.AddTransient<IsNotEqualConverterViewModel>();
 		services.AddTransient<SelectedItemEventArgsConverterViewModel>();
+		services.AddTransient<StateToBooleanConverterViewModel>();
 		services.AddTransient<StringToListConverterViewModel>();
 		services.AddTransient<TextCaseConverterViewModel>();
 		services.AddTransient<VariableMultiValueConverterViewModel>();

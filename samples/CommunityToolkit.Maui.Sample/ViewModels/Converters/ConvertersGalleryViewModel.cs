@@ -90,7 +90,10 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
 				"A converter that compares two IComparable objects and returns a boolean value or one of two specified objects."),
 
 			SectionModel.Create<ByteArrayToImageSourceConverterViewModel>(nameof(ByteArrayToImageSourceConverter),
-				"A converter that allows the user to convert an incoming value from byte array and returns an object of type ImageSource. This object can then be used as the Source of an Image control..")
+				"A converter that allows the user to convert an incoming value from byte array and returns an object of type ImageSource. This object can then be used as the Source of an Image control.."),
+
+			SectionModel.Create<StateToBooleanConverterViewModel>(nameof(StateToBooleanConverter),
+				"A converter that allows the user to convert a LayoutState enum to a boolean value."),
 		})
 	{
 	}

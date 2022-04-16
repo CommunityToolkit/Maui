@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage
+	x:Class="CommunityToolkit.Maui.Sample.StateToBooleanConverterPage"
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+	xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+	xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
+	Title="StateToBooleanConverterPage"
+	x:DataType="vm:StateToBooleanConverterViewModel"
+	x:TypeArguments="vm:StateToBooleanConverterViewModel">
+
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<mct:StateToBooleanConverter x:Key="StateToBooleanConverter" StateToCompare="Success" />
+		</ResourceDictionary>
+	</ContentPage.Resources>
+
+	<VerticalStackLayout VerticalOptions="Center">
+		<Label
+			HorizontalOptions="Center"
+			IsVisible="{Binding LayoutState, Converter={StaticResource StateToBooleanConverter}}"
+			Text="The state is Success!"
+			VerticalOptions="Center" />
+		<Button Command="{Binding ChangeLayoutCommand}" Text="Change state" />
+	</VerticalStackLayout>
+</pages:BasePage>
