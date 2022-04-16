@@ -20,7 +20,7 @@ public static partial class DrawingViewService
 	/// <returns>Image stream</returns>
 	public static async ValueTask<Stream> GetImageStream(IList<DrawingLine> lines, Size imageSize, Color? backgroundColor)
 	{
-		var image = GetImageInternal(lines, backgroundColor);
+		var image = GetImageInternal(lines, imageSize, backgroundColor);
 		if (image == null)
 		{
 			return Stream.Null;
@@ -59,7 +59,7 @@ public static partial class DrawingViewService
 			return Stream.Null;
 		}
 
-		var image = GetImageInternal(points, lineWidth, strokeColor, backgroundColor);
+		var image = GetImageInternal(points, imageSize, lineWidth, strokeColor, backgroundColor);
 		if (image == null)
 		{
 			return Stream.Null;
@@ -78,9 +78,11 @@ public static partial class DrawingViewService
 	}
 
 	static CanvasRenderTarget? GetImageInternal(ICollection<PointF> points,
+		Size size,
 		float lineWidth,
 		Color lineColor,
-		Color? backgroundColor)
+		Color? backgroundColor,
+		bool scale = false)
 	{
 		const int minSize = 1;
 
@@ -99,7 +101,7 @@ public static partial class DrawingViewService
 		}
 
 		var device = CanvasDevice.GetSharedDevice();
-		var offscreen = new CanvasRenderTarget(device, (int)drawingWidth, (int)drawingHeight, 96);
+		var offscreen = new CanvasRenderTarget(device, scale ? (int)size.Width : drawingWidth, scale ? (int)size.Height : drawingHeight, 96);
 
 		using var session = offscreen.CreateDrawingSession();
 		session.Clear(backgroundColor?.ToWindowsColor() ?? Defaults.BackgroundColor.ToWindowsColor());
@@ -112,15 +114,14 @@ public static partial class DrawingViewService
 		strokeBuilder.SetDefaultDrawingAttributes(inkDrawingAttributes);
 		var strokes = new[]
 		{
-				strokeBuilder.CreateStroke(
-					points.Select(p => new Windows.Foundation.Point(p.X - minPointX, p.Y - minPointY)))
+			strokeBuilder.CreateStroke(points.Select(p => new Windows.Foundation.Point((p.X - minPointX)*offscreen.Size.Width/drawingWidth, (p.Y - minPointY)*offscreen.Size.Height/drawingHeight)))
 		};
 		session.DrawInk(strokes);
 
 		return offscreen;
 	}
 
-	static CanvasRenderTarget? GetImageInternal(IList<DrawingLine> lines, Color? backgroundColor)
+	static CanvasRenderTarget? GetImageInternal(IList<DrawingLine> lines, Size size, Color? backgroundColor, bool scale = false)
 	{
 		const int minSize = 1;
 
@@ -142,7 +143,7 @@ public static partial class DrawingViewService
 
 
 		var device = CanvasDevice.GetSharedDevice();
-		var offscreen = new CanvasRenderTarget(device, (int)drawingWidth, (int)drawingHeight, 96);
+		var offscreen = new CanvasRenderTarget(device, scale ? (int)size.Width : drawingWidth, scale ? (int)size.Height : drawingHeight, 96);
 
 		using var session = offscreen.CreateDrawingSession();
 		session.Clear(backgroundColor?.ToWindowsColor() ?? Defaults.BackgroundColor.ToWindowsColor());
@@ -158,7 +159,7 @@ public static partial class DrawingViewService
 			strokeBuilder.SetDefaultDrawingAttributes(inkDrawingAttributes);
 			var strokes = new[]
 			{
-				strokeBuilder.CreateStroke(line.Points.Select(p => new Windows.Foundation.Point(p.X - minPointX, p.Y - minPointY)))
+				strokeBuilder.CreateStroke(line.Points.Select(p => new Windows.Foundation.Point((p.X - minPointX)*offscreen.Size.Width/drawingWidth, (p.Y - minPointY)*offscreen.Size.Height/drawingHeight)))
 			};
 
 			session.DrawInk(strokes);
@@ -179,7 +180,7 @@ public static partial class DrawingViewService
 				session.DrawLine(
 					new Vector2((float)currentPoint.X, (float)currentPoint.Y),
 					new Vector2((float)nextPoint.X, (float)nextPoint.Y),
-					stroke.DrawingAttributes.Color);
+					stroke.DrawingAttributes.Color, (float)stroke.DrawingAttributes.Size.Width);
 			}
 		}
 	}
