@@ -23,14 +23,16 @@ public partial class DrawingViewHandler
 		[nameof(IDrawingView.DrawAction)] = MapDrawAction,
 		[nameof(IDrawingView.Background)] = MapDrawingViewBackground,
 	};
-
+public static CommandMapper<IDrawingView, DrawingViewHandler> DrawingViewCommandMapper = new(ViewCommandMapper)
+		{
+		};
 	/// <summary>
 	/// Initialize new instance of <see cref="DrawingViewHandler"/>.
 	/// </summary>
 	/// <param name="mapper">Custom instance of <see cref="PropertyMapper"/>, if it's null the <see cref="DrawingViewMapper"/> will be used</param>
 	/// <param name="commandMapper">Custom instance of <see cref="CommandMapper"/></param>
 	public DrawingViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
-		: base(mapper ?? DrawingViewMapper, commandMapper)
+		: base(mapper ?? DrawingViewMapper, commandMapper ?? DrawingViewCommandMapper)
 	{
 	}
 

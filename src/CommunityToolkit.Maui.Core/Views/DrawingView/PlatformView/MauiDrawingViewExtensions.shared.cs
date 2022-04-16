@@ -13,15 +13,15 @@ public static class MauiDrawingViewExtensions
 	/// </summary>
 	public static ObservableCollection<PointF> SmoothedPathWithGranularity(this IEnumerable<PointF> currentPoints, int granularity)
 	{
-		var currentPointsCopy = new List<PointF>(currentPoints);
+		var currentPointsCopy = new ObservableCollection<PointF>(currentPoints);
 
 		// not enough points to smooth effectively, so return the original path and points.
 		if (currentPointsCopy.Count < granularity + 2)
 		{
-			return new(currentPointsCopy);
+			return currentPointsCopy;
 		}
 
-		var smoothedPoints = new List<PointF>();
+		var smoothedPoints = new ObservableCollection<PointF>();
 
 		// duplicate the first and last points as control points.
 		currentPointsCopy.Insert(0, currentPointsCopy[0]);
@@ -58,7 +58,7 @@ public static class MauiDrawingViewExtensions
 		var last = currentPointsCopy[^1];
 		smoothedPoints.Add(last);
 
-		return new(smoothedPoints);
+		return smoothedPoints;
 	}
 
 	static Point GetIntermediatePoint(PointF p0, PointF p1, PointF p2, PointF p3, in float t, in float tt, in float ttt) => new()

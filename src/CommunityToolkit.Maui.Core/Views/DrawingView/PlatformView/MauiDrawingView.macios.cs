@@ -57,9 +57,9 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 
 		while (parent is not null)
 		{
-			if (parent.GetType() == typeof(UIScrollView))
+                        if (parent is UIScrollView scrollView)
 			{
-				scrollViewParents.Add((UIScrollView)parent);
+				scrollViewParents.Add(scrollView);
 			}
 
 			parent = parent.Superview;

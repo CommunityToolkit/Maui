@@ -21,7 +21,7 @@ public static partial class DrawingViewService
 	public static async ValueTask<Stream> GetImageStream(IList<DrawingLine> lines, Size imageSize, Color? backgroundColor)
 	{
 		var image = GetImageInternal(lines, imageSize, backgroundColor);
-		if (image == null)
+		if (image is null)
 		{
 			return Stream.Null;
 		}
@@ -60,7 +60,7 @@ public static partial class DrawingViewService
 		}
 
 		var image = GetImageInternal(points, imageSize, lineWidth, strokeColor, backgroundColor);
-		if (image == null)
+		if (image is null)
 		{
 			return Stream.Null;
 		}

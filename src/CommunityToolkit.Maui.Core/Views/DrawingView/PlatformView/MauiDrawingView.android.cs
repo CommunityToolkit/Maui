@@ -65,7 +65,7 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 
 	ObservableCollection<PointF> NormalizePoints(IEnumerable<PointF> points)
 	{
-		var newPoints = new List<PointF>();
+		var newPoints = new ObservableCollection<PointF>();
 		foreach (var point in points)
 		{
 			var pointX = point.X;
@@ -93,6 +93,6 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 			newPoints.Add(new PointF(pointX, pointY));
 		}
 
-		return newPoints.ToObservableCollection();
+		return newPoints;
 	}
 }
