@@ -73,7 +73,7 @@
                              MultiLineMode="{Binding Source={x:Reference MultiLineMode}, Path=IsToggled}">
                 <mct:DrawingView.Background>
                     <LinearGradientBrush StartPoint="0,0"
-                                             EndPoint="1,1">
+                                             EndPoint="0,1">
                             <GradientStop Color="Blue"
                                           Offset="0"/>
                             <GradientStop Color="Yellow"

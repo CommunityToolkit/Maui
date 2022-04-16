@@ -14,8 +14,8 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 	public override void TouchesBegan(NSSet touches, UIEvent? evt)
 	{
 		base.TouchesBegan(touches, evt);
-		//DetectScrollViews();
-		//SetParentTouches(false);
+		DetectScrollViews();
+		SetParentTouches(false);
 
 		var touch = (UITouch)touches.AnyObject;
 		OnStart(touch.PreviousLocationInView(this).AsPointF());
@@ -35,7 +35,7 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 	{
 		base.TouchesEnded(touches, evt);
 		OnFinish();
-		//SetParentTouches(true);
+		SetParentTouches(true);
 	}
 
 	/// <inheritdoc />
@@ -43,7 +43,7 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 	{
 		base.TouchesCancelled(touches, evt);
 		OnCancel();
-		//SetParentTouches(true);
+		SetParentTouches(true);
 	}
 
 	void DetectScrollViews()
