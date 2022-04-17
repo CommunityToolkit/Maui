@@ -15,40 +15,43 @@
         </ResourceDictionary>
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
-        <VerticalStackLayout
+        <Grid
             Padding="10,10"
             HorizontalOptions="Fill"
-            Spacing="10"
+            RowDefinitions="Auto, Auto, Auto, Auto, Auto"
             VerticalOptions="Fill">
-            <Label Text="The IsNullConverter is a converter that allows users to convert an incoming object? to a bool. If the incoming object? is null, it will be converted to true. Any other incoming value will be converted to false." TextColor="{StaticResource NormalLabelTextColor}" />
-            <HorizontalStackLayout>
+            <Label
+                Grid.Row="0"
+                Text="The IsNullConverter is a converter that allows users to convert an incoming object? to a bool. If the incoming object? is null, it will be converted to true. Any other incoming value will be converted to false."
+                TextColor="{StaticResource NormalLabelTextColor}" />
+            <HorizontalStackLayout Grid.Row="1">
                 <Label Text="int? test:" TextColor="{StaticResource NormalLabelTextColor}" />
                 <Label
                     Padding="7,0,0,0"
                     Text="{Binding IntCheck, Converter={StaticResource IsNullConverter}}"
                     TextColor="{StaticResource NormalLabelTextColor}" />
             </HorizontalStackLayout>
-            <HorizontalStackLayout>
+            <HorizontalStackLayout Grid.Row="2">
                 <Label Text="List&lt;string&gt;? test:" TextColor="{StaticResource NormalLabelTextColor}" />
                 <Label
                     Padding="7,0,0,0"
                     Text="{Binding ListCheck, Converter={StaticResource IsNullConverter}}"
                     TextColor="{StaticResource NormalLabelTextColor}" />
             </HorizontalStackLayout>
-            <HorizontalStackLayout>
+            <HorizontalStackLayout Grid.Row="3">
                 <Label Text="string? test:" TextColor="{StaticResource NormalLabelTextColor}" />
                 <Label
                     Padding="7,0,0,0"
                     Text="{Binding StringCheck, Converter={StaticResource IsNullConverter}}"
                     TextColor="{StaticResource NormalLabelTextColor}" />
             </HorizontalStackLayout>
-            <HorizontalStackLayout>
+            <HorizontalStackLayout Grid.Row="4">
                 <Label Text="object? test:" TextColor="{StaticResource NormalLabelTextColor}" />
                 <Label
                     Padding="7,0,0,0"
                     Text="{Binding ObjectCheck, Converter={StaticResource IsNullConverter}}"
                     TextColor="{StaticResource NormalLabelTextColor}" />
             </HorizontalStackLayout>
-        </VerticalStackLayout>
+        </Grid>
     </pages:BasePage.Content>
 </pages:BasePage>
