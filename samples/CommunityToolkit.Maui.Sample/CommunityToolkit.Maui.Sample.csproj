@@ -56,12 +56,18 @@
   </ItemGroup>
   
   <ItemGroup>
+    <Compile Update="Pages\Converters\IsNullConverterPage.xaml.cs">
+      <DependentUpon>IsNullConverterPage.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Pages\Converters\IsNotNullConverterPage.xaml.cs">
       <DependentUpon>IsNotNullConverterPage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   
   <ItemGroup>
+    <MauiXaml Update="Pages\Converters\IsNullConverterPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
     <MauiXaml Update="Pages\Converters\IsNotNullConverterPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
