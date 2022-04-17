@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
@@ -119,7 +120,7 @@ public class DrawingViewTests : BaseHandlerTest
 			LineWidth = 5f,
 			MultiLineMode = false,
 			ClearOnFinish = false,
-			Lines = new ObservableCollection<DrawingLine>(),
+			Lines = new ObservableCollection<IDrawingLine>(),
 			DrawAction = null
 		};
 
@@ -141,6 +142,48 @@ public class DrawingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
+	public void DefaultDrawingLineAdapter_IDrawingLineIsDrawingLine()
+	{
+		IDrawingLine? currentLine = null;
+		var action = new EventHandler<DrawingLineCompletedEventArgs>((_, e) => { currentLine = e.LastDrawingLine; });
+		drawingView.DrawingLineCompleted += action;
+		drawingView.Lines.Add(new DrawingLine());
+		drawingView.DrawingLineCompleted -= action;
+
+		currentLine.Should().BeOfType<DrawingLine>();
+	}
+	
+	[Fact]
+	public void SetDefaultDrawingLineAdapter_IDrawingLineIsDrawingLine()
+	{
+		var drawingViewHandler = CreateElementHandler<MockDrawingViewHandler>(drawingView);
+		drawingViewHandler.SetDrawingLineAdapter(new DrawingLineAdapter());
+		
+		IDrawingLine? currentLine = null;
+		var action = new EventHandler<DrawingLineCompletedEventArgs>((_, e) => { currentLine = e.LastDrawingLine; });
+		drawingView.DrawingLineCompleted += action;
+		drawingView.Lines.Add(new DrawingLine());
+		drawingView.DrawingLineCompleted -= action;
+
+		currentLine.Should().BeOfType<DrawingLine>();
+	}
+
+	[Fact]
+	public void SetDrawingLineAdapter_IDrawingLineIsMockDrawingLine()
+	{
+		var drawingViewHandler = CreateElementHandler<MockDrawingViewHandler>(drawingView);
+		drawingViewHandler.SetDrawingLineAdapter(new MockDrawingLineAdapter());
+		
+		IDrawingLine? currentLine = null;
+		var action = new EventHandler<DrawingLineCompletedEventArgs>((_, e) => { currentLine = e.LastDrawingLine; });
+		drawingView.DrawingLineCompleted += action;
+		drawingView.Lines.Add(new DrawingLine());
+		drawingView.DrawingLineCompleted -= action;
+
+		currentLine.Should().BeOfType<MockDrawingLine>();
+	}
+	
+	[Fact]
 	public void DrawingLineCompletedLastDrawingLinePassedWithCommand()
 	{
 		var expectedDrawingLine = new DrawingLine
@@ -152,8 +195,8 @@ public class DrawingViewTests : BaseHandlerTest
 			Points = new ObservableCollection<PointF>(new[] { new PointF(10, 10) })
 		};
 
-		DrawingLine? currentLine = null;
-		drawingView.DrawingLineCompletedCommand = new Command<DrawingLine>(line => currentLine = line);
+		IDrawingLine? currentLine = null;
+		drawingView.DrawingLineCompletedCommand = new Command<IDrawingLine>(line => currentLine = line);
 		((IDrawingView)drawingView).DrawingLineCompleted(expectedDrawingLine);
 
 		currentLine.Should().BeEquivalentTo(expectedDrawingLine);
@@ -162,7 +205,7 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void DrawingLineCompleted_CommandIsNull_LastDrawingLineNotPassed()
 	{
-		DrawingLine? currentLine = null;
+		IDrawingLine? currentLine = null;
 		drawingView.DrawingLineCompletedCommand = null;
 		((IDrawingView)drawingView).DrawingLineCompleted(new DrawingLine());
 
@@ -172,8 +215,8 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void DrawingLineCompleted_CommandIsNotAllowedExecute_LastDrawingLineNotPassed()
 	{
-		DrawingLine? currentLine = null;
-		drawingView.DrawingLineCompletedCommand = new Command<DrawingLine>(line => currentLine = line, _ => false);
+		IDrawingLine? currentLine = null;
+		drawingView.DrawingLineCompletedCommand = new Command<IDrawingLine>(line => currentLine = line, _ => false);
 		((IDrawingView)drawingView).DrawingLineCompleted(new DrawingLine());
 
 		currentLine.Should().BeNull();
@@ -191,7 +234,7 @@ public class DrawingViewTests : BaseHandlerTest
 			Points = new ObservableCollection<PointF>(new[] { new PointF(10, 10) })
 		};
 
-		DrawingLine? currentLine = null;
+		IDrawingLine? currentLine = null;
 		var action = new EventHandler<DrawingLineCompletedEventArgs>((_, e) => { currentLine = e.LastDrawingLine; });
 		drawingView.DrawingLineCompleted += action;
 		((IDrawingView)drawingView).DrawingLineCompleted(expectedDrawingLine);

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core.Views;
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Maui.Core.Views;
 using FluentAssertions;
 using Xunit;
 
@@ -85,7 +86,8 @@ public class DrawingLineTests : BaseHandlerTest
 			LineColor = Colors.Black,
 			LineWidth = 5f,
 			EnableSmoothedPath = false,
-			Granularity = 5
+			Granularity = 5,
+			Points = new ObservableCollection<PointF>()
 		};
 
 		drawingLine.Should().BeEquivalentTo(expectedDefaultValue);

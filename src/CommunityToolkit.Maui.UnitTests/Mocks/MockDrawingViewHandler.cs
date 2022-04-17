@@ -1,11 +1,16 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Extensions;
+using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Core.Views;
 using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
-public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>
+public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawingViewHandler
 {
+	DrawingLineAdapter adapter;
 
 	public static readonly PropertyMapper<IDrawingView, MockDrawingViewHandler> DrawingViewPropertyMapper = new(ViewMapper)
 	{
@@ -16,14 +21,13 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>
 		[nameof(IDrawingView.DrawAction)] = MapDrawAction
 	};
 
-	public MockDrawingViewHandler() : base(DrawingViewPropertyMapper)
+	public MockDrawingViewHandler() : this(DrawingViewPropertyMapper)
 	{
-
 	}
 
 	public MockDrawingViewHandler(IPropertyMapper mapper) : base(mapper)
 	{
-
+		SetDrawingLineAdapter();
 	}
 
 	/// <inheritdoc />
@@ -89,5 +93,41 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>
 				LineWidth = line.LineWidth
 			});
 		}
+		var drawingLine = adapter.GetDrawingLine(Lines.Last());
+		VirtualView.DrawingLineCompleted(drawingLine);
+	}
+
+	[MemberNotNull(nameof(adapter))]
+	public void SetDrawingLineAdapter(DrawingLineAdapter? drawingLineAdapter = null)
+	{
+		adapter = drawingLineAdapter ?? new DrawingLineAdapter();
+	}
+}
+
+public class MockDrawingLineAdapter : DrawingLineAdapter
+{
+	public override IDrawingLine GetDrawingLine(MauiDrawingLine mauiDrawingLine)
+	{
+		return new MockDrawingLine
+		{
+			EnableSmoothedPath = mauiDrawingLine.EnableSmoothedPath,
+			LineWidth = mauiDrawingLine.LineWidth,
+			Granularity = mauiDrawingLine.Granularity,
+			LineColor = mauiDrawingLine.LineColor,
+			Points = mauiDrawingLine.Points.ToObservableCollection()
+		};
+	}
+}
+
+public class MockDrawingLine : IDrawingLine
+{
+	public int Granularity { get; set; }
+	public Color LineColor { get; set; } = Colors.Blue;
+	public float LineWidth { get; set; }
+	public ObservableCollection<PointF> Points { get; set; } = new();
+	public bool EnableSmoothedPath { get; set; }
+	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Color backgroundColor)
+	{
+		return ValueTask.FromResult(Stream.Null);
 	}
 }
