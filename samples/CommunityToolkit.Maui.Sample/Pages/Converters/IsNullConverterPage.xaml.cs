@@ -4,8 +4,8 @@ namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
 public partial class IsNullConverterPage : BasePage<IsNullConverterViewModel>
 {
-	public IsNullConverterPage(IDeviceInfo deviceInfo, IsNullConverterViewModel intToBoolConverterViewModel)
-		: base(deviceInfo, intToBoolConverterViewModel)
+	public IsNullConverterPage(IDeviceInfo deviceInfo, IsNullConverterViewModel isNullConverterViewModel)
+		: base(deviceInfo, isNullConverterViewModel)
 	{
 		InitializeComponent();
 	}
