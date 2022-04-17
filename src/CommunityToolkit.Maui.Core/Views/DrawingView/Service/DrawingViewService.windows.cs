@@ -3,22 +3,24 @@ using Windows.Storage.Streams;
 using Windows.UI.Input.Inking;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Platform;
+using Point = Windows.Foundation.Point;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
-/// Drawing view service
+///     Drawing view service
 /// </summary>
-public static partial class DrawingViewService
+public static class DrawingViewService
 {
 	/// <summary>
-	/// Get image stream from lines
+	///     Get image stream from lines
 	/// </summary>
 	/// <param name="lines">Drawing lines</param>
 	/// <param name="imageSize">Image size</param>
 	/// <param name="backgroundColor">Image background color</param>
 	/// <returns>Image stream</returns>
-	public static async ValueTask<Stream> GetImageStream(IList<DrawingLine> lines, Size imageSize, Color? backgroundColor)
+	public static async ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize,
+		Color? backgroundColor)
 	{
 		var image = GetImageInternal(lines, imageSize, backgroundColor);
 		if (image is null)
@@ -39,7 +41,7 @@ public static partial class DrawingViewService
 	}
 
 	/// <summary>
-	/// Get image stream from points
+	///     Get image stream from points
 	/// </summary>
 	/// <param name="points">Drawing points</param>
 	/// <param name="imageSize">Image size</param>
@@ -101,7 +103,8 @@ public static partial class DrawingViewService
 		}
 
 		var device = CanvasDevice.GetSharedDevice();
-		var offscreen = new CanvasRenderTarget(device, scale ? (int)size.Width : drawingWidth, scale ? (int)size.Height : drawingHeight, 96);
+		var offscreen = new CanvasRenderTarget(device, scale ? (int)size.Width : drawingWidth,
+			scale ? (int)size.Height : drawingHeight, 96);
 
 		using var session = offscreen.CreateDrawingSession();
 		session.Clear(backgroundColor?.ToWindowsColor() ?? Defaults.BackgroundColor.ToWindowsColor());
@@ -114,14 +117,16 @@ public static partial class DrawingViewService
 		strokeBuilder.SetDefaultDrawingAttributes(inkDrawingAttributes);
 		var strokes = new[]
 		{
-			strokeBuilder.CreateStroke(points.Select(p => new Windows.Foundation.Point((p.X - minPointX)*offscreen.Size.Width/drawingWidth, (p.Y - minPointY)*offscreen.Size.Height/drawingHeight)))
+			strokeBuilder.CreateStroke(points.Select(p =>
+				new Point((p.X - minPointX) * offscreen.Size.Width / drawingWidth,
+					(p.Y - minPointY) * offscreen.Size.Height / drawingHeight)))
 		};
 		session.DrawInk(strokes);
 
 		return offscreen;
 	}
 
-	static CanvasRenderTarget? GetImageInternal(IList<DrawingLine> lines, Size size, Color? backgroundColor, bool scale = false)
+	static CanvasRenderTarget? GetImageInternal(IList<IDrawingLine> lines, Size size, Color? backgroundColor, bool scale = false)
 	{
 		const int minSize = 1;
 
@@ -143,7 +148,8 @@ public static partial class DrawingViewService
 
 
 		var device = CanvasDevice.GetSharedDevice();
-		var offscreen = new CanvasRenderTarget(device, scale ? (int)size.Width : drawingWidth, scale ? (int)size.Height : drawingHeight, 96);
+		var offscreen = new CanvasRenderTarget(device, scale ? (int)size.Width : drawingWidth,
+			scale ? (int)size.Height : drawingHeight, 96);
 
 		using var session = offscreen.CreateDrawingSession();
 		session.Clear(backgroundColor?.ToWindowsColor() ?? Defaults.BackgroundColor.ToWindowsColor());
@@ -159,7 +165,9 @@ public static partial class DrawingViewService
 			strokeBuilder.SetDefaultDrawingAttributes(inkDrawingAttributes);
 			var strokes = new[]
 			{
-				strokeBuilder.CreateStroke(line.Points.Select(p => new Windows.Foundation.Point((p.X - minPointX)*offscreen.Size.Width/drawingWidth, (p.Y - minPointY)*offscreen.Size.Height/drawingHeight)))
+				strokeBuilder.CreateStroke(line.Points.Select(p =>
+					new Point((p.X - minPointX) * offscreen.Size.Width / drawingWidth,
+						(p.Y - minPointY) * offscreen.Size.Height / drawingHeight)))
 			};
 
 			session.DrawInk(strokes);

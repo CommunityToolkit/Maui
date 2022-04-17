@@ -17,7 +17,7 @@ public static partial class DrawingViewService
 	/// <param name="imageSize">Image size</param>
 	/// <param name="backgroundColor">Image background color</param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(in IList<DrawingLine> lines, in Size imageSize, in Color? backgroundColor)
+	public static ValueTask<Stream> GetImageStream(in IList<IDrawingLine> lines, in Size imageSize, in Color? backgroundColor)
 	{
 		var image = GetUIImageForLines(lines, backgroundColor);
 		if (image is null)
@@ -101,7 +101,7 @@ public static partial class DrawingViewService
 		return image;
 	}
 
-	static UIImage? GetUIImageForLines(in IList<DrawingLine> lines, in Color? backgroundColor)
+	static UIImage? GetUIImageForLines(in IList<IDrawingLine> lines, in Color? backgroundColor)
 	{
 		const int minSize = 1;
 

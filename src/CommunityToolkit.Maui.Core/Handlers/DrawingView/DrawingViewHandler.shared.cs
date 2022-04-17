@@ -1,4 +1,5 @@
 ﻿using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Maui.Core.Views;
 using Microsoft.Maui.Handlers;
@@ -10,6 +11,8 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 /// </summary>
 public partial class DrawingViewHandler
 {
+	DrawingLineAdapter adapter;
+
 	/// <summary>
 	/// <see cref ="PropertyMapper"/> for DrawingView Control.
 	/// </summary>
@@ -24,12 +27,10 @@ public partial class DrawingViewHandler
 		[nameof(IDrawingView.Background)] = MapDrawingViewBackground,
 	};
 
-        /// <summary>
+	/// <summary>
 	/// <see cref ="CommandMapper"/> for DrawingView Control.
 	/// </summary>
-        public static CommandMapper<IDrawingView, DrawingViewHandler> DrawingViewCommandMapper = new(ViewCommandMapper)
-		{
-		};
+	public static readonly CommandMapper<IDrawingView, DrawingViewHandler> DrawingViewCommandMapper = new(ViewCommandMapper);
 
 	/// <summary>
 	/// Initialize new instance of <see cref="DrawingViewHandler"/>.
@@ -39,18 +40,29 @@ public partial class DrawingViewHandler
 	public DrawingViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
 		: base(mapper ?? DrawingViewMapper, commandMapper ?? DrawingViewCommandMapper)
 	{
+		SetDrawingLineAdapter();
 	}
 
 	/// <summary>
 	/// Initialize new instance of <see cref="DrawingViewHandler"/>.
 	/// </summary>
-	public DrawingViewHandler() : base(DrawingViewMapper)
+	public DrawingViewHandler() : this(DrawingViewMapper, DrawingViewCommandMapper)
 	{
+	}
+
+	/// <summary>
+	/// Set <see cref="DrawingLineAdapter"/>.
+	/// </summary>
+	/// <param name="drawingLineAdapter"><see cref="DrawingLineAdapter"/>. If null, default drawing line adapter is used.</param>
+	[MemberNotNull(nameof(adapter))]
+	public void SetDrawingLineAdapter(DrawingLineAdapter? drawingLineAdapter = null)
+	{
+		adapter = drawingLineAdapter ?? new DrawingLineAdapter();
 	}
 }
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS
-public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingView>
+public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingView>, IDrawingViewHandler
 {
 	/// <summary>
 	/// Action that's triggered when the DrawingView <see cref="IDrawingView.Lines"/> property changes.
@@ -110,7 +122,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	public static void MapDrawAction(DrawingViewHandler handler, IDrawingView view)
 	{
 		handler.PlatformView.SetDrawAction(view.DrawAction);
-	}	
+	}
 
 	/// <summary>
 	/// Action that's triggered when the DrawingView Background property changes.
@@ -152,14 +164,8 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 
 	void OnPlatformViewDrawingLineCompleted(object? sender, MauiDrawingLineCompletedEventArgs e)
 	{
-		VirtualView.DrawingLineCompleted(new DrawingLine
-		{
-			LineColor = e.Line.LineColor,
-			EnableSmoothedPath = e.Line.EnableSmoothedPath,
-			Granularity = e.Line.Granularity,
-			LineWidth = e.Line.LineWidth,
-			Points = e.Line.Points.ToObservableCollection()
-		});
+		var drawingLine = adapter.GetDrawingLine(e.Line);
+		VirtualView.DrawingLineCompleted(drawingLine);
 	}
 
 	void OnVirtualViewLinesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -172,12 +178,13 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	void OnPlatformViewLinesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 	{
 		VirtualView.Lines.CollectionChanged -= OnVirtualViewLinesCollectionChanged;
-		VirtualView.SetLines(PlatformView);
+		VirtualView.SetLines(PlatformView, adapter);
 		VirtualView.Lines.CollectionChanged += OnVirtualViewLinesCollectionChanged;
 	}
 }
+
 #else
-public partial class DrawingViewHandler : ViewHandler<IDrawingView, object>
+public partial class DrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawingViewHandler
 {
 	/// <inheritdoc />
 	protected override object CreatePlatformView() => throw new NotSupportedException();

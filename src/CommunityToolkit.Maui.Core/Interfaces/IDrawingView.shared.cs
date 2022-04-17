@@ -12,7 +12,7 @@ public interface IDrawingView : IView
 	/// Event occurred when drawing line completed
 	/// </summary>
 	/// <param name="lastDrawingLine">Last drawing line</param>
-	void DrawingLineCompleted(DrawingLine lastDrawingLine);
+	void DrawingLineCompleted(IDrawingLine lastDrawingLine);
 
 	/// <summary>
 	/// The <see cref="Color"/> that is used by default to draw a line on the <see cref="IDrawingView"/>.
@@ -27,7 +27,7 @@ public interface IDrawingView : IView
 	/// <summary>
 	/// The collection of lines that are currently on the <see cref="IDrawingView"/>.
 	/// </summary>
-	ObservableCollection<DrawingLine> Lines { get; }
+	ObservableCollection<IDrawingLine> Lines { get; }
 
 	/// <summary>
 	/// Toggles multi-line mode. When true, multiple lines can be drawn on the <see cref="IDrawingView"/> while the tap/click is released in-between lines.
@@ -54,4 +54,9 @@ public interface IDrawingView : IView
 	/// Allows to draw on the <see cref="IDrawingView"/>.
 	/// </summary>
 	Action<ICanvas, RectF>? DrawAction { get; }
+
+	/// <summary>
+	/// Clears the <see cref="Lines"/> that are currently drawn on the <see cref="IDrawingView"/>.
+	/// </summary>
+	void Clear();
 }

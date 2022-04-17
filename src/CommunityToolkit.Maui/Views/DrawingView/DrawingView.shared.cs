@@ -34,7 +34,7 @@ public class DrawingView : View, IDrawingView
 	/// Backing BindableProperty for the <see cref="Lines"/> property.
 	/// </summary>
 	public static readonly BindableProperty LinesProperty = BindableProperty.Create(
-		nameof(Lines), typeof(ObservableCollection<DrawingLine>), typeof(DrawingView), new ObservableCollection<DrawingLine>(), BindingMode.TwoWay);
+		nameof(Lines), typeof(ObservableCollection<IDrawingLine>), typeof(DrawingView), new ObservableCollection<IDrawingLine>(), BindingMode.TwoWay);
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="DrawingLineCompletedCommand"/> property.
@@ -44,13 +44,13 @@ public class DrawingView : View, IDrawingView
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="LineColor"/> property.
 	/// </summary>
-	public static readonly BindableProperty DefaultLineColorProperty =
+	public static readonly BindableProperty LineColorProperty =
 		BindableProperty.Create(nameof(LineColor), typeof(Color), typeof(DrawingView), Colors.Black);
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="LineWidth"/> property.
 	/// </summary>
-	public static readonly BindableProperty DefaultLineWidthProperty =
+	public static readonly BindableProperty LineWidthProperty =
 		BindableProperty.Create(nameof(LineWidth), typeof(float), typeof(DrawingView), 5f);
 
 	/// <summary>
@@ -67,8 +67,8 @@ public class DrawingView : View, IDrawingView
 	/// </summary>
 	public Color LineColor
 	{
-		get => (Color)GetValue(DefaultLineColorProperty);
-		set => SetValue(DefaultLineColorProperty, value);
+		get => (Color)GetValue(LineColorProperty);
+		set => SetValue(LineColorProperty, value);
 	}
 
 	/// <summary>
@@ -76,8 +76,8 @@ public class DrawingView : View, IDrawingView
 	/// </summary>
 	public float LineWidth
 	{
-		get => (float)GetValue(DefaultLineWidthProperty);
-		set => SetValue(DefaultLineWidthProperty, value);
+		get => (float)GetValue(LineWidthProperty);
+		set => SetValue(LineWidthProperty, value);
 	}
 
 	/// <summary>
@@ -95,9 +95,9 @@ public class DrawingView : View, IDrawingView
 	/// <summary>
 	/// The collection of lines that are currently on the <see cref="DrawingView"/>. This is a bindable property.
 	/// </summary>
-	public ObservableCollection<DrawingLine> Lines
+	public ObservableCollection<IDrawingLine> Lines
 	{
-		get => (ObservableCollection<DrawingLine>)GetValue(LinesProperty);
+		get => (ObservableCollection<IDrawingLine>)GetValue(LinesProperty);
 		set => SetValue(LinesProperty, value);
 	}
 
@@ -143,13 +143,13 @@ public class DrawingView : View, IDrawingView
 	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight) => DrawingViewService.GetImageStream(Lines.ToList(), new Size(imageSizeWidth, imageSizeHeight), BackgroundColor);
 
 	/// <summary>
-	/// Retrieves a <see cref="Stream"/> containing an image of the collection of <see cref="DrawingLine"/> that is provided as a parameter.
+	/// Retrieves a <see cref="Stream"/> containing an image of the collection of <see cref="IDrawingLine"/> that is provided as a parameter.
 	/// </summary>
-	/// <param name="lines">A collection of <see cref="DrawingLine"/> that a image is generated from.</param>
+	/// <param name="lines">A collection of <see cref="IDrawingLine"/> that a image is generated from.</param>
 	/// <param name="imageSize">The desired dimensions of the generated image.</param>
 	/// <param name="backgroundColor">Background color of the generated image. If color is null, default background color is used.</param>
 	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's provided through the <paramref name="lines"/> parameter.</returns>
-	public static ValueTask<Stream> GetImageStream(IEnumerable<DrawingLine> lines,
+	public static ValueTask<Stream> GetImageStream(IEnumerable<IDrawingLine> lines,
 		Size imageSize,
 		Color? backgroundColor) =>
 		DrawingViewService.GetImageStream(lines.ToList(), imageSize, backgroundColor);
@@ -158,7 +158,7 @@ public class DrawingView : View, IDrawingView
 	/// Executes DrawingLineCompleted event and DrawingLineCompletedCommand
 	/// </summary>
 	/// <param name="lastDrawingLine">Last drawing line</param>
-	void IDrawingView.DrawingLineCompleted(DrawingLine lastDrawingLine)
+	void IDrawingView.DrawingLineCompleted(IDrawingLine lastDrawingLine)
 	{
 		drawingLineCompletedEventManager.HandleEvent(this, new DrawingLineCompletedEventArgs(lastDrawingLine), nameof(DrawingLineCompleted));
 
@@ -166,5 +166,13 @@ public class DrawingView : View, IDrawingView
 		{
 			DrawingLineCompletedCommand.Execute(lastDrawingLine);
 		}
+	}
+
+	/// <summary>
+	/// Clears the <see cref="Lines"/> collection.
+	/// </summary>
+	public void Clear()
+	{
+		Lines.Clear();
 	}
 }

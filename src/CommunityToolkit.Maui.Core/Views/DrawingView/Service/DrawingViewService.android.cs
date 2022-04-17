@@ -19,7 +19,7 @@ public static partial class DrawingViewService
 	/// <param name="imageSize">Image size</param>
 	/// <param name="backgroundColor">Image background color</param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(in IList<DrawingLine> lines,
+	public static ValueTask<Stream> GetImageStream(in IList<IDrawingLine> lines,
 										in Size imageSize,
 										in Color? backgroundColor)
 	{
@@ -146,7 +146,7 @@ public static partial class DrawingViewService
 		return image;
 	}
 
-	static Bitmap? GetBitmapForLines(IList<DrawingLine> lines, Color? backgroundColor)
+	static Bitmap? GetBitmapForLines(IList<IDrawingLine> lines, Color? backgroundColor)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
 		if (points.Count is 0)

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Core.Views;
 
 namespace CommunityToolkit.Maui.Core.Extensions;
@@ -148,7 +149,7 @@ public static class MauiDrawingViewExtensions
 			return;
 		}
 
-		IReadOnlyList<DrawingLine> lines = drawingView.Lines.ToList();
+		IReadOnlyList<IDrawingLine> lines = drawingView.Lines.ToList();
 		if (!drawingView.MultiLineMode && lines.Count > 1)
 		{
 			lines = lines.TakeLast(1).ToList();
@@ -174,7 +175,8 @@ public static class MauiDrawingViewExtensions
 	/// </summary>
 	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/><see cref="MauiDrawingView"/></param>
 	/// <param name="drawingView"><see cref="IDrawingView"/></param>
-	public static void SetLines(this IDrawingView drawingView, MauiDrawingView mauiDrawingView)
+	/// <param name="adapter"><see cref="DrawingLineAdapter"/></param>
+	public static void SetLines(this IDrawingView drawingView, MauiDrawingView mauiDrawingView, DrawingLineAdapter adapter)
 	{
 		if (mauiDrawingView.Lines.Count == drawingView.Lines.Count)
 		{
@@ -191,14 +193,7 @@ public static class MauiDrawingViewExtensions
 
 		foreach (var line in lines)
 		{
-			drawingView.Lines.Add(new DrawingLine
-			{
-				LineColor = line.LineColor,
-				EnableSmoothedPath = line.EnableSmoothedPath,
-				Granularity = line.Granularity,
-				LineWidth = line.LineWidth,
-				Points = line.Points.ToObservableCollection()
-			});
+			drawingView.Lines.Add(adapter.GetDrawingLine(line));
 		}
 	}
 #endif

@@ -29,7 +29,7 @@ public static partial class DrawingViewService
 	/// <param name="imageSize">Image size</param>
 	/// <param name="backgroundColor">Image background color</param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(IList<DrawingLine> lines,
+	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines,
 		Size imageSize,
 		Color? backgroundColor) =>
 		ValueTask.FromResult(Stream.Null);

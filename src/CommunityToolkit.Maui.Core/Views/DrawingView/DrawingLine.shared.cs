@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// The Line object is used to describe the lines that are drawn on a <see cref="IDrawingView"/>.
 /// </summary>
-public class DrawingLine
+public class DrawingLine : IDrawingLine
 {
 	const int minValueGranularity = 5;
 	int granularity = 5;

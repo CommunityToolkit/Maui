@@ -11,7 +11,7 @@ public class DrawingLineCompletedEventArgs : EventArgs
 	/// Initialize a new instance of <see cref="DrawingLineCompletedEventArgs"/>
 	/// </summary>
 	/// <param name="lastDrawingLine"></param>
-	public DrawingLineCompletedEventArgs(DrawingLine lastDrawingLine)
+	public DrawingLineCompletedEventArgs(IDrawingLine lastDrawingLine)
 	{
 		LastDrawingLine = lastDrawingLine;
 	}
@@ -19,5 +19,5 @@ public class DrawingLineCompletedEventArgs : EventArgs
 	/// <summary>
 	/// Last drawing line
 	/// </summary>
-	public DrawingLine LastDrawingLine { get; }
+	public IDrawingLine LastDrawingLine { get; }
 }
