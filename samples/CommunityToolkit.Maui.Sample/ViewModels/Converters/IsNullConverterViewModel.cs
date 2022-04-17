@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 public partial class IsNullConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	int? intCheck;
+	int intCheck;
 
 	[ObservableProperty]
 	List<string>? listCheck;

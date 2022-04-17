@@ -16,59 +16,68 @@
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
         <Grid
-            Padding="10,10"
-            ColumnDefinitions="1*, *"
+            ColumnDefinitions="*, *"
             HorizontalOptions="Fill"
-            RowDefinitions="100, 20, 20, 20, 20"
+            RowDefinitions="100, 20, 20, 20, 20, 20"
             VerticalOptions="Fill">
             <Label
                 Grid.Row="0"
                 Grid.ColumnSpan="2"
-                Text="The IsNullConverter is a converter that allows users to convert an incoming object? to a bool. If the incoming object? is null, it will be converted to true. Any other incoming value will be converted to false."
+                Text="The IsNullConverter is a converter that allows users to convert an incoming `object?` to a `bool`. If the incoming `object?` is `null`, it will be converted to `true`. Any other incoming value will be converted to `false`."
                 TextColor="{StaticResource NormalLabelTextColor}" />
             <Label
                 Grid.Row="1"
                 Grid.Column="0"
                 HorizontalOptions="Start"
-                Text="int? test:"
+                Text="Type"
+                FontAttributes="Bold"
                 TextColor="{StaticResource NormalLabelTextColor}" />
             <Label
                 Grid.Row="1"
                 Grid.Column="1"
-                Padding="7,0,0,0"
+                HorizontalOptions="Start"
+                Text="Is Default Value Null?"
+                FontAttributes="Bold"
+                TextColor="{StaticResource NormalLabelTextColor}" />
+            <Label
+                Grid.Row="2"
+                Grid.Column="0"
+                HorizontalOptions="Start"
+                Text="int"
+                TextColor="{StaticResource NormalLabelTextColor}" />
+            <Label
+                Grid.Row="2"
+                Grid.Column="1"
                 Text="{Binding IntCheck, Converter={StaticResource IsNullConverter}}"
                 TextColor="{StaticResource NormalLabelTextColor}" />
             <Label
-                Grid.Row="2"
+                Grid.Row="3"
                 Grid.Column="0"
-                Text="List&lt;string&gt;? test:"
+                Text="List&lt;string&gt;?"
                 TextColor="{StaticResource NormalLabelTextColor}" />
             <Label
-                Grid.Row="2"
+                Grid.Row="3"
                 Grid.Column="1"
-                Padding="7,0,0,0"
                 Text="{Binding ListCheck, Converter={StaticResource IsNullConverter}}"
                 TextColor="{StaticResource NormalLabelTextColor}" />
             <Label
-                Grid.Row="3"
+                Grid.Row="4"
                 Grid.Column="0"
-                Text="string? test:"
+                Text="string?"
                 TextColor="{StaticResource NormalLabelTextColor}" />
             <Label
-                Grid.Row="3"
+                Grid.Row="4"
                 Grid.Column="1"
-                Padding="7,0,0,0"
                 Text="{Binding StringCheck, Converter={StaticResource IsNullConverter}}"
                 TextColor="{StaticResource NormalLabelTextColor}" />
             <Label
-                Grid.Row="4"
+                Grid.Row="5"
                 Grid.Column="0"
-                Text="object? test:"
+                Text="object?"
                 TextColor="{StaticResource NormalLabelTextColor}" />
             <Label
-                Grid.Row="4"
+                Grid.Row="5"
                 Grid.Column="1"
-                Padding="7,0,0,0"
                 Text="{Binding ObjectCheck, Converter={StaticResource IsNullConverter}}"
                 TextColor="{StaticResource NormalLabelTextColor}" />
         </Grid>
