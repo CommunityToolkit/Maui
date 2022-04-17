@@ -40,7 +40,7 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void OnLinesCollectionChangedHandlerIsCalled()
 	{
-		var drawingViewHandler = CreateElementHandler<MockDrawingViewHandler>(drawingView);
+		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		drawingView.Handler.Should().NotBeNull();
 
 		drawingView.Lines.Add(new DrawingLine());
@@ -53,7 +53,7 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void LineWidthMapperIsCalled()
 	{
-		var drawingViewHandler = CreateElementHandler<MockDrawingViewHandler>(drawingView);
+		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		drawingView.Handler.Should().NotBeNull();
 
 		drawingViewHandler.MapLineWidthCount.Should().Be(1);
@@ -65,7 +65,7 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void ClearOnFinishMapperIsCalled()
 	{
-		var drawingViewHandler = CreateElementHandler<MockDrawingViewHandler>(drawingView);
+		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		drawingView.Handler.Should().NotBeNull();
 
 		drawingViewHandler.MapClearOnFinishCount.Should().Be(1);
@@ -77,7 +77,7 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void LineColorMapperIsCalled()
 	{
-		var drawingViewHandler = CreateElementHandler<MockDrawingViewHandler>(drawingView);
+		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		drawingView.Handler.Should().NotBeNull();
 
 		drawingViewHandler.MapLineColorCount.Should().Be(1);
@@ -89,7 +89,7 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void MultiLineModeMapperIsCalled()
 	{
-		var drawingViewHandler = CreateElementHandler<MockDrawingViewHandler>(drawingView);
+		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		drawingView.Handler.Should().NotBeNull();
 
 		drawingViewHandler.MapMultiLineModeCount.Should().Be(1);
@@ -102,7 +102,7 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void DrawMapperIsCalled()
 	{
-		var drawingViewHandler = CreateElementHandler<MockDrawingViewHandler>(drawingView);
+		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		drawingView.Handler.Should().NotBeNull();
 
 		drawingViewHandler.MapDrawCount.Should().Be(1);
@@ -144,6 +144,7 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void DefaultDrawingLineAdapter_IDrawingLineIsDrawingLine()
 	{
+		CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		IDrawingLine? currentLine = null;
 		var action = new EventHandler<DrawingLineCompletedEventArgs>((_, e) => { currentLine = e.LastDrawingLine; });
 		drawingView.DrawingLineCompleted += action;
@@ -156,7 +157,7 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void SetDefaultDrawingLineAdapter_IDrawingLineIsDrawingLine()
 	{
-		var drawingViewHandler = CreateElementHandler<MockDrawingViewHandler>(drawingView);
+		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		drawingViewHandler.SetDrawingLineAdapter(new DrawingLineAdapter());
 		
 		IDrawingLine? currentLine = null;
@@ -171,7 +172,7 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void SetDrawingLineAdapter_IDrawingLineIsMockDrawingLine()
 	{
-		var drawingViewHandler = CreateElementHandler<MockDrawingViewHandler>(drawingView);
+		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		drawingViewHandler.SetDrawingLineAdapter(new MockDrawingLineAdapter());
 		
 		IDrawingLine? currentLine = null;
