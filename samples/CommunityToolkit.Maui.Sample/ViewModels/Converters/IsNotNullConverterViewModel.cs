@@ -1,32 +1,18 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-public class IsNotNullConverterViewModel : BaseViewModel
+namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+
+public partial class IsNotNullConverterViewModel : BaseViewModel
 {
+	[ObservableProperty]
 	int? intCheck;
-	public int? IntCheck
-	{
-		get => intCheck;
-		set => SetProperty(ref intCheck, value);
-	}
 
+	[ObservableProperty]
 	List<string>? listCheck;
-	public List<string>? ListCheck
-	{
-		get => listCheck;
-		set => SetProperty(ref listCheck, value);
-	}
 
+	[ObservableProperty]
 	string? stringCheck;
-	public string? StringCheck
-	{
-		get => stringCheck;
-		set => SetProperty(ref stringCheck, value);
-	}
 
+	[ObservableProperty]
 	object? objectCheck;
-	public object? ObjectCheck
-	{
-		get => objectCheck;
-		set => SetProperty(ref objectCheck, value);
-	}
 }
