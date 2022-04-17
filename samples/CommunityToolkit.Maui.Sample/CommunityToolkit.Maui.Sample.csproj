@@ -54,6 +54,18 @@
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.SourceGenerators\CommunityToolkit.Maui.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Update="Pages\Converters\IsNotNullConverterPage.xaml.cs">
+      <DependentUpon>IsNotNullConverterPage.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <MauiXaml Update="Pages\Converters\IsNotNullConverterPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+  </ItemGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
     <RuntimeIdentifiers>android-arm;android-arm64;android-x86;android-x64</RuntimeIdentifiers>

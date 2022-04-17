@@ -55,6 +55,7 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<IsListNotNullOrEmptyConverterPage, IsListNotNullOrEmptyConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<IsListNullOrEmptyConverterPage, IsListNullOrEmptyConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<IsNotEqualConverterPage, IsNotEqualConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<IsNotNullConverterPage, IsNotNullConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<IsStringNotNullOrEmptyConverterPage, IsStringNotNullOrEmptyConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<IsStringNotNullOrWhiteSpaceConverterPage, IsStringNotNullOrWhiteSpaceConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<IsStringNullOrEmptyConverterPage, IsStringNullOrEmptyConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
