@@ -17,9 +17,9 @@
     <pages:BasePage.Content>
         <Grid
             Padding="10,10"
-            ColumnDefinitions="auto, *"
+            ColumnDefinitions="1*, *"
             HorizontalOptions="Fill"
-            RowDefinitions="20, 20, 20, 20, 20"
+            RowDefinitions="100, 20, 20, 20, 20"
             VerticalOptions="Fill">
             <Label
                 Grid.Row="0"
