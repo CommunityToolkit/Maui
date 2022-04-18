@@ -40,7 +40,7 @@ public partial class DrawingViewHandler
 	public DrawingViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
 		: base(mapper ?? DrawingViewMapper, commandMapper ?? DrawingViewCommandMapper)
 	{
-		SetDrawingLineAdapter();
+		SetDrawingLineAdapter(new DrawingLineAdapter());
 	}
 
 	/// <summary>
@@ -52,9 +52,9 @@ public partial class DrawingViewHandler
 
 	/// <inheritdoc />
 	[MemberNotNull(nameof(adapter))]
-	public void SetDrawingLineAdapter(IDrawingLineAdapter? drawingLineAdapter = null)
+	public void SetDrawingLineAdapter(IDrawingLineAdapter drawingLineAdapter)
 	{
-		adapter = drawingLineAdapter ?? new DrawingLineAdapter();
+		adapter = drawingLineAdapter;
 	}
 }
 
