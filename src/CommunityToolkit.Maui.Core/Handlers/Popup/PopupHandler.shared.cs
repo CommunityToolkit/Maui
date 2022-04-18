@@ -8,7 +8,7 @@ public partial class PopupHandler
 	/// <summary>
 	/// PropertyMapper for Popup Control
 	/// </summary>
-	public static PropertyMapper<IPopup, PopupHandler> PopUpMapper = new(ElementMapper)
+	public static IPropertyMapper<IPopup, PopupHandler> PopUpMapper = new PropertyMapper<IPopup, PopupHandler>(ElementMapper)
 	{
 		[nameof(IPopup.Anchor)] = MapAnchor,
 		[nameof(IPopup.Color)] = MapColor,
@@ -35,7 +35,7 @@ public partial class PopupHandler
 	/// </summary>
 	/// <param name="mapper">Custom instance of <see cref="PropertyMapper"/>, if it's null the <see cref="PopUpMapper"/> will be used</param>
 	/// <param name="commandMapper">Custom instance of <see cref="CommandMapper"/>, if it's null the <see cref="PopUpCommandMapper"/> will be used</param>
-	public PopupHandler(PropertyMapper? mapper, CommandMapper? commandMapper)
+	public PopupHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
 		: base(mapper ?? PopUpMapper, commandMapper ?? PopUpCommandMapper)
 	{
 	}
