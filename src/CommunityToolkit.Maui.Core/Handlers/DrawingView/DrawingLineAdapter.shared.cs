@@ -6,13 +6,13 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 /// <summary>
 /// DrawingLine Adapter
 /// </summary>
-public class DrawingLineAdapter
+public sealed class DrawingLineAdapter : IDrawingLineAdapter
 {
 	/// <summary>
 	/// Convert <see cref="MauiDrawingLine"/> to <see cref="IDrawingLine"/>.
 	/// </summary>
-	/// <returns></returns>
-	public virtual IDrawingLine GetDrawingLine(MauiDrawingLine mauiDrawingLine)
+	/// <returns><see cref="IDrawingLine"/></returns>
+	public IDrawingLine GetDrawingLine(MauiDrawingLine mauiDrawingLine)
 	{
 		return new DrawingLine
 		{

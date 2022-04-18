@@ -6,8 +6,8 @@
 public interface IDrawingViewHandler
 {
 	/// <summary>
-	/// Set <see cref="DrawingLineAdapter"/>.
+	/// Set <see cref="IDrawingLineAdapter"/>.
 	/// </summary>
-	/// <param name="drawingLineAdapter"><see cref="DrawingLineAdapter"/>. If null, default drawing line adapter is used.</param>
-	void SetDrawingLineAdapter(DrawingLineAdapter? drawingLineAdapter = null);
+	/// <param name="drawingLineAdapter"><see cref="IDrawingLineAdapter"/>. If null, <see cref="DrawingLineAdapter"/> is used.</param>
+	void SetDrawingLineAdapter(IDrawingLineAdapter? drawingLineAdapter = null);
 }

@@ -11,7 +11,7 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 /// </summary>
 public partial class DrawingViewHandler
 {
-	DrawingLineAdapter adapter;
+	IDrawingLineAdapter adapter;
 
 	/// <summary>
 	/// <see cref ="PropertyMapper"/> for DrawingView Control.
@@ -50,12 +50,9 @@ public partial class DrawingViewHandler
 	{
 	}
 
-	/// <summary>
-	/// Set <see cref="DrawingLineAdapter"/>.
-	/// </summary>
-	/// <param name="drawingLineAdapter"><see cref="DrawingLineAdapter"/>. If null, default drawing line adapter is used.</param>
+	/// <inheritdoc />
 	[MemberNotNull(nameof(adapter))]
-	public void SetDrawingLineAdapter(DrawingLineAdapter? drawingLineAdapter = null)
+	public void SetDrawingLineAdapter(IDrawingLineAdapter? drawingLineAdapter = null)
 	{
 		adapter = drawingLineAdapter ?? new DrawingLineAdapter();
 	}

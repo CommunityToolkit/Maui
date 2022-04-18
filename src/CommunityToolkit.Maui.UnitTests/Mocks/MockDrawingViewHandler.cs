@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
 public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawingViewHandler
 {
-	DrawingLineAdapter adapter;
+	IDrawingLineAdapter adapter;
 
 	public static readonly PropertyMapper<IDrawingView, MockDrawingViewHandler> DrawingViewPropertyMapper = new(ViewMapper)
 	{
@@ -98,15 +98,15 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawin
 	}
 
 	[MemberNotNull(nameof(adapter))]
-	public void SetDrawingLineAdapter(DrawingLineAdapter? drawingLineAdapter = null)
+	public void SetDrawingLineAdapter(IDrawingLineAdapter? drawingLineAdapter = null)
 	{
 		adapter = drawingLineAdapter ?? new DrawingLineAdapter();
 	}
 }
 
-public class MockDrawingLineAdapter : DrawingLineAdapter
+public class MockDrawingLineAdapter : IDrawingLineAdapter
 {
-	public override IDrawingLine GetDrawingLine(MauiDrawingLine mauiDrawingLine)
+	public IDrawingLine GetDrawingLine(MauiDrawingLine mauiDrawingLine)
 	{
 		return new MockDrawingLine
 		{

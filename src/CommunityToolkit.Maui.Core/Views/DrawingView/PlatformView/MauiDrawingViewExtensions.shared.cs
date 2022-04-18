@@ -175,8 +175,8 @@ public static class MauiDrawingViewExtensions
 	/// </summary>
 	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/><see cref="MauiDrawingView"/></param>
 	/// <param name="drawingView"><see cref="IDrawingView"/></param>
-	/// <param name="adapter"><see cref="DrawingLineAdapter"/></param>
-	public static void SetLines(this IDrawingView drawingView, MauiDrawingView mauiDrawingView, DrawingLineAdapter adapter)
+	/// <param name="adapter"><see cref="IDrawingLineAdapter"/></param>
+	public static void SetLines(this IDrawingView drawingView, MauiDrawingView mauiDrawingView, IDrawingLineAdapter adapter)
 	{
 		if (mauiDrawingView.Lines.Count == drawingView.Lines.Count)
 		{
