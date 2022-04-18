@@ -93,7 +93,7 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawin
 				LineWidth = line.LineWidth
 			});
 		}
-		var drawingLine = adapter.GetDrawingLine(Lines.Last());
+		var drawingLine = adapter.ConvertMauiDrawingLine(Lines.Last());
 		VirtualView.DrawingLineCompleted(drawingLine);
 	}
 
@@ -106,7 +106,7 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawin
 
 public class MockDrawingLineAdapter : IDrawingLineAdapter
 {
-	public IDrawingLine GetDrawingLine(MauiDrawingLine mauiDrawingLine)
+	public IDrawingLine ConvertMauiDrawingLine(MauiDrawingLine mauiDrawingLine)
 	{
 		return new MockDrawingLine
 		{

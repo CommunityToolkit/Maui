@@ -244,5 +244,5 @@ public partial class MauiDrawingView
 		}
 #endif
 	}
-}
 #endif
+}
