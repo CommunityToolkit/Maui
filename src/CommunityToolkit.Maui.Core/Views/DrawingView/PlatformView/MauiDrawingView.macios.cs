@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MauiDrawingView : PlatformTouchGraphicsView
 {
 	readonly List<UIScrollView> scrollViewParents = new();
-	
+
 	/// <inheritdoc />
 	public override void TouchesBegan(NSSet touches, UIEvent? evt)
 	{
@@ -57,7 +57,7 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 
 		while (parent is not null)
 		{
-                        if (parent is UIScrollView scrollView)
+			if (parent is UIScrollView scrollView)
 			{
 				scrollViewParents.Add(scrollView);
 			}
