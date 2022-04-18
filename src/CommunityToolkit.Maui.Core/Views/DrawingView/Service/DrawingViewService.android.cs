@@ -143,8 +143,8 @@ public static partial class DrawingViewService
 		{
 			var p1 = points.ElementAt(i);
 			var p2 = points.ElementAt(i + 1);
-			canvas.DrawLine(p1.X - minPointX, p1.Y - minPointY, p2.X - minPointX,
-				p2.Y - minPointY, paint);
+
+			canvas.DrawLine(p1.X - minPointX, p1.Y - minPointY, p2.X - minPointX, p2.Y - minPointY, paint);
 		}
 
 		return image;
