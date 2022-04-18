@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Core.Views;
 
@@ -76,7 +76,7 @@ public static class MauiDrawingViewExtensions
 				(3 * p1.Y - p0.Y - 3 * p2.Y + p3.Y) * ttt)
 	};
 
-#if (ANDROID || IOS || MACCATALYST || WINDOWS)
+#if ANDROID || IOS || MACCATALYST || WINDOWS
 	/// <summary>
 	/// Set MultiLine mode
 	/// </summary>
@@ -86,7 +86,7 @@ public static class MauiDrawingViewExtensions
 	{
 		mauiDrawingView.MultiLineMode = multiLineMode;
 	}
-	
+
 	/// <summary>
 	/// Set DrawAction action
 	/// </summary>
@@ -126,7 +126,7 @@ public static class MauiDrawingViewExtensions
 	{
 		mauiDrawingView.LineWidth = lineWidth;
 	}
-	
+
 	/// <summary>
 	/// Set Paint
 	/// </summary>
@@ -193,8 +193,8 @@ public static class MauiDrawingViewExtensions
 
 		foreach (var line in lines)
 		{
-			drawingView.Lines.Add(adapter.GetDrawingLine(line));
+			drawingView.Lines.Add(adapter.ConvertMauiDrawingLine(line));
 		}
 	}
 #endif
-		}
+}

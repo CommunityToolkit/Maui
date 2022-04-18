@@ -11,5 +11,5 @@ public interface IDrawingLineAdapter
 	/// Convert <see cref="MauiDrawingLine"/> to <see cref="IDrawingLine"/>.
 	/// </summary>
 	/// <returns><see cref="IDrawingLine"/></returns>
-	IDrawingLine GetDrawingLine(MauiDrawingLine mauiDrawingLine);
+	IDrawingLine ConvertMauiDrawingLine(MauiDrawingLine mauiDrawingLine);
 }

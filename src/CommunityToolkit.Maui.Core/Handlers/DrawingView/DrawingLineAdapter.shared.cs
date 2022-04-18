@@ -12,7 +12,7 @@ public sealed class DrawingLineAdapter : IDrawingLineAdapter
 	/// Convert <see cref="MauiDrawingLine"/> to <see cref="IDrawingLine"/>.
 	/// </summary>
 	/// <returns><see cref="IDrawingLine"/></returns>
-	public IDrawingLine GetDrawingLine(MauiDrawingLine mauiDrawingLine)
+	public IDrawingLine ConvertMauiDrawingLine(MauiDrawingLine mauiDrawingLine)
 	{
 		return new DrawingLine
 		{
