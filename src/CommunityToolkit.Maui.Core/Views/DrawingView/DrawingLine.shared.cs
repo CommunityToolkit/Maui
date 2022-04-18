@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 public class DrawingLine : IDrawingLine
 {
 	const int minValueGranularity = 5;
-	int granularity = 5;
+	int granularity = minValueGranularity;
 
 	/// <summary>
 	/// The <see cref="Color"/> that is used to draw this line on the <see cref="IDrawingView"/>.
@@ -26,7 +26,7 @@ public class DrawingLine : IDrawingLine
 	public ObservableCollection<PointF> Points { get; set; } = new();
 
 	/// <summary>
-	/// The granularity of this line. Min value is 5. The higher the value, the smoother the line, the slower the program.
+	/// The granularity of this line. Min value is 5. The higher the value, the smoother the line, the slower the program. Value clamped between <see cref="minValueGranularity"/> and <see cref="int.MaxValue"/>
 	/// </summary>
 	public int Granularity
 	{
