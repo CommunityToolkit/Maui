@@ -1,6 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Maui.Core.Extensions;
-using Microsoft.Maui.Graphics;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -117,7 +116,7 @@ public partial class MauiDrawingView
 		}
 
 #if !ANDROID
-		AddPointToPath(currentPath, currentPoint);
+		AddPointToPath(currentPoint);
 #endif
 		
 		Redraw();
@@ -162,7 +161,7 @@ public partial class MauiDrawingView
 	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) =>
 		LoadLines();
 
-	void AddPointToPath(PathF path, PointF currentPoint) => path.LineTo(currentPoint);
+	void AddPointToPath(PointF currentPoint) => currentPath.LineTo(currentPoint);
 
 	void LoadLines()
 	{
@@ -194,7 +193,7 @@ public partial class MauiDrawingView
 			canvas.SetFillPaint(drawingView.Paint, dirtyRect);
 			canvas.FillRectangle(dirtyRect);
 			drawingView.DrawAction?.Invoke(canvas, dirtyRect);
-			DrawCurrentLines(canvas);
+			DrawCurrentLines(canvas, drawingView.Lines);
 			SetStroke(canvas, drawingView.LineWidth, drawingView.LineColor);
 			canvas.DrawPath(drawingView.currentPath);
 		}
@@ -205,30 +204,65 @@ public partial class MauiDrawingView
 			canvas.StrokeSize = lineWidth;
 		}
 
-		void DrawCurrentLines(ICanvas canvas)
+		void DrawCurrentLines(in ICanvas canvas, in IEnumerable<MauiDrawingLine> lines)
 		{
-			foreach (var line in drawingView.Lines)
+			foreach (var line in lines)
 			{
 				var path = new PathF();
-				var newPoints = line.EnableSmoothedPath
+				var points = line.EnableSmoothedPath
 					? line.Points.SmoothedPathWithGranularity(line.Granularity)
 					: line.Points;
 #if ANDROID
-				newPoints = drawingView.NormalizePoints(newPoints);
+				points = NormalizePoints(points);
 #endif
-				if (newPoints.Count > 0)
+				if (points.Count > 0)
 				{
-					path.MoveTo(newPoints[0].X, newPoints[0].Y);
-					foreach (var point in newPoints)
+					path.MoveTo(points[0].X, points[0].Y);
+					foreach (var point in points)
 					{
-						drawingView.AddPointToPath(path, point);
+						path.LineTo(point);
 					}
+					
+					SetStroke(canvas, line.LineWidth, line.LineColor);
+					canvas.DrawPath(path);
 				}
-
-				SetStroke(canvas, line.LineWidth, line.LineColor);
-				canvas.DrawPath(path);
 			}
 		}
+
+#if ANDROID
+		ObservableCollection<PointF> NormalizePoints(ObservableCollection<PointF> points)
+		{
+			var newPoints = new ObservableCollection<PointF>();
+			foreach (var point in points)
+			{
+				var pointX = point.X;
+				var pointY = point.Y;
+				if (pointX < 0)
+				{
+					pointX = 0;
+				}
+
+				if (pointX > drawingView.Width)
+				{
+					pointX = drawingView.Width;
+				}
+
+				if (point.Y < 0)
+				{
+					pointY = 0;
+				}
+
+				if (pointY > drawingView.Height)
+				{
+					pointY = drawingView.Height;
+				}
+
+				newPoints.Add(new PointF(pointX, pointY));
+			}
+
+			return newPoints;
+		}
+#endif
 	}
 #endif
 	}

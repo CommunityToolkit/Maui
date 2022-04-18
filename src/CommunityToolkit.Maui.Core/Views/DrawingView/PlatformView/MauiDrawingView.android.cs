@@ -25,8 +25,8 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 		base.OnTouchEvent(e);
 		ArgumentNullException.ThrowIfNull(e);
 
-		var touchX = e.GetX();
-		var touchY = e.GetY();
+		var touchX = e.GetX() / (float)DeviceDisplay.MainDisplayInfo.Density;
+		var touchY = e.GetY() / (float)DeviceDisplay.MainDisplayInfo.Density;
 		var point = new PointF(touchX, touchY);
 		switch (e.Action)
 		{
@@ -38,10 +38,10 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 			case MotionEventActions.Move:
 				if (touchX > 0 && touchY > 0 && touchX < Width && touchY < Height)
 				{
-					AddPointToPath(currentPath, point);
+					AddPointToPath(point);
 				}
-				
-				OnMoving(new Point(touchX, touchY));
+
+				OnMoving(point);
 				break;
 
 			case MotionEventActions.Up:
@@ -60,38 +60,5 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 		Redraw();
 
 		return true;
-	}
-
-	ObservableCollection<PointF> NormalizePoints(IEnumerable<PointF> points)
-	{
-		var newPoints = new ObservableCollection<PointF>();
-		foreach (var point in points)
-		{
-			var pointX = point.X;
-			var pointY = point.Y;
-			if (pointX < 0)
-			{
-				pointX = 0;
-			}
-
-			if (pointX > Width)
-			{
-				pointX = Width;
-			}
-
-			if (point.Y < 0)
-			{
-				pointY = 0;
-			}
-
-			if (pointY > Height)
-			{
-				pointY = Height;
-			}
-
-			newPoints.Add(new PointF(pointX, pointY));
-		}
-
-		return newPoints;
 	}
 }
