@@ -9,17 +9,11 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public partial class DrawingViewViewModel : BaseViewModel
 {
-	readonly IDeviceInfo deviceInfo;
-	readonly IDeviceDisplay deviceDisplay;
-
 	[ObservableProperty]
 	string logs = string.Empty;
 
-	public DrawingViewViewModel(IDeviceInfo deviceInfo, IDeviceDisplay deviceDisplay)
+	public DrawingViewViewModel()
 	{
-		this.deviceInfo = deviceInfo;
-		this.deviceDisplay = deviceDisplay;
-
 		DrawingLineCompletedCommand = new Command<IDrawingLine>(line => Logs = "GestureCompletedCommand executed." + Environment.NewLine + $"Line points count: {line.Points.Count}" + Environment.NewLine + Environment.NewLine + Logs);
 
 		ClearLinesCommand = new Command(Lines.Clear);
@@ -46,24 +40,13 @@ public partial class DrawingViewViewModel : BaseViewModel
 	public ICommand ClearLinesCommand { get; }
 	public ICommand AddNewLineCommand { get; }
 
-	public IEnumerable<PointF> GeneratePoints(int count, double viewWidth, double viewHeight)
+	public static IEnumerable<PointF> GeneratePoints(int count, double viewWidth, double viewHeight)
 	{
-		int maxWidthInt, maxHeightInt;
+		var paddedViewWidth = Math.Clamp(viewWidth - 10, 0, viewWidth);
+		var paddedViewHeight = Math.Clamp(viewHeight - 10, 0, viewHeight);
 
-		if (deviceInfo.Platform == DevicePlatform.Android || deviceInfo.Platform == DevicePlatform.WinUI)
-		{
-			maxWidthInt = (int)Math.Round(viewWidth * deviceDisplay.MainDisplayInfo.Density, MidpointRounding.ToZero);
-			maxHeightInt = (int)Math.Round(viewHeight * deviceDisplay.MainDisplayInfo.Density, MidpointRounding.ToZero);
-		}
-		else if (deviceInfo.Platform == DevicePlatform.iOS || deviceInfo.Platform == DevicePlatform.MacCatalyst)
-		{
-			maxWidthInt = (int)Math.Round(viewWidth, MidpointRounding.ToZero);
-			maxHeightInt = (int)Math.Round(viewHeight, MidpointRounding.ToZero);
-		}
-		else
-		{
-			throw new NotImplementedException();
-		}
+		int maxWidthInt = (int)Math.Round(paddedViewWidth, MidpointRounding.ToZero);
+		int maxHeightInt = (int)Math.Round(paddedViewHeight, MidpointRounding.ToZero);
 
 		for (var i = 0; i < count; i++)
 		{
