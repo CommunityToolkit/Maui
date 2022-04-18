@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -19,7 +20,7 @@ public partial class DrawingViewViewModel : BaseViewModel
 		this.deviceInfo = deviceInfo;
 		this.deviceDisplay = deviceDisplay;
 
-		DrawingLineCompletedCommand = new Command<DrawingLine>(line => Logs = "GestureCompletedCommand executed." + Environment.NewLine + $"Line points count: {line.Points.Count}" + Environment.NewLine + Environment.NewLine + Logs);
+		DrawingLineCompletedCommand = new Command<IDrawingLine>(line => Logs = "GestureCompletedCommand executed." + Environment.NewLine + $"Line points count: {line.Points.Count}" + Environment.NewLine + Environment.NewLine + Logs);
 
 		ClearLinesCommand = new Command(Lines.Clear);
 
@@ -39,7 +40,7 @@ public partial class DrawingViewViewModel : BaseViewModel
 		});
 	}
 
-	public ObservableCollection<DrawingLine> Lines { get; } = new();
+	public ObservableCollection<IDrawingLine> Lines { get; } = new();
 
 	public ICommand DrawingLineCompletedCommand { get; }
 	public ICommand ClearLinesCommand { get; }

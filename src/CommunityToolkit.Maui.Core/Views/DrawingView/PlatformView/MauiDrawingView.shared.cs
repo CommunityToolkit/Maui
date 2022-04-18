@@ -160,11 +160,11 @@ public partial class MauiDrawingView
 	}
 
 	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) =>
-		LoadPoints();
+		LoadLines();
 
 	void AddPointToPath(PathF path, PointF currentPoint) => path.LineTo(currentPoint);
 
-	void LoadPoints()
+	void LoadLines()
 	{
 		ClearPath();
 		Redraw();

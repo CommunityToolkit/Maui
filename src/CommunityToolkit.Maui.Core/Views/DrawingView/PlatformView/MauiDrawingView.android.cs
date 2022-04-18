@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using Android.Content;
 using Android.Views;
-using CommunityToolkit.Maui.Core.Extensions;
 using Microsoft.Maui.Platform;
 using AColor = Android.Graphics.Color;
 using APaint = Android.Graphics.Paint;
