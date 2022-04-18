@@ -1,4 +1,4 @@
-using Android.Graphics;
+﻿using Android.Graphics;
 using Microsoft.Maui.Platform;
 using Color = Microsoft.Maui.Graphics.Color;
 using Math = System.Math;
@@ -125,12 +125,16 @@ public static partial class DrawingViewService
 		// strokes
 		using var paint = new Paint
 		{
-			Color = strokeColor.ToPlatform(),
 			StrokeWidth = lineWidth,
 			StrokeJoin = Paint.Join.Round,
 			StrokeCap = Paint.Cap.Round,
 			AntiAlias = true
 		};
+
+		if (OperatingSystem.IsAndroidVersionAtLeast(29))
+		{
+			paint.Color = strokeColor.ToPlatform();
+		}
 
 		paint.SetStyle(Paint.Style.Stroke);
 
@@ -184,12 +188,16 @@ public static partial class DrawingViewService
 		{
 			using var paint = new Paint
 			{
-				Color = line.LineColor.ToPlatform(),
 				StrokeWidth = line.LineWidth,
 				StrokeJoin = Paint.Join.Round,
 				StrokeCap = Paint.Cap.Round,
 				AntiAlias = true
 			};
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(29))
+			{
+				paint.Color = line.LineColor.ToPlatform();
+			}
 
 			paint.SetStyle(Paint.Style.Stroke);
 
