@@ -9,12 +9,6 @@ namespace CommunityToolkit.Maui.Core;
 public interface IDrawingView : IView
 {
 	/// <summary>
-	/// Event occurred when drawing line completed
-	/// </summary>
-	/// <param name="lastDrawingLine">Last drawing line</param>
-	void DrawingLineCompleted(IDrawingLine lastDrawingLine);
-
-	/// <summary>
 	/// The <see cref="Color"/> that is used by default to draw a line on the <see cref="IDrawingView"/>.
 	/// </summary>
 	Color LineColor { get; }
@@ -43,6 +37,11 @@ public interface IDrawingView : IView
 	bool ClearOnFinish { get; }
 
 	/// <summary>
+	/// Allows to draw on the <see cref="IDrawingView"/>.
+	/// </summary>
+	Action<ICanvas, RectF>? DrawAction { get; }
+
+	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of the <see cref="Lines"/> that are currently drawn on the <see cref="IDrawingView"/>.
 	/// </summary>
 	/// <param name="imageSizeWidth">Desired width of the image that is returned.</param>
@@ -51,12 +50,13 @@ public interface IDrawingView : IView
 	ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight);
 
 	/// <summary>
-	/// Allows to draw on the <see cref="IDrawingView"/>.
-	/// </summary>
-	Action<ICanvas, RectF>? DrawAction { get; }
-
-	/// <summary>
 	/// Clears the <see cref="Lines"/> that are currently drawn on the <see cref="IDrawingView"/>.
 	/// </summary>
 	void Clear();
+
+	/// <summary>
+	/// Event occurred when drawing line completed
+	/// </summary>
+	/// <param name="lastDrawingLine">Last drawing line</param>
+	void DrawingLineCompleted(IDrawingLine lastDrawingLine);
 }
