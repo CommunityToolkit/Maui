@@ -51,7 +51,6 @@ public partial class DrawingViewHandler
 	}
 
 	/// <inheritdoc />
-	[MemberNotNull(nameof(adapter))]
 	public void SetDrawingLineAdapter(IDrawingLineAdapter drawingLineAdapter)
 	{
 		adapter = drawingLineAdapter;
