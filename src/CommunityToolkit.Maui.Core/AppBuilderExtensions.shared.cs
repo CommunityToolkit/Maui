@@ -1,6 +1,4 @@
-﻿using CommunityToolkit.Maui.Core.Views;
-
-namespace CommunityToolkit.Maui.Core;
+﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// <see cref="MauiAppBuilder"/> Extensions
