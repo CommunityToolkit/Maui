@@ -27,7 +27,7 @@ public class MauiDrawingLine
 	public ObservableCollection<PointF> Points { get; set; } = new();
 
 	/// <summary>
-	/// The granularity of this line. Clamped to a minimum value of 5.
+	/// The granularity of this line. Clamped to a minimum value of 5. Value clamped between <see cref="minValueGranularity"/> and <see cref="int.MaxValue"/>
 	/// </summary>
 	public int Granularity
 	{
