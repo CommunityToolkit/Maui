@@ -37,7 +37,7 @@ public class DrawingLineAdapterTests
 		};
 
 		var drawingLineAdapter = new DrawingLineAdapter();
-		var result = drawingLineAdapter.GetDrawingLine(mauiDrawingLine);
+		var result = drawingLineAdapter.ConvertMauiDrawingLine(mauiDrawingLine);
 
 		result.Should().BeEquivalentTo(expectedDrawingLine);
 	}
