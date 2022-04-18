@@ -33,7 +33,7 @@ public partial class MauiDrawingView
 	/// Clear drawing on finish
 	/// </summary>
 	public bool ClearOnFinish { get; set; }
-	
+
 	/// <summary>
 	/// Line color
 	/// </summary>
@@ -44,15 +44,10 @@ public partial class MauiDrawingView
 	/// </summary>
 	public float LineWidth { get; set; } = 5;
 
-	void OnDrawingLineCompleted(MauiDrawingLine lastDrawingLine)
-	{
-		weakEventManager.HandleEvent(this, new MauiDrawingLineCompletedEventArgs(lastDrawingLine), nameof(DrawingLineCompleted));
-	}
-
 	/// <summary>
 	/// Used to draw any shape on the canvas
 	/// </summary>
-	public Action<ICanvas, RectF>? DrawAction;
+	public Action<ICanvas, RectF>? DrawAction { get; set; }
 
 	/// <summary>
 	/// Drawable background
@@ -60,7 +55,7 @@ public partial class MauiDrawingView
 	public Paint Paint { get; set; } = new SolidPaint(Defaults.BackgroundColor);
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS
-
+	bool isDrawing;
 	PointF previousPoint;
 	PathF currentPath = new();
 	MauiDrawingLine? currentLine;
@@ -77,8 +72,16 @@ public partial class MauiDrawingView
 #endif
 		Lines.CollectionChanged += OnLinesCollectionChanged;
 	}
-	
-	bool isDrawing;
+
+	/// <summary>
+	/// Clean up resources
+	/// </summary>
+	public void CleanUp()
+	{
+		currentPath.Dispose();
+		Lines.CollectionChanged -= OnLinesCollectionChanged;
+	}
+
 	void OnStart(PointF point)
 	{
 		isDrawing = true;
@@ -118,7 +121,7 @@ public partial class MauiDrawingView
 #if !ANDROID
 		AddPointToPath(currentPoint);
 #endif
-		
+
 		Redraw();
 		currentLine?.Points.Add(currentPoint);
 	}
@@ -149,17 +152,10 @@ public partial class MauiDrawingView
 		isDrawing = false;
 	}
 
-	/// <summary>
-	/// Clean up resources
-	/// </summary>
-	public void CleanUp()
-	{
-		currentPath.Dispose();
-		Lines.CollectionChanged -= OnLinesCollectionChanged;
-	}
+	void OnDrawingLineCompleted(MauiDrawingLine lastDrawingLine) =>
+		weakEventManager.HandleEvent(this, new MauiDrawingLineCompletedEventArgs(lastDrawingLine), nameof(DrawingLineCompleted));
 
-	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) =>
-		LoadLines();
+	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => LoadLines();
 
 	void AddPointToPath(PointF currentPoint) => currentPath.LineTo(currentPoint);
 
@@ -192,28 +188,31 @@ public partial class MauiDrawingView
 		{
 			canvas.SetFillPaint(drawingView.Paint, dirtyRect);
 			canvas.FillRectangle(dirtyRect);
+
 			drawingView.DrawAction?.Invoke(canvas, dirtyRect);
-			DrawCurrentLines(canvas, drawingView.Lines);
+
+			DrawCurrentLines(canvas, drawingView);
 			SetStroke(canvas, drawingView.LineWidth, drawingView.LineColor);
+
 			canvas.DrawPath(drawingView.currentPath);
 		}
 
-		void SetStroke(ICanvas canvas, float lineWidth, Color lineColor)
+		static void SetStroke(in ICanvas canvas, in float lineWidth, in Color lineColor)
 		{
 			canvas.StrokeColor = lineColor;
 			canvas.StrokeSize = lineWidth;
 		}
 
-		void DrawCurrentLines(in ICanvas canvas, in IEnumerable<MauiDrawingLine> lines)
+		static void DrawCurrentLines(in ICanvas canvas, in MauiDrawingView drawingView)
 		{
-			foreach (var line in lines)
+			foreach (var line in drawingView.Lines)
 			{
 				var path = new PathF();
 				var points = line.EnableSmoothedPath
 					? line.Points.SmoothedPathWithGranularity(line.Granularity)
 					: line.Points;
 #if ANDROID
-				points = NormalizePoints(points);
+				points = CreateCollectionWithNormalizedPoints(points, drawingView.Width, drawingView.Height);
 #endif
 				if (points.Count > 0)
 				{
@@ -222,7 +221,7 @@ public partial class MauiDrawingView
 					{
 						path.LineTo(point);
 					}
-					
+
 					SetStroke(canvas, line.LineWidth, line.LineColor);
 					canvas.DrawPath(path);
 				}
@@ -230,39 +229,20 @@ public partial class MauiDrawingView
 		}
 
 #if ANDROID
-		ObservableCollection<PointF> NormalizePoints(ObservableCollection<PointF> points)
+		static ObservableCollection<PointF> CreateCollectionWithNormalizedPoints(in ObservableCollection<PointF> points, in int drawingViewWidth, in int drawingViewHeight)
 		{
-			var newPoints = new ObservableCollection<PointF>();
+			var newPoints = new List<PointF>();
 			foreach (var point in points)
 			{
-				var pointX = point.X;
-				var pointY = point.Y;
-				if (pointX < 0)
-				{
-					pointX = 0;
-				}
-
-				if (pointX > drawingView.Width)
-				{
-					pointX = drawingView.Width;
-				}
-
-				if (point.Y < 0)
-				{
-					pointY = 0;
-				}
-
-				if (pointY > drawingView.Height)
-				{
-					pointY = drawingView.Height;
-				}
+				var pointX = Math.Clamp(point.X, 0, drawingViewWidth);
+				var pointY = Math.Clamp(point.Y, 0, drawingViewHeight);
 
 				newPoints.Add(new PointF(pointX, pointY));
 			}
 
-			return newPoints;
+			return newPoints.ToObservableCollection();
 		}
 #endif
 	}
+}
 #endif
-	}
