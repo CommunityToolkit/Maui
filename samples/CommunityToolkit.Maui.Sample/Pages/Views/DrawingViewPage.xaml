@@ -61,7 +61,8 @@
             <Label Text="DrawingView"
                    Grid.Row="9" Grid.Column="0"
                    Grid.ColumnSpan="2"/>
-            <mct:DrawingView x:Name="DrawingViewControl" 
+            <mct:DrawingView x:Name="DrawingViewControl"
+                             Margin="0,0,0,10"
                              Grid.Row="10" Grid.Column="0"
                              Grid.ColumnSpan="2"
                              LineColor="Green"
