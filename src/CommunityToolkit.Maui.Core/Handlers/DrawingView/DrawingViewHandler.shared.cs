@@ -148,7 +148,9 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 		PlatformView.DrawingLineCompleted -= OnPlatformViewDrawingLineCompleted;
 		VirtualView.Lines.CollectionChanged -= OnVirtualViewLinesCollectionChanged;
 		PlatformView.Lines.CollectionChanged -= OnPlatformViewLinesCollectionChanged;
+		
 		platformView.CleanUp();
+
 		base.DisconnectHandler(platformView);
 	}
 
