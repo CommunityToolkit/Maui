@@ -133,14 +133,6 @@ public class DrawingView : View, IDrawingView
 		get => (Action<ICanvas, RectF>?)GetValue(DrawActionProperty);
 		set => SetValue(DrawActionProperty, value);
 	}
-	
-	/// <summary>
-	/// Retrieves a <see cref="Stream"/> containing an image of the <see cref="Lines"/> that are currently drawn on the <see cref="DrawingView"/>.
-	/// </summary>
-	/// <param name="imageSizeWidth">Desired width of the image that is returned.</param>
-	/// <param name="imageSizeHeight">Desired height of the image that is returned.</param>
-	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="DrawingView"/>.</returns>
-	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight) => DrawingViewService.GetImageStream(Lines.ToList(), new Size(imageSizeWidth, imageSizeHeight), BackgroundColor);
 
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of the collection of <see cref="IDrawingLine"/> that is provided as a parameter.
@@ -155,6 +147,22 @@ public class DrawingView : View, IDrawingView
 		DrawingViewService.GetImageStream(lines.ToList(), imageSize, backgroundColor);
 
 	/// <summary>
+	/// Retrieves a <see cref="Stream"/> containing an image of the <see cref="Lines"/> that are currently drawn on the <see cref="DrawingView"/>.
+	/// </summary>
+	/// <param name="imageSizeWidth">Desired width of the image that is returned.</param>
+	/// <param name="imageSizeHeight">Desired height of the image that is returned.</param>
+	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="DrawingView"/>.</returns>
+	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight) => DrawingViewService.GetImageStream(Lines.ToList(), new Size(imageSizeWidth, imageSizeHeight), BackgroundColor);
+
+	/// <summary>
+	/// Clears the <see cref="Lines"/> collection.
+	/// </summary>
+	public void Clear()
+	{
+		Lines.Clear();
+	}
+
+	/// <summary>
 	/// Executes DrawingLineCompleted event and DrawingLineCompletedCommand
 	/// </summary>
 	/// <param name="lastDrawingLine">Last drawing line</param>
@@ -166,13 +174,5 @@ public class DrawingView : View, IDrawingView
 		{
 			DrawingLineCompletedCommand.Execute(lastDrawingLine);
 		}
-	}
-
-	/// <summary>
-	/// Clears the <see cref="Lines"/> collection.
-	/// </summary>
-	public void Clear()
-	{
-		Lines.Clear();
 	}
 }
