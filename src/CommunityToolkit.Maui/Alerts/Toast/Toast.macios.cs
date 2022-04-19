@@ -31,11 +31,11 @@ public partial class Toast
 		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height);
 
 		PlatformToast = new PlatformToast(Text,
-											Defaults.BackgroundColor.ToPlatform(),
+											AlertDefaults.BackgroundColor.ToPlatform(),
 											cornerRadius,
-											Defaults.TextColor.ToPlatform(),
+											AlertDefaults.TextColor.ToPlatform(),
 											UIFont.SystemFontOfSize((NFloat)TextSize),
-											Defaults.CharacterSpacing,
+											AlertDefaults.CharacterSpacing,
 											padding)
 		{
 			Duration = GetDuration(Duration)

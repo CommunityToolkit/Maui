@@ -17,7 +17,7 @@ public partial class Snackbar : ISnackbar
 
 	bool isDisposed;
 	string text = string.Empty;
-	string actionButtonText = Defaults.ActionButtonText;
+	string actionButtonText = AlertDefaults.ActionButtonText;
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="Snackbar"/>
@@ -84,7 +84,7 @@ public partial class Snackbar : ISnackbar
 	public static ISnackbar Make(
 		string message,
 		Action? action = null,
-		string actionButtonText = Defaults.ActionButtonText,
+		string actionButtonText = AlertDefaults.ActionButtonText,
 		TimeSpan? duration = null,
 		SnackbarOptions? visualOptions = null,
 		IView? anchor = null)
@@ -203,7 +203,7 @@ public static class SnackbarVisualElementExtension
 		this VisualElement? visualElement,
 		string message,
 		Action? action = null,
-		string actionButtonText = Defaults.ActionButtonText,
+		string actionButtonText = AlertDefaults.ActionButtonText,
 		TimeSpan? duration = null,
 		SnackbarOptions? visualOptions = null,
 		CancellationToken token = default) => Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement).Show(token);

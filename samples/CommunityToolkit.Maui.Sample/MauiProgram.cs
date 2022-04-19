@@ -105,6 +105,7 @@ public static class MauiProgram
 
 		// Add Views Pages
 		services.AddTransient<CsharpBindingPopup>();
+		services.AddTransient<DrawingViewPage>();
 		services.AddTransient<MultiplePopupPage>();
 		services.AddTransient<PopupAnchorPage>();
 		services.AddTransient<PopupPositionPage>();
@@ -182,6 +183,7 @@ public static class MauiProgram
 
 		// Add Views View Models
 		services.AddTransient<CsharpBindingPopupViewModel>();
+		services.AddTransient<DrawingViewViewModel>();
 		services.AddTransient<MultiplePopupViewModel>();
 		services.AddTransient<PopupAnchorViewModel>();
 		services.AddTransient<PopupPositionViewModel>();

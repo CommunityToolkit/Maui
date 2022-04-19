@@ -8,8 +8,8 @@
        xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Converters"
        xmlns:extensions="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Extensions"
        xmlns:layouts="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Layouts"
-       xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
        xmlns:views="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Views"
+       xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
        xmlns:sys="clr-namespace:System;assembly=netstandard"
        Padding="4,0,0,0">
 
@@ -26,7 +26,7 @@
                VerticalTextAlignment="Center" />
 
     </Shell.FlyoutHeader>
-
+    
     <FlyoutItem Title="Welcome"
                 Route="WelcomePage"
                 Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst=''}">
