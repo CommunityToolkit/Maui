@@ -153,13 +153,13 @@ public class DrawingViewTests : BaseHandlerTest
 
 		currentLine.Should().BeOfType<DrawingLine>();
 	}
-	
+
 	[Fact]
 	public void SetDefaultDrawingLineAdapter_IDrawingLineIsDrawingLine()
 	{
 		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		drawingViewHandler.SetDrawingLineAdapter(new DrawingLineAdapter());
-		
+
 		IDrawingLine? currentLine = null;
 		var action = new EventHandler<DrawingLineCompletedEventArgs>((_, e) => { currentLine = e.LastDrawingLine; });
 		drawingView.DrawingLineCompleted += action;
@@ -174,7 +174,7 @@ public class DrawingViewTests : BaseHandlerTest
 	{
 		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		drawingViewHandler.SetDrawingLineAdapter(new MockDrawingLineAdapter());
-		
+
 		IDrawingLine? currentLine = null;
 		var action = new EventHandler<DrawingLineCompletedEventArgs>((_, e) => { currentLine = e.LastDrawingLine; });
 		drawingView.DrawingLineCompleted += action;
@@ -183,7 +183,7 @@ public class DrawingViewTests : BaseHandlerTest
 
 		currentLine.Should().BeOfType<MockDrawingLine>();
 	}
-	
+
 	[Fact]
 	public void DrawingLineCompletedLastDrawingLinePassedWithCommand()
 	{
@@ -240,7 +240,7 @@ public class DrawingViewTests : BaseHandlerTest
 		drawingView.DrawingLineCompleted += action;
 		((IDrawingView)drawingView).DrawingLineCompleted(expectedDrawingLine);
 		drawingView.DrawingLineCompleted -= action;
-		
+
 		currentLine.Should().BeEquivalentTo(expectedDrawingLine);
 	}
 }

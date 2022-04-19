@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
 using FluentAssertions;
 using Xunit;
@@ -7,7 +8,12 @@ namespace CommunityToolkit.Maui.UnitTests.Views.DrawingView;
 
 public class DrawingLineTests : BaseHandlerTest
 {
-	readonly DrawingLine drawingLine = new();
+	readonly IDrawingLine drawingLine = new DrawingLine();
+
+	public DrawingLineTests()
+	{
+		Assert.IsAssignableFrom<IDrawingLine>(drawingLine);
+	}
 
 	[Fact]
 	public void OnPointsCollectionChanged()

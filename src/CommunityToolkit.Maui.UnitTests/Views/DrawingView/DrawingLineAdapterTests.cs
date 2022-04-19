@@ -7,7 +7,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views.DrawingView;
 
-public class DrawingLineAdapterTests
+public class DrawingLineAdapterTests : BaseTest
 {
 	[Fact]
 	public void DrawingViewShouldBeAssignedToIDrawingView()
