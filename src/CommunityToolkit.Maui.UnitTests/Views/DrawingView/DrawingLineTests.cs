@@ -30,7 +30,7 @@ public class DrawingLineTests : BaseHandlerTest
 	[Fact]
 	public void LineWidth()
 	{
-		drawingLine.LineWidth.Should().Be(5);
+		drawingLine.LineWidth.Should().Be(DrawingViewDefaults.LineWidth);
 
 		drawingLine.LineWidth = 10;
 
@@ -40,7 +40,7 @@ public class DrawingLineTests : BaseHandlerTest
 	[Fact]
 	public void LineColor()
 	{
-		drawingLine.LineColor.Should().Be(Colors.Black);
+		drawingLine.LineColor.Should().Be(DrawingViewDefaults.LineColor);
 
 		drawingLine.LineColor = Colors.Red;
 
@@ -50,7 +50,7 @@ public class DrawingLineTests : BaseHandlerTest
 	[Fact]
 	public void DisableSmoothedPath()
 	{
-		drawingLine.ShouldSmoothPathWhenDrawn.Should().BeTrue();
+		drawingLine.ShouldSmoothPathWhenDrawn.Should().Be(DrawingViewDefaults.ShouldSmoothPathWhenDrawn);
 
 		drawingLine.ShouldSmoothPathWhenDrawn = false;
 
@@ -63,7 +63,7 @@ public class DrawingLineTests : BaseHandlerTest
 	[InlineData(int.MaxValue, int.MaxValue)]
 	public void GranularityCheckRange(int value, int expectedValue)
 	{
-		drawingLine.Granularity.Should().Be(5);
+		drawingLine.Granularity.Should().Be(DrawingViewDefaults.MinimumGranularity);
 
 		drawingLine.Granularity = value;
 
