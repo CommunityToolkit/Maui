@@ -52,7 +52,7 @@ public partial class MauiDrawingView
 	/// <summary>
 	/// Drawable background
 	/// </summary>
-	public Paint Paint { get; set; } = new SolidPaint(AlertDefaults.BackgroundColor);
+	public Paint Paint { get; set; } = new SolidPaint(DrawingViewDefaults.BackgroundColor);
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS
 	bool isDrawing;

@@ -20,5 +20,11 @@ public static class DrawingViewDefaults
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static Color LineColor { get; } = Colors.Black;
+
+	/// <summary>
+	/// Default Background Color
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public static Color BackgroundColor { get; } = Colors.LightGray;
 }
 

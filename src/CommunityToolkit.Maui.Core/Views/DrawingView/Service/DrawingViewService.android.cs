@@ -120,7 +120,7 @@ public static partial class DrawingViewService
 		using var canvas = new Canvas(image);
 
 		// background
-		canvas.DrawColor(backgroundColor.ToPlatform(AlertDefaults.BackgroundColor));
+		canvas.DrawColor(backgroundColor.ToPlatform(DrawingViewDefaults.BackgroundColor));
 
 		// strokes
 		using var paint = new Paint
@@ -182,7 +182,7 @@ public static partial class DrawingViewService
 		using var canvas = new Canvas(image);
 
 		// background
-		canvas.DrawColor(backgroundColor.ToPlatform(AlertDefaults.BackgroundColor));
+		canvas.DrawColor(backgroundColor.ToPlatform(DrawingViewDefaults.BackgroundColor));
 
 		foreach (var line in lines)
 		{

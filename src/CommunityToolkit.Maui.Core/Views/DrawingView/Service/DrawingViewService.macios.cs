@@ -84,7 +84,7 @@ public static partial class DrawingViewService
 		UIGraphics.BeginImageContextWithOptions(imageSize, false, 1);
 
 		var context = UIGraphics.GetCurrentContext();
-		context.SetFillColor(backgroundColor?.ToCGColor() ?? AlertDefaults.BackgroundColor.ToCGColor());
+		context.SetFillColor(backgroundColor?.ToCGColor() ?? DrawingViewDefaults.BackgroundColor.ToCGColor());
 		context.FillRect(new CGRect(CGPoint.Empty, imageSize));
 
 		context.SetStrokeColor(strokeColor.ToCGColor());
@@ -126,7 +126,7 @@ public static partial class DrawingViewService
 
 		var context = UIGraphics.GetCurrentContext();
 
-		context.SetFillColor(backgroundColor?.ToCGColor() ?? AlertDefaults.BackgroundColor.ToCGColor());
+		context.SetFillColor(backgroundColor?.ToCGColor() ?? DrawingViewDefaults.BackgroundColor.ToCGColor());
 		context.FillRect(new CGRect(CGPoint.Empty, imageSize));
 
 		foreach (var line in lines)

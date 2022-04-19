@@ -107,7 +107,7 @@ public static class DrawingViewService
 			scale ? (int)size.Height : drawingHeight, 96);
 
 		using var session = offscreen.CreateDrawingSession();
-		session.Clear(backgroundColor?.ToWindowsColor() ?? Defaults.BackgroundColor.ToWindowsColor());
+		session.Clear(backgroundColor?.ToWindowsColor() ?? DrawingViewDefaults.BackgroundColor.ToWindowsColor());
 		var strokeBuilder = new InkStrokeBuilder();
 		var inkDrawingAttributes = new InkDrawingAttributes
 		{
@@ -152,7 +152,7 @@ public static class DrawingViewService
 			scale ? (int)size.Height : drawingHeight, 96);
 
 		using var session = offscreen.CreateDrawingSession();
-		session.Clear(backgroundColor?.ToWindowsColor() ?? Defaults.BackgroundColor.ToWindowsColor());
+		session.Clear(backgroundColor?.ToWindowsColor() ?? DrawingViewDefaults.BackgroundColor.ToWindowsColor());
 
 		foreach (var line in lines)
 		{
