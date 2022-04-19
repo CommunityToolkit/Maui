@@ -88,7 +88,7 @@ public class DrawingView : View, IDrawingView
 	/// </summary>
 	public ICommand? DrawingLineCompletedCommand
 	{
-		get => (ICommand)GetValue(DrawingLineCompletedCommandProperty);
+		get => (ICommand?)GetValue(DrawingLineCompletedCommandProperty);
 		set => SetValue(DrawingLineCompletedCommandProperty, value);
 	}
 
