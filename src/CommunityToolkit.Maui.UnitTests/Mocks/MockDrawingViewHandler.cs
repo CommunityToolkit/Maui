@@ -86,11 +86,13 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawin
 		Lines.Clear();
 		foreach (var line in VirtualView.Lines)
 		{
-			Lines.Add(new MauiDrawingLine()
+			Lines.Add(new MauiDrawingLine
 			{
 				ShouldSmoothPathWhenDrawn = line.ShouldSmoothPathWhenDrawn,
 				Granularity = line.Granularity,
-				LineWidth = line.LineWidth
+				LineWidth = line.LineWidth,
+				LineColor = line.LineColor,
+				Points = line.Points
 			});
 		}
 		var drawingLine = adapter.ConvertMauiDrawingLine(Lines.Last());
@@ -103,7 +105,7 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawin
 	}
 }
 
-public class MockDrawingLineAdapter : IDrawingLineAdapter
+class MockDrawingLineAdapter : IDrawingLineAdapter
 {
 	public IDrawingLine ConvertMauiDrawingLine(MauiDrawingLine mauiDrawingLine)
 	{
@@ -118,7 +120,7 @@ public class MockDrawingLineAdapter : IDrawingLineAdapter
 	}
 }
 
-public class MockDrawingLine : IDrawingLine
+class MockDrawingLine : IDrawingLine
 {
 	public int Granularity { get; set; }
 	public Color LineColor { get; set; } = Colors.Blue;

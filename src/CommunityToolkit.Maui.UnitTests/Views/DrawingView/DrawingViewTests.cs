@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.UnitTests.Mocks;
@@ -147,12 +148,19 @@ public class DrawingViewTests : BaseHandlerTest
 	{
 		CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		IDrawingLine? currentLine = null;
-		var action = new EventHandler<DrawingLineCompletedEventArgs>((_, e) => { currentLine = e.LastDrawingLine; });
+		var action = new EventHandler<DrawingLineCompletedEventArgs>((_, e) => currentLine = e.LastDrawingLine);
 		drawingView.DrawingLineCompleted += action;
-		drawingView.Lines.Add(new DrawingLine());
+
+		drawingView.Lines.Add(new DrawingLine
+		{
+			LineColor = Colors.BlanchedAlmond
+		});
+
 		drawingView.DrawingLineCompleted -= action;
 
-		currentLine.Should().BeOfType<DrawingLine>();
+		Assert.NotNull(currentLine);
+		currentLine?.Should().BeOfType<DrawingLine>();
+		currentLine?.LineColor.Should().Be(Colors.BlanchedAlmond);
 	}
 
 	[Fact]
@@ -162,12 +170,20 @@ public class DrawingViewTests : BaseHandlerTest
 		drawingViewHandler.SetDrawingLineAdapter(new DrawingLineAdapter());
 
 		IDrawingLine? currentLine = null;
-		var action = new EventHandler<DrawingLineCompletedEventArgs>((_, e) => { currentLine = e.LastDrawingLine; });
+		var action = new EventHandler<DrawingLineCompletedEventArgs>((_, e) => currentLine = e.LastDrawingLine);
+
 		drawingView.DrawingLineCompleted += action;
-		drawingView.Lines.Add(new DrawingLine());
+
+		drawingView.Lines.Add(new DrawingLine
+		{
+			LineColor = Colors.Linen
+		});
+
 		drawingView.DrawingLineCompleted -= action;
 
+		Assert.NotNull(currentLine);
 		currentLine.Should().BeOfType<DrawingLine>();
+		currentLine?.LineColor.Should().Be(Colors.Linen);
 	}
 
 	[Fact]
@@ -178,11 +194,19 @@ public class DrawingViewTests : BaseHandlerTest
 
 		IDrawingLine? currentLine = null;
 		var action = new EventHandler<DrawingLineCompletedEventArgs>((_, e) => { currentLine = e.LastDrawingLine; });
+
 		drawingView.DrawingLineCompleted += action;
-		drawingView.Lines.Add(new DrawingLine());
+
+		drawingView.Lines.Add(new DrawingLine
+		{
+			LineColor = Colors.LimeGreen
+		});
+
 		drawingView.DrawingLineCompleted -= action;
 
+		Assert.NotNull(currentLine);
 		currentLine.Should().BeOfType<MockDrawingLine>();
+		currentLine?.LineColor.Should().Be(Colors.LimeGreen);
 	}
 
 	[Fact]
@@ -190,10 +214,10 @@ public class DrawingViewTests : BaseHandlerTest
 	{
 		var expectedDrawingLine = new DrawingLine
 		{
-			LineColor = Colors.Black,
-			LineWidth = 5f,
+			LineColor = Colors.Grey,
+			LineWidth = 11f,
 			ShouldSmoothPathWhenDrawn = false,
-			Granularity = 5,
+			Granularity = 21,
 			Points = new ObservableCollection<PointF>(new[] { new PointF(10, 10) })
 		};
 
@@ -229,15 +253,15 @@ public class DrawingViewTests : BaseHandlerTest
 	{
 		var expectedDrawingLine = new DrawingLine
 		{
-			LineColor = Colors.Black,
-			LineWidth = 5f,
+			LineColor = Colors.GreenYellow,
+			LineWidth = 15f,
 			ShouldSmoothPathWhenDrawn = false,
-			Granularity = 5,
+			Granularity = 55,
 			Points = new ObservableCollection<PointF>(new[] { new PointF(10, 10) })
 		};
 
 		IDrawingLine? currentLine = null;
-		var action = new EventHandler<DrawingLineCompletedEventArgs>((_, e) => { currentLine = e.LastDrawingLine; });
+		var action = new EventHandler<DrawingLineCompletedEventArgs>((_, e) => currentLine = e.LastDrawingLine);
 		drawingView.DrawingLineCompleted += action;
 		((IDrawingView)drawingView).DrawingLineCompleted(expectedDrawingLine);
 		drawingView.DrawingLineCompleted -= action;
