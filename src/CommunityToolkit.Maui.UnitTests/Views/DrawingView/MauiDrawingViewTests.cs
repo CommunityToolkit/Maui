@@ -13,11 +13,11 @@ public class MauiDrawingViewTests : BaseHandlerTest
 	{
 		var expectedDefaultValue = new MauiDrawingView
 		{
-			ClearOnFinish = false,
+			ShouldClearOnFinish = false,
 			DrawAction = null,
 			LineColor = Colors.Black,
 			LineWidth = 5f,
-			MultiLineMode = false
+			IsMultiLineModeEnabled = false
 		};
 
 		drawingView.Should().BeEquivalentTo(expectedDefaultValue);

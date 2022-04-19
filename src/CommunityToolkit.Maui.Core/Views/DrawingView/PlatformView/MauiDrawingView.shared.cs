@@ -27,12 +27,12 @@ public partial class MauiDrawingView
 	/// <summary>
 	/// Enable or disable multiline mode
 	/// </summary>
-	public bool MultiLineMode { get; set; }
+	public bool IsMultiLineModeEnabled { get; set; }
 
 	/// <summary>
 	/// Clear drawing on finish
 	/// </summary>
-	public bool ClearOnFinish { get; set; }
+	public bool ShouldClearOnFinish { get; set; }
 
 	/// <summary>
 	/// Line color
@@ -88,7 +88,7 @@ public partial class MauiDrawingView
 
 		Lines.CollectionChanged -= OnLinesCollectionChanged;
 
-		if (!MultiLineMode)
+		if (!IsMultiLineModeEnabled)
 		{
 			Lines.Clear();
 			ClearPath();
@@ -134,7 +134,7 @@ public partial class MauiDrawingView
 			OnDrawingLineCompleted(currentLine);
 		}
 
-		if (ClearOnFinish)
+		if (ShouldClearOnFinish)
 		{
 			Lines.Clear();
 			ClearPath();
@@ -209,7 +209,7 @@ public partial class MauiDrawingView
 			{
 				var path = new PathF();
 				var points = line.ShouldSmoothPathWhenDrawn
-					? line.Points.SmoothedPathWithGranularity(line.Granularity)
+					? line.Points.CreateSmoothedPathWithGranularity(line.Granularity)
 					: line.Points;
 #if ANDROID
 				points = CreateCollectionWithNormalizedPoints(points, drawingView.Width, drawingView.Height);

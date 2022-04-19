@@ -14,7 +14,7 @@ public class MauiDrawingViewExtensionsTests : BaseTest
 			new(10, 10),
 			new(20, 20)
 		};
-		var newPoints = points.SmoothedPathWithGranularity(points.Count - 1);
+		var newPoints = points.CreateSmoothedPathWithGranularity(points.Count - 1);
 		newPoints.Should().BeEquivalentTo(points);
 	}
 
@@ -43,7 +43,7 @@ public class MauiDrawingViewExtensionsTests : BaseTest
 			new(30, 30)
 		};
 		
-		var newPoints = points.SmoothedPathWithGranularity(2);
+		var newPoints = points.CreateSmoothedPathWithGranularity(2);
 		// each second point should be equivalent
 		newPoints.Should().BeEquivalentTo(expectedPoints);
 	}

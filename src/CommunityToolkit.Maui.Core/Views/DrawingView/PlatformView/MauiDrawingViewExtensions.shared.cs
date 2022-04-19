@@ -12,32 +12,32 @@ public static class MauiDrawingViewExtensions
 	/// <summary>
 	/// Get smoothed path.
 	/// </summary>
-	public static ObservableCollection<PointF> SmoothedPathWithGranularity(this IEnumerable<PointF> currentPoints, int granularity)
+	public static ObservableCollection<PointF> CreateSmoothedPathWithGranularity(this IEnumerable<PointF> currentPoints, int granularity)
 	{
-		var currentPointsCopy = new ObservableCollection<PointF>(currentPoints);
+		var currentPointsList = new List<PointF>(currentPoints);
 
 		// not enough points to smooth effectively, so return the original path and points.
-		if (currentPointsCopy.Count < granularity + 2)
+		if (currentPointsList.Count < granularity + 2)
 		{
-			return currentPointsCopy;
+			return currentPointsList.ToObservableCollection();
 		}
 
-		var smoothedPoints = new ObservableCollection<PointF>();
+		var smoothedPointsList = new List<PointF>();
 
 		// duplicate the first and last points as control points.
-		currentPointsCopy.Insert(0, currentPointsCopy[0]);
-		currentPointsCopy.Add(currentPointsCopy[^1]);
+		currentPointsList.Insert(0, currentPointsList[0]);
+		currentPointsList.Add(currentPointsList[^1]);
 
 		// add the first point
-		smoothedPoints.Add(currentPointsCopy[0]);
+		smoothedPointsList.Add(currentPointsList[0]);
 
-		var currentPointsCount = currentPointsCopy.Count;
+		var currentPointsCount = currentPointsList.Count;
 		for (var index = 1; index < currentPointsCount - 2; index++)
 		{
-			var p0 = currentPointsCopy[index - 1];
-			var p1 = currentPointsCopy[index];
-			var p2 = currentPointsCopy[index + 1];
-			var p3 = currentPointsCopy[index + 2];
+			var p0 = currentPointsList[index - 1];
+			var p1 = currentPointsList[index];
+			var p2 = currentPointsList[index + 1];
+			var p3 = currentPointsList[index + 2];
 
 			// add n points starting at p1 + dx/dy up until p2 using Catmull-Rom splines
 			for (var i = 1; i < granularity; i++)
@@ -48,18 +48,18 @@ public static class MauiDrawingViewExtensions
 
 				// intermediate point
 				var mid = GetIntermediatePoint(p0, p1, p2, p3, t, tt, ttt);
-				smoothedPoints.Add(mid);
+				smoothedPointsList.Add(mid);
 			}
 
 			// add p2
-			smoothedPoints.Add(p2);
+			smoothedPointsList.Add(p2);
 		}
 
 		// add the last point
-		var last = currentPointsCopy[^1];
-		smoothedPoints.Add(last);
+		var last = currentPointsList[^1];
+		smoothedPointsList.Add(last);
 
-		return smoothedPoints;
+		return smoothedPointsList.ToObservableCollection();
 	}
 
 	static Point GetIntermediatePoint(PointF p0, PointF p1, PointF p2, PointF p3, in float t, in float tt, in float ttt) => new()
@@ -82,9 +82,9 @@ public static class MauiDrawingViewExtensions
 	/// </summary>
 	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/></param>
 	/// <param name="multiLineMode">value</param>
-	public static void SetMultiLineMode(this MauiDrawingView mauiDrawingView, bool multiLineMode)
+	public static void SetIsMultiLineModeEnabled(this MauiDrawingView mauiDrawingView, bool multiLineMode)
 	{
-		mauiDrawingView.MultiLineMode = multiLineMode;
+		mauiDrawingView.IsMultiLineModeEnabled = multiLineMode;
 	}
 
 	/// <summary>
@@ -102,9 +102,9 @@ public static class MauiDrawingViewExtensions
 	/// </summary>
 	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/></param>
 	/// <param name="clearOnFinish">value</param>
-	public static void SetClearOnFinish(this MauiDrawingView mauiDrawingView, bool clearOnFinish)
+	public static void SetShouldClearOnFinish(this MauiDrawingView mauiDrawingView, bool clearOnFinish)
 	{
-		mauiDrawingView.ClearOnFinish = clearOnFinish;
+		mauiDrawingView.ShouldClearOnFinish = clearOnFinish;
 	}
 
 	/// <summary>
@@ -184,7 +184,7 @@ public static class MauiDrawingViewExtensions
 		}
 
 		IReadOnlyList<MauiDrawingLine> lines = mauiDrawingView.Lines.ToList();
-		if (!mauiDrawingView.MultiLineMode && mauiDrawingView.Lines.Count > 1)
+		if (!mauiDrawingView.IsMultiLineModeEnabled && mauiDrawingView.Lines.Count > 1)
 		{
 			lines = lines.TakeLast(1).ToList();
 		}

@@ -77,7 +77,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
 	public static void MapShouldClearOnFinish(DrawingViewHandler handler, IDrawingView view)
 	{
-		handler.PlatformView.SetClearOnFinish(view.ShouldClearOnFinish);
+		handler.PlatformView.SetShouldClearOnFinish(view.ShouldClearOnFinish);
 	}
 
 	/// <summary>
@@ -107,7 +107,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
 	public static void MapIsMultiLineModeEnabled(DrawingViewHandler handler, IDrawingView view)
 	{
-		handler.PlatformView.SetMultiLineMode(view.IsMultiLineModeEnabled);
+		handler.PlatformView.SetIsMultiLineModeEnabled(view.IsMultiLineModeEnabled);
 	}
 
 	/// <summary>
