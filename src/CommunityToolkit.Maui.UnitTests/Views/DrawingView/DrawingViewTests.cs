@@ -181,7 +181,7 @@ public class DrawingViewTests : BaseHandlerTest
 
 		drawingView.DrawingLineCompleted -= action;
 
-		Assert.NotNull(currentLine);
+		currentLine.Should().NotBeNull();
 		currentLine.Should().BeOfType<DrawingLine>();
 		currentLine?.LineColor.Should().Be(Colors.Linen);
 	}
@@ -193,7 +193,7 @@ public class DrawingViewTests : BaseHandlerTest
 		drawingViewHandler.SetDrawingLineAdapter(new MockDrawingLineAdapter());
 
 		IDrawingLine? currentLine = null;
-		var action = new EventHandler<DrawingLineCompletedEventArgs>((_, e) => { currentLine = e.LastDrawingLine; });
+		var action = new EventHandler<DrawingLineCompletedEventArgs>((_, e) => currentLine = e.LastDrawingLine);
 
 		drawingView.DrawingLineCompleted += action;
 
@@ -204,7 +204,7 @@ public class DrawingViewTests : BaseHandlerTest
 
 		drawingView.DrawingLineCompleted -= action;
 
-		Assert.NotNull(currentLine);
+		currentLine.Should().NotBeNull();
 		currentLine.Should().BeOfType<MockDrawingLine>();
 		currentLine?.LineColor.Should().Be(Colors.LimeGreen);
 	}
