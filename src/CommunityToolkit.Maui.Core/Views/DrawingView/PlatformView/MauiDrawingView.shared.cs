@@ -10,6 +10,11 @@ public partial class MauiDrawingView
 {
 	readonly WeakEventManager weakEventManager = new();
 
+	bool isDrawing;
+	PointF previousPoint;
+	PathF currentPath = new();
+	MauiDrawingLine? currentLine;
+
 	/// <summary>
 	/// Event raised when drawing line completed 
 	/// </summary>
@@ -53,12 +58,6 @@ public partial class MauiDrawingView
 	/// Drawable background
 	/// </summary>
 	public Paint Paint { get; set; } = new SolidPaint(DrawingViewDefaults.BackgroundColor);
-
-#if ANDROID || IOS || MACCATALYST || WINDOWS
-	bool isDrawing;
-	PointF previousPoint;
-	PathF currentPath = new();
-	MauiDrawingLine? currentLine;
 
 	/// <summary>
 	/// Initialize resources
@@ -172,7 +171,9 @@ public partial class MauiDrawingView
 
 	void Redraw()
 	{
+#if IOS || ANDROID || MACCATALYST || WINDOWS
 		Invalidate();
+#endif
 	}
 
 	class DrawingViewDrawable : IDrawable
@@ -244,5 +245,4 @@ public partial class MauiDrawingView
 		}
 #endif
 	}
-#endif
 }
