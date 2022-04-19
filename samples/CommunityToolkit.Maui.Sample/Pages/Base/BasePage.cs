@@ -17,17 +17,9 @@ public abstract class BasePage : ContentPage
 	protected BasePage(IDeviceInfo deviceInfo, object? viewModel = null)
 	{
 		BindingContext = viewModel;
+		Padding = 12;
 
-		BackgroundColor = (Color)(Application.Current?.Resources["AppBackgroundColor"] ?? throw new InvalidOperationException("Application.Current cannot be null"));
-
-		if (deviceInfo.Platform == DevicePlatform.iOS || deviceInfo.Platform == DevicePlatform.MacCatalyst)
-		{
-			Padding = new Thickness(12, 108, 12, 12);
-		}
-		else
-		{
-			Padding = 12;
-		}
+		SetDynamicResource(BackgroundColorProperty, "AppBackgroundColor");
 
 		if (string.IsNullOrWhiteSpace(Title))
 		{

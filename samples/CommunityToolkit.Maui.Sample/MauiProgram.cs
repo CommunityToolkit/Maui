@@ -82,6 +82,8 @@ public static class MauiProgram
 		services.AddTransient<IsListNotNullOrEmptyConverterPage>();
 		services.AddTransient<IsListNullOrEmptyConverterPage>();
 		services.AddTransient<IsNotEqualConverterPage>();
+		services.AddTransient<IsNotNullConverterPage>();
+		services.AddTransient<IsNullConverterPage>();
 		services.AddTransient<IsStringNotNullOrEmptyConverterPage>();
 		services.AddTransient<IsStringNotNullOrWhiteSpaceConverterPage>();
 		services.AddTransient<IsStringNullOrEmptyConverterPage>();
@@ -155,6 +157,8 @@ public static class MauiProgram
 		services.AddTransient<InvertedBoolConverterViewModel>();
 		services.AddTransient<IsListNotNullOrEmptyConverterViewModel>();
 		services.AddTransient<IsListNullOrEmptyConverterViewModel>();
+		services.AddTransient<IsNotNullConverterViewModel>();
+		services.AddTransient<IsNullConverterViewModel>();
 		services.AddTransient<IsStringNotNullOrEmptyConverterViewModel>();
 		services.AddTransient<IsStringNotNullOrWhiteSpaceConverterViewModel>();
 		services.AddTransient<IsStringNullOrEmptyConverterViewModel>();

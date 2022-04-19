@@ -94,6 +94,13 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
 
 			SectionModel.Create<StateToBooleanConverterViewModel>(nameof(StateToBooleanConverter),
 				"A converter that allows the user to convert a LayoutState enum to a boolean value."),
+
+			SectionModel.Create<IsNotNullConverterViewModel>(nameof(IsNotNullConverter),
+				"A converter that allows users to convert an incoming object? to a bool."),
+
+
+			SectionModel.Create<IsNullConverterViewModel>(nameof(IsNullConverter),
+				"A converter that allows users to convert an incoming object? to a bool."),
 		})
 	{
 	}
