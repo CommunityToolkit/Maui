@@ -27,12 +27,12 @@ public partial class MauiDrawingView
 	/// <summary>
 	/// Enable or disable multiline mode
 	/// </summary>
-	public bool IsMultiLineModeEnabled { get; set; }
+	public bool IsMultiLineModeEnabled { get; set; } = DrawingViewDefaults.IsMultiLineModeEnabled;
 
 	/// <summary>
 	/// Clear drawing on finish
 	/// </summary>
-	public bool ShouldClearOnFinish { get; set; }
+	public bool ShouldClearOnFinish { get; set; } = DrawingViewDefaults.ShouldClearOnFinish;
 
 	/// <summary>
 	/// Line color
