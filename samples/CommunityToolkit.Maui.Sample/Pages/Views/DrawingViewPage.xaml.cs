@@ -54,7 +54,7 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 				Points = new(DrawingViewViewModel.GeneratePoints(10, width, height)),
 				LineColor = Color.FromRgb(Random.Shared.Next(255), Random.Shared.Next(255), Random.Shared.Next(255)),
 				LineWidth = 10,
-				EnableSmoothedPath = false,
+				ShouldSmoothPathWhenDrawn = false,
 				Granularity = 5
 			};
 		}

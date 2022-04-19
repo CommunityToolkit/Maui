@@ -10,14 +10,14 @@ namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
 public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawingViewHandler
 {
-	IDrawingLineAdapter adapter;
+	IDrawingLineAdapter adapter = new DrawingLineAdapter();
 
 	public static readonly PropertyMapper<IDrawingView, MockDrawingViewHandler> DrawingViewPropertyMapper = new(ViewMapper)
 	{
 		[nameof(IDrawingView.LineWidth)] = MapLineWidth,
 		[nameof(IDrawingView.LineColor)] = MapLineColor,
-		[nameof(IDrawingView.ClearOnFinish)] = MapClearOnFinish,
-		[nameof(IDrawingView.MultiLineMode)] = MapMultiLineMode,
+		[nameof(IDrawingView.ShouldClearOnFinish)] = MapShouldSmoothPathWhenDrawn,
+		[nameof(IDrawingView.IsMultiLineModeEnabled)] = MapIsMultiLineModeEnabled,
 		[nameof(IDrawingView.DrawAction)] = MapDrawAction
 	};
 
@@ -27,7 +27,7 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawin
 
 	public MockDrawingViewHandler(IPropertyMapper mapper) : base(mapper)
 	{
-		SetDrawingLineAdapter();
+
 	}
 
 	/// <inheritdoc />
@@ -46,8 +46,8 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawin
 
 	public int MapLineWidthCount { get; private set; }
 	public int MapLineColorCount { get; private set; }
-	public int MapClearOnFinishCount { get; private set; }
-	public int MapMultiLineModeCount { get; private set; }
+	public int MapShouldSmoothPathWhenDrawnCount { get; private set; }
+	public int MapIsMultiLineModeEnabledCount { get; private set; }
 	public int MapDrawCount { get; private set; }
 	public List<MauiDrawingLine> Lines { get; } = new();
 
@@ -61,14 +61,14 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawin
 		arg1.MapLineColorCount++;
 	}
 
-	static void MapClearOnFinish(MockDrawingViewHandler arg1, IDrawingView arg2)
+	static void MapShouldSmoothPathWhenDrawn(MockDrawingViewHandler arg1, IDrawingView arg2)
 	{
-		arg1.MapClearOnFinishCount++;
+		arg1.MapShouldSmoothPathWhenDrawnCount++;
 	}
 
-	static void MapMultiLineMode(MockDrawingViewHandler arg1, IDrawingView arg2)
+	static void MapIsMultiLineModeEnabled(MockDrawingViewHandler arg1, IDrawingView arg2)
 	{
-		arg1.MapMultiLineModeCount++;
+		arg1.MapIsMultiLineModeEnabledCount++;
 	}
 
 	static void MapDrawAction(MockDrawingViewHandler arg1, IDrawingView arg2)
@@ -88,7 +88,7 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawin
 		{
 			Lines.Add(new MauiDrawingLine()
 			{
-				EnableSmoothedPath = line.EnableSmoothedPath,
+				ShouldSmoothPathWhenDrawn = line.ShouldSmoothPathWhenDrawn,
 				Granularity = line.Granularity,
 				LineWidth = line.LineWidth
 			});
@@ -97,10 +97,9 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawin
 		VirtualView.DrawingLineCompleted(drawingLine);
 	}
 
-	[MemberNotNull(nameof(adapter))]
-	public void SetDrawingLineAdapter(IDrawingLineAdapter? drawingLineAdapter = null)
+	public void SetDrawingLineAdapter(IDrawingLineAdapter drawingLineAdapter)
 	{
-		adapter = drawingLineAdapter ?? new DrawingLineAdapter();
+		adapter = drawingLineAdapter;
 	}
 }
 
@@ -110,7 +109,7 @@ public class MockDrawingLineAdapter : IDrawingLineAdapter
 	{
 		return new MockDrawingLine
 		{
-			EnableSmoothedPath = mauiDrawingLine.EnableSmoothedPath,
+			ShouldSmoothPathWhenDrawn = mauiDrawingLine.ShouldSmoothPathWhenDrawn,
 			LineWidth = mauiDrawingLine.LineWidth,
 			Granularity = mauiDrawingLine.Granularity,
 			LineColor = mauiDrawingLine.LineColor,
@@ -125,7 +124,7 @@ public class MockDrawingLine : IDrawingLine
 	public Color LineColor { get; set; } = Colors.Blue;
 	public float LineWidth { get; set; }
 	public ObservableCollection<PointF> Points { get; set; } = new();
-	public bool EnableSmoothedPath { get; set; }
+	public bool ShouldSmoothPathWhenDrawn { get; set; }
 	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Color backgroundColor)
 	{
 		return ValueTask.FromResult(Stream.Null);

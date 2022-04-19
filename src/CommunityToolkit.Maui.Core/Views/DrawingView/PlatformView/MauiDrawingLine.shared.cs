@@ -7,19 +7,17 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiDrawingLine
 {
-	const int minValueGranularity = 5;
-
-	int granularity = minValueGranularity;
+	int granularity = DrawingViewDefaults.MinimumGranularity;
 
 	/// <summary>
 	/// The width that is used to draw this line on the <see cref="MauiDrawingView"/>.
 	/// </summary>
-	public float LineWidth { get; set; } = 5;
+	public float LineWidth { get; set; } = DrawingViewDefaults.LineWidth;
 
 	/// <summary>
 	/// The <see cref="Color"/> that is used to draw this line on the <see cref="MauiDrawingView"/>.
 	/// </summary>
-	public Color LineColor { get; set; } = Colors.Black;
+	public Color LineColor { get; set; } = DrawingViewDefaults.LineColor;
 	
 	/// <summary>
 	/// The collection of <see cref="PointF"/> that makes up this line on the <see cref="MauiDrawingView"/>.
@@ -27,16 +25,16 @@ public class MauiDrawingLine
 	public ObservableCollection<PointF> Points { get; set; } = new();
 
 	/// <summary>
-	/// The granularity of this line. Clamped to a minimum value of 5. Value clamped between <see cref="minValueGranularity"/> and <see cref="int.MaxValue"/>
+	/// The granularity of this line. Clamped to a minimum value of 5. Value clamped between <see cref="DrawingViewDefaults.MinimumGranularity"/> and <see cref="int.MaxValue"/>
 	/// </summary>
 	public int Granularity
 	{
 		get => granularity;
-		set => granularity = Math.Clamp(value, minValueGranularity, int.MaxValue);
+		set => granularity = Math.Clamp(value, DrawingViewDefaults.MinimumGranularity, int.MaxValue);
 	}
 
 	/// <summary>
 	/// Enables or disabled if this line is smoothed (anti-aliased) when drawn.
 	/// </summary>
-	public bool EnableSmoothedPath { get; set; } = true;
+	public bool ShouldSmoothPathWhenDrawn { get; set; } = true;
 }

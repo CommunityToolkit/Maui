@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core.Views;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Views;
 using FluentAssertions;
 using Xunit;
 
@@ -43,11 +44,11 @@ public class MauiDrawingLineTests : BaseHandlerTest
 	[Fact]
 	public void EnableSmoothedPath()
 	{
-		drawingLine.EnableSmoothedPath.Should().BeTrue();
+		drawingLine.ShouldSmoothPathWhenDrawn.Should().BeTrue();
 
-		drawingLine.EnableSmoothedPath = false;
+		drawingLine.ShouldSmoothPathWhenDrawn = false;
 
-		drawingLine.EnableSmoothedPath.Should().BeFalse();
+		drawingLine.ShouldSmoothPathWhenDrawn.Should().BeFalse();
 	}
 
 	[Theory]
@@ -68,10 +69,10 @@ public class MauiDrawingLineTests : BaseHandlerTest
 	{
 		var expectedDefaultValue = new MauiDrawingLine
 		{
-			LineColor = Colors.Black,
-			LineWidth = 5f,
-			EnableSmoothedPath = true,
-			Granularity = 5
+			LineColor = DrawingViewDefaults.LineColor,
+			LineWidth = DrawingViewDefaults.LineWidth,
+			ShouldSmoothPathWhenDrawn = DrawingViewDefaults.ShouldSmoothPathWhenDrawn,
+			Granularity = DrawingViewDefaults.MinimumGranularity
 		};
 
 		drawingLine.Should().BeEquivalentTo(expectedDefaultValue);

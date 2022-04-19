@@ -17,18 +17,18 @@ public class DrawingView : View, IDrawingView
 	/// </summary>
 	public static readonly BindableProperty DrawActionProperty =
 		BindableProperty.Create(nameof(DrawAction), typeof(Action<ICanvas, RectF>), typeof(DrawingView));
-	
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="ClearOnFinish"/> property.
-	/// </summary>
-	public static readonly BindableProperty ClearOnFinishProperty =
-		BindableProperty.Create(nameof(ClearOnFinish), typeof(bool), typeof(DrawingView), default(bool));
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="MultiLineMode"/> property.
+	/// Backing BindableProperty for the <see cref="ShouldClearOnFinish"/> property.
 	/// </summary>
-	public static readonly BindableProperty MultiLineModeProperty =
-		BindableProperty.Create(nameof(MultiLineMode), typeof(bool), typeof(DrawingView), default(bool));
+	public static readonly BindableProperty ShouldClearOnFinishProperty =
+		BindableProperty.Create(nameof(ShouldClearOnFinish), typeof(bool), typeof(DrawingView), DrawingViewDefaults.ShouldClearOnFinish);
+
+	/// <summary>
+	/// Backing BindableProperty for the <see cref="IsMultiLineModeEnabled"/> property.
+	/// </summary>
+	public static readonly BindableProperty IsMultiLineModeEnabledProperty =
+		BindableProperty.Create(nameof(IsMultiLineModeEnabled), typeof(bool), typeof(DrawingView), DrawingViewDefaults.IsMultiLineModeEnabled);
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Lines"/> property.
@@ -82,7 +82,7 @@ public class DrawingView : View, IDrawingView
 
 	/// <summary>
 	/// This command is invoked whenever the drawing of a line on <see cref="DrawingView"/> has completed.
-	/// Note that this is fired after the tap or click is lifted. When <see cref="MultiLineMode"/> is enabled
+	/// Note that this is fired after the tap or click is lifted. When <see cref="IsMultiLineModeEnabled"/> is enabled
 	/// this command is fired multiple times.
 	/// This is a bindable property.
 	/// </summary>
@@ -103,25 +103,25 @@ public class DrawingView : View, IDrawingView
 
 	/// <summary>
 	/// Toggles multi-line mode. When true, multiple lines can be drawn on the <see cref="DrawingView"/> while the tap/click is released in-between lines.
-	/// Note: when <see cref="ClearOnFinish"/> is also enabled, the lines are cleared after the tap/click is released.
+	/// Note: when <see cref="ShouldClearOnFinish"/> is also enabled, the lines are cleared after the tap/click is released.
 	/// Additionally, <see cref="DrawingLineCompletedCommand"/> will be fired after each line that is drawn.
 	/// This is a bindable property.
 	/// </summary>
-	public bool MultiLineMode
+	public bool IsMultiLineModeEnabled
 	{
-		get => (bool)GetValue(MultiLineModeProperty);
-		set => SetValue(MultiLineModeProperty, value);
+		get => (bool)GetValue(IsMultiLineModeEnabledProperty);
+		set => SetValue(IsMultiLineModeEnabledProperty, value);
 	}
 
 	/// <summary>
 	/// Indicates whether the <see cref="DrawingView"/> is cleared after releasing the tap/click and a line is drawn.
-	/// Note: when <see cref="MultiLineMode"/> is also enabled, this might cause unexpected behavior.
+	/// Note: when <see cref="IsMultiLineModeEnabled"/> is also enabled, this might cause unexpected behavior.
 	/// This is a bindable property.
 	/// </summary>
-	public bool ClearOnFinish
+	public bool ShouldClearOnFinish
 	{
-		get => (bool)GetValue(ClearOnFinishProperty);
-		set => SetValue(ClearOnFinishProperty, value);
+		get => (bool)GetValue(ShouldClearOnFinishProperty);
+		set => SetValue(ShouldClearOnFinishProperty, value);
 	}
 
 	/// <summary>

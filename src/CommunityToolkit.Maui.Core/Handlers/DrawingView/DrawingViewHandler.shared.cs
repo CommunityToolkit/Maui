@@ -19,10 +19,10 @@ public partial class DrawingViewHandler
 	public static readonly PropertyMapper<IDrawingView, DrawingViewHandler> DrawingViewMapper = new(ViewMapper)
 	{
 		[nameof(IDrawingView.Lines)] = MapLines,
-		[nameof(IDrawingView.ClearOnFinish)] = MapClearOnFinish,
+		[nameof(IDrawingView.ShouldClearOnFinish)] = MapShouldClearOnFinish,
 		[nameof(IDrawingView.LineColor)] = MapLineColor,
 		[nameof(IDrawingView.LineWidth)] = MapLineWidth,
-		[nameof(IDrawingView.MultiLineMode)] = MapMultiLineMode,
+		[nameof(IDrawingView.IsMultiLineModeEnabled)] = MapIsMultiLineModeEnabled,
 		[nameof(IDrawingView.DrawAction)] = MapDrawAction,
 		[nameof(IDrawingView.Background)] = MapDrawingViewBackground,
 	};
@@ -71,13 +71,13 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	}
 
 	/// <summary>
-	/// Action that's triggered when the DrawingView <see cref="IDrawingView.ClearOnFinish"/> property changes.
+	/// Action that's triggered when the DrawingView <see cref="IDrawingView.ShouldClearOnFinish"/> property changes.
 	/// </summary>
 	/// <param name="handler">An instance of <see cref="DrawingViewHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
-	public static void MapClearOnFinish(DrawingViewHandler handler, IDrawingView view)
+	public static void MapShouldClearOnFinish(DrawingViewHandler handler, IDrawingView view)
 	{
-		handler.PlatformView.SetClearOnFinish(view.ClearOnFinish);
+		handler.PlatformView.SetClearOnFinish(view.ShouldClearOnFinish);
 	}
 
 	/// <summary>
@@ -101,13 +101,13 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	}
 
 	/// <summary>
-	/// Action that's triggered when the DrawingView <see cref="IDrawingView.MultiLineMode"/> property changes.
+	/// Action that's triggered when the DrawingView <see cref="IDrawingView.IsMultiLineModeEnabled"/> property changes.
 	/// </summary>
 	/// <param name="handler">An instance of <see cref="DrawingViewHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
-	public static void MapMultiLineMode(DrawingViewHandler handler, IDrawingView view)
+	public static void MapIsMultiLineModeEnabled(DrawingViewHandler handler, IDrawingView view)
 	{
-		handler.PlatformView.SetMultiLineMode(view.MultiLineMode);
+		handler.PlatformView.SetMultiLineMode(view.IsMultiLineModeEnabled);
 	}
 
 	/// <summary>
@@ -197,11 +197,11 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, object>, IDr
 	}
 
 	/// <summary>
-	/// Action that's triggered when the DrawingView <see cref="IDrawingView.ClearOnFinish"/> property changes.
+	/// Action that's triggered when the DrawingView <see cref="IDrawingView.ShouldClearOnFinish"/> property changes.
 	/// </summary>
 	/// <param name="handler">An instance of <see cref="DrawingViewHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
-	public static void MapClearOnFinish(DrawingViewHandler handler, IDrawingView view)
+	public static void MapShouldClearOnFinish(DrawingViewHandler handler, IDrawingView view)
 	{
 	}
 
@@ -224,11 +224,11 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, object>, IDr
 	}
 
 	/// <summary>
-	/// Action that's triggered when the DrawingView <see cref="IDrawingView.MultiLineMode"/> property changes.
+	/// Action that's triggered when the DrawingView <see cref="IDrawingView.IsMultiLineModeEnabled"/> property changes.
 	/// </summary>
 	/// <param name="handler">An instance of <see cref="DrawingViewHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
-	public static void MapMultiLineMode(DrawingViewHandler handler, IDrawingView view)
+	public static void MapIsMultiLineModeEnabled(DrawingViewHandler handler, IDrawingView view)
 	{
 	}
 

@@ -68,10 +68,10 @@ public class DrawingViewTests : BaseHandlerTest
 		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		drawingView.Handler.Should().NotBeNull();
 
-		drawingViewHandler.MapClearOnFinishCount.Should().Be(1);
+		drawingViewHandler.MapShouldSmoothPathWhenDrawnCount.Should().Be(1);
 
-		drawingView.ClearOnFinish = true;
-		drawingViewHandler.MapClearOnFinishCount.Should().Be(2);
+		drawingView.ShouldClearOnFinish = true;
+		drawingViewHandler.MapShouldSmoothPathWhenDrawnCount.Should().Be(2);
 	}
 
 	[Fact]
@@ -92,10 +92,10 @@ public class DrawingViewTests : BaseHandlerTest
 		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		drawingView.Handler.Should().NotBeNull();
 
-		drawingViewHandler.MapMultiLineModeCount.Should().Be(1);
+		drawingViewHandler.MapIsMultiLineModeEnabledCount.Should().Be(1);
 
-		drawingView.MultiLineMode = true;
-		drawingViewHandler.MapMultiLineModeCount.Should().Be(2);
+		drawingView.IsMultiLineModeEnabled = true;
+		drawingViewHandler.MapIsMultiLineModeEnabledCount.Should().Be(2);
 	}
 
 
@@ -107,7 +107,7 @@ public class DrawingViewTests : BaseHandlerTest
 
 		drawingViewHandler.MapDrawCount.Should().Be(1);
 
-		drawingView.DrawAction = (_, _) => { testOutputHelper.WriteLine("DrawActionCalled"); };
+		drawingView.DrawAction = (_, _) => testOutputHelper.WriteLine("DrawActionCalled");
 		drawingViewHandler.MapDrawCount.Should().Be(2);
 	}
 
@@ -118,10 +118,11 @@ public class DrawingViewTests : BaseHandlerTest
 		{
 			LineColor = DrawingViewDefaults.LineColor,
 			LineWidth = DrawingViewDefaults.LineWidth,
-			MultiLineMode = false,
-			ClearOnFinish = false,
+			IsMultiLineModeEnabled = DrawingViewDefaults.IsMultiLineModeEnabled,
+			ShouldClearOnFinish = DrawingViewDefaults.ShouldClearOnFinish,
 			Lines = new ObservableCollection<IDrawingLine>(),
-			DrawAction = null
+			DrawAction = null,
+			DrawingLineCompletedCommand = null,
 		};
 
 		drawingView.Should().BeEquivalentTo(expectedDefaultValue, config => config.Excluding(ctx => ctx.Id));
@@ -191,7 +192,7 @@ public class DrawingViewTests : BaseHandlerTest
 		{
 			LineColor = Colors.Black,
 			LineWidth = 5f,
-			EnableSmoothedPath = false,
+			ShouldSmoothPathWhenDrawn = false,
 			Granularity = 5,
 			Points = new ObservableCollection<PointF>(new[] { new PointF(10, 10) })
 		};
@@ -230,7 +231,7 @@ public class DrawingViewTests : BaseHandlerTest
 		{
 			LineColor = Colors.Black,
 			LineWidth = 5f,
-			EnableSmoothedPath = false,
+			ShouldSmoothPathWhenDrawn = false,
 			Granularity = 5,
 			Points = new ObservableCollection<PointF>(new[] { new PointF(10, 10) })
 		};

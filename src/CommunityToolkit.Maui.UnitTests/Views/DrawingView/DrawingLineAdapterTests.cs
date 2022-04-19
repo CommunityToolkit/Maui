@@ -16,7 +16,7 @@ public class DrawingLineAdapterTests : BaseTest
 		{
 			LineColor = Colors.Blue,
 			LineWidth = 10f,
-			EnableSmoothedPath = false,
+			ShouldSmoothPathWhenDrawn = false,
 			Granularity = 15,
 			Points = new ObservableCollection<PointF>
 			{
@@ -28,7 +28,7 @@ public class DrawingLineAdapterTests : BaseTest
 		{
 			LineColor = Colors.Blue,
 			LineWidth = 10f,
-			EnableSmoothedPath = false,
+			ShouldSmoothPathWhenDrawn = false,
 			Granularity = 15,
 			Points = new ObservableCollection<PointF>
 			{

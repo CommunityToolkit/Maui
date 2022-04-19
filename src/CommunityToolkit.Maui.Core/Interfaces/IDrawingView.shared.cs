@@ -25,16 +25,16 @@ public interface IDrawingView : IView
 
 	/// <summary>
 	/// Toggles multi-line mode. When true, multiple lines can be drawn on the <see cref="IDrawingView"/> while the tap/click is released in-between lines.
-	/// Note: when <see cref="ClearOnFinish"/> is also enabled, the lines are cleared after the tap/click is released.
+	/// Note: when <see cref="ShouldClearOnFinish"/> is also enabled, the lines are cleared after the tap/click is released.
 	/// Additionally, <see cref="DrawingLineCompleted"/> will be fired after each line that is drawn.
 	/// </summary>
-	bool MultiLineMode { get; }
+	bool IsMultiLineModeEnabled { get; }
 
 	/// <summary>
 	/// Indicates whether the <see cref="IDrawingView"/> is cleared after releasing the tap/click and a line is drawn.
-	/// Note: when <see cref="MultiLineMode"/> is also enabled, this might cause unexpected behavior.
+	/// Note: when <see cref="IsMultiLineModeEnabled"/> is also enabled, this might cause unexpected behavior.
 	/// </summary>
-	bool ClearOnFinish { get; }
+	bool ShouldClearOnFinish { get; }
 
 	/// <summary>
 	/// Allows to draw on the <see cref="IDrawingView"/>.

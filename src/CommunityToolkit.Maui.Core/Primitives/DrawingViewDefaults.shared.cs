@@ -10,10 +10,34 @@ namespace CommunityToolkit.Maui.Core;
 public static class DrawingViewDefaults
 {
 	/// <summary>
+	/// Minimum Granularity
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public const int MinimumGranularity = 5;
+
+	/// <summary>
 	/// Default Line Width
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const float LineWidth = 5;
+
+	/// <summary>
+	/// Default Value for ShouldSmoothPathWhenDrawn
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public const bool ShouldSmoothPathWhenDrawn = true;
+
+	/// <summary>
+	/// Default Value for IsMultiLineModeEnabled
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public const bool IsMultiLineModeEnabled = false;
+
+	/// <summary>
+	/// Default Value for ShouldClearOnFinish
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public const bool ShouldClearOnFinish = false;
 
 	/// <summary>
 	/// Default Line Color

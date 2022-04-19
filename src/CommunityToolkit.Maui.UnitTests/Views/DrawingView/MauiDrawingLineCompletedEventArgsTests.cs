@@ -13,7 +13,7 @@ public class MauiDrawingLineCompletedEventArgsTests : BaseHandlerTest
 	{
 		var drawingLine = new MauiDrawingLine()
 		{
-			EnableSmoothedPath = true,
+			ShouldSmoothPathWhenDrawn = true,
 			Granularity = 10,
 			LineColor = Colors.Blue,
 			LineWidth = 10,

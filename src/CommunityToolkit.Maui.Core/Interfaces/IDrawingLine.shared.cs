@@ -30,7 +30,7 @@ public interface IDrawingLine
 	/// <summary>
 	/// Enables or disables if this line is smoothed (anti-aliased) when drawn.
 	/// </summary>
-	bool EnableSmoothedPath { get; set; }
+	bool ShouldSmoothPathWhenDrawn { get; set; }
 
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of this line, based on the <see cref="Points"/> data.

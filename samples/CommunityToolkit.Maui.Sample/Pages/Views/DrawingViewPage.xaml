@@ -10,11 +10,11 @@
                 Title="DrawingView">
 
     <ScrollView>
-        <Grid RowDefinitions="40,40,40,40,Auto,40,40,40,200,40,200,100" ColumnDefinitions="*,*">
-            <Label Grid.Row="0" Grid.Column="0" Text="Clear on Finish" Margin="0,0,5,0" />
-            <Switch  Grid.Row="0" Grid.Column="1" x:Name="ClearOnFinish" />
-            <Label  Grid.Row="1" Grid.Column="0" Text="Multi-Line Mode" Margin="0,0,5,0" />
-            <Switch  Grid.Row="1" Grid.Column="1" x:Name="MultiLineMode" />
+        <Grid RowDefinitions="40,40,40,40,40,40,40,40,200,200,100" ColumnDefinitions="*,*">
+            <Label Grid.Row="0" Grid.Column="0" Text="Clear on Finish" Margin="0,0,5,0" HorizontalOptions="End" HorizontalTextAlignment="End"/>
+            <Switch Grid.Row="0" Grid.Column="1" x:Name="ClearOnFinish" HorizontalOptions="Start" />
+            <Label Grid.Row="1" Grid.Column="0" Text="Multi-Line Mode" Margin="0,0,5,0" HorizontalOptions="End" HorizontalTextAlignment="End"/>
+            <Switch Grid.Row="1" Grid.Column="1" x:Name="MultiLineMode" HorizontalOptions="Start" />
             <Button
                 Grid.Row="2" Grid.Column="0"
                 Grid.ColumnSpan="2"
@@ -31,59 +31,60 @@
                 Text="Load points"
                 TextColor="Black" />
             <Button
-                Grid.Row="5" Grid.Column="0"
+                Grid.Row="4" Grid.Column="0"
                 Grid.ColumnSpan="2"
                 BackgroundColor="White"
                 Command="{Binding ClearLinesCommand}"
                 Text="Clear all lines"
                 TextColor="Black" />
             <Button
-                Grid.Row="6" Grid.Column="0"
+                Grid.Row="5" Grid.Column="0"
                 Grid.ColumnSpan="2"
                 BackgroundColor="White"
                 Clicked="GetCurrentDrawingViewImageClicked"
                 Text="Display current gesture pad image"
                 TextColor="Black" />
             <Button
-                Grid.Row="7" Grid.Column="0"
+                Grid.Row="6" Grid.Column="0"
                 Grid.ColumnSpan="2"
                 BackgroundColor="White"
                 Clicked="GenerateImageButtonClicked"
                 Text="Generate Image with Random Lines"
                 TextColor="Black" />
-            <Image
-                Grid.Row="8" Grid.Column="0"
-                Grid.ColumnSpan="2"
-                x:Name="GestureImage"
-                HeightRequest="200"
-                WidthRequest="200" />
 
             <Label Text="DrawingView"
-                   Grid.Row="9" Grid.Column="0"
+                   Grid.Row="7" Grid.Column="0"
                    Grid.ColumnSpan="2"/>
             <mct:DrawingView x:Name="DrawingViewControl"
                              Margin="0,0,0,10"
-                             Grid.Row="10" Grid.Column="0"
+                             Grid.Row="8" Grid.Column="0"
                              Grid.ColumnSpan="2"
                              LineColor="Green"
                              LineWidth="5"
                              Lines="{Binding Lines, Mode=TwoWay}"
                              DrawingLineCompleted="OnDrawingLineCompleted"
                              DrawingLineCompletedCommand="{Binding DrawingLineCompletedCommand}"
-                             ClearOnFinish="{Binding Source={x:Reference ClearOnFinish}, Path=IsToggled}"
-                             MultiLineMode="{Binding Source={x:Reference MultiLineMode}, Path=IsToggled}">
-                    <mct:DrawingView.Background>
-                        <LinearGradientBrush StartPoint="0,0"
+                             ShouldClearOnFinish="{Binding Source={x:Reference ClearOnFinish}, Path=IsToggled}"
+                             IsMultiLineModeEnabled="{Binding Source={x:Reference MultiLineMode}, Path=IsToggled}">
+                <mct:DrawingView.Background>
+                    <LinearGradientBrush StartPoint="0,0"
                                              EndPoint="0,1">
-                            <GradientStop Color="Blue"
+                        <GradientStop Color="Blue"
                                           Offset="0"/>
-                            <GradientStop Color="Yellow"
+                        <GradientStop Color="Yellow"
                                           Offset="1"/>
-                        </LinearGradientBrush>
-                    </mct:DrawingView.Background>
-                </mct:DrawingView>
+                    </LinearGradientBrush>
+                </mct:DrawingView.Background>
+            </mct:DrawingView>
 
-                <Label Grid.Row="11" Grid.Column="0"
+            <Image
+                Grid.Row="9" Grid.Column="0"
+                Grid.ColumnSpan="2"
+                x:Name="GestureImage"
+                Margin="0,0,0,10"
+                HorizontalOptions="Start"/>
+
+            <Label Grid.Row="10" Grid.Column="0"
                     Grid.ColumnSpan="2"
                     BackgroundColor="Gray"
                     TextColor="Black"

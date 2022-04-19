@@ -17,7 +17,7 @@ public sealed class DrawingLineAdapter : IDrawingLineAdapter
 		return new DrawingLine
 		{
 			LineColor = mauiDrawingLine.LineColor,
-			EnableSmoothedPath = mauiDrawingLine.EnableSmoothedPath,
+			ShouldSmoothPathWhenDrawn = mauiDrawingLine.ShouldSmoothPathWhenDrawn,
 			Granularity = mauiDrawingLine.Granularity,
 			LineWidth = mauiDrawingLine.LineWidth,
 			Points = mauiDrawingLine.Points.ToObservableCollection()

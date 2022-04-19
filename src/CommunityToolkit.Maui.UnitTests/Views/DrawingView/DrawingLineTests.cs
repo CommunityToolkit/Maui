@@ -48,13 +48,13 @@ public class DrawingLineTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void EnableSmoothedPath()
+	public void DisableSmoothedPath()
 	{
-		drawingLine.EnableSmoothedPath.Should().BeFalse();
+		drawingLine.ShouldSmoothPathWhenDrawn.Should().BeTrue();
 
-		drawingLine.EnableSmoothedPath = true;
+		drawingLine.ShouldSmoothPathWhenDrawn = false;
 
-		drawingLine.EnableSmoothedPath.Should().BeTrue();
+		drawingLine.ShouldSmoothPathWhenDrawn.Should().BeFalse();
 	}
 
 	[Theory]
@@ -89,10 +89,10 @@ public class DrawingLineTests : BaseHandlerTest
 	{
 		var expectedDefaultValue = new DrawingLine
 		{
-			LineColor = Colors.Black,
-			LineWidth = 5f,
-			EnableSmoothedPath = false,
-			Granularity = 5,
+			LineColor = DrawingViewDefaults.LineColor,
+			LineWidth = DrawingViewDefaults.LineWidth,
+			ShouldSmoothPathWhenDrawn = DrawingViewDefaults.ShouldSmoothPathWhenDrawn,
+			Granularity = DrawingViewDefaults.MinimumGranularity,
 			Points = new ObservableCollection<PointF>()
 		};
 

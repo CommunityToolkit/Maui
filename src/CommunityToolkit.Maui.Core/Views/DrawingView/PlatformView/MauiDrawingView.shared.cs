@@ -208,7 +208,7 @@ public partial class MauiDrawingView
 			foreach (var line in drawingView.Lines)
 			{
 				var path = new PathF();
-				var points = line.EnableSmoothedPath
+				var points = line.ShouldSmoothPathWhenDrawn
 					? line.Points.SmoothedPathWithGranularity(line.Granularity)
 					: line.Points;
 #if ANDROID

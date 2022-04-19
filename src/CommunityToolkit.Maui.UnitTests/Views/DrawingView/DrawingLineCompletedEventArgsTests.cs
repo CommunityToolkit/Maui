@@ -13,7 +13,7 @@ public class DrawingLineCompletedEventArgsTests : BaseHandlerTest
 	{
 		var drawingLine = new DrawingLine()
 		{
-			EnableSmoothedPath = true,
+			ShouldSmoothPathWhenDrawn = true,
 			Granularity = 10,
 			LineColor = Colors.Blue,
 			LineWidth = 10,

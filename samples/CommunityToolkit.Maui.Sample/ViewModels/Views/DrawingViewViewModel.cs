@@ -28,7 +28,7 @@ public partial class DrawingViewViewModel : BaseViewModel
 				Points = new(GeneratePoints(10, width, height)),
 				LineColor = Color.FromRgb(Random.Shared.Next(255), Random.Shared.Next(255), Random.Shared.Next(255)),
 				LineWidth = 10,
-				EnableSmoothedPath = true,
+				ShouldSmoothPathWhenDrawn = true,
 				Granularity = 5
 			});
 		});
