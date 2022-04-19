@@ -20,8 +20,8 @@ public static partial class DrawingViewService
 	/// <param name="backgroundColor">Image background color</param>
 	/// <returns>Image stream</returns>
 	public static ValueTask<Stream> GetImageStream(in IList<IDrawingLine> lines,
-										in Size imageSize,
-										in Color? backgroundColor)
+													in Size imageSize,
+													in Color? backgroundColor)
 	{
 
 		var image = GetBitmapForLines(lines, backgroundColor);
