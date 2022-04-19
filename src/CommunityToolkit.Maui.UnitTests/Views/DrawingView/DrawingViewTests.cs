@@ -116,8 +116,8 @@ public class DrawingViewTests : BaseHandlerTest
 	{
 		var expectedDefaultValue = new Maui.Views.DrawingView
 		{
-			LineColor = Colors.Black,
-			LineWidth = 5f,
+			LineColor = DrawingViewDefaults.LineColor,
+			LineWidth = DrawingViewDefaults.LineWidth,
 			MultiLineMode = false,
 			ClearOnFinish = false,
 			Lines = new ObservableCollection<IDrawingLine>(),
