@@ -64,7 +64,7 @@ public class PlatformToast : Alert
 	/// </summary>
 	public UIColor TextColor
 	{
-		get => messageLabel.TextColor ??= Defaults.TextColor.ToPlatform();
+		get => messageLabel.TextColor ??= AlertDefaults.TextColor.ToPlatform();
 		private init => messageLabel.TextColor = value;
 	}
 

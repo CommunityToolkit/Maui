@@ -17,7 +17,7 @@ public partial class Toast : IToast
 
 	string text = string.Empty;
 	ToastDuration duration = ToastDuration.Short;
-	double textSize = Defaults.FontSize;
+	double textSize = AlertDefaults.FontSize;
 
 	/// <inheritdoc/>
 	public string Text
@@ -66,7 +66,7 @@ public partial class Toast : IToast
 	public static IToast Make(
 		string message,
 		ToastDuration duration = ToastDuration.Short,
-		double textSize = Defaults.FontSize)
+		double textSize = AlertDefaults.FontSize)
 	{
 		return new Toast
 		{

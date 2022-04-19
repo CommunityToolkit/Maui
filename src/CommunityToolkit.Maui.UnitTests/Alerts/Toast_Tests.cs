@@ -84,7 +84,7 @@ public class Toast_Tests : BaseTest
 	{
 		toast.Text.Should().BeEmpty();
 		toast.Duration.Should().Be(ToastDuration.Short);
-		toast.TextSize.Should().Be(Defaults.FontSize);
+		toast.TextSize.Should().Be(AlertDefaults.FontSize);
 	}
 
 	[Fact]

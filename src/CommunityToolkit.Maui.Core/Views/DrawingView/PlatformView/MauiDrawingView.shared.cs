@@ -37,12 +37,12 @@ public partial class MauiDrawingView
 	/// <summary>
 	/// Line color
 	/// </summary>
-	public Color LineColor { get; set; } = Colors.Black;
+	public Color LineColor { get; set; } = DrawingViewDefaults.LineColor;
 
 	/// <summary>
 	/// Line width
 	/// </summary>
-	public float LineWidth { get; set; } = 5;
+	public float LineWidth { get; set; } = DrawingViewDefaults.LineWidth;
 
 	/// <summary>
 	/// Used to draw any shape on the canvas
@@ -52,7 +52,7 @@ public partial class MauiDrawingView
 	/// <summary>
 	/// Drawable background
 	/// </summary>
-	public Paint Paint { get; set; } = new SolidPaint(Defaults.BackgroundColor);
+	public Paint Paint { get; set; } = new SolidPaint(AlertDefaults.BackgroundColor);
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS
 	bool isDrawing;

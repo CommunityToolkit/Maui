@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
@@ -45,13 +45,13 @@ public class DrawingView : View, IDrawingView
 	/// Backing BindableProperty for the <see cref="LineColor"/> property.
 	/// </summary>
 	public static readonly BindableProperty LineColorProperty =
-		BindableProperty.Create(nameof(LineColor), typeof(Color), typeof(DrawingView), Colors.Black);
+		BindableProperty.Create(nameof(LineColor), typeof(Color), typeof(DrawingView), DrawingViewDefaults.LineColor);
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="LineWidth"/> property.
 	/// </summary>
 	public static readonly BindableProperty LineWidthProperty =
-		BindableProperty.Create(nameof(LineWidth), typeof(float), typeof(DrawingView), 5f);
+		BindableProperty.Create(nameof(LineWidth), typeof(float), typeof(DrawingView), DrawingViewDefaults.LineWidth);
 
 	/// <summary>
 	/// Event occurred when drawing line completed.

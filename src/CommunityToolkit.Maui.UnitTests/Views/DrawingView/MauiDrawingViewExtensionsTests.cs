@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views.DrawingView;
 
-public class MauiDrawingViewExtensionsTests
+public class MauiDrawingViewExtensionsTests : BaseTest
 {
 	[Fact]
 	public void SmoothedPathWithGranularity_NotEnoughPoints_ReturnOriginalCollection()

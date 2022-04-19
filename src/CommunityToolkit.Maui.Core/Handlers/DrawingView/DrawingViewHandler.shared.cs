@@ -127,7 +127,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
 	public static void MapDrawingViewBackground(DrawingViewHandler handler, IDrawingView view)
 	{
-		handler.PlatformView.SetPaint(view.Background ?? new SolidPaint(Defaults.BackgroundColor));
+		handler.PlatformView.SetPaint(view.Background ?? new SolidPaint(AlertDefaults.BackgroundColor));
 	}
 
 	/// <inheritdoc />
