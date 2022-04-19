@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.IsNotNullConverterPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
+    x:DataType="vm:IsNotNullConverterViewModel"
+    x:TypeArguments="vm:IsNotNullConverterViewModel">
+
+    <pages:BasePage.Resources>
+        <ResourceDictionary>
+            <mct:IsNotNullConverter x:Key="IsNotNullConverter" />
+        </ResourceDictionary>
+    </pages:BasePage.Resources>
+    <pages:BasePage.Content>
+        <Grid
+            ColumnDefinitions="*, *"
+            HorizontalOptions="Fill"
+            RowDefinitions="100, 20, 20, 20, 20, 20"
+            VerticalOptions="Fill">
+            <Label
+                Grid.Row="0"
+                Grid.ColumnSpan="2"
+                Text="The IsNotNullConverter is a converter that allows users to convert an incoming `object?` to a `bool`. If the incoming `object?` is not `null`, it will be converted to `true`. Any other incoming value will be converted to `false`."
+                TextColor="{StaticResource NormalLabelTextColor}" />
+            <Label
+                Grid.Row="1"
+                Grid.Column="0"
+                HorizontalOptions="Start"
+                Text="Type"
+                FontAttributes="Bold"
+                TextColor="{StaticResource NormalLabelTextColor}" />
+            <Label
+                Grid.Row="1"
+                Grid.Column="1"
+                HorizontalOptions="Start"
+                Text="Is Default Value Not Null?"
+                FontAttributes="Bold"
+                TextColor="{StaticResource NormalLabelTextColor}" />
+            <Label
+                Grid.Row="2"
+                Grid.Column="0"
+                HorizontalOptions="Start"
+                Text="int"
+                TextColor="{StaticResource NormalLabelTextColor}" />
+            <Label
+                Grid.Row="2"
+                Grid.Column="1"
+                Text="{Binding IntCheck, Converter={StaticResource IsNotNullConverter}}"
+                TextColor="{StaticResource NormalLabelTextColor}" />
+            <Label
+                Grid.Row="3"
+                Grid.Column="0"
+                Text="List&lt;string&gt;?"
+                TextColor="{StaticResource NormalLabelTextColor}" />
+            <Label
+                Grid.Row="3"
+                Grid.Column="1"
+                Text="{Binding ListCheck, Converter={StaticResource IsNotNullConverter}}"
+                TextColor="{StaticResource NormalLabelTextColor}" />
+            <Label
+                Grid.Row="4"
+                Grid.Column="0"
+                Text="string?"
+                TextColor="{StaticResource NormalLabelTextColor}" />
+            <Label
+                Grid.Row="4"
+                Grid.Column="1"
+                Text="{Binding StringCheck, Converter={StaticResource IsNotNullConverter}}"
+                TextColor="{StaticResource NormalLabelTextColor}" />
+            <Label
+                Grid.Row="5"
+                Grid.Column="0"
+                Text="object?"
+                TextColor="{StaticResource NormalLabelTextColor}" />
+            <Label
+                Grid.Row="5"
+                Grid.Column="1"
+                Text="{Binding ObjectCheck, Converter={StaticResource IsNotNullConverter}}"
+                TextColor="{StaticResource NormalLabelTextColor}" />
+        </Grid>
+    </pages:BasePage.Content>
+</pages:BasePage>
