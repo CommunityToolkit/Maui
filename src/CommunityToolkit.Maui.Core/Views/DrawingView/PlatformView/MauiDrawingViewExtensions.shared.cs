@@ -144,11 +144,6 @@ public static class MauiDrawingViewExtensions
 	/// <param name="drawingView"><see cref="IDrawingView"/></param>
 	public static void SetLines(this MauiDrawingView mauiDrawingView, IDrawingView drawingView)
 	{
-		if (mauiDrawingView.Lines.Count == drawingView.Lines.Count)
-		{
-			return;
-		}
-
 		IReadOnlyList<IDrawingLine> lines = drawingView.Lines.ToList();
 		if (!drawingView.IsMultiLineModeEnabled && lines.Count > 1)
 		{
@@ -178,13 +173,8 @@ public static class MauiDrawingViewExtensions
 	/// <param name="adapter"><see cref="IDrawingLineAdapter"/></param>
 	public static void SetLines(this IDrawingView drawingView, MauiDrawingView mauiDrawingView, IDrawingLineAdapter adapter)
 	{
-		if (mauiDrawingView.Lines.Count == drawingView.Lines.Count)
-		{
-			return;
-		}
-
 		IReadOnlyList<MauiDrawingLine> lines = mauiDrawingView.Lines.ToList();
-		if (!mauiDrawingView.IsMultiLineModeEnabled && mauiDrawingView.Lines.Count > 1)
+		if (!mauiDrawingView.IsMultiLineModeEnabled && lines.Count > 1)
 		{
 			lines = lines.TakeLast(1).ToList();
 		}

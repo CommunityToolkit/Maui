@@ -11,8 +11,6 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 /// </summary>
 public partial class DrawingViewHandler
 {
-	IDrawingLineAdapter adapter = new DrawingLineAdapter();
-
 	/// <summary>
 	/// <see cref ="PropertyMapper"/> for DrawingView Control.
 	/// </summary>
@@ -30,14 +28,14 @@ public partial class DrawingViewHandler
 	/// <summary>
 	/// <see cref ="CommandMapper"/> for DrawingView Control.
 	/// </summary>
-	public static readonly ICommandMapper<IDrawingView, DrawingViewHandler> DrawingViewCommandMapper = new CommandMapper<IDrawingView, DrawingViewHandler>(ViewCommandMapper);
+	public static readonly CommandMapper<IDrawingView, DrawingViewHandler> DrawingViewCommandMapper = new(ViewCommandMapper);
 
 	/// <summary>
 	/// Initialize new instance of <see cref="DrawingViewHandler"/>.
 	/// </summary>
 	/// <param name="mapper">Custom instance of <see cref="PropertyMapper"/>, if it's null the <see cref="DrawingViewMapper"/> will be used</param>
 	/// <param name="commandMapper">Custom instance of <see cref="CommandMapper"/></param>
-	public DrawingViewHandler(IPropertyMapper? mapper, ICommandMapper? commandMapper)
+	public DrawingViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
 		: base(mapper ?? DrawingViewMapper, commandMapper ?? DrawingViewCommandMapper)
 	{
 
@@ -49,17 +47,20 @@ public partial class DrawingViewHandler
 	public DrawingViewHandler() : this(DrawingViewMapper, DrawingViewCommandMapper)
 	{
 	}
-
-	/// <inheritdoc />
-	public void SetDrawingLineAdapter(IDrawingLineAdapter drawingLineAdapter)
-	{
-		adapter = drawingLineAdapter;
-	}
 }
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS
 public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingView>, IDrawingViewHandler
 {
+
+	IDrawingLineAdapter adapter = new DrawingLineAdapter();
+	
+	/// <inheritdoc />
+	public void SetDrawingLineAdapter(IDrawingLineAdapter drawingLineAdapter)
+	{
+		adapter = drawingLineAdapter;
+	}
+
 	/// <summary>
 	/// Action that's triggered when the DrawingView <see cref="IDrawingView.Lines"/> property changes.
 	/// </summary>
@@ -247,6 +248,11 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, object>, IDr
 	/// <param name="handler">An instance of <see cref="DrawingViewHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
 	public static void MapDrawingViewBackground(DrawingViewHandler handler, IDrawingView view)
+	{
+	}
+
+	/// <inheritdoc/>
+	public void SetDrawingLineAdapter(IDrawingLineAdapter drawingLineAdapter)
 	{
 	}
 }

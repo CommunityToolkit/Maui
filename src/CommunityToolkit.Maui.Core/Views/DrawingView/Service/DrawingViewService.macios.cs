@@ -25,8 +25,7 @@ public static partial class DrawingViewService
 			return ValueTask.FromResult(Stream.Null);
 		}
 
-		var resizedImage = GetMaximumUIImage(image, imageSize.Width, imageSize.Height);
-		return ValueTask.FromResult(resizedImage.AsJPEG().AsStream());
+		return ValueTask.FromResult(GetMaximumUIImage(image, imageSize.Width, imageSize.Height).AsPNG().AsStream());
 	}
 
 	/// <summary>
@@ -44,19 +43,13 @@ public static partial class DrawingViewService
 										in Color strokeColor,
 										in Color? backgroundColor)
 	{
-		if (points.Count < 2)
-		{
-			return ValueTask.FromResult(Stream.Null);
-		}
-
 		var image = GetUIImageForPoints(points, lineWidth, strokeColor, backgroundColor);
 		if (image is null)
 		{
 			return ValueTask.FromResult(Stream.Null);
 		}
 
-		var resizedImage = GetMaximumUIImage(image, (float)imageSize.Width, (float)imageSize.Height);
-		return ValueTask.FromResult(resizedImage.AsJPEG().AsStream());
+		return ValueTask.FromResult(GetMaximumUIImage(image, imageSize.Width, imageSize.Height).AsPNG().AsStream());
 	}
 
 	static UIImage? GetUIImageForPoints(ICollection<PointF> points,
@@ -64,17 +57,32 @@ public static partial class DrawingViewService
 		Color strokeColor,
 		Color? backgroundColor)
 	{
-		const int minSize = 1;
-
-		if (points.Count is 0)
+		return GetUIImage(points, (context) =>
 		{
-			return null;
-		}
+			DrawStrokes(context, points.ToList(), lineWidth, strokeColor);
+		}, backgroundColor);
+	}
 
+	static UIImage? GetUIImageForLines(IList<IDrawingLine> lines, in Color? backgroundColor)
+	{
+		var points = lines.SelectMany(x => x.Points).ToList();
+		return GetUIImage(points, (context) =>
+		{
+			foreach (var line in lines)
+			{
+				DrawStrokes(context, line.Points, line.LineWidth, line.LineColor);
+			}			
+		}, backgroundColor);
+	}
+
+	static UIImage? GetUIImage(ICollection<PointF> points, Action<CGContext> drawStrokes, Color? backgroundColor)
+	{
+		const int minSize = 1;
 		var minPointX = points.Min(p => p.X);
 		var minPointY = points.Min(p => p.Y);
 		var drawingWidth = points.Max(p => p.X) - minPointX;
 		var drawingHeight = points.Max(p => p.Y) - minPointY;
+
 		if (drawingWidth < minSize || drawingHeight < minSize)
 		{
 			return null;
@@ -84,15 +92,12 @@ public static partial class DrawingViewService
 		UIGraphics.BeginImageContextWithOptions(imageSize, false, 1);
 
 		var context = UIGraphics.GetCurrentContext();
+
 		context.SetFillColor(backgroundColor?.ToCGColor() ?? DrawingViewDefaults.BackgroundColor.ToCGColor());
 		context.FillRect(new CGRect(CGPoint.Empty, imageSize));
 
-		context.SetStrokeColor(strokeColor.ToCGColor());
-		context.SetLineWidth(lineWidth);
-		context.SetLineCap(CGLineCap.Round);
-		context.SetLineJoin(CGLineJoin.Round);
+		drawStrokes(context);
 
-		context.AddLines(points.Select(p => new CGPoint(p.X - minPointX, p.Y - minPointY)).ToArray());
 		context.StrokePath();
 
 		var image = UIGraphics.GetImageFromCurrentImageContext();
@@ -101,52 +106,18 @@ public static partial class DrawingViewService
 		return image;
 	}
 
-	static UIImage? GetUIImageForLines(in IList<IDrawingLine> lines, in Color? backgroundColor)
+	static void DrawStrokes(CGContext context, IList<PointF> points, NFloat lineWidth, Color strokeColor)
 	{
-		const int minSize = 1;
-
-		var points = lines.SelectMany(x => x.Points).ToList();
-		if (points.Count is 0)
-		{
-			return null;
-		}
-
 		var minPointX = points.Min(p => p.X);
 		var minPointY = points.Min(p => p.Y);
-		var drawingWidth = points.Max(p => p.X) - minPointX;
-		var drawingHeight = points.Max(p => p.Y) - minPointY;
+		context.SetStrokeColor(strokeColor.ToCGColor());
+		context.SetLineWidth(lineWidth);
+		context.SetLineCap(CGLineCap.Round);
+		context.SetLineJoin(CGLineJoin.Round);
 
-		if (drawingWidth < minSize || drawingHeight < minSize)
-		{
-			return null;
-		}
-
-		var imageSize = new CGSize(drawingWidth, drawingHeight);
-		UIGraphics.BeginImageContextWithOptions(imageSize, false, 1);
-
-		var context = UIGraphics.GetCurrentContext();
-
-		context.SetFillColor(backgroundColor?.ToCGColor() ?? DrawingViewDefaults.BackgroundColor.ToCGColor());
-		context.FillRect(new CGRect(CGPoint.Empty, imageSize));
-
-		foreach (var line in lines)
-		{
-			context.SetStrokeColor(line.LineColor.ToCGColor());
-			context.SetLineWidth(line.LineWidth);
-			context.SetLineCap(CGLineCap.Round);
-			context.SetLineJoin(CGLineJoin.Round);
-
-			var (startPointX, startPointY) = line.Points[0];
-			context.MoveTo(new NFloat(startPointX), new NFloat(startPointY));
-			context.AddLines(line.Points.Select(p => new CGPoint(p.X - minPointX, p.Y - minPointY)).ToArray());
-		}
-
-		context.StrokePath();
-
-		var image = UIGraphics.GetImageFromCurrentImageContext();
-		UIGraphics.EndImageContext();
-
-		return image;
+		var (startPointX, startPointY) = points[0];
+		context.MoveTo(new NFloat(startPointX), new NFloat(startPointY));
+		context.AddLines(points.Select(p => new CGPoint(p.X - minPointX, p.Y - minPointY)).ToArray());
 	}
 
 	static UIImage GetMaximumUIImage(UIImage sourceImage, double maxWidth, double maxHeight)

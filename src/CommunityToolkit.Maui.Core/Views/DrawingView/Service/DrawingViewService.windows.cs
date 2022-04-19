@@ -19,25 +19,11 @@ public static class DrawingViewService
 	/// <param name="imageSize">Image size</param>
 	/// <param name="backgroundColor">Image background color</param>
 	/// <returns>Image stream</returns>
-	public static async ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize,
+	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize,
 		Color? backgroundColor)
 	{
-		var image = GetImageInternal(lines, imageSize, backgroundColor);
-		if (image is null)
-		{
-			return Stream.Null;
-		}
-
-		using (image)
-		{
-			var fileStream = new InMemoryRandomAccessStream();
-			await image.SaveAsync(fileStream, CanvasBitmapFileFormat.Jpeg);
-
-			var stream = fileStream.AsStream();
-			stream.Position = 0;
-
-			return stream;
-		}
+		var canvas = GetImageInternal(lines, imageSize, backgroundColor);
+		return GetCanvasRenderTargetStream(canvas);
 	}
 
 	/// <summary>
@@ -49,28 +35,28 @@ public static class DrawingViewService
 	/// <param name="strokeColor">Line color</param>
 	/// <param name="backgroundColor">Image background color</param>
 	/// <returns>Image stream</returns>
-	public static async ValueTask<Stream> GetImageStream(
+	public static ValueTask<Stream> GetImageStream(
 		IList<PointF> points,
 		Size imageSize,
 		float lineWidth,
 		Color strokeColor,
 		Color? backgroundColor)
 	{
-		if (points.Count < 2)
+		var canvas = GetImageInternal(points, imageSize, lineWidth, strokeColor, backgroundColor);
+		return GetCanvasRenderTargetStream(canvas);
+	}
+
+	static async ValueTask<Stream> GetCanvasRenderTargetStream(CanvasRenderTarget? canvas)
+	{
+		if (canvas is null)
 		{
 			return Stream.Null;
 		}
 
-		var image = GetImageInternal(points, imageSize, lineWidth, strokeColor, backgroundColor);
-		if (image is null)
-		{
-			return Stream.Null;
-		}
-
-		using (image)
+		using (canvas)
 		{
 			var fileStream = new InMemoryRandomAccessStream();
-			await image.SaveAsync(fileStream, CanvasBitmapFileFormat.Jpeg);
+			await canvas.SaveAsync(fileStream, CanvasBitmapFileFormat.Png);
 
 			var stream = fileStream.AsStream();
 			stream.Position = 0;
@@ -86,28 +72,32 @@ public static class DrawingViewService
 		Color? backgroundColor,
 		bool scale = false)
 	{
-		const int minSize = 1;
-
-		if (points.Count is 0)
+		var offscreen = GetCanvasRenderTarget(points, size, scale);
+		if (offscreen is null)
 		{
 			return null;
 		}
 
+		using var session = offscreen.CreateDrawingSession();
+
+		session.Clear(backgroundColor?.ToWindowsColor() ?? DrawingViewDefaults.BackgroundColor.ToWindowsColor());
+
+		DrawStrokes(offscreen, session, points, lineColor, lineWidth);
+
+		return offscreen;
+	}
+
+	static void DrawStrokes(CanvasRenderTarget offscreen, 
+		CanvasDrawingSession session, 
+		ICollection<PointF> points, 
+		Color lineColor, 
+		float lineWidth)
+	{
 		var minPointX = points.Min(p => p.X);
 		var minPointY = points.Min(p => p.Y);
 		var drawingWidth = points.Max(p => p.X) - minPointX;
 		var drawingHeight = points.Max(p => p.Y) - minPointY;
-		if (drawingWidth < minSize || drawingHeight < minSize)
-		{
-			return null;
-		}
 
-		var device = CanvasDevice.GetSharedDevice();
-		var offscreen = new CanvasRenderTarget(device, scale ? (int)size.Width : drawingWidth,
-			scale ? (int)size.Height : drawingHeight, 96);
-
-		using var session = offscreen.CreateDrawingSession();
-		session.Clear(backgroundColor?.ToWindowsColor() ?? DrawingViewDefaults.BackgroundColor.ToWindowsColor());
 		var strokeBuilder = new InkStrokeBuilder();
 		var inkDrawingAttributes = new InkDrawingAttributes
 		{
@@ -122,15 +112,12 @@ public static class DrawingViewService
 					(p.Y - minPointY) * offscreen.Size.Height / drawingHeight)))
 		};
 		session.DrawInk(strokes);
-
-		return offscreen;
 	}
 
-	static CanvasRenderTarget? GetImageInternal(IList<IDrawingLine> lines, Size size, Color? backgroundColor, bool scale = false)
+	static CanvasRenderTarget? GetCanvasRenderTarget(ICollection<PointF> points, Size size, bool scale)
 	{
 		const int minSize = 1;
 
-		var points = lines.SelectMany(x => x.Points).ToList();
 		if (points.Count is 0)
 		{
 			return null;
@@ -140,37 +127,31 @@ public static class DrawingViewService
 		var minPointY = points.Min(p => p.Y);
 		var drawingWidth = points.Max(p => p.X) - minPointX;
 		var drawingHeight = points.Max(p => p.Y) - minPointY;
-
 		if (drawingWidth < minSize || drawingHeight < minSize)
 		{
 			return null;
 		}
 
-
 		var device = CanvasDevice.GetSharedDevice();
-		var offscreen = new CanvasRenderTarget(device, scale ? (int)size.Width : drawingWidth,
-			scale ? (int)size.Height : drawingHeight, 96);
+		return new CanvasRenderTarget(device, scale ? (int)size.Width : drawingWidth, scale ? (int)size.Height : drawingHeight, 96);
+	}
+
+	static CanvasRenderTarget? GetImageInternal(IList<IDrawingLine> lines, Size size, Color? backgroundColor, bool scale = false)
+	{
+		var points = lines.SelectMany(x => x.Points).ToList();
+		var offscreen = GetCanvasRenderTarget(points, size, scale);
+		if (offscreen is null)
+		{
+			return null;
+		}
 
 		using var session = offscreen.CreateDrawingSession();
+
 		session.Clear(backgroundColor?.ToWindowsColor() ?? DrawingViewDefaults.BackgroundColor.ToWindowsColor());
 
 		foreach (var line in lines)
 		{
-			var strokeBuilder = new InkStrokeBuilder();
-			var inkDrawingAttributes = new InkDrawingAttributes
-			{
-				Color = line.LineColor.ToWindowsColor(),
-				Size = new Windows.Foundation.Size(line.LineWidth, line.LineWidth)
-			};
-			strokeBuilder.SetDefaultDrawingAttributes(inkDrawingAttributes);
-			var strokes = new[]
-			{
-				strokeBuilder.CreateStroke(line.Points.Select(p =>
-					new Point((p.X - minPointX) * offscreen.Size.Width / drawingWidth,
-						(p.Y - minPointY) * offscreen.Size.Height / drawingHeight)))
-			};
-
-			session.DrawInk(strokes);
+			DrawStrokes(offscreen, session, line.Points, line.LineColor, line.LineWidth);
 		}
 
 		return offscreen;
