@@ -16,7 +16,7 @@ public partial class DrawingViewHandler
 	/// <summary>
 	/// <see cref ="PropertyMapper"/> for DrawingView Control.
 	/// </summary>
-	public static readonly PropertyMapper<IDrawingView, DrawingViewHandler> DrawingViewMapper = new(ViewMapper)
+	public static readonly IPropertyMapper<IDrawingView, DrawingViewHandler> DrawingViewMapper = new PropertyMapper<IDrawingView, DrawingViewHandler>(ViewMapper)
 	{
 		[nameof(IDrawingView.Lines)] = MapLines,
 		[nameof(IDrawingView.ShouldClearOnFinish)] = MapShouldClearOnFinish,
@@ -30,14 +30,14 @@ public partial class DrawingViewHandler
 	/// <summary>
 	/// <see cref ="CommandMapper"/> for DrawingView Control.
 	/// </summary>
-	public static readonly CommandMapper<IDrawingView, DrawingViewHandler> DrawingViewCommandMapper = new(ViewCommandMapper);
+	public static readonly ICommandMapper<IDrawingView, DrawingViewHandler> DrawingViewCommandMapper = new CommandMapper<IDrawingView, DrawingViewHandler>(ViewCommandMapper);
 
 	/// <summary>
 	/// Initialize new instance of <see cref="DrawingViewHandler"/>.
 	/// </summary>
 	/// <param name="mapper">Custom instance of <see cref="PropertyMapper"/>, if it's null the <see cref="DrawingViewMapper"/> will be used</param>
 	/// <param name="commandMapper">Custom instance of <see cref="CommandMapper"/></param>
-	public DrawingViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
+	public DrawingViewHandler(IPropertyMapper? mapper, ICommandMapper? commandMapper)
 		: base(mapper ?? DrawingViewMapper, commandMapper ?? DrawingViewCommandMapper)
 	{
 
