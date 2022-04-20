@@ -27,7 +27,10 @@ public class RequiredStringValidationBehavior : ValidationBehavior<string>
 	}
 
 	/// <summary>
-	/// Equals comapre or contains. Equals by default. This is a bindable property.
+	/// Get or sets whether the entered text must match the whole contents of the <see cref="RequiredString"/> property
+	/// or simply contain the <see cref="RequiredString"/> property value.
+	/// <br/>
+	/// <c>true</c> by default. This is a bindable property.
 	/// </summary>
 	public bool ExactMatch
 	{
