@@ -19,7 +19,7 @@ public static class AppBuilderExtensions
 		builder.ConfigureMauiHandlers(h =>
 		{
 			h.AddHandler<IDrawingView, DrawingViewHandler>();
-			h.AddHandler<IPopup, PopupHandler>();
+			h.AddHandler<Popup, PopupHandler>();
 		});
 
 		Popup.RemapForControls();
