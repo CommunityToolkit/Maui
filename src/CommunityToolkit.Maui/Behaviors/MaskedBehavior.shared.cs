@@ -34,7 +34,11 @@ public class MaskedBehavior : BaseBehavior<InputView>
 	}
 
 	/// <summary>
-	/// The placeholder character for when no input has been given yet. This is a bindable property.
+	/// Gets or sets which character in the <see cref="Mask"/> property that will be visible and entered by a user. Defaults to 'X'. This is a bindable property.
+	/// <br/>
+	/// By default the 'X' character will be unmasked therefore a <see cref="Mask"/> of "XX XX XX" would display "12 34 56".
+	/// If you wish to include 'X' in your <see cref="Mask"/> then you could set this <see cref="UnmaskedCharacter"/> to something else
+	/// e.g. '0' and then use a <see cref="Mask"/> of "00X00X00" which would then display "12X34X56".
 	/// </summary>
 	public char UnmaskedCharacter
 	{
