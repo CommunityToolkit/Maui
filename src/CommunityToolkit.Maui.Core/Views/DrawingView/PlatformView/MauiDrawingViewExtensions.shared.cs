@@ -154,7 +154,7 @@ public static class MauiDrawingViewExtensions
 
 		foreach (var line in lines)
 		{
-			mauiDrawingView.Lines.Add(new MauiDrawingLine()
+			mauiDrawingView.Lines.Add(new MauiDrawingLine
 			{
 				LineColor = line.LineColor,
 				ShouldSmoothPathWhenDrawn = line.ShouldSmoothPathWhenDrawn,

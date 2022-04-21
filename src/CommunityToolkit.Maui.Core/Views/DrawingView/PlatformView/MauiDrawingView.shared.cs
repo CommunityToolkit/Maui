@@ -14,6 +14,7 @@ public partial class MauiDrawingView
 	PointF previousPoint;
 	PathF currentPath = new();
 	MauiDrawingLine? currentLine;
+	Paint paint = new SolidPaint(DrawingViewDefaults.BackgroundColor);
 
 	/// <summary>
 	/// Event raised when drawing line completed 
@@ -57,7 +58,15 @@ public partial class MauiDrawingView
 	/// <summary>
 	/// Drawable background
 	/// </summary>
-	public Paint Paint { get; set; } = new SolidPaint(DrawingViewDefaults.BackgroundColor);
+	public Paint Paint
+	{
+		get => paint;
+		set
+		{
+			paint = value;
+			Redraw();
+		}
+	}
 
 	/// <summary>
 	/// Initialize resources
@@ -67,7 +76,10 @@ public partial class MauiDrawingView
 #if ANDROID || IOS || MACCATALYST
 		Drawable = new DrawingViewDrawable(this);
 #elif WINDOWS
-		((Microsoft.Maui.Graphics.Win2D.W2DGraphicsView)Content).Drawable = new DrawingViewDrawable(this);
+		if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 18362))
+		{
+			((Microsoft.Maui.Graphics.Win2D.W2DGraphicsView)Content).Drawable = new DrawingViewDrawable(this);
+		}
 #endif
 		Lines.CollectionChanged += OnLinesCollectionChanged;
 	}
@@ -202,6 +214,10 @@ public partial class MauiDrawingView
 		{
 			canvas.StrokeColor = lineColor;
 			canvas.StrokeSize = lineWidth;
+			canvas.StrokeDashOffset = 0;
+			canvas.StrokeLineCap = LineCap.Butt;
+			canvas.StrokeLineJoin = LineJoin.Miter;
+			canvas.StrokeDashPattern = Array.Empty<float>();
 		}
 
 		static void DrawCurrentLines(in ICanvas canvas, in MauiDrawingView drawingView)
