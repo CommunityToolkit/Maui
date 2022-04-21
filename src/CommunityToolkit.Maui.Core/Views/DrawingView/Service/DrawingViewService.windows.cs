@@ -72,7 +72,7 @@ public static class DrawingViewService
 		Color? backgroundColor,
 		bool scale = false)
 	{
-		var offscreen = GetCanvasRenderTarget(points, size, scale);
+		var (offscreen, offset) = GetCanvasRenderTarget(points, size, scale);
 		if (offscreen is null)
 		{
 			return null;
@@ -82,22 +82,17 @@ public static class DrawingViewService
 
 		session.Clear(backgroundColor?.ToWindowsColor() ?? DrawingViewDefaults.BackgroundColor.ToWindowsColor());
 
-		DrawStrokes(offscreen, session, points, lineColor, lineWidth);
+		DrawStrokes(session, points, lineColor, lineWidth, offset);
 
 		return offscreen;
 	}
 
-	static void DrawStrokes(CanvasRenderTarget offscreen, 
-		CanvasDrawingSession session, 
-		ICollection<PointF> points, 
+	static void DrawStrokes(CanvasDrawingSession session, 
+		IEnumerable<PointF> points, 
 		Color lineColor, 
-		float lineWidth)
+		float lineWidth,
+		Size offset)
 	{
-		var minPointX = points.Min(p => p.X);
-		var minPointY = points.Min(p => p.Y);
-		var drawingWidth = points.Max(p => p.X) - minPointX;
-		var drawingHeight = points.Max(p => p.Y) - minPointY;
-
 		var strokeBuilder = new InkStrokeBuilder();
 		var inkDrawingAttributes = new InkDrawingAttributes
 		{
@@ -107,20 +102,18 @@ public static class DrawingViewService
 		strokeBuilder.SetDefaultDrawingAttributes(inkDrawingAttributes);
 		var strokes = new[]
 		{
-			strokeBuilder.CreateStroke(points.Select(p =>
-				new Point((p.X - minPointX) * offscreen.Size.Width / drawingWidth,
-					(p.Y - minPointY) * offscreen.Size.Height / drawingHeight)))
+			strokeBuilder.CreateStroke(points.Select(p => new Point(p.X - offset.Width, p.Y - offset.Height)))
 		};
 		session.DrawInk(strokes);
 	}
 
-	static CanvasRenderTarget? GetCanvasRenderTarget(ICollection<PointF> points, Size size, bool scale)
+	static (CanvasRenderTarget? offscreen, Size offset) GetCanvasRenderTarget(ICollection<PointF> points, Size size, bool scale)
 	{
 		const int minSize = 1;
 
 		if (points.Count is 0)
 		{
-			return null;
+			return (null, Size.Zero);
 		}
 
 		var minPointX = points.Min(p => p.X);
@@ -129,17 +122,17 @@ public static class DrawingViewService
 		var drawingHeight = points.Max(p => p.Y) - minPointY;
 		if (drawingWidth < minSize || drawingHeight < minSize)
 		{
-			return null;
+			return (null, new Size(minPointX, minPointY));
 		}
 
 		var device = CanvasDevice.GetSharedDevice();
-		return new CanvasRenderTarget(device, scale ? (int)size.Width : drawingWidth, scale ? (int)size.Height : drawingHeight, 96);
+		return (new CanvasRenderTarget(device, scale ? (float)size.Width : drawingWidth, scale ? (float)size.Height : drawingHeight, 96), new Size(minPointX, minPointY));
 	}
 
 	static CanvasRenderTarget? GetImageInternal(IList<IDrawingLine> lines, Size size, Color? backgroundColor, bool scale = false)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
-		var offscreen = GetCanvasRenderTarget(points, size, scale);
+		var (offscreen, offset) = GetCanvasRenderTarget(points, size, scale);
 		if (offscreen is null)
 		{
 			return null;
@@ -151,7 +144,7 @@ public static class DrawingViewService
 
 		foreach (var line in lines)
 		{
-			DrawStrokes(offscreen, session, line.Points, line.LineColor, line.LineWidth);
+			DrawStrokes(session, line.Points, line.LineColor, line.LineWidth, offset);
 		}
 
 		return offscreen;
