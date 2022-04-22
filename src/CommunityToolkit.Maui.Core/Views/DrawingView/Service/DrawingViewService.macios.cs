@@ -98,8 +98,6 @@ public static partial class DrawingViewService
 
 		drawStrokes(context, new Size(minPointX, minPointY));
 
-		context.StrokePath();
-
 		var image = UIGraphics.GetImageFromCurrentImageContext();
 		UIGraphics.EndImageContext();
 
@@ -116,6 +114,8 @@ public static partial class DrawingViewService
 		var (startPointX, startPointY) = points[0];
 		context.MoveTo(new NFloat(startPointX), new NFloat(startPointY));
 		context.AddLines(points.Select(p => new CGPoint(p.X - offset.Width, p.Y - offset.Height)).ToArray());
+
+		context.StrokePath();
 	}
 
 	static UIImage GetMaximumUIImage(UIImage sourceImage, double maxWidth, double maxHeight)
