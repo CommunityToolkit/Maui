@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using CoreGraphics;
 using Microsoft.Maui.Platform;
 using UIKit;
@@ -57,25 +57,25 @@ public static partial class DrawingViewService
 		Color strokeColor,
 		Color? backgroundColor)
 	{
-		return GetUIImage(points, (context) =>
+		return GetUIImage(points, (context, offset) =>
 		{
-			DrawStrokes(context, points.ToList(), lineWidth, strokeColor);
+			DrawStrokes(context, points.ToList(), lineWidth, strokeColor, offset);
 		}, backgroundColor);
 	}
 
 	static UIImage? GetUIImageForLines(IList<IDrawingLine> lines, in Color? backgroundColor)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
-		return GetUIImage(points, (context) =>
+		return GetUIImage(points, (context, offset) =>
 		{
 			foreach (var line in lines)
 			{
-				DrawStrokes(context, line.Points, line.LineWidth, line.LineColor);
+				DrawStrokes(context, line.Points, line.LineWidth, line.LineColor, offset);
 			}			
 		}, backgroundColor);
 	}
 
-	static UIImage? GetUIImage(ICollection<PointF> points, Action<CGContext> drawStrokes, Color? backgroundColor)
+	static UIImage? GetUIImage(ICollection<PointF> points, Action<CGContext, Size> drawStrokes, Color? backgroundColor)
 	{
 		const int minSize = 1;
 		var minPointX = points.Min(p => p.X);
@@ -96,7 +96,7 @@ public static partial class DrawingViewService
 		context.SetFillColor(backgroundColor?.ToCGColor() ?? DrawingViewDefaults.BackgroundColor.ToCGColor());
 		context.FillRect(new CGRect(CGPoint.Empty, imageSize));
 
-		drawStrokes(context);
+		drawStrokes(context, new Size(minPointX, minPointY));
 
 		context.StrokePath();
 
@@ -106,10 +106,8 @@ public static partial class DrawingViewService
 		return image;
 	}
 
-	static void DrawStrokes(CGContext context, IList<PointF> points, NFloat lineWidth, Color strokeColor)
+	static void DrawStrokes(CGContext context, IList<PointF> points, NFloat lineWidth, Color strokeColor, Size offset)
 	{
-		var minPointX = points.Min(p => p.X);
-		var minPointY = points.Min(p => p.Y);
 		context.SetStrokeColor(strokeColor.ToCGColor());
 		context.SetLineWidth(lineWidth);
 		context.SetLineCap(CGLineCap.Round);
@@ -117,7 +115,7 @@ public static partial class DrawingViewService
 
 		var (startPointX, startPointY) = points[0];
 		context.MoveTo(new NFloat(startPointX), new NFloat(startPointY));
-		context.AddLines(points.Select(p => new CGPoint(p.X - minPointX, p.Y - minPointY)).ToArray());
+		context.AddLines(points.Select(p => new CGPoint(p.X - offset.Width, p.Y - offset.Height)).ToArray());
 	}
 
 	static UIImage GetMaximumUIImage(UIImage sourceImage, double maxWidth, double maxHeight)

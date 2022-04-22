@@ -75,7 +75,7 @@ public static partial class DrawingViewService
 		Color strokeColor,
 		Color? backgroundColor)
 	{
-		var image = GetBitmap(points);
+		var (image, offset) = GetBitmap(points);
 		if (image is null)
 		{
 			return null;
@@ -83,14 +83,14 @@ public static partial class DrawingViewService
 
 		using var canvas = new Canvas(image);
 		canvas.DrawColor(backgroundColor.ToPlatform(DrawingViewDefaults.BackgroundColor));
-		DrawStrokes(canvas, points, lineWidth, strokeColor);
+		DrawStrokes(canvas, points, lineWidth, strokeColor, offset);
 		return image;
 	}
 
 	static Bitmap? GetBitmapForLines(IList<IDrawingLine> lines, Color? backgroundColor)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
-		var image = GetBitmap(points);
+		var (image, offset) = GetBitmap(points);
 		if (image is null)
 		{
 			return null;
@@ -100,17 +100,17 @@ public static partial class DrawingViewService
 		canvas.DrawColor(backgroundColor.ToPlatform(DrawingViewDefaults.BackgroundColor));
 		foreach (var line in lines)
 		{
-			DrawStrokes(canvas, line.Points, line.LineWidth, line.LineColor);
+			DrawStrokes(canvas, line.Points, line.LineWidth, line.LineColor, offset);
 		}
 
 		return image;
 	}
 
-	static Bitmap? GetBitmap(ICollection<PointF> points)
+	static (Bitmap?, SizeF offset) GetBitmap(ICollection<PointF> points)
 	{
 		if (points.Count is 0)
 		{
-			return null;
+			return (null, SizeF.Zero);
 		}
 
 		var minPointX = points.Min(p => p.X);
@@ -120,29 +120,25 @@ public static partial class DrawingViewService
 		const int minSize = 1;
 		if (drawingWidth < minSize || drawingHeight < minSize)
 		{
-			return null;
+			return (null, SizeF.Zero);
 		}
 
 		if (Bitmap.Config.Argb8888 is null)
 		{
-			return null;
+			return (null, SizeF.Zero);
 		}
 
 		var image = Bitmap.CreateBitmap((int)drawingWidth, (int)drawingHeight, Bitmap.Config.Argb8888);
 		if (image is null)
 		{
-			return null;
+			return (null, SizeF.Zero);
 		}
 
-		return image;
+		return (image, new SizeF(minPointX, minPointY));
 	}
 
-	static void DrawStrokes(Canvas canvas, ICollection<PointF> points, float lineWidth, Color strokeColor)
+	static void DrawStrokes(Canvas canvas, ICollection<PointF> points, float lineWidth, Color strokeColor, SizeF offset)
 	{
-		var minPointX = points.Min(p => p.X);
-		var minPointY = points.Min(p => p.Y);
-
-		// strokes
 		using var paint = new Paint
 		{
 			StrokeWidth = lineWidth,
@@ -164,7 +160,7 @@ public static partial class DrawingViewService
 			var p1 = points.ElementAt(i);
 			var p2 = points.ElementAt(i + 1);
 
-			canvas.DrawLine(p1.X - minPointX, p1.Y - minPointY, p2.X - minPointX, p2.Y - minPointY, paint);
+			canvas.DrawLine(p1.X - offset.Width, p1.Y - offset.Height, p2.X - offset.Width, p2.Y - offset.Height, paint);
 		}
 	}
 
