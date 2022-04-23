@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CommunityToolkit.Maui.Sample.SelectAllTextPage"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             Title="SelectAllTextPage">
+    <ScrollView>
+        <VerticalStackLayout Padding="10,10"
+                         BackgroundColor="{StaticResource AppBackgroundColor}"
+                         HorizontalOptions="Fill"
+                         Spacing="20"
+                         VerticalOptions="Fill">
+
+            <Label Text="The SelectAllTextEffect is an effect that will select all text in an Entry / Editor when it becomes focussed. Useful applications for this effect would be custom url address bars, a copy paste button etc."/>
+
+            <Label Text="Entry" TextColor="{StaticResource DarkLabelTextColor}" FontAttributes="Bold"/>
+
+            <VerticalStackLayout>
+                <Label Text="Entry without the effect, when focussed no text will be selected" FontAttributes="Italic"/>
+                <Frame BackgroundColor="{StaticResource SoftFrameBackgroundColor}" HasShadow="False">
+                    <Entry Text="https://github.com/xamarin/XamarinCommunityToolkit" TextColor="{StaticResource DarkLabelTextColor}" PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}"/>
+                </Frame>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout>
+                <Label Text="Entry with the effect, when focussed all text will be selected" FontAttributes="Italic"/>
+                <Frame BackgroundColor="{StaticResource SoftFrameBackgroundColor}" HasShadow="False">
+                    <Entry Text="https://github.com/xamarin/XamarinCommunityToolkit" TextColor="{StaticResource DarkLabelTextColor}" PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}">
+                        <Entry.Behaviors>
+                            <mct:SelectAllText/>
+                        </Entry.Behaviors>
+                    </Entry>
+                </Frame>
+            </VerticalStackLayout>
+
+            <Label Text="Editor" TextColor="{StaticResource DarkLabelTextColor}" FontAttributes="Bold"/>
+
+            <VerticalStackLayout>
+                <Label Text="Editor without the effect, when focussed no text will be selected" FontAttributes="Italic"/>
+                <Frame BackgroundColor="{StaticResource SoftFrameBackgroundColor}" HasShadow="False">
+                    <Editor TextColor="{StaticResource DarkLabelTextColor}" PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}">
+                        <Editor.Text>
+                            Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should. Must go faster... go, go, go, go, go! You know what? It is beets. I've crashed into a beet truck. Is this my espresso machine? Wh-what is-h-how did you get my espresso machine?
+
+Just my luck, no ice. I gave it a cold? I gave it a virus. A computer virus. Must go faster... go, go, go, go, go! God creates dinosaurs. God destroys dinosaurs. God creates Man. Man destroys God. Man creates Dinosaurs. Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should.
+                        </Editor.Text>
+                    </Editor>
+                </Frame>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout>
+                <Label Text="Editor with the effect, when focussed all text will be selected" FontAttributes="Italic"/>
+                <Frame BackgroundColor="{StaticResource SoftFrameBackgroundColor}" HasShadow="False">
+                    <Editor TextColor="{StaticResource DarkLabelTextColor}" PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}">
+                        <Editor.Behaviors>
+                            <mct:SelectAllText/>
+                        </Editor.Behaviors>
+                        <Editor.Text>
+                            Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should. Must go faster... go, go, go, go, go! You know what? It is beets. I've crashed into a beet truck. Is this my espresso machine? Wh-what is-h-how did you get my espresso machine?
+
+Just my luck, no ice. I gave it a cold? I gave it a virus. A computer virus. Must go faster... go, go, go, go, go! God creates dinosaurs. God destroys dinosaurs. God creates Man. Man destroys God. Man creates Dinosaurs. Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should.
+                        </Editor.Text>
+                    </Editor>
+                </Frame>
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
