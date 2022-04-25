@@ -80,6 +80,10 @@ public partial class MauiDrawingView
 		{
 			((Microsoft.Maui.Graphics.Win2D.W2DGraphicsView)Content).Drawable = new DrawingViewDrawable(this);
 		}
+		else
+		{
+			System.Diagnostics.Debug.WriteLine("DrawingView requires Windows 10.0.18362 or higher.");
+		}
 #endif
 		Lines.CollectionChanged += OnLinesCollectionChanged;
 	}
