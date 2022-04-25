@@ -18,10 +18,10 @@
     <pages:BasePage.Content>
         <VerticalStackLayout Padding="10">
 
-        <Label
-            Text="The ItemTappedEventArgsConverter is a converter that allows users to extract the Item value from an ItemTappedEventArgs object. It can subsequently be used in combination with EventToCommandBehavior."
-            TextColor="{StaticResource NormalLabelTextColor}"
-            Margin="0, 0, 0, 20" />
+            <Label
+                Text="The ItemTappedEventArgsConverter is a converter that allows users to extract the Item value from an ItemTappedEventArgs object. It can subsequently be used in combination with EventToCommandBehavior."
+                TextColor="{StaticResource NormalLabelTextColor}"
+                Margin="0, 0, 0, 20" />
 
             <ListView
                 BackgroundColor="Transparent"
