@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using CoreGraphics;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Platform;
 using UIKit;
 
@@ -8,18 +9,18 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// Drawing view service
 /// </summary>
-public static partial class DrawingViewService
+public static class DrawingViewService
 {
 	/// <summary>
 	/// Get image stream from lines
 	/// </summary>
 	/// <param name="lines">Drawing lines</param>
 	/// <param name="imageSize">Image size</param>
-	/// <param name="backgroundColor">Image background color</param>
+	/// <param name="background">Image background</param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(in IList<IDrawingLine> lines, in Size imageSize, in Color? backgroundColor)
+	public static ValueTask<Stream> GetImageStream(in IList<IDrawingLine> lines, in Size imageSize, in Paint? background)
 	{
-		var image = GetUIImageForLines(lines, backgroundColor);
+		var image = GetUIImageForLines(lines, background);
 		if (image is null)
 		{
 			return ValueTask.FromResult(Stream.Null);
@@ -35,15 +36,15 @@ public static partial class DrawingViewService
 	/// <param name="imageSize">Image size</param>
 	/// <param name="lineWidth">Line Width</param>
 	/// <param name="strokeColor">Line color</param>
-	/// <param name="backgroundColor">Image background color</param>
+	/// <param name="background">Image background</param>
 	/// <returns>Image stream</returns>
 	public static ValueTask<Stream> GetImageStream(in IList<PointF> points,
 										in Size imageSize,
 										in float lineWidth,
 										in Color strokeColor,
-										in Color? backgroundColor)
+										in Paint? background)
 	{
-		var image = GetUIImageForPoints(points, lineWidth, strokeColor, backgroundColor);
+		var image = GetUIImageForPoints(points, lineWidth, strokeColor, background);
 		if (image is null)
 		{
 			return ValueTask.FromResult(Stream.Null);
@@ -55,15 +56,15 @@ public static partial class DrawingViewService
 	static UIImage? GetUIImageForPoints(ICollection<PointF> points,
 		NFloat lineWidth,
 		Color strokeColor,
-		Color? backgroundColor)
+		Paint? background)
 	{
 		return GetUIImage(points, (context, offset) =>
 		{
 			DrawStrokes(context, points.ToList(), lineWidth, strokeColor, offset);
-		}, backgroundColor);
+		}, background);
 	}
 
-	static UIImage? GetUIImageForLines(IList<IDrawingLine> lines, in Color? backgroundColor)
+	static UIImage? GetUIImageForLines(IList<IDrawingLine> lines, in Paint? background)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
 		return GetUIImage(points, (context, offset) =>
@@ -72,10 +73,10 @@ public static partial class DrawingViewService
 			{
 				DrawStrokes(context, line.Points, line.LineWidth, line.LineColor, offset);
 			}			
-		}, backgroundColor);
+		}, background);
 	}
 
-	static UIImage? GetUIImage(ICollection<PointF> points, Action<CGContext, Size> drawStrokes, Color? backgroundColor)
+	static UIImage? GetUIImage(ICollection<PointF> points, Action<CGContext, Size> drawStrokes, Paint? background)
 	{
 		const int minSize = 1;
 		var minPointX = points.Min(p => p.X);
@@ -93,8 +94,7 @@ public static partial class DrawingViewService
 
 		var context = UIGraphics.GetCurrentContext();
 
-		context.SetFillColor(backgroundColor?.ToCGColor() ?? DrawingViewDefaults.BackgroundColor.ToCGColor());
-		context.FillRect(new CGRect(CGPoint.Empty, imageSize));
+		DrawBackground(context, background, imageSize);
 
 		drawStrokes(context, new Size(minPointX, minPointY));
 
@@ -137,5 +137,57 @@ public static partial class DrawingViewService
 		UIGraphics.EndImageContext();
 
 		return resultImage;
+	}
+	static void DrawBackground(CGContext context, Paint? brush, CGSize imageSize)
+	{
+		switch (brush)
+		{
+			case SolidPaint solidColorBrush:
+				context.SetFillColor(solidColorBrush.Color.ToCGColor());
+				context.FillRect(new CGRect(CGPoint.Empty, imageSize));
+				break;
+			case LinearGradientPaint linearGradientBrush:
+				{
+					var colors = new CGColor[linearGradientBrush.GradientStops.Length];
+					var positions = new NFloat[linearGradientBrush.GradientStops.Length];
+					for (var index = 0; index < linearGradientBrush.GradientStops.Length; index++)
+					{
+						var gradientStop = linearGradientBrush.GradientStops[index];
+						colors[index] = gradientStop.Color.AsCGColor();
+						positions[index] = gradientStop.Offset;
+					}
+
+					context.DrawLinearGradient(
+						new CGGradient(CGColorSpace.CreateDeviceRGB(), colors, positions),
+						linearGradientBrush.StartPoint.AsCGPoint(),
+						linearGradientBrush.EndPoint.AsCGPoint(), 
+						CGGradientDrawingOptions.None);
+					break;
+				}
+			case RadialGradientPaint radialGradientBrush:
+				{
+					var colors = new CGColor[radialGradientBrush.GradientStops.Length];
+					var positions = new NFloat[radialGradientBrush.GradientStops.Length];
+					for (var index = 0; index < radialGradientBrush.GradientStops.Length; index++)
+					{
+						var gradientStop = radialGradientBrush.GradientStops[index];
+						colors[index] = gradientStop.Color.AsCGColor();
+						positions[index] = gradientStop.Offset;
+					}
+
+					context.DrawRadialGradient(
+						new CGGradient(CGColorSpace.CreateDeviceRGB(), colors, positions), 
+						radialGradientBrush.Center.AsCGPoint(),
+						(NFloat)radialGradientBrush.Radius,
+						radialGradientBrush.Center.AsCGPoint(),
+						(NFloat)radialGradientBrush.Radius,
+						CGGradientDrawingOptions.None);
+					break;
+				}
+			default:
+				context.SetFillColor(DrawingViewDefaults.BackgroundColor.ToCGColor());
+				context.FillRect(new CGRect(CGPoint.Empty, imageSize));
+				break;
+		}
 	}
 }

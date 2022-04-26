@@ -1,9 +1,9 @@
 ﻿using Android.Graphics;
-using CommunityToolkit.Maui.Core.Extensions;
 using Microsoft.Maui.Platform;
 using Color = Microsoft.Maui.Graphics.Color;
 using Math = System.Math;
-using Paint = Android.Graphics.Paint;
+using Paint = Microsoft.Maui.Graphics.Paint;
+using APaint = Android.Graphics.Paint;
 using PointF = Microsoft.Maui.Graphics.PointF;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -11,21 +11,21 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// Drawing view service
 /// </summary>
-public static partial class DrawingViewService
+public static class DrawingViewService
 {
 	/// <summary>
 	/// Get image stream from lines
 	/// </summary>
 	/// <param name="lines">Drawing lines</param>
 	/// <param name="imageSize">Image size</param>
-	/// <param name="backgroundColor">Image background color</param>
+	/// <param name="background">Image background</param>
 	/// <returns>Image stream</returns>
 	public static ValueTask<Stream> GetImageStream(in IList<IDrawingLine> lines,
 												   in Size imageSize,
-												   in Color? backgroundColor)
+												   in Paint? background)
 	{
 
-		var image = GetBitmapForLines(lines, backgroundColor);
+		var image = GetBitmapForLines(lines, background);
 		return ValueTask.FromResult(GetBitmapStream(image, imageSize));
 	}
 
@@ -36,15 +36,15 @@ public static partial class DrawingViewService
 	/// <param name="imageSize">Image size</param>
 	/// <param name="lineWidth">Line Width</param>
 	/// <param name="strokeColor">Line color</param>
-	/// <param name="backgroundColor">Image background color</param>
+	/// <param name="background">Image background</param>
 	/// <returns>Image stream</returns>
 	public static ValueTask<Stream> GetImageStream(in IList<PointF> points,
 										in Size imageSize,
 										in float lineWidth,
 										in Color strokeColor,
-										in Color? backgroundColor)
+										in Paint? background)
 	{
-		var image = GetBitmapForPoints(points, lineWidth, strokeColor, backgroundColor);
+		var image = GetBitmapForPoints(points, lineWidth, strokeColor, background);
 		return ValueTask.FromResult(GetBitmapStream(image, imageSize));
 	}
 
@@ -73,7 +73,7 @@ public static partial class DrawingViewService
 	static Bitmap? GetBitmapForPoints(ICollection<PointF> points,
 		float lineWidth,
 		Color strokeColor,
-		Color? backgroundColor)
+		Paint? background)
 	{
 		var (image, offset) = GetBitmap(points);
 		if (image is null)
@@ -82,12 +82,12 @@ public static partial class DrawingViewService
 		}
 
 		using var canvas = new Canvas(image);
-		canvas.DrawColor(backgroundColor.ToPlatform(DrawingViewDefaults.BackgroundColor));
+		DrawBackground(canvas, background);
 		DrawStrokes(canvas, points, lineWidth, strokeColor, offset);
 		return image;
 	}
 
-	static Bitmap? GetBitmapForLines(IList<IDrawingLine> lines, Color? backgroundColor)
+	static Bitmap? GetBitmapForLines(IList<IDrawingLine> lines, Paint? background)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
 		var (image, offset) = GetBitmap(points);
@@ -97,7 +97,7 @@ public static partial class DrawingViewService
 		}
 
 		using var canvas = new Canvas(image);
-		canvas.DrawColor(backgroundColor.ToPlatform(DrawingViewDefaults.BackgroundColor));
+		DrawBackground(canvas, background);
 		foreach (var line in lines)
 		{
 			DrawStrokes(canvas, line.Points, line.LineWidth, line.LineColor, offset);
@@ -139,11 +139,11 @@ public static partial class DrawingViewService
 
 	static void DrawStrokes(Canvas canvas, ICollection<PointF> points, float lineWidth, Color strokeColor, SizeF offset)
 	{
-		using var paint = new Paint
+		using var paint = new APaint
 		{
 			StrokeWidth = lineWidth,
-			StrokeJoin = Paint.Join.Round,
-			StrokeCap = Paint.Cap.Round,
+			StrokeJoin = APaint.Join.Round,
+			StrokeCap = APaint.Cap.Round,
 			AntiAlias = true
 		};
 
@@ -152,7 +152,7 @@ public static partial class DrawingViewService
 			paint.Color = strokeColor.ToPlatform();
 		}
 
-		paint.SetStyle(Paint.Style.Stroke);
+		paint.SetStyle(APaint.Style.Stroke);
 
 		var pointsCount = points.Count;
 		for (var i = 0; i < pointsCount - 1; i++)
@@ -176,5 +176,69 @@ public static partial class DrawingViewService
 		var width = maxResizeFactor * sourceSize.Width;
 		var height = maxResizeFactor * sourceSize.Height;
 		return Bitmap.CreateScaledBitmap(sourceImage, (int)width, (int)height, false)!;
+	}
+
+	static void DrawBackground(Canvas canvas, Paint? brush)
+	{
+		switch (brush)
+		{
+			case SolidPaint solidColorBrush:
+				canvas.DrawColor(solidColorBrush.Color.ToPlatform(DrawingViewDefaults.BackgroundColor));
+				break;
+			case LinearGradientPaint linearGradientBrush:
+				{
+					var paint = new APaint();
+					var colors = new int[linearGradientBrush.GradientStops.Length];
+					var positions = new float[linearGradientBrush.GradientStops.Length];
+					for (var index = 0; index < linearGradientBrush.GradientStops.Length; index++)
+					{
+						var gradientStop = linearGradientBrush.GradientStops[index];
+						colors[index] = gradientStop.Color.ToInt();
+						positions[index] = gradientStop.Offset;
+					}
+					
+					var shader = new LinearGradient(
+						(float)linearGradientBrush.StartPoint.X * canvas.Width,
+						(float)linearGradientBrush.StartPoint.Y * canvas.Height, 
+						(float)linearGradientBrush.EndPoint.X * canvas.Width, 
+						(float)linearGradientBrush.EndPoint.Y*canvas.Height,
+						colors,
+						positions,
+						Shader.TileMode.Clamp ?? throw new NullReferenceException("TileMode is null"));
+					paint.SetShader(shader);
+					paint.SetXfermode(new PorterDuffXfermode(PorterDuff.Mode.SrcIn));
+					canvas.DrawRect(0, 0, canvas.Width, canvas.Height, paint);
+
+					break;
+				}
+			case RadialGradientPaint radialGradientBrush:
+				{
+					var paint = new APaint();
+					var colors = new int[radialGradientBrush.GradientStops.Length];
+					var positions = new float[radialGradientBrush.GradientStops.Length];
+					for (var index = 0; index < radialGradientBrush.GradientStops.Length; index++)
+					{
+						var gradientStop = radialGradientBrush.GradientStops[index];
+						colors[index] = gradientStop.Color.ToInt();
+						positions[index] = gradientStop.Offset;
+					}
+
+					var shader = new RadialGradient(
+						(float)radialGradientBrush.Center.X,
+						(float)radialGradientBrush.Center.Y,
+						(float)radialGradientBrush.Radius,
+						colors,
+						positions,
+						Shader.TileMode.Clamp ?? throw new NullReferenceException("TileMode is null"));
+					paint.SetShader(shader);
+					paint.SetXfermode(new PorterDuffXfermode(PorterDuff.Mode.SrcIn));
+					canvas.DrawRect(0, 0, canvas.Width, canvas.Height, paint);
+
+					break;
+				}
+			default:
+				canvas.DrawColor(DrawingViewDefaults.BackgroundColor.ToPlatform());
+				break;
+		}
 	}
 }
