@@ -196,17 +196,16 @@ public static class DrawingViewService
 						colors[index] = gradientStop.Color.ToInt();
 						positions[index] = gradientStop.Offset;
 					}
-					
+
 					var shader = new LinearGradient(
 						(float)linearGradientBrush.StartPoint.X * canvas.Width,
-						(float)linearGradientBrush.StartPoint.Y * canvas.Height, 
-						(float)linearGradientBrush.EndPoint.X * canvas.Width, 
-						(float)linearGradientBrush.EndPoint.Y*canvas.Height,
+						(float)linearGradientBrush.StartPoint.Y * canvas.Height,
+						(float)linearGradientBrush.EndPoint.X * canvas.Width,
+						(float)linearGradientBrush.EndPoint.Y * canvas.Height,
 						colors,
 						positions,
 						Shader.TileMode.Clamp ?? throw new NullReferenceException("TileMode is null"));
 					paint.SetShader(shader);
-					paint.SetXfermode(new PorterDuffXfermode(PorterDuff.Mode.SrcIn));
 					canvas.DrawRect(0, 0, canvas.Width, canvas.Height, paint);
 
 					break;
@@ -224,14 +223,13 @@ public static class DrawingViewService
 					}
 
 					var shader = new RadialGradient(
-						(float)radialGradientBrush.Center.X,
-						(float)radialGradientBrush.Center.Y,
-						(float)radialGradientBrush.Radius,
+						(float)radialGradientBrush.Center.X * canvas.Width,
+						(float)radialGradientBrush.Center.Y * canvas.Height,
+						(float)radialGradientBrush.Radius * canvas.Width,
 						colors,
 						positions,
 						Shader.TileMode.Clamp ?? throw new NullReferenceException("TileMode is null"));
 					paint.SetShader(shader);
-					paint.SetXfermode(new PorterDuffXfermode(PorterDuff.Mode.SrcIn));
 					canvas.DrawRect(0, 0, canvas.Width, canvas.Height, paint);
 
 					break;
