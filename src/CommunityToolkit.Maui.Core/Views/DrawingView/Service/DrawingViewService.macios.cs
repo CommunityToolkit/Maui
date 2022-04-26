@@ -72,7 +72,7 @@ public static class DrawingViewService
 			foreach (var line in lines)
 			{
 				DrawStrokes(context, line.Points, line.LineWidth, line.LineColor, offset);
-			}			
+			}
 		}, background);
 	}
 
@@ -157,11 +157,13 @@ public static class DrawingViewService
 						positions[index] = gradientStop.Offset;
 					}
 
-					context.DrawLinearGradient(
-						new CGGradient(CGColorSpace.CreateDeviceRGB(), colors, positions),
-						linearGradientBrush.StartPoint.AsCGPoint(),
-						linearGradientBrush.EndPoint.AsCGPoint(), 
-						CGGradientDrawingOptions.None);
+					DrawLinearGradient(
+						context,
+						imageSize,
+						colors,
+						positions,
+						new CGPoint(linearGradientBrush.StartPoint.X * imageSize.Width, linearGradientBrush.StartPoint.Y * imageSize.Height),
+						new CGPoint(linearGradientBrush.EndPoint.X * imageSize.Width, linearGradientBrush.EndPoint.Y * imageSize.Height));
 					break;
 				}
 			case RadialGradientPaint radialGradientBrush:
@@ -173,15 +175,9 @@ public static class DrawingViewService
 						var gradientStop = radialGradientBrush.GradientStops[index];
 						colors[index] = gradientStop.Color.AsCGColor();
 						positions[index] = gradientStop.Offset;
-					}
+					}					
 
-					context.DrawRadialGradient(
-						new CGGradient(CGColorSpace.CreateDeviceRGB(), colors, positions), 
-						radialGradientBrush.Center.AsCGPoint(),
-						(NFloat)radialGradientBrush.Radius,
-						radialGradientBrush.Center.AsCGPoint(),
-						(NFloat)radialGradientBrush.Radius,
-						CGGradientDrawingOptions.None);
+					DrawRadialGradient(context, imageSize, colors, positions);
 					break;
 				}
 			default:
@@ -189,5 +185,57 @@ public static class DrawingViewService
 				context.FillRect(new CGRect(CGPoint.Empty, imageSize));
 				break;
 		}
+	}
+
+	static void DrawRadialGradient(CGContext context, CGSize size, CGColor[] colors, NFloat[] locations)
+	{
+		var colorSpace = CGColorSpace.CreateDeviceRGB();
+
+		var gradient = new CGGradient(colorSpace, colors, locations);
+		var path = GetBackgroundPath(size);
+		var pathRect = path.BoundingBox;
+		var center = new CGPoint(pathRect.GetMidX(), pathRect.GetMidY());
+		var radius = Math.Max(pathRect.Size.Width / 2.0, pathRect.Size.Height / 2.0) * Math.Sqrt(2);
+
+		context.SaveState();
+		context.AddPath(path);
+		context.EOClip();
+
+		context.DrawRadialGradient(gradient, center, 0, center, (NFloat)radius, 0);
+
+		context.RestoreState();
+	}
+
+
+	static void DrawLinearGradient(CGContext context, CGSize size, CGColor[] colors, NFloat[] locations, CGPoint startPoint, CGPoint endPoint)
+	{
+		var colorSpace = CGColorSpace.CreateDeviceRGB();
+
+		var gradient = new CGGradient(colorSpace, colors, locations);
+
+		context.SaveState();
+		context.AddPath(GetBackgroundPath(size));
+		context.EOClip();
+
+		context.DrawLinearGradient(
+			gradient,
+			startPoint,
+			endPoint,
+			CGGradientDrawingOptions.DrawsBeforeStartLocation);
+
+		context.RestoreState();
+	}
+
+	static CGPath GetBackgroundPath(CGSize imageSize)
+	{
+		var path = new CGPath();
+
+		var rect = new CGRect(0, 0, imageSize.Width, imageSize.Height);
+		path.MoveToPoint(rect.GetMinX(), rect.GetMinY());
+		path.AddLineToPoint(rect.GetMinX(), rect.GetMaxY());
+		path.AddLineToPoint(rect.Width, rect.GetMaxY());
+		path.AddLineToPoint(rect.Width, rect.GetMinY());
+		path.CloseSubpath();
+		return path;
 	}
 }
