@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
@@ -35,6 +35,7 @@
     <MauiImage Include="Resources\Images\*" />
     <PackageReference Include="CommunityToolkit.Maui.Markup" Version="1.0.0-rc1" />
 
+    <PackageReference Include="CommunityToolkit.Maui.Markup" Version="1.0.0-rc1" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0-preview3" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
   </ItemGroup>
