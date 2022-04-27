@@ -25,9 +25,9 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 		base.OnTouchEvent(e);
 		ArgumentNullException.ThrowIfNull(e);
 
-		var touchX = e.GetX() / (float)DeviceDisplay.MainDisplayInfo.Density;
-		var touchY = e.GetY() / (float)DeviceDisplay.MainDisplayInfo.Density;
-		var point = new PointF(touchX, touchY);
+		var touchX = e.GetX();
+		var touchY = e.GetY();
+		var point = new PointF(touchX / (float)DeviceDisplay.MainDisplayInfo.Density, touchY / (float)DeviceDisplay.MainDisplayInfo.Density);
 		switch (e.Action)
 		{
 			case MotionEventActions.Down:
