@@ -45,8 +45,8 @@ public partial class DrawingViewViewModel : BaseViewModel
 		var paddedViewWidth = Math.Clamp(viewWidth - 10, 1, viewWidth);
 		var paddedViewHeight = Math.Clamp(viewHeight - 10, 1, viewHeight);
 
-		var maxWidthInt = (int)Math.Round(paddedViewWidth, MidpointRounding.ToZero);
-		var maxHeightInt = (int)Math.Round(paddedViewHeight, MidpointRounding.ToZero);
+		var maxWidthInt = (int)Math.Round(paddedViewWidth, MidpointRounding.AwayFromZero);
+		var maxHeightInt = (int)Math.Round(paddedViewHeight, MidpointRounding.AwayFromZero);
 
 		for (var i = 0; i < count; i++)
 		{

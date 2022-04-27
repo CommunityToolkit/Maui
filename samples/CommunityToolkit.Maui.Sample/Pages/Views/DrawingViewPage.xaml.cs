@@ -74,6 +74,6 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 
 	double GetSide(double value)
 	{
-		return double.IsNaN(value) || value <= 0 ? 200 : value;
+		return double.IsNaN(value) || value <= 1 ? 200 : value;
 	}
 }
