@@ -14,6 +14,7 @@ public partial class MauiDrawingView
 	PointF previousPoint;
 	PathF currentPath = new();
 	MauiDrawingLine? currentLine;
+	Paint paint = new SolidPaint(DrawingViewDefaults.BackgroundColor);
 
 	/// <summary>
 	/// Event raised when drawing line completed 
@@ -57,7 +58,15 @@ public partial class MauiDrawingView
 	/// <summary>
 	/// Drawable background
 	/// </summary>
-	public Paint Paint { get; set; } = new SolidPaint(DrawingViewDefaults.BackgroundColor);
+	public Paint Paint
+	{
+		get => paint;
+		set
+		{
+			paint = value;
+			Redraw();
+		}
+	}
 
 	/// <summary>
 	/// Initialize resources
@@ -67,7 +76,14 @@ public partial class MauiDrawingView
 #if ANDROID || IOS || MACCATALYST
 		Drawable = new DrawingViewDrawable(this);
 #elif WINDOWS
-		((Microsoft.Maui.Graphics.Win2D.W2DGraphicsView)Content).Drawable = new DrawingViewDrawable(this);
+		if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 18362))
+		{
+			((Microsoft.Maui.Graphics.Win2D.W2DGraphicsView)Content).Drawable = new DrawingViewDrawable(this);
+		}
+		else
+		{
+			System.Diagnostics.Debug.WriteLine("DrawingView requires Windows 10.0.18362 or higher.");
+		}
 #endif
 		Lines.CollectionChanged += OnLinesCollectionChanged;
 	}
@@ -193,8 +209,8 @@ public partial class MauiDrawingView
 			drawingView.DrawAction?.Invoke(canvas, dirtyRect);
 
 			DrawCurrentLines(canvas, drawingView);
-			SetStroke(canvas, drawingView.LineWidth, drawingView.LineColor);
 
+			SetStroke(canvas, drawingView.LineWidth, drawingView.LineColor);
 			canvas.DrawPath(drawingView.currentPath);
 		}
 
@@ -202,6 +218,10 @@ public partial class MauiDrawingView
 		{
 			canvas.StrokeColor = lineColor;
 			canvas.StrokeSize = lineWidth;
+			canvas.StrokeDashOffset = 0;
+			canvas.StrokeLineCap = LineCap.Butt;
+			canvas.StrokeLineJoin = LineJoin.Miter;
+			canvas.StrokeDashPattern = Array.Empty<float>();
 		}
 
 		static void DrawCurrentLines(in ICanvas canvas, in MauiDrawingView drawingView)
@@ -213,7 +233,7 @@ public partial class MauiDrawingView
 					? line.Points.CreateSmoothedPathWithGranularity(line.Granularity)
 					: line.Points;
 #if ANDROID
-				points = CreateCollectionWithNormalizedPoints(points, drawingView.Width, drawingView.Height);
+				points = CreateCollectionWithNormalizedPoints(points, drawingView.Width, drawingView.Height, canvas.DisplayScale);
 #endif
 				if (points.Count > 0)
 				{
@@ -230,14 +250,13 @@ public partial class MauiDrawingView
 		}
 
 #if ANDROID
-		static ObservableCollection<PointF> CreateCollectionWithNormalizedPoints(in ObservableCollection<PointF> points, in int drawingViewWidth, in int drawingViewHeight)
+		static ObservableCollection<PointF> CreateCollectionWithNormalizedPoints(in ObservableCollection<PointF> points, in int drawingViewWidth, in int drawingViewHeight, in float canvasScale)
 		{
 			var newPoints = new List<PointF>();
 			foreach (var point in points)
 			{
-				var pointX = Math.Clamp(point.X, 0, drawingViewWidth);
-				var pointY = Math.Clamp(point.Y, 0, drawingViewHeight);
-
+				var pointX = Math.Clamp(point.X, 0, drawingViewWidth / canvasScale);
+				var pointY = Math.Clamp(point.Y, 0, drawingViewHeight / canvasScale);
 				newPoints.Add(new PointF(pointX, pointY));
 			}
 

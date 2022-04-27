@@ -68,11 +68,11 @@
                              IsMultiLineModeEnabled="{Binding Source={x:Reference MultiLineMode}, Path=IsToggled}">
                 <mct:DrawingView.Background>
                     <LinearGradientBrush StartPoint="0,0"
-                                             EndPoint="0,1">
+                                         EndPoint="0,1">
                         <GradientStop Color="Blue"
-                                          Offset="0"/>
+                                      Offset="0"/>
                         <GradientStop Color="Yellow"
-                                          Offset="1"/>
+                                      Offset="1"/>
                     </LinearGradientBrush>
                 </mct:DrawingView.Background>
             </mct:DrawingView>
@@ -81,8 +81,7 @@
                 Grid.Row="9" Grid.Column="0"
                 Grid.ColumnSpan="2"
                 x:Name="GestureImage"
-                Margin="0,0,0,10"
-                HorizontalOptions="Start"/>
+                Margin="0,0,0,10"/>
 
             <Label Grid.Row="10" Grid.Column="0"
                     Grid.ColumnSpan="2"

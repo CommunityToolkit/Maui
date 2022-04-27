@@ -4,7 +4,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// Drawing view service
 /// </summary>
-public static partial class DrawingViewService
+public static class DrawingViewService
 {
 	/// <summary>
 	/// Get image stream from points
@@ -13,13 +13,13 @@ public static partial class DrawingViewService
 	/// <param name="imageSize">Image size</param>
 	/// <param name="lineWidth">Line Width</param>
 	/// <param name="strokeColor">Line color</param>
-	/// <param name="backgroundColor">Image background color</param>
+	/// <param name="background">Image background</param>
 	/// <returns>Image stream</returns>
 	public static ValueTask<Stream> GetImageStream(IList<PointF> points,
 		Size imageSize,
 		float lineWidth,
 		Color strokeColor,
-		Color? backgroundColor) =>
+		Paint? background) =>
 		ValueTask.FromResult(Stream.Null);
 
 	/// <summary>
@@ -27,11 +27,11 @@ public static partial class DrawingViewService
 	/// </summary>
 	/// <param name="lines">Drawing lines</param>
 	/// <param name="imageSize">Image size</param>
-	/// <param name="backgroundColor">Image background color</param>
+	/// <param name="background">Image background</param>
 	/// <returns>Image stream</returns>
 	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines,
 		Size imageSize,
-		Color? backgroundColor) =>
+		Paint? background) =>
 		ValueTask.FromResult(Stream.Null);
 }
 #endif

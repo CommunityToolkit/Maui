@@ -29,13 +29,10 @@
     <MauiImage Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" IsAppIcon="true" Color="#512BD4" />
 
     <!-- Splash Screen -->
-    <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4"  BaseSize="128,128" />
+    <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" BaseSize="128,128" />
 
     <!-- Images -->
     <MauiImage Include="Resources\Images\*" />
-
-    <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
-    <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 
     <PackageReference Include="CommunityToolkit.Maui.Markup" Version="1.0.0-rc1" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0-preview3" />

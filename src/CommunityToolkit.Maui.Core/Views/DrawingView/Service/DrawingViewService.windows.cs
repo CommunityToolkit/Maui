@@ -2,8 +2,11 @@
 using Windows.Storage.Streams;
 using Windows.UI.Input.Inking;
 using Microsoft.Graphics.Canvas;
+using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Maui.Platform;
 using Point = Windows.Foundation.Point;
+using Rect = Windows.Foundation.Rect;
+using Size = Microsoft.Maui.Graphics.Size;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -17,12 +20,11 @@ public static class DrawingViewService
 	/// </summary>
 	/// <param name="lines">Drawing lines</param>
 	/// <param name="imageSize">Image size</param>
-	/// <param name="backgroundColor">Image background color</param>
+	/// <param name="background">Image background</param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize,
-		Color? backgroundColor)
+	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background)
 	{
-		var canvas = GetImageInternal(lines, imageSize, backgroundColor);
+		var canvas = GetImageInternal(lines, imageSize, background);
 		return GetCanvasRenderTargetStream(canvas);
 	}
 
@@ -33,16 +35,16 @@ public static class DrawingViewService
 	/// <param name="imageSize">Image size</param>
 	/// <param name="lineWidth">Line Width</param>
 	/// <param name="strokeColor">Line color</param>
-	/// <param name="backgroundColor">Image background color</param>
+	/// <param name="background">Image background</param>
 	/// <returns>Image stream</returns>
 	public static ValueTask<Stream> GetImageStream(
 		IList<PointF> points,
 		Size imageSize,
 		float lineWidth,
 		Color strokeColor,
-		Color? backgroundColor)
+		Paint? background)
 	{
-		var canvas = GetImageInternal(points, imageSize, lineWidth, strokeColor, backgroundColor);
+		var canvas = GetImageInternal(points, imageSize, lineWidth, strokeColor, background);
 		return GetCanvasRenderTargetStream(canvas);
 	}
 
@@ -69,35 +71,30 @@ public static class DrawingViewService
 		Size size,
 		float lineWidth,
 		Color lineColor,
-		Color? backgroundColor,
+		Paint? background,
 		bool scale = false)
 	{
-		var offscreen = GetCanvasRenderTarget(points, size, scale);
+		var (offscreen, offset) = GetCanvasRenderTarget(points, size, scale);
 		if (offscreen is null)
 		{
 			return null;
 		}
 
 		using var session = offscreen.CreateDrawingSession();
+		var brush = GetCanvasBrush(session, background, offscreen.Size);
+		session.FillRectangle(new Rect(0, 0, offscreen.Size.Width, offscreen.Size.Height), brush);
 
-		session.Clear(backgroundColor?.ToWindowsColor() ?? DrawingViewDefaults.BackgroundColor.ToWindowsColor());
-
-		DrawStrokes(offscreen, session, points, lineColor, lineWidth);
+		DrawStrokes(session, points, lineColor, lineWidth, offset);
 
 		return offscreen;
 	}
 
-	static void DrawStrokes(CanvasRenderTarget offscreen, 
-		CanvasDrawingSession session, 
-		ICollection<PointF> points, 
-		Color lineColor, 
-		float lineWidth)
+	static void DrawStrokes(CanvasDrawingSession session,
+		IEnumerable<PointF> points,
+		Color lineColor,
+		float lineWidth,
+		Size offset)
 	{
-		var minPointX = points.Min(p => p.X);
-		var minPointY = points.Min(p => p.Y);
-		var drawingWidth = points.Max(p => p.X) - minPointX;
-		var drawingHeight = points.Max(p => p.Y) - minPointY;
-
 		var strokeBuilder = new InkStrokeBuilder();
 		var inkDrawingAttributes = new InkDrawingAttributes
 		{
@@ -107,20 +104,18 @@ public static class DrawingViewService
 		strokeBuilder.SetDefaultDrawingAttributes(inkDrawingAttributes);
 		var strokes = new[]
 		{
-			strokeBuilder.CreateStroke(points.Select(p =>
-				new Point((p.X - minPointX) * offscreen.Size.Width / drawingWidth,
-					(p.Y - minPointY) * offscreen.Size.Height / drawingHeight)))
+			strokeBuilder.CreateStroke(points.Select(p => new Point(p.X - offset.Width, p.Y - offset.Height)))
 		};
 		session.DrawInk(strokes);
 	}
 
-	static CanvasRenderTarget? GetCanvasRenderTarget(ICollection<PointF> points, Size size, bool scale)
+	static (CanvasRenderTarget? offscreen, Size offset) GetCanvasRenderTarget(ICollection<PointF> points, SizeF size, bool scale)
 	{
 		const int minSize = 1;
 
 		if (points.Count is 0)
 		{
-			return null;
+			return (null, Size.Zero);
 		}
 
 		var minPointX = points.Min(p => p.X);
@@ -129,17 +124,17 @@ public static class DrawingViewService
 		var drawingHeight = points.Max(p => p.Y) - minPointY;
 		if (drawingWidth < minSize || drawingHeight < minSize)
 		{
-			return null;
+			return (null, new Size(minPointX, minPointY));
 		}
 
 		var device = CanvasDevice.GetSharedDevice();
-		return new CanvasRenderTarget(device, scale ? (int)size.Width : drawingWidth, scale ? (int)size.Height : drawingHeight, 96);
+		return (new CanvasRenderTarget(device, scale ? size.Width : drawingWidth, scale ? size.Height : drawingHeight, 96), new Size(minPointX, minPointY));
 	}
 
-	static CanvasRenderTarget? GetImageInternal(IList<IDrawingLine> lines, Size size, Color? backgroundColor, bool scale = false)
+	static CanvasRenderTarget? GetImageInternal(IList<IDrawingLine> lines, Size size, Paint? background, bool scale = false)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
-		var offscreen = GetCanvasRenderTarget(points, size, scale);
+		var (offscreen, offset) = GetCanvasRenderTarget(points, size, scale);
 		if (offscreen is null)
 		{
 			return null;
@@ -147,11 +142,13 @@ public static class DrawingViewService
 
 		using var session = offscreen.CreateDrawingSession();
 
-		session.Clear(backgroundColor?.ToWindowsColor() ?? DrawingViewDefaults.BackgroundColor.ToWindowsColor());
+		var brush = GetCanvasBrush(session, background, offscreen.Size);
+
+		session.FillRectangle(new Rect(0, 0, offscreen.Size.Width, offscreen.Size.Height), brush);
 
 		foreach (var line in lines)
 		{
-			DrawStrokes(offscreen, session, line.Points, line.LineColor, line.LineWidth);
+			DrawStrokes(session, line.Points, line.LineColor, line.LineWidth, offset);
 		}
 
 		return offscreen;
@@ -171,6 +168,48 @@ public static class DrawingViewService
 					new Vector2((float)nextPoint.X, (float)nextPoint.Y),
 					stroke.DrawingAttributes.Color, (float)stroke.DrawingAttributes.Size.Width);
 			}
+		}
+	}
+
+	static ICanvasBrush GetCanvasBrush(ICanvasResourceCreator canvasResourceCreator, Paint? brush, Windows.Foundation.Size size)
+	{
+		switch (brush)
+		{
+			case SolidPaint solidColorBrush:
+				return new CanvasSolidColorBrush(canvasResourceCreator, solidColorBrush.Color.ToWindowsColor());
+			case LinearGradientPaint linearGradientBrush:
+				{
+					var gradientStops = new CanvasGradientStop[linearGradientBrush.GradientStops.Length];
+					for (var index = 0; index < linearGradientBrush.GradientStops.Length; index++)
+					{
+						var gradientStop = linearGradientBrush.GradientStops[index];
+						gradientStops[index] = new CanvasGradientStop(gradientStop.Offset, gradientStop.Color.ToWindowsColor());
+					}
+
+					return new CanvasLinearGradientBrush(canvasResourceCreator, gradientStops)
+					{
+						StartPoint = new Vector2((float)(linearGradientBrush.StartPoint.X * size.Width), (float)(linearGradientBrush.StartPoint.Y * size.Height)),
+						EndPoint = new Vector2((float)(linearGradientBrush.EndPoint.X * size.Width), (float)(linearGradientBrush.EndPoint.Y * size.Height))
+					};
+				}
+			case RadialGradientPaint radialGradientBrush:
+				{
+					var gradientStops = new CanvasGradientStop[radialGradientBrush.GradientStops.Length];
+					for (var index = 0; index < radialGradientBrush.GradientStops.Length; index++)
+					{
+						var gradientStop = radialGradientBrush.GradientStops[index];
+						gradientStops[index] = new CanvasGradientStop(gradientStop.Offset, gradientStop.Color.ToWindowsColor());
+					}
+
+					return new CanvasRadialGradientBrush(canvasResourceCreator, gradientStops)
+					{
+						Center = new Vector2((float)(radialGradientBrush.Center.X * size.Width), (float)(radialGradientBrush.Center.Y * size.Height)),
+						RadiusX = (float)radialGradientBrush.Radius * size._width,
+						RadiusY = (float)radialGradientBrush.Radius * size._height
+					};
+				}
+			default:
+				return new CanvasSolidColorBrush(canvasResourceCreator, DrawingViewDefaults.BackgroundColor.ToWindowsColor());
 		}
 	}
 }

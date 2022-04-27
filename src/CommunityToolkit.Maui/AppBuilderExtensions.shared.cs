@@ -18,7 +18,7 @@ public static class AppBuilderExtensions
 	{
 		builder.ConfigureMauiHandlers(h =>
 		{
-			h.AddHandler<IDrawingView, DrawingViewHandler>();
+			h.AddHandler<DrawingView, DrawingViewHandler>();
 			h.AddHandler<Popup, PopupHandler>();
 		});
 

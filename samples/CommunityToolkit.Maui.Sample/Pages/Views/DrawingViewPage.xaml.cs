@@ -39,14 +39,18 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 
 	async Task DrawImage(IEnumerable<DrawingLine> lines)
 	{
-		var stream = await DrawingView.GetImageStream(lines, new Size(GestureImage.Width, GestureImage.Height), Colors.Gray);
+		var drawingLines = lines.ToList();
+		var points = drawingLines.SelectMany(x => x.Points).ToList();
+		var stream = await DrawingView.GetImageStream(drawingLines,
+			new Size(points.Max(x => x.X) - points.Min(x => x.X), points.Max(x => x.Y) - points.Min(x => x.Y)),
+			Colors.Gray);
 		GestureImage.Source = ImageSource.FromStream(() => stream);
 	}
 
 	IEnumerable<DrawingLine> GenerateLines(int count)
 	{
-		var width = double.IsNaN(DrawingViewControl.Width) ? 200 : DrawingViewControl.Width;
-		var height = double.IsNaN(DrawingViewControl.Height) ? 200 : DrawingViewControl.Height;
+		var width = GetSide(GestureImage.Width);
+		var height = GetSide(GestureImage.Height);
 		for (var i = 0; i < count; i++)
 		{
 			yield return new DrawingLine
@@ -62,7 +66,14 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 
 	async void OnDrawingLineCompleted(object sender, DrawingLineCompletedEventArgs e)
 	{
-		var stream = await e.LastDrawingLine.GetImageStream(GestureImage.Width, GestureImage.Height, Colors.Gray);
+		var width = GetSide(GestureImage.Width);
+		var height = GetSide(GestureImage.Height);
+		var stream = await e.LastDrawingLine.GetImageStream(width, height, Colors.Gray.AsPaint());
 		GestureImage.Source = ImageSource.FromStream(() => stream);
+	}
+
+	double GetSide(double value)
+	{
+		return double.IsNaN(value) || value <= 1 ? 200 : value;
 	}
 }

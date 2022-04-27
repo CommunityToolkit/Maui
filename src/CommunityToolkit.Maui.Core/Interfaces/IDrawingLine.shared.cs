@@ -37,7 +37,7 @@ public interface IDrawingLine
 	/// </summary>
 	/// <param name="imageSizeWidth">Desired width of the image that is returned.</param>
 	/// <param name="imageSizeHeight">Desired height of the image that is returned.</param>
-	/// <param name="backgroundColor">Background color of the generated image.</param>
+	/// <param name="background">Background of the generated image.</param>
 	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingLine"/>.</returns>
-	ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Color backgroundColor);
+	ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Paint background);
 }

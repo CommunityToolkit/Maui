@@ -45,15 +45,15 @@ public class DrawingLine : IDrawingLine
 	/// <param name="imageSize">The desired dimensions of the generated image.</param>
 	/// <param name="lineWidth">The desired line width to be used in the generated image.</param>
 	/// <param name="strokeColor">The desired color of the line to be used in the generated image.</param>
-	/// <param name="backgroundColor">Background color of the generated image.</param>
+	/// <param name="background">Background of the generated image.</param>
 	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's provided through the <paramref name="points"/> parameter.</returns>
 	public static ValueTask<Stream> GetImageStream(IEnumerable<PointF> points,
 										Size imageSize,
 										float lineWidth,
 										Color strokeColor,
-										Color backgroundColor)
+										Paint background)
 	{
-		return DrawingViewService.GetImageStream(points.ToList(), imageSize, lineWidth, strokeColor, backgroundColor);
+		return DrawingViewService.GetImageStream(points.ToList(), imageSize, lineWidth, strokeColor, background);
 	}
 
 	/// <summary>
@@ -61,8 +61,8 @@ public class DrawingLine : IDrawingLine
 	/// </summary>
 	/// <param name="imageSizeWidth">Desired width of the image that is returned.</param>
 	/// <param name="imageSizeHeight">Desired height of the image that is returned.</param>
-	/// <param name="backgroundColor">Background color of the generated image.</param>
+	/// <param name="background">Background of the generated image.</param>
 	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
-	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Color backgroundColor) =>
-		DrawingViewService.GetImageStream(Points.ToList(), new Size(imageSizeWidth, imageSizeHeight), LineWidth, LineColor, backgroundColor);
+	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Paint background) =>
+		DrawingViewService.GetImageStream(Points.ToList(), new Size(imageSizeWidth, imageSizeHeight), LineWidth, LineColor, background);
 }

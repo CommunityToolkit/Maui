@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Core.Views;
 
@@ -144,17 +145,17 @@ public static class MauiDrawingViewExtensions
 	/// <param name="drawingView"><see cref="IDrawingView"/></param>
 	public static void SetLines(this MauiDrawingView mauiDrawingView, IDrawingView drawingView)
 	{
-		IReadOnlyList<IDrawingLine> lines = drawingView.Lines.ToList();
+		var lines = drawingView.Lines.ToImmutableList();
 		if (!drawingView.IsMultiLineModeEnabled && lines.Count > 1)
 		{
-			lines = lines.TakeLast(1).ToList();
+			lines = lines.TakeLast(1).ToImmutableList();
 		}
 
 		mauiDrawingView.Lines.Clear();
 
 		foreach (var line in lines)
 		{
-			mauiDrawingView.Lines.Add(new MauiDrawingLine()
+			mauiDrawingView.Lines.Add(new MauiDrawingLine
 			{
 				LineColor = line.LineColor,
 				ShouldSmoothPathWhenDrawn = line.ShouldSmoothPathWhenDrawn,
@@ -173,10 +174,10 @@ public static class MauiDrawingViewExtensions
 	/// <param name="adapter"><see cref="IDrawingLineAdapter"/></param>
 	public static void SetLines(this IDrawingView drawingView, MauiDrawingView mauiDrawingView, IDrawingLineAdapter adapter)
 	{
-		IReadOnlyList<MauiDrawingLine> lines = mauiDrawingView.Lines.ToList();
+		var lines = mauiDrawingView.Lines.ToImmutableList();
 		if (!mauiDrawingView.IsMultiLineModeEnabled && lines.Count > 1)
 		{
-			lines = lines.TakeLast(1).ToList();
+			lines = lines.TakeLast(1).ToImmutableList();
 		}
 
 		drawingView.Lines.Clear();

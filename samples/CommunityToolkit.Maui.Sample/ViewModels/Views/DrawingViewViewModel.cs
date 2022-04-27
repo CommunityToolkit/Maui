@@ -20,8 +20,8 @@ public partial class DrawingViewViewModel : BaseViewModel
 
 		AddNewLineCommand = new Command<DrawingView>(drawingView =>
 		{
-			var width = double.IsNaN(drawingView.Width) ? 200 : drawingView.Width;
-			var height = double.IsNaN(drawingView.Height) ? 200 : drawingView.Height;
+			var width = double.IsNaN(drawingView.Width) || drawingView.Width <= 1 ? 200 : drawingView.Width;
+			var height = double.IsNaN(drawingView.Height) || drawingView.Height <= 1 ? 200 : drawingView.Height;
 
 			Lines.Add(new DrawingLine()
 			{
@@ -42,11 +42,11 @@ public partial class DrawingViewViewModel : BaseViewModel
 
 	public static IEnumerable<PointF> GeneratePoints(int count, double viewWidth, double viewHeight)
 	{
-		var paddedViewWidth = Math.Clamp(viewWidth - 10, 0, viewWidth);
-		var paddedViewHeight = Math.Clamp(viewHeight - 10, 0, viewHeight);
+		var paddedViewWidth = Math.Clamp(viewWidth - 10, 1, viewWidth);
+		var paddedViewHeight = Math.Clamp(viewHeight - 10, 1, viewHeight);
 
-		int maxWidthInt = (int)Math.Round(paddedViewWidth, MidpointRounding.ToZero);
-		int maxHeightInt = (int)Math.Round(paddedViewHeight, MidpointRounding.ToZero);
+		var maxWidthInt = (int)Math.Round(paddedViewWidth, MidpointRounding.AwayFromZero);
+		var maxHeightInt = (int)Math.Round(paddedViewHeight, MidpointRounding.AwayFromZero);
 
 		for (var i = 0; i < count; i++)
 		{

@@ -127,7 +127,7 @@ class MockDrawingLine : IDrawingLine
 	public float LineWidth { get; set; }
 	public ObservableCollection<PointF> Points { get; set; } = new();
 	public bool ShouldSmoothPathWhenDrawn { get; set; }
-	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Color backgroundColor)
+	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Paint background)
 	{
 		return ValueTask.FromResult(Stream.Null);
 	}
