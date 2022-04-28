@@ -42,7 +42,8 @@ public class DrawingViewTests : BaseHandlerTest
 	{
 		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		drawingView.Handler.Should().NotBeNull();
-		drawingView.Lines = new ObservableCollection<IDrawingLine> {new DrawingLine()};
+
+		drawingView.Lines.Add(new DrawingLine());
 		drawingViewHandler.Lines.Should().HaveCount(1);
 
 		drawingView.Lines.Add(new DrawingLine());
@@ -132,7 +133,9 @@ public class DrawingViewTests : BaseHandlerTest
 	{
 		drawingView.Lines = new ObservableCollection<IDrawingLine> {new DrawingLine()};
 		drawingView.Lines.Should().HaveCount(1);
+		
 		drawingView.Clear();
+
 		drawingView.Lines.Should().BeEmpty();
 	}
 	

@@ -94,8 +94,12 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawin
 				Points = line.Points
 			});
 		}
-		var drawingLine = adapter.ConvertMauiDrawingLine(Lines.Last());
-		VirtualView.DrawingLineCompleted(drawingLine);
+
+		if (Lines.Count > 0)
+		{
+			var drawingLine = adapter.ConvertMauiDrawingLine(Lines.Last());
+			VirtualView.DrawingLineCompleted(drawingLine);
+		}
 	}
 
 	public void SetDrawingLineAdapter(IDrawingLineAdapter drawingLineAdapter)
