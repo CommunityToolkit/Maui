@@ -45,7 +45,7 @@ jobs:
       #     packageType: 'sdk'
       #     version: '$(NET_VERSION)'
       #     includePreviewVersions: true
-        - powershell: |
+      - powershell: |
           wget https://dot.net/v1/dotnet-install.ps1 -OutFile C:\dotnet-install.ps1
           C:\dotnet-install.ps1 -Version $(NET_VERSION)
           dotnet --info
@@ -172,9 +172,10 @@ jobs:
       #     includePreviewVersions: true
       - task: CmdLine@2
         displayName: 'Install .NET SDK'
-        script: |
-          curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version $(NET_VERSION) --quality preview
-          dotnet --info
+        inputs:
+          script: |
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version $(NET_VERSION) --quality preview
+            dotnet --info
       - task: CmdLine@2
         displayName: 'Install .NET MAUI workload'
         inputs:
