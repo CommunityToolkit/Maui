@@ -97,7 +97,7 @@ public class CharactersValidationBehavior : TextValidationBehavior
 
 	/// <inheritdoc/>
 	protected override async ValueTask<bool> ValidateAsync(string? value, CancellationToken token)
-		=> await base.ValidateAsync(value, token).ConfigureAwait(false) && Validate(value?.ToString());
+		=> await base.ValidateAsync(value, token).ConfigureAwait(false) && Validate(value);
 
 	static void OnCharacterTypePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{

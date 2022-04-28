@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToByteGreenConverter_Tests : BaseTest
 {
-	public readonly static IReadOnlyList<object[]> ValidInputData = new[]
+	public static readonly IReadOnlyList<object[]> ValidInputData = new[]
 	{
 		new object[] { float.MinValue, (byte)0 },
 		new object[] { -0.01f, (byte)0 },

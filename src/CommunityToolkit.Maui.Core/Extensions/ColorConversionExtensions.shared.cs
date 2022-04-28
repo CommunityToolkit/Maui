@@ -36,51 +36,6 @@ public static class ColorConversionExtensions
 	}
 
 	/// <summary>
-	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the red, green and blue components in hexadecimal.
-	/// </summary>
-	/// <param name="color">The <see cref="Color"/> to convert.</param>
-	/// <returns>
-	/// A <see cref="string"/> in the format: <c>#redgreenblue</c> where <b>red</b>, <b>green</b> and <b>blue</b> will be a value between 00 and FF.
-	/// (e.g. <c>#FF0000</c> for <see cref="Colors.Red"/>).
-	/// </returns>
-	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
-	public static string ToHexRgbString(this Color color)
-	{
-		ArgumentNullException.ThrowIfNull(color);
-		return $"#{color.GetByteRed():X2}{color.GetByteGreen():X2}{color.GetByteBlue():X2}";
-	}
-
-	/// <summary>
-	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the red, green, blue and alpha components in hexadecimal.
-	/// </summary>
-	/// <param name="color">The <see cref="Color"/> to convert.</param>
-	/// <returns>
-	/// A <see cref="string"/> in the format: <c>#redgreenbluealpha</c> where <b>red</b>, <b>green</b>, <b>blue</b> and <b>alpha</b> will be a value between 00 and FF.
-	/// e.g. <c>#FF0000FF</c> for <see cref="Colors.Red"/>).
-	/// </returns>
-	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
-	public static string ToHexRgbaString(this Color color)
-	{
-		ArgumentNullException.ThrowIfNull(color);
-		return $"#{color.GetByteRed():X2}{color.GetByteGreen():X2}{color.GetByteBlue():X2}{color.GetByteAlpha():X2}";
-	}
-
-	/// <summary>
-	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the red, green, blue and alpha components in hexadecimal.
-	/// </summary>
-	/// <param name="color">The <see cref="Color"/> to convert.</param>
-	/// <returns>
-	/// A <see cref="string"/> in the format: <c>#alpharedgreenblue</c> where <b>alpha</b>, <b>red</b>, <b>green</b> and <b>blue</b> will be a value between 00 and FF.
-	/// e.g. <c>#FFFF0000</c> for <see cref="Colors.Red"/>).
-	/// </returns>
-	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
-	public static string ToHexArgbString(this Color color)
-	{
-		ArgumentNullException.ThrowIfNull(color);
-		return $"#{color.GetByteAlpha():X2}{color.GetByteRed():X2}{color.GetByteGreen():X2}{color.GetByteBlue():X2}";
-	}
-
-	/// <summary>
 	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the cyan, magenta, yellow and key components.
 	/// </summary>
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
@@ -151,7 +106,6 @@ public static class ColorConversionExtensions
 	public static Color WithRed(this Color color, double redComponent)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-
 		return redComponent is < 0 or > 1
 				? throw new ArgumentOutOfRangeException(nameof(redComponent))
 				: Color.FromRgba(redComponent, color.Green, color.Blue, color.Alpha);
@@ -230,20 +184,6 @@ public static class ColorConversionExtensions
 		ArgumentNullException.ThrowIfNull(color);
 
 		return Color.FromRgba(color.Red, color.Green, (double)blueComponent / 255, color.Alpha);
-	}
-
-	/// <summary>
-	/// Applies the supplied <paramref name="alphaComponent"/> to this <see cref="Color"/>.
-	/// </summary>
-	/// <param name="color">The <see cref="Color"/> to modify.</param>
-	/// <param name="alphaComponent">The alpha component to apply to the existing <see cref="Color"/>. Note this value must be between 0 and 255.</param>
-	/// <returns>A <see cref="Color"/> with the supplied <paramref name="alphaComponent"/> applied.</returns>
-	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
-	public static Color WithAlpha(this Color color, byte alphaComponent)
-	{
-		ArgumentNullException.ThrowIfNull(color);
-
-		return Color.FromRgba(color.Red, color.Green, color.Blue, (double)alphaComponent / 255);
 	}
 
 	/// <summary>

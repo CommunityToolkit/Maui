@@ -3,7 +3,8 @@
   <PropertyGroup>
     <TargetFrameworks>net6.0;net6.0-android;net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net6.0-windows10.0.19041.0</TargetFrameworks>
-    <UseMaui>true</UseMaui>
+    <UseMauiCore>true</UseMauiCore>
+    <UseMauiEssentials>true</UseMauiEssentials>
     <SingleProject>true</SingleProject>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
@@ -76,7 +77,6 @@
   <ItemGroup>
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
     <None Include="ReadMe.txt" pack="true" PackagePath="." />
-    <Using Remove="Microsoft.Maui.Controls" />
   </ItemGroup>
 
 </Project>

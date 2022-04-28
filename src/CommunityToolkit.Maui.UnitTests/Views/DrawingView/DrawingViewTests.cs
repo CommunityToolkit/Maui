@@ -130,6 +130,15 @@ public class DrawingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
+	public void ClearShouldClearLines()
+	{
+		drawingView.Lines.Add(new DrawingLine());
+		drawingView.Lines.Should().HaveCount(1);
+		drawingView.Clear();
+		drawingView.Lines.Should().BeEmpty();
+	}
+	
+	[Fact]
 	public async Task GetImageStreamReturnsNullStream()
 	{
 		var stream = await drawingView.GetImageStream(10, 10);

@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToCmykStringConverter_Tests : BaseTest
 {
-	public readonly static IReadOnlyList<object[]> ValidInputData = new[]
+	public static readonly IReadOnlyList<object[]> ValidInputData = new[]
 	{
 		new object[] { int.MinValue, int.MinValue, int.MinValue, int.MinValue, "CMYK(0%,0%,0%,100%)" },
 		new object[] { int.MinValue, int.MinValue, int.MinValue, int.MaxValue, "CMYK(0%,0%,0%,100%)" },

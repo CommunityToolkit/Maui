@@ -320,58 +320,7 @@ public class ColorConversionExtensions_Tests
 		Assert.Throws<ArgumentNullException>(() => ColorConversionExtensions.ToRgbaString(null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
-
-	[Theory]
-	[MemberData(nameof(ColorTestData))]
-	public void ToHexRgbString(ColorTestDefinition testDef)
-	{
-		var result = testDef.Color.ToHexRgbString();
-
-		Assert.Equal(testDef.ExpectedHEXRGB, result);
-	}
-
-	[Fact]
-	public void ToHexRgbStringNullInput()
-	{
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => ColorConversionExtensions.ToHexRgbString(null));
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-	}
-
-	[Theory]
-	[MemberData(nameof(ColorTestData))]
-	public void ToHexRgbaString(ColorTestDefinition testDef)
-	{
-		var result = testDef.Color.ToHexRgbaString();
-
-		Assert.Equal(testDef.ExpectedHEXRGBA, result);
-	}
-
-	[Fact]
-	public void ToHexRgbaStringNullInput()
-	{
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => ColorConversionExtensions.ToHexRgbaString(null));
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-	}
-
-	[Theory]
-	[MemberData(nameof(ColorTestData))]
-	public void ToHexArgbString(ColorTestDefinition testDef)
-	{
-		var result = testDef.Color.ToHexArgbString();
-
-		Assert.Equal(testDef.ExpectedHEXARGB, result);
-	}
-
-	[Fact]
-	public void ToHexArgbStringNullInput()
-	{
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => ColorConversionExtensions.ToHexArgbString(null));
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-	}
-
+	
 	[Theory]
 	[MemberData(nameof(ColorTestData))]
 	public void ToCmykString(ColorTestDefinition testDef)
@@ -879,23 +828,6 @@ public class ColorConversionExtensions_Tests
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		Assert.Throws<ArgumentNullException>(() => ColorConversionExtensions.WithCyan(null, 0));
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-	}
-
-	[Theory]
-	[MemberData(nameof(ColorTestData))]
-	public void WithAlpha(ColorTestDefinition testDef)
-	{
-		var newColor = testDef.Color.WithAlpha(testDef.A);
-
-		Assert.Equal(testDef.ExpectedByteA, newColor.GetByteAlpha());
-	}
-
-	[Fact]
-	public void WithAlphaNullInput()
-	{
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => ColorConversionExtensions.WithAlpha(null, 0));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 

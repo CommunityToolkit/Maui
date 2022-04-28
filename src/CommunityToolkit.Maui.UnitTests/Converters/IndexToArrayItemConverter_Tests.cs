@@ -7,9 +7,9 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 public class IndexToArrayItemConverter_Tests : BaseTest
 {
 	[Theory]
-	[InlineData(new int[] { 1, 2, 3, 4, 5 }, 2, 3)]
-	[InlineData(new string[] { "Val1", "Val2", "Val3" }, 0, "Val1")]
-	[InlineData(new double[] { 1.3, 4.3, 4.3 }, 1, 4.3)]
+	[InlineData(new[] { 1, 2, 3, 4, 5 }, 2, 3)]
+	[InlineData(new[] { "Val1", "Val2", "Val3" }, 0, "Val1")]
+	[InlineData(new[] { 1.3, 4.3, 4.3 }, 1, 4.3)]
 	public void IndexToArrayConverter(Array value, int position, object expectedResult)
 	{
 		var indexToArrayConverter = new IndexToArrayItemConverter();
@@ -29,13 +29,45 @@ public class IndexToArrayItemConverter_Tests : BaseTest
 	}
 
 	[Theory]
-	[InlineData(new int[] { 1, 2, 3, 4, 5 }, 100)]
-	[InlineData(new int[] { 1, 2, 3, 4, 5 }, -1)]
-	public void IndexToArrayInvalidValuesThrowArgumenOutOfRangeException(int[] value, int position)
+	[InlineData(new[] { 1, 2, 3, 4, 5 }, 100)]
+	[InlineData(new[] { 1, 2, 3, 4, 5 }, -1)]
+	public void IndexToArrayInvalidValuesThrowArgumentOutOfRangeException(int[] value, int position)
 	{
 		var indexToArrayConverter = new IndexToArrayItemConverter();
 		Assert.Throws<ArgumentOutOfRangeException>(() => ((ICommunityToolkitValueConverter)indexToArrayConverter).Convert(position, typeof(object), value, CultureInfo.CurrentCulture));
 		Assert.Throws<ArgumentOutOfRangeException>(() => indexToArrayConverter.ConvertFrom(position, value));
+	}
+	
+	[Theory]
+	[InlineData(new[] { 1, 2, 3, 4, 5 }, 2, 3)]
+	[InlineData(new[] { "Val1", "Val2", "Val3" }, 0, "Val1")]
+	[InlineData(new[] { 1.3, 4.3, 4.3 }, 1, 4.3)]
+	public void IndexToArrayConverterConvertBack(Array value, int position, object expectedResult)
+	{
+		var indexToArrayConverter = new IndexToArrayItemConverter();
+
+		var convertResult = ((ICommunityToolkitValueConverter)indexToArrayConverter).ConvertBack(position, typeof(object), value, CultureInfo.CurrentCulture);
+		var convertFromResult = indexToArrayConverter.ConvertBackTo(expectedResult, value);
+
+		Assert.Equal(position, convertResult);
+		Assert.Equal(position, convertFromResult);
+	}
+	
+	[Fact]
+	public void ConvertBackIndexToArrayNullValuesThrowArgumentNullException()
+	{
+		var indexToArrayConverter = new IndexToArrayItemConverter();
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)indexToArrayConverter).ConvertBack(null, typeof(object), null, CultureInfo.CurrentCulture));
+	}
+
+	[Theory]
+	[InlineData(new[] { 1, 2, 3, 4, 5 }, 100)]
+	[InlineData(new[] { 1, 2, 3, 4, 5 }, -1)]
+	public void ConvertBackIndexToArrayInvalidValuesThrowArgumentOutOfRangeException(int[] value, int position)
+	{
+		var indexToArrayConverter = new IndexToArrayItemConverter();
+		Assert.Throws<ArgumentOutOfRangeException>(() => ((ICommunityToolkitValueConverter)indexToArrayConverter).ConvertBack(position, typeof(object), value, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentOutOfRangeException>(() => indexToArrayConverter.ConvertBackTo(position, value));
 	}
 
 	[Fact]
