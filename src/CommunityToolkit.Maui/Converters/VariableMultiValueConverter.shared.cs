@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Converters;

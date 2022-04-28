@@ -1,8 +1,5 @@
-﻿using System.Collections.ObjectModel;
-using Foundation;
-using Microsoft.Maui.Graphics.Platform;
+﻿using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Platform;
-using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
 

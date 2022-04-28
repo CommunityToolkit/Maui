@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Maui.Core.Views;
 
 namespace CommunityToolkit.Maui.Core;
 

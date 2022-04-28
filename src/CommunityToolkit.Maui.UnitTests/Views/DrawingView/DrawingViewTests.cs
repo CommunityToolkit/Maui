@@ -1,6 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.UnitTests.Mocks;
@@ -43,12 +42,11 @@ public class DrawingViewTests : BaseHandlerTest
 	{
 		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		drawingView.Handler.Should().NotBeNull();
+		drawingView.Lines = new ObservableCollection<IDrawingLine> {new DrawingLine()};
+		drawingViewHandler.Lines.Should().HaveCount(1);
 
 		drawingView.Lines.Add(new DrawingLine());
-		drawingViewHandler.Lines.Count.Should().Be(1);
-
-		drawingView.Lines.Add(new DrawingLine());
-		drawingViewHandler.Lines.Count.Should().Be(2);
+		drawingViewHandler.Lines.Should().HaveCount(2);
 	}
 
 	[Fact]
@@ -132,7 +130,7 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void ClearShouldClearLines()
 	{
-		drawingView.Lines.Add(new DrawingLine());
+		drawingView.Lines = new ObservableCollection<IDrawingLine> {new DrawingLine()};
 		drawingView.Lines.Should().HaveCount(1);
 		drawingView.Clear();
 		drawingView.Lines.Should().BeEmpty();
