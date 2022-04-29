@@ -2,7 +2,6 @@
 using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.ViewModels;
 using static CommunityToolkit.Maui.Markup.GridRowsColumns;
-using Application = Microsoft.Maui.Controls.Application;
 
 namespace CommunityToolkit.Maui.Sample.Pages;
 

@@ -1,6 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.UnitTests.Mocks;
@@ -45,10 +44,10 @@ public class DrawingViewTests : BaseHandlerTest
 		drawingView.Handler.Should().NotBeNull();
 
 		drawingView.Lines.Add(new DrawingLine());
-		drawingViewHandler.Lines.Count.Should().Be(1);
+		drawingViewHandler.Lines.Should().HaveCount(1);
 
 		drawingView.Lines.Add(new DrawingLine());
-		drawingViewHandler.Lines.Count.Should().Be(2);
+		drawingViewHandler.Lines.Should().HaveCount(2);
 	}
 
 	[Fact]
@@ -129,6 +128,17 @@ public class DrawingViewTests : BaseHandlerTest
 		drawingView.Should().BeEquivalentTo(expectedDefaultValue, config => config.Excluding(ctx => ctx.Id));
 	}
 
+	[Fact]
+	public void ClearShouldClearLines()
+	{
+		drawingView.Lines = new ObservableCollection<IDrawingLine> {new DrawingLine()};
+		drawingView.Lines.Should().HaveCount(1);
+		
+		drawingView.Clear();
+
+		drawingView.Lines.Should().BeEmpty();
+	}
+	
 	[Fact]
 	public async Task GetImageStreamReturnsNullStream()
 	{

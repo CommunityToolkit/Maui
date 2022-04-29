@@ -21,6 +21,23 @@ public class DoubleToIntConverter_Tests : BaseTest
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
 	}
+	
+	[Fact]
+	public void DoubleToIntConverterParameter()
+	{
+		const int expectedResult = 10;
+		const double value = 2;
+		var doubleToIntConverter = new DoubleToIntConverter
+		{
+			Ratio = 5
+		};
+
+		var convertResult = (int?)((ICommunityToolkitValueConverter)doubleToIntConverter).Convert(value, typeof(int), null, CultureInfo.CurrentCulture);
+		var convertFromResult = doubleToIntConverter.ConvertFrom(value);
+
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
+	}
 
 	[Theory]
 	[InlineData(2, 2.0)]
@@ -37,15 +54,25 @@ public class DoubleToIntConverter_Tests : BaseTest
 	}
 
 	[Theory]
-	[InlineData(5.5)]
 	[InlineData('c')]
 	[InlineData(true)]
 	[InlineData("abc")]
 	public void DoubleToIntInvalidValuesThrowArgumentException(object value)
 	{
 		var doubleToIntConverter = new DoubleToIntConverter();
-		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)doubleToIntConverter).Convert(value, typeof(BoolToObjectConverter_Tests), null, CultureInfo.CurrentCulture));
-		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)doubleToIntConverter).ConvertBack(value, typeof(BoolToObjectConverter_Tests), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)doubleToIntConverter).Convert(value, typeof(int), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)doubleToIntConverter).ConvertBack(value, typeof(double), null, CultureInfo.CurrentCulture));
+	}
+	
+	[Theory]
+	[InlineData('c')]
+	[InlineData(true)]
+	[InlineData("abc")]
+	public void DoubleToIntInvalidParameterThrowArgumentException(object value)
+	{
+		var doubleToIntConverter = new DoubleToIntConverter();
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)doubleToIntConverter).Convert(10, typeof(int), value, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)doubleToIntConverter).ConvertBack(10, typeof(double), value, CultureInfo.CurrentCulture));
 	}
 
 	[Fact]

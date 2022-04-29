@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Handlers;
-using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
 

@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Android.App;
 using Android.Content;
 using Microsoft.Maui.Platform;
 using AView = Android.Views.View;

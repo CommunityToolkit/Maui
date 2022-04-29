@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToPercentBlackKeyConverter_Tests : BaseTest
 {
-	public readonly static IReadOnlyList<object[]> ValidInputData = new[]
+	public static readonly IReadOnlyList<object[]> ValidInputData = new[]
 	{
 		new object[] { 0, 0, 0, 0, 1 },
 		new object[] { 0, 0, 0, 1, 1 },

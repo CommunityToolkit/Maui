@@ -19,6 +19,6 @@ public class ImageResourceConverter : BaseConverterOneWay<string?, ImageSource?>
 	public override ImageSource? ConvertFrom(string? value, CultureInfo? culture = null) => value switch
 	{
 		null => null,
-		_ => ImageSource.FromResource(value, Application.Current?.GetType()?.Assembly)
+		_ => ImageSource.FromResource(value, Application.Current?.GetType().Assembly)
 	};
 }

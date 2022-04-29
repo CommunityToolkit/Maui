@@ -5,14 +5,14 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToHexRgbaStringConverter_Tests_Tests : BaseTest
 {
-	public readonly static IReadOnlyList<object[]> ValidInputData = new[]
+	public static readonly IReadOnlyList<object[]> ValidInputData = new[]
 	{
 		new object[] { int.MinValue, int.MinValue, int.MinValue, int.MinValue, "#00000000" },
 		new object[] { int.MinValue, int.MinValue, int.MinValue, int.MaxValue, "#000000FF" },
 		new object[] { 0, 0, 0, int.MinValue, "#00000000" },
 		new object[] { 0, 0, 0, -0.5, "#00000000" },
 		new object[] { 0, 0, 0, 0, "#00000000" },
-		new object[] { 0, 0, 0, 0.5, "#00000080" },
+		new object[] { 0, 0, 0, 0.5, "#0000007F" },
 		new object[] { 0, 0, 0, 1, "#000000FF" },
 		new object[] { 0, 0, 0, int.MaxValue, "#000000FF" },
 		new object[] { int.MaxValue, int.MaxValue, int.MaxValue, int.MinValue, "#FFFFFF00" },
@@ -31,22 +31,22 @@ public class ColorToHexRgbaStringConverter_Tests_Tests : BaseTest
 		new object[] { 1, 1, 0, 1, "#FFFF00FF" },
 		new object[] { 1, 1, 1, 0, "#FFFFFF00" },
 		new object[] { 1, 1, 1, 1, "#FFFFFFFF" },
-		new object[] { 0.5, 0, 0, 1, "#800000FF" },
-		new object[] { 0.5, 0, 0, 0, "#80000000" },
-		new object[] { 0, 0.5, 0, 1, "#008000FF" },
-		new object[] { 0, 0.5, 0, 0, "#00800000" },
-		new object[] { 0, 0, 0.5, 1, "#000080FF" },
-		new object[] { 0, 0, 0.5, 0, "#00008000" },
-		new object[] { 0.5, 0.5, 0.5, 1, "#808080FF" },
-		new object[] { 0.5, 0.5, 0.5, 0, "#80808000" },
-		new object[] { 0.25, 0.25, 0.25, 1, "#404040FF" },
-		new object[] { 0.25, 0.25, 0.25, 0, "#40404000" },
-		new object[] { 0.25, 0.25, 1, 1, "#4040FFFF" },
-		new object[] { 0.25, 0.25, 1, 0, "#4040FF00" },
-		new object[] { 0.25, 1, 0.25, 1, "#40FF40FF" },
-		new object[] { 0.25, 1, 0.25, 0, "#40FF4000" },
-		new object[] { 0.75, 1, 0.25, 1, "#BFFF40FF" },
-		new object[] { 0.75, 1, 0.25, 0, "#BFFF4000" },
+		new object[] { 0.5, 0, 0, 1, "#7F0000FF" },
+		new object[] { 0.5, 0, 0, 0, "#7F000000" },
+		new object[] { 0, 0.5, 0, 1, "#007F00FF" },
+		new object[] { 0, 0.5, 0, 0, "#007F0000" },
+		new object[] { 0, 0, 0.5, 1, "#00007FFF" },
+		new object[] { 0, 0, 0.5, 0, "#00007F00" },
+		new object[] { 0.5, 0.5, 0.5, 1, "#7F7F7FFF" },
+		new object[] { 0.5, 0.5, 0.5, 0, "#7F7F7F00" },
+		new object[] { 0.25, 0.25, 0.25, 1, "#3F3F3FFF" },
+		new object[] { 0.25, 0.25, 0.25, 0, "#3F3F3F00" },
+		new object[] { 0.25, 0.25, 1, 1, "#3F3FFFFF" },
+		new object[] { 0.25, 0.25, 1, 0, "#3F3FFF00" },
+		new object[] { 0.25, 1, 0.25, 1, "#3FFF3FFF" },
+		new object[] { 0.25, 1, 0.25, 0, "#3FFF3F00" },
+		new object[] { 0.75, 1, 0.25, 1, "#BFFF3FFF" },
+		new object[] { 0.75, 1, 0.25, 0, "#BFFF3F00" },
 		new object[] { 0.75, 0, 1, 1, "#BF00FFFF" },
 		new object[] { 0.75, 0, 1, 0, "#BF00FF00" },
 	};
@@ -65,6 +65,21 @@ public class ColorToHexRgbaStringConverter_Tests_Tests : BaseTest
 		Assert.Equal(expectedResult, resultConvertFrom);
 	}
 
+
+	[Theory]
+	[MemberData(nameof(ValidInputData))]
+	public void ColorToHexRgbStringConverterConvertBackValidInputTest(float red, float green, float blue, float alpha, string expectedResult)
+	{
+		var converter = new ColorToHexRgbaStringConverter();
+		var color = new Color(red, green, blue, alpha);
+
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).ConvertBack(expectedResult, typeof(Color), null, null);
+		var resultConvertTo = converter.ConvertBackTo(expectedResult);
+
+		Assert.Equal(color, resultConvert);
+		Assert.Equal(color, resultConvertTo);
+	}
+	
 	[Fact]
 	public void ColorToHexRgbaStringConverterNullInputTest()
 	{

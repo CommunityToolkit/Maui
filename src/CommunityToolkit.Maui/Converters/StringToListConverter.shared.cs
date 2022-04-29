@@ -95,7 +95,7 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable<st
 				{
 					if (parameter is not null)
 					{
-						throw new ArgumentException("Parameter cannot be casted to string nor string[]", nameof(parameter));
+						throw new ArgumentException("Parameter cannot be cast to string nor string[]", nameof(parameter));
 					}
 
 					break;

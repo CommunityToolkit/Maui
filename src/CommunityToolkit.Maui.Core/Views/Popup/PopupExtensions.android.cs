@@ -1,7 +1,5 @@
-﻿using Android.App;
-using Android.Graphics.Drawables;
+﻿using Android.Graphics.Drawables;
 using Android.Views;
-using Android.Widget;
 using Microsoft.Maui.Platform;
 using AColorRes = Android.Resource.Color;
 using AView = Android.Views.View;

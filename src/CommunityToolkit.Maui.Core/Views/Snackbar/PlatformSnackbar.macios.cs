@@ -1,6 +1,4 @@
 using System.Runtime.InteropServices;
-using CoreGraphics;
-using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
 

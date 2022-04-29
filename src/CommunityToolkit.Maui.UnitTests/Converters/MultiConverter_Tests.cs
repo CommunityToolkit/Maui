@@ -8,7 +8,7 @@ public class MultiConverter_Tests : BaseTest
 {
 	public static IReadOnlyList<object[]> Data { get; } = new[]
 	{
-		new object[] { new List<MultiConverterParameter>() { { new MultiConverterParameter() { Value = "Param 1", } }, { new MultiConverterParameter() { Value = "Param 2", } } } },
+		new object[] { new List<MultiConverterParameter> { new() { Value = "Param 1", }, new() { Value = "Param 2", }} },
 	};
 
 	[Theory]
