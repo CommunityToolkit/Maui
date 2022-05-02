@@ -35,7 +35,14 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, PreviewView>
 		return cameraManager.CreatePlatformView();
 	}
 
-	public CameraViewHandler() : base(Propertymapper)
+	private protected override async void OnConnectHandler(View platformView)
+	{
+		base.OnConnectHandler(platformView);
+		await cameraManager!.CheckPermissions();
+		cameraManager?.Connect();
+	}
+
+	public CameraViewHandler() : base(Propertymapper, Commandmapper)
 	{
 	}
 }

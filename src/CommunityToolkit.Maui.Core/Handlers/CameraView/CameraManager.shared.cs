@@ -16,23 +16,21 @@ public partial class CameraManager
 		this.cameraLocation = cameraLocation;
 	}
 
-	public void Setup() => PlatformSetup();
+	public async Task<bool> CheckPermissions()
+			=> (await Permissions.RequestAsync<Permissions.Camera>()) == PermissionStatus.Granted;
+
 	public void Connect() => PlatformConnect();
 	public void Disconnect() => PlatformDisconnect();
 	public void TakePicture() => PlatformTakePicture();
 
-	protected virtual partial void PlatformSetup();
 	protected virtual partial void PlatformConnect();
 	protected virtual partial void PlatformDisconnect();
 	protected virtual partial void PlatformTakePicture();
-
 }
 
 #if NET6_0 && !ANDROID
 public partial class CameraManager
 {
-
-	protected virtual partial void PlatformSetup() { }
 	protected virtual partial void PlatformConnect() { }
 	protected virtual partial void PlatformDisconnect() { }
 	protected virtual partial void PlatformTakePicture() { }

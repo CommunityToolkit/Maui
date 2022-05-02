@@ -30,6 +30,7 @@ public partial class CameraManager
 	ProcessCameraProvider? cameraProvider;
 	ImageCapture? imageCapture;
 	ImageCallBack imageCallback = new();
+	public static Action? RunnableAction { get; }
 	// IN the future change the return type to be an alias
 	public PreviewView CreatePlatformView()
 	{
@@ -39,11 +40,6 @@ public partial class CameraManager
 		return previewView;
 	}
 
-	protected virtual partial void PlatformSetup()
-	{
-
-	}
-
 	protected virtual partial void PlatformConnect()
 	{
 		var cameraProviderFuture = ProcessCameraProvider.GetInstance(Context);
@@ -51,6 +47,7 @@ public partial class CameraManager
 		{
 			return;
 		}
+		
 		cameraProviderFuture.AddListener(new Runnable(() =>
 		{
 			cameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ?? throw new NullReferenceException());
