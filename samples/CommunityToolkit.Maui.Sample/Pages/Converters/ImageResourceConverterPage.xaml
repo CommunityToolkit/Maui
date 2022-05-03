@@ -16,7 +16,7 @@
     </ContentPage.Resources>
     
     <pages:BasePage.Content>
-        <Grid RowDefinitions="100, *" ColumnDefinitions="*,*,*">
+        <Grid RowDefinitions="100, *">
             <Label Grid.ColumnSpan="3" Text="ImageResourceConverter converts embedded image resource ID to it ImageSource"
                    HorizontalOptions="CenterAndExpand" />
             <Image Grid.Row="1" Grid.Column="0"  Source="{Binding XamarinImageResource, Converter={StaticResource ImageResourceConverter}}"
