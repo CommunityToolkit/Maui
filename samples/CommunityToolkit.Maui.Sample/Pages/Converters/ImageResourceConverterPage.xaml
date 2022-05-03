@@ -2,17 +2,30 @@
 <pages:BasePage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.ImageResourceConverterPage"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:TypeArguments="vm:ImageResourceConverterViewModel"
     x:DataType="vm:ImageResourceConverterViewModel">
 
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <mct:ImageResourceConverter x:Key="ImageResourceConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    
     <pages:BasePage.Content>
-        <VerticalStackLayout>
-            <Label Text="ImageResourceConverter"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
-        </VerticalStackLayout>
+        <Grid RowDefinitions="100, *" ColumnDefinitions="*,*,*">
+            <Label Grid.ColumnSpan="3" Text="ImageResourceConverter converts embedded image resource ID to it ImageSource"
+                   HorizontalOptions="CenterAndExpand" />
+            <Image Grid.Row="1" Grid.Column="0"  Source="{Binding XamarinImageResource, Converter={StaticResource ImageResourceConverter}}"
+                   WidthRequest="150"
+                   HeightRequest="150"/>
+            <Label Grid.Row="1" Grid.Column="1" Text="->" HorizontalOptions="Center" FontSize="Large"/>
+            <Image Grid.Row="1" Grid.Column="2"  Source="{Binding MauiImageResource, Converter={StaticResource ImageResourceConverter}}"
+                   WidthRequest="150"
+                   HeightRequest="150"/>
+        </Grid>
     </pages:BasePage.Content>
 </pages:BasePage>
