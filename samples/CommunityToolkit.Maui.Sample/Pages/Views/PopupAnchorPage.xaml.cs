@@ -7,7 +7,7 @@ public partial class PopupAnchorPage : BasePage<PopupAnchorViewModel>
 	readonly IDeviceInfo deviceinfo;
 
 	public PopupAnchorPage(IDeviceInfo deviceInfo, PopupAnchorViewModel popupAnchorViewModel)
-		: base(deviceInfo, popupAnchorViewModel)
+		: base(popupAnchorViewModel)
 	{
 		InitializeComponent();
 		Indicator ??= new();

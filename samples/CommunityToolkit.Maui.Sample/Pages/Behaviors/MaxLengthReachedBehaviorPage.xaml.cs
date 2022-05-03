@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 partial class MaxLengthReachedBehaviorPage : BasePage<MaxLengthReachedBehaviorViewModel>
 {
 	public MaxLengthReachedBehaviorPage(IDeviceInfo deviceInfo, MaxLengthReachedBehaviorViewModel maxLengthReachedBehaviorViewModel)
-		: base(deviceInfo, maxLengthReachedBehaviorViewModel)
+		: base(maxLengthReachedBehaviorViewModel)
 	{
 		InitializeComponent();
 

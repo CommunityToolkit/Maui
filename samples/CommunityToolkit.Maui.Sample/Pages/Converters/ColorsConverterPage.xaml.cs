@@ -11,7 +11,7 @@ public partial class ColorsConverterPage : BasePage<ColorsConverterViewModel>
 		.ToDictionary(c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()));
 
 	public ColorsConverterPage(IDeviceInfo deviceInfo, ColorsConverterViewModel colorsConvertersViewModel)
-		: base(deviceInfo, colorsConvertersViewModel)
+		: base(colorsConvertersViewModel)
 	{
 		InitializeComponent();
 

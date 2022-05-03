@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.Sample.Pages;
 
 public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where TViewModel : BaseGalleryViewModel
 {
-	protected BaseGalleryPage(string title, IDeviceInfo deviceInfo, TViewModel viewModel) : base(deviceInfo, viewModel)
+	protected BaseGalleryPage(string title, IDeviceInfo deviceInfo, TViewModel viewModel) : base(viewModel)
 	{
 		Title = title;
 

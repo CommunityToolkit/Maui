@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Sample;
 public partial class StateToBooleanConverterPage : BasePage<StateToBooleanConverterViewModel>
 {
 	public StateToBooleanConverterPage(IDeviceInfo deviceInfo, StateToBooleanConverterViewModel stateToBooleanConverterViewModel)
-		: base(deviceInfo, stateToBooleanConverterViewModel)
+		: base(stateToBooleanConverterViewModel)
 	{
 		InitializeComponent();
 	}

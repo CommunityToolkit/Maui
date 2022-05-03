@@ -11,7 +11,7 @@ public partial class UniformItemsLayoutPage : BasePage<UniformItemsLayoutViewMod
 											.Values.ToList();
 
 	public UniformItemsLayoutPage(IDeviceInfo deviceInfo, UniformItemsLayoutViewModel uniformItemsLayoutViewModel)
-		: base(deviceInfo, uniformItemsLayoutViewModel)
+		: base(uniformItemsLayoutViewModel)
 	{
 		InitializeComponent();
 		UniformItemsLayout_Default ??= new();

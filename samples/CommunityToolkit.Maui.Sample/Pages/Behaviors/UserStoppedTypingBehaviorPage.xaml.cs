@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 public partial class UserStoppedTypingBehaviorPage : BasePage<UserStoppedTypingBehaviorViewModel>
 {
 	public UserStoppedTypingBehaviorPage(IDeviceInfo deviceInfo, UserStoppedTypingBehaviorViewModel userStoppedTypingBehaviorViewModel)
-		: base(deviceInfo, userStoppedTypingBehaviorViewModel)
+		: base(userStoppedTypingBehaviorViewModel)
 	{
 		InitializeComponent();
 

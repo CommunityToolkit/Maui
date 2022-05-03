@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 public partial class MathExpressionConverterPage : BasePage<MathExpressionConverterViewModel>
 {
 	public MathExpressionConverterPage(IDeviceInfo deviceInfo, MathExpressionConverterViewModel mathExpressionConverterViewModel)
-		: base(deviceInfo, mathExpressionConverterViewModel)
+		: base(mathExpressionConverterViewModel)
 	{
 		InitializeComponent();
 	}

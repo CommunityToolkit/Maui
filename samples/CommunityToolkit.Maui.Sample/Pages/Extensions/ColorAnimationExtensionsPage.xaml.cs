@@ -15,7 +15,7 @@ public partial class ColorAnimationExtensionsPage : BasePage<ColorAnimationExten
 		.ToDictionary(c => c.Name, c => (Easing)(c.GetValue(null) ?? throw new InvalidOperationException()));
 
 	public ColorAnimationExtensionsPage(IDeviceInfo deviceInfo, ColorAnimationExtensionsViewModel colorAnimationExtensionsViewModel)
-		: base(deviceInfo, colorAnimationExtensionsViewModel)
+		: base(colorAnimationExtensionsViewModel)
 	{
 		InitializeComponent();
 

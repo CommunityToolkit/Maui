@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 public partial class CharactersValidationBehaviorPage : BasePage<CharactersValidationBehaviorViewModel>
 {
 	public CharactersValidationBehaviorPage(IDeviceInfo deviceInfo, CharactersValidationBehaviorViewModel charactersValidationBehaviorViewModel)
-		: base(deviceInfo, charactersValidationBehaviorViewModel)
+		: base(charactersValidationBehaviorViewModel)
 	{
 		InitializeComponent();
 	}
