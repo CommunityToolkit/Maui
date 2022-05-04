@@ -1,19 +1,46 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<pages:BasePage 
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.SetFocusOnEntryCompletedBehaviorPage"
-    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
-    x:TypeArguments="vm:SetFocusOnEntryCompletedBehaviorViewModel"
-    x:DataType="vm:SetFocusOnEntryCompletedBehaviorViewModel">
+<pages:BasePage
+	x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.SetFocusOnEntryCompletedBehaviorPage"
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+	xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+	xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
+	x:DataType="vm:SetFocusOnEntryCompletedBehaviorViewModel"
+	x:TypeArguments="vm:SetFocusOnEntryCompletedBehaviorViewModel">
 
-    <pages:BasePage.Content>
-        <VerticalStackLayout>
+	<VerticalStackLayout Spacing="12" VerticalOptions="Start">
 
-            <Label Text="The SetFocusOnEntryCompletedBehavior is an attached property for entries that allows the user to specify what VisualElement should gain focus after the user completes that entry."
-               TextColor="{StaticResource NormalLabelTextColor}" />
+		<VerticalStackLayout.Resources>
+			<ResourceDictionary>
+				<Style TargetType="Entry">
+					<Setter Property="BackgroundColor" Value="{StaticResource PrimaryColor}" />
+					<Setter Property="PlaceholderColor" Value="{StaticResource NormalLabelTextColor}" />
+					<Setter Property="TextColor" Value="{StaticResource DarkLabelTextColor}" />
+				</Style>
+			</ResourceDictionary>
+		</VerticalStackLayout.Resources>
 
-        </VerticalStackLayout>
-    </pages:BasePage.Content>
+
+		<Label Margin="0,10" Text="The SetFocusOnEntryCompletedBehavior is an attached property for entries that allows the user to specify which VisualElement should gain focus after the user completes that entry." />
+
+		<Entry
+			x:Name="Entry1"
+			mct:SetFocusOnEntryCompletedBehavior.NextElement="{x:Reference Entry2}"
+			Placeholder="Entry 1 (Tap `Next` on the keyboard when finished)"
+			ReturnType="Next" />
+		<Entry
+			x:Name="Entry2"
+			mct:SetFocusOnEntryCompletedBehavior.NextElement="{x:Reference Entry3}"
+			Placeholder="Entry 2 (Tap `Next` on the keyboard when finished)"
+			ReturnType="Next" />
+		<Entry
+			x:Name="Entry3"
+			mct:SetFocusOnEntryCompletedBehavior.NextElement="{x:Reference Entry4}"
+			Placeholder="Entry 3 (Tap `Next` on the keyboard when finished)"
+			ReturnType="Next" />
+
+		<Entry x:Name="Entry4" Placeholder="Entry 4 (no next entry this time)" />
+
+	</VerticalStackLayout>
 </pages:BasePage>
