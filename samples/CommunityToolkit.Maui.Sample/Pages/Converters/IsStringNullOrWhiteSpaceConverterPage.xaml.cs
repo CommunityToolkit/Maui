@@ -4,8 +4,8 @@ namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
 public partial class IsStringNullOrWhiteSpaceConverterPage : BasePage<IsStringNullOrWhiteSpaceConverterViewModel>
 {
-	public IsStringNullOrWhiteSpaceConverterPage(IDeviceInfo deviceInfo, IsStringNullOrWhiteSpaceConverterViewModel isStringNullOrWhiteSpaceConverterViewModel)
-		: base(deviceInfo, isStringNullOrWhiteSpaceConverterViewModel)
+	public IsStringNullOrWhiteSpaceConverterPage(IsStringNullOrWhiteSpaceConverterViewModel isStringNullOrWhiteSpaceConverterViewModel)
+		: base(isStringNullOrWhiteSpaceConverterViewModel)
 	{
 		InitializeComponent();
 	}

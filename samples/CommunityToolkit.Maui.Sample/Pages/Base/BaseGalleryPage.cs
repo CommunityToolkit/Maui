@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.Sample.Pages;
 
 public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where TViewModel : BaseGalleryViewModel
 {
-	protected BaseGalleryPage(string title, IDeviceInfo deviceInfo, TViewModel viewModel) : base(deviceInfo, viewModel)
+	protected BaseGalleryPage(string title, IDeviceInfo deviceInfo, TViewModel viewModel) : base(viewModel)
 	{
 		Title = title;
 
@@ -27,8 +27,8 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 		Content = new CollectionView
 		{
 			SelectionMode = SelectionMode.Single,
-			ItemTemplate = new GalleryDataTemplate()
-		}.Bind(ItemsView.ItemsSourceProperty, nameof(BaseGalleryViewModel.Items))
+		}.ItemTemplate(new GalleryDataTemplate())
+		 .Bind(ItemsView.ItemsSourceProperty, nameof(BaseGalleryViewModel.Items))
 		 .Invoke(collectionView => collectionView.SelectionChanged += HandleSelectionChanged);
 	}
 

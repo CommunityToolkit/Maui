@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 {
-	public DrawingViewPage(IDeviceInfo deviceInfo, DrawingViewViewModel viewModel) : base(deviceInfo, viewModel)
+	public DrawingViewPage(DrawingViewViewModel viewModel) : base(viewModel)
 	{
 		InitializeComponent();
 		DrawingViewControl.DrawAction = (canvas, rect) =>

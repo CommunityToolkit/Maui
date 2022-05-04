@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Sample.Pages;
 
 public abstract class BasePage<TViewModel> : BasePage where TViewModel : BaseViewModel
 {
-	protected BasePage(IDeviceInfo deviceInfo, TViewModel viewModel) : base(deviceInfo, viewModel)
+	protected BasePage(TViewModel viewModel) : base(viewModel)
 	{
 	}
 
@@ -14,7 +14,7 @@ public abstract class BasePage<TViewModel> : BasePage where TViewModel : BaseVie
 
 public abstract class BasePage : ContentPage
 {
-	protected BasePage(IDeviceInfo deviceInfo, object? viewModel = null)
+	protected BasePage(object? viewModel = null)
 	{
 		BindingContext = viewModel;
 		Padding = 12;
@@ -23,7 +23,7 @@ public abstract class BasePage : ContentPage
 
 		if (string.IsNullOrWhiteSpace(Title))
 		{
-			Title = this.GetType().Name;
+			Title = GetType().Name;
 		}
 	}
 

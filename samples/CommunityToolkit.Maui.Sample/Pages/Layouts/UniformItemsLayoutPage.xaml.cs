@@ -10,14 +10,10 @@ public partial class UniformItemsLayoutPage : BasePage<UniformItemsLayoutViewMod
 											.ToDictionary(c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()))
 											.Values.ToList();
 
-	public UniformItemsLayoutPage(IDeviceInfo deviceInfo, UniformItemsLayoutViewModel uniformItemsLayoutViewModel)
-		: base(deviceInfo, uniformItemsLayoutViewModel)
+	public UniformItemsLayoutPage(UniformItemsLayoutViewModel uniformItemsLayoutViewModel)
+		: base(uniformItemsLayoutViewModel)
 	{
 		InitializeComponent();
-		UniformItemsLayout_Default ??= new();
-		UniformItemsLayout_MaxColumns1 ??= new();
-		UniformItemsLayout_MaxRows1 ??= new();
-		UniformItemsLayout_MaxRows2MaxColumns2 ??= new();
 	}
 
 	void HandleAddButtonClicked(object? sender, System.EventArgs e)

@@ -130,7 +130,7 @@ public class TextValidationBehavior : ValidationBehavior<string>
 			stringValue ??= string.Empty;
 		}
 
-		if (stringValue == null)
+		if (stringValue is null)
 		{
 			return null;
 		}

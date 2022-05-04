@@ -6,7 +6,8 @@
         <ResourceDictionary>
 
             <!--  Colors  -->
-            <Color x:Key="AppBackgroundColor">#FAFAFA</Color>
+            <Color x:Key="AppBackgroundLightColor">#FAFAFA</Color>
+            <Color x:Key="AppBackgroundDarkColor">#050505</Color>
             <Color x:Key="PrimaryColor">#FAFAFA</Color>
             <Color x:Key="NavigationBarTextColor">#5D5D5D</Color>
             <Color x:Key="NormalButtonBackgroundColor">#1976D2</Color>
@@ -25,9 +26,9 @@
                 <Setter Property="BarTextColor" Value="{StaticResource NavigationBarTextColor}" />
             </Style>
 
-            <Style ApplyToDerivedTypes="True" TargetType="ContentPage">
-                <Setter Property="BackgroundColor" Value="{StaticResource AppBackgroundColor}" />
-                <Setter Property="NavigationPage.BackButtonTitle" Value="" />
+            <Style TargetType="Page" ApplyToDerivedTypes="True">
+                <Setter Property="Padding" Value="0"/>
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource AppBackgroundLightColor}, Dark={StaticResource AppBackgroundDarkColor}}" />
             </Style>
 
             <Style TargetType="Button">
@@ -44,7 +45,7 @@
                 <Setter Property="HorizontalTextAlignment" Value="Start" />
             </Style>
 
-            <Style TargetType="StackLayout">
+            <Style TargetType="VerticalStackLayout">
                 <Setter Property="Spacing" Value="0" />
             </Style>
             

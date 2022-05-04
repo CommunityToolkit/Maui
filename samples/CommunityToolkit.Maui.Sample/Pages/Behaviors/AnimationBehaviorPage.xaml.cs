@@ -5,8 +5,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
 public partial class AnimationBehaviorPage : BasePage<AnimationBehaviorViewModel>
 {
-	public AnimationBehaviorPage(IDeviceInfo deviceInfo, AnimationBehaviorViewModel animationBehaviorViewModel)
-		: base(deviceInfo, animationBehaviorViewModel)
+	public AnimationBehaviorPage(AnimationBehaviorViewModel animationBehaviorViewModel) : base(animationBehaviorViewModel)
 	{
 		InitializeComponent();
 	}
