@@ -5,14 +5,10 @@ namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
 partial class MaxLengthReachedBehaviorPage : BasePage<MaxLengthReachedBehaviorViewModel>
 {
-	public MaxLengthReachedBehaviorPage(IDeviceInfo deviceInfo, MaxLengthReachedBehaviorViewModel maxLengthReachedBehaviorViewModel)
-		: base(deviceInfo, maxLengthReachedBehaviorViewModel)
+	public MaxLengthReachedBehaviorPage(MaxLengthReachedBehaviorViewModel maxLengthReachedBehaviorViewModel)
+		: base(maxLengthReachedBehaviorViewModel)
 	{
 		InitializeComponent();
-
-		NextEntry ??= new();
-		MaxLengthSetting ??= new();
-		AutoDismissKeyboardSetting ??= new();
 	}
 
 	void MaxLengthReachedBehavior_MaxLengthReached(object? sender, MaxLengthReachedEventArgs e)

@@ -1,5 +1,20 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-public class EnumToBoolConverterViewModel : BaseViewModel
+namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+
+public partial class EnumToBoolConverterViewModel : BaseViewModel
 {
+	[ObservableProperty]
+	MyDevicePlatform selectedPlatform = Enum.Parse<MyDevicePlatform>(DeviceInfo.Platform.ToString(), true);
+
+	public IReadOnlyCollection<MyDevicePlatform> Platforms { get; } = new List<MyDevicePlatform>(Enum.GetValues<MyDevicePlatform>());
+}
+
+public enum MyDevicePlatform
+{
+	Android,
+	iOS,
+	MacCatalyst,
+	Tizen,
+	WinUI,
 }

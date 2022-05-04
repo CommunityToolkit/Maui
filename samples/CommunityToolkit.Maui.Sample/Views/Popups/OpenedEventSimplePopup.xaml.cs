@@ -11,12 +11,7 @@ public partial class OpenedEventSimplePopup : Popup
 		InitializeComponent();
 
 		Size = popupSizeConstants.Medium;
-
-		Title ??= new();
-		Message ??= new();
-
 		Opened += OnOpened;
-
 	}
 
 	void OnOpened(object? sender, PopupOpenedEventArgs e)

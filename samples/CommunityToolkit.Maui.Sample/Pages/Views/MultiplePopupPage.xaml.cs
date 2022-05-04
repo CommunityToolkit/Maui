@@ -13,7 +13,7 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 								PopupSizeConstants popupSizeConstants,
 								MultiplePopupViewModel multiplePopupViewModel,
 								CsharpBindingPopupViewModel csharpBindingPopupViewModel)
-		: base(deviceInfo, multiplePopupViewModel)
+		: base(multiplePopupViewModel)
 	{
 		InitializeComponent();
 

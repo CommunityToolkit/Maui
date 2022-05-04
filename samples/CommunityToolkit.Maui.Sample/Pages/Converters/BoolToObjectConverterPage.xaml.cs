@@ -5,13 +5,10 @@ namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
 public partial class BoolToObjectConverterPage : BasePage<BoolToObjectConverterViewModel>
 {
-	public BoolToObjectConverterPage(IDeviceInfo deviceInfo, BoolToObjectConverterViewModel boolToObjectConverterViewModel)
-		: base(deviceInfo, boolToObjectConverterViewModel)
+	public BoolToObjectConverterPage(BoolToObjectConverterViewModel boolToObjectConverterViewModel)
+		: base(boolToObjectConverterViewModel)
 	{
 		InitializeComponent();
-
-		CheckBox ??= new();
-		Ellipse ??= new();
 	}
 
 	void OnButtonClicked(object? sender, EventArgs args)
