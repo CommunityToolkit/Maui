@@ -5,16 +5,9 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 public partial class EnumToBoolConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	MyDevicePlatform platform;
-	
-	[ObservableProperty]
-	ICollection<MyDevicePlatform> platforms;
+	MyDevicePlatform selectedPlatform = Enum.Parse<MyDevicePlatform>(DeviceInfo.Platform.ToString(), true);
 
-	public EnumToBoolConverterViewModel()
-	{
-		platforms = new List<MyDevicePlatform>(Enum.GetValues<MyDevicePlatform>());
-		Enum.TryParse(DeviceInfo.Platform.ToString(), true, out platform);
-	}
+	public IReadOnlyCollection<MyDevicePlatform> Platforms { get; } = new List<MyDevicePlatform>(Enum.GetValues<MyDevicePlatform>());
 }
 
 public enum MyDevicePlatform

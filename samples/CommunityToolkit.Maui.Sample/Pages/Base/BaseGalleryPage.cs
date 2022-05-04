@@ -27,8 +27,8 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 		Content = new CollectionView
 		{
 			SelectionMode = SelectionMode.Single,
-			ItemTemplate = new GalleryDataTemplate()
-		}.Bind(ItemsView.ItemsSourceProperty, nameof(BaseGalleryViewModel.Items))
+		}.ItemTemplate(new GalleryDataTemplate())
+		 .Bind(ItemsView.ItemsSourceProperty, nameof(BaseGalleryViewModel.Items))
 		 .Invoke(collectionView => collectionView.SelectionChanged += HandleSelectionChanged);
 	}
 

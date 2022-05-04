@@ -29,16 +29,18 @@
         </ResourceDictionary>
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
-        <VerticalStackLayout>
-            <Label Text="EnumToBoolConverter converts an Enum to corresponding boolean value." 
+        <VerticalStackLayout Spacing="12">
+            <Label Text="EnumToBoolConverter converts an Enum to corresponding boolean value."
                    HorizontalOptions="CenterAndExpand" />
 
-            <Picker ItemsSource="{Binding Platforms}" SelectedItem="{Binding Platform}" />
+            <Label Text="👇 Change the Picker value to see the below Label Text change."/>
+
+            <Picker ItemsSource="{Binding Platforms}" SelectedItem="{Binding SelectedPlatform}" />
             <!-- Converter with TRUE list -->
-            <Label IsVisible="{Binding Platform, Converter={StaticResource MobileConverter}}" Text="I am visible if Platform is Android or iOS"/>
-            <Label IsVisible="{Binding Platform, Converter={StaticResource DesktopConverter}}" Text="I am visible if Platform is MacCatalyst or WinUI"/>
+            <Label IsVisible="{Binding SelectedPlatform, Converter={StaticResource MobileConverter}}" Text="I am visible when the Picker value is Android or iOS."/>
+            <Label IsVisible="{Binding SelectedPlatform, Converter={StaticResource DesktopConverter}}" Text="I am visible when the Picker value is MacCatalyst or WinUI."/>
             <!-- Converter, that uses parameter -->
-            <Label IsVisible="{Binding Platform, Converter={StaticResource PlatformConverter}, ConverterParameter={x:Static vm:MyDevicePlatform.Tizen}}" Text="I am visible if Platform is Tizen"/>
+            <Label IsVisible="{Binding SelectedPlatform, Converter={StaticResource PlatformConverter}, ConverterParameter={x:Static vm:MyDevicePlatform.Tizen}}" Text="I am visible when the Picker value is Platform is Tizen."/>
 
         </VerticalStackLayout>
     </pages:BasePage.Content>
