@@ -9,14 +9,14 @@
 	x:DataType="vm:SetFocusOnEntryCompletedBehaviorViewModel"
 	x:TypeArguments="vm:SetFocusOnEntryCompletedBehaviorViewModel">
 
-	<VerticalStackLayout VerticalOptions="Start" Spacing="12" >
+	<VerticalStackLayout Spacing="12" VerticalOptions="Start">
 
 		<VerticalStackLayout.Resources>
 			<ResourceDictionary>
 				<Style TargetType="Entry">
-					<Setter Property="BackgroundColor" Value="White" />
-					<Setter Property="PlaceholderColor" Value="DarkGray" />
-					<Setter Property="TextColor" Value="Black" />
+					<Setter Property="BackgroundColor" Value="{StaticResource PrimaryColor}" />
+					<Setter Property="PlaceholderColor" Value="{StaticResource NormalLabelTextColor}" />
+					<Setter Property="TextColor" Value="{StaticResource DarkLabelTextColor}" />
 				</Style>
 			</ResourceDictionary>
 		</VerticalStackLayout.Resources>
