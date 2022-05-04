@@ -4,7 +4,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
 public partial class EmailValidationBehaviorPage : BasePage<EmailValidationBehaviorViewModel>
 {
-	public EmailValidationBehaviorPage(IDeviceInfo deviceInfo, EmailValidationBehaviorViewModel emailValidationBehaviorViewModel)
+	public EmailValidationBehaviorPage(EmailValidationBehaviorViewModel emailValidationBehaviorViewModel)
 		: base(emailValidationBehaviorViewModel)
 	{
 		InitializeComponent();

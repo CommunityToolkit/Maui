@@ -4,7 +4,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
 public partial class SelectedItemEventArgsConverterPage : BasePage<SelectedItemEventArgsConverterViewModel>
 {
-	public SelectedItemEventArgsConverterPage(IDeviceInfo deviceInfo, SelectedItemEventArgsConverterViewModel selectedItemEventArgsConverterViewModel)
+	public SelectedItemEventArgsConverterPage(SelectedItemEventArgsConverterViewModel selectedItemEventArgsConverterViewModel)
 		: base(selectedItemEventArgsConverterViewModel)
 	{
 		InitializeComponent();

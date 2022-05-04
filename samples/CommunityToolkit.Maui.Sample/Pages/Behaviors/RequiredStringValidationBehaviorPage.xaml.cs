@@ -4,7 +4,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
 public partial class RequiredStringValidationBehaviorPage : BasePage<RequiredStringValidationBehaviorViewModel>
 {
-	public RequiredStringValidationBehaviorPage(IDeviceInfo deviceInfo, RequiredStringValidationBehaviorViewModel requiredStringValidationBehaviorViewModel)
+	public RequiredStringValidationBehaviorPage(RequiredStringValidationBehaviorViewModel requiredStringValidationBehaviorViewModel)
 		: base(requiredStringValidationBehaviorViewModel)
 	{
 		InitializeComponent();

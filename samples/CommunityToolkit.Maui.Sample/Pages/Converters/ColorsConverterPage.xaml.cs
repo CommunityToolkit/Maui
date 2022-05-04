@@ -10,7 +10,7 @@ public partial class ColorsConverterPage : BasePage<ColorsConverterViewModel>
 		.GetFields(BindingFlags.Static | BindingFlags.Public)
 		.ToDictionary(c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()));
 
-	public ColorsConverterPage(IDeviceInfo deviceInfo, ColorsConverterViewModel colorsConvertersViewModel)
+	public ColorsConverterPage(ColorsConverterViewModel colorsConvertersViewModel)
 		: base(colorsConvertersViewModel)
 	{
 		InitializeComponent();

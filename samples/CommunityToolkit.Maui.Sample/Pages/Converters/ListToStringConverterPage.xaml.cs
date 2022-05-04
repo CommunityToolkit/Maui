@@ -4,7 +4,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
 public partial class ListToStringConverterPage : BasePage<ListToStringConverterViewModel>
 {
-	public ListToStringConverterPage(IDeviceInfo deviceInfo, ListToStringConverterViewModel listToStringConverterViewModel)
+	public ListToStringConverterPage(ListToStringConverterViewModel listToStringConverterViewModel)
 		: base(listToStringConverterViewModel)
 	{
 		InitializeComponent();

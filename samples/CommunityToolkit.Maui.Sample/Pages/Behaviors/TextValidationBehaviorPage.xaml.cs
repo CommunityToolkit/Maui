@@ -4,7 +4,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
 public partial class TextValidationBehaviorPage : BasePage<TextValidationBehaviorViewModel>
 {
-	public TextValidationBehaviorPage(IDeviceInfo deviceInfo, TextValidationBehaviorViewModel textValidationBehaviorViewModel)
+	public TextValidationBehaviorPage(TextValidationBehaviorViewModel textValidationBehaviorViewModel)
 		: base(textValidationBehaviorViewModel)
 	{
 		InitializeComponent();

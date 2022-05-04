@@ -4,7 +4,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
 public partial class TextCaseConverterPage : BasePage<TextCaseConverterViewModel>
 {
-	public TextCaseConverterPage(IDeviceInfo deviceInfo, TextCaseConverterViewModel textCaseConverterViewModel)
+	public TextCaseConverterPage(TextCaseConverterViewModel textCaseConverterViewModel)
 		: base(textCaseConverterViewModel)
 	{
 		InitializeComponent();

@@ -4,7 +4,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
 public partial class EnumToBoolConverterPage : BasePage<EnumToBoolConverterViewModel>
 {
-	public EnumToBoolConverterPage(IDeviceInfo deviceInfo, EnumToBoolConverterViewModel enumToBoolConverterViewModel)
+	public EnumToBoolConverterPage(EnumToBoolConverterViewModel enumToBoolConverterViewModel)
 		: base(enumToBoolConverterViewModel)
 	{
 		InitializeComponent();

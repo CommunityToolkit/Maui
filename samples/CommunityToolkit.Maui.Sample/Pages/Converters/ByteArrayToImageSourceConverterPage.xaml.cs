@@ -7,7 +7,7 @@ public partial class ByteArrayToImageSourceConverterPage : BasePage<ByteArrayToI
 {
 	readonly IDispatcher dispatcher;
 
-	public ByteArrayToImageSourceConverterPage(IDeviceInfo deviceInfo, IDispatcher dispatcher, ByteArrayToImageSourceConverterViewModel byteArrayToImageSourceConverterViewModel)
+	public ByteArrayToImageSourceConverterPage(IDispatcher dispatcher, ByteArrayToImageSourceConverterViewModel byteArrayToImageSourceConverterViewModel)
 		: base(byteArrayToImageSourceConverterViewModel)
 	{
 		InitializeComponent();

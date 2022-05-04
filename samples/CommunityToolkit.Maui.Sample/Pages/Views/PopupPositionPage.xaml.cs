@@ -4,7 +4,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class PopupPositionPage : BasePage<PopupPositionViewModel>
 {
-	public PopupPositionPage(IDeviceInfo deviceInfo, PopupPositionViewModel popupPositionViewModel)
+	public PopupPositionPage(PopupPositionViewModel popupPositionViewModel)
 		: base(popupPositionViewModel)
 	{
 		InitializeComponent();

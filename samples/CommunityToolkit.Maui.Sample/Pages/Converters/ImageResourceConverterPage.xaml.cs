@@ -4,7 +4,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
 public partial class ImageResourceConverterPage : BasePage<ImageResourceConverterViewModel>
 {
-	public ImageResourceConverterPage(IDeviceInfo deviceInfo, ImageResourceConverterViewModel imageResourceConverterViewModel)
+	public ImageResourceConverterPage(ImageResourceConverterViewModel imageResourceConverterViewModel)
 		: base(imageResourceConverterViewModel)
 	{
 		InitializeComponent();

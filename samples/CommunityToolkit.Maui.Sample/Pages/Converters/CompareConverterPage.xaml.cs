@@ -4,7 +4,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
 public partial class CompareConverterPage : BasePage<CompareConverterViewModel>
 {
-	public CompareConverterPage(IDeviceInfo deviceInfo, CompareConverterViewModel compareConverterViewModel)
+	public CompareConverterPage(CompareConverterViewModel compareConverterViewModel)
 		: base(compareConverterViewModel)
 	{
 		InitializeComponent();
