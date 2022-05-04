@@ -18,13 +18,6 @@ public partial class ColorAnimationExtensionsPage : BasePage<ColorAnimationExten
 		: base(colorAnimationExtensionsViewModel)
 	{
 		InitializeComponent();
-
-		RateInput ??= new();
-		ColorFrame ??= new();
-		ColorPicker ??= new();
-		EasingPicker ??= new();
-		DurationInput ??= new();
-		TextColorToDescriptionLabel ??= new();
 	}
 
 	protected override void OnAppearing()

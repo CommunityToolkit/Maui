@@ -8,7 +8,5 @@ public partial class DoubleToIntConverterPage : BasePage<DoubleToIntConverterVie
 		: base(doubleToIntConverterViewModel)
 	{
 		InitializeComponent();
-
-		ExampleText ??= new();
 	}
 }

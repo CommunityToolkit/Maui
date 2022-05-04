@@ -10,7 +10,6 @@ public partial class PopupAnchorPage : BasePage<PopupAnchorViewModel>
 		: base(popupAnchorViewModel)
 	{
 		InitializeComponent();
-		Indicator ??= new();
 
 		this.deviceInfo = deviceInfo;
 	}

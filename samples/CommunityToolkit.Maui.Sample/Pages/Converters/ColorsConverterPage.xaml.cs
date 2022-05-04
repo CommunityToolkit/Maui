@@ -14,9 +14,6 @@ public partial class ColorsConverterPage : BasePage<ColorsConverterViewModel>
 		: base(colorsConvertersViewModel)
 	{
 		InitializeComponent();
-
-		Picker ??= new();
-		BoxView ??= new();
 	}
 
 	protected override void OnAppearing()

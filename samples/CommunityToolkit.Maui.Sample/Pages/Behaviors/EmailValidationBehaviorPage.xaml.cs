@@ -8,6 +8,5 @@ public partial class EmailValidationBehaviorPage : BasePage<EmailValidationBehav
 		: base(emailValidationBehaviorViewModel)
 	{
 		InitializeComponent();
-		EmailValidator ??= new();
 	}
 }

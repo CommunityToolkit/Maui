@@ -9,9 +9,6 @@ public partial class BoolToObjectConverterPage : BasePage<BoolToObjectConverterV
 		: base(boolToObjectConverterViewModel)
 	{
 		InitializeComponent();
-
-		CheckBox ??= new();
-		Ellipse ??= new();
 	}
 
 	void OnButtonClicked(object? sender, EventArgs args)

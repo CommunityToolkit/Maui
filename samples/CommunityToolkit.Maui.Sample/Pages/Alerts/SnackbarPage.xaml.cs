@@ -22,8 +22,6 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 	{
 		InitializeComponent();
 
-		SnackbarShownStatus ??= new();
-		DisplayCustomSnackbarButton ??= new();
 		DisplayCustomSnackbarButton.Text = displayCustomSnackbarText;
 
 		Snackbar.Shown += Snackbar_Shown;

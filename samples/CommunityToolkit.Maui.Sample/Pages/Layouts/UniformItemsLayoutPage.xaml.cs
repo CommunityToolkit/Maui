@@ -14,10 +14,6 @@ public partial class UniformItemsLayoutPage : BasePage<UniformItemsLayoutViewMod
 		: base(uniformItemsLayoutViewModel)
 	{
 		InitializeComponent();
-		UniformItemsLayout_Default ??= new();
-		UniformItemsLayout_MaxColumns1 ??= new();
-		UniformItemsLayout_MaxRows1 ??= new();
-		UniformItemsLayout_MaxRows2MaxColumns2 ??= new();
 	}
 
 	void HandleAddButtonClicked(object? sender, System.EventArgs e)

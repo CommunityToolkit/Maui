@@ -8,11 +8,5 @@ public partial class MultiValidationBehaviorPage : BasePage<MultiValidationBehav
 		: base(multiValidationBehaviorViewModel)
 	{
 		InitializeComponent();
-
-		AnyValidation ??= new();
-		MultiValidation ??= new();
-		DigitValidation ??= new();
-		UpperValidation ??= new();
-		SymbolValidation ??= new();
 	}
 }
