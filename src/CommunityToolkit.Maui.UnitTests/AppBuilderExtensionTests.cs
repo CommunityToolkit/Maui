@@ -12,7 +12,7 @@ namespace CommunityToolkit.Maui.UnitTests;
 public class AppBuilderExtensionTests : BaseTest
 {
 	[Fact]
-	public void EnsureMauiAppBuilderExtensions()
+	public void EnsureMauiAppBuilderExtensionsAddsHandlers()
 	{
 		var builderWithoutInitialization = MauiApp.CreateBuilder();
 		var serviceProviderWithoutInitialization = builderWithoutInitialization.Services.BuildServiceProvider();
