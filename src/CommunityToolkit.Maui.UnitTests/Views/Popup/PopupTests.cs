@@ -9,11 +9,11 @@ namespace CommunityToolkit.Maui.UnitTests.Views.Popup;
 public class PopupTests : BaseHandlerTest
 {
 	const string resultWhenUserTapsOutsideOfPopup = "User Tapped Outside of Popup";
-	readonly IPopup popup = new MockPopup();
+	readonly MockPopup popup = new();
 
 	public PopupTests()
 	{
-		Assert.IsAssignableFrom<IPopup>(new MockPopup());
+		Assert.IsAssignableFrom<IPopup>(popup);
 	}
 
 	[Fact]
@@ -52,16 +52,37 @@ public class PopupTests : BaseHandlerTest
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
 
-		page.ShowPopup((MockPopup)popup);
+		page.ShowPopup(popup);
+
 		Assert.Equal(1, popupHandler.OnOpenedCount);
 		popup.OnDismissedByTappingOutsideOfPopup();
 
-		var popupTask = page.ShowPopupAsync((MockPopup)popup);
+		var popupTask = page.ShowPopupAsync(popup);
 		popup.OnDismissedByTappingOutsideOfPopup();
 
 		await popupTask;
 
 		Assert.Equal(2, popupHandler.OnOpenedCount);
+	}
+
+	[Fact]
+	public async Task ConfirmEmptyPopupOpenedEventArgs()
+	{
+		var openedTCS = new TaskCompletionSource<PopupOpenedEventArgs>();
+		popup.Opened += HandleOpened;
+
+		((IPopup)popup).OnOpened();
+
+		var openedEventArgs = await openedTCS.Task;
+
+		Assert.Equal(PopupOpenedEventArgs.Empty, openedEventArgs);
+
+		void HandleOpened(object? sender, PopupOpenedEventArgs e)
+		{
+			popup.Opened -= HandleOpened;
+			openedTCS.SetResult(e);
+		}
+
 	}
 
 	[Fact]
@@ -79,7 +100,7 @@ public class PopupTests : BaseHandlerTest
 			}
 		};
 
-		((MockPopup)popup).Closed += (s, e) =>
+		popup.Closed += (s, e) =>
 		{
 			Assert.Equal(popup, s);
 
@@ -129,13 +150,13 @@ public class PopupTests : BaseHandlerTest
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
 
-		((MockPopup)popup).Closed += (_, e) =>
+		popup.Closed += (_, e) =>
 		{
 			result = e.Result;
 			isPopupDismissed = true;
 		};
 
-		((MockPopup)popup).Close(new object());
+		popup.Close(new object());
 
 		Assert.True(isPopupDismissed);
 		Assert.NotNull(result);
@@ -168,13 +189,13 @@ public class PopupTests : BaseHandlerTest
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
 
-		((MockPopup)popup).Closed += (_, e) =>
+		popup.Closed += (_, e) =>
 		{
 			result = e.Result;
 			isPopupDismissed = true;
 		};
 
-		((MockPopup)popup).Close();
+		popup.Close();
 
 		Assert.True(isPopupDismissed);
 		Assert.Null(result);
