@@ -1,12 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-public class MultiConverterViewModel : BaseViewModel
+namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+
+public partial class MultiConverterViewModel : BaseViewModel
 {
+	[ObservableProperty]
 	string enteredName = "Steven";
-
-	public string EnteredName
-	{
-		get => enteredName;
-		set => SetProperty(ref enteredName, value);
-	}
 }
