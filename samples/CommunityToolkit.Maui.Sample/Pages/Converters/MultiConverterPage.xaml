@@ -39,9 +39,6 @@
             </x:Array>
         </ResourceDictionary>
     </pages:BasePage.Resources>
-    <pages:BasePage.BindingContext>
-        <vm:MultiConverterViewModel />
-    </pages:BasePage.BindingContext>
     <pages:BasePage.Content>
         <VerticalStackLayout Padding="20"
                              Spacing="20">
