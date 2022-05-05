@@ -11,28 +11,24 @@
 
     <pages:BasePage.Resources>
         <ResourceDictionary>
-            <mct:MultiConverter
-                x:Key="myMultiConverter">
+            <mct:MultiConverter x:Key="MyMultiConverter">
                 <mct:TextCaseConverter />
                 <mct:IsNotEqualConverter />
             </mct:MultiConverter>
-            <x:Array
-                x:Key="multiParams"
-                Type="{x:Type mct:MultiConverterParameter}">
+            <x:Array x:Key="MultiParams"
+                     Type="{x:Type mct:MultiConverterParameter}">
                 <mct:MultiConverterParameter
                     ConverterType="{x:Type mct:TextCaseConverter}"
                     Value="{x:Static mct:TextCaseType.Upper}" />
                 <mct:MultiConverterParameter
                     ConverterType="{x:Type mct:IsNotEqualConverter}"
-                    Value="ANDREI" />
+                    Value="MAUI" />
             </x:Array>
-            <mct:MultiConverter
-                x:Key="myUpperCaseConverter">
+            <mct:MultiConverter x:Key="MyUpperCaseConverter">
                 <mct:TextCaseConverter/>
             </mct:MultiConverter>
-            <x:Array
-                x:Key="upperCaseParams"
-                Type="{x:Type mct:MultiConverterParameter}">
+            <x:Array x:Key="UpperCaseParams"
+                     Type="{x:Type mct:MultiConverterParameter}">
                 <mct:MultiConverterParameter
                     ConverterType="{x:Type mct:TextCaseConverter}"
                     Value="{x:Static mct:TextCaseType.Upper}" />
@@ -42,11 +38,11 @@
     <pages:BasePage.Content>
         <VerticalStackLayout Padding="20"
                              Spacing="20">
-            <Label Text="This sample demonstrates how to use the MultiBinding Converter with the IsNotEqualConverter and the TextCaseConverter. It converts the entered text to Upper Case and checks that it is Not Equal to the string 'ANDREI'."/>
+            <Label Text="This sample demonstrates how to use the MultiConverter with the IsNotEqualConverter and the TextCaseConverter. It converts the entered text to Upper Case and checks that it is Not Equal to the string 'MAUI'."/>
             <Entry Text="{Binding EnteredName}"/>
-            <Label Text="{Binding EnteredName, Converter={StaticResource myUpperCaseConverter}, ConverterParameter={StaticResource upperCaseParams}, Mode=OneWay}"
+            <Label Text="{Binding EnteredName, Converter={StaticResource MyUpperCaseConverter}, ConverterParameter={StaticResource UpperCaseParams}, Mode=OneWay}"
                    HorizontalOptions="CenterAndExpand"/>
-            <Label Text="{Binding EnteredName, Converter={StaticResource myMultiConverter}, ConverterParameter={StaticResource multiParams}, Mode=OneWay}"
+            <Label Text="{Binding EnteredName, Converter={StaticResource MyMultiConverter}, ConverterParameter={StaticResource MultiParams}, Mode=OneWay}"
                    HorizontalOptions="CenterAndExpand"/>
         </VerticalStackLayout>
     </pages:BasePage.Content>
