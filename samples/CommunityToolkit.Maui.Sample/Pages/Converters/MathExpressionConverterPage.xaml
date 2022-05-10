@@ -14,28 +14,38 @@
             <mct:MathExpressionConverter x:Key="MathExpressionConverter"/>
         </ResourceDictionary>
     </pages:BasePage.Resources>
-    
+
     <pages:BasePage.Content>
         <VerticalStackLayout Padding="20"
                              Spacing="20">
             <Label Text="This sample demonstrates the use of the MathExpressionConverter. It utilizes the converter to perform various math operations on the steppers value."/>
             <Label Text="{Binding SliderValue}"
-                   HorizontalOptions="CenterAndExpand"/>
+                       Grid.Row="0"
+                       HorizontalOptions="CenterAndExpand"/>
             <Stepper Value="{Binding SliderValue}"
-                     Minimum="1"
-                     Maximum="100"
-                     Increment="1"
-                     HorizontalOptions="CenterAndExpand"/>
-            <HorizontalStackLayout HorizontalOptions="CenterAndExpand">
+                         Minimum="1"
+                         Maximum="100"
+                         Increment="1"
+                         Grid.Row="1"
+                         HorizontalOptions="CenterAndExpand"/>
+            <Grid RowDefinitions="Auto,Auto"
+                  ColumnDefinitions="Auto,Auto"
+                  HorizontalOptions="CenterAndExpand">
                 <Label Text="Divided by 2 equals:"
-                       Padding="0,0,5,0"/>
-                <Label Text="{Binding SliderValue, Converter={StaticResource MathExpressionConverter}, ConverterParameter='x/2'}"/>
-            </HorizontalStackLayout>
-            <HorizontalStackLayout HorizontalOptions="CenterAndExpand">
+                       Grid.Row="0"
+                       Grid.Column="0"
+                       Padding="0,0,10,0"/>
+                <Label Text="{Binding SliderValue, Converter={StaticResource MathExpressionConverter}, ConverterParameter='x/2'}"
+                       Grid.Row="0"
+                       Grid.Column="1"/>
                 <Label Text="Multiplied by 5 equals:"
-                       Padding="0,0,5,0"/>
-                <Label Text="{Binding SliderValue, Converter={StaticResource MathExpressionConverter}, ConverterParameter='x*5'}"/>
-            </HorizontalStackLayout>
+                       Grid.Row="1"
+                       Grid.Column="0"
+                       Padding="0,0,10,0"/>
+                <Label Text="{Binding SliderValue, Converter={StaticResource MathExpressionConverter}, ConverterParameter='x*5'}"
+                       Grid.Row="1"
+                       Grid.Column="1"/>
+            </Grid>
         </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>
