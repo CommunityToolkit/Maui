@@ -3,7 +3,7 @@ variables:
   PreviewNumber: $[counter(variables['CurrentSemanticVersionBase'], 1001)]
   CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(PreviewNumber)'
   NugetPackageVersion: '$(CurrentSemanticVersion)'
-  NET_VERSION: '6.0.300-preview.22204.3'
+  NET_VERSION: '6.0.300'
   PathToSolution: 'src/CommunityToolkit.Maui.sln'
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
   PathToCommunityToolkitCoreCsproj: 'src/CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj'
@@ -39,18 +39,18 @@ jobs:
     pool:
       vmImage: windows-latest
     steps:
-      # - task: UseDotNet@2
-      #   displayName: 'Install .NET SDK'
-      #   inputs:
-      #     packageType: 'sdk'
-      #     version: '$(NET_VERSION)'
-      #     includePreviewVersions: true
-      - powershell: |
-          wget https://dot.net/v1/dotnet-install.ps1 -OutFile C:\dotnet-install.ps1
-          C:\dotnet-install.ps1 -Version $(NET_VERSION)
-          dotnet --info
-          Write-Host "##vso[task.prependpath]C:\\Users\\VssAdministrator\\AppData\\Local\\Microsoft\\dotnet"
-        displayName: Install .NET SDK
+      - task: UseDotNet@2
+        displayName: 'Install .NET SDK'
+        inputs:
+          packageType: 'sdk'
+          version: '$(NET_VERSION)'
+          includePreviewVersions: true
+      # - powershell: |
+      #     wget https://dot.net/v1/dotnet-install.ps1 -OutFile C:\dotnet-install.ps1
+      #     C:\dotnet-install.ps1 -Version $(NET_VERSION)
+      #     dotnet --info
+      #     Write-Host "##vso[task.prependpath]C:\\Users\\VssAdministrator\\AppData\\Local\\Microsoft\\dotnet"
+      #   displayName: Install .NET SDK
       - powershell: dotnet workload install maui
         displayName: Install .NET MAUI
       # if this is a tagged build, then update the version number
@@ -164,18 +164,18 @@ jobs:
       #   displayName: 'Set Xcode Version'
       #   inputs:
       #     script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XcodeVersion).app;sudo xcode-select --switch /Applications/Xcode_$(XcodeVersion).app/Contents/Developer
-      # - task: UseDotNet@2
-      #   displayName: 'Install .NET SDK'
-      #   inputs:
-      #     packageType: 'sdk'
-      #     version: '$(NET_VERSION)'
-      #     includePreviewVersions: true
-      - task: CmdLine@2
+      - task: UseDotNet@2
         displayName: 'Install .NET SDK'
         inputs:
-          script: |
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version $(NET_VERSION) --quality preview
-            dotnet --info
+          packageType: 'sdk'
+          version: '$(NET_VERSION)'
+          includePreviewVersions: true
+      # - task: CmdLine@2
+      #   displayName: 'Install .NET SDK'
+      #   inputs:
+      #     script: |
+      #       curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version $(NET_VERSION) --quality preview
+      #       dotnet --info
       - task: CmdLine@2
         displayName: 'Install .NET MAUI workload'
         inputs:
