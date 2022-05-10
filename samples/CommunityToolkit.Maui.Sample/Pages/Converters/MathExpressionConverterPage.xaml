@@ -2,17 +2,40 @@
 <pages:BasePage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.MathExpressionConverterPage"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:TypeArguments="vm:MathExpressionConverterViewModel"
     x:DataType="vm:MathExpressionConverterViewModel">
 
+    <pages:BasePage.Resources>
+        <ResourceDictionary>
+            <mct:MathExpressionConverter x:Key="MathExpressionConverter"/>
+        </ResourceDictionary>
+    </pages:BasePage.Resources>
+    
     <pages:BasePage.Content>
-        <VerticalStackLayout>
-            <Label Text="MathExpressionConverter"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
+        <VerticalStackLayout Padding="20"
+                             Spacing="20">
+            <Label Text="This sample demonstrates the use of the MathExpressionConverter. It utilizes the converter to perform various math operations on the steppers value."/>
+            <Label Text="{Binding SliderValue}"
+                   HorizontalOptions="CenterAndExpand"/>
+            <Stepper Value="{Binding SliderValue}"
+                     Minimum="1"
+                     Maximum="100"
+                     Increment="1"
+                     HorizontalOptions="CenterAndExpand"/>
+            <HorizontalStackLayout HorizontalOptions="CenterAndExpand">
+                <Label Text="Divided by 2 equals:"
+                       Padding="0,0,5,0"/>
+                <Label Text="{Binding SliderValue, Converter={StaticResource MathExpressionConverter}, ConverterParameter='x/2'}"/>
+            </HorizontalStackLayout>
+            <HorizontalStackLayout HorizontalOptions="CenterAndExpand">
+                <Label Text="Multiplied by 5 equals:"
+                       Padding="0,0,5,0"/>
+                <Label Text="{Binding SliderValue, Converter={StaticResource MathExpressionConverter}, ConverterParameter='x*5'}"/>
+            </HorizontalStackLayout>
         </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>
