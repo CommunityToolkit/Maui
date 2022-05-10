@@ -44,7 +44,6 @@ jobs:
         inputs:
           packageType: 'sdk'
           version: '$(NET_VERSION)'
-          includePreviewVersions: true
       - powershell: dotnet workload install maui
         displayName: Install .NET MAUI
       # if this is a tagged build, then update the version number
@@ -162,7 +161,6 @@ jobs:
         inputs:
           packageType: 'sdk'
           version: '$(NET_VERSION)'
-          includePreviewVersions: true
       - task: CmdLine@2
         displayName: 'Install .NET MAUI workload'
         inputs:
