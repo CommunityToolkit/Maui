@@ -35,9 +35,9 @@
     <MauiImage Include="Resources\Images\*" />
     <EmbeddedResource Include="Resources\Embedded\*" />
 
-    <PackageReference Include="CommunityToolkit.Maui.Markup" Version="1.0.0-rc1" />
+    <PackageReference Include="CommunityToolkit.Maui.Markup" Version="1.0.0-rc2" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0-preview3" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.2-mauipre.1.22102.15" />
   </ItemGroup>
 
   <PropertyGroup>
