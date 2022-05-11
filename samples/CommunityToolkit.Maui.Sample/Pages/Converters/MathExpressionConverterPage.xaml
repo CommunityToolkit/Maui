@@ -2,17 +2,47 @@
 <pages:BasePage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.MathExpressionConverterPage"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:TypeArguments="vm:MathExpressionConverterViewModel"
     x:DataType="vm:MathExpressionConverterViewModel">
 
-    <pages:BasePage.Content>
-        <VerticalStackLayout>
-            <Label Text="MathExpressionConverter"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
-        </VerticalStackLayout>
-    </pages:BasePage.Content>
+    <pages:BasePage.Resources>
+        <ResourceDictionary>
+            <mct:MathExpressionConverter x:Key="MathExpressionConverter"/>
+        </ResourceDictionary>
+    </pages:BasePage.Resources>
+
+    <VerticalStackLayout Padding="20" Spacing="20">
+        <Label HorizontalOptions="Center"
+               Text="This sample demonstrates the use of the MathExpressionConverter. It utilizes the converter to perform various math operations on the steppers value."/>
+        
+        <Label Text="{Binding SliderValue}"
+               HorizontalOptions="Center"/>
+        
+        <Stepper Value="{Binding SliderValue}"
+                 Minimum="1"
+                 Maximum="100"
+                 Increment="1"
+                 HorizontalOptions="Center"/>
+        <Label HorizontalOptions="Center">
+            <Label.FormattedText>
+                <FormattedString>
+                    <Span Text="Divided by 2 equals:"/>
+                    <Span Text="{Binding SliderValue, Converter={StaticResource MathExpressionConverter}, ConverterParameter='x/2'}"/>
+                </FormattedString>
+            </Label.FormattedText>
+        </Label>
+
+        <Label HorizontalOptions="Center" >
+            <Label.FormattedText>
+                <FormattedString>
+                    <Span Text="Multiplied by 5 equals:"/>
+                    <Span Text="{Binding SliderValue, Converter={StaticResource MathExpressionConverter}, ConverterParameter='x*5'}"/>
+                </FormattedString>
+            </Label.FormattedText>
+        </Label>
+    </VerticalStackLayout>
 </pages:BasePage>
