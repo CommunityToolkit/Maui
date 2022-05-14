@@ -22,7 +22,7 @@ public class ListToStringConverter_Tests : BaseTest
 		var listToStringConverter = new ListToStringConverter();
 
 		var convertResult = (string?)((ICommunityToolkitValueConverter)listToStringConverter).Convert(value, typeof(string), parameter, null);
-		var convertFromResult = listToStringConverter.ConvertFrom(value, typeof(string), parameter, null);
+		var convertFromResult = listToStringConverter.ConvertFrom(value, parameter);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);

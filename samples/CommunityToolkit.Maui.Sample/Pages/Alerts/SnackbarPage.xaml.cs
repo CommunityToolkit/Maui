@@ -67,6 +67,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 			if (customSnackbar is not null)
 			{
 				await customSnackbar.Dismiss();
+				customSnackbar.Dispose();
 			}
 
 			DisplayCustomSnackbarButton.Text = displayCustomSnackbarText;

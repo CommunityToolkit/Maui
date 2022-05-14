@@ -20,7 +20,7 @@ public class ItemTappedEventArgsConverter_Tests : BaseTest
 		var itemTappedEventArgsConverter = new ItemTappedEventArgsConverter();
 
 		var convertResult = ((ICommunityToolkitValueConverter)itemTappedEventArgsConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture);
-		var convertFromResult = itemTappedEventArgsConverter.ConvertFrom(value, typeof(object), null, CultureInfo.CurrentCulture);
+		var convertFromResult = itemTappedEventArgsConverter.ConvertFrom(value);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);

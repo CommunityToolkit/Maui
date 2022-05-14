@@ -6,8 +6,8 @@ public class PopupSizeConstants
 	{
 		Tiny = new(100, 100);
 		Small = new(300, 300);
-		Medium = new(0.7 * (deviceDisplay.GetMainDisplayInfo().Width / deviceDisplay.GetMainDisplayInfo().Density), 0.6 * (deviceDisplay.GetMainDisplayInfo().Height / deviceDisplay.GetMainDisplayInfo().Density));
-		Large = new(0.9 * (deviceDisplay.GetMainDisplayInfo().Width / deviceDisplay.GetMainDisplayInfo().Density), 0.8 * (deviceDisplay.GetMainDisplayInfo().Height / deviceDisplay.GetMainDisplayInfo().Density));
+		Medium = new(0.7 * (deviceDisplay.MainDisplayInfo.Width / deviceDisplay.MainDisplayInfo.Density), 0.6 * (deviceDisplay.MainDisplayInfo.Height / deviceDisplay.MainDisplayInfo.Density));
+		Large = new(0.9 * (deviceDisplay.MainDisplayInfo.Width / deviceDisplay.MainDisplayInfo.Density), 0.8 * (deviceDisplay.MainDisplayInfo.Height / deviceDisplay.MainDisplayInfo.Density));
 	}
 
 	// examples for fixed sizes

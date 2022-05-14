@@ -48,7 +48,7 @@ public class ColorToPercentCyanConverter_Tests : BaseTest
 		var converter = new ColorToPercentCyanConverter();
 		var color = new Color(red, green, blue, alpha);
 
-		var resultConvertFrom = converter.ConvertFrom(color, typeof(double), null, null);
+		var resultConvertFrom = converter.ConvertFrom(color);
 		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(double), null, null);
 
 		Assert.Equal(expectedResult, resultConvertFrom);
@@ -59,7 +59,7 @@ public class ColorToPercentCyanConverter_Tests : BaseTest
 	public void ColorToPercentCyanConverterNullInputTest()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => new ColorToPercentCyanConverter().ConvertFrom(null, typeof(double), null, null));
+		Assert.Throws<ArgumentNullException>(() => new ColorToPercentCyanConverter().ConvertFrom(null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToPercentCyanConverter()).Convert(null, typeof(double), null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToPercentCyanConverter()).Convert(new Color(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
