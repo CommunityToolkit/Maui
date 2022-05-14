@@ -47,7 +47,7 @@ public class VariableMultiValueConverter : MultiValueConverterExtension, ICommun
 	[return: NotNull]
 	public object? Convert(object[]? values, Type targetType, object? parameter = null, CultureInfo? culture = null)
 	{
-		if (values == null || values.Length == 0)
+		if (values is null || values.Length == 0)
 		{
 			return false;
 		}

@@ -154,7 +154,7 @@ public class EventToCommandBehaviorGeneric_Tests : BaseTest
 
 		void Selected(Coffee coffee)
 		{
-			if (coffee == null)
+			if (coffee is null)
 			{
 				return;
 			}

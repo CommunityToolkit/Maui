@@ -371,7 +371,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 	{
 		VisualStateManager.GoToState(view, isValid ? ValidVisualState : InvalidVisualState);
 
-		if ((ValidStyle ?? InvalidStyle) == null)
+		if ((ValidStyle ?? InvalidStyle) is null)
 		{
 			return;
 		}

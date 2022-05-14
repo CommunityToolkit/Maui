@@ -132,7 +132,7 @@ sealed class MathExpression
 		var regex = new Regex(regexPattern);
 
 		var matches = regex.Matches(expression);
-		if (matches == null)
+		if (matches is null)
 		{
 			throw new ArgumentException("Invalid math expression.");
 		}
@@ -142,7 +142,7 @@ sealed class MathExpression
 
 		foreach (Match? match in matches)
 		{
-			if (match == null || string.IsNullOrEmpty(match.Value))
+			if (match is null || string.IsNullOrEmpty(match.Value))
 			{
 				continue;
 			}

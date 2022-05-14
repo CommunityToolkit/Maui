@@ -31,7 +31,7 @@ public abstract class BaseTemplatedView<TControl> : TemplatedView where TControl
 	/// <inheritdoc />
 	protected override void OnChildAdded(Element child)
 	{
-		if (Control == null && child is TControl control)
+		if (Control is null && child is TControl control)
 		{
 			Control = control;
 			OnControlInitialized(Control);

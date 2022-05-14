@@ -328,7 +328,7 @@ public class BadgeView : BaseTemplatedView<Grid>, IBadgeView
 
 	void UpdateFont()
 	{
-		if (BadgeText == null)
+		if (BadgeText is null)
 		{
 			return;
 		}
@@ -414,7 +414,7 @@ public class BadgeView : BaseTemplatedView<Grid>, IBadgeView
 
 	async Task UpdateVisibilityAsync()
 	{
-		if (BadgeIndicatorBackground == null)
+		if (BadgeIndicatorBackground is null)
 		{
 			return;
 		}

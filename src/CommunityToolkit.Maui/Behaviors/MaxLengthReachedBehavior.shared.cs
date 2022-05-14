@@ -62,7 +62,7 @@ public class MaxLengthReachedBehavior : BaseBehavior<InputView>
 
 	void OnTextPropertyChanged()
 	{
-		if (View?.Text == null || View.Text.Length < View.MaxLength)
+		if (View?.Text is null || View.Text.Length < View.MaxLength)
 		{
 			return;
 		}
