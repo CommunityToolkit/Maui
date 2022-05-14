@@ -48,6 +48,12 @@ public class BadgeAnimation : IBadgeAnimation
 		return tcs.Task;
 	}
 
+	/// <inheritdoc />
+	public Task OnAppearing(IView badgeView) =>
+		badgeView is VisualElement visualElement
+			? OnAppearing(visualElement)
+			: throw new NotSupportedException();
+
 	/// <summary>
 	/// With the <see cref="OnDisappearing(VisualElement)"/> method you can influence the animation that is used when the <see cref="BadgeView"/> disappears.
 	/// </summary>
@@ -74,4 +80,10 @@ public class BadgeAnimation : IBadgeAnimation
 
 		return tcs.Task;
 	}
+
+	/// <inheritdoc />
+	public Task OnDisappearing(IView badgeView) =>
+		badgeView is VisualElement visualElement
+			? OnAppearing(visualElement)
+			: throw new NotSupportedException();
 }

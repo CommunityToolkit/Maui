@@ -1,7 +1,7 @@
 ﻿namespace CommunityToolkit.Maui.Core.Views.BadgeView;
 
 /// <summary>
-/// Determines the position where the badge will be shown on top of <see cref="IBadgeView.Content"/>.
+/// Determines the position where the badge will be shown on top of the Content/>.
 /// </summary>
 public enum BadgePosition
 {

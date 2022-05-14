@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-
-namespace CommunityToolkit.Maui.Core.Views.BadgeView;
+﻿namespace CommunityToolkit.Maui.Core.Views.BadgeView;
 
 /// <summary>
 /// The <see cref="IBadgeView"/> allows the user to show a badge with a string value on top of any control. By wrapping a control in a <see cref="IBadgeView"/> control, you can show a badge value on top of it. This is very much like the badges you see on the app icons on iOS and Android.
@@ -8,12 +6,7 @@ namespace CommunityToolkit.Maui.Core.Views.BadgeView;
 public interface IBadgeView : IView
 {
 	/// <summary>
-	/// Gets or sets the <see cref="View"/> on top of which the <see cref="BadgeView"/> will be shown. This is a bindable property.
-	/// </summary>
-	View? Content { get; }
-
-	/// <summary>
-	/// Determines the position where the badge will be shown on top of <see cref="Content"/>. This is a bindable property.
+	/// Determines the position where the badge will be shown on top of Content. This is a bindable property.
 	/// </summary>
 	BadgePosition BadgePosition { get; }
 
@@ -58,7 +51,7 @@ public interface IBadgeView : IView
 	string Text { get; }
 
 	/// <summary>
-	/// Font size of all the text on the <see cref="BadgeView" />. <see cref="NamedSize" /> values can be used. This is a bindable property.
+	/// Font size of all the text on the <see cref="BadgeView" />. This is a bindable property.
 	/// </summary>
 	double FontSize { get; }
 
@@ -66,9 +59,4 @@ public interface IBadgeView : IView
 	/// Font of the text on the <see cref="BadgeView" />. This is a bindable property.
 	/// </summary>
 	string FontFamily { get; }
-
-	/// <summary>
-	/// Font attributes of all the text on the <see cref="BadgeView" />. This is a bindable property.
-	/// </summary>
-	FontAttributes FontAttributes { get; }
 }
