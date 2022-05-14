@@ -1,5 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-public class MathExpressionConverterViewModel : BaseViewModel
+namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+
+public partial class MathExpressionConverterViewModel : BaseViewModel
 {
+	[ObservableProperty]
+	double sliderValue = 50;
 }

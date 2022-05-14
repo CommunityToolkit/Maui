@@ -41,10 +41,7 @@ class WrapperControl : Panel
 
 	public void CleanUp()
 	{
-		if (view is not null)
-		{
-			view.MeasureInvalidated -= OnMeasureInvalidated;
-		}
+		view.MeasureInvalidated -= OnMeasureInvalidated;
 	}
 
 	protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)

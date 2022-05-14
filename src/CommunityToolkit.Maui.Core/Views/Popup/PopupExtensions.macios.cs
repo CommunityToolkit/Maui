@@ -1,6 +1,4 @@
-﻿using CoreGraphics;
-using Microsoft.Maui.Platform;
-using UIKit;
+﻿using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>

@@ -18,12 +18,10 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 
 	ISnackbar? customSnackbar;
 
-	public SnackbarPage(IDeviceInfo deviceInfo, SnackbarViewModel snackbarViewModel) : base(deviceInfo, snackbarViewModel)
+	public SnackbarPage(SnackbarViewModel snackbarViewModel) : base(snackbarViewModel)
 	{
 		InitializeComponent();
 
-		SnackbarShownStatus ??= new();
-		DisplayCustomSnackbarButton ??= new();
 		DisplayCustomSnackbarButton.Text = displayCustomSnackbarText;
 
 		Snackbar.Shown += Snackbar_Shown;

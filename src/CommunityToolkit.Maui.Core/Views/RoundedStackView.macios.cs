@@ -1,7 +1,5 @@
 ﻿using System.Runtime.InteropServices;
 using CoreAnimation;
-using CoreGraphics;
-using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
 

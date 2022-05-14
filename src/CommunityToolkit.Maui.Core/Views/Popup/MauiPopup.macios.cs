@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Handlers;
-using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -141,12 +140,18 @@ public class MauiPopup : UIViewController
 
 	sealed class PopoverDelegate : UIPopoverPresentationControllerDelegate
 	{
-		public event EventHandler<UIPresentationController>? PopoverDismissedEvent;
+		readonly WeakEventManager popoverDismissedEventmanager = new();
+
+		public event EventHandler<UIPresentationController> PopoverDismissedEvent
+		{
+			add => popoverDismissedEventmanager.AddEventHandler(value);
+			remove => popoverDismissedEventmanager.RemoveEventHandler(value);
+		}
 
 		public override UIModalPresentationStyle GetAdaptivePresentationStyle(UIPresentationController forPresentationController) =>
 			UIModalPresentationStyle.None;
 
 		public override void DidDismiss(UIPresentationController presentationController) =>
-			PopoverDismissedEvent?.Invoke(this, presentationController);
+			popoverDismissedEventmanager.HandleEvent(this, presentationController, nameof(PopoverDismissedEvent));
 	}
 }

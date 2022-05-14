@@ -70,18 +70,6 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 		}
 
 		[Fact]
-		public async Task LabelTextColorTo_VerifyFalseWhenAnimationContextNotSet()
-		{
-			var label = new Label();
-			Assert.Null(label.TextColor);
-
-			var isSuccessful = await label.TextColorTo(Colors.Red);
-
-			Assert.False(isSuccessful);
-			Assert.Equal(Colors.Transparent, label.TextColor);
-		}
-
-		[Fact]
 		public async Task LabelTextColorTo_DoesNotAllowNullVisualElement()
 		{
 			Label? label = null;

@@ -6,11 +6,12 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ItemTappedEventArgsConverter_Tests : BaseTest
 {
-	public static IReadOnlyList<object[]> Data { get; } = new[]
+	public static IReadOnlyList<object?[]> Data { get; } = new[]
 	{
-		new object[] { new ItemTappedEventArgs("", 1, 1), 1},
-		new object[] { new ItemTappedEventArgs("", 'c', 1), 'c'},
-		new object[] { new ItemTappedEventArgs("", Colors.Black, 1), Colors.Black},
+		new object?[] { null, null },
+		new object?[] { new ItemTappedEventArgs("", 1, 1), 1},
+		new object?[] { new ItemTappedEventArgs("", 'c', 1), 'c'},
+		new object?[] { new ItemTappedEventArgs("", Colors.Black, 1), Colors.Black},
 	};
 
 	[Theory]

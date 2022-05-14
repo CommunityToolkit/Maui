@@ -1,7 +1,4 @@
-﻿using CoreGraphics;
-using UIKit;
-
-namespace CommunityToolkit.Maui.Core.Primitives;
+﻿namespace CommunityToolkit.Maui.Core.Primitives;
 
 /// <summary>
 /// Visual Options for <see cref="CommunityToolkit.Maui.Core.Views.AlertView"/>

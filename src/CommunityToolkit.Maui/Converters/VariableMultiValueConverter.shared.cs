@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Converters;
@@ -44,8 +43,7 @@ public class VariableMultiValueConverter : MultiValueConverterExtension, ICommun
 	/// <param name="parameter">Additional parameter for the converter to handle. This is not implemented.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>A single <see cref="bool"/> value dependent on the configuration for this converter.</returns>
-	[return: NotNull]
-	public object? Convert(object[]? values, Type targetType, object? parameter = null, CultureInfo? culture = null)
+	public object Convert(object[]? values, Type targetType, object? parameter = null, CultureInfo? culture = null)
 	{
 		if (values is null || values.Length == 0)
 		{

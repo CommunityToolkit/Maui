@@ -2,17 +2,48 @@
 <pages:BasePage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.MultiConverterPage"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:TypeArguments="vm:MultiConverterViewModel"
     x:DataType="vm:MultiConverterViewModel">
 
+    <pages:BasePage.Resources>
+        <ResourceDictionary>
+            <mct:MultiConverter x:Key="MyMultiConverter">
+                <mct:TextCaseConverter />
+                <mct:IsNotEqualConverter />
+            </mct:MultiConverter>
+            <x:Array x:Key="MultiParams"
+                     Type="{x:Type mct:MultiConverterParameter}">
+                <mct:MultiConverterParameter
+                    ConverterType="{x:Type mct:TextCaseConverter}"
+                    Value="{x:Static mct:TextCaseType.Upper}" />
+                <mct:MultiConverterParameter
+                    ConverterType="{x:Type mct:IsNotEqualConverter}"
+                    Value="MAUI" />
+            </x:Array>
+            <mct:MultiConverter x:Key="MyUpperCaseConverter">
+                <mct:TextCaseConverter/>
+            </mct:MultiConverter>
+            <x:Array x:Key="UpperCaseParams"
+                     Type="{x:Type mct:MultiConverterParameter}">
+                <mct:MultiConverterParameter
+                    ConverterType="{x:Type mct:TextCaseConverter}"
+                    Value="{x:Static mct:TextCaseType.Upper}" />
+            </x:Array>
+        </ResourceDictionary>
+    </pages:BasePage.Resources>
     <pages:BasePage.Content>
-        <VerticalStackLayout>
-            <Label Text="MultiConverter"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
+        <VerticalStackLayout Padding="20"
+                             Spacing="20">
+            <Label Text="This sample demonstrates how to use the MultiConverter with the IsNotEqualConverter and the TextCaseConverter. It converts the entered text to Upper Case and checks that it is Not Equal to the string 'MAUI'."/>
+            <Entry Text="{Binding EnteredName}"/>
+            <Label Text="{Binding EnteredName, Converter={StaticResource MyUpperCaseConverter}, ConverterParameter={StaticResource UpperCaseParams}, Mode=OneWay}"
+                   HorizontalOptions="CenterAndExpand"/>
+            <Label Text="{Binding EnteredName, Converter={StaticResource MyMultiConverter}, ConverterParameter={StaticResource MultiParams}, Mode=OneWay}"
+                   HorizontalOptions="CenterAndExpand"/>
         </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

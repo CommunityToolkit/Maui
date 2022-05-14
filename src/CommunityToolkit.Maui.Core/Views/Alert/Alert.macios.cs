@@ -1,7 +1,4 @@
-﻿using Foundation;
-using UIKit;
-
-namespace CommunityToolkit.Maui.Core.Views;
+﻿namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// Popup for iOS + MacCatalyst

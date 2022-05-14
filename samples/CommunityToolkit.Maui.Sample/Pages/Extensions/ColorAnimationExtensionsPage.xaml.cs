@@ -14,17 +14,10 @@ public partial class ColorAnimationExtensionsPage : BasePage<ColorAnimationExten
 		.GetFields(BindingFlags.Static | BindingFlags.Public)
 		.ToDictionary(c => c.Name, c => (Easing)(c.GetValue(null) ?? throw new InvalidOperationException()));
 
-	public ColorAnimationExtensionsPage(IDeviceInfo deviceInfo, ColorAnimationExtensionsViewModel colorAnimationExtensionsViewModel)
-		: base(deviceInfo, colorAnimationExtensionsViewModel)
+	public ColorAnimationExtensionsPage(ColorAnimationExtensionsViewModel colorAnimationExtensionsViewModel)
+		: base(colorAnimationExtensionsViewModel)
 	{
 		InitializeComponent();
-
-		RateInput ??= new();
-		ColorFrame ??= new();
-		ColorPicker ??= new();
-		EasingPicker ??= new();
-		DurationInput ??= new();
-		TextColorToDescriptionLabel ??= new();
 	}
 
 	protected override void OnAppearing()

@@ -66,6 +66,7 @@ public static class MauiProgram
 
 		// Add Converters Pages
 		services.AddTransient<BoolToObjectConverterPage>();
+		services.AddTransient<StateToBooleanConverterPage>();
 		services.AddTransient<ByteArrayToImageSourceConverterPage>();
 		services.AddTransient<ColorsConverterPage>();
 		services.AddTransient<CompareConverterPage>();
@@ -81,6 +82,8 @@ public static class MauiProgram
 		services.AddTransient<IsListNotNullOrEmptyConverterPage>();
 		services.AddTransient<IsListNullOrEmptyConverterPage>();
 		services.AddTransient<IsNotEqualConverterPage>();
+		services.AddTransient<IsNotNullConverterPage>();
+		services.AddTransient<IsNullConverterPage>();
 		services.AddTransient<IsStringNotNullOrEmptyConverterPage>();
 		services.AddTransient<IsStringNotNullOrWhiteSpaceConverterPage>();
 		services.AddTransient<IsStringNullOrEmptyConverterPage>();
@@ -102,6 +105,7 @@ public static class MauiProgram
 
 		// Add Views Pages
 		services.AddTransient<CsharpBindingPopup>();
+		services.AddTransient<DrawingViewPage>();
 		services.AddTransient<MultiplePopupPage>();
 		services.AddTransient<PopupAnchorPage>();
 		services.AddTransient<PopupPositionPage>();
@@ -154,6 +158,8 @@ public static class MauiProgram
 		services.AddTransient<InvertedBoolConverterViewModel>();
 		services.AddTransient<IsListNotNullOrEmptyConverterViewModel>();
 		services.AddTransient<IsListNullOrEmptyConverterViewModel>();
+		services.AddTransient<IsNotNullConverterViewModel>();
+		services.AddTransient<IsNullConverterViewModel>();
 		services.AddTransient<IsStringNotNullOrEmptyConverterViewModel>();
 		services.AddTransient<IsStringNotNullOrWhiteSpaceConverterViewModel>();
 		services.AddTransient<IsStringNullOrEmptyConverterViewModel>();
@@ -164,6 +170,7 @@ public static class MauiProgram
 		services.AddTransient<MultiConverterViewModel>();
 		services.AddTransient<IsNotEqualConverterViewModel>();
 		services.AddTransient<SelectedItemEventArgsConverterViewModel>();
+		services.AddTransient<StateToBooleanConverterViewModel>();
 		services.AddTransient<StringToListConverterViewModel>();
 		services.AddTransient<TextCaseConverterViewModel>();
 		services.AddTransient<VariableMultiValueConverterViewModel>();
@@ -176,6 +183,7 @@ public static class MauiProgram
 
 		// Add Views View Models
 		services.AddTransient<CsharpBindingPopupViewModel>();
+		services.AddTransient<DrawingViewViewModel>();
 		services.AddTransient<MultiplePopupViewModel>();
 		services.AddTransient<PopupAnchorViewModel>();
 		services.AddTransient<PopupPositionViewModel>();

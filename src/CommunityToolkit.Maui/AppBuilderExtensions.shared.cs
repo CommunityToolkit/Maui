@@ -18,9 +18,12 @@ public static class AppBuilderExtensions
 	{
 		builder.ConfigureMauiHandlers(h =>
 		{
-			h.AddHandler(typeof(Popup), typeof(PopupHandler));
+			h.AddHandler<DrawingView, DrawingViewHandler>();
+			h.AddHandler<Popup, PopupHandler>();
 		});
+
 		Popup.RemapForControls();
+
 		return builder.UseMauiCommunityToolkitCore();
 	}
 }

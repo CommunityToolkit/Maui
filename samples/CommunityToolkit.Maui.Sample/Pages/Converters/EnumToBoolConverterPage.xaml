@@ -2,17 +2,46 @@
 <pages:BasePage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.EnumToBoolConverterPage"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:TypeArguments="vm:EnumToBoolConverterViewModel"
     x:DataType="vm:EnumToBoolConverterViewModel">
 
+    <pages:BasePage.Resources>
+        <ResourceDictionary>
+            <!-- Converter with TRUE list -->
+            <mct:EnumToBoolConverter x:Key="MobileConverter">
+                <mct:EnumToBoolConverter.TrueValues>
+                    <vm:MyDevicePlatform>Android</vm:MyDevicePlatform>
+                    <vm:MyDevicePlatform>iOS</vm:MyDevicePlatform>
+                </mct:EnumToBoolConverter.TrueValues>
+            </mct:EnumToBoolConverter>
+            <mct:EnumToBoolConverter x:Key="DesktopConverter">
+                <mct:EnumToBoolConverter.TrueValues>
+                    <vm:MyDevicePlatform>MacCatalyst</vm:MyDevicePlatform>
+                    <vm:MyDevicePlatform>WinUI</vm:MyDevicePlatform>
+                </mct:EnumToBoolConverter.TrueValues>
+            </mct:EnumToBoolConverter>
+            <!-- Converter, that uses parameter -->
+            <mct:EnumToBoolConverter x:Key="PlatformConverter" />
+        </ResourceDictionary>
+    </pages:BasePage.Resources>
     <pages:BasePage.Content>
-        <VerticalStackLayout>
-            <Label Text="EnumToBoolConverter"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
+        <VerticalStackLayout Spacing="12">
+            <Label Text="EnumToBoolConverter converts an Enum to corresponding boolean value."
+                   HorizontalOptions="CenterAndExpand" />
+
+            <Label Text="👇 Change the Picker value to see the below Label Text change."/>
+
+            <Picker ItemsSource="{Binding Platforms}" SelectedItem="{Binding SelectedPlatform}" />
+            <!-- Converter with TRUE list -->
+            <Label IsVisible="{Binding SelectedPlatform, Converter={StaticResource MobileConverter}}" Text="I am visible when the Picker value is Android or iOS."/>
+            <Label IsVisible="{Binding SelectedPlatform, Converter={StaticResource DesktopConverter}}" Text="I am visible when the Picker value is MacCatalyst or WinUI."/>
+            <!-- Converter, that uses parameter -->
+            <Label IsVisible="{Binding SelectedPlatform, Converter={StaticResource PlatformConverter}, ConverterParameter={x:Static vm:MyDevicePlatform.Tizen}}" Text="I am visible when the Picker value is Platform is Tizen."/>
+
         </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

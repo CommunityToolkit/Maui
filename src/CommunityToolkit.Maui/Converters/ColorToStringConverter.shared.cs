@@ -38,14 +38,14 @@ public class ColorToHexRgbStringConverter : BaseConverter<Color, string>
 	public override string ConvertFrom(Color value, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(value);
-		return value.ToHexRgbString();
+		return value.ToRgbaHex(false);
 	}
 
 	/// <inheritdoc/>
 	public override Color ConvertBackTo(string value, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(value);
-		return Color.FromArgb(value);
+		return Color.FromRgba(value);
 	}
 }
 
@@ -58,14 +58,14 @@ public class ColorToHexRgbaStringConverter : BaseConverter<Color, string>
 	public override string ConvertFrom(Color value, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(value);
-		return value.ToHexRgbaString();
+		return value.ToRgbaHex(true);
 	}
 
 	/// <inheritdoc/>
 	public override Color ConvertBackTo(string value, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(value);
-		return Color.FromArgb(value);
+		return Color.FromRgba(value);
 	}
 }
 

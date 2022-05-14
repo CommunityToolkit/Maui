@@ -1,9 +1,6 @@
 ﻿using System.Runtime.InteropServices;
-using CoreGraphics;
 using CoreText;
-using Foundation;
 using Microsoft.Maui.Platform;
-using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -64,7 +61,7 @@ public class PlatformToast : Alert
 	/// </summary>
 	public UIColor TextColor
 	{
-		get => messageLabel.TextColor ??= Defaults.TextColor.ToPlatform();
+		get => messageLabel.TextColor ??= AlertDefaults.TextColor.ToPlatform();
 		private init => messageLabel.TextColor = value;
 	}
 

@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Views.DrawingViewPage"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+                x:TypeArguments="viewModels:DrawingViewViewModel"
+                x:DataType="viewModels:DrawingViewViewModel"
+                Title="DrawingView">
+
+    <ScrollView>
+        <Grid RowDefinitions="40,40,40,40,40,40,40,40,200,200,100" ColumnDefinitions="*,*">
+            <Label Grid.Row="0" Grid.Column="0" Text="Clear on Finish" Margin="0,0,5,0" HorizontalOptions="End" HorizontalTextAlignment="End"/>
+            <Switch Grid.Row="0" Grid.Column="1" x:Name="ClearOnFinish" HorizontalOptions="Start" />
+            <Label Grid.Row="1" Grid.Column="0" Text="Multi-Line Mode" Margin="0,0,5,0" HorizontalOptions="End" HorizontalTextAlignment="End"/>
+            <Switch Grid.Row="1" Grid.Column="1" x:Name="MultiLineMode" HorizontalOptions="Start" />
+            <Button
+                Grid.Row="2" Grid.Column="0"
+                Grid.ColumnSpan="2"
+                BackgroundColor="White"
+                Command="{Binding AddNewLineCommand}"
+                CommandParameter="{Binding Path=., Source={x:Reference DrawingViewControl}}"
+                Text="Add new line"
+                TextColor="Black" />
+            <Button
+                Grid.Row="3" Grid.Column="0"
+                Grid.ColumnSpan="2"
+                BackgroundColor="White"
+                Clicked="LoadPointsButtonClicked"
+                Text="Load points"
+                TextColor="Black" />
+            <Button
+                Grid.Row="4" Grid.Column="0"
+                Grid.ColumnSpan="2"
+                BackgroundColor="White"
+                Command="{Binding ClearLinesCommand}"
+                Text="Clear all lines"
+                TextColor="Black" />
+            <Button
+                Grid.Row="5" Grid.Column="0"
+                Grid.ColumnSpan="2"
+                BackgroundColor="White"
+                Clicked="GetCurrentDrawingViewImageClicked"
+                Text="Display current gesture pad image"
+                TextColor="Black" />
+            <Button
+                Grid.Row="6" Grid.Column="0"
+                Grid.ColumnSpan="2"
+                BackgroundColor="White"
+                Clicked="GenerateImageButtonClicked"
+                Text="Generate Image with Random Lines"
+                TextColor="Black" />
+
+            <Label Text="DrawingView"
+                   Grid.Row="7" Grid.Column="0"
+                   Grid.ColumnSpan="2"/>
+            <mct:DrawingView x:Name="DrawingViewControl"
+                             Margin="0,0,0,10"
+                             Grid.Row="8" Grid.Column="0"
+                             Grid.ColumnSpan="2"
+                             LineColor="Green"
+                             LineWidth="5"
+                             Lines="{Binding Lines, Mode=TwoWay}"
+                             DrawingLineCompleted="OnDrawingLineCompleted"
+                             DrawingLineCompletedCommand="{Binding DrawingLineCompletedCommand}"
+                             ShouldClearOnFinish="{Binding Source={x:Reference ClearOnFinish}, Path=IsToggled}"
+                             IsMultiLineModeEnabled="{Binding Source={x:Reference MultiLineMode}, Path=IsToggled}">
+                <mct:DrawingView.Background>
+                    <LinearGradientBrush StartPoint="0,0"
+                                         EndPoint="0,1">
+                        <GradientStop Color="Blue"
+                                      Offset="0"/>
+                        <GradientStop Color="Yellow"
+                                      Offset="1"/>
+                    </LinearGradientBrush>
+                </mct:DrawingView.Background>
+            </mct:DrawingView>
+
+            <Image
+                Grid.Row="9" Grid.Column="0"
+                Grid.ColumnSpan="2"
+                x:Name="GestureImage"
+                Margin="0,0,0,10"/>
+
+            <Label Grid.Row="10" Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    BackgroundColor="Gray"
+                    TextColor="Black"
+                    HeightRequest="100" Text="{Binding Logs}" />
+        </Grid>
+    </ScrollView>
+</pages:BasePage>

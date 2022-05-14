@@ -3,10 +3,10 @@
 namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
-/// Default Values for CommunityToolkit.Maui
+/// Default Values for <see cref="IAlert"/>
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
-public static class Defaults
+public static class AlertDefaults
 {
 	/// <summary>
 	/// Default Font Size
@@ -30,11 +30,11 @@ public static class Defaults
 	/// Default Text Color
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static readonly Color TextColor = Colors.Black;
+	public static Color TextColor { get; } = Colors.Black;
 
 	/// <summary>
 	/// Default Background Color
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static readonly Color BackgroundColor = Colors.LightGray;
+	public static Color BackgroundColor { get; } = Colors.LightGray;
 }

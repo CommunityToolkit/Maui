@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Sample.Pages;
 
 public abstract class BasePage<TViewModel> : BasePage where TViewModel : BaseViewModel
 {
-	protected BasePage(IDeviceInfo deviceInfo, TViewModel viewModel) : base(deviceInfo, viewModel)
+	protected BasePage(TViewModel viewModel) : base(viewModel)
 	{
 	}
 
@@ -14,24 +14,16 @@ public abstract class BasePage<TViewModel> : BasePage where TViewModel : BaseVie
 
 public abstract class BasePage : ContentPage
 {
-	protected BasePage(IDeviceInfo deviceInfo, object? viewModel = null)
+	protected BasePage(object? viewModel = null)
 	{
 		BindingContext = viewModel;
+		Padding = 12;
 
-		BackgroundColor = (Color)(Application.Current?.Resources["AppBackgroundColor"] ?? throw new InvalidOperationException("Application.Current cannot be null"));
-
-		if (deviceInfo.Platform == DevicePlatform.iOS || deviceInfo.Platform == DevicePlatform.MacCatalyst)
-		{
-			Padding = new Thickness(12, 108, 12, 12);
-		}
-		else
-		{
-			Padding = 12;
-		}
+		SetDynamicResource(BackgroundColorProperty, "AppBackgroundColor");
 
 		if (string.IsNullOrWhiteSpace(Title))
 		{
-			Title = this.GetType().Name;
+			Title = GetType().Name;
 		}
 	}
 

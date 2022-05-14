@@ -7,12 +7,12 @@ public class ListToStringConverter_Tests : BaseTest
 {
 	public static IReadOnlyList<object?[]> TestData { get; } = new[]
 	{
-		new object[] { new string[] { "A", "B", "C" }, "+_+", "A+_+B+_+C" },
-		new object[] { new string[] { "A", string.Empty, "C" }, ",", "A,C" },
-		new object?[] { new string?[] { "A", null, "C" }, ",", "A,C" },
-		new object[] { new string[] { "A" }, ":-:", "A" },
+		new object[] { new[] { "A", "B", "C" }, "+_+", "A+_+B+_+C" },
+		new object[] { new[] { "A", string.Empty, "C" }, ",", "A,C" },
+		new object?[] { new[] { "A", null, "C" }, ",", "A,C" },
+		new object[] { new[] { "A" }, ":-:", "A" },
 		new object[] { Array.Empty<string>(), ",", string.Empty },
-		new object?[] { new string[] { "A", "B", "C" }, null, "ABC" },
+		new object?[] { new[] { "A", "B", "C" }, null, "ABC" },
 	};
 
 	[Theory]
@@ -23,6 +23,22 @@ public class ListToStringConverter_Tests : BaseTest
 
 		var convertResult = (string?)((ICommunityToolkitValueConverter)listToStringConverter).Convert(value, typeof(string), parameter, null);
 		var convertFromResult = listToStringConverter.ConvertFrom(value, parameter);
+
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
+	}
+
+	[Theory]
+	[MemberData(nameof(TestData))]
+	public void ListToStringConverterExplicitParameter(string[] value, string? parameter, string expectedResult)
+	{
+		var listToStringConverter = new ListToStringConverter()
+		{
+			Separator = parameter ?? string.Empty
+		};
+
+		var convertResult = (string?)((ICommunityToolkitValueConverter)listToStringConverter).Convert(value, typeof(string), null, null);
+		var convertFromResult = listToStringConverter.ConvertFrom(value);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);

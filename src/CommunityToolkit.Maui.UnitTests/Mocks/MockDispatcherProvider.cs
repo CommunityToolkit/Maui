@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.UnitTests.Mocks;
 // Inspired by https://github.com/dotnet/maui/blob/main/src/Core/tests/UnitTests/TestClasses/DispatcherStub.cs
 sealed class MockDispatcherProvider : IDispatcherProvider, IDisposable
 {
-	readonly static DispatcherMock dispatcherMock = new();
+	static readonly DispatcherMock dispatcherMock = new();
 
 	readonly ThreadLocal<IDispatcher> dispatcherInstance = new(() => dispatcherMock);
 
