@@ -1,4 +1,5 @@
-﻿using Android.Graphics.Drawables;
+﻿using Android.Content;
+using Android.Graphics.Drawables;
 using Android.Views;
 using Microsoft.Maui.Platform;
 using AColorRes = Android.Resource.Color;
@@ -106,20 +107,13 @@ public static class PopupExtensions
 
 		var decorView = (ViewGroup)window.DecorView;
 		var child = decorView.GetChildAt(0) ?? throw new NullReferenceException();
-		var realWidth = (int)context.ToPixels(popup.Size.Width);
-		var realHeight = (int)context.ToPixels(popup.Size.Height);
 
-		var realContentWidth = (int)context.ToPixels(popup.Content.Width);
-		var realContentHeight = (int)context.ToPixels(popup.Content.Height);
+		int realWidth = 0,
+			realHeight = 0,
+			realContentWidth = 0,
+			realContentHeight = 0;
 
-		realWidth = realWidth is 0 ? realContentWidth : realWidth;
-		realHeight = realHeight is 0 ? realContentHeight : realHeight;
-
-		if (realHeight is 0 || realWidth is 0)
-		{
-			realWidth = (int?)(context.Resources?.DisplayMetrics?.WidthPixels * 0.8) ?? throw new NullReferenceException();
-			realHeight = (int?)(context.Resources?.DisplayMetrics?.HeightPixels * 0.6) ?? throw new NullReferenceException();
-		}
+		CalculateSizes(popup, context, ref realWidth, ref realHeight, ref realContentWidth, ref realContentHeight);
 
 		var childLayoutParams = (FrameLayout.LayoutParams)(child.LayoutParameters ?? throw new NullReferenceException());
 		childLayoutParams.Width = realWidth;
@@ -186,6 +180,38 @@ public static class PopupExtensions
 		}
 
 		container.LayoutParameters = containerLayoutParams;
+
+
+		static void CalculateSizes(IPopup popup, Context context, ref int realWidth, ref int realHeight, ref int realContentWidth, ref int realContentHeight)
+		{
+			ArgumentNullException.ThrowIfNull(popup.Content);
+
+			if (!popup.Size.IsZero)
+			{
+				realWidth = (int)context.ToPixels(popup.Size.Width);
+				realHeight = (int)context.ToPixels(popup.Size.Height);
+			}
+			if (double.IsNaN(popup.Content.Width) && double.IsNaN(popup.Content.Height))
+			{
+				var size = popup.Content.Measure(double.PositiveInfinity, double.PositiveInfinity);
+				realContentWidth = (int)context.ToPixels(size.Width);
+				realContentHeight = (int)context.ToPixels(size.Height);
+			}
+			else
+			{
+				realContentWidth = (int)context.ToPixels(popup.Content.Width);
+				realContentHeight = (int)context.ToPixels(popup.Content.Height);
+			}
+
+			realWidth = realWidth is 0 ? realContentWidth : realWidth;
+			realHeight = realHeight is 0 ? realContentHeight : realHeight;
+
+			if (realHeight is 0 || realWidth is 0)
+			{
+				realWidth = (int?)(context.Resources?.DisplayMetrics?.WidthPixels * 0.8) ?? throw new NullReferenceException();
+				realHeight = (int?)(context.Resources?.DisplayMetrics?.HeightPixels * 0.6) ?? throw new NullReferenceException();
+			}
+		}
 	}
 
 	static void SetDialogPosition(in IPopup popup, Android.Views.Window window)
