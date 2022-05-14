@@ -1,4 +1,7 @@
 ﻿using System.ComponentModel;
+using CommunityToolkit.Maui.Core.Views.BadgeView;
+using Microsoft.Maui.Controls.Internals;
+using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;
 using TypeConverterAttribute = System.ComponentModel.TypeConverterAttribute;
 
 namespace CommunityToolkit.Maui.Views.BadgeView;
@@ -7,7 +10,7 @@ namespace CommunityToolkit.Maui.Views.BadgeView;
 /// The <see cref="BadgeView"/> allows the user to show a badge with a string value on top of any control. By wrapping a control in a <see cref="BadgeView"/> control, you can show a badge value on top of it. This is very much like the badges you see on the app icons on iOS and Android.
 /// </summary>
 [ContentProperty(nameof(Content))]
-public class BadgeView : BaseTemplatedView<Grid>
+public class BadgeView : BaseTemplatedView<Grid>, IBadgeView
 {
 	bool isVisible;
 	bool placementDone;
