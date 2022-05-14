@@ -4,8 +4,8 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class BadgeViewPage : BasePage<BadgeViewViewModel>
 {
-	public BadgeViewPage(IDeviceInfo deviceInfo, BadgeViewViewModel badgeViewViewModel)
-		: base(deviceInfo, badgeViewViewModel)
+	public BadgeViewPage(BadgeViewViewModel badgeViewViewModel)
+		: base(badgeViewViewModel)
 	{
 		InitializeComponent();
 	}
