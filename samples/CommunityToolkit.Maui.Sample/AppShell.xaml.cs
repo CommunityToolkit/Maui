@@ -64,6 +64,7 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<ItemTappedEventArgsConverterPage, ItemTappedEventArgsConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<ListToStringConverterPage, ListToStringConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<MathExpressionConverterPage, MathExpressionConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<MultiMathExpressionConverterPage, MultiMathExpressionConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<MultiConverterPage, MultiConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<SelectedItemEventArgsConverterPage, SelectedItemEventArgsConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<StateToBooleanConverterPage, StateToBooleanConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),

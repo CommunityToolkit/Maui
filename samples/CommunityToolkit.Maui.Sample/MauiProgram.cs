@@ -91,6 +91,7 @@ public static class MauiProgram
 		services.AddTransient<ItemTappedEventArgsConverterPage>();
 		services.AddTransient<ListToStringConverterPage>();
 		services.AddTransient<MathExpressionConverterPage>();
+		services.AddTransient<MultiMathExpressionConverterPage>();
 		services.AddTransient<MultiConverterPage>();
 		services.AddTransient<SelectedItemEventArgsConverterPage>();
 		services.AddTransient<StringToListConverterPage>();
@@ -167,6 +168,7 @@ public static class MauiProgram
 		services.AddTransient<ItemTappedEventArgsConverterViewModel>();
 		services.AddTransient<ListToStringConverterViewModel>();
 		services.AddTransient<MathExpressionConverterViewModel>();
+		services.AddTransient<MultiMathExpressionConverterViewModel>();
 		services.AddTransient<MultiConverterViewModel>();
 		services.AddTransient<IsNotEqualConverterViewModel>();
 		services.AddTransient<SelectedItemEventArgsConverterViewModel>();
