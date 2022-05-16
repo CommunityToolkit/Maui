@@ -72,7 +72,7 @@ public class MathExpressionConverter_Tests : BaseTest
 	}
 
 	[Fact]
-	public void MultiMathExpressionConverterInvalidValuesThrowsArgumentException()
+	public void MultiMathExpressionConverterInvalidValuesReturnsNull()
 	{
 		var mathExpressionConverter = new MultiMathExpressionConverter();
 		var result = mathExpressionConverter.Convert(new object?[] { 0d, null }, mathExpressionTargetType, "x", cultureInfo);
