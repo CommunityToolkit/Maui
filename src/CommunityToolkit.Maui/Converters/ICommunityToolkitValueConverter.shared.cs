@@ -6,6 +6,16 @@ namespace CommunityToolkit.Maui.Converters;
 public interface ICommunityToolkitValueConverter : IValueConverter
 {
 	/// <summary>
+	/// Type Converting From
+	/// </summary>
+	Type FromType { get; }
+
+	/// <summary>
+	/// Type Converting To
+	/// </summary>
+	Type ToType { get; }
+
+	/// <summary>
 	/// Converts the incoming values to a different object
 	/// </summary>
 	/// <param name="value">The object to convert</param>

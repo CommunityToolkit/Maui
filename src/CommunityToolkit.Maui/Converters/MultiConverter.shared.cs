@@ -5,6 +5,12 @@
 /// </summary>
 public class MultiConverter : List<ICommunityToolkitValueConverter>, ICommunityToolkitValueConverter
 {
+	/// <inheritdoc/>
+	public Type FromType => throw new NotImplementedException();
+
+	/// <inheritdoc/>
+	public Type ToType => throw new NotImplementedException();
+
 	/// <summary>
 	/// Uses the incoming converters to convert the value.
 	/// </summary>
@@ -15,9 +21,9 @@ public class MultiConverter : List<ICommunityToolkitValueConverter>, ICommunityT
 	/// <returns>The converted value.</returns>
 	public object? Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo? culture)
 		=> parameter is IList<MultiConverterParameter> parameters
-		? this.Aggregate(value, (current, converter) => converter.Convert(current, targetType,
+		? this.Aggregate(value, (current, converter) => converter.Convert(current, converter.ToType,
 				 parameters.FirstOrDefault(x => x.ConverterType == converter.GetType())?.Value, culture))
-		: this.Aggregate(value, (current, converter) => converter.Convert(current, targetType, parameter, culture));
+		: this.Aggregate(value, (current, converter) => converter.Convert(current, converter.ToType, parameter, culture));
 
 	/// <summary>
 	/// This method is not supported and will throw a <see cref="NotSupportedException"/>.
