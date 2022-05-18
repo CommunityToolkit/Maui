@@ -5,11 +5,9 @@
 /// </summary>
 public class MultiConverter : List<ICommunityToolkitValueConverter>, ICommunityToolkitValueConverter
 {
-	/// <inheritdoc/>
-	public Type FromType => throw new NotImplementedException();
+	Type ICommunityToolkitValueConverter.FromType => throw new NotSupportedException($"{nameof(ICommunityToolkitMultiValueConverter)} does not implement {nameof(ICommunityToolkitValueConverter.FromType)}");
 
-	/// <inheritdoc/>
-	public Type ToType => throw new NotImplementedException();
+	Type ICommunityToolkitValueConverter.ToType => throw new NotSupportedException($"{nameof(ICommunityToolkitMultiValueConverter)} does not implement {nameof(ICommunityToolkitValueConverter.ToType)}");
 
 	/// <summary>
 	/// Uses the incoming converters to convert the value.
