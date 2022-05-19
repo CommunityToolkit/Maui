@@ -15,25 +15,63 @@
         </ResourceDictionary>
     </pages:BasePage.Resources>
 
-    <VerticalStackLayout Padding="20" Spacing="20">
-        <Label HorizontalOptions="Center"
+    <Grid Padding="20"
+          RowSpacing="20"
+          ColumnSpacing="12"
+          ColumnDefinitions="*,*,*,*,*,*,*"
+          RowDefinitions="100, *">
+        <Label Grid.ColumnSpan="7"
+               Grid.Row="0"
                Text="This sample demonstrates the use of the MultiMathExpressionConverter. It utilizes the converter to perform various math operations of multiple variables."/>
 
-        <Label HorizontalOptions="Center" >
-            <Label.FormattedText>
-                <FormattedString>
-                    <Span Text="x0 + x1 + x2 = "/>
-                    <Span>
-                        <Span.Text>
-                            <MultiBinding Converter="{StaticResource MultiMathExpressionConverter}" ConverterParameter="x0 + x1 + x2">
-                                <Binding Path="X0" />
-                                <Binding Path="X1" />
-                                <Binding Path="X2" />
-                            </MultiBinding>
-                        </Span.Text>
-                    </Span>
-                </FormattedString>
-            </Label.FormattedText>
+        <Entry Grid.Column="0"
+               Grid.Row="1"
+               VerticalTextAlignment="Center"
+               VerticalOptions="Center"
+               Text="{Binding X0}"/>
+
+        <Label Grid.Column="1"
+               Grid.Row="1"
+               VerticalTextAlignment="Center"
+               VerticalOptions="Center"
+               Text="+" />
+
+        <Entry Grid.Column="2"
+               Grid.Row="1"
+               VerticalTextAlignment="Center"
+               VerticalOptions="Center"
+               Text="{Binding X1}"/>
+
+        <Label Grid.Column="3"
+               Grid.Row="1"
+               VerticalTextAlignment="Center"
+               VerticalOptions="Center"
+               Text="+" />
+
+        <Entry Grid.Column="4"
+               Grid.Row="1"
+               VerticalTextAlignment="Center"
+               VerticalOptions="Center"
+               Text="{Binding X2}"/>
+
+        <Label Grid.Column="5"
+               Grid.Row="1"
+               VerticalTextAlignment="Center"
+               VerticalOptions="Center"
+               Text="=" />
+
+        <Label Grid.Column="6"
+               Grid.Row="1"
+               VerticalTextAlignment="Center"
+               VerticalOptions="Center">
+             <Label.Text>
+                <MultiBinding Converter="{StaticResource MultiMathExpressionConverter}"
+                              ConverterParameter="x0 + x1 + x2">
+                    <Binding Path="X0" Mode="OneWay"/>
+                    <Binding Path="X1" Mode="OneWay"/>
+                    <Binding Path="X2" Mode="OneWay"/>
+                </MultiBinding>
+            </Label.Text>           
         </Label>
-    </VerticalStackLayout>
+    </Grid>
 </pages:BasePage>
