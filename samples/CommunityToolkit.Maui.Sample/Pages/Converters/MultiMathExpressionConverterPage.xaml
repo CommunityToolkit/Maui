@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.MultiMathExpressionConverterPage"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
+    x:TypeArguments="vm:MultiMathExpressionConverterViewModel"
+    x:DataType="vm:MultiMathExpressionConverterViewModel">
+
+    <pages:BasePage.Resources>
+        <ResourceDictionary>
+            <mct:MultiMathExpressionConverter x:Key="MultiMathExpressionConverter"/>
+        </ResourceDictionary>
+    </pages:BasePage.Resources>
+
+    <Grid Padding="20"
+          RowSpacing="20"
+          ColumnSpacing="12"
+          ColumnDefinitions="*,*,*,*,*,*,*"
+          RowDefinitions="100, *">
+        <Label Grid.ColumnSpan="7"
+               Grid.Row="0"
+               Text="This sample demonstrates the use of the MultiMathExpressionConverter. It utilizes the converter to perform various math operations of multiple variables."/>
+
+        <Entry Grid.Column="0"
+               Grid.Row="1"
+               VerticalTextAlignment="Center"
+               VerticalOptions="Center"
+               Text="{Binding X0}"/>
+
+        <Label Grid.Column="1"
+               Grid.Row="1"
+               VerticalTextAlignment="Center"
+               VerticalOptions="Center"
+               Text="+" />
+
+        <Entry Grid.Column="2"
+               Grid.Row="1"
+               VerticalTextAlignment="Center"
+               VerticalOptions="Center"
+               Text="{Binding X1}"/>
+
+        <Label Grid.Column="3"
+               Grid.Row="1"
+               VerticalTextAlignment="Center"
+               VerticalOptions="Center"
+               Text="+" />
+
+        <Entry Grid.Column="4"
+               Grid.Row="1"
+               VerticalTextAlignment="Center"
+               VerticalOptions="Center"
+               Text="{Binding X2}"/>
+
+        <Label Grid.Column="5"
+               Grid.Row="1"
+               VerticalTextAlignment="Center"
+               VerticalOptions="Center"
+               Text="=" />
+
+        <Label Grid.Column="6"
+               Grid.Row="1"
+               VerticalTextAlignment="Center"
+               VerticalOptions="Center">
+             <Label.Text>
+                <MultiBinding Converter="{StaticResource MultiMathExpressionConverter}"
+                              ConverterParameter="x0 + x1 + x2">
+                    <Binding Path="X0" Mode="OneWay"/>
+                    <Binding Path="X1" Mode="OneWay"/>
+                    <Binding Path="X2" Mode="OneWay"/>
+                </MultiBinding>
+            </Label.Text>           
+        </Label>
+    </Grid>
+</pages:BasePage>
