@@ -11,7 +11,7 @@ public interface ICommunityToolkitValueConverter : IValueConverter
 	Type FromType { get; }
 
 	/// <summary>
-	/// Type Converting To
+	/// Gets the <see cref="Type" /> this converter expects to <see cref="Convert" /> to or <see cref="ConvertBack" /> from.
 	/// </summary>
 	Type ToType { get; }
 
