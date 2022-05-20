@@ -191,7 +191,7 @@ public static class PopupExtensions
 				realWidth = (int)context.ToPixels(popup.Size.Width);
 				realHeight = (int)context.ToPixels(popup.Size.Height);
 			}
-			if (double.IsNaN(popup.Content.Width) && double.IsNaN(popup.Content.Height))
+			if (double.IsNaN(popup.Content.Width) || double.IsNaN(popup.Content.Height))
 			{
 				var size = popup.Content.Measure(double.PositiveInfinity, double.PositiveInfinity);
 				realContentWidth = (int)context.ToPixels(size.Width);
