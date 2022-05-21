@@ -20,12 +20,6 @@ public class DrawingView : View, IDrawingView
 		Unloaded += DrawingView_Unloaded;
 	}
 
-	void DrawingView_Unloaded(object? sender, EventArgs e)
-	{
-		Unloaded -= DrawingView_Unloaded;
-		Handler?.DisconnectHandler();
-	}
-	
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="DrawAction"/> property.
 	/// </summary>
@@ -188,5 +182,11 @@ public class DrawingView : View, IDrawingView
 		{
 			DrawingLineCompletedCommand.Execute(lastDrawingLine);
 		}
+	}
+
+	void DrawingView_Unloaded(object? sender, EventArgs e)
+	{
+		Unloaded -= DrawingView_Unloaded;
+		Handler?.DisconnectHandler();
 	}
 }
