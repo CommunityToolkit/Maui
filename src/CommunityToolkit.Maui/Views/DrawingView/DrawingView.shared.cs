@@ -17,7 +17,7 @@ public class DrawingView : View, IDrawingView
 	/// </summary>
 	public DrawingView()
 	{
-		Unloaded += DrawingView_Unloaded;
+		Unloaded += OnDrawingViewUnloaded;
 	}
 
 	/// <summary>
@@ -184,9 +184,9 @@ public class DrawingView : View, IDrawingView
 		}
 	}
 
-	void DrawingView_Unloaded(object? sender, EventArgs e)
+	void OnDrawingViewUnloaded(object? sender, EventArgs e)
 	{
-		Unloaded -= DrawingView_Unloaded;
+		Unloaded -= OnDrawingViewUnloaded;
 		Handler?.DisconnectHandler();
 	}
 }
