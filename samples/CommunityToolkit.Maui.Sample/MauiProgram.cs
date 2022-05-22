@@ -63,6 +63,7 @@ public static class MauiProgram
 		services.AddTransient<TextValidationBehaviorPage>();
 		services.AddTransient<UriValidationBehaviorPage>();
 		services.AddTransient<UserStoppedTypingBehaviorPage>();
+		services.AddTransient<SelectAllTextBehaviorPage>();
 
 		// Add Converters Pages
 		services.AddTransient<BoolToObjectConverterPage>();
@@ -142,6 +143,7 @@ public static class MauiProgram
 		services.AddTransient<TextValidationBehaviorViewModel>();
 		services.AddTransient<UriValidationBehaviorViewModel>();
 		services.AddTransient<UserStoppedTypingBehaviorViewModel>();
+		services.AddTransient<SelectAllTextBehaviorViewModel>();
 
 		// Add Converters View Models
 		services.AddTransient<BoolToObjectConverterViewModel>();
