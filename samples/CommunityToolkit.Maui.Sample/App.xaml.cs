@@ -8,24 +8,6 @@ public partial class App : Application
 	{
 		InitializeComponent();
 
-		var layout = new Button
-		{
-			Text = "Navigate",
-			VerticalOptions = LayoutOptions.Center,
-			HorizontalOptions = LayoutOptions.Center,
-		};
-
-		layout.Clicked += (sender, args) =>
-		{
-			MainPage!.Navigation.PushAsync(new SelectAllTextPage());
-		};
-
-		var page = new ContentPage
-		{
-			Content = layout,
-		};
-	
-
-		MainPage = page;
+		MainPage = new AppShell();
 	}
 }
