@@ -9,9 +9,9 @@ using ObjCRuntime;
 namespace CommunityToolkit.Maui.Behaviors;
 
 /// <summary>
-/// 
+/// A behavior that selects all text when the view is focused.
 /// </summary>
-public class SelectAllText : PlatformBehavior<InputView>
+public class SelectAllTextBehavior : PlatformBehavior<InputView>
 {
 	InputView? element;
 	UIView? control;

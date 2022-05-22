@@ -9,9 +9,9 @@ using Microsoft.UI.Xaml.Controls;
 namespace CommunityToolkit.Maui.Behaviors;
 
 /// <summary>
-/// 
+/// A behavior that selects all text when the view is focused.
 /// </summary>
-public class SelectAllText : PlatformBehavior<InputView, TextBox>
+public class SelectAllTextBehavior : PlatformBehavior<InputView, TextBox>
 {
 	/// <inheritdoc/>
 	protected override void OnAttachedTo(InputView bindable, TextBox platformView)

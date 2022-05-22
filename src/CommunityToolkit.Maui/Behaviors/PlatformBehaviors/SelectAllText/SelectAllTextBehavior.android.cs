@@ -8,9 +8,9 @@ using Android.Widget;
 namespace CommunityToolkit.Maui.Behaviors;
 
 /// <summary>
-/// 
+/// A behavior that selects all text when the view is focused.
 /// </summary>
-public class SelectAllText : PlatformBehavior<InputView, EditText>
+public class SelectAllTextBehavior : PlatformBehavior<InputView, EditText>
 {
 	/// <inheritdoc/>
 	protected override void OnAttachedTo(InputView bindable, EditText platformView) => platformView.SetSelectAllOnFocus(true);
