@@ -46,7 +46,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapAnchor(PopupHandler handler, IPopup view)
 	{
-		handler?.PlatformView.ConfigureControl();
+		handler.PlatformView.ConfigureControl();
 	}
 
 	/// <summary>

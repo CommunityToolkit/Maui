@@ -101,6 +101,6 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	protected override void DisconnectHandler(MauiPopup nativeView)
 	{
 		base.DisconnectHandler(nativeView);
-		PlatformView.CleanUp();
+		nativeView.CleanUp();
 	}
 }
