@@ -104,15 +104,15 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	}
 
 	/// <inheritdoc/>
-	protected override void ConnectHandler(MauiPopup nativeView)
+	protected override void ConnectHandler(MauiPopup platformView)
 	{
-		Container = nativeView.SetElement(VirtualView);
+		Container = platformView.SetElement(VirtualView);
 	}
 
 	/// <inheritdoc/>
-	protected override void DisconnectHandler(MauiPopup nativeView)
+	protected override void DisconnectHandler(MauiPopup platformView)
 	{
-		nativeView.Dispose();
+		platformView.Dispose();
 	}
 
 	void OnShowed(object? sender, EventArgs args)

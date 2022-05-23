@@ -30,16 +30,16 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawin
 	}
 
 	/// <inheritdoc />
-	protected override void ConnectHandler(object nativeView)
+	protected override void ConnectHandler(object platformView)
 	{
-		base.ConnectHandler(nativeView);
+		base.ConnectHandler(platformView);
 		VirtualView.Lines.CollectionChanged += Lines_CollectionChanged;
 	}
 
 	/// <inheritdoc />
-	protected override void DisconnectHandler(object nativeView)
+	protected override void DisconnectHandler(object platformView)
 	{
-		base.DisconnectHandler(nativeView);
+		base.DisconnectHandler(platformView);
 		VirtualView.Lines.CollectionChanged -= Lines_CollectionChanged;
 	}
 
