@@ -21,4 +21,26 @@ public class MultiConverter_Tests : BaseTest
 
 		Assert.Equal(result, value);
 	}
+
+	[Fact]
+	public void ChainingConvertersOfDifferentTargetTypes()
+	{
+		var multiConverter = new MultiConverter
+		{
+			new TextCaseConverter(),
+			new IsEqualConverter()
+		};
+
+		var multiParams = new List<MultiConverterParameter>
+		{
+			new MultiConverterParameter { ConverterType = typeof(TextCaseConverter), Value = TextCaseType.Upper },
+			new MultiConverterParameter { ConverterType = typeof(IsEqualConverter), Value = "MAUI" }
+		};
+
+		var falseResult = (bool?)multiConverter.Convert("JOHN", typeof(bool), multiParams, CultureInfo.CurrentCulture);
+		var trueResult = (bool?)multiConverter.Convert("MAUI", typeof(bool), multiParams, CultureInfo.CurrentCulture);
+
+		Assert.False(falseResult);
+		Assert.True(trueResult);
+	}
 }
