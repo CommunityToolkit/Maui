@@ -11,6 +11,17 @@ namespace CommunityToolkit.Maui.Converters;
 /// <typeparam name="TParam">Type of parameter</typeparam>
 public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtension, ICommunityToolkitValueConverter
 {
+	/// <inheritdoc/>
+	public Type FromType { get; } = typeof(TFrom);
+
+	/// <inheritdoc/>
+	public Type ToType { get; } = typeof(TTo);
+
+	/// <summary>
+	/// Type of TParam
+	/// </summary>
+	public Type ParamType { get; } = typeof(TParam);
+
 	/// <summary>
 	/// Method that will be called by <see cref="ICommunityToolkitValueConverter.Convert(object?, Type, object?, CultureInfo?)"/>.
 	/// </summary>
@@ -59,6 +70,12 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 /// <typeparam name="TTo">Type of the output value.</typeparam>
 public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, ICommunityToolkitValueConverter
 {
+	/// <inheritdoc/>
+	public Type FromType { get; } = typeof(TFrom);
+
+	/// <inheritdoc/>
+	public Type ToType { get; } = typeof(TTo);
+
 	/// <summary>
 	/// Method that will be called by <see cref="ICommunityToolkitValueConverter.Convert(object?, Type, object?, CultureInfo?)"/>.
 	/// </summary>

@@ -13,6 +13,14 @@ public class DrawingView : View, IDrawingView
 	readonly WeakEventManager drawingLineCompletedEventManager = new();
 
 	/// <summary>
+	/// Initializes a new instance of the <see cref="DrawingView"/> class.
+	/// </summary>
+	public DrawingView()
+	{
+		Unloaded += OnDrawingViewUnloaded;
+	}
+
+	/// <summary>
 	/// Backing BindableProperty for the <see cref="DrawAction"/> property.
 	/// </summary>
 	public static readonly BindableProperty DrawActionProperty =
@@ -174,5 +182,11 @@ public class DrawingView : View, IDrawingView
 		{
 			DrawingLineCompletedCommand.Execute(lastDrawingLine);
 		}
+	}
+
+	void OnDrawingViewUnloaded(object? sender, EventArgs e)
+	{
+		Unloaded -= OnDrawingViewUnloaded;
+		Handler?.DisconnectHandler();
 	}
 }
