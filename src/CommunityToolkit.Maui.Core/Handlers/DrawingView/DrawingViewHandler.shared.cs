@@ -53,7 +53,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 {
 
 	IDrawingLineAdapter adapter = new DrawingLineAdapter();
-	
+
 	/// <inheritdoc />
 	public void SetDrawingLineAdapter(IDrawingLineAdapter drawingLineAdapter)
 	{
@@ -136,18 +136,18 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 		base.ConnectHandler(platformView);
 		platformView.Initialize();
 
-		PlatformView.DrawingLineCompleted += OnPlatformViewDrawingLineCompleted;
+		platformView.DrawingLineCompleted += OnPlatformViewDrawingLineCompleted;
 		VirtualView.Lines.CollectionChanged += OnVirtualViewLinesCollectionChanged;
-		PlatformView.Lines.CollectionChanged += OnPlatformViewLinesCollectionChanged;
+		platformView.Lines.CollectionChanged += OnPlatformViewLinesCollectionChanged;
 	}
 
 	/// <inheritdoc />
 	protected override void DisconnectHandler(MauiDrawingView platformView)
 	{
-		PlatformView.DrawingLineCompleted -= OnPlatformViewDrawingLineCompleted;
+		platformView.DrawingLineCompleted -= OnPlatformViewDrawingLineCompleted;
 		VirtualView.Lines.CollectionChanged -= OnVirtualViewLinesCollectionChanged;
-		PlatformView.Lines.CollectionChanged -= OnPlatformViewLinesCollectionChanged;
-		
+		platformView.Lines.CollectionChanged -= OnPlatformViewLinesCollectionChanged;
+
 		platformView.CleanUp();
 
 		base.DisconnectHandler(platformView);
