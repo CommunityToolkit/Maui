@@ -64,7 +64,7 @@ public class ColorToHexRgbStringConverter_Tests_Tests : BaseTest
 		Assert.Equal(expectedResult, resultConvert);
 		Assert.Equal(expectedResult, resultConvertFrom);
 	}
-	
+
 	[Theory]
 	[MemberData(nameof(ValidInputData))]
 	public void ColorToHexRgbStringConverterConvertBackValidInputTest(float red, float green, float blue, float alpha, string expectedResult)

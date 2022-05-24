@@ -34,7 +34,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="result">We don't need to provide the result parameter here.</param>
 	public static void MapOnOpened(PopupHandler handler, IPopup view, object? result)
 	{
-		handler.PlatformView?.Show();
+		handler.PlatformView.Show();
 	}
 
 	/// <summary>
@@ -58,7 +58,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapAnchor(PopupHandler handler, IPopup view)
 	{
-		handler.PlatformView?.SetAnchor(view);
+		handler.PlatformView.SetAnchor(view);
 	}
 
 	/// <summary>
@@ -68,7 +68,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapCanBeDismissedByTappingOutsideOfPopup(PopupHandler handler, IPopup view)
 	{
-		handler.PlatformView?.SetCanBeDismissedByTappingOutsideOfPopup(view);
+		handler.PlatformView.SetCanBeDismissedByTappingOutsideOfPopup(view);
 	}
 
 	/// <summary>
@@ -78,7 +78,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapColor(PopupHandler handler, IPopup view)
 	{
-		handler.PlatformView?.SetColor(view);
+		handler.PlatformView.SetColor(view);
 	}
 
 	/// <summary>
@@ -90,8 +90,8 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	{
 		ArgumentNullException.ThrowIfNull(handler.Container);
 
-		handler.PlatformView?.SetSize(view, handler.Container);
-		handler.PlatformView?.SetAnchor(view);
+		handler.PlatformView.SetSize(view, handler.Container);
+		handler.PlatformView.SetAnchor(view);
 	}
 
 	/// <inheritdoc/>
@@ -104,15 +104,15 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	}
 
 	/// <inheritdoc/>
-	protected override void ConnectHandler(MauiPopup nativeView)
+	protected override void ConnectHandler(MauiPopup platformView)
 	{
-		Container = nativeView.SetElement(VirtualView);
+		Container = platformView.SetElement(VirtualView);
 	}
 
 	/// <inheritdoc/>
-	protected override void DisconnectHandler(MauiPopup nativeView)
+	protected override void DisconnectHandler(MauiPopup platformView)
 	{
-		nativeView.Dispose();
+		platformView.Dispose();
 	}
 
 	void OnShowed(object? sender, EventArgs args)

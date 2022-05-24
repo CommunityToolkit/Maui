@@ -131,14 +131,14 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void ClearShouldClearLines()
 	{
-		drawingView.Lines = new ObservableCollection<IDrawingLine> {new DrawingLine()};
+		drawingView.Lines = new ObservableCollection<IDrawingLine> { new DrawingLine() };
 		drawingView.Lines.Should().HaveCount(1);
-		
+
 		drawingView.Clear();
 
 		drawingView.Lines.Should().BeEmpty();
 	}
-	
+
 	[Fact]
 	public async Task GetImageStreamReturnsNullStream()
 	{

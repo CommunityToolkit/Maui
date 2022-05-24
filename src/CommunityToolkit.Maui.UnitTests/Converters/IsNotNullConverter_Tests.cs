@@ -25,7 +25,7 @@ public class IsNotNullConverter_Tests : BaseTest
 		{
 			Add(123, true);
 			Add((int?)null, false);
-			Add(123d, true);			
+			Add(123d, true);
 			Add((double?)null, false);
 			Add(new List<string>(), true);
 			Add((List<string>?)null, false);

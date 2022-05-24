@@ -14,7 +14,7 @@ public partial class StateToBooleanConverterViewModel : BaseViewModel
 	{
 		ChangeLayoutCommand = new Command(ChangeLayout);
 	}
-	
+
 	public void ChangeLayout()
 	{
 		LayoutState = LayoutState == LayoutState.None ? LayoutState.Success : LayoutState.None;

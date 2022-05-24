@@ -1,9 +1,9 @@
 ﻿using Android.Graphics;
 using Microsoft.Maui.Platform;
+using APaint = Android.Graphics.Paint;
 using Color = Microsoft.Maui.Graphics.Color;
 using Math = System.Math;
 using Paint = Microsoft.Maui.Graphics.Paint;
-using APaint = Android.Graphics.Paint;
 using PointF = Microsoft.Maui.Graphics.PointF;
 
 namespace CommunityToolkit.Maui.Core.Views;

@@ -18,7 +18,7 @@ public class MauiDrawingLine
 	/// The <see cref="Color"/> that is used to draw this line on the <see cref="MauiDrawingView"/>.
 	/// </summary>
 	public Color LineColor { get; set; } = DrawingViewDefaults.LineColor;
-	
+
 	/// <summary>
 	/// The collection of <see cref="PointF"/> that makes up this line on the <see cref="MauiDrawingView"/>.
 	/// </summary>

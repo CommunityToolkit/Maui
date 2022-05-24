@@ -41,7 +41,7 @@ public class EnumToBoolConverter : BaseConverterOneWay<Enum, bool, Enum?>
 			{
 				return false;
 			}
-			
+
 			var valueToCheckType = valueToCheck.GetType();
 			if (valueToCheckType != referenceEnumValue.GetType())
 			{

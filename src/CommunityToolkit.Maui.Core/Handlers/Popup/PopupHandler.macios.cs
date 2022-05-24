@@ -85,10 +85,10 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	}
 
 	/// <inheritdoc/>
-	protected override void ConnectHandler(MauiPopup nativeView)
+	protected override void ConnectHandler(MauiPopup platformView)
 	{
-		base.ConnectHandler(nativeView);
-		nativeView.SetElement(VirtualView);
+		base.ConnectHandler(platformView);
+		platformView.SetElement(VirtualView);
 	}
 
 	/// <inheritdoc/>
@@ -98,9 +98,9 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	}
 
 	/// <inheritdoc/>
-	protected override void DisconnectHandler(MauiPopup nativeView)
+	protected override void DisconnectHandler(MauiPopup platformView)
 	{
-		base.DisconnectHandler(nativeView);
-		PlatformView.CleanUp();
+		base.DisconnectHandler(platformView);
+		platformView.CleanUp();
 	}
 }

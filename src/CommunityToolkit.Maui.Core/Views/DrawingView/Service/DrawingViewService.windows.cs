@@ -1,9 +1,9 @@
 ﻿using System.Numerics;
-using Windows.Storage.Streams;
-using Windows.UI.Input.Inking;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Maui.Platform;
+using Windows.Storage.Streams;
+using Windows.UI.Input.Inking;
 using Point = Windows.Foundation.Point;
 using Rect = Windows.Foundation.Rect;
 using Size = Microsoft.Maui.Graphics.Size;

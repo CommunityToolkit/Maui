@@ -206,7 +206,7 @@ public class MauiPopup : Flyout
 
 	void ApplyStyles()
 	{
-		if(Control is null)
+		if (Control is null)
 		{
 			return;
 		}
