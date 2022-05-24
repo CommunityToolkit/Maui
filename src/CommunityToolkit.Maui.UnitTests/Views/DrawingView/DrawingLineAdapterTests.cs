@@ -22,7 +22,7 @@ public class DrawingLineAdapterTests : BaseTest
 				new (10, 10)
 			}
 		};
-		
+
 		var expectedDrawingLine = new DrawingLine
 		{
 			LineColor = Colors.Blue,

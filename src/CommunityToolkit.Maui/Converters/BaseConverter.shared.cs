@@ -19,7 +19,7 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 	/// <param name="culture">Culture Info</param>
 	/// <returns>An object of type <typeparamref name="TTo"/>.</returns>
 	public abstract TTo ConvertFrom(TFrom value, TParam parameter, CultureInfo? culture);
-	
+
 	/// <summary>
 	/// Method that will be called by <see cref="ICommunityToolkitValueConverter.ConvertBack(object?, Type, object?, CultureInfo?)"/>.
 	/// </summary>
@@ -28,7 +28,7 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 	/// <param name="culture">Culture Info</param>
 	/// <returns>An object of type <typeparamref name="TFrom"/>.</returns>
 	public abstract TFrom ConvertBackTo(TTo value, TParam parameter, CultureInfo? culture);
-	
+
 	/// <inheritdoc/>
 	object? ICommunityToolkitValueConverter.ConvertBack(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
@@ -49,7 +49,7 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 		var converterValue = ConvertValue<TFrom>(value);
 
 		return ConvertFrom(converterValue, converterParameter, culture);
-	}	
+	}
 }
 
 /// <summary>
@@ -74,7 +74,7 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 	/// <param name="culture">Culture Info</param>
 	/// <returns>An object of type <typeparamref name="TFrom"/>.</returns>
 	public abstract TFrom ConvertBackTo(TTo value, CultureInfo? culture);
-	
+
 	/// <inheritdoc/>
 	object? ICommunityToolkitValueConverter.ConvertBack(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{

@@ -46,7 +46,7 @@ public class PlatformToast : Alert
 		AlertView.VisualOptions.CornerRadius = cornerRadius;
 		AlertView.AddChild(messageLabel);
 	}
-	
+
 	/// <summary>
 	/// Toast Message
 	/// </summary>

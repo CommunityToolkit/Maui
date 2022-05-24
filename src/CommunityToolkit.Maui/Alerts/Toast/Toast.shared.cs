@@ -119,7 +119,7 @@ public partial class Toast : IToast
 			PlatformToast?.Dispose();
 #endif
 		}
-		
+
 		isDisposed = true;
 	}
 

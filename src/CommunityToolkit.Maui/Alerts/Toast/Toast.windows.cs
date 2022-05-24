@@ -21,7 +21,7 @@ public partial class Toast
 	{
 		DismissPlatform(token);
 		token.ThrowIfCancellationRequested();
-		
+
 		PlatformToast = new ToastNotification(BuildToastNotificationContent(Text))
 		{
 			ExpirationTime = DateTimeOffset.Now.Add(GetDuration(Duration))

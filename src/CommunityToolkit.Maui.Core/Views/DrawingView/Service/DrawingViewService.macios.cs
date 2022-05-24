@@ -173,7 +173,7 @@ public static class DrawingViewService
 						var gradientStop = radialGradientBrush.GradientStops[index];
 						colors[index] = gradientStop.Color.AsCGColor();
 						positions[index] = gradientStop.Offset;
-					}					
+					}
 
 					DrawRadialGradient(context, imageSize, colors, positions);
 					break;

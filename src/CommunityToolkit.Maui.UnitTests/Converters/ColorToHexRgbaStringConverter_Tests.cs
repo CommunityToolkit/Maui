@@ -79,7 +79,7 @@ public class ColorToHexRgbaStringConverter_Tests_Tests : BaseTest
 		Assert.Equal(color, resultConvert);
 		Assert.Equal(color, resultConvertTo);
 	}
-	
+
 	[Fact]
 	public void ColorToHexRgbaStringConverterNullInputTest()
 	{

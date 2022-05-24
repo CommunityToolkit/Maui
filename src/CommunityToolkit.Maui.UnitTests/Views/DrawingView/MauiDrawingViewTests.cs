@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.UnitTests.Views.DrawingView;
 public class MauiDrawingViewTests : BaseHandlerTest
 {
 	readonly MauiDrawingView drawingView = new();
-	
+
 	[Fact]
 	public void CheckDefaultValues()
 	{

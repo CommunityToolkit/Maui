@@ -17,7 +17,7 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 	{
 		previousPoint = new();
 	}
- 
+
 	/// <inheritdoc />
 	public override bool OnTouchEvent(MotionEvent? e)
 	{

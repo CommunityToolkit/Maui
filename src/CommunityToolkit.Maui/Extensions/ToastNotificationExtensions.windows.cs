@@ -43,12 +43,12 @@ public static class ToastNotificationExtensions
 		activationTypeAttribute.Value = isBackground ? "background" : "foreground";
 		xmlNode.Attributes.SetNamedItem(activationTypeAttribute);
 	}
-	
+
 	static void SetContentText(this XmlNodeList xmlNodes, string text)
 	{
 		xmlNodes.ForEach(node => node.InnerText = text);
 	}
-	
+
 	static void SetAction(this IXmlNode xmlNode, string text)
 	{
 		var actions = xmlNode.OwnerDocument.CreateElement("actions");

@@ -1,8 +1,8 @@
 ﻿using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Input;
-using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WColor = Microsoft.UI.Colors;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
