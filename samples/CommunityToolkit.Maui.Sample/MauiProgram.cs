@@ -59,11 +59,11 @@ public static class MauiProgram
 		services.AddTransient<NumericValidationBehaviorPage>();
 		services.AddTransient<ProgressBarAnimationBehaviorPage>();
 		services.AddTransient<RequiredStringValidationBehaviorPage>();
+		services.AddTransient<SelectAllTextBehaviorPage>();
 		services.AddTransient<SetFocusOnEntryCompletedBehaviorPage>();
 		services.AddTransient<TextValidationBehaviorPage>();
 		services.AddTransient<UriValidationBehaviorPage>();
 		services.AddTransient<UserStoppedTypingBehaviorPage>();
-		services.AddTransient<SelectAllTextBehaviorPage>();
 
 		// Add Converters Pages
 		services.AddTransient<BoolToObjectConverterPage>();
