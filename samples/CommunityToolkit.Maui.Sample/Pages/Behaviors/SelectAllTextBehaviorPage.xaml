@@ -13,7 +13,7 @@
 	<ScrollView>
 		<VerticalStackLayout
 			Padding="10,10"
-			BackgroundColor="{StaticResource AppBackgroundColor}"
+			BackgroundColor="{StaticResource PrimaryColor}"
 			HorizontalOptions="Fill"
 			Spacing="20"
 			VerticalOptions="Fill">
