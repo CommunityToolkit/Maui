@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <pages:BasePage
 	x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.SelectAllTextBehaviorPage"
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -10,10 +10,9 @@
 	x:DataType="vm:SelectAllTextBehaviorViewModel"
 	x:TypeArguments="vm:SelectAllTextBehaviorViewModel">
 
-	<ScrollView>
+	<ScrollView BackgroundColor="{StaticResource PrimaryColor}">
 		<VerticalStackLayout
 			Padding="10,10"
-			BackgroundColor="{StaticResource PrimaryColor}"
 			HorizontalOptions="Fill"
 			Spacing="20"
 			VerticalOptions="Fill">
@@ -29,6 +28,7 @@
 			<Label FontAttributes="Italic" Text="Entry without the effect, when focussed no text will be selected" />
 			<Frame BackgroundColor="{StaticResource SoftFrameBackgroundColor}" HasShadow="False">
 				<Entry
+					BackgroundColor="{StaticResource PrimaryColor}"
 					PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}"
 					Text="https://github.com/xamarin/XamarinCommunityToolkit"
 					TextColor="{StaticResource DarkLabelTextColor}" />
@@ -39,6 +39,7 @@
 			<Label FontAttributes="Italic" Text="Entry with the effect, when focussed all text will be selected" />
 			<Frame BackgroundColor="{StaticResource SoftFrameBackgroundColor}" HasShadow="False">
 				<Entry
+					BackgroundColor="{StaticResource PrimaryColor}"
 					PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}"
 					Text="https://github.com/xamarin/XamarinCommunityToolkit"
 					TextColor="{StaticResource DarkLabelTextColor}">
@@ -56,7 +57,9 @@
 
 			<Label FontAttributes="Italic" Text="Editor without the effect, when focussed no text will be selected" />
 			<Frame BackgroundColor="{StaticResource SoftFrameBackgroundColor}" HasShadow="False">
-				<Editor PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}" TextColor="{StaticResource DarkLabelTextColor}">
+				<Editor PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}"
+						TextColor="{StaticResource DarkLabelTextColor}"
+						BackgroundColor="{StaticResource PrimaryColor}">
 					<Editor.Text>
 						Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should. Must go faster... go, go, go, go, go! You know what? It is beets. I've crashed into a beet truck. Is this my espresso machine? Wh-what is-h-how did you get my espresso machine?
 						Just my luck, no ice. I gave it a cold? I gave it a virus. A computer virus. Must go faster... go, go, go, go, go! God creates dinosaurs. God destroys dinosaurs. God creates Man. Man destroys God. Man creates Dinosaurs. Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should.
@@ -68,7 +71,9 @@
 
 			<Label FontAttributes="Italic" Text="Editor with the effect, when focussed all text will be selected" />
 			<Frame BackgroundColor="{StaticResource SoftFrameBackgroundColor}" HasShadow="False">
-				<Editor PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}" TextColor="{StaticResource DarkLabelTextColor}">
+				<Editor PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}"
+						TextColor="{StaticResource DarkLabelTextColor}"
+						BackgroundColor="{StaticResource PrimaryColor}">
 					<Editor.Behaviors>
 						<mct:SelectAllTextBehavior />
 					</Editor.Behaviors>
