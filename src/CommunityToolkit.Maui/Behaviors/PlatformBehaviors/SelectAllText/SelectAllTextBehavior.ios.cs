@@ -24,6 +24,14 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView>
 		ApplyBehaviorToControl(true, platformView);
 	}
 	
+
+	/// <inheritdoc/>
+	protected override void OnDetachedFrom(InputView bindable, UIView platformView)
+	{
+		element = bindable;
+		control = platformView;
+		ApplyBehaviorToControl(false, platformView);
+	}
 	bool ApplyBehaviorToControl<T>(bool apply, T platformView)
 	{
 		return platformView switch
