@@ -1,4 +1,5 @@
-﻿using Application = Microsoft.Maui.Controls.Application;
+﻿using CommunityToolkit.Maui.Sample.Pages.Behaviors;
+using Application = Microsoft.Maui.Controls.Application;
 
 namespace CommunityToolkit.Maui.Sample;
 
@@ -8,6 +9,7 @@ public partial class App : Application
 	{
 		InitializeComponent();
 
-		MainPage = new AppShell();
+		//MainPage = new AppShell();
+		MainPage = new SelectAllTextBehaviorPage(new ViewModels.Behaviors.SelectAllTextBehaviorViewModel());
 	}
 }
