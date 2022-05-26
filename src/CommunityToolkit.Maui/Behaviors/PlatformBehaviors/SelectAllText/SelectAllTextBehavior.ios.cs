@@ -23,7 +23,6 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView>
 		control = platformView;
 		ApplyBehaviorToControl(true, platformView);
 	}
-	
 
 	/// <inheritdoc/>
 	protected override void OnDetachedFrom(InputView bindable, UIView platformView)
@@ -32,6 +31,7 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView>
 		control = platformView;
 		ApplyBehaviorToControl(false, platformView);
 	}
+
 	bool ApplyBehaviorToControl<T>(bool apply, T platformView)
 	{
 		return platformView switch
@@ -46,7 +46,7 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView>
 	{
 		if (textField is null)
 		{
-			return false;
+			throw new InvalidOperationException("The Platform View can't be null.");
 		}
 
 		if (shouldApply)
@@ -65,7 +65,7 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView>
 	{
 		if (sender is not UITextField textfield)
 		{
-			return;
+			throw new InvalidOperationException($"The Platform View should be of the type {nameof(UITextField)}.");
 		}
 
 		textfield.PerformSelector(new Selector("selectAll"), null, 0.0f);
@@ -73,18 +73,18 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView>
 
 	bool ApplyToUITextView(bool shouldApply)
 	{
-		if (element is not Editor formsControl)
+		if (element is not Editor mauiControl)
 		{
-			return false;
+			throw new InvalidOperationException($"The Maui control should be of the type {nameof(Editor)}.");
 		}
 
 		if (shouldApply)
 		{
-			formsControl.Focused += OnTextViewFocussed;
+			mauiControl.Focused += OnTextViewFocussed;
 		}
 		else
 		{
-			formsControl.Focused -= OnTextViewFocussed;
+			mauiControl.Focused -= OnTextViewFocussed;
 		}
 
 		return true;
@@ -92,12 +92,12 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView>
 
 	void OnTextViewFocussed(object? sender, FocusEventArgs e)
 	{
-		if (element is not Editor formsControl || control is not UITextView textView)
+		if (element is not Editor mauiControl || control is not UITextView textView)
 		{
-			return;
+			throw new InvalidOperationException("The Platform View or the Maui control isn't the right types.");
 		}
 
-		if (formsControl.IsFocused)
+		if (mauiControl.IsFocused)
 		{
 			textView.SelectAll(textView);
 		}
