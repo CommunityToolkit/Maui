@@ -34,14 +34,14 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView>
 		};
 	}
 
-	bool ApplyToUITextField(UITextField textField, bool apply)
+	bool ApplyToUITextField(UITextField textField, bool shouldApply)
 	{
 		if (textField is null)
 		{
 			return false;
 		}
 
-		if (apply)
+		if (shouldApply)
 		{
 			textField.EditingDidBegin += OnEditingDidBegin;
 		}
@@ -63,14 +63,14 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView>
 		textfield.PerformSelector(new Selector("selectAll"), null, 0.0f);
 	}
 
-	bool ApplyToUITextView(bool apply)
+	bool ApplyToUITextView(bool shouldApply)
 	{
 		if (element is not Editor formsControl)
 		{
 			return false;
 		}
 
-		if (apply)
+		if (shouldApply)
 		{
 			formsControl.Focused += OnTextViewFocussed;
 		}
