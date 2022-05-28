@@ -9,10 +9,12 @@ using AndroidX.Camera.Lifecycle;
 using AndroidX.Camera.View;
 using AndroidX.Core.Content;
 using AndroidX.Lifecycle;
+using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Core.Views.CameraView;
 using Java.Lang;
 using Java.Util.Concurrent;
 
-namespace CommunityToolkit.Maui.Core.Handlers.CameraView;
+namespace CommunityToolkit.Maui.Core.Handlers;
 
 class Bla
 {
@@ -30,6 +32,9 @@ public partial class CameraManager
 	ProcessCameraProvider? cameraProvider;
 	ImageCapture? imageCapture;
 	ImageCallBack imageCallback = new();
+	ICamera? camera;
+
+	internal Action Loaded { get; set; }
 	public static Action? RunnableAction { get; }
 	// IN the future change the return type to be an alias
 	public PreviewView CreatePlatformView()
@@ -64,9 +69,8 @@ public partial class CameraManager
 			.SetCaptureMode(ImageCapture.CaptureModeMaximizeQuality)
 			.Build();
 
-
 			var owner = (ILifecycleOwner)Context;
-			var camera = cameraProvider.BindToLifecycle(owner, CameraSelector.DefaultBackCamera, cameraPreview, imageCapture);
+			camera = cameraProvider.BindToLifecycle(owner, CameraSelector.DefaultBackCamera, cameraPreview, imageCapture);
 
 			//start the camera with AutoFocus
 			MeteringPoint point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2, previewView.Height / 2, 0.1F);
@@ -74,6 +78,7 @@ public partial class CameraManager
 																.DisableAutoCancel()
 																.Build();
 			camera.CameraControl.StartFocusAndMetering(action);
+			Loaded?.Invoke();
 
 		}), ContextCompat.GetMainExecutor(Context));
 	}
@@ -86,6 +91,15 @@ public partial class CameraManager
 	protected virtual partial void PlatformTakePicture()
 	{
 		imageCapture?.TakePicture(cameraExecutor, imageCallback);
+	}
+	
+	public partial void UpdateFlashMode(CameraFlashMode flashMode)
+	{
+		if (imageCapture is null)
+		{
+			return;
+		}
+		imageCapture.FlashMode = flashMode.ToPlatform();
 	}
 
 	class ImageCallBack : ImageCapture.OnImageCapturedCallback

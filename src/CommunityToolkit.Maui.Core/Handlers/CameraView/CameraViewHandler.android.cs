@@ -8,7 +8,7 @@ using Microsoft.Maui.Handlers;
 using AndroidX.Camera.View;
 using Microsoft.Maui;
 
-namespace CommunityToolkit.Maui.Core.Handlers.CameraView;
+namespace CommunityToolkit.Maui.Core.Handlers;
 
 public partial class CameraViewHandler : ViewHandler<ICameraView, PreviewView>
 {
@@ -16,7 +16,7 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, PreviewView>
 
 	public static IPropertyMapper<ICameraView, CameraViewHandler> Propertymapper = new PropertyMapper<ICameraView, CameraViewHandler>(ViewMapper)
 	{
-
+		[nameof(ICameraView.CameraFlashMode)] = MapCameraFlashMode
 	};
 
 	public static CommandMapper<ICameraView, CameraViewHandler> Commandmapper = new CommandMapper<ICameraView, CameraViewHandler>(ViewCommandMapper)
@@ -29,10 +29,21 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, PreviewView>
 		handler.cameraManager?.TakePicture();
 	}
 
+	public static void MapCameraFlashMode(CameraViewHandler handler, ICameraView view)
+	{
+		handler.cameraManager?.UpdateFlashMode(view.CameraFlashMode);
+	}
+
 	protected override PreviewView CreatePlatformView()
 	{
 		cameraManager = new CameraManager(MauiContext!, CameraLocation.Front);
+		cameraManager.Loaded = () => Init(VirtualView);
 		return cameraManager.CreatePlatformView();
+	}
+
+	void Init(ICameraView view)
+	{
+		MapCameraFlashMode(this, view);
 	}
 
 	private protected override async void OnConnectHandler(View platformView)
@@ -40,6 +51,7 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, PreviewView>
 		base.OnConnectHandler(platformView);
 		await cameraManager!.CheckPermissions();
 		cameraManager?.Connect();
+		Init(this.VirtualView);
 	}
 
 	public CameraViewHandler() : base(Propertymapper, Commandmapper)

@@ -11,5 +11,6 @@
 			HorizontalOptions="Fill"
 			VerticalOptions="Fill" />
 		<Button Clicked="Button_Clicked" Text="Shot" />
+		<Button Clicked="Button_Clicked_1" Text="Change the flashMode" />
 	</VerticalStackLayout>
 </ContentPage>

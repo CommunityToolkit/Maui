@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CommunityToolkit.Maui.Core.Primitives;
+using Microsoft.Maui.ApplicationModel;
 
-namespace CommunityToolkit.Maui.Core.Handlers.CameraView;
+namespace CommunityToolkit.Maui.Core.Handlers;
 public partial class CameraManager
 {
 	readonly IMauiContext mauiContext;
@@ -23,6 +25,8 @@ public partial class CameraManager
 	public void Disconnect() => PlatformDisconnect();
 	public void TakePicture() => PlatformTakePicture();
 
+	public partial void UpdateFlashMode(CameraFlashMode flashMode);
+
 	protected virtual partial void PlatformConnect();
 	protected virtual partial void PlatformDisconnect();
 	protected virtual partial void PlatformTakePicture();
@@ -34,6 +38,9 @@ public partial class CameraManager
 	protected virtual partial void PlatformConnect() { }
 	protected virtual partial void PlatformDisconnect() { }
 	protected virtual partial void PlatformTakePicture() { }
+	public partial void UpdateFlashMode(CameraFlashMode flashMode)
+	{
+	}
 }
 #endif
 
