@@ -28,6 +28,10 @@ public static class AppBuilderExtensions
 			h.AddHandler<DrawingView, DrawingViewHandler>();
 			h.AddHandler<Popup, PopupHandler>();
 			h.AddHandler<SemanticOrderView, SemanticOrderViewHandler>();
+#if ANDROID
+			h.AddHandler<CameraView, CameraViewHandler>();
+#endif
+
 		});
 
 		Popup.RemapForControls();
