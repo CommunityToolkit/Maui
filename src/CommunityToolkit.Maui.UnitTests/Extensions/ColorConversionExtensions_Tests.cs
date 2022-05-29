@@ -320,7 +320,7 @@ public class ColorConversionExtensions_Tests
 		Assert.Throws<ArgumentNullException>(() => ColorConversionExtensions.ToRgbaString(null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
-	
+
 	[Theory]
 	[MemberData(nameof(ColorTestData))]
 	public void ToCmykString(ColorTestDefinition testDef)

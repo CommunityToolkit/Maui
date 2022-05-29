@@ -26,7 +26,7 @@ public partial class Snackbar
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	private partial async Task ShowPlatform(CancellationToken token)
+	private async partial Task ShowPlatform(CancellationToken token)
 	{
 		await DismissPlatform(token);
 		token.ThrowIfCancellationRequested();

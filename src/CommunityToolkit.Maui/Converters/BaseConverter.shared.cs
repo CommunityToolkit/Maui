@@ -11,6 +11,17 @@ namespace CommunityToolkit.Maui.Converters;
 /// <typeparam name="TParam">Type of parameter</typeparam>
 public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtension, ICommunityToolkitValueConverter
 {
+	/// <inheritdoc/>
+	public Type FromType { get; } = typeof(TFrom);
+
+	/// <inheritdoc/>
+	public Type ToType { get; } = typeof(TTo);
+
+	/// <summary>
+	/// Type of TParam
+	/// </summary>
+	public Type ParamType { get; } = typeof(TParam);
+
 	/// <summary>
 	/// Method that will be called by <see cref="ICommunityToolkitValueConverter.Convert(object?, Type, object?, CultureInfo?)"/>.
 	/// </summary>
@@ -19,7 +30,7 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 	/// <param name="culture">Culture Info</param>
 	/// <returns>An object of type <typeparamref name="TTo"/>.</returns>
 	public abstract TTo ConvertFrom(TFrom value, TParam parameter, CultureInfo? culture);
-	
+
 	/// <summary>
 	/// Method that will be called by <see cref="ICommunityToolkitValueConverter.ConvertBack(object?, Type, object?, CultureInfo?)"/>.
 	/// </summary>
@@ -28,7 +39,7 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 	/// <param name="culture">Culture Info</param>
 	/// <returns>An object of type <typeparamref name="TFrom"/>.</returns>
 	public abstract TFrom ConvertBackTo(TTo value, TParam parameter, CultureInfo? culture);
-	
+
 	/// <inheritdoc/>
 	object? ICommunityToolkitValueConverter.ConvertBack(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
@@ -49,7 +60,7 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 		var converterValue = ConvertValue<TFrom>(value);
 
 		return ConvertFrom(converterValue, converterParameter, culture);
-	}	
+	}
 }
 
 /// <summary>
@@ -59,6 +70,12 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 /// <typeparam name="TTo">Type of the output value.</typeparam>
 public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, ICommunityToolkitValueConverter
 {
+	/// <inheritdoc/>
+	public Type FromType { get; } = typeof(TFrom);
+
+	/// <inheritdoc/>
+	public Type ToType { get; } = typeof(TTo);
+
 	/// <summary>
 	/// Method that will be called by <see cref="ICommunityToolkitValueConverter.Convert(object?, Type, object?, CultureInfo?)"/>.
 	/// </summary>
@@ -74,7 +91,7 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 	/// <param name="culture">Culture Info</param>
 	/// <returns>An object of type <typeparamref name="TFrom"/>.</returns>
 	public abstract TFrom ConvertBackTo(TTo value, CultureInfo? culture);
-	
+
 	/// <inheritdoc/>
 	object? ICommunityToolkitValueConverter.ConvertBack(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{

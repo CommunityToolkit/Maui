@@ -21,7 +21,7 @@ public class DoubleToIntConverter_Tests : BaseTest
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
 	}
-	
+
 	[Fact]
 	public void DoubleToIntConverterParameter()
 	{
@@ -63,7 +63,7 @@ public class DoubleToIntConverter_Tests : BaseTest
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)doubleToIntConverter).Convert(value, typeof(int), null, CultureInfo.CurrentCulture));
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)doubleToIntConverter).ConvertBack(value, typeof(double), null, CultureInfo.CurrentCulture));
 	}
-	
+
 	[Theory]
 	[InlineData('c')]
 	[InlineData(true)]

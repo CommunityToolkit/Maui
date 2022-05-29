@@ -48,7 +48,7 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
 				"A converter that allows users to convert the casing of an incoming string type binding. The Type property is used to define what kind of casing will be applied to the string."),
 
 			SectionModel.Create<MultiConverterViewModel>(nameof(MultiConverter),
-				"This sample demonstrates how to use Multibinding Converter"),
+				"This sample demonstrates how to use MultiBinding Converter"),
 
 			SectionModel.Create<DateTimeOffsetConverterViewModel>(nameof(DateTimeOffsetConverter),
 				"A converter that allows to convert from a DateTimeOffset type to a DateTime type"),
@@ -76,6 +76,9 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
 
 			SectionModel.Create<MathExpressionConverterViewModel>(nameof(MathExpressionConverter),
 				"A converter that allows users to calculate an expression at runtime."),
+
+			SectionModel.Create<MultiMathExpressionConverterViewModel>(nameof(MultiMathExpressionConverter),
+				"A converter that allows users to calculate multiple math expressions at runtime."),
 
 			SectionModel.Create<StringToListConverterViewModel>(nameof(StringToListConverter),
 				"A converter that splits a string by the separator and returns the enumerable sequence of strings as the result."),

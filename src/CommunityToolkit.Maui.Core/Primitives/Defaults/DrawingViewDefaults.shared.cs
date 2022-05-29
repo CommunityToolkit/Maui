@@ -50,4 +50,3 @@ public static class DrawingViewDefaults
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static Color BackgroundColor { get; } = Colors.LightGray;
 }
-

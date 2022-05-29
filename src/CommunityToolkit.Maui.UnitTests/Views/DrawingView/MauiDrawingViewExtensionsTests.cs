@@ -42,7 +42,7 @@ public class MauiDrawingViewExtensionsTests : BaseTest
 			new(20, 28),
 			new(30, 30)
 		};
-		
+
 		var newPoints = points.CreateSmoothedPathWithGranularity(2);
 		// each second point should be equivalent
 		newPoints.Should().BeEquivalentTo(expectedPoints);

@@ -46,7 +46,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapAnchor(PopupHandler handler, IPopup view)
 	{
-		handler?.PlatformView.ConfigureControl();
+		handler.PlatformView.ConfigureControl();
 	}
 
 	/// <summary>
@@ -81,9 +81,9 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	}
 
 	/// <inheritdoc/>
-	protected override void DisconnectHandler(MauiPopup nativeView)
+	protected override void DisconnectHandler(MauiPopup platformView)
 	{
-		nativeView.CleanUp();
+		platformView.CleanUp();
 	}
 
 	/// <inheritdoc/>
@@ -94,9 +94,9 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	}
 
 	/// <inheritdoc/>
-	protected override void ConnectHandler(MauiPopup nativeView)
+	protected override void ConnectHandler(MauiPopup platformView)
 	{
-		nativeView.SetElement(VirtualView);
-		base.ConnectHandler(nativeView);
+		platformView.SetElement(VirtualView);
+		base.ConnectHandler(platformView);
 	}
 }

@@ -11,7 +11,7 @@ public partial class Snackbar
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
-	private partial async Task DismissPlatform(CancellationToken token)
+	private async partial Task DismissPlatform(CancellationToken token)
 	{
 		if (PlatformSnackbar is null)
 		{
@@ -34,13 +34,13 @@ public partial class Snackbar
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	private partial async Task ShowPlatform(CancellationToken token)
+	private async partial Task ShowPlatform(CancellationToken token)
 	{
 		await DismissPlatform(token);
 		token.ThrowIfCancellationRequested();
-		
+
 		dismissedTCS = new();
-		
+
 		PlatformSnackbar = new ToastNotification(BuildToastNotificationContent(Text, ActionButtonText));
 		PlatformSnackbar.Activated += OnActivated;
 		PlatformSnackbar.Dismissed += OnDismissed;

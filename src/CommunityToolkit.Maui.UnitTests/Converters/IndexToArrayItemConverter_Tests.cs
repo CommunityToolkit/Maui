@@ -20,7 +20,7 @@ public class IndexToArrayItemConverter_Tests : BaseTest
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
 	}
-	
+
 	[Fact]
 	public void IndexToArrayNullValuesThrowArgumentNullException()
 	{
@@ -37,7 +37,7 @@ public class IndexToArrayItemConverter_Tests : BaseTest
 		Assert.Throws<ArgumentOutOfRangeException>(() => ((ICommunityToolkitValueConverter)indexToArrayConverter).Convert(position, typeof(object), value, CultureInfo.CurrentCulture));
 		Assert.Throws<ArgumentOutOfRangeException>(() => indexToArrayConverter.ConvertFrom(position, value));
 	}
-	
+
 	[Theory]
 	[InlineData(new[] { 1, 2, 3, 4, 5 }, 2, 3)]
 	[InlineData(new[] { "Val1", "Val2", "Val3" }, 0, "Val1")]
@@ -52,7 +52,7 @@ public class IndexToArrayItemConverter_Tests : BaseTest
 		Assert.Equal(position, convertResult);
 		Assert.Equal(position, convertFromResult);
 	}
-	
+
 	[Fact]
 	public void ConvertBackIndexToArrayNullValuesThrowArgumentNullException()
 	{
