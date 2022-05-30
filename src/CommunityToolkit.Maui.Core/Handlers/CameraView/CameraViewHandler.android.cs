@@ -43,8 +43,10 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, PreviewView>
 
 	protected override PreviewView CreatePlatformView()
 	{
-		cameraManager = new CameraManager(MauiContext!, CameraLocation.Front);
-		cameraManager.Loaded = () => Init(VirtualView);
+		cameraManager = new(MauiContext!, CameraLocation.Front)
+		{
+			Loaded = () => Init(VirtualView)
+		};
 		return cameraManager.CreatePlatformView();
 	}
 
