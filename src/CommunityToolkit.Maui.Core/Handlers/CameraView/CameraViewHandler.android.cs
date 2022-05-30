@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Android.Views;
+﻿using Android.Views;
 using Microsoft.Maui.Handlers;
 using AndroidX.Camera.View;
-using Microsoft.Maui;
+using CommunityToolkit.Maui.Core.Views.CameraView;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
 
 public partial class CameraViewHandler : ViewHandler<ICameraView, PreviewView>
 {
+
+	public static Action<byte[]>? Picture { get; set; }
+	
 	CameraManager? cameraManager;
 
 	public static IPropertyMapper<ICameraView, CameraViewHandler> Propertymapper = new PropertyMapper<ICameraView, CameraViewHandler>(ViewMapper)

@@ -1,4 +1,6 @@
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Core.Handlers;
+
 
 namespace CommunityToolkit.Maui.Sample;
 
@@ -8,12 +10,25 @@ public partial class CameraTestPage : ContentPage
 	{
 		InitializeComponent();
 		camera.CameraFlashMode = CameraFlashMode.On;
+#if ANDROID
+		CommunityToolkit.Maui.Core.Handlers.CameraViewHandler.Picture = (imgArr) =>
+		{
+			img.Dispatcher.Dispatch(() =>
+			{
+				img.Source = ImageSource.FromStream(() => new MemoryStream(imgArr));
+			});
+		};
+
+#endif
+
+
 	}
 
 	void Button_Clicked(object sender, EventArgs e)
 	{
 		camera.Shutter();
 	}
+	
 	int flashModeIndex = 0;
 	void Button_Clicked_1(object sender, EventArgs e)
 	{

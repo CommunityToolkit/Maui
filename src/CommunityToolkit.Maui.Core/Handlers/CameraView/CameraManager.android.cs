@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Android.Content;
+using Android.Content.PM;
 using AndroidX.Camera.Core;
 using AndroidX.Camera.Lifecycle;
 using AndroidX.Camera.View;
@@ -20,7 +21,7 @@ class Bla
 {
 	public Bla()
 	{
-		
+
 	}
 }
 
@@ -39,7 +40,6 @@ public partial class CameraManager
 	// IN the future change the return type to be an alias
 	public PreviewView CreatePlatformView()
 	{
-		
 		previewView = new PreviewView(Context);
 		cameraExecutor = Executors.NewSingleThreadExecutor() ?? throw new NullReferenceException();
 		return previewView;
@@ -52,7 +52,7 @@ public partial class CameraManager
 		{
 			return;
 		}
-		
+
 		cameraProviderFuture.AddListener(new Runnable(() =>
 		{
 			cameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ?? throw new NullReferenceException());
@@ -92,13 +92,14 @@ public partial class CameraManager
 	{
 		imageCapture?.TakePicture(cameraExecutor, imageCallback);
 	}
-	
+
 	public partial void UpdateFlashMode(CameraFlashMode flashMode)
 	{
 		if (imageCapture is null)
 		{
 			return;
 		}
+
 		imageCapture.FlashMode = flashMode.ToPlatform();
 	}
 
@@ -107,16 +108,23 @@ public partial class CameraManager
 		public override void OnCaptureSuccess(IImageProxy image)
 		{
 			base.OnCaptureSuccess(image);
+			var img = image.Image;
+			//var x = image.GetPlanes()![0].Buffer;
+			var x = img.GetPlanes()![0].Buffer;
 
-			var buffer = image.GetPlanes()[0].Buffer;
-
-			if (buffer is null)
+			if (x is null)
 			{
+				image.Close();
 				return;
 			}
 
-			var imgData = new byte[buffer.Capacity()];
-			buffer.Get(imgData);
+			var imgData = new byte[x.Capacity()];
+			x.Get(imgData);
+
+
+			CameraViewHandler.Picture?.Invoke(imgData);
+			
+			image.Close();
 		}
 
 		public override void OnError(ImageCaptureException exception)
