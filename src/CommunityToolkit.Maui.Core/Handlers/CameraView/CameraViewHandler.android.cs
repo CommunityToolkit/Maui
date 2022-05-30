@@ -16,10 +16,17 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, PreviewView>
 
 	public static IPropertyMapper<ICameraView, CameraViewHandler> Propertymapper = new PropertyMapper<ICameraView, CameraViewHandler>(ViewMapper)
 	{
-		[nameof(ICameraView.CameraFlashMode)] = MapCameraFlashMode
+		[nameof(ICameraView.CameraFlashMode)] = MapCameraFlashMode,
+		[nameof(IAvailability.IsAvailable)] = MapIsAvailable
 	};
 
-	public static CommandMapper<ICameraView, CameraViewHandler> Commandmapper = new CommandMapper<ICameraView, CameraViewHandler>(ViewCommandMapper)
+	public static void MapIsAvailable(CameraViewHandler handler, ICameraView view)
+	{
+		var cameraAvailability = (IAvailability)handler.VirtualView;
+		cameraAvailability.UpdateAvailability(handler.Context);
+	}
+
+	public static CommandMapper<ICameraView, CameraViewHandler> Commandmapper = new(ViewCommandMapper)
 	{
 		[nameof(ICameraView.Shutter)] = MapShutter,
 	};
