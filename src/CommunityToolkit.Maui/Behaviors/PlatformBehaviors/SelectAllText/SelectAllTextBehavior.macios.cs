@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UIKit;
 using ObjCRuntime;
+using System.Runtime.Versioning;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -32,15 +33,12 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView>
 		ApplyBehaviorToControl(false, platformView);
 	}
 
-	bool ApplyBehaviorToControl<T>(bool apply, T platformView)
+	bool ApplyBehaviorToControl<T>(bool apply, T platformView) => platformView switch
 	{
-		return platformView switch
-		{
-			UITextField textField => ApplyToUITextField(textField, apply),
-			UITextView => ApplyToUITextView(apply),
-			_ => throw new NotSupportedException($"Control of type: {platformView?.GetType()?.Name} is not supported by this effect.")
-		};
-	}
+		UITextField textField => ApplyToUITextField(textField, apply),
+		UITextView => ApplyToUITextView(apply),
+		_ => throw new NotSupportedException($"Control of type: {platformView?.GetType()?.Name} is not supported by this effect.")
+	};
 
 	bool ApplyToUITextField(UITextField textField, bool shouldApply)
 	{
@@ -71,6 +69,7 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView>
 		textfield.PerformSelector(new Selector("selectAll"), null, 0.0f);
 	}
 
+	// MacCatalyst support blocked: https://github.com/xamarin/xamarin-macios/issues/15156
 	bool ApplyToUITextView(bool shouldApply)
 	{
 		if (element is not Editor mauiControl)

@@ -14,16 +14,10 @@ namespace CommunityToolkit.Maui.Behaviors;
 public class SelectAllTextBehavior : PlatformBehavior<InputView, TextBox>
 {
 	/// <inheritdoc/>
-	protected override void OnAttachedTo(InputView bindable, TextBox platformView)
-	{
-		ApplyEffect(true, platformView);
-	}
+	protected override void OnAttachedTo(InputView bindable, TextBox platformView) => ApplyEffect(true, platformView);
 
 	/// <inheritdoc/>
-	protected override void OnDetachedFrom(InputView bindable, TextBox platformView)
-	{
-		ApplyEffect(false, platformView);
-	}
+	protected override void OnDetachedFrom(InputView bindable, TextBox platformView) => ApplyEffect(false, platformView);
 
 	void ApplyEffect(bool apply, TextBox editText)
 	{
@@ -41,5 +35,4 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView, TextBox>
 
 		void OnGotFocus(object sender, RoutedEventArgs e) => editText?.SelectAll();
 	}
-
 }
