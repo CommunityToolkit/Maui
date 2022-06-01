@@ -74,7 +74,7 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView>
 	{
 		if (OperatingSystem.IsMacCatalyst())
 		{
-			Console.WriteLine("MacCatalyst doesn't support this feature on the editor. for more info see https://github.com/xamarin/xamarin-macios/issues/15156");
+			Console.WriteLine("MacCatalyst doesn't support this feature on the editor. for more info see https://github.com/CommunityToolkit/Maui/issues/432");
 		}
 
 		if (element is not Editor mauiControl)
