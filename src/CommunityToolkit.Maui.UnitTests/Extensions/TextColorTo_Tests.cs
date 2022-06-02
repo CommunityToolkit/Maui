@@ -92,7 +92,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 		public async Task Extensions_For_Generic_Class()
 		{
 			Color originalTextColor = Colors.Blue, updatedTextColor = Colors.Red;
-
+			
 			var textStyleView = new GenericPicker<
 				ClassConstraintWithInterface, 
 				ClassConstraint,
@@ -102,9 +102,11 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 				int,
 				bool,
 				ClassConstraintWithInterface?,
-				ClassConstraint?,
+				ClassConstraint[],
 				ClassConstraintWithInterface,
-				ClassConstraint
+				RecordClassContstraint,
+				RecordClassContstraint[],
+				RecordStructContstraint
 			> { TextColor = originalTextColor };
 			textStyleView.EnableAnimations();
 
@@ -157,11 +159,22 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
 
 	}
 
+	public record RecordClassContstraint
+	{
+
+	}
+	
+
+	public readonly record struct RecordStructContstraint
+	{
+
+	}
+
 	public struct StructConstraint
 	{
 
 	}
-	public class GenericPicker<TA, TB, TC, TD, TE, TF, TG, TH, TI, TJ, TK> : Picker
+	public class GenericPicker<TA, TB, TC, TD, TE, TF, TG, TH, TI, TJ, TK, TL, TM> : Picker
 		where TA : notnull, ISomeInterface
 		where TB : class
 		where TC : struct
@@ -173,6 +186,8 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
 		where TI : class?
 		where TJ : ISomeInterface
 		where TK : new()
+		where TL : class
+		where TM : struct
 	{
 
 	}
