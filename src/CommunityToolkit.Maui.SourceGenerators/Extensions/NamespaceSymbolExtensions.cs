@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
+
 namespace CommunityToolkit.Maui.SourceGenerators.Extensions;
 
 static class NamespaceSymbolExtensions
@@ -103,6 +104,11 @@ static class NamespaceSymbolExtensions
 			else if (typeParameterSymbol.HasReferenceTypeConstraint)
 			{
 				constraints += "class";
+
+				if (typeParameterSymbol.ReferenceTypeConstraintNullableAnnotation == NullableAnnotation.Annotated)
+				{
+					constraints += "?";
+				}
 
 				isFirstConstraint = false;
 			}

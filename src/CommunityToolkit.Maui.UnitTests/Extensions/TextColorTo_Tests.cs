@@ -87,6 +87,34 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 			await Assert.ThrowsAsync<ArgumentNullException>(() => label.TextColorTo(null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 		}
+
+		[Fact]
+		public async Task Extensions_For_Generic_Class()
+		{
+			Color originalTextColor = Colors.Blue, updatedTextColor = Colors.Red;
+
+			var textStyleView = new GenericPicker<
+				ClassConstraintWithInterface, 
+				ClassConstraint,
+				StructConstraint,
+				ClassConstraintWithInterface,
+				string,
+				int,
+				bool,
+				ClassConstraintWithInterface?,
+				ClassConstraint?,
+				ClassConstraintWithInterface,
+				ClassConstraint
+			> { TextColor = originalTextColor };
+			textStyleView.EnableAnimations();
+
+			Assert.Equal(originalTextColor, textStyleView.TextColor);
+
+			var isSuccessful = await textStyleView.TextColorTo(updatedTextColor);
+
+			Assert.True(isSuccessful);
+			Assert.Equal(updatedTextColor, textStyleView.TextColor);
+		}
 	}
 }
 
@@ -112,6 +140,39 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
 
 	// Ensures custom ITextStyle interfaces are supported
 	interface ICustomTextStyle : ITextStyle
+	{
+
+	}
+
+	public interface ISomeInterface
+	{
+
+	}
+	public class ClassConstraintWithInterface : ISomeInterface
+	{
+
+	}
+	public class ClassConstraint
+	{
+
+	}
+
+	public struct StructConstraint
+	{
+
+	}
+	public class GenericPicker<TA, TB, TC, TD, TE, TF, TG, TH, TI, TJ, TK> : Picker
+		where TA : notnull, ISomeInterface
+		where TB : class
+		where TC : struct
+		where TD : class, ISomeInterface, new()
+		//TE has no constraints 
+		where TF : notnull
+		where TG : unmanaged
+		where TH : ISomeInterface?
+		where TI : class?
+		where TJ : ISomeInterface
+		where TK : new()
 	{
 
 	}
