@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Text;
+using Microsoft.CodeAnalysis;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Extensions;
 
@@ -28,21 +29,17 @@ static class NamespaceSymbolExtensions
 	}
 	
 	public static string GetFullTypeString(this INamedTypeSymbol type) => 
-		type.Name + 
-		(type.NullableAnnotation == NullableAnnotation.Annotated ? "?" : string.Empty) +
-		type.TypeArguments.GetGenericTypeArgumentsString();
+		$"{type.Name}{(type.NullableAnnotation == NullableAnnotation.Annotated ? "?" : string.Empty)}{type.TypeArguments.GetGenericTypeArgumentsString()}";
 
 	public static string GetGenericTypeArgumentsString(this IEnumerable<ITypeSymbol> typeArguments)
 	{
-		string result = string.Empty;
-
 		if (!typeArguments.Any())
 		{
-			return result;
+			return string.Empty;
 		}
 
-		result += "<";
-
+		StringBuilder result = new StringBuilder("<");
+		
 		bool isFirstArgument = true;
 		foreach (ITypeSymbol typeArg in typeArguments)
 		{
@@ -52,16 +49,16 @@ static class NamespaceSymbolExtensions
 			}
 			else
 			{
-				result += ", ";
+				result.Append(", ");
 			}
 
 			switch (typeArg)
 			{
 				case ITypeParameterSymbol typeParameterSymbol:
-					result += typeParameterSymbol.Name;
+					result.Append(typeParameterSymbol.Name);
 					break;
 				case INamedTypeSymbol namedTypeSymbol:
-					result += namedTypeSymbol.GetFullTypeString();
+					result.Append(namedTypeSymbol.GetFullTypeString());
 					break;
 				default:
 					//Maybe should handle this somehow, maybe inject SourceProductionContext and call ReportDiagnostic on it?
@@ -70,51 +67,52 @@ static class NamespaceSymbolExtensions
 
 		}
 
-		result += ">";
+		result.Append(">");
 
-		return result;
+		return result.ToString();
 	}
 
 	public static string GetWhereStatement(this INamedTypeSymbol type)
 	{
-		string result = string.Empty;
+		
 		if (!type.TypeParameters.Any())
 		{
-			return result;
+			return string.Empty;
 		}
 
+		StringBuilder result = new StringBuilder();
+		StringBuilder constraints = new StringBuilder();
 		foreach (var typeParameterSymbol in type.TypeParameters)
 		{
-			string constraints = "";
-
+			
 			bool isFirstConstraint = true;
-
+			
 			if (typeParameterSymbol.HasNotNullConstraint)
 			{
-				constraints += "notnull";
+				constraints.Append("notnull");
 
 				isFirstConstraint = false;
 			}
 			else if (typeParameterSymbol.HasUnmanagedTypeConstraint)
 			{
-				constraints += "unmanaged";
+				constraints.Append("unmanaged");
 
 				isFirstConstraint = false;
 			}
 			else if (typeParameterSymbol.HasReferenceTypeConstraint)
 			{
-				constraints += "class";
+				constraints.Append("class");
 
 				if (typeParameterSymbol.ReferenceTypeConstraintNullableAnnotation == NullableAnnotation.Annotated)
 				{
-					constraints += "?";
+					constraints.Append("?");
 				}
 
 				isFirstConstraint = false;
 			}
 			else if (typeParameterSymbol.HasValueTypeConstraint)
 			{
-				constraints += "struct";
+				constraints.Append("struct");
 
 				isFirstConstraint = false;
 			}
@@ -123,32 +121,34 @@ static class NamespaceSymbolExtensions
 			{
 				if (!isFirstConstraint)
 				{
-					constraints += ", ";
+					constraints.Append(", ");
 				}
 				else
 				{
 					isFirstConstraint = false;
 				}
 
-				constraints += contstraintType.GetFullTypeString();
+				constraints.Append(contstraintType.GetFullTypeString());
 			}
 
 			if (typeParameterSymbol.HasConstructorConstraint)
 			{
 				if (!isFirstConstraint)
 				{
-					constraints += ", ";
+					constraints.Append(", ");
 				}
-				constraints += "new()";
+				constraints.Append("new()");
 			}
 
-			if (!string.IsNullOrEmpty(constraints))
+			if (constraints.Length > 0)
 			{
-				result += "where " + typeParameterSymbol.Name + " : " + constraints + @"
-";
+				result.Append($"where " + typeParameterSymbol.Name + " : " + constraints + @"
+"); 
+				constraints.Clear();
 			}
 		}
 
-		return result;
+		return result.ToString();
 	}
+	
 }
