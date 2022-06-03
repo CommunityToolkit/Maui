@@ -22,7 +22,7 @@ public partial class IconTintColorBehavior : PlatformBehavior<Image>
 
 	void ApplyTintColor(Image element, AView control)
 	{
-		var color = GetTintColor(element);
+		var color = TintColor;
 
 		element.PropertyChanged += OnElementPropertyChanged;
 
