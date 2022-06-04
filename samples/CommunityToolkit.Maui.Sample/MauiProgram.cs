@@ -50,6 +50,7 @@ public static class MauiProgram
 		services.AddTransient<ToastPage>();
 
 		// Add Behaviors Pages
+		services.AddTransient<AnimationBehaviorPage>();
 		services.AddTransient<CharactersValidationBehaviorPage>();
 		services.AddTransient<EmailValidationBehaviorPage>();
 		services.AddTransient<EventToCommandBehaviorPage>();
