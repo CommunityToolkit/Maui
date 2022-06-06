@@ -5,9 +5,8 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Extensions.ColorAnimationExtensionsPage"
-    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
-    x:TypeArguments="vm:ColorAnimationExtensionsViewModel"
-    x:DataType="vm:TextCaseConverteColorAnimationExtensionsViewModelrViewModel">
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Extensions"
+    x:TypeArguments="vm:ColorAnimationExtensionsViewModel">
 
     <pages:BasePage.Resources>
         <ResourceDictionary>

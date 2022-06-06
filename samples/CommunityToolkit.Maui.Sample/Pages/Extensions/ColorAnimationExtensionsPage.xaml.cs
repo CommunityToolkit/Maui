@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 using CommunityToolkit.Maui.Extensions;
-using CommunityToolkit.Maui.Sample.ViewModels.Converters;
+using CommunityToolkit.Maui.Sample.ViewModels.Extensions;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Extensions;
 

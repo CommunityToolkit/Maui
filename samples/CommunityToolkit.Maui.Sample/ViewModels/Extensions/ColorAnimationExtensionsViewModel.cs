@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Extensions;
 
 public class ColorAnimationExtensionsViewModel : BaseViewModel
 {

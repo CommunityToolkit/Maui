@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Extensions"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Extensions.LocalizationResourceManagerPage"
+    x:TypeArguments="vm:LocalizationResourceManagerViewModel">
+
+    <pages:BasePage.Resources>
+        <ResourceDictionary>
+            <mct:ByteArrayToImageSourceConverter x:Key="ByteArrayToImageSourceConverter"/>
+        </ResourceDictionary>
+    </pages:BasePage.Resources>
+
+    <VerticalStackLayout>
+        <Label Text="{Binding LocalizationResourceManager[NetMauiCommunityToolkitIntro], Mode=OneWay}"
+               Margin="0,0,0,20"/>
+        <Label Text="Change language:"/>
+        <ImageButton
+            Source="{Binding LocalizationResourceManager[flag], Mode=OneWay, Converter={StaticResource ByteArrayToImageSourceConverter}}"
+            Command="{Binding SetLanguageCommand}"/>
+    </VerticalStackLayout>
+</pages:BasePage>
