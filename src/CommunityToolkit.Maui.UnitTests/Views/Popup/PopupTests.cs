@@ -30,7 +30,7 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public async Task OnOnpenedMapperIsCalled()
+	public async Task OnOpenedMapperIsCalled()
 	{
 		var app = Application.Current ?? throw new NullReferenceException();
 
