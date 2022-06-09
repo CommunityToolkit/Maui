@@ -33,6 +33,7 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<NumericValidationBehaviorPage, NumericValidationBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
 		CreateViewModelMapping<ProgressBarAnimationBehaviorPage, ProgressBarAnimationBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
 		CreateViewModelMapping<RequiredStringValidationBehaviorPage, RequiredStringValidationBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
+		CreateViewModelMapping<SelectAllTextBehaviorPage, SelectAllTextBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
 		CreateViewModelMapping<SetFocusOnEntryCompletedBehaviorPage, SetFocusOnEntryCompletedBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
 		CreateViewModelMapping<TextValidationBehaviorPage, TextValidationBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
 		CreateViewModelMapping<UriValidationBehaviorPage, UriValidationBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
