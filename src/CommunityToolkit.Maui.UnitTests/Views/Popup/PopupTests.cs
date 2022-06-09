@@ -25,8 +25,8 @@ public class PopupTests : BaseHandlerTest
 
 		var ex = Assert.Throws<InvalidOperationException>(() => handlerStub.GetRequiredService<IFooService>());
 
-		Assert.Contains("the context", ex.Message, StringComparison.Ordinal);
-		Assert.Contains("MauiContext", ex.Message, StringComparison.Ordinal);
+		Assert.Contains("the context", ex.Message);
+		Assert.Contains("MauiContext", ex.Message);
 	}
 
 	[Fact]
