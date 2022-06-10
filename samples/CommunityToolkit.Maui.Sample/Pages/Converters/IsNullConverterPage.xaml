@@ -20,6 +20,7 @@
             HorizontalOptions="Fill"
             RowDefinitions="100, 20, 20, 20, 20, 20"
             VerticalOptions="Fill">
+
             <Label
                 Grid.Row="0"
                 Grid.ColumnSpan="2"

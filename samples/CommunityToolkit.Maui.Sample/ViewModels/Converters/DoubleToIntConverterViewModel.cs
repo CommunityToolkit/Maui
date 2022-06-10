@@ -5,5 +5,5 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 public partial class DoubleToIntConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	double index;
+	double input;
 }

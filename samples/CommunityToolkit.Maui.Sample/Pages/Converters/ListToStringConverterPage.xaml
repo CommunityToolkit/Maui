@@ -8,6 +8,7 @@
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.ListToStringConverterPage"
     x:TypeArguments="vm:ListToStringConverterViewModel"
     x:DataType="vm:ListToStringConverterViewModel">
+
     <ContentPage.Resources>
         <ResourceDictionary>
             <mct:ListToStringConverter x:Key="ListToStringConverter" Separator=", " />
