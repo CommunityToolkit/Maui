@@ -1,12 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-public class IntToBoolConverterViewModel : BaseViewModel
+namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+
+public partial class IntToBoolConverterViewModel : BaseViewModel
 {
-	int index;
-
-	public int Number
-	{
-		get => index;
-		set => SetProperty(ref index, value);
-	}
+	[ObservableProperty]
+	int number;
 }

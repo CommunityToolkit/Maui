@@ -1,12 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-public class DoubleToIntConverterViewModel : BaseViewModel
+namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+
+public partial class DoubleToIntConverterViewModel : BaseViewModel
 {
+	[ObservableProperty]
 	double index;
-
-	public double Input
-	{
-		get => index;
-		set => SetProperty(ref index, value);
-	}
 }

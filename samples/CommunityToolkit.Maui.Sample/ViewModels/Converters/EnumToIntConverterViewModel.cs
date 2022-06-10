@@ -1,16 +1,13 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-public class EnumToIntConverterViewModel : BaseViewModel
+namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+
+public partial class EnumToIntConverterViewModel : BaseViewModel
 {
+	[ObservableProperty]
 	IssueState selectedState = IssueState.None;
 
-	public IReadOnlyList<string> AllStates { get; } = Enum.GetNames(typeof(IssueState));
-
-	public IssueState SelectedState
-	{
-		get => selectedState;
-		set => SetProperty(ref selectedState, value);
-	}
+	public static IReadOnlyList<string> AllStates { get; } = Enum.GetNames(typeof(IssueState));
 
 	public enum IssueState
 	{

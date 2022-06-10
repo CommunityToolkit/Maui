@@ -1,12 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-public class InvertedBoolConverterViewModel : BaseViewModel
+namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+
+public partial class InvertedBoolConverterViewModel : BaseViewModel
 {
+	[ObservableProperty]
 	bool isToggled;
-
-	public bool IsToggled
-	{
-		get => isToggled;
-		set => SetProperty(ref isToggled, value);
-	}
 }
