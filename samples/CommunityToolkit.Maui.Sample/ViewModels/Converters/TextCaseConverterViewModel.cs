@@ -2,7 +2,7 @@
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-public class TextCaseConverterViewModel : BaseViewModel
+public partial class TextCaseConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
 	string input = string.Empty;
