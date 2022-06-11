@@ -164,20 +164,10 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
 
 	class BrandNewControl : View, ITextStyle, IAnimatable
 	{
+		public double CharacterSpacing { get; } = 0;
+
 		public Color TextColor { get; set; } = Colors.Transparent;
 
 		public Font Font { get; set; }
-
-		public double CharacterSpacing => 0;
-
-		public void BatchBegin()
-		{
-
-		}
-
-		public void BatchCommit()
-		{
-
-		}
 	}
 }

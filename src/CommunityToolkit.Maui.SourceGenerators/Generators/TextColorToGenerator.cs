@@ -74,9 +74,9 @@ class TextColorToGenerator : IIncrementalGenerator
 			// If the control is inherit from a Maui control that implements ITextStyle
 			// We don't need to generate a extension method for it.
 			// We just generate a method if the Control is a new implementation of ITextStyle and IAnimatable
-			var isMauiBaseType = IsMauiBaseType(declarationSymbol, mauiTextStyleImplementors);
+			var doesContainSymbolBaseType = mauiTextStyleImplementors.ContainsSymbolBaseType(declarationSymbol);
 
-			if (!isMauiBaseType
+			if (!doesContainSymbolBaseType
 				&& declarationSymbol.AllInterfaces.Contains(textStyleSymbol, SymbolEqualityComparer.Default)
 				&& declarationSymbol.AllInterfaces.Contains(iAnimatableSymbol, SymbolEqualityComparer.Default))
 			{
@@ -86,6 +86,7 @@ class TextColorToGenerator : IIncrementalGenerator
 					context.ReportDiagnostic(diag);
 					continue;
 				}
+
 				var nameSpace = declarationSymbol.ContainingNamespace.ToDisplayString();
 
 				var accessModifier = GetClassAccessModifier(declarationSymbol);
@@ -191,21 +192,4 @@ namespace " + textStyleClass.Namespace + @";
 		Accessibility.Internal => "internal",
 		_ => string.Empty
 	};
-
-	static bool IsMauiBaseType(INamedTypeSymbol symbol, IEnumerable<INamedTypeSymbol> mauiTypes)
-	{
-		INamedTypeSymbol? baseType = symbol.BaseType;
-		while (baseType is not null)
-		{
-			var result = mauiTypes.Any(x => x.Equals(baseType, SymbolEqualityComparer.Default));
-
-			if (result)
-			{
-				return true;
-			}
-
-			baseType = baseType.BaseType;
-		}
-		return false;
-	}
 }
