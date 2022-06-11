@@ -72,19 +72,23 @@ static class NamespaceSymbolExtensions
 		return result.ToString();
 	}
 
-	public static string GetWhereStatement(this INamedTypeSymbol type)
+	/// <summary>
+	/// Find all generic type constraints for <see cref="INamedTypeSymbol"/> and return the results as a complete string
+	/// </summary>
+	/// <param name="type"></param>
+	/// <returns>A text string contiaining all Generic Type Constraints for <see cref="INamedTypeSymbol"/, eg "where T : ITextStyle, notnull". Returns <see cref="string.Empty"/> if no generic type constrants found</returns>
+	public static string GetGenericTypeConstraintsAsText(this INamedTypeSymbol type)
 	{
-
 		if (!type.TypeParameters.Any())
 		{
 			return string.Empty;
 		}
 
-		StringBuilder result = new StringBuilder();
-		StringBuilder constraints = new StringBuilder();
+		StringBuilder result = new();
+		StringBuilder constraints = new();
+
 		foreach (var typeParameterSymbol in type.TypeParameters)
 		{
-
 			bool isFirstConstraint = true;
 
 			if (typeParameterSymbol.HasNotNullConstraint)
@@ -117,7 +121,7 @@ static class NamespaceSymbolExtensions
 				isFirstConstraint = false;
 			}
 
-			foreach (INamedTypeSymbol contstraintType in typeParameterSymbol.ConstraintTypes)
+			foreach (INamedTypeSymbol contstraintType in typeParameterSymbol.ConstraintTypes.Cast<INamedTypeSymbol>())
 			{
 				if (!isFirstConstraint)
 				{

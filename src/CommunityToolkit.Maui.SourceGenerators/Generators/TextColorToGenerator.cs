@@ -57,7 +57,7 @@ class TextColorToGenerator : IIncrementalGenerator
 
 		foreach (var namedTypeSymbol in mauiTextStyleImplementors)
 		{
-			textStyleClassList.Add((namedTypeSymbol.Name, "public", namedTypeSymbol.ContainingNamespace.ToDisplayString(), namedTypeSymbol.TypeArguments.GetGenericTypeArgumentsString(), namedTypeSymbol.GetWhereStatement()));
+			textStyleClassList.Add((namedTypeSymbol.Name, "public", namedTypeSymbol.ContainingNamespace.ToDisplayString(), namedTypeSymbol.TypeArguments.GetGenericTypeArgumentsString(), namedTypeSymbol.GetGenericTypeConstraintsAsText()));
 		}
 
 		// Collect All Classes in User Library that Implement ITextStyle
@@ -98,7 +98,7 @@ class TextColorToGenerator : IIncrementalGenerator
 					continue;
 				}
 
-				textStyleClassList.Add((declarationSymbol.Name, accessModifier, nameSpace, declarationSymbol.TypeArguments.GetGenericTypeArgumentsString(), declarationSymbol.GetWhereStatement()));
+				textStyleClassList.Add((declarationSymbol.Name, accessModifier, nameSpace, declarationSymbol.TypeArguments.GetGenericTypeArgumentsString(), declarationSymbol.GetGenericTypeConstraintsAsText()));
 			}
 		}
 
