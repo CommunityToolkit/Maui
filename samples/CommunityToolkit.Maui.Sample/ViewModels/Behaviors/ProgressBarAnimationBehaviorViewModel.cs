@@ -1,11 +1,9 @@
 ﻿using System.Windows.Input;
-using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
-public partial class ProgressBarAnimationBehaviorViewModel : BaseViewModel
+public class ProgressBarAnimationBehaviorViewModel : BaseViewModel
 {
-	[ObservableProperty]
 	double progress;
 
 	public ProgressBarAnimationBehaviorViewModel()
@@ -20,6 +18,12 @@ public partial class ProgressBarAnimationBehaviorViewModel : BaseViewModel
 	public ICommand SetTo50Command { get; }
 
 	public ICommand SetTo100Command { get; }
+
+	public double Progress
+	{
+		get => progress;
+		set => SetProperty(ref progress, value);
+	}
 
 	void SetProgress(double progress) => Progress = progress;
 }
