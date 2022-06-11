@@ -1,16 +1,21 @@
 ﻿using System.Windows.Input;
 using CommunityToolkit.Maui.Views;
-using CommunityToolkit.Mvvm.Input;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public partial class PopupPositionViewModel : BaseViewModel
+public class PopupPositionViewModel : BaseViewModel
 {
+	public PopupPositionViewModel()
+	{
+		DisplayPopup = new Command<PopupPosition>(OnDisplayPopup);
+	}
+
+	public ICommand DisplayPopup { get; }
+
 	static Page Page => Application.Current?.MainPage ?? throw new NullReferenceException();
 
-	[RelayCommand]
-	static void DisplayPopup(PopupPosition position)
+	void OnDisplayPopup(PopupPosition position)
 	{
 		// Using the C# version of Popup until this get fixed
 		// https://github.com/dotnet/maui/issues/4300

@@ -1,15 +1,22 @@
 ﻿using System.Windows.Input;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
-public partial class MaxLengthReachedBehaviorViewModel : BaseViewModel
+public class MaxLengthReachedBehaviorViewModel : BaseViewModel
 {
-	[ObservableProperty]
-	string commandExecutionText = string.Empty;
+	string commandExecutions = string.Empty;
 
-	[RelayCommand]
-	void MaxLengthReached(string text)
-		=> CommandExecutionText += string.Format("MaxLength reached with value: '{0}'.", text) + Environment.NewLine;
+	public MaxLengthReachedBehaviorViewModel()
+		=> MaxLengthReachedCommand = new Command<string>(OnCommandExecuted);
+
+	public ICommand MaxLengthReachedCommand { get; }
+
+	public string CommandExecutions
+	{
+		get => commandExecutions;
+		set => SetProperty(ref commandExecutions, value);
+	}
+
+	void OnCommandExecuted(string text)
+		=> CommandExecutions += string.Format("MaxLength reached with value: '{0}'.", text) + Environment.NewLine;
 }
