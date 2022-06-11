@@ -2,8 +2,8 @@
 
 public class ImageResourceConverterViewModel : BaseViewModel
 {
-	public static string XamarinImageResource { get; } = BuildImageResource("XCT.png");
-	public static string MauiImageResource { get; } = BuildImageResource("MCT.png");
+	public string XamarinImageResource { get; } = BuildImageResource("XCT.png");
+	public string MauiImageResource { get; } = BuildImageResource("MCT.png");
 
 	static string BuildImageResource(in string resourceName) => $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.Resources.Embedded.{resourceName}";
 }

@@ -7,7 +7,7 @@ public partial class EnumToIntConverterViewModel : BaseViewModel
 	[ObservableProperty]
 	IssueState selectedState = IssueState.None;
 
-	public static IReadOnlyList<string> AllStates { get; } = Enum.GetNames(typeof(IssueState));
+	public IReadOnlyList<string> AllStates { get; } = Enum.GetNames(typeof(IssueState));
 
 	public enum IssueState
 	{
