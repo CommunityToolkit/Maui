@@ -71,7 +71,13 @@ class TextColorToGenerator : IIncrementalGenerator
 				continue;
 			}
 
-			if (declarationSymbol.AllInterfaces.Contains(textStyleSymbol, SymbolEqualityComparer.Default)
+			// If the control is inherit from a Maui control that implements ITextStyle
+			// We don't need to generate a extension method for it.
+			// We just generate a method if the Control is a new implementation of ITextStyle and IAnimatable
+			var doesContainSymbolBaseType = mauiTextStyleImplementors.ContainsSymbolBaseType(declarationSymbol);
+
+			if (!doesContainSymbolBaseType
+				&& declarationSymbol.AllInterfaces.Contains(textStyleSymbol, SymbolEqualityComparer.Default)
 				&& declarationSymbol.AllInterfaces.Contains(iAnimatableSymbol, SymbolEqualityComparer.Default))
 			{
 				if (declarationSymbol.ContainingNamespace.IsGlobalNamespace)
@@ -80,6 +86,7 @@ class TextColorToGenerator : IIncrementalGenerator
 					context.ReportDiagnostic(diag);
 					continue;
 				}
+
 				var nameSpace = declarationSymbol.ContainingNamespace.ToDisplayString();
 
 				var accessModifier = GetClassAccessModifier(declarationSymbol);
@@ -175,7 +182,7 @@ namespace " + textStyleClass.Namespace + @";
 }";
 			var source = textColorToBuilder.ToString();
 			SourceStringExtensions.FormatText(ref source, options);
-			context.AddSource($"{textStyleClass.ClassName}TextColorTo_{Guid.NewGuid()}.g.shared.cs", SourceText.From(source, Encoding.UTF8));
+			context.AddSource($"{textStyleClass.ClassName}TextColorTo.g.shared.cs", SourceText.From(source, Encoding.UTF8));
 		}
 	}
 
