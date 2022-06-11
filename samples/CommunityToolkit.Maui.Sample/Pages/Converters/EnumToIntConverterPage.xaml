@@ -6,7 +6,6 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.EnumToIntConverterPage"
-    x:DataType="vm:EnumToIntConverterViewModel"
     x:TypeArguments="vm:EnumToIntConverterViewModel">
     <pages:BasePage.Resources>
         <ResourceDictionary>
