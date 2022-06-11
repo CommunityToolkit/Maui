@@ -30,7 +30,8 @@
                HorizontalOptions="Center"
                TextColor="{StaticResource NormalLabelTextColor}"/>
 
-        <ActivityIndicator IsRunning="{Binding IsDownloadingImage}"
+        <ActivityIndicator Color="{StaticResource NormalButtonBackgroundColor}"
+                           IsRunning="{Binding IsDownloadingImage}"
                            IsVisible="{Binding IsDownloadingImage}" />
 
     </VerticalStackLayout>
