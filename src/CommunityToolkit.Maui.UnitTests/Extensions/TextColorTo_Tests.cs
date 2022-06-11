@@ -87,6 +87,42 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 			await Assert.ThrowsAsync<ArgumentNullException>(() => label.TextColorTo(null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 		}
+
+		[Fact]
+		public async Task GenericPickerShouldUseThePickerExtension()
+		{
+			var genericPicker = new MyGenericPicker<string>();
+			genericPicker.EnableAnimations();
+
+			Color updatedTextColor = Colors.Yellow;
+			var isSuccessful = await genericPicker.TextColorTo(updatedTextColor);
+
+			Assert.True(isSuccessful);
+		}
+
+		[Fact]
+		public async Task MoreGenericPickerShouldUseThePickerExtension()
+		{
+			var genericPicker = new MoreGenericPicker<string>();
+			genericPicker.EnableAnimations();
+
+			Color updatedTextColor = Colors.Yellow;
+			var isSuccessful = await genericPicker.TextColorTo(updatedTextColor);
+
+			Assert.True(isSuccessful);
+		}
+		
+		[Fact]
+		public async Task BrandNewControlShouldHaveHisOwnExtensionMethod()
+		{
+			var brandNewControl = new BrandNewControl();
+			brandNewControl.EnableAnimations();
+
+			Color updatedTextColor = Colors.Yellow;
+			var isSuccessful = await brandNewControl.TextColorTo(updatedTextColor);
+
+			Assert.True(isSuccessful);
+		}
 	}
 }
 
@@ -114,5 +150,34 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
 	interface ICustomTextStyle : ITextStyle
 	{
 
+	}
+
+	class MyGenericPicker<T> : Picker
+	{
+
+	}
+
+	class MoreGenericPicker<T> : MyGenericPicker<T>
+	{
+
+	}
+
+	class BrandNewControl : View, ITextStyle, IAnimatable
+	{
+		public Color TextColor { get; set; } = Colors.Transparent;
+
+		public Font Font { get; set; }
+
+		public double CharacterSpacing => 0;
+
+		public void BatchBegin()
+		{
+
+		}
+
+		public void BatchCommit()
+		{
+
+		}
 	}
 }

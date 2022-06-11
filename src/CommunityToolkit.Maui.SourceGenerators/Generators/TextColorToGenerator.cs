@@ -71,7 +71,13 @@ class TextColorToGenerator : IIncrementalGenerator
 				continue;
 			}
 
-			if (declarationSymbol.AllInterfaces.Contains(textStyleSymbol, SymbolEqualityComparer.Default)
+			// If the control is inherit from a Maui control that implements ITextStyle
+			// We don't need to generate a extension method for it.
+			// We just generate a method if the Control is a new implementation of ITextStyle and IAnimatable
+			var isMauiBaseType = IsMauiBaseType(declarationSymbol, mauiTextStyleImplementors);
+
+			if (!isMauiBaseType
+				&& declarationSymbol.AllInterfaces.Contains(textStyleSymbol, SymbolEqualityComparer.Default)
 				&& declarationSymbol.AllInterfaces.Contains(iAnimatableSymbol, SymbolEqualityComparer.Default))
 			{
 				if (declarationSymbol.ContainingNamespace.IsGlobalNamespace)
@@ -185,4 +191,21 @@ namespace " + textStyleClass.Namespace + @";
 		Accessibility.Internal => "internal",
 		_ => string.Empty
 	};
+
+	static bool IsMauiBaseType(INamedTypeSymbol symbol, IEnumerable<INamedTypeSymbol> mauiTypes)
+	{
+		INamedTypeSymbol? baseType = symbol.BaseType;
+		while (baseType is not null)
+		{
+			var result = mauiTypes.Any(x => x.Equals(baseType, SymbolEqualityComparer.Default));
+
+			if (result)
+			{
+				return true;
+			}
+
+			baseType = baseType.BaseType;
+		}
+		return false;
+	}
 }
