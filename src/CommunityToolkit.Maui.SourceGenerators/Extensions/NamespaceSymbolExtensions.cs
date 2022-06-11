@@ -33,9 +33,9 @@ static class NamespaceSymbolExtensions
 
 		while (baseType is not null)
 		{
-			var result = namedSymbolList.Any(x => x.Equals(baseType, SymbolEqualityComparer.Default));
+			var doesListContainBaseType = namedSymbolList.Any(x => x.Equals(baseType, SymbolEqualityComparer.Default));
 
-			if (result)
+			if (doesListContainBaseType)
 			{
 				return true;
 			}
