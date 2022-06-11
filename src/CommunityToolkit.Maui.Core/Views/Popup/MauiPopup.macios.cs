@@ -114,6 +114,11 @@ public class MauiPopup : UIViewController
 		view.AddSubview(control.ViewController?.View ?? throw new InvalidOperationException($"{nameof(control.ViewController.View)} cannot be null"));
 		view.Bounds = new(0, 0, PreferredContentSize.Width, PreferredContentSize.Height);
 		AddChildViewController(control.ViewController);
+
+		if (VirtualView is not null)
+		{
+			this.SetBackgroundColor(VirtualView);
+		}
 	}
 
 	void SetPresentationController()

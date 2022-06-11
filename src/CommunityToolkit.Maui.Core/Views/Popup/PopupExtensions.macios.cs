@@ -46,6 +46,11 @@ public static class PopupExtensions
 
 		var color = popup.Color?.ToPlatform();
 		mauiPopup.Control.PlatformView.BackgroundColor = color;
+
+		if (mauiPopup.Control.ViewController?.View is UIView view)
+		{
+			view.BackgroundColor = color;
+		}
 	}
 
 	/// <summary>
