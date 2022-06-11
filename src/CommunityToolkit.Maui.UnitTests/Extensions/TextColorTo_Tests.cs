@@ -223,7 +223,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
 
 	}
 
-	public class GenericPicker<TA, TB, TC, TD, TE, TF, TG, TH, TI, TJ, TK, TL, TM> : Picker
+	public class GenericPicker<TA, TB, TC, TD, TE, TF, TG, TH, TI, TJ, TK, TL, TM> : View, ITextStyle, IAnimatable
 		where TA : notnull, ISomeInterface
 		where TB : class
 		where TC : struct
@@ -238,7 +238,11 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
 		where TL : class
 		where TM : struct
 	{
+		public double CharacterSpacing { get; } = 0;
 
+		public Color TextColor { get; set; } = Colors.Transparent;
+
+		public Font Font { get; set; }
 	}
 
 	class BrandNewControl : View, ITextStyle, IAnimatable
