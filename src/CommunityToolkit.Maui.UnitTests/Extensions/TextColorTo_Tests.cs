@@ -117,6 +117,42 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 			Assert.True(isSuccessful);
 			Assert.Equal(updatedTextColor, textStyleView.TextColor);
 		}
+
+		[Fact]
+		public async Task GenericPickerShouldUseThePickerExtension()
+		{
+			var genericPicker = new MyGenericPicker<string>();
+			genericPicker.EnableAnimations();
+
+			Color updatedTextColor = Colors.Yellow;
+			var isSuccessful = await genericPicker.TextColorTo(updatedTextColor);
+
+			Assert.True(isSuccessful);
+		}
+
+		[Fact]
+		public async Task MoreGenericPickerShouldUseThePickerExtension()
+		{
+			var genericPicker = new MoreGenericPicker<string>();
+			genericPicker.EnableAnimations();
+
+			Color updatedTextColor = Colors.Yellow;
+			var isSuccessful = await genericPicker.TextColorTo(updatedTextColor);
+
+			Assert.True(isSuccessful);
+		}
+		
+		[Fact]
+		public async Task BrandNewControlShouldHaveHisOwnExtensionMethod()
+		{
+			var brandNewControl = new BrandNewControl();
+			brandNewControl.EnableAnimations();
+
+			Color updatedTextColor = Colors.Yellow;
+			var isSuccessful = await brandNewControl.TextColorTo(updatedTextColor);
+
+			Assert.True(isSuccessful);
+		}
 	}
 }
 
@@ -155,6 +191,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
 
 	}
 	public class ClassConstraint
+	class MyGenericPicker<T> : Picker
 	{
 
 	}
@@ -166,6 +203,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
 	
 
 	public readonly record struct RecordStructContstraint
+	class MoreGenericPicker<T> : MyGenericPicker<T>
 	{
 
 	}
@@ -190,5 +228,12 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
 		where TM : struct
 	{
 
+	class BrandNewControl : View, ITextStyle, IAnimatable
+	{
+		public double CharacterSpacing { get; } = 0;
+
+		public Color TextColor { get; set; } = Colors.Transparent;
+
+		public Font Font { get; set; }
 	}
 }
