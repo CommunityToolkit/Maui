@@ -4,8 +4,9 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
-public partial class AnimationBehaviorViewModel : BaseViewModel
+public class AnimationBehaviorViewModel : BaseViewModel
 {
-	[RelayCommand]
-	Task OnAnimation() => Snackbar.Make($"{nameof(AnimationCommand)} is triggered.").Show();
+	public ICommand AnimationCommand { get; } = new AsyncRelayCommand(OnAnimationCommand);
+
+	static Task OnAnimationCommand() => Snackbar.Make($"{nameof(AnimationCommand)} is triggered.").Show();
 }

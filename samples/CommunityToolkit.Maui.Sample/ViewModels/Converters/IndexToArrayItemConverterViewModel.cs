@@ -1,9 +1,12 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
-
-public partial class IndexToArrayItemConverterViewModel : BaseViewModel
+public class IndexToArrayItemConverterViewModel : BaseViewModel
 {
-	[ObservableProperty]
 	int selectedIndex;
+
+	public int SelectedIndex
+	{
+		get => selectedIndex;
+		set => SetProperty(ref selectedIndex, value);
+	}
 }

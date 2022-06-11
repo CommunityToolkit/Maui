@@ -1,28 +1,24 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.Dispatching;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-public sealed partial class ByteArrayToImageSourceConverterViewModel : BaseViewModel, IDisposable
+public sealed class ByteArrayToImageSourceConverterViewModel : BaseViewModel, IDisposable
 {
 	readonly WeakEventManager imageDownloadFailedEventManager = new();
 	readonly HttpClient client;
 	readonly IDispatcher dispatcher;
 
-	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(DownloadDotNetBotImageCommand))]
 	bool isDownloadingImage;
-
-	[ObservableProperty]
 	byte[]? dotNetBotImageByteArray;
-
-	[ObservableProperty]
 	string labelText = "Tap the Download Image Button to download an Image as a byte[]";
 
 	public ByteArrayToImageSourceConverterViewModel(HttpClient client, IDispatcher dispatcher)
 	{
 		this.client = client;
 		this.dispatcher = dispatcher;
+
+		DownloadDotNetBotImageCommand = new AsyncRelayCommand(ExecuteDownloadDotNetBotImageCommand, () => !IsDownloadingImage && dotNetBotImageByteArray is null, false);
 	}
 
 	public event EventHandler<string> ImageDownloadFailed
@@ -31,15 +27,36 @@ public sealed partial class ByteArrayToImageSourceConverterViewModel : BaseViewM
 		remove => imageDownloadFailedEventManager.RemoveEventHandler(value);
 	}
 
+	public AsyncRelayCommand DownloadDotNetBotImageCommand { get; }
+
+	public bool IsDownloadingImage
+	{
+		get => isDownloadingImage;
+		set
+		{
+			SetProperty(ref isDownloadingImage, value);
+			dispatcher.Dispatch(() => DownloadDotNetBotImageCommand.NotifyCanExecuteChanged());
+		}
+	}
+
+	public byte[]? DotNetBotImageByteArray
+	{
+		get => dotNetBotImageByteArray;
+		set => SetProperty(ref dotNetBotImageByteArray, value);
+	}
+
+	public string LabelText
+	{
+		get => labelText;
+		set => SetProperty(ref labelText, value);
+	}
+
 	public void Dispose()
 	{
 		DotNetBotImageByteArray = null;
 	}
 
-	bool CanDownloadDotNetBotImageComandExecute => !IsDownloadingImage && dotNetBotImageByteArray is null;
-
-	[RelayCommand(CanExecute = nameof(CanDownloadDotNetBotImageComandExecute))]
-	async Task DownloadDotNetBotImage()
+	async Task ExecuteDownloadDotNetBotImageCommand()
 	{
 		IsDownloadingImage = true;
 

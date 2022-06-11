@@ -1,14 +1,19 @@
 ﻿using System.Windows.Input;
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Application = Microsoft.Maui.Controls.Application;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-public partial class ItemTappedEventArgsConverterViewModel : BaseViewModel
+public class ItemTappedEventArgsConverterViewModel : BaseViewModel
 {
-	[ObservableProperty]
-	Person? itemSelected = null;
+	Person? selectedItem = null;
+
+	public ItemTappedEventArgsConverterViewModel()
+	{
+		ItemTappedCommand = new AsyncRelayCommand<Person>(ExecuteItemSelectedCommand);
+	}
+
+	public ICommand ItemTappedCommand { get; }
 
 	public IReadOnlyList<Person> Items { get; } = new[]
 	{
@@ -17,8 +22,13 @@ public partial class ItemTappedEventArgsConverterViewModel : BaseViewModel
 		new Person(3, "Joe Doe"),
 	};
 
-	[RelayCommand]
-	Task ItemTapped(Person? person)
+	public Person? ItemSelected
+	{
+		get => selectedItem;
+		set => SetProperty(ref selectedItem, value);
+	}
+
+	Task ExecuteItemSelectedCommand(Person? person)
 	{
 		ArgumentNullException.ThrowIfNull(person);
 

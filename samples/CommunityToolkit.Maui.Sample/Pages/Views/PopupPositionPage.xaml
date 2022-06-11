@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <pages:BasePage x:Class="CommunityToolkit.Maui.Sample.Pages.Views.PopupPositionPage"
                 xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -40,63 +40,63 @@
 
         <Button Grid.Row="1"
                     Grid.Column="0"
-                    Command="{Binding DisplayPopupCommand}"
+                    Command="{Binding DisplayPopup}"
                     CommandParameter="{x:Static viewModels:PopupPositionViewModel+PopupPosition.TopLeft}"
                     FontSize="18"
                     Text="&#x2196;" />
 
         <Button Grid.Row="1"
                     Grid.Column="1"
-                    Command="{Binding DisplayPopupCommand}"
+                    Command="{Binding DisplayPopup}"
                     CommandParameter="{x:Static viewModels:PopupPositionViewModel+PopupPosition.Top}"
                     FontSize="18"
                     Text="&#x2191;" />
 
         <Button Grid.Row="1"
                     Grid.Column="2"
-                    Command="{Binding DisplayPopupCommand}"
+                    Command="{Binding DisplayPopup}"
                     CommandParameter="{x:Static viewModels:PopupPositionViewModel+PopupPosition.TopRight}"
                     FontSize="18"
                     Text="&#x2197;" />
 
         <Button Grid.Row="2"
                     Grid.Column="0"
-                    Command="{Binding DisplayPopupCommand}"
+                    Command="{Binding DisplayPopup}"
                     CommandParameter="{x:Static viewModels:PopupPositionViewModel+PopupPosition.Left}"
                     FontSize="18"
                     Text="&#x2190;" />
 
         <Button Grid.Row="2"
                     Grid.Column="1"
-                    Command="{Binding DisplayPopupCommand}"
+                    Command="{Binding DisplayPopup}"
                     CommandParameter="{x:Static viewModels:PopupPositionViewModel+PopupPosition.Center}"
                     FontSize="18"
                     Text="&#x26AC;" />
 
         <Button Grid.Row="2"
                     Grid.Column="2"
-                    Command="{Binding DisplayPopupCommand}"
+                    Command="{Binding DisplayPopup}"
                     CommandParameter="{x:Static viewModels:PopupPositionViewModel+PopupPosition.Right}"
                     FontSize="18"
                     Text="&#x2192;" />
 
         <Button Grid.Row="3"
                     Grid.Column="0"
-                    Command="{Binding DisplayPopupCommand}"
+                    Command="{Binding DisplayPopup}"
                     CommandParameter="{x:Static viewModels:PopupPositionViewModel+PopupPosition.BottomLeft}"
                     FontSize="18"
                     Text="&#x2199;" />
 
         <Button Grid.Row="3"
                     Grid.Column="1"
-                    Command="{Binding DisplayPopupCommand}"
+                    Command="{Binding DisplayPopup}"
                     CommandParameter="{x:Static viewModels:PopupPositionViewModel+PopupPosition.Bottom}"
                     FontSize="18"
                     Text="&#x2193;" />
 
         <Button Grid.Row="3"
                     Grid.Column="2"
-                    Command="{Binding DisplayPopupCommand}"
+                    Command="{Binding DisplayPopup}"
                     CommandParameter="{x:Static viewModels:PopupPositionViewModel+PopupPosition.BottomRight}"
                     FontSize="18"
                     Text="&#x2198;" />

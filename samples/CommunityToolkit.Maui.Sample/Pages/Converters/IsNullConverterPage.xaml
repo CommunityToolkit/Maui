@@ -37,7 +37,6 @@
                 Grid.Column="1"
                 HorizontalOptions="Start"
                 Text="Is Default Value Null?"
-                LineBreakMode="TailTruncation"
                 FontAttributes="Bold"
                 TextColor="{StaticResource NormalLabelTextColor}" />
             <Label
