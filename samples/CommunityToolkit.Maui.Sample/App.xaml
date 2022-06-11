@@ -31,26 +31,26 @@
                 <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource AppBackgroundLightColor}, Dark={StaticResource AppBackgroundDarkColor}}" />
             </Style>
 
-            <Style TargetType="Button">
+            <Style TargetType="Button" ApplyToDerivedTypes="true">
                 <Setter Property="FontSize" Value="Medium" />
                 <Setter Property="BackgroundColor" Value="{StaticResource NormalButtonBackgroundColor}" />
                 <Setter Property="TextColor" Value="{StaticResource NormalButtonTextColor}" />
                 <Setter Property="CornerRadius" Value="5" />
             </Style>
 
-            <Style TargetType="Label">
+            <Style TargetType="Label" ApplyToDerivedTypes="true">
                 <Setter Property="FontSize" Value="Body" />
                 <Setter Property="TextColor" Value="{StaticResource NormalLabelTextColor}" />
                 <Setter Property="VerticalTextAlignment" Value="Center" />
                 <Setter Property="HorizontalTextAlignment" Value="Start" />
             </Style>
 
-            <Style TargetType="VerticalStackLayout">
+            <Style TargetType="VerticalStackLayout" ApplyToDerivedTypes="true">
                 <Setter Property="Spacing" Value="0" />
             </Style>
             
             <!-- Styles -->
-            <Style x:Key="card" TargetType="Frame">
+            <Style x:Key="card" TargetType="Frame" ApplyToDerivedTypes="true">
                 <Setter Property="BackgroundColor" Value="#ffffff" />
                 <Setter Property="CornerRadius" Value="8" />
                 <Setter Property="HasShadow" Value="True" />
