@@ -28,11 +28,6 @@
                 BackgroundColor="Transparent"
                 ItemsSource="{Binding Items}"
                 SelectedItem="{Binding ItemSelected, Mode=TwoWay}">
-                <ListView.ItemTemplate x:DataType="vm:ItemTappedEventArgsConverterViewModel.Person">
-                    <DataTemplate>
-                        <Label Text="{Binding Person.Name, StringFormat='Name: {0}'}"/>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
 
                 <ListView.Behaviors>
                     <mctBehaviors:EventToCommandBehavior 

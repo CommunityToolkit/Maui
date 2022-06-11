@@ -27,5 +27,6 @@ public partial class ItemTappedEventArgsConverterViewModel : BaseViewModel
 		return Application.Current?.MainPage?.DisplayAlert("Item Tapped", person.Name, "Ok") ?? Task.CompletedTask;
 	}
 
-	public record Person(int Id, string Name);
 }
+
+public record Person(int Id, string Name);
