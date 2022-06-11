@@ -186,11 +186,17 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
 	{
 
 	}
+
 	public class ClassConstraintWithInterface : ISomeInterface
 	{
 
 	}
+
 	public class ClassConstraint
+	{
+
+	}
+
 	class MyGenericPicker<T> : Picker
 	{
 
@@ -203,6 +209,10 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
 	
 
 	public readonly record struct RecordStructContstraint
+	{
+
+	}
+
 	class MoreGenericPicker<T> : MyGenericPicker<T>
 	{
 
@@ -212,6 +222,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
 	{
 
 	}
+
 	public class GenericPicker<TA, TB, TC, TD, TE, TF, TG, TH, TI, TJ, TK, TL, TM> : Picker
 		where TA : notnull, ISomeInterface
 		where TB : class
@@ -227,6 +238,8 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
 		where TL : class
 		where TM : struct
 	{
+
+	}
 
 	class BrandNewControl : View, ITextStyle, IAnimatable
 	{

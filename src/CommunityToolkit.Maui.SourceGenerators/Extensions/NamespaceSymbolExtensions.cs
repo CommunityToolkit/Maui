@@ -27,8 +27,8 @@ static class NamespaceSymbolExtensions
 			}
 		}
 	}
-	
-	public static string GetFullTypeString(this INamedTypeSymbol type) => 
+
+	public static string GetFullTypeString(this INamedTypeSymbol type) =>
 		$"{type.Name}{(type.NullableAnnotation == NullableAnnotation.Annotated ? "?" : string.Empty)}{type.TypeArguments.GetGenericTypeArgumentsString()}";
 
 	public static string GetGenericTypeArgumentsString(this IEnumerable<ITypeSymbol> typeArguments)
@@ -39,7 +39,7 @@ static class NamespaceSymbolExtensions
 		}
 
 		StringBuilder result = new StringBuilder("<");
-		
+
 		bool isFirstArgument = true;
 		foreach (ITypeSymbol typeArg in typeArguments)
 		{
@@ -74,7 +74,7 @@ static class NamespaceSymbolExtensions
 
 	public static string GetWhereStatement(this INamedTypeSymbol type)
 	{
-		
+
 		if (!type.TypeParameters.Any())
 		{
 			return string.Empty;
@@ -84,9 +84,9 @@ static class NamespaceSymbolExtensions
 		StringBuilder constraints = new StringBuilder();
 		foreach (var typeParameterSymbol in type.TypeParameters)
 		{
-			
+
 			bool isFirstConstraint = true;
-			
+
 			if (typeParameterSymbol.HasNotNullConstraint)
 			{
 				constraints.Append("notnull");
@@ -143,15 +143,13 @@ static class NamespaceSymbolExtensions
 			if (constraints.Length > 0)
 			{
 				result.Append($"where " + typeParameterSymbol.Name + " : " + constraints + @"
-"); 
+");
 				constraints.Clear();
 			}
 		}
 
 		return result.ToString();
 	}
-	
-}
 
 	public static bool ContainsSymbolBaseType(this IEnumerable<INamedTypeSymbol> namedSymbolList, INamedTypeSymbol symbol)
 	{
