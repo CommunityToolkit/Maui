@@ -49,7 +49,7 @@ class TextColorToGenerator : IIncrementalGenerator
 			return;
 		}
 
-		var textStyleClassList = new List<(string ClassName, string ClassAcessModifier, string Namespace, string GenericArguments, string WhereStatement)>();
+		var textStyleClassList = new List<(string ClassName, string ClassAcessModifier, string Namespace, string GenericArguments, string GenericConstraints)>();
 
 		// Collect Microsoft.Maui.Controls that Implement ITextStyle
 		var mauiTextStyleImplementors = mauiControlsAssemblySymbolProvider.GlobalNamespace.GetNamedTypeSymbols().Where(x => x.AllInterfaces.Contains(textStyleSymbol, SymbolEqualityComparer.Default)
@@ -132,7 +132,7 @@ namespace " + textStyleClass.Namespace + @";
 	/// <param name=""easing"">The easing function to be used in the animation</param>
 	/// <returns>Value indicating if the animation completed successfully or not</returns>
 	public static Task<bool> TextColorTo" + textStyleClass.GenericArguments + "(this " + textStyleClass.Namespace + "." + textStyleClass.ClassName + textStyleClass.GenericArguments + @" element, Color color, uint rate = 16u, uint length = 250u, Easing? easing = null)
-" + textStyleClass.WhereStatement + @"
+" + textStyleClass.GenericConstraints + @"
 	{
 		ArgumentNullException.ThrowIfNull(element);
 		ArgumentNullException.ThrowIfNull(color);
