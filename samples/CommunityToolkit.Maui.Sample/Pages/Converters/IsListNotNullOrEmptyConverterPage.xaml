@@ -20,16 +20,16 @@
             Spacing="10">
 
             <Label
-                Text="The IsListNullOrEmptyConverter is a converter that allows users to convert an incoming binding that implements IEnumerable to a bool value. This value represents if the incoming binding value is null or an empty list."
-                TextColor="{StaticResource NormalLabelTextColor}" />
+                 Text="The IsListNotNullOrEmptyConverter is a converter that allows users to convert an incoming binding that implements IEnumerable to a bool value. This value represents if the incoming binding value is not null or an empty list."
+                 TextColor="{StaticResource NormalLabelTextColor}" />
 
-            <BoxView
-                HeightRequest="20"
-                BackgroundColor="Transparent"/>
+             <BoxView
+                 HeightRequest="20"
+                 BackgroundColor="Transparent"/>
 
-            <Label
-                Text="This label should be true if the collection item is null or empty"
-                TextColor="{StaticResource NormalLabelTextColor}" />
+             <Label
+                 Text="This label should be true if the collection item is not null or not empty"
+                 TextColor="{StaticResource NormalLabelTextColor}" />
 
             <Label
                 Text="{Binding StringItemSource, Converter={StaticResource IsListNotNullOrEmptyConverter}}"
