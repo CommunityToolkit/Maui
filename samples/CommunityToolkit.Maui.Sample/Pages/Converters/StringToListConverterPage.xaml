@@ -9,18 +9,6 @@
     x:TypeArguments="vm:StringToListConverterViewModel"
     x:DataType="vm:StringToListConverterViewModel">
 
-    <pages:BasePage.Resources>
-        <ResourceDictionary>
-            <mct:StringToListConverter x:Key="StringToListConverter" SplitOptions="RemoveEmptyEntries">
-                <mct:StringToListConverter.Separators>
-                    <x:String>,</x:String>
-                    <x:String>.</x:String>
-                    <x:String>;</x:String>
-                </mct:StringToListConverter.Separators>
-            </mct:StringToListConverter>
-        </ResourceDictionary>
-    </pages:BasePage.Resources>
-
     <pages:BasePage.Content>
         <VerticalStackLayout Spacing="8">
 
@@ -34,10 +22,10 @@
             <Entry
                 FontSize="Medium"
                 Placeholder="Enter some text separated by ',' or '.' or ';'"
-                Text="{Binding LabelText}" />
+                Text="{Binding LabelText, Mode=OneWayToSource}" />
 
             <CollectionView
-                ItemsSource="{Binding LabelText, Converter={StaticResource StringToListConverter}}">
+                ItemsSource="{Binding LabelText, Mode=OneWay, Converter={StaticResource StringToListConverter}}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="x:String">
                         <Label FontSize="Medium" Text="{Binding .}" TextColor="{StaticResource NormalLabelTextColor}" />
