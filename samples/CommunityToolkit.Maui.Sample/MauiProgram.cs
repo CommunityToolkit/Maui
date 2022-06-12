@@ -50,6 +50,7 @@ public static class MauiProgram
 		services.AddTransient<ToastPage>();
 
 		// Add Behaviors Pages
+		services.AddTransient<AnimationBehaviorPage>();
 		services.AddTransient<CharactersValidationBehaviorPage>();
 		services.AddTransient<EmailValidationBehaviorPage>();
 		services.AddTransient<EventToCommandBehaviorPage>();
@@ -67,7 +68,6 @@ public static class MauiProgram
 
 		// Add Converters Pages
 		services.AddTransient<BoolToObjectConverterPage>();
-		services.AddTransient<StateToBooleanConverterPage>();
 		services.AddTransient<ByteArrayToImageSourceConverterPage>();
 		services.AddTransient<ColorsConverterPage>();
 		services.AddTransient<CompareConverterPage>();
@@ -95,6 +95,7 @@ public static class MauiProgram
 		services.AddTransient<MultiConverterPage>();
 		services.AddTransient<MultiMathExpressionConverterPage>();
 		services.AddTransient<SelectedItemEventArgsConverterPage>();
+		services.AddTransient<StateToBooleanConverterPage>();
 		services.AddTransient<StringToListConverterPage>();
 		services.AddTransient<TextCaseConverterPage>();
 		services.AddTransient<VariableMultiValueConverterPage>();
