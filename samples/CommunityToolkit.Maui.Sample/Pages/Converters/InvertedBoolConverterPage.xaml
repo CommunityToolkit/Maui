@@ -30,10 +30,7 @@
 
                 <Label Text="False" TextColor="{StaticResource NormalLabelTextColor}" />
 
-                <Switch IsToggled="{Binding IsToggled, Mode=OneWayToSource}"
-                        IsEnabled="false"/>
-
-                <Label Text="True" TextColor="{StaticResource NormalLabelTextColor}" />
+                <Switch IsToggled="{Binding IsToggled, Mode=OneWayToSource}"/>
 
             </HorizontalStackLayout>
 
@@ -45,10 +42,7 @@
 
                 <Label Text="False" TextColor="{StaticResource NormalLabelTextColor}" />
 
-                <Switch IsToggled="{Binding IsToggled, Mode=OneWay, Converter={StaticResource InvertedBoolConverter}}"
-                        IsEnabled="false"/>
-
-                <Label Text="True" TextColor="{StaticResource NormalLabelTextColor}" />
+                <Switch IsToggled="{Binding IsToggled, Mode=OneWay, Converter={StaticResource InvertedBoolConverter}}" IsEnabled="false"/>
 
             </HorizontalStackLayout>
 

@@ -30,11 +30,11 @@
             SelectedItem="{Binding ItemSelected, Mode=TwoWay}"
             ItemsSource="{Binding StringItemSource, Mode=OneWay}">
             <ListView.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="x:String">
                     <ViewCell>
                         <Label 
                             Text="{Binding .}"
-                            TextColor="Black"
+                            TextColor="{StaticResource NormalLabelTextColor}"
                             Margin="10"/>
                     </ViewCell>
                 </DataTemplate>
@@ -43,7 +43,7 @@
                 <mct:EventToCommandBehavior 
                     EventName="ItemSelected"
                     Command="{Binding HandleItemSelectedCommand}"
-                    EventArgsConverter="{StaticResource SelectedItemEventArgsConverter}" />
+                    CommandParameter="{Binding ItemSelected}"/>
             </ListView.Behaviors>
         </ListView>
 

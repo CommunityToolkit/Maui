@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -13,7 +14,7 @@ public partial class SelectedItemEventArgsConverterViewModel : BaseViewModel
 	[ObservableProperty]
 	string labelText = "This label will display the selected item";
 
-	public ObservableCollection<string> StringItemSource { get; } = new()
+	public IReadOnlyList<string> StringItemSource { get; } = new[]
 	{
 		"Item 0",
 		"Item 1",
@@ -26,7 +27,10 @@ public partial class SelectedItemEventArgsConverterViewModel : BaseViewModel
 	[RelayCommand]
 	void HandleItemSelected(string text)
 	{
-		LabelText = $"{text} has been selected";
-		ItemSelected = null;
+		if (ItemSelected is not null)
+		{
+			LabelText = $"{text} has been selected";
+			ItemSelected = null;
+		}
 	}
 }
