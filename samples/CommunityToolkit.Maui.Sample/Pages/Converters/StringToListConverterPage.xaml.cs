@@ -8,11 +8,11 @@ public partial class StringToListConverterPage : BasePage<StringToListConverterV
 	public StringToListConverterPage(StringToListConverterViewModel stringToListConverterViewModel)
 		: base(stringToListConverterViewModel)
 	{
-		//Resources.Add(nameof(StringToListConverter), new StringToListConverter
-		//{
-		//	SplitOptions = StringSplitOptions.RemoveEmptyEntries,
-		//	Separators = new[] { ",", ".", ";" }
-		//});
+		Resources.Add(nameof(StringToListConverter), new StringToListConverter
+		{
+			SplitOptions = StringSplitOptions.RemoveEmptyEntries,
+			Separators = new[] { ",", ".", ";" }
+		});
 
 		InitializeComponent();
 	}
