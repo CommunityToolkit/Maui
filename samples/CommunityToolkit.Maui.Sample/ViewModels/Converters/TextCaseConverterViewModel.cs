@@ -1,12 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-public class TextCaseConverterViewModel : BaseViewModel
+namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+
+public partial class TextCaseConverterViewModel : BaseViewModel
 {
+	[ObservableProperty]
 	string input = string.Empty;
-
-	public string Input
-	{
-		get => input;
-		set => SetProperty(ref input, value);
-	}
 }

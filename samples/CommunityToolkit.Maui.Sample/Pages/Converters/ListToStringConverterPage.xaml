@@ -8,6 +8,7 @@
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.ListToStringConverterPage"
     x:TypeArguments="vm:ListToStringConverterViewModel"
     x:DataType="vm:ListToStringConverterViewModel">
+
     <ContentPage.Resources>
         <ResourceDictionary>
             <mct:ListToStringConverter x:Key="ListToStringConverter" Separator=", " />
@@ -18,7 +19,7 @@
         <VerticalStackLayout Spacing="16">
             <Label Text="The ListToStringConverter is a converter that allows users to convert an incoming binding that implements IEnumerable to a single string value. The Separator property is used to join the items in the IEnumerable." TextColor="{StaticResource NormalLabelTextColor}" />
             <Label Text="Output:" TextColor="{StaticResource NormalLabelTextColor}" />
-            <Label Text="{Binding ItemSource, Converter={StaticResource ListToStringConverter}}" TextColor="Black"/> 
+            <Label Text="{Binding ItemSource, Converter={StaticResource ListToStringConverter}}" TextColor="{StaticResource NormalLabelTextColor}"/> 
         </VerticalStackLayout>
     </pages:BasePage.Content>
 

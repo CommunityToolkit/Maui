@@ -7,6 +7,7 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.ItemTappedEventArgsConverterPage"
+    x:DataType="vm:ItemTappedEventArgsConverterViewModel"
     x:TypeArguments="vm:ItemTappedEventArgsConverterViewModel">
 
     <pages:BasePage.Resources>
@@ -27,18 +28,6 @@
                 BackgroundColor="Transparent"
                 ItemsSource="{Binding Items}"
                 SelectedItem="{Binding ItemSelected, Mode=TwoWay}">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <ViewCell>
-                            <VerticalStackLayout Margin="6">
-
-                                <Label Text="{Binding Name, StringFormat='Name: {0}'}"/>
-
-                            </VerticalStackLayout>
-                        </ViewCell>
-
-                    </DataTemplate>
-                </ListView.ItemTemplate>
 
                 <ListView.Behaviors>
                     <mctBehaviors:EventToCommandBehavior 

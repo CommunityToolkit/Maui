@@ -68,7 +68,6 @@ public static class MauiProgram
 
 		// Add Converters Pages
 		services.AddTransient<BoolToObjectConverterPage>();
-		services.AddTransient<StateToBooleanConverterPage>();
 		services.AddTransient<ByteArrayToImageSourceConverterPage>();
 		services.AddTransient<ColorsConverterPage>();
 		services.AddTransient<CompareConverterPage>();
@@ -96,6 +95,7 @@ public static class MauiProgram
 		services.AddTransient<MultiConverterPage>();
 		services.AddTransient<MultiMathExpressionConverterPage>();
 		services.AddTransient<SelectedItemEventArgsConverterPage>();
+		services.AddTransient<StateToBooleanConverterPage>();
 		services.AddTransient<StringToListConverterPage>();
 		services.AddTransient<TextCaseConverterPage>();
 		services.AddTransient<VariableMultiValueConverterPage>();
@@ -140,11 +140,11 @@ public static class MauiProgram
 		services.AddTransient<NumericValidationBehaviorViewModel>();
 		services.AddTransient<ProgressBarAnimationBehaviorViewModel>();
 		services.AddTransient<RequiredStringValidationBehaviorViewModel>();
+		services.AddTransient<SelectAllTextBehaviorViewModel>();
 		services.AddTransient<SetFocusOnEntryCompletedBehaviorViewModel>();
 		services.AddTransient<TextValidationBehaviorViewModel>();
 		services.AddTransient<UriValidationBehaviorViewModel>();
 		services.AddTransient<UserStoppedTypingBehaviorViewModel>();
-		services.AddTransient<SelectAllTextBehaviorViewModel>();
 
 		// Add Converters View Models
 		services.AddTransient<BoolToObjectConverterViewModel>();

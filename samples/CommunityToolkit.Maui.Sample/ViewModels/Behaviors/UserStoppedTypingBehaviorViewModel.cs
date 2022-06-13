@@ -1,20 +1,14 @@
 ﻿using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
-public class UserStoppedTypingBehaviorViewModel : BaseViewModel
+public partial class UserStoppedTypingBehaviorViewModel : BaseViewModel
 {
+	[ObservableProperty]
 	string performedSearches = string.Empty;
 
-	public string PerformedSearches
-	{
-		get => performedSearches;
-		set => SetProperty(ref performedSearches, value);
-	}
-
-	public ICommand SearchCommand { get; }
-
-	public UserStoppedTypingBehaviorViewModel() => SearchCommand = new Command<string>(PerformSearch);
-
-	void PerformSearch(string searchTerms) => PerformedSearches += string.Format($"Performed search for '{searchTerms}'.") + Environment.NewLine;
+	[RelayCommand]
+	void Search(string searchTerms) => PerformedSearches += string.Format($"Performed search for '{searchTerms}'.") + Environment.NewLine;
 }
