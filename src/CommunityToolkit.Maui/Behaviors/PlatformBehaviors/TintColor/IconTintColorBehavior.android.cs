@@ -11,7 +11,6 @@ namespace CommunityToolkit.Maui.Behaviors;
 
 public partial class IconTintColorBehavior : PlatformBehavior<Image>
 {
-
 	/// <inheritdoc/>
 	protected override void OnAttachedTo(Image bindable, AView platformView) =>
 		ApplyTintColor(bindable, platformView);

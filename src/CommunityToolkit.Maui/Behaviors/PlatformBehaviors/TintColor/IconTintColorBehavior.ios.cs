@@ -22,7 +22,12 @@ public partial class IconTintColorBehavior : PlatformBehavior<Image, UIImageView
 
 	static void ApplyTintColor(UIImageView imageView, Color? color)
 	{
-		color ??= Colors.Transparent;
+		if (color is null)
+		{
+			ClearTintColor(imageView);
+			return;
+		}
+
 		imageView.Image = imageView.Image?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
 		imageView.TintColor = color.ToPlatform();
 	}
