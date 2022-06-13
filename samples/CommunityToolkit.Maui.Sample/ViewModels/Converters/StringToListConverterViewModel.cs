@@ -1,12 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-public class StringToListConverterViewModel : BaseViewModel
+namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+
+public partial class StringToListConverterViewModel : BaseViewModel
 {
+	[ObservableProperty]
 	string labelText = "Item 1,Item 2,Item 3";
-
-	public string LabelText
-	{
-		get => labelText;
-		set => SetProperty(ref labelText, value);
-	}
 }

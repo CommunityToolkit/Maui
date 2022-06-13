@@ -19,7 +19,7 @@
                TextColor="{StaticResource NormalLabelTextColor}"/>
 
         <Image HorizontalOptions="Center"
-               MinimumHeightRequest="75"
+               HeightRequest="75"
                Source="{Binding DotNetBotImageByteArray, Mode=OneWay, Converter={StaticResource ByteArrayToImageSourceConverter}}" />
 
         <Button Text="Download Image"
@@ -30,7 +30,8 @@
                HorizontalOptions="Center"
                TextColor="{StaticResource NormalLabelTextColor}"/>
 
-        <ActivityIndicator IsRunning="{Binding IsDownloadingImage}"
+        <ActivityIndicator Color="{StaticResource NormalButtonBackgroundColor}"
+                           IsRunning="{Binding IsDownloadingImage}"
                            IsVisible="{Binding IsDownloadingImage}" />
 
     </VerticalStackLayout>

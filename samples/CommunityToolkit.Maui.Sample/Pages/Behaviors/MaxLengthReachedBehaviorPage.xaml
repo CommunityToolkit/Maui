@@ -6,6 +6,7 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.MaxLengthReachedBehaviorPage"
+    x:DataType="vm:MaxLengthReachedBehaviorViewModel"
     x:TypeArguments="vm:MaxLengthReachedBehaviorViewModel">
 
     <pages:BasePage.Content>
@@ -77,7 +78,7 @@
                     </Entry.Behaviors>
                 </Entry>
 
-                <Label Text="{Binding CommandExecutions}" Margin="{StaticResource ContentPadding}" />
+                <Label Text="{Binding CommandExecutionText}" Margin="{StaticResource ContentPadding}" />
 
             </VerticalStackLayout>
         </ScrollView>
