@@ -118,9 +118,10 @@
         </Setter>
     </Style>
 
-    <Style TargetType="Frame">
-        <Setter Property="HasShadow" Value="False" />
+    <Style TargetType="Frame" ApplyToDerivedTypes="true" >
+        <Setter Property="HasShadow" Value="True" />
         <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray950}}" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray950}}" />
         <Setter Property="CornerRadius" Value="8" />
     </Style>
 
@@ -315,7 +316,7 @@
                     </VisualState>
                     <VisualState x:Name="On">
                         <VisualState.Setters>
-                            <Setter Property="OnColor" Value="{AppThemeBinding Light={StaticResource Secondary}, Dark={StaticResource Gray200}}" />
+                            <Setter Property="OnColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray200}}" />
                             <Setter Property="ThumbColor" Value="{AppThemeBinding Light={StaticResource PrimaryColor}, Dark={StaticResource White}}" />
                         </VisualState.Setters>
                     </VisualState>
@@ -349,12 +350,12 @@
     </Style>
 
     <Style TargetType="Shell" ApplyToDerivedTypes="True">
-        <Setter Property="Shell.BackgroundColor" Value="{AppThemeBinding Light={StaticResource PrimaryColor}, Dark={StaticResource Gray950}}" />
+        <Setter Property="Shell.BackgroundColor" Value="{AppThemeBinding Light={StaticResource NavBarColor}, Dark={StaticResource Gray950}}" />
         <Setter Property="Shell.ForegroundColor" Value="{OnPlatform WinUI={StaticResource PrimaryColor}, Default={StaticResource White}}"></Setter>
         <Setter Property="Shell.TitleColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource White}}" />
         <Setter Property="Shell.DisabledColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray950}}" />
         <Setter Property="Shell.UnselectedColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray200}}" />
-        <Setter Property="Shell.NavBarHasShadow" Value="False" />
+        <Setter Property="Shell.NavBarHasShadow" Value="True" />
         <Setter Property="Shell.TabBarBackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}" />
         <Setter Property="Shell.TabBarForegroundColor" Value="{AppThemeBinding Light={StaticResource PrimaryColor}, Dark={StaticResource White}}" />
         <Setter Property="Shell.TabBarTitleColor" Value="{AppThemeBinding Light={StaticResource PrimaryColor}, Dark={StaticResource White}}" />
@@ -368,20 +369,13 @@
         <Setter Property="SelectedTabColor" Value="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}" />
     </Style>
 
-    <!-- Explicit Styles -->
-    <Style x:Key="card" TargetType="Frame" ApplyToDerivedTypes="true">
-        <Setter Property="BackgroundColor" Value="#ffffff" />
-        <Setter Property="CornerRadius" Value="8" />
-        <Setter Property="HasShadow" Value="True" />
-    </Style>
-
     <Style x:Key="label_welcome_header" TargetType="Label">
         <Setter Property="FontSize" Value="Title" />
         <Setter Property="TextColor" Value="{StaticResource HeadingLabelTextColor}" />
     </Style>
 
-    <Style x:Key="label_section_header" TargetType="Label">
-        <Setter Property="TextColor" Value="{StaticResource HeadingLabelTextColor}" />
+    <Style x:Key="label_section_text" TargetType="Label">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray300}}" />
     </Style>
 
     <!--  Values  -->
