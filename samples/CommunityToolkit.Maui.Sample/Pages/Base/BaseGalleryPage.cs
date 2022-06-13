@@ -11,18 +11,7 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 	{
 		Title = title;
 
-		if (deviceInfo.Platform == DevicePlatform.iOS && deviceInfo.Idiom == DeviceIdiom.Phone) // iOS Phones
-		{
-			Padding = new Thickness(0, 96, 0, 0);
-		}
-		else if (deviceInfo.Platform == DevicePlatform.iOS || deviceInfo.Platform == DevicePlatform.MacCatalyst) //iOS Tablets + MacCatalyst
-		{
-			Padding = new Thickness(0, 84, 0, 0);
-		}
-		else
-		{
-			Padding = 0;
-		}
+		Padding = 0;
 
 		Content = new CollectionView
 		{
@@ -77,8 +66,6 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 		{
 			public Card()
 			{
-				SetDynamicResource(StyleProperty, "card");
-
 				Content = new Grid
 				{
 					RowSpacing = 4,
@@ -92,13 +79,13 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 					Children =
 					{
 						new Label()
-							.DynamicResource(StyleProperty, "label_section_header")
 							.Row(CardRow.Title)
 							.Bind(Label.TextProperty, nameof(SectionModel.Title)),
 
 						new Label { MaxLines = 4, LineBreakMode = LineBreakMode.WordWrap }
 							.Row(CardRow.Description).TextStart().TextTop()
 							.Bind(Label.TextProperty, nameof(SectionModel.Description))
+							.DynamicResource(Label.StyleProperty, "label_section_text")
 					}
 				};
 			}

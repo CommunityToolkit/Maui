@@ -5,6 +5,7 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.IsListNullOrEmptyConverterPage"
+    x:DataType="vm:IsListNullOrEmptyConverterViewModel"
     x:TypeArguments="vm:IsListNullOrEmptyConverterViewModel">
 
     <pages:BasePage.Resources>
@@ -16,9 +17,7 @@
     <pages:BasePage.Content>
         <VerticalStackLayout
             Padding="10,10"
-            HorizontalOptions="Fill"
-            Spacing="10"
-            VerticalOptions="Fill">
+            Spacing="10">
 
             <Label
                 Text="The IsListNullOrEmptyConverter is a converter that allows users to convert an incoming binding that implements IEnumerable to a bool value. This value represents if the incoming binding value is null or an empty list."
@@ -34,14 +33,15 @@
 
             <Label
                 Text="{Binding StringItemSource, Converter={StaticResource IsListNullOrEmptyConverter}}"
-                TextColor="Black" />
+                FontAttributes="Bold"
+                TextColor="Red" />
 
             <Button Text="Clear List" Command="{Binding ClearCollectionCommand}" />
 
-            <CollectionView  VerticalOptions="StartAndExpand" HorizontalOptions="Center" ItemsSource="{Binding StringItemSource}">
+            <CollectionView ItemsSource="{Binding StringItemSource}">
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Label Text="{Binding .}" Margin="10" TextColor="Black" />
+                    <DataTemplate x:DataType="x:String">
+                        <Label Text="{Binding .}" Margin="10" TextColor="{StaticResource NormalLabelTextColor}" />
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>

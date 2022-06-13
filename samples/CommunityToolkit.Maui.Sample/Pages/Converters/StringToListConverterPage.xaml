@@ -9,44 +9,30 @@
     x:TypeArguments="vm:StringToListConverterViewModel"
     x:DataType="vm:StringToListConverterViewModel">
 
-    <pages:BasePage.Resources>
-        <ResourceDictionary>
-            <mct:StringToListConverter x:Key="StringToListConverter" SplitOptions="RemoveEmptyEntries">
-                <mct:StringToListConverter.Separators>
-                    <x:String>,</x:String>
-                    <x:String>.</x:String>
-                    <x:String>;</x:String>
-                </mct:StringToListConverter.Separators>
-            </mct:StringToListConverter>
-        </ResourceDictionary>
-    </pages:BasePage.Resources>
     <pages:BasePage.Content>
         <VerticalStackLayout Spacing="8">
 
             <Label Text="The StringToListConverter returns a string array that contains the substrings in this string that are delimited by Separator"
-                   TextColor="{StaticResource NormalLabelTextColor}"
-                   Grid.Row="0"/>
+                   TextColor="{StaticResource NormalLabelTextColor}"/>
 
             <Label
-                Grid.Row="1"
                 FontAttributes="Bold"
                 Text="Enter some text separated by ',' or '.' or ';'" />
 
             <Entry
-                Grid.Row="2"
                 FontSize="Medium"
                 Placeholder="Enter some text separated by ',' or '.' or ';'"
-                Text="{Binding LabelText}" />
+                Text="{Binding LabelText, Mode=OneWayToSource}" />
 
             <CollectionView
-                Grid.Row="3"
-                ItemsSource="{Binding LabelText, Converter={StaticResource StringToListConverter}}">
+                ItemsSource="{Binding LabelText, Mode=OneWay, Converter={StaticResource StringToListConverter}}">
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Label FontSize="Medium" Text="{Binding .}" />
+                    <DataTemplate x:DataType="x:String">
+                        <Label FontSize="Medium" Text="{Binding .}" TextColor="{StaticResource NormalLabelTextColor}" />
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
+
         </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>
