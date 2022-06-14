@@ -63,6 +63,7 @@ public static class MauiProgram
 		services.AddTransient<SelectAllTextBehaviorPage>();
 		services.AddTransient<SetFocusOnEntryCompletedBehaviorPage>();
 		services.AddTransient<TextValidationBehaviorPage>();
+		services.AddTransient<TintColorBehaviorPage>();
 		services.AddTransient<UriValidationBehaviorPage>();
 		services.AddTransient<UserStoppedTypingBehaviorPage>();
 
@@ -143,6 +144,7 @@ public static class MauiProgram
 		services.AddTransient<SelectAllTextBehaviorViewModel>();
 		services.AddTransient<SetFocusOnEntryCompletedBehaviorViewModel>();
 		services.AddTransient<TextValidationBehaviorViewModel>();
+		services.AddTransient<TintColorBehaviorViewModel>();
 		services.AddTransient<UriValidationBehaviorViewModel>();
 		services.AddTransient<UserStoppedTypingBehaviorViewModel>();
 

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage
+	x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.TintColorBehaviorPage"
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+	xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+	xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
+	Title="TintColorBehaviorPage"
+	x:DataType="vm:TintColorBehaviorViewModel"
+	x:TypeArguments="vm:TintColorBehaviorViewModel">
+	<ScrollView>
+		<VerticalStackLayout Padding="20">
+
+			<Label Margin="0,0,0,20" Text="With the IconTintColorBehavior you set the tint color of an image. This behavior works on the Image and ImageButton controls and is implemented for the Android, iOS, and maccatalyst platforms." />
+
+			<Grid RowDefinitions="Auto, 60, 60, 60" RowSpacing="20">
+
+				<Label
+					FontAttributes="Bold"
+					FontSize="18"
+					HorizontalTextAlignment="Center"
+					Text="Image control" />
+
+				<Image Grid.Row="1" Source="shield.png" />
+
+				<Image Grid.Row="2" Source="shield.png">
+					<Image.Behaviors>
+						<mct:IconTintColorBehavior TintColor="Red" />
+					</Image.Behaviors>
+				</Image>
+
+				<Image Grid.Row="3" Source="shield.png">
+					<Image.Behaviors>
+						<mct:IconTintColorBehavior TintColor="Green" />
+					</Image.Behaviors>
+				</Image>
+
+				<Label
+					Grid.Column="1"
+					FontAttributes="Bold"
+					FontSize="18"
+					HorizontalTextAlignment="Center"
+					Text="ImageButton control" />
+
+				<ImageButton
+					Grid.Row="1"
+					Grid.Column="1"
+					Source="shield.png" />
+
+				<ImageButton
+					Grid.Row="2"
+					Grid.Column="1"
+					Source="shield.png">
+					<ImageButton.Behaviors>
+						<mct:IconTintColorBehavior TintColor="Red" />
+					</ImageButton.Behaviors>
+				</ImageButton>
+
+				<ImageButton
+					Grid.Row="3"
+					Grid.Column="1"
+					Source="shield.png">
+					<ImageButton.Behaviors>
+						<mct:IconTintColorBehavior TintColor="Green" />
+					</ImageButton.Behaviors>
+				</ImageButton>
+			</Grid>
+		</VerticalStackLayout>
+	</ScrollView>
+</pages:BasePage>

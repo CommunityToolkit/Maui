@@ -39,6 +39,7 @@
     <!-- Images -->
     <MauiImage Include="Resources\Images\*" />
     <EmbeddedResource Include="Resources\Embedded\*" />
+    <None Remove="Resources\Images\shield.png" />
 
     <PackageReference Include="CommunityToolkit.Maui.Markup" Version="1.0.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0-preview4" />
