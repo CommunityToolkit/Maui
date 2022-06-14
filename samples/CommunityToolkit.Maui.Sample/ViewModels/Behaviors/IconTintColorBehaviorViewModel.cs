@@ -1,4 +1,5 @@
 ﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
-public class TintColorBehaviorViewModel : BaseViewModel
+
+public class IconTintColorBehaviorViewModel : BaseViewModel
 {
 }

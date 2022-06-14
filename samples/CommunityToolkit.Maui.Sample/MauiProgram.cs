@@ -54,6 +54,7 @@ public static class MauiProgram
 		services.AddTransient<CharactersValidationBehaviorPage>();
 		services.AddTransient<EmailValidationBehaviorPage>();
 		services.AddTransient<EventToCommandBehaviorPage>();
+		services.AddTransient<IconTintColorBehaviorPage>();
 		services.AddTransient<MaskedBehaviorPage>();
 		services.AddTransient<MaxLengthReachedBehaviorPage>();
 		services.AddTransient<MultiValidationBehaviorPage>();
@@ -63,7 +64,6 @@ public static class MauiProgram
 		services.AddTransient<SelectAllTextBehaviorPage>();
 		services.AddTransient<SetFocusOnEntryCompletedBehaviorPage>();
 		services.AddTransient<TextValidationBehaviorPage>();
-		services.AddTransient<TintColorBehaviorPage>();
 		services.AddTransient<UriValidationBehaviorPage>();
 		services.AddTransient<UserStoppedTypingBehaviorPage>();
 
@@ -135,6 +135,7 @@ public static class MauiProgram
 		services.AddTransient<CharactersValidationBehaviorViewModel>();
 		services.AddTransient<EmailValidationBehaviorViewModel>();
 		services.AddTransient<EventToCommandBehaviorViewModel>();
+		services.AddTransient<IconTintColorBehaviorViewModel>();
 		services.AddTransient<MaskedBehaviorViewModel>();
 		services.AddTransient<MaxLengthReachedBehaviorViewModel>();
 		services.AddTransient<MultiValidationBehaviorViewModel>();
@@ -144,7 +145,6 @@ public static class MauiProgram
 		services.AddTransient<SelectAllTextBehaviorViewModel>();
 		services.AddTransient<SetFocusOnEntryCompletedBehaviorViewModel>();
 		services.AddTransient<TextValidationBehaviorViewModel>();
-		services.AddTransient<TintColorBehaviorViewModel>();
 		services.AddTransient<UriValidationBehaviorViewModel>();
 		services.AddTransient<UserStoppedTypingBehaviorViewModel>();
 

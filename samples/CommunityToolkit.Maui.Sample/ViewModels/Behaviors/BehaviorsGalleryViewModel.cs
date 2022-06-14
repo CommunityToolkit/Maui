@@ -53,7 +53,7 @@ public class BehaviorsGalleryViewModel : BaseGalleryViewModel
 			SectionModel.Create<SelectAllTextBehaviorViewModel>(nameof(SelectAllTextBehavior),
 				"Select all text inside the Entry or Editor control."),
 			
-			SectionModel.Create<TintColorBehaviorViewModel>(nameof(IconTintColorBehavior),
+			SectionModel.Create<IconTintColorBehaviorViewModel>(nameof(IconTintColorBehavior),
 				"Tint an icon with the selected color."),
 		})
 	{
