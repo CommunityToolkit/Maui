@@ -33,7 +33,7 @@ public partial class IconTintColorBehavior
 				SetButtonTintColor(button, color);
 				break;
 			default:
-				throw new InvalidOperationException($"The control must be of type {nameof(AButton)} or {nameof(ImageView)}.");
+				throw new NotSupportedException($"{nameof(IconTintColorBehavior)} only currently supports Android.Widget.Button and {nameof(ImageView)}.");
 		}
 
 
@@ -45,7 +45,7 @@ public partial class IconTintColorBehavior
 				color = Colors.Transparent;
 			}
 
-			image.SetColorFilter(new PorterDuffColorFilter(color.ToPlatform(), PorterDuff.Mode.SrcIn ?? throw new NullReferenceException()));
+			image.SetColorFilter(new PorterDuffColorFilter(color.ToPlatform(), PorterDuff.Mode.SrcIn ?? throw new InvalidOperationException("PorterDuff.Mode.SrcIn should not be null at runtime")));
 		}
 
 		static void SetButtonTintColor(AButton button, Color? color)
