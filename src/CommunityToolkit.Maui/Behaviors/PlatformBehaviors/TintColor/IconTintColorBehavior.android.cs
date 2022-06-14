@@ -9,20 +9,19 @@ using ImageButton = Microsoft.Maui.Controls.ImageButton;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
-public partial class IconTintColorBehavior : PlatformBehavior<Image>
+public partial class IconTintColorBehavior : PlatformBehavior<View>
 {
 	/// <inheritdoc/>
-	protected override void OnAttachedTo(Image bindable, AView platformView) =>
+	protected override void OnAttachedTo(View bindable, AView platformView) =>
 		ApplyTintColor(bindable, platformView);
 
 	/// <inheritdoc/>
-	protected override void OnDetachedFrom(Image bindable, AView platformView) =>
+	protected override void OnDetachedFrom(View bindable, AView platformView) =>
 		ClearTintColor(bindable, platformView);
 
-	void ApplyTintColor(Image element, AView control)
+	void ApplyTintColor(View element, AView control)
 	{
 		var color = TintColor;
-
 		element.PropertyChanged += OnElementPropertyChanged;
 
 		switch (control)
@@ -72,7 +71,7 @@ public partial class IconTintColorBehavior : PlatformBehavior<Image>
 	void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs args)
 	{
 		if (args.PropertyName is not string propertyName
-			|| sender is not Image bindable
+			|| sender is not View bindable
 			|| bindable.Handler?.PlatformView is not AView platformView)
 		{
 			return;
@@ -88,7 +87,7 @@ public partial class IconTintColorBehavior : PlatformBehavior<Image>
 		ApplyTintColor(bindable, platformView);
 	}
 
-	void ClearTintColor(Image element, AView control)
+	void ClearTintColor(View element, AView control)
 	{
 		element.PropertyChanged -= OnElementPropertyChanged;
 		switch (control)

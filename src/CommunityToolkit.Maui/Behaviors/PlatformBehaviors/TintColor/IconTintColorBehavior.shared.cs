@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 [UnsupportedOSPlatform("Windows")]
 public partial class IconTintColorBehavior
 #if !(ANDROID || IOS || MACCATALYST)
- : PlatformBehavior<Image>
+ : PlatformBehavior<View>
 #endif
 {
 	/// <summary>

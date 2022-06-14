@@ -14,7 +14,10 @@
 
 			<Label Margin="0,0,0,20" Text="With the IconTintColorBehavior you set the tint color of an image. This behavior works on the Image and ImageButton controls and is implemented for the Android, iOS, and maccatalyst platforms." />
 
-			<Grid RowDefinitions="Auto, 60, 60, 60" RowSpacing="20">
+			<Grid
+				ColumnDefinitions="*,*"
+				RowDefinitions="Auto, 60, 60, 60"
+				RowSpacing="20">
 
 				<Label
 					FontAttributes="Bold"

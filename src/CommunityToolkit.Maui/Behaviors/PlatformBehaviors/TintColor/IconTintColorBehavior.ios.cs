@@ -1,15 +1,16 @@
-﻿using Microsoft.Maui.Platform;
+﻿using System.ComponentModel;
+using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Behaviors;
-public partial class IconTintColorBehavior : PlatformBehavior<Image, UIImageView>
+public partial class IconTintColorBehavior : PlatformBehavior<View, UIImageView>
 {
 	/// <inheritdoc/>
-	protected override void OnAttachedTo(Image bindable, UIImageView platformView) =>
+	protected override void OnAttachedTo(View bindable, UIImageView platformView) =>
 		ApplyTintColor(platformView, TintColor);
 
 	/// <inheritdoc/>
-	protected override void OnDetachedFrom(Image bindable, UIImageView platformView) =>
+	protected override void OnDetachedFrom(View bindable, UIImageView platformView) =>
 		ClearTintColor(platformView);
 
 	static void ClearTintColor(UIImageView imageView) =>
@@ -25,5 +26,24 @@ public partial class IconTintColorBehavior : PlatformBehavior<Image, UIImageView
 
 		imageView.Image = imageView.Image?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
 		imageView.TintColor = color.ToPlatform();
+	}
+
+	void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs args)
+	{
+		if (args.PropertyName is not string propertyName
+			|| sender is not View bindable
+			|| bindable.Handler?.PlatformView is not UIImageView platformView)
+		{
+			return;
+		}
+
+		if (!propertyName.Equals(TintColorProperty.PropertyName)
+			&& !propertyName.Equals(Image.SourceProperty.PropertyName)
+			&& !propertyName.Equals(ImageButton.SourceProperty.PropertyName))
+		{
+			return;
+		}
+
+		ApplyTintColor(platformView, TintColor);
 	}
 }
