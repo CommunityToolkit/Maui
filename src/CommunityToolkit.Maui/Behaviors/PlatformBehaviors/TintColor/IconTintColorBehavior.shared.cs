@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Versioning;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.Versioning;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -19,7 +14,6 @@ public partial class IconTintColorBehavior
 	/// <summary>
 	/// Attached Bindable Property for the <see cref="TintColor"/>.
 	/// </summary>
-
 	public static readonly BindableProperty TintColorProperty =
 		BindableProperty.Create(nameof(TintColor), typeof(Color), typeof(IconTintColorBehavior), default);
 
