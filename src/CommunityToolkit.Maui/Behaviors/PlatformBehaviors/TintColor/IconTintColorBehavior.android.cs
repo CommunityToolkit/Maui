@@ -9,7 +9,7 @@ using ImageButton = Microsoft.Maui.Controls.ImageButton;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
-public partial class IconTintColorBehavior : PlatformBehavior<View>
+public partial class IconTintColorBehavior
 {
 	/// <inheritdoc/>
 	protected override void OnAttachedTo(View bindable, AView platformView) =>

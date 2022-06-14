@@ -6,10 +6,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// A behavior that allows you to tint an icon with a specified <see cref="Color"/>.
 /// </summary>
 [UnsupportedOSPlatform("Windows")]
-public partial class IconTintColorBehavior
-#if !(ANDROID || IOS || MACCATALYST)
- : PlatformBehavior<View>
-#endif
+public partial class IconTintColorBehavior : PlatformBehavior<View>
 {
 	/// <summary>
 	/// Attached Bindable Property for the <see cref="TintColor"/>.
