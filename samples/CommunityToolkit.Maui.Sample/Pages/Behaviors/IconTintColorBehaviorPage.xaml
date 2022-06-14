@@ -10,30 +10,34 @@
 	x:DataType="vm:IconTintColorBehaviorViewModel"
 	x:TypeArguments="vm:IconTintColorBehaviorViewModel">
 	<ScrollView>
-		<VerticalStackLayout Padding="20">
+		<Grid
+			Padding="20" 
+			ColumnDefinitions="*,*"
+			RowDefinitions="Auto, Auto, 60, 60, 60"
+			RowSpacing="20">
 
-			<Label Margin="0,0,0,20" Text="With the IconTintColorBehavior you set the tint color of an image. This behavior works on the Image and ImageButton controls and is implemented for the Android, iOS, and maccatalyst platforms." />
-
-			<Grid
-				ColumnDefinitions="*,*"
-				RowDefinitions="Auto, 60, 60, 60"
-				RowSpacing="20">
+			<Label
+				Margin="0,0,0,20"
+				Text="With the IconTintColorBehavior you set the tint color of an image. This behavior works on the Image and ImageButton controls and is implemented for the Android, iOS, and maccatalyst platforms."
+				HorizontalTextAlignment="Center"
+				Grid.ColumnSpan="2"/>
 
 				<Label
+					Grid.Row="1"
 					FontAttributes="Bold"
 					FontSize="18"
 					HorizontalTextAlignment="Center"
 					Text="Image control" />
 
-				<Image Grid.Row="1" Source="shield.png" />
+				<Image Grid.Row="2" Source="shield.png" />
 
-				<Image Grid.Row="2" Source="shield.png">
+				<Image Grid.Row="3" Source="shield.png">
 					<Image.Behaviors>
 						<mct:IconTintColorBehavior TintColor="Red" />
 					</Image.Behaviors>
 				</Image>
 
-				<Image Grid.Row="3" Source="shield.png">
+				<Image Grid.Row="4" Source="shield.png">
 					<Image.Behaviors>
 						<mct:IconTintColorBehavior TintColor="Green" />
 					</Image.Behaviors>
@@ -41,18 +45,19 @@
 
 				<Label
 					Grid.Column="1"
+					Grid.Row="1"
 					FontAttributes="Bold"
 					FontSize="18"
 					HorizontalTextAlignment="Center"
 					Text="ImageButton control" />
 
 				<ImageButton
-					Grid.Row="1"
+					Grid.Row="2"
 					Grid.Column="1"
 					Source="shield.png" />
 
 				<ImageButton
-					Grid.Row="2"
+					Grid.Row="3"
 					Grid.Column="1"
 					Source="shield.png">
 					<ImageButton.Behaviors>
@@ -61,7 +66,7 @@
 				</ImageButton>
 
 				<ImageButton
-					Grid.Row="3"
+					Grid.Row="4"
 					Grid.Column="1"
 					Source="shield.png">
 					<ImageButton.Behaviors>
@@ -69,6 +74,5 @@
 					</ImageButton.Behaviors>
 				</ImageButton>
 			</Grid>
-		</VerticalStackLayout>
 	</ScrollView>
 </pages:BasePage>
