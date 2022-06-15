@@ -3,13 +3,14 @@ variables:
   PreviewNumber: $[counter(variables['CurrentSemanticVersionBase'], 1001)]
   CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(PreviewNumber)'
   NugetPackageVersion: '$(CurrentSemanticVersion)'
-  NET_VERSION: '6.0.x'
+  NET_VERSION: '6.0.300'
   PathToSolution: 'src/CommunityToolkit.Maui.sln'
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
   PathToCommunityToolkitCoreCsproj: 'src/CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
   XcodeVersion: '13.3.1'
+  RollbackFile: '6.0.312.json'
 
 trigger:
   branches:
@@ -44,7 +45,7 @@ jobs:
         inputs:
           packageType: 'sdk'
           version: '$(NET_VERSION)'
-      - powershell: dotnet workload install maui
+      - powershell: dotnet workload install maui --from-rollback-file $(RollbackFile) --source https://api.nuget.org/v3/index.json
         displayName: Install .NET MAUI
       # if this is a tagged build, then update the version number
       - powershell: |
@@ -164,7 +165,7 @@ jobs:
       - task: CmdLine@2
         displayName: 'Install .NET MAUI workload'
         inputs:
-          script: dotnet workload install maui
+          script: dotnet workload install maui --from-rollback-file $(RollbackFile) --source https://api.nuget.org/v3/index.json
       - task: CmdLine@2
         displayName: 'Run Unit Tests'
         inputs:
