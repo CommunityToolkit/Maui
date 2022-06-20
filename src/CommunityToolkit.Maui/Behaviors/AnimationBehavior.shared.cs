@@ -38,7 +38,6 @@ public class AnimationBehavior : EventToCommandBehavior
 	}
 
 	/// <inheritdoc/>
-	[MemberNotNull(nameof(tapGestureRecognizer))]
 	protected override void OnAttachedTo(VisualElement bindable)
 	{
 		base.OnAttachedTo(bindable);
