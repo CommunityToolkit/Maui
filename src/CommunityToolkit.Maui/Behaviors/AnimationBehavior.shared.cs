@@ -44,14 +44,14 @@ public class AnimationBehavior : EventToCommandBehavior
 
 		if (string.IsNullOrWhiteSpace(EventName))
 		{
-			if (bindable is not IGestureRecognizers gestureRecognizers)
-			{
-				throw new InvalidOperationException($"VisualElement does not implement {nameof(IGestureRecognizers)}");
-			}
-
 			if (bindable is ITextInput)
 			{
 				throw new InvalidOperationException($"Animation Behavior can not be attached to {nameof(ITextInput)} without using the EventName property.");
+			}
+
+			if (bindable is not IGestureRecognizers gestureRecognizers)
+			{
+				throw new InvalidOperationException($"VisualElement does not implement {nameof(IGestureRecognizers)}");
 			}
 
 			tapGestureRecognizer = new TapGestureRecognizer();

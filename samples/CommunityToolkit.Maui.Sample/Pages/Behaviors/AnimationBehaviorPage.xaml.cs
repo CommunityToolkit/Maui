@@ -24,8 +24,5 @@ class SampleScaleToAnimation : BaseAnimation
 {
 	public double Scale { get; set; }
 
-	public override async Task Animate(VisualElement view)
-	{
-		await view.ScaleTo(Scale, Length, Easing);
-	}
+	public override Task Animate(VisualElement view) => view.ScaleTo(Scale, Length, Easing);
 }
