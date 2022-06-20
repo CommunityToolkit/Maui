@@ -1,12 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-public class IsStringNullOrEmptyConverterViewModel : BaseViewModel
+namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+
+public partial class IsStringNullOrEmptyConverterViewModel : BaseViewModel
 {
+	[ObservableProperty]
 	string? labelText;
-
-	public string? LabelText
-	{
-		get => labelText;
-		set => SetProperty(ref labelText, value);
-	}
 }

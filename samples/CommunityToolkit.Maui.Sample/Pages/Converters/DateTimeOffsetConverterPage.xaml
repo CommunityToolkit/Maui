@@ -6,7 +6,9 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.DateTimeOffsetConverterPage"
+    x:DataType="vm:DateTimeOffsetConverterViewModel"
     x:TypeArguments="vm:DateTimeOffsetConverterViewModel">
+
     <pages:BasePage.Resources>
         <ResourceDictionary>
             <mct:DateTimeOffsetConverter x:Key="DateTimeOffsetConverter" />

@@ -1,12 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-public class CompareConverterViewModel : BaseViewModel
+namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+
+public partial class CompareConverterViewModel : BaseViewModel
 {
+	[ObservableProperty]
 	double sliderValue = 0.5;
-
-	public double SliderValue
-	{
-		get => sliderValue;
-		set => SetProperty(ref sliderValue, value);
-	}
 }
