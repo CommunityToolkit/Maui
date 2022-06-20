@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 public class AnimationBehavior_Tests : BaseTest
 {
 	[Fact]
-	public void TabGestureRecognizerAttachedWhenNoEventSpecified()
+	public void TapGestureRecognizerAttachedWhenNoEventSpecified()
 	{
 		var boxView = new BoxView();
 		boxView.Behaviors.Add(new AnimationBehavior());
@@ -19,7 +19,18 @@ public class AnimationBehavior_Tests : BaseTest
 	}
 
 	[Fact]
-	public void TabGestureRecognizerNotAttachedWhenEventSpecified()
+	public void TapGestureRecognizerAttachedEvenWithAnotherAlreadyAttached()
+	{
+		var boxView = new BoxView();
+		boxView.GestureRecognizers.Add(new TapGestureRecognizer());
+		boxView.Behaviors.Add(new AnimationBehavior());
+		var gestureRecognizers = boxView.GestureRecognizers.ToList();
+
+		gestureRecognizers.Should().HaveCount(2).And.AllBeOfType<TapGestureRecognizer>();
+	}
+
+	[Fact]
+	public void TapGestureRecognizerNotAttachedWhenEventSpecified()
 	{
 		var boxView = new BoxView();
 		boxView.Behaviors.Add(new AnimationBehavior
@@ -32,7 +43,7 @@ public class AnimationBehavior_Tests : BaseTest
 	}
 
 	[Fact]
-	public void TabGestureRecognizerNotAttachedWhenViewIsInputView()
+	public void TapGestureRecognizerNotAttachedWhenViewIsInputView()
 	{
 		var addBehavior = () => new Entry().Behaviors.Add(new AnimationBehavior());
 		addBehavior.Should().Throw<InvalidOperationException>();
