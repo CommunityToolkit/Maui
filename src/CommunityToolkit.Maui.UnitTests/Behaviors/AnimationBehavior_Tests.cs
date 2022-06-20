@@ -21,12 +21,14 @@ public class AnimationBehavior_Tests : BaseTest
 	[Fact]
 	public void TabGestureRecognizerNotAttachedWhenEventSpecified()
 	{
-		var addBehavior = () => new BoxView().Behaviors.Add(new AnimationBehavior()
+		var boxView = new BoxView();
+		boxView.Behaviors.Add(new AnimationBehavior
 		{
 			EventName = nameof(BoxView.Focused),
 		});
+		var gestureRecognizers = boxView.GestureRecognizers.ToList();
 
-		addBehavior.Should().Throw<InvalidOperationException>();
+		gestureRecognizers.Should().BeEmpty();
 	}
 
 	[Fact]
