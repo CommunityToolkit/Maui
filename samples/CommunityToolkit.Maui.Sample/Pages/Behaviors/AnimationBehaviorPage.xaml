@@ -40,13 +40,23 @@
             </Button.Behaviors>
         </Button>
 
-        <Entry Placeholder="Click this Button" Margin="16,0">
+        <Entry Placeholder="Animate on Focused and Unfocused" Margin="16,0">
             <Entry.Behaviors>
                 <mct:AnimationBehavior EventName="Focused">
                     <mct:AnimationBehavior.AnimationType>
-                        <behaviorPages:SampleScaleAnimation 
+                        <behaviorPages:SampleScaleToAnimation 
                             Easing="{x:Static Easing.Linear}"
-                            Length="100"/>
+                            Length="100"
+                            Scale="1.05"/>
+                    </mct:AnimationBehavior.AnimationType>
+                </mct:AnimationBehavior>
+
+                <mct:AnimationBehavior EventName="Unfocused">
+                    <mct:AnimationBehavior.AnimationType>
+                        <behaviorPages:SampleScaleToAnimation 
+                            Easing="{x:Static Easing.Linear}"
+                            Length="100"
+                            Scale="1"/>
                     </mct:AnimationBehavior.AnimationType>
                 </mct:AnimationBehavior>
             </Entry.Behaviors>
