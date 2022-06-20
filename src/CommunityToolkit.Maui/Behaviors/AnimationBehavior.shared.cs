@@ -50,6 +50,11 @@ public class AnimationBehavior : EventToCommandBehavior
 				throw new InvalidOperationException($"VisualElement does not implement {nameof(IGestureRecognizers)}");
 			}
 
+			if (bindable is ITextInput)
+			{
+				throw new InvalidOperationException($"Animation Behavior can not be attached to {nameof(ITextInput)} without using the EventName property.");
+			}
+
 			tapGestureRecognizer = new TapGestureRecognizer();
 			tapGestureRecognizer.Tapped += OnTriggerHandled;
 
