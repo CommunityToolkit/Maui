@@ -97,7 +97,7 @@ public class EventToCommandBehavior : BaseBehavior<VisualElement>
 		UnregisterEvent();
 
 		var eventName = EventName;
-		if (View == null || string.IsNullOrWhiteSpace(eventName))
+		if (View is null || string.IsNullOrWhiteSpace(eventName))
 		{
 			return;
 		}
@@ -116,7 +116,7 @@ public class EventToCommandBehavior : BaseBehavior<VisualElement>
 
 	void UnregisterEvent()
 	{
-		if (eventInfo != null && eventHandler != null)
+		if (eventInfo is not null && eventHandler is not null)
 		{
 			eventInfo.RemoveEventHandler(View, eventHandler);
 		}
