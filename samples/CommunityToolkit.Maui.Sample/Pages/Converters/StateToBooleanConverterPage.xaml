@@ -16,12 +16,18 @@
 		</ResourceDictionary>
 	</ContentPage.Resources>
 
-	<VerticalStackLayout VerticalOptions="Center">
-		<Label
+	<VerticalStackLayout VerticalOptions="Start" Spacing="12">
+        <Label HorizontalOptions="Center"
+               Text="The StateToBoolConverter is a one way converter that returns a boolean result based on whether the supplied value is of a specific LayoutState."/>
+
+		<Button HorizontalOptions="Center"
+                Command="{Binding ChangeLayoutCommand}" 
+                Text="Change LayoutState" />
+        
+        <Label
 			HorizontalOptions="Center"
-			IsVisible="{Binding LayoutState, Converter={StaticResource StateToBooleanConverter}}"
-			Text="The state is Success!"
-			VerticalOptions="Center" />
-		<Button Command="{Binding ChangeLayoutCommand}" Text="Change state" />
+			Text="{Binding LayoutState, Converter={StaticResource StateToBooleanConverter}, StringFormat='The supplied valie of LayoutState is Success: {0}'}"
+			VerticalOptions="Center" />            
+            
 	</VerticalStackLayout>
 </pages:BasePage>

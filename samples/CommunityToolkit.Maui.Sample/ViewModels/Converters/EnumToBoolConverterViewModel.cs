@@ -7,7 +7,7 @@ public partial class EnumToBoolConverterViewModel : BaseViewModel
 	[ObservableProperty]
 	MyDevicePlatform selectedPlatform = Enum.Parse<MyDevicePlatform>(DeviceInfo.Platform.ToString(), true);
 
-	public IReadOnlyCollection<MyDevicePlatform> Platforms { get; } = new List<MyDevicePlatform>(Enum.GetValues<MyDevicePlatform>());
+	public IReadOnlyCollection<MyDevicePlatform> Platforms { get; } = Enum.GetValues<MyDevicePlatform>();
 }
 
 public enum MyDevicePlatform

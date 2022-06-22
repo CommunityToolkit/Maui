@@ -24,12 +24,12 @@ public class EmailValidationBehavior : TextValidationBehavior
 			return false;
 		}
 
-		if (value.Contains(".."))
+		if (value.Contains("..", StringComparison.Ordinal))
 		{
 			return false;
 		}
 
-		if (value.Contains(".@"))
+		if (value.Contains(".@", StringComparison.Ordinal))
 		{
 			return false;
 		}

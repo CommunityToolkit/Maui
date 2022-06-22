@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 public class AnimationBehavior_Tests : BaseTest
 {
 	[Fact]
-	public void TabGestureRecognizerAttachedWhenNoEventSpecified()
+	public void TapGestureRecognizerAttachedWhenNoEventSpecified()
 	{
 		var boxView = new BoxView();
 		boxView.Behaviors.Add(new AnimationBehavior());
@@ -19,18 +19,31 @@ public class AnimationBehavior_Tests : BaseTest
 	}
 
 	[Fact]
-	public void TabGestureRecognizerNotAttachedWhenEventSpecified()
+	public void TapGestureRecognizerAttachedEvenWithAnotherAlreadyAttached()
 	{
-		var addBehavior = () => new BoxView().Behaviors.Add(new AnimationBehavior()
-		{
-			EventName = nameof(BoxView.Focused),
-		});
+		var boxView = new BoxView();
+		boxView.GestureRecognizers.Add(new TapGestureRecognizer());
+		boxView.Behaviors.Add(new AnimationBehavior());
+		var gestureRecognizers = boxView.GestureRecognizers.ToList();
 
-		addBehavior.Should().Throw<InvalidOperationException>();
+		gestureRecognizers.Should().HaveCount(2).And.AllBeOfType<TapGestureRecognizer>();
 	}
 
 	[Fact]
-	public void TabGestureRecognizerNotAttachedWhenViewIsInputView()
+	public void TapGestureRecognizerNotAttachedWhenEventSpecified()
+	{
+		var boxView = new BoxView();
+		boxView.Behaviors.Add(new AnimationBehavior
+		{
+			EventName = nameof(BoxView.Focused),
+		});
+		var gestureRecognizers = boxView.GestureRecognizers.ToList();
+
+		gestureRecognizers.Should().BeEmpty();
+	}
+
+	[Fact]
+	public void TapGestureRecognizerNotAttachedWhenViewIsInputView()
 	{
 		var addBehavior = () => new Entry().Behaviors.Add(new AnimationBehavior());
 		addBehavior.Should().Throw<InvalidOperationException>();

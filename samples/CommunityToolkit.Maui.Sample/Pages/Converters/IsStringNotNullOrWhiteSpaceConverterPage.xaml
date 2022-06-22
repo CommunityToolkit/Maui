@@ -5,6 +5,7 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.IsStringNotNullOrWhiteSpaceConverterPage"
+    x:DataType="vm:IsStringNotNullOrWhiteSpaceConverterViewModel"
     x:TypeArguments="vm:IsStringNotNullOrWhiteSpaceConverterViewModel">
 
     <pages:BasePage.Resources>

@@ -6,6 +6,7 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.DoubleToIntConverterPage"
+    x:DataType="vm:DoubleToIntConverterViewModel"
     x:TypeArguments="vm:DoubleToIntConverterViewModel">
     <pages:BasePage.Resources>
         <ResourceDictionary>

@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:system="clr-namespace:System;assembly=netstandard"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.AnimationBehaviorPage"
     xmlns:behaviorPages="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Behaviors"
@@ -11,23 +12,63 @@
     x:DataType="vm:AnimationBehaviorViewModel">
 
     <VerticalStackLayout Spacing="15" Padding="12">
-        <Label Text="AnimationBehavor is a Behavior that can be attached to any VisualElement, allowing developers to trigger animations via ICommand AnimateCommand."/>
+        <Label>
+            <Label.FormattedText>
+                <FormattedString>
+                    <FormattedString.Spans>
+                        <Span Text="AnimationBehavor is a Behavior that can be attached to any VisualElement, allowing developers to: trigger animations via: ICommand AnimateCommand." />
+                        <Span Text="{x:Static system:Environment.NewLine}" />
+                        <Span Text="* use the default of a TapGestureRecognizer being added to the attached VisualElement" />
+                        <Span Text="{x:Static system:Environment.NewLine}" />
+                        <Span Text="* define an EventName that will trigger the animation" />
+                        <Span Text="{x:Static system:Environment.NewLine}" />
+                        <Span Text="* trigger the animation through the AnimateCommand property" />
+                    </FormattedString.Spans>
+                </FormattedString>
+            </Label.FormattedText>
+        </Label>
 
         <Button Text="Click this Button" Margin="16,0">
             <Button.Behaviors>
-                <mct:AnimationBehavior Command="{Binding AnimationCommand}">
+                <mct:AnimationBehavior EventName="Clicked">
                     <mct:AnimationBehavior.AnimationType>
                         <behaviorPages:SampleScaleAnimation 
-                                Easing="{x:Static Easing.Linear}"
-                                Length="100"/>
+                            Easing="{x:Static Easing.Linear}"
+                            Length="100"/>
                     </mct:AnimationBehavior.AnimationType>
                 </mct:AnimationBehavior>
             </Button.Behaviors>
         </Button>
 
+        <Entry Placeholder="Animate on Focused and Unfocused" Margin="16,0">
+            <Entry.Behaviors>
+                <mct:AnimationBehavior EventName="Focused">
+                    <mct:AnimationBehavior.AnimationType>
+                        <behaviorPages:SampleScaleToAnimation 
+                            Easing="{x:Static Easing.Linear}"
+                            Length="100"
+                            Scale="1.05"/>
+                    </mct:AnimationBehavior.AnimationType>
+                </mct:AnimationBehavior>
+
+                <mct:AnimationBehavior EventName="Unfocused">
+                    <mct:AnimationBehavior.AnimationType>
+                        <behaviorPages:SampleScaleToAnimation 
+                            Easing="{x:Static Easing.Linear}"
+                            Length="100"
+                            Scale="1"/>
+                    </mct:AnimationBehavior.AnimationType>
+                </mct:AnimationBehavior>
+            </Entry.Behaviors>
+        </Entry>
+
+        <!-- Shows how the AnimationBehavior will play nicely with already attached TapGestureRecognizers -->
         <Label Text="Click this Label" Margin="16,0" HorizontalOptions="Center">
+            <Label.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding AnimationCommand}" />
+            </Label.GestureRecognizers>
             <Label.Behaviors>
-                <mct:AnimationBehavior Command="{Binding AnimationCommand}">
+                <mct:AnimationBehavior>
                     <mct:AnimationBehavior.AnimationType>
                         <behaviorPages:SampleScaleAnimation 
                             Easing="{x:Static Easing.Linear}"
@@ -42,8 +83,8 @@
                 <mct:AnimationBehavior Command="{Binding AnimationCommand}">
                     <mct:AnimationBehavior.AnimationType>
                         <behaviorPages:SampleScaleAnimation 
-                                Easing="{x:Static Easing.Linear}"
-                                Length="100"/>
+                            Easing="{x:Static Easing.Linear}"
+                            Length="100"/>
                     </mct:AnimationBehavior.AnimationType>
                 </mct:AnimationBehavior>
             </Frame.Behaviors>

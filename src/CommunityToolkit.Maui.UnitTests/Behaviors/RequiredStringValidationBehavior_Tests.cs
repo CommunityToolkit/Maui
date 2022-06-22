@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Behaviors;
+﻿using System.Globalization;
+using CommunityToolkit.Maui.Behaviors;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
@@ -69,6 +70,43 @@ public class RequiredStringValidationBehavior_Tests : BaseTest
 
 		// Assert
 		Assert.True(confirmPasswordBehavior.IsValid);
+	}
+
+	// Based on helpful documentation found at: https://docs.microsoft.com/dotnet/api/system.stringcomparison?view=net-6.0#examples
+	[Theory]
+	[InlineData("en-US", false)] // US Culture where a != a-
+	[InlineData("th-TH", true)] // Thai Culture where a == a-
+	public void IsValidShouldReturnResultBasedOnCultureSpecificComparison(string cultureName, bool expectedIsValid)
+	{
+		var currentCulture = Thread.CurrentThread.CurrentCulture;
+
+		try
+		{
+			Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture(cultureName);
+
+			// Arrange
+			var passwordEntry = new Entry
+			{
+				Text = "a"
+			};
+			var confirmPasswordEntry = new Entry();
+			var confirmPasswordBehavior = new RequiredStringValidationBehavior
+			{
+				Flags = ValidationFlags.ValidateOnValueChanged,
+				RequiredString = passwordEntry.Text
+			};
+
+			// Act
+			confirmPasswordEntry.Behaviors.Add(confirmPasswordBehavior);
+			confirmPasswordEntry.Text = "a-";
+
+			// Assert
+			Assert.Equal(expectedIsValid, confirmPasswordBehavior.IsValid);
+		}
+		finally
+		{
+			Thread.CurrentThread.CurrentCulture = currentCulture;
+		}
 	}
 
 	[Fact]

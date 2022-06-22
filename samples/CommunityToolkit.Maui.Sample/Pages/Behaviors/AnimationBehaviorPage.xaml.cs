@@ -19,3 +19,10 @@ class SampleScaleAnimation : BaseAnimation
 		await view.ScaleTo(1, Length, Easing);
 	}
 }
+
+class SampleScaleToAnimation : BaseAnimation
+{
+	public double Scale { get; set; }
+
+	public override Task Animate(VisualElement view) => view.ScaleTo(Scale, Length, Easing);
+}
