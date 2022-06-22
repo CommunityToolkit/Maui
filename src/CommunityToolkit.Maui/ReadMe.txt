@@ -11,7 +11,7 @@ public static MauiApp CreateMauiApp()
 {
     var builder = MauiApp.CreateBuilder();
 
-    // Initialise the toolkit
+    // Initialize the toolkit
 	builder.UseMauiApp<App>().UseMauiCommunityToolkit();
 
     // the rest of your logic...
@@ -24,9 +24,13 @@ In order to make use of the toolkit within XAML you can use this namespace:
 
 xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
 
+> [!WARNING]
+> If using the .NET MAUI Community Toolkit in a class library rather than an app project you will need to have at least one reference to the toolkit in C#. This is due to a limitation of the XAML compiler.
+> You can alternatively use the namespace: `xmlns:controls="clr-namespace:CommunityToolkit.Maui.Behaviors;assembly=CommunityToolkit.Maui"`. Just replacing Behaviors with the part of the namespace that you require.
+> See documentation at: https://docs.microsoft.com/dotnet/maui/xaml/namespaces/custom-namespace-schemas#consume-a-custom-namespace-schema
 !!!WARNING!!!
 In order to use the custom schema mentioned above you need to call the `UseMauiCommunityToolkit` method or call any API on C# code. If you don't do that that url will not work and you need to use the `xmlns= namespace;assembly` pattern. This is a limitation of the custom schema API, more info here:
-https://docs.microsoft.com/en-us/xamarin/xamarin-forms/xaml/custom-namespace-schemas#consuming-a-custom-namespace-schema
+https://docs.microsoft.com/dotnet/maui/xaml/namespaces/custom-namespace-schemas#consume-a-custom-namespace-schema
 
 ## Further information
 
