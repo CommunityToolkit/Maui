@@ -1,12 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-public class IsEqualConverterViewModel : BaseViewModel
+namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+
+public partial class IsEqualConverterViewModel : BaseViewModel
 {
+	[ObservableProperty]
 	string inputValue = string.Empty;
-
-	public string InputValue
-	{
-		get => inputValue;
-		set => SetProperty(ref inputValue, value);
-	}
 }

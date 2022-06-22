@@ -16,16 +16,22 @@
     </ContentPage.Resources>
     
     <pages:BasePage.Content>
-        <Grid RowDefinitions="100, *">
-            <Label Grid.ColumnSpan="3" Text="ImageResourceConverter converts embedded image resource ID to it ImageSource"
-                   HorizontalOptions="CenterAndExpand" />
-            <Image Grid.Row="1" Grid.Column="0"  Source="{Binding XamarinImageResource, Converter={StaticResource ImageResourceConverter}}"
+        <Grid RowDefinitions="100, *" ColumnDefinitions="*,50,*">
+            <Label Grid.ColumnSpan="3" Text="ImageResourceConverter converts embedded image resource ID to it ImageSource" 
+                   HorizontalOptions="CenterAndExpand" TextColor="{StaticResource NormalLabelTextColor}"/>
+            <Image Grid.Row="1" 
+                   Grid.Column="0"  
+                   Source="{Binding XamarinImageResource, Converter={StaticResource ImageResourceConverter}}"
                    WidthRequest="150"
-                   HeightRequest="150"/>
-            <Label Grid.Row="1" Grid.Column="1" Text="->" HorizontalOptions="Center" FontSize="Large"/>
-            <Image Grid.Row="1" Grid.Column="2"  Source="{Binding MauiImageResource, Converter={StaticResource ImageResourceConverter}}"
+                   HeightRequest="150"
+                   HorizontalOptions="End"/>
+            <Label Grid.Row="1" Grid.Column="1" Text="->" HorizontalOptions="Center" FontSize="Large" TextColor="{StaticResource NormalLabelTextColor}"/>
+            <Image Grid.Row="1" 
+                   Grid.Column="2"  
+                   Source="{Binding MauiImageResource, Converter={StaticResource ImageResourceConverter}}"
                    WidthRequest="150"
-                   HeightRequest="150"/>
+                   HeightRequest="150"
+                   HorizontalOptions="Start"/>
         </Grid>
     </pages:BasePage.Content>
 </pages:BasePage>

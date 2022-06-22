@@ -37,10 +37,10 @@
 
             <Picker ItemsSource="{Binding Platforms}" SelectedItem="{Binding SelectedPlatform}" />
             <!-- Converter with TRUE list -->
-            <Label IsVisible="{Binding SelectedPlatform, Converter={StaticResource MobileConverter}}" Text="I am visible when the Picker value is Android or iOS."/>
-            <Label IsVisible="{Binding SelectedPlatform, Converter={StaticResource DesktopConverter}}" Text="I am visible when the Picker value is MacCatalyst or WinUI."/>
+            <Label IsVisible="{Binding SelectedPlatform, Converter={StaticResource MobileConverter}}" Text="This text is visible when the Picker value is Android or iOS."/>
+            <Label IsVisible="{Binding SelectedPlatform, Converter={StaticResource DesktopConverter}}" Text="This text is visible when the Picker value is MacCatalyst or WinUI."/>
             <!-- Converter, that uses parameter -->
-            <Label IsVisible="{Binding SelectedPlatform, Converter={StaticResource PlatformConverter}, ConverterParameter={x:Static vm:MyDevicePlatform.Tizen}}" Text="I am visible when the Picker value is Platform is Tizen."/>
+            <Label IsVisible="{Binding SelectedPlatform, Converter={StaticResource PlatformConverter}, ConverterParameter={x:Static vm:MyDevicePlatform.Tizen}}" Text="This text is visible when the Picker value is Platform is Tizen."/>
 
         </VerticalStackLayout>
     </pages:BasePage.Content>

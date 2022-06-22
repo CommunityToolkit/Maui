@@ -49,7 +49,7 @@ class TextColorToGenerator : IIncrementalGenerator
 			return;
 		}
 
-		var textStyleClassList = new List<(string ClassName, string ClassAcessModifier, string Namespace)>();
+		var textStyleClassList = new List<(string ClassName, string ClassAcessModifier, string Namespace, string GenericArguments, string GenericConstraints)>();
 
 		// Collect Microsoft.Maui.Controls that Implement ITextStyle
 		var mauiTextStyleImplementors = mauiControlsAssemblySymbolProvider.GlobalNamespace.GetNamedTypeSymbols().Where(x => x.AllInterfaces.Contains(textStyleSymbol, SymbolEqualityComparer.Default)
@@ -57,7 +57,7 @@ class TextColorToGenerator : IIncrementalGenerator
 
 		foreach (var namedTypeSymbol in mauiTextStyleImplementors)
 		{
-			textStyleClassList.Add((namedTypeSymbol.Name, "public", namedTypeSymbol.ContainingNamespace.ToDisplayString()));
+			textStyleClassList.Add((namedTypeSymbol.Name, "public", namedTypeSymbol.ContainingNamespace.ToDisplayString(), namedTypeSymbol.TypeArguments.GetGenericTypeArgumentsString(), namedTypeSymbol.GetGenericTypeConstraintsAsString()));
 		}
 
 		// Collect All Classes in User Library that Implement ITextStyle
@@ -71,7 +71,13 @@ class TextColorToGenerator : IIncrementalGenerator
 				continue;
 			}
 
-			if (declarationSymbol.AllInterfaces.Contains(textStyleSymbol, SymbolEqualityComparer.Default)
+			// If the control is inherit from a Maui control that implements ITextStyle
+			// We don't need to generate a extension method for it.
+			// We just generate a method if the Control is a new implementation of ITextStyle and IAnimatable
+			var doesContainSymbolBaseType = mauiTextStyleImplementors.ContainsSymbolBaseType(declarationSymbol);
+
+			if (!doesContainSymbolBaseType
+				&& declarationSymbol.AllInterfaces.Contains(textStyleSymbol, SymbolEqualityComparer.Default)
 				&& declarationSymbol.AllInterfaces.Contains(iAnimatableSymbol, SymbolEqualityComparer.Default))
 			{
 				if (declarationSymbol.ContainingNamespace.IsGlobalNamespace)
@@ -80,6 +86,7 @@ class TextColorToGenerator : IIncrementalGenerator
 					context.ReportDiagnostic(diag);
 					continue;
 				}
+
 				var nameSpace = declarationSymbol.ContainingNamespace.ToDisplayString();
 
 				var accessModifier = GetClassAccessModifier(declarationSymbol);
@@ -91,7 +98,7 @@ class TextColorToGenerator : IIncrementalGenerator
 					continue;
 				}
 
-				textStyleClassList.Add((declarationSymbol.Name, accessModifier, nameSpace));
+				textStyleClassList.Add((declarationSymbol.Name, accessModifier, nameSpace, declarationSymbol.TypeArguments.GetGenericTypeArgumentsString(), declarationSymbol.GetGenericTypeConstraintsAsString()));
 			}
 		}
 
@@ -124,7 +131,8 @@ namespace " + textStyleClass.Namespace + @";
 	/// <param name=""length"">The duration, in milliseconds, of the animation</param>
 	/// <param name=""easing"">The easing function to be used in the animation</param>
 	/// <returns>Value indicating if the animation completed successfully or not</returns>
-	public static Task<bool> TextColorTo(this " + textStyleClass.Namespace + "." + textStyleClass.ClassName + @" element, Color color, uint rate = 16u, uint length = 250u, Easing? easing = null)
+	public static Task<bool> TextColorTo" + textStyleClass.GenericArguments + "(this " + textStyleClass.Namespace + "." + textStyleClass.ClassName + textStyleClass.GenericArguments + @" element, Color color, uint rate = 16u, uint length = 250u, Easing? easing = null)
+" + textStyleClass.GenericConstraints + @"
 	{
 		ArgumentNullException.ThrowIfNull(element);
 		ArgumentNullException.ThrowIfNull(color);
@@ -160,22 +168,22 @@ namespace " + textStyleClass.Namespace + @";
 		return animationCompletionSource.Task;
 
 
-		static Animation GetRedTransformAnimation(" + textStyleClass.Namespace + "." + textStyleClass.ClassName + @"  element, float targetRed) =>
+		static Animation GetRedTransformAnimation(" + textStyleClass.Namespace + "." + textStyleClass.ClassName + textStyleClass.GenericArguments + @"  element, float targetRed) =>
 			new(v => element.TextColor = element.TextColor.WithRed(v), element.TextColor.Red, targetRed);
 
-		static Animation GetGreenTransformAnimation(" + textStyleClass.Namespace + "." + textStyleClass.ClassName + @"  element, float targetGreen) =>
+		static Animation GetGreenTransformAnimation(" + textStyleClass.Namespace + "." + textStyleClass.ClassName + textStyleClass.GenericArguments + @"  element, float targetGreen) =>
 			new(v => element.TextColor = element.TextColor.WithGreen(v), element.TextColor.Green, targetGreen);
 
-		static Animation GetBlueTransformAnimation(" + textStyleClass.Namespace + "." + textStyleClass.ClassName + @"  element, float targetBlue) =>
+		static Animation GetBlueTransformAnimation(" + textStyleClass.Namespace + "." + textStyleClass.ClassName + textStyleClass.GenericArguments + @"  element, float targetBlue) =>
 			new(v => element.TextColor = element.TextColor.WithBlue(v), element.TextColor.Blue, targetBlue);
 
-		static Animation GetAlphaTransformAnimation(" + textStyleClass.Namespace + "." + textStyleClass.ClassName + @"  element, float targetAlpha) =>
+		static Animation GetAlphaTransformAnimation(" + textStyleClass.Namespace + "." + textStyleClass.ClassName + textStyleClass.GenericArguments + @"  element, float targetAlpha) =>
 			new(v => element.TextColor = element.TextColor.WithAlpha((float)v), element.TextColor.Alpha, targetAlpha);
 	}
 }";
 			var source = textColorToBuilder.ToString();
 			SourceStringExtensions.FormatText(ref source, options);
-			context.AddSource($"{textStyleClass.ClassName}TextColorTo_{Guid.NewGuid()}.g.shared.cs", SourceText.From(source, Encoding.UTF8));
+			context.AddSource($"{textStyleClass.ClassName}TextColorTo.g.shared.cs", SourceText.From(source, Encoding.UTF8));
 		}
 	}
 
