@@ -21,7 +21,7 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 
 class Bla : CameraManager
 {
-	public Bla() :base(null!, CameraLocation.Front)
+	public Bla() :base(null!, CameraLocation.Front, new CameraViewHandler().VirtualView)
 	{
 
 	}
@@ -39,7 +39,7 @@ public partial class CameraManager
 	Context Context => mauiContext.Context ?? throw new NullReferenceException();
 	ProcessCameraProvider? cameraProvider;
 	ImageCapture? imageCapture;
-	ImageCallBack imageCallback = new();
+	ImageCallBack? imageCallback;
 	ICamera? camera;
 
 	internal Action? Loaded { get; set; }
@@ -48,6 +48,7 @@ public partial class CameraManager
 	// IN the future change the return type to be an alias
 	public PreviewView CreatePlatformView()
 	{
+		imageCallback = new ImageCallBack(cameraView);
 		previewView = new PreviewView(Context);
 		cameraExecutor = Executors.NewSingleThreadExecutor() ?? throw new NullReferenceException();
 		return previewView;
@@ -132,7 +133,7 @@ public partial class CameraManager
 				return;
 			}
 
-			var imgData = ArrayPool<byte>.Shared.Rent(buffer.Capacity());
+			var imgData = new byte[buffer.Capacity()];
 			try
 			{
 				buffer.Get(imgData);
@@ -141,7 +142,6 @@ public partial class CameraManager
 			}
 			finally
 			{
-				ArrayPool<byte>.Shared.Return(imgData);
 				image.Close();
 			}
 
