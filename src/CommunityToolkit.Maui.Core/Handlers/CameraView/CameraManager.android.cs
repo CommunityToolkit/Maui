@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,14 +15,20 @@ using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Core.Views.CameraView;
 using Java.Lang;
 using Java.Util.Concurrent;
+using static Android.Media.Image;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
 
-class Bla
+class Bla : CameraManager
 {
-	public Bla()
+	public Bla() :base(null!, CameraLocation.Front)
 	{
 
+	}
+
+	protected override void PlatformConnect()
+	{
+		base.PlatformConnect();
 	}
 }
 
@@ -35,8 +42,9 @@ public partial class CameraManager
 	ImageCallBack imageCallback = new();
 	ICamera? camera;
 
-	internal Action Loaded { get; set; }
+	internal Action? Loaded { get; set; }
 	public static Action? RunnableAction { get; }
+	
 	// IN the future change the return type to be an alias
 	public PreviewView CreatePlatformView()
 	{
@@ -79,7 +87,6 @@ public partial class CameraManager
 																.Build();
 			camera.CameraControl.StartFocusAndMetering(action);
 			Loaded?.Invoke();
-
 		}), ContextCompat.GetMainExecutor(Context));
 	}
 
@@ -105,26 +112,49 @@ public partial class CameraManager
 
 	class ImageCallBack : ImageCapture.OnImageCapturedCallback
 	{
+		readonly ICameraView cameraView;
+
+		public ImageCallBack(ICameraView cameraView)
+		{
+			this.cameraView = cameraView;
+		}
+		
 		public override void OnCaptureSuccess(IImageProxy image)
 		{
 			base.OnCaptureSuccess(image);
 			var img = image.Image;
-			//var x = image.GetPlanes()![0].Buffer;
-			var x = img.GetPlanes()![0].Buffer;
 
-			if (x is null)
+			var buffer = GetFirstPlane(img.GetPlanes())?.Buffer;
+
+			if (buffer is null)
 			{
 				image.Close();
 				return;
 			}
 
-			var imgData = new byte[x.Capacity()];
-			x.Get(imgData);
+			var imgData = ArrayPool<byte>.Shared.Rent(buffer.Capacity());
+			try
+			{
+				buffer.Get(imgData);
+				var memStream = new MemoryStream(imgData);
+				cameraView.OnMediaCaptured(memStream);
+			}
+			finally
+			{
+				ArrayPool<byte>.Shared.Return(imgData);
+				image.Close();
+			}
 
 
-			CameraViewHandler.Picture?.Invoke(imgData);
-			
-			image.Close();
+			static Plane? GetFirstPlane(Plane[]? planes)
+			{
+				if (planes is null || planes.Length is 0)
+				{
+					return null;
+				}
+
+				return planes[0];
+			}
 		}
 
 		public override void OnError(ImageCaptureException exception)

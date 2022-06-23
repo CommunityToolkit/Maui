@@ -11,11 +11,13 @@ public partial class CameraManager
 {
 	readonly IMauiContext mauiContext;
 	readonly CameraLocation cameraLocation;
+	readonly ICameraView cameraView;
 
-	public CameraManager(IMauiContext mauiContext, CameraLocation cameraLocation)
+	public CameraManager(IMauiContext mauiContext, CameraLocation cameraLocation, ICameraView cameraView)
 	{
 		this.mauiContext = mauiContext;
 		this.cameraLocation = cameraLocation;
+		this.cameraView = cameraView;
 	}
 
 	public async Task<bool> CheckPermissions()

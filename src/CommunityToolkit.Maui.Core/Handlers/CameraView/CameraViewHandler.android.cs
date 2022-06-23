@@ -7,7 +7,6 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 
 public partial class CameraViewHandler : ViewHandler<ICameraView, PreviewView>
 {
-
 	public static Action<byte[]>? Picture { get; set; }
 	
 	CameraManager? cameraManager;
@@ -41,16 +40,17 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, PreviewView>
 
 	protected override PreviewView CreatePlatformView()
 	{
-		cameraManager = new(MauiContext!, CameraLocation.Front)
+		ArgumentNullException.ThrowIfNull(MauiContext);
+		cameraManager = new(MauiContext, CameraLocation.Rear, VirtualView)
 		{
 			Loaded = () => Init(VirtualView)
 		};
 		return cameraManager.CreatePlatformView();
-	}
 
-	void Init(ICameraView view)
-	{
-		MapCameraFlashMode(this, view);
+		void Init(ICameraView view)
+		{
+			MapCameraFlashMode(this, view);
+		}
 	}
 
 	private protected override async void OnConnectHandler(View platformView)
@@ -58,7 +58,6 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, PreviewView>
 		base.OnConnectHandler(platformView);
 		await cameraManager!.CheckPermissions();
 		cameraManager?.Connect();
-		Init(this.VirtualView);
 	}
 
 	public CameraViewHandler() : base(Propertymapper, Commandmapper)
