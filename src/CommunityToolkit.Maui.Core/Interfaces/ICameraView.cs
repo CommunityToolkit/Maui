@@ -4,10 +4,9 @@ namespace CommunityToolkit.Maui.Core;
 public interface ICameraView : IView, IAvailability
 {
 	CameraFlashMode CameraFlashMode { get; }
-
 	bool IsTorchOn { get; }
 	void Shutter();
 	void OnAvailable();
-	void OnMediaCaptured();
+	void OnMediaCaptured(Stream imageData);
 	void OnMediaCapturedFailed();
 }

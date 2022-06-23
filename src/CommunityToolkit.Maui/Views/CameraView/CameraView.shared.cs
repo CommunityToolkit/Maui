@@ -56,7 +56,7 @@ public partial class CameraView : View, ICameraView
 	{
 	}
 
-	public void OnMediaCaptured()
+	public void OnMediaCaptured(Stream imageData)
 	{
 	}
 
