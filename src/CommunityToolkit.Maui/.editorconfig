@@ -1,10 +1,4 @@
-root = false
+﻿[*.cs]
 
-[*.cs]
-
-# Missing XML comment for publicly visible type or member
-dotnet_diagnostic.CS1591.severity = error
-
-# String comparison preferences
-dotnet_diagnostic.CA1307.severity = error
-dotnet_diagnostic.CA1309.severity = error
+# CS1591: Missing XML comment for publicly visible type or member
+dotnet_diagnostic.CS1591.severity = silent
