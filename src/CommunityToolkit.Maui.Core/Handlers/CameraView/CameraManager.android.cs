@@ -43,7 +43,6 @@ public partial class CameraManager
 	ICamera? camera;
 
 	internal Action? Loaded { get; set; }
-	public static Action? RunnableAction { get; }
 	
 	// IN the future change the return type to be an alias
 	public PreviewView CreatePlatformView()
@@ -111,7 +110,7 @@ public partial class CameraManager
 		imageCapture.FlashMode = flashMode.ToPlatform();
 	}
 
-	class ImageCallBack : ImageCapture.OnImageCapturedCallback
+	sealed class ImageCallBack : ImageCapture.OnImageCapturedCallback
 	{
 		readonly ICameraView cameraView;
 
@@ -160,6 +159,7 @@ public partial class CameraManager
 		public override void OnError(ImageCaptureException exception)
 		{
 			base.OnError(exception);
+			cameraView.OnMediaCapturedFailed();
 		}
 	}
 }

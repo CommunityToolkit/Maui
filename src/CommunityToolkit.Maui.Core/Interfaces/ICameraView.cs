@@ -8,5 +8,7 @@ public interface ICameraView : IView, IAvailability
 	void Shutter();
 	void OnAvailable();
 	void OnMediaCaptured(Stream imageData);
+
+	// TODO: Create a custom Exception type and pass as parameter providing more info about the error
 	void OnMediaCapturedFailed();
 }

@@ -6,6 +6,8 @@ namespace CommunityToolkit.Maui.Views;
 
 public partial class CameraView : View, ICameraView
 {
+	static readonly WeakEventManager weakEventManager = new();
+
 	public static readonly BindableProperty CameraFlashModeProperty =
 		BindableProperty.Create(nameof(CameraFlashMode), typeof(CameraFlashMode), typeof(CameraView), CameraFlashMode.Off);
 
@@ -52,16 +54,30 @@ public partial class CameraView : View, ICameraView
 		set => SetValue(isCameraBusyPropertyKey, value);
 	}
 
+	public event EventHandler<MediaCaptureFailedEventArgs> MediaCaptureFailed
+	{
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
+	}
+
+	public event EventHandler<MediaCapturedEventArgs> MediaCaptured
+	{
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
+	}
+	
 	public void OnAvailable()
 	{
 	}
-
+	
 	public void OnMediaCaptured(Stream imageData)
 	{
+		weakEventManager.HandleEvent(this, new MediaCapturedEventArgs(imageData), nameof(MediaCaptured));
 	}
 
 	public void OnMediaCapturedFailed()
 	{
+		weakEventManager.HandleEvent(this, new MediaCaptureFailedEventArgs(), nameof(MediaCaptureFailed));
 	}
 
 	public void Shutter()
