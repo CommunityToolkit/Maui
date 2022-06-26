@@ -35,7 +35,7 @@ pr:
     - README.md
 
 jobs:      
-  - job: build_windows
+  - job: build_windows_library
     displayName: Build Windows Library
     pool:
       vmImage: windows-latest
@@ -133,7 +133,7 @@ jobs:
           artifactName: nuget
           pathToPublish: '$(Build.ArtifactStagingDirectory)'
 
-  - job: build_windows
+  - job: build_windows_sample
     displayName: Build Windows Sample App
     pool:
       vmImage: windows-latest
@@ -152,7 +152,7 @@ jobs:
           configuration: 'Release'
           msbuildArgs: '/restore'
 
-  - job: build_macos
+  - job: build_macos_library
     displayName: Build macOS Library
     pool:
       vmImage: macos-12
@@ -191,7 +191,7 @@ jobs:
         inputs:
           script: 'dotnet pack $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
 
-  - job: build_macos
+  - job: build_macos_sample
     displayName: Build macOS Sample App using Latest .NET SDK
     pool:
       vmImage: macos-12
