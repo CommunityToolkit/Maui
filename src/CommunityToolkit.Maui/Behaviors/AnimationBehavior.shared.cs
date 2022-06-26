@@ -5,7 +5,7 @@ using CommunityToolkit.Maui.Animations;
 namespace CommunityToolkit.Maui.Behaviors;
 
 /// <summary>
-/// The <see cref="AnimationBehavior"/> is a behavior that shows an animation on any <see cref="View"/> when the <see cref="AnimateCommand"/> is called.
+/// The <see cref="AnimationBehavior"/> is a behavior that shows an animation on any <see cref="VisualElement"/> when the <see cref="AnimateCommand"/> is called.
 /// </summary>
 public class AnimationBehavior : EventToCommandBehavior
 {
@@ -24,12 +24,12 @@ public class AnimationBehavior : EventToCommandBehavior
 	TapGestureRecognizer? tapGestureRecognizer;
 
 	/// <summary>
-	/// Command on which to perform the animation.
+	/// Gets the Command that allows the triggering of the animation.
 	/// </summary>
 	public ICommand AnimateCommand => (ICommand)GetValue(AnimateCommandProperty);
 
 	/// <summary>
-	/// The type of animation to perform
+	/// The type of animation to perform.
 	/// </summary>
 	public BaseAnimation? AnimationType
 	{
@@ -38,36 +38,26 @@ public class AnimationBehavior : EventToCommandBehavior
 	}
 
 	/// <inheritdoc/>
-	[MemberNotNull(nameof(tapGestureRecognizer))]
 	protected override void OnAttachedTo(VisualElement bindable)
 	{
 		base.OnAttachedTo(bindable);
 
-		if (!string.IsNullOrWhiteSpace(EventName))
+		if (string.IsNullOrWhiteSpace(EventName))
 		{
-			throw new InvalidOperationException($"{nameof(EventName)} must be null. It is not used by {nameof(AnimationBehavior)}");
-		}
+			if (bindable is ITextInput)
+			{
+				throw new InvalidOperationException($"Animation Behavior can not be attached to {nameof(ITextInput)} without using the EventName property.");
+			}
 
-		if (bindable is not IGestureRecognizers gestureRecognizers)
-		{
-			throw new InvalidOperationException($"VisualElement does not implement {nameof(IGestureRecognizers)}");
-		}
+			if (bindable is not IGestureRecognizers gestureRecognizers)
+			{
+				throw new InvalidOperationException($"VisualElement does not implement {nameof(IGestureRecognizers)}");
+			}
 
-		if (bindable is not ITextInput)
-		{
 			tapGestureRecognizer = new TapGestureRecognizer();
 			tapGestureRecognizer.Tapped += OnTriggerHandled;
 
-			foreach (var recognizer in gestureRecognizers.GestureRecognizers.OfType<TapGestureRecognizer>())
-			{
-				gestureRecognizers.GestureRecognizers.Remove(recognizer);
-			}
-
 			gestureRecognizers.GestureRecognizers.Add(tapGestureRecognizer);
-		}
-		else
-		{
-			throw new InvalidOperationException($"Animation Behavior can not be attached to {nameof(ITextInput)}");
 		}
 	}
 
