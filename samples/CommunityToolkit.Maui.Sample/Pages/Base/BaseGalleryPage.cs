@@ -80,7 +80,8 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 					{
 						new Label()
 							.Row(CardRow.Title)
-							.Bind(Label.TextProperty, nameof(SectionModel.Title)),
+							.Bind(Label.TextProperty, nameof(SectionModel.Title))
+							.DynamicResource(Label.StyleProperty, "label_section_title"),
 
 						new Label { MaxLines = 4, LineBreakMode = LineBreakMode.WordWrap }
 							.Row(CardRow.Description).TextStart().TextTop()
