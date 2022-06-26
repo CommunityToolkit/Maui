@@ -210,4 +210,8 @@ jobs:
       - task: CmdLine@2
         displayName: 'Install Latest .NET MAUI Workload'
         inputs:
-          script: dotnet workload install maui --from-rollback-file $(RollbackFile) --source https://api.nuget.org/v3/index.json
+          script: dotnet workload install maui
+      - task: CmdLine@2
+         displayName: 'Build Community Toolkit Sample'
+         inputs:
+           script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release'
