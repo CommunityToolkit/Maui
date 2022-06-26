@@ -212,6 +212,6 @@ jobs:
         inputs:
           script: dotnet workload install maui
       - task: CmdLine@2
-         displayName: 'Build Community Toolkit Sample'
-         inputs:
-           script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release'
+        displayName: 'Build Community Toolkit Sample'
+        inputs:
+          script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release'
