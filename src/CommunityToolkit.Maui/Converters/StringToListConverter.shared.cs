@@ -1,11 +1,12 @@
-﻿using System.Globalization;
+﻿using System.Collections;
+using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>
 /// Returns a string array that contains the substrings in this string that are delimited by <see cref="Separator"/>.
 /// </summary>
-public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable<string>, object?>
+public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable, object?>
 {
 	string separator = " ";
 	IList<string> separators = Array.Empty<string>();
@@ -92,14 +93,12 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable<st
 				return Split(value, separator);
 
 			default:
+				if (parameter is not null)
 				{
-					if (parameter is not null)
-					{
-						throw new ArgumentException("Parameter cannot be cast to string nor string[]", nameof(parameter));
-					}
-
-					break;
+					throw new ArgumentException("Parameter cannot be cast to string nor string[]", nameof(parameter));
 				}
+
+				break;
 		}
 
 		return Separators.Count > 1 ? Split(value, Separators.ToArray()) : Split(value, Separator);

@@ -7,7 +7,7 @@
     x:Class="CommunityToolkit.Maui.Sample.Pages.Extensions.ColorAnimationExtensionsPage"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:TypeArguments="vm:ColorAnimationExtensionsViewModel"
-    x:DataType="vm:TextCaseConverteColorAnimationExtensionsViewModelrViewModel">
+    x:DataType="vm:ColorAnimationExtensionsViewModel">
 
     <pages:BasePage.Resources>
         <ResourceDictionary>

@@ -6,7 +6,9 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.IndexToArrayItemConverterPage"
+    x:DataType="vm:IndexToArrayItemConverterViewModel"
     x:TypeArguments="vm:IndexToArrayItemConverterViewModel">
+
     <ContentPage.Resources>
         <mct:IndexToArrayItemConverter x:Key="IndexToArrayItemConverter" />
         <x:Array x:Key="StringArray" Type="{x:Type x:String}">

@@ -1,20 +1,15 @@
 ﻿using System.Windows.Input;
 using CommunityToolkit.Maui.Views;
+using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public sealed class PopupAnchorViewModel : BaseViewModel
+public sealed partial class PopupAnchorViewModel : BaseViewModel
 {
-	public PopupAnchorViewModel()
-	{
-		ShowPopup = new Command<View>(OnShowPopup);
-	}
-
-	public ICommand ShowPopup { get; }
-
 	static Page Page => Application.Current?.MainPage ?? throw new NullReferenceException();
 
-	void OnShowPopup(View anchor)
+	[RelayCommand]
+	static void ShowPopup(View anchor)
 	{
 
 		// Using the C# version of Popup until this get fixed

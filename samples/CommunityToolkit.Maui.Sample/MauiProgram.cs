@@ -50,6 +50,7 @@ public static class MauiProgram
 		services.AddTransient<ToastPage>();
 
 		// Add Behaviors Pages
+		services.AddTransient<AnimationBehaviorPage>();
 		services.AddTransient<CharactersValidationBehaviorPage>();
 		services.AddTransient<EmailValidationBehaviorPage>();
 		services.AddTransient<EventToCommandBehaviorPage>();
@@ -59,6 +60,7 @@ public static class MauiProgram
 		services.AddTransient<NumericValidationBehaviorPage>();
 		services.AddTransient<ProgressBarAnimationBehaviorPage>();
 		services.AddTransient<RequiredStringValidationBehaviorPage>();
+		services.AddTransient<SelectAllTextBehaviorPage>();
 		services.AddTransient<SetFocusOnEntryCompletedBehaviorPage>();
 		services.AddTransient<TextValidationBehaviorPage>();
 		services.AddTransient<UriValidationBehaviorPage>();
@@ -66,7 +68,6 @@ public static class MauiProgram
 
 		// Add Converters Pages
 		services.AddTransient<BoolToObjectConverterPage>();
-		services.AddTransient<StateToBooleanConverterPage>();
 		services.AddTransient<ByteArrayToImageSourceConverterPage>();
 		services.AddTransient<ColorsConverterPage>();
 		services.AddTransient<CompareConverterPage>();
@@ -94,6 +95,7 @@ public static class MauiProgram
 		services.AddTransient<MultiConverterPage>();
 		services.AddTransient<MultiMathExpressionConverterPage>();
 		services.AddTransient<SelectedItemEventArgsConverterPage>();
+		services.AddTransient<StateToBooleanConverterPage>();
 		services.AddTransient<StringToListConverterPage>();
 		services.AddTransient<TextCaseConverterPage>();
 		services.AddTransient<VariableMultiValueConverterPage>();
@@ -138,6 +140,7 @@ public static class MauiProgram
 		services.AddTransient<NumericValidationBehaviorViewModel>();
 		services.AddTransient<ProgressBarAnimationBehaviorViewModel>();
 		services.AddTransient<RequiredStringValidationBehaviorViewModel>();
+		services.AddTransient<SelectAllTextBehaviorViewModel>();
 		services.AddTransient<SetFocusOnEntryCompletedBehaviorViewModel>();
 		services.AddTransient<TextValidationBehaviorViewModel>();
 		services.AddTransient<UriValidationBehaviorViewModel>();

@@ -27,17 +27,17 @@
 		<Entry
 			x:Name="Entry1"
 			mct:SetFocusOnEntryCompletedBehavior.NextElement="{x:Reference Entry2}"
-			Placeholder="Entry 1 (Tap `Next` on the keyboard when finished)"
+			Placeholder="Entry 1 (Tap `Next` or `Enter` or `Return` when finished)"
 			ReturnType="Next" />
 		<Entry
 			x:Name="Entry2"
 			mct:SetFocusOnEntryCompletedBehavior.NextElement="{x:Reference Entry3}"
-			Placeholder="Entry 2 (Tap `Next` on the keyboard when finished)"
+			Placeholder="Entry 2 (Tap `Next` or `Enter` or `Return` on the keyboard when finished)"
 			ReturnType="Next" />
 		<Entry
 			x:Name="Entry3"
 			mct:SetFocusOnEntryCompletedBehavior.NextElement="{x:Reference Entry4}"
-			Placeholder="Entry 3 (Tap `Next` on the keyboard when finished)"
+			Placeholder="Entry 3 (Tap `Next` or `Enter` or `Return` on the keyboard when finished)"
 			ReturnType="Next" />
 
 		<Entry x:Name="Entry4" Placeholder="Entry 4 (no next entry this time)" />

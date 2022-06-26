@@ -37,4 +37,70 @@ public class EventToCommandBehavior_Tests : BaseTest
 		};
 		page.Behaviors.Add(behavior);
 	}
+
+	[Fact]
+	public void ListView_ItemSelected_Test()
+	{
+		bool didEventToCommandBehaviorFire = false;
+
+		var listView = new ListView
+		{
+			ItemsSource = new[]
+			{
+				"Item 0",
+				"Item 1",
+				"Item 2",
+				"Item 3",
+				"Item 4",
+				"Item 5",
+			},
+			Behaviors =
+			{
+				new EventToCommandBehavior
+				{
+					EventName = nameof(ListView.ItemSelected),
+					Command = new Command(HandleItemSelected)
+				}
+			}
+		};
+
+		listView.SelectedItem = "Item 3";
+
+		Assert.True(didEventToCommandBehaviorFire);
+
+		void HandleItemSelected() => didEventToCommandBehaviorFire = true;
+	}
+
+	[Fact]
+	public void CollectionView_ItemSelected_Test()
+	{
+		bool didEventToCommandBehaviorFire = false;
+
+		var collectionView = new CollectionView
+		{
+			ItemsSource = new[]
+			{
+				"Item 0",
+				"Item 1",
+				"Item 2",
+				"Item 3",
+				"Item 4",
+				"Item 5",
+			},
+			Behaviors =
+			{
+				new EventToCommandBehavior
+				{
+					EventName = nameof(CollectionView.SelectionChanged),
+					Command = new Command(HandleSelectionChanged)
+				}
+			}
+		};
+
+		collectionView.SelectedItem = "Item 3";
+
+		Assert.True(didEventToCommandBehaviorFire);
+
+		void HandleSelectionChanged() => didEventToCommandBehaviorFire = true;
+	}
 }
