@@ -77,9 +77,9 @@ public partial class IconTintColorBehavior
 			return;
 		}
 
-		if (!propertyName.Equals(TintColorProperty.PropertyName)
-			&& !propertyName.Equals(Image.SourceProperty.PropertyName)
-			&& !propertyName.Equals(ImageButton.SourceProperty.PropertyName))
+		if (!propertyName.Equals(TintColorProperty.PropertyName, StringComparison.Ordinal)
+			&& !propertyName.Equals(Image.SourceProperty.PropertyName, StringComparison.Ordinal)
+			&& !propertyName.Equals(ImageButton.SourceProperty.PropertyName, StringComparison.Ordinal))
 		{
 			return;
 		}
