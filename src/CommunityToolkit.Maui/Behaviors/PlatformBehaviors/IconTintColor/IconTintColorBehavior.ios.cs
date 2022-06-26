@@ -34,6 +34,9 @@ public partial class IconTintColorBehavior
 				}
 
 				break;
+
+			default:
+				throw new NotSupportedException($"{nameof(IconTintColorBehavior)} only currently supports {nameof(UIButton)} and {nameof(UIImageView)}.");
 		}
 	}
 
@@ -53,6 +56,8 @@ public partial class IconTintColorBehavior
 			case UIButton button:
 				SetUIButtonTintColor(button, element, color);
 				break;
+			default:
+				throw new NotSupportedException($"{nameof(IconTintColorBehavior)} only currently supports {nameof(UIButton)} and {nameof(UIImageView)}.");
 		}
 	}
 
