@@ -3,13 +3,15 @@ variables:
   PreviewNumber: $[counter(variables['CurrentSemanticVersionBase'], 1001)]
   CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(PreviewNumber)'
   NugetPackageVersion: '$(CurrentSemanticVersion)'
-  NET_VERSION: '6.0.x'
+  TOOLKIT_NET6_VERSION: '6.0.300'
+  LATEST_NET6_VERSION: '6.0.x'
   PathToSolution: 'src/CommunityToolkit.Maui.sln'
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
   PathToCommunityToolkitCoreCsproj: 'src/CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
   XcodeVersion: '13.3.1'
+  RollbackFile: '6.0.312.json'
 
 trigger:
   branches:
@@ -34,18 +36,18 @@ pr:
     - README.md
 
 jobs:      
-  - job: build_windows
+  - job: build_windows_library
     displayName: Build Windows Library
     pool:
       vmImage: windows-latest
     steps:
       - task: UseDotNet@2
-        displayName: 'Install .NET SDK'
+        displayName: 'Install .NET SDK $(TOOLKIT_NET6_VERSION)'
         inputs:
           packageType: 'sdk'
-          version: '$(NET_VERSION)'
-      - powershell: dotnet workload install maui
-        displayName: Install .NET MAUI
+          version: '$(TOOLKIT_NET6_VERSION)'
+      - powershell: dotnet workload install maui --from-rollback-file $(RollbackFile) --source https://api.nuget.org/v3/index.json
+        displayName: Install .NET MAUI $(TOOLKIT_NET6_VERSION)
       # if this is a tagged build, then update the version number
       - powershell: |
           $buildSourceBranch = "$(Build.SourceBranch)"
@@ -84,13 +86,6 @@ jobs:
           codeCoverageTool: 'Cobertura'
           summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
           failIfCoverageEmpty: true
-      # build sample
-      - task: VSBuild@1
-        displayName: 'Build Community Toolkit Sample'
-        inputs:
-          solution: '$(PathToCommunityToolkitSampleCsproj)'
-          configuration: 'Release'
-          msbuildArgs: '/restore'
       # pack
       - task: VSBuild@1
         displayName: 'Build and Pack CommunityToolkit.Maui.Core'
@@ -139,7 +134,27 @@ jobs:
           artifactName: nuget
           pathToPublish: '$(Build.ArtifactStagingDirectory)'
 
-  - job: build_macos
+  - job: build_windows_sample
+    displayName: Build Windows Sample App using Latest .NET SDK
+    pool:
+      vmImage: windows-latest
+    steps:
+      - task: UseDotNet@2
+        displayName: 'Install Latest .NET SDK'
+        inputs:
+          packageType: 'sdk'
+          version: '$(LATEST_NET6_VERSION)'
+      - powershell: dotnet workload install maui
+        displayName: Install Latest .NET MAUI Workload
+      # build sample
+      - task: VSBuild@1
+        displayName: 'Build Community Toolkit Sample'
+        inputs:
+          solution: '$(PathToCommunityToolkitSampleCsproj)'
+          configuration: 'Release'
+          msbuildArgs: '/restore'
+
+  - job: build_macos_library
     displayName: Build macOS Library
     pool:
       vmImage: macos-12
@@ -157,22 +172,18 @@ jobs:
         inputs:
           script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XcodeVersion).app;sudo xcode-select --switch /Applications/Xcode_$(XcodeVersion).app/Contents/Developer
       - task: UseDotNet@2
-        displayName: 'Install .NET SDK'
+        displayName: Install .NET $(TOOLKIT_NET6_VERSION)
         inputs:
           packageType: 'sdk'
-          version: '$(NET_VERSION)'
+          version: '$(TOOLKIT_NET6_VERSION)'
       - task: CmdLine@2
-        displayName: 'Install .NET MAUI workload'
+        displayName: 'Install .NET MAUI Workload $(TOOLKIT_NET6_VERSION)'
         inputs:
-          script: dotnet workload install maui
+          script: dotnet workload install maui --from-rollback-file $(RollbackFile) --source https://api.nuget.org/v3/index.json
       - task: CmdLine@2
         displayName: 'Run Unit Tests'
         inputs:
           script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release'
-      - task: CmdLine@2
-        displayName: 'Build Community Toolkit Sample'
-        inputs:
-          script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release'
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit.Maui.Core NuGet'
         inputs:
@@ -181,3 +192,26 @@ jobs:
         displayName: 'Pack CommunityToolkit.Maui NuGet'
         inputs:
           script: 'dotnet pack $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
+
+  - job: build_macos_sample
+    displayName: Build macOS Sample App using Latest .NET SDK
+    pool:
+      vmImage: macos-12
+    steps:
+      - task: CmdLine@2
+        displayName: 'Set Xcode Version'
+        inputs:
+          script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XcodeVersion).app;sudo xcode-select --switch /Applications/Xcode_$(XcodeVersion).app/Contents/Developer
+      - task: UseDotNet@2
+        displayName: Install Latest .NET SDK
+        inputs:
+          packageType: 'sdk'
+          version: '$(LATEST_NET6_VERSION)'
+      - task: CmdLine@2
+        displayName: 'Install Latest .NET MAUI Workload'
+        inputs:
+          script: dotnet workload install maui
+      - task: CmdLine@2
+        displayName: 'Build Community Toolkit Sample'
+        inputs:
+          script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release'
