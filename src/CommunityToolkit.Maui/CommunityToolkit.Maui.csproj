@@ -88,4 +88,13 @@
     <None Include="ReadMe.txt" pack="true" PackagePath="." />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Dependencies" Version="$(MauiVersion)">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Maui.Extensions" Version="$(MauiVersion)">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
 </Project>
