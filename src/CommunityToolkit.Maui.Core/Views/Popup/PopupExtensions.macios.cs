@@ -19,10 +19,10 @@ public static class PopupExtensions
 		}
 		else if (popup.Content is not null)
 		{
-			if (!popup.Content.DesiredSize.IsZero)
+			var content = popup.Content;
+			if (content.Width is not 0 || content.Height is not 0)
 			{
-				var contentSize = popup.Content.DesiredSize;
-				mauiPopup.PreferredContentSize = new CGSize(contentSize.Width, contentSize.Height);
+				mauiPopup.PreferredContentSize = new CGSize(content.Width, content.Height);
 			}
 			else
 			{
