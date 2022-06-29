@@ -4,12 +4,14 @@ using CommunityToolkit.Maui.Sample.Pages.Behaviors;
 using CommunityToolkit.Maui.Sample.Pages.Converters;
 using CommunityToolkit.Maui.Sample.Pages.Extensions;
 using CommunityToolkit.Maui.Sample.Pages.Layouts;
+using CommunityToolkit.Maui.Sample.Pages.ViewControls;
 using CommunityToolkit.Maui.Sample.Pages.Views;
 using CommunityToolkit.Maui.Sample.ViewModels;
 using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
+using CommunityToolkit.Maui.Sample.ViewModels.ViewControls;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 namespace CommunityToolkit.Maui.Sample;
@@ -84,9 +86,15 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<MultiplePopupPage, MultiplePopupViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<PopupAnchorPage, PopupAnchorViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<PopupPositionPage, PopupPositionViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+
+		// Add Controls View Models
+		CreateViewModelMapping<AvatarControlPage, AvatarControlViewModel, ControlsGalleryPage, ControlsGalleryViewModel>(),
 	});
 
-	public AppShell() => InitializeComponent();
+	public AppShell()
+	{
+		InitializeComponent();
+	}
 
 	public static string GetPageRoute(Type viewModelType)
 	{
@@ -95,18 +103,21 @@ public partial class AppShell : Shell
 			throw new KeyNotFoundException($"No map for ${viewModelType} was found on navigation mappings. Please register your ViewModel in {nameof(AppShell)}.{nameof(viewModelMappings)}");
 		}
 
-		var uri = new UriBuilder("", GetPageRoute(mapping.GalleryPageType, mapping.ContentPageType));
+		UriBuilder uri = new("", GetPageRoute(mapping.GalleryPageType, mapping.ContentPageType));
 		return uri.Uri.OriginalString[..^1];
 	}
 
-	static string GetPageRoute(Type galleryPageType, Type contentPageType) => $"//{galleryPageType.Name}/{contentPageType.Name}";
+	static string GetPageRoute(Type galleryPageType, Type contentPageType)
+	{
+		return $"//{galleryPageType.Name}/{contentPageType.Name}";
+	}
 
 	static KeyValuePair<Type, (Type GalleryPageType, Type ContentPageType)> CreateViewModelMapping<TPage, TViewModel, TGalleryPage, TGalleryViewModel>() where TPage : BasePage<TViewModel>
 																																							where TViewModel : BaseViewModel
 																																							where TGalleryPage : BaseGalleryPage<TGalleryViewModel>
 																																							where TGalleryViewModel : BaseGalleryViewModel
 	{
-		var route = GetPageRoute(typeof(TGalleryPage), typeof(TPage));
+		string route = GetPageRoute(typeof(TGalleryPage), typeof(TPage));
 		Routing.RegisterRoute(route, typeof(TPage));
 
 		return new KeyValuePair<Type, (Type GalleryPageType, Type ContentPageType)>(typeof(TViewModel), (typeof(TGalleryPage), typeof(TPage)));
