@@ -11,9 +11,9 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace CommunityToolkit.Maui.Analyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class ToolkitInitializationAnalyzer : DiagnosticAnalyzer
+public class CommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 {
-	public const string DiagnosticId = nameof(CommunityToolkit) + "." + nameof(Maui);
+	public const string DiagnosticId = nameof(CommunityToolkitInitializationAnalyzer);
 
 	const string category = "Initialization";
 	static readonly LocalizableString title = new LocalizableResourceString(nameof(Resources.InitializationErrorTitle), Resources.ResourceManager, typeof(Resources));

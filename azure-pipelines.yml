@@ -10,6 +10,7 @@ variables:
   PathToCommunityToolkitCoreCsproj: 'src/CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
+  PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
   XcodeVersion: '13.3.1'
   RollbackFile: '6.0.312.json'
 
@@ -68,12 +69,19 @@ jobs:
         condition: and(succeeded(), eq(variables['build.reason'], 'PullRequest'))
       # test
       - task: DotNetCoreCLI@2
-        displayName: 'Run Unit Tests'
+        displayName: 'Run CommunityToolkit.Maui Unit Tests'
         inputs:
           command: 'test'
           projects: '$(PathToCommunityToolkitUnitTestCsproj)'
           arguments: '--configuration Release --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory $(Agent.TempDirectory)'
           publishTestResults: false    
+      - task: DotNetCoreCLI@2
+        displayName: 'Run CommunityToolkit.Maui.Analyzers Unit Tests'
+        inputs:
+          command: 'test'
+          projects: '$(PathToCommunityToolkitAnalyzersUnitTestCsproj)'
+          arguments: '--configuration Release --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory $(Agent.TempDirectory)'
+          publishTestResults: false  
       - task: PublishTestResults@2
         displayName: 'Publish Test Results'
         inputs:
