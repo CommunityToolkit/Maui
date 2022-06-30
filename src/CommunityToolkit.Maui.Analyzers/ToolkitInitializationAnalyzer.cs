@@ -13,9 +13,9 @@ namespace CommunityToolkit.Maui.Analyzers;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class ToolkitInitializationAnalyzer : DiagnosticAnalyzer
 {
-	public const string DiagnosticId = nameof(ToolkitInitializationAnalyzer);
+	public const string DiagnosticId = nameof(CommunityToolkit) + "." + nameof(Maui);
 
-	const string category = "Naming";
+	const string category = "Initialization";
 	static readonly LocalizableString title = new LocalizableResourceString(nameof(Resources.InitializationErrorTitle), Resources.ResourceManager, typeof(Resources));
 	static readonly LocalizableString messageFormat = new LocalizableResourceString(nameof(Resources.IniitalizationMessageFormat), Resources.ResourceManager, typeof(Resources));
 	static readonly LocalizableString description = new LocalizableResourceString(nameof(Resources.InitializationErrorMessage), Resources.ResourceManager, typeof(Resources));
