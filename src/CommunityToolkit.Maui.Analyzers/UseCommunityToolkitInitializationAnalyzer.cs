@@ -11,9 +11,9 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace CommunityToolkit.Maui.Analyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class CommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
+public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 {
-	public const string DiagnosticId = nameof(CommunityToolkitInitializationAnalyzer);
+	public const string DiagnosticId = "MCT001";
 
 	const string category = "Initialization";
 	static readonly LocalizableString title = new LocalizableResourceString(nameof(Resources.InitializationErrorTitle), Resources.ResourceManager, typeof(Resources));
@@ -44,3 +44,4 @@ public class CommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 		}
 	}
 }
+

@@ -1,18 +1,22 @@
-﻿using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using VerifyCS = CommunityToolkit.Maui.Analyzer.Test.CSharpCodeFixVerifier<
-	CommunityToolkit.Maui.Analyzers.CommunityToolkitInitializationAnalyzer,
-	CommunityToolkit.Maui.Analyzers.CommunityToolkitInitializationAnalyzerCodeFixProvider>;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp.Testing;
+using Microsoft.CodeAnalysis.Testing.Verifiers;
+using Xunit;
 
-namespace CommunityToolkit.Maui.Analyzers.Test;
+namespace CommunityToolkit.Maui.Analyzers.UnitTests;
 
-[TestClass]
-public class CommunityToolkitMauiAnalyzerUnitTest
+public class UseCommunityToolkitAnalyzerTest : CSharpCodeFixTest<UseCommunityToolkitInitializationAnalyzer, 
+																	UseCommunityToolkitInitializationAnalyzerCodeFixProvider, 
+																	XUnitVerifier>
 {
-	[TestMethod]
-	public async Task EnsureUseCommunityToolkitAdded()
+	[Fact]
+	public async Task EnsureUseCommunityToolkitAnalyzerTest()
 	{
-		var failingString = @"
+		TestCode = @"
 using Microsoft.Maui.Hosting;
 
 namespace MauiApp1;
@@ -34,7 +38,7 @@ public static class MauiProgram
 	}
 }";
 
-		var fixedString = @"
+		FixedCode = @"
 using Microsoft.Maui.Hosting;
 
 namespace MauiApp1;
@@ -56,6 +60,8 @@ public static class MauiProgram
 	}
 }";
 
-		await VerifyCS.VerifyCodeFixAsync(failingString, fixedString);
+		ExpectedDiagnostics.Clear();
+
+		await RunAsync();
 	}
 }

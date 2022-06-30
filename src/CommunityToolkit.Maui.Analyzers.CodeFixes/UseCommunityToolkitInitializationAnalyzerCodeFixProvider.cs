@@ -10,10 +10,10 @@ using Microsoft.CodeAnalysis.Rename;
 
 namespace CommunityToolkit.Maui.Analyzers;
 
-[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(CommunityToolkitInitializationAnalyzerCodeFixProvider)), Shared]
-public class CommunityToolkitInitializationAnalyzerCodeFixProvider : CodeFixProvider
+[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseCommunityToolkitInitializationAnalyzerCodeFixProvider)), Shared]
+public class UseCommunityToolkitInitializationAnalyzerCodeFixProvider : CodeFixProvider
 {
-	public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(CommunityToolkitInitializationAnalyzer.DiagnosticId);
+	public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(UseCommunityToolkitInitializationAnalyzer.DiagnosticId);
 
 	public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
@@ -39,7 +39,6 @@ public class CommunityToolkitInitializationAnalyzerCodeFixProvider : CodeFixProv
 
 	async Task<Solution> AddUseCommunityToolkit(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
 	{
-		// Compute new uppercase name.
 		var identifierToken = typeDecl.Identifier;
 		var newText = identifierToken.Text.Replace(";", ".UseMauiCommunityToolkit();");
 
