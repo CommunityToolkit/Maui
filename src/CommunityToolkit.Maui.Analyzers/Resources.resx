@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="IniitalizationMessageFormat" xml:space="preserve">
-    <value>`.UseMauiCommunityToolkit()` must be chained to `.UseMauiApp&lt;T&gt;()`</value>
+    <value>`.UseMauiCommunityToolkit()` must be called before `.UseMauiApp&lt;T&gt;()` and proceeded by `.UseMauiApp&lt;T&gt;()`</value>
   </data>
   <data name="InitializationErrorMessage" xml:space="preserve">
     <value>`.UseMauiCommunityToolkit()` is required to initalize .NET MAUI Community Toolkit</value>

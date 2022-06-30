@@ -34,9 +34,9 @@ public class UseCommunityToolkitInitializationAnalyzerCodeFixProvider : CodeFixP
 		// Register a code action that will invoke the fix.
 		context.RegisterCodeFix(
 			CodeAction.Create(
-				title: CodeFixResources.AddUseCommunityToolkit,
+				title: CodeFixResources.Initialize__NET_MAUI_Community_Toolkit_Before_UseMauiApp,
 				createChangedDocument: c => AddUseCommunityToolkit(context.Document, declaration, c),
-				equivalenceKey: nameof(CodeFixResources.AddUseCommunityToolkit)),
+				equivalenceKey: nameof(CodeFixResources.Initialize__NET_MAUI_Community_Toolkit_Before_UseMauiApp)),
 			diagnostic);
 	}
 
@@ -58,6 +58,5 @@ public class UseCommunityToolkitInitializationAnalyzerCodeFixProvider : CodeFixP
 		var newDocument = document.WithSyntaxRoot(newRoot);
 
 		return newDocument;
-
 	}
 }

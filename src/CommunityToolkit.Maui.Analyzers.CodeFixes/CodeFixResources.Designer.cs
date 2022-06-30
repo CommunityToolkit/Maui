@@ -61,11 +61,11 @@ namespace CommunityToolkit.Maui.Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Add `.UseCommunityToolkit()`.
+        ///   Looks up a localized string similar to Add `.UseMauiCommunityToolkit()`.
         /// </summary>
-        internal static string AddUseCommunityToolkit {
+        internal static string Initialize__NET_MAUI_Community_Toolkit_Before_UseMauiApp {
             get {
-                return ResourceManager.GetString("AddUseCommunityToolkit", resourceCulture);
+                return ResourceManager.GetString("Initialize .NET MAUI Community Toolkit Before UseMauiApp", resourceCulture);
             }
         }
     }
