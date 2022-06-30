@@ -1,5 +1,8 @@
 ﻿using System.Collections.Immutable;
 using System.Composition;
+using System.Linq.Expressions;
+using System.Reflection.Metadata.Ecma335;
+using System.Runtime.InteropServices.ComTypes;
 using CommunityToolkit.Maui.Analyzers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
@@ -26,32 +29,35 @@ public class UseCommunityToolkitInitializationAnalyzerCodeFixProvider : CodeFixP
 		var diagnosticSpan = diagnostic.Location.SourceSpan;
 
 		// Find the type declaration identified by the diagnostic.
-		var declaration = root?.FindToken(diagnosticSpan.Start).Parent?.AncestorsAndSelf().OfType<TypeDeclarationSyntax>().First() ?? throw new InvalidOperationException();
+		var declaration = root?.FindToken(diagnosticSpan.Start).Parent?.AncestorsAndSelf().OfType<InvocationExpressionSyntax>().First() ?? throw new InvalidOperationException();
 
 		// Register a code action that will invoke the fix.
 		context.RegisterCodeFix(
 			CodeAction.Create(
 				title: CodeFixResources.AddUseCommunityToolkit,
-				createChangedSolution: c => AddUseCommunityToolkit(context.Document, declaration, c),
+				createChangedDocument: c => AddUseCommunityToolkit(context.Document, declaration, c),
 				equivalenceKey: nameof(CodeFixResources.AddUseCommunityToolkit)),
 			diagnostic);
 	}
 
-	async Task<Solution> AddUseCommunityToolkit(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
+	async Task<Document> AddUseCommunityToolkit(Document document, InvocationExpressionSyntax invocationExpression, CancellationToken cancellationToken)
 	{
-		var identifierToken = typeDecl.Identifier;
-		var newText = identifierToken.Text.Replace(";", ".UseMauiCommunityToolkit();");
+		var updatedInvocationExpression =
+			SyntaxFactory.InvocationExpression(
+				SyntaxFactory.MemberAccessExpression(
+					SyntaxKind.SimpleMemberAccessExpression, invocationExpression, SyntaxFactory.IdentifierName("UseMauiCommunityToolkit")));	
 
-		// Get the symbol representing the type to be renamed.
-		var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
-		var typeSymbol = semanticModel.GetDeclaredSymbol(typeDecl, cancellationToken) ?? throw new InvalidOperationException();
+		var root = await document.GetSyntaxRootAsync();
+		if (root is null)
+		{
+			return document;
+		}
 
-		// Produce a new solution that has all references to that type renamed, including the declaration.
-		var originalSolution = document.Project.Solution;
-		var optionSet = originalSolution.Workspace.Options;
-		var newSolution = await Renamer.RenameSymbolAsync(document.Project.Solution, typeSymbol, newText, optionSet, cancellationToken).ConfigureAwait(false);
+		var newRoot = root.ReplaceNode(invocationExpression, updatedInvocationExpression);
 
-		// Return the new solution with the now-uppercase type name.
-		return newSolution;
+		var newDocument = document.WithSyntaxRoot(newRoot);
+
+		return newDocument;
+
 	}
 }

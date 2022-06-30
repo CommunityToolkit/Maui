@@ -28,18 +28,24 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 	{
 		context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 		context.EnableConcurrentExecution();
-		context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.LocalDeclarationStatement);
+		context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.InvocationExpression);
 	}
 
 	static void AnalyzeNode(SyntaxNodeAnalysisContext context)
 	{
-		var localDeclaration = (LocalDeclarationStatementSyntax)context.Node;
+		var invocationExpression = (InvocationExpressionSyntax)context.Node;
 
-		if (localDeclaration.Declaration.Variables.ToString().Contains("UseMauiApp<")
-			&& !localDeclaration.Declaration.ToString().Contains(".UseMauiCommunityToolkit("))
+		if (invocationExpression.ToString().Contains("UseMauiApp<")
+			&& !invocationExpression.ToString().Contains(".UseMauiCommunityToolkit("))
 		{
-			var diagnostic = Diagnostic.Create(rule, localDeclaration.GetLocation());
-
+			var memberAccessExpressions = invocationExpression.ChildNodes().OfType<MemberAccessExpressionSyntax>();
+			foreach(var expression in memberAccessExpressions)//.OfType<GenericNameSyntax>())
+			{
+				var descendantNodes = expression.DescendantNodes(_ => true);
+				expression.Expressione
+			}
+			
+			var diagnostic = Diagnostic.Create(rule, invocationExpression.GetLocation());
 			context.ReportDiagnostic(diagnostic);
 		}
 	}

@@ -7,10 +7,10 @@ using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Xunit;
 
-namespace CommunityToolkit.Maui.Analyzers.UnitTests;
+namespace CommunityToolkit.Maui.Analyzers.UnitTests.CodeFixTests;
 
-public class UseCommunityToolkitAnalyzerTest : CSharpCodeFixTest<UseCommunityToolkitInitializationAnalyzer, 
-																	UseCommunityToolkitInitializationAnalyzerCodeFixProvider, 
+public class UseCommunityToolkitAnalyzerTests : CSharpCodeFixTest<UseCommunityToolkitInitializationAnalyzer,
+																	UseCommunityToolkitInitializationAnalyzerCodeFixProvider,
 																	XUnitVerifier>
 {
 	[Fact]
@@ -25,7 +25,7 @@ public static class MauiProgram
 {
 	public static MauiApp CreateMauiApp()
 	{
-		var builder = Microsoft.Maui.Hosting.MauiApp.CreateBuilder();
+		var builder = MauiApp.CreateBuilder();
 		builder
 			.UseMauiApp<App>()
 			.ConfigureFonts(fonts =>
