@@ -37,14 +37,7 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 
 		if (invocationExpression.ToString().Contains("UseMauiApp<")
 			&& !invocationExpression.ToString().Contains(".UseMauiCommunityToolkit("))
-		{
-			var memberAccessExpressions = invocationExpression.ChildNodes().OfType<MemberAccessExpressionSyntax>();
-			foreach(var expression in memberAccessExpressions)//.OfType<GenericNameSyntax>())
-			{
-				var descendantNodes = expression.DescendantNodes(_ => true);
-				expression.Expressione
-			}
-			
+		{			
 			var diagnostic = Diagnostic.Create(rule, invocationExpression.GetLocation());
 			context.ReportDiagnostic(diagnostic);
 		}

@@ -118,12 +118,12 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="IniitalizationMessageFormat" xml:space="preserve">
-    <value>`.UseCommunityToolkit()` must be chained to `.UseMauiApp&lt;T&gt;()`</value>
+    <value>`.UseMauiCommunityToolkit()` must be chained to `.UseMauiApp&lt;T&gt;()`</value>
   </data>
   <data name="InitializationErrorMessage" xml:space="preserve">
-    <value>`.UseCommunityToolkit()` is required to initalize .NET MAUI Community Toolkit</value>
+    <value>`.UseMauiCommunityToolkit()` is required to initalize .NET MAUI Community Toolkit</value>
   </data>
   <data name="InitializationErrorTitle" xml:space="preserve">
-    <value>`.UseCommunityToolkit()` Not Found on MauiAppBuilder</value>
+    <value>`.UseMauiCommunityToolkit()` Not Found on MauiAppBuilder</value>
   </data>
 </root>

@@ -61,7 +61,7 @@ namespace CommunityToolkit.Maui.Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to `.UseCommunityToolkit()` must be chained to `.UseMauiApp&lt;T&gt;()`.
+        ///   Looks up a localized string similar to `.UseMauiCommunityToolkit()` must be chained to `.UseMauiApp&lt;T&gt;()`.
         /// </summary>
         internal static string IniitalizationMessageFormat {
             get {
@@ -70,7 +70,7 @@ namespace CommunityToolkit.Maui.Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to `.UseCommunityToolkit()` is required to initalize .NET MAUI Community Toolkit.
+        ///   Looks up a localized string similar to `.UseMauiCommunityToolkit()` is required to initalize .NET MAUI Community Toolkit.
         /// </summary>
         internal static string InitializationErrorMessage {
             get {
@@ -79,7 +79,7 @@ namespace CommunityToolkit.Maui.Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to `.UseCommunityToolkit()` Not Found on MauiAppBuilder.
+        ///   Looks up a localized string similar to `.UseMauiCommunityToolkit()` Not Found on MauiAppBuilder.
         /// </summary>
         internal static string InitializationErrorTitle {
             get {
