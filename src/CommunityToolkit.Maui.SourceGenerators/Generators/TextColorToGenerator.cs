@@ -23,7 +23,7 @@ class TextColorToGenerator : IIncrementalGenerator
 			static (syntaxNode, cancellationToken) => syntaxNode is ClassDeclarationSyntax { BaseList: not null },
 			static (context, cancellationToken) => (ClassDeclarationSyntax)context.Node);
 
-		// Get Microsoft.Maui.Controls Assymbly Symbol
+		// Get Microsoft.Maui.Controls Assembly Symbol
 		var mauiControlsAssemblySymbolProvider = context.CompilationProvider.Select(
 			static (compilation, token) => compilation.SourceModule.ReferencedAssemblySymbols.Single(q => q.Name == mauiControlsAssembly));
 

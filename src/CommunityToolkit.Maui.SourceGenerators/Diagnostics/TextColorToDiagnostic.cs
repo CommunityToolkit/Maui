@@ -32,7 +32,7 @@ static class TextColorToDiagnostic
 	public static readonly DiagnosticDescriptor InvalidModifierAccess = new(
 		   "MCT004",
 		   "Class marked with invalid modifier access",
-		   "TextColorTo only supports public and internal classes ineriting from ITextStyle, please fix '{0}'",
+		   "TextColorTo only supports public and internal classes inheriting from ITextStyle, please fix '{0}'",
 		   category,
 		   DiagnosticSeverity.Info,
 		   true);
