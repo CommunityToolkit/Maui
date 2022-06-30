@@ -10,7 +10,8 @@
     x:TypeArguments="vm:AvatarControlViewModel">
 
     <pages:BasePage.Resources>
-        <x:String x:Key="Initials">GL</x:String>
+        <x:String x:Key="Initials">ZS</x:String>
+        <!--  The actress who played Neytiri in Avatar (2009) is Zoe Saldana (ZS)  -->
         <x:Double x:Key="Margin">0</x:Double>
         <x:Double x:Key="Padding">0</x:Double>
         <Color x:Key="AvatarBackgroundColor">Blue</Color>
@@ -29,696 +30,89 @@
     <ScrollView>
         <VerticalStackLayout x:Name="ContainerControl" Spacing="12">
             <Label LineBreakMode="WordWrap" Text="A control to display an image avatar or the user's initials that reacts to touch events." />
-            <Label FontSize="Header" Text="Proposed Controls" />
-            <Label FontSize="Large" Text="Using Avatar View 'Layout' control" />
-            <HorizontalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="Default" />
-                    <mct:AvatarLayoutView />
-                </VerticalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="with properties" />
-                    <mct:AvatarLayoutView
-                        Margin="{StaticResource Margin}"
-                        Padding="{StaticResource Padding}"
-                        AvatarBackgroundColor="{StaticResource AvatarBackgroundColor}"
-                        AvatarCornerRadius="{StaticResource AvatarCornerRadius}"
-                        AvatarHeightRequest="{StaticResource AvatarHeight}"
-                        AvatarWidthRequest="{StaticResource AvatarWidth}"
-                        BackgroundColor="{StaticResource ControlBackgroundColor}"
-                        FontAttributes="{StaticResource AvatarFontAttributes}"
-                        FontSize="Large"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        HorizontalOptions="Center"
-                        IsClippedToBounds="True"
-                        Text="{StaticResource Initials}"
-                        TextColor="{StaticResource AvatarTextColor}"
-                        VerticalOptions="Center"
-                        WidthRequest="{StaticResource ControlWidth}" />
-                </VerticalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="With shadow" />
-                    <mct:AvatarLayoutView
-                        Margin="{StaticResource Margin}"
-                        Padding="{StaticResource Padding}"
-                        AvatarBackgroundColor="{StaticResource AvatarBackgroundColor}"
-                        AvatarCornerRadius="{StaticResource AvatarCornerRadius}"
-                        FontAttributes="{StaticResource AvatarFontAttributes}"
-                        FontAutoScalingEnabled="True"
-                        FontSize="Large"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        IsClippedToBounds="True"
-                        Text="{StaticResource Initials}"
-                        TextColor="{StaticResource AvatarTextColor}"
-                        WidthRequest="{StaticResource ControlWidth}">
-                        <mct:AvatarLayoutView.Shadow>
-                            <Shadow
-                                Brush="{StaticResource AvatarShadowColor}"
-                                Opacity="0.8"
-                                Radius="10"
-                                Offset="10,10" />
-                        </mct:AvatarLayoutView.Shadow>
-                    </mct:AvatarLayoutView>
-                </VerticalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="With image" />
-                    <mct:AvatarLayoutView
-                        Margin="{StaticResource Margin}"
-                        Padding="{StaticResource Padding}"
-                        AvatarBackgroundColor="{StaticResource AvatarBackgroundColor}"
-                        AvatarCornerRadius="{StaticResource AvatarCornerRadius}"
-                        AvatarHeightRequest="{StaticResource AvatarHeight}"
-                        AvatarWidthRequest="{StaticResource AvatarWidth}"
-                        FontAttributes="{StaticResource AvatarFontAttributes}"
-                        FontAutoScalingEnabled="True"
-                        FontSize="Large"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        HorizontalOptions="Center"
-                        ImageSource="https://vectorified.com/images/avatar-icon-png-13.png"
-                        Text="{StaticResource Initials}"
-                        TextColor="{StaticResource AvatarTextColor}"
-                        VerticalOptions="Center"
-                        WidthRequest="{StaticResource ControlWidth}" />
-                </VerticalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="With image and shadow" />
-                    <mct:AvatarLayoutView
-                        Margin="{StaticResource Margin}"
-                        Padding="{StaticResource Padding}"
-                        AvatarBackgroundColor="{StaticResource AvatarBackgroundColor}"
-                        AvatarCornerRadius="{StaticResource AvatarCornerRadius}"
-                        AvatarHeightRequest="{StaticResource AvatarHeight}"
-                        AvatarWidthRequest="{StaticResource AvatarWidth}"
-                        FontAttributes="{StaticResource AvatarFontAttributes}"
-                        WidthRequest="{StaticResource ControlWidth}"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        FontSize="Large"
-                        ImageSource="https://vectorified.com/images/avatar-icon-png-13.png"
-                        TextColor="{StaticResource AvatarTextColor}">
-                        <mct:AvatarLayoutView.Shadow>
-                            <Shadow
-                                Brush="{StaticResource AvatarShadowColor}"
-                                Opacity="0.5"
-                                Radius="10"
-                                Offset="10,10" />
-                        </mct:AvatarLayoutView.Shadow>
-                    </mct:AvatarLayoutView>
-                </VerticalStackLayout>
-            </HorizontalStackLayout>
-            <Label FontSize="Large" Text="Avatar Box 'View' control" />
-            <HorizontalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="Default" />
-                    <mct:AvatarViewBoxView
-                        BackgroundColor="{StaticResource AvatarBackgroundColor}"
-                        CornerRadius="{StaticResource AvatarCornerRadius}"
-                        FontSize="Large"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        HorizontalOptions="Center"
-                        Text="{StaticResource Initials}"
-                        TextColor="{StaticResource AvatarTextColor}"
-                        VerticalOptions="Center"
-                        WidthRequest="{StaticResource ControlWidth}" />
-                </VerticalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="With image" />
-                    <mct:AvatarViewBoxView
-                        BackgroundColor="{StaticResource AvatarBackgroundColor}"
-                        CornerRadius="{StaticResource AvatarCornerRadius}"
-                        FontSize="Large"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        HorizontalOptions="Center"
-                        ImageSource="https://aka.ms/campus.jpg"
-                        Text="{StaticResource Initials}"
-                        TextColor="{StaticResource AvatarTextColor}"
-                        VerticalOptions="Center"
-                        WidthRequest="{StaticResource ControlWidth}" />
-                </VerticalStackLayout>
-            </HorizontalStackLayout>
-            <Label FontSize="Large" Text="Avatar Border 'View' Control" />
-            <HorizontalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="Default" />
-                    <mct:AvatarViewBorder
-                        Margin="{StaticResource Margin}"
-                        Padding="{StaticResource Padding}"
-                        BackgroundColor="{StaticResource AvatarBackgroundColor}"
-                        FontSize="Large"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        StrokeShape="RoundRectangle 50,0,0,50"
-                        StrokeThickness="4"
-                        Text="{StaticResource Initials}"
-                        TextColor="{StaticResource AvatarTextColor}"
-                        WidthRequest="{StaticResource ControlWidth}" />
-                </VerticalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="With Image" />
-                    <mct:AvatarViewBorder
-                        Margin="{StaticResource Margin}"
-                        Padding="{StaticResource Padding}"
-                        BackgroundColor="{StaticResource AvatarBackgroundColor}"
-                        FontSize="Large"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        ImageSource="https://aka.ms/campus.jpg"
-                        StrokeShape="RoundRectangle 50,0,0,50"
-                        StrokeThickness="4"
-                        Text="{StaticResource Initials}"
-                        TextColor="{StaticResource AvatarTextColor}"
-                        WidthRequest="{StaticResource ControlWidth}" />
-                </VerticalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="With shadow" />
-                    <mct:AvatarViewBorder
-                        Margin="{StaticResource Margin}"
-                        Padding="{StaticResource Padding}"
-                        BackgroundColor="{StaticResource AvatarBackgroundColor}"
-                        FontSize="Large"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        StrokeShape="RoundRectangle 50,0,0,50"
-                        StrokeThickness="4"
-                        Text="{StaticResource Initials}"
-                        TextColor="{StaticResource AvatarTextColor}"
-                        WidthRequest="{StaticResource ControlWidth}">
-                        <mct:AvatarViewBorder.Shadow>
-                            <Shadow
-                                Brush="{StaticResource AvatarShadowColor}"
-                                Opacity="0.8"
-                                Radius="10"
-                                Offset="10,10" />
-                        </mct:AvatarViewBorder.Shadow>
-                    </mct:AvatarViewBorder>
-                </VerticalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="With stroke" />
-                    <mct:AvatarViewBorder
-                        Margin="{StaticResource Margin}"
-                        Padding="{StaticResource Padding}"
-                        BackgroundColor="{StaticResource AvatarBackgroundColor}"
-                        FontSize="Large"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        StrokeShape="RoundRectangle 50,0,0,50"
-                        StrokeThickness="4"
-                        Text="{StaticResource Initials}"
-                        TextColor="{StaticResource AvatarTextColor}"
-                        WidthRequest="{StaticResource ControlWidth}">
-                        <mct:AvatarViewBorder.Stroke>
-                            <LinearGradientBrush EndPoint="0,1">
-                                <GradientStop Offset="0.1" Color="PaleVioletRed" />
-                                <GradientStop Offset="1.0" Color="Brown" />
-                            </LinearGradientBrush>
-                        </mct:AvatarViewBorder.Stroke>
-                    </mct:AvatarViewBorder>
-                </VerticalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="With shadow and stroke" />
-                    <mct:AvatarViewBorder
-                        Margin="{StaticResource Margin}"
-                        Padding="{StaticResource Padding}"
-                        BackgroundColor="{StaticResource AvatarBackgroundColor}"
-                        FontSize="Large"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        StrokeShape="RoundRectangle 50,0,0,50"
-                        StrokeThickness="4"
-                        Text="{StaticResource Initials}"
-                        TextColor="{StaticResource AvatarTextColor}"
-                        WidthRequest="{StaticResource ControlWidth}">
-                        <mct:AvatarViewBorder.Shadow>
-                            <Shadow
-                                Brush="{StaticResource AvatarShadowColor}"
-                                Opacity="0.8"
-                                Radius="10"
-                                Offset="10,10" />
-                        </mct:AvatarViewBorder.Shadow>
-                        <mct:AvatarViewBorder.Stroke>
-                            <LinearGradientBrush EndPoint="0,1">
-                                <GradientStop Offset="0.1" Color="PaleVioletRed" />
-                                <GradientStop Offset="1.0" Color="Brown" />
-                            </LinearGradientBrush>
-                        </mct:AvatarViewBorder.Stroke>
-                    </mct:AvatarViewBorder>
-                </VerticalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="With Image and shadow" />
-                    <mct:AvatarViewBorder
-                        Margin="{StaticResource Margin}"
-                        Padding="{StaticResource Padding}"
-                        BackgroundColor="{StaticResource AvatarBackgroundColor}"
-                        FontSize="Large"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        ImageSource="https://aka.ms/campus.jpg"
-                        StrokeShape="RoundRectangle 50,0,0,50"
-                        StrokeThickness="4"
-                        Text="{StaticResource Initials}"
-                        TextColor="{StaticResource AvatarTextColor}"
-                        WidthRequest="{StaticResource ControlWidth}">
-                        <mct:AvatarViewBorder.Shadow>
-                            <Shadow
-                                Brush="{StaticResource AvatarShadowColor}"
-                                Opacity="0.8"
-                                Radius="10"
-                                Offset="10,10" />
-                        </mct:AvatarViewBorder.Shadow>
-                    </mct:AvatarViewBorder>
-                </VerticalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="With Image and stroke" />
-                    <mct:AvatarViewBorder
-                        Margin="{StaticResource Margin}"
-                        Padding="{StaticResource Padding}"
-                        BackgroundColor="{StaticResource AvatarBackgroundColor}"
-                        FontSize="Large"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        ImageSource="https://aka.ms/campus.jpg"
-                        StrokeShape="RoundRectangle 50,0,0,50"
-                        StrokeThickness="4"
-                        Text="{StaticResource Initials}"
-                        TextColor="{StaticResource AvatarTextColor}"
-                        WidthRequest="{StaticResource ControlWidth}">
-                        <mct:AvatarViewBorder.Stroke>
-                            <LinearGradientBrush EndPoint="0,1">
-                                <GradientStop Offset="0.1" Color="PaleVioletRed" />
-                                <GradientStop Offset="1.0" Color="Brown" />
-                            </LinearGradientBrush>
-                        </mct:AvatarViewBorder.Stroke>
-                    </mct:AvatarViewBorder>
-                </VerticalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="With Image, shadow and stroke" />
-                    <mct:AvatarViewBorder
-                        Margin="{StaticResource Margin}"
-                        Padding="{StaticResource Padding}"
-                        BackgroundColor="{StaticResource AvatarBackgroundColor}"
-                        FontSize="Large"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        ImageSource="https://aka.ms/campus.jpg"
-                        StrokeShape="RoundRectangle 50,0,0,50"
-                        StrokeThickness="4"
-                        Text="{StaticResource Initials}"
-                        TextColor="{StaticResource AvatarTextColor}"
-                        WidthRequest="{StaticResource ControlWidth}">
-                        <mct:AvatarViewBorder.Shadow>
-                            <Shadow
-                                Brush="{StaticResource AvatarShadowColor}"
-                                Opacity="0.8"
-                                Radius="10"
-                                Offset="10,10" />
-                        </mct:AvatarViewBorder.Shadow>
-                        <mct:AvatarViewBorder.Stroke>
-                            <LinearGradientBrush EndPoint="0,1">
-                                <GradientStop Offset="0.1" Color="PaleVioletRed" />
-                                <GradientStop Offset="1.0" Color="Brown" />
-                            </LinearGradientBrush>
-                        </mct:AvatarViewBorder.Stroke>
-                    </mct:AvatarViewBorder>
-                </VerticalStackLayout>
-            </HorizontalStackLayout>
-            <Label FontSize="Header" Text="Experiments" />
-            <Label FontSize="Large" Text="Using frame" />
-            <HorizontalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="Default" />
-                    <Frame
-                        Margin="{StaticResource Margin}"
-                        Padding="{StaticResource Padding}"
-                        BackgroundColor="{StaticResource AvatarBackgroundColor}"
-                            CornerRadius="{StaticResource AvatarCornerRadiusFloat}"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        HorizontalOptions="Center"
-                        IsClippedToBounds="True"
-                        VerticalOptions="Center"
-                        WidthRequest="{StaticResource ControlWidth}">
-                        <Grid>
-                            <Label
-                                HorizontalTextAlignment="Center"
-                                Text="{StaticResource Initials}"
-                                TextColor="{StaticResource AvatarTextColor}"
-                                VerticalTextAlignment="Center" />
-                            <Image
-                                Aspect="AspectFill"
-                                IsVisible="False"
-                                Source="https://aka.ms/campus.jpg" />
-                        </Grid>
-                    </Frame>
-                </VerticalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="With Shadow" />
-                    <Frame
-                        Margin="{StaticResource Margin}"
-                        Padding="{StaticResource Padding}"
-                        BackgroundColor="{StaticResource AvatarBackgroundColor}"
-                            CornerRadius="{StaticResource AvatarCornerRadiusFloat}"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        HorizontalOptions="Center"
-                        IsClippedToBounds="True"
-                        VerticalOptions="Center"
-                        WidthRequest="{StaticResource ControlWidth}">
-                        <Grid>
-                            <Label
-                                HorizontalTextAlignment="Center"
-                                Text="{StaticResource Initials}"
-                                TextColor="{StaticResource AvatarTextColor}"
-                                VerticalTextAlignment="Center" />
-                            <Image
-                                Aspect="AspectFill"
-                                IsVisible="False"
-                                Source="https://aka.ms/campus.jpg" />
-                        </Grid>
-                        <Frame.Shadow>
-                            <Shadow
-                                Brush="{StaticResource AvatarShadowColor}"
-                                Opacity="0.8"
-                                Radius="10"
-                                Offset="10,10" />
-                        </Frame.Shadow>
-                    </Frame>
-                </VerticalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="With Image" />
-                    <Frame
-                        Margin="{StaticResource Margin}"
-                        Padding="{StaticResource Padding}"
-                        BackgroundColor="{StaticResource AvatarBackgroundColor}"
-                            CornerRadius="{StaticResource AvatarCornerRadiusFloat}"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        HorizontalOptions="Center"
-                        IsClippedToBounds="True"
-                        VerticalOptions="Center"
-                        WidthRequest="{StaticResource ControlWidth}">
-                        <Grid>
-                            <Label
-                                HorizontalTextAlignment="Center"
-                                IsVisible="False"
-                                Text="{StaticResource Initials}"
-                                TextColor="{StaticResource AvatarTextColor}"
-                                VerticalTextAlignment="Center" />
-                            <Image Aspect="AspectFill" Source="https://aka.ms/campus.jpg" />
-                        </Grid>
-                    </Frame>
-                </VerticalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="With Image and shadow" />
-                    <Frame
-                        Margin="{StaticResource Margin}"
-                        Padding="{StaticResource Padding}"
-                        BackgroundColor="{StaticResource AvatarBackgroundColor}"
-                            CornerRadius="{StaticResource AvatarCornerRadiusFloat}"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        HorizontalOptions="Center"
-                        IsClippedToBounds="True"
-                        VerticalOptions="Center"
-                        WidthRequest="{StaticResource ControlWidth}">
-                        <Grid>
-                            <Label
-                                HorizontalTextAlignment="Center"
-                                IsVisible="False"
-                                Text="{StaticResource Initials}"
-                                TextColor="{StaticResource AvatarTextColor}"
-                                VerticalTextAlignment="Center" />
-                            <Image Aspect="AspectFill" Source="https://aka.ms/campus.jpg" />
-                        </Grid>
-                        <Frame.Shadow>
-                            <Shadow
-                                Brush="{StaticResource AvatarShadowColor}"
-                                Opacity="0.8"
-                                Radius="10"
-                                Offset="10,10" />
-                        </Frame.Shadow>
-                    </Frame>
-                </VerticalStackLayout>
-            </HorizontalStackLayout>
-            <Label FontSize="Large" Text="Using Absolute Layout" />
-            <HorizontalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="Default" />
-                    <AbsoluteLayout
-                        Margin="{StaticResource Margin}"
-                        Padding="{StaticResource Padding}"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        HorizontalOptions="Center"
-                        IsClippedToBounds="True"
-                        VerticalOptions="Center"
-                        WidthRequest="{StaticResource ControlWidth}">
-                        <Frame
-                            Margin="{StaticResource Margin}"
-                            Padding="{StaticResource Padding}"
-                            BackgroundColor="{StaticResource AvatarBackgroundColor}"
-                            BorderColor="White"
-                            CornerRadius="{StaticResource AvatarCornerRadiusFloat}"
-                            HeightRequest="{StaticResource ControlHeight}"
-                            HorizontalOptions="Center"
-                            IsClippedToBounds="True"
-                            VerticalOptions="Center"
-                            WidthRequest="{StaticResource ControlWidth}">
-                            <Grid>
-                                <Label
-                                    FontSize="Large"
-                                    HorizontalTextAlignment="Center"
-                                    IsVisible="True"
-                                    Text="{StaticResource Initials}"
-                                    TextColor="{StaticResource AvatarTextColor}"
-                                    VerticalTextAlignment="Center" />
-                                <Image
-                                    Aspect="AspectFill"
-                                    IsVisible="False"
-                                    Source="https://aka.ms/campus.jpg" />
-                            </Grid>
-                        </Frame>
-                    </AbsoluteLayout>
-                </VerticalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="With Shadow" />
-                    <AbsoluteLayout
-                        Margin="{StaticResource Margin}"
-                        Padding="{StaticResource Padding}"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        HorizontalOptions="Center"
-                        IsClippedToBounds="True"
-                        VerticalOptions="Center"
-                        WidthRequest="{StaticResource ControlWidth}">
-                        <Frame
-                            Margin="{StaticResource Margin}"
-                            Padding="{StaticResource Padding}"
-                            BackgroundColor="{StaticResource AvatarBackgroundColor}"
-                            BorderColor="White"
-                            CornerRadius="{StaticResource AvatarCornerRadiusFloat}"
-                            HeightRequest="{StaticResource ControlHeight}"
-                            HorizontalOptions="Center"
-                            IsClippedToBounds="True"
-                            VerticalOptions="Center"
-                            WidthRequest="{StaticResource ControlWidth}">
-                            <Grid>
-                                <Label
-                                    FontSize="Large"
-                                    HorizontalTextAlignment="Center"
-                                    IsVisible="True"
-                                    Text="{StaticResource Initials}"
-                                    TextColor="{StaticResource AvatarTextColor}"
-                                    VerticalTextAlignment="Center" />
-                                <Image
-                                    Aspect="AspectFill"
-                                    IsVisible="False"
-                                    Source="https://aka.ms/campus.jpg" />
-                            </Grid>
-                        </Frame>
-                        <AbsoluteLayout.Shadow>
-                            <Shadow
-                                Brush="{StaticResource AvatarShadowColor}"
-                                Radius="10"
-                                Offset="10,10" />
-                        </AbsoluteLayout.Shadow>
-                    </AbsoluteLayout>
-                </VerticalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="With Image" />
-                    <AbsoluteLayout
-                        Margin="{StaticResource Margin}"
-                        Padding="{StaticResource Padding}"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        HorizontalOptions="Center"
-                        IsClippedToBounds="True"
-                        VerticalOptions="Center"
-                        WidthRequest="{StaticResource ControlWidth}">
-                        <Frame
-                            Margin="{StaticResource Margin}"
-                            Padding="{StaticResource Padding}"
-                            BackgroundColor="{StaticResource AvatarBackgroundColor}"
-                            BorderColor="White"
-                            CornerRadius="{StaticResource AvatarCornerRadiusFloat}"
-                            HeightRequest="{StaticResource ControlHeight}"
-                            HorizontalOptions="Center"
-                            IsClippedToBounds="True"
-                            VerticalOptions="Center"
-                            WidthRequest="{StaticResource ControlWidth}">
-                            <Grid>
-                                <Label
-                                    FontSize="Large"
-                                    HorizontalTextAlignment="Center"
-                                    IsVisible="False"
-                                    Text="{StaticResource Initials}"
-                                    TextColor="{StaticResource AvatarTextColor}"
-                                    VerticalTextAlignment="Center" />
-                                <Image
-                                    Aspect="AspectFill"
-                                    IsVisible="True"
-                                    Source="https://aka.ms/campus.jpg" />
-                            </Grid>
-                        </Frame>
-                    </AbsoluteLayout>
-                </VerticalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="With Image and shadow" />
-                    <AbsoluteLayout
-                        Margin="{StaticResource Margin}"
-                        Padding="{StaticResource Padding}"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        HorizontalOptions="Center"
-                        IsClippedToBounds="True"
-                        VerticalOptions="Center"
-                        WidthRequest="{StaticResource ControlWidth}">
-                        <Frame
-                            Margin="{StaticResource Margin}"
-                            Padding="{StaticResource Padding}"
-                            BackgroundColor="{StaticResource AvatarBackgroundColor}"
-                            BorderColor="White"
-                            CornerRadius="{StaticResource AvatarCornerRadiusFloat}"
-                            HeightRequest="{StaticResource ControlHeight}"
-                            HorizontalOptions="Center"
-                            IsClippedToBounds="True"
-                            VerticalOptions="Center"
-                            WidthRequest="{StaticResource ControlWidth}">
-                            <Grid>
-                                <Label
-                                    FontSize="Large"
-                                    HorizontalTextAlignment="Center"
-                                    IsVisible="True"
-                                    Text="{StaticResource Initials}"
-                                    TextColor="{StaticResource AvatarTextColor}"
-                                    VerticalTextAlignment="Center" />
-                                <Image
-                                    Aspect="AspectFill"
-                                    IsVisible="False"
-                                    Source="https://aka.ms/campus.jpg" />
-                            </Grid>
-                        </Frame>
-                        <AbsoluteLayout.Shadow>
-                            <Shadow
-                                Brush="{StaticResource AvatarShadowColor}"
-                                Radius="10"
-                                Offset="10,10" />
-                        </AbsoluteLayout.Shadow>
-                    </AbsoluteLayout>
-                </VerticalStackLayout>
-            </HorizontalStackLayout>
-            <Label FontSize="Large" Text="Using Border" />
-            <HorizontalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="Default" />
-                    <Border
-                        Padding="16,8"
-                        Background="{StaticResource AvatarBackgroundColor}"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        HorizontalOptions="Center"
-                        StrokeShape="RoundRectangle 50,0,0,50"
-                        StrokeThickness="4"
-                        WidthRequest="{StaticResource ControlWidth}">
-                        <Label
-                            FontAttributes="{StaticResource AvatarFontAttributes}"
-                            FontSize="18"
-                            HorizontalTextAlignment="Center"
-                            Text="{StaticResource Initials}"
-                            TextColor="{StaticResource AvatarTextColor}"
-                            VerticalTextAlignment="Center" />
-                    </Border>
-                </VerticalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="With Stroke" />
-                    <Border
-                        Background="{StaticResource AvatarBackgroundColor}"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        HorizontalOptions="Center"
-                        StrokeShape="RoundRectangle 50,0,0,50"
-                        StrokeThickness="4"
-                        WidthRequest="{StaticResource ControlWidth}">
-                        <Border.Stroke>
-                            <LinearGradientBrush EndPoint="0,1">
-                                <GradientStop Offset="0.1" Color="Orange" />
-                                <GradientStop Offset="1.0" Color="Brown" />
-                            </LinearGradientBrush>
-                        </Border.Stroke>
-                        <Label
-                            FontAttributes="{StaticResource AvatarFontAttributes}"
-                            FontSize="Large"
-                            HorizontalTextAlignment="Center"
-                            Text="{StaticResource Initials}"
-                            TextColor="{StaticResource AvatarTextColor}"
-                            VerticalTextAlignment="Center" />
-                    </Border>
-                </VerticalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="With Image" />
-                    <Border
-                        Margin="{StaticResource Margin}"
-                        Padding="{StaticResource Padding}"
-                        Background="{StaticResource AvatarBackgroundColor}"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        HorizontalOptions="Center"
-                        StrokeShape="RoundRectangle 50,0,0,50"
-                        StrokeThickness="4"
-                        WidthRequest="{StaticResource ControlWidth}">
-                        <Image Aspect="AspectFill" Source="https://aka.ms/campus.jpg" />
-                    </Border>
-                </VerticalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="With Image and stroke" />
-                    <Border
-                        Margin="{StaticResource Margin}"
-                        Padding="{StaticResource Padding}"
-                        Background="{StaticResource AvatarBackgroundColor}"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        HorizontalOptions="Center"
-                        StrokeShape="RoundRectangle 50,0,0,50"
-                        StrokeThickness="4"
-                        WidthRequest="{StaticResource ControlWidth}">
-                        <Border.Stroke>
-                            <LinearGradientBrush EndPoint="0,1">
-                                <GradientStop Offset="0.1" Color="Orange" />
-                                <GradientStop Offset="1.0" Color="Brown" />
-                            </LinearGradientBrush>
-                        </Border.Stroke>
-                        <Image Aspect="AspectFill" Source="https://aka.ms/campus.jpg" />
-                    </Border>
-                </VerticalStackLayout>
-                <VerticalStackLayout>
-                    <Label Text="With image, stroke and shadow" />
-                    <Border
-                        Margin="{StaticResource Margin}"
-                        Padding="{StaticResource Padding}"
-                        Background="{StaticResource AvatarBackgroundColor}"
-                        HeightRequest="{StaticResource ControlHeight}"
-                        HorizontalOptions="Center"
-                        StrokeShape="RoundRectangle 50,0,0,50"
-                        StrokeThickness="4"
-                        WidthRequest="{StaticResource ControlWidth}">
-                        <Border.Stroke>
-                            <LinearGradientBrush EndPoint="0,1">
-                                <GradientStop Offset="0.1" Color="Orange" />
-                                <GradientStop Offset="1.0" Color="Brown" />
-                            </LinearGradientBrush>
-                        </Border.Stroke>
-                        <Border.Shadow>
-                            <Shadow
-                                Brush="{StaticResource AvatarShadowColor}"
-                                Radius="10"
-                                Offset="10,-10" />
-                        </Border.Shadow>
-                        <Image Aspect="AspectFill" Source="https://aka.ms/campus.jpg">
-                            <Image.Clip>
-                                <RoundRectangleGeometry CornerRadius="{StaticResource AvatarCornerRadius}" Rect="40,0,0,40" />
-                            </Image.Clip>
-                        </Image>
-                    </Border>
-                </VerticalStackLayout>
-            </HorizontalStackLayout>
+            <VerticalStackLayout>
+                <Label Text="Default" />
+                <mct:Avatar />
+            </VerticalStackLayout>
+            <VerticalStackLayout>
+                <Label Text="Text" />
+                <mct:Avatar Text="{StaticResource Initials}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout>
+                <Label Text="Image" />
+                <mct:Avatar ImageSource="avatar_icon.png" />
+            </VerticalStackLayout>
+            <VerticalStackLayout>
+                <Label Text="Text+Properties+Shadow" />
+                <mct:Avatar
+                    Margin="{StaticResource Margin}"
+                    Padding="{StaticResource Padding}"
+                    Background="{StaticResource ControlBackgroundColor}"
+                    BackgroundColor="{StaticResource AvatarBackgroundColor}"
+                    FontAttributes="{StaticResource AvatarFontAttributes}"
+                    FontSize="Large"
+                    HeightRequest="{StaticResource ControlHeight}"
+                    IsClippedToBounds="True"
+                    Text="{StaticResource Initials}"
+                    TextColor="{StaticResource AvatarTextColor}"
+                    WidthRequest="{StaticResource ControlWidth}">
+                    <mct:Avatar.Shadow>
+                        <Shadow
+                            Brush="{StaticResource AvatarShadowColor}"
+                            Opacity="0.8"
+                            Radius="10"
+                            Offset="10,10" />
+                    </mct:Avatar.Shadow>
+                </mct:Avatar>
+            </VerticalStackLayout>
+            <VerticalStackLayout>
+                <Label Text="ImageURL+Properties+Shadow" />
+                <mct:Avatar
+                    Margin="{StaticResource Margin}"
+                    Padding="{StaticResource Padding}"
+                    CornerRadius="50,50,50,50"
+                    FontAttributes="{StaticResource AvatarFontAttributes}"
+                    FontSize="Large"
+                    HeightRequest="{StaticResource ControlHeight}"
+                    ImageSource="https://aka.ms/campus.jpg"
+                    IsClippedToBounds="True"
+                    Text="{StaticResource Initials}"
+                    TextColor="{StaticResource AvatarTextColor}"
+                    WidthRequest="{StaticResource ControlWidth}">
+                    <mct:Avatar.Shadow>
+                        <Shadow
+                            Brush="{StaticResource AvatarShadowColor}"
+                            Opacity="0.8"
+                            Radius="10"
+                            Offset="10,10" />
+                    </mct:Avatar.Shadow>
+                </mct:Avatar>
+            </VerticalStackLayout>
+            <VerticalStackLayout>
+                <Label Text="Tap Gesture" />
+                <mct:Avatar
+                    Margin="{StaticResource Margin}"
+                    Padding="{StaticResource Padding}"
+                    BackgroundColor="{StaticResource AvatarBackgroundColor}"
+                    FontAttributes="{StaticResource AvatarFontAttributes}"
+                    FontSize="Large"
+                    HeightRequest="{StaticResource ControlHeight}"
+                    IsClippedToBounds="True"
+                    Text="{StaticResource Initials}"
+                    TextColor="{StaticResource AvatarTextColor}"
+                    WidthRequest="{StaticResource ControlWidth}">
+                    <mct:Avatar.GestureRecognizers>
+                        <TapGestureRecognizer CommandParameter="{StaticResource Initials}" Tapped="TapGestureRecognizer_Tapped" />
+                    </mct:Avatar.GestureRecognizers>
+                    <mct:Avatar.Shadow>
+                        <Shadow
+                            Brush="{StaticResource AvatarShadowColor}"
+                            Opacity="0.8"
+                            Radius="10"
+                            Offset="10,10" />
+                    </mct:Avatar.Shadow>
+                </mct:Avatar>
+            </VerticalStackLayout>
         </VerticalStackLayout>
     </ScrollView>
 </pages:BasePage>
