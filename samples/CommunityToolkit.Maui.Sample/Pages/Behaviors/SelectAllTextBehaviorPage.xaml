@@ -10,79 +10,77 @@
 	x:DataType="vm:SelectAllTextBehaviorViewModel"
 	x:TypeArguments="vm:SelectAllTextBehaviorViewModel">
 
-	<ScrollView BackgroundColor="{StaticResource PrimaryColor}">
-		<VerticalStackLayout
+    <ScrollView>
+        <VerticalStackLayout
 			Padding="10,10"
 			HorizontalOptions="Fill"
 			Spacing="20"
 			VerticalOptions="Fill">
 
-			<Label Text="The SelectAllTextEffect is an effect that will select all text in an Entry / Editor when it becomes focussed. Useful applications for this effect would be custom url address bars, a copy paste button etc." />
+            <Label Text="The SelectAllTextBehavior is an effect that will select all text in an Entry / Editor when it becomes focused. Useful applications for this effect would be custom url address bars, a copy paste button etc." />
 
-			<Label
+            <Label
 				FontAttributes="Bold"
 				Text="Entry"
 				TextColor="{StaticResource DarkLabelTextColor}" />
 
 
-			<Label FontAttributes="Italic" Text="Entry without the effect, when focussed no text will be selected" />
-			<Frame BackgroundColor="{StaticResource SoftFrameBackgroundColor}" HasShadow="False">
-				<Entry
+            <Label FontAttributes="Italic" Text="Entry without the effect, when focused no text will be selected" />
+            <Border BackgroundColor="{StaticResource SoftBorderBackgroundColor}" >
+                <Entry
 					BackgroundColor="{StaticResource PrimaryColor}"
 					PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}"
 					Text="https://github.com/xamarin/XamarinCommunityToolkit"
 					TextColor="{StaticResource DarkLabelTextColor}" />
-			</Frame>
+            </Border>
 
-
-
-			<Label FontAttributes="Italic" Text="Entry with the effect, when focussed all text will be selected" />
-			<Frame BackgroundColor="{StaticResource SoftFrameBackgroundColor}" HasShadow="False">
-				<Entry
+            <Label FontAttributes="Italic" Text="Entry with the effect, when focused all text will be selected" />
+            <Border BackgroundColor="{StaticResource SoftBorderBackgroundColor}" >
+                <Entry
 					BackgroundColor="{StaticResource PrimaryColor}"
 					PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}"
 					Text="https://github.com/xamarin/XamarinCommunityToolkit"
 					TextColor="{StaticResource DarkLabelTextColor}">
-					<Entry.Behaviors>
-						<mct:SelectAllTextBehavior />
-					</Entry.Behaviors>
-				</Entry>
-			</Frame>
+                    <Entry.Behaviors>
+                        <mct:SelectAllTextBehavior />
+                    </Entry.Behaviors>
+                </Entry>
+            </Border>
 
-			<Label
+            <Label
 				FontAttributes="Bold"
 				Text="Editor"
 				TextColor="{StaticResource DarkLabelTextColor}" />
 
 
-			<Label FontAttributes="Italic" Text="Editor without the effect, when focussed no text will be selected" />
-			<Frame BackgroundColor="{StaticResource SoftFrameBackgroundColor}" HasShadow="False">
-				<Editor PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}"
+            <Label FontAttributes="Italic" Text="Editor without the effect, when focused no text will be selected" />
+            <Border BackgroundColor="{StaticResource SoftBorderBackgroundColor}" >
+                <Editor PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}"
 						TextColor="{StaticResource DarkLabelTextColor}"
 						BackgroundColor="{StaticResource PrimaryColor}">
-					<Editor.Text>
-						Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should. Must go faster... go, go, go, go, go! You know what? It is beets. I've crashed into a beet truck. Is this my espresso machine? Wh-what is-h-how did you get my espresso machine?
+                    <Editor.Text>
+                        Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should. Must go faster... go, go, go, go, go! You know what? It is beets. I've crashed into a beet truck. Is this my espresso machine? Wh-what is-h-how did you get my espresso machine?
 						Just my luck, no ice. I gave it a cold? I gave it a virus. A computer virus. Must go faster... go, go, go, go, go! God creates dinosaurs. God destroys dinosaurs. God creates Man. Man destroys God. Man creates Dinosaurs. Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should.
-					</Editor.Text>
-				</Editor>
-			</Frame>
+                    </Editor.Text>
+                </Editor>
+            </Border>
 
 
 
-			<Label FontAttributes="Italic" Text="Editor with the effect, when focussed all text will be selected" />
-			<Frame BackgroundColor="{StaticResource SoftFrameBackgroundColor}" HasShadow="False">
-				<Editor PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}"
+            <Label FontAttributes="Italic" Text="Editor with the effect, when focused all text will be selected" />
+            <Border BackgroundColor="{StaticResource SoftBorderBackgroundColor}" >
+                <Editor PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}"
 						TextColor="{StaticResource DarkLabelTextColor}"
 						BackgroundColor="{StaticResource PrimaryColor}">
-					<Editor.Behaviors>
-						<mct:SelectAllTextBehavior />
-					</Editor.Behaviors>
-					<Editor.Text>
-						Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should. Must go faster... go, go, go, go, go! You know what? It is beets. I've crashed into a beet truck. Is this my espresso machine? Wh-what is-h-how did you get my espresso machine?
+                    <Editor.Behaviors>
+                        <mct:SelectAllTextBehavior />
+                    </Editor.Behaviors>
+                    <Editor.Text>
+                        Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should. Must go faster... go, go, go, go, go! You know what? It is beets. I've crashed into a beet truck. Is this my espresso machine? Wh-what is-h-how did you get my espresso machine?
 						Just my luck, no ice. I gave it a cold? I gave it a virus. A computer virus. Must go faster... go, go, go, go, go! God creates dinosaurs. God destroys dinosaurs. God creates Man. Man destroys God. Man creates Dinosaurs. Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should.
-					</Editor.Text>
-				</Editor>
-			</Frame>
-		</VerticalStackLayout>
-	</ScrollView>
+                    </Editor.Text>
+                </Editor>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
 </pages:BasePage>
