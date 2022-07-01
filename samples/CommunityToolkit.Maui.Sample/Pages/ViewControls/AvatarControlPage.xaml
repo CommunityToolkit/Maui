@@ -24,6 +24,8 @@
         <x:Single x:Key="AvatarCornerRadiusFloat">50</x:Single>
         <x:Double x:Key="ControlHeight">100</x:Double>
         <x:Double x:Key="ControlWidth">100</x:Double>
+        <x:Double x:Key="ControlHalfHeight">50</x:Double>
+        <x:Double x:Key="ControlHalfWidth">50</x:Double>
         <FontAttributes x:Key="AvatarFontAttributes">Bold</FontAttributes>
     </pages:BasePage.Resources>
 
@@ -39,23 +41,127 @@
                 <mct:Avatar Text="{StaticResource Initials}" />
             </VerticalStackLayout>
             <VerticalStackLayout>
-                <Label Text="Image" />
-                <mct:Avatar ImageSource="avatar_icon.png" />
+                <Label Text="Text (rounded square)" />
+                <mct:Avatar
+                    CornerRadius="15"
+                    AvatarHeightRequest="{StaticResource ControlHeight}"
+                    Text="{StaticResource Initials}"
+                    AvatarWidthRequest="{StaticResource ControlWidth}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout>
+                <Label Text="Text (circle)" />
+                <mct:Avatar CornerRadius="50" Text="{StaticResource Initials}" AvatarHeightRequest="{StaticResource AvatarHeight}" AvatarWidthRequest="{StaticResource AvatarWidth}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout>
+                <Label Text="Text (vpill)" />
+                <mct:Avatar
+                    CornerRadius="50"
+                    AvatarHeightRequest="{StaticResource ControlHeight}"
+                    Text="{StaticResource Initials}"
+                    AvatarWidthRequest="{StaticResource ControlHalfWidth}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout>
+                <Label Text="Text (hpill)" />
+                <mct:Avatar
+                    CornerRadius="50"
+                    AvatarHeightRequest="{StaticResource ControlHalfHeight}"
+                    Text="{StaticResource Initials}"
+                    AvatarWidthRequest="{StaticResource ControlWidth}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout>
+                <Label Text="Text (arch)" />
+                <mct:Avatar
+                    CornerRadius="50,50,0,0"
+                    AvatarHeightRequest="{StaticResource ControlHeight}"
+                    Text="{StaticResource Initials}"
+                    AvatarWidthRequest="{StaticResource ControlWidth}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout>
+                <Label Text="Text (shield)" />
+                <mct:Avatar
+                    CornerRadius="0,0,50,50"
+                    AvatarHeightRequest="{StaticResource ControlHeight}"
+                    Text="{StaticResource Initials}"
+                    AvatarWidthRequest="{StaticResource ControlWidth}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout>
+                <Label Text="Text (eed)" />
+                <mct:Avatar
+                    CornerRadius="50,0,50,0"
+                    AvatarHeightRequest="{StaticResource ControlHeight}"
+                    Text="{StaticResource Initials}"
+                    AvatarWidthRequest="{StaticResource ControlWidth}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout>
+                <Label Text="Text (dee)" />
+                <mct:Avatar
+                    CornerRadius="0,50,0,50"
+                    AvatarHeightRequest="{StaticResource ControlHeight}"
+                    Text="{StaticResource Initials}"
+                    AvatarWidthRequest="{StaticResource ControlWidth}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout>
+                <Label Text="Text (tlpoint)" />
+                <mct:Avatar
+                    CornerRadius="0,50,50,50"
+                    AvatarHeightRequest="{StaticResource ControlHeight}"
+                    Text="{StaticResource Initials}"
+                    AvatarWidthRequest="{StaticResource ControlWidth}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout>
+                <Label Text="Text (trpoint)" />
+                <mct:Avatar
+                    CornerRadius="50,0,50,50"
+                    AvatarHeightRequest="{StaticResource ControlHeight}"
+                    Text="{StaticResource Initials}"
+                    AvatarWidthRequest="{StaticResource ControlWidth}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout>
+                <Label Text="Text (blpoint)" />
+                <mct:Avatar
+                    CornerRadius="50,50,0,50"
+                    AvatarHeightRequest="{StaticResource ControlHeight}"
+                    Text="{StaticResource Initials}"
+                    AvatarWidthRequest="{StaticResource ControlWidth}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout>
+                <Label Text="Text (brpoint)" />
+                <mct:Avatar
+                    CornerRadius="50,50,50,0"
+                    AvatarHeightRequest="{StaticResource ControlHeight}"
+                    Text="{StaticResource Initials}"
+                    AvatarWidthRequest="{StaticResource ControlWidth}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout>
+                <Label Text="Local Image" />
+                <mct:Avatar
+                    AvatarHeightRequest="{StaticResource ControlHeight}"
+                    ImageSource="avatar_icon.png"
+                    AvatarWidthRequest="{StaticResource ControlWidth}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout>
+                <Label Text="Local Image (circle)" />
+                <mct:Avatar
+                    CornerRadius="50"
+                    AvatarHeightRequest="{StaticResource ControlHeight}"
+                    ImageSource="avatar_icon.png"
+                    AvatarWidthRequest="{StaticResource ControlWidth}" />
             </VerticalStackLayout>
             <VerticalStackLayout>
                 <Label Text="Text+Properties+Shadow" />
                 <mct:Avatar
                     Margin="{StaticResource Margin}"
                     Padding="{StaticResource Padding}"
-                    Background="{StaticResource ControlBackgroundColor}"
-                    BackgroundColor="{StaticResource AvatarBackgroundColor}"
+                    AvatarBackgroundColor="{StaticResource AvatarBackgroundColor}"
+                    BorderWidth="5"
+                    CornerRadius="50, 50, 50, 50"
                     FontAttributes="{StaticResource AvatarFontAttributes}"
                     FontSize="Large"
-                    HeightRequest="{StaticResource ControlHeight}"
+                    AvatarHeightRequest="{StaticResource ControlHeight}"
                     IsClippedToBounds="True"
-                    Text="{StaticResource Initials}"
+                    Text="AS"
                     TextColor="{StaticResource AvatarTextColor}"
-                    WidthRequest="{StaticResource ControlWidth}">
+                    AvatarWidthRequest="{StaticResource ControlWidth}">
                     <mct:Avatar.Shadow>
                         <Shadow
                             Brush="{StaticResource AvatarShadowColor}"
@@ -70,15 +176,16 @@
                 <mct:Avatar
                     Margin="{StaticResource Margin}"
                     Padding="{StaticResource Padding}"
-                    CornerRadius="50,50,50,50"
+                    BorderWidth="5"
+                    CornerRadius="50, 50,50,50"
                     FontAttributes="{StaticResource AvatarFontAttributes}"
                     FontSize="Large"
-                    HeightRequest="{StaticResource ControlHeight}"
+                    AvatarHeightRequest="{StaticResource ControlHeight}"
                     ImageSource="https://aka.ms/campus.jpg"
                     IsClippedToBounds="True"
                     Text="{StaticResource Initials}"
                     TextColor="{StaticResource AvatarTextColor}"
-                    WidthRequest="{StaticResource ControlWidth}">
+                    AvatarWidthRequest="{StaticResource ControlWidth}">
                     <mct:Avatar.Shadow>
                         <Shadow
                             Brush="{StaticResource AvatarShadowColor}"
@@ -93,7 +200,7 @@
                 <mct:Avatar
                     Margin="{StaticResource Margin}"
                     Padding="{StaticResource Padding}"
-                    BackgroundColor="{StaticResource AvatarBackgroundColor}"
+                    AvatarBackgroundColor="{StaticResource AvatarBackgroundColor}"
                     FontAttributes="{StaticResource AvatarFontAttributes}"
                     FontSize="Large"
                     HeightRequest="{StaticResource ControlHeight}"
@@ -113,6 +220,40 @@
                     </mct:Avatar.Shadow>
                 </mct:Avatar>
             </VerticalStackLayout>
+            <!--
+            Having weird problems with binding, specifically:
+            XFC0009	No property, BindableProperty, or event found for "BackgroundColor", or mismatching type between value and property.
+            XFC0009	No property, BindableProperty, or event found for "FontAttributes", or mismatching type between value and property.
+            XFC0009	No property, BindableProperty, or event found for "FontSize", or mismatching type between value and property.
+            XFC0009	No property, BindableProperty, or event found for "ImageSource", or mismatching type between value and property.
+            XFC0009	No property, BindableProperty, or event found for "Text", or mismatching type between value and property.
+            XFC0009	No property, BindableProperty, or event found for "TextColor", or mismatching type between value and property.
+
+            <Grid>
+                <CollectionView
+                    BackgroundColor="red"
+                    HeightRequest="200"
+                    ItemsSource="{Binding AvatarList}"
+                    WidthRequest="800">
+                    <CollectionView.ItemsLayout>
+                        <GridItemsLayout HorizontalItemSpacing="4" Orientation="Horizontal" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.Header>
+                        <Label Text="Collection view of C# collection of Avatars" />
+                    </CollectionView.Header>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:AvatarModel">
+                            <mct:Avatar
+                                BackgroundColor="{Binding BackgroundColor}"
+                                FontAttributes="{Binding FontAttributes}"
+                                FontSize="{Binding FontSize}"
+                                ImageSource="{Binding ImageSource}"
+                                Text="{Binding Text}"
+                                TextColor="{Binding TextColor}" />
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>-->
         </VerticalStackLayout>
     </ScrollView>
 </pages:BasePage>

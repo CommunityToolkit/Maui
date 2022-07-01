@@ -9,8 +9,6 @@ public class Avatar : ContentView, IAvatarElement, IFontElement, ITextElement, I
 	/// <summary>Initialises a new instance of the <see cref="Avatar"/> class.</summary>
 	public Avatar()
 	{
-		WidthRequest = AvatarElement.DefaultWidthRequest;
-		HeightRequest = AvatarElement.DefaultHeightRequest;
 		IsEnabled = true;
 		grid.Add(avatarLabel);
 		grid.Add(avatarImage);
@@ -21,13 +19,8 @@ public class Avatar : ContentView, IAvatarElement, IFontElement, ITextElement, I
 
 	Border avatarFrame { get; } = new Border
 	{
-		StrokeThickness = 4,
-		Background = Color.FromArgb("#2B0B98"),
 		HorizontalOptions = LayoutOptions.Center,
-		StrokeShape = new RoundRectangle
-		{
-			CornerRadius = new CornerRadius(AvatarElement.DefaultCornerRadius.TopLeft, AvatarElement.DefaultCornerRadius.TopRight, AvatarElement.DefaultCornerRadius.BottomLeft, AvatarElement.DefaultCornerRadius.BottomRight),
-		},
+		Padding = new Thickness(0.01),
 		Stroke = new LinearGradientBrush
 		{
 			EndPoint = new Point(0, 1),
@@ -37,8 +30,6 @@ public class Avatar : ContentView, IAvatarElement, IFontElement, ITextElement, I
 				new GradientStop { Color = Colors.Brown, Offset = 1.0f }
 			},
 		},
-		WidthRequest = AvatarElement.DefaultWidthRequest,
-		HeightRequest = AvatarElement.DefaultHeightRequest,
 	};
 
 	Grid grid { get; } = new Grid();
@@ -236,6 +227,34 @@ public class Avatar : ContentView, IAvatarElement, IFontElement, ITextElement, I
 		set => SetValue(AvatarElement.CornerRadiusProperty, value);
 	}
 
+	/// <summary>Gets or sets a value of the avatar background colour property.</summary>
+	public Color AvatarBackgroundColor
+	{
+		get => (Color)GetValue(AvatarElement.AvatarBackgroundColorProperty);
+		set => SetValue(AvatarElement.AvatarBackgroundColorProperty, value);
+	}
+
+	/// <summary>Gets or sets a value of the avatar border width.</summary>
+	public double BorderWidth
+	{
+		get => (double)GetValue(AvatarElement.BorderWidthProperty);
+		set => SetValue(AvatarElement.BorderWidthProperty, value);
+	}
+
+	/// <summary>Gets or sets a value of the avatar width request property.</summary>
+	public double AvatarWidthRequest
+	{
+		get => (double)GetValue(AvatarElement.AvatarWidthRequestProperty);
+		set => SetValue(AvatarElement.AvatarWidthRequestProperty, value);
+	}
+
+	/// <summary>Gets or sets a value of the avatar height request property.</summary>
+	public double AvatarHeightRequest
+	{
+		get => (double)GetValue(AvatarElement.AvatarHeightRequestProperty);
+		set => SetValue(AvatarElement.AvatarHeightRequestProperty, value);
+	}
+
 	string IAvatarElement.TextDefaultValue => (string)AvatarElement.TextProperty.DefaultValue;
 	CornerRadius IAvatarElement.CornerRadiusDefaultValue => (CornerRadius)AvatarElement.CornerRadiusProperty.DefaultValue;
 
@@ -257,6 +276,26 @@ public class Avatar : ContentView, IAvatarElement, IFontElement, ITextElement, I
 	void IAvatarElement.OnImageSourceChanged(ImageSource oldValue, ImageSource newValue)
 	{
 		HandleImageChanged();
+	}
+
+	void IAvatarElement.OnBackgroundColorChanged(Color oldValue, Color newValue)
+	{
+		avatarFrame.Background = newValue;
+	}
+
+	void IAvatarElement.OnBorderWidthPropertyChanged(double oldValue, double newValue)
+	{
+		avatarFrame.StrokeThickness = newValue;
+	}
+
+	void IAvatarElement.OnWidthRequestPropertyChanged(double oldValue, double newValue)
+	{
+		avatarFrame.WidthRequest = newValue;
+	}
+
+	void IAvatarElement.OnHeightRequestPropertyChanged(double oldValue, double newValue)
+	{
+		avatarFrame.HeightRequest = newValue;
 	}
 
 	void HandleCornerRadiusChanged()
