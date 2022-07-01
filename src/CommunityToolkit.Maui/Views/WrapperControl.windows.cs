@@ -5,7 +5,7 @@ using WRect = Windows.Foundation.Rect;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
-// We still have to keep this class, due to some random exceptions that occours when the 
+// We still have to keep this class, due to some random exceptions that occurs when the 
 // .NET MAUI implementation is used.
 class WrapperControl : Panel
 {
