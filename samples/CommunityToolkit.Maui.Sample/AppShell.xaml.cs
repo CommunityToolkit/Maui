@@ -27,6 +27,7 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<CharactersValidationBehaviorPage, CharactersValidationBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
 		CreateViewModelMapping<EmailValidationBehaviorPage, EmailValidationBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
 		CreateViewModelMapping<EventToCommandBehaviorPage, EventToCommandBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
+		CreateViewModelMapping<IconTintColorBehaviorPage, IconTintColorBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
 		CreateViewModelMapping<MaskedBehaviorPage, MaskedBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
 		CreateViewModelMapping<MaxLengthReachedBehaviorPage, MaxLengthReachedBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
 		CreateViewModelMapping<MultiValidationBehaviorPage, MultiValidationBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),

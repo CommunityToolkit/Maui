@@ -54,6 +54,7 @@ public static class MauiProgram
 		services.AddTransient<CharactersValidationBehaviorPage>();
 		services.AddTransient<EmailValidationBehaviorPage>();
 		services.AddTransient<EventToCommandBehaviorPage>();
+		services.AddTransient<IconTintColorBehaviorPage>();
 		services.AddTransient<MaskedBehaviorPage>();
 		services.AddTransient<MaxLengthReachedBehaviorPage>();
 		services.AddTransient<MultiValidationBehaviorPage>();
@@ -134,6 +135,7 @@ public static class MauiProgram
 		services.AddTransient<CharactersValidationBehaviorViewModel>();
 		services.AddTransient<EmailValidationBehaviorViewModel>();
 		services.AddTransient<EventToCommandBehaviorViewModel>();
+		services.AddTransient<IconTintColorBehaviorViewModel>();
 		services.AddTransient<MaskedBehaviorViewModel>();
 		services.AddTransient<MaxLengthReachedBehaviorViewModel>();
 		services.AddTransient<MultiValidationBehaviorViewModel>();
