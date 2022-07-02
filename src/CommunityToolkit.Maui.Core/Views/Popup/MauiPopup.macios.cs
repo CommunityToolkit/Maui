@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -66,7 +67,8 @@ public class MauiPopup : UIViewController
 		_ = View ?? throw new InvalidOperationException($"{nameof(View)} cannot be null");
 		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null.");
 
-		ViewController ??= mainPage.ViewController ?? throw new InvalidOperationException($"{nameof(mainPage.ViewController)} cannot be null"); ;
+		var rootViewController = WindowStateManager.Default.GetCurrentUIViewController() ?? throw new InvalidOperationException($"{nameof(mainPage.ViewController)} cannot be null");
+		ViewController ??= rootViewController;
 	}
 
 	/// <summary>
@@ -125,16 +127,17 @@ public class MauiPopup : UIViewController
 	{
 		var popOverDelegate = new PopoverDelegate();
 		popOverDelegate.PopoverDismissedEvent += HandlePopoverDelegateDismissed;
-		((UIPopoverPresentationController)PresentationController).SourceView = ViewController?.View ?? throw new InvalidOperationException($"{nameof(ViewController.View)} cannot be null");
 
-		((UIPopoverPresentationController)PresentationController).Delegate = popOverDelegate;
+		var presentationController = ((UIPopoverPresentationController)PresentationController);
+		presentationController.SourceView = ViewController?.View ?? throw new InvalidOperationException($"{nameof(ViewController.View)} cannot be null");
+
+		presentationController.Delegate = popOverDelegate;
 	}
 
 
 	void HandlePopoverDelegateDismissed(object? sender, UIPresentationController e)
 	{
 		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null.");
-
 		VirtualView.Handler?.Invoke(nameof(IPopup.OnDismissedByTappingOutsideOfPopup));
 	}
 
