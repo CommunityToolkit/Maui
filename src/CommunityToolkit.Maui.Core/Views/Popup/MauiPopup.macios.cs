@@ -77,9 +77,9 @@ public class MauiPopup : UIViewController
 		_ = View ?? throw new InvalidOperationException($"{nameof(View)} cannot be null");
 		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null.");
 
-		SetDimmingBackgroundEffect();
 		var rootViewController = WindowStateManager.Default.GetCurrentUIViewController() ?? throw new InvalidOperationException($"{nameof(mainPage.ViewController)} cannot be null");
 		ViewController ??= rootViewController;
+		SetDimmingBackgroundEffect();
 	}
 
 	void SetDimmingBackgroundEffect()
