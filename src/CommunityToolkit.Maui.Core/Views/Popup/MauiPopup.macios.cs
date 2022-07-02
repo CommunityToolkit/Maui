@@ -49,6 +49,16 @@ public class MauiPopup : UIViewController
 		SetElementSize(new Size(View.Bounds.Width, View.Bounds.Height));
 	}
 
+	/// <inheritdoc/>
+	public override void ViewWillDisappear(bool animated)
+	{
+		if (ViewController?.View is UIView view)
+		{
+			view.Alpha = 1f;
+		}
+		base.ViewWillDisappear(animated);
+	}
+
 	/// <summary>
 	/// Method to initialize the native implementation.
 	/// </summary>
@@ -69,6 +79,15 @@ public class MauiPopup : UIViewController
 
 		var rootViewController = WindowStateManager.Default.GetCurrentUIViewController() ?? throw new InvalidOperationException($"{nameof(mainPage.ViewController)} cannot be null");
 		ViewController ??= rootViewController;
+		SetDimmingBackgroundEffect();
+	}
+
+	void SetDimmingBackgroundEffect()
+	{
+		if (ViewController?.View is UIView view)
+		{
+			view.Alpha = 0.4f;
+		}
 	}
 
 	/// <summary>
