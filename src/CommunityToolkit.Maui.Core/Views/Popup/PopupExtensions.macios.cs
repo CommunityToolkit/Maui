@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Platform;
+using CommunityToolkit.Maui.Core.Extensions;
 
 namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
@@ -20,7 +21,7 @@ public static class PopupExtensions
 		else if (popup.Content is not null)
 		{
 			var content = popup.Content;
-			if (content.Width is not 0 || content.Height is not 0)
+			if (!content.Width.IsZeroOrNaN() || !content.Height.IsZeroOrNaN())
 			{
 				mauiPopup.PreferredContentSize = new CGSize(content.Width, content.Height);
 			}
