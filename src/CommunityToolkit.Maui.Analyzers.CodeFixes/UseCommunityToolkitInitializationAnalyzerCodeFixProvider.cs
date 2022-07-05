@@ -42,18 +42,29 @@ public class UseCommunityToolkitInitializationAnalyzerCodeFixProvider : CodeFixP
 
 	async Task<Document> AddUseCommunityToolkit(Document document, InvocationExpressionSyntax invocationExpression, CancellationToken cancellationToken)
 	{
-		var updatedInvocationExpression =
-			SyntaxFactory.InvocationExpression(
-				SyntaxFactory.MemberAccessExpression(
-					SyntaxKind.SimpleMemberAccessExpression, invocationExpression, SyntaxFactory.IdentifierName("UseMauiCommunityToolkit")));	
-
-		var root = await document.GetSyntaxRootAsync();
+		var root = await document.GetSyntaxRootAsync().ConfigureAwait(false);
 		if (root is null)
 		{
 			return document;
 		}
 
+		var updatedInvocationExpression =
+			SyntaxFactory.InvocationExpression(
+				SyntaxFactory.MemberAccessExpression(
+					SyntaxKind.SimpleMemberAccessExpression, invocationExpression, SyntaxFactory.IdentifierName("UseMauiCommunityToolkit")));
+
+		var mauiCommunityToolkitUsingStatement =
+			SyntaxFactory.UsingDirective(
+				SyntaxFactory.QualifiedName(
+					SyntaxFactory.IdentifierName("CommunityToolkit"),
+					SyntaxFactory.IdentifierName("Maui")));
+
 		var newRoot = root.ReplaceNode(invocationExpression, updatedInvocationExpression);
+
+		if (newRoot is CompilationUnitSyntax compilationSyntax)
+		{
+			newRoot = compilationSyntax.AddUsings(mauiCommunityToolkitUsingStatement).NormalizeWhitespace();
+		}
 
 		var newDocument = document.WithSyntaxRoot(newRoot);
 
