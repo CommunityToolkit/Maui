@@ -8,12 +8,12 @@ public interface IExpander : IView
 	/// <summary>
 	/// Expander header.
 	/// </summary>
-	public IView Header { get; }
+	public IView? Header { get; }
 
 	/// <summary>
 	/// Collapsible content.
 	/// </summary>
-	public IView Content { get; }
+	public IView? Content { get; }
 
 	/// <summary>
 	/// Gets or sets Expander collapsible state.

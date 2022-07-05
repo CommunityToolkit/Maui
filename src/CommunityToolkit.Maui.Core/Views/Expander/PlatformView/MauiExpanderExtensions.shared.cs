@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Core.Views;
+using CommunityToolkit.Maui.Core.Views;
 using Microsoft.Maui.Platform;
 #if WINDOWS
 using MauiExpander = Microsoft.UI.Xaml.Controls.Expander;
@@ -16,17 +16,17 @@ public static partial class MauiExpanderExtensions
 	/// <summary>
 	/// Set Header
 	/// </summary>
-	public static void SetHeader(this MauiExpander mauiExpander, IView header, IMauiContext context)
+	public static void SetHeader(this MauiExpander mauiExpander, IView? header, IMauiContext context)
 	{
-		mauiExpander.Header = header.ToPlatform(context);
+		mauiExpander.Header = header?.ToPlatform(context);
 	}
 
 	/// <summary>
 	/// Set Content
 	/// </summary>
-	public static void SetContent(this MauiExpander mauiExpander, IView content, IMauiContext context)
+	public static void SetContent(this MauiExpander mauiExpander, IView? content, IMauiContext context)
 	{
-		mauiExpander.Content = content.ToPlatform(context);
+		mauiExpander.Content = content?.ToPlatform(context);
 	}
 
 	/// <summary>
@@ -53,8 +53,6 @@ public static partial class MauiExpanderExtensions
 	/// <summary>
 	/// Converts platform expand direction to virtual expand direction
 	/// </summary>
-	/// <param name="direction"><see cref="ExpandDirection"/></param>
-	/// <returns><see cref="Microsoft.UI.Xaml.Controls.ExpandDirection"/></returns>
 	public static Microsoft.UI.Xaml.Controls.ExpandDirection ToPlatform(this ExpandDirection direction)
 	{
 		return Enum.Parse<Microsoft.UI.Xaml.Controls.ExpandDirection>(direction.ToString());
@@ -63,8 +61,6 @@ public static partial class MauiExpanderExtensions
 	/// <summary>
 	/// Converts platform expand direction to virtual expand direction
 	/// </summary>
-	/// <param name="direction"><see cref="ExpandDirection"/></param>
-	/// <returns><see cref="ExpandDirection"/></returns>
 	public static ExpandDirection ToPlatform(this ExpandDirection direction)
 	{
 		return direction;

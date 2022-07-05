@@ -100,4 +100,18 @@ public class ExpanderTests : BaseHandlerTest
 
 		isExpanded.Should().Be(expectedIsExpanded);
 	}
+	
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public void ExpandedChangedCommandExecutedWithParams(bool expectedIsExpanded)
+	{
+		bool? isExpanded = null;
+
+		expander.Command = new Command<bool>(parameter => isExpanded = parameter);
+		expander.CommandParameter = expectedIsExpanded;
+		((IExpander)expander).ExpandedChanged(expectedIsExpanded);
+
+		isExpanded.Should().Be(expectedIsExpanded);
+	}
 }

@@ -5,17 +5,10 @@ using Java.Lang;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
-/// <summary>
-/// 
-/// </summary>
 public partial class MauiExpander : LinearLayout
 {
 	View? content;
 	View? header;
-	bool isExpanded;
-	ExpandDirection expandDirection;
-	readonly WeakEventManager weakEventManager = new();
-
 
 	/// <summary>
 	/// Initialize a new instance of <see cref="MauiExpander" />.
@@ -23,17 +16,9 @@ public partial class MauiExpander : LinearLayout
 	public MauiExpander(Context context) : base(context)
 	{
 	}
-
+	
 	/// <summary>
-	/// 
-	/// </summary>
-	public event EventHandler<ExpanderCollapsedEventArgs> Collapsed
-	{
-		add => weakEventManager.AddEventHandler(value);
-		remove => weakEventManager.RemoveEventHandler(value);
-	}
-	/// <summary>
-	/// 
+	/// Expander header
 	/// </summary>
 	public View? Header
 	{
@@ -46,7 +31,7 @@ public partial class MauiExpander : LinearLayout
 	}
 
 	/// <summary>
-	/// 
+	/// Expander expandable content
 	/// </summary>
 	public View? Content
 	{
@@ -58,34 +43,7 @@ public partial class MauiExpander : LinearLayout
 		}
 	}
 
-	/// <summary>
-	/// 
-	/// </summary>
-	public bool IsExpanded
-	{
-		get => isExpanded;
-		set
-		{
-			isExpanded = value;
-			UpdateContentVisibility(value);
-			weakEventManager.HandleEvent(this, new ExpanderCollapsedEventArgs(!value), nameof(Collapsed));
-		}
-	}
-
-	/// <summary>
-	/// 
-	/// </summary>
-	public ExpandDirection ExpandDirection
-	{
-		get => expandDirection;
-		set
-		{
-			expandDirection = value;
-			Draw();
-		}
-	}
-
-	void Draw()
+	partial void Draw()
 	{
 		if (Header is null || Content is null)
 		{
@@ -110,7 +68,7 @@ public partial class MauiExpander : LinearLayout
 		}
 	}
 
-	void UpdateContentVisibility(bool isVisible)
+	partial void UpdateContentVisibility(bool isVisible)
 	{
 		if (Content is not null)
 		{
@@ -138,14 +96,14 @@ public partial class MauiExpander : LinearLayout
 			this.expander = expander;
 		}
 
-		public void OnClick(Android.Views.View? v)
+		public void OnClick(View? v)
 		{
 			if (expander.Content is null)
 			{
 				return;
 			}
 
-			var animation = expander.Content.Animate()?.Alpha(expander.IsExpanded ? 0.0f : 1.0f)?.SetDuration(300);
+			var animation = expander.Content.Animate()?.Alpha(expander.IsExpanded ? 0.0f : 1.0f)?.SetDuration(expander.AnimationDuration);
 			if (animation is null)
 			{
 				return;

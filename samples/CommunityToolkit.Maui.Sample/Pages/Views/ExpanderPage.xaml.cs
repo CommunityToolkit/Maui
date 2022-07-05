@@ -15,4 +15,9 @@ public partial class ExpanderPage : BasePage<ExpanderViewModel>
 		var collapsedText = e.IsExpanded ? "expanded":"collapsed";
 		await Toast.Make($"Expander is {collapsedText}").Show(CancellationToken.None);
 	}
+
+	async void GoToCSharpSampleClicked(object sender, EventArgs e)
+	{
+		await Navigation.PushAsync(new ExpanderPageCS());
+	}
 }

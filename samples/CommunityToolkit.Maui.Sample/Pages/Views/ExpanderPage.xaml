@@ -11,6 +11,9 @@
 
     <ScrollView>
         <VerticalStackLayout Spacing="10">
+            <Label Text="C# Sample" />
+            <Button Text="Navigate" Clicked="GoToCSharpSampleClicked"/>
+
             <Label Text="Simple expander" />
             <mct:Expander>
                 <mct:Expander.Header>

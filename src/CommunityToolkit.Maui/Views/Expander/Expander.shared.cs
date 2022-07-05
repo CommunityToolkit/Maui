@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using System.Windows.Input;
+using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -37,6 +38,16 @@ public class Expander : View, IExpander
 	/// </summary>
 	public static readonly BindableProperty DirectionProperty = BindableProperty.Create(nameof(Direction), typeof(ExpandDirection), typeof(Expander));
 
+	/// <summary>
+	/// Backing BindableProperty for the <see cref="CommandParameter"/> property.
+	/// </summary>
+	public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(Expander));
+
+	/// <summary>
+	/// Backing BindableProperty for the <see cref="Command"/> property.
+	/// </summary>
+	public static readonly BindableProperty CommandProperty = BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(Expander));
+	
 	/// <summary>
 	/// Event occurred when IsExpanded changed.
 	/// </summary>
@@ -82,6 +93,24 @@ public class Expander : View, IExpander
 		set => SetValue(DirectionProperty, value);
 	}
 
+	/// <summary>
+	/// Command parameter. This is a bindable property.
+	/// </summary>
+	public object? CommandParameter
+	{
+		get => GetValue(CommandParameterProperty);
+		set => SetValue(CommandParameterProperty, value);
+	}
+
+	/// <summary>
+	/// Command is executed on IsExpanded changed. This is a bindable property.
+	/// </summary>
+	public ICommand? Command
+	{
+		get => (ICommand?)GetValue(CommandProperty);
+		set => SetValue(CommandProperty, value);
+	}
+
 	void OnExpanderUnloaded(object? sender, EventArgs e)
 	{
 		Unloaded -= OnExpanderUnloaded;
@@ -114,6 +143,7 @@ public class Expander : View, IExpander
 	void IExpander.ExpandedChanged(bool isExpanded)
 	{ 
 		expandedChangedEventManager.HandleEvent(this, new ExpandedChangedEventArgs(isExpanded), nameof(ExpandedChanged));
+		Command?.Execute(CommandParameter);
 #if IOS || MACCATALYST
 		InvalidateMeasure();
 #endif

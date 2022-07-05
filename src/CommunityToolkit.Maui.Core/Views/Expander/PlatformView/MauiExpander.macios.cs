@@ -7,18 +7,6 @@ public partial class MauiExpander : UIStackView
 {
 	UIView? header;
 	UIView? content;
-	bool isExpanded;
-	ExpandDirection expandDirection;
-	readonly WeakEventManager weakEventManager = new();
-
-	/// <summary>
-	/// Event invoked when IsExpanded changed
-	/// </summary>
-	public event EventHandler<ExpanderCollapsedEventArgs> Collapsed
-	{
-		add => weakEventManager.AddEventHandler(value);
-		remove => weakEventManager.RemoveEventHandler(value);
-	}
 
 	/// <summary>
 	/// Expander header
@@ -46,34 +34,7 @@ public partial class MauiExpander : UIStackView
 		}
 	}
 
-	/// <summary>
-	/// Returns true if expander is expanded
-	/// </summary>
-	public bool IsExpanded
-	{
-		get => isExpanded;
-		set
-		{
-			isExpanded = value;
-			UpdateContentVisibility(value);
-			weakEventManager.HandleEvent(this, new ExpanderCollapsedEventArgs(!value), nameof(Collapsed));
-		}
-	}
-
-	/// <summary>
-	/// Gets or sets Expander expand direction
-	/// </summary>
-	public ExpandDirection ExpandDirection
-	{
-		get => expandDirection;
-		set
-		{
-			expandDirection = value;
-			Draw();
-		}
-	}
-
-	void Draw()
+	partial void Draw()
 	{
 		if (Header is null || Content is null)
 		{
@@ -116,7 +77,7 @@ public partial class MauiExpander : UIStackView
 				return;
 			}
 
-			Transition(Content, 0.3, UIViewAnimationOptions.CurveLinear,
+			Transition(Content, AnimationDuration / 1000d, UIViewAnimationOptions.CurveLinear,
 				() => IsExpanded = !IsExpanded,
 				() => { });
 		});
@@ -126,7 +87,7 @@ public partial class MauiExpander : UIStackView
 		};
 	}
 
-	void UpdateContentVisibility(bool isVisible)
+	partial void UpdateContentVisibility(bool isVisible)
 	{
 		if (Content is not null)
 		{

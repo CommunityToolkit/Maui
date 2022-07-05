@@ -71,7 +71,7 @@ public partial class ExpanderHandler : ViewHandler<IExpander, MauiExpander>
 	}
 
 	/// <summary>
-	/// Action that's triggered when the <see cref="IExpander.Content"/> property changes.
+	/// Action that's triggered when the <see cref="Core.IExpander.Content"/> property changes.
 	/// </summary>
 	public static void MapContent(ExpanderHandler handler, IExpander view)
 	{
@@ -88,7 +88,7 @@ public partial class ExpanderHandler : ViewHandler<IExpander, MauiExpander>
 	}
 
 	/// <summary>
-	/// Action that's triggered when the <see cref="IExpander.Direction"/> property changes.
+	/// Action that's triggered when the <see cref="Core.IExpander.Direction"/> property changes.
 	/// </summary>
 	public static void MapDirection(ExpanderHandler handler, IExpander view)
 	{
