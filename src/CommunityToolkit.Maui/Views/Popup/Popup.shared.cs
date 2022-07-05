@@ -131,7 +131,7 @@ public partial class Popup : Element, IPopup
 	/// <remarks>
 	/// The Popup will always try to constrain the actual size of the <see cref="Popup" />
 	/// to the <see cref="Popup" /> of the View unless a <see cref="Size"/> is specified.
-	/// If the <see cref="Popup" /> contiains <see cref="LayoutOptions"/> a <see cref="Size"/>
+	/// If the <see cref="Popup" /> contains <see cref="LayoutOptions"/> a <see cref="Size"/>
 	/// will be required. This will allow the View to have a concept of <see cref="Size"/>
 	/// that varies from the actual <see cref="Size"/> of the <see cref="Popup" />
 	/// </remarks>
