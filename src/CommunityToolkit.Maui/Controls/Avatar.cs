@@ -3,36 +3,95 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui.Controls;
+
 /// <summary>Avatar content view.</summary>
 public class Avatar : ContentView, IAvatarElement, IFontElement, ITextElement, IImageElement
 {
+	/// <summary>The backing store for the <see cref="IAvatarElement.AvatarBackgroundColor" /> bindable property.</summary>
+	public static readonly BindableProperty AvatarBackgroundColorProperty = BindableProperty.Create(nameof(IAvatarElement.AvatarBackgroundColor), typeof(Color), typeof(IAvatarElement), null, propertyChanged: OnBackgroundColorChanged);
+
+	/// <summary>The backing store for the <see cref="IAvatarElement.AvatarHeightRequest" /> bindable property.</summary>
+	public static readonly BindableProperty AvatarHeightRequestProperty = BindableProperty.Create(nameof(IAvatarElement.AvatarHeightRequest), typeof(double), typeof(VisualElement), defaultValue: AvatarElement.DefaultHeightRequest, propertyChanged: OnHeightRequestPropertyChanged);
+
+	/// <inheritdoc/>
+	public static readonly BindableProperty AvatarPaddingBottomProperty = BindableProperty.Create("AvatarPaddingBottom", typeof(double), typeof(IPaddingElement), default(double), propertyChanged: OnPaddingBottomChanged);
+
+	/// <inheritdoc/>
+	public static readonly BindableProperty AvatarPaddingLeftProperty = BindableProperty.Create("AvatarPaddingLeft", typeof(double), typeof(IPaddingElement), default(double), propertyChanged: OnPaddingLeftChanged);
+
+	/// <summary>The backing store for the <see cref="AvatarPadding" /> bindable property.</summary>
+	public static readonly BindableProperty AvatarPaddingProperty = BindableProperty.Create(nameof(IPaddingElement.Padding), typeof(Thickness), typeof(IPaddingElement), default(Thickness), propertyChanged: OnPaddingPropertyChanged, defaultValueCreator: PaddingDefaultValueCreator);
+
+	/// <inheritdoc/>
+	public static readonly BindableProperty AvatarPaddingRightProperty = BindableProperty.Create("AvatarPaddingRight", typeof(double), typeof(IPaddingElement), default(double), propertyChanged: OnPaddingRightChanged);
+
+	/// <inheritdoc/>
+	public static readonly BindableProperty AvatarPaddingTopProperty = BindableProperty.Create("AvatarPaddingTop", typeof(double), typeof(IPaddingElement), default(double), propertyChanged: OnPaddingTopChanged);
+
+	/// <summary>The backing store for the <see cref="AvatarShadow" /> bindable property.</summary>
+	public static readonly BindableProperty AvatarShadowProperty = BindableProperty.Create(nameof(IAvatarElement.AvatarShadow), typeof(Shadow), typeof(VisualElement), defaultValue: null, propertyChanged: OnShadowPropertyChanged);
+
+	/// <summary>The backing store for the <see cref="IAvatarElement.AvatarWidthRequest" /> bindable property.</summary>
+	public static readonly BindableProperty AvatarWidthRequestProperty = BindableProperty.Create(nameof(IAvatarElement.AvatarWidthRequest), typeof(double), typeof(VisualElement), defaultValue: AvatarElement.DefaultWidthRequest, propertyChanged: OnWidthRequestPropertyChanged);
+
+	/// <summary>The backing store for the <see cref="BorderColor" /> bindable property.</summary>
+	public static readonly BindableProperty BorderColorProperty = BindableProperty.Create(nameof(IAvatarElement.BorderColor), typeof(Color), typeof(IAvatarElement), defaultValue: AvatarElement.DefaultBorderColor, propertyChanged: OnBorderColorPropertyChanged);
+
+	/// <summary>The backing store for the <see cref="IAvatarElement.BorderWidth" /> bindable property.</summary>
+	public static readonly BindableProperty BorderWidthProperty = BindableProperty.Create(nameof(IAvatarElement.BorderWidth), typeof(double), typeof(IAvatarElement), defaultValue: AvatarElement.DefaultBorderWidth, propertyChanged: OnBorderWidthPropertyChanged);
+
+	/// <summary>The backing store for the <see cref="IAvatarElement.CornerRadius" /> bindable property.</summary>
+	public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(nameof(IAvatarElement.CornerRadius), typeof(CornerRadius), typeof(ICornerElement), defaultValue: AvatarElement.DefaultCornerRadius, propertyChanged: OnCornerRadiusPropertyChanged);
+
+	/// <summary>The backing store for the <see cref="IFontElement.FontAttributes" /> bindable property.</summary>
+	public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
+
+	/// <summary>The backing store for the <see cref="FontAutoScalingEnabled" /> bindable property.</summary>
+	public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
+
+	/// <summary>The backing store for the <see cref="IFontElement.FontSize" /> bindable property.</summary>
+	public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
+
+	/// <summary>The backing store for the <see cref="ImageSource" /> bindable property.</summary>
+	public static readonly BindableProperty ImageSourceProperty = BindableProperty.Create(nameof(ImageSource), typeof(ImageSource), typeof(IImageElement), default(ImageSource), propertyChanged: OnImageSourceChanged);
+
+	/// <summary>The backing store for the <see cref="TextColor" /> bindable property.</summary>
+	public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
+
+	/// <summary>The backing store for the <see cref="IAvatarElement.Text" /> bindable property.</summary>
+	public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(IAvatarElement.Text), typeof(string), typeof(Avatar), defaultValue: AvatarElement.DefaultText, propertyChanged: OnTextPropertyChanged);
+
+	/// <summary>The backing store for the <see cref="TextTransform" /> bindable property.</summary>
+	public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
+
 	/// <summary>Initialises a new instance of the <see cref="Avatar"/> class.</summary>
 	public Avatar()
 	{
 		IsEnabled = true;
-		grid.Add(avatarLabel);
-		grid.Add(avatarImage);
-		HandleImageChanged();
-		Content = avatarFrame;
+		avatarBorder.Content = avatarLabel;
+		Content = avatarBorder;
 		InvalidateMeasure();
 	}
 
-	Border avatarFrame { get; } = new Border
+	Border avatarBorder { get; } = new Border
 	{
 		HorizontalOptions = LayoutOptions.Center,
-		Padding = new Thickness(0.01),
-		Stroke = new LinearGradientBrush
+		VerticalOptions = LayoutOptions.Center,
+		HeightRequest = AvatarElement.DefaultHeightRequest,
+		WidthRequest = AvatarElement.DefaultWidthRequest,
+		Stroke = AvatarElement.DefaultBorderColor,
+		StrokeThickness = AvatarElement.DefaultBorderWidth,
+		Padding = default,
+		StrokeShape = new RoundRectangle
 		{
-			EndPoint = new Point(0, 1),
-			GradientStops = new GradientStopCollection
-			{
-				new GradientStop { Color = Colors.Orange, Offset = 0.1f },
-				new GradientStop { Color = Colors.Brown, Offset = 1.0f }
-			},
+			CornerRadius = new CornerRadius(AvatarElement.DefaultCornerRadius.TopLeft, AvatarElement.DefaultCornerRadius.TopRight, AvatarElement.DefaultCornerRadius.BottomLeft, AvatarElement.DefaultCornerRadius.BottomRight),
 		},
 	};
 
-	Grid grid { get; } = new Grid();
+	Image avatarImage { get; } = new Image
+	{
+		Aspect = Aspect.AspectFill,
+	};
 
 	Label avatarLabel { get; } = new Label
 	{
@@ -41,10 +100,159 @@ public class Avatar : ContentView, IAvatarElement, IFontElement, ITextElement, I
 		Text = AvatarElement.DefaultText
 	};
 
-	Image avatarImage { get; } = new Image
+	#region Property Events
+
+	/// <summary>On background colour changed.</summary>
+	/// <param name="bindable">Bindable object</param>
+	/// <param name="oldValue">Old value</param>
+	/// <param name="newValue">New Value</param>
+	static void OnBackgroundColorChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		Aspect = Aspect.AspectFill,
-	};
+		((IAvatarElement)bindable).OnBackgroundColorChanged((Color)oldValue, (Color)newValue);
+	}
+
+	static void OnBorderColorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		((IAvatarElement)bindable).OnBorderColorPropertyChanged((Color)oldValue, (Color)newValue);
+	}
+
+	/// <summary>On border width property changed.</summary>
+	/// <param name="bindable">Bindable object</param>
+	/// <param name="oldValue">Old value</param>
+	/// <param name="newValue">New Value</param>
+	static void OnBorderWidthPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		((IAvatarElement)bindable).OnBorderWidthPropertyChanged((double)oldValue, (double)newValue);
+	}
+
+	/// <summary>On corner radius property changed.</summary>
+	/// <param name="bindable">Bindable object</param>
+	/// <param name="oldValue">Old value</param>
+	/// <param name="newValue">New Value</param>
+	static void OnCornerRadiusPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		((IAvatarElement)bindable).OnCornerRadiusPropertyChanged((CornerRadius)oldValue, (CornerRadius)newValue);
+	}
+
+	/// <summary>On height request property changed.</summary>
+	/// <param name="bindable">Bindable object</param>
+	/// <param name="oldValue">Old value</param>
+	/// <param name="newValue">New Value</param>
+	static void OnHeightRequestPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		OnRequestChanged(bindable);
+		((IAvatarElement)bindable).OnHeightRequestPropertyChanged((double)oldValue, (double)newValue);
+	}
+
+	/// <summary>On image source changed.</summary>
+	/// <param name="bindable">Bindable object</param>
+	/// <param name="oldValue">Old value</param>
+	/// <param name="newValue">New Value</param>
+	static void OnImageSourceChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		((IAvatarElement)bindable).OnImageSourceChanged((ImageSource)oldValue, (ImageSource)newValue);
+	}
+
+	static void OnPaddingBottomChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		Thickness padding = (Thickness)bindable.GetValue(AvatarPaddingProperty);
+		padding.Bottom = (double)newValue;
+		bindable.SetValue(AvatarPaddingProperty, padding);
+	}
+
+	static void OnPaddingLeftChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		Thickness padding = (Thickness)bindable.GetValue(AvatarPaddingProperty);
+		padding.Left = (double)newValue;
+		bindable.SetValue(AvatarPaddingProperty, padding);
+	}
+
+	/// <summary>On padding property changed event.</summary>
+	/// <param name="bindable">Bindable object</param>
+	/// <param name="oldValue">Old value</param>
+	/// <param name="newValue">New Value</param>
+	static void OnPaddingPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		((IAvatarElement)bindable).OnPaddingPropertyChanged((Thickness)oldValue, (Thickness)newValue);
+	}
+
+	static void OnPaddingRightChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		Thickness padding = (Thickness)bindable.GetValue(AvatarPaddingProperty);
+		padding.Right = (double)newValue;
+		bindable.SetValue(AvatarPaddingProperty, padding);
+	}
+
+	static void OnPaddingTopChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		Thickness padding = (Thickness)bindable.GetValue(AvatarPaddingProperty);
+		padding.Top = (double)newValue;
+		bindable.SetValue(AvatarPaddingProperty, padding);
+	}
+
+	/// <summary>On visual element width or height request property changed.</summary>
+	/// <param name="bindable">Bindable object</param>
+	static void OnRequestChanged(BindableObject bindable)
+	{
+		LayoutConstraint constraint = LayoutConstraint.None;
+		VisualElement element = (VisualElement)bindable;
+		if (element.WidthRequest >= 0 && element.MinimumWidthRequest >= 0)
+		{
+			constraint |= LayoutConstraint.HorizontallyFixed;
+		}
+		if (element.HeightRequest >= 0 && element.MinimumHeightRequest >= 0)
+		{
+			constraint |= LayoutConstraint.VerticallyFixed;
+		}
+
+		element.SelfConstraint = constraint;
+
+		if (element is IView fe)
+		{
+			fe.Handler?.UpdateValue(nameof(IView.Width));
+			fe.Handler?.UpdateValue(nameof(IView.Height));
+			fe.Handler?.UpdateValue(nameof(IView.MinimumHeight));
+			fe.Handler?.UpdateValue(nameof(IView.MinimumWidth));
+			fe.Handler?.UpdateValue(nameof(IView.MaximumHeight));
+			fe.Handler?.UpdateValue(nameof(IView.MaximumWidth));
+		}
+
+		((VisualElement)bindable).InvalidateMeasureInternal(InvalidationTrigger.SizeRequestChanged);
+	}
+
+	static void OnShadowPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		((IAvatarElement)bindable).OnShadowPropertyChanged((Shadow)oldValue, (Shadow)newValue);
+	}
+
+	/// <summary>On text property changed.</summary>
+	/// <param name="bindable">Bindable object</param>
+	/// <param name="oldValue">Old value</param>
+	/// <param name="newValue">New Value</param>
+	static void OnTextPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		((IAvatarElement)bindable).OnTextPropertyChanged((string)oldValue, (string)newValue);
+	}
+
+	/// <summary>On width request property changed.</summary>
+	/// <param name="bindable">Bindable object</param>
+	/// <param name="oldValue">Old value</param>
+	/// <param name="newValue">New Value</param>
+	static void OnWidthRequestPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		OnRequestChanged(bindable);
+		((IAvatarElement)bindable).OnWidthRequestPropertyChanged((double)oldValue, (double)newValue);
+	}
+
+	/// <summary>Padding default value creator.</summary>
+	/// <param name="bindable">Bindable object</param>
+	/// <returns>Default padding value.</returns>
+	static object PaddingDefaultValueCreator(BindableObject bindable)
+	{
+		return ((IPaddingElement)bindable).PaddingDefaultValueCreator();
+	}
+
+	#endregion Property Events
 
 	#region Text element
 
@@ -176,36 +384,24 @@ public class Avatar : ContentView, IAvatarElement, IFontElement, ITextElement, I
 
 	bool IImageElement.IsAnimationPlaying => false;
 	bool IImageElement.IsLoading => false;
+
 	bool IImageElement.IsOpaque => false;
 	ImageSource IImageElement.Source => ImageSource;
 
 	void IImageElement.OnImageSourceSourceChanged(object sender, EventArgs e)
 	{
 		ImageElement.ImageSourceSourceChanged(this, e);
-		HandleImageChanged();
 	}
+
 	void IImageElement.RaiseImageSourcePropertyChanged()
 	{
 		OnPropertyChanged(ImageElement.ImageSourceProperty.PropertyName);
 	}
 
-	/// <inheritdoc/>
-	protected override void OnBindingContextChanged()
+	void HandleImageChanged(ImageSource newValue)
 	{
-		ImageSource bindingImage = ImageSource;
-		if (bindingImage is not null)
-		{
-			SetInheritedBindingContext(bindingImage, BindingContext);
-			HandleImageChanged();
-		}
-
-		base.OnBindingContextChanged();
-	}
-
-	void HandleImageChanged()
-	{
-		avatarImage.Source = ImageSource;
-		avatarFrame.Content = ImageSource is not null ? avatarImage : avatarLabel;
+		avatarImage.Source = newValue;
+		avatarBorder.Content = newValue is not null ? avatarImage : avatarLabel;
 		HandleCornerRadiusChanged();
 	}
 
@@ -213,54 +409,121 @@ public class Avatar : ContentView, IAvatarElement, IFontElement, ITextElement, I
 
 	#region Avatar ControlView
 
-	/// <summary>Gets or sets a value of the avatar text property.</summary>
-	public string Text
-	{
-		get => (string)GetValue(AvatarElement.TextProperty);
-		set => SetValue(AvatarElement.TextProperty, value);
-	}
-
-	/// <summary>Gets or sets a value of the avatar corder radius property.</summary>
-	public CornerRadius CornerRadius
-	{
-		get => (CornerRadius)GetValue(AvatarElement.CornerRadiusProperty);
-		set => SetValue(AvatarElement.CornerRadiusProperty, value);
-	}
-
 	/// <summary>Gets or sets a value of the avatar background colour property.</summary>
 	public Color AvatarBackgroundColor
 	{
-		get => (Color)GetValue(AvatarElement.AvatarBackgroundColorProperty);
-		set => SetValue(AvatarElement.AvatarBackgroundColorProperty, value);
-	}
-
-	/// <summary>Gets or sets a value of the avatar border width.</summary>
-	public double BorderWidth
-	{
-		get => (double)GetValue(AvatarElement.BorderWidthProperty);
-		set => SetValue(AvatarElement.BorderWidthProperty, value);
-	}
-
-	/// <summary>Gets or sets a value of the avatar width request property.</summary>
-	public double AvatarWidthRequest
-	{
-		get => (double)GetValue(AvatarElement.AvatarWidthRequestProperty);
-		set => SetValue(AvatarElement.AvatarWidthRequestProperty, value);
+		get => (Color)GetValue(AvatarBackgroundColorProperty);
+		set => SetValue(AvatarBackgroundColorProperty, value);
 	}
 
 	/// <summary>Gets or sets a value of the avatar height request property.</summary>
 	public double AvatarHeightRequest
 	{
-		get => (double)GetValue(AvatarElement.AvatarHeightRequestProperty);
-		set => SetValue(AvatarElement.AvatarHeightRequestProperty, value);
+		get => (double)GetValue(AvatarHeightRequestProperty);
+		set => SetValue(AvatarHeightRequestProperty, value);
 	}
 
-	string IAvatarElement.TextDefaultValue => (string)AvatarElement.TextProperty.DefaultValue;
-	CornerRadius IAvatarElement.CornerRadiusDefaultValue => (CornerRadius)AvatarElement.CornerRadiusProperty.DefaultValue;
+	/// <summary>Gets or sets the avatar padding property.</summary>
+	public Thickness AvatarPadding
+	{
+		get => (Thickness)GetValue(PaddingElement.PaddingProperty);
+		set => SetValue(PaddingElement.PaddingProperty, value);
+	}
+
+	/// <summary>Gets or sets a value of the avatar shadow property.</summary>
+	public Shadow AvatarShadow
+	{
+		get => (Shadow)GetValue(AvatarShadowProperty);
+		set => SetValue(AvatarShadowProperty, value);
+	}
+
+	/// <summary>Gets or sets a value of the avatar width request property.</summary>
+	public double AvatarWidthRequest
+	{
+		get => (double)GetValue(AvatarWidthRequestProperty);
+		set => SetValue(AvatarWidthRequestProperty, value);
+	}
+
+	/// <summary>Gets or sets a value of the avatar border colour.</summary>
+	public Color BorderColor
+	{
+		get => (Color)GetValue(BorderWidthProperty);
+		set => SetValue(BorderWidthProperty, value);
+	}
+
+	/// <summary>Gets or sets a value of the avatar border width.</summary>
+	public double BorderWidth
+	{
+		get => (double)GetValue(BorderWidthProperty);
+		set => SetValue(BorderWidthProperty, value);
+	}
+
+	/// <summary>Gets or sets a value of the avatar corder radius property.</summary>
+	public CornerRadius CornerRadius
+	{
+		get => (CornerRadius)GetValue(CornerRadiusProperty);
+		set => SetValue(CornerRadiusProperty, value);
+	}
+
+	CornerRadius IAvatarElement.CornerRadiusDefaultValue => (CornerRadius)CornerRadiusProperty.DefaultValue;
+
+	/// <summary>Gets or sets a value of the avatar text property.</summary>
+	public string Text
+	{
+		get => (string)GetValue(TextProperty);
+		set => SetValue(TextProperty, value);
+	}
+
+	string IAvatarElement.TextDefaultValue => (string)TextProperty.DefaultValue;
 
 	bool IAvatarElement.IsTextSet()
 	{
-		return IsSet(AvatarElement.TextProperty);
+		return IsSet(TextProperty);
+	}
+
+	void IAvatarElement.OnBackgroundColorChanged(Color oldValue, Color newValue)
+	{
+		avatarBorder.Background = newValue;
+	}
+
+	void IAvatarElement.OnBorderColorPropertyChanged(Color oldValue, Color newValue)
+	{
+		avatarBorder.Stroke = newValue;
+	}
+
+	void IAvatarElement.OnBorderWidthPropertyChanged(double oldValue, double newValue)
+	{
+		avatarBorder.StrokeThickness = newValue;
+	}
+
+	void IAvatarElement.OnCornerRadiusPropertyChanged(CornerRadius oldValue, CornerRadius newValue)
+	{
+		avatarBorder.StrokeShape = new RoundRectangle { CornerRadius = newValue };
+	}
+
+	void IAvatarElement.OnHeightRequestPropertyChanged(double oldValue, double newValue)
+	{
+		avatarBorder.HeightRequest = newValue;
+		OnSizeAllocated(AvatarWidthRequest, newValue);
+	}
+
+	void IAvatarElement.OnImageSourceChanged(ImageSource oldValue, ImageSource newValue)
+	{
+		HandleImageChanged(newValue);
+	}
+
+	void IAvatarElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)
+	{
+		avatarBorder.Padding = newValue;
+	}
+
+	/// <summary>On avatar shadow changed.</summary>
+	/// <remarks>This allows for the avatar to have a shadow, which is different from the parent.</remarks>
+	/// <param name="oldValue">Old value.</param>
+	/// <param name="newValue">New value.</param>
+	void IAvatarElement.OnShadowPropertyChanged(Shadow oldValue, Shadow newValue)
+	{
+		avatarBorder.Shadow = newValue;
 	}
 
 	void IAvatarElement.OnTextPropertyChanged(string oldValue, string newValue)
@@ -268,34 +531,15 @@ public class Avatar : ContentView, IAvatarElement, IFontElement, ITextElement, I
 		avatarLabel.Text = newValue;
 	}
 
-	void IAvatarElement.OnCornerRadiusPropertyChanged(CornerRadius oldValue, CornerRadius newValue)
-	{
-		avatarFrame.StrokeShape = new RoundRectangle { CornerRadius = newValue };
-	}
-
-	void IAvatarElement.OnImageSourceChanged(ImageSource oldValue, ImageSource newValue)
-	{
-		HandleImageChanged();
-	}
-
-	void IAvatarElement.OnBackgroundColorChanged(Color oldValue, Color newValue)
-	{
-		avatarFrame.Background = newValue;
-	}
-
-	void IAvatarElement.OnBorderWidthPropertyChanged(double oldValue, double newValue)
-	{
-		avatarFrame.StrokeThickness = newValue;
-	}
-
 	void IAvatarElement.OnWidthRequestPropertyChanged(double oldValue, double newValue)
 	{
-		avatarFrame.WidthRequest = newValue;
+		avatarBorder.WidthRequest = newValue;
+		OnSizeAllocated(newValue, AvatarHeightRequest);
 	}
 
-	void IAvatarElement.OnHeightRequestPropertyChanged(double oldValue, double newValue)
+	Thickness IAvatarElement.PaddingDefaultValueCreator()
 	{
-		avatarFrame.HeightRequest = newValue;
+		return default;
 	}
 
 	void HandleCornerRadiusChanged()
@@ -303,10 +547,10 @@ public class Avatar : ContentView, IAvatarElement, IFontElement, ITextElement, I
 		CornerRadius cornerRadius = new();
 		if (CornerRadius != cornerRadius)
 		{
-			avatarFrame.StrokeShape = new RoundRectangle { CornerRadius = cornerRadius };
+			avatarBorder.StrokeShape = new RoundRectangle { CornerRadius = cornerRadius };
 		}
 
-		avatarFrame.StrokeShape = new RoundRectangle { CornerRadius = CornerRadius };
+		avatarBorder.StrokeShape = new RoundRectangle { CornerRadius = CornerRadius };
 	}
 
 	#endregion Avatar ControlView

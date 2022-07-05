@@ -13,6 +13,9 @@ public interface IAvatarElement
 	/// <summary>Gets a value indicating the avatar background colour.</summary>
 	Color AvatarBackgroundColor { get; }
 
+	/// <summary>Gets a value indicating the avatar border colour.</summary>
+	Color BorderColor { get; }
+
 	/// <summary>Gets a value indicating the avatar border width.</summary>
 	double BorderWidth { get; }
 
@@ -27,6 +30,12 @@ public interface IAvatarElement
 
 	/// <summary>Gets a value indicating the element height request.</summary>
 	double AvatarHeightRequest { get; }
+
+	/// <summary>Gets a value indicating the avatar padding.</summary>
+	Thickness AvatarPadding { get; }
+
+	/// <summary>Gets a value indicating the avatar shadow.</summary>
+	Shadow AvatarShadow { get; }
 
 	#endregion Public Property
 
@@ -78,6 +87,25 @@ public interface IAvatarElement
 	/// <param name="oldValue">Old value</param>
 	/// <param name="newValue">New Value</param>
 	void OnHeightRequestPropertyChanged(double oldValue, double newValue);
+
+	/// <summary>On padding property changed</summary>
+	/// <param name="oldValue">Old value</param>
+	/// <param name="newValue">New Value</param>
+	void OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue);
+
+	/// <summary>Padding default value creator method.</summary>
+	/// <returns>Padding thickness.</returns>
+	Thickness PaddingDefaultValueCreator();
+
+	/// <summary>On border colour property changed.</summary>
+	/// <param name="oldValue">Old value</param>
+	/// <param name="newValue">New Value</param>
+	void OnBorderColorPropertyChanged(Color oldValue, Color newValue);
+
+	/// <summary>On avatar shadow property changed.</summary>
+	/// <param name="oldValue">Old value</param>
+	/// <param name="newValue">New Value</param>
+	void OnShadowPropertyChanged(Shadow oldValue, Shadow newValue);
 
 	#endregion Explicit methods
 }
