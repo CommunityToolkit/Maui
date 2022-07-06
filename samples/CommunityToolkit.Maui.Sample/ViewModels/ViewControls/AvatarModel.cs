@@ -7,7 +7,7 @@ public class AvatarModel
 
 	public double? FontSize { get; set; } = Device.GetNamedSize(NamedSize.Large, typeof(Label));
 
-	public ImageSource? ImageSource { get; set; }
+	public ImageSource ImageSource { get; init; }
 
 	public string? Text { get; set; } = "?";
 
