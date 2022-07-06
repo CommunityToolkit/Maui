@@ -1,8 +1,5 @@
 ﻿using System.ComponentModel;
 
-// TODO: Fix problem with not finding assembly reference for Microsoft.Maui.Controls.
-//using Microsoft.Maui.Controls;
-
 namespace CommunityToolkit.Maui.Core;
 
 /// <summary>Avatar view interface.</summary>
