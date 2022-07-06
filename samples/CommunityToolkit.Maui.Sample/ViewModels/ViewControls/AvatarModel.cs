@@ -5,7 +5,7 @@ public class AvatarModel
 	public Color? AvatarBackgroundColor { get; set; } = Colors.Black;
 	public FontAttributes? FontAttributes { get; set; }
 
-	public double? FontSize { get; set; } = Device.GetNamedSize(NamedSize.Large, typeof(Label));
+	public double FontSize { get; init; } = Device.GetNamedSize(NamedSize.Large, typeof(Label));
 
 	public ImageSource ImageSource { get; init; }
 
