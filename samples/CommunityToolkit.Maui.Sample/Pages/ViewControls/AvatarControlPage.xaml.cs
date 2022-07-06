@@ -10,7 +10,7 @@ public partial class AvatarControlPage : BasePage<AvatarControlViewModel>
 		InitializeComponent();
 	}
 
-	public void OnAvatarClicked(object? sender, EventArgs e)
+	void OnAvatarClicked(object? sender, EventArgs e)
 	{
 		Debug.WriteLine("Clicked");
 	}
