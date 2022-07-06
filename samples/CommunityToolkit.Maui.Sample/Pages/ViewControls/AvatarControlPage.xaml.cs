@@ -15,7 +15,7 @@ public partial class AvatarControlPage : BasePage<AvatarControlViewModel>
 		Debug.WriteLine("Clicked");
 	}
 
-	public void TapGestureRecognizer_Tapped(object sender, EventArgs e)
+	void TapGestureRecognizer_Tapped(object sender, EventArgs e)
 	{
 		if (e is TappedEventArgs gesture)
 		{
