@@ -17,7 +17,7 @@ public class AvatarModel
 
 	public Thickness AvatarPadding { get; init; } = 5;
 
-	public double? AvatarWidthRequest { get; set; } = 64;
+	public double AvatarWidthRequest { get; init; } = 64;
 
 	public double? AvatarHeightRequest { get; set; } = 64;
 
