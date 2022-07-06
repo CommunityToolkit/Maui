@@ -21,7 +21,7 @@ public class AvatarModel
 
 	public double AvatarHeightRequest { get; init; } = 64;
 
-	public CornerRadius? CornerRadius { get; set; } = new(50, 50, 50, 50);
+	public CornerRadius CornerRadius { get; init; } = new(50, 50, 50, 50);
 
 	public Color? BorderColor { get; set; }
 }
