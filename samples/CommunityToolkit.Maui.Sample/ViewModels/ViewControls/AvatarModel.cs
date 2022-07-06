@@ -3,7 +3,7 @@
 public class AvatarModel
 {
 	public Color AvatarBackgroundColor { get; init; } = Colors.Black;
-	public FontAttributes? FontAttributes { get; set; }
+	public FontAttributes? FontAttributes { get; init; }
 
 	public double FontSize { get; init; } = Device.GetNamedSize(NamedSize.Large, typeof(Label));
 
