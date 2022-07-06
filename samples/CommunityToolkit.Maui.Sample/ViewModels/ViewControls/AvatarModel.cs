@@ -19,7 +19,7 @@ public class AvatarModel
 
 	public double AvatarWidthRequest { get; init; } = 64;
 
-	public double? AvatarHeightRequest { get; set; } = 64;
+	public double AvatarHeightRequest { get; init; } = 64;
 
 	public CornerRadius? CornerRadius { get; set; } = new(50, 50, 50, 50);
 
