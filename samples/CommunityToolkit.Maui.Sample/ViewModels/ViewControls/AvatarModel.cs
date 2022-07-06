@@ -9,7 +9,7 @@ public class AvatarModel
 
 	public ImageSource ImageSource { get; init; }
 
-	public string? Text { get; set; } = "?";
+	public string Text { get; init; } = "?";
 
 	public Color? TextColor { get; set; } = Colors.White;
 
