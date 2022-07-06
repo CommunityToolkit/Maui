@@ -11,7 +11,7 @@ public class AvatarModel
 
 	public string Text { get; init; } = "?";
 
-	public Color? TextColor { get; set; } = Colors.White;
+	public Color TextColor { get; init; } = Colors.White;
 
 	public Thickness? BorderWidth { get; set; } = 0;
 
