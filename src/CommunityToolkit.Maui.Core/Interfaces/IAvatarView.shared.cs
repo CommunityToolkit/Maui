@@ -4,11 +4,11 @@ namespace CommunityToolkit.Maui.Core;
 
 /// <summary>Avatar view interface.</summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
-public interface IAvatarView : IContentView, IText, IImageSource, IImageSourcePart
+public interface IAvatarView : IBorder, IText, IImageSource, IImageSourcePart
 {
 	#region Public Property
 
-	//// NOTE to implementer: Implement these properties as public.
+	//// NOTE to implementer: Implement the following properties as public.
 
 	/// <summary>Gets a value indicating the avatar background colour.</summary>
 	Color AvatarBackgroundColor { get; }
@@ -100,6 +100,5 @@ public interface IAvatarView : IContentView, IText, IImageSource, IImageSourcePa
 	/// <param name="oldValue">Old value</param>
 	/// <param name="newValue">New Value</param>
 	void OnShadowPropertyChanged(object oldValue, object newValue);
-
 	#endregion Explicit methods
 }
