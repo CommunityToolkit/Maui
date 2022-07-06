@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Controls;
 public class Avatar : ContentView, IAvatarElement, IFontElement, ITextElement, IImageElement
 {
 	/// <summary>The backing store for the <see cref="IAvatarElement.AvatarBackgroundColor" /> bindable property.</summary>
-	public static readonly BindableProperty AvatarBackgroundColorProperty = BindableProperty.Create(nameof(IAvatarElement.AvatarBackgroundColor), typeof(Color), typeof(IAvatarElement), null, propertyChanged: OnBackgroundColorChanged);
+	public static readonly BindableProperty AvatarBackgroundColorProperty = BindableProperty.Create(nameof(AvatarBackgroundColor), typeof(Color), typeof(IAvatarElement), Colors.Transparant, propertyChanged: OnBackgroundColorChanged);
 
 	/// <summary>The backing store for the <see cref="IAvatarElement.AvatarHeightRequest" /> bindable property.</summary>
 	public static readonly BindableProperty AvatarHeightRequestProperty = BindableProperty.Create(nameof(IAvatarElement.AvatarHeightRequest), typeof(double), typeof(VisualElement), defaultValue: AvatarElement.DefaultHeightRequest, propertyChanged: OnHeightRequestPropertyChanged);
