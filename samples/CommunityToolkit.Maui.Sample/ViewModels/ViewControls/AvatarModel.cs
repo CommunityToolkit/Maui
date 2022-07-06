@@ -23,5 +23,5 @@ public class AvatarModel
 
 	public CornerRadius CornerRadius { get; init; } = new(50, 50, 50, 50);
 
-	public Color? BorderColor { get; set; }
+	public Color? BorderColor { get; init; }
 }
