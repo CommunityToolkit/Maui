@@ -13,7 +13,7 @@ public class AvatarModel
 
 	public Color TextColor { get; init; } = Colors.White;
 
-	public Thickness? BorderWidth { get; set; } = 0;
+	public Thickness BorderWidth { get; init; } = 0;
 
 	public Thickness? AvatarPadding { get; set; } = 5;
 
