@@ -28,9 +28,9 @@ public static class AvatarViewDefaults
 
 	/// <summary>default avatar border colour.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static readonly Color DefaultBorderColor = Colors.White;
+	public static Color DefaultBorderColor { get; } = Colors.White;
 
 	/// <summary>Default corner radius.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static readonly CornerRadius DefaultCornerRadius = new(50, 50, 50, 50);
+	public static CornerRadius DefaultCornerRadius { get; } = new(50, 50, 50, 50);
 }
