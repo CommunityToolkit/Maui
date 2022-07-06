@@ -1,10 +1,13 @@
 ﻿using System.ComponentModel;
 
-namespace CommunityToolkit.Maui.Controls;
+// TODO: Fix problem with not finding assembly reference for Microsoft.Maui.Controls.
+//using Microsoft.Maui.Controls;
 
-/// <summary>Avatar content view element interface.</summary>
+namespace CommunityToolkit.Maui.Core;
+
+/// <summary>Avatar view interface.</summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
-public interface IAvatarElement
+public interface IAvatarView : IContentView, IText, IImageSource, IImageSourcePart
 {
 	#region Public Property
 
@@ -22,9 +25,6 @@ public interface IAvatarElement
 	/// <summary>Gets a value indicating the avatar corner radius (MAUI).</summary>
 	CornerRadius CornerRadius { get; }
 
-	/// <summary>Gets a value indicating the Avatar text.</summary>
-	string Text { get; }
-
 	/// <summary>Gets a value indicating the element width request.</summary>
 	double AvatarWidthRequest { get; }
 
@@ -33,9 +33,6 @@ public interface IAvatarElement
 
 	/// <summary>Gets a value indicating the avatar padding.</summary>
 	Thickness AvatarPadding { get; }
-
-	/// <summary>Gets a value indicating the avatar shadow.</summary>
-	Shadow AvatarShadow { get; }
 
 	#endregion Public Property
 
@@ -71,7 +68,7 @@ public interface IAvatarElement
 	/// <summary>On image source property changed.</summary>
 	/// <param name="oldValue">Old value</param>
 	/// <param name="newValue">New Value</param>
-	void OnImageSourceChanged(ImageSource oldValue, ImageSource newValue);
+	void OnImageSourceChanged(object oldValue, object newValue);
 
 	/// <summary>On text property changed.</summary>
 	/// <param name="oldValue">Old value</param>
@@ -105,7 +102,7 @@ public interface IAvatarElement
 	/// <summary>On avatar shadow property changed.</summary>
 	/// <param name="oldValue">Old value</param>
 	/// <param name="newValue">New Value</param>
-	void OnShadowPropertyChanged(Shadow oldValue, Shadow newValue);
+	void OnShadowPropertyChanged(object oldValue, object newValue);
 
 	#endregion Explicit methods
 }

@@ -1,11 +1,11 @@
 using System.Diagnostics;
-using CommunityToolkit.Maui.Sample.ViewModels.ViewControls;
+using CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-namespace CommunityToolkit.Maui.Sample.Pages.ViewControls;
+namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
-public partial class AvatarControlPage : BasePage<AvatarControlViewModel>
+public partial class AvatarViewPage : BasePage<AvatarViewViewModel>
 {
-	public AvatarControlPage(AvatarControlViewModel avatarControlViewModel) : base(avatarControlViewModel)
+	public AvatarViewPage(AvatarViewViewModel avatarControlViewModel) : base(avatarControlViewModel)
 	{
 		InitializeComponent();
 	}

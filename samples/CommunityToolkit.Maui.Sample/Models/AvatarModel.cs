@@ -1,13 +1,15 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.ViewControls;
+﻿namespace CommunityToolkit.Maui.Sample.Models;
 
 public class AvatarModel
 {
 	public Color AvatarBackgroundColor { get; init; } = Colors.Black;
 	public FontAttributes? FontAttributes { get; init; }
 
+#pragma warning disable CS0612 // Type or member is obsolete, however is still used in Microsoft.Maui
 	public double FontSize { get; init; } = Device.GetNamedSize(NamedSize.Large, typeof(Label));
+#pragma warning restore CS0612 // Type or member is obsolete, however is still used in Microsoft.Maui
 
-	public ImageSource ImageSource { get; init; }
+	public ImageSource? ImageSource { get; init; }
 
 	public string Text { get; init; } = "?";
 

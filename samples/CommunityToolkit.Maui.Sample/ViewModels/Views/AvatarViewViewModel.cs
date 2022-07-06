@@ -1,12 +1,15 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.ViewControls;
+﻿using System.Collections.ObjectModel;
 
-public static class AvatarData
+namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
+
+/// <summary>Sample view model for Avatar View page.</summary>
+public partial class AvatarViewViewModel : BaseViewModel
 {
-	static AvatarData()
-	{
-		Avatars = new List<AvatarModel>
+#pragma warning disable CS0612 // Type or member is obsolete, this is however still used in Microsoft.Maui
+
+	public ObservableCollection<Models.AvatarModel> AvatarList { get; } = new()
 		{
-			new AvatarModel
+			new Models.AvatarModel
 			{
 				Text = "SW", // Sam Worthington
 				TextColor = Colors.Blue,
@@ -22,7 +25,7 @@ public static class AvatarData
 				FontAttributes = FontAttributes.Bold | FontAttributes.Italic,
 			},
 
-			new AvatarModel
+			new Models.AvatarModel
 			{
 				Text = "ZS", // Zoe Saldana
 				TextColor = Colors.Yellow,
@@ -38,7 +41,7 @@ public static class AvatarData
 				FontAttributes = FontAttributes.Bold,
 			},
 
-			new AvatarModel
+			new Models.AvatarModel
 			{
 				Text = "SW", // Sigourney Weaver
 				TextColor = Colors.Yellow,
@@ -48,12 +51,12 @@ public static class AvatarData
 				AvatarWidthRequest = 48,
 				AvatarHeightRequest = 64,
 				FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label)),
-				CornerRadius = new CornerRadius(16,16,0,0),
+				CornerRadius = new CornerRadius(16, 16, 0, 0),
 				BorderColor = Colors.Pink,
 				FontAttributes = FontAttributes.Bold,
 			},
 
-			new AvatarModel
+			new Models.AvatarModel
 			{
 				Text = "SL", // Stephen Lang
 				TextColor = Colors.White,
@@ -63,12 +66,12 @@ public static class AvatarData
 				AvatarWidthRequest = 64,
 				AvatarHeightRequest = 48,
 				FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label)),
-				CornerRadius = new CornerRadius(0,0,16,16),
+				CornerRadius = new CornerRadius(0, 0, 16, 16),
 				BorderColor = Colors.Red,
 				FontAttributes = FontAttributes.Italic,
 			},
 
-			new AvatarModel
+			new Models.AvatarModel
 			{
 				Text = "Michelle Rodriguez", // Michelle Rodriguez
 				TextColor = Colors.Yellow,
@@ -76,14 +79,13 @@ public static class AvatarData
 				BorderWidth = 1,
 				AvatarPadding = 7,
 				FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label)),
-				CornerRadius = new CornerRadius(0,0,16,16),
+				CornerRadius = new CornerRadius(0, 0, 16, 16),
 				BorderColor = Colors.Orange,
 				FontAttributes = FontAttributes.Italic,
 				AvatarWidthRequest = 128,
 				AvatarHeightRequest = 72,
 			},
 		};
-	}
 
-	public static List<AvatarModel> Avatars { get; private set; }
+#pragma warning restore CS0612 // Type or member is obsolete, this is however still used in Microsoft.Maui
 }
