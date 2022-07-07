@@ -117,7 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="IniitalizationMessageFormat" xml:space="preserve">
+  <data name="InitalizationMessageFormat" xml:space="preserve">
     <value>`.UseMauiCommunityToolkit()` must be called before `.UseMauiApp&lt;T&gt;()` and proceeded by `.UseMauiApp&lt;T&gt;()`</value>
   </data>
   <data name="InitializationErrorMessage" xml:space="preserve">

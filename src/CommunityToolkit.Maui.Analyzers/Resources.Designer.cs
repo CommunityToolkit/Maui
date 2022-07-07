@@ -63,9 +63,9 @@ namespace CommunityToolkit.Maui.Analyzers {
         /// <summary>
         ///   Looks up a localized string similar to `.UseMauiCommunityToolkit()` must be called before `.UseMauiApp&lt;T&gt;()` and proceeded by `.UseMauiApp&lt;T&gt;()`.
         /// </summary>
-        internal static string IniitalizationMessageFormat {
+        internal static string InitalizationMessageFormat {
             get {
-                return ResourceManager.GetString("IniitalizationMessageFormat", resourceCulture);
+                return ResourceManager.GetString("InitalizationMessageFormat", resourceCulture);
             }
         }
         
