@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <pages:BasePage
     x:Class="CommunityToolkit.Maui.Sample.Pages.Views.AvatarViewPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -19,7 +19,7 @@
         <Color x:Key="AvatarBackgroundColor">Blue</Color>
         <Color x:Key="AvatarTextColor">Yellow</Color>
         <Color x:Key="ControlBackgroundColor">Green</Color>
-        <Color x:Key="AvatarShadowColor">Red</Color>
+        <Color x:Key="ShadowColor">Red</Color>
         <x:Double x:Key="AvatarDoubleHeight">128</x:Double>
         <x:Double x:Key="AvatarHeight">64</x:Double>
         <x:Double x:Key="AvatarHalfHeight">32</x:Double>
@@ -370,13 +370,13 @@
                     AvatarBackgroundColor="Green"
                     SemanticProperties.Description="Sample AvatarView showing a 'rounded square' shape and a red 'shadow'."
                     Text="{StaticResource Initials}">
-                    <mct:AvatarView.AvatarShadow>
+                    <mct:AvatarView.Shadow>
                         <Shadow
                             Brush="Red"
                             Opacity="0.7"
                             Radius="10"
                             Offset="10,10" />
-                    </mct:AvatarView.AvatarShadow>
+                    </mct:AvatarView.Shadow>
                 </mct:AvatarView>
                 <mct:AvatarView
                     Grid.Row="7"
@@ -390,13 +390,13 @@
                     HeightRequest="70"
                     SemanticProperties.Description="Sample AvatarView showing a 'circle' shape and a green 'shadow'."
                     Text="{StaticResource Initials}">
-                    <mct:AvatarView.AvatarShadow>
+                    <mct:AvatarView.Shadow>
                         <Shadow
                             Brush="Green"
                             Opacity="0.7"
                             Radius="10"
                             Offset="10,10" />
-                    </mct:AvatarView.AvatarShadow>
+                    </mct:AvatarView.Shadow>
                 </mct:AvatarView>
                 <mct:AvatarView
                     Grid.Row="7"
@@ -407,13 +407,13 @@
                     AvatarBackgroundColor="Blue"
                     SemanticProperties.Description="Sample AvatarView showing a 'vertical-pill' shape and a blue 'shadow'."
                     Text="{StaticResource Initials}">
-                    <mct:AvatarView.AvatarShadow>
+                    <mct:AvatarView.Shadow>
                         <Shadow
                             Brush="Blue"
                             Opacity="0.7"
                             Radius="10"
                             Offset="10,10" />
-                    </mct:AvatarView.AvatarShadow>
+                    </mct:AvatarView.Shadow>
                 </mct:AvatarView>
                 <mct:AvatarView
                     Grid.Row="7"
@@ -424,13 +424,13 @@
                     CornerRadius="0, 32, 32, 32"
                     SemanticProperties.Description="Sample AvatarView showing a 'top-left point' shape and a yellow 'shadow'."
                     Text="{StaticResource Initials}">
-                    <mct:AvatarView.AvatarShadow>
+                    <mct:AvatarView.Shadow>
                         <Shadow
                             Brush="Yellow"
                             Opacity="0.7"
                             Radius="10"
                             Offset="10,10" />
-                    </mct:AvatarView.AvatarShadow>
+                    </mct:AvatarView.Shadow>
                 </mct:AvatarView>
                 <mct:AvatarView
                     Grid.Row="7"
@@ -442,13 +442,13 @@
                     ImageSource="avatar_icon.png"
                     SemanticProperties.Description="Sample AvatarView showing using a local image and 'circle' shape and an orange 'shadow'."
                     Text="{StaticResource Initials}">
-                    <mct:AvatarView.AvatarShadow>
+                    <mct:AvatarView.Shadow>
                         <Shadow
                             Brush="Orange"
                             Opacity="0.7"
                             Radius="10"
                             Offset="10,10" />
-                    </mct:AvatarView.AvatarShadow>
+                    </mct:AvatarView.Shadow>
                 </mct:AvatarView>
                 <Label
                     Grid.Row="8"
@@ -494,7 +494,7 @@
                             <mct:AvatarView
                                 AvatarBackgroundColor="{Binding AvatarBackgroundColor}"
                                 AvatarHeightRequest="{Binding AvatarHeightRequest}"
-                                AvatarPadding="{Binding AvatarPadding}"
+                                Padding="{Binding Padding}"
                                 AvatarWidthRequest="{Binding AvatarWidthRequest}"
                                 BorderColor="{Binding BorderColor}"
                                 BorderWidth="{Binding BorderWidth}"
@@ -509,13 +509,13 @@
                                 <mct:AvatarView.GestureRecognizers>
                                     <TapGestureRecognizer CommandParameter="{Binding Text}" Tapped="TapGestureRecognizer_Tapped" />
                                 </mct:AvatarView.GestureRecognizers>
-                                <mct:AvatarView.AvatarShadow>
+                                <mct:AvatarView.Shadow>
                                     <Shadow
-                                        Brush="{StaticResource AvatarShadowColor}"
+                                        Brush="{StaticResource ShadowColor}"
                                         Opacity="0.5"
                                         Radius="10"
                                         Offset="10,10" />
-                                </mct:AvatarView.AvatarShadow>
+                                </mct:AvatarView.Shadow>
                             </mct:AvatarView>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>

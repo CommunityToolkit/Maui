@@ -3,8 +3,7 @@
 namespace CommunityToolkit.Maui.Core;
 
 /// <summary>Avatar view interface.</summary>
-[EditorBrowsable(EditorBrowsableState.Never)]
-public interface IAvatarView : IBorder, IText, IImageSource, IImageSourcePart
+public interface IAvatarView : IBorderView, ILabel, Microsoft.Maui.IImage, IImageSource
 {
 	#region Public Property
 
@@ -95,10 +94,5 @@ public interface IAvatarView : IBorder, IText, IImageSource, IImageSourcePart
 	/// <param name="oldValue">Old value</param>
 	/// <param name="newValue">New Value</param>
 	void OnBorderColorPropertyChanged(Color oldValue, Color newValue);
-
-	/// <summary>On avatar shadow property changed.</summary>
-	/// <param name="oldValue">Old value</param>
-	/// <param name="newValue">New Value</param>
-	void OnShadowPropertyChanged(object oldValue, object newValue);
 	#endregion Explicit methods
 }
