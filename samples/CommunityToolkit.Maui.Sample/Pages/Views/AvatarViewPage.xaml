@@ -18,7 +18,6 @@
         <x:Double x:Key="Padding">0</x:Double>
         <Color x:Key="AvatarBackgroundColor">Blue</Color>
         <Color x:Key="AvatarTextColor">Yellow</Color>
-        <Color x:Key="ControlBackgroundColor">Green</Color>
         <Color x:Key="ShadowColor">Red</Color>
         <x:Double x:Key="AvatarDoubleHeight">128</x:Double>
         <x:Double x:Key="AvatarHeight">64</x:Double>
@@ -28,7 +27,6 @@
         <x:Double x:Key="AvatarWidth">64</x:Double>
         <x:Double x:Key="AvatarHalfWidth">32</x:Double>
         <x:Double x:Key="AvatarQuarterWidth">16</x:Double>
-        <FontAttributes x:Key="AvatarFontAttributes">Bold</FontAttributes>
     </pages:BasePage.Resources>
 
     <ScrollView>
@@ -47,66 +45,66 @@
                 <mct:AvatarView
                     Grid.Row="0"
                     Grid.Column="1"
-                    AvatarHeightRequest="{StaticResource AvatarQuarterHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarQuarterWidth}"
                     FontSize="Micro"
+                    HeightRequest="{StaticResource AvatarQuarterHeight}"
                     SemanticProperties.Description="Sample AvatarView showing size at 16x16."
-                    Text="{StaticResource Initials}" />
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarQuarterWidth}" />
                 <mct:AvatarView
                     Grid.Row="0"
                     Grid.Column="2"
-                    AvatarHeightRequest="{StaticResource AvatarHalfHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarHalfWidth}"
+                    HeightRequest="{StaticResource AvatarHalfHeight}"
                     SemanticProperties.Description="Sample AvatarView showing size at 32x32."
-                    Text="{StaticResource Initials}" />
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarHalfWidth}" />
                 <mct:AvatarView
                     Grid.Row="0"
                     Grid.Column="3"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing size at 64x64."
-                    Text="{StaticResource Initials}" />
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <mct:AvatarView
                     Grid.Row="0"
                     Grid.Column="4"
-                    AvatarHeightRequest="{StaticResource AvatarDoubleHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarDoubleWidth}"
+                    HeightRequest="{StaticResource AvatarDoubleHeight}"
                     SemanticProperties.Description="Sample AvatarView showing size at 128x128."
-                    Text="{StaticResource Initials}" />
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarDoubleWidth}" />
                 <mct:AvatarView
                     Grid.Row="0"
                     Grid.Column="5"
-                    AvatarHeightRequest="{StaticResource AvatarQuarterHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarQuarterWidth}"
                     FontSize="Small"
+                    HeightRequest="{StaticResource AvatarQuarterHeight}"
                     SemanticProperties.Description="Sample AvatarView showing size at 16x16 and a 'small' font."
-                    Text="{StaticResource Initials}" />
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarQuarterWidth}" />
                 <mct:AvatarView
                     Grid.Row="0"
                     Grid.Column="6"
-                    AvatarHeightRequest="{StaticResource AvatarHalfHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarHalfWidth}"
                     FontAttributes="Bold,Italic"
                     FontSize="Default"
+                    HeightRequest="{StaticResource AvatarHalfHeight}"
                     SemanticProperties.Description="Sample AvatarView showing size at 32x32 with the 'default' font in 'bold' and 'italic'."
-                    Text="{StaticResource Initials}" />
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarHalfWidth}" />
                 <mct:AvatarView
                     Grid.Row="0"
                     Grid.Column="7"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
                     FontAttributes="Bold"
                     FontSize="Large"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing size at 64x64 with the 'large' font in 'bold'."
-                    Text="{StaticResource Initials}" />
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <mct:AvatarView
                     Grid.Row="0"
                     Grid.Column="8"
-                    AvatarHeightRequest="{StaticResource AvatarDoubleHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarDoubleWidth}"
                     FontSize="Header"
+                    HeightRequest="{StaticResource AvatarDoubleHeight}"
                     SemanticProperties.Description="Sample AvatarView showing size at 128x128 withe the 'header' font."
-                    Text="{StaticResource Initials}" />
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarDoubleWidth}" />
                 <Label
                     Grid.Row="1"
                     Grid.RowSpan="2"
@@ -116,99 +114,108 @@
                 <mct:AvatarView
                     Grid.Row="1"
                     Grid.Column="1"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
                     CornerRadius="16"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'rounded square' shape."
-                    Text="{StaticResource Initials}" />
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <mct:AvatarView
                     Grid.Row="1"
                     Grid.Column="2"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
                     CornerRadius="32"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'circle' shape."
-                    Text="{StaticResource Initials}" />
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <mct:AvatarView
                     Grid.Row="1"
                     Grid.Column="3"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarHalfWidth}"
                     CornerRadius="32"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'vertical-pill' shape."
-                    Text="{StaticResource Initials}" />
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarHalfWidth}" />
                 <mct:AvatarView
                     Grid.Row="1"
                     Grid.Column="4"
-                    AvatarHeightRequest="{StaticResource AvatarHalfHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
                     CornerRadius="32"
+                    HeightRequest="{StaticResource AvatarHalfHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'horizontal-pill' shape."
-                    Text="{StaticResource Initials}" />
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <mct:AvatarView
                     Grid.Row="1"
                     Grid.Column="5"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
                     CornerRadius="32, 32, 0, 0"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing an 'arch' shape."
-                    Text="{StaticResource Initials}" />
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <mct:AvatarView
                     Grid.Row="1"
                     Grid.Column="6"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
                     CornerRadius="0, 0, 32, 32"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'shield' shape."
-                    Text="{StaticResource Initials}" />
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <mct:AvatarView
                     Grid.Row="1"
                     Grid.Column="7"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
                     CornerRadius="32, 0, 32, 0"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'eed' shape."
-                    Text="{StaticResource Initials}" />
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <mct:AvatarView
                     Grid.Row="1"
                     Grid.Column="8"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
                     CornerRadius="0, 32, 0, 32"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'dee' shape."
-                    Text="{StaticResource Initials}" />
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <mct:AvatarView
                     Grid.Row="2"
                     Grid.Column="1"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
                     CornerRadius="0, 32, 32, 32"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'top-left point' shape."
-                    Text="{StaticResource Initials}" />
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <mct:AvatarView
                     Grid.Row="2"
                     Grid.Column="2"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
                     CornerRadius="32, 0, 32, 32"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'top-right point' shape."
-                    Text="{StaticResource Initials}" />
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <mct:AvatarView
                     Grid.Row="2"
                     Grid.Column="3"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
                     CornerRadius="32, 32, 0, 32"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'bottom-left point' shape."
-                    Text="{StaticResource Initials}" />
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarWidth}" />
+                <mct:AvatarView
+                    Grid.Row="2"
+                    Grid.Column="5"
+                    CornerRadius="32, 32, 32, 0"
+                    HeightRequest="{StaticResource AvatarHeight}"
+                    Rotation="45"
+                    SemanticProperties.Description="Sample AvatarView showing a 'bottom-right point' shape rotated 45 degrees."
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <mct:AvatarView
                     Grid.Row="2"
                     Grid.Column="4"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
                     CornerRadius="32, 32, 32, 0"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'bottom-right point' shape."
-                    Text="{StaticResource Initials}" />
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <Label
                     Grid.Row="3"
                     SemanticProperties.Description="AvatarView provides for image avatars."
@@ -217,65 +224,65 @@
                 <mct:AvatarView
                     Grid.Row="3"
                     Grid.Column="1"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     ImageSource="avatar_icon.png"
-                    SemanticProperties.Description="Sample AvatarView showing using a local image." />
+                    SemanticProperties.Description="Sample AvatarView showing using a local image."
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <mct:AvatarView
                     Grid.Row="3"
                     Grid.Column="2"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
                     CornerRadius="16"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     ImageSource="avatar_icon.png"
-                    SemanticProperties.Description="Sample AvatarView showing using a local image and 'rounded square' shape." />
+                    SemanticProperties.Description="Sample AvatarView showing using a local image and 'rounded square' shape."
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <mct:AvatarView
                     Grid.Row="3"
                     Grid.Column="3"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
                     CornerRadius="32"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     ImageSource="avatar_icon.png"
-                    SemanticProperties.Description="Sample AvatarView showing using a local image and 'circle' shape." />
+                    SemanticProperties.Description="Sample AvatarView showing using a local image and 'circle' shape."
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <mct:AvatarView
                     Grid.Row="3"
                     Grid.Column="4"
-                    AvatarHeightRequest="{StaticResource AvatarDoubleHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarDoubleWidth}"
                     CornerRadius="64"
+                    HeightRequest="{StaticResource AvatarDoubleHeight}"
                     ImageSource="avatar_icon.png"
-                    SemanticProperties.Description="Sample AvatarView showing using a local image and large 'circle' shape." />
+                    SemanticProperties.Description="Sample AvatarView showing using a local image and large 'circle' shape."
+                    WidthRequest="{StaticResource AvatarDoubleWidth}" />
                 <mct:AvatarView
                     Grid.Row="4"
                     Grid.Column="1"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     ImageSource="https://aka.ms/campus.jpg"
-                    SemanticProperties.Description="Sample AvatarView showing using a URL image." />
+                    SemanticProperties.Description="Sample AvatarView showing using a URL image."
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <mct:AvatarView
                     Grid.Row="4"
                     Grid.Column="2"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
                     CornerRadius="16"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     ImageSource="https://aka.ms/campus.jpg"
-                    SemanticProperties.Description="Sample AvatarView showing using a URL image and 'rounded square' shape." />
+                    SemanticProperties.Description="Sample AvatarView showing using a URL image and 'rounded square' shape."
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <mct:AvatarView
                     Grid.Row="4"
                     Grid.Column="3"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
                     CornerRadius="32"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     ImageSource="https://aka.ms/campus.jpg"
-                    SemanticProperties.Description="Sample AvatarView showing using a URL image and 'circle' shape." />
+                    SemanticProperties.Description="Sample AvatarView showing using a URL image and 'circle' shape."
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <mct:AvatarView
                     Grid.Row="4"
                     Grid.Column="4"
-                    AvatarHeightRequest="{StaticResource AvatarDoubleHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarDoubleWidth}"
                     CornerRadius="64"
+                    HeightRequest="{StaticResource AvatarDoubleHeight}"
                     ImageSource="https://aka.ms/campus.jpg"
-                    SemanticProperties.Description="Sample AvatarView showing using a URL image and large 'circle' shape." />
+                    SemanticProperties.Description="Sample AvatarView showing using a URL image and large 'circle' shape."
+                    WidthRequest="{StaticResource AvatarDoubleWidth}" />
                 <Label
                     Grid.Row="5"
                     SemanticProperties.Description="AvatarView provides for borders."
@@ -284,27 +291,27 @@
                 <mct:AvatarView
                     Grid.Row="5"
                     Grid.Column="1"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
                     BorderWidth="1"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a border width of '1'."
-                    Text="{StaticResource Initials}" />
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <mct:AvatarView
                     Grid.Row="5"
                     Grid.Column="2"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
                     BorderWidth="3"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a border width of '3'."
-                    Text="{StaticResource Initials}" />
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <mct:AvatarView
                     Grid.Row="5"
                     Grid.Column="3"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
                     BorderWidth="5"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a border width of '5'."
-                    Text="{StaticResource Initials}" />
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <Label
                     Grid.Row="6"
                     SemanticProperties.Description="AvatarView provides for avatar text, background and border colours."
@@ -313,47 +320,47 @@
                 <mct:AvatarView
                     Grid.Row="6"
                     Grid.Column="1"
-                    AvatarBackgroundColor="Blue"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
+                    BackgroundColor="Blue"
                     BorderColor="Green"
                     BorderWidth="1"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing text in 'yellow', background in 'blue', border width of '1' and a border colour of 'green'."
                     Text="{StaticResource Initials}"
-                    TextColor="Yellow" />
+                    TextColor="Yellow"
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <mct:AvatarView
                     Grid.Row="6"
                     Grid.Column="2"
-                    AvatarBackgroundColor="Green"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
+                    BackgroundColor="Green"
                     BorderColor="Red"
                     BorderWidth="1"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing text in 'blue', background in 'green', border width of '1' and a border colour of 'red'."
                     Text="{StaticResource Initials}"
-                    TextColor="Blue" />
+                    TextColor="Blue"
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <mct:AvatarView
                     Grid.Row="6"
                     Grid.Column="3"
-                    AvatarBackgroundColor="White"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
+                    BackgroundColor="White"
                     BorderColor="DeepPink"
                     BorderWidth="1"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing text in 'black', background in 'white', border width of '1' and a border colour of 'deeppink'."
                     Text="{StaticResource Initials}"
-                    TextColor="Black" />
+                    TextColor="Black"
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <mct:AvatarView
                     Grid.Row="6"
                     Grid.Column="4"
-                    AvatarBackgroundColor="Black"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
+                    BackgroundColor="Black"
                     BorderColor="DeepPink"
                     BorderWidth="1"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing text in 'white', background in 'black', border width of '1' and a border colour of 'deeppink'."
                     Text="{StaticResource Initials}"
-                    TextColor="White" />
+                    TextColor="White"
+                    WidthRequest="{StaticResource AvatarWidth}" />
                 <Label
                     Grid.Row="7"
                     SemanticProperties.Description="AvatarView provides for avatar shadow."
@@ -362,14 +369,12 @@
                 <mct:AvatarView
                     Grid.Row="7"
                     Grid.Column="1"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
+                    BackgroundColor="Green"
                     CornerRadius="16"
-                    WidthRequest="70"
-                    HeightRequest="70"
-                    AvatarBackgroundColor="Green"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'rounded square' shape and a red 'shadow'."
-                    Text="{StaticResource Initials}">
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarWidth}">
                     <mct:AvatarView.Shadow>
                         <Shadow
                             Brush="Red"
@@ -381,15 +386,13 @@
                 <mct:AvatarView
                     Grid.Row="7"
                     Grid.Column="2"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
+                    BackgroundColor="Yellow"
                     CornerRadius="32"
-                    AvatarBackgroundColor="Yellow"
-                    TextColor="Black"
-                    WidthRequest="70"
-                    HeightRequest="70"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'circle' shape and a green 'shadow'."
-                    Text="{StaticResource Initials}">
+                    Text="{StaticResource Initials}"
+                    TextColor="Black"
+                    WidthRequest="{StaticResource AvatarWidth}">
                     <mct:AvatarView.Shadow>
                         <Shadow
                             Brush="Green"
@@ -401,12 +404,12 @@
                 <mct:AvatarView
                     Grid.Row="7"
                     Grid.Column="3"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarHalfWidth}"
+                    BackgroundColor="Blue"
                     CornerRadius="32"
-                    AvatarBackgroundColor="Blue"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'vertical-pill' shape and a blue 'shadow'."
-                    Text="{StaticResource Initials}">
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarHalfWidth}">
                     <mct:AvatarView.Shadow>
                         <Shadow
                             Brush="Blue"
@@ -418,12 +421,12 @@
                 <mct:AvatarView
                     Grid.Row="7"
                     Grid.Column="4"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
-                    AvatarBackgroundColor="DeepPink"
-                    CornerRadius="0, 32, 32, 32"
+                    BackgroundColor="DeepPink"
+                    CornerRadius="32, 32, 32, 0"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'top-left point' shape and a yellow 'shadow'."
-                    Text="{StaticResource Initials}">
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarWidth}">
                     <mct:AvatarView.Shadow>
                         <Shadow
                             Brush="Yellow"
@@ -435,13 +438,13 @@
                 <mct:AvatarView
                     Grid.Row="7"
                     Grid.Column="5"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
+                    BackgroundColor="Blue"
                     CornerRadius="32"
-                    AvatarBackgroundColor="Blue"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     ImageSource="avatar_icon.png"
                     SemanticProperties.Description="Sample AvatarView showing using a local image and 'circle' shape and an orange 'shadow'."
-                    Text="{StaticResource Initials}">
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarWidth}">
                     <mct:AvatarView.Shadow>
                         <Shadow
                             Brush="Orange"
@@ -458,10 +461,10 @@
                 <mct:AvatarView
                     Grid.Row="8"
                     Grid.Column="1"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing the standard 'tap' gesture recogniser."
-                    Text="{StaticResource Initials}">
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarWidth}">
                     <mct:AvatarView.GestureRecognizers>
                         <TapGestureRecognizer CommandParameter="{StaticResource Initials}" Tapped="TapGestureRecognizer_Tapped" />
                     </mct:AvatarView.GestureRecognizers>
@@ -469,43 +472,48 @@
                 <mct:AvatarView
                     Grid.Row="8"
                     Grid.Column="2"
-                    AvatarHeightRequest="{StaticResource AvatarHeight}"
-                    AvatarWidthRequest="{StaticResource AvatarWidth}"
+                    HeightRequest="{StaticResource AvatarHeight}"
                     ImageSource="avatar_icon.png"
                     SemanticProperties.Description="Sample AvatarView showing local image and the standard 'tap' gesture recogniser."
-                    Text="{StaticResource Initials}">
+                    Text="{StaticResource Initials}"
+                    WidthRequest="{StaticResource AvatarWidth}">
                     <mct:AvatarView.GestureRecognizers>
                         <TapGestureRecognizer CommandParameter="{StaticResource Initials}" Tapped="TapGestureRecognizer_Tapped" />
                     </mct:AvatarView.GestureRecognizers>
                 </mct:AvatarView>
             </Grid>
-            <Grid>
-                <CollectionView
-                    HeightRequest="200"
-                    ItemsSource="{Binding AvatarList}">
-                    <CollectionView.ItemsLayout>
-                        <GridItemsLayout HorizontalItemSpacing="4" Orientation="Horizontal" />
-                    </CollectionView.ItemsLayout>
-                    <CollectionView.Header>
-                        <Label Text="Collection view of C# collection of Avatars" />
-                    </CollectionView.Header>
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="models:AvatarModel">
+            <CollectionView
+                HeightRequest="200"
+                HorizontalOptions="Start"
+                ItemSizingStrategy="MeasureAllItems"
+                ItemsSource="{Binding AvatarList}"
+                WidthRequest="1000">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout HorizontalItemSpacing="4" Orientation="Horizontal" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.Header>
+                    <Label Text="Collection view of C# collection of Avatars" />
+                </CollectionView.Header>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:AvatarModel">
+                        <Grid
+                            ColumnDefinitions="*"
+                            HeightRequest="{Binding HeightRequest}"
+                            RowDefinitions="*"
+                            WidthRequest="{Binding WidthRequest}">
                             <mct:AvatarView
-                                AvatarBackgroundColor="{Binding AvatarBackgroundColor}"
-                                AvatarHeightRequest="{Binding AvatarHeightRequest}"
                                 Padding="{Binding Padding}"
-                                AvatarWidthRequest="{Binding AvatarWidthRequest}"
+                                BackgroundColor="{Binding BackgroundColor}"
                                 BorderColor="{Binding BorderColor}"
                                 BorderWidth="{Binding BorderWidth}"
                                 CornerRadius="{Binding CornerRadius}"
                                 FontAttributes="{Binding FontAttributes}"
                                 FontSize="{Binding FontSize}"
-                                HeightRequest="75"
+                                HeightRequest="{Binding HeightRequest}"
                                 ImageSource="{Binding ImageSource}"
                                 Text="{Binding Text}"
                                 TextColor="{Binding TextColor}"
-                                WidthRequest="150">
+                                WidthRequest="{Binding WidthRequest}">
                                 <mct:AvatarView.GestureRecognizers>
                                     <TapGestureRecognizer CommandParameter="{Binding Text}" Tapped="TapGestureRecognizer_Tapped" />
                                 </mct:AvatarView.GestureRecognizers>
@@ -517,10 +525,10 @@
                                         Offset="10,10" />
                                 </mct:AvatarView.Shadow>
                             </mct:AvatarView>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-            </Grid>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
         </VerticalStackLayout>
     </ScrollView>
 </pages:BasePage>

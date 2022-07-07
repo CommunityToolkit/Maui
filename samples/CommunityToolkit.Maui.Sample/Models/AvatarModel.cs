@@ -2,7 +2,7 @@
 
 public class AvatarModel
 {
-	public Color AvatarBackgroundColor { get; init; } = Colors.Black;
+	public Color BackgroundColor { get; init; } = Colors.Black;
 
 	public FontAttributes? FontAttributes { get; init; }
 
@@ -20,9 +20,9 @@ public class AvatarModel
 
 	public Thickness Padding { get; init; } = 5;
 
-	public double AvatarWidthRequest { get; init; } = 64;
+	public double WidthRequest { get; init; } = 64;
 
-	public double AvatarHeightRequest { get; init; } = 64;
+	public double HeightRequest { get; init; } = 64;
 
 	public CornerRadius CornerRadius { get; init; } = new(50, 50, 50, 50);
 

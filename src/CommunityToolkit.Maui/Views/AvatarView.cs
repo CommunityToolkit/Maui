@@ -9,15 +9,6 @@ namespace CommunityToolkit.Maui.Views;
 /// <summary>Avatar content view.</summary>
 public class AvatarView : Border, IAvatarView, IFontElement, ITextElement, IImageElement, ITextAlignmentElement, ILineHeightElement, ICornerElement
 {
-	/// <summary>The backing store for the <see cref="AvatarBackgroundColor" /> bindable property.</summary>
-	public static readonly BindableProperty AvatarBackgroundColorProperty = BindableProperty.Create(nameof(AvatarBackgroundColor), typeof(Color), typeof(IAvatarView), Colors.Transparent, propertyChanged: OnBackgroundColorChanged);
-
-	/// <summary>The backing store for the <see cref="AvatarHeightRequest" /> bindable property.</summary>
-	public static readonly BindableProperty AvatarHeightRequestProperty = BindableProperty.Create(nameof(AvatarHeightRequest), typeof(double), typeof(VisualElement), defaultValue: AvatarViewDefaults.DefaultHeightRequest, propertyChanged: OnHeightRequestPropertyChanged);
-
-	/// <summary>The backing store for the <see cref="AvatarWidthRequest" /> bindable property.</summary>
-	public static readonly BindableProperty AvatarWidthRequestProperty = BindableProperty.Create(nameof(IAvatarView.AvatarWidthRequest), typeof(double), typeof(VisualElement), defaultValue: AvatarViewDefaults.DefaultWidthRequest, propertyChanged: OnWidthRequestPropertyChanged);
-
 	/// <summary>The backing store for the <see cref="BorderColor" /> bindable property.</summary>
 	public static readonly BindableProperty BorderColorProperty = BindableProperty.Create(nameof(IAvatarView.BorderColor), typeof(Color), typeof(IAvatarView), defaultValue: AvatarViewDefaults.DefaultBorderColor, propertyChanged: OnBorderColorPropertyChanged);
 
@@ -73,32 +64,11 @@ public class AvatarView : Border, IAvatarView, IFontElement, ITextElement, IImag
 		InvalidateMeasure();
 	}
 
-	/// <summary>Gets or sets a value of the avatar background colour property.</summary>
-	public Color AvatarBackgroundColor
-	{
-		get => (Color)GetValue(AvatarBackgroundColorProperty);
-		set => SetValue(AvatarBackgroundColorProperty, value);
-	}
-
-	/// <summary>Gets or sets a value of the avatar height request property.</summary>
-	public double AvatarHeightRequest
-	{
-		get => (double)GetValue(AvatarHeightRequestProperty);
-		set => SetValue(AvatarHeightRequestProperty, value);
-	}
-
 	/// <summary>Gets or sets the avatar padding property.</summary>
 	public Thickness AvatarPadding
 	{
 		get => (Thickness)GetValue(PaddingElement.PaddingProperty);
 		set => SetValue(PaddingElement.PaddingProperty, value);
-	}
-
-	/// <summary>Gets or sets a value of the avatar width request property.</summary>
-	public double AvatarWidthRequest
-	{
-		get => (double)GetValue(AvatarWidthRequestProperty);
-		set => SetValue(AvatarWidthRequestProperty, value);
 	}
 
 	/// <summary>Gets or sets a value of the avatar border colour.</summary>
@@ -115,7 +85,7 @@ public class AvatarView : Border, IAvatarView, IFontElement, ITextElement, IImag
 		set => SetValue(BorderWidthProperty, value);
 	}
 
-	/// <inheritdoc/>
+	/// <summary>Gets or sets a value of the avatar text character spacing property.</summary>
 	public double CharacterSpacing
 	{
 		get => (double)GetValue(TextElement.CharacterSpacingProperty);
@@ -132,28 +102,28 @@ public class AvatarView : Border, IAvatarView, IFontElement, ITextElement, IImag
 	/// <summary>Gets or sets the avatar font.</summary>
 	public Font Font { get; set; } = Font.SystemFontOfSize(AvatarViewDefaults.FontSize);
 
-	/// <inheritdoc/>
+	/// <summary>Gets or sets a value of the avatar font attributes property.</summary>
 	public FontAttributes FontAttributes
 	{
 		get => (FontAttributes)GetValue(FontElement.FontAttributesProperty);
 		set => SetValue(FontElement.FontAttributesProperty, value);
 	}
 
-	/// <inheritdoc/>
+	/// <summary>Gets or sets a value of the avatar font auto scaling enabled property.</summary>
 	public bool FontAutoScalingEnabled
 	{
 		get => (bool)GetValue(FontElement.FontAutoScalingEnabledProperty);
 		set => SetValue(FontElement.FontAutoScalingEnabledProperty, value);
 	}
 
-	/// <inheritdoc/>
+	/// <summary>Gets or sets a value of the avatar font family property.</summary>
 	public string FontFamily
 	{
 		get => (string)GetValue(FontElement.FontFamilyProperty);
 		set => SetValue(FontElement.FontFamilyProperty, value);
 	}
 
-	/// <inheritdoc/>
+	/// <summary>Gets or sets a value of the avatar font size property.</summary>
 	[TypeConverter(typeof(FontSizeConverter))]
 	public double FontSize
 	{
@@ -161,7 +131,7 @@ public class AvatarView : Border, IAvatarView, IFontElement, ITextElement, IImag
 		set => SetValue(FontElement.FontSizeProperty, value);
 	}
 
-	/// <inheritdoc/>
+	/// <summary>Gets or sets a value of the avatar image source property.</summary>
 	[TypeConverter(typeof(ImageSourceConverter))]
 	public ImageSource ImageSource
 	{
@@ -176,7 +146,7 @@ public class AvatarView : Border, IAvatarView, IFontElement, ITextElement, IImag
 		set => SetValue(TextProperty, value);
 	}
 
-	/// <inheritdoc/>
+	/// <summary>Gets or sets a value of the avatar text colour property.</summary>
 	public Color TextColor
 	{
 		get => (Color)GetValue(TextElement.TextColorProperty);
@@ -240,11 +210,8 @@ public class AvatarView : Border, IAvatarView, IFontElement, ITextElement, IImag
 
 	double ILineHeightElement.LineHeight => avatarLabel.LineHeight;
 
-	static void OnBackgroundColorChanged(BindableObject bindable, object oldValue, object newValue) =>
-		((IAvatarView)bindable).OnBackgroundColorChanged((Color)oldValue, (Color)newValue);
-
 	static void OnBorderColorPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
-		((IAvatarView)bindable).OnBorderColorPropertyChanged((Color)oldValue, (Color)newValue);
+																							((IAvatarView)bindable).OnBorderColorPropertyChanged((Color)oldValue, (Color)newValue);
 
 	static void OnBorderWidthPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
 		((IAvatarView)bindable).OnBorderWidthPropertyChanged((double)oldValue, (double)newValue);
@@ -252,53 +219,11 @@ public class AvatarView : Border, IAvatarView, IFontElement, ITextElement, IImag
 	static void OnCornerRadiusPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
 		((IAvatarView)bindable).OnCornerRadiusPropertyChanged((CornerRadius)oldValue, (CornerRadius)newValue);
 
-	static void OnHeightRequestPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		OnRequestChanged(bindable);
-		((IAvatarView)bindable).OnHeightRequestPropertyChanged((double)oldValue, (double)newValue);
-	}
-
 	static void OnImageSourceChanged(BindableObject bindable, object oldValue, object newValue) =>
 		((IAvatarView)bindable).OnImageSourceChanged((ImageSource)oldValue, (ImageSource)newValue);
 
-	static void OnRequestChanged(BindableObject bindable)
-	{
-		LayoutConstraint constraint = LayoutConstraint.None;
-		VisualElement element = (VisualElement)bindable;
-		if (element.WidthRequest >= 0 && element.MinimumWidthRequest >= 0)
-		{
-			constraint |= LayoutConstraint.HorizontallyFixed;
-		}
-		if (element.HeightRequest >= 0 && element.MinimumHeightRequest >= 0)
-		{
-			constraint |= LayoutConstraint.VerticallyFixed;
-		}
-
-		element.SelfConstraint = constraint;
-
-		if (element is IView view)
-		{
-			view.Handler?.UpdateValue(nameof(IView.Width));
-			view.Handler?.UpdateValue(nameof(IView.Height));
-			view.Handler?.UpdateValue(nameof(IView.MinimumHeight));
-			view.Handler?.UpdateValue(nameof(IView.MinimumWidth));
-			view.Handler?.UpdateValue(nameof(IView.MaximumHeight));
-			view.Handler?.UpdateValue(nameof(IView.MaximumWidth));
-		}
-
-		((VisualElement)bindable).InvalidateMeasureInternal(InvalidationTrigger.SizeRequestChanged);
-	}
-
 	static void OnTextPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
 		((IAvatarView)bindable).OnTextPropertyChanged((string)oldValue, (string)newValue);
-
-	static object PaddingDefaultValueCreator(BindableObject bindable) => ((IPaddingElement)bindable).PaddingDefaultValueCreator();
-
-	static void OnWidthRequestPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		OnRequestChanged(bindable);
-		((IAvatarView)bindable).OnWidthRequestPropertyChanged((double)oldValue, (double)newValue);
-	}
 
 	void HandleCornerRadiusChanged()
 	{
@@ -327,8 +252,6 @@ public class AvatarView : Border, IAvatarView, IFontElement, ITextElement, IImag
 	double IFontElement.FontSizeDefaultValueCreator() => this.GetDefaultFontSize();
 
 	bool IAvatarView.IsTextSet() => IsSet(TextProperty);
-
-	void IAvatarView.OnBackgroundColorChanged(Color oldValue, Color newValue) => Background = newValue;
 
 	void IAvatarView.OnBorderColorPropertyChanged(Color oldValue, Color newValue) => Stroke = newValue;
 
@@ -369,12 +292,6 @@ public class AvatarView : Border, IAvatarView, IFontElement, ITextElement, IImag
 		avatarLabel.FontSize = newValue;
 	}
 
-	void IAvatarView.OnHeightRequestPropertyChanged(double oldValue, double newValue)
-	{
-		HeightRequest = newValue;
-		OnSizeAllocated(AvatarWidthRequest, newValue);
-	}
-
 	void IAvatarView.OnImageSourceChanged(object oldValue, object newValue) => HandleImageChanged((ImageSource)newValue);
 
 	void ITextElement.OnTextColorPropertyChanged(Color oldValue, Color newValue) => avatarLabel.TextColor = newValue;
@@ -385,12 +302,6 @@ public class AvatarView : Border, IAvatarView, IFontElement, ITextElement, IImag
 	{
 		InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		avatarLabel.TextTransform = newValue;
-	}
-
-	void IAvatarView.OnWidthRequestPropertyChanged(double oldValue, double newValue)
-	{
-		WidthRequest = newValue;
-		OnSizeAllocated(newValue, AvatarHeightRequest);
 	}
 
 	Thickness IAvatarView.PaddingDefaultValueCreator() => default;
