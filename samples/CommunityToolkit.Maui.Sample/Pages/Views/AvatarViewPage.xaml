@@ -261,6 +261,8 @@
                 <mct:AvatarView
                     Grid.Row="3"
                     Grid.Column="1"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     HeightRequest="{StaticResource AvatarHeight}"
                     ImageSource="avatar_icon.png"
                     SemanticProperties.Description="Sample AvatarView showing using a local image."
@@ -268,6 +270,8 @@
                 <mct:AvatarView
                     Grid.Row="3"
                     Grid.Column="2"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="16"
                     HeightRequest="{StaticResource AvatarHeight}"
                     ImageSource="avatar_icon.png"
@@ -276,6 +280,8 @@
                 <mct:AvatarView
                     Grid.Row="3"
                     Grid.Column="3"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="32"
                     HeightRequest="{StaticResource AvatarHeight}"
                     ImageSource="avatar_icon.png"
@@ -284,6 +290,8 @@
                 <mct:AvatarView
                     Grid.Row="3"
                     Grid.Column="4"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="64"
                     HeightRequest="{StaticResource AvatarDoubleHeight}"
                     ImageSource="avatar_icon.png"
@@ -292,6 +300,8 @@
                 <mct:AvatarView
                     Grid.Row="4"
                     Grid.Column="1"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     HeightRequest="{StaticResource AvatarHeight}"
                     ImageSource="https://aka.ms/campus.jpg"
                     SemanticProperties.Description="Sample AvatarView showing using a URL image."
@@ -299,6 +309,8 @@
                 <mct:AvatarView
                     Grid.Row="4"
                     Grid.Column="2"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="16"
                     HeightRequest="{StaticResource AvatarHeight}"
                     ImageSource="https://aka.ms/campus.jpg"
@@ -307,6 +319,8 @@
                 <mct:AvatarView
                     Grid.Row="4"
                     Grid.Column="3"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="32"
                     HeightRequest="{StaticResource AvatarHeight}"
                     ImageSource="https://aka.ms/campus.jpg"
@@ -315,6 +329,8 @@
                 <mct:AvatarView
                     Grid.Row="4"
                     Grid.Column="4"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="64"
                     HeightRequest="{StaticResource AvatarDoubleHeight}"
                     ImageSource="https://aka.ms/campus.jpg"
@@ -328,6 +344,8 @@
                 <mct:AvatarView
                     Grid.Row="5"
                     Grid.Column="1"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     BorderWidth="1"
                     HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a border width of '1'."
@@ -336,6 +354,8 @@
                 <mct:AvatarView
                     Grid.Row="5"
                     Grid.Column="2"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     BorderWidth="3"
                     HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a border width of '3'."
@@ -344,6 +364,8 @@
                 <mct:AvatarView
                     Grid.Row="5"
                     Grid.Column="3"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     BorderWidth="5"
                     HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a border width of '5'."
@@ -407,6 +429,8 @@
                     Grid.Row="7"
                     Grid.Column="1"
                     BackgroundColor="Green"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="16"
                     HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'rounded square' shape and a red 'shadow'."
@@ -424,6 +448,8 @@
                     Grid.Row="7"
                     Grid.Column="2"
                     BackgroundColor="Yellow"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="32"
                     HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'circle' shape and a green 'shadow'."
@@ -442,6 +468,8 @@
                     Grid.Row="7"
                     Grid.Column="3"
                     BackgroundColor="Blue"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="32"
                     HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'vertical-pill' shape and a blue 'shadow'."
@@ -459,6 +487,8 @@
                     Grid.Row="7"
                     Grid.Column="4"
                     BackgroundColor="DeepPink"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="32, 32, 32, 0"
                     HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'top-left point' shape and a yellow 'shadow'."
@@ -476,6 +506,8 @@
                     Grid.Row="7"
                     Grid.Column="5"
                     BackgroundColor="Blue"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="32"
                     HeightRequest="{StaticResource AvatarHeight}"
                     ImageSource="avatar_icon.png"
@@ -498,6 +530,8 @@
                 <mct:AvatarView
                     Grid.Row="8"
                     Grid.Column="1"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing the standard 'tap' gesture recogniser."
                     Text="{StaticResource Initials}"
@@ -509,6 +543,8 @@
                 <mct:AvatarView
                     Grid.Row="8"
                     Grid.Column="2"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     HeightRequest="{StaticResource AvatarHeight}"
                     ImageSource="avatar_icon.png"
                     SemanticProperties.Description="Sample AvatarView showing local image and the standard 'tap' gesture recogniser."
