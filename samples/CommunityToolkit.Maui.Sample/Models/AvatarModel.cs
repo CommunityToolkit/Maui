@@ -3,6 +3,7 @@
 public class AvatarModel
 {
 	public Color AvatarBackgroundColor { get; init; } = Colors.Black;
+
 	public FontAttributes? FontAttributes { get; init; }
 
 #pragma warning disable CS0612 // Type or member is obsolete, however is still used in Microsoft.Maui
@@ -17,7 +18,7 @@ public class AvatarModel
 
 	public Thickness BorderWidth { get; init; } = 0;
 
-	public Thickness AvatarPadding { get; init; } = 5;
+	public Thickness Padding { get; init; } = 5;
 
 	public double AvatarWidthRequest { get; init; } = 64;
 
