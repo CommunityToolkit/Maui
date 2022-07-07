@@ -12,13 +12,8 @@
     x:TypeArguments="vm:AvatarViewViewModel">
 
     <pages:BasePage.Resources>
-        <x:String x:Key="Initials">ZS</x:String>
         <!--  The actress who played Neytiri in Avatar (2009) is Zoe Saldana (ZS)  -->
-        <x:Double x:Key="Margin">0</x:Double>
-        <x:Double x:Key="Padding">0</x:Double>
-        <Color x:Key="AvatarBackgroundColor">Blue</Color>
-        <Color x:Key="AvatarTextColor">Yellow</Color>
-        <Color x:Key="ShadowColor">Red</Color>
+        <x:String x:Key="Initials">ZS</x:String>
         <x:Double x:Key="AvatarDoubleHeight">128</x:Double>
         <x:Double x:Key="AvatarHeight">64</x:Double>
         <x:Double x:Key="AvatarHalfHeight">32</x:Double>
@@ -29,13 +24,13 @@
         <x:Double x:Key="AvatarQuarterWidth">16</x:Double>
     </pages:BasePage.Resources>
 
-    <ScrollView>
+    <ScrollView Orientation="Both">
         <VerticalStackLayout Spacing="12">
             <Label LineBreakMode="WordWrap" Text="AvatarView provides a control to display an avatar or the user's initials. This page demonstrates multiple different view options." />
             <Grid
                 ColumnDefinitions="Auto,80,80,80,160,80,80,80,160"
                 ColumnSpacing="8"
-                RowDefinitions="160,80,80,160,160,80,80,80,80"
+                RowDefinitions="160,80,80,160,160,80,80,80,80,200"
                 RowSpacing="8">
                 <Label
                     Grid.Row="0"
@@ -45,6 +40,8 @@
                 <mct:AvatarView
                     Grid.Row="0"
                     Grid.Column="1"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     FontSize="Micro"
                     HeightRequest="{StaticResource AvatarQuarterHeight}"
                     SemanticProperties.Description="Sample AvatarView showing size at 16x16."
@@ -53,6 +50,8 @@
                 <mct:AvatarView
                     Grid.Row="0"
                     Grid.Column="2"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     HeightRequest="{StaticResource AvatarHalfHeight}"
                     SemanticProperties.Description="Sample AvatarView showing size at 32x32."
                     Text="{StaticResource Initials}"
@@ -60,6 +59,8 @@
                 <mct:AvatarView
                     Grid.Row="0"
                     Grid.Column="3"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing size at 64x64."
                     Text="{StaticResource Initials}"
@@ -67,6 +68,8 @@
                 <mct:AvatarView
                     Grid.Row="0"
                     Grid.Column="4"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     HeightRequest="{StaticResource AvatarDoubleHeight}"
                     SemanticProperties.Description="Sample AvatarView showing size at 128x128."
                     Text="{StaticResource Initials}"
@@ -74,6 +77,8 @@
                 <mct:AvatarView
                     Grid.Row="0"
                     Grid.Column="5"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     FontSize="Small"
                     HeightRequest="{StaticResource AvatarQuarterHeight}"
                     SemanticProperties.Description="Sample AvatarView showing size at 16x16 and a 'small' font."
@@ -82,6 +87,8 @@
                 <mct:AvatarView
                     Grid.Row="0"
                     Grid.Column="6"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     FontAttributes="Bold,Italic"
                     FontSize="Default"
                     HeightRequest="{StaticResource AvatarHalfHeight}"
@@ -91,6 +98,8 @@
                 <mct:AvatarView
                     Grid.Row="0"
                     Grid.Column="7"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     FontAttributes="Bold"
                     FontSize="Large"
                     HeightRequest="{StaticResource AvatarHeight}"
@@ -100,6 +109,8 @@
                 <mct:AvatarView
                     Grid.Row="0"
                     Grid.Column="8"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     FontSize="Header"
                     HeightRequest="{StaticResource AvatarDoubleHeight}"
                     SemanticProperties.Description="Sample AvatarView showing size at 128x128 withe the 'header' font."
@@ -114,6 +125,8 @@
                 <mct:AvatarView
                     Grid.Row="1"
                     Grid.Column="1"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="16"
                     HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'rounded square' shape."
@@ -122,6 +135,8 @@
                 <mct:AvatarView
                     Grid.Row="1"
                     Grid.Column="2"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="32"
                     HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'circle' shape."
@@ -130,6 +145,8 @@
                 <mct:AvatarView
                     Grid.Row="1"
                     Grid.Column="3"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="32"
                     HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'vertical-pill' shape."
@@ -138,6 +155,8 @@
                 <mct:AvatarView
                     Grid.Row="1"
                     Grid.Column="4"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="32"
                     HeightRequest="{StaticResource AvatarHalfHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'horizontal-pill' shape."
@@ -146,6 +165,8 @@
                 <mct:AvatarView
                     Grid.Row="1"
                     Grid.Column="5"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="32, 32, 0, 0"
                     HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing an 'arch' shape."
@@ -154,6 +175,8 @@
                 <mct:AvatarView
                     Grid.Row="1"
                     Grid.Column="6"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="0, 0, 32, 32"
                     HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'shield' shape."
@@ -162,6 +185,8 @@
                 <mct:AvatarView
                     Grid.Row="1"
                     Grid.Column="7"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="32, 0, 32, 0"
                     HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'eed' shape."
@@ -170,6 +195,8 @@
                 <mct:AvatarView
                     Grid.Row="1"
                     Grid.Column="8"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="0, 32, 0, 32"
                     HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'dee' shape."
@@ -178,6 +205,8 @@
                 <mct:AvatarView
                     Grid.Row="2"
                     Grid.Column="1"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="0, 32, 32, 32"
                     HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'top-left point' shape."
@@ -186,6 +215,8 @@
                 <mct:AvatarView
                     Grid.Row="2"
                     Grid.Column="2"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="32, 0, 32, 32"
                     HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'top-right point' shape."
@@ -194,6 +225,8 @@
                 <mct:AvatarView
                     Grid.Row="2"
                     Grid.Column="3"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="32, 32, 0, 32"
                     HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'bottom-left point' shape."
@@ -202,6 +235,8 @@
                 <mct:AvatarView
                     Grid.Row="2"
                     Grid.Column="5"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="32, 32, 32, 0"
                     HeightRequest="{StaticResource AvatarHeight}"
                     Rotation="45"
@@ -211,6 +246,8 @@
                 <mct:AvatarView
                     Grid.Row="2"
                     Grid.Column="4"
+                    BorderColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
                     CornerRadius="32, 32, 32, 0"
                     HeightRequest="{StaticResource AvatarHeight}"
                     SemanticProperties.Description="Sample AvatarView showing a 'bottom-right point' shape."
@@ -481,54 +518,310 @@
                         <TapGestureRecognizer CommandParameter="{StaticResource Initials}" Tapped="TapGestureRecognizer_Tapped" />
                     </mct:AvatarView.GestureRecognizers>
                 </mct:AvatarView>
-            </Grid>
-            <CollectionView
-                HeightRequest="200"
-                HorizontalOptions="Start"
-                ItemSizingStrategy="MeasureAllItems"
-                ItemsSource="{Binding AvatarList}"
-                WidthRequest="1000">
-                <CollectionView.ItemsLayout>
-                    <GridItemsLayout HorizontalItemSpacing="4" Orientation="Horizontal" />
-                </CollectionView.ItemsLayout>
-                <CollectionView.Header>
-                    <Label Text="Collection view of C# collection of Avatars" />
-                </CollectionView.Header>
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="models:AvatarModel">
-                        <Grid
-                            ColumnDefinitions="*"
-                            HeightRequest="{Binding HeightRequest}"
-                            RowDefinitions="*"
-                            WidthRequest="{Binding WidthRequest}">
-                            <mct:AvatarView
-                                Padding="{Binding Padding}"
-                                BackgroundColor="{Binding BackgroundColor}"
-                                BorderColor="{Binding BorderColor}"
-                                BorderWidth="{Binding BorderWidth}"
-                                CornerRadius="{Binding CornerRadius}"
-                                FontAttributes="{Binding FontAttributes}"
-                                FontSize="{Binding FontSize}"
+                <Label
+                    Grid.Row="9"
+                    SemanticProperties.Description="AvatarView provides for bindable layouts."
+                    Text="Collection View"
+                    VerticalOptions="Center" />
+                <CollectionView
+                    Grid.Row="9"
+                    Grid.Column="1"
+                    Grid.ColumnSpan="8"
+                    HorizontalOptions="Start"
+                    ItemSizingStrategy="MeasureAllItems"
+                    ItemsSource="{Binding AvatarList}">
+                    <CollectionView.ItemsLayout>
+                        <GridItemsLayout HorizontalItemSpacing="4" Orientation="Horizontal" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:AvatarModel">
+                            <Grid
+                                ColumnDefinitions="*"
                                 HeightRequest="{Binding HeightRequest}"
-                                ImageSource="{Binding ImageSource}"
-                                Text="{Binding Text}"
-                                TextColor="{Binding TextColor}"
+                                RowDefinitions="*"
                                 WidthRequest="{Binding WidthRequest}">
-                                <mct:AvatarView.GestureRecognizers>
-                                    <TapGestureRecognizer CommandParameter="{Binding Text}" Tapped="TapGestureRecognizer_Tapped" />
-                                </mct:AvatarView.GestureRecognizers>
-                                <mct:AvatarView.Shadow>
-                                    <Shadow
-                                        Brush="{StaticResource ShadowColor}"
-                                        Opacity="0.5"
-                                        Radius="10"
-                                        Offset="10,10" />
-                                </mct:AvatarView.Shadow>
-                            </mct:AvatarView>
-                        </Grid>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+                                <mct:AvatarView
+                                    Padding="{Binding Padding}"
+                                    BackgroundColor="{Binding BackgroundColor}"
+                                    BorderColor="{Binding BorderColor}"
+                                    BorderWidth="{Binding BorderWidth}"
+                                    CornerRadius="{Binding CornerRadius}"
+                                    FontAttributes="{Binding FontAttributes}"
+                                    FontSize="{Binding FontSize}"
+                                    HeightRequest="{Binding HeightRequest}"
+                                    ImageSource="{Binding ImageSource}"
+                                    Text="{Binding Text}"
+                                    TextColor="{Binding TextColor}"
+                                    WidthRequest="{Binding WidthRequest}">
+                                    <mct:AvatarView.GestureRecognizers>
+                                        <TapGestureRecognizer CommandParameter="{Binding Text}" Tapped="TapGestureRecognizer_Tapped" />
+                                    </mct:AvatarView.GestureRecognizers>
+                                    <mct:AvatarView.Shadow>
+                                        <Shadow
+                                            Brush="Red"
+                                            Opacity="0.5"
+                                            Radius="10"
+                                            Offset="10,10" />
+                                    </mct:AvatarView.Shadow>
+                                </mct:AvatarView>
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+            <Label
+                FontSize="Header"
+                SemanticProperties.Description="In adition to avatars, the AvatarView can be used in other ways.  This shows some sample ideas."
+                Text="Sample ideas" />
+            <Label FontSize="Subtitle" Text="Keyboard" />
+            <Grid
+                Padding="4,4"
+                BackgroundColor="Red"
+                ColumnDefinitions="96,96,96,96"
+                ColumnSpacing="4"
+                HorizontalOptions="Start"
+                RowDefinitions="64,64,64,64"
+                RowSpacing="4"
+                SemanticProperties.Description="Sample idea for using AvatarView to draw a keyboard.">
+                <mct:AvatarView
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    BackgroundColor="#80AA0000"
+                    CornerRadius="32,32,32,32"
+                    FontSize="Large"
+                    HeightRequest="64"
+                    SemanticProperties.Description="Keyboard number 1"
+                    Text="1"
+                    WidthRequest="96" />
+                <mct:AvatarView
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    BackgroundColor="#80AA0000"
+                    CornerRadius="32,32,32,32"
+                    FontSize="Large"
+                    HeightRequest="64"
+                    SemanticProperties.Description="Keyboard number 2"
+                    Text="2"
+                    WidthRequest="96" />
+                <mct:AvatarView
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    BackgroundColor="#80AA0000"
+                    CornerRadius="32,32,32,32"
+                    FontSize="Large"
+                    HeightRequest="64"
+                    SemanticProperties.Description="Keyboard number 3"
+                    Text="3"
+                    WidthRequest="96" />
+                <mct:AvatarView
+                    Grid.Row="0"
+                    Grid.Column="3"
+                    BackgroundColor="#30AA0000"
+                    CornerRadius="32,32,32,32"
+                    FontSize="Large"
+                    HeightRequest="64"
+                    SemanticProperties.Description="Keyboard minus"
+                    Text="-"
+                    WidthRequest="96" />
+                <mct:AvatarView
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    BackgroundColor="#80AA0000"
+                    CornerRadius="32,32,32,32"
+                    FontSize="Large"
+                    HeightRequest="64"
+                    SemanticProperties.Description="Keyboard number 4"
+                    Text="4"
+                    WidthRequest="96" />
+                <mct:AvatarView
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    BackgroundColor="#80AA0000"
+                    CornerRadius="32,32,32,32"
+                    FontSize="Large"
+                    HeightRequest="64"
+                    SemanticProperties.Description="Keyboard number 5"
+                    Text="5"
+                    WidthRequest="96" />
+                <mct:AvatarView
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    BackgroundColor="#80AA0000"
+                    CornerRadius="32,32,32,32"
+                    FontSize="Large"
+                    HeightRequest="64"
+                    SemanticProperties.Description="Keyboard number 6"
+                    Text="6"
+                    WidthRequest="96" />
+                <mct:AvatarView
+                    Grid.Row="1"
+                    Grid.Column="3"
+                    BackgroundColor="#30AA0000"
+                    CornerRadius="32,32,32,32"
+                    FontSize="Large"
+                    HeightRequest="64"
+                    SemanticProperties.Description="Keyboard plus"
+                    Text="+"
+                    WidthRequest="96" />
+                <mct:AvatarView
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    BackgroundColor="#80AA0000"
+                    CornerRadius="32,32,32,32"
+                    FontSize="Large"
+                    HeightRequest="64"
+                    SemanticProperties.Description="Keyboard number 7"
+                    Text="7"
+                    WidthRequest="96" />
+                <mct:AvatarView
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    BackgroundColor="#80AA0000"
+                    CornerRadius="32,32,32,32"
+                    FontSize="Large"
+                    HeightRequest="64"
+                    SemanticProperties.Description="Keyboard number 8"
+                    Text="8"
+                    WidthRequest="96" />
+                <mct:AvatarView
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    BackgroundColor="#80AA0000"
+                    CornerRadius="32,32,32,32"
+                    FontSize="Large"
+                    HeightRequest="64"
+                    SemanticProperties.Description="Keyboard number 9"
+                    Text="9"
+                    WidthRequest="96" />
+                <mct:AvatarView
+                    Grid.Row="2"
+                    Grid.Column="3"
+                    BackgroundColor="#30AA0000"
+                    CornerRadius="32,32,32,32"
+                    FontSize="Large"
+                    HeightRequest="64"
+                    SemanticProperties.Description="Keyboard backspace"
+                    Text="&#x2190;"
+                    WidthRequest="96" />
+                <mct:AvatarView
+                    Grid.Row="3"
+                    Grid.Column="0"
+                    BackgroundColor="#80AA0000"
+                    CornerRadius="32,32,32,32"
+                    FontSize="Large"
+                    HeightRequest="64"
+                    SemanticProperties.Description="Keyboard comma"
+                    Text=","
+                    WidthRequest="96" />
+                <mct:AvatarView
+                    Grid.Row="3"
+                    Grid.Column="1"
+                    BackgroundColor="#80AA0000"
+                    CornerRadius="32,32,32,32"
+                    FontSize="Large"
+                    HeightRequest="64"
+                    SemanticProperties.Description="Keyboard number 0"
+                    Text="0"
+                    WidthRequest="96" />
+                <mct:AvatarView
+                    Grid.Row="3"
+                    Grid.Column="2"
+                    BackgroundColor="#80AA0000"
+                    CornerRadius="32,32,32,32"
+                    FontSize="Large"
+                    HeightRequest="64"
+                    SemanticProperties.Description="Keyboard period"
+                    Text="."
+                    WidthRequest="96" />
+                <mct:AvatarView
+                    Grid.Row="3"
+                    Grid.Column="3"
+                    BackgroundColor="#30AA0000"
+                    CornerRadius="32,32,32,32"
+                    FontSize="Large"
+                    HeightRequest="64"
+                    SemanticProperties.Description="Keyboard equals"
+                    Text="="
+                    WidthRequest="96" />
+            </Grid>
+            <Label FontSize="Subtitle" Text="Days of the week" />
+            <Grid
+                Padding="4,4"
+                ColumnDefinitions="64,64,64,64,64,64,64"
+                ColumnSpacing="4"
+                HorizontalOptions="Start"
+                RowDefinitions="Auto">
+                <mct:AvatarView
+                    Grid.Column="0"
+                    BackgroundColor="#ABDEE6"
+                    BorderColor="Black"
+                    CornerRadius="16"
+                    FontSize="Medium"
+                    HeightRequest="64"
+                    Text="MON"
+                    TextColor="Black"
+                    WidthRequest="64" />
+                <mct:AvatarView
+                    Grid.Column="1"
+                    BackgroundColor="#CBAACB"
+                    BorderColor="Black"
+                    CornerRadius="16"
+                    FontSize="Medium"
+                    HeightRequest="64"
+                    Text="TUE"
+                    TextColor="Black"
+                    WidthRequest="64" />
+                <mct:AvatarView
+                    Grid.Column="2"
+                    BackgroundColor="#FFFF85"
+                    BorderColor="Black"
+                    CornerRadius="16"
+                    FontSize="Medium"
+                    HeightRequest="64"
+                    Text="WED"
+                    TextColor="Black"
+                    WidthRequest="64" />
+                <mct:AvatarView
+                    Grid.Column="3"
+                    BackgroundColor="#FFCC86"
+                    BorderColor="Black"
+                    CornerRadius="16"
+                    FontSize="Medium"
+                    HeightRequest="64"
+                    Text="THU"
+                    TextColor="Black"
+                    WidthRequest="64" />
+                <mct:AvatarView
+                    Grid.Column="4"
+                    BackgroundColor="#F3B0C3"
+                    BorderColor="Black"
+                    CornerRadius="16"
+                    FontSize="Medium"
+                    HeightRequest="64"
+                    Text="FRI"
+                    TextColor="Black"
+                    WidthRequest="64" />
+                <mct:AvatarView
+                    Grid.Column="5"
+                    BackgroundColor="#CCE2CB"
+                    BorderColor="Black"
+                    CornerRadius="16"
+                    FontSize="Medium"
+                    HeightRequest="64"
+                    Text="SAT"
+                    TextColor="Black"
+                    WidthRequest="64" />
+                <mct:AvatarView
+                    Grid.Column="6"
+                    BackgroundColor="#97C1A9"
+                    BorderColor="Black"
+                    CornerRadius="16"
+                    FontSize="Medium"
+                    HeightRequest="64"
+                    Text="SUN"
+                    TextColor="Black"
+                    WidthRequest="64" />
+            </Grid>
         </VerticalStackLayout>
     </ScrollView>
 </pages:BasePage>
