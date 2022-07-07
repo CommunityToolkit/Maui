@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace CommunityToolkit.Maui.Core;
+﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>Avatar view interface.</summary>
 public interface IAvatarView : IBorderView, ILabel, Microsoft.Maui.IImage, IImageSource
@@ -8,9 +6,6 @@ public interface IAvatarView : IBorderView, ILabel, Microsoft.Maui.IImage, IImag
 	#region Public Property
 
 	//// NOTE to implementer: Implement the following properties as public.
-
-	/// <summary>Gets a value indicating the avatar background colour.</summary>
-	Color AvatarBackgroundColor { get; }
 
 	/// <summary>Gets a value indicating the avatar border colour.</summary>
 	Color BorderColor { get; }
@@ -20,12 +15,6 @@ public interface IAvatarView : IBorderView, ILabel, Microsoft.Maui.IImage, IImag
 
 	/// <summary>Gets a value indicating the avatar corner radius (MAUI).</summary>
 	CornerRadius CornerRadius { get; }
-
-	/// <summary>Gets a value indicating the element width request.</summary>
-	double AvatarWidthRequest { get; }
-
-	/// <summary>Gets a value indicating the element height request.</summary>
-	double AvatarHeightRequest { get; }
 
 	/// <summary>Gets a value indicating the avatar padding.</summary>
 	Thickness AvatarPadding { get; }
@@ -46,11 +35,6 @@ public interface IAvatarView : IBorderView, ILabel, Microsoft.Maui.IImage, IImag
 	/// <returns>True if set.</returns>
 	bool IsTextSet();
 
-	/// <summary>On background colour property changed.</summary>
-	/// <param name="oldValue">Old value</param>
-	/// <param name="newValue">New Value</param>
-	void OnBackgroundColorChanged(Color oldValue, Color newValue);
-
 	/// <summary>On border width property changed.</summary>
 	/// <param name="oldValue">Old value</param>
 	/// <param name="newValue">New Value</param>
@@ -70,21 +54,6 @@ public interface IAvatarView : IBorderView, ILabel, Microsoft.Maui.IImage, IImag
 	/// <param name="oldValue">Old value</param>
 	/// <param name="newValue">New Value</param>
 	void OnTextPropertyChanged(string oldValue, string newValue);
-
-	/// <summary>On width request property changed.</summary>
-	/// <param name="oldValue">Old value</param>
-	/// <param name="newValue">New Value</param>
-	void OnWidthRequestPropertyChanged(double oldValue, double newValue);
-
-	/// <summary>On height request property changed.</summary>
-	/// <param name="oldValue">Old value</param>
-	/// <param name="newValue">New Value</param>
-	void OnHeightRequestPropertyChanged(double oldValue, double newValue);
-
-	/// <summary>On padding property changed</summary>
-	/// <param name="oldValue">Old value</param>
-	/// <param name="newValue">New Value</param>
-	void OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue);
 
 	/// <summary>Padding default value creator method.</summary>
 	/// <returns>Padding thickness.</returns>
