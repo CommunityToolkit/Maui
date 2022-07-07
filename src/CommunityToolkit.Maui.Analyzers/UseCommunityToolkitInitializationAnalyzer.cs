@@ -28,19 +28,41 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 	{
 		context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 		context.EnableConcurrentExecution();
-		context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.InvocationExpression);
+		context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.ExpressionStatement);
 	}
 
 	static void AnalyzeNode(SyntaxNodeAnalysisContext context)
 	{
-		var invocationExpression = (InvocationExpressionSyntax)context.Node;
+		var expressionStatement = (ExpressionStatementSyntax)context.Node;
 
-		if (invocationExpression.ToString().Contains("UseMauiApp<")
-			&& !invocationExpression.ToString().Contains(".UseMauiCommunityToolkit("))
-		{			
-			var diagnostic = Diagnostic.Create(rule, invocationExpression.GetLocation());
+		if (expressionStatement.ToString().Contains("UseMauiApp<")
+			&& !expressionStatement.ToString().Contains(".UseMauiCommunityToolkit("))
+		{
+			var expression = GetInvocationExpressionSyntax(expressionStatement);
+			var diagnostic = Diagnostic.Create(rule, expression.GetLocation());
 			context.ReportDiagnostic(diagnostic);
 		}
+	}
+
+	static InvocationExpressionSyntax GetInvocationExpressionSyntax(SyntaxNode parent)
+	{
+		foreach (var child in parent.ChildNodes())
+		{
+			if (child is InvocationExpressionSyntax expressionSyntax)
+			{
+				return expressionSyntax;
+			}
+			else
+			{
+				var expression = GetInvocationExpressionSyntax(child);
+
+				if (expression is not null)
+				{
+					return expression;
+				}
+			}
+		}
+		throw new InvalidOperationException("Wow, this shouldn't happen, please open a bug here: https://github.com/CommunityToolkit/Maui/issues/new/choose");
 	}
 }
 
