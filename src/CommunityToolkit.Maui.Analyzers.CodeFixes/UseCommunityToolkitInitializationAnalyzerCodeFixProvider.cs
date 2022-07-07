@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Rename;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace CommunityToolkit.Maui.Analyzers;
 
@@ -24,12 +25,11 @@ public class UseCommunityToolkitInitializationAnalyzerCodeFixProvider : CodeFixP
 	{
 		var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
-		// TODO: Replace the following code with your own analysis, generating a CodeAction for each fix to suggest
 		var diagnostic = context.Diagnostics.First();
 		var diagnosticSpan = diagnostic.Location.SourceSpan;
 
 		// Find the type declaration identified by the diagnostic.
-		var declaration = root?.FindToken(diagnosticSpan.Start).Parent?.AncestorsAndSelf().OfType<InvocationExpressionSyntax>().First() ?? throw new InvalidOperationException();
+		var declaration = root?.FindToken(diagnosticSpan.Start).Parent?.AncestorsAndSelf().OfType<InvocationExpressionSyntax>().Last() ?? throw new InvalidOperationException();
 
 		// Register a code action that will invoke the fix.
 		context.RegisterCodeFix(
@@ -42,22 +42,22 @@ public class UseCommunityToolkitInitializationAnalyzerCodeFixProvider : CodeFixP
 
 	async Task<Document> AddUseCommunityToolkit(Document document, InvocationExpressionSyntax invocationExpression, CancellationToken cancellationToken)
 	{
-		var root = await document.GetSyntaxRootAsync().ConfigureAwait(false);
+		var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 		if (root is null)
 		{
 			return document;
 		}
 
 		var updatedInvocationExpression =
-			SyntaxFactory.InvocationExpression(
-				SyntaxFactory.MemberAccessExpression(
-					SyntaxKind.SimpleMemberAccessExpression, invocationExpression, SyntaxFactory.IdentifierName("UseMauiCommunityToolkit")));
+			InvocationExpression(
+				MemberAccessExpression(
+					SyntaxKind.SimpleMemberAccessExpression, invocationExpression, IdentifierName("UseMauiCommunityToolkit")));
 
 		var mauiCommunityToolkitUsingStatement =
-			SyntaxFactory.UsingDirective(
-				SyntaxFactory.QualifiedName(
-					SyntaxFactory.IdentifierName("CommunityToolkit"),
-					SyntaxFactory.IdentifierName("Maui")));
+			UsingDirective(
+				QualifiedName(
+					IdentifierName("CommunityToolkit"),
+					IdentifierName("Maui")));
 
 		var newRoot = root.ReplaceNode(invocationExpression, updatedInvocationExpression);
 
