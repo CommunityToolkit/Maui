@@ -108,7 +108,7 @@ public static class MauiProgram
 		services.AddTransient<UniformItemsLayoutPage>();
 
 		// Add Views Pages
-		_ = services.AddTransient<AvatarViewPage>();
+		services.AddTransient<AvatarViewPage>();
 		services.AddTransient<CsharpBindingPopup>();
 		services.AddTransient<DrawingViewPage>();
 		services.AddTransient<MultiplePopupPage>();
