@@ -3,8 +3,6 @@
 /// <summary>Avatar view interface.</summary>
 public interface IAvatarView : IBorderView, ILabel, Microsoft.Maui.IImage, IImageSource
 {
-	#region Public Property
-
 	//// NOTE to implementer: Implement the following properties as public.
 
 	/// <summary>Gets a value indicating the avatar border colour.</summary>
@@ -18,10 +16,6 @@ public interface IAvatarView : IBorderView, ILabel, Microsoft.Maui.IImage, IImag
 
 	/// <summary>Gets a value indicating the avatar padding.</summary>
 	Thickness AvatarPadding { get; }
-
-	#endregion Public Property
-
-	#region Explicit methods
 
 	//// NOTE to implementer: Implement these methods explicitly
 
@@ -63,5 +57,4 @@ public interface IAvatarView : IBorderView, ILabel, Microsoft.Maui.IImage, IImag
 	/// <param name="oldValue">Old value</param>
 	/// <param name="newValue">New Value</param>
 	void OnBorderColorPropertyChanged(Color oldValue, Color newValue);
-	#endregion Explicit methods
 }
