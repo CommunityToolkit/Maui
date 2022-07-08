@@ -253,6 +253,14 @@ public class AvatarView : Border, IAvatarView, IFontElement, ITextElement, IImag
 
 	bool IAvatarView.IsTextSet() => IsSet(TextProperty);
 
+	bool IAvatarView.IsBorderColorSet() => IsSet(BorderColorProperty);
+
+	bool IAvatarView.IsBorderWidthSet() => IsSet(BorderWidthProperty);
+
+	bool IAvatarView.IsCornerRadiusSet() => IsSet(CornerRadiusProperty);
+
+	bool IAvatarView.IsImageSourceSet() => IsSet(ImageSourceProperty);
+
 	void IAvatarView.OnBorderColorPropertyChanged(Color oldValue, Color newValue) => Stroke = newValue;
 
 	void IAvatarView.OnBorderWidthPropertyChanged(double oldValue, double newValue) => StrokeThickness = newValue;
