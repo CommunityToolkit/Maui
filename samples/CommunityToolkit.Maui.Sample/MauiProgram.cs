@@ -190,7 +190,7 @@ public static class MauiProgram
 		services.AddTransient<UniformItemsLayoutViewModel>();
 
 		// Add Views View Models
-		_ = services.AddTransient<AvatarViewViewModel>();
+		services.AddTransient<AvatarViewViewModel>();
 		services.AddTransient<CsharpBindingPopupViewModel>();
 		services.AddTransient<DrawingViewViewModel>();
 		services.AddTransient<MultiplePopupViewModel>();
