@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<mct:Popup
+    x:Class="CommunityToolkit.Maui.Sample.SamplesAvatarView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit">
+    <ScrollView>
+        <VerticalStackLayout Style="{StaticResource PopupLayout}">
+
+            <VerticalStackLayout.Resources>
+                <ResourceDictionary>
+                    <Style x:Key="Title" TargetType="Label">
+                        <Setter Property="FontSize" Value="26" />
+                        <Setter Property="FontAttributes" Value="Bold" />
+                        <Setter Property="TextColor" Value="#000" />
+                        <Setter Property="VerticalTextAlignment" Value="Start" />
+                        <Setter Property="HorizontalTextAlignment" Value="Start" />
+                        <Setter Property="LineBreakMode" Value="WordWrap" />
+                    </Style>
+                    <Style x:Key="Divider" TargetType="BoxView">
+                        <Setter Property="HeightRequest" Value="1" />
+                        <Setter Property="Margin" Value="50, 25" />
+                        <Setter Property="Color" Value="#c3c3c3" />
+                    </Style>
+                    <Style x:Key="AvatarViewSamplesBase" TargetType="mct:AvatarView">
+                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                        <!--  The actress who played Neytiri in Avatar (2009) is Zoe Saldana (ZS)  -->
+                        <Setter Property="Text" Value="ZS" />
+                        <Setter Property="TextColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
+                        <Setter Property="BorderColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
+                    </Style>
+                    <Style
+                        x:Key="KeyboardKey"
+                        BasedOn="{StaticResource AvatarViewSamplesBase}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="CornerRadius" Value="32,32,32,32" />
+                        <Setter Property="WidthRequest" Value="96" />
+                        <Setter Property="HeightRequest" Value="64" />
+                        <Setter Property="Margin" Value="0" />
+                        <Setter Property="BorderColor" Value="White" />
+                        <Setter Property="TextColor" Value="White" />
+                    </Style>
+                    <Style
+                        x:Key="KeyboardKeyNumber"
+                        BasedOn="{StaticResource KeyboardKey}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="BackgroundColor" Value="#80AA0000" />
+                    </Style>
+                    <Style
+                        x:Key="KeyboardKeyChar"
+                        BasedOn="{StaticResource KeyboardKey}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="BackgroundColor" Value="#30AA0000" />
+                    </Style>
+                    <Style x:Key="SampleKeyboard" TargetType="Grid">
+                        <Setter Property="Padding" Value="4,4" />
+                        <Setter Property="BackgroundColor" Value="Red" />
+                        <Setter Property="ColumnSpacing" Value="4" />
+                        <Setter Property="RowSpacing" Value="4" />
+                        <Setter Property="HorizontalOptions" Value="Start" />
+                        <Setter Property="RowDefinitions" Value="64,64,64,64" />
+                        <Setter Property="ColumnDefinitions" Value="96,96,96" />
+                    </Style>
+                    <Style x:Key="DaysOfTheWeekGrid" TargetType="Grid">
+                        <Setter Property="Padding" Value="4,4" />
+                        <Setter Property="ColumnDefinitions" Value="64,64,64,64,64,64,64" />
+                        <Setter Property="ColumnSpacing" Value="4" />
+                        <Setter Property="HorizontalOptions" Value="Start" />
+                        <Setter Property="RowDefinitions" Value="Auto" />
+                    </Style>
+                    <Style
+                        x:Key="DayOfWeekDay"
+                        BasedOn="{StaticResource AvatarViewSamplesBase}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="BorderColor" Value="{AppThemeBinding Dark=White, Light=Black}" />
+                        <Setter Property="CornerRadius" Value="16" />
+                        <Setter Property="FontSize" Value="Medium" />
+                        <Setter Property="TextColor" Value="Black" />
+                        <Setter Property="WidthRequest" Value="64" />
+                        <Setter Property="HeightRequest" Value="64" />
+                    </Style>
+                </ResourceDictionary>
+            </VerticalStackLayout.Resources>
+
+            <Label Style="{StaticResource Title}" Text="Sample sizes (and fonts) for AvatarView.  AvatarView can be set to any size and supports all font properties." />
+            <BoxView Style="{StaticResource Divider}" />
+            <Label FontSize="Subtitle" Text="Keyboard" />
+            <Grid SemanticProperties.Description="Sample idea for using AvatarView to draw a keyboard." Style="{StaticResource SampleKeyboard}">
+                <mct:AvatarView
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    SemanticProperties.Description="Keyboard number 1"
+                    Style="{StaticResource KeyboardKeyNumber}"
+                    Text="1" />
+                <mct:AvatarView
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    SemanticProperties.Description="Keyboard number 2"
+                    Style="{StaticResource KeyboardKeyNumber}"
+                    Text="2" />
+                <mct:AvatarView
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    SemanticProperties.Description="Keyboard number 3"
+                    Style="{StaticResource KeyboardKeyNumber}"
+                    Text="3" />
+                <mct:AvatarView
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    SemanticProperties.Description="Keyboard number 4"
+                    Style="{StaticResource KeyboardKeyNumber}"
+                    Text="4" />
+                <mct:AvatarView
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    SemanticProperties.Description="Keyboard number 5"
+                    Style="{StaticResource KeyboardKeyNumber}"
+                    Text="5" />
+                <mct:AvatarView
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    SemanticProperties.Description="Keyboard number 6"
+                    Style="{StaticResource KeyboardKeyNumber}"
+                    Text="6" />
+                <mct:AvatarView
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    SemanticProperties.Description="Keyboard number 7"
+                    Style="{StaticResource KeyboardKeyNumber}"
+                    Text="7" />
+                <mct:AvatarView
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    SemanticProperties.Description="Keyboard number 8"
+                    Style="{StaticResource KeyboardKeyNumber}"
+                    Text="8" />
+                <mct:AvatarView
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    SemanticProperties.Description="Keyboard number 9"
+                    Style="{StaticResource KeyboardKeyNumber}"
+                    Text="9" />
+                <mct:AvatarView
+                    Grid.Row="3"
+                    Grid.Column="0"
+                    SemanticProperties.Description="Keyboard comma"
+                    Style="{StaticResource KeyboardKeyChar}"
+                    Text="," />
+                <mct:AvatarView
+                    Grid.Row="3"
+                    Grid.Column="1"
+                    SemanticProperties.Description="Keyboard number 0"
+                    Style="{StaticResource KeyboardKeyNumber}"
+                    Text="0" />
+                <mct:AvatarView
+                    Grid.Row="3"
+                    Grid.Column="2"
+                    SemanticProperties.Description="Keyboard period"
+                    Style="{StaticResource KeyboardKeyChar}"
+                    Text="." />
+            </Grid>
+            <BoxView Style="{StaticResource Divider}" />
+            <Label FontSize="Subtitle" Text="Days of the week" />
+            <Grid Style="{StaticResource DaysOfTheWeekGrid}">
+                <mct:AvatarView
+                    Grid.Column="0"
+                    BackgroundColor="#ABDEE6"
+                    Style="{StaticResource DayOfWeekDay}"
+                    Text="MON" />
+                <mct:AvatarView
+                    Grid.Column="1"
+                    BackgroundColor="#CBAACB"
+                    Style="{StaticResource DayOfWeekDay}"
+                    Text="TUE" />
+                <mct:AvatarView
+                    Grid.Column="2"
+                    BackgroundColor="#FFFF85"
+                    Style="{StaticResource DayOfWeekDay}"
+                    Text="WED" />
+                <mct:AvatarView
+                    Grid.Column="3"
+                    BackgroundColor="#FFCC86"
+                    Style="{StaticResource DayOfWeekDay}"
+                    Text="THU" />
+                <mct:AvatarView
+                    Grid.Column="4"
+                    BackgroundColor="#F3B0C3"
+                    Style="{StaticResource DayOfWeekDay}"
+                    Text="FRI" />
+                <mct:AvatarView
+                    Grid.Column="5"
+                    BackgroundColor="#CCE2CB"
+                    Style="{StaticResource DayOfWeekDay}"
+                    Text="SAT" />
+                <mct:AvatarView
+                    Grid.Column="6"
+                    BackgroundColor="#97C1A9"
+                    Style="{StaticResource DayOfWeekDay}"
+                    Text="SUN" />
+            </Grid>
+        </VerticalStackLayout>
+    </ScrollView>
+</mct:Popup>

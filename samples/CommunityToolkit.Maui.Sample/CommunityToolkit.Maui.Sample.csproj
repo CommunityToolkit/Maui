@@ -58,6 +58,63 @@
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.SourceGenerators\CommunityToolkit.Maui.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Views\AvatarViews\ColoursAvatarView.xaml.cs">
+      <DependentUpon>ColoursAvatarView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\AvatarViews\ShadowsAvatarView.xaml.cs">
+      <DependentUpon>ShadowsAvatarView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\AvatarViews\ShapesAvatarView.xaml.cs">
+      <DependentUpon>ShapesAvatarView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\AvatarViews\ImagesAvatarView.xaml.cs">
+      <DependentUpon>ImagesAvatarView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\AvatarViews\BordersAvatarView.xaml.cs">
+      <DependentUpon>BordersAvatarView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\AvatarViews\GesturesAvatarView.xaml.cs">
+      <DependentUpon>GesturesAvatarView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\AvatarViews\BindableLayoutsAvatarView.xaml.cs">
+      <DependentUpon>BindableLayoutsAvatarView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\AvatarViews\SamplesAvatarView.xaml.cs">
+      <DependentUpon>SamplesAvatarView.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <MauiXaml Update="Views\AvatarViews\ColoursAvatarView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\AvatarViews\ShadowsAvatarView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\AvatarViews\ShapesAvatarView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\AvatarViews\ImagesAvatarView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\AvatarViews\BordersAvatarView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\AvatarViews\GesturesAvatarView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\AvatarViews\BindableLayoutsAvatarView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\AvatarViews\SamplesAvatarView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\AvatarViews\SizesAvatarView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+  </ItemGroup>
+
   <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
     <RuntimeIdentifiers>android-arm;android-arm64;android-x86;android-x64</RuntimeIdentifiers>
   </PropertyGroup>
