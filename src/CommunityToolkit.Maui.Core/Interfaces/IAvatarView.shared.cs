@@ -25,6 +25,22 @@ public interface IAvatarView : IBorderView, ILabel, Microsoft.Maui.IImage, IImag
 	/// <summary>Gets a value indicating the text default.</summary>
 	string TextDefaultValue { get; }
 
+	/// <summary>Indicates whether border colour is set.</summary>
+	/// <returns>True if set.</returns>
+	bool IsBorderColorSet();
+
+	/// <summary>Indicates whether border width is set.</summary>
+	/// <returns>True if set.</returns>
+	bool IsBorderWidthSet();
+
+	/// <summary>Indicates whether corner radius is set.</summary>
+	/// <returns>True if set.</returns>
+	bool IsCornerRadiusSet();
+
+	/// <summary>Indicates whether image source is set.</summary>
+	/// <returns>True if set.</returns>
+	bool IsImageSourceSet();
+
 	/// <summary>Indicates whether avatar text is set.</summary>
 	/// <returns>True if set.</returns>
 	bool IsTextSet();
