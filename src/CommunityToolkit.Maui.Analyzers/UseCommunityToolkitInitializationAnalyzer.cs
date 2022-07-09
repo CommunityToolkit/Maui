@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Threading;
+﻿using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -17,7 +13,7 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 
 	const string category = "Initialization";
 	static readonly LocalizableString title = new LocalizableResourceString(nameof(Resources.InitializationErrorTitle), Resources.ResourceManager, typeof(Resources));
-	static readonly LocalizableString messageFormat = new LocalizableResourceString(nameof(Resources.InitalizationMessageFormat), Resources.ResourceManager, typeof(Resources));
+	static readonly LocalizableString messageFormat = new LocalizableResourceString(nameof(Resources.IniitalizationMessageFormat), Resources.ResourceManager, typeof(Resources));
 	static readonly LocalizableString description = new LocalizableResourceString(nameof(Resources.InitializationErrorMessage), Resources.ResourceManager, typeof(Resources));
 
 	static readonly DiagnosticDescriptor rule = new(DiagnosticId, title, messageFormat, category, DiagnosticSeverity.Error, isEnabledByDefault: true, description: description);
@@ -34,6 +30,12 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 	static void AnalyzeNode(SyntaxNodeAnalysisContext context)
 	{
 		var expressionStatement = (ExpressionStatementSyntax)context.Node;
+		var root = expressionStatement.SyntaxTree.GetRoot();
+
+		if (HasUseMauiCommunityToolkit(root))
+		{
+			return;
+		}
 
 		if (expressionStatement.ToString().Contains("UseMauiApp<")
 			&& !expressionStatement.ToString().Contains(".UseMauiCommunityToolkit("))
@@ -42,6 +44,20 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 			var diagnostic = Diagnostic.Create(rule, expression.GetLocation());
 			context.ReportDiagnostic(diagnostic);
 		}
+	}
+
+	static bool HasUseMauiCommunityToolkit(SyntaxNode root)
+	{
+
+		foreach (var method in root.DescendantNodes().OfType<MethodDeclarationSyntax>())
+		{
+			if (method.DescendantNodes().OfType<ExpressionStatementSyntax>().Any(x => x.ToString().Contains(".UseMauiCommunityToolkit(")))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	static InvocationExpressionSyntax GetInvocationExpressionSyntax(SyntaxNode parent)
