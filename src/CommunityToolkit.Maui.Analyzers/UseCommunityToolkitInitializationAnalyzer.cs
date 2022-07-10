@@ -13,7 +13,7 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 
 	const string category = "Initialization";
 	static readonly LocalizableString title = new LocalizableResourceString(nameof(Resources.InitializationErrorTitle), Resources.ResourceManager, typeof(Resources));
-	static readonly LocalizableString messageFormat = new LocalizableResourceString(nameof(Resources.IniitalizationMessageFormat), Resources.ResourceManager, typeof(Resources));
+	static readonly LocalizableString messageFormat = new LocalizableResourceString(nameof(Resources.InitalizationMessageFormat), Resources.ResourceManager, typeof(Resources));
 	static readonly LocalizableString description = new LocalizableResourceString(nameof(Resources.InitializationErrorMessage), Resources.ResourceManager, typeof(Resources));
 
 	static readonly DiagnosticDescriptor rule = new(DiagnosticId, title, messageFormat, category, DiagnosticSeverity.Error, isEnabledByDefault: true, description: description);
