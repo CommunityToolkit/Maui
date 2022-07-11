@@ -14,9 +14,6 @@ public interface IAvatarView : IBorderView, ILabel, Microsoft.Maui.IImage, IImag
 	/// <summary>Gets a value indicating the avatar corner radius (MAUI).</summary>
 	CornerRadius CornerRadius { get; }
 
-	/// <summary>Gets a value indicating the avatar padding.</summary>
-	Thickness AvatarPadding { get; }
-
 	//// NOTE to implementer: Implement these methods explicitly
 
 	/// <summary>Gets a value indicating the corner radius default.</summary>
