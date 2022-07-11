@@ -64,13 +64,6 @@ public class AvatarView : Border, IAvatarView, IFontElement, ITextElement, IImag
 		InvalidateMeasure();
 	}
 
-	/// <summary>Gets or sets the avatar padding property.</summary>
-	public Thickness AvatarPadding
-	{
-		get => (Thickness)GetValue(PaddingElement.PaddingProperty);
-		set => SetValue(PaddingElement.PaddingProperty, value);
-	}
-
 	/// <summary>Gets or sets a value of the avatar border colour.</summary>
 	public Color BorderColor
 	{

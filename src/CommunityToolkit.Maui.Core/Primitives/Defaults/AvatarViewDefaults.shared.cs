@@ -12,7 +12,7 @@ public static class AvatarViewDefaults
 
 	/// <summary>Default height request.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const double DefaultHeightRequest = 64;
+	public const double DefaultHeightRequest = 48;
 
 	/// <summary>Default avatar text.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
@@ -20,7 +20,7 @@ public static class AvatarViewDefaults
 
 	/// <summary>Default width request.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const double DefaultWidthRequest = 64;
+	public const double DefaultWidthRequest = 48;
 
 	/// <summary>Default Font Size</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
@@ -32,5 +32,5 @@ public static class AvatarViewDefaults
 
 	/// <summary>Default corner radius.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static CornerRadius DefaultCornerRadius { get; } = new(50, 50, 50, 50);
+	public static CornerRadius DefaultCornerRadius { get; } = new(24, 24, 24, 24);
 }
