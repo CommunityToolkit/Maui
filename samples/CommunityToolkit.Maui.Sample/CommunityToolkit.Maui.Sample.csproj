@@ -62,6 +62,9 @@
     <Compile Update="Views\AvatarViews\ColoursAvatarView.xaml.cs">
       <DependentUpon>ColoursAvatarView.xaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\AvatarViews\SamplesDOWAvatarView.xaml.cs">
+      <DependentUpon>SamplesDOWAvatarView.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\AvatarViews\ShadowsAvatarView.xaml.cs">
       <DependentUpon>ShadowsAvatarView.xaml</DependentUpon>
     </Compile>
@@ -80,13 +83,16 @@
     <Compile Update="Views\AvatarViews\BindableLayoutsAvatarView.xaml.cs">
       <DependentUpon>BindableLayoutsAvatarView.xaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\AvatarViews\SamplesAvatarView.xaml.cs">
-      <DependentUpon>SamplesAvatarView.xaml</DependentUpon>
+    <Compile Update="Views\AvatarViews\SamplesKeyboardAvatarView.xaml.cs">
+      <DependentUpon>SamplesKeyboardAvatarView.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
 
   <ItemGroup>
     <MauiXaml Update="Views\AvatarViews\ColoursAvatarView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\AvatarViews\SamplesDOWAvatarView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
     <MauiXaml Update="Views\AvatarViews\ShadowsAvatarView.xaml">
@@ -107,7 +113,7 @@
     <MauiXaml Update="Views\AvatarViews\BindableLayoutsAvatarView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
-    <MauiXaml Update="Views\AvatarViews\SamplesAvatarView.xaml">
+    <MauiXaml Update="Views\AvatarViews\SamplesKeyboardAvatarView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
     <MauiXaml Update="Views\AvatarViews\SizesAvatarView.xaml">

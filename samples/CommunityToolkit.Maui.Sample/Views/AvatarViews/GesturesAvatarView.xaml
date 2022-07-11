@@ -27,56 +27,67 @@
                     <Setter Property="Text" Value="ZS" />
                     <Setter Property="TextColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
                     <Setter Property="BorderColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
-                    <Setter Property="Margin" Value="8" />
+                    <Setter Property="Margin" Value="4" />
                 </Style>
                 <Style
                     x:Key="AvatarViewGesturesDefault"
                     BasedOn="{StaticResource AvatarViewGesturesBase}"
                     TargetType="mct:AvatarView">
-                    <Setter Property="WidthRequest" Value="96" />
-                    <Setter Property="HeightRequest" Value="64" />
+                    <Setter Property="WidthRequest" Value="48" />
+                    <Setter Property="HeightRequest" Value="48" />
                 </Style>
             </ResourceDictionary>
         </VerticalStackLayout.Resources>
 
-        <Label Style="{StaticResource Title}" Text="Sample gestures for AvatarView.  AvatarView supports all standard gestures." />
+        <Label Style="{StaticResource Title}" Text="Sample gestures." />
+        <Label Text="AvatarView supports gestures." />
         <BoxView Style="{StaticResource Divider}" />
         <mct:AvatarView
+            HeightRequest="48"
             SemanticProperties.Description="Sample AvatarView providing drag gesture recognizer."
             Style="{StaticResource AvatarViewGesturesDefault}"
-            Text="Drag">
+            Text="Drag"
+            WidthRequest="48">
             <mct:AvatarView.GestureRecognizers>
                 <DragGestureRecognizer DragStarting="DragGestureRecognizer_DragStarting" />
             </mct:AvatarView.GestureRecognizers>
         </mct:AvatarView>
         <mct:AvatarView
+            HeightRequest="48"
             SemanticProperties.Description="Sample AvatarView providing pinch gesture recognizer."
             Style="{StaticResource AvatarViewGesturesDefault}"
-            Text="Pinch">
+            Text="Pinch"
+            WidthRequest="48">
             <mct:AvatarView.GestureRecognizers>
                 <PinchGestureRecognizer PinchUpdated="PinchGestureRecognizer_PinchUpdated" />
             </mct:AvatarView.GestureRecognizers>
         </mct:AvatarView>
         <mct:AvatarView
+            HeightRequest="48"
             SemanticProperties.Description="Sample AvatarView providing pan gesture recognizer."
             Style="{StaticResource AvatarViewGesturesDefault}"
-            Text="Pan">
+            Text="Pan"
+            WidthRequest="48">
             <mct:AvatarView.GestureRecognizers>
                 <PanGestureRecognizer PanUpdated="PanGestureRecognizer_PanUpdated" />
             </mct:AvatarView.GestureRecognizers>
         </mct:AvatarView>
         <mct:AvatarView
+            HeightRequest="48"
             SemanticProperties.Description="Sample AvatarView providing swipe gesture recognizer."
             Style="{StaticResource AvatarViewGesturesDefault}"
-            Text="Swipe">
+            Text="Swipe"
+            WidthRequest="48">
             <mct:AvatarView.GestureRecognizers>
                 <SwipeGestureRecognizer Direction="Left" Swiped="SwipeGestureRecognizer_Swiped" />
             </mct:AvatarView.GestureRecognizers>
         </mct:AvatarView>
         <mct:AvatarView
+            HeightRequest="48"
             SemanticProperties.Description="Sample AvatarView providing tap gesture recognizer."
             Style="{StaticResource AvatarViewGesturesDefault}"
-            Text="Tap">
+            Text="Tap"
+            WidthRequest="48">
             <mct:AvatarView.GestureRecognizers>
                 <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped" />
             </mct:AvatarView.GestureRecognizers>

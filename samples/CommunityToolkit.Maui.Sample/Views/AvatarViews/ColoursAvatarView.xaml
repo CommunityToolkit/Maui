@@ -4,80 +4,95 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit">
-    <ScrollView>
-        <VerticalStackLayout Style="{StaticResource PopupLayout}">
+    <VerticalStackLayout Style="{StaticResource PopupLayout}">
 
-            <VerticalStackLayout.Resources>
-                <ResourceDictionary>
-                    <Style x:Key="Title" TargetType="Label">
-                        <Setter Property="FontSize" Value="26" />
-                        <Setter Property="FontAttributes" Value="Bold" />
-                        <Setter Property="TextColor" Value="#000" />
-                        <Setter Property="VerticalTextAlignment" Value="Start" />
-                        <Setter Property="HorizontalTextAlignment" Value="Start" />
-                        <Setter Property="LineBreakMode" Value="WordWrap" />
-                    </Style>
-                    <Style x:Key="Divider" TargetType="BoxView">
-                        <Setter Property="HeightRequest" Value="1" />
-                        <Setter Property="Margin" Value="50, 25" />
-                        <Setter Property="Color" Value="#c3c3c3" />
-                    </Style>
-                    <Style x:Key="AvatarViewColoursBase" TargetType="mct:AvatarView">
-                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=Black, Dark=White}" />
-                        <!--  The actress who played Neytiri in Avatar (2009) is Zoe Saldana (ZS)  -->
-                        <Setter Property="Text" Value="ZS" />
-                        <Setter Property="TextColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
-                        <Setter Property="BorderColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
-                        <Setter Property="Margin" Value="8" />
-                    </Style>
-                    <Style
-                        x:Key="AvatarViewColoursDefault"
-                        BasedOn="{StaticResource AvatarViewColoursBase}"
-                        TargetType="mct:AvatarView">
-                        <Setter Property="WidthRequest" Value="64" />
-                        <Setter Property="HeightRequest" Value="64" />
-                    </Style>
-                    <Style
-                        x:Key="AvatarViewYellowRedGreen"
-                        BasedOn="{StaticResource AvatarViewColoursDefault}"
-                        TargetType="mct:AvatarView">
-                        <Setter Property="BorderColor" Value="Yellow" />
-                        <Setter Property="BackgroundColor" Value="Red" />
-                        <Setter Property="TextColor" Value="Green" />
-                    </Style>
-                    <Style
-                        x:Key="AvatarViewRedGreenBlue"
-                        BasedOn="{StaticResource AvatarViewColoursDefault}"
-                        TargetType="mct:AvatarView">
-                        <Setter Property="BorderColor" Value="Red" />
-                        <Setter Property="BackgroundColor" Value="Green" />
-                        <Setter Property="TextColor" Value="Blue" />
-                    </Style>
-                    <Style
-                        x:Key="AvatarViewBlackBlueYellow"
-                        BasedOn="{StaticResource AvatarViewColoursDefault}"
-                        TargetType="mct:AvatarView">
-                        <Setter Property="BorderColor" Value="Black" />
-                        <Setter Property="BackgroundColor" Value="Blue" />
-                        <Setter Property="TextColor" Value="Yellow" />
-                    </Style>
-                    <Style
-                        x:Key="AvatarViewWhiteBlueYellow"
-                        BasedOn="{StaticResource AvatarViewColoursDefault}"
-                        TargetType="mct:AvatarView">
-                        <Setter Property="BorderColor" Value="White" />
-                        <Setter Property="BackgroundColor" Value="Blue" />
-                        <Setter Property="TextColor" Value="Yellow" />
-                    </Style>
-                </ResourceDictionary>
-            </VerticalStackLayout.Resources>
+        <VerticalStackLayout.Resources>
+            <ResourceDictionary>
+                <Style x:Key="Title" TargetType="Label">
+                    <Setter Property="FontSize" Value="26" />
+                    <Setter Property="FontAttributes" Value="Bold" />
+                    <Setter Property="TextColor" Value="#000" />
+                    <Setter Property="VerticalTextAlignment" Value="Start" />
+                    <Setter Property="HorizontalTextAlignment" Value="Start" />
+                    <Setter Property="LineBreakMode" Value="WordWrap" />
+                </Style>
+                <Style x:Key="Divider" TargetType="BoxView">
+                    <Setter Property="HeightRequest" Value="1" />
+                    <Setter Property="Margin" Value="50, 25" />
+                    <Setter Property="Color" Value="#c3c3c3" />
+                </Style>
+                <Style x:Key="AvatarViewColoursBase" TargetType="mct:AvatarView">
+                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                    <!--  The actress who played Neytiri in Avatar (2009) is Zoe Saldana (ZS)  -->
+                    <Setter Property="Text" Value="ZS" />
+                    <Setter Property="TextColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
+                    <Setter Property="BorderColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
+                    <Setter Property="Margin" Value="8" />
+                </Style>
+                <Style
+                    x:Key="AvatarViewColoursDefault"
+                    BasedOn="{StaticResource AvatarViewColoursBase}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="WidthRequest" Value="48" />
+                    <Setter Property="HeightRequest" Value="48" />
+                </Style>
+                <Style
+                    x:Key="AvatarViewYellowRedGreen"
+                    BasedOn="{StaticResource AvatarViewColoursDefault}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="BorderColor" Value="Yellow" />
+                    <Setter Property="BackgroundColor" Value="Red" />
+                    <Setter Property="TextColor" Value="Green" />
+                </Style>
+                <Style
+                    x:Key="AvatarViewRedGreenBlue"
+                    BasedOn="{StaticResource AvatarViewColoursDefault}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="BorderColor" Value="Red" />
+                    <Setter Property="BackgroundColor" Value="Green" />
+                    <Setter Property="TextColor" Value="Blue" />
+                </Style>
+                <Style
+                    x:Key="AvatarViewBlackBlueYellow"
+                    BasedOn="{StaticResource AvatarViewColoursDefault}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="BorderColor" Value="Black" />
+                    <Setter Property="BackgroundColor" Value="Blue" />
+                    <Setter Property="TextColor" Value="Yellow" />
+                </Style>
+                <Style
+                    x:Key="AvatarViewWhiteBlueYellow"
+                    BasedOn="{StaticResource AvatarViewColoursDefault}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="BorderColor" Value="White" />
+                    <Setter Property="BackgroundColor" Value="Blue" />
+                    <Setter Property="TextColor" Value="Yellow" />
+                </Style>
+            </ResourceDictionary>
+        </VerticalStackLayout.Resources>
 
-            <Label Style="{StaticResource Title}" Text="Samples for AvatarView showing some colour options for border, background and text.  AvatarView supports all colour properties for border, background and text." />
-            <BoxView Style="{StaticResource Divider}" />
-            <mct:AvatarView SemanticProperties.Description="Sample AvatarView showing yellow border, red background and green text." Style="{StaticResource AvatarViewYellowRedGreen}" />
-            <mct:AvatarView SemanticProperties.Description="Sample AvatarView showing red border, green background and blue text." Style="{StaticResource AvatarViewRedGreenBlue}" />
-            <mct:AvatarView SemanticProperties.Description="Sample AvatarView showing black border, blue background and yellow text." Style="{StaticResource AvatarViewBlackBlueYellow}" />
-            <mct:AvatarView SemanticProperties.Description="Sample AvatarView showing white border, blue background and yellow text." Style="{StaticResource AvatarViewWhiteBlueYellow}" />
-        </VerticalStackLayout>
-    </ScrollView>
+        <Label Style="{StaticResource Title}" Text="Sample colours." />
+        <Label Text="AvatarView supports all colour properties for border, background and text." />
+        <BoxView Style="{StaticResource Divider}" />
+        <mct:AvatarView
+            HeightRequest="48"
+            SemanticProperties.Description="Sample AvatarView showing yellow border, red background and green text."
+            Style="{StaticResource AvatarViewYellowRedGreen}"
+            WidthRequest="48" />
+        <mct:AvatarView
+            HeightRequest="48"
+            SemanticProperties.Description="Sample AvatarView showing red border, green background and blue text."
+            Style="{StaticResource AvatarViewRedGreenBlue}"
+            WidthRequest="48" />
+        <mct:AvatarView
+            HeightRequest="48"
+            SemanticProperties.Description="Sample AvatarView showing black border, blue background and yellow text."
+            Style="{StaticResource AvatarViewBlackBlueYellow}"
+            WidthRequest="48" />
+        <mct:AvatarView
+            HeightRequest="48"
+            SemanticProperties.Description="Sample AvatarView showing white border, blue background and yellow text."
+            Style="{StaticResource AvatarViewWhiteBlueYellow}"
+            WidthRequest="48" />
+    </VerticalStackLayout>
 </mct:Popup>

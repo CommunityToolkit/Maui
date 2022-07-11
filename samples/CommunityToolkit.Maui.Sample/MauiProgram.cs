@@ -191,6 +191,7 @@ public static class MauiProgram
 
 		// Add Views View Models
 		services.AddTransient<AvatarViewViewModel>();
+		services.AddTransient<AvatarViewBindingPopupViewModel>();
 		services.AddTransient<CsharpBindingPopupViewModel>();
 		services.AddTransient<DrawingViewViewModel>();
 		services.AddTransient<MultiplePopupViewModel>();

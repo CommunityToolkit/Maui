@@ -4,52 +4,54 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-    xmlns:models="clr-namespace:CommunityToolkit.Maui.Sample.Models">
-    <ScrollView>
-        <VerticalStackLayout Style="{StaticResource PopupLayout}">
+    xmlns:models="clr-namespace:CommunityToolkit.Maui.Sample.Models"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+    x:DataType="vm:AvatarViewBindingPopupViewModel">
+    <VerticalStackLayout Style="{StaticResource PopupLayout}">
+        <VerticalStackLayout.Resources>
+            <ResourceDictionary>
+                <Style x:Key="Title" TargetType="Label">
+                    <Setter Property="FontSize" Value="26" />
+                    <Setter Property="FontAttributes" Value="Bold" />
+                    <Setter Property="TextColor" Value="#000" />
+                    <Setter Property="VerticalTextAlignment" Value="Start" />
+                    <Setter Property="HorizontalTextAlignment" Value="Start" />
+                    <Setter Property="LineBreakMode" Value="WordWrap" />
+                </Style>
+                <Style x:Key="Divider" TargetType="BoxView">
+                    <Setter Property="HeightRequest" Value="1" />
+                    <Setter Property="Margin" Value="50, 25" />
+                    <Setter Property="Color" Value="#c3c3c3" />
+                </Style>
+            </ResourceDictionary>
+        </VerticalStackLayout.Resources>
 
-            <VerticalStackLayout.Resources>
-                <ResourceDictionary>
-                    <Style x:Key="Title" TargetType="Label">
-                        <Setter Property="FontSize" Value="26" />
-                        <Setter Property="FontAttributes" Value="Bold" />
-                        <Setter Property="TextColor" Value="#000" />
-                        <Setter Property="VerticalTextAlignment" Value="Start" />
-                        <Setter Property="HorizontalTextAlignment" Value="Start" />
-                        <Setter Property="LineBreakMode" Value="WordWrap" />
-                    </Style>
-                    <Style x:Key="Divider" TargetType="BoxView">
-                        <Setter Property="HeightRequest" Value="1" />
-                        <Setter Property="Margin" Value="50, 25" />
-                        <Setter Property="Color" Value="#c3c3c3" />
-                    </Style>
-                </ResourceDictionary>
-            </VerticalStackLayout.Resources>
-
-            <Label Style="{StaticResource Title}" Text="Sample AvatarView using bindable layout." />
-            <BoxView Style="{StaticResource Divider}" />
-            <CollectionView HorizontalOptions="Start" ItemsSource="{Binding AvatarList}">
-                <CollectionView.ItemsLayout>
-                    <LinearItemsLayout ItemSpacing="8" Orientation="Vertical" />
-                </CollectionView.ItemsLayout>
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="models:AvatarModel">
-                        <mct:AvatarView
-                            Padding="{Binding Padding}"
-                            BackgroundColor="{Binding BackgroundColor}"
-                            BorderColor="{Binding BorderColor}"
-                            BorderWidth="{Binding BorderWidth}"
-                            CornerRadius="{Binding CornerRadius}"
-                            FontAttributes="{Binding FontAttributes}"
-                            FontSize="{Binding FontSize}"
-                            HeightRequest="{Binding HeightRequest}"
-                            ImageSource="{Binding ImageSource}"
-                            Text="{Binding Text}"
-                            TextColor="{Binding TextColor}"
-                            WidthRequest="{Binding WidthRequest}" />
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-        </VerticalStackLayout>
-    </ScrollView>
+        <Label Style="{StaticResource Title}" Text="Sample bindable layout." />
+        <BoxView Style="{StaticResource Divider}" />
+        <CollectionView
+            Margin="4"
+            HorizontalOptions="Start"
+            ItemsSource="{Binding AvatarList}">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout ItemSpacing="8" Orientation="Vertical" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:AvatarModel">
+                    <mct:AvatarView
+                        Padding="{Binding Padding}"
+                        BackgroundColor="{Binding BackgroundColor}"
+                        BorderColor="{Binding BorderColor}"
+                        BorderWidth="{Binding BorderWidth}"
+                        CornerRadius="{Binding CornerRadius}"
+                        FontAttributes="{Binding FontAttributes}"
+                        FontSize="{Binding FontSize}"
+                        HeightRequest="{Binding HeightRequest}"
+                        ImageSource="{Binding ImageSource}"
+                        Text="{Binding Text}"
+                        TextColor="{Binding TextColor}"
+                        WidthRequest="{Binding WidthRequest}" />
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </VerticalStackLayout>
 </mct:Popup>
