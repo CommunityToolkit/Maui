@@ -8,17 +8,19 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 public partial class AvatarViewPage : BasePage<AvatarViewViewModel>
 {
 	readonly PopupSizeConstants popupSizeConstants;
+	readonly AvatarViewBindingPopupViewModel avatarviewbindingpopupviewmodel;
 
 	/// <summary>Initialises a new instance of the <see cref="AvatarViewPage"/> class.</summary>
-	public AvatarViewPage(PopupSizeConstants popupSizeConstants, AvatarViewViewModel avatarControlViewModel) : base(avatarControlViewModel)
+	public AvatarViewPage(PopupSizeConstants popupSizeConstants, AvatarViewViewModel avatarControlViewModel, AvatarViewBindingPopupViewModel avatarViewBindingPopupViewModel) : base(avatarControlViewModel)
 	{
 		InitializeComponent();
 		this.popupSizeConstants = popupSizeConstants;
+		this.avatarviewbindingpopupviewmodel = avatarViewBindingPopupViewModel;
 	}
 
 	async void HandleBindableLayoutsAvatarViewButtonClicked(object sender, EventArgs e)
 	{
-		BindableLayoutsAvatarView bindableLayoutsView = new(popupSizeConstants);
+		BindableLayoutsAvatarView bindableLayoutsView = new(popupSizeConstants, avatarviewbindingpopupviewmodel);
 		await this.ShowPopupAsync(bindableLayoutsView);
 	}
 
@@ -46,10 +48,16 @@ public partial class AvatarViewPage : BasePage<AvatarViewViewModel>
 		await this.ShowPopupAsync(imagesView);
 	}
 
-	async void HandleSamplesAvatarViewButtonClicked(object sender, EventArgs e)
+	async void HandleSamplesKeyboardAvatarViewButtonClicked(object sender, EventArgs e)
 	{
-		SamplesAvatarView samplesView = new(popupSizeConstants);
-		await this.ShowPopupAsync(samplesView);
+		SamplesKeyboardAvatarView samplesKeyboardView = new(popupSizeConstants);
+		await this.ShowPopupAsync(samplesKeyboardView);
+	}
+
+	async void HandleSamplesDOWAvatarViewButtonClicked(object sender, EventArgs e)
+	{
+		SamplesDOWAvatarView samplesDOWView = new(popupSizeConstants);
+		await this.ShowPopupAsync(samplesDOWView);
 	}
 
 	async void HandleShadowsAvatarViewButtonClicked(object sender, EventArgs e)

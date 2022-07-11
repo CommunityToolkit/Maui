@@ -11,7 +11,7 @@ public sealed class ViewsGalleryViewModel : BaseGalleryViewModel
 			SectionModel.Create<PopupAnchorViewModel>("Anchor Popup", Colors.Red, "Popups can be anchored to other view's on the screen"),
 			SectionModel.Create<MultiplePopupViewModel>("Mutiple Popups Page", Colors.Red, "A page demonstrating multiple different Popups"),
 			SectionModel.Create<DrawingViewViewModel>("DrawingView", Colors.Red, "DrawingView provides a canvas for users to \"paint\" on the screen. The drawing can also be captured and displayed as an Image."),
-			SectionModel.Create<AvatarViewViewModel>("AvatarView", "AvatarView provides a control to display an avatar or the user's initials. The page demonstrates multiple different view options."),
+			SectionModel.Create<AvatarViewViewModel>("AvatarView", Colors.Red, "AvatarView provides a control to display an avatar or the user's initials. The page demonstrates multiple different view options."),
 		})
 	{
 
