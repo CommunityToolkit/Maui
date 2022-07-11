@@ -52,6 +52,7 @@
                     <Setter Property="BackgroundColor" Value="#30AA0000" />
                 </Style>
                 <Style x:Key="SampleKeyboard" TargetType="Grid">
+                    <Setter Property="Margin" Value="4,0" />
                     <Setter Property="Padding" Value="4,4" />
                     <Setter Property="BackgroundColor" Value="Red" />
                     <Setter Property="ColumnSpacing" Value="4" />
