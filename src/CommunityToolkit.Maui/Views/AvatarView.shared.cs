@@ -67,8 +67,8 @@ public class AvatarView : Border, IAvatarView, IFontElement, ITextElement, IImag
 	/// <summary>Gets or sets a value of the avatar border colour.</summary>
 	public Color BorderColor
 	{
-		get => (Color)GetValue(BorderWidthProperty);
-		set => SetValue(BorderWidthProperty, value);
+		get => (Color)GetValue(BorderColorProperty);
+		set => SetValue(BorderColorProperty, value);
 	}
 
 	/// <summary>Gets or sets a value of the avatar border width.</summary>
