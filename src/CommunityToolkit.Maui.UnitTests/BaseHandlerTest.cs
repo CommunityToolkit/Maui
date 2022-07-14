@@ -40,6 +40,7 @@ public abstract class BaseHandlerTest : BaseTest
 	static void CreateAndSetMockApplication()
 	{
 		var appBuilder = MauiApp.CreateBuilder()
+								.UseMauiCommunityToolkit()
 								.UseMauiApp<MockApplication>();
 
 		var mauiApp = appBuilder.Build();
