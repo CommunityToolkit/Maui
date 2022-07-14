@@ -44,10 +44,12 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 			context.ReportDiagnostic(diagnostic);
 		}
 	}
-	static bool CheckIfItIsUseMauiMethod(ExpressionStatementSyntax expressionStatement) => expressionStatement.DescendantNodes()
-			.OfType<GenericNameSyntax>()
-			.Any(x => x.Identifier.ValueText.Equals("UseMauiApp", StringComparison.InvariantCulture)
-			&& x.TypeArgumentList.Arguments.Count is 1);
+
+	static bool CheckIfItIsUseMauiMethod(ExpressionStatementSyntax expressionStatement) => 
+		expressionStatement.DescendantNodes()
+							.OfType<GenericNameSyntax>()
+							.Any(x => x.Identifier.ValueText.Equals("UseMauiApp", StringComparison.InvariantCulture)
+										&& x.TypeArgumentList.Arguments.Count is 1);
 
 	static bool HasUseMauiCommunityToolkit(SyntaxNode root)
 	{
