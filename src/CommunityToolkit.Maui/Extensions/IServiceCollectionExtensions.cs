@@ -1,6 +1,9 @@
 ﻿using System.ComponentModel;
 
-namespace CommunityToolkit.Maui.Extensions;
+/// Using root CommunityToolkit.Maui namespace so these extension methods
+/// light up in MauiProgram when CommunityToolkit.Maui namespace is imported 
+/// for UseMauiCommunityToolkit();
+namespace CommunityToolkit.Maui;
 
 /// <summary>
 /// Extension methods for registering Views and ViewModels in <see cref="IServiceCollection"/>

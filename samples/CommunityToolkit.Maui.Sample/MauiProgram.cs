@@ -11,7 +11,6 @@ using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
-using CommunityToolkit.Maui.Extensions;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
