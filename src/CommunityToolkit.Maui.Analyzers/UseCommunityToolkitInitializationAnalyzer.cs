@@ -37,18 +37,20 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 			return;
 		}
 
-		if (expressionStatement.ToString().Contains("UseMauiApp<")
-			&& !expressionStatement.ToString().Contains(".UseMauiCommunityToolkit("))
+		if (CheckIfItIsUseMauiMethod(expressionStatement))
 		{
 			var expression = GetInvocationExpressionSyntax(expressionStatement);
 			var diagnostic = Diagnostic.Create(rule, expression.GetLocation());
 			context.ReportDiagnostic(diagnostic);
 		}
 	}
+	static bool CheckIfItIsUseMauiMethod(ExpressionStatementSyntax expressionStatement) => expressionStatement.DescendantNodes()
+			.OfType<GenericNameSyntax>()
+			.Any(x => x.Identifier.ValueText.Equals("UseMauiApp", StringComparison.InvariantCulture)
+			&& x.TypeArgumentList.Arguments.Count is 1);
 
 	static bool HasUseMauiCommunityToolkit(SyntaxNode root)
 	{
-
 		foreach (var method in root.DescendantNodes().OfType<MethodDeclarationSyntax>())
 		{
 			if (method.DescendantNodes().OfType<ExpressionStatementSyntax>().Any(x => x.ToString().Contains(".UseMauiCommunityToolkit(")))
