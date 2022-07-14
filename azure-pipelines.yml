@@ -76,16 +76,19 @@ jobs:
         inputs:
           solution: '$(PathToCommunityToolkitAnalyzersCsproj)'
           configuration: 'Release'
+          msbuildArgs: '/restore'
       - task: VSBuild@1
         displayName: 'Build CommunityToolkit.Maui.Analyzers.CodeFixes'
         inputs:
           solution: '$(PathToCommunityToolkitAnalyzersCodeFixCsproj)'
           configuration: 'Release'
+          msbuildArgs: '/restore'
       - task: VSBuild@1
         displayName: 'Build CommunityToolkit.Maui.SourceGenerators'
         inputs:
           solution: '$(PathToCommunityToolkitSourceGeneratorsCsproj)'
           configuration: 'Release'
+          msbuildArgs: '/restore'
       # test
       - task: DotNetCoreCLI@2
         displayName: 'Run CommunityToolkit.Maui Unit Tests'
