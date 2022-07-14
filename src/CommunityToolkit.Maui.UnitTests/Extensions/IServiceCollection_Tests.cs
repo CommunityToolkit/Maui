@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Maui.Extensions;
-using CommunityToolkit.Maui.UnitTests.Mocks;
+﻿using CommunityToolkit.Maui.UnitTests.Mocks;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Extensions;
