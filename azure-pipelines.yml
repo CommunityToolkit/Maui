@@ -102,7 +102,7 @@ jobs:
         inputs:
           command: 'test'
           projects: '$(PathToCommunityToolkitAnalyzersUnitTestCsproj)'
-          arguments: '--configuration Release --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory $(Agent.TempDirectory)'
+          arguments: '--configuration Release
           publishTestResults: false  
       - task: PublishTestResults@2
         displayName: 'Publish Test Results'
