@@ -102,7 +102,7 @@ jobs:
         inputs:
           command: 'test'
           projects: '$(PathToCommunityToolkitAnalyzersUnitTestCsproj)'
-          arguments: '--configuration Release
+          arguments: '--configuration Release'
           publishTestResults: false  
       - task: PublishTestResults@2
         displayName: 'Publish Test Results'
