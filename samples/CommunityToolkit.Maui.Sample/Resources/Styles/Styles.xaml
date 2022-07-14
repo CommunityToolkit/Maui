@@ -374,8 +374,14 @@
         <Setter Property="TextColor" Value="{StaticResource HeadingLabelTextColor}" />
     </Style>
 
+    <Style x:Key="label_section_title" TargetType="Label">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray100}}" />
+        <Setter Property="FontSize" Value="18" />
+    </Style>
+
     <Style x:Key="label_section_text" TargetType="Label">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray300}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}" />
+        <Setter Property="FontSize" Value="14" />
     </Style>
 
     <!--  Values  -->
