@@ -11,6 +11,7 @@ using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
+using CommunityToolkit.Maui.Extensions;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
@@ -28,173 +29,93 @@ public static class MauiProgram
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>();
 		builder.Services.AddSingleton<PopupSizeConstants>();
 
-		RegisterPages(builder.Services);
-		RegisterViewModels(builder.Services);
+		RegisterViewsAndViewModels(builder.Services);
 		RegisterEssentials(builder.Services);
 
 		return builder.Build();
 	}
 
-	static void RegisterPages(in IServiceCollection services)
+	static void RegisterViewsAndViewModels(in IServiceCollection services)
 	{
-		// Add Gallery Pages
-		services.AddTransient<AlertsGalleryPage>();
-		services.AddTransient<BehaviorsGalleryPage>();
-		services.AddTransient<ConvertersGalleryPage>();
-		services.AddTransient<ExtensionsGalleryPage>();
-		services.AddTransient<LayoutsGalleryPage>();
-		services.AddTransient<ViewsGalleryPage>();
+		// Add Gallery Pages / ViewModels
+		services.AddTransient<AlertsGalleryPage, AlertsGalleryViewModel>();
+		services.AddTransient<BehaviorsGalleryPage, BehaviorsGalleryViewModel>();
+		services.AddTransient<ConvertersGalleryPage, ConvertersGalleryViewModel>();
+		services.AddTransient<ExtensionsGalleryPage, ExtensionsGalleryViewModel>();
+		services.AddTransient<LayoutsGalleryPage, LayoutsGalleryViewModel>();
+		services.AddTransient<ViewsGalleryPage, ViewsGalleryViewModel>();
 
-		// Add Alerts Pages
-		services.AddTransient<SnackbarPage>();
-		services.AddTransient<ToastPage>();
+		// Add Alerts Pages / ViewModels
+		services.AddTransient<SnackbarPage, SnackbarViewModel>();
+		services.AddTransient<ToastPage, ToastViewModel>();
 
-		// Add Behaviors Pages
-		services.AddTransient<AnimationBehaviorPage>();
-		services.AddTransient<CharactersValidationBehaviorPage>();
-		services.AddTransient<EmailValidationBehaviorPage>();
-		services.AddTransient<EventToCommandBehaviorPage>();
-		services.AddTransient<IconTintColorBehaviorPage>();
-		services.AddTransient<MaskedBehaviorPage>();
-		services.AddTransient<MaxLengthReachedBehaviorPage>();
-		services.AddTransient<MultiValidationBehaviorPage>();
-		services.AddTransient<NumericValidationBehaviorPage>();
-		services.AddTransient<ProgressBarAnimationBehaviorPage>();
-		services.AddTransient<RequiredStringValidationBehaviorPage>();
-		services.AddTransient<SelectAllTextBehaviorPage>();
-		services.AddTransient<SetFocusOnEntryCompletedBehaviorPage>();
-		services.AddTransient<TextValidationBehaviorPage>();
-		services.AddTransient<UriValidationBehaviorPage>();
-		services.AddTransient<UserStoppedTypingBehaviorPage>();
+		// Add Behaviors Pages / ViewModels
+		services.AddTransient<AnimationBehaviorPage, AnimationBehaviorViewModel>();
+		services.AddTransient<CharactersValidationBehaviorPage, CharactersValidationBehaviorViewModel>();
+		services.AddTransient<EmailValidationBehaviorPage, EmailValidationBehaviorViewModel>();
+		services.AddTransient<EventToCommandBehaviorPage, EventToCommandBehaviorViewModel>();
+		services.AddTransient<IconTintColorBehaviorPage, IconTintColorBehaviorViewModel>();
+		services.AddTransient<MaskedBehaviorPage, MaskedBehaviorViewModel>();
+		services.AddTransient<MaxLengthReachedBehaviorPage, MaxLengthReachedBehaviorViewModel>();
+		services.AddTransient<MultiValidationBehaviorPage, MultiValidationBehaviorViewModel>();
+		services.AddTransient<NumericValidationBehaviorPage, NumericValidationBehaviorViewModel>();
+		services.AddTransient<ProgressBarAnimationBehaviorPage, ProgressBarAnimationBehaviorViewModel>();
+		services.AddTransient<RequiredStringValidationBehaviorPage, RequiredStringValidationBehaviorViewModel>();
+		services.AddTransient<SelectAllTextBehaviorPage, SelectAllTextBehaviorViewModel>();
+		services.AddTransient<SetFocusOnEntryCompletedBehaviorPage, SetFocusOnEntryCompletedBehaviorViewModel>();
+		services.AddTransient<TextValidationBehaviorPage, TextValidationBehaviorViewModel>();
+		services.AddTransient<UriValidationBehaviorPage, UriValidationBehaviorViewModel>();
+		services.AddTransient<UserStoppedTypingBehaviorPage, UserStoppedTypingBehaviorViewModel>();
 
-		// Add Converters Pages
-		services.AddTransient<BoolToObjectConverterPage>();
-		services.AddTransient<ByteArrayToImageSourceConverterPage>();
-		services.AddTransient<ColorsConverterPage>();
-		services.AddTransient<CompareConverterPage>();
-		services.AddTransient<DateTimeOffsetConverterPage>();
-		services.AddTransient<DoubleToIntConverterPage>();
-		services.AddTransient<EnumToBoolConverterPage>();
-		services.AddTransient<EnumToIntConverterPage>();
-		services.AddTransient<ImageResourceConverterPage>();
-		services.AddTransient<IndexToArrayItemConverterPage>();
-		services.AddTransient<IntToBoolConverterPage>();
-		services.AddTransient<InvertedBoolConverterPage>();
-		services.AddTransient<IsEqualConverterPage>();
-		services.AddTransient<IsListNotNullOrEmptyConverterPage>();
-		services.AddTransient<IsListNullOrEmptyConverterPage>();
-		services.AddTransient<IsNotEqualConverterPage>();
-		services.AddTransient<IsNotNullConverterPage>();
-		services.AddTransient<IsNullConverterPage>();
-		services.AddTransient<IsStringNotNullOrEmptyConverterPage>();
-		services.AddTransient<IsStringNotNullOrWhiteSpaceConverterPage>();
-		services.AddTransient<IsStringNullOrEmptyConverterPage>();
-		services.AddTransient<IsStringNullOrWhiteSpaceConverterPage>();
-		services.AddTransient<ItemTappedEventArgsConverterPage>();
-		services.AddTransient<ListToStringConverterPage>();
-		services.AddTransient<MathExpressionConverterPage>();
-		services.AddTransient<MultiConverterPage>();
-		services.AddTransient<MultiMathExpressionConverterPage>();
-		services.AddTransient<SelectedItemEventArgsConverterPage>();
-		services.AddTransient<StateToBooleanConverterPage>();
-		services.AddTransient<StringToListConverterPage>();
-		services.AddTransient<TextCaseConverterPage>();
-		services.AddTransient<VariableMultiValueConverterPage>();
+		// Add Converters Pages / ViewModels
+		services.AddTransient<BoolToObjectConverterPage, BoolToObjectConverterViewModel>();
+		services.AddTransient<ByteArrayToImageSourceConverterPage, ByteArrayToImageSourceConverterViewModel>();
+		services.AddTransient<ColorsConverterPage, ColorsConverterViewModel>();
+		services.AddTransient<CompareConverterPage, CompareConverterViewModel>();
+		services.AddTransient<DateTimeOffsetConverterPage, DateTimeOffsetConverterViewModel>();
+		services.AddTransient<DoubleToIntConverterPage, DoubleToIntConverterViewModel>();
+		services.AddTransient<EnumToBoolConverterPage, EnumToBoolConverterViewModel>();
+		services.AddTransient<EnumToIntConverterPage, EnumToIntConverterViewModel>();
+		services.AddTransient<ImageResourceConverterPage, ImageResourceConverterViewModel>();
+		services.AddTransient<IndexToArrayItemConverterPage, IndexToArrayItemConverterViewModel>();
+		services.AddTransient<IntToBoolConverterPage, IntToBoolConverterViewModel>();
+		services.AddTransient<InvertedBoolConverterPage, InvertedBoolConverterViewModel>();
+		services.AddTransient<IsEqualConverterPage, IsEqualConverterViewModel>();
+		services.AddTransient<IsListNotNullOrEmptyConverterPage, IsListNotNullOrEmptyConverterViewModel>();
+		services.AddTransient<IsListNullOrEmptyConverterPage, IsListNullOrEmptyConverterViewModel>();
+		services.AddTransient<IsNotEqualConverterPage, IsNotEqualConverterViewModel>();
+		services.AddTransient<IsNotNullConverterPage, IsNotNullConverterViewModel>();
+		services.AddTransient<IsNullConverterPage, IsNullConverterViewModel>();
+		services.AddTransient<IsStringNotNullOrEmptyConverterPage, IsStringNotNullOrEmptyConverterViewModel>();
+		services.AddTransient<IsStringNotNullOrWhiteSpaceConverterPage, IsStringNotNullOrWhiteSpaceConverterViewModel>();
+		services.AddTransient<IsStringNullOrEmptyConverterPage, IsStringNullOrEmptyConverterViewModel>();
+		services.AddTransient<IsStringNullOrWhiteSpaceConverterPage, IsStringNullOrWhiteSpaceConverterViewModel>();
+		services.AddTransient<ItemTappedEventArgsConverterPage, ItemTappedEventArgsConverterViewModel>();
+		services.AddTransient<ListToStringConverterPage, ListToStringConverterViewModel>();
+		services.AddTransient<MathExpressionConverterPage, MathExpressionConverterViewModel>();
+		services.AddTransient<MultiConverterPage, MultiConverterViewModel>();
+		services.AddTransient<MultiMathExpressionConverterPage, MultiMathExpressionConverterViewModel>();
+		services.AddTransient<SelectedItemEventArgsConverterPage, SelectedItemEventArgsConverterViewModel>();
+		services.AddTransient<StateToBooleanConverterPage, StateToBooleanConverterViewModel>();
+		services.AddTransient<StringToListConverterPage, StringToListConverterViewModel>();
+		services.AddTransient<TextCaseConverterPage, TextCaseConverterViewModel>();
+		services.AddTransient<VariableMultiValueConverterPage, VariableMultiValueConverterViewModel>();
 
-		// Add Extensions Pages
-		services.AddTransient<ColorAnimationExtensionsPage>();
+		// Add Extensions Pages / ViewModels
+		services.AddTransient<ColorAnimationExtensionsPage, ColorAnimationExtensionsViewModel>();
 
-		// Add Layouts Pages
-		services.AddTransient<UniformItemsLayoutPage>();
+		// Add Layouts Pages / ViewModels
+		services.AddTransient<UniformItemsLayoutPage, UniformItemsLayoutViewModel>();
 
-		// Add Views Pages
-		services.AddTransient<CsharpBindingPopup>();
-		services.AddTransient<DrawingViewPage>();
-		services.AddTransient<MultiplePopupPage>();
-		services.AddTransient<PopupAnchorPage>();
-		services.AddTransient<PopupPositionPage>();
-		services.AddTransient<XamlBindingPopup>();
-	}
+		// Add Views Pages / ViewModels
+		services.AddTransient<DrawingViewPage, DrawingViewViewModel>();
+		services.AddTransient<MultiplePopupPage, MultiplePopupViewModel>();
+		services.AddTransient<PopupAnchorPage, PopupAnchorViewModel>();
+		services.AddTransient<PopupPositionPage, PopupPositionViewModel>();
 
-	static void RegisterViewModels(in IServiceCollection services)
-	{
-		// Add Gallery View Models
-		services.AddTransient<AlertsGalleryViewModel>();
-		services.AddTransient<BehaviorsGalleryViewModel>();
-		services.AddTransient<ConvertersGalleryViewModel>();
-		services.AddTransient<ExtensionsGalleryViewModel>();
-		services.AddTransient<LayoutsGalleryViewModel>();
-		services.AddTransient<ViewsGalleryViewModel>();
-
-		// Add Alerts View Models
-		services.AddTransient<SnackbarViewModel>();
-		services.AddTransient<ToastViewModel>();
-
-		// Add Behaviors View Models
-		services.AddTransient<AnimationBehaviorViewModel>();
-		services.AddTransient<CharactersValidationBehaviorViewModel>();
-		services.AddTransient<EmailValidationBehaviorViewModel>();
-		services.AddTransient<EventToCommandBehaviorViewModel>();
-		services.AddTransient<IconTintColorBehaviorViewModel>();
-		services.AddTransient<MaskedBehaviorViewModel>();
-		services.AddTransient<MaxLengthReachedBehaviorViewModel>();
-		services.AddTransient<MultiValidationBehaviorViewModel>();
-		services.AddTransient<NumericValidationBehaviorViewModel>();
-		services.AddTransient<ProgressBarAnimationBehaviorViewModel>();
-		services.AddTransient<RequiredStringValidationBehaviorViewModel>();
-		services.AddTransient<SelectAllTextBehaviorViewModel>();
-		services.AddTransient<SetFocusOnEntryCompletedBehaviorViewModel>();
-		services.AddTransient<TextValidationBehaviorViewModel>();
-		services.AddTransient<UriValidationBehaviorViewModel>();
-		services.AddTransient<UserStoppedTypingBehaviorViewModel>();
-
-		// Add Converters View Models
-		services.AddTransient<BoolToObjectConverterViewModel>();
-		services.AddTransient<ByteArrayToImageSourceConverterViewModel>();
-		services.AddTransient<ColorsConverterViewModel>();
-		services.AddTransient<CompareConverterViewModel>();
-		services.AddTransient<DateTimeOffsetConverterViewModel>();
-		services.AddTransient<DoubleToIntConverterViewModel>();
-		services.AddTransient<EnumToBoolConverterViewModel>();
-		services.AddTransient<EnumToIntConverterViewModel>();
-		services.AddTransient<IsEqualConverterViewModel>();
-		services.AddTransient<ImageResourceConverterViewModel>();
-		services.AddTransient<IndexToArrayItemConverterViewModel>();
-		services.AddTransient<IntToBoolConverterViewModel>();
-		services.AddTransient<InvertedBoolConverterViewModel>();
-		services.AddTransient<IsListNotNullOrEmptyConverterViewModel>();
-		services.AddTransient<IsListNullOrEmptyConverterViewModel>();
-		services.AddTransient<IsNotNullConverterViewModel>();
-		services.AddTransient<IsNullConverterViewModel>();
-		services.AddTransient<IsStringNotNullOrEmptyConverterViewModel>();
-		services.AddTransient<IsStringNotNullOrWhiteSpaceConverterViewModel>();
-		services.AddTransient<IsStringNullOrEmptyConverterViewModel>();
-		services.AddTransient<IsStringNullOrWhiteSpaceConverterViewModel>();
-		services.AddTransient<ItemTappedEventArgsConverterViewModel>();
-		services.AddTransient<ListToStringConverterViewModel>();
-		services.AddTransient<MathExpressionConverterViewModel>();
-		services.AddTransient<MultiConverterViewModel>();
-		services.AddTransient<MultiMathExpressionConverterViewModel>();
-		services.AddTransient<IsNotEqualConverterViewModel>();
-		services.AddTransient<SelectedItemEventArgsConverterViewModel>();
-		services.AddTransient<StateToBooleanConverterViewModel>();
-		services.AddTransient<StringToListConverterViewModel>();
-		services.AddTransient<TextCaseConverterViewModel>();
-		services.AddTransient<VariableMultiValueConverterViewModel>();
-
-		// Add Extensions View Models
-		services.AddTransient<ColorAnimationExtensionsViewModel>();
-
-		// Add Layouts View Models
-		services.AddTransient<UniformItemsLayoutViewModel>();
-
-		// Add Views View Models
-		services.AddTransient<CsharpBindingPopupViewModel>();
-		services.AddTransient<DrawingViewViewModel>();
-		services.AddTransient<MultiplePopupViewModel>();
-		services.AddTransient<PopupAnchorViewModel>();
-		services.AddTransient<PopupPositionViewModel>();
-		services.AddTransient<XamlBindingPopupViewModel>();
+		// Add Popups
+		services.AddTransient<CsharpBindingPopup, CsharpBindingPopupViewModel>();
+		services.AddTransient<XamlBindingPopup, XamlBindingPopupViewModel>();
 	}
 
 	static void RegisterEssentials(in IServiceCollection services)
