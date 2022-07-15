@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Extensions;
 
-public class IServiceCollection_Tests : BaseTest
+public class ServiceCollectionExtensions_Tests : BaseTest
 {
 	readonly Type mockPageType = typeof(MockPage);
 	readonly Type mockPageViewModelType = typeof(MockPageViewModel);
