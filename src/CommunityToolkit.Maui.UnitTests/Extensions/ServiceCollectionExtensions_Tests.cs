@@ -313,4 +313,10 @@ public class ServiceCollectionExtensions_Tests : BaseTest
 
 		Assert.True(factory.WasInvoked);
 	}
+
+	protected override void Dispose(bool isDisposing)
+	{
+		Routing.Clear();
+		base.Dispose(isDisposing);
+	}
 }

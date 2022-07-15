@@ -34,8 +34,6 @@ public abstract class BaseTest : IDisposable
 			return;
 		}
 
-		Routing.Clear();
-
 		Thread.CurrentThread.CurrentCulture = defaultCulture;
 		Thread.CurrentThread.CurrentUICulture = defaultUICulture;
 
