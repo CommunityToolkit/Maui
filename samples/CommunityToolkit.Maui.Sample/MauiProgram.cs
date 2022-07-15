@@ -21,9 +21,9 @@ public static class MauiProgram
 	public static MauiApp CreateMauiApp()
 	{
 		var builder = MauiApp.CreateBuilder()
-								.UseMauiApp<App>()
 								.UseMauiCommunityToolkit()
-								.UseMauiCommunityToolkitMarkup();
+								.UseMauiCommunityToolkitMarkup()
+								.UseMauiApp<App>();
 
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>();
 		builder.Services.AddSingleton<PopupSizeConstants>();
