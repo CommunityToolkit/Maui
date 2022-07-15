@@ -157,7 +157,7 @@ public static class ServiceCollectionExtensions
 	/// <param name="factory">RouteFactory to be used while creating the <see cref="NavigableElement"/> 
 	/// for the route. Defaults to TypeRouteFactory.</param>
 	static void RegisterShellRoute<TView>(string route, RouteFactory? factory = null)
-		where TView: NavigableElement
+		where TView : NavigableElement
 	{
 		if (factory is null)
 		{
