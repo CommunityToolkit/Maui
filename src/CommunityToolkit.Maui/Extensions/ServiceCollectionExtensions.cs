@@ -8,10 +8,10 @@ namespace CommunityToolkit.Maui;
 /// <summary>
 /// Extension methods for registering Views and ViewModels in <see cref="IServiceCollection"/>
 /// </summary>
-public static class IServiceCollectionExtensions
+public static class ServiceCollectionExtensions
 {
 	/// <summary>
-	/// Adds a Page or View of the type specified in <typeparamref name="TView"/> and a ViewModel
+	/// Adds a <see cref="BindableObject"/> of the type specified in <typeparamref name="TView"/> and a ViewModel
 	/// of the type specified in <typeparamref name="TViewModel"/> to the specified
 	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Transient"/> lifetime.
 	/// </summary>
@@ -33,7 +33,7 @@ public static class IServiceCollectionExtensions
 	}
 
 	/// <summary>
-	/// Adds a Page of the type specified in <typeparamref name="TView"/> and a ViewModel
+	/// Adds a <see cref="NavigableElement"/> of the type specified in <typeparamref name="TView"/> and a ViewModel
 	/// of the type specified in <typeparamref name="TViewModel"/> to the specified
 	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Transient"/> lifetime
 	/// and registers a MAUI Shell route in <see cref="Routing"/> using the value of 
@@ -58,7 +58,7 @@ public static class IServiceCollectionExtensions
 	}
 
 	/// <summary>
-	/// Adds a Page or View of the type specified in <typeparamref name="TView"/> and a ViewModel
+	/// Adds a <see cref="BindableObject"/> of the type specified in <typeparamref name="TView"/> and a ViewModel
 	/// of the type specified in <typeparamref name="TViewModel"/> to the specified
 	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Singleton"/> lifetime.
 	/// </summary>
@@ -79,7 +79,7 @@ public static class IServiceCollectionExtensions
 	}
 
 	/// <summary>
-	/// Adds a Page of the type specified in <typeparamref name="TView"/> and a ViewModel
+	/// Adds a <see cref="NavigableElement"/> of the type specified in <typeparamref name="TView"/> and a ViewModel
 	/// of the type specified in <typeparamref name="TViewModel"/> to the specified
 	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Singleton"/> lifetime
 	/// and registers a MAUI Shell route in <see cref="Routing"/> using the value of 
@@ -104,7 +104,7 @@ public static class IServiceCollectionExtensions
 	}
 
 	/// <summary>
-	/// Adds a Page or View of the type specified in <typeparamref name="TView"/> and a ViewModel
+	/// Adds a <see cref="BindableObject"/> of the type specified in <typeparamref name="TView"/> and a ViewModel
 	/// of the type specified in <typeparamref name="TViewModel"/> to the specified
 	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Scoped"/> lifetime.
 	/// </summary>
@@ -125,7 +125,7 @@ public static class IServiceCollectionExtensions
 	}
 
 	/// <summary>
-	/// Adds a Page of the type specified in <typeparamref name="TView"/> and a ViewModel
+	/// Adds a <see cref="NavigableElement"/> of the type specified in <typeparamref name="TView"/> and a ViewModel
 	/// of the type specified in <typeparamref name="TViewModel"/> to the specified
 	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Scoped"/> lifetime
 	/// and registers a MAUI Shell route in <see cref="Routing"/> using the value of 
