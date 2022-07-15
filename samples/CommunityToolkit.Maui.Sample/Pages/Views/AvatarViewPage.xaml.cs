@@ -77,4 +77,10 @@ public partial class AvatarViewPage : BasePage<AvatarViewViewModel>
 		SizesAvatarView sizesView = new(popupSizeConstants);
 		await this.ShowPopupAsync(sizesView);
 	}
+
+	async void HandleSamplesRatingAvatarViewButtonClicked(object sender, EventArgs e)
+	{
+		SamplesRatingAvatarView samplesRatingAvatarView = new(popupSizeConstants);
+		await this.ShowPopupAsync(samplesRatingAvatarView);
+	}
 }

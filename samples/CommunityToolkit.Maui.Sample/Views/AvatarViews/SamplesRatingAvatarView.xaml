@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <mct:Popup
-    x:Class="CommunityToolkit.Maui.Sample.SamplesDOWAvatarView"
+    x:Class="CommunityToolkit.Maui.Sample.SamplesRatingAvatarView"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit">
@@ -29,82 +29,77 @@
                     <Setter Property="TextColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
                     <Setter Property="BorderColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
                 </Style>
-                <Style x:Key="DaysOfTheWeekGrid" TargetType="Grid">
+                <Style x:Key="RatingGrid" TargetType="Grid">
                     <Setter Property="Padding" Value="4,4" />
-                    <Setter Property="ColumnDefinitions" Value="56,56,56,56" />
+                    <Setter Property="ColumnDefinitions" Value="60,60,60,60,26" />
                     <Setter Property="ColumnSpacing" Value="4" />
                     <Setter Property="HorizontalOptions" Value="Start" />
                     <Setter Property="RowDefinitions" Value="Auto, Auto" />
                     <Setter Property="RowSpacing" Value="4" />
                 </Style>
                 <Style
-                    x:Key="DayOfWeekDay"
+                    x:Key="Rating"
                     BasedOn="{StaticResource AvatarViewSamplesBase}"
                     TargetType="mct:AvatarView">
-                    <Setter Property="BorderColor" Value="{AppThemeBinding Dark=White, Light=Black}" />
-                    <Setter Property="CornerRadius" Value="12" />
+                    <Setter Property="BorderColor" Value="Silver" />
+                    <Setter Property="Background">
+                        <LinearGradientBrush EndPoint="0,1">
+                            <GradientStopCollection>
+                                <GradientStop Offset="0.1" Color="Gold" />
+                                <GradientStop Offset="1.0" Color="Red" />
+                            </GradientStopCollection>
+                        </LinearGradientBrush>
+                    </Setter>
                     <Setter Property="FontSize" Value="Default" />
-                    <Setter Property="TextColor" Value="Black" />
+                    <Setter Property="TextColor" Value="Silver" />
                     <Setter Property="WidthRequest" Value="48" />
                     <Setter Property="HeightRequest" Value="48" />
                 </Style>
             </ResourceDictionary>
         </VerticalStackLayout.Resources>
 
-        <Label Style="{StaticResource Title}" Text="Sample Days of the Week." />
+        <Label Style="{StaticResource Title}" Text="Sample rating stars." />
         <BoxView Style="{StaticResource Divider}" />
-        <Grid Style="{StaticResource DaysOfTheWeekGrid}">
+        <Grid Style="{StaticResource RatingGrid}">
             <mct:AvatarView
                 Grid.Column="0"
-                BackgroundColor="#ABDEE6"
                 HeightRequest="48"
-                Style="{StaticResource DayOfWeekDay}"
-                Text="MON"
+                SemanticProperties.Description="Sample AvatarView idea using a polyline stroke shape to override the corder radius to draw a star."
+                StrokeShape="PolyLine 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
+                Style="{StaticResource Rating}"
+                Text="1"
                 WidthRequest="48" />
             <mct:AvatarView
                 Grid.Column="1"
-                BackgroundColor="#CBAACB"
                 HeightRequest="48"
-                Style="{StaticResource DayOfWeekDay}"
-                Text="TUE"
+                SemanticProperties.Description="Sample AvatarView idea using a polyline stroke shape to override the corder radius to draw a star."
+                StrokeShape="PolyLine 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
+                Style="{StaticResource Rating}"
+                Text="2"
                 WidthRequest="48" />
             <mct:AvatarView
                 Grid.Column="2"
-                BackgroundColor="#FFFF85"
                 HeightRequest="48"
-                Style="{StaticResource DayOfWeekDay}"
-                Text="WED"
+                SemanticProperties.Description="Sample AvatarView idea using a polyline stroke shape to override the corder radius to draw a star."
+                StrokeShape="PolyLine 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
+                Style="{StaticResource Rating}"
+                Text="3"
                 WidthRequest="48" />
             <mct:AvatarView
                 Grid.Column="3"
-                BackgroundColor="#FFCC86"
                 HeightRequest="48"
-                Style="{StaticResource DayOfWeekDay}"
-                Text="THU"
+                SemanticProperties.Description="Sample AvatarView idea using a polyline stroke shape to override the corder radius to draw a star."
+                StrokeShape="PolyLine 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
+                Style="{StaticResource Rating}"
+                Text="4"
                 WidthRequest="48" />
             <mct:AvatarView
-                Grid.Row="1"
-                Grid.Column="0"
-                BackgroundColor="#F3B0C3"
+                Grid.Column="4"
                 HeightRequest="48"
-                Style="{StaticResource DayOfWeekDay}"
-                Text="FRI"
-                WidthRequest="48" />
-            <mct:AvatarView
-                Grid.Row="1"
-                Grid.Column="1"
-                BackgroundColor="#CCE2CB"
-                HeightRequest="48"
-                Style="{StaticResource DayOfWeekDay}"
-                Text="SAT"
-                WidthRequest="48" />
-            <mct:AvatarView
-                Grid.Row="1"
-                Grid.Column="2"
-                BackgroundColor="#97C1A9"
-                HeightRequest="48"
-                Style="{StaticResource DayOfWeekDay}"
-                Text="SUN"
+                SemanticProperties.Description="Sample AvatarView idea using a polyline stroke shape to override the corder radius to draw a star, cliped by parent size."
+                StrokeShape="PolyLine 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
+                Style="{StaticResource Rating}"
+                Text="5"
                 WidthRequest="48" />
         </Grid>
     </VerticalStackLayout>

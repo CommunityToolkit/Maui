@@ -15,6 +15,14 @@
                     <Setter Property="VerticalTextAlignment" Value="Start" />
                     <Setter Property="HorizontalTextAlignment" Value="Start" />
                     <Setter Property="LineBreakMode" Value="WordWrap" />
+                    <Setter Property="Margin" Value="4,0" />
+                </Style>
+                <Style x:Key="Description" TargetType="Label">
+                    <Setter Property="TextColor" Value="#000" />
+                    <Setter Property="VerticalTextAlignment" Value="Start" />
+                    <Setter Property="HorizontalTextAlignment" Value="Start" />
+                    <Setter Property="LineBreakMode" Value="WordWrap" />
+                    <Setter Property="Margin" Value="4,0" />
                 </Style>
                 <Style x:Key="Divider" TargetType="BoxView">
                     <Setter Property="HeightRequest" Value="1" />
@@ -118,7 +126,7 @@
         </VerticalStackLayout.Resources>
 
         <Label Style="{StaticResource Title}" Text="Sample shadows." />
-        <Label Text="AvatarView supports the Shadow property." />
+        <Label Style="{StaticResource Description}" Text="AvatarView supports the Shadow property." />
         <BoxView Style="{StaticResource Divider}" />
         <mct:AvatarView
             HeightRequest="48"

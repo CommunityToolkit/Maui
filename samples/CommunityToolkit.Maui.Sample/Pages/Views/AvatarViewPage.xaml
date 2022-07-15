@@ -27,6 +27,10 @@
                     Clicked="HandleSamplesDOWAvatarViewButtonClicked"
                     SemanticProperties.Description="A sample idea for AvatarView presenting Days of the Week."
                     Text="Idea DOW" />
+                <Button
+                    Clicked="HandleSamplesRatingAvatarViewButtonClicked"
+                    SemanticProperties.Description="A sample idea for AvatarView presenting rating stars."
+                    Text="Idea Ratings" />
             </VerticalStackLayout>
         </ScrollView>
     </ContentPage.Content>

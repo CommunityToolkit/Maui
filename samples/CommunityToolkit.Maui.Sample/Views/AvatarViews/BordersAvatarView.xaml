@@ -12,8 +12,16 @@
                     <Setter Property="FontSize" Value="26" />
                     <Setter Property="FontAttributes" Value="Bold" />
                     <Setter Property="TextColor" Value="#000" />
-                    <Setter Property="VerticalTextAlignment" Value="Center" />
-                    <Setter Property="HorizontalTextAlignment" Value="Center" />
+                    <Setter Property="VerticalTextAlignment" Value="Start" />
+                    <Setter Property="HorizontalTextAlignment" Value="Start" />
+                    <Setter Property="Margin" Value="4,0" />
+                </Style>
+                <Style x:Key="Description" TargetType="Label">
+                    <Setter Property="TextColor" Value="#000" />
+                    <Setter Property="VerticalTextAlignment" Value="Start" />
+                    <Setter Property="HorizontalTextAlignment" Value="Start" />
+                    <Setter Property="LineBreakMode" Value="WordWrap" />
+                    <Setter Property="Margin" Value="4,0" />
                 </Style>
                 <Style x:Key="Divider" TargetType="BoxView">
                     <Setter Property="HeightRequest" Value="1" />
@@ -58,10 +66,21 @@
         </VerticalStackLayout.Resources>
 
         <Label Style="{StaticResource Title}" Text="Sample borders." />
-        <Label Text="AvatarView supports all border properties." />
+        <Label Style="{StaticResource Description}" Text="AvatarView supports all border properties." />
         <BoxView Style="{StaticResource Divider}" />
         <mct:AvatarView SemanticProperties.Description="Sample AvatarView showing no border." Style="{StaticResource AvatarViewBordersNone}" />
         <mct:AvatarView SemanticProperties.Description="Sample AvatarView showing a thin coloured border." Style="{StaticResource AvatarViewBordersThin}" />
         <mct:AvatarView SemanticProperties.Description="Sample AvatarView showing a thick coloured border." Style="{StaticResource AvatarViewBordersThickColour}" />
+        <mct:AvatarView
+            BorderWidth="3"
+            SemanticProperties.Description="Sample AvatarView using a linear gradient brush for the border colour."
+            Style="{StaticResource AvatarViewBordersDefault}">
+            <mct:AvatarView.Stroke>
+                <LinearGradientBrush EndPoint="0,1">
+                    <GradientStop Offset="0.1" Color="Blue" />
+                    <GradientStop Offset="1.0" Color="Red" />
+                </LinearGradientBrush>
+            </mct:AvatarView.Stroke>
+        </mct:AvatarView>
     </VerticalStackLayout>
 </mct:Popup>
