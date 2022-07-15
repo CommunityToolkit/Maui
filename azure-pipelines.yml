@@ -149,7 +149,7 @@ jobs:
           if ($LastExitCode -ne 1)
           {
             dotnet list $(PathToSolution) package --vulnerable --include-transitive;
-            exit 2;
+            exit 1;
           }
 
           exit 0;
