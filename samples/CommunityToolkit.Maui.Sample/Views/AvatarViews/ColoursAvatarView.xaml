@@ -15,6 +15,14 @@
                     <Setter Property="VerticalTextAlignment" Value="Start" />
                     <Setter Property="HorizontalTextAlignment" Value="Start" />
                     <Setter Property="LineBreakMode" Value="WordWrap" />
+                    <Setter Property="Margin" Value="4,0" />
+                </Style>
+                <Style x:Key="Description" TargetType="Label">
+                    <Setter Property="TextColor" Value="#000" />
+                    <Setter Property="VerticalTextAlignment" Value="Start" />
+                    <Setter Property="HorizontalTextAlignment" Value="Start" />
+                    <Setter Property="LineBreakMode" Value="WordWrap" />
+                    <Setter Property="Margin" Value="4,0" />
                 </Style>
                 <Style x:Key="Divider" TargetType="BoxView">
                     <Setter Property="HeightRequest" Value="1" />
@@ -72,7 +80,7 @@
         </VerticalStackLayout.Resources>
 
         <Label Style="{StaticResource Title}" Text="Sample colours." />
-        <Label Text="AvatarView supports all colour properties for border, background and text." />
+        <Label Style="{StaticResource Description}" Text="AvatarView supports all colour properties for border, background and text." />
         <BoxView Style="{StaticResource Divider}" />
         <mct:AvatarView
             HeightRequest="48"
@@ -91,8 +99,19 @@
             WidthRequest="48" />
         <mct:AvatarView
             HeightRequest="48"
-            SemanticProperties.Description="Sample AvatarView showing white border, blue background and yellow text."
-            Style="{StaticResource AvatarViewWhiteBlueYellow}"
-            WidthRequest="48" />
+            SemanticProperties.Description="Sample AvatarView using a linear gradient brush background."
+            StrokeShape="PolyLine             70,16             76,32             94,32             80,44             84,60             70,50             55,60             60,42             46,32             64,32"
+            Style="{StaticResource AvatarViewYellowRedGreen}"
+            TextColor="Black"
+            WidthRequest="48">
+            <mct:AvatarView.Background>
+                <LinearGradientBrush EndPoint="0,1">
+                    <GradientStopCollection>
+                        <GradientStop Offset="0.1" Color="Gold" />
+                        <GradientStop Offset="1.0" Color="Red" />
+                    </GradientStopCollection>
+                </LinearGradientBrush>
+            </mct:AvatarView.Background>
+        </mct:AvatarView>
     </VerticalStackLayout>
 </mct:Popup>
