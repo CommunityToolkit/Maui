@@ -144,19 +144,17 @@ jobs:
           msbuildArgs: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'
       
       # check vulnerabilities
-      - task: PowerShell@2
+      - powershell: |
+          dotnet list $(PathToSolution) package --vulnerable --include-transitive | findstr /S /c:"has the following vulnerable packages";
+          if ($LastExitCode -ne 1)
+          {
+            dotnet list $(PathToSolution) package --vulnerable --include-transitive;
+            exit 2;
+          }
+
+          exit 0;
         displayName: 'Check Dependencies'
         condition: eq(variables.CheckDependencies, 'true')
-        inputs:
-          targetType: 'inline'
-          script: |
-            dotnet list $(PathToSolution) package --vulnerable --include-transitive | findstr /S /c:"has the following vulnerable packages"
-            if (-Not $LastExitCode -eq 1)
-            {
-              dotnet list $(PathToSolution) package --vulnerable --include-transitive
-              exit 1
-            }
-          pwsh: true
       
       # publish
       - task: PowerShell@2
