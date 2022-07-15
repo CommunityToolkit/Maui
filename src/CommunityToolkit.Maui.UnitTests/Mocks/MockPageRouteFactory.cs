@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
-public class MockRouteFactory : RouteFactory
+public class MockPageRouteFactory : RouteFactory
 {
 	public bool WasInvoked { get; set; }
 
@@ -18,6 +18,6 @@ public class MockRouteFactory : RouteFactory
 	public override Element GetOrCreate(IServiceProvider services)
 	{
 		WasInvoked = true;
-		return services.GetService<MockPage>() ?? new Page();
+		return services.GetService<MockPage>() ?? throw new InvalidOperationException($"{nameof(MockPage)} has not been added to `IServiceCollection`");
 	}
 }

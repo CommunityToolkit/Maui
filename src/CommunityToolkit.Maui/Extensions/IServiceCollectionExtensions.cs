@@ -43,14 +43,13 @@ public static class IServiceCollectionExtensions
 	/// <typeparam name="TViewModel">The type of the ViewModel to add. Constrained to 
 	/// <see cref="INotifyPropertyChanged"/></typeparam>
 	/// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
-	/// <param name="route">Route at which this page will be registered within Shell routing. 
-	/// Defaults to type name of <typeparamref name="TView" />.</param>
+	/// <param name="route">Route at which this page will be registered within Shell routing.</param>
 	/// <param name="factory">RouteFactory to be used while creating the <see cref="NavigableElement"/> 
 	/// for the route. Defaults to TypeRouteFactory.</param>
 	/// <returns>A reference to this instance after the operation has completed.</returns>
 	/// <remarks>Developers are still responsible for assigning the injected instance of <typeparamref name="TViewModel" /> 
 	/// to the BindingContext property of <typeparamref name="TView" />.</remarks>
-	public static IServiceCollection AddTransientWithShellRoute<TView, TViewModel>(this IServiceCollection services, string? route = null, RouteFactory? factory = null)
+	public static IServiceCollection AddTransientWithShellRoute<TView, TViewModel>(this IServiceCollection services, string route, RouteFactory? factory = null)
 		where TView : NavigableElement
 		where TViewModel : class, INotifyPropertyChanged
 	{
@@ -90,14 +89,13 @@ public static class IServiceCollectionExtensions
 	/// <typeparam name="TViewModel">The type of the ViewModel to add. Constrained to 
 	/// <see cref="INotifyPropertyChanged"/></typeparam>
 	/// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
-	/// <param name="route">Route at which this page will be registered within Shell routing. 
-	/// Defaults to type name of <typeparamref name="TView" />.</param>
+	/// <param name="route">Route at which this page will be registered within Shell routing.</param>
 	/// <param name="factory">RouteFactory to be used while creating the <see cref="NavigableElement"/> 
 	/// for the route. Defaults to TypeRouteFactory.</param>
 	/// <returns>A reference to this instance after the operation has completed.</returns>
 	/// <remarks>Developers are still responsible for assigning the injected instance of <typeparamref name="TViewModel" /> 
 	/// to the BindingContext property of <typeparamref name="TView" />.</remarks>
-	public static IServiceCollection AddSingletonWithShellRoute<TView, TViewModel>(this IServiceCollection services, string? route = null, RouteFactory? factory = null)
+	public static IServiceCollection AddSingletonWithShellRoute<TView, TViewModel>(this IServiceCollection services, string route, RouteFactory? factory = null)
 		where TView : NavigableElement
 		where TViewModel : class, INotifyPropertyChanged
 	{
@@ -137,14 +135,13 @@ public static class IServiceCollectionExtensions
 	/// <typeparam name="TViewModel">The type of the ViewModel to add. Constrained to 
 	/// <see cref="INotifyPropertyChanged"/></typeparam>
 	/// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
-	/// <param name="route">Route at which this page will be registered within Shell routing. 
-	/// Defaults to type name of <typeparamref name="TView" />.</param>
+	/// <param name="route">Route at which this page will be registered within Shell routing.</param>
 	/// <param name="factory">RouteFactory to be used while creating the <see cref="NavigableElement"/> 
 	/// for the route. Defaults to TypeRouteFactory.</param>
 	/// <returns>A reference to this instance after the operation has completed.</returns>
 	/// <remarks>Developers are still responsible for assigning the injected instance of <typeparamref name="TViewModel" /> 
 	/// to the BindingContext property of <typeparamref name="TView" />.</remarks>
-	public static IServiceCollection AddScopedWithShellRoute<TView, TViewModel>(this IServiceCollection services, string? route = null, RouteFactory? factory = null)
+	public static IServiceCollection AddScopedWithShellRoute<TView, TViewModel>(this IServiceCollection services, string route, RouteFactory? factory = null)
 		where TView : NavigableElement
 		where TViewModel : class, INotifyPropertyChanged
 	{
@@ -156,15 +153,12 @@ public static class IServiceCollectionExtensions
 	/// Registers routes in in <see cref="Routing"/> for Views registered using WithShellRouting methods.
 	/// </summary>
 	/// <typeparam name="TView">The type of the View to add. Constrained to <see cref="NavigableElement"/></typeparam>
-	/// <param name="route">Route at which this page will be registered within Shell routing. 
-	/// Defaults to type name of <typeparamref name="TView" />.</param>
+	/// <param name="route">Route at which this page will be registered within Shell routing.</param>
 	/// <param name="factory">RouteFactory to be used while creating the <see cref="NavigableElement"/> 
 	/// for the route. Defaults to TypeRouteFactory.</param>
-	static void RegisterShellRoute<TView>(string? route = null, RouteFactory? factory = null)
+	static void RegisterShellRoute<TView>(string route, RouteFactory? factory = null)
 		where TView: NavigableElement
 	{
-		route ??= typeof(TView).Name;
-
 		if (factory is null)
 		{
 			Routing.RegisterRoute(route, typeof(TView));
