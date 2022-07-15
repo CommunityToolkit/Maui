@@ -5,184 +5,312 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions;
 
 public class ServiceCollectionExtensions_Tests : BaseTest
 {
+	const string customRoute = "//MockCustomRoute";
 	readonly Type mockPageType = typeof(MockPage);
 	readonly Type mockPageViewModelType = typeof(MockPageViewModel);
-	const string customRoute = "MockCustomRoute";
 
 	[Fact]
-	public async Task IServiceCollection_VerifyTransient()
+	public void IServiceCollection_VerifyTransient()
 	{
 		// Arrange
 		var services = MauiApp.CreateBuilder().Services;
-		var lifetime = ServiceLifetime.Transient;
+		const ServiceLifetime expectedServiceLifetime = ServiceLifetime.Transient;
 
 		// Act
 		services.AddTransient<MockPage, MockPageViewModel>();
+		var serviceProvider = services.BuildServiceProvider();
 
 		// Assert
-		Assert.NotNull(services.Single(s => s.ServiceType.Equals(mockPageType) && s.Lifetime.Equals(lifetime)));
-		Assert.NotNull(services.Single(s => s.ServiceType.Equals(mockPageViewModelType) && s.Lifetime.Equals(lifetime)));
+		var mockPageServiceDescriptor = services.Single(s => s.ServiceType.Equals(mockPageType) && s.Lifetime.Equals(expectedServiceLifetime));
+		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType.Equals(mockPageViewModelType) && s.Lifetime.Equals(expectedServiceLifetime));
+
+		Assert.NotNull(mockPageServiceDescriptor);
+		Assert.NotNull(mockViewModelServiceDescriptor);
+
+		Assert.Equal(expectedServiceLifetime, mockPageServiceDescriptor.Lifetime);
+		Assert.Equal(expectedServiceLifetime, mockViewModelServiceDescriptor.Lifetime);
+
+		Assert.Equal(mockPageType, mockPageServiceDescriptor.ServiceType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ServiceType);
+
+		Assert.Equal(mockPageType, mockPageServiceDescriptor.ImplementationType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ImplementationType);
+
+		Assert.IsType<MockPage>(serviceProvider.GetRequiredService<MockPage>());
+		Assert.IsType<MockPageViewModel>(serviceProvider.GetRequiredService<MockPageViewModel>());
 	}
 
 	[Fact]
-	public async Task IServiceCollection_VerifyTransientShellRouteWithRouteParam()
+	public void IServiceCollection_VerifyTransientShellRouteWithRouteParam()
 	{
 		// Arrange
+		const ServiceLifetime expectedServiceLifetime = ServiceLifetime.Transient;
+		const string route = customRoute;
 		var services = MauiApp.CreateBuilder().Services;
-		var lifetime = ServiceLifetime.Transient;
-		var route = customRoute;
 
 		// Act
 		services.AddTransientWithShellRoute<MockPage, MockPageViewModel>(route);
-		var resolvedPage = Routing.GetOrCreateContent(route, services.BuildServiceProvider());
+		var serviceProvider = services.BuildServiceProvider();
 
 		// Assert
-		Assert.NotNull(services.Single(s => s.ServiceType.Equals(mockPageType) && s.Lifetime.Equals(lifetime)));
-		Assert.NotNull(services.Single(s => s.ServiceType.Equals(mockPageViewModelType) && s.Lifetime.Equals(lifetime)));
-		Assert.Equal(mockPageType, resolvedPage.GetType());
-		Assert.Equal(mockPageViewModelType, resolvedPage.BindingContext.GetType());
+		var mockPageServiceDescriptor = services.Single(s => s.ServiceType.Equals(mockPageType) && s.Lifetime.Equals(expectedServiceLifetime));
+		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType.Equals(mockPageViewModelType) && s.Lifetime.Equals(expectedServiceLifetime));
 
-		Routing.Clear();
+		Assert.NotNull(mockPageServiceDescriptor);
+		Assert.NotNull(mockViewModelServiceDescriptor);
+
+		Assert.IsType<MockPage>(Routing.GetOrCreateContent(route, serviceProvider));
+
+		Assert.Equal(expectedServiceLifetime, mockPageServiceDescriptor.Lifetime);
+		Assert.Equal(expectedServiceLifetime, mockViewModelServiceDescriptor.Lifetime);
+
+		Assert.Equal(mockPageType, mockPageServiceDescriptor.ServiceType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ServiceType);
+
+		Assert.Equal(mockPageType, mockPageServiceDescriptor.ImplementationType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ImplementationType);
+
+		Assert.IsType<MockPage>(serviceProvider.GetRequiredService<MockPage>());
+		Assert.IsType<MockPageViewModel>(serviceProvider.GetRequiredService<MockPageViewModel>());
 	}
 
 	[Fact]
-	public async Task IServiceCollection_VerifyTransientShellRouteWithRouteAndRouteFactoryParam()
+	public void IServiceCollection_VerifyTransientShellRouteWithRouteAndRouteFactoryParam()
 	{
 		// Arrange
+		const ServiceLifetime expectedServiceLifetime = ServiceLifetime.Transient;
+		const string route = customRoute;
 		var services = MauiApp.CreateBuilder().Services;
-		var lifetime = ServiceLifetime.Transient;
 		var factory = new MockPageRouteFactory();
-		var route = customRoute;
 
 		// Act
 		services.AddTransientWithShellRoute<MockPage, MockPageViewModel>(route, factory);
-		var resolvedPage = Routing.GetOrCreateContent(route, services.BuildServiceProvider());
+		var serviceProvider = services.BuildServiceProvider();
 
 		// Assert
-		Assert.NotNull(services.Single(s => s.ServiceType.Equals(mockPageType) && s.Lifetime.Equals(lifetime)));
-		Assert.NotNull(services.Single(s => s.ServiceType.Equals(mockPageViewModelType) && s.Lifetime.Equals(lifetime)));
-		Assert.Equal(mockPageType, resolvedPage.GetType());
-		Assert.Equal(mockPageViewModelType, resolvedPage.BindingContext.GetType());
-		Assert.True(factory.WasInvoked);
+		var mockPageServiceDescriptor = services.Single(s => s.ServiceType.Equals(mockPageType) && s.Lifetime.Equals(expectedServiceLifetime));
+		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType.Equals(mockPageViewModelType) && s.Lifetime.Equals(expectedServiceLifetime));
 
-		Routing.Clear();
+		Assert.NotNull(mockPageServiceDescriptor);
+		Assert.NotNull(mockViewModelServiceDescriptor);
+
+		Assert.IsType<MockPage>(Routing.GetOrCreateContent(route, serviceProvider));
+
+		Assert.Equal(expectedServiceLifetime, mockPageServiceDescriptor.Lifetime);
+		Assert.Equal(expectedServiceLifetime, mockViewModelServiceDescriptor.Lifetime);
+
+		Assert.Equal(mockPageType, mockPageServiceDescriptor.ServiceType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ServiceType);
+
+		Assert.Equal(mockPageType, mockPageServiceDescriptor.ImplementationType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ImplementationType);
+
+		Assert.IsType<MockPage>(serviceProvider.GetRequiredService<MockPage>());
+		Assert.IsType<MockPageViewModel>(serviceProvider.GetRequiredService<MockPageViewModel>());
+		Assert.True(factory.WasInvoked);
 	}
 
 	[Fact]
-	public async Task IServiceCollection_VerifySingleton()
+	public void IServiceCollection_VerifySingleton()
 	{
 		// Arrange
+		const ServiceLifetime expectedServiceLifetime = ServiceLifetime.Singleton;
 		var services = MauiApp.CreateBuilder().Services;
-		var lifetime = ServiceLifetime.Singleton;
 
 		// Act
 		services.AddSingleton<MockPage, MockPageViewModel>();
+		var serviceProvider = services.BuildServiceProvider();
 
 		// Assert
-		Assert.NotNull(services.Single(s => s.ServiceType.Equals(mockPageType) && s.Lifetime.Equals(lifetime)));
-		Assert.NotNull(services.Single(s => s.ServiceType.Equals(mockPageViewModelType) && s.Lifetime.Equals(lifetime)));
+		var mockPageServiceDescriptor = services.Single(s => s.ServiceType.Equals(mockPageType) && s.Lifetime.Equals(expectedServiceLifetime));
+		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType.Equals(mockPageViewModelType) && s.Lifetime.Equals(expectedServiceLifetime));
+
+		Assert.NotNull(mockPageServiceDescriptor);
+		Assert.NotNull(mockViewModelServiceDescriptor);
+
+		Assert.Equal(expectedServiceLifetime, mockPageServiceDescriptor.Lifetime);
+		Assert.Equal(expectedServiceLifetime, mockViewModelServiceDescriptor.Lifetime);
+
+		Assert.Equal(mockPageType, mockPageServiceDescriptor.ServiceType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ServiceType);
+
+		Assert.Equal(mockPageType, mockPageServiceDescriptor.ImplementationType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ImplementationType);
+
+		Assert.IsType<MockPage>(serviceProvider.GetRequiredService<MockPage>());
+		Assert.IsType<MockPageViewModel>(serviceProvider.GetRequiredService<MockPageViewModel>());
 	}
 
 	[Fact]
-	public async Task IServiceCollection_VerifySingletonShellRouteWithRouteParam()
+	public void IServiceCollection_VerifySingletonShellRouteWithRouteParam()
 	{
 		// Arrange
+		const ServiceLifetime expectedServiceLifetime = ServiceLifetime.Singleton;
+		const string route = customRoute;
 		var services = MauiApp.CreateBuilder().Services;
-		var lifetime = ServiceLifetime.Singleton;
-		var route = customRoute;
 
 		// Act
 		services.AddSingletonWithShellRoute<MockPage, MockPageViewModel>(route);
-		var resolvedPage = Routing.GetOrCreateContent(route, services.BuildServiceProvider());
+		var serviceProvider = services.BuildServiceProvider();
 
 		// Assert
-		Assert.NotNull(services.Single(s => s.ServiceType.Equals(mockPageType) && s.Lifetime.Equals(lifetime)));
-		Assert.NotNull(services.Single(s => s.ServiceType.Equals(mockPageViewModelType) && s.Lifetime.Equals(lifetime)));
-		Assert.Equal(mockPageType, resolvedPage.GetType());
-		Assert.Equal(mockPageViewModelType, resolvedPage.BindingContext.GetType());
+		var mockPageServiceDescriptor = services.Single(s => s.ServiceType.Equals(mockPageType) && s.Lifetime.Equals(expectedServiceLifetime));
+		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType.Equals(mockPageViewModelType) && s.Lifetime.Equals(expectedServiceLifetime));
 
-		Routing.Clear();
+		Assert.NotNull(mockPageServiceDescriptor);
+		Assert.NotNull(mockViewModelServiceDescriptor);
+
+		Assert.IsType<MockPage>(Routing.GetOrCreateContent(route, serviceProvider));
+
+		Assert.Equal(expectedServiceLifetime, mockPageServiceDescriptor.Lifetime);
+		Assert.Equal(expectedServiceLifetime, mockViewModelServiceDescriptor.Lifetime);
+
+		Assert.Equal(mockPageType, mockPageServiceDescriptor.ServiceType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ServiceType);
+
+		Assert.Equal(mockPageType, mockPageServiceDescriptor.ImplementationType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ImplementationType);
+
+		Assert.IsType<MockPage>(serviceProvider.GetRequiredService<MockPage>());
+		Assert.IsType<MockPageViewModel>(serviceProvider.GetRequiredService<MockPageViewModel>());
 	}
 
 	[Fact]
-	public async Task IServiceCollection_VerifySingletonShellRouteWithRouteAndRouteFactoryParam()
+	public void IServiceCollection_VerifySingletonShellRouteWithRouteAndRouteFactoryParam()
 	{
 		// Arrange
+		const ServiceLifetime expectedServiceLifetime = ServiceLifetime.Singleton;
+		const string route = customRoute;
 		var services = MauiApp.CreateBuilder().Services;
-		var lifetime = ServiceLifetime.Singleton;
 		var factory = new MockPageRouteFactory();
-		var route = customRoute;
 
 		// Act
 		services.AddSingletonWithShellRoute<MockPage, MockPageViewModel>(customRoute, factory);
-		var resolvedPage = Routing.GetOrCreateContent(route, services.BuildServiceProvider());
+		var serviceProvider = services.BuildServiceProvider();
 
 		// Assert
-		Assert.NotNull(services.Single(s => s.ServiceType.Equals(mockPageType) && s.Lifetime.Equals(lifetime)));
-		Assert.NotNull(services.Single(s => s.ServiceType.Equals(mockPageViewModelType) && s.Lifetime.Equals(lifetime)));
-		Assert.Equal(mockPageType, resolvedPage.GetType());
-		Assert.Equal(mockPageViewModelType, resolvedPage.BindingContext.GetType());
-		Assert.True(factory.WasInvoked);
+		var mockPageServiceDescriptor = services.Single(s => s.ServiceType.Equals(mockPageType) && s.Lifetime.Equals(expectedServiceLifetime));
+		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType.Equals(mockPageViewModelType) && s.Lifetime.Equals(expectedServiceLifetime));
 
-		Routing.Clear();
+		Assert.NotNull(mockPageServiceDescriptor);
+		Assert.NotNull(mockViewModelServiceDescriptor);
+
+		Assert.IsType<MockPage>(Routing.GetOrCreateContent(route, serviceProvider));
+
+		Assert.Equal(expectedServiceLifetime, mockPageServiceDescriptor.Lifetime);
+		Assert.Equal(expectedServiceLifetime, mockViewModelServiceDescriptor.Lifetime);
+
+		Assert.Equal(mockPageType, mockPageServiceDescriptor.ServiceType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ServiceType);
+
+		Assert.Equal(mockPageType, mockPageServiceDescriptor.ImplementationType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ImplementationType);
+
+		Assert.IsType<MockPage>(serviceProvider.GetRequiredService<MockPage>());
+		Assert.IsType<MockPageViewModel>(serviceProvider.GetRequiredService<MockPageViewModel>());
+
+		Assert.True(factory.WasInvoked);
 	}
 
 	[Fact]
-	public async Task IServiceCollection_VerifyScoped()
+	public void IServiceCollection_VerifyScoped()
 	{
 		// Arrange
+		const ServiceLifetime expectedServiceLifetime = ServiceLifetime.Scoped;
 		var services = MauiApp.CreateBuilder().Services;
-		var lifetime = ServiceLifetime.Scoped;
 
 		// Act
 		services.AddScoped<MockPage, MockPageViewModel>();
+		var serviceProvider = services.BuildServiceProvider();
 
 		// Assert
-		Assert.NotNull(services.Single(s => s.ServiceType.Equals(mockPageType) && s.Lifetime.Equals(lifetime)));
-		Assert.NotNull(services.Single(s => s.ServiceType.Equals(mockPageViewModelType) && s.Lifetime.Equals(lifetime)));
+		var mockPageServiceDescriptor = services.Single(s => s.ServiceType.Equals(mockPageType) && s.Lifetime.Equals(expectedServiceLifetime));
+		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType.Equals(mockPageViewModelType) && s.Lifetime.Equals(expectedServiceLifetime));
+
+		Assert.NotNull(mockPageServiceDescriptor);
+		Assert.NotNull(mockViewModelServiceDescriptor);
+
+		Assert.Equal(expectedServiceLifetime, mockPageServiceDescriptor.Lifetime);
+		Assert.Equal(expectedServiceLifetime, mockViewModelServiceDescriptor.Lifetime);
+
+		Assert.Equal(mockPageType, mockPageServiceDescriptor.ServiceType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ServiceType);
+
+		Assert.Equal(mockPageType, mockPageServiceDescriptor.ImplementationType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ImplementationType);
+
+		Assert.IsType<MockPage>(serviceProvider.GetRequiredService<MockPage>());
+		Assert.IsType<MockPageViewModel>(serviceProvider.GetRequiredService<MockPageViewModel>());
 	}
 
 	[Fact]
-	public async Task IServiceCollection_VerifyScopedShellRouteWithRouteParam()
+	public void IServiceCollection_VerifyScopedShellRouteWithRouteParam()
 	{
 		// Arrange
+		const ServiceLifetime expectedServiceLifetime = ServiceLifetime.Scoped;
+		const string route = customRoute;
 		var services = MauiApp.CreateBuilder().Services;
-		var lifetime = ServiceLifetime.Scoped;
-		var route = customRoute;
 
 		// Act
 		services.AddScopedWithShellRoute<MockPage, MockPageViewModel>(route);
-		var resolvedPage = Routing.GetOrCreateContent(route, services.BuildServiceProvider());
+		var serviceProvider = services.BuildServiceProvider();
 
 		// Assert
-		Assert.NotNull(services.Single(s => s.ServiceType.Equals(mockPageType) && s.Lifetime.Equals(lifetime)));
-		Assert.NotNull(services.Single(s => s.ServiceType.Equals(mockPageViewModelType) && s.Lifetime.Equals(lifetime)));
-		Assert.Equal(mockPageType, resolvedPage.GetType());
-		Assert.Equal(mockPageViewModelType, resolvedPage.BindingContext.GetType());
+		var mockPageServiceDescriptor = services.Single(s => s.ServiceType.Equals(mockPageType) && s.Lifetime.Equals(expectedServiceLifetime));
+		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType.Equals(mockPageViewModelType) && s.Lifetime.Equals(expectedServiceLifetime));
 
-		Routing.Clear();
+		Assert.NotNull(mockPageServiceDescriptor);
+		Assert.NotNull(mockViewModelServiceDescriptor);
+
+		Assert.IsType<MockPage>(Routing.GetOrCreateContent(route, serviceProvider));
+
+		Assert.Equal(expectedServiceLifetime, mockPageServiceDescriptor.Lifetime);
+		Assert.Equal(expectedServiceLifetime, mockViewModelServiceDescriptor.Lifetime);
+
+		Assert.Equal(mockPageType, mockPageServiceDescriptor.ServiceType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ServiceType);
+
+		Assert.Equal(mockPageType, mockPageServiceDescriptor.ImplementationType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ImplementationType);
+
+		Assert.IsType<MockPage>(serviceProvider.GetRequiredService<MockPage>());
+		Assert.IsType<MockPageViewModel>(serviceProvider.GetRequiredService<MockPageViewModel>());
 	}
 
 	[Fact]
-	public async Task IServiceCollection_VerifyScopedShellRouteWithRouteAndRouteFactoryParam()
+	public void IServiceCollection_VerifyScopedShellRouteWithRouteAndRouteFactoryParam()
 	{
 		// Arrange
+		const ServiceLifetime expectedServiceLifetime = ServiceLifetime.Scoped;
+		const string route = customRoute;
 		var services = MauiApp.CreateBuilder().Services;
-		var lifetime = ServiceLifetime.Scoped;
 		var factory = new MockPageRouteFactory();
-		var route = customRoute;
 
 		// Act
 		services.AddScopedWithShellRoute<MockPage, MockPageViewModel>(route, factory);
-		var resolvedPage = Routing.GetOrCreateContent(route, services.BuildServiceProvider());
+		var serviceProvider = services.BuildServiceProvider();
 
 		// Assert
-		Assert.NotNull(services.Single(s => s.ServiceType.Equals(mockPageType) && s.Lifetime.Equals(lifetime)));
-		Assert.NotNull(services.Single(s => s.ServiceType.Equals(mockPageViewModelType) && s.Lifetime.Equals(lifetime)));
-		Assert.Equal(mockPageType, resolvedPage.GetType());
-		Assert.Equal(mockPageViewModelType, resolvedPage.BindingContext.GetType());
-		Assert.True(factory.WasInvoked);
+		var mockPageServiceDescriptor = services.Single(s => s.ServiceType.Equals(mockPageType) && s.Lifetime.Equals(expectedServiceLifetime));
+		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType.Equals(mockPageViewModelType) && s.Lifetime.Equals(expectedServiceLifetime));
 
-		Routing.Clear();
+		Assert.NotNull(mockPageServiceDescriptor);
+		Assert.NotNull(mockViewModelServiceDescriptor);
+
+		Assert.IsType<MockPage>(Routing.GetOrCreateContent(route, serviceProvider));
+
+		Assert.Equal(expectedServiceLifetime, mockPageServiceDescriptor.Lifetime);
+		Assert.Equal(expectedServiceLifetime, mockViewModelServiceDescriptor.Lifetime);
+
+		Assert.Equal(mockPageType, mockPageServiceDescriptor.ServiceType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ServiceType);
+
+		Assert.Equal(mockPageType, mockPageServiceDescriptor.ImplementationType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ImplementationType);
+
+		Assert.IsType<MockPage>(serviceProvider.GetRequiredService<MockPage>());
+		Assert.IsType<MockPageViewModel>(serviceProvider.GetRequiredService<MockPageViewModel>());
+
+		Assert.True(factory.WasInvoked);
 	}
 }
