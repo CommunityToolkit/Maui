@@ -4,17 +4,16 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:models="clr-namespace:CommunityToolkit.Maui.Sample.Models"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView"
+    Title="AvatarView Bindable"
     x:DataType="vm:AvatarViewBindablePropertiesViewModel"
     x:TypeArguments="vm:AvatarViewBindablePropertiesViewModel">
-    <VerticalStackLayout Style="{StaticResource PopupLayout}">
+    <VerticalStackLayout Spacing="12">
         <VerticalStackLayout.Resources>
             <ResourceDictionary>
-                <Style x:Key="Title" TargetType="Label">
-                    <Setter Property="FontSize" Value="26" />
-                    <Setter Property="FontAttributes" Value="Bold" />
+                <Style x:Key="Description" TargetType="Label">
                     <Setter Property="VerticalTextAlignment" Value="Start" />
                     <Setter Property="HorizontalTextAlignment" Value="Start" />
                     <Setter Property="LineBreakMode" Value="WordWrap" />
@@ -28,7 +27,7 @@
             </ResourceDictionary>
         </VerticalStackLayout.Resources>
 
-        <Label Style="{StaticResource Title}" Text="AvatarView Bindable Properties" />
+        <Label Style="{StaticResource Description}" Text="AvatarView supports data binding." />
         <BoxView Style="{StaticResource Divider}" />
         <CollectionView
             Margin="4"

@@ -1,17 +1,11 @@
 using System.Diagnostics;
-using CommunityToolkit.Maui.Sample.Models;
-using CommunityToolkit.Maui.Sample.Pages;
 using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
-using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class AvatarViewGesturesPage : BasePage<AvatarViewGesturesViewModel>
 {
-	public AvatarViewGesturesPage(AvatarViewGesturesViewModel avatarViewGesturesViewModel) : base(avatarViewGesturesViewModel)
-	{
-		InitializeComponent();
-	}
+	public AvatarViewGesturesPage(AvatarViewGesturesViewModel avatarViewGesturesViewModel) : base(avatarViewGesturesViewModel) => InitializeComponent();
 
 	void DragGestureRecognizer_DragStarting(object sender, DragStartingEventArgs e) => Debug.WriteLine("AvatarView drag gesture recognizer, drag starting.");
 

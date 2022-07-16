@@ -6,19 +6,12 @@
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView"
+    Title="AvatarView Image Avatar"
     x:DataType="vm:AvatarViewImagesViewModel"
     x:TypeArguments="vm:AvatarViewImagesViewModel">
     <VerticalStackLayout Spacing="12">
         <VerticalStackLayout.Resources>
             <ResourceDictionary>
-                <Style x:Key="Title" TargetType="Label">
-                    <Setter Property="FontSize" Value="26" />
-                    <Setter Property="FontAttributes" Value="Bold" />
-                    <Setter Property="VerticalTextAlignment" Value="Start" />
-                    <Setter Property="HorizontalTextAlignment" Value="Start" />
-                    <Setter Property="LineBreakMode" Value="WordWrap" />
-                    <Setter Property="Margin" Value="4,0" />
-                </Style>
                 <Style x:Key="Description" TargetType="Label">
                     <Setter Property="VerticalTextAlignment" Value="Start" />
                     <Setter Property="HorizontalTextAlignment" Value="Start" />
@@ -102,9 +95,7 @@
                 </Style>
             </ResourceDictionary>
         </VerticalStackLayout.Resources>
-
-        <Label Style="{StaticResource Title}" Text="AvatarView Images" />
-        <Label Style="{StaticResource Description}" Text="AvatarView can use local or URL image sources" />
+        <Label Style="{StaticResource Description}" Text="AvatarView can use local or URL image sources." />
         <BoxView Style="{StaticResource Divider}" />
         <mct:AvatarView
             HeightRequest="32"

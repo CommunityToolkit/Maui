@@ -6,14 +6,13 @@
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView"
+    Title="AvatarView Keyboard"
     x:DataType="vm:AvatarViewKeyboardViewModel"
     x:TypeArguments="vm:AvatarViewKeyboardViewModel">
-    <VerticalStackLayout>
+    <VerticalStackLayout Spacing="12">
         <VerticalStackLayout.Resources>
             <ResourceDictionary>
-                <Style x:Key="Title" TargetType="Label">
-                    <Setter Property="FontSize" Value="26" />
-                    <Setter Property="FontAttributes" Value="Bold" />
+                <Style x:Key="Description" TargetType="Label">
                     <Setter Property="VerticalTextAlignment" Value="Start" />
                     <Setter Property="HorizontalTextAlignment" Value="Start" />
                     <Setter Property="LineBreakMode" Value="WordWrap" />
@@ -63,11 +62,12 @@
                     <Setter Property="HorizontalOptions" Value="Start" />
                     <Setter Property="RowDefinitions" Value="40,40,40,40" />
                     <Setter Property="ColumnDefinitions" Value="56,56,56" />
+                    <Setter Property="HorizontalOptions" Value="Center" />
                 </Style>
             </ResourceDictionary>
         </VerticalStackLayout.Resources>
 
-        <Label Style="{StaticResource Title}" Text="AvatarView Keyboard" />
+        <Label Style="{StaticResource Title}" Text="AvatarView sample as a Keyboard." />
         <BoxView Style="{StaticResource Divider}" />
         <Grid SemanticProperties.Description="Sample idea for using AvatarView to draw a keyboard." Style="{StaticResource SampleKeyboard}">
             <mct:AvatarView
