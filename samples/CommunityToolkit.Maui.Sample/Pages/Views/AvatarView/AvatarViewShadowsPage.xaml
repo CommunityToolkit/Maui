@@ -6,20 +6,12 @@
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView"
+    Title="AvatarView Shadows"
     x:DataType="vm:AvatarViewShadowsViewModel"
     x:TypeArguments="vm:AvatarViewShadowsViewModel">
-    <VerticalStackLayout Style="{StaticResource PopupLayout}">
-
+    <VerticalStackLayout Spacing="12">
         <VerticalStackLayout.Resources>
             <ResourceDictionary>
-                <Style x:Key="Title" TargetType="Label">
-                    <Setter Property="FontSize" Value="26" />
-                    <Setter Property="FontAttributes" Value="Bold" />
-                    <Setter Property="VerticalTextAlignment" Value="Start" />
-                    <Setter Property="HorizontalTextAlignment" Value="Start" />
-                    <Setter Property="LineBreakMode" Value="WordWrap" />
-                    <Setter Property="Margin" Value="4,0" />
-                </Style>
                 <Style x:Key="Description" TargetType="Label">
                     <Setter Property="VerticalTextAlignment" Value="Start" />
                     <Setter Property="HorizontalTextAlignment" Value="Start" />
@@ -126,9 +118,7 @@
                 </Style>
             </ResourceDictionary>
         </VerticalStackLayout.Resources>
-
-        <Label Style="{StaticResource Title}" Text="AvatarView Shadows" />
-        <Label Style="{StaticResource Description}" Text="AvatarView supports the Shadow property" />
+        <Label Style="{StaticResource Description}" Text="AvatarView supports the Shadow property." />
         <BoxView Style="{StaticResource Divider}" />
         <mct:AvatarView
             HeightRequest="48"
@@ -151,8 +141,9 @@
             Style="{StaticResource AvatarViewShadowsPointerBottomRight}"
             WidthRequest="48" />
         <mct:AvatarView
+            Margin="{OnPlatform Android='48,0,0,0'}"
             HeightRequest="48"
-            SemanticProperties.Description="Sample AvatarView showing teal shadow."
+            SemanticProperties.Description="Sample AvatarView showing teal shadow and rotated 45 degrees."
             Style="{StaticResource AvatarViewShadowsRotatedPointerBottomRight}"
             WidthRequest="48" />
     </VerticalStackLayout>

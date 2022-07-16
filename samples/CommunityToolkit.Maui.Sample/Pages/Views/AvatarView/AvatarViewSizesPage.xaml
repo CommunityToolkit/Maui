@@ -6,9 +6,10 @@
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView"
+    Title="AvatarView Sizes"
     x:DataType="vm:AvatarViewSizesViewModel"
     x:TypeArguments="vm:AvatarViewSizesViewModel">
-    <VerticalStackLayout Style="{StaticResource PopupLayout}">
+    <VerticalStackLayout Spacing="12">
         <VerticalStackLayout.Resources>
             <ResourceDictionary>
                 <Style x:Key="Title" TargetType="Label">
@@ -77,8 +78,7 @@
                 </Style>
             </ResourceDictionary>
         </VerticalStackLayout.Resources>
-        <Label Style="{StaticResource Title}" Text="AvatarView Sizes" />
-        <Label Style="{StaticResource Description}" Text="AvatarView can be set to any size and supports all font properties" />
+        <Label Style="{StaticResource Description}" Text="AvatarView can be set to any size and supports font properties." />
         <BoxView Style="{StaticResource Divider}" />
         <mct:AvatarView
             HeightRequest="16"
