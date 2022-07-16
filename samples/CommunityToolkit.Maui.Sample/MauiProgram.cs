@@ -11,6 +11,7 @@ using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
+using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
@@ -108,7 +109,17 @@ public static class MauiProgram
 		services.AddTransient<UniformItemsLayoutPage>();
 
 		// Add Views Pages
-		services.AddTransient<AvatarViewPage>();
+		services.AddTransient<AvatarViewBindablePropertiesPage>();
+		services.AddTransient<AvatarViewBordersPage>();
+		services.AddTransient<AvatarViewColorsPage>();
+		services.AddTransient<AvatarViewDayOfWeekPage>();
+		services.AddTransient<AvatarViewGesturesPage>();
+		services.AddTransient<AvatarViewImagesPage>();
+		services.AddTransient<AvatarViewKeyboardPage>();
+		services.AddTransient<AvatarViewSampleRatingPage>();
+		services.AddTransient<AvatarViewShadowsPage>();
+		services.AddTransient<AvatarViewShapesPage>();
+		services.AddTransient<AvatarViewSizesPage>();
 		services.AddTransient<CsharpBindingPopup>();
 		services.AddTransient<DrawingViewPage>();
 		services.AddTransient<MultiplePopupPage>();
@@ -190,8 +201,17 @@ public static class MauiProgram
 		services.AddTransient<UniformItemsLayoutViewModel>();
 
 		// Add Views View Models
-		services.AddTransient<AvatarViewViewModel>();
-		services.AddTransient<AvatarViewBindingPopupViewModel>();
+		services.AddTransient<AvatarViewBindablePropertiesViewModel>();
+		services.AddTransient<AvatarViewBordersViewModel>();
+		services.AddTransient<AvatarViewColorsViewModel>();
+		services.AddTransient<AvatarViewDayOfWeekViewModel>();
+		services.AddTransient<AvatarViewGesturesViewModel>();
+		services.AddTransient<AvatarViewImagesViewModel>();
+		services.AddTransient<AvatarViewKeyboardViewModel>();
+		services.AddTransient<AvatarViewSampleRatingViewModel>();
+		services.AddTransient<AvatarViewShadowsViewModel>();
+		services.AddTransient<AvatarViewShapesViewModel>();
+		services.AddTransient<AvatarViewSizesViewModel>();
 		services.AddTransient<CsharpBindingPopupViewModel>();
 		services.AddTransient<DrawingViewViewModel>();
 		services.AddTransient<MultiplePopupViewModel>();
