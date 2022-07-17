@@ -9,6 +9,7 @@ namespace CommunityToolkit.Maui.Views;
 public class Expander : View, IExpander
 {
 	readonly WeakEventManager expandedChangedEventManager = new();
+	readonly List<Cell> cellParents = new();
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="Expander"/> class.
@@ -144,8 +145,35 @@ public class Expander : View, IExpander
 	{ 
 		expandedChangedEventManager.HandleEvent(this, new ExpandedChangedEventArgs(isExpanded), nameof(ExpandedChanged));
 		Command?.Execute(CommandParameter);
+		DetectParentCells();
+		foreach (var cell in cellParents)
+		{
+			cell.ForceUpdateSize();
+		}
+
 #if IOS || MACCATALYST
 		InvalidateMeasure();
 #endif
+
+	}
+
+	void DetectParentCells()
+	{
+		if (cellParents.Count > 0)
+		{
+			return;
+		}
+
+		var parent = Parent;
+
+		while (parent is not null)
+		{
+			if (parent is Cell cell)
+			{
+				cellParents.Add(cell);
+			}
+
+			parent = parent.Parent;
+		}
 	}
 }

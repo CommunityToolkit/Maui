@@ -8,6 +8,8 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 using MauiExpander = Microsoft.UI.Xaml.Controls.Expander;
 using ExpanderCollapsedEventArgs = Microsoft.UI.Xaml.Controls.ExpanderCollapsedEventArgs;
 using Microsoft.UI.Xaml.Controls;
+using HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment;
+using VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment;
 #endif
 
 /// <summary>
@@ -102,6 +104,8 @@ public partial class ExpanderHandler : ViewHandler<IExpander, MauiExpander>
 		platformView.Collapsed += OnCollapsedChanged;
 #if WINDOWS
 		platformView.Expanding += OnExpanding;
+		platformView.HorizontalAlignment = platformView.HorizontalContentAlignment = HorizontalAlignment.Stretch;
+		platformView.VerticalAlignment = platformView.VerticalContentAlignment =  VerticalAlignment.Stretch;
 #endif
 	}
 

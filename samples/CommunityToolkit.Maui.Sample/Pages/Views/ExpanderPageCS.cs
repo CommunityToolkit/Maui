@@ -15,7 +15,7 @@ public class ExpanderPageCS : ContentPage
 			}
 		};
 
-		var content = new HorizontalStackLayout()
+		var content = new VerticalStackLayout()
 		{
 			Padding = new Thickness(10)
 		};
@@ -23,7 +23,7 @@ public class ExpanderPageCS : ContentPage
 		content.Children.Add(new Image
 		{
 			Source = "http://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Papio_anubis_%28Serengeti%2C_2009%29.jpg/200px-Papio_anubis_%28Serengeti%2C_2009%29.jpg",
-			Aspect = Aspect.AspectFill,
+			Aspect = Aspect.AspectFit,
 			HeightRequest = 120,
 			WidthRequest = 120
 		});
@@ -36,6 +36,13 @@ public class ExpanderPageCS : ContentPage
 
 		expander.Content = content;
 
-		Content = expander;
+		Content = new VerticalStackLayout()
+		{
+			Children =
+			{
+				new Label(){ Text = "Expander C# Sample", HorizontalOptions = LayoutOptions.Center},
+				expander
+			}
+		};
 	}
 }
