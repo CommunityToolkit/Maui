@@ -16,7 +16,7 @@ variables:
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
   XcodeVersion: '13.3.1'
   DotNetMauiRollbackFile: '6.0.312.json'
-  CheckDependencies: 'true'
+  ShouldCheckDependencies: true
 
 trigger:
   branches:
@@ -154,7 +154,7 @@ jobs:
 
           exit 0;
         displayName: 'Check Dependencies'
-        condition: eq(variables.CheckDependencies, 'true')
+        condition: eq(variables.ShouldCheckDependencies, true)
       
       # publish
       - task: PowerShell@2
