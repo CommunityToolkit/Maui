@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CommunityToolkit.Sample": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\..\\samples\\CommunityToolkit.Maui.Sample\\CommunityToolkit.Maui.Sample.csproj"
+    }
+  }
+}
