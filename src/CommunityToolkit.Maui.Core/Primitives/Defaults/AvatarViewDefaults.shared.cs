@@ -1,6 +1,6 @@
-﻿namespace CommunityToolkit.Maui.Core;
+﻿using System.ComponentModel;
 
-using System.ComponentModel;
+namespace CommunityToolkit.Maui.Core;
 
 /// <summary>Default Values for <see cref="IAvatarView"/></summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
@@ -33,4 +33,8 @@ public static class AvatarViewDefaults
 	/// <summary>Default corner radius.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static CornerRadius DefaultCornerRadius { get; } = new(24, 24, 24, 24);
+
+	/// <summary>Default padding.</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public static Thickness DefaultPadding { get; } = new Thickness(1);
 }

@@ -6,8 +6,8 @@ using Font = Microsoft.Maui.Font;
 
 namespace CommunityToolkit.Maui.Views;
 
-/// <summary>Avatar content view.</summary>
-public class AvatarView : Border, IAvatarView, IFontElement, ITextElement, IImageElement, ITextAlignmentElement, ILineHeightElement, ICornerElement
+/// <summary>AvatarView control.</summary>
+public class AvatarView : Border, IAvatarView, IFontElement, ITextElement, IImageElement, ITextAlignmentElement, ILineHeightElement, ICornerElement, IPaddingElement
 {
 	/// <summary>The backing store for the <see cref="BorderColor" /> bindable property.</summary>
 	public static readonly BindableProperty BorderColorProperty = BindableProperty.Create(nameof(IAvatarView.BorderColor), typeof(Color), typeof(IAvatarView), defaultValue: AvatarViewDefaults.DefaultBorderColor, propertyChanged: OnBorderColorPropertyChanged);
@@ -286,7 +286,7 @@ public class AvatarView : Border, IAvatarView, IFontElement, ITextElement, IImag
 
 	/// <summary>Padding default value creator.</summary>
 	/// <returns>Default padding Thickness.</returns>
-	Thickness IAvatarView.PaddingDefaultValueCreator() => default;
+	Thickness IPaddingElement.PaddingDefaultValueCreator() => AvatarViewDefaults.DefaultPadding;
 
 	/// <inheritdoc/>
 	string ITextElement.UpdateFormsText(string original, TextTransform transform) => TextTransformUtilites.GetTransformedText(original, transform);
