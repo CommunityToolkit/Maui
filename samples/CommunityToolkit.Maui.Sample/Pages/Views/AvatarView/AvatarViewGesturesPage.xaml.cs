@@ -19,7 +19,7 @@ public partial class AvatarViewGesturesPage : BasePage<AvatarViewGesturesViewMod
 
 	static async Task ShowToastGestureMessage(string message)
 	{
-		Core.IToast toast = Toast.Make(message);
+		Core.IToast toast = Toast.Make(message, Core.ToastDuration.Short);
 		await toast.Show();
 	}
 }
