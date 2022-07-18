@@ -48,6 +48,7 @@
                         FontSize="{Binding FontSize}"
                         HeightRequest="{Binding HeightRequest}"
                         ImageSource="{Binding ImageSource}"
+                        SemanticProperties.Description="{Binding Description}"
                         Text="{Binding Text}"
                         TextColor="{Binding TextColor}"
                         WidthRequest="{Binding WidthRequest}" />

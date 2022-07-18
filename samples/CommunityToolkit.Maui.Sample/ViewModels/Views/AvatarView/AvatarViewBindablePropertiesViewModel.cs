@@ -9,7 +9,8 @@ public class AvatarViewBindablePropertiesViewModel : BaseViewModel
 	{
 		new AvatarModel
 		{
-			Text = "SW", // Sam Worthington
+			Description = "Sam Worthington",
+			Text = "SW",
 			TextColor = Colors.Blue,
 			BackgroundColor = Colors.Yellow,
 			ImageSource = "https://clipground.com/images/avatar-movie-clipart.png", // Using URL image
@@ -25,7 +26,8 @@ public class AvatarViewBindablePropertiesViewModel : BaseViewModel
 
 		new AvatarModel
 		{
-			Text = "ZS", // Zoe Saldana
+			Description = "Zoe Saldana",
+			Text = "ZS",
 			TextColor = Colors.Yellow,
 			BackgroundColor = Colors.Blue,
 			ImageSource = "avatar_icon.png", // Using local MauiImage
@@ -41,7 +43,8 @@ public class AvatarViewBindablePropertiesViewModel : BaseViewModel
 
 		new AvatarModel
 		{
-			Text = "SW", // Sigourney Weaver
+			Description = "Sigourney Weaver",
+			Text = "SW",
 			TextColor = Colors.Yellow,
 			BackgroundColor = Colors.Green,
 			BorderWidth = 3,
@@ -56,7 +59,8 @@ public class AvatarViewBindablePropertiesViewModel : BaseViewModel
 
 		new AvatarModel
 		{
-			Text = "SL", // Stephen Lang
+			Description = "Stephen Lang",
+			Text = "SL",
 			TextColor = Colors.White,
 			BackgroundColor = Colors.Black,
 			BorderWidth = Thickness.Zero,
@@ -71,7 +75,8 @@ public class AvatarViewBindablePropertiesViewModel : BaseViewModel
 
 		new AvatarModel
 		{
-			Text = "Michelle Rodriguez", // Michelle Rodriguez
+			Description = "Michelle Rodriguez",
+			Text = "Michelle Rodriguez",
 			TextColor = Colors.Yellow,
 			BackgroundColor = Colors.Gray,
 			BorderWidth = 1,
