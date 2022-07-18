@@ -1,7 +1,14 @@
 ﻿namespace CommunityToolkit.Maui.Animations;
 
-class FadeAnimation : BaseAnimation
+/// <summary>
+/// Animation that will fade the supplied view to the specified <see cref="Opacity"/>
+/// and then back to it's original <see cref="Opacity"/>.
+/// </summary>
+public class FadeAnimation : BaseAnimation
 {
+	/// <summary>
+	/// Initializes a new instance of <see cref="FadeAnimation"/>.
+	/// </summary>
 	public FadeAnimation() : base(300)
 	{
 
@@ -27,6 +34,7 @@ class FadeAnimation : BaseAnimation
 		set => SetValue(OpacityProperty, value);
 	}
 
+	/// <inheritdoc />
 	public override async Task Animate(VisualElement view)
 	{
 		ArgumentNullException.ThrowIfNull(view);
