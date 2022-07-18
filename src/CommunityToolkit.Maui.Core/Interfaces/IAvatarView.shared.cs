@@ -11,12 +11,12 @@ public interface IAvatarView : IBorderView, ILabel, Microsoft.Maui.IImage, IImag
 	/// <summary>Gets a value indicating the avatar border width.</summary>
 	double BorderWidth { get; }
 
-	/// <summary>Gets a value indicating the avatar corner radius (MAUI).</summary>
+	/// <summary>Gets a value indicating the avatar corner radius <see cref="Microsoft.Maui.CornerRadius"/>.</summary>
 	CornerRadius CornerRadius { get; }
 
 	//// NOTE to implementer: Implement these methods explicitly
 
-	/// <summary>Gets a value indicating the corner radius default.</summary>
+	/// <summary>Gets a value indicating the corner radius default <see cref="Microsoft.Maui.CornerRadius"/>.</summary>
 	CornerRadius CornerRadiusDefaultValue { get; }
 
 	/// <summary>Gets a value indicating the text default.</summary>
