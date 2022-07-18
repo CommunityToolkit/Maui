@@ -169,9 +169,6 @@ public class AvatarView : Border, IAvatarView, IFontElement, ITextElement, IImag
 	/// <summary>Gets the avatar default text value.</summary>
 	string IAvatarView.TextDefaultValue => (string)TextProperty.DefaultValue;
 
-	/// <summary>Gets the corder radius property default value.</summary>
-	CornerRadius IAvatarView.CornerRadiusDefaultValue => (CornerRadius)CornerRadiusProperty.DefaultValue;
-
 	/// <summary>Gets a value indicating whether the avatar image source is empty.</summary>
 	bool IImageSource.IsEmpty => AvatarImage.Source is null;
 
