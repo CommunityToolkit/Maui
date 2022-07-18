@@ -15,7 +15,8 @@ variables:
   PathToCommunityToolkitAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Analyzers.CodeFixes/CommunityToolkit.Maui.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
   XcodeVersion: '13.3.1'
-  RollbackFile: '6.0.312.json'
+  DotNetMauiRollbackFile: '6.0.312.json'
+  ShouldCheckDependencies: true
 
 trigger:
   branches:
@@ -50,8 +51,10 @@ jobs:
         inputs:
           packageType: 'sdk'
           version: '$(TOOLKIT_NET6_VERSION)'
-      - powershell: dotnet workload install maui --from-rollback-file $(RollbackFile) --source https://api.nuget.org/v3/index.json
+
+      - powershell: dotnet workload install maui --from-rollback-file $(DotNetMauiRollbackFile) --source https://api.nuget.org/v3/index.json
         displayName: Install .NET MAUI $(TOOLKIT_NET6_VERSION)
+
       # if this is a tagged build, then update the version number
       - powershell: |
           $buildSourceBranch = "$(Build.SourceBranch)"
@@ -60,6 +63,7 @@ jobs:
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$tagVersion")
         displayName: Set NuGet Version to Tag Number
         condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+
       # if this is a PR build, then update the version number
       - powershell: |
           $prNumber = $env:System_PullRequest_PullRequestNumber
@@ -70,6 +74,7 @@ jobs:
           Write-Host "##vso[build.updatebuildnumber]$fullVersionString"
         displayName: Set NuGet Version to PR Version
         condition: and(succeeded(), eq(variables['build.reason'], 'PullRequest'))
+
       # build analyzers
       - task: VSBuild@1
         displayName: 'Build CommunityToolkit.Maui.Analyzers'
@@ -77,18 +82,21 @@ jobs:
           solution: '$(PathToCommunityToolkitAnalyzersCsproj)'
           configuration: 'Release'
           msbuildArgs: '/restore'
+
       - task: VSBuild@1
         displayName: 'Build CommunityToolkit.Maui.Analyzers.CodeFixes'
         inputs:
           solution: '$(PathToCommunityToolkitAnalyzersCodeFixCsproj)'
           configuration: 'Release'
           msbuildArgs: '/restore'
+
       - task: VSBuild@1
         displayName: 'Build CommunityToolkit.Maui.SourceGenerators'
         inputs:
           solution: '$(PathToCommunityToolkitSourceGeneratorsCsproj)'
           configuration: 'Release'
           msbuildArgs: '/restore'
+
       # test
       - task: DotNetCoreCLI@2
         displayName: 'Run CommunityToolkit.Maui Unit Tests'
@@ -97,25 +105,20 @@ jobs:
           projects: '$(PathToCommunityToolkitUnitTestCsproj)'
           arguments: '--configuration Release --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory $(Agent.TempDirectory)'
           publishTestResults: false    
-      - task: DotNetCoreCLI@2
-        displayName: 'Run CommunityToolkit.Maui.Analyzers Unit Tests'
-        inputs:
-          command: 'test'
-          projects: '$(PathToCommunityToolkitAnalyzersUnitTestCsproj)'
-          arguments: '--configuration Release'
-          publishTestResults: false  
       - task: PublishTestResults@2
         displayName: 'Publish Test Results'
         inputs:
           testResultsFormat: VSTest
           testResultsFiles: '**/*.trx'
           searchFolder: $(Agent.TempDirectory)
+
       - task: PublishCodeCoverageResults@1
         displayName: 'Publish Code Coverage Results'
         inputs:
           codeCoverageTool: 'Cobertura'
           summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
           failIfCoverageEmpty: true
+
       # pack
       - task: VSBuild@1
         displayName: 'Build and Pack CommunityToolkit.Maui.Core'
@@ -123,20 +126,27 @@ jobs:
           solution: '$(PathToCommunityToolkitCoreCsproj)'
           configuration: 'Release'
           msbuildArgs: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'     
+      
       - task: VSBuild@1
         displayName: 'Build and Pack CommunityToolkit.Maui'
         inputs:
           solution: '$(PathToCommunityToolkitCsproj)'
           configuration: 'Release'
           msbuildArgs: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'
+      
       # check vulnerabilities
-      - task: DotNetCoreCLI@2
+      - powershell: |
+          dotnet list $(PathToSolution) package --vulnerable --include-transitive | findstr /S /c:"has the following vulnerable packages";
+          if ($LastExitCode -ne 1)
+          {
+            dotnet list $(PathToSolution) package --vulnerable --include-transitive;
+            exit 1;
+          }
+
+          exit 0;
         displayName: 'Check Dependencies'
-        inputs:
-          command: 'custom'
-          custom: 'list'
-          arguments: 'package --vulnerable --include-transitive'
-          projects: $(PathToSolution)
+        condition: eq(variables.ShouldCheckDependencies, true)
+      
       # publish
       - task: PowerShell@2
         displayName: 'Copy NuGet Packages to Staging Directory'
@@ -147,6 +157,7 @@ jobs:
             $filter = "nupkg"
             Get-ChildItem -Path $source -Recurse | Where-Object { $_.Extension -match $filter } | Copy-Item -Destination "$(Build.ArtifactStagingDirectory)"
           pwsh: true
+      
       # Sign NuGet Packages
       - task: PowerShell@2
         displayName: Authenticode Sign Packages
@@ -157,6 +168,7 @@ jobs:
           SignClientSecret: $(SignClientSecret)
           ArtifactDirectory: $(Build.ArtifactStagingDirectory)
         condition: and(succeeded(), not(eq(variables['build.reason'], 'PullRequest')), not(eq(variables['SignClientSecret'], '')), not(eq(variables['SignClientUser'], '')))
+      
       # publish the packages
       - task: PublishBuildArtifacts@1
         displayName: 'Publish NuGets'
@@ -174,8 +186,10 @@ jobs:
         inputs:
           packageType: 'sdk'
           version: '$(LATEST_NET6_VERSION)'
+
       - powershell: dotnet workload install maui
         displayName: Install Latest .NET MAUI Workload
+
       # build sample
       - task: VSBuild@1
         displayName: 'Build Community Toolkit Sample'
@@ -197,43 +211,53 @@ jobs:
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$tagVersion")
         displayName: Set NuGet Version to Tag Number
         condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+
       - task: CmdLine@2
         displayName: 'Set Xcode Version'
         inputs:
           script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XcodeVersion).app;sudo xcode-select --switch /Applications/Xcode_$(XcodeVersion).app/Contents/Developer
+     
       - task: UseDotNet@2
         displayName: Install .NET $(TOOLKIT_NET6_VERSION)
         inputs:
           packageType: 'sdk'
           version: '$(TOOLKIT_NET6_VERSION)'
+
       - task: CmdLine@2
         displayName: 'Install .NET MAUI Workload $(TOOLKIT_NET6_VERSION)'
         inputs:
-          script: dotnet workload install maui --from-rollback-file $(RollbackFile) --source https://api.nuget.org/v3/index.json
+          script: dotnet workload install maui --from-rollback-file $(DotNetMauiRollbackFile) --source https://api.nuget.org/v3/index.json
+
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.Analyzers'
         inputs:
           script: 'dotnet build -c Release $(PathToCommunityToolkitAnalyzersCsproj)'
+
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.Analyzers.CodeFixes'
         inputs:
           script: 'dotnet build -c Release $(PathToCommunityToolkitAnalyzersCodeFixCsproj)'
+
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.SourceGenerators'
         inputs:
           script: 'dotnet build -c Release $(PathToCommunityToolkitSourceGeneratorsCsproj)'
+
       - task: CmdLine@2
         displayName: 'Run CommunityToolkit.Maui.Analyzers.UnitTests'
         inputs:
           script: 'dotnet test $(PathToCommunityToolkitAnalyzersUnitTestCsproj) -c Release'
+
       - task: CmdLine@2
-        displayName: 'Run CommunityToolkit.Maui.UnitTests'
+        displayName: 'Run Unit Tests'
         inputs:
           script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release'
+
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit.Maui.Core NuGet'
         inputs:
           script: 'dotnet pack $(PathToCommunityToolkitCoreCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
+
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit.Maui NuGet'
         inputs:
@@ -248,15 +272,18 @@ jobs:
         displayName: 'Set Xcode Version'
         inputs:
           script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XcodeVersion).app;sudo xcode-select --switch /Applications/Xcode_$(XcodeVersion).app/Contents/Developer
+      
       - task: UseDotNet@2
         displayName: Install Latest .NET SDK
         inputs:
           packageType: 'sdk'
           version: '$(LATEST_NET6_VERSION)'
+
       - task: CmdLine@2
         displayName: 'Install Latest .NET MAUI Workload'
         inputs:
           script: dotnet workload install maui
+
       - task: CmdLine@2
         displayName: 'Build Community Toolkit Sample'
         inputs:
