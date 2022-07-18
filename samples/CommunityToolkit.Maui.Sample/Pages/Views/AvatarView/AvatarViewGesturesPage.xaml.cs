@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
@@ -7,13 +7,19 @@ public partial class AvatarViewGesturesPage : BasePage<AvatarViewGesturesViewMod
 {
 	public AvatarViewGesturesPage(AvatarViewGesturesViewModel avatarViewGesturesViewModel) : base(avatarViewGesturesViewModel) => InitializeComponent();
 
-	void DragGestureRecognizer_DragStarting(object sender, DragStartingEventArgs e) => Debug.WriteLine("AvatarView drag gesture recognizer, drag starting.");
+	async void DragGestureRecognizer_DragStarting(object sender, DragStartingEventArgs e) => await ShowToastGestureMessage("AvatarView drag gesture recognizer, drag starting.");
 
-	void PanGestureRecognizer_PanUpdated(object sender, PanUpdatedEventArgs e) => Debug.WriteLine("AvatarView pan gesture recognizer, pan updated.");
+	async void PanGestureRecognizer_PanUpdated(object sender, PanUpdatedEventArgs e) => await ShowToastGestureMessage("AvatarView pan gesture recognizer, pan updated.");
 
-	void PinchGestureRecognizer_PinchUpdated(object sender, PinchGestureUpdatedEventArgs e) => Debug.WriteLine("AvatarView pinch gesture recognizer, pinch updated.");
+	async void PinchGestureRecognizer_PinchUpdated(object sender, PinchGestureUpdatedEventArgs e) => await ShowToastGestureMessage("AvatarView pinch gesture recognizer, pinch updated.");
 
-	void SwipeGestureRecognizer_Swiped(object sender, SwipedEventArgs e) => Debug.WriteLine("AvatarView swipe gesture recognizer, swiped.");
+	async void SwipeGestureRecognizer_Swiped(object sender, SwipedEventArgs e) => await ShowToastGestureMessage("AvatarView swipe gesture recognizer, swiped.");
 
-	void TapGestureRecognizer_Tapped(object sender, EventArgs e) => Debug.WriteLine("AvatarView Tap Gesture Recognizer, tapped.");
+	async void TapGestureRecognizer_Tapped(object sender, EventArgs e) => await ShowToastGestureMessage("AvatarView Tap Gesture Recognizer, tapped.");
+
+	static async Task ShowToastGestureMessage(string message)
+	{
+		Core.IToast toast = Toast.Make(message);
+		await toast.Show();
+	}
 }
