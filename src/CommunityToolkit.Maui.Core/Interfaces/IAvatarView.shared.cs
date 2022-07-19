@@ -17,7 +17,7 @@ public interface IAvatarView : IBorderView, ILabel, Microsoft.Maui.IImage, IImag
 	//// NOTE to implementer: Implement these methods explicitly
 
 	/// <summary>Gets a value indicating the text default.</summary>
-	string TextDefaultValue { get; }
+	string? TextDefaultValue { get; }
 
 	/// <summary>Indicates whether border colour is set.</summary>
 	/// <returns>True if set.</returns>
