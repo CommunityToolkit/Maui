@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <pages:BasePage
     x:Class="CommunityToolkit.Maui.Sample.Pages.Views.AvatarViewBindablePropertiesPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -31,7 +31,6 @@
         <BoxView Style="{StaticResource Divider}" />
         <CollectionView
             Margin="4"
-            HorizontalOptions="Start"
             ItemsSource="{Binding AvatarList}">
             <CollectionView.ItemsLayout>
                 <LinearItemsLayout ItemSpacing="8" Orientation="Vertical" />
