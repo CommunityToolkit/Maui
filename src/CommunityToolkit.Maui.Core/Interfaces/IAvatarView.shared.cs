@@ -59,10 +59,6 @@ public interface IAvatarView : IBorderView, ILabel, Microsoft.Maui.IImage, IImag
 	/// <param name="newValue">New Value</param>
 	void OnTextPropertyChanged(string oldValue, string newValue);
 
-	/// <summary>Padding default value creator method.</summary>
-	/// <returns>Padding thickness.</returns>
-	Thickness PaddingDefaultValueCreator();
-
 	/// <summary>On border colour property changed.</summary>
 	/// <param name="oldValue">Old value</param>
 	/// <param name="newValue">New Value</param>
