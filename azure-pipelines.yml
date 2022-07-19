@@ -105,6 +105,15 @@ jobs:
           projects: '$(PathToCommunityToolkitUnitTestCsproj)'
           arguments: '--configuration Release --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory $(Agent.TempDirectory)'
           publishTestResults: false    
+
+      - task: DotNetCoreCLI@2
+        displayName: 'Run CommunityToolkit.Maui.Analyzers Unit Tests'
+        inputs:
+          command: 'test'
+          projects: '$(PathToCommunityToolkitAnalyzersUnitTestCsproj)'
+          arguments: '--configuration Release'
+          publishTestResults: false  
+
       - task: PublishTestResults@2
         displayName: 'Publish Test Results'
         inputs:
@@ -249,7 +258,7 @@ jobs:
           script: 'dotnet test $(PathToCommunityToolkitAnalyzersUnitTestCsproj) -c Release'
 
       - task: CmdLine@2
-        displayName: 'Run Unit Tests'
+        displayName: 'Run CommunityToolkit.Maui.UnitTests'
         inputs:
           script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release'
 
