@@ -4,11 +4,13 @@ namespace CommunityToolkit.Maui.Sample.ViewModels;
 
 public abstract class BaseGalleryViewModel : BaseViewModel
 {
-	protected BaseGalleryViewModel(IEnumerable<SectionModel> items)
+	protected BaseGalleryViewModel(SectionModel[] items)
 	{
-		foreach (var item in items)
+		foreach (SectionModel? item in from SectionModel item in items
+									   where items.Count(x => x.ViewModelType == item.ViewModelType) is not 1
+									   select item)
 		{
-			if (items.Count(x => x.ViewModelType == item.ViewModelType) is not 1)
+			if (item is not null)
 			{
 				throw new InvalidOperationException($"Duplicate {nameof(SectionModel)}.{nameof(SectionModel.ViewModelType)} found for {item.ViewModelType}");
 			}
