@@ -14,14 +14,14 @@
             <ResourceDictionary>
                 <Style x:Key="Description" TargetType="Label">
                     <Setter Property="VerticalTextAlignment" Value="Start" />
-                    <Setter Property="HorizontalTextAlignment" Value="Start" />
+                    <Setter Property="HorizontalTextAlignment" Value="Center" />
                     <Setter Property="LineBreakMode" Value="WordWrap" />
                     <Setter Property="Margin" Value="4,0" />
                 </Style>
-                <Style x:Key="Divider" TargetType="BoxView">
-                    <Setter Property="HeightRequest" Value="1" />
-                    <Setter Property="Margin" Value="50, 25" />
-                    <Setter Property="Color" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                <Style x:Key="HR" TargetType="Line">
+                    <Setter Property="Stroke" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                    <Setter Property="X2" Value="300" />
+                    <Setter Property="HorizontalOptions" Value="Center" />
                 </Style>
                 <Style x:Key="AvatarViewSamplesBase" TargetType="mct:AvatarView">
                     <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=Black, Dark=White}" />
@@ -34,7 +34,7 @@
                     <Setter Property="Padding" Value="4,4" />
                     <Setter Property="ColumnDefinitions" Value="60,60,60,60,60" />
                     <Setter Property="ColumnSpacing" Value="4" />
-                    <Setter Property="HorizontalOptions" Value="Start" />
+                    <Setter Property="HorizontalOptions" Value="Center" />
                     <Setter Property="RowDefinitions" Value="Auto" />
                     <Setter Property="RowSpacing" Value="4" />
                 </Style>
@@ -60,7 +60,7 @@
         </VerticalStackLayout.Resources>
 
         <Label Style="{StaticResource Description}" Text="AvatarView sample as a Ratings." />
-        <BoxView Style="{StaticResource Divider}" />
+        <Line Style="{StaticResource HR}" />
         <Grid Style="{StaticResource RatingGrid}">
             <mct:AvatarView
                 Grid.Column="0"
