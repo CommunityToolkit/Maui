@@ -1,6 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-public sealed class CsharpBindingPopupViewModel
+namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
+
+[INotifyPropertyChanged]
+public sealed partial class CsharpBindingPopupViewModel
 {
 	public string Title { get; } = "C# Binding Popup";
 
