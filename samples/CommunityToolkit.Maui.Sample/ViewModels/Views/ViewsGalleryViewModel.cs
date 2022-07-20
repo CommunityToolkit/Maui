@@ -15,7 +15,7 @@ public sealed class ViewsGalleryViewModel : BaseGalleryViewModel
 			SectionModel.Create<AvatarViewGesturesViewModel>("AvatarView Gestures Page", Colors.Red, "A page demonstrating AvatarViews with different gesture options."),
 			SectionModel.Create<AvatarViewImagesViewModel>("AvatarView Images Page", Colors.Red, "A page demonstrating AvatarViews with different image options."),
 			SectionModel.Create<AvatarViewKeyboardViewModel>("AvatarView Keyboard Page", Colors.Red, "A page demonstrating AvatarViews aligned as a Keyboard."),
-			SectionModel.Create<AvatarViewSampleRatingViewModel>("AvatarView Rating Page", Colors.Red, "A page demonstrating AvatarViews as a star rating."),
+			SectionModel.Create<AvatarViewRatingViewModel>("AvatarView Rating Page", Colors.Red, "A page demonstrating AvatarViews as a star rating."),
 			SectionModel.Create<AvatarViewShadowsViewModel>("AvatarView Shadows Page", Colors.Red, "A page demonstrating AvatarViews with various shadow options."),
 			SectionModel.Create<AvatarViewShapesViewModel>("AvatarView Shapes Page", Colors.Red, "A page demonstrating AvatarViews with various shape options."),
 			SectionModel.Create<AvatarViewSizesViewModel>("AvatarView Sizes Page", Colors.Red, "A page demonstrating AvatarViews with various size options."),
@@ -25,6 +25,5 @@ public sealed class ViewsGalleryViewModel : BaseGalleryViewModel
 			SectionModel.Create<PopupAnchorViewModel>("Anchor Popup", Colors.Red, "Popups can be anchored to other view's on the screen"),
 		})
 	{
-
 	}
 }

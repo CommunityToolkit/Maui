@@ -89,7 +89,7 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<AvatarViewGesturesPage, AvatarViewGesturesViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<AvatarViewImagesPage, AvatarViewImagesViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<AvatarViewKeyboardPage, AvatarViewKeyboardViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
-		CreateViewModelMapping<AvatarViewSampleRatingPage, AvatarViewSampleRatingViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		CreateViewModelMapping<AvatarViewRatingPage, AvatarViewRatingViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<AvatarViewShadowsPage, AvatarViewShadowsViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<AvatarViewShapesPage, AvatarViewShapesViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<AvatarViewSizesPage, AvatarViewSizesViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
@@ -99,7 +99,10 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<PopupPositionPage, PopupPositionViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 	});
 
-	public AppShell() => InitializeComponent();
+	public AppShell()
+	{
+		InitializeComponent();
+	}
 
 	public static string GetPageRoute(Type viewModelType)
 	{
@@ -108,18 +111,21 @@ public partial class AppShell : Shell
 			throw new KeyNotFoundException($"No map for ${viewModelType} was found on navigation mappings. Please register your ViewModel in {nameof(AppShell)}.{nameof(viewModelMappings)}");
 		}
 
-		var uri = new UriBuilder("", GetPageRoute(mapping.GalleryPageType, mapping.ContentPageType));
+		UriBuilder uri = new("", GetPageRoute(mapping.GalleryPageType, mapping.ContentPageType));
 		return uri.Uri.OriginalString[..^1];
 	}
 
-	static string GetPageRoute(Type galleryPageType, Type contentPageType) => $"//{galleryPageType.Name}/{contentPageType.Name}";
+	static string GetPageRoute(Type galleryPageType, Type contentPageType)
+	{
+		return $"//{galleryPageType.Name}/{contentPageType.Name}";
+	}
 
 	static KeyValuePair<Type, (Type GalleryPageType, Type ContentPageType)> CreateViewModelMapping<TPage, TViewModel, TGalleryPage, TGalleryViewModel>() where TPage : BasePage<TViewModel>
 																																							where TViewModel : BaseViewModel
 																																							where TGalleryPage : BaseGalleryPage<TGalleryViewModel>
 																																							where TGalleryViewModel : BaseGalleryViewModel
 	{
-		var route = GetPageRoute(typeof(TGalleryPage), typeof(TPage));
+		string route = GetPageRoute(typeof(TGalleryPage), typeof(TPage));
 		Routing.RegisterRoute(route, typeof(TPage));
 
 		return new KeyValuePair<Type, (Type GalleryPageType, Type ContentPageType)>(typeof(TViewModel), (typeof(TGalleryPage), typeof(TPage)));

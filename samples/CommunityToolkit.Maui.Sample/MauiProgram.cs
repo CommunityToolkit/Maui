@@ -116,7 +116,7 @@ public static class MauiProgram
 		services.AddTransient<AvatarViewGesturesPage>();
 		services.AddTransient<AvatarViewImagesPage>();
 		services.AddTransient<AvatarViewKeyboardPage>();
-		services.AddTransient<AvatarViewSampleRatingPage>();
+		services.AddTransient<AvatarViewRatingPage>();
 		services.AddTransient<AvatarViewShadowsPage>();
 		services.AddTransient<AvatarViewShapesPage>();
 		services.AddTransient<AvatarViewSizesPage>();
@@ -208,7 +208,7 @@ public static class MauiProgram
 		services.AddTransient<AvatarViewGesturesViewModel>();
 		services.AddTransient<AvatarViewImagesViewModel>();
 		services.AddTransient<AvatarViewKeyboardViewModel>();
-		services.AddTransient<AvatarViewSampleRatingViewModel>();
+		services.AddTransient<AvatarViewRatingViewModel>();
 		services.AddTransient<AvatarViewShadowsViewModel>();
 		services.AddTransient<AvatarViewShapesViewModel>();
 		services.AddTransient<AvatarViewSizesViewModel>();
