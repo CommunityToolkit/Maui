@@ -111,7 +111,7 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 	}
 
 	/// <summary>Gets or sets the avatar font.</summary>
-	public Font Font { get; set; } = Font.SystemFontOfSize(AvatarViewDefaults.FontSize);
+	public Font Font { get; set; } = Font.SystemFontOfSize((double)FontElement.FontSizeProperty.DefaultValue);
 
 	/// <summary>Gets or sets a value of the avatar font attributes property.</summary>
 	public FontAttributes FontAttributes

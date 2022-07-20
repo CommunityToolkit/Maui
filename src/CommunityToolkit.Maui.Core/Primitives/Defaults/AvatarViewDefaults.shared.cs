@@ -22,10 +22,6 @@ public static class AvatarViewDefaults
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const double DefaultWidthRequest = 48;
 
-	/// <summary>Default Font Size</summary>
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const double FontSize = 14;
-
 	/// <summary>default avatar border colour.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static Color DefaultBorderColor { get; } = Colors.White;

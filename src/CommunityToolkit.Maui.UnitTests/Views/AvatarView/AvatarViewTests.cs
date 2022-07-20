@@ -58,7 +58,7 @@ public class AvatarViewTests : BaseHandlerTest
 	public void DefaultFontSize()
 	{
 		AvatarView avatarView = new();
-		Assert.Equal(14, avatarView.Font.Size);
+		Assert.Equal(0, avatarView.FontSize);
 	}
 
 	[Fact]
