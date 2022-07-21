@@ -296,10 +296,10 @@
               ]
             },
             {
-              "operator": "or",
+              "operator": "not",
               "operands": [
                 {
-                  "operator": "not",
+                  "operator": "or",
                   "operands": [
                     {
                       "name": "isInProjectColumn",
@@ -307,12 +307,7 @@
                         "projectName": "New Feature Proposals",
                         "columnName": "Closed"
                       }
-                    }
-                  ]
-                },
-                {
-                  "operator": "not",
-                  "operands": [
+                    },
                     {
                       "name": "isInProjectColumn",
                       "parameters": {
