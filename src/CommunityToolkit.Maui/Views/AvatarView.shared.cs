@@ -2,7 +2,6 @@ using System.ComponentModel;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
-using Font = Microsoft.Maui.Font;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -72,6 +71,7 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		HorizontalOptions = VerticalOptions = LayoutOptions.Center;
 		HeightRequest = AvatarViewDefaults.DefaultHeightRequest;
 		WidthRequest = AvatarViewDefaults.DefaultWidthRequest;
+		Padding = AvatarViewDefaults.DefaultPadding;
 		Stroke = AvatarViewDefaults.DefaultBorderColor;
 		StrokeThickness = AvatarViewDefaults.DefaultBorderWidth;
 		StrokeShape = new RoundRectangle
@@ -111,7 +111,7 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 	}
 
 	/// <summary>Gets or sets the avatar font.</summary>
-	public Font Font { get; set; } = Font.SystemFontOfSize((double)FontElement.FontSizeProperty.DefaultValue);
+	public Microsoft.Maui.Font Font { get; set; } = Microsoft.Maui.Font.SystemFontOfSize((double)FontElement.FontSizeProperty.DefaultValue);
 
 	/// <summary>Gets or sets a value of the avatar font attributes property.</summary>
 	public FontAttributes FontAttributes
@@ -215,42 +215,34 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 
 	static void OnCornerRadiusPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		var avatarView = (AvatarView)bindable;
-		var corderRadius = (CornerRadius)newValue;
+		AvatarView avatarView = (AvatarView)bindable;
+		CornerRadius corderRadius = (CornerRadius)newValue;
 
 		avatarView.StrokeShape = new RoundRectangle { CornerRadius = corderRadius };
 	}
 
 	static void OnBorderColorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		var avatarView = (AvatarView)bindable;
-		var borderColor = (Color)newValue;
-
-		avatarView.Stroke = borderColor;
+		AvatarView avatarView = (AvatarView)bindable;
+		avatarView.Stroke = (Color)newValue;
 	}
 
 	static void OnBorderWidthPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		var avatarView = (AvatarView)bindable;
-		var thickness = (double)newValue;
-
-		avatarView.StrokeThickness = thickness;
+		AvatarView avatarView = (AvatarView)bindable;
+		avatarView.StrokeThickness = (double)newValue;
 	}
 
 	static void OnImageSourceChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		var avatarView = (AvatarView)bindable;
-		var imageSource = (ImageSource)newValue;
-
-		avatarView.HandleImageChanged(imageSource);
+		AvatarView avatarView = (AvatarView)bindable;
+		avatarView.HandleImageChanged((ImageSource)newValue);
 	}
 
 	static void OnTextPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		var avatarView = (AvatarView)bindable;
-		var text = (string)newValue;
-
-		avatarView.avatarLabel.Text = text;
+		AvatarView avatarView = (AvatarView)bindable;
+		avatarView.avatarLabel.Text = (string)newValue;
 	}
 
 	static double GetAverageCorderRadius(in CornerRadius cornerRadius) =>
