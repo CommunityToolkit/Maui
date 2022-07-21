@@ -42,14 +42,14 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 	/// <summary>The backing store for the <see cref="TextTransform" /> bindable property.</summary>
 	public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
 
-	readonly Image avatarImage = new Image
+	readonly Image avatarImage = new()
 	{
 		MaximumHeightRequest = AvatarViewDefaults.DefaultHeightRequest,
 		MaximumWidthRequest = AvatarViewDefaults.DefaultWidthRequest,
 		Aspect = Aspect.AspectFill,
 	};
 
-	readonly Label avatarLabel = new Label
+	readonly Label avatarLabel = new()
 	{
 		HorizontalTextAlignment = TextAlignment.Center,
 		VerticalTextAlignment = TextAlignment.Center,
