@@ -37,7 +37,7 @@ public static class MauiProgram
 
 	static void RegisterViewsAndViewModels(in IServiceCollection services)
 	{
-		// Add Gallery Pages / ViewModels
+		// Add Gallery Pages + ViewModels
 		services.AddTransient<AlertsGalleryPage, AlertsGalleryViewModel>();
 		services.AddTransient<BehaviorsGalleryPage, BehaviorsGalleryViewModel>();
 		services.AddTransient<ConvertersGalleryPage, ConvertersGalleryViewModel>();
@@ -45,11 +45,11 @@ public static class MauiProgram
 		services.AddTransient<LayoutsGalleryPage, LayoutsGalleryViewModel>();
 		services.AddTransient<ViewsGalleryPage, ViewsGalleryViewModel>();
 
-		// Add Alerts Pages / ViewModels
+		// Add Alerts Pages + ViewModels
 		services.AddTransient<SnackbarPage, SnackbarViewModel>();
 		services.AddTransient<ToastPage, ToastViewModel>();
 
-		// Add AvatarView pages / ViewModels
+		// Add AvatarView pages + ViewModels
 		services.AddTransient<AvatarViewBindablePropertiesPage, AvatarViewBindablePropertiesViewModel>();
 		services.AddTransient<AvatarViewBordersPage, AvatarViewBordersViewModel>();
 		services.AddTransient<AvatarViewColorsPage, AvatarViewColorsViewModel>();
@@ -62,7 +62,7 @@ public static class MauiProgram
 		services.AddTransient<AvatarViewShapesPage, AvatarViewShapesViewModel>();
 		services.AddTransient<AvatarViewSizesPage, AvatarViewSizesViewModel>();
 
-		// Add Behaviors Pages / ViewModels
+		// Add Behaviors Pages + ViewModels
 		services.AddTransient<AnimationBehaviorPage, AnimationBehaviorViewModel>();
 		services.AddTransient<CharactersValidationBehaviorPage, CharactersValidationBehaviorViewModel>();
 		services.AddTransient<EmailValidationBehaviorPage, EmailValidationBehaviorViewModel>();
@@ -80,7 +80,7 @@ public static class MauiProgram
 		services.AddTransient<UriValidationBehaviorPage, UriValidationBehaviorViewModel>();
 		services.AddTransient<UserStoppedTypingBehaviorPage, UserStoppedTypingBehaviorViewModel>();
 
-		// Add Converters Pages / ViewModels
+		// Add Converters Pages + ViewModels
 		services.AddTransient<BoolToObjectConverterPage, BoolToObjectConverterViewModel>();
 		services.AddTransient<ByteArrayToImageSourceConverterPage, ByteArrayToImageSourceConverterViewModel>();
 		services.AddTransient<ColorsConverterPage, ColorsConverterViewModel>();
@@ -114,13 +114,13 @@ public static class MauiProgram
 		services.AddTransient<TextCaseConverterPage, TextCaseConverterViewModel>();
 		services.AddTransient<VariableMultiValueConverterPage, VariableMultiValueConverterViewModel>();
 
-		// Add Extensions Pages / ViewModels
+		// Add Extensions Pages + ViewModels
 		services.AddTransient<ColorAnimationExtensionsPage, ColorAnimationExtensionsViewModel>();
 
-		// Add Layouts Pages / ViewModels
+		// Add Layouts Pages + ViewModels
 		services.AddTransient<UniformItemsLayoutPage, UniformItemsLayoutViewModel>();
 
-		// Add Views Pages / ViewModels
+		// Add Views Pages + ViewModels
 		services.AddTransient<DrawingViewPage, DrawingViewViewModel>();
 		services.AddTransient<MultiplePopupPage, MultiplePopupViewModel>();
 		services.AddTransient<PopupAnchorPage, PopupAnchorViewModel>();
