@@ -327,15 +327,16 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		((ILineHeightElement)avatarLabel).OnLineHeightChanged(oldValue, newValue);
 	}
 
-	void HandleCornerRadiusChanged()
+	/// <summary>Handle the corner radius change, for windows render.</summary>
+	/// <remarks>For details <see href="https://github.com/dotnet/maui/issues/6986"/>.</remarks>
+	void HandleCornerRadiusForImage()
 	{
-		CornerRadius cornerRadius = new();
-		if (CornerRadius != cornerRadius)
-		{
-			StrokeShape = new RoundRectangle { CornerRadius = cornerRadius };
-		}
-
-		StrokeShape = new RoundRectangle { CornerRadius = CornerRadius };
+		double horizontalThickness = Padding.HorizontalThickness > 0 ? Padding.HorizontalThickness : 0;
+		double verticalThickness = Padding.VerticalThickness > 0 ? Padding.VerticalThickness : 0;
+		double width = Width >= 0 ? Width - horizontalThickness : double.PositiveInfinity;
+		double height = Height >= 0 ? Height - verticalThickness : double.PositiveInfinity;
+		Rect rect = new(-(horizontalThickness / 2), -(verticalThickness / 2), width, height);
+		avatarImage.Clip = new RoundRectangleGeometry { CornerRadius = CornerRadius, Rect = rect };
 	}
 
 	void HandleFontChanged()
@@ -351,7 +352,8 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		avatarImage.Source = newValue;
 
 		Content = newValue is not null ? avatarImage : avatarLabel;
-
-		HandleCornerRadiusChanged();
+#if WINDOWS
+		HandleCornerRadiusForImage();
+#endif
 	}
 }
