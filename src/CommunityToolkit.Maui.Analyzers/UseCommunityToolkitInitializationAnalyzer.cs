@@ -55,7 +55,7 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 	{
 		foreach (var method in root.DescendantNodes().OfType<MethodDeclarationSyntax>())
 		{
-			if (method.DescendantNodes().OfType<ExpressionStatementSyntax>().Any(x => x.ToString().Contains(".UseMauiCommunityToolkit(")))
+			if (method.DescendantNodes().OfType<ExpressionStatementSyntax>().Any(x => x.DescendantNodes().Any(x => x.ToString().Contains(".UseMauiCommunityToolkit("))))
 			{
 				return true;
 			}
