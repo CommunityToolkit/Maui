@@ -28,7 +28,7 @@
                     <!--  The actress who played Neytiri in Avatar (2009) is Zoe Saldana (ZS)  -->
                     <Setter Property="Text" Value="ZS" />
                     <Setter Property="TextColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
-                    <Setter Property="BorderColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
+                    <Setter Property="BorderColor" Value="{AppThemeBinding Light=Black, Dark=White}" />
                     <Setter Property="Margin" Value="4" />
                 </Style>
                 <Style

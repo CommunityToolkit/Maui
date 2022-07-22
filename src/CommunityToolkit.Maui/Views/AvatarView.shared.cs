@@ -43,8 +43,6 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 
 	readonly Image avatarImage = new()
 	{
-		MaximumHeightRequest = AvatarViewDefaults.DefaultHeightRequest,
-		MaximumWidthRequest = AvatarViewDefaults.DefaultWidthRequest,
 		Aspect = Aspect.AspectFill,
 	};
 
@@ -52,8 +50,6 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 	{
 		HorizontalTextAlignment = TextAlignment.Center,
 		VerticalTextAlignment = TextAlignment.Center,
-		MaximumHeightRequest = AvatarViewDefaults.DefaultHeightRequest,
-		MaximumWidthRequest = AvatarViewDefaults.DefaultWidthRequest,
 		Text = AvatarViewDefaults.DefaultText,
 	};
 
@@ -62,10 +58,7 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 	/// <summary>Initializes a new instance of the <see cref="AvatarView"/> class.</summary>
 	public AvatarView()
 	{
-		this.SetBinding(Border.StrokeProperty, new Binding(nameof(BorderColor), source: this));
-		this.SetBinding(Border.StrokeThicknessProperty, new Binding(nameof(BorderWidth), source: this));
-		avatarImage.SetBinding(Image.SourceProperty, new Binding(nameof(ImageSource), source: this));
-		avatarLabel.SetBinding(Label.TextProperty, new Binding(nameof(Text), source: this));
+		PropertyChanged += HandlePropertyChanged;
 
 		IsEnabled = true;
 		HorizontalOptions = VerticalOptions = LayoutOptions.Center;
@@ -81,6 +74,9 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		Content = avatarLabel;
 		InvalidateMeasure();
 	}
+
+	/// <summary>Gets or sets the avatar font.</summary>
+	public Microsoft.Maui.Font Font { get; set; } = Microsoft.Maui.Font.SystemFontOfSize((double)FontElement.FontSizeProperty.DefaultValue);
 
 	/// <summary>Gets or sets a value of the avatar border colour.</summary>
 	public Color BorderColor
@@ -109,9 +105,6 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		get => (CornerRadius)GetValue(CornerRadiusProperty);
 		set => SetValue(CornerRadiusProperty, value);
 	}
-
-	/// <summary>Gets or sets the avatar font.</summary>
-	public Microsoft.Maui.Font Font { get; set; } = Microsoft.Maui.Font.SystemFontOfSize((double)FontElement.FontSizeProperty.DefaultValue);
 
 	/// <summary>Gets or sets a value of the avatar font attributes property.</summary>
 	public FontAttributes FontAttributes
@@ -264,8 +257,6 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 
 	void ITextElement.OnTextColorPropertyChanged(Color oldValue, Color newValue) => avatarLabel.TextColor = newValue;
 
-	Thickness IPaddingElement.PaddingDefaultValueCreator() => AvatarViewDefaults.DefaultPadding;
-
 	string ITextElement.UpdateFormsText(string original, TextTransform transform) => TextTransformUtilites.GetTransformedText(original, transform);
 
 	void ITextElement.OnCharacterSpacingPropertyChanged(double oldValue, double newValue)
@@ -322,22 +313,8 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 	void ITextAlignmentElement.OnHorizontalTextAlignmentPropertyChanged(TextAlignment oldValue, TextAlignment newValue) =>
 		((ITextAlignmentElement)avatarLabel).OnHorizontalTextAlignmentPropertyChanged(oldValue, newValue);
 
-	void ILineHeightElement.OnLineHeightChanged(double oldValue, double newValue)
-	{
+	void ILineHeightElement.OnLineHeightChanged(double oldValue, double newValue) =>
 		((ILineHeightElement)avatarLabel).OnLineHeightChanged(oldValue, newValue);
-	}
-
-	/// <summary>Handle the corner radius change, for windows render.</summary>
-	/// <remarks>For details <see href="https://github.com/dotnet/maui/issues/6986"/>.</remarks>
-	void HandleCornerRadiusForImage()
-	{
-		double horizontalThickness = Padding.HorizontalThickness > 0 ? Padding.HorizontalThickness : 0;
-		double verticalThickness = Padding.VerticalThickness > 0 ? Padding.VerticalThickness : 0;
-		double width = Width >= 0 ? Width - horizontalThickness : double.PositiveInfinity;
-		double height = Height >= 0 ? Height - verticalThickness : double.PositiveInfinity;
-		Rect rect = new(-(horizontalThickness / 2), -(verticalThickness / 2), width, height);
-		avatarImage.Clip = new RoundRectangleGeometry { CornerRadius = CornerRadius, Rect = rect };
-	}
 
 	void HandleFontChanged()
 	{
@@ -347,13 +324,43 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 
 	void HandleImageChanged(ImageSource newValue)
 	{
-		avatarImage.MaximumHeightRequest = Height >= 0 ? Height : double.PositiveInfinity; // Minimum value of MaximumHeightRequest cannot be lower than 0
-		avatarImage.MaximumWidthRequest = Width >= 0 ? Width : double.PositiveInfinity; // Minimum value of MaximumWidthRequest cannot be lower than 0
 		avatarImage.Source = newValue;
+		if (newValue is not null)
+		{
+			// Work-around for iOS / MacOS bug that paints `Border.BackgroundColor` over top of `Border.Content` when an Image is used for `Border.Content`
+			if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst() || OperatingSystem.IsMacOS())
+			{
+				BackgroundColor = Colors.Transparent;
+			}
 
-		Content = newValue is not null ? avatarImage : avatarLabel;
-#if WINDOWS
-		HandleCornerRadiusForImage();
-#endif
+			Content = avatarImage;
+		}
+		else
+		{
+			Content = avatarLabel;
+		}
+	}
+
+	void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
+	{
+		// Ensure avatarImage is clipped to the bounds of the AvatarView whenever its Height, Width, CornerRadius and Padding properties change		
+		if ((e.PropertyName == HeightProperty.PropertyName
+				|| e.PropertyName == WidthProperty.PropertyName
+				|| e.PropertyName == PaddingProperty.PropertyName
+				|| e.PropertyName == StrokeThickness.PropertyName
+				|| e.PropertyName == ImageSourceProperty.PropertyName
+				|| e.PropertyName == BorderWidthProperty.PropertyName
+				|| e.PropertyName == CornerRadiusProperty.PropertyName
+)
+			&& Height >= 0 // The default value of Height (before the view is drawn onto the page) is -1
+			&& Width >= 0) // The default value of Y (before the view is drawn onto the page) is -1
+		{
+			var imageWidth = Width - (BorderWidth * 2) - Padding.Left - Padding.Right;
+			var imageHeight = Height - (BorderWidth * 2) - Padding.Top - Padding.Bottom;
+
+			var rect = new Rect(0, 0, imageWidth, imageHeight);
+
+			avatarImage.Clip = new RoundRectangleGeometry { CornerRadius = CornerRadius, Rect = rect };
+		}
 	}
 }
