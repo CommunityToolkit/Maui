@@ -228,7 +228,7 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 	static void OnImageSourceChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		AvatarView avatarView = (AvatarView)bindable;
-		avatarView.HandleImageChanged((ImageSource)newValue);
+		avatarView.HandleImageChanged((ImageSource?)newValue);
 	}
 
 	static void OnTextPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -321,7 +321,7 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 	}
 
-	void HandleImageChanged(ImageSource newValue)
+	void HandleImageChanged(ImageSource? newValue)
 	{
 		avatarImage.Source = newValue;
 		if (newValue is not null)
