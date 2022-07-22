@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.UnitTests.Mocks;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Internals;
 using Xunit;
@@ -7,10 +8,15 @@ namespace CommunityToolkit.Maui.UnitTests.Views.AvatarView;
 
 public class AvatarViewTests : BaseHandlerTest
 {
+	public AvatarViewTests()
+	{
+		Assert.IsAssignableFrom<IAvatarView>(new Maui.Views.AvatarView());
+	}
+
 	[Fact]
 	public void ConstructorTest()
 	{
-		AvatarView avatarView = new()
+		var avatarView = new Maui.Views.AvatarView()
 		{
 			BorderColor = Colors.Beige,
 			BorderWidth = 2,
@@ -36,35 +42,35 @@ public class AvatarViewTests : BaseHandlerTest
 	[Fact]
 	public void DefaultBorderColor()
 	{
-		AvatarView avatarView = new();
+		var avatarView = new Maui.Views.AvatarView();
 		Assert.Equal(Colors.White, avatarView.BorderColor);
 	}
 
 	[Fact]
 	public void DefaultBorderWidth()
 	{
-		AvatarView avatarView = new();
+		var avatarView = new Maui.Views.AvatarView();
 		Assert.Equal(1, avatarView.BorderWidth);
 	}
 
 	[Fact]
 	public void DefaultCornerRadius()
 	{
-		AvatarView avatarView = new();
+		var avatarView = new Maui.Views.AvatarView();
 		Assert.Equal(new CornerRadius(24, 24, 24, 24), avatarView.CornerRadius);
 	}
 
 	[Fact]
 	public void DefaultFontSize()
 	{
-		AvatarView avatarView = new();
+		var avatarView = new Maui.Views.AvatarView();
 		Assert.Equal(0, avatarView.FontSize);
 	}
 
 	[Fact]
 	public void DefaultHeightRequest()
 	{
-		AvatarView avatarView = new();
+		var avatarView = new Maui.Views.AvatarView();
 		Size request = avatarView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
 		Assert.Equal(48, request.Height);
 	}
@@ -72,14 +78,14 @@ public class AvatarViewTests : BaseHandlerTest
 	[Fact]
 	public void DefaultText()
 	{
-		AvatarView avatarView = new();
+		var avatarView = new Maui.Views.AvatarView();
 		Assert.Equal("?", avatarView.Text);
 	}
 
 	[Fact]
 	public void DefaultWidthRequest()
 	{
-		AvatarView avatarView = new();
+		var avatarView = new Maui.Views.AvatarView();
 		Size request = avatarView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
 		Assert.Equal(48, request.Width);
 	}
@@ -93,7 +99,7 @@ public class AvatarViewTests : BaseHandlerTest
 	{
 		var handler = new FontElementHandlerStub();
 
-		AvatarView avatarView = new()
+		var avatarView = new Maui.Views.AvatarView()
 		{
 			Handler = handler
 		};
@@ -108,7 +114,7 @@ public class AvatarViewTests : BaseHandlerTest
 	public void TestBindingContextPropagation()
 	{
 		object context = new();
-		AvatarView avatar = new()
+		Maui.Views.AvatarView avatar = new()
 		{
 			BindingContext = context
 		};
@@ -120,7 +126,7 @@ public class AvatarViewTests : BaseHandlerTest
 	[Fact]
 	public void TestBorderColorToBlack()
 	{
-		AvatarView avatarView = new()
+		var avatarView = new Maui.Views.AvatarView()
 		{
 			BorderColor = Colors.Red,
 		};
@@ -143,7 +149,7 @@ public class AvatarViewTests : BaseHandlerTest
 	[Fact]
 	public void TestBorderWidthToSeven()
 	{
-		AvatarView avatarView = new()
+		var avatarView = new Maui.Views.AvatarView()
 		{
 			BorderWidth = 2,
 		};
@@ -167,7 +173,7 @@ public class AvatarViewTests : BaseHandlerTest
 	[Fact]
 	public void TestCornerRadiusFourCornerRadiusToOneTwoThreeFour()
 	{
-		AvatarView avatarView = new()
+		var avatarView = new Maui.Views.AvatarView()
 		{
 			CornerRadius = new CornerRadius(3, 4, 5, 6),
 		};
@@ -191,7 +197,7 @@ public class AvatarViewTests : BaseHandlerTest
 	[Fact]
 	public void TestCornerRadiusSameRadiusToThree()
 	{
-		AvatarView avatarView = new()
+		var avatarView = new Maui.Views.AvatarView()
 		{
 			CornerRadius = new CornerRadius(7),
 		};
@@ -214,7 +220,7 @@ public class AvatarViewTests : BaseHandlerTest
 	[Fact]
 	public void TestImageSource()
 	{
-		AvatarView avatarView = new();
+		var avatarView = new Maui.Views.AvatarView();
 		Assert.Null(avatarView.ImageSource);
 
 		bool signaled = false;
@@ -236,7 +242,7 @@ public class AvatarViewTests : BaseHandlerTest
 	[Fact]
 	public void TestTextColorToYellow()
 	{
-		AvatarView avatarView = new()
+		var avatarView = new Maui.Views.AvatarView()
 		{
 			TextColor = Microsoft.Maui.Graphics.Colors.Coral,
 		};
@@ -259,7 +265,7 @@ public class AvatarViewTests : BaseHandlerTest
 	[Fact]
 	public void TestTextSetToZz()
 	{
-		AvatarView avatarView = new()
+		var avatarView = new Maui.Views.AvatarView()
 		{
 			Text = "GL"
 		};
@@ -282,7 +288,7 @@ public class AvatarViewTests : BaseHandlerTest
 	[Fact]
 	public void TestTextTranformToLowerCase()
 	{
-		AvatarView avatarView = new()
+		var avatarView = new Maui.Views.AvatarView()
 		{
 			TextTransform = TextTransform.Uppercase,
 		};
