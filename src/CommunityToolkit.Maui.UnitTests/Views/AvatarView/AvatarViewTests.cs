@@ -1,9 +1,9 @@
-﻿namespace CommunityToolkit.Maui.UnitTests.Views.AvatarView;
-
-using CommunityToolkit.Maui.UnitTests.Mocks;
+﻿using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Internals;
 using Xunit;
+
+namespace CommunityToolkit.Maui.UnitTests.Views.AvatarView;
 
 public class AvatarViewTests : BaseHandlerTest
 {
