@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Views.AvatarViewDayOfWeekPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:models="clr-namespace:CommunityToolkit.Maui.Sample.Models"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView"
+    Title="AvatarView DoW"
+    x:DataType="vm:AvatarViewDayOfWeekViewModel"
+    x:TypeArguments="vm:AvatarViewDayOfWeekViewModel">
+    <VerticalStackLayout Spacing="12">
+        <VerticalStackLayout.Resources>
+            <ResourceDictionary>
+                <Style x:Key="Description" TargetType="Label">
+                    <Setter Property="VerticalTextAlignment" Value="Start" />
+                    <Setter Property="HorizontalTextAlignment" Value="Center" />
+                    <Setter Property="LineBreakMode" Value="WordWrap" />
+                    <Setter Property="Margin" Value="4,0" />
+                </Style>
+                <Style x:Key="HR" TargetType="Line">
+                    <Setter Property="Stroke" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                    <Setter Property="X2" Value="300" />
+                    <Setter Property="HorizontalOptions" Value="Center" />
+                </Style>
+                <Style x:Key="AvatarViewSamplesBase" TargetType="mct:AvatarView">
+                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                    <!--  The actress who played Neytiri in Avatar (2009) is Zoe Saldana (ZS)  -->
+                    <Setter Property="Text" Value="ZS" />
+                    <Setter Property="TextColor" Value="Black" />
+                    <Setter Property="BorderColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
+                </Style>
+                <Style
+                    x:Key="DayOfWeekDay"
+                    BasedOn="{StaticResource AvatarViewSamplesBase}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="BorderColor" Value="{AppThemeBinding Dark=White, Light=Black}" />
+                    <Setter Property="CornerRadius" Value="12" />
+                    <Setter Property="FontSize" Value="Default" />
+                    <Setter Property="WidthRequest" Value="48" />
+                    <Setter Property="HeightRequest" Value="48" />
+                </Style>
+            </ResourceDictionary>
+        </VerticalStackLayout.Resources>
+        <Label Style="{StaticResource Description}" Text="AvatarView sample as a Day of the Week." />
+        <Line Style="{StaticResource HR}" />
+        <mct:AvatarView
+            BackgroundColor="#ABDEE6"
+            HeightRequest="48"
+            Style="{StaticResource DayOfWeekDay}"
+            Text="MON"
+            WidthRequest="48" />
+        <mct:AvatarView
+            BackgroundColor="#CBAACB"
+            HeightRequest="48"
+            Style="{StaticResource DayOfWeekDay}"
+            Text="TUE"
+            WidthRequest="48" />
+        <mct:AvatarView
+            BackgroundColor="#FFFF85"
+            HeightRequest="48"
+            Style="{StaticResource DayOfWeekDay}"
+            Text="WED"
+            WidthRequest="48" />
+        <mct:AvatarView
+            BackgroundColor="#FFCC86"
+            HeightRequest="48"
+            Style="{StaticResource DayOfWeekDay}"
+            Text="THU"
+            WidthRequest="48" />
+        <mct:AvatarView
+            BackgroundColor="#F3B0C3"
+            HeightRequest="48"
+            Style="{StaticResource DayOfWeekDay}"
+            Text="FRI"
+            WidthRequest="48" />
+        <mct:AvatarView
+            BackgroundColor="#CCE2CB"
+            HeightRequest="48"
+            Style="{StaticResource DayOfWeekDay}"
+            Text="SAT"
+            WidthRequest="48" />
+        <mct:AvatarView
+            BackgroundColor="#97C1A9"
+            HeightRequest="48"
+            Style="{StaticResource DayOfWeekDay}"
+            Text="SUN"
+            WidthRequest="48" />
+    </VerticalStackLayout>
+</pages:BasePage>

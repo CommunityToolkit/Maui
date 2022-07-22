@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Views.AvatarViewBordersPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView"
+    Title="AvatarView Borders"
+    x:DataType="vm:AvatarViewBordersViewModel"
+    x:TypeArguments="vm:AvatarViewBordersViewModel">
+    <VerticalStackLayout Spacing="12">
+        <VerticalStackLayout.Resources>
+            <ResourceDictionary>
+                <Style x:Key="Description" TargetType="Label">
+                    <Setter Property="VerticalTextAlignment" Value="Start" />
+                    <Setter Property="HorizontalTextAlignment" Value="Center" />
+                    <Setter Property="LineBreakMode" Value="WordWrap" />
+                    <Setter Property="Margin" Value="4,0" />
+                </Style>
+                <Style x:Key="HR" TargetType="Line">
+                    <Setter Property="Stroke" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                    <Setter Property="X2" Value="300" />
+                    <Setter Property="HorizontalOptions" Value="Center" />
+                </Style>
+                <Style x:Key="AvatarViewBordersBase" TargetType="mct:AvatarView">
+                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                    <!--  The actress who played Neytiri in Avatar (2009) is Zoe Saldana (ZS)  -->
+                    <Setter Property="Text" Value="ZS" />
+                    <Setter Property="TextColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
+                    <Setter Property="BorderColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
+                </Style>
+                <Style
+                    x:Key="AvatarViewBordersDefault"
+                    BasedOn="{StaticResource AvatarViewBordersBase}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="WidthRequest" Value="64" />
+                    <Setter Property="HeightRequest" Value="64" />
+                </Style>
+                <Style
+                    x:Key="AvatarViewBordersNone"
+                    BasedOn="{StaticResource AvatarViewBordersDefault}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="BorderWidth" Value="0" />
+                </Style>
+                <Style
+                    x:Key="AvatarViewBordersThin"
+                    BasedOn="{StaticResource AvatarViewBordersDefault}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="BorderWidth" Value="1" />
+                    <Setter Property="BorderColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
+                </Style>
+                <Style
+                    x:Key="AvatarViewBordersThickColour"
+                    BasedOn="{StaticResource AvatarViewBordersDefault}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="BorderWidth" Value="5" />
+                    <Setter Property="BorderColor" Value="{AppThemeBinding Dark=Blue, Light=Green}" />
+                </Style>
+            </ResourceDictionary>
+        </VerticalStackLayout.Resources>
+        <Label Style="{StaticResource Description}" Text="AvatarView supports all border properties." />
+        <Line Style="{StaticResource HR}" />
+        <mct:AvatarView SemanticProperties.Description="Sample AvatarView showing no border." Style="{StaticResource AvatarViewBordersNone}" />
+        <mct:AvatarView SemanticProperties.Description="Sample AvatarView showing a thin coloured border." Style="{StaticResource AvatarViewBordersThin}" />
+        <mct:AvatarView SemanticProperties.Description="Sample AvatarView showing a thick coloured border." Style="{StaticResource AvatarViewBordersThickColour}" />
+        <mct:AvatarView
+            BorderWidth="3"
+            SemanticProperties.Description="Sample AvatarView using a linear gradient brush for the border colour."
+            Style="{StaticResource AvatarViewBordersDefault}">
+            <mct:AvatarView.Stroke>
+                <LinearGradientBrush EndPoint="0,1">
+                    <GradientStop Offset="0.1" Color="Blue" />
+                    <GradientStop Offset="1.0" Color="Red" />
+                </LinearGradientBrush>
+            </mct:AvatarView.Stroke>
+        </mct:AvatarView>
+    </VerticalStackLayout>
+</pages:BasePage>

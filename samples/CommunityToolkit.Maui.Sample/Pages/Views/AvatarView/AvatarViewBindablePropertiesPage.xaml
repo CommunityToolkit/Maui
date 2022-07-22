@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Views.AvatarViewBindablePropertiesPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:models="clr-namespace:CommunityToolkit.Maui.Sample.Models"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView"
+    Title="AvatarView Bindable"
+    x:DataType="vm:AvatarViewBindablePropertiesViewModel"
+    x:TypeArguments="vm:AvatarViewBindablePropertiesViewModel">
+    <VerticalStackLayout Spacing="12">
+        <VerticalStackLayout.Resources>
+            <ResourceDictionary>
+                <Style x:Key="Description" TargetType="Label">
+                    <Setter Property="VerticalTextAlignment" Value="Start" />
+                    <Setter Property="HorizontalTextAlignment" Value="Center" />
+                    <Setter Property="LineBreakMode" Value="WordWrap" />
+                    <Setter Property="Margin" Value="4,0" />
+                </Style>
+                <Style x:Key="HR" TargetType="Line">
+                    <Setter Property="Stroke" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                    <Setter Property="X2" Value="300" />
+                    <Setter Property="HorizontalOptions" Value="Center" />
+                </Style>
+            </ResourceDictionary>
+        </VerticalStackLayout.Resources>
+
+        <Label Style="{StaticResource Description}" Text="AvatarView supports data binding." />
+        <Line Style="{StaticResource HR}" />
+        <CollectionView Margin="4" ItemsSource="{Binding AvatarList}" WidthRequest="200">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout ItemSpacing="8" Orientation="Vertical" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:AvatarModel">
+                    <ContentView>
+                        <mct:AvatarView
+                            Padding="{Binding Padding}"
+                            BackgroundColor="{Binding BackgroundColor}"
+                            BorderColor="{Binding BorderColor}"
+                            BorderWidth="{Binding BorderWidth}"
+                            CornerRadius="{Binding CornerRadius}"
+                            FontAttributes="{Binding FontAttributes}"
+                            FontSize="{Binding FontSize}"
+                            HeightRequest="{Binding HeightRequest}"
+                            ImageSource="{Binding ImageSource}"
+                            SemanticProperties.Description="{Binding Description}"
+                            Text="{Binding Text}"
+                            TextColor="{Binding TextColor}"
+                            WidthRequest="{Binding WidthRequest}" />
+                    </ContentView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </VerticalStackLayout>
+</pages:BasePage>
