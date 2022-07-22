@@ -351,7 +351,8 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 				|| e.PropertyName == CornerRadiusProperty.PropertyName
 				|| e.PropertyName == StrokeThicknessProperty.PropertyName)
 			&& Height >= 0 // The default value of Height (before the view is drawn onto the page) is -1
-			&& Width >= 0) // The default value of Y (before the view is drawn onto the page) is -1
+			&& Width >= 0 // The default value of Y (before the view is drawn onto the page) is -1
+			&& avatarImage.Source is not null)
 		{
 			var imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
 			var imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
