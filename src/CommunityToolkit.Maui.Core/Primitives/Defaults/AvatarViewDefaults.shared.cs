@@ -32,5 +32,5 @@ public static class AvatarViewDefaults
 
 	/// <summary>Default padding.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static Thickness DefaultPadding { get; } = new Thickness(1);
+	public static Thickness DefaultPadding { get; } = new(1);
 }

@@ -72,7 +72,6 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 			CornerRadius = new CornerRadius(AvatarViewDefaults.DefaultCornerRadius.TopLeft, AvatarViewDefaults.DefaultCornerRadius.TopRight, AvatarViewDefaults.DefaultCornerRadius.BottomLeft, AvatarViewDefaults.DefaultCornerRadius.BottomRight),
 		};
 		Content = avatarLabel;
-		InvalidateMeasure();
 	}
 
 	/// <summary>Gets or sets the avatar font.</summary>
@@ -347,16 +346,15 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		if ((e.PropertyName == HeightProperty.PropertyName
 				|| e.PropertyName == WidthProperty.PropertyName
 				|| e.PropertyName == PaddingProperty.PropertyName
-				|| e.PropertyName == StrokeThickness.PropertyName
 				|| e.PropertyName == ImageSourceProperty.PropertyName
 				|| e.PropertyName == BorderWidthProperty.PropertyName
 				|| e.PropertyName == CornerRadiusProperty.PropertyName
-)
+				|| e.PropertyName == StrokeThicknessProperty.PropertyName)
 			&& Height >= 0 // The default value of Height (before the view is drawn onto the page) is -1
 			&& Width >= 0) // The default value of Y (before the view is drawn onto the page) is -1
 		{
-			var imageWidth = Width - (BorderWidth * 2) - Padding.Left - Padding.Right;
-			var imageHeight = Height - (BorderWidth * 2) - Padding.Top - Padding.Bottom;
+			var imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
+			var imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
 
 			var rect = new Rect(0, 0, imageWidth, imageHeight);
 
