@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core.Interfaces;
+﻿using System.Diagnostics;
+using CommunityToolkit.Maui.Core.Interfaces;
 using Microsoft.Maui.Layouts;
 
 namespace CommunityToolkit.Maui.Layouts;
@@ -47,28 +48,29 @@ public class UniformItemsLayout : Layout, IUniformItemsLayout
 	/// <returns>Child size</returns>
 	public Size ArrangeChildren(Rect rectangle)
 	{
-		Measure(rectangle.Width, rectangle.Height, MeasureFlags.None);
+		var width = rectangle.Width - Padding.HorizontalThickness;
+		var visibleChildren = Children.Where(x => x.Visibility == Visibility.Visible).ToArray();
 
-		var columns = GetColumnsCount(Children.Count, rectangle.Width, childWidth);
-		var rows = GetRowsCount(Children.Count, columns);
-		var boundsWidth = rectangle.Width / columns;
+		var columns = GetColumnsCount(visibleChildren.Length, width);
+		var rows = GetRowsCount(visibleChildren.Length, columns);
+		var boundsWidth = width / columns;
 		var boundsHeight = childHeight;
 		var bounds = new Rect(0, 0, boundsWidth, boundsHeight);
 		var count = 0;
 
 		for (var i = 0; i < rows; i++)
 		{
-			for (var j = 0; j < columns && count < Children.Count; j++)
+			for (var j = 0; j < columns && count < visibleChildren.Length; j++)
 			{
-				var item = Children[count];
-				bounds.X = j * boundsWidth;
-				bounds.Y = i * boundsHeight;
+				var item = visibleChildren[count];
+				bounds.X = j * boundsWidth + Padding.Left;
+				bounds.Y = i * boundsHeight + Padding.Top;
 				item.Arrange(bounds);
 				count++;
 			}
 		}
 
-		return new Size(boundsWidth, boundsHeight);
+		return new Size(boundsWidth + Padding.HorizontalThickness, boundsHeight + Padding.VerticalThickness);
 	}
 
 	/// <summary>
@@ -79,32 +81,34 @@ public class UniformItemsLayout : Layout, IUniformItemsLayout
 	/// <returns>Grid size</returns>
 	public Size Measure(double widthConstraint, double heightConstraint)
 	{
-		foreach (var child in Children)
-		{
-			if (child.Visibility is not Visibility.Visible)
-			{
-				continue;
-			}
+		var visibleChildren = Children.Where(x => x.Visibility == Visibility.Visible).ToArray();
 
-			var sizeRequest = child.Measure(double.PositiveInfinity, double.PositiveInfinity);
-			childHeight = sizeRequest.Height;
+		if (childWidth == 0)
+		{
+			var sizeRequest = visibleChildren[0].Measure(double.PositiveInfinity, double.PositiveInfinity);
+
 			childWidth = sizeRequest.Width;
+			childHeight = sizeRequest.Height;
 		}
 
-		var columns = GetColumnsCount(Children.Count, widthConstraint, childWidth);
-		var rows = GetRowsCount(Children.Count, columns);
+		var columns = GetColumnsCount(visibleChildren.Length, widthConstraint);
+		var rows = GetRowsCount(visibleChildren.Length, columns);
 
-		return new Size(columns * childWidth, rows * childHeight);
+		return new Size(columns * childWidth + Padding.HorizontalThickness, rows * childHeight + Padding.VerticalThickness);
 	}
 
 	/// <inheritdoc	/>
 	protected override ILayoutManager CreateLayoutManager() => this;
 
-	int GetColumnsCount(int visibleChildrenCount, double widthConstraint, double maxChildWidth)
-		=> Math.Min(double.IsPositiveInfinity(widthConstraint)
-					   ? visibleChildrenCount
-					   : Math.Min((int)(widthConstraint / maxChildWidth), visibleChildrenCount), MaxColumns);
+	int GetColumnsCount(int visibleChildrenCount, double widthConstraint)
+		=> Math.Min(
+			double.IsPositiveInfinity(widthConstraint)
+			   ? visibleChildrenCount
+			   : Math.Min((int)(widthConstraint / childWidth), visibleChildrenCount),
+			MaxColumns);
 
 	int GetRowsCount(int visibleChildrenCount, int columnsCount)
-		=> Math.Min((int)Math.Ceiling((double)visibleChildrenCount / columnsCount), MaxRows);
+		=> Math.Min(
+			(int)Math.Ceiling((double)visibleChildrenCount / columnsCount),
+			MaxRows);
 }
