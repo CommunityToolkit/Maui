@@ -141,7 +141,7 @@ public static class DrawingViewService
 		switch (brush)
 		{
 			case SolidPaint solidColorBrush:
-				context.SetFillColor(solidColorBrush.Color.ToCGColor());
+				context.SetFillColor(solidColorBrush.Color?.ToCGColor() ?? DrawingViewDefaults.BackgroundColor.AsCGColor());
 				context.FillRect(new CGRect(CGPoint.Empty, imageSize));
 				break;
 			case LinearGradientPaint linearGradientBrush:

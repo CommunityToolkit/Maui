@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Views.AvatarViewKeyboardPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView"
+    Title="AvatarView Keyboard"
+    x:DataType="vm:AvatarViewKeyboardViewModel"
+    x:TypeArguments="vm:AvatarViewKeyboardViewModel">
+    <VerticalStackLayout Spacing="12">
+        <VerticalStackLayout.Resources>
+            <ResourceDictionary>
+                <Style x:Key="Description" TargetType="Label">
+                    <Setter Property="VerticalTextAlignment" Value="Start" />
+                    <Setter Property="HorizontalTextAlignment" Value="Center" />
+                    <Setter Property="LineBreakMode" Value="WordWrap" />
+                    <Setter Property="Margin" Value="4,0" />
+                </Style>
+                <Style x:Key="HR" TargetType="Line">
+                    <Setter Property="Stroke" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                    <Setter Property="X2" Value="300" />
+                    <Setter Property="HorizontalOptions" Value="Center" />
+                </Style>
+                <Style x:Key="AvatarViewSamplesBase" TargetType="mct:AvatarView">
+                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                    <!--  The actress who played Neytiri in Avatar (2009) is Zoe Saldana (ZS)  -->
+                    <Setter Property="Text" Value="ZS" />
+                    <Setter Property="TextColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
+                    <Setter Property="BorderColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
+                </Style>
+                <Style
+                    x:Key="KeyboardKey"
+                    BasedOn="{StaticResource AvatarViewSamplesBase}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="CornerRadius" Value="24,24,24,24" />
+                    <Setter Property="WidthRequest" Value="48" />
+                    <Setter Property="HeightRequest" Value="32" />
+                    <Setter Property="Margin" Value="0" />
+                    <Setter Property="BorderColor" Value="White" />
+                    <Setter Property="TextColor" Value="White" />
+                </Style>
+                <Style
+                    x:Key="KeyboardKeyNumber"
+                    BasedOn="{StaticResource KeyboardKey}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="BackgroundColor" Value="#80AA0000" />
+                </Style>
+                <Style
+                    x:Key="KeyboardKeyChar"
+                    BasedOn="{StaticResource KeyboardKey}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="BackgroundColor" Value="#30AA0000" />
+                </Style>
+                <Style x:Key="SampleKeyboard" TargetType="Grid">
+                    <Setter Property="Margin" Value="4,0" />
+                    <Setter Property="Padding" Value="4,4" />
+                    <Setter Property="BackgroundColor" Value="Red" />
+                    <Setter Property="ColumnSpacing" Value="4" />
+                    <Setter Property="RowSpacing" Value="4" />
+                    <Setter Property="HorizontalOptions" Value="Start" />
+                    <Setter Property="RowDefinitions" Value="40,40,40,40" />
+                    <Setter Property="ColumnDefinitions" Value="56,56,56" />
+                    <Setter Property="HorizontalOptions" Value="Center" />
+                </Style>
+            </ResourceDictionary>
+        </VerticalStackLayout.Resources>
+
+        <Label Style="{StaticResource Description}" Text="AvatarView sample as a Keyboard." />
+        <Line Style="{StaticResource HR}" />
+        <Grid SemanticProperties.Description="Sample idea for using AvatarView to draw a keyboard." Style="{StaticResource SampleKeyboard}">
+            <mct:AvatarView
+                Grid.Row="0"
+                Grid.Column="0"
+                HeightRequest="32"
+                SemanticProperties.Description="Keyboard number 1"
+                Style="{StaticResource KeyboardKeyNumber}"
+                Text="1"
+                WidthRequest="48" />
+            <mct:AvatarView
+                Grid.Row="0"
+                Grid.Column="1"
+                HeightRequest="32"
+                SemanticProperties.Description="Keyboard number 2"
+                Style="{StaticResource KeyboardKeyNumber}"
+                Text="2"
+                WidthRequest="48" />
+            <mct:AvatarView
+                Grid.Row="0"
+                Grid.Column="2"
+                HeightRequest="32"
+                SemanticProperties.Description="Keyboard number 3"
+                Style="{StaticResource KeyboardKeyNumber}"
+                Text="3"
+                WidthRequest="48" />
+            <mct:AvatarView
+                Grid.Row="1"
+                Grid.Column="0"
+                HeightRequest="32"
+                SemanticProperties.Description="Keyboard number 4"
+                Style="{StaticResource KeyboardKeyNumber}"
+                Text="4"
+                WidthRequest="48" />
+            <mct:AvatarView
+                Grid.Row="1"
+                Grid.Column="1"
+                HeightRequest="32"
+                SemanticProperties.Description="Keyboard number 5"
+                Style="{StaticResource KeyboardKeyNumber}"
+                Text="5"
+                WidthRequest="48" />
+            <mct:AvatarView
+                Grid.Row="1"
+                Grid.Column="2"
+                HeightRequest="32"
+                SemanticProperties.Description="Keyboard number 6"
+                Style="{StaticResource KeyboardKeyNumber}"
+                Text="6"
+                WidthRequest="48" />
+            <mct:AvatarView
+                Grid.Row="2"
+                Grid.Column="0"
+                HeightRequest="32"
+                SemanticProperties.Description="Keyboard number 7"
+                Style="{StaticResource KeyboardKeyNumber}"
+                Text="7"
+                WidthRequest="48" />
+            <mct:AvatarView
+                Grid.Row="2"
+                Grid.Column="1"
+                HeightRequest="32"
+                SemanticProperties.Description="Keyboard number 8"
+                Style="{StaticResource KeyboardKeyNumber}"
+                Text="8"
+                WidthRequest="48" />
+            <mct:AvatarView
+                Grid.Row="2"
+                Grid.Column="2"
+                HeightRequest="32"
+                SemanticProperties.Description="Keyboard number 9"
+                Style="{StaticResource KeyboardKeyNumber}"
+                Text="9"
+                WidthRequest="48" />
+            <mct:AvatarView
+                Grid.Row="3"
+                Grid.Column="0"
+                HeightRequest="32"
+                SemanticProperties.Description="Keyboard comma"
+                Style="{StaticResource KeyboardKeyChar}"
+                Text=","
+                WidthRequest="48" />
+            <mct:AvatarView
+                Grid.Row="3"
+                Grid.Column="1"
+                HeightRequest="32"
+                SemanticProperties.Description="Keyboard number 0"
+                Style="{StaticResource KeyboardKeyNumber}"
+                Text="0"
+                WidthRequest="48" />
+            <mct:AvatarView
+                Grid.Row="3"
+                Grid.Column="2"
+                HeightRequest="32"
+                SemanticProperties.Description="Keyboard period"
+                Style="{StaticResource KeyboardKeyChar}"
+                Text="."
+                WidthRequest="48" />
+        </Grid>
+    </VerticalStackLayout>
+</pages:BasePage>

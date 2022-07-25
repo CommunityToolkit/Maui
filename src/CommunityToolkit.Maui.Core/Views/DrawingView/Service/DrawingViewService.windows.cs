@@ -176,7 +176,7 @@ public static class DrawingViewService
 		switch (brush)
 		{
 			case SolidPaint solidColorBrush:
-				return new CanvasSolidColorBrush(canvasResourceCreator, solidColorBrush.Color.ToWindowsColor());
+				return new CanvasSolidColorBrush(canvasResourceCreator, (solidColorBrush.Color ?? DrawingViewDefaults.BackgroundColor).ToWindowsColor());
 			case LinearGradientPaint linearGradientBrush:
 				{
 					var gradientStops = new CanvasGradientStop[linearGradientBrush.GradientStops.Length];

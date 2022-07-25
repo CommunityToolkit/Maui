@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Views.AvatarViewRatingPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView"
+    Title="AvatarView Ratings"
+    x:DataType="vm:AvatarViewRatingViewModel"
+    x:TypeArguments="vm:AvatarViewRatingViewModel">
+    <VerticalStackLayout Spacing="12">
+        <VerticalStackLayout.Resources>
+            <ResourceDictionary>
+                <Style x:Key="Description" TargetType="Label">
+                    <Setter Property="VerticalTextAlignment" Value="Start" />
+                    <Setter Property="HorizontalTextAlignment" Value="Center" />
+                    <Setter Property="LineBreakMode" Value="WordWrap" />
+                    <Setter Property="Margin" Value="4,0" />
+                </Style>
+                <Style x:Key="HR" TargetType="Line">
+                    <Setter Property="Stroke" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                    <Setter Property="X2" Value="300" />
+                    <Setter Property="HorizontalOptions" Value="Center" />
+                </Style>
+                <Style x:Key="AvatarViewSamplesBase" TargetType="mct:AvatarView">
+                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                    <!--  The actress who played Neytiri in Avatar (2009) is Zoe Saldana (ZS)  -->
+                    <Setter Property="Text" Value="ZS" />
+                    <Setter Property="TextColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
+                    <Setter Property="BorderColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
+                </Style>
+                <Style x:Key="RatingGrid" TargetType="Grid">
+                    <Setter Property="Padding" Value="4,4" />
+                    <Setter Property="ColumnDefinitions" Value="60,60,60,60,60" />
+                    <Setter Property="ColumnSpacing" Value="4" />
+                    <Setter Property="HorizontalOptions" Value="Center" />
+                    <Setter Property="RowDefinitions" Value="Auto" />
+                    <Setter Property="RowSpacing" Value="4" />
+                </Style>
+                <Style
+                    x:Key="Rating"
+                    BasedOn="{StaticResource AvatarViewSamplesBase}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="BorderColor" Value="Silver" />
+                    <Setter Property="Background">
+                        <LinearGradientBrush EndPoint="0,1">
+                            <GradientStopCollection>
+                                <GradientStop Offset="0.1" Color="Gold" />
+                                <GradientStop Offset="1.0" Color="Red" />
+                            </GradientStopCollection>
+                        </LinearGradientBrush>
+                    </Setter>
+                    <Setter Property="FontSize" Value="Default" />
+                    <Setter Property="TextColor" Value="Silver" />
+                    <Setter Property="WidthRequest" Value="48" />
+                    <Setter Property="HeightRequest" Value="48" />
+                </Style>
+            </ResourceDictionary>
+        </VerticalStackLayout.Resources>
+
+        <Label Style="{StaticResource Description}" Text="AvatarView sample as a Ratings." />
+        <Line Style="{StaticResource HR}" />
+        <Grid Style="{StaticResource RatingGrid}">
+            <mct:AvatarView
+                Grid.Column="0"
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView idea using a polyline stroke shape to override the corder radius to draw a star."
+                StrokeShape="PolyLine 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
+                Style="{StaticResource Rating}"
+                Text="1"
+                WidthRequest="48" />
+            <mct:AvatarView
+                Grid.Column="1"
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView idea using a polyline stroke shape to override the corder radius to draw a star."
+                StrokeShape="PolyLine 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
+                Style="{StaticResource Rating}"
+                Text="2"
+                WidthRequest="48" />
+            <mct:AvatarView
+                Grid.Column="2"
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView idea using a polyline stroke shape to override the corder radius to draw a star."
+                StrokeShape="PolyLine 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
+                Style="{StaticResource Rating}"
+                Text="3"
+                WidthRequest="48" />
+            <mct:AvatarView
+                Grid.Column="3"
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView idea using a polyline stroke shape to override the corder radius to draw a star."
+                StrokeShape="PolyLine 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
+                Style="{StaticResource Rating}"
+                Text="4"
+                WidthRequest="48" />
+            <mct:AvatarView
+                Grid.Column="4"
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView idea using a polyline stroke shape to override the corder radius to draw a star, cliped by parent size."
+                StrokeShape="PolyLine 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
+                Style="{StaticResource Rating}"
+                Text="5"
+                WidthRequest="48">
+                <mct:AvatarView.Clip>
+                    <RectangleGeometry Rect="0,0,24,48" />
+                </mct:AvatarView.Clip>
+            </mct:AvatarView>
+        </Grid>
+    </VerticalStackLayout>
+</pages:BasePage>
