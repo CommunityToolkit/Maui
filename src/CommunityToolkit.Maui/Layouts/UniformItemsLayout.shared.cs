@@ -28,7 +28,7 @@ public class UniformItemsLayout : Layout, IUniformItemsLayout
 	public int MaxRows
 	{
 		get => (int)GetValue(MaxRowsProperty);
-		set => SetValue(MaxRowsProperty, value);
+		set => SetValue(MaxRowsProperty, Math.Clamp(value, 1, int.MaxValue));
 	}
 
 	/// <summary>
@@ -37,7 +37,7 @@ public class UniformItemsLayout : Layout, IUniformItemsLayout
 	public int MaxColumns
 	{
 		get => (int)GetValue(MaxColumnsProperty);
-		set => SetValue(MaxColumnsProperty, value);
+		set => SetValue(MaxColumnsProperty, Math.Clamp(value, 1, int.MaxValue));
 	}
 
 	/// <summary>
@@ -100,11 +100,15 @@ public class UniformItemsLayout : Layout, IUniformItemsLayout
 	protected override ILayoutManager CreateLayoutManager() => this;
 
 	int GetColumnsCount(int visibleChildrenCount, double widthConstraint)
-		=> Math.Min(
-			double.IsPositiveInfinity(widthConstraint)
-			   ? visibleChildrenCount
-			   : Math.Clamp((int)(widthConstraint / childWidth), 1, visibleChildrenCount),
-			MaxColumns);
+	{
+		var columnsCount = visibleChildrenCount;
+		if (childWidth != 0 && !double.IsPositiveInfinity(widthConstraint))
+		{
+			columnsCount = Math.Clamp((int) (widthConstraint / childWidth), 1, visibleChildrenCount);
+		}
+
+		return Math.Min(columnsCount, MaxColumns);
+	}
 
 	int GetRowsCount(int visibleChildrenCount, int columnsCount)
 		=> Math.Min(
