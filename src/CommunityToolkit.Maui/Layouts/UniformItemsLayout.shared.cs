@@ -1,4 +1,3 @@
-﻿using System.Diagnostics;
 using CommunityToolkit.Maui.Core.Interfaces;
 using Microsoft.Maui.Layouts;
 
@@ -48,7 +47,7 @@ public class UniformItemsLayout : Layout, IUniformItemsLayout
 	/// <returns>Child size</returns>
 	public Size ArrangeChildren(Rect rectangle)
 	{
-		var width = rectangle.Width - Padding.HorizontalThickness;
+		var width = Width - Padding.HorizontalThickness;
 		var visibleChildren = Children.Where(x => x.Visibility == Visibility.Visible).ToArray();
 
 		var columns = GetColumnsCount(visibleChildren.Length, width);
@@ -70,7 +69,7 @@ public class UniformItemsLayout : Layout, IUniformItemsLayout
 			}
 		}
 
-		return new Size(boundsWidth + Padding.HorizontalThickness, boundsHeight + Padding.VerticalThickness);
+		return bounds.Size;
 	}
 
 	/// <summary>
@@ -91,7 +90,7 @@ public class UniformItemsLayout : Layout, IUniformItemsLayout
 			childHeight = sizeRequest.Height;
 		}
 
-		var columns = GetColumnsCount(visibleChildren.Length, widthConstraint);
+		var columns = GetColumnsCount(visibleChildren.Length, widthConstraint - Padding.HorizontalThickness);
 		var rows = GetRowsCount(visibleChildren.Length, columns);
 
 		return new Size(columns * childWidth + Padding.HorizontalThickness, rows * childHeight + Padding.VerticalThickness);
@@ -104,7 +103,7 @@ public class UniformItemsLayout : Layout, IUniformItemsLayout
 		=> Math.Min(
 			double.IsPositiveInfinity(widthConstraint)
 			   ? visibleChildrenCount
-			   : Math.Min((int)(widthConstraint / childWidth), visibleChildrenCount),
+			   : Math.Clamp((int)(widthConstraint / childWidth), 1, visibleChildrenCount),
 			MaxColumns);
 
 	int GetRowsCount(int visibleChildrenCount, int columnsCount)
