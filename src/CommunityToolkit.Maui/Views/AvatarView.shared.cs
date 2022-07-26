@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Shapes;
 namespace CommunityToolkit.Maui.Views;
 
 /// <summary>AvatarView control.</summary>
-public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITextElement, IImageElement, ITextAlignmentElement, ILineHeightElement, ICornerElement, IPaddingElement
+public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITextElement, IImageElement, ITextAlignmentElement, ILineHeightElement, ICornerElement
 {
 	/// <summary>The backing store for the <see cref="BorderColor" /> bindable property.</summary>
 	public static readonly BindableProperty BorderColorProperty = BindableProperty.Create(nameof(AvatarView.BorderColor), typeof(Color), typeof(IAvatarView), defaultValue: AvatarViewDefaults.DefaultBorderColor, propertyChanged: OnBorderColorPropertyChanged);
@@ -357,29 +357,17 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 			double imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
 			double imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
 
-			var rect = new Rect(0, 0, imageWidth, imageHeight);
+			Rect rect = new(0, 0, imageWidth, imageHeight);
 
-			switch (StrokeShape)
+			avatarImage.Clip = StrokeShape switch
 			{
-				case Polyline polyLine:
-					avatarImage.Clip = polyLine.Clip;
-					break;
-				case Ellipse ellipse:
-					avatarImage.Clip = ellipse.Clip;
-					break;
-				case Microsoft.Maui.Controls.Shapes.Path path:
-					avatarImage.Clip = path.Clip;
-					break;
-				case Polygon polygon:
-					avatarImage.Clip = polygon.Clip;
-					break;
-				case Rectangle rectangle:
-					avatarImage.Clip = rectangle.Clip;
-					break;
-				default:
-					avatarImage.Clip = new RoundRectangleGeometry { CornerRadius = CornerRadius, Rect = rect };
-					break;
-			}
+				Polyline polyLine => polyLine.Clip,
+				Ellipse ellipse => ellipse.Clip,
+				Microsoft.Maui.Controls.Shapes.Path path => path.Clip,
+				Polygon polygon => polygon.Clip,
+				Rectangle rectangle => rectangle.Clip,
+				_ => new RoundRectangleGeometry { CornerRadius = CornerRadius, Rect = rect },
+			};
 		}
 	}
 }
