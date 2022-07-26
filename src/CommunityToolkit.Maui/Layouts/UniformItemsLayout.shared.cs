@@ -28,7 +28,7 @@ public class UniformItemsLayout : Layout, IUniformItemsLayout
 	public int MaxRows
 	{
 		get => (int)GetValue(MaxRowsProperty);
-		set => SetValue(MaxRowsProperty, Math.Clamp(value, 1, int.MaxValue));
+		set => value >= 1 : SetValue(MaxRowsProperty, value) ? throw new new ArgumentOutOfRangeException(nameof(value), $"{nameof(MaxRows)} must be greater or equal to {1}");
 	}
 
 	/// <summary>
