@@ -28,7 +28,15 @@ public class UniformItemsLayout : Layout, IUniformItemsLayout
 	public int MaxRows
 	{
 		get => (int)GetValue(MaxRowsProperty);
-		set => value >= 1 : SetValue(MaxRowsProperty, value) ? throw new new ArgumentOutOfRangeException(nameof(value), $"{nameof(MaxRows)} must be greater or equal to {1}");
+		set
+		{
+			if (value < 1)
+			{
+				throw new ArgumentOutOfRangeException(nameof(value), value, $"{nameof(MaxRows)} must be greater or equal to 1.");
+			}
+
+			SetValue(MaxRowsProperty, value);
+		}
 	}
 
 	/// <summary>
@@ -37,7 +45,15 @@ public class UniformItemsLayout : Layout, IUniformItemsLayout
 	public int MaxColumns
 	{
 		get => (int)GetValue(MaxColumnsProperty);
-		set => value >= 1 : SetValue(MaxColumnsProperty, value) ? throw new new ArgumentOutOfRangeException(nameof(value), $"{nameof(MaxColumns)} must be greater or equal to {1}");
+		set
+		{
+			if (value < 1)
+			{
+				throw new ArgumentOutOfRangeException(nameof(value), value, $"{nameof(MaxColumns)} must be greater or equal to 1.");
+			}
+
+			SetValue(MaxColumnsProperty, value);
+		}
 	}
 
 	/// <summary>
