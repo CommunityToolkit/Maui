@@ -80,6 +80,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Categories\" />
+    <None Remove="Helpers\" />
+    <None Remove="Mappings\" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="..\CommunityToolkit.Maui.SourceGenerators\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.SourceGenerators.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="..\CommunityToolkit.Maui.Analyzers\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="..\CommunityToolkit.Maui.Analyzers.CodeFixes\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.Analyzers.CodeFixes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
@@ -97,6 +102,13 @@
     <PackageReference Include="Microsoft.Maui.Extensions" Version="$(MauiVersion)">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Extensions\OnScreenSizeMarkup" />
+    <Folder Include="Categories\" />
+    <Folder Include="Helpers\" />
+    <Folder Include="Mappings\" />
   </ItemGroup>
 
 </Project>

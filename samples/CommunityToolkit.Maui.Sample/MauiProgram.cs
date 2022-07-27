@@ -9,6 +9,7 @@ using CommunityToolkit.Maui.Sample.Pages.Views;
 using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
+using CommunityToolkit.Maui.Sample.ViewModels.Extensions;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
@@ -116,6 +117,7 @@ public static class MauiProgram
 
 		// Add Extensions Pages + ViewModels
 		services.AddTransient<ColorAnimationExtensionsPage, ColorAnimationExtensionsViewModel>();
+		services.AddTransient<OnScreenSizeExtensionPage, OnScreenSizeExtensionViewModel>();
 
 		// Add Layouts Pages + ViewModels
 		services.AddTransient<UniformItemsLayoutPage, UniformItemsLayoutViewModel>();

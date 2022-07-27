@@ -1,0 +1,150 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+             x:Class="CommunityToolkit.Maui.Sample.Pages.Extensions.OnScreenSizeExtensionPage"
+             xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Extensions"
+             x:TypeArguments="vm:OnScreenSizeExtensionViewModel"
+             xmlns:markups="clr-namespace:CommunityToolkit.Maui.Extensions;assembly=CommunityToolkit.Maui"
+             xmlns:mapping="clr-namespace:CommunityToolkit.Maui.Mappings;assembly=CommunityToolkit.Maui"
+             Title="OnScreenSizeExtensionPage"
+             x:DataType="vm:OnScreenSizeExtensionViewModel">
+<ContentPage.Resources>
+    
+    <ResourceDictionary>
+        <Style x:Key="HeadingLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="{markups:OnScreenSize ExtraSmall='14',  Small='20', Medium='22', Large='30', ExtraLarge='50'}"/>
+            <Setter Property="HorizontalTextAlignment" Value="Center"/>
+        </Style>
+        
+        <Style x:Key="ParagraphLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="{markups:OnScreenSize ExtraSmall='12',  Small='14',  Medium='14', Large='14', ExtraLarge='28'}"/>
+            <Setter Property="HorizontalOptions" Value="Center"/>
+        </Style>
+        
+        <Style x:Key="TableHeadingLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="{markups:OnScreenSize ExtraSmall='12', Small='14',  Medium='14', Large='16', ExtraLarge='32'}"/>
+            <Setter Property="FontAttributes" Value="Bold"/>
+            <Setter Property="HorizontalOptions" Value="Center"/>
+            <Setter Property="HorizontalTextAlignment" Value="Center"/>
+
+        </Style>
+        
+        <Style x:Key="TableDataLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="{markups:OnScreenSize ExtraSmall='11', Small='12',  Medium='12', Large='14', ExtraLarge='28'}"/>
+            <Setter Property="HorizontalOptions" Value="Center"/>
+            <Setter Property="HorizontalTextAlignment" Value="Center"/>
+        </Style>
+
+        
+    </ResourceDictionary>
+
+</ContentPage.Resources>
+    <ScrollView>
+        <VerticalStackLayout 
+            Spacing="{markups:OnScreenSize Default='20', ExtraSmall='10',   Small='14', Medium='14', Large='20',  ExtraLarge='30'}" 
+            Padding="{markups:OnScreenSize Default='30, 0', ExtraSmall='5',  Small='7',  Medium='9', Large='13', ExtraLarge='30, 15, 30, 15'}" 
+            VerticalOptions="Center">
+
+        
+            <Image
+                Source="dotnet_bot.png"
+                HeightRequest="{markups:OnScreenSize ExtraSmall='120',   Small='135',  Medium='145',  Large='200', ExtraLarge='300'}"
+                HorizontalOptions="Center" />
+          
+            
+                <Label
+                    Style="{StaticResource HeadingLabel}"
+                 >
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="You are seeing " />
+                
+                            <Span Text="{markups:OnScreenSize ExtraSmall='Green',  Small='Red', Medium='Blue', Large='Pink', ExtraLarge='Purple'}"
+                                  TextColor="{markups:OnScreenSize ExtraSmall='Green',  Small='Red', Medium='Blue', Large='Pink', ExtraLarge='Purple'}"/>
+            
+                            <Span Text=" because your device was categorized as " />
+                            
+                            <Span Text="{markups:OnScreenSize ExtraSmall='ExtraSmall', Small='Small', Medium='Medium', Large='Large', ExtraLarge='ExtraLarge'}"
+                                  TextColor="White"
+                                  BackgroundColor="{markups:OnScreenSize ExtraSmall='Green',  Small='Red', Medium='Blue', Large='Pink', ExtraLarge='Purple'}" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+                
+                <Label 
+                        Style="{StaticResource ParagraphLabel}"
+                        HorizontalOptions="Center" >
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="Your device was categorized according to the table below. " />
+                            <Span Text="To learn how to customize/override category mappings, see " />
+                            <Span Text="documentation"
+                                  TextColor="Blue"
+                                  TextDecorations="Underline">
+                                <Span.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding OpenDocumentationCommand}" />
+                                </Span.GestureRecognizers>
+                            </Span>
+                                    
+                        </FormattedString>
+                                
+                    </Label.FormattedText>
+                </Label>
+            
+                <Grid 
+                      RowDefinitions="{markups:OnScreenSize Default='*, 3*', Medium='30, 0.8*', Large='45, *', ExtraLarge='80, *'}"
+                      ColumnDefinitions="{markups:OnScreenSize Default='*, *, *', ExtraLarge='2*, *, *'}">
+              
+
+                    <Label Grid.Row="0" Grid.Column="0"
+                           Text="Compare mode"
+                           Style="{StaticResource TableHeadingLabel}"  />
+
+                    
+                    <Label Grid.Row="0" Grid.Column="1"
+                        Text="Diagonal Size"
+                        Style="{StaticResource TableHeadingLabel}" />
+
+                    <Label Grid.Row="0" Grid.Column="2"
+                           Text="Category"
+                           Style="{StaticResource TableHeadingLabel}"  />
+
+                    <CollectionView x:Name="mappings" 
+                                    Grid.Row="1"
+                                    Grid.ColumnSpan="3">
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout Orientation="Vertical" />
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate >
+                                <Grid x:DataType="mapping:SizeMappingInfo"  
+                                    RowDefinitions="{markups:OnScreenSize ExtraSmall='30', Small='35', Medium='30', Large='45', ExtraLarge='80'}"
+                                       ColumnDefinitions="{markups:OnScreenSize Default='*, *, *', ExtraLarge='2*, *, *'}">
+                                    <Label Grid.Column="0"
+                                           Text="{Binding CompareMode}"
+                                           Style="{StaticResource TableDataLabel}"
+                                           HorizontalOptions="Center" />
+                                    
+                                    <Label Grid.Column="1"
+                                           Text="{Binding DiagonalSize, StringFormat='{0}&quot;'}"
+                                           Style="{StaticResource TableDataLabel}"
+                                           HorizontalOptions="Center" />
+                                    
+                                    <Label  Grid.Column="2"
+                                            Text="{Binding Category}"
+                                            Style="{StaticResource TableDataLabel}"
+                                            HorizontalOptions="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                </Grid>
+            
+
+        </VerticalStackLayout>
+    </ScrollView>
+ 
+</pages:BasePage>
+

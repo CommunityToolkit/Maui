@@ -30,9 +30,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Views\OnScreenSize\" />
+    <None Remove="Categories\" />
+  </ItemGroup>
+  <ItemGroup>
     <None Update="xunit.runner.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Views\OnScreenSize\" />
+    <Folder Include="Categories\" />
+  </ItemGroup>
 </Project>
