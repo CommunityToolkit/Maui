@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Views.AvatarViewGravatarPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView"
+    Title="AvatarViewGravatar"
+    x:DataType="vm:AvatarViewGravatarViewModel"
+    x:TypeArguments="vm:AvatarViewGravatarViewModel">
+    <ScrollView>
+        <VerticalStackLayout Spacing="12">
+            <VerticalStackLayout.Resources>
+                <ResourceDictionary>
+                    <Style x:Key="Description" TargetType="Label">
+                        <Setter Property="VerticalTextAlignment" Value="Start" />
+                        <Setter Property="HorizontalTextAlignment" Value="Center" />
+                        <Setter Property="LineBreakMode" Value="WordWrap" />
+                        <Setter Property="Margin" Value="4,0" />
+                    </Style>
+                    <Style x:Key="HR" TargetType="Line">
+                        <Setter Property="Stroke" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                        <Setter Property="X2" Value="300" />
+                        <Setter Property="HorizontalOptions" Value="Center" />
+                    </Style>
+                </ResourceDictionary>
+            </VerticalStackLayout.Resources>
+
+            <Label Style="{StaticResource Description}" Text="AvatarView supports using Gravatar. 'One avatar for everything, everywhere.'" />
+            <Line Style="{StaticResource HR}" />
+            <mct:AvatarView
+                CacheValidity="{Binding CacheValidityTimespan}"
+                CachingEnabled="{Binding EnableCache}"
+                CornerRadius="16"
+                DefaultGravatar="{Binding DefaultGravatarSelected}"
+                HeightRequest="32"
+                ImageSource="{Binding Email}"
+                WidthRequest="32" />
+            <mct:AvatarView
+                CacheValidity="{Binding CacheValidityTimespan}"
+                CachingEnabled="{Binding EnableCache}"
+                DefaultGravatar="{Binding DefaultGravatarSelected}"
+                ImageSource="{Binding Email}" />
+            <mct:AvatarView
+                CacheValidity="{Binding CacheValidityTimespan}"
+                CachingEnabled="{Binding EnableCache}"
+                CornerRadius="32"
+                DefaultGravatar="{Binding DefaultGravatarSelected}"
+                HeightRequest="64"
+                ImageSource="{Binding Email}"
+                WidthRequest="128" />
+            <mct:AvatarView
+                CacheValidity="{Binding CacheValidityTimespan}"
+                CachingEnabled="{Binding EnableCache}"
+                CornerRadius="32"
+                DefaultGravatar="{Binding DefaultGravatarSelected}"
+                HeightRequest="128"
+                ImageSource="{Binding Email}"
+                WidthRequest="64" />
+            <mct:AvatarView
+                BorderWidth="2"
+                CacheValidity="{Binding CacheValidityTimespan}"
+                CachingEnabled="{Binding EnableCache}"
+                CornerRadius="32,0,0,32"
+                DefaultGravatar="{Binding DefaultGravatarSelected}"
+                HeightRequest="64"
+                ImageSource="{Binding Email}"
+                WidthRequest="64">
+                <mct:AvatarView.Stroke>
+                    <LinearGradientBrush EndPoint="0,1">
+                        <GradientStop Offset="0.1" Color="Blue" />
+                        <GradientStop Offset="1.0" Color="Red" />
+                    </LinearGradientBrush>
+                </mct:AvatarView.Stroke>
+            </mct:AvatarView>
+            <Label x:Name="LabelEmail" Text="Email:" />
+            <Entry
+                AutomationProperties.LabeledBy="{x:Reference LabelEmail}"
+                Keyboard="Email"
+                Text="{Binding Email}" />
+            <Label x:Name="LabelDefaultGravatar" Text="Default Gravatar:" />
+            <Picker
+                AutomationProperties.LabeledBy="{x:Reference LabelDefaultGravatar}"
+                ItemsSource="{Binding DefaultGravatarItems}"
+                SelectedItem="{Binding DefaultGravatarSelected}"
+                SemanticProperties.Description="The default image is displayed if there is no image associated with the requested email hash." />
+            <Label x:Name="LabelEnableCache" Text="Enable cache:" />
+            <Switch
+                AutomationProperties.LabeledBy="{x:Reference LabelEnableCache}"
+                IsToggled="{Binding EnableCache}"
+                SemanticProperties.Description="Defines whether image caching is enabled.  The default value of this property is: True" />
+            <Label x:Name="LabelCacheValidity">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="Cache Validity (in days): '" />
+                        <Span Text="{Binding CacheValidityInDays}" />
+                        <Span Text="'" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            <Stepper
+                Increment="1"
+                Maximum="365"
+                Minimum="1"
+                SemanticProperties.Description="Specify how long the image will be stored locally for.  The default of this property is 1 day."
+                Value="{Binding CacheValidityInDays}" />
+        </VerticalStackLayout>
+    </ScrollView>
+</pages:BasePage>

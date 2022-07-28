@@ -13,6 +13,7 @@ public sealed class ViewsGalleryViewModel : BaseGalleryViewModel
 			SectionModel.Create<AvatarViewColorsViewModel>("AvatarView Colors Page", Colors.Red, "A page demonstrating AvatarViews with different color options."),
 			SectionModel.Create<AvatarViewDayOfWeekViewModel>("AvatarView Day of Week Page", Colors.Red, "A page demonstrating AvatarViews as a Day of the Week."),
 			SectionModel.Create<AvatarViewGesturesViewModel>("AvatarView Gestures Page", Colors.Red, "A page demonstrating AvatarViews with different gesture options."),
+			SectionModel.Create<AvatarViewGravatarViewModel>("AvatarView Gravatar Page", Colors.Red, "A page demonstrating using a Gravatar with AvatarView."),
 			SectionModel.Create<AvatarViewImagesViewModel>("AvatarView Images Page", Colors.Red, "A page demonstrating AvatarViews with different image options."),
 			SectionModel.Create<AvatarViewKeyboardViewModel>("AvatarView Keyboard Page", Colors.Red, "A page demonstrating AvatarViews aligned as a Keyboard."),
 			SectionModel.Create<AvatarViewRatingViewModel>("AvatarView Rating Page", Colors.Red, "A page demonstrating AvatarViews as a star rating."),

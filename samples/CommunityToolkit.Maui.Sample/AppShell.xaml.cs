@@ -87,6 +87,7 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<AvatarViewColorsPage, AvatarViewColorsViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<AvatarViewDayOfWeekPage, AvatarViewDayOfWeekViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<AvatarViewGesturesPage, AvatarViewGesturesViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		CreateViewModelMapping<AvatarViewGravatarPage, AvatarViewGravatarViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<AvatarViewImagesPage, AvatarViewImagesViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<AvatarViewKeyboardPage, AvatarViewKeyboardViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<AvatarViewRatingPage, AvatarViewRatingViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),

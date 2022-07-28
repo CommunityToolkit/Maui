@@ -55,6 +55,7 @@ public static class MauiProgram
 		services.AddTransient<AvatarViewColorsPage, AvatarViewColorsViewModel>();
 		services.AddTransient<AvatarViewDayOfWeekPage, AvatarViewDayOfWeekViewModel>();
 		services.AddTransient<AvatarViewGesturesPage, AvatarViewGesturesViewModel>();
+		services.AddTransient<AvatarViewGravatarPage, AvatarViewGravatarViewModel>();
 		services.AddTransient<AvatarViewImagesPage, AvatarViewImagesViewModel>();
 		services.AddTransient<AvatarViewKeyboardPage, AvatarViewKeyboardViewModel>();
 		services.AddTransient<AvatarViewRatingPage, AvatarViewRatingViewModel>();

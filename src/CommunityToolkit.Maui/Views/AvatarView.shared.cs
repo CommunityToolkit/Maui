@@ -1,4 +1,6 @@
 using System.ComponentModel;
+using System.Security.Cryptography;
+using System.Text;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
@@ -6,7 +8,7 @@ using Microsoft.Maui.Controls.Shapes;
 namespace CommunityToolkit.Maui.Views;
 
 /// <summary>AvatarView control.</summary>
-public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITextElement, IImageElement, ITextAlignmentElement, ILineHeightElement, ICornerElement, IPaddingElement
+public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITextElement, IImageElement, ITextAlignmentElement, ILineHeightElement, ICornerElement
 {
 	/// <summary>The backing store for the <see cref="BorderColor" /> bindable property.</summary>
 	public static readonly BindableProperty BorderColorProperty = BindableProperty.Create(nameof(AvatarView.BorderColor), typeof(Color), typeof(IAvatarView), defaultValue: AvatarViewDefaults.DefaultBorderColor, propertyChanged: OnBorderColorPropertyChanged);
@@ -14,8 +16,17 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 	/// <summary>The backing store for the <see cref="BorderWidth" /> bindable property.</summary>
 	public static readonly BindableProperty BorderWidthProperty = BindableProperty.Create(nameof(AvatarView.BorderWidth), typeof(double), typeof(IAvatarView), defaultValue: AvatarViewDefaults.DefaultBorderWidth, propertyChanged: OnBorderWidthPropertyChanged);
 
+	/// <summary>The backing store for the <see cref="CacheValidity" /> bindable property.</summary>
+	public static readonly BindableProperty CacheValidityProperty = BindableProperty.Create(nameof(CacheValidity), typeof(TimeSpan), typeof(AvatarView), defaultValue: TimeSpan.FromDays(1));
+
+	/// <summary>The backing store for the <see cref="CachingEnabled" /> bindable property.</summary>
+	public static readonly BindableProperty CachingEnabledProperty = BindableProperty.Create(nameof(CachingEnabled), typeof(bool), typeof(AvatarView), defaultValue: true);
+
 	/// <summary>The backing store for the <see cref="CornerRadius" /> bindable property.</summary>
 	public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(nameof(AvatarView.CornerRadius), typeof(CornerRadius), typeof(ICornerElement), defaultValue: AvatarViewDefaults.DefaultCornerRadius, propertyChanged: OnCornerRadiusPropertyChanged);
+
+	/// <summary>The backing store for the <see cref="DefaultGravatar" /> bindable property.</summary>
+	public static readonly BindableProperty DefaultGravatarProperty = BindableProperty.Create(nameof(DefaultGravatar), typeof(DefaultGravatarImage), typeof(AvatarView), defaultValue: DefaultGravatarImage.MysteryPerson);
 
 	/// <summary>The backing store for the <see cref="IFontElement.FontAttributes" /> bindable property.</summary>
 	public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
@@ -43,7 +54,7 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 
 	readonly Image avatarImage = new()
 	{
-		Aspect = Aspect.AspectFill,
+		Aspect = Aspect.AspectFill
 	};
 
 	readonly Label avatarLabel = new()
@@ -52,6 +63,8 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		VerticalTextAlignment = TextAlignment.Center,
 		Text = AvatarViewDefaults.DefaultText,
 	};
+
+	readonly string requestUriFormat = "https://www.gravatar.com/avatar/{0}?s={1}&d={2}";
 
 	bool wasImageLoading;
 
@@ -91,6 +104,20 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		set => SetValue(BorderWidthProperty, value);
 	}
 
+	/// <summary>Gets or sets a value of the control image cache validity property.</summary>
+	public TimeSpan CacheValidity
+	{
+		get => (TimeSpan)GetValue(CacheValidityProperty);
+		set => SetValue(CacheValidityProperty, value);
+	}
+
+	/// <summary>Gets or sets a value indicating whether the control image cache is enabled property.</summary>
+	public bool CachingEnabled
+	{
+		get => (bool)GetValue(CachingEnabledProperty);
+		set => SetValue(CachingEnabledProperty, value);
+	}
+
 	/// <summary>Gets or sets a value of the avatar text character spacing property.</summary>
 	public double CharacterSpacing
 	{
@@ -103,6 +130,13 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 	{
 		get => (CornerRadius)GetValue(CornerRadiusProperty);
 		set => SetValue(CornerRadiusProperty, value);
+	}
+
+	/// <summary>Gets or sets a value of the control default gravatar property.</summary>
+	public DefaultGravatarImage DefaultGravatar
+	{
+		get => (DefaultGravatarImage)GetValue(DefaultGravatarProperty);
+		set => SetValue(DefaultGravatarProperty, value);
 	}
 
 	/// <summary>Gets or sets a value of the avatar font attributes property.</summary>
@@ -321,15 +355,75 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 	}
 
+	static string DefaultGravatarName(DefaultGravatarImage defaultGravatar)
+			=> defaultGravatar switch
+			{
+				DefaultGravatarImage.FileNotFound => "404",
+				DefaultGravatarImage.MysteryPerson => "mp",
+				_ => $"{defaultGravatar}".ToLower(),
+			};
+
+	static string GetMd5Hash(string str)
+	{
+		using MD5 md5 = MD5.Create();
+		byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(str));
+		StringBuilder sBuilder = new();
+		foreach (byte hashByte in hash)
+		{
+			sBuilder.Append(hashByte.ToString("x2"));
+		}
+		return sBuilder.ToString();
+	}
+
+	static bool IsValidEmail(string email)
+	{
+		string trimmedEmail = email.Trim();
+		if (trimmedEmail.EndsWith("."))
+		{
+			return false;
+		}
+
+		try
+		{
+			System.Net.Mail.MailAddress addr = new(email);
+			return addr.Address == trimmedEmail;
+		}
+		catch
+		{
+			return false;
+		}
+	}
+
 	void HandleImageChanged(ImageSource? newValue)
 	{
-		avatarImage.Source = newValue;
 		if (newValue is not null)
 		{
 			// Work-around for iOS / MacOS bug that paints `Border.BackgroundColor` over top of `Border.Content` when an Image is used for `Border.Content`
 			if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst() || OperatingSystem.IsMacOS())
 			{
 				BackgroundColor = Colors.Transparent;
+			}
+
+			if (newValue is FileImageSource fileImageSource && IsValidEmail(fileImageSource.File))
+			{
+				double height = Height >= 0 ? Height : Math.Max(HeightRequest, AvatarViewDefaults.DefaultHeightRequest);
+				double width = Width >= 0 ? Width : Math.Max(WidthRequest, AvatarViewDefaults.DefaultWidthRequest);
+				int gravatarSize = (int)Math.Max(width, height);
+				newValue = new UriImageSource()
+				{
+					Uri = new Uri(string.Format(requestUriFormat, GetMd5Hash(fileImageSource.File), gravatarSize, DefaultGravatarName(DefaultGravatar))),
+				};
+			}
+
+			if (newValue is UriImageSource uriImageSource)
+			{
+				uriImageSource.CacheValidity = CacheValidity;
+				uriImageSource.CachingEnabled = CachingEnabled;
+				avatarImage.Source = uriImageSource;
+			}
+			else
+			{
+				avatarImage.Source = newValue;
 			}
 
 			Content = avatarImage;
@@ -354,11 +448,9 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 			&& Width >= 0 // The default value of Y (before the view is drawn onto the page) is -1
 			&& avatarImage.Source is not null)
 		{
-			var imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
-			var imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
-
-			var rect = new Rect(0, 0, imageWidth, imageHeight);
-
+			double imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
+			double imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
+			Rect rect = new(0, 0, imageWidth, imageHeight);
 			avatarImage.Clip = new RoundRectangleGeometry { CornerRadius = CornerRadius, Rect = rect };
 		}
 	}
