@@ -9,123 +9,132 @@
     Title="AvatarView Image Avatar"
     x:DataType="vm:AvatarViewImagesViewModel"
     x:TypeArguments="vm:AvatarViewImagesViewModel">
-    <VerticalStackLayout Spacing="12">
-        <VerticalStackLayout.Resources>
-            <ResourceDictionary>
-                <Style x:Key="Description" TargetType="Label">
-                    <Setter Property="VerticalTextAlignment" Value="Start" />
-                    <Setter Property="HorizontalTextAlignment" Value="Center" />
-                    <Setter Property="LineBreakMode" Value="WordWrap" />
-                    <Setter Property="Margin" Value="4,0" />
-                </Style>
-                <Style x:Key="HR" TargetType="Line">
-                    <Setter Property="Stroke" Value="{AppThemeBinding Light=Black, Dark=White}" />
-                    <Setter Property="X2" Value="300" />
-                    <Setter Property="HorizontalOptions" Value="Center" />
-                </Style>
-                <Style x:Key="AvatarViewImagesBase" TargetType="mct:AvatarView">
-                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=Black, Dark=White}" />
-                    <!--  The actress who played Neytiri in Avatar (2009) is Zoe Saldana (ZS)  -->
-                    <Setter Property="Text" Value="ZS" />
-                    <Setter Property="TextColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
-                    <Setter Property="BorderColor" Value="{AppThemeBinding Light=Black, Dark=White}" />
-                    <Setter Property="Margin" Value="4" />
-                </Style>
-                <Style
-                    x:Key="AvatarViewImagesDefault"
-                    BasedOn="{StaticResource AvatarViewImagesBase}"
-                    TargetType="mct:AvatarView">
-                    <Setter Property="WidthRequest" Value="48" />
-                    <Setter Property="HeightRequest" Value="48" />
-                    <Setter Property="CornerRadius" Value="24" />
-                </Style>
-                <Style
-                    x:Key="AvatarViewImagesSmall"
-                    BasedOn="{StaticResource AvatarViewImagesBase}"
-                    TargetType="mct:AvatarView">
-                    <Setter Property="WidthRequest" Value="32" />
-                    <Setter Property="HeightRequest" Value="32" />
-                    <Setter Property="FontSize" Value="Small" />
-                    <Setter Property="CornerRadius" Value="16" />
-                </Style>
-                <Style
-                    x:Key="AvatarViewImagesLarge"
-                    BasedOn="{StaticResource AvatarViewImagesBase}"
-                    TargetType="mct:AvatarView">
-                    <Setter Property="WidthRequest" Value="64" />
-                    <Setter Property="HeightRequest" Value="64" />
-                    <Setter Property="FontSize" Value="Large" />
-                    <Setter Property="CornerRadius" Value="32" />
-                </Style>
-                <Style
-                    x:Key="AvatarViewImagesSmallLocal"
-                    BasedOn="{StaticResource AvatarViewImagesSmall}"
-                    TargetType="mct:AvatarView">
-                    <Setter Property="ImageSource" Value="avatar_icon.png" />
-                </Style>
-                <Style
-                    x:Key="AvatarViewImagesSmallURL"
-                    BasedOn="{StaticResource AvatarViewImagesSmall}"
-                    TargetType="mct:AvatarView">
-                    <Setter Property="ImageSource" Value="https://aka.ms/campus.jpg" />
-                </Style>
-                <Style
-                    x:Key="AvatarViewImagesDefaultLocal"
-                    BasedOn="{StaticResource AvatarViewImagesDefault}"
-                    TargetType="mct:AvatarView">
-                    <Setter Property="ImageSource" Value="avatar_icon.png" />
-                </Style>
-                <Style
-                    x:Key="AvatarViewImagesDefaultURL"
-                    BasedOn="{StaticResource AvatarViewImagesDefault}"
-                    TargetType="mct:AvatarView">
-                    <Setter Property="ImageSource" Value="https://aka.ms/campus.jpg" />
-                </Style>
-                <Style
-                    x:Key="AvatarViewImagesLargeLocal"
-                    BasedOn="{StaticResource AvatarViewImagesLarge}"
-                    TargetType="mct:AvatarView">
-                    <Setter Property="ImageSource" Value="avatar_icon.png" />
-                </Style>
-                <Style
-                    x:Key="AvatarViewImagesLargeURL"
-                    BasedOn="{StaticResource AvatarViewImagesLarge}"
-                    TargetType="mct:AvatarView">
-                    <Setter Property="ImageSource" Value="https://aka.ms/campus.jpg" />
-                </Style>
-            </ResourceDictionary>
-        </VerticalStackLayout.Resources>
-        <Label Style="{StaticResource Description}" Text="AvatarView can use local or URL image sources." />
-        <Line Style="{StaticResource HR}" />
-        <mct:AvatarView
-            HeightRequest="32"
-            SemanticProperties.Description="Sample small AvatarView showing using a local image."
-            Style="{StaticResource AvatarViewImagesSmallLocal}"
-            WidthRequest="32" />
-        <mct:AvatarView
-            HeightRequest="32"
-            SemanticProperties.Description="Sample small AvatarView showing using a URL image."
-            Style="{StaticResource AvatarViewImagesSmallURL}"
-            WidthRequest="32" />
-        <mct:AvatarView
-            HeightRequest="48"
-            SemanticProperties.Description="Sample AvatarView showing using a local image."
-            Style="{StaticResource AvatarViewImagesDefaultLocal}"
-            WidthRequest="48" />
-        <mct:AvatarView
-            HeightRequest="48"
-            SemanticProperties.Description="Sample AvatarView showing using a URL image."
-            Style="{StaticResource AvatarViewImagesDefaultURL}"
-            WidthRequest="48" />
-        <mct:AvatarView
-            HeightRequest="62"
-            SemanticProperties.Description="Sample large AvatarView showing using a local image."
-            Style="{StaticResource AvatarViewImagesLargeLocal}"
-            WidthRequest="62" />
-        <mct:AvatarView
-            HeightRequest="62"
-            SemanticProperties.Description="Sample large AvatarView showing using a URL image."
-            Style="{StaticResource AvatarViewImagesLargeURL}"
-            WidthRequest="62" />
-    </VerticalStackLayout>
+    <ScrollView>
+        <VerticalStackLayout Spacing="12">
+            <VerticalStackLayout.Resources>
+                <ResourceDictionary>
+                    <Style x:Key="Description" TargetType="Label">
+                        <Setter Property="VerticalTextAlignment" Value="Start" />
+                        <Setter Property="HorizontalTextAlignment" Value="Center" />
+                        <Setter Property="LineBreakMode" Value="WordWrap" />
+                        <Setter Property="Margin" Value="4,0" />
+                    </Style>
+                    <Style x:Key="HR" TargetType="Line">
+                        <Setter Property="Stroke" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                        <Setter Property="X2" Value="300" />
+                        <Setter Property="HorizontalOptions" Value="Center" />
+                    </Style>
+                    <Style x:Key="AvatarViewImagesBase" TargetType="mct:AvatarView">
+                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                        <!--  The actress who played Neytiri in Avatar (2009) is Zoe Saldana (ZS)  -->
+                        <Setter Property="Text" Value="ZS" />
+                        <Setter Property="TextColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
+                        <Setter Property="BorderColor" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                        <Setter Property="Margin" Value="4" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewImagesDefault"
+                        BasedOn="{StaticResource AvatarViewImagesBase}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="WidthRequest" Value="48" />
+                        <Setter Property="HeightRequest" Value="48" />
+                        <Setter Property="CornerRadius" Value="24" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewImagesSmall"
+                        BasedOn="{StaticResource AvatarViewImagesBase}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="WidthRequest" Value="32" />
+                        <Setter Property="HeightRequest" Value="32" />
+                        <Setter Property="FontSize" Value="Small" />
+                        <Setter Property="CornerRadius" Value="16" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewImagesLarge"
+                        BasedOn="{StaticResource AvatarViewImagesBase}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="WidthRequest" Value="64" />
+                        <Setter Property="HeightRequest" Value="64" />
+                        <Setter Property="FontSize" Value="Large" />
+                        <Setter Property="CornerRadius" Value="32" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewImagesSmallLocal"
+                        BasedOn="{StaticResource AvatarViewImagesSmall}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="ImageSource" Value="avatar_icon.png" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewImagesSmallURL"
+                        BasedOn="{StaticResource AvatarViewImagesSmall}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="ImageSource" Value="https://aka.ms/campus.jpg" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewImagesDefaultLocal"
+                        BasedOn="{StaticResource AvatarViewImagesDefault}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="ImageSource" Value="avatar_icon.png" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewImagesDefaultURL"
+                        BasedOn="{StaticResource AvatarViewImagesDefault}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="ImageSource" Value="https://aka.ms/campus.jpg" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewImagesLargeLocal"
+                        BasedOn="{StaticResource AvatarViewImagesLarge}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="ImageSource" Value="avatar_icon.png" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewImagesLargeURL"
+                        BasedOn="{StaticResource AvatarViewImagesLarge}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="ImageSource" Value="https://aka.ms/campus.jpg" />
+                    </Style>
+                </ResourceDictionary>
+            </VerticalStackLayout.Resources>
+            <Label Style="{StaticResource Description}" Text="AvatarView can use local or URL image sources." />
+            <Line Style="{StaticResource HR}" />
+            <mct:AvatarView
+                HeightRequest="32"
+                SemanticProperties.Description="Sample small AvatarView showing using a local image."
+                Style="{StaticResource AvatarViewImagesSmallLocal}"
+                WidthRequest="32" />
+            <mct:AvatarView
+                HeightRequest="32"
+                SemanticProperties.Description="Sample small AvatarView showing using a URL image."
+                Style="{StaticResource AvatarViewImagesSmallURL}"
+                WidthRequest="32" />
+            <mct:AvatarView
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView showing using a local image."
+                Style="{StaticResource AvatarViewImagesDefaultLocal}"
+                WidthRequest="48" />
+            <mct:AvatarView
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView showing using a URL image."
+                Style="{StaticResource AvatarViewImagesDefaultURL}"
+                WidthRequest="48" />
+            <mct:AvatarView
+                HeightRequest="62"
+                SemanticProperties.Description="Sample large AvatarView showing using a local image."
+                Style="{StaticResource AvatarViewImagesLargeLocal}"
+                WidthRequest="62" />
+            <mct:AvatarView
+                HeightRequest="62"
+                SemanticProperties.Description="Sample large AvatarView showing using a URL image, and setting the cache and validity length."
+                Style="{StaticResource AvatarViewImagesLarge}"
+                WidthRequest="62">
+                <mct:AvatarView.ImageSource>
+                    <UriImageSource
+                        CacheValidity="7"
+                        CachingEnabled="True"
+                        Uri="https://aka.ms/campus.jpg" />
+                </mct:AvatarView.ImageSource>
+            </mct:AvatarView>
+        </VerticalStackLayout>
+    </ScrollView>
 </pages:BasePage>
