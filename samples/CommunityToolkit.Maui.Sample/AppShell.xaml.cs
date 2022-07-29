@@ -103,6 +103,7 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<MultiplePopupPage, MultiplePopupViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<PopupAnchorPage, PopupAnchorViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<PopupPositionPage, PopupPositionViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		CreateViewModelMapping<SemanticOrderViewPage, SemanticOrderViewViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 	});
 
 	public AppShell() => InitializeComponent();
