@@ -129,6 +129,9 @@ public static class MauiProgram
 		// Add Popups
 		services.AddTransient<CsharpBindingPopup, CsharpBindingPopupViewModel>();
 		services.AddTransient<XamlBindingPopup, XamlBindingPopupViewModel>();
+
+		// Add SemanticOrderView
+		services.AddTransient<SemanticOrderViewPage, SemanticOrderViewViewModel>();
 	}
 
 	static void RegisterEssentials(in IServiceCollection services)
