@@ -409,6 +409,16 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 				double height = Height >= 0 ? Height : Math.Max(HeightRequest, AvatarViewDefaults.DefaultHeightRequest);
 				double width = Width >= 0 ? Width : Math.Max(WidthRequest, AvatarViewDefaults.DefaultWidthRequest);
 				int gravatarSize = (int)Math.Max(width, height);
+				switch (gravatarSize) // Using Enumerable.Range is very inefficient for validating a number is within a range.  Much more efficient to simply use an if/switch.
+				{
+					case < 1:
+						gravatarSize = 1;  // Images minimum is 1px
+						break;
+					case > 2048:
+						gravatarSize = 2048; // Images maximum is 2048px, however note that many users have lower resolution images, so requesting larger sizes mar result in pixelation/low-quality images.
+						break;
+				}
+
 				newValue = new UriImageSource()
 				{
 					Uri = new Uri(string.Format(requestUriFormat, GetMd5Hash(fileImageSource.File), gravatarSize, DefaultGravatarName(DefaultGravatar))),

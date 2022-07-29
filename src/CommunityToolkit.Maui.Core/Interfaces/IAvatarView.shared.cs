@@ -25,11 +25,11 @@ public interface IAvatarView : IBorderView, ILabel, Microsoft.Maui.IImage, IImag
 /// <summary>Default gravatar image enumerator.</summary>
 public enum DefaultGravatarImage
 {
+	/// <summary>(mystery-person) A simple, cartoon-style silhouetted outline of a person (does not vary by email hash)</summary>
+	MysteryPerson = 0,
+
 	/// <summary>404: Do not load any image if none is associated with the email hash, instead return an HTTP 404 (File Not Found) response.</summary>
 	FileNotFound,
-
-	/// <summary>(mystery-person) A simple, cartoon-style silhouetted outline of a person (does not vary by email hash)</summary>
-	MysteryPerson,
 
 	/// <summary>A geometric pattern based on an email hash.</summary>
 	Identicon,

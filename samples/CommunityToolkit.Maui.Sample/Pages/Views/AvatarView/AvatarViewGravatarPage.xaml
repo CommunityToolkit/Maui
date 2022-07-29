@@ -24,6 +24,31 @@
                         <Setter Property="X2" Value="300" />
                         <Setter Property="HorizontalOptions" Value="Center" />
                     </Style>
+                    <Style TargetType="Switch">
+                        <Setter Property="OnColor" Value="{StaticResource Gray400}" />
+                        <Setter Property="ThumbColor" Value="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}" />
+                        <Setter Property="VisualStateManager.VisualStateGroups">
+                            <VisualStateGroupList>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="On">
+                                        <VisualState.Setters>
+                                            <Setter Property="ThumbColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Off">
+                                        <VisualState.Setters>
+                                            <Setter Property="ThumbColor" Value="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateGroupList>
+                        </Setter>
+                    </Style>
+                    <Style TargetType="Slider">
+                        <Setter Property="MinimumTrackColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                        <Setter Property="MaximumTrackColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" />
+                        <Setter Property="ThumbColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                    </Style>
                 </ResourceDictionary>
             </VerticalStackLayout.Resources>
 
@@ -90,7 +115,7 @@
                 AutomationProperties.LabeledBy="{x:Reference LabelEnableCache}"
                 IsToggled="{Binding EnableCache}"
                 SemanticProperties.Description="Defines whether image caching is enabled.  The default value of this property is: True" />
-            <Label x:Name="LabelCacheValidity">
+            <Label x:Name="LabelCacheValidity" IsEnabled="{Binding EnableCache}">
                 <Label.FormattedText>
                     <FormattedString>
                         <Span Text="Cache Validity (in days): '" />
@@ -99,8 +124,9 @@
                     </FormattedString>
                 </Label.FormattedText>
             </Label>
-            <Stepper
-                Increment="1"
+            <Slider
+                AutomationProperties.LabeledBy="{x:Reference LabelCacheValidity}"
+                IsEnabled="{Binding EnableCache}"
                 Maximum="365"
                 Minimum="1"
                 SemanticProperties.Description="Specify how long the image will be stored locally for.  The default of this property is 1 day."
