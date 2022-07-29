@@ -16,12 +16,6 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 	/// <summary>The backing store for the <see cref="BorderWidth" /> bindable property.</summary>
 	public static readonly BindableProperty BorderWidthProperty = BindableProperty.Create(nameof(AvatarView.BorderWidth), typeof(double), typeof(IAvatarView), defaultValue: AvatarViewDefaults.DefaultBorderWidth, propertyChanged: OnBorderWidthPropertyChanged);
 
-	/// <summary>The backing store for the <see cref="CacheValidity" /> bindable property.</summary>
-	public static readonly BindableProperty CacheValidityProperty = BindableProperty.Create(nameof(CacheValidity), typeof(TimeSpan), typeof(AvatarView), defaultValue: TimeSpan.FromDays(1));
-
-	/// <summary>The backing store for the <see cref="CachingEnabled" /> bindable property.</summary>
-	public static readonly BindableProperty CachingEnabledProperty = BindableProperty.Create(nameof(CachingEnabled), typeof(bool), typeof(AvatarView), defaultValue: true);
-
 	/// <summary>The backing store for the <see cref="CornerRadius" /> bindable property.</summary>
 	public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(nameof(AvatarView.CornerRadius), typeof(CornerRadius), typeof(ICornerElement), defaultValue: AvatarViewDefaults.DefaultCornerRadius, propertyChanged: OnCornerRadiusPropertyChanged);
 
@@ -39,6 +33,9 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 
 	/// <summary>The backing store for the <see cref="IFontElement.FontSize" /> bindable property.</summary>
 	public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
+
+	/// <summary>The backing store for the <see cref="GravatarEmail" /> bindable property.</summary>
+	public static readonly BindableProperty? GravatarEmailProperty = BindableProperty.Create(nameof(GravatarEmail), typeof(string), typeof(AvatarView), defaultValue: AvatarViewDefaults.DefaultGravatarEmail, propertyChanged: OnGravatarEmailPropertyChanged);
 
 	/// <summary>The backing store for the <see cref="ImageSource" /> bindable property.</summary>
 	public static readonly BindableProperty ImageSourceProperty = BindableProperty.Create(nameof(ImageSource), typeof(ImageSource), typeof(IImageElement), default(ImageSource), propertyChanged: OnImageSourceChanged);
@@ -63,8 +60,6 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		VerticalTextAlignment = TextAlignment.Center,
 		Text = AvatarViewDefaults.DefaultText,
 	};
-
-	readonly string requestUriFormat = "https://www.gravatar.com/avatar/{0}?s={1}&d={2}";
 
 	bool wasImageLoading;
 
@@ -102,20 +97,6 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 	{
 		get => (double)GetValue(BorderWidthProperty);
 		set => SetValue(BorderWidthProperty, value);
-	}
-
-	/// <summary>Gets or sets a value of the control image cache validity property.</summary>
-	public TimeSpan CacheValidity
-	{
-		get => (TimeSpan)GetValue(CacheValidityProperty);
-		set => SetValue(CacheValidityProperty, value);
-	}
-
-	/// <summary>Gets or sets a value indicating whether the control image cache is enabled property.</summary>
-	public bool CachingEnabled
-	{
-		get => (bool)GetValue(CachingEnabledProperty);
-		set => SetValue(CachingEnabledProperty, value);
 	}
 
 	/// <summary>Gets or sets a value of the avatar text character spacing property.</summary>
@@ -166,6 +147,13 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 	{
 		get => (double)GetValue(FontElement.FontSizeProperty);
 		set => SetValue(FontElement.FontSizeProperty, value);
+	}
+
+	/// <summary>Gets or sets a value of the control gravatar email property.</summary>
+	public string? GravatarEmail
+	{
+		get => (string)GetValue(GravatarEmailProperty);
+		set => SetValue(GravatarEmailProperty, value);
 	}
 
 	/// <summary>Gets or sets a value of the avatar image source property.</summary>
@@ -257,6 +245,12 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 	{
 		AvatarView avatarView = (AvatarView)bindable;
 		avatarView.StrokeThickness = (double)newValue;
+	}
+
+	static void OnGravatarEmailPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		AvatarView avatarView = (AvatarView)bindable;
+		avatarView.HandleGravatarEmailChanged((string)newValue);
 	}
 
 	static void OnImageSourceChanged(BindableObject bindable, object oldValue, object newValue)
@@ -365,14 +359,9 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 
 	static string GetMd5Hash(string str)
 	{
-		using MD5 md5 = MD5.Create();
-		byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(str));
-		StringBuilder sBuilder = new();
-		foreach (byte hashByte in hash)
-		{
-			sBuilder.Append(hashByte.ToString("x2"));
-		}
-		return sBuilder.ToString();
+		using var md5 = MD5.Create();
+		Span<byte> hash = md5.ComputeHash(Encoding.UTF8.GetBytes(str));
+		return BitConverter.ToString(hash.ToArray(), 0, hash.Length).Replace("-", string.Empty, StringComparison.OrdinalIgnoreCase).ToLowerInvariant();
 	}
 
 	static bool IsValidEmail(string email)
@@ -394,74 +383,82 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		}
 	}
 
+	void HandleGravatarEmailChanged(string? newValue)
+	{
+		if (newValue is null || !IsValidEmail(newValue))
+		{
+			HandleImageChanged(ImageSource);
+			return;
+		}
+
+		var height = Height >= 0 ? Height : Math.Max(HeightRequest, AvatarViewDefaults.DefaultHeightRequest);
+		var width = Width >= 0 ? Width : Math.Max(WidthRequest, AvatarViewDefaults.DefaultWidthRequest);
+		var gravatarSize = (int)Math.Max(width, height);
+		switch (gravatarSize) // Using Enumerable.Range is very inefficient for validating a number is within a range.  Much more efficient to simply use an if/switch.
+		{
+			case < 1:
+				gravatarSize = 1;  // Images minimum is 1px
+				break;
+			case > 2048:
+				gravatarSize = 2048; // Images maximum is 2048px, however note that many users have lower resolution images, so requesting larger sizes mar result in pixelation/low-quality images.
+				break;
+		}
+
+		var newImageSource = new UriImageSource()
+		{
+			Uri = new Uri($"https://www.gravatar.com/avatar/{GetMd5Hash(newValue)}?s={gravatarSize}&d={DefaultGravatarName(DefaultGravatar)}"),
+		};
+
+		// If the control has UriImageSource set, use property values.  Otherwise, use default property values.
+		if (avatarImage.Source is UriImageSource avatarUriImageSource)
+		{
+			newImageSource.CacheValidity = avatarUriImageSource.CacheValidity;
+			newImageSource.CachingEnabled = avatarUriImageSource.CachingEnabled;
+		}
+
+		HandleImageChanged(newImageSource);
+	}
+
 	void HandleImageChanged(ImageSource? newValue)
 	{
-		if (newValue is not null)
-		{
-			// Work-around for iOS / MacOS bug that paints `Border.BackgroundColor` over top of `Border.Content` when an Image is used for `Border.Content`
-			if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst() || OperatingSystem.IsMacOS())
-			{
-				BackgroundColor = Colors.Transparent;
-			}
-
-			if (newValue is FileImageSource fileImageSource && IsValidEmail(fileImageSource.File))
-			{
-				double height = Height >= 0 ? Height : Math.Max(HeightRequest, AvatarViewDefaults.DefaultHeightRequest);
-				double width = Width >= 0 ? Width : Math.Max(WidthRequest, AvatarViewDefaults.DefaultWidthRequest);
-				int gravatarSize = (int)Math.Max(width, height);
-				switch (gravatarSize) // Using Enumerable.Range is very inefficient for validating a number is within a range.  Much more efficient to simply use an if/switch.
-				{
-					case < 1:
-						gravatarSize = 1;  // Images minimum is 1px
-						break;
-					case > 2048:
-						gravatarSize = 2048; // Images maximum is 2048px, however note that many users have lower resolution images, so requesting larger sizes mar result in pixelation/low-quality images.
-						break;
-				}
-
-				newValue = new UriImageSource()
-				{
-					Uri = new Uri(string.Format(requestUriFormat, GetMd5Hash(fileImageSource.File), gravatarSize, DefaultGravatarName(DefaultGravatar))),
-				};
-			}
-
-			if (newValue is UriImageSource uriImageSource)
-			{
-				uriImageSource.CacheValidity = CacheValidity;
-				uriImageSource.CachingEnabled = CachingEnabled;
-				avatarImage.Source = uriImageSource;
-			}
-			else
-			{
-				avatarImage.Source = newValue;
-			}
-
-			Content = avatarImage;
-		}
-		else
+		avatarImage.Source = newValue;
+		if (newValue is null)
 		{
 			Content = avatarLabel;
+			return;
 		}
+
+		// Work-around for iOS / MacOS bug that paints `Border.BackgroundColor` over top of `Border.Content` when an Image is used for `Border.Content`
+		if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst() || OperatingSystem.IsMacOS())
+		{
+			BackgroundColor = Colors.Transparent;
+		}
+
+		Content = avatarImage;
 	}
 
 	void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
-		// Ensure avatarImage is clipped to the bounds of the AvatarView whenever its Height, Width, CornerRadius and Padding properties change		
-		if ((e.PropertyName == HeightProperty.PropertyName
-				|| e.PropertyName == WidthProperty.PropertyName
-				|| e.PropertyName == PaddingProperty.PropertyName
-				|| e.PropertyName == ImageSourceProperty.PropertyName
-				|| e.PropertyName == BorderWidthProperty.PropertyName
-				|| e.PropertyName == CornerRadiusProperty.PropertyName
-				|| e.PropertyName == StrokeThicknessProperty.PropertyName)
-			&& Height >= 0 // The default value of Height (before the view is drawn onto the page) is -1
-			&& Width >= 0 // The default value of Y (before the view is drawn onto the page) is -1
-			&& avatarImage.Source is not null)
+		if ((e is not null && e.PropertyName != HeightProperty.PropertyName
+				&& e.PropertyName != WidthProperty.PropertyName
+				&& e.PropertyName != PaddingProperty.PropertyName
+				&& e.PropertyName != ImageSourceProperty.PropertyName
+				&& e.PropertyName != BorderWidthProperty.PropertyName
+				&& e.PropertyName != CornerRadiusProperty.PropertyName
+				&& e.PropertyName != StrokeThicknessProperty.PropertyName)
+			|| Height < 0 // The default value of Height (before the view is drawn onto the page) is -1
+			|| Width < 0 // The default value of Y (before the view is drawn onto the page) is -1
+			|| avatarImage.Source is null)
 		{
-			double imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
-			double imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
-			Rect rect = new(0, 0, imageWidth, imageHeight);
-			avatarImage.Clip = new RoundRectangleGeometry { CornerRadius = CornerRadius, Rect = rect };
+			return;
 		}
+
+		// Ensure avatarImage is clipped to the bounds of the AvatarView whenever its Height, Width, CornerRadius and Padding properties change		
+		var imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
+		var imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
+
+		var rect = new Rect(0, 0, imageWidth, imageHeight);
+
+		avatarImage.Clip = new RoundRectangleGeometry { CornerRadius = CornerRadius, Rect = rect };
 	}
 }

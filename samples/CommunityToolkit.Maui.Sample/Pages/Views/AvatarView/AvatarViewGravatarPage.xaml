@@ -55,42 +55,43 @@
             <Label Style="{StaticResource Description}" Text="AvatarView supports using Gravatar. 'One avatar for everything, everywhere.'" />
             <Line Style="{StaticResource HR}" />
             <mct:AvatarView
-                CacheValidity="{Binding CacheValidityTimespan}"
-                CachingEnabled="{Binding EnableCache}"
                 CornerRadius="16"
                 DefaultGravatar="{Binding DefaultGravatarSelected}"
+                GravatarEmail="{Binding Email}"
                 HeightRequest="32"
-                ImageSource="{Binding Email}"
-                WidthRequest="32" />
+                WidthRequest="32">
+            </mct:AvatarView>
+            <mct:AvatarView DefaultGravatar="{Binding DefaultGravatarSelected}" GravatarEmail="{Binding Email}">
+                <mct:AvatarView.ImageSource>
+                    <UriImageSource CacheValidity="{Binding CacheValidityTimespan}" CachingEnabled="{Binding EnableCache}" />
+                </mct:AvatarView.ImageSource>
+            </mct:AvatarView>
             <mct:AvatarView
-                CacheValidity="{Binding CacheValidityTimespan}"
-                CachingEnabled="{Binding EnableCache}"
-                DefaultGravatar="{Binding DefaultGravatarSelected}"
-                ImageSource="{Binding Email}" />
-            <mct:AvatarView
-                CacheValidity="{Binding CacheValidityTimespan}"
-                CachingEnabled="{Binding EnableCache}"
                 CornerRadius="32"
                 DefaultGravatar="{Binding DefaultGravatarSelected}"
+                GravatarEmail="{Binding Email}"
                 HeightRequest="64"
-                ImageSource="{Binding Email}"
-                WidthRequest="128" />
+                WidthRequest="128">
+                <mct:AvatarView.ImageSource>
+                    <UriImageSource CacheValidity="{Binding CacheValidityTimespan}" CachingEnabled="{Binding EnableCache}" />
+                </mct:AvatarView.ImageSource>
+            </mct:AvatarView>
             <mct:AvatarView
-                CacheValidity="{Binding CacheValidityTimespan}"
-                CachingEnabled="{Binding EnableCache}"
                 CornerRadius="32"
                 DefaultGravatar="{Binding DefaultGravatarSelected}"
+                GravatarEmail="{Binding Email}"
                 HeightRequest="128"
-                ImageSource="{Binding Email}"
-                WidthRequest="64" />
+                WidthRequest="64">
+                <mct:AvatarView.ImageSource>
+                    <UriImageSource CacheValidity="{Binding CacheValidityTimespan}" CachingEnabled="{Binding EnableCache}" />
+                </mct:AvatarView.ImageSource>
+            </mct:AvatarView>
             <mct:AvatarView
                 BorderWidth="2"
-                CacheValidity="{Binding CacheValidityTimespan}"
-                CachingEnabled="{Binding EnableCache}"
                 CornerRadius="32,0,0,32"
                 DefaultGravatar="{Binding DefaultGravatarSelected}"
+                GravatarEmail="{Binding Email}"
                 HeightRequest="64"
-                ImageSource="{Binding Email}"
                 WidthRequest="64">
                 <mct:AvatarView.Stroke>
                     <LinearGradientBrush EndPoint="0,1">
@@ -98,6 +99,9 @@
                         <GradientStop Offset="1.0" Color="Red" />
                     </LinearGradientBrush>
                 </mct:AvatarView.Stroke>
+                <mct:AvatarView.ImageSource>
+                    <UriImageSource CacheValidity="{Binding CacheValidityTimespan}" CachingEnabled="{Binding EnableCache}" />
+                </mct:AvatarView.ImageSource>
             </mct:AvatarView>
             <Label x:Name="LabelEmail" Text="Email:" />
             <Entry

@@ -9,12 +9,6 @@ public interface IAvatarView : IBorderView, ILabel, Microsoft.Maui.IImage, IImag
 	/// <summary>Gets a value indicating the avatar border width.</summary>
 	double BorderWidth { get; }
 
-	/// <summary>Gets or sets a value of the control image cache validity.</summary>
-	TimeSpan CacheValidity { get; }
-
-	/// <summary>Gets or sets a value indicating whether the control image cache is enabled.</summary>
-	bool CachingEnabled { get; }
-
 	/// <summary>Gets a value indicating the avatar corner radius <see cref="Microsoft.Maui.CornerRadius"/>.</summary>
 	CornerRadius CornerRadius { get; }
 

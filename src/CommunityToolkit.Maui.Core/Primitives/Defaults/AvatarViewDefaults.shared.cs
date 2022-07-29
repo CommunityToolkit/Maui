@@ -30,6 +30,10 @@ public static class AvatarViewDefaults
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static CornerRadius DefaultCornerRadius { get; } = new(24, 24, 24, 24);
 
+	/// <summary>Gets or sets a value of the control default gravatar email property.</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public static string? DefaultGravatarEmail { get; }
+
 	/// <summary>Default padding.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static Thickness DefaultPadding { get; } = new(1);
