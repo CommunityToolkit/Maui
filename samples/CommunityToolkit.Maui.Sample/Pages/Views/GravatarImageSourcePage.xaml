@@ -54,17 +54,16 @@
 
             <Label Style="{StaticResource Description}" Text="GravatarImageSource supports using Gravatar. 'One avatar for everything, everywhere.'" />
             <Line Style="{StaticResource HR}" />
-            <Label Style="{StaticResource Description}" Text="Default" />
             <Image HeightRequest="128" WidthRequest="128">
                 <Image.Source>
                     <mct:GravatarImageSource
-                        CacheValidity="{Binding CacheValidityInDays}"
+                        CacheValidity="{Binding CacheValidityTimespan}"
                         CachingEnabled="{Binding EnableCache}"
                         Email="{Binding Email}"
-                        Image="{Binding DefaultGravatarSelected}" />
+                        Image="{Binding DefaultGravatarSelected}"
+                        SemanticProperties.Description="GravatarImageSource for an Image contron, binding all properties." />
                 </Image.Source>
             </Image>
-            <Label Style="{StaticResource Description}" Text="With AvatarView" />
             <mct:AvatarView
                 BorderWidth="2"
                 CornerRadius="32,0,0,32"
@@ -78,10 +77,11 @@
                 </mct:AvatarView.Stroke>
                 <mct:AvatarView.ImageSource>
                     <mct:GravatarImageSource
-                        CacheValidity="{Binding CacheValidityInDays}"
+                        CacheValidity="{Binding CacheValidityTimespan}"
                         CachingEnabled="{Binding EnableCache}"
                         Email="{Binding Email}"
-                        Image="{Binding DefaultGravatarSelected}" />
+                        Image="{Binding DefaultGravatarSelected}"
+                        SemanticProperties.Description="GravatarImageSourse used with AvatarView." />
                 </mct:AvatarView.ImageSource>
             </mct:AvatarView>
             <Label x:Name="LabelEmail" Text="Email:" />
@@ -89,12 +89,12 @@
                 AutomationProperties.LabeledBy="{x:Reference LabelEmail}"
                 Keyboard="Email"
                 Text="{Binding Email}" />
-            <Label x:Name="LabelDefaultGravatar" Text="Default Gravatar:" />
+            <Label x:Name="LabelDefaultImage" Text="Default Image:" />
             <Picker
-                AutomationProperties.LabeledBy="{x:Reference LabelDefaultGravatar}"
+                AutomationProperties.LabeledBy="{x:Reference LabelDefaultImage}"
                 ItemsSource="{Binding DefaultGravatarItems}"
                 SelectedItem="{Binding DefaultGravatarSelected}"
-                SemanticProperties.Description="The default image is displayed if there is no image associated with the requested email hash." />
+                SemanticProperties.Description="A default image is displayed if there is no image associated with the requested email hash." />
             <Label x:Name="LabelEnableCache" Text="Enable cache:" />
             <Switch
                 AutomationProperties.LabeledBy="{x:Reference LabelEnableCache}"
