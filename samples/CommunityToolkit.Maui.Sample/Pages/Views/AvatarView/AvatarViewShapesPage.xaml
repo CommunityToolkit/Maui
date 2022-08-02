@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Views.AvatarViewShapesPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView"
+    Title="AvatarView Shapes"
+    x:DataType="vm:AvatarViewShapesViewModel"
+    x:TypeArguments="vm:AvatarViewShapesViewModel">
+    <ScrollView>
+        <VerticalStackLayout Spacing="12">
+            <VerticalStackLayout.Resources>
+                <ResourceDictionary>
+                    <Style x:Key="Description" TargetType="Label">
+                        <Setter Property="VerticalTextAlignment" Value="Start" />
+                        <Setter Property="HorizontalTextAlignment" Value="Center" />
+                        <Setter Property="LineBreakMode" Value="WordWrap" />
+                        <Setter Property="Margin" Value="4,0" />
+                    </Style>
+                    <Style x:Key="HR" TargetType="Line">
+                        <Setter Property="Stroke" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                        <Setter Property="X2" Value="300" />
+                        <Setter Property="HorizontalOptions" Value="Center" />
+                    </Style>
+                    <Style x:Key="AvatarViewShapesBase" TargetType="mct:AvatarView">
+                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                        <!--  The actress who played Neytiri in Avatar (2009) is Zoe Saldana (ZS)  -->
+                        <Setter Property="Text" Value="ZS" />
+                        <Setter Property="TextColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
+                        <Setter Property="BorderColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
+                        <Setter Property="Margin" Value="4" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewShapesDefault"
+                        BasedOn="{StaticResource AvatarViewShapesBase}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="WidthRequest" Value="48" />
+                        <Setter Property="HeightRequest" Value="48" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewShapesCircle"
+                        BasedOn="{StaticResource AvatarViewShapesDefault}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="CornerRadius" Value="24" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewShapesRoundedSquare"
+                        BasedOn="{StaticResource AvatarViewShapesDefault}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="CornerRadius" Value="12" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewShapesVerticalPill"
+                        BasedOn="{StaticResource AvatarViewShapesBase}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="WidthRequest" Value="32" />
+                        <Setter Property="HeightRequest" Value="48" />
+                        <Setter Property="CornerRadius" Value="24" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewShapesHorizontalPill"
+                        BasedOn="{StaticResource AvatarViewShapesBase}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="WidthRequest" Value="48" />
+                        <Setter Property="HeightRequest" Value="32" />
+                        <Setter Property="CornerRadius" Value="24" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewShapesArch"
+                        BasedOn="{StaticResource AvatarViewShapesDefault}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="CornerRadius" Value="24, 24, 0, 0" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewShapesShield"
+                        BasedOn="{StaticResource AvatarViewShapesDefault}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="CornerRadius" Value="0, 0, 24, 24" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewShapesEed"
+                        BasedOn="{StaticResource AvatarViewShapesDefault}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="CornerRadius" Value="32, 0, 24, 0" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewShapesDee"
+                        BasedOn="{StaticResource AvatarViewShapesDefault}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="CornerRadius" Value="0, 24, 0, 24" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewShapesPointerTopLeft"
+                        BasedOn="{StaticResource AvatarViewShapesDefault}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="CornerRadius" Value="0, 24, 24, 24" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewShapesPointerTopRight"
+                        BasedOn="{StaticResource AvatarViewShapesDefault}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="CornerRadius" Value="24, 0, 24, 24" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewShapesPointerBottomRight"
+                        BasedOn="{StaticResource AvatarViewShapesDefault}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="CornerRadius" Value="24, 24, 24, 0" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewShapesPointerBottomLeft"
+                        BasedOn="{StaticResource AvatarViewShapesDefault}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="CornerRadius" Value="24, 24, 0, 24" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewShapesRotatedPointerBottomRight"
+                        BasedOn="{StaticResource AvatarViewShapesDefault}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="CornerRadius" Value="24, 24, 24, 0" />
+                        <Setter Property="Rotation" Value="45" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewShapesExotic"
+                        BasedOn="{StaticResource AvatarViewShapesDefault}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="CornerRadius" Value="-24,24,-24,24" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewShapesExoticTwo"
+                        BasedOn="{StaticResource AvatarViewShapesDefault}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="CornerRadius" Value="-24,-24,-24,-24" />
+                    </Style>
+                    <Style
+                        x:Key="AvatarViewShapesExoticThree"
+                        BasedOn="{StaticResource AvatarViewShapesDefault}"
+                        TargetType="mct:AvatarView">
+                        <Setter Property="CornerRadius" Value="-24,0,0,-24" />
+                    </Style>
+                </ResourceDictionary>
+            </VerticalStackLayout.Resources>
+            <Label Style="{StaticResource Description}" Text="AvatarView supports the .NET MAUI CornerRadius property to modify its shape." />
+            <Line Style="{StaticResource HR}" />
+            <mct:AvatarView
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView showing circle shape."
+                Style="{StaticResource AvatarViewShapesCircle}"
+                WidthRequest="48" />
+            <mct:AvatarView
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView showing a 'rounded square' shape."
+                Style="{StaticResource AvatarViewShapesRoundedSquare}"
+                WidthRequest="48" />
+            <mct:AvatarView
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView showing a 'vertical-pill' shape."
+                Style="{StaticResource AvatarViewShapesVerticalPill}"
+                WidthRequest="32" />
+            <mct:AvatarView
+                HeightRequest="32"
+                SemanticProperties.Description="Sample AvatarView showing a 'horizontal-pill' shape."
+                Style="{StaticResource AvatarViewShapesHorizontalPill}"
+                WidthRequest="48" />
+            <mct:AvatarView
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView showing an 'arch' shape."
+                Style="{StaticResource AvatarViewShapesArch}"
+                WidthRequest="48" />
+            <mct:AvatarView
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView showing an 'shield' shape."
+                Style="{StaticResource AvatarViewShapesShield}"
+                WidthRequest="48" />
+            <mct:AvatarView
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView showing an 'eed' shape."
+                Style="{StaticResource AvatarViewShapesEed}"
+                WidthRequest="48" />
+            <mct:AvatarView
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView showing an 'dee' shape."
+                Style="{StaticResource AvatarViewShapesDee}"
+                WidthRequest="48" />
+            <mct:AvatarView
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView showing an 'top-left point' shape."
+                Style="{StaticResource AvatarViewShapesPointerTopLeft}"
+                WidthRequest="48" />
+            <mct:AvatarView
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView showing an 'top-right point' shape."
+                Style="{StaticResource AvatarViewShapesPointerTopRight}"
+                WidthRequest="48" />
+            <mct:AvatarView
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView showing an 'bottom-right point' shape."
+                Style="{StaticResource AvatarViewShapesPointerBottomRight}"
+                WidthRequest="48" />
+            <mct:AvatarView
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView showing an 'bottom-left point' shape."
+                Style="{StaticResource AvatarViewShapesPointerBottomLeft}"
+                WidthRequest="48" />
+            <mct:AvatarView
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView showing an 'bottom-right point' shape rotated 45 degrees."
+                Style="{StaticResource AvatarViewShapesRotatedPointerBottomRight}"
+                WidthRequest="48" />
+            <mct:AvatarView
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView showing an 'exoitc' use of corner radius."
+                Style="{StaticResource AvatarViewShapesExotic}"
+                WidthRequest="48" />
+            <mct:AvatarView
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView showing an 'exoitc' use of corner radius."
+                Style="{StaticResource AvatarViewShapesExoticTwo}"
+                WidthRequest="48" />
+            <mct:AvatarView
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView showing an 'exoitc' use of corner radius."
+                Style="{StaticResource AvatarViewShapesExoticThree}"
+                WidthRequest="48" />
+        </VerticalStackLayout>
+    </ScrollView>
+</pages:BasePage>

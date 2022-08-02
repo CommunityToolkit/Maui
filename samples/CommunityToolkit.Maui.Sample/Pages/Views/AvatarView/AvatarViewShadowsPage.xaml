@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Views.AvatarViewShadowsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView"
+    Title="AvatarView Shadows"
+    x:DataType="vm:AvatarViewShadowsViewModel"
+    x:TypeArguments="vm:AvatarViewShadowsViewModel">
+    <VerticalStackLayout Spacing="12">
+        <VerticalStackLayout.Resources>
+            <ResourceDictionary>
+                <Style x:Key="Description" TargetType="Label">
+                    <Setter Property="VerticalTextAlignment" Value="Start" />
+                    <Setter Property="HorizontalTextAlignment" Value="Center" />
+                    <Setter Property="LineBreakMode" Value="WordWrap" />
+                    <Setter Property="Margin" Value="4,0" />
+                </Style>
+                <Style x:Key="HR" TargetType="Line">
+                    <Setter Property="Stroke" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                    <Setter Property="X2" Value="300" />
+                    <Setter Property="HorizontalOptions" Value="Center" />
+                </Style>
+                <Style x:Key="AvatarViewBase" TargetType="mct:AvatarView">
+                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                    <!--  The actress who played Neytiri in Avatar (2009) is Zoe Saldana (ZS)  -->
+                    <Setter Property="Text" Value="ZS" />
+                    <Setter Property="TextColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
+                    <Setter Property="BorderColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
+                    <Setter Property="Margin" Value="4" />
+                </Style>
+                <Style
+                    x:Key="AvatarViewShadowsDefault"
+                    BasedOn="{StaticResource AvatarViewBase}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="WidthRequest" Value="48" />
+                    <Setter Property="HeightRequest" Value="48" />
+                </Style>
+                <Style
+                    x:Key="AvatarViewShadowsCircle"
+                    BasedOn="{StaticResource AvatarViewShadowsDefault}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="CornerRadius" Value="32" />
+                    <Setter Property="Shadow">
+                        <Setter.Value>
+                            <Shadow
+                                Brush="Red"
+                                Opacity="0.5"
+                                Radius="10"
+                                Offset="10,10" />
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+                <Style
+                    x:Key="AvatarViewShadowsRoundedSquare"
+                    BasedOn="{StaticResource AvatarViewShadowsDefault}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="CornerRadius" Value="16" />
+                    <Setter Property="Shadow">
+                        <Setter.Value>
+                            <Shadow
+                                Brush="Green"
+                                Opacity="0.5"
+                                Radius="10"
+                                Offset="10,10" />
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+                <Style
+                    x:Key="AvatarViewShadowsVerticalPill"
+                    BasedOn="{StaticResource AvatarViewBase}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="WidthRequest" Value="32" />
+                    <Setter Property="HeightRequest" Value="48" />
+                    <Setter Property="CornerRadius" Value="32" />
+                    <Setter Property="Shadow">
+                        <Setter.Value>
+                            <Shadow
+                                Brush="Blue"
+                                Opacity="0.5"
+                                Radius="10"
+                                Offset="10,10" />
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+                <Style
+                    x:Key="AvatarViewShadowsPointerBottomRight"
+                    BasedOn="{StaticResource AvatarViewBase}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="CornerRadius" Value="32, 32, 32, 0" />
+                    <Setter Property="Shadow">
+                        <Setter.Value>
+                            <Shadow
+                                Brush="Brown"
+                                Opacity="0.5"
+                                Radius="10"
+                                Offset="10,10" />
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+                <Style
+                    x:Key="AvatarViewShadowsRotatedPointerBottomRight"
+                    BasedOn="{StaticResource AvatarViewBase}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="CornerRadius" Value="32, 32, 32, 0" />
+                    <Setter Property="Rotation" Value="45" />
+                    <Setter Property="Shadow">
+                        <Setter.Value>
+                            <Shadow
+                                Brush="Teal"
+                                Opacity="0.5"
+                                Radius="10"
+                                Offset="10,10" />
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ResourceDictionary>
+        </VerticalStackLayout.Resources>
+        <Label Style="{StaticResource Description}" Text="AvatarView supports the Shadow property." />
+        <Line Style="{StaticResource HR}" />
+        <mct:AvatarView
+            HeightRequest="48"
+            SemanticProperties.Description="Sample AvatarView showing red shadow."
+            Style="{StaticResource AvatarViewShadowsCircle}"
+            WidthRequest="48" />
+        <mct:AvatarView
+            HeightRequest="48"
+            SemanticProperties.Description="Sample AvatarView showing green shadow."
+            Style="{StaticResource AvatarViewShadowsRoundedSquare}"
+            WidthRequest="48" />
+        <mct:AvatarView
+            HeightRequest="48"
+            SemanticProperties.Description="Sample AvatarView showing blue shadow."
+            Style="{StaticResource AvatarViewShadowsVerticalPill}"
+            WidthRequest="32" />
+        <mct:AvatarView
+            HeightRequest="48"
+            SemanticProperties.Description="Sample AvatarView showing brown shadow."
+            Style="{StaticResource AvatarViewShadowsPointerBottomRight}"
+            WidthRequest="48" />
+        <mct:AvatarView
+            Margin="{OnPlatform Android='48,0,0,0'}"
+            HeightRequest="48"
+            SemanticProperties.Description="Sample AvatarView showing teal shadow and rotated 45 degrees."
+            Style="{StaticResource AvatarViewShadowsRotatedPointerBottomRight}"
+            WidthRequest="48" />
+    </VerticalStackLayout>
+</pages:BasePage>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Views.AvatarViewSizesPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView"
+    Title="AvatarView Sizes"
+    x:DataType="vm:AvatarViewSizesViewModel"
+    x:TypeArguments="vm:AvatarViewSizesViewModel">
+    <VerticalStackLayout Spacing="12">
+        <VerticalStackLayout.Resources>
+            <ResourceDictionary>
+                <Style x:Key="Description" TargetType="Label">
+                    <Setter Property="VerticalTextAlignment" Value="Start" />
+                    <Setter Property="HorizontalTextAlignment" Value="Center" />
+                    <Setter Property="LineBreakMode" Value="WordWrap" />
+                    <Setter Property="Margin" Value="4,0" />
+                </Style>
+                <Style x:Key="HR" TargetType="Line">
+                    <Setter Property="Stroke" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                    <Setter Property="X2" Value="300" />
+                    <Setter Property="HorizontalOptions" Value="Center" />
+                </Style>
+                <Style x:Key="AvatarViewSizeBase" TargetType="mct:AvatarView">
+                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                    <!--  The actress who played Neytiri in Avatar (2009) is Zoe Saldana (ZS)  -->
+                    <Setter Property="Text" Value="ZS" />
+                    <Setter Property="TextColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
+                    <Setter Property="BorderColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
+                    <Setter Property="Margin" Value="8" />
+                </Style>
+                <Style
+                    x:Key="AvatarViewSizesDefault"
+                    BasedOn="{StaticResource AvatarViewSizeBase}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="WidthRequest" Value="64" />
+                    <Setter Property="HeightRequest" Value="64" />
+                    <Setter Property="CornerRadius" Value="32" />
+                </Style>
+                <Style
+                    x:Key="AvatarViewSizesMicro"
+                    BasedOn="{StaticResource AvatarViewSizeBase}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="WidthRequest" Value="16" />
+                    <Setter Property="HeightRequest" Value="16" />
+                    <Setter Property="FontSize" Value="Micro" />
+                    <Setter Property="CornerRadius" Value="8" />
+                </Style>
+                <Style
+                    x:Key="AvatarViewSizesSmall"
+                    BasedOn="{StaticResource AvatarViewSizeBase}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="WidthRequest" Value="32" />
+                    <Setter Property="HeightRequest" Value="32" />
+                    <Setter Property="FontSize" Value="Small" />
+                    <Setter Property="FontAttributes" Value="Italic" />
+                    <Setter Property="CornerRadius" Value="16" />
+                </Style>
+                <Style
+                    x:Key="AvatarViewSizesLarge"
+                    BasedOn="{StaticResource AvatarViewSizeBase}"
+                    TargetType="mct:AvatarView">
+                    <Setter Property="WidthRequest" Value="128" />
+                    <Setter Property="HeightRequest" Value="128" />
+                    <Setter Property="FontSize" Value="Large" />
+                    <Setter Property="CornerRadius" Value="64" />
+                    <Setter Property="FontAttributes" Value="Bold" />
+                </Style>
+            </ResourceDictionary>
+        </VerticalStackLayout.Resources>
+        <Label Style="{StaticResource Description}" Text="AvatarView can be set to any size and supports font properties." />
+        <Line Style="{StaticResource HR}" />
+        <mct:AvatarView
+            HeightRequest="16"
+            SemanticProperties.Description="Sample AvatarView showing size at 16x16 and 'micro' font."
+            Style="{StaticResource AvatarViewSizesMicro}"
+            WidthRequest="16" />
+        <mct:AvatarView
+            HeightRequest="32"
+            SemanticProperties.Description="Sample AvatarView showing size at 32x32 and 'small' font and 'italic'."
+            Style="{StaticResource AvatarViewSizesSmall}"
+            WidthRequest="32" />
+        <mct:AvatarView
+            HeightRequest="64"
+            SemanticProperties.Description="Sample AvatarView showing size at 64x64, 'default'."
+            Style="{StaticResource AvatarViewSizesDefault}"
+            WidthRequest="64" />
+        <mct:AvatarView
+            HeightRequest="128"
+            SemanticProperties.Description="Sample AvatarView showing size at 128x128, 'large' font and 'bold'."
+            Style="{StaticResource AvatarViewSizesLarge}"
+            WidthRequest="128" />
+    </VerticalStackLayout>
+</pages:BasePage>
