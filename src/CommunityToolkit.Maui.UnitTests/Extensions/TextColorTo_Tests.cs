@@ -74,7 +74,9 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 		{
 			Label? label = null;
 
+#pragma warning disable CS8603 // Possible null reference return.
 			await Assert.ThrowsAsync<NullReferenceException>(() => label?.TextColorTo(Colors.Red));
+#pragma warning restore CS8603 // Possible null reference return.
 		}
 
 		[Fact]
