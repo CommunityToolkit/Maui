@@ -122,6 +122,7 @@ public static class MauiProgram
 
 		// Add Views Pages + ViewModels
 		services.AddTransient<DrawingViewPage, DrawingViewViewModel>();
+		services.AddTransient<GravatarImageSourcePage, GravatarImageSourceViewModel>();
 		services.AddTransient<MultiplePopupPage, MultiplePopupViewModel>();
 		services.AddTransient<PopupAnchorPage, PopupAnchorViewModel>();
 		services.AddTransient<PopupPositionPage, PopupPositionViewModel>();

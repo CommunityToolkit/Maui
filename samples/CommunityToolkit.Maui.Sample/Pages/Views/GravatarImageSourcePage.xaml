@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Views.GravatarImageSourcePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+    Title="GravatarImageSource"
+    x:DataType="vm:GravatarImageSourceViewModel"
+    x:TypeArguments="vm:GravatarImageSourceViewModel">
+    <ScrollView>
+        <VerticalStackLayout Spacing="12">
+            <VerticalStackLayout.Resources>
+                <ResourceDictionary>
+                    <Style x:Key="Description" TargetType="Label">
+                        <Setter Property="VerticalTextAlignment" Value="Start" />
+                        <Setter Property="HorizontalTextAlignment" Value="Center" />
+                        <Setter Property="LineBreakMode" Value="WordWrap" />
+                        <Setter Property="Margin" Value="4,0" />
+                    </Style>
+                    <Style x:Key="HR" TargetType="Line">
+                        <Setter Property="Stroke" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                        <Setter Property="X2" Value="300" />
+                        <Setter Property="HorizontalOptions" Value="Center" />
+                    </Style>
+                    <Style TargetType="Switch">
+                        <Setter Property="OnColor" Value="{StaticResource Gray400}" />
+                        <Setter Property="ThumbColor" Value="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}" />
+                        <Setter Property="VisualStateManager.VisualStateGroups">
+                            <VisualStateGroupList>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="On">
+                                        <VisualState.Setters>
+                                            <Setter Property="ThumbColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Off">
+                                        <VisualState.Setters>
+                                            <Setter Property="ThumbColor" Value="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateGroupList>
+                        </Setter>
+                    </Style>
+                    <Style TargetType="Slider">
+                        <Setter Property="MinimumTrackColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                        <Setter Property="MaximumTrackColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" />
+                        <Setter Property="ThumbColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                    </Style>
+                </ResourceDictionary>
+            </VerticalStackLayout.Resources>
+
+            <Label Style="{StaticResource Description}" Text="GravatarImageSource supports using Gravatar. 'One avatar for everything, everywhere.'" />
+            <Line Style="{StaticResource HR}" />
+            <Label Style="{StaticResource Description}" Text="Default" />
+            <Image HeightRequest="128" WidthRequest="128">
+                <Image.Source>
+                    <mct:GravatarImageSource
+                        CacheValidity="{Binding CacheValidityInDays}"
+                        CachingEnabled="{Binding EnableCache}"
+                        Email="{Binding Email}"
+                        Image="{Binding DefaultGravatarSelected}" />
+                </Image.Source>
+            </Image>
+            <Label Style="{StaticResource Description}" Text="With AvatarView" />
+            <mct:AvatarView
+                BorderWidth="2"
+                CornerRadius="32,0,0,32"
+                HeightRequest="128"
+                WidthRequest="128">
+                <mct:AvatarView.Stroke>
+                    <LinearGradientBrush EndPoint="0,1">
+                        <GradientStop Offset="0.1" Color="Blue" />
+                        <GradientStop Offset="1.0" Color="Red" />
+                    </LinearGradientBrush>
+                </mct:AvatarView.Stroke>
+                <mct:AvatarView.ImageSource>
+                    <mct:GravatarImageSource
+                        CacheValidity="{Binding CacheValidityInDays}"
+                        CachingEnabled="{Binding EnableCache}"
+                        Email="{Binding Email}"
+                        Image="{Binding DefaultGravatarSelected}" />
+                </mct:AvatarView.ImageSource>
+            </mct:AvatarView>
+            <Label x:Name="LabelEmail" Text="Email:" />
+            <Entry
+                AutomationProperties.LabeledBy="{x:Reference LabelEmail}"
+                Keyboard="Email"
+                Text="{Binding Email}" />
+            <Label x:Name="LabelDefaultGravatar" Text="Default Gravatar:" />
+            <Picker
+                AutomationProperties.LabeledBy="{x:Reference LabelDefaultGravatar}"
+                ItemsSource="{Binding DefaultGravatarItems}"
+                SelectedItem="{Binding DefaultGravatarSelected}"
+                SemanticProperties.Description="The default image is displayed if there is no image associated with the requested email hash." />
+            <Label x:Name="LabelEnableCache" Text="Enable cache:" />
+            <Switch
+                AutomationProperties.LabeledBy="{x:Reference LabelEnableCache}"
+                IsToggled="{Binding EnableCache}"
+                SemanticProperties.Description="Defines whether image caching is enabled.  The default value of this property is: True" />
+            <Label x:Name="LabelCacheValidity" IsEnabled="{Binding EnableCache}">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="Cache Validity (in days): '" />
+                        <Span Text="{Binding CacheValidityInDays}" />
+                        <Span Text="'" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            <Slider
+                AutomationProperties.LabeledBy="{x:Reference LabelCacheValidity}"
+                IsEnabled="{Binding EnableCache}"
+                Maximum="365"
+                Minimum="1"
+                SemanticProperties.Description="Specify how long the image will be stored locally for.  The default of this property is 1 day."
+                Value="{Binding CacheValidityInDays}" />
+        </VerticalStackLayout>
+    </ScrollView>
+</pages:BasePage>
