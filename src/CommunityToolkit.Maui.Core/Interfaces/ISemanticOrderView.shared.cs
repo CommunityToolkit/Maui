@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Core;
 /// <summary>
 /// TBD
 /// </summary>
-public interface ISemanticOrderView : IElement
+public interface ISemanticOrderView : IView
 {
 	/// <summary>
 	/// TBD

@@ -21,10 +21,34 @@ public static class SemanticOrderViewExtensions
 	/// <param name="view"></param>
 	public static void SetViewOrder(this View element, in ISemanticOrderView view)
 	{
-		
+	//	SetAccessibilityElements(view);
 	}
 
-	public static global::Android.Views.View? GetViewForAccessibility(this IElement visualElement)
+	static void SetAccessibilityElements(ISemanticOrderView virtualView)
+	{
+		if (virtualView == null)
+		{
+			return;
+		}
+
+		var viewOrder = virtualView.ViewOrder.OfType<IView>().ToList();
+
+		for (var i = 1; i < viewOrder.Count; i++)
+		{
+			var view1 = viewOrder[i - 1].GetViewForAccessibility();
+			var view2 = viewOrder[i].GetViewForAccessibility();
+
+			if (view1 == null || view2 == null)
+			{
+				return;
+			}
+
+			view2.AccessibilityTraversalAfter = view1.Id;
+			view1.AccessibilityTraversalBefore = view2.Id;
+		}
+	}
+
+	public static global::Android.Views.View? GetViewForAccessibility(this IView visualElement)
 	{
 		var platformView = visualElement.Handler?.PlatformView;
 
@@ -44,7 +68,7 @@ public static class SemanticOrderViewExtensions
 		return null;
 	}
 
-	public static global::Android.Views.View? GetViewForAccessibility(this IElement element, global::Android.Views.View platformView)
+	public static global::Android.Views.View? GetViewForAccessibility(this IView element, global::Android.Views.View platformView)
 	{
 		if (platformView == null)
 		{
