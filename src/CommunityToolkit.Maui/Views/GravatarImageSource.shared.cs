@@ -31,9 +31,7 @@ public class GravatarImageSource : ImageSource, IGravatarImageSource
 
 	/// <summary>On property changed.</summary>
 	/// <param name="propertyName">Property name.</param>
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type. NOTE: This is to match override
-	protected override void OnPropertyChanged(string propertyName = null)
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type. NOTE: This is to match override
+	protected override void OnPropertyChanged(string propertyName)
 	{
 		if (propertyName is not null && (propertyName == CacheValidityProperty.PropertyName || propertyName == CachingEnabledProperty.PropertyName))
 		{
