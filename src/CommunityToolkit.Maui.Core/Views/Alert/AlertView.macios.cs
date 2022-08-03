@@ -15,7 +15,6 @@ public class AlertView : UIView
 	/// Parent UIView
 	/// </summary>
 	public UIView ParentView => UIApplication.SharedApplication.ConnectedScenes.ToArray()
-		.Where(x => x.ActivationState == UISceneActivationState.ForegroundActive)
 		.Select(x => x as UIWindowScene)
 		.FirstOrDefault()?
 		.Windows.FirstOrDefault(x => x.IsKeyWindow) ?? throw new InvalidOperationException("KeyWindow is not found");

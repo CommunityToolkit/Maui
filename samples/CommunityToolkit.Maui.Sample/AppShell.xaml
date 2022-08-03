@@ -26,7 +26,7 @@
                VerticalTextAlignment="Center" />
 
     </Shell.FlyoutHeader>
-    
+
     <FlyoutItem Title="Welcome"
                 Route="WelcomePage"
                 Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst=''}">

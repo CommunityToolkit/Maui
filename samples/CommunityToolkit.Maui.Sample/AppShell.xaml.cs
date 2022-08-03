@@ -11,6 +11,7 @@ using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
+using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
 
 namespace CommunityToolkit.Maui.Sample;
 
@@ -81,6 +82,17 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<UniformItemsLayoutPage, UniformItemsLayoutViewModel, LayoutsGalleryPage, LayoutsGalleryViewModel>(),
 
 		// Add Views View Models
+		CreateViewModelMapping<AvatarViewBindablePropertiesPage, AvatarViewBindablePropertiesViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		CreateViewModelMapping<AvatarViewBordersPage, AvatarViewBordersViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		CreateViewModelMapping<AvatarViewColorsPage, AvatarViewColorsViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		CreateViewModelMapping<AvatarViewDayOfWeekPage, AvatarViewDayOfWeekViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		CreateViewModelMapping<AvatarViewGesturesPage, AvatarViewGesturesViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		CreateViewModelMapping<AvatarViewImagesPage, AvatarViewImagesViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		CreateViewModelMapping<AvatarViewKeyboardPage, AvatarViewKeyboardViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		CreateViewModelMapping<AvatarViewRatingPage, AvatarViewRatingViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		CreateViewModelMapping<AvatarViewShadowsPage, AvatarViewShadowsViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		CreateViewModelMapping<AvatarViewShapesPage, AvatarViewShapesViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		CreateViewModelMapping<AvatarViewSizesPage, AvatarViewSizesViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<DrawingViewPage, DrawingViewViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<ExpanderPage, ExpanderViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<MultiplePopupPage, MultiplePopupViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
