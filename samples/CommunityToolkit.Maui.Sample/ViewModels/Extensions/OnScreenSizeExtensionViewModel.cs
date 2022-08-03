@@ -1,18 +1,22 @@
-﻿using CommunityToolkit.Mvvm.Input;
-using ThreadNetwork;
+﻿using System.Windows.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Extensions;
 
 public sealed partial class OnScreenSizeExtensionViewModel : BaseViewModel
 {
-	public OnScreenSizeExtensionViewModel():base()
+	 readonly ILauncher launcher;
+
+	public OnScreenSizeExtensionViewModel(ILauncher launcher)
 	{
+		this.launcher = launcher;
+		OpenDocumentationCommand = new Command(async () => await OpenDocumentation());
 	}
 
-	[RelayCommand]
+	public ICommand OpenDocumentationCommand { get; }
+	
 	async Task OpenDocumentation()
 	{
-		var url = "https://github.com/MicrosoftDocs/CommunityToolkit/tree/main/docs/maui/extensions/on-screen-size-extension.md";
-		await Launcher.OpenAsync(new System.Uri(url));
+		var url = "https://docs.microsoft.com/dotnet/communitytoolkit/maui/extensions/on-screen-size-extension";
+		await launcher.OpenAsync(new Uri(url));
 	}
 }

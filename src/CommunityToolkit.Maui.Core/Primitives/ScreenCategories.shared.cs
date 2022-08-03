@@ -1,11 +1,10 @@
-﻿namespace  CommunityToolkit.Maui.Categories;
+namespace CommunityToolkit.Maui.Core.Primitives;
 
 /// <summary>
 /// Categories that a device screen size fits in.
 /// </summary>
 public enum ScreenCategories
 {
-
 	/// <summary>
 	/// Extra Small sized screens
 	/// </summary>
@@ -28,7 +27,7 @@ public enum ScreenCategories
 	ExtraLarge = 5,
 
 	/// <summary>
-	/// 
+	/// Undefined/Unkown category
 	/// </summary>
 	NotSet = 0,
 }

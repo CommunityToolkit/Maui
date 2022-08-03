@@ -20,11 +20,13 @@ public static partial class OnScreenSizePlatform
 	/// Returns how many horizontal/vertical pixels-per-inches the current device screen has.
 	/// </summary>
 	/// <returns></returns>
-	public static (double xdpi, double ydpi) GetPixelPerInches()
+	public static bool TryGetPixelPerInches(out double xdpi, out double ydpi)
 	{
 		var displayMetrics = Android.App.Application.Context.Resources?.DisplayMetrics;
 		
-		return (displayMetrics?.Xdpi ?? 0, displayMetrics?.Ydpi ?? 0);
+		xdpi = displayMetrics?.Xdpi ?? 0;
+		ydpi = displayMetrics?.Ydpi ?? 0;
+		return true;
 	}
 }
 #endif

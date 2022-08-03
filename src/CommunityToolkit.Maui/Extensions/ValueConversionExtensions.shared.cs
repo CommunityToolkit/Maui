@@ -1,15 +1,15 @@
 ﻿using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
-using CommunityToolkit.Maui.Categories;
+using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Helpers;
+using Microsoft.Extensions.Logging;
 
 namespace  CommunityToolkit.Maui.Extensions;
 
-#pragma warning disable IDE0040 // Add accessibility modifiers
-internal static class ValueConversionExtensions
+ static class ValueConversionExtensions
 {
-	private static Dictionary<Type, TypeConverter> converter = new Dictionary<Type, TypeConverter>();
+	 static Dictionary<Type, TypeConverter> converter = new Dictionary<Type, TypeConverter>();
 
 	/// <summary>
    /// Attempts to convert <paramref name="value"/> to <paramref name="toType"/>.
@@ -18,12 +18,10 @@ internal static class ValueConversionExtensions
    /// <param name="toType"></param>
    /// <param name="bindableProperty"></param>
    /// <returns></returns>
-    public static object ConvertTo(this object value, Type toType, BindableProperty bindableProperty)
+    public static object ConvertTo(this object value, Type toType, BindableProperty? bindableProperty)
     {
-	    if (Manager.Current.IsLogEnabled)
-	    {
-			LogHelpers.WriteLine($"Attempting To Convert \"{(value == null ? "null" : value)}\" of type:{(value == null ? "null" : value.GetType())} to Type:{(toType == null ? "null" : toType)} on bindable Property of type:{(bindableProperty == null ? "null" : bindableProperty.ReturnType)}", LogLevels.Verbose);
-	    }
+	    LogHelpers.Log($"Attempting To Convert \"{(value == null ? "null" : value)}\" of type:{(value == null ? "null" : value.GetType())} to Type:{(toType == null ? "null" : toType)} on bindable Property of type:{(bindableProperty == null ? "null" : bindableProperty.ReturnType)}", LogLevel.Debug);
+
 
 	    if (toType == null)
 	    {

@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Helpers;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
-using CommunityToolkit.Maui.Categories;
-using CommunityToolkit.Maui.Extensions;
-using CommunityToolkit.Maui.Helpers;
 
 namespace CommunityToolkit.Maui.Extensions;
 
@@ -16,13 +14,11 @@ namespace CommunityToolkit.Maui.Extensions;
 /// Markup extension that allows specify values to be applied to a physical screen size according to the category
 /// the screen it fits in, such as ExtraSmall, Small, Medium, Large, ExtraLarge, or Default.
 /// </summary>
-[SuppressMessage("Style", "IDE0040:Adicionar modificadores de acessibilidade")]
-[SuppressMessage("ReSharper", "UseStringInterpolation")]
 public class OnScreenSizeExtension : IMarkupExtension<object>
 {
 	static readonly object defaultNull = new ();
 
-	private Dictionary<ScreenCategories, object> categoryPropertyValues = new () {
+	 Dictionary<ScreenCategories, object> categoryPropertyValues = new () {
 		{ ScreenCategories.ExtraSmall, defaultNull},
 		{ ScreenCategories.Small, defaultNull},
 		{ ScreenCategories.Medium,  defaultNull},
@@ -49,7 +45,7 @@ public class OnScreenSizeExtension : IMarkupExtension<object>
 	/// </summary>
 	public object ExtraSmall
 	{
-		get => categoryPropertyValues[ScreenCategories.ExtraSmall]!;
+		get => categoryPropertyValues[ScreenCategories.ExtraSmall];
 		set => categoryPropertyValues[ScreenCategories.ExtraSmall] = value;
 	}
 	/// <summary>
@@ -57,7 +53,7 @@ public class OnScreenSizeExtension : IMarkupExtension<object>
 	/// </summary>
 	public object Small
 	{
-		get => categoryPropertyValues[ScreenCategories.Small]!;
+		get => categoryPropertyValues[ScreenCategories.Small];
 		set => categoryPropertyValues[ScreenCategories.Small] = value;
 	}
 	
@@ -66,7 +62,7 @@ public class OnScreenSizeExtension : IMarkupExtension<object>
 	/// </summary>
 	public object Medium
 	{
-		get => categoryPropertyValues[ScreenCategories.Medium]!;
+		get => categoryPropertyValues[ScreenCategories.Medium];
 		set => categoryPropertyValues[ScreenCategories.Medium] = value;
 	}
 
@@ -75,7 +71,7 @@ public class OnScreenSizeExtension : IMarkupExtension<object>
 	/// </summary>
 	public object Large
 	{
-		get => categoryPropertyValues[ScreenCategories.Large]!;
+		get => categoryPropertyValues[ScreenCategories.Large];
 		set => categoryPropertyValues[ScreenCategories.Large] = value;
 	}
 
@@ -84,7 +80,7 @@ public class OnScreenSizeExtension : IMarkupExtension<object>
 	/// </summary>
 	public object ExtraLarge
 	{
-		get => categoryPropertyValues[ScreenCategories.ExtraLarge]!;
+		get => categoryPropertyValues[ScreenCategories.ExtraLarge];
 		set => categoryPropertyValues[ScreenCategories.ExtraLarge] = value;
 	}
 
@@ -109,17 +105,19 @@ public class OnScreenSizeExtension : IMarkupExtension<object>
 			pi = (valueProvider.TargetProperty as PropertyInfo)!;
 		}
 
-		if (Manager.Current.IsLogEnabled)
+		LogHelpers.Log($"Providing Value using propertyType:\"{(bp?.ReturnType ?? pi?.PropertyType ?? null)}\" and BindableProperty:{(bp ?? null)}", LogLevel.Debug);
+
+		var propertyType = bp?.ReturnType ?? pi?.PropertyType;
+
+		if (propertyType == null)
 		{
-			LogHelpers.WriteLine($"Providing Value using propertyType:\"{(bp?.ReturnType ?? pi?.PropertyType ?? null)}\" and BindableProperty:{(bp ?? null)}", LogLevels.Verbose);
+			throw new InvalidOperationException("Não foi posivel determinar a propriedade para fornecer o valor.");
 		}
-		
-		var propertyType = bp?.ReturnType ?? pi?.PropertyType ?? throw new InvalidOperationException("Não foi posivel determinar a propriedade para fornecer o valor.");
 
 		var value = GetScreenCategoryPropertyValue(serviceProvider);
 
 
-		return value!.ConvertTo(propertyType, bp!);
+		return value.ConvertTo(propertyType, bp);
 	}
 
 	/// <summary>
@@ -128,16 +126,14 @@ public class OnScreenSizeExtension : IMarkupExtension<object>
 	/// <param name="serviceProvider"></param>
 	/// <returns></returns>
 	/// <exception cref="XamlParseException"></exception>
-#pragma warning disable IDE0040
-	private object GetScreenCategoryPropertyValue(IServiceProvider serviceProvider)
-#pragma warning restore IDE0040
+	 object GetScreenCategoryPropertyValue(IServiceProvider serviceProvider)
 	{
-		var screenCategory = ScreenCategoryHelper.GetCategory();
+		var screenCategory = OnScreenSizeHelper.GetCategory();
 		if (screenCategory != ScreenCategories.NotSet)
 		{
 			if (categoryPropertyValues[screenCategory] != defaultNull)
 			{
-				return categoryPropertyValues[screenCategory]!;
+				return categoryPropertyValues[screenCategory];
 			}
 		}
 
@@ -147,6 +143,4 @@ public class OnScreenSizeExtension : IMarkupExtension<object>
 		}
 		return Default;
 	}
-
-
 }

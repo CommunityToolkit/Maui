@@ -1,5 +1,6 @@
 using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Categories;
+using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Mappings;
 using CommunityToolkit.Maui.Extensions;
 

@@ -2,7 +2,7 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views.OnScreenSize;
 
-#if MACCATALYST
+#if (IOS || MACCATALYST)
 /// <summary>
 /// Platform-specifics for getting specific screen information.
 /// </summary>
@@ -12,23 +12,16 @@ public static partial class OnScreenSizePlatform
 	/// Returns how many horizontal/vertical pixels-per-inches the current device screen has.
 	/// </summary>
 	/// <returns></returns>
-	public static (double xdpi, double ydpi) GetPixelPerInches()
+	public static bool TryGetPixelPerInches(out double xdpi, out double ydpi)
 	{
-		var displayInfo = Microsoft.Maui.Devices.DeviceDisplay.Current.MainDisplayInfo;
-		
-		var scale = displayInfo.Density;
-		var dpi = scale * 160;
-		
-		if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
-		{
-			dpi = scale * 132;
-		} 
-		else if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Phone)
-		{
-			dpi = scale * 163;
-		}
+		var displayInfo = DeviceDisplay.Current.MainDisplayInfo;
 
-		return (dpi, dpi);
+		var dimensions = (displayInfo.Width / displayInfo.Density, displayInfo.Height / displayInfo.Density);
+
+		var success = AppleScreenDensityHelper.TryGetPpiWithFallBacks(DeviceInfo.Current.Model, DeviceInfo.Current.Name, dimensions, out var ppi);
+		xdpi = ppi;
+		ydpi = ppi;
+		return success;
 	}
 }
 #endif

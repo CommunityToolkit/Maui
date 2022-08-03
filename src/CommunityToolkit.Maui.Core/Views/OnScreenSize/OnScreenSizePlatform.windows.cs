@@ -1,9 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace CommunityToolkit.Maui.Core.Views.OnScreenSize;
 
 
-#if !(IOS || ANDROID || MACCATALYST || WINDOWS)
+#if (WINDOWS)
 /// <summary>
 /// Platform-specifics for getting specific screen information.
 /// </summary>
@@ -15,7 +13,9 @@ public static partial class OnScreenSizePlatform
 	/// <returns></returns>
 	public static bool TryGetPixelPerInches(out double xdpi, out double ydpi)
 	{
-		throw new NotSupportedException("Platform implementation not found");
+		xdpi = 0;
+		ydpi = 0;
+		return false;
 	}
 }
 #endif

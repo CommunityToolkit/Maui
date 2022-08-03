@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Sample.ViewModels.Converters;
+﻿using CommunityToolkit.Maui.Helpers;
 using CommunityToolkit.Maui.Sample.ViewModels.Extensions;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Extensions;
@@ -9,5 +9,12 @@ public partial class OnScreenSizeExtensionPage: BasePage<OnScreenSizeExtensionVi
 	: base(viewModel)
 	{
 		InitializeComponent();
+	}
+
+	protected override void OnAppearing()
+	{
+		mappings.ItemsSource = OnScreenSizeManager.Current.Mappings;
+        
+		base.OnAppearing();
 	}
 }

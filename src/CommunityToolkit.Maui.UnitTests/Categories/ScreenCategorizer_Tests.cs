@@ -1,5 +1,5 @@
-﻿using System;
-using CommunityToolkit.Maui.Categories;
+﻿using CommunityToolkit.Maui.Categories;
+using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Mappings;
 using Xunit;
 

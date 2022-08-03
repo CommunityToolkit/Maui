@@ -1,6 +1,4 @@
-﻿using System;
-using CommunityToolkit.Maui.Categories;
-using CommunityToolkit.Maui.Mappings;
+﻿using CommunityToolkit.Maui.Core.Primitives;
 
 namespace  CommunityToolkit.Maui.Mappings;
 

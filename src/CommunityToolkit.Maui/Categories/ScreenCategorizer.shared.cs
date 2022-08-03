@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Mappings;
 using CommunityToolkit.Maui.Helpers;
@@ -6,10 +6,9 @@ using CommunityToolkit.Maui.Helpers;
 namespace CommunityToolkit.Maui.Categories;
 
 /// <summary>
-/// Responsible for categorizing the device's actual screen size to <see cref="ScreenCategories"/> based on <see cref="Manager.Mappings"/>
+/// Responsible for categorizing the device's actual screen size to <see cref="ScreenCategories"/> based on <see cref="OnScreenSizeManager.Mappings"/>
 /// </summary>
-[SuppressMessage("Style", "IDE0040:Add accessibility modifiers")]
-internal  class ScreenCategorizer : IScreenCategorizer
+ class ScreenCategorizer : IScreenCategorizer
 {
 	public ScreenCategories GetCategoryByDiagonalSize(List<SizeMappingInfo> mappings, double deviceActualDiagonalSize)
 	{
@@ -34,7 +33,7 @@ internal  class ScreenCategorizer : IScreenCategorizer
 	/// <param name="deviceActualDiagonalSize"></param>
 	/// <param name="category"></param>
 	/// <returns></returns>
-	private static bool TryCategorizeByFixedSize(List<SizeMappingInfo> mappings, double deviceActualDiagonalSize, out ScreenCategories category)
+	 static bool TryCategorizeByFixedSize(List<SizeMappingInfo> mappings, double deviceActualDiagonalSize, out ScreenCategories category)
 	{
 		category = ScreenCategories.NotSet;
 
@@ -52,7 +51,7 @@ internal  class ScreenCategorizer : IScreenCategorizer
 		return false;
 	}
 
-	private static bool TryCategorizeBySmallerOrEqualsTo(List<SizeMappingInfo> mappings, double deviceActualDiagonalSize, out ScreenCategories category)
+	 static bool TryCategorizeBySmallerOrEqualsTo(List<SizeMappingInfo> mappings, double deviceActualDiagonalSize, out ScreenCategories category)
 	{
 
 		var mappingsLocal = mappings.Where(f => f.ComparisonMode == ScreenSizeCompareModes.SmallerOrEqualsTo).OrderBy(f => f.DiagonalSize).ToList();

@@ -1,48 +1,92 @@
-﻿using System.Collections.Generic;
-using CommunityToolkit.Maui.Categories;
-using CommunityToolkit.Maui.Extensions;
-using CommunityToolkit.Maui.Helpers;
+﻿using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Core.Views.OnScreenSize;
+using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Helpers;
 
 /// <summary>
 /// Helper methods for supporting OnScreenSize on code-behind.
 /// </summary>
-public static class OnScreenSizeHelpers
+public static class OnScreenSizeHelper
 {
 	
-	internal static double GetScreenDiagonalInches()
+	 internal static ScreenCategories GetCategory()
 	{
-		var dpi =  OnScreenSizePlatform.GetPixelPerInches();
+		if (TryGetCategory(out var category))
+		{
+
+			return category;
+		}
+
+		return ScreenCategories.NotSet;
+	}
+
+
+	static bool TryGetCategory(out ScreenCategories category)
+	{
+		if (OnScreenSizeManager.Current.CurrentCategory != null)
+		{
+			if (OnScreenSizeManager.Current.CurrentCategory.Value != ScreenCategories.NotSet)
+			{
+				category = OnScreenSizeManager.Current.CurrentCategory.Value;
+				return true;
+			}
+		}
+		category = GetCategoryInternal();
+
+		OnScreenSizeManager.Current.CurrentCategory =category;
+		return true;
+	}
+
+	static ScreenCategories GetCategoryInternal()
+	{
+#if !(ANDROID || IOS)
+		    var defaultCategory = ScreenCategories.ExtraLarge;
+		    LogHelpers.Log(string.Format("{0} - Detected platform \"{1}\" assuming \"{2}\"!", nameof(OnScreenSizeExtension), DeviceInfo.Platform.ToString(), defaultCategory));
+		    return defaultCategory;
+#endif
+	    
+		var diagonalSize = OnScreenSizeHelper.GetScreenDiagonalInches();
+            
+		var category = OnScreenSizeManager.Current.Categorizer.GetCategoryByDiagonalSize(OnScreenSizeManager.Current.Mappings, diagonalSize);
+
+		LogHelpers.Log(string.Format("{0} - Current screen category is \"{1}\", and screen diagonal size is \"{2}\"",nameof(OnScreenSizeExtension),category, diagonalSize));
+            
+		if (category == ScreenCategories.NotSet)
+		{
+			throw new InvalidOperationException(string.Format("Fail to categorize your current screen. Screen-Diagonal-Size:{0}.", diagonalSize));
+		}
+		return category;
+	}
+
+	 static double GetScreenDiagonalInches()
+	{
+		OnScreenSizePlatform.TryGetPixelPerInches(out var xdpi, out var ydpi);
 		
-		var displayInfo = Microsoft.Maui.Devices.DeviceDisplay.Current.MainDisplayInfo;
+		var displayInfo = DeviceDisplay.Current.MainDisplayInfo;
 	     
-		return GetScreenDiagonalInches(displayInfo.Width, displayInfo.Height,displayInfo.Density, dpi.xdpi, dpi.ydpi );
+		return GetScreenDiagonalInches(displayInfo.Width, displayInfo.Height,xdpi, ydpi );
 	}
         
-	internal static double GetScreenDiagonalInches(double width, double height, double scale, double xDpi, double yDpi)
+	static double GetScreenDiagonalInches(double width, double height, double xDpi, double yDpi)
 	{
-		var width1 = width;
-		var height1 = height;
-	        
-		var horizontal = width1 / xDpi;
-		var vertical = height1 / yDpi;
+		var horizontal = width / xDpi;
+		var vertical = height / yDpi;
 
 		var diagonal = Math.Sqrt(Math.Pow(horizontal, 2) + Math.Pow(vertical, 2));
 
-		var diagonalReturnValue = diagonal.RoundUp();
+		var diagonalReturnValue = (double)Math.Round((Math.Ceiling(diagonal * 100) / 100), 1);
 
-		LogHelpers.WriteLine($"{nameof(OnScreenSizeExtension)} - DiagonalSize: {diagonalReturnValue},  PPI/DPI: x:\"{xDpi}\", y:\"{yDpi}\"", LogLevels.Info);
+		LogHelpers.Log($"{nameof(OnScreenSizeExtension)} - DiagonalSize: {diagonalReturnValue},  PPI/DPI: x:\"{xDpi}\", y:\"{yDpi}\"");
 	        
-		return diagonal.RoundUp();
+		return (double)Math.Round((Math.Ceiling(diagonal * 100) / 100), 1);
 	}
 
 	/// <summary>
 	/// OnScreenSize's code behind support.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	/// <param name="defaultSize"></param>
+	/// <param name="default"></param>
 	/// <param name="extraSmall"></param>
 	/// <param name="small"></param>
 	/// <param name="medium"></param>
@@ -50,33 +94,40 @@ public static class OnScreenSizeHelpers
 	/// <param name="extraLarge"></param>
 	/// <returns></returns>
 	/// <exception cref="ArgumentException"></exception>
-	public static T OnScreenSize<T>(T defaultSize= default(T)!,
-		T extraSmall = default(T)!,
-		T small = default(T)!,
-		T medium = default(T)!,
-		T large = default(T)!,
-		T extraLarge = default(T)!)
+	public static object OnScreenSize(object @default,
+		object? extraSmall = null,
+		object? small = null,
+		object? medium = null,
+		object? large = null,
+		object? extraLarge = null)
 	{
-		var screenSize = ScreenCategoryHelper.GetCategory();
+		var screenSize = OnScreenSizeHelper.GetCategory();
+		
+		object? value = null;
 		switch (screenSize)
 		{
 			case ScreenCategories.ExtraSmall:
-				return extraSmall;
+				value = extraSmall;
+				break;
 			case ScreenCategories.Small:
-				return small;
+				value = small;
+				break;
 			case ScreenCategories.Medium:
-				return medium;
+				value =  medium;
+				break;
 			case ScreenCategories.Large:
-				return large;
+				value = large;
+				break;
 			case ScreenCategories.ExtraLarge:
-				return extraLarge;
+				value = extraLarge;
+				break;
 		}
 
-		if (EqualityComparer<T>.Default.Equals(defaultSize, default(T)))
+		if (value == null)
 		{
-			throw new ArgumentException($"{nameof(OnScreenSizeExtension)} markup requires a {nameof(defaultSize)} set.");
+			return @default;
 		}
 		
-		return defaultSize;
+		return value;
 	}
 }

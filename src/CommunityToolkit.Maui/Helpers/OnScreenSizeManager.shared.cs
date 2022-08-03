@@ -1,29 +1,25 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.Categories;
+using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Mappings;
+using Microsoft.Extensions.Logging;
 using OnScreenSizeMarkup.Maui.Mappings;
-#pragma warning disable CS8618
-#pragma warning disable CS1591
-
 
 namespace  CommunityToolkit.Maui.Helpers;
 
 /// <summary>
 /// Central point for defining specific settings for the Markup extension.
 /// </summary>
-[SuppressMessage("Style", "IDE0040:Adicionar modificadores de acessibilidade")]
-[SuppressMessage("Style", "IDE1006:Estilos de Nomenclatura")]
-public class Manager
+public class OnScreenSizeManager
 {
-    private Manager()
+     OnScreenSizeManager()
     {
     }
 
     /// <summary>
     /// Gets the singleton instance of this class.
     /// </summary>
-    private static readonly Lazy<Manager> _Current = new Lazy<Manager>(() => new Manager());
+     static readonly Lazy<OnScreenSizeManager> current = new (() => new OnScreenSizeManager());
 
     /// <summary>
     /// List of mappings that defines which screen diagonal-sizes (in inches) corresponds to a specific <see cref="ScreenCategories"/> and also
@@ -33,28 +29,18 @@ public class Manager
     /// You can override this values by setting your own mappings.
     /// </remarks>
     public List<SizeMappingInfo> Mappings { get; set; } = DefaultMappings.MobileMappings;
-    
-    /// <summary>
-    /// Display console messages for debugging purposes.
-    /// </summary>
-    public bool IsLogEnabled { get; set; }
-
-    /// <summary>
-    /// When <see cref="IsLogEnabled"/> is true, defines how detailed the log messages should be logged to.
-    /// </summary>
-    public LogLevels LogLevel { get; set; } = LogLevels.Info;
 
     /// <summary>
     /// Returns the _Current <see cref="ScreenCategories"/> set for the device.
     /// </summary>
-    public ScreenCategories? CurrentCategory { get; internal set; } = null;
+    public ScreenCategories? CurrentCategory { get; internal set; }
 
     internal IScreenCategorizer Categorizer { get; } = new ScreenCategorizer();
 
     /// <summary>
     /// Gets the singleton instance of this class.
     /// </summary>
-    public static Manager Current => _Current.Value;
+    public static OnScreenSizeManager Current => current.Value;
     
 
 }

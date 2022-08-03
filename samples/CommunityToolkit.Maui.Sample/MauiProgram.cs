@@ -135,6 +135,7 @@ public static class MauiProgram
 
 	static void RegisterEssentials(in IServiceCollection services)
 	{
+		services.AddSingleton<ILauncher>(Launcher.Default);
 		services.AddSingleton<IDeviceInfo>(DeviceInfo.Current);
 		services.AddSingleton<IDeviceDisplay>(DeviceDisplay.Current);
 	}

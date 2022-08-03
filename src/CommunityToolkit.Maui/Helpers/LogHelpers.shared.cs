@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
-using CommunityToolkit.Maui.Categories;
+using CommunityToolkit.Maui.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.Helpers;
 
@@ -7,13 +8,13 @@ namespace CommunityToolkit.Maui.Helpers;
 internal static class LogHelpers
 #pragma warning restore IDE0040 // Add accessibility modifiers
 {
-	public static void WriteLine( string message, LogLevels level = LogLevels.Info,  [CallerFilePath]string? callerFilePath = null, [CallerMemberName] string memberName = null!)
+	const string source = nameof(OnScreenSizeExtension);
+	
+	public static void Log( string message, LogLevel level = LogLevel.Information,  [CallerFilePath]string? callerFilePath = null, [CallerMemberName] string memberName = null!)
 	{
-		if (!Manager.Current.IsLogEnabled)
-		{
-			return;
-		}
-		if (Manager.Current.LogLevel > level)
+		var logger = ServiceProvider.GetService<ILogger<OnScreenSizeExtension>>();
+		
+		if (!logger.IsEnabled(level))
 		{
 			return;
 		}
@@ -23,6 +24,7 @@ internal static class LogHelpers
 		{
 			memberName = "";
 		}
-		Console.WriteLine($"** DEBUG ** {nameof(OnScreenSizeMarkup)} ({classFilename}.{memberName}): {message}");
+
+		logger.Log(level, "*** {Source} ***  {ClassFilename}.{MemberName}: {Message}",source, classFilename,memberName,message);
 	}
 }

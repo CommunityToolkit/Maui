@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 
 namespace CommunityToolkit.Maui.Core.Views.OnScreenSize;
 
@@ -12,17 +11,16 @@ namespace CommunityToolkit.Maui.Core.Views.OnScreenSize;
 /// to get PPI.ided apple-device-model.
 /// Probably we will need to update this list as new iphones and apple devices are launched having different PPI.  
 /// </remarks>
-[SuppressMessage("Style", "IDE0040:Add accessibility modifiers")]
-internal static class AppleScreenDensityHelper
+public static class AppleScreenDensityHelper
 {
 
 	/// <summary>
 	/// Attempts to retrieve the pixel-per-inches (PPI) for the provided apple-device-model
 	/// </summary>
-	/// <param name="appleDeviceModel"></param>
-	/// <param name="ppi"></param>
+	/// <param name="appleDeviceModel">Apple device model. for instance: "iPhone7,2", "iPhone8,4", and etc</param>
+	/// <param name="ppi">the amount of pixel per inches a device has.</param>
 	/// <returns></returns>
-	internal static bool TryGetPpiByDeviceModel(string appleDeviceModel, out double ppi)
+	 static bool TryGetPpiByDeviceModel(string appleDeviceModel, out double ppi)
 	{
 		ppi = 0;
 		if (string.IsNullOrWhiteSpace((appleDeviceModel)) || IsUnknownIosSimulator(appleDeviceModel))
@@ -40,7 +38,7 @@ internal static class AppleScreenDensityHelper
 		return true ;
 	}
 
-	private static bool IsUnknownIosSimulator(string appleDeviceModel)
+	 static bool IsUnknownIosSimulator(string appleDeviceModel)
 	{
 		if ( 
 		    appleDeviceModel.Equals("x86_64", StringComparison.OrdinalIgnoreCase) ||  
@@ -60,7 +58,7 @@ internal static class AppleScreenDensityHelper
 	/// <param name="appleDeviceName"></param>
 	/// <param name="ppi"></param>
 	/// <returns></returns>
-	internal static bool TryGetPpiByDeviceName(string appleDeviceName, out double ppi)
+	 static bool TryGetPpiByDeviceName(string appleDeviceName, out double ppi)
 	{
 		ppi = 0;
 		if (!deviceNamesToPpi.TryGetValue(appleDeviceName, out ppi))
@@ -80,7 +78,7 @@ internal static class AppleScreenDensityHelper
 	/// <param name="screenDimensions"></param>
 	/// <param name="ppi"></param>
 	/// <returns></returns>
-	internal static bool TryGetPpiByScreenDimensions((double Width, double Height) screenDimensions, out double ppi)
+	 static bool TryGetPpiByScreenDimensions((double Width, double Height) screenDimensions, out double ppi)
 	{
 		if (!apppleDevicesDimensionsToPpi.TryGetValue(screenDimensions, out  ppi))
 		{
@@ -137,7 +135,7 @@ internal static class AppleScreenDensityHelper
 	#region hardcoded PPI related values
 	
 	
-	private static Dictionary<string, double> deviceNamesToPpi = new(StringComparer.InvariantCultureIgnoreCase)
+	 static Dictionary<string, double> deviceNamesToPpi = new(StringComparer.InvariantCultureIgnoreCase)
 	{
 		{"iPhone 3GS",	163	},	//	iPhone 3GS	
 		{"iPhone 3G",	163	},	//	iPhone 3G	
@@ -210,7 +208,7 @@ internal static class AppleScreenDensityHelper
 		{$"iPad Pro (1st gen 12.9\")",	264	},	//	iPad Pro (1st gen 12.9)	
 	};
 
-	private static Dictionary<(double Width, double Height), double> apppleDevicesDimensionsToPpi = new ()
+	 static Dictionary<(double Width, double Height), double> apppleDevicesDimensionsToPpi = new ()
 	{
 			{new (	320	,	480	),	163 },	//	iPhone 3GS
 			{new (	320	,	568	),	326	},	//	iPhone SE 1st gen
@@ -229,7 +227,7 @@ internal static class AppleScreenDensityHelper
 			{new (	1024	,	1366	),	264	},	//	iPad Pro (1st gen 12.9")
 	};
 	
-	private static readonly (string[] Models, int PixelPerInches)[] machineNamesToPpi = new (string[] Models, int PixelPerInches)[]
+	 static readonly (string[] Models, int PixelPerInches)[] machineNamesToPpi = new (string[] Models, int PixelPerInches)[]
 	{
 		new ( new[] { "iPhone14,4", "iPhone13,1" }, 476 ),
 		new ( new[] { "iPhone14,5", "iPhone14,2", "iPhone13,2", "iPhone13,3" }, 460  ),

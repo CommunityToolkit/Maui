@@ -1,8 +1,6 @@
 namespace CommunityToolkit.Maui.Extensions;
 
-#pragma warning disable IDE0040 // Add accessibility modifiers
-internal static class DoubleExtensions
-#pragma warning restore IDE0040 // Add accessibility modifiers
+ static class DoubleExtensions
 {
 		public static bool EqualsTo(this double value1, double value2)
 		{

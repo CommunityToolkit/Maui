@@ -122,7 +122,7 @@
                                     RowDefinitions="{markups:OnScreenSize ExtraSmall='30', Small='35', Medium='30', Large='45', ExtraLarge='80'}"
                                        ColumnDefinitions="{markups:OnScreenSize Default='*, *, *', ExtraLarge='2*, *, *'}">
                                     <Label Grid.Column="0"
-                                           Text="{Binding CompareMode}"
+                                           Text="{Binding ComparisonMode}"
                                            Style="{StaticResource TableDataLabel}"
                                            HorizontalOptions="Center" />
                                     

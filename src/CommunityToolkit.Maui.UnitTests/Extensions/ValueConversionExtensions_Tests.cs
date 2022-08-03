@@ -4,7 +4,6 @@ using Microsoft.Maui.Converters;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Extensions;
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
 
 public class ValueConversionExtensions_Tests
 {
@@ -13,7 +12,7 @@ public class ValueConversionExtensions_Tests
 	{
 		var stringToParse = "0.25*, 0.13*, 0.08*, 230, *";
 
-		var expected = (RowDefinitionCollection)new RowDefinitionCollectionTypeConverter().ConvertFromInvariantString(stringToParse);
+		var expected = (RowDefinitionCollection)new RowDefinitionCollectionTypeConverter().ConvertFromInvariantString(stringToParse)!;
 
 		var actual = ValueConversionExtensions.ConvertTo(stringToParse, typeof(RowDefinitionCollection), Grid.RowDefinitionsProperty);
 
