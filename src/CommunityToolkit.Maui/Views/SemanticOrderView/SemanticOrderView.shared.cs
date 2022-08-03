@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Views;
 /// <summary>
 /// TBD
 /// </summary>
-public partial class SemanticOrderView : ContentView, ISemanticOrderView
+public class SemanticOrderView : ContentView, ISemanticOrderView
 {
 	/// <summary>
 	/// TBD

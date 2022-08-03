@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
 
-public partial class SemanticOrderViewHandler : ElementHandler<ISemanticOrderView, MauiSemanticOrderView>
+public partial class SemanticOrderViewHandler : ViewHandler<ISemanticOrderView, MauiSemanticOrderView>
 {
 	/// <summary>
 	/// TBD
@@ -15,7 +15,7 @@ public partial class SemanticOrderViewHandler : ElementHandler<ISemanticOrderVie
 	}
 
 	/// <inheritdoc/>
-	protected override MauiSemanticOrderView CreatePlatformElement() => new();
+	protected override MauiSemanticOrderView CreatePlatformView() => new();
 
 	/// <inheritdoc/>
 	protected override void ConnectHandler(MauiSemanticOrderView platformView)
