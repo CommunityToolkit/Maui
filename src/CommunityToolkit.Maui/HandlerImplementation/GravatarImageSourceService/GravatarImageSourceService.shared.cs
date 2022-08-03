@@ -7,13 +7,18 @@ using Microsoft.Extensions.Logging;
 public partial class GravatarImageSourceService : ImageSourceService, IImageSourceService<IGravatarImageSource>
 {
 	/// <summary>Initializes a new instance of the <see cref="GravatarImageSourceService"/> class.</summary>
-	public GravatarImageSourceService() : this(null)
+	public GravatarImageSourceService()
 	{
+		uriImageSourceService = new UriImageSourceService();
 	}
 
 	/// <summary>Initializes a new instance of the <see cref="GravatarImageSourceService"/> class.</summary>
+	/// <param name="uriImageSourceService">Base service.</param>
 	/// <param name="logger">Logging service.</param>
-	public GravatarImageSourceService(ILogger<GravatarImageSourceService>? logger = null) : base(logger)
+	public GravatarImageSourceService(UriImageSourceService uriImageSourceService, ILogger<GravatarImageSourceService>? logger = null) : base(logger)
 	{
+		this.uriImageSourceService = uriImageSourceService;
 	}
+
+	UriImageSourceService uriImageSourceService { get; }
 }
