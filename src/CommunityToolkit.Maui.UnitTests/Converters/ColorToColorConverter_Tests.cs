@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToColorConverter_Tests : BaseTest
 {
-	public static IReadOnlyList<Color[]> ColorToBlackOrWhiteData { get; } = new[]
+	public static IReadOnlyList<object[]> ColorToBlackOrWhiteData { get; } = new[]
 	{
 		new[] { Colors.Black, Colors.Black },
 		new[] { Colors.DarkBlue, Colors.Black },
@@ -24,7 +24,7 @@ public class ColorToColorConverter_Tests : BaseTest
 		new[] { Colors.Wheat, Colors.White }
 	};
 
-	public static IReadOnlyList<Color[]> ColorToColorForTextData { get; } = new[]
+	public static IReadOnlyList<object[]> ColorToColorForTextData { get; } = new[]
 	{
 		new[] { Colors.White, Colors.Black},
 		new[] { Colors.Yellow, Colors.Black },
@@ -43,7 +43,7 @@ public class ColorToColorConverter_Tests : BaseTest
 		new[] { Colors.DarkGrey, Colors.White }
 	};
 
-	public static IReadOnlyList<Color[]> ColorToGrayScaleColorData { get; } = new[]
+	public static IReadOnlyList<object[]> ColorToGrayScaleColorData { get; } = new[]
 	{
 		new[] { Colors.White, Colors.White},
 		new[] { Colors.Yellow, new Color(2f/3f, 2f/3f, 2f/3f, 1) },
@@ -62,7 +62,7 @@ public class ColorToColorConverter_Tests : BaseTest
 		new[] { Colors.DarkGrey, new Color(0.6627451f, 0.6627451f, 0.6627451f, 1) }
 	};
 
-	public static IReadOnlyList<Color[]> ColorToInverseColorConverterData { get; } = new[]
+	public static IReadOnlyList<object[]> ColorToInverseColorConverterData { get; } = new[]
 	{
 		new[] { Colors.White, Colors.Black},
 		new[] { new Color(0f,0f,0f), new Color(1f,1f,1f) },
