@@ -93,9 +93,7 @@ public class GravatarImageSource : ImageSource, IGravatarImageSource
 	{
 		if (IsEmpty || Uri is null)
 		{
-#nullable disable
-			return null;
-#nullable enable
+			return Stream.Null;
 		}
 
 		OnLoadingStarted();
@@ -186,9 +184,7 @@ public class GravatarImageSource : ImageSource, IGravatarImageSource
 		catch (Exception ex)
 		{
 			Application.Current?.FindMauiContext()?.CreateLogger<GravatarImageSource>()?.LogWarning(ex, "Error getting stream for {Uri}", Uri);
-#nullable disable
-			return null;
-#nullable enable
+			return Stream.Null;
 		}
 	}
 
