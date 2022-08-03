@@ -121,6 +121,7 @@ public static class MauiProgram
 		services.AddTransient<UniformItemsLayoutPage, UniformItemsLayoutViewModel>();
 
 		// Add Views Pages + ViewModels
+		services.AddTransient<ExpanderPage, ExpanderViewModel>();
 		services.AddTransient<DrawingViewPage, DrawingViewViewModel>();
 		services.AddTransient<MultiplePopupPage, MultiplePopupViewModel>();
 		services.AddTransient<PopupAnchorPage, PopupAnchorViewModel>();
