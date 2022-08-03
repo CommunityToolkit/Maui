@@ -82,21 +82,7 @@ public class GravatarImageSource : ImageSource, IGravatarImageSource
 	int GravatarSize
 	{
 		get => gravatarSize;
-		set
-		{
-			switch (value)
-			{
-				case < 1:
-					value = 1;  // Image minimum is 1px
-					break;
-
-				case > 2048:
-					value = 2048; // Image maximum is 2048px, however note that many users have lower resolution images, so requesting larger sizes mar result in pixelation/low-quality images.
-					break;
-			}
-
-			gravatarSize = value;
-		}
+		set => gravatarSize = Math.Clamp(value, 1, 2048);
 	}
 
 	/// <summary>Get image stream.</summary>
