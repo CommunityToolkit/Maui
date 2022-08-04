@@ -1,20 +1,36 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-             xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-             xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"   
-             x:Class="CommunityToolkit.Maui.Sample.Pages.Views.SemanticOrderViewPage"
-             x:TypeArguments="viewModels:SemanticOrderViewViewModel"
-             x:DataType="viewModels:SemanticOrderViewViewModel"
-             Title="SemanticOrderView">
-    <mct:SemanticOrderView x:Name="acv">
-        <StackLayout>
-            <Label x:Name="second" Text="Second" Margin="0,20" />
-            <Button x:Name="third" Text="Third" Margin="0,20" />
-            <Label x:Name="fourth" Text="Fourth" Margin="0,20" />
-            <Button x:Name="fifth" Text="Fifth and last" Margin="0,20" />
-            <Button x:Name="first" Text="First" Margin="0,20" />
-        </StackLayout>
-    </mct:SemanticOrderView>
+<pages:BasePage
+	x:Class="CommunityToolkit.Maui.Sample.Pages.Views.SemanticOrderViewPage"
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+	xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+	xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+	Title="SemanticOrderView"
+	x:DataType="viewModels:SemanticOrderViewViewModel"
+	x:TypeArguments="viewModels:SemanticOrderViewViewModel">
+	<mct:SemanticOrderView x:Name="acv">
+		<StackLayout BackgroundColor="White" HeightRequest="500">
+			<Label
+				x:Name="second"
+				Margin="0,20"
+				Text="Second" />
+			<Button
+				x:Name="third"
+				Margin="0,20"
+				Text="Third" />
+			<Label
+				x:Name="fourth"
+				Margin="0,20"
+				Text="Fourth" />
+			<Button
+				x:Name="fifth"
+				Margin="0,20"
+				Text="Fifth and last" />
+			<Button
+				x:Name="first"
+				Margin="0,20"
+				Text="First" />
+		</StackLayout>
+	</mct:SemanticOrderView>
 </pages:BasePage>
