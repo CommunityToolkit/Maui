@@ -1,9 +1,11 @@
-﻿using CommunityToolkit.Maui.Core.Views;
+﻿using Android.Views;
+using CommunityToolkit.Maui.Core.Views;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
 
-public partial class SemanticOrderViewHandler : ViewHandler<ISemanticOrderView, MauiSemanticOrderView>
+public partial class SemanticOrderViewHandler : ViewHandler<ISemanticOrderView, ViewGroup>
 {
 	/// <summary>
 	/// TBD
@@ -12,13 +14,23 @@ public partial class SemanticOrderViewHandler : ViewHandler<ISemanticOrderView, 
 	{
 		handler.PlatformView.SetViewOrder(view);
 	}
-	
+
+	//public SemanticOrderViewHandler()
+	//{
+
+	//}
+
 	/// <inheritdoc/>
 	protected override MauiSemanticOrderView CreatePlatformView()
 	{
 		_ = MauiContext ?? throw new InvalidOperationException("MauiContext is null, please check your MauiApplication.");
 		_ = MauiContext.Context ?? throw new InvalidOperationException("Android Context is null, please check your MauiApplication.");
 
-		return new MauiSemanticOrderView(MauiContext.Context);
+		return new MauiSemanticOrderView(MauiContext.Context)
+		{
+			CrossPlatformArrange = VirtualView.CrossPlatformArrange,
+			CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
+			VirtualView = (ISemanticOrderView)VirtualView
+		};
 	}
 }
