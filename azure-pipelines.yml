@@ -209,7 +209,7 @@ jobs:
           msbuildArgs: '/restore'
 
   - job: verify_formatting_windows
-    displayName: Build Windows Sample App using Latest .NET SDK
+    displayName: Verify Code Formatting (Windows)
     pool:
       vmImage: windows-latest
     steps:
