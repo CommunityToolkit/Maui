@@ -22,6 +22,11 @@ public static class AppBuilderExtensions
 			h.AddHandler<Popup, PopupHandler>();
 		});
 
+		builder.ConfigureImageSources(services =>
+		{
+			services.AddService<GravatarImageSource, UriImageSourceService>();
+		});
+
 		Popup.RemapForControls();
 
 		return builder.UseMauiCommunityToolkitCore();
