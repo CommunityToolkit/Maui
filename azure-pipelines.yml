@@ -227,6 +227,7 @@ jobs:
         env:
           PathToSamplesSolution: $(PathToSamplesSolution)
         inputs:
+          targetType: 'inline'
           script: |
             dotnet format $PathToSamplesSolution --verify-no-changes --exclude-diagnostics CA1416
             status=$?
