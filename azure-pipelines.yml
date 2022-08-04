@@ -224,6 +224,8 @@ jobs:
 
       - task: Bash@3
         displayName: 'Verify Formatting'
+        env:
+          PathToSamplesSolution: $(PathToSamplesSolution)
         inputs:
           script: |
             dotnet format $PathToSamplesSolution --verify-no-changes --exclude-diagnostics CA1416
