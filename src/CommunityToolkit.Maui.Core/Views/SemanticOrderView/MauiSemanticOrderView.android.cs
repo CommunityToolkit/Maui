@@ -18,17 +18,7 @@ public class MauiSemanticOrderView : ViewGroup
 {
 	internal ISemanticOrderView VirtualView { get; init; } = null!;
 	Context context;
-	//public MauiSemanticOrderView(Context context, ISemanticOrderView virtualView)
-	//	: base(context) 
-	//{
-	//	this.virtualView = virtualView;
-	//	this.context = context;
-	//	this.ChildViewAdded += (_, __) =>
-	//	{
-	//		_ = true;
-	//	};
-	//}
-
+	
 	public MauiSemanticOrderView(Context context) : base(context)
 	{
 		this.context = context;
@@ -38,27 +28,27 @@ public class MauiSemanticOrderView : ViewGroup
 		};
 	}
 
-	public MauiSemanticOrderView(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
-	{
-		var context = Context;
-		ArgumentNullException.ThrowIfNull(context);
-		this.context = context;
-	}
+	//public MauiSemanticOrderView(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+	//{
+	//	var context = Context;
+	//	ArgumentNullException.ThrowIfNull(context);
+	//	this.context = context;
+	//}
 
-	public MauiSemanticOrderView(Context context, IAttributeSet attrs) : base(context, attrs)
-	{
-		this.context = context;
-	}
+	//public MauiSemanticOrderView(Context context, IAttributeSet attrs) : base(context, attrs)
+	//{
+	//	this.context = context;
+	//}
 
-	public MauiSemanticOrderView(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
-	{
-		this.context = context;
-	}
+	//public MauiSemanticOrderView(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
+	//{
+	//	this.context = context;
+	//}
 
-	public MauiSemanticOrderView(Context context, IAttributeSet attrs, int defStyleAttr, int defStyleRes) : base(context, attrs, defStyleAttr, defStyleRes)
-	{
-		this.context = context;
-	}
+	//public MauiSemanticOrderView(Context context, IAttributeSet attrs, int defStyleAttr, int defStyleRes) : base(context, attrs, defStyleAttr, defStyleRes)
+	//{
+	//	this.context = context;
+	//}
 
 
 	protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
@@ -78,8 +68,6 @@ public class MauiSemanticOrderView : ViewGroup
 		var destination = context.ToCrossPlatformRectInReferenceFrame(left, top, right, bottom);
 
 		CrossPlatformArrange(destination);
-
-		//base.OnLayout(changed, left, top, right, bottom);
 	}
 	internal Func<double, double, Microsoft.Maui.Graphics.Size>? CrossPlatformMeasure { get; set; }
 	internal Func<Microsoft.Maui.Graphics.Rect, Microsoft.Maui.Graphics.Size>? CrossPlatformArrange { get; set; }
@@ -137,51 +125,6 @@ public class MauiSemanticOrderView : ViewGroup
 
 			view2.AccessibilityTraversalAfter = view1.Id;
 			view1.AccessibilityTraversalBefore = view2.Id;
-		}
-	}
-
-	protected override void DispatchDraw(Canvas? canvas)
-	{
-		if (Clip != null)
-		{
-			ClipChild(canvas);
-		}
-
-		base.DispatchDraw(canvas);
-	}
-
-	IBorderStroke? clip;
-	internal IBorderStroke? Clip
-	{
-		get => clip;
-		set
-		{
-			clip = value;
-			PostInvalidate();
-		}
-	}
-
-	void ClipChild(Canvas? canvas)
-	{
-		if (Clip == null || canvas == null)
-		{
-			return;
-		}
-
-		float density = context.GetDisplayDensity();
-
-		float strokeThickness = (float)(Clip.StrokeThickness * density);
-		float offset = strokeThickness / 2;
-		float w = (canvas.Width / density) - strokeThickness;
-		float h = (canvas.Height / density) - strokeThickness;
-
-		var bounds = new Microsoft.Maui.Graphics.RectF(offset, offset, w, h);
-		var path = Clip.Shape?.PathForBounds(bounds);
-		var currentPath = path?.AsAndroidPath(scaleX: density, scaleY: density);
-
-		if (currentPath != null)
-		{
-			canvas.ClipPath(currentPath);
 		}
 	}
 }
