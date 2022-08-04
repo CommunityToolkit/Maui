@@ -327,4 +327,5 @@ jobs:
             dotnet format $(PathToSamplesSolution) --verify-no-changes
             status=$?
             [ $status -eq 0 ] && echo "No errors found"
+            [ $status -ne 0 ] && echo "Formatting errors found. In the command line, please run `dotnet format [PathToMauiCommunityToolkitCode]/samples/CommunityToolkit.Maui.Sample.sln`, replacing \"[PathToMauiCommunityToolkitCode]\" with your folder structure."
             exit $status
