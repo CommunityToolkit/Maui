@@ -222,7 +222,7 @@ jobs:
       - powershell: dotnet workload install maui
         displayName: Install Latest .NET MAUI Workload
 
-      - task: CmdLine@2
+      - task: Bash@3
         displayName: 'Verify Formatting'
         inputs:
           script: |
