@@ -5,7 +5,8 @@ variables:
   NugetPackageVersion: '$(CurrentSemanticVersion)'
   TOOLKIT_NET6_VERSION: '6.0.300'
   LATEST_NET6_VERSION: '6.0.x'
-  PathToSolution: 'src/CommunityToolkit.Maui.sln'
+  PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
+  PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
   PathToCommunityToolkitCoreCsproj: 'src/CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
@@ -145,10 +146,10 @@ jobs:
       
       # check vulnerabilities
       - powershell: |
-          dotnet list $(PathToSolution) package --vulnerable --include-transitive | findstr /S /c:"has the following vulnerable packages";
+          dotnet list $(PathToLibrarySolution) package --vulnerable --include-transitive | findstr /S /c:"has the following vulnerable packages";
           if ($LastExitCode -ne 1)
           {
-            dotnet list $(PathToSolution) package --vulnerable --include-transitive;
+            dotnet list $(PathToLibrarySolution) package --vulnerable --include-transitive;
             exit 1;
           }
 
@@ -297,3 +298,33 @@ jobs:
         displayName: 'Build Community Toolkit Sample'
         inputs:
           script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release'
+
+  - job: verify_dotnet_format
+    displayName: Verify Code Formatting
+    pool:
+      vmImage: macos-12
+    steps:
+      - task: CmdLine@2
+        displayName: 'Set Xcode Version'
+        inputs:
+          script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(XcodeVersion).app;sudo xcode-select --switch /Applications/Xcode_$(XcodeVersion).app/Contents/Developer
+      
+      - task: UseDotNet@2
+        displayName: Install Latest .NET SDK
+        inputs:
+          packageType: 'sdk'
+          version: '$(LATEST_NET6_VERSION)'
+
+      - task: CmdLine@2
+        displayName: 'Install Latest .NET MAUI Workload'
+        inputs:
+          script: dotnet workload install maui
+
+      - task: CmdLine@2
+        displayName: 'Verify Formatting'
+        inputs:
+          script: |
+            dotnet format $(PathToSamplesSolution) --verify-no-changes
+            status=$?
+            [ $status -eq 0 ] && echo "No errors found"
+            exit $status
