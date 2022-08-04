@@ -208,6 +208,30 @@ jobs:
           configuration: 'Release'
           msbuildArgs: '/restore'
 
+  - job: verify_formatting_windows
+    displayName: Build Windows Sample App using Latest .NET SDK
+    pool:
+      vmImage: windows-latest
+    steps:
+      - task: UseDotNet@2
+        displayName: 'Install Latest .NET SDK'
+        inputs:
+          packageType: 'sdk'
+          version: '$(LATEST_NET6_VERSION)'
+
+      - powershell: dotnet workload install maui
+        displayName: Install Latest .NET MAUI Workload
+
+      - task: CmdLine@2
+        displayName: 'Verify Formatting'
+        inputs:
+          script: |
+            dotnet format $(PathToSamplesSolution) --verify-no-changes
+            status=$?
+            [ $status -eq 0 ] && echo "No errors found"
+            [ $status -ne 0 ] && echo "\nFormatting errors found. In the command line, please run \`dotnet format CommunityToolkit.Maui.Sample.sln\`, then commit + push the newly formatted code\n"
+            exit $status
+
   - job: build_macos_library
     displayName: Build macOS Library
     pool:
@@ -299,8 +323,8 @@ jobs:
         inputs:
           script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release'
 
-  - job: verify_dotnet_format
-    displayName: Verify Code Formatting
+  - job: verify_formatting_macos
+    displayName: Verify Code Formatting (macOS)
     pool:
       vmImage: macos-12
     steps:
@@ -327,5 +351,5 @@ jobs:
             dotnet format $(PathToSamplesSolution) --verify-no-changes
             status=$?
             [ $status -eq 0 ] && echo "No errors found"
-            [ $status -ne 0 ] && echo "Formatting errors found. In the command line, please run \`dotnet format CommunityToolkit.Maui.Sample.sln\`, then commit + push the newly formatted code"
+            [ $status -ne 0 ] && echo "\nFormatting errors found. In the command line, please run \`dotnet format CommunityToolkit.Maui.Sample.sln\`, then commit + push the newly formatted code\n"
             exit $status
