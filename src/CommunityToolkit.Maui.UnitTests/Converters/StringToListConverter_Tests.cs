@@ -59,7 +59,7 @@ public class StringToListConverter_Tests : BaseTest
 		};
 
 		var convertFromResult = stringToListConverter.ConvertFrom(valueToConvert);
-		var convertResult = (IEnumerable<string>?)((ICommunityToolkitValueConverter)stringToListConverter).Convert(valueToConvert, typeof(IList<string>), null, null);
+		var convertResult = (string[]?)((ICommunityToolkitValueConverter)stringToListConverter).Convert(valueToConvert, typeof(IList<string>), null, null);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
@@ -77,7 +77,7 @@ public class StringToListConverter_Tests : BaseTest
 		};
 
 		var convertFromResult = stringToListConverter.ConvertFrom(valueToConvert);
-		var convertResult = (IEnumerable<string>?)((ICommunityToolkitValueConverter)stringToListConverter).Convert(valueToConvert, typeof(IList<string>), null, null);
+		var convertResult = (string[]?)((ICommunityToolkitValueConverter)stringToListConverter).Convert(valueToConvert, typeof(IList<string>), null, null);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
