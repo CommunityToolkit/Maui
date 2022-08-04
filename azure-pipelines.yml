@@ -209,7 +209,7 @@ jobs:
           msbuildArgs: '/restore'
 
   - job: verify_formatting_windows
-    displayName: Verify Code Formatting (Windows)
+    displayName: Verify Code Formatting on Windows
     pool:
       vmImage: windows-latest
     steps:
@@ -324,7 +324,7 @@ jobs:
           script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release'
 
   - job: verify_formatting_macos
-    displayName: Verify Code Formatting (macOS)
+    displayName: Verify Code Formatting on macOS
     pool:
       vmImage: macos-12
     steps:
