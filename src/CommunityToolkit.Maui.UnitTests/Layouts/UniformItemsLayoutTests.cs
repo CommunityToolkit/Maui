@@ -36,7 +36,7 @@ public class UniformItemsLayoutTests : BaseTest
 		exception.Message.Should().StartWith("MaxRows must be greater or equal to 1.");
 		exception.ActualValue.Should().Be(invalidValue);
 	}
-	
+
 
 	[Fact]
 	public void UniformItemsLayout_CheckMaxColumnsRange()

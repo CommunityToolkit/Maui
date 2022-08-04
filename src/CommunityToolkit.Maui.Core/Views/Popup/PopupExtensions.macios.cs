@@ -1,5 +1,5 @@
-﻿using Microsoft.Maui.Platform;
-using CommunityToolkit.Maui.Core.Extensions;
+﻿using CommunityToolkit.Maui.Core.Extensions;
+using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
