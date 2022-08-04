@@ -5,7 +5,7 @@ using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
 
-public partial class SemanticOrderViewHandler : ViewHandler<ISemanticOrderView, ViewGroup>
+public partial class SemanticOrderViewHandler : ContentViewHandler
 {
 	/// <summary>
 	/// TBD

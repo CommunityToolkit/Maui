@@ -14,7 +14,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// TBD
 /// </summary>
-public class MauiSemanticOrderView : ViewGroup
+public class MauiSemanticOrderView : ContentViewGroup
 {
 	internal ISemanticOrderView VirtualView { get; init; } = null!;
 	Context context;
@@ -51,62 +51,62 @@ public class MauiSemanticOrderView : ViewGroup
 	//}
 
 
-	protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
-	{
-		var h = this.MeasuredHeight;
-		var w = this.MeasuredWidth;
+	//protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+	//{
+	//	var h = this.MeasuredHeight;
+	//	var w = this.MeasuredWidth;
 
-		var height = Height;
-		var width = Width;
-		SetAccessibilityElements();
+	//	var height = Height;
+	//	var width = Width;
+	//	SetAccessibilityElements();
 
-		if (CrossPlatformArrange is null)
-		{
-			return;
-		}
+	//	if (CrossPlatformArrange is null)
+	//	{
+	//		return;
+	//	}
 
-		var destination = context.ToCrossPlatformRectInReferenceFrame(left, top, right, bottom);
+	//	var destination = context.ToCrossPlatformRectInReferenceFrame(left, top, right, bottom);
 
-		CrossPlatformArrange(destination);
-	}
+	//	CrossPlatformArrange(destination);
+	//}
 	internal Func<double, double, Microsoft.Maui.Graphics.Size>? CrossPlatformMeasure { get; set; }
 	internal Func<Microsoft.Maui.Graphics.Rect, Microsoft.Maui.Graphics.Size>? CrossPlatformArrange { get; set; }
 
-	protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
-	{
-		if (CrossPlatformMeasure == null)
-		{
-			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
-			return;
-		}
+	//protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
+	//{
+	//	if (CrossPlatformMeasure == null)
+	//	{
+	//		base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+	//		return;
+	//	}
 
-		var deviceIndependentWidth = widthMeasureSpec.ToDouble(context);
-		var deviceIndependentHeight = heightMeasureSpec.ToDouble(context);
+	//	var deviceIndependentWidth = widthMeasureSpec.ToDouble(context);
+	//	var deviceIndependentHeight = heightMeasureSpec.ToDouble(context);
 
-		var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
-		var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
+	//	var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
+	//	var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
 
-		var measure = CrossPlatformMeasure(deviceIndependentWidth, deviceIndependentHeight);
+	//	var measure = CrossPlatformMeasure(deviceIndependentWidth, deviceIndependentHeight);
 
-		// If the measure spec was exact, we should return the explicit size value, even if the content
-		// measure came out to a different size
-		var width = widthMode == MeasureSpecMode.Exactly ? deviceIndependentWidth : measure.Width;
-		var height = heightMode == MeasureSpecMode.Exactly ? deviceIndependentHeight : measure.Height;
+	//	// If the measure spec was exact, we should return the explicit size value, even if the content
+	//	// measure came out to a different size
+	//	var width = widthMode == MeasureSpecMode.Exactly ? deviceIndependentWidth : measure.Width;
+	//	var height = heightMode == MeasureSpecMode.Exactly ? deviceIndependentHeight : measure.Height;
 
-		var platformWidth = context.ToPixels(width);
-		var platformHeight = context.ToPixels(height);
+	//	var platformWidth = context.ToPixels(width);
+	//	var platformHeight = context.ToPixels(height);
 
-		// Minimum values win over everything
-		platformWidth = Math.Max(MinimumWidth, platformWidth);
-		platformHeight = Math.Max(MinimumHeight, platformHeight);
+	//	// Minimum values win over everything
+	//	platformWidth = Math.Max(MinimumWidth, platformWidth);
+	//	platformHeight = Math.Max(MinimumHeight, platformHeight);
 
-		SetMeasuredDimension((int)platformWidth, (int)platformHeight);
-		if (VirtualView.Content is IView view && firstTime)
-		{
-			AddView(view.ToPlatform(VirtualView.Handler!.MauiContext!));
-			firstTime = false;
-		}
-	}
+	//	SetMeasuredDimension((int)platformWidth, (int)platformHeight);
+	//	if (VirtualView.Content is IView view && firstTime)
+	//	{
+	//		AddView(view.ToPlatform(VirtualView.Handler!.MauiContext!));
+	//		firstTime = false;
+	//	}
+	//}
 	bool firstTime = true;
 
 	void SetAccessibilityElements()
