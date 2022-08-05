@@ -52,7 +52,15 @@
                 </ResourceDictionary>
             </VerticalStackLayout.Resources>
 
-            <Label Style="{StaticResource Description}" Text="GravatarImageSource supports using Gravatar. 'One avatar for everything, everywhere.'" />
+            <Label Style="{StaticResource Description}">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="GravatarImageSource allows you to use as an Image " />
+                        <Span Text="source" FontAttributes="Italic" />
+                        <Span Text=", a users Gravatar registered image via their email address." />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
             <Line Style="{StaticResource HR}" />
             <Image HeightRequest="128" WidthRequest="128">
                 <Image.Source>
