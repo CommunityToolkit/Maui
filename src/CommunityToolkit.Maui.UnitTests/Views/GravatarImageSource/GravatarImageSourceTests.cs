@@ -63,7 +63,7 @@ public class GravatarImageSourceTests : BaseHandlerTest
 	public void DefaultUri()
 	{
 		var gravatarImageSource = new Maui.Views.GravatarImageSource();
-		Assert.Null(gravatarImageSource.Uri);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), gravatarImageSource.Uri);
 	}
 
 	[Fact]
@@ -74,7 +74,19 @@ public class GravatarImageSourceTests : BaseHandlerTest
 			Image = image
 		};
 		Assert.Equal(image, gravatarImageSource.Image);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/dbe9d2cc85a3f41cc430bc817e55233b?s=0&d=monsterid"), gravatarImageSource.Uri);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/?s=0"), gravatarImageSource.Uri);
+	}
+
+	[Fact]
+	public void TestChangeImageWithEmail()
+	{
+		var gravatarImageSource = new Maui.Views.GravatarImageSource
+		{
+			Email = email,
+			Image = image
+		};
+		Assert.Equal(image, gravatarImageSource.Image);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=monsterid"), gravatarImageSource.Uri);
 	}
 
 	[Fact]
@@ -95,7 +107,18 @@ public class GravatarImageSourceTests : BaseHandlerTest
 			Source = new Maui.Views.GravatarImageSource()
 		};
 		Assert.True(testImage.Source is Maui.Views.GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/dbe9d2cc85a3f41cc430bc817e55233b?s=80&d=mp"), ((Maui.Views.GravatarImageSource)testImage.Source).Uri);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/?s=80"), ((Maui.Views.GravatarImageSource)testImage.Source).Uri);
+	}
+
+	[Fact]
+	public void TestImageControlWithEmail()
+	{
+		Image testImage = new()
+		{
+			Source = new Maui.Views.GravatarImageSource() { Email = email }
+		};
+		Assert.True(testImage.Source is Maui.Views.GravatarImageSource);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=80&d=mp"), ((Maui.Views.GravatarImageSource)testImage.Source).Uri);
 	}
 
 	[Fact]
@@ -104,16 +127,5 @@ public class GravatarImageSourceTests : BaseHandlerTest
 		var loader = new Maui.Views.GravatarImageSource();
 		var exception = Record.Exception(() => loader.Email = null);
 		Assert.Null(exception);
-	}
-
-	[Fact]
-	public void LoadImageFromStream()
-	{
-		IGravatarImageSource loader = new Maui.Views.GravatarImageSource
-		{
-			Email = email
-		};
-		Stream s0 = loader.GetStreamAsync().Result;
-		Assert.Equal(3429, s0.Length);
 	}
 }

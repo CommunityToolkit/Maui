@@ -8,8 +8,10 @@ using Microsoft.Maui.Controls;
 
 /// <summary>Gravatar image source.</summary>
 /// <remarks>Note that <see cref="UriImageSource"/> is sealed and can't be used as a parent!</remarks>
-public class GravatarImageSource : ImageSource, IGravatarImageSource
+public class GravatarImageSource : StreamImageSource, IGravatarImageSource
 {
+	const string defaultGravatarImageAddress = "https://www.gravatar.com/avatar/";
+
 	/// <summary>The backing store for the <see cref="CacheValidity" /> bindable property.</summary>
 	public static readonly BindableProperty CacheValidityProperty = BindableProperty.Create(nameof(CacheValidity), typeof(TimeSpan), typeof(UriImageSource), TimeSpan.FromDays(1));
 
@@ -27,6 +29,8 @@ public class GravatarImageSource : ImageSource, IGravatarImageSource
 	/// <summary>Initializes a new instance of the <see cref="GravatarImageSource"/> class.</summary>
 	public GravatarImageSource()
 	{
+		Stream = new Func<CancellationToken, Task<Stream>>(cancelationToken => DownloadStreamAsync(Uri, cancelationToken));
+		Uri = new Uri(defaultGravatarImageAddress);
 	}
 
 	/// <summary>On property changed.</summary>
@@ -74,44 +78,13 @@ public class GravatarImageSource : ImageSource, IGravatarImageSource
 
 	/// <summary>Gets or sets the URI for the image to get.</summary>
 	[System.ComponentModel.TypeConverter(typeof(UriTypeConverter))]
-	public Uri? Uri { get; private set; }
+	public Uri Uri { get; private set; }
 
 	/// <summary>Gets or sets the control size property.</summary>
 	int GravatarSize
 	{
 		get => gravatarSize;
 		set => gravatarSize = Math.Clamp(value, 1, 2048);
-	}
-
-	/// <summary>Get image stream.</summary>
-	/// <remarks>Taken from <see cref="StreamImageSource"/>.</remarks>
-	/// <param name="cancellationToken">Cancellation token.</param>
-	/// <returns>Task{Stream}.</returns>
-	async Task<Stream> IStreamImageSource.GetStreamAsync(CancellationToken cancellationToken)
-	{
-		if (IsEmpty || Uri is null)
-		{
-			return Stream.Null;
-		}
-
-		OnLoadingStarted();
-		cancellationToken.Register(CancellationTokenSource.Cancel);
-		try
-		{
-			Stream stream = await GetStreamAsync(Uri, CancellationTokenSource.Token);
-			OnLoadingCompleted(false);
-			return stream;
-		}
-		catch (OperationCanceledException)
-		{
-			OnLoadingCompleted(true);
-			throw;
-		}
-		catch (Exception ex)
-		{
-			Application.Current?.FindMauiContext()?.CreateLogger<GravatarImageSource>()?.LogWarning(ex, "Error getting stream for {Uri}", Uri);
-			throw;
-		}
 	}
 
 	/// <summary>Returns the Uri as a string.</summary>
@@ -134,7 +107,7 @@ public class GravatarImageSource : ImageSource, IGravatarImageSource
 			if (GravatarSize != sizeFromParent)
 			{
 				GravatarSize = sizeFromParent;
-				HandleSizeChanged(sizeFromParent);
+				HandleNewUriRequested(Email, Image);
 			}
 		}
 	}
@@ -151,7 +124,7 @@ public class GravatarImageSource : ImageSource, IGravatarImageSource
 	{
 		if (string.IsNullOrWhiteSpace(str))
 		{
-			str = "MCT";
+			return string.Empty;
 		}
 
 		using var md5 = MD5.Create();
@@ -162,16 +135,31 @@ public class GravatarImageSource : ImageSource, IGravatarImageSource
 	static void OnDefaultImagePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		GravatarImageSource gravatarImageSource = (GravatarImageSource)bindable;
-		gravatarImageSource.HandleDefaultImageChanged((DefaultImage)newValue);
+		gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, (DefaultImage)newValue);
 	}
 
 	static void OnEmailPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		GravatarImageSource gravatarImageSource = (GravatarImageSource)bindable;
-		gravatarImageSource.HandleEmailChanged((string?)newValue);
+		gravatarImageSource.HandleNewUriRequested((string?)newValue, gravatarImageSource.Image);
 	}
 
-	async Task<Stream> DownloadStreamAsync(Uri uri, CancellationToken cancellationToken)
+	void HandleNewUriRequested(string? email, DefaultImage image)
+	{
+		Uri = string.IsNullOrWhiteSpace(email)
+			? new Uri($"{defaultGravatarImageAddress}?s={GravatarSize}")
+			: new Uri($"{defaultGravatarImageAddress}{GetMd5Hash(email)}?s={GravatarSize}&d={DefaultGravatarName(image)}");
+
+		OnUriChanged();
+	}
+
+	void OnUriChanged()
+	{
+		CancellationTokenSource?.Cancel();
+		OnSourceChanged();
+	}
+
+	async Task<Stream> DownloadStreamAsync(Uri? uri, CancellationToken cancellationToken)
 	{
 		try
 		{
@@ -182,37 +170,7 @@ public class GravatarImageSource : ImageSource, IGravatarImageSource
 		catch (Exception ex)
 		{
 			Application.Current?.FindMauiContext()?.CreateLogger<GravatarImageSource>()?.LogWarning(ex, "Error getting stream for {Uri}", Uri);
-			return Stream.Null;
+			return System.IO.Stream.Null;
 		}
-	}
-
-	async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken = default)
-	{
-		cancellationToken.ThrowIfCancellationRequested();
-		return await DownloadStreamAsync(uri, cancellationToken).ConfigureAwait(false);
-	}
-
-	void HandleDefaultImageChanged(DefaultImage newValue)
-	{
-		Uri = new Uri($"https://www.gravatar.com/avatar/{GetMd5Hash(Email)}?s={GravatarSize}&d={DefaultGravatarName(newValue)}");
-		OnUriChanged();
-	}
-
-	void HandleEmailChanged(string? newValue)
-	{
-		Uri = new Uri($"https://www.gravatar.com/avatar/{GetMd5Hash(newValue)}?s={GravatarSize}&d={DefaultGravatarName(Image)}");
-		OnUriChanged();
-	}
-
-	void HandleSizeChanged(int newValue)
-	{
-		Uri = new Uri($"https://www.gravatar.com/avatar/{GetMd5Hash(Email)}?s={newValue}&d={DefaultGravatarName(Image)}");
-		OnUriChanged();
-	}
-
-	void OnUriChanged()
-	{
-		CancellationTokenSource?.Cancel();
-		OnSourceChanged();
 	}
 }
