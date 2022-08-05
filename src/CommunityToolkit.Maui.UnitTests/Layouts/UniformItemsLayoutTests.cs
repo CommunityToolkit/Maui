@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Layouts;
+using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Layouts;
@@ -25,6 +26,25 @@ public class UniformItemsLayoutTests : BaseTest
 				uniformChild
 			}
 		};
+	}
+
+	[Fact]
+	public void UniformItemsLayout_CheckMaxRowsRange()
+	{
+		var invalidValue = 0;
+		var exception = Assert.Throws<ArgumentOutOfRangeException>(() => uniformItemsLayout.MaxRows = invalidValue);
+		exception.Message.Should().StartWith("MaxRows must be greater or equal to 1.");
+		exception.ActualValue.Should().Be(invalidValue);
+	}
+
+
+	[Fact]
+	public void UniformItemsLayout_CheckMaxColumnsRange()
+	{
+		var invalidValue = 0;
+		var exception = Assert.Throws<ArgumentOutOfRangeException>(() => uniformItemsLayout.MaxColumns = invalidValue);
+		exception.Message.Should().StartWith("MaxColumns must be greater or equal to 1.");
+		exception.ActualValue.Should().Be(invalidValue);
 	}
 
 	[Fact]
@@ -71,8 +91,9 @@ public class UniformItemsLayoutTests : BaseTest
 		var expectedSize = new Size(childWidth, childHeight);
 		uniformChild = new TestView(expectedSize);
 		uniformItemsLayout.Measure(double.PositiveInfinity, double.PositiveInfinity);
-
-		var actualSize = uniformItemsLayout.ArrangeChildren(new Rect(0, 0, childWidth * childCount, childHeight * childCount));
+		var rect = new Rect(0, 0, childWidth * childCount, childHeight * childCount);
+		uniformItemsLayout.Layout(rect);
+		var actualSize = uniformItemsLayout.ArrangeChildren(rect);
 
 		Assert.Equal(expectedSize, actualSize);
 	}

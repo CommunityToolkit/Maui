@@ -74,7 +74,9 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 		{
 			Label? label = null;
 
+#pragma warning disable CS8603 // Possible null reference return.
 			await Assert.ThrowsAsync<NullReferenceException>(() => label?.TextColorTo(Colors.Red));
+#pragma warning restore CS8603 // Possible null reference return.
 		}
 
 		[Fact]
@@ -92,9 +94,9 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 		public async Task Extensions_For_Generic_Class()
 		{
 			Color originalTextColor = Colors.Blue, updatedTextColor = Colors.Red;
-			
+
 			var textStyleView = new GenericPicker<
-				ClassConstraintWithInterface, 
+				ClassConstraintWithInterface,
 				ClassConstraint,
 				StructConstraint,
 				ClassConstraintWithInterface,
@@ -107,7 +109,8 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 				RecordClassContstraint,
 				RecordClassContstraint[],
 				RecordStructContstraint
-			> { TextColor = originalTextColor };
+			>
+			{ TextColor = originalTextColor };
 			textStyleView.EnableAnimations();
 
 			Assert.Equal(originalTextColor, textStyleView.TextColor);
@@ -141,7 +144,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 
 			Assert.True(isSuccessful);
 		}
-		
+
 		[Fact]
 		public async Task BrandNewControlShouldHaveHisOwnExtensionMethod()
 		{
@@ -206,7 +209,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
 	{
 
 	}
-	
+
 
 	public readonly record struct RecordStructContstraint
 	{

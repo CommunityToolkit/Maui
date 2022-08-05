@@ -1,10 +1,10 @@
-﻿using Android.Graphics;
+﻿using System.ComponentModel;
+using Android.Graphics;
 using Android.Widget;
 using Microsoft.Maui.Platform;
 using AButton = Android.Widget.Button;
-using Color = Microsoft.Maui.Graphics.Color;
 using AView = Android.Views.View;
-using System.ComponentModel;
+using Color = Microsoft.Maui.Graphics.Color;
 using ImageButton = Microsoft.Maui.Controls.ImageButton;
 
 namespace CommunityToolkit.Maui.Behaviors;

@@ -45,7 +45,7 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 		}
 	}
 
-	static bool CheckIfItIsUseMauiMethod(ExpressionStatementSyntax expressionStatement) => 
+	static bool CheckIfItIsUseMauiMethod(ExpressionStatementSyntax expressionStatement) =>
 		expressionStatement.DescendantNodes()
 							.OfType<GenericNameSyntax>()
 							.Any(x => x.Identifier.ValueText.Equals("UseMauiApp", StringComparison.InvariantCulture)
@@ -55,7 +55,7 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 	{
 		foreach (var method in root.DescendantNodes().OfType<MethodDeclarationSyntax>())
 		{
-			if (method.DescendantNodes().OfType<ExpressionStatementSyntax>().Any(x => x.ToString().Contains(".UseMauiCommunityToolkit(")))
+			if (method.DescendantNodes().OfType<ExpressionStatementSyntax>().Any(x => x.DescendantNodes().Any(x => x.ToString().Contains(".UseMauiCommunityToolkit("))))
 			{
 				return true;
 			}
@@ -85,4 +85,3 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 		throw new InvalidOperationException("Wow, this shouldn't happen, please open a bug here: https://github.com/CommunityToolkit/Maui/issues/new/choose");
 	}
 }
-
