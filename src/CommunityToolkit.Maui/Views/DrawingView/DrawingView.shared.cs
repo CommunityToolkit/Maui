@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Views;
 /// <summary>
 /// The DrawingView allows you to draw one or multiple lines on a canvas.
 /// </summary>
-public class DrawingView : View, IDrawingView
+public class DrawingView:View,IDrawingView
 {
 	readonly WeakEventManager drawingLineCompletedEventManager = new();
 
