@@ -120,7 +120,7 @@ public class UniformItemsLayout : Layout, IUniformItemsLayout
 		var columnsCount = visibleChildrenCount;
 		if (childWidth != 0 && !double.IsPositiveInfinity(widthConstraint))
 		{
-			columnsCount = Math.Clamp((int) (widthConstraint / childWidth), 1, visibleChildrenCount);
+			columnsCount = Math.Clamp((int)(widthConstraint / childWidth), 1, visibleChildrenCount);
 		}
 
 		return Math.Min(columnsCount, MaxColumns);
