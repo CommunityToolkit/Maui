@@ -94,9 +94,9 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 		public async Task Extensions_For_Generic_Class()
 		{
 			Color originalTextColor = Colors.Blue, updatedTextColor = Colors.Red;
-			
+
 			var textStyleView = new GenericPicker<
-				ClassConstraintWithInterface, 
+				ClassConstraintWithInterface,
 				ClassConstraint,
 				StructConstraint,
 				ClassConstraintWithInterface,
@@ -109,7 +109,8 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 				RecordClassContstraint,
 				RecordClassContstraint[],
 				RecordStructContstraint
-			> { TextColor = originalTextColor };
+			>
+			{ TextColor = originalTextColor };
 			textStyleView.EnableAnimations();
 
 			Assert.Equal(originalTextColor, textStyleView.TextColor);
@@ -143,7 +144,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 
 			Assert.True(isSuccessful);
 		}
-		
+
 		[Fact]
 		public async Task BrandNewControlShouldHaveHisOwnExtensionMethod()
 		{
@@ -208,7 +209,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
 	{
 
 	}
-	
+
 
 	public readonly record struct RecordStructContstraint
 	{
