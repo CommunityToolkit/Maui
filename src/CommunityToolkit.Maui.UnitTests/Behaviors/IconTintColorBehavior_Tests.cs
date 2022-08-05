@@ -11,7 +11,7 @@ public class IconTintColorBehavior_Tests : BaseTest
 		var iconTintColorBehavior = new IconTintColorBehavior();
 
 		Assert.Equal(default, iconTintColorBehavior.TintColor);
-		Assert.Equal(null, iconTintColorBehavior.TintColor);
+		Assert.Null(iconTintColorBehavior.TintColor);
 	}
 
 	[Fact]
