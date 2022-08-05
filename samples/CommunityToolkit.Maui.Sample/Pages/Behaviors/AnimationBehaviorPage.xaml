@@ -82,9 +82,7 @@
             <Frame.Behaviors>
                 <mct:AnimationBehavior Command="{Binding AnimationCommand}">
                     <mct:AnimationBehavior.AnimationType>
-                        <behaviorPages:SampleScaleAnimation 
-                            Easing="{x:Static Easing.Linear}"
-                            Length="100"/>
+                        <mct:FadeAnimation Opacity="0.2" />
                     </mct:AnimationBehavior.AnimationType>
                 </mct:AnimationBehavior>
             </Frame.Behaviors>
