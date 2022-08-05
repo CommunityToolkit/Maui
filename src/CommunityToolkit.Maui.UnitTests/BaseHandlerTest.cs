@@ -2,7 +2,7 @@
 
 namespace CommunityToolkit.Maui.UnitTests;
 
-public abstract class BaseHandlerTest:BaseTest
+public abstract class BaseHandlerTest : BaseTest
 {
 	protected BaseHandlerTest()
 	{
