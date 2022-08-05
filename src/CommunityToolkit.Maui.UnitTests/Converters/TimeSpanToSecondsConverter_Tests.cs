@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class TimeSpanToSecondsConverter_Tests
 {
-	public static readonly IReadOnlyList<object> ValidData = new[]
+	public static readonly IReadOnlyList<object[]> ValidData = new[]
 	{
 		new object[] { TimeSpan.MaxValue, 922337203685.4775 },
 		new object[] { TimeSpan.FromSeconds(100), 100 },
