@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Animations;
+using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
 
@@ -25,6 +26,7 @@ public class FadeAnimation_Tests : BaseTest
 		{
 			Opacity = 0.9
 		};
+		label.EnableAnimations();
 
 		await animation.Animate(label);
 
