@@ -69,7 +69,7 @@
                         CachingEnabled="{Binding EnableCache}"
                         Email="{Binding Email}"
                         Image="{Binding DefaultGravatarSelected}"
-                        SemanticProperties.Description="GravatarImageSource for an Image contron, binding all properties." />
+                        SemanticProperties.Description="GravatarImageSource for an Image control, binding all properties." />
                 </Image.Source>
             </Image>
             <mct:AvatarView
