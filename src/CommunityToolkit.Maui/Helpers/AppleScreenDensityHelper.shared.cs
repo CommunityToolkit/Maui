@@ -1,5 +1,5 @@
 
-namespace CommunityToolkit.Maui.Core.Views.OnScreenSize;
+namespace CommunityToolkit.Maui.Helpers;
 
 /// <summary>
 /// Helper class for retrieving PIxel per Inches (PPI) for apple devices so that the screen diagonal size in inches can be calculated later on. 

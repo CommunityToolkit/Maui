@@ -1,5 +1,5 @@
-﻿using CommunityToolkit.Maui.Core.Primitives;
-using CommunityToolkit.Maui.Core.Views.OnScreenSize;
+﻿using System.Diagnostics;
+using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Helpers;
@@ -40,14 +40,11 @@ public static class OnScreenSizeHelper
 
 	static ScreenCategories GetCategoryInternal()
 	{
-#if !(ANDROID || IOS)
-		    var defaultCategory = ScreenCategories.ExtraLarge;
-		    LogHelpers.Log(string.Format("{0} - Detected platform \"{1}\" assuming \"{2}\"!", nameof(OnScreenSizeExtension), DeviceInfo.Platform.ToString(), defaultCategory));
-		    return defaultCategory;
-#endif
-	    
-		var diagonalSize = OnScreenSizeHelper.GetScreenDiagonalInches();
-            
+		if (!TryGetScreenDiagonalInches(out var diagonalSize))
+		{
+			return ScreenCategories.Large;
+		}
+
 		var category = OnScreenSizeManager.Current.Categorizer.GetCategoryByDiagonalSize(OnScreenSizeManager.Current.Mappings, diagonalSize);
 
 		LogHelpers.Log(string.Format("{0} - Current screen category is \"{1}\", and screen diagonal size is \"{2}\"",nameof(OnScreenSizeExtension),category, diagonalSize));
@@ -59,15 +56,45 @@ public static class OnScreenSizeHelper
 		return category;
 	}
 
-	 static double GetScreenDiagonalInches()
+	 static bool TryGetScreenDiagonalInches(out double diagonslSize)
 	{
-		OnScreenSizePlatform.TryGetPixelPerInches(out var xdpi, out var ydpi);
-		
+		if (!TryGetPixelPerInches(out var xdpi, out var ydpi))
+		{
+			diagonslSize = 0;
+			return false;
+		}
+
 		var displayInfo = DeviceDisplay.Current.MainDisplayInfo;
 	     
-		return GetScreenDiagonalInches(displayInfo.Width, displayInfo.Height,xdpi, ydpi );
+		diagonslSize = GetScreenDiagonalInches(displayInfo.Width, displayInfo.Height,xdpi, ydpi );
+		return true;
 	}
-        
+	 
+	 /// <summary>
+	 /// Returns how many horizontal/vertical pixels-per-inches the current device screen has.
+	 /// </summary>
+	 /// <returns></returns>
+	 static bool TryGetPixelPerInches(out double xdpi, out double ydpi)
+	 {
+#if IOS
+		 var displayInfo = DeviceDisplay.Current.MainDisplayInfo;
+		 var dimensions = (displayInfo.Width / displayInfo.Density, displayInfo.Height / displayInfo.Density);
+		 var success = AppleScreenDensityHelper.TryGetPpiWithFallBacks(DeviceInfo.Current.Model, DeviceInfo.Current.Name, dimensions, out var ppi);
+		 xdpi = ppi;
+		 ydpi = ppi;
+		 return success;
+#elif ANDROID
+		 var displayMetrics = Android.App.Application.Context.Resources?.DisplayMetrics;
+		 xdpi = displayMetrics?.Xdpi ?? 0;
+		 ydpi = displayMetrics?.Ydpi ?? 0;
+		 return true;
+#else
+		 xdpi = 0;
+		 ydpi = 0;
+		return false;
+#endif		 
+	 }
+
 	static double GetScreenDiagonalInches(double width, double height, double xDpi, double yDpi)
 	{
 		var horizontal = width / xDpi;
@@ -101,7 +128,7 @@ public static class OnScreenSizeHelper
 		object? large = null,
 		object? extraLarge = null)
 	{
-		var screenSize = OnScreenSizeHelper.GetCategory();
+		var screenSize = GetCategory();
 		
 		object? value = null;
 		switch (screenSize)

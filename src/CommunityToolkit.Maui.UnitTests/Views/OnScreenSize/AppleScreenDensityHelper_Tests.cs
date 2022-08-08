@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Core.Views.OnScreenSize;
+﻿using CommunityToolkit.Maui.Helpers;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views.OnScreenSize;
