@@ -126,6 +126,56 @@ public class GravatarImageSourceTests : BaseHandlerTest
 	}
 
 	[Fact]
+	public void TestControlBackButtonBehavior()
+	{
+		BackButtonBehavior testControl = new()
+		{
+			IconOverride = new GravatarImageSource(),
+		};
+		Assert.True(testControl.IconOverride is GravatarImageSource);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.IconOverride).Uri);
+	}
+
+	[Fact]
+	public void TestControlBackButtonBehaviorWithEmail()
+	{
+		BackButtonBehavior testControl = new()
+		{
+			IconOverride = new GravatarImageSource() { Email = email },
+		};
+		Assert.True(testControl.IconOverride is GravatarImageSource);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.IconOverride).Uri);
+	}
+
+	[Fact]
+	public void TestControlBaseShellItem()
+	{
+		BaseShellItem testControl = new()
+		{
+			Icon = new GravatarImageSource(),
+			FlyoutIcon = new GravatarImageSource(),
+		};
+		Assert.True(testControl.Icon is GravatarImageSource);
+		Assert.True(testControl.FlyoutIcon is GravatarImageSource);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.Icon).Uri);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.FlyoutIcon).Uri);
+	}
+
+	[Fact]
+	public void TestControlBaseShellItemWithEmail()
+	{
+		BaseShellItem testControl = new()
+		{
+			Icon = new GravatarImageSource() { Email = email },
+			FlyoutIcon = new GravatarImageSource() { Email = email },
+		};
+		Assert.True(testControl.Icon is GravatarImageSource);
+		Assert.True(testControl.FlyoutIcon is GravatarImageSource);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.Icon).Uri);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.FlyoutIcon).Uri);
+	}
+
+	[Fact]
 	public void TestControlButton()
 	{
 		Button testControl = new()
@@ -303,56 +353,6 @@ public class GravatarImageSourceTests : BaseHandlerTest
 		};
 		Assert.True(testControl.IconImageSource is GravatarImageSource);
 		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.IconImageSource).Uri);
-	}
-
-	[Fact]
-	public void TestControlBackButtonBehavior()
-	{
-		BackButtonBehavior testControl = new()
-		{
-			IconOverride = new GravatarImageSource(),
-		};
-		Assert.True(testControl.IconOverride is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.IconOverride).Uri);
-	}
-
-	[Fact]
-	public void TestControlBackButtonBehaviorWithEmail()
-	{
-		BackButtonBehavior testControl = new()
-		{
-			IconOverride = new GravatarImageSource() { Email = email },
-		};
-		Assert.True(testControl.IconOverride is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.IconOverride).Uri);
-	}
-
-	[Fact]
-	public void TestControlBaseShellItem()
-	{
-		BaseShellItem testControl = new()
-		{
-			Icon = new GravatarImageSource(),
-			FlyoutIcon = new GravatarImageSource(),
-		};
-		Assert.True(testControl.Icon is GravatarImageSource);
-		Assert.True(testControl.FlyoutIcon is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.Icon).Uri);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.FlyoutIcon).Uri);
-	}
-
-	[Fact]
-	public void TestControlBaseShellItemWithEmail()
-	{
-		BaseShellItem testControl = new()
-		{
-			Icon = new GravatarImageSource() { Email = email },
-			FlyoutIcon = new GravatarImageSource() {  Email = email },
-		};
-		Assert.True(testControl.Icon is GravatarImageSource);
-		Assert.True(testControl.FlyoutIcon is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.Icon).Uri);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.FlyoutIcon).Uri);
 	}
 
 	[Fact]
