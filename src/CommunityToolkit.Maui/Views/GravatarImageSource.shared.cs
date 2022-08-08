@@ -164,7 +164,6 @@ public class GravatarImageSource : StreamImageSource
 		try
 		{
 			using var client = new HttpClient();
-			// Do not remove this await otherwise the client will dispose before the stream even starts
 			return await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
 		}
 		catch (Exception ex)
