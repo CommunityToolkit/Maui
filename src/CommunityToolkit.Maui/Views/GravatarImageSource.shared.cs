@@ -2,15 +2,15 @@
 
 using System.Security.Cryptography;
 using System.Text;
-using CommunityToolkit.Maui.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls;
 
 /// <summary>Gravatar image source.</summary>
 /// <remarks>Note that <see cref="UriImageSource"/> is sealed and can't be used as a parent!</remarks>
-public class GravatarImageSource : StreamImageSource, IGravatarImageSource
+public class GravatarImageSource : StreamImageSource
 {
 	const string defaultGravatarImageAddress = "https://www.gravatar.com/avatar/";
+	const int defaultSize = 80;
 
 	/// <summary>The backing store for the <see cref="CacheValidity" /> bindable property.</summary>
 	public static readonly BindableProperty CacheValidityProperty = BindableProperty.Create(nameof(CacheValidity), typeof(TimeSpan), typeof(UriImageSource), TimeSpan.FromDays(1));
@@ -19,10 +19,10 @@ public class GravatarImageSource : StreamImageSource, IGravatarImageSource
 	public static readonly BindableProperty CachingEnabledProperty = BindableProperty.Create(nameof(CachingEnabled), typeof(bool), typeof(UriImageSource), true);
 
 	/// <summary>The backing store for the <see cref="Email" /> bindable property.</summary>
-	public static readonly BindableProperty? EmailProperty = BindableProperty.Create(nameof(Email), typeof(string), typeof(GravatarImageSource), defaultValue: GravatarImageSourceDefaults.DefaultEmail, propertyChanged: OnEmailPropertyChanged);
+	public static readonly BindableProperty? EmailProperty = BindableProperty.Create(nameof(Email), typeof(string), typeof(GravatarImageSource), defaultValue: null, propertyChanged: OnEmailPropertyChanged);
 
 	/// <summary>The backing store for the <see cref="Image" /> bindable property.</summary>
-	public static readonly BindableProperty ImageProperty = BindableProperty.Create(nameof(Image), typeof(DefaultImage), typeof(GravatarImageSource), defaultValue: GravatarImageSourceDefaults.Defaultimage, propertyChanged: OnDefaultImagePropertyChanged);
+	public static readonly BindableProperty ImageProperty = BindableProperty.Create(nameof(Image), typeof(DefaultImage), typeof(GravatarImageSource), defaultValue: DefaultImage.MysteryPerson, propertyChanged: OnDefaultImagePropertyChanged);
 
 	int gravatarSize;
 
@@ -101,8 +101,8 @@ public class GravatarImageSource : StreamImageSource, IGravatarImageSource
 		base.OnParentSet();
 		if (element is Microsoft.Maui.Controls.Image parentImage)
 		{
-			var height = parentImage.Height >= 0 ? parentImage.Height : Math.Max(parentImage.HeightRequest, GravatarImageSourceDefaults.DefaultSize);
-			var width = parentImage.Width >= 0 ? parentImage.Width : Math.Max(parentImage.WidthRequest, GravatarImageSourceDefaults.DefaultSize);
+			var height = parentImage.Height >= 0 ? parentImage.Height : Math.Max(parentImage.HeightRequest, defaultSize);
+			var width = parentImage.Width >= 0 ? parentImage.Width : Math.Max(parentImage.WidthRequest, defaultSize);
 			var sizeFromParent = (int)Math.Max(width, height);
 			if (GravatarSize != sizeFromParent)
 			{
@@ -173,4 +173,32 @@ public class GravatarImageSource : StreamImageSource, IGravatarImageSource
 			return System.IO.Stream.Null;
 		}
 	}
+}
+
+/// <summary>Default gravatar image enumerator.</summary>
+public enum DefaultImage
+{
+	/// <summary>(mystery-person) A simple, cartoon-style silhouetted outline of a person (does not vary by email hash)</summary>
+	MysteryPerson = 0,
+
+	/// <summary>404: Do not load any image if none is associated with the email hash, instead return an HTTP 404 (File Not Found) response.</summary>
+	FileNotFound,
+
+	/// <summary>A geometric pattern based on an email hash.</summary>
+	Identicon,
+
+	/// <summary>A generated 'monster' with different colours, faces, etc.</summary>
+	MonsterId,
+
+	/// <summary>Generated faces with differing features and backgrounds.</summary>
+	Wavatar,
+
+	/// <summary>Awesome generated, 8-bit arcade-style pixilated faces.</summary>
+	Retro,
+
+	/// <summary>A generated robot with different colours, faces, etc.</summary>
+	Robohash,
+
+	/// <summary>A transparent PNG image.</summary>
+	Blank,
 }

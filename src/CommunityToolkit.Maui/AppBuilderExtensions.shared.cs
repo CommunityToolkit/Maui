@@ -22,7 +22,7 @@ public static class AppBuilderExtensions
 			h.AddHandler<Popup, PopupHandler>();
 		});
 
-		builder.ConfigureImageSources(services => services.AddService<GravatarImageSource, UriImageSourceService>());
+		//builder.ConfigureImageSources(services => services.AddService<GravatarImageSource, UriImageSourceService>());
 
 		Popup.RemapForControls();
 
