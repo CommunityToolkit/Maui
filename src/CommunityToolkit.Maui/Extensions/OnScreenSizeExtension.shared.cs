@@ -105,8 +105,6 @@ public class OnScreenSizeExtension : IMarkupExtension<object>
 			pi = (valueProvider.TargetProperty as PropertyInfo)!;
 		}
 
-		LogHelpers.Log($"Providing Value using propertyType:\"{(bp?.ReturnType ?? pi?.PropertyType ?? null)}\" and BindableProperty:{(bp ?? null)}", LogLevel.Debug);
-
 		var propertyType = bp?.ReturnType ?? pi?.PropertyType;
 
 		if (propertyType == null)

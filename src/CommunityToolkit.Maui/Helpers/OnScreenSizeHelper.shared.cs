@@ -47,7 +47,7 @@ public static class OnScreenSizeHelper
 
 		var category = OnScreenSizeManager.Current.Categorizer.GetCategoryByDiagonalSize(OnScreenSizeManager.Current.Mappings, diagonalSize);
 
-		LogHelpers.Log(string.Format("{0} - Current screen category is \"{1}\", and screen diagonal size is \"{2}\"",nameof(OnScreenSizeExtension),category, diagonalSize));
+		Debug.WriteLine(string.Format("{0} - Current screen category is \"{1}\", and screen diagonal size is \"{2}\"",nameof(OnScreenSizeExtension),category, diagonalSize));
             
 		if (category == ScreenCategories.NotSet)
 		{
@@ -104,7 +104,7 @@ public static class OnScreenSizeHelper
 
 		var diagonalReturnValue = (double)Math.Round((Math.Ceiling(diagonal * 100) / 100), 1);
 
-		LogHelpers.Log($"{nameof(OnScreenSizeExtension)} - DiagonalSize: {diagonalReturnValue},  PPI/DPI: x:\"{xDpi}\", y:\"{yDpi}\"");
+		Debug.WriteLine($"{nameof(OnScreenSizeExtension)} - DiagonalSize: {diagonalReturnValue},  PPI/DPI: x:\"{xDpi}\", y:\"{yDpi}\"");
 	        
 		return (double)Math.Round((Math.Ceiling(diagonal * 100) / 100), 1);
 	}
