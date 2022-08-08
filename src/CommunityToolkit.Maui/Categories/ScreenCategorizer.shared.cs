@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Categories;
 /// </summary>
  class ScreenCategorizer : IScreenCategorizer
 {
-	public ScreenCategories GetCategoryByDiagonalSize(List<SizeMappingInfo> mappings, double deviceActualDiagonalSize)
+	public ScreenCategories GetCategoryByDiagonalSize(IEnumerable<SizeMappingInfo> mappings, double deviceActualDiagonalSize)
 	{
 		ScreenCategories category;
 		if (TryCategorizeByFixedSize(mappings, deviceActualDiagonalSize, out category))
@@ -33,14 +33,13 @@ namespace CommunityToolkit.Maui.Categories;
 	/// <param name="deviceActualDiagonalSize"></param>
 	/// <param name="category"></param>
 	/// <returns></returns>
-	 static bool TryCategorizeByFixedSize(List<SizeMappingInfo> mappings, double deviceActualDiagonalSize, out ScreenCategories category)
+	 static bool TryCategorizeByFixedSize(IEnumerable<SizeMappingInfo> mappings, double deviceActualDiagonalSize, out ScreenCategories category)
 	{
 		category = ScreenCategories.NotSet;
 
-		var diagonalSizeMappingsEquals = mappings.Where((f => f.ComparisonMode == ScreenSizeCompareModes.SpecificSize)).OrderBy(f => f.DiagonalSize).ToArray();
-		for (var index = 0; index < diagonalSizeMappingsEquals.Length; index++)
+		var diagonalSizeMappingsEquals = mappings.Where((f => f.ComparisonMode == ScreenSizeCompareModes.SpecificSize)).OrderBy(f => f.DiagonalSize);
+		foreach (var sizeInfo in diagonalSizeMappingsEquals)
 		{
-			var sizeInfo = diagonalSizeMappingsEquals[index];
 			if (deviceActualDiagonalSize.EqualsTo(sizeInfo.DiagonalSize))
 			{
 				category = sizeInfo.Category;
@@ -51,7 +50,7 @@ namespace CommunityToolkit.Maui.Categories;
 		return false;
 	}
 
-	 static bool TryCategorizeBySmallerOrEqualsTo(List<SizeMappingInfo> mappings, double deviceActualDiagonalSize, out ScreenCategories category)
+	 static bool TryCategorizeBySmallerOrEqualsTo(IEnumerable<SizeMappingInfo> mappings, double deviceActualDiagonalSize, out ScreenCategories category)
 	{
 
 		var mappingsLocal = mappings.Where(f => f.ComparisonMode == ScreenSizeCompareModes.SmallerOrEqualsTo).OrderBy(f => f.DiagonalSize).ToList();

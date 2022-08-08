@@ -112,15 +112,14 @@ public static class OnScreenSizeHelper
 	/// <summary>
 	/// OnScreenSize's code behind support.
 	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	/// <param name="default"></param>
-	/// <param name="extraSmall"></param>
-	/// <param name="small"></param>
-	/// <param name="medium"></param>
-	/// <param name="large"></param>
-	/// <param name="extraLarge"></param>
+	/// <typeparam name="T">The type of the value we are handling</typeparam>
+	/// <param name="default">default value used when no other values are provided</param>
+	/// <param name="extraSmall">Extra-small-screen value</param>
+	/// <param name="small">Small-screen value</param>
+	/// <param name="medium">Medium-screen value</param>
+	/// <param name="large">large-screen value</param>
+	/// <param name="extraLarge">Extra-large-screen value</param>
 	/// <returns></returns>
-	/// <exception cref="ArgumentException"></exception>
 	public static object OnScreenSize(object @default,
 		object? extraSmall = null,
 		object? small = null,

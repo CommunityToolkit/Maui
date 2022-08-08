@@ -9,5 +9,5 @@ namespace  CommunityToolkit.Maui.Categories;
 /// </summary>
  interface IScreenCategorizer
 {
-	ScreenCategories GetCategoryByDiagonalSize(List<SizeMappingInfo> mappings, double deviceActualDiagonalSize);
+	ScreenCategories GetCategoryByDiagonalSize(IEnumerable<SizeMappingInfo> mappings, double deviceActualDiagonalSize);
 }

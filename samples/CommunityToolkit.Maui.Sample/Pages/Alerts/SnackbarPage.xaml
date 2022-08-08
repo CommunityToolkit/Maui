@@ -20,12 +20,8 @@
                 LineBreakMode = "WordWrap" />
         
         <Label Text="Windows uses toast notifications to display snackbar. Make sure you switched off Focus Assist."
-               IsVisible="false">
-            <Label.IsVisible>
-                <OnPlatform x:TypeArguments="x:Boolean">
-                    <On Platform="UWP" Value="true" />
-                </OnPlatform>
-            </Label.IsVisible>
+       >
+        
         </Label>
         
         <Button Clicked="DisplayDefaultSnackbarButtonClicked"

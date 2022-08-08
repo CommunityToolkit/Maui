@@ -31,7 +31,7 @@ public class OnScreenSizeManager
     public List<SizeMappingInfo> Mappings { get; set; } = DefaultMappings.MobileMappings;
 
     /// <summary>
-    /// Returns the _Current <see cref="ScreenCategories"/> set for the device.
+    /// Returns the Current <see cref="ScreenCategories"/> set for the device.
     /// </summary>
     public ScreenCategories? CurrentCategory { get; internal set; }
 
