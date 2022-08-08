@@ -9,6 +9,7 @@ using Microsoft.Maui.Controls;
 /// <remarks>Note that <see cref="UriImageSource"/> is sealed and can't be used as a parent!</remarks>
 public class GravatarImageSource : StreamImageSource
 {
+	static readonly HttpClient singletonHttpClient = new();
 	const string defaultGravatarImageAddress = "https://www.gravatar.com/avatar/";
 	const int defaultSize = 80;
 
@@ -163,8 +164,7 @@ public class GravatarImageSource : StreamImageSource
 	{
 		try
 		{
-			using var client = new HttpClient();
-			return await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
+			return await StreamWrapper.GetStreamAsync(uri, cancellationToken, singletonHttpClient).ConfigureAwait(false);
 		}
 		catch (Exception ex)
 		{
