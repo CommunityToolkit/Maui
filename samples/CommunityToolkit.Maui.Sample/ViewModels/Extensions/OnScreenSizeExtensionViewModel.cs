@@ -1,4 +1,5 @@
 ﻿using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Extensions;
 
@@ -9,11 +10,9 @@ public sealed partial class OnScreenSizeExtensionViewModel : BaseViewModel
 	public OnScreenSizeExtensionViewModel(ILauncher launcher)
 	{
 		this.launcher = launcher;
-		OpenDocumentationCommand = new Command(async () => await OpenDocumentation());
 	}
 
-	public ICommand OpenDocumentationCommand { get; }
-	
+	[RelayCommand]
 	async Task OpenDocumentation()
 	{
 		var url = "https://docs.microsoft.com/dotnet/communitytoolkit/maui/extensions/on-screen-size-extension";
