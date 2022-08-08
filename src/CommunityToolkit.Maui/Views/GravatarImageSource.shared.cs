@@ -1,8 +1,8 @@
 ﻿namespace CommunityToolkit.Maui.Views;
 
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls;
 
 /// <summary>Gravatar image source.</summary>
@@ -192,7 +192,7 @@ public class GravatarImageSource : StreamImageSource
 		}
 		catch (Exception ex)
 		{
-			Application.Current?.FindMauiContext()?.CreateLogger<GravatarImageSource>()?.LogWarning(ex, "Error getting stream for {Uri}", Uri);
+			Debug.WriteLine($"Error getting stream for {Uri}: {ex}");
 			return System.IO.Stream.Null;
 		}
 	}
