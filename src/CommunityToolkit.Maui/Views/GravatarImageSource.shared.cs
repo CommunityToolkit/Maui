@@ -9,10 +9,6 @@ using Microsoft.Maui.Controls;
 /// <remarks>Note that <see cref="UriImageSource"/> is sealed and can't be used as a parent!</remarks>
 public class GravatarImageSource : StreamImageSource
 {
-	static readonly HttpClient singletonHttpClient = new();
-	const string defaultGravatarImageAddress = "https://www.gravatar.com/avatar/";
-	const int defaultSize = 80;
-
 	/// <summary>The backing store for the <see cref="CacheValidity" /> bindable property.</summary>
 	public static readonly BindableProperty CacheValidityProperty = BindableProperty.Create(nameof(CacheValidity), typeof(TimeSpan), typeof(UriImageSource), TimeSpan.FromDays(1));
 
@@ -25,6 +21,9 @@ public class GravatarImageSource : StreamImageSource
 	/// <summary>The backing store for the <see cref="Image" /> bindable property.</summary>
 	public static readonly BindableProperty ImageProperty = BindableProperty.Create(nameof(Image), typeof(DefaultImage), typeof(GravatarImageSource), defaultValue: DefaultImage.MysteryPerson, propertyChanged: OnDefaultImagePropertyChanged);
 
+	const string defaultGravatarImageAddress = "https://www.gravatar.com/avatar/";
+	const int defaultSize = 80;
+	static readonly HttpClient singletonHttpClient = new();
 	int gravatarSize;
 
 	/// <summary>Initializes a new instance of the <see cref="GravatarImageSource"/> class.</summary>
@@ -32,18 +31,6 @@ public class GravatarImageSource : StreamImageSource
 	{
 		Stream = new Func<CancellationToken, Task<Stream>>(cancelationToken => DownloadStreamAsync(Uri, cancelationToken));
 		Uri = new Uri(defaultGravatarImageAddress);
-	}
-
-	/// <summary>On property changed.</summary>
-	/// <param name="propertyName">Property name.</param>
-	protected override void OnPropertyChanged(string propertyName)
-	{
-		if (propertyName is not null && (propertyName == CacheValidityProperty.PropertyName || propertyName == CachingEnabledProperty.PropertyName))
-		{
-			OnUriChanged();
-		}
-
-		base.OnPropertyChanged(propertyName);
 	}
 
 	/// <summary>Gets or sets a <see cref="TimeSpan"/> structure that indicates the length of time after which the image cache becomes invalid.</summary>
@@ -113,6 +100,18 @@ public class GravatarImageSource : StreamImageSource
 		}
 	}
 
+	/// <summary>On property changed.</summary>
+	/// <param name="propertyName">Property name.</param>
+	protected override void OnPropertyChanged(string propertyName)
+	{
+		if (propertyName is not null && (propertyName == CacheValidityProperty.PropertyName || propertyName == CachingEnabledProperty.PropertyName))
+		{
+			OnUriChanged();
+		}
+
+		base.OnPropertyChanged(propertyName);
+	}
+
 	static string DefaultGravatarName(DefaultImage defaultGravatar)
 			=> defaultGravatar switch
 			{
@@ -145,6 +144,19 @@ public class GravatarImageSource : StreamImageSource
 		gravatarImageSource.HandleNewUriRequested((string?)newValue, gravatarImageSource.Image);
 	}
 
+	async Task<Stream> DownloadStreamAsync(Uri? uri, CancellationToken cancellationToken)
+	{
+		try
+		{
+			return await StreamWrapper.GetStreamAsync(uri, cancellationToken, singletonHttpClient).ConfigureAwait(false);
+		}
+		catch (Exception ex)
+		{
+			Application.Current?.FindMauiContext()?.CreateLogger<GravatarImageSource>()?.LogWarning(ex, "Error getting stream for {Uri}", Uri);
+			return System.IO.Stream.Null;
+		}
+	}
+
 	void HandleNewUriRequested(string? email, DefaultImage image)
 	{
 		Uri = string.IsNullOrWhiteSpace(email)
@@ -159,22 +171,9 @@ public class GravatarImageSource : StreamImageSource
 		CancellationTokenSource?.Cancel();
 		OnSourceChanged();
 	}
-
-	async Task<Stream> DownloadStreamAsync(Uri? uri, CancellationToken cancellationToken)
-	{
-		try
-		{
-			return await StreamWrapper.GetStreamAsync(uri, cancellationToken, singletonHttpClient).ConfigureAwait(false);
-		}
-		catch (Exception ex)
-		{
-			Application.Current?.FindMauiContext()?.CreateLogger<GravatarImageSource>()?.LogWarning(ex, "Error getting stream for {Uri}", Uri);
-			return System.IO.Stream.Null;
-		}
-	}
 }
 
-/// <summary>Default gravatar image enumerator.</summary>
+/// <summary>Default image enumerator.</summary>
 public enum DefaultImage
 {
 	/// <summary>(mystery-person) A simple, cartoon-style silhouetted outline of a person (does not vary by email hash)</summary>
