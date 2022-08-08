@@ -56,12 +56,13 @@
                 <Label.FormattedText>
                     <FormattedString>
                         <Span Text="GravatarImageSource allows you to use as an Image " />
-                        <Span Text="source" FontAttributes="Italic" />
+                        <Span FontAttributes="Italic" Text="source" />
                         <Span Text=", a users Gravatar registered image via their email address." />
                     </FormattedString>
                 </Label.FormattedText>
             </Label>
             <Line Style="{StaticResource HR}" />
+            <Label Text="with Image control" />
             <Image HeightRequest="128" WidthRequest="128">
                 <Image.Source>
                     <mct:GravatarImageSource
@@ -72,6 +73,29 @@
                         SemanticProperties.Description="GravatarImageSource for an Image control, binding all properties." />
                 </Image.Source>
             </Image>
+            <Label Text="with Button control" />
+            <Button Text="Button">
+                <Button.ImageSource>
+                    <mct:GravatarImageSource
+                        CacheValidity="{Binding CacheValidityTimespan}"
+                        CachingEnabled="{Binding EnableCache}"
+                        Email="{Binding Email}"
+                        Image="{Binding DefaultGravatarSelected}"
+                        SemanticProperties.Description="GravatarImageSource for a Button control, binding all properties." />
+                </Button.ImageSource>
+            </Button>
+            <Label Text="with ImageButton control" />
+            <ImageButton HeightRequest="73" WidthRequest="72">
+                <ImageButton.Source>
+                    <mct:GravatarImageSource
+                        CacheValidity="{Binding CacheValidityTimespan}"
+                        CachingEnabled="{Binding EnableCache}"
+                        Email="{Binding Email}"
+                        Image="{Binding DefaultGravatarSelected}"
+                        SemanticProperties.Description="GravatarImageSource for an ImageButton control, binding all properties." />
+                </ImageButton.Source>
+            </ImageButton>
+            <Label Text="with AvatarView Control" />
             <mct:AvatarView
                 BorderWidth="2"
                 CornerRadius="32,0,0,32"

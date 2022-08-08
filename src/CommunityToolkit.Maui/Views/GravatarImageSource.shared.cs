@@ -87,16 +87,55 @@ public class GravatarImageSource : StreamImageSource
 	{
 		object element = Parent;
 		base.OnParentSet();
-		if (element is Microsoft.Maui.Controls.Image parentImage)
+		if (element is null)
 		{
-			var height = parentImage.Height >= 0 ? parentImage.Height : Math.Max(parentImage.HeightRequest, defaultSize);
-			var width = parentImage.Width >= 0 ? parentImage.Width : Math.Max(parentImage.WidthRequest, defaultSize);
+			GravatarSize = defaultSize;
+			return;
+		}
+
+		try
+		{
+			double height = defaultSize;
+			double width = defaultSize;
+			object? objectHeight = element.GetType().GetProperty("Height")?.GetValue(element, null);
+			double? objectWidth = (double?)(element.GetType().GetProperty("Width")?.GetValue(element, null));
+
+			if (objectHeight is not null && (double)objectHeight >= 0)
+			{
+				height = (double)objectHeight;
+			}
+			else
+			{
+				double? objectHeightRequest = (double?)(element.GetType().GetProperty("HeightRequest")?.GetValue(element, null));
+				if (objectHeightRequest is not null && (double)objectHeightRequest >= 0)
+				{
+					height = (double)objectHeightRequest;
+				}
+			}
+
+			if (objectWidth is not null && (double)objectWidth >= 0)
+			{
+				width = (double)objectWidth;
+			}
+			else
+			{
+				double? objectWidthRequest = (double?)(element.GetType().GetProperty("WidthRequest")?.GetValue(element, null));
+				if (objectWidthRequest is not null && (double)objectWidthRequest >= 0)
+				{
+					width = (double)objectWidthRequest;
+				}
+			}
+
 			var sizeFromParent = (int)Math.Max(width, height);
 			if (GravatarSize != sizeFromParent)
 			{
 				GravatarSize = sizeFromParent;
 				HandleNewUriRequested(Email, Image);
 			}
+		}
+		catch
+		{
+			GravatarSize = defaultSize;
 		}
 	}
 
