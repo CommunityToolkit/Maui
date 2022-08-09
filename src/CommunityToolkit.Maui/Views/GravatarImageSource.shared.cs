@@ -88,55 +88,29 @@ public class GravatarImageSource : StreamImageSource
 	{
 		object element = Parent;
 		base.OnParentSet();
-		if (element is null)
+		if (element is not VisualElement parentElement || parentElement is null)
 		{
 			GravatarSize = defaultSize;
 			return;
 		}
 
-		try
+		var height = parentElement.Height >= 0 ? parentElement.Height : parentElement.HeightRequest;
+		if (height <= 0)
 		{
-			double height = defaultSize;
-			double width = defaultSize;
-			object? objectHeight = element.GetType().GetProperty("Height")?.GetValue(element, null);
-			double? objectWidth = (double?)(element.GetType().GetProperty("Width")?.GetValue(element, null));
-
-			if (objectHeight is not null && (double)objectHeight >= 0)
-			{
-				height = (double)objectHeight;
-			}
-			else
-			{
-				double? objectHeightRequest = (double?)(element.GetType().GetProperty("HeightRequest")?.GetValue(element, null));
-				if (objectHeightRequest is not null && (double)objectHeightRequest >= 0)
-				{
-					height = (double)objectHeightRequest;
-				}
-			}
-
-			if (objectWidth is not null && (double)objectWidth >= 0)
-			{
-				width = (double)objectWidth;
-			}
-			else
-			{
-				double? objectWidthRequest = (double?)(element.GetType().GetProperty("WidthRequest")?.GetValue(element, null));
-				if (objectWidthRequest is not null && (double)objectWidthRequest >= 0)
-				{
-					width = (double)objectWidthRequest;
-				}
-			}
-
-			var sizeFromParent = (int)Math.Max(width, height);
-			if (GravatarSize != sizeFromParent)
-			{
-				GravatarSize = sizeFromParent;
-				HandleNewUriRequested(Email, Image);
-			}
+			height = defaultSize;
 		}
-		catch
+
+		var width = parentElement.Width >= 0 ? parentElement.Width : parentElement.WidthRequest;
+		if (width <= 0)
 		{
-			GravatarSize = defaultSize;
+			width = defaultSize;
+		}
+
+		var sizeFromParent = (int)Math.Max(width, height);
+		if (GravatarSize != sizeFromParent)
+		{
+			GravatarSize = sizeFromParent;
+			HandleNewUriRequested(Email, Image);
 		}
 	}
 
