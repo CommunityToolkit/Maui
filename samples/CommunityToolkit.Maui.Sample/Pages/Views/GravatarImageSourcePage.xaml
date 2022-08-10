@@ -52,7 +52,7 @@
                 </ResourceDictionary>
             </VerticalStackLayout.Resources>
 
-            <Label Style="{StaticResource Description}">
+            <Label Style="{StaticResource Description}" SemanticProperties.HeadingLevel="Level1">
                 <Label.FormattedText>
                     <FormattedString>
                         <Span Text="GravatarImageSource allows you to use as an Image " />
@@ -62,7 +62,7 @@
                 </Label.FormattedText>
             </Label>
             <Line Style="{StaticResource HR}" />
-            <Label Text="with Image control" />
+            <Label Text="with Image control" SemanticProperties.HeadingLevel="Level2" />
             <Image HeightRequest="128" WidthRequest="128">
                 <Image.Source>
                     <mct:GravatarImageSource
@@ -73,7 +73,7 @@
                         SemanticProperties.Description="GravatarImageSource for an Image control, binding all properties." />
                 </Image.Source>
             </Image>
-            <Label Text="with Button control" />
+            <Label Text="with Button control" SemanticProperties.HeadingLevel="Level2" />
             <Button Text="Button">
                 <Button.ImageSource>
                     <mct:GravatarImageSource
@@ -84,7 +84,7 @@
                         SemanticProperties.Description="GravatarImageSource for a Button control, binding all properties." />
                 </Button.ImageSource>
             </Button>
-            <Label Text="with ImageButton control" />
+            <Label Text="with ImageButton control" SemanticProperties.HeadingLevel="Level2" />
             <ImageButton HeightRequest="73" WidthRequest="72">
                 <ImageButton.Source>
                     <mct:GravatarImageSource
@@ -95,7 +95,7 @@
                         SemanticProperties.Description="GravatarImageSource for an ImageButton control, binding all properties." />
                 </ImageButton.Source>
             </ImageButton>
-            <Label Text="with AvatarView Control" />
+            <Label Text="with AvatarView Control" SemanticProperties.HeadingLevel="Level2" />
             <mct:AvatarView
                 BorderWidth="2"
                 CornerRadius="32,0,0,32"
@@ -118,7 +118,7 @@
             </mct:AvatarView>
             <Label x:Name="LabelEmail" Text="Email:" />
             <Entry
-                AutomationProperties.LabeledBy="{x:Reference LabelEmail}"
+                AutomationProperties.LabeledBy="{x:Reference LabelEmail}" SemanticProperties.Hint="Enter your own gravatar registered email address"
                 Keyboard="Email"
                 Text="{Binding Email}" />
             <Label x:Name="LabelDefaultImage" Text="Default Image:" />
@@ -126,13 +126,13 @@
                 AutomationProperties.LabeledBy="{x:Reference LabelDefaultImage}"
                 ItemsSource="{Binding DefaultGravatarItems}"
                 SelectedItem="{Binding DefaultGravatarSelected}"
-                SemanticProperties.Description="A default image is displayed if there is no image associated with the requested email hash." />
+                SemanticProperties.Hint="A default image is displayed if there is no image associated with the requested email hash." />
             <Label x:Name="LabelEnableCache" Text="Enable cache:" />
             <Switch
                 AutomationProperties.LabeledBy="{x:Reference LabelEnableCache}"
                 IsToggled="{Binding EnableCache}"
-                SemanticProperties.Description="Defines whether image caching is enabled.  The default value of this property is: True" />
-            <Label x:Name="LabelCacheValidity" IsEnabled="{Binding EnableCache}">
+                SemanticProperties.Hint="Defines whether image caching is enabled.  The default value of this property is: True" />
+            <Label x:Name="LabelCacheValidity" IsEnabled="{Binding EnableCache}" SemanticProperties.Description="Display how many days for cache validity.">
                 <Label.FormattedText>
                     <FormattedString>
                         <Span Text="Cache Validity (in days): '" />
@@ -146,7 +146,7 @@
                 IsEnabled="{Binding EnableCache}"
                 Maximum="365"
                 Minimum="1"
-                SemanticProperties.Description="Specify how long the image will be stored locally for.  The default of this property is 1 day."
+                SemanticProperties.Hint="Specify how long the image will be stored locally for.  The default of this property is 1 day."
                 Value="{Binding CacheValidityInDays}" />
         </VerticalStackLayout>
     </ScrollView>
