@@ -76,7 +76,7 @@ static class NamespaceSymbolExtensions
 	/// Find all generic type constraints for <see cref="INamedTypeSymbol"/> and return the results as a complete string
 	/// </summary>
 	/// <param name="type"></param>
-	/// <returns>A text string contiaining all Generic Type Constraints for <see cref="INamedTypeSymbol"/, eg "where T : ITextStyle, notnull". Returns <see cref="string.Empty"/> if no generic type constrants found</returns>
+	/// <returns>A text string containing all Generic Type Constraints for <see cref="INamedTypeSymbol"/>, eg "where T : ITextStyle, notnull". Returns <see cref="string.Empty"/> if no generic type constrants found</returns>
 	public static string GetGenericTypeConstraintsAsString(this INamedTypeSymbol type)
 	{
 		if (!type.TypeParameters.Any())

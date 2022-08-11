@@ -58,11 +58,11 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 
 			Children =
 			{
-				new Card().Row(Row.Content).Column(Column.Content)
+				new Card().Row(Row.Content).Column(Column.Content).DynamicResource(Border.StyleProperty, "border_gallery_card")
 			}
 		}.DynamicResource(BackgroundColorProperty, "AppBackgroundColor");
 
-		class Card : Frame
+		class Card : Border
 		{
 			public Card()
 			{
@@ -80,7 +80,8 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 					{
 						new Label()
 							.Row(CardRow.Title)
-							.Bind(Label.TextProperty, nameof(SectionModel.Title)),
+							.Bind(Label.TextProperty, nameof(SectionModel.Title))
+							.DynamicResource(Label.StyleProperty, "label_section_title"),
 
 						new Label { MaxLines = 4, LineBreakMode = LineBreakMode.WordWrap }
 							.Row(CardRow.Description).TextStart().TextTop()

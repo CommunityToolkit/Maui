@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Platform;
+﻿using CommunityToolkit.Maui.Core.Extensions;
+using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
@@ -19,10 +20,10 @@ public static class PopupExtensions
 		}
 		else if (popup.Content is not null)
 		{
-			if (!popup.Content.DesiredSize.IsZero)
+			var content = popup.Content;
+			if (!content.Width.IsZeroOrNaN() || !content.Height.IsZeroOrNaN())
 			{
-				var contentSize = popup.Content.DesiredSize;
-				mauiPopup.PreferredContentSize = new CGSize(contentSize.Width, contentSize.Height);
+				mauiPopup.PreferredContentSize = new CGSize(content.Width, content.Height);
 			}
 			else
 			{
@@ -70,24 +71,35 @@ public static class PopupExtensions
 	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
 	public static void SetLayout(this MauiPopup mauiPopup, in IPopup popup)
 	{
-		var presentationController = mauiPopup.PresentationController;
-		var preferredContentSize = mauiPopup.PreferredContentSize;
+		if (mauiPopup.View is null)
+		{
+			return;
+		}
 
-		((UIPopoverPresentationController)presentationController).SourceRect = new CGRect(0, 0, preferredContentSize.Width, preferredContentSize.Height);
+		CGRect frame;
+
+		if (mauiPopup.ViewController?.View?.Window is UIWindow window)
+		{
+			frame = window.Frame;
+		}
+		else
+		{
+			frame = UIScreen.MainScreen.Bounds;
+		}
 
 		if (popup.Anchor is null)
 		{
 			var originY = popup.VerticalOptions switch
 			{
 				Microsoft.Maui.Primitives.LayoutAlignment.End => UIScreen.MainScreen.Bounds.Height,
-				Microsoft.Maui.Primitives.LayoutAlignment.Center => UIScreen.MainScreen.Bounds.Height / 2,
+				Microsoft.Maui.Primitives.LayoutAlignment.Center => frame.GetMidY(),
 				_ => 0f
 			};
 
 			var originX = popup.HorizontalOptions switch
 			{
 				Microsoft.Maui.Primitives.LayoutAlignment.End => UIScreen.MainScreen.Bounds.Width,
-				Microsoft.Maui.Primitives.LayoutAlignment.Center => UIScreen.MainScreen.Bounds.Width / 2,
+				Microsoft.Maui.Primitives.LayoutAlignment.Center => frame.GetMidX(),
 				_ => 0f
 			};
 
@@ -100,6 +112,5 @@ public static class PopupExtensions
 			mauiPopup.PopoverPresentationController.SourceView = view;
 			mauiPopup.PopoverPresentationController.SourceRect = view.Bounds;
 		}
-
 	}
 }
