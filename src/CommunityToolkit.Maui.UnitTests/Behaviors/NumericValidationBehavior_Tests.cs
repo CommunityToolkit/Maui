@@ -72,7 +72,7 @@ public class NumericValidationBehavior_Tests : BaseTest
 	}
 
 	[Fact]
-	public void IsNull()
+	public async Task IsNull()
 	{
 		// Arrange
 		string? text = null;
@@ -85,6 +85,8 @@ public class NumericValidationBehavior_Tests : BaseTest
 		};
 		entry.Behaviors.Add(behavior);
 
-		Assert.ThrowsAsync<ArgumentNullException>(async () => await behavior.ForceValidate());
+		await behavior.ForceValidate();
+
+		Assert.False(behavior.IsValid);
 	}
 }
