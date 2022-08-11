@@ -21,6 +21,7 @@ public class GravatarImageSource : StreamImageSource
 	/// <summary>The backing store for the <see cref="Image" /> bindable property.</summary>
 	public static readonly BindableProperty ImageProperty = BindableProperty.Create(nameof(Image), typeof(DefaultImage), typeof(GravatarImageSource), defaultValue: DefaultImage.MysteryPerson, propertyChanged: OnDefaultImagePropertyChanged);
 
+	const int cancellationTokenSourceTimeout = 737;
 	const string defaultGravatarImageAddress = "https://www.gravatar.com/avatar/";
 	const int defaultSize = 80;
 	static readonly HttpClient singletonHttpClient = new();
@@ -118,9 +119,14 @@ public class GravatarImageSource : StreamImageSource
 	/// <param name="propertyName">Property name.</param>
 	protected override void OnPropertyChanged(string propertyName)
 	{
-		if (propertyName is not null && (propertyName == CacheValidityProperty.PropertyName || propertyName == CachingEnabledProperty.PropertyName))
+		if (propertyName is not null && (propertyName == CacheValidityProperty.PropertyName || propertyName == CachingEnabledProperty.PropertyName || propertyName == EmailProperty?.PropertyName || propertyName == ImageProperty.PropertyName))
 		{
-			OnUriChanged();
+			if (propertyName == CacheValidityProperty.PropertyName || propertyName == CachingEnabledProperty.PropertyName)
+			{
+				OnUriChanged();
+			}
+
+			return;
 		}
 
 		base.OnPropertyChanged(propertyName);
@@ -189,7 +195,7 @@ public class GravatarImageSource : StreamImageSource
 		}
 
 		tokenSource = new CancellationTokenSource();
-		Task.Delay(737, tokenSource.Token).ContinueWith(task =>
+		Task.Delay(cancellationTokenSourceTimeout, tokenSource.Token).ContinueWith(task =>
 		{
 			if (task.IsFaulted && task.Exception is not null)
 			{
@@ -201,6 +207,7 @@ public class GravatarImageSource : StreamImageSource
 				return;
 			}
 
+			CancellationTokenSource?.Cancel();
 			Dispatcher.DispatchIfRequired(OnSourceChanged);
 		});
 	}
