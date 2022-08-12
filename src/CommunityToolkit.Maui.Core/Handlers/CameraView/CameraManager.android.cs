@@ -97,7 +97,7 @@ public partial class CameraManager
 
 	protected virtual partial void PlatformTakePicture()
 	{
-		imageCapture?.TakePicture(cameraExecutor, imageCallback);
+		imageCapture?.TakePicture(cameraExecutor!, imageCallback!);
 	}
 
 	public partial void UpdateFlashMode(CameraFlashMode flashMode)
