@@ -49,6 +49,18 @@ public class EmailValidationBehavior : TextValidationBehavior
 		base.OnAttachedTo(bindable);
 	}
 
+	/// <inheritdoc /> 
+	protected override void OnDetachingFrom(VisualElement bindable)
+	{
+		// Assign Keyboard.Default if the user has not specified a different Keyboard layout
+		if (bindable is InputView inputView && inputView.Keyboard == Keyboard.Email)
+		{
+			inputView.Keyboard = Keyboard.Default;
+		}
+
+		base.OnDetachingFrom(bindable);
+	}
+
 	// https://docs.microsoft.com/dotnet/standard/base-types/how-to-verify-that-strings-are-in-valid-email-format
 	static bool IsValidEmail(string? email)
 	{

@@ -5,12 +5,11 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
 public class EmailValidationBehavior_Tests : BaseTest
 {
-	public static IReadOnlyList<object[]> KeyboardData = new[]
+	public static IReadOnlyList<object[]> NonDefaultKeyboardData { get; } = new[]
 	{
 		new[] { Keyboard.Plain },
 		new[] { Keyboard.Numeric },
 		new[] { Keyboard.Chat },
-		new[] { Keyboard.Email },
 		new[] { Keyboard.Telephone },
 		new[] { Keyboard.Text },
 		new[] { Keyboard.Url },
@@ -90,6 +89,12 @@ public class EmailValidationBehavior_Tests : BaseTest
 
 		// Assert
 		Assert.Equal(Keyboard.Email, entry.Keyboard);
+
+		// Act
+		entry.Behaviors.Remove(behavior);
+
+		// Assert
+		Assert.Equal(Keyboard.Default, entry.Keyboard);
 	}
 
 	[Fact]
@@ -108,11 +113,17 @@ public class EmailValidationBehavior_Tests : BaseTest
 
 		// Assert
 		Assert.Equal(Keyboard.Email, editor.Keyboard);
+
+		// Act
+		editor.Behaviors.Remove(behavior);
+
+		// Assert
+		Assert.Equal(Keyboard.Default, editor.Keyboard);
 	}
 
 	[Theory]
-	[MemberData(nameof(KeyboardData))]
-	public void EnsureEntryKeyboardNotOverwrittenWhenAttached(Keyboard keyboard)
+	[MemberData(nameof(NonDefaultKeyboardData))]
+	public void EnsureEntryKeyboardNotOverwritten(Keyboard keyboard)
 	{
 		// Arrange
 		var behavior = new EmailValidationBehavior();
@@ -128,11 +139,17 @@ public class EmailValidationBehavior_Tests : BaseTest
 
 		// Assert
 		Assert.Equal(keyboard, entry.Keyboard);
+
+		// Act
+		entry.Behaviors.Remove(behavior);
+
+		// Assert
+		Assert.Equal(keyboard, entry.Keyboard);
 	}
 
 	[Theory]
-	[MemberData(nameof(KeyboardData))]
-	public void EnsureEditorrEmailKeyboardWhenDefaultKeyboardAssigned(Keyboard keyboard)
+	[MemberData(nameof(NonDefaultKeyboardData))]
+	public void EnsureEditorEmailKeyboardNotOverwritten(Keyboard keyboard)
 	{
 		// Arrange
 		var behavior = new EmailValidationBehavior();
@@ -145,6 +162,12 @@ public class EmailValidationBehavior_Tests : BaseTest
 
 		// Act 
 		editor.Behaviors.Add(behavior);
+
+		// Assert
+		Assert.Equal(keyboard, editor.Keyboard);
+
+		// Act
+		editor.Behaviors.Remove(behavior);
 
 		// Assert
 		Assert.Equal(keyboard, editor.Keyboard);
