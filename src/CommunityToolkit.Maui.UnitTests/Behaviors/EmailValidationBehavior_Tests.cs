@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Behaviors;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
