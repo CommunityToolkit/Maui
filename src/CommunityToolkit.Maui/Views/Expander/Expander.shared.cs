@@ -1,179 +1,235 @@
 ﻿using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
+using Microsoft.Maui.Graphics;
+using static System.Math;
 
 namespace CommunityToolkit.Maui.Views;
 
-/// <summary>
-/// Allows collapse and expand content.
-/// </summary>
-public class Expander : View, IExpander
+[ContentProperty(nameof(Content))]
+public class Expander : Grid, IExpander
 {
-	readonly WeakEventManager expandedChangedEventManager = new();
-	readonly List<Cell> cellParents = new();
+	IGestureRecognizer tapGestureRecognizer;
+	
+	const string expandAnimationName = nameof(expandAnimationName);
 
-	/// <summary>
-	/// Initializes a new instance of the <see cref="Expander"/> class.
-	/// </summary>
+	const uint defaultAnimationLength = 250;
+
+	readonly WeakEventManager tappedEventManager = new();
+
 	public Expander()
 	{
-		Unloaded += OnExpanderUnloaded;
+		tapGestureRecognizer = new TapGestureRecognizer()
+		{
+			Command = new Command(() =>
+			{
+				IsExpanded = !IsExpanded;
+				((IExpander)this).ExpandedChanged(IsExpanded);
+			})
+		};
 	}
 
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="Header"/> property.
-	/// </summary>
-	public static readonly BindableProperty HeaderProperty = BindableProperty.Create(nameof(Header), typeof(IView), typeof(Expander));
+	public event EventHandler<Core.ExpandedChangedEventArgs> ExpandedChanged
+	{
+		add => tappedEventManager.AddEventHandler(value);
+		remove => tappedEventManager.RemoveEventHandler(value);
+	}
 
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="Content"/> property.
-	/// </summary>
-	public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(IView), typeof(Expander));
+	public static readonly BindableProperty HeaderProperty
+		= BindableProperty.Create(nameof(Header), typeof(IView), typeof(Expander), propertyChanged: OnHeaderPropertyChanged);
 
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="IsExpanded"/> property.
-	/// </summary>
-	public static readonly BindableProperty IsExpandedProperty = BindableProperty.Create(nameof(IsExpanded), typeof(bool), typeof(Expander));
+	public static readonly BindableProperty ContentProperty
+		= BindableProperty.Create(nameof(Content), typeof(IView), typeof(Expander), propertyChanged: OnContentPropertyChanged);
 
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="Direction"/> property.
-	/// </summary>
-	public static readonly BindableProperty DirectionProperty = BindableProperty.Create(nameof(Direction), typeof(ExpandDirection), typeof(Expander));
+	public static readonly BindableProperty IsExpandedProperty
+		= BindableProperty.Create(nameof(IsExpanded), typeof(bool), typeof(Expander), default(bool), BindingMode.TwoWay, propertyChanged: OnIsExpandedPropertyChanged);
 
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="CommandParameter"/> property.
-	/// </summary>
-	public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(Expander));
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="Command"/> property.
-	/// </summary>
-	public static readonly BindableProperty CommandProperty = BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(Expander));
+	public static readonly BindableProperty DirectionProperty
+		= BindableProperty.Create(nameof(Direction), typeof(ExpandDirection), typeof(Expander), default(ExpandDirection), propertyChanged: OnDirectionPropertyChanged);
 	
-	/// <summary>
-	/// Event occurred when IsExpanded changed.
-	/// </summary>
-	public event EventHandler<ExpandedChangedEventArgs> ExpandedChanged
-	{
-		add => expandedChangedEventManager.AddEventHandler(value);
-		remove => expandedChangedEventManager.RemoveEventHandler(value);
-	}
+	public static readonly BindableProperty AnimationLengthProperty
+		= BindableProperty.Create(nameof(AnimationLength), typeof(uint), typeof(Expander), defaultAnimationLength);
 
-	/// <summary>
-	/// The <see cref="IView"/> that is used to show header of the <see cref="Expander"/>. This is a bindable property.
-	/// </summary>
-	public IView Header
+	public static readonly BindableProperty AnimationEasingProperty
+		= BindableProperty.Create(nameof(AnimationEasing), typeof(Easing), typeof(Expander));
+
+	public static readonly BindableProperty CommandParameterProperty
+		= BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(Expander));
+
+	public static readonly BindableProperty CommandProperty
+		= BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(Expander));
+
+	public IView? Header
 	{
-		get => (IView)GetValue(HeaderProperty);
+		get => (IView?)GetValue(HeaderProperty);
 		set => SetValue(HeaderProperty, value);
 	}
 
-	/// <summary>
-	/// The <see cref="IView"/> that is used to show content of the <see cref="Expander"/>. This is a bindable property.
-	/// </summary>
-	public IView Content
+	public IView? Content
 	{
-		get => (IView)GetValue(ContentProperty);
+		get => (IView?)GetValue(ContentProperty);
 		set => SetValue(ContentProperty, value);
 	}
 
-	/// <summary>
-	/// True if <see cref="Expander"/> is expanded. This is a bindable property.
-	/// </summary>
 	public bool IsExpanded
 	{
 		get => (bool)GetValue(IsExpandedProperty);
 		set => SetValue(IsExpandedProperty, value);
 	}
 
-	/// <summary>
-	/// The <see cref="ExpandDirection"/> that is used to define expand direction of the <see cref="Expander"/>. This is a bindable property.
-	/// </summary>
 	public ExpandDirection Direction
 	{
 		get => (ExpandDirection)GetValue(DirectionProperty);
 		set => SetValue(DirectionProperty, value);
 	}
 
-	/// <summary>
-	/// Command parameter. This is a bindable property.
-	/// </summary>
+	void IExpander.ExpandedChanged(bool isExpanded)
+	{
+		if (Command is not null && Command.CanExecute(CommandParameter))
+		{
+			Command.Execute(CommandParameter);
+		}
+
+		tappedEventManager.HandleEvent(this, new Core.ExpandedChangedEventArgs(isExpanded), nameof(ExpandedChanged));
+	}
+
+	public uint AnimationLength
+	{
+		get => (uint)GetValue(AnimationLengthProperty);
+		set => SetValue(AnimationLengthProperty, value);
+	}
+
+	public Easing AnimationEasing
+	{
+		get => (Easing)GetValue(AnimationEasingProperty);
+		set => SetValue(AnimationEasingProperty, value);
+	}
+
 	public object? CommandParameter
 	{
 		get => GetValue(CommandParameterProperty);
 		set => SetValue(CommandParameterProperty, value);
 	}
 
-	/// <summary>
-	/// Command is executed on IsExpanded changed. This is a bindable property.
-	/// </summary>
 	public ICommand? Command
 	{
 		get => (ICommand?)GetValue(CommandProperty);
 		set => SetValue(CommandProperty, value);
 	}
 
-	void OnExpanderUnloaded(object? sender, EventArgs e)
+	static void OnHeaderPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		=> ((Expander)bindable).Configure();
+
+	static void OnContentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		=> ((Expander)bindable).Configure();
+
+	static void OnIsExpandedPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		=> ((Expander)bindable).Configure();
+
+	static void OnDirectionPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		=> ((Expander)bindable).Configure();
+
+	void Configure()
 	{
-		Unloaded -= OnExpanderUnloaded;
-		Handler?.DisconnectHandler();
-	}
-
-	/// <inheritdoc />
-	protected override void OnBindingContextChanged()
-	{
-		base.OnBindingContextChanged();
-		((View)Header).BindingContext = BindingContext;
-		((View)Content).BindingContext = BindingContext;
-	}
-
-#if IOS || MACCATALYST
-	/// <inheritdoc />
-	protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
-	{
-		var headerSize = Header.Measure(widthConstraint, heightConstraint);
-		if (IsExpanded)
-		{
-			var contentSize = Content.Measure(widthConstraint, heightConstraint);
-			return new Size(Math.Max(headerSize.Width, contentSize.Width), headerSize.Height + contentSize.Height);
-		}
-
-		return headerSize;
-	}
-#endif
-
-	void IExpander.ExpandedChanged(bool isExpanded)
-	{ 
-		expandedChangedEventManager.HandleEvent(this, new ExpandedChangedEventArgs(isExpanded), nameof(ExpandedChanged));
-		Command?.Execute(CommandParameter);
-		DetectParentCells();
-		foreach (var cell in cellParents)
-		{
-			cell.ForceUpdateSize();
-		}
-
-#if IOS || MACCATALYST
-		InvalidateMeasure();
-#endif
-
-	}
-
-	void DetectParentCells()
-	{
-		if (cellParents.Count > 0)
+		if (Header is null || Content is null)
 		{
 			return;
 		}
 
-		var parent = Parent;
+		SetGestures();
+		Layout();
+		UpdateSize();
+	}
 
+	void Layout()
+	{
+		Children.Clear();
+		Children.Add(Header);
+		RowDefinitions.Clear();
+		ColumnDefinitions.Clear();
+		switch (Direction)
+		{
+			case ExpandDirection.Down:
+				RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+				SetRow(Header, 0);
+				if (IsExpanded)
+				{
+					Children.Add(Content);
+					RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+					SetRow(Content, 1);
+				}
+				break;
+			case ExpandDirection.Up:
+				if (IsExpanded)
+				{
+					Children.Add(Content);
+					RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+					SetRow(Content, 0);
+					RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+					SetRow(Header, 1);
+				}
+				else
+				{
+					RowDefinitions.Add(new RowDefinition());
+					SetRow(Header, 0);
+				}
+				break;
+			case ExpandDirection.Left:
+				if (IsExpanded)
+				{
+					Children.Add(Content);
+					ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
+					SetColumn(Content, 0);
+					ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
+					SetColumn(Header, 1);
+				}
+				else
+				{
+					ColumnDefinitions.Add(new ColumnDefinition());
+					SetColumn(Header, 0);
+				}
+				break;
+			case ExpandDirection.Right:
+				if (IsExpanded)
+				{
+					Children.Add(Content);
+					ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
+					SetColumn(Header, 0);
+					ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
+					SetColumn(Content, 1);
+				}
+				else
+				{
+					ColumnDefinitions.Add(new ColumnDefinition());
+					SetColumn(Header, 0);
+				}
+				break;
+		}
+	}
+
+	void UpdateSize()
+	{ 
+		var parent = Parent;
 		while (parent is not null)
 		{
 			if (parent is Cell cell)
 			{
-				cellParents.Add(cell);
+				cell.ForceUpdateSize();
+			}
+
+			if (parent is CollectionView collectionView)
+			{
+				collectionView.InvalidateMeasureInternal(Microsoft.Maui.Controls.Internals.InvalidationTrigger.MeasureChanged);
 			}
 
 			parent = parent.Parent;
 		}
+	}
+
+	void SetGestures()
+	{
+		var header = Header as View;
+		header?.GestureRecognizers.Remove(tapGestureRecognizer);
+		header?.GestureRecognizers.Add(tapGestureRecognizer);
 	}
 }

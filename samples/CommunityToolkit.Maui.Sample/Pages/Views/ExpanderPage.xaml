@@ -19,25 +19,11 @@
                 <mct:Expander.Header>
                     <Label Text="Level 0"/>
                 </mct:Expander.Header>
-                <mct:Expander.Content>
                     <VerticalStackLayout>
                         <Label Text="Item 1"/>
                         <Label Text="Item 2"/>
                     </VerticalStackLayout>
-                </mct:Expander.Content>
             </mct:Expander>
-            <Label Text="Simple expander (shared)" />
-            <mct:Expander2>
-                <mct:Expander2.Header>
-                    <Label Text="Level 0"/>
-                </mct:Expander2.Header>
-                <mct:Expander2.Content>
-                    <VerticalStackLayout>
-                        <Label Text="Item 1"/>
-                        <Label Text="Item 2"/>
-                    </VerticalStackLayout>
-                </mct:Expander2.Content>
-            </mct:Expander2>
             
             <Label Text="Multi-level expander" />
             <mct:Expander IsExpanded="True" Direction="Up">
@@ -45,7 +31,7 @@
                     <Label Text="Level 0"/>
                 </mct:Expander.Header>
                 <mct:Expander.Content>
-                    <mct:Expander>
+                    <mct:Expander Direction="Left">
                         <mct:Expander.Header>
                             <Label Text="Level 1"/>
                         </mct:Expander.Header>
@@ -56,21 +42,6 @@
                 </mct:Expander.Content>
             </mct:Expander>
             <Label Text="Multi-level expander (shared)" />
-            <mct:Expander2 IsExpanded="True" Direction="Up">
-                <mct:Expander2.Header>
-                    <Label Text="Level 0"/>
-                </mct:Expander2.Header>
-                <mct:Expander2.Content>
-                    <mct:Expander2>
-                        <mct:Expander2.Header>
-                            <Label Text="Level 1"/>
-                        </mct:Expander2.Header>
-                        <mct:Expander2.Content>
-                            <Label Text="Level 2" />
-                        </mct:Expander2.Content>
-                    </mct:Expander2>
-                </mct:Expander2.Content>
-            </mct:Expander2>
             
             <Label Text="Expander in ListView" />
             <ListView ItemsSource="{Binding ContentCreators}">
@@ -95,29 +66,6 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <Label Text="Expander (shared) in ListView" />
-            <ListView ItemsSource="{Binding ContentCreators}">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <ViewCell>
-                            <mct:Expander2 x:DataType="viewModels:ContentCreator"
-                                          ExpandedChanged="Expander_ExpandedChanged">
-                                <mct:Expander2.Header>
-                                    <Label Text="{Binding Name}"/>
-                                </mct:Expander2.Header>
-                                <mct:Expander2.Content>
-                                    <VerticalStackLayout>
-                                        <Label Text="{Binding Resource}"/>
-                                        <Image Source="{Binding Image}"
-                                               WidthRequest="100"
-                                               HeightRequest="100"/>
-                                    </VerticalStackLayout>
-                                </mct:Expander2.Content>
-                            </mct:Expander2>
-                        </ViewCell>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
 
             <Label Text="Expander in CollectionView" />
             <CollectionView ItemsSource="{Binding ContentCreators}">
@@ -130,34 +78,13 @@
                             </mct:Expander.Header>
                             <mct:Expander.Content>
                                 <VerticalStackLayout>
-                                    <Label Text="{Binding Resource}"/>
+                                    <Label Text="{Binding Resource}" HorizontalOptions="Center"/>
                                     <Image Source="{Binding Image}"
                                                WidthRequest="100"
                                                HeightRequest="100"/>
                                 </VerticalStackLayout>
                             </mct:Expander.Content>
                         </mct:Expander>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-            <Label Text="Expander (shared) in CollectionView" />
-            <CollectionView ItemsSource="{Binding ContentCreators}">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <mct:Expander2 x:DataType="viewModels:ContentCreator"
-                                      ExpandedChanged="Expander_ExpandedChanged">
-                            <mct:Expander2.Header>
-                                <Label Text="{Binding Name}"/>
-                            </mct:Expander2.Header>
-                            <mct:Expander2.Content>
-                                <VerticalStackLayout>
-                                    <Label Text="{Binding Resource}"/>
-                                    <Image Source="{Binding Image}"
-                                               WidthRequest="100"
-                                               HeightRequest="100"/>
-                                </VerticalStackLayout>
-                            </mct:Expander2.Content>
-                        </mct:Expander2>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>

@@ -11,6 +11,7 @@ public partial class ExpanderViewModel : BaseViewModel
 	{
 		ContentCreators.Add(new ContentCreator("Brandon Minnick", "https://codetraveler.io/", "https://avatars.githubusercontent.com/u/13558917"));
 		ContentCreators.Add(new ContentCreator("Gerald Versluis", "https://blog.verslu.is/", "https://avatars.githubusercontent.com/u/939291"));
+		ContentCreators.Add(new ContentCreator("Kym Phillpotts", "https://kymphillpotts.com", "https://avatars.githubusercontent.com/u/1327346"));
 		ContentCreators.Add(new ContentCreator("Pedro Jesus", "https://github.com/pictos", "https://avatars.githubusercontent.com/u/20712372"));
 		ContentCreators.Add(new ContentCreator("Shaun Lawrence", "https://github.com/bijington", "https://avatars.githubusercontent.com/u/17139988"));
 		ContentCreators.Add(new ContentCreator("Vladislav Antonyuk", "https://vladislavantonyuk.azurewebsites.net", "https://avatars.githubusercontent.com/u/33021114"));

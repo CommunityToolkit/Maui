@@ -14,67 +14,7 @@ public class ExpanderTests : BaseHandlerTest
 	{
 		new Maui.Views.Expander().Should().BeAssignableTo<IExpander>();
 	}
-
-	[Fact]
-	public void GetRequiredServiceThrowsOnNoContext()
-	{
-		var handlerStub = new MockExpanderHandler();
-
-		(handlerStub as IElementHandler).MauiContext.Should().BeNull();
-
-		var ex = Assert.Throws<InvalidOperationException>(() => handlerStub.GetRequiredService<IExpander>());
-
-		ex.Message.Should().Be("Unable to find the context. The MauiContext property should have been set by the host.");
-	}
 	
-	[Fact]
-	public void HeaderMapperIsCalled()
-	{
-		var expanderHandler = CreateViewHandler<MockExpanderHandler>(expander);
-		expander.Handler.Should().NotBeNull();
-
-		expanderHandler.MapHeaderCount.Should().Be(1);
-
-		expander.Header = new Label();
-		expanderHandler.MapHeaderCount.Should().Be(2);
-	}
-
-	[Fact]
-	public void IsExpandedMapperIsCalled()
-	{
-		var expanderHandler = CreateViewHandler<MockExpanderHandler>(expander);
-		expander.Handler.Should().NotBeNull();
-
-		expanderHandler.MapIsExpandedCount.Should().Be(1);
-
-		expander.IsExpanded = true;
-		expanderHandler.MapIsExpandedCount.Should().Be(2);
-	}
-
-	[Fact]
-	public void ContentMapperIsCalled()
-	{
-		var expanderHandler = CreateViewHandler<MockExpanderHandler>(expander);
-		expander.Handler.Should().NotBeNull();
-
-		expanderHandler.MapContentCount.Should().Be(1);
-
-		expander.Content = new Label();
-		expanderHandler.MapContentCount.Should().Be(2);
-	}
-
-	[Fact]
-	public void DirectionMapperIsCalled()
-	{
-		var expanderHandler = CreateViewHandler<MockExpanderHandler>(expander);
-		expander.Handler.Should().NotBeNull();
-
-		expanderHandler.MapDirectionCount.Should().Be(1);
-
-		expander.Direction = ExpandDirection.Up;
-		expanderHandler.MapDirectionCount.Should().Be(2);
-	}
-
 	[Fact]
 	public void CheckDefaultValues()
 	{
@@ -84,7 +24,7 @@ public class ExpanderTests : BaseHandlerTest
 			IsExpanded = false
 		};
 
-		expander.Should().BeEquivalentTo(expectedDefaultValue, config => config.Excluding(ctx => ctx.Id));
+		expander.Should().BeEquivalentTo(expectedDefaultValue);
 	}
 	
 	[Theory]

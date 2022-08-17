@@ -13,5 +13,15 @@ public enum ExpandDirection
 	/// <summary>
 	/// Expander expands up
 	/// </summary>
-	Up
+	Up,
+	
+	/// <summary>
+	/// Expander expands left
+	/// </summary>
+	Left,
+	
+	/// <summary>
+	/// Expander expands right
+	/// </summary>
+	Right
 }
