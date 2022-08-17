@@ -66,6 +66,20 @@ public class ColorToCmykaStringConverter_Tests : BaseTest
 	}
 
 	[Fact]
+	public void ColorToRgbStringConverterCultureTest()
+	{
+		var expectedResult = "CMYKA(0%,0%,0%,100%,0,5)";
+		var converter = new ColorToCmykaStringConverter();
+		var color = new Color(0, 0, 0, 0.5f);
+
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, new System.Globalization.CultureInfo("uk-UA"));
+		var resultConvertFrom = converter.ConvertFrom(color, new System.Globalization.CultureInfo("uk-UA"));
+
+		Assert.Equal(expectedResult, resultConvert);
+		Assert.Equal(expectedResult, resultConvertFrom);
+	}
+
+	[Fact]
 	public void ColorToCmykaStringConverterNullInputTest()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.

@@ -65,6 +65,20 @@ public class ColorToHslaStringConverter_Tests : BaseTest
 	}
 
 	[Fact]
+	public void ColorToRgbStringConverterCultureTest()
+	{
+		var expectedResult = "HSLA(0,0%,0%,0,5)";
+		var converter = new ColorToHslaStringConverter();
+		var color = new Color(0, 0, 0, 0.5f);
+
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, new System.Globalization.CultureInfo("uk-UA"));
+		var resultConvertFrom = converter.ConvertFrom(color, new System.Globalization.CultureInfo("uk-UA"));
+
+		Assert.Equal(expectedResult, resultConvert);
+		Assert.Equal(expectedResult, resultConvertFrom);
+	}
+
+	[Fact]
 	public void ColorToRgbStringConverterNullInputTest()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
