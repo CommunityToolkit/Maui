@@ -1,4 +1,4 @@
-﻿using System.Windows.Input;
+using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Graphics;
@@ -10,10 +10,6 @@ namespace CommunityToolkit.Maui.Views;
 public class Expander : Grid, IExpander
 {
 	IGestureRecognizer tapGestureRecognizer;
-
-	const string expandAnimationName = nameof(expandAnimationName);
-
-	const uint defaultAnimationLength = 250;
 
 	readonly WeakEventManager tappedEventManager = new();
 
@@ -46,12 +42,6 @@ public class Expander : Grid, IExpander
 
 	public static readonly BindableProperty DirectionProperty
 		= BindableProperty.Create(nameof(Direction), typeof(ExpandDirection), typeof(Expander), default(ExpandDirection), propertyChanged: OnDirectionPropertyChanged);
-
-	public static readonly BindableProperty AnimationLengthProperty
-		= BindableProperty.Create(nameof(AnimationLength), typeof(uint), typeof(Expander), defaultAnimationLength);
-
-	public static readonly BindableProperty AnimationEasingProperty
-		= BindableProperty.Create(nameof(AnimationEasing), typeof(Easing), typeof(Expander));
 
 	public static readonly BindableProperty CommandParameterProperty
 		= BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(Expander));
@@ -91,18 +81,6 @@ public class Expander : Grid, IExpander
 		}
 
 		tappedEventManager.HandleEvent(this, new Core.ExpandedChangedEventArgs(isExpanded), nameof(ExpandedChanged));
-	}
-
-	public uint AnimationLength
-	{
-		get => (uint)GetValue(AnimationLengthProperty);
-		set => SetValue(AnimationLengthProperty, value);
-	}
-
-	public Easing AnimationEasing
-	{
-		get => (Easing)GetValue(AnimationEasingProperty);
-		set => SetValue(AnimationEasingProperty, value);
 	}
 
 	public object? CommandParameter
