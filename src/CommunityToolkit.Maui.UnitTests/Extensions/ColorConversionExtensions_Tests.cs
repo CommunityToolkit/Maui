@@ -376,7 +376,7 @@ public class ColorConversionExtensions_Tests
 	[MemberData(nameof(ColorTestData))]
 	public void ToHslaString(ColorTestDefinition testDef)
 	{
-		var result = testDef.Color.ToHslaString(new System.Globalization.CultureInfo("en-US"));
+		var result = testDef.Color.ToHslaString();
 
 		Assert.Equal(testDef.ExpectedHslaString, result);
 	}
