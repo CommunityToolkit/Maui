@@ -14,7 +14,7 @@ public class ExpanderTests : BaseHandlerTest
 	{
 		new Maui.Views.Expander().Should().BeAssignableTo<IExpander>();
 	}
-	
+
 	[Fact]
 	public void CheckDefaultValues()
 	{
@@ -26,7 +26,7 @@ public class ExpanderTests : BaseHandlerTest
 
 		expander.Should().BeEquivalentTo(expectedDefaultValue);
 	}
-	
+
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
@@ -40,7 +40,7 @@ public class ExpanderTests : BaseHandlerTest
 
 		isExpanded.Should().Be(expectedIsExpanded);
 	}
-	
+
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]

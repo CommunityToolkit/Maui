@@ -12,7 +12,7 @@ public partial class ExpanderPage : BasePage<ExpanderViewModel>
 
 	async void Expander_ExpandedChanged(object sender, Core.ExpandedChangedEventArgs e)
 	{
-		var collapsedText = e.IsExpanded ? "expanded":"collapsed";
+		var collapsedText = e.IsExpanded ? "expanded" : "collapsed";
 		await Toast.Make($"Expander is {collapsedText}").Show(CancellationToken.None);
 	}
 

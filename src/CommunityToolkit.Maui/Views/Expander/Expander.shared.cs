@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Views;
 public class Expander : Grid, IExpander
 {
 	IGestureRecognizer tapGestureRecognizer;
-	
+
 	const string expandAnimationName = nameof(expandAnimationName);
 
 	const uint defaultAnimationLength = 250;
@@ -46,7 +46,7 @@ public class Expander : Grid, IExpander
 
 	public static readonly BindableProperty DirectionProperty
 		= BindableProperty.Create(nameof(Direction), typeof(ExpandDirection), typeof(Expander), default(ExpandDirection), propertyChanged: OnDirectionPropertyChanged);
-	
+
 	public static readonly BindableProperty AnimationLengthProperty
 		= BindableProperty.Create(nameof(AnimationLength), typeof(uint), typeof(Expander), defaultAnimationLength);
 
@@ -208,7 +208,7 @@ public class Expander : Grid, IExpander
 	}
 
 	void UpdateSize()
-	{ 
+	{
 		var parent = Parent;
 		while (parent is not null)
 		{
