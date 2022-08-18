@@ -94,6 +94,7 @@ public static class MauiProgram
 		services.AddTransient<IntToBoolConverterPage, IntToBoolConverterViewModel>();
 		services.AddTransient<InvertedBoolConverterPage, InvertedBoolConverterViewModel>();
 		services.AddTransient<IsEqualConverterPage, IsEqualConverterViewModel>();
+		services.AddTransient<IsInRangeConverterPage, IsInRangeConverterViewModel>();
 		services.AddTransient<IsListNotNullOrEmptyConverterPage, IsListNotNullOrEmptyConverterViewModel>();
 		services.AddTransient<IsListNullOrEmptyConverterPage, IsListNullOrEmptyConverterViewModel>();
 		services.AddTransient<IsNotEqualConverterPage, IsNotEqualConverterViewModel>();
