@@ -139,7 +139,7 @@ public class Expander : StackLayout, IExpander
 
 	void Configure()
 	{
-		if (Header is null || Content is null)
+		if (Header is null)
 		{
 			return;
 		}
@@ -157,14 +157,14 @@ public class Expander : StackLayout, IExpander
 			case ExpandDirection.Down:
 				Orientation = StackOrientation.Vertical;
 				Children.Add(Header);
-				if (IsExpanded)
+				if (IsExpanded && Content is not null)
 				{
 					Children.Add(Content);
 				}
 				break;
 			case ExpandDirection.Up:
 				Orientation = StackOrientation.Vertical;
-				if (IsExpanded)
+				if (IsExpanded && Content is not null)
 				{
 					Children.Add(Content);
 				}
@@ -173,7 +173,7 @@ public class Expander : StackLayout, IExpander
 				break;
 			case ExpandDirection.Left:
 				Orientation = StackOrientation.Horizontal;
-				if (IsExpanded)
+				if (IsExpanded && Content is not null)
 				{
 					Children.Add(Content);
 				}
@@ -183,7 +183,7 @@ public class Expander : StackLayout, IExpander
 			case ExpandDirection.Right:
 				Orientation = StackOrientation.Horizontal;
 				Children.Add(Header);
-				if (IsExpanded)
+				if (IsExpanded && Content is not null)
 				{
 					Children.Add(Content);
 				}

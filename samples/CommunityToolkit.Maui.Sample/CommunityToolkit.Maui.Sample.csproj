@@ -64,7 +64,7 @@
     <RuntimeIdentifiers>android-arm;android-arm64;android-x86;android-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
-  <PropertyGroup  Condition="$([MSBuild]::IsOSPlatform('windows'))=='false' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='maccatalyst' and $(Configuration) == 'Debug'">
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))=='false' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='maccatalyst' and $(Configuration) == 'Debug'">
     <RuntimeIdentifiers>maccatalyst-arm64;maccatalyst-x64</RuntimeIdentifiers>
   </PropertyGroup>
   
