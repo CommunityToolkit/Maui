@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.Views;
+﻿namespace CommunityToolkit.Maui.ImageSources;
 
 using System.Diagnostics;
 using System.Security.Cryptography;

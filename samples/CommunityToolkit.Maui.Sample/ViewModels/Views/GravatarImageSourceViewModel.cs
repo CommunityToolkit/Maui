@@ -1,6 +1,6 @@
 ﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-using CommunityToolkit.Maui.Views;
+using CommunityToolkit.Maui.ImageSources;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 public partial class GravatarImageSourceViewModel : BaseViewModel
