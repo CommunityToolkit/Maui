@@ -1,15 +1,12 @@
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Extensions;
-using Microsoft.Maui.Graphics;
-using static System.Math;
 
 namespace CommunityToolkit.Maui.Views;
 
 [ContentProperty(nameof(Content))]
-public class Expander : Grid, IExpander
+public class Expander : StackLayout, IExpander
 {
-	IGestureRecognizer tapGestureRecognizer;
+	readonly IGestureRecognizer tapGestureRecognizer;
 
 	readonly WeakEventManager tappedEventManager = new();
 
@@ -25,7 +22,7 @@ public class Expander : Grid, IExpander
 		};
 	}
 
-	public event EventHandler<Core.ExpandedChangedEventArgs> ExpandedChanged
+	public event EventHandler<ExpandedChangedEventArgs> ExpandedChanged
 	{
 		add => tappedEventManager.AddEventHandler(value);
 		remove => tappedEventManager.RemoveEventHandler(value);
@@ -122,65 +119,42 @@ public class Expander : Grid, IExpander
 	void Layout()
 	{
 		Children.Clear();
-		Children.Add(Header);
-		RowDefinitions.Clear();
-		ColumnDefinitions.Clear();
 		switch (Direction)
 		{
 			case ExpandDirection.Down:
-				RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-				SetRow(Header, 0);
+				Orientation = StackOrientation.Vertical;
+				Children.Add(Header);
 				if (IsExpanded)
 				{
 					Children.Add(Content);
-					RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-					SetRow(Content, 1);
 				}
 				break;
 			case ExpandDirection.Up:
+				Orientation = StackOrientation.Vertical;
 				if (IsExpanded)
 				{
 					Children.Add(Content);
-					RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-					SetRow(Content, 0);
-					RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-					SetRow(Header, 1);
 				}
-				else
-				{
-					RowDefinitions.Add(new RowDefinition());
-					SetRow(Header, 0);
-				}
+
+				Children.Add(Header);
 				break;
 			case ExpandDirection.Left:
+				Orientation = StackOrientation.Horizontal;
 				if (IsExpanded)
 				{
 					Children.Add(Content);
-					ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
-					SetColumn(Content, 0);
-					ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
-					SetColumn(Header, 1);
 				}
-				else
-				{
-					ColumnDefinitions.Add(new ColumnDefinition());
-					SetColumn(Header, 0);
-				}
+
+				Children.Add(Header);
 				break;
 			case ExpandDirection.Right:
+				Orientation = StackOrientation.Horizontal;
+				Children.Add(Header);
 				if (IsExpanded)
 				{
 					Children.Add(Content);
-					ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
-					SetColumn(Header, 0);
-					ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
-					SetColumn(Content, 1);
 				}
-				else
-				{
-					ColumnDefinitions.Add(new ColumnDefinition());
-					SetColumn(Header, 0);
-				}
+
 				break;
 		}
 	}
@@ -190,14 +164,14 @@ public class Expander : Grid, IExpander
 		var parent = Parent;
 		while (parent is not null)
 		{
-			if (parent is Cell cell)
+			switch (parent)
 			{
-				cell.ForceUpdateSize();
-			}
-
-			if (parent is CollectionView collectionView)
-			{
-				collectionView.InvalidateMeasureInternal(Microsoft.Maui.Controls.Internals.InvalidationTrigger.MeasureChanged);
+				case Cell cell:
+					cell.ForceUpdateSize();
+					break;
+				case CollectionView collectionView:
+					collectionView.InvalidateMeasureInternal(Microsoft.Maui.Controls.Internals.InvalidationTrigger.MeasureChanged);
+					break;
 			}
 
 			parent = parent.Parent;
