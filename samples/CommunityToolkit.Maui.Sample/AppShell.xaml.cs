@@ -3,12 +3,14 @@ using CommunityToolkit.Maui.Sample.Pages.Alerts;
 using CommunityToolkit.Maui.Sample.Pages.Behaviors;
 using CommunityToolkit.Maui.Sample.Pages.Converters;
 using CommunityToolkit.Maui.Sample.Pages.Extensions;
+using CommunityToolkit.Maui.Sample.Pages.ImageSources;
 using CommunityToolkit.Maui.Sample.Pages.Layouts;
 using CommunityToolkit.Maui.Sample.Pages.Views;
 using CommunityToolkit.Maui.Sample.ViewModels;
 using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
+using CommunityToolkit.Maui.Sample.ViewModels.ImageSources;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
@@ -78,6 +80,9 @@ public partial class AppShell : Shell
 		// Add Extensions View Models
 		CreateViewModelMapping<ColorAnimationExtensionsPage, ColorAnimationExtensionsViewModel, ExtensionsGalleryPage, ExtensionsGalleryViewModel>(),
 
+		// Add ImageSources View Models
+		CreateViewModelMapping<GravatarImageSourcePage, GravatarImageSourceViewModel, ImageSourcesGalleryPage, ImageSourcesGalleryViewModel>(),
+
 		// Add Layouts View Models
 		CreateViewModelMapping<UniformItemsLayoutPage, UniformItemsLayoutViewModel, LayoutsGalleryPage, LayoutsGalleryViewModel>(),
 
@@ -94,7 +99,6 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<AvatarViewShapesPage, AvatarViewShapesViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<AvatarViewSizesPage, AvatarViewSizesViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<DrawingViewPage, DrawingViewViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
-		CreateViewModelMapping<GravatarImageSourcePage, GravatarImageSourceViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<MultiplePopupPage, MultiplePopupViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<PopupAnchorPage, PopupAnchorViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<PopupPositionPage, PopupPositionViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),

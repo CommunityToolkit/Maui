@@ -1,6 +1,6 @@
-namespace CommunityToolkit.Maui.Sample.Pages.Views;
+namespace CommunityToolkit.Maui.Sample.Pages.ImageSources;
 
-using CommunityToolkit.Maui.Sample.ViewModels.Views;
+using CommunityToolkit.Maui.Sample.ViewModels.ImageSources;
 
 public partial class GravatarImageSourcePage : BasePage<GravatarImageSourceViewModel>
 {

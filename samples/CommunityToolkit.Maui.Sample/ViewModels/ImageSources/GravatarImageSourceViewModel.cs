@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
+﻿namespace CommunityToolkit.Maui.Sample.ViewModels.ImageSources;
 
 using CommunityToolkit.Maui.ImageSources;
 using CommunityToolkit.Mvvm.ComponentModel;
