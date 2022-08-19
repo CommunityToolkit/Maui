@@ -104,10 +104,5 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Categories\" />
-    <Folder Include="Helpers\" />
-    <Folder Include="Mappings\" />
-  </ItemGroup>
 
 </Project>
