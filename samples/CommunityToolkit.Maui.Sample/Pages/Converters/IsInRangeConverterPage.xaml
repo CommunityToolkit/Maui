@@ -34,6 +34,8 @@
             <x:String x:Key="TimeSpanMaxString">5:37 PM</x:String>
             <x:TimeSpan x:Key="TimeSpanMin">07:37:37</x:TimeSpan>
             <x:TimeSpan x:Key="TimeSpanMax">17:37:37</x:TimeSpan>
+            <x:String x:Key="CharMinString">G</x:String>
+            <x:String x:Key="CharMaxString">L</x:String>
             <x:Char x:Key="CharMin">G</x:Char>
             <x:Char x:Key="CharMax">L</x:Char>
             <SolidColorBrush x:Key="TrueBrush" Color="Green" />
@@ -267,7 +269,6 @@
                         MaxLength="1"
                         SemanticProperties.Description="Enter char to check is if is in range."
                         Text="{Binding StringCharInRange}"
-                        TextChanged="CharText_TextChanged"
                         WidthRequest="200" />
                 </HorizontalStackLayout>
                 <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
@@ -275,9 +276,9 @@
                         <Label.FormattedText>
                             <FormattedString>
                                 <Span Text="In the range of '" />
-                                <Span FontAttributes="Italic" Text="{Binding CharMin}" />
+                                <Span FontAttributes="Italic" Text="{StaticResource CharMinString}" />
                                 <Span Text="' to '" />
-                                <Span FontAttributes="Italic" Text="{Binding CharMax}" />
+                                <Span FontAttributes="Italic" Text="{StaticResource CharMaxString}" />
                                 <Span Text="'" />
                             </FormattedString>
                         </Label.FormattedText>
@@ -285,12 +286,13 @@
                     <Label
                         x:Name="LabelCharInRange"
                         Grid.Column="1"
-                        Padding="4,0" />
+                        Padding="4,0"
+                        Style="{Binding CharIsInRange, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, Min={StaticResource CharMin}, Max={StaticResource CharMax}}}" />
                     <Label Grid.Row="1">
                         <Label.FormattedText>
                             <FormattedString>
                                 <Span Text="Greater than '" />
-                                <Span FontAttributes="Italic" Text="{Binding CharMin}" />
+                                <Span FontAttributes="Italic" Text="{StaticResource CharMinString}" />
                                 <Span Text="'" />
                             </FormattedString>
                         </Label.FormattedText>
@@ -299,12 +301,13 @@
                         x:Name="LabelCharGreater"
                         Grid.Row="1"
                         Grid.Column="1"
-                        Padding="4,0" />
+                        Padding="4,0"
+                        Style="{Binding CharIsInRange, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, Min={StaticResource CharMin}}}" />
                     <Label Grid.Row="2">
                         <Label.FormattedText>
                             <FormattedString>
                                 <Span Text="Less than '" />
-                                <Span FontAttributes="Italic" Text="{Binding CharMax}" />
+                                <Span FontAttributes="Italic" Text="{StaticResource CharMaxString}" />
                                 <Span Text="'" />
                             </FormattedString>
                         </Label.FormattedText>
@@ -313,7 +316,8 @@
                         x:Name="LabelCharLess"
                         Grid.Row="2"
                         Grid.Column="1"
-                        Padding="4,0" />
+                        Padding="4,0"
+                        Style="{Binding CharIsInRange, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, Max={StaticResource CharMax}}}" />
                 </Grid>
             </VerticalStackLayout>
         </ScrollView>

@@ -5,14 +5,20 @@ using CommunityToolkit.Mvvm.ComponentModel;
 public partial class IsInRangeConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	char charMin = 'G';
-
-	[ObservableProperty]
-	char charMax = 'L';
-
-	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(CharIsInRange))]
 	string stringCharInRange = "H";
 
-	public char CharIsInRange => char.Parse(StringCharInRange);
+	public char? CharIsInRange
+	{
+		get
+		{
+			bool success = char.TryParse(StringCharInRange, out char returnChar);
+			if (success)
+			{
+				return returnChar;
+			}
+
+			return (char)0;
+		}
+	}
 }
