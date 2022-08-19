@@ -142,11 +142,6 @@ public class GravatarImageSource : StreamImageSource
 
 	static string GetMd5Hash(ReadOnlySpan<char> str)
 	{
-		if (str.Length is 0)
-		{
-			return string.Empty;
-		}
-
 		using var md5 = MD5.Create();
 		Span<byte> hash = md5.ComputeHash(Encoding.UTF8.GetBytes(str.ToArray()));
 		return BitConverter.ToString(hash.ToArray(), 0, hash.Length).Replace("-", string.Empty, StringComparison.OrdinalIgnoreCase).ToLowerInvariant();

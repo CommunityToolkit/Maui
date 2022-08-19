@@ -65,6 +65,7 @@ public class GravatarImageSourceTests : BaseHandlerTest
 	{
 		var gravatarImageSource = new GravatarImageSource()
 		{
+			Email = email,
 			Image = DefaultImage.FileNotFound,
 		};
 		Assert.Equal(DefaultImage.FileNotFound, gravatarImageSource.Image);
@@ -476,6 +477,25 @@ public class GravatarImageSourceTests : BaseHandlerTest
 		};
 		Assert.True(testControl.TitleIcon is GravatarImageSource);
 		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.TitleIcon).Uri);
+	}
+
+	[Fact]
+	public async Task TestDefaultStream()
+	{
+		CancellationTokenSource cts = new();
+		var gravatarImageSource = new GravatarImageSource();
+		Stream stream = await gravatarImageSource.Stream(cts.Token);
+		Assert.Equal(2637, stream.Length);
+	}
+
+	[Fact]
+	public async Task TestDefaultStreamCanceled()
+	{
+		CancellationTokenSource cts = new();
+		var gravatarImageSource = new GravatarImageSource();
+		cts.Cancel();
+		Stream stream = await gravatarImageSource.Stream(cts.Token);
+		Assert.Equal(Stream.Null, stream);
 	}
 
 	[Fact]
