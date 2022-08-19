@@ -105,7 +105,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Extensions\OnScreenSizeMarkup" />
     <Folder Include="Categories\" />
     <Folder Include="Helpers\" />
     <Folder Include="Mappings\" />

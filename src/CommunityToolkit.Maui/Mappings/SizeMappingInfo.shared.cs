@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Maui.Core.Primitives;
 
-namespace  CommunityToolkit.Maui.Mappings;
+namespace CommunityToolkit.Maui.Mappings;
 
 /// <summary>
 /// Size mapping info about the screen diagonal-size and the category it falls into.
@@ -18,9 +18,8 @@ public record struct SizeMappingInfo
 		DiagonalSize = diagonalSize;
 		Category = category;
 		ComparisonMode = comparisonMode;
-		
 	}
-	
+
 	/// <summary>
 	/// Determine how a mapping comparison should be performed against the actual diagonal screen size of the device which is running the code.
 	/// </summary>
@@ -30,10 +29,9 @@ public record struct SizeMappingInfo
 	/// Physical/actual diagonal size of the screen in inches.
 	/// </summary>
 	public double DiagonalSize { get; init; }
-	
+
 	/// <summary>
 	/// The category the screen falls into.
 	/// </summary>
 	public ScreenCategories Category { get; init; }
-	
 }

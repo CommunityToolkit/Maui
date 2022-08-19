@@ -5,16 +5,14 @@ using CommunityToolkit.Maui.Extensions;
 namespace CommunityToolkit.Maui.Helpers;
 
 /// <summary>
-/// Helper methods for supporting OnScreenSize on code-behind.
+///     Helper methods for supporting OnScreenSize on code-behind.
 /// </summary>
 public static class OnScreenSizeHelper
 {
-	
-	 internal static ScreenCategories GetCategory()
+	internal static ScreenCategories GetCategory()
 	{
 		if (TryGetCategory(out var category))
 		{
-
 			return category;
 		}
 
@@ -22,9 +20,9 @@ public static class OnScreenSizeHelper
 	}
 
 
-	static bool TryGetCategory(out ScreenCategories category)
+	 static bool TryGetCategory(out ScreenCategories category)
 	{
-		if (OnScreenSizeManager.Current.CurrentCategory != null)
+		if (OnScreenSizeManager.Current.CurrentCategory is not null)
 		{
 			if (OnScreenSizeManager.Current.CurrentCategory.Value != ScreenCategories.NotSet)
 			{
@@ -32,27 +30,33 @@ public static class OnScreenSizeHelper
 				return true;
 			}
 		}
+
 		category = GetCategoryInternal();
 
-		OnScreenSizeManager.Current.CurrentCategory =category;
+		OnScreenSizeManager.Current.CurrentCategory = category;
 		return true;
 	}
 
-	static ScreenCategories GetCategoryInternal()
+	 static ScreenCategories GetCategoryInternal()
 	{
 		if (!TryGetScreenDiagonalInches(out var diagonalSize))
 		{
 			return ScreenCategories.Large;
 		}
 
-		var category = OnScreenSizeManager.Current.Categorizer.GetCategoryByDiagonalSize(OnScreenSizeManager.Current.Mappings, diagonalSize);
+		var category =
+			OnScreenSizeManager.Current.Categorizer.GetCategoryByDiagonalSize(OnScreenSizeManager.Current.Mappings,
+				diagonalSize);
 
-		Debug.WriteLine(string.Format("{0} - Current screen category is \"{1}\", and screen diagonal size is \"{2}\"",nameof(OnScreenSizeExtension),category, diagonalSize));
-            
+		Debug.WriteLine(string.Format("{0} - Current screen category is \"{1}\", and screen diagonal size is \"{2}\"",
+			nameof(OnScreenSizeExtension), category, diagonalSize));
+
 		if (category == ScreenCategories.NotSet)
 		{
-			throw new InvalidOperationException(string.Format("Fail to categorize your current screen. Screen-Diagonal-Size:{0}.", diagonalSize));
+			throw new InvalidOperationException(
+				string.Format("Fail to categorize your current screen. Screen-Diagonal-Size:{0}.", diagonalSize));
 		}
+
 		return category;
 	}
 
@@ -65,21 +69,22 @@ public static class OnScreenSizeHelper
 		}
 
 		var displayInfo = DeviceDisplay.Current.MainDisplayInfo;
-	     
-		diagonslSize = GetScreenDiagonalInches(displayInfo.Width, displayInfo.Height,xdpi, ydpi );
+
+		diagonslSize = GetScreenDiagonalInches(displayInfo.Width, displayInfo.Height, xdpi, ydpi);
 		return true;
 	}
-	 
-	 /// <summary>
-	 /// Returns how many horizontal/vertical pixels-per-inches the current device screen has.
-	 /// </summary>
-	 /// <returns></returns>
+
+	/// <summary>
+	///     Returns how many horizontal/vertical pixels-per-inches the current device screen has.
+	/// </summary>
+	/// <returns></returns>
 	 static bool TryGetPixelPerInches(out double xdpi, out double ydpi)
-	 {
+	{
 #if IOS
 		 var displayInfo = DeviceDisplay.Current.MainDisplayInfo;
 		 var dimensions = (displayInfo.Width / displayInfo.Density, displayInfo.Height / displayInfo.Density);
-		 var success = AppleScreenDensityHelper.TryGetPpiWithFallBacks(DeviceInfo.Current.Model, DeviceInfo.Current.Name, dimensions, out var ppi);
+		 var success =
+ AppleScreenDensityHelper.TryGetPpiWithFallBacks(DeviceInfo.Current.Model, DeviceInfo.Current.Name, dimensions, out var ppi);
 		 xdpi = ppi;
 		 ydpi = ppi;
 		 return success;
@@ -89,28 +94,29 @@ public static class OnScreenSizeHelper
 		 ydpi = displayMetrics?.Ydpi ?? 0;
 		 return true;
 #else
-		 xdpi = 0;
-		 ydpi = 0;
+		xdpi = 0;
+		ydpi = 0;
 		return false;
-#endif		 
-	 }
+#endif
+	}
 
-	static double GetScreenDiagonalInches(double width, double height, double xDpi, double yDpi)
+	 static double GetScreenDiagonalInches(double width, double height, double xDpi, double yDpi)
 	{
 		var horizontal = width / xDpi;
 		var vertical = height / yDpi;
 
 		var diagonal = Math.Sqrt(Math.Pow(horizontal, 2) + Math.Pow(vertical, 2));
 
-		var diagonalReturnValue = (double)Math.Round((Math.Ceiling(diagonal * 100) / 100), 1);
+		var diagonalReturnValue = Math.Round(Math.Ceiling(diagonal * 100) / 100, 1);
 
-		Debug.WriteLine($"{nameof(OnScreenSizeExtension)} - DiagonalSize: {diagonalReturnValue},  PPI/DPI: x:\"{xDpi}\", y:\"{yDpi}\"");
-	        
-		return (double)Math.Round((Math.Ceiling(diagonal * 100) / 100), 1);
+		Debug.WriteLine(
+			$"{nameof(OnScreenSizeExtension)} - DiagonalSize: {diagonalReturnValue},  PPI/DPI: x:\"{xDpi}\", y:\"{yDpi}\"");
+
+		return Math.Round(Math.Ceiling(diagonal * 100) / 100, 1);
 	}
 
 	/// <summary>
-	/// OnScreenSize's code behind support.
+	///     OnScreenSize's code behind support.
 	/// </summary>
 	/// <typeparam name="T">The type of the value we are handling</typeparam>
 	/// <param name="default">default value used when no other values are provided</param>
@@ -128,7 +134,7 @@ public static class OnScreenSizeHelper
 		object? extraLarge = null)
 	{
 		var screenSize = GetCategory();
-		
+
 		object? value = null;
 		switch (screenSize)
 		{
@@ -139,7 +145,7 @@ public static class OnScreenSizeHelper
 				value = small;
 				break;
 			case ScreenCategories.Medium:
-				value =  medium;
+				value = medium;
 				break;
 			case ScreenCategories.Large:
 				value = large;
@@ -149,11 +155,11 @@ public static class OnScreenSizeHelper
 				break;
 		}
 
-		if (value == null)
+		if (value is null)
 		{
 			return @default;
 		}
-		
+
 		return value;
 	}
 }

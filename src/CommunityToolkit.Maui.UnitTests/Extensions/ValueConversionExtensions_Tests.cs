@@ -12,9 +12,12 @@ public class ValueConversionExtensions_Tests
 	{
 		var stringToParse = "0.25*, 0.13*, 0.08*, 230, *";
 
-		var expected = (RowDefinitionCollection)new RowDefinitionCollectionTypeConverter().ConvertFromInvariantString(stringToParse)!;
+		var expected =
+			(RowDefinitionCollection)new RowDefinitionCollectionTypeConverter().ConvertFromInvariantString(
+				stringToParse)!;
 
-		var actual = ValueConversionExtensions.ConvertTo(stringToParse, typeof(RowDefinitionCollection), Grid.RowDefinitionsProperty);
+		var actual = ValueConversionExtensions.ConvertTo(stringToParse, typeof(RowDefinitionCollection),
+			Grid.RowDefinitionsProperty);
 
 		//assert
 		Assert.IsType<RowDefinitionCollection>(actual);
@@ -29,10 +32,10 @@ public class ValueConversionExtensions_Tests
 
 		var expected = new ThicknessTypeConverter().ConvertFromInvariantString(stringToParse);
 
-		var actual = ValueConversionExtensions.ConvertTo(stringToParse, typeof(Microsoft.Maui.Thickness), VerticalStackLayout.SpacingProperty);
+		var actual = ValueConversionExtensions.ConvertTo(stringToParse, typeof(Microsoft.Maui.Thickness),
+			VerticalStackLayout.SpacingProperty);
 
 		//assert
 		Assert.IsType<Thickness>(actual);
 	}
 }
-

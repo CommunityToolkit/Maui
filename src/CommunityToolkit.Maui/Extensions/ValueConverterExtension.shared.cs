@@ -7,10 +7,14 @@ public abstract class ValueConverterExtension : IMarkupExtension<ICommunityToolk
 {
 	/// <inheritdoc />
 	public ICommunityToolkitValueConverter ProvideValue(IServiceProvider serviceProvider)
-		=> (ICommunityToolkitValueConverter)this;
+	{
+		return (ICommunityToolkitValueConverter)this;
+	}
 
 	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)
-		=> ((IMarkupExtension<ICommunityToolkitValueConverter>)this).ProvideValue(serviceProvider);
+	{
+		return ((IMarkupExtension<ICommunityToolkitValueConverter>)this).ProvideValue(serviceProvider);
+	}
 
 	private protected static bool IsNullable<T>()
 	{
@@ -50,8 +54,15 @@ public abstract class ValueConverterExtension : IMarkupExtension<ICommunityToolk
 			return false;
 		}
 
-		static bool IsConvertingToString(in Type targetType) => targetType == typeof(string);
-		static bool CanBeConvertedToString() => typeof(T).GetMethods().Any(x => x.Name is nameof(ToString) && x.ReturnType == typeof(string));
+		static bool IsConvertingToString(in Type targetType)
+		{
+			return targetType == typeof(string);
+		}
+
+		static bool CanBeConvertedToString()
+		{
+			return typeof(T).GetMethods().Any(x => x.Name is nameof(ToString) && x.ReturnType == typeof(string));
+		}
 	}
 
 	private protected static void ValidateTargetType<TTarget>(Type targetType)
@@ -61,27 +72,36 @@ public abstract class ValueConverterExtension : IMarkupExtension<ICommunityToolk
 		// Ensure TTo can be assigned to the given Target Type
 		if (!typeof(TTarget).IsAssignableFrom(targetType) && !IsValidTargetType<TTarget>(targetType))
 		{
-			throw new ArgumentException($"targetType needs to be assignable from {typeof(TTarget)}", nameof(targetType));
+			throw new ArgumentException($"targetType needs to be assignable from {typeof(TTarget)}",
+				nameof(targetType));
 		}
 	}
 
 #pragma warning disable CS8603 // Possible null reference return. If TParam is null (e.g. `string?`), a null return value is expected
-	private protected static TParam ConvertParameter<TParam>(object? parameter) => parameter switch
+	private protected static TParam ConvertParameter<TParam>(object? parameter)
 	{
-		null when IsNullable<TParam>() => default,
-		null when !IsNullable<TParam>() => throw new ArgumentNullException(nameof(parameter), $"value cannot be null because {nameof(TParam)} is not Nullable"),
-		TParam convertedParameter => convertedParameter,
-		_ => throw new ArgumentException($"parameter needs to be of type {typeof(TParam)}", nameof(parameter))
-	};
+		return parameter switch
+		{
+			null when IsNullable<TParam>() => default,
+			null when !IsNullable<TParam>() => throw new ArgumentNullException(nameof(parameter),
+				$"value cannot be null because {nameof(TParam)} is not Nullable"),
+			TParam convertedParameter => convertedParameter,
+			_ => throw new ArgumentException($"parameter needs to be of type {typeof(TParam)}", nameof(parameter))
+		};
+	}
 #pragma warning restore CS8603 // Possible null reference return.
 
 #pragma warning disable CS8603 // Possible null reference return. If TValue is null (e.g. `string?`), a null return value is expected
-	private protected static TValue ConvertValue<TValue>(object? value) => value switch
+	private protected static TValue ConvertValue<TValue>(object? value)
 	{
-		null when IsNullable<TValue>() => default,
-		null when !IsNullable<TValue>() => throw new ArgumentNullException(nameof(value), $"value cannot be null because {nameof(TValue)} is not Nullable"),
-		TValue convertedValue => convertedValue,
-		_ => throw new ArgumentException($"value needs to be of type {typeof(TValue)}", nameof(value))
-	};
+		return value switch
+		{
+			null when IsNullable<TValue>() => default,
+			null when !IsNullable<TValue>() => throw new ArgumentNullException(nameof(value),
+				$"value cannot be null because {nameof(TValue)} is not Nullable"),
+			TValue convertedValue => convertedValue,
+			_ => throw new ArgumentException($"value needs to be of type {typeof(TValue)}", nameof(value))
+		};
+	}
 #pragma warning restore CS8603 // Possible null reference return.
 }

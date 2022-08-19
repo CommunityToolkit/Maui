@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Categories;
 /// <summary>
 /// Responsible for categorizing the device's actual screen size to <see cref="ScreenCategories"/> based on <see cref="OnScreenSizeManager.Mappings"/>
 /// </summary>
- class ScreenCategorizer : IScreenCategorizer
+class ScreenCategorizer : IScreenCategorizer
 {
 	public ScreenCategories GetCategoryByDiagonalSize(IEnumerable<SizeMappingInfo> mappings, double deviceActualDiagonalSize)
 	{
@@ -33,11 +33,13 @@ namespace CommunityToolkit.Maui.Categories;
 	/// <param name="deviceActualDiagonalSize"></param>
 	/// <param name="category"></param>
 	/// <returns></returns>
-	 static bool TryCategorizeByFixedSize(IEnumerable<SizeMappingInfo> mappings, double deviceActualDiagonalSize, out ScreenCategories category)
+	static bool TryCategorizeByFixedSize(IEnumerable<SizeMappingInfo> mappings, double deviceActualDiagonalSize,
+		out ScreenCategories category)
 	{
 		category = ScreenCategories.NotSet;
 
-		var diagonalSizeMappingsEquals = mappings.Where((f => f.ComparisonMode == ScreenSizeCompareModes.SpecificSize)).OrderBy(f => f.DiagonalSize);
+		var diagonalSizeMappingsEquals = mappings.Where((f => f.ComparisonMode == ScreenSizeCompareModes.SpecificSize))
+			.OrderBy(f => f.DiagonalSize);
 		foreach (var sizeInfo in diagonalSizeMappingsEquals)
 		{
 			if (deviceActualDiagonalSize.EqualsTo(sizeInfo.DiagonalSize))
@@ -50,10 +52,10 @@ namespace CommunityToolkit.Maui.Categories;
 		return false;
 	}
 
-	 static bool TryCategorizeBySmallerOrEqualsTo(IEnumerable<SizeMappingInfo> mappings, double deviceActualDiagonalSize, out ScreenCategories category)
+	static bool TryCategorizeBySmallerOrEqualsTo(IEnumerable<SizeMappingInfo> mappings, double deviceActualDiagonalSize, out ScreenCategories category)
 	{
-
-		var mappingsLocal = mappings.Where(f => f.ComparisonMode == ScreenSizeCompareModes.SmallerOrEqualsTo).OrderBy(f => f.DiagonalSize).ToList();
+		var mappingsLocal = mappings.Where(f => f.ComparisonMode == ScreenSizeCompareModes.SmallerOrEqualsTo)
+			.OrderBy(f => f.DiagonalSize).ToList();
 
 		category = ScreenCategories.NotSet;
 		var diagonalSizeMappings = mappingsLocal.ToArray();
@@ -71,4 +73,3 @@ namespace CommunityToolkit.Maui.Categories;
 		return false;
 	}
 }
-

@@ -1,33 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using Microsoft.Extensions.Logging;
+﻿using System.Reflection;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Helpers;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
 
 namespace CommunityToolkit.Maui.Extensions;
 
 /// <summary>
-/// Markup extension that allows specify values to be applied to a physical screen size according to the category
-/// the screen it fits in, such as ExtraSmall, Small, Medium, Large, ExtraLarge, or Default.
+///     Markup extension that allows specify values to be applied to a physical screen size according to the category
+///     the screen it fits in, such as ExtraSmall, Small, Medium, Large, ExtraLarge, or Default.
 /// </summary>
 public class OnScreenSizeExtension : IMarkupExtension<object>
 {
-	static readonly object defaultNull = new ();
+	static readonly object defaultNull = new();
 
-	 Dictionary<ScreenCategories, object> categoryPropertyValues = new () {
-		{ ScreenCategories.ExtraSmall, defaultNull},
-		{ ScreenCategories.Small, defaultNull},
-		{ ScreenCategories.Medium,  defaultNull},
-		{ ScreenCategories.Large,  defaultNull},
-		{ ScreenCategories.ExtraLarge,  defaultNull},
+	Dictionary<ScreenCategories, object> categoryPropertyValues = new()
+	{
+		{ ScreenCategories.ExtraSmall, defaultNull },
+		{ ScreenCategories.Small, defaultNull },
+		{ ScreenCategories.Medium, defaultNull },
+		{ ScreenCategories.Large, defaultNull },
+		{ ScreenCategories.ExtraLarge, defaultNull }
 	};
 
 	/// <summary>
-	/// Xaml internal usage
+	///     Xaml internal usage
 	/// </summary>
 	public OnScreenSizeExtension()
 	{
@@ -35,30 +30,31 @@ public class OnScreenSizeExtension : IMarkupExtension<object>
 	}
 
 	/// <summary>
-	/// Default value assumed when the other property values were not provided for the current device. 
+	///     Default value assumed when the other property values were not provided for the current device.
 	/// </summary>
 	public object Default { get; set; }
 
 
 	/// <summary>
-	/// Defines a value used when the screen size is categorized as <see cref="ScreenCategories.ExtraSmall"/>
+	///     Defines a value used when the screen size is categorized as <see cref="ScreenCategories.ExtraSmall" />
 	/// </summary>
 	public object ExtraSmall
 	{
 		get => categoryPropertyValues[ScreenCategories.ExtraSmall];
 		set => categoryPropertyValues[ScreenCategories.ExtraSmall] = value;
 	}
+
 	/// <summary>
-	/// Defines a value used when the screen size is categorized as <see cref="ScreenCategories.Small"/>
+	///     Defines a value used when the screen size is categorized as <see cref="ScreenCategories.Small" />
 	/// </summary>
 	public object Small
 	{
 		get => categoryPropertyValues[ScreenCategories.Small];
 		set => categoryPropertyValues[ScreenCategories.Small] = value;
 	}
-	
+
 	/// <summary>
-	/// Defines a value used when the screen size is categorized as <see cref="ScreenCategories.Medium"/>
+	///     Defines a value used when the screen size is categorized as <see cref="ScreenCategories.Medium" />
 	/// </summary>
 	public object Medium
 	{
@@ -67,7 +63,7 @@ public class OnScreenSizeExtension : IMarkupExtension<object>
 	}
 
 	/// <summary>
-	/// Defines a value used when the screen size is categorized as <see cref="ScreenCategories.Large"/>
+	///     Defines a value used when the screen size is categorized as <see cref="ScreenCategories.Large" />
 	/// </summary>
 	public object Large
 	{
@@ -76,7 +72,7 @@ public class OnScreenSizeExtension : IMarkupExtension<object>
 	}
 
 	/// <summary>
-	/// Defines a value used when the screen size is categorized as <see cref="ScreenCategories.ExtraLarge"/>
+	///     Defines a value used when the screen size is categorized as <see cref="ScreenCategories.ExtraLarge" />
 	/// </summary>
 	public object ExtraLarge
 	{
@@ -86,15 +82,16 @@ public class OnScreenSizeExtension : IMarkupExtension<object>
 
 
 	/// <summary>
-	/// Xaml internal usage
+	///     Xaml internal usage
 	/// </summary>
 	public object ProvideValue(IServiceProvider serviceProvider)
 	{
-		var valueProvider = serviceProvider?.GetService<IProvideValueTarget>() ?? throw new ArgumentException($"Service provided for OnScreenSize is null");
+		var valueProvider = serviceProvider?.GetService<IProvideValueTarget>() ??
+		                    throw new ArgumentException("Service provided for OnScreenSize is null");
 
 		BindableProperty bp;
 		PropertyInfo pi = null!;
-		
+
 		if (valueProvider.TargetObject is Setter setter)
 		{
 			bp = setter.Property;
@@ -107,7 +104,7 @@ public class OnScreenSizeExtension : IMarkupExtension<object>
 
 		var propertyType = bp?.ReturnType ?? pi?.PropertyType;
 
-		if (propertyType == null)
+		if (propertyType is null)
 		{
 			throw new InvalidOperationException("Não foi posivel determinar a propriedade para fornecer o valor.");
 		}
@@ -119,12 +116,12 @@ public class OnScreenSizeExtension : IMarkupExtension<object>
 	}
 
 	/// <summary>
-	/// Gets a value from one of the properties that best suites a <see cref="ScreenCategories"/> a device fits in.
+	///     Gets a value from one of the properties that best suites a <see cref="ScreenCategories" /> a device fits in.
 	/// </summary>
 	/// <param name="serviceProvider"></param>
 	/// <returns></returns>
 	/// <exception cref="XamlParseException"></exception>
-	 object GetScreenCategoryPropertyValue(IServiceProvider serviceProvider)
+	object GetScreenCategoryPropertyValue(IServiceProvider serviceProvider)
 	{
 		var screenCategory = OnScreenSizeHelper.GetCategory();
 		if (screenCategory != ScreenCategories.NotSet)
@@ -137,8 +134,11 @@ public class OnScreenSizeExtension : IMarkupExtension<object>
 
 		if (Default == defaultNull)
 		{
-			throw new XamlParseException(string.Format("{0} requires property {0}.{1} defined to use as fallback as property {0}.{2} was not set.",nameof(OnScreenSizeExtension),nameof(Default), screenCategory.ToString()));
+			throw new XamlParseException(string.Format(
+				"{0} requires property {0}.{1} defined to use as fallback as property {0}.{2} was not set.",
+				nameof(OnScreenSizeExtension), nameof(Default), screenCategory.ToString()));
 		}
+
 		return Default;
 	}
 }

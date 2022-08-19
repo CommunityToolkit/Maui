@@ -14,7 +14,7 @@ public static class DefaultMappings
 	/// <summary>
 	/// Mappings for categorizing mobile devices screen sizes.
 	/// </summary>
-	public static List<SizeMappingInfo> MobileMappings { get;   } = new List<SizeMappingInfo>
+	public static List<SizeMappingInfo> MobileMappings { get; } = new List<SizeMappingInfo>
 	{
 		new SizeMappingInfo(3.9, ScreenCategories.ExtraSmall, ScreenSizeCompareModes.SmallerOrEqualsTo),
 		new SizeMappingInfo(4.9, ScreenCategories.Small, ScreenSizeCompareModes.SmallerOrEqualsTo),
@@ -23,4 +23,3 @@ public static class DefaultMappings
 		new SizeMappingInfo(200.0, ScreenCategories.ExtraLarge, ScreenSizeCompareModes.SmallerOrEqualsTo),
 	};
 }
-
