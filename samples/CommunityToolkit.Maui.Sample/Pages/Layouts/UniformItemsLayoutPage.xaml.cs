@@ -18,38 +18,28 @@ public partial class UniformItemsLayoutPage : BasePage<UniformItemsLayoutViewMod
 
 	void HandleAddButtonClicked(object? sender, System.EventArgs e)
 	{
-		const int widthRequest = 25;
-		const int heightRequest = 25;
 		var randomColor = colors[new Random().Next(colors.Count)];
 
-		UniformItemsLayout_Default.Children.Add(new BoxView
+		UniformItemsLayout_Default.Children.Add(new Button
 		{
-			HeightRequest = widthRequest,
-			WidthRequest = heightRequest,
-			Color = randomColor
+			BackgroundColor = randomColor
 		});
 
-		UniformItemsLayout_MaxRows1.Children.Add(new BoxView
+		UniformItemsLayout_MaxRows1.Children.Add(new Button
 		{
-			HeightRequest = widthRequest,
-			WidthRequest = heightRequest,
-			Color = randomColor
+			BackgroundColor = randomColor
 		});
 
-		UniformItemsLayout_MaxColumns1.Children.Add(new BoxView
+		UniformItemsLayout_MaxColumns1.Children.Add(new Button
 		{
-			HeightRequest = widthRequest,
-			WidthRequest = heightRequest,
-			Color = randomColor
+			BackgroundColor = randomColor
 		});
 
-		var boxView = new BoxView
+		var button = new Button
 		{
-			HeightRequest = widthRequest,
-			WidthRequest = heightRequest,
-			Color = randomColor
+			BackgroundColor = randomColor
 		};
 
-		UniformItemsLayout_MaxRows2MaxColumns2.Children.Add(boxView);
+		UniformItemsLayout_MaxRows2MaxColumns2.Children.Add(button);
 	}
 }

@@ -41,7 +41,9 @@ public class BackgroundColorTo_Tests : BaseTest
 	{
 		VisualElement? element = null;
 
+#pragma warning disable CS8603 // Possible null reference return.
 		await Assert.ThrowsAsync<NullReferenceException>(() => element?.BackgroundColorTo(Colors.Red));
+#pragma warning restore CS8603 // Possible null reference return.
 	}
 
 	[Fact]
