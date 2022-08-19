@@ -61,6 +61,16 @@ public class GravatarImageSourceTests : BaseHandlerTest
 	}
 
 	[Fact]
+	public void Default404Image()
+	{
+		var gravatarImageSource = new GravatarImageSource()
+		{
+			Image = DefaultImage.FileNotFound,
+		};
+		Assert.Equal(DefaultImage.FileNotFound, gravatarImageSource.Image);
+	}
+
+	[Fact]
 	public void DefaultCacheValidity()
 	{
 		var gravatarImageSource = new GravatarImageSource();
@@ -93,6 +103,13 @@ public class GravatarImageSourceTests : BaseHandlerTest
 	{
 		var gravatarImageSource = new GravatarImageSource();
 		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), gravatarImageSource.Uri);
+	}
+
+	[Fact]
+	public void IsEmpty()
+	{
+		var gravatarImageSource = new GravatarImageSource();
+		Assert.False(gravatarImageSource.IsEmpty);
 	}
 
 	[Fact]
@@ -459,5 +476,12 @@ public class GravatarImageSourceTests : BaseHandlerTest
 		};
 		Assert.True(testControl.TitleIcon is GravatarImageSource);
 		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.TitleIcon).Uri);
+	}
+
+	[Fact]
+	public void ToStringTest()
+	{
+		var gravatarImageSource = new GravatarImageSource();
+		Assert.Equal("Uri: https://www.gravatar.com/avatar/, Email:, Size:0, Image: mp, CacheValidity:1.00:00:00, CachingEnabled:True", gravatarImageSource.ToString());
 	}
 }
