@@ -6,13 +6,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 public partial class GravatarImageSourceViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	string email = "dsiegel@avantipoint.com";
-
-	[ObservableProperty]
-	bool enableCache = true;
-
-	[ObservableProperty]
-	DefaultImage defaultGravatarSelected = DefaultImage.MysteryPerson;
+	[NotifyPropertyChangedFor(nameof(CacheValidityTimespan))]
+	int cacheValidityInDays = 1;
 
 	[ObservableProperty]
 	DefaultImage[] defaultGravatarItems = new[]
@@ -28,8 +23,13 @@ public partial class GravatarImageSourceViewModel : BaseViewModel
 	};
 
 	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(CacheValidityTimespan))]
-	int cacheValidityInDays = 1;
+	DefaultImage defaultGravatarSelected = DefaultImage.MysteryPerson;
+
+	[ObservableProperty]
+	string email = "dsiegel@avantipoint.com";
+
+	[ObservableProperty]
+	bool enableCache = true;
 
 	public TimeSpan CacheValidityTimespan => TimeSpan.FromDays(CacheValidityInDays);
 }

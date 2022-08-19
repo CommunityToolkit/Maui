@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Converters;
+﻿using CommunityToolkit.Maui.ImageSources;
 using CommunityToolkit.Maui.Sample.Models;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.ImageSources;

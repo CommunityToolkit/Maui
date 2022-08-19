@@ -1,7 +1,6 @@
-﻿using CommunityToolkit.Maui.Sample.ViewModels.Converters;
-using CommunityToolkit.Maui.Sample.ViewModels.ImageSources;
+﻿using CommunityToolkit.Maui.Sample.ViewModels.ImageSources;
 
-namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+namespace CommunityToolkit.Maui.Sample.Pages.ImageSources;
 
 public class ImageSourcesGalleryPage : BaseGalleryPage<ImageSourcesGalleryViewModel>
 {
