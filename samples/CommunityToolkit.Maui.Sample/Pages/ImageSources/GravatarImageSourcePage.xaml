@@ -52,7 +52,7 @@
                 </ResourceDictionary>
             </VerticalStackLayout.Resources>
 
-            <Label Style="{StaticResource Description}" SemanticProperties.HeadingLevel="Level1">
+            <Label SemanticProperties.HeadingLevel="Level1" Style="{StaticResource Description}">
                 <Label.FormattedText>
                     <FormattedString>
                         <Span Text="GravatarImageSource allows you to use as an Image " />
@@ -62,7 +62,7 @@
                 </Label.FormattedText>
             </Label>
             <Line Style="{StaticResource HR}" />
-            <Label Text="with Image control" SemanticProperties.HeadingLevel="Level2" />
+            <Label SemanticProperties.HeadingLevel="Level2" Text="with Image control" />
             <Image HeightRequest="128" WidthRequest="128">
                 <Image.Source>
                     <mct:GravatarImageSource
@@ -73,7 +73,7 @@
                         SemanticProperties.Description="GravatarImageSource for an Image control, binding all properties." />
                 </Image.Source>
             </Image>
-            <Label Text="with Button control" SemanticProperties.HeadingLevel="Level2" />
+            <Label SemanticProperties.HeadingLevel="Level2" Text="with Button control" />
             <Button Text="Button">
                 <Button.ImageSource>
                     <mct:GravatarImageSource
@@ -84,7 +84,7 @@
                         SemanticProperties.Description="GravatarImageSource for a Button control, binding all properties." />
                 </Button.ImageSource>
             </Button>
-            <Label Text="with ImageButton control" SemanticProperties.HeadingLevel="Level2" />
+            <Label SemanticProperties.HeadingLevel="Level2" Text="with ImageButton control" />
             <ImageButton HeightRequest="73" WidthRequest="72">
                 <ImageButton.Source>
                     <mct:GravatarImageSource
@@ -95,7 +95,7 @@
                         SemanticProperties.Description="GravatarImageSource for an ImageButton control, binding all properties." />
                 </ImageButton.Source>
             </ImageButton>
-            <Label Text="with AvatarView Control" SemanticProperties.HeadingLevel="Level2" />
+            <Label SemanticProperties.HeadingLevel="Level2" Text="with AvatarView Control" />
             <mct:AvatarView
                 BorderWidth="2"
                 CornerRadius="32,0,0,32"
@@ -118,8 +118,9 @@
             </mct:AvatarView>
             <Label x:Name="LabelEmail" Text="Email:" />
             <Entry
-                AutomationProperties.LabeledBy="{x:Reference LabelEmail}" SemanticProperties.Hint="Enter your own gravatar registered email address"
+                AutomationProperties.LabeledBy="{x:Reference LabelEmail}"
                 Keyboard="Email"
+                SemanticProperties.Hint="Enter your own gravatar registered email address"
                 Text="{Binding Email}" />
             <Label x:Name="LabelDefaultImage" Text="Default Image:" />
             <Picker
@@ -132,7 +133,10 @@
                 AutomationProperties.LabeledBy="{x:Reference LabelEnableCache}"
                 IsToggled="{Binding EnableCache}"
                 SemanticProperties.Hint="Defines whether image caching is enabled.  The default value of this property is: True" />
-            <Label x:Name="LabelCacheValidity" IsEnabled="{Binding EnableCache}" SemanticProperties.Description="Display how many days for cache validity.">
+            <Label
+                x:Name="LabelCacheValidity"
+                IsEnabled="{Binding EnableCache}"
+                SemanticProperties.Description="Display how many days for cache validity.">
                 <Label.FormattedText>
                     <FormattedString>
                         <Span Text="Cache Validity (in days): '" />
