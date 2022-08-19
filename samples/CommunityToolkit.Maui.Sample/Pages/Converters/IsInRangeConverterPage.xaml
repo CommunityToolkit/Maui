@@ -25,7 +25,7 @@
             <x:String x:Key="StringInRangeMax">Toolkit</x:String>
             <x:String x:Key="StringInRangeMin">.NET</x:String>
             <x:String x:Key="StringGreaterThanMin">MAUI</x:String>
-            <x:String x:Key="StringLessThanMax">Beloved</x:String>
+            <x:String x:Key="StringLessThanMax">Community</x:String>
             <x:String x:Key="DoubleMinString">37</x:String>
             <x:String x:Key="DoubleMaxString">73</x:String>
             <x:Double x:Key="DoubleMin">37</x:Double>
@@ -38,8 +38,6 @@
             <x:String x:Key="CharMaxString">L</x:String>
             <x:Char x:Key="CharMin">G</x:Char>
             <x:Char x:Key="CharMax">L</x:Char>
-            <SolidColorBrush x:Key="TrueBrush" Color="Green" />
-            <SolidColorBrush x:Key="FalseBrush" Color="Red" />
             <Style x:Key="TrueLabel" TargetType="Label">
                 <Setter Property="Text" Value="TRUE" />
                 <Setter Property="BackgroundColor" Value="Green" />
@@ -284,7 +282,6 @@
                         </Label.FormattedText>
                     </Label>
                     <Label
-                        x:Name="LabelCharInRange"
                         Grid.Column="1"
                         Padding="4,0"
                         Style="{Binding CharIsInRange, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, Min={StaticResource CharMin}, Max={StaticResource CharMax}}}" />
@@ -298,7 +295,6 @@
                         </Label.FormattedText>
                     </Label>
                     <Label
-                        x:Name="LabelCharGreater"
                         Grid.Row="1"
                         Grid.Column="1"
                         Padding="4,0"
@@ -313,7 +309,6 @@
                         </Label.FormattedText>
                     </Label>
                     <Label
-                        x:Name="LabelCharLess"
                         Grid.Row="2"
                         Grid.Column="1"
                         Padding="4,0"
