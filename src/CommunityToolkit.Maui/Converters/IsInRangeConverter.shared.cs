@@ -29,8 +29,7 @@ public abstract class IsInRangeConverter<TObject> : BaseConverterOneWay<ICompara
 	public override object ConvertFrom(IComparable value, CultureInfo? culture)
 	{
 		ArgumentNullException.ThrowIfNull(value);
-		ArgumentNullException.ThrowIfNull(Min is null && Max is null, nameof(Min));
-
+		ArgumentNullException.ThrowIfNull((Min is null && Max is null) ? null : true, nameof(Min));
 		if (!(TrueObject is null ^ FalseObject is not null))
 		{
 			throw new InvalidOperationException($"{nameof(TrueObject)} and {nameof(FalseObject)} should either be both defined or both omitted.");
