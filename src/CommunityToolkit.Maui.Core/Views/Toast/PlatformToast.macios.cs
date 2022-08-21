@@ -49,15 +49,15 @@ public class PlatformToast : Alert, IDisposable
 		AlertView.AddChild(messageLabel);
 	}
 
-    /// <summary>
-    /// Finalizer for <see cref="PlatformToast"/>
-    /// </summary>
-    ~PlatformToast() => Dispose(false);
+	/// <summary>
+	/// Finalizer for <see cref="PlatformToast"/>
+	/// </summary>
+	~PlatformToast() => Dispose(false);
 
-    /// <summary>
-    /// Toast Message
-    /// </summary>
-    public string Message
+	/// <summary>
+	/// Toast Message
+	/// </summary>
+	public string Message
 	{
 		get => messageLabel.Text ??= string.Empty;
 		private init => messageLabel.Text = value;
@@ -94,25 +94,25 @@ public class PlatformToast : Alert, IDisposable
 	}
 
 	/// <inheritdoc />
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
 
-    /// <inheritdoc />
-    protected virtual void Dispose(bool isDisposing)
-    {
-        if (!isDisposed)
-        {
-            if (isDisposing)
-            {
-                messageLabel.Dispose();
-            }
+	/// <inheritdoc />
+	protected virtual void Dispose(bool isDisposing)
+	{
+		if (!isDisposed)
+		{
+			if (isDisposing)
+			{
+				messageLabel.Dispose();
+			}
 
-            isDisposed = true;
-        }
-    }
+			isDisposed = true;
+		}
+	}
 
-    static NFloat GetEmFromPx(NFloat defaultFontSize, double currentValue) => 100 * (NFloat)currentValue / defaultFontSize;
+	static NFloat GetEmFromPx(NFloat defaultFontSize, double currentValue) => 100 * (NFloat)currentValue / defaultFontSize;
 }

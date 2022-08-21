@@ -104,19 +104,19 @@ public partial class Snackbar : ISnackbar
 	static PlatformSnackbar? PlatformSnackbar { get; set; }
 #endif
 
-    /// <summary>
-    /// Dispose Snackbar
-    /// </summary>
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+	/// <summary>
+	/// Dispose Snackbar
+	/// </summary>
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
 
-    /// <summary>
-    /// Show Snackbar
-    /// </summary>
-    public virtual Task Show(CancellationToken token = default) => ShowPlatform(token);
+	/// <summary>
+	/// Show Snackbar
+	/// </summary>
+	public virtual Task Show(CancellationToken token = default) => ShowPlatform(token);
 
 	/// <summary>
 	/// Dismiss Snackbar
@@ -125,29 +125,29 @@ public partial class Snackbar : ISnackbar
 
 	internal static TimeSpan GetDefaultTimeSpan() => TimeSpan.FromSeconds(3);
 
-    /// <summary>
-    /// Dispose Snackbar
-    /// </summary>
-    protected virtual void Dispose(bool isDisposing)
-    {
-        if (isDisposed)
-        {
-            return;
-        }
+	/// <summary>
+	/// Dispose Snackbar
+	/// </summary>
+	protected virtual void Dispose(bool isDisposing)
+	{
+		if (isDisposed)
+		{
+			return;
+		}
 
-        if (isDisposing)
-        {
+		if (isDisposing)
+		{
 #if ANDROID || IOS || MACCATALYST
 			PlatformSnackbar?.Dispose();
 #endif
-        }
+		}
 
-        isDisposed = true;
-    }
+		isDisposed = true;
+	}
 
 #if !(IOS || ANDROID || MACCATALYST || WINDOWS)
-    /// <inheritdoc/>
-    private partial Task ShowPlatform(CancellationToken token)
+	/// <inheritdoc/>
+	private partial Task ShowPlatform(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 
@@ -184,7 +184,7 @@ public partial class Snackbar : ISnackbar
 #if IOS || MACCATALYST
 	private static partial Task DismissPlatform(CancellationToken token);
 #else
-    private partial Task DismissPlatform(CancellationToken token);
+	private partial Task DismissPlatform(CancellationToken token);
 #endif
 }
 
