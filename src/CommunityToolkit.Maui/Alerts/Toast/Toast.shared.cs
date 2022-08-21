@@ -142,21 +142,23 @@ public partial class Toast : IToast
 
 	private partial void ShowPlatform(CancellationToken token);
 
-	private partial void DismissPlatform(CancellationToken token);
+	private static partial void DismissPlatform(CancellationToken token);
 
 #if !(IOS || ANDROID || MACCATALYST || WINDOWS)
 	/// <summary>
 	/// Show Toast
 	/// </summary>
+#pragma warning disable CA1822 // Cannot mark as static as Toast.android.cs requires instance
 	private partial void ShowPlatform(CancellationToken token)
-	{
-		token.ThrowIfCancellationRequested();
+#pragma warning restore CA1822 // Cannot mark as static as Toast.android.cs requires instance
+    {
+        token.ThrowIfCancellationRequested();
 	}
 
 	/// <summary>
 	/// Dismiss Toast
 	/// </summary>
-	private partial void DismissPlatform(CancellationToken token)
+	private static partial void DismissPlatform(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 	}
