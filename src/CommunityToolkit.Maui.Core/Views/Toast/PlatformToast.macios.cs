@@ -12,7 +12,7 @@ public class PlatformToast : Alert, IDisposable
 	readonly PaddedLabel messageLabel;
 	internal const float defaultPadding = 10;
 
-	bool disposedValue;
+	bool isDisposed;
 
 	/// <summary>
 	/// Initialize <see cref="PlatformToast"/>
@@ -103,14 +103,14 @@ public class PlatformToast : Alert, IDisposable
     /// <inheritdoc />
     protected virtual void Dispose(bool isDisposing)
     {
-        if (!disposedValue)
+        if (!isDisposed)
         {
             if (isDisposing)
             {
                 messageLabel.Dispose();
             }
 
-            disposedValue = true;
+            isDisposed = true;
         }
     }
 
