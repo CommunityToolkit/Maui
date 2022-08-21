@@ -128,8 +128,5 @@ dotnet_diagnostic.CA2208.severity = error
 # CA1834: Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string
 dotnet_diagnostic.CA1834.severity = error
 
-# CA1309: Use ordinal string comparison
-dotnet_diagnostic.CA1309.severity = error
-
 # IDE0220: Add explicit cast
 dotnet_diagnostic.IDE0220.severity = error
