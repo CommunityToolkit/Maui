@@ -116,7 +116,7 @@ public partial class Toast : IToast
 		if (isDisposing)
 		{
 #if ANDROID
-            PlatformToast?.Dispose();
+			PlatformToast?.Dispose();
 #endif
 		}
 
@@ -136,13 +136,13 @@ public partial class Toast : IToast
 #endif
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS
-    static PlatformToast? PlatformToast { get; set; }
+	static PlatformToast? PlatformToast { get; set; }
 #endif
 
 #if !(IOS || ANDROID || MACCATALYST || WINDOWS)
 	private static partial void ShowPlatform(CancellationToken token);
 #else
-    private partial void ShowPlatform(CancellationToken token);
+	private partial void ShowPlatform(CancellationToken token);
 #endif
 
 	private static partial void DismissPlatform(CancellationToken token);
