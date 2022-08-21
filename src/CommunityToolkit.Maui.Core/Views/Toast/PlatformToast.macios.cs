@@ -105,7 +105,7 @@ public class PlatformToast : Alert, IDisposable
     {
         if (!disposedValue)
         {
-            if (disposing)
+            if (isDisposing)
             {
                 messageLabel.Dispose();
             }
