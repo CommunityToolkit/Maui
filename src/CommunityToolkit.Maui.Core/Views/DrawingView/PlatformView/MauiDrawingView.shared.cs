@@ -14,7 +14,11 @@ public partial class MauiDrawingView
 {
 	readonly WeakEventManager weakEventManager = new();
 
-	bool isDrawing, isDisposed;
+#if !(IOS || MACCATALYST || ANDROID)
+	bool isDisposed;
+#endif
+
+	bool isDrawing;
 	PointF previousPoint;
 	PathF currentPath = new();
 	MauiDrawingLine? currentLine;
