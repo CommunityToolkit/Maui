@@ -95,6 +95,7 @@ public class GravatarImageSource : StreamImageSource
 			return;
 		}
 
+		parentElement.InvalidateMeasureInternal(Microsoft.Maui.Controls.Internals.InvalidationTrigger.MeasureChanged);
 		var height = parentElement.Height >= 0 ? parentElement.Height : parentElement.HeightRequest;
 		if (height <= 0)
 		{

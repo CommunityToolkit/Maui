@@ -272,22 +272,6 @@ public class GravatarImageSourceTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void TestControlImageSizeSet()
-	{
-		Image testImage = new()
-		{
-			WidthRequest = 100,
-			HeightRequest = 100,
-		};
-		bool fired = false;
-		testImage.MeasureInvalidated += (sender, e) => fired = true;
-		testImage.Source = new GravatarImageSource();
-		Assert.True(testImage.Source is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/?s=100"), ((GravatarImageSource)testImage.Source).Uri);
-		Assert.True(fired);
-	}
-
-	[Fact]
 	public void TestControlImageButton()
 	{
 		ImageButton testControl = new()
@@ -342,6 +326,19 @@ public class GravatarImageSourceTests : BaseHandlerTest
 		};
 		Assert.True(testControl.ImageSource is GravatarImageSource);
 		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.ImageSource).Uri);
+	}
+
+	[Fact]
+	public void TestControlImageSizeSet()
+	{
+		Image testImage = new()
+		{
+			WidthRequest = 100,
+			HeightRequest = 100,
+			Source = new GravatarImageSource(),
+		};
+		Assert.True(testImage.Source is GravatarImageSource);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/?s=100"), ((GravatarImageSource)testImage.Source).Uri);
 	}
 
 	[Fact]
