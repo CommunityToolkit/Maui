@@ -63,8 +63,8 @@ public class GravatarImageSource : StreamImageSource
 		set => SetValue(ImageProperty, value);
 	}
 
-	/// <summary>Gets a value indicating whether the control URI is empty.</summary>
-	public override bool IsEmpty => Uri == null;
+	/// <summary>Gets a value indicating whether the control email is empty.</summary>
+	public override bool IsEmpty => string.IsNullOrEmpty(Email);
 
 	/// <summary>Gets or sets the URI for the image to get.</summary>
 	[System.ComponentModel.TypeConverter(typeof(UriTypeConverter))]
