@@ -72,6 +72,8 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 			CornerRadius = new CornerRadius(AvatarViewDefaults.DefaultCornerRadius.TopLeft, AvatarViewDefaults.DefaultCornerRadius.TopRight, AvatarViewDefaults.DefaultCornerRadius.BottomLeft, AvatarViewDefaults.DefaultCornerRadius.BottomRight),
 		};
 		Content = avatarLabel;
+		avatarImage.SetBinding(WidthRequestProperty, new Binding(nameof(WidthRequest), source: this));
+		avatarImage.SetBinding(HeightRequestProperty, new Binding(nameof(HeightRequest), source: this));
 	}
 
 	/// <summary>Gets or sets the avatar font.</summary>
