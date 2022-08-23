@@ -10,10 +10,13 @@ using Microsoft.Maui.Controls;
 public class GravatarImageSource : StreamImageSource
 {
 	/// <summary>The backing store for the <see cref="CacheValidity" /> bindable property.</summary>
-	public static readonly BindableProperty CacheValidityProperty = BindableProperty.Create(nameof(CacheValidity), typeof(TimeSpan), typeof(UriImageSource), TimeSpan.FromDays(1));
+	public static readonly BindableProperty CacheValidityProperty = BindableProperty.Create(nameof(CacheValidity), typeof(TimeSpan), typeof(GravatarImageSource), TimeSpan.FromDays(1));
+
+	/// <summary>The backing store for the <see cref="Size" /> bindable property.</summary>
+	public static readonly BindableProperty SizeProperty = BindableProperty.Create(nameof(Size), typeof(int), typeof(GravatarImageSource), 0, propertyChanged: OnSizePropertyChanged);
 
 	/// <summary>The backing store for the <see cref="CachingEnabled" /> bindable property.</summary>
-	public static readonly BindableProperty CachingEnabledProperty = BindableProperty.Create(nameof(CachingEnabled), typeof(bool), typeof(UriImageSource), true);
+	public static readonly BindableProperty CachingEnabledProperty = BindableProperty.Create(nameof(CachingEnabled), typeof(bool), typeof(GravatarImageSource), true);
 
 	/// <summary>The backing store for the <see cref="Email" /> bindable property.</summary>
 	public static readonly BindableProperty? EmailProperty = BindableProperty.Create(nameof(Email), typeof(string), typeof(GravatarImageSource), defaultValue: null, propertyChanged: OnEmailPropertyChanged);
@@ -40,6 +43,13 @@ public class GravatarImageSource : StreamImageSource
 	{
 		get => (TimeSpan)GetValue(CacheValidityProperty);
 		set => SetValue(CacheValidityProperty, value);
+	}
+
+	/// <summary>Gets or sets the size of the gravatar image.</summary>
+	public int Size
+	{
+		get => (int)GetValue(SizeProperty);
+		set => SetValue(SizeProperty, value);
 	}
 
 	/// <summary>Gets or sets a Boolean value that indicates whether caching is enabled on this <see cref="GravatarImageSource"/> object.</summary>
@@ -95,23 +105,11 @@ public class GravatarImageSource : StreamImageSource
 			return;
 		}
 
-		var height = parentElement.Height >= 0 ? parentElement.Height : parentElement.HeightRequest;
-		if (height <= 0)
+		// Only bind if the consumer hasn't opted for a fixed Size.
+		if (Size == 0)
 		{
-			height = defaultSize;
-		}
-
-		var width = parentElement.Width >= 0 ? parentElement.Width : parentElement.WidthRequest;
-		if (width <= 0)
-		{
-			width = defaultSize;
-		}
-
-		var sizeFromParent = (int)Math.Max(width, height);
-		if (GravatarSize != sizeFromParent)
-		{
-			GravatarSize = sizeFromParent;
-			HandleNewUriRequested(Email, Image);
+			SetBinding(SizeProperty, new Binding(nameof(VisualElement.Width), source: parentElement));
+			SetBinding(SizeProperty, new Binding(nameof(VisualElement.Height), source: parentElement));
 		}
 	}
 
@@ -159,6 +157,18 @@ public class GravatarImageSource : StreamImageSource
 		gravatarImageSource.HandleNewUriRequested((string?)newValue, gravatarImageSource.Image);
 	}
 
+	static void OnSizePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		GravatarImageSource gravatarImageSource = (GravatarImageSource)bindable;
+
+		if (newValue is int intValue &&
+			intValue > -1)
+		{
+			gravatarImageSource.GravatarSize = gravatarImageSource.GravatarSize == 0 ? intValue : Math.Min(intValue, gravatarImageSource.GravatarSize);
+			gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, gravatarImageSource.Image);
+		}
+	}
+
 	async Task<Stream> DownloadStreamAsync(Uri? uri, CancellationToken cancellationToken)
 	{
 		try
@@ -174,6 +184,11 @@ public class GravatarImageSource : StreamImageSource
 
 	void HandleNewUriRequested(string? email, DefaultImage image)
 	{
+		if (GravatarSize == 0)
+		{
+			return;
+		}
+
 		Uri = string.IsNullOrWhiteSpace(email)
 			? new Uri($"{defaultGravatarImageAddress}?s={GravatarSize}")
 			: new Uri($"{defaultGravatarImageAddress}{GetMd5Hash(email)}?s={GravatarSize}&d={DefaultGravatarName(image)}");
