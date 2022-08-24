@@ -12,9 +12,6 @@ public class GravatarImageSource : StreamImageSource
 	/// <summary>The backing store for the <see cref="CacheValidity" /> bindable property.</summary>
 	public static readonly BindableProperty CacheValidityProperty = BindableProperty.Create(nameof(CacheValidity), typeof(TimeSpan), typeof(GravatarImageSource), TimeSpan.FromDays(1));
 
-	/// <summary>The backing store for the <see cref="Size" /> bindable property.</summary>
-	public static readonly BindableProperty SizeProperty = BindableProperty.Create(nameof(Size), typeof(int), typeof(GravatarImageSource), 0, propertyChanged: OnSizePropertyChanged);
-
 	/// <summary>The backing store for the <see cref="CachingEnabled" /> bindable property.</summary>
 	public static readonly BindableProperty CachingEnabledProperty = BindableProperty.Create(nameof(CachingEnabled), typeof(bool), typeof(GravatarImageSource), true);
 
@@ -24,12 +21,19 @@ public class GravatarImageSource : StreamImageSource
 	/// <summary>The backing store for the <see cref="Image" /> bindable property.</summary>
 	public static readonly BindableProperty ImageProperty = BindableProperty.Create(nameof(Image), typeof(DefaultImage), typeof(GravatarImageSource), defaultValue: DefaultImage.MysteryPerson, propertyChanged: OnDefaultImagePropertyChanged);
 
+	/// <summary>The backing store for the <see cref="ParentHeight" /> bindable property.</summary>
+	internal static readonly BindableProperty parentHeightProperty = BindableProperty.Create(nameof(ParentHeight), typeof(int), typeof(GravatarImageSource), defaultValue: defaultSize, propertyChanged: OnSizePropertyChanged);
+
+	/// <summary>The backing store for the <see cref="ParentWidth" /> bindable property.</summary>
+	internal static readonly BindableProperty parentWidthProperty = BindableProperty.Create(nameof(ParentWidth), typeof(int), typeof(GravatarImageSource), defaultValue: defaultSize, propertyChanged: OnSizePropertyChanged);
+
 	const int cancellationTokenSourceTimeout = 737;
 	const string defaultGravatarImageAddress = "https://www.gravatar.com/avatar/";
 	const int defaultSize = 80;
 	static readonly HttpClient singletonHttpClient = new();
 	int gravatarSize;
 	CancellationTokenSource? tokenSource;
+	bool parentBound = false;
 
 	/// <summary>Initializes a new instance of the <see cref="GravatarImageSource"/> class.</summary>
 	public GravatarImageSource()
@@ -43,13 +47,6 @@ public class GravatarImageSource : StreamImageSource
 	{
 		get => (TimeSpan)GetValue(CacheValidityProperty);
 		set => SetValue(CacheValidityProperty, value);
-	}
-
-	/// <summary>Gets or sets the size of the gravatar image.</summary>
-	public int Size
-	{
-		get => (int)GetValue(SizeProperty);
-		set => SetValue(SizeProperty, value);
 	}
 
 	/// <summary>Gets or sets a Boolean value that indicates whether caching is enabled on this <see cref="GravatarImageSource"/> object.</summary>
@@ -78,9 +75,23 @@ public class GravatarImageSource : StreamImageSource
 
 	/// <summary>Gets or sets the URI for the image to get.</summary>
 	[System.ComponentModel.TypeConverter(typeof(UriTypeConverter))]
-	public Uri Uri { get; private set; }
+	public Uri Uri { get; set; }
 
-	/// <summary>Gets or sets the control size property.</summary>
+	/// <summary>Gets or sets the parent height.</summary>
+	internal int ParentHeight
+	{
+		get => (int)GetValue(parentHeightProperty);
+		set => SetValue(parentHeightProperty, value);
+	}
+
+	/// <summary>Gets or sets the parent width.</summary>
+	internal int ParentWidth
+	{
+		get => (int)GetValue(parentWidthProperty);
+		set => SetValue(parentWidthProperty, value);
+	}
+
+	/// <summary>Gets or sets the image size.</summary>
 	int GravatarSize
 	{
 		get => gravatarSize;
@@ -105,29 +116,14 @@ public class GravatarImageSource : StreamImageSource
 			return;
 		}
 
-		// Only bind if the consumer hasn't opted for a fixed Size.
-		if (Size == 0)
+		if (ParentWidth != defaultSize || ParentHeight != defaultSize || parentBound)
 		{
-			SetBinding(SizeProperty, new Binding(nameof(VisualElement.Width), source: parentElement));
-			SetBinding(SizeProperty, new Binding(nameof(VisualElement.Height), source: parentElement));
-		}
-	}
-
-	/// <summary>On property changed.</summary>
-	/// <param name="propertyName">Property name.</param>
-	protected override void OnPropertyChanged(string propertyName)
-	{
-		if (propertyName is not null && (propertyName == CacheValidityProperty.PropertyName || propertyName == CachingEnabledProperty.PropertyName || propertyName == EmailProperty?.PropertyName || propertyName == ImageProperty.PropertyName))
-		{
-			if (propertyName == CacheValidityProperty.PropertyName || propertyName == CachingEnabledProperty.PropertyName)
-			{
-				OnUriChanged();
-			}
-
 			return;
 		}
 
-		base.OnPropertyChanged(propertyName);
+		SetBinding(parentWidthProperty, new Binding(nameof(VisualElement.Width), BindingMode.OneWay, source: parentElement));
+		SetBinding(parentHeightProperty, new Binding(nameof(VisualElement.Height), BindingMode.OneWay, source: parentElement));
+		parentBound = true;
 	}
 
 	static string DefaultGravatarName(DefaultImage defaultGravatar)
@@ -160,13 +156,19 @@ public class GravatarImageSource : StreamImageSource
 	static void OnSizePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		GravatarImageSource gravatarImageSource = (GravatarImageSource)bindable;
-
-		if (newValue is int intValue &&
-			intValue > -1)
+		if (newValue is not int intNewValue || intNewValue <= -1)
 		{
-			gravatarImageSource.GravatarSize = gravatarImageSource.GravatarSize == 0 ? intValue : Math.Min(intValue, gravatarImageSource.GravatarSize);
-			gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, gravatarImageSource.Image);
+			return;
 		}
+
+		if (gravatarImageSource.GravatarSize == 0)
+		{
+			gravatarImageSource.GravatarSize = intNewValue;
+			return;
+		}
+
+		gravatarImageSource.GravatarSize = Math.Min(intNewValue, gravatarImageSource.GravatarSize);
+		gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, gravatarImageSource.Image);
 	}
 
 	async Task<Stream> DownloadStreamAsync(Uri? uri, CancellationToken cancellationToken)
