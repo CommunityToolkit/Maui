@@ -16,7 +16,7 @@ public class GravatarImageSource : StreamImageSource
 	public static readonly BindableProperty CachingEnabledProperty = BindableProperty.Create(nameof(CachingEnabled), typeof(bool), typeof(GravatarImageSource), true);
 
 	/// <summary>The backing store for the <see cref="Email" /> bindable property.</summary>
-	public static readonly BindableProperty? EmailProperty = BindableProperty.Create(nameof(Email), typeof(string), typeof(GravatarImageSource), defaultValue: null, propertyChanged: OnEmailPropertyChanged);
+	public static readonly BindableProperty EmailProperty = BindableProperty.Create(nameof(Email), typeof(string), typeof(GravatarImageSource), defaultValue: null, propertyChanged: OnEmailPropertyChanged);
 
 	/// <summary>The backing store for the <see cref="Image" /> bindable property.</summary>
 	public static readonly BindableProperty ImageProperty = BindableProperty.Create(nameof(Image), typeof(DefaultImage), typeof(GravatarImageSource), defaultValue: DefaultImage.MysteryPerson, propertyChanged: OnDefaultImagePropertyChanged);
