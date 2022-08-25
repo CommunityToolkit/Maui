@@ -63,12 +63,17 @@ public class GravatarImageSourceTests : BaseHandlerTest
 	[Fact]
 	public void Default404Image()
 	{
-		var gravatarImageSource = new GravatarImageSource()
+		Image testControl = new()
 		{
-			Email = email,
+			Source = new GravatarImageSource()
+			{
+				Email = email,
+			}
 		};
-		gravatarImageSource.Image = DefaultImage.FileNotFound;
-		Assert.Equal(DefaultImage.FileNotFound, gravatarImageSource.Image);
+
+		((GravatarImageSource)testControl.Source).Image = DefaultImage.FileNotFound;
+		testControl.Layout(new Rect(0, 0, 37, 73));
+		Assert.Equal(DefaultImage.FileNotFound, ((GravatarImageSource)testControl.Source).Image);
 	}
 
 	[Fact]

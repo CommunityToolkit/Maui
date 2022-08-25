@@ -33,7 +33,6 @@ public class GravatarImageSource : StreamImageSource
 	static readonly HttpClient singletonHttpClient = new();
 	int gravatarSize;
 	CancellationTokenSource? tokenSource;
-	bool parentBound = false;
 
 	/// <summary>Initializes a new instance of the <see cref="GravatarImageSource"/> class.</summary>
 	public GravatarImageSource()
@@ -78,18 +77,10 @@ public class GravatarImageSource : StreamImageSource
 	public Uri Uri { get; set; }
 
 	/// <summary>Gets or sets the parent height.</summary>
-	internal int ParentHeight
-	{
-		get => (int)GetValue(parentHeightProperty);
-		set => SetValue(parentHeightProperty, value);
-	}
+	internal int ParentHeight => (int)GetValue(parentHeightProperty);
 
 	/// <summary>Gets or sets the parent width.</summary>
-	internal int ParentWidth
-	{
-		get => (int)GetValue(parentWidthProperty);
-		set => SetValue(parentWidthProperty, value);
-	}
+	internal int ParentWidth => (int)GetValue(parentWidthProperty);
 
 	/// <summary>Gets or sets the image size.</summary>
 	int GravatarSize
@@ -116,14 +107,8 @@ public class GravatarImageSource : StreamImageSource
 			return;
 		}
 
-		if (ParentWidth != defaultSize || ParentHeight != defaultSize || parentBound)
-		{
-			return;
-		}
-
 		SetBinding(parentWidthProperty, new Binding(nameof(VisualElement.Width), BindingMode.OneWay, source: parentElement));
 		SetBinding(parentHeightProperty, new Binding(nameof(VisualElement.Height), BindingMode.OneWay, source: parentElement));
-		parentBound = true;
 	}
 
 	static string DefaultGravatarName(DefaultImage defaultGravatar)
@@ -220,6 +205,7 @@ public class GravatarImageSource : StreamImageSource
 			}
 
 			CancellationTokenSource?.Cancel();
+			Debug.WriteLine(this.ToString());
 			Dispatcher.DispatchIfRequired(OnSourceChanged);
 		});
 	}
