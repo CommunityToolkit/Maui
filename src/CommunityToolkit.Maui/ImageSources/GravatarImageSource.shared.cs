@@ -108,7 +108,7 @@ public class GravatarImageSource : StreamImageSource
 		}
 
 		SetBinding(ParentWidthProperty, new Binding(nameof(VisualElement.Width), BindingMode.OneWay, source: parentElement));
-		SetBinding(parentHeightProperty, new Binding(nameof(VisualElement.Height), BindingMode.OneWay, source: parentElement));
+		SetBinding(ParentHeightProperty, new Binding(nameof(VisualElement.Height), BindingMode.OneWay, source: parentElement));
 	}
 
 	static string DefaultGravatarName(DefaultImage defaultGravatar)
