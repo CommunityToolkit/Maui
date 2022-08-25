@@ -22,10 +22,10 @@ public class GravatarImageSource : StreamImageSource
 	public static readonly BindableProperty ImageProperty = BindableProperty.Create(nameof(Image), typeof(DefaultImage), typeof(GravatarImageSource), defaultValue: DefaultImage.MysteryPerson, propertyChanged: OnDefaultImagePropertyChanged);
 
 	/// <summary>The backing store for the <see cref="ParentHeight" /> bindable property.</summary>
-	internal static readonly BindableProperty parentHeightProperty = BindableProperty.Create(nameof(ParentHeight), typeof(int), typeof(GravatarImageSource), defaultValue: defaultSize, propertyChanged: OnSizePropertyChanged);
+	internal static readonly BindableProperty ParentHeightProperty = BindableProperty.Create(nameof(ParentHeight), typeof(int), typeof(GravatarImageSource), defaultValue: defaultSize, propertyChanged: OnSizePropertyChanged);
 
 	/// <summary>The backing store for the <see cref="ParentWidth" /> bindable property.</summary>
-	internal static readonly BindableProperty parentWidthProperty = BindableProperty.Create(nameof(ParentWidth), typeof(int), typeof(GravatarImageSource), defaultValue: defaultSize, propertyChanged: OnSizePropertyChanged);
+	internal static readonly BindableProperty ParentWidthProperty = BindableProperty.Create(nameof(ParentWidth), typeof(int), typeof(GravatarImageSource), defaultValue: defaultSize, propertyChanged: OnSizePropertyChanged);
 
 	const int cancellationTokenSourceTimeout = 737;
 	const string defaultGravatarImageAddress = "https://www.gravatar.com/avatar/";
