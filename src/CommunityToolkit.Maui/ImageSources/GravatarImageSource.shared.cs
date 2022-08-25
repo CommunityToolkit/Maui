@@ -107,7 +107,7 @@ public class GravatarImageSource : StreamImageSource
 			return;
 		}
 
-		SetBinding(parentWidthProperty, new Binding(nameof(VisualElement.Width), BindingMode.OneWay, source: parentElement));
+		SetBinding(ParentWidthProperty, new Binding(nameof(VisualElement.Width), BindingMode.OneWay, source: parentElement));
 		SetBinding(parentHeightProperty, new Binding(nameof(VisualElement.Height), BindingMode.OneWay, source: parentElement));
 	}
 
