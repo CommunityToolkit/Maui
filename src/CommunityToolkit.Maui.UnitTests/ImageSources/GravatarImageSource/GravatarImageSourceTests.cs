@@ -17,7 +17,19 @@ public class GravatarImageSourceTests : BaseHandlerTest
 		{
 			Email = email
 		};
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), gravatarImageSource.Uri);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), gravatarImageSource.Uri);
+	}
+
+	[Fact]
+	public void ChangeEmailAndImage()
+	{
+		var gravatarImageSource = new GravatarImageSource
+		{
+			Email = email,
+			Image = image
+		};
+		Assert.Equal(image, gravatarImageSource.Image);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), gravatarImageSource.Uri);
 	}
 
 	[Fact]
@@ -28,19 +40,7 @@ public class GravatarImageSourceTests : BaseHandlerTest
 			Image = image
 		};
 		Assert.Equal(image, gravatarImageSource.Image);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/?s=0"), gravatarImageSource.Uri);
-	}
-
-	[Fact]
-	public void ChangeImageWithEmail()
-	{
-		var gravatarImageSource = new GravatarImageSource
-		{
-			Email = email,
-			Image = image
-		};
-		Assert.Equal(image, gravatarImageSource.Image);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=monsterid"), gravatarImageSource.Uri);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), gravatarImageSource.Uri);
 	}
 
 	[Fact]
@@ -132,29 +132,7 @@ public class GravatarImageSourceTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void TestControlAppLinkEntry()
-	{
-		AppLinkEntry testControl = new()
-		{
-			Thumbnail = new GravatarImageSource(),
-		};
-		Assert.True(testControl.Thumbnail is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.Thumbnail).Uri);
-	}
-
-	[Fact]
-	public void TestControlAppLinkEntryWithEmail()
-	{
-		AppLinkEntry testControl = new()
-		{
-			Thumbnail = new GravatarImageSource() { Email = email },
-		};
-		Assert.True(testControl.Thumbnail is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.Thumbnail).Uri);
-	}
-
-	[Fact]
-	public void TestControlBackButtonBehavior()
+	public void TestBindableObjectBackButtonBehavior()
 	{
 		BackButtonBehavior testControl = new()
 		{
@@ -165,239 +143,7 @@ public class GravatarImageSourceTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void TestControlBackButtonBehaviorWithEmail()
-	{
-		BackButtonBehavior testControl = new()
-		{
-			IconOverride = new GravatarImageSource() { Email = email },
-		};
-		Assert.True(testControl.IconOverride is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.IconOverride).Uri);
-	}
-
-	[Fact]
-	public void TestControlBaseShellItem()
-	{
-		BaseShellItem testControl = new()
-		{
-			Icon = new GravatarImageSource(),
-			FlyoutIcon = new GravatarImageSource(),
-		};
-		Assert.True(testControl.Icon is GravatarImageSource);
-		Assert.True(testControl.FlyoutIcon is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.Icon).Uri);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.FlyoutIcon).Uri);
-	}
-
-	[Fact]
-	public void TestControlBaseShellItemWithEmail()
-	{
-		BaseShellItem testControl = new()
-		{
-			Icon = new GravatarImageSource() { Email = email },
-			FlyoutIcon = new GravatarImageSource() { Email = email },
-		};
-		Assert.True(testControl.Icon is GravatarImageSource);
-		Assert.True(testControl.FlyoutIcon is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.Icon).Uri);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.FlyoutIcon).Uri);
-	}
-
-	[Fact]
-	public void TestControlButton()
-	{
-		Button testControl = new()
-		{
-			ImageSource = new GravatarImageSource(),
-		};
-		Assert.True(testControl.ImageSource is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/?s=80"), ((GravatarImageSource)testControl.ImageSource).Uri);
-	}
-
-	[Fact]
-	public void TestControlButtonWithEmail()
-	{
-		Button testControl = new()
-		{
-			ImageSource = new GravatarImageSource() { Email = email },
-		};
-		Assert.True(testControl.ImageSource is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=80&d=mp"), ((GravatarImageSource)testControl.ImageSource).Uri);
-	}
-
-	[Fact]
-	public void TestControlButtonWithEmailandSize()
-	{
-		Button testControl = new()
-		{
-			ImageSource = new GravatarImageSource() { Email = email },
-			WidthRequest = 72,
-			HeightRequest = 73
-		};
-		Assert.True(testControl.ImageSource is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=80&d=mp"), ((GravatarImageSource)testControl.ImageSource).Uri);
-	}
-
-	[Fact]
-	public void TestControlDataPackage()
-	{
-		DataPackage testControl = new()
-		{
-			Image = new GravatarImageSource(),
-		};
-		Assert.True(testControl.Image is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.Image).Uri);
-	}
-
-	[Fact]
-	public void TestControlDataPackageWithEmail()
-	{
-		DataPackage testControl = new()
-		{
-			Image = new GravatarImageSource() { Email = email },
-		};
-		Assert.True(testControl.Image is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.Image).Uri);
-	}
-
-	[Fact]
-	public void TestControlImage()
-	{
-		Image testImage = new()
-		{
-			Source = new GravatarImageSource()
-		};
-		Assert.True(testImage.Source is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/?s=80"), ((GravatarImageSource)testImage.Source).Uri);
-	}
-
-	[Fact]
-	public void TestControlImageButton()
-	{
-		ImageButton testControl = new()
-		{
-			Source = new GravatarImageSource(),
-		};
-		Assert.True(testControl.Source is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/?s=80"), ((GravatarImageSource)testControl.Source).Uri);
-	}
-
-	[Fact]
-	public void TestControlImageButtonWithEmail()
-	{
-		ImageButton testControl = new()
-		{
-			Source = new GravatarImageSource() { Email = email },
-		};
-		Assert.True(testControl.Source is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=80&d=mp"), ((GravatarImageSource)testControl.Source).Uri);
-	}
-
-	[Fact]
-	public void TestControlImageButtonWithEmailandSize()
-	{
-		ImageButton testControl = new()
-		{
-			Source = new GravatarImageSource() { Email = email },
-			WidthRequest = 72,
-			HeightRequest = 73
-		};
-		Assert.True(testControl.Source is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=80&d=mp"), ((GravatarImageSource)testControl.Source).Uri);
-	}
-
-	[Fact]
-	public void TestControlImageCell()
-	{
-		ImageCell testControl = new()
-		{
-			ImageSource = new GravatarImageSource(),
-		};
-		Assert.True(testControl.ImageSource is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.ImageSource).Uri);
-	}
-
-	[Fact]
-	public void TestControlImageCellWithEmail()
-	{
-		ImageCell testControl = new()
-		{
-			ImageSource = new GravatarImageSource() { Email = email },
-		};
-		Assert.True(testControl.ImageSource is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.ImageSource).Uri);
-	}
-
-	[Fact]
-	public void TestControlImageSizeSet()
-	{
-		Image testImage = new()
-		{
-			WidthRequest = 100,
-			HeightRequest = 100,
-			Source = new GravatarImageSource(),
-		};
-		Assert.True(testImage.Source is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/?s=100"), ((GravatarImageSource)testImage.Source).Uri);
-	}
-
-	[Fact]
-	public void TestControlImageWithEmail()
-	{
-		Image testImage = new()
-		{
-			Source = new GravatarImageSource() { Email = email }
-		};
-		Assert.True(testImage.Source is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=80&d=mp"), ((GravatarImageSource)testImage.Source).Uri);
-	}
-
-	[Fact]
-	public void TestControlMenuItem()
-	{
-		MenuItem testControl = new()
-		{
-			IconImageSource = new GravatarImageSource(),
-		};
-		Assert.True(testControl.IconImageSource is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.IconImageSource).Uri);
-	}
-
-	[Fact]
-	public void TestControlMenuItemControlWithEmail()
-	{
-		MenuItem testControl = new()
-		{
-			IconImageSource = new GravatarImageSource() { Email = email },
-		};
-		Assert.True(testControl.IconImageSource is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.IconImageSource).Uri);
-	}
-
-	[Fact]
-	public void TestControlPage()
-	{
-		Page testControl = new()
-		{
-			IconImageSource = new GravatarImageSource(),
-		};
-		Assert.True(testControl.IconImageSource is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.IconImageSource).Uri);
-	}
-
-	[Fact]
-	public void TestControlPageWithEmail()
-	{
-		Page testControl = new()
-		{
-			IconImageSource = new GravatarImageSource() { Email = email },
-		};
-		Assert.True(testControl.IconImageSource is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.IconImageSource).Uri);
-	}
-
-	[Fact]
-	public void TestControlSearchHandler()
+	public void TestBindableObjectSearchHandler()
 	{
 		SearchHandler testControl = new()
 		{
@@ -414,20 +160,118 @@ public class GravatarImageSourceTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void TestControlSearchHandlerWithEmail()
+	public void TestControlButton()
 	{
-		SearchHandler testControl = new()
+		Button testControl = new()
 		{
-			QueryIcon = new GravatarImageSource() { Email = email },
-			ClearPlaceholderIcon = new GravatarImageSource() { Email = email },
-			ClearIcon = new GravatarImageSource() { Email = email },
+			ImageSource = new GravatarImageSource(),
 		};
-		Assert.True(testControl.QueryIcon is GravatarImageSource);
-		Assert.True(testControl.ClearPlaceholderIcon is GravatarImageSource);
-		Assert.True(testControl.ClearIcon is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.QueryIcon).Uri);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.ClearPlaceholderIcon).Uri);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.ClearIcon).Uri);
+		testControl.Layout(new Rect(0, 0, 37, 73));
+		Assert.True(testControl.ImageSource is GravatarImageSource);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/?s=37"), ((GravatarImageSource)testControl.ImageSource).Uri);
+	}
+
+	[Fact]
+	public void TestControlButtonWithEmail()
+	{
+		Button testControl = new()
+		{
+			ImageSource = new GravatarImageSource() { Email = email },
+		};
+		testControl.Layout(new Rect(0, 0, 37, 73));
+		Assert.True(testControl.ImageSource is GravatarImageSource);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=37&d=mp"), ((GravatarImageSource)testControl.ImageSource).Uri);
+	}
+
+	[Fact]
+	public void TestControlImage()
+	{
+		Image testControl = new()
+		{
+			Source = new GravatarImageSource()
+		};
+		Assert.True(testControl.Source is GravatarImageSource);
+		testControl.Layout(new Rect(0, 0, 37, 73));
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/?s=37"), ((GravatarImageSource)testControl.Source).Uri);
+	}
+
+	[Fact]
+	public void TestControlImageButton()
+	{
+		ImageButton testControl = new()
+		{
+			Source = new GravatarImageSource(),
+		};
+		Assert.True(testControl.Source is GravatarImageSource);
+		testControl.Layout(new Rect(0, 0, 37, 73));
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/?s=37"), ((GravatarImageSource)testControl.Source).Uri);
+	}
+
+	[Fact]
+	public void TestControlImageButtonWithEmail()
+	{
+		ImageButton testControl = new()
+		{
+			Source = new GravatarImageSource() { Email = email },
+		};
+		Assert.True(testControl.Source is GravatarImageSource);
+		testControl.Layout(new Rect(0, 0, 37, 73));
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=37&d=mp"), ((GravatarImageSource)testControl.Source).Uri);
+	}
+
+	[Fact]
+	public void TestControlImageButtonWithoutEmail()
+	{
+		ImageButton testControl = new()
+		{
+			Source = new GravatarImageSource() { Image = image },
+		};
+		Assert.True(testControl.Source is GravatarImageSource);
+		testControl.Layout(new Rect(0, 0, 37, 73));
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/?s=37"), ((GravatarImageSource)testControl.Source).Uri);
+	}
+
+	[Fact]
+	public void TestControlImageWithEmail()
+	{
+		Image testControl = new()
+		{
+			Source = new GravatarImageSource()
+			{
+				Email = email,
+			}
+		};
+		Assert.True(testControl.Source is GravatarImageSource);
+		testControl.Layout(new Rect(0, 0, 37, 73));
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=37&d=mp"), ((GravatarImageSource)testControl.Source).Uri);
+	}
+
+	[Fact]
+	public void TestControlImageWithEmailAndImage()
+	{
+		Image testControl = new()
+		{
+			Source = new GravatarImageSource()
+			{
+				Email = email,
+				Image = image
+			}
+		};
+		Assert.True(testControl.Source is GravatarImageSource);
+		testControl.Layout(new Rect(0, 0, 37, 73));
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=37&d=monsterid"), ((GravatarImageSource)testControl.Source).Uri);
+	}
+
+	[Fact]
+	public void TestControlPage()
+	{
+		Page testControl = new()
+		{
+			IconImageSource = new GravatarImageSource(),
+		};
+		Assert.True(testControl.IconImageSource is GravatarImageSource);
+		testControl.Layout(new Rect(0, 0, 37, 73));
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.IconImageSource).Uri);
 	}
 
 	[Fact]
@@ -440,22 +284,9 @@ public class GravatarImageSourceTests : BaseHandlerTest
 		};
 		Assert.True(testControl.FlyoutBackgroundImage is GravatarImageSource);
 		Assert.True(testControl.FlyoutIcon is GravatarImageSource);
+		testControl.Layout(new Rect(0, 0, 37, 73));
 		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.FlyoutBackgroundImage).Uri);
 		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.FlyoutIcon).Uri);
-	}
-
-	[Fact]
-	public void TestControlShellWithEmail()
-	{
-		Shell testControl = new()
-		{
-			FlyoutBackgroundImage = new GravatarImageSource() { Email = email },
-			FlyoutIcon = new GravatarImageSource() { Email = email },
-		};
-		Assert.True(testControl.FlyoutBackgroundImage is GravatarImageSource);
-		Assert.True(testControl.FlyoutIcon is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.FlyoutBackgroundImage).Uri);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.FlyoutIcon).Uri);
 	}
 
 	[Fact]
@@ -466,40 +297,19 @@ public class GravatarImageSourceTests : BaseHandlerTest
 			ThumbImageSource = new GravatarImageSource(),
 		};
 		Assert.True(testControl.ThumbImageSource is GravatarImageSource);
+		testControl.Layout(new Rect(0, 0, 37, 73));
 		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.ThumbImageSource).Uri);
 	}
 
 	[Fact]
-	public void TestControlSliderWithEmail()
+	public void TestDataPackage()
 	{
-		Slider testControl = new()
+		DataPackage testControl = new()
 		{
-			ThumbImageSource = new GravatarImageSource() { Email = email },
+			Image = new GravatarImageSource(),
 		};
-		Assert.True(testControl.ThumbImageSource is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.ThumbImageSource).Uri);
-	}
-
-	[Fact]
-	public void TestControlToolbar()
-	{
-		Toolbar testControl = new(new View())
-		{
-			TitleIcon = new GravatarImageSource(),
-		};
-		Assert.True(testControl.TitleIcon is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.TitleIcon).Uri);
-	}
-
-	[Fact]
-	public void TestControlToolbarWithEmail()
-	{
-		Toolbar testControl = new(new View())
-		{
-			TitleIcon = new GravatarImageSource() { Email = email },
-		};
-		Assert.True(testControl.TitleIcon is GravatarImageSource);
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=0&d=mp"), ((GravatarImageSource)testControl.TitleIcon).Uri);
+		Assert.True(testControl.Image is GravatarImageSource);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.Image).Uri);
 	}
 
 	[Fact]
@@ -519,6 +329,75 @@ public class GravatarImageSourceTests : BaseHandlerTest
 		cts.Cancel();
 		Stream stream = await gravatarImageSource.Stream(cts.Token);
 		Assert.Equal(Stream.Null, stream);
+	}
+
+	[Fact]
+	public void TestElementAppLinkEntry()
+	{
+		AppLinkEntry testControl = new()
+		{
+			Thumbnail = new GravatarImageSource(),
+		};
+		Assert.True(testControl.Thumbnail is GravatarImageSource);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.Thumbnail).Uri);
+	}
+
+	[Fact]
+	public void TestElementAppLinkEntryWithEmail()
+	{
+		AppLinkEntry testControl = new()
+		{
+			Thumbnail = new GravatarImageSource() { Email = email },
+		};
+		Assert.True(testControl.Thumbnail is GravatarImageSource);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.Thumbnail).Uri);
+	}
+
+	[Fact]
+	public void TestElementImageCell()
+	{
+		ImageCell testControl = new()
+		{
+			ImageSource = new GravatarImageSource(),
+		};
+		Assert.True(testControl.ImageSource is GravatarImageSource);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.ImageSource).Uri);
+	}
+
+	[Fact]
+	public void TestElementMenuItem()
+	{
+		MenuItem testControl = new()
+		{
+			IconImageSource = new GravatarImageSource(),
+		};
+		Assert.True(testControl.IconImageSource is GravatarImageSource);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.IconImageSource).Uri);
+	}
+
+	[Fact]
+	public void TestNavigableElementBaseShellItem()
+	{
+		BaseShellItem testControl = new()
+		{
+			Icon = new GravatarImageSource(),
+			FlyoutIcon = new GravatarImageSource(),
+		};
+		Assert.True(testControl.Icon is GravatarImageSource);
+		Assert.True(testControl.FlyoutIcon is GravatarImageSource);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.Icon).Uri);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.FlyoutIcon).Uri);
+	}
+
+	[Fact]
+	public void TestToolbar()
+	{
+		Toolbar testControl = new(new View())
+		{
+			TitleIcon = new GravatarImageSource(),
+		};
+		Assert.True(testControl.TitleIcon is GravatarImageSource);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.TitleIcon).Uri);
 	}
 
 	[Fact]
