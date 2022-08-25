@@ -11,7 +11,7 @@ public class GravatarImageSourceTests : BaseHandlerTest
 	readonly DefaultImage image = DefaultImage.MonsterId;
 
 	[Fact]
-	public void ChangeEmail()
+	public void ChangingEmailWithNoSizeDoesNotUpdateUri()
 	{
 		var gravatarImageSource = new GravatarImageSource
 		{
@@ -21,7 +21,7 @@ public class GravatarImageSourceTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void ChangeEmailAndImage()
+	public void ChangingEmailAndImageWithNoSizeDoesNotUpdateUri()
 	{
 		var gravatarImageSource = new GravatarImageSource
 		{
@@ -33,7 +33,7 @@ public class GravatarImageSourceTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void ChangeImage()
+	public void ChangingImageWithNoSizeDoesNotUpdateUri()
 	{
 		var gravatarImageSource = new GravatarImageSource
 		{
