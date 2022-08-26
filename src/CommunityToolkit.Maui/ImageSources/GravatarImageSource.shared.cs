@@ -80,7 +80,7 @@ public class GravatarImageSource : StreamImageSource
 	internal int ParentHeight => (int)GetValue(parentHeightProperty);
 
 	/// <summary>Gets or sets the parent width.</summary>
-	internal int ParentWidth => (int)GetValue(parentWidthProperty);
+	internal int ParentWidth => (int)GetValue(ParentWidthProperty);
 
 	/// <summary>Gets or sets the image size.</summary>
 	int GravatarSize
