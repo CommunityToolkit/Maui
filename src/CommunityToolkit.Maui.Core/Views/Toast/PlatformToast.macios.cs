@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 public class PlatformToast : Alert
 {
 	readonly PaddedLabel messageLabel;
-	internal const float defaultPadding = 10;
+	internal const float DefaultPadding = 10;
 
 	/// <summary>
 	/// Initialize <see cref="PlatformToast"/>
@@ -31,7 +31,7 @@ public class PlatformToast : Alert
 		double characterSpacing,
 		NFloat padding)
 	{
-		padding += defaultPadding;
+		padding += DefaultPadding;
 
 		messageLabel = new PaddedLabel(padding, padding, padding, padding)
 		{
