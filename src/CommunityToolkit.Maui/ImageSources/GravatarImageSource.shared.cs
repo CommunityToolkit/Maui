@@ -77,7 +77,7 @@ public class GravatarImageSource : StreamImageSource
 	public Uri Uri { get; set; }
 
 	/// <summary>Gets or sets the parent height.</summary>
-	internal int ParentHeight => (int)GetValue(parentHeightProperty);
+	internal int ParentHeight => (int)GetValue(ParentHeightProperty);
 
 	/// <summary>Gets or sets the parent width.</summary>
 	internal int ParentWidth => (int)GetValue(ParentWidthProperty);
