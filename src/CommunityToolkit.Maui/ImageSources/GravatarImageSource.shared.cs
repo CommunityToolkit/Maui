@@ -196,8 +196,6 @@ public class GravatarImageSource : StreamImageSource
 				return;
 			}
 
-			Debug.WriteLine(this.ToString());
-
 			CancellationTokenSource?.Cancel();
 			Dispatcher.DispatchIfRequired(OnSourceChanged);
 		});
