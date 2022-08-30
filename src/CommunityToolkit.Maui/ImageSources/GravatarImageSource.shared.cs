@@ -132,12 +132,12 @@ public class GravatarImageSource : StreamImageSource
 
 	static void OnSizePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		GravatarImageSource gravatarImageSource = (GravatarImageSource)bindable;
 		if (newValue is not int intNewValue || intNewValue <= -1)
 		{
 			return;
 		}
 
+		GravatarImageSource gravatarImageSource = (GravatarImageSource)bindable;
 		if (gravatarImageSource.GravatarSize == -1)
 		{
 			gravatarImageSource.GravatarSize = intNewValue;
