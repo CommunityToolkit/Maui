@@ -30,7 +30,7 @@ public class GravatarImageSource : StreamImageSource
 	const string defaultGravatarImageAddress = "https://www.gravatar.com/avatar/";
 	const int defaultSize = 80;
 	static readonly HttpClient singletonHttpClient = new();
-	int gravatarSize;
+	int gravatarSize = -1;
 	CancellationTokenSource? tokenSource;
 
 	/// <summary>Initializes a new instance of the <see cref="GravatarImageSource"/> class.</summary>
@@ -138,7 +138,7 @@ public class GravatarImageSource : StreamImageSource
 			return;
 		}
 
-		if (gravatarImageSource.GravatarSize == 0)
+		if (gravatarImageSource.GravatarSize == -1)
 		{
 			gravatarImageSource.GravatarSize = intNewValue;
 			return;
@@ -163,7 +163,7 @@ public class GravatarImageSource : StreamImageSource
 
 	void HandleNewUriRequested(string? email, DefaultImage image)
 	{
-		if (GravatarSize == 0)
+		if (GravatarSize == -1)
 		{
 			return;
 		}
@@ -195,6 +195,8 @@ public class GravatarImageSource : StreamImageSource
 			{
 				return;
 			}
+
+			Debug.WriteLine(this.ToString());
 
 			CancellationTokenSource?.Cancel();
 			Dispatcher.DispatchIfRequired(OnSourceChanged);
