@@ -99,9 +99,8 @@ public class GravatarImageSource : StreamImageSource
 	/// <summary>On parent set.</summary>
 	protected override void OnParentSet()
 	{
-		object element = Parent;
 		base.OnParentSet();
-		if (element is not VisualElement parentElement || parentElement is null)
+		if (Parent is not VisualElement parentElement || parentElement is null)
 		{
 			GravatarSize = defaultSize;
 			return;
