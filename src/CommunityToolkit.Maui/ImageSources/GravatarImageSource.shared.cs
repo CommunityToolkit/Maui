@@ -168,9 +168,9 @@ public class GravatarImageSource : StreamImageSource
 			return;
 		}
 
-		Uri = string.IsNullOrWhiteSpace(email)
+		Uri = IsEmpty
 			? new Uri($"{defaultGravatarImageAddress}?s={GravatarSize}")
-			: new Uri($"{defaultGravatarImageAddress}{email.GetMd5Hash(string.Empty).ToLowerInvariant()}?s={GravatarSize}&d={DefaultGravatarName(image)}");
+			: new Uri($"{defaultGravatarImageAddress}{email?.GetMd5Hash(string.Empty).ToLowerInvariant()}?s={GravatarSize}&d={DefaultGravatarName(image)}");
 
 		OnUriChanged();
 	}
