@@ -93,7 +93,7 @@ public class GravatarImageSource : StreamImageSource
 	/// <returns>String of the URI.</returns>
 	public override string ToString()
 	{
-		return $"Uri: {Uri}, Email:{Email}, Size:{GravatarSize}, Image: {DefaultGravatarName(Image)}, CacheValidity:{CacheValidity}, CachingEnabled:{CachingEnabled}";
+		return $"Uri: {Uri}, Email: {Email}, Size: {GravatarSize}, Image: {DefaultGravatarName(Image)}, CacheValidity: {CacheValidity}, CachingEnabled: {CachingEnabled}";
 	}
 
 	/// <summary>On parent set.</summary>
