@@ -82,6 +82,7 @@ public class GravatarImageSource : StreamImageSource
 	internal int ParentWidth => (int)GetValue(ParentWidthProperty);
 
 	/// <summary>Gets or sets the image size.</summary>
+	/// <remarks>Size is limited to be in the range of 1 to 2048.</remarks>
 	int GravatarSize
 	{
 		get => gravatarSize;
