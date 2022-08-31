@@ -74,10 +74,10 @@ public class GravatarImageSource : StreamImageSource
 	[System.ComponentModel.TypeConverter(typeof(UriTypeConverter))]
 	public Uri Uri { get; set; }
 
-	/// <summary>Gets or sets the parent height.</summary>
+	/// <summary>Gets the parent height.</summary>
 	internal int ParentHeight => (int)GetValue(ParentHeightProperty);
 
-	/// <summary>Gets or sets the parent width.</summary>
+	/// <summary>Gets the parent width.</summary>
 	internal int ParentWidth => (int)GetValue(ParentWidthProperty);
 
 	/// <summary>Gets or sets the image size.</summary>
