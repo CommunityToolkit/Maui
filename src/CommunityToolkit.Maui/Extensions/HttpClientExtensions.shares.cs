@@ -10,7 +10,7 @@ public static partial class HttpClientExtensions
 {
 	/// <summary>Download stream Async.</summary>
 	/// <param name="client">this HttpClient.</param>
-	/// <param name="uri">Uri to stream or cancel.</param>
+	/// <param name="uri">Target uri.</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>Task <see cref="Task{TResult}"/> result.</returns>
 	public static async Task<Stream> DownloadStreamAsync(this HttpClient client, Uri? uri, CancellationToken cancellationToken)
