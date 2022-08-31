@@ -9,7 +9,7 @@ using Microsoft.Maui.Controls;
 public static partial class HttpClientExtensions
 {
 	/// <summary>Get stream from uri.</summary>
-	/// <param name="client">this HttpClient.</param>
+	/// <param name="client"><see href="HttpClient">.</param>
 	/// <param name="uri">Target uri.</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>Task <see cref="Task{TResult}"/> result.</returns>
