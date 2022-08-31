@@ -1,6 +1,5 @@
 ﻿namespace CommunityToolkit.Maui.ImageSources;
 
-using System.Diagnostics;
 using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Controls;
 
@@ -36,7 +35,7 @@ public class GravatarImageSource : StreamImageSource
 	/// <summary>Initializes a new instance of the <see cref="GravatarImageSource"/> class.</summary>
 	public GravatarImageSource()
 	{
-		Stream = new Func<CancellationToken, Task<Stream>>(cancelationToken => DownloadStreamAsync(Uri, cancelationToken));
+		Stream = new Func<CancellationToken, Task<Stream>>(cancelationToken => singletonHttpClient.DownloadStreamAsync(Uri, cancelationToken));
 		Uri = new Uri(defaultGravatarImageAddress);
 	}
 
@@ -146,19 +145,6 @@ public class GravatarImageSource : StreamImageSource
 
 		gravatarImageSource.GravatarSize = Math.Min(intNewValue, gravatarImageSource.GravatarSize);
 		gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, gravatarImageSource.Image);
-	}
-
-	async Task<Stream> DownloadStreamAsync(Uri? uri, CancellationToken cancellationToken)
-	{
-		try
-		{
-			return await StreamWrapper.GetStreamAsync(uri, cancellationToken, singletonHttpClient).ConfigureAwait(false);
-		}
-		catch (Exception ex)
-		{
-			Debug.WriteLine($"Error getting stream for {Uri}: {ex}");
-			return System.IO.Stream.Null;
-		}
 	}
 
 	void HandleNewUriRequested(string? email, DefaultImage image)
