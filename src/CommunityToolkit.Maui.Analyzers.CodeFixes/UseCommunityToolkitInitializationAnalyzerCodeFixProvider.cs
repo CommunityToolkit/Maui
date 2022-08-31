@@ -40,7 +40,7 @@ public class UseCommunityToolkitInitializationAnalyzerCodeFixProvider : CodeFixP
 			diagnostic);
 	}
 
-	async Task<Document> AddUseCommunityToolkit(Document document, InvocationExpressionSyntax invocationExpression, CancellationToken cancellationToken)
+	static async Task<Document> AddUseCommunityToolkit(Document document, InvocationExpressionSyntax invocationExpression, CancellationToken cancellationToken)
 	{
 		var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 		if (root is null)
