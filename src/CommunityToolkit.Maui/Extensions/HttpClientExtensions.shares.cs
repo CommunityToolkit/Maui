@@ -8,7 +8,7 @@ using Microsoft.Maui.Controls;
 /// <summary>HttpClient extensions.</summary>
 public static partial class HttpClientExtensions
 {
-	/// <summary>Download stream Async.</summary>
+	/// <summary>Get stream from uri.</summary>
 	/// <param name="client">this HttpClient.</param>
 	/// <param name="uri">Target uri.</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
