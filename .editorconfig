@@ -52,6 +52,9 @@ dotnet_style_require_accessibility_modifiers = omit_if_default:error
 # CA1063: Implement IDisposable Correctly
 dotnet_diagnostic.CA1063.severity = error
 
+# CA1001: Type owns disposable field(s) but is not disposable
+dotnet_diagnostic.CA1001.severity = error
+
 # Add braces (IDE0011)
 csharp_prefer_braces = true
 dotnet_diagnostic.IDE0011.severity = error
@@ -92,7 +95,7 @@ dotnet_naming_rule.instance_fields_should_be_camel_case.style = instance_field_s
 dotnet_naming_symbols.instance_fields.applicable_kinds = field
 
 dotnet_naming_style.instance_field_style.capitalization = camel_case
-dotnet_naming_style.instance_field_style.required_prefix = 
+dotnet_naming_style.instance_field_style.required_prefix =
 
 ## Static fields are camelCase
 dotnet_naming_rule.static_fields_should_be_camel_case.severity = error
@@ -104,8 +107,26 @@ dotnet_naming_symbols.static_fields.required_modifiers = static
 dotnet_naming_symbols.static_fields.applicable_accessibilities = internal, private, protected, protected_internal, private_protected
 
 dotnet_naming_style.static_field_style.capitalization = camel_case
-dotnet_naming_style.static_field_style.required_prefix = 
+dotnet_naming_style.static_field_style.required_prefix =
 
 # Modifier preferences
 csharp_prefer_static_local_function = true:suggestion
 csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async:error
+
+# CA1822: Member does not access instance data and can be marked as static
+dotnet_diagnostic.CA1822.severity = error
+
+# CA1050: Declare types in namespaces
+dotnet_diagnostic.CA1050.severity = error
+
+# CA2016: Forward the 'cancellationToken' parameter methods that take one
+dotnet_diagnostic.CA2016.severity = error
+
+# CA2208: Method passes parameter as the paramName argument to a ArgumentNullException constructor. Replace this argument with one of the method's parameter names. Note that the provided parameter name should have the exact casing as declared on the method.
+dotnet_diagnostic.CA2208.severity = error
+
+# CA1834: Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string
+dotnet_diagnostic.CA1834.severity = error
+
+# IDE0220: Add explicit cast
+dotnet_diagnostic.IDE0220.severity = error

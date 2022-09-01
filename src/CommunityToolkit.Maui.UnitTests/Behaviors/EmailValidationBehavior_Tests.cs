@@ -5,6 +5,16 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
 public class EmailValidationBehavior_Tests : BaseTest
 {
+	public static IReadOnlyList<object[]> NonDefaultKeyboardData { get; } = new[]
+	{
+		new[] { Keyboard.Plain },
+		new[] { Keyboard.Numeric },
+		new[] { Keyboard.Chat },
+		new[] { Keyboard.Telephone },
+		new[] { Keyboard.Text },
+		new[] { Keyboard.Url },
+	};
+
 	// Data from https://codefool.tumblr.com/post/15288874550/list-of-valid-and-invalid-email-addresses
 	public static IReadOnlyList<object?[]> TestData { get; } = new[]
 	{
@@ -61,5 +71,105 @@ public class EmailValidationBehavior_Tests : BaseTest
 
 		// Assert
 		Assert.Equal(expectedValue, behavior.IsValid);
+	}
+
+	[Fact]
+	public void EnsureEntryEmailKeyboardWhenDefaultKeyboardAssigned()
+	{
+		// Arrange
+		var behavior = new EmailValidationBehavior();
+
+		var entry = new Entry
+		{
+			Text = "mabuta@gmail.com"
+		};
+
+		// Act 
+		entry.Behaviors.Add(behavior);
+
+		// Assert
+		Assert.Equal(Keyboard.Email, entry.Keyboard);
+
+		// Act
+		entry.Behaviors.Remove(behavior);
+
+		// Assert
+		Assert.Equal(Keyboard.Default, entry.Keyboard);
+	}
+
+	[Fact]
+	public void EnsureEditorEmailKeyboardWhenDefaultKeyboardAssigned()
+	{
+		// Arrange
+		var behavior = new EmailValidationBehavior();
+
+		var editor = new Editor
+		{
+			Text = "mabuta@gmail.com"
+		};
+
+		// Act 
+		editor.Behaviors.Add(behavior);
+
+		// Assert
+		Assert.Equal(Keyboard.Email, editor.Keyboard);
+
+		// Act
+		editor.Behaviors.Remove(behavior);
+
+		// Assert
+		Assert.Equal(Keyboard.Default, editor.Keyboard);
+	}
+
+	[Theory]
+	[MemberData(nameof(NonDefaultKeyboardData))]
+	public void EnsureEntryKeyboardNotOverwritten(Keyboard keyboard)
+	{
+		// Arrange
+		var behavior = new EmailValidationBehavior();
+
+		var entry = new Entry
+		{
+			Text = "mabuta@gmail.com",
+			Keyboard = keyboard
+		};
+
+		// Act 
+		entry.Behaviors.Add(behavior);
+
+		// Assert
+		Assert.Equal(keyboard, entry.Keyboard);
+
+		// Act
+		entry.Behaviors.Remove(behavior);
+
+		// Assert
+		Assert.Equal(keyboard, entry.Keyboard);
+	}
+
+	[Theory]
+	[MemberData(nameof(NonDefaultKeyboardData))]
+	public void EnsureEditorEmailKeyboardNotOverwritten(Keyboard keyboard)
+	{
+		// Arrange
+		var behavior = new EmailValidationBehavior();
+
+		var editor = new Editor
+		{
+			Text = "mabuta@gmail.com",
+			Keyboard = keyboard
+		};
+
+		// Act 
+		editor.Behaviors.Add(behavior);
+
+		// Assert
+		Assert.Equal(keyboard, editor.Keyboard);
+
+		// Act
+		editor.Behaviors.Remove(behavior);
+
+		// Assert
+		Assert.Equal(keyboard, editor.Keyboard);
 	}
 }

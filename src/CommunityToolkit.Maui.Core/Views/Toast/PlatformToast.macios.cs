@@ -7,10 +7,12 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// Toast for iOS + MacCatalyst
 /// </summary>
-public class PlatformToast : Alert
+public class PlatformToast : Alert, IDisposable
 {
 	readonly PaddedLabel messageLabel;
 	internal const float defaultPadding = 10;
+
+	bool isDisposed;
 
 	/// <summary>
 	/// Initialize <see cref="PlatformToast"/>
@@ -48,6 +50,11 @@ public class PlatformToast : Alert
 	}
 
 	/// <summary>
+	/// Finalizer for <see cref="PlatformToast"/>
+	/// </summary>
+	~PlatformToast() => Dispose(false);
+
+	/// <summary>
 	/// Toast Message
 	/// </summary>
 	public string Message
@@ -83,6 +90,27 @@ public class PlatformToast : Alert
 		{
 			var em = Font.PointSize > 0 ? GetEmFromPx(Font.PointSize, value) : 0;
 			messageLabel.AttributedText = new NSAttributedString(Message, new CTStringAttributes() { KerningAdjustment = (float)em });
+		}
+	}
+
+	/// <inheritdoc />
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	/// <inheritdoc />
+	protected virtual void Dispose(bool isDisposing)
+	{
+		if (!isDisposed)
+		{
+			if (isDisposing)
+			{
+				messageLabel.Dispose();
+			}
+
+			isDisposed = true;
 		}
 	}
 
