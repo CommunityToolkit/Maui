@@ -52,6 +52,7 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 		Lines.CollectionChanged += OnLinesCollectionChanged;
 	}
 
+	/// <inheritdoc/>
 	protected override void Dispose(bool disposing)
 	{
 		if (disposing)
