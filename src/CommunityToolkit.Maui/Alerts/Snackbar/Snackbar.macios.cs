@@ -4,7 +4,6 @@ using CoreGraphics;
 using Microsoft.Maui.Platform;
 using UIKit;
 
-
 namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Snackbar

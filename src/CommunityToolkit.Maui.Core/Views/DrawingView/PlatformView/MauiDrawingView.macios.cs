@@ -52,6 +52,16 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 		Lines.CollectionChanged += OnLinesCollectionChanged;
 	}
 
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			currentPath.Dispose();
+		}
+
+		base.Dispose(disposing);
+	}
+
 	void DetectScrollViews()
 	{
 		if (scrollViewParents.Count > 0)

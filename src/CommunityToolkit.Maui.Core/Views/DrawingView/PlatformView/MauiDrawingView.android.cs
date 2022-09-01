@@ -18,6 +18,16 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 		previousPoint = new();
 	}
 
+	protected override void Dispose(bool disposing)
+	{
+		if(disposing)
+		{
+			currentPath.Dispose();
+		}
+
+		base.Dispose(disposing);
+	}
+
 	/// <inheritdoc />
 	public override bool OnTouchEvent(MotionEvent? e)
 	{

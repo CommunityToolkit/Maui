@@ -1,5 +1,4 @@
-﻿using System;
-using Windows.UI.Notifications;
+﻿using Windows.UI.Notifications;
 using static CommunityToolkit.Maui.Extensions.ToastNotificationExtensions;
 
 namespace CommunityToolkit.Maui.Alerts;
