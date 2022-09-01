@@ -1,11 +1,31 @@
-﻿using Windows.UI.Notifications;
+﻿using System;
+using Windows.UI.Notifications;
 using static CommunityToolkit.Maui.Extensions.ToastNotificationExtensions;
 
 namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Toast
 {
-	private static partial void DismissPlatform(CancellationToken token)
+	static Windows.UI.Notifications.ToastNotification? PlatformToast { get; set; }
+
+	/// <summary>
+	/// Dispose Toast
+	/// </summary>
+	protected virtual void Dispose(bool isDisposing)
+	{
+		if (isDisposed)
+		{
+			return;
+		}
+
+		if (isDisposing)
+		{
+		}
+
+		isDisposed = true;
+	}
+
+	static void DismissPlatform(CancellationToken token)
 	{
 		if (PlatformToast is not null)
 		{
@@ -17,7 +37,7 @@ public partial class Toast
 		}
 	}
 
-	private partial void ShowPlatform(CancellationToken token)
+	void ShowPlatform(CancellationToken token)
 	{
 		DismissPlatform(token);
 		token.ThrowIfCancellationRequested();

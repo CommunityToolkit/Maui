@@ -12,9 +12,29 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Snackbar
 {
+	static Google.Android.Material.Snackbar.Snackbar? PlatformSnackbar { get; set; }
+
 	TaskCompletionSource<bool>? dismissedTCS;
 
-	private async partial Task DismissPlatform(CancellationToken token)
+	/// <summary>
+	/// Dispose Snackbar
+	/// </summary>
+	protected virtual void Dispose(bool isDisposing)
+	{
+		if (isDisposed)
+		{
+			return;
+		}
+
+		if (isDisposing)
+		{
+			PlatformSnackbar?.Dispose();
+		}
+
+		isDisposed = true;
+	}
+
+	async Task DismissPlatform(CancellationToken token)
 	{
 		if (PlatformSnackbar is null)
 		{
@@ -37,7 +57,7 @@ public partial class Snackbar
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	private async partial Task ShowPlatform(CancellationToken token)
+	async Task ShowPlatform(CancellationToken token)
 	{
 		await DismissPlatform(token);
 		token.ThrowIfCancellationRequested();

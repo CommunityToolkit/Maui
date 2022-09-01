@@ -43,6 +43,15 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 		SetParentTouches(true);
 	}
 
+	/// <summary>
+	/// Initialize resources
+	/// </summary>
+	public void Initialize()
+	{
+		Drawable = new DrawingViewDrawable(this);
+		Lines.CollectionChanged += OnLinesCollectionChanged;
+	}
+
 	void DetectScrollViews()
 	{
 		if (scrollViewParents.Count > 0)
@@ -74,5 +83,10 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 	void Invalidate()
 	{
 		SetNeedsDisplay();
+	}
+
+	void Redraw()
+	{
+		Invalidate();
 	}
 }

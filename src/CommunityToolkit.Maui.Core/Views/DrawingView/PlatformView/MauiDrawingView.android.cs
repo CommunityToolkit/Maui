@@ -60,4 +60,18 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 
 		return true;
 	}
+
+	/// <summary>
+	/// Initialize resources
+	/// </summary>
+	public void Initialize()
+	{
+		Drawable = new DrawingViewDrawable(this);
+		Lines.CollectionChanged += OnLinesCollectionChanged;
+	}
+
+	void Redraw()
+	{
+		Invalidate();
+	}
 }

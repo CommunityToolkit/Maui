@@ -4,14 +4,35 @@ using CoreGraphics;
 using Microsoft.Maui.Platform;
 using UIKit;
 
+
 namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Snackbar
 {
+	static CommunityToolkit.Maui.Core.Views.PlatformSnackbar? PlatformSnackbar { get; set; }
+
+	/// <summary>
+	/// Dispose Snackbar
+	/// </summary>
+	protected virtual void Dispose(bool isDisposing)
+	{
+		if (isDisposed)
+		{
+			return;
+		}
+
+		if (isDisposing)
+		{
+			PlatformSnackbar?.Dispose();
+		}
+
+		isDisposed = true;
+	}
+
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
-	private static partial Task DismissPlatform(CancellationToken token)
+	static Task DismissPlatform(CancellationToken token)
 	{
 		if (PlatformSnackbar is not null)
 		{
@@ -26,7 +47,7 @@ public partial class Snackbar
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	private async partial Task ShowPlatform(CancellationToken token)
+	async Task ShowPlatform(CancellationToken token)
 	{
 		await DismissPlatform(token);
 		token.ThrowIfCancellationRequested();

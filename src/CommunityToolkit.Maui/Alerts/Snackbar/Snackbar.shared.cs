@@ -1,13 +1,5 @@
 using CommunityToolkit.Maui.Core;
 
-#if ANDROID
-using PlatformSnackbar = Google.Android.Material.Snackbar.Snackbar;
-#elif IOS || MACCATALYST
-using PlatformSnackbar = CommunityToolkit.Maui.Core.Views.PlatformSnackbar;
-#elif WINDOWS
-using PlatformSnackbar = Windows.UI.Notifications.ToastNotification;
-#endif
-
 namespace CommunityToolkit.Maui.Alerts;
 
 /// <inheritdoc/>
@@ -100,10 +92,6 @@ public partial class Snackbar : ISnackbar
 		};
 	}
 
-#if ANDROID || IOS || MACCATALYST || WINDOWS
-	static PlatformSnackbar? PlatformSnackbar { get; set; }
-#endif
-
 	/// <summary>
 	/// Dispose Snackbar
 	/// </summary>
@@ -125,48 +113,6 @@ public partial class Snackbar : ISnackbar
 
 	internal static TimeSpan GetDefaultTimeSpan() => TimeSpan.FromSeconds(3);
 
-	/// <summary>
-	/// Dispose Snackbar
-	/// </summary>
-	protected virtual void Dispose(bool isDisposing)
-	{
-		if (isDisposed)
-		{
-			return;
-		}
-
-		if (isDisposing)
-		{
-#if ANDROID || IOS || MACCATALYST
-			PlatformSnackbar?.Dispose();
-#endif
-		}
-
-		isDisposed = true;
-	}
-
-#if !(IOS || ANDROID || MACCATALYST || WINDOWS)
-	/// <inheritdoc/>
-	private partial Task ShowPlatform(CancellationToken token)
-	{
-		token.ThrowIfCancellationRequested();
-
-		OnShown();
-
-		return Task.CompletedTask;
-	}
-
-	/// <inheritdoc/>
-	private partial Task DismissPlatform(CancellationToken token)
-	{
-		token.ThrowIfCancellationRequested();
-
-		OnDismissed();
-
-		return Task.CompletedTask;
-	}
-#endif
-
 	void OnShown()
 	{
 		IsShown = true;
@@ -178,14 +124,6 @@ public partial class Snackbar : ISnackbar
 		IsShown = false;
 		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Dismissed));
 	}
-
-	private partial Task ShowPlatform(CancellationToken token);
-
-#if IOS || MACCATALYST
-	private static partial Task DismissPlatform(CancellationToken token);
-#else
-	private partial Task DismissPlatform(CancellationToken token);
-#endif
 }
 
 /// <summary>
