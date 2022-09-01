@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls;
 
 /// <summary>Gravatar image source.</summary>
 /// <remarks>Note that <see cref="UriImageSource"/> is sealed and can't be used as a parent!</remarks>
-public class GravatarImageSource : StreamImageSource
+public class GravatarImageSource : StreamImageSource, IDisposable
 {
 	/// <summary>The backing store for the <see cref="CacheValidity" /> bindable property.</summary>
 	public static readonly BindableProperty CacheValidityProperty = BindableProperty.Create(nameof(CacheValidity), typeof(TimeSpan), typeof(GravatarImageSource), TimeSpan.FromDays(1));
@@ -30,8 +30,8 @@ public class GravatarImageSource : StreamImageSource
 	const int defaultSize = 80;
 	static readonly HttpClient singletonHttpClient = new();
 	int gravatarSize = -1;
-	CancellationTokenSource? tokenSource;
 	Uri? lastDispatch;
+	CancellationTokenSource? tokenSource;
 
 	/// <summary>Initializes a new instance of the <see cref="GravatarImageSource"/> class.</summary>
 	public GravatarImageSource()
@@ -89,11 +89,28 @@ public class GravatarImageSource : StreamImageSource
 		set => gravatarSize = Math.Clamp(value, 1, 2048);
 	}
 
+	/// <summary>Dispose <see cref="GravatarImageSource"/>.</summary>
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
 	/// <summary>Returns the Uri as a string.</summary>
 	/// <returns>String of the URI.</returns>
 	public override string ToString()
 	{
 		return $"Uri: {Uri}, Email: {Email}, Size: {GravatarSize}, Image: {DefaultGravatarName(Image)}, CacheValidity: {CacheValidity}, CachingEnabled: {CachingEnabled}";
+	}
+
+	/// <summary>Dispose <see cref="GravatarImageSource"/>.</summary>
+	/// <param name="isDisposing">Is disposing.</param>
+	protected virtual void Dispose(bool isDisposing)
+	{
+		if (isDisposing && tokenSource is not null)
+		{
+			tokenSource.Dispose();
+		}
 	}
 
 	/// <summary>On parent set.</summary>
