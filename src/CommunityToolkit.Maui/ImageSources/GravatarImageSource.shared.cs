@@ -31,6 +31,7 @@ public class GravatarImageSource : StreamImageSource
 	static readonly HttpClient singletonHttpClient = new();
 	int gravatarSize = -1;
 	CancellationTokenSource? tokenSource;
+	Uri? lastDispatch;
 
 	/// <summary>Initializes a new instance of the <see cref="GravatarImageSource"/> class.</summary>
 	public GravatarImageSource()
@@ -169,8 +170,13 @@ public class GravatarImageSource : StreamImageSource
 			tokenSource.Dispose();
 		}
 
+		if (Uri.Equals(lastDispatch))
+		{
+			return;
+		}
+
 		tokenSource = new CancellationTokenSource();
-		Task.Delay(cancellationTokenSourceTimeout, tokenSource.Token).ContinueWith(task =>
+		_ = Task.Delay(cancellationTokenSourceTimeout, tokenSource.Token).ContinueWith(task =>
 		{
 			if (task.IsFaulted && task.Exception is not null)
 			{
@@ -183,6 +189,7 @@ public class GravatarImageSource : StreamImageSource
 			}
 
 			CancellationTokenSource?.Cancel();
+			lastDispatch = Uri;
 			Dispatcher.DispatchIfRequired(OnSourceChanged);
 		});
 	}
