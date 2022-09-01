@@ -20,11 +20,6 @@ public partial class Snackbar
 			return;
 		}
 
-		if (isDisposing)
-		{
-			PlatformSnackbar?.Dispose();
-		}
-
 		isDisposed = true;
 	}
 
