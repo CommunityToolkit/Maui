@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Maui.Platform;
+﻿using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Input;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WColor = Microsoft.UI.Colors;
