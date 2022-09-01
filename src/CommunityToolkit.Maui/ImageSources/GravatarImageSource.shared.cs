@@ -55,7 +55,7 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 	}
 
 	/// <summary>Gets or sets a value indicating whether <see cref="GravatarImageSource"/> has been disposed.</summary>
-	public bool Disposed { get; set; }
+	public bool IsDisposed { get; set; }
 
 	/// <summary>Gets or sets the email address.</summary>
 	public string? Email
@@ -110,9 +110,9 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 	/// <param name="isDisposing">Is disposing.</param>
 	protected virtual void Dispose(bool isDisposing)
 	{
-		if (!Disposed)
+		if (!IsDisposed)
 		{
-			Disposed = true;
+			IsDisposed = true;
 			if (isDisposing && tokenSource is not null)
 			{
 				tokenSource.Dispose();

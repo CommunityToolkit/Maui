@@ -115,9 +115,24 @@ public class GravatarImageSourceTests : BaseHandlerTest
 	public void IsDisposed()
 	{
 		var gravatarImageSource = new GravatarImageSource();
-		Assert.False(gravatarImageSource.Disposed);
+		Assert.False(gravatarImageSource.IsDisposed);
 		gravatarImageSource.Dispose();
-		Assert.True(gravatarImageSource.Disposed);
+		Assert.True(gravatarImageSource.IsDisposed);
+	}
+
+	[Fact]
+	public void IsDisposedDisposeTokenSource()
+	{
+		Image testControl = new()
+		{
+			Source = new GravatarImageSource()
+		};
+		Assert.True(testControl.Source is GravatarImageSource);
+		testControl.Layout(new Rect(0, 0, 37, 73));
+
+		Assert.False(((GravatarImageSource)testControl.Source).IsDisposed);
+		((GravatarImageSource)testControl.Source).Dispose();
+		Assert.True(((GravatarImageSource)testControl.Source).IsDisposed);
 	}
 
 	[Fact]
