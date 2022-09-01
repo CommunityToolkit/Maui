@@ -140,7 +140,7 @@ sealed class MathExpression
 		var output = new List<string>();
 		var stack = new Stack<(string Name, MathOperatorPrecedence Precedence)>();
 
-		foreach (Match? match in matches)
+		foreach (var match in matches.Cast<Match>())
 		{
 			if (match == null || string.IsNullOrEmpty(match.Value))
 			{
