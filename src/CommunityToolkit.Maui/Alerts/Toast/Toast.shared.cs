@@ -139,16 +139,19 @@ public partial class Toast : IToast
 	static PlatformToast? PlatformToast { get; set; }
 #endif
 
-
+#if !(IOS || ANDROID || MACCATALYST || WINDOWS)
+	private static partial void ShowPlatform(CancellationToken token);
+#else
 	private partial void ShowPlatform(CancellationToken token);
+#endif
 
-	private partial void DismissPlatform(CancellationToken token);
+	private static partial void DismissPlatform(CancellationToken token);
 
 #if !(IOS || ANDROID || MACCATALYST || WINDOWS)
 	/// <summary>
 	/// Show Toast
 	/// </summary>
-	private partial void ShowPlatform(CancellationToken token)
+	private static partial void ShowPlatform(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 	}
@@ -156,7 +159,7 @@ public partial class Toast : IToast
 	/// <summary>
 	/// Dismiss Toast
 	/// </summary>
-	private partial void DismissPlatform(CancellationToken token)
+	private static partial void DismissPlatform(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 	}

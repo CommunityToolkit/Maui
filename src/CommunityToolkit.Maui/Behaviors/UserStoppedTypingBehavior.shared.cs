@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// <summary>
 /// The <see cref="UserStoppedTypingBehavior"/> is a behavior that allows the user to trigger an action when a user has stopped data input any <see cref="InputView"/> derivate like <see cref="Entry"/> or <see cref="SearchBar"/>. Examples of its usage include triggering a search when a user has stopped entering their search query.
 /// </summary>
-public class UserStoppedTypingBehavior : BaseBehavior<InputView>
+public class UserStoppedTypingBehavior : BaseBehavior<InputView>, IDisposable
 {
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Command"/> property.
@@ -39,6 +39,10 @@ public class UserStoppedTypingBehavior : BaseBehavior<InputView>
 		= BindableProperty.Create(nameof(ShouldDismissKeyboardAutomatically), typeof(bool), typeof(UserStoppedTypingBehavior), false);
 
 	CancellationTokenSource? tokenSource;
+	bool isDisposed;
+
+	/// <inheritdoc />
+	~UserStoppedTypingBehavior() => Dispose(false);
 
 	/// <summary>
 	/// Command that is triggered when the <see cref="StoppedTypingTimeThreshold" /> is reached. When <see cref="MinimumLengthThreshold"/> is set, it's only triggered when both conditions are met. This is a bindable property.
@@ -85,6 +89,13 @@ public class UserStoppedTypingBehavior : BaseBehavior<InputView>
 		set => SetValue(ShouldDismissKeyboardAutomaticallyProperty, value);
 	}
 
+	/// <inheritdoc />
+	public void Dispose()
+	{
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
+	}
+
 	/// <inheritdoc/>
 	protected override void OnViewPropertyChanged(InputView sender, PropertyChangedEventArgs e)
 	{
@@ -93,6 +104,20 @@ public class UserStoppedTypingBehavior : BaseBehavior<InputView>
 		if (e.PropertyName == InputView.TextProperty.PropertyName)
 		{
 			OnTextPropertyChanged();
+		}
+	}
+
+	/// <inheritdoc />
+	protected virtual void Dispose(bool disposing)
+	{
+		if (!isDisposed)
+		{
+			if (disposing)
+			{
+				tokenSource?.Dispose();
+			}
+
+			isDisposed = true;
 		}
 	}
 

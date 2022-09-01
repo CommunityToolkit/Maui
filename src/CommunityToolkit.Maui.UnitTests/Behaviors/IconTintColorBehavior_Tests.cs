@@ -3,6 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
+#pragma warning disable CA1416 // Validate platform compatibility
 public class IconTintColorBehavior_Tests : BaseTest
 {
 	[Fact]
@@ -25,4 +26,5 @@ public class IconTintColorBehavior_Tests : BaseTest
 
 		Assert.Equal(Colors.Blue, iconTintColorBehavior.TintColor);
 	}
+#pragma warning restore CA1416 // Validate platform compatibility
 }
