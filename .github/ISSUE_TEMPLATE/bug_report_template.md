@@ -24,10 +24,17 @@ body:
     required: true
 - type: textarea
   attributes:
-    label: Steps To Reproduce (Attachment is required)
+    label: Steps To Reproduce
     description: Steps to reproduce the behavior.
     placeholder: |
-      Please attach a small repro. Otherwise the issue will be marked with "Needs reproduction" label and will have a lower priority.
+      1. Open and run solution fron reproduction repository.
+      1. Click the button and observe the bug 🐞
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: Link to public reproduction project repository
+    description: Please add a link to a public [reproduction project](https://github.com/dotnet/maui/blob/main/.github/repro.md) repository. Otherwise the issue will be marked with "Needs reproduction" label and will have a lower priority. Attached zip files cannot be opened by us.
   validations:
     required: true
 - type: dropdown
@@ -39,6 +46,7 @@ body:
       - 1.0.0
       - 1.1.0
       - 1.2.0
+      - 1.3.0
   validations:
     required: true
 - type: textarea
