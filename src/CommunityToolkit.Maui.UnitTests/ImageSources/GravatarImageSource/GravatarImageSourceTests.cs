@@ -11,16 +11,6 @@ public class GravatarImageSourceTests : BaseHandlerTest
 	readonly DefaultImage image = DefaultImage.MonsterId;
 
 	[Fact]
-	public void ChangingEmailWithNoSizeDoesNotUpdateUri()
-	{
-		var gravatarImageSource = new GravatarImageSource
-		{
-			Email = email
-		};
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), gravatarImageSource.Uri);
-	}
-
-	[Fact]
 	public void ChangingEmailAndImageWithNoSizeDoesNotUpdateUri()
 	{
 		var gravatarImageSource = new GravatarImageSource
@@ -29,6 +19,16 @@ public class GravatarImageSourceTests : BaseHandlerTest
 			Image = image
 		};
 		Assert.Equal(image, gravatarImageSource.Image);
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), gravatarImageSource.Uri);
+	}
+
+	[Fact]
+	public void ChangingEmailWithNoSizeDoesNotUpdateUri()
+	{
+		var gravatarImageSource = new GravatarImageSource
+		{
+			Email = email
+		};
 		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), gravatarImageSource.Uri);
 	}
 
@@ -109,6 +109,15 @@ public class GravatarImageSourceTests : BaseHandlerTest
 	{
 		var gravatarImageSource = new GravatarImageSource();
 		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), gravatarImageSource.Uri);
+	}
+
+	[Fact]
+	public void IsDisposed()
+	{
+		var gravatarImageSource = new GravatarImageSource();
+		Assert.False(gravatarImageSource.Disposed);
+		gravatarImageSource.Dispose();
+		Assert.True(gravatarImageSource.Disposed);
 	}
 
 	[Fact]
