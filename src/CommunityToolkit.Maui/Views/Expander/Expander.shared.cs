@@ -1,11 +1,12 @@
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
+using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Views;
 
 /// <inheritdoc cref="IExpander"/>
 [ContentProperty(nameof(Content))]
-public class Expander : StackLayout, IExpander
+public class Expander : ContentView, IExpander
 {
 	readonly IGestureRecognizer tapGestureRecognizer;
 
@@ -42,7 +43,7 @@ public class Expander : StackLayout, IExpander
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Content"/> property.
 	/// </summary>
-	public static readonly BindableProperty ContentProperty
+	public static readonly new BindableProperty ContentProperty
 		= BindableProperty.Create(nameof(Content), typeof(IView), typeof(Expander), propertyChanged: OnContentPropertyChanged);
 
 	/// <summary>
@@ -77,7 +78,7 @@ public class Expander : StackLayout, IExpander
 	}
 
 	/// <inheritdoc />
-	public IView? Content
+	public new IView? Content
 	{
 		get => (IView?)GetValue(ContentProperty);
 		set => SetValue(ContentProperty, value);
@@ -139,7 +140,7 @@ public class Expander : StackLayout, IExpander
 
 	void Configure()
 	{
-		if (Header is null)
+		if (Header is null || Content is null)
 		{
 			return;
 		}
@@ -151,45 +152,38 @@ public class Expander : StackLayout, IExpander
 
 	void Layout()
 	{
-		Children.Clear();
+		var grid = new Grid();
+		grid.Children.Add(Header);
 		switch (Direction)
 		{
 			case ExpandDirection.Down:
-				Orientation = StackOrientation.Vertical;
-				Children.Add(Header);
-				if (IsExpanded && Content is not null)
+				grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+				grid.SetRow(Header, 0);
+				if (IsExpanded)
 				{
-					Children.Add(Content);
+					grid.Children.Add(Content);
+					grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+					grid.SetRow(Content, 1);
 				}
 				break;
 			case ExpandDirection.Up:
-				Orientation = StackOrientation.Vertical;
-				if (IsExpanded && Content is not null)
+				if (IsExpanded)
 				{
-					Children.Add(Content);
+					grid.Children.Add(Content);
+					grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+					grid.SetRow(Content, 0);
+					grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+					grid.SetRow(Header, 1);
 				}
-
-				Children.Add(Header);
-				break;
-			case ExpandDirection.Left:
-				Orientation = StackOrientation.Horizontal;
-				if (IsExpanded && Content is not null)
+				else
 				{
-					Children.Add(Content);
+					grid.RowDefinitions.Add(new RowDefinition());
+					grid.SetRow(Header, 0);
 				}
-
-				Children.Add(Header);
-				break;
-			case ExpandDirection.Right:
-				Orientation = StackOrientation.Horizontal;
-				Children.Add(Header);
-				if (IsExpanded && Content is not null)
-				{
-					Children.Add(Content);
-				}
-
 				break;
 		}
+
+		base.Content = grid;
 	}
 
 	void UpdateSize()

@@ -31,7 +31,7 @@
                     <Label Text="Level 0"/>
                 </mct:Expander.Header>
                 <mct:Expander.Content>
-                    <mct:Expander Direction="Left">
+                    <mct:Expander Direction="Down">
                         <mct:Expander.Header>
                             <Label Text="Level 1"/>
                         </mct:Expander.Header>
