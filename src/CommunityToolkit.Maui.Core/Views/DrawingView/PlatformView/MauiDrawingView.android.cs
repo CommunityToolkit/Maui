@@ -20,7 +20,7 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 
 	protected override void Dispose(bool disposing)
 	{
-		if(disposing)
+		if (disposing)
 		{
 			currentPath.Dispose();
 		}

@@ -87,16 +87,6 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView, IDisposable
 		OnCancel();
 	}
 
-	protected override void Dispose(bool disposing)
-	{
-		if (disposing)
-		{
-			currentPath.Dispose();
-		}
-
-		base.Dispose(disposing);
-	}
-
 	void Redraw()
 	{
 		Invalidate();
