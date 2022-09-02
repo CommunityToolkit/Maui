@@ -35,7 +35,7 @@ public class SetFocusOnEntryCompleted_Tests : BaseTest
 		Assert.True(entry2.IsFocused);
 	}
 
-	public Entry CreateEntry(VisualElement? nextElement = null)
+	static Entry CreateEntry(VisualElement? nextElement = null)
 	{
 		var entry = new Entry();
 

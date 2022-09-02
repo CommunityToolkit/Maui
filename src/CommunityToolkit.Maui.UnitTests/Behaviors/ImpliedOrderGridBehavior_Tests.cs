@@ -130,7 +130,7 @@ public class ImpliedOrderGridBehavior_Tests : BaseTest
 		Assert.Throws<Exception>(() => grid.Children.Add(throwLabel));
 	}
 
-	Grid CreateExceptionTestGrid()
+	static Grid CreateExceptionTestGrid()
 	{
 		var grid = new Grid();
 		grid.Behaviors.Add(new ImpliedOrderGridBehavior { ThrowOnLayoutWarning = true });
@@ -144,7 +144,7 @@ public class ImpliedOrderGridBehavior_Tests : BaseTest
 		return grid;
 	}
 
-	void AssertExpectedCoordinates(Grid grid, View view, int row, int column)
+	static void AssertExpectedCoordinates(Grid grid, View view, int row, int column)
 	{
 		grid.Children.Add(view);
 		Assert.Equal(row, Grid.GetRow(view));
