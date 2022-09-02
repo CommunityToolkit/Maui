@@ -24,7 +24,7 @@ public class ExpanderTests : BaseHandlerTest
 			IsExpanded = false
 		};
 
-		expander.Should().BeEquivalentTo(expectedDefaultValue);
+		expander.Should().BeEquivalentTo(expectedDefaultValue, config => config.Excluding(ctx => ctx.Id));
 	}
 
 	[Theory]
