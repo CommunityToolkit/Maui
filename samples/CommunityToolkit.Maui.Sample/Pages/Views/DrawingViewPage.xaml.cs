@@ -16,6 +16,9 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 		};
 	}
 
+	static double GetSide(double value) =>
+		double.IsNaN(value) || value <= 1 ? 200 : value;
+
 	void LoadPointsButtonClicked(object sender, EventArgs e)
 	{
 		DrawingViewControl.Lines.Clear();
@@ -70,10 +73,5 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 		var height = GetSide(GestureImage.Height);
 		var stream = await e.LastDrawingLine.GetImageStream(width, height, Colors.Gray.AsPaint());
 		GestureImage.Source = ImageSource.FromStream(() => stream);
-	}
-
-	double GetSide(double value)
-	{
-		return double.IsNaN(value) || value <= 1 ? 200 : value;
 	}
 }

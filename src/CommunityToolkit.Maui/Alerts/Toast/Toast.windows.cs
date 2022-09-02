@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Toast
 {
-	private partial void DismissPlatform(CancellationToken token)
+	private static partial void DismissPlatform(CancellationToken token)
 	{
 		if (PlatformToast is not null)
 		{

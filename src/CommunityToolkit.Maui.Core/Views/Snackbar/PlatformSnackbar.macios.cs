@@ -5,11 +5,9 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// UIView for Snackbar on iOS
 /// </summary>
-public class PlatformSnackbar : PlatformToast, IDisposable
+public class PlatformSnackbar : PlatformToast
 {
 	readonly PaddedButton actionButton;
-
-	bool isDisposed;
 
 	/// <summary>
 	/// Initialize <see cref="PlatformSnackbar"/>
@@ -51,11 +49,6 @@ public class PlatformSnackbar : PlatformToast, IDisposable
 	}
 
 	/// <summary>
-	/// Finalizer for <see cref="PlatformSnackbar"/>
-	/// </summary>
-	~PlatformSnackbar() => Dispose(false);
-
-	/// <summary>
 	/// Action that executes when the user clicks the Snackbar Action Button 
 	/// </summary>
 	public Action? Action { get; init; }
@@ -90,26 +83,15 @@ public class PlatformSnackbar : PlatformToast, IDisposable
 	/// <summary>
 	/// Dispose <see cref="PlatformSnackbar"/>
 	/// </summary>
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
-	}
-
-	/// <summary>
-	/// Dispose <see cref="PlatformSnackbar"/>
-	/// </summary>
 	/// <param name="isDisposing"></param>
-	protected virtual void Dispose(bool isDisposing)
+	protected override void Dispose(bool isDisposing)
 	{
-		if (isDisposed)
+		if (isDisposing)
 		{
-			return;
+			actionButton.TouchUpInside -= ActionButton_TouchUpInside;
 		}
 
-		actionButton.TouchUpInside -= ActionButton_TouchUpInside;
-
-		isDisposed = true;
+		base.Dispose(isDisposing);
 	}
 
 	void ActionButton_TouchUpInside(object? sender, EventArgs e)
