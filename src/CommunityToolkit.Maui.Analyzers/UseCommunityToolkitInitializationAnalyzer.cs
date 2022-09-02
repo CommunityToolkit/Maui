@@ -48,7 +48,7 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 	static bool CheckIfItIsUseMauiMethod(ExpressionStatementSyntax expressionStatement) =>
 		expressionStatement.DescendantNodes()
 							.OfType<GenericNameSyntax>()
-							.Any(x => x.Identifier.ValueText.Equals("UseMauiApp", StringComparison.InvariantCulture)
+							.Any(x => x.Identifier.ValueText.Equals("UseMauiApp", StringComparison.Ordinal)
 										&& x.TypeArgumentList.Arguments.Count is 1);
 
 	static bool HasUseMauiCommunityToolkit(SyntaxNode root)
