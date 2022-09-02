@@ -168,7 +168,7 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 			return;
 		}
 
-		gravatarImageSource.GravatarSize = Math.Min(intNewValue, gravatarImageSource.GravatarSize);
+		gravatarImageSource.GravatarSize = Math.Min(gravatarImageSource.ParentWidth, gravatarImageSource.ParentHeight);
 		gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, gravatarImageSource.Image);
 	}
 
