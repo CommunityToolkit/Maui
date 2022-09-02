@@ -6,15 +6,28 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// DrawingView Platform Control
 /// </summary>
+#if !(IOS || MACCATALYST || ANDROID)
+public partial class MauiDrawingView : IDisposable
+#else
 public partial class MauiDrawingView
+#endif
 {
 	readonly WeakEventManager weakEventManager = new();
+
+#if !(IOS || MACCATALYST || ANDROID)
+	bool isDisposed;
+#endif
 
 	bool isDrawing;
 	PointF previousPoint;
 	PathF currentPath = new();
 	MauiDrawingLine? currentLine;
 	Paint paint = new SolidPaint(DrawingViewDefaults.BackgroundColor);
+
+#if !(IOS || MACCATALYST || ANDROID)
+	/// <inheritdoc />
+	~MauiDrawingView() => Dispose(false);
+#endif
 
 	/// <summary>
 	/// Event raised when drawing line completed 
@@ -96,6 +109,30 @@ public partial class MauiDrawingView
 		currentPath.Dispose();
 		Lines.CollectionChanged -= OnLinesCollectionChanged;
 	}
+
+#if !(IOS || MACCATALYST || ANDROID)
+	/// <inheritdoc />
+	public void Dispose()
+	{
+		// Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
+	}
+
+	/// <inheritdoc />
+	protected virtual void Dispose(bool disposing)
+	{
+		if (!isDisposed)
+		{
+			if (disposing)
+			{
+				currentPath.Dispose();
+			}
+
+			isDisposed = true;
+		}
+	}
+#endif
 
 	void OnStart(PointF point)
 	{
@@ -185,12 +222,17 @@ public partial class MauiDrawingView
 		currentPath = new PathF();
 	}
 
+#if IOS || ANDROID || MACCATALYST || WINDOWS
 	void Redraw()
 	{
-#if IOS || ANDROID || MACCATALYST || WINDOWS
 		Invalidate();
-#endif
 	}
+#else
+	static void Redraw()
+	{
+
+	}
+#endif
 
 	class DrawingViewDrawable : IDrawable
 	{

@@ -11,7 +11,7 @@ public partial class Snackbar
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
-	private partial Task DismissPlatform(CancellationToken token)
+	private static partial Task DismissPlatform(CancellationToken token)
 	{
 		if (PlatformSnackbar is not null)
 		{

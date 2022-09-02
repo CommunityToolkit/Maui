@@ -4,6 +4,10 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>NETSDK1023</NoWarn>
+    <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
+    <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <!--CS1570: XML comment has badly formed XML 'Expected an end tag for element [parameter] -->
     <!--CS1571: XML comment on [construct] has a duplicate param tag for [parameter] -->
     <!--CS1572: XML comment has a param tag for '[parameter]', but there is no parameter by that name -->
@@ -11,10 +15,6 @@
     <!--CS1574: XML comment has cref attribute that could not be resolved-->
     <!--CS1734: XML comment has a paramref tag, but there is no parameter by that name-->
     <WarningsAsErrors>nullable,CS1570,CS1571,CS1572,CS1573,CS1574,CS1734</WarningsAsErrors>
-    <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
-    <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
-    
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
   <ItemGroup>
