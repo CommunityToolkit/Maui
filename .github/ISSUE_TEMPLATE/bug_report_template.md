@@ -1,6 +1,6 @@
 name: Bug Report
 description: Report a bug in the .NET MAUI Toolkit
-title: "[BUG] <title>"
+title: "[BUG] "
 labels: [bug, unverified]
 body:
 - type: checkboxes
@@ -37,26 +37,16 @@ body:
     description: Please add a link to a public [reproduction project](https://github.com/dotnet/maui/blob/main/.github/repro.md) repository. Otherwise the issue will be marked with "Needs reproduction" label and will have a lower priority. Attached zip files cannot be opened by us.
   validations:
     required: true
-- type: dropdown
-  attributes:
-    label: CommunityToolkit Version
-    description: What version of our library are you running?
-    multiple: false
-    options:
-      - 1.0.0
-      - 1.1.0
-      - 1.2.0
-      - 1.3.0
-  validations:
-    required: true
 - type: textarea
   attributes:
     label: Environment
     description: |
       examples:
+        - **.NET MAUI CommunityToolkit**: 1.2.0
         - **OS**: Windows 10 Build 10.0.19041.0
         - **.NET MAUI**: 6.0.408
     value: |
+        - .NET MAUI CommunityToolkit:
         - OS:
         - .NET MAUI:
     render: markdown
