@@ -111,7 +111,7 @@ public class EmailValidationBehavior : TextValidationBehavior
 
 			if (domainName.StartsWith('-'))
 			{
-				throw new ArgumentException("Domain name cannot start with hyphen");
+				throw new ArgumentException("Domain name cannot start with hyphen.");
 			}
 
 			return match.Groups[1].Value + domainName;
