@@ -4,6 +4,8 @@ using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml;
 using IMap = Microsoft.Maui.Maps.IMap;
+using Windows.Devices.Geolocation;
+using Microsoft.Maui.Devices.Sensors;
 
 namespace CommunityToolkit.Maui.Maps.Handlers;
 
@@ -67,7 +69,51 @@ public partial class MapHandlerWindows : MapHandler
 		CallJSMethod(handler.PlatformView, $"disableTraffic({(!map.IsTrafficEnabled).ToString().ToLower()});");
 	}
 
-	public static void MapIsShowingUser(IMapHandler handler, IMap map) { }
+	public static async void MapIsShowingUser(IMapHandler handler, IMap map)
+	{
+		if(map.IsShowingUser)
+		{
+			var location = await GetCurrentLocation();
+			if(location != null)
+			{
+				CallJSMethod(handler.PlatformView, $"addLocationPin({location.Latitude},{location.Longitude});");
+			}
+		}
+		else
+		{
+			CallJSMethod(handler.PlatformView, $"removeLocationPin();");
+		}
+	}
+
+	static CancellationTokenSource? cts;
+	static async Task<Location?> GetCurrentLocation()
+	{
+		
+
+		Location? location = null;
+		try
+		{
+			var request = new GeolocationRequest(GeolocationAccuracy.Best);
+			cts = new CancellationTokenSource();
+			var geolocator = new Geolocator
+			{
+				//DesiredAccuracyInMeters =  
+			};
+			var l = await geolocator.GetGeopositionAsync();
+			location = new Location(l.Coordinate.Latitude, l.Coordinate.Longitude);
+			// await Geolocation.GetLocationAsync(request, cts.Token);
+		}
+		catch (Exception ex)
+		{
+
+		}
+		finally
+		{
+			cts?.Dispose();
+			cts = null;	
+		}
+		return location;
+	}
 
 	public static void MapPins(IMapHandler handler, IMap map) { }
 
@@ -75,7 +121,7 @@ public partial class MapHandlerWindows : MapHandler
 
 	public void UpdateMapElement(IMapElement element)
 	{
-
+		
 	}
 
 	public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
@@ -106,6 +152,7 @@ public partial class MapHandlerWindows : MapHandler
 						<script type='text/javascript' src='https://www.bing.com/api/maps/mapcontrol?key={key}'></script>";
 		str += @"	<script type='text/javascript'>
 			                var map;
+							var locationPin;
 							var trafficManager; 
 			                function loadMap() {
 			                    map = new Microsoft.Maps.Map(document.getElementById('myMap'), {
@@ -177,7 +224,26 @@ public partial class MapHandlerWindows : MapHandler
 								map.setView({
 									center: new Microsoft.Maps.Location(latitude, longitude),
 								});
-							}	
+							}
+
+							function addLocationPin(latitude, longitude)
+							{
+								var location = new Microsoft.Maps.Location(latitude, longitude);
+								locationPin = new Microsoft.Maps.Pushpin(location, null);
+								map.entities.push(locationPin);
+								map.setView({
+									center: location
+								});
+							}
+					
+							function removeLocationPin()
+							{
+								if(locationPin != null)
+								{
+									map.entities.remove(locationPin);
+									locationPin = null;
+								}
+							}
 						</script>
 						<style>
 							body, html{
