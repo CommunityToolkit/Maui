@@ -105,7 +105,7 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
 	{
 		if (sender is not TView view)
 		{
-			throw new ArgumentException($"Behavior Cann Only Be Attached to {typeof(TView)}");
+			throw new ArgumentException($"Behavior can only be attached to {typeof(TView)}");
 		}
 
 		OnViewPropertyChanged(view, e);
