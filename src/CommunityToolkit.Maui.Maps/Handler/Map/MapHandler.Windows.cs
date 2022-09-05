@@ -13,19 +13,32 @@ using Microsoft.UI.Xaml;
 
 namespace CommunityToolkit.Maui.Maps.Handlers;
 
-public partial class MapHandler : ViewHandler<IMap, FrameworkElement>
+public partial class MapHandlerWindows : MapHandler
 {
+	internal static string? mapsKey;
 
-	public MapHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null) : base(mapper, commandMapper)
+	public MapHandlerWindows() : base(Mapper, CommandMapper)
 	{
+		Mapper.ModifyMapping(nameof(IMap.MapType), (handler, map, action) => MapMapType(handler, map));
+		Mapper.ModifyMapping(nameof(IMap.IsShowingUser), (handler, map, action) => MapIsShowingUser(handler, map));
+		Mapper.ModifyMapping(nameof(IMap.IsScrollEnabled), (handler, map, action) => MapIsScrollEnabled(handler, map));
+		Mapper.ModifyMapping(nameof(IMap.IsTrafficEnabled), (handler, map, action) => MapIsTrafficEnabled(handler, map));
+		Mapper.ModifyMapping(nameof(IMap.IsZoomEnabled), (handler, map, action) => MapIsZoomEnabled(handler, map));
+		Mapper.ModifyMapping(nameof(IMap.Pins), (handler, map, action) => MapPins(handler, map));
+		Mapper.ModifyMapping(nameof(IMap.Elements), (handler, map, action) => MapElements(handler, map));
+		CommandMapper.ModifyMapping(nameof(IMap.MoveToRegion), (handler, map, args, action) => MapMoveToRegion(handler, map, args));
 	}
-
 
 	/// <inheritdoc/>
 
 	protected override FrameworkElement CreatePlatformView()
 	{
-		var mapPage = GetMapHtmlPage("");
+		if (string.IsNullOrEmpty(mapsKey))
+		{
+			throw new InvalidOperationException("You need to specify a Bing Maps Key");
+		}
+
+		var mapPage = GetMapHtmlPage(mapsKey);
 		var webView = new MauiWebView();
 		webView.LoadHtml(mapPage, null);
 		return webView;
@@ -54,6 +67,10 @@ public partial class MapHandler : ViewHandler<IMap, FrameworkElement>
 
 	public static void MapIsShowingUser(IMapHandler handler, IMap map) { }
 
+	public static void MapPins(IMapHandler handler, IMap map) { }
+
+	public static void MapElements(IMapHandler handler, IMap map) { }
+
 	public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
 	{
 		MapSpan? newRegion = arg as MapSpan;
@@ -63,10 +80,7 @@ public partial class MapHandler : ViewHandler<IMap, FrameworkElement>
 		}
 	}
 
-	public static void MapPins(IMapHandler handler, IMap map) { }
-
-	public static void MapElements(IMapHandler handler, IMap map) { }
-
+	
 	static void CallJSMethod(FrameworkElement platformWebView, string script)
 	{
 		if (platformWebView is WebView2 webView2 && webView2.CoreWebView2 != null)
@@ -77,11 +91,6 @@ public partial class MapHandler : ViewHandler<IMap, FrameworkElement>
 
 	static string GetMapHtmlPage(string key)
 	{
-		if (string.IsNullOrEmpty(key))
-		{
-			throw new InvalidOperationException("You need to specify a Bing Maps Key");
-		}
-
 		var str = @$"<!DOCTYPE html>
 				<html>
 					<head>
@@ -178,4 +187,8 @@ public partial class MapHandler : ViewHandler<IMap, FrameworkElement>
 		return str;
 	}
 
+	public void UpdateMapElement(IMapElement element)
+	{
+		throw new NotImplementedException();
+	}
 }
