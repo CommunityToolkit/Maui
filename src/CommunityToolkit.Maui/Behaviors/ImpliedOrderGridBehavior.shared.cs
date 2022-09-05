@@ -115,7 +115,7 @@ public class ImpliedOrderGridBehavior : BaseBehavior<Grid>
 		{
 			for (var c = column; c < columnEnd; c++)
 			{
-				if (usedMatrix?[r][c] ?? throw new InvalidOperationException("Grid Child Not Added"))
+				if (usedMatrix?[r][c] ?? throw new InvalidOperationException("Grid child not added"))
 				{
 					LogWarning($"Cell at row {r} column {c} has already been used.", ThrowOnLayoutWarning);
 				}
