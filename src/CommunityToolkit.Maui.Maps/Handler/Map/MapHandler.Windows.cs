@@ -71,6 +71,11 @@ public partial class MapHandlerWindows : MapHandler
 
 	public static void MapElements(IMapHandler handler, IMap map) { }
 
+	public void UpdateMapElement(IMapElement element)
+	{
+
+	}
+
 	public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
 	{
 		MapSpan? newRegion = arg as MapSpan;
@@ -80,7 +85,6 @@ public partial class MapHandlerWindows : MapHandler
 		}
 	}
 
-	
 	static void CallJSMethod(FrameworkElement platformWebView, string script)
 	{
 		if (platformWebView is WebView2 webView2 && webView2.CoreWebView2 != null)
@@ -187,8 +191,5 @@ public partial class MapHandlerWindows : MapHandler
 		return str;
 	}
 
-	public void UpdateMapElement(IMapElement element)
-	{
-		throw new NotImplementedException();
-	}
+
 }
