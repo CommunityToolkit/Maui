@@ -39,9 +39,9 @@ public static class MauiProgram
 									options.SetShouldSuppressExceptionsInAnimations(false);
 								})
 #endif
-								.UseMauiCommunityToolkitMarkup()
 								.UseMauiMaps()
-								.UseMauiCommunityToolkitMaps()
+								.UseMauiCommunityToolkitMarkup()	
+								.UseMauiCommunityToolkitMaps("")
 								.UseMauiApp<App>();
 
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>()

@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Maps.Handlers;
+﻿using Microsoft.Maui.Maps.Handlers;
 using Microsoft.Maui.Maps;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
-using IMap = Microsoft.Maui.Maps.IMap;
 using Microsoft.UI.Xaml;
+using IMap = Microsoft.Maui.Maps.IMap;
 
 namespace CommunityToolkit.Maui.Maps.Handlers;
 
@@ -40,10 +34,18 @@ public partial class MapHandlerWindows : MapHandler
 
 		var mapPage = GetMapHtmlPage(mapsKey);
 		var webView = new MauiWebView();
+		webView.NavigationCompleted += WebViewNavigationCompleted;
 		webView.LoadHtml(mapPage, null);
 		return webView;
 	}
 
+	protected override void DisconnectHandler(FrameworkElement platformView)
+	{
+		if (PlatformView is MauiWebView mauiWebView)
+			mauiWebView.NavigationCompleted -= WebViewNavigationCompleted;
+
+		base.DisconnectHandler(platformView);
+	}
 
 	public static void MapMapType(IMapHandler handler, IMap map)
 	{
@@ -191,5 +193,9 @@ public partial class MapHandlerWindows : MapHandler
 		return str;
 	}
 
-
+	void WebViewNavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
+	{
+		//Update intital properties when our page is loaded
+		Mapper.UpdateProperties(this, VirtualView); ;
+	}
 }
