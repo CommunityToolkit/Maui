@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Interfaces;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 

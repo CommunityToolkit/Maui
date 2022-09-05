@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using CommunityToolkit.Maui.Core.Interfaces;
 
 namespace CommunityToolkit.Maui.Core;
 

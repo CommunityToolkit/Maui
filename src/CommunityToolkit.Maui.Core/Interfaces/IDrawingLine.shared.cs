@@ -1,6 +1,4 @@
-using System.Collections.ObjectModel;
-
-namespace CommunityToolkit.Maui.Core;
+namespace CommunityToolkit.Maui.Core.Interfaces;
 
 /// <summary>
 /// The Line object is used to describe the lines that are drawn on a <see cref="IDrawingView"/>.

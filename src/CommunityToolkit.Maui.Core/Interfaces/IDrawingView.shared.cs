@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace CommunityToolkit.Maui.Core;
+namespace CommunityToolkit.Maui.Core.Interfaces;
 
 /// <summary>
 /// The DrawingView allows you to draw one or multiple lines on a canvas

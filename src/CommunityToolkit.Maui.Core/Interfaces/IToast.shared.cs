@@ -1,4 +1,5 @@
-﻿namespace CommunityToolkit.Maui.Core;
+﻿namespace CommunityToolkit.Maui.Core.Interfaces;
+
 
 /// <summary>
 /// Toast
@@ -14,20 +15,4 @@ public interface IToast : IAlert
 	/// Toast font size
 	/// </summary>
 	double TextSize { get; }
-}
-
-/// <summary>
-/// Toast duration
-/// </summary>
-public enum ToastDuration
-{
-	/// <summary>
-	/// Displays Toast for a short time
-	/// </summary>
-	Short,
-
-	/// <summary>
-	/// Displays Toast for a long time
-	/// </summary>
-	Long
 }

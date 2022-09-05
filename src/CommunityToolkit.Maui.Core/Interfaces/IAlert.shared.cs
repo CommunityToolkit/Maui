@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.Core;
+﻿namespace CommunityToolkit.Maui.Core.Interfaces;
 
 /// <summary>
 /// Alert

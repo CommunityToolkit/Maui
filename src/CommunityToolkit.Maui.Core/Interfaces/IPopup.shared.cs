@@ -1,7 +1,8 @@
 ﻿using IElement = Microsoft.Maui.IElement;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
-namespace CommunityToolkit.Maui.Core;
+namespace CommunityToolkit.Maui.Core.Interfaces;
+
 
 /// <summary>
 /// Represents a small View that pops up at front the Page.

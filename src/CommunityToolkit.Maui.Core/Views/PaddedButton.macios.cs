@@ -5,6 +5,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// <see cref="UIButton"/> with Left, Top, Right and Bottom Padding
 /// </summary>
+#pragma warning disable
 public sealed class PaddedButton : UIButton
 {
 	/// <summary>
