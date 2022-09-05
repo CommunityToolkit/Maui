@@ -86,7 +86,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="6.0.1880" />
+    <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="$(MauiVersion)" />
     <PackageReference Include="Microsoft.Maui.Dependencies" Version="$(MauiVersion)">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
