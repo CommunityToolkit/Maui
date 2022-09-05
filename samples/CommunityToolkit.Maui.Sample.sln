@@ -32,6 +32,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{9F7D54C0
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Analyzers.UnitTests", "..\src\CommunityToolkit.Maui.Analyzers.UnitTests\CommunityToolkit.Maui.Analyzers.UnitTests.csproj", "{60B976B2-F3FA-494E-A28B-7BED2EAE990E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Maps", "..\src\CommunityToolkit.Maui.Maps\CommunityToolkit.Maui.Maps.csproj", "{6D2CACB2-9AAA-4F1F-B480-750F23D5FEA2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,6 +76,10 @@ Global
 		{60B976B2-F3FA-494E-A28B-7BED2EAE990E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{60B976B2-F3FA-494E-A28B-7BED2EAE990E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{60B976B2-F3FA-494E-A28B-7BED2EAE990E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D2CACB2-9AAA-4F1F-B480-750F23D5FEA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D2CACB2-9AAA-4F1F-B480-750F23D5FEA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D2CACB2-9AAA-4F1F-B480-750F23D5FEA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D2CACB2-9AAA-4F1F-B480-750F23D5FEA2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
