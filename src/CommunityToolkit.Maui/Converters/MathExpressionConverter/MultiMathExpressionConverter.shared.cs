@@ -36,7 +36,7 @@ public class MultiMathExpressionConverter : MultiValueConverterExtension, ICommu
 		var args = new List<double>();
 		foreach (var value in values)
 		{
-			var valueString = value?.ToString() ?? throw new ArgumentException("values cannot be null");
+			var valueString = value?.ToString() ?? throw new ArgumentException("Values cannot be null.");
 
 			var xValue = double.Parse(valueString);
 			args.Add(xValue);
