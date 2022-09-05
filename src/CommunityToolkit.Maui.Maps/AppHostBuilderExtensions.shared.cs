@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Maps.Handlers;
 
 namespace CommunityToolkit.Maui.Maps;
 
@@ -28,7 +29,7 @@ public static class AppHostBuilderExtensions
 
 	public static IMauiHandlersCollection AddMauiCommunityToolkitMaps(this IMauiHandlersCollection handlersCollection)
 	{
-		handlersCollection.AddHandler<Map, MapHandler>();
+		handlersCollection.AddHandler<Microsoft.Maui.Controls.Maps.Map, MapHandler>();
 
 		return handlersCollection;
 	}

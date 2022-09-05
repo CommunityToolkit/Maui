@@ -71,9 +71,6 @@
     <Compile Remove="**\windows\**\*.cs" />
     <None Include="**\windows\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="AppHostBuilderExtensions.shared.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj" />
@@ -81,7 +78,6 @@
 
   <ItemGroup>
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
-    <None Include="AppHostBuilderExtensions.shared.cs" />
     <None Include="ReadMe.txt" pack="true" PackagePath="." />
   </ItemGroup>
 
