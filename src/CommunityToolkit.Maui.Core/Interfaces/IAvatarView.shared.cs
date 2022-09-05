@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.Core;
+﻿namespace CommunityToolkit.Maui.Core.Interfaces;
 
 /// <summary>Avatar view interface.</summary>
 public interface IAvatarView : IBorderView, ILabel, Microsoft.Maui.IImage, IImageSource
