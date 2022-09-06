@@ -98,11 +98,16 @@ public partial class MapHandlerWindows : MapHandler
 
 	}
 
+	MapSpan? regionToGo;
 	public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
 	{
 		MapSpan? newRegion = arg as MapSpan;
 		if (newRegion != null)
 		{
+			if (handler is MapHandlerWindows mapHandler)
+			{
+				mapHandler.regionToGo = newRegion;
+			}
 			CallJSMethod(handler.PlatformView, $"setRegion({newRegion.Center.Latitude},{newRegion.Center.Longitude});");
 		}
 	}
@@ -253,7 +258,9 @@ public partial class MapHandlerWindows : MapHandler
 	void WebViewNavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
 	{
 		//Update intital properties when our page is loaded
-		Mapper.UpdateProperties(this, VirtualView); ;
+		Mapper.UpdateProperties(this, VirtualView);
+		if (regionToGo != null)
+			MapMoveToRegion(this, VirtualView, regionToGo);
 	}
 
 	void WebViewWebMessageReceived(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs args)
