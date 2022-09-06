@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml;
 using IMap = Microsoft.Maui.Maps.IMap;
 using Windows.Devices.Geolocation;
 using Microsoft.Maui.Devices.Sensors;
+using System.Text.Json;
 
 namespace CommunityToolkit.Maui.Maps.Handlers;
 
@@ -37,6 +38,7 @@ public partial class MapHandlerWindows : MapHandler
 		var mapPage = GetMapHtmlPage(mapsKey);
 		var webView = new MauiWebView();
 		webView.NavigationCompleted += WebViewNavigationCompleted;
+		webView.WebMessageReceived += WebViewWebMessageReceived;
 		webView.LoadHtml(mapPage, null);
 		return webView;
 	}
@@ -44,8 +46,10 @@ public partial class MapHandlerWindows : MapHandler
 	protected override void DisconnectHandler(FrameworkElement platformView)
 	{
 		if (PlatformView is MauiWebView mauiWebView)
+		{
 			mauiWebView.NavigationCompleted -= WebViewNavigationCompleted;
-
+			mauiWebView.WebMessageReceived -= WebViewWebMessageReceived;
+		}
 		base.DisconnectHandler(platformView);
 	}
 
@@ -71,10 +75,10 @@ public partial class MapHandlerWindows : MapHandler
 
 	public static async void MapIsShowingUser(IMapHandler handler, IMap map)
 	{
-		if(map.IsShowingUser)
+		if (map.IsShowingUser)
 		{
 			var location = await GetCurrentLocation();
-			if(location != null)
+			if (location != null)
 			{
 				CallJSMethod(handler.PlatformView, $"addLocationPin({location.Latitude},{location.Longitude});");
 			}
@@ -85,43 +89,13 @@ public partial class MapHandlerWindows : MapHandler
 		}
 	}
 
-	static CancellationTokenSource? cts;
-	static async Task<Location?> GetCurrentLocation()
-	{
-		
-
-		Location? location = null;
-		try
-		{
-			var request = new GeolocationRequest(GeolocationAccuracy.Best);
-			cts = new CancellationTokenSource();
-			var geolocator = new Geolocator
-			{
-				//DesiredAccuracyInMeters =  
-			};
-			var l = await geolocator.GetGeopositionAsync();
-			location = new Location(l.Coordinate.Latitude, l.Coordinate.Longitude);
-			// await Geolocation.GetLocationAsync(request, cts.Token);
-		}
-		catch (Exception ex)
-		{
-
-		}
-		finally
-		{
-			cts?.Dispose();
-			cts = null;	
-		}
-		return location;
-	}
-
 	public static void MapPins(IMapHandler handler, IMap map) { }
 
 	public static void MapElements(IMapHandler handler, IMap map) { }
 
 	public void UpdateMapElement(IMapElement element)
 	{
-		
+
 	}
 
 	public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
@@ -166,6 +140,7 @@ public partial class MapHandlerWindows : MapHandler
 									showTrafficButton: false
 								});
 								loadTrafficModule();
+								Microsoft.Maps.Events.addHandler(map, 'viewrendered', function () { var bounds = map.getBounds(); invokeHandlerAction(bounds); });
 			                }
 							
 							function loadTrafficModule()
@@ -244,6 +219,11 @@ public partial class MapHandlerWindows : MapHandler
 									locationPin = null;
 								}
 							}
+
+							function invokeHandlerAction(data)
+							{
+								window.chrome.webview.postMessage(data);
+							}
 						</script>
 						<style>
 							body, html{
@@ -259,9 +239,44 @@ public partial class MapHandlerWindows : MapHandler
 		return str;
 	}
 
+	static async Task<Location?> GetCurrentLocation()
+	{
+		Location? location = null;
+		var request = new GeolocationRequest(GeolocationAccuracy.Best);
+		var geolocator = new Geolocator();
+		var position = await geolocator.GetGeopositionAsync();
+		location = new Location(position.Coordinate.Latitude, position.Coordinate.Longitude);
+
+		return location;
+	}
+
 	void WebViewNavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
 	{
 		//Update intital properties when our page is loaded
 		Mapper.UpdateProperties(this, VirtualView); ;
+	}
+
+	void WebViewWebMessageReceived(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs args)
+	{
+		Bounds? mapRect = JsonSerializer.Deserialize<Bounds>(args.WebMessageAsJson);
+		if (mapRect != null)
+		{
+			VirtualView.VisibleRegion = new MapSpan(new Location(mapRect.center.latitude, mapRect.center.longitude), mapRect.height, mapRect.width);
+		}
+	}
+
+	class Center
+	{
+		public double latitude { get; set; }
+		public double longitude { get; set; }
+		public int altitude { get; set; }
+		public int altitudeReference { get; set; }
+	}
+
+	class Bounds
+	{
+		public Center center { get; set; }
+		public double width { get; set; }
+		public double height { get; set; }
 	}
 }
