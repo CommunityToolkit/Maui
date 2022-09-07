@@ -1,7 +1,8 @@
 ﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.UnitTests.Mocks;
-using CommunityToolkit.Maui.Views;
+using FluentAssertions;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Shapes;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views.AvatarView;
@@ -11,6 +12,12 @@ public class AvatarViewTests : BaseHandlerTest
 	public AvatarViewTests()
 	{
 		Assert.IsAssignableFrom<IAvatarView>(new Maui.Views.AvatarView());
+	}
+
+	[Fact]
+	public void AvatarViewShouldBeAssignedToIAvatarView()
+	{
+		new Maui.Views.AvatarView().Should().BeAssignableTo<IAvatarView>();
 	}
 
 	[Fact]
@@ -28,43 +35,43 @@ public class AvatarViewTests : BaseHandlerTest
 			HeightRequest = 20,
 		};
 
-		Assert.Equal(Colors.Beige, avatarView.BorderColor);
-		Assert.Equal(2, avatarView.BorderWidth);
-		Assert.Equal(new CornerRadius(4, 8, 12, 16), avatarView.CornerRadius);
-		Assert.Equal(Colors.Pink, avatarView.TextColor);
-		Assert.Equal("GL", avatarView.Text);
-		Assert.Equal(TextTransform.Lowercase, avatarView.TextTransform);
+		avatarView.BorderColor.Should().Be(Colors.Beige);
+		avatarView.BorderWidth.Should().Be(2);
+		avatarView.CornerRadius.Should().Be(new CornerRadius(4, 8, 12, 16));
+		avatarView.TextColor.Should().Be(Colors.Pink);
+		avatarView.Text.Should().Be("GL");
+		avatarView.TextTransform.Should().Be(TextTransform.Lowercase);
 		Size request = avatarView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
-		Assert.Equal(10, request.Width);
-		Assert.Equal(20, request.Height);
+		request.Width.Should().Be(10);
+		request.Height.Should().Be(20);
 	}
 
 	[Fact]
 	public void DefaultBorderColor()
 	{
 		var avatarView = new Maui.Views.AvatarView();
-		Assert.Equal(Colors.White, avatarView.BorderColor);
+		avatarView.BorderColor.Should().Be(AvatarViewDefaults.DefaultBorderColor);
 	}
 
 	[Fact]
 	public void DefaultBorderWidth()
 	{
 		var avatarView = new Maui.Views.AvatarView();
-		Assert.Equal(1, avatarView.BorderWidth);
+		avatarView.BorderWidth.Should().Be(AvatarViewDefaults.DefaultBorderWidth);
 	}
 
 	[Fact]
 	public void DefaultCornerRadius()
 	{
 		var avatarView = new Maui.Views.AvatarView();
-		Assert.Equal(new CornerRadius(24, 24, 24, 24), avatarView.CornerRadius);
+		avatarView.CornerRadius.Should().Be(new CornerRadius(AvatarViewDefaults.DefaultCornerRadius.TopLeft, AvatarViewDefaults.DefaultCornerRadius.TopRight, AvatarViewDefaults.DefaultCornerRadius.BottomLeft, AvatarViewDefaults.DefaultCornerRadius.BottomRight));
 	}
 
 	[Fact]
 	public void DefaultFontSize()
 	{
 		var avatarView = new Maui.Views.AvatarView();
-		Assert.Equal(0, avatarView.FontSize);
+		avatarView.FontSize.Should().Be(0);
 	}
 
 	[Fact]
@@ -72,14 +79,36 @@ public class AvatarViewTests : BaseHandlerTest
 	{
 		var avatarView = new Maui.Views.AvatarView();
 		Size request = avatarView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
-		Assert.Equal(48, request.Height);
+		request.Height.Should().Be(AvatarViewDefaults.DefaultHeightRequest);
 	}
 
 	[Fact]
-	public void DefaultText()
+	public void DefaultLabelProperties()
 	{
 		var avatarView = new Maui.Views.AvatarView();
-		Assert.Equal("?", avatarView.Text);
+		avatarView.Content.Should().BeOfType<Label>();
+		if (avatarView.Content is Label avatarLabel)
+		{
+			avatarLabel.Should().NotBeNull();
+			avatarLabel.HorizontalTextAlignment.Should().Be(TextAlignment.Center);
+			avatarLabel.VerticalTextAlignment.Should().Be(TextAlignment.Center);
+			avatarLabel.Text.Should().Be(AvatarViewDefaults.DefaultText);
+		}
+	}
+
+	[Fact]
+	public void DefaultProperties()
+	{
+		var avatarView = new Maui.Views.AvatarView();
+		avatarView.IsEnabled.Should().BeTrue();
+		avatarView.HorizontalOptions.Should().Be(LayoutOptions.Center);
+		avatarView.VerticalOptions.Should().Be(LayoutOptions.Center);
+		avatarView.HeightRequest.Should().Be(AvatarViewDefaults.DefaultHeightRequest);
+		avatarView.WidthRequest.Should().Be(AvatarViewDefaults.DefaultWidthRequest);
+		avatarView.Padding.Should().Be(AvatarViewDefaults.DefaultPadding);
+		avatarView.Stroke.Should().Be((SolidColorBrush)AvatarViewDefaults.DefaultBorderColor);
+		avatarView.StrokeThickness.Should().Be(AvatarViewDefaults.DefaultBorderWidth);
+		avatarView.StrokeShape.Should().BeOfType<RoundRectangle>();
 	}
 
 	[Fact]
@@ -87,7 +116,7 @@ public class AvatarViewTests : BaseHandlerTest
 	{
 		var avatarView = new Maui.Views.AvatarView();
 		Size request = avatarView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
-		Assert.Equal(48, request.Width);
+		request.Width.Should().Be(AvatarViewDefaults.DefaultWidthRequest);
 	}
 
 	[Theory]
@@ -98,15 +127,13 @@ public class AvatarViewTests : BaseHandlerTest
 	public void FontPropertyTriggersFontProperty(string propertyName, object value)
 	{
 		var handler = new FontElementHandlerStub();
-
 		var avatarView = new Maui.Views.AvatarView()
 		{
 			Handler = handler
 		};
 		handler.Updates.Clear();
-
 		avatarView.GetType().GetProperty(propertyName)?.SetValue(avatarView, value, null);
-		Assert.Equal(2, handler.Updates.Count);
+		handler.Updates.Should().HaveCount(2);
 		Assert.Equal(new[] { propertyName, nameof(ITextStyle.Font) }, handler.Updates);
 	}
 
@@ -120,7 +147,7 @@ public class AvatarViewTests : BaseHandlerTest
 		};
 		FileImageSource source = new();
 		avatar.ImageSource = source;
-		Assert.Equal(context, source.BindingContext);
+		source.BindingContext.Should().Be(context);
 	}
 
 	[Fact]
@@ -130,7 +157,7 @@ public class AvatarViewTests : BaseHandlerTest
 		{
 			BorderColor = Colors.Red,
 		};
-		Assert.Equal(Colors.Red, avatarView.BorderColor);
+		avatarView.BorderColor.Should().Be(Colors.Red);
 
 		bool signaled = false;
 		avatarView.PropertyChanged += (sender, e) =>
@@ -142,8 +169,8 @@ public class AvatarViewTests : BaseHandlerTest
 		};
 
 		avatarView.BorderColor = Colors.Black;
-		Assert.Equal(Colors.Black, avatarView.BorderColor);
-		Assert.True(signaled);
+		avatarView.BorderColor.Should().Be(Colors.Black);
+		signaled.Should().BeTrue();
 	}
 
 	[Fact]
@@ -153,8 +180,7 @@ public class AvatarViewTests : BaseHandlerTest
 		{
 			BorderWidth = 2,
 		};
-		Assert.Equal(2, avatarView.BorderWidth);
-
+		avatarView.BorderWidth.Should().Be(2);
 		bool signaled = false;
 		avatarView.PropertyChanged += (sender, e) =>
 		{
@@ -165,8 +191,17 @@ public class AvatarViewTests : BaseHandlerTest
 		};
 
 		avatarView.BorderWidth = 7;
-		Assert.Equal(7, avatarView.BorderWidth);
-		Assert.True(signaled);
+		avatarView.BorderWidth.Should().Be(7);
+		signaled.Should().BeTrue();
+	}
+
+	[Fact]
+	public void TestCharacterSpacingProperty()
+	{
+		var avatarView = new Maui.Views.AvatarView();
+		avatarView.CharacterSpacing.Should().Be(0);
+		avatarView.CharacterSpacing = 1;
+		avatarView.CharacterSpacing.Should().Be(1);
 	}
 
 	/// <summary>This test is specifically to test the use ofCornerRadius of type Maui.CornerRadius.</summary>
@@ -177,8 +212,7 @@ public class AvatarViewTests : BaseHandlerTest
 		{
 			CornerRadius = new CornerRadius(3, 4, 5, 6),
 		};
-		Assert.Equal(new CornerRadius(3, 4, 5, 6), avatarView.CornerRadius);
-
+		avatarView.CornerRadius.Should().Be(new CornerRadius(3, 4, 5, 6));
 		bool signaled = false;
 		avatarView.PropertyChanged += (sender, e) =>
 		{
@@ -189,8 +223,8 @@ public class AvatarViewTests : BaseHandlerTest
 		};
 
 		avatarView.CornerRadius = new CornerRadius(1, 2, 3, 4);
-		Assert.Equal(new CornerRadius(1, 2, 3, 4), avatarView.CornerRadius);
-		Assert.True(signaled);
+		avatarView.CornerRadius.Should().Be(new CornerRadius(1, 2, 3, 4));
+		signaled.Should().BeTrue();
 	}
 
 	/// <summary>This test is specifically to test the use of CornerRadius of type Int.</summary>
@@ -201,8 +235,7 @@ public class AvatarViewTests : BaseHandlerTest
 		{
 			CornerRadius = new CornerRadius(7),
 		};
-		Assert.Equal(new CornerRadius(7), avatarView.CornerRadius);
-
+		avatarView.CornerRadius.Should().Be(new CornerRadius(7));
 		bool signaled = false;
 		avatarView.PropertyChanged += (sender, e) =>
 		{
@@ -213,16 +246,42 @@ public class AvatarViewTests : BaseHandlerTest
 		};
 
 		avatarView.CornerRadius = new CornerRadius(3);
-		Assert.Equal(new CornerRadius(3), avatarView.CornerRadius);
-		Assert.True(signaled);
+		avatarView.CornerRadius.Should().Be(new CornerRadius(3));
+		signaled.Should().BeTrue();
 	}
 
 	[Fact]
-	public void TestImageSource()
+	public void TestFontAttributesPropertyChanged()
 	{
 		var avatarView = new Maui.Views.AvatarView();
-		Assert.Null(avatarView.ImageSource);
+		avatarView.FontAttributes.Should().Be(FontAttributes.None);
+		avatarView.FontAttributes = FontAttributes.Bold;
+		avatarView.FontAttributes.Should().Be(FontAttributes.Bold);
+	}
 
+	[Fact]
+	public void TestFontAutoScalingEnabledPropertyChanged()
+	{
+		var avatarView = new Maui.Views.AvatarView();
+		avatarView.FontAutoScalingEnabled.Should().BeTrue();
+		avatarView.FontAutoScalingEnabled = false;
+		avatarView.FontAutoScalingEnabled.Should().BeFalse();
+	}
+
+	[Fact]
+	public void TestFontFamilyPropertyChanged()
+	{
+		var avatarView = new Maui.Views.AvatarView();
+		avatarView.FontFamily.Should().BeNull();
+		avatarView.FontFamily = "Arial";
+		avatarView.FontFamily.Should().Be("Arial");
+	}
+
+	[Fact]
+	public void TestImageSourceChanged()
+	{
+		var avatarView = new Maui.Views.AvatarView();
+		avatarView.ImageSource.Should().BeNull();
 		bool signaled = false;
 		avatarView.PropertyChanged += (sender, e) =>
 		{
@@ -234,9 +293,18 @@ public class AvatarViewTests : BaseHandlerTest
 
 		ImageSource source = ImageSource.FromFile("File.png");
 		avatarView.ImageSource = source;
+		avatarView.ImageSource.Should().NotBeNull();
+		avatarView.ImageSource.Should().Be(source);
+		signaled.Should().BeTrue();
+	}
 
-		Assert.Equal(source, avatarView.ImageSource);
-		Assert.True(signaled);
+	[Fact]
+	public void TestImageSourceIsNotEmpty()
+	{
+		var avatarView = new Maui.Views.AvatarView();
+		ImageSource source = ImageSource.FromFile("File.png");
+		avatarView.ImageSource = source;
+		avatarView.ImageSource.IsEmpty.Should().BeFalse();
 	}
 
 	[Fact]
@@ -244,10 +312,9 @@ public class AvatarViewTests : BaseHandlerTest
 	{
 		var avatarView = new Maui.Views.AvatarView()
 		{
-			TextColor = Microsoft.Maui.Graphics.Colors.Coral,
+			TextColor = Colors.Coral,
 		};
-		Assert.Equal(Microsoft.Maui.Graphics.Colors.Coral, avatarView.TextColor);
-
+		avatarView.TextColor.Should().Be(Colors.Coral);
 		bool signaled = false;
 		avatarView.PropertyChanged += (sender, e) =>
 		{
@@ -257,9 +324,9 @@ public class AvatarViewTests : BaseHandlerTest
 			}
 		};
 
-		avatarView.TextColor = Microsoft.Maui.Graphics.Colors.Yellow;
-		Assert.Equal(Microsoft.Maui.Graphics.Colors.Yellow, avatarView.TextColor);
-		Assert.True(signaled);
+		avatarView.TextColor = Colors.Yellow;
+		avatarView.TextColor.Should().Be(Colors.Yellow);
+		signaled.Should().BeTrue();
 	}
 
 	[Fact]
@@ -269,7 +336,7 @@ public class AvatarViewTests : BaseHandlerTest
 		{
 			Text = "GL"
 		};
-		Assert.Equal("GL", avatarView.Text);
+		avatarView.Text.Should().Be("GL");
 
 		bool signaled = false;
 		avatarView.PropertyChanged += (sender, e) =>
@@ -281,8 +348,8 @@ public class AvatarViewTests : BaseHandlerTest
 		};
 
 		avatarView.Text = "ZZ";
-		Assert.Equal("ZZ", avatarView.Text);
-		Assert.True(signaled);
+		avatarView.Text.Should().Be("ZZ");
+		signaled.Should().BeTrue();
 	}
 
 	[Fact]
@@ -292,8 +359,7 @@ public class AvatarViewTests : BaseHandlerTest
 		{
 			TextTransform = TextTransform.Uppercase,
 		};
-		Assert.Equal(TextTransform.Uppercase, avatarView.TextTransform);
-
+		avatarView.TextTransform.Should().Be(TextTransform.Uppercase);
 		bool signaled = false;
 		avatarView.PropertyChanged += (sender, e) =>
 		{
@@ -304,7 +370,7 @@ public class AvatarViewTests : BaseHandlerTest
 		};
 
 		avatarView.TextTransform = TextTransform.Lowercase;
-		Assert.Equal(TextTransform.Lowercase, avatarView.TextTransform);
-		Assert.True(signaled);
+		avatarView.TextTransform.Should().Be(TextTransform.Lowercase);
+		signaled.Should().BeTrue();
 	}
 }
