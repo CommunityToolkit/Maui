@@ -129,7 +129,7 @@ public class BoolToObjectConverter_Tests : BaseTest
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new BoolToObjectConverter<string>()).ConvertBack(true, null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
-	
+
 	[Theory]
 	[InlineData(0)]
 	[InlineData(5.5)]
@@ -139,11 +139,11 @@ public class BoolToObjectConverter_Tests : BaseTest
 	{
 		var options = new Options();
 		options.SetShouldSuppressExceptionsInConverters(true);
-		
+
 		var boolObjectConverter = new BoolToObjectConverter();
 		var action = () => ((ICommunityToolkitValueConverter)boolObjectConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture);
 		action.Should().NotThrow<ArgumentException>();
-		
+
 		options.SetShouldSuppressExceptionsInConverters(false);
 	}
 
@@ -160,7 +160,7 @@ public class BoolToObjectConverter_Tests : BaseTest
 		var boolObjectConverter = new BoolToObjectConverter<DateTime>();
 		var action = () => ((ICommunityToolkitValueConverter)boolObjectConverter).ConvertBack(value, typeof(object), null, CultureInfo.CurrentCulture);
 		action.Should().NotThrow<ArgumentException>();
-		
+
 		options.SetShouldSuppressExceptionsInConverters(false);
 	}
 
@@ -178,7 +178,7 @@ public class BoolToObjectConverter_Tests : BaseTest
 		action = () => ((ICommunityToolkitValueConverter)new BoolToObjectConverter()).ConvertBack(true, null, null, null);
 		action.Should().NotThrow<ArgumentNullException>();
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-		
+
 		options.SetShouldSuppressExceptionsInConverters(false);
 	}
 
@@ -196,7 +196,7 @@ public class BoolToObjectConverter_Tests : BaseTest
 		action = () => ((ICommunityToolkitValueConverter)new BoolToObjectConverter<string>()).ConvertBack(true, null, null, null);
 		action.Should().NotThrow<ArgumentNullException>();
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-		
+
 		options.SetShouldSuppressExceptionsInConverters(false);
 	}
 }

@@ -19,7 +19,7 @@ public static class AppBuilderExtensions
 	{
 		builder.UseMauiCommunityToolkitCore();
 		options?.Invoke(new Options());
-		
+
 		builder.ConfigureMauiHandlers(h =>
 		{
 			h.AddHandler<DrawingView, DrawingViewHandler>();

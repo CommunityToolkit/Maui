@@ -13,9 +13,9 @@ public partial class NumericValidationBehaviorPage : BasePage<NumericValidationB
 
 	async void SetEntryValue(object? sender, EventArgs e)
 	{
-		#if DEBUG
-		   await Toast.Make("The app will crash").Show();
-		#endif
+#if DEBUG
+		await Toast.Make("The app will crash").Show();
+#endif
 		SafeEntry.Text = null;
 	}
 }

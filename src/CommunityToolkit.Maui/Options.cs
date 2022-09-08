@@ -16,14 +16,14 @@ public class Options : Core.Options
 	/// Allows to return default value instead of throwing an exception when using <see cref="BaseConverter{TFrom,TTo}"/>.
 	/// Default value is false.
 	/// </summary>
-	public void SetShouldSuppressExceptionsInConverters(bool value) => ShouldSuppressExceptionsInConverters = value;	
+	public void SetShouldSuppressExceptionsInConverters(bool value) => ShouldSuppressExceptionsInConverters = value;
 
 	/// <summary>
 	/// Allows to return default value instead of throwing an exception when using <see cref="AnimationBehavior"/>.
 	/// Default value is false.
 	/// </summary>
-	public void SetShouldSuppressExceptionsInAnimations(bool value) => ShouldSuppressExceptionsInAnimations = value;	
-	
+	public void SetShouldSuppressExceptionsInAnimations(bool value) => ShouldSuppressExceptionsInAnimations = value;
+
 	/// <summary>
 	/// Allows to return default value instead of throwing an exception when using <see cref="BaseBehavior{TView}"/>.
 	/// Default value is false.

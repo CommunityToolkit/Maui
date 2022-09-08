@@ -85,14 +85,14 @@ public abstract class ValueConverterExtension : IMarkupExtension<ICommunityToolk
 		_ => throw new ArgumentException($"Value needs to be of type {typeof(TValue)}", nameof(value))
 	};
 #pragma warning restore CS8603 // Possible null reference return.
-	
+
 	private protected static T? PerformConvertion<T>(Func<T?> operation, T? defaultValue)
 	{
 		if (!Options.ShouldSuppressExceptionsInConverters)
 		{
 			return operation();
 		}
-		
+
 		try
 		{
 			return operation();

@@ -15,7 +15,7 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 	/// Default value to return when the value is null.
 	/// </summary>
 	public TTo? Default { get; set; } = default;
-	
+
 	/// <inheritdoc/>
 	public Type FromType { get; } = typeof(TFrom);
 
@@ -85,7 +85,7 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 	/// Default value to return when the value is null.
 	/// </summary>
 	public TTo? Default { get; set; } = default;
-	
+
 	/// <inheritdoc/>
 	public Type FromType { get; } = typeof(TFrom);
 
