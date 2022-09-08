@@ -51,7 +51,7 @@ public class AnimationBehavior : EventToCommandBehavior
 
 			if (bindable is not IGestureRecognizers gestureRecognizers)
 			{
-				throw new InvalidOperationException($"VisualElement does not implement {nameof(IGestureRecognizers)}");
+				throw new InvalidOperationException($"VisualElement does not implement {nameof(IGestureRecognizers)}.");
 			}
 
 			tapGestureRecognizer = new TapGestureRecognizer();

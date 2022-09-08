@@ -29,7 +29,7 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable, o
 
 			if (string.IsNullOrEmpty(value))
 			{
-				throw new ArgumentException("An empty string is not a valid separator", nameof(value));
+				throw new ArgumentException("An empty string is not a valid separator.", nameof(value));
 			}
 
 			separator = value;
@@ -50,7 +50,7 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable, o
 
 			if (value.Any(string.IsNullOrEmpty))
 			{
-				throw new ArgumentException("A null or an empty string is not a valid separator", nameof(value));
+				throw new ArgumentException("A null or an empty string is not a valid separator.", nameof(value));
 			}
 
 			separators = value;
@@ -81,13 +81,13 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable, o
 			case string[] separators:
 				if (separators.Any(string.IsNullOrEmpty))
 				{
-					throw new ArgumentException("A null or an empty string is not a valid separator", nameof(parameter));
+					throw new ArgumentException("A null or an empty string is not a valid separator.", nameof(parameter));
 				}
 
 				return Split(value, separators.ToArray());
 
 			case string separator when string.IsNullOrEmpty(separator):
-				throw new ArgumentException("An empty string is not a valid separator", nameof(parameter));
+				throw new ArgumentException("An empty string is not a valid separator.", nameof(parameter));
 
 			case string separator:
 				return Split(value, separator);
@@ -95,7 +95,7 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable, o
 			default:
 				if (parameter is not null)
 				{
-					throw new ArgumentException("Parameter cannot be cast to string nor string[]", nameof(parameter));
+					throw new ArgumentException("Parameter cannot be cast to string nor string[].", nameof(parameter));
 				}
 
 				break;

@@ -38,7 +38,7 @@ public class EnumToIntConverter : BaseConverter<Enum, int, Type>
 
 		if (!Enum.IsDefined(parameter, value))
 		{
-			throw new InvalidEnumArgumentException($"{value} is not valid for {parameter.Name}");
+			throw new InvalidEnumArgumentException($"{value} is not valid for {parameter.Name}.");
 		}
 
 		return (Enum)Enum.ToObject(parameter, value);

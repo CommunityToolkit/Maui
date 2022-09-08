@@ -20,7 +20,7 @@ public class IndexToArrayItemConverter : BaseConverter<int, object?, Array>
 
 		if (value < 0 || value >= parameter.Length)
 		{
-			throw new ArgumentOutOfRangeException(nameof(value), "Index was out of range");
+			throw new ArgumentOutOfRangeException(nameof(value), "Index was out of range.");
 		}
 
 		return parameter.GetValue(value);
@@ -46,6 +46,6 @@ public class IndexToArrayItemConverter : BaseConverter<int, object?, Array>
 			}
 		}
 
-		throw new ArgumentException("Value does not exist in the array", nameof(value));
+		throw new ArgumentException("Value does not exist in the array.", nameof(value));
 	}
 }
