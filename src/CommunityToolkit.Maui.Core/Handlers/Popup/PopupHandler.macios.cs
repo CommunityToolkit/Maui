@@ -32,7 +32,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	{
 		if (handler.PlatformView is not MauiPopup popupRenderer)
 		{
-			throw new InvalidOperationException($"{nameof(handler.PlatformView)} must be of type {typeof(PopupHandler)}");
+			throw new InvalidOperationException($"{nameof(handler.PlatformView)} must be of type {typeof(PopupHandler)}.");
 		}
 
 		if (popupRenderer.IsViewLoaded && view.CanBeDismissedByTappingOutsideOfPopup)

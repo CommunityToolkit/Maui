@@ -61,7 +61,7 @@ public abstract class ValueConverterExtension : IMarkupExtension<ICommunityToolk
 		// Ensure TTo can be assigned to the given Target Type
 		if (!typeof(TTarget).IsAssignableFrom(targetType) && !IsValidTargetType<TTarget>(targetType))
 		{
-			throw new ArgumentException($"targetType needs to be assignable from {typeof(TTarget)}", nameof(targetType));
+			throw new ArgumentException($"targetType needs to be assignable from {typeof(TTarget)}.", nameof(targetType));
 		}
 	}
 
@@ -69,9 +69,9 @@ public abstract class ValueConverterExtension : IMarkupExtension<ICommunityToolk
 	private protected static TParam ConvertParameter<TParam>(object? parameter) => parameter switch
 	{
 		null when IsNullable<TParam>() => default,
-		null when !IsNullable<TParam>() => throw new ArgumentNullException(nameof(parameter), $"value cannot be null because {nameof(TParam)} is not Nullable"),
+		null when !IsNullable<TParam>() => throw new ArgumentNullException(nameof(parameter), $"Value cannot be null because {nameof(TParam)} is not nullable."),
 		TParam convertedParameter => convertedParameter,
-		_ => throw new ArgumentException($"parameter needs to be of type {typeof(TParam)}", nameof(parameter))
+		_ => throw new ArgumentException($"Parameter needs to be of type {typeof(TParam)}", nameof(parameter))
 	};
 #pragma warning restore CS8603 // Possible null reference return.
 
@@ -79,9 +79,9 @@ public abstract class ValueConverterExtension : IMarkupExtension<ICommunityToolk
 	private protected static TValue ConvertValue<TValue>(object? value) => value switch
 	{
 		null when IsNullable<TValue>() => default,
-		null when !IsNullable<TValue>() => throw new ArgumentNullException(nameof(value), $"value cannot be null because {nameof(TValue)} is not Nullable"),
+		null when !IsNullable<TValue>() => throw new ArgumentNullException(nameof(value), $"Value cannot be null because {nameof(TValue)} is not nullable"),
 		TValue convertedValue => convertedValue,
-		_ => throw new ArgumentException($"value needs to be of type {typeof(TValue)}", nameof(value))
+		_ => throw new ArgumentException($"Value needs to be of type {typeof(TValue)}", nameof(value))
 	};
 #pragma warning restore CS8603 // Possible null reference return.
 }

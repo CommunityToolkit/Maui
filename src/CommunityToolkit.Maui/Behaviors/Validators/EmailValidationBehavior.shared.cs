@@ -106,12 +106,12 @@ public class EmailValidationBehavior : TextValidationBehavior
 			if (domainName.All(x => char.IsDigit(x) || x is '.')
 				&& !Regex.IsMatch(domainName, @"^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}$"))
 			{
-				throw new ArgumentException("Invalid IPv4 Address");
+				throw new ArgumentException("Invalid IPv4 Address.");
 			}
 
 			if (domainName.StartsWith('-'))
 			{
-				throw new ArgumentException("Domain Name Cannot Start With Hyphen");
+				throw new ArgumentException("Domain name cannot start with hyphen.");
 			}
 
 			return match.Groups[1].Value + domainName;

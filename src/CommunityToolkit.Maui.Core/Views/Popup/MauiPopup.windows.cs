@@ -138,7 +138,7 @@ public class MauiPopup : Flyout
 
 	void SetSize()
 	{
-		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null");
+		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null.");
 
 		if (Control is null)
 		{
