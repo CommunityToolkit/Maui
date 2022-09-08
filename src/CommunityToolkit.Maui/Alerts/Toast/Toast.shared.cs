@@ -1,12 +1,5 @@
 ﻿using System.ComponentModel;
 using CommunityToolkit.Maui.Core;
-#if ANDROID
-using PlatformToast = Android.Widget.Toast;
-#elif IOS || MACCATALYST
-using PlatformToast = CommunityToolkit.Maui.Core.Views.PlatformToast;
-#elif WINDOWS
-using PlatformToast = Windows.UI.Notifications.ToastNotification;
-#endif
 
 namespace CommunityToolkit.Maui.Alerts;
 
@@ -103,65 +96,10 @@ public partial class Toast : IToast
 		GC.SuppressFinalize(this);
 	}
 
-	/// <summary>
-	/// Dispose Toast
-	/// </summary>
-	protected virtual void Dispose(bool isDisposing)
+	static TimeSpan GetDuration(ToastDuration duration) => duration switch
 	{
-		if (isDisposed)
-		{
-			return;
-		}
-
-		if (isDisposing)
-		{
-#if ANDROID
-			PlatformToast?.Dispose();
-#endif
-		}
-
-		isDisposed = true;
-	}
-
-#if IOS || MACCATALYST || WINDOWS
-	static TimeSpan GetDuration(ToastDuration duration)
-	{
-		return duration switch
-		{
-			ToastDuration.Short => TimeSpan.FromSeconds(2),
-			ToastDuration.Long => TimeSpan.FromSeconds(3.5),
-			_ => throw new InvalidEnumArgumentException(nameof(Duration), (int)duration, typeof(ToastDuration))
-		};
-	}
-#endif
-
-#if ANDROID || IOS || MACCATALYST || WINDOWS
-	static PlatformToast? PlatformToast { get; set; }
-#endif
-
-#if !(IOS || ANDROID || MACCATALYST || WINDOWS)
-	private static partial void ShowPlatform(CancellationToken token);
-#else
-	private partial void ShowPlatform(CancellationToken token);
-#endif
-
-	private static partial void DismissPlatform(CancellationToken token);
-
-#if !(IOS || ANDROID || MACCATALYST || WINDOWS)
-	/// <summary>
-	/// Show Toast
-	/// </summary>
-	private static partial void ShowPlatform(CancellationToken token)
-	{
-		token.ThrowIfCancellationRequested();
-	}
-
-	/// <summary>
-	/// Dismiss Toast
-	/// </summary>
-	private static partial void DismissPlatform(CancellationToken token)
-	{
-		token.ThrowIfCancellationRequested();
-	}
-#endif
+		ToastDuration.Short => TimeSpan.FromSeconds(2),
+		ToastDuration.Long => TimeSpan.FromSeconds(3.5),
+		_ => throw new InvalidEnumArgumentException(nameof(Duration), (int)duration, typeof(ToastDuration))
+	};
 }

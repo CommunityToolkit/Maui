@@ -6,28 +6,15 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// DrawingView Platform Control
 /// </summary>
-#if !(IOS || MACCATALYST || ANDROID)
-public partial class MauiDrawingView : IDisposable
-#else
 public partial class MauiDrawingView
-#endif
 {
 	readonly WeakEventManager weakEventManager = new();
-
-#if !(IOS || MACCATALYST || ANDROID)
-	bool isDisposed;
-#endif
 
 	bool isDrawing;
 	PointF previousPoint;
 	PathF currentPath = new();
 	MauiDrawingLine? currentLine;
 	Paint paint = new SolidPaint(DrawingViewDefaults.BackgroundColor);
-
-#if !(IOS || MACCATALYST || ANDROID)
-	/// <inheritdoc />
-	~MauiDrawingView() => Dispose(false);
-#endif
 
 	/// <summary>
 	/// Event raised when drawing line completed 
@@ -82,26 +69,6 @@ public partial class MauiDrawingView
 	}
 
 	/// <summary>
-	/// Initialize resources
-	/// </summary>
-	public void Initialize()
-	{
-#if ANDROID || IOS || MACCATALYST
-		Drawable = new DrawingViewDrawable(this);
-#elif WINDOWS
-		if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 18362))
-		{
-			((Microsoft.Maui.Graphics.Win2D.W2DGraphicsView)Content).Drawable = new DrawingViewDrawable(this);
-		}
-		else
-		{
-			System.Diagnostics.Debug.WriteLine("DrawingView requires Windows 10.0.18362 or higher.");
-		}
-#endif
-		Lines.CollectionChanged += OnLinesCollectionChanged;
-	}
-
-	/// <summary>
 	/// Clean up resources
 	/// </summary>
 	public void CleanUp()
@@ -109,30 +76,6 @@ public partial class MauiDrawingView
 		currentPath.Dispose();
 		Lines.CollectionChanged -= OnLinesCollectionChanged;
 	}
-
-#if !(IOS || MACCATALYST || ANDROID)
-	/// <inheritdoc />
-	public void Dispose()
-	{
-		// Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-		Dispose(disposing: true);
-		GC.SuppressFinalize(this);
-	}
-
-	/// <inheritdoc />
-	protected virtual void Dispose(bool disposing)
-	{
-		if (!isDisposed)
-		{
-			if (disposing)
-			{
-				currentPath.Dispose();
-			}
-
-			isDisposed = true;
-		}
-	}
-#endif
 
 	void OnStart(PointF point)
 	{
@@ -221,18 +164,6 @@ public partial class MauiDrawingView
 	{
 		currentPath = new PathF();
 	}
-
-#if IOS || ANDROID || MACCATALYST || WINDOWS
-	void Redraw()
-	{
-		Invalidate();
-	}
-#else
-	static void Redraw()
-	{
-
-	}
-#endif
 
 	class DrawingViewDrawable : IDrawable
 	{
