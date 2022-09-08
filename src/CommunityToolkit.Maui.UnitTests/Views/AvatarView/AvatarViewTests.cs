@@ -21,195 +21,6 @@ public class AvatarViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void ConstructorTest()
-	{
-		var avatarView = new Maui.Views.AvatarView()
-		{
-			BorderColor = Colors.Beige,
-			BorderWidth = 2,
-			CornerRadius = new CornerRadius(4, 8, 12, 16),
-			TextColor = Colors.Pink,
-			Text = "GL",
-			TextTransform = TextTransform.Lowercase,
-			WidthRequest = 10,
-			HeightRequest = 20,
-		};
-
-		avatarView.BorderColor.Should().Be(Colors.Beige);
-		avatarView.BorderWidth.Should().Be(2);
-		avatarView.CornerRadius.Should().Be(new CornerRadius(4, 8, 12, 16));
-		avatarView.TextColor.Should().Be(Colors.Pink);
-		avatarView.Text.Should().Be("GL");
-		avatarView.TextTransform.Should().Be(TextTransform.Lowercase);
-		Size request = avatarView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
-		request.Width.Should().Be(10);
-		request.Height.Should().Be(20);
-	}
-
-	[Fact]
-	public void DefaultBorderColor()
-	{
-		var avatarView = new Maui.Views.AvatarView();
-		avatarView.BorderColor.Should().Be(AvatarViewDefaults.DefaultBorderColor);
-	}
-
-	[Fact]
-	public void DefaultBorderWidth()
-	{
-		var avatarView = new Maui.Views.AvatarView();
-		avatarView.BorderWidth.Should().Be(AvatarViewDefaults.DefaultBorderWidth);
-	}
-
-	[Fact]
-	public void DefaultCornerRadius()
-	{
-		var avatarView = new Maui.Views.AvatarView();
-		avatarView.CornerRadius.Should().Be(new CornerRadius(AvatarViewDefaults.DefaultCornerRadius.TopLeft, AvatarViewDefaults.DefaultCornerRadius.TopRight, AvatarViewDefaults.DefaultCornerRadius.BottomLeft, AvatarViewDefaults.DefaultCornerRadius.BottomRight));
-	}
-
-	[Fact]
-	public void DefaultFontSize()
-	{
-		var avatarView = new Maui.Views.AvatarView();
-		avatarView.FontSize.Should().Be(0);
-	}
-
-	[Fact]
-	public void DefaultHeightRequest()
-	{
-		var avatarView = new Maui.Views.AvatarView();
-		Size request = avatarView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
-		request.Height.Should().Be(AvatarViewDefaults.DefaultHeightRequest);
-	}
-
-	[Fact]
-	public void DefaultLabelProperties()
-	{
-		var avatarView = new Maui.Views.AvatarView();
-		avatarView.Content.Should().BeOfType<Label>();
-		if (avatarView.Content is Label avatarLabel)
-		{
-			avatarLabel.Should().NotBeNull();
-			avatarLabel.HorizontalTextAlignment.Should().Be(TextAlignment.Center);
-			avatarLabel.VerticalTextAlignment.Should().Be(TextAlignment.Center);
-			avatarLabel.Text.Should().Be(AvatarViewDefaults.DefaultText);
-		}
-	}
-
-	[Fact]
-	public void DefaultImageSourceProperties()
-	{
-		var source = new UriImageSource()
-		{
-			Uri = new Uri("https://aka.ms/campus.jpg"),
-		};
-		var avatarView = new Maui.Views.AvatarView
-		{
-			ImageSource = source
-		};
-		avatarView.ImageSource.Should().NotBeNull();
-		avatarView.Content.Should().BeOfType<Image>();
-		if (avatarView.Content is Image avatarImage)
-		{
-			avatarImage.Should().NotBeNull();
-			avatarImage.Aspect.Should().Be(Aspect.AspectFill);
-			avatarImage.Source.Should().Be(source);
-			avatarImage.Width.Should().Be(-1);
-			avatarImage.Height.Should().Be(-1);
-			avatarImage.Clip.Should().BeNull();
-			avatarImage.BackgroundColor.Should().BeNull();
-		}
-	}
-
-	[Fact]
-	public void ImageSourceParentSize()
-	{
-		var source = new UriImageSource()
-		{
-			Uri = new Uri("https://aka.ms/campus.jpg"),
-		};
-		var avatarView = new Maui.Views.AvatarView
-		{
-			WidthRequest = 73,
-			HeightRequest = 37,
-			ImageSource = source
-		};
-		avatarView.Layout(new Rect(0, 0, 73, 73));
-		avatarView.ImageSource.Should().NotBeNull();
-		avatarView.Content.Should().BeOfType<Image>();
-		if (avatarView.Content is Image avatarImage)
-		{
-			avatarImage.WidthRequest.Should().Be(73);
-			avatarImage.HeightRequest.Should().Be(37);
-			avatarImage.Clip.Should().BeOfType<RoundRectangleGeometry>();
-		}
-	}
-
-	[Fact]
-	public void ImageSourceBackgroundColor()
-	{
-		var source = new UriImageSource()
-		{
-			Uri = new Uri("https://aka.ms/campus.jpg"),
-		};
-		var avatarView = new Maui.Views.AvatarView
-		{
-			WidthRequest = 73,
-			HeightRequest = 37,
-			ImageSource = source,
-			BackgroundColor = Colors.Azure,
-		};
-		avatarView.Layout(new Rect(0, 0, 73, 73));
-		avatarView.ImageSource.Should().NotBeNull();
-		avatarView.Content.Should().BeOfType<Image>();
-		if (avatarView.Content is Image avatarImage)
-		{
-			avatarImage.BackgroundColor.Should().BeNull();
-		}
-	}
-
-	[Fact]
-	public void DefaultProperties()
-	{
-		var avatarView = new Maui.Views.AvatarView();
-		avatarView.IsEnabled.Should().BeTrue();
-		avatarView.HorizontalOptions.Should().Be(LayoutOptions.Center);
-		avatarView.VerticalOptions.Should().Be(LayoutOptions.Center);
-		avatarView.HeightRequest.Should().Be(AvatarViewDefaults.DefaultHeightRequest);
-		avatarView.WidthRequest.Should().Be(AvatarViewDefaults.DefaultWidthRequest);
-		avatarView.Padding.Should().Be(AvatarViewDefaults.DefaultPadding);
-		avatarView.Stroke.Should().Be((SolidColorBrush)AvatarViewDefaults.DefaultBorderColor);
-		avatarView.StrokeThickness.Should().Be(AvatarViewDefaults.DefaultBorderWidth);
-		avatarView.StrokeShape.Should().BeOfType<RoundRectangle>();
-	}
-
-	[Fact]
-	public void DefaultWidthRequest()
-	{
-		var avatarView = new Maui.Views.AvatarView();
-		Size request = avatarView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
-		request.Width.Should().Be(AvatarViewDefaults.DefaultWidthRequest);
-	}
-
-	[Theory]
-	[InlineData(nameof(IFontElement.FontAttributes), FontAttributes.Bold)]
-	[InlineData(nameof(IFontElement.FontAutoScalingEnabled), false)]
-	[InlineData(nameof(IFontElement.FontFamily), "Arial")]
-	[InlineData(nameof(IFontElement.FontSize), 10)]
-	public void FontPropertyTriggersFontProperty(string propertyName, object value)
-	{
-		var handler = new FontElementHandlerStub();
-		var avatarView = new Maui.Views.AvatarView()
-		{
-			Handler = handler
-		};
-		handler.Updates.Clear();
-		avatarView.GetType().GetProperty(propertyName)?.SetValue(avatarView, value, null);
-		handler.Updates.Should().HaveCount(2);
-		Assert.Equal(new[] { propertyName, nameof(ITextStyle.Font) }, handler.Updates);
-	}
-
-	[Fact]
 	public void BindingContextPropagation()
 	{
 		object context = new();
@@ -276,6 +87,32 @@ public class AvatarViewTests : BaseHandlerTest
 		avatarView.CharacterSpacing.Should().Be(1);
 	}
 
+	[Fact]
+	public void ConstructorTest()
+	{
+		var avatarView = new Maui.Views.AvatarView()
+		{
+			BorderColor = Colors.Beige,
+			BorderWidth = 2,
+			CornerRadius = new CornerRadius(4, 8, 12, 16),
+			TextColor = Colors.Pink,
+			Text = "GL",
+			TextTransform = TextTransform.Lowercase,
+			WidthRequest = 10,
+			HeightRequest = 20,
+		};
+
+		avatarView.BorderColor.Should().Be(Colors.Beige);
+		avatarView.BorderWidth.Should().Be(2);
+		avatarView.CornerRadius.Should().Be(new CornerRadius(4, 8, 12, 16));
+		avatarView.TextColor.Should().Be(Colors.Pink);
+		avatarView.Text.Should().Be("GL");
+		avatarView.TextTransform.Should().Be(TextTransform.Lowercase);
+		Size request = avatarView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
+		request.Width.Should().Be(10);
+		request.Height.Should().Be(20);
+	}
+
 	/// <summary>This test is specifically to test the use ofCornerRadius of type Maui.CornerRadius.</summary>
 	[Fact]
 	public void CornerRadiusFourCornerRadiusToOneTwoThreeFour()
@@ -323,6 +160,79 @@ public class AvatarViewTests : BaseHandlerTest
 	}
 
 	[Fact]
+	public void DefaultBorderColor()
+	{
+		var avatarView = new Maui.Views.AvatarView();
+		avatarView.BorderColor.Should().Be(AvatarViewDefaults.DefaultBorderColor);
+	}
+
+	[Fact]
+	public void DefaultBorderWidth()
+	{
+		var avatarView = new Maui.Views.AvatarView();
+		avatarView.BorderWidth.Should().Be(AvatarViewDefaults.DefaultBorderWidth);
+	}
+
+	[Fact]
+	public void DefaultCornerRadius()
+	{
+		var avatarView = new Maui.Views.AvatarView();
+		avatarView.CornerRadius.Should().Be(new CornerRadius(AvatarViewDefaults.DefaultCornerRadius.TopLeft, AvatarViewDefaults.DefaultCornerRadius.TopRight, AvatarViewDefaults.DefaultCornerRadius.BottomLeft, AvatarViewDefaults.DefaultCornerRadius.BottomRight));
+	}
+
+	[Fact]
+	public void DefaultFontSize()
+	{
+		var avatarView = new Maui.Views.AvatarView();
+		avatarView.FontSize.Should().Be(0);
+	}
+
+	[Fact]
+	public void DefaultHeightRequest()
+	{
+		var avatarView = new Maui.Views.AvatarView();
+		Size request = avatarView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
+		request.Height.Should().Be(AvatarViewDefaults.DefaultHeightRequest);
+	}
+
+	[Fact]
+	public void DefaultLabelProperties()
+	{
+		var avatarView = new Maui.Views.AvatarView();
+		avatarView.Content.Should().BeOfType<Label>();
+		if (avatarView.Content is Label avatarLabel)
+		{
+			avatarLabel.Should().NotBeNull();
+			avatarLabel.HorizontalTextAlignment.Should().Be(TextAlignment.Center);
+			avatarLabel.VerticalTextAlignment.Should().Be(TextAlignment.Center);
+			avatarLabel.Text.Should().Be(AvatarViewDefaults.DefaultText);
+		}
+	}
+
+	[Fact]
+	public void DefaultProperties()
+	{
+		var avatarView = new Maui.Views.AvatarView();
+		avatarView.IsEnabled.Should().BeTrue();
+		avatarView.HorizontalOptions.Should().Be(LayoutOptions.Center);
+		avatarView.VerticalOptions.Should().Be(LayoutOptions.Center);
+		avatarView.HeightRequest.Should().Be(AvatarViewDefaults.DefaultHeightRequest);
+		avatarView.WidthRequest.Should().Be(AvatarViewDefaults.DefaultWidthRequest);
+		avatarView.Padding.Should().Be(AvatarViewDefaults.DefaultPadding);
+		avatarView.Stroke.Should().Be((SolidColorBrush)AvatarViewDefaults.DefaultBorderColor);
+		avatarView.StrokeThickness.Should().Be(AvatarViewDefaults.DefaultBorderWidth);
+		avatarView.StrokeShape.Should().BeOfType<RoundRectangle>();
+	}
+
+	[Fact]
+	public void DefaultWidthRequest()
+	{
+		var avatarView = new Maui.Views.AvatarView();
+		Size request = avatarView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
+		request.Width.Should().Be(AvatarViewDefaults.DefaultWidthRequest);
+	}
+
+	[Fact]
 	public void FontAttributesPropertyChanged()
 	{
 		var avatarView = new Maui.Views.AvatarView();
@@ -349,45 +259,22 @@ public class AvatarViewTests : BaseHandlerTest
 		avatarView.FontFamily.Should().Be("Arial");
 	}
 
-
-	[Fact]
-	public void DefaultImageSource()
+	[Theory]
+	[InlineData(nameof(IFontElement.FontAttributes), FontAttributes.Bold)]
+	[InlineData(nameof(IFontElement.FontAutoScalingEnabled), false)]
+	[InlineData(nameof(IFontElement.FontFamily), "Arial")]
+	[InlineData(nameof(IFontElement.FontSize), 10)]
+	public void FontPropertyTriggersFontProperty(string propertyName, object value)
 	{
-		var avatarView = new Maui.Views.AvatarView();
-		avatarView.ImageSource.Should().BeNull();
-	}
-
-	[Fact]
-	public void ImageSourceChanged()
-	{
-		var avatarView = new Maui.Views.AvatarView();
-		avatarView.ImageSource.Should().BeNull();
-		bool signaled = false;
-		avatarView.PropertyChanged += (sender, e) =>
+		var handler = new FontElementHandlerStub();
+		var avatarView = new Maui.Views.AvatarView()
 		{
-			if (e.PropertyName == "ImageSource")
-			{
-				signaled = true;
-			}
+			Handler = handler
 		};
-
-		ImageSource source = new UriImageSource()
-		{
-			Uri = new Uri("https://aka.ms/campus.jpg"),
-		};
-		avatarView.ImageSource = source;
-		avatarView.ImageSource.Should().NotBeNull();
-		avatarView.ImageSource.Should().Be(source);
-		signaled.Should().BeTrue();
-	}
-
-	[Fact]
-	public void ImageSourceIsNotEmpty()
-	{
-		var avatarView = new Maui.Views.AvatarView();
-		ImageSource source = ImageSource.FromFile("File.png");
-		avatarView.ImageSource = source;
-		avatarView.ImageSource.IsEmpty.Should().BeFalse();
+		handler.Updates.Clear();
+		avatarView.GetType().GetProperty(propertyName)?.SetValue(avatarView, value, null);
+		handler.Updates.Should().HaveCount(2);
+		Assert.Equal(new[] { propertyName, nameof(ITextStyle.Font) }, handler.Updates);
 	}
 
 	[Fact]

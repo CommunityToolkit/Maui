@@ -164,6 +164,7 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		get => (TextTransform)GetValue(TextElement.TextTransformProperty);
 		set => SetValue(TextElement.TextTransformProperty, value);
 	}
+
 	Aspect Microsoft.Maui.IImage.Aspect => ((IImageElement)this).Aspect;
 
 	Aspect IImageElement.Aspect => avatarImage.Aspect;
