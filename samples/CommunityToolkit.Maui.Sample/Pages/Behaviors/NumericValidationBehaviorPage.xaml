@@ -37,6 +37,18 @@
                                                MaximumDecimalPlaces="2"/>
             </Entry.Behaviors>
         </Entry>
+        
+        <Button Clicked="SetEntryValue" Text="Set Entry Value to null"/>
+        <Entry x:Name="SafeEntry" Placeholder="Number">
+            <Entry.Behaviors>
+                <mct:NumericValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                               ValidStyle="{StaticResource ValidEntryStyle}"
+                                               Flags="ValidateOnValueChanged"
+                                               MinimumValue="1.0"
+                                               MaximumValue="100.0"
+                                               MaximumDecimalPlaces="2"/>
+            </Entry.Behaviors>
+        </Entry>
     </VerticalStackLayout>
 
 </pages:BasePage>

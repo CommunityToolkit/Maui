@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Animations;
 
@@ -98,7 +97,7 @@ public class AnimationBehavior : EventToCommandBehavior
 	
 	static T Animate<T>(Func<T> operation, T defaultValue)
 	{
-		if (MauiCommunityToolkitOptions.ThrowExceptionInAnimations)
+		if (Options.ThrowExceptionInAnimations)
 		{
 			return operation();
 		}

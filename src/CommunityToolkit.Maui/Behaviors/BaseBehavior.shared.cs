@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
@@ -109,6 +110,24 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
 			throw new ArgumentException($"Behavior can only be attached to {typeof(TView)}");
 		}
 
-		OnViewPropertyChanged(view, e);
+		PerformOperation(() => OnViewPropertyChanged(view, e));
+	}
+	
+	private static void PerformOperation(Action operation)
+	{
+		if (Options.ThrowExceptionInBehaviors)
+		{
+			operation();
+			return;
+		}
+		
+		try
+		{
+			operation();
+		}
+		catch (Exception ex)
+		{
+			Debug.WriteLine(ex.Message);
+		}
 	}
 }

@@ -114,7 +114,7 @@ csharp_prefer_static_local_function = true:suggestion
 csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async:error
 
 # CA1822: Member does not access instance data and can be marked as static
-dotnet_diagnostic.CA1822.severity = error
+dotnet_diagnostic.CA1822.severity = suggestion
 
 # CA1050: Declare types in namespaces
 dotnet_diagnostic.CA1050.severity = error

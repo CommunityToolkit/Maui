@@ -137,7 +137,7 @@ public class BoolToObjectConverter_Tests : BaseTest
 	[InlineData("abc")]
 	public void BoolToObjectInvalidValuesShouldNotThrowArgumentException(object value)
 	{
-		var options = new MauiCommunityToolkitOptions();
+		var options = new Options();
 		options.SetThrowExceptionInConverters(false);
 		
 		var boolObjectConverter = new BoolToObjectConverter();
@@ -154,7 +154,7 @@ public class BoolToObjectConverter_Tests : BaseTest
 	[InlineData("abc")]
 	public void BoolToObjectTInvalidValuesShouldNotThrowArgumentException(object value)
 	{
-		var options = new MauiCommunityToolkitOptions();
+		var options = new Options();
 		options.SetThrowExceptionInConverters(false);
 
 		var boolObjectConverter = new BoolToObjectConverter<DateTime>();
@@ -166,7 +166,7 @@ public class BoolToObjectConverter_Tests : BaseTest
 	[Fact]
 	public void BoolToObjectConverterShouldNotThrowNullInputTest()
 	{
-		var options = new MauiCommunityToolkitOptions();
+		var options = new Options();
 		options.SetThrowExceptionInConverters(false);
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
@@ -184,7 +184,7 @@ public class BoolToObjectConverter_Tests : BaseTest
 	[Fact]
 	public void BoolToObjectTConverterShouldNotThrowNullInputTest()
 	{
-		var options = new MauiCommunityToolkitOptions();
+		var options = new Options();
 		options.SetThrowExceptionInConverters(false);
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.

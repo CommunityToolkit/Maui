@@ -6,9 +6,8 @@ namespace CommunityToolkit.Maui;
 /// <summary>
 /// .NET MAUI Community Toolkit Options.
 /// </summary>
-public class MauiCommunityToolkitOptions
+public class Options : Core.Options
 {
-#pragma warning disable CA1822 // Mark members as static
 	/// <summary>
 	/// Allows to return default value instead of throwing an exception when using <see cref="BaseConverter{TFrom,TTo}"/>.
 	/// Default value is true.
@@ -24,5 +23,12 @@ public class MauiCommunityToolkitOptions
 	public void SetThrowExceptionInAnimations(bool value) => ThrowExceptionInAnimations = value;
 	
 	internal static bool ThrowExceptionInAnimations { get; private set; } = true;
-#pragma warning restore CA1822 // Mark members as static
+	
+	/// <summary>
+	/// Allows to return default value instead of throwing an exception when using <see cref="BaseBehavior{TView}"/>.
+	/// Default value is true.
+	/// </summary>
+	public void SetThrowExceptionInBehaviors(bool value) => ThrowExceptionInBehaviors = value;
+
+	internal static bool ThrowExceptionInBehaviors { get; private set; } = true;
 }

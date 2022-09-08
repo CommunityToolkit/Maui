@@ -88,7 +88,7 @@ public abstract class ValueConverterExtension : IMarkupExtension<ICommunityToolk
 	
 	private protected static T? PerformConvertion<T>(Func<T?> operation, T? defaultValue)
 	{
-		if (MauiCommunityToolkitOptions.ThrowExceptionInConverters)
+		if (Options.ThrowExceptionInConverters)
 		{
 			return operation();
 		}

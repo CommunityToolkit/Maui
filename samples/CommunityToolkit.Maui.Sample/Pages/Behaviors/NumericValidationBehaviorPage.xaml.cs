@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
+﻿using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
@@ -8,5 +9,13 @@ public partial class NumericValidationBehaviorPage : BasePage<NumericValidationB
 		: base(numericValidationBehaviorViewModel)
 	{
 		InitializeComponent();
+	}
+
+	async void SetEntryValue(object? sender, EventArgs e)
+	{
+		#if DEBUG
+		   await Toast.Make("The app will crash").Show();
+		#endif
+		SafeEntry.Text = null;
 	}
 }
