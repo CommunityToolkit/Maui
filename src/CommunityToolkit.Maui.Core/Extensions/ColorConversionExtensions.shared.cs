@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.Core.Extensions;
+﻿using System.Globalization;
+
+namespace CommunityToolkit.Maui.Core.Extensions;
 
 /// <summary>
 /// Extension methods for Microsoft.Maui.Graphics.Color
@@ -24,15 +26,16 @@ public static class ColorConversionExtensions
 	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the red, green, blue and alpha components.
 	/// </summary>
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
+	/// <param name="cultureInfo">The <see cref="CultureInfo"/>.</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>RGBA(red,green,blue,alpha)</c> where <b>red</b>, <b>green</b> and <b>blue</b> will be a value between 0 and 255,
 	/// and <b>alpha</b> is a value between 0 and 1. (e.g. <c>RGBA(255,0,0,1)</c> for <see cref="Colors.Red"/>).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
-	public static string ToRgbaString(this Color color)
+	public static string ToRgbaString(this Color color, CultureInfo? cultureInfo = null)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return $"RGBA({color.GetByteRed()},{color.GetByteGreen()},{color.GetByteBlue()},{color.Alpha})";
+		return $"RGBA({color.GetByteRed()},{color.GetByteGreen()},{color.GetByteBlue()},{color.Alpha.ToString(cultureInfo)})";
 	}
 
 	/// <summary>
@@ -54,15 +57,16 @@ public static class ColorConversionExtensions
 	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the cyan, magenta, yellow, key and alpha components.
 	/// </summary>
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
+	/// <param name="cultureInfo">The <see cref="CultureInfo"/>.</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>CMYKA(cyan,magenta,yellow,key,alpha)</c> where <b>cyan</b>, <b>magenta</b>, <b>yellow </b>and <b>key</b> will be a value between
 	/// 0% and 100% and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>CMYKA(100%,100%,0%,100%,1)</c> for <see cref="Colors.Red"/>).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
-	public static string ToCmykaString(this Color color)
+	public static string ToCmykaString(this Color color, CultureInfo? cultureInfo = null)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return $"CMYKA({color.GetPercentCyan():P0},{color.GetPercentMagenta():P0},{color.GetPercentYellow():P0},{color.GetPercentBlackKey():P0},{color.Alpha})";
+		return $"CMYKA({color.GetPercentCyan():P0},{color.GetPercentMagenta():P0},{color.GetPercentYellow():P0},{color.GetPercentBlackKey():P0},{color.Alpha.ToString(cultureInfo)})";
 	}
 
 	/// <summary>
@@ -84,15 +88,16 @@ public static class ColorConversionExtensions
 	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the hue, saturation, lightness and alpha components.
 	/// </summary>
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
+	/// <param name="cultureInfo">The <see cref="CultureInfo"/>.</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>HSLA(hue,saturation,lightness,alpha)</c> where <b>hue</b> will be a value between 0 and 360, <b>saturation</b> and <b>lightness</b>
 	/// will be a value between 0% and 100%, and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>HSLA(0,100%,50%,1)</c> for <see cref="Colors.Red"/>).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
-	public static string ToHslaString(this Color color)
+	public static string ToHslaString(this Color color, CultureInfo? cultureInfo = null)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return $"HSLA({color.GetDegreeHue():0},{color.GetSaturation():P0},{color.GetLuminosity():P0},{color.Alpha})";
+		return $"HSLA({color.GetDegreeHue():0},{color.GetSaturation():P0},{color.GetLuminosity():P0},{color.Alpha.ToString(cultureInfo)})";
 	}
 
 	/// <summary>

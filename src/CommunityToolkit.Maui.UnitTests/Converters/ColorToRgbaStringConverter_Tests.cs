@@ -58,8 +58,22 @@ public class ColorToRgbaStringConverter_Tests : BaseTest
 		var converter = new ColorToRgbaStringConverter();
 		var color = new Color(red, green, blue, alpha);
 
-		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, null);
-		var resultConvertFrom = converter.ConvertFrom(color);
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, new System.Globalization.CultureInfo("en-US"));
+		var resultConvertFrom = converter.ConvertFrom(color, new System.Globalization.CultureInfo("en-US"));
+
+		Assert.Equal(expectedResult, resultConvert);
+		Assert.Equal(expectedResult, resultConvertFrom);
+	}
+
+	[Fact]
+	public void ColorToRgbStringConverterCultureTest()
+	{
+		var expectedResult = "RGBA(0,0,0,0,5)";
+		var converter = new ColorToRgbaStringConverter();
+		var color = new Color(0, 0, 0, 0.5f);
+
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, new System.Globalization.CultureInfo("uk-UA"));
+		var resultConvertFrom = converter.ConvertFrom(color, new System.Globalization.CultureInfo("uk-UA"));
 
 		Assert.Equal(expectedResult, resultConvert);
 		Assert.Equal(expectedResult, resultConvertFrom);
