@@ -38,7 +38,7 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
 
 	internal bool TryRemoveBindingContext()
 	{
-		if (defaultBindingContextBinding == null)
+		if (defaultBindingContextBinding is null)
 		{
 			return false;
 		}
