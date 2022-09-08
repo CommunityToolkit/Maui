@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Converters;
+﻿using System.Diagnostics;
+using CommunityToolkit.Maui.Converters;
 
 namespace CommunityToolkit.Maui.Extensions;
 

@@ -92,6 +92,6 @@ public class AnimationBehavior : EventToCommandBehavior
 		}
 
 		View.CancelAnimations();
-		return AnimationType.Animate(View);
+		return MauiCommunityToolkitOptions.PerformOperation(() => AnimationType.Animate(View), Task.CompletedTask);
 	}
 }

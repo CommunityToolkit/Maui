@@ -11,6 +11,11 @@ namespace CommunityToolkit.Maui.Converters;
 /// <typeparam name="TParam">Type of parameter</typeparam>
 public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtension, ICommunityToolkitValueConverter
 {
+	/// <summary>
+	/// Default value to return when the value is null.
+	/// </summary>
+	public TTo? Default { get; set; } = default;
+	
 	/// <inheritdoc/>
 	public Type FromType { get; } = typeof(TFrom);
 
@@ -43,23 +48,29 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 	/// <inheritdoc/>
 	object? ICommunityToolkitValueConverter.ConvertBack(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
-		ValidateTargetType<TFrom>(targetType);
+		return MauiCommunityToolkitOptions.PerformOperation<object?>(() =>
+		{
+			ValidateTargetType<TFrom>(targetType);
 
-		var converterParameter = ConvertParameter<TParam>(parameter);
-		var converterValue = ConvertValue<TTo>(value);
+			var converterParameter = ConvertParameter<TParam>(parameter);
+			var converterValue = ConvertValue<TTo>(value);
 
-		return ConvertBackTo(converterValue, converterParameter, culture);
+			return ConvertBackTo(converterValue, converterParameter, culture);
+		}, Default);
 	}
 
 	/// <inheritdoc/>
 	object? ICommunityToolkitValueConverter.Convert(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
-		ValidateTargetType<TTo>(targetType);
+		return MauiCommunityToolkitOptions.PerformOperation(() =>
+		{
+			ValidateTargetType<TTo>(targetType);
 
-		var converterParameter = ConvertParameter<TParam>(parameter);
-		var converterValue = ConvertValue<TFrom>(value);
+			var converterParameter = ConvertParameter<TParam>(parameter);
+			var converterValue = ConvertValue<TFrom>(value);
 
-		return ConvertFrom(converterValue, converterParameter, culture);
+			return ConvertFrom(converterValue, converterParameter, culture);
+		}, Default);
 	}
 }
 
@@ -70,6 +81,11 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 /// <typeparam name="TTo">Type of the output value.</typeparam>
 public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, ICommunityToolkitValueConverter
 {
+	/// <summary>
+	/// Default value to return when the value is null.
+	/// </summary>
+	public TTo? Default { get; set; } = default;
+	
 	/// <inheritdoc/>
 	public Type FromType { get; } = typeof(TFrom);
 
@@ -95,20 +111,22 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 	/// <inheritdoc/>
 	object? ICommunityToolkitValueConverter.ConvertBack(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
-		ValidateTargetType<TFrom>(targetType);
-
-		var converterValue = ConvertValue<TTo>(value);
-
-		return ConvertBackTo(converterValue, culture);
+		return MauiCommunityToolkitOptions.PerformOperation<object?>(() =>
+		{
+			ValidateTargetType<TFrom>(targetType);
+			var converterValue = ConvertValue<TTo>(value);
+			return ConvertBackTo(converterValue, culture);
+		}, Default);
 	}
 
 	/// <inheritdoc/>
 	object? ICommunityToolkitValueConverter.Convert(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
-		ValidateTargetType<TTo>(targetType);
-
-		var converterValue = ConvertValue<TFrom>(value);
-
-		return ConvertFrom(converterValue, culture);
+		return MauiCommunityToolkitOptions.PerformOperation<object?>(() =>
+		{
+			ValidateTargetType<TTo>(targetType);
+			var converterValue = ConvertValue<TFrom>(value);
+			return ConvertFrom(converterValue, culture);
+		}, Default);
 	}
 }
