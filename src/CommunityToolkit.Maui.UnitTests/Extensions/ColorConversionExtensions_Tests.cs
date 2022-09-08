@@ -385,7 +385,7 @@ public class ColorConversionExtensions_Tests
 	public void ToHslaStringNullInput()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => ColorConversionExtensions.ToHslaString(null));
+		Assert.Throws<ArgumentNullException>(() => ColorConversionExtensions.ToHslaString(null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 

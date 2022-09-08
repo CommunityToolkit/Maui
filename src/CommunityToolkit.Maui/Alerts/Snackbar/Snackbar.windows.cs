@@ -6,12 +6,27 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Snackbar
 {
+	static Windows.UI.Notifications.ToastNotification? PlatformSnackbar { get; set; }
+
 	TaskCompletionSource<bool>? dismissedTCS;
+
+	/// <summary>
+	/// Dispose Snackbar
+	/// </summary>
+	protected virtual void Dispose(bool isDisposing)
+	{
+		if (isDisposed)
+		{
+			return;
+		}
+
+		isDisposed = true;
+	}
 
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
-	private async partial Task DismissPlatform(CancellationToken token)
+	async Task DismissPlatform(CancellationToken token)
 	{
 		if (PlatformSnackbar is null)
 		{
@@ -34,7 +49,7 @@ public partial class Snackbar
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	private async partial Task ShowPlatform(CancellationToken token)
+	async Task ShowPlatform(CancellationToken token)
 	{
 		await DismissPlatform(token);
 		token.ThrowIfCancellationRequested();

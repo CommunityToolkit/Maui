@@ -6,7 +6,27 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Toast
 {
-	private static partial void DismissPlatform(CancellationToken token)
+	static Android.Widget.Toast? PlatformToast { get; set; }
+
+	/// <summary>
+	/// Dispose Toast
+	/// </summary>
+	protected virtual void Dispose(bool isDisposing)
+	{
+		if (isDisposed)
+		{
+			return;
+		}
+
+		if (isDisposing)
+		{
+			PlatformToast?.Dispose();
+		}
+
+		isDisposed = true;
+	}
+
+	static void DismissPlatform(CancellationToken token)
 	{
 		if (PlatformToast is not null)
 		{
@@ -16,7 +36,7 @@ public partial class Toast
 		}
 	}
 
-	private partial void ShowPlatform(CancellationToken token)
+	void ShowPlatform(CancellationToken token)
 	{
 		DismissPlatform(token);
 
@@ -31,8 +51,5 @@ public partial class Toast
 		PlatformToast.Show();
 	}
 
-	static ToastLength GetToastLength(Core.ToastDuration duration)
-	{
-		return (ToastLength)(int)duration;
-	}
+	static ToastLength GetToastLength(Core.ToastDuration duration) => (ToastLength)(int)duration;
 }
