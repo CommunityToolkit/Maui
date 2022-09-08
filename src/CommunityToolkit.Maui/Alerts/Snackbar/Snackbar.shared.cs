@@ -1,13 +1,5 @@
 using CommunityToolkit.Maui.Core;
 
-#if ANDROID
-using PlatformSnackbar = Google.Android.Material.Snackbar.Snackbar;
-#elif IOS || MACCATALYST
-using PlatformSnackbar = CommunityToolkit.Maui.Core.Views.PlatformSnackbar;
-#elif WINDOWS
-using PlatformSnackbar = Windows.UI.Notifications.ToastNotification;
-#endif
-
 namespace CommunityToolkit.Maui.Alerts;
 
 /// <inheritdoc/>
@@ -101,6 +93,15 @@ public partial class Snackbar : ISnackbar
 	}
 
 	/// <summary>
+	/// Dispose Snackbar
+	/// </summary>
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	/// <summary>
 	/// Show Snackbar
 	/// </summary>
 	public virtual Task Show(CancellationToken token = default) => ShowPlatform(token);
@@ -111,61 +112,6 @@ public partial class Snackbar : ISnackbar
 	public virtual Task Dismiss(CancellationToken token = default) => DismissPlatform(token);
 
 	internal static TimeSpan GetDefaultTimeSpan() => TimeSpan.FromSeconds(3);
-
-#if !(IOS || ANDROID || MACCATALYST || WINDOWS)
-	/// <inheritdoc/>
-	private partial Task ShowPlatform(CancellationToken token)
-	{
-		token.ThrowIfCancellationRequested();
-
-		OnShown();
-
-		return Task.CompletedTask;
-	}
-
-	/// <inheritdoc/>
-	private partial Task DismissPlatform(CancellationToken token)
-	{
-		token.ThrowIfCancellationRequested();
-
-		OnDismissed();
-
-		return Task.CompletedTask;
-	}
-#endif
-
-	/// <summary>
-	/// Dispose Snackbar
-	/// </summary>
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
-	}
-
-	/// <summary>
-	/// Dispose Snackbar
-	/// </summary>
-	protected virtual void Dispose(bool isDisposing)
-	{
-		if (isDisposed)
-		{
-			return;
-		}
-
-		if (isDisposing)
-		{
-#if ANDROID || IOS || MACCATALYST
-			PlatformSnackbar?.Dispose();
-#endif
-		}
-
-		isDisposed = true;
-	}
-
-#if ANDROID || IOS || MACCATALYST || WINDOWS
-	static PlatformSnackbar? PlatformSnackbar { get; set; }
-#endif
 
 	void OnShown()
 	{
@@ -178,10 +124,6 @@ public partial class Snackbar : ISnackbar
 		IsShown = false;
 		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Dismissed));
 	}
-
-	private partial Task ShowPlatform(CancellationToken token);
-
-	private partial Task DismissPlatform(CancellationToken token);
 }
 
 /// <summary>
