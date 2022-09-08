@@ -13,9 +13,7 @@ public static class AppBuilderExtensions
 	/// <returns><see cref="MauiAppBuilder"/> initialized for <see cref="CommunityToolkit.Maui.Core"/></returns>
 	public static MauiAppBuilder UseMauiCommunityToolkitCore(this MauiAppBuilder builder, Action<Options>? options = default)
 	{
-		var toolkitOptions = new Options();
-		options?.Invoke(toolkitOptions);
-
+		options?.Invoke(new Options());
 		return builder;
 	}
 }
