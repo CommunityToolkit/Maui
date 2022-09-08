@@ -93,7 +93,7 @@ public class NumericValidationBehavior_Tests : BaseTest
 	public async Task ShouldNotThrowIsNull()
 	{
 		var options = new Options();
-		options.SetThrowExceptionInBehaviors(false);
+		options.SetShouldSupressExceptionsInBehaviors(true);
 		
 		// Arrange
 		string? text = null;
@@ -109,6 +109,6 @@ public class NumericValidationBehavior_Tests : BaseTest
 		var action = (async () => await behavior.ForceValidate());
 		await action.Should().NotThrowAsync<ArgumentNullException>();
 		
-		options.SetThrowExceptionInBehaviors(true);
+		options.SetShouldSupressExceptionsInBehaviors(false);
 	}
 }

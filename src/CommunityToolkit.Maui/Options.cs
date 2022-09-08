@@ -8,25 +8,25 @@ namespace CommunityToolkit.Maui;
 /// </summary>
 public class Options : Core.Options
 {
-	internal static bool ShouldThrowExceptionInAnimations { get; private set; } = true;
-	internal static bool ShouldThrowExceptionInConverters { get; private set; } = true;
-	internal static bool ShouldThrowExceptionInBehaviors { get; private set; } = true;
+	internal static bool ShouldSuppressExceptionsInAnimations { get; private set; }
+	internal static bool ShouldSuppressExceptionsInConverters { get; private set; }
+	internal static bool ShouldSuppressExceptionsInBehaviors { get; private set; }
 
 	/// <summary>
 	/// Allows to return default value instead of throwing an exception when using <see cref="BaseConverter{TFrom,TTo}"/>.
-	/// Default value is true.
+	/// Default value is false.
 	/// </summary>
-	public void SetThrowExceptionInConverters(bool value) => ShouldThrowExceptionInConverters = value;	
+	public void SetShouldSuppressExceptionsInConverters(bool value) => ShouldSuppressExceptionsInConverters = value;	
 
 	/// <summary>
 	/// Allows to return default value instead of throwing an exception when using <see cref="AnimationBehavior"/>.
-	/// Default value is true.
+	/// Default value is false.
 	/// </summary>
-	public void SetThrowExceptionInAnimations(bool value) => ShouldThrowExceptionInAnimations = value;	
+	public void SetShouldSuppressExceptionsInAnimations(bool value) => ShouldSuppressExceptionsInAnimations = value;	
 	
 	/// <summary>
 	/// Allows to return default value instead of throwing an exception when using <see cref="BaseBehavior{TView}"/>.
-	/// Default value is true.
+	/// Default value is false.
 	/// </summary>
-	public void SetThrowExceptionInBehaviors(bool value) => ShouldThrowExceptionInBehaviors = value;
+	public void SetShouldSuppressExceptionsInBehaviors(bool value) => ShouldSuppressExceptionsInBehaviors = value;
 }

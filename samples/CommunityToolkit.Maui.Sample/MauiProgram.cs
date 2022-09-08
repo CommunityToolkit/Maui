@@ -27,9 +27,9 @@ public static class MauiProgram
 #else
 								.UseMauiCommunityToolkit(options =>
 								{
-									options.SetThrowExceptionInConverters(false);
-									options.SetThrowExceptionInBehaviors(false);
-									options.SetThrowExceptionInAnimations(false);
+									options.SetShouldSuppressExceptionsInConverters(false);
+									options.SetShouldSuppressExceptionsInBehaviors(false);
+									options.SetShouldSuppressExceptionsInAnimations(false);
 								})
 #endif
 								.UseMauiCommunityToolkitMarkup()

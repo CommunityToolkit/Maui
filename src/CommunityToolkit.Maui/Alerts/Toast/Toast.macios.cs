@@ -21,6 +21,11 @@ public partial class Toast
 			return;
 		}
 
+		if (isDisposing)
+		{
+			PlatformToast?.Dispose();
+		}
+		
 		isDisposed = true;
 	}
 

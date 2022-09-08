@@ -97,7 +97,7 @@ public class AnimationBehavior : EventToCommandBehavior
 	
 	static T Animate<T>(Func<T> operation, T defaultValue)
 	{
-		if (Options.ShouldThrowExceptionInAnimations)
+		if (!Options.ShouldSuppressExceptionsInAnimations)
 		{
 			return operation();
 		}

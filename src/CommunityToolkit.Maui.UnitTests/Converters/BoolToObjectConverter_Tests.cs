@@ -138,13 +138,13 @@ public class BoolToObjectConverter_Tests : BaseTest
 	public void BoolToObjectInvalidValuesShouldNotThrowArgumentException(object value)
 	{
 		var options = new Options();
-		options.SetThrowExceptionInConverters(false);
+		options.SetShouldSuppressExceptionsInConverters(true);
 		
 		var boolObjectConverter = new BoolToObjectConverter();
 		var action = () => ((ICommunityToolkitValueConverter)boolObjectConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture);
 		action.Should().NotThrow<ArgumentException>();
 		
-		options.SetThrowExceptionInConverters(true);
+		options.SetShouldSuppressExceptionsInConverters(false);
 	}
 
 	[Theory]
@@ -155,19 +155,20 @@ public class BoolToObjectConverter_Tests : BaseTest
 	public void BoolToObjectTInvalidValuesShouldNotThrowArgumentException(object value)
 	{
 		var options = new Options();
-		options.SetThrowExceptionInConverters(false);
+		options.SetShouldSuppressExceptionsInConverters(true);
 
 		var boolObjectConverter = new BoolToObjectConverter<DateTime>();
 		var action = () => ((ICommunityToolkitValueConverter)boolObjectConverter).ConvertBack(value, typeof(object), null, CultureInfo.CurrentCulture);
 		action.Should().NotThrow<ArgumentException>();
 		
-		options.SetThrowExceptionInConverters(true);}
+		options.SetShouldSuppressExceptionsInConverters(false);
+	}
 
 	[Fact]
 	public void BoolToObjectConverterShouldNotThrowNullInputTest()
 	{
 		var options = new Options();
-		options.SetThrowExceptionInConverters(false);
+		options.SetShouldSuppressExceptionsInConverters(true);
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		var action = () => ((ICommunityToolkitValueConverter)new BoolToObjectConverter()).Convert(null, typeof(object), null, null);
@@ -178,14 +179,14 @@ public class BoolToObjectConverter_Tests : BaseTest
 		action.Should().NotThrow<ArgumentNullException>();
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 		
-		options.SetThrowExceptionInConverters(true);
+		options.SetShouldSuppressExceptionsInConverters(false);
 	}
 
 	[Fact]
 	public void BoolToObjectTConverterShouldNotThrowNullInputTest()
 	{
 		var options = new Options();
-		options.SetThrowExceptionInConverters(false);
+		options.SetShouldSuppressExceptionsInConverters(true);
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		var action = () => ((ICommunityToolkitValueConverter)new BoolToObjectConverter<string>()).Convert(null, typeof(object), null, null);
@@ -196,6 +197,6 @@ public class BoolToObjectConverter_Tests : BaseTest
 		action.Should().NotThrow<ArgumentNullException>();
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 		
-		options.SetThrowExceptionInConverters(true);
+		options.SetShouldSuppressExceptionsInConverters(false);
 	}
 }

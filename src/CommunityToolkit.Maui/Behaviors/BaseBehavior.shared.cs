@@ -113,9 +113,9 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
 		PerformOperation(() => OnViewPropertyChanged(view, e));
 	}
 	
-	private static void PerformOperation(Action operation)
+	static void PerformOperation(Action operation)
 	{
-		if (Options.ShouldThrowExceptionInBehaviors)
+		if (!Options.ShouldSuppressExceptionsInBehaviors)
 		{
 			operation();
 			return;
