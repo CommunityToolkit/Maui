@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using CommunityToolkit.Maui.Converters;
+using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
@@ -127,5 +128,74 @@ public class BoolToObjectConverter_Tests : BaseTest
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new BoolToObjectConverter<string>()).Convert(true, null, null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new BoolToObjectConverter<string>()).ConvertBack(true, null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+	
+	[Theory]
+	[InlineData(0)]
+	[InlineData(5.5)]
+	[InlineData('c')]
+	[InlineData("abc")]
+	public void BoolToObjectInvalidValuesShouldNotThrowArgumentException(object value)
+	{
+		var options = new MauiCommunityToolkitOptions();
+		options.SetThrowExceptionInConverters(false);
+		
+		var boolObjectConverter = new BoolToObjectConverter();
+		var action = () => ((ICommunityToolkitValueConverter)boolObjectConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture);
+		action.Should().NotThrow<ArgumentException>();
+		
+		options.SetThrowExceptionInConverters(true);
+	}
+
+	[Theory]
+	[InlineData(0)]
+	[InlineData(5.5)]
+	[InlineData('c')]
+	[InlineData("abc")]
+	public void BoolToObjectTInvalidValuesShouldNotThrowArgumentException(object value)
+	{
+		var options = new MauiCommunityToolkitOptions();
+		options.SetThrowExceptionInConverters(false);
+
+		var boolObjectConverter = new BoolToObjectConverter<DateTime>();
+		var action = () => ((ICommunityToolkitValueConverter)boolObjectConverter).ConvertBack(value, typeof(object), null, CultureInfo.CurrentCulture);
+		action.Should().NotThrow<ArgumentException>();
+		
+		options.SetThrowExceptionInConverters(true);}
+
+	[Fact]
+	public void BoolToObjectConverterShouldNotThrowNullInputTest()
+	{
+		var options = new MauiCommunityToolkitOptions();
+		options.SetThrowExceptionInConverters(false);
+
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var action = () => ((ICommunityToolkitValueConverter)new BoolToObjectConverter()).Convert(null, typeof(object), null, null);
+		action.Should().NotThrow<ArgumentNullException>();
+		action = () => ((ICommunityToolkitValueConverter)new BoolToObjectConverter()).Convert(true, null, null, null);
+		action.Should().NotThrow<ArgumentNullException>();
+		action = () => ((ICommunityToolkitValueConverter)new BoolToObjectConverter()).ConvertBack(true, null, null, null);
+		action.Should().NotThrow<ArgumentNullException>();
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+		
+		options.SetThrowExceptionInConverters(true);
+	}
+
+	[Fact]
+	public void BoolToObjectTConverterShouldNotThrowNullInputTest()
+	{
+		var options = new MauiCommunityToolkitOptions();
+		options.SetThrowExceptionInConverters(false);
+
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var action = () => ((ICommunityToolkitValueConverter)new BoolToObjectConverter<string>()).Convert(null, typeof(object), null, null);
+		action.Should().NotThrow<ArgumentException>();
+		action = () => ((ICommunityToolkitValueConverter)new BoolToObjectConverter<string>()).Convert(true, null, null, null);
+		action.Should().NotThrow<ArgumentNullException>();
+		action = () => ((ICommunityToolkitValueConverter)new BoolToObjectConverter<string>()).ConvertBack(true, null, null, null);
+		action.Should().NotThrow<ArgumentNullException>();
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+		
+		options.SetThrowExceptionInConverters(true);
 	}
 }

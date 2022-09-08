@@ -1,5 +1,5 @@
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Maui.Behaviors;
+using CommunityToolkit.Maui.Converters;
 
 namespace CommunityToolkit.Maui;
 
@@ -8,27 +8,21 @@ namespace CommunityToolkit.Maui;
 /// </summary>
 public class MauiCommunityToolkitOptions
 {
+#pragma warning disable CA1822 // Mark members as static
 	/// <summary>
-	/// Allows to
+	/// Allows to return default value instead of throwing an exception when using <see cref="BaseConverter{TFrom,TTo}"/>.
+	/// Default value is true.
 	/// </summary>
-	public static bool ThrowException { get; set; } = true;
+	public void SetThrowExceptionInConverters(bool value) => ThrowExceptionInConverters = value;
 	
-	[return: NotNullIfNotNull("defaultValue")]
-	internal static T? PerformOperation<T>(Func<T?> operation, T? defaultValue)
-	{
-		if (ThrowException)
-		{
-			return operation();
-		}
-		
-		try
-		{
-			return operation();
-		}
-		catch (Exception ex)
-		{
-			Debug.WriteLine(ex.Message);
-			return defaultValue;
-		}
-	}
+	internal static bool ThrowExceptionInConverters { get; private set; } = true;
+
+	/// <summary>
+	/// Allows to return default value instead of throwing an exception when using <see cref="AnimationBehavior"/>.
+	/// Default value is true.
+	/// </summary>
+	public void SetThrowExceptionInAnimations(bool value) => ThrowExceptionInAnimations = value;
+	
+	internal static bool ThrowExceptionInAnimations { get; private set; } = true;
+#pragma warning restore CA1822 // Mark members as static
 }

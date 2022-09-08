@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Animations;
 
@@ -92,6 +93,24 @@ public class AnimationBehavior : EventToCommandBehavior
 		}
 
 		View.CancelAnimations();
-		return MauiCommunityToolkitOptions.PerformOperation(() => AnimationType.Animate(View), Task.CompletedTask);
+		return Animate(() => AnimationType.Animate(View), Task.CompletedTask);
+	}
+	
+	static T Animate<T>(Func<T> operation, T defaultValue)
+	{
+		if (MauiCommunityToolkitOptions.ThrowExceptionInAnimations)
+		{
+			return operation();
+		}
+		
+		try
+		{
+			return operation();
+		}
+		catch (Exception ex)
+		{
+			Debug.WriteLine(ex.Message);
+			return defaultValue;
+		}
 	}
 }

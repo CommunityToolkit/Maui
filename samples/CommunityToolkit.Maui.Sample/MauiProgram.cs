@@ -22,7 +22,15 @@ public static class MauiProgram
 	public static MauiApp CreateMauiApp()
 	{
 		var builder = MauiApp.CreateBuilder()
+#if DEBUG
 								.UseMauiCommunityToolkit()
+#else
+								.UseMauiCommunityToolkit(options =>
+								{
+									options.SetThrowExceptionInConverters(false);
+									options.SetThrowExceptionInAnimations(false);
+								})
+#endif
 								.UseMauiCommunityToolkitMarkup()
 								.UseMauiApp<App>();
 

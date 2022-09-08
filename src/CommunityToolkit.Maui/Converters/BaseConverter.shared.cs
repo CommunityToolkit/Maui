@@ -48,7 +48,7 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 	/// <inheritdoc/>
 	object? ICommunityToolkitValueConverter.ConvertBack(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
-		return MauiCommunityToolkitOptions.PerformOperation<object?>(() =>
+		return PerformConvertion<object?>(() =>
 		{
 			ValidateTargetType<TFrom>(targetType);
 
@@ -62,7 +62,7 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 	/// <inheritdoc/>
 	object? ICommunityToolkitValueConverter.Convert(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
-		return MauiCommunityToolkitOptions.PerformOperation(() =>
+		return PerformConvertion(() =>
 		{
 			ValidateTargetType<TTo>(targetType);
 
@@ -111,7 +111,7 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 	/// <inheritdoc/>
 	object? ICommunityToolkitValueConverter.ConvertBack(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
-		return MauiCommunityToolkitOptions.PerformOperation<object?>(() =>
+		return PerformConvertion<object?>(() =>
 		{
 			ValidateTargetType<TFrom>(targetType);
 			var converterValue = ConvertValue<TTo>(value);
@@ -122,7 +122,7 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 	/// <inheritdoc/>
 	object? ICommunityToolkitValueConverter.Convert(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
-		return MauiCommunityToolkitOptions.PerformOperation<object?>(() =>
+		return PerformConvertion<object?>(() =>
 		{
 			ValidateTargetType<TTo>(targetType);
 			var converterValue = ConvertValue<TFrom>(value);
