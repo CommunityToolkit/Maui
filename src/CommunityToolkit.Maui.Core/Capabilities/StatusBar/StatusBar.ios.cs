@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Core.Capabilities;
 
 static partial class StatusBar
 {
-	static async void PlatformSetColor(Color color)
+	static void PlatformSetColor(Color color)
 	{
 		var uiColor = color.ToPlatform();
 
@@ -14,16 +14,6 @@ static partial class StatusBar
 			const int statusBarTag = 38482;
 			foreach (var window in UIApplication.SharedApplication.Windows)
 			{
-				if (window.RootViewController is null)
-				{
-					while (window.RootViewController is null)
-					{
-						await Task.Delay(200);
-					}
-					PlatformSetColor(color);
-					return;
-				}
-				
 				var statusBar = window.ViewWithTag(statusBarTag) ?? new UIView(UIApplication.SharedApplication.StatusBarFrame);
 				statusBar.Tag = statusBarTag;
 				statusBar.BackgroundColor = uiColor;
@@ -31,7 +21,6 @@ static partial class StatusBar
 				statusBar.Frame = UIApplication.SharedApplication.StatusBarFrame;
 				window.AddSubview(statusBar);
 
-				
 				UpdateStatusBarAppearance(window);
 			}
 		}
@@ -79,12 +68,7 @@ static partial class StatusBar
 
 	static void UpdateStatusBarAppearance(UIWindow? window)
 	{
-		var vc = Microsoft.Maui.ApplicationModel.Platform.GetCurrentUIViewController();
-		//var vc = window?.RootViewController ?? WindowStateManager.Default.GetCurrentUIViewController() ?? throw new NullReferenceException(nameof(window.RootViewController));
-		if (vc is null)
-		{
-			return;
-		}
+		var vc = window?.RootViewController ?? WindowStateManager.Default.GetCurrentUIViewController() ?? throw new NullReferenceException(nameof(window.RootViewController));
 
 		while (vc.PresentedViewController is not null)
 		{
