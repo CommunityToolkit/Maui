@@ -97,6 +97,108 @@ public class AvatarViewTests : BaseHandlerTest
 	}
 
 	[Fact]
+	public void DefaultImageSourceProperties()
+	{
+		var source = new UriImageSource()
+		{
+			Uri = new Uri("https://aka.ms/campus.jpg"),
+		};
+		var avatarView = new Maui.Views.AvatarView
+		{
+			ImageSource = source
+		};
+		avatarView.ImageSource.Should().NotBeNull();
+		avatarView.Content.Should().BeOfType<Image>();
+		if (avatarView.Content is Image avatarImage)
+		{
+			avatarImage.Should().NotBeNull();
+			avatarImage.Aspect.Should().Be(Aspect.AspectFill);
+			avatarImage.Source.Should().Be(source);
+			avatarImage.Width.Should().Be(-1);
+			avatarImage.Height.Should().Be(-1);
+			avatarImage.Clip.Should().BeNull();
+			avatarImage.BackgroundColor.Should().BeNull();
+		}
+	}
+
+	[Fact]
+	public void ImageSourceParentSize()
+	{
+		var source = new UriImageSource()
+		{
+			Uri = new Uri("https://aka.ms/campus.jpg"),
+		};
+		var avatarView = new Maui.Views.AvatarView
+		{
+			WidthRequest = 73,
+			HeightRequest = 37,
+			ImageSource = source
+		};
+		avatarView.Layout(new Rect(0, 0, 73, 73));
+		avatarView.ImageSource.Should().NotBeNull();
+		avatarView.Content.Should().BeOfType<Image>();
+		if (avatarView.Content is Image avatarImage)
+		{
+			avatarImage.WidthRequest.Should().Be(73);
+			avatarImage.HeightRequest.Should().Be(37);
+			avatarImage.Clip.Should().BeOfType<RoundRectangleGeometry>();
+		}
+	}
+
+	[Fact]
+	public void ImageSourceBackgroundColor()
+	{
+		var source = new UriImageSource()
+		{
+			Uri = new Uri("https://aka.ms/campus.jpg"),
+		};
+		var avatarView = new Maui.Views.AvatarView
+		{
+			WidthRequest = 73,
+			HeightRequest = 37,
+			ImageSource = source,
+			BackgroundColor = Colors.Azure,
+		};
+		avatarView.Layout(new Rect(0, 0, 73, 73));
+		avatarView.ImageSource.Should().NotBeNull();
+		avatarView.Content.Should().BeOfType<Image>();
+		if (avatarView.Content is Image avatarImage)
+		{
+			avatarImage.BackgroundColor.Should().BeNull();
+		}
+	}
+
+	[Fact]
+	public void ImageSourceClipingPolyline()
+	{
+		Polyline strokeShape = new()
+		{
+			Points = new PointCollection() {
+				new Point(16, 76),
+				new Point(32, 94)
+			}
+		};
+		var source = new UriImageSource()
+		{
+			Uri = new Uri("https://aka.ms/campus.jpg"),
+		};
+		var avatarView = new Maui.Views.AvatarView
+		{
+			WidthRequest = 73,
+			HeightRequest = 37,
+			ImageSource = source,
+			StrokeShape = strokeShape
+		};
+		avatarView.Layout(new Rect(0, 0, 73, 73));
+		avatarView.ImageSource.Should().NotBeNull();
+		avatarView.Content.Should().BeOfType<Image>();
+		if (avatarView.Content is Image avatarImage)
+		{
+			avatarImage.Clip.Should().BeOfType<Polyline>();
+		}
+	}
+
+	[Fact]
 	public void DefaultProperties()
 	{
 		var avatarView = new Maui.Views.AvatarView();
@@ -138,7 +240,7 @@ public class AvatarViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void TestBindingContextPropagation()
+	public void BindingContextPropagation()
 	{
 		object context = new();
 		Maui.Views.AvatarView avatar = new()
@@ -151,7 +253,7 @@ public class AvatarViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void TestBorderColorToBlack()
+	public void BorderColorToBlack()
 	{
 		var avatarView = new Maui.Views.AvatarView()
 		{
@@ -174,7 +276,7 @@ public class AvatarViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void TestBorderWidthToSeven()
+	public void BorderWidthToSeven()
 	{
 		var avatarView = new Maui.Views.AvatarView()
 		{
@@ -196,7 +298,7 @@ public class AvatarViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void TestCharacterSpacingProperty()
+	public void CharacterSpacingProperty()
 	{
 		var avatarView = new Maui.Views.AvatarView();
 		avatarView.CharacterSpacing.Should().Be(0);
@@ -206,7 +308,7 @@ public class AvatarViewTests : BaseHandlerTest
 
 	/// <summary>This test is specifically to test the use ofCornerRadius of type Maui.CornerRadius.</summary>
 	[Fact]
-	public void TestCornerRadiusFourCornerRadiusToOneTwoThreeFour()
+	public void CornerRadiusFourCornerRadiusToOneTwoThreeFour()
 	{
 		var avatarView = new Maui.Views.AvatarView()
 		{
@@ -229,7 +331,7 @@ public class AvatarViewTests : BaseHandlerTest
 
 	/// <summary>This test is specifically to test the use of CornerRadius of type Int.</summary>
 	[Fact]
-	public void TestCornerRadiusSameRadiusToThree()
+	public void CornerRadiusSameRadiusToThree()
 	{
 		var avatarView = new Maui.Views.AvatarView()
 		{
@@ -251,7 +353,7 @@ public class AvatarViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void TestFontAttributesPropertyChanged()
+	public void FontAttributesPropertyChanged()
 	{
 		var avatarView = new Maui.Views.AvatarView();
 		avatarView.FontAttributes.Should().Be(FontAttributes.None);
@@ -260,7 +362,7 @@ public class AvatarViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void TestFontAutoScalingEnabledPropertyChanged()
+	public void FontAutoScalingEnabledPropertyChanged()
 	{
 		var avatarView = new Maui.Views.AvatarView();
 		avatarView.FontAutoScalingEnabled.Should().BeTrue();
@@ -269,7 +371,7 @@ public class AvatarViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void TestFontFamilyPropertyChanged()
+	public void FontFamilyPropertyChanged()
 	{
 		var avatarView = new Maui.Views.AvatarView();
 		avatarView.FontFamily.Should().BeNull();
@@ -277,8 +379,16 @@ public class AvatarViewTests : BaseHandlerTest
 		avatarView.FontFamily.Should().Be("Arial");
 	}
 
+
 	[Fact]
-	public void TestImageSourceChanged()
+	public void DefaultImageSource()
+	{
+		var avatarView = new Maui.Views.AvatarView();
+		avatarView.ImageSource.Should().BeNull();
+	}
+
+	[Fact]
+	public void ImageSourceChanged()
 	{
 		var avatarView = new Maui.Views.AvatarView();
 		avatarView.ImageSource.Should().BeNull();
@@ -291,7 +401,10 @@ public class AvatarViewTests : BaseHandlerTest
 			}
 		};
 
-		ImageSource source = ImageSource.FromFile("File.png");
+		ImageSource source = new UriImageSource()
+		{
+			Uri = new Uri("https://aka.ms/campus.jpg"),
+		};
 		avatarView.ImageSource = source;
 		avatarView.ImageSource.Should().NotBeNull();
 		avatarView.ImageSource.Should().Be(source);
@@ -299,7 +412,7 @@ public class AvatarViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void TestImageSourceIsNotEmpty()
+	public void ImageSourceIsNotEmpty()
 	{
 		var avatarView = new Maui.Views.AvatarView();
 		ImageSource source = ImageSource.FromFile("File.png");
@@ -308,7 +421,7 @@ public class AvatarViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void TestTextColorToYellow()
+	public void TextColorToYellow()
 	{
 		var avatarView = new Maui.Views.AvatarView()
 		{
@@ -330,7 +443,7 @@ public class AvatarViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void TestTextSetToZz()
+	public void TextSetToZz()
 	{
 		var avatarView = new Maui.Views.AvatarView()
 		{
@@ -353,7 +466,7 @@ public class AvatarViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void TestTextTranformToLowerCase()
+	public void TextTranformToLowerCase()
 	{
 		var avatarView = new Maui.Views.AvatarView()
 		{
