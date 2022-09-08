@@ -115,7 +115,7 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
 	
 	private static void PerformOperation(Action operation)
 	{
-		if (Options.ThrowExceptionInBehaviors)
+		if (Options.ShouldThrowExceptionInBehaviors)
 		{
 			operation();
 			return;

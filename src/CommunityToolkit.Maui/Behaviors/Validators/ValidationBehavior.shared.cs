@@ -359,7 +359,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 			{
 				return;
 			}
-			catch (Exception) when (!Options.ThrowExceptionInBehaviors)
+			catch (Exception) when (!Options.ShouldThrowExceptionInBehaviors)
 			{
 				validationTokenSource = null;
 				IsValid = false;
