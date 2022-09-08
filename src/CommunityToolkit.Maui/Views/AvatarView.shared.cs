@@ -357,16 +357,10 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		{
 			var imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
 			var imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
+
 			var rect = new Rect(0, 0, imageWidth, imageHeight);
-			avatarImage.Clip = StrokeShape switch
-			{
-				Polyline polyLine => polyLine.Clip,
-				Ellipse ellipse => ellipse.Clip,
-				Microsoft.Maui.Controls.Shapes.Path path => path.Clip,
-				Polygon polygon => polygon.Clip,
-				Rectangle rectangle => rectangle.Clip,
-				_ => new RoundRectangleGeometry { CornerRadius = CornerRadius, Rect = rect },
-			};
+
+			avatarImage.Clip = new RoundRectangleGeometry { CornerRadius = CornerRadius, Rect = rect };
 		}
 	}
 }

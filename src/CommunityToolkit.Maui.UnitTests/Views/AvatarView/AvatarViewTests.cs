@@ -169,36 +169,6 @@ public class AvatarViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void ImageSourceClipingPolyline()
-	{
-		Polyline strokeShape = new()
-		{
-			Points = new PointCollection() {
-				new Point(16, 76),
-				new Point(32, 94)
-			}
-		};
-		var source = new UriImageSource()
-		{
-			Uri = new Uri("https://aka.ms/campus.jpg"),
-		};
-		var avatarView = new Maui.Views.AvatarView
-		{
-			WidthRequest = 73,
-			HeightRequest = 37,
-			ImageSource = source,
-			StrokeShape = strokeShape
-		};
-		avatarView.Layout(new Rect(0, 0, 73, 73));
-		avatarView.ImageSource.Should().NotBeNull();
-		avatarView.Content.Should().BeOfType<Image>();
-		if (avatarView.Content is Image avatarImage)
-		{
-			avatarImage.Clip.Should().BeOfType<Polyline>();
-		}
-	}
-
-	[Fact]
 	public void DefaultProperties()
 	{
 		var avatarView = new Maui.Views.AvatarView();
