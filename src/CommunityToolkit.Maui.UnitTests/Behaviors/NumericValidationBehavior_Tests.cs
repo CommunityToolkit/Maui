@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using CommunityToolkit.Maui.Behaviors;
+using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
@@ -72,7 +73,7 @@ public class NumericValidationBehavior_Tests : BaseTest
 	}
 
 	[Fact]
-	public void IsNull()
+	public async Task IsNull()
 	{
 		// Arrange
 		string? text = null;
@@ -85,6 +86,29 @@ public class NumericValidationBehavior_Tests : BaseTest
 		};
 		entry.Behaviors.Add(behavior);
 
-		Assert.ThrowsAsync<ArgumentNullException>(async () => await behavior.ForceValidate());
+		await Assert.ThrowsAsync<ArgumentNullException>(async () => await behavior.ForceValidate());
+	}
+	
+	[Fact]
+	public async Task ShouldNotThrowIsNull()
+	{
+		var options = new Options();
+		options.SetThrowExceptionInBehaviors(false);
+		
+		// Arrange
+		string? text = null;
+
+		var behavior = new NumericValidationBehavior();
+
+		var entry = new Entry
+		{
+			Text = text
+		};
+		entry.Behaviors.Add(behavior);
+
+		var action = (async () => await behavior.ForceValidate());
+		await action.Should().NotThrowAsync<ArgumentNullException>();
+		
+		options.SetThrowExceptionInBehaviors(true);
 	}
 }
