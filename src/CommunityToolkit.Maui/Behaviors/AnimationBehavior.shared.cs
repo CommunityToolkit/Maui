@@ -92,19 +92,15 @@ public class AnimationBehavior : EventToCommandBehavior
 		}
 
 		View.CancelAnimations();
-		return Animate(() => AnimationType.Animate(View), Task.CompletedTask);
-	}
 
-	static T Animate<T>(Func<T> operation, T defaultValue)
-	{
 		try
 		{
-			return operation();
+			return AnimationType.Animate(View);
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInAnimations)
 		{
-			Debug.WriteLine(ex.Message);
-			return defaultValue;
+			Debug.WriteLine(ex);
+			return Task.CompletedTask;
 		}
 	}
 }

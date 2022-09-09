@@ -103,18 +103,6 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
 			&& binding != defaultBinding;
 	}
 
-	static void PerformOperation(Action operation)
-	{
-		try
-		{
-			operation();
-		}
-		catch (Exception ex) when (Options.ShouldSuppressExceptionsInBehaviors)
-		{
-			Debug.WriteLine(ex.Message);
-		}
-	}
-
 	void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (sender is not TView view)
@@ -122,6 +110,13 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
 			throw new ArgumentException($"Behavior can only be attached to {typeof(TView)}");
 		}
 
-		PerformOperation(() => OnViewPropertyChanged(view, e));
+		try
+		{
+			OnViewPropertyChanged(view, e);
+		}
+		catch (Exception ex) when (Options.ShouldSuppressExceptionsInBehaviors)
+		{
+			Debug.WriteLine(ex);
+		};
 	}
 }

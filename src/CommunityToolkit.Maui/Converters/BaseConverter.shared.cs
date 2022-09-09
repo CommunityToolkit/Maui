@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Globalization;
 using CommunityToolkit.Maui.Extensions;
 
@@ -50,7 +51,7 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 	/// <inheritdoc/>
 	object? ICommunityToolkitValueConverter.ConvertBack(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
-		return PerformConvertion<object?>(() =>
+		try
 		{
 			ValidateTargetType<TFrom>(targetType);
 
@@ -58,13 +59,18 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 			var converterValue = ConvertValue<TTo>(value);
 
 			return ConvertBackTo(converterValue, converterParameter, culture);
-		}, DefaultReturnType);
+		}
+		catch (Exception ex) when (Options.ShouldSuppressExceptionsInConverters)
+		{
+			Debug.WriteLine(ex);
+			return DefaultReturnType;
+		}
 	}
 
 	/// <inheritdoc/>
 	object? ICommunityToolkitValueConverter.Convert(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
-		return PerformConvertion(() =>
+		try
 		{
 			ValidateTargetType<TTo>(targetType);
 
@@ -72,7 +78,12 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 			var converterValue = ConvertValue<TFrom>(value);
 
 			return ConvertFrom(converterValue, converterParameter, culture);
-		}, DefaultReturnType);
+		}
+		catch (Exception ex) when (Options.ShouldSuppressExceptionsInConverters)
+		{
+			Debug.WriteLine(ex);
+			return DefaultReturnType;
+		}
 	}
 }
 
@@ -115,22 +126,33 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 	/// <inheritdoc/>
 	object? ICommunityToolkitValueConverter.ConvertBack(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
-		return PerformConvertion<object?>(() =>
+		try
 		{
 			ValidateTargetType<TFrom>(targetType);
 			var converterValue = ConvertValue<TTo>(value);
 			return ConvertBackTo(converterValue, culture);
-		}, DefaultReturnType);
+		}
+		catch (Exception ex) when (Options.ShouldSuppressExceptionsInConverters)
+		{
+			Debug.WriteLine(ex);
+			return DefaultReturnType;
+		}
 	}
 
 	/// <inheritdoc/>
 	object? ICommunityToolkitValueConverter.Convert(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
-		return PerformConvertion<object?>(() =>
+		try
 		{
 			ValidateTargetType<TTo>(targetType);
+
 			var converterValue = ConvertValue<TFrom>(value);
 			return ConvertFrom(converterValue, culture);
-		}, DefaultReturnType);
+		}
+		catch (Exception ex) when (Options.ShouldSuppressExceptionsInConverters)
+		{
+			Debug.WriteLine(ex);
+			return DefaultReturnType;
+		}
 	}
 }
