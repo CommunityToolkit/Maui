@@ -8,9 +8,4 @@ static partial class StatusBar
 	{
 		throw new NotImplementedException();
 	}
-
-	static void PlatformSetStyle(StatusBarStyle style)
-	{
-		throw new NotImplementedException();
-	}
 }

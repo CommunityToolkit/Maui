@@ -14,11 +14,4 @@ public static partial class StatusBar
 	/// <param name="color">The <see cref="Color"/> that will be set to the status bar.</param>
 	public static void SetColor(Color? color) =>
 		PlatformSetColor(color ?? Colors.Transparent);
-
-	/// <summary>
-	/// Method to change the style of the status bar.
-	/// </summary>
-	/// <param name="statusBarStyle"> The <see cref="StatusBarStyle"/> that will used by status bar.</param>
-	public static void SetStyle(StatusBarStyle statusBarStyle) =>
-		PlatformSetStyle(statusBarStyle);
 }
