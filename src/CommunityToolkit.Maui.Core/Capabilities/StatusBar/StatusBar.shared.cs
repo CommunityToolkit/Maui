@@ -1,8 +1,11 @@
-﻿namespace CommunityToolkit.Maui.Core.Capabilities;
+﻿using System.Runtime.Versioning;
+
+namespace CommunityToolkit.Maui.Core.Capabilities;
 
 /// <summary>
 /// Class that hold the method to customize the StatusBar
 /// </summary>
+[UnsupportedOSPlatform("windows")]
 public static partial class StatusBar
 {
 	/// <summary>
