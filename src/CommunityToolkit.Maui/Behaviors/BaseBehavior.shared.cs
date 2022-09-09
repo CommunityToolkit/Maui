@@ -103,6 +103,18 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
 			&& binding != defaultBinding;
 	}
 
+	static void PerformOperation(Action operation)
+	{
+		try
+		{
+			operation();
+		}
+		catch (Exception ex) when (Options.ShouldSuppressExceptionsInBehaviors)
+		{
+			Debug.WriteLine(ex.Message);
+		}
+	}
+
 	void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (sender is not TView view)
@@ -111,23 +123,5 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
 		}
 
 		PerformOperation(() => OnViewPropertyChanged(view, e));
-	}
-
-	static void PerformOperation(Action operation)
-	{
-		if (!Options.ShouldSuppressExceptionsInBehaviors)
-		{
-			operation();
-			return;
-		}
-
-		try
-		{
-			operation();
-		}
-		catch (Exception ex)
-		{
-			Debug.WriteLine(ex.Message);
-		}
 	}
 }
