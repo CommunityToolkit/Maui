@@ -92,6 +92,24 @@ public class AvatarViewImageTests : BaseHandlerTest
 	}
 
 	[Fact]
+	public void ImageSourceChangedToNull()
+	{
+		var avatarView = new Maui.Views.AvatarView();
+		avatarView.ImageSource.Should().BeNull();
+		ImageSource source = new UriImageSource()
+		{
+			Uri = new Uri("https://aka.ms/campus.jpg"),
+		};
+		avatarView.ImageSource = source;
+		avatarView.ImageSource.Should().NotBeNull();
+		avatarView.ImageSource.Should().Be(source);
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		avatarView.ImageSource = null;
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+		avatarView.ImageSource.Should().BeNull();
+	}
+
+	[Fact]
 	public void ImageSourceIsNotEmpty()
 	{
 		var avatarView = new Maui.Views.AvatarView();

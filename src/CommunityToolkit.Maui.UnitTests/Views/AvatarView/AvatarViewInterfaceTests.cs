@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
 
@@ -295,9 +296,23 @@ public class AvatarViewInterfaceTests : BaseHandlerTest
 	public void IImageSourcePartUpdateIsLoading()
 	{
 		// For code coverage
-		var avatarView = new Maui.Views.AvatarView();
+		var handler = new FontElementHandlerStub();
+		var avatarView = new Maui.Views.AvatarView()
+		{
+			Handler = handler
+		};
+		handler.Updates.Clear();
 		((IImageSourcePart)avatarView).UpdateIsLoading(true);
 		((IImageSourcePart)avatarView).UpdateIsLoading(false);
+		avatarView.Text.Should().Be("?");
+	}
+
+	[Fact]
+	public void ILineHeightElementOnLineHeightChanged()
+	{
+		// For code coverage
+		var avatarView = new Maui.Views.AvatarView();
+		((Microsoft.Maui.Controls.Internals.ILineHeightElement)avatarView).OnLineHeightChanged(0.0, 3.7);
 		avatarView.Text.Should().Be("?");
 	}
 }
