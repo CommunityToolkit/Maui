@@ -14,7 +14,7 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 	/// <summary>
 	/// Default value to return when the value is null.
 	/// </summary>
-	public TTo? Default { get; set; } = default;
+	public TTo? DefaultReturnType { get; set; } = default;
 
 	/// <inheritdoc/>
 	public Type FromType { get; } = typeof(TFrom);
@@ -26,6 +26,8 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 	/// Type of TParam
 	/// </summary>
 	public Type ParamType { get; } = typeof(TParam);
+
+	object? ICommunityToolkitValueConverter.DefaultReturnType => DefaultReturnType;
 
 	/// <summary>
 	/// Method that will be called by <see cref="ICommunityToolkitValueConverter.Convert(object?, Type, object?, CultureInfo?)"/>.
@@ -56,7 +58,7 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 			var converterValue = ConvertValue<TTo>(value);
 
 			return ConvertBackTo(converterValue, converterParameter, culture);
-		}, Default);
+		}, DefaultReturnType);
 	}
 
 	/// <inheritdoc/>
@@ -70,7 +72,7 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 			var converterValue = ConvertValue<TFrom>(value);
 
 			return ConvertFrom(converterValue, converterParameter, culture);
-		}, Default);
+		}, DefaultReturnType);
 	}
 }
 
@@ -84,13 +86,15 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 	/// <summary>
 	/// Default value to return when the value is null.
 	/// </summary>
-	public TTo? Default { get; set; } = default;
+	public TTo? DefaultReturnType { get; set; } = default;
 
 	/// <inheritdoc/>
 	public Type FromType { get; } = typeof(TFrom);
 
 	/// <inheritdoc/>
 	public Type ToType { get; } = typeof(TTo);
+
+	object? ICommunityToolkitValueConverter.DefaultReturnType => DefaultReturnType;
 
 	/// <summary>
 	/// Method that will be called by <see cref="ICommunityToolkitValueConverter.Convert(object?, Type, object?, CultureInfo?)"/>.
@@ -116,7 +120,7 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 			ValidateTargetType<TFrom>(targetType);
 			var converterValue = ConvertValue<TTo>(value);
 			return ConvertBackTo(converterValue, culture);
-		}, Default);
+		}, DefaultReturnType);
 	}
 
 	/// <inheritdoc/>
@@ -127,6 +131,6 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 			ValidateTargetType<TTo>(targetType);
 			var converterValue = ConvertValue<TFrom>(value);
 			return ConvertFrom(converterValue, culture);
-		}, Default);
+		}, DefaultReturnType);
 	}
 }

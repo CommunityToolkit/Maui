@@ -6,6 +6,11 @@ namespace CommunityToolkit.Maui.Converters;
 public interface ICommunityToolkitValueConverter : IValueConverter
 {
 	/// <summary>
+	/// Default value to return when the value is null.
+	/// </summary>
+	object? DefaultReturnType { get; }
+
+	/// <summary>
 	/// Gets the <see cref="Type" /> this converter expects to <see cref="Convert" /> from or <see cref="ConvertBack" /> to.
 	/// </summary>
 	Type FromType { get; }
