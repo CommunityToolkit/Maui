@@ -18,6 +18,16 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 		previousPoint = new();
 	}
 
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			currentPath.Dispose();
+		}
+
+		base.Dispose(disposing);
+	}
+
 	/// <inheritdoc />
 	public override bool OnTouchEvent(MotionEvent? e)
 	{
@@ -59,5 +69,19 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 		Redraw();
 
 		return true;
+	}
+
+	/// <summary>
+	/// Initialize resources
+	/// </summary>
+	public void Initialize()
+	{
+		Drawable = new DrawingViewDrawable(this);
+		Lines.CollectionChanged += OnLinesCollectionChanged;
+	}
+
+	void Redraw()
+	{
+		Invalidate();
 	}
 }
