@@ -40,6 +40,7 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<TextValidationBehaviorPage, TextValidationBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
 		CreateViewModelMapping<UriValidationBehaviorPage, UriValidationBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
 		CreateViewModelMapping<UserStoppedTypingBehaviorPage, UserStoppedTypingBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
+		CreateViewModelMapping<StatusBarBehaviorPage, StatusBarBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
 
 		// Add Converters View Models
 		CreateViewModelMapping<BoolToObjectConverterPage, BoolToObjectConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
