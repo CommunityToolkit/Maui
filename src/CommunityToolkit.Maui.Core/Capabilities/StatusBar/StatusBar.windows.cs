@@ -11,6 +11,6 @@ static partial class StatusBar
 
 	static void PlatformSetStyle(StatusBarStyle style)
 	{
-		throw new NotImplementedException();
+		throw new NotSupportedException("WinUI does not currently support changing the Windows status bar color");
 	}
 }
