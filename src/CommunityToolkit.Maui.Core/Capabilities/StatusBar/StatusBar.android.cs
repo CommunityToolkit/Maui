@@ -42,6 +42,7 @@ static partial class StatusBar
 	static void RemoveBarAppearanceFlag(Activity activity, StatusBarVisibility flag) =>
 		SetBarAppearance(activity, barAppearance => barAppearance &= ~flag);
 
+	[Obsolete]
 	static void SetBarAppearance(Activity activity, Func<StatusBarVisibility, StatusBarVisibility> updateAppearance)
 	{
 		var window = GetCurrentWindow(activity);
