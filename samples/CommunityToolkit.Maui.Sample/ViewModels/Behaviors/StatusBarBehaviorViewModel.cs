@@ -8,22 +8,22 @@ public partial class StatusBarBehaviorViewModel : BaseViewModel
 	[NotifyPropertyChangedFor(nameof(StatusBarStyle))]
 	[NotifyPropertyChangedFor(nameof(StatusBarColor))]
 	int redSliderValue;
-	
+
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(StatusBarStyle))]
 	[NotifyPropertyChangedFor(nameof(StatusBarColor))]
 	int greenSliderValue;
-	
+
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(StatusBarStyle))]
 	[NotifyPropertyChangedFor(nameof(StatusBarColor))]
 	int blueSliderValue;
-	
+
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(StatusBarStyle))]
 	[NotifyPropertyChangedFor(nameof(StatusBarColor))]
 	bool isDefaultChecked = true;
-	
+
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(StatusBarStyle))]
 	[NotifyPropertyChangedFor(nameof(StatusBarColor))]
