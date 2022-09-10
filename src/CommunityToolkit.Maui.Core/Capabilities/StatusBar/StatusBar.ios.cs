@@ -35,6 +35,21 @@ static partial class StatusBar
 			UpdateStatusBarAppearance();
 		}
 	}
+
+	static void PlatformSetStyle(StatusBarStyle statusBarStyle)
+	{
+		var uiStyle = statusBarStyle switch
+		{
+			StatusBarStyle.LightContent => UIStatusBarStyle.LightContent,
+			StatusBarStyle.DarkContent => UIStatusBarStyle.DarkContent,
+			_ => UIStatusBarStyle.Default
+		};
+		UIApplication.SharedApplication.SetStatusBarStyle(uiStyle, false);
+
+		UpdateStatusBarAppearance();
+	}
+
+
 	static void UpdateStatusBarAppearance()
 	{
 		if (PlatformVersion.IsiOS13OrNewer)

@@ -18,6 +18,47 @@ static partial class StatusBar
 		Activity.Window?.SetStatusBarColor(color.ToPlatform());
 	}
 
+	static void PlatformSetStyle(StatusBarStyle style)
+	{
+		if (!IsSupported())
+		{
+			return;
+		}
+
+		switch (style)
+		{
+			case StatusBarStyle.DarkContent:
+				AddBarAppearanceFlag(Activity, (StatusBarVisibility)SystemUiFlags.LightStatusBar);
+				break;
+			default:
+				RemoveBarAppearanceFlag(Activity, (StatusBarVisibility)SystemUiFlags.LightStatusBar);
+				break;
+		}
+	}
+
+	static void AddBarAppearanceFlag(Activity activity, StatusBarVisibility flag) =>
+			SetBarAppearance(activity, barAppearance => barAppearance |= flag);
+
+	static void RemoveBarAppearanceFlag(Activity activity, StatusBarVisibility flag) =>
+		SetBarAppearance(activity, barAppearance => barAppearance &= ~flag);
+
+	static void SetBarAppearance(Activity activity, Func<StatusBarVisibility, StatusBarVisibility> updateAppearance)
+	{
+		var window = GetCurrentWindow(activity);
+		var appearance = window.DecorView.SystemUiVisibility;
+		appearance = updateAppearance(appearance);
+		window.DecorView.SystemUiVisibility = appearance;
+
+		static Window GetCurrentWindow(Activity activity)
+		{
+			var window = activity.Window ?? throw new NullReferenceException();
+			window.ClearFlags(WindowManagerFlags.TranslucentStatus);
+			window.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
+			return window;
+		}
+	}
+
+
 	static bool IsSupported()
 	{
 		if (PlatformVersion.SdkInt < (int)BuildVersionCodes.M)

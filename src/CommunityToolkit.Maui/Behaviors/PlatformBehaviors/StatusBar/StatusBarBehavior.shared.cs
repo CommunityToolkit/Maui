@@ -27,6 +27,22 @@ public class StatusBarBehavior : PlatformBehavior<VisualElement>
 		set => SetValue(StatusBarColorProperty, value);
 	}
 
+
+	/// <summary>
+	/// <see cref="BindableProperty"/> that manages the StatusBarColor property.
+	/// </summary>
+	public static readonly BindableProperty StatusBarStyleProperty =
+		BindableProperty.Create(nameof(StatusBarStyle), typeof(StatusBarStyle), typeof(StatusBarBehavior), StatusBarStyle.Default);
+
+	/// <summary>
+	/// Property that holds the value of the Status bar color. 
+	/// </summary>
+	public StatusBarStyle StatusBarStyle
+	{
+		get => (StatusBarStyle)GetValue(StatusBarStyleProperty);
+		set => SetValue(StatusBarStyleProperty, value);
+	}
+
 #if !WINDOWS
 
 	/// <inheritdoc /> 
@@ -39,6 +55,7 @@ public class StatusBarBehavior : PlatformBehavior<VisualElement>
 #endif
 	{
 		StatusBar.SetColor(StatusBarColor);
+		StatusBar.SetStyle(StatusBarStyle);
 	}
 
 
@@ -50,6 +67,10 @@ public class StatusBarBehavior : PlatformBehavior<VisualElement>
 		if (propertyName == StatusBarColorProperty.PropertyName)
 		{
 			StatusBar.SetColor(StatusBarColor);
+		}
+		else if (propertyName == StatusBarStyleProperty.PropertyName)
+		{
+			StatusBar.SetStyle(StatusBarStyle);
 		}
 	}
 #endif
