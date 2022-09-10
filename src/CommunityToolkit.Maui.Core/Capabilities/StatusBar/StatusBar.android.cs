@@ -29,6 +29,7 @@ static partial class StatusBar
 		{
 			case StatusBarStyle.DarkContent:
 				AddBarAppearanceFlag(Activity, (StatusBarVisibility)SystemUiFlags.LightStatusBar);
+
 				break;
 			default:
 				RemoveBarAppearanceFlag(Activity, (StatusBarVisibility)SystemUiFlags.LightStatusBar);
@@ -36,19 +37,23 @@ static partial class StatusBar
 		}
 	}
 
+
 	static void AddBarAppearanceFlag(Activity activity, StatusBarVisibility flag) =>
 			SetBarAppearance(activity, barAppearance => barAppearance |= flag);
+
 
 	static void RemoveBarAppearanceFlag(Activity activity, StatusBarVisibility flag) =>
 		SetBarAppearance(activity, barAppearance => barAppearance &= ~flag);
 
-	[Obsolete]
+
 	static void SetBarAppearance(Activity activity, Func<StatusBarVisibility, StatusBarVisibility> updateAppearance)
 	{
 		var window = GetCurrentWindow(activity);
+#pragma warning disable CS0618 // Type or member is obsolete
 		var appearance = window.DecorView.SystemUiVisibility;
 		appearance = updateAppearance(appearance);
 		window.DecorView.SystemUiVisibility = appearance;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		static Window GetCurrentWindow(Activity activity)
 		{
@@ -58,7 +63,6 @@ static partial class StatusBar
 			return window;
 		}
 	}
-
 
 	static bool IsSupported()
 	{
