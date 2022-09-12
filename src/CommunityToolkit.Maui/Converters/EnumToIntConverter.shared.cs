@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.Globalization;
-using System.Reflection.Metadata;
 
 namespace CommunityToolkit.Maui.Converters;
 
