@@ -12,8 +12,8 @@ public abstract class BaseConverterOneWay<TFrom, TTo> : BaseConverter<TFrom, TTo
 	/// <inheritdoc/>
 	public override TFrom DefaultConvertBackReturnValue
 	{
-		get => throw new NotSupportedException($"{nameof(DefaultConvertBackReturnValue)} not used for ${nameof(BaseConverterOneWay<TFrom, TTo>)}");
-		set => throw new NotSupportedException($"{nameof(DefaultConvertBackReturnValue)} not used for ${nameof(BaseConverterOneWay<TFrom, TTo>)}");
+		get => throw new NotSupportedException($"{nameof(DefaultConvertBackReturnValue)} is not used for ${nameof(BaseConverterOneWay<TFrom, TTo>)}");
+		set => throw new NotSupportedException($"{nameof(DefaultConvertBackReturnValue)} is not used for ${nameof(BaseConverterOneWay<TFrom, TTo>)}");
 	}
 
 	/// <inheritdoc/>
@@ -32,8 +32,8 @@ public abstract class BaseConverterOneWay<TFrom, TTo, TParam> : BaseConverter<TF
 	/// <inheritdoc/>
 	public override TFrom DefaultConvertBackReturnValue
 	{
-		get => throw new NotSupportedException($"{nameof(DefaultConvertBackReturnValue)} not used for ${nameof(BaseConverterOneWay<TFrom, TTo, TParam>)}");
-		set => throw new NotSupportedException($"{nameof(DefaultConvertBackReturnValue)} not used for ${nameof(BaseConverterOneWay<TFrom, TTo, TParam>)}");
+		get => throw new NotSupportedException($"{nameof(DefaultConvertBackReturnValue)} is not used for ${nameof(BaseConverterOneWay<TFrom, TTo, TParam>)}");
+		set => throw new NotSupportedException($"{nameof(DefaultConvertBackReturnValue)} is not used for ${nameof(BaseConverterOneWay<TFrom, TTo, TParam>)}");
 	}
 
 	/// <inheritdoc/>
