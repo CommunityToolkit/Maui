@@ -14,15 +14,15 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 {
 	/// <summary>
 	/// Default value to return when the <see cref="IValueConverter.Convert(object?, Type, object?, CultureInfo?)"/> throws an <see cref="Exception"/>.
-	/// This value is used when <see cref="Maui.Options.ShouldSuppressExceptionsInConverters" is set to <see cref="true"/> />
+	/// This value is used when <see cref="Maui.Options.ShouldSuppressExceptionsInConverters"/> is set to <see langword="true"/>.
 	/// </summary>
-	public abstract TTo? DefaultConvertReturnValue { get; set; }
+	public abstract TTo DefaultConvertReturnValue { get; set; }
 
 	/// <summary>
 	/// Default value to return when the <see cref="IValueConverter.ConvertBack(object?, Type, object?, CultureInfo?)"/> throws an <see cref="Exception"/>.
-	/// This value is used when <see cref="Maui.Options.ShouldSuppressExceptionsInConverters" is set to <see cref="true"/> />
+	/// This value is used when <see cref="Maui.Options.ShouldSuppressExceptionsInConverters"/> is set to <see langword="true"/>.
 	/// </summary>
-	public abstract TFrom? DefaultConvertBackReturnValue { get; set; }
+	public abstract TFrom DefaultConvertBackReturnValue { get; set; }
 
 	/// <inheritdoc/>
 	public Type FromType { get; } = typeof(TFrom);
@@ -50,7 +50,7 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 	/// <summary>
 	/// Method that will be called by <see cref="ICommunityToolkitValueConverter.ConvertBack(object?, Type, object?, CultureInfo?)"/>.
 	/// </summary>
-	/// <param name="value">Value to be converted from <typeparamref name="TTo"/> to <typeparamref name="TFrom"/>.</param>	
+	/// <param name="value">Value to be converted from <typeparamref name="TTo"/> to <typeparamref name="TFrom"/>.</param>
 	/// <param name="parameter">Optional Parameters</param>
 	/// <param name="culture">Culture Info</param>
 	/// <returns>An object of type <typeparamref name="TFrom"/>.</returns>
@@ -104,15 +104,15 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 {
 	/// <summary>
 	/// Default value to return when the <see cref="IValueConverter.Convert(object?, Type, object?, CultureInfo?)"/> throws an <see cref="Exception"/>.
-	/// This value is used when <see cref="Maui.Options.ShouldSuppressExceptionsInConverters" is set to <see cref="true"/> />
+	/// This value is used when <see cref="Maui.Options.ShouldSuppressExceptionsInConverters"/> is set to <see langword="true"/>.
 	/// </summary>
-	public abstract TTo? DefaultConvertReturnValue { get; set; }
+	public abstract TTo DefaultConvertReturnValue { get; set; }
 
 	/// <summary>
 	/// Default value to return when the <see cref="IValueConverter.ConvertBack(object?, Type, object?, CultureInfo?)"/> throws an <see cref="Exception"/>.
-	/// This value is used when <see cref="Maui.Options.ShouldSuppressExceptionsInConverters" is set to <see cref="true"/> />
+	/// This value is used when <see cref="Maui.Options.ShouldSuppressExceptionsInConverters"/> is set to <see langword="true"/>.
 	/// </summary>
-	public abstract TFrom? DefaultConvertBackReturnValue { get; set; }
+	public abstract TFrom DefaultConvertBackReturnValue { get; set; }
 
 	/// <inheritdoc/>
 	public Type FromType { get; } = typeof(TFrom);

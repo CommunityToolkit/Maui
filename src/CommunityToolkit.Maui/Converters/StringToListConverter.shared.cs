@@ -12,7 +12,7 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable, o
 	IList<string> separators = Array.Empty<string>();
 
 	/// <inheritdoc/>
-	public override IEnumerable DefaultReturnValue { get; set; } = Array.Empty<string>();
+	public override IEnumerable DefaultConvertReturnValue { get; set; } = Array.Empty<string>();
 
 	/// <summary>
 	/// The string that delimits the substrings in this string

@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Converters;
 public class ColorToByteAlphaConverter : BaseConverterOneWay<Color, byte>
 {
 	/// <inheritdoc/>
-	public override byte DefaultReturnValue { get; set; } = default;
+	public override byte DefaultConvertReturnValue { get; set; } = default;
 
 	/// <inheritdoc/>
 	public override byte ConvertFrom(Color value, CultureInfo? culture = null)
@@ -26,7 +26,7 @@ public class ColorToByteAlphaConverter : BaseConverterOneWay<Color, byte>
 public class ColorToByteRedConverter : BaseConverterOneWay<Color, byte>
 {
 	/// <inheritdoc/>
-	public override byte DefaultReturnValue { get; set; } = default;
+	public override byte DefaultConvertReturnValue { get; set; } = default;
 
 	/// <inheritdoc/>
 	public override byte ConvertFrom(Color value, CultureInfo? culture = null)
@@ -43,7 +43,7 @@ public class ColorToByteRedConverter : BaseConverterOneWay<Color, byte>
 public class ColorToByteGreenConverter : BaseConverterOneWay<Color, byte>
 {
 	/// <inheritdoc/>
-	public override byte DefaultReturnValue { get; set; } = default;
+	public override byte DefaultConvertReturnValue { get; set; } = default;
 
 	/// <inheritdoc/>
 	public override byte ConvertFrom(Color value, CultureInfo? culture = null)
@@ -60,7 +60,7 @@ public class ColorToByteGreenConverter : BaseConverterOneWay<Color, byte>
 public class ColorToByteBlueConverter : BaseConverterOneWay<Color, byte>
 {
 	/// <inheritdoc/>
-	public override byte DefaultReturnValue { get; set; } = default;
+	public override byte DefaultConvertReturnValue { get; set; } = default;
 
 	/// <inheritdoc/>
 	public override byte ConvertFrom(Color value, CultureInfo? culture = null)
@@ -77,7 +77,7 @@ public class ColorToByteBlueConverter : BaseConverterOneWay<Color, byte>
 public class ColorToPercentCyanConverter : BaseConverterOneWay<Color, double>
 {
 	/// <inheritdoc/>
-	public override double DefaultReturnValue { get; set; } = 0.0d;
+	public override double DefaultConvertReturnValue { get; set; } = 0.0d;
 
 	/// <inheritdoc/>
 	public override double ConvertFrom(Color value, CultureInfo? culture = null)
@@ -94,7 +94,7 @@ public class ColorToPercentCyanConverter : BaseConverterOneWay<Color, double>
 public class ColorToPercentMagentaConverter : BaseConverterOneWay<Color, double>
 {
 	/// <inheritdoc/>
-	public override double DefaultReturnValue { get; set; } = 0.0d;
+	public override double DefaultConvertReturnValue { get; set; } = 0.0d;
 
 	/// <inheritdoc/>
 	public override double ConvertFrom(Color value, CultureInfo? culture = null)
@@ -111,7 +111,7 @@ public class ColorToPercentMagentaConverter : BaseConverterOneWay<Color, double>
 public class ColorToPercentYellowConverter : BaseConverterOneWay<Color, double>
 {
 	/// <inheritdoc/>
-	public override double DefaultReturnValue { get; set; } = 0.0d;
+	public override double DefaultConvertReturnValue { get; set; } = 0.0d;
 
 	/// <inheritdoc/>
 	public override double ConvertFrom(Color value, CultureInfo? culture = null)
@@ -128,7 +128,7 @@ public class ColorToPercentYellowConverter : BaseConverterOneWay<Color, double>
 public class ColorToPercentBlackKeyConverter : BaseConverterOneWay<Color, double>
 {
 	/// <inheritdoc/>
-	public override double DefaultReturnValue { get; set; } = 0.0d;
+	public override double DefaultConvertReturnValue { get; set; } = 0.0d;
 
 	/// <inheritdoc/>
 	public override double ConvertFrom(Color value, CultureInfo? culture = null)
@@ -146,7 +146,7 @@ public class ColorToPercentBlackKeyConverter : BaseConverterOneWay<Color, double
 public class ColorToDegreeHueConverter : BaseConverterOneWay<Color, double>
 {
 	/// <inheritdoc/>
-	public override double DefaultReturnValue { get; set; } = 0.0d;
+	public override double DefaultConvertReturnValue { get; set; } = 0.0d;
 
 	/// <inheritdoc/>
 	public override double ConvertFrom(Color value, CultureInfo? culture = null)

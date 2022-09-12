@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Converters;
 public class IsStringNullOrEmptyConverter : BaseConverterOneWay<string?, bool>
 {
 	/// <inheritdoc/>
-	public override bool DefaultReturnValue { get; set; } = false;
+	public override bool DefaultConvertReturnValue { get; set; } = false;
 
 	/// <summary>
 	/// Converts the incoming string to a <see cref="bool"/> indicating whether or not the string is null or empty using string.IsNullOrEmpty.

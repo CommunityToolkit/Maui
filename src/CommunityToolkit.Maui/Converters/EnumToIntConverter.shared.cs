@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Globalization;
+using System.Reflection.Metadata;
 
 namespace CommunityToolkit.Maui.Converters;
 
@@ -9,7 +10,10 @@ namespace CommunityToolkit.Maui.Converters;
 public class EnumToIntConverter : BaseConverter<Enum, int, Type>
 {
 	/// <inheritdoc/>
-	public override int DefaultReturnValue { get; set; } = 0;
+	public override int DefaultConvertReturnValue { get; set; } = 0;
+
+	/// <inheritdoc/>
+	public override Enum DefaultConvertBackReturnValue { get; set; } = (Enum)Enum.ToObject(typeof(Enum), 0);
 
 	/// <summary>
 	/// Convert a default <see cref="Enum"/> (i.e., extending <see cref="int"/>) to corresponding underlying <see cref="int"/>
