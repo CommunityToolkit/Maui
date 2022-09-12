@@ -7,6 +7,9 @@ namespace CommunityToolkit.Maui.Converters;
 /// </summary>
 public class IsStringNotNullOrWhiteSpaceConverter : BaseConverterOneWay<string?, bool>
 {
+	/// <inheritdoc/>
+	public override bool DefaultReturnValue { get; set; } = false;
+
 	/// <summary>
 	/// Converts the incoming string to a <see cref="bool"/> indicating whether or not the value is not null and not white space using string.IsNullOrWhiteSpace.
 	/// </summary>

@@ -11,6 +11,9 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable, o
 	string separator = " ";
 	IList<string> separators = Array.Empty<string>();
 
+	/// <inheritdoc/>
+	public override IEnumerable DefaultReturnValue { get; set; } = Array.Empty<string>();
+
 	/// <summary>
 	/// The string that delimits the substrings in this string
 	/// This value is superseded by the ConverterParameter, if provided

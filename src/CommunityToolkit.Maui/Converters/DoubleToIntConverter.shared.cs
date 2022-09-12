@@ -8,6 +8,9 @@ namespace CommunityToolkit.Maui.Converters;
 [ContentProperty(nameof(Ratio))]
 public class DoubleToIntConverter : BaseConverter<double, int, object?>
 {
+	/// <inheritdoc/>
+	public override int DefaultReturnValue { get; set; } = 0;
+
 	/// <summary>
 	/// Multiplier / Denominator (Equals 1 by default).
 	/// </summary>

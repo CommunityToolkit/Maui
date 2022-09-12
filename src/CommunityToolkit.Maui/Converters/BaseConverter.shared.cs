@@ -13,9 +13,10 @@ namespace CommunityToolkit.Maui.Converters;
 public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
-	/// Default value to return when the value is null.
+	/// Default value to return when the converter throws an <see cref="Exception"/>.
+	/// This value is used when <see cref="Maui.Options.ShouldSuppressExceptionsInConverters" is set to <see cref="true"/> />
 	/// </summary>
-	public TTo? DefaultReturnValue { get; set; } = default;
+	public abstract TTo DefaultReturnValue { get; set; }
 
 	/// <inheritdoc/>
 	public Type FromType { get; } = typeof(TFrom);
@@ -95,9 +96,10 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
-	/// Default value to return when the value is null.
+	/// Default value to return when the converter throws an <see cref="Exception"/>.
+	/// This value is used when <see cref="Maui.Options.ShouldSuppressExceptionsInConverters" is set to <see cref="true"/> />
 	/// </summary>
-	public TTo? DefaultReturnValue { get; set; } = default;
+	public abstract TTo DefaultReturnValue { get; set; }
 
 	/// <inheritdoc/>
 	public Type FromType { get; } = typeof(TFrom);

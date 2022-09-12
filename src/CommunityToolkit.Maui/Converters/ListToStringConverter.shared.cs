@@ -10,6 +10,9 @@ public class ListToStringConverter : BaseConverterOneWay<IEnumerable, string, st
 {
 	string separator = string.Empty;
 
+	/// <inheritdoc/>
+	public override string DefaultReturnValue { get; set; } = string.Empty;
+
 	/// <summary>
 	/// The value that separates each item in the collection
 	/// This value is superseded by the ConverterParameter, if provided
