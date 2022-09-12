@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Converters;
 public class IsListNullOrEmptyConverter : BaseConverterOneWay<IEnumerable?, bool>
 {
 	/// <inheritdoc/>
-	public override bool DefaultReturnValue { get; set; } = false;
+	public override bool DefaultConvertReturnValue { get; set; } = false;
 
 	/// <summary>
 	/// Converts the incoming value to a <see cref="bool"/> indicating whether or not the value is null or empty.

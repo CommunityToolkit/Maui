@@ -9,7 +9,10 @@ namespace CommunityToolkit.Maui.Converters;
 public class DoubleToIntConverter : BaseConverter<double, int, object?>
 {
 	/// <inheritdoc/>
-	public override int DefaultReturnValue { get; set; } = 0;
+	public override int DefaultConvertReturnValue { get; set; } = 0;
+
+	/// <inheritdoc/>
+	public override double DefaultConvertBackReturnValue { get; set; } = 0.0d;
 
 	/// <summary>
 	/// Multiplier / Denominator (Equals 1 by default).

@@ -8,7 +8,10 @@ namespace CommunityToolkit.Maui.Converters;
 public class DateTimeOffsetConverter : BaseConverter<DateTimeOffset, DateTime>
 {
 	/// <inheritdoc/>
-	public override DateTime DefaultReturnValue { get; set; } = DateTime.MinValue; //`DateTime.MinValue` is the same as `new DateTime()`, but it is more-efficient
+	public override DateTime DefaultConvertReturnValue { get; set; } = DateTime.MinValue; //`DateTime.MinValue` is the same as `new DateTime()`, but it is more-efficient
+
+	/// <inheritdoc/>
+	public override DateTimeOffset DefaultConvertBackReturnValue { get; set; } = DateTimeOffset.MinValue; //`DateTimeOffset.MinValue` is the same as `new DateTimeOffset()`, but it is more-efficient
 
 	/// <summary>
 	/// Converts <see cref="DateTimeOffset"/> to <see cref="DateTime"/>
