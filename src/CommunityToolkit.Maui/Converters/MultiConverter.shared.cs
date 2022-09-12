@@ -5,7 +5,7 @@
 /// </summary>
 public class MultiConverter : List<ICommunityToolkitValueConverter>, ICommunityToolkitValueConverter
 {
-	object? ICommunityToolkitValueConverter.DefaultReturnValue => throw new NotSupportedException($"{nameof(ICommunityToolkitMultiValueConverter)} does not implement {nameof(ICommunityToolkitValueConverter.DefaultReturnValue)}");
+	object? ICommunityToolkitValueConverter.DefaultConvertReturnValue => throw new NotSupportedException($"{nameof(ICommunityToolkitMultiValueConverter)} does not implement {nameof(ICommunityToolkitValueConverter.DefaultConvertReturnValue)}");
 
 	Type ICommunityToolkitValueConverter.FromType => throw new NotSupportedException($"{nameof(ICommunityToolkitMultiValueConverter)} does not implement {nameof(ICommunityToolkitValueConverter.FromType)}");
 
