@@ -14,7 +14,7 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 {
 	/// <summary>
 	/// Default value to return when the converter throws an <see cref="Exception"/>.
-	/// This value is used when <see cref="Maui.Options.ShouldSuppressExceptionsInConverters" is set to <see cref="true"/> />
+	/// This value is used when <see cref="Maui.Options.ShouldSuppressExceptionsInConverters"/> is set to true />
 	/// </summary>
 	public abstract TTo DefaultReturnValue { get; set; }
 
@@ -97,7 +97,7 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 {
 	/// <summary>
 	/// Default value to return when the converter throws an <see cref="Exception"/>.
-	/// This value is used when <see cref="Maui.Options.ShouldSuppressExceptionsInConverters" is set to <see cref="true"/> />
+	/// This value is used when <see cref="Maui.Options.ShouldSuppressExceptionsInConverters"/> is set to true />
 	/// </summary>
 	public abstract TTo DefaultReturnValue { get; set; }
 
