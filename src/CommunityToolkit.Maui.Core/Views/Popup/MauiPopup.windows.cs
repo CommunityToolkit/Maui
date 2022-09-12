@@ -125,6 +125,7 @@ public class MauiPopup : Flyout
 
 		VirtualView = null;
 		Control = null;
+		Target.ContextFlyout = null;
 	}
 
 	void CreateControl()
