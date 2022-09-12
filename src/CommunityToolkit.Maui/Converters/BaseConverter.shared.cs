@@ -13,13 +13,13 @@ namespace CommunityToolkit.Maui.Converters;
 public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
-	/// Default value to return when the <see cref="IValueConverter.Convert(object?, Type, object?, CultureInfo?)"/> throws an <see cref="Exception"/>.
+	/// Default value to return when <see cref="IValueConverter.Convert(object?, Type, object?, CultureInfo?)"/> throws an <see cref="Exception"/>.
 	/// This value is used when <see cref="Maui.Options.ShouldSuppressExceptionsInConverters"/> is set to <see langword="true"/>.
 	/// </summary>
 	public abstract TTo DefaultConvertReturnValue { get; set; }
 
 	/// <summary>
-	/// Default value to return when the <see cref="IValueConverter.ConvertBack(object?, Type, object?, CultureInfo?)"/> throws an <see cref="Exception"/>.
+	/// Default value to return when <see cref="IValueConverter.ConvertBack(object?, Type, object?, CultureInfo?)"/> throws an <see cref="Exception"/>.
 	/// This value is used when <see cref="Maui.Options.ShouldSuppressExceptionsInConverters"/> is set to <see langword="true"/>.
 	/// </summary>
 	public abstract TFrom DefaultConvertBackReturnValue { get; set; }
@@ -103,15 +103,33 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
-	/// Default value to return when the <see cref="IValueConverter.Convert(object?, Type, object?, CultureInfo?)"/> throws an <see cref="Exception"/>.
+	/// Default value to return when <see cref="IValueConverter.Convert(object?, Type, object?, CultureInfo?)"/> throws an <see cref="Exception"/>.
 	/// This value is used when <see cref="Maui.Options.ShouldSuppressExceptionsInConverters"/> is set to <see langword="true"/>.
 	/// </summary>
 	public abstract TTo DefaultConvertReturnValue { get; set; }
 
 	/// <summary>
+	/// Default value to return when <see cref="IValueConverter.ConvertBack(object?, Type, object?, CultureInfo?)"/> throws an <see cref="Exception"/>.
+	/// This value is used when <see cref="Maui.Options.ShouldSuppressExceptionsInConverters"/> is set to <see langword="true"/>.
+	/// </summary>
 	public abstract TFrom DefaultConvertBackReturnValue { get; set; }
 
+	/// <inheritdoc/>
+	public Type FromType { get; } = typeof(TFrom);
+
+	/// <inheritdoc/>
+	public Type ToType { get; } = typeof(TTo);
+
 	object? ICommunityToolkitValueConverter.DefaultConvertReturnValue => DefaultConvertReturnValue;
+	object? ICommunityToolkitValueConverter.DefaultConvertBackReturnValue => DefaultConvertBackReturnValue;
+
+	/// Method that will be called by <see cref="ICommunityToolkitValueConverter.Convert(object?, Type, object?, CultureInfo?)"/>.
+	/// </summary>
+	/// <param name="value">The object to convert <typeparamref name="TFrom"/> to <typeparamref name="TTo"/>.</param>
+	/// <param name="culture">Culture Info</param>
+	/// <returns>An object of type <typeparamref name="TTo"/>.</returns>
+	public abstract TTo ConvertFrom(TFrom value, CultureInfo? culture);
+
 	/// <param name="culture">Culture Info</param>
 	/// <param name="value">Value to be converted from <typeparamref name="TTo"/> to <typeparamref name="TFrom"/>.</param>
 	/// <param name="culture">Culture Info</param>
