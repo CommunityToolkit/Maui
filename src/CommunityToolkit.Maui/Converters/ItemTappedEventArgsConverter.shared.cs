@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Converters;
 public class ItemTappedEventArgsConverter : BaseConverterOneWay<ItemTappedEventArgs?, object?>
 {
 	/// <inheritdoc/>
-	public override object? DefaultReturnValue { get; } = null;
+	public override object? DefaultReturnValue { get; set; } = null;
 
 	/// <summary>
 	/// Converts/Extracts the incoming value from <see cref="ItemTappedEventArgs"/> object and returns the value of <see cref="ItemTappedEventArgs.Item"/> property from it.

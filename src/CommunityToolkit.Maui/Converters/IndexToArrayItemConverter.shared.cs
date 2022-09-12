@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Converters;
 public class IndexToArrayItemConverter : BaseConverter<int, object?, Array>
 {
 	/// <inheritdoc/>
-	public override object? DefaultReturnValue { get; } = null;
+	public override object? DefaultReturnValue { get; set; } = null;
 
 	/// <summary>
 	/// Converts an <see cref="int"/> index to corresponding array item.

@@ -6,7 +6,8 @@ namespace CommunityToolkit.Maui.Converters;
 public interface ICommunityToolkitValueConverter : IValueConverter
 {
 	/// <summary>
-	/// Default value to return when the value is null.
+	/// Default value to return when the converter throws an <see cref="Exception"/>.
+	/// This value is used when <see cref="Maui.Options.ShouldSuppressExceptionsInConverters" is set to <see cref="true"/> />
 	/// </summary>
 	object? DefaultReturnValue { get; }
 

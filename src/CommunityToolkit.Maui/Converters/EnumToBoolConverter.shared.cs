@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Converters;
 public class EnumToBoolConverter : BaseConverterOneWay<Enum, bool, Enum?>
 {
 	/// <inheritdoc/>
-	public override bool DefaultReturnValue { get; } = false;
+	public override bool DefaultReturnValue { get; set; } = false;
 
 	/// <summary>
 	///     Enum values, that converts to <c>true</c> (optional)

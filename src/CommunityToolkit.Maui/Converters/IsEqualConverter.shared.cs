@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Converters;
 public class IsEqualConverter : BaseConverterOneWay<object?, bool, object?>
 {
 	/// <inheritdoc/>
-	public override bool DefaultReturnValue { get; } = false;
+	public override bool DefaultReturnValue { get; set; } = false;
 	
 	/// <summary>
 	/// Checks whether the incoming value doesn't equal the provided parameter.

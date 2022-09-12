@@ -15,7 +15,7 @@ public class BoolToObjectConverter : BoolToObjectConverter<object>
 public class BoolToObjectConverter<TObject> : BaseConverter<bool, TObject?>
 {
 	/// <inheritdoc/>
-	public override TObject? DefaultReturnValue { get; } = default;
+	public override TObject? DefaultReturnValue { get; set; } = default;
 
 	/// <summary>
 	/// The object that corresponds to True value.

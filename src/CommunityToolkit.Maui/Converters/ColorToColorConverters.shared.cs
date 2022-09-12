@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Converters;
 public class ColorToBlackOrWhiteConverter : BaseConverterOneWay<Color, Color>
 {
 	/// <inheritdoc/>
-	public override Color DefaultReturnValue { get; } = Colors.Transparent;
+	public override Color DefaultReturnValue { get; set; } = Colors.Transparent;
 
 	/// <inheritdoc/>
 	public override Color ConvertFrom(Color value, CultureInfo? culture = null)
@@ -25,7 +25,7 @@ public class ColorToBlackOrWhiteConverter : BaseConverterOneWay<Color, Color>
 public class ColorToColorForTextConverter : BaseConverterOneWay<Color, Color>
 {
 	/// <inheritdoc/>
-	public override Color DefaultReturnValue { get; } = Colors.Transparent;
+	public override Color DefaultReturnValue { get; set; } = Colors.Transparent;
 
 	/// <inheritdoc/>
 	public override Color ConvertFrom(Color value, CultureInfo? culture = null)
@@ -41,7 +41,7 @@ public class ColorToColorForTextConverter : BaseConverterOneWay<Color, Color>
 public class ColorToGrayScaleColorConverter : BaseConverterOneWay<Color, Color>
 {
 	/// <inheritdoc/>
-	public override Color DefaultReturnValue { get; } = Colors.Transparent;
+	public override Color DefaultReturnValue { get; set; } = Colors.Transparent;
 
 	/// <inheritdoc/>
 	public override Color ConvertFrom(Color value, CultureInfo? culture = null)
@@ -57,7 +57,7 @@ public class ColorToGrayScaleColorConverter : BaseConverterOneWay<Color, Color>
 public class ColorToInverseColorConverter : BaseConverterOneWay<Color, Color>
 {
 	/// <inheritdoc/>
-	public override Color DefaultReturnValue { get; } = Colors.Transparent;
+	public override Color DefaultReturnValue { get; set; } = Colors.Transparent;
 
 	/// <inheritdoc/>
 	public override Color ConvertFrom(Color value, CultureInfo? culture = null)

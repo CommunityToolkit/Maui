@@ -16,7 +16,7 @@ public sealed class CompareConverter : CompareConverter<object>
 public abstract class CompareConverter<TObject> : BaseConverterOneWay<IComparable, object>
 {
 	/// <inheritdoc/>
-	public override object DefaultReturnValue { get; } = new();
+	public override object DefaultReturnValue { get; set; } = new();
 
 	/// <summary>
 	/// Math operator type

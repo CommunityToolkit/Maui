@@ -31,7 +31,7 @@ public class TextCaseConverter : BaseConverterOneWay<string?, string?, TextCaseT
 	TextCaseType type = TextCaseType.None;
 
 	/// <inheritdoc/>
-	public override string? DefaultReturnValue { get; } = null;
+	public override string? DefaultReturnValue { get; set; } = null;
 
 	/// <summary>
 	/// The desired text case that the text should be converted to.

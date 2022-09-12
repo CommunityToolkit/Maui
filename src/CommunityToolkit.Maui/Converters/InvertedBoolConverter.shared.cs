@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Converters;
 public class InvertedBoolConverter : BaseConverter<bool, bool>
 {
 	/// <inheritdoc/>
-	public override bool DefaultReturnValue { get; } = false;
+	public override bool DefaultReturnValue { get; set; } = false;
 
 	/// <summary>
 	/// Converts a <see cref="bool"/> to its inverse value.

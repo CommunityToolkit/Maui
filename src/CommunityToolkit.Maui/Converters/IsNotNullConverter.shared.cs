@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Converters;
 public class IsNotNullConverter : BaseConverterOneWay<object?, bool>
 {
 	/// <inheritdoc/>
-	public override bool DefaultReturnValue { get; } = false;
+	public override bool DefaultReturnValue { get; set; } = false;
 
 	/// <summary>
 	/// Converts the incoming object to a <see cref="bool"/> indicating whether or not the value is not null.

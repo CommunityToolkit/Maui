@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Converters;
 public class ColorToRgbStringConverter : BaseConverterOneWay<Color, string>
 {
 	/// <inheritdoc/>
-	public override string DefaultReturnValue { get; } = string.Empty;
+	public override string DefaultReturnValue { get; set; } = string.Empty;
 
 	/// <inheritdoc/>
 	public override string ConvertFrom(Color value, CultureInfo? culture = null)
@@ -25,7 +25,7 @@ public class ColorToRgbStringConverter : BaseConverterOneWay<Color, string>
 public class ColorToRgbaStringConverter : BaseConverterOneWay<Color, string>
 {
 	/// <inheritdoc/>
-	public override string DefaultReturnValue { get; } = string.Empty;
+	public override string DefaultReturnValue { get; set; } = string.Empty;
 
 	/// <inheritdoc/>
 	public override string ConvertFrom(Color value, CultureInfo? culture = null)
@@ -41,7 +41,7 @@ public class ColorToRgbaStringConverter : BaseConverterOneWay<Color, string>
 public class ColorToHexRgbStringConverter : BaseConverter<Color, string>
 {
 	/// <inheritdoc/>
-	public override string DefaultReturnValue { get; } = string.Empty;
+	public override string DefaultReturnValue { get; set; } = string.Empty;
 
 	/// <inheritdoc/>
 	public override string ConvertFrom(Color value, CultureInfo? culture = null)
@@ -64,7 +64,7 @@ public class ColorToHexRgbStringConverter : BaseConverter<Color, string>
 public class ColorToHexRgbaStringConverter : BaseConverter<Color, string>
 {
 	/// <inheritdoc/>
-	public override string DefaultReturnValue { get; } = string.Empty;
+	public override string DefaultReturnValue { get; set; } = string.Empty;
 
 	/// <inheritdoc/>
 	public override string ConvertFrom(Color value, CultureInfo? culture = null)
@@ -87,7 +87,7 @@ public class ColorToHexRgbaStringConverter : BaseConverter<Color, string>
 public class ColorToCmykStringConverter : BaseConverterOneWay<Color, string>
 {
 	/// <inheritdoc/>
-	public override string DefaultReturnValue { get; } = string.Empty;
+	public override string DefaultReturnValue { get; set; } = string.Empty;
 
 	/// <inheritdoc/>
 	public override string ConvertFrom(Color value, CultureInfo? culture = null)
@@ -103,7 +103,7 @@ public class ColorToCmykStringConverter : BaseConverterOneWay<Color, string>
 public class ColorToCmykaStringConverter : BaseConverterOneWay<Color, string>
 {
 	/// <inheritdoc/>
-	public override string DefaultReturnValue { get; } = string.Empty;
+	public override string DefaultReturnValue { get; set; } = string.Empty;
 
 	/// <inheritdoc/>
 	public override string ConvertFrom(Color value, CultureInfo? culture = null)
@@ -119,7 +119,7 @@ public class ColorToCmykaStringConverter : BaseConverterOneWay<Color, string>
 public class ColorToHslStringConverter : BaseConverterOneWay<Color, string>
 {
 	/// <inheritdoc/>
-	public override string DefaultReturnValue { get; } = string.Empty;
+	public override string DefaultReturnValue { get; set; } = string.Empty;
 
 	/// <inheritdoc/>
 	public override string ConvertFrom(Color value, CultureInfo? culture = null)
@@ -135,7 +135,7 @@ public class ColorToHslStringConverter : BaseConverterOneWay<Color, string>
 public class ColorToHslaStringConverter : BaseConverterOneWay<Color, string>
 {
 	/// <inheritdoc/>
-	public override string DefaultReturnValue { get; } = string.Empty;
+	public override string DefaultReturnValue { get; set; } = string.Empty;
 
 	/// <inheritdoc/>
 	public override string ConvertFrom(Color value, CultureInfo? culture = null)
