@@ -8,6 +8,9 @@ namespace CommunityToolkit.Maui.Converters;
 /// </summary>
 public class SelectedItemEventArgsConverter : BaseConverterOneWay<SelectedItemChangedEventArgs?, object?>
 {
+	/// <inheritdoc/>
+	public override object? DefaultReturnValue { get; } = null;
+
 	/// <summary>
 	/// Converts/Extracts the incoming value from <see cref="SelectedItemChangedEventArgs"/> object and returns the value of <see cref="SelectedItemChangedEventArgs.SelectedItem"/> property from it.
 	/// </summary>

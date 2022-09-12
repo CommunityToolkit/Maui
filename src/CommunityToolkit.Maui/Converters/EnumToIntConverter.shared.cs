@@ -8,6 +8,9 @@ namespace CommunityToolkit.Maui.Converters;
 /// </summary>
 public class EnumToIntConverter : BaseConverter<Enum, int, Type>
 {
+	/// <inheritdoc/>
+	public override int DefaultReturnValue { get; } = 0;
+
 	/// <summary>
 	/// Convert a default <see cref="Enum"/> (i.e., extending <see cref="int"/>) to corresponding underlying <see cref="int"/>
 	/// </summary>

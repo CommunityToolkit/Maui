@@ -7,6 +7,9 @@ namespace CommunityToolkit.Maui.Converters;
 /// </summary>
 public class IntToBoolConverter : BaseConverter<int, bool>
 {
+	/// <inheritdoc/>
+	public override bool DefaultReturnValue { get; } = false;
+
 	/// <summary>
 	/// Converts the incoming <see cref="int"/> to a <see cref="bool"/> indicating whether or not the value is not equal to 0.
 	/// </summary>
