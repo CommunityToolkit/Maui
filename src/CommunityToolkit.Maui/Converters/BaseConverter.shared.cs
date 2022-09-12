@@ -123,6 +123,7 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 	object? ICommunityToolkitValueConverter.DefaultConvertReturnValue => DefaultConvertReturnValue;
 	object? ICommunityToolkitValueConverter.DefaultConvertBackReturnValue => DefaultConvertBackReturnValue;
 
+	/// <summary>
 	/// Method that will be called by <see cref="ICommunityToolkitValueConverter.Convert(object?, Type, object?, CultureInfo?)"/>.
 	/// </summary>
 	/// <param name="value">The object to convert <typeparamref name="TFrom"/> to <typeparamref name="TTo"/>.</param>
@@ -130,6 +131,7 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 	/// <returns>An object of type <typeparamref name="TTo"/>.</returns>
 	public abstract TTo ConvertFrom(TFrom value, CultureInfo? culture);
 
+	/// <summary>
 	/// <param name="culture">Culture Info</param>
 	/// <param name="value">Value to be converted from <typeparamref name="TTo"/> to <typeparamref name="TFrom"/>.</param>
 	/// <param name="culture">Culture Info</param>
