@@ -200,7 +200,7 @@ public class BoolToObjectConverter_Tests : BaseTest
 
 		options.SetShouldSuppressExceptionsInConverters(false);
 	}
-	
+
 	[Theory]
 	[AutoData]
 	public void BoolToObjectTConverterShouldReturnDefaultValue(string defaultReturnValue)
@@ -219,14 +219,14 @@ public class BoolToObjectConverter_Tests : BaseTest
 
 		options.SetShouldSuppressExceptionsInConverters(false);
 	}
-	
+
 	[Theory]
 	[AutoData]
 	public void BoolToObjectTConverterShouldReturnBackDefaultValue(bool backReturnData)
 	{
 		var options = new Options();
 		options.SetShouldSuppressExceptionsInConverters(true);
-		
+
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		var converter = new BoolToObjectConverter<string>
 		{
