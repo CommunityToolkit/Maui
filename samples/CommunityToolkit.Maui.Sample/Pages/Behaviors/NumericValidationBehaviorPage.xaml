@@ -9,6 +9,7 @@
                 x:DataType="vm:NumericValidationBehaviorViewModel">
 
     <pages:BasePage.Resources>
+        <mct:IsNotNullConverter x:Key="IsNotNullConverter" />
         <Style x:Key="InvalidEntryStyle" TargetType="Entry">
             <Setter Property="TextColor" Value="Red" />
         </Style>
@@ -26,8 +27,8 @@
                TextColor="{StaticResource NormalLabelTextColor}" />
 
         <Label Text="Text color will be changed according to the configured style in case of an invalid numeric format or when the numeric value is outside of the configured boundaries (min: 1.0, max: 100.0). Maximum decimal places value equals 2." />
-
-        <Entry Placeholder="Number">
+        
+        <Entry x:Name="SafeEntry" Placeholder="Number">
             <Entry.Behaviors>
                 <mct:NumericValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"
                                                ValidStyle="{StaticResource ValidEntryStyle}"
@@ -37,6 +38,10 @@
                                                MaximumDecimalPlaces="2"/>
             </Entry.Behaviors>
         </Entry>
+
+        <Button Clicked="SetEntryValue" Text="Set Entry Value To Null" IsEnabled="{Binding Path=Text, Source={x:Reference SafeEntry}, Converter={StaticResource IsNotNullConverter}}"/>
+        <Label Text="After entering text then setting the above Entry value to null, the app will crash because null is not a valid input for NumericValidationBehavior and CommunityToolkit.Maui.Options.SetShouldSuppressExceptionsInBehaviors is not set to true."
+               TextColor="{StaticResource NormalLabelTextColor}" />
     </VerticalStackLayout>
 
 </pages:BasePage>

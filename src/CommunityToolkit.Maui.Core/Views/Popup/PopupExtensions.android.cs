@@ -234,5 +234,5 @@ public static class PopupExtensions
 	}
 
 	static Android.Views.Window GetWindow(in Dialog dialog) =>
-		dialog.Window ?? throw new NullReferenceException("Android.Views.Window is null");
+		dialog.Window ?? throw new NullReferenceException("Android.Views.Window is null.");
 }
