@@ -8,6 +8,12 @@ namespace CommunityToolkit.Maui.Converters;
 [ContentProperty(nameof(Ratio))]
 public class DoubleToIntConverter : BaseConverter<double, int, object?>
 {
+	/// <inheritdoc/>
+	public override int DefaultConvertReturnValue { get; set; } = 0;
+
+	/// <inheritdoc/>
+	public override double DefaultConvertBackReturnValue { get; set; } = 0.0d;
+
 	/// <summary>
 	/// Multiplier / Denominator (Equals 1 by default).
 	/// </summary>
@@ -38,7 +44,7 @@ public class DoubleToIntConverter : BaseConverter<double, int, object?>
 		null => Ratio,
 		double d => d,
 		int i => i,
-		string s => double.TryParse(s, out var result) ? result : throw new ArgumentException("Cannot parse number from the string", nameof(parameter)),
-		_ => throw new ArgumentException("Parameter must be a valid number")
+		string s => double.TryParse(s, out var result) ? result : throw new ArgumentException("Cannot parse number from the string.", nameof(parameter)),
+		_ => throw new ArgumentException("Parameter must be a valid number.")
 	};
 }
