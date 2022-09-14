@@ -6,6 +6,16 @@ namespace CommunityToolkit.Maui.UnitTests;
 
 public abstract class BaseOneWayConverterTest<TConverter> : ConverterTest<TConverter> where TConverter : ICommunityToolkitValueConverter, new()
 {
+	[Fact]
+	public void ConvertBack_ShouldThrowNotSupportedException()
+	{
+		var options = new Options();
+		options.SetShouldSuppressExceptionsInConverters(true);
+
+		var converter = InitializeConverterForInvalidConverterTests();
+
+		Assert.ThrowsAny<NotSupportedException>(() => converter.ConvertBack(GetInvalidConvertBackValue(), converter.FromType, null, CultureInfo.CurrentCulture));
+	}
 }
 
 public abstract class BaseConverterTest<TConverter> : ConverterTest<TConverter> where TConverter : ICommunityToolkitValueConverter, new()
