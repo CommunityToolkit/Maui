@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Converters;
 public abstract class BaseConverterOneWay<TFrom, TTo> : BaseConverter<TFrom, TTo>
 {
 	/// <inheritdoc/>
-	public override TFrom DefaultConvertBackReturnValue
+	public sealed override TFrom DefaultConvertBackReturnValue
 	{
 		get => throw new NotSupportedException($"{nameof(DefaultConvertBackReturnValue)} is not used for ${nameof(BaseConverterOneWay<TFrom, TTo>)}");
 		set => throw new NotSupportedException($"{nameof(DefaultConvertBackReturnValue)} is not used for ${nameof(BaseConverterOneWay<TFrom, TTo>)}");
@@ -30,7 +30,7 @@ public abstract class BaseConverterOneWay<TFrom, TTo> : BaseConverter<TFrom, TTo
 public abstract class BaseConverterOneWay<TFrom, TTo, TParam> : BaseConverter<TFrom, TTo, TParam>
 {
 	/// <inheritdoc/>
-	public override TFrom DefaultConvertBackReturnValue
+	public sealed override TFrom DefaultConvertBackReturnValue
 	{
 		get => throw new NotSupportedException($"{nameof(DefaultConvertBackReturnValue)} is not used for ${nameof(BaseConverterOneWay<TFrom, TTo, TParam>)}");
 		set => throw new NotSupportedException($"{nameof(DefaultConvertBackReturnValue)} is not used for ${nameof(BaseConverterOneWay<TFrom, TTo, TParam>)}");
