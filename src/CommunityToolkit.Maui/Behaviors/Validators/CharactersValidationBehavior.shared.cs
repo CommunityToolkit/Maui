@@ -134,12 +134,12 @@ public class CharactersValidationBehavior : TextValidationBehavior
 
 		if (characterType.HasFlag(CharacterType.LowercaseLatinLetter))
 		{
-			yield return c => c >= 'a' && c <= 'z';
+			yield return c => c is >= 'a' and <= 'z';
 		}
 
 		if (characterType.HasFlag(CharacterType.UppercaseLatinLetter))
 		{
-			yield return c => c >= 'A' && c <= 'Z';
+			yield return c => c is >= 'A' and <= 'Z';
 		}
 	}
 

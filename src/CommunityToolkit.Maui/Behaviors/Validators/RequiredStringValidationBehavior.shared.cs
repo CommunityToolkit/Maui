@@ -44,8 +44,8 @@ public class RequiredStringValidationBehavior : ValidationBehavior<string>
 #pragma warning disable CA1309 // Use ordinal string comparison - It is an entirely valid use case to use the current culture when validating what the user has entered.
 		return new ValueTask<bool>(ExactMatch switch
 		{
-			true => string.Equals(value?.ToString(), RequiredString, StringComparison.CurrentCulture),
-			false => value?.ToString()?.Contains(RequiredString ?? string.Empty, StringComparison.CurrentCulture) ?? false
+			true => string.Equals(value, RequiredString, StringComparison.CurrentCulture),
+			false => value?.Contains(RequiredString ?? string.Empty, StringComparison.CurrentCulture) ?? false
 		});
 #pragma warning restore CA1309 // Use ordinal string comparison
 	}
