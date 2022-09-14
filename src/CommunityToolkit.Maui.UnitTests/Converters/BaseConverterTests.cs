@@ -28,7 +28,7 @@ public abstract class BaseConverterTest<TConverter> : ConverterTest<TConverter> 
 
 		var converter = InitializeConverterForInvalidConverterTests();
 
-		Assert.ThrowsAny<Exception>(() => converter.ConvertBack(GetInvalidConvertBackValue(), converter.FromType, null, CultureInfo.CurrentCulture));
+		Assert.ThrowsAny<ArgumentException>(() => converter.ConvertBack(GetInvalidConvertBackValue(), converter.FromType, null, CultureInfo.CurrentCulture));
 	}
 
 	[Fact]
@@ -55,7 +55,7 @@ public abstract class ConverterTest<TConverter> : BaseTest where TConverter : IC
 
 		var converter = InitializeConverterForInvalidConverterTests();
 
-		Assert.ThrowsAny<Exception>(() => converter.Convert(GetInvalidConvertFromValue(), converter.ToType, null, CultureInfo.CurrentCulture));
+		Assert.ThrowsAny<ArgumentException>(() => converter.Convert(GetInvalidConvertFromValue(), converter.ToType, null, CultureInfo.CurrentCulture));
 	}
 
 	[Fact]
