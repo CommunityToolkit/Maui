@@ -7,6 +7,9 @@ namespace CommunityToolkit.Maui.Converters;
 /// </summary>
 public class MathExpressionConverter : BaseConverterOneWay<double, double, string>
 {
+	/// <inheritdoc/>
+	public override double DefaultConvertReturnValue { get; set; } = 0.0d;
+
 	/// <summary>
 	/// Calculate the incoming expression string with one variable.
 	/// </summary>

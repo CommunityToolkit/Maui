@@ -29,8 +29,8 @@ public partial class ColorAnimationExtensionsPage : BasePage<ColorAnimationExten
 
 	void SetPickersRandomValue()
 	{
-		ColorPicker.SelectedIndex = new Random().Next(ColorPicker.ItemsSource.Count);
-		EasingPicker.SelectedIndex = new Random().Next(EasingPicker.ItemsSource.Count);
+		ColorPicker.SelectedIndex = Random.Shared.Next(ColorPicker.ItemsSource.Count);
+		EasingPicker.SelectedIndex = Random.Shared.Next(EasingPicker.ItemsSource.Count);
 	}
 
 	async void Button_Clicked(object sender, EventArgs e)
