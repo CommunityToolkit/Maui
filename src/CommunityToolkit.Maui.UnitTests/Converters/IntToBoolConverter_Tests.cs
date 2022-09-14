@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class IntToBoolConverter_Tests : BaseConverterTests<IntToBoolConverter>
+public class IntToBoolConverter_Tests : BaseConverterTest<IntToBoolConverter>
 {
 	[Theory]
 	[InlineData(int.MaxValue, true)]

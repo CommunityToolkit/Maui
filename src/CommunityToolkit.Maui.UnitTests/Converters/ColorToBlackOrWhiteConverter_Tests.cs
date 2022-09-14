@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
-public class ColorToBlackOrWhiteConverter_Tests : BaseConverterTests<ColorToBlackOrWhiteConverter>
+public class ColorToBlackOrWhiteConverter_Tests : BaseConverterTest<ColorToBlackOrWhiteConverter>
 {
 	public static IReadOnlyList<object[]> ColorToBlackOrWhiteData { get; } = new[]
 	{

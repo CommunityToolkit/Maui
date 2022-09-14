@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class EnumToIntConverter_Tests : BaseConverterTests<EnumToIntConverter>
+public class EnumToIntConverter_Tests : BaseConverterTest<EnumToIntConverter>
 {
 	[Theory]
 	[InlineData(int.MinValue)]

@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class ColorToHslaStringConverter_Tests : BaseConverterTests<ColorToHslaStringConverter>
+public class ColorToHslaStringConverter_Tests : BaseConverterTest<ColorToHslaStringConverter>
 {
 	public static readonly IReadOnlyList<object[]> ValidInputData = new[]
 	{

@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class InvertedBoolConverter_Tests : BaseConverterTests<InvertedBoolConverter>
+public class InvertedBoolConverter_Tests : BaseConverterTest<InvertedBoolConverter>
 {
 	[Theory]
 	[InlineData(true, false)]

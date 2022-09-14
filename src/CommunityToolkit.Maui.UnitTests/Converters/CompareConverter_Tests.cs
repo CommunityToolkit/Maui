@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class CompareConverter_Tests : BaseConverterTests<CompareConverter>
+public class CompareConverter_Tests : BaseConverterTest<CompareConverter>
 {
 	public const string TrueTestObject = nameof(TrueTestObject);
 	public const string FalseTestObject = nameof(FalseTestObject);

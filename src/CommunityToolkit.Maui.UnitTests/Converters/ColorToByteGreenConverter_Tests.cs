@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class ColorToByteGreenConverter_Tests : BaseConverterTests<ColorToByteGreenConverter>
+public class ColorToByteGreenConverter_Tests : BaseConverterTest<ColorToByteGreenConverter>
 {
 	public static readonly IReadOnlyList<object[]> ValidInputData = new[]
 	{

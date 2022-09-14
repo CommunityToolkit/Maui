@@ -7,7 +7,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
-public abstract class BaseConverterTests<TConverter> : BaseTest where TConverter : ICommunityToolkitValueConverter, new()
+public abstract class BaseConverterTest<TConverter> : BaseTest where TConverter : ICommunityToolkitValueConverter, new()
 {
 	[SkippableFact]
 	public void InvalidConvertBackValue_ShouldThrowException()

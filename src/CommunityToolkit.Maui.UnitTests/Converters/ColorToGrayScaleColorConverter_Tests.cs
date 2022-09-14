@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
-public class ColorToGrayScaleColorConverter_Tests : BaseConverterTests<ColorToGrayScaleColorConverter>
+public class ColorToGrayScaleColorConverter_Tests : BaseConverterTest<ColorToGrayScaleColorConverter>
 {
 	public static IReadOnlyList<object[]> ColorToGrayScaleColorData { get; } = new[]
 	{

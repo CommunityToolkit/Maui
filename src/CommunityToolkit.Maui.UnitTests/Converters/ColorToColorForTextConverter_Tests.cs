@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
-public class ColorToColorForTextConverter_Tests : BaseConverterTests<ColorToColorForTextConverter>
+public class ColorToColorForTextConverter_Tests : BaseConverterTest<ColorToColorForTextConverter>
 {
 	public static IReadOnlyList<object[]> ColorToColorForTextData { get; } = new[]
 	{

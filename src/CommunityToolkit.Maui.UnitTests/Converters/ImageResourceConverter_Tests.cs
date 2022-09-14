@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class ImageResourceConverter_Tests : BaseConverterTests<ImageResourceConverter>
+public class ImageResourceConverter_Tests : BaseConverterTest<ImageResourceConverter>
 {
 	public ImageResourceConverter_Tests() : base()
 	{

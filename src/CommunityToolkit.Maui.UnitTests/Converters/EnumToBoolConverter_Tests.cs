@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class EnumToBoolConverter_Tests : BaseConverterTests<EnumToBoolConverter>
+public class EnumToBoolConverter_Tests : BaseConverterTest<EnumToBoolConverter>
 {
 	[Fact]
 	public void EnumToBoolConvertBack_ThrowsNotSupportedException()
