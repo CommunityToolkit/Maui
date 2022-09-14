@@ -39,7 +39,7 @@ static partial class StatusBar
 
 
 	static void AddBarAppearanceFlag(Activity activity, StatusBarVisibility flag) =>
-			SetBarAppearance(activity, barAppearance => barAppearance |= flag);
+		SetBarAppearance(activity, barAppearance => barAppearance |= flag);
 
 
 	static void RemoveBarAppearanceFlag(Activity activity, StatusBarVisibility flag) =>
