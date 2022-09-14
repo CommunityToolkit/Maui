@@ -43,4 +43,34 @@ public class MultiConverterTests : BaseTest
 		Assert.False(falseResult);
 		Assert.True(trueResult);
 	}
+
+	[Fact]
+	public void EnsureICommunityToolkitValueConverterThrowsExceptions()
+	{
+		ICommunityToolkitValueConverter communityToolkitValueConverter = new MultiConverter();
+
+		// ICommunityToolkitValueConverter.DefaultConvertBackReturnValue GET
+		Assert.Throws<NotSupportedException>(() =>
+		{
+			var value = communityToolkitValueConverter.DefaultConvertBackReturnValue;
+		});
+
+		// ICommunityToolkitValueConverter.DefaultConvertReturnValue GET
+		Assert.Throws<NotSupportedException>(() =>
+		{
+			var value = communityToolkitValueConverter.DefaultConvertReturnValue;
+		});
+
+		// ICommunityToolkitValueConverter.FromType GET
+		Assert.Throws<NotSupportedException>(() =>
+		{
+			var value = communityToolkitValueConverter.FromType;
+		});
+
+		// ICommunityToolkitValueConverter.ToType GET
+		Assert.Throws<NotSupportedException>(() =>
+		{
+			var value = communityToolkitValueConverter.ToType;
+		});
+	}
 }
