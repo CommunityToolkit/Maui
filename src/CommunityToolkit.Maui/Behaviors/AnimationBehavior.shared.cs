@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Animations;
 
@@ -51,7 +51,7 @@ public class AnimationBehavior : EventToCommandBehavior
 
 			if (bindable is not IGestureRecognizers gestureRecognizers)
 			{
-				throw new InvalidOperationException($"VisualElement does not implement {nameof(IGestureRecognizers)}");
+				throw new InvalidOperationException($"VisualElement does not implement {nameof(IGestureRecognizers)}.");
 			}
 
 			tapGestureRecognizer = new TapGestureRecognizer();
@@ -92,6 +92,15 @@ public class AnimationBehavior : EventToCommandBehavior
 		}
 
 		View.CancelAnimations();
-		return AnimationType.Animate(View);
+
+		try
+		{
+			return AnimationType.Animate(View);
+		}
+		catch (Exception ex) when (Options.ShouldSuppressExceptionsInAnimations)
+		{
+			Debug.WriteLine(ex);
+			return Task.CompletedTask;
+		}
 	}
 }

@@ -45,7 +45,7 @@ public class MauiPopup : UIViewController
 	{
 		base.ViewDidLayoutSubviews();
 
-		_ = View ?? throw new InvalidOperationException($"{nameof(View)} cannot be null");
+		_ = View ?? throw new InvalidOperationException($"{nameof(View)} cannot be null.");
 		SetElementSize(new Size(View.Bounds.Width, View.Bounds.Height));
 	}
 
@@ -68,16 +68,16 @@ public class MauiPopup : UIViewController
 	{
 		if (element.Parent?.Handler is not PageHandler mainPage)
 		{
-			throw new InvalidOperationException($"The {nameof(element.Parent)} must be of type {typeof(PageHandler)}");
+			throw new InvalidOperationException($"The {nameof(element.Parent)} must be of type {typeof(PageHandler)}.");
 		}
 
 		VirtualView = element;
 		ModalPresentationStyle = UIModalPresentationStyle.Popover;
 
-		_ = View ?? throw new InvalidOperationException($"{nameof(View)} cannot be null");
+		_ = View ?? throw new InvalidOperationException($"{nameof(View)} cannot be null.");
 		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null.");
 
-		var rootViewController = WindowStateManager.Default.GetCurrentUIViewController() ?? throw new InvalidOperationException($"{nameof(mainPage.ViewController)} cannot be null");
+		var rootViewController = WindowStateManager.Default.GetCurrentUIViewController() ?? throw new InvalidOperationException($"{nameof(mainPage.ViewController)} cannot be null.");
 		ViewController ??= rootViewController;
 		SetDimmingBackgroundEffect();
 	}
@@ -121,10 +121,10 @@ public class MauiPopup : UIViewController
 
 		SetPresentationController();
 
-		_ = View ?? throw new InvalidOperationException($"{nameof(View)} cannot be null");
+		_ = View ?? throw new InvalidOperationException($"{nameof(View)} cannot be null.");
 		SetView(View, Control);
 
-		_ = ViewController ?? throw new InvalidOperationException($"{nameof(ViewController)} cannot be null");
+		_ = ViewController ?? throw new InvalidOperationException($"{nameof(ViewController)} cannot be null.");
 		AddToCurrentPageViewController(ViewController);
 
 		this.SetLayout(virtualView);
@@ -132,7 +132,7 @@ public class MauiPopup : UIViewController
 
 	void SetView(UIView view, PageHandler control)
 	{
-		view.AddSubview(control.ViewController?.View ?? throw new InvalidOperationException($"{nameof(control.ViewController.View)} cannot be null"));
+		view.AddSubview(control.ViewController?.View ?? throw new InvalidOperationException($"{nameof(control.ViewController.View)} cannot be null."));
 		view.Bounds = new(0, 0, PreferredContentSize.Width, PreferredContentSize.Height);
 		AddChildViewController(control.ViewController);
 
@@ -148,7 +148,7 @@ public class MauiPopup : UIViewController
 		popOverDelegate.PopoverDismissedEvent += HandlePopoverDelegateDismissed;
 
 		var presentationController = ((UIPopoverPresentationController)PresentationController);
-		presentationController.SourceView = ViewController?.View ?? throw new InvalidOperationException($"{nameof(ViewController.View)} cannot be null");
+		presentationController.SourceView = ViewController?.View ?? throw new InvalidOperationException($"{nameof(ViewController.View)} cannot be null.");
 
 		presentationController.Delegate = popOverDelegate;
 	}

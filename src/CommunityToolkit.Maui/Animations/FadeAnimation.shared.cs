@@ -7,14 +7,6 @@
 public class FadeAnimation : BaseAnimation
 {
 	/// <summary>
-	/// Initializes a new instance of <see cref="FadeAnimation"/>.
-	/// </summary>
-	public FadeAnimation() : base(300)
-	{
-
-	}
-
-	/// <summary>
 	/// Backing BindableProperty for the <see cref="Opacity"/> property.
 	/// </summary>
 	public static readonly BindableProperty OpacityProperty =
@@ -24,6 +16,14 @@ public class FadeAnimation : BaseAnimation
 			typeof(FadeAnimation),
 			0.3,
 			BindingMode.TwoWay);
+
+	/// <summary>
+	/// Initializes a new instance of <see cref="FadeAnimation"/>.
+	/// </summary>
+	public FadeAnimation() : base(300)
+	{
+
+	}
 
 	/// <summary>
 	/// Gets or sets the opacity to fade to before returning to the elements current Opacity.

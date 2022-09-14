@@ -63,6 +63,6 @@ public static partial class PopupExtensions
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static IMauiContext GetMauiContext(Page page)
 	{
-		return page.Handler?.MauiContext ?? throw new InvalidOperationException("Could not locate MauiContext");
+		return page.Handler?.MauiContext ?? throw new InvalidOperationException("Could not locate MauiContext.");
 	}
 }

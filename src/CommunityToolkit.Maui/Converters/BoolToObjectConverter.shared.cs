@@ -14,6 +14,12 @@ public class BoolToObjectConverter : BoolToObjectConverter<object>
 /// </summary>
 public class BoolToObjectConverter<TObject> : BaseConverter<bool, TObject?>
 {
+	/// <inheritdoc/>
+	public override TObject? DefaultConvertReturnValue { get; set; } = default;
+
+	/// <inheritdoc/>
+	public override bool DefaultConvertBackReturnValue { get; set; } = false;
+
 	/// <summary>
 	/// The object that corresponds to True value.
 	/// </summary>

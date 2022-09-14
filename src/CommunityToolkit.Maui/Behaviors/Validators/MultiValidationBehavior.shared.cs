@@ -65,7 +65,7 @@ public class MultiValidationBehavior : ValidationBehavior
 			return c.ValidateNestedAsync(token).AsTask();
 		})).ConfigureAwait(false);
 
-		var errors = children.Where(c => c.IsNotValid).Select(c => GetError(c));
+		var errors = children.Where(c => c.IsNotValid).Select(GetError);
 
 		if (!errors.Any())
 		{
@@ -75,7 +75,7 @@ public class MultiValidationBehavior : ValidationBehavior
 
 		if (!Errors?.SequenceEqual(errors) ?? true)
 		{
-			Errors = (errors ?? Enumerable.Empty<object?>()).ToList();
+			Errors = errors.ToList();
 		}
 
 		return false;
