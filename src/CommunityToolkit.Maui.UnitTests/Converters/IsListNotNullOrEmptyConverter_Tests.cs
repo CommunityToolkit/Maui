@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class IsListNotNullOrEmptyConverter_Tests : BaseTest
+public class IsListNotNullOrEmptyConverter_Tests : BaseConverterTests<IsListNotNullOrEmptyConverter>
 {
 	public static IReadOnlyList<object?[]> Data { get; } = new[]
 	{
@@ -47,4 +47,6 @@ public class IsListNotNullOrEmptyConverter_Tests : BaseTest
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new IsListNotNullOrEmptyConverter()).ConvertBack(true, null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
+
+	protected override object? GetInvalidConvertFromValue() => true;
 }

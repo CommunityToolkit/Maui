@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class IsStringNullOrWhiteSpaceConverter_Tests : BaseTest
+public class IsStringNullOrWhiteSpaceConverter_Tests : BaseConverterTests<IsStringNullOrWhiteSpaceConverter>
 {
 	[Theory]
 	[InlineData(null, true)]

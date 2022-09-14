@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class TimeSpanToSecondsConverter_Tests
+public class TimeSpanToSecondsConverter_Tests : BaseConverterTests<TimeSpanToSecondsConverter>
 {
 	public static readonly IReadOnlyList<object[]> ValidData = new[]
 	{

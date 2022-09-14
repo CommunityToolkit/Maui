@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class ListToStringConverter_Tests : BaseTest
+public class ListToStringConverter_Tests : BaseConverterTests<ListToStringConverter>
 {
 	public static IReadOnlyList<object?[]> TestData { get; } = new[]
 	{
@@ -88,4 +88,6 @@ public class ListToStringConverter_Tests : BaseTest
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ListToStringConverter()).ConvertBack(string.Empty, null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
+
+	protected override object? GetInvalidConvertFromValue() => null;
 }

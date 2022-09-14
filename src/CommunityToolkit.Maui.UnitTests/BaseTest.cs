@@ -37,8 +37,13 @@ public abstract class BaseTest : IDisposable
 		Thread.CurrentThread.CurrentCulture = defaultCulture;
 		Thread.CurrentThread.CurrentUICulture = defaultUICulture;
 
-		DispatcherProvider.SetCurrent(null);
 		DeviceDisplay.SetCurrent(null);
+		DispatcherProvider.SetCurrent(null);
+
+		var options = new Options();
+		options.SetShouldSuppressExceptionsInAnimations(false);
+		options.SetShouldSuppressExceptionsInBehaviors(false);
+		options.SetShouldSuppressExceptionsInConverters(false);
 
 		isDisposed = true;
 	}

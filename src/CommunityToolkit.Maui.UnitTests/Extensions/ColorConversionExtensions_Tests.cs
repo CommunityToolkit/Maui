@@ -672,7 +672,7 @@ public class ColorConversionExtensions_Tests
 	[MemberData(nameof(ColorTestData))]
 	public void WithRed_Double(ColorTestDefinition testDef)
 	{
-		var red = new Random().NextDouble();
+		var red = Random.Shared.NextDouble();
 		var result = testDef.Color.WithRed(red);
 
 		Assert.Equal((float)red, result.Red);
@@ -682,7 +682,7 @@ public class ColorConversionExtensions_Tests
 	public void WithRed_Double_RedGeaterThan1ShouldThrowAgumentOutOfRangeException()
 	{
 		Color c = new();
-		var red = new Random().Next(2, int.MaxValue);
+		var red = Random.Shared.Next(2, int.MaxValue);
 
 		Assert.Throws<ArgumentOutOfRangeException>(() => c.WithRed(red));
 	}
@@ -691,7 +691,7 @@ public class ColorConversionExtensions_Tests
 	public void WithRed_Double_RedNegativeShouldThrowAgumentOutOfRangeException()
 	{
 		Color c = new();
-		var red = -new Random().NextDouble();
+		var red = -Random.Shared.NextDouble();
 
 		Assert.Throws<ArgumentOutOfRangeException>(() => c.WithRed(red));
 	}
@@ -708,7 +708,7 @@ public class ColorConversionExtensions_Tests
 	[MemberData(nameof(ColorTestData))]
 	public void WithGreen_Double(ColorTestDefinition testDef)
 	{
-		var green = new Random().NextDouble();
+		var green = Random.Shared.NextDouble();
 		var result = testDef.Color.WithGreen(green);
 
 		Assert.Equal((float)green, result.Green);
@@ -718,7 +718,7 @@ public class ColorConversionExtensions_Tests
 	public void WithGreen_Double_GreenGeaterThan1ShouldThrowAgumentOutOfRangeException()
 	{
 		Color c = new();
-		var green = new Random().Next(2, int.MaxValue);
+		var green = Random.Shared.Next(2, int.MaxValue);
 
 		Assert.Throws<ArgumentOutOfRangeException>(() => c.WithGreen(green));
 	}
@@ -727,7 +727,7 @@ public class ColorConversionExtensions_Tests
 	public void WithGreen_Double_GreenNegativeShouldThrowAgumentOutOfRangeException()
 	{
 		Color c = new();
-		var green = -new Random().NextDouble();
+		var green = -Random.Shared.NextDouble();
 
 		Assert.Throws<ArgumentOutOfRangeException>(() => c.WithGreen(green));
 	}
@@ -744,7 +744,7 @@ public class ColorConversionExtensions_Tests
 	[MemberData(nameof(ColorTestData))]
 	public void WithBlue_Double(ColorTestDefinition testDef)
 	{
-		var blue = new Random().NextDouble();
+		var blue = Random.Shared.NextDouble();
 		var result = testDef.Color.WithBlue(blue);
 
 		Assert.Equal((float)blue, result.Blue);
@@ -755,7 +755,7 @@ public class ColorConversionExtensions_Tests
 	{
 		Color c = new();
 
-		var blue = new Random().Next(2, int.MaxValue);
+		var blue = Random.Shared.Next(2, int.MaxValue);
 
 		Assert.Throws<ArgumentOutOfRangeException>(() => c.WithBlue(blue));
 	}
@@ -765,7 +765,7 @@ public class ColorConversionExtensions_Tests
 	{
 		Color c = new();
 
-		var blue = -new Random().NextDouble();
+		var blue = -Random.Shared.NextDouble();
 
 		Assert.Throws<ArgumentOutOfRangeException>(() => c.WithBlue(blue));
 	}
@@ -782,7 +782,7 @@ public class ColorConversionExtensions_Tests
 	[MemberData(nameof(ColorTestData))]
 	public void WithRed_Byte(ColorTestDefinition testDef)
 	{
-		var red = (byte)new Random().Next(0, 256);
+		var red = (byte)Random.Shared.Next(0, 256);
 		var result = testDef.Color.WithRed(red);
 
 		Assert.Equal(red, result.GetByteRed());
@@ -792,7 +792,7 @@ public class ColorConversionExtensions_Tests
 	[MemberData(nameof(ColorTestData))]
 	public void WithGreen_Byte(ColorTestDefinition testDef)
 	{
-		var green = (byte)new Random().Next(0, 256);
+		var green = (byte)Random.Shared.Next(0, 256);
 		var result = testDef.Color.WithGreen(green);
 
 		Assert.Equal(green, result.GetByteGreen());
@@ -802,7 +802,7 @@ public class ColorConversionExtensions_Tests
 	[MemberData(nameof(ColorTestData))]
 	public void WithBlue_Byte(ColorTestDefinition testDef)
 	{
-		var blue = (byte)new Random().Next(0, 256);
+		var blue = (byte)Random.Shared.Next(0, 256);
 		var result = testDef.Color.WithBlue(blue);
 
 		Assert.Equal(blue, result.GetByteBlue());
@@ -812,7 +812,7 @@ public class ColorConversionExtensions_Tests
 	[MemberData(nameof(ColorTestData))]
 	public void WithCyan(ColorTestDefinition testDef)
 	{
-		var pctCyan = new Random().NextDouble();
+		var pctCyan = Random.Shared.NextDouble();
 		var newColor = testDef.Color.WithCyan(pctCyan);
 
 		var expectedRed = (1 - pctCyan) * (1 - testDef.ExpectedPctBlack);
@@ -835,7 +835,7 @@ public class ColorConversionExtensions_Tests
 	[MemberData(nameof(ColorTestData))]
 	public void WithMagenta(ColorTestDefinition testDef)
 	{
-		var pctMagenta = new Random().NextDouble();
+		var pctMagenta = Random.Shared.NextDouble();
 		var newColor = testDef.Color.WithMagenta(pctMagenta);
 
 		var expectedGreen = (1 - pctMagenta) * (1 - testDef.ExpectedPctBlack);
@@ -858,7 +858,7 @@ public class ColorConversionExtensions_Tests
 	[MemberData(nameof(ColorTestData))]
 	public void WithYellow(ColorTestDefinition testDef)
 	{
-		var pctYellow = new Random().NextDouble();
+		var pctYellow = Random.Shared.NextDouble();
 		var newColor = testDef.Color.WithYellow(pctYellow);
 
 		var expectedBlue = (1 - pctYellow) * (1 - testDef.ExpectedPctBlack);
@@ -881,7 +881,7 @@ public class ColorConversionExtensions_Tests
 	[MemberData(nameof(ColorTestData))]
 	public void WithBlackKey(ColorTestDefinition testDef)
 	{
-		var pctBlack = new Random().NextDouble();
+		var pctBlack = Random.Shared.NextDouble();
 		var newColor = testDef.Color.WithBlackKey(pctBlack);
 
 		var expectedRed = (1 - testDef.ExpectedPctCyan) * (1 - pctBlack);

@@ -6,7 +6,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class BoolToObjectConverter_Tests : BaseTest
+public class BoolToObjectConverter_Tests : BaseConverterTests<BoolToObjectConverter>
 {
 	public const string TrueTestObject = nameof(TrueTestObject);
 	public const string FalseTestObject = nameof(FalseTestObject);
@@ -238,4 +238,7 @@ public class BoolToObjectConverter_Tests : BaseTest
 
 		options.SetShouldSuppressExceptionsInConverters(false);
 	}
+
+	protected override object? GetInvalidConvertBackValue() => null;
+	protected override BoolToObjectConverter InitializeConverterForInvalidConverterTests() => new() { TrueObject = false };
 }
