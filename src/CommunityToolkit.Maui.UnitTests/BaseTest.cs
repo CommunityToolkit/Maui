@@ -6,14 +6,14 @@ namespace CommunityToolkit.Maui.UnitTests;
 
 public abstract class BaseTest : IDisposable
 {
-	readonly CultureInfo defaultCulture, defaultUICulture;
+	readonly CultureInfo defaultCulture, defaultUiCulture;
 
 	bool isDisposed;
 
 	protected BaseTest()
 	{
 		defaultCulture = Thread.CurrentThread.CurrentCulture;
-		defaultUICulture = Thread.CurrentThread.CurrentUICulture;
+		defaultUiCulture = Thread.CurrentThread.CurrentUICulture;
 
 		DispatcherProvider.SetCurrent(new MockDispatcherProvider());
 		DeviceDisplay.SetCurrent(null);
@@ -35,10 +35,15 @@ public abstract class BaseTest : IDisposable
 		}
 
 		Thread.CurrentThread.CurrentCulture = defaultCulture;
-		Thread.CurrentThread.CurrentUICulture = defaultUICulture;
+		Thread.CurrentThread.CurrentUICulture = defaultUiCulture;
 
-		DispatcherProvider.SetCurrent(null);
 		DeviceDisplay.SetCurrent(null);
+		DispatcherProvider.SetCurrent(null);
+
+		var options = new Options();
+		options.SetShouldSuppressExceptionsInAnimations(false);
+		options.SetShouldSuppressExceptionsInBehaviors(false);
+		options.SetShouldSuppressExceptionsInConverters(false);
 
 		isDisposed = true;
 	}

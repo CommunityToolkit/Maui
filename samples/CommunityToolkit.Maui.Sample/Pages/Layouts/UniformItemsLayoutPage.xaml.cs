@@ -18,7 +18,7 @@ public partial class UniformItemsLayoutPage : BasePage<UniformItemsLayoutViewMod
 
 	void HandleAddButtonClicked(object? sender, System.EventArgs e)
 	{
-		var randomColor = colors[new Random().Next(colors.Count)];
+		var randomColor = colors[Random.Shared.Next(colors.Count)];
 
 		UniformItemsLayout_Default.Children.Add(new Button
 		{

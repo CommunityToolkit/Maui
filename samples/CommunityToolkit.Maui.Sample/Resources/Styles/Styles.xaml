@@ -396,8 +396,8 @@
                     Brush="{AppThemeBinding Light={StaticResource Gray500},
                                             Dark={StaticResource Gray950}}"
                     Opacity=".5"
-                    Radius="15"
-                    Offset="10,10" />
+                    Radius="4"
+                    Offset="2,2" />
             </Setter.Value>
         </Setter>
     </Style>

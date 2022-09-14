@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows.Input;
 
 namespace CommunityToolkit.Maui.Behaviors;
@@ -358,6 +359,14 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 			catch (TaskCanceledException)
 			{
 				return;
+			}
+			catch (Exception ex) when (Options.ShouldSuppressExceptionsInBehaviors)
+			{
+				validationTokenSource = null;
+				IsValid = false;
+				IsRunning = false;
+
+				Debug.WriteLine(ex);
 			}
 		}
 

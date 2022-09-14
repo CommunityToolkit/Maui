@@ -48,7 +48,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 				"This is a customized Snackbar",
 				async () =>
 				{
-					await DisplayCustomSnackbarButton.BackgroundColorTo(colors[new Random().Next(colors.Count)], length: 500);
+					await DisplayCustomSnackbarButton.BackgroundColorTo(colors[Random.Shared.Next(colors.Count)], length: 500);
 					DisplayCustomSnackbarButton.Text = displayCustomSnackbarText;
 				},
 				"Change Button Color",

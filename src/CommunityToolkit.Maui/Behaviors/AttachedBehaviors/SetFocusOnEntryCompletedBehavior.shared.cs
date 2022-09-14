@@ -32,9 +32,9 @@ public class SetFocusOnEntryCompletedBehavior : BaseBehavior<VisualElement>
 	{
 		var entry = (Entry)bindable;
 		var weakEntry = new WeakReference<Entry>(entry);
-		entry.Completed += completedHandler;
+		entry.Completed += CompletedHandler;
 
-		void completedHandler(object? sender, EventArgs e)
+		void CompletedHandler(object? sender, EventArgs e)
 		{
 			if (weakEntry.TryGetTarget(out var origEntry))
 			{
