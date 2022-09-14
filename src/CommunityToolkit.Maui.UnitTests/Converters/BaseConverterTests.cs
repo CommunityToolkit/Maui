@@ -64,7 +64,7 @@ public abstract class ConverterTest<TConverter> : BaseTest where TConverter : IC
 	protected virtual object? GetInvalidConvertBackValue() => GetInvalidValue(InitializeConverterForInvalidConverterTests().ToType);
 	protected virtual object? GetInvalidConvertFromValue() => GetInvalidValue(InitializeConverterForInvalidConverterTests().FromType);
 	protected virtual TConverter InitializeConverterForInvalidConverterTests() => new();
-	
+
 	static object GetInvalidValue(Type type)
 	{
 		if (type != typeof(string))
