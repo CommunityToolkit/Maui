@@ -6,11 +6,11 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Alerts;
 
-public class Toast_Tests : BaseTest
+public class ToastTests : BaseTest
 {
 	readonly IToast toast = new Toast();
 
-	public Toast_Tests()
+	public ToastTests()
 	{
 		Assert.IsAssignableFrom<IAlert>(toast);
 	}

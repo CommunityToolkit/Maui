@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class ByteArrayToImageSourceConverter_Tests : BaseConverterTest<ByteArrayToImageSourceConverter>
+public class ByteArrayToImageSourceConverterTests : BaseConverterTest<ByteArrayToImageSourceConverter>
 {
 	public static IReadOnlyList<object[]> NonImageStreamData { get; } = new[]
 	{

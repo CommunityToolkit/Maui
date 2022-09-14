@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class ProgressBarAnimationBehavior_Tests : BaseTest
+public class ProgressBarAnimationBehaviorTests : BaseTest
 {
 	public static readonly IReadOnlyList<object[]> ValidData = new[]
 	{
@@ -20,7 +20,7 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 		var progressBar = new ProgressBar();
 		progressBar.EnableAnimations();
 
-		var progressBarAnimationCompletedTCS = new TaskCompletionSource();
+		var progressBarAnimationCompletedTcs = new TaskCompletionSource();
 
 		var progressBarAnimationBehavior = new ProgressBarAnimationBehavior();
 		progressBarAnimationBehavior.AnimationCompleted += HandleAnimationCompleted;
@@ -37,7 +37,7 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 
 		if (progressBar.Progress != progress)
 		{
-			await progressBarAnimationCompletedTCS.Task;
+			await progressBarAnimationCompletedTcs.Task;
 		}
 
 		Assert.Equal(progress, progressBar.Progress);
@@ -50,7 +50,7 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 			ArgumentNullException.ThrowIfNull(sender);
 
 			progressBarAnimationBehavior.AnimationCompleted -= HandleAnimationCompleted;
-			progressBarAnimationCompletedTCS.SetResult();
+			progressBarAnimationCompletedTcs.SetResult();
 		}
 	}
 
@@ -95,17 +95,17 @@ public class ProgressBarAnimationBehavior_Tests : BaseTest
 		var progressBar = new ProgressBar();
 		var customProgressBar = new CustomProgressBar();
 
-		var progressBarAnimationBehavior_ProgressBar = new ProgressBarAnimationBehavior();
-		var progressBarAnimationBehavior_CustomProgressBar = new ProgressBarAnimationBehavior();
+		var progressBarAnimationBehaviorProgressBar = new ProgressBarAnimationBehavior();
+		var progressBarAnimationBehaviorCustomProgressBar = new ProgressBarAnimationBehavior();
 
-		progressBar.Invoking(x => x.Behaviors.Add(progressBarAnimationBehavior_ProgressBar)).Should().NotThrow<InvalidOperationException>();
-		customProgressBar.Invoking(x => x.Behaviors.Add(progressBarAnimationBehavior_CustomProgressBar)).Should().NotThrow<InvalidOperationException>();
+		progressBar.Invoking(x => x.Behaviors.Add(progressBarAnimationBehaviorProgressBar)).Should().NotThrow<InvalidOperationException>();
+		customProgressBar.Invoking(x => x.Behaviors.Add(progressBarAnimationBehaviorCustomProgressBar)).Should().NotThrow<InvalidOperationException>();
 
 		Assert.Single(progressBar.Behaviors.OfType<ProgressBarAnimationBehavior>());
 		Assert.Single(customProgressBar.Behaviors.OfType<ProgressBarAnimationBehavior>());
 
-		progressBar.Invoking(x => x.Behaviors.Remove(progressBarAnimationBehavior_ProgressBar)).Should().NotThrow<InvalidOperationException>();
-		customProgressBar.Invoking(x => x.Behaviors.Remove(progressBarAnimationBehavior_CustomProgressBar)).Should().NotThrow<InvalidOperationException>();
+		progressBar.Invoking(x => x.Behaviors.Remove(progressBarAnimationBehaviorProgressBar)).Should().NotThrow<InvalidOperationException>();
+		customProgressBar.Invoking(x => x.Behaviors.Remove(progressBarAnimationBehaviorCustomProgressBar)).Should().NotThrow<InvalidOperationException>();
 
 		Assert.Empty(progressBar.Behaviors);
 		Assert.Empty(customProgressBar.Behaviors);

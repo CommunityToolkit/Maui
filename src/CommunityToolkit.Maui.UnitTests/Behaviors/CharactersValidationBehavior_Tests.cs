@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class CharactersValidationBehavior_Tests : BaseTest
+public class CharactersValidationBehaviorTests : BaseTest
 {
 	[Theory]
 	[InlineData(CharacterType.Any, 1, 2, "A", true)]

@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class IsEqualConverter_Tests : BaseTest
+public class IsEqualConverterTests : BaseTest
 {
 	public const string TestValue = nameof(TestValue);
 

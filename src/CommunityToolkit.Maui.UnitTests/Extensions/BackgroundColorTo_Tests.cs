@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Extensions;
 
-public class BackgroundColorTo_Tests : BaseTest
+public class BackgroundColorToTests : BaseTest
 {
 	[Fact]
 	public async Task BackgroundColorTo_VerifyColorChanged()

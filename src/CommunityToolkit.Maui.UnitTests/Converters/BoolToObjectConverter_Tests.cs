@@ -6,7 +6,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class BoolToObjectConverter_Tests : BaseConverterTest<BoolToObjectConverter>
+public class BoolToObjectConverterTests : BaseConverterTest<BoolToObjectConverter>
 {
 	public const string TrueTestObject = nameof(TrueTestObject);
 	public const string FalseTestObject = nameof(FalseTestObject);

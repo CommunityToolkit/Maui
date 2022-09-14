@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class ColorToDegreeHueConverter_Tests : BaseConverterTest<ColorToDegreeHueConverter>
+public class ColorToDegreeHueConverterTests : BaseOneWayConverterTest<ColorToDegreeHueConverter>
 {
 	public static readonly IReadOnlyList<object[]> ValidInputData = new[]
 	{

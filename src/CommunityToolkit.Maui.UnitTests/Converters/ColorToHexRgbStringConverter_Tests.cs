@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class ColorToHexRgbStringConverter_Tests_Tests : BaseConverterTest<ColorToHexRgbStringConverter>
+public class ColorToHexRgbStringConverterTestsTests : BaseOneWayConverterTest<ColorToHexRgbStringConverter>
 {
 	public static readonly IReadOnlyList<object[]> ValidInputData = new[]
 	{

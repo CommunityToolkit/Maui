@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class ListToStringConverter_Tests : BaseConverterTest<ListToStringConverter>
+public class ListToStringConverterTests : BaseOneWayConverterTest<ListToStringConverter>
 {
 	public static IReadOnlyList<object?[]> TestData { get; } = new[]
 	{

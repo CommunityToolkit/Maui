@@ -4,7 +4,7 @@ using Xunit;
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
 #pragma warning disable CA1416 // Validate platform compatibility
-public class IconTintColorBehavior_Tests : BaseTest
+public class IconTintColorBehaviorTests : BaseTest
 {
 	[Fact]
 	public void VerifyDefaultColor()

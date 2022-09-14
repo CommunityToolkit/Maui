@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class StateToBooleanConverter_Tests : BaseConverterTest<StateToBooleanConverter>
+public class StateToBooleanConverterTests : BaseOneWayConverterTest<StateToBooleanConverter>
 {
 	[Theory]
 	[InlineData((LayoutState)int.MinValue)]

@@ -3,18 +3,18 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class StringToListConverter_Tests : BaseConverterTest<StringToListConverter>
+public class StringToListConverterTests : BaseOneWayConverterTest<StringToListConverter>
 {
 	public static IReadOnlyList<object?[]> ListData { get; } = new[]
 	{
-		new object?[] { "A,B.C;D", new string[] { ",", ".", ";" }, new string[] { "A", "B", "C", "D" } },
-		new object?[] { "A+_+B+_+C", "+_+", new string[] { "A", "B", "C" } },
-		new object?[] { "A,,C", ",", new string[] { "A", string.Empty, "C" }, },
-		new object?[] { "A,C", ",", new string?[] { "A", "C" } },
-		new object?[] { "A", ":-:", new string[] { "A" } },
-		new object?[] { string.Empty, ",", new string[] { string.Empty } },
+		new object?[] { "A,B.C;D", new[] { ",", ".", ";" }, new[] { "A", "B", "C", "D" } },
+		new object?[] { "A+_+B+_+C", "+_+", new[] { "A", "B", "C" } },
+		new object?[] { "A,,C", ",", new[] { "A", string.Empty, "C" }, },
+		new object?[] { "A,C", ",", new[] { "A", "C" } },
+		new object?[] { "A", ":-:", new[] { "A" } },
+		new object?[] { string.Empty, ",", new[] { string.Empty } },
 		new object?[] { null, ",", Array.Empty<string>() },
-		new object?[] { "ABC", null, new string[] { "ABC" } },
+		new object?[] { "ABC", null, new[] { "ABC" } },
 	};
 
 	[Theory]

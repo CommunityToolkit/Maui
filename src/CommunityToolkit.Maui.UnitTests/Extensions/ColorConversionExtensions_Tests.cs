@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Extensions;
 
-public class ColorConversionExtensions_Tests
+public class ColorConversionExtensionsTests
 {
 	public static IReadOnlyList<object[]> ColorTestData { get; } = new[]
 	{
@@ -293,7 +293,7 @@ public class ColorConversionExtensions_Tests
 	{
 		var result = testDef.Color.ToRgbString();
 
-		Assert.Equal(testDef.ExpectedRGB, result);
+		Assert.Equal(testDef.ExpectedRgb, result);
 	}
 
 	[Fact]
@@ -310,7 +310,7 @@ public class ColorConversionExtensions_Tests
 	{
 		var result = testDef.Color.ToRgbaString();
 
-		Assert.Equal(testDef.ExpectedRGBA, result);
+		Assert.Equal(testDef.ExpectedRgba, result);
 	}
 
 	[Fact]
@@ -327,7 +327,7 @@ public class ColorConversionExtensions_Tests
 	{
 		var result = testDef.Color.ToCmykString();
 
-		Assert.Equal(testDef.ExpectedCMYK, result);
+		Assert.Equal(testDef.ExpectedCmyk, result);
 	}
 
 	[Fact]
@@ -344,7 +344,7 @@ public class ColorConversionExtensions_Tests
 	{
 		var result = testDef.Color.ToCmykaString();
 
-		Assert.Equal(testDef.ExpectedCMYKA, result);
+		Assert.Equal(testDef.ExpectedCmyka, result);
 	}
 
 	[Fact]
@@ -946,13 +946,13 @@ public class ColorConversionExtensions_Tests
 			ExpectedToBlackOrWhiteForText = expectedToBlackOrWhiteForText;
 			ExpectedGreyScale = new Color(expectedAvgColor, expectedAvgColor, expectedAvgColor);
 			ExpectedInverse = new Color(expectedInverseR, expectedInverseG, expectedInverseB);
-			ExpectedRGB = $"RGB({expectedByteR},{expectedByteG},{expectedByteB})";
-			ExpectedRGBA = $"RGBA({expectedByteR},{expectedByteG},{expectedByteB},{A})";
-			ExpectedHEXRGB = $"#{expectedByteR:X2}{expectedByteG:X2}{expectedByteB:X2}";
-			ExpectedHEXRGBA = $"#{expectedByteR:X2}{expectedByteG:X2}{expectedByteB:X2}{expectedByteA:X2}";
-			ExpectedHEXARGB = $"#{expectedByteA:X2}{expectedByteR:X2}{expectedByteG:X2}{expectedByteB:X2}";
-			ExpectedCMYK = $"CMYK({expectedPctCyan:P0},{expectedPctMagenta:P0},{expectedPctYellow:P0},{expectedPctBlack:P0})";
-			ExpectedCMYKA = $"CMYKA({expectedPctCyan:P0},{expectedPctMagenta:P0},{expectedPctYellow:P0},{expectedPctBlack:P0},{a})";
+			ExpectedRgb = $"RGB({expectedByteR},{expectedByteG},{expectedByteB})";
+			ExpectedRgba = $"RGBA({expectedByteR},{expectedByteG},{expectedByteB},{A})";
+			ExpectedHexrgb = $"#{expectedByteR:X2}{expectedByteG:X2}{expectedByteB:X2}";
+			ExpectedHexrgba = $"#{expectedByteR:X2}{expectedByteG:X2}{expectedByteB:X2}{expectedByteA:X2}";
+			ExpectedHexargb = $"#{expectedByteA:X2}{expectedByteR:X2}{expectedByteG:X2}{expectedByteB:X2}";
+			ExpectedCmyk = $"CMYK({expectedPctCyan:P0},{expectedPctMagenta:P0},{expectedPctYellow:P0},{expectedPctBlack:P0})";
+			ExpectedCmyka = $"CMYKA({expectedPctCyan:P0},{expectedPctMagenta:P0},{expectedPctYellow:P0},{expectedPctBlack:P0},{a})";
 
 			Color = new Color(r, g, b, a);
 			ExpectedDegreeHue = Color.GetHue() * 360;
@@ -983,13 +983,13 @@ public class ColorConversionExtensions_Tests
 		internal Color ExpectedToBlackOrWhiteForText { get; }
 		internal Color ExpectedGreyScale { get; }
 		internal Color ExpectedInverse { get; }
-		internal string ExpectedRGB { get; }
-		internal string ExpectedRGBA { get; }
-		internal string ExpectedHEXRGB { get; }
-		internal string ExpectedHEXRGBA { get; }
-		internal string ExpectedHEXARGB { get; }
-		internal string ExpectedCMYK { get; }
-		internal string ExpectedCMYKA { get; }
+		internal string ExpectedRgb { get; }
+		internal string ExpectedRgba { get; }
+		internal string ExpectedHexrgb { get; }
+		internal string ExpectedHexrgba { get; }
+		internal string ExpectedHexargb { get; }
+		internal string ExpectedCmyk { get; }
+		internal string ExpectedCmyka { get; }
 		internal string ExpectedHslString { get; }
 		internal string ExpectedHslaString { get; }
 		internal double ExpectedDegreeHue { get; }

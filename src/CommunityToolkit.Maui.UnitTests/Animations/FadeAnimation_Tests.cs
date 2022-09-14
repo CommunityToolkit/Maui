@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Animations;
 
-public class FadeAnimation_Tests : BaseTest
+public class FadeAnimationTests : BaseTest
 {
 	[Fact]
 	public async Task AnimateShouldThrowWithNullView()

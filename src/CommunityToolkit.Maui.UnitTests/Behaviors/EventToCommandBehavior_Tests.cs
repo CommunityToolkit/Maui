@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class EventToCommandBehavior_Tests : BaseTest
+public class EventToCommandBehaviorTests : BaseTest
 {
 	[Fact]
 	public void ArgumentExceptionIfSpecifiedEventDoesNotExist()

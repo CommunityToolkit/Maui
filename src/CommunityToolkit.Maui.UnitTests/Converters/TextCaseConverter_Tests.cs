@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class TextCaseConverter_Tests : BaseConverterTest<TextCaseConverter>
+public class TextCaseConverterTests : BaseOneWayConverterTest<TextCaseConverter>
 {
 	const string test = nameof(test);
 	const string t = nameof(t);

@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class EmailValidationBehavior_Tests : BaseTest
+public class EmailValidationBehaviorTests : BaseTest
 {
 	public static IReadOnlyList<object[]> NonDefaultKeyboardData { get; } = new[]
 	{

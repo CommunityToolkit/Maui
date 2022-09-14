@@ -1,19 +1,18 @@
 ﻿using System.Globalization;
 using CommunityToolkit.Maui.UnitTests.Mocks;
-using Microsoft.Maui.Dispatching;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
 public abstract class BaseTest : IDisposable
 {
-	readonly CultureInfo defaultCulture, defaultUICulture;
+	readonly CultureInfo defaultCulture, defaultUiCulture;
 
 	bool isDisposed;
 
 	protected BaseTest()
 	{
 		defaultCulture = Thread.CurrentThread.CurrentCulture;
-		defaultUICulture = Thread.CurrentThread.CurrentUICulture;
+		defaultUiCulture = Thread.CurrentThread.CurrentUICulture;
 
 		DispatcherProvider.SetCurrent(new MockDispatcherProvider());
 		DeviceDisplay.SetCurrent(null);
@@ -35,7 +34,7 @@ public abstract class BaseTest : IDisposable
 		}
 
 		Thread.CurrentThread.CurrentCulture = defaultCulture;
-		Thread.CurrentThread.CurrentUICulture = defaultUICulture;
+		Thread.CurrentThread.CurrentUICulture = defaultUiCulture;
 
 		DeviceDisplay.SetCurrent(null);
 		DispatcherProvider.SetCurrent(null);

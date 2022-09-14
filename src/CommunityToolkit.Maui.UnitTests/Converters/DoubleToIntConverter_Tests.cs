@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class DoubleToIntConverter_Tests : BaseConverterTest<DoubleToIntConverter>
+public class DoubleToIntConverterTests : BaseConverterTest<DoubleToIntConverter>
 {
 	[Theory]
 	[InlineData(2.5, 2)]

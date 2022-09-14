@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class ColorToCmykStringConverter_Tests : BaseConverterTest<ColorToCmykStringConverter>
+public class ColorToCmykStringConverterTests : BaseOneWayConverterTest<ColorToCmykStringConverter>
 {
 	public static readonly IReadOnlyList<object[]> ValidInputData = new[]
 	{

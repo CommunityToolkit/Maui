@@ -1,10 +1,9 @@
-﻿using System;
-using CommunityToolkit.Maui.Converters;
+﻿using CommunityToolkit.Maui.Converters;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
-public class ColorToGrayScaleColorConverter_Tests : BaseConverterTest<ColorToGrayScaleColorConverter>
+public class ColorToGrayScaleColorConverterTests : BaseOneWayConverterTest<ColorToGrayScaleColorConverter>
 {
 	public static IReadOnlyList<object[]> ColorToGrayScaleColorData { get; } = new[]
 	{

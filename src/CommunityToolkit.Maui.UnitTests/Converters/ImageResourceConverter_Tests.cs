@@ -5,9 +5,9 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class ImageResourceConverter_Tests : BaseConverterTest<ImageResourceConverter>
+public class ImageResourceConverterTests : BaseOneWayConverterTest<ImageResourceConverter>
 {
-	public ImageResourceConverter_Tests() : base()
+	public ImageResourceConverterTests() : base()
 	{
 		Application.Current = new MockApplication();
 	}
@@ -16,7 +16,7 @@ public class ImageResourceConverter_Tests : BaseConverterTest<ImageResourceConve
 	{
 		new object[] { 3 }, // primitive type
 		new object[] { DateTime.UtcNow }, // Struct
-		new object[] { new object() } // objects
+		new object[] { new () } // objects
 	};
 
 	protected override void Dispose(bool isDisposing)

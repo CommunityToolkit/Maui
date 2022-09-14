@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class ColorToInverseColorConverter_Tests : BaseConverterTest<ColorToInverseColorConverter>
+public class ColorToInverseColorConverterTests : BaseOneWayConverterTest<ColorToInverseColorConverter>
 {
 	public static IReadOnlyList<object[]> ColorToInverseColorConverterData { get; } = new[]
 	{

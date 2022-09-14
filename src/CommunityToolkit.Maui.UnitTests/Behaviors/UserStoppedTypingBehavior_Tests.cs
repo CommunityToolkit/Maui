@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class UserStoppedTypingBehavior_Tests : BaseTest
+public class UserStoppedTypingBehaviorTests : BaseTest
 {
 	const int defaultTimeThreshold = 1000;
 	const int defaultLengthThreshold = 0;

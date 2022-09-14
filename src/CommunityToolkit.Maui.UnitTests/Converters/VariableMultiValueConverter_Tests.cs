@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class VariableMultiValueConverter_Tests : BaseTest
+public class VariableMultiValueConverterTests : BaseTest
 {
 	[Theory]
 	[InlineData(new object[] { true, true, true }, MultiBindingCondition.None, false)]

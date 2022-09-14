@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class MathExpressionConverter_Tests : BaseConverterTest<MathExpressionConverter>
+public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressionConverter>
 {
 	const double tolerance = 0.00001d;
 	readonly Type mathExpressionTargetType = typeof(double);

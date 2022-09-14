@@ -1,10 +1,9 @@
-﻿using System;
-using CommunityToolkit.Maui.Converters;
+﻿using CommunityToolkit.Maui.Converters;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
-public class ColorToBlackOrWhiteConverter_Tests : BaseConverterTest<ColorToBlackOrWhiteConverter>
+public class ColorToBlackOrWhiteConverterTests : BaseOneWayConverterTest<ColorToBlackOrWhiteConverter>
 {
 	public static IReadOnlyList<object[]> ColorToBlackOrWhiteData { get; } = new[]
 	{

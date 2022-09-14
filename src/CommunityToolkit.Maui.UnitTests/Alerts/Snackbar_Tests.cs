@@ -6,11 +6,11 @@ using Font = Microsoft.Maui.Font;
 
 namespace CommunityToolkit.Maui.UnitTests.Alerts;
 
-public class Snackbar_Tests : BaseTest
+public class SnackbarTests : BaseTest
 {
 	readonly ISnackbar snackbar = new Snackbar();
 
-	public Snackbar_Tests()
+	public SnackbarTests()
 	{
 		Assert.IsAssignableFrom<IAlert>(snackbar);
 	}

@@ -1,40 +1,42 @@
 ﻿using System.Globalization;
-using System.Runtime.InteropServices;
-using AutoFixture.Xunit2;
 using CommunityToolkit.Maui.Converters;
-using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
-public abstract class BaseConverterTest<TConverter> : BaseTest where TConverter : ICommunityToolkitValueConverter, new()
+public abstract class BaseOneWayConverterTest<TConverter> : ConverterTest<TConverter> where TConverter : ICommunityToolkitValueConverter, new()
 {
-	[SkippableFact]
+}
+
+public abstract class BaseConverterTest<TConverter> : ConverterTest<TConverter> where TConverter : ICommunityToolkitValueConverter, new()
+{
+	[Fact]
 	public void InvalidConvertBackValue_ShouldThrowException()
 	{
 		var options = new Options();
 		options.SetShouldSuppressExceptionsInConverters(false);
 
 		var converter = InitializeConverterForInvalidConverterTests();
-		Skip.If(IsOneWayConverter(), $"{typeof(TConverter).Name} is a One Way Converter");
 
 		Assert.ThrowsAny<Exception>(() => converter.ConvertBack(GetInvalidConvertBackValue(), converter.FromType, null, CultureInfo.CurrentCulture));
 	}
 
-	[SkippableFact]
+	[Fact]
 	public void InvalidConvertBackValue_ShouldSuppressExceptionsInConverters_ShouldReturnDefaultConvertValue()
 	{
 		var options = new Options();
 		options.SetShouldSuppressExceptionsInConverters(true);
 
 		var converter = InitializeConverterForInvalidConverterTests();
-		Skip.If(IsOneWayConverter(), $"{typeof(TConverter).Name} is a One Way Converter");
 
 		var result = converter.ConvertBack(GetInvalidConvertBackValue(), converter.FromType, null, CultureInfo.CurrentCulture);
 
 		Assert.Equal(converter.DefaultConvertBackReturnValue, result);
 	}
+}
 
+public abstract class ConverterTest<TConverter> : BaseTest where TConverter : ICommunityToolkitValueConverter, new()
+{
 	[Fact]
 	public void InvalidConvertValue_ShouldThrowException()
 	{
@@ -62,27 +64,15 @@ public abstract class BaseConverterTest<TConverter> : BaseTest where TConverter 
 	protected virtual object? GetInvalidConvertBackValue() => GetInvalidValue(InitializeConverterForInvalidConverterTests().ToType);
 	protected virtual object? GetInvalidConvertFromValue() => GetInvalidValue(InitializeConverterForInvalidConverterTests().FromType);
 	protected virtual TConverter InitializeConverterForInvalidConverterTests() => new();
-
-	static bool IsOneWayConverter()
-	{
-		try
-		{
-			var defaultConvertBackValue = new TConverter().DefaultConvertBackReturnValue;
-			return false;
-		}
-		catch (NotSupportedException)
-		{
-			return true;
-		}
-	}
-
-	static object? GetInvalidValue(Type type)
+	
+	static object GetInvalidValue(Type type)
 	{
 		if (type != typeof(string))
 		{
 			return string.Empty;
 		}
-		else if (type != typeof(bool))
+
+		if (type != typeof(bool))
 		{
 			return true;
 		}

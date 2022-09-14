@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class ItemTappedEventArgsConverter_Tests : BaseConverterTest<ItemTappedEventArgsConverter>
+public class ItemTappedEventArgsConverterTests : BaseOneWayConverterTest<ItemTappedEventArgsConverter>
 {
 	public static IReadOnlyList<object?[]> Data { get; } = new[]
 	{

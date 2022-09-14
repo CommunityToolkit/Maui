@@ -1,11 +1,9 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using CommunityToolkit.Maui.Converters;
+﻿using CommunityToolkit.Maui.Converters;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
-public class ColorToColorForTextConverter_Tests : BaseConverterTest<ColorToColorForTextConverter>
+public class ColorToColorForTextConverterTests : BaseOneWayConverterTest<ColorToColorForTextConverter>
 {
 	public static IReadOnlyList<object[]> ColorToColorForTextData { get; } = new[]
 	{

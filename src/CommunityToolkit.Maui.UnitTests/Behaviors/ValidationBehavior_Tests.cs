@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class ValidationBehavior_Tests : BaseTest
+public class ValidationBehaviorTests : BaseTest
 {
 	[Fact]
 	public void ValidateOnValueChanged()

@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Extensions;
 
-public class ServiceCollectionExtensions_Tests : BaseTest
+public class ServiceCollectionExtensionsTests : BaseTest
 {
 	const string customRoute = "//MockCustomRoute";
 	readonly Type mockPageType = typeof(MockPage);

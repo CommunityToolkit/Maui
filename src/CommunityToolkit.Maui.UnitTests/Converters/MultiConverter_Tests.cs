@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class MultiConverter_Tests : BaseTest
+public class MultiConverterTests : BaseTest
 {
 	public static IReadOnlyList<object[]> Data { get; } = new[]
 	{

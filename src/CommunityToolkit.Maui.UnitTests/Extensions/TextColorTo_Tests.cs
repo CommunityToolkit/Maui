@@ -5,7 +5,7 @@ using Font = Microsoft.Maui.Font;
 
 namespace CommunityToolkit.Maui.UnitTests.Extensions
 {
-	public class TextColorTo_Tests : BaseTest
+	public class TextColorToTests : BaseTest
 	{
 		[Fact]
 		public async Task PublicTextColorTo_VerifyColorChanged()

@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class IndexToArrayItemConverter_Tests : BaseConverterTest<IndexToArrayItemConverter>
+public class IndexToArrayItemConverterTests : BaseConverterTest<IndexToArrayItemConverter>
 {
 	[Theory]
 	[InlineData(new[] { 1, 2, 3, 4, 5 }, 2, 3)]

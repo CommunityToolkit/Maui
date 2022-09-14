@@ -6,7 +6,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class AnimationBehavior_Tests : BaseTest
+public class AnimationBehaviorTests : BaseTest
 {
 	[Fact]
 	public void TapGestureRecognizerAttachedWhenNoEventSpecified()
@@ -54,8 +54,8 @@ public class AnimationBehavior_Tests : BaseTest
 	{
 		bool animationStarted = false, animationEnded = false;
 
-		var animationStartedTCS = new TaskCompletionSource();
-		var animationEndedTCS = new TaskCompletionSource();
+		var animationStartedTcs = new TaskCompletionSource();
+		var animationEndedTcs = new TaskCompletionSource();
 
 		var mockAnimation = new MockAnimation();
 		mockAnimation.AnimationStarted += HandleAnimationStarted;
@@ -73,8 +73,8 @@ public class AnimationBehavior_Tests : BaseTest
 
 		behavior.AnimateCommand.Execute(null);
 
-		await animationStartedTCS.Task;
-		await animationEndedTCS.Task;
+		await animationStartedTcs.Task;
+		await animationEndedTcs.Task;
 
 		animationEnded.Should().BeTrue();
 		animationStarted.Should().BeTrue();
@@ -85,7 +85,7 @@ public class AnimationBehavior_Tests : BaseTest
 			mockAnimation.AnimationStarted -= HandleAnimationStarted;
 
 			animationStarted = true;
-			animationStartedTCS.SetResult();
+			animationStartedTcs.SetResult();
 		}
 
 		void HandleAnimationEnded(object? sender, EventArgs e)
@@ -93,7 +93,7 @@ public class AnimationBehavior_Tests : BaseTest
 			mockAnimation.AnimationEnded -= HandleAnimationEnded;
 
 			animationEnded = true;
-			animationEndedTCS.SetResult();
+			animationEndedTcs.SetResult();
 		}
 	}
 

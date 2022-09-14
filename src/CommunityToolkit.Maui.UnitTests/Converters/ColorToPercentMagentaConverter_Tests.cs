@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class ColorToPercentMagentaConverter_Tests : BaseConverterTest<ColorToPercentMagentaConverter>
+public class ColorToPercentMagentaConverterTests : BaseOneWayConverterTest<ColorToPercentMagentaConverter>
 {
 	public static readonly IReadOnlyList<object[]> ValidInputData = new[]
 	{

@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class NumericValidationBehavior_Tests : BaseTest
+public class NumericValidationBehaviorTests : BaseTest
 {
 	[Theory]
 	[InlineData("en-US", "15.2", 1.0, 16.0, 0, 16, true)]

@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class ColorToPercentBlackKeyConverter_Tests : BaseConverterTest<ColorToPercentBlackKeyConverter>
+public class ColorToPercentBlackKeyConverterTests : BaseOneWayConverterTest<ColorToPercentBlackKeyConverter>
 {
 	public static readonly IReadOnlyList<object[]> ValidInputData = new[]
 	{

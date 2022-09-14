@@ -2,7 +2,7 @@ using CommunityToolkit.Maui.Core.Extensions;
 using Xunit;
 namespace CommunityToolkit.Maui.UnitTests.Extensions;
 
-public class MathExtensions_Tests : BaseTest
+public class MathExtensionsTests : BaseTest
 {
 	[Theory]
 	[InlineData(0.0, true)]

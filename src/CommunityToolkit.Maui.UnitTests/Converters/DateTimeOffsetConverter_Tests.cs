@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class DateTimeOffsetConverter_Tests : BaseConverterTest<DateTimeOffsetConverter>
+public class DateTimeOffsetConverterTests : BaseConverterTest<DateTimeOffsetConverter>
 {
 	static readonly DateTime testDateTimeNow = DateTime.Now;
 	static readonly DateTime testDateTimeLocal = new(2020, 08, 25, 13, 37, 00, DateTimeKind.Local);

@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class UriValidationBehavior_Tests : BaseTest
+public class UriValidationBehaviorTests : BaseTest
 {
 	[Theory]
 	[InlineData(@"http://microsoft.com", UriKind.Absolute, true)]

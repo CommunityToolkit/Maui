@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class IsNotNullConverter_Tests : BaseTest
+public class IsNotNullConverterTests : BaseTest
 {
 	[Theory]
 	[ClassData(typeof(FooDataGenerator))]
@@ -31,8 +31,8 @@ public class IsNotNullConverter_Tests : BaseTest
 			Add((List<string>?)null, false);
 			Add("test", true);
 			Add((string?)null, false);
-			Add(new IsNotNullConverter_Tests(), true);
-			Add((IsNotNullConverter_Tests?)null, false);
+			Add(new IsNotNullConverterTests(), true);
+			Add((IsNotNullConverterTests?)null, false);
 		}
 	}
 }
