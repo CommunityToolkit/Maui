@@ -69,26 +69,6 @@ public partial class MauiDrawingView
 	}
 
 	/// <summary>
-	/// Initialize resources
-	/// </summary>
-	public void Initialize()
-	{
-#if ANDROID || IOS || MACCATALYST
-		Drawable = new DrawingViewDrawable(this);
-#elif WINDOWS
-		if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 18362))
-		{
-			((Microsoft.Maui.Graphics.Win2D.W2DGraphicsView)Content).Drawable = new DrawingViewDrawable(this);
-		}
-		else
-		{
-			System.Diagnostics.Debug.WriteLine("DrawingView requires Windows 10.0.18362 or higher.");
-		}
-#endif
-		Lines.CollectionChanged += OnLinesCollectionChanged;
-	}
-
-	/// <summary>
 	/// Clean up resources
 	/// </summary>
 	public void CleanUp()
@@ -183,13 +163,6 @@ public partial class MauiDrawingView
 	void ClearPath()
 	{
 		currentPath = new PathF();
-	}
-
-	void Redraw()
-	{
-#if IOS || ANDROID || MACCATALYST || WINDOWS
-		Invalidate();
-#endif
 	}
 
 	class DrawingViewDrawable : IDrawable

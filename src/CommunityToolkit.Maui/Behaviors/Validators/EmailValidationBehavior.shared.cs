@@ -37,6 +37,30 @@ public class EmailValidationBehavior : TextValidationBehavior
 		return IsValidEmail(value) && await base.ValidateAsync(value, token);
 	}
 
+	/// <inheritdoc /> 
+	protected override void OnAttachedTo(VisualElement bindable)
+	{
+		// Assign Keyboard.Email if the user has not specified a specific Keyboard layout
+		if (bindable is InputView inputView && inputView.Keyboard == Keyboard.Default)
+		{
+			inputView.Keyboard = Keyboard.Email;
+		}
+
+		base.OnAttachedTo(bindable);
+	}
+
+	/// <inheritdoc /> 
+	protected override void OnDetachingFrom(VisualElement bindable)
+	{
+		// Assign Keyboard.Default if the user has not specified a different Keyboard layout
+		if (bindable is InputView inputView && inputView.Keyboard == Keyboard.Email)
+		{
+			inputView.Keyboard = Keyboard.Default;
+		}
+
+		base.OnDetachingFrom(bindable);
+	}
+
 	// https://docs.microsoft.com/dotnet/standard/base-types/how-to-verify-that-strings-are-in-valid-email-format
 	static bool IsValidEmail(string? email)
 	{
@@ -48,7 +72,7 @@ public class EmailValidationBehavior : TextValidationBehavior
 		try
 		{
 			// Normalize the domain
-			email = Regex.Replace(email, @"(@)(.+)$", domainMapper, RegexOptions.None, TimeSpan.FromMilliseconds(200));
+			email = Regex.Replace(email, @"(@)(.+)$", DomainMapper, RegexOptions.None, TimeSpan.FromMilliseconds(200));
 		}
 		catch (RegexMatchTimeoutException)
 		{
@@ -71,7 +95,7 @@ public class EmailValidationBehavior : TextValidationBehavior
 		}
 
 		// Examines the domain part of the email and normalizes it.
-		static string domainMapper(Match match)
+		static string DomainMapper(Match match)
 		{
 			// Use IdnMapping class to convert Unicode domain names.
 			var idn = new IdnMapping();
@@ -82,17 +106,15 @@ public class EmailValidationBehavior : TextValidationBehavior
 			if (domainName.All(x => char.IsDigit(x) || x is '.')
 				&& !Regex.IsMatch(domainName, @"^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}$"))
 			{
-				throw new ArgumentException("Invalid IPv4 Address");
+				throw new ArgumentException("Invalid IPv4 Address.");
 			}
 
 			if (domainName.StartsWith('-'))
 			{
-				throw new ArgumentException("Domain Name Cannot Start With Hyphen");
+				throw new ArgumentException("Domain name cannot start with hyphen.");
 			}
 
 			return match.Groups[1].Value + domainName;
 		}
 	}
-
-
 }

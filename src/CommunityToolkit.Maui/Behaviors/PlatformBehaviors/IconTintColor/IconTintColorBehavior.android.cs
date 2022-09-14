@@ -45,7 +45,7 @@ public partial class IconTintColorBehavior
 				color = Colors.Transparent;
 			}
 
-			image.SetColorFilter(new PorterDuffColorFilter(color.ToPlatform(), PorterDuff.Mode.SrcIn ?? throw new InvalidOperationException("PorterDuff.Mode.SrcIn should not be null at runtime")));
+			image.SetColorFilter(new PorterDuffColorFilter(color.ToPlatform(), PorterDuff.Mode.SrcIn ?? throw new InvalidOperationException("PorterDuff.Mode.SrcIn should not be null at runtime.")));
 		}
 
 		static void SetButtonTintColor(AButton button, Color? color)

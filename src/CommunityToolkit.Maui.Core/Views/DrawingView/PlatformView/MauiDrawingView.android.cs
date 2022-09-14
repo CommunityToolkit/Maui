@@ -1,4 +1,4 @@
-﻿using Android.Content;
+using Android.Content;
 using Android.Views;
 using Microsoft.Maui.Platform;
 using AColor = Android.Graphics.Color;
@@ -16,6 +16,17 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 	public MauiDrawingView(Context context) : base(context)
 	{
 		previousPoint = new();
+	}
+
+	/// <inheritdoc />
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			currentPath.Dispose();
+		}
+
+		base.Dispose(disposing);
 	}
 
 	/// <inheritdoc />
@@ -59,5 +70,19 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 		Redraw();
 
 		return true;
+	}
+
+	/// <summary>
+	/// Initialize resources
+	/// </summary>
+	public void Initialize()
+	{
+		Drawable = new DrawingViewDrawable(this);
+		Lines.CollectionChanged += OnLinesCollectionChanged;
+	}
+
+	void Redraw()
+	{
+		Invalidate();
 	}
 }

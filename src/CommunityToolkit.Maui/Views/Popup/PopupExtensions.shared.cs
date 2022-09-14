@@ -63,20 +63,6 @@ public static partial class PopupExtensions
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static IMauiContext GetMauiContext(Page page)
 	{
-		return page.Handler?.MauiContext ?? throw new InvalidOperationException("Could not locate MauiContext");
+		return page.Handler?.MauiContext ?? throw new InvalidOperationException("Could not locate MauiContext.");
 	}
 }
-
-#if !(ANDROID || IOS || MACCATALYST || WINDOWS)
-/// <summary>
-/// Extension methods for <see cref="Popup"/>.
-/// </summary>
-public static partial class PopupExtensions
-{
-	static void PlatformShowPopup(Popup popup, IMauiContext mauiContext) =>
-		throw new NotSupportedException($"The current platform '{DeviceInfo.Platform}' does not support CommunityToolkit.Maui.Core.Popup");
-
-	static Task<object?> PlatformShowPopupAsync(Popup popup, IMauiContext mauiContext) =>
-		throw new NotSupportedException($"The current platform '{DeviceInfo.Platform}' does not support CommunityToolkit.Maui.Core.Popup.");
-}
-#endif

@@ -9,7 +9,27 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Toast
 {
-	private partial void DismissPlatform(CancellationToken token)
+	static CommunityToolkit.Maui.Core.Views.PlatformToast? PlatformToast { get; set; }
+
+	/// <summary>
+	/// Dispose Toast
+	/// </summary>
+	protected virtual void Dispose(bool isDisposing)
+	{
+		if (isDisposed)
+		{
+			return;
+		}
+
+		if (isDisposing)
+		{
+			PlatformToast?.Dispose();
+		}
+
+		isDisposed = true;
+	}
+
+	static void DismissPlatform(CancellationToken token)
 	{
 		if (PlatformToast is not null)
 		{
@@ -22,7 +42,7 @@ public partial class Toast
 	/// <summary>
 	/// Show Toast
 	/// </summary>
-	private partial void ShowPlatform(CancellationToken token)
+	void ShowPlatform(CancellationToken token)
 	{
 		DismissPlatform(token);
 		token.ThrowIfCancellationRequested();
