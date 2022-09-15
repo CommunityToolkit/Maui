@@ -38,4 +38,3 @@ public class StatusBarBehaviorTests : BaseTest
 		Assert.Throws<InvalidOperationException>(() => view.Behaviors.Add(statusBarBehavior));
 	}
 }
-
