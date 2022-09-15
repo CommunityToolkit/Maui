@@ -137,7 +137,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<ColorAnimationExtensionsPage, ColorAnimationExtensionsViewModel>();
 
 		// Add ImageSources pages + ViewModels
-		services.AddTransient<GravatarImageSourcePage, GravatarImageSourceViewModel>();
+		services.AddTransientWithShellRoute<GravatarImageSourcePage, GravatarImageSourceViewModel>();
 
 		// Add Layouts Pages + ViewModels
 		services.AddTransientWithShellRoute<UniformItemsLayoutPage, UniformItemsLayoutViewModel>();

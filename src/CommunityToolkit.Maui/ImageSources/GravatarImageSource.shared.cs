@@ -190,8 +190,15 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 	{
 		if (tokenSource is not null)
 		{
-			tokenSource.Cancel();
-			tokenSource.Dispose();
+			try
+			{
+				tokenSource.Cancel();
+				tokenSource.Dispose();
+			}
+			catch
+			{
+				// Left intentionally empty, as we don't need to catch anything.
+			}
 		}
 
 		if (Uri.Equals(lastDispatch))
