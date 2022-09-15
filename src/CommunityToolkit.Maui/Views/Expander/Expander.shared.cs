@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls;
@@ -43,7 +45,7 @@ public class Expander : ContentView, IExpander
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Content"/> property.
 	/// </summary>
-	public static readonly new BindableProperty ContentProperty
+	public static new readonly BindableProperty ContentProperty
 		= BindableProperty.Create(nameof(Content), typeof(IView), typeof(Expander), propertyChanged: OnContentPropertyChanged);
 
 	/// <summary>
@@ -193,8 +195,13 @@ public class Expander : ContentView, IExpander
 		{
 			switch (parent)
 			{
-				case Cell cell:
-					cell.ForceUpdateSize();
+				case ListView listView:
+					var cells = listView.AllChildren.OfType<Cell>();
+					foreach(var child in cells)
+					{
+						child.ForceUpdateSize();
+					}
+
 					break;
 				case CollectionView collectionView:
 					collectionView.InvalidateMeasureInternal(Microsoft.Maui.Controls.Internals.InvalidationTrigger.MeasureChanged);

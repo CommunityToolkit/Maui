@@ -44,7 +44,8 @@
             <Label Text="Multi-level expander (shared)" />
             
             <Label Text="Expander in ListView" />
-            <ListView ItemsSource="{Binding ContentCreators}">
+            <ListView ItemsSource="{Binding ContentCreators}"
+                      HasUnevenRows="True">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>
