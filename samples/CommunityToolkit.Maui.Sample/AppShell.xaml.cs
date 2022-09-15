@@ -101,14 +101,14 @@ public partial class AppShell : Shell
 
 	public AppShell() => InitializeComponent();
 
-	public static string GetPageRoute<TViewModel>()  where TViewModel : BaseViewModel
+	public static string GetPageRoute<TViewModel>() where TViewModel : BaseViewModel
 	{
 		return GetPageRoute(typeof(TViewModel));
 	}
 
 	public static string GetPageRoute(Type viewModelType)
 	{
-		if(!viewModelType.IsAssignableTo(typeof(BaseViewModel)))
+		if (!viewModelType.IsAssignableTo(typeof(BaseViewModel)))
 		{
 			throw new ArgumentException($"{nameof(viewModelType)} must implement {nameof(BaseViewModel)}", nameof(viewModelType));
 		}
