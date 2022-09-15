@@ -101,8 +101,18 @@ public partial class AppShell : Shell
 
 	public AppShell() => InitializeComponent();
 
+	public static string GetPageRoute<TViewModel>() where TViewModel : BaseViewModel
+	{
+		return GetPageRoute(typeof(TViewModel));
+	}
+
 	public static string GetPageRoute(Type viewModelType)
 	{
+		if (!viewModelType.IsAssignableTo(typeof(BaseViewModel)))
+		{
+			throw new ArgumentException($"{nameof(viewModelType)} must implement {nameof(BaseViewModel)}", nameof(viewModelType));
+		}
+
 		if (!viewModelMappings.TryGetValue(viewModelType, out (Type GalleryPageType, Type ContentPageType) mapping))
 		{
 			throw new KeyNotFoundException($"No map for ${viewModelType} was found on navigation mappings. Please register your ViewModel in {nameof(AppShell)}.{nameof(viewModelMappings)}");
@@ -119,9 +129,6 @@ public partial class AppShell : Shell
 																																							where TGalleryPage : BaseGalleryPage<TGalleryViewModel>
 																																							where TGalleryViewModel : BaseGalleryViewModel
 	{
-		var route = GetPageRoute(typeof(TGalleryPage), typeof(TPage));
-		Routing.RegisterRoute(route, typeof(TPage));
-
 		return new KeyValuePair<Type, (Type GalleryPageType, Type ContentPageType)>(typeof(TViewModel), (typeof(TGalleryPage), typeof(TPage)));
 	}
 }
