@@ -5,34 +5,12 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 public partial class StatusBarBehaviorViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(StatusBarStyle))]
 	[NotifyPropertyChangedFor(nameof(StatusBarColor))]
-	int redSliderValue;
+	int redSliderValue, greenSliderValue, blueSliderValue;
 
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(StatusBarStyle))]
-	[NotifyPropertyChangedFor(nameof(StatusBarColor))]
-	int greenSliderValue;
-
-	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(StatusBarStyle))]
-	[NotifyPropertyChangedFor(nameof(StatusBarColor))]
-	int blueSliderValue;
-
-	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(StatusBarStyle))]
-	[NotifyPropertyChangedFor(nameof(StatusBarColor))]
-	bool isDefaultChecked = true;
-
-	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(StatusBarStyle))]
-	[NotifyPropertyChangedFor(nameof(StatusBarColor))]
-	bool isLightContentChecked;
-
-	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(StatusBarStyle))]
-	[NotifyPropertyChangedFor(nameof(StatusBarColor))]
-	bool isDarkContentChecked;
+	bool isLightContentChecked, isDarkContentChecked, isDefaultChecked = true;
 
 	public Color StatusBarColor => Color.FromRgb(RedSliderValue, GreenSliderValue, BlueSliderValue);
 
@@ -52,7 +30,8 @@ public partial class StatusBarBehaviorViewModel : BaseViewModel
 			{
 				return StatusBarStyle.DarkContent;
 			}
-			throw new InvalidOperationException("Style is not selected.");
+
+			throw new NotSupportedException($"{nameof(StatusBarStyle)} {StatusBarStyle} is not supported.");
 		}
 	}
 }

@@ -15,6 +15,7 @@ public partial class StatusBarBehaviorPage : BasePage<StatusBarBehaviorViewModel
 	{
 		base.OnNavigatedTo(args);
 
-		CommunityToolkit.Maui.Core.Platform.StatusBar.SetColor(Colors.Fuchsia);
+		var statusBarColor = Color.FromRgb(BindingContext.RedSliderValue, BindingContext.GreenSliderValue, BindingContext.BlueSliderValue);
+		CommunityToolkit.Maui.Core.Platform.StatusBar.SetColor(statusBarColor);
 	}
 }

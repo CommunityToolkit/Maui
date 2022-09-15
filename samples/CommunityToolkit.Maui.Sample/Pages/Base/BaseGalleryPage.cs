@@ -60,7 +60,7 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 			{
 				new Card().Row(Row.Content).Column(Column.Content).DynamicResource(Border.StyleProperty, "border_gallery_card")
 			}
-		}.DynamicResource(BackgroundColorProperty, "AppBackgroundColor");
+		};
 
 		class Card : Border
 		{

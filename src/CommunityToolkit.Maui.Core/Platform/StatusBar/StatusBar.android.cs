@@ -1,13 +1,14 @@
 ﻿using System.Diagnostics;
+using System.Runtime.Versioning;
 using Android.OS;
 using Android.Util;
 using Android.Views;
 using Microsoft.Maui.Platform;
 using Activity = Android.App.Activity;
-using Debug = System.Diagnostics.Debug;
 
 namespace CommunityToolkit.Maui.Core.Platform;
 
+[UnsupportedOSPlatform("Android"), SupportedOSPlatform("Android23.0")] // StatusBar is only supported on Android +23.0
 static partial class StatusBar
 {
 	static Activity Activity => Microsoft.Maui.ApplicationModel.Platform.CurrentActivity ?? throw new InvalidOperationException("Android Activity can't be null.");
@@ -67,12 +68,12 @@ static partial class StatusBar
 
 	static bool IsSupported()
 	{
-		if (OperatingSystem.IsAndroidVersionAtLeast(23))
+		if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.M))
 		{
 			return true;
 		}
 
-		Debug.WriteLine($"This functionality is not available. Minimum supported API is {(int)BuildVersionCodes.M}");
+		System.Diagnostics.Debug.WriteLine($"This functionality is not available. Minimum supported API is {(int)BuildVersionCodes.M}");
 		return false;
 	}
 }
