@@ -8,7 +8,6 @@ public sealed partial class ByteArrayToImageSourceConverterViewModel : BaseViewM
 {
 	readonly WeakEventManager imageDownloadFailedEventManager = new();
 	readonly HttpClient client;
-	readonly IDispatcher dispatcher;
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(DownloadDotNetBotImageCommand))]
 	bool isDownloadingImage;
@@ -19,10 +18,9 @@ public sealed partial class ByteArrayToImageSourceConverterViewModel : BaseViewM
 	[ObservableProperty]
 	string labelText = "Tap the Download Image Button to download an Image as a byte[]";
 
-	public ByteArrayToImageSourceConverterViewModel(HttpClient client, IDispatcher dispatcher)
+	public ByteArrayToImageSourceConverterViewModel(HttpClient client)
 	{
 		this.client = client;
-		this.dispatcher = dispatcher;
 	}
 
 	public event EventHandler<string> ImageDownloadFailed
