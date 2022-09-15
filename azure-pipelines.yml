@@ -53,6 +53,9 @@ jobs:
           packageType: 'sdk'
           version: '$(TOOLKIT_NET6_VERSION)'
 
+      - powershell: dotnet new globaljson --sdk-version $(TOOLKIT_NET6_VERSION) --roll-forward latestMajor
+        displayName: 'Generate global.json'
+
       - powershell: dotnet workload install maui --from-rollback-file $(DotNetMauiRollbackFile) --source https://api.nuget.org/v3/index.json
         displayName: Install .NET MAUI $(TOOLKIT_NET6_VERSION)
 
@@ -259,6 +262,11 @@ jobs:
         inputs:
           packageType: 'sdk'
           version: '$(TOOLKIT_NET6_VERSION)'
+
+      - task: CmdLine@2
+        displayName: 'Generate global.json'
+        inputs:
+          script: dotnet new globaljson --sdk-version $(TOOLKIT_NET6_VERSION) --roll-forward latestMajor
 
       - task: CmdLine@2
         displayName: 'Install .NET MAUI Workload $(TOOLKIT_NET6_VERSION)'
