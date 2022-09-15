@@ -32,11 +32,15 @@ static partial class StatusBar
 		{
 			case StatusBarStyle.DarkContent:
 				AddBarAppearanceFlag(Activity, (StatusBarVisibility)SystemUiFlags.LightStatusBar);
-
 				break;
-			default:
+
+			case StatusBarStyle.Default:
+			case StatusBarStyle.LightContent:
 				RemoveBarAppearanceFlag(Activity, (StatusBarVisibility)SystemUiFlags.LightStatusBar);
 				break;
+
+			default:
+				throw new NotSupportedException($"{nameof(StatusBarStyle)} {style} is not yet supported on Android");
 		}
 	}
 

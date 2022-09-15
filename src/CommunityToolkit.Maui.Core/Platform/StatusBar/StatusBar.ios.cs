@@ -43,10 +43,12 @@ static partial class StatusBar
 	{
 		var uiStyle = statusBarStyle switch
 		{
+			StatusBarStyle.Default => UIStatusBarStyle.Default,
 			StatusBarStyle.LightContent => UIStatusBarStyle.LightContent,
 			StatusBarStyle.DarkContent => UIStatusBarStyle.DarkContent,
-			_ => UIStatusBarStyle.Default
+			_ => throw new NotSupportedException($"{nameof(StatusBarStyle)} {statusBarStyle} is not yet supported on iOS")
 		};
+
 		UIApplication.SharedApplication.SetStatusBarStyle(uiStyle, false);
 
 		UpdateStatusBarAppearance();
