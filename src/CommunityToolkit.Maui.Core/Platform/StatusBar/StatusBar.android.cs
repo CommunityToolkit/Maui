@@ -6,16 +6,18 @@ using Microsoft.Maui.Platform;
 using Activity = Android.App.Activity;
 using Debug = System.Diagnostics.Debug;
 
-namespace CommunityToolkit.Maui.Core.Capabilities;
+namespace CommunityToolkit.Maui.Core.Platform;
+
 static partial class StatusBar
 {
+	static Activity Activity => Microsoft.Maui.ApplicationModel.Platform.CurrentActivity ?? throw new InvalidOperationException("Android Activity can't be null.");
+
 	static void PlatformSetColor(Color color)
 	{
-		if (!IsSupported())
+		if (IsSupported())
 		{
-			return;
+			Activity.Window?.SetStatusBarColor(color.ToPlatform());
 		}
-		Activity.Window?.SetStatusBarColor(color.ToPlatform());
 	}
 
 	static void PlatformSetStyle(StatusBarStyle style)
@@ -37,7 +39,6 @@ static partial class StatusBar
 		}
 	}
 
-
 	static void AddBarAppearanceFlag(Activity activity, StatusBarVisibility flag) =>
 		SetBarAppearance(activity, barAppearance => barAppearance |= flag);
 
@@ -57,7 +58,7 @@ static partial class StatusBar
 
 		static Window GetCurrentWindow(Activity activity)
 		{
-			var window = activity.Window ?? throw new NullReferenceException();
+			var window = activity.Window ?? throw new InvalidOperationException($"{nameof(activity.Window)} cannot be null");
 			window.ClearFlags(WindowManagerFlags.TranslucentStatus);
 			window.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
 			return window;
@@ -66,14 +67,12 @@ static partial class StatusBar
 
 	static bool IsSupported()
 	{
-		if (PlatformVersion.SdkInt < (int)BuildVersionCodes.M)
+		if (OperatingSystem.IsAndroidVersionAtLeast(23))
 		{
-			Debug.WriteLine($"This functionality is not available. Minimum supported API is {(int)BuildVersionCodes.M}");
-			return false;
+			return true;
 		}
 
-		return true;
+		Debug.WriteLine($"This functionality is not available. Minimum supported API is {(int)BuildVersionCodes.M}");
+		return false;
 	}
-
-	static Activity Activity => Microsoft.Maui.ApplicationModel.Platform.CurrentActivity ?? throw new NullReferenceException("Android Activity can't be null.");
 }

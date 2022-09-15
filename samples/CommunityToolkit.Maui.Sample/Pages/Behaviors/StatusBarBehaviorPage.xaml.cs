@@ -15,6 +15,6 @@ public partial class StatusBarBehaviorPage : BasePage<StatusBarBehaviorViewModel
 	{
 		base.OnNavigatedTo(args);
 
-		CommunityToolkit.Maui.Core.Capabilities.StatusBar.SetColor(Colors.Fuchsia);
+		CommunityToolkit.Maui.Core.Platform.StatusBar.SetColor(Colors.Fuchsia);
 	}
 }

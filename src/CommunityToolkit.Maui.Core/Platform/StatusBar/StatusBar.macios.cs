@@ -1,15 +1,18 @@
-﻿using Microsoft.Maui.ApplicationModel;
+﻿using System;
+using System.Runtime.Versioning;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Platform;
 
-namespace CommunityToolkit.Maui.Core.Capabilities;
+namespace CommunityToolkit.Maui.Core.Platform;
 
+[UnsupportedOSPlatform("MacCatalyst")]
 static partial class StatusBar
 {
 	static void PlatformSetColor(Color color)
 	{
 		var uiColor = color.ToPlatform();
 
-		if (PlatformVersion.IsiOS13OrNewer)
+		if (OperatingSystem.IsIOSVersionAtLeast(13))
 		{
 			const int statusBarTag = 38482;
 			foreach (var window in UIApplication.SharedApplication.Windows)
@@ -52,7 +55,7 @@ static partial class StatusBar
 
 	static void UpdateStatusBarAppearance()
 	{
-		if (PlatformVersion.IsiOS13OrNewer)
+		if (OperatingSystem.IsIOSVersionAtLeast(13))
 		{
 			foreach (var window in UIApplication.SharedApplication.Windows)
 			{
@@ -68,7 +71,7 @@ static partial class StatusBar
 
 	static void UpdateStatusBarAppearance(UIWindow? window)
 	{
-		var vc = window?.RootViewController ?? WindowStateManager.Default.GetCurrentUIViewController() ?? throw new NullReferenceException(nameof(window.RootViewController));
+		var vc = window?.RootViewController ?? WindowStateManager.Default.GetCurrentUIViewController() ?? throw new InvalidOperationException($"{nameof(window.RootViewController)} cannot be null");
 
 		while (vc.PresentedViewController is not null)
 		{

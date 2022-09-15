@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Capabilities;
+using CommunityToolkit.Maui.Core.Platform;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// <see cref="PlatformBehavior{TView,TPlatformView}"/> that controls the Status bar color
 /// </summary>
 [UnsupportedOSPlatform("windows")]
-public class StatusBarBehavior : PlatformBehavior<VisualElement>
+public class StatusBarBehavior : PlatformBehavior<Page>
 {
 	/// <summary>
 	/// <see cref="BindableProperty"/> that manages the StatusBarColor property.
@@ -47,11 +47,11 @@ public class StatusBarBehavior : PlatformBehavior<VisualElement>
 
 	/// <inheritdoc /> 
 #if IOS || MACCATALYST
-	protected override void OnAttachedTo(VisualElement bindable, UIKit.UIView platformView)
+	protected override void OnAttachedTo(Page bindable, UIKit.UIView platformView)
 #elif ANDROID
-	protected override void OnAttachedTo(VisualElement bindable, Android.Views.View platformView)
+	protected override void OnAttachedTo(Page bindable, Android.Views.View platformView)
 #else
-	protected override void OnAttachedTo(VisualElement bindable, object platformView)
+	protected override void OnAttachedTo(Page bindable, object platformView)
 #endif
 	{
 		StatusBar.SetColor(StatusBarColor);
