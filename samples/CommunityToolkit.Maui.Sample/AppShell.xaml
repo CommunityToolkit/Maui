@@ -7,6 +7,7 @@
        xmlns:behaviors="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Behaviors"
        xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Converters"
        xmlns:extensions="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Extensions"
+       xmlns:imagesources="clr-namespace:CommunityToolkit.Maui.Sample.Pages.ImageSources"
        xmlns:layouts="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Layouts"
        xmlns:views="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Views"
        xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
@@ -55,6 +56,12 @@
                 Route="ExtensionsGalleryPage"
                 Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst=''}">
         <ShellContent ContentTemplate="{DataTemplate extensions:ExtensionsGalleryPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="ImageSources"
+                Route="ImageSourcesGalleryPage"
+                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst=''}">
+        <ShellContent ContentTemplate="{DataTemplate imagesources:ImageSourcesGalleryPage}" />
     </FlyoutItem>
 
     <FlyoutItem Title="Layouts"
