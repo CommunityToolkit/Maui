@@ -19,21 +19,21 @@ public class DockLayout : Layout, IDockLayout
 	/// <inheritdoc/>
 	public bool LastChildFill
 	{
-		get { return (bool) GetValue(LastChildFillProperty); }
+		get { return (bool)GetValue(LastChildFillProperty); }
 		set { SetValue(LastChildFillProperty, value); }
 	}
 
 	/// <inheritdoc/>
 	public SizeF Spacing
 	{
-		get { return (SizeF) GetValue(SpacingProperty); }
+		get { return (SizeF)GetValue(SpacingProperty); }
 		set { SetValue(SpacingProperty, value); }
 	}
-	
+
 	/// <summary>Gets the docking position for a view.</summary>
 	public static DockEnum GetDock(BindableObject view)
 	{
-		return (DockEnum) view.GetValue(DockProperty);
+		return (DockEnum)view.GetValue(DockProperty);
 	}
 
 	/// <summary>Sets the docking position for a view.</summary>
@@ -47,12 +47,12 @@ public class DockLayout : Layout, IDockLayout
 	{
 		if (view is BindableObject bindable)
 		{
-			return (DockEnum) bindable.GetValue(DockProperty);
+			return (DockEnum)bindable.GetValue(DockProperty);
 		}
 
 		return DockEnum.None;
 	}
-	
+
 	/// <inheritdoc/>
 	protected override ILayoutManager CreateLayoutManager()
 	{

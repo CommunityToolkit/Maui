@@ -40,29 +40,29 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 			{
 				case DockEnum.Left:
 				case DockEnum.Right:
-				{
-					var childWidth = childSize.Width + spacing.Width;
-					width += childWidth;
-					widthLimit -= childWidth;
-					break;
-				}
+					{
+						var childWidth = childSize.Width + spacing.Width;
+						width += childWidth;
+						widthLimit -= childWidth;
+						break;
+					}
 				case DockEnum.Top:
 				case DockEnum.Bottom:
-				{
-					var childHeight = childSize.Height + spacing.Height;
-					height += childHeight;
-					heightLimit -= childHeight;
-					break;
-				}
+					{
+						var childHeight = childSize.Height + spacing.Height;
+						height += childHeight;
+						heightLimit -= childHeight;
+						break;
+					}
 				case DockEnum.None:
 				default:
-				{
-					width += childSize.Width;
-					widthLimit -= childSize.Width;
-					height += childSize.Height;
-					heightLimit -= childSize.Height;
-					break;
-				}
+					{
+						width += childSize.Width;
+						widthLimit -= childSize.Width;
+						height += childSize.Height;
+						heightLimit -= childSize.Height;
+						break;
+					}
 			}
 		}
 
@@ -107,39 +107,39 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 				case DockEnum.Top:
 				case DockEnum.None:
 				default:
-				{
-					childX = x;
-					childY = y;
-					childWidth = width;
-					y += (childHeight + spacing.Height);
-					height -= (childHeight + spacing.Height);
-					break;
-				}
+					{
+						childX = x;
+						childY = y;
+						childWidth = width;
+						y += (childHeight + spacing.Height);
+						height -= (childHeight + spacing.Height);
+						break;
+					}
 				case DockEnum.Left:
-				{
-					childX = x;
-					childY = y;
-					childHeight = height;
-					x += (childWidth + spacing.Width);
-					width -= (childWidth + spacing.Width);
-					break;
-				}
+					{
+						childX = x;
+						childY = y;
+						childHeight = height;
+						x += (childWidth + spacing.Width);
+						width -= (childWidth + spacing.Width);
+						break;
+					}
 				case DockEnum.Right:
-				{
-					childX = x + width - childWidth;
-					childY = y;
-					childHeight = height;
-					width -= (childWidth + spacing.Width);
-					break;
-				}
+					{
+						childX = x + width - childWidth;
+						childY = y;
+						childHeight = height;
+						width -= (childWidth + spacing.Width);
+						break;
+					}
 				case DockEnum.Bottom:
-				{
-					childX = x;
-					childY = y + height - childHeight;
-					childWidth = width;
-					height -= (childHeight + spacing.Height);
-					break;
-				}
+					{
+						childX = x;
+						childY = y + height - childHeight;
+						childWidth = width;
+						height -= (childHeight + spacing.Height);
+						break;
+					}
 			}
 
 			child.Arrange(new Rect(childX, childY, childWidth, childHeight));
