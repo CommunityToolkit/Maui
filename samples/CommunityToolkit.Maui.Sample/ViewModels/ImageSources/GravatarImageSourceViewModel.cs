@@ -10,7 +10,17 @@ public partial class GravatarImageSourceViewModel : BaseViewModel
 	int cacheValidityInDays = 1;
 
 	[ObservableProperty]
-	DefaultImage[] defaultGravatarItems = new[]
+	DefaultImage defaultGravatarSelected = DefaultImage.MysteryPerson;
+
+	[ObservableProperty]
+	string email = "dsiegel@avantipoint.com";
+
+	[ObservableProperty]
+	bool enableCache = true;
+
+	public TimeSpan CacheValidityTimespan => TimeSpan.FromDays(CacheValidityInDays);
+
+	public IReadOnlyList<DefaultImage> DefaultGravatarItems { get; } = new[]
 	{
 		DefaultImage.MysteryPerson,
 		DefaultImage.FileNotFound,
@@ -21,15 +31,4 @@ public partial class GravatarImageSourceViewModel : BaseViewModel
 		DefaultImage.Wavatar,
 		DefaultImage.Blank
 	};
-
-	[ObservableProperty]
-	DefaultImage defaultGravatarSelected = DefaultImage.MysteryPerson;
-
-	[ObservableProperty]
-	string email = "dsiegel@avantipoint.com";
-
-	[ObservableProperty]
-	bool enableCache = true;
-
-	public TimeSpan CacheValidityTimespan => TimeSpan.FromDays(CacheValidityInDays);
 }
