@@ -1,12 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Extensions;
+﻿using System.Diagnostics;
 
-using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
+namespace CommunityToolkit.Maui.Extensions;
 
 /// <summary>HttpClient extensions.</summary>
-public static partial class HttpClientExtensions
+static partial class HttpClientExtensions
 {
 	/// <summary>Get stream from Uri.</summary>
 	/// <param name="client"><see href="HttpClient" />.</param>
@@ -15,7 +12,8 @@ public static partial class HttpClientExtensions
 	/// <returns>Task <see cref="Task{TResult}"/> result.</returns>
 	public static async Task<Stream> DownloadStreamAsync(this HttpClient client, Uri? uri, CancellationToken cancellationToken)
 	{
-		ArgumentNullException.ThrowIfNull(client, nameof(client));
+		ArgumentNullException.ThrowIfNull(client);
+		
 		try
 		{
 			return await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
