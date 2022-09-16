@@ -9,8 +9,9 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class PlatformToast : Alert, IDisposable
 {
-	readonly PaddedLabel messageLabel;
 	internal const float DefaultPadding = 10;
+
+	readonly PaddedLabel messageLabel;
 
 	bool isDisposed;
 
