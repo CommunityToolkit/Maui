@@ -29,7 +29,7 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 	const string defaultGravatarImageAddress = "https://www.gravatar.com/avatar/";
 	const int defaultSize = 80;
 
-	static readonly HttpClient singletonHttpClient = new();
+	static readonly Lazy<HttpClient> singletonHttpClientHolder = new();
 
 	readonly CancellationTokenSource? tokenSource;
 
@@ -39,7 +39,7 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 	/// <summary>Initializes a new instance of the <see cref="GravatarImageSource"/> class.</summary>
 	public GravatarImageSource()
 	{
-		Stream = new Func<CancellationToken, Task<Stream>>(cancelationToken => singletonHttpClient.DownloadStreamAsync(Uri, cancelationToken));
+		Stream = new Func<CancellationToken, Task<Stream>>(cancelationToken => SingletonHttpClient.DownloadStreamAsync(Uri, cancelationToken));
 		Uri = new Uri(defaultGravatarImageAddress);
 	}
 
@@ -94,6 +94,8 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 		get => gravatarSize;
 		set => gravatarSize = Math.Clamp(value, 1, 2048);
 	}
+
+	HttpClient SingletonHttpClient => singletonHttpClientHolder.Value;
 
 	/// <summary>Dispose <see cref="GravatarImageSource"/>.</summary>
 	public void Dispose()
