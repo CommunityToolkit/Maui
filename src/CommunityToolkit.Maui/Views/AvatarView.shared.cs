@@ -76,59 +76,59 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		avatarImage.SetBinding(HeightRequestProperty, new Binding(nameof(HeightRequest), source: this));
 	}
 
-	/// <summary>Gets or sets a value of the avatar border colour.</summary>
+	/// <summary>Gets or sets the control font.</summary>
+	public Microsoft.Maui.Font Font { get; set; } = Microsoft.Maui.Font.SystemFontOfSize((double)FontElement.FontSizeProperty.DefaultValue);
+
+	/// <summary>Gets or sets a value of the control border colour.</summary>
 	public Color BorderColor
 	{
 		get => (Color)GetValue(BorderColorProperty);
 		set => SetValue(BorderColorProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the avatar border width.</summary>
+	/// <summary>Gets or sets a value of the control border width.</summary>
 	public double BorderWidth
 	{
 		get => (double)GetValue(BorderWidthProperty);
 		set => SetValue(BorderWidthProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the avatar text character spacing property.</summary>
+	/// <summary>Gets or sets a value of the control text character spacing property.</summary>
 	public double CharacterSpacing
 	{
 		get => (double)GetValue(TextElement.CharacterSpacingProperty);
 		set => SetValue(TextElement.CharacterSpacingProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the avatar corder radius property.</summary>
+	/// <summary>Gets or sets a value of the control corner radius property.</summary>
 	public CornerRadius CornerRadius
 	{
 		get => (CornerRadius)GetValue(CornerRadiusProperty);
 		set => SetValue(CornerRadiusProperty, value);
 	}
 
-	/// <summary>Gets or sets the avatar font.</summary>
-	public Microsoft.Maui.Font Font { get; set; } = Microsoft.Maui.Font.SystemFontOfSize((double)FontElement.FontSizeProperty.DefaultValue);
-
-	/// <summary>Gets or sets a value of the avatar font attributes property.</summary>
+	/// <summary>Gets or sets a value of the control font attributes property.</summary>
 	public FontAttributes FontAttributes
 	{
 		get => (FontAttributes)GetValue(FontElement.FontAttributesProperty);
 		set => SetValue(FontElement.FontAttributesProperty, value);
 	}
 
-	/// <summary>Gets or sets a value indicating whether avatar font auto scaling enabled property.</summary>
+	/// <summary>Gets or sets a value indicating whether control font auto scaling enabled property.</summary>
 	public bool FontAutoScalingEnabled
 	{
 		get => (bool)GetValue(FontElement.FontAutoScalingEnabledProperty);
 		set => SetValue(FontElement.FontAutoScalingEnabledProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the avatar font family property.</summary>
+	/// <summary>Gets or sets a value of the control font family property.</summary>
 	public string FontFamily
 	{
 		get => (string)GetValue(FontElement.FontFamilyProperty);
 		set => SetValue(FontElement.FontFamilyProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the avatar font size property.</summary>
+	/// <summary>Gets or sets a value of the control font size property.</summary>
 	[TypeConverter(typeof(FontSizeConverter))]
 	public double FontSize
 	{
@@ -136,7 +136,7 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		set => SetValue(FontElement.FontSizeProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the avatar image source property.</summary>
+	/// <summary>Gets or sets a value of the control image source property.</summary>
 	[TypeConverter(typeof(ImageSourceConverter))]
 	public ImageSource ImageSource
 	{
@@ -144,14 +144,14 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		set => SetValue(ImageSourceProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the avatar text property.</summary>
+	/// <summary>Gets or sets a value of the control text property.</summary>
 	public string Text
 	{
 		get => (string)GetValue(TextProperty);
 		set => SetValue(TextProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the avatar text colour property.</summary>
+	/// <summary>Gets or sets a value of the control text colour property.</summary>
 	public Color TextColor
 	{
 		get => (Color)GetValue(TextElement.TextColorProperty);
@@ -356,12 +356,20 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 			&& Width >= 0 // The default value of Y (before the view is drawn onto the page) is -1
 			&& avatarImage.Source is not null)
 		{
-			var imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
-			var imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
+			double imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
+			double imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
 
-			var rect = new Rect(0, 0, imageWidth, imageHeight);
+			Rect rect = new(0, 0, imageWidth, imageHeight);
 
-			avatarImage.Clip = new RoundRectangleGeometry { CornerRadius = CornerRadius, Rect = rect };
+			avatarImage.Clip = StrokeShape switch
+			{
+				Polyline polyLine => polyLine.Clip,
+				Ellipse ellipse => ellipse.Clip,
+				Microsoft.Maui.Controls.Shapes.Path path => path.Clip,
+				Polygon polygon => polygon.Clip,
+				Rectangle rectangle => rectangle.Clip,
+				_ => new RoundRectangleGeometry { CornerRadius = CornerRadius, Rect = rect },
+			};
 		}
 	}
 }
