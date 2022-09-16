@@ -142,6 +142,7 @@ public static class MauiProgram
 
 		// Add Layouts Pages + ViewModels
 		services.AddTransientWithShellRoute<UniformItemsLayoutPage, UniformItemsLayoutViewModel>();
+		services.AddTransientWithShellRoute<DockLayoutPage, DockLayoutViewModel>();
 
 		// Add Views Pages + ViewModels
 		services.AddTransientWithShellRoute<DrawingViewPage, DrawingViewViewModel>();

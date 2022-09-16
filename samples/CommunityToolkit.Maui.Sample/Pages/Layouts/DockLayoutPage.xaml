@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:mct="clr-namespace:CommunityToolkit.Maui.Layouts;assembly=CommunityToolkit.Maui"
+    xmlns:layouts="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Layouts"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Layouts.DockLayoutPage"
+    x:TypeArguments="layouts:DockLayoutViewModel"
+    x:DataType="layouts:DockLayoutViewModel">
+
+    <mct:DockLayout Padding="40,30,20,10" Spacing="10,15">
+        <Button mct:DockLayout.Dock="Top" Text="Top" HeightRequest="60"/>
+        <Button mct:DockLayout.Dock="Bottom" Text="Bottom" HeightRequest="70"/>
+        <Button mct:DockLayout.Dock="Left" Text="Left" WidthRequest="80" />
+        <Button mct:DockLayout.Dock="Right" Text="Right" WidthRequest="90" />
+        <Button Text="Center" />
+    </mct:DockLayout>
+</pages:BasePage>
