@@ -81,9 +81,8 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 		var width = bounds.Width - padding.HorizontalThickness;
 		var height = bounds.Height - padding.VerticalThickness;
 
-		for (var i = 0; i < dockLayout.Count; i++)
+		foreach (var child in dockLayout)
 		{
-			var child = dockLayout[i];
 			if (child.Visibility != Visibility.Visible)
 			{
 				continue;
@@ -92,7 +91,7 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 			var childWidth = Math.Min(width, child.DesiredSize.Width);
 			var childHeight = Math.Min(height, child.DesiredSize.Height);
 
-			var isLastChild = (i == dockLayout.Count - 1);
+			var isLastChild = (child == dockLayout[^1]);
 			if (isLastChild && dockLayout.LastChildFill)
 			{
 				child.Arrange(new Rect(x, y, width, height));
