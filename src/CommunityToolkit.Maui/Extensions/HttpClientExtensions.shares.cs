@@ -10,10 +10,11 @@ static partial class HttpClientExtensions
 	/// <param name="uri">Target Uri.</param>
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>Task <see cref="Task{TResult}"/> result.</returns>
-	public static async Task<Stream> DownloadStreamAsync(this HttpClient client, Uri? uri, CancellationToken cancellationToken)
+	public static async Task<Stream> DownloadStreamAsync(this HttpClient client, Uri uri, CancellationToken cancellationToken)
 	{
 		ArgumentNullException.ThrowIfNull(client);
-		
+		ArgumentNullException.ThrowIfNull(uri);
+
 		try
 		{
 			return await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);

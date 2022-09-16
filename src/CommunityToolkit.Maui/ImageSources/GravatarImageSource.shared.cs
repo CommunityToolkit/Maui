@@ -39,8 +39,8 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 	/// <summary>Initializes a new instance of the <see cref="GravatarImageSource"/> class.</summary>
 	public GravatarImageSource()
 	{
-		Stream = new Func<CancellationToken, Task<Stream>>(cancelationToken => SingletonHttpClient.DownloadStreamAsync(Uri, cancelationToken));
 		Uri = new Uri(defaultGravatarImageAddress);
+		Stream = new Func<CancellationToken, Task<Stream>>(cancelationToken => SingletonHttpClient.DownloadStreamAsync(Uri, cancelationToken));
 	}
 
 	/// <summary>Gets a value indicating whether the control email is empty.</summary>
