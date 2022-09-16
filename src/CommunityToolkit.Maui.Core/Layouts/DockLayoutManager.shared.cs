@@ -81,21 +81,19 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 		var width = bounds.Width - padding.HorizontalThickness;
 		var height = bounds.Height - padding.VerticalThickness;
 
-		var i = 0;
-		foreach (var child in dockLayout)
+		for (var i = 0; i < dockLayout.Count; i++)
 		{
+			var child = dockLayout[i];
 			if (child.Visibility != Visibility.Visible)
 			{
 				continue;
 			}
 
-			i++;
-
 			var childWidth = Math.Min(width, child.DesiredSize.Width);
 			var childHeight = Math.Min(height, child.DesiredSize.Height);
 
-			var lastItem = (i == dockLayout.Count);
-			if (lastItem && dockLayout.LastChildFill)
+			var isLastChild = (i == dockLayout.Count - 1);
+			if (isLastChild && dockLayout.LastChildFill)
 			{
 				child.Arrange(new Rect(x, y, width, height));
 
@@ -107,6 +105,17 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 
 			switch (dockLayout.GetDock(child))
 			{
+				case DockEnum.Top:
+				case DockEnum.None:
+				default:
+				{
+					childX = x;
+					childY = y;
+					childWidth = width;
+					y += (childHeight + spacing.Height);
+					height -= (childHeight + spacing.Height);
+					break;
+				}
 				case DockEnum.Left:
 				{
 					childX = x;
@@ -114,16 +123,6 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 					childHeight = height;
 					x += (childWidth + spacing.Width);
 					width -= (childWidth + spacing.Width);
-					break;
-				}
-				case DockEnum.Top:
-				case DockEnum.None:
-				{
-					childX = x;
-					childY = y;
-					childWidth = width;
-					y += (childHeight + spacing.Height);
-					height -= (childHeight + spacing.Height);
 					break;
 				}
 				case DockEnum.Right:
@@ -141,10 +140,6 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 					childWidth = width;
 					height -= (childHeight + spacing.Height);
 					break;
-				}
-				default:
-				{
-					goto case DockEnum.Top;
 				}
 			}
 

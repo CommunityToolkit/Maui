@@ -8,13 +8,13 @@ namespace CommunityToolkit.Maui.Layouts;
 public class DockLayout : Layout, IDockLayout
 {
 	/// <summary>Docking position for a view.</summary>
-	public static readonly BindableProperty DockProperty = BindableProperty.Create(nameof(DockEnum), typeof(DockEnum), typeof(DockLayout), DockEnum.None, BindingMode.TwoWay);
+	public static readonly BindableProperty DockProperty = BindableProperty.Create(nameof(DockEnum), typeof(DockEnum), typeof(DockLayout), DockEnum.None);
 
 	/// <summary>If true, the last child fills the remaining space.</summary>
-	public static readonly BindableProperty LastChildFillProperty = BindableProperty.Create(nameof(LastChildFill), typeof(bool), typeof(DockLayout), true, BindingMode.TwoWay);
+	public static readonly BindableProperty LastChildFillProperty = BindableProperty.Create(nameof(LastChildFill), typeof(bool), typeof(DockLayout), true);
 
 	/// <summary>Horizontal (width) and vertical (height) spacing between docked views.</summary>
-	public static readonly BindableProperty SpacingProperty = BindableProperty.Create(nameof(Spacing), typeof(SizeF), typeof(DockLayout), SizeF.Zero, BindingMode.TwoWay);
+	public static readonly BindableProperty SpacingProperty = BindableProperty.Create(nameof(Spacing), typeof(SizeF), typeof(DockLayout), SizeF.Zero);
 
 	/// <inheritdoc/>
 	public bool LastChildFill
