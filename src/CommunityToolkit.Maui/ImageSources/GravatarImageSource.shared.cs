@@ -28,10 +28,13 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 	const int cancellationTokenSourceTimeout = 737;
 	const string defaultGravatarImageAddress = "https://www.gravatar.com/avatar/";
 	const int defaultSize = 80;
+
 	static readonly HttpClient singletonHttpClient = new();
+
+	readonly CancellationTokenSource? tokenSource;
+
 	int gravatarSize = -1;
 	Uri? lastDispatch;
-	CancellationTokenSource? tokenSource;
 
 	/// <summary>Initializes a new instance of the <see cref="GravatarImageSource"/> class.</summary>
 	public GravatarImageSource()
@@ -39,6 +42,9 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 		Stream = new Func<CancellationToken, Task<Stream>>(cancelationToken => singletonHttpClient.DownloadStreamAsync(Uri, cancelationToken));
 		Uri = new Uri(defaultGravatarImageAddress);
 	}
+
+	/// <summary>Gets a value indicating whether the control email is empty.</summary>
+	public override bool IsEmpty => string.IsNullOrEmpty(Email);
 
 	/// <summary>Gets or sets a <see cref="TimeSpan"/> structure that indicates the length of time after which the image cache becomes invalid.</summary>
 	public TimeSpan CacheValidity
@@ -71,9 +77,6 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 		set => SetValue(ImageProperty, value);
 	}
 
-	/// <summary>Gets a value indicating whether the control email is empty.</summary>
-	public override bool IsEmpty => string.IsNullOrEmpty(Email);
-
 	/// <summary>Gets or sets the URI for the image to get.</summary>
 	[System.ComponentModel.TypeConverter(typeof(UriTypeConverter))]
 	public Uri Uri { get; set; }
@@ -103,7 +106,7 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 	/// <returns>String of the URI.</returns>
 	public override string ToString()
 	{
-		return $"Uri: {Uri}, Email: {Email}, Size: {GravatarSize}, Image: {DefaultGravatarName(Image)}, CacheValidity: {CacheValidity}, CachingEnabled: {CachingEnabled}";
+		return $"Uri: {Uri}\nEmail: {Email}\nSize: {GravatarSize}\nImage: {DefaultGravatarName(Image)}\nCacheValidity: {CacheValidity}\nCachingEnabled: {CachingEnabled}";
 	}
 
 	/// <summary>Dispose <see cref="GravatarImageSource"/>.</summary>
@@ -113,9 +116,10 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 		if (!IsDisposed)
 		{
 			IsDisposed = true;
-			if (isDisposing && tokenSource is not null)
+
+			if (isDisposing)
 			{
-				tokenSource.Dispose();
+				tokenSource?.Dispose();
 			}
 		}
 	}
@@ -124,6 +128,7 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 	protected override void OnParentSet()
 	{
 		base.OnParentSet();
+
 		if (Parent is not VisualElement parentElement || parentElement is null)
 		{
 			GravatarSize = defaultSize;
@@ -134,27 +139,26 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 		SetBinding(ParentHeightProperty, new Binding(nameof(VisualElement.Height), BindingMode.OneWay, source: parentElement));
 	}
 
-	static string DefaultGravatarName(DefaultImage defaultGravatar)
-			=> defaultGravatar switch
-			{
-				DefaultImage.FileNotFound => "404",
-				DefaultImage.MysteryPerson => "mp",
-				_ => $"{defaultGravatar}".ToLower(),
-			};
+	static string DefaultGravatarName(DefaultImage defaultGravatar) => defaultGravatar switch
+	{
+		DefaultImage.FileNotFound => "404",
+		DefaultImage.MysteryPerson => "mp",
+		_ => defaultGravatar.ToString().ToLower(),
+	};
 
-	static void OnDefaultImagePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	static async void OnDefaultImagePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		GravatarImageSource gravatarImageSource = (GravatarImageSource)bindable;
-		gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, (DefaultImage)newValue);
+		await gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, (DefaultImage)newValue);
 	}
 
-	static void OnEmailPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	static async void OnEmailPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		GravatarImageSource gravatarImageSource = (GravatarImageSource)bindable;
-		gravatarImageSource.HandleNewUriRequested((string?)newValue, gravatarImageSource.Image);
+		await gravatarImageSource.HandleNewUriRequested((string?)newValue, gravatarImageSource.Image);
 	}
 
-	static void OnSizePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	static async void OnSizePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		if (newValue is not int intNewValue || intNewValue <= -1)
 		{
@@ -162,31 +166,31 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 		}
 
 		GravatarImageSource gravatarImageSource = (GravatarImageSource)bindable;
-		if (gravatarImageSource.GravatarSize == -1)
+		if (gravatarImageSource.GravatarSize is -1)
 		{
 			gravatarImageSource.GravatarSize = intNewValue;
 			return;
 		}
 
 		gravatarImageSource.GravatarSize = Math.Min(gravatarImageSource.ParentWidth, gravatarImageSource.ParentHeight);
-		gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, gravatarImageSource.Image);
+		await gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, gravatarImageSource.Image);
 	}
 
-	void HandleNewUriRequested(string? email, DefaultImage image)
+	Task HandleNewUriRequested(string? email, DefaultImage image)
 	{
-		if (GravatarSize == -1)
+		if (GravatarSize is -1)
 		{
-			return;
+			return Task.CompletedTask;
 		}
 
 		Uri = IsEmpty
 			? new Uri($"{defaultGravatarImageAddress}?s={GravatarSize}")
 			: new Uri($"{defaultGravatarImageAddress}{email?.GetMd5Hash(string.Empty).ToLowerInvariant()}?s={GravatarSize}&d={DefaultGravatarName(image)}");
 
-		OnUriChanged();
+		return OnUriChanged();
 	}
 
-	void OnUriChanged()
+	async Task OnUriChanged()
 	{
 		if (tokenSource is not null)
 		{
@@ -206,23 +210,25 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 			return;
 		}
 
-		tokenSource = new CancellationTokenSource();
-		_ = Task.Delay(cancellationTokenSourceTimeout, tokenSource.Token).ContinueWith(task =>
-		{
-			if (task.IsFaulted && task.Exception is not null)
+		try
+		{ 
+			if (tokenSource?.Token is not null)
 			{
-				throw task.Exception;
+				await Task.Delay(cancellationTokenSourceTimeout, tokenSource.Token);
 			}
-
-			if (task.Status == TaskStatus.Canceled)
+			else
 			{
-				return;
+				await Task.Delay(cancellationTokenSourceTimeout);
 			}
 
 			CancellationTokenSource?.Cancel();
 			lastDispatch = Uri;
-			Dispatcher.DispatchIfRequired(OnSourceChanged);
-		});
+			await Dispatcher.DispatchIfRequiredAsync(OnSourceChanged);
+		}
+		catch (TaskCanceledException)
+		{
+
+		}
 	}
 }
 
