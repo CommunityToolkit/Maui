@@ -213,7 +213,7 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 		}
 
 		try
-		{ 
+		{
 			if (tokenSource?.Token is not null)
 			{
 				await Task.Delay(cancellationTokenSourceTimeout, tokenSource.Token);
