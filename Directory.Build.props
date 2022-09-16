@@ -16,6 +16,18 @@
     <!--CS1734: XML comment has a paramref tag, but there is no parameter by that name-->
     <WarningsAsErrors>nullable,CS1570,CS1571,CS1572,CS1573,CS1574,CS1734</WarningsAsErrors>
   </PropertyGroup>
+  
+  <!-- https://github.com/dotnet/sdk/issues/1458#issuecomment-420456386 -->
+  <Target Name="_ResolveCopyLocalNuGetPackagePdbsAndXml" Condition="$(CopyLocalLockFileAssemblies) == true" AfterTargets="ResolveReferences">
+    <ItemGroup>
+      <ReferenceCopyLocalPaths
+        Include="@(ReferenceCopyLocalPaths->'%(RootDir)%(Directory)%(Filename).pdb')"
+        Condition="'%(ReferenceCopyLocalPaths.NuGetPackageId)' != '' and Exists('%(RootDir)%(Directory)%(Filename).pdb')" />
+      <ReferenceCopyLocalPaths
+        Include="@(ReferenceCopyLocalPaths->'%(RootDir)%(Directory)%(Filename).xml')"
+        Condition="'%(ReferenceCopyLocalPaths.NuGetPackageId)' != '' and Exists('%(RootDir)%(Directory)%(Filename).xml')" />
+    </ItemGroup>
+  </Target>
 
   <ItemGroup>
     <InternalsVisibleTo Include="CommunityToolkit.Maui.UnitTests" />
