@@ -35,10 +35,10 @@ public class DockLayoutTests : BaseTest
 			}
 		};
 
-		DockLayout.SetDock(childTopView, DockEnum.Top);
-		DockLayout.SetDock(childLeftView, DockEnum.Left);
-		DockLayout.SetDock(childRightView, DockEnum.Right);
-		DockLayout.SetDock(childBottomView, DockEnum.Bottom);
+		DockLayout.SetDockPosition(childTopView, DockPosition.Top);
+		DockLayout.SetDockPosition(childLeftView, DockPosition.Left);
+		DockLayout.SetDockPosition(childRightView, DockPosition.Right);
+		DockLayout.SetDockPosition(childBottomView, DockPosition.Bottom);
 	}
 
 	#region Measure

@@ -35,25 +35,25 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 			}
 
 			var childSize = child.Measure(widthLimit, heightLimit);
-			var position = dockLayout.GetDock(child);
+			var position = dockLayout.GetDockPosition(child);
 
 			switch (position)
 			{
-				case DockEnum.Left:
-				case DockEnum.Right:
+				case DockPosition.Left:
+				case DockPosition.Right:
 					var childWidth = childSize.Width + spacing.Width;
 					width += childWidth;
 					widthLimit -= childWidth;
 					break;
 
-				case DockEnum.Top:
-				case DockEnum.Bottom:
+				case DockPosition.Top:
+				case DockPosition.Bottom:
 					var childHeight = childSize.Height + spacing.Height;
 					height += childHeight;
 					heightLimit -= childHeight;
 					break;
 
-				case DockEnum.None:
+				case DockPosition.None:
 					width += childSize.Width;
 					widthLimit -= childSize.Width;
 					height += childSize.Height;
@@ -61,7 +61,7 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 					break;
 
 				default:
-					throw new NotSupportedException($"{nameof(DockEnum)} {position}	is not yet supported");
+					throw new NotSupportedException($"{nameof(DockPosition)} {position}	is not yet supported");
 			}
 		}
 
@@ -101,10 +101,10 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 			double childX;
 			double childY;
 
-			switch (dockLayout.GetDock(child))
+			switch (dockLayout.GetDockPosition(child))
 			{
-				case DockEnum.Top:
-				case DockEnum.None:
+				case DockPosition.Top:
+				case DockPosition.None:
 				default:
 					{
 						childX = x;
@@ -114,7 +114,7 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 						height -= (childHeight + spacing.Height);
 						break;
 					}
-				case DockEnum.Left:
+				case DockPosition.Left:
 					{
 						childX = x;
 						childY = y;
@@ -123,7 +123,7 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 						width -= (childWidth + spacing.Width);
 						break;
 					}
-				case DockEnum.Right:
+				case DockPosition.Right:
 					{
 						childX = x + width - childWidth;
 						childY = y;
@@ -131,7 +131,7 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 						width -= (childWidth + spacing.Width);
 						break;
 					}
-				case DockEnum.Bottom:
+				case DockPosition.Bottom:
 					{
 						childX = x;
 						childY = y + height - childHeight;

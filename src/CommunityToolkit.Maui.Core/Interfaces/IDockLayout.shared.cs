@@ -1,7 +1,7 @@
 ﻿namespace CommunityToolkit.Maui.Core.Interfaces;
 
 /// <summary>Docking position for a view in <see cref="IDockLayout"/>.</summary>
-public enum DockEnum
+public enum DockPosition
 {
 	/// <summary>Do not dock.</summary>
 	None = 0,
@@ -26,6 +26,6 @@ public interface IDockLayout : ILayout
 
 	/// <summary>Gets the docking position for a view (or Dock.Top as default value).</summary>
 	/// <param name="view">A view that belongs to the DockLayout.</param>
-	/// <returns>DockEnum that signifies where the item will dock.</returns>
-	DockEnum GetDock(IView view);
+	/// <returns>DockPosition that signifies where the item will dock.</returns>
+	DockPosition GetDockPosition(IView view);
 }

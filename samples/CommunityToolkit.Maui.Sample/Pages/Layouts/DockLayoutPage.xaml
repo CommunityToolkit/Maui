@@ -10,10 +10,10 @@
     x:DataType="layouts:DockLayoutViewModel">
 
     <mct:DockLayout Padding="40,30,20,10" Spacing="10,15">
-        <Button mct:DockLayout.Dock="Top" Text="Top" HeightRequest="60"/>
-        <Button mct:DockLayout.Dock="Bottom" Text="Bottom" HeightRequest="70"/>
-        <Button mct:DockLayout.Dock="Left" Text="Left" WidthRequest="80" />
-        <Button mct:DockLayout.Dock="Right" Text="Right" WidthRequest="90" />
+        <Button mct:DockLayout.DockPosition="Top" Text="Top" HeightRequest="60"/>
+        <Button mct:DockLayout.DockPosition="Bottom" Text="Bottom" HeightRequest="70"/>
+        <Button mct:DockLayout.DockPosition="Left" Text="Left" WidthRequest="80" />
+        <Button mct:DockLayout.DockPosition="Right" Text="Right" WidthRequest="90" />
         <Button Text="Center" />
     </mct:DockLayout>
 </pages:BasePage>

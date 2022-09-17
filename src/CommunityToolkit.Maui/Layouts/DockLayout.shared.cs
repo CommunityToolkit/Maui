@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Layouts;
 public class DockLayout : Layout, IDockLayout
 {
 	/// <summary>Docking position for a view.</summary>
-	public static readonly BindableProperty DockProperty = BindableProperty.Create(nameof(DockEnum), typeof(DockEnum), typeof(DockLayout), DockEnum.None);
+	public static readonly BindableProperty DockPositionProperty = BindableProperty.Create(nameof(DockPosition), typeof(DockPosition), typeof(DockLayout), DockPosition.None);
 
 	/// <summary>If true, the last child fills the remaining space.</summary>
 	public static readonly BindableProperty LastChildFillProperty = BindableProperty.Create(nameof(LastChildFill), typeof(bool), typeof(DockLayout), true);
@@ -31,31 +31,24 @@ public class DockLayout : Layout, IDockLayout
 	}
 
 	/// <summary>Gets the docking position for a view.</summary>
-	public static DockEnum GetDock(BindableObject view)
+	public static DockPosition GetDockPosition(BindableObject view)
 	{
-		return (DockEnum)view.GetValue(DockProperty);
+		return (DockPosition)view.GetValue(DockPositionProperty);
 	}
 
 	/// <summary>Sets the docking position for a view.</summary>
-	public static void SetDock(BindableObject view, DockEnum value)
+	public static void SetDockPosition(BindableObject view, DockPosition value)
 	{
-		view.SetValue(DockProperty, value);
+		view.SetValue(DockPositionProperty, value);
 	}
 
 	/// <inheritdoc/>
-	public DockEnum GetDock(IView view)
+	public DockPosition GetDockPosition(IView view)
 	{
-		if (view is BindableObject bindable)
-		{
-			return (DockEnum)bindable.GetValue(DockProperty);
-		}
-
-		return DockEnum.None;
+		var mauiView = (View)view;
+		return (DockPosition)mauiView.GetValue(DockPositionProperty);
 	}
 
 	/// <inheritdoc/>
-	protected override ILayoutManager CreateLayoutManager()
-	{
-		return new DockLayoutManager(this);
-	}
+	protected override ILayoutManager CreateLayoutManager() => new DockLayoutManager(this);
 }
