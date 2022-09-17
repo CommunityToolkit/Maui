@@ -35,34 +35,33 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 			}
 
 			var childSize = child.Measure(widthLimit, heightLimit);
+			var position = dockLayout.GetDock(child);
 
-			switch (dockLayout.GetDock(child))
+			switch (position)
 			{
 				case DockEnum.Left:
 				case DockEnum.Right:
-					{
-						var childWidth = childSize.Width + spacing.Width;
-						width += childWidth;
-						widthLimit -= childWidth;
-						break;
-					}
+					var childWidth = childSize.Width + spacing.Width;
+					width += childWidth;
+					widthLimit -= childWidth;
+					break;
+
 				case DockEnum.Top:
 				case DockEnum.Bottom:
-					{
-						var childHeight = childSize.Height + spacing.Height;
-						height += childHeight;
-						heightLimit -= childHeight;
-						break;
-					}
+					var childHeight = childSize.Height + spacing.Height;
+					height += childHeight;
+					heightLimit -= childHeight;
+					break;
+
 				case DockEnum.None:
+					width += childSize.Width;
+					widthLimit -= childSize.Width;
+					height += childSize.Height;
+					heightLimit -= childSize.Height;
+					break;
+
 				default:
-					{
-						width += childSize.Width;
-						widthLimit -= childSize.Width;
-						height += childSize.Height;
-						heightLimit -= childSize.Height;
-						break;
-					}
+					throw new NotSupportedException($"{nameof(DockEnum)} {position}	is not yet supported");
 			}
 		}
 
