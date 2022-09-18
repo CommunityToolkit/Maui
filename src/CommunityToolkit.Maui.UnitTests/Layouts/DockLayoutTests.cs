@@ -104,7 +104,7 @@ public class DockLayoutTests : BaseTest
 		var heightLimit = 140;
 
 		dockLayout.Padding = new Thickness(10, 20);
-		dockLayout.Spacing = new SizeF(5, 10);
+		dockLayout.Spacing = new Thickness(5, 10);
 		var actualSize = dockLayout.CrossPlatformMeasure(widthLimit, heightLimit);
 
 		var expectedSize = new Size(widthLimit, heightLimit);
@@ -115,12 +115,12 @@ public class DockLayoutTests : BaseTest
 	public void MeasureNotConstrainedWithPaddingAndSpacing()
 	{
 		dockLayout.Padding = new Thickness(10, 20);
-		dockLayout.Spacing = new SizeF(5, 10);
+		dockLayout.Spacing = new Thickness(5, 10);
 		var actualSize = dockLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
 
 		var expectedSize = new Size(
-			2 * (childWidth + dockLayout.Spacing.Width) + contentWidth + dockLayout.Padding.HorizontalThickness,
-			2 * (childHeight + dockLayout.Spacing.Height) + contentHeight + dockLayout.Padding.VerticalThickness);
+			2 * (childWidth + dockLayout.Spacing.HorizontalThickness) + contentWidth + dockLayout.Padding.HorizontalThickness,
+			2 * (childHeight + dockLayout.Spacing.VerticalThickness) + contentHeight + dockLayout.Padding.VerticalThickness);
 		Assert.Equal(expectedSize, actualSize);
 	}
 
@@ -209,7 +209,7 @@ public class DockLayoutTests : BaseTest
 		var heightLimit = 140;
 
 		dockLayout.Padding = new Thickness(10, 20);
-		dockLayout.Spacing = new SizeF(5, 10);
+		dockLayout.Spacing = new Thickness(5, 10);
 		var measuredSize = dockLayout.CrossPlatformMeasure(widthLimit, heightLimit);
 		var rect = new Rect(0, 0, measuredSize.Width, measuredSize.Height);
 		dockLayout.Layout(rect);
@@ -224,15 +224,15 @@ public class DockLayoutTests : BaseTest
 	public void ArrangeNotConstrainedWithPaddingAndSpacing()
 	{
 		dockLayout.Padding = new Thickness(10, 20);
-		dockLayout.Spacing = new SizeF(5, 10);
+		dockLayout.Spacing = new Thickness(5, 10);
 		var measuredSize = dockLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
 		var rect = new Rect(0, 0, measuredSize.Width, measuredSize.Height);
 		dockLayout.Layout(rect);
 		var actualSize = dockLayout.CrossPlatformArrange(rect);
 
 		var expectedSize = new Size(
-			2 * (childWidth + dockLayout.Spacing.Width) + contentWidth + dockLayout.Padding.HorizontalThickness,
-			2 * (childHeight + dockLayout.Spacing.Height) + contentHeight + dockLayout.Padding.VerticalThickness);
+			2 * (childWidth + dockLayout.Spacing.HorizontalThickness) + contentWidth + dockLayout.Padding.HorizontalThickness,
+			2 * (childHeight + dockLayout.Spacing.VerticalThickness) + contentHeight + dockLayout.Padding.VerticalThickness);
 		Assert.Equal(measuredSize, actualSize);
 		Assert.Equal(expectedSize, actualSize);
 	}
