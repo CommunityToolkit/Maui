@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Core.Interfaces;
+﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Layouts;
 using Xunit;
 

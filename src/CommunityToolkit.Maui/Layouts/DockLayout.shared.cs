@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Core.Interfaces;
 using CommunityToolkit.Maui.Core.Layouts;
+using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Layouts;
 
 namespace CommunityToolkit.Maui.Layouts;
