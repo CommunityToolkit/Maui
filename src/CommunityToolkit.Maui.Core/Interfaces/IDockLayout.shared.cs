@@ -7,7 +7,7 @@ public interface IDockLayout : ILayout
 	public bool LastChildFill { get; }
 
 	/// <summary>Horizontal (width) and vertical (height) spacing between docked views.</summary>
-	public SizeF Spacing { get; }
+	public Thickness Spacing { get; }
 
 	/// <summary>Gets the docking position for a view (or Dock.Top as default value).</summary>
 	/// <param name="view">A view that belongs to the DockLayout.</param>

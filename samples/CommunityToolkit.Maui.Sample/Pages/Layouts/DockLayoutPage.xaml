@@ -1,5 +1,6 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<pages:BasePage 
+<?xml version="1.0" encoding="utf-8"?>
+
+<pages:BasePage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
@@ -9,11 +10,48 @@
     x:TypeArguments="layouts:DockLayoutViewModel"
     x:DataType="layouts:DockLayoutViewModel">
 
-    <mct:DockLayout Padding="40,30,20,10" Spacing="10,15">
-        <Button mct:DockLayout.DockPosition="Top" Text="Top" HeightRequest="60"/>
-        <Button mct:DockLayout.DockPosition="Bottom" Text="Bottom" HeightRequest="70"/>
-        <Button mct:DockLayout.DockPosition="Left" Text="Left" WidthRequest="80" />
-        <Button mct:DockLayout.DockPosition="Right" Text="Right" WidthRequest="90" />
-        <Button Text="Center" />
-    </mct:DockLayout>
+    <ScrollView>
+        <VerticalStackLayout>
+            <Label Text="Simple DockLayout"/>
+            <mct:DockLayout Padding="40,30,20,10" Margin="10" Spacing="10,15" LastChildFill="True">
+                <Button mct:DockLayout.DockPosition="Top" Text="Top" HeightRequest="60" />
+                <Button mct:DockLayout.DockPosition="Bottom" Text="Bottom" HeightRequest="70" />
+                <Button mct:DockLayout.DockPosition="Left" Text="Left" WidthRequest="80" />
+                <Button mct:DockLayout.DockPosition="Right" Text="Right" WidthRequest="90" />
+                <Button Text="Center" />
+            </mct:DockLayout>
+
+            <Label Text="DockLayout with multiple items docked to top"/>
+            <mct:DockLayout Padding="40,30,20,10" Margin="10" Spacing="10,15" LastChildFill="True">
+                <Button mct:DockLayout.DockPosition="Top" Text="Top1" HeightRequest="60" />
+                <Button mct:DockLayout.DockPosition="Top" Text="Top2" HeightRequest="60" />
+                <Button mct:DockLayout.DockPosition="Top" Text="Top3" HeightRequest="60" />
+                <Button mct:DockLayout.DockPosition="Bottom" Text="Bottom" HeightRequest="70" />
+                <Button mct:DockLayout.DockPosition="Left" Text="Left" WidthRequest="80" />
+                <Button mct:DockLayout.DockPosition="Right" Text="Right" WidthRequest="90" />
+                <Button Text="Center" />
+            </mct:DockLayout>
+
+            <Label Text="DockLayout with multiple items docked to center"/>
+            <mct:DockLayout Padding="40,30,20,10" Margin="10" Spacing="10,15" LastChildFill="True">
+                <Button mct:DockLayout.DockPosition="Top" Text="Top" HeightRequest="60" />
+                <Button mct:DockLayout.DockPosition="Bottom" Text="Bottom" HeightRequest="70" />
+                <Button mct:DockLayout.DockPosition="Left" Text="Left" WidthRequest="80" />
+                <Button mct:DockLayout.DockPosition="Right" Text="Right" WidthRequest="90" />
+                <Button Text="Center1" />
+                <Button Text="Center2" />
+                <Button Text="Center3" />
+            </mct:DockLayout>
+
+            <Label Text="DockLayout with LastChild not filled"/>
+            <mct:DockLayout Padding="40,30,20,10" Margin="10" Spacing="10,15,20,25" LastChildFill="False">
+                <Button mct:DockLayout.DockPosition="Top" Text="Top" HeightRequest="60" />
+                <Button mct:DockLayout.DockPosition="Bottom" Text="Bottom" HeightRequest="70" />
+                <Button mct:DockLayout.DockPosition="Left" Text="Left" WidthRequest="80" />
+                <Button mct:DockLayout.DockPosition="Right" Text="Right" WidthRequest="90" />
+                <Button Text="Center" />
+            </mct:DockLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+
 </pages:BasePage>
