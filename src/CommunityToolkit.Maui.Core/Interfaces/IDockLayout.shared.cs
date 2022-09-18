@@ -1,16 +1,21 @@
-﻿namespace CommunityToolkit.Maui.Core.Interfaces;
+﻿using CommunityToolkit.Maui.Core.Primitives;
+
+namespace CommunityToolkit.Maui.Core.Interfaces;
 
 /// <summary>DockLayout positions its child elements along the edges of the layout container.</summary>
 public interface IDockLayout : ILayout
 {
-	/// <summary>If true, the last child fills the remaining space.</summary>
+	/// <summary>If true, the last child fills the remaining space (default: true).</summary>
 	public bool LastChildFill { get; }
+	
+	/// <summary>Horizontal spacing between docked views.</summary>
+	public double HorizontalSpacing { get; }
 
-	/// <summary>Horizontal (width) and vertical (height) spacing between docked views.</summary>
-	public Thickness Spacing { get; }
+	/// <summary>Vertical spacing between docked views.</summary>
+	public double VerticalSpacing { get; }
 
-	/// <summary>Gets the docking position for a view (or Dock.Top as default value).</summary>
+	/// <summary>Gets the docking position for a view.</summary>
 	/// <param name="view">A view that belongs to the DockLayout.</param>
-	/// <returns>DockPosition that signifies where the item will dock.</returns>
+	/// <returns>DockPosition that signifies where the view will dock.</returns>
 	DockPosition GetDockPosition(IView view);
 }

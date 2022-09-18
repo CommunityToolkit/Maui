@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core.Interfaces;
+using CommunityToolkit.Maui.Core.Primitives;
 using Microsoft.Maui.Layouts;
 
 namespace CommunityToolkit.Maui.Core.Layouts;
@@ -19,7 +20,8 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 	public override Size Measure(double widthConstraint, double heightConstraint)
 	{
 		var padding = dockLayout.Padding;
-		var spacing = dockLayout.Spacing;
+		var horizontalSpacing = dockLayout.HorizontalSpacing;
+		var verticalSpacing = dockLayout.VerticalSpacing;
 
 		var width = padding.HorizontalThickness;
 		var height = padding.VerticalThickness;
@@ -41,14 +43,14 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 			{
 				case DockPosition.Left:
 				case DockPosition.Right:
-					var childWidth = childSize.Width + spacing.HorizontalThickness;
+					var childWidth = childSize.Width + horizontalSpacing;
 					width += childWidth;
 					widthLimit -= childWidth;
 					break;
 
 				case DockPosition.Top:
 				case DockPosition.Bottom:
-					var childHeight = childSize.Height + spacing.VerticalThickness;
+					var childHeight = childSize.Height + verticalSpacing;
 					height += childHeight;
 					heightLimit -= childHeight;
 					break;
@@ -72,7 +74,8 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 	public override Size ArrangeChildren(Rect bounds)
 	{
 		var padding = dockLayout.Padding;
-		var spacing = dockLayout.Spacing;
+		var horizontalSpacing = dockLayout.HorizontalSpacing;
+		var verticalSpacing = dockLayout.VerticalSpacing;
 
 		var x = bounds.Left + padding.Left;
 		var y = bounds.Top + padding.Top;
@@ -110,8 +113,8 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 						childX = x;
 						childY = y;
 						childWidth = width;
-						y += (childHeight + spacing.VerticalThickness);
-						height -= (childHeight + spacing.VerticalThickness);
+						y += (childHeight + verticalSpacing);
+						height -= (childHeight + verticalSpacing);
 						break;
 					}
 				case DockPosition.Left:
@@ -119,8 +122,8 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 						childX = x;
 						childY = y;
 						childHeight = height;
-						x += (childWidth + spacing.HorizontalThickness);
-						width -= (childWidth + spacing.HorizontalThickness);
+						x += (childWidth + horizontalSpacing);
+						width -= (childWidth + horizontalSpacing);
 						break;
 					}
 				case DockPosition.Right:
@@ -128,7 +131,7 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 						childX = x + width - childWidth;
 						childY = y;
 						childHeight = height;
-						width -= (childWidth + spacing.HorizontalThickness);
+						width -= (childWidth + horizontalSpacing);
 						break;
 					}
 				case DockPosition.Bottom:
@@ -136,7 +139,7 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 						childX = x;
 						childY = y + height - childHeight;
 						childWidth = width;
-						height -= (childHeight + spacing.HorizontalThickness);
+						height -= (childHeight + verticalSpacing);
 						break;
 					}
 			}

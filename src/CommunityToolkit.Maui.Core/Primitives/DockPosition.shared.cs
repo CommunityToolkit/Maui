@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Maui.Core.Interfaces;
 
-namespace CommunityToolkit.Maui.Core;
+namespace CommunityToolkit.Maui.Core.Primitives;
 
 /// <summary>Docking position for a view in <see cref="IDockLayout"/>.</summary>
 public enum DockPosition
