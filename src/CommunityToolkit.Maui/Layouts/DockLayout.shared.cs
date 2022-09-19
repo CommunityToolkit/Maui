@@ -12,7 +12,7 @@ public class DockLayout : Layout, IDockLayout
 	public static readonly BindableProperty DockPositionProperty = BindableProperty.Create(nameof(DockPosition), typeof(DockPosition), typeof(DockLayout), DockPosition.None);
 
 	/// <summary>If true, the last child is expanded to fill the remaining space (default: true).</summary>
-	public static readonly BindableProperty IsLastChildFillProperty = BindableProperty.Create(nameof(IsLastChildFill), typeof(bool), typeof(DockLayout), true);
+	public static readonly BindableProperty ShouldExpandLastChildProperty = BindableProperty.Create(nameof(ShouldExpandLastChild), typeof(bool), typeof(DockLayout), true);
 
 	/// <summary>Horizontal spacing between docked views.</summary>
 	public static readonly BindableProperty HorizontalSpacingProperty = BindableProperty.Create(nameof(HorizontalSpacing), typeof(double), typeof(DockLayout), 0.0);
@@ -21,10 +21,10 @@ public class DockLayout : Layout, IDockLayout
 	public static readonly BindableProperty VerticalSpacingProperty = BindableProperty.Create(nameof(VerticalSpacing), typeof(double), typeof(DockLayout), 0.0);
 
 	/// <inheritdoc/>
-	public bool IsLastChildFill
+	public bool ShouldExpandLastChild
 	{
-		get => (bool)GetValue(IsLastChildFillProperty);
-		set => SetValue(IsLastChildFillProperty, value);
+		get => (bool)GetValue(ShouldExpandLastChildProperty);
+		set => SetValue(ShouldExpandLastChildProperty, value);
 	}
 
 	/// <inheritdoc/>
