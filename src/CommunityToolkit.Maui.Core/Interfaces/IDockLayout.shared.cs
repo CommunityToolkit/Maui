@@ -4,7 +4,7 @@
 public interface IDockLayout : ILayout
 {
 	/// <summary>If true, the last child is expanded to fill the remaining space (default: true).</summary>
-	public bool ExpandLastChild { get; }
+	public bool IsLastChildFill { get; }
 	
 	/// <summary>Horizontal spacing between docked views.</summary>
 	public double HorizontalSpacing { get; }

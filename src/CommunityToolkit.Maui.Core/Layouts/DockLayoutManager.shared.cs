@@ -94,7 +94,7 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 			var childHeight = Math.Min(height, child.DesiredSize.Height);
 
 			var isLastChild = (child == dockLayout[^1]);
-			if (isLastChild && dockLayout.ExpandLastChild)
+			if (isLastChild && dockLayout.IsLastChildFill)
 			{
 				child.Arrange(new Rect(x, y, width, height));
 
