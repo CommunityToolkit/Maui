@@ -1,6 +1,6 @@
-﻿using CommunityToolkit.Maui.Core.Interfaces;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Interfaces;
 using CommunityToolkit.Maui.Core.Layouts;
-using CommunityToolkit.Maui.Core.Primitives;
 using Microsoft.Maui.Layouts;
 
 namespace CommunityToolkit.Maui.Layouts;
@@ -11,8 +11,8 @@ public class DockLayout : Layout, IDockLayout
 	/// <summary>Docking position for a view.</summary>
 	public static readonly BindableProperty DockPositionProperty = BindableProperty.Create(nameof(DockPosition), typeof(DockPosition), typeof(DockLayout), DockPosition.None);
 
-	/// <summary>If true, the last child fills the remaining space. Default value is true.</summary>
-	public static readonly BindableProperty LastChildFillProperty = BindableProperty.Create(nameof(LastChildFill), typeof(bool), typeof(DockLayout), true);
+	/// <summary>If true, the last child is expanded to fill the remaining space (default: true).</summary>
+	public static readonly BindableProperty ExpandLastChildProperty = BindableProperty.Create(nameof(ExpandLastChild), typeof(bool), typeof(DockLayout), true);
 
 	/// <summary>Horizontal spacing between docked views.</summary>
 	public static readonly BindableProperty HorizontalSpacingProperty = BindableProperty.Create(nameof(HorizontalSpacing), typeof(double), typeof(DockLayout), 0.0);
@@ -21,10 +21,10 @@ public class DockLayout : Layout, IDockLayout
 	public static readonly BindableProperty VerticalSpacingProperty = BindableProperty.Create(nameof(VerticalSpacing), typeof(double), typeof(DockLayout), 0.0);
 
 	/// <inheritdoc/>
-	public bool LastChildFill
+	public bool ExpandLastChild
 	{
-		get => (bool)GetValue(LastChildFillProperty);
-		set => SetValue(LastChildFillProperty, value);
+		get => (bool)GetValue(ExpandLastChildProperty);
+		set => SetValue(ExpandLastChildProperty, value);
 	}
 
 	/// <inheritdoc/>

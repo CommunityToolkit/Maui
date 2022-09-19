@@ -1,12 +1,10 @@
-﻿using CommunityToolkit.Maui.Core.Primitives;
-
-namespace CommunityToolkit.Maui.Core.Interfaces;
+﻿namespace CommunityToolkit.Maui.Core.Interfaces;
 
 /// <summary>DockLayout positions its child elements along the edges of the layout container.</summary>
 public interface IDockLayout : ILayout
 {
-	/// <summary>If true, the last child fills the remaining space (default: true).</summary>
-	public bool LastChildFill { get; }
+	/// <summary>If true, the last child is expanded to fill the remaining space (default: true).</summary>
+	public bool ExpandLastChild { get; }
 	
 	/// <summary>Horizontal spacing between docked views.</summary>
 	public double HorizontalSpacing { get; }

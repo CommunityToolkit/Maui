@@ -13,7 +13,7 @@
     <ScrollView>
         <VerticalStackLayout>
             <Label Margin="0,10,0,0" Text="Simple DockLayout"/>
-            <mct:DockLayout HeightRequest="400" Padding="10,20,30,40" VerticalSpacing="10" HorizontalSpacing="15" LastChildFill="True">
+            <mct:DockLayout HeightRequest="400" Padding="10,20,30,40" VerticalSpacing="10" HorizontalSpacing="15" ExpandLastChild="True">
                 <Button mct:DockLayout.DockPosition="Top" Text="Top" HeightRequest="50" />
                 <Button mct:DockLayout.DockPosition="Bottom" Text="Bottom" HeightRequest="70" />
                 <Button mct:DockLayout.DockPosition="Left" Text="Left" WidthRequest="80" />
@@ -21,8 +21,8 @@
                 <Button Text="Center" />
             </mct:DockLayout>
 
-            <Label Margin="0,10,0,0" Text="DockLayout with multiple items docked to top"/>
-            <mct:DockLayout HeightRequest="400" Padding="10,20,30,40" VerticalSpacing="10" HorizontalSpacing="15" LastChildFill="True">
+            <Label Margin="0,10,0,0" Text="DockLayout with multiple items docked at the top"/>
+            <mct:DockLayout HeightRequest="400" Padding="10,20,30,40" VerticalSpacing="10" HorizontalSpacing="15" ExpandLastChild="True">
                 <Button mct:DockLayout.DockPosition="Top" Text="Top1" HeightRequest="50" />
                 <Button mct:DockLayout.DockPosition="Top" Text="Top2" HeightRequest="50" />
                 <Button mct:DockLayout.DockPosition="Top" Text="Top3" HeightRequest="50" />
@@ -32,8 +32,8 @@
                 <Button Text="Center" />
             </mct:DockLayout>
 
-            <Label Margin="0,10,0,0" Text="DockLayout with multiple items docked to center"/>
-            <mct:DockLayout HeightRequest="400" Padding="10,20,30,40" VerticalSpacing="10" HorizontalSpacing="15" LastChildFill="True">
+            <Label Margin="0,10,0,0" Text="DockLayout with multiple items at the center"/>
+            <mct:DockLayout HeightRequest="400" Padding="10,20,30,40" VerticalSpacing="10" HorizontalSpacing="15" ExpandLastChild="True">
                 <Button mct:DockLayout.DockPosition="Top" Text="Top" HeightRequest="50" />
                 <Button mct:DockLayout.DockPosition="Bottom" Text="Bottom" HeightRequest="70" />
                 <Button mct:DockLayout.DockPosition="Left" Text="Left" WidthRequest="80" />
@@ -43,8 +43,8 @@
                 <Button Text="Center3" />
             </mct:DockLayout>
 
-            <Label Margin="0,10,0,0" Text="DockLayout with LastChild not filled"/>
-            <mct:DockLayout HeightRequest="400" Padding="10,20,30,40" VerticalSpacing="10" HorizontalSpacing="15" LastChildFill="False">
+            <Label Margin="0,10,0,0" Text="DockLayout with last child not expanded"/>
+            <mct:DockLayout HeightRequest="400" Padding="10,20,30,40" VerticalSpacing="10" HorizontalSpacing="15" ExpandLastChild="False">
                 <Button mct:DockLayout.DockPosition="Top" Text="Top" HeightRequest="50" />
                 <Button mct:DockLayout.DockPosition="Bottom" Text="Bottom" HeightRequest="70" />
                 <Button mct:DockLayout.DockPosition="Left" Text="Left" WidthRequest="80" />

@@ -1,5 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core.Interfaces;
-using CommunityToolkit.Maui.Core.Primitives;
+
 using Microsoft.Maui.Layouts;
 
 namespace CommunityToolkit.Maui.Core.Layouts;
@@ -37,9 +37,9 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 			}
 
 			var childSize = child.Measure(widthLimit, heightLimit);
-			var position = dockLayout.GetDockPosition(child);
+			var dockPosition = dockLayout.GetDockPosition(child);
 
-			switch (position)
+			switch (dockPosition)
 			{
 				case DockPosition.Left:
 				case DockPosition.Right:
@@ -63,7 +63,7 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 					break;
 
 				default:
-					throw new NotSupportedException($"{nameof(DockPosition)} {position}	is not yet supported");
+					throw new NotSupportedException($"{nameof(DockPosition)} {dockPosition} is not supported");
 			}
 		}
 
@@ -94,7 +94,7 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 			var childHeight = Math.Min(height, child.DesiredSize.Height);
 
 			var isLastChild = (child == dockLayout[^1]);
-			if (isLastChild && dockLayout.LastChildFill)
+			if (isLastChild && dockLayout.ExpandLastChild)
 			{
 				child.Arrange(new Rect(x, y, width, height));
 
@@ -104,11 +104,11 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 			double childX;
 			double childY;
 
-			switch (dockLayout.GetDockPosition(child))
+			var dockPosition = dockLayout.GetDockPosition(child);
+			switch (dockPosition)
 			{
 				case DockPosition.Top:
 				case DockPosition.None:
-				default:
 					{
 						childX = x;
 						childY = y;
@@ -142,6 +142,8 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 						height -= (childHeight + verticalSpacing);
 						break;
 					}
+				default:
+					throw new NotSupportedException($"{nameof(DockPosition)} {dockPosition} is not supported");
 			}
 
 			child.Arrange(new Rect(childX, childY, childWidth, childHeight));
