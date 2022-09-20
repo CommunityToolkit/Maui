@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Platform;
+using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -62,9 +63,14 @@ public class StatusBarBehavior : PlatformBehavior<Page>
 	/// <inheritdoc /> 
 	protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
 	{
+		if (string.IsNullOrWhiteSpace(propertyName))
+		{
+			return;
+		}
+
 		base.OnPropertyChanged(propertyName);
 
-		if (propertyName == StatusBarColorProperty.PropertyName)
+		if (propertyName.IsOneOf(StatusBarColorProperty, Page.WidthProperty, Page.HeightProperty))
 		{
 			StatusBar.SetColor(StatusBarColor);
 		}
