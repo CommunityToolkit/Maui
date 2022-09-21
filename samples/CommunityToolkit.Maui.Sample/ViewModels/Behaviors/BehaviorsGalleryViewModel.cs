@@ -55,6 +55,9 @@ public class BehaviorsGalleryViewModel : BaseGalleryViewModel
 
 			SectionModel.Create<IconTintColorBehaviorViewModel>(nameof(IconTintColorBehavior),
 				"Tint an icon with the selected color."),
+
+			SectionModel.Create<StatusBarBehaviorViewModel>(nameof(StatusBarBehavior),
+				"Change the Status Bar color."),
 		})
 	{
 	}
