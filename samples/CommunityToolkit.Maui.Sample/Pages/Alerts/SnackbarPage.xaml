@@ -33,7 +33,11 @@
         
         <Button x:Name="DisplayCustomSnackbarButton"
                 Clicked="DisplayCustomSnackbarButtonClicked"
-                TextColor="{Binding Source={RelativeSource Self}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}}"/>
+                TextColor="{Binding Source={RelativeSource Self}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}}"/> 
+        
+        <Button x:Name="DisplaySnackbarInModalButton"
+                Text="Show snackbar in modal"
+                Clicked="DisplaySnackbarInModalButtonClicked"/>
 
         <Label x:Name="SnackbarShownStatus" />
     </VerticalStackLayout>

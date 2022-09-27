@@ -85,4 +85,36 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 	{
 		SnackbarShownStatus.Text = $"Snackbar shown. Snackbar.IsShown={Snackbar.IsShown}";
 	}
+
+	async void DisplaySnackbarInModalButtonClicked(object? sender, EventArgs e)
+	{
+		var modalPage = new ContentPage();
+		var snackbarButton = new Button()
+		{
+			Text = "Show snackbar in modal"
+		};
+		snackbarButton.Clicked += async (o, args) =>
+		{
+			await Snackbar.Make("Snackbar in modal").Show();
+		};
+		var backButton = new Button()
+		{
+			Text = "Back"
+		};
+		backButton.Clicked += async (o, args) =>
+		{
+			if (Application.Current?.MainPage is not null)
+			{
+				await Application.Current.MainPage.Navigation.PopModalAsync();
+			}
+		};
+		modalPage.Content = new VerticalStackLayout()
+		{
+			Children = { snackbarButton, backButton }
+		};
+		if (Application.Current?.MainPage is not null)
+		{
+			await Application.Current.MainPage.Navigation.PushModalAsync(modalPage);
+		}
+	}
 }

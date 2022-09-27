@@ -61,18 +61,17 @@ public partial class Snackbar
 	{
 		await DismissPlatform(token);
 		token.ThrowIfCancellationRequested();
-
-		var rootView = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.Window?.DecorView.FindViewById(Android.Resource.Id.Content)?.RootView
-			?? throw new NotSupportedException("Unable to retrieve Snackbar parent");
-
-		PlatformSnackbar = Google.Android.Material.Snackbar.Snackbar.Make(rootView, Text, (int)Duration.TotalMilliseconds);
+		
+		var parentView = GetParentView();
+		PlatformSnackbar = Google.Android.Material.Snackbar.Snackbar.Make(parentView, Text, (int)Duration.TotalMilliseconds);
 		var snackbarView = PlatformSnackbar.View;
-
+		
 		if (Anchor is not Page)
 		{
 			PlatformSnackbar.SetAnchorView(Anchor?.Handler?.PlatformView as View);
 		}
 
+		SetupLayout(snackbarView);
 		SetupContainer(snackbarView);
 		SetupMessage(snackbarView);
 		SetupActions(PlatformSnackbar);
@@ -80,6 +79,27 @@ public partial class Snackbar
 		PlatformSnackbar.Show();
 	}
 
+	void SetupLayout(View snackbarView)
+	{
+		var isInModal = Application.Current?.MainPage is not null &&
+		                Application.Current.MainPage.Navigation.ModalStack.Count > 0;
+		if (isInModal && snackbarView.Context?.Resources is not null)
+		{
+			var resourceId = snackbarView.Context.Resources.GetIdentifier(
+				"navigation_bar_height",
+				"dimen",
+				"android"
+			);
+			var navBarHeight = snackbarView.Context.Resources.GetDimensionPixelSize(resourceId);
+			var layoutParameters = (FrameLayout.LayoutParams?)snackbarView.LayoutParameters;
+			if (layoutParameters is not null)
+			{
+				layoutParameters.SetMargins(layoutParameters.LeftMargin,layoutParameters.TopMargin,layoutParameters.RightMargin, layoutParameters.BottomMargin + navBarHeight);
+				snackbarView.LayoutParameters = layoutParameters;
+			}
+		}
+	}
+	
 	void SetupContainer(View snackbarView)
 	{
 		if (snackbarView.Background is GradientDrawable shape)
@@ -135,6 +155,18 @@ public partial class Snackbar
 		});
 
 		platformSnackbar.AddCallback(new SnackbarCallback(this, dismissedTCS = new()));
+	}
+
+	View GetParentView()
+	{
+		var parentView = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.Window?.DecorView.FindViewById(Android.Resource.Id.Content);
+		if (Application.Current?.MainPage is not null && Application.Current.MainPage.Navigation.ModalStack.Count > 0)
+		{
+			parentView = parentView?.RootView;
+		}
+
+		_ = parentView ?? throw new NotSupportedException("Unable to retrieve Snackbar parent");
+		return parentView;
 	}
 
 	class SnackbarCallback : BaseTransientBottomBar.BaseCallback
