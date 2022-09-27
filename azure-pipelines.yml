@@ -52,6 +52,7 @@ jobs:
         inputs:
           packageType: 'sdk'
           version: '$(TOOLKIT_NET_VERSION)'
+          includePreviewVersions: true
 
       - powershell: dotnet workload install maui --from-rollback-file $(DotNetMauiRollbackFile) --source https://api.nuget.org/v3/index.json
         displayName: Install .NET MAUI $(TOOLKIT_NET_VERSION)
@@ -259,6 +260,7 @@ jobs:
         inputs:
           packageType: 'sdk'
           version: '$(TOOLKIT_NET_VERSION)'
+          includePreviewVersions: true
 
       - task: CmdLine@2
         displayName: 'Install .NET MAUI Workload $(TOOLKIT_NET_VERSION)'
