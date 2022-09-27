@@ -87,6 +87,11 @@ public static class PopupExtensions
 			frame = UIScreen.MainScreen.Bounds;
 		}
 
+		if (mauiPopup.PopoverPresentationController is null)
+		{
+			throw new InvalidOperationException("PopoverPresentationController cannot be null");
+		}
+
 		if (popup.Anchor is null)
 		{
 			var originY = popup.VerticalOptions switch

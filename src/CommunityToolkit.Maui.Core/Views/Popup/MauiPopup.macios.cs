@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Handlers;
 
@@ -147,7 +148,12 @@ public class MauiPopup : UIViewController
 		var popOverDelegate = new PopoverDelegate();
 		popOverDelegate.PopoverDismissedEvent += HandlePopoverDelegateDismissed;
 
-		var presentationController = ((UIPopoverPresentationController)PresentationController);
+		var presentationController = ((UIPopoverPresentationController?)PresentationController);
+		if (presentationController is null)
+		{
+			throw new InvalidOperationException("PresentationController cannot be null");
+		}
+
 		presentationController.SourceView = ViewController?.View ?? throw new InvalidOperationException($"{nameof(ViewController.View)} cannot be null.");
 
 		presentationController.Delegate = popOverDelegate;
