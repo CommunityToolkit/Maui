@@ -66,7 +66,7 @@
                 Grid.Column="0"
                 HeightRequest="48"
                 SemanticProperties.Description="Sample AvatarView idea using a polyline stroke shape to override the corder radius to draw a star."
-                StrokeShape="PolyLine 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
+                StrokeShape="Polyline 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
                 Style="{StaticResource Rating}"
                 Text="1"
                 WidthRequest="48" />
@@ -74,7 +74,7 @@
                 Grid.Column="1"
                 HeightRequest="48"
                 SemanticProperties.Description="Sample AvatarView idea using a polyline stroke shape to override the corder radius to draw a star."
-                StrokeShape="PolyLine 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
+                StrokeShape="Polyline 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
                 Style="{StaticResource Rating}"
                 Text="2"
                 WidthRequest="48" />
@@ -82,7 +82,7 @@
                 Grid.Column="2"
                 HeightRequest="48"
                 SemanticProperties.Description="Sample AvatarView idea using a polyline stroke shape to override the corder radius to draw a star."
-                StrokeShape="PolyLine 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
+                StrokeShape="Polyline 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
                 Style="{StaticResource Rating}"
                 Text="3"
                 WidthRequest="48" />
@@ -90,7 +90,7 @@
                 Grid.Column="3"
                 HeightRequest="48"
                 SemanticProperties.Description="Sample AvatarView idea using a polyline stroke shape to override the corder radius to draw a star."
-                StrokeShape="PolyLine 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
+                StrokeShape="Polyline 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
                 Style="{StaticResource Rating}"
                 Text="4"
                 WidthRequest="48" />
@@ -98,7 +98,7 @@
                 Grid.Column="4"
                 HeightRequest="48"
                 SemanticProperties.Description="Sample AvatarView idea using a polyline stroke shape to override the corder radius to draw a star, cliped by parent size."
-                StrokeShape="PolyLine 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
+                StrokeShape="Polyline 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
                 Style="{StaticResource Rating}"
                 Text="5"
                 WidthRequest="48">
@@ -112,7 +112,7 @@
                 HeightRequest="48"
                 ImageSource="avatar_icon.png"
                 SemanticProperties.Description="Sample AvatarView idea using a polyline stroke shape to override the corder radius to draw a star."
-                StrokeShape="PolyLine 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
+                StrokeShape="Polyline 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
                 Style="{StaticResource Rating}"
                 Text="1"
                 WidthRequest="48" />
@@ -122,7 +122,7 @@
                 HeightRequest="48"
                 ImageSource="https://aka.ms/campus.jpg"
                 SemanticProperties.Description="Sample AvatarView idea using a polyline stroke shape to override the corder radius to draw a star."
-                StrokeShape="PolyLine 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
+                StrokeShape="Polyline 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
                 Style="{StaticResource Rating}"
                 Text="2"
                 WidthRequest="48" />
@@ -132,7 +132,7 @@
                 HeightRequest="48"
                 ImageSource="avatar_icon.png"
                 SemanticProperties.Description="Sample AvatarView idea using a polyline stroke shape to override the corder radius to draw a star, cliped by parent size."
-                StrokeShape="PolyLine 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
+                StrokeShape="Polyline 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
                 Style="{StaticResource Rating}"
                 Text="3"
                 WidthRequest="48">
