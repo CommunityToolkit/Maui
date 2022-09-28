@@ -54,7 +54,7 @@ static class AnimationExtensions
 			}
 		}
 
-		class AsyncTicker : Ticker, IDisposable
+		sealed class AsyncTicker : Ticker, IDisposable
 		{
 			CancellationTokenSource? cancellationTokenSource;
 
@@ -79,28 +79,7 @@ static class AnimationExtensions
 
 			public void Dispose()
 			{
-				Dispose(true);
-				GC.SuppressFinalize(this);
-			}
-
-			protected virtual void Dispose(bool disposing)
-			{
-				if (isDisposed)
-				{
-					return;
-				}
-
-				if (disposing)
-				{
-					cancellationTokenSource?.Dispose();
-				}
-
-				isDisposed = true;
-			}
-
-			~AsyncTicker()
-			{
-				Dispose(false);
+				cancellationTokenSource?.Dispose();
 			}
 		}
 
