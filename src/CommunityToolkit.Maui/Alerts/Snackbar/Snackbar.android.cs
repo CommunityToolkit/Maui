@@ -61,11 +61,11 @@ public partial class Snackbar
 	{
 		await DismissPlatform(token);
 		token.ThrowIfCancellationRequested();
-		
+
 		var parentView = GetParentView();
 		PlatformSnackbar = Google.Android.Material.Snackbar.Snackbar.Make(parentView, Text, (int)Duration.TotalMilliseconds);
 		var snackbarView = PlatformSnackbar.View;
-		
+
 		if (Anchor is not Page)
 		{
 			PlatformSnackbar.SetAnchorView(Anchor?.Handler?.PlatformView as View);
@@ -82,7 +82,7 @@ public partial class Snackbar
 	void SetupLayout(View snackbarView)
 	{
 		var isInModal = Application.Current?.MainPage is not null &&
-		                Application.Current.MainPage.Navigation.ModalStack.Count > 0;
+						Application.Current.MainPage.Navigation.ModalStack.Count > 0;
 		if (isInModal && snackbarView.Context?.Resources is not null)
 		{
 			var resourceId = snackbarView.Context.Resources.GetIdentifier(
@@ -94,12 +94,12 @@ public partial class Snackbar
 			var layoutParameters = (FrameLayout.LayoutParams?)snackbarView.LayoutParameters;
 			if (layoutParameters is not null)
 			{
-				layoutParameters.SetMargins(layoutParameters.LeftMargin,layoutParameters.TopMargin,layoutParameters.RightMargin, layoutParameters.BottomMargin + navBarHeight);
+				layoutParameters.SetMargins(layoutParameters.LeftMargin, layoutParameters.TopMargin, layoutParameters.RightMargin, layoutParameters.BottomMargin + navBarHeight);
 				snackbarView.LayoutParameters = layoutParameters;
 			}
 		}
 	}
-	
+
 	void SetupContainer(View snackbarView)
 	{
 		if (snackbarView.Background is GradientDrawable shape)
