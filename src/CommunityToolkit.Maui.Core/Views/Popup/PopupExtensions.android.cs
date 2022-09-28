@@ -80,13 +80,8 @@ public static class PopupExtensions
 	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
 	public static void SetCanBeDismissedByTappingOutsideOfPopup(this Dialog dialog, in IPopup popup)
 	{
-		if (popup.CanBeDismissedByTappingOutsideOfPopup)
-		{
-			return;
-		}
-
-		dialog.SetCancelable(false);
-		dialog.SetCanceledOnTouchOutside(false);
+		dialog.SetCancelable(popup.CanBeDismissedByTappingOutsideOfPopup);
+		dialog.SetCanceledOnTouchOutside(popup.CanBeDismissedByTappingOutsideOfPopup);
 	}
 
 	/// <summary>
