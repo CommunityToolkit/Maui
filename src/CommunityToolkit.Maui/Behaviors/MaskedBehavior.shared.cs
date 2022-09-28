@@ -167,7 +167,7 @@ public class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 			applyMaskSemaphoreSlim.Release();
 		}
 	}
-	
+
 	bool isDisposed;
 
 	/// <inheritdoc/>
