@@ -75,8 +75,6 @@ static class AnimationExtensions
 
 			public override void Stop() => cancellationTokenSource?.Cancel();
 
-			bool isDisposed;
-
 			public void Dispose()
 			{
 				cancellationTokenSource?.Dispose();
