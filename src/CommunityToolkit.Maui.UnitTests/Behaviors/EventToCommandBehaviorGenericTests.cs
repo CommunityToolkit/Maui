@@ -126,11 +126,12 @@ public class EventToCommandBehaviorGenericTests : BaseTest
 	{
 		var vm = new ViewModelCoffee();
 		var convertedValue = default(object);
+		var cappuccino = new Coffee();
 
 		var behavior = new EventToCommandBehavior<Coffee>
 		{
 			EventName = nameof(ListView.ItemTapped),
-			EventArgsConverter = new MockValueConverter((value) => 42),
+			EventArgsConverter = new MockValueConverter((value) => cappuccino),
 			Command = new Command((parameter) => convertedValue = parameter)
 		};
 
@@ -138,7 +139,7 @@ public class EventToCommandBehaviorGenericTests : BaseTest
 
 		TriggerEventToCommandBehavior(behavior, nullArgs);
 
-		Assert.Equal(42, convertedValue);
+		Assert.Equal(cappuccino, convertedValue);
 	}
 
 	static void TriggerEventToCommandBehavior<T>(EventToCommandBehavior<T> eventToCommand, object?[] args)
