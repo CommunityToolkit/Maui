@@ -56,14 +56,14 @@ public class StreamMediaSource : MediaSource, IStreamImageSource
 	async Task<Stream?> IStreamImageSource.GetStreamAsync(CancellationToken cancellationToken)
 #pragma warning restore CS8616 // Nullability of reference types in return type doesn't match implemented member.
 	{
-		if (Stream == null)
+		if (Stream is null)
 		{
 			return null;
 		}
 
 		OnLoadingStarted();
 
-		if (CancellationTokenSource == null)
+		if (CancellationTokenSource is null)
 		{
 			throw new InvalidOperationException($"{nameof(OnLoadingStarted)} not called");
 		}
@@ -92,7 +92,7 @@ public class StreamMediaSource : MediaSource, IStreamImageSource
 
 		var tcs = Interlocked.Exchange<TaskCompletionSource<bool>?>(ref completionSource, null);
 
-		if (tcs != null)
+		if (tcs is not null)
 		{
 			tcs.SetResult(cancelled);
 		}
@@ -121,7 +121,7 @@ public class StreamMediaSource : MediaSource, IStreamImageSource
 		var tcs = new TaskCompletionSource<bool>();
 		var original = Interlocked.CompareExchange(ref completionSource, tcs, null);
 
-		if (original == null)
+		if (original is null)
 		{
 			CancellationTokenSource = null;
 		}

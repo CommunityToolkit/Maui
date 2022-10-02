@@ -55,7 +55,7 @@ public class MauiMediaElement : UIView
 
 			//	asset = AVAsset.FromUrl(NSUrl.FromFilename(filePath));
 			//}
-			else if (uriSource.Uri != null)
+			else if (uriSource.Uri is not null)
 			{
 				var nsUrl = NSUrl.FromString(uriSource.Uri.AbsoluteUri) ??
 							throw new NullReferenceException("NSUrl is null");
@@ -68,7 +68,7 @@ public class MauiMediaElement : UIView
 		}
 		else
 		{
-			if (mediaElement?.Source is FileMediaSource fileSource)
+			if (mediaElement?.Source is FileMediaSource fileSource && fileSource.File is not null)
 			{
 				asset = AVAsset.FromUrl(NSUrl.FromFilename(fileSource.File));
 			}
@@ -79,7 +79,7 @@ public class MauiMediaElement : UIView
 		playerItem = new AVPlayerItem(asset);
 		AddStatusObserver();
 
-		if (playerViewController.Player != null)
+		if (playerViewController.Player is not null)
 		{
 			playerViewController.Player.ReplaceCurrentItemWithPlayerItem(playerItem);
 		}
@@ -109,7 +109,7 @@ public class MauiMediaElement : UIView
 
 	public void UpdateSpeed()
 	{
-		if (playerViewController.Player == null || mediaElement == null)
+		if (playerViewController.Player is null || mediaElement is null)
 		{
 			return;
 		}
@@ -119,7 +119,7 @@ public class MauiMediaElement : UIView
 
 	public void UpdateVolume()
 	{
-		if (playerViewController.Player == null || mediaElement == null)
+		if (playerViewController.Player is null || mediaElement is null)
 		{
 			return;
 		}
@@ -238,7 +238,7 @@ public class MauiMediaElement : UIView
 
 	void ObserveVolume(NSObservedChange e)
 	{
-		if (mediaElement == null || playerViewController?.Player == null)
+		if (mediaElement is null || playerViewController?.Player is null)
 		{
 			return;
 		}
@@ -280,7 +280,7 @@ public class MauiMediaElement : UIView
 	{
 		get
 		{
-			if (playerViewController.Player?.CurrentItem == null)
+			if (playerViewController.Player?.CurrentItem is null)
 			{
 				return TimeSpan.Zero;
 			}
@@ -300,13 +300,13 @@ public class MauiMediaElement : UIView
 	{
 		if (disposing)
 		{
-			if (player != null)
+			if (player is not null)
 			{
 				player.ReplaceCurrentItemWithPlayerItem(null);
 				player.Dispose();
 			}
 
-			if (playerViewController != null)
+			if (playerViewController is not null)
 			{
 				playerViewController.Dispose();
 			}
