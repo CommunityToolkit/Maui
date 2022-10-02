@@ -7,6 +7,8 @@ public partial class MediaElementHandler
 	public static IPropertyMapper<MediaElement, MediaElementHandler> PropertyMapper = new PropertyMapper<MediaElement, MediaElementHandler>(ViewMapper)
 	{
 		[nameof(IMediaElement.Source)] = MapSource,
+		[nameof(IMediaElement.Speed)] = MapSpeed,
+		[nameof(IMediaElement.Volume)] = MapVolume,
 	};
 
 	public static CommandMapper<MediaElement, MediaElementHandler> CommandMapper = new(ViewCommandMapper)

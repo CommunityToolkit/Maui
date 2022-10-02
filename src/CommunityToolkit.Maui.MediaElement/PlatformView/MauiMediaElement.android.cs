@@ -17,5 +17,13 @@ public class MauiMediaElement : CoordinatorLayout
 	public void UpdateSource()
 	{
 	}
+
+	public void UpdateSpeed()
+	{
+	}
+
+	public void UpdateVolume()
+	{
+	}
 }
 

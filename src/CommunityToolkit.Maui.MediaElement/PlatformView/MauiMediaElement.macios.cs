@@ -1,9 +1,7 @@
 ﻿using AVFoundation;
 using AVKit;
-using CoreMedia;
 using Foundation;
 using GameController;
-using Microsoft.Maui.Controls;
 using UIKit;
 
 namespace CommunityToolkit.Maui.MediaElement.PlatformView;
@@ -12,7 +10,7 @@ public class MauiMediaElement : UIView
 {
 	AVPlayer player;
 	AVPlayerItem? playerItem;
-	AVPlayerViewController playerViewController;
+	readonly AVPlayerViewController playerViewController;
 	MediaElement? mediaElement;
 	protected NSObject? playedToEndObserver;
 	protected IDisposable? statusObserver;
@@ -27,7 +25,7 @@ public class MauiMediaElement : UIView
 		
 		player = new AVPlayer();
 		playerViewController.Player = player;
-		playerViewController.View!.Frame = this.Bounds;
+		playerViewController.View!.Frame = Bounds;
 		AddSubview(playerViewController.View);
 	}
 
@@ -109,13 +107,24 @@ public class MauiMediaElement : UIView
 		}
 	}
 
-	void UpdateVolume()
+	public void UpdateSpeed()
 	{
-		// TODO
-		//if (avPlayerViewController.Player != null)
-		//{
-		//	avPlayerViewController.Player.Volume = (float)Element.Volume;
-		//}
+		if (playerViewController.Player == null || mediaElement == null)
+		{
+			return;
+		}
+
+		playerViewController.Player.Rate = (float)mediaElement.Speed;
+	}
+
+	public void UpdateVolume()
+	{
+		if (playerViewController.Player == null || mediaElement == null)
+		{
+			return;
+		}
+
+		playerViewController.Player.Volume = (float)mediaElement.Volume;
 	}
 
 	protected void DisposeObservers(ref IDisposable? disposable)
@@ -132,18 +141,16 @@ public class MauiMediaElement : UIView
 
 	void AddVolumeObserver()
 	{
-		// TODO
-		//DestroyVolumeObserver();
-		//volumeObserver = playerViewController.Player?.AddObserver("volume", NSKeyValueObservingOptions.New,
-		//		ObserveVolume);
+		DestroyVolumeObserver();
+		volumeObserver = playerViewController.Player?.AddObserver("volume", NSKeyValueObservingOptions.New,
+			ObserveVolume);
 	}
 
 	void AddRateObserver()
 	{
-		// TODO
-		//DestroyRateObserver();
-		//rateObserver = playerViewController.Player?.AddObserver("rate", NSKeyValueObservingOptions.New,
-		//		ObserveRate);
+		DestroyRateObserver();
+		rateObserver = playerViewController.Player?.AddObserver("rate", NSKeyValueObservingOptions.New,
+			ObserveRate);
 	}
 
 	void AddStatusObserver()
@@ -178,28 +185,65 @@ public class MauiMediaElement : UIView
 	protected void ObserveStatus(NSObservedChange e)
 	{
 		// TODO
-		//_ = playerViewController.Player?.CurrentItem ?? throw new NullReferenceException();
-		//Controller.Volume = playerViewController.Player.Volume;
+		_ = playerViewController.Player?.CurrentItem ?? throw new NullReferenceException();
+		_ = mediaElement ?? throw new NullReferenceException();
+		mediaElement.Volume = playerViewController.Player.Volume;
 
-		//switch (playerViewController.Player.Status)
+		switch (playerViewController.Player.Status)
+		{
+			case AVPlayerStatus.Failed:
+				// TODO add media failed event
+				//mediaElement.OnMediaFailed();
+				break;
+
+			case AVPlayerStatus.ReadyToPlay:
+				var duration = playerViewController.Player.CurrentItem.Duration;
+				if (duration.IsIndefinite)
+				{
+					mediaElement.Duration = TimeSpan.Zero;
+				}
+				else
+				{
+					mediaElement.Duration = TimeSpan.FromSeconds(duration.Seconds);
+				}
+
+				// TODO add properties and events
+				mediaElement.VideoHeight = (int)playerViewController.Player.CurrentItem.Asset.NaturalSize.Height;
+				mediaElement.VideoWidth = (int)playerViewController.Player.CurrentItem.Asset.NaturalSize.Width;
+				//mediaElement.OnMediaOpened();
+				mediaElement.Position = Position;
+				break;
+		}
+	}
+
+	protected virtual void ObserveRate(NSObservedChange e)
+	{
+		// TODO
+		//if (mediaElement is object)
 		//{
-		//	case AVPlayerStatus.Failed:
-		//		Controller.OnMediaFailed();
-		//		break;
+		//	switch (playerViewController.Player?.Rate)
+		//	{
+		//		case 0.0f:
+		//			mediaElement.CurrentState = MediaElementState.Paused;
+		//			break;
 
-		//	case AVPlayerStatus.ReadyToPlay:
-		//		var duration = playerViewController.Player.CurrentItem.Duration;
-		//		if (duration.IsIndefinite)
-		//			Controller.Duration = TimeSpan.Zero;
-		//		else
-		//			Controller.Duration = TimeSpan.FromSeconds(duration.Seconds);
+		//		default:
+		//			mediaElement.CurrentState = MediaElementState.Playing;
+		//			break;
+		//	}
 
-		//		Controller.VideoHeight = (int)playerViewController.Player.CurrentItem.Asset.NaturalSize.Height;
-		//		Controller.VideoWidth = (int)playerViewController.Player.CurrentItem.Asset.NaturalSize.Width;
-		//		Controller.OnMediaOpened();
-		//		Controller.Position = Position;
-		//		break;
+		//	Controller.Position = Position;
 		//}
+	}
+
+	void ObserveVolume(NSObservedChange e)
+	{
+		if (mediaElement == null || playerViewController?.Player == null)
+		{
+			return;
+		}
+
+		mediaElement.Volume = playerViewController.Player.Volume;
 	}
 
 	void PlayedToEnd(NSNotification notification)
@@ -230,6 +274,26 @@ public class MauiMediaElement : UIView
 		//		Log.Warning("MediaElement", $"Failed to play media to end: {e}");
 		//	}
 		//}
+	}
+
+	TimeSpan Position
+	{
+		get
+		{
+			if (playerViewController.Player?.CurrentItem == null)
+			{
+				return TimeSpan.Zero;
+			}
+
+			var currentTime = playerViewController.Player.CurrentTime;
+
+			if (double.IsNaN(currentTime.Seconds) || currentTime.IsIndefinite)
+			{
+				return TimeSpan.Zero;
+			}
+
+			return TimeSpan.FromSeconds(currentTime.Seconds);
+		}
 	}
 
 	protected override void Dispose(bool disposing)

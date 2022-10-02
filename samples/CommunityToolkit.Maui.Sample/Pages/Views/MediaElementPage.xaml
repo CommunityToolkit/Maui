@@ -8,6 +8,11 @@
              x:DataType="viewModels:MediaElementViewModel"
              x:Class="CommunityToolkit.Maui.Sample.Pages.Views.MediaElementPage"
              Title="MediaElement">
+    
     <mct:MediaElement AutoPlay="True"
-                      Source="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" />
+                      Source="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                      Speed="5.0"
+                      Volume="0.5"/>
+        
+    
 </pages:BasePage>

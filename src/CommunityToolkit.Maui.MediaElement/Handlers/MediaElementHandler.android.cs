@@ -11,5 +11,15 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	{
 		handler?.PlatformView.UpdateSource();
 	}
+
+	public static void MapSpeed(MediaElementHandler handler, MediaElement mediaElement)
+	{
+		handler?.PlatformView.UpdateSpeed();
+	}
+
+	public static void MapVolume(MediaElementHandler handler, MediaElement mediaElement)
+	{
+		handler?.PlatformView.UpdateVolume();
+	}
 }
 

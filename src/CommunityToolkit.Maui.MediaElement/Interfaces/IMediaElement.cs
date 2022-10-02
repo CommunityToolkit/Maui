@@ -22,6 +22,31 @@ public interface IMediaElement
 	TimeSpan Duration { get; }
 
 	/// <summary>
+	/// Gets or sets the speed with which the media should be played.
+	/// </summary>
+	/// <remarks>A value of 1 means normal speed.
+	/// Anything more than 1 is faster speed, anything less than 1 is slower speed.</remarks>
+	double Speed { get; set; }
+
+	/// <summary>
+	/// The height of the loaded media in pixels.
+	/// </summary>
+	/// <remarks>Not reported for non-visual media.</remarks>
+	int VideoHeight { get; }
+
+	/// <summary>
+	/// The width of the loaded media in pixels.
+	/// </summary>
+	/// <remarks>Not reported for non-visual media.</remarks>
+	int VideoWidth { get; }
+
+	/// <summary>
+	/// Gets or sets the volume of the audio for the media.
+	/// </summary>
+	/// <remarks>A value of 1 means full volume, 0 is silence.</remarks>
+	double Volume { get; set; }
+
+	/// <summary>
 	/// Starts playing the loaded media.
 	/// </summary>
 	void Play();
