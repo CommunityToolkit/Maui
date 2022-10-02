@@ -6,6 +6,8 @@ public partial class MediaElement : View, IMediaElement
 	{
 	}
 
+	public bool AutoPlay { get; set; }
+
 	public MediaSource? Source { get; set; }
 
 	public TimeSpan Position { get; set; }

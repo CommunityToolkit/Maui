@@ -6,6 +6,11 @@
 public interface IMediaElement
 {
 	/// <summary>
+	/// Gets or sets whether the media should start playing as soon as it's loaded. Default is <see langword="false"/>.
+	/// </summary>
+	bool AutoPlay { get; set; }
+
+	/// <summary>
 	/// The current position of the playing media.
 	/// </summary>
 	TimeSpan Position { get; set; }

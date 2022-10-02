@@ -95,17 +95,18 @@ public class MauiMediaElement : UIView
 		UpdateVolume();
 
 		// TODO
-		//if (mediaElement.AutoPlay)
-		//{
-		//	Play();
-		//}
-		//else
-		//{
-		//	playerViewController.Player?.Pause();
-		//	playerViewController.Player?.ReplaceCurrentItemWithPlayerItem(null);
-		//	DestroyStatusObserver();
-		//	Controller.CurrentState = MediaElementState.Stopped;
-		//}
+		if (mediaElement?.AutoPlay ?? false)
+		{
+			player.Play();
+		}
+		else
+		{
+			playerViewController.Player?.Pause();
+			playerViewController.Player?.ReplaceCurrentItemWithPlayerItem(null);
+			DestroyStatusObserver();
+			// TODO
+			//Controller.CurrentState = MediaElementState.Stopped;
+		}
 	}
 
 	void UpdateVolume()
