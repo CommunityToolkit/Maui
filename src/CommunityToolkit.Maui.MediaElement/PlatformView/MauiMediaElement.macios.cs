@@ -1,7 +1,7 @@
 ﻿using AVFoundation;
 using AVKit;
+using CoreMedia;
 using Foundation;
-using GameController;
 using UIKit;
 
 namespace CommunityToolkit.Maui.MediaElement.PlatformView;
@@ -27,6 +27,8 @@ public class MauiMediaElement : UIView
 		playerViewController.Player = player;
 		playerViewController.View!.Frame = Bounds;
 		AddSubview(playerViewController.View);
+
+		AddPlayedToEndObserver();
 	}
 
 	public void UpdateSource()
@@ -92,7 +94,6 @@ public class MauiMediaElement : UIView
 
 		UpdateVolume();
 
-		// TODO
 		if (mediaElement?.AutoPlay ?? false)
 		{
 			player.Play();
@@ -102,8 +103,11 @@ public class MauiMediaElement : UIView
 			playerViewController.Player?.Pause();
 			playerViewController.Player?.ReplaceCurrentItemWithPlayerItem(null);
 			DestroyStatusObserver();
-			// TODO
-			//Controller.CurrentState = MediaElementState.Stopped;
+
+			if (mediaElement is not null)
+			{
+				mediaElement.CurrentState = MediaElementState.Stopped;
+			}
 		}
 	}
 
@@ -162,6 +166,7 @@ public class MauiMediaElement : UIView
 	void AddPlayedToEndObserver()
 	{
 		DestroyPlayedToEndObserver();
+
 		playedToEndObserver =
 			NSNotificationCenter.DefaultCenter.AddObserver(AVPlayerItem.DidPlayToEndTimeNotification, PlayedToEnd);
 	}
@@ -184,7 +189,6 @@ public class MauiMediaElement : UIView
 
 	protected void ObserveStatus(NSObservedChange e)
 	{
-		// TODO
 		_ = playerViewController.Player?.CurrentItem ?? throw new NullReferenceException();
 		_ = mediaElement ?? throw new NullReferenceException();
 		mediaElement.Volume = playerViewController.Player.Volume;
@@ -192,8 +196,7 @@ public class MauiMediaElement : UIView
 		switch (playerViewController.Player.Status)
 		{
 			case AVPlayerStatus.Failed:
-				// TODO add media failed event
-				//mediaElement.OnMediaFailed();
+				mediaElement.OnMediaFailed();
 				break;
 
 			case AVPlayerStatus.ReadyToPlay:
@@ -207,10 +210,9 @@ public class MauiMediaElement : UIView
 					mediaElement.Duration = TimeSpan.FromSeconds(duration.Seconds);
 				}
 
-				// TODO add properties and events
 				mediaElement.VideoHeight = (int)playerViewController.Player.CurrentItem.Asset.NaturalSize.Height;
 				mediaElement.VideoWidth = (int)playerViewController.Player.CurrentItem.Asset.NaturalSize.Width;
-				//mediaElement.OnMediaOpened();
+				mediaElement.OnMediaOpened();
 				mediaElement.Position = Position;
 				break;
 		}
@@ -218,22 +220,21 @@ public class MauiMediaElement : UIView
 
 	protected virtual void ObserveRate(NSObservedChange e)
 	{
-		// TODO
-		//if (mediaElement is object)
-		//{
-		//	switch (playerViewController.Player?.Rate)
-		//	{
-		//		case 0.0f:
-		//			mediaElement.CurrentState = MediaElementState.Paused;
-		//			break;
+		if (mediaElement is object)
+		{
+			switch (playerViewController.Player?.Rate)
+			{
+				case 0.0f:
+					mediaElement.CurrentState = MediaElementState.Paused;
+					break;
 
-		//		default:
-		//			mediaElement.CurrentState = MediaElementState.Playing;
-		//			break;
-		//	}
+				default:
+					mediaElement.CurrentState = MediaElementState.Playing;
+					break;
+			}
 
-		//	Controller.Position = Position;
-		//}
+			mediaElement.Position = Position;
+		}
 	}
 
 	void ObserveVolume(NSObservedChange e)
@@ -248,32 +249,33 @@ public class MauiMediaElement : UIView
 
 	void PlayedToEnd(NSNotification notification)
 	{
-		// TODO
-		//if (mediaElement == null || notification.Object != playerViewController.Player?.CurrentItem)
-		//{
-		//	return;
-		//}
+		if (mediaElement is null || notification.Object != playerViewController.Player?.CurrentItem)
+		{
+			return;
+		}
 
-		//if (mediaElement.IsLooping)
-		//{
-		//	playerViewController.Player?.Seek(CMTime.Zero);
-		//	Controller.Position = Position;
-		//	playerViewController.Player?.Play();
-		//}
-		//else
-		//{
-		//	SetKeepScreenOn(false);
-		//	Controller.Position = Position;
+		if (mediaElement.IsLooping)
+		{
+			playerViewController.Player?.Seek(CMTime.Zero);
+			mediaElement.Position = Position;
+			playerViewController.Player?.Play();
+		}
+		else
+		{
+			// TODO Implemeent KeepScreenOn
+			//SetKeepScreenOn(false);
+			mediaElement.Position = Position;
 
-		//	try
-		//	{
-		//		Device.BeginInvokeOnMainThread(Controller.OnMediaEnded);
-		//	}
-		//	catch (Exception e)
-		//	{
-		//		Log.Warning("MediaElement", $"Failed to play media to end: {e}");
-		//	}
-		//}
+			try
+			{
+				Dispatcher.GetForCurrentThread()?.Dispatch(mediaElement.OnMediaEnded);
+			}
+			catch (Exception e)
+			{
+				// TODO inject ILogger everywhere and report there?
+				//Log.Warning("MediaElement", $"Failed to play media to end: {e}");
+			}
+		}
 	}
 
 	TimeSpan Position

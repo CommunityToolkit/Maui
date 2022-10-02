@@ -2,17 +2,59 @@
 <pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-             xmlns:mct="clr-namespace:CommunityToolkit.Maui.MediaElement;assembly=CommunityToolkit.Maui.MediaElement"
+             xmlns:media="clr-namespace:CommunityToolkit.Maui.MediaElement;assembly=CommunityToolkit.Maui.MediaElement"
              xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
              x:TypeArguments="viewModels:MediaElementViewModel"
              x:DataType="viewModels:MediaElementViewModel"
              x:Class="CommunityToolkit.Maui.Sample.Pages.Views.MediaElementPage"
              Title="MediaElement">
-    
-    <mct:MediaElement AutoPlay="True"
-                      Source="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-                      Speed="5.0"
-                      Volume="0.5"/>
-        
-    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <media:MediaElement
+            x:Name="mediaElement"
+            WidthRequest="500"
+            HeightRequest="500"
+            AutoPlay="True"
+            Source="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+            MediaEnded="OnMediaEnded"
+            MediaFailed="OnMediaFailed"
+            MediaOpened="OnMediaOpened" />
+            <!-- TODO -->
+            <!--SeekCompleted="OnSeekCompleted"
+            ShowsPlaybackControls="True"-->
+
+        <!-- TODO -->
+        <!--<Slider
+            Grid.Row="1"
+            BindingContext="{x:Reference mediaElement}"
+            Maximum="{Binding Duration, Converter={StaticResource TimeSpanConverter}}"
+            Value="{Binding Position, Converter={StaticResource TimeSpanConverter}}" />-->
+        <Button
+            Grid.Row="2"
+            Clicked="OnResetClicked"
+            Text="Reset Source (Set Null)" />
+        <Label Grid.Row="3" Margin="20,10">
+            <Label.FormattedText>
+                <FormattedString>
+                    <Span Text="Speed:" />
+                    <Span Text="{Binding Source={x:Reference mediaElement}, Path=Speed}" />
+                </FormattedString>
+            </Label.FormattedText>
+        </Label>
+        <Slider
+            x:Name="MainSlider"
+            Grid.Row="4"
+            Margin="20"
+            DragCompleted="Slider_DragCompleted"
+            Maximum="2"
+            Minimum=".5"
+            ThumbColor="Blue"
+            Value="{Binding Source={x:Reference mediaElement}, Path=Speed}" />
+    </Grid>
 </pages:BasePage>

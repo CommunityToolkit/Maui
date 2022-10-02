@@ -5,16 +5,30 @@ namespace CommunityToolkit.Maui.MediaElement;
 
 public partial class MediaElement : View, IMediaElement
 {
+	bool isSeeking = false;
+
 	public static readonly BindableProperty AutoPlayProperty =
 		BindableProperty.Create(nameof(AutoPlay), typeof(bool), typeof(MediaElement), false,
 			propertyChanged: OnAutoPlayPropertyChanged);
+
+	public static readonly BindableProperty CurrentStateProperty =
+		  BindableProperty.Create(nameof(CurrentState), typeof(MediaElementState), typeof(MediaElement), MediaElementState.Closed, propertyChanged: CurrentStateChanged);
+
+	public static readonly BindableProperty DurationProperty =
+		  BindableProperty.Create(nameof(Duration), typeof(TimeSpan), typeof(MediaElement), null);
+
+	public static readonly BindableProperty IsLoopingProperty =
+		  BindableProperty.Create(nameof(IsLooping), typeof(bool), typeof(MediaElement), false);
+
+	public static readonly BindableProperty PositionProperty =
+		  BindableProperty.Create(nameof(Position), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero, propertyChanged: OnPositionPropertyChanged);
 
 	public static readonly BindableProperty SourceProperty =
 		BindableProperty.Create(nameof(Source), typeof(MediaSource), typeof(MediaElement), null,
 			propertyChanged: OnSourcePropertyChanged);
 
 	public static readonly BindableProperty SpeedProperty =
-		  BindableProperty.Create(nameof(Speed), typeof(double), typeof(MediaElement), 1.0, BindingMode.OneWay);
+		  BindableProperty.Create(nameof(Speed), typeof(double), typeof(MediaElement), 1.0);
 
 	public static readonly BindableProperty VideoHeightProperty =
 		BindableProperty.Create(nameof(VideoHeight), typeof(int), typeof(MediaElement));
@@ -31,7 +45,19 @@ public partial class MediaElement : View, IMediaElement
 		set { SetValue(AutoPlayProperty, value); }
 	}
 
+	public MediaElementState CurrentState
+	{
+		get => (MediaElementState)GetValue(CurrentStateProperty);
+		internal set => SetValue(CurrentStateProperty, value);
+	}
+
 	public TimeSpan Duration { get; internal set; }
+
+	public bool IsLooping
+	{
+		get => (bool)GetValue(IsLoopingProperty);
+		set => SetValue(IsLoopingProperty, value);
+	}
 
 	public TimeSpan Position { get; set; }
 
@@ -72,14 +98,76 @@ public partial class MediaElement : View, IMediaElement
 
 	public void Stop() { }
 
+	public event EventHandler? MediaEnded;
+
+	public event EventHandler? MediaFailed;
+
+	public event EventHandler? MediaOpened;
+
+	internal void OnMediaEnded()
+	{
+		SetValue(CurrentStateProperty, MediaElementState.Stopped);
+		MediaEnded?.Invoke(this, EventArgs.Empty);
+	}
+
+	internal void OnMediaFailed() => MediaFailed?.Invoke(this, EventArgs.Empty);
+
+	internal void OnMediaOpened() => MediaOpened?.Invoke(this, EventArgs.Empty);
+
+	internal event EventHandler<SeekRequested>? SeekRequested;
+
+	static void CurrentStateChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var element = (MediaElement)bindable;
+
+		switch ((MediaElementState)newValue)
+		{
+			// TODO
+			//case MediaElementState.Playing:
+			//	// Start a timer to poll the platform control position while playing
+			//	Device.StartTimer(TimeSpan.FromMilliseconds(200), () =>
+			//	{
+			//		if (!element.isSeeking)
+			//		{
+			//			Device.BeginInvokeOnMainThread(() =>
+			//			{
+			//				element.PositionRequested?.Invoke(element, EventArgs.Empty);
+			//			});
+			//		}
+
+			//		return element.CurrentState == MediaElementState.Playing;
+			//	});
+			//	break;
+		}
+	}
+
 	static void OnAutoPlayPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		((MediaElement)bindable).AutoPlay = (bool)newValue;
 	}
 
+	static void OnPositionPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var element = (MediaElement)bindable;
+
+		var oldval = (TimeSpan)oldValue;
+		var newval = (TimeSpan)newValue;
+
+		if (Math.Abs(newval.Subtract(oldval).TotalMilliseconds) > 300 && !element.isSeeking)
+		{
+			element.RequestSeek(newval);
+		}
+	}
+
 	static void OnSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		((MediaElement)bindable).Source = (MediaSource?)newValue;
+	}
+
+	void RequestSeek(TimeSpan newPosition)
+	{
+		isSeeking = true;
+		SeekRequested?.Invoke(this, new SeekRequested(newPosition));
 	}
 
 	static bool ValidateVolume(BindableObject o, object newValue)
@@ -88,8 +176,4 @@ public partial class MediaElement : View, IMediaElement
 
 		return volume >= 0.0 && volume <= 1.0;
 	}
-
-#if (NET6_0 && !ANDROID && !IOS && !MACCATALYST && !WINDOWS)
-	
-#endif
 }

@@ -50,4 +50,10 @@
     <Compile Remove="**\net\**\*.cs" />
     <None Include="**\net\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="EventArgs\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="EventArgs\" />
+  </ItemGroup>
 </Project>
