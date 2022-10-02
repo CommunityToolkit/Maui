@@ -7,7 +7,6 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// </summary>
 public partial class TouchBehavior : PlatformBehavior<VisualElement>
 {
-
 	public const string UnpressedVisualState = "Unpressed";
 
 	public const string PressedVisualState = "Pressed";
