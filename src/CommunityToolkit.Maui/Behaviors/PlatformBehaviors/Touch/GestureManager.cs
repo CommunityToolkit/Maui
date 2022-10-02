@@ -205,7 +205,7 @@ sealed class GestureManager : IDisposable
 			return;
 		}
 
-		if (sender.LongPressCommand == null || sender.InteractionStatus == TouchInteractionStatus.Completed)
+		if (sender.LongPressCommand is null || sender.InteractionStatus == TouchInteractionStatus.Completed)
 		{
 			return;
 		}
@@ -347,9 +347,9 @@ sealed class GestureManager : IDisposable
 		var pressedBackgroundImageSource = sender.PressedBackgroundImageSource;
 		var hoveredBackgroundImageSource = sender.HoveredBackgroundImageSource;
 
-		if (normalBackgroundImageSource == null &&
-			pressedBackgroundImageSource == null &&
-			hoveredBackgroundImageSource == null)
+		if (normalBackgroundImageSource is null &&
+			pressedBackgroundImageSource is null &&
+			hoveredBackgroundImageSource is null)
 		{
 			return;
 		}
@@ -510,7 +510,7 @@ sealed class GestureManager : IDisposable
 		}
 
 		var element = sender.Element;
-		if (element == null)
+		if (element is null)
 		{
 			return Task.FromResult(false);
 		}
