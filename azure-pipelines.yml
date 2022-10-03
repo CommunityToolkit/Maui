@@ -9,6 +9,7 @@ variables:
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
   PathToCommunityToolkitCoreCsproj: 'src/CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj'
+  PathToCommunityToolkitMediaElementCsproj: 'src/CommunityToolkit.Maui.MediaElement/CommunityToolkit.Maui.MediaElement.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
   PathToCommunityToolkitAnalyzersCsproj: 'src/CommunityToolkit.Maui.Analyzers/CommunityToolkit.Maui.Analyzers.csproj'
@@ -172,6 +173,13 @@ jobs:
         displayName: 'Pack CommunityToolkit.Maui NuGet'
         inputs:
           script: 'dotnet pack $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
+
+      - task: VSBuild@1
+        displayName: 'Build and Pack CommunityToolkit.Maui.MediaElement'
+        inputs:
+          solution: '$(PathToCommunityToolkitMediaElementCsproj)'
+          configuration: 'Release'
+          msbuildArgs: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'
 
       # check vulnerabilities
       - powershell: |
