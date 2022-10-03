@@ -1,6 +1,8 @@
-﻿namespace CommunityToolkit.Maui.MediaElement.PlatformView;
+﻿using Grid = Microsoft.UI.Xaml.Controls.Grid;
 
-public class MauiMediaElement : FrameworkElement
+namespace CommunityToolkit.Maui.MediaElement.PlatformView;
+
+public class MauiMediaElement : Grid
 {
 	public MauiMediaElement(MediaElement mediaElement)
 	{
