@@ -78,10 +78,9 @@
     <Compile Remove="**\net\**\*.cs" />
     <None Include="**\net\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
+
   <ItemGroup>
-    <None Remove="EventArgs\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="EventArgs\" />
+    <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
+    <None Include="ReadMe.txt" pack="true" PackagePath="." />
   </ItemGroup>
 </Project>
