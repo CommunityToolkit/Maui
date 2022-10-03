@@ -20,7 +20,7 @@
     <PackageReference Include="xunit" Version="2.4.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5" PrivateAssets="All" />
     <PackageReference Include="coverlet.collector" Version="3.1.2" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.CodeAnalysis" Version="4.3.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="4.3.1" />
   </ItemGroup>
 
   <ItemGroup>
