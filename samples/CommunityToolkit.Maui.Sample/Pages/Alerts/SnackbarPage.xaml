@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
@@ -20,13 +20,7 @@
                 LineBreakMode = "WordWrap" />
         
         <Label Text="Windows uses toast notifications to display snackbar. Make sure you switched off Focus Assist."
-               IsVisible="false">
-            <Label.IsVisible>
-                <OnPlatform x:TypeArguments="x:Boolean">
-                    <On Platform="UWP" Value="true" />
-                </OnPlatform>
-            </Label.IsVisible>
-        </Label>
+               IsVisible="{OnPlatform Default='false', WinUI='true'}"/>
         
         <Button Clicked="DisplayDefaultSnackbarButtonClicked"
                 Text="Display Default Snackbar"/>
