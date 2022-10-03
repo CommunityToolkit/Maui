@@ -25,7 +25,7 @@
 					<Setter Property="VerticalTextAlignment" Value="Center" />
 				</Style>
 				<Style x:Key="PopupLayout" TargetType="StackLayout">
-					<Setter Property="Padding" Value="{OnPlatform Android=20, UWP=20, iOS=5, MacCatalyst=5}" />
+					<Setter Property="Padding" Value="{OnPlatform Android=20, WinUI=20, iOS=5, MacCatalyst=5}" />
 				</Style>
 				<Style x:Key="CancelButton" TargetType="Button">
 					<Setter Property="Background" Value="#FFF" />
