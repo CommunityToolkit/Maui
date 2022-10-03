@@ -23,7 +23,14 @@ public class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 
 	readonly SemaphoreSlim applyMaskSemaphoreSlim = new(1, 1);
 
+	bool isDisposed;
+
 	IReadOnlyDictionary<int, char>? maskPositions;
+
+	/// <summary>
+	/// Finalizer
+	/// </summary>
+	~MaskedBehavior() => Dispose(false);
 
 	/// <summary>
 	/// The mask that the input value needs to match. This is a bindable property.
@@ -45,6 +52,29 @@ public class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 	{
 		get => (char)GetValue(UnmaskedCharacterProperty);
 		set => SetValue(UnmaskedCharacterProperty, value);
+	}
+
+	/// <inheritdoc/>
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	/// <inheritdoc/>
+	protected virtual void Dispose(bool disposing)
+	{
+		if (isDisposed)
+		{
+			return;
+		}
+
+		if (disposing)
+		{
+			applyMaskSemaphoreSlim.Dispose();
+		}
+
+		isDisposed = true;
 	}
 
 	/// <inheritdoc />
@@ -166,38 +196,5 @@ public class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 		{
 			applyMaskSemaphoreSlim.Release();
 		}
-	}
-
-	bool isDisposed;
-
-	/// <inheritdoc/>
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
-	}
-
-	/// <inheritdoc/>
-	protected virtual void Dispose(bool disposing)
-	{
-		if (isDisposed)
-		{
-			return;
-		}
-
-		if (disposing)
-		{
-			applyMaskSemaphoreSlim.Dispose();
-		}
-
-		isDisposed = true;
-	}
-
-	/// <summary>
-	/// Finalizer
-	/// </summary>
-	~MaskedBehavior()
-	{
-		Dispose(false);
 	}
 }
