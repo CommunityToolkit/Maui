@@ -10,7 +10,7 @@
     x:DataType="vm:GravatarImageSourceViewModel"
     x:TypeArguments="vm:GravatarImageSourceViewModel">
     <ScrollView>
-        <VerticalStackLayout Spacing="12">
+        <VerticalStackLayout Spacing="12" Padding="0,12,0,0" >
             <VerticalStackLayout.Resources>
                 <ResourceDictionary>
                     <Style x:Key="Description" TargetType="Label">

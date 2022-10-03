@@ -8,6 +8,6 @@ public partial class GravatarImageSourcePage : BasePage<GravatarImageSourceViewM
 	{
 		InitializeComponent();
 
-		Padding = new Thickness(Padding.Left, Padding.Top, Padding.Right, 0);
+		Padding = new Thickness(Padding.Left, 0, Padding.Right, 0);
 	}
 }
