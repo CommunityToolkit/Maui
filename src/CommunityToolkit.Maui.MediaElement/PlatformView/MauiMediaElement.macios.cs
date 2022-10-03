@@ -3,7 +3,6 @@ using AVKit;
 using CoreFoundation;
 using CoreMedia;
 using Foundation;
-using GameController;
 using UIKit;
 
 namespace CommunityToolkit.Maui.MediaElement.PlatformView;
@@ -291,7 +290,7 @@ public class MauiMediaElement : UIView
 
 			try
 			{
-				Dispatcher.GetForCurrentThread()?.Dispatch(mediaElement.OnMediaEnded);
+				mediaElement.Dispatcher.Dispatch(mediaElement.OnMediaEnded);
 			}
 			catch (Exception e)
 			{
