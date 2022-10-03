@@ -2,7 +2,9 @@
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
+using CommunityToolkit.Mvvm.Input;
 using Font = Microsoft.Maui.Font;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Alerts;
@@ -88,33 +90,30 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 
 	async void DisplaySnackbarInModalButtonClicked(object? sender, EventArgs e)
 	{
-		var modalPage = new ContentPage();
-		var snackbarButton = new Button()
-		{
-			Text = "Show snackbar in modal"
-		};
-		snackbarButton.Clicked += async (o, args) =>
-		{
-			await Snackbar.Make("Snackbar in modal").Show();
-		};
-		var backButton = new Button()
-		{
-			Text = "Back"
-		};
-		backButton.Clicked += async (o, args) =>
-		{
-			if (Application.Current?.MainPage is not null)
-			{
-				await Application.Current.MainPage.Navigation.PopModalAsync();
-			}
-		};
-		modalPage.Content = new VerticalStackLayout()
-		{
-			Children = { snackbarButton, backButton }
-		};
 		if (Application.Current?.MainPage is not null)
 		{
-			await Application.Current.MainPage.Navigation.PushModalAsync(modalPage);
+			await Application.Current.MainPage.Navigation.PushModalAsync(new ContentPage
+			{
+				Content = new VerticalStackLayout
+				{
+					Spacing = 12,
+
+					Children =
+					{
+						new Button { Command = new AsyncRelayCommand(() => Snackbar.Make("Snackbar in a Modal Page").Show()) }
+							.Top().CenterHorizontal()
+							.Text("Display Snackbar"),
+
+						new Label()
+							.Center().TextCenter()
+							.Text("This is a Modal Page"),
+
+						new Button { Command = new AsyncRelayCommand(Application.Current.MainPage.Navigation.PopModalAsync) }
+							.Bottom().CenterHorizontal()
+							.Text("Back to Snackbar Page")
+					}
+				}.Center()
+			}.Padding(12));
 		}
 	}
 }
