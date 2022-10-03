@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Maui.MediaElement.Converters;
-using Microsoft.Maui.Controls.Internals;
+﻿using Microsoft.Maui.Controls.Internals;
 
 namespace CommunityToolkit.Maui.MediaElement;
 

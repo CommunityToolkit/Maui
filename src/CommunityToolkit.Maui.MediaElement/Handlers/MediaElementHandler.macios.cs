@@ -7,8 +7,15 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 {
 	protected override MauiMediaElement CreatePlatformView() => new(VirtualView);
 
+	protected override void ConnectHandler(MauiMediaElement platformView)
+	{
+		VirtualView.SeekRequested += platformView.MediaElementSeekRequested;
+		base.ConnectHandler(platformView);
+	}
+
 	protected override void DisconnectHandler(MauiMediaElement platformView)
 	{
+		VirtualView.SeekRequested -= platformView.MediaElementSeekRequested;
 		platformView.Dispose();
 		base.DisconnectHandler(platformView);
 	}

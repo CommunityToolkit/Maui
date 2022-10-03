@@ -3,14 +3,22 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
              xmlns:media="clr-namespace:CommunityToolkit.Maui.MediaElement;assembly=CommunityToolkit.Maui.MediaElement"
+             xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
              xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+             xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Converters"
              x:TypeArguments="viewModels:MediaElementViewModel"
              x:DataType="viewModels:MediaElementViewModel"
              x:Class="CommunityToolkit.Maui.Sample.Pages.Views.MediaElementPage"
              Title="MediaElement">
+    <pages:BasePage.Resources>
+        <mct:TimeSpanToSecondsConverter x:Key="TimeSpanConverter" />
+        <converters:SecondsToStringConverter x:Key="SecondsToStringConverter" />
+    </pages:BasePage.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -18,28 +26,46 @@
         </Grid.RowDefinitions>
         <media:MediaElement
             x:Name="mediaElement"
-            WidthRequest="500"
-            HeightRequest="500"
             AutoPlay="True"
             Source="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
             MediaEnded="OnMediaEnded"
             MediaFailed="OnMediaFailed"
-            MediaOpened="OnMediaOpened" />
-            <!-- TODO -->
-            <!--SeekCompleted="OnSeekCompleted"
+            MediaOpened="OnMediaOpened"
+            SeekCompleted="OnSeekCompleted" />
+            
+            <!-- TODO
             ShowsPlaybackControls="True"-->
+        <HorizontalStackLayout Grid.Row="1">
+            <Label HorizontalOptions="Center">
+                <Label.Text>
+                    <MultiBinding StringFormat="{}Position: {0}/{1}">
+                        <Binding Path="Position" Source="{x:Reference mediaElement}" Converter="{StaticResource SecondsToStringConverter}" />
+                        <Binding Path="Duration" Source="{x:Reference mediaElement}" Converter="{StaticResource SecondsToStringConverter}" />
+                    </MultiBinding>
+                </Label.Text>
+            </Label>
 
-        <!-- TODO -->
-        <!--<Slider
-            Grid.Row="1"
-            BindingContext="{x:Reference mediaElement}"
-            Maximum="{Binding Duration, Converter={StaticResource TimeSpanConverter}}"
-            Value="{Binding Position, Converter={StaticResource TimeSpanConverter}}" />-->
-        <Button
+        </HorizontalStackLayout>
+        <Slider
             Grid.Row="2"
-            Clicked="OnResetClicked"
-            Text="Reset Source (Set Null)" />
-        <Label Grid.Row="3" Margin="20,10">
+            Maximum="{Binding Duration, Source={x:Reference mediaElement}, Converter={StaticResource TimeSpanConverter}}"
+            Value="{Binding Position, Source={x:Reference mediaElement}, Converter={StaticResource TimeSpanConverter}}" />
+
+        <HorizontalStackLayout Grid.Row="3" Spacing="5">
+            <Button
+                Clicked="OnMp4OnlineSourceClicked"
+                Text="Load MP4 from online" />
+
+            <Button
+                Clicked="OnHlsSourceClicked"
+                Text="Load HLS from online" />
+
+            <Button    
+                Clicked="OnResetClicked"
+                Text="Reset Source (Set Null)" />
+        </HorizontalStackLayout>
+        
+        <Label Grid.Row="4" Margin="20,10">
             <Label.FormattedText>
                 <FormattedString>
                     <Span Text="Speed:" />
@@ -49,11 +75,11 @@
         </Label>
         <Slider
             x:Name="MainSlider"
-            Grid.Row="4"
+            Grid.Row="5"
             Margin="20"
             DragCompleted="Slider_DragCompleted"
-            Maximum="2"
-            Minimum=".5"
+            Maximum="5"
+            Minimum="0"
             ThumbColor="Blue"
             Value="{Binding Source={x:Reference mediaElement}, Path=Speed}" />
     </Grid>

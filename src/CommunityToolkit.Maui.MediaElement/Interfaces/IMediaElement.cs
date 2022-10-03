@@ -52,6 +52,11 @@ public interface IMediaElement
 	TimeSpan Position { get; set; }
 
 	/// <summary>
+	/// Fired when a seek action has been completed.
+	/// </summary>
+	event EventHandler? SeekCompleted;
+
+	/// <summary>
 	/// The source of the media to play.
 	/// </summary>
 	MediaSource? Source { get; set; }

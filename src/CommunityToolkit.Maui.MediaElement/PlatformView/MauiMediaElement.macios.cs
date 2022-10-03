@@ -1,7 +1,9 @@
 ﻿using AVFoundation;
 using AVKit;
+using CoreFoundation;
 using CoreMedia;
 using Foundation;
+using GameController;
 using UIKit;
 
 namespace CommunityToolkit.Maui.MediaElement.PlatformView;
@@ -16,6 +18,7 @@ public class MauiMediaElement : UIView
 	protected IDisposable? statusObserver;
 	protected IDisposable? rateObserver;
 	protected IDisposable? volumeObserver;
+	protected IDisposable? positionObserver;
 
 	public MauiMediaElement(MediaElement mediaElement)
 	{
@@ -33,76 +36,82 @@ public class MauiMediaElement : UIView
 
 	public void UpdateSource()
 	{
-		AVAsset? asset = null;
-
-		if (mediaElement?.Source is UriMediaSource uriSource)
+		if (mediaElement?.Source is not null)
 		{
-			if (uriSource.Uri?.Scheme is "ms-appx")
+			AVAsset? asset = null;
+
+			if (mediaElement?.Source is UriMediaSource uriSource)
 			{
-				if (uriSource.Uri.LocalPath.Length <= 1)
+				if (uriSource.Uri?.Scheme is "ms-appx")
 				{
-					return;
+					if (uriSource.Uri.LocalPath.Length <= 1)
+					{
+						return;
+					}
+
+					// used for a file embedded in the application package
+					asset = AVAsset.FromUrl(NSUrl.FromFilename(uriSource.Uri.LocalPath.Substring(1)));
 				}
+				//TODO
+				//else if (uriSource.Uri?.Scheme == "ms-appdata")
+				//{
+				//	var filePath = ResolveMsAppDataUri(uriSource.Uri);
 
-				// used for a file embedded in the application package
-				asset = AVAsset.FromUrl(NSUrl.FromFilename(uriSource.Uri.LocalPath.Substring(1)));
-			}
-			//TODO
-			//else if (uriSource.Uri?.Scheme == "ms-appdata")
-			//{
-			//	var filePath = ResolveMsAppDataUri(uriSource.Uri);
+				//	if (string.IsNullOrEmpty(filePath))
+				//		throw new ArgumentException("Invalid Uri", "Source");
 
-			//	if (string.IsNullOrEmpty(filePath))
-			//		throw new ArgumentException("Invalid Uri", "Source");
-
-			//	asset = AVAsset.FromUrl(NSUrl.FromFilename(filePath));
-			//}
-			else if (uriSource.Uri is not null)
-			{
-				var nsUrl = NSUrl.FromString(uriSource.Uri.AbsoluteUri) ??
-							throw new NullReferenceException("NSUrl is null");
-				asset = AVUrlAsset.Create(nsUrl);
+				//	asset = AVAsset.FromUrl(NSUrl.FromFilename(filePath));
+				//}
+				else if (uriSource.Uri is not null)
+				{
+					var nsUrl = NSUrl.FromString(uriSource.Uri.AbsoluteUri) ??
+								throw new NullReferenceException("NSUrl is null");
+					asset = AVUrlAsset.Create(nsUrl);
+				}
+				else
+				{
+					throw new InvalidOperationException($"{nameof(uriSource.Uri)} is not initialized");
+				}
 			}
 			else
 			{
-				throw new InvalidOperationException($"{nameof(uriSource.Uri)} is not initialized");
+				if (mediaElement?.Source is FileMediaSource fileSource && fileSource.File is not null)
+				{
+					asset = AVAsset.FromUrl(NSUrl.FromFilename(fileSource.File));
+				}
 			}
-		}
-		else
-		{
-			if (mediaElement?.Source is FileMediaSource fileSource && fileSource.File is not null)
+
+			_ = asset ?? throw new NullReferenceException();
+
+			playerItem = new AVPlayerItem(asset);
+			AddStatusObserver();
+			AddPositionObserver();
+
+			if (playerViewController.Player is not null)
 			{
-				asset = AVAsset.FromUrl(NSUrl.FromFilename(fileSource.File));
+				playerViewController.Player.ReplaceCurrentItemWithPlayerItem(playerItem);
 			}
-		}
+			else
+			{
+				playerViewController.Player = new AVPlayer(playerItem);
+				AddRateObserver();
+				AddVolumeObserver();
+			}
 
-		_ = asset ?? throw new NullReferenceException();
+			UpdateVolume();
 
-		playerItem = new AVPlayerItem(asset);
-		AddStatusObserver();
-
-		if (playerViewController.Player is not null)
-		{
-			playerViewController.Player.ReplaceCurrentItemWithPlayerItem(playerItem);
-		}
-		else
-		{
-			playerViewController.Player = new AVPlayer(playerItem);
-			AddRateObserver();
-			AddVolumeObserver();
-		}
-
-		UpdateVolume();
-
-		if (mediaElement?.AutoPlay ?? false)
-		{
-			player.Play();
+			if (mediaElement?.AutoPlay ?? false)
+			{
+				player.Play();
+				mediaElement.CurrentState = MediaElementState.Playing;
+			}
 		}
 		else
 		{
 			playerViewController.Player?.Pause();
 			playerViewController.Player?.ReplaceCurrentItemWithPlayerItem(null);
 			DestroyStatusObserver();
+			DestroyPositionObserver();
 
 			if (mediaElement is not null)
 			{
@@ -143,6 +152,12 @@ public class MauiMediaElement : UIView
 		disposable = null;
 	}
 
+	void AddPositionObserver()
+	{
+		DestroyPositionObserver();
+		positionObserver = playerViewController.Player?.AddPeriodicTimeObserver(CMTime.FromSeconds(1, 1), DispatchQueue.MainQueue, ObservePosition);
+	}
+
 	void AddVolumeObserver()
 	{
 		DestroyVolumeObserver();
@@ -171,6 +186,8 @@ public class MauiMediaElement : UIView
 			NSNotificationCenter.DefaultCenter.AddObserver(AVPlayerItem.DidPlayToEndTimeNotification, PlayedToEnd);
 	}
 
+	void DestroyPositionObserver() => DisposeObservers(ref positionObserver);
+
 	void DestroyVolumeObserver() => DisposeObservers(ref volumeObserver);
 
 	void DestroyRateObserver() => DisposeObservers(ref rateObserver);
@@ -198,7 +215,7 @@ public class MauiMediaElement : UIView
 			case AVPlayerStatus.Failed:
 				mediaElement.OnMediaFailed();
 				break;
-
+				
 			case AVPlayerStatus.ReadyToPlay:
 				var duration = playerViewController.Player.CurrentItem.Duration;
 				if (duration.IsIndefinite)
@@ -220,21 +237,26 @@ public class MauiMediaElement : UIView
 
 	protected virtual void ObserveRate(NSObservedChange e)
 	{
-		if (mediaElement is object)
+		if (mediaElement is not null)
 		{
-			switch (playerViewController.Player?.Rate)
+			mediaElement.CurrentState = (playerViewController.Player?.Rate) switch
 			{
-				case 0.0f:
-					mediaElement.CurrentState = MediaElementState.Paused;
-					break;
-
-				default:
-					mediaElement.CurrentState = MediaElementState.Playing;
-					break;
-			}
+				0.0f => MediaElementState.Paused,
+				_ => MediaElementState.Playing,
+			};
 
 			mediaElement.Position = Position;
 		}
+	}
+
+	void ObservePosition(CMTime time)
+	{
+		if (mediaElement is null || playerViewController?.Player is null)
+		{
+			return;
+		}
+
+		mediaElement.Position = TimeSpan.FromSeconds(time.Seconds);
 	}
 
 	void ObserveVolume(NSObservedChange e)
@@ -259,6 +281,7 @@ public class MauiMediaElement : UIView
 			playerViewController.Player?.Seek(CMTime.Zero);
 			mediaElement.Position = Position;
 			playerViewController.Player?.Play();
+			mediaElement.CurrentState = MediaElementState.Playing;
 		}
 		else
 		{
@@ -295,6 +318,33 @@ public class MauiMediaElement : UIView
 			}
 
 			return TimeSpan.FromSeconds(currentTime.Seconds);
+		}
+	}
+
+	internal void MediaElementSeekRequested(object? sender, SeekRequested e)
+	{
+		if (playerViewController.Player?.CurrentItem == null || playerViewController.Player.Status != AVPlayerStatus.ReadyToPlay)
+		{
+			return;
+		}
+
+		var ranges = playerViewController.Player.CurrentItem.SeekableTimeRanges;
+		var seekTo = new CMTime(Convert.ToInt64(e.Position.TotalMilliseconds), 1000);
+		foreach (var v in ranges)
+		{
+			if (seekTo >= v.CMTimeRangeValue.Start && seekTo < (v.CMTimeRangeValue.Start + v.CMTimeRangeValue.Duration))
+			{
+				playerViewController.Player.Seek(seekTo, SeekComplete);
+				break;
+			}
+		}
+	}
+
+	void SeekComplete(bool finished)
+	{
+		if (finished)
+		{
+			mediaElement?.OnSeekCompleted();
 		}
 	}
 

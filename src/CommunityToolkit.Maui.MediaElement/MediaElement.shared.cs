@@ -12,7 +12,8 @@ public partial class MediaElement : View, IMediaElement
 			propertyChanged: OnAutoPlayPropertyChanged);
 
 	public static readonly BindableProperty CurrentStateProperty =
-		  BindableProperty.Create(nameof(CurrentState), typeof(MediaElementState), typeof(MediaElement), MediaElementState.Closed, propertyChanged: CurrentStateChanged);
+		  BindableProperty.Create(nameof(CurrentState), typeof(MediaElementState), typeof(MediaElement),
+			  MediaElementState.Closed);
 
 	public static readonly BindableProperty DurationProperty =
 		  BindableProperty.Create(nameof(Duration), typeof(TimeSpan), typeof(MediaElement), null);
@@ -21,14 +22,16 @@ public partial class MediaElement : View, IMediaElement
 		  BindableProperty.Create(nameof(IsLooping), typeof(bool), typeof(MediaElement), false);
 
 	public static readonly BindableProperty PositionProperty =
-		  BindableProperty.Create(nameof(Position), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero, propertyChanged: OnPositionPropertyChanged);
+		  BindableProperty.Create(nameof(Position), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero,
+			  propertyChanged: OnPositionPropertyChanged);
 
 	public static readonly BindableProperty SourceProperty =
 		BindableProperty.Create(nameof(Source), typeof(MediaSource), typeof(MediaElement), null,
-			propertyChanged: OnSourcePropertyChanged);
+			propertyChanging: OnSourcePropertyChanging, propertyChanged: OnSourcePropertyChanged);
 
 	public static readonly BindableProperty SpeedProperty =
-		  BindableProperty.Create(nameof(Speed), typeof(double), typeof(MediaElement), 1.0);
+		  BindableProperty.Create(nameof(Speed), typeof(double), typeof(MediaElement), 1.0,
+			  propertyChanged: OnSpeedPropertyChanged);
 
 	public static readonly BindableProperty VideoHeightProperty =
 		BindableProperty.Create(nameof(VideoHeight), typeof(int), typeof(MediaElement));
@@ -37,7 +40,8 @@ public partial class MediaElement : View, IMediaElement
 		BindableProperty.Create(nameof(VideoWidth), typeof(int), typeof(MediaElement));
 
 	public static readonly BindableProperty VolumeProperty =
-		  BindableProperty.Create(nameof(Volume), typeof(double), typeof(MediaElement), 1.0, BindingMode.TwoWay, new BindableProperty.ValidateValueDelegate(ValidateVolume));
+		  BindableProperty.Create(nameof(Volume), typeof(double), typeof(MediaElement), 1.0,
+			  BindingMode.TwoWay, new BindableProperty.ValidateValueDelegate(ValidateVolume));
 
 	public bool AutoPlay
 	{
@@ -51,7 +55,11 @@ public partial class MediaElement : View, IMediaElement
 		internal set => SetValue(CurrentStateProperty, value);
 	}
 
-	public TimeSpan Duration { get; internal set; }
+	public TimeSpan Duration
+	{
+		get => (TimeSpan)GetValue(DurationProperty);
+		internal set => SetValue(DurationProperty, value);
+	}
 
 	public bool IsLooping
 	{
@@ -59,7 +67,26 @@ public partial class MediaElement : View, IMediaElement
 		set => SetValue(IsLoopingProperty, value);
 	}
 
-	public TimeSpan Position { get; set; }
+	public TimeSpan Position
+	{
+		get
+		{
+			PositionRequested?.Invoke(this, EventArgs.Empty);
+			return (TimeSpan)GetValue(PositionProperty);
+		}
+
+		set
+		{
+			var currentValue = (TimeSpan)GetValue(PositionProperty);
+
+			if (Math.Abs(value.Subtract(currentValue).TotalMilliseconds) > 300 && !isSeeking)
+			{
+				RequestSeek(value);
+			}
+
+			SetValue(PositionProperty, value);
+		}
+	}
 
 	[TypeConverter(typeof(MediaSourceConverter))]
 	public MediaSource? Source
@@ -92,11 +119,11 @@ public partial class MediaElement : View, IMediaElement
 		set => SetValue(VolumeProperty, value);
 	}
 
-	public void Pause() { }
+	public void Play() => StateRequested?.Invoke(this, new StateRequested(MediaElementState.Playing));
 
-	public void Play() { }
+	public void Pause() => StateRequested?.Invoke(this, new StateRequested(MediaElementState.Paused));
 
-	public void Stop() { }
+	public void Stop() => StateRequested?.Invoke(this, new StateRequested(MediaElementState.Stopped));
 
 	public event EventHandler? MediaEnded;
 
@@ -114,31 +141,28 @@ public partial class MediaElement : View, IMediaElement
 
 	internal void OnMediaOpened() => MediaOpened?.Invoke(this, EventArgs.Empty);
 
+	internal event EventHandler? PositionRequested;
+
+	public event EventHandler? SeekCompleted;
+
 	internal event EventHandler<SeekRequested>? SeekRequested;
 
-	static void CurrentStateChanged(BindableObject bindable, object oldValue, object newValue)
+	internal event EventHandler<StateRequested>? StateRequested;
+
+	internal void OnSeekCompleted()
 	{
-		var element = (MediaElement)bindable;
+		isSeeking = false;
+		SeekCompleted?.Invoke(this, EventArgs.Empty);
+	}
 
-		switch ((MediaElementState)newValue)
+	protected override void OnBindingContextChanged()
+	{
+		if (Source != null)
 		{
-			// TODO
-			//case MediaElementState.Playing:
-			//	// Start a timer to poll the platform control position while playing
-			//	Device.StartTimer(TimeSpan.FromMilliseconds(200), () =>
-			//	{
-			//		if (!element.isSeeking)
-			//		{
-			//			Device.BeginInvokeOnMainThread(() =>
-			//			{
-			//				element.PositionRequested?.Invoke(element, EventArgs.Empty);
-			//			});
-			//		}
-
-			//		return element.CurrentState == MediaElementState.Playing;
-			//	});
-			//	break;
+			SetInheritedBindingContext(Source, BindingContext);
 		}
+
+		base.OnBindingContextChanged();
 	}
 
 	static void OnAutoPlayPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -159,13 +183,47 @@ public partial class MediaElement : View, IMediaElement
 		}
 	}
 
-	static void OnSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnSourceChanged(object? sender, EventArgs eventArgs)
 	{
-		((MediaElement)bindable).Source = (MediaSource?)newValue;
+		OnPropertyChanged(SourceProperty.PropertyName);
+		InvalidateMeasure();
+	}
+
+	static void OnSourcePropertyChanged(BindableObject bindable, object oldvalue, object newvalue) =>
+			((MediaElement)bindable).OnSourcePropertyChanged((MediaSource)newvalue);
+
+	void OnSourcePropertyChanged(MediaSource newvalue)
+	{
+		if (newvalue is not null)
+		{
+			newvalue.SourceChanged += OnSourceChanged;
+			SetInheritedBindingContext(newvalue, BindingContext);
+		}
+
+		InvalidateMeasure();
+	}
+
+	static void OnSourcePropertyChanging(BindableObject bindable, object oldvalue, object newvalue) =>
+			((MediaElement)bindable).OnSourcePropertyChanging((MediaSource)oldvalue);
+
+	void OnSourcePropertyChanging(MediaSource oldvalue)
+	{
+		if (oldvalue is null)
+		{
+			return;
+		}
+
+		oldvalue.SourceChanged -= OnSourceChanged;
+	}
+
+	static void OnSpeedPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		((MediaElement)bindable).Speed = (double)newValue;
 	}
 
 	void RequestSeek(TimeSpan newPosition)
 	{
+		// TODO should we set media to pause for smoother seeking?
 		isSeeking = true;
 		SeekRequested?.Invoke(this, new SeekRequested(newPosition));
 	}
