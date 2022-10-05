@@ -3,8 +3,8 @@
 namespace CommunityToolkit.Maui.Layouts;
 
 /// <summary>
-/// The <see cref="StateLayout"/> control enables the user to turn any layout element like a <see cref="Grid"/> or <see cref="StackLayout"/> into an individual state-aware element.
-/// Each layout that you make state-aware, using the StateLayout attached properties, contains a collection of StateView objects.
+/// The <see cref="StateLayout"/> control enables the user to turn any layout element like a <see cref="Grid"/> or <see cref="VerticalStackLayout"/> into an individual state-aware element.
+/// Each layout that you make state-aware, using the StateLayout attached properties, contains a collection of <see cref="StateView"/> objects.
 /// </summary>
 public class StateLayout
 {

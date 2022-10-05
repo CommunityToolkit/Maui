@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Core;
-using StackLayout = Microsoft.Maui.Controls.StackLayout;
 using ViewExtensions = Microsoft.Maui.Controls.ViewExtensions;
 
 namespace CommunityToolkit.Maui.Layouts;
@@ -128,10 +127,10 @@ public class StateLayoutController : IDisposable
 					items.Add(i);
 				}
 
-				// We create a StackLayout to stack repeating items.
+				// We create a VerticalStackLayout to stack repeating items.
 				// It takes VerticalOptions and HorizontalOptions from the
 				// StateView to allow for more control over how it layouts.
-				var s = new StackLayout
+				var s = new VerticalStackLayout
 				{
 					Opacity = animate ? 0 : 1,
 					VerticalOptions = view.VerticalOptions,
@@ -170,10 +169,10 @@ public class StateLayoutController : IDisposable
 
 
 				// No template, so we use the children of the StateView.
-				// We create a StackLayout to stack repeating items.
+				// We create a VerticalStackLayout to stack repeating items.
 				// It takes VerticalOptions and HorizontalOptions from the
 				// StateView to allow for more control over how it layouts.
-				var s = new StackLayout
+				var s = new VerticalStackLayout
 				{
 					Opacity = animate ? 0 : 1,
 					VerticalOptions = view.VerticalOptions,
