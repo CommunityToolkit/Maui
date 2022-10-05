@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core;
+using Microsoft.Maui.Controls.Internals;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
 namespace CommunityToolkit.Maui.Views;
@@ -7,7 +8,7 @@ namespace CommunityToolkit.Maui.Views;
 /// Represents a small View that pops up at front the Page. Implements <see cref="IPopup"/>.
 /// </summary>
 [ContentProperty(nameof(Content))]
-public partial class Popup : Element, IPopup
+public partial class Popup : Element, IPopup, IWindowController, IPropertyPropagationController
 {
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="Content"/> property.
@@ -53,7 +54,6 @@ public partial class Popup : Element, IPopup
 		platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Popup>>(() => new(this));
 
 		VerticalOptions = HorizontalOptions = LayoutAlignment.Center;
-
 #if WINDOWS
 		this.HandlerChanged += OnPopupHandlerChanged;
 #endif
@@ -174,6 +174,26 @@ public partial class Popup : Element, IPopup
 	/// <inheritdoc/>
 	IView? IPopup.Content => Content;
 
+
+	Window? window;
+
+	/// <summary>
+	/// Property that represents the Window that's showing the Popup.
+	/// </summary>
+	public Window? Window
+	{
+		get => window;
+		set 
+		{
+			window = value;
+
+			if (Content is IWindowController controller)
+			{
+				controller.Window = value;
+			}
+		}
+	}
+
 	/// <summary>
 	/// Resets the Popup.
 	/// </summary>
@@ -231,6 +251,7 @@ public partial class Popup : Element, IPopup
 		if (Content is not null)
 		{
 			SetInheritedBindingContext(Content, BindingContext);
+			Content.Parent = this;
 		}
 	}
 
@@ -250,4 +271,12 @@ public partial class Popup : Element, IPopup
 	void IPopup.OnOpened() => OnOpened();
 
 	void IPopup.OnDismissedByTappingOutsideOfPopup() => OnDismissedByTappingOutsideOfPopup();
+
+	void IPropertyPropagationController.PropagatePropertyChanged(string propertyName) =>
+		PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
+
+	IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() =>
+		Content is null
+			? Enumerable.Empty<IVisualTreeElement>().ToList()
+			: new List<IVisualTreeElement> { Content };
 }
