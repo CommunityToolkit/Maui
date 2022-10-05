@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Layouts.StateLayoutPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:layouts="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Layouts"
+    xmlns:mct="clr-namespace:CommunityToolkit.Maui.Layouts;assembly=CommunityToolkit.Maui"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    x:DataType="layouts:StateLayoutViewModel"
+    x:TypeArguments="layouts:StateLayoutViewModel">
+
+    <pages:BasePage.Resources>
+        <Style x:Key="BorderStyle" TargetType="Border">
+            <Setter Property="Padding" Value="20" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 10" />
+            <Setter Property="StrokeThickness" Value="4" />
+        </Style>
+    </pages:BasePage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="10">
+            <Label Text="The StateLayout properties allow any Layout derived element to become state-aware." />
+            <Button Command="{Binding CycleStatesCommand}" Text="Cycle States" />
+            <Label Text="This will show several states at an interval of 2 seconds." />
+            <VerticalStackLayout
+                mct:StateLayout.AnimateStateChanges="True"
+                mct:StateLayout.CurrentCustomStateKey="{Binding CurrentCustomStateKey}"
+                mct:StateLayout.CurrentState="{Binding CurrentState}">
+
+                <mct:StateLayout.StateViews>
+                    <mct:StateView StateKey="Loading">
+                        <Border Stroke="CornflowerBlue" Style="{StaticResource BorderStyle}">
+                            <HorizontalStackLayout Spacing="10">
+                                <ActivityIndicator
+                                    HeightRequest="20"
+                                    IsRunning="True"
+                                    WidthRequest="20"
+                                    Color="CornflowerBlue" />
+                                <Label Text="Pretending to load things..." VerticalTextAlignment="Center" />
+                            </HorizontalStackLayout>
+                        </Border>
+                    </mct:StateView>
+
+                    <mct:StateView StateKey="Error">
+                        <Border Stroke="Red" Style="{StaticResource BorderStyle}">
+                            <Label Text="Did something go horribly wrong?" VerticalTextAlignment="Center" />
+                        </Border>
+                    </mct:StateView>
+
+                    <mct:StateView CustomStateKey="FirstCustomState" StateKey="Custom">
+                        <Border Stroke="Fuchsia" Style="{StaticResource BorderStyle}">
+                            <Label Text="Hi, I'm a custom state!" VerticalTextAlignment="Center" />
+                        </Border>
+                    </mct:StateView>
+
+                    <mct:StateView CustomStateKey="SecondCustomState" StateKey="Custom">
+                        <Border Stroke="Gold" Style="{StaticResource BorderStyle}">
+                            <Label Text="Hi, I'm a custom state too!" VerticalTextAlignment="Center" />
+                        </Border>
+                    </mct:StateView>
+
+                    <mct:StateView StateKey="Success">
+                        <Border Stroke="Green" Style="{StaticResource BorderStyle}">
+                            <Label Text="Hooray! Great success!" VerticalTextAlignment="Center" />
+                        </Border>
+                    </mct:StateView>
+                </mct:StateLayout.StateViews>
+
+                <Border Style="{StaticResource BorderStyle}">
+                    <Label Text="This is the default content" VerticalTextAlignment="Center" />
+                </Border>
+
+            </VerticalStackLayout>
+
+            <Button Command="{Binding ToggleRepeatingStateCommand}" Text="Toggle Repeating State" />
+            <Label Text="This uses the StateView's RepeatCount property for a repeating template." />
+
+            <VerticalStackLayout mct:StateLayout.AnimateStateChanges="True" mct:StateLayout.CurrentState="{Binding RepeatingState}">
+                <mct:StateLayout.StateViews>
+                    <mct:StateView RepeatCount="3" StateKey="Loading">
+                        <mct:StateView.Template>
+                            <DataTemplate>
+                                <Border Stroke="CornflowerBlue" Style="{StaticResource BorderStyle}">
+                                    <HorizontalStackLayout Spacing="10">
+                                        <ActivityIndicator
+                                            HeightRequest="20"
+                                            IsRunning="True"
+                                            WidthRequest="20"
+                                            Color="CornflowerBlue" />
+                                        <Label Text="I am a repeating template!" VerticalTextAlignment="Center" />
+                                    </HorizontalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </mct:StateView.Template>
+
+                    </mct:StateView>
+                </mct:StateLayout.StateViews>
+
+                <Border Style="{StaticResource BorderStyle}">
+                    <Label Text="This is the default content" VerticalTextAlignment="Center" />
+                </Border>
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</pages:BasePage>

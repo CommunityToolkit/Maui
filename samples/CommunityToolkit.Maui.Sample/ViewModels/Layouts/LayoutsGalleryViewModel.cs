@@ -8,6 +8,9 @@ public class LayoutsGalleryViewModel : BaseGalleryViewModel
 	public LayoutsGalleryViewModel()
 		: base(new[]
 		{
+			SectionModel.Create<StateLayoutViewModel>(nameof(StateLayoutPage),
+				"Enables any Layout derived element to become state-aware"),
+
 			SectionModel.Create<UniformItemsLayoutViewModel>(nameof(UniformItemsLayoutPage),
 				"A Grid where all rows and columns have the same size"),
 		})
