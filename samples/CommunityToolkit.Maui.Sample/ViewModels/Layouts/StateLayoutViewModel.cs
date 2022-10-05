@@ -43,7 +43,7 @@ public partial class StateLayoutViewModel : BaseViewModel
 		if (RepeatingState == LayoutState.Loading)
 		{
 			RepeatingState = LayoutState.None;
-		} 
+		}
 		else
 		{
 			RepeatingState = LayoutState.Loading;
