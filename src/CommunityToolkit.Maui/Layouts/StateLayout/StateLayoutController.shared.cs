@@ -11,7 +11,7 @@ public class StateLayoutController : IDisposable
 	readonly WeakReference<Layout> layoutWeakReference;
 	bool layoutIsGrid;
 	LayoutState previousState = LayoutState.None;
-	IList<View> originalContent = Enumerable.Empty<View>().ToList();
+	List<View> originalContent = Enumerable.Empty<View>().ToList();
 	CancellationTokenSource? animationTokenSource;
 
 	bool isDisposed;
@@ -100,7 +100,7 @@ public class StateLayoutController : IDisposable
 
 		var view = GetViewForState(state, customState);
 
-		if (view != null)
+		if (view is not null)
 		{
 			previousState = state;
 
@@ -117,10 +117,10 @@ public class StateLayoutController : IDisposable
 			var repeatCount = GetRepeatCount(state, customState);
 			var template = GetTemplate(state, customState);
 
-			if (template != null)
+			if (template is not null)
 			{
 				// We have a template we can use.
-				var items = new List<int>();
+				var items = new List<int>(repeatCount);
 
 				for (var i = 0; i < repeatCount; i++)
 				{
@@ -142,13 +142,12 @@ public class StateLayoutController : IDisposable
 				// Otherwise it would just end up in row 0 : column 0.
 				if (layout is Grid grid)
 				{
-					if (grid.RowDefinitions.Any())
+					if (grid.RowDefinitions.Count > 0)
 					{
 						Grid.SetRowSpan(s, grid.RowDefinitions.Count);
 					}
 
-
-					if (grid.ColumnDefinitions.Any())
+					if (grid.ColumnDefinitions.Count > 0)
 					{
 						Grid.SetColumnSpan(s, grid.ColumnDefinitions.Count);
 					}
@@ -184,12 +183,12 @@ public class StateLayoutController : IDisposable
 				// Otherwise it would just end up in row 0 : column 0.
 				if (layout is Grid grid)
 				{
-					if (grid.RowDefinitions.Any())
+					if (grid.RowDefinitions.Count > 0)
 					{
 						Grid.SetRowSpan(s, grid.RowDefinitions.Count);
 					}
 
-					if (grid.ColumnDefinitions.Any())
+					if (grid.ColumnDefinitions.Count > 0)
 					{
 						Grid.SetColumnSpan(s, grid.ColumnDefinitions.Count);
 					}
@@ -201,7 +200,7 @@ public class StateLayoutController : IDisposable
 
 				var itemView = CreateItemView(state, customState);
 
-				if (itemView != null)
+				if (itemView is not null)
 				{
 					if (layoutIsGrid)
 					{
@@ -232,7 +231,7 @@ public class StateLayoutController : IDisposable
 		var template = StateViews.FirstOrDefault(x => (x.StateKey == state && state != LayoutState.Custom) ||
 					   (state == LayoutState.Custom && x.CustomStateKey == customState));
 
-		if (template != null)
+		if (template is not null)
 		{
 			return template.RepeatCount;
 		}
@@ -245,7 +244,7 @@ public class StateLayoutController : IDisposable
 		var view = StateViews.FirstOrDefault(x => (x.StateKey == state && state != LayoutState.Custom) ||
 					   (state == LayoutState.Custom && x.CustomStateKey == customState));
 
-		if (view != null)
+		if (view is not null)
 		{
 			return view.Template;
 		}
@@ -260,7 +259,7 @@ public class StateLayoutController : IDisposable
 
 		// TODO: This only allows for a repeatcount of 1.
 		// Internally in Xamarin.Forms we cannot add the same element to Children multiple times.
-		if (view != null)
+		if (view is not null)
 		{
 			return view;
 		}
