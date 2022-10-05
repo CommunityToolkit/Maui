@@ -183,7 +183,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	public Window? Window
 	{
 		get => window;
-		set 
+		set
 		{
 			window = value;
 
