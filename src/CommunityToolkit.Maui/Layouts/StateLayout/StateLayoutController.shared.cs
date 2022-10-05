@@ -42,7 +42,7 @@ public class StateLayoutController : IDisposable
 	{
 		var layout = GetLayout();
 
-		if (layout is null) 
+		if (layout is null)
 		{
 			return;
 		}
