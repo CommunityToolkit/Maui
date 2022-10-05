@@ -28,13 +28,21 @@ public class StateLayoutController : IDisposable
 	public StateLayoutController(Layout layout)
 		=> layoutWeakReference = new WeakReference<Layout>(layout);
 
+	internal Layout? GetLayout()
+	{
+		layoutWeakReference.TryGetTarget(out var layout);
+		return layout;
+	}
+
 	/// <summary>
 	/// Display the default content.
 	/// </summary>
 	/// <param name="animate"></param>
 	public async void SwitchToContent(bool animate)
 	{
-		if (!layoutWeakReference.TryGetTarget(out var layout))
+		var layout = GetLayout();
+
+		if (layout is null) 
 		{
 			return;
 		}
@@ -78,7 +86,9 @@ public class StateLayoutController : IDisposable
 	/// <exception cref="ArgumentException"></exception>
 	public async void SwitchToTemplate(LayoutState state, string? customState, bool animate)
 	{
-		if (!layoutWeakReference.TryGetTarget(out var layout))
+		var layout = GetLayout();
+
+		if (layout is null)
 		{
 			return;
 		}

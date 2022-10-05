@@ -37,6 +37,9 @@ public class StateLayout
 	public static readonly BindableProperty AnimateStateChangesProperty
 		= BindableProperty.CreateAttached("AnimateStateChanges", typeof(bool), typeof(StateLayout), true, propertyChanged: OnAnimateStateChangesChanged);
 
+	internal static void SetStateViews(BindableObject b, List<StateView> value)
+		=> b.SetValue(StateViewsPropertyKey, value);
+
 	/// <summary>
 	/// Get the defined StateViews
 	/// </summary>
