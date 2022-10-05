@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.Layouts;
 /// <summary>
 /// StateLayout Controller
 /// </summary>
-public class StateLayoutController: IDisposable
+public class StateLayoutController : IDisposable
 {
 	readonly WeakReference<Layout> layoutWeakReference;
 	bool layoutIsGrid;
@@ -28,7 +28,7 @@ public class StateLayoutController: IDisposable
 	/// <param name="layout"></param>
 	public StateLayoutController(Layout layout)
 		=> layoutWeakReference = new WeakReference<Layout>(layout);
-	
+
 	/// <summary>
 	/// Display the default content.
 	/// </summary>
@@ -292,7 +292,7 @@ public class StateLayoutController: IDisposable
 		animationTokenSource?.Dispose();
 
 		foreach (var child in layout.Children)
-		{ 
+		{
 			ViewExtensions.CancelAnimations((VisualElement)child);
 		}
 

@@ -18,7 +18,7 @@ public class StateLayout
 	/// Backing BindableProperty for the <see cref="GetStateViews"/> method.
 	/// </summary>
 	public static readonly BindableProperty StateViewsProperty = StateViewsPropertyKey.BindableProperty;
-	
+
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="GetCurrentState"/> and <see cref="SetCurrentState"/> methods.
 	/// </summary>
@@ -34,9 +34,9 @@ public class StateLayout
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="GetAnimateStateChanges"/> and <see cref="SetAnimateStateChanges"/> methods.
 	/// </summary>
-	public static readonly BindableProperty AnimateStateChangesProperty 
+	public static readonly BindableProperty AnimateStateChangesProperty
 		= BindableProperty.CreateAttached("AnimateStateChanges", typeof(bool), typeof(StateLayout), true, propertyChanged: OnAnimateStateChangesChanged);
-	
+
 	/// <summary>
 	/// Get the defined StateViews
 	/// </summary>
