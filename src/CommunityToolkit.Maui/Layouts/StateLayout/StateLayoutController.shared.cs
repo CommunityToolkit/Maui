@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Layouts;
 /// <summary>
 /// StateLayout Controller
 /// </summary>
-public class StateLayoutController : IDisposable
+class StateLayoutController : IDisposable
 {
 	readonly WeakReference<Layout> layoutWeakReference;
 
