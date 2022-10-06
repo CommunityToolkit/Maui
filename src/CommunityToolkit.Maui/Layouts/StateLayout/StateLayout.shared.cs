@@ -36,7 +36,7 @@ public static class StateLayout
 	/// Backing BindableProperty for the <see cref="GetShouldAnimateOnStateChange"/> and <see cref="SetShouldAnimateOnStateChange"/> methods.
 	/// </summary>
 	public static readonly BindableProperty ShouldAnimateOnStateChangeProperty
-		= BindableProperty.CreateAttached("ShouldAnimateOnStateChange", typeof(bool), typeof(StateLayout), true, propertyChanged: OnAnimateStateChangesChanged);
+		= BindableProperty.CreateAttached("ShouldAnimateOnStateChange", typeof(bool), typeof(StateLayout), true, propertyChanged: OnShouldAnimateOnStateChangeChanged);
 
 	/// <summary>
 	/// Get the defined StateViews
@@ -148,7 +148,7 @@ public static class StateLayout
 		}
 	}
 
-	static void OnAnimateStateChangesChanged(BindableObject bindable, object oldValue, object newValue)
+	static void OnShouldAnimateOnStateChangeChanged(BindableObject bindable, object oldValue, object newValue)
 		=> bindable.SetValue(ShouldAnimateOnStateChangeProperty, newValue);
 
 	static object LayoutControllerCreator(BindableObject bindable)
