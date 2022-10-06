@@ -66,7 +66,7 @@
 
     <FlyoutItem Title="Layouts"
                 Route="LayoutsGalleryPage"
-                Icon="dotnet_bot.png', MacCatalyst=''}">
+                Icon="dotnet_bot.png">
         <ShellContent ContentTemplate="{DataTemplate layouts:LayoutsGalleryPage}" />
     </FlyoutItem>
 
