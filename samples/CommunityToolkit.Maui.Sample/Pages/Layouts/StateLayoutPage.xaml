@@ -23,7 +23,7 @@
             <Button Command="{Binding CycleStatesCommand}" Text="Cycle States" />
             <Label Text="This will show several states at an interval of 2 seconds." />
             <VerticalStackLayout
-                mct:StateLayout.AnimateStateChanges="True"
+                mct:StateLayout.ShouldAnimateOnStateChange="True"
                 mct:StateLayout.CurrentCustomStateKey="{Binding CurrentCustomStateKey}"
                 mct:StateLayout.CurrentState="{Binding CurrentState}">
 
@@ -75,7 +75,7 @@
             <Button Command="{Binding ToggleRepeatingStateCommand}" Text="Toggle Repeating State" />
             <Label Text="This uses the StateView's RepeatCount property for a repeating template." />
 
-            <VerticalStackLayout mct:StateLayout.AnimateStateChanges="True" mct:StateLayout.CurrentState="{Binding RepeatingState}">
+            <VerticalStackLayout mct:StateLayout.ShouldAnimateOnStateChange="True" mct:StateLayout.CurrentState="{Binding RepeatingState}">
                 <mct:StateLayout.StateViews>
                     <mct:StateView RepeatCount="3" StateKey="Loading">
                         <mct:StateView.Template>
