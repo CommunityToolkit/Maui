@@ -54,7 +54,9 @@ jobs:
           version: '$(TOOLKIT_NET_VERSION)'
           includePreviewVersions: true
 
-      - powershell: dotnet workload install maui --from-rollback-file $(DotNetMauiRollbackFile) --source https://api.nuget.org/v3/index.json
+      - powershell: |
+          dotnet workload install maui --from-rollback-file $(DotNetMauiRollbackFile) --source https://api.nuget.org/v3/index.json
+          dotnet workload install ios
         displayName: Install .NET MAUI $(TOOLKIT_NET_VERSION)
 
       # if this is a tagged build, then update the version number
@@ -199,7 +201,9 @@ jobs:
           version: '$(LATEST_NET_VERSION)'
           includePreviewVersions: true
 
-      - powershell: dotnet workload install maui
+      - powershell: |
+          dotnet workload install maui
+          dotnet workload install ios
         displayName: Install Latest .NET MAUI Workload
 
       # build sample
@@ -267,7 +271,9 @@ jobs:
       - task: CmdLine@2
         displayName: 'Install .NET MAUI Workload $(TOOLKIT_NET_VERSION)'
         inputs:
-          script: dotnet workload install maui --from-rollback-file $(DotNetMauiRollbackFile) --source https://api.nuget.org/v3/index.json
+          script: |
+            dotnet workload install maui --from-rollback-file $(DotNetMauiRollbackFile) --source https://api.nuget.org/v3/index.json
+            dotnet workload install ios
 
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.Analyzers'
