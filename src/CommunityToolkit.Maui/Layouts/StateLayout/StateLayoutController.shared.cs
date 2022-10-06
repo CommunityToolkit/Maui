@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Views;
 using ViewExtensions = Microsoft.Maui.Controls.ViewExtensions;
 
 namespace CommunityToolkit.Maui.Layouts;
@@ -9,64 +11,54 @@ namespace CommunityToolkit.Maui.Layouts;
 public class StateLayoutController : IDisposable
 {
 	readonly WeakReference<Layout> layoutWeakReference;
-	bool layoutIsGrid;
+
+	bool layoutIsGrid, isDisposed;
 	LayoutState previousState = LayoutState.None;
 	List<View> originalContent = Enumerable.Empty<View>().ToList();
 	CancellationTokenSource? animationTokenSource;
 
-	bool isDisposed;
+	/// <summary>
+	/// StateLayout Controller constructor
+	/// </summary>
+	/// <param name="layout"></param>
+	public StateLayoutController(Layout layout) => layoutWeakReference = new WeakReference<Layout>(layout);
 
 	/// <summary>
 	/// The StateViews defined in the StateLayout.
 	/// </summary>
 	public IList<StateView> StateViews { get; set; } = Enumerable.Empty<StateView>().ToList();
 
-	/// <summary>
-	/// StateLayout Controller constructor
-	/// </summary>
-	/// <param name="layout"></param>
-	public StateLayoutController(Layout layout)
-		=> layoutWeakReference = new WeakReference<Layout>(layout);
-
-	internal Layout? GetLayout()
+	/// <summary>Dispose <see cref="StateLayoutController"/>.</summary>
+	public void Dispose()
 	{
-		layoutWeakReference.TryGetTarget(out var layout);
-		return layout;
+		Dispose(true);
+		GC.SuppressFinalize(this);
 	}
 
 	/// <summary>
 	/// Display the default content.
 	/// </summary>
-	/// <param name="animate"></param>
-	public async void SwitchToContent(bool animate)
+	/// <param name="shouldAnimate"></param>
+	public async Task SwitchToContent(bool shouldAnimate)
 	{
 		var layout = GetLayout();
-
-		if (layout is null)
-		{
-			return;
-		}
-
 		var token = RebuildAnimationTokenSource(layout);
 
 		previousState = LayoutState.None;
-		await ChildrenFadeTo(layout, animate, true);
+		await FadeLayoutChildren(layout, shouldAnimate, true);
 
-		if (token.IsCancellationRequested)
-		{
-			return;
-		}
+		token.ThrowIfCancellationRequested();
 
 		// Put the original content back in.
 		layout.Children.Clear();
 
 		foreach (var item in originalContent)
 		{
-			item.Opacity = animate ? 0 : 1;
+			item.Opacity = shouldAnimate ? 0 : 1;
 			layout.Children.Add(item);
 		}
 
-		await ChildrenFadeTo(layout, animate, false);
+		await FadeLayoutChildren(layout, shouldAnimate, false);
 	}
 
 	/// <summary>
@@ -74,7 +66,7 @@ public class StateLayoutController : IDisposable
 	/// </summary>
 	/// <param name="customState"></param>
 	/// <param name="animate"></param>
-	public void SwitchToTemplate(string customState, bool animate)
+	public Task SwitchToTemplate(string customState, bool animate)
 		=> SwitchToTemplate(LayoutState.Custom, customState, animate);
 
 	/// <summary>
@@ -84,20 +76,13 @@ public class StateLayoutController : IDisposable
 	/// <param name="customState"></param>
 	/// <param name="animate"></param>
 	/// <exception cref="ArgumentException"></exception>
-	public async void SwitchToTemplate(LayoutState state, string? customState, bool animate)
+	public async Task SwitchToTemplate(LayoutState state, string? customState, bool animate)
 	{
 		var layout = GetLayout();
-
-		if (layout is null)
-		{
-			return;
-		}
-
-
 		var token = RebuildAnimationTokenSource(layout);
 
 		// Put the original content somewhere where we can restore it.
-		if (previousState == LayoutState.None)
+		if (previousState is LayoutState.None)
 		{
 			originalContent = new List<View>();
 
@@ -105,7 +90,6 @@ public class StateLayoutController : IDisposable
 			{
 				originalContent.Add((View)item);
 			}
-
 		}
 
 		var view = GetViewForState(state, customState);
@@ -114,7 +98,7 @@ public class StateLayoutController : IDisposable
 		{
 			previousState = state;
 
-			await ChildrenFadeTo(layout, animate, true);
+			await FadeLayoutChildren(layout, animate, true);
 
 			if (token.IsCancellationRequested)
 			{
@@ -224,7 +208,45 @@ public class StateLayoutController : IDisposable
 				}
 			}
 
-			await ChildrenFadeTo(layout, animate, false);
+			await FadeLayoutChildren(layout, animate, false);
+		}
+	}
+
+	internal Layout GetLayout()
+	{
+		layoutWeakReference.TryGetTarget(out var layout);
+		return layout ?? throw new ObjectDisposedException("Layout Disposed");
+	}
+
+	/// <summary>Dispose <see cref="StateLayoutController"/>.</summary>
+	/// <param name="isDisposing">Is disposing.</param>
+	protected virtual void Dispose(bool isDisposing)
+	{
+		if (!isDisposed)
+		{
+			isDisposed = true;
+
+			if (isDisposing)
+			{
+				animationTokenSource?.Dispose();
+			}
+		}
+	}
+
+	static async ValueTask FadeLayoutChildren(Layout layout, bool shouldAnimate, bool isHidden)
+	{
+		if (shouldAnimate && layout.Children.Count > 0)
+		{
+			var opacity = 1;
+			var time = 500u;
+
+			if (isHidden)
+			{
+				opacity = 0;
+				time = 100u;
+			}
+
+			await Task.WhenAll(layout.Children.OfType<View>().Select(a => ViewExtensions.FadeTo(a, opacity, time)));
 		}
 	}
 
@@ -241,12 +263,9 @@ public class StateLayoutController : IDisposable
 		var template = StateViews.FirstOrDefault(x => (x.StateKey == state && state != LayoutState.Custom) ||
 					   (state == LayoutState.Custom && x.CustomStateKey == customState));
 
-		if (template is not null)
-		{
-			return template.RepeatCount;
-		}
-
-		return 1;
+		return template is not null
+				? template.RepeatCount
+				: 1;
 	}
 
 	DataTemplate? GetTemplate(LayoutState state, string? customState)
@@ -254,12 +273,7 @@ public class StateLayoutController : IDisposable
 		var view = StateViews.FirstOrDefault(x => (x.StateKey == state && state != LayoutState.Custom) ||
 					   (state == LayoutState.Custom && x.CustomStateKey == customState));
 
-		if (view is not null)
-		{
-			return view.Template;
-		}
-
-		return null;
+		return view?.Template;
 	}
 
 	View CreateItemView(LayoutState state, string? customState)
@@ -269,31 +283,10 @@ public class StateLayoutController : IDisposable
 
 		// TODO: This only allows for a repeatcount of 1.
 		// Internally in Xamarin.Forms we cannot add the same element to Children multiple times.
-		if (view is not null)
-		{
-			return view;
-		}
-
-		return new Label { Text = $"View for {state}{customState} not defined." };
+		return view ?? (View)(new Label { Text = $"View for {state}{customState} not defined." });
 	}
 
-	async Task ChildrenFadeTo(Layout layout, bool animate, bool isHide)
-	{
-		if (animate && layout?.Children?.Count > 0)
-		{
-			var opacity = 1;
-			var time = 500u;
-
-			if (isHide)
-			{
-				opacity = 0;
-				time = 100u;
-			}
-
-			await Task.WhenAll(layout.Children.Select(a => ViewExtensions.FadeTo((VisualElement)a, opacity, time)));
-		}
-	}
-
+	[MemberNotNull(nameof(animationTokenSource))]
 	CancellationToken RebuildAnimationTokenSource(Layout layout)
 	{
 		animationTokenSource?.Cancel();
@@ -301,34 +294,11 @@ public class StateLayoutController : IDisposable
 
 		foreach (var child in layout.Children)
 		{
-			ViewExtensions.CancelAnimations((VisualElement)child);
+			ViewExtensions.CancelAnimations((View)child);
 		}
-
 
 		animationTokenSource = new CancellationTokenSource();
 		return animationTokenSource.Token;
-	}
-
-	/// <summary>Dispose <see cref="StateLayoutController"/>.</summary>
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
-	}
-
-	/// <summary>Dispose <see cref="StateLayoutController"/>.</summary>
-	/// <param name="isDisposing">Is disposing.</param>
-	protected virtual void Dispose(bool isDisposing)
-	{
-		if (!isDisposed)
-		{
-			isDisposed = true;
-
-			if (isDisposing)
-			{
-				animationTokenSource?.Dispose();
-			}
-		}
 	}
 
 }

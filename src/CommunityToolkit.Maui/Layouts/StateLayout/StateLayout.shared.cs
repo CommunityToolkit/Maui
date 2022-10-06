@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Layouts;
 
@@ -6,7 +7,7 @@ namespace CommunityToolkit.Maui.Layouts;
 /// The <see cref="StateLayout"/> control enables the user to turn any layout element like a <see cref="Grid"/> or <see cref="VerticalStackLayout"/> into an individual state-aware element.
 /// Each layout that you make state-aware, using the StateLayout attached properties, contains a collection of <see cref="StateView"/> objects.
 /// </summary>
-public class StateLayout
+public static class StateLayout
 {
 	internal static readonly BindableProperty LayoutControllerProperty
 		= BindableProperty.CreateAttached("LayoutController", typeof(StateLayoutController), typeof(StateLayout), default(StateLayoutController), defaultValueCreator: LayoutControllerCreator);
@@ -32,19 +33,16 @@ public class StateLayout
 		= BindableProperty.CreateAttached("CurrentCustomStateKey", typeof(string), typeof(StateLayout), default(string), propertyChanged: OnCurrentCustomStateKeyChanged);
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="GetAnimateStateChanges"/> and <see cref="SetAnimateStateChanges"/> methods.
+	/// Backing BindableProperty for the <see cref="GetShouldAnimateOnStateChange"/> and <see cref="SetShouldAnimateOnStateChange"/> methods.
 	/// </summary>
-	public static readonly BindableProperty AnimateStateChangesProperty
-		= BindableProperty.CreateAttached("AnimateStateChanges", typeof(bool), typeof(StateLayout), true, propertyChanged: OnAnimateStateChangesChanged);
-
-	internal static void SetStateViews(BindableObject b, List<StateView> value)
-		=> b.SetValue(StateViewsPropertyKey, value);
+	public static readonly BindableProperty ShouldAnimateOnStateChangeProperty
+		= BindableProperty.CreateAttached("ShouldAnimateOnStateChange", typeof(bool), typeof(StateLayout), true, propertyChanged: OnAnimateStateChangesChanged);
 
 	/// <summary>
 	/// Get the defined StateViews
 	/// </summary>
-	public static IList<StateView>? GetStateViews(BindableObject b)
-		=> (IList<StateView>?)b.GetValue(StateViewsProperty);
+	public static IList<StateView> GetStateViews(BindableObject b)
+		=> (IList<StateView>)b.GetValue(StateViewsProperty);
 
 	/// <summary>
 	/// Set the active LayoutState
@@ -71,18 +69,24 @@ public class StateLayout
 		=> (string?)b.GetValue(CurrentCustomStateKeyProperty);
 
 	/// <summary>
-	/// Set the AnimateStateChanges property
+	/// Set the ShouldAnimateOnStateChange property
 	/// </summary>
-	public static void SetAnimateStateChanges(BindableObject b, bool value)
-		=> b.SetValue(AnimateStateChangesProperty, value);
+	public static void SetShouldAnimateOnStateChange(BindableObject b, bool value)
+		=> b.SetValue(ShouldAnimateOnStateChangeProperty, value);
 
 	/// <summary>
-	/// Get the AnimateStateChanges property
+	/// Get the ShouldAnimateOnStateChange property
 	/// </summary>
-	public static bool GetAnimateStateChanges(BindableObject b)
-		=> (bool?)b.GetValue(AnimateStateChangesProperty) ?? false;
+	public static bool GetShouldAnimateOnStateChange(BindableObject b)
+		=> (bool)b.GetValue(ShouldAnimateOnStateChangeProperty);
 
-	static void OnCurrentStateChanged(BindableObject bindable, object oldValue, object newValue)
+	internal static StateLayoutController GetLayoutController(BindableObject b) =>
+		(StateLayoutController)b.GetValue(LayoutControllerProperty);
+
+	internal static void SetStateViews(BindableObject b, IEnumerable<StateView> value)
+		=> b.SetValue(StateViewsPropertyKey, value.ToList());
+
+	static async void OnCurrentStateChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		if (oldValue == newValue)
 		{
@@ -94,16 +98,25 @@ public class StateLayout
 		{
 			case LayoutState.Custom:
 				break;
+
 			case LayoutState.None:
-				GetLayoutController(bindable)?.SwitchToContent(GetAnimateStateChanges(bindable));
+				await GetLayoutController(bindable).SwitchToContent(GetShouldAnimateOnStateChange(bindable));
 				break;
+
+			case LayoutState.Empty:
+			case LayoutState.Error:
+			case LayoutState.Loading:
+			case LayoutState.Saving:
+			case LayoutState.Success:
+				await GetLayoutController(bindable).SwitchToTemplate((LayoutState)newValue, null, GetShouldAnimateOnStateChange(bindable));
+				break;
+
 			default:
-				GetLayoutController(bindable)?.SwitchToTemplate((LayoutState)newValue, null, GetAnimateStateChanges(bindable));
-				break;
+				throw new NotSupportedException($"{nameof(LayoutState)} {newValue} Not Supported");
 		}
 	}
 
-	static void OnCurrentCustomStateKeyChanged(BindableObject bindable, object oldValue, object newValue)
+	static async void OnCurrentCustomStateKeyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		if (oldValue == newValue)
 		{
@@ -115,32 +128,39 @@ public class StateLayout
 		// Swap out the current children for the Loading Template.
 		switch (state)
 		{
+			case LayoutState.Empty:
+			case LayoutState.Error:
+			case LayoutState.Loading:
+			case LayoutState.Saving:
+			case LayoutState.Success:
+				break;
+
 			case LayoutState.None:
-				GetLayoutController(bindable)?.SwitchToContent(GetAnimateStateChanges(bindable));
+				await GetLayoutController(bindable).SwitchToContent(GetShouldAnimateOnStateChange(bindable));
 				break;
+
 			case LayoutState.Custom:
-				GetLayoutController(bindable)?.SwitchToTemplate((string)newValue, GetAnimateStateChanges(bindable));
+				await GetLayoutController(bindable).SwitchToTemplate((string)newValue, GetShouldAnimateOnStateChange(bindable));
 				break;
+
 			default:
-				break;
+				throw new NotSupportedException($"{nameof(LayoutState)} {state} Not Supported");
 		}
 	}
 
 	static void OnAnimateStateChangesChanged(BindableObject bindable, object oldValue, object newValue)
-		=> bindable.SetValue(AnimateStateChangesProperty, newValue);
-
-	internal static StateLayoutController? GetLayoutController(BindableObject b) => (StateLayoutController?)b.GetValue(LayoutControllerProperty);
+		=> bindable.SetValue(ShouldAnimateOnStateChangeProperty, newValue);
 
 	static object LayoutControllerCreator(BindableObject bindable)
 	{
-		if (bindable is Layout layoutView)
+		if (bindable is not Layout layoutView)
 		{
-			return new StateLayoutController(layoutView)
-			{
-				StateViews = GetStateViews(layoutView) ?? new List<StateView>()
-			};
+			throw new InvalidOperationException($"Cannot create the {nameof(StateLayoutController)}. The specified view '{bindable.GetType().FullName}' does not inherit Layout.");
 		}
 
-		throw new InvalidOperationException($"Cannot create the StateLayoutController. The specified view '{bindable.GetType().FullName}' does not inherit Layout.");
+		return new StateLayoutController(layoutView)
+		{
+			StateViews = GetStateViews(layoutView) ?? new List<StateView>()
+		};
 	}
 }

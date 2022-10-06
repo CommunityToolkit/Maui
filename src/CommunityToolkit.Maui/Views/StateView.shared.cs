@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Maui.Core;
 
-namespace CommunityToolkit.Maui.Layouts;
+namespace CommunityToolkit.Maui.Views;
 
 /// <summary>
 /// The <see cref="StateView"/> can be used as a template for one of the different states supported by StateLayout.
