@@ -61,7 +61,10 @@ public static class PopupExtensions
 	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
 	public static void SetCanBeDismissedByTappingOutsideOfPopup(this MauiPopup mauiPopup, in IPopup popup)
 	{
-		mauiPopup.ModalInPresentation = !popup.CanBeDismissedByTappingOutsideOfPopup;
+		if (OperatingSystem.IsIOSVersionAtLeast(13))
+		{
+			mauiPopup.ModalInPresentation = !popup.CanBeDismissedByTappingOutsideOfPopup;
+		}
 	}
 
 	/// <summary>
