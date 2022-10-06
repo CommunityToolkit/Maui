@@ -8,17 +8,17 @@ namespace CommunityToolkit.Maui.Layouts;
 /// <summary>
 /// StateLayout Controller
 /// </summary>
-class StateLayoutController : IDisposable
+sealed class StateLayoutController : IDisposable
 {
 	readonly WeakReference<Layout> layoutWeakReference;
 
-	bool layoutIsGrid, isDisposed;
+	bool layoutIsGrid;
 	LayoutState previousState = LayoutState.None;
 	List<View> originalContent = Enumerable.Empty<View>().ToList();
 	CancellationTokenSource? animationTokenSource;
 
 	/// <summary>
-	/// StateLayout Controller constructor
+	/// Initialize <see cref="StateLayoutController"/> with a <see cref="Layout"/>
 	/// </summary>
 	/// <param name="layout"></param>
 	public StateLayoutController(Layout layout) => layoutWeakReference = new WeakReference<Layout>(layout);
@@ -28,12 +28,10 @@ class StateLayoutController : IDisposable
 	/// </summary>
 	public IList<StateView> StateViews { get; set; } = Enumerable.Empty<StateView>().ToList();
 
-	/// <summary>Dispose <see cref="StateLayoutController"/>.</summary>
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
-	}
+	/// <summary>
+	/// Dispose <see cref="StateLayoutController"/>
+	/// </summary>
+	public void Dispose() => animationTokenSource?.Dispose();
 
 	/// <summary>
 	/// Display the default content.
@@ -218,21 +216,6 @@ class StateLayoutController : IDisposable
 		return layout ?? throw new ObjectDisposedException("Layout Disposed");
 	}
 
-	/// <summary>Dispose <see cref="StateLayoutController"/>.</summary>
-	/// <param name="isDisposing">Is disposing.</param>
-	protected virtual void Dispose(bool isDisposing)
-	{
-		if (!isDisposed)
-		{
-			isDisposed = true;
-
-			if (isDisposing)
-			{
-				animationTokenSource?.Dispose();
-			}
-		}
-	}
-
 	static async ValueTask FadeLayoutChildren(Layout layout, bool shouldAnimate, bool isHidden)
 	{
 		if (shouldAnimate && layout.Children.Count > 0)
@@ -252,16 +235,16 @@ class StateLayoutController : IDisposable
 
 	StateView? GetViewForState(LayoutState state, string? customState)
 	{
-		var view = StateViews.FirstOrDefault(x => (x.StateKey == state && state != LayoutState.Custom) ||
-						(state == LayoutState.Custom && x.CustomStateKey == customState));
+		var view = StateViews.FirstOrDefault(x => (x.StateKey == state && state is not LayoutState.Custom) ||
+						(state is LayoutState.Custom && x.CustomStateKey == customState));
 
 		return view;
 	}
 
 	int GetRepeatCount(LayoutState state, string? customState)
 	{
-		var template = StateViews.FirstOrDefault(x => (x.StateKey == state && state != LayoutState.Custom) ||
-					   (state == LayoutState.Custom && x.CustomStateKey == customState));
+		var template = StateViews.FirstOrDefault(x => (x.StateKey == state && state is not LayoutState.Custom) ||
+					   (state is LayoutState.Custom && x.CustomStateKey == customState));
 
 		return template is not null
 				? template.RepeatCount
@@ -270,16 +253,16 @@ class StateLayoutController : IDisposable
 
 	DataTemplate? GetTemplate(LayoutState state, string? customState)
 	{
-		var view = StateViews.FirstOrDefault(x => (x.StateKey == state && state != LayoutState.Custom) ||
-					   (state == LayoutState.Custom && x.CustomStateKey == customState));
+		var view = StateViews.FirstOrDefault(x => (x.StateKey == state && state is not LayoutState.Custom) ||
+					   (state is LayoutState.Custom && x.CustomStateKey == customState));
 
 		return view?.Template;
 	}
 
 	View CreateItemView(LayoutState state, string? customState)
 	{
-		var view = StateViews.FirstOrDefault(x => (x.StateKey == state && state != LayoutState.Custom) ||
-						(state == LayoutState.Custom && x.CustomStateKey == customState));
+		var view = StateViews.FirstOrDefault(x => (x.StateKey == state && state is not LayoutState.Custom) ||
+						(state is LayoutState.Custom && x.CustomStateKey == customState));
 
 		// TODO: This only allows for a repeatcount of 1.
 		// Internally in Xamarin.Forms we cannot add the same element to Children multiple times.
