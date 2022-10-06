@@ -43,7 +43,7 @@ sealed class StateLayoutController : IDisposable
 		var token = RebuildAnimationTokenSource(layout);
 
 		previousState = LayoutState.None;
-		await FadeLayoutChildren(layout, shouldAnimate, true);
+		await FadeLayoutChildren(layout, shouldAnimate, true, token);
 
 		token.ThrowIfCancellationRequested();
 
@@ -56,7 +56,7 @@ sealed class StateLayoutController : IDisposable
 			layout.Children.Add(item);
 		}
 
-		await FadeLayoutChildren(layout, shouldAnimate, false);
+		await FadeLayoutChildren(layout, shouldAnimate, false, token);
 	}
 
 	/// <summary>
@@ -96,7 +96,7 @@ sealed class StateLayoutController : IDisposable
 		{
 			previousState = state;
 
-			await FadeLayoutChildren(layout, animate, true);
+			await FadeLayoutChildren(layout, animate, true, token);
 
 			if (token.IsCancellationRequested)
 			{
@@ -206,7 +206,7 @@ sealed class StateLayoutController : IDisposable
 				}
 			}
 
-			await FadeLayoutChildren(layout, animate, false);
+			await FadeLayoutChildren(layout, animate, false, token);
 		}
 	}
 
@@ -216,7 +216,7 @@ sealed class StateLayoutController : IDisposable
 		return layout ?? throw new ObjectDisposedException("Layout Disposed");
 	}
 
-	static async ValueTask FadeLayoutChildren(Layout layout, bool shouldAnimate, bool isHidden)
+	static async ValueTask FadeLayoutChildren(Layout layout, bool shouldAnimate, bool isHidden, CancellationToken token)
 	{
 		if (shouldAnimate && layout.Children.Count > 0)
 		{
@@ -229,7 +229,7 @@ sealed class StateLayoutController : IDisposable
 				time = 100u;
 			}
 
-			await Task.WhenAll(layout.Children.OfType<View>().Select(a => ViewExtensions.FadeTo(a, opacity, time)));
+			await Task.WhenAll(layout.Children.OfType<View>().Select(a => ViewExtensions.FadeTo(a, opacity, time))).WaitAsync(token);
 		}
 	}
 
@@ -246,9 +246,7 @@ sealed class StateLayoutController : IDisposable
 		var template = StateViews.FirstOrDefault(x => (x.StateKey == state && state is not LayoutState.Custom) ||
 					   (state is LayoutState.Custom && x.CustomStateKey == customState));
 
-		return template is not null
-				? template.RepeatCount
-				: 1;
+		return template?.RepeatCount ?? 1;
 	}
 
 	DataTemplate? GetTemplate(LayoutState state, string? customState)
