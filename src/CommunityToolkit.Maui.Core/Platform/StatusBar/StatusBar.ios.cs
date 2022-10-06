@@ -14,10 +14,10 @@ static partial class StatusBar
 
 		if (OperatingSystem.IsIOSVersionAtLeast(13))
 		{
-			const int statusBarTag = 38482;
+			var statusBarTag = new IntPtr(38482);
 			foreach (var window in UIApplication.SharedApplication.Windows)
 			{
-				var statusBar = window.ViewWithTag(statusBarTag) ?? new UIView(UIApplication.SharedApplication.StatusBarFrame);
+				var statusBar = window.ViewWithTag(statusBarTag);
 				statusBar.Tag = statusBarTag;
 				statusBar.BackgroundColor = uiColor;
 				statusBar.TintColor = uiColor;

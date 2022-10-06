@@ -197,38 +197,4 @@ public class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 			applyMaskSemaphoreSlim.Release();
 		}
 	}
-	
-	bool isDisposed;
-
-	/// <inheritdoc/>
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
-	}
-
-	/// <inheritdoc/>
-	protected virtual void Dispose(bool disposing)
-	{
-		if (isDisposed)
-		{
-			return;
-		}
-
-		if (disposing)
-		{
-			applyMaskSemaphoreSlim.Dispose();
-		}
-
-		isDisposed = true;
-	}
-
-	/// <summary>
-	/// Finalizer
-	/// </summary>
-	~MaskedBehavior()
-	{
-		// Finalizer calls Dispose(false)
-		Dispose(false);
-	}
 }

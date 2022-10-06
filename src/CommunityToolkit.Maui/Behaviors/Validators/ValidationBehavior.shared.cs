@@ -426,41 +426,6 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 		validationTokenSource?.Cancel();
 		validationTokenSource = newTokenSource;
 	}
-
-
-	bool isDisposed;
-
-	/// <inheritdoc/>
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
-	}
-
-	/// <inheritdoc/>
-	protected virtual void Dispose(bool disposing)
-	{
-		if (isDisposed)
-		{
-			return;
-		}
-
-		if (disposing)
-		{
-			isAttachingSemaphoreSlim.Dispose();
-		}
-
-		isDisposed = true;
-	}
-
-	/// <summary>
-	/// Finalizer
-	/// </summary>
-	~ValidationBehavior()
-	{
-		// Finalizer calls Dispose(false)
-		Dispose(false);
-	}
 }
 
 /// <inheritdoc />
