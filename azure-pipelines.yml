@@ -138,7 +138,7 @@ jobs:
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$fullVersionString")
           Write-Host "##vso[build.updatebuildnumber]$fullVersionString"
         displayName: Set NuGet Version to PR Version
-        condition: and(succeeded(), eq(variables['build.reason'], 'PullRequest'))
+        condition: and(succeeded(), ne( variables['Agent.OS'], 'Darwin' ), eq(variables['build.reason'], 'PullRequest'))
 
       - task: CmdLine@2
         displayName: 'Set Xcode Version'
@@ -177,12 +177,12 @@ jobs:
       - task: CmdLine@2
         displayName: 'Run CommunityToolkit.Maui.Analyzers.UnitTests'
         inputs:
-          script: 'dotnet test $(PathToCommunityToolkitAnalyzersUnitTestCsproj) -c Release  --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory $(Agent.TempDirectory)'
+          script: 'dotnet test $(PathToCommunityToolkitAnalyzersUnitTestCsproj) -c Release'
 
       - task: CmdLine@2
         displayName: 'Run CommunityToolkit.Maui.UnitTests'
         inputs:
-          script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release  --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory $(Agent.TempDirectory)'
+          script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory $(Agent.TempDirectory)'
 
       - task: PublishTestResults@2
         condition: ne( variables['Agent.OS'], 'Darwin' )
