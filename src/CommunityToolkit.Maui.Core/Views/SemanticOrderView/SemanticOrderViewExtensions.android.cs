@@ -21,7 +21,7 @@ public static class SemanticOrderViewExtensions
 	/// <param name="view"></param>
 	public static void SetViewOrder(this View element, in ISemanticOrderView view)
 	{
-	//	SetAccessibilityElements(view);
+		SetAccessibilityElements(view);
 	}
 
 	static void SetAccessibilityElements(ISemanticOrderView virtualView)

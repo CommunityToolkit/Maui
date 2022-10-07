@@ -19,6 +19,11 @@ public partial class SemanticOrderViewHandler : ViewHandler<ISemanticOrderView, 
 		_ = MauiContext ?? throw new InvalidOperationException("MauiContext is null, please check your MauiApplication.");
 		_ = MauiContext.Context ?? throw new InvalidOperationException("Android Context is null, please check your MauiApplication.");
 
-		return new MauiSemanticOrderView(MauiContext.Context);
+		return new MauiSemanticOrderView(MauiContext.Context)
+		{
+			CrossPlatformArrange = VirtualView.CrossPlatformArrange,
+			CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
+			VirtualView = VirtualView
+		};
 	}
 }
