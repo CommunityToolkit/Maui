@@ -2,17 +2,10 @@
 <pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-                xmlns:converters="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Alerts.ToastPage"
                 xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Alerts"
                 x:TypeArguments="vm:ToastViewModel"
                 x:DataType="vm:ToastViewModel">
-
-    <pages:BasePage.Resources>
-        <ResourceDictionary>
-            <converters:ColorToColorForTextConverter x:Key="ColorToColorForTextConverter"/>
-        </ResourceDictionary>
-    </pages:BasePage.Resources>
     
     <VerticalStackLayout Spacing="12">
         
@@ -20,13 +13,7 @@
                 LineBreakMode = "WordWrap" />
         
         <Label Text="Windows uses toast notifications to display toast. Make sure you switched off Focus Assist."
-               IsVisible="false">
-            <Label.IsVisible>
-                <OnPlatform x:TypeArguments="x:Boolean">
-                    <On Platform="UWP" Value="true" />
-                </OnPlatform>
-            </Label.IsVisible>
-        </Label>
+               IsVisible="{OnPlatform Default='false', WinUI='true'}"/>
 
         <Button Clicked="ShowToastButtonClicked"
                 Text="Display Toast"/>
