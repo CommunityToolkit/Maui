@@ -30,11 +30,10 @@ public static class PopupExtensions
 
 		if (popup.Anchor is not null)
 		{
-			var anchorView = popup.Anchor.ToPlatform(popup.Handler.MauiContext);
+			var anchorView = popup.Anchor.ToPlatform();
 
 			var locationOnScreen = new int[2];
 			anchorView.GetLocationOnScreen(locationOnScreen);
-
 			window.SetGravity(GravityFlags.Top | GravityFlags.Left);
 			window.DecorView.Measure((int)MeasureSpecMode.Unspecified, (int)MeasureSpecMode.Unspecified);
 
