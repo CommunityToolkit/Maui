@@ -9,24 +9,11 @@ namespace CommunityToolkit.Maui.UnitTests.Layouts;
 
 public class StateLayoutTests : BaseTest
 {
-	readonly IReadOnlyList<StateView> stateViews = new List<StateView>
+	readonly IReadOnlyList<View> stateViews = new List<View>
 	{
-		new StateView()
-		{
-			StateKey = LayoutState.Loading,
-			Content = new Label { Text = "Loading" }
-		},
-		new StateView()
-		{
-			StateKey = LayoutState.Error,
-			Content = new Label { Text = "Error" }
-		},
-		new StateView()
-		{
-			StateKey = LayoutState.Custom,
-			CustomStateKey = "MyCustomState",
-			Content = new Label { Text = "Custom" }
-		}
+		new Label() { Text = "Loading" },
+		new Label() { Text = "Error" },
+		new Label() { Text = "Another" },
 	};
 
 	readonly VerticalStackLayout layout = new()
@@ -47,13 +34,17 @@ public class StateLayoutTests : BaseTest
 
 	public StateLayoutTests()
 	{
-		StateLayout.SetCurrentState(layout, LayoutState.None);
-		StateLayout.SetShouldAnimateOnStateChange(layout, false);
-		StateLayout.SetStateViews(layout, stateViews);
+		StateView.SetStateKey(stateViews[0], "LoadingState");
+		StateView.SetStateKey(stateViews[1], "ErrorState");
+		StateView.SetStateKey(stateViews[2], "AnythingState");
 
-		StateLayout.SetCurrentState(grid, LayoutState.None);
-		StateLayout.SetShouldAnimateOnStateChange(grid, false);
-		StateLayout.SetStateViews(grid, stateViews);
+		StateContainer.SetCurrentState(layout, string.Empty);
+		StateContainer.SetShouldAnimateOnStateChange(layout, false);
+		StateContainer.SetStateViews(layout, stateViews);
+
+		StateContainer.SetCurrentState(grid, string.Empty);
+		StateContainer.SetShouldAnimateOnStateChange(grid, false);
+		StateContainer.SetStateViews(grid, stateViews);
 	}
 
 	[Fact]
@@ -64,50 +55,48 @@ public class StateLayoutTests : BaseTest
 		var exception = Assert.Throws<InvalidOperationException>(() =>
 		{
 			// Use AsyncContext to test `async void` methods https://stackoverflow.com/a/14207615/5953643
-			AsyncContext.Run(() => StateLayout.SetCurrentState(invalidElement, LayoutState.Loading));
+			AsyncContext.Run(() => StateContainer.SetCurrentState(invalidElement, "abc"));
 		});
 
-		exception.Message.Should().StartWith("Cannot create the StateLayoutController.");
+		exception.Message.Should().StartWith("Cannot create the StateContainerController.");
 	}
 
 	[Fact]
 	public void StateLayout_CreatesControllerWithLayout()
 	{
-		StateLayout.SetCurrentState(layout, LayoutState.Loading);
+		StateContainer.SetCurrentState(layout, "abc");
 
-		var controller = StateLayout.GetLayoutController(layout);
+		var controller = StateContainer.GetContainerController(layout);
 
 		Assert.NotNull(controller);
 		Assert.IsType<VerticalStackLayout>(controller.GetLayout());
 	}
 
 	[Fact]
-	public async Task StateLayoutController_SwitchesToTemplateSuccess()
+	public async Task StateLayoutController_SwitchesToStateSuccess()
 	{
-		var controller = new StateLayoutController(layout)
+		var controller = new StateContainerController(layout)
 		{
-			StateViews = StateLayout.GetStateViews(layout)
+			StateViews = StateContainer.GetStateViews(layout)
 		};
 
-		await controller.SwitchToTemplate(LayoutState.Loading, null, false);
+		await controller.SwitchToState("LoadingState", false);
 
 		var state = controller.GetLayout().Children.First();
 
-		Assert.IsType<StateView>(state);
-		var label = ((StateView)state).Content;
-		Assert.IsType<Label>(label);
-		Assert.Equal("Loading", ((Label)label).Text);
+		Assert.IsType<Label>(state);
+		Assert.Equal("Loading", ((Label)state).Text);
 	}
 
 	[Fact]
 	public async Task StateLayoutController_SwitchesToContentSuccess()
 	{
-		var controller = new StateLayoutController(layout)
+		var controller = new StateContainerController(layout)
 		{
-			StateViews = StateLayout.GetStateViews(layout) ?? new List<StateView>()
+			StateViews = StateContainer.GetStateViews(layout) ?? new List<View>()
 		};
 
-		await controller.SwitchToTemplate(LayoutState.Loading, null, false);
+		await controller.SwitchToState("abc", false);
 		await controller.SwitchToContent(false);
 
 		var label = controller.GetLayout().Children.First();
