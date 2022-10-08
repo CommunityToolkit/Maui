@@ -85,7 +85,7 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<GravatarImageSourcePage, GravatarImageSourceViewModel, ImageSourcesGalleryPage, ImageSourcesGalleryViewModel>(),
 
 		// Add Layouts View Models
-		CreateViewModelMapping<StateLayoutPage, StateLayoutViewModel, LayoutsGalleryPage, LayoutsGalleryViewModel>(),
+		CreateViewModelMapping<StateContainerPage, StateContainerViewModel, LayoutsGalleryPage, LayoutsGalleryViewModel>(),
 		CreateViewModelMapping<UniformItemsLayoutPage, UniformItemsLayoutViewModel, LayoutsGalleryPage, LayoutsGalleryViewModel>(),
 
 		// Add Views View Models

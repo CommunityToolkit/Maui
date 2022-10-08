@@ -8,7 +8,7 @@ public class LayoutsGalleryViewModel : BaseGalleryViewModel
 	public LayoutsGalleryViewModel()
 		: base(new[]
 		{
-			SectionModel.Create<StateLayoutViewModel>(nameof(StateLayoutPage),
+			SectionModel.Create<StateContainerViewModel>(nameof(StateContainerPage),
 				"Enables any Layout derived element to become state-aware"),
 
 			SectionModel.Create<UniformItemsLayoutViewModel>(nameof(UniformItemsLayoutPage),
