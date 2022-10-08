@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Globalization;
 using CommunityToolkit.Maui.Converters;
-using CommunityToolkit.Maui.Core;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;

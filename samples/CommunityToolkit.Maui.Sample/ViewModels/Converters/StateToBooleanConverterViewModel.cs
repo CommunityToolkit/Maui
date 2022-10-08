@@ -1,6 +1,5 @@
 ﻿using System.Windows.Input;
 using CommunityToolkit.Maui.Converters;
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
