@@ -35,7 +35,6 @@ sealed class StateContainerController : IDisposable
 	/// <param name="shouldAnimate"></param>
 	public async Task SwitchToContent(bool shouldAnimate)
 	{
-
 		var layout = GetLayout();
 		var token = RebuildAnimationTokenSource(layout);
 
@@ -44,9 +43,9 @@ sealed class StateContainerController : IDisposable
 
 		token.ThrowIfCancellationRequested();
 
-		// Put the original content back in.
 		layout.Children.Clear();
 
+		// Put the original content back in.
 		foreach (var item in originalContent)
 		{
 			item.Opacity = shouldAnimate ? 0 : 1;
@@ -65,6 +64,7 @@ sealed class StateContainerController : IDisposable
 	{
 		var layout = GetLayout();
 		var token = RebuildAnimationTokenSource(layout);
+		var view = GetViewForState(state);
 
 		// Put the original content somewhere where we can restore it.
 		if (previousState is null)
@@ -76,8 +76,6 @@ sealed class StateContainerController : IDisposable
 				originalContent.Add((View)item);
 			}
 		}
-
-		var view = GetViewForState(state);
 
 		previousState = state;
 
@@ -117,7 +115,6 @@ sealed class StateContainerController : IDisposable
 
 			innerLayout.Children.Add(view);
 			layout.Children.Add(innerLayout);
-
 		}
 		else
 		{
