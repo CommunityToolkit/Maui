@@ -5,25 +5,38 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 
 public partial class StateContainerViewModel : BaseViewModel
 {
+	class StateKey
+	{
+		public const string Loading = "Loading";
+		public const string Success = "Success";
+		public const string Anything = "StateKey can be anything!";
+		public const string ReplaceGrid = "ReplaceGrid";
+		public const string NoAnimate = "NoAnimate";
+		public const string NotFound = "NotFoundExampleKey";
+	} 
+
 	[ObservableProperty]
 	string? currentState;
 
 	[ObservableProperty]
 	string? gridState;
 
+	[ObservableProperty]
+	string? noAnimateState;
+
+	[ObservableProperty]
+	string? notFoundState;
+
 	[RelayCommand]
 	async Task CycleStates()
 	{
-		CurrentState = "Loading";
+		CurrentState = StateKey.Loading;
 		await Task.Delay(2000);
 
-		CurrentState = "Success";
+		CurrentState = StateKey.Success;
 		await Task.Delay(2000);
 
-		CurrentState = "AnotherState";
-		await Task.Delay(2000);
-
-		CurrentState = "StateKey can be anything!";
+		CurrentState = StateKey.Anything;
 		await Task.Delay(2000);
 
 		// Setting state to empty string or null returns to the default content
@@ -31,11 +44,41 @@ public partial class StateContainerViewModel : BaseViewModel
 	}
 
 	[RelayCommand]
-	async Task CycleGridStates()
+	void ToggleGridState()
 	{
-		GridState = "ReplaceGridState";
-		await Task.Delay(2000);
+		if (GridState == StateKey.ReplaceGrid)
+		{
+			GridState = null;
+		} 
+		else
+		{
+			GridState = StateKey.ReplaceGrid;
+		}
+	}
 
-		GridState = null;
+	[RelayCommand]
+	void ToggleNoAnimateState()
+	{
+		if (NoAnimateState == StateKey.NoAnimate)
+		{
+			NoAnimateState = null;
+		} 
+		else
+		{
+			NoAnimateState = StateKey.NoAnimate;
+		}
+	}
+
+	[RelayCommand]
+	void ToggleNotFoundState()
+	{
+		if (NotFoundState == StateKey.NotFound)
+		{
+			NotFoundState = null;
+		}
+		else
+		{
+			NotFoundState = StateKey.NotFound;
+		}
 	}
 }
