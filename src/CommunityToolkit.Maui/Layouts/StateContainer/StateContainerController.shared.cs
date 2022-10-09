@@ -4,7 +4,7 @@ using ViewExtensions = Microsoft.Maui.Controls.ViewExtensions;
 namespace CommunityToolkit.Maui.Layouts;
 
 /// <summary>
-/// StateLayout Controller
+/// StateContainer Controller
 /// </summary>
 sealed class StateContainerController : IDisposable
 {
@@ -20,7 +20,7 @@ sealed class StateContainerController : IDisposable
 	public StateContainerController(Layout layout) => layoutWeakReference = new WeakReference<Layout>(layout);
 
 	/// <summary>
-	/// The StateViews defined in the StateLayout.
+	/// The StateViews defined in the StateContainer.
 	/// </summary>
 	public IList<View> StateViews { get; set; } = Enumerable.Empty<View>().ToList();
 

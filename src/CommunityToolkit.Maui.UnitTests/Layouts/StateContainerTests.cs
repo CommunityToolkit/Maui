@@ -7,7 +7,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Layouts;
 
-public class StateLayoutTests : BaseTest
+public class StateContainerTests : BaseTest
 {
 	readonly IReadOnlyList<View> stateViews = new List<View>
 	{
@@ -32,7 +32,7 @@ public class StateLayoutTests : BaseTest
 		}
 	};
 
-	public StateLayoutTests()
+	public StateContainerTests()
 	{
 		StateView.SetStateKey(stateViews[0], "LoadingState");
 		StateView.SetStateKey(stateViews[1], "ErrorState");
@@ -48,7 +48,7 @@ public class StateLayoutTests : BaseTest
 	}
 
 	[Fact]
-	public void StateLayout_ElementNotInheritsLayoutThrowsException()
+	public void StateContainer_ElementNotInheritsLayoutThrowsException()
 	{
 		var invalidElement = new View();
 
@@ -62,7 +62,7 @@ public class StateLayoutTests : BaseTest
 	}
 
 	[Fact]
-	public void StateLayout_CreatesControllerWithLayout()
+	public void StateContainer_CreatesControllerWithLayout()
 	{
 		StateContainer.SetCurrentState(layout, "abc");
 
@@ -73,7 +73,7 @@ public class StateLayoutTests : BaseTest
 	}
 
 	[Fact]
-	public async Task StateLayoutController_SwitchesToStateSuccess()
+	public async Task StateContainerController_SwitchesToStateSuccess()
 	{
 		var controller = new StateContainerController(layout)
 		{
@@ -89,7 +89,7 @@ public class StateLayoutTests : BaseTest
 	}
 
 	[Fact]
-	public async Task StateLayoutController_SwitchesToContentSuccess()
+	public async Task StateContainerController_SwitchesToContentSuccess()
 	{
 		var controller = new StateContainerController(layout)
 		{
