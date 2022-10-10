@@ -72,13 +72,21 @@ public static class StateContainer
 			return;
 		}
 
-		if (string.IsNullOrEmpty((string)newValue))
+		try
 		{
-			await GetContainerController(bindable).SwitchToContent(GetShouldAnimateOnStateChange(bindable));
+			if (string.IsNullOrEmpty((string)newValue))
+			{
+				await GetContainerController(bindable).SwitchToContent(GetShouldAnimateOnStateChange(bindable));
+			}
+			else
+			{
+				await GetContainerController(bindable).SwitchToState((string)newValue, GetShouldAnimateOnStateChange(bindable));
+			}
 		}
-		else
+		catch (OperationCanceledException)
 		{
-			await GetContainerController(bindable).SwitchToState((string)newValue, GetShouldAnimateOnStateChange(bindable));
+			// The state was changed before the current finished changing; abort
+			return;
 		}
 	}
 
