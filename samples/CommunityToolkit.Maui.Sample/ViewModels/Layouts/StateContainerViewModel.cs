@@ -13,7 +13,7 @@ public partial class StateContainerViewModel : BaseViewModel
 		public const string ReplaceGrid = "ReplaceGrid";
 		public const string NoAnimate = "NoAnimate";
 		public const string NotFound = "NotFoundExampleKey";
-	} 
+	}
 
 	[ObservableProperty]
 	string? currentState;
@@ -49,7 +49,7 @@ public partial class StateContainerViewModel : BaseViewModel
 		if (GridState == StateKey.ReplaceGrid)
 		{
 			GridState = null;
-		} 
+		}
 		else
 		{
 			GridState = StateKey.ReplaceGrid;
@@ -62,7 +62,7 @@ public partial class StateContainerViewModel : BaseViewModel
 		if (NoAnimateState == StateKey.NoAnimate)
 		{
 			NoAnimateState = null;
-		} 
+		}
 		else
 		{
 			NoAnimateState = StateKey.NoAnimate;
