@@ -33,10 +33,11 @@ sealed class StateContainerController : IDisposable
 	/// Display the default content.
 	/// </summary>
 	/// <param name="shouldAnimate"></param>
-	public async Task SwitchToContent(bool shouldAnimate)
+	/// <param name="cancellationToken"></param>
+	public async Task SwitchToContent(bool shouldAnimate, CancellationToken? cancellationToken = null)
 	{
 		var layout = GetLayout();
-		var token = RebuildAnimationTokenSource(layout);
+		var token = cancellationToken ?? RebuildAnimationTokenSource(layout);
 
 		previousState = null;
 		await FadeLayoutChildren(layout, shouldAnimate, true, token);
@@ -60,10 +61,11 @@ sealed class StateContainerController : IDisposable
 	/// </summary>
 	/// <param name="state"></param>
 	/// <param name="shouldAnimate"></param>
-	public async Task SwitchToState(string state, bool shouldAnimate)
+	/// <param name="cancellationToken"></param>
+	public async Task SwitchToState(string state, bool shouldAnimate, CancellationToken? cancellationToken = null)
 	{
 		var layout = GetLayout();
-		var token = RebuildAnimationTokenSource(layout);
+		var token = cancellationToken ?? RebuildAnimationTokenSource(layout);
 		var view = GetViewForState(state);
 
 		// Put the original content somewhere where we can restore it.
@@ -154,7 +156,7 @@ sealed class StateContainerController : IDisposable
 	}
 
 	[MemberNotNull(nameof(animationTokenSource))]
-	CancellationToken RebuildAnimationTokenSource(Layout layout)
+	internal CancellationToken RebuildAnimationTokenSource(Layout layout)
 	{
 		animationTokenSource?.Cancel();
 		animationTokenSource?.Dispose();
