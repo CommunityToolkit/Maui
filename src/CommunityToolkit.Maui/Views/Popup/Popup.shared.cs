@@ -45,6 +45,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	readonly Lazy<PlatformConfigurationRegistry<Popup>> platformConfigurationRegistry;
 
 	TaskCompletionSource<object?> taskCompletionSource = new();
+	Window? window;
 
 	/// <summary>
 	/// Instantiates a new instance of <see cref="Popup"/>.
@@ -164,20 +165,6 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	public View? Anchor { get; set; }
 
 	/// <summary>
-	/// Gets or sets the result that will return when user taps outside of the Popup.
-	/// </summary>
-	protected object? ResultWhenUserTapsOutsideOfPopup { get; set; }
-
-	/// <inheritdoc/>
-	IView? IPopup.Anchor => Anchor;
-
-	/// <inheritdoc/>
-	IView? IPopup.Content => Content;
-
-
-	Window? window;
-
-	/// <summary>
 	/// Property that represents the Window that's showing the Popup.
 	/// </summary>
 	public Window? Window
@@ -193,6 +180,18 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 			}
 		}
 	}
+
+	/// <summary>
+	/// Gets or sets the result that will return when user taps outside of the Popup.
+	/// </summary>
+	protected object? ResultWhenUserTapsOutsideOfPopup { get; set; }
+
+	/// <inheritdoc/>
+	IView? IPopup.Anchor => Anchor;
+
+	/// <inheritdoc/>
+	IView? IPopup.Content => Content;
+
 
 	/// <summary>
 	/// Resets the Popup.
