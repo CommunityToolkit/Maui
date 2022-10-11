@@ -39,11 +39,10 @@ sealed class StateContainerController : IDisposable
 		var layout = GetLayout();
 		var token = cancellationToken ?? RebuildAnimationTokenSource(layout);
 
-		previousState = null;
 		await FadeLayoutChildren(layout, shouldAnimate, true, token);
-
 		token.ThrowIfCancellationRequested();
 
+		previousState = null;
 		layout.Children.Clear();
 
 		// Put the original content back in.
@@ -68,6 +67,9 @@ sealed class StateContainerController : IDisposable
 		var token = cancellationToken ?? RebuildAnimationTokenSource(layout);
 		var view = GetViewForState(state);
 
+		await FadeLayoutChildren(layout, shouldAnimate, true, token);
+		token.ThrowIfCancellationRequested();
+
 		// Put the original content somewhere where we can restore it.
 		if (previousState is null)
 		{
@@ -80,11 +82,6 @@ sealed class StateContainerController : IDisposable
 		}
 
 		previousState = state;
-
-		await FadeLayoutChildren(layout, shouldAnimate, true, token);
-
-		token.ThrowIfCancellationRequested();
-
 		layout.Children.Clear();
 
 		// If the layout we're applying StateContainer to is a Grid,
@@ -137,15 +134,15 @@ sealed class StateContainerController : IDisposable
 		if (shouldAnimate && layout.Children.Count > 0)
 		{
 			var opacity = 1;
-			var time = 500u;
+			var length = 500u;
 
 			if (isHidden)
 			{
 				opacity = 0;
-				time = 100u;
+				length = 100u;
 			}
 
-			await Task.WhenAll(layout.Children.OfType<View>().Select(a => ViewExtensions.FadeTo(a, opacity, time))).WaitAsync(token);
+			await Task.WhenAll(layout.Children.OfType<View>().Select(view => view.FadeTo(opacity, length))).WaitAsync(token);
 		}
 	}
 
@@ -163,7 +160,7 @@ sealed class StateContainerController : IDisposable
 
 		foreach (var child in layout.Children)
 		{
-			ViewExtensions.CancelAnimations((View)child);
+			((View)child).CancelAnimations();
 		}
 
 		animationTokenSource = new CancellationTokenSource();
