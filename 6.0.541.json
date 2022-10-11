@@ -1,0 +1,10 @@
+{
+  "microsoft.net.sdk.android": "32.0.476",
+  "microsoft.net.sdk.ios": "16.0.517",
+  "microsoft.net.sdk.maccatalyst": "15.4.465",
+  "microsoft.net.sdk.macos": "12.3.465",
+  "microsoft.net.sdk.maui": "6.0.541",
+  "microsoft.net.sdk.tvos": "16.0.517",
+  "microsoft.net.workload.mono.toolchain": "6.0.10",
+  "microsoft.net.workload.emscripten": "6.0.10"
+}

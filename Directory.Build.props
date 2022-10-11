@@ -20,4 +20,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="CommunityToolkit.Maui.UnitTests" />
   </ItemGroup>
+  <PropertyGroup Condition="'$(TF_BUILD)' == 'true' and $([MSBuild]::IsOSPlatform('windows')) == 'true'">
+    <IncludeTizenTargetFrameworks>true</IncludeTizenTargetFrameworks>
+  </PropertyGroup>
 </Project>

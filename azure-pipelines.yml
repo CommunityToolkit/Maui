@@ -3,7 +3,7 @@ variables:
   PreviewNumber: $[counter(variables['CurrentSemanticVersionBase'], 1001)]
   CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(PreviewNumber)'
   NugetPackageVersion: '$(CurrentSemanticVersion)'
-  TOOLKIT_NET6_VERSION: '6.0.300'
+  TOOLKIT_NET6_VERSION: '6.0.400'
   LATEST_NET6_VERSION: '6.0.x'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
@@ -17,7 +17,7 @@ variables:
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
   Xcode13Version: '13.3.1'
   Xcode14Version: '14.0.1'
-  DotNetMauiRollbackFile: '6.0.312.json'
+  DotNetMauiRollbackFile: '6.0.541.json'
   ShouldCheckDependencies: true
 
 trigger:
@@ -56,6 +56,11 @@ jobs:
 
       - powershell: dotnet workload install maui --from-rollback-file $(DotNetMauiRollbackFile) --source https://api.nuget.org/v3/index.json
         displayName: Install .NET MAUI $(TOOLKIT_NET6_VERSION)
+
+      - pwsh: |
+          Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
+          .\workload-install.ps1 -DotnetTargetVersionBand $(TOOLKIT_NET6_VERSION)
+        displayName: Install tizen workload
 
       # if this is a tagged build, then update the version number
       - powershell: |
@@ -201,6 +206,11 @@ jobs:
       - powershell: dotnet workload install maui
         displayName: Install Latest .NET MAUI Workload
 
+      - pwsh: |
+          Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
+          .\workload-install.ps1 -DotnetTargetVersionBand $(TOOLKIT_NET6_VERSION)
+        displayName: Install tizen workload
+
       # build sample
       - task: VSBuild@1
         displayName: 'Build Community Toolkit Sample'
@@ -222,6 +232,11 @@ jobs:
 
       - powershell: dotnet workload install maui
         displayName: Install Latest .NET MAUI Workload
+
+      - pwsh: |
+          Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
+          .\workload-install.ps1 -DotnetTargetVersionBand $(TOOLKIT_NET6_VERSION)
+        displayName: Install tizen workload
 
       - task: Bash@3
         displayName: 'Verify Formatting'

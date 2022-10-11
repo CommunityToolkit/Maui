@@ -44,7 +44,7 @@ public class StatusBarBehavior : PlatformBehavior<Page>
 		set => SetValue(StatusBarStyleProperty, value);
 	}
 
-#if !(WINDOWS || MACCATALYST)
+#if !(WINDOWS || MACCATALYST || TIZEN)
 
 	/// <inheritdoc /> 
 #if IOS
