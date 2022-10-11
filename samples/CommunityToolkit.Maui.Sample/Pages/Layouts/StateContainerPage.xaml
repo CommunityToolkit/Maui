@@ -9,6 +9,10 @@
     x:DataType="layouts:StateContainerViewModel"
     x:TypeArguments="layouts:StateContainerViewModel">
 
+    <pages:BasePage.ToolbarItems>
+        <ToolbarItem Command="{Binding ToggleFullPageStateCommand}" Text="Toggle Page" />
+    </pages:BasePage.ToolbarItems>
+
     <pages:BasePage.Resources>
         <Style x:Key="BorderStyle" TargetType="Border">
             <Setter Property="Padding" Value="20" />
@@ -18,7 +22,19 @@
     </pages:BasePage.Resources>
 
     <ScrollView>
-        <VerticalStackLayout Spacing="10">
+        <VerticalStackLayout mct:StateContainer.CurrentState="{Binding FullPageState}" Spacing="10">
+
+            <mct:StateContainer.StateViews>
+                <VerticalStackLayout mct:StateView.StateKey="Loading">
+                    <ActivityIndicator
+                        HorizontalOptions="Center"
+                        IsRunning="True"
+                        Color="Fuchsia" />
+                    <Label HorizontalOptions="Center" Text="I'm a state on the whole page!" />
+                    <Label HorizontalOptions="Center" Text="Toggle to go back." />
+                </VerticalStackLayout>
+            </mct:StateContainer.StateViews>
+
             <Label Text="The StateContainer properties allow any Layout derived element to become state-aware." />
             <Button Command="{Binding CycleStatesCommand}" Text="Cycle States" />
             <Label Text="This will show several states at an interval of 2 seconds." />
@@ -64,7 +80,7 @@
                 </mct:StateContainer.StateViews>
 
                 <Border Style="{StaticResource BorderStyle}">
-                    <Label Text="This is the default content" VerticalTextAlignment="Center" />
+                    <Label Text="This is the default content." VerticalTextAlignment="Center" />
                 </Border>
 
             </VerticalStackLayout>
@@ -114,7 +130,7 @@
             </Grid>
 
             <Button Command="{Binding ToggleNoAnimateStateCommand}" Text="Toggle State Without Animation" />
-            <Label Text="ShouldAnimateOnStateChange can be set to false to disable state changing animation." />
+            <Label Text="ShouldAnimateOnStateChange can be set to false to disable the fade animation." />
 
             <VerticalStackLayout mct:StateContainer.CurrentState="{Binding NoAnimateState}" mct:StateContainer.ShouldAnimateOnStateChange="False">
 
@@ -123,23 +139,23 @@
                         mct:StateView.StateKey="NoAnimate"
                         Stroke="Fuschia"
                         Style="{StaticResource BorderStyle}">
-                        <Label Text="Hi, I didn't animate" VerticalTextAlignment="Center" />
+                        <Label Text="Hi, I didn't animate." VerticalTextAlignment="Center" />
                     </Border>
                 </mct:StateContainer.StateViews>
 
                 <Border Style="{StaticResource BorderStyle}">
-                    <Label Text="This is the default content" VerticalTextAlignment="Center" />
+                    <Label Text="This is the default content." VerticalTextAlignment="Center" />
                 </Border>
 
             </VerticalStackLayout>
 
             <Button Command="{Binding ToggleNotFoundStateCommand}" Text="Toggle Nonexistent State" />
-            <Label Text="A placeholder Label is presented when the CurrentState doesn't have a corresponding StateView." />
+            <Label Text="A placeholder Label is presented when CurrentState doesn't have a matching StateKey." />
 
             <VerticalStackLayout mct:StateContainer.CurrentState="{Binding NotFoundState}" mct:StateContainer.ShouldAnimateOnStateChange="True">
 
                 <Border Style="{StaticResource BorderStyle}">
-                    <Label Text="This is the default content" VerticalTextAlignment="Center" />
+                    <Label Text="This is the default content." VerticalTextAlignment="Center" />
                 </Border>
 
             </VerticalStackLayout>

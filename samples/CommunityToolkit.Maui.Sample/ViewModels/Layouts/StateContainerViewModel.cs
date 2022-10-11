@@ -27,6 +27,9 @@ public partial class StateContainerViewModel : BaseViewModel
 	[ObservableProperty]
 	string? notFoundState;
 
+	[ObservableProperty]
+	string? fullPageState;
+
 	[RelayCommand]
 	async Task CycleStates()
 	{
@@ -79,6 +82,19 @@ public partial class StateContainerViewModel : BaseViewModel
 		else
 		{
 			NotFoundState = StateKey.NotFound;
+		}
+	}
+
+	[RelayCommand]
+	void ToggleFullPageState()
+	{
+		if (FullPageState == StateKey.Loading)
+		{
+			FullPageState = null;
+		}
+		else
+		{
+			FullPageState = StateKey.Loading;
 		}
 	}
 }
