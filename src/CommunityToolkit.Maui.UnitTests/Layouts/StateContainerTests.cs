@@ -43,27 +43,59 @@ public class StateContainerTests : BaseTest
 		}
 	};
 
+	readonly StateContainerController controller;
+	readonly StateContainerController gridController;
+
 	public StateContainerTests()
 	{
 		StateView.SetStateKey(stateViews[0], StateKey.Loading);
 		StateView.SetStateKey(stateViews[1], StateKey.Error);
 		StateView.SetStateKey(stateViews[2], StateKey.Anything);
 
-		StateContainer.SetCurrentState(layout, string.Empty);
 		StateContainer.SetShouldAnimateOnStateChange(layout, false);
 		StateContainer.SetStateViews(layout, stateViews);
 
-		StateContainer.SetCurrentState(grid, string.Empty);
 		StateContainer.SetShouldAnimateOnStateChange(grid, false);
 		StateContainer.SetStateViews(grid, stateViews);
+
+		controller = new StateContainerController(layout)
+		{
+			StateViews = StateContainer.GetStateViews(layout) ?? new List<View>()
+		};
+
+		gridController = new StateContainerController(grid)
+		{
+			StateViews = StateContainer.GetStateViews(grid) ?? new List<View>()
+		};
 	}
 
 	[Fact]
 	public void StateView_HasStateKey()
 	{
-		var stateView = StateContainer.GetStateViews(layout).First();
-		var stateKey = StateView.GetStateKey(stateView);
-		Assert.Equal(StateKey.Loading, stateKey);
+		var view = StateContainer.GetStateViews(layout).First();
+		Assert.Equal(StateKey.Loading, StateView.GetStateKey(view));
+	}
+
+	[Fact]
+	public void StateView_SetsStateKey()
+	{
+		var view = (View)layout.Children.First();
+		StateView.SetStateKey(view, StateKey.Anything);
+		Assert.Equal(StateKey.Anything, StateView.GetStateKey(view));
+	}
+
+	[Fact]
+	public void StateContainer_SetsCurrentState()
+	{
+		StateContainer.SetCurrentState(layout, StateKey.Loading);
+		Assert.Equal(StateKey.Loading, StateContainer.GetCurrentState(layout));
+	}
+
+	[Fact]
+	public void StateContainer_SetsShouldAnimateOnStateChange()
+	{
+		StateContainer.SetShouldAnimateOnStateChange(layout, true);
+		Assert.True(StateContainer.GetShouldAnimateOnStateChange(layout));
 	}
 
 	[Fact]
@@ -92,10 +124,6 @@ public class StateContainerTests : BaseTest
 	[Fact]
 	public void Controller_CancelsAnimationTokenOnRebuild()
 	{
-		var controller = new StateContainerController(layout)
-		{
-			StateViews = StateContainer.GetStateViews(layout) ?? new List<View>()
-		};
 		var token = controller.RebuildAnimationTokenSource(layout);
 		var newToken = controller.RebuildAnimationTokenSource(layout);
 
@@ -106,10 +134,6 @@ public class StateContainerTests : BaseTest
 	[Fact]
 	public async Task Controller_CanceledSwitchToStateThrowsException()
 	{
-		var controller = new StateContainerController(layout)
-		{
-			StateViews = StateContainer.GetStateViews(layout) ?? new List<View>()
-		};
 		var cts = new CancellationTokenSource();
 		cts.Cancel();
 
@@ -119,10 +143,6 @@ public class StateContainerTests : BaseTest
 	[Fact]
 	public async Task Controller_CanceledSwitchToContentThrowsException()
 	{
-		var controller = new StateContainerController(layout)
-		{
-			StateViews = StateContainer.GetStateViews(layout) ?? new List<View>()
-		};
 		var cts = new CancellationTokenSource();
 		cts.Cancel();
 
@@ -132,10 +152,6 @@ public class StateContainerTests : BaseTest
 	[Fact]
 	public async Task Controller_ReturnsErrorLabelOnInvalidState()
 	{
-		var controller = new StateContainerController(layout)
-		{
-			StateViews = StateContainer.GetStateViews(layout) ?? new List<View>()
-		};
 		await controller.SwitchToState("InvalidStateKey", false);
 		var label = controller.GetLayout().Children.First();
 
@@ -146,10 +162,6 @@ public class StateContainerTests : BaseTest
 	[Fact]
 	public async Task Controller_SwitchesToStateFromContentSuccess()
 	{
-		var controller = new StateContainerController(layout)
-		{
-			StateViews = StateContainer.GetStateViews(layout)
-		};
 		await controller.SwitchToState(StateKey.Loading, false);
 		var state = controller.GetLayout().Children.First();
 
@@ -160,15 +172,11 @@ public class StateContainerTests : BaseTest
 	[Fact]
 	public async Task Controller_SwitchesToContentFromStateSuccess()
 	{
-		var controller = new StateContainerController(layout)
-		{
-			StateViews = StateContainer.GetStateViews(layout) ?? new List<View>()
-		};
-		await controller.SwitchToState(StateKey.Anything, false);
+		await controller.SwitchToState(StateKey.Loading, false);
 		var label = controller.GetLayout().Children.First();
 
 		Assert.IsType<Label>(label);
-		Assert.Equal("Anything", ((Label)label).Text);
+		Assert.Equal("Loading", ((Label)label).Text);
 
 		await controller.SwitchToContent(false);
 		label = controller.GetLayout().Children.First();
@@ -180,10 +188,6 @@ public class StateContainerTests : BaseTest
 	[Fact]
 	public async Task Controller_SwitchesToStateFromStateSuccess()
 	{
-		var controller = new StateContainerController(layout)
-		{
-			StateViews = StateContainer.GetStateViews(layout) ?? new List<View>()
-		};
 		await controller.SwitchToState(StateKey.Anything, false);
 		var label = controller.GetLayout().Children.First();
 
@@ -200,10 +204,6 @@ public class StateContainerTests : BaseTest
 	[Fact]
 	public async Task Controller_SwitchesToStateFromSameStateSuccess()
 	{
-		var controller = new StateContainerController(layout)
-		{
-			StateViews = StateContainer.GetStateViews(layout) ?? new List<View>()
-		};
 		await controller.SwitchToState(StateKey.Loading, false);
 		var label = controller.GetLayout().Children.First();
 
@@ -220,12 +220,8 @@ public class StateContainerTests : BaseTest
 	[Fact]
 	public async Task Controller_GridStateInnerLayoutSpansParent()
 	{
-		var controller = new StateContainerController(grid)
-		{
-			StateViews = StateContainer.GetStateViews(grid) ?? new List<View>()
-		};
-		await controller.SwitchToState(StateKey.Loading, false);
-		var innerLayout = controller.GetLayout().Children.First();
+		await gridController.SwitchToState(StateKey.Loading, false);
+		var innerLayout = gridController.GetLayout().Children.First();
 
 		Assert.IsType<VerticalStackLayout>(innerLayout);
 		Assert.Equal(Grid.GetColumnSpan((VerticalStackLayout)innerLayout), grid.ColumnDefinitions.Count);
@@ -235,12 +231,8 @@ public class StateContainerTests : BaseTest
 	[Fact]
 	public async Task Controller_GridStateInnerLayoutRespectsViewOptions()
 	{
-		var controller = new StateContainerController(grid)
-		{
-			StateViews = StateContainer.GetStateViews(grid) ?? new List<View>()
-		};
-		await controller.SwitchToState(StateKey.Anything, false);
-		var innerLayout = controller.GetLayout().Children.First();
+		await gridController.SwitchToState(StateKey.Anything, false);
+		var innerLayout = gridController.GetLayout().Children.First();
 
 		Assert.IsType<VerticalStackLayout>(innerLayout);
 
