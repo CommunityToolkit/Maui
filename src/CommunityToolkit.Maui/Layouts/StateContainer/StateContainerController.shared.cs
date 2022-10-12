@@ -52,6 +52,7 @@ sealed class StateContainerController : IDisposable
 			layout.Children.Add(item);
 		}
 
+		token.ThrowIfCancellationRequested();
 		await FadeLayoutChildren(layout, shouldAnimate, false, token);
 	}
 
@@ -120,6 +121,7 @@ sealed class StateContainerController : IDisposable
 			layout.Children.Add(view);
 		}
 
+		token.ThrowIfCancellationRequested();
 		await FadeLayoutChildren(layout, shouldAnimate, false, token);
 	}
 

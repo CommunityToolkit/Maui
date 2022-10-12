@@ -14,8 +14,8 @@ public static class StateView
 	/// <summary>
 	/// Set the StateKey property
 	/// </summary>
-	/// <param name="b"></param>
-	/// <param name="value"></param>
+	/// <param name="b">The <see cref="VisualElement"/> that will set the property.</param>
+	/// <param name="value">The StateKey value for this <see cref="VisualElement"/>.</param>
 	public static void SetStateKey(BindableObject b, string value)
 		=> b.SetValue(StateKeyProperty, value);
 
