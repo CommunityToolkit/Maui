@@ -19,8 +19,6 @@ public abstract class BasePage : ContentPage
 		BindingContext = viewModel;
 		Padding = 12;
 
-		SetDynamicResource(BackgroundColorProperty, "AppBackgroundColor");
-
 		if (string.IsNullOrWhiteSpace(Title))
 		{
 			Title = GetType().Name;

@@ -20,20 +20,18 @@
                 LineBreakMode = "WordWrap" />
         
         <Label Text="Windows uses toast notifications to display snackbar. Make sure you switched off Focus Assist."
-               IsVisible="false">
-            <Label.IsVisible>
-                <OnPlatform x:TypeArguments="x:Boolean">
-                    <On Platform="UWP" Value="true" />
-                </OnPlatform>
-            </Label.IsVisible>
-        </Label>
+               IsVisible="{OnPlatform Default='false', WinUI='true'}"/>
         
         <Button Clicked="DisplayDefaultSnackbarButtonClicked"
                 Text="Display Default Snackbar"/>
         
         <Button x:Name="DisplayCustomSnackbarButton"
                 Clicked="DisplayCustomSnackbarButtonClicked"
-                TextColor="{Binding Source={RelativeSource Self}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}}"/>
+                TextColor="{Binding Source={RelativeSource Self}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}}"/> 
+        
+        <Button x:Name="DisplaySnackbarInModalButton"
+                Text="Show Snackbar in Modal Page"
+                Clicked="DisplaySnackbarInModalButtonClicked"/>
 
         <Label x:Name="SnackbarShownStatus" />
     </VerticalStackLayout>

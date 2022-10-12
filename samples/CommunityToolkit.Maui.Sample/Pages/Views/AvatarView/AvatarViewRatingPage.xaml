@@ -35,7 +35,7 @@
                     <Setter Property="ColumnDefinitions" Value="60,60,60,60,60" />
                     <Setter Property="ColumnSpacing" Value="4" />
                     <Setter Property="HorizontalOptions" Value="Center" />
-                    <Setter Property="RowDefinitions" Value="Auto" />
+                    <Setter Property="RowDefinitions" Value="Auto, Auto" />
                     <Setter Property="RowSpacing" Value="4" />
                 </Style>
                 <Style
@@ -101,6 +101,40 @@
                 StrokeShape="PolyLine 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
                 Style="{StaticResource Rating}"
                 Text="5"
+                WidthRequest="48">
+                <mct:AvatarView.Clip>
+                    <RectangleGeometry Rect="0,0,24,48" />
+                </mct:AvatarView.Clip>
+            </mct:AvatarView>
+            <mct:AvatarView
+                Grid.Row="1"
+                Grid.Column="0"
+                HeightRequest="48"
+                ImageSource="avatar_icon.png"
+                SemanticProperties.Description="Sample AvatarView idea using a polyline stroke shape to override the corder radius to draw a star."
+                StrokeShape="PolyLine 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
+                Style="{StaticResource Rating}"
+                Text="1"
+                WidthRequest="48" />
+            <mct:AvatarView
+                Grid.Row="1"
+                Grid.Column="1"
+                HeightRequest="48"
+                ImageSource="https://aka.ms/campus.jpg"
+                SemanticProperties.Description="Sample AvatarView idea using a polyline stroke shape to override the corder radius to draw a star."
+                StrokeShape="PolyLine 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
+                Style="{StaticResource Rating}"
+                Text="2"
+                WidthRequest="48" />
+            <mct:AvatarView
+                Grid.Row="1"
+                Grid.Column="2"
+                HeightRequest="48"
+                ImageSource="avatar_icon.png"
+                SemanticProperties.Description="Sample AvatarView idea using a polyline stroke shape to override the corder radius to draw a star, cliped by parent size."
+                StrokeShape="PolyLine 70,16 76,32 94,32 80,44 84,60 70,50 55,60 60,42 46,32 64,32"
+                Style="{StaticResource Rating}"
+                Text="3"
                 WidthRequest="48">
                 <mct:AvatarView.Clip>
                     <RectangleGeometry Rect="0,0,24,48" />

@@ -35,7 +35,7 @@ public class PlatformSnackbar : PlatformToast
 		NFloat padding)
 		: base(message, backgroundColor, cornerRadius, textColor, textFont, characterSpacing, padding)
 	{
-		padding += defaultPadding;
+		padding += DefaultPadding;
 
 		actionButton = new PaddedButton(padding, padding, padding, padding);
 		actionButton.SetContentCompressionResistancePriority((float)UILayoutPriority.Required, UILayoutConstraintAxis.Horizontal);

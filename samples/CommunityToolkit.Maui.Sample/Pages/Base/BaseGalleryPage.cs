@@ -44,7 +44,7 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 		enum Row { TopPadding, Content, BottomPadding }
 		enum Column { LeftPadding, Content, RightPadding }
 
-		static Grid CreateDataTemplate() => new Grid
+		static Grid CreateDataTemplate() => new()
 		{
 			RowDefinitions = Rows.Define(
 				(Row.TopPadding, 12),
@@ -60,7 +60,7 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 			{
 				new Card().Row(Row.Content).Column(Column.Content).DynamicResource(Border.StyleProperty, "border_gallery_card")
 			}
-		}.DynamicResource(BackgroundColorProperty, "AppBackgroundColor");
+		};
 
 		class Card : Border
 		{
@@ -68,6 +68,8 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 			{
 				Content = new Grid
 				{
+					BackgroundColor = Colors.Transparent,
+
 					RowSpacing = 4,
 
 					RowDefinitions = Rows.Define(

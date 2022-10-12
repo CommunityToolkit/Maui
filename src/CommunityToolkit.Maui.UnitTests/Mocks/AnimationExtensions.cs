@@ -54,7 +54,7 @@ static class AnimationExtensions
 			}
 		}
 
-		class AsyncTicker : Ticker
+		sealed class AsyncTicker : Ticker, IDisposable
 		{
 			CancellationTokenSource? cancellationTokenSource;
 
@@ -74,6 +74,11 @@ static class AnimationExtensions
 			}
 
 			public override void Stop() => cancellationTokenSource?.Cancel();
+
+			public void Dispose()
+			{
+				cancellationTokenSource?.Dispose();
+			}
 		}
 
 		class TestAnimationManager : IAnimationManager
