@@ -15,13 +15,14 @@ public partial class DrawingViewHandler
 	/// </summary>
 	public static readonly IPropertyMapper<IDrawingView, DrawingViewHandler> DrawingViewMapper = new PropertyMapper<IDrawingView, DrawingViewHandler>(ViewMapper)
 	{
-		[nameof(IDrawingView.Lines)] = MapLines,
+		// Be careful when editing the order of the mappers below. `IDrawingView.Lines` must be mapped last.
+		[nameof(IDrawingView.DrawAction)] = MapDrawAction,
 		[nameof(IDrawingView.ShouldClearOnFinish)] = MapShouldClearOnFinish,
+		[nameof(IDrawingView.IsMultiLineModeEnabled)] = MapIsMultiLineModeEnabled,
 		[nameof(IDrawingView.LineColor)] = MapLineColor,
 		[nameof(IDrawingView.LineWidth)] = MapLineWidth,
-		[nameof(IDrawingView.IsMultiLineModeEnabled)] = MapIsMultiLineModeEnabled,
-		[nameof(IDrawingView.DrawAction)] = MapDrawAction,
 		[nameof(IDrawingView.Background)] = MapDrawingViewBackground,
+		[nameof(IDrawingView.Lines)] = MapLines, // `IDrawingView.Lines` must be mapped last
 	};
 
 	/// <summary>

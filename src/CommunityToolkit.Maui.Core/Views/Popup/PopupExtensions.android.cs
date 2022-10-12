@@ -30,11 +30,10 @@ public static class PopupExtensions
 
 		if (popup.Anchor is not null)
 		{
-			var anchorView = popup.Anchor.ToPlatform(popup.Handler.MauiContext);
+			var anchorView = popup.Anchor.ToPlatform();
 
 			var locationOnScreen = new int[2];
 			anchorView.GetLocationOnScreen(locationOnScreen);
-
 			window.SetGravity(GravityFlags.Top | GravityFlags.Left);
 			window.DecorView.Measure((int)MeasureSpecMode.Unspecified, (int)MeasureSpecMode.Unspecified);
 
@@ -80,13 +79,8 @@ public static class PopupExtensions
 	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
 	public static void SetCanBeDismissedByTappingOutsideOfPopup(this Dialog dialog, in IPopup popup)
 	{
-		if (popup.CanBeDismissedByTappingOutsideOfPopup)
-		{
-			return;
-		}
-
-		dialog.SetCancelable(false);
-		dialog.SetCanceledOnTouchOutside(false);
+		dialog.SetCancelable(popup.CanBeDismissedByTappingOutsideOfPopup);
+		dialog.SetCanceledOnTouchOutside(popup.CanBeDismissedByTappingOutsideOfPopup);
 	}
 
 	/// <summary>

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Input;
 
@@ -25,7 +25,7 @@ public enum ValidationFlags
 /// <summary>
 /// The <see cref="ValidationBehavior"/> allows users to create custom validation behaviors. All of the validation behaviors in the Xamarin Community Toolkit inherit from this behavior, to expose a number of shared properties. Users can inherit from this class to create a custom validation behavior currently not supported through the Xamarin Community Toolkit. This behavios cannot be used directly as it's abstract.
 /// </summary>
-public abstract class ValidationBehavior : BaseBehavior<VisualElement>
+public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposable
 {
 	/// <summary>
 	/// Valid visual state
@@ -99,10 +99,20 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 
 	CancellationTokenSource? validationTokenSource;
 
+	bool isDisposed;
+
 	/// <summary>
 	/// Initialize a new instance of ValidationBehavior
 	/// </summary>
 	public ValidationBehavior() => DefaultForceValidateCommand = new Command(async () => await ForceValidate().ConfigureAwait(false));
+
+	/// <summary>
+	/// Finalizer
+	/// </summary>
+	~ValidationBehavior()
+	{
+		Dispose(false);
+	}
 
 	/// <summary>
 	/// Indicates whether or not the current value is considered valid. This is a bindable property.
@@ -200,17 +210,40 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>
 	/// </summary>
 	public ValueTask ForceValidate() => UpdateStateAsync(View, Flags, true);
 
-	internal ValueTask ValidateNestedAsync(CancellationToken token) => UpdateStateAsync(View, Flags, true, token);
+	/// <inheritdoc/>
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
 
-	/// <summary>
-	/// Decorate value
-	/// </summary>
-	protected virtual object? Decorate(object? value) => value;
+	internal ValueTask ValidateNestedAsync(CancellationToken token) => UpdateStateAsync(View, Flags, true, token);
 
 	/// <summary>
 	/// Validate value
 	/// </summary>
 	protected abstract ValueTask<bool> ValidateAsync(object? value, CancellationToken token);
+
+	/// <inheritdoc/>
+	protected virtual void Dispose(bool disposing)
+	{
+		if (isDisposed)
+		{
+			return;
+		}
+
+		if (disposing)
+		{
+			isAttachingSemaphoreSlim.Dispose();
+		}
+
+		isDisposed = true;
+	}
+
+	/// <summary>
+	/// Decorate value
+	/// </summary>
+	protected virtual object? Decorate(object? value) => value;
 
 	/// <inheritdoc/>
 	protected override async void OnAttachedTo(VisualElement bindable)

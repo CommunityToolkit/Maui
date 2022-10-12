@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Converters;
+using CommunityToolkit.Maui.UnitTests.Mocks;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
@@ -43,7 +44,7 @@ public class EventToCommandBehaviorGenericTests : BaseTest
 	[Fact]
 	public void NoExceptionWhenTheEventArgsAreNotNull()
 	{
-		var vm = new ViewModelCoffe();
+		var vm = new ViewModelCoffee();
 		var behavior = new EventToCommandBehavior<Coffee>
 		{
 			EventName = nameof(ListView.ItemTapped),
@@ -65,7 +66,7 @@ public class EventToCommandBehaviorGenericTests : BaseTest
 	[Fact]
 	public void NoExceptionWhenTheEventArgsAreNotNull_InheritedType()
 	{
-		var vm = new ViewModelCoffe();
+		var vm = new ViewModelCoffee();
 		var behavior = new EventToCommandBehavior<Coffee>
 		{
 			EventName = nameof(ListView.ItemTapped),
@@ -87,7 +88,7 @@ public class EventToCommandBehaviorGenericTests : BaseTest
 	[Fact]
 	public void ParameterOfTypeInt()
 	{
-		var vm = new ViewModelCoffe();
+		var vm = new ViewModelCoffee();
 		var behavior = new EventToCommandBehavior<int>
 		{
 			EventName = nameof(ListView.ItemTapped),
@@ -103,7 +104,7 @@ public class EventToCommandBehaviorGenericTests : BaseTest
 	[Fact]
 	public void NoExceptionWhenTheSelectedItemIsNull()
 	{
-		var vm = new ViewModelCoffe();
+		var vm = new ViewModelCoffee();
 		var behavior = new EventToCommandBehavior<Coffee>
 		{
 			EventName = nameof(ListView.ItemTapped),
@@ -118,6 +119,27 @@ public class EventToCommandBehaviorGenericTests : BaseTest
 		TriggerEventToCommandBehavior(behavior, notNullArgs);
 
 		Assert.Null(vm.CoffeeName);
+	}
+
+	[Fact]
+	public void HappilyUsesIValueConverterImplementation()
+	{
+		var vm = new ViewModelCoffee();
+		var convertedValue = default(object);
+		var cappuccino = new Coffee();
+
+		var behavior = new EventToCommandBehavior<Coffee>
+		{
+			EventName = nameof(ListView.ItemTapped),
+			EventArgsConverter = new MockValueConverter((value) => cappuccino),
+			Command = new Command((parameter) => convertedValue = parameter)
+		};
+
+		var nullArgs = new object?[] { null, null };
+
+		TriggerEventToCommandBehavior(behavior, nullArgs);
+
+		Assert.Equal(cappuccino, convertedValue);
 	}
 
 	static void TriggerEventToCommandBehavior<T>(EventToCommandBehavior<T> eventToCommand, object?[] args)
@@ -141,13 +163,13 @@ public class EventToCommandBehaviorGenericTests : BaseTest
 		public string Image { get; set; } = string.Empty;
 	}
 
-	public class ViewModelCoffe
+	public class ViewModelCoffee
 	{
 		public Command<Coffee> SelectedCommand { get; set; }
 
 		public string? CoffeeName { get; set; }
 
-		public ViewModelCoffe()
+		public ViewModelCoffee()
 		{
 			SelectedCommand = new Command<Coffee>(Selected);
 		}
