@@ -31,7 +31,7 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 
 		foreach (var child in dockLayout)
 		{
-			if (child.Visibility is not  Visibility.Visible)
+			if (child.Visibility is not Visibility.Visible)
 			{
 				continue;
 			}
@@ -85,7 +85,7 @@ public class DockLayoutManager : LayoutManager, IDockLayoutManager
 
 		foreach (var child in dockLayout)
 		{
-			if (child.Visibility is not  Visibility.Visible)
+			if (child.Visibility is not Visibility.Visible)
 			{
 				continue;
 			}
