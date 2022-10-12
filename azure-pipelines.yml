@@ -149,7 +149,7 @@ jobs:
           dotnet list $(PathToLibrarySolution) package --vulnerable --include-transitive | findstr /S /c:"has the following vulnerable packages";
           if ($LastExitCode -ne 1)
           {
-            dotnet list $(PathToLibrarySolution) package --vulnerable --include-transitive;
+            dotnet list $(PathToLibrarySolution) package --vulnerable --include-transitive -v diag;
             exit 1;
           }
 
