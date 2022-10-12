@@ -102,7 +102,7 @@ public static class StateContainer
 
 		return new StateContainerController(layoutView)
 		{
-			StateViews = GetStateViews(layoutView) ?? new List<View>()
+			StateViews = GetStateViews(layoutView)
 		};
 	}
 }
