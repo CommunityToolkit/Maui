@@ -63,36 +63,33 @@
             </Label>
             <Line Style="{StaticResource HR}" />
             <Label SemanticProperties.HeadingLevel="Level2" Text="with Image control" />
-            <Image HeightRequest="128" WidthRequest="128">
+            <Image HeightRequest="128" WidthRequest="128" SemanticProperties.Description="GravatarImageSource for an Image control, binding all properties.">
                 <Image.Source>
                     <mct:GravatarImageSource
                         CacheValidity="{Binding CacheValidityTimespan}"
                         CachingEnabled="{Binding EnableCache}"
                         Email="{Binding Email}"
-                        Image="{Binding DefaultGravatarSelected}"
-                        SemanticProperties.Description="GravatarImageSource for an Image control, binding all properties." />
+                        Image="{Binding DefaultGravatarSelected}"/>
                 </Image.Source>
             </Image>
             <Label SemanticProperties.HeadingLevel="Level2" Text="with Button control" />
-            <Button Text="Button">
+            <Button Text="Button" SemanticProperties.Description="GravatarImageSource for a Button control, binding all properties." >
                 <Button.ImageSource>
                     <mct:GravatarImageSource
                         CacheValidity="{Binding CacheValidityTimespan}"
                         CachingEnabled="{Binding EnableCache}"
                         Email="{Binding Email}"
-                        Image="{Binding DefaultGravatarSelected}"
-                        SemanticProperties.Description="GravatarImageSource for a Button control, binding all properties." />
+                        Image="{Binding DefaultGravatarSelected}"/>
                 </Button.ImageSource>
             </Button>
             <Label SemanticProperties.HeadingLevel="Level2" Text="with ImageButton control" />
-            <ImageButton HeightRequest="73" WidthRequest="72">
+            <ImageButton HeightRequest="73" WidthRequest="72" SemanticProperties.Description="GravatarImageSource for an ImageButton control, binding all properties." >
                 <ImageButton.Source>
                     <mct:GravatarImageSource
                         CacheValidity="{Binding CacheValidityTimespan}"
                         CachingEnabled="{Binding EnableCache}"
                         Email="{Binding Email}"
-                        Image="{Binding DefaultGravatarSelected}"
-                        SemanticProperties.Description="GravatarImageSource for an ImageButton control, binding all properties." />
+                        Image="{Binding DefaultGravatarSelected}"/>
                 </ImageButton.Source>
             </ImageButton>
             <Label SemanticProperties.HeadingLevel="Level2" Text="with AvatarView Control" />
@@ -100,7 +97,8 @@
                 BorderWidth="2"
                 CornerRadius="32,0,0,32"
                 HeightRequest="128"
-                WidthRequest="128">
+                WidthRequest="128"
+                SemanticProperties.Description="GravatarImageSourse used with AvatarView.">
                 <mct:AvatarView.Stroke>
                     <LinearGradientBrush EndPoint="0,1">
                         <GradientStop Offset="0.1" Color="Blue" />
@@ -112,8 +110,7 @@
                         CacheValidity="{Binding CacheValidityTimespan}"
                         CachingEnabled="{Binding EnableCache}"
                         Email="{Binding Email}"
-                        Image="{Binding DefaultGravatarSelected}"
-                        SemanticProperties.Description="GravatarImageSourse used with AvatarView." />
+                        Image="{Binding DefaultGravatarSelected}"/>
                 </mct:AvatarView.ImageSource>
             </mct:AvatarView>
             <Label x:Name="LabelEmail" Text="Email:" />

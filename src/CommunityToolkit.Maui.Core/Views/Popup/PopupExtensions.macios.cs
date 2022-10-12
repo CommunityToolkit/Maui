@@ -103,12 +103,22 @@ public static class PopupExtensions
 				_ => 0f
 			};
 
+			if (mauiPopup.PopoverPresentationController is null)
+			{
+				throw new InvalidOperationException($"{nameof(mauiPopup.PopoverPresentationController)} Cannot Be Null");
+			}
+
 			mauiPopup.PopoverPresentationController.SourceRect = new CGRect(originX, originY, 0, 0);
 			mauiPopup.PopoverPresentationController.PermittedArrowDirections = 0;
 		}
 		else
 		{
-			var view = popup.Anchor.ToPlatform(popup.Handler?.MauiContext ?? throw new NullReferenceException());
+			if (mauiPopup.PopoverPresentationController is null)
+			{
+				throw new InvalidOperationException($"{nameof(mauiPopup.PopoverPresentationController)} Cannot Be Null");
+			}
+
+			var view = popup.Anchor.ToPlatform(popup.Handler?.MauiContext ?? throw new InvalidOperationException($"{nameof(popup.Handler.MauiContext)} Cannot Be Null"));
 			mauiPopup.PopoverPresentationController.SourceView = view;
 			mauiPopup.PopoverPresentationController.SourceRect = view.Bounds;
 		}
