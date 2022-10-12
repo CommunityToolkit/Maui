@@ -147,13 +147,13 @@ public class MauiPopup : UIViewController
 		var popOverDelegate = new PopoverDelegate();
 		popOverDelegate.PopoverDismissedEvent += HandlePopoverDelegateDismissed;
 
-		var presentationController = ((UIPopoverPresentationController)PresentationController);
+		UIPopoverPresentationController presentationController = (UIPopoverPresentationController)(PresentationController ?? throw new InvalidOperationException($"{nameof(PresentationController)} cannot be null."));
 		presentationController.SourceView = ViewController?.View ?? throw new InvalidOperationException($"{nameof(ViewController.View)} cannot be null.");
 
 		presentationController.Delegate = popOverDelegate;
 	}
 
-
+	[MemberNotNull(nameof(VirtualView))]
 	void HandlePopoverDelegateDismissed(object? sender, UIPresentationController e)
 	{
 		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null.");
