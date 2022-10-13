@@ -11,9 +11,12 @@ public partial class NumericValidationBehaviorPage : BasePage<NumericValidationB
 		InitializeComponent();
 	}
 
+#if !DEBUG
+	void SetEntryValue(object? sender, EventArgs e)
+	{
+#else
 	async void SetEntryValue(object? sender, EventArgs e)
 	{
-#if DEBUG
 		await Toast.Make($"The app will crash because {nameof(Options.SetShouldSuppressExceptionsInBehaviors)} is false", Core.ToastDuration.Long).Show();
 #endif
 		SafeEntry.Text = null;
