@@ -9,13 +9,11 @@ public static class StateContainer
 	internal static readonly BindableProperty LayoutControllerProperty
 		= BindableProperty.CreateAttached("LayoutController", typeof(StateContainerController), typeof(StateContainer), default(StateContainerController), defaultValueCreator: ContainerControllerCreator);
 
-	internal static readonly BindablePropertyKey StateViewsPropertyKey
-		= BindableProperty.CreateReadOnly("StateViews", typeof(IList<View>), typeof(StateContainer), default(IList<View>), defaultValueCreator: bindable => new List<View>());
-
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="GetStateViews"/> method.
+	/// Backing BindableProperty for the <see cref="GetStateViews"/> and <see cref="SetStateViews"/> methods.
 	/// </summary>
-	public static readonly BindableProperty StateViewsProperty = StateViewsPropertyKey.BindableProperty;
+	public static readonly BindableProperty StateViewsProperty
+		= BindableProperty.CreateAttached("StateViews", typeof(IList<View>), typeof(StateContainer), default(IList<View>), defaultValueCreator: bindable => new List<View>());
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="GetCurrentState"/> and <see cref="SetCurrentState"/> methods.
@@ -28,6 +26,12 @@ public static class StateContainer
 	/// </summary>
 	public static readonly BindableProperty ShouldAnimateOnStateChangeProperty
 		= BindableProperty.CreateAttached("ShouldAnimateOnStateChange", typeof(bool), typeof(StateContainer), true, propertyChanged: OnShouldAnimateOnStateChangeChanged);
+
+	/// <summary>
+	/// Set the StateViews property
+	/// </summary>
+	public static void SetStateViews(BindableObject b, IList<View> value)
+		=> b.SetValue(StateViewsProperty, value);
 
 	/// <summary>
 	/// Get the StateViews property
@@ -61,9 +65,6 @@ public static class StateContainer
 
 	internal static StateContainerController GetContainerController(BindableObject b) =>
 		(StateContainerController)b.GetValue(LayoutControllerProperty);
-
-	internal static void SetStateViews(BindableObject b, IEnumerable<View> value)
-		=> b.SetValue(StateViewsPropertyKey, value);
 
 	static async void OnCurrentStateChanged(BindableObject bindable, object oldValue, object newValue)
 	{

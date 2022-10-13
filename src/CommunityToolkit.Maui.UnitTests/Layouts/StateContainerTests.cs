@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.UnitTests.Layouts;
 
 public class StateContainerTests : BaseTest
 {
-	readonly IReadOnlyList<View> stateViews = new List<View>
+	readonly IList<View> stateViews = new List<View>
 	{
 		new Label() { Text = "Loading" },
 		new Label() { Text = "Error" },
