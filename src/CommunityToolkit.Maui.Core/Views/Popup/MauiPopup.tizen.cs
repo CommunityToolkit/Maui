@@ -25,9 +25,20 @@ public class MauiPopup : Popup
 		OutsideClicked += OnOutsideClicked;
 	}
 
+	/// <inheritdoc/>
+	protected override void Dispose(bool isDisposing)
+	{
+		if (isDisposing)
+		{
+			OutsideClicked -= OnOutsideClicked;
+		}
+
+		base.Dispose(isDisposing);
+	}
+
 	void OnOutsideClicked(object? sender, EventArgs e)
 	{
-		if (VirtualView == null || VirtualView.Handler == null)
+		if (VirtualView is null || VirtualView.Handler is null)
 		{
 			return;
 		}
@@ -62,7 +73,7 @@ public class MauiPopup : Popup
 		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null");
 		Content = VirtualView.Content?.ToPlatform(mauiContext) ?? throw new InvalidOperationException($"{nameof(VirtualView.Content)} cannot be null");
 
-		if (Content == null)
+		if (Content is null)
 		{
 			return;
 		}
@@ -70,7 +81,7 @@ public class MauiPopup : Popup
 		BackgroundColor = new Tizen.NUI.Color(0.1f, 0.1f, 0.1f, 0.5f);
 		Content.BackgroundColor = (VirtualView.Color ?? Colors.Transparent).ToNUIColor();
 
-		if (VirtualView.Anchor != null)
+		if (VirtualView.Anchor is not null)
 		{
 			var anchorView = VirtualView.Anchor.ToPlatform();
 			var anchorPosition = anchorView.ScreenPosition;
@@ -102,7 +113,7 @@ public class MauiPopup : Popup
 	public void UpdateContentSize()
 	{
 		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null");
-		if (Content == null)
+		if (Content is null)
 		{
 			return;
 		}

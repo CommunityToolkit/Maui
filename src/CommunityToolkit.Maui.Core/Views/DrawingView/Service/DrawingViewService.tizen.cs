@@ -20,7 +20,7 @@ public static class DrawingViewService
 	public static ValueTask<Stream> GetImageStream(IList<PointF> points, Size imageSize, float lineWidth, Color strokeColor, Paint? background)
 	{
 		var image = GetBitmapForPoints(points, lineWidth, strokeColor, background);
-		if (image == null)
+		if (image is null)
 		{
 			return ValueTask.FromResult(Stream.Null);
 		}
@@ -45,7 +45,7 @@ public static class DrawingViewService
 	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background)
 	{
 		var image = GetBitmapForLines(lines, background);
-		if (image == null)
+		if (image is null)
 		{
 			return ValueTask.FromResult(Stream.Null);
 		}

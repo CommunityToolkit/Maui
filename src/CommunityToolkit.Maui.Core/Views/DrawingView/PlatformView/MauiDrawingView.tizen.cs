@@ -20,6 +20,7 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 		if (disposing)
 		{
 			currentPath.Dispose();
+			TouchEvent -= OnTouch;
 		}
 
 		base.Dispose(disposing);
