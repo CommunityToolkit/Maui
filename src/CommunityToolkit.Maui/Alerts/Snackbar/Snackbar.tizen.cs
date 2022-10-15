@@ -158,7 +158,7 @@ public partial class Snackbar
 	{
 		token.ThrowIfCancellationRequested();
 
-		if (PopupInstance == null)
+		if (PopupInstance is null)
 		{
 			return Task.CompletedTask;
 		}
