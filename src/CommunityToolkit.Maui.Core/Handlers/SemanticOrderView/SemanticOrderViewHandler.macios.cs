@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Maui.Core.Views;
+using Microsoft.Maui;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
@@ -17,9 +19,6 @@ public partial class SemanticOrderViewHandler : ViewHandler<ISemanticOrderView, 
 		handler.PlatformView.SetAccessibilityElements(NSArray.FromNSObjects(GetAccessibilityElements(handler)?.ToArray()));
 	}
 
-	/// <inheritdoc/>
-	protected override MauiSemanticOrderView CreatePlatformView() => new();
-
 	static List<NSObject>? GetAccessibilityElements(SemanticOrderViewHandler handler)
 	{
 		if (handler.VirtualView == null)
@@ -30,11 +29,22 @@ public partial class SemanticOrderViewHandler : ViewHandler<ISemanticOrderView, 
 		var viewOrder = handler.VirtualView.ViewOrder;
 
 		var returnValue = new List<NSObject>();
-		foreach (ISemanticOrderView view in viewOrder)
-		{
-			returnValue.Add(NSObject.FromObject(view.Handler?.PlatformView));
+		foreach (IView view in viewOrder)
+		{	
+			returnValue.Add(view.ToPlatform(handler.MauiContext!));
 		}
 
-		return returnValue.Count == 0 ? new() : returnValue;
+		return returnValue.Count == 0 ? null : returnValue;
+	}
+
+	/// <inheritdoc/>
+	protected override MauiSemanticOrderView CreatePlatformView()
+	{
+		return new MauiSemanticOrderView
+		{
+			CrossPlatformArrange = VirtualView.CrossPlatformArrange,
+			CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
+			VirtualView = VirtualView
+		};
 	}
 }
