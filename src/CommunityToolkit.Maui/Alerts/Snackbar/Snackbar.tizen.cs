@@ -111,7 +111,7 @@ public partial class Snackbar
 		content.Add(actionButton);
 		popup.Content = content;
 
-		if (Anchor != null)
+		if (Anchor is not null)
 		{
 			var anchorPlatformView = Anchor.ToPlatform();
 
