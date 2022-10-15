@@ -98,7 +98,7 @@ public partial class Snackbar
 		actionButton.SizeWidth = actionButton.TextLabel.NaturalSize.Width + 15d.ToPixel() * 2;
 		actionButton.Clicked += (s, e) =>
 		{
-			if (Action != null)
+			if (Action is not null)
 			{
 				Action.Invoke();
 			}
