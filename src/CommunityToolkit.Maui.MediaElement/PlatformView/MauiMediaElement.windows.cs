@@ -8,6 +8,10 @@ public class MauiMediaElement : Grid
 	{
 	}
 
+	public void UpdateShowsPlaybackControls()
+	{
+	}
+
 	public void UpdateSource()
 	{
 	}

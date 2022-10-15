@@ -6,6 +6,7 @@ public partial class MediaElementHandler
 {
 	public static IPropertyMapper<MediaElement, MediaElementHandler> PropertyMapper = new PropertyMapper<MediaElement, MediaElementHandler>(ViewMapper)
 	{
+		[nameof(IMediaElement.ShowsPlaybackControls)] = MapShowsPlaybackControls,
 		[nameof(IMediaElement.Source)] = MapSource,
 		[nameof(IMediaElement.Speed)] = MapSpeed,
 		[nameof(IMediaElement.Volume)] = MapVolume,

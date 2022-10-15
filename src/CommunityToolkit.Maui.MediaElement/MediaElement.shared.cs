@@ -23,7 +23,10 @@ public partial class MediaElement : View, IMediaElement
 
 	public static readonly BindableProperty PositionProperty =
 		  BindableProperty.Create(nameof(Position), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero,
-			  propertyChanged: OnPositionPropertyChanged);
+			  BindingMode.TwoWay, propertyChanged: OnPositionPropertyChanged);
+
+	public static readonly BindableProperty ShowsPlaybackControlsProperty =
+		  BindableProperty.Create(nameof(ShowsPlaybackControls), typeof(bool), typeof(MediaElement), true);
 
 	public static readonly BindableProperty SourceProperty =
 		BindableProperty.Create(nameof(Source), typeof(MediaSource), typeof(MediaElement), null,
@@ -86,6 +89,12 @@ public partial class MediaElement : View, IMediaElement
 
 			SetValue(PositionProperty, value);
 		}
+	}
+
+	public bool ShowsPlaybackControls
+	{
+		get => (bool)GetValue(ShowsPlaybackControlsProperty);
+		set => SetValue(ShowsPlaybackControlsProperty, value);
 	}
 
 	[TypeConverter(typeof(MediaSourceConverter))]

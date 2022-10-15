@@ -33,6 +33,16 @@ public class MauiMediaElement : UIView
 		AddPlayedToEndObserver();
 	}
 
+	public void UpdateShowsPlaybackControls()
+	{
+		if (playerViewController.Player is null || mediaElement is null)
+		{
+			return;
+		}
+
+		playerViewController.ShowsPlaybackControls = mediaElement.ShowsPlaybackControls;
+	}
+
 	public void UpdateSource()
 	{
 		if (mediaElement?.Source is not null)
@@ -322,11 +332,13 @@ public class MauiMediaElement : UIView
 
 	internal void MediaElementSeekRequested(object? sender, SeekRequested e)
 	{
-		if (playerViewController.Player?.CurrentItem == null || playerViewController.Player.Status != AVPlayerStatus.ReadyToPlay)
+		
+		if (playerViewController.Player?.CurrentItem == null
+			|| playerViewController.Player.Status != AVPlayerStatus.ReadyToPlay)
 		{
 			return;
 		}
-
+		
 		var ranges = playerViewController.Player.CurrentItem.SeekableTimeRanges;
 		var seekTo = new CMTime(Convert.ToInt64(e.Position.TotalMilliseconds), 1000);
 		foreach (var v in ranges)

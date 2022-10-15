@@ -31,10 +31,9 @@
             MediaEnded="OnMediaEnded"
             MediaFailed="OnMediaFailed"
             MediaOpened="OnMediaOpened"
-            SeekCompleted="OnSeekCompleted" />
-            
-            <!-- TODO
-            ShowsPlaybackControls="True"-->
+            SeekCompleted="OnSeekCompleted"
+            ShowsPlaybackControls="False"/>
+
         <HorizontalStackLayout Grid.Row="1">
             <Label HorizontalOptions="Center">
                 <Label.Text>

@@ -57,6 +57,11 @@ public interface IMediaElement
 	event EventHandler? SeekCompleted;
 
 	/// <summary>
+	/// Gets or sets whether to show the playback controls.
+	/// </summary>
+	bool ShowsPlaybackControls { get; set; }
+
+	/// <summary>
 	/// The source of the media to play.
 	/// </summary>
 	MediaSource? Source { get; set; }

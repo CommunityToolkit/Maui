@@ -14,6 +14,10 @@ public class MauiMediaElement : CoordinatorLayout
 		this.context = context;
 	}
 
+	public void UpdateShowsPlaybackControls()
+	{
+	}
+
 	public void UpdateSource()
 	{
 	}

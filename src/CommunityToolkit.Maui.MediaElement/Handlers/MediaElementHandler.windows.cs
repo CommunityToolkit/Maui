@@ -7,6 +7,11 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 {
 	protected override MauiMediaElement CreatePlatformView() => new(VirtualView);
 
+	public static void MapShowsPlaybackControls(MediaElementHandler handler, MediaElement mediaElement)
+	{
+		handler?.PlatformView.UpdateShowsPlaybackControls();
+	}
+
 	public static void MapSource(MediaElementHandler handler, MediaElement mediaElement)
 	{
 		handler?.PlatformView.UpdateSource();
