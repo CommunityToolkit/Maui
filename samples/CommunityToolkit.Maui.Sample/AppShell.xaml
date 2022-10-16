@@ -30,49 +30,49 @@
 
     <FlyoutItem Title="Welcome"
                 Route="WelcomePage"
-                Icon="dotnet_bot.png">
+                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst={x:Null}}">
         <ShellContent ContentTemplate="{DataTemplate pages:WelcomePage}" />
     </FlyoutItem>
 
     <FlyoutItem Title="Alerts"
                 Route="AlertsGalleryPage"
-                Icon="dotnet_bot.png">
+                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst={x:Null}}">
         <ShellContent ContentTemplate="{DataTemplate alerts:AlertsGalleryPage}" />
     </FlyoutItem>
 
     <FlyoutItem Title="Behaviors"
                 Route="BehaviorsGalleryPage"
-                Icon="dotnet_bot.png">
+                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst={x:Null}}">
         <ShellContent ContentTemplate="{DataTemplate behaviors:BehaviorsGalleryPage}" />
     </FlyoutItem>
 
     <FlyoutItem Title="Converters"
                 Route="ConvertersGalleryPage"
-                Icon="dotnet_bot.png">
+                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst={x:Null}}">
         <ShellContent ContentTemplate="{DataTemplate converters:ConvertersGalleryPage}" />
     </FlyoutItem>
 
     <FlyoutItem Title="Extensions"
                 Route="ExtensionsGalleryPage"
-                Icon="dotnet_bot.png">
+                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst={x:Null}}">
         <ShellContent ContentTemplate="{DataTemplate extensions:ExtensionsGalleryPage}" />
     </FlyoutItem>
 
     <FlyoutItem Title="ImageSources"
                 Route="ImageSourcesGalleryPage"
-                Icon="dotnet_bot.png">
+                FlyoutIcon="{OnPlatform Default='dotnet_bot.png', MacCatalyst={x:Null}}">
         <ShellContent ContentTemplate="{DataTemplate imagesources:ImageSourcesGalleryPage}" />
     </FlyoutItem>
 
     <FlyoutItem Title="Layouts"
                 Route="LayoutsGalleryPage"
-                Icon="dotnet_bot.png">
+                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst={x:Null}}">
         <ShellContent ContentTemplate="{DataTemplate layouts:LayoutsGalleryPage}" />
     </FlyoutItem>
 
     <FlyoutItem Title="Views"
                 Route="ViewsGalleryPage"
-                Icon="dotnet_bot.png">
+                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst={x:Null}}">
         <ShellContent ContentTemplate="{DataTemplate views:ViewsGalleryPage}" />
     </FlyoutItem>
 
