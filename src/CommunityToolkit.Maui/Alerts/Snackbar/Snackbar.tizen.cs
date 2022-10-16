@@ -41,7 +41,7 @@ public partial class Snackbar
 		var dispatcher = Dispatcher.GetForCurrentThread() ?? Application.Current?.Dispatcher ?? throw new InvalidOperationException($"There is no IDispatcher object, application is not initalized");
 
 		// close and cleanup the previously opened snackbar
-		if (PopupStatic != null && PopupStatic.IsOpen)
+		if (PopupStatic is not null && PopupStatic.IsOpen)
 		{
 			PopupStatic.Close();
 			PopupStatic.Dispose();
