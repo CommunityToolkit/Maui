@@ -58,6 +58,7 @@ public partial class PopupHandler : Microsoft.Maui.Handlers.ElementHandler<IPopu
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapAnchor(PopupHandler handler, IPopup view)
 	{
+		// On Tizen, Anchor only update when popup is opened
 	}
 
 	/// <summary>
@@ -67,6 +68,7 @@ public partial class PopupHandler : Microsoft.Maui.Handlers.ElementHandler<IPopu
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapCanBeDismissedByTappingOutsideOfPopup(PopupHandler handler, IPopup view)
 	{
+		// this property directly access on platform view
 	}
 
 	/// <summary>
@@ -76,6 +78,7 @@ public partial class PopupHandler : Microsoft.Maui.Handlers.ElementHandler<IPopu
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapColor(PopupHandler handler, IPopup view)
 	{
+		// this property directly access on platform view
 	}
 
 	/// <summary>

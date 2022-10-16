@@ -25,6 +25,11 @@ public class MauiPopup : Popup
 		OutsideClicked += OnOutsideClicked;
 	}
 
+	/// <summary>
+	/// An instance of the <see cref="IPopup"/>.
+	/// </summary>
+	public IPopup? VirtualView { get; private set; }
+
 	/// <inheritdoc/>
 	protected override void Dispose(bool isDisposing)
 	{
@@ -36,25 +41,6 @@ public class MauiPopup : Popup
 		base.Dispose(isDisposing);
 	}
 
-	void OnOutsideClicked(object? sender, EventArgs e)
-	{
-		if (VirtualView is null || VirtualView.Handler is null)
-		{
-			return;
-		}
-
-		if (VirtualView.CanBeDismissedByTappingOutsideOfPopup)
-		{
-			Close();
-			VirtualView.Handler.Invoke(nameof(IPopup.OnDismissedByTappingOutsideOfPopup));
-		}
-	}
-
-	/// <summary>
-	/// An instance of the <see cref="IPopup"/>.
-	/// </summary>
-	public IPopup? VirtualView { get; private set; }
-
 	/// <summary>
 	/// Method to initialize the native implementation.
 	/// </summary>
@@ -63,7 +49,6 @@ public class MauiPopup : Popup
 	{
 		VirtualView = element;
 	}
-
 
 	/// <summary>
 	/// Method to show the Popup
@@ -103,7 +88,7 @@ public class MauiPopup : Popup
 		UpdateContentSize();
 
 		Open();
-		VirtualView?.OnOpened();
+		VirtualView.OnOpened();
 	}
 
 	/// <summary>
@@ -129,14 +114,28 @@ public class MauiPopup : Popup
 		}
 	}
 
-	NVerticalAlignment ToVerticalAlignment(LayoutAlignment align) => align switch
+	void OnOutsideClicked(object? sender, EventArgs e)
+	{
+		if (VirtualView is null || VirtualView.Handler is null)
+		{
+			return;
+		}
+
+		if (VirtualView.CanBeDismissedByTappingOutsideOfPopup)
+		{
+			Close();
+			VirtualView.Handler.Invoke(nameof(IPopup.OnDismissedByTappingOutsideOfPopup));
+		}
+	}
+
+	static NVerticalAlignment ToVerticalAlignment(LayoutAlignment align) => align switch
 	{
 		LayoutAlignment.Start => NVerticalAlignment.Top,
 		LayoutAlignment.End => NVerticalAlignment.Bottom,
 		_ => NVerticalAlignment.Center
 	};
 
-	NHorizontalAlignment ToHorizontalAlignment(LayoutAlignment align) => align switch
+	static NHorizontalAlignment ToHorizontalAlignment(LayoutAlignment align) => align switch
 	{
 		LayoutAlignment.Start => NHorizontalAlignment.Begin,
 		LayoutAlignment.End => NHorizontalAlignment.End,
