@@ -17,9 +17,9 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
+            <RowDefinition Height="220" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -31,10 +31,9 @@
             MediaEnded="OnMediaEnded"
             MediaFailed="OnMediaFailed"
             MediaOpened="OnMediaOpened"
-            SeekCompleted="OnSeekCompleted"
-            ShowsPlaybackControls="False"/>
+            SeekCompleted="OnSeekCompleted"/>
 
-        <HorizontalStackLayout Grid.Row="1">
+        <HorizontalStackLayout Grid.Row="1" Padding="0,0,0,15">
             <Label HorizontalOptions="Center">
                 <Label.Text>
                     <MultiBinding StringFormat="{}Position: {0}/{1}">
@@ -45,41 +44,62 @@
             </Label>
 
         </HorizontalStackLayout>
+
         <Slider
             Grid.Row="2"
+            MinimumTrackColor="Gray"
             Maximum="{Binding Duration, Source={x:Reference mediaElement}, Converter={StaticResource TimeSpanConverter}}"
             Value="{Binding Position, Source={x:Reference mediaElement}, Converter={StaticResource TimeSpanConverter}}" />
 
-        <HorizontalStackLayout Grid.Row="3" Spacing="5">
+        <HorizontalStackLayout Padding="0,20,0,0" Grid.Row="3" Spacing="5">
             <Button
                 Clicked="OnMp4OnlineSourceClicked"
-                Text="Load MP4 from online" />
+                Text="Load MP4" />
 
             <Button
                 Clicked="OnHlsSourceClicked"
-                Text="Load HLS from online" />
+                Text="Load HLS" />
 
             <Button    
                 Clicked="OnResetClicked"
-                Text="Reset Source (Set Null)" />
+                Text="Reset Source (null)" />
+        </HorizontalStackLayout>
+
+        <HorizontalStackLayout Grid.Row="4" Padding="0,10,0,10" Spacing="5">
+            <Label Margin="20,10">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="Speed:" />
+                        <Span Text="{Binding Source={x:Reference mediaElement}, Path=Speed}" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+
+            <Button Text="-" Clicked="SpeedMinusClicked" />
+            <Button Text="+" Clicked="SpeedPlusClicked" />
         </HorizontalStackLayout>
         
-        <Label Grid.Row="4" Margin="20,10">
-            <Label.FormattedText>
-                <FormattedString>
-                    <Span Text="Speed:" />
-                    <Span Text="{Binding Source={x:Reference mediaElement}, Path=Speed}" />
-                </FormattedString>
-            </Label.FormattedText>
-        </Label>
-        <Slider
-            x:Name="MainSlider"
-            Grid.Row="5"
-            Margin="20"
-            DragCompleted="Slider_DragCompleted"
-            Maximum="5"
-            Minimum="0"
-            ThumbColor="Blue"
-            Value="{Binding Source={x:Reference mediaElement}, Path=Speed}" />
+        <VerticalStackLayout Grid.Row="5">
+            <HorizontalStackLayout Padding="0,0,0,10">
+                <Switch
+                    Margin="0,0,5,0"
+                    ThumbColor="White"
+                    OnColor="LimeGreen"
+                    IsToggled="{Binding Source={x:Reference mediaElement}, Path=ShowsPlaybackControls}" />
+                <Label
+                    VerticalOptions="Center"
+                    Text="Show playback controls" />
+            </HorizontalStackLayout>
+            <HorizontalStackLayout>
+                <Switch
+                    Margin="0,0,5,0"
+                    ThumbColor="White"
+                    OnColor="LimeGreen"
+                    IsToggled="{Binding Source={x:Reference mediaElement}, Path=IsLooping}" />
+                <Label
+                    VerticalOptions="Center"
+                    Text="Loop video" />
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
     </Grid>
 </pages:BasePage>

@@ -1,11 +1,30 @@
 ﻿using System.ComponentModel;
+using System.Data;
 using CommunityToolkit.Maui.MediaElement.Converters;
 
 namespace CommunityToolkit.Maui.MediaElement;
 
 public partial class MediaElement : View, IMediaElement
 {
-	bool isSeeking = false;
+	readonly IDispatcherTimer timer;
+
+	public MediaElement()
+	{
+		timer = Dispatcher.CreateTimer();
+		timer.Interval = TimeSpan.FromMilliseconds(100);
+		timer.Tick += OnTimerTick;
+		timer.Start();
+	}
+
+	~MediaElement() => timer.Tick -= OnTimerTick;
+
+	public event EventHandler? UpdateStatus;
+
+	void OnTimerTick(object? sender, EventArgs e)
+	{
+		UpdateStatus?.Invoke(this, EventArgs.Empty);
+		Handler?.Invoke(nameof(MediaElement.UpdateStatus));
+	}
 
 	public static readonly BindableProperty AutoPlayProperty =
 		BindableProperty.Create(nameof(AutoPlay), typeof(bool), typeof(MediaElement), false,
@@ -22,8 +41,7 @@ public partial class MediaElement : View, IMediaElement
 		  BindableProperty.Create(nameof(IsLooping), typeof(bool), typeof(MediaElement), false);
 
 	public static readonly BindableProperty PositionProperty =
-		  BindableProperty.Create(nameof(Position), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero,
-			  BindingMode.TwoWay, propertyChanged: OnPositionPropertyChanged);
+		  BindableProperty.Create(nameof(Position), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero);
 
 	public static readonly BindableProperty ShowsPlaybackControlsProperty =
 		  BindableProperty.Create(nameof(ShowsPlaybackControls), typeof(bool), typeof(MediaElement), true);
@@ -72,23 +90,8 @@ public partial class MediaElement : View, IMediaElement
 
 	public TimeSpan Position
 	{
-		get
-		{
-			PositionRequested?.Invoke(this, EventArgs.Empty);
-			return (TimeSpan)GetValue(PositionProperty);
-		}
-
-		set
-		{
-			var currentValue = (TimeSpan)GetValue(PositionProperty);
-
-			if (Math.Abs(value.Subtract(currentValue).TotalMilliseconds) > 300 && !isSeeking)
-			{
-				RequestSeek(value);
-			}
-
-			SetValue(PositionProperty, value);
-		}
+		get { return (TimeSpan)GetValue(PositionProperty); }
+		set { SetValue(PositionProperty, value); }
 	}
 
 	public bool ShowsPlaybackControls
@@ -158,11 +161,6 @@ public partial class MediaElement : View, IMediaElement
 
 	internal event EventHandler<StateRequested>? StateRequested;
 
-	internal void OnSeekCompleted()
-	{
-		isSeeking = false;
-		SeekCompleted?.Invoke(this, EventArgs.Empty);
-	}
 
 	protected override void OnBindingContextChanged()
 	{
@@ -177,19 +175,6 @@ public partial class MediaElement : View, IMediaElement
 	static void OnAutoPlayPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		((MediaElement)bindable).AutoPlay = (bool)newValue;
-	}
-
-	static void OnPositionPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		var element = (MediaElement)bindable;
-
-		var oldval = (TimeSpan)oldValue;
-		var newval = (TimeSpan)newValue;
-
-		if (Math.Abs(newval.Subtract(oldval).TotalMilliseconds) > 300 && !element.isSeeking)
-		{
-			element.RequestSeek(newval);
-		}
 	}
 
 	void OnSourceChanged(object? sender, EventArgs eventArgs)
@@ -228,13 +213,6 @@ public partial class MediaElement : View, IMediaElement
 	static void OnSpeedPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		((MediaElement)bindable).Speed = (double)newValue;
-	}
-
-	void RequestSeek(TimeSpan newPosition)
-	{
-		// TODO should we set media to pause for smoother seeking?
-		isSeeking = true;
-		SeekRequested?.Invoke(this, new SeekRequested(newPosition));
 	}
 
 	static bool ValidateVolume(BindableObject o, object newValue)

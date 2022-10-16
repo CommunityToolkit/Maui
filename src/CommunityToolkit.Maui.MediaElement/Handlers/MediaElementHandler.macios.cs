@@ -9,13 +9,11 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 
 	protected override void ConnectHandler(MauiMediaElement platformView)
 	{
-		VirtualView.SeekRequested += platformView.MediaElementSeekRequested;
 		base.ConnectHandler(platformView);
 	}
 
 	protected override void DisconnectHandler(MauiMediaElement platformView)
 	{
-		VirtualView.SeekRequested -= platformView.MediaElementSeekRequested;
 		platformView.Dispose();
 		base.DisconnectHandler(platformView);
 	}
@@ -23,6 +21,11 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	public static void MapShowsPlaybackControls(MediaElementHandler handler, MediaElement mediaElement)
 	{
 		handler?.PlatformView.UpdateShowsPlaybackControls();
+	}
+
+	public static void MapPosition(MediaElementHandler handler, MediaElement mediaElement)
+	{
+		handler?.PlatformView.UpdatePosition();
 	}
 
 	public static void MapSource(MediaElementHandler handler, MediaElement mediaElement)
@@ -38,6 +41,11 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	public static void MapVolume(MediaElementHandler handler, MediaElement mediaElement)
 	{
 		handler?.PlatformView.UpdateVolume();
+	}
+
+	public static void MapUpdateStatus(MediaElementHandler handler, MediaElement mediaElement, object? args)
+	{
+		handler.PlatformView?.UpdateStatus();
 	}
 }
 

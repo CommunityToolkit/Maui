@@ -10,11 +10,17 @@ public partial class MediaElementHandler
 		[nameof(IMediaElement.Source)] = MapSource,
 		[nameof(IMediaElement.Speed)] = MapSpeed,
 		[nameof(IMediaElement.Volume)] = MapVolume,
+#if __IOS__
+		[nameof(IMediaElement.Position)] = MapPosition
+#endif
 	};
 
 	public static CommandMapper<MediaElement, MediaElementHandler> CommandMapper = new(ViewCommandMapper)
 	{
 		// TODO
+#if __IOS__
+		[nameof(MediaElement.UpdateStatus)] = MapUpdateStatus
+#endif
 	};
 
 	public MediaElementHandler() : base(PropertyMapper, CommandMapper)

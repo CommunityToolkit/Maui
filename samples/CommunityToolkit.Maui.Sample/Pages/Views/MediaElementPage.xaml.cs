@@ -26,8 +26,19 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 	void OnHlsSourceClicked(object? sender, EventArgs e) => mediaElement.Source = MediaSource.FromUri("https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8");
 
-	private void Slider_DragCompleted(object sender, EventArgs e)
+	void SpeedMinusClicked(System.Object sender, System.EventArgs e)
 	{
-		mediaElement.Speed = MainSlider.Value;
+		if (mediaElement.Speed >= 1)
+		{
+			mediaElement.Speed -= 1;
+		}
+	}
+
+	void SpeedPlusClicked(System.Object sender, System.EventArgs e)
+	{
+		if (mediaElement.Speed < 10)
+		{
+			mediaElement.Speed += 1;
+		}
 	}
 }
