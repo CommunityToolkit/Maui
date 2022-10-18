@@ -43,13 +43,11 @@ static partial class StatusBar
 		}
 	}
 
-	static void SetStatusBarAppearance(Activity activity, bool lightStatusBars)
+	static void SetStatusBarAppearance(Activity activity, bool isLightStatusBars)
 	{
 		var window = GetCurrentWindow(activity);
-		_ = new WindowInsetsControllerCompat(window, window.DecorView)
-		{
-			AppearanceLightStatusBars = lightStatusBars
-		};
+		var windowController = WindowCompat.GetInsetsController(window, window.DecorView);
+		windowController.AppearanceLightStatusBars = isLightStatusBars;
 
 		static Window GetCurrentWindow(Activity activity)
 		{
