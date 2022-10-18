@@ -17,7 +17,7 @@ variables:
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
   Xcode13Version: '13.3.1'
   Xcode14Version: '14.0.1'
-  DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/6.0.486.json'
+  DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/6.0.540.json'
   ShouldCheckDependencies: true
 
 trigger:
