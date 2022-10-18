@@ -1,9 +1,12 @@
-﻿using CommunityToolkit.Maui.Markup;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Essentials;
+using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.Pages;
 using CommunityToolkit.Maui.Sample.Pages.Alerts;
 using CommunityToolkit.Maui.Sample.Pages.Behaviors;
 using CommunityToolkit.Maui.Sample.Pages.Converters;
+using CommunityToolkit.Maui.Sample.Pages.Essentials;
 using CommunityToolkit.Maui.Sample.Pages.Extensions;
 using CommunityToolkit.Maui.Sample.Pages.ImageSources;
 using CommunityToolkit.Maui.Sample.Pages.Layouts;
@@ -12,6 +15,7 @@ using CommunityToolkit.Maui.Sample.ViewModels;
 using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
+using CommunityToolkit.Maui.Sample.ViewModels.Essentials;
 using CommunityToolkit.Maui.Sample.ViewModels.ImageSources;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
@@ -63,6 +67,7 @@ public static class MauiProgram
 		services.AddTransient<ImageSourcesGalleryPage, ImageSourcesGalleryViewModel>();
 		services.AddTransient<LayoutsGalleryPage, LayoutsGalleryViewModel>();
 		services.AddTransient<ViewsGalleryPage, ViewsGalleryViewModel>();
+		services.AddTransient<EssentialsGalleryPage, EssentialsGalleryViewModel>();
 
 		// Add Alerts Pages + ViewModels
 		services.AddTransientWithShellRoute<SnackbarPage, SnackbarViewModel>();
@@ -152,12 +157,19 @@ public static class MauiProgram
 		// Add Popups
 		services.AddTransient<CsharpBindingPopup, CsharpBindingPopupViewModel>();
 		services.AddTransient<XamlBindingPopup, XamlBindingPopupViewModel>();
+		
+		// Add Essentials
+		services.AddTransientWithShellRoute<FolderPickerPage, FolderPickerViewModel>();
+		services.AddTransientWithShellRoute<SaveFileDialogPage, SaveFileDialogViewModel>();
 	}
 
 	static void RegisterEssentials(in IServiceCollection services)
 	{
 		services.AddSingleton<IDeviceInfo>(DeviceInfo.Current);
 		services.AddSingleton<IDeviceDisplay>(DeviceDisplay.Current);
+
+		services.AddSingleton<IFolderPicker>(FolderPicker.Default);
+		services.AddSingleton<ISaveFileDialog>(SaveFileDialog.Default);
 	}
 
 	static IServiceCollection AddTransientWithShellRoute<TPage, TViewModel>(this IServiceCollection services) where TPage : BasePage<TViewModel>

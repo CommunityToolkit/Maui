@@ -14,10 +14,7 @@ public class AlertView : UIView
 	/// <summary>
 	/// Parent UIView
 	/// </summary>
-	public static UIView ParentView => UIApplication.SharedApplication.ConnectedScenes.ToArray()
-										.Select(x => x as UIWindowScene)
-										.FirstOrDefault()?
-										.Windows.FirstOrDefault(x => x.IsKeyWindow) ?? throw new InvalidOperationException("KeyWindow is not found");
+	public static UIView ParentView => UIViewExtensions.GetKeyWindow() ?? throw new InvalidOperationException("KeyWindow is not found");
 
 	/// <summary>
 	/// PopupView Children

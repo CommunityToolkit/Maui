@@ -2,6 +2,7 @@
 using CommunityToolkit.Maui.Sample.Pages.Alerts;
 using CommunityToolkit.Maui.Sample.Pages.Behaviors;
 using CommunityToolkit.Maui.Sample.Pages.Converters;
+using CommunityToolkit.Maui.Sample.Pages.Essentials;
 using CommunityToolkit.Maui.Sample.Pages.Extensions;
 using CommunityToolkit.Maui.Sample.Pages.ImageSources;
 using CommunityToolkit.Maui.Sample.Pages.Layouts;
@@ -10,6 +11,7 @@ using CommunityToolkit.Maui.Sample.ViewModels;
 using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
+using CommunityToolkit.Maui.Sample.ViewModels.Essentials;
 using CommunityToolkit.Maui.Sample.ViewModels.ImageSources;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
@@ -103,6 +105,10 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<MultiplePopupPage, MultiplePopupViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<PopupAnchorPage, PopupAnchorViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<PopupPositionPage, PopupPositionViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		
+		// Essentials View Models
+		CreateViewModelMapping<FolderPickerPage, FolderPickerViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
+		CreateViewModelMapping<SaveFileDialogPage, SaveFileDialogViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
 	});
 
 	public AppShell() => InitializeComponent();

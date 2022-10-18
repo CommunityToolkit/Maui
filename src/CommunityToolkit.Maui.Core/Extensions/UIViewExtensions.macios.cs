@@ -84,4 +84,30 @@ public static class UIViewExtensions
 		UIDevice.CurrentDevice.CheckSystemVersion(11, 0)
 			? view.SafeAreaLayoutGuide.WidthAnchor
 			: view.WidthAnchor;
+
+	/// <summary>
+	/// Get Key Window
+	/// </summary>
+	public static UIWindow? GetKeyWindow()
+	{
+		return UIApplication.SharedApplication.ConnectedScenes.ToArray()
+			.Select(x => x as UIWindowScene)
+			.FirstOrDefault()?
+			.Windows.FirstOrDefault(x => x.IsKeyWindow);
+	}
+	
+	/// <summary>
+	/// Get current UI view controller
+	/// </summary>
+	public static UIViewController? GetCurrentUIViewController()
+	{
+		var viewController = GetKeyWindow()?.RootViewController;
+
+		while (viewController?.PresentedViewController != null)
+		{
+			viewController = viewController.PresentedViewController;
+		}
+
+		return viewController;
+	}
 }

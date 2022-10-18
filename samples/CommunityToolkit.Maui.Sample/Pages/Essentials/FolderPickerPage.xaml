@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Essentials.FolderPickerPage"
+                xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Essentials"
+                x:TypeArguments="vm:FolderPickerViewModel"
+                x:DataType="vm:FolderPickerViewModel">
+    
+    <VerticalStackLayout Spacing="12">
+        
+        <Label Text="The folder picker allows you to pick a folder from the device."
+                LineBreakMode = "WordWrap" />
+        
+        <Button Command="{Binding PickFolderCommand}" Text="Pick Folder" />
+
+    </VerticalStackLayout>
+    
+</pages:BasePage>
