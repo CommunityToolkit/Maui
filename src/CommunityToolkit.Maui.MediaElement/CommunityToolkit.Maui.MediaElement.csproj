@@ -83,7 +83,10 @@
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
     <None Include="ReadMe.txt" pack="true" PackagePath="." />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0-android33'">
+  <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <PackageReference Include="Xam.Plugins.Android.ExoPlayer" Version="2.18.3" />
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.220902.1-preview1" />
   </ItemGroup>
 </Project>
