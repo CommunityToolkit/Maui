@@ -7,6 +7,16 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 {
 	protected override MauiMediaElement CreatePlatformView() => new(Context, VirtualView);
 
+	public static void MapIsLooping(MediaElementHandler handler, MediaElement mediaElement)
+	{
+		handler?.PlatformView.UpdateIsLooping();
+	}
+
+	public static void MapPosition(MediaElementHandler handler, MediaElement mediaElement)
+	{
+		handler?.PlatformView.UpdatePosition();
+	}
+
 	public static void MapShowsPlaybackControls(MediaElementHandler handler, MediaElement mediaElement)
 	{
 		handler?.PlatformView.UpdateShowsPlaybackControls();
@@ -22,9 +32,15 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		handler?.PlatformView.UpdateSpeed();
 	}
 
+	public static void MapUpdateStatus(MediaElementHandler handler, MediaElement mediaElement, object? args)
+	{
+		handler.PlatformView?.UpdateStatus();
+	}
+
 	public static void MapVolume(MediaElementHandler handler, MediaElement mediaElement)
 	{
 		handler?.PlatformView.UpdateVolume();
 	}
+
 }
 

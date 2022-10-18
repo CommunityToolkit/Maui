@@ -4,7 +4,7 @@ using CommunityToolkit.Maui.MediaElement.Converters;
 
 namespace CommunityToolkit.Maui.MediaElement;
 
-public partial class MediaElement : View, IMediaElement
+public class MediaElement : View, IMediaElement
 {
 	readonly IDispatcherTimer timer;
 

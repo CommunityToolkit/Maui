@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Handlers;
-
-namespace CommunityToolkit.Maui.MediaElement;
+﻿namespace CommunityToolkit.Maui.MediaElement;
 
 public partial class MediaElementHandler
 {
@@ -10,17 +8,16 @@ public partial class MediaElementHandler
 		[nameof(IMediaElement.Source)] = MapSource,
 		[nameof(IMediaElement.Speed)] = MapSpeed,
 		[nameof(IMediaElement.Volume)] = MapVolume,
-#if __IOS__
-		[nameof(IMediaElement.Position)] = MapPosition
+		[nameof(IMediaElement.Position)] = MapPosition,
+#if __ANDROID__
+		[nameof(MediaElement.IsLooping)] = MapIsLooping
 #endif
 	};
 
 	public static CommandMapper<MediaElement, MediaElementHandler> CommandMapper = new(ViewCommandMapper)
 	{
 		// TODO
-#if __IOS__
 		[nameof(MediaElement.UpdateStatus)] = MapUpdateStatus
-#endif
 	};
 
 	public MediaElementHandler() : base(PropertyMapper, CommandMapper)

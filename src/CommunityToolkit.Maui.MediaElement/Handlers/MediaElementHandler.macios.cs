@@ -18,14 +18,14 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		base.DisconnectHandler(platformView);
 	}
 
-	public static void MapShowsPlaybackControls(MediaElementHandler handler, MediaElement mediaElement)
-	{
-		handler?.PlatformView.UpdateShowsPlaybackControls();
-	}
-
 	public static void MapPosition(MediaElementHandler handler, MediaElement mediaElement)
 	{
 		handler?.PlatformView.UpdatePosition();
+	}
+
+	public static void MapShowsPlaybackControls(MediaElementHandler handler, MediaElement mediaElement)
+	{
+		handler?.PlatformView.UpdateShowsPlaybackControls();
 	}
 
 	public static void MapSource(MediaElementHandler handler, MediaElement mediaElement)
@@ -38,14 +38,13 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		handler?.PlatformView.UpdateSpeed();
 	}
 
-	public static void MapVolume(MediaElementHandler handler, MediaElement mediaElement)
-	{
-		handler?.PlatformView.UpdateVolume();
-	}
-
 	public static void MapUpdateStatus(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
 		handler.PlatformView?.UpdateStatus();
 	}
-}
 
+	public static void MapVolume(MediaElementHandler handler, MediaElement mediaElement)
+	{
+		handler?.PlatformView.UpdateVolume();
+	}
+}
