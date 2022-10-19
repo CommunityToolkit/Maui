@@ -1,36 +1,40 @@
 ﻿using Android.Content;
 using Android.Views;
 using Android.Widget;
-using AndroidX.ConstraintLayout.Helper.Widget;
 using AndroidX.CoordinatorLayout.Widget;
-using Com.Google.Android.Exoplayer2.Source.Dash;
 using Com.Google.Android.Exoplayer2.UI;
 using Com.Google.Android.Exoplayer2;
-using Com.Google.Android.Exoplayer2.Upstream;
-using Microsoft.Maui.Controls;
-using static Android.Provider.MediaStore;
-using Color = Android.Graphics.Color;
-using Uri = Android.Net.Uri;
 using Android.Media.Session;
+using Com.Google.Android.Exoplayer2.Video;
 
 namespace CommunityToolkit.Maui.MediaElement.PlatformView;
 
-public class MauiMediaElement : CoordinatorLayout
+public class MauiMediaElement : CoordinatorLayout, IPlayer.IListener
 {
-	PlayerView? playerView;
-	SimpleExoPlayer? player;
-	readonly Context context;
-	bool isPrepared;
+	StyledPlayerView? playerView;
+	IExoPlayer? player;
 	MediaElement mediaElement;
+
+	public void OnPlayerStateChanged(bool playWhenReady, int playbackState)
+	{
+		if (player is null)
+		{
+			return;
+		}
+
+		if (playbackState == IPlayer.StateReady)
+		{
+			mediaElement.Duration = TimeSpan.FromMilliseconds(player.Duration);
+		}
+	}
 
 	public MauiMediaElement(Context context, MediaElement mediaElement)
 		 : base(context)
 	{
-		this.context = context;
 		this.mediaElement = mediaElement;
 
 		// Create a RelativeLayout for sizing the video
-		RelativeLayout relativeLayout = new RelativeLayout(context)
+		RelativeLayout relativeLayout = new(context)
 		{
 			LayoutParameters = new CoordinatorLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent)
 			{
@@ -38,12 +42,10 @@ public class MauiMediaElement : CoordinatorLayout
 			}
 		};
 
-		player = new SimpleExoPlayer.Builder(context).Build() ?? throw new NullReferenceException();
+		player = new IExoPlayer.Builder(context).Build() ?? throw new NullReferenceException();
+		player.AddListener(this);
 
-		//TODO: should we use this over the check in SetSource?
-		//player.PlayWhenReady = mediaElement.AutoPlay;
-
-		playerView = new PlayerView(context)
+		playerView = new StyledPlayerView(context)
 		{
 			Player = player,
 			UseController = false,
@@ -53,8 +55,6 @@ public class MauiMediaElement : CoordinatorLayout
 
 		relativeLayout.AddView(playerView);
 		AddView(relativeLayout);
-
-		player.PlaybackStateChanged += Player_PlaybackStateChanged;
 	}
 
 	protected override void Dispose(bool disposing)
@@ -63,7 +63,7 @@ public class MauiMediaElement : CoordinatorLayout
 		{
 			if (player is not null)
 			{
-				player.PlaybackStateChanged -= Player_PlaybackStateChanged;
+				player.RemoveListener(this);
 			}
 
 			if (playerView is not null)
@@ -108,8 +108,8 @@ public class MauiMediaElement : CoordinatorLayout
 			return;
 		}
 
-		// Stops and releases the media player, do a reset so that the media can be played again
-		player.Stop(true);
+		// Stops and releases the media player
+		player.Stop();
 	}
 
 	public void UpdateIsLooping()
@@ -119,7 +119,7 @@ public class MauiMediaElement : CoordinatorLayout
 			return;
 		}
 
-		player.RepeatMode = mediaElement.IsLooping ? Player.RepeatModeOne : Player.RepeatModeOff;
+		player.RepeatMode = mediaElement.IsLooping ? IPlayer.RepeatModeOne : IPlayer.RepeatModeOff;
 	}
 
 	public void UpdatePosition()
@@ -147,7 +147,6 @@ public class MauiMediaElement : CoordinatorLayout
 
 	public void UpdateSource()
 	{
-		isPrepared = false;
 		bool hasSetSource = false;
 
 		if (player is null)
@@ -160,14 +159,14 @@ public class MauiMediaElement : CoordinatorLayout
 			string uri = (mediaElement.Source as UriMediaSource)!.Uri!.AbsoluteUri;
 			if (!string.IsNullOrWhiteSpace(uri))
 			{
+				//Com.Google.Android.Exoplayer2.Util.Util.InferContentType()
 				//var httpDataSourceFactory = new DefaultHttpDataSource.Factory();
 				//var mediaSource = new DashMediaSource.Factory(httpDataSourceFactory)
 				//.CreateMediaSource(MediaItem.FromUri(uri));
 
 				//player.SetMediaSource(mediaSource);
 
-
-				player.SetMediaItem(MediaItem.FromUri(Uri.Parse(uri)));
+				player.SetMediaItem(MediaItem.FromUri(uri));
 				player.Prepare();
 
 				hasSetSource = true;
@@ -175,12 +174,14 @@ public class MauiMediaElement : CoordinatorLayout
 		}
 		else if (mediaElement.Source is FileMediaSource)
 		{
-			//string filename = (video.Source as FileMediaSource)!.File!;
-			//if (!string.IsNullOrWhiteSpace(filename))
-			//{
-			//	player.SetVideoPath(filename);
-			//	hasSetSource = true;
-			//}
+			string filePath = (mediaElement.Source as FileMediaSource)!.File!;
+			if (!string.IsNullOrWhiteSpace(filePath))
+			{
+				player.SetMediaItem(MediaItem.FromUri(filePath));
+				player.Prepare();
+
+				hasSetSource = true;
+			}
 		}
 		//else if (video.Source is ResourceVideoSource)
 		//{
@@ -264,11 +265,33 @@ public class MauiMediaElement : CoordinatorLayout
 			return;
 		}
 
-		if (e.State == Player.StateReady)
+		if (e.State == IPlayer.StateReady)
 		{
-			isPrepared = true;
 			mediaElement.Duration = TimeSpan.FromMilliseconds(player.Duration);
 		}
 	}
+
+	#region IPlayer.IListener implementation method stubs
+	public void OnEvents(IPlayer? player, IPlayer.Events? events) { }
+	public void OnIsLoadingChanged(bool loading) { }
+	public void OnPositionDiscontinuity(int reason) { }
+	public void OnPlayerError(ExoPlaybackException error) { }
+	public void OnLoadingChanged(bool isLoading) { }
+	public void OnPlaybackParametersChanged(PlaybackParameters? playbackParameters) { }
+	public void OnPlaybackStateChanged(int state) { }
+	public void OnPlayWhenReadyChanged(bool ready, int state) { }
+	public void OnRepeatModeChanged(int repeatMode) { }
+	public void OnSeekProcessed() { }
+	public void OnShuffleModeEnabledChanged(bool shuffleModeEnabled) { }
+	public void OnSurfaceSizeChanged(int width, int height) { }
+	public void OnTimelineChanged(Timeline? timeline, int reason) { }
+	public void OnTracksChanged(Tracks? tracks) { }
+	public void OnIsPlayingChanged(bool isPlaying) { }
+	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
+	public void OnMediaItemTransition(MediaItem? mediaItem, int transition) { }
+	public void OnAvailableCommandsChanged(IPlayer.Commands? commands) { }
+	public void OnVideoSizeChanged(VideoSize? videoSize) { }
+	public void OnRenderedFirstFrame() { }
+	#endregion
 }
 
