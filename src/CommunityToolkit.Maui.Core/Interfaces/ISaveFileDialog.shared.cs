@@ -1,24 +1,26 @@
 namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
-/// 
+/// Allows selecting target folder and saving files to the file system.
 /// </summary>
 public interface ISaveFileDialog
 {
 	/// <summary>
-	/// 
+	/// Allows selecting target folder and saving files to the file system.
 	/// </summary>
-	/// <param name="initialPath"></param>
-	/// <param name="stream"></param>
-	/// <param name="cancellationToken"></param>
-	/// <returns></returns>
-	Task<bool> SaveAsync(string initialPath, Stream stream, CancellationToken cancellationToken);
+	/// <param name="initialPath">Initial path</param>
+	/// <param name="fileName">File name with extension</param>
+	/// <param name="stream"><see cref="Stream"/></param>
+	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
+	/// <returns>True if file is saved, otherwise False</returns>
+	Task<bool> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken);
 
 	/// <summary>
-	/// 
+	/// Allows selecting target folder and saving files to the file system.
 	/// </summary>
-	/// <param name="stream"></param>
-	/// <param name="cancellationToken"></param>
-	/// <returns></returns>
-	Task<bool> SaveAsync(Stream stream, CancellationToken cancellationToken);
+	/// <param name="fileName">File name with extension</param>
+	/// <param name="stream"><see cref="Stream"/></param>
+	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
+	/// <returns>True if file is saved, otherwise False</returns>
+	Task<bool> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken);
 }

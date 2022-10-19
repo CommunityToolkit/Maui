@@ -1,20 +1,35 @@
+using System.Diagnostics;
+using Windows.Storage.Pickers;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Primitives;
 
 namespace CommunityToolkit.Maui.Essentials;
 
-/// <summary>
-/// 
-/// </summary>
+/// <inheritdoc />
 public partial class SaveFileDialogImplementation : ISaveFileDialog
 {
-	public Task<bool> SaveAsync(string initialPath, Stream stream, CancellationToken cancellationToken)
+	/// <inheritdoc />
+	public async Task<bool> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
-		throw new NotImplementedException();
+		var savePicker = new FileSavePicker
+		{
+			SuggestedStartLocation = PickerLocationId.DocumentsLibrary
+		};
+		WinRT.Interop.InitializeWithWindow.Initialize(savePicker, Process.GetCurrentProcess().MainWindowHandle);
+		savePicker.FileTypeChoices.Add(GetExtension(fileName), new List<string> { GetExtension(fileName) });
+		savePicker.SuggestedFileName = GetFileName(fileName);
+		var file = await savePicker.PickSaveFileAsync();
+		if (string.IsNullOrEmpty(file?.Path))
+		{
+			return false;
+		}
+
+		await WriteStream(stream, file.Path, cancellationToken);
+		return true;
 	}
 
-	public Task<bool> SaveAsync(Stream stream, CancellationToken cancellationToken)
+	/// <inheritdoc />
+	public Task<bool> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
 	{
-		throw new NotImplementedException();
+		return SaveAsync("", fileName, stream, cancellationToken);
 	}
 }

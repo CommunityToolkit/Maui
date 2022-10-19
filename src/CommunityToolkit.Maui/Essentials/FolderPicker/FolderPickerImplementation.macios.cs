@@ -1,5 +1,4 @@
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Maui.Core.Primitives;
 using Foundation;
 using UIKit;
@@ -16,14 +15,15 @@ public class FolderPickerImplementation : IFolderPicker
 		var documentPickerViewController = new UIDocumentPickerViewController(new[]{ UTTypes.Folder });
 		documentPickerViewController.AllowsMultipleSelection = false;
 		documentPickerViewController.DirectoryUrl = NSUrl.FromString(initialPath);
-		var currentViewController = UIViewExtensions.GetCurrentUIViewController();
+		var currentViewController = Microsoft.Maui.Platform.UIApplicationExtensions.GetKeyWindow(UIApplication.SharedApplication)?.RootViewController;
 		var taskCompetedSource = new TaskCompletionSource<Folder?>();
 		documentPickerViewController.DidPickDocumentAtUrls += (s, e) =>
 		{
+			var path = e.Urls[0].AbsoluteString ?? throw new Exception("Path cannot be null");
 			var folder = new Folder
 			{
-				Path = e.Urls[0].AbsoluteString,
-				Name = Path.GetDirectoryName(e.Urls[0].AbsoluteString)
+				Path = path,
+				Name = new DirectoryInfo(path).Name
 			};
 			taskCompetedSource.SetResult(folder);
 		};

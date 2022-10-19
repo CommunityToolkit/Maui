@@ -4,9 +4,7 @@ using CommunityToolkit.Maui.Core.Primitives;
 
 namespace CommunityToolkit.Maui.Essentials;
 
-/// <summary>
-/// 
-/// </summary>
+/// <inheritdoc />
 public class FolderPickerImplementation : IFolderPicker
 {
 	/// <inheritdoc />
@@ -25,7 +23,7 @@ public class FolderPickerImplementation : IFolderPicker
 			return new Folder
 			{
 				Path = path,
-				Name = Path.GetDirectoryName(path)
+				Name = new DirectoryInfo(path).Name
 			};
 		}
 

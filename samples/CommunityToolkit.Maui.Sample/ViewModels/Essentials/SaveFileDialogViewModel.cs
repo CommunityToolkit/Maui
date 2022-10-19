@@ -11,7 +11,7 @@ public partial class SaveFileDialogViewModel:BaseViewModel
 	async Task SaveFile(CancellationToken cancellationToken)
 	{
 		using var stream = new MemoryStream();
-		var isSaved = await SaveFileDialog.SaveAsync(stream, cancellationToken);
+		var isSaved = await SaveFileDialog.SaveAsync("test.txt", stream, cancellationToken);
 		if (isSaved)
 		{
 			await Toast.Make("File is saved").Show(cancellationToken);
