@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.MediaElement.PlatformView;
+﻿using System;
+using CommunityToolkit.Maui.MediaElement.PlatformView;
 using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.MediaElement;
@@ -35,5 +36,38 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	public static void MapVolume(MediaElementHandler handler, MediaElement mediaElement)
 	{
 		handler?.PlatformView.UpdateVolume();
+	}
+
+	public static void MapPlayRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
+	{
+		if (args is not MediaPositionEventArgs)
+		{
+			return;
+		}
+
+		TimeSpan position = ((MediaPositionEventArgs)args).Position;
+		handler.PlatformView?.PlayRequested(position);
+	}
+
+	public static void MapPauseRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
+	{
+		if (args is not MediaPositionEventArgs)
+		{
+			return;
+		}
+
+		TimeSpan position = ((MediaPositionEventArgs)args).Position;
+		handler.PlatformView?.PauseRequested(position);
+	}
+
+	public static void MapStopRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
+	{
+		if (args is not MediaPositionEventArgs)
+		{
+			return;
+		}
+
+		TimeSpan position = ((MediaPositionEventArgs)args).Position;
+		handler.PlatformView?.StopRequested(position);
 	}
 }

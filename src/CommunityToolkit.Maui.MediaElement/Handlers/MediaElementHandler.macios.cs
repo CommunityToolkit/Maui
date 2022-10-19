@@ -47,4 +47,37 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	{
 		handler?.PlatformView.UpdateVolume();
 	}
+
+	public static void MapPlayRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
+	{
+		if (args is not MediaPositionEventArgs)
+		{
+			return;
+		}
+
+		TimeSpan position = ((MediaPositionEventArgs)args).Position;
+		handler.PlatformView?.PlayRequested(position);
+	}
+
+	public static void MapPauseRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
+	{
+		if (args is not MediaPositionEventArgs)
+		{
+			return;
+		}
+
+		TimeSpan position = ((MediaPositionEventArgs)args).Position;
+		handler.PlatformView?.PauseRequested(position);
+	}
+
+	public static void MapStopRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
+	{
+		if (args is not MediaPositionEventArgs)
+		{
+			return;
+		}
+
+		TimeSpan position = ((MediaPositionEventArgs)args).Position;
+		handler.PlatformView?.StopRequested(position);
+	}
 }

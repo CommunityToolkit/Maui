@@ -38,8 +38,7 @@ public class StreamMediaSource : MediaSource, IStreamImageSource
 		set => SetValue(StreamProperty, value);
 	}
 
-	// TODO check length as well?
-	public bool IsEmpty => Stream != null;
+	public bool IsEmpty => Stream == null;
 
 	protected override void OnPropertyChanged(string propertyName)
 	{
@@ -51,14 +50,11 @@ public class StreamMediaSource : MediaSource, IStreamImageSource
 		base.OnPropertyChanged(propertyName);
 	}
 
-	// TODO
-#pragma warning disable CS8616 // Nullability of reference types in return type doesn't match implemented member.
-	async Task<Stream?> IStreamImageSource.GetStreamAsync(CancellationToken cancellationToken)
-#pragma warning restore CS8616 // Nullability of reference types in return type doesn't match implemented member.
+	async Task<Stream> IStreamImageSource.GetStreamAsync(CancellationToken cancellationToken)
 	{
 		if (Stream is null)
 		{
-			return null;
+			return MemoryStream.Null;
 		}
 
 		OnLoadingStarted();

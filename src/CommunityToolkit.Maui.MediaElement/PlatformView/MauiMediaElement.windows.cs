@@ -104,16 +104,6 @@ public class MauiMediaElement : Grid, IDisposable
 				hasSetSource = true;
 			}
 		}
-		// TODO
-		//else if (_video.Source is ResourceVideoSource)
-		//{
-		//	string path = "ms-appx:///" + (_video.Source as ResourceVideoSource).Path;
-		//	if (!string.IsNullOrWhiteSpace(path))
-		//	{
-		//		_mediaPlayerElement.Source = MediaSource.CreateFromUri(new Uri(path));
-		//		hasSetSource = true;
-		//	}
-		//}
 
 		if (hasSetSource && !isMediaPlayerAttached)
 		{

@@ -19,6 +19,9 @@ public class MediaElement : View, IMediaElement
 	~MediaElement() => timer.Tick -= OnTimerTick;
 
 	public event EventHandler? UpdateStatus;
+	public event EventHandler<MediaPositionEventArgs>? PlayRequested;
+	public event EventHandler<MediaPositionEventArgs>? PauseRequested;
+	public event EventHandler<MediaPositionEventArgs>? StopRequested;
 
 	void OnTimerTick(object? sender, EventArgs e)
 	{
@@ -131,11 +134,26 @@ public class MediaElement : View, IMediaElement
 		set => SetValue(VolumeProperty, value);
 	}
 
-	public void Play() => StateRequested?.Invoke(this, new StateRequested(MediaElementState.Playing));
+	public void Play()
+	{
+		MediaPositionEventArgs args = new(Position);
+		PlayRequested?.Invoke(this, args);
+		Handler?.Invoke(nameof(MediaElement.PlayRequested), args);
+	}
 
-	public void Pause() => StateRequested?.Invoke(this, new StateRequested(MediaElementState.Paused));
+	public void Pause()
+	{
+		MediaPositionEventArgs args = new(Position);
+		PauseRequested?.Invoke(this, args);
+		Handler?.Invoke(nameof(MediaElement.PauseRequested), args);
+	}
 
-	public void Stop() => StateRequested?.Invoke(this, new StateRequested(MediaElementState.Stopped));
+	public void Stop()
+	{
+		MediaPositionEventArgs args = new(Position);
+		StopRequested?.Invoke(this, args);
+		Handler?.Invoke(nameof(MediaElement.StopRequested), args);
+	}
 
 	public event EventHandler? MediaEnded;
 

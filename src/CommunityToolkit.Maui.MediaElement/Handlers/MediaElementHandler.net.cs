@@ -13,4 +13,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, object>
 	public static void MapSpeed(object handler, MediaElement mediaElement) { }
 	public static void MapUpdateStatus(MediaElementHandler handler, MediaElement mediaElement, object? args) { }
 	public static void MapVolume(object handler, MediaElement mediaElement) { }
+	public static void MapPlayRequested(MediaElementHandler handler, MediaElement mediaElement, object? args) { }
+	public static void MapPauseRequested(MediaElementHandler handler, MediaElement mediaElement, object? args) { }
+	public static void MapStopRequested(MediaElementHandler handler, MediaElement mediaElement, object? args) { }
 }

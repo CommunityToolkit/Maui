@@ -1,12 +1,13 @@
-﻿using Microsoft.Maui.Controls.Internals;
+﻿using System.ComponentModel;
+using CommunityToolkit.Maui.MediaElement.Converters;
+using Microsoft.Maui.Controls.Internals;
 
 namespace CommunityToolkit.Maui.MediaElement;
 
-// TODO
-//[TypeConversion(typeof(MediaSourceConverter))]
+[TypeConverter(typeof(MediaSourceConverter))]
 public abstract class MediaSource : Element
 {
-	readonly WeakEventManager weakEventManager = new WeakEventManager();
+	readonly WeakEventManager weakEventManager = new();
 
 	public static MediaSource FromFile(string? file) =>
 		new FileMediaSource { File = file };

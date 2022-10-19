@@ -183,17 +183,6 @@ public class MauiMediaElement : CoordinatorLayout, IPlayer.IListener
 				hasSetSource = true;
 			}
 		}
-		//else if (video.Source is ResourceVideoSource)
-		//{
-		//	string package = Context.PackageName;
-		//	string path = (_video.Source as ResourceVideoSource).Path;
-		//	if (!string.IsNullOrWhiteSpace(path))
-		//	{
-		//		string assetFilePath = "content://" + package + "/" + path;
-		//		_videoView.SetVideoPath(assetFilePath);
-		//		hasSetSource = true;
-		//	}
-		//}
 
 		if (hasSetSource && mediaElement.AutoPlay)
 		{

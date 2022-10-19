@@ -144,19 +144,6 @@ public class MauiMediaElement : UIView
 				asset = AVAsset.FromUrl(NSUrl.CreateFileUrl(new[] { uri }));
 			}
 		}
-		//TODO
-		//else if (video.Source is ResourceVideoSource)
-		//{
-		//	string path = (video.Source as ResourceVideoSource).Path;
-		//	if (!string.IsNullOrWhiteSpace(path))
-		//	{
-		//		string directory = Path.GetDirectoryName(path);
-		//		string filename = Path.GetFileNameWithoutExtension(path);
-		//		string extension = Path.GetExtension(path).Substring(1);
-		//		NSUrl url = NSBundle.MainBundle.GetUrlForResource(filename, extension, directory);
-		//		asset = AVAsset.FromUrl(url);
-		//	}
-		//}
 
 		if (asset != null)
 		{

@@ -16,8 +16,10 @@ public partial class MediaElementHandler
 
 	public static CommandMapper<MediaElement, MediaElementHandler> CommandMapper = new(ViewCommandMapper)
 	{
-		// TODO
-		[nameof(MediaElement.UpdateStatus)] = MapUpdateStatus
+		[nameof(MediaElement.UpdateStatus)] = MapUpdateStatus,
+		[nameof(MediaElement.PlayRequested)] = MapPlayRequested,
+		[nameof(MediaElement.PauseRequested)] = MapPauseRequested,
+		[nameof(MediaElement.StopRequested)] = MapStopRequested
 	};
 
 	public MediaElementHandler() : base(PropertyMapper, CommandMapper)
