@@ -240,6 +240,11 @@ public class MauiMediaElement : UIView
 			mediaElement.Duration = ConvertTime(playerItem.Duration);
 			mediaElement.Position = ConvertTime(playerItem.CurrentTime);
 		}
+		else
+		{
+			player.Pause();
+			mediaElement.Duration = mediaElement.Position = TimeSpan.Zero;
+		}
 	}
 
 	public void UpdateVolume()
