@@ -138,7 +138,7 @@ public partial class TouchBehavior
 		: platformView?.Background;
 
 		var isBorderLess = NativeAnimationBorderless;
-		var isEmptyDrawable = Element is Layout || drawable == null;
+		var isEmptyDrawable = Element is Layout || drawable is null;
 		var color = NativeAnimationColor;
 
 		if (drawable is RippleDrawable rippleDrawable && rippleDrawable.GetConstantState() is Drawable.ConstantState constantState)
