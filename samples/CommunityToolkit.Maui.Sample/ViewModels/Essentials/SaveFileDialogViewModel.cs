@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Essentials;
 
-public partial class SaveFileDialogViewModel:BaseViewModel
+public partial class SaveFileDialogViewModel : BaseViewModel
 {
 	[RelayCommand]
 	async Task SaveFile(CancellationToken cancellationToken)

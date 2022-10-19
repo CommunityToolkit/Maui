@@ -43,7 +43,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 	{
 		return SaveAsync(GetExternalDirectory(), fileName, stream, cancellationToken);
 	}
-	
+
 	static string GetExternalDirectory()
 	{
 		return Platform.CurrentActivity?.GetExternalFilesDir(null)

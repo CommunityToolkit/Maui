@@ -12,12 +12,12 @@ public partial class SaveFileDialogImplementation
 		stream.Seek(0, SeekOrigin.Begin);
 		await stream.CopyToAsync(fileStream, cancellationToken);
 	}
-	
+
 	static string GetFileName(string fileNameWithExtension)
 	{
 		return Path.GetFileNameWithoutExtension(fileNameWithExtension);
 	}
-	
+
 	static string GetExtension(string fileNameWithExtension)
 	{
 		return Path.GetExtension(fileNameWithExtension);

@@ -36,7 +36,7 @@ public class FolderPickerImplementation : IFolderPicker
 	{
 		return PickAsync(GetExternalDirectory(), cancellationToken);
 	}
-	
+
 	static string GetExternalDirectory()
 	{
 		return Platform.CurrentActivity?.GetExternalFilesDir(null)

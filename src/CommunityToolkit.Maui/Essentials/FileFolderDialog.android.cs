@@ -78,7 +78,7 @@ class FileFolderDialog : IDisposable
 				selectType = fileOpen;
 				break;
 		}
-		
+
 		this.context = context;
 		sdCardDirectory = Environment.RootDirectory.AbsolutePath;
 
@@ -218,7 +218,7 @@ class FileFolderDialog : IDisposable
 
 			// if directory is not the base sd card directory add ".." for going up one directory
 			if ((goToUpper || !mDir.Equals(sdCardDirectory, StringComparison.Ordinal)) &&
-			    !"/".Equals(mDir, StringComparison.Ordinal))
+				!"/".Equals(mDir, StringComparison.Ordinal))
 			{
 				dirs.Add("..");
 			}
@@ -257,7 +257,7 @@ class FileFolderDialog : IDisposable
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	AlertDialog.Builder CreateDirectoryChooserDialog(string title,
 		List<string> listItems,
-		EventHandler<DialogClickEventArgs> onClickListener, 
+		EventHandler<DialogClickEventArgs> onClickListener,
 		string defaultFileName = "default")
 	{
 		var dialogBuilder = new AlertDialog.Builder(context);

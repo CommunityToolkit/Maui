@@ -1,7 +1,7 @@
 using System.Diagnostics;
-using Windows.Storage.Pickers;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
+using Windows.Storage.Pickers;
 
 namespace CommunityToolkit.Maui.Essentials;
 

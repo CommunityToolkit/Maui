@@ -12,7 +12,7 @@ public class FolderPickerImplementation : IFolderPicker
 	/// <inheritdoc />
 	public async Task<Folder?> PickAsync(string initialPath, CancellationToken cancellationToken)
 	{
-		var documentPickerViewController = new UIDocumentPickerViewController(new[]{ UTTypes.Folder });
+		var documentPickerViewController = new UIDocumentPickerViewController(new[] { UTTypes.Folder });
 		documentPickerViewController.AllowsMultipleSelection = false;
 		documentPickerViewController.DirectoryUrl = NSUrl.FromString(initialPath);
 		var currentViewController = Microsoft.Maui.Platform.UIApplicationExtensions.GetKeyWindow(UIApplication.SharedApplication)?.RootViewController;
@@ -34,7 +34,7 @@ public class FolderPickerImplementation : IFolderPicker
 		currentViewController?.PresentViewController(documentPickerViewController, true, null);
 		return await taskCompetedSource.Task;
 	}
-	
+
 	/// <inheritdoc />
 	public Task<Folder?> PickAsync(CancellationToken cancellationToken)
 	{
