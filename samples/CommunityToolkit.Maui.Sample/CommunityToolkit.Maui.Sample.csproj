@@ -30,6 +30,11 @@
     <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles</CompilerGeneratedFilesOutputPath>-->
   </PropertyGroup>
 
+  <!-- Got errors while building in the pipeline that Android used all kinds of preview features? Trying if this fixes it. More info: https://aka.ms/dotnet-warnings/preview-features -->
+  <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
+    <EnablePreviewFeatures>True</EnablePreviewFeatures>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- App Icon -->
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
