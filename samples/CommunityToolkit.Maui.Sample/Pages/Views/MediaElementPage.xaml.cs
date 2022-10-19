@@ -41,4 +41,19 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			mediaElement.Speed += 1;
 		}
 	}
+
+	void PlayClicked(System.Object sender, System.EventArgs e)
+	{
+		mediaElement.Play();
+	}
+
+	void PauseClicked(System.Object sender, System.EventArgs e)
+	{
+		mediaElement.Pause();
+	}
+
+	void StopClicked(System.Object sender, System.EventArgs e)
+	{
+		mediaElement.Stop();
+	}
 }
