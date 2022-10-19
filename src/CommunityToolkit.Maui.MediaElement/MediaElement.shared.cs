@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.MediaElement;
 
 public class MediaElement : View, IMediaElement
 {
-	readonly IDispatcherTimer timer;
+	readonly Microsoft.Maui.Dispatching.IDispatcherTimer timer;
 
 	public MediaElement()
 	{

@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.UI.Xaml.Controls;
-using Windows.Media.Core;
+﻿using Microsoft.UI.Xaml.Controls;
 using Windows.Media.Playback;
 using Windows.Storage;
 using Grid = Microsoft.UI.Xaml.Controls.Grid;
@@ -8,10 +6,11 @@ using WinMediaSource = Windows.Media.Core.MediaSource;
 
 namespace CommunityToolkit.Maui.MediaElement.PlatformView;
 
-public class MauiMediaElement : Grid//, IDisposable
+public class MauiMediaElement : Grid, IDisposable
 {
+	bool isDisposed;
 	MediaPlayerElement? mediaPlayerElement;
-	MediaElement mediaElement;
+	readonly MediaElement mediaElement;
 	bool isMediaPlayerAttached;
 
 	public MauiMediaElement(MediaElement mediaElement)
@@ -21,15 +20,35 @@ public class MauiMediaElement : Grid//, IDisposable
 		Children.Add(mediaPlayerElement);
 	}
 
-	//void IDisposable.Dispose()
-	//{
-	//	if (isMediaPlayerAttached)
-	//	{
-	//		mediaPlayerElement.MediaPlayer.MediaOpened -= OnMediaPlayerMediaOpened;
-	//		mediaPlayerElement.MediaPlayer.Dispose();
-	//	}
-	//	mediaPlayerElement = null;
-	//}
+	protected virtual void Dispose(bool isDisposing)
+	{
+		if (isDisposed)
+		{
+			return;
+		}
+
+		if (isDisposing)
+		{
+			if (isMediaPlayerAttached)
+			{
+				if (mediaPlayerElement is not null)
+				{
+					mediaPlayerElement.MediaPlayer.MediaOpened -= OnMediaPlayerMediaOpened;
+					mediaPlayerElement.MediaPlayer.Dispose();
+				}
+			}
+
+			mediaPlayerElement = null;
+		}
+
+		isDisposed = true;
+	}
+
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
 
 	public void UpdatePosition()
 	{
