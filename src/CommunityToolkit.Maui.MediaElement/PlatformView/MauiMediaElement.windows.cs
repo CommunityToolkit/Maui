@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using System;
+using Microsoft.UI.Xaml.Controls;
 using Windows.Media.Playback;
 using Windows.Storage;
 using Grid = Microsoft.UI.Xaml.Controls.Grid;
@@ -150,6 +151,37 @@ public class MauiMediaElement : Grid, IDisposable
 
 	public void UpdateVolume()
 	{
+		if (_isMediaPlayerAttached)
+		{
+			// TODO
+		}
+	}
+
+	public void PlayRequested(TimeSpan position)
+	{
+		if (_isMediaPlayerAttached)
+		{
+			mediaPlayerElement.MediaPlayer.Play();
+		}
+	}
+
+	public void PauseRequested(TimeSpan position)
+	{
+		if (isMediaPlayerAttached)
+		{
+			mediaPlayerElement.MediaPlayer.Pause();
+		}
+	}
+
+	public void StopRequested(TimeSpan position)
+	{
+		if (_isMediaPlayerAttached)
+		{
+			// There's no Stop method so pause the video and reset its position
+			_mediaPlayerElement.MediaPlayer.Pause();
+			_mediaPlayerElement.MediaPlayer.Position = TimeSpan.Zero;
+			System.Diagnostics.Debug.WriteLine($"Video stopped at {position.Hours:X2}:{position.Minutes:X2}:{position.Seconds:X2}.");
+		}
 	}
 
 	void OnMediaPlayerMediaOpened(MediaPlayer sender, object args)
