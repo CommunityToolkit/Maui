@@ -43,4 +43,3 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	}
 
 }
-

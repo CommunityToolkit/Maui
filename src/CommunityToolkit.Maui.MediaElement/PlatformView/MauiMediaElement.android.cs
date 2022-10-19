@@ -1,10 +1,10 @@
 ﻿using Android.Content;
+using Android.Media.Session;
 using Android.Views;
 using Android.Widget;
 using AndroidX.CoordinatorLayout.Widget;
-using Com.Google.Android.Exoplayer2.UI;
 using Com.Google.Android.Exoplayer2;
-using Android.Media.Session;
+using Com.Google.Android.Exoplayer2.UI;
 using Com.Google.Android.Exoplayer2.Video;
 
 namespace CommunityToolkit.Maui.MediaElement.PlatformView;
@@ -294,4 +294,3 @@ public class MauiMediaElement : CoordinatorLayout, IPlayer.IListener
 	public void OnRenderedFirstFrame() { }
 	#endregion
 }
-

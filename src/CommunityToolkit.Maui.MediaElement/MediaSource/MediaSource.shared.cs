@@ -14,7 +14,7 @@ public abstract class MediaSource : Element
 	public static MediaSource? FromUri(Uri? uri)
 	{
 		if (uri == null)
-		{ 
+		{
 			return null;
 		}
 

@@ -1,9 +1,9 @@
-﻿using AVFoundation;
+﻿using System.Diagnostics;
+using AVFoundation;
 using AVKit;
 using CoreMedia;
 using Foundation;
 using Microsoft.Maui.Controls;
-using System.Diagnostics;
 using UIKit;
 
 namespace CommunityToolkit.Maui.MediaElement.PlatformView;

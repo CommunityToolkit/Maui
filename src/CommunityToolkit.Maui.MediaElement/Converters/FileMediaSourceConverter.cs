@@ -13,4 +13,3 @@ public sealed class FileMediaSourceConverter : TypeConverter
 	//		: throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(FileMediaSource)}");
 	//}
 }
-
