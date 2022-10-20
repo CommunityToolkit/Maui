@@ -120,6 +120,10 @@ public class MauiMediaElement : Grid, IDisposable
 
 	public void UpdateSpeed()
 	{
+		if (isMediaPlayerAttached && mediaPlayerElement is not null)
+		{
+			mediaPlayerElement.MediaPlayer.PlaybackRate = mediaElement.Speed;
+		}
 	}
 
 	public void UpdateStatus()
@@ -151,9 +155,9 @@ public class MauiMediaElement : Grid, IDisposable
 
 	public void UpdateVolume()
 	{
-		if (isMediaPlayerAttached)
+		if (isMediaPlayerAttached && mediaPlayerElement is not null)
 		{
-			// TODO
+			mediaPlayerElement.MediaPlayer.Volume = mediaElement.Volume;
 		}
 	}
 
