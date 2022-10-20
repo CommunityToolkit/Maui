@@ -33,6 +33,6 @@ public class FolderPickerImplementation : IFolderPicker
 	/// <inheritdoc />
 	public Task<Folder?> PickAsync(CancellationToken cancellationToken)
 	{
-		return PickAsync("", cancellationToken);
+		return PickAsync(string.Empty, cancellationToken);
 	}
 }

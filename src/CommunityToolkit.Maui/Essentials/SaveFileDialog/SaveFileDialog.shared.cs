@@ -2,7 +2,7 @@ using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Essentials;
 
-/// <inheritdoc cref=""/>
+/// <inheritdoc cref="ISaveFileDialog"/>
 public static class SaveFileDialog
 {
 	/// <summary>
