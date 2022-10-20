@@ -151,7 +151,7 @@ public class MauiMediaElement : Grid, IDisposable
 
 	public void UpdateVolume()
 	{
-		if (_isMediaPlayerAttached)
+		if (isMediaPlayerAttached)
 		{
 			// TODO
 		}
