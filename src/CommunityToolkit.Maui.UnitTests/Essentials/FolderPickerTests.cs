@@ -19,6 +19,7 @@ public class FolderPickerTests
 	[Fact]
 	public async Task PickAsyncFailsOnNet()
 	{
+		FolderPicker.SetDefault(new FolderPickerImplementation());
 		await Assert.ThrowsAsync<NotImplementedException>(() => FolderPicker.PickAsync(CancellationToken.None));
 		await Assert.ThrowsAsync<NotImplementedException>(() => FolderPicker.PickAsync("initial path", CancellationToken.None));
 	}

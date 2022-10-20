@@ -18,6 +18,7 @@ public class SaveFileDialogTests
 	[Fact]
 	public async Task SaveAsyncFailsOnNet()
 	{
+		SaveFileDialog.SetDefault(new SaveFileDialogImplementation());
 		await Assert.ThrowsAsync<NotImplementedException>(() => SaveFileDialog.SaveAsync("file name", Stream.Null, CancellationToken.None));
 		await Assert.ThrowsAsync<NotImplementedException>(() => SaveFileDialog.SaveAsync("initial path", "file name", Stream.Null, CancellationToken.None));
 	}
