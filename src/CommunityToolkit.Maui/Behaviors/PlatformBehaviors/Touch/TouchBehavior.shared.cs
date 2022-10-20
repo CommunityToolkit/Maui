@@ -17,7 +17,27 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 
 	VisualElement? element;
 
-	internal VisualElement? Element => element;
+	internal VisualElement? Element
+	{
+		get => element;
+		set
+		{
+			if (element != null)
+			{
+				IsUsed = false;
+				gestureManager.Reset();
+				SetChildrenInputTransparent(false);
+			}
+			gestureManager.AbortAnimations(this);
+			element = value;
+			if (value != null)
+			{
+				SetChildrenInputTransparent(ShouldMakeChildrenInputTransparent);
+				IsUsed = true;
+				ForceUpdateState();
+			}
+		}
+	}
 
 	readonly WeakEventManager weakEventManager = new();
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Android.Content;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Media.Effect;
@@ -33,6 +34,13 @@ public partial class TouchBehavior
 	AView? platformView = null;
 	ViewGroup? viewGroup;
 
+	AccessibilityManager? accessibilityManager;
+	AccessibilityListener? accessibilityListener;
+
+	bool IsAccessibilityMode => accessibilityManager is not null
+		&& accessibilityManager.IsEnabled
+		&& accessibilityManager.IsTouchExplorationEnabled;
+
 	readonly bool isAtLeastM = IsAndroidVersionAtLeast((int)BuildVersionCodes.M);
 
 	internal bool IsCanceled { get; set; }
@@ -48,7 +56,7 @@ public partial class TouchBehavior
 
 	protected override void OnAttachedTo(VisualElement bindable, AView platformView)
 	{
-		element = bindable;
+		Element = bindable;
 		this.platformView = platformView;
 		viewGroup = Microsoft.Maui.Platform.ViewExtensions.GetParentOfType<ViewGroup>(platformView);
 		if (IsDisabled)
@@ -58,6 +66,14 @@ public partial class TouchBehavior
 
 		platformView.Touch += OnTouch;
 		UpdateClickHandler();
+		accessibilityManager = platformView.Context?.GetSystemService(Context.AccessibilityService) as AccessibilityManager;
+
+		if (accessibilityManager is not null)
+		{
+			accessibilityListener = new AccessibilityListener(this);
+			accessibilityManager.AddAccessibilityStateChangeListener(accessibilityListener);
+			accessibilityManager.AddTouchExplorationStateChangeListener(accessibilityListener);
+		}
 
 		if (!IsAndroidVersionAtLeast((int)BuildVersionCodes.Lollipop) || !NativeAnimation)
 		{
@@ -85,14 +101,14 @@ public partial class TouchBehavior
 
 		try
 		{
-			//if (accessibilityManager != null && accessibilityListener != null)
-			//{
-			//	accessibilityManager.RemoveAccessibilityStateChangeListener(accessibilityListener);
-			//	accessibilityManager.RemoveTouchExplorationStateChangeListener(accessibilityListener);
-			//	accessibilityListener.Dispose();
-			//	accessibilityManager = null;
-			//	accessibilityListener = null;
-			//}
+			if (accessibilityManager is not null && accessibilityListener is not null)
+			{
+				accessibilityManager.RemoveAccessibilityStateChangeListener(accessibilityListener);
+				accessibilityManager.RemoveTouchExplorationStateChangeListener(accessibilityListener);
+				accessibilityListener.Dispose();
+				accessibilityManager = null;
+				accessibilityListener = null;
+			}
 
 			RemoveRipple();
 
@@ -219,8 +235,7 @@ public partial class TouchBehavior
 		}
 
 		platformView.Click -= OnClick;
-		//if (IsAccessibilityMode || ((IsAvailable) && (element?.IsEnabled ?? false)))
-		if (((IsAvailable) && (element?.IsEnabled ?? false)))
+		if (IsAccessibilityMode || ((IsAvailable) && (element?.IsEnabled ?? false)))
 		{
 			platformView.Click += OnClick;
 			return;
@@ -285,10 +300,10 @@ public partial class TouchBehavior
 			return;
 		}
 
-		//if (!IsAccessibilityMode)
-		//{
-		//	return;
-		//}
+		if (!IsAccessibilityMode)
+		{
+			return;
+		}
 
 		IsCanceled = false;
 		HandleEnd(TouchStatus.Completed);
@@ -347,10 +362,10 @@ public partial class TouchBehavior
 			return;
 		}
 
-		//if (IsAccessibilityMode)
-		//{
-		//	return;
-		//}
+		if (IsAccessibilityMode)
+		{
+			return;
+		}
 
 		switch (e.Event?.ActionMasked)
 		{
@@ -488,6 +503,30 @@ public partial class TouchBehavior
 		else if (rippleView is null)
 		{
 			UpdateRipple(Colors.Transparent);
+		}
+	}
+
+	sealed class AccessibilityListener : Java.Lang.Object,
+											 AccessibilityManager.IAccessibilityStateChangeListener,
+											 AccessibilityManager.ITouchExplorationStateChangeListener
+	{
+		TouchBehavior? platformTouchEffect;
+
+		internal AccessibilityListener(TouchBehavior platformTouchEffect)
+			=> this.platformTouchEffect = platformTouchEffect;
+
+		public void OnAccessibilityStateChanged(bool enabled)
+			=> platformTouchEffect?.UpdateClickHandler();
+
+		public void OnTouchExplorationStateChanged(bool enabled)
+			=> platformTouchEffect?.UpdateClickHandler();
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+				platformTouchEffect = null;
+
+			base.Dispose(disposing);
 		}
 	}
 }

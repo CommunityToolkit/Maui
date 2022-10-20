@@ -92,4 +92,43 @@ public partial class TouchBehavior
 
 		gestureManager.HandleLongPress(this);
 	}
+
+	void SetChildrenInputTransparent(bool value)
+	{
+		if (Element is not Layout layout)
+		{
+			return;
+		}
+
+		layout.ChildAdded -= OnLayoutChildAdded;
+
+		if (!value)
+		{
+			return;
+		}
+
+		layout.InputTransparent = false;
+		foreach (var view in layout.Children)
+		{
+			OnLayoutChildAdded(layout, new ElementEventArgs((View)view));
+		}
+
+		layout.ChildAdded += OnLayoutChildAdded;
+	}
+
+	void OnLayoutChildAdded(object? sender, ElementEventArgs e)
+	{
+		if (e.Element is not View view)
+		{
+			return;
+		}
+
+		if (!ShouldMakeChildrenInputTransparent)
+		{
+			view.InputTransparent = false;
+			return;
+		}
+
+		view.InputTransparent = IsAvailable;
+	}
 }
