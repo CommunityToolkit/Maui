@@ -41,7 +41,7 @@ public class Expander : ContentView, IExpander
 	/// </summary>
 	public static readonly BindableProperty HeaderProperty
 		= BindableProperty.Create(nameof(Header), typeof(IView), typeof(Expander), propertyChanged: OnHeaderPropertyChanged);
-	
+
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Content"/> property.
 	/// </summary>
@@ -197,7 +197,7 @@ public class Expander : ContentView, IExpander
 			{
 				case ListView listView:
 					var cells = listView.AllChildren.OfType<Cell>();
-					foreach(var child in cells)
+					foreach (var child in cells)
 					{
 						child.ForceUpdateSize();
 					}
