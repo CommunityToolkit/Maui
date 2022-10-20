@@ -159,7 +159,7 @@ public class MauiMediaElement : Grid, IDisposable
 
 	public void PlayRequested(TimeSpan position)
 	{
-		if (_isMediaPlayerAttached)
+		if (isMediaPlayerAttached && mediaPlayerElement is not null)
 		{
 			mediaPlayerElement.MediaPlayer.Play();
 		}
@@ -167,7 +167,7 @@ public class MauiMediaElement : Grid, IDisposable
 
 	public void PauseRequested(TimeSpan position)
 	{
-		if (isMediaPlayerAttached)
+		if (isMediaPlayerAttached && mediaPlayerElement is not null)
 		{
 			mediaPlayerElement.MediaPlayer.Pause();
 		}
@@ -175,12 +175,11 @@ public class MauiMediaElement : Grid, IDisposable
 
 	public void StopRequested(TimeSpan position)
 	{
-		if (_isMediaPlayerAttached)
+		if (isMediaPlayerAttached && mediaPlayerElement is not null)
 		{
 			// There's no Stop method so pause the video and reset its position
-			_mediaPlayerElement.MediaPlayer.Pause();
-			_mediaPlayerElement.MediaPlayer.Position = TimeSpan.Zero;
-			System.Diagnostics.Debug.WriteLine($"Video stopped at {position.Hours:X2}:{position.Minutes:X2}:{position.Seconds:X2}.");
+			mediaPlayerElement.MediaPlayer.Pause();
+			mediaPlayerElement.MediaPlayer.Position = TimeSpan.Zero;
 		}
 	}
 
