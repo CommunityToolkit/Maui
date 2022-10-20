@@ -16,6 +16,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 		};
 		WinRT.Interop.InitializeWithWindow.Initialize(savePicker, Process.GetCurrentProcess().MainWindowHandle);
 		savePicker.FileTypeChoices.Add(GetExtension(fileName), new List<string> { GetExtension(fileName) });
+		savePicker.FileTypeChoices.Add("All files", new List<string> { "." });
 		savePicker.SuggestedFileName = GetFileName(fileName);
 		var file = await savePicker.PickSaveFileAsync();
 		if (string.IsNullOrEmpty(file?.Path))
