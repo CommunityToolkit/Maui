@@ -64,7 +64,7 @@ jobs:
 
       - pwsh: |
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
-          .\workload-install.ps1 -DotnetTargetVersionBand $(TOOLKIT_NET6_VERSION)
+          .\workload-install.ps1 -DotnetTargetVersionBand $(TOOLKIT_NET_VERSION)
         displayName: Install tizen workload
 
       # build sample
