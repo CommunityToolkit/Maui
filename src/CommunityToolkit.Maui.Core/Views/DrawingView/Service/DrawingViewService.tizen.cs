@@ -160,28 +160,28 @@ public static class DrawingViewService
 				break;
 
 			case RadialGradientPaint radialGradientBrush:
-				var paint = new SKPaint();
-				var colors = new SKColor[radialGradientBrush.GradientStops.Length];
-				var positions = new float[radialGradientBrush.GradientStops.Length];
+				var skPaint = new SKPaint();
+				var skColors = new SKColor[radialGradientBrush.GradientStops.Length];
+				var positionsArray = new float[radialGradientBrush.GradientStops.Length];
 
 				for (var index = 0; index < radialGradientBrush.GradientStops.Length; index++)
 				{
 					var gradientStop = radialGradientBrush.GradientStops[index];
-					colors[index] = gradientStop.Color.AsSKColor();
-					positions[index] = gradientStop.Offset;
+					skColors[index] = gradientStop.Color.AsSKColor();
+					positionsArray[index] = gradientStop.Offset;
 				}
 
 				float centerX = (float)(radialGradientBrush.Center.X * info.Width);
 				float centerY = (float)(radialGradientBrush.Center.Y * info.Height);
 				float radius = (float)(radialGradientBrush.Radius * info.Width);
 
-				var shader = SKShader.CreateRadialGradient(new SKPoint(centerX, centerX),
+				var skShader = SKShader.CreateRadialGradient(new SKPoint(centerX, centerX),
 															radius,
-															colors,
-															positions,
+															skColors,
+															positionsArray,
 															SKShaderTileMode.Clamp);
-				paint.Shader = shader;
-				canvas.DrawRect(0, 0, info.Width, info.Height, paint);
+				skPaint.Shader = skShader;
+				canvas.DrawRect(0, 0, info.Width, info.Height, skPaint);
 				break;
 
 			default:
