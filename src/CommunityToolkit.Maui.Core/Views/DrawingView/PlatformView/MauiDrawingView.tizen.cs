@@ -42,9 +42,7 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 
 		switch (pointStateType)
 		{
-			case NPointStateType.Finished:
 			case NPointStateType.Leave:
-			case NPointStateType.Started:
 			case NPointStateType.Stationary:
 				break;
 
