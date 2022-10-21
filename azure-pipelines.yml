@@ -3,8 +3,8 @@ variables:
   PreviewNumber: $[counter(variables['CurrentSemanticVersionBase'], 1001)]
   CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(PreviewNumber)'
   NugetPackageVersion: '$(CurrentSemanticVersion)'
-  TOOLKIT_NET6_VERSION: '6.0.400'
-  LATEST_NET6_VERSION: '6.0.x'
+  TOOLKIT_NET_VERSION: '6.0.400'
+  LATEST_NET_VERSION: '6.0.x'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
@@ -15,8 +15,6 @@ variables:
   PathToCommunityToolkitSourceGeneratorsCsproj: 'src/CommunityToolkit.Maui.SourceGenerators/CommunityToolkit.Maui.SourceGenerators.csproj'
   PathToCommunityToolkitAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Analyzers.CodeFixes/CommunityToolkit.Maui.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
-  Xcode13Version: '13.3.1'
-  Xcode14Version: '14.0.1'
   DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/6.0.540.json'
   ShouldCheckDependencies: true
 
@@ -42,26 +40,51 @@ pr:
     exclude:
     - README.md
 
-jobs:      
-  - job: build_windows_library
-    displayName: Build Windows Library
+jobs:
+  - job: build_sample
+    displayName: Build Sample App using Latest .NET SDK
+    strategy:
+      matrix:
+        'Windows':
+          image: 'windows-latest'
+        'macOS':
+          image: 'macos-12'
     pool:
-      vmImage: windows-latest
+      vmImage: $(image)
     steps:
       - task: UseDotNet@2
-        displayName: 'Install .NET SDK $(TOOLKIT_NET6_VERSION)'
+        displayName: 'Install Latest .NET SDK'
         inputs:
           packageType: 'sdk'
-          version: '$(TOOLKIT_NET6_VERSION)'
+          version: '$(LATEST_NET_VERSION)'
+          includePreviewVersions: true
 
-      - powershell: dotnet workload install maui --from-rollback-file $(DotNetMauiRollbackFile) --source https://api.nuget.org/v3/index.json
-        displayName: Install .NET MAUI $(TOOLKIT_NET6_VERSION)
+      - powershell: dotnet workload install maui
+        displayName: Install Latest .NET MAUI Workload
 
       - pwsh: |
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
           .\workload-install.ps1 -DotnetTargetVersionBand $(TOOLKIT_NET6_VERSION)
         displayName: Install tizen workload
 
+      # build sample
+      - task: CmdLine@2
+        displayName: 'Build Community Toolkit Sample'
+        inputs:
+          script: |
+            dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release
+
+  - job: build_library
+    displayName: Build Library
+    strategy:
+      matrix:
+        'Windows':
+          image: 'windows-latest'
+        'macOS':
+          image: 'macos-12'
+    pool:
+      vmImage: $(image)
+    steps:
       # if this is a tagged build, then update the version number
       - powershell: |
           $buildSourceBranch = "$(Build.SourceBranch)"
@@ -80,204 +103,17 @@ jobs:
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$fullVersionString")
           Write-Host "##vso[build.updatebuildnumber]$fullVersionString"
         displayName: Set NuGet Version to PR Version
-        condition: and(succeeded(), eq(variables['build.reason'], 'PullRequest'))
+        condition: and(succeeded(), ne( variables['Agent.OS'], 'Darwin' ), eq(variables['build.reason'], 'PullRequest'))
 
-      # build analyzers
-      - task: VSBuild@1
-        displayName: 'Build CommunityToolkit.Maui.Analyzers'
-        inputs:
-          solution: '$(PathToCommunityToolkitAnalyzersCsproj)'
-          configuration: 'Release'
-          msbuildArgs: '/restore'
-
-      - task: VSBuild@1
-        displayName: 'Build CommunityToolkit.Maui.Analyzers.CodeFixes'
-        inputs:
-          solution: '$(PathToCommunityToolkitAnalyzersCodeFixCsproj)'
-          configuration: 'Release'
-          msbuildArgs: '/restore'
-
-      - task: VSBuild@1
-        displayName: 'Build CommunityToolkit.Maui.SourceGenerators'
-        inputs:
-          solution: '$(PathToCommunityToolkitSourceGeneratorsCsproj)'
-          configuration: 'Release'
-          msbuildArgs: '/restore'
-
-      # test
-      - task: DotNetCoreCLI@2
-        displayName: 'Run CommunityToolkit.Maui Unit Tests'
-        inputs:
-          command: 'test'
-          projects: '$(PathToCommunityToolkitUnitTestCsproj)'
-          arguments: '--configuration Release --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory $(Agent.TempDirectory)'
-          publishTestResults: false    
-
-      - task: DotNetCoreCLI@2
-        displayName: 'Run CommunityToolkit.Maui.Analyzers Unit Tests'
-        inputs:
-          command: 'test'
-          projects: '$(PathToCommunityToolkitAnalyzersUnitTestCsproj)'
-          arguments: '--configuration Release'
-          publishTestResults: false  
-
-      - task: PublishTestResults@2
-        displayName: 'Publish Test Results'
-        inputs:
-          testResultsFormat: VSTest
-          testResultsFiles: '**/*.trx'
-          searchFolder: $(Agent.TempDirectory)
-
-      - task: PublishCodeCoverageResults@1
-        displayName: 'Publish Code Coverage Results'
-        inputs:
-          codeCoverageTool: 'Cobertura'
-          summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
-          failIfCoverageEmpty: true
-
-      # pack
-      - task: VSBuild@1
-        displayName: 'Build and Pack CommunityToolkit.Maui.Core'
-        inputs:
-          solution: '$(PathToCommunityToolkitCoreCsproj)'
-          configuration: 'Release'
-          msbuildArgs: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'     
-      
-      - task: VSBuild@1
-        displayName: 'Build and Pack CommunityToolkit.Maui'
-        inputs:
-          solution: '$(PathToCommunityToolkitCsproj)'
-          configuration: 'Release'
-          msbuildArgs: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'
-      
-      # check vulnerabilities
-      - powershell: |
-          dotnet list $(PathToLibrarySolution) package --vulnerable --include-transitive | findstr /S /c:"has the following vulnerable packages";
-          if ($LastExitCode -ne 1)
-          {
-            dotnet list $(PathToLibrarySolution) package --vulnerable --include-transitive -v diag;
-            exit 1;
-          }
-
-          exit 0;
-        displayName: 'Check Dependencies'
-        condition: eq(variables.ShouldCheckDependencies, true)
-      
-      # publish
-      - task: PowerShell@2
-        displayName: 'Copy NuGet Packages to Staging Directory'
-        inputs:
-          targetType: 'inline'
-          script: |
-            $source = ".\src"
-            $filter = "nupkg"
-            Get-ChildItem -Path $source -Recurse | Where-Object { $_.Extension -match $filter } | Copy-Item -Destination "$(Build.ArtifactStagingDirectory)"
-          pwsh: true
-      
-      # Sign NuGet Packages
-      - task: PowerShell@2
-        displayName: Authenticode Sign Packages
-        inputs:
-          filePath: build/Sign-Package.ps1
-        env:
-          SignClientUser: $(SignClientUser)
-          SignClientSecret: $(SignClientSecret)
-          ArtifactDirectory: $(Build.ArtifactStagingDirectory)
-        condition: and(succeeded(), not(eq(variables['build.reason'], 'PullRequest')), not(eq(variables['SignClientSecret'], '')), not(eq(variables['SignClientUser'], '')))
-      
-      # publish the packages
-      - task: PublishBuildArtifacts@1
-        displayName: 'Publish NuGets'
-        inputs:
-          artifactName: nuget
-          pathToPublish: '$(Build.ArtifactStagingDirectory)'
-
-  - job: build_windows_sample
-    displayName: Build Windows Sample App using Latest .NET SDK
-    pool:
-      vmImage: windows-latest
-    steps:
       - task: UseDotNet@2
-        displayName: 'Install Latest .NET SDK'
+        displayName: Install .NET $(TOOLKIT_NET_VERSION)
         inputs:
           packageType: 'sdk'
-          version: '$(LATEST_NET6_VERSION)'
-
-      - powershell: dotnet workload install maui
-        displayName: Install Latest .NET MAUI Workload
-
-      - pwsh: |
-          Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
-          .\workload-install.ps1 -DotnetTargetVersionBand $(TOOLKIT_NET6_VERSION)
-        displayName: Install tizen workload
-
-      # build sample
-      - task: VSBuild@1
-        displayName: 'Build Community Toolkit Sample'
-        inputs:
-          solution: '$(PathToCommunityToolkitSampleCsproj)'
-          configuration: 'Release'
-          msbuildArgs: '/restore'
-
-  - job: verify_formatting_windows
-    displayName: Verify Code Formatting on Windows
-    pool:
-      vmImage: windows-latest
-    steps:
-      - task: UseDotNet@2
-        displayName: 'Install Latest .NET SDK'
-        inputs:
-          packageType: 'sdk'
-          version: '$(LATEST_NET6_VERSION)'
-
-      - powershell: dotnet workload install maui
-        displayName: Install Latest .NET MAUI Workload
-
-      - pwsh: |
-          Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
-          .\workload-install.ps1 -DotnetTargetVersionBand $(TOOLKIT_NET6_VERSION)
-        displayName: Install tizen workload
-
-      - task: Bash@3
-        displayName: 'Verify Formatting'
-        env:
-          PathToSamplesSolution: $(PathToSamplesSolution)
-        inputs:
-          targetType: 'inline'
-          script: |
-            dotnet format $PathToSamplesSolution --verify-no-changes --exclude-diagnostics CA1416
-            status=$?
-            [ $status -eq 0 ] && echo "No errors found"
-            [ $status -ne 0 ] && echo "Formatting errors found. In the command line, please run \`dotnet format $PathToSamplesSolution\`, then commit + push the newly formatted code"
-            exit $status
-
-  - job: build_macos_library
-    displayName: Build macOS Library
-    pool:
-      vmImage: macos-12
-    steps:
-      # if this is a tagged build, then update the version number
-      - powershell: |
-          $buildSourceBranch = "$(Build.SourceBranch)"
-          $tagVersion = $buildSourceBranch.Substring($buildSourceBranch.LastIndexOf("/") + 1)
-          Write-Host("Branch = $buildSourceBranch, Version = $tagVersion");
-          Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$tagVersion")
-        displayName: Set NuGet Version to Tag Number
-        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+          version: '$(TOOLKIT_NET_VERSION)'
+          includePreviewVersions: true
 
       - task: CmdLine@2
-        displayName: 'Set Xcode Version'
-        inputs:
-          script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(Xcode13Version).app;sudo xcode-select --switch /Applications/Xcode_$(Xcode13Version).app/Contents/Developer
-     
-      - task: UseDotNet@2
-        displayName: Install .NET $(TOOLKIT_NET6_VERSION)
-        inputs:
-          packageType: 'sdk'
-          version: '$(TOOLKIT_NET6_VERSION)'
-
-      - task: CmdLine@2
-        displayName: 'Install .NET MAUI Workload $(TOOLKIT_NET6_VERSION)'
+        displayName: 'Install .NET MAUI Workload $(TOOLKIT_NET_VERSION)'
         inputs:
           script: dotnet workload install maui --from-rollback-file $(DotNetMauiRollbackFile) --source https://api.nuget.org/v3/index.json
 
@@ -304,7 +140,23 @@ jobs:
       - task: CmdLine@2
         displayName: 'Run CommunityToolkit.Maui.UnitTests'
         inputs:
-          script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release'
+          script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory $(Agent.TempDirectory)'
+
+      - task: PublishTestResults@2
+        condition: ne( variables['Agent.OS'], 'Darwin' )
+        displayName: 'Publish Test Results'
+        inputs:
+          testResultsFormat: VSTest
+          testResultsFiles: '**/*.trx'
+          searchFolder: $(Agent.TempDirectory)
+
+      - task: PublishCodeCoverageResults@1
+        condition: ne( variables['Agent.OS'], 'Darwin' )
+        displayName: 'Publish Code Coverage Results'
+        inputs:
+          codeCoverageTool: 'Cobertura'
+          summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
+          failIfCoverageEmpty: true
 
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit.Maui.Core NuGet'
@@ -316,59 +168,46 @@ jobs:
         inputs:
           script: 'dotnet pack $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
 
-  - job: build_macos_sample
-    displayName: Build macOS Sample App using Latest .NET SDK
-    pool:
-      vmImage: macos-12
-    steps:
-      - task: CmdLine@2
-        displayName: 'Set Xcode Version'
-        inputs:
-          script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(Xcode14Version).app;sudo xcode-select --switch /Applications/Xcode_$(Xcode14Version).app/Contents/Developer
+      # check vulnerabilities
+      - powershell: |
+          dotnet list $(PathToLibrarySolution) package --vulnerable --include-transitive | findstr /S /c:"has the following vulnerable packages";
+          if ($LastExitCode -ne 1)
+          {
+            dotnet list $(PathToLibrarySolution) package --vulnerable --include-transitive;
+            exit 1;
+          }
+
+          exit 0;
+        displayName: 'Check Dependencies'
+        condition: and(ne( variables['Agent.OS'], 'Darwin' ), eq(variables.ShouldCheckDependencies, true))
       
-      - task: UseDotNet@2
-        displayName: Install Latest .NET SDK
+      # publish
+      - task: PowerShell@2
+        condition: ne( variables['Agent.OS'], 'Darwin' )
+        displayName: 'Copy NuGet Packages to Staging Directory'
         inputs:
-          packageType: 'sdk'
-          version: '$(LATEST_NET6_VERSION)'
-
-      - task: CmdLine@2
-        displayName: 'Install Latest .NET MAUI Workload'
-        inputs:
-          script: dotnet workload install maui
-
-      - task: CmdLine@2
-        displayName: 'Build Community Toolkit Sample'
-        inputs:
-          script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release'
-
-  - job: verify_formatting_macos
-    displayName: Verify Code Formatting on macOS
-    pool:
-      vmImage: macos-12
-    steps:
-      - task: CmdLine@2
-        displayName: 'Set Xcode Version'
-        inputs:
-          script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(Xcode14Version).app;sudo xcode-select --switch /Applications/Xcode_$(Xcode14Version).app/Contents/Developer
-      
-      - task: UseDotNet@2
-        displayName: Install Latest .NET SDK
-        inputs:
-          packageType: 'sdk'
-          version: '$(LATEST_NET6_VERSION)'
-
-      - task: CmdLine@2
-        displayName: 'Install Latest .NET MAUI Workload'
-        inputs:
-          script: dotnet workload install maui
-
-      - task: CmdLine@2
-        displayName: 'Verify Formatting'
-        inputs:
+          targetType: 'inline'
           script: |
-            dotnet format $(PathToSamplesSolution) --verify-no-changes --exclude-diagnostics CA1416
-            status=$?
-            [ $status -eq 0 ] && echo "No errors found"
-            [ $status -ne 0 ] && echo "Formatting errors found. In the command line, please run \`dotnet format $(PathToSamplesSolution)\`, then commit + push the newly formatted code"
-            exit $status
+            $source = ".\src"
+            $filter = "nupkg"
+            Get-ChildItem -Path $source -Recurse | Where-Object { $_.Extension -match $filter } | Copy-Item -Destination "$(Build.ArtifactStagingDirectory)"
+          pwsh: true
+      
+      # Sign NuGet Packages
+      - task: PowerShell@2
+        displayName: Authenticode Sign Packages
+        inputs:
+          filePath: build/Sign-Package.ps1
+        env:
+          SignClientUser: $(SignClientUser)
+          SignClientSecret: $(SignClientSecret)
+          ArtifactDirectory: $(Build.ArtifactStagingDirectory)
+        condition: and(succeeded(), ne( variables['Agent.OS'], 'Darwin' ), not(eq(variables['build.reason'], 'PullRequest')), not(eq(variables['SignClientSecret'], '')), not(eq(variables['SignClientUser'], '')))
+      
+      # publish the packages
+      - task: PublishBuildArtifacts@1
+        condition: ne( variables['Agent.OS'], 'Darwin' )        
+        displayName: 'Publish NuGets'
+        inputs:
+          artifactName: nuget
+          pathToPublish: '$(Build.ArtifactStagingDirectory)'
