@@ -17,8 +17,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	public static void MapOnClosed(PopupHandler handler, IPopup view, object? result)
 	{
 		var popup = handler.PlatformView;
-
-		if (popup.IsShowing)
+		if (!(popup.IsDisposed())&& popup.IsShowing)
 		{
 			popup.Dismiss();
 		}
