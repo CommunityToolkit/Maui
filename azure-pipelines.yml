@@ -65,7 +65,7 @@ jobs:
       - pwsh: |
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
           .\workload-install.ps1 -DotnetTargetVersionBand $(TOOLKIT_NET_VERSION)
-        displayName: Install tizen workload
+        displayName: Install Tizen Workload
 
       # build sample
       - task: CmdLine@2
@@ -116,6 +116,11 @@ jobs:
         displayName: 'Install .NET MAUI Workload $(TOOLKIT_NET_VERSION)'
         inputs:
           script: dotnet workload install maui --from-rollback-file $(DotNetMauiRollbackFile) --source https://api.nuget.org/v3/index.json
+
+      - pwsh: |
+          Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
+          .\workload-install.ps1 -DotnetTargetVersionBand $(TOOLKIT_NET_VERSION)
+        displayName: Install Tizen Workload
 
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.Analyzers'
