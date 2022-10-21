@@ -4,8 +4,13 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using Com.Google.Android.Exoplayer2;
+using Com.Google.Android.Exoplayer2.Audio;
+using Com.Google.Android.Exoplayer2.Metadata;
+using Com.Google.Android.Exoplayer2.Text;
+using Com.Google.Android.Exoplayer2.Trackselection;
 using Com.Google.Android.Exoplayer2.UI;
 using Com.Google.Android.Exoplayer2.Video;
+using static Com.Google.Android.Exoplayer2.IPlayer;
 
 namespace CommunityToolkit.Maui.MediaElement.PlatformView;
 
@@ -13,7 +18,7 @@ public class MauiMediaElement : CoordinatorLayout, IPlayer.IListener
 {
 	StyledPlayerView? playerView;
 	IExoPlayer? player;
-	MediaElement mediaElement;
+	readonly MediaElement mediaElement;
 
 	public void OnPlayerStateChanged(bool playWhenReady, int playbackState)
 	{
@@ -108,8 +113,11 @@ public class MauiMediaElement : CoordinatorLayout, IPlayer.IListener
 			return;
 		}
 
-		// Stops and releases the media player
+		// Stops and resets the media player
 		player.Stop();
+		player.SeekTo(0);
+		player.PlayWhenReady = false;
+		player.Prepare();
 	}
 
 	public void UpdateIsLooping()
@@ -247,39 +255,43 @@ public class MauiMediaElement : CoordinatorLayout, IPlayer.IListener
 		player.Volume = (float)mediaElement.Volume;
 	}
 
-	void Player_PlaybackStateChanged(object? sender, Com.Google.Android.Exoplayer2.Analytics.PlaybackStateChangedEventArgs e)
-	{
-		if (player is null)
-		{
-			return;
-		}
-
-		if (e.State == IPlayer.StateReady)
-		{
-			mediaElement.Duration = TimeSpan.FromMilliseconds(player.Duration);
-		}
-	}
-
 	#region IPlayer.IListener implementation method stubs
+	public void OnAudioAttributesChanged(AudioAttributes? audioAttributes) { }
+	public void OnAudioSessionIdChanged(int audioSessionId) { }
+	public void OnAvailableCommandsChanged(IPlayer.Commands? availableCommands) { }
+	public void OnCues(CueGroup? cueGroup) { }
+	public void OnCues(List<Cue> cues) { }
+	public void OnDeviceInfoChanged(Com.Google.Android.Exoplayer2.DeviceInfo? deviceInfo) { }
+	public void OnDeviceVolumeChanged(int volume, bool muted) { }
 	public void OnEvents(IPlayer? player, IPlayer.Events? events) { }
-	public void OnIsLoadingChanged(bool loading) { }
-	public void OnPositionDiscontinuity(int reason) { }
-	public void OnPlayerError(ExoPlaybackException error) { }
+	public void OnIsLoadingChanged(bool isLoading) { }
+	public void OnIsPlayingChanged(bool isPlaying) { }
 	public void OnLoadingChanged(bool isLoading) { }
+	public void OnMaxSeekToPreviousPositionChanged(long maxSeekToPreviousPositionMs) { }
+	public void OnMediaItemTransition(MediaItem? mediaItem, int transition) { }
+	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata) { }
+	public void OnMetadata(Metadata? metadata) { }
 	public void OnPlaybackParametersChanged(PlaybackParameters? playbackParameters) { }
-	public void OnPlaybackStateChanged(int state) { }
-	public void OnPlayWhenReadyChanged(bool ready, int state) { }
+	public void OnPlaybackStateChanged(int playbackState) { }
+	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
+	public void OnPlayerError(ExoPlaybackException error) { }
+	public void OnPlayerErrorChanged(PlaybackException? error) { }
+	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata) { }
+	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason) { }
+	public void OnPositionDiscontinuity(int reason) { }
+	public void OnPositionDiscontinuity(IPlayer.PositionInfo oldPosition, IPlayer.PositionInfo newPosition, int reason) { }
+	public void OnRenderedFirstFrame() { }
 	public void OnRepeatModeChanged(int repeatMode) { }
+	public void OnSeekBackIncrementChanged(long seekBackIncrementMs) { }
+	public void OnSeekForwardIncrementChanged(long seekForwardIncrementMs) { }
 	public void OnSeekProcessed() { }
 	public void OnShuffleModeEnabledChanged(bool shuffleModeEnabled) { }
+	public void OnSkipSilenceEnabledChanged(bool skipSilenceEnabled) { }
 	public void OnSurfaceSizeChanged(int width, int height) { }
 	public void OnTimelineChanged(Timeline? timeline, int reason) { }
 	public void OnTracksChanged(Tracks? tracks) { }
-	public void OnIsPlayingChanged(bool isPlaying) { }
-	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
-	public void OnMediaItemTransition(MediaItem? mediaItem, int transition) { }
-	public void OnAvailableCommandsChanged(IPlayer.Commands? commands) { }
+	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? trackSelectionParameters) { }
 	public void OnVideoSizeChanged(VideoSize? videoSize) { }
-	public void OnRenderedFirstFrame() { }
+	public void OnVolumeChanged(VideoSize? videoSize) { }
 	#endregion
 }
