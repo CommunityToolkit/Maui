@@ -17,23 +17,27 @@ public static class DrawingViewService
 	/// <param name="strokeColor">Line color</param>
 	/// <param name="background">Image background</param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(IList<PointF> points, Size imageSize, float lineWidth, Color strokeColor, Paint? background)
+	public static async ValueTask<Stream> GetImageStream(IList<PointF> points, Size imageSize, float lineWidth, Color strokeColor, Paint? background)
 	{
 		var image = GetBitmapForPoints(points, lineWidth, strokeColor, background);
 
 		if (image is null)
 		{
-			return ValueTask.FromResult(Stream.Null);
+			return Stream.Null;
 		}
 
-		var resized = image.Resize(new SKImageInfo((int)imageSize.Width, (int)imageSize.Height, SKColorType.Bgra8888, SKAlphaType.Opaque), SKFilterQuality.High);
-		var data = resized.Encode(SKEncodedImageFormat.Png, 100);
+		// Defer to thread pool thread https://github.com/CommunityToolkit/Maui/pull/692#pullrequestreview-1150202727
+		return await Task.Run(() =>
+		{
+			var resized = image.Resize(new SKImageInfo((int)imageSize.Width, (int)imageSize.Height, SKColorType.Bgra8888, SKAlphaType.Opaque), SKFilterQuality.High);
+			var data = resized.Encode(SKEncodedImageFormat.Png, 100);
 
-		var stream = new MemoryStream();
-		data.SaveTo(stream);
-		stream.Seek(0, SeekOrigin.Begin);
+			var stream = new MemoryStream();
+			data.SaveTo(stream);
+			stream.Seek(0, SeekOrigin.Begin);
 
-		return ValueTask.FromResult<Stream>(stream);
+			return stream;
+		}).ConfigureAwait(false);
 	}
 
 	/// <summary>
@@ -43,23 +47,27 @@ public static class DrawingViewService
 	/// <param name="imageSize">Image size</param>
 	/// <param name="background">Image background</param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background)
+	public static async ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background)
 	{
 		var image = GetBitmapForLines(lines, background);
 
 		if (image is null)
 		{
-			return ValueTask.FromResult(Stream.Null);
+			return Stream.Null;
 		}
 
-		var resized = image.Resize(new SKImageInfo((int)imageSize.Width, (int)imageSize.Height, SKColorType.Bgra8888, SKAlphaType.Opaque), SKFilterQuality.High);
-		var data = resized.Encode(SKEncodedImageFormat.Png, 100);
+		// Defer to thread pool thread https://github.com/CommunityToolkit/Maui/pull/692#pullrequestreview-1150202727
+		return await Task.Run(() =>
+		{
+			var resized = image.Resize(new SKImageInfo((int)imageSize.Width, (int)imageSize.Height, SKColorType.Bgra8888, SKAlphaType.Opaque), SKFilterQuality.High);
+			var data = resized.Encode(SKEncodedImageFormat.Png, 100);
 
-		var stream = new MemoryStream();
-		data.SaveTo(stream);
-		stream.Seek(0, SeekOrigin.Begin);
+			var stream = new MemoryStream();
+			data.SaveTo(stream);
+			stream.Seek(0, SeekOrigin.Begin);
 
-		return ValueTask.FromResult<Stream>(stream);
+			return stream;
+		}).ConfigureAwait(false);
 	}
 
 	static (SKBitmap?, SizeF offset) GetBitmap(in ICollection<PointF> points)
