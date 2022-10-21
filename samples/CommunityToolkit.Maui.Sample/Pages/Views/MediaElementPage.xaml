@@ -37,9 +37,10 @@
         <HorizontalStackLayout Grid.Row="1" Padding="0,0,0,15">
             <Label HorizontalOptions="Center">
                 <Label.Text>
-                    <MultiBinding StringFormat="{}Position: {0}/{1}">
+                    <MultiBinding StringFormat="{}Position: {0}/{1} - Current State: {2}">
                         <Binding Path="Position" Source="{x:Reference mediaElement}" Converter="{StaticResource SecondsToStringConverter}" />
                         <Binding Path="Duration" Source="{x:Reference mediaElement}" Converter="{StaticResource SecondsToStringConverter}" />
+                        <Binding Path="CurrentState" Source="{x:Reference mediaElement}" />
                     </MultiBinding>
                 </Label.Text>
             </Label>

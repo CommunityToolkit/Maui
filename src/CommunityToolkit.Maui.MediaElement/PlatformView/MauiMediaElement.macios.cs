@@ -209,6 +209,10 @@ public class MauiMediaElement : UIView
 			case AVPlayerStatus.ReadyToPlay:
 				switch (player.TimeControlStatus)
 				{
+					case AVPlayerTimeControlStatus.WaitingToPlayAtSpecifiedRate:
+						videoStatus = MediaElementState.Buffering;
+						break;
+
 					case AVPlayerTimeControlStatus.Playing:
 						videoStatus = MediaElementState.Playing;
 						break;
@@ -218,6 +222,12 @@ public class MauiMediaElement : UIView
 						break;
 				}
 				break;
+		}
+
+		// There is no real stopped state, if position is 0 and status is paused, assume stopped
+		if (videoStatus == MediaElementState.Paused && mediaElement.Position == TimeSpan.Zero)
+		{
+			videoStatus = MediaElementState.Stopped;
 		}
 
 		mediaElement.CurrentState = videoStatus;
