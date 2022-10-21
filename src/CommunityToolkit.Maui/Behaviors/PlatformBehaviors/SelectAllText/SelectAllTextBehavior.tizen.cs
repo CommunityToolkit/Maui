@@ -22,10 +22,7 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView, NView>
 
 	void ApplyEffect(bool apply, NView inputView)
 	{
-		if (inputView is null)
-		{
-			throw new InvalidOperationException("The Platform View can't be null.");
-		}
+		ArgumentNullException.ThrowIfNull(inputView);
 
 		inputView.FocusGained -= OnFocused;
 
@@ -46,5 +43,4 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView, NView>
 			}
 		}
 	}
-
 }

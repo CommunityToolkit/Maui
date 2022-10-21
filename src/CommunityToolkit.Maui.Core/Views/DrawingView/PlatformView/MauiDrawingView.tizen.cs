@@ -14,6 +14,15 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 		TouchEvent += OnTouch;
 	}
 
+	/// <summary>
+	/// Initialize resources
+	/// </summary>
+	public void Initialize()
+	{
+		Drawable = new DrawingViewDrawable(this);
+		Lines.CollectionChanged += OnLinesCollectionChanged;
+	}
+
 	/// <inheritdoc />
 	protected override void Dispose(bool disposing)
 	{
@@ -26,33 +35,39 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 		base.Dispose(disposing);
 	}
 
-	/// <summary>
-	/// Initialize resources
-	/// </summary>
-	public void Initialize()
-	{
-		Drawable = new DrawingViewDrawable(this);
-		Lines.CollectionChanged += OnLinesCollectionChanged;
-	}
-
 	bool OnTouch(object source, TouchEventArgs e)
 	{
 		var point = new PointF(e.Touch.GetLocalPosition(0).X.ToScaledDP(), e.Touch.GetLocalPosition(0).Y.ToScaledDP());
-		switch (e.Touch.GetState(0))
+		var pointStateType = e.Touch.GetState(0);
+
+		switch (pointStateType)
 		{
+			case NPointStateType.Finished:
+			case NPointStateType.Leave:
+			case NPointStateType.Started:
+			case NPointStateType.Stationary:
+				break;
+
 			case NPointStateType.Down:
 				OnStart(point);
 				break;
+
 			case NPointStateType.Motion:
 				OnMoving(point);
 				break;
+
 			case NPointStateType.Up:
 				OnFinish();
 				break;
+
 			case NPointStateType.Interrupted:
 				OnCancel();
 				break;
+
+			default:
+				throw new NotSupportedException($"{pointStateType} not supported");
 		}
+
 		Redraw();
 
 		return true;

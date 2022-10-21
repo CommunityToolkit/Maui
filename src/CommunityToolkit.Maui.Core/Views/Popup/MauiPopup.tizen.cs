@@ -114,20 +114,6 @@ public class MauiPopup : Popup
 		}
 	}
 
-	void OnOutsideClicked(object? sender, EventArgs e)
-	{
-		if (VirtualView is null || VirtualView.Handler is null)
-		{
-			return;
-		}
-
-		if (VirtualView.CanBeDismissedByTappingOutsideOfPopup)
-		{
-			Close();
-			VirtualView.Handler.Invoke(nameof(IPopup.OnDismissedByTappingOutsideOfPopup));
-		}
-	}
-
 	static NVerticalAlignment ToVerticalAlignment(LayoutAlignment align) => align switch
 	{
 		LayoutAlignment.Start => NVerticalAlignment.Top,
@@ -141,4 +127,18 @@ public class MauiPopup : Popup
 		LayoutAlignment.End => NHorizontalAlignment.End,
 		_ => NHorizontalAlignment.Center
 	};
+
+	void OnOutsideClicked(object? sender, EventArgs e)
+	{
+		if (VirtualView is null || VirtualView.Handler is null)
+		{
+			return;
+		}
+
+		if (VirtualView.CanBeDismissedByTappingOutsideOfPopup)
+		{
+			Close();
+			VirtualView.Handler.Invoke(nameof(IPopup.OnDismissedByTappingOutsideOfPopup));
+		}
+	}
 }

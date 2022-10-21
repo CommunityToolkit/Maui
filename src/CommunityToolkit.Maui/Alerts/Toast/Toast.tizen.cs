@@ -20,6 +20,9 @@ public partial class Toast
 	/// </summary>
 	void ShowPlatform(CancellationToken token)
 	{
+		DismissPlatform(token);
+		token.ThrowIfCancellationRequested();
+
 		new Tizen.Applications.ToastMessage
 		{
 			Message = Text
@@ -31,5 +34,6 @@ public partial class Toast
 	/// </summary>
 	static void DismissPlatform(CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
 	}
 }

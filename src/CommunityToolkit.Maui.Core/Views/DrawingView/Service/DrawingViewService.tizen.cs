@@ -20,19 +20,20 @@ public static class DrawingViewService
 	public static ValueTask<Stream> GetImageStream(IList<PointF> points, Size imageSize, float lineWidth, Color strokeColor, Paint? background)
 	{
 		var image = GetBitmapForPoints(points, lineWidth, strokeColor, background);
+
 		if (image is null)
 		{
 			return ValueTask.FromResult(Stream.Null);
 		}
-		return new ValueTask<Stream>(Task.Run<Stream>(() =>
-		{
-			var resized = image.Resize(new SKImageInfo((int)imageSize.Width, (int)imageSize.Height, SKColorType.Bgra8888, SKAlphaType.Opaque), SKFilterQuality.High);
-			var data = resized.Encode(SKEncodedImageFormat.Png, 100);
-			var stream = new MemoryStream();
-			data.SaveTo(stream);
-			stream.Seek(0, SeekOrigin.Begin);
-			return stream;
-		}));
+
+		var resized = image.Resize(new SKImageInfo((int)imageSize.Width, (int)imageSize.Height, SKColorType.Bgra8888, SKAlphaType.Opaque), SKFilterQuality.High);
+		var data = resized.Encode(SKEncodedImageFormat.Png, 100);
+
+		var stream = new MemoryStream();
+		data.SaveTo(stream);
+		stream.Seek(0, SeekOrigin.Begin);
+
+		return ValueTask.FromResult<Stream>(stream);
 	}
 
 	/// <summary>
@@ -45,34 +46,35 @@ public static class DrawingViewService
 	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background)
 	{
 		var image = GetBitmapForLines(lines, background);
+
 		if (image is null)
 		{
 			return ValueTask.FromResult(Stream.Null);
 		}
-		return new ValueTask<Stream>(Task.Run<Stream>(() =>
-		{
-			var resized = image.Resize(new SKImageInfo((int)imageSize.Width, (int)imageSize.Height, SKColorType.Bgra8888, SKAlphaType.Opaque), SKFilterQuality.High);
-			var data = resized.Encode(SKEncodedImageFormat.Png, 100);
 
-			var stream = new MemoryStream();
-			data.SaveTo(stream);
-			stream.Seek(0, SeekOrigin.Begin);
-			return stream;
-		}));
+		var resized = image.Resize(new SKImageInfo((int)imageSize.Width, (int)imageSize.Height, SKColorType.Bgra8888, SKAlphaType.Opaque), SKFilterQuality.High);
+		var data = resized.Encode(SKEncodedImageFormat.Png, 100);
+
+		var stream = new MemoryStream();
+		data.SaveTo(stream);
+		stream.Seek(0, SeekOrigin.Begin);
+
+		return ValueTask.FromResult<Stream>(stream);
 	}
 
-	static (SKBitmap?, SizeF offset) GetBitmap(ICollection<PointF> points)
+	static (SKBitmap?, SizeF offset) GetBitmap(in ICollection<PointF> points)
 	{
 		if (points.Count is 0)
 		{
 			return (null, SizeF.Zero);
 		}
 
-		var minPointX = points.Min(p => p.X);
-		var minPointY = points.Min(p => p.Y);
-		var drawingWidth = points.Max(p => p.X) - minPointX;
-		var drawingHeight = points.Max(p => p.Y) - minPointY;
 		const int minSize = 1;
+		var minPointX = points.Min(static p => p.X);
+		var minPointY = points.Min(static p => p.Y);
+		var drawingWidth = points.Max(static p => p.X) - minPointX;
+		var drawingHeight = points.Max(static p => p.Y) - minPointY;
+
 		if (drawingWidth < minSize || drawingHeight < minSize)
 		{
 			return (null, SizeF.Zero);
@@ -83,28 +85,29 @@ public static class DrawingViewService
 		return (bitmap, new SizeF(minPointX, minPointY));
 	}
 
-	static SKBitmap? GetBitmapForLines(IList<IDrawingLine> lines, Paint? background)
+	static SKBitmap? GetBitmapForLines(in IList<IDrawingLine> lines, in Paint? background)
 	{
-		var points = lines.SelectMany(x => x.Points).ToList();
+		var points = lines.SelectMany(static x => x.Points).ToList();
 		var (image, offset) = GetBitmap(points);
+
 		if (image is null)
 		{
 			return null;
 		}
 
 		using var canvas = new SKCanvas(image);
+
 		DrawBackground(canvas, image.Info, background);
+
 		foreach (var line in lines)
 		{
 			DrawStrokes(canvas, line.Points, line.LineWidth, line.LineColor, offset);
 		}
+
 		return image;
 	}
 
-	static SKBitmap? GetBitmapForPoints(ICollection<PointF> points,
-	float lineWidth,
-	Color strokeColor,
-	Paint? background)
+	static SKBitmap? GetBitmapForPoints(in ICollection<PointF> points, in float lineWidth, in Color strokeColor, in Paint? background)
 	{
 		var (image, offset) = GetBitmap(points);
 		if (image is null)
@@ -113,80 +116,81 @@ public static class DrawingViewService
 		}
 
 		using var canvas = new SKCanvas(image);
+
 		DrawBackground(canvas, image.Info, background);
 		DrawStrokes(canvas, points, lineWidth, strokeColor, offset);
+
 		return image;
 	}
 
-
-	static void DrawBackground(SKCanvas canvas, SKImageInfo info, Paint? brush)
+	static void DrawBackground(in SKCanvas canvas, in SKImageInfo info, in Paint? brush)
 	{
 		switch (brush)
 		{
 			case SolidPaint solidColorBrush:
-				canvas.DrawColor(solidColorBrush.Color != null ? solidColorBrush.Color.AsSKColor() : DrawingViewDefaults.BackgroundColor.AsSKColor());
+				canvas.DrawColor(solidColorBrush.Color is not null
+									? solidColorBrush.Color.AsSKColor()
+									: DrawingViewDefaults.BackgroundColor.AsSKColor());
 				break;
+
 			case LinearGradientPaint linearGradientBrush:
+				var paint = new SKPaint();
+				var colors = new SKColor[linearGradientBrush.GradientStops.Length];
+				var positions = new float[linearGradientBrush.GradientStops.Length];
+
+				for (var index = 0; index < linearGradientBrush.GradientStops.Length; index++)
 				{
-					var paint = new SKPaint();
-					var colors = new SKColor[linearGradientBrush.GradientStops.Length];
-					var positions = new float[linearGradientBrush.GradientStops.Length];
-					for (var index = 0; index < linearGradientBrush.GradientStops.Length; index++)
-					{
-						var gradientStop = linearGradientBrush.GradientStops[index];
-						colors[index] = gradientStop.Color.AsSKColor();
-						positions[index] = gradientStop.Offset;
-					}
-
-					var x1 = (float)linearGradientBrush.StartPoint.X * info.Width;
-					var y1 = (float)linearGradientBrush.StartPoint.Y * info.Height;
-					var x2 = (float)linearGradientBrush.EndPoint.X * info.Width;
-					var y2 = (float)linearGradientBrush.EndPoint.Y * info.Height;
-
-					var shader = SKShader.CreateLinearGradient(
-						new SKPoint(x1, y1),
-						new SKPoint(x2, y2),
-						colors,
-						positions,
-						SKShaderTileMode.Clamp);
-					paint.Shader = shader;
-					canvas.DrawRect(0, 0, info.Width, info.Height, paint);
-					break;
+					var gradientStop = linearGradientBrush.GradientStops[index];
+					colors[index] = gradientStop.Color.AsSKColor();
+					positions[index] = gradientStop.Offset;
 				}
+
+				var x1 = (float)linearGradientBrush.StartPoint.X * info.Width;
+				var y1 = (float)linearGradientBrush.StartPoint.Y * info.Height;
+				var x2 = (float)linearGradientBrush.EndPoint.X * info.Width;
+				var y2 = (float)linearGradientBrush.EndPoint.Y * info.Height;
+
+				var shader = SKShader.CreateLinearGradient(new SKPoint(x1, y1),
+															new SKPoint(x2, y2),
+															colors,
+															positions,
+															SKShaderTileMode.Clamp);
+				paint.Shader = shader;
+				canvas.DrawRect(0, 0, info.Width, info.Height, paint);
+				break;
+
 			case RadialGradientPaint radialGradientBrush:
+				var paint = new SKPaint();
+				var colors = new SKColor[radialGradientBrush.GradientStops.Length];
+				var positions = new float[radialGradientBrush.GradientStops.Length];
+
+				for (var index = 0; index < radialGradientBrush.GradientStops.Length; index++)
 				{
-					var paint = new SKPaint();
-					var colors = new SKColor[radialGradientBrush.GradientStops.Length];
-					var positions = new float[radialGradientBrush.GradientStops.Length];
-
-					for (var index = 0; index < radialGradientBrush.GradientStops.Length; index++)
-					{
-						var gradientStop = radialGradientBrush.GradientStops[index];
-						colors[index] = gradientStop.Color.AsSKColor();
-						positions[index] = gradientStop.Offset;
-					}
-
-					float centerX = (float)(radialGradientBrush.Center.X * info.Width);
-					float centerY = (float)(radialGradientBrush.Center.Y * info.Height);
-					float radius = (float)(radialGradientBrush.Radius * info.Width);
-
-					var shader = SKShader.CreateRadialGradient(
-						new SKPoint(centerX, centerX),
-						radius,
-						colors,
-						positions,
-						SKShaderTileMode.Clamp);
-					paint.Shader = shader;
-					canvas.DrawRect(0, 0, info.Width, info.Height, paint);
-					break;
+					var gradientStop = radialGradientBrush.GradientStops[index];
+					colors[index] = gradientStop.Color.AsSKColor();
+					positions[index] = gradientStop.Offset;
 				}
+
+				float centerX = (float)(radialGradientBrush.Center.X * info.Width);
+				float centerY = (float)(radialGradientBrush.Center.Y * info.Height);
+				float radius = (float)(radialGradientBrush.Radius * info.Width);
+
+				var shader = SKShader.CreateRadialGradient(new SKPoint(centerX, centerX),
+															radius,
+															colors,
+															positions,
+															SKShaderTileMode.Clamp);
+				paint.Shader = shader;
+				canvas.DrawRect(0, 0, info.Width, info.Height, paint);
+				break;
+
 			default:
 				canvas.DrawColor(DrawingViewDefaults.BackgroundColor.AsSKColor());
 				break;
 		}
 	}
 
-	static void DrawStrokes(SKCanvas canvas, ICollection<PointF> points, float lineWidth, Color strokeColor, SizeF offset)
+	static void DrawStrokes(in SKCanvas canvas, in ICollection<PointF> points, in float lineWidth, in Color strokeColor, in SizeF offset)
 	{
 		using var paint = new SKPaint
 		{

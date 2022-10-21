@@ -5,9 +5,6 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 
 public partial class PopupHandler : Microsoft.Maui.Handlers.ElementHandler<IPopup, MauiPopup>
 {
-	/// <inheritdoc/>
-	protected override MauiPopup CreatePlatformElement() => new MauiPopup(MauiContext ?? throw new NullReferenceException(nameof(MauiContext)));
-
 	/// <summary>
 	/// Action that's triggered when the Popup is closed.
 	/// </summary>
@@ -95,5 +92,12 @@ public partial class PopupHandler : Microsoft.Maui.Handlers.ElementHandler<IPopu
 	protected override void ConnectHandler(MauiPopup platformView)
 	{
 		platformView.SetElement(VirtualView);
+	}
+
+	/// <inheritdoc/>
+	protected override MauiPopup CreatePlatformElement()
+	{
+		var mauiContext = MauiContext ?? throw new InvalidOperationException("${nameof(MauiContext)} cannot be null");
+		return new MauiPopup(mauiContext);
 	}
 }

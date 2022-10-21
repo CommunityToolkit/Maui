@@ -150,6 +150,7 @@ public partial class Snackbar
 		PopupInstance = popup;
 
 		OnShown();
+
 		return Task.CompletedTask;
 	}
 
@@ -166,6 +167,7 @@ public partial class Snackbar
 		PopupInstance.Close();
 		PopupInstance.Dispose();
 		PopupInstance = null;
+
 		return Task.CompletedTask;
 	}
 
