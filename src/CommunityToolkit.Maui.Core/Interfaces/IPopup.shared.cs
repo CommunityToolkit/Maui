@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Core;
 /// <summary>
 /// Represents a small View that pops up at front the Page.
 /// </summary>
-public interface IPopup : IElement
+public interface IPopup : IElement, IVisualTreeElement
 {
 	/// <summary>
 	/// Gets the View that Popup will be anchored.
