@@ -76,13 +76,14 @@ public class MediaElement : View, IMediaElement
 	public MediaElementState CurrentState
 	{
 		get => (MediaElementState)GetValue(CurrentStateProperty);
-		internal set => SetValue(CurrentStateProperty, value);
+		set => SetValue(CurrentStateProperty, value);
 	}
 
+	// Change this to be a Readonly BP
 	public TimeSpan Duration
 	{
 		get => (TimeSpan)GetValue(DurationProperty);
-		internal set => SetValue(DurationProperty, value);
+		set => SetValue(DurationProperty, value);
 	}
 
 	public bool IsLooping

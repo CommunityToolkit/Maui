@@ -13,13 +13,13 @@ public interface IMediaElement
 	/// <summary>
 	/// The current state of the <see cref="MediaElement"/>.
 	/// </summary>
-	MediaElementState CurrentState { get; }
+	MediaElementState CurrentState { get; set; }
 
 	/// <summary>
 	/// The total duration of the loaded media.
 	/// </summary>
 	/// <remarks>Might not be available for some types, like live streams.</remarks>
-	TimeSpan Duration { get; }
+	TimeSpan Duration { get; set; }
 
 	/// <summary>
 	/// Fired when the media has ended playing.

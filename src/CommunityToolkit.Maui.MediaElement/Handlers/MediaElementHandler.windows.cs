@@ -6,36 +6,42 @@ namespace CommunityToolkit.Maui.MediaElement;
 
 public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaElement>
 {
-	protected override MauiMediaElement CreatePlatformView() => new(VirtualView);
+	MediaManager? mediaManager;
+	protected override MauiMediaElement CreatePlatformView()
+	{
+		mediaManager ??= new(this.MauiContext ?? throw new NullReferenceException(), VirtualView);
+		var mediaPlatform = mediaManager.CreatePlatformView();
+		return new(mediaPlatform);
+	}
 
 	public static void MapPosition(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler?.PlatformView.UpdatePosition();
+		handler?.mediaManager?.UpdatePosition();
 	}
 
 	public static void MapShowsPlaybackControls(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler?.PlatformView.UpdateShowsPlaybackControls();
+		handler?.mediaManager?.UpdateShowsPlaybackControls();
 	}
 
 	public static void MapSource(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler?.PlatformView.UpdateSource();
+		handler?.mediaManager?.UpdateSource();
 	}
 
 	public static void MapSpeed(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler?.PlatformView.UpdateSpeed();
+		handler?.mediaManager?.UpdateSpeed();
 	}
 
 	public static void MapUpdateStatus(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
-		handler?.PlatformView.UpdateStatus();
+		handler?.mediaManager?.UpdateStatus();
 	}
 
 	public static void MapVolume(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler?.PlatformView.UpdateVolume();
+		handler?.mediaManager?.UpdateVolume();
 	}
 
 	public static void MapPlayRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
@@ -46,7 +52,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		}
 
 		TimeSpan position = ((MediaPositionEventArgs)args).Position;
-		handler.PlatformView?.PlayRequested(position);
+		handler.mediaManager?.Play(position);
 	}
 
 	public static void MapPauseRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
@@ -57,7 +63,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		}
 
 		TimeSpan position = ((MediaPositionEventArgs)args).Position;
-		handler.PlatformView?.PauseRequested(position);
+		handler.mediaManager?.Pause(position);
 	}
 
 	public static void MapStopRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
@@ -68,6 +74,6 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		}
 
 		TimeSpan position = ((MediaPositionEventArgs)args).Position;
-		handler.PlatformView?.StopRequested(position);
+		handler.mediaManager?.Stop(position);
 	}
 }
