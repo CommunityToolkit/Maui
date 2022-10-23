@@ -12,8 +12,8 @@ public abstract class BaseConverterOneWay<TFrom, TTo> : BaseConverter<TFrom, TTo
 	/// <inheritdoc/>
 	public sealed override TFrom DefaultConvertBackReturnValue
 	{
-		get => throw new NotSupportedException($"{nameof(DefaultConvertBackReturnValue)} is not used for ${nameof(BaseConverterOneWay<TFrom, TTo>)}");
-		set => throw new NotSupportedException($"{nameof(DefaultConvertBackReturnValue)} is not used for ${nameof(BaseConverterOneWay<TFrom, TTo>)}");
+		get => throw new NotSupportedException($"{nameof(DefaultConvertBackReturnValue)} is not used for ${nameof(BaseConverterOneWay<TFrom, TTo>)}.");
+		set => throw new NotSupportedException($"{nameof(DefaultConvertBackReturnValue)} is not used for ${nameof(BaseConverterOneWay<TFrom, TTo>)}.");
 	}
 
 	/// <inheritdoc/>

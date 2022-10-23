@@ -117,7 +117,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 
 	void OnShowed(object? sender, EventArgs args)
 	{
-		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null");
+		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null.");
 
 		VirtualView.OnOpened();
 	}

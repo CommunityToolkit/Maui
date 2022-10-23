@@ -61,8 +61,8 @@ public class AlertView : UIView
 
 	void ConstraintInParent()
 	{
-		_ = ParentView ?? throw new InvalidOperationException($"{nameof(AlertView)}.{nameof(Initialize)} not called");
-		_ = Container ?? throw new InvalidOperationException($"{nameof(AlertView)}.{nameof(Initialize)} not called");
+		_ = ParentView ?? throw new InvalidOperationException($"{nameof(AlertView)}.{nameof(Initialize)} not called.");
+		_ = Container ?? throw new InvalidOperationException($"{nameof(AlertView)}.{nameof(Initialize)} not called.");
 
 		const int defaultSpacing = 10;
 		if (AnchorView is null)

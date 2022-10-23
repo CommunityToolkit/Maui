@@ -80,7 +80,7 @@ public abstract class ValueConverterExtension : IMarkupExtension<ICommunityToolk
 	private protected static TValue ConvertValue<TValue>(object? value) => value switch
 	{
 		null when IsNullable<TValue>() => default,
-		null when !IsNullable<TValue>() => throw new ArgumentNullException(nameof(value), $"Value cannot be null because {nameof(TValue)} is not nullable"),
+		null when !IsNullable<TValue>() => throw new ArgumentNullException(nameof(value), $"Value cannot be null because {nameof(TValue)} is not nullable."),
 		TValue convertedValue => convertedValue,
 		_ => throw new ArgumentException($"Value needs to be of type {typeof(TValue)}", nameof(value))
 	};

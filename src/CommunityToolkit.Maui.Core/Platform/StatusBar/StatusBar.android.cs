@@ -51,7 +51,7 @@ static partial class StatusBar
 
 		static Window GetCurrentWindow(Activity activity)
 		{
-			var window = activity.Window ?? throw new InvalidOperationException($"{nameof(activity.Window)} cannot be null");
+			var window = activity.Window ?? throw new InvalidOperationException($"{nameof(activity.Window)} cannot be null.");
 			window.ClearFlags(WindowManagerFlags.TranslucentStatus);
 			window.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
 			return window;
@@ -65,7 +65,7 @@ static partial class StatusBar
 			return true;
 		}
 
-		System.Diagnostics.Debug.WriteLine($"This functionality is not available. Minimum supported API is {(int)BuildVersionCodes.M}");
+		System.Diagnostics.Debug.WriteLine($"This functionality is not available. Minimum supported API is {(int)BuildVersionCodes.M}.");
 		return false;
 	}
 }

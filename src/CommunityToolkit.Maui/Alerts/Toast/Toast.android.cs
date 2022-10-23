@@ -46,7 +46,7 @@ public partial class Toast
 		styledText.SetSpan(new AbsoluteSizeSpan((int)TextSize, true), 0, Text.Length, 0);
 
 		PlatformToast = Android.Widget.Toast.MakeText(Platform.CurrentActivity?.Window?.DecorView.FindViewById(Android.Resource.Id.Content)?.RootView?.Context, styledText, GetToastLength(Duration))
-						  ?? throw new Exception("Unable to create toast");
+						  ?? throw new Exception("Unable to create toast.");
 
 		PlatformToast.Show();
 	}

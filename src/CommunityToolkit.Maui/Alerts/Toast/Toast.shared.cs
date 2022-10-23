@@ -42,7 +42,7 @@ public partial class Toast : IToast
 		{
 			if (value <= 0)
 			{
-				throw new ArgumentOutOfRangeException(nameof(value), "Toast font size must be positive");
+				throw new ArgumentOutOfRangeException(nameof(value), "Toast font size must be positive.");
 			}
 
 			textSize = value;

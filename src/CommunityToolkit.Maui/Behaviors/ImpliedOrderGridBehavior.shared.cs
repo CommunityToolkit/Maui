@@ -81,7 +81,7 @@ public class ImpliedOrderGridBehavior : BaseBehavior<Grid>
 		// If no row is found, set cell to origin and log
 		if (row is null)
 		{
-			LogWarning("Defined cells exceeded", ThrowOnLayoutWarning);
+			LogWarning("Defined cells exceeded.", ThrowOnLayoutWarning);
 
 			rowIndex = Math.Max(rowCount - 1, 0);
 			columnIndex = Math.Max(columnCount - 1, 0);
@@ -115,7 +115,7 @@ public class ImpliedOrderGridBehavior : BaseBehavior<Grid>
 		{
 			for (var c = column; c < columnEnd; c++)
 			{
-				if (usedMatrix?[r][c] ?? throw new InvalidOperationException("Grid Child Not Added."))
+				if (usedMatrix?[r][c] ?? throw new InvalidOperationException("Grid child not added."))
 				{
 					LogWarning($"Cell at row {r} column {c} has already been used.", ThrowOnLayoutWarning);
 				}

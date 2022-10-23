@@ -46,7 +46,7 @@ public class AnimationBehavior : EventToCommandBehavior
 		{
 			if (bindable is ITextInput)
 			{
-				throw new InvalidOperationException($"Animation Behavior can not be attached to {nameof(ITextInput)} without using the EventName property.");
+				throw new InvalidOperationException($"Animation behavior can not be attached to {nameof(ITextInput)} without using the eventName property.");
 			}
 
 			if (bindable is not IGestureRecognizers gestureRecognizers)

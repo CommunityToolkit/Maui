@@ -54,7 +54,7 @@ public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 	{
 		base.Show();
 
-		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null");
+		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null.");
 
 		VirtualView.OnOpened();
 	}
@@ -65,8 +65,8 @@ public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 	/// <param name="dialog">An instance of the <see cref="IDialogInterface"/>.</param>
 	public void OnDismissedByTappingOutsideOfPopup(IDialogInterface dialog)
 	{
-		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null");
-		_ = VirtualView.Handler ?? throw new InvalidOperationException($"{nameof(VirtualView.Handler)} cannot be null");
+		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null.");
+		_ = VirtualView.Handler ?? throw new InvalidOperationException($"{nameof(VirtualView.Handler)} cannot be null.");
 
 		VirtualView.Handler.Invoke(nameof(IPopup.OnDismissedByTappingOutsideOfPopup));
 	}

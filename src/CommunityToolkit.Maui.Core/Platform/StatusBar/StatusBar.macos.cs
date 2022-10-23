@@ -8,11 +8,11 @@ static partial class StatusBar
 {
 	static void PlatformSetColor(Color color)
 	{
-		throw new NotSupportedException("MacCatalyst does not currently support changing the macOS status bar color");
+		throw new NotSupportedException("MacCatalyst does not currently support changing the macOS status bar color.");
 	}
 
 	static void PlatformSetStyle(StatusBarStyle style)
 	{
-		throw new NotSupportedException("MacCatalyst does not currently support changing the macOS status bar color");
+		throw new NotSupportedException("MacCatalyst does not currently support changing the macOS status bar color.");
 	}
 }

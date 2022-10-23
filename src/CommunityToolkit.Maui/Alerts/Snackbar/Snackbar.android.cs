@@ -46,7 +46,7 @@ public partial class Snackbar
 			parentView = parentView?.RootView;
 		}
 
-		return parentView ?? throw new NotSupportedException("Unable to retrieve Snackbar parent");
+		return parentView ?? throw new NotSupportedException("Unable to retrieve snackbar parent.");
 	}
 
 	static void SetLayoutParametersForView(in View snackbarView)

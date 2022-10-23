@@ -45,7 +45,7 @@ public static class PopupExtensions
 			// 2. Calculate the Actual Center of the Anchor by adding the width /2 and height / 2
 			// 3. Calculate the top-left point of where the dialog should be positioned by subtracting the Width / 2 and height / 2
 			//    of the dialog that is about to be drawn.
-			_ = window.Attributes ?? throw new InvalidOperationException($"{nameof(window.Attributes)} cannot be null");
+			_ = window.Attributes ?? throw new InvalidOperationException($"{nameof(window.Attributes)} cannot be null.");
 
 			window.Attributes.X = locationOnScreen[0] + (anchorView.Width / 2) - (window.DecorView.MeasuredWidth / 2);
 			window.Attributes.Y = locationOnScreen[1] + (anchorView.Height / 2) - (window.DecorView.MeasuredHeight / 2);

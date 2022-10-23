@@ -204,7 +204,7 @@ public static class DrawingViewService
 						(float)linearGradientBrush.EndPoint.Y * canvas.Height,
 						colors,
 						positions,
-						Shader.TileMode.Clamp ?? throw new NullReferenceException("TileMode is null"));
+						Shader.TileMode.Clamp ?? throw new NullReferenceException("TileMode is null."));
 					paint.SetShader(shader);
 					canvas.DrawRect(0, 0, canvas.Width, canvas.Height, paint);
 
@@ -228,7 +228,7 @@ public static class DrawingViewService
 						(float)radialGradientBrush.Radius * canvas.Width,
 						colors,
 						positions,
-						Shader.TileMode.Clamp ?? throw new NullReferenceException("TileMode is null"));
+						Shader.TileMode.Clamp ?? throw new NullReferenceException("TileMode is null."));
 					paint.SetShader(shader);
 					canvas.DrawRect(0, 0, canvas.Width, canvas.Height, paint);
 

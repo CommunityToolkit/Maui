@@ -105,7 +105,7 @@ public static class PopupExtensions
 
 			if (mauiPopup.PopoverPresentationController is null)
 			{
-				throw new InvalidOperationException($"{nameof(mauiPopup.PopoverPresentationController)} Cannot Be Null");
+				throw new InvalidOperationException($"{nameof(mauiPopup.PopoverPresentationController)} cannot be null.");
 			}
 
 			mauiPopup.PopoverPresentationController.SourceRect = new CGRect(originX, originY, 0, 0);
@@ -115,10 +115,10 @@ public static class PopupExtensions
 		{
 			if (mauiPopup.PopoverPresentationController is null)
 			{
-				throw new InvalidOperationException($"{nameof(mauiPopup.PopoverPresentationController)} Cannot Be Null");
+				throw new InvalidOperationException($"{nameof(mauiPopup.PopoverPresentationController)} cannot be null.");
 			}
 
-			var view = popup.Anchor.ToPlatform(popup.Handler?.MauiContext ?? throw new InvalidOperationException($"{nameof(popup.Handler.MauiContext)} Cannot Be Null"));
+			var view = popup.Anchor.ToPlatform(popup.Handler?.MauiContext ?? throw new InvalidOperationException($"{nameof(popup.Handler.MauiContext)} cannot be null"));
 			mauiPopup.PopoverPresentationController.SourceView = view;
 			mauiPopup.PopoverPresentationController.SourceRect = view.Bounds;
 		}
