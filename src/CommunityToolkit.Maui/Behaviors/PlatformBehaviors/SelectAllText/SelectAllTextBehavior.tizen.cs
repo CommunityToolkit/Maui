@@ -31,7 +31,7 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView, NView>
 			inputView.FocusGained += OnFocused;
 		}
 
-		void OnFocused(object? sender, EventArgs e)
+		static void OnFocused(object? sender, EventArgs e)
 		{
 			if (sender is TextField tf && tf.HasFocus())
 			{

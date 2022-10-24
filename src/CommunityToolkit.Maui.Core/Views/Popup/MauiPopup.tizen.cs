@@ -58,11 +58,6 @@ public class MauiPopup : Popup
 		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null");
 		Content = VirtualView.Content?.ToPlatform(mauiContext) ?? throw new InvalidOperationException($"{nameof(VirtualView.Content)} cannot be null");
 
-		if (Content is null)
-		{
-			return;
-		}
-
 		BackgroundColor = new Tizen.NUI.Color(0.1f, 0.1f, 0.1f, 0.5f);
 		Content.BackgroundColor = (VirtualView.Color ?? Colors.Transparent).ToNUIColor();
 
@@ -129,7 +124,7 @@ public class MauiPopup : Popup
 
 	void OnOutsideClicked(object? sender, EventArgs e)
 	{
-		if (VirtualView is null || VirtualView.Handler is null)
+		if (VirtualView?.Handler is null)
 		{
 			return;
 		}
