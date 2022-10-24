@@ -70,9 +70,8 @@ public class MauiPopup : Popup
 		{
 			var anchorView = VirtualView.Anchor.ToPlatform();
 			var anchorPosition = anchorView.ScreenPosition;
-			Content.ScreenToLocal(out float x, out float y, anchorPosition.X, anchorPosition.Y);
 			Layout = new AbsoluteLayout();
-			Content.UpdatePosition(new Tizen.UIExtensions.Common.Point(x, y));
+			Content.UpdatePosition(new Tizen.UIExtensions.Common.Point(anchorPosition.X, anchorPosition.Y));
 		}
 		else
 		{
