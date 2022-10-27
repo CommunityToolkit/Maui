@@ -51,7 +51,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 			return;
 		}
 
-		TimeSpan position = ((MediaPositionEventArgs)args).Position;
+		var position = ((MediaPositionEventArgs)args).Position;
 		handler.mediaManager?.Play(position);
 	}
 
@@ -62,7 +62,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 			return;
 		}
 
-		TimeSpan position = ((MediaPositionEventArgs)args).Position;
+		var position = ((MediaPositionEventArgs)args).Position;
 		handler.mediaManager?.Pause(position);
 	}
 
@@ -73,7 +73,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 			return;
 		}
 
-		TimeSpan position = ((MediaPositionEventArgs)args).Position;
+		var position = ((MediaPositionEventArgs)args).Position;
 		handler.mediaManager?.Stop(position);
 	}
 }
