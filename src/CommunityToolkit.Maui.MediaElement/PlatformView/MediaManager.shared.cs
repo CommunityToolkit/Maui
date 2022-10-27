@@ -19,13 +19,13 @@ namespace CommunityToolkit.Maui.MediaElement;
 
 public partial class MediaManager
 {
-	readonly IMauiContext context;
+	readonly IMauiContext mauiContext;
 	readonly IMediaElement mediaElement;
 	PlatformMediaView? player;
 
 	public MediaManager(IMauiContext context, IMediaElement mediaElement)
 	{
-		this.context = context;
+		this.mauiContext = context;
 		this.mediaElement = mediaElement;
 	}
 

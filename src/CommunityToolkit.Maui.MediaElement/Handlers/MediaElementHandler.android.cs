@@ -5,7 +5,13 @@ namespace CommunityToolkit.Maui.MediaElement;
 
 public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaElement>
 {
-	protected override MauiMediaElement CreatePlatformView() => new(Context, VirtualView);
+	MediaManager? mediaManager;
+	protected override MauiMediaElement CreatePlatformView()
+	{
+		mediaManager ??= new(MauiContext ?? throw new NullReferenceException(), VirtualView);
+		var player = mediaManager.CreatePlatformView();
+		return new(Context, player, VirtualView);
+	}
 
 	public static void MapIsLooping(MediaElementHandler handler, MediaElement mediaElement)
 	{
