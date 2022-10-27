@@ -274,7 +274,7 @@ public class MauiMediaElement : CoordinatorLayout, IPlayer.IListener
 	public void OnPlaybackParametersChanged(PlaybackParameters? playbackParameters) { }
 	public void OnPlaybackStateChanged(int playbackState) { }
 	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
-	public void OnPlayerError(ExoPlaybackException error) { }
+	public void OnPlayerError(PlaybackException? error) { }
 	public void OnPlayerErrorChanged(PlaybackException? error) { }
 	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata) { }
 	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason) { }
