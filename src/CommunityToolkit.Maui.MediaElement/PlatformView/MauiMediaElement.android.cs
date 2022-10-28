@@ -20,7 +20,7 @@ public class MauiMediaElement : CoordinatorLayout
 	IExoPlayer? player;
 	readonly MediaElement mediaElement;
 
-	public MauiMediaElement(Context context, IExoPlayer player, MediaElement mediaElement)
+	public MauiMediaElement(Context context, IExoPlayer player, MediaElement mediaElement, StyledPlayerView playerView)
 		 : base(context)
 	{
 		this.mediaElement = mediaElement;
@@ -32,17 +32,10 @@ public class MauiMediaElement : CoordinatorLayout
 				Gravity = (int)GravityFlags.Center
 			}
 		};
-		//player.AddListener(this);
+
 		this.player = player;
 
-
-		playerView = new StyledPlayerView(context)
-		{
-			Player = player,
-			UseController = false,
-			ControllerAutoShow = false,
-			LayoutParameters = new RelativeLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent),
-		};
+		this.playerView = playerView;
 
 		relativeLayout.AddView(playerView);
 		AddView(relativeLayout);
@@ -69,42 +62,42 @@ public class MauiMediaElement : CoordinatorLayout
 		base.Dispose(disposing);
 	}
 
-	public void PlayRequested(TimeSpan position)
-	{
-		// TODO do something with position
-		if (player is null)
-		{
-			return;
-		}
+	//public void PlayRequested(TimeSpan position)
+	//{
+	//	// TODO do something with position
+	//	if (player is null)
+	//	{
+	//		return;
+	//	}
 
-		player.Play();
-	}
+	//	player.Play();
+	//}
 
-	public void PauseRequested(TimeSpan position)
-	{
-		// TODO do something with position
-		if (player is null)
-		{
-			return;
-		}
+	//public void PauseRequested(TimeSpan position)
+	//{
+	//	// TODO do something with position
+	//	if (player is null)
+	//	{
+	//		return;
+	//	}
 
-		player.Pause();
-	}
+	//	player.Pause();
+	//}
 
-	public void StopRequested(TimeSpan position)
-	{
-		// TODO do something with position
-		if (player is null)
-		{
-			return;
-		}
+	//public void StopRequested(TimeSpan position)
+	//{
+	//	// TODO do something with position
+	//	if (player is null)
+	//	{
+	//		return;
+	//	}
 
-		// Stops and resets the media player
-		player.Stop();
-		player.SeekTo(0);
-		player.PlayWhenReady = false;
-		player.Prepare();
-	}
+	//	// Stops and resets the media player
+	//	player.Stop();
+	//	player.SeekTo(0);
+	//	player.PlayWhenReady = false;
+	//	player.Prepare();
+	//}
 
 	public void UpdateIsLooping()
 	{
@@ -116,28 +109,28 @@ public class MauiMediaElement : CoordinatorLayout
 		player.RepeatMode = mediaElement.IsLooping ? IPlayer.RepeatModeOne : IPlayer.RepeatModeOff;
 	}
 
-	public void UpdatePosition()
-	{
-		if (mediaElement is null || player is null)
-		{
-			return;
-		}
+	//public void UpdatePosition()
+	//{
+	//	if (mediaElement is null || player is null)
+	//	{
+	//		return;
+	//	}
 
-		if (Math.Abs(player.CurrentPosition - mediaElement.Position.TotalMilliseconds) > 1000)
-		{
-			player.SeekTo((long)mediaElement.Position.TotalMilliseconds);
-		}
-	}
+	//	if (Math.Abs(player.CurrentPosition - mediaElement.Position.TotalMilliseconds) > 1000)
+	//	{
+	//		player.SeekTo((long)mediaElement.Position.TotalMilliseconds);
+	//	}
+	//}
 
-	public void UpdateShowsPlaybackControls()
-	{
-		if (mediaElement is null || playerView is null)
-		{
-			return;
-		}
+	//public void UpdateShowsPlaybackControls()
+	//{
+	//	if (mediaElement is null || playerView is null)
+	//	{
+	//		return;
+	//	}
 
-		playerView.UseController = mediaElement.ShowsPlaybackControls;
-	}
+	//	playerView.UseController = mediaElement.ShowsPlaybackControls;
+	//}
 
 	public void UpdateSource()
 	{

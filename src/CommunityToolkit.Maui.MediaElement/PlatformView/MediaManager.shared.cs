@@ -84,7 +84,7 @@ public partial class MediaManager
 }
 
 
-#if !WINDOWS
+#if !(WINDOWS || ANDROID)
 partial class MediaManager
 {
 	protected virtual partial void PlatformPlay(TimeSpan timeSpan)

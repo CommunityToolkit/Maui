@@ -9,8 +9,8 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	protected override MauiMediaElement CreatePlatformView()
 	{
 		mediaManager ??= new(MauiContext ?? throw new NullReferenceException(), VirtualView);
-		var player = mediaManager.CreatePlatformView();
-		return new(Context, player, VirtualView);
+		var (player, playerView) = mediaManager.CreatePlatformView();
+		return new(Context, player, VirtualView, playerView);
 	}
 
 	public static void MapIsLooping(MediaElementHandler handler, MediaElement mediaElement)
@@ -20,12 +20,12 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 
 	public static void MapPosition(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler?.PlatformView.UpdatePosition();
+		handler?.mediaManager?.UpdatePosition();
 	}
 
 	public static void MapShowsPlaybackControls(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler?.PlatformView.UpdateShowsPlaybackControls();
+		handler?.mediaManager?.UpdateShowsPlaybackControls();
 	}
 
 	public static void MapSource(MediaElementHandler handler, MediaElement mediaElement)
@@ -56,7 +56,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		}
 
 		TimeSpan position = ((MediaPositionEventArgs)args).Position;
-		handler.PlatformView?.PlayRequested(position);
+		handler.mediaManager?.Play(position);
 	}
 
 	public static void MapPauseRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
@@ -67,7 +67,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		}
 
 		TimeSpan position = ((MediaPositionEventArgs)args).Position;
-		handler.PlatformView?.PauseRequested(position);
+		handler.mediaManager?.Pause(position);
 	}
 
 	public static void MapStopRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
@@ -78,6 +78,6 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		}
 
 		TimeSpan position = ((MediaPositionEventArgs)args).Position;
-		handler.PlatformView?.StopRequested(position);
+		handler.mediaManager?.Stop(position);
 	}
 }
