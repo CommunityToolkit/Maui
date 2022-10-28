@@ -31,7 +31,7 @@ public class EventToCommandBehavior : BaseBehavior<VisualElement>
 	/// Backing BindableProperty for the <see cref="EventArgs"/> property.
 	/// </summary>
 	public static readonly BindableProperty EventArgsConverterProperty =
-		BindableProperty.Create(nameof(EventArgsConverter), typeof(ICommunityToolkitValueConverter), typeof(EventToCommandBehavior));
+		BindableProperty.Create(nameof(EventArgsConverter), typeof(IValueConverter), typeof(EventToCommandBehavior));
 
 	readonly MethodInfo eventHandlerMethodInfo = typeof(EventToCommandBehavior).GetTypeInfo()?.GetDeclaredMethod(nameof(OnTriggerHandled)) ?? throw new InvalidOperationException($"Cannot find method {nameof(OnTriggerHandled)}");
 
@@ -69,9 +69,9 @@ public class EventToCommandBehavior : BaseBehavior<VisualElement>
 	/// <summary>
 	/// An optional <see cref="ICommunityToolkitValueConverter"/> that can be used to convert <see cref="EventArgs"/> values, associated with the event configured with <see cref="EventName"/>, to values passed into the <see cref="Command"/>. This is a bindable property.
 	/// </summary>
-	public ICommunityToolkitValueConverter? EventArgsConverter
+	public IValueConverter? EventArgsConverter
 	{
-		get => (ICommunityToolkitValueConverter?)GetValue(EventArgsConverterProperty);
+		get => (IValueConverter?)GetValue(EventArgsConverterProperty);
 		set => SetValue(EventArgsConverterProperty, value);
 	}
 

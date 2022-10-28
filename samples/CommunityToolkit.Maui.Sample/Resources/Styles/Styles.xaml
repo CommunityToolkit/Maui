@@ -6,6 +6,10 @@
     xmlns:maui="clr-namespace:Microsoft.Maui;assembly=Microsoft.Maui">
 
     <!--  Implicit styles  -->
+    <Style TargetType="Grid">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource AppBackgroundLightColor}, Dark={StaticResource AppBackgroundDarkColor}}" />
+    </Style>
+
     <Style TargetType="NavigationPage">
         <Setter Property="BarBackgroundColor" Value="{AppThemeBinding Light={StaticResource PrimaryColor}, Dark={StaticResource Gray950}}" />
         <Setter Property="BarTextColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource White}}" />
@@ -206,6 +210,7 @@
 
     <Style TargetType="RadioButton">
         <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BackgroundColor" Value="Transparent"/>
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
         <Setter Property="FontFamily" Value="OpenSansRegular"/>
         <Setter Property="FontSize" Value="14"/>
@@ -396,8 +401,8 @@
                     Brush="{AppThemeBinding Light={StaticResource Gray500},
                                             Dark={StaticResource Gray950}}"
                     Opacity=".5"
-                    Radius="15"
-                    Offset="10,10" />
+                    Radius="4"
+                    Offset="2,2" />
             </Setter.Value>
         </Setter>
     </Style>

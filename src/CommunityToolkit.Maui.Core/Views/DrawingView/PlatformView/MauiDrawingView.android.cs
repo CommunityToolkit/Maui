@@ -1,4 +1,4 @@
-﻿using Android.Content;
+using Android.Content;
 using Android.Views;
 using Microsoft.Maui.Platform;
 using AColor = Android.Graphics.Color;
@@ -18,6 +18,7 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 		previousPoint = new();
 	}
 
+	/// <inheritdoc />
 	protected override void Dispose(bool disposing)
 	{
 		if (disposing)

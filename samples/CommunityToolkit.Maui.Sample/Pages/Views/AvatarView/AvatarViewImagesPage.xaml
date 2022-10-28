@@ -87,12 +87,6 @@
                     TargetType="mct:AvatarView">
                     <Setter Property="ImageSource" Value="avatar_icon.png" />
                 </Style>
-                <Style
-                    x:Key="AvatarViewImagesLargeURL"
-                    BasedOn="{StaticResource AvatarViewImagesLarge}"
-                    TargetType="mct:AvatarView">
-                    <Setter Property="ImageSource" Value="https://aka.ms/campus.jpg" />
-                </Style>
             </ResourceDictionary>
         </VerticalStackLayout.Resources>
         <Label Style="{StaticResource Description}" Text="AvatarView can use local or URL image sources." />
@@ -125,7 +119,14 @@
         <mct:AvatarView
             HeightRequest="62"
             SemanticProperties.Description="Sample large AvatarView showing using a URL image."
-            Style="{StaticResource AvatarViewImagesLargeURL}"
-            WidthRequest="62" />
+            Style="{StaticResource AvatarViewImagesLarge}"
+            WidthRequest="62">
+            <mct:AvatarView.ImageSource>
+                <UriImageSource
+                    CacheValidity="1"
+                    CachingEnabled="True"
+                    Uri="https://aka.ms/campus.jpg" />
+            </mct:AvatarView.ImageSource>
+        </mct:AvatarView>
     </VerticalStackLayout>
 </pages:BasePage>

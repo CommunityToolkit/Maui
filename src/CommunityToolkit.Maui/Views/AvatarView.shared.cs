@@ -6,16 +6,16 @@ using Microsoft.Maui.Controls.Shapes;
 namespace CommunityToolkit.Maui.Views;
 
 /// <summary>AvatarView control.</summary>
-public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITextElement, IImageElement, ITextAlignmentElement, ILineHeightElement, ICornerElement, IPaddingElement
+public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITextElement, IImageElement, ITextAlignmentElement, ILineHeightElement, ICornerElement
 {
 	/// <summary>The backing store for the <see cref="BorderColor" /> bindable property.</summary>
-	public static readonly BindableProperty BorderColorProperty = BindableProperty.Create(nameof(AvatarView.BorderColor), typeof(Color), typeof(IAvatarView), defaultValue: AvatarViewDefaults.DefaultBorderColor, propertyChanged: OnBorderColorPropertyChanged);
+	public static readonly BindableProperty BorderColorProperty = BindableProperty.Create(nameof(BorderColor), typeof(Color), typeof(IAvatarView), defaultValue: AvatarViewDefaults.DefaultBorderColor, propertyChanged: OnBorderColorPropertyChanged);
 
 	/// <summary>The backing store for the <see cref="BorderWidth" /> bindable property.</summary>
-	public static readonly BindableProperty BorderWidthProperty = BindableProperty.Create(nameof(AvatarView.BorderWidth), typeof(double), typeof(IAvatarView), defaultValue: AvatarViewDefaults.DefaultBorderWidth, propertyChanged: OnBorderWidthPropertyChanged);
+	public static readonly BindableProperty BorderWidthProperty = BindableProperty.Create(nameof(BorderWidth), typeof(double), typeof(IAvatarView), defaultValue: AvatarViewDefaults.DefaultBorderWidth, propertyChanged: OnBorderWidthPropertyChanged);
 
 	/// <summary>The backing store for the <see cref="CornerRadius" /> bindable property.</summary>
-	public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(nameof(AvatarView.CornerRadius), typeof(CornerRadius), typeof(ICornerElement), defaultValue: AvatarViewDefaults.DefaultCornerRadius, propertyChanged: OnCornerRadiusPropertyChanged);
+	public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(nameof(CornerRadius), typeof(CornerRadius), typeof(ICornerElement), defaultValue: AvatarViewDefaults.DefaultCornerRadius, propertyChanged: OnCornerRadiusPropertyChanged);
 
 	/// <summary>The backing store for the <see cref="IFontElement.FontAttributes" /> bindable property.</summary>
 	public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
@@ -30,7 +30,7 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 	public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
 
 	/// <summary>The backing store for the <see cref="ImageSource" /> bindable property.</summary>
-	public static readonly BindableProperty ImageSourceProperty = BindableProperty.Create(nameof(ImageSource), typeof(ImageSource), typeof(IImageElement), default(ImageSource), propertyChanged: OnImageSourceChanged);
+	public static readonly BindableProperty ImageSourceProperty = BindableProperty.Create(nameof(ImageSource), typeof(ImageSource), typeof(IImageElement), default(ImageSource), propertyChanged: OnImageSourcePropertyChanged);
 
 	/// <summary>The backing store for the <see cref="ITextStyle.TextColor" /> bindable property.</summary>
 	public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
@@ -72,61 +72,63 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 			CornerRadius = new CornerRadius(AvatarViewDefaults.DefaultCornerRadius.TopLeft, AvatarViewDefaults.DefaultCornerRadius.TopRight, AvatarViewDefaults.DefaultCornerRadius.BottomLeft, AvatarViewDefaults.DefaultCornerRadius.BottomRight),
 		};
 		Content = avatarLabel;
+		avatarImage.SetBinding(WidthRequestProperty, new Binding(nameof(WidthRequest), source: this));
+		avatarImage.SetBinding(HeightRequestProperty, new Binding(nameof(HeightRequest), source: this));
 	}
 
-	/// <summary>Gets or sets the avatar font.</summary>
+	/// <summary>Gets or sets the control font.</summary>
 	public Microsoft.Maui.Font Font { get; set; } = Microsoft.Maui.Font.SystemFontOfSize((double)FontElement.FontSizeProperty.DefaultValue);
 
-	/// <summary>Gets or sets a value of the avatar border colour.</summary>
+	/// <summary>Gets or sets a value of the control border colour.</summary>
 	public Color BorderColor
 	{
 		get => (Color)GetValue(BorderColorProperty);
 		set => SetValue(BorderColorProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the avatar border width.</summary>
+	/// <summary>Gets or sets a value of the control border width.</summary>
 	public double BorderWidth
 	{
 		get => (double)GetValue(BorderWidthProperty);
 		set => SetValue(BorderWidthProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the avatar text character spacing property.</summary>
+	/// <summary>Gets or sets a value of the control text character spacing property.</summary>
 	public double CharacterSpacing
 	{
 		get => (double)GetValue(TextElement.CharacterSpacingProperty);
 		set => SetValue(TextElement.CharacterSpacingProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the avatar corder radius property.</summary>
+	/// <summary>Gets or sets a value of the control corner radius property.</summary>
 	public CornerRadius CornerRadius
 	{
 		get => (CornerRadius)GetValue(CornerRadiusProperty);
 		set => SetValue(CornerRadiusProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the avatar font attributes property.</summary>
+	/// <summary>Gets or sets a value of the control font attributes property.</summary>
 	public FontAttributes FontAttributes
 	{
 		get => (FontAttributes)GetValue(FontElement.FontAttributesProperty);
 		set => SetValue(FontElement.FontAttributesProperty, value);
 	}
 
-	/// <summary>Gets or sets a value indicating whether avatar font auto scaling enabled property.</summary>
+	/// <summary>Gets or sets a value indicating whether control font auto scaling enabled property.</summary>
 	public bool FontAutoScalingEnabled
 	{
 		get => (bool)GetValue(FontElement.FontAutoScalingEnabledProperty);
 		set => SetValue(FontElement.FontAutoScalingEnabledProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the avatar font family property.</summary>
+	/// <summary>Gets or sets a value of the control font family property.</summary>
 	public string FontFamily
 	{
 		get => (string)GetValue(FontElement.FontFamilyProperty);
 		set => SetValue(FontElement.FontFamilyProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the avatar font size property.</summary>
+	/// <summary>Gets or sets a value of the control font size property.</summary>
 	[TypeConverter(typeof(FontSizeConverter))]
 	public double FontSize
 	{
@@ -134,22 +136,22 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		set => SetValue(FontElement.FontSizeProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the avatar image source property.</summary>
+	/// <summary>Gets or sets a value of the control image source property.</summary>
 	[TypeConverter(typeof(ImageSourceConverter))]
 	public ImageSource ImageSource
 	{
-		get => (ImageSource)GetValue(ImageElement.ImageSourceProperty);
-		set => SetValue(ImageElement.ImageSourceProperty, value);
+		get => (ImageSource)GetValue(ImageSourceProperty);
+		set => SetValue(ImageSourceProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the avatar text property.</summary>
+	/// <summary>Gets or sets a value of the control text property.</summary>
 	public string Text
 	{
 		get => (string)GetValue(TextProperty);
 		set => SetValue(TextProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the avatar text colour property.</summary>
+	/// <summary>Gets or sets a value of the control text colour property.</summary>
 	public Color TextColor
 	{
 		get => (Color)GetValue(TextElement.TextColorProperty);
@@ -163,86 +165,49 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		set => SetValue(TextElement.TextTransformProperty, value);
 	}
 
-	bool IImageSource.IsEmpty => avatarImage.Source is null;
-
-	IImageSource IImageSourcePart.Source => ImageSource;
-
 	Aspect Microsoft.Maui.IImage.Aspect => ((IImageElement)this).Aspect;
 
-	bool Microsoft.Maui.IImage.IsOpaque => ((IImageElement)this).IsOpaque;
-
 	Aspect IImageElement.Aspect => avatarImage.Aspect;
-
-	ImageSource IImageElement.Source => avatarImage.Source;
-
-	bool IImageElement.IsOpaque => avatarImage.IsOpaque;
-
-	bool IImageElement.IsLoading => avatarImage.IsLoading;
-
-	bool IImageElement.IsAnimationPlaying => avatarImage.IsAnimationPlaying;
-
-	bool IImageSourcePart.IsAnimationPlaying => ((IImageElement)this).IsAnimationPlaying;
-
-	TextDecorations ILabel.TextDecorations => avatarLabel.TextDecorations;
-
-	TextAlignment ITextAlignment.HorizontalTextAlignment => ((ITextAlignmentElement)this).HorizontalTextAlignment;
-
-	TextAlignment ITextAlignment.VerticalTextAlignment => ((ITextAlignmentElement)this).VerticalTextAlignment;
-
-	TextAlignment ITextAlignmentElement.HorizontalTextAlignment => avatarLabel.HorizontalTextAlignment;
-
-	TextAlignment ITextAlignmentElement.VerticalTextAlignment => avatarLabel.VerticalTextAlignment;
-
-	double ILabel.LineHeight => ((ILineHeightElement)this).LineHeight;
-
-	double ILineHeightElement.LineHeight => avatarLabel.LineHeight;
-
-	int IBorderElement.CornerRadius => (int)GetAverageCorderRadius(CornerRadius);
-
-	int IBorderElement.CornerRadiusDefaultValue => (int)GetAverageCorderRadius((CornerRadius)CornerRadiusProperty.DefaultValue);
 
 	Color IBorderElement.BorderColorDefaultValue => (Color)BorderColorProperty.DefaultValue;
 
 	double IBorderElement.BorderWidthDefaultValue => (double)BorderWidthProperty.DefaultValue;
 
-	static void OnCornerRadiusPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		AvatarView avatarView = (AvatarView)bindable;
-		CornerRadius corderRadius = (CornerRadius)newValue;
+	int IBorderElement.CornerRadius => (int)GetAverageCorderRadius(CornerRadius);
 
-		avatarView.StrokeShape = new RoundRectangle { CornerRadius = corderRadius };
-	}
+	int IBorderElement.CornerRadiusDefaultValue => (int)GetAverageCorderRadius((CornerRadius)CornerRadiusProperty.DefaultValue);
 
-	static void OnBorderColorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		AvatarView avatarView = (AvatarView)bindable;
-		avatarView.Stroke = (Color)newValue;
-	}
+	TextAlignment ITextAlignment.HorizontalTextAlignment => ((ITextAlignmentElement)this).HorizontalTextAlignment;
 
-	static void OnBorderWidthPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		AvatarView avatarView = (AvatarView)bindable;
-		avatarView.StrokeThickness = (double)newValue;
-	}
+	TextAlignment ITextAlignmentElement.HorizontalTextAlignment => avatarLabel.HorizontalTextAlignment;
 
-	static void OnImageSourceChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		AvatarView avatarView = (AvatarView)bindable;
-		avatarView.HandleImageChanged((ImageSource?)newValue);
-	}
+	bool IImageElement.IsAnimationPlaying => avatarImage.IsAnimationPlaying;
 
-	static void OnTextPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		AvatarView avatarView = (AvatarView)bindable;
-		avatarView.avatarLabel.Text = (string)newValue;
-	}
+	bool IImageSourcePart.IsAnimationPlaying => ((IImageElement)this).IsAnimationPlaying;
 
-	static double GetAverageCorderRadius(in CornerRadius cornerRadius) =>
-		new[] { cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomLeft, cornerRadius.BottomRight }.Average();
+	bool IImageSource.IsEmpty => avatarImage.Source is null;
 
-	void IBorderElement.OnBorderColorPropertyChanged(Color oldValue, Color newValue) => Stroke = newValue;
+	bool IImageElement.IsLoading => avatarImage.IsLoading;
 
-	bool IBorderElement.IsCornerRadiusSet() => IsSet(CornerRadiusProperty);
+	bool Microsoft.Maui.IImage.IsOpaque => ((IImageElement)this).IsOpaque;
+
+	bool IImageElement.IsOpaque => avatarImage.IsOpaque;
+
+	double ILabel.LineHeight => ((ILineHeightElement)this).LineHeight;
+
+	double ILineHeightElement.LineHeight => avatarLabel.LineHeight;
+
+	IImageSource IImageSourcePart.Source => ImageSource;
+
+	ImageSource IImageElement.Source => avatarImage.Source;
+
+	TextAlignment ITextAlignment.VerticalTextAlignment => ((ITextAlignmentElement)this).VerticalTextAlignment;
+
+	TextAlignment ITextAlignmentElement.VerticalTextAlignment => avatarLabel.VerticalTextAlignment;
+
+	TextDecorations ILabel.TextDecorations => avatarLabel.TextDecorations;
+
+	double IFontElement.FontSizeDefaultValueCreator() => this.GetDefaultFontSize();
 
 	bool IBorderElement.IsBackgroundColorSet() => IsSet(BackgroundColorProperty);
 
@@ -252,11 +217,9 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 
 	bool IBorderElement.IsBorderWidthSet() => IsSet(BorderWidthProperty);
 
-	double IFontElement.FontSizeDefaultValueCreator() => this.GetDefaultFontSize();
+	bool IBorderElement.IsCornerRadiusSet() => IsSet(CornerRadiusProperty);
 
-	void ITextElement.OnTextColorPropertyChanged(Color oldValue, Color newValue) => avatarLabel.TextColor = newValue;
-
-	string ITextElement.UpdateFormsText(string original, TextTransform transform) => TextTransformUtilites.GetTransformedText(original, transform);
+	void IBorderElement.OnBorderColorPropertyChanged(Color oldValue, Color newValue) => Stroke = newValue;
 
 	void ITextElement.OnCharacterSpacingPropertyChanged(double oldValue, double newValue)
 	{
@@ -288,11 +251,26 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		avatarLabel.FontSize = newValue;
 	}
 
+	void ITextAlignmentElement.OnHorizontalTextAlignmentPropertyChanged(TextAlignment oldValue, TextAlignment newValue) =>
+		((ITextAlignmentElement)avatarLabel).OnHorizontalTextAlignmentPropertyChanged(oldValue, newValue);
+
+	void IImageElement.OnImageSourceSourceChanged(object sender, EventArgs e) =>
+		((IImageElement)avatarImage).OnImageSourceSourceChanged(sender, e);
+
+	void ILineHeightElement.OnLineHeightChanged(double oldValue, double newValue) =>
+		((ILineHeightElement)avatarLabel).OnLineHeightChanged(oldValue, newValue);
+
+	void ITextElement.OnTextColorPropertyChanged(Color oldValue, Color newValue) => avatarLabel.TextColor = newValue;
+
 	void ITextElement.OnTextTransformChanged(TextTransform oldValue, TextTransform newValue)
 	{
 		InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		avatarLabel.TextTransform = newValue;
 	}
+
+	void IImageElement.RaiseImageSourcePropertyChanged() => ((IImageElement)avatarImage).RaiseImageSourcePropertyChanged();
+
+	string ITextElement.UpdateFormsText(string original, TextTransform transform) => TextTransformUtilites.GetTransformedText(original, transform);
 
 	void IImageSourcePart.UpdateIsLoading(bool isLoading)
 	{
@@ -304,16 +282,40 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		wasImageLoading = isLoading;
 	}
 
-	void IImageElement.RaiseImageSourcePropertyChanged() => ((IImageElement)avatarImage).RaiseImageSourcePropertyChanged();
+	static double GetAverageCorderRadius(in CornerRadius cornerRadius) =>
+		new[] { cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomLeft, cornerRadius.BottomRight }.Average();
 
-	void IImageElement.OnImageSourceSourceChanged(object sender, EventArgs e) =>
-		((IImageElement)avatarImage).OnImageSourceSourceChanged(sender, e);
+	static void OnBorderColorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		AvatarView avatarView = (AvatarView)bindable;
+		avatarView.Stroke = (Color)newValue;
+	}
 
-	void ITextAlignmentElement.OnHorizontalTextAlignmentPropertyChanged(TextAlignment oldValue, TextAlignment newValue) =>
-		((ITextAlignmentElement)avatarLabel).OnHorizontalTextAlignmentPropertyChanged(oldValue, newValue);
+	static void OnBorderWidthPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		AvatarView avatarView = (AvatarView)bindable;
+		avatarView.StrokeThickness = (double)newValue;
+	}
 
-	void ILineHeightElement.OnLineHeightChanged(double oldValue, double newValue) =>
-		((ILineHeightElement)avatarLabel).OnLineHeightChanged(oldValue, newValue);
+	static void OnCornerRadiusPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		AvatarView avatarView = (AvatarView)bindable;
+		CornerRadius corderRadius = (CornerRadius)newValue;
+
+		avatarView.StrokeShape = new RoundRectangle { CornerRadius = corderRadius };
+	}
+
+	static void OnImageSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		AvatarView avatarView = (AvatarView)bindable;
+		avatarView.HandleImageChanged((ImageSource?)newValue);
+	}
+
+	static void OnTextPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		AvatarView avatarView = (AvatarView)bindable;
+		avatarView.avatarLabel.Text = (string)newValue;
+	}
 
 	void HandleFontChanged()
 	{
@@ -342,7 +344,7 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 
 	void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
-		// Ensure avatarImage is clipped to the bounds of the AvatarView whenever its Height, Width, CornerRadius and Padding properties change		
+		// Ensure avatarImage is clipped to the bounds of the AvatarView whenever its Height, Width, CornerRadius and Padding properties change
 		if ((e.PropertyName == HeightProperty.PropertyName
 				|| e.PropertyName == WidthProperty.PropertyName
 				|| e.PropertyName == PaddingProperty.PropertyName
@@ -354,12 +356,20 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 			&& Width >= 0 // The default value of Y (before the view is drawn onto the page) is -1
 			&& avatarImage.Source is not null)
 		{
-			var imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
-			var imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
+			double imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
+			double imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
 
-			var rect = new Rect(0, 0, imageWidth, imageHeight);
+			Rect rect = new(0, 0, imageWidth, imageHeight);
 
-			avatarImage.Clip = new RoundRectangleGeometry { CornerRadius = CornerRadius, Rect = rect };
+			avatarImage.Clip = StrokeShape switch
+			{
+				Polyline polyLine => polyLine.Clip,
+				Ellipse ellipse => ellipse.Clip,
+				Microsoft.Maui.Controls.Shapes.Path path => path.Clip,
+				Polygon polygon => polygon.Clip,
+				Rectangle rectangle => rectangle.Clip,
+				_ => new RoundRectangleGeometry { CornerRadius = CornerRadius, Rect = rect },
+			};
 		}
 	}
 }

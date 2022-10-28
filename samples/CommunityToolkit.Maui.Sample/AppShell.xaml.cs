@@ -3,12 +3,14 @@ using CommunityToolkit.Maui.Sample.Pages.Alerts;
 using CommunityToolkit.Maui.Sample.Pages.Behaviors;
 using CommunityToolkit.Maui.Sample.Pages.Converters;
 using CommunityToolkit.Maui.Sample.Pages.Extensions;
+using CommunityToolkit.Maui.Sample.Pages.ImageSources;
 using CommunityToolkit.Maui.Sample.Pages.Layouts;
 using CommunityToolkit.Maui.Sample.Pages.Views;
 using CommunityToolkit.Maui.Sample.ViewModels;
 using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
+using CommunityToolkit.Maui.Sample.ViewModels.ImageSources;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
@@ -37,6 +39,7 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<RequiredStringValidationBehaviorPage, RequiredStringValidationBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
 		CreateViewModelMapping<SelectAllTextBehaviorPage, SelectAllTextBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
 		CreateViewModelMapping<SetFocusOnEntryCompletedBehaviorPage, SetFocusOnEntryCompletedBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
+		CreateViewModelMapping<StatusBarBehaviorPage, StatusBarBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
 		CreateViewModelMapping<TextValidationBehaviorPage, TextValidationBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
 		CreateViewModelMapping<UriValidationBehaviorPage, UriValidationBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
 		CreateViewModelMapping<UserStoppedTypingBehaviorPage, UserStoppedTypingBehaviorViewModel, BehaviorsGalleryPage, BehaviorsGalleryViewModel>(),
@@ -79,6 +82,9 @@ public partial class AppShell : Shell
 		// Add Extensions View Models
 		CreateViewModelMapping<ColorAnimationExtensionsPage, ColorAnimationExtensionsViewModel, ExtensionsGalleryPage, ExtensionsGalleryViewModel>(),
 
+		// Add ImageSources View Models
+		CreateViewModelMapping<GravatarImageSourcePage, GravatarImageSourceViewModel, ImageSourcesGalleryPage, ImageSourcesGalleryViewModel>(),
+
 		// Add Layouts View Models
 		CreateViewModelMapping<UniformItemsLayoutPage, UniformItemsLayoutViewModel, LayoutsGalleryPage, LayoutsGalleryViewModel>(),
 
@@ -102,8 +108,18 @@ public partial class AppShell : Shell
 
 	public AppShell() => InitializeComponent();
 
+	public static string GetPageRoute<TViewModel>() where TViewModel : BaseViewModel
+	{
+		return GetPageRoute(typeof(TViewModel));
+	}
+
 	public static string GetPageRoute(Type viewModelType)
 	{
+		if (!viewModelType.IsAssignableTo(typeof(BaseViewModel)))
+		{
+			throw new ArgumentException($"{nameof(viewModelType)} must implement {nameof(BaseViewModel)}", nameof(viewModelType));
+		}
+
 		if (!viewModelMappings.TryGetValue(viewModelType, out (Type GalleryPageType, Type ContentPageType) mapping))
 		{
 			throw new KeyNotFoundException($"No map for ${viewModelType} was found on navigation mappings. Please register your ViewModel in {nameof(AppShell)}.{nameof(viewModelMappings)}");
@@ -120,9 +136,6 @@ public partial class AppShell : Shell
 																																							where TGalleryPage : BaseGalleryPage<TGalleryViewModel>
 																																							where TGalleryViewModel : BaseGalleryViewModel
 	{
-		var route = GetPageRoute(typeof(TGalleryPage), typeof(TPage));
-		Routing.RegisterRoute(route, typeof(TPage));
-
 		return new KeyValuePair<Type, (Type GalleryPageType, Type ContentPageType)>(typeof(TViewModel), (typeof(TGalleryPage), typeof(TPage)));
 	}
 }

@@ -29,6 +29,9 @@ public class StateToBooleanConverter : BaseConverterOneWay<LayoutState, bool, La
 {
 	LayoutState stateToCompare = LayoutState.None;
 
+	/// <inheritdoc/>
+	public override bool DefaultConvertReturnValue { get; set; } = false;
+
 	/// <summary>
 	/// The <see cref="LayoutState"/> to compare to.
 	/// </summary>
