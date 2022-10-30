@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Android.Content;
-using Android.Runtime;
+﻿using Android.Media.Session;
 using Android.Widget;
 using Com.Google.Android.Exoplayer2;
 using Com.Google.Android.Exoplayer2.Audio;
@@ -13,11 +7,6 @@ using Com.Google.Android.Exoplayer2.Text;
 using Com.Google.Android.Exoplayer2.Trackselection;
 using Com.Google.Android.Exoplayer2.UI;
 using Com.Google.Android.Exoplayer2.Video;
-using Java.Interop;
-using static Com.Google.Android.Exoplayer2.IPlayer;
-using DeviceInfo = Com.Google.Android.Exoplayer2.DeviceInfo;
-using SkipSilenceEnabledChangedEventArgs = Com.Google.Android.Exoplayer2.IPlayer.SkipSilenceEnabledChangedEventArgs;
-using VideoSizeChangedEventArgs = Com.Google.Android.Exoplayer2.IPlayer.VideoSizeChangedEventArgs;
 
 namespace CommunityToolkit.Maui.MediaElement;
 
@@ -25,6 +14,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
 	StyledPlayerView? playerView;
 
+	// TODO: Make sure we don't need the both and make the StyledPlayerView as android PlatformView
 	public (PlatformMediaView platformView, StyledPlayerView playerView) CreatePlatformView()
 	{
 		ArgumentNullException.ThrowIfNull(mauiContext.Context);
@@ -75,8 +65,69 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		player.PlayWhenReady = false;
 		player.Prepare();
 	}
-	protected virtual partial void PlatformUpdateSource() { }
-	protected virtual partial void PlatformUpdateSpeed() { }
+	protected virtual partial void PlatformUpdateSource()
+	{
+		var hasSetSource = false;
+
+		if (player is null)
+		{
+			return;
+		}
+
+		if (mediaElement.Source is UriMediaSource)
+		{
+			string uri = (mediaElement.Source as UriMediaSource)!.Uri!.AbsoluteUri;
+			if (!string.IsNullOrWhiteSpace(uri))
+			{
+				//Com.Google.Android.Exoplayer2.Util.Util.InferContentType()
+				//var httpDataSourceFactory = new DefaultHttpDataSource.Factory();
+				//var mediaSource = new DashMediaSource.Factory(httpDataSourceFactory)
+				//.CreateMediaSource(MediaItem.FromUri(uri));
+
+				//player.SetMediaSource(mediaSource);
+
+				player.SetMediaItem(MediaItem.FromUri(uri));
+				player.Prepare();
+
+				hasSetSource = true;
+			}
+		}
+		else if (mediaElement.Source is FileMediaSource)
+		{
+			string filePath = (mediaElement.Source as FileMediaSource)!.File!;
+			if (!string.IsNullOrWhiteSpace(filePath))
+			{
+				player.SetMediaItem(MediaItem.FromUri(filePath));
+				player.Prepare();
+
+				hasSetSource = true;
+			}
+		}
+
+		if (hasSetSource && mediaElement.AutoPlay)
+		{
+			player.Play();
+		}
+	}
+
+	protected virtual partial void PlatformUpdateSpeed()
+	{
+		if (mediaElement is null || player is null)
+		{
+			return;
+		}
+
+		if (mediaElement.Speed > 0)
+		{
+			player.SetPlaybackSpeed((float)mediaElement.Speed);
+			player.Play();
+		}
+		else
+		{
+			player.Pause();
+		}
+	}
+
 	protected virtual partial void PlatformUpdateShowsPlaybackControls()
 	{
 		if (mediaElement is null || playerView is null)
@@ -98,8 +149,56 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			player.SeekTo((long)mediaElement.Position.TotalMilliseconds);
 		}
 	}
-	protected virtual partial void PlatformUpdateStatus() { }
-	protected virtual partial void PlatformUpdateVolume() { }
+
+	protected virtual partial void PlatformUpdateStatus()
+	{
+		if (mediaElement is null || player is null)
+		{
+			return;
+		}
+
+		var videoStatus = MediaElementState.Closed;
+
+		switch ((PlaybackStateCode)player.PlaybackState)
+		{
+			case PlaybackStateCode.Playing:
+				videoStatus = MediaElementState.Playing;
+				break;
+
+			case PlaybackStateCode.Paused:
+				videoStatus = MediaElementState.Paused;
+				break;
+
+			case PlaybackStateCode.Stopped:
+				videoStatus = MediaElementState.Stopped;
+				break;
+		}
+
+		mediaElement.CurrentState = videoStatus;
+
+		mediaElement.Position = TimeSpan.FromMilliseconds(player.CurrentPosition);
+	}
+
+	protected virtual partial void PlatformUpdateVolume()
+	{
+		if (mediaElement is null || player is null)
+		{
+			return;
+		}
+
+		player.Volume = (float)mediaElement.Volume;
+	}
+
+
+	protected virtual partial void PlatformUpdateIsLooping()
+	{
+		if (mediaElement is null || player is null)
+		{
+			return;
+		}
+
+		player.RepeatMode = mediaElement.IsLooping ? IPlayer.RepeatModeOne : IPlayer.RepeatModeOff;
+	}
 
 	#region IPlayer.IListener implementation method stubs
 	public void OnPlayerStateChanged(bool playWhenReady, int playbackState)

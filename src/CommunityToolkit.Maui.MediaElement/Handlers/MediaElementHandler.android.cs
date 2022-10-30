@@ -3,19 +3,20 @@ using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.MediaElement;
 
-public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaElement>
+public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaElement>, IDisposable
 {
 	MediaManager? mediaManager;
+
 	protected override MauiMediaElement CreatePlatformView()
 	{
 		mediaManager ??= new(MauiContext ?? throw new NullReferenceException(), VirtualView);
-		var (player, playerView) = mediaManager.CreatePlatformView();
-		return new(Context, player, VirtualView, playerView);
+		var (_, playerView) = mediaManager.CreatePlatformView();
+		return new(Context, playerView);
 	}
 
 	public static void MapIsLooping(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler?.PlatformView.UpdateIsLooping();
+		handler?.mediaManager?.UpdateIsLooping();
 	}
 
 	public static void MapPosition(MediaElementHandler handler, MediaElement mediaElement)
@@ -30,22 +31,22 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 
 	public static void MapSource(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler?.PlatformView.UpdateSource();
+		handler?.mediaManager?.UpdateSource();
 	}
 
 	public static void MapSpeed(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler?.PlatformView.UpdateSpeed();
+		handler?.mediaManager?.UpdateSpeed();
 	}
 
 	public static void MapUpdateStatus(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
-		handler.PlatformView?.UpdateStatus();
+		handler.mediaManager?.UpdateStatus();
 	}
 
 	public static void MapVolume(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler?.PlatformView.UpdateVolume();
+		handler?.mediaManager?.UpdateVolume();
 	}
 
 	public static void MapPlayRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
@@ -79,5 +80,15 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 
 		TimeSpan position = ((MediaPositionEventArgs)args).Position;
 		handler.mediaManager?.Stop(position);
+	}
+
+	public void Dispose()
+	{
+		Dispose(true);
+	}
+
+	protected virtual void Dispose(bool isDisposing)
+	{
+		GC.SuppressFinalize(this);
 	}
 }

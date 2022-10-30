@@ -62,6 +62,11 @@ public interface IMediaElement
 	bool ShowsPlaybackControls { get; set; }
 
 	/// <summary>
+	/// Gets or sets if the video will play when reaches the end.
+	/// </summary>
+	bool IsLooping { get; set; }
+
+	/// <summary>
 	/// The source of the media to play.
 	/// </summary>
 	MediaSource? Source { get; set; }

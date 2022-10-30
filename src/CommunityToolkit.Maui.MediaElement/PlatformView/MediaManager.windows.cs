@@ -153,6 +153,11 @@ partial class MediaManager
 		}
 	}
 
+	protected virtual partial void PlatformUpdateIsLooping()
+	{
+		// why this doesn't exist on WIndows?
+	}
+
 	void OnMediaPlayerMediaOpened(MediaPlayer sender, object args)
 	{
 		if (mediaElement is null || player is null)

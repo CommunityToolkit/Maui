@@ -72,6 +72,11 @@ public partial class MediaManager
 		PlatformUpdateVolume();
 	}
 
+	public void UpdateIsLooping()
+	{
+		PlatformUpdateIsLooping();
+	}
+
 	protected virtual partial void PlatformPlay(TimeSpan timeSpan);
 	protected virtual partial void PlatformPause(TimeSpan timeSpan);
 	protected virtual partial void PlatformStop(TimeSpan timeSpan);
@@ -81,6 +86,8 @@ public partial class MediaManager
 	protected virtual partial void PlatformUpdatePosition();
 	protected virtual partial void PlatformUpdateStatus();
 	protected virtual partial void PlatformUpdateVolume();
+	//TODO: Check if just android has support for this
+	protected virtual partial void PlatformUpdateIsLooping();
 }
 
 
@@ -128,6 +135,12 @@ partial class MediaManager
 	}
 
 	protected virtual partial void PlatformUpdateVolume()
+	{
+
+	}
+
+
+	protected virtual partial void PlatformUpdateIsLooping()
 	{
 
 	}
