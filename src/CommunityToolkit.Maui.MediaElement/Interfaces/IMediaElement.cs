@@ -3,7 +3,7 @@
 /// <summary>
 /// With MediaElement you can play multimedia inside of your app.
 /// </summary>
-public interface IMediaElement
+public interface IMediaElement : IView
 {
 	/// <summary>
 	/// Gets or sets whether the media should start playing as soon as it's loaded. Default is <see langword="false"/>.
