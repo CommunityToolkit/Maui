@@ -132,7 +132,8 @@ static class NamespaceSymbolExtensions
 					isFirstConstraint = false;
 				}
 
-				constraints.Append(contstraintType.GetFullTypeString());
+				var symbolDisplayFormat = new SymbolDisplayFormat(typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
+				constraints.Append(contstraintType.ToDisplayString(symbolDisplayFormat));
 			}
 
 			if (typeParameterSymbol.HasConstructorConstraint)
