@@ -134,6 +134,11 @@ static class NamespaceSymbolExtensions
 
 				var symbolDisplayFormat = new SymbolDisplayFormat(typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
 				constraints.Append(contstraintType.ToDisplayString(symbolDisplayFormat));
+
+				if (contstraintType.NullableAnnotation is NullableAnnotation.Annotated)
+				{
+					constraints.Append("?");
+				}
 			}
 
 			if (typeParameterSymbol.HasConstructorConstraint)
