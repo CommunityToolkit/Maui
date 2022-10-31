@@ -118,13 +118,9 @@ static class NamespaceSymbolExtensions
 					constraints.Append(", ");
 				}
 
-				var symbolDisplayFormat = new SymbolDisplayFormat(typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
+				var symbolDisplayFormat = new SymbolDisplayFormat(typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+																	miscellaneousOptions: SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
 				constraints.Append(contstraintType.ToDisplayString(symbolDisplayFormat));
-
-				if (contstraintType.NullableAnnotation is NullableAnnotation.Annotated)
-				{
-					constraints.Append("?");
-				}
 			}
 
 			if (typeParameterSymbol.HasConstructorConstraint)
