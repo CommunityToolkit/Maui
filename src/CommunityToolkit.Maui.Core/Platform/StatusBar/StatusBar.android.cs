@@ -1,14 +1,13 @@
-﻿using System.Diagnostics;
-using System.Runtime.Versioning;
+﻿using System.Runtime.Versioning;
 using Android.OS;
-using Android.Util;
 using Android.Views;
+using AndroidX.Core.View;
 using Microsoft.Maui.Platform;
 using Activity = Android.App.Activity;
 
 namespace CommunityToolkit.Maui.Core.Platform;
 
-[UnsupportedOSPlatform("Android"), SupportedOSPlatform("Android23.0")] // StatusBar is only supported on Android +23.0
+[SupportedOSPlatform("Android23.0")] // StatusBar is only supported on Android 23.0+
 static partial class StatusBar
 {
 	static Activity Activity => Microsoft.Maui.ApplicationModel.Platform.CurrentActivity ?? throw new InvalidOperationException("Android Activity can't be null.");
@@ -31,12 +30,12 @@ static partial class StatusBar
 		switch (style)
 		{
 			case StatusBarStyle.DarkContent:
-				AddBarAppearanceFlag(Activity, (StatusBarVisibility)SystemUiFlags.LightStatusBar);
+				SetStatusBarAppearance(Activity, true);
 				break;
 
 			case StatusBarStyle.Default:
 			case StatusBarStyle.LightContent:
-				RemoveBarAppearanceFlag(Activity, (StatusBarVisibility)SystemUiFlags.LightStatusBar);
+				SetStatusBarAppearance(Activity, false);
 				break;
 
 			default:
@@ -44,22 +43,11 @@ static partial class StatusBar
 		}
 	}
 
-	static void AddBarAppearanceFlag(Activity activity, StatusBarVisibility flag) =>
-		SetBarAppearance(activity, barAppearance => barAppearance |= flag);
-
-
-	static void RemoveBarAppearanceFlag(Activity activity, StatusBarVisibility flag) =>
-		SetBarAppearance(activity, barAppearance => barAppearance &= ~flag);
-
-
-	static void SetBarAppearance(Activity activity, Func<StatusBarVisibility, StatusBarVisibility> updateAppearance)
+	static void SetStatusBarAppearance(Activity activity, bool isLightStatusBars)
 	{
 		var window = GetCurrentWindow(activity);
-#pragma warning disable CS0618 // Type or member is obsolete
-		var appearance = window.DecorView.SystemUiVisibility;
-		appearance = updateAppearance(appearance);
-		window.DecorView.SystemUiVisibility = appearance;
-#pragma warning restore CS0618 // Type or member is obsolete
+		var windowController = WindowCompat.GetInsetsController(window, window.DecorView);
+		windowController.AppearanceLightStatusBars = isLightStatusBars;
 
 		static Window GetCurrentWindow(Activity activity)
 		{
