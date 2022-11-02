@@ -1,5 +1,6 @@
-﻿using CommunityToolkit.Maui.UnitTests.Extensions.TextStyle;
-using CommunityToolkit.Maui.UnitTests.Mocks;
+﻿using CommunityToolkit.Maui.UnitTests.Mocks;
+using Unique.Interface.Namespace.TextStyle;
+using Unique.Namespace.TextStyle;
 using Xunit;
 using Font = Microsoft.Maui.Font;
 
@@ -159,7 +160,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 	}
 }
 
-namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
+namespace Unique.Namespace.TextStyle
 {
 	public class PublicTextStyleView : View, ICustomTextStyle
 	{
@@ -181,11 +182,6 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
 
 	// Ensures custom ITextStyle interfaces are supported
 	interface ICustomTextStyle : ITextStyle
-	{
-
-	}
-
-	public interface ISomeInterface
 	{
 
 	}
@@ -255,5 +251,13 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
 		public Color TextColor { get; set; } = Colors.Transparent;
 
 		public Font Font { get; set; }
+	}
+}
+
+namespace Unique.Interface.Namespace.TextStyle
+{
+	public interface ISomeInterface
+	{
+
 	}
 }
