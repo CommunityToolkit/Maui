@@ -5,16 +5,6 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 
 public partial class StateContainerViewModel : BaseViewModel
 {
-	class StateKey
-	{
-		public const string Loading = "Loading";
-		public const string Success = "Success";
-		public const string Anything = "StateKey can be anything!";
-		public const string ReplaceGrid = "ReplaceGrid";
-		public const string NoAnimate = "NoAnimate";
-		public const string NotFound = "NotFoundExampleKey";
-	}
-
 	[ObservableProperty]
 	string? currentState;
 
@@ -34,67 +24,53 @@ public partial class StateContainerViewModel : BaseViewModel
 	async Task CycleStates()
 	{
 		CurrentState = StateKey.Loading;
-		await Task.Delay(2000);
+		await Task.Delay(2000).ConfigureAwait(false);
 
 		CurrentState = StateKey.Success;
-		await Task.Delay(2000);
+		await Task.Delay(2000).ConfigureAwait(false);
 
 		CurrentState = StateKey.Anything;
-		await Task.Delay(2000);
+		await Task.Delay(2000).ConfigureAwait(false);
 
 		// Setting state to empty string or null returns to the default content
 		CurrentState = string.Empty;
 	}
 
 	[RelayCommand]
-	void ToggleGridState()
+	void ToggleGridState() => GridState = GridState switch
 	{
-		if (GridState == StateKey.ReplaceGrid)
-		{
-			GridState = null;
-		}
-		else
-		{
-			GridState = StateKey.ReplaceGrid;
-		}
-	}
+		StateKey.ReplaceGrid => null,
+		_ => StateKey.ReplaceGrid
+	};
 
 	[RelayCommand]
-	void ToggleNoAnimateState()
+	void ToggleNoAnimateState() => NoAnimateState = NoAnimateState switch
 	{
-		if (NoAnimateState == StateKey.NoAnimate)
-		{
-			NoAnimateState = null;
-		}
-		else
-		{
-			NoAnimateState = StateKey.NoAnimate;
-		}
-	}
+		StateKey.NoAnimate => null,
+		_ => StateKey.NoAnimate
+	};
 
 	[RelayCommand]
-	void ToggleNotFoundState()
+	void ToggleNotFoundState() => NotFoundState = NotFoundState switch
 	{
-		if (NotFoundState == StateKey.NotFound)
-		{
-			NotFoundState = null;
-		}
-		else
-		{
-			NotFoundState = StateKey.NotFound;
-		}
-	}
+		StateKey.NotFound => null,
+		_ => StateKey.NotFound
+	};
 
 	[RelayCommand]
-	void ToggleFullPageState()
+	void ToggleFullPageState() => FullPageState = FullPageState switch
 	{
-		if (FullPageState == StateKey.Loading)
-		{
-			FullPageState = null;
-		}
-		else
-		{
-			FullPageState = StateKey.Loading;
-		}
+		StateKey.Loading => null,
+		_ => StateKey.Loading
+	};
+
+	static class StateKey
+	{
+		public const string Loading = "Loading";
+		public const string Success = "Success";
+		public const string Anything = "StateKey can be anything!";
+		public const string ReplaceGrid = "ReplaceGrid";
+		public const string NoAnimate = "NoAnimate";
+		public const string NotFound = "NotFoundExampleKey";
 	}
 }

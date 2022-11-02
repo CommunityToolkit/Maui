@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.Layouts;
+﻿using System.Linq.Expressions;
+
+namespace CommunityToolkit.Maui.Layouts;
 
 /// <summary>
 /// The <see cref="StateContainer"/> attached properties enable any <see cref="Layout"/> inheriting element to become state-aware.
@@ -73,21 +75,15 @@ public static class StateContainer
 			return;
 		}
 
-		try
+		var newState = (string)newValue;
+
+		if (string.IsNullOrEmpty(newState))
 		{
-			if (string.IsNullOrEmpty((string)newValue))
-			{
-				await GetContainerController(bindable).SwitchToContent(GetShouldAnimateOnStateChange(bindable));
-			}
-			else
-			{
-				await GetContainerController(bindable).SwitchToState((string)newValue, GetShouldAnimateOnStateChange(bindable));
-			}
+			await GetContainerController(bindable).SwitchToContent(GetShouldAnimateOnStateChange(bindable));
 		}
-		catch (OperationCanceledException)
+		else
 		{
-			// The state was changed before the current finished changing; abort
-			return;
+			await GetContainerController(bindable).SwitchToState(newState, GetShouldAnimateOnStateChange(bindable));
 		}
 	}
 
@@ -98,12 +94,20 @@ public static class StateContainer
 	{
 		if (bindable is not Layout layoutView)
 		{
-			throw new InvalidOperationException($"Cannot create the {nameof(StateContainerController)}. The specified view '{bindable.GetType().FullName}' does not inherit Layout.");
+			throw new StateContainerException($"Cannot create the {nameof(StateContainerController)}. The specified view '{bindable.GetType().FullName}' does not inherit Layout.");
 		}
 
 		return new StateContainerController(layoutView)
 		{
 			StateViews = GetStateViews(layoutView)
 		};
+	}
+}
+
+sealed class StateContainerException : InvalidOperationException
+{
+	public StateContainerException(string message) : base(message)
+	{
+
 	}
 }

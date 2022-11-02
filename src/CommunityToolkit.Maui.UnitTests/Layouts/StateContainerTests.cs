@@ -14,13 +14,6 @@ public class StateContainerTests : BaseTest
 		new Label() { Text = "Anything", HorizontalOptions = LayoutOptions.End, VerticalOptions = LayoutOptions.End },
 	};
 
-	class StateKey
-	{
-		public const string Loading = "LoadingStateKey";
-		public const string Error = "ErrorStateKey";
-		public const string Anything = "AnythingStateKey";
-	}
-
 	readonly VerticalStackLayout layout = new()
 	{
 		Children =
@@ -103,7 +96,7 @@ public class StateContainerTests : BaseTest
 	{
 		var invalidElement = new View();
 
-		var exception = Assert.Throws<InvalidOperationException>(() =>
+		var exception = Assert.Throws<StateContainerException>(() =>
 		{
 			// Use AsyncContext to test `async void` methods https://stackoverflow.com/a/14207615/5953643
 			AsyncContext.Run(() => StateContainer.SetCurrentState(invalidElement, "abc"));
@@ -152,11 +145,7 @@ public class StateContainerTests : BaseTest
 	[Fact]
 	public async Task Controller_ReturnsErrorLabelOnInvalidState()
 	{
-		await controller.SwitchToState("InvalidStateKey", false);
-		var label = controller.GetLayout().Children.First();
-
-		Assert.IsType<Label>(label);
-		Assert.StartsWith("View for InvalidStateKey not defined.", ((Label)label).Text);
+		await Assert.ThrowsAsync<StateContainerException>(() => controller.SwitchToState("InvalidStateKey", false));
 	}
 
 	[Fact]
@@ -243,4 +232,10 @@ public class StateContainerTests : BaseTest
 		Assert.Equal(((VerticalStackLayout)innerLayout).HorizontalOptions, ((Label)label).HorizontalOptions);
 	}
 
+	static class StateKey
+	{
+		public const string Loading = "LoadingStateKey";
+		public const string Error = "ErrorStateKey";
+		public const string Anything = "AnythingStateKey";
+	}
 }

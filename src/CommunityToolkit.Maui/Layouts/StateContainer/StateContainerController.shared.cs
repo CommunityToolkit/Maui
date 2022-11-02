@@ -151,7 +151,7 @@ sealed class StateContainerController : IDisposable
 	View GetViewForState(string state)
 	{
 		var view = StateViews.FirstOrDefault(x => StateView.GetStateKey(x) == state);
-		return view ?? (new Label { Text = $"View for {state} not defined." });
+		return view ?? throw new StateContainerException($"View for {state} not defined.");
 	}
 
 	[MemberNotNull(nameof(animationTokenSource))]
@@ -168,5 +168,4 @@ sealed class StateContainerController : IDisposable
 		animationTokenSource = new CancellationTokenSource();
 		return animationTokenSource.Token;
 	}
-
 }

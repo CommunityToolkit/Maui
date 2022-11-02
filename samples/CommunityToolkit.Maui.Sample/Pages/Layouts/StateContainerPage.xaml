@@ -137,9 +137,9 @@
                 <mct:StateContainer.StateViews>
                     <Border
                         mct:StateView.StateKey="NoAnimate"
-                        Stroke="Fuschia"
+                        Stroke="Fuchsia"
                         Style="{StaticResource BorderStyle}">
-                        <Label Text="Hi, I didn't animate." VerticalTextAlignment="Center" />
+                        <Label Text="Hi, I changed, but I didn't animate." VerticalTextAlignment="Center" />
                     </Border>
                 </mct:StateContainer.StateViews>
 
@@ -150,7 +150,14 @@
             </VerticalStackLayout>
 
             <Button Command="{Binding ToggleNotFoundStateCommand}" Text="Toggle Nonexistent State" />
-            <Label Text="A placeholder Label is presented when CurrentState doesn't have a matching StateKey." />
+            <Label TextColor="Red">
+                <Label.FormattedText>
+                    <FormattedString >
+                        <Span Text="Warning" FontAttributes="Bold"/>
+                        <Span Text=": A StateContainerException is thrown when a StateKey is not found"/>
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
 
             <VerticalStackLayout mct:StateContainer.CurrentState="{Binding NotFoundState}" mct:StateContainer.ShouldAnimateOnStateChange="True">
 
