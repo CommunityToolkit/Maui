@@ -9,7 +9,7 @@ public static class StateView
 	/// Backing BindableProperty for the <see cref="GetStateKey(BindableObject)"/> and <see cref="SetStateKey(BindableObject, string)"/> methods.
 	/// </summary>
 	public static readonly BindableProperty StateKeyProperty
-		= BindableProperty.CreateAttached("StateKey", typeof(string), typeof(IView), default(string));
+		= BindableProperty.CreateAttached("StateKey", typeof(string), typeof(IView), string.Empty);
 
 	/// <summary>
 	/// Set the StateKey property
