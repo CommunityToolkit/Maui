@@ -86,6 +86,7 @@ public partial class AppShell : Shell
 
 		// Add Layouts View Models
 		CreateViewModelMapping<DockLayoutPage, DockLayoutViewModel, LayoutsGalleryPage, LayoutsGalleryViewModel>(),
+		CreateViewModelMapping<StateContainerPage, StateContainerViewModel, LayoutsGalleryPage, LayoutsGalleryViewModel>(),
 		CreateViewModelMapping<UniformItemsLayoutPage, UniformItemsLayoutViewModel, LayoutsGalleryPage, LayoutsGalleryViewModel>(),
 
 		// Add Views View Models
