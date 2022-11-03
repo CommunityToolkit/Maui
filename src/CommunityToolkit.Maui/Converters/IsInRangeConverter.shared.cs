@@ -10,6 +10,9 @@ public sealed class IsInRangeConverter : IsInRangeConverter<object>
 /// <summary>Converts the incoming value to a <see cref="bool"/> indicating whether or not the value is within a range.</summary>
 public abstract class IsInRangeConverter<TObject> : BaseConverterOneWay<IComparable, object>
 {
+	/// <inheritdoc/>
+	public override object DefaultConvertReturnValue { get; set; } = new();
+
 	/// <summary>Minimum value.</summary>
 	public IComparable? Min { get; set; }
 
