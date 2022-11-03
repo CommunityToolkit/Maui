@@ -25,8 +25,7 @@ public partial class Popup
 			var view = (View?)virtualView.Content ?? throw new InvalidOperationException($"{nameof(IPopup.Content)} can't be null here.");
 			var contentPage = new ContentPage
 			{
-				Content = view,
-				Parent = Application.Current?.MainPage
+				Content = view
 			};
 
 			contentPage.SetBinding(BindingContextProperty, new Binding { Source = virtualView, Path = BindingContextProperty.PropertyName });

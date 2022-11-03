@@ -1,6 +1,4 @@
-﻿using System.Runtime.Versioning;
-
-namespace CommunityToolkit.Maui.Core.Platform;
+﻿namespace CommunityToolkit.Maui.Core.Platform;
 
 /// <summary>
 /// Class that hold the method to customize the StatusBar

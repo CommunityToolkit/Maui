@@ -14,7 +14,7 @@
 
         CornerRadius="{OnPlatform Default='25',
                                   Android='50',
-                                  UWP='50'}"
+                                  WinUI='50'}"
         HeightRequest="{OnPlatform Default='50',
                                    Android='100'}"
         WidthRequest="{OnPlatform Default='50',
