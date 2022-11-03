@@ -12,11 +12,15 @@ public class FolderPickerImplementation : IFolderPicker
 	/// <inheritdoc />
 	public async Task<Folder?> PickAsync(string initialPath, CancellationToken cancellationToken)
 	{
-		var documentPickerViewController = new UIDocumentPickerViewController(new[] { UTTypes.Folder });
-		documentPickerViewController.AllowsMultipleSelection = false;
-		documentPickerViewController.DirectoryUrl = NSUrl.FromString(initialPath);
+		var documentPickerViewController = new UIDocumentPickerViewController(new[] { UTTypes.Folder })
+		{
+			AllowsMultipleSelection = false,
+			DirectoryUrl = NSUrl.FromString(initialPath)
+		};
+
 		var currentViewController = Microsoft.Maui.Platform.UIApplicationExtensions.GetKeyWindow(UIApplication.SharedApplication)?.RootViewController;
 		var taskCompetedSource = new TaskCompletionSource<Folder?>();
+
 		documentPickerViewController.DidPickDocumentAtUrls += (s, e) =>
 		{
 			var path = e.Urls[0].AbsoluteString ?? throw new Exception("Path cannot be null");
@@ -27,11 +31,14 @@ public class FolderPickerImplementation : IFolderPicker
 			};
 			taskCompetedSource.SetResult(folder);
 		};
+
 		documentPickerViewController.WasCancelled += (s, e) =>
 		{
 			taskCompetedSource.SetResult(null);
 		};
+
 		currentViewController?.PresentViewController(documentPickerViewController, true, null);
+
 		return await taskCompetedSource.Task;
 	}
 

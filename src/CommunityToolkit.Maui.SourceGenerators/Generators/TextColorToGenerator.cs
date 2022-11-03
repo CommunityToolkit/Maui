@@ -1,4 +1,6 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Text;
 using CommunityToolkit.Maui.SourceGenerators.Extensions;
 using CommunityToolkit.Maui.SourceGenerators.Helpers;

@@ -9,24 +9,28 @@ namespace CommunityToolkit.Maui.Essentials;
 public partial class SaveFileDialogImplementation : ISaveFileDialog
 {
 	/// <inheritdoc/>
-	public async Task<bool> SaveAsync(string initialPath, string fileName, Stream stream,
-		CancellationToken cancellationToken)
+	public async Task<bool> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		var fileManager = NSFileManager.DefaultManager;
 		var fileUrl = fileManager.GetTemporaryDirectory().Append($"{Guid.NewGuid()}.{GetExtension(fileName)}", false);
 		await WriteStream(stream, fileUrl.Path ?? throw new Exception("Path cannot be null"), cancellationToken);
+
 		var documentPickerViewController = new UIDocumentPickerViewController(new[] { fileUrl });
-		var currentViewController = Microsoft.Maui.Platform.UIApplicationExtensions.GetKeyWindow(UIApplication.SharedApplication)?.RootViewController;
 		var taskCompetedSource = new TaskCompletionSource<bool>();
+
 		documentPickerViewController.DidPickDocumentAtUrls += (s, e) =>
 		{
 			taskCompetedSource.SetResult(true);
 		};
+
 		documentPickerViewController.WasCancelled += (s, e) =>
 		{
 			taskCompetedSource.SetResult(false);
 		};
+
+		var currentViewController = Microsoft.Maui.Platform.UIApplicationExtensions.GetKeyWindow(UIApplication.SharedApplication)?.RootViewController;
 		currentViewController?.PresentViewController(documentPickerViewController, true, null);
+
 		return await taskCompetedSource.Task;
 	}
 

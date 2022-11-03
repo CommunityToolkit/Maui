@@ -11,14 +11,17 @@ public class FolderPickerImplementation : IFolderPicker
 	public async Task<Folder?> PickAsync(string initialPath, CancellationToken cancellationToken)
 	{
 		var status = await Permissions.RequestAsync<Permissions.StorageRead>();
-		if (status == PermissionStatus.Granted)
+		if (status is not PermissionStatus.Granted)
 		{
-			var dialog = new FileFolderDialog(Platform.CurrentActivity, FileFolderDialog.FileSelectionMode.FolderChoose);
+			await Toast.Make("Storage permission is not granted").Show(cancellationToken);
+			return null;
+		}
+
+		try
+		{
+			var currentActivity = Platform.CurrentActivity ?? throw new InvalidOperationException($"{nameof(Platform.CurrentActivity)} cannot be null");
+			var dialog = new FileFolderDialog(Platform.CurrentActivity, FileSelectionMode.FolderChoose);
 			var path = await dialog.GetFileOrDirectoryAsync(initialPath);
-			if (string.IsNullOrEmpty(path))
-			{
-				return null;
-			}
 
 			return new Folder
 			{
@@ -26,9 +29,10 @@ public class FolderPickerImplementation : IFolderPicker
 				Name = new DirectoryInfo(path).Name
 			};
 		}
-
-		await Toast.Make("Storage permission is not granted").Show(cancellationToken);
-		return null;
+		catch (IOException)
+		{
+			return null;
+		}
 	}
 
 	/// <inheritdoc />
@@ -39,7 +43,7 @@ public class FolderPickerImplementation : IFolderPicker
 
 	static string GetExternalDirectory()
 	{
-		return Platform.CurrentActivity?.GetExternalFilesDir(null)
-			?.ParentFile?.ParentFile?.ParentFile?.ParentFile?.AbsolutePath ?? "/storage/emulated/0";
+		return Platform.CurrentActivity?.GetExternalFilesDir(null)?.ParentFile?.ParentFile?.ParentFile?.ParentFile?.AbsolutePath
+				?? "/storage/emulated/0";
 	}
 }

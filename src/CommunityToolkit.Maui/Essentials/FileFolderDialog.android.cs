@@ -1,4 +1,5 @@
-﻿using Android.App;
+﻿using System.ComponentModel;
+using Android.App;
 using Android.Content;
 using Android.Graphics;
 using Android.Util;
@@ -13,71 +14,54 @@ using View = Android.Views.View;
 
 namespace CommunityToolkit.Maui.Essentials;
 
-class FileFolderDialog : IDisposable
+enum FileSelectionMode
 {
-	public enum FileSelectionMode
-	{
-		FileOpen,
-		FileSave,
-		FolderChoose,
-		FileOpenRoot,
-		FileSaveRoot,
-		FolderChooseRoot
-	}
+	FileOpen,
+	FileSave,
+	FolderChoose,
+	FileOpenRoot,
+	FileSaveRoot,
+	FolderChooseRoot
+}
 
-	const int fileOpen = 0;
-	const int fileSave = 1;
-	const int folderChoose = 2;
+sealed class FileFolderDialog : IDisposable
+{
 	readonly Context? context;
-	readonly bool goToUpper;
+	readonly bool isRootSelectionMode;
 	readonly string? sdCardDirectory;
-	readonly int selectType;
+	readonly FileSelectionMode fileSelectionMode;
+
 	AutoResetEvent? autoResetEvent;
 	AlertDialog? dirsDialog;
 	EditText? inputText;
 
-	string mDir = "";
+	string directory = string.Empty;
 	ArrayAdapter<string>? listAdapter;
-	List<string>? subDirectories;
 	TextView? titleView;
 	TextView? titleView1;
-	string? result;
 	string selectedFileName;
 
 	//////////////////////////////////////////////////////
 	// Callback interface for selected directory
 	//////////////////////////////////////////////////////
 
-	public FileFolderDialog(Context? context, FileSelectionMode mode, string? fileName = "default", string? fileExtension = ".png")
+	public FileFolderDialog(Context context, FileSelectionMode mode, string fileName = "default", string fileExtension = ".png")
 	{
-		selectedFileName = fileName + fileExtension;
-		switch (mode)
+		ArgumentNullException.ThrowIfNull(context);
+		ArgumentNullException.ThrowIfNull(mode);
+		ArgumentNullException.ThrowIfNull(fileName);
+		ArgumentNullException.ThrowIfNull(fileExtension);
+
+		if (!Enum.IsDefined(typeof(FileSelectionMode), mode))
 		{
-			case FileSelectionMode.FileOpen:
-				selectType = fileOpen;
-				break;
-			case FileSelectionMode.FileSave:
-				selectType = fileSave;
-				break;
-			case FileSelectionMode.FolderChoose:
-				selectType = folderChoose;
-				break;
-			case FileSelectionMode.FileOpenRoot:
-				selectType = fileOpen;
-				goToUpper = true;
-				break;
-			case FileSelectionMode.FileSaveRoot:
-				selectType = fileSave;
-				goToUpper = true;
-				break;
-			case FileSelectionMode.FolderChooseRoot:
-				selectType = folderChoose;
-				goToUpper = true;
-				break;
-			default:
-				selectType = fileOpen;
-				break;
+			throw new InvalidEnumArgumentException($"{mode} is not valid for {nameof(FileSelectionMode)}.");
 		}
+
+		fileSelectionMode = mode;
+		selectedFileName = fileName + fileExtension;
+		isRootSelectionMode = mode is FileSelectionMode.FileOpenRoot
+									or FileSelectionMode.FileSaveRoot
+									or FileSelectionMode.FolderChooseRoot;
 
 		this.context = context;
 		sdCardDirectory = Environment.RootDirectory.AbsolutePath;
@@ -91,7 +75,6 @@ class FileFolderDialog : IDisposable
 		}
 	}
 
-
 	public void Dispose()
 	{
 		autoResetEvent?.Dispose();
@@ -100,91 +83,86 @@ class FileFolderDialog : IDisposable
 		titleView1?.Dispose();
 	}
 
-	public async Task<string?> GetFileOrDirectoryAsync(string? dir, string defaultFileName = "default")
+	public async Task<string> GetFileOrDirectoryAsync(string directory, string defaultFileName = "default")
 	{
-		if (dir is null)
-		{
-			return null;
-		}
+		ArgumentNullException.ThrowIfNull(directory);
+		ArgumentNullException.ThrowIfNull(defaultFileName);
 
-		var dirFile = new File(dir);
-		while (!dirFile.Exists() || !dirFile.IsDirectory)
+		string? result = null;
+
+		var directoryFile = new File(directory);
+		while (!directoryFile.Exists() || !directoryFile.IsDirectory)
 		{
-			dir = dirFile.Parent;
-			if (dir == null)
+			if (directoryFile.Parent is null)
 			{
-				return null;
+				throw new FileNotFoundException($"Could not locate {directoryFile}");
 			}
 
-			dirFile = new File(dir);
-			Log.Debug("~~~~~", "dir=" + dir);
+			directoryFile = new File(directory);
+			Log.Debug("~~~~~", $"{nameof(directory)}={directory}");
 		}
 
-		Log.Debug("~~~~~", "dir=" + dir);
-		try
-		{
-			dir = new File(dir).CanonicalPath;
-		}
-		catch (IOException)
-		{
-			return result;
-		}
+		Log.Debug("~~~~~", $"{nameof(directory)}={directory}");
 
-		mDir = dir;
-		subDirectories = GetDirectories(dir);
+		directory = new File(directory).CanonicalPath;
 
-		var dialogBuilder = CreateDirectoryChooserDialog(dir, subDirectories, (sender, args) =>
+		this.directory = directory;
+		var subDirectories = GetDirectories(directory);
+
+		var dialogBuilder = CreateDirectoryChooserDialog(directory, subDirectories, (sender, args) =>
 		{
-			var mDirOld = mDir;
-			var sel = "" + ((AlertDialog?)sender)?.ListView?.Adapter?.GetItem(args.Which);
-			if (sel[^1] == '/')
+			var mDirOld = this.directory;
+			var selection = ((AlertDialog?)sender)?.ListView?.Adapter?.GetItem(args.Which)?.ToString() ?? string.Empty;
+			if (selection[^1] is '/')
 			{
-				sel = sel.Substring(0, sel.Length - 1);
+				selection = selection[..^1];
 			}
 
 			// Navigate into the sub-directory
-			if (sel.Equals("..", StringComparison.Ordinal))
+			if (selection.Equals("..", StringComparison.Ordinal))
 			{
-				mDir = mDir.Substring(0, mDir.LastIndexOf("/", StringComparison.Ordinal));
-				if ("".Equals(mDir, StringComparison.Ordinal))
+				this.directory = this.directory[..this.directory.LastIndexOf("/", StringComparison.Ordinal)];
+				if (this.directory.Equals(string.Empty, StringComparison.Ordinal))
 				{
-					mDir = "/";
+					this.directory = "/";
 				}
 			}
 			else
 			{
-				mDir += "/" + sel;
+				this.directory += "/" + selection;
 			}
 
 			selectedFileName = defaultFileName;
 
-			if (new File(mDir).IsFile) // If the selection is a regular file
+			if (new File(this.directory).IsFile) // If the selection is a regular file
 			{
-				mDir = mDirOld;
-				selectedFileName = sel;
+				this.directory = mDirOld;
+				selectedFileName = selection;
 			}
 
-			UpdateDirectory();
+			UpdateDirectory(subDirectories);
 		});
+
 		dialogBuilder.SetPositiveButton("OK", (_, _) =>
 		{
 			// Current directory chosen
 			// Call registered listener supplied with the chosen directory
-
+			if (fileSelectionMode is FileSelectionMode.FileOpen
+										or FileSelectionMode.FileOpenRoot
+										or FileSelectionMode.FileSave
+										or FileSelectionMode.FileSaveRoot)
 			{
-				if (selectType is fileOpen or fileSave)
-				{
-					selectedFileName = inputText?.Text + "";
-					result = mDir + "/" + selectedFileName;
-					autoResetEvent?.Set();
-				}
-				else
-				{
-					result = mDir;
-					autoResetEvent?.Set();
-				}
+				selectedFileName = inputText?.Text + "";
+				result = this.directory + '/' + selectedFileName;
+				autoResetEvent?.Set();
+			}
+			else
+			{
+				result = this.directory;
+				autoResetEvent?.Set();
 			}
 		});
+
 		dialogBuilder.SetNegativeButton("Cancel", (_, _) => { });
 		dirsDialog = dialogBuilder.Create();
 
@@ -197,9 +175,9 @@ class FileFolderDialog : IDisposable
 			dirsDialog.Show();
 		}
 
-		await Task.Run(() => { autoResetEvent?.WaitOne(); });
+		await Task.Run(() => autoResetEvent?.WaitOne());
 
-		return result;
+		return result ?? throw new FileNotFoundException($"Could not locate {directoryFile}");
 	}
 
 
@@ -211,35 +189,38 @@ class FileFolderDialog : IDisposable
 
 	List<string> GetDirectories(string dir)
 	{
-		var dirs = new List<string>();
+		var directories = new List<string>();
 		try
 		{
-			var dirFile = new File(dir);
+			var directoryFile = new File(dir);
 
 			// if directory is not the base sd card directory add ".." for going up one directory
-			if ((goToUpper || !mDir.Equals(sdCardDirectory, StringComparison.Ordinal)) &&
-				!"/".Equals(mDir, StringComparison.Ordinal))
+			if ((isRootSelectionMode || !directory.Equals(sdCardDirectory, StringComparison.Ordinal)) &&
+				!("/".Equals(directory, StringComparison.Ordinal)))
 			{
-				dirs.Add("..");
+				directories.Add("..");
 			}
 
-			Log.Debug("~~~~", "m_dir=" + mDir);
-			if (!dirFile.Exists() || !dirFile.IsDirectory)
+			Log.Debug("~~~~", "m_dir=" + directory);
+			if (!directoryFile.Exists() || !directoryFile.IsDirectory)
 			{
-				return dirs;
+				return directories;
 			}
 
-			foreach (var file in dirFile.ListFiles() ?? Array.Empty<File>())
+			foreach (var file in directoryFile.ListFiles() ?? Array.Empty<File>())
 			{
 				if (file.IsDirectory)
 				{
 					// Add "/" to directory names to identify them in the list
-					dirs.Add(file.Name + "/");
+					directories.Add(file.Name + "/");
 				}
-				else if (selectType is fileSave or fileOpen)
+				else if (fileSelectionMode is FileSelectionMode.FileOpen
+												or FileSelectionMode.FileOpenRoot
+												or FileSelectionMode.FileSave
+												or FileSelectionMode.FileSaveRoot)
 				{
 					// Add file names to the list if we are doing a file save or file open operation
-					dirs.Add(file.Name);
+					directories.Add(file.Name);
 				}
 			}
 		}
@@ -248,8 +229,8 @@ class FileFolderDialog : IDisposable
 			// ignored
 		}
 
-		dirs.Sort();
-		return dirs;
+		directories.Sort();
+		return directories;
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -264,47 +245,47 @@ class FileFolderDialog : IDisposable
 		////////////////////////////////////////////////
 		// Create title text showing file select type // 
 		////////////////////////////////////////////////
-		titleView1 = new TextView(context);
-		titleView1.LayoutParameters =
-			new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
-		//m_titleView1.setTextAppearance(m_context, android.R.style.TextAppearance_Large);
-		//m_titleView1.setTextColor( m_context.getResources().getColor(android.R.color.black) );
-
-		if (selectType == fileOpen)
+		titleView1 = new TextView(context)
 		{
-			titleView1.Text = "Open";
-		}
+			LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent),
 
-		if (selectType == fileSave)
-		{
-			titleView1.Text = "Save As";
-		}
+			//m_titleView1.setTextAppearance(m_context, android.R.style.TextAppearance_Large);
+			//m_titleView1.setTextColor( m_context.getResources().getColor(android.R.color.black) );
+			Text = fileSelectionMode switch
+			{
+				FileSelectionMode.FileOpen or FileSelectionMode.FileOpenRoot => "Open",
+				FileSelectionMode.FileSave or FileSelectionMode.FileSaveRoot => "Save As",
+				FileSelectionMode.FolderChoose or FileSelectionMode.FolderChooseRoot => "Select Folder",
+				_ => throw new NotSupportedException($"{fileSelectionMode} is not yet supported")
+			},
 
-		if (selectType == folderChoose)
-		{
-			titleView1.Text = "Select folder";
-		}
+			//need to make this a variable Save as, Open, Select Directory
+			Gravity = GravityFlags.CenterVertical
+		};
 
-		//need to make this a variable Save as, Open, Select Directory
-		titleView1.Gravity = GravityFlags.CenterVertical;
 		//_mTitleView1.SetBackgroundColor(Color.DarkGray); // dark gray 	-12303292
 		titleView1.SetTextColor(Color.Black);
 		titleView1.SetTextSize(ComplexUnitType.Dip, 18);
 		titleView1.SetTypeface(null, TypefaceStyle.Bold);
+
 		// Create custom view for AlertDialog title
-		var titleLayout1 = new LinearLayout(context);
-		titleLayout1.Orientation = Orientation.Vertical;
+		var titleLayout1 = new LinearLayout(context)
+		{
+			Orientation = Orientation.Vertical
+		};
 		titleLayout1.AddView(titleView1);
 
-		if (selectType == fileSave)
+		if (fileSelectionMode is FileSelectionMode.FileSave)
 		{
 			///////////////////////////////
 			// Create New Folder Button  //
 			///////////////////////////////
-			var newDirButton = new Button(context);
-			newDirButton.LayoutParameters =
-				new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
-			newDirButton.Text = "New Folder";
+			var newDirButton = new Button(context)
+			{
+				LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent),
+				Text = "New Folder"
+			};
+
 			newDirButton.Click += (_, _) =>
 			{
 				var input = new EditText(context);
@@ -314,11 +295,11 @@ class FileFolderDialog : IDisposable
 					{
 						var newDirName = input.Text;
 						// Create new directory
-						if (CreateSubDir(mDir + "/" + newDirName))
+						if (CreateSubDir(directory + "/" + newDirName))
 						{
 							// Navigate into the new directory
-							mDir += "/" + newDirName;
-							UpdateDirectory();
+							directory += "/" + newDirName;
+							UpdateDirectory(listItems);
 						}
 						else
 						{
@@ -337,36 +318,46 @@ class FileFolderDialog : IDisposable
 		/////////////////////////////////////////////////////
 		// Create View with folder path and entry text box // 
 		/////////////////////////////////////////////////////
-		var titleLayout = new LinearLayout(context);
-		titleLayout.Orientation = Orientation.Vertical;
+		var titleLayout = new LinearLayout(context)
+		{
+			Orientation = Orientation.Vertical
+		};
 
 
-		var currentSelection = new TextView(context);
-		currentSelection.LayoutParameters =
-			new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+		var currentSelection = new TextView(context)
+		{
+			LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent),
+			Gravity = GravityFlags.CenterVertical,
+			Text = "Current selection:"
+		};
 		currentSelection.SetTextColor(Color.Black);
-		currentSelection.Gravity = GravityFlags.CenterVertical;
-		currentSelection.Text = "Current selection:";
 		currentSelection.SetTextSize(ComplexUnitType.Dip, 12);
 		currentSelection.SetTypeface(null, TypefaceStyle.Bold);
 
 		titleLayout.AddView(currentSelection);
 
-		titleView = new TextView(context);
-		titleView.LayoutParameters =
-			new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+		titleView = new TextView(context)
+		{
+			Gravity = GravityFlags.CenterVertical,
+			Text = title,
+			LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent)
+		};
 		titleView.SetTextColor(Color.Black);
-		titleView.Gravity = GravityFlags.CenterVertical;
-		titleView.Text = title;
 		titleView.SetTextSize(ComplexUnitType.Dip, 10);
 		titleView.SetTypeface(null, TypefaceStyle.Normal);
 
 		titleLayout.AddView(titleView);
 
-		if (selectType is fileOpen or fileSave)
+		if (fileSelectionMode is FileSelectionMode.FileOpen
+									or FileSelectionMode.FileOpenRoot
+									or FileSelectionMode.FileSave
+									or FileSelectionMode.FileSaveRoot)
 		{
-			inputText = new EditText(context);
-			inputText.Text = defaultFileName;
+			inputText = new EditText(context)
+			{
+				Text = defaultFileName
+			};
+
 			titleLayout.AddView(inputText);
 		}
 
@@ -378,27 +369,32 @@ class FileFolderDialog : IDisposable
 		listAdapter = CreateListAdapter(listItems);
 		dialogBuilder.SetSingleChoiceItems(listAdapter, -1, onClickListener);
 		dialogBuilder.SetCancelable(true);
+
 		return dialogBuilder;
 	}
 
-
-	void UpdateDirectory()
+	void UpdateDirectory(in List<string> subDirectories)
 	{
-		subDirectories?.Clear();
-		subDirectories?.AddRange(GetDirectories(mDir));
-		if (titleView != null)
+		subDirectories.Clear();
+		subDirectories.AddRange(GetDirectories(directory));
+
+		if (titleView is not null)
 		{
-			titleView.Text = mDir;
+			titleView.Text = directory;
 		}
 
-		if (dirsDialog?.ListView != null)
+		if (dirsDialog?.ListView is not null)
 		{
 			dirsDialog.ListView.Adapter = null;
 			dirsDialog.ListView.Adapter = CreateListAdapter(subDirectories);
 		}
 
 		//#scorch
-		if (selectType is fileSave or fileOpen && inputText != null)
+		if (inputText is not null
+			&& fileSelectionMode is FileSelectionMode.FileOpen
+									or FileSelectionMode.FileOpenRoot
+									or FileSelectionMode.FileSave
+									or FileSelectionMode.FileSaveRoot)
 		{
 			inputText.Text = selectedFileName;
 		}
