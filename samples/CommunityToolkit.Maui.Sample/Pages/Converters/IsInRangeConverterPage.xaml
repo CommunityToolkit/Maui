@@ -90,7 +90,7 @@
                     <Label
                         Grid.Column="1"
                         Padding="4,0"
-                        Style="{Binding Source={x:Reference EntryText}, Path=Text, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, Min={StaticResource StringInRangeMin}, Max={StaticResource StringInRangeMax}}}" />
+                        Style="{Binding Source={x:Reference EntryText}, Path=Text, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, MinValue={StaticResource StringInRangeMin}, MaxValue={StaticResource StringInRangeMax}}}" />
                     <Label Grid.Row="1">
                         <Label.FormattedText>
                             <FormattedString>
@@ -104,7 +104,7 @@
                         Grid.Row="1"
                         Grid.Column="1"
                         Padding="4,0"
-                        Style="{Binding Source={x:Reference EntryText}, Path=Text, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, Min={StaticResource StringGreaterThanMin}}}" />
+                        Style="{Binding Source={x:Reference EntryText}, Path=Text, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, MinValue={StaticResource StringGreaterThanMin}}}" />
                     <Label Grid.Row="2">
                         <Label.FormattedText>
                             <FormattedString>
@@ -118,7 +118,7 @@
                         Grid.Row="2"
                         Grid.Column="1"
                         Padding="4,0"
-                        Style="{Binding Source={x:Reference EntryText}, Path=Text, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, Max={StaticResource StringLessThanMax}}}" />
+                        Style="{Binding Source={x:Reference EntryText}, Path=Text, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, MaxValue={StaticResource StringLessThanMax}}}" />
                 </Grid>
                 <Line Style="{StaticResource HR}" />
                 <HorizontalStackLayout Margin="0,16,0,0">
@@ -156,7 +156,7 @@
                     <Label
                         Grid.Column="1"
                         Padding="4,0"
-                        Style="{Binding Source={x:Reference StepperSource}, Path=Value, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, Min={StaticResource DoubleMin}, Max={StaticResource DoubleMax}}}" />
+                        Style="{Binding Source={x:Reference StepperSource}, Path=Value, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, MinValue={StaticResource DoubleMin}, MaxValue={StaticResource DoubleMax}}}" />
                     <Label Grid.Row="1">
                         <Label.FormattedText>
                             <FormattedString>
@@ -170,7 +170,7 @@
                         Grid.Row="1"
                         Grid.Column="1"
                         Padding="4,0"
-                        Style="{Binding Source={x:Reference StepperSource}, Path=Value, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, Min={StaticResource DoubleMin}}}" />
+                        Style="{Binding Source={x:Reference StepperSource}, Path=Value, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, MinValue={StaticResource DoubleMin}}}" />
                     <Label Grid.Row="2">
                         <Label.FormattedText>
                             <FormattedString>
@@ -184,7 +184,7 @@
                         Grid.Row="2"
                         Grid.Column="1"
                         Padding="4,0"
-                        Style="{Binding Source={x:Reference StepperSource}, Path=Value, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, Max={StaticResource DoubleMax}}}" />
+                        Style="{Binding Source={x:Reference StepperSource}, Path=Value, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, MaxValue={StaticResource DoubleMax}}}" />
                 </Grid>
                 <Line Style="{StaticResource HR}" />
                 <HorizontalStackLayout Margin="0,16,0,0">
@@ -218,7 +218,7 @@
                     <Label
                         Grid.Column="1"
                         Padding="4,0"
-                        Style="{Binding Source={x:Reference TimePickerSource}, Path=Time, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, Min={StaticResource TimeSpanMin}, Max={StaticResource TimeSpanMax}}}" />
+                        Style="{Binding Source={x:Reference TimePickerSource}, Path=Time, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, MinValue={StaticResource TimeSpanMin}, MaxValue={StaticResource TimeSpanMax}}}" />
                     <Label Grid.Row="1">
                         <Label.FormattedText>
                             <FormattedString>
@@ -232,7 +232,7 @@
                         Grid.Row="1"
                         Grid.Column="1"
                         Padding="4,0"
-                        Style="{Binding Source={x:Reference TimePickerSource}, Path=Time, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, Min={StaticResource TimeSpanMin}}}" />
+                        Style="{Binding Source={x:Reference TimePickerSource}, Path=Time, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, MinValue={StaticResource TimeSpanMin}}}" />
                     <Label Grid.Row="2">
                         <Label.FormattedText>
                             <FormattedString>
@@ -246,7 +246,7 @@
                         Grid.Row="2"
                         Grid.Column="1"
                         Padding="4,0"
-                        Style="{Binding Source={x:Reference TimePickerSource}, Path=Time, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, Max={StaticResource TimeSpanMax}}}" />
+                        Style="{Binding Source={x:Reference TimePickerSource}, Path=Time, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, MaxValue={StaticResource TimeSpanMax}}}" />
                 </Grid>
                 <Line Margin="0,16,0,0" Style="{StaticResource HR}" />
                 <HorizontalStackLayout>
@@ -284,7 +284,7 @@
                     <Label
                         Grid.Column="1"
                         Padding="4,0"
-                        Style="{Binding CharIsInRange, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, Min={StaticResource CharMin}, Max={StaticResource CharMax}}}" />
+                        Style="{Binding CharIsInRange, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, MinValue={StaticResource CharMin}, MaxValue={StaticResource CharMax}}}" />
                     <Label Grid.Row="1">
                         <Label.FormattedText>
                             <FormattedString>
@@ -298,7 +298,7 @@
                         Grid.Row="1"
                         Grid.Column="1"
                         Padding="4,0"
-                        Style="{Binding CharIsInRange, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, Min={StaticResource CharMin}}}" />
+                        Style="{Binding CharIsInRange, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, MinValue={StaticResource CharMin}}}" />
                     <Label Grid.Row="2">
                         <Label.FormattedText>
                             <FormattedString>
@@ -312,7 +312,7 @@
                         Grid.Row="2"
                         Grid.Column="1"
                         Padding="4,0"
-                        Style="{Binding CharIsInRange, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, Max={StaticResource CharMax}}}" />
+                        Style="{Binding CharIsInRange, Mode=OneWay, Converter={mct:IsInRangeConverter TrueObject={StaticResource TrueLabel}, FalseObject={StaticResource FalseLabel}, MaxValue={StaticResource CharMax}}}" />
                 </Grid>
             </VerticalStackLayout>
         </ScrollView>
