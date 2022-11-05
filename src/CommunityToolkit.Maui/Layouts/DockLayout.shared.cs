@@ -4,19 +4,29 @@ using Microsoft.Maui.Layouts;
 
 namespace CommunityToolkit.Maui.Layouts;
 
-/// <summary>DockLayout positions its child elements along the edges of the layout container.</summary>
+/// <summary>
+/// DockLayout positions its child elements along the edges of the layout container.
+/// </summary>
 public class DockLayout : Layout, IDockLayout
 {
-	/// <summary>Docking position for a view.</summary>
+	/// <summary>
+	/// Docking position for a view.
+	/// </summary>
 	public static readonly BindableProperty DockPositionProperty = BindableProperty.Create(nameof(DockPosition), typeof(DockPosition), typeof(DockLayout), DockPosition.None);
 
-	/// <summary>If true, the last child is expanded to fill the remaining space (default: true).</summary>
+	/// <summary>
+	/// If true, the last child is expanded to fill the remaining space (default: true).
+	/// </summary>
 	public static readonly BindableProperty ShouldExpandLastChildProperty = BindableProperty.Create(nameof(ShouldExpandLastChild), typeof(bool), typeof(DockLayout), true);
 
-	/// <summary>Horizontal spacing between docked views.</summary>
+	/// <summary>
+	/// Horizontal spacing between docked views.
+	/// </summary>
 	public static readonly BindableProperty HorizontalSpacingProperty = BindableProperty.Create(nameof(HorizontalSpacing), typeof(double), typeof(DockLayout), 0.0);
 
-	/// <summary>Vertical spacing between docked views.</summary>
+	/// <summary>
+	/// Vertical spacing between docked views.
+	/// </summary>
 	public static readonly BindableProperty VerticalSpacingProperty = BindableProperty.Create(nameof(VerticalSpacing), typeof(double), typeof(DockLayout), 0.0);
 
 	/// <inheritdoc/>
@@ -40,13 +50,17 @@ public class DockLayout : Layout, IDockLayout
 		set => SetValue(VerticalSpacingProperty, value);
 	}
 
-	/// <summary>Gets the docking position for a view.</summary>
+	/// <summary>
+	/// Gets the docking position for a view.
+	/// </summary>
 	public static DockPosition GetDockPosition(BindableObject view)
 	{
 		return (DockPosition)view.GetValue(DockPositionProperty);
 	}
 
-	/// <summary>Sets the docking position for a view.</summary>
+	/// <summary>
+	/// Sets the docking position for a view.
+	/// </summary>
 	public static void SetDockPosition(BindableObject view, DockPosition value)
 	{
 		view.SetValue(DockPositionProperty, value);
