@@ -54,7 +54,7 @@ public class UniformItemsLayout : Layout, IUniformItemsLayout
 			SetValue(MaxColumnsProperty, value);
 		}
 	}
-	
+
 	/// <inheritdoc	/>
 	protected override ILayoutManager CreateLayoutManager() => new UniformItemsLayoutManager(this);
 }

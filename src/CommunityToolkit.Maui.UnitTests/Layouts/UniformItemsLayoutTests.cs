@@ -65,7 +65,7 @@ public class UniformItemsLayoutTests : BaseTest
 		var expectedSize = new Size(childWidth, childHeight * childCount);
 		var childSize = new Size(childWidth, childHeight);
 		uniformChild = new TestView(childSize);
-		
+
 		var actualSize = uniformItemsLayout.CrossPlatformMeasure(childWidth, childHeight * childCount);
 
 		Assert.Equal(expectedSize, actualSize);

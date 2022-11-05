@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Core.Layouts;
 public class UniformItemsLayoutManager : LayoutManager
 {
 	double childWidth, childHeight;
-	
+
 	readonly IUniformItemsLayout uniformItemsLayout;
 
 	/// <summary>
@@ -19,7 +19,7 @@ public class UniformItemsLayoutManager : LayoutManager
 	{
 		this.uniformItemsLayout = uniformItemsLayout;
 	}
-	
+
 	/// <summary>
 	/// Arrange children
 	/// </summary>
@@ -75,7 +75,7 @@ public class UniformItemsLayoutManager : LayoutManager
 
 		return new Size(columns * childWidth + uniformItemsLayout.Padding.HorizontalThickness, rows * childHeight + uniformItemsLayout.Padding.VerticalThickness);
 	}
-	
+
 	int GetColumnsCount(int visibleChildrenCount, double widthConstraint)
 	{
 		var columnsCount = visibleChildrenCount;
