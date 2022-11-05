@@ -133,7 +133,7 @@ sealed class GestureManager : IDisposable
 
 		var isToggled = sender.IsToggled;
 
-		if (sender.Element != null)
+		if (sender.Element is not null)
 		{
 			UpdateVisualState(sender.Element, state, hoverState);
 		}
@@ -160,9 +160,10 @@ sealed class GestureManager : IDisposable
 		{
 			if (isToggled.HasValue)
 			{
-				state =
-					(status == TouchStatus.Started && isToggled.Value) ||
-					(status != TouchStatus.Started && !isToggled.Value)
+				Console.WriteLine($"Touch state: {status}");
+				var r = (status == TouchStatus.Started && isToggled.Value) ||
+					(status != TouchStatus.Started && !isToggled.Value);
+				state = r
 					? TouchState.Normal
 					: TouchState.Pressed;
 			}
