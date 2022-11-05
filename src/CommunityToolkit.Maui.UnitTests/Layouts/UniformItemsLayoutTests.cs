@@ -54,7 +54,7 @@ public class UniformItemsLayoutTests : BaseTest
 		var childSize = new Size(childWidth, childHeight);
 		uniformChild = new TestView(childSize);
 
-		var actualSize = uniformItemsLayout.Measure(childWidth * childCount, childHeight * childCount);
+		var actualSize = uniformItemsLayout.CrossPlatformMeasure(childWidth * childCount, childHeight * childCount);
 
 		Assert.Equal(expectedSize, actualSize);
 	}
@@ -65,8 +65,8 @@ public class UniformItemsLayoutTests : BaseTest
 		var expectedSize = new Size(childWidth, childHeight * childCount);
 		var childSize = new Size(childWidth, childHeight);
 		uniformChild = new TestView(childSize);
-
-		var actualSize = uniformItemsLayout.Measure(childWidth, childHeight * childCount);
+		
+		var actualSize = uniformItemsLayout.CrossPlatformMeasure(childWidth, childHeight * childCount);
 
 		Assert.Equal(expectedSize, actualSize);
 	}
@@ -80,20 +80,7 @@ public class UniformItemsLayoutTests : BaseTest
 		uniformItemsLayout.MaxColumns = 1;
 		uniformItemsLayout.MaxRows = 1;
 
-		var actualSize = uniformItemsLayout.Measure(double.PositiveInfinity, double.PositiveInfinity);
-
-		Assert.Equal(expectedSize, actualSize);
-	}
-
-	[Fact]
-	public void ArrangeChildrenUniformItemsLayout()
-	{
-		var expectedSize = new Size(childWidth, childHeight);
-		uniformChild = new TestView(expectedSize);
-		uniformItemsLayout.Measure(double.PositiveInfinity, double.PositiveInfinity);
-		var rect = new Rect(0, 0, childWidth * childCount, childHeight * childCount);
-		uniformItemsLayout.Layout(rect);
-		var actualSize = uniformItemsLayout.ArrangeChildren(rect);
+		var actualSize = uniformItemsLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
 
 		Assert.Equal(expectedSize, actualSize);
 	}

@@ -1,15 +1,17 @@
-﻿using CommunityToolkit.Maui.Core.Interfaces;
-
-using Microsoft.Maui.Layouts;
+﻿using Microsoft.Maui.Layouts;
 
 namespace CommunityToolkit.Maui.Core.Layouts;
 
-/// <summary>LayoutManager for <see cref="IDockLayout"/>.</summary>
-public class DockLayoutManager : LayoutManager, IDockLayoutManager
+/// <summary>
+/// LayoutManager for <see cref="IDockLayout"/>.
+/// </summary>
+public class DockLayoutManager : LayoutManager
 {
 	readonly IDockLayout dockLayout;
 
-	/// <summary>Initialize a new instance of <see cref="DockLayoutManager"/>.</summary>
+	/// <summary>
+	/// Initialize a new instance of <see cref="DockLayoutManager"/>.
+	/// </summary>
 	public DockLayoutManager(IDockLayout dockLayout)
 		: base(dockLayout)
 	{
