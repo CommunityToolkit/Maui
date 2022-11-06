@@ -44,7 +44,7 @@ public class ExpanderPageCS : ContentPage
 				 .Assign(out expander),
 
 				new Picker() { ItemsSource = Enum.GetValues<ExpandDirection>(), Title = "Direction" }
-					.CenterHorizontal()
+					.CenterHorizontal().TextCenter()
 					.Invoke(picker => picker.SelectedIndexChanged += HandleSelectedIndexChanged),
 			}
 		};
