@@ -150,6 +150,7 @@ public class Expander : ContentView, IExpander
 					grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
 					grid.SetRow(expanderContent, 1);
 				}
+
 				break;
 
 			case ExpandDirection.Up:
@@ -166,6 +167,7 @@ public class Expander : ContentView, IExpander
 					grid.RowDefinitions.Add(new RowDefinition());
 					grid.SetRow(expanderHeader, 0);
 				}
+
 				break;
 		}
 
@@ -203,8 +205,15 @@ public class Expander : ContentView, IExpander
 		}
 	}
 
-	void IExpander.ExpandedChanged(bool isExpanded) =>
+	void IExpander.ExpandedChanged(bool isExpanded)
+	{
+		if(Command?.CanExecute(CommandParameter) is true)
+		{
+			Command.Execute(CommandParameter);
+		}
+
 		tappedEventManager.HandleEvent(this, new Core.ExpandedChangedEventArgs(isExpanded), nameof(ExpandedChanged));
+	}
 
 	void UpdateExpander()
 	{
