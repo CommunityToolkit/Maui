@@ -1,59 +1,62 @@
 ﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
+using CommunityToolkit.Maui.Markup;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
+
 public class ExpanderPageCS : ContentPage
 {
+	readonly Expander expander;
+
 	public ExpanderPageCS()
 	{
-		var content = new VerticalStackLayout()
-		{
-			Padding = new Thickness(10)
-		};
-
-		content.Children.Add(new Image
-		{
-			Source = "https://avatars.githubusercontent.com/u/9011267?v=4",
-			Aspect = Aspect.AspectFit,
-			HeightRequest = 120,
-			WidthRequest = 120
-		});
-
-		content.Children.Add(new Label
-		{
-			Text = ".NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating mobile and desktop apps with C# and XAML. Using .NET MAUI, you can develop apps that can run on Android, iOS, iPadOS, macOS, and Windows from a single shared codebase.",
-			FontAttributes = FontAttributes.Italic
-		});
-
-		var expander = new Expander
-		{
-			HorizontalOptions = LayoutOptions.Center,
-			Header = new Label
-			{
-				Text = ".NET MAUI",
-				FontAttributes = FontAttributes.Bold
-			},
-			Direction = ExpandDirection.Down,
-			Content = content
-		};
-		var expandDirectionPicker = new Picker()
-		{
-			SelectedIndex = 0,
-			ItemsSource = Enum.GetValues<ExpandDirection>(),
-			HorizontalOptions = LayoutOptions.Center
-		};
-		expandDirectionPicker.SelectedIndexChanged += (_, _) =>
-		{
-			expander.Direction = Enum.Parse<ExpandDirection>(expandDirectionPicker.SelectedIndex.ToString());
-		};
 		Content = new VerticalStackLayout()
 		{
 			Children =
 			{
-				new Label(){ Text = "Expander C# Sample", HorizontalOptions = LayoutOptions.Center},
-				expandDirectionPicker,
-				expander
+				new Label()
+					.Text("Expander C# Sample")
+					.Font(bold: true, size: 24)
+					.CenterHorizontal(),
+
+				new Expander
+				{
+					Header = new Label()
+								.Text("Expander (Click Me)")
+								.Font(bold: true, size: 18),
+
+					Direction = ExpandDirection.Down,
+
+					Content = new VerticalStackLayout()
+					{
+						new Image()
+							.Source("https://avatars.githubusercontent.com/u/9011267?v=4")
+							.Size(120)
+							.Aspect(Aspect.AspectFit),
+
+						new Label()
+							.Text(".NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating mobile and desktop apps with C# and XAML. Using .NET MAUI, you can develop apps that can run on Android, iOS, iPadOS, macOS, and Windows from a single shared codebase.")
+							.Font(italic: true)
+
+					}.Padding(10)
+
+				}.CenterHorizontal()
+				 .Assign(out expander),
+
+				new Picker() { ItemsSource = Enum.GetValues<ExpandDirection>(), Title = "Direction" }
+					.CenterHorizontal()
+					.Invoke(picker => picker.SelectedIndexChanged += HandleSelectedIndexChanged),
 			}
 		};
+
+
+	}
+
+	void HandleSelectedIndexChanged(object? sender, EventArgs e)
+	{
+		ArgumentNullException.ThrowIfNull(sender);
+
+		var picker = (Picker)sender;
+		expander.Direction = Enum.Parse<ExpandDirection>(picker.SelectedIndex.ToString());
 	}
 }

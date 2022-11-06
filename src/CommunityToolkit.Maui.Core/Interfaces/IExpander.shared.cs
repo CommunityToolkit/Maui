@@ -3,7 +3,7 @@ namespace CommunityToolkit.Maui.Core;
 /// <summary>
 /// Allows collapse and expand content.
 /// </summary>
-public interface IExpander : IView
+public interface IExpander : IContentView
 {
 	/// <summary>
 	/// Expander header.
@@ -11,9 +11,9 @@ public interface IExpander : IView
 	public IView? Header { get; }
 
 	/// <summary>
-	/// Collapsible content.
+	/// Gets or sets expand direction.
 	/// </summary>
-	public IView? Content { get; }
+	public ExpandDirection Direction { get; }
 
 	/// <summary>
 	/// Gets or sets Expander collapsible state.
@@ -21,12 +21,7 @@ public interface IExpander : IView
 	public bool IsExpanded { get; set; }
 
 	/// <summary>
-	/// Gets or sets expand direction.
-	/// </summary>
-	public ExpandDirection Direction { get; }
-
-	/// <summary>
-	/// Event occurred when IsExpanded changed.
+	/// Action when <see cref="IsExpanded"/> changes
 	/// </summary>
 	void ExpandedChanged(bool isExpanded);
 }

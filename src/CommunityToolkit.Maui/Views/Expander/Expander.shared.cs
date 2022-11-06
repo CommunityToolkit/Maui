@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
@@ -10,32 +11,6 @@ namespace CommunityToolkit.Maui.Views;
 [ContentProperty(nameof(Content))]
 public class Expander : ContentView, IExpander
 {
-	readonly IGestureRecognizer tapGestureRecognizer;
-
-	readonly WeakEventManager tappedEventManager = new();
-
-	/// <summary>
-	/// Initialize a new instance of <see cref="Expander"/>.
-	/// </summary>
-	public Expander()
-	{
-		tapGestureRecognizer = new TapGestureRecognizer()
-		{
-			Command = new Command(() =>
-			{
-				IsExpanded = !IsExpanded;
-				((IExpander)this).ExpandedChanged(IsExpanded);
-			})
-		};
-	}
-
-	/// <inheritdoc cref="IExpander.ExpandedChanged"/>
-	public event EventHandler<ExpandedChangedEventArgs> ExpandedChanged
-	{
-		add => tappedEventManager.AddEventHandler(value);
-		remove => tappedEventManager.RemoveEventHandler(value);
-	}
-
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Header"/> property.
 	/// </summary>
@@ -52,7 +27,7 @@ public class Expander : ContentView, IExpander
 	/// Backing BindableProperty for the <see cref="IsExpanded"/> property.
 	/// </summary>
 	public static readonly BindableProperty IsExpandedProperty
-		= BindableProperty.Create(nameof(IsExpanded), typeof(bool), typeof(Expander), default(bool), BindingMode.TwoWay, propertyChanged: OnIsExpandedPropertyChanged);
+		= BindableProperty.Create(nameof(IsExpanded), typeof(bool), typeof(Expander), false, BindingMode.TwoWay, propertyChanged: OnIsExpandedPropertyChanged);
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Direction"/> property.
@@ -72,6 +47,30 @@ public class Expander : ContentView, IExpander
 	public static readonly BindableProperty CommandProperty
 		= BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(Expander));
 
+	readonly object updateExpanderLock = new();
+	readonly IGestureRecognizer tapGestureRecognizer;
+	readonly WeakEventManager tappedEventManager = new();
+
+	/// <summary>
+	/// Initialize a new instance of <see cref="Expander"/>.
+	/// </summary>
+	public Expander()
+	{
+		tapGestureRecognizer = new TapGestureRecognizer
+		{
+			Command = new Command(() => IsExpanded = !IsExpanded)
+		};
+	}
+
+	/// <summary>
+	///	Triggered when 
+	/// </summary>
+	public event EventHandler<ExpandedChangedEventArgs> ExpandedChanged
+	{
+		add => tappedEventManager.AddEventHandler(value);
+		remove => tappedEventManager.RemoveEventHandler(value);
+	}
+
 	/// <inheritdoc />
 	public IView? Header
 	{
@@ -82,8 +81,8 @@ public class Expander : ContentView, IExpander
 	/// <inheritdoc />
 	public new IView? Content
 	{
-		get => (IView?)GetValue(ContentProperty);
-		set => SetValue(ContentProperty, value);
+		get => (IView?)GetValue(Expander.ContentProperty);
+		set => SetValue(Expander.ContentProperty, value);
 	}
 
 	/// <inheritdoc />
@@ -119,103 +118,108 @@ public class Expander : ContentView, IExpander
 	}
 
 	static void OnHeaderPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		=> ((Expander)bindable).Configure();
+		=> ((Expander)bindable).UpdateExpander();
 
 	static void OnContentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		=> ((Expander)bindable).Configure();
+		=> ((Expander)bindable).UpdateExpander();
 
 	static void OnIsExpandedPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		=> ((Expander)bindable).Configure();
+	{
+		((Expander)bindable).UpdateExpander();
+		((IExpander)bindable).ExpandedChanged(((IExpander)bindable).IsExpanded);
+	}
 
 	static void OnDirectionPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		=> ((Expander)bindable).Configure();
+		=> ((Expander)bindable).UpdateExpander();
 
-	void IExpander.ExpandedChanged(bool isExpanded)
+	static Grid CreateGridLayout(in IView expanderHeader, in IView expanderContent, in ExpandDirection expandDirection, in bool isExpanded)
 	{
-		if (Command is not null && Command.CanExecute(CommandParameter))
+		var grid = new Grid
 		{
-			Command.Execute(CommandParameter);
-		}
+			expanderHeader
+		};
 
-		tappedEventManager.HandleEvent(this, new Core.ExpandedChangedEventArgs(isExpanded), nameof(ExpandedChanged));
-	}
-
-	void Configure()
-	{
-		if (Header is null || Content is null)
-		{
-			return;
-		}
-
-		SetGestures();
-		Layout();
-		UpdateSize();
-	}
-
-	void Layout()
-	{
-		var grid = new Grid();
-		grid.Children.Add(Header);
-		switch (Direction)
+		switch (expandDirection)
 		{
 			case ExpandDirection.Down:
 				grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-				grid.SetRow(Header, 0);
-				if (IsExpanded)
+				grid.SetRow(expanderHeader, 0);
+				if (isExpanded)
 				{
-					grid.Children.Add(Content);
+					grid.Children.Add(expanderContent);
 					grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-					grid.SetRow(Content, 1);
+					grid.SetRow(expanderContent, 1);
 				}
 				break;
+
 			case ExpandDirection.Up:
-				if (IsExpanded)
+				if (isExpanded)
 				{
-					grid.Children.Add(Content);
+					grid.Children.Add(expanderContent);
 					grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-					grid.SetRow(Content, 0);
+					grid.SetRow(expanderContent, 0);
 					grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-					grid.SetRow(Header, 1);
+					grid.SetRow(expanderHeader, 1);
 				}
 				else
 				{
 					grid.RowDefinitions.Add(new RowDefinition());
-					grid.SetRow(Header, 0);
+					grid.SetRow(expanderHeader, 0);
 				}
 				break;
 		}
 
-		base.Content = grid;
+		return grid;
 	}
 
-	void UpdateSize()
+	static void SetHeaderGestures(in IView header, in IGestureRecognizer gestureRecognizer)
 	{
-		var parent = Parent;
-		while (parent is not null)
-		{
-			switch (parent)
-			{
-				case ListView listView:
-					var cells = listView.AllChildren.OfType<Cell>();
-					foreach (var child in cells)
-					{
-						child.ForceUpdateSize();
-					}
+		var headerView = (View)header;
+		headerView.GestureRecognizers.Remove(gestureRecognizer);
+		headerView.GestureRecognizers.Add(gestureRecognizer);
+	}
 
-					break;
-				case CollectionView collectionView:
-					collectionView.InvalidateMeasureInternal(Microsoft.Maui.Controls.Internals.InvalidationTrigger.MeasureChanged);
-					break;
+	static void ForceUpdateLayoutSizeForItemsView(in Element parent)
+	{
+		var element = parent;
+
+		while (element is not null)
+		{
+			if (element is ListView listView)
+			{
+				foreach (var child in listView.AllChildren.OfType<Cell>())
+				{
+					child.ForceUpdateSize();
+				}
+
+				listView.InvalidateMeasureInternal(Microsoft.Maui.Controls.Internals.InvalidationTrigger.MeasureChanged);
+			}
+			else if (element is CollectionView collectionView)
+			{
+				collectionView.InvalidateMeasureInternal(Microsoft.Maui.Controls.Internals.InvalidationTrigger.MeasureChanged);
 			}
 
-			parent = parent.Parent;
+			element = element.Parent;
 		}
 	}
 
-	void SetGestures()
+	void IExpander.ExpandedChanged(bool isExpanded) =>
+		tappedEventManager.HandleEvent(this, new Core.ExpandedChangedEventArgs(isExpanded), nameof(ExpandedChanged));
+
+	void UpdateExpander()
 	{
-		var header = Header as View;
-		header?.GestureRecognizers.Remove(tapGestureRecognizer);
-		header?.GestureRecognizers.Add(tapGestureRecognizer);
+		lock (updateExpanderLock) // Ensure thread safety
+		{
+			if (Header is null || Content is null)
+			{
+				return;
+			}
+
+			SetHeaderGestures(Header, tapGestureRecognizer);
+
+			base.Content = CreateGridLayout(Header, Content, Direction, IsExpanded);
+
+			ForceUpdateLayoutSizeForItemsView(Parent);
+		}
 	}
 }

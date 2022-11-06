@@ -11,39 +11,43 @@
 
     <ScrollView>
         <VerticalStackLayout Spacing="10">
-            <Label Text="C# Sample" />
-            <Button Text="Navigate" Clicked="GoToCSharpSampleClicked"/>
+            <Button Text="Navigate to C# Sample" Clicked="GoToCSharpSampleClicked"/>
 
-            <Label Text="Simple expander" />
+            <Label Text="Simple expander" FontSize="24" FontAttributes="Bold"/>
+
             <mct:Expander>
                 <mct:Expander.Header>
-                    <Label Text="Level 0"/>
+                    <Label Text="Simple Expander (Click Me)" FontSize="16" FontAttributes="Bold"/>
                 </mct:Expander.Header>
+
+                <mct:Expander.Content BackgroundColor="LightGray">
                     <VerticalStackLayout>
                         <Label Text="Item 1"/>
                         <Label Text="Item 2"/>
                     </VerticalStackLayout>
+                </mct:Expander.Content>
             </mct:Expander>
-            
-            <Label Text="Multi-level expander" />
-            <mct:Expander IsExpanded="True" Direction="Up">
+
+            <Label Text="Multi-level expander" FontSize="24" FontAttributes="Bold"/>
+
+            <mct:Expander Direction="Up">
                 <mct:Expander.Header>
-                    <Label Text="Level 0"/>
+                    <Label Text="Multi-Level Expander (Click Me)" FontSize="16" FontAttributes="Bold"/>
                 </mct:Expander.Header>
-                <mct:Expander.Content>
-                    <mct:Expander Direction="Down">
+                <mct:Expander.Content BackgroundColor="LightGray">
+                    <mct:Expander Direction="Down" BackgroundColor="LightGray">
                         <mct:Expander.Header>
-                            <Label Text="Level 1"/>
+                            <Label Text="Nested Expander (Click Me)" FontSize="14" FontAttributes="Bold"/>
                         </mct:Expander.Header>
                         <mct:Expander.Content>
-                            <Label Text="Level 2" />
+                            <Label Text="Item 1" />
                         </mct:Expander.Content>
                     </mct:Expander>
                 </mct:Expander.Content>
             </mct:Expander>
-            <Label Text="Multi-level expander (shared)" />
-            
-            <Label Text="Expander in ListView" />
+
+            <Label Text="Expander in ListView" FontSize="24" FontAttributes="Bold"/>
+
             <ListView ItemsSource="{Binding ContentCreators}"
                       HasUnevenRows="True">
                 <ListView.ItemTemplate>
@@ -68,7 +72,8 @@
                 </ListView.ItemTemplate>
             </ListView>
 
-            <Label Text="Expander in CollectionView" />
+            <Label Text="Expander in CollectionView" FontSize="24" FontAttributes="Bold"/>
+
             <CollectionView ItemsSource="{Binding ContentCreators}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
