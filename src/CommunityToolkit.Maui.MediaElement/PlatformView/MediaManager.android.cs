@@ -12,7 +12,7 @@ namespace CommunityToolkit.Maui.MediaElement;
 
 public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
-	StyledPlayerView? playerView;
+	protected StyledPlayerView? playerView;
 
 	// TODO: Make sure we don't need the both and make the StyledPlayerView as android PlatformView
 	public (PlatformMediaView platformView, StyledPlayerView playerView) CreatePlatformView()

@@ -13,7 +13,7 @@ namespace CommunityToolkit.Maui.MediaElement;
 
 partial class MediaManager
 {
-	bool isMediaPlayerAttached;
+	protected bool isMediaPlayerAttached;
 
 	public PlatformMediaView CreatePlatformView()
 	{
@@ -54,7 +54,6 @@ partial class MediaManager
 			player.MediaPlayer.PlaybackRate = mediaElement.Speed;
 		}
 	}
-
 
 	protected virtual partial void PlatformUpdateShowsPlaybackControls()
 	{
