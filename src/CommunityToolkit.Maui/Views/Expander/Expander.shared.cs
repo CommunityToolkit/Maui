@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -96,7 +97,15 @@ public class Expander : ContentView, IExpander
 	public ExpandDirection Direction
 	{
 		get => (ExpandDirection)GetValue(DirectionProperty);
-		set => SetValue(DirectionProperty, value);
+		set
+		{
+			if (!Enum.IsDefined(typeof(ExpandDirection), value))
+			{
+				throw new InvalidEnumArgumentException(nameof(value), (int)value, typeof(ExpandDirection));
+			}
+
+			SetValue(DirectionProperty, value);
+		}
 	}
 
 	/// <summary>
@@ -169,6 +178,9 @@ public class Expander : ContentView, IExpander
 				}
 
 				break;
+
+			default:
+				throw new NotSupportedException($"{nameof(ExpandDirection)} {expandDirection} is not yet supported");
 		}
 
 		return grid;
@@ -207,7 +219,7 @@ public class Expander : ContentView, IExpander
 
 	void IExpander.ExpandedChanged(bool isExpanded)
 	{
-		if(Command?.CanExecute(CommandParameter) is true)
+		if (Command?.CanExecute(CommandParameter) is true)
 		{
 			Command.Execute(CommandParameter);
 		}
@@ -225,6 +237,12 @@ public class Expander : ContentView, IExpander
 			}
 
 			SetHeaderGestures(Header, tapGestureRecognizer);
+
+			if (base.Content is Grid gridContent)
+			{
+				gridContent.Remove(Header);
+				gridContent.Remove(Content);
+			}
 
 			base.Content = CreateGridLayout(Header, Content, Direction, IsExpanded);
 

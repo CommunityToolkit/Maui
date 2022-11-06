@@ -6,12 +6,12 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public class ExpanderPageCS : ContentPage
 {
-	readonly Expander expander;
-
 	public ExpanderPageCS()
 	{
 		Content = new VerticalStackLayout()
 		{
+			Spacing = 12,
+
 			Children =
 			{
 				new Label()
@@ -19,13 +19,15 @@ public class ExpanderPageCS : ContentPage
 					.Font(bold: true, size: 24)
 					.CenterHorizontal(),
 
+				new Picker() { ItemsSource = Enum.GetValues<ExpandDirection>(), Title = "Direction" }
+					.CenterHorizontal().TextCenter()
+					.Assign(out Picker picker),
+
 				new Expander
 				{
 					Header = new Label()
-								.Text("Expander (Click Me)")
+								.Text("Expander (Tap Me)")
 								.Font(bold: true, size: 18),
-
-					Direction = ExpandDirection.Down,
 
 					Content = new VerticalStackLayout()
 					{
@@ -41,22 +43,8 @@ public class ExpanderPageCS : ContentPage
 					}.Padding(10)
 
 				}.CenterHorizontal()
-				 .Assign(out expander),
-
-				new Picker() { ItemsSource = Enum.GetValues<ExpandDirection>(), Title = "Direction" }
-					.CenterHorizontal().TextCenter()
-					.Invoke(picker => picker.SelectedIndexChanged += HandleSelectedIndexChanged),
-			}
+				 .Bind(Expander.DirectionProperty, nameof(Picker.SelectedIndex), source: picker, convert: (int selectedIndex) => Enum.IsDefined(typeof(ExpandDirection), selectedIndex) ? (ExpandDirection)selectedIndex : default)
+			 }
 		};
-
-
-	}
-
-	void HandleSelectedIndexChanged(object? sender, EventArgs e)
-	{
-		ArgumentNullException.ThrowIfNull(sender);
-
-		var picker = (Picker)sender;
-		expander.Direction = Enum.Parse<ExpandDirection>(picker.SelectedIndex.ToString());
 	}
 }

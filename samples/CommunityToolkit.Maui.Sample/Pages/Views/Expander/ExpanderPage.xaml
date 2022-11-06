@@ -17,7 +17,7 @@
 
             <mct:Expander>
                 <mct:Expander.Header>
-                    <Label Text="Simple Expander (Click Me)" FontSize="16" FontAttributes="Bold"/>
+                    <Label Text="Simple Expander (Tap Me)" FontSize="16" FontAttributes="Bold"/>
                 </mct:Expander.Header>
 
                 <mct:Expander.Content BackgroundColor="LightGray">
@@ -32,12 +32,12 @@
 
             <mct:Expander Direction="Up">
                 <mct:Expander.Header>
-                    <Label Text="Multi-Level Expander (Click Me)" FontSize="16" FontAttributes="Bold"/>
+                    <Label Text="Multi-Level Expander (Tap Me)" FontSize="16" FontAttributes="Bold"/>
                 </mct:Expander.Header>
                 <mct:Expander.Content BackgroundColor="LightGray">
                     <mct:Expander Direction="Down" BackgroundColor="LightGray">
                         <mct:Expander.Header>
-                            <Label Text="Nested Expander (Click Me)" FontSize="14" FontAttributes="Bold"/>
+                            <Label Text="Nested Expander (Tap Me)" FontSize="14" FontAttributes="Bold"/>
                         </mct:Expander.Header>
                         <mct:Expander.Content>
                             <Label Text="Item 1" />
