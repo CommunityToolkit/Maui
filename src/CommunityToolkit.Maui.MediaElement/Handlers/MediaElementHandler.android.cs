@@ -5,8 +5,6 @@ namespace CommunityToolkit.Maui.MediaElement;
 
 public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaElement>, IDisposable
 {
-	MediaManager? mediaManager;
-
 	protected override MauiMediaElement CreatePlatformView()
 	{
 		mediaManager ??= new(MauiContext ?? throw new NullReferenceException(), VirtualView);
