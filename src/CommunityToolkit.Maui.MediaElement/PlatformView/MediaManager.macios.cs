@@ -19,6 +19,7 @@ public partial class MediaManager : IDisposable
 		{
 			Player = player
 		};
+
 		AddPlayedToEndObserver();
 		return (player, playerViewController);
 	}
@@ -187,10 +188,7 @@ public partial class MediaManager : IDisposable
 				player.Dispose();
 			}
 
-			if (playerViewController is not null)
-			{
-				playerViewController.Dispose();
-			}
+			playerViewController?.Dispose();
 		}
 	}
 
@@ -200,7 +198,7 @@ public partial class MediaManager : IDisposable
 		GC.SuppressFinalize(this);
 	}
 
-	TimeSpan ConvertTime(CMTime cmTime)
+	static TimeSpan ConvertTime(CMTime cmTime)
 	{
 		return TimeSpan.FromSeconds(Double.IsNaN(cmTime.Seconds) ? 0 : cmTime.Seconds);
 	}
