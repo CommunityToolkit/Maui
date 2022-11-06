@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using System.ComponentModel;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
@@ -53,5 +54,13 @@ public class ExpanderTests : BaseHandlerTest
 		((IExpander)expander).ExpandedChanged(expectedIsExpanded);
 
 		isExpanded.Should().Be(expectedIsExpanded);
+	}
+
+	[Theory]
+	[InlineData((ExpandDirection)(-1))]
+	[InlineData((ExpandDirection)2)]
+	public void ExpanderDirectionThrowsInvalidEnumArgumentException(ExpandDirection direction)
+	{
+		Assert.Throws<InvalidEnumArgumentException>(() => expander.Direction = direction);
 	}
 }
