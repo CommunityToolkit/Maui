@@ -1,10 +1,6 @@
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
-using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -34,7 +30,7 @@ public class Expander : ContentView, IExpander
 	/// Backing BindableProperty for the <see cref="Direction"/> property.
 	/// </summary>
 	public static readonly BindableProperty DirectionProperty
-		= BindableProperty.Create(nameof(Direction), typeof(ExpandDirection), typeof(Expander), default(ExpandDirection), propertyChanged: OnDirectionPropertyChanged);
+		= BindableProperty.Create(nameof(Direction), typeof(ExpandDirection), typeof(Expander), ExpandDirection.Down, propertyChanged: OnDirectionPropertyChanged);
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="CommandParameter"/> property.
@@ -60,6 +56,15 @@ public class Expander : ContentView, IExpander
 		tapGestureRecognizer = new TapGestureRecognizer
 		{
 			Command = new Command(() => IsExpanded = !IsExpanded)
+		};
+
+		base.Content = new Grid
+		{
+			RowDefinitions =
+			{
+				new RowDefinition(GridLength.Auto),
+				new RowDefinition(GridLength.Auto)
+			}
 		};
 	}
 
@@ -126,71 +131,82 @@ public class Expander : ContentView, IExpander
 		set => SetValue(CommandProperty, value);
 	}
 
-	static void OnHeaderPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		=> ((Expander)bindable).UpdateExpander();
+	Grid ContentGrid => (Grid)base.Content;
 
 	static void OnContentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		=> ((Expander)bindable).UpdateExpander();
+	{
+		var expander = (Expander)bindable;
+		if (newValue is View view)
+		{
+			view.SetBinding(IsVisibleProperty, new Binding(nameof(Expander.IsExpanded), source: bindable));
+
+			expander.ContentGrid.Remove(oldValue);
+			expander.ContentGrid.Add(newValue);
+			expander.ContentGrid.SetRow(view, expander.Direction switch
+			{
+				ExpandDirection.Down => 1,
+				ExpandDirection.Up => 0,
+				_ => throw new NotSupportedException($"{nameof(ExpandDirection)} {expander.Direction} is not yet supported")
+			});
+
+			var temp = view.IsVisible;
+		}
+	}
+
+	static void OnHeaderPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var expander = (Expander)bindable;
+		if (newValue is View view)
+		{
+			expander.SetHeaderGestures(view);
+
+			expander.ContentGrid.Remove(oldValue);
+			expander.ContentGrid.Add(newValue);
+
+			expander.ContentGrid.SetRow(view, expander.Direction switch
+			{
+				ExpandDirection.Down => 0,
+				ExpandDirection.Up => 1,
+				_ => throw new NotSupportedException($"{nameof(ExpandDirection)} {expander.Direction} is not yet supported")
+			});
+		}
+	}
 
 	static void OnIsExpandedPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		((Expander)bindable).UpdateExpander();
+		var expander = (Expander)bindable;
+		ForceUpdateLayoutSizeForItemsView(expander);
+
 		((IExpander)bindable).ExpandedChanged(((IExpander)bindable).IsExpanded);
 	}
 
-	static void OnDirectionPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		=> ((Expander)bindable).UpdateExpander();
+	static void OnDirectionPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
+		((Expander)bindable).HandleDirectionChanged((ExpandDirection)newValue);
 
-	static Grid CreateGridLayout(in IView expanderHeader, in IView expanderContent, in ExpandDirection expandDirection, in bool isExpanded)
+	void HandleDirectionChanged(ExpandDirection expandDirection)
 	{
-		var grid = new Grid
-		{
-			expanderHeader
-		};
-
 		switch (expandDirection)
 		{
 			case ExpandDirection.Down:
-				grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-				grid.SetRow(expanderHeader, 0);
-				if (isExpanded)
-				{
-					grid.Children.Add(expanderContent);
-					grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-					grid.SetRow(expanderContent, 1);
-				}
-
+				ContentGrid.SetRow(Header, 0);
+				ContentGrid.SetRow(Content, 1);
 				break;
 
 			case ExpandDirection.Up:
-				if (isExpanded)
-				{
-					grid.Children.Add(expanderContent);
-					grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-					grid.SetRow(expanderContent, 0);
-					grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-					grid.SetRow(expanderHeader, 1);
-				}
-				else
-				{
-					grid.RowDefinitions.Add(new RowDefinition());
-					grid.SetRow(expanderHeader, 0);
-				}
-
+				ContentGrid.SetRow(Header, 1);
+				ContentGrid.SetRow(Content, 0);
 				break;
 
 			default:
 				throw new NotSupportedException($"{nameof(ExpandDirection)} {expandDirection} is not yet supported");
 		}
-
-		return grid;
 	}
 
-	static void SetHeaderGestures(in IView header, in IGestureRecognizer gestureRecognizer)
+	void SetHeaderGestures(in IView header)
 	{
 		var headerView = (View)header;
-		headerView.GestureRecognizers.Remove(gestureRecognizer);
-		headerView.GestureRecognizers.Add(gestureRecognizer);
+		headerView.GestureRecognizers.Remove(tapGestureRecognizer);
+		headerView.GestureRecognizers.Add(tapGestureRecognizer);
 	}
 
 	static void ForceUpdateLayoutSizeForItemsView(in Element parent)
@@ -225,28 +241,5 @@ public class Expander : ContentView, IExpander
 		}
 
 		tappedEventManager.HandleEvent(this, new Core.ExpandedChangedEventArgs(isExpanded), nameof(ExpandedChanged));
-	}
-
-	void UpdateExpander()
-	{
-		lock (updateExpanderLock) // Ensure thread safety
-		{
-			if (Header is null || Content is null)
-			{
-				return;
-			}
-
-			SetHeaderGestures(Header, tapGestureRecognizer);
-
-			if (base.Content is Grid gridContent)
-			{
-				gridContent.Remove(Header);
-				gridContent.Remove(Content);
-			}
-
-			base.Content = CreateGridLayout(Header, Content, Direction, IsExpanded);
-
-			ForceUpdateLayoutSizeForItemsView(Parent);
-		}
 	}
 }

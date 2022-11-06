@@ -19,13 +19,12 @@ public class ExpanderTests : BaseHandlerTest
 	[Fact]
 	public void CheckDefaultValues()
 	{
-		var expectedDefaultValue = new Maui.Views.Expander
-		{
-			Direction = ExpandDirection.Down,
-			IsExpanded = false
-		};
-
-		expander.Should().BeEquivalentTo(expectedDefaultValue, config => config.Excluding(ctx => ctx.Id));
+		Assert.Equal(ExpandDirection.Down, expander.Direction);
+		Assert.False(expander.IsExpanded);
+		Assert.Null(expander.Content);
+		Assert.Null(expander.Header);
+		Assert.Null(expander.Command);
+		Assert.Null(expander.CommandParameter);
 	}
 
 	[Theory]
