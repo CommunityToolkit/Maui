@@ -25,7 +25,7 @@ public interface IDockLayout : ILayout
 	/// </summary>
 	/// <param name="view">A view that belongs to the DockLayout.</param>
 	/// <returns>DockPosition that signifies where the view will dock.</returns>
-	DockPosition GetDockPosition(IView view);
+	public DockPosition GetDockPosition(IView view);
 
 	/// <summary>
 	/// Adds a view to the layout container at the given docking position.
@@ -33,6 +33,5 @@ public interface IDockLayout : ILayout
 	/// <param name="view">Child view to be added to the container.</param>
 	/// <param name="position">Docking position for the view.</param>
 	/// <returns>View that has been added as a child view.</returns>
-	public TView Add<TView>(TView view, DockPosition position = DockPosition.None)
-		where TView : IView;
+	public TView Add<TView>(TView view, DockPosition position = DockPosition.None) where TView : IView;
 }

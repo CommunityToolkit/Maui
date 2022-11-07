@@ -22,12 +22,12 @@ public class DockLayout : Layout, IDockLayout
 	/// <summary>
 	/// Horizontal spacing between docked views.
 	/// </summary>
-	public static readonly BindableProperty HorizontalSpacingProperty = BindableProperty.Create(nameof(HorizontalSpacing), typeof(double), typeof(DockLayout), 0.0);
+	public static readonly BindableProperty HorizontalSpacingProperty = BindableProperty.Create(nameof(HorizontalSpacing), typeof(double), typeof(DockLayout), 0.0d);
 
 	/// <summary>
 	/// Vertical spacing between docked views.
 	/// </summary>
-	public static readonly BindableProperty VerticalSpacingProperty = BindableProperty.Create(nameof(VerticalSpacing), typeof(double), typeof(DockLayout), 0.0);
+	public static readonly BindableProperty VerticalSpacingProperty = BindableProperty.Create(nameof(VerticalSpacing), typeof(double), typeof(DockLayout), 0.0d);
 
 	/// <inheritdoc/>
 	public bool ShouldExpandLastChild
@@ -77,9 +77,8 @@ public class DockLayout : Layout, IDockLayout
 	public TView Add<TView>(TView view, DockPosition position = DockPosition.None)
 		where TView : IView
 	{
-		var mauiView = (View)(IView)view;
-		Children.Add(mauiView);
-		SetDockPosition(mauiView, position);
+		Children.Add(view);
+		SetDockPosition((View)(IView)view, position);
 		return view;
 	}
 

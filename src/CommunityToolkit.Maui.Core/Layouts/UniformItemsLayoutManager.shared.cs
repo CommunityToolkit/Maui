@@ -3,7 +3,7 @@ using Microsoft.Maui.Layouts;
 namespace CommunityToolkit.Maui.Core.Layouts;
 
 /// <summary>
-/// LayoutManager for <see cref="IUniformItemsLayout"/>.
+/// <see cref="LayoutManager"/> for <see cref="IUniformItemsLayout"/>.
 /// </summary>
 public class UniformItemsLayoutManager : LayoutManager
 {

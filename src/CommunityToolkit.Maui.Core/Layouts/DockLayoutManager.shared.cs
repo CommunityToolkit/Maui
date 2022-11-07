@@ -3,7 +3,7 @@
 namespace CommunityToolkit.Maui.Core.Layouts;
 
 /// <summary>
-/// LayoutManager for <see cref="IDockLayout"/>.
+/// <see cref="LayoutManager"/> for <see cref="IDockLayout"/>.
 /// </summary>
 public class DockLayoutManager : LayoutManager
 {
