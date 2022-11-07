@@ -18,11 +18,19 @@ public class MauiMediaElement : UIView
 		_ = playerViewController.View ?? throw new NullReferenceException(nameof(playerViewController.View));
 		playerViewController.View.Frame = this.Bounds;
 
-		// This shouldn't be necessary but something in this call is making the playback controls largely size correctly.
-		// Largely because they are slightly off at the top margin, but if you fullscreen then cancel fullscreen they size correctly.
-		var vc = WindowStateManager.Default.GetCurrentUIViewController() ?? throw new NullReferenceException("ViewController can't be null.");
-		_ = vc.View ?? throw new NullReferenceException(nameof(vc.View));
-		vc.View.AddSubview(playerViewController.View);
+#if IOS16_0_OR_GREATER
+		// On iOS 16 the AVPlayerViewController has to be added to the parent ViewController, otherwise the transport controls won't be displayed.
+		var viewController = WindowStateManager.Default.GetCurrentUIViewController() ?? throw new NullReferenceException("ViewController can't be null.");
+
+		_ = viewController.View ?? throw new NullReferenceException(nameof(viewController.View));
+
+		// Zero out the safe area insets of the AVPlayerViewController
+		UIEdgeInsets insets = viewController.View.SafeAreaInsets;
+		playerViewController.AdditionalSafeAreaInsets = new UIEdgeInsets(insets.Top * -1, insets.Left, insets.Bottom * -1, insets.Right);
+
+		// Add the View from the AVPlayerViewController to the parent ViewController
+		viewController.View.AddSubview(playerViewController.View);
+#endif
 
 		AddSubview(playerViewController.View);
 	}
