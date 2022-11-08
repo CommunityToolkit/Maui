@@ -132,6 +132,14 @@ public class Expander : ContentView, IExpander
 
 	Grid ContentGrid => (Grid)base.Content;
 
+	/// <inheritdoc/>
+	protected override async void OnParentChanged()
+	{
+		base.OnParentChanged();
+
+		await EnsureParentIsNotItemsView().ConfigureAwait(false);
+	}
+
 	static void OnContentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var expander = (Expander)bindable;
@@ -169,16 +177,34 @@ public class Expander : ContentView, IExpander
 		}
 	}
 
-	static void OnIsExpandedPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		var expander = (Expander)bindable;
-		ForceUpdateLayoutSizeForItemsView(expander);
-
+	static void OnIsExpandedPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
 		((IExpander)bindable).ExpandedChanged(((IExpander)bindable).IsExpanded);
-	}
 
 	static void OnDirectionPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
 		((Expander)bindable).HandleDirectionChanged((ExpandDirection)newValue);
+
+	// Expander is not currently supported for ListView or CollectionView
+	Task EnsureParentIsNotItemsView()
+	{
+		var parentElement = Parent;
+
+		// The UI Thread is not required for this check
+		// Run this on a background thread to avoid performance impact on the UI Thread
+		return Task.Run(() =>
+		{
+			while (parentElement is not null)
+			{
+				if (parentElement is ListView or ItemsView)
+				{
+					// Marshall the exception to the UI Thread to ensure Exception is surfaced to the developer, stopping the app
+					// Required for MacCatalyst
+					Dispatcher.DispatchIfRequired(() => throw new NotSupportedException($"{nameof(Expander)} is not yet supported in {parentElement.GetType().Name}"));
+				}
+
+				parentElement = parentElement.Parent;
+			}
+		});
+	}
 
 	void HandleDirectionChanged(ExpandDirection expandDirection)
 	{
@@ -209,30 +235,6 @@ public class Expander : ContentView, IExpander
 		var headerView = (View)header;
 		headerView.GestureRecognizers.Remove(tapGestureRecognizer);
 		headerView.GestureRecognizers.Add(tapGestureRecognizer);
-	}
-
-	static void ForceUpdateLayoutSizeForItemsView(in Element parent)
-	{
-		var element = parent;
-
-		while (element is not null)
-		{
-			if (element is ListView listView)
-			{
-				foreach (var child in listView.AllChildren.OfType<Cell>())
-				{
-					child.ForceUpdateSize();
-				}
-
-				listView.InvalidateMeasureInternal(Microsoft.Maui.Controls.Internals.InvalidationTrigger.MeasureChanged);
-			}
-			else if (element is CollectionView collectionView)
-			{
-				collectionView.InvalidateMeasureInternal(Microsoft.Maui.Controls.Internals.InvalidationTrigger.MeasureChanged);
-			}
-
-			element = element.Parent;
-		}
 	}
 
 	void IExpander.ExpandedChanged(bool isExpanded)
