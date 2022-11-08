@@ -44,7 +44,6 @@ public class Expander : ContentView, IExpander
 	public static readonly BindableProperty CommandProperty
 		= BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(Expander));
 
-	readonly object updateExpanderLock = new();
 	readonly IGestureRecognizer tapGestureRecognizer;
 	readonly WeakEventManager tappedEventManager = new();
 
@@ -148,8 +147,6 @@ public class Expander : ContentView, IExpander
 				ExpandDirection.Up => 0,
 				_ => throw new NotSupportedException($"{nameof(ExpandDirection)} {expander.Direction} is not yet supported")
 			});
-
-			var temp = view.IsVisible;
 		}
 	}
 
@@ -185,6 +182,11 @@ public class Expander : ContentView, IExpander
 
 	void HandleDirectionChanged(ExpandDirection expandDirection)
 	{
+		if (Header is null || Content is null)
+		{
+			return;
+		}
+
 		switch (expandDirection)
 		{
 			case ExpandDirection.Down:
@@ -240,6 +242,6 @@ public class Expander : ContentView, IExpander
 			Command.Execute(CommandParameter);
 		}
 
-		tappedEventManager.HandleEvent(this, new Core.ExpandedChangedEventArgs(isExpanded), nameof(ExpandedChanged));
+		tappedEventManager.HandleEvent(this, new ExpandedChangedEventArgs(isExpanded), nameof(ExpandedChanged));
 	}
 }
