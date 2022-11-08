@@ -1,6 +1,4 @@
-﻿using System.Linq.Expressions;
-
-namespace CommunityToolkit.Maui.Layouts;
+﻿namespace CommunityToolkit.Maui.Layouts;
 
 /// <summary>
 /// The <see cref="StateContainer"/> attached properties enable any <see cref="Layout"/> inheriting element to become state-aware.

@@ -141,6 +141,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<GravatarImageSourcePage, GravatarImageSourceViewModel>();
 
 		// Add Layouts Pages + ViewModels
+		services.AddTransientWithShellRoute<DockLayoutPage, DockLayoutViewModel>();
 		services.AddTransientWithShellRoute<StateContainerPage, StateContainerViewModel>();
 		services.AddTransientWithShellRoute<UniformItemsLayoutPage, UniformItemsLayoutViewModel>();
 
