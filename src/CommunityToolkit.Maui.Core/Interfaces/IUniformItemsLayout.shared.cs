@@ -1,11 +1,11 @@
 ﻿using Microsoft.Maui.Layouts;
 
-namespace CommunityToolkit.Maui.Core.Interfaces;
+namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// Uniform Items Layout Control
 /// </summary>
-public interface IUniformItemsLayout : ILayoutManager
+public interface IUniformItemsLayout : ILayout
 {
 	/// <summary>
 	/// Max rows
