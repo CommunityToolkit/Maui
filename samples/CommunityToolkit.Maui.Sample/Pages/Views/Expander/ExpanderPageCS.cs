@@ -8,6 +8,8 @@ public class ExpanderPageCS : ContentPage
 {
 	public ExpanderPageCS()
 	{
+		Title = "Expander Page, C# UI";
+
 		Content = new VerticalStackLayout()
 		{
 			Spacing = 12,
