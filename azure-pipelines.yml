@@ -110,8 +110,7 @@ jobs:
       - task: CmdLine@2
         displayName: 'Install .NET MAUI Workload $(TOOLKIT_NET_VERSION)'
         inputs:
-          script: dotnet workload install maui --from-rollback-file $(DotNetMauiRollbackFile) --source https://api.nuget.org/v3/index.json
-
+          script: dotnet workload install maui
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.Analyzers'
         inputs:
