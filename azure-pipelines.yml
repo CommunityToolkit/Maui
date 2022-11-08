@@ -3,7 +3,7 @@ variables:
   PreviewNumber: $[counter(variables['CurrentSemanticVersionBase'], 1001)]
   CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(PreviewNumber)'
   NugetPackageVersion: '$(CurrentSemanticVersion)'
-  TOOLKIT_NET_VERSION: '6.0.300'
+  TOOLKIT_NET_VERSION: '6.0.400'
   LATEST_NET_VERSION: '6.0.x'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
@@ -15,7 +15,7 @@ variables:
   PathToCommunityToolkitSourceGeneratorsCsproj: 'src/CommunityToolkit.Maui.SourceGenerators/CommunityToolkit.Maui.SourceGenerators.csproj'
   PathToCommunityToolkitAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Analyzers.CodeFixes/CommunityToolkit.Maui.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
-  DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/6.0.312.json'
+  DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/6.0.540.json'
   ShouldCheckDependencies: true
 
 trigger:
@@ -61,6 +61,11 @@ jobs:
 
       - powershell: dotnet workload install maui
         displayName: Install Latest .NET MAUI Workload
+
+      - pwsh: |
+          Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
+          .\workload-install.ps1 -DotnetTargetVersionBand $(TOOLKIT_NET_VERSION)
+        displayName: Install Tizen Workload
 
       # build sample
       - task: CmdLine@2
@@ -111,6 +116,11 @@ jobs:
         displayName: 'Install .NET MAUI Workload $(TOOLKIT_NET_VERSION)'
         inputs:
           script: dotnet workload install maui --from-rollback-file $(DotNetMauiRollbackFile) --source https://api.nuget.org/v3/index.json
+
+      - pwsh: |
+          Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
+          .\workload-install.ps1 -DotnetTargetVersionBand $(TOOLKIT_NET_VERSION)
+        displayName: Install Tizen Workload
 
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.Analyzers'
