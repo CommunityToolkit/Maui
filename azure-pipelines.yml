@@ -62,6 +62,11 @@ jobs:
       - powershell: dotnet workload install maui
         displayName: Install Latest .NET MAUI Workload
 
+      - pwsh: |
+          Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
+          .\workload-install.ps1 -DotnetTargetVersionBand $(TOOLKIT_NET_VERSION)
+        displayName: Install Tizen Workload
+
       # build sample
       - task: CmdLine@2
         displayName: 'Build Community Toolkit Sample'
@@ -111,6 +116,12 @@ jobs:
         displayName: 'Install .NET MAUI Workload $(TOOLKIT_NET_VERSION)'
         inputs:
           script: dotnet workload install maui
+
+      - pwsh: |
+          Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
+          .\workload-install.ps1 -DotnetTargetVersionBand $(TOOLKIT_NET_VERSION)
+        displayName: Install Tizen Workload
+
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.Analyzers'
         inputs:
