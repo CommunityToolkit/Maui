@@ -47,6 +47,7 @@
             </mct:Expander>
 
             <Label Text="Expander in ListView" FontSize="24" FontAttributes="Bold"/>
+
             <ListView ItemsSource="{Binding ContentCreators}"
                       HasUnevenRows="True">
                 <ListView.ItemTemplate>
@@ -70,7 +71,9 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
+
             <Label Text="Expander in CollectionView" FontSize="24" FontAttributes="Bold"/>
+
             <CollectionView ItemsSource="{Binding ContentCreators}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
