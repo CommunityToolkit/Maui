@@ -85,6 +85,19 @@ public class UniformItemsLayoutTests : BaseTest
 		Assert.Equal(expectedSize, actualSize);
 	}
 
+	[Fact]
+	public void ArrangeChildrenUniformItemsLayout()
+	{
+		var expectedSize = new Size(childWidth, childHeight);
+		uniformChild = new TestView(expectedSize);
+		uniformItemsLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
+		var rect = new Rect(0, 0, childWidth * childCount, childHeight * childCount);
+		uniformItemsLayout.Layout(rect);
+		var actualSize = uniformItemsLayout.CrossPlatformArrange(rect);
+
+		Assert.Equal(expectedSize, actualSize);
+	}
+
 	class TestView : View
 	{
 		readonly Size size;

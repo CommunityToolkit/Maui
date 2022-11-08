@@ -27,7 +27,7 @@ public class UniformItemsLayoutManager : LayoutManager
 	/// <returns>Child size</returns>
 	public override Size ArrangeChildren(Rect rectangle)
 	{
-		var width = uniformItemsLayout.Width - uniformItemsLayout.Padding.HorizontalThickness;
+		var width = rectangle.Width - uniformItemsLayout.Padding.HorizontalThickness;
 		var visibleChildren = uniformItemsLayout.Where(x => x.Visibility == Visibility.Visible).ToArray();
 
 		var columns = GetColumnsCount(visibleChildren.Length, width);

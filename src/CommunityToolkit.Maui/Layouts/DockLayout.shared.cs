@@ -74,12 +74,10 @@ public class DockLayout : Layout, IDockLayout
 	}
 
 	/// <inheritdoc/>
-	public TView Add<TView>(TView view, DockPosition position = DockPosition.None)
-		where TView : IView
+	public void Add(IView view, DockPosition position = DockPosition.None)
 	{
 		Children.Add(view);
-		SetDockPosition((View)(IView)view, position);
-		return view;
+		SetDockPosition((View)view, position);
 	}
 
 	/// <inheritdoc/>
