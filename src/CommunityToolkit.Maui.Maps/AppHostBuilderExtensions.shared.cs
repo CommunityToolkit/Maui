@@ -22,7 +22,7 @@ public static class AppHostBuilderExtensions
 		.ConfigureMauiHandlers(handlers =>
 		{
 #if WINDOWS
-			CommunityToolkit.Maui.Maps.Handlers.MapHandlerWindows.mapsKey = key;
+			CommunityToolkit.Maui.Maps.Handlers.MapHandlerWindows.MapsKey = key;
 #endif
 			handlers.AddMauiCommunityToolkitMaps();
 		});

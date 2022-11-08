@@ -5,14 +5,13 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml;
 using IMap = Microsoft.Maui.Maps.IMap;
 using Windows.Devices.Geolocation;
-using Microsoft.Maui.Devices.Sensors;
 using System.Text.Json;
 
 namespace CommunityToolkit.Maui.Maps.Handlers;
 
 public partial class MapHandlerWindows : MapHandler
 {
-	internal static string? mapsKey;
+	internal static string? MapsKey;
 
 	public MapHandlerWindows() : base(Mapper, CommandMapper)
 	{
@@ -30,12 +29,12 @@ public partial class MapHandlerWindows : MapHandler
 
 	protected override FrameworkElement CreatePlatformView()
 	{
-		if (string.IsNullOrEmpty(mapsKey))
+		if (string.IsNullOrEmpty(MapsKey))
 		{
 			throw new InvalidOperationException("You need to specify a Bing Maps Key");
 		}
 
-		var mapPage = GetMapHtmlPage(mapsKey);
+		var mapPage = GetMapHtmlPage(MapsKey);
 		var webView = new MauiWebView();
 		webView.NavigationCompleted += WebViewNavigationCompleted;
 		webView.WebMessageReceived += WebViewWebMessageReceived;
@@ -246,8 +245,7 @@ public partial class MapHandlerWindows : MapHandler
 
 	static async Task<Location?> GetCurrentLocation()
 	{
-		Location? location = null;
-		var request = new GeolocationRequest(GeolocationAccuracy.Best);
+		Location? location;
 		var geolocator = new Geolocator();
 		var position = await geolocator.GetGeopositionAsync();
 		location = new Location(position.Coordinate.Latitude, position.Coordinate.Longitude);
@@ -257,10 +255,13 @@ public partial class MapHandlerWindows : MapHandler
 
 	void WebViewNavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
 	{
-		//Update intital properties when our page is loaded
+		// Update initial properties when our page is loaded
 		Mapper.UpdateProperties(this, VirtualView);
+		
 		if (regionToGo != null)
+		{
 			MapMoveToRegion(this, VirtualView, regionToGo);
+		}
 	}
 
 	void WebViewWebMessageReceived(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs args)
@@ -268,22 +269,22 @@ public partial class MapHandlerWindows : MapHandler
 		Bounds? mapRect = JsonSerializer.Deserialize<Bounds>(args.WebMessageAsJson);
 		if (mapRect != null)
 		{
-			VirtualView.VisibleRegion = new MapSpan(new Location(mapRect.center.latitude, mapRect.center.longitude), mapRect.height, mapRect.width);
+			VirtualView.VisibleRegion = new MapSpan(new Location(mapRect.Center?.Latitude ?? 0, mapRect.Center?.Longitude ?? 0), mapRect.Height, mapRect.Width);
 		}
 	}
 
 	class Center
 	{
-		public double latitude { get; set; }
-		public double longitude { get; set; }
-		public int altitude { get; set; }
-		public int altitudeReference { get; set; }
+		public double Latitude { get; set; }
+		public double Longitude { get; set; }
+		public int Altitude { get; set; }
+		public int AltitudeReference { get; set; }
 	}
 
 	class Bounds
 	{
-		public Center center { get; set; }
-		public double width { get; set; }
-		public double height { get; set; }
+		public Center? Center { get; set; }
+		public double Width { get; set; }
+		public double Height { get; set; }
 	}
 }

@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net6.0-android;net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
-    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net6.0-windows10.0.19041.0</TargetFrameworks>
+    <TargetFrameworks>net7.0</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net7.0-windows10.0.19041.0</TargetFrameworks>
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -83,12 +83,12 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="$(MauiVersion)" />
-    <PackageReference Include="Microsoft.Maui.Dependencies" Version="$(MauiVersion)">
+    <!--<PackageReference Include="Microsoft.Maui.Dependencies" Version="$(MauiVersion)">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Maui.Extensions" Version="$(MauiVersion)">
       <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
+    </PackageReference>-->
   </ItemGroup>
 
 </Project>
