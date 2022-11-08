@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Extensions;
-using CommunityToolkit.Maui.Core.Primitives;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
