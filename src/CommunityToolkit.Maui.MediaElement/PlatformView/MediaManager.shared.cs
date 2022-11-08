@@ -86,7 +86,6 @@ public partial class MediaManager
 	protected virtual partial void PlatformUpdatePosition();
 	protected virtual partial void PlatformUpdateStatus();
 	protected virtual partial void PlatformUpdateVolume();
-	//TODO: Check if just android has support for this
 	protected virtual partial void PlatformUpdateIsLooping();
 }
 

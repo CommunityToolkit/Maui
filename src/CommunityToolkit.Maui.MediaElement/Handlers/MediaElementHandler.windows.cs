@@ -6,12 +6,16 @@ namespace CommunityToolkit.Maui.MediaElement;
 
 public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaElement>
 {
-	MediaManager? mediaManager;
 	protected override MauiMediaElement CreatePlatformView()
 	{
 		mediaManager ??= new(this.MauiContext ?? throw new NullReferenceException(), VirtualView);
 		var mediaPlatform = mediaManager.CreatePlatformView();
 		return new(mediaPlatform);
+	}
+
+	public static void MapIsLooping(MediaElementHandler handler, MediaElement mediaElement)
+	{
+		handler?.mediaManager?.UpdateIsLooping();
 	}
 
 	public static void MapPosition(MediaElementHandler handler, MediaElement mediaElement)
