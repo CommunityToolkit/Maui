@@ -1,6 +1,4 @@
 ﻿using System.Runtime.Versioning;
-using Microsoft.Maui.Platform;
-using Windows.UI.ViewManagement;
 
 namespace CommunityToolkit.Maui.Core.Platform;
 
