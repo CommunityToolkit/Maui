@@ -13,14 +13,29 @@ static partial class StatusBar
 
 		if (OperatingSystem.IsIOSVersionAtLeast(13))
 		{
-			const int statusBarTag = 38482;
+			var statusBarTag = new IntPtr(38482);
 			foreach (var window in UIApplication.SharedApplication.Windows)
 			{
-				var statusBar = window.ViewWithTag(statusBarTag) ?? new UIView(UIApplication.SharedApplication.StatusBarFrame);
+				var statusBar = window.ViewWithTag(statusBarTag);
+				var statusBarFrame = window.WindowScene?.StatusBarManager?.StatusBarFrame;
+				if (statusBarFrame is null)
+				{
+					continue;
+				}
+				
+				// ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
+				// window.ViewWithTag(tag) can return null
+				statusBar ??= new UIView(statusBarFrame.Value);
 				statusBar.Tag = statusBarTag;
 				statusBar.BackgroundColor = uiColor;
 				statusBar.TintColor = uiColor;
 				statusBar.Frame = UIApplication.SharedApplication.StatusBarFrame;
+				var statusBarSubViews = window.Subviews.Where(x => x.Tag == statusBarTag).ToList();
+				foreach (var statusBarSubView in statusBarSubViews)
+				{
+					statusBarSubView.RemoveFromSuperview();
+				}
+				
 				window.AddSubview(statusBar);
 
 				UpdateStatusBarAppearance(window);
