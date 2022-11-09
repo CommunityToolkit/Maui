@@ -41,7 +41,7 @@ public static class MauiProgram
 #endif
 								.UseMauiMaps()
 								.UseMauiCommunityToolkitMarkup()	
-								.UseMauiCommunityToolkitMaps("")
+								.UseMauiCommunityToolkitMaps("AoMC9rIuqF7yMQ9wGXfCCHnSAsr4ZRoju1NjEplgoGJveL9EdBTuDZSWQDQqHGYY")
 								.UseMauiApp<App>();
 
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>()
@@ -152,6 +152,7 @@ public static class MauiProgram
 		// Add Views Pages + ViewModels
 		services.AddTransientWithShellRoute<DrawingViewPage, DrawingViewViewModel>();
 		services.AddTransientWithShellRoute<ExpanderPage, ExpanderViewModel>();
+		services.AddTransientWithShellRoute<MapsPage, MapsViewModel>();
 		services.AddTransientWithShellRoute<MultiplePopupPage, MultiplePopupViewModel>();
 		services.AddTransientWithShellRoute<PopupAnchorPage, PopupAnchorViewModel>();
 		services.AddTransientWithShellRoute<PopupPositionPage, PopupPositionViewModel>();
