@@ -1,5 +1,5 @@
 ﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public class MapsViewModel : BaseViewModel
+public class BasicMapsViewModel : BaseViewModel
 {
 }

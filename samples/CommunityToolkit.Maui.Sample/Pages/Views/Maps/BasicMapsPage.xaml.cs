@@ -3,9 +3,9 @@ using Microsoft.Maui.Maps;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
-public partial class MapsPage : BasePage<MapsViewModel>
+public partial class BasicMapsPage : BasePage<BasicMapsViewModel>
 {
-	public MapsPage(MapsViewModel mapsViewModel) : base(mapsViewModel) => InitializeComponent();
+	public BasicMapsPage(BasicMapsViewModel mapsViewModel) : base(mapsViewModel) => InitializeComponent();
 
 	protected override void OnNavigatedTo(NavigatedToEventArgs args)
 	{
