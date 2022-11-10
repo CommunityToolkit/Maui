@@ -30,11 +30,6 @@
     <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles</CompilerGeneratedFilesOutputPath>-->
   </PropertyGroup>
 
-  <!-- Got errors while building in the pipeline that Android used all kinds of preview features? Trying if this fixes it. More info: https://aka.ms/dotnet-warnings/preview-features -->
-  <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
-    <EnablePreviewFeatures>True</EnablePreviewFeatures>
-  </PropertyGroup>
-
   <ItemGroup>
     <!-- App Icon -->
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
@@ -75,8 +70,8 @@
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))=='false' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='maccatalyst' and $(Configuration) == 'Debug'">
     <RuntimeIdentifiers>maccatalyst-arm64;maccatalyst-x64</RuntimeIdentifiers>
   </PropertyGroup>
-  
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0-ios|AnyCPU'">
-    <CreatePackage>false</CreatePackage>
-  </PropertyGroup>
+
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.220902.1-preview1" />
+  </ItemGroup>
 </Project>
