@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Reflection;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 
@@ -132,14 +133,6 @@ public class Expander : ContentView, IExpander
 
 	Grid ContentGrid => (Grid)base.Content;
 
-	/// <inheritdoc/>
-	protected override async void OnParentChanged()
-	{
-		base.OnParentChanged();
-
-		await EnsureParentIsNotItemsView().ConfigureAwait(false);
-	}
-
 	static void OnContentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var expander = (Expander)bindable;
@@ -177,34 +170,16 @@ public class Expander : ContentView, IExpander
 		}
 	}
 
-	static void OnIsExpandedPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
+	static void OnIsExpandedPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var expander = (Expander)bindable;
+		ForceUpdateLayoutSizeForItemsView(expander);
+
 		((IExpander)bindable).ExpandedChanged(((IExpander)bindable).IsExpanded);
+	}
 
 	static void OnDirectionPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
 		((Expander)bindable).HandleDirectionChanged((ExpandDirection)newValue);
-
-	// Expander is not currently supported for ListView or CollectionView
-	Task EnsureParentIsNotItemsView()
-	{
-		var parentElement = Parent;
-
-		// The UI Thread is not required for this check
-		// Run this on a background thread to avoid performance impact on the UI Thread
-		return Task.Run(() =>
-		{
-			while (parentElement is not null)
-			{
-				if (parentElement is ListView or ItemsView)
-				{
-					// Marshall the exception to the UI Thread to ensure Exception is surfaced to the developer, stopping the app
-					// Required for MacCatalyst
-					Dispatcher.DispatchIfRequired(() => throw new NotSupportedException($"{nameof(Expander)} is not yet supported in {parentElement.GetType().Name}"));
-				}
-
-				parentElement = parentElement.Parent;
-			}
-		});
-	}
 
 	void HandleDirectionChanged(ExpandDirection expandDirection)
 	{
@@ -235,6 +210,45 @@ public class Expander : ContentView, IExpander
 		var headerView = (View)header;
 		headerView.GestureRecognizers.Remove(tapGestureRecognizer);
 		headerView.GestureRecognizers.Add(tapGestureRecognizer);
+	}
+
+	static async void ForceUpdateLayoutSizeForItemsView(Expander expander)
+	{
+		if (expander.Header is null)
+		{
+			return;
+		}
+
+		Element element = expander;
+		var size = expander.IsExpanded
+				? expander.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins).Request
+				: expander.Header.Measure(double.PositiveInfinity, double.PositiveInfinity);
+		while (element is not null)
+		{
+			if (element.Parent is ListView listView)
+			{
+				(element as Cell)?.ForceUpdateSize();
+			}
+#if IOS || MACCATALYST
+			else if (element is CollectionView collectionView)
+			{
+				var handler = collectionView.Handler as Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler;
+				var controller = handler?.GetType().BaseType?.BaseType?.BaseType?.BaseType?.BaseType?.GetProperty("Controller", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
+				var uiCollectionViewController = controller?.GetValue(handler) as UIKit.UICollectionViewController;
+				if (uiCollectionViewController?.CollectionView.CollectionViewLayout is UIKit.UICollectionViewFlowLayout layout)
+				{
+					layout.EstimatedItemSize = new CoreGraphics.CGSize(size.Width, size.Height);
+					layout.ItemSize = layout.EstimatedItemSize;
+					await Task.Delay(500);
+					layout.InvalidateLayout();
+				}
+
+				collectionView.InvalidateMeasureInternal(Microsoft.Maui.Controls.Internals.InvalidationTrigger.MeasureChanged);
+			}
+#endif
+
+			element = element.Parent;
+		}
 	}
 
 	void IExpander.ExpandedChanged(bool isExpanded)
