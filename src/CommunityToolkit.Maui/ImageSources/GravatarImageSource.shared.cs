@@ -40,7 +40,7 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 	public GravatarImageSource()
 	{
 		Uri = new Uri(defaultGravatarImageAddress);
-		Stream = new Func<CancellationToken, Task<Stream>>(cancelationToken => SingletonHttpClient.DownloadStreamAsync(Uri, cancelationToken));
+		Stream = cancellationToken => SingletonHttpClient.DownloadStreamAsync(Uri, cancellationToken);
 	}
 
 	/// <summary>Gets a value indicating whether the control email is empty.</summary>
@@ -131,7 +131,7 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 	{
 		base.OnParentSet();
 
-		if (Parent is not VisualElement parentElement || parentElement is null)
+		if (Parent is not VisualElement parentElement)
 		{
 			GravatarSize = defaultSize;
 			return;

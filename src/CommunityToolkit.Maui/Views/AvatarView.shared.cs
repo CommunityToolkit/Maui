@@ -355,11 +355,19 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 			&& Height >= 0 // The default value of Height (before the view is drawn onto the page) is -1
 			&& Width >= 0 // The default value of Y (before the view is drawn onto the page) is -1
 			&& avatarImage.Source is not null)
+
 		{
+#if WINDOWS
+			double offsetX = 0;
+			double offsetY = 0;
+#else
+			double offsetX = StrokeThickness + Padding.Left;
+			double offsetY = StrokeThickness + Padding.Top;
+#endif
 			double imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
 			double imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
 
-			Rect rect = new(0, 0, imageWidth, imageHeight);
+			Rect rect = new(offsetX, offsetY, imageWidth, imageHeight);
 
 			avatarImage.Clip = StrokeShape switch
 			{

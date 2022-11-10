@@ -61,7 +61,10 @@ public static class PopupExtensions
 	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
 	public static void SetCanBeDismissedByTappingOutsideOfPopup(this MauiPopup mauiPopup, in IPopup popup)
 	{
-		mauiPopup.ModalInPresentation = !popup.CanBeDismissedByTappingOutsideOfPopup;
+		if (OperatingSystem.IsIOSVersionAtLeast(13))
+		{
+			mauiPopup.ModalInPresentation = !popup.CanBeDismissedByTappingOutsideOfPopup;
+		}
 	}
 
 	/// <summary>
@@ -87,6 +90,11 @@ public static class PopupExtensions
 			frame = UIScreen.MainScreen.Bounds;
 		}
 
+		if (mauiPopup.PopoverPresentationController is null)
+		{
+			throw new InvalidOperationException("PopoverPresentationController cannot be null");
+		}
+
 		if (popup.Anchor is null)
 		{
 			var originY = popup.VerticalOptions switch
@@ -103,12 +111,22 @@ public static class PopupExtensions
 				_ => 0f
 			};
 
+			if (mauiPopup.PopoverPresentationController is null)
+			{
+				throw new InvalidOperationException($"{nameof(mauiPopup.PopoverPresentationController)} Cannot Be Null");
+			}
+
 			mauiPopup.PopoverPresentationController.SourceRect = new CGRect(originX, originY, 0, 0);
 			mauiPopup.PopoverPresentationController.PermittedArrowDirections = 0;
 		}
 		else
 		{
-			var view = popup.Anchor.ToPlatform(popup.Handler?.MauiContext ?? throw new NullReferenceException());
+			if (mauiPopup.PopoverPresentationController is null)
+			{
+				throw new InvalidOperationException($"{nameof(mauiPopup.PopoverPresentationController)} Cannot Be Null");
+			}
+
+			var view = popup.Anchor.ToPlatform(popup.Handler?.MauiContext ?? throw new InvalidOperationException($"{nameof(popup.Handler.MauiContext)} Cannot Be Null"));
 			mauiPopup.PopoverPresentationController.SourceView = view;
 			mauiPopup.PopoverPresentationController.SourceRect = view.Bounds;
 		}
