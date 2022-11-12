@@ -6,17 +6,12 @@ namespace CommunityToolkit.Maui.MediaElement;
 
 public class MediaElement : View, IMediaElement
 {
-	readonly Microsoft.Maui.Dispatching.IDispatcherTimer timer;
+	Microsoft.Maui.Dispatching.IDispatcherTimer? timer;
 
 	public MediaElement()
 	{
-		timer = Dispatcher.CreateTimer();
-		timer.Interval = TimeSpan.FromMilliseconds(100);
-		timer.Tick += OnTimerTick;
-		timer.Start();
+		InitTimer();
 	}
-
-	~MediaElement() => timer.Tick -= OnTimerTick;
 
 	public event EventHandler? UpdateStatus;
 	public event EventHandler<MediaPositionEventArgs>? PlayRequested;
@@ -27,6 +22,30 @@ public class MediaElement : View, IMediaElement
 	{
 		UpdateStatus?.Invoke(this, EventArgs.Empty);
 		Handler?.Invoke(nameof(MediaElement.UpdateStatus));
+	}
+
+	void InitTimer()
+	{
+		if (timer is not null)
+		{
+			return;
+		}
+
+		timer = Dispatcher.CreateTimer();
+		timer.Interval = TimeSpan.FromMilliseconds(100);
+		timer.Tick += OnTimerTick;
+		timer.Start();
+	}
+
+	void ClearTimer()
+	{
+		if (timer is null)
+		{
+			return;
+		}
+		timer.Tick -= OnTimerTick;
+		timer.Stop();
+		timer = null;
 	}
 
 	public static readonly BindableProperty AutoPlayProperty =
@@ -137,6 +156,7 @@ public class MediaElement : View, IMediaElement
 
 	public void Play()
 	{
+		InitTimer();
 		MediaPositionEventArgs args = new(Position);
 		PlayRequested?.Invoke(this, args);
 		Handler?.Invoke(nameof(MediaElement.PlayRequested), args);
@@ -151,6 +171,7 @@ public class MediaElement : View, IMediaElement
 
 	public void Stop()
 	{
+		ClearTimer();
 		MediaPositionEventArgs args = new(Position);
 		StopRequested?.Invoke(this, args);
 		Handler?.Invoke(nameof(MediaElement.StopRequested), args);
@@ -164,7 +185,7 @@ public class MediaElement : View, IMediaElement
 
 	internal void OnMediaEnded()
 	{
-		timer.Tick -= OnTimerTick;
+		ClearTimer();
 		CurrentState = MediaElementState.Stopped;
 		MediaEnded?.Invoke(this, EventArgs.Empty);
 	}
@@ -199,6 +220,7 @@ public class MediaElement : View, IMediaElement
 
 	void OnSourceChanged(object? sender, EventArgs eventArgs)
 	{
+		ClearTimer();
 		OnPropertyChanged(SourceProperty.PropertyName);
 		InvalidateMeasure();
 	}
