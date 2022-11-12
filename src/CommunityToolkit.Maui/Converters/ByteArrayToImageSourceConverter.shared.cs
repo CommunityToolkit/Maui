@@ -20,7 +20,7 @@ public class ByteArrayToImageSourceConverter : BaseConverter<byte[]?, ImageSourc
 	/// <param name="value">The value to convert.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>An object of type <see cref="ImageSource"/>.</returns>
-	[return: NotNullIfNotNull("value")]
+	[return: NotNullIfNotNull(nameof(value))]
 	public override ImageSource? ConvertFrom(byte[]? value, CultureInfo? culture = null)
 	{
 		if (value is null)
