@@ -240,4 +240,24 @@ public class MediaElement : View, IMediaElement
 
 		return volume >= 0.0 && volume <= 1.0;
 	}
+
+	void IMediaElement.MediaEnded()
+	{
+		OnMediaEnded();
+	}
+
+	void IMediaElement.MediaFailed()
+	{
+		OnMediaFailed();
+	}
+
+	void IMediaElement.MediaOpened()
+	{
+		OnMediaOpened();
+	}
+
+	void IMediaElement.SeekCompleted()
+	{
+		SeekCompleted?.Invoke(this, EventArgs.Empty);
+	}
 }

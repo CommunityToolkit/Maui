@@ -24,17 +24,17 @@ public interface IMediaElement : IView
 	/// <summary>
 	/// Fired when the media has ended playing.
 	/// </summary>
-	event EventHandler? MediaEnded;
+	void MediaEnded();
 
 	/// <summary>
 	/// Fired when the media has failed loading.
 	/// </summary>
-	event EventHandler? MediaFailed;
+	void MediaFailed();
 
 	/// <summary>
 	/// Fired when the media has been loaded and is ready to play.
 	/// </summary>
-	event EventHandler? MediaOpened;
+	void MediaOpened();
 
 	/// <summary>
 	/// Pauses the currently playing media.
@@ -54,7 +54,7 @@ public interface IMediaElement : IView
 	/// <summary>
 	/// Fired when a seek action has been completed.
 	/// </summary>
-	event EventHandler? SeekCompleted;
+	void SeekCompleted();
 
 	/// <summary>
 	/// Gets or sets whether to show the playback controls.
