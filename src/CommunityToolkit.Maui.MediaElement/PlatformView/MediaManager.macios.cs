@@ -201,7 +201,7 @@ public partial class MediaManager : IDisposable
 
 	static TimeSpan ConvertTime(CMTime cmTime)
 	{
-		return TimeSpan.FromSeconds(Double.IsNaN(cmTime.Seconds) ? 0 : cmTime.Seconds);
+		return TimeSpan.FromSeconds(double.IsNaN(cmTime.Seconds) ? 0 : cmTime.Seconds);
 	}
 
 	void AddPlayedToEndObserver()
