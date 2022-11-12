@@ -164,7 +164,8 @@ public class MediaElement : View, IMediaElement
 
 	internal void OnMediaEnded()
 	{
-		SetValue(CurrentStateProperty, MediaElementState.Stopped);
+		timer.Tick -= OnTimerTick;
+		CurrentState = MediaElementState.Stopped;
 		MediaEnded?.Invoke(this, EventArgs.Empty);
 	}
 
