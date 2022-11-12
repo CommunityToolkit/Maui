@@ -220,7 +220,6 @@ public class MediaElement : View, IMediaElement
 
 	void OnSourceChanged(object? sender, EventArgs eventArgs)
 	{
-		ClearTimer();
 		OnPropertyChanged(SourceProperty.PropertyName);
 		InvalidateMeasure();
 	}
