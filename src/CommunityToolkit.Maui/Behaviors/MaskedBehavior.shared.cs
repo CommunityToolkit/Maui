@@ -140,7 +140,7 @@ public class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 		await ApplyMask(originalText, token);
 	}
 
-	[return: NotNullIfNotNull("text")]
+	[return: NotNullIfNotNull(nameof(text))]
 	string? RemoveMask(string? text)
 	{
 		if (string.IsNullOrEmpty(text))
@@ -187,7 +187,7 @@ public class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 				}
 			}
 
-			if (View != null)
+			if (View is not null)
 			{
 				View.Text = text;
 			}
