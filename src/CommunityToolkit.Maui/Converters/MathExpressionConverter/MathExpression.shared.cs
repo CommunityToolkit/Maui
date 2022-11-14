@@ -123,7 +123,7 @@ sealed partial class MathExpression
 		return stack.Pop();
 	}
 
-	[GeneratedRegex(@"(?<!\d)\-?(?:\d+\.\d+|\d+)|\+|\-|\/|\*|\(|\)|\^|\%|\,|\w+", RegexOptions.Compiled)]
+	[GeneratedRegex(@"(?<!\d)\-?(?:\d+\.\d+|\d+)|\+|\-|\/|\*|\(|\)|\^|\%|\,|\w+")]
 	private static partial Regex ValidExpressionRegex();
 
 	IEnumerable<string> GetReversePolishNotation(string expression)
