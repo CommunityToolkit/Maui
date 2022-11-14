@@ -116,12 +116,12 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 		}
 	}
 
-	[GeneratedRegex(@"^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}$", RegexOptions.None, 250)]
+	[GeneratedRegex(@"^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}$", RegexOptions.Compiled, 250)]
 	private static partial Regex ValidIpv4Regex();
 
-	[GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase, 250)]
+	[GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled, 250)]
 	private static partial Regex ValidEmailRegex();
 
-	[GeneratedRegex(@"(@)(.+)$", RegexOptions.None, 250)]
+	[GeneratedRegex(@"(@)(.+)$", RegexOptions.Compiled, 250)]
 	private static partial Regex NormalizeDomainRegex();
 }
