@@ -123,6 +123,9 @@ sealed partial class MathExpression
 		return stack.Pop();
 	}
 
+	[GeneratedRegex(@"(?<!\d)\-?(?:\d+\.\d+|\d+)|\+|\-|\/|\*|\(|\)|\^|\%|\,|\w+")]
+	private static partial Regex ValidExpressionRegex();
+
 	IEnumerable<string> GetReversePolishNotation(string expression)
 	{
 		var matches = ValidExpressionRegex().Matches(expression) ?? throw new ArgumentException("Invalid math expression.");
@@ -240,7 +243,4 @@ sealed partial class MathExpression
 
 		return output;
 	}
-
-	[GeneratedRegex(@"(?<!\d)\-?(?:\d+\.\d+|\d+)|\+|\-|\/|\*|\(|\)|\^|\%|\,|\w+")]
-	private static partial Regex ValidExpressionRegex();
 }
