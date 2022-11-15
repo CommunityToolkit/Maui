@@ -3,13 +3,13 @@ using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
 using Windows.Storage.Pickers;
 
-namespace CommunityToolkit.Maui.Essentials;
+namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc />
 public class FolderPickerImplementation : IFolderPicker
 {
 	/// <inheritdoc />
-	public async Task<Folder?> PickAsync(string initialPath, CancellationToken cancellationToken)
+	public async Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)
 	{
 		var folderPicker = new Windows.Storage.Pickers.FolderPicker()
 		{
@@ -20,7 +20,7 @@ public class FolderPickerImplementation : IFolderPicker
 		var folder = await folderPicker.PickSingleFolderAsync();
 		if (folder is null)
 		{
-			return null;
+			throw new FolderPickerException("Folder doesn't exist");
 		}
 
 		return new Folder
@@ -31,7 +31,7 @@ public class FolderPickerImplementation : IFolderPicker
 	}
 
 	/// <inheritdoc />
-	public Task<Folder?> PickAsync(CancellationToken cancellationToken)
+	public Task<Folder> PickAsync(CancellationToken cancellationToken)
 	{
 		return PickAsync(string.Empty, cancellationToken);
 	}

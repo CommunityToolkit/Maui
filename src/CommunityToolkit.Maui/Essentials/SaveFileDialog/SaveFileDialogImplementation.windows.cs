@@ -1,8 +1,9 @@
+using System;
 using System.Diagnostics;
 using CommunityToolkit.Maui.Core;
 using Windows.Storage.Pickers;
 
-namespace CommunityToolkit.Maui.Essentials;
+namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc />
 public partial class SaveFileDialogImplementation : ISaveFileDialog
@@ -10,7 +11,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 	List<string> allFilesExtension = new List<string> { "." };
 
 	/// <inheritdoc />
-	public async Task<bool> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
+	public async Task SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		var savePicker = new FileSavePicker
 		{
@@ -26,16 +27,14 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 
 		if (string.IsNullOrEmpty(file?.Path))
 		{
-			return false;
+			throw new FileSaveException("Path doesn't exist");
 		}
 
 		await WriteStream(stream, file.Path, cancellationToken);
-
-		return true;
 	}
 
 	/// <inheritdoc />
-	public Task<bool> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
+	public Task SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		return SaveAsync(string.Empty, fileName, stream, cancellationToken);
 	}

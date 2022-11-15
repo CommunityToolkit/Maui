@@ -1,6 +1,6 @@
 using CommunityToolkit.Maui.Core;
 
-namespace CommunityToolkit.Maui.Essentials;
+namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc cref="ISaveFileDialog"/>
 public static class SaveFileDialog
@@ -20,8 +20,7 @@ public static class SaveFileDialog
 	/// <param name="fileName">File name with extension</param>
 	/// <param name="stream"><see cref="Stream"/></param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
-	/// <returns>True if file is saved, otherwise False</returns>
-	public static Task<bool> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken) =>
+	public static Task SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken) =>
 		Default.SaveAsync(initialPath, fileName, stream, cancellationToken);
 
 	/// <summary>
@@ -30,8 +29,7 @@ public static class SaveFileDialog
 	/// <param name="fileName">File name with extension</param>
 	/// <param name="stream"><see cref="Stream"/></param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
-	/// <returns>True if file is saved, otherwise False</returns>
-	public static Task<bool> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken) =>
+	public static Task SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken) =>
 		Default.SaveAsync(fileName, stream, cancellationToken);
 
 	internal static void SetDefault(ISaveFileDialog? implementation) =>

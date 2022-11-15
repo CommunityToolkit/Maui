@@ -1,7 +1,6 @@
-using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 
-namespace CommunityToolkit.Maui.Essentials;
+namespace CommunityToolkit.Maui.Storage;
 
 /// <summary>
 /// 
@@ -9,13 +8,12 @@ namespace CommunityToolkit.Maui.Essentials;
 public partial class SaveFileDialogImplementation : ISaveFileDialog
 {
 	/// <inheritdoc/>
-	public async Task<bool> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
+	public async Task SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		var status = await Permissions.RequestAsync<Permissions.StorageWrite>();
 		if (status is not PermissionStatus.Granted)
 		{
-			await Toast.Make("Storage permission is not granted").Show(cancellationToken);
-			return false;
+			throw new PermissionException("Storage permission is not granted");
 		}
 
 		var currentActivity = Platform.CurrentActivity ?? throw new InvalidOperationException($"{nameof(Platform.CurrentActivity)} cannot be null");
@@ -24,23 +22,14 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 
 		if (string.IsNullOrEmpty(path))
 		{
-			return false;
+			throw new FileSaveException("Path doesn't exist");
 		}
 
-		try
-		{
-			await WriteStream(stream, path, cancellationToken);
-			return true;
-		}
-		catch
-		{
-			await Toast.Make("File is not stored").Show(cancellationToken);
-			return false;
-		}
+		await WriteStream(stream, path, cancellationToken);
 	}
 
 	/// <inheritdoc/>
-	public Task<bool> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
+	public Task SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		return SaveAsync(GetExternalDirectory(), fileName, stream, cancellationToken);
 	}

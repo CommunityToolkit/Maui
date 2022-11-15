@@ -1,7 +1,7 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
 
-namespace CommunityToolkit.Maui.Essentials;
+namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc cref="IFolderPicker"/> 
 public static class FolderPicker
@@ -20,7 +20,7 @@ public static class FolderPicker
 	/// <param name="initialPath">Initial path</param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="Folder"/></returns>
-	public static Task<Folder?> PickAsync(string initialPath, CancellationToken cancellationToken) =>
+	public static Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken) =>
 		Default.PickAsync(initialPath, cancellationToken);
 
 	/// <summary>
@@ -28,7 +28,7 @@ public static class FolderPicker
 	/// </summary>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="Folder"/></returns>
-	public static Task<Folder?> PickAsync(CancellationToken cancellationToken) =>
+	public static Task<Folder> PickAsync(CancellationToken cancellationToken) =>
 		Default.PickAsync(cancellationToken);
 
 	internal static void SetDefault(IFolderPicker? implementation) =>

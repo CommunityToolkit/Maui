@@ -8,10 +8,10 @@ public class Folder
 	/// <summary>
 	/// Folder path.
 	/// </summary>
-	public string Path { get; init; } = null!;
+	public required string Path { get; init; }
 
 	/// <summary>
 	/// Folder name.
 	/// </summary>
-	public string Name { get; init; } = null!;
+	public required string Name { get; init; }
 }

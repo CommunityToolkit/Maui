@@ -1,5 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Essentials;
+using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.Pages;

@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Essentials;
+﻿using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
