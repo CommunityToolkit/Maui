@@ -18,7 +18,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 
 		var currentActivity = Platform.CurrentActivity ?? throw new InvalidOperationException($"{nameof(Platform.CurrentActivity)} cannot be null");
 		var dialog = new FileFolderDialog(currentActivity, FileSelectionMode.FileSave, fileName);
-		var path = await dialog.GetFileOrDirectoryAsync(GetExternalDirectory());
+		var path = await dialog.GetFileOrDirectoryAsync(GetExternalDirectory(), cancellationToken: cancellationToken);
 
 		if (string.IsNullOrEmpty(path))
 		{

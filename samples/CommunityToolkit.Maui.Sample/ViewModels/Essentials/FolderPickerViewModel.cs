@@ -16,10 +16,14 @@ public partial class FolderPickerViewModel : BaseViewModel
 	[RelayCommand]
 	async Task PickFolder(CancellationToken cancellationToken)
 	{
-		var folder = await folderPicker.PickAsync(cancellationToken);
-		if (folder != null)
+		try
 		{
+			var folder = await folderPicker.PickAsync(cancellationToken);
 			await Toast.Make($"Folder picked: Name - {folder.Name}, Path - {folder.Path}").Show(cancellationToken);
+		}
+		catch (Exception ex)
+		{
+			await Toast.Make($"Folder is not picked, {ex.Message}").Show(cancellationToken);
 		}
 	}
 }

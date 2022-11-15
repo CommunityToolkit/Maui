@@ -1,5 +1,4 @@
 using CommunityToolkit.Maui.Alerts;
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Mvvm.Input;
 
@@ -11,14 +10,14 @@ public partial class SaveFileDialogViewModel : BaseViewModel
 	async Task SaveFile(CancellationToken cancellationToken)
 	{
 		using var stream = new MemoryStream();
-		var isSaved = await SaveFileDialog.SaveAsync("test.txt", stream, cancellationToken);
-		if (isSaved)
+		try
 		{
+			await SaveFileDialog.SaveAsync("test.txt", stream, cancellationToken);
 			await Toast.Make("File is saved").Show(cancellationToken);
 		}
-		else
+		catch (Exception ex)
 		{
-			await Toast.Make("File is not saved").Show(cancellationToken);
+			await Toast.Make($"File is not saved, {ex.Message}").Show(cancellationToken);
 		}
 	}
 }

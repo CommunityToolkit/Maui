@@ -18,7 +18,7 @@ public class FolderPickerImplementation : IFolderPicker
 
 		var currentActivity = Platform.CurrentActivity ?? throw new InvalidOperationException($"{nameof(Platform.CurrentActivity)} cannot be null");
 		var dialog = new FileFolderDialog(currentActivity, FileSelectionMode.FolderChoose);
-		var path = await dialog.GetFileOrDirectoryAsync(initialPath);
+		var path = await dialog.GetFileOrDirectoryAsync(initialPath, cancellationToken: cancellationToken);
 
 		return new Folder
 		{

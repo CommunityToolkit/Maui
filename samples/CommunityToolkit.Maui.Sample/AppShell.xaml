@@ -55,7 +55,7 @@
 
     <FlyoutItem Title="Essentials"
                 Route="EssentialsGalleryPage"
-                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst=''}">
+                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst={x:Null}}">
         <ShellContent ContentTemplate="{DataTemplate essentials:EssentialsGalleryPage}" />
     </FlyoutItem>
 

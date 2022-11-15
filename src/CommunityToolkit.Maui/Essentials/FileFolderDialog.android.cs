@@ -63,6 +63,7 @@ sealed class FileFolderDialog : IDisposable
 		}
 		catch (IOException)
 		{
+
 		}
 	}
 
