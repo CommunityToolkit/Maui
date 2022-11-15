@@ -18,7 +18,7 @@ public class ImageResourceConverter : BaseConverterOneWay<string?, ImageSource?>
 	/// <param name="value">The value to convert.</param>
 	/// <param name="culture">(Not Used)</param>
 	/// <returns>The ImageSource related to the provided resource ID of the embedded image. If it's null it will returns null.</returns>
-	[return: NotNullIfNotNull("value")]
+	[return: NotNullIfNotNull(nameof(value))]
 	public override ImageSource? ConvertFrom(string? value, CultureInfo? culture = null) => value switch
 	{
 		null => null,

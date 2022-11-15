@@ -179,13 +179,13 @@ public partial class Snackbar
 			this.dismissedTCS = dismissedTCS;
 		}
 
-		public override void OnShown(Object transientBottomBar)
+		public override void OnShown(Object? transientBottomBar)
 		{
 			base.OnShown(transientBottomBar);
 			snackbar.OnShown();
 		}
 
-		public override void OnDismissed(Object transientBottomBar, int e)
+		public override void OnDismissed(Object? transientBottomBar, int e)
 		{
 			base.OnDismissed(transientBottomBar, e);
 

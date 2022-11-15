@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Extensions;
-using CommunityToolkit.Maui.Core.Primitives;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -58,7 +58,6 @@ public class AlertView : UIView
 
 	void ConstraintInParent()
 	{
-		_ = ParentView ?? throw new InvalidOperationException($"{nameof(AlertView)}.{nameof(Initialize)} not called");
 		_ = Container ?? throw new InvalidOperationException($"{nameof(AlertView)}.{nameof(Initialize)} not called");
 
 		const int defaultSpacing = 10;
