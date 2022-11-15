@@ -16,7 +16,7 @@ public sealed class PaddedButton : UIButton
 		TopPadding = topPadding;
 		RightPadding = rightPadding;
 		BottomPadding = bottomPadding;
-		
+
 		SetPadding(leftPadding, topPadding, rightPadding, bottomPadding);
 	}
 
@@ -39,7 +39,7 @@ public sealed class PaddedButton : UIButton
 	/// Bottom Padding
 	/// </summary>
 	public NFloat BottomPadding { get; }
-	
+
 	void SetPadding(NFloat leftPadding, NFloat topPadding, NFloat rightPadding, NFloat bottomPadding)
 	{
 		if (OperatingSystem.IsIOSVersionAtLeast(15))
