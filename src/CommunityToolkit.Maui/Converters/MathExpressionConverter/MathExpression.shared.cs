@@ -128,7 +128,7 @@ sealed partial class MathExpression
 
 	IEnumerable<string> GetReversePolishNotation(string expression)
 	{
-		var matches = ValidExpressionRegex().Matches(expression) ?? throw new ArgumentException("Invalid math expression.");
+		var matches = MathExpressionRegexPattern().Matches(expression) ?? throw new ArgumentException("Invalid math expression.");
 
 		var output = new List<string>();
 		var stack = new Stack<(string Name, MathOperatorPrecedence Precedence)>();

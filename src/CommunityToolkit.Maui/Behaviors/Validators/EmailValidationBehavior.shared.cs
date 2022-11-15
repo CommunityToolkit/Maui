@@ -85,7 +85,7 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 
 		try
 		{
-			return ValidEmailRegex().IsMatch(email);
+			return EmailRegex().IsMatch(email);
 		}
 		catch (RegexMatchTimeoutException)
 		{
@@ -120,7 +120,7 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 	private static partial Regex ValidIpv4Regex();
 
 	[GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase, 250)]
-	private static partial Regex ValidEmailRegex();
+	private static partial Regex EmailRegex();
 
 	[GeneratedRegex(@"(@)(.+)$", RegexOptions.None, 250)]
 	private static partial Regex NormalizeDomainRegex();
