@@ -19,39 +19,39 @@ public class EmailValidationBehaviorTests : BaseTest
 	// Data from https://codefool.tumblr.com/post/15288874550/list-of-valid-and-invalid-email-addresses
 	public static IReadOnlyList<object?[]> EmailTestData { get; } = new[]
 	{
-		new object?[] { @"email@example.com", true },
-		new object?[] { @"firstname.lastname@example.com", true },
-		new object?[] { @"email@subdomain.example.com", true },
-		new object?[] { @"firstname+lastname@example.com", true },
-		new object?[] { @"email@123.123.123.123", true },
-		new object?[] { @"email@[123.123.123.123]", true },
-		new object?[] { @"""email""@example.com", true },
-		new object?[] { @"1234567890@example.com", true },
-		new object?[] { @"email@example-one.com", true },
-		new object?[] { @"_______@example.com", true },
-		new object?[] { @"email@example.name", true },
-		new object?[] { @"email@example.museum", true },
-		new object?[] { @"email@example.co.jp", true },
-		new object?[] { @"firstname-lastname@example.com", true },
-		new object?[] { @"email@😃.example-one.com", true },
-		new object?[] { @"plainaddress", false },
-		new object?[] { @"#@%^%#$@#$@#.com", false },
-		new object?[] { @"@example.com", false },
-		new object?[] { @"Joe Smith<email@example.com>", false },
-		new object?[] { @"email.example.com", false },
-		new object?[] { @"email@example@example.com", false },
-		new object?[] { @".email@example.com", false },
-		new object?[] { @"email.@example.com", false },
-		new object?[] { @"email..email@example.com", false },
-		new object?[] { @"email@example.com (Joe Smith)", false },
-		new object?[] { @"email@example", false },
-		new object?[] { @"email@-example.com", false },
-		new object?[] { @"email@111.222.333.44444", false },
-		new object?[] { @"email@example..com", false },
-		new object?[] { @"Abc..123@example.com", false },
-		new object?[] { @"""(),:;<>[\]", false },
-		new object?[] { @"this\ is""really""not\allowed@example.co", false },
-		new object?[] { "", false },
+		new object[] { @"email@example.com", true },
+		new object[] { @"firstname.lastname@example.com", true },
+		new object[] { @"email@subdomain.example.com", true },
+		new object[] { @"firstname+lastname@example.com", true },
+		new object[] { @"email@123.123.123.123", true },
+		new object[] { @"email@[123.123.123.123]", true },
+		new object[] { @"""email""@example.com", true },
+		new object[] { @"1234567890@example.com", true },
+		new object[] { @"email@example-one.com", true },
+		new object[] { @"_______@example.com", true },
+		new object[] { @"email@example.name", true },
+		new object[] { @"email@example.museum", true },
+		new object[] { @"email@example.co.jp", true },
+		new object[] { @"firstname-lastname@example.com", true },
+		new object[] { @"email@😃.example-one.com", true },
+		new object[] { @"plainaddress", false },
+		new object[] { @"#@%^%#$@#$@#.com", false },
+		new object[] { @"@example.com", false },
+		new object[] { @"Joe Smith<email@example.com>", false },
+		new object[] { @"email.example.com", false },
+		new object[] { @"email@example@example.com", false },
+		new object[] { @".email@example.com", false },
+		new object[] { @"email.@example.com", false },
+		new object[] { @"email..email@example.com", false },
+		new object[] { @"email@example.com (Joe Smith)", false },
+		new object[] { @"email@example", false },
+		new object[] { @"email@-example.com", false },
+		new object[] { @"email@111.222.333.44444", false },
+		new object[] { @"email@example..com", false },
+		new object[] { @"Abc..123@example.com", false },
+		new object[] { @"""(),:;<>[\]", false },
+		new object[] { @"this\ is""really""not\allowed@example.co", false },
+		new object[] { "", false },
 	};
 
 	// Valid Pulic IPv4 Ranges https://phoenixnap.com/kb/public-vs-private-ip-address
@@ -99,6 +99,36 @@ public class EmailValidationBehaviorTests : BaseTest
 		new object[] { "111.111.111.", false },
 		new object[] { "111.111.111.111.", false },
 		new object[] { "111.111.111.111.111", false },
+		new object[] { "", false },
+	};
+
+	public static IReadOnlyList<object?[]> EmailRegexTestData { get; } = new[]
+	{
+		new object[] { @"email@example.com", true },
+		new object[] { @"firstname.lastname@example.com", true },
+		new object[] { @"email@subdomain.example.com", true },
+		new object[] { @"firstname+lastname@example.com", true },
+		new object[] { @"email@123.123.123.123", true },
+		new object[] { @"email@[123.123.123.123]", true },
+		new object[] { @"""email""@example.com", true },
+		new object[] { @"1234567890@example.com", true },
+		new object[] { @"email@example-one.com", true },
+		new object[] { @"_______@example.com", true },
+		new object[] { @"email@example.name", true },
+		new object[] { @"email@example.museum", true },
+		new object[] { @"email@example.co.jp", true },
+		new object[] { @"firstname-lastname@example.com", true },
+		new object[] { @"email@😃.example-one.com", true },
+		new object[] { @"plainaddress", false },
+		new object[] { @"#@%^%#$@#$@#.com", false },
+		new object[] { @"@example.com", false },
+		new object[] { @"Joe Smith<email@example.com>", false },
+		new object[] { @"email.example.com", false },
+		new object[] { @"email@example@example.com", false },
+		new object[] { @"email@example.com (Joe Smith)", false },
+		new object[] { @"email@example", false },
+		new object[] { @"""(),:;<>[\]", false },
+		new object[] { @"this\ is""really""not\allowed@example.co", false },
 		new object[] { "", false },
 	};
 
@@ -235,7 +265,7 @@ public class EmailValidationBehaviorTests : BaseTest
 	public void EnsureValidIpv4Regex(string ipAddress, bool expectedResult)
 	{
 		// Assert
-		Assert.Equal(expectedResult, CustomEmailValidationBehavior.ValidIpv4Regex().IsMatch(ipAddress));
+		Assert.Equal(expectedResult, CustomEmailValidationBehavior.Ipv4Regex().IsMatch(ipAddress));
 	}
 
 	[Fact]
@@ -246,29 +276,31 @@ public class EmailValidationBehaviorTests : BaseTest
 
 		// Assert
 #pragma warning disable CS8604 // Possible null reference argument.
-		Assert.Throws<ArgumentNullException>(() => CustomEmailValidationBehavior.ValidIpv4Regex().IsMatch(nullInputString));
+		Assert.Throws<ArgumentNullException>(() => CustomEmailValidationBehavior.Ipv4Regex().IsMatch(nullInputString));
 #pragma warning restore CS8604 // Possible null reference argument.
 	}
 
 	[Theory]
-	[MemberData(nameof(EmailTestData))]
-	public void EnsureValidEmailRegex(string? value, bool expectedValue)
+	[MemberData(nameof(EmailRegexTestData))]
+	public void EnsureValidEmailRegex(string email, bool expectedValue)
 	{
-#pragma warning disable CS8604 // Possible null reference argument.
-		if (value is null)
-		{
-			// Assert
-			Assert.Throws<ArgumentNullException>(() => CustomEmailValidationBehavior.ValidEmailRegex().IsMatch(value));
-		}
-#pragma warning restore CS8604 // Possible null reference argument.
-		else
-		{
-			// Act
-			var nomalizedDomain = CustomEmailValidationBehavior.NormalizeDomainRegex().Replace(value, CustomEmailValidationBehavior.DomainMapper);
+		// Act
+		var emailWithNormalizedDomain = CustomEmailValidationBehavior.EmailDomainRegex().Replace(email, CustomEmailValidationBehavior.DomainMapper);
 
-			// Assert
-			Assert.Equal(expectedValue, CustomEmailValidationBehavior.ValidEmailRegex().IsMatch(nomalizedDomain));
-		}
+		// Assert
+		Assert.Equal(expectedValue, CustomEmailValidationBehavior.EmailRegex().IsMatch(emailWithNormalizedDomain));
+	}
+
+	[Fact]
+	public void NullEmailRegexThrowsArgumentNullException()
+	{
+		// Assign
+		string? nullInputString = null;
+
+		// Assert
+#pragma warning disable CS8604 // Possible null reference argument.
+		Assert.Throws<ArgumentNullException>(() => CustomEmailValidationBehavior.EmailRegex().IsMatch(nullInputString));
+#pragma warning restore CS8604 // Possible null reference argument.
 	}
 
 	[Theory]
@@ -276,7 +308,7 @@ public class EmailValidationBehaviorTests : BaseTest
 	public void EnsureValidDomainRegex(string emailAddress, string expectedResult)
 	{
 		// Act
-		var replaceResult = CustomEmailValidationBehavior.NormalizeDomainRegex().Replace(emailAddress, CustomEmailValidationBehavior.DomainMapper);
+		var replaceResult = CustomEmailValidationBehavior.EmailDomainRegex().Replace(emailAddress, CustomEmailValidationBehavior.DomainMapper);
 
 		// Assert
 		Assert.Equal(expectedResult, replaceResult);
@@ -290,15 +322,16 @@ public class EmailValidationBehaviorTests : BaseTest
 
 		// Assert
 #pragma warning disable CS8604 // Possible null reference argument.
-		Assert.Throws<ArgumentNullException>(() => CustomEmailValidationBehavior.NormalizeDomainRegex().IsMatch(nullInputString));
+		Assert.Throws<ArgumentNullException>(() => CustomEmailValidationBehavior.EmailRegex().IsMatch(nullInputString));
 #pragma warning restore CS8604 // Possible null reference argument.
 	}
 
 	class CustomEmailValidationBehavior : EmailValidationBehavior
 	{
-		public static new Regex ValidIpv4Regex() => EmailValidationBehavior.ValidIpv4Regex();
-		public static new Regex NormalizeDomainRegex() => EmailValidationBehavior.NormalizeDomainRegex();
-		public static new Regex ValidEmailRegex() => EmailValidationBehavior.ValidEmailRegex();
+		public static new Regex Ipv4Regex() => EmailValidationBehavior.Ipv4Regex();
+		public static new Regex Ipv6Regex() => EmailValidationBehavior.Ipv6Regex();
+		public static new Regex EmailRegex() => EmailValidationBehavior.EmailRegex();
+		public static new Regex EmailDomainRegex() => EmailValidationBehavior.EmailDomainRegex();
 		public static new string DomainMapper(Match match) => EmailValidationBehavior.DomainMapper(match);
 	}
 }

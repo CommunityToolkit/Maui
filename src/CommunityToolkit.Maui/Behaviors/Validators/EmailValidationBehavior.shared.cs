@@ -18,7 +18,7 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 	/// </summary>
 	/// <returns>Generated <see cref="Regex"/></returns>
 	[GeneratedRegex("^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", RegexOptions.None, 250)]
-	protected static partial Regex ValidIpv4Regex();
+	protected static partial Regex Ipv4Regex();
 
 	/// <summary>
 	/// A <see cref="Regex"/> to verify an input only contains hexidecimal characters
@@ -26,7 +26,7 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 	/// </summary>
 	/// <returns>Generated <see cref="Regex"/></returns>
 	[GeneratedRegex(@"\A\b[0-9a-fA-F]+\b\Z", RegexOptions.None, 250)]
-	protected static partial Regex IsHexadecimal();
+	protected static partial Regex HexadecimalRegex();
 
 	/// <summary>
 	/// A <see cref="Regex"/> to verify an input is a valid IPv6 address
@@ -34,7 +34,7 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 	/// </summary>
 	/// <returns>Generated <see cref="Regex"/></returns>
 	[GeneratedRegex("^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$", RegexOptions.None, 250)]
-	protected static partial Regex ValidIpv6Regex();
+	protected static partial Regex Ipv6Regex();
 
 	/// <summary>
 	/// A <see cref="Regex"/> to verify an input is a valid email address
@@ -42,7 +42,7 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 	/// </summary>
 	/// <returns>Generated <see cref="Regex"/></returns>
 	[GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase, 250)]
-	protected static partial Regex ValidEmailRegex();
+	protected static partial Regex EmailRegex();
 
 	/// <summary>
 	/// A <see cref="Regex"/> to normalize an input a domain
@@ -50,38 +50,37 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 	/// </summary>
 	/// <returns>Generated <see cref="Regex"/></returns>
 	[GeneratedRegex(@"(@)(.+)$", RegexOptions.None, 250)]
-	protected static partial Regex NormalizeDomainRegex();
+	protected static partial Regex EmailDomainRegex();
 
-	// Examines the domain part of the email and normalizes it.
+	/// <summary>
+	/// Examines the domain part of the email and normalizes it to ASCII
+	/// </summary>
+	/// <param name="match"></param>
+	/// <returns></returns>
+	/// <exception cref="ArgumentException"></exception>
 	private protected static string DomainMapper(Match match)
 	{
 		// Use IdnMapping class to convert Unicode domain names.
 		var idn = new IdnMapping();
 
+		if (match.Groups[2].Value.StartsWith('-'))
+		{
+			throw new ArgumentException("Domain name cannot start with hyphen.");
+		}
+
 		// Pull out and process domain name (throws ArgumentException on invalid)
 		string domainName = idn.GetAscii(match.Groups[2].Value);
 
 		if (domainName.All(x => char.IsDigit(x) || x is '.')
-			&& !ValidIpv4Regex().IsMatch(domainName))
+			&& !Ipv4Regex().IsMatch(domainName))
 		{
 			throw new ArgumentException("Invalid IPv4 Address.");
 		}
 
-		if (domainName.All(x => char.IsDigit(x) || x is '.')
-			&& !ValidIpv4Regex().IsMatch(domainName))
-		{
-			throw new ArgumentException("Invalid IPv4 Address.");
-		}
-
-		if(IsHexadecimal().IsMatch(domainName)
-			&& !ValidIpv6Regex().IsMatch(domainName))
+		if (HexadecimalRegex().IsMatch(domainName)
+			&& !Ipv6Regex().IsMatch(domainName))
 		{
 			throw new ArgumentException("Invalid IPv6 Address.");
-		}
-
-		if (domainName.StartsWith('-'))
-		{
-			throw new ArgumentException("Domain name cannot start with hyphen.");
 		}
 
 		return match.Groups[1].Value + domainName;
@@ -90,26 +89,6 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 	/// <inheritdoc /> 
 	protected override async ValueTask<bool> ValidateAsync(string? value, CancellationToken token)
 	{
-		if (string.IsNullOrWhiteSpace(value))
-		{
-			return false;
-		}
-
-		if (value.StartsWith('.'))
-		{
-			return false;
-		}
-
-		if (value.Contains("..", StringComparison.Ordinal))
-		{
-			return false;
-		}
-
-		if (value.Contains(".@", StringComparison.Ordinal))
-		{
-			return false;
-		}
-
 		return IsValidEmail(value) && await base.ValidateAsync(value, token);
 	}
 
@@ -140,7 +119,10 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 	// https://docs.microsoft.com/dotnet/standard/base-types/how-to-verify-that-strings-are-in-valid-email-format
 	static bool IsValidEmail(string? email)
 	{
-		if (string.IsNullOrWhiteSpace(email))
+		if (string.IsNullOrWhiteSpace(email)
+			|| email.StartsWith('.')
+			|| email.Contains("..", StringComparison.Ordinal)
+			|| email.Contains(".@", StringComparison.Ordinal))
 		{
 			return false;
 		}
@@ -148,7 +130,7 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 		try
 		{
 			// Normalize the domain
-			email = NormalizeDomainRegex().Replace(email, DomainMapper);
+			email = EmailDomainRegex().Replace(email, DomainMapper);
 		}
 		catch (RegexMatchTimeoutException)
 		{
@@ -161,7 +143,7 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 
 		try
 		{
-			return ValidEmailRegex().IsMatch(email) && MailAddress.TryCreate(email, out _);
+			return EmailRegex().IsMatch(email) && MailAddress.TryCreate(email, out _);
 		}
 		catch (RegexMatchTimeoutException)
 		{
