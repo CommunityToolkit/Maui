@@ -2,7 +2,6 @@
 using System.Net;
 using System.Net.Mail;
 using System.Text.RegularExpressions;
-using Microsoft.Maui.ApplicationModel.Communication;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
