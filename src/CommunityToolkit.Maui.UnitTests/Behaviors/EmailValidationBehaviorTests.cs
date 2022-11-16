@@ -87,7 +87,7 @@ public class EmailValidationBehaviorTests : BaseTest
 		new object[] { "", false },
 	};
 
-	public static IReadOnlyList<object?[]> SubdomainData { get; } = new[]
+	public static IReadOnlyList<object?[]> NonAsciiEmailAddress { get; } = new[]
 	{
 		new object?[] { "example@😃.co.jp", "example@xn--h28h.co.jp" },
 		new object?[] { "example@≡.com", "example@xn--2ch.com" },
@@ -239,7 +239,7 @@ public class EmailValidationBehaviorTests : BaseTest
 	}
 
 	[Theory]
-	[MemberData(nameof(SubdomainData))]
+	[MemberData(nameof(NonAsciiEmailAddress))]
 	public void EnsureValidDomainRegex(string emailAddress, string expectedResult)
 	{
 		// Act
