@@ -25,6 +25,7 @@ public class EmailValidationBehaviorTests : BaseTest
 		new object[] { @"firstname+lastname@example.com", true },
 		new object[] { @"email@123.123.123.123", true },
 		new object[] { @"email@[123.123.123.123]", true },
+		new object[] { @"email@[IPv6:2001:db8:3333:4444:5555:6666:7777:8888]", true },
 		new object[] { @"""email""@example.com", true },
 		new object[] { @"1234567890@example.com", true },
 		new object[] { @"email@example-one.com", true },
@@ -34,6 +35,8 @@ public class EmailValidationBehaviorTests : BaseTest
 		new object[] { @"email@example.co.jp", true },
 		new object[] { @"firstname-lastname@example.com", true },
 		new object[] { @"email@😃.example-one.com", true },
+		new object[] { @"email@IPv6:2001:db8:3333:4444:5555:6666:7777:8888", false },
+		new object[] { @"email@2001:db8:3333:4444:5555:6666:7777:8888", false },
 		new object[] { @"plainaddress", false },
 		new object[] { @"#@%^%#$@#$@#.com", false },
 		new object[] { @"@example.com", false },
@@ -51,54 +54,6 @@ public class EmailValidationBehaviorTests : BaseTest
 		new object[] { @"Abc..123@example.com", false },
 		new object[] { @"""(),:;<>[\]", false },
 		new object[] { @"this\ is""really""not\allowed@example.co", false },
-		new object[] { "", false },
-	};
-
-	// Valid Pulic IPv4 Ranges https://phoenixnap.com/kb/public-vs-private-ip-address
-	public static IReadOnlyList<object?[]> IPv4Data { get; } = new[]
-	{
-		new object[] { "111.222.111.222", true },
-		new object[] { "111.0.111.111", true },
-		new object[] { "111.111.0.111", true },
-		new object[] { "111.111.111.0", true },
-		new object[] { "1.0.0.1", true },
-		new object[] { "9.255.255.255", true },
-		new object[] { "11.0.0.0", true },
-		new object[] { "100.63.255.255", true },
-		new object[] { "100.128.0.0", true },
-		new object[] { "126.255.255.255", true },
-		new object[] { "128.0.0.0", true },
-		new object[] { "169.253.255.255", true },
-		new object[] { "169.255.0.0", true },
-		new object[] { "172.15.255.255", true },
-		new object[] { "172.32.0.0", true },
-		new object[] { "191.255.255.255", true },
-		new object[] { "192.0.1.0", true },
-		new object[] { "192.0.3.0", true },
-		new object[] { "192.88.98.255", true },
-		new object[] { "192.88.100.0", true },
-		new object[] { "192.167.255.255", true },
-		new object[] { "192.169.0.0", true },
-		new object[] { "198.17.255.255", true },
-		new object[] { "198.20.0.0", true },
-		new object[] { "198.51.99.255", true },
-		new object[] { "198.51.101.0", true },
-		new object[] { "203.0.112.255", true },
-		new object[] { "203.0.114.0", true },
-		new object[] { "223.255.255.255", true },
-		new object[] { "255.255.255.255", true },
-		new object[] { "192.168.1.1", true },
-		new object[] { "10.0.1.1", true },
-		new object[] { "172.16.1.1", true },
-		new object[] { "0.111.111.111", true },
-		new object[] { "256.111.111.111", false },
-		new object[] { "111.256.111.111", false },
-		new object[] { "111.111.256.111", false },
-		new object[] { "111.111.111.256", false },
-		new object[] { "111.111.111", false },
-		new object[] { "111.111.111.", false },
-		new object[] { "111.111.111.111.", false },
-		new object[] { "111.111.111.111.111", false },
 		new object[] { "", false },
 	};
 
@@ -261,26 +216,6 @@ public class EmailValidationBehaviorTests : BaseTest
 	}
 
 	[Theory]
-	[MemberData(nameof(IPv4Data))]
-	public void EnsureValidIpv4Regex(string ipAddress, bool expectedResult)
-	{
-		// Assert
-		Assert.Equal(expectedResult, CustomEmailValidationBehavior.Ipv4Regex().IsMatch(ipAddress));
-	}
-
-	[Fact]
-	public void NullValidIpv4RegexThrowsArgumentNullException()
-	{
-		// Assign
-		string? nullInputString = null;
-
-		// Assert
-#pragma warning disable CS8604 // Possible null reference argument.
-		Assert.Throws<ArgumentNullException>(() => CustomEmailValidationBehavior.Ipv4Regex().IsMatch(nullInputString));
-#pragma warning restore CS8604 // Possible null reference argument.
-	}
-
-	[Theory]
 	[MemberData(nameof(EmailRegexTestData))]
 	public void EnsureValidEmailRegex(string email, bool expectedValue)
 	{
@@ -328,8 +263,6 @@ public class EmailValidationBehaviorTests : BaseTest
 
 	class CustomEmailValidationBehavior : EmailValidationBehavior
 	{
-		public static new Regex Ipv4Regex() => EmailValidationBehavior.Ipv4Regex();
-		public static new Regex Ipv6Regex() => EmailValidationBehavior.Ipv6Regex();
 		public static new Regex EmailRegex() => EmailValidationBehavior.EmailRegex();
 		public static new Regex EmailDomainRegex() => EmailValidationBehavior.EmailDomainRegex();
 		public static new string DomainMapper(Match match) => EmailValidationBehavior.DomainMapper(match);
