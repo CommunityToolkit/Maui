@@ -17,7 +17,7 @@ public class EmailValidationBehaviorTests : BaseTest
 	};
 
 	// Data from https://codefool.tumblr.com/post/15288874550/list-of-valid-and-invalid-email-addresses
-	public static IReadOnlyList<object?[]> EmailTestData { get; } = new[]
+	public static IReadOnlyList<object?[]> ForceValidateData { get; } = new[]
 	{
 		new object[] { @"email@example.com", true },
 		new object[] { @"firstname.lastname@example.com", true },
@@ -96,7 +96,7 @@ public class EmailValidationBehaviorTests : BaseTest
 	};
 
 	[Theory]
-	[MemberData(nameof(EmailTestData))]
+	[MemberData(nameof(ForceValidateData))]
 	public async Task IsValid(string? value, bool expectedValue)
 	{
 		// Arrange
