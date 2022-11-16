@@ -170,4 +170,13 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 		return IPAddress.TryParse(normalizedDomain, out var address)
 				&& address.AddressFamily is System.Net.Sockets.AddressFamily.InterNetworkV6;
 	}
+
+	[GeneratedRegex(@"^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}$", RegexOptions.None, 250)]
+	private static partial Regex ValidIpv4Regex();
+
+	[GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase, 250)]
+	private static partial Regex EmailRegex();
+
+	[GeneratedRegex(@"(@)(.+)$", RegexOptions.None, 250)]
+	private static partial Regex NormalizeDomainRegex();
 }
