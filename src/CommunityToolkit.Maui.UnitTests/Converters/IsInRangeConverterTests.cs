@@ -41,9 +41,14 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 		new object?[] { new DateTime(2022, 12, 25), new DateTime(2022, 5, 5), new DateTime(2022, 12, 25), TrueTestObject, FalseTestObject, TrueTestObject },
 		new object?[] { new DateTime(2022, 1, 2), new DateTime(2022, 5, 5), new DateTime(2022, 12, 25), TrueTestObject, FalseTestObject, FalseTestObject },
 		new object?[] { new DateTime(2022, 12, 26), new DateTime(2022, 5, 5), new DateTime(2022, 12, 25), TrueTestObject, FalseTestObject, FalseTestObject },
+		// System.DateTimeOffset
+		new object?[] { new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(3,0,0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, TrueTestObject },
+		new object?[] { new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4,0,0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, TrueTestObject },
+		new object?[] { new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2,0,0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, TrueTestObject },
+		new object?[] { new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(1,0,0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, FalseTestObject },
+		new object?[] { new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(5,0,0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, FalseTestObject },
 
 /*
-System.DateTimeOffset
 System.Decimal
 System.Double
 System.Enum
