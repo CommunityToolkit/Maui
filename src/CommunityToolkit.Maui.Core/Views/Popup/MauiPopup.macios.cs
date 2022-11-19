@@ -66,7 +66,7 @@ public class MauiPopup : UIViewController
 	[MemberNotNull(nameof(VirtualView), nameof(ViewController))]
 	public void SetElement(IPopup element)
 	{
-		if (element.Parent?.Handler is not PageHandler mainPage)
+		if (element.Parent?.Handler is not PageHandler)
 		{
 			throw new InvalidOperationException($"The {nameof(element.Parent)} must be of type {typeof(PageHandler)}.");
 		}
@@ -77,7 +77,7 @@ public class MauiPopup : UIViewController
 		_ = View ?? throw new InvalidOperationException($"{nameof(View)} cannot be null.");
 		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null.");
 
-		var rootViewController = WindowStateManager.Default.GetCurrentUIViewController() ?? throw new InvalidOperationException($"{nameof(mainPage.ViewController)} cannot be null.");
+		var rootViewController = WindowStateManager.Default.GetCurrentUIViewController() ?? throw new InvalidOperationException($"{nameof(PageHandler.ViewController)} cannot be null.");
 		ViewController ??= rootViewController;
 		SetDimmingBackgroundEffect();
 	}

@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Extensions;
-using CommunityToolkit.Maui.Core.Primitives;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -14,10 +14,12 @@ public class AlertView : UIView
 	/// <summary>
 	/// Parent UIView
 	/// </summary>
-	public static UIView ParentView => UIApplication.SharedApplication.ConnectedScenes.ToArray()
+	public static UIView ParentView => OperatingSystem.IsIOSVersionAtLeast(13) ? 
+		UIApplication.SharedApplication.ConnectedScenes.ToArray()
 										.Select(x => x as UIWindowScene)
 										.FirstOrDefault()?
-										.Windows.FirstOrDefault(x => x.IsKeyWindow) ?? throw new InvalidOperationException("KeyWindow is not found");
+										.Windows.FirstOrDefault(x => x.IsKeyWindow) ?? throw new InvalidOperationException("KeyWindow is not found") :
+		UIApplication.SharedApplication.Windows.First(x => x.IsKeyWindow);
 
 	/// <summary>
 	/// PopupView Children
@@ -61,7 +63,6 @@ public class AlertView : UIView
 
 	void ConstraintInParent()
 	{
-		_ = ParentView ?? throw new InvalidOperationException($"{nameof(AlertView)}.{nameof(Initialize)} not called");
 		_ = Container ?? throw new InvalidOperationException($"{nameof(AlertView)}.{nameof(Initialize)} not called");
 
 		const int defaultSpacing = 10;
