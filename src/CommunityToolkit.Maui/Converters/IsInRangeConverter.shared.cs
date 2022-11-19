@@ -29,7 +29,7 @@ public abstract class IsInRangeConverter<TObject> : BaseConverterOneWay<ICompara
 	/// <param name="value">The value to convert.</param>
 	/// <param name="culture">(Not Used)</param>
 	/// <returns>The object assigned to <see cref="TrueObject"/> if value is between <see cref="MinValue"/> and <see cref="MaxValue"/> then <see cref="TrueObject"/> returns true, otherwise the value assigned to <see cref="FalseObject"/>.</returns>
-	public override object ConvertFrom(IComparable value, CultureInfo? culture)
+	public override object ConvertFrom(IComparable value, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(value);
 		ArgumentNullException.ThrowIfNull((MinValue is null && MaxValue is null) ? null : true, nameof(MinValue));
