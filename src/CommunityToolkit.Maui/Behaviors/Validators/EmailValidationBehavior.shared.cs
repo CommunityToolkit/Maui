@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// The validation is achieved through a regular expression that is used to verify whether or not the text input is a valid e-mail address.
 /// It can be overridden to customize the validation through the properties it inherits from <see cref="ValidationBehavior"/>.
 /// </summary>
-public class EmailValidationBehavior : TextValidationBehavior
+public partial class EmailValidationBehavior : TextValidationBehavior
 {
 	/// <inheritdoc /> 
 	protected override async ValueTask<bool> ValidateAsync(string? value, CancellationToken token)
@@ -72,7 +72,7 @@ public class EmailValidationBehavior : TextValidationBehavior
 		try
 		{
 			// Normalize the domain
-			email = Regex.Replace(email, @"(@)(.+)$", DomainMapper, RegexOptions.None, TimeSpan.FromMilliseconds(200));
+			email = NormalizeDomainRegex().Replace(email, DomainMapper);
 		}
 		catch (RegexMatchTimeoutException)
 		{
@@ -85,9 +85,7 @@ public class EmailValidationBehavior : TextValidationBehavior
 
 		try
 		{
-			return Regex.IsMatch(email,
-				@"^[^@\s]+@[^@\s]+\.[^@\s]+$",
-				RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
+			return EmailRegex().IsMatch(email);
 		}
 		catch (RegexMatchTimeoutException)
 		{
@@ -104,7 +102,7 @@ public class EmailValidationBehavior : TextValidationBehavior
 			string domainName = idn.GetAscii(match.Groups[2].Value);
 
 			if (domainName.All(x => char.IsDigit(x) || x is '.')
-				&& !Regex.IsMatch(domainName, @"^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}$"))
+				&& !ValidIpv4Regex().IsMatch(domainName))
 			{
 				throw new ArgumentException("Invalid IPv4 Address.");
 			}
@@ -117,4 +115,13 @@ public class EmailValidationBehavior : TextValidationBehavior
 			return match.Groups[1].Value + domainName;
 		}
 	}
+
+	[GeneratedRegex(@"^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}$", RegexOptions.None, 250)]
+	private static partial Regex ValidIpv4Regex();
+
+	[GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase, 250)]
+	private static partial Regex EmailRegex();
+
+	[GeneratedRegex(@"(@)(.+)$", RegexOptions.None, 250)]
+	private static partial Regex NormalizeDomainRegex();
 }
