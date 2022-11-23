@@ -22,7 +22,7 @@ static partial class StatusBar
 				{
 					continue;
 				}
-				
+
 				// ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
 				// window.ViewWithTag(tag) can return null
 				statusBar ??= new UIView(statusBarFrame.Value);
@@ -35,7 +35,7 @@ static partial class StatusBar
 				{
 					statusBarSubView.RemoveFromSuperview();
 				}
-				
+
 				window.AddSubview(statusBar);
 
 				UpdateStatusBarAppearance(window);

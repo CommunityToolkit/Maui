@@ -14,7 +14,7 @@ public class AlertView : UIView
 	/// <summary>
 	/// Parent UIView
 	/// </summary>
-	public static UIView ParentView => OperatingSystem.IsIOSVersionAtLeast(13) ? 
+	public static UIView ParentView => OperatingSystem.IsIOSVersionAtLeast(13) ?
 		UIApplication.SharedApplication.ConnectedScenes.ToArray()
 										.Select(x => x as UIWindowScene)
 										.FirstOrDefault()?
