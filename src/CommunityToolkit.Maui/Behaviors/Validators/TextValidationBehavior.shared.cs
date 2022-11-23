@@ -165,7 +165,7 @@ public class TextValidationBehavior : ValidationBehavior<string>
 
 	static void OnRegexPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		var textValidationBehavior = ((TextValidationBehavior)bindable);
+		var textValidationBehavior = (TextValidationBehavior)bindable;
 		textValidationBehavior.OnRegexPropertyChanged(textValidationBehavior.RegexPattern, textValidationBehavior.RegexOptions);
 		OnValidationPropertyChanged(bindable, oldValue, newValue);
 	}
