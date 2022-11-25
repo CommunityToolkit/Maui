@@ -1,5 +1,4 @@
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Primitives;
 
 namespace CommunityToolkit.Maui.Storage;
 
@@ -7,14 +6,41 @@ namespace CommunityToolkit.Maui.Storage;
 public partial class SaveFileDialogImplementation : ISaveFileDialog
 {
 	/// <inheritdoc />
-	public Task SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
+	public async Task SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
-		throw new NotImplementedException();
+		var status = await Permissions.RequestAsync<Permissions.StorageRead>();
+		if (status is not PermissionStatus.Granted)
+		{
+			throw new PermissionException("Storage permission is not granted");
+		}
+
+		var dialog = new FileFolderDialog(FileSelectionMode.FileSave, initialPath, fileName: fileName, cancellationToken: cancellationToken);
+		var path = await dialog.Open();
+
+		if (string.IsNullOrEmpty(path))
+		{
+			throw new FileSaveException("Path doesn't exist");
+		}
+
+		await WriteStream(stream, path, cancellationToken);
 	}
 
 	/// <inheritdoc />
 	public Task SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
 	{
-		throw new NotImplementedException();
+		return SaveAsync(GetExternalDirectory(), fileName, stream, cancellationToken);
+	}
+
+	static string GetExternalDirectory()
+	{
+		string? externalDirectory = null;
+		foreach (var storage in Tizen.System.StorageManager.Storages)
+		{
+			if (storage.StorageType == Tizen.System.StorageArea.External)
+			{
+				externalDirectory = storage.RootDirectory;
+			}
+		}
+		return externalDirectory ?? "/home/owner/media/";
 	}
 }
