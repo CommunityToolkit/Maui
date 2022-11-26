@@ -239,8 +239,8 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 			TrueObject = trueObject,
 		};
 
-		var convertResult = ((ICommunityToolkitValueConverter)isInRangeConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture);
-		var convertFromResult = isInRangeConverter.ConvertFrom(value);
+		object? convertResult = ((ICommunityToolkitValueConverter)isInRangeConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture);
+		object convertFromResult = isInRangeConverter.ConvertFrom(value);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
@@ -261,7 +261,24 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 			TrueObject = trueObject,
 		};
 
-		var convertFromResult = isInRangeConverter.ConvertFrom(value);
+		object convertFromResult = isInRangeConverter.ConvertFrom(value);
+		Assert.Equal(expectedResult, convertFromResult);
+	}
+
+	[Theory]
+	[InlineData(20d, 10d, 30d, null, null, true)]
+	[InlineData(5d, 10d, 30d, null, null, false)]
+	public void ReturnObjectsNullExpectBoolReturn(IComparable value, IComparable comparingMinValue, IComparable comparingMaxValue, object trueObject, object falseObject, object expectedResult)
+	{
+		IsInRangeConverter isInRangeConverter = new()
+		{
+			MinValue = comparingMinValue,
+			MaxValue = comparingMaxValue,
+			FalseObject = falseObject,
+			TrueObject = trueObject,
+		};
+
+		object convertFromResult = isInRangeConverter.ConvertFrom(value);
 		Assert.Equal(expectedResult, convertFromResult);
 	}
 }
