@@ -48,26 +48,22 @@ public abstract class IsInRangeConverter<TObject> : BaseConverterOneWay<ICompara
 			throw new ArgumentOutOfRangeException(nameof(value), $" is expected to be of type {nameof(MaxValue)}");
 		}
 
-		bool shouldReturnObjectResult = TrueObject is not null && FalseObject is not null;
-
 		if (MaxValue is null)
 		{
-			return EvaluateCondition(value.CompareTo(MinValue) >= 0, shouldReturnObjectResult);
+			return EvaluateCondition(value.CompareTo(MinValue) >= 0);
 		}
 
 		if (MinValue is null)
 		{
-			return EvaluateCondition(value.CompareTo(MaxValue) <= 0, shouldReturnObjectResult);
+			return EvaluateCondition(value.CompareTo(MaxValue) <= 0);
 		}
 
-		return EvaluateCondition(value.CompareTo(MinValue) >= 0 && value.CompareTo(MaxValue) <= 0, shouldReturnObjectResult);
+		return EvaluateCondition(value.CompareTo(MinValue) >= 0 && value.CompareTo(MaxValue) <= 0);
 	}
 
-	object EvaluateCondition(bool comparisonResult, bool shouldReturnObject) => (comparisonResult, shouldReturnObject) switch
+	object EvaluateCondition(bool comparisonResult) => comparisonResult switch
 	{
-		(true, true) => TrueObject ?? throw new InvalidOperationException($"{nameof(TrueObject)} cannot be null"),
-		(false, true) => FalseObject ?? throw new InvalidOperationException($"{nameof(FalseObject)} cannot be null"),
-		(true, _) => true,
-		_ => false
+		true => TrueObject ?? throw new InvalidOperationException($"{nameof(TrueObject)} cannot be null"),
+		false => FalseObject ?? throw new InvalidOperationException($"{nameof(FalseObject)} cannot be null")
 	};
 }
