@@ -210,7 +210,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		if (playbackState == IPlayer.StateReady)
 		{
-			mediaElement.Duration = TimeSpan.FromMilliseconds(player.Duration);
+			mediaElement.Duration = TimeSpan.FromMilliseconds(
+				player.Duration == C.TimeUnset ? 0 : player.Duration);		
 		}
 	}
 
