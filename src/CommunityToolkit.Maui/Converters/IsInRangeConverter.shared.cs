@@ -66,8 +66,8 @@ public abstract class IsInRangeConverter<TObject> : BaseConverterOneWay<ICompara
 
 	object EvaluateCondition(bool comparisonResult, bool shouldReturnObject) => (comparisonResult, shouldReturnObject) switch
 	{
-		(true, true) => TrueObject,
-		(false, true) => FalseObject,
+		(true, true) => TrueObject ?? throw new InvalidOperationException($"{nameof(TrueObject)} cannot be null"),
+		(false, true) => FalseObject ?? throw new InvalidOperationException($"{nameof(FalseObject)} cannot be null"),
 		(true, _) => true,
 		_ => false
 	};
