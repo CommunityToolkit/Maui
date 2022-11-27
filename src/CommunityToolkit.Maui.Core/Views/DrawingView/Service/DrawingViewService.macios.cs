@@ -59,28 +59,29 @@ public static class DrawingViewService
 		return GetUIImage(points, (context, offset) =>
 		{
 			DrawStrokes(context, points.ToList(), lineWidth, strokeColor, offset);
-		}, background);
+		}, background, lineWidth);
 	}
 
 	static UIImage? GetUIImageForLines(IList<IDrawingLine> lines, in Paint? background)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
+		var maxLineWidth = lines.Select(x => x.LineWidth).Max();
 		return GetUIImage(points, (context, offset) =>
 		{
 			foreach (var line in lines)
 			{
 				DrawStrokes(context, line.Points, line.LineWidth, line.LineColor, offset);
 			}
-		}, background);
+		}, background, maxLineWidth);
 	}
 
-	static UIImage? GetUIImage(ICollection<PointF> points, Action<CGContext, Size> drawStrokes, Paint? background)
+	static UIImage? GetUIImage(ICollection<PointF> points, Action<CGContext, Size> drawStrokes, Paint? background, NFloat maxLineWidth)
 	{
 		const int minSize = 1;
-		var minPointX = points.Min(p => p.X);
-		var minPointY = points.Min(p => p.Y);
-		var drawingWidth = points.Max(p => p.X) - minPointX;
-		var drawingHeight = points.Max(p => p.Y) - minPointY;
+		var minPointX = points.Min(p => p.X) - maxLineWidth;
+		var minPointY = points.Min(p => p.Y) - maxLineWidth;
+		var drawingWidth = points.Max(p => p.X) - minPointX + maxLineWidth;
+		var drawingHeight = points.Max(p => p.Y) - minPointY + maxLineWidth;
 
 		if (drawingWidth < minSize || drawingHeight < minSize)
 		{

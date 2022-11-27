@@ -74,7 +74,7 @@ public static class DrawingViewService
 		Paint? background,
 		bool scale = false)
 	{
-		var (offscreen, offset) = GetCanvasRenderTarget(points, size, scale);
+		var (offscreen, offset) = GetCanvasRenderTarget(points, size, scale, lineWidth);
 		if (offscreen is null)
 		{
 			return null;
@@ -109,7 +109,7 @@ public static class DrawingViewService
 		session.DrawInk(strokes);
 	}
 
-	static (CanvasRenderTarget? offscreen, Size offset) GetCanvasRenderTarget(ICollection<PointF> points, SizeF size, bool scale)
+	static (CanvasRenderTarget? offscreen, Size offset) GetCanvasRenderTarget(ICollection<PointF> points, SizeF size, bool scale, float maxLineWidth)
 	{
 		const int minSize = 1;
 
@@ -118,10 +118,10 @@ public static class DrawingViewService
 			return (null, Size.Zero);
 		}
 
-		var minPointX = points.Min(p => p.X);
-		var minPointY = points.Min(p => p.Y);
-		var drawingWidth = points.Max(p => p.X) - minPointX;
-		var drawingHeight = points.Max(p => p.Y) - minPointY;
+		var minPointX = points.Min(p => p.X) - maxLineWidth;
+		var minPointY = points.Min(p => p.Y) - maxLineWidth;
+		var drawingWidth = points.Max(p => p.X) - minPointX + maxLineWidth;
+		var drawingHeight = points.Max(p => p.Y) - minPointY + maxLineWidth;
 		if (drawingWidth < minSize || drawingHeight < minSize)
 		{
 			return (null, new Size(minPointX, minPointY));
@@ -134,7 +134,8 @@ public static class DrawingViewService
 	static CanvasRenderTarget? GetImageInternal(IList<IDrawingLine> lines, Size size, Paint? background, bool scale = false)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
-		var (offscreen, offset) = GetCanvasRenderTarget(points, size, scale);
+		var maxLineWidth = lines.Select(x => x.LineWidth).Max();
+		var (offscreen, offset) = GetCanvasRenderTarget(points, size, scale, maxLineWidth);
 		if (offscreen is null)
 		{
 			return null;
