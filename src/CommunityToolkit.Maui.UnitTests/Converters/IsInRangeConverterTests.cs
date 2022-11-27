@@ -192,7 +192,7 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 			TrueObject = trueObject,
 		};
 
-		_ = Assert.Throws<ArgumentOutOfRangeException>(() => ((ICommunityToolkitValueConverter)isInRangeConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentOutOfRangeException>(() => ((ICommunityToolkitValueConverter)isInRangeConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
 	}
 
 	[Theory]
@@ -208,7 +208,7 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 			TrueObject = trueObject,
 		};
 
-		_ = Assert.Throws<InvalidOperationException>(() => ((ICommunityToolkitValueConverter)isInRangeConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
+		Assert.Throws<InvalidOperationException>(() => ((ICommunityToolkitValueConverter)isInRangeConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
 	}
 
 	[Theory]
@@ -223,8 +223,8 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 			TrueObject = trueObject,
 		};
 
-		_ = Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)isInRangeConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
-		_ = Assert.Throws<ArgumentNullException>(() => isInRangeConverter.ConvertFrom(value));
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)isInRangeConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentNullException>(() => isInRangeConverter.ConvertFrom(value));
 	}
 
 	[Theory]

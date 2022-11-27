@@ -38,17 +38,18 @@ public abstract class IsInRangeConverter<TObject> : BaseConverterOneWay<ICompara
 			throw new InvalidOperationException($"{nameof(TrueObject)} and {nameof(FalseObject)} should either be both defined or both omitted.");
 		}
 
-		if (MinValue is not null && MinValue.GetType() != value.GetType())
+		var valueType = value.GetType();
+		if (MinValue is not null && MinValue.GetType() != valueType)
 		{
 			throw new ArgumentOutOfRangeException(nameof(value), $" is expected to be of type {nameof(MinValue)}");
 		}
 
-		if (MaxValue is not null && MaxValue.GetType() != value.GetType())
+		if (MaxValue is not null && MaxValue.GetType() != valueType)
 		{
 			throw new ArgumentOutOfRangeException(nameof(value), $" is expected to be of type {nameof(MaxValue)}");
 		}
 
-		bool shouldReturnObjectResult = TrueObject is not null && FalseObject is not null;
+		var shouldReturnObjectResult = TrueObject is not null && FalseObject is not null;
 
 		if (MaxValue is null)
 		{
@@ -65,8 +66,8 @@ public abstract class IsInRangeConverter<TObject> : BaseConverterOneWay<ICompara
 
 	object EvaluateCondition(bool comparisonResult, bool shouldReturnObject) => (comparisonResult, shouldReturnObject) switch
 	{
-		(true, true) => TrueObject ?? throw new InvalidOperationException($"{nameof(TrueObject)} cannot be null"),
-		(false, true) => FalseObject ?? throw new InvalidOperationException($"{nameof(FalseObject)} cannot be null"),
+		(true, true) => TrueObject,
+		(false, true) => FalseObject,
 		(true, _) => true,
 		_ => false
 	};

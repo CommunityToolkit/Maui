@@ -12,7 +12,7 @@ public partial class IsInRangeConverterViewModel : BaseViewModel
 	{
 		get
 		{
-			bool success = char.TryParse(StringCharInRange, out char returnChar);
+			var success = char.TryParse(StringCharInRange, out var returnChar);
 			if (success)
 			{
 				return returnChar;
