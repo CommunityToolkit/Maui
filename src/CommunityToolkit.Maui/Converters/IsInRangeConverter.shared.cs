@@ -48,7 +48,7 @@ public abstract class IsInRangeConverter<TObject> : BaseConverterOneWay<ICompara
 			throw new ArgumentOutOfRangeException(nameof(value), $" is expected to be of type {nameof(MaxValue)}");
 		}
 
-		bool shouldReturnObjectResult = TrueObject is not null && FalseObject is not null;
+		var shouldReturnObjectResult = TrueObject is not null && FalseObject is not null;
 
 		if (MaxValue is null)
 		{
