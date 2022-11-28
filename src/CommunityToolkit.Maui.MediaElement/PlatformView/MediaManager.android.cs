@@ -162,7 +162,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		switch ((PlaybackStateCode)player.PlaybackState)
 		{
 			case PlaybackStateCode.Playing:
-				videoStatus = MediaElementState.Playing;
+				videoStatus = player.PlayWhenReady ? MediaElementState.Playing : MediaElementState.Paused;
 				break;
 
 			case PlaybackStateCode.Paused:
