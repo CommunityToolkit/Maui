@@ -20,8 +20,8 @@
                     <Label Text="Simple Expander (Tap Me)" FontSize="16" FontAttributes="Bold"/>
                 </mct:Expander.Header>
 
-                <mct:Expander.Content BackgroundColor="LightGray">
-                    <VerticalStackLayout>
+                <mct:Expander.Content>
+                    <VerticalStackLayout BackgroundColor="LightGray">
                         <Label Text="Item 1"/>
                         <Label Text="Item 2"/>
                     </VerticalStackLayout>
@@ -34,7 +34,7 @@
                 <mct:Expander.Header>
                     <Label Text="Multi-Level Expander (Tap Me)" FontSize="16" FontAttributes="Bold"/>
                 </mct:Expander.Header>
-                <mct:Expander.Content BackgroundColor="LightGray">
+                <mct:Expander.Content>
                     <mct:Expander Direction="Down" BackgroundColor="LightGray">
                         <mct:Expander.Header>
                             <Label Text="Nested Expander (Tap Me)" FontSize="14" FontAttributes="Bold"/>
