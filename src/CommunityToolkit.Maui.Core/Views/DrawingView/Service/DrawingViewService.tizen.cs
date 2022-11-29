@@ -70,7 +70,7 @@ public static class DrawingViewService
 		}));
 	}
 
-	static (SKBitmap?, SizeF offset) GetBitmap(in ICollection<PointF> points)
+	static (SKBitmap?, SizeF offset) GetBitmap(in ICollection<PointF> points, float maxLineWidth)
 	{
 		if (points.Count is 0)
 		{
@@ -78,10 +78,10 @@ public static class DrawingViewService
 		}
 
 		const int minSize = 1;
-		var minPointX = points.Min(static p => p.X);
-		var minPointY = points.Min(static p => p.Y);
-		var drawingWidth = points.Max(static p => p.X) - minPointX;
-		var drawingHeight = points.Max(static p => p.Y) - minPointY;
+		var minPointX = points.Min(p => p.X) - maxLineWidth;
+		var minPointY = points.Min(p => p.Y) - maxLineWidth;
+		var drawingWidth = points.Max(p => p.X) - minPointX + maxLineWidth;
+		var drawingHeight = points.Max(p => p.Y) - minPointY + maxLineWidth;
 
 		if (drawingWidth < minSize || drawingHeight < minSize)
 		{
@@ -96,7 +96,8 @@ public static class DrawingViewService
 	static SKBitmap? GetBitmapForLines(in IList<IDrawingLine> lines, in Paint? background)
 	{
 		var points = lines.SelectMany(static x => x.Points).ToList();
-		var (image, offset) = GetBitmap(points);
+		var maxLineWidth = lines.Select(x => x.LineWidth).Max();
+		var (image, offset) = GetBitmap(points, maxLineWidth);
 
 		if (image is null)
 		{
@@ -117,7 +118,7 @@ public static class DrawingViewService
 
 	static SKBitmap? GetBitmapForPoints(in ICollection<PointF> points, in float lineWidth, in Color strokeColor, in Paint? background)
 	{
-		var (image, offset) = GetBitmap(points);
+		var (image, offset) = GetBitmap(points, lineWidth);
 		if (image is null)
 		{
 			return null;
