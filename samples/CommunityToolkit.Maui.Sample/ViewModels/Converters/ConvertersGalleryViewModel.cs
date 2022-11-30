@@ -99,13 +99,13 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
 				"A converter that allows the user to convert a LayoutState enum to a boolean value."),
 
 			SectionModel.Create<IsNotNullConverterViewModel>(nameof(IsNotNullConverter),
-				"A converter that allows users to convert an incoming object? to a bool."),
+				"A converter that allows users to convert an incoming `object?` to a bool."),
 
 			SectionModel.Create<IsNullConverterViewModel>(nameof(IsNullConverter),
-				"A converter that allows users to convert an incoming object? to a bool."),
+				"A converter that allows users to convert an incoming `object?` to a bool."),
 
 			SectionModel.Create<IsInRangeConverterViewModel>(nameof(IsInRangeConverter),
-				"A converter that allows users to validate an object is within a range? to a bool.")
+				"A converter that allows users to validate an object is within a range.")
 		})
 	{
 	}
