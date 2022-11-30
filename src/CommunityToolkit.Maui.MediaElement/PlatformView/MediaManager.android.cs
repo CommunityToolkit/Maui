@@ -162,7 +162,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		switch ((PlaybackStateCode)player.PlaybackState)
 		{
 			case PlaybackStateCode.Playing:
-				videoStatus = MediaElementState.Playing;
+				videoStatus = player.PlayWhenReady ? MediaElementState.Playing : MediaElementState.Paused;
 				break;
 
 			case PlaybackStateCode.Paused:
@@ -210,7 +210,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		if (playbackState == IPlayer.StateReady)
 		{
-			mediaElement.Duration = TimeSpan.FromMilliseconds(player.Duration);
+			mediaElement.Duration = TimeSpan.FromMilliseconds(
+				player.Duration == C.TimeUnset ? 0 : player.Duration);		
 		}
 	}
 
