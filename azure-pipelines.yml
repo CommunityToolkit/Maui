@@ -174,12 +174,10 @@ jobs:
         inputs:
           script: 'dotnet pack $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
 
-      - task: VSBuild@1
-        displayName: 'Build and Pack CommunityToolkit.Maui.MediaElement'
+      - task: CmdLine@2
+        displayName: 'Pack CommunityToolkit.Maui.MediaElement NuGet'
         inputs:
-          solution: '$(PathToCommunityToolkitMediaElementCsproj)'
-          configuration: 'Release'
-          msbuildArgs: '/restore -t:pack -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion) -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg'
+          script: 'dotnet pack $(PathToCommunityToolkitMediaElementCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
 
       # check vulnerabilities
       - powershell: |
