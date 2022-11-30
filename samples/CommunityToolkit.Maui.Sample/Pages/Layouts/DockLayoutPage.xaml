@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<pages:BasePage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:mct="clr-namespace:CommunityToolkit.Maui.Layouts;assembly=CommunityToolkit.Maui"
+    xmlns:layouts="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Layouts"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Layouts.DockLayoutPage"
+    x:TypeArguments="layouts:DockLayoutViewModel"
+    x:DataType="layouts:DockLayoutViewModel">
+
+    <ScrollView>
+        <VerticalStackLayout>
+            <Label Margin="0,10,0,0" Text="Simple DockLayout"/>
+            <mct:DockLayout HeightRequest="400" Padding="10,20,30,40" VerticalSpacing="10" HorizontalSpacing="15">
+                <Button mct:DockLayout.DockPosition="Top" Text="Top" HeightRequest="50" />
+                <Button mct:DockLayout.DockPosition="Bottom" Text="Bottom" HeightRequest="70" />
+                <Button mct:DockLayout.DockPosition="Left" Text="Left" WidthRequest="80" />
+                <Button mct:DockLayout.DockPosition="Right" Text="Right" WidthRequest="90" />
+                <Button Text="Center" />
+            </mct:DockLayout>
+
+            <Label Margin="0,10,0,0" Text="DockLayout with multiple items docked at the top"/>
+            <mct:DockLayout HeightRequest="400" Padding="10,20,30,40" VerticalSpacing="10" HorizontalSpacing="15" ShouldExpandLastChild="True">
+                <Button mct:DockLayout.DockPosition="Top" Text="Top1" HeightRequest="50" />
+                <Button mct:DockLayout.DockPosition="Top" Text="Top2" HeightRequest="50" />
+                <Button mct:DockLayout.DockPosition="Top" Text="Top3" HeightRequest="50" />
+                <Button mct:DockLayout.DockPosition="Bottom" Text="Bottom" HeightRequest="70" />
+                <Button mct:DockLayout.DockPosition="Left" Text="Left" WidthRequest="80" />
+                <Button mct:DockLayout.DockPosition="Right" Text="Right" WidthRequest="90" />
+                <Button Text="Center" />
+            </mct:DockLayout>
+
+            <Label Margin="0,10,0,0" Text="DockLayout with multiple items at the center"/>
+            <mct:DockLayout HeightRequest="400" Padding="10,20,30,40" VerticalSpacing="10" HorizontalSpacing="15" ShouldExpandLastChild="True">
+                <Button mct:DockLayout.DockPosition="Top" Text="Top" HeightRequest="50" />
+                <Button mct:DockLayout.DockPosition="Bottom" Text="Bottom" HeightRequest="70" />
+                <Button mct:DockLayout.DockPosition="Left" Text="Left" WidthRequest="80" />
+                <Button mct:DockLayout.DockPosition="Right" Text="Right" WidthRequest="90" />
+                <Button Text="Center1" />
+                <Button Text="Center2" />
+                <Button Text="Center3" />
+            </mct:DockLayout>
+
+            <Label Margin="0,10,0,0" Text="DockLayout without last child not filling space (ShouldExpandLastChild=false)"/>
+            <mct:DockLayout HeightRequest="400" Padding="10,20,30,40" VerticalSpacing="10" HorizontalSpacing="15" ShouldExpandLastChild="False">
+                <Button mct:DockLayout.DockPosition="Top" Text="Top" HeightRequest="50" />
+                <Button mct:DockLayout.DockPosition="Bottom" Text="Bottom" HeightRequest="70" />
+                <Button mct:DockLayout.DockPosition="Left" Text="Left" WidthRequest="80" />
+                <Button mct:DockLayout.DockPosition="Right" Text="Right" WidthRequest="90" />
+                <Button Text="Center" />
+            </mct:DockLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+
+</pages:BasePage>

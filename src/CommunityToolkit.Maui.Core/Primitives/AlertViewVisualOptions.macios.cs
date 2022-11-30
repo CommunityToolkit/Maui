@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.Core.Primitives;
+﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// Visual Options for <see cref="CommunityToolkit.Maui.Core.Views.AlertView"/>

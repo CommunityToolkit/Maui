@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using ViewExtensions = Microsoft.Maui.Controls.ViewExtensions;
 
 namespace CommunityToolkit.Maui.Layouts;
 

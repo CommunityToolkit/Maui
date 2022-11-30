@@ -137,15 +137,17 @@ public static class MauiProgram
 		// Add Extensions Pages + ViewModels
 		services.AddTransientWithShellRoute<ColorAnimationExtensionsPage, ColorAnimationExtensionsViewModel>();
 
-		// Add ImageSources pages + ViewModels
+		// Add ImageSources Pages + ViewModels
 		services.AddTransientWithShellRoute<GravatarImageSourcePage, GravatarImageSourceViewModel>();
 
 		// Add Layouts Pages + ViewModels
+		services.AddTransientWithShellRoute<DockLayoutPage, DockLayoutViewModel>();
 		services.AddTransientWithShellRoute<StateContainerPage, StateContainerViewModel>();
 		services.AddTransientWithShellRoute<UniformItemsLayoutPage, UniformItemsLayoutViewModel>();
 
 		// Add Views Pages + ViewModels
 		services.AddTransientWithShellRoute<DrawingViewPage, DrawingViewViewModel>();
+		services.AddTransientWithShellRoute<ExpanderPage, ExpanderViewModel>();
 		services.AddTransientWithShellRoute<MultiplePopupPage, MultiplePopupViewModel>();
 		services.AddTransientWithShellRoute<PopupAnchorPage, PopupAnchorViewModel>();
 		services.AddTransientWithShellRoute<PopupPositionPage, PopupPositionViewModel>();
