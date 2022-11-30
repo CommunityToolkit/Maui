@@ -121,7 +121,7 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		var videoStatus = MediaElementState.Closed;
+		var videoStatus = MediaElementState.None;
 
 		switch (player.Status)
 		{

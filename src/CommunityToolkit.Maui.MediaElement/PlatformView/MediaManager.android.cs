@@ -157,7 +157,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			return;
 		}
 
-		var videoStatus = MediaElementState.Closed;
+		var videoStatus = MediaElementState.None;
 
 		switch ((PlaybackStateCode)player.PlaybackState)
 		{

@@ -32,6 +32,7 @@
             MediaEnded="OnMediaEnded"
             MediaFailed="OnMediaFailed"
             MediaOpened="OnMediaOpened"
+            StateChanged="OnStateChanged"
             SeekCompleted="OnSeekCompleted"/>
 
         <HorizontalStackLayout Grid.Row="1" Padding="0,0,0,15">

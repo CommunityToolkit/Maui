@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using CommunityToolkit.Maui.MediaElement;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 
@@ -12,17 +13,19 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		InitializeComponent();
 	}
 
-	void OnMediaOpened(object? sender, EventArgs e) => Console.WriteLine("Media opened.");
+	void OnMediaOpened(object? sender, EventArgs e) => Debug.WriteLine("Media opened.");
 
-	void OnMediaFailed(object? sender, EventArgs e) => Console.WriteLine("Media failed.");
+	void OnStateChanged(object? sender, MediaStateChangedEventArgs e) => Debug.WriteLine($"Media State Changed. Old State: {e.PreviousState}, New State: {e.NewState}");
 
-	void OnMediaEnded(object? sender, EventArgs e) => Console.WriteLine("Media ended.");
+	void OnMediaFailed(object? sender, MediaFailedEventArgs e) => Debug.WriteLine($"Media failed. Error: {e.ErrorMessage}");
 
-	void OnSeekCompleted(object? sender, EventArgs e) => Console.WriteLine("Seek completed.");
+	void OnMediaEnded(object? sender, EventArgs e) => Debug.WriteLine("Media ended.");
+
+	void OnSeekCompleted(object? sender, EventArgs e) => Debug.WriteLine("Seek completed.");
 
 	void OnResetClicked(object? sender, EventArgs e) => mediaElement.Source = null;
 
-	void OnMp4OnlineSourceClicked(object? sender, EventArgs e) => mediaElement.Source = MediaSource.FromUri("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
+	void OnMp4OnlineSourceClicked(object? sender, EventArgs e) => mediaElement.Source = MediaSource.FromUri("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp14");
 
 	void OnHlsSourceClicked(object? sender, EventArgs e) => mediaElement.Source = MediaSource.FromUri("https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8");
 

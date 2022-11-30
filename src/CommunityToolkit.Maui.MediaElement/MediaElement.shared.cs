@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Data;
 using CommunityToolkit.Maui.MediaElement.Converters;
 
 namespace CommunityToolkit.Maui.MediaElement;
@@ -54,7 +53,7 @@ public class MediaElement : View, IMediaElement
 
 	public static readonly BindableProperty CurrentStateProperty =
 		  BindableProperty.Create(nameof(CurrentState), typeof(MediaElementState), typeof(MediaElement),
-			  MediaElementState.Closed);
+			  MediaElementState.None);
 
 	public static readonly BindableProperty DurationProperty =
 		  BindableProperty.Create(nameof(Duration), typeof(TimeSpan), typeof(MediaElement), null);
@@ -179,9 +178,11 @@ public class MediaElement : View, IMediaElement
 
 	public event EventHandler? MediaEnded;
 
-	public event EventHandler? MediaFailed;
+	public event EventHandler<MediaFailedEventArgs>? MediaFailed;
 
 	public event EventHandler? MediaOpened;
+
+	public event EventHandler<MediaStateChangedEventArgs>? StateChanged;
 
 	internal void OnMediaEnded()
 	{
@@ -190,7 +191,7 @@ public class MediaElement : View, IMediaElement
 		MediaEnded?.Invoke(this, EventArgs.Empty);
 	}
 
-	internal void OnMediaFailed() => MediaFailed?.Invoke(this, EventArgs.Empty);
+	internal void OnMediaFailed(MediaFailedEventArgs args) => MediaFailed?.Invoke(this, args);
 
 	internal void OnMediaOpened() => MediaOpened?.Invoke(this, EventArgs.Empty);
 
@@ -268,9 +269,9 @@ public class MediaElement : View, IMediaElement
 		OnMediaEnded();
 	}
 
-	void IMediaElement.MediaFailed()
+	void IMediaElement.MediaFailed(MediaFailedEventArgs args)
 	{
-		OnMediaFailed();
+		OnMediaFailed(args);
 	}
 
 	void IMediaElement.MediaOpened()
@@ -281,5 +282,10 @@ public class MediaElement : View, IMediaElement
 	void IMediaElement.SeekCompleted()
 	{
 		SeekCompleted?.Invoke(this, EventArgs.Empty);
+	}
+
+	void IMediaElement.CurrentStateChanged(MediaStateChangedEventArgs args)
+	{
+		StateChanged?.Invoke(this, args);
 	}
 }

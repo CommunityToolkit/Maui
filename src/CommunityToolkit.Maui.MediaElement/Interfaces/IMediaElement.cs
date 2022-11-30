@@ -16,23 +16,30 @@ public interface IMediaElement : IView
 	MediaElementState CurrentState { get; set; }
 
 	/// <summary>
+	/// Occurs when <see cref="CurrentState"/> changes.
+	/// </summary>
+	/// <param name="args">Event arguments containing extra information about this event.</param>
+	void CurrentStateChanged(MediaStateChangedEventArgs args);
+
+	/// <summary>
 	/// The total duration of the loaded media.
 	/// </summary>
 	/// <remarks>Might not be available for some types, like live streams.</remarks>
 	TimeSpan Duration { get; set; }
 
 	/// <summary>
-	/// Fired when the media has ended playing.
+	/// Occurs when the media has ended playing.
 	/// </summary>
 	void MediaEnded();
 
 	/// <summary>
-	/// Fired when the media has failed loading.
+	/// Occurs when the media has failed loading.
 	/// </summary>
-	void MediaFailed();
+	/// <param name="args">Event arguments containing extra information about this event.</param>
+	void MediaFailed(MediaFailedEventArgs args);
 
 	/// <summary>
-	/// Fired when the media has been loaded and is ready to play.
+	/// Occurs when the media has been loaded and is ready to play.
 	/// </summary>
 	void MediaOpened();
 

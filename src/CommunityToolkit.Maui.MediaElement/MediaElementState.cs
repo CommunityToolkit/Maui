@@ -2,8 +2,8 @@
 
 public enum MediaElementState
 {
-	/// <summary>The media source has been closed.</summary>
-	Closed,
+	/// <summary>No current state or state unkown.</summary>
+	None,
 
 	/// <summary>The media source is currently being opened.</summary>
 	Opening,
@@ -19,4 +19,7 @@ public enum MediaElementState
 
 	/// <summary>The media playing has been stopped.</summary>
 	Stopped,
+
+	/// <summary>The media failed to open or play.</summary>
+	Failed,
 }
