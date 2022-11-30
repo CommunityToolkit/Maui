@@ -172,6 +172,7 @@ partial class MediaManager
 		MainThread.BeginInvokeOnMainThread(() =>
 		{
 			mediaElement.Duration = player.MediaPlayer.NaturalDuration;
+			player.MediaPlayer.MediaOpened -= OnMediaPlayerMediaOpened;
 		});
 	}
 }
