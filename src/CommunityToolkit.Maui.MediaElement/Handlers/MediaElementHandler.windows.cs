@@ -13,6 +13,12 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		return new(mediaPlatform);
 	}
 
+	protected override void DisconnectHandler(MauiMediaElement platformView)
+	{
+		platformView.Dispose();
+		base.DisconnectHandler(platformView);
+	}
+
 	public static void MapIsLooping(MediaElementHandler handler, MediaElement mediaElement)
 	{
 		handler?.mediaManager?.UpdateIsLooping();

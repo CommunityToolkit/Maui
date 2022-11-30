@@ -33,7 +33,10 @@ public class MauiMediaElement : CoordinatorLayout
 		if (disposing)
 		{
 			if (playerView is not null)
-			{
+			{                
+				// https://github.com/google/ExoPlayer/issues/1855#issuecomment-251041500
+				playerView.Player?.Release();
+				playerView.Player?.Dispose();
 				playerView.Dispose();
 				playerView = null;
 			}
