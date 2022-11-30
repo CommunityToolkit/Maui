@@ -38,7 +38,7 @@
                 {
                   "name": "isInProject",
                   "parameters": {
-                    "projectName": "New Feature Proposals"
+                    "projectName": "New MAUI Feature Proposals"
                   }
                 }
               ]
@@ -55,7 +55,7 @@
           {
             "name": "addToProject",
             "parameters": {
-              "projectName": "New Feature Proposals",
+              "projectName": "New MAUI Feature Proposals",
               "columnName": "Proposal Submitted"
             }
           }
@@ -75,7 +75,7 @@
             {
               "name": "addedToProjectColumn",
               "parameters": {
-                "projectName": "New Feature Proposals",
+                "projectName": "New MAUI Feature Proposals",
                 "columnName": "Proposal Championed"
               }
             }
@@ -116,7 +116,7 @@
             {
               "name": "addedToProjectColumn",
               "parameters": {
-                "projectName": "New Feature Proposals",
+                "projectName": "New MAUI Feature Proposals",
                 "columnName": "Proposal Approved"
               }
             }
@@ -163,21 +163,21 @@
             {
               "name": "addedToProjectColumn",
               "parameters": {
-                "projectName": "New Feature Proposals",
+                "projectName": "New MAUI Feature Proposals",
                 "columnName": "Proposal Championed"
               }
             },
             {
               "name": "addedToProjectColumn",
               "parameters": {
-                "projectName": "New Feature Proposals",
+                "projectName": "New MAUI Feature Proposals",
                 "columnName": "Proposal Approved"
               }
             },
             {
               "name": "addedToProjectColumn",
               "parameters": {
-                "projectName": "New Feature Proposals",
+                "projectName": "New MAUI Feature Proposals",
                 "columnName": "Pull Request Approved (Pending Documentation)"
               }
             }
@@ -218,14 +218,14 @@
             {
               "name": "addedToProjectColumn",
               "parameters": {
-                "projectName": "New Feature Proposals",
+                "projectName": "New MAUI Feature Proposals",
                 "columnName": "Documentation Approved"
               }
             },
             {
               "name": "addedToProjectColumn",
               "parameters": {
-                "projectName": "New Feature Proposals",
+                "projectName": "New MAUI Feature Proposals",
                 "columnName": "Completed"
               }
             }
@@ -275,7 +275,7 @@
                 {
                   "name": "isInProject",
                   "parameters": {
-                    "projectName": "New Feature Proposals"
+                    "projectName": "New MAUI Feature Proposals"
                   }
                 },
                 {
@@ -304,14 +304,14 @@
                     {
                       "name": "isInProjectColumn",
                       "parameters": {
-                        "projectName": "New Feature Proposals",
+                        "projectName": "New MAUI Feature Proposals",
                         "columnName": "Closed"
                       }
                     },
                     {
                       "name": "isInProjectColumn",
                       "parameters": {
-                        "projectName": "New Feature Proposals",
+                        "projectName": "New MAUI Feature Proposals",
                         "columnName": "Completed"
                       }
                     }
@@ -354,14 +354,14 @@
             {
               "name": "addedToProjectColumn",
               "parameters": {
-                "projectName": "New Feature Proposals",
+                "projectName": "New MAUI Feature Proposals",
                 "columnName": "Completed"
               }
             },
             {
               "name": "addedToProjectColumn",
               "parameters": {
-                "projectName": "New Feature Proposals",
+                "projectName": "New MAUI Feature Proposals",
                 "columnName": "Closed"
               }
             }
