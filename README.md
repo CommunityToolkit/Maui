@@ -10,7 +10,7 @@ All features are contributed by you, our amazing .NET community, and maintained 
 
 And – the best part – the features you add to the .NET MAUI Toolkit may one day be included into the official .NET MAUI library! We leverage the Community Toolkits to debut new features and work closely with the .NET MAUI engineering team to nominate features for promotion.
 
-## Roadmap / plan
+## Roadmap / Plan
 
 All work carried out on the toolkit is done so by the community and the core maintainers in their spare time, due to this reason we do not have a concrete plan on when features will be added and delivered. What we do have is a list of proposals and a [Project board](https://github.com/CommunityToolkit/Maui/projects/1) which summarises they states. Please feel free to check them out and jump in to providing any assistance that you feel you can.
 
