@@ -105,7 +105,7 @@ public class ConvertersGalleryViewModel : BaseGalleryViewModel
 				"A converter that allows users to convert an incoming `object?` to a bool."),
 
 			SectionModel.Create<IsInRangeConverterViewModel>(nameof(IsInRangeConverter),
-				"A converter that allows users to validate an object is within a range.")
+				"A converter that returns a bool if the incoming object is within a defined range.")
 		})
 	{
 	}
