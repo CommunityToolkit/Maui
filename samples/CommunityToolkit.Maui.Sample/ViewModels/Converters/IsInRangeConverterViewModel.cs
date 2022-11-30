@@ -5,20 +5,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 public partial class IsInRangeConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(CharIsInRange))]
-	string stringCharInRange = "H";
+	[NotifyPropertyChangedFor(nameof(InputChar))]
+	string inputString = "H";
 
-	public char? CharIsInRange
-	{
-		get
-		{
-			var success = char.TryParse(StringCharInRange, out var returnChar);
-			if (success)
-			{
-				return returnChar;
-			}
-
-			return (char)0;
-		}
-	}
+	public char InputChar => char.TryParse(InputString, out var returnChar) ? returnChar : default;
 }
