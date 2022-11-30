@@ -1,22 +1,14 @@
-﻿using System.Diagnostics;
-using AVFoundation;
-using AVKit;
-using CoreMedia;
-using Foundation;
-using Microsoft.Maui.Controls;
+﻿using AVKit;
 using UIKit;
 
 namespace CommunityToolkit.Maui.MediaElement.PlatformView;
 
-
 public class MauiMediaElement : UIView
 {
-	protected NSObject? playedToEndObserver;
-
 	public MauiMediaElement(AVPlayerViewController playerViewController)
 	{
 		_ = playerViewController.View ?? throw new NullReferenceException(nameof(playerViewController.View));
-		playerViewController.View.Frame = this.Bounds;
+		playerViewController.View.Frame = Bounds;
 
 #if IOS16_0_OR_GREATER
 		// On iOS 16 the AVPlayerViewController has to be added to the parent ViewController, otherwise the transport controls won't be displayed.
@@ -33,26 +25,5 @@ public class MauiMediaElement : UIView
 #endif
 
 		AddSubview(playerViewController.View);
-	}
-
-	protected override void Dispose(bool disposing)
-	{
-		//if (disposing)
-		//{
-		//	if (player != null)
-		//	{
-		//		player.ReplaceCurrentItemWithPlayerItem(null);
-		//		player.Dispose();
-		//	}
-
-		//	if (playerViewController != null)
-		//	{
-		//		playerViewController.Dispose();
-		//	}
-
-		//	mediaElement = null;
-		//}
-
-		base.Dispose(disposing);
 	}
 }

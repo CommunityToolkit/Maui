@@ -200,7 +200,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		player.RepeatMode = mediaElement.IsLooping ? IPlayer.RepeatModeOne : IPlayer.RepeatModeOff;
 	}
 
-	#region IPlayer.IListener implementation method stubs
 	public void OnPlayerStateChanged(bool playWhenReady, int playbackState)
 	{
 		if (player is null)
@@ -211,10 +210,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		if (playbackState == IPlayer.StateReady)
 		{
 			mediaElement.Duration = TimeSpan.FromMilliseconds(
-				player.Duration == C.TimeUnset ? 0 : player.Duration);		
+				player.Duration < 0 ? 0 : player.Duration);		
 		}
 	}
 
+	#region IPlayer.IListener implementation method stubs
 	public void OnAudioAttributesChanged(AudioAttributes? audioAttributes) { }
 	public void OnAudioSessionIdChanged(int audioSessionId) { }
 	public void OnAvailableCommandsChanged(IPlayer.Commands? availableCommands) { }

@@ -1,24 +1,24 @@
-﻿using System;
-using Microsoft.UI.Xaml.Controls;
-using Windows.Media.Playback;
-using Windows.Storage;
+﻿using Microsoft.UI.Xaml.Controls;
 using Grid = Microsoft.UI.Xaml.Controls.Grid;
-using WinMediaSource = Windows.Media.Core.MediaSource;
 
 namespace CommunityToolkit.Maui.MediaElement.PlatformView;
 
 public class MauiMediaElement : Grid
 {
-	private MediaPlayerElement? _mediaPlayerElement;
+	MediaPlayerElement? mediaPlayerElement;
+
 	public MauiMediaElement(MediaPlayerElement mediaPlayerElement)
 	{
-		_mediaPlayerElement = mediaPlayerElement;
-		Children.Add(_mediaPlayerElement);
+		this.mediaPlayerElement = mediaPlayerElement;
+		Children.Add(this.mediaPlayerElement);
 	}
 
 	public void Dispose()
 	{
-		_mediaPlayerElement?.MediaPlayer.Dispose();
-		_mediaPlayerElement = null;
+		if (mediaPlayerElement is not null)
+		{
+			mediaPlayerElement?.MediaPlayer.Dispose();
+			mediaPlayerElement = null;
+		}
 	}
 }
