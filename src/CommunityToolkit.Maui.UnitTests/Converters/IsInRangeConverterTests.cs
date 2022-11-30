@@ -9,8 +9,7 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 	public const string FalseTestObject = nameof(FalseTestObject);
 	public const string TrueTestObject = nameof(TrueTestObject);
 
-	public enum Days
-	{ Sun, Mon, Tue, Wed, Thu, Fri, Sat };
+	public enum Days { Sun, Mon, Tue, Wed, Thu, Fri, Sat };
 
 	public static IReadOnlyList<object?[]> TestData { get; } = new[]
 	{
@@ -182,7 +181,7 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 	[InlineData(20d, "A", 'B', TrueTestObject, FalseTestObject)]
 	[InlineData(20d, 1d, 'B', TrueTestObject, FalseTestObject)]
 	[InlineData(20d, "A", 1d, TrueTestObject, FalseTestObject)]
-	public void InvalidIComparableThrowArgumentOutOfRangeException(IComparable value, IComparable comparingMinValue, IComparable comparingMaxValue, object trueObject, object falseObject)
+	public void InvalidIComparableThrowArgumentException(IComparable value, IComparable comparingMinValue, IComparable comparingMaxValue, object trueObject, object falseObject)
 	{
 		IsInRangeConverter isInRangeConverter = new()
 		{
@@ -192,7 +191,7 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 			TrueObject = trueObject,
 		};
 
-		Assert.Throws<ArgumentOutOfRangeException>(() => ((ICommunityToolkitValueConverter)isInRangeConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)isInRangeConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
 	}
 
 	[Theory]
@@ -213,7 +212,7 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 
 	[Theory]
 	[InlineData(20d, null, null, TrueTestObject, FalseTestObject)]
-	public void InvalidValuesThrowArgumentNullException(IComparable value, IComparable comparingMinValue, IComparable comparingMaxValue, object trueObject, object falseObject)
+	public void InvalidValuesThrowArgumentException(IComparable value, IComparable comparingMinValue, IComparable comparingMaxValue, object trueObject, object falseObject)
 	{
 		IsInRangeConverter isInRangeConverter = new()
 		{
@@ -223,8 +222,8 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 			TrueObject = trueObject,
 		};
 
-		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)isInRangeConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
-		Assert.Throws<ArgumentNullException>(() => isInRangeConverter.ConvertFrom(value));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)isInRangeConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => isInRangeConverter.ConvertFrom(value));
 	}
 
 	[Theory]

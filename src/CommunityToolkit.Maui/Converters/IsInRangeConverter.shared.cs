@@ -32,7 +32,12 @@ public abstract class IsInRangeConverter<TObject> : BaseConverterOneWay<ICompara
 	public override object ConvertFrom(IComparable value, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(value);
-		ArgumentNullException.ThrowIfNull((MinValue is null && MaxValue is null) ? null : true, nameof(MinValue));
+
+		if(MinValue is null && MaxValue is null)
+		{
+			throw new ArgumentException($"A value is required for {nameof(MinValue)}, or {nameof(MaxValue)}, or both");
+		}
+
 		if (!(TrueObject is null ^ FalseObject is not null))
 		{
 			throw new InvalidOperationException($"{nameof(TrueObject)} and {nameof(FalseObject)} should either be both defined or both omitted.");
@@ -41,12 +46,12 @@ public abstract class IsInRangeConverter<TObject> : BaseConverterOneWay<ICompara
 		var valueType = value.GetType();
 		if (MinValue is not null && MinValue.GetType() != valueType)
 		{
-			throw new ArgumentOutOfRangeException(nameof(value), $" is expected to be of type {nameof(MinValue)}");
+			throw new ArgumentException($"{nameof(value)} is expected to be of type {nameof(MinValue)}, but is {valueType}", nameof(value));
 		}
 
 		if (MaxValue is not null && MaxValue.GetType() != valueType)
 		{
-			throw new ArgumentOutOfRangeException(nameof(value), $" is expected to be of type {nameof(MaxValue)}");
+			throw new ArgumentException($"{nameof(value)} is expected to be of type {nameof(MaxValue)}, but is {valueType}", nameof(value));
 		}
 
 		var shouldReturnObjectResult = TrueObject is not null && FalseObject is not null;
@@ -68,7 +73,7 @@ public abstract class IsInRangeConverter<TObject> : BaseConverterOneWay<ICompara
 	{
 		(true, true) => TrueObject ?? throw new InvalidOperationException($"{nameof(TrueObject)} cannot be null"),
 		(false, true) => FalseObject ?? throw new InvalidOperationException($"{nameof(FalseObject)} cannot be null"),
-		(true, _) => true,
-		_ => false
+		(true, false) => true,
+		(false, false) => false
 	};
 }
