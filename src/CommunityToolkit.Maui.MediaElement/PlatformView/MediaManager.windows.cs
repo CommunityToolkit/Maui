@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Windows.Media.Playback;
+﻿using Windows.Media.Playback;
 using Windows.Storage;
 using WinMediaSource = Windows.Media.Core.MediaSource;
 
@@ -208,11 +207,8 @@ partial class MediaManager : IDisposable
 			MediaPlaybackState.Opening => MediaElementState.Opening,
 			_ => MediaElementState.None,
 		};
-
-		if (newState != previousState)
-		{
-			mediaElement.CurrentStateChanged(new MediaStateChangedEventArgs(previousState, newState));
-		}
+		
+		mediaElement.CurrentStateChanged(new MediaStateChangedEventArgs(previousState, newState));
 	}
 
 	void PlaybackSession_PositionChanged(MediaPlaybackSession sender, object args)
