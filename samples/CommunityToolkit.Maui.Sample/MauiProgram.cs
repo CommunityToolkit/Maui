@@ -114,6 +114,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<IntToBoolConverterPage, IntToBoolConverterViewModel>();
 		services.AddTransientWithShellRoute<InvertedBoolConverterPage, InvertedBoolConverterViewModel>();
 		services.AddTransientWithShellRoute<IsEqualConverterPage, IsEqualConverterViewModel>();
+		services.AddTransientWithShellRoute<IsInRangeConverterPage, IsInRangeConverterViewModel>();
 		services.AddTransientWithShellRoute<IsListNotNullOrEmptyConverterPage, IsListNotNullOrEmptyConverterViewModel>();
 		services.AddTransientWithShellRoute<IsListNullOrEmptyConverterPage, IsListNullOrEmptyConverterViewModel>();
 		services.AddTransientWithShellRoute<IsNotEqualConverterPage, IsNotEqualConverterViewModel>();
