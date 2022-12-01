@@ -1,4 +1,4 @@
-﻿using Android.Media.Session;
+﻿using Android.Support.V4.Media.Session;
 using Android.Widget;
 using Com.Google.Android.Exoplayer2;
 using Com.Google.Android.Exoplayer2.Audio;
@@ -37,7 +37,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			return;
 		}
-
+		player.Prepare();
 		player.Play();
 	}
 
@@ -54,16 +54,17 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	protected virtual partial void PlatformStop(TimeSpan timeSpan)
 	{
 		// TODO do something with position
-		if (player is null)
+		if (player is null || mediaElement is null)
 		{
 			return;
 		}
 
 		// Stops and resets the media player
-		player.Stop();
-		player.SeekTo(0);
 		player.PlayWhenReady = false;
-		player.Prepare();
+		player.SeekTo(0);
+		player.Stop();
+
+		mediaElement.Position = TimeSpan.Zero;
 	}
 	protected virtual partial void PlatformUpdateSource()
 	{
@@ -157,25 +158,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			return;
 		}
 
-		var videoStatus = MediaElementState.None;
-
-		switch ((PlaybackStateCode)player.PlaybackState)
-		{
-			case PlaybackStateCode.Playing:
-				videoStatus = player.PlayWhenReady ? MediaElementState.Playing : MediaElementState.Paused;
-				break;
-
-			case PlaybackStateCode.Paused:
-				videoStatus = MediaElementState.Paused;
-				break;
-
-			case PlaybackStateCode.Stopped:
-				videoStatus = MediaElementState.Stopped;
-				break;
-		}
-
-		mediaElement.CurrentState = videoStatus;
-
 		mediaElement.Position = TimeSpan.FromMilliseconds(player.CurrentPosition);
 	}
 
@@ -207,11 +189,66 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			return;
 		}
 
+		var previousState = mediaElement.CurrentState;
+		MediaElementState newState;
+
+		switch (playbackState)
+		{
+			case PlaybackStateCompat.StateFastForwarding:
+			case PlaybackStateCompat.StateRewinding:
+			case PlaybackStateCompat.StateSkippingToNext:
+			case PlaybackStateCompat.StateSkippingToPrevious:
+			case PlaybackStateCompat.StateSkippingToQueueItem:
+			case PlaybackStateCompat.StatePlaying:
+				newState = playWhenReady ? MediaElementState.Playing : MediaElementState.Paused;
+				break;
+			case PlaybackStateCompat.StatePaused:
+				newState = MediaElementState.Paused;
+				break;
+			case PlaybackStateCompat.StateConnecting:
+			case PlaybackStateCompat.StateBuffering:
+				newState = MediaElementState.Buffering;
+				break;
+			case PlaybackStateCompat.StateNone:
+				newState = MediaElementState.None;
+				break;
+			case PlaybackStateCompat.StateStopped:
+				newState = MediaElementState.Stopped;
+				break;
+			case PlaybackStateCompat.StateError:
+				newState = MediaElementState.Failed;
+				break;
+			default:
+				newState = MediaElementState.None;
+				break;
+		}
+
+		if (newState != previousState)
+		{
+			mediaElement.CurrentStateChanged(new MediaStateChangedEventArgs(previousState, newState));
+		}
+
 		if (playbackState == IPlayer.StateReady)
 		{
 			mediaElement.Duration = TimeSpan.FromMilliseconds(
-				player.Duration < 0 ? 0 : player.Duration);		
+				player.Duration < 0 ? 0 : player.Duration);
 		}
+	}
+
+	public void OnPlayerError(PlaybackException? error)
+	{
+		if (mediaElement is null)
+		{
+			return;
+		}
+
+		// TODO add more detail to error message?
+		mediaElement?.MediaFailed(new MediaFailedEventArgs(error?.Message ?? ""));
+	}
+
+	public void OnSeekProcessed()
+	{
+		mediaElement?.SeekCompleted();
 	}
 
 	#region IPlayer.IListener implementation method stubs
@@ -233,7 +270,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	public void OnPlaybackParametersChanged(PlaybackParameters? playbackParameters) { }
 	public void OnPlaybackStateChanged(int playbackState) { }
 	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
-	public void OnPlayerError(PlaybackException? error) { }
 	public void OnPlayerErrorChanged(PlaybackException? error) { }
 	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata) { }
 	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason) { }
@@ -243,7 +279,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	public void OnRepeatModeChanged(int repeatMode) { }
 	public void OnSeekBackIncrementChanged(long seekBackIncrementMs) { }
 	public void OnSeekForwardIncrementChanged(long seekForwardIncrementMs) { }
-	public void OnSeekProcessed() { }
 	public void OnShuffleModeEnabledChanged(bool shuffleModeEnabled) { }
 	public void OnSkipSilenceEnabledChanged(bool skipSilenceEnabled) { }
 	public void OnSurfaceSizeChanged(int width, int height) { }

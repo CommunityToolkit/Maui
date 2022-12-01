@@ -10,6 +10,12 @@ namespace CommunityToolkit.Maui.MediaElement;
 public partial class MediaManager : IDisposable
 {
 	protected NSObject? playedToEndObserver;
+	protected NSObject? itemFailedToPlayToEndTimeObserver;
+	protected NSObject? playbackStalledObserver;
+	protected NSObject? errorObserver;
+	protected IDisposable? statusObserver;
+	protected IDisposable? timeControlStatusObserver;
+	protected IDisposable? currentItemObserver;
 	protected AVPlayerViewController? playerViewController;
 	protected AVPlayerItem? playerItem;
 
@@ -21,7 +27,10 @@ public partial class MediaManager : IDisposable
 			Player = player
 		};
 
+		AddStatusObservers();
 		AddPlayedToEndObserver();
+		AddErrorObservers();
+
 		return (player, playerViewController);
 	}
 
@@ -37,8 +46,11 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformStop(TimeSpan timeSpan)
 	{
+		// There's no Stop method so pause the video and reset its position
+		player?.Seek(CMTime.Zero);
 		player?.Pause();
-		player?.Seek(new CMTime(0, 1));
+
+		mediaElement.CurrentStateChanged(new MediaStateChangedEventArgs(mediaElement.CurrentState, MediaElementState.Stopped));
 	}
 
 	protected virtual partial void PlatformUpdateSource()
@@ -73,7 +85,18 @@ public partial class MediaManager : IDisposable
 			playerItem = null;
 		}
 
+		currentItemObserver?.Dispose();
+
 		player?.ReplaceCurrentItemWithPlayerItem(playerItem);
+
+		currentItemObserver = playerItem?.AddObserver("error", NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.New, (NSObservedChange change) =>
+		{
+			if (player?.CurrentItem?.Error != null)
+			{
+				mediaElement.MediaFailed(new MediaFailedEventArgs(player?.CurrentItem?.Error?.LocalizedDescription ?? ""));
+			}
+		});
+
 		if (playerItem is not null && mediaElement.AutoPlay)
 		{
 			player?.Play();
@@ -110,7 +133,8 @@ public partial class MediaManager : IDisposable
 		var controlPosition = ConvertTime(player.CurrentTime);
 		if (Math.Abs((controlPosition - mediaElement.Position).TotalSeconds) > 1)
 		{
-			player.Seek(CMTime.FromSeconds(mediaElement.Position.TotalSeconds, 1));
+			player.Seek(CMTime.FromSeconds(mediaElement.Position.TotalSeconds, 1),
+				(a) => mediaElement?.SeekCompleted());
 		}
 	}
 
@@ -120,36 +144,6 @@ public partial class MediaManager : IDisposable
 		{
 			return;
 		}
-
-		var videoStatus = MediaElementState.None;
-
-		switch (player.Status)
-		{
-			case AVPlayerStatus.ReadyToPlay:
-				switch (player.TimeControlStatus)
-				{
-					case AVPlayerTimeControlStatus.WaitingToPlayAtSpecifiedRate:
-						videoStatus = MediaElementState.Buffering;
-						break;
-
-					case AVPlayerTimeControlStatus.Playing:
-						videoStatus = MediaElementState.Playing;
-						break;
-
-					case AVPlayerTimeControlStatus.Paused:
-						videoStatus = MediaElementState.Paused;
-						break;
-				}
-				break;
-		}
-
-		// There is no real stopped state, if position is 0 and status is paused, assume stopped
-		if (videoStatus == MediaElementState.Paused && mediaElement.Position == TimeSpan.Zero)
-		{
-			videoStatus = MediaElementState.Stopped;
-		}
-
-		mediaElement.CurrentState = videoStatus;
 
 		if (playerItem is not null)
 		{
@@ -185,7 +179,12 @@ public partial class MediaManager : IDisposable
 		{
 			if (player is not null)
 			{
+				DestroyErrorObservers();
+				DestroyPlayedToEndObserver();
+				
 				player.ReplaceCurrentItemWithPlayerItem(null);
+				statusObserver?.Dispose();
+				timeControlStatusObserver?.Dispose();
 				player.Dispose();
 			}
 
@@ -204,26 +203,127 @@ public partial class MediaManager : IDisposable
 		return TimeSpan.FromSeconds(double.IsNaN(cmTime.Seconds) ? 0 : cmTime.Seconds);
 	}
 
+	void AddStatusObservers()
+	{
+		if (player is null)
+		{
+			return;
+		}
+
+		statusObserver = player.AddObserver("status", NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.New, StatusChanged);
+		timeControlStatusObserver = player.AddObserver("timeControlStatus", NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.New, TimeControlStatusChanged);
+	}
+
+	void AddErrorObservers()
+	{
+		DestroyErrorObservers();
+
+		itemFailedToPlayToEndTimeObserver = AVPlayerItem.Notifications.ObserveItemFailedToPlayToEndTime(ErrorOccured);
+		playbackStalledObserver = AVPlayerItem.Notifications.ObservePlaybackStalled(ErrorOccured);
+		errorObserver = AVPlayerItem.Notifications.ObserveNewErrorLogEntry(ErrorOccured);
+	}
+
 	void AddPlayedToEndObserver()
 	{
 		DestroyPlayedToEndObserver();
 
-		playedToEndObserver =
-			NSNotificationCenter.DefaultCenter.AddObserver(AVPlayerItem.DidPlayToEndTimeNotification, PlayedToEnd);
+		playedToEndObserver = AVPlayerItem.Notifications.ObserveDidPlayToEndTime(PlayedToEnd);
+	}
+
+	void DestroyErrorObservers()
+	{
+		itemFailedToPlayToEndTimeObserver?.Dispose();
+		playbackStalledObserver?.Dispose();
+		errorObserver?.Dispose();
 	}
 
 	void DestroyPlayedToEndObserver()
 	{
-		if (playedToEndObserver is not null)
-		{
-			NSNotificationCenter.DefaultCenter.RemoveObserver(playedToEndObserver);
-			DisposeObservers(ref playedToEndObserver);
-		}
+		playedToEndObserver?.Dispose();
 	}
 
-	void PlayedToEnd(NSNotification notification)
+	void StatusChanged(NSObservedChange obj)
 	{
-		if (notification.Object != playerViewController?.Player?.CurrentItem || player is null)
+		if (player is null)
+		{
+			return;
+		}
+
+		var previousState = mediaElement.CurrentState;
+		MediaElementState newState = MediaElementState.None;
+
+		switch (player.Status)
+		{
+			case AVPlayerStatus.Unknown:
+				newState = MediaElementState.Stopped;
+				break;
+			case AVPlayerStatus.ReadyToPlay:
+				newState = MediaElementState.Paused;
+				break;
+			case AVPlayerStatus.Failed:
+				newState = MediaElementState.Failed;
+				break;
+		}
+
+		mediaElement.CurrentStateChanged(new MediaStateChangedEventArgs(previousState, newState));
+	}
+
+	void TimeControlStatusChanged(NSObservedChange obj)
+	{
+		if (player is null)
+		{
+			return;
+		}
+
+		if (player.Status == AVPlayerStatus.Unknown)
+		{
+			return;
+		}
+
+		if (player.CurrentItem?.Error is not null)	{ return; }
+
+		var previousState = mediaElement.CurrentState;
+		MediaElementState newState = MediaElementState.None;
+
+		switch (player.TimeControlStatus)
+		{
+			case AVPlayerTimeControlStatus.Paused:
+				newState = MediaElementState.Paused;
+				break;
+			case AVPlayerTimeControlStatus.Playing:
+				newState = MediaElementState.Playing;
+				break;
+			case AVPlayerTimeControlStatus.WaitingToPlayAtSpecifiedRate:
+				newState = MediaElementState.Buffering;
+				break;
+		}
+
+		mediaElement.CurrentStateChanged(new MediaStateChangedEventArgs(previousState, newState));
+	}
+
+	void ErrorOccured(object? sender, NSNotificationEventArgs args)
+	{
+		Exception exception;
+		string message;
+
+		var error = player?.CurrentItem?.Error;
+		if (error != null)
+		{
+			exception = new NSErrorException(error);
+			message = error.LocalizedDescription;
+		}
+		else
+		{
+			message = args.Notification?.ToString() ?? "MediaItem failed with unknown reason";
+			exception = new ApplicationException(message);
+		}
+
+		mediaElement.MediaFailed(new MediaFailedEventArgs(message));
+	}
+
+	void PlayedToEnd(object? sender, NSNotificationEventArgs args)
+	{
+		if (args.Notification.Object != playerViewController?.Player?.CurrentItem || player is null)
 		{
 			return;
 		}

@@ -191,7 +191,17 @@ public class MediaElement : View, IMediaElement
 		MediaEnded?.Invoke(this, EventArgs.Empty);
 	}
 
-	internal void OnMediaFailed(MediaFailedEventArgs args) => MediaFailed?.Invoke(this, args);
+	internal void OnMediaFailed(MediaFailedEventArgs args)
+	{
+		Duration = Position = TimeSpan.Zero;
+
+		var previousState = CurrentState;
+		CurrentState = MediaElementState.Failed;
+
+		StateChanged?.Invoke(this, new MediaStateChangedEventArgs(previousState, CurrentState));
+
+		MediaFailed?.Invoke(this, args);
+	}
 
 	internal void OnMediaOpened() => MediaOpened?.Invoke(this, EventArgs.Empty);
 
@@ -286,6 +296,10 @@ public class MediaElement : View, IMediaElement
 
 	void IMediaElement.CurrentStateChanged(MediaStateChangedEventArgs args)
 	{
-		StateChanged?.Invoke(this, args);
+		if (args.NewState != args.PreviousState)
+		{
+			CurrentState = args.NewState;
+			StateChanged?.Invoke(this, args);
+		}
 	}
 }

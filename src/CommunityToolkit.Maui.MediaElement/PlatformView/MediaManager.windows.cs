@@ -39,7 +39,9 @@ partial class MediaManager : IDisposable
 			player.MediaPlayer.Pause();
 			player.MediaPlayer.Position = TimeSpan.Zero;
 
-			mediaElement.CurrentState = MediaElementState.Stopped;
+			mediaElement.CurrentStateChanged(
+				new MediaStateChangedEventArgs(mediaElement.CurrentState,
+				MediaElementState.Stopped));
 		}
 	}
 
@@ -172,10 +174,6 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
-		mediaElement.Position = TimeSpan.Zero;
-		mediaElement.Duration = TimeSpan.Zero;
-		mediaElement.CurrentState = MediaElementState.Failed;
-
 		string errorMessage = string.Empty;
 		string errorCode = string.Empty;
 		string error = args.Error.ToString();
@@ -213,7 +211,6 @@ partial class MediaManager : IDisposable
 
 		if (newState != previousState)
 		{
-			mediaElement.CurrentState = newState;
 			mediaElement.CurrentStateChanged(new MediaStateChangedEventArgs(previousState, newState));
 		}
 	}
