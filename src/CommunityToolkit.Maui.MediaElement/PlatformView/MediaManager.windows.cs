@@ -202,27 +202,14 @@ partial class MediaManager : IDisposable
 		}
 
 		var previousState = mediaElement.CurrentState;
-		MediaElementState newState;
-
-		switch (sender.PlaybackState)
+		var newState = sender.PlaybackState switch
 		{
-			case MediaPlaybackState.Buffering:
-				newState = MediaElementState.Buffering;
-				break;
-			case MediaPlaybackState.Playing:
-				newState = MediaElementState.Playing;
-				break;
-			case MediaPlaybackState.Paused:
-				newState = MediaElementState.Paused;
-				break;
-			case MediaPlaybackState.Opening:
-				newState = MediaElementState.Opening;
-				break;
-			default:
-			case MediaPlaybackState.None:
-				newState = MediaElementState.None;
-				break;
-		}
+			MediaPlaybackState.Buffering => MediaElementState.Buffering,
+			MediaPlaybackState.Playing => MediaElementState.Playing,
+			MediaPlaybackState.Paused => MediaElementState.Paused,
+			MediaPlaybackState.Opening => MediaElementState.Opening,
+			_ => MediaElementState.None,
+		};
 
 		if (newState != previousState)
 		{

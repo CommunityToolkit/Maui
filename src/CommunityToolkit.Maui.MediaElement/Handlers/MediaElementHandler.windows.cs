@@ -1,10 +1,9 @@
-﻿using System;
-using CommunityToolkit.Maui.MediaElement.PlatformView;
+﻿using CommunityToolkit.Maui.MediaElement.PlatformView;
 using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.MediaElement;
 
-public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaElement>
+public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaElement>, IDisposable
 {
 	protected override MauiMediaElement CreatePlatformView()
 	{
@@ -85,5 +84,20 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 
 		var position = ((MediaPositionEventArgs)args).Position;
 		handler.mediaManager?.Stop(position);
+	}
+
+	protected virtual void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			mediaManager?.Dispose();
+			mediaManager = null;
+		}
+	}
+
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
 	}
 }

@@ -86,13 +86,18 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		handler.mediaManager?.Stop(position);
 	}
 
+	protected virtual void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			mediaManager?.Dispose();
+			mediaManager = null;
+		}
+	}
+
 	public void Dispose()
 	{
 		Dispose(true);
-	}
-
-	protected virtual void Dispose(bool isDisposing)
-	{
 		GC.SuppressFinalize(this);
 	}
 }
