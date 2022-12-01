@@ -39,7 +39,10 @@ sealed class StateContainerController : IDisposable
 		var token = cancellationToken ?? RebuildAnimationTokenSource(layout);
 
 		await FadeLayoutChildren(layout, shouldAnimate, true, token);
-		token.ThrowIfCancellationRequested();
+		if (token.IsCancellationRequested)
+		{
+			return;
+		}
 
 		previousState = null;
 		layout.Children.Clear();
@@ -51,7 +54,11 @@ sealed class StateContainerController : IDisposable
 			layout.Children.Add(item);
 		}
 
-		token.ThrowIfCancellationRequested();
+		if (token.IsCancellationRequested)
+		{
+			return;
+		}
+
 		await FadeLayoutChildren(layout, shouldAnimate, false, token);
 	}
 
@@ -68,7 +75,10 @@ sealed class StateContainerController : IDisposable
 		var view = GetViewForState(state);
 
 		await FadeLayoutChildren(layout, shouldAnimate, true, token);
-		token.ThrowIfCancellationRequested();
+		if (token.IsCancellationRequested)
+		{
+			return;
+		}
 
 		// Put the original content somewhere where we can restore it.
 		if (previousState is null)
@@ -120,7 +130,11 @@ sealed class StateContainerController : IDisposable
 			layout.Children.Add(view);
 		}
 
-		token.ThrowIfCancellationRequested();
+		if (token.IsCancellationRequested)
+		{
+			return;
+		}
+
 		await FadeLayoutChildren(layout, shouldAnimate, false, token);
 	}
 
@@ -132,18 +146,25 @@ sealed class StateContainerController : IDisposable
 
 	static async ValueTask FadeLayoutChildren(Layout layout, bool shouldAnimate, bool isHidden, CancellationToken token)
 	{
-		if (shouldAnimate && layout.Children.Count > 0)
+		try
 		{
-			var opacity = 1;
-			var length = 500u;
-
-			if (isHidden)
+			if (shouldAnimate && layout.Children.Count > 0)
 			{
-				opacity = 0;
-				length = 100u;
-			}
+				var opacity = 1;
+				var length = 500u;
 
-			await Task.WhenAll(layout.Children.OfType<View>().Select(view => view.FadeTo(opacity, length))).WaitAsync(token);
+				if (isHidden)
+				{
+					opacity = 0;
+					length = 100u;
+				}
+
+				await Task.WhenAll(layout.Children.OfType<View>().Select(view => view.FadeTo(opacity, length))).WaitAsync(token);
+			}
+		}
+		catch
+		{
+			//ignored
 		}
 	}
 
