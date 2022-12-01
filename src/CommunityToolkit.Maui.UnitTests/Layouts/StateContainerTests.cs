@@ -125,24 +125,6 @@ public class StateContainerTests : BaseTest
 	}
 
 	[Fact]
-	public async Task Controller_CanceledSwitchToStateThrowsException()
-	{
-		var cts = new CancellationTokenSource();
-		cts.Cancel();
-
-		await Assert.ThrowsAsync<OperationCanceledException>(() => controller.SwitchToState(StateKey.Loading, false, cts.Token));
-	}
-
-	[Fact]
-	public async Task Controller_CanceledSwitchToContentThrowsException()
-	{
-		var cts = new CancellationTokenSource();
-		cts.Cancel();
-
-		await Assert.ThrowsAsync<OperationCanceledException>(() => controller.SwitchToContent(false, cts.Token));
-	}
-
-	[Fact]
 	public async Task Controller_ReturnsErrorLabelOnInvalidState()
 	{
 		await Assert.ThrowsAsync<StateContainerException>(() => controller.SwitchToState("InvalidStateKey", false));
