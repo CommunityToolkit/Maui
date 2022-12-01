@@ -12,7 +12,7 @@ And – the best part – the features you add to the .NET MAUI Toolkit may one 
 
 ## Roadmap / Plan
 
-All work carried out on the toolkit is done so by the community and the core maintainers in their spare time, due to this reason we do not have a concrete plan on when features will be added and delivered. What we do have is a list of proposals and a [Project board](https://github.com/CommunityToolkit/Maui/projects/1) which summarises they states. Please feel free to check them out and jump in to providing any assistance that you feel you can.
+All work carried out on the toolkit is done so by the community and the core maintainers in our spare time on nights and weekends. Due to this reason we do not have a concrete plan on when features will be added and delivered. What we do have is a list of proposals and a [Project board](https://github.com/CommunityToolkit/Maui/projects/1) which summarises they states. Please feel free to check them out and jump in to providing any assistance that you feel you can.
 
 ## Getting Started
 
