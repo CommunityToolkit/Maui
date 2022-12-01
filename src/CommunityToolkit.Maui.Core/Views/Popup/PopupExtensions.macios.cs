@@ -41,6 +41,11 @@ public static class PopupExtensions
 	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
 	public static void SetBackgroundColor(this MauiPopup mauiPopup, in IPopup popup)
 	{
+		if (mauiPopup.PopoverPresentationController is not null && popup.Color == Colors.Transparent)
+		{
+			mauiPopup.PopoverPresentationController.PopoverBackgroundViewType = typeof(TransparentPopoverBackgroundView);
+		}
+
 		if (mauiPopup.Control is null)
 		{
 			return;
@@ -120,8 +125,6 @@ public static class PopupExtensions
 			mauiPopup.PopoverPresentationController.SourceView = view;
 			mauiPopup.PopoverPresentationController.SourceRect = view.Bounds;
 		}
-
-		mauiPopup.PopoverPresentationController.PopoverBackgroundViewType = typeof(TransparentPopoverBackgroundView);
 	}
 
 	class TransparentPopoverBackgroundView : UIPopoverBackgroundView
