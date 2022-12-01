@@ -4,7 +4,7 @@ using CommunityToolkit.Maui.Converters;
 namespace CommunityToolkit.Maui.Extensions;
 
 /// <inheritdoc />
-public abstract class ValueConverterExtension : IMarkupExtension<ICommunityToolkitValueConverter>
+public abstract class ValueConverterExtension : BindableObject, IMarkupExtension<ICommunityToolkitValueConverter>
 {
 	/// <inheritdoc />
 	public ICommunityToolkitValueConverter ProvideValue(IServiceProvider serviceProvider)
