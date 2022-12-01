@@ -58,6 +58,7 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<IntToBoolConverterPage, IntToBoolConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<InvertedBoolConverterPage, InvertedBoolConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<IsEqualConverterPage, IsEqualConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<IsInRangeConverterPage, IsInRangeConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<IsListNotNullOrEmptyConverterPage, IsListNotNullOrEmptyConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<IsListNullOrEmptyConverterPage, IsListNullOrEmptyConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<IsNotEqualConverterPage, IsNotEqualConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
