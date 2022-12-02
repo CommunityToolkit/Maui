@@ -69,7 +69,7 @@ public abstract class IsInRangeConverter<TObject> : BaseConverterOneWay<ICompara
 	{
 		ArgumentNullException.ThrowIfNull(value);
 
-		if(MinValue is null && MaxValue is null)
+		if (MinValue is null && MaxValue is null)
 		{
 			throw new ArgumentException($"A value is required for {nameof(MinValue)}, or {nameof(MaxValue)}, or both");
 		}
