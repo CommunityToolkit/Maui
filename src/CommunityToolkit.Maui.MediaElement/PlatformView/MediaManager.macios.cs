@@ -303,22 +303,20 @@ public partial class MediaManager : IDisposable
 
 	void ErrorOccured(object? sender, NSNotificationEventArgs args)
 	{
-		Exception exception;
 		string message;
-
+		
 		var error = player?.CurrentItem?.Error;
 		if (error != null)
 		{
-			exception = new NSErrorException(error);
 			message = error.LocalizedDescription;
+
+			mediaElement.MediaFailed(new MediaFailedEventArgs(message));
 		}
 		else
 		{
+			// Non-fatal error, TODO log?
 			message = args.Notification?.ToString() ?? "MediaItem failed with unknown reason";
-			exception = new ApplicationException(message);
 		}
-
-		mediaElement.MediaFailed(new MediaFailedEventArgs(message));
 	}
 
 	void PlayedToEnd(object? sender, NSNotificationEventArgs args)

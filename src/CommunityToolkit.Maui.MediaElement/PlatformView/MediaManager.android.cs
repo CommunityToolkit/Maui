@@ -190,43 +190,24 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		}
 
 		var previousState = mediaElement.CurrentState;
-		MediaElementState newState;
-
-		switch (playbackState)
+		var newState = playbackState switch
 		{
-			case PlaybackStateCompat.StateFastForwarding:
-			case PlaybackStateCompat.StateRewinding:
-			case PlaybackStateCompat.StateSkippingToNext:
-			case PlaybackStateCompat.StateSkippingToPrevious:
-			case PlaybackStateCompat.StateSkippingToQueueItem:
-			case PlaybackStateCompat.StatePlaying:
-				newState = playWhenReady ? MediaElementState.Playing : MediaElementState.Paused;
-				break;
-			case PlaybackStateCompat.StatePaused:
-				newState = MediaElementState.Paused;
-				break;
-			case PlaybackStateCompat.StateConnecting:
-			case PlaybackStateCompat.StateBuffering:
-				newState = MediaElementState.Buffering;
-				break;
-			case PlaybackStateCompat.StateNone:
-				newState = MediaElementState.None;
-				break;
-			case PlaybackStateCompat.StateStopped:
-				newState = MediaElementState.Stopped;
-				break;
-			case PlaybackStateCompat.StateError:
-				newState = MediaElementState.Failed;
-				break;
-			default:
-				newState = MediaElementState.None;
-				break;
-		}
+			PlaybackStateCompat.StateFastForwarding
+			or PlaybackStateCompat.StateRewinding
+			or PlaybackStateCompat.StateSkippingToNext
+			or PlaybackStateCompat.StateSkippingToPrevious
+			or PlaybackStateCompat.StateSkippingToQueueItem
+			or PlaybackStateCompat.StatePlaying => playWhenReady ? MediaElementState.Playing : MediaElementState.Paused,
 
-		if (newState != previousState)
-		{
-			mediaElement.CurrentStateChanged(new MediaStateChangedEventArgs(previousState, newState));
-		}
+			PlaybackStateCompat.StatePaused => MediaElementState.Paused,
+			PlaybackStateCompat.StateConnecting or PlaybackStateCompat.StateBuffering => MediaElementState.Buffering,
+			PlaybackStateCompat.StateNone => MediaElementState.None,
+			PlaybackStateCompat.StateStopped => previousState != MediaElementState.Failed ? MediaElementState.Stopped : MediaElementState.Failed,
+			PlaybackStateCompat.StateError => MediaElementState.Failed,
+			_ => MediaElementState.None,
+		};
+
+		mediaElement.CurrentStateChanged(new MediaStateChangedEventArgs(previousState, newState));
 
 		if (playbackState == IPlayer.StateReady)
 		{
@@ -241,7 +222,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			return;
 		}
-
+		
 		// TODO add more detail to error message?
 		mediaElement?.MediaFailed(new MediaFailedEventArgs(error?.Message ?? ""));
 	}
@@ -268,7 +249,20 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata) { }
 	public void OnMetadata(Metadata? metadata) { }
 	public void OnPlaybackParametersChanged(PlaybackParameters? playbackParameters) { }
-	public void OnPlaybackStateChanged(int playbackState) { }
+	public void OnPlaybackStateChanged(int playbackState)
+	{
+		var previousState = mediaElement.CurrentState;
+		MediaElementState newState = previousState;
+
+		switch (playbackState)
+		{
+			case IPlayer.StateBuffering:
+				newState = MediaElementState.Buffering;
+				break;
+		}
+
+		mediaElement.CurrentStateChanged(new MediaStateChangedEventArgs(previousState, newState));
+	}
 	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
 	public void OnPlayerErrorChanged(PlaybackException? error) { }
 	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata) { }
