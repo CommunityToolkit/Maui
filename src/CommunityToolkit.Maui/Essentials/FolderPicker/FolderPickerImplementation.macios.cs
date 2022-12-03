@@ -34,7 +34,7 @@ public class FolderPickerImplementation : IFolderPicker
 
 		documentPickerViewController.WasCancelled += (s, e) =>
 		{
-			taskCompetedSource.SetException(new FolderPickerException("Operation cancelled"));
+			taskCompetedSource.SetException(new FolderPickerException("Operation cancelled."));
 		};
 
 		currentViewController?.PresentViewController(documentPickerViewController, true, null);

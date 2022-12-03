@@ -8,18 +8,18 @@ namespace CommunityToolkit.Maui.Storage;
 public partial class SaveFileDialogImplementation : ISaveFileDialog
 {
 	/// <inheritdoc/>
-	public async Task SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
+	public async Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		var fileManager = NSFileManager.DefaultManager;
 		var fileUrl = fileManager.GetTemporaryDirectory().Append($"{Guid.NewGuid()}.{GetExtension(fileName)}", false);
 		await WriteStream(stream, fileUrl.Path ?? throw new Exception("Path cannot be null"), cancellationToken);
 
 		var documentPickerViewController = new UIDocumentPickerViewController(new[] { fileUrl });
-		var taskCompetedSource = new TaskCompletionSource();
+		var taskCompetedSource = new TaskCompletionSource<string>();
 
 		documentPickerViewController.DidPickDocumentAtUrls += (s, e) =>
 		{
-			taskCompetedSource.SetResult();
+			taskCompetedSource.SetResult(e.Urls[0].Path ?? throw new FileSaveException("Unable to retrieve the path of the saved file"));
 		};
 
 		documentPickerViewController.WasCancelled += (s, e) =>
@@ -30,11 +30,11 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 		var currentViewController = Microsoft.Maui.Platform.UIApplicationExtensions.GetKeyWindow(UIApplication.SharedApplication)?.RootViewController;
 		currentViewController?.PresentViewController(documentPickerViewController, true, null);
 
-		await taskCompetedSource.Task;
+		return await taskCompetedSource.Task;
 	}
 
 	/// <inheritdoc/>
-	public Task SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
+	public Task<string> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		return SaveAsync("/", fileName, stream, cancellationToken);
 	}

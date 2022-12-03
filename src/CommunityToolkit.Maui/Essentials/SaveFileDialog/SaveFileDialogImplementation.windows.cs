@@ -11,7 +11,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 	List<string> allFilesExtension = new List<string> { "." };
 
 	/// <inheritdoc />
-	public async Task SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
+	public async Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		var savePicker = new FileSavePicker
 		{
@@ -31,10 +31,11 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 		}
 
 		await WriteStream(stream, file.Path, cancellationToken).ConfigureAwait(false);
+		return file.Path;
 	}
 
 	/// <inheritdoc />
-	public Task SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
+	public Task<string> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		return SaveAsync(string.Empty, fileName, stream, cancellationToken);
 	}

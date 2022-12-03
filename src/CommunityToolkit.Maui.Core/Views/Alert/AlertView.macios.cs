@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Extensions;
 
 namespace CommunityToolkit.Maui.Core.Views;

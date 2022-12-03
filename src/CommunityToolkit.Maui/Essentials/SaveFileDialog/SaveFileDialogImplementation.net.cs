@@ -7,13 +7,13 @@ namespace CommunityToolkit.Maui.Storage;
 public partial class SaveFileDialogImplementation : ISaveFileDialog
 {
 	/// <inheritdoc />
-	public Task SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
+	public Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		throw new NotImplementedException();
 	}
 
 	/// <inheritdoc />
-	public Task SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
+	public Task<string> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		throw new NotImplementedException();
 	}

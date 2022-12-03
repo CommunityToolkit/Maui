@@ -19,7 +19,7 @@ public partial class FolderPickerViewModel : BaseViewModel
 		try
 		{
 			var folder = await folderPicker.PickAsync(cancellationToken);
-			await Toast.Make($"Folder picked: Name - {folder.Name}, Path - {folder.Path}").Show(cancellationToken);
+			await Toast.Make($"Folder picked: Name - {folder.Name}, Path - {folder.Path}", ToastDuration.Long).Show(cancellationToken);
 		}
 		catch (Exception ex)
 		{

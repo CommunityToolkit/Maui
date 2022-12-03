@@ -1,12 +1,15 @@
-using CommunityToolkit.Maui.Alerts;
+using Android.Content;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
+using AndroidUri = Android.Net.Uri;
 
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc />
 public class FolderPickerImplementation : IFolderPicker
 {
+	const int requestCodeFolderPicker = 12345;
+
 	/// <inheritdoc />
 	public async Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)
 	{
@@ -16,15 +19,23 @@ public class FolderPickerImplementation : IFolderPicker
 			throw new PermissionException("Storage permission is not granted");
 		}
 
-		var currentActivity = Platform.CurrentActivity ?? throw new InvalidOperationException($"{nameof(Platform.CurrentActivity)} cannot be null");
-		var dialog = new FileFolderDialog(currentActivity, FileSelectionMode.FolderChoose);
-		var path = await dialog.GetFileOrDirectoryAsync(initialPath, cancellationToken: cancellationToken);
+		var intent = new Intent(Intent.ActionOpenDocumentTree);
+		var pickerIntent = Intent.CreateChooser(intent, "Select folder") ?? throw new InvalidOperationException($"Unable to create intent.");
 
-		return new Folder
+		Folder? folder = null;
+		void OnResult(Intent intent)
 		{
-			Path = path,
-			Name = new DirectoryInfo(path).Name
-		};
+			var path = EnsurePhysicalPath(intent.Data);
+			folder = new Folder
+			{
+				Path = path,
+				Name = Path.GetFileName(path)
+			};
+		}
+
+		await IntermediateActivity.StartAsync(pickerIntent, requestCodeFolderPicker, onResult: OnResult);
+
+		return folder ?? throw new FolderPickerException("Unable to get folder.");
 	}
 
 	/// <inheritdoc />
@@ -37,5 +48,22 @@ public class FolderPickerImplementation : IFolderPicker
 	{
 		return Platform.CurrentActivity?.GetExternalFilesDir(null)?.ParentFile?.ParentFile?.ParentFile?.ParentFile?.AbsolutePath
 				?? "/storage/emulated/0";
+	}
+
+	static string EnsurePhysicalPath(AndroidUri? uri)
+	{
+		if (uri is null)
+		{
+			throw new FolderPickerException("Path is not selected.");
+		}
+		
+		const string uriSchemeFolder = "content";
+		if (uri.Scheme != null && uri.Scheme.Equals(uriSchemeFolder, StringComparison.OrdinalIgnoreCase))
+		{
+			var split = uri.Path? .Split(":") ?? throw new FolderPickerException("Unable to resolve path.");
+			return Android.OS.Environment.ExternalStorageDirectory + "/" + split[1];
+		}
+
+		throw new FolderPickerException($"Unable to resolve absolute path or retrieve contents of URI '{uri}'.");
 	}
 }
