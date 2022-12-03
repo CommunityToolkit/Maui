@@ -41,7 +41,7 @@ public sealed class FolderPickerImplementation : IFolderPicker, IDisposable
 
 	void DocumentPickerViewControllerOnDidPickDocumentAtUrls(object? sender, UIDocumentPickedAtUrlsEventArgs e)
 	{
-		var path = e.Urls[0].AbsoluteString ?? throw new Exception("Path cannot be null");
+		var path = e.Urls[0].AbsoluteString ?? throw new Exception("Path cannot be null.");
 		taskCompetedSource?.SetResult(new Folder(path, new DirectoryInfo(path).Name));
 	}
 

@@ -11,7 +11,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 		var status = await Permissions.RequestAsync<Permissions.StorageRead>();
 		if (status is not PermissionStatus.Granted)
 		{
-			throw new PermissionException("Storage permission is not granted");
+			throw new PermissionException("Storage permission is not granted.");
 		}
 
 		var dialog = new FileFolderDialog(FileSelectionMode.FileSave, initialPath, fileName: fileName, cancellationToken: cancellationToken);
@@ -19,7 +19,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 
 		if (string.IsNullOrEmpty(path))
 		{
-			throw new FileSaveException("Path doesn't exist");
+			throw new FileSaveException("Path doesn't exist.");
 		}
 
 		await WriteStream(stream, path, cancellationToken).ConfigureAwait(false);

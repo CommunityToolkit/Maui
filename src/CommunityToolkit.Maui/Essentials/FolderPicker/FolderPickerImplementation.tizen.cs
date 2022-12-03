@@ -12,17 +12,13 @@ public class FolderPickerImplementation : IFolderPicker
 		var status = await Permissions.RequestAsync<Permissions.StorageRead>();
 		if (status is not PermissionStatus.Granted)
 		{
-			throw new PermissionException("Storage permission is not granted");
+			throw new PermissionException("Storage permission is not granted.");
 		}
 
 		var dialog = new FileFolderDialog(FileSelectionMode.FolderChoose, initialPath, cancellationToken: cancellationToken);
 		var path = await dialog.Open();
 
-		return new Folder
-		{
-			Path = path,
-			Name = Path.GetFileName(path)
-		};
+		return new Folder(path, Path.GetFileName(path));
 	}
 
 	/// <inheritdoc />

@@ -20,14 +20,10 @@ public class FolderPickerImplementation : IFolderPicker
 		var folder = await folderPicker.PickSingleFolderAsync();
 		if (folder is null)
 		{
-			throw new FolderPickerException("Folder doesn't exist");
+			throw new FolderPickerException("Folder doesn't exist.");
 		}
 
-		return new Folder
-		{
-			Path = folder.Path,
-			Name = folder.Name
-		};
+		return new Folder(folder.Path, folder.Name);
 	}
 
 	/// <inheritdoc />

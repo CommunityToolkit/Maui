@@ -27,7 +27,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 
 		if (string.IsNullOrEmpty(file?.Path))
 		{
-			throw new FileSaveException("Path doesn't exist");
+			throw new FileSaveException("Path doesn't exist.");
 		}
 
 		await WriteStream(stream, file.Path, cancellationToken).ConfigureAwait(false);

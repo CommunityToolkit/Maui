@@ -16,7 +16,7 @@ public class FolderPickerImplementation : IFolderPicker
 		var status = await Permissions.RequestAsync<Permissions.StorageRead>();
 		if (status is not PermissionStatus.Granted)
 		{
-			throw new PermissionException("Storage permission is not granted");
+			throw new PermissionException("Storage permission is not granted.");
 		}
 
 		var intent = new Intent(Intent.ActionOpenDocumentTree);

@@ -17,7 +17,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 		var status = await Permissions.RequestAsync<Permissions.StorageWrite>();
 		if (status is not PermissionStatus.Granted)
 		{
-			throw new PermissionException("Storage permission is not granted");
+			throw new PermissionException("Storage permission is not granted.");
 		}
 
 		var intent = new Intent(Intent.ActionCreateDocument);
@@ -36,7 +36,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 
 		if (filePath is null)
 		{
-			throw new FileSaveException("Path doesn't exist");
+			throw new FileSaveException("Path doesn't exist.");
 		}
 		
 		return await SaveDocument(filePath, stream, cancellationToken);
@@ -63,7 +63,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 		const string uriSchemeFolder = "content";
 		if (uri.Scheme != null && uri.Scheme.Equals(uriSchemeFolder, StringComparison.OrdinalIgnoreCase))
 		{
-			return uri ?? throw new FolderPickerException("Unable to resolve path.");;
+			return uri ?? throw new FolderPickerException("Unable to resolve path.");
 		}
 
 		throw new FolderPickerException($"Unable to resolve absolute path or retrieve contents of URI '{uri}'.");
