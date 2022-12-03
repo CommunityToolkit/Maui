@@ -12,11 +12,7 @@ class FolderPickerImplementationMock : IFolderPicker
 			return Task.FromException<Folder>(new FolderPickerException("error"));
 		}
 
-		return Task.FromResult<Folder>(new Folder()
-		{
-			Path = initialPath,
-			Name = "name"
-		});
+		return Task.FromResult<Folder>(new Folder(initialPath, "name"));
 	}
 
 	public Task<Folder> PickAsync(CancellationToken cancellationToken)

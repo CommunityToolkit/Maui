@@ -26,11 +26,7 @@ public class FolderPickerImplementation : IFolderPicker
 		void OnResult(Intent intent)
 		{
 			var path = EnsurePhysicalPath(intent.Data);
-			folder = new Folder
-			{
-				Path = path,
-				Name = Path.GetFileName(path)
-			};
+			folder = new Folder(path, Path.GetFileName(path));
 		}
 
 		await IntermediateActivity.StartAsync(pickerIntent, requestCodeFolderPicker, onResult: OnResult);
@@ -46,8 +42,7 @@ public class FolderPickerImplementation : IFolderPicker
 
 	static string GetExternalDirectory()
 	{
-		return Platform.CurrentActivity?.GetExternalFilesDir(null)?.ParentFile?.ParentFile?.ParentFile?.ParentFile?.AbsolutePath
-				?? "/storage/emulated/0";
+		return Android.OS.Environment.ExternalStorageDirectory?.Path ?? "/storage/emulated/0";
 	}
 
 	static string EnsurePhysicalPath(AndroidUri? uri)

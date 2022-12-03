@@ -7,44 +7,55 @@ using UniformTypeIdentifiers;
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc />
-public class FolderPickerImplementation : IFolderPicker
+public sealed class FolderPickerImplementation : IFolderPicker, IDisposable
 {
-	/// <inheritdoc />
-	public async Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)
+	readonly UIDocumentPickerViewController documentPickerViewController;
+	TaskCompletionSource<Folder>? taskCompetedSource;
+	
+	/// <summary>
+	/// Initializes a new instance of the <see cref="FolderPickerImplementation"/> class.
+	/// </summary>
+	public FolderPickerImplementation()
 	{
-		var documentPickerViewController = new UIDocumentPickerViewController(new[] { UTTypes.Folder })
+		documentPickerViewController = new UIDocumentPickerViewController(new []{ UTTypes.Folder })
 		{
-			AllowsMultipleSelection = false,
-			DirectoryUrl = NSUrl.FromString(initialPath)
+			AllowsMultipleSelection = false
 		};
-
+	}
+	/// <inheritdoc />
+	public Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)
+	{
+		documentPickerViewController.DirectoryUrl = NSUrl.FromString(initialPath);
 		var currentViewController = Microsoft.Maui.Platform.UIApplicationExtensions.GetKeyWindow(UIApplication.SharedApplication)?.RootViewController;
-		var taskCompetedSource = new TaskCompletionSource<Folder>();
-
-		documentPickerViewController.DidPickDocumentAtUrls += (s, e) =>
-		{
-			var path = e.Urls[0].AbsoluteString ?? throw new Exception("Path cannot be null");
-			var folder = new Folder
-			{
-				Path = path,
-				Name = new DirectoryInfo(path).Name
-			};
-			taskCompetedSource.SetResult(folder);
-		};
-
-		documentPickerViewController.WasCancelled += (s, e) =>
-		{
-			taskCompetedSource.SetException(new FolderPickerException("Operation cancelled."));
-		};
-
+		taskCompetedSource = new TaskCompletionSource<Folder>();
+		documentPickerViewController.DidPickDocumentAtUrls += DocumentPickerViewControllerOnDidPickDocumentAtUrls;
+		documentPickerViewController.WasCancelled += DocumentPickerViewControllerOnWasCancelled;
 		currentViewController?.PresentViewController(documentPickerViewController, true, null);
+		return taskCompetedSource.Task;
+	}
 
-		return await taskCompetedSource.Task;
+	void DocumentPickerViewControllerOnWasCancelled(object? sender, EventArgs e)
+	{
+		taskCompetedSource?.SetException(new FolderPickerException("Operation cancelled."));
+	}
+
+	void DocumentPickerViewControllerOnDidPickDocumentAtUrls(object? sender, UIDocumentPickedAtUrlsEventArgs e)
+	{
+		var path = e.Urls[0].AbsoluteString ?? throw new Exception("Path cannot be null");
+		taskCompetedSource?.SetResult(new Folder(path, new DirectoryInfo(path).Name));
 	}
 
 	/// <inheritdoc />
 	public Task<Folder> PickAsync(CancellationToken cancellationToken)
 	{
 		return PickAsync("/", cancellationToken);
+	}
+
+	/// <inheritdoc />
+	public void Dispose()
+	{
+		documentPickerViewController.DidPickDocumentAtUrls -= DocumentPickerViewControllerOnDidPickDocumentAtUrls;
+		documentPickerViewController.WasCancelled -= DocumentPickerViewControllerOnWasCancelled;
+		documentPickerViewController.Dispose();
 	}
 }

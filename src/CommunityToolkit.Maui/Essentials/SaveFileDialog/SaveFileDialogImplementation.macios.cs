@@ -12,9 +12,9 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 	{
 		var fileManager = NSFileManager.DefaultManager;
 		var fileUrl = fileManager.GetTemporaryDirectory().Append($"{Guid.NewGuid()}.{GetExtension(fileName)}", false);
-		await WriteStream(stream, fileUrl.Path ?? throw new Exception("Path cannot be null"), cancellationToken);
-
-		var documentPickerViewController = new UIDocumentPickerViewController(new[] { fileUrl });
+		await WriteStream(stream, fileUrl.Path ?? throw new Exception("Path cannot be null"), cancellationToken); 
+		
+		using var documentPickerViewController = new UIDocumentPickerViewController(new[] { fileUrl });
 		var taskCompetedSource = new TaskCompletionSource<string>();
 
 		documentPickerViewController.DidPickDocumentAtUrls += (s, e) =>

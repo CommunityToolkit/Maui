@@ -50,8 +50,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 
 	static string GetExternalDirectory()
 	{
-		return Platform.CurrentActivity?.GetExternalFilesDir(null)
-			?.ParentFile?.ParentFile?.ParentFile?.ParentFile?.AbsolutePath ?? "/storage/emulated/0";
+		return Android.OS.Environment.ExternalStorageDirectory?.Path ?? "/storage/emulated/0";
 	}
 
 	static AndroidUri EnsurePhysicalPath(AndroidUri? uri)
