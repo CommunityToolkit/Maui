@@ -299,7 +299,7 @@ sealed class FileFolderDialog : Popup<string>, IDisposable
 
 		var listItems = GetDirectories(path);
 
-		if (listItems != null)
+		if (listItems is not null)
 		{
 			foreach (var item in listItems)
 			{

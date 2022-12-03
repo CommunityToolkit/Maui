@@ -30,7 +30,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 			throw new FileSaveException("Path doesn't exist");
 		}
 
-		await WriteStream(stream, file.Path, cancellationToken);
+		await WriteStream(stream, file.Path, cancellationToken).ConfigureAwait(false);
 	}
 
 	/// <inheritdoc />

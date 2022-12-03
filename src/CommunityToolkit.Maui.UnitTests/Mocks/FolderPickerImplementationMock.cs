@@ -7,7 +7,7 @@ class FolderPickerImplementationMock : IFolderPicker
 {
 	public Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)
 	{
-		if (initialPath == string.Empty)
+		if (string.IsNullOrWhiteSpace(initialPath))
 		{
 			return Task.FromException<Folder>(new FolderPickerException("error"));
 		}

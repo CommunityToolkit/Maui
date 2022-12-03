@@ -362,15 +362,15 @@ sealed class FileFolderDialog : IDisposable
 		}
 	}
 
-	ArrayAdapter<string> CreateListAdapter(List<string>? items)
+	ArrayAdapter<string> CreateListAdapter(IList<string>? items)
 	{
 		var adapter = new SimpleArrayAdapter(context ?? throw new InvalidOperationException(),
 			Android.Resource.Layout.SelectDialogItem,
-			Android.Resource.Id.Text1, items ?? Array.Empty<string>().ToList());
+			Android.Resource.Id.Text1, items ?? Array.Empty<string>());
 		return adapter;
 	}
 
-	class SimpleArrayAdapter : ArrayAdapter<string>
+	sealed class SimpleArrayAdapter : ArrayAdapter<string>
 	{
 		public SimpleArrayAdapter(Context context, int resource, int textViewResourceId, IList<string> objects) : base(
 			context, resource, textViewResourceId, objects)
@@ -383,7 +383,7 @@ sealed class FileFolderDialog : IDisposable
 			if (v is TextView textView)
 			{
 				// Enable list item (directory) text wrapping
-				if (textView.LayoutParameters != null)
+				if (textView.LayoutParameters is not null)
 				{
 					textView.LayoutParameters.Height = ViewGroup.LayoutParams.WrapContent;
 				}

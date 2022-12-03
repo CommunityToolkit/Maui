@@ -7,7 +7,7 @@ class SaveFileDialogImplementationMock : ISaveFileDialog
 {
 	public Task SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
-		if (initialPath == string.Empty)
+		if (string.IsNullOrWhiteSpace(initialPath))
 		{
 			return Task.FromException(new FileSaveException("Error"));
 		}
