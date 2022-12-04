@@ -1,4 +1,5 @@
-﻿using Android.Support.V4.Media.Session;
+﻿using System.Diagnostics;
+using Android.Support.V4.Media.Session;
 using Android.Widget;
 using Com.Google.Android.Exoplayer2;
 using Com.Google.Android.Exoplayer2.Audio;
@@ -95,6 +96,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			case IPlayer.StateBuffering:
 				newState = MediaElementState.Buffering;
+				break;
+			case IPlayer.StateEnded:
+				mediaElement.MediaEnded();
 				break;
 		}
 
