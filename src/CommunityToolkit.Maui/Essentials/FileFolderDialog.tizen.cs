@@ -18,7 +18,7 @@ using Window = Tizen.NUI.Window;
 
 namespace CommunityToolkit.Maui.Storage;
 
-file enum FileSelectionMode
+enum FileSelectionMode
 {
 	FileOpen,
 	FileSave,
@@ -370,7 +370,7 @@ sealed class FileFolderDialog : Popup<string>, IDisposable
 		}
 
 		var allFilesAndDirectories = Directory.GetDirectories(directoryPath);
-		allFilesAndDirectories = allFilesAndDirectories.Concat(Directory.GetFiles(directoryPath));
+		allFilesAndDirectories = allFilesAndDirectories.Concat(Directory.GetFiles(directoryPath)).ToArray();
 		foreach (var item in allFilesAndDirectories ?? Array.Empty<string>())
 		{
 			var fileName = Path.GetFileName(item);
