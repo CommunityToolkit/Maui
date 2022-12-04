@@ -173,7 +173,9 @@ public class Expander : ContentView, IExpander
 	static void OnIsExpandedPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var expander = (Expander)bindable;
+#if IOS || MACCATALYST || WINDOWS
 		ForceUpdateLayoutSizeForItemsView(expander);
+#endif
 
 		((IExpander)bindable).ExpandedChanged(((IExpander)bindable).IsExpanded);
 	}
@@ -229,9 +231,9 @@ public class Expander : ContentView, IExpander
 			{
 				(element as Cell)?.ForceUpdateSize();
 			}
-#if IOS || MACCATALYST
 			else if (element is CollectionView collectionView)
 			{
+#if IOS || MACCATALYST
 				var handler = collectionView.Handler as Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler;
 				var controller = handler?.GetType().BaseType?.BaseType?.BaseType?.BaseType?.BaseType?.GetProperty("Controller", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
 				var uiCollectionViewController = controller?.GetValue(handler) as UIKit.UICollectionViewController;
@@ -242,10 +244,21 @@ public class Expander : ContentView, IExpander
 					await Task.Delay(500);
 					layout.InvalidateLayout();
 				}
-
-				collectionView.InvalidateMeasureInternal(Microsoft.Maui.Controls.Internals.InvalidationTrigger.MeasureChanged);
-			}
+#elif WINDOWS
+				var formsListView = collectionView.Handler?.PlatformView as Microsoft.Maui.Controls.Platform.FormsListView;
+				if (formsListView is not null)
+				{
+					foreach (var item in formsListView.Items)
+					{
+						var cell = formsListView.ContainerFromItem(item) as Microsoft.UI.Xaml.Controls.ListViewItem;
+						if (cell is not null)
+						{
+							cell.Height = size.Height;
+						}
+					}
+				}
 #endif
+			}
 
 			element = element.Parent;
 		}
