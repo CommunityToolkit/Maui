@@ -3,7 +3,7 @@ using AVKit;
 using CoreFoundation;
 using CoreMedia;
 using Foundation;
-using Microsoft.Extensions.Logging;
+using UIKit;
 
 namespace CommunityToolkit.Maui.MediaElement;
 
@@ -11,6 +11,8 @@ public partial class MediaManager : IDisposable
 {
 	const NSKeyValueObservingOptions valueObserverOptions =
 		NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.New;
+
+	bool idleTimerDisabled = false;
 
 	protected NSObject? playedToEndObserver;
 	protected NSObject? itemFailedToPlayToEndTimeObserver;
@@ -41,11 +43,13 @@ public partial class MediaManager : IDisposable
 	protected virtual partial void PlatformPlay(TimeSpan timeSpan)
 	{
 		player?.Play();
+		SetKeepScreenOn(mediaElement.KeepScreenOn);
 	}
 
 	protected virtual partial void PlatformPause(TimeSpan timeSpan)
 	{
 		player?.Pause();
+		SetKeepScreenOn(false);
 	}
 
 	protected virtual partial void PlatformStop(TimeSpan timeSpan)
@@ -53,6 +57,8 @@ public partial class MediaManager : IDisposable
 		// There's no Stop method so pause the video and reset its position
 		player?.Seek(CMTime.Zero);
 		player?.Pause();
+
+		SetKeepScreenOn(false);
 
 		mediaElement.CurrentStateChanged(MediaElementState.Stopped);
 	}
@@ -99,6 +105,7 @@ public partial class MediaManager : IDisposable
 			if (player?.CurrentItem?.Error != null)
 			{
 				mediaElement.MediaFailed(new MediaFailedEventArgs(player?.CurrentItem?.Error?.LocalizedDescription ?? ""));
+				SetKeepScreenOn(false);
 			}
 		});
 
@@ -109,6 +116,8 @@ public partial class MediaManager : IDisposable
 			if (mediaElement.AutoPlay)
 			{
 				player?.Play();
+
+				SetKeepScreenOn(mediaElement.KeepScreenOn);
 			}
 		}
 	}
@@ -184,6 +193,10 @@ public partial class MediaManager : IDisposable
 		playerViewController.Player.Volume = (float)mediaElement.Volume;
 	}
 
+	protected virtual partial void PlatformUpdateKeepScreenOn()
+	{
+		SetKeepScreenOn(mediaElement.KeepScreenOn);
+	}
 
 	protected virtual partial void PlatformUpdateIsLooping()
 	{
@@ -196,6 +209,8 @@ public partial class MediaManager : IDisposable
 		{
 			if (player is not null)
 			{
+				SetKeepScreenOn(false);
+
 				DestroyErrorObservers();
 				DestroyPlayedToEndObserver();
 
@@ -327,8 +342,9 @@ public partial class MediaManager : IDisposable
 		if (error != null)
 		{
 			message = error.LocalizedDescription;
-
+			
 			mediaElement.MediaFailed(new MediaFailedEventArgs(message));
+			SetKeepScreenOn(false);
 		}
 		else
 		{
@@ -351,8 +367,7 @@ public partial class MediaManager : IDisposable
 		}
 		else
 		{
-			// TODO Implement KeepScreenOn
-			//SetKeepScreenOn(false);
+			SetKeepScreenOn(false);
 
 			try
 			{
@@ -363,6 +378,23 @@ public partial class MediaManager : IDisposable
 				// TODO inject ILogger everywhere and report there?
 				//Log.Warning("MediaElement", $"Failed to play media to end: {e}");
 			}
+		}
+	}
+
+	void SetKeepScreenOn(bool keepScreenOn)
+	{
+		if (keepScreenOn)
+		{
+			if (!UIApplication.SharedApplication.IdleTimerDisabled)
+			{
+				idleTimerDisabled = true;
+				UIApplication.SharedApplication.IdleTimerDisabled = true;
+			}
+		}
+		else if (idleTimerDisabled)
+		{
+			idleTimerDisabled = false;
+			UIApplication.SharedApplication.IdleTimerDisabled = false;
 		}
 	}
 }

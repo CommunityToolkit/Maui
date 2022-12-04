@@ -75,6 +75,13 @@ public interface IMediaElement : IView
 	bool IsLooping { get; set; }
 
 	/// <summary>
+	/// Gets or sets if media playback will prevent the device display from going to sleep.
+	/// If media is paused, stopped or has completed playing, the display will turn off.
+	/// </summary>
+	/// <remarks>Only works on mobile devices.</remarks>
+	public bool KeepScreenOn { get; set; }
+
+	/// <summary>
 	/// The source of the media to play.
 	/// </summary>
 	MediaSource? Source { get; set; }

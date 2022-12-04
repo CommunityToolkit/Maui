@@ -72,6 +72,11 @@ public partial class MediaManager
 		PlatformUpdateVolume();
 	}
 
+	public void UpdateKeepScreenOn()
+	{
+		PlatformUpdateKeepScreenOn();
+	}
+
 	public void UpdateIsLooping()
 	{
 		PlatformUpdateIsLooping();
@@ -86,6 +91,7 @@ public partial class MediaManager
 	protected virtual partial void PlatformUpdatePosition();
 	protected virtual partial void PlatformUpdateStatus();
 	protected virtual partial void PlatformUpdateVolume();
+	protected virtual partial void PlatformUpdateKeepScreenOn();
 	protected virtual partial void PlatformUpdateIsLooping();
 }
 
@@ -138,6 +144,10 @@ partial class MediaManager
 
 	}
 
+	protected virtual partial void PlatformUpdateKeepScreenOn()
+	{
+
+	}
 
 	protected virtual partial void PlatformUpdateIsLooping()
 	{

@@ -53,6 +53,11 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		handler?.mediaManager?.UpdateVolume();
 	}
 
+	public static void MapKeepScreenOn(MediaElementHandler handler, MediaElement mediaElement)
+	{
+		handler?.mediaManager?.UpdateKeepScreenOn();
+	}
+
 	public static void MapPlayRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
 		if (args is not MediaPositionEventArgs)

@@ -302,6 +302,15 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		player.Volume = (float)mediaElement.Volume;
 	}
 
+	protected virtual partial void PlatformUpdateKeepScreenOn()
+	{
+		if (playerView is null)
+		{
+			return;
+		}
+
+		playerView.KeepScreenOn = mediaElement.KeepScreenOn;
+	}
 
 	protected virtual partial void PlatformUpdateIsLooping()
 	{

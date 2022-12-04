@@ -52,6 +52,9 @@ public class MediaElement : View, IMediaElement
 	public static readonly BindableProperty IsLoopingProperty =
 		  BindableProperty.Create(nameof(IsLooping), typeof(bool), typeof(MediaElement), false);
 
+	public static readonly BindableProperty KeepScreenOnProperty =
+		  BindableProperty.Create(nameof(KeepScreenOn), typeof(bool), typeof(MediaElement), false);
+
 	public static readonly BindableProperty PositionProperty =
 		  BindableProperty.Create(nameof(Position), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero);
 
@@ -99,6 +102,12 @@ public class MediaElement : View, IMediaElement
 	{
 		get => (bool)GetValue(IsLoopingProperty);
 		set => SetValue(IsLoopingProperty, value);
+	}
+
+	public bool KeepScreenOn
+	{
+		get => (bool)GetValue(KeepScreenOnProperty);
+		set => SetValue(KeepScreenOnProperty, value);
 	}
 
 	public TimeSpan Position

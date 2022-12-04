@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.MediaElement.PlatformView;
 using Microsoft.Maui.Handlers;
+using UIKit;
 
 namespace CommunityToolkit.Maui.MediaElement;
 
@@ -51,6 +52,11 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	public static void MapVolume(MediaElementHandler handler, MediaElement mediaElement)
 	{
 		handler?.mediaManager?.UpdateVolume();
+	}
+
+	public static void MapKeepScreenOn(MediaElementHandler handler, MediaElement mediaElement)
+	{
+		handler?.mediaManager?.UpdateKeepScreenOn();
 	}
 
 	public static void MapPlayRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
