@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using CommunityToolkit.Maui.MediaElement;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 

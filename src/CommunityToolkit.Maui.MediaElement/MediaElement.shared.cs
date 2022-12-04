@@ -7,45 +7,36 @@ public class MediaElement : View, IMediaElement
 {
 	Microsoft.Maui.Dispatching.IDispatcherTimer? timer;
 
+	internal event EventHandler? UpdateStatus;
+	internal event EventHandler<MediaPositionEventArgs>? PlayRequested;
+	internal event EventHandler<MediaPositionEventArgs>? PauseRequested;
+	internal event EventHandler<MediaPositionEventArgs>? StopRequested;
+
 	public MediaElement()
 	{
 		InitTimer();
 	}
 
-	public event EventHandler? UpdateStatus;
-	public event EventHandler<MediaPositionEventArgs>? PlayRequested;
-	public event EventHandler<MediaPositionEventArgs>? PauseRequested;
-	public event EventHandler<MediaPositionEventArgs>? StopRequested;
+	/// <summary>
+	/// Occurs when the media has reached the end successfully.
+	/// </summary>
+	/// <remarks>This is not triggered when the media fails during playback.</remarks>
+	public event EventHandler? MediaEnded;
 
-	void OnTimerTick(object? sender, EventArgs e)
-	{
-		UpdateStatus?.Invoke(this, EventArgs.Empty);
-		Handler?.Invoke(nameof(MediaElement.UpdateStatus));
-	}
+	/// <summary>
+	/// Occurs when the media fails to load or fails during playback.
+	/// </summary>
+	public event EventHandler<MediaFailedEventArgs>? MediaFailed;
 
-	void InitTimer()
-	{
-		if (timer is not null)
-		{
-			return;
-		}
+	/// <summary>
+	/// Occurs when the media has opened successfully and is ready for playback.
+	/// </summary>
+	public event EventHandler? MediaOpened;
 
-		timer = Dispatcher.CreateTimer();
-		timer.Interval = TimeSpan.FromMilliseconds(100);
-		timer.Tick += OnTimerTick;
-		timer.Start();
-	}
-
-	void ClearTimer()
-	{
-		if (timer is null)
-		{
-			return;
-		}
-		timer.Tick -= OnTimerTick;
-		timer.Stop();
-		timer = null;
-	}
+	/// <summary>
+	/// Occurs whenever <see cref="CurrentState"/> changes.
+	/// </summary>
+	public event EventHandler<MediaStateChangedEventArgs>? StateChanged;
 
 	public static readonly BindableProperty AutoPlayProperty =
 		BindableProperty.Create(nameof(AutoPlay), typeof(bool), typeof(MediaElement), false,
@@ -176,13 +167,37 @@ public class MediaElement : View, IMediaElement
 		Handler?.Invoke(nameof(MediaElement.StopRequested), args);
 	}
 
-	public event EventHandler? MediaEnded;
+	void OnTimerTick(object? sender, EventArgs e)
+	{
+		UpdateStatus?.Invoke(this, EventArgs.Empty);
+		Handler?.Invoke(nameof(MediaElement.UpdateStatus));
+	}
 
-	public event EventHandler<MediaFailedEventArgs>? MediaFailed;
+	void InitTimer()
+	{
+		if (timer is not null)
+		{
+			return;
+		}
 
-	public event EventHandler? MediaOpened;
+		timer = Dispatcher.CreateTimer();
+		timer.Interval = TimeSpan.FromMilliseconds(100);
+		timer.Tick += OnTimerTick;
+		timer.Start();
+	}
 
-	public event EventHandler<MediaStateChangedEventArgs>? StateChanged;
+	void ClearTimer()
+	{
+		if (timer is null)
+		{
+			return;
+		}
+		timer.Tick -= OnTimerTick;
+		timer.Stop();
+		timer = null;
+	}
+
+	
 
 	internal void OnMediaEnded()
 	{
@@ -294,12 +309,14 @@ public class MediaElement : View, IMediaElement
 		SeekCompleted?.Invoke(this, EventArgs.Empty);
 	}
 
-	void IMediaElement.CurrentStateChanged(MediaStateChangedEventArgs args)
+	void IMediaElement.CurrentStateChanged(MediaElementState newState)
 	{
-		if (args.NewState != args.PreviousState)
+		if (CurrentState != newState)
 		{
-			CurrentState = args.NewState;
-			StateChanged?.Invoke(this, args);
+			var previousState = CurrentState;
+			CurrentState = newState;
+			StateChanged?.Invoke(this,
+				new MediaStateChangedEventArgs(previousState, CurrentState));
 		}
 	}
 }

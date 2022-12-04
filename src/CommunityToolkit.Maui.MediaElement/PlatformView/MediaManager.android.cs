@@ -30,6 +30,127 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		return (player, playerView);
 	}
 
+	/// <summary>
+	/// Occurs when ExoPlayer changes the player state.
+	/// </summary>
+	/// <paramref name="playWhenReady">Indicates whether the player should start playing the media whenever the media is ready.</paramref>
+	/// <paramref name="playbackState">The state that the player has transitioned to.</paramref>
+	/// <remarks>
+	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
+	/// While this method does not seem to have any references, it's invoked at runtime.
+	/// </remarks>
+	public void OnPlayerStateChanged(bool playWhenReady, int playbackState)
+	{
+		if (player is null)
+		{
+			return;
+		}
+
+		var newState = playbackState switch
+		{
+			PlaybackStateCompat.StateFastForwarding
+			or PlaybackStateCompat.StateRewinding
+			or PlaybackStateCompat.StateSkippingToNext
+			or PlaybackStateCompat.StateSkippingToPrevious
+			or PlaybackStateCompat.StateSkippingToQueueItem
+			or PlaybackStateCompat.StatePlaying => playWhenReady ?
+				MediaElementState.Playing : MediaElementState.Paused,
+
+			PlaybackStateCompat.StatePaused => MediaElementState.Paused,
+
+			PlaybackStateCompat.StateConnecting
+			or PlaybackStateCompat.StateBuffering => MediaElementState.Buffering,
+
+			PlaybackStateCompat.StateNone => MediaElementState.None,
+			PlaybackStateCompat.StateStopped
+				=> mediaElement.CurrentState != MediaElementState.Failed ?
+				MediaElementState.Stopped : MediaElementState.Failed,
+
+			PlaybackStateCompat.StateError => MediaElementState.Failed,
+			_ => MediaElementState.None,
+		};
+
+		mediaElement.CurrentStateChanged(newState);
+
+		if (playbackState == IPlayer.StateReady)
+		{
+			mediaElement.Duration = TimeSpan.FromMilliseconds(
+				player.Duration < 0 ? 0 : player.Duration);
+		}
+	}
+
+	/// <summary>
+	/// Occurs when ExoPlayer changes the playback state.
+	/// </summary>
+	/// <paramref name="playbackState">The state that the player has transitioned to.</paramref>
+	/// <remarks>
+	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
+	/// While this method does not seem to have any references, it's invoked at runtime.
+	/// </remarks>
+	public void OnPlaybackStateChanged(int playbackState)
+	{
+		MediaElementState newState = mediaElement.CurrentState;
+
+		switch (playbackState)
+		{
+			case IPlayer.StateBuffering:
+				newState = MediaElementState.Buffering;
+				break;
+		}
+
+		mediaElement.CurrentStateChanged(newState);
+	}
+
+	/// <summary>
+	/// Occurs when ExoPlayer encounters an error.
+	/// </summary>
+	/// <remarks>
+	/// <paramref name="error">An instance of <seealso cref="PlaybackException"/> containing details of the error.</paramref>
+	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
+	/// While this method does not seem to have any references, it's invoked at runtime.
+	/// </remarks>
+	public void OnPlayerError(PlaybackException? error)
+	{
+		if (mediaElement is null)
+		{
+			return;
+		}
+
+		string errorMessage = string.Empty;
+		string errorCode = string.Empty;
+		string errorCodeName = string.Empty;
+		
+		if (!string.IsNullOrWhiteSpace(error?.LocalizedMessage))
+		{
+			errorMessage = $"Error message: {error.LocalizedMessage}";
+		}
+
+		if (error?.ErrorCode != null)
+		{
+			errorCode = $"Error code: {error?.ErrorCode}";
+		}
+
+		if (!string.IsNullOrWhiteSpace(error?.ErrorCodeName))
+		{
+			errorCode = $"Error codename: {error?.ErrorCodeName}";
+		}
+
+		mediaElement.MediaFailed(new MediaFailedEventArgs(
+			string.Join(", ", new[] { errorCodeName, errorCode, errorMessage }.Where(s => !string.IsNullOrEmpty(s)))));
+	}
+
+	/// <summary>
+	/// Invoked when TODO
+	/// </summary>
+	/// <remarks>
+	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
+	/// While this method does not seem to have any references, it's invoked at runtime.
+	/// </remarks>
+	public void OnSeekProcessed()
+	{
+		mediaElement?.SeekCompleted();
+	}
+
 	protected virtual partial void PlatformPlay(TimeSpan timeSpan)
 	{
 		// TODO do something with position
@@ -37,6 +158,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			return;
 		}
+
 		player.Prepare();
 		player.Play();
 	}
@@ -51,6 +173,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		player.Pause();
 	}
+
 	protected virtual partial void PlatformStop(TimeSpan timeSpan)
 	{
 		// TODO do something with position
@@ -66,6 +189,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		mediaElement.Position = TimeSpan.Zero;
 	}
+
 	protected virtual partial void PlatformUpdateSource()
 	{
 		var hasSetSource = false;
@@ -74,6 +198,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			return;
 		}
+
+		player.PlayWhenReady = mediaElement.AutoPlay;
 
 		if (mediaElement.Source is UriMediaSource)
 		{
@@ -105,9 +231,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			}
 		}
 
-		if (hasSetSource && mediaElement.AutoPlay)
+		if (hasSetSource && player.PlayerError is null)
 		{
-			player.Play();
+			mediaElement.MediaOpened();
 		}
 	}
 
@@ -138,6 +264,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		playerView.UseController = mediaElement.ShowsPlaybackControls;
 	}
+
 	protected virtual partial void PlatformUpdatePosition()
 	{
 		if (mediaElement is null || player is null)
@@ -182,56 +309,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		player.RepeatMode = mediaElement.IsLooping ? IPlayer.RepeatModeOne : IPlayer.RepeatModeOff;
 	}
 
-	public void OnPlayerStateChanged(bool playWhenReady, int playbackState)
-	{
-		if (player is null)
-		{
-			return;
-		}
-
-		var previousState = mediaElement.CurrentState;
-		var newState = playbackState switch
-		{
-			PlaybackStateCompat.StateFastForwarding
-			or PlaybackStateCompat.StateRewinding
-			or PlaybackStateCompat.StateSkippingToNext
-			or PlaybackStateCompat.StateSkippingToPrevious
-			or PlaybackStateCompat.StateSkippingToQueueItem
-			or PlaybackStateCompat.StatePlaying => playWhenReady ? MediaElementState.Playing : MediaElementState.Paused,
-
-			PlaybackStateCompat.StatePaused => MediaElementState.Paused,
-			PlaybackStateCompat.StateConnecting or PlaybackStateCompat.StateBuffering => MediaElementState.Buffering,
-			PlaybackStateCompat.StateNone => MediaElementState.None,
-			PlaybackStateCompat.StateStopped => previousState != MediaElementState.Failed ? MediaElementState.Stopped : MediaElementState.Failed,
-			PlaybackStateCompat.StateError => MediaElementState.Failed,
-			_ => MediaElementState.None,
-		};
-
-		mediaElement.CurrentStateChanged(new MediaStateChangedEventArgs(previousState, newState));
-
-		if (playbackState == IPlayer.StateReady)
-		{
-			mediaElement.Duration = TimeSpan.FromMilliseconds(
-				player.Duration < 0 ? 0 : player.Duration);
-		}
-	}
-
-	public void OnPlayerError(PlaybackException? error)
-	{
-		if (mediaElement is null)
-		{
-			return;
-		}
-		
-		// TODO add more detail to error message?
-		mediaElement?.MediaFailed(new MediaFailedEventArgs(error?.Message ?? ""));
-	}
-
-	public void OnSeekProcessed()
-	{
-		mediaElement?.SeekCompleted();
-	}
-
 	#region IPlayer.IListener implementation method stubs
 	public void OnAudioAttributesChanged(AudioAttributes? audioAttributes) { }
 	public void OnAudioSessionIdChanged(int audioSessionId) { }
@@ -249,20 +326,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata) { }
 	public void OnMetadata(Metadata? metadata) { }
 	public void OnPlaybackParametersChanged(PlaybackParameters? playbackParameters) { }
-	public void OnPlaybackStateChanged(int playbackState)
-	{
-		var previousState = mediaElement.CurrentState;
-		MediaElementState newState = previousState;
-
-		switch (playbackState)
-		{
-			case IPlayer.StateBuffering:
-				newState = MediaElementState.Buffering;
-				break;
-		}
-
-		mediaElement.CurrentStateChanged(new MediaStateChangedEventArgs(previousState, newState));
-	}
 	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
 	public void OnPlayerErrorChanged(PlaybackException? error) { }
 	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata) { }

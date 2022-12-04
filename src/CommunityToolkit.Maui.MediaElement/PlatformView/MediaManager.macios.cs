@@ -3,19 +3,23 @@ using AVKit;
 using CoreFoundation;
 using CoreMedia;
 using Foundation;
-using static CommunityToolkit.Maui.MediaElement.Helpers.ObserverExtensions;
+using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.MediaElement;
 
 public partial class MediaManager : IDisposable
 {
+	const NSKeyValueObservingOptions valueObserverOptions =
+		NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.New;
+
 	protected NSObject? playedToEndObserver;
 	protected NSObject? itemFailedToPlayToEndTimeObserver;
 	protected NSObject? playbackStalledObserver;
 	protected NSObject? errorObserver;
 	protected IDisposable? statusObserver;
 	protected IDisposable? timeControlStatusObserver;
-	protected IDisposable? currentItemObserver;
+	protected IDisposable? currentItemErrorObserver;
+	protected IDisposable? currentItemStatusObserver;
 	protected AVPlayerViewController? playerViewController;
 	protected AVPlayerItem? playerItem;
 
@@ -50,7 +54,7 @@ public partial class MediaManager : IDisposable
 		player?.Seek(CMTime.Zero);
 		player?.Pause();
 
-		mediaElement.CurrentStateChanged(new MediaStateChangedEventArgs(mediaElement.CurrentState, MediaElementState.Stopped));
+		mediaElement.CurrentStateChanged(MediaElementState.Stopped);
 	}
 
 	protected virtual partial void PlatformUpdateSource()
@@ -85,11 +89,12 @@ public partial class MediaManager : IDisposable
 			playerItem = null;
 		}
 
-		currentItemObserver?.Dispose();
+		currentItemErrorObserver?.Dispose();
 
 		player?.ReplaceCurrentItemWithPlayerItem(playerItem);
 
-		currentItemObserver = playerItem?.AddObserver("error", NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.New, (NSObservedChange change) =>
+		currentItemErrorObserver = playerItem?.AddObserver("error",
+			valueObserverOptions, (NSObservedChange change) =>
 		{
 			if (player?.CurrentItem?.Error != null)
 			{
@@ -97,9 +102,14 @@ public partial class MediaManager : IDisposable
 			}
 		});
 
-		if (playerItem is not null && mediaElement.AutoPlay)
+		if (playerItem is not null && playerItem.Error is null)
 		{
-			player?.Play();
+			mediaElement.MediaOpened();
+
+			if (mediaElement.AutoPlay)
+			{
+				player?.Play();
+			}
 		}
 	}
 
@@ -120,7 +130,8 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		playerViewController.ShowsPlaybackControls = mediaElement.ShowsPlaybackControls;
+		playerViewController.ShowsPlaybackControls =
+			mediaElement.ShowsPlaybackControls;
 	}
 
 	protected virtual partial void PlatformUpdatePosition()
@@ -134,7 +145,13 @@ public partial class MediaManager : IDisposable
 		if (Math.Abs((controlPosition - mediaElement.Position).TotalSeconds) > 1)
 		{
 			player.Seek(CMTime.FromSeconds(mediaElement.Position.TotalSeconds, 1),
-				(a) => mediaElement?.SeekCompleted());
+				(complete) =>
+				{
+					if (complete)
+					{
+						mediaElement?.SeekCompleted();
+					}
+				});
 		}
 	}
 
@@ -170,7 +187,7 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateIsLooping()
 	{
-
+		// no-op
 	}
 
 	protected virtual void Dispose(bool disposing)
@@ -181,7 +198,8 @@ public partial class MediaManager : IDisposable
 			{
 				DestroyErrorObservers();
 				DestroyPlayedToEndObserver();
-				
+
+				currentItemErrorObserver?.Dispose();
 				player.ReplaceCurrentItemWithPlayerItem(null);
 				statusObserver?.Dispose();
 				timeControlStatusObserver?.Dispose();
@@ -200,7 +218,8 @@ public partial class MediaManager : IDisposable
 
 	static TimeSpan ConvertTime(CMTime cmTime)
 	{
-		return TimeSpan.FromSeconds(double.IsNaN(cmTime.Seconds) ? 0 : cmTime.Seconds);
+		return TimeSpan.FromSeconds(
+			double.IsNaN(cmTime.Seconds) ? 0 : cmTime.Seconds);
 	}
 
 	void AddStatusObservers()
@@ -210,8 +229,9 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		statusObserver = player.AddObserver("status", NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.New, StatusChanged);
-		timeControlStatusObserver = player.AddObserver("timeControlStatus", NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.New, TimeControlStatusChanged);
+		statusObserver = player.AddObserver("status", valueObserverOptions, StatusChanged);
+		timeControlStatusObserver = player.AddObserver("timeControlStatus",
+			valueObserverOptions, TimeControlStatusChanged);
 	}
 
 	void AddErrorObservers()
@@ -249,8 +269,7 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		var previousState = mediaElement.CurrentState;
-		MediaElementState newState = MediaElementState.None;
+		MediaElementState newState = mediaElement.CurrentState;
 
 		switch (player.Status)
 		{
@@ -265,7 +284,7 @@ public partial class MediaManager : IDisposable
 				break;
 		}
 
-		mediaElement.CurrentStateChanged(new MediaStateChangedEventArgs(previousState, newState));
+		mediaElement.CurrentStateChanged(newState);
 	}
 
 	void TimeControlStatusChanged(NSObservedChange obj)
@@ -282,8 +301,7 @@ public partial class MediaManager : IDisposable
 
 		if (player.CurrentItem?.Error is not null)	{ return; }
 
-		var previousState = mediaElement.CurrentState;
-		MediaElementState newState = MediaElementState.None;
+		MediaElementState newState = mediaElement.CurrentState;
 
 		switch (player.TimeControlStatus)
 		{
@@ -298,7 +316,7 @@ public partial class MediaManager : IDisposable
 				break;
 		}
 
-		mediaElement.CurrentStateChanged(new MediaStateChangedEventArgs(previousState, newState));
+		mediaElement.CurrentStateChanged(newState);
 	}
 
 	void ErrorOccured(object? sender, NSNotificationEventArgs args)

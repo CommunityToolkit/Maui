@@ -13,13 +13,13 @@ public interface IMediaElement : IView
 	/// <summary>
 	/// The current state of the <see cref="MediaElement"/>.
 	/// </summary>
-	MediaElementState CurrentState { get; set; }
+	MediaElementState CurrentState { get; }
 
 	/// <summary>
 	/// Occurs when <see cref="CurrentState"/> changes.
 	/// </summary>
-	/// <param name="args">Event arguments containing extra information about this event.</param>
-	void CurrentStateChanged(MediaStateChangedEventArgs args);
+	/// <param name="newState">The new state the <see cref="MediaElement"/> transitioned to.</param>
+	void CurrentStateChanged(MediaElementState newState);
 
 	/// <summary>
 	/// The total duration of the loaded media.
@@ -28,8 +28,9 @@ public interface IMediaElement : IView
 	TimeSpan Duration { get; set; }
 
 	/// <summary>
-	/// Occurs when the media has ended playing.
+	/// Occurs when the media has ended playing successfully.
 	/// </summary>
+	/// <remarks>This does not trigger when the media has failed during playback.</remarks>
 	void MediaEnded();
 
 	/// <summary>
@@ -91,13 +92,13 @@ public interface IMediaElement : IView
 	void Stop();
 
 	/// <summary>
-	/// The height of the loaded media in pixels.
+	/// The height (in pixels) of the loaded media in pixels.
 	/// </summary>
 	/// <remarks>Not reported for non-visual media.</remarks>
 	int VideoHeight { get; }
 
 	/// <summary>
-	/// The width of the loaded media in pixels.
+	/// The width (in pixels) of the loaded media in pixels.
 	/// </summary>
 	/// <remarks>Not reported for non-visual media.</remarks>
 	int VideoWidth { get; }
@@ -107,7 +108,4 @@ public interface IMediaElement : IView
 	/// </summary>
 	/// <remarks>A value of 1 means full volume, 0 is silence.</remarks>
 	double Volume { get; set; }
-
-	// iOS: https://github.com/brminnick/GitTrends/blob/main/GitTrends.iOS/CustomRenderers/VideoPlayerViewCustomRenderer.cs
-	// Android: https://github.com/brminnick/GitTrends/blob/main/GitTrends.Android/CustomRenderers/VideoPlayerViewCustomRenderer.cs
 }

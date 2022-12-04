@@ -38,9 +38,7 @@ partial class MediaManager : IDisposable
 			player.MediaPlayer.Pause();
 			player.MediaPlayer.Position = TimeSpan.Zero;
 
-			mediaElement.CurrentStateChanged(
-				new MediaStateChangedEventArgs(mediaElement.CurrentState,
-				MediaElementState.Stopped));
+			mediaElement.CurrentStateChanged(MediaElementState.Stopped);
 		}
 	}
 
@@ -198,7 +196,6 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
-		var previousState = mediaElement.CurrentState;
 		var newState = sender.PlaybackState switch
 		{
 			MediaPlaybackState.Buffering => MediaElementState.Buffering,
@@ -208,7 +205,7 @@ partial class MediaManager : IDisposable
 			_ => MediaElementState.None,
 		};
 		
-		mediaElement.CurrentStateChanged(new MediaStateChangedEventArgs(previousState, newState));
+		mediaElement.CurrentStateChanged(newState);
 	}
 
 	void PlaybackSession_PositionChanged(MediaPlaybackSession sender, object args)
