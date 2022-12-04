@@ -85,10 +85,10 @@ public class MediaElement : View, IMediaElement
 	public MediaElementState CurrentState
 	{
 		get => (MediaElementState)GetValue(CurrentStateProperty);
-		set => SetValue(CurrentStateProperty, value);
+		private set => SetValue(CurrentStateProperty, value);
 	}
 
-	// Change this to be a Readonly BP
+	// TODO Change this to be a Readonly BP
 	public TimeSpan Duration
 	{
 		get => (TimeSpan)GetValue(DurationProperty);
