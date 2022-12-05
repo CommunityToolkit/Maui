@@ -28,10 +28,22 @@ public static class StateContainer
 		= BindableProperty.CreateAttached("ShouldAnimateOnStateChange", typeof(bool), typeof(StateContainer), true, propertyChanged: OnShouldAnimateOnStateChangeChanged);
 
 	/// <summary>
+	/// Backing BindableProperty for the <see cref="GetCanStateChange"/> method.
+	/// </summary>
+	public static readonly BindableProperty CanStateChangeProperty
+		= BindableProperty.CreateAttached("CanStateChange", typeof(bool), typeof(StateContainer), true, BindingMode.OneWayToSource);
+
+	/// <summary>
 	/// Set the StateViews property
 	/// </summary>
 	public static void SetStateViews(BindableObject b, IList<View> value)
 		=> b.SetValue(StateViewsProperty, value);
+
+	/// <summary>
+	/// Get the CanStateChange property
+	/// </summary>
+	public static bool GetCanStateChange(BindableObject b)
+		=> (bool)b.GetValue(CanStateChangeProperty);
 
 	/// <summary>
 	/// Get the StateViews property
@@ -66,12 +78,22 @@ public static class StateContainer
 	internal static StateContainerController GetContainerController(BindableObject b) =>
 		(StateContainerController)b.GetValue(LayoutControllerProperty);
 
+	static void SetCanStateChange(BindableObject b, bool value)
+		=> b.SetValue(CanStateChangeProperty, value);
+
 	static async void OnCurrentStateChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		if (oldValue == newValue)
 		{
 			return;
 		}
+
+		if(!GetCanStateChange(bindable))
+		{
+			throw new StateContainerException($"CurrentState cannot be changed while a state change is in progress");
+		}
+
+		SetCanStateChange(bindable, false);
 
 		var newState = (string)newValue;
 
@@ -83,6 +105,8 @@ public static class StateContainer
 		{
 			await GetContainerController(bindable).SwitchToState(newState, GetShouldAnimateOnStateChange(bindable));
 		}
+
+		SetCanStateChange(bindable, true);
 	}
 
 	static void OnShouldAnimateOnStateChangeChanged(BindableObject bindable, object oldValue, object newValue)

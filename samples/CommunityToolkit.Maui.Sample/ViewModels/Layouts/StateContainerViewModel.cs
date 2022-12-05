@@ -9,7 +9,7 @@ public partial class StateContainerViewModel : BaseViewModel
 	string? currentState, gridState, noAnimateState, notFoundState, fullPageState;
 
 	[ObservableProperty]
-	bool isGridStateChanging;
+	bool canGridStateChange;
 
 	[RelayCommand]
 	async Task CycleStates()
@@ -27,7 +27,7 @@ public partial class StateContainerViewModel : BaseViewModel
 		CurrentState = string.Empty;
 	}
 
-	[RelayCommand]
+	[RelayCommand(CanExecute = nameof(CanGridStateChange))]
 	void ToggleGridState() => GridState = GridState switch
 	{
 		StateKey.ReplaceGrid => null,
@@ -54,6 +54,11 @@ public partial class StateContainerViewModel : BaseViewModel
 		StateKey.Loading => null,
 		_ => StateKey.Loading
 	};
+
+	partial void OnCanGridStateChangeChanged(bool value)
+	{
+		ToggleGridStateCommand.NotifyCanExecuteChanged();
+	}
 
 	static class StateKey
 	{
