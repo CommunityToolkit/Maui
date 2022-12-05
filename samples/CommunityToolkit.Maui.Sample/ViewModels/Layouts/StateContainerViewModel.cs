@@ -6,19 +6,10 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 public partial class StateContainerViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	string? currentState;
+	string? currentState, gridState, noAnimateState, notFoundState, fullPageState;
 
 	[ObservableProperty]
-	string? gridState;
-
-	[ObservableProperty]
-	string? noAnimateState;
-
-	[ObservableProperty]
-	string? notFoundState;
-
-	[ObservableProperty]
-	string? fullPageState;
+	bool isGridStateChanging;
 
 	[RelayCommand]
 	async Task CycleStates()
@@ -66,11 +57,11 @@ public partial class StateContainerViewModel : BaseViewModel
 
 	static class StateKey
 	{
-		public const string Loading = "Loading";
-		public const string Success = "Success";
+		public const string Loading = nameof(Loading);
+		public const string Success = nameof(Success);
 		public const string Anything = "StateKey can be anything!";
-		public const string ReplaceGrid = "ReplaceGrid";
-		public const string NoAnimate = "NoAnimate";
-		public const string NotFound = "NotFoundExampleKey";
+		public const string ReplaceGrid = nameof(ReplaceGrid);
+		public const string NoAnimate = nameof(NoAnimate);
+		public const string NotFound = nameof(NotFound);
 	}
 }
