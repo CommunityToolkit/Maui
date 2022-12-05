@@ -90,7 +90,7 @@ public static class StateContainer
 
 		if(!GetCanStateChange(bindable))
 		{
-			throw new StateContainerException($"CurrentState cannot be changed while a state change is in progress");
+			throw new StateContainerException($"CanSateChange is false. CurrentState cannot be changed while a state change is in progress.");
 		}
 
 		SetCanStateChange(bindable, false);
