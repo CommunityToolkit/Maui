@@ -16,6 +16,7 @@ public partial class MediaManager : IDisposable
 	protected NSObject? playbackStalledObserver;
 	protected NSObject? errorObserver;
 	protected IDisposable? statusObserver;
+	protected IDisposable? rateObserver;
 	protected IDisposable? timeControlStatusObserver;
 	protected IDisposable? currentItemErrorObserver;
 	protected IDisposable? currentItemStatusObserver;
@@ -208,6 +209,7 @@ public partial class MediaManager : IDisposable
 				DestroyErrorObservers();
 				DestroyPlayedToEndObserver();
 
+				rateObserver?.Dispose();
 				currentItemErrorObserver?.Dispose();
 				player.ReplaceCurrentItemWithPlayerItem(null);
 				statusObserver?.Dispose();
@@ -241,12 +243,13 @@ public partial class MediaManager : IDisposable
 		statusObserver = player.AddObserver("status", valueObserverOptions, StatusChanged);
 		timeControlStatusObserver = player.AddObserver("timeControlStatus",
 			valueObserverOptions, TimeControlStatusChanged);
+		rateObserver = AVPlayer.Notifications.ObserveRateDidChange(RateChanged);
 	}
 
 	void AddErrorObservers()
 	{
 		DestroyErrorObservers();
-
+		
 		itemFailedToPlayToEndTimeObserver = AVPlayerItem.Notifications.ObserveItemFailedToPlayToEndTime(ErrorOccured);
 		playbackStalledObserver = AVPlayerItem.Notifications.ObservePlaybackStalled(ErrorOccured);
 		errorObserver = AVPlayerItem.Notifications.ObserveNewErrorLogEntry(ErrorOccured);
@@ -370,5 +373,15 @@ public partial class MediaManager : IDisposable
 				//Log.Warning("MediaElement", $"Failed to play media to end: {e}");
 			}
 		}
+	}
+
+	void RateChanged(object? sender, NSNotificationEventArgs args)
+	{
+		if (mediaElement is null || player is null)
+		{
+			return;
+		}
+
+		mediaElement.Speed = player.Rate;
 	}
 }
