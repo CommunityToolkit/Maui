@@ -32,6 +32,27 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	}
 
 	/// <summary>
+	/// Occurs when ExoPlayer changes the playback parameters.
+	/// </summary>
+	/// <paramref name="playbackParameters">Object containing the new playback parameter values.</paramref>
+	/// <remarks>
+	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
+	/// While this method does not seem to have any references, it's invoked at runtime.
+	/// </remarks>
+	public void OnPlaybackParametersChanged(PlaybackParameters? playbackParameters)
+	{
+		if (playbackParameters is null || mediaElement is null)
+		{
+			return;
+		}
+
+		if ((double)playbackParameters.Speed != mediaElement.Speed)
+		{
+			mediaElement.Speed = (double)playbackParameters.Speed;
+		}
+	}
+
+	/// <summary>
 	/// Occurs when ExoPlayer changes the player state.
 	/// </summary>
 	/// <paramref name="playWhenReady">Indicates whether the player should start playing the media whenever the media is ready.</paramref>
@@ -108,8 +129,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// <summary>
 	/// Occurs when ExoPlayer encounters an error.
 	/// </summary>
-	/// <remarks>
 	/// <paramref name="error">An instance of <seealso cref="PlaybackException"/> containing details of the error.</paramref>
+	/// <remarks>
 	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
 	/// While this method does not seem to have any references, it's invoked at runtime.
 	/// </remarks>
@@ -153,6 +174,24 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	public void OnSeekProcessed()
 	{
 		mediaElement?.SeekCompleted();
+	}
+
+	/// <summary>
+	/// Occurs when ExoPlayer changes volume.
+	/// </summary>
+	/// <param name="volume">The new value for volume.</param>
+	/// <remarks>
+	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
+	/// While this method does not seem to have any references, it's invoked at runtime.
+	/// </remarks>
+	public void OnVolumeChanged(float volume)
+	{
+		if (player is null || mediaElement is null)
+		{
+			return;
+		}
+
+		mediaElement.Volume = volume;
 	}
 
 	protected virtual partial void PlatformPlay(TimeSpan timeSpan)
@@ -338,7 +377,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	public void OnMediaItemTransition(MediaItem? mediaItem, int transition) { }
 	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata) { }
 	public void OnMetadata(Metadata? metadata) { }
-	public void OnPlaybackParametersChanged(PlaybackParameters? playbackParameters) { }
 	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
 	public void OnPlayerErrorChanged(PlaybackException? error) { }
 	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata) { }
@@ -356,6 +394,5 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	public void OnTracksChanged(Tracks? tracks) { }
 	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? trackSelectionParameters) { }
 	public void OnVideoSizeChanged(VideoSize? videoSize) { }
-	public void OnVolumeChanged(VideoSize? videoSize) { }
 	#endregion
 }
