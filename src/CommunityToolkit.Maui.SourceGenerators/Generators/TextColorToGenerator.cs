@@ -120,7 +120,7 @@ using Microsoft.Maui.Graphics;
 
 namespace " + textStyleClass.Namespace + @";
 
-"+ textStyleClass.ClassAcessModifier + @" static partial class ColorAnimationExtensions_" + textStyleClass.ClassName + @"
+" + textStyleClass.ClassAcessModifier + @" static partial class ColorAnimationExtensions_" + textStyleClass.ClassName + @"
 {
 	/// <summary>
 	/// Animates the TextColor of an <see cref=""Microsoft.Maui.ITextStyle""/> to the given color
