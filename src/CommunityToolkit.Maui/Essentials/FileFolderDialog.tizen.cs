@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
+﻿using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 using Microsoft.Maui.Platform;
 using Tizen.NUI;
 using Tizen.NUI.BaseComponents;
@@ -18,24 +17,14 @@ using Window = Tizen.NUI.Window;
 
 namespace CommunityToolkit.Maui.Storage;
 
-enum FileSelectionMode
-{
-	FileOpen,
-	FileSave,
-	FolderChoose,
-	FileOpenRoot,
-	FileSaveRoot,
-	FolderChooseRoot
-}
-
 sealed class FileFolderDialog : Popup<string>, IDisposable
 {
+	const string fileSaveString = "Save As";
+	const string selectFolderString = "Select Folder";
 	const string previousDirectorySymbol = "..";
 	const string slashSymbol = "/";
 
-	readonly bool isRootSelectionMode;
 	readonly bool isFileSelectionMode;
-	readonly FileSelectionMode fileSelectionMode;
 	readonly string initialFileFolderPath;
 
 	ScrollView? directoryScrollView;
@@ -44,28 +33,36 @@ sealed class FileFolderDialog : Popup<string>, IDisposable
 	string selectedPath;
 	string selectedFileName;
 
-	public FileFolderDialog(FileSelectionMode mode, string initialPath, CancellationToken cancellationToken = default, string fileName = "default")
+	public static string TryGetExternalDirectory()
 	{
-		if (!Enum.IsDefined(typeof(FileSelectionMode), mode))
+		string? externalDirectory = null;
+		foreach (var storage in Tizen.System.StorageManager.Storages)
 		{
-			throw new InvalidEnumArgumentException($"{mode} is not valid for {nameof(FileSelectionMode)}.");
+			if (storage.StorageType == Tizen.System.StorageArea.External)
+			{
+				externalDirectory = storage.RootDirectory;
+				break;
+			}
+			else if (storage.StorageType == Tizen.System.StorageArea.Internal)
+			{
+				externalDirectory = storage.RootDirectory;
+			}
 		}
+
+		return externalDirectory!;
+	}
+
+	public FileFolderDialog(bool isFileSelection, string initialPath, CancellationToken cancellationToken = default, string fileName = "default")
+	{
 		if (!File.Exists(initialPath) && !Directory.Exists(initialPath))
 		{
 			throw new FileNotFoundException($"Could not locate {initialPath}");
 		}
 
-		fileSelectionMode = mode;
 		selectedFileName = fileName;
 		selectedPath = initialFileFolderPath = initialPath;
 		directoyViews = new List<View>();
-		isRootSelectionMode = mode is FileSelectionMode.FileOpenRoot
-									or FileSelectionMode.FileSaveRoot
-									or FileSelectionMode.FolderChooseRoot;
-		isFileSelectionMode = mode is FileSelectionMode.FileOpen
-									or FileSelectionMode.FileOpenRoot
-									or FileSelectionMode.FileSave
-									or FileSelectionMode.FileSaveRoot;
+		isFileSelectionMode = isFileSelection;
 	}
 
 	protected override View CreateContent()
@@ -76,7 +73,6 @@ sealed class FileFolderDialog : Popup<string>, IDisposable
 			HorizontalAlignment = HorizontalAlignment.Center
 		};
 		BackgroundColor = new TColor(0.1f, 0.1f, 0.1f, 0.5f).ToNative();
-
 		
 		var isHorizontal = Window.Instance.WindowSize.Width > Window.Instance.WindowSize.Height;
 		var margin1 = (ushort)20d.ToPixel();
@@ -99,13 +95,7 @@ sealed class FileFolderDialog : Popup<string>, IDisposable
 
 		content.Add(new Label
 		{
-			Text = fileSelectionMode switch
-			{
-				FileSelectionMode.FileOpen or FileSelectionMode.FileOpenRoot => "Open",
-				FileSelectionMode.FileSave or FileSelectionMode.FileSaveRoot => "Save As",
-				FileSelectionMode.FolderChoose or FileSelectionMode.FolderChooseRoot => "Select Folder",
-				_ => throw new NotSupportedException($"{fileSelectionMode} is not yet supported")
-			},
+			Text = isFileSelectionMode ? fileSaveString : selectFolderString,
 			Margin = new Extents(margin1, margin1, margin1, margin2),
 			WidthSpecification = LayoutParamPolicies.MatchParent,
 			HorizontalTextAlignment = Tizen.UIExtensions.Common.TextAlignment.Start,
@@ -121,43 +111,6 @@ sealed class FileFolderDialog : Popup<string>, IDisposable
 			SizeHeight = 1.5d.ToPixel(),
 			WidthSpecification = LayoutParamPolicies.MatchParent,
 		});
-
-		if (fileSelectionMode is FileSelectionMode.FileSave)
-		{
-			var newFolderButton = new Button
-			{
-				Focusable = true,
-				Text = "New Folder",
-				TextColor = TColor.Black,
-				Margin = new Extents(margin1, margin1, 0, 0),
-				WidthSpecification = LayoutParamPolicies.MatchParent
-			};
-			newFolderButton.Clicked += async (sender, args) =>
-			{
-				try
-				{
-					var newDirectoryName = await new PromptPopup("New Folder Name", "").Open();
-					var newDirectoryPath = IsDirectory(selectedPath) ? selectedPath : Path.GetDirectoryName(selectedPath);
-					if (string.IsNullOrEmpty(newDirectoryPath) || string.IsNullOrEmpty(newDirectoryName))
-					{
-						return;
-					}
-					newDirectoryPath = newDirectoryPath.EndsWith(slashSymbol) ? newDirectoryPath : newDirectoryPath + slashSymbol;
-					if (CreateSubDirectory(newDirectoryPath + newDirectoryName))
-					{
-						UpdateDirectoryScrollView(selectedPath);
-					}
-				}
-				catch(Exception ex)
-				{
-					new Tizen.Applications.ToastMessage
-					{
-						Message = $"Failed to create new folder, {ex.Message}"
-					}.Post();
-				}
-			};
-			content.Add(newFolderButton);
-		}
 
 		directoryScrollView = new ScrollView
 		{
@@ -182,12 +135,53 @@ sealed class FileFolderDialog : Popup<string>, IDisposable
 
 		if (isFileSelectionMode)
 		{
+			var newFolderButton = new Button
+			{
+				Focusable = true,
+				Text = "New Folder",
+				TextColor = TColor.Black,
+				BackgroundColor = TColor.Transparent.ToNative(),
+				Margin = new Extents(margin1, margin1, 0, 0),
+				WidthSpecification = LayoutParamPolicies.MatchParent
+			};
+			newFolderButton.Clicked += async (sender, args) =>
+			{
+				try
+				{
+					var newDirectoryName = await new PromptPopup("New Folder Name", "").Open();
+					var newDirectoryPath = IsDirectory(selectedPath) ? selectedPath : Path.GetDirectoryName(selectedPath);
+					if (string.IsNullOrEmpty(newDirectoryPath) || string.IsNullOrEmpty(newDirectoryName))
+					{
+						return;
+					}
+					newDirectoryPath = newDirectoryPath.EndsWith(slashSymbol) ? newDirectoryPath : newDirectoryPath + slashSymbol;
+					if (CreateSubDirectory(newDirectoryPath + newDirectoryName))
+					{
+						UpdateDirectoryScrollView(selectedPath);
+					}
+				}
+				catch (Exception ex)
+				{
+					new Tizen.Applications.ToastMessage
+					{
+						Message = $"Failed to create new folder, {ex.Message}"
+					}.Post();
+				}
+			};
+			content.Add(newFolderButton);
+		}
+
+		if (isFileSelectionMode)
+		{
 			fileNameEntry = new Entry()
 			{
 				Text = selectedFileName,
 				Margin = new Extents(margin1, margin1, 0, 0),
 				WidthSpecification = LayoutParamPolicies.MatchParent
 			};
+			PropertyMap underline = new PropertyMap();
+			underline.Add("enable", new PropertyValue("True"));
+			fileNameEntry.Underline = underline;
 			fileNameEntry.PixelSize = 15d.ToPixel();
 			content.Add(fileNameEntry);
 		}
@@ -206,10 +200,22 @@ sealed class FileFolderDialog : Popup<string>, IDisposable
 		};
 		content.Add(hlayout);
 
+		var cancelButton = new Button
+		{
+			Focusable = true,
+			Text = "Cancel",
+			TextColor = TColor.Black,
+			BackgroundColor = TColor.Transparent.ToNative(),
+		};
+		cancelButton.TextLabel.PixelSize = 15d.ToPixel();
+		cancelButton.SizeWidth = cancelButton.TextLabel.NaturalSize.Width + 15d.ToPixel() * 2;
+		cancelButton.Clicked += (s, e) => SendCancel();
+		hlayout.Add(cancelButton);
+
 		var okButton = new Button
 		{
 			Focusable = true,
-			Text = "OK",
+			Text = isFileSelectionMode ? "Save" : "OK",
 			TextColor = TColor.Black,
 			BackgroundColor = TColor.Transparent.ToNative(),
 		};
@@ -236,18 +242,6 @@ sealed class FileFolderDialog : Popup<string>, IDisposable
 		};
 		hlayout.Add(okButton);
 
-		var cancelButton = new Button
-		{
-			Focusable = true,
-			Text = "Cancel",
-			TextColor = TColor.Black,
-			BackgroundColor = TColor.Transparent.ToNative(),
-		};
-		cancelButton.TextLabel.PixelSize = 15d.ToPixel();
-		cancelButton.SizeWidth = cancelButton.TextLabel.NaturalSize.Width + 15d.ToPixel() * 2;
-		cancelButton.Clicked += (s, e) => SendCancel();
-		hlayout.Add(cancelButton);
-
 		Relayout += (s, e) =>
 		{
 			var isHorizontal = Window.Instance.WindowSize.Width > Window.Instance.WindowSize.Height;
@@ -261,6 +255,11 @@ sealed class FileFolderDialog : Popup<string>, IDisposable
 	{
 		if (selectedItem.Equals(previousDirectorySymbol, StringComparison.Ordinal))
 		{
+			if (selectedPath.Equals(initialFileFolderPath, StringComparison.Ordinal)
+				|| (selectedPath + slashSymbol).Equals(initialFileFolderPath, StringComparison.Ordinal))
+			{
+				return;
+			}
 			selectedPath = Path.GetDirectoryName(selectedPath) ?? initialFileFolderPath;
 			selectedPath = selectedPath[..selectedPath.LastIndexOf(slashSymbol, StringComparison.Ordinal)];
 		}
@@ -359,7 +358,7 @@ sealed class FileFolderDialog : Popup<string>, IDisposable
 		var directories = new List<string>();
 		var directoryPath = IsDirectory(path) ? path : Path.GetDirectoryName(path);
 
-		if (isRootSelectionMode || !slashSymbol.Equals(selectedPath, StringComparison.Ordinal))
+		if (!slashSymbol.Equals(selectedPath, StringComparison.Ordinal))
 		{
 			directories.Add(previousDirectorySymbol);
 		}

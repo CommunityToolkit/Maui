@@ -15,7 +15,7 @@ public class FolderPickerImplementation : IFolderPicker
 			throw new PermissionException("Storage permission is not granted.");
 		}
 
-		var dialog = new FileFolderDialog(FileSelectionMode.FolderChoose, initialPath, cancellationToken: cancellationToken);
+		var dialog = new FileFolderDialog(false, initialPath, cancellationToken: cancellationToken);
 		var path = await dialog.Open();
 
 		return new Folder(path, Path.GetFileName(path));
@@ -24,19 +24,6 @@ public class FolderPickerImplementation : IFolderPicker
 	/// <inheritdoc />
 	public Task<Folder> PickAsync(CancellationToken cancellationToken)
 	{
-		return PickAsync(GetExternalDirectory(), cancellationToken);
-	}
-
-	static string GetExternalDirectory()
-	{
-		string? externalDirectory = null;
-		foreach (var storage in Tizen.System.StorageManager.Storages)
-		{
-			if (storage.StorageType == Tizen.System.StorageArea.External)
-			{
-				externalDirectory = storage.RootDirectory;
-			}
-		}
-		return externalDirectory ?? "/home/owner/media/";
+		return PickAsync(FileFolderDialog.TryGetExternalDirectory(), cancellationToken);
 	}
 }
