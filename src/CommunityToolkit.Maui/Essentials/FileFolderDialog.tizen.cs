@@ -49,7 +49,7 @@ sealed class FileFolderDialog : Popup<string>, IDisposable
 			}
 		}
 
-		return externalDirectory!;
+		return externalDirectory ?? throw new InvalidOperationException("Cannot locate external directory.");
 	}
 
 	public FileFolderDialog(bool isFileSelection, string initialPath, CancellationToken cancellationToken = default, string fileName = "default")
