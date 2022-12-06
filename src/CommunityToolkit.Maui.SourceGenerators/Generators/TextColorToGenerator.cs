@@ -57,7 +57,7 @@ class TextColorToGenerator : IIncrementalGenerator
 
 		foreach (var namedTypeSymbol in mauiTextStyleImplementors)
 		{
-			textStyleClassList.Add((namedTypeSymbol.Name, "public", namedTypeSymbol.ContainingNamespace.ToDisplayString(), namedTypeSymbol.TypeArguments.GetGenericTypeArgumentsString(), namedTypeSymbol.GetGenericTypeConstraintsAsString()));
+			textStyleClassList.Add((namedTypeSymbol.Name, "internal", namedTypeSymbol.ContainingNamespace.ToDisplayString(), namedTypeSymbol.TypeArguments.GetGenericTypeArgumentsString(), namedTypeSymbol.GetGenericTypeConstraintsAsString()));
 		}
 
 		// Collect All Classes in User Library that Implement ITextStyle
@@ -120,7 +120,7 @@ using Microsoft.Maui.Graphics;
 
 namespace " + textStyleClass.Namespace + @";
 
-static partial class ColorAnimationExtensions_" + textStyleClass.ClassName + @"
+"+ textStyleClass.ClassAcessModifier + @" static partial class ColorAnimationExtensions_" + textStyleClass.ClassName + @"
 {
 	/// <summary>
 	/// Animates the TextColor of an <see cref=""Microsoft.Maui.ITextStyle""/> to the given color
