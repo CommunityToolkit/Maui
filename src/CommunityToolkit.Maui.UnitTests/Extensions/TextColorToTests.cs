@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.UnitTests.Mocks;
+﻿using System.Reflection;
+using CommunityToolkit.Maui.UnitTests.Mocks;
 using Unique.Interface.Namespace.TextStyle;
 using Unique.Namespace.TextStyle;
 using Xunit;
@@ -156,6 +157,41 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 			var isSuccessful = await brandNewControl.TextColorTo(updatedTextColor);
 
 			Assert.True(isSuccessful);
+		}
+
+		[Fact]
+		public void AccessModifierForMauiControlsShouldNotBePublic()
+		{
+			foreach (var (generatedType, control) in GetGeneratedColorAnimationExtensionTypes())
+			{
+				if (control.Assembly == typeof(Button).Assembly)
+				{
+					Assert.False(generatedType.IsPublic);
+				}
+			}
+		}
+
+		[Fact]
+		public void AccessModifierForCustomControlsShouldMatchTheControl()
+		{
+			var executingAssembly = Assembly.GetExecutingAssembly();
+
+			foreach (var (generatedType, control) in GetGeneratedColorAnimationExtensionTypes())
+			{
+				if (control.Assembly == executingAssembly)
+				{
+					Assert.Equal(control.IsPublic, generatedType.IsPublic);
+				}
+			}
+		}
+
+		static IEnumerable<(Type generatedType, Type control)> GetGeneratedColorAnimationExtensionTypes()
+		{
+			return from type in Assembly.GetExecutingAssembly().GetTypes()
+				   where type.Name.StartsWith("ColorAnimationExtensions_")
+				   let method = type.GetMethods().Single(m => m.Name.StartsWith("TextColorTo"))
+				   let control = method.GetParameters()[0].ParameterType
+				   select (type, control);
 		}
 	}
 }
