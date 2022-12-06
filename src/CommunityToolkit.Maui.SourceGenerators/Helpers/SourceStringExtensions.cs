@@ -9,6 +9,7 @@ static class SourceStringExtensions
 {
 	public static void FormatText(ref string classSource, CSharpParseOptions? options)
 	{
+		options ??= CSharpParseOptions.Default;
 		var mysource = CSharpSyntaxTree.ParseText(SourceText.From(classSource, Encoding.UTF8), options);
 		var formattedRoot = (CSharpSyntaxNode)mysource.GetRoot().NormalizeWhitespace();
 		classSource = CSharpSyntaxTree.Create(formattedRoot).ToString();
