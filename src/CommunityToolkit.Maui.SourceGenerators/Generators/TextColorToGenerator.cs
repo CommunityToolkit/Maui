@@ -81,7 +81,7 @@ class TextColorToGenerator : IIncrementalGenerator
 
 
 		// Here we Collect all the Classes candidates from the first pipeline
-		// Then we merge then with the Maui.Controls that implements the desired interfaces
+		// Then we merge them with the Maui.Controls that implements the desired interfaces
 		// Then we make sure they are unique and the user control doesn't inherit from any Maui control that implements the desired interface already
 		// Then we transform the ISymbol to be a type that we can compare and preserve the Incremental behavior of this Source Generator
 		var inputs = userGeneratedClassesProvider.Collect()
