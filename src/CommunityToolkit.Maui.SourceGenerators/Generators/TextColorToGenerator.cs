@@ -184,7 +184,7 @@ namespace " + textStyleClassMetadata.Namespace + @";
 		{
 			if (leftItem is null)
 			{
-				continue;
+				continue; 
 			}
 
 			var result = right.ContainsSymbolBaseType(leftItem);
