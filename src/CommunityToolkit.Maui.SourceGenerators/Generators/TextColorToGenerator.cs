@@ -52,7 +52,7 @@ class TextColorToGenerator : IIncrementalGenerator
 				}
 
 				return classSymbol;
-			}).Where(static x => x is not null);
+			});
 
 		// Get Microsoft.Maui.Controls Symbols that implements the desired interfaces
 		var mauiControlsAssemblySymbolProvider = context.CompilationProvider.Select(
