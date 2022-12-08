@@ -36,7 +36,6 @@ class TextColorToGenerator : IIncrementalGenerator
 			static (syntaxNode, cancellationToken) => syntaxNode is ClassDeclarationSyntax { BaseList: not null },
 			static (context, cancellationToken) =>
 			{
-
 				var compilation = context.SemanticModel.Compilation;
 
 				var iTextStyleInterfaceSymbol = compilation.GetTypeByMetadataName(iTextStyleInterface);
@@ -50,16 +49,15 @@ class TextColorToGenerator : IIncrementalGenerator
 				var classSymbol = (INamedTypeSymbol?)context.SemanticModel.GetDeclaredSymbol(context.Node);
 
 				// If the ClassDlecarationSyntax doesn't implements those interfaces we just return null
-				if (classSymbol is null ||
-				!(classSymbol.AllInterfaces.Contains(iAnimatableInterfaceSymbol, SymbolEqualityComparer.Default)
-				&& classSymbol.AllInterfaces.Contains(iTextStyleInterfaceSymbol, SymbolEqualityComparer.Default)))
+				if (classSymbol is null
+					|| !(classSymbol.AllInterfaces.Contains(iAnimatableInterfaceSymbol, SymbolEqualityComparer.Default)
+							&& classSymbol.AllInterfaces.Contains(iTextStyleInterfaceSymbol, SymbolEqualityComparer.Default)))
 				{
 					return null;
 				}
 
 				return classSymbol;
-			})
-			.Where(x => x is not null);
+			}).Where(x => x is not null);
 
 		// Get Microsoft.Maui.Controls Symbols that implements the desired interfaces
 		var mauiControlsAssemblySymbolProvider = context.CompilationProvider.Select(
@@ -92,7 +90,7 @@ class TextColorToGenerator : IIncrementalGenerator
 		context.RegisterSourceOutput(inputs, Execution);
 	}
 
-	static void Execution(SourceProductionContext context, ModelToGenerate textStyleClass)
+	static void Execution(SourceProductionContext context, (string ClassName, string ClassAcessModifier, string Namespace, string GenericArguments, string GenericConstraints) textStyleClass)
 	{
 
 		var textColorToBuilder = $@"
@@ -173,19 +171,18 @@ namespace " + textStyleClass.Namespace + @";
 	}
 }";
 		var source = textColorToBuilder.ToString();
-		SourceStringExtensions.FormatText(ref source, null);
+		SourceStringService.FormatText(ref source);
 		context.AddSource($"{textStyleClass.ClassName}TextColorTo.g.shared.cs", SourceText.From(source, Encoding.UTF8));
 	}
 
-	static ModelToGenerate TransformType(INamedTypeSymbol namedTypeSymbol)
+	static (string ClassName, string ClassAcessModifier, string Namespace, string GenericArguments, string GenericConstraints) TransformType(INamedTypeSymbol namedTypeSymbol)
 	{
 		var accessModifier = mauiControlsAssembly == namedTypeSymbol.ContainingNamespace.ToDisplayString()
 			? "internal"
 			: GetClassAccessModifier(namedTypeSymbol);
-		return new(namedTypeSymbol.Name, accessModifier, namedTypeSymbol.ContainingNamespace.ToDisplayString(), namedTypeSymbol.TypeArguments.GetGenericTypeArgumentsString(), namedTypeSymbol.GetGenericTypeConstraintsAsString());
-	}
 
-	record ModelToGenerate(string ClassName, string ClassAcessModifier, string Namespace, string GenericArguments, string GenericConstraints);
+		return (namedTypeSymbol.Name, accessModifier, namedTypeSymbol.ContainingNamespace.ToDisplayString(), namedTypeSymbol.TypeArguments.GetGenericTypeArgumentsString(), namedTypeSymbol.GetGenericTypeConstraintsAsString());
+	}
 
 	static IEnumerable<INamedTypeSymbol> Deduplicate(ImmutableArray<INamedTypeSymbol> left, IEnumerable<INamedTypeSymbol> right)
 	{
