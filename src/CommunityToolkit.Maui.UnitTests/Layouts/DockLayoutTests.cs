@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.UnitTests.Layouts;
 public class DockLayoutTests : BaseTest
 {
 	const double childWidth = 80;
-	const double childHeight = 60;
+	const double childHeight = 61;
 	const double contentWidth = 2 * childWidth;
 	const double contentHeight = childHeight / 2;
 

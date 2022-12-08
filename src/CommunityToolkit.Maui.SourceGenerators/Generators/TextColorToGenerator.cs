@@ -85,12 +85,12 @@ class TextColorToGenerator : IIncrementalGenerator
 		var inputs = userGeneratedClassesProvider.Collect()
 			.Combine(mauiControlsAssemblySymbolProvider)
 			.SelectMany(static (x, _) => Deduplicate(x.Left, x.Right).ToImmutableArray())
-			.Select(static (x, _) => TransformType(x));
+			.Select(static (x, _) => GenerateMetadata(x));
 
 		context.RegisterSourceOutput(inputs, Execution);
 	}
 
-	static void Execution(SourceProductionContext context, (string ClassName, string ClassAcessModifier, string Namespace, string GenericArguments, string GenericConstraints) textStyleClass)
+	static void Execution(SourceProductionContext context, TextStyleClassMetadata textStyleClassMetadata)
 	{
 
 		var textColorToBuilder = $@"
@@ -106,9 +106,9 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
-namespace " + textStyleClass.Namespace + @";
+namespace " + textStyleClassMetadata.Namespace + @";
 
-" + textStyleClass.ClassAcessModifier + @" static partial class ColorAnimationExtensions_" + textStyleClass.ClassName + @"
+" + textStyleClassMetadata.ClassAcessModifier + @" static partial class ColorAnimationExtensions_" + textStyleClassMetadata.ClassName + @"
 {
 	/// <summary>
 	/// Animates the TextColor of an <see cref=""Microsoft.Maui.ITextStyle""/> to the given color
@@ -119,8 +119,8 @@ namespace " + textStyleClass.Namespace + @";
 	/// <param name=""length"">The duration, in milliseconds, of the animation</param>
 	/// <param name=""easing"">The easing function to be used in the animation</param>
 	/// <returns>Value indicating if the animation completed successfully or not</returns>
-	public static Task<bool> TextColorTo" + textStyleClass.GenericArguments + "(this " + textStyleClass.Namespace + "." + textStyleClass.ClassName + textStyleClass.GenericArguments + @" element, Color color, uint rate = 16u, uint length = 250u, Easing? easing = null)
-" + textStyleClass.GenericConstraints + @"
+	public static Task<bool> TextColorTo" + textStyleClassMetadata.GenericArguments + "(this " + textStyleClassMetadata.Namespace + "." + textStyleClassMetadata.ClassName + textStyleClassMetadata.GenericArguments + @" element, Color color, uint rate = 16u, uint length = 250u, Easing? easing = null)
+" + textStyleClassMetadata.GenericConstraints + @"
 	{
 		ArgumentNullException.ThrowIfNull(element);
 		ArgumentNullException.ThrowIfNull(color);
@@ -149,38 +149,38 @@ namespace " + textStyleClass.Namespace + @";
 		{
 			//When creating an Animation too early in the lifecycle of the Page, i.e. in the OnAppearing method,
 			//the Page might not have an 'IAnimationManager' yet, resulting in an ArgumentException.
-			System.Diagnostics.Debug.WriteLine($""{aex.GetType().Name} thrown in {typeof(ColorAnimationExtensions_" + textStyleClass.ClassName + @").FullName}: {aex.Message}"");
+			System.Diagnostics.Debug.WriteLine($""{aex.GetType().Name} thrown in {typeof(ColorAnimationExtensions_" + textStyleClassMetadata.ClassName + @").FullName}: {aex.Message}"");
 			animationCompletionSource.SetResult(false);
 		}
 
 		return animationCompletionSource.Task;
 
 
-		static Animation GetRedTransformAnimation(" + textStyleClass.Namespace + "." + textStyleClass.ClassName + textStyleClass.GenericArguments + @"  element, float targetRed) =>
+		static Animation GetRedTransformAnimation(" + textStyleClassMetadata.Namespace + "." + textStyleClassMetadata.ClassName + textStyleClassMetadata.GenericArguments + @"  element, float targetRed) =>
 			new(v => element.TextColor = element.TextColor.WithRed(v), element.TextColor.Red, targetRed);
 
-		static Animation GetGreenTransformAnimation(" + textStyleClass.Namespace + "." + textStyleClass.ClassName + textStyleClass.GenericArguments + @"  element, float targetGreen) =>
+		static Animation GetGreenTransformAnimation(" + textStyleClassMetadata.Namespace + "." + textStyleClassMetadata.ClassName + textStyleClassMetadata.GenericArguments + @"  element, float targetGreen) =>
 			new(v => element.TextColor = element.TextColor.WithGreen(v), element.TextColor.Green, targetGreen);
 
-		static Animation GetBlueTransformAnimation(" + textStyleClass.Namespace + "." + textStyleClass.ClassName + textStyleClass.GenericArguments + @"  element, float targetBlue) =>
+		static Animation GetBlueTransformAnimation(" + textStyleClassMetadata.Namespace + "." + textStyleClassMetadata.ClassName + textStyleClassMetadata.GenericArguments + @"  element, float targetBlue) =>
 			new(v => element.TextColor = element.TextColor.WithBlue(v), element.TextColor.Blue, targetBlue);
 
-		static Animation GetAlphaTransformAnimation(" + textStyleClass.Namespace + "." + textStyleClass.ClassName + textStyleClass.GenericArguments + @"  element, float targetAlpha) =>
+		static Animation GetAlphaTransformAnimation(" + textStyleClassMetadata.Namespace + "." + textStyleClassMetadata.ClassName + textStyleClassMetadata.GenericArguments + @"  element, float targetAlpha) =>
 			new(v => element.TextColor = element.TextColor.WithAlpha((float)v), element.TextColor.Alpha, targetAlpha);
 	}
 }";
 		var source = textColorToBuilder.ToString();
 		SourceStringService.FormatText(ref source);
-		context.AddSource($"{textStyleClass.ClassName}TextColorTo.g.shared.cs", SourceText.From(source, Encoding.UTF8));
+		context.AddSource($"{textStyleClassMetadata.ClassName}TextColorTo.g.shared.cs", SourceText.From(source, Encoding.UTF8));
 	}
 
-	static (string ClassName, string ClassAcessModifier, string Namespace, string GenericArguments, string GenericConstraints) TransformType(INamedTypeSymbol namedTypeSymbol)
+	static TextStyleClassMetadata GenerateMetadata(INamedTypeSymbol namedTypeSymbol)
 	{
 		var accessModifier = mauiControlsAssembly == namedTypeSymbol.ContainingNamespace.ToDisplayString()
 			? "internal"
 			: GetClassAccessModifier(namedTypeSymbol);
 
-		return (namedTypeSymbol.Name, accessModifier, namedTypeSymbol.ContainingNamespace.ToDisplayString(), namedTypeSymbol.TypeArguments.GetGenericTypeArgumentsString(), namedTypeSymbol.GetGenericTypeConstraintsAsString());
+		return new(namedTypeSymbol.Name, accessModifier, namedTypeSymbol.ContainingNamespace.ToDisplayString(), namedTypeSymbol.TypeArguments.GetGenericTypeArgumentsString(), namedTypeSymbol.GetGenericTypeConstraintsAsString());
 	}
 
 	static IEnumerable<INamedTypeSymbol> Deduplicate(ImmutableArray<INamedTypeSymbol?> left, IEnumerable<INamedTypeSymbol> right)
@@ -217,4 +217,6 @@ namespace " + textStyleClass.Namespace + @";
 		Accessibility.Internal => "internal",
 		_ => string.Empty
 	};
+
+	record TextStyleClassMetadata(string ClassName, string ClassAcessModifier, string Namespace, string GenericArguments, string GenericConstraints);
 }
