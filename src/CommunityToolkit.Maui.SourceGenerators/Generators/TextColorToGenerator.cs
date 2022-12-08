@@ -205,7 +205,7 @@ namespace " + textStyleClassMetadata.Namespace + @";
 		}
 	}
 
-	internal static IEnumerable<INamedTypeSymbol> GetMauiInterfaceImplementors(IAssemblySymbol mauiControlsAssemblySymbolProvider, INamedTypeSymbol iAnimatableSymbol, INamedTypeSymbol itextStyleSymbol)
+	static IEnumerable<INamedTypeSymbol> GetMauiInterfaceImplementors(IAssemblySymbol mauiControlsAssemblySymbolProvider, INamedTypeSymbol iAnimatableSymbol, INamedTypeSymbol itextStyleSymbol)
 	{
 		return mauiControlsAssemblySymbolProvider.GlobalNamespace.GetNamedTypeSymbols().Where(x => x.AllInterfaces.Contains(itextStyleSymbol, SymbolEqualityComparer.Default)
 																									&& x.AllInterfaces.Contains(iAnimatableSymbol, SymbolEqualityComparer.Default));
