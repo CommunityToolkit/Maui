@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Text;
 using CommunityToolkit.Maui.SourceGenerators.Extensions;
 using CommunityToolkit.Maui.SourceGenerators.Helpers;
