@@ -26,11 +26,6 @@ class TextColorToGenerator : IIncrementalGenerator
 
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
-		if (!Debugger.IsAttached)
-		{
-			//Debugger.Launch();
-		}
-
 		// Get All Classes in User Library
 		var userGeneratedClassesProvider = context.SyntaxProvider.CreateSyntaxProvider(
 			static (syntaxNode, cancellationToken) => syntaxNode is ClassDeclarationSyntax { BaseList: not null },
