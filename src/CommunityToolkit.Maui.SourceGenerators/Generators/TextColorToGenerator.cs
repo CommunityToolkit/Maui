@@ -84,7 +84,7 @@ class TextColorToGenerator : IIncrementalGenerator
 		// Then we transform the ISymbol to be a type that we can compare and preserve the Incremental behavior of this Source Generator
 		var inputs = userGeneratedClassesProvider.Collect()
 			.Combine(mauiControlsAssemblySymbolProvider)
-			.SelectMany(static (x, _) => Deduplicate(x.Left!, x.Right).ToImmutableArray())
+			.SelectMany(static (x, _) => Deduplicate(x.Left, x.Right).ToImmutableArray())
 			.Select(static (x, _) => TransformType(x));
 
 		context.RegisterSourceOutput(inputs, Execution);
@@ -184,10 +184,15 @@ namespace " + textStyleClass.Namespace + @";
 		return (namedTypeSymbol.Name, accessModifier, namedTypeSymbol.ContainingNamespace.ToDisplayString(), namedTypeSymbol.TypeArguments.GetGenericTypeArgumentsString(), namedTypeSymbol.GetGenericTypeConstraintsAsString());
 	}
 
-	static IEnumerable<INamedTypeSymbol> Deduplicate(ImmutableArray<INamedTypeSymbol> left, IEnumerable<INamedTypeSymbol> right)
+	static IEnumerable<INamedTypeSymbol> Deduplicate(ImmutableArray<INamedTypeSymbol?> left, IEnumerable<INamedTypeSymbol> right)
 	{
 		foreach (var leftItem in left)
 		{
+			if (leftItem is null)
+			{
+				continue;
+			}
+
 			var result = right.ContainsSymbolBaseType(leftItem);
 			if (!result)
 			{
