@@ -65,8 +65,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 			return;
 		}
 
-		TimeSpan position = ((MediaPositionEventArgs)args).Position;
-		handler.mediaManager?.Play(position);
+		handler.mediaManager?.Play();
 	}
 
 	public static void MapPauseRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
@@ -76,8 +75,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 			return;
 		}
 
-		TimeSpan position = ((MediaPositionEventArgs)args).Position;
-		handler.mediaManager?.Pause(position);
+		handler.mediaManager?.Pause();
 	}
 
 	public static void MapStopRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
@@ -87,8 +85,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 			return;
 		}
 
-		TimeSpan position = ((MediaPositionEventArgs)args).Position;
-		handler.mediaManager?.Stop(position);
+		handler.mediaManager?.Stop();
 	}
 
 	protected virtual void Dispose(bool disposing)

@@ -22,7 +22,7 @@ public interface IMediaElement : IView
 	void CurrentStateChanged(MediaElementState newState);
 
 	/// <summary>
-	/// The total duration of the loaded media.
+	/// Gets total duration of the loaded media.
 	/// </summary>
 	/// <remarks>Might not be available for some types, like live streams.</remarks>
 	TimeSpan Duration { get; set; }

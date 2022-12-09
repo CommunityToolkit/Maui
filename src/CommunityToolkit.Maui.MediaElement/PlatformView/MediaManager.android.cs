@@ -155,9 +155,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		mediaElement?.SeekCompleted();
 	}
 
-	protected virtual partial void PlatformPlay(TimeSpan timeSpan)
+	protected virtual partial void PlatformPlay()
 	{
-		// TODO do something with position
 		if (player is null)
 		{
 			return;
@@ -167,9 +166,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		player.Play();
 	}
 
-	protected virtual partial void PlatformPause(TimeSpan timeSpan)
+	protected virtual partial void PlatformPause()
 	{
-		// TODO do something with position
 		if (player is null)
 		{
 			return;
@@ -178,16 +176,14 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		player.Pause();
 	}
 
-	protected virtual partial void PlatformStop(TimeSpan timeSpan)
+	protected virtual partial void PlatformStop()
 	{
-		// TODO do something with position
 		if (player is null || mediaElement is null)
 		{
 			return;
 		}
 
 		// Stops and resets the media player
-		player.PlayWhenReady = false;
 		player.SeekTo(0);
 		player.Stop();
 

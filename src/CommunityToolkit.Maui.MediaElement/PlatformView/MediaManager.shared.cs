@@ -29,19 +29,19 @@ public partial class MediaManager
 		this.mediaElement = mediaElement;
 	}
 
-	public void Play(TimeSpan timeSpan)
+	public void Play()
 	{
-		PlatformPlay(timeSpan);
+		PlatformPlay();
 	}
 
-	public void Pause(TimeSpan timeSpan)
+	public void Pause()
 	{
-		PlatformPause(timeSpan);
+		PlatformPause();
 	}
 
-	public void Stop(TimeSpan timeSpan)
+	public void Stop()
 	{
-		PlatformStop(timeSpan);
+		PlatformStop();
 	}
 
 	public void UpdateSource()
@@ -82,9 +82,9 @@ public partial class MediaManager
 		PlatformUpdateIsLooping();
 	}
 
-	protected virtual partial void PlatformPlay(TimeSpan timeSpan);
-	protected virtual partial void PlatformPause(TimeSpan timeSpan);
-	protected virtual partial void PlatformStop(TimeSpan timeSpan);
+	protected virtual partial void PlatformPlay();
+	protected virtual partial void PlatformPause();
+	protected virtual partial void PlatformStop();
 	protected virtual partial void PlatformUpdateSource();
 	protected virtual partial void PlatformUpdateSpeed();
 	protected virtual partial void PlatformUpdateShowsPlaybackControls();
@@ -99,17 +99,17 @@ public partial class MediaManager
 #if !(WINDOWS || ANDROID || IOS || MACCATALYST)
 partial class MediaManager
 {
-	protected virtual partial void PlatformPlay(TimeSpan timeSpan)
+	protected virtual partial void PlatformPlay()
 	{
 
 	}
 
-	protected virtual partial void PlatformPause(TimeSpan timeSpan)
+	protected virtual partial void PlatformPause()
 	{
 
 	}
 
-	protected virtual partial void PlatformStop(TimeSpan timeSpan)
+	protected virtual partial void PlatformStop()
 	{
 
 	}

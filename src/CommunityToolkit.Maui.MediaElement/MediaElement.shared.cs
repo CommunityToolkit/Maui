@@ -8,9 +8,9 @@ public class MediaElement : View, IMediaElement
 	Microsoft.Maui.Dispatching.IDispatcherTimer? timer;
 
 	internal event EventHandler? UpdateStatus;
-	internal event EventHandler<MediaPositionEventArgs>? PlayRequested;
-	internal event EventHandler<MediaPositionEventArgs>? PauseRequested;
-	internal event EventHandler<MediaPositionEventArgs>? StopRequested;
+	internal event EventHandler? PlayRequested;
+	internal event EventHandler? PauseRequested;
+	internal event EventHandler? StopRequested;
 
 	public MediaElement()
 	{
@@ -34,7 +34,12 @@ public class MediaElement : View, IMediaElement
 	public event EventHandler? MediaOpened;
 
 	/// <summary>
-	/// Occurs whenever <see cref="CurrentState"/> changes.
+	/// Occurs when a seek operation has completed.
+	/// </summary>
+	public event EventHandler? SeekCompleted;
+
+	/// <summary>
+	/// Occurs when <see cref="CurrentState"/> changes.
 	/// </summary>
 	public event EventHandler<MediaStateChangedEventArgs>? StateChanged;
 
@@ -206,8 +211,6 @@ public class MediaElement : View, IMediaElement
 		timer = null;
 	}
 
-	
-
 	internal void OnMediaEnded()
 	{
 		ClearTimer();
@@ -228,15 +231,6 @@ public class MediaElement : View, IMediaElement
 	}
 
 	internal void OnMediaOpened() => MediaOpened?.Invoke(this, EventArgs.Empty);
-
-	internal event EventHandler? PositionRequested;
-
-	public event EventHandler? SeekCompleted;
-
-	internal event EventHandler<SeekRequested>? SeekRequested;
-
-	internal event EventHandler<StateRequested>? StateRequested;
-
 
 	protected override void OnBindingContextChanged()
 	{

@@ -14,7 +14,7 @@ partial class MediaManager : IDisposable
 		return player;
 	}
 
-	protected virtual partial void PlatformPlay(TimeSpan timeSpan)
+	protected virtual partial void PlatformPlay()
 	{
 		if (isMediaPlayerAttached && player is not null)
 		{
@@ -22,7 +22,7 @@ partial class MediaManager : IDisposable
 		}
 	}
 
-	protected virtual partial void PlatformPause(TimeSpan timeSpan)
+	protected virtual partial void PlatformPause()
 	{
 		if (isMediaPlayerAttached && player is not null)
 		{
@@ -30,7 +30,7 @@ partial class MediaManager : IDisposable
 		}
 	}
 
-	protected virtual partial void PlatformStop(TimeSpan timeSpan)
+	protected virtual partial void PlatformStop()
 	{
 		if (isMediaPlayerAttached && player is not null)
 		{

@@ -1,4 +1,5 @@
-﻿using AVFoundation;
+﻿using System.Diagnostics;
+using AVFoundation;
 using AVKit;
 using CoreFoundation;
 using CoreMedia;
@@ -40,19 +41,19 @@ public partial class MediaManager : IDisposable
 		return (player, playerViewController);
 	}
 
-	protected virtual partial void PlatformPlay(TimeSpan timeSpan)
+	protected virtual partial void PlatformPlay()
 	{
 		player?.Play();
 		SetKeepScreenOn(mediaElement.KeepScreenOn);
 	}
 
-	protected virtual partial void PlatformPause(TimeSpan timeSpan)
+	protected virtual partial void PlatformPause()
 	{
 		player?.Pause();
 		SetKeepScreenOn(false);
 	}
 
-	protected virtual partial void PlatformStop(TimeSpan timeSpan)
+	protected virtual partial void PlatformStop()
 	{
 		// There's no Stop method so pause the video and reset its position
 		player?.Seek(CMTime.Zero);
@@ -313,7 +314,7 @@ public partial class MediaManager : IDisposable
 		{
 			return;
 		}
-
+		
 		if (player.CurrentItem?.Error is not null)	{ return; }
 
 		MediaElementState newState = mediaElement.CurrentState;
