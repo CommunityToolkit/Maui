@@ -60,31 +60,16 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 
 	public static void MapPlayRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
-		if (args is not MediaPositionEventArgs)
-		{
-			return;
-		}
-
 		handler.mediaManager?.Play();
 	}
 
 	public static void MapPauseRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
-		if (args is not MediaPositionEventArgs)
-		{
-			return;
-		}
-
 		handler.mediaManager?.Pause();
 	}
 
 	public static void MapStopRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
-		if (args is not MediaPositionEventArgs)
-		{
-			return;
-		}
-
 		handler.mediaManager?.Stop();
 	}
 

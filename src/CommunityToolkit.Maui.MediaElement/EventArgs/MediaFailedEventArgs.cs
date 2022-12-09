@@ -3,7 +3,7 @@
 public class MediaFailedEventArgs : EventArgs
 {
 	/// <summary>
-	/// A description of why the media failed to load and/or play.
+	/// Gets a description of why the media failed to load and/or play.
 	/// </summary>
 	public string ErrorMessage { get; } = string.Empty;
 
