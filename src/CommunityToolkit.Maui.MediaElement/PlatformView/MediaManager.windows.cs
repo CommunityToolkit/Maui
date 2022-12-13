@@ -152,6 +152,8 @@ partial class MediaManager : IDisposable
 		if (mediaElement.Source is null)
 		{
 			player.Source = null;
+			mediaElement.CurrentStateChanged(MediaElementState.None);
+
 			return;
 		}
 

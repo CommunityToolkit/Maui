@@ -1,5 +1,4 @@
-﻿using Android.Content;
-using Android.Support.V4.Media.Session;
+﻿using Android.Support.V4.Media.Session;
 using Android.Widget;
 using Com.Google.Android.Exoplayer2;
 using Com.Google.Android.Exoplayer2.Audio;
@@ -7,10 +6,8 @@ using Com.Google.Android.Exoplayer2.Metadata;
 using Com.Google.Android.Exoplayer2.Text;
 using Com.Google.Android.Exoplayer2.Trackselection;
 using Com.Google.Android.Exoplayer2.UI;
-using Com.Google.Android.Exoplayer2.Upstream;
 using Com.Google.Android.Exoplayer2.Video;
 using Microsoft.Extensions.Logging;
-using static Android.Provider.MediaStore;
 
 namespace CommunityToolkit.Maui.MediaElement;
 
@@ -65,7 +62,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// </remarks>
 	public void OnPlayerStateChanged(bool playWhenReady, int playbackState)
 	{
-		if (player is null)
+		if (player is null || mediaElement.Source is null)
 		{
 			return;
 		}
@@ -113,6 +110,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// </remarks>
 	public void OnPlaybackStateChanged(int playbackState)
 	{
+		if (mediaElement.Source is null)
+		{
+			return;
+		}
+
 		MediaElementState newState = mediaElement.CurrentState;
 
 		switch (playbackState)
@@ -203,7 +205,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 	protected virtual partial void PlatformPlay()
 	{
-		if (player is null)
+		if (player is null || mediaElement.Source is null)
 		{
 			return;
 		}
@@ -214,7 +216,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 	protected virtual partial void PlatformPause()
 	{
-		if (player is null)
+		if (player is null || mediaElement.Source is null)
 		{
 			return;
 		}
@@ -224,7 +226,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 	protected virtual partial void PlatformStop()
 	{
-		if (player is null || mediaElement is null)
+		if (player is null || mediaElement is null
+			 || mediaElement.Source is null)
 		{
 			return;
 		}
@@ -247,7 +250,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		if (mediaElement.Source is null)
 		{
-			player.SetMediaItem(null);
+			player.ClearMediaItems();
+			mediaElement.Duration = TimeSpan.Zero;
+			mediaElement.CurrentStateChanged(MediaElementState.None);
+
 			return;
 		}
 
@@ -374,7 +380,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			return;
 		}
 
-		player.RepeatMode = mediaElement.IsLooping ? IPlayer.RepeatModeOne : IPlayer.RepeatModeOff;
+		player.RepeatMode = mediaElement.IsLooping ?
+			IPlayer.RepeatModeOne : IPlayer.RepeatModeOff;
 	}
 
 	#region IPlayer.IListener implementation method stubs

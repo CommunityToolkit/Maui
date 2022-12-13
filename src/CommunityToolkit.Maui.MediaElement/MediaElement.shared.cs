@@ -230,7 +230,11 @@ public class MediaElement : View, IMediaElement
 		MediaFailed?.Invoke(this, args);
 	}
 
-	internal void OnMediaOpened() => MediaOpened?.Invoke(this, EventArgs.Empty);
+	internal void OnMediaOpened()
+	{
+		InitTimer();
+		MediaOpened?.Invoke(this, EventArgs.Empty);
+	}
 
 	protected override void OnBindingContextChanged()
 	{

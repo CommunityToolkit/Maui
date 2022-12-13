@@ -134,6 +134,10 @@ public partial class MediaManager : IDisposable
 				player?.Play();
 			}
 		}
+		else if (playerItem is null)
+		{
+			mediaElement.CurrentStateChanged(MediaElementState.None);
+		}
 	}
 
 	protected virtual partial void PlatformUpdateSpeed()
