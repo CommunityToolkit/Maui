@@ -22,12 +22,12 @@ public interface IToast : IAlert
 public enum ToastDuration
 {
 	/// <summary>
-	/// Displays Toast for a short time
+	/// Displays Toast for a short time (~2 seconds).
 	/// </summary>
 	Short,
 
 	/// <summary>
-	/// Displays Toast for a long time
+	/// Displays Toast for a long time (~3.5 seconds).
 	/// </summary>
 	Long
 }
