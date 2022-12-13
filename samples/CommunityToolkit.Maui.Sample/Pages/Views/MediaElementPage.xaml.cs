@@ -1,26 +1,30 @@
-﻿using System.Diagnostics;
-using CommunityToolkit.Maui.MediaElement;
+﻿using CommunityToolkit.Maui.MediaElement;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
+using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class MediaElementPage : BasePage<MediaElementViewModel>
 {
-	public MediaElementPage(MediaElementViewModel viewModel)
+	ILogger? logger;
+
+	public MediaElementPage(MediaElementViewModel viewModel, ILogger<MediaElementPage> logger)
 		: base(viewModel)
 	{
 		InitializeComponent();
+
+		this.logger = logger;
 	}
 
-	void OnMediaOpened(object? sender, EventArgs e) => Debug.WriteLine("Media opened.");
+	void OnMediaOpened(object? sender, EventArgs e) => logger?.LogInformation("Media opened.");
 
-	void OnStateChanged(object? sender, MediaStateChangedEventArgs e) => Debug.WriteLine($"Media State Changed. Old State: {e.PreviousState}, New State: {e.NewState}");
+	void OnStateChanged(object? sender, MediaStateChangedEventArgs e) => logger?.LogInformation("Media State Changed. Old State: {PreviousState}, New State: {NewState}", e.PreviousState, e.NewState);
 
-	void OnMediaFailed(object? sender, MediaFailedEventArgs e) => Debug.WriteLine($"Media failed. Error: {e.ErrorMessage}");
+	void OnMediaFailed(object? sender, MediaFailedEventArgs e) => logger?.LogInformation("Media failed. Error: {ErrorMessage}", e.ErrorMessage);
 
-	void OnMediaEnded(object? sender, EventArgs e) => Debug.WriteLine("Media ended.");
+	void OnMediaEnded(object? sender, EventArgs e) => logger?.LogInformation("Media ended.");
 
-	void OnSeekCompleted(object? sender, EventArgs e) => Debug.WriteLine("Seek completed.");
+	void OnSeekCompleted(object? sender, EventArgs e) => logger?.LogInformation("Seek completed.");
 
 	void OnResetClicked(object? sender, EventArgs e) => mediaElement.Source = null;
 
@@ -28,7 +32,24 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 	void OnHlsSourceClicked(object? sender, EventArgs e) => mediaElement.Source = MediaSource.FromUri("https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_4x3/gear1/prog_index.m3u8");
 
-	void SpeedMinusClicked(System.Object sender, System.EventArgs e)
+	void OnResourceSourceClicked(object? sender, EventArgs e)
+	{
+		if (DeviceInfo.Platform == DevicePlatform.MacCatalyst
+			|| DeviceInfo.Platform == DevicePlatform.iOS)
+		{
+			mediaElement.Source = MediaSource.FromResource("AppleVideo.mp4");
+		}
+		else if(DeviceInfo.Platform == DevicePlatform.Android)
+		{
+			mediaElement.Source = MediaSource.FromResource("AndroidVideo.mp4");
+		}
+		else if (DeviceInfo.Platform == DevicePlatform.WinUI)
+		{
+			mediaElement.Source = MediaSource.FromResource("WindowsVideo.mp4");
+		}
+	}
+
+	void SpeedMinusClicked(object sender, EventArgs e)
 	{
 		if (mediaElement.Speed >= 1)
 		{
@@ -36,7 +57,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	void SpeedPlusClicked(System.Object sender, System.EventArgs e)
+	void SpeedPlusClicked(object sender, EventArgs e)
 	{
 		if (mediaElement.Speed < 10)
 		{
@@ -44,17 +65,17 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	void PlayClicked(System.Object sender, System.EventArgs e)
+	void PlayClicked(object sender, EventArgs e)
 	{
 		mediaElement.Play();
 	}
 
-	void PauseClicked(System.Object sender, System.EventArgs e)
+	void PauseClicked(object sender, EventArgs e)
 	{
 		mediaElement.Pause();
 	}
 
-	void StopClicked(System.Object sender, System.EventArgs e)
+	void StopClicked(object sender, EventArgs e)
 	{
 		mediaElement.Stop();
 	}

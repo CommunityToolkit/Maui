@@ -20,6 +20,8 @@ public sealed class MediaSourceConverter : TypeConverter
 			return null;
 		}
 
+		// TODO smarter detection of filesystem files/resource file/url/other
+
 		return Uri.TryCreate(valueAsString, UriKind.Absolute, out var uri) && uri.Scheme != "file"
 			? MediaSource.FromUri(uri)
 			: MediaSource.FromFile(valueAsString);
@@ -37,8 +39,12 @@ public sealed class MediaSourceConverter : TypeConverter
 			{
 				return uriMediaSource.ToString();
 			}
+			else if (valueAsMediaSource is ResourceMediaSource resourceMediaSource)
+			{
+				return resourceMediaSource.ToString();
+			}
 
-			// Probably a StreamMediaSource, can't translate that to a string
+			// Unknown/other media source, return empty string
 			return string.Empty;
 		}
 

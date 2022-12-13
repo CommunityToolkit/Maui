@@ -171,6 +171,15 @@ partial class MediaManager : IDisposable
 				hasSetSource = true;
 			}
 		}
+		else if (mediaElement.Source is ResourceMediaSource)
+		{
+			string path = "ms-appx:///" + (mediaElement.Source as ResourceMediaSource)!.Path!;
+			if (!string.IsNullOrWhiteSpace(path))
+			{
+				player.Source = MediaSource.CreateFromUri(new Uri(path));
+				hasSetSource = true;
+			}
+		}
 
 		if (hasSetSource && !isMediaPlayerAttached)
 		{

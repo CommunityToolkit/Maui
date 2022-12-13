@@ -4,6 +4,7 @@ using CoreFoundation;
 using CoreMedia;
 using Foundation;
 using Microsoft.Extensions.Logging;
+using UIKit;
 
 namespace CommunityToolkit.Maui.MediaElement;
 
@@ -78,6 +79,21 @@ public partial class MediaManager : IDisposable
 			if (!string.IsNullOrWhiteSpace(uri))
 			{
 				asset = AVAsset.FromUrl(NSUrl.CreateFileUrl(new[] { uri }));
+			}
+		}
+		else if (mediaElement.Source is ResourceMediaSource)
+		{
+			string path = (mediaElement.Source as ResourceMediaSource)!.Path!;
+
+			if (!string.IsNullOrWhiteSpace(path))
+			{
+				string directory = Path.GetDirectoryName(path) ?? "";
+				string filename = Path.GetFileNameWithoutExtension(path);
+				string extension = Path.GetExtension(path).Substring(1);
+				var url = NSBundle.MainBundle.GetUrlForResource(filename,
+					extension, directory);
+
+				asset = AVAsset.FromUrl(url);
 			}
 		}
 

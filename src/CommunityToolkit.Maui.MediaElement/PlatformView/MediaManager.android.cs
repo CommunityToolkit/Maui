@@ -1,4 +1,5 @@
-﻿using Android.Support.V4.Media.Session;
+﻿using Android.Content;
+using Android.Support.V4.Media.Session;
 using Android.Widget;
 using Com.Google.Android.Exoplayer2;
 using Com.Google.Android.Exoplayer2.Audio;
@@ -6,8 +7,10 @@ using Com.Google.Android.Exoplayer2.Metadata;
 using Com.Google.Android.Exoplayer2.Text;
 using Com.Google.Android.Exoplayer2.Trackselection;
 using Com.Google.Android.Exoplayer2.UI;
+using Com.Google.Android.Exoplayer2.Upstream;
 using Com.Google.Android.Exoplayer2.Video;
 using Microsoft.Extensions.Logging;
+using static Android.Provider.MediaStore;
 
 namespace CommunityToolkit.Maui.MediaElement;
 
@@ -15,7 +18,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
 	protected StyledPlayerView? playerView;
 
-	// TODO: Make sure we don't need the both and make the StyledPlayerView as android PlatformView
 	public (PlatformMediaView platformView, StyledPlayerView playerView) CreatePlatformView()
 	{
 		ArgumentNullException.ThrowIfNull(mauiContext.Context);
@@ -262,6 +264,20 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			if (!string.IsNullOrWhiteSpace(filePath))
 			{
 				player.SetMediaItem(MediaItem.FromUri(filePath));
+				player.Prepare();
+
+				hasSetSource = true;
+			}
+		}
+		else if (mediaElement.Source is ResourceMediaSource)
+		{
+			string package = playerView?.Context?.PackageName ?? "";
+			string path = (mediaElement.Source as ResourceMediaSource)!.Path!;
+			if (!string.IsNullOrWhiteSpace(path))
+			{
+				string assetFilePath = "asset://" + package + "/" + path;
+
+				player.SetMediaItem(MediaItem.FromUri(assetFilePath));
 				player.Prepare();
 
 				hasSetSource = true;

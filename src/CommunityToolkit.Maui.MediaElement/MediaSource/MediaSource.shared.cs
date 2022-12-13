@@ -22,6 +22,9 @@ public abstract class MediaSource : Element
 		return !uri.IsAbsoluteUri ? throw new ArgumentException("Uri must be be absolute", nameof(uri)) : new UriMediaSource { Uri = uri };
 	}
 
+	public static MediaSource FromResource(string? fileName) =>
+		new ResourceMediaSource { Path = fileName };
+
 	public static MediaSource? FromUri(string uri) => FromUri(new Uri(uri));
 
 	[Preserve(Conditional = true)]
