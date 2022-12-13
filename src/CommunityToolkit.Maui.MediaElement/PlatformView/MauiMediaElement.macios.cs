@@ -10,8 +10,8 @@ public class MauiMediaElement : UIView
 		_ = playerViewController.View ?? throw new NullReferenceException(nameof(playerViewController.View));
 		playerViewController.View.Frame = Bounds;
 
-#if IOS16_0_OR_GREATER
-		// On iOS 16 the AVPlayerViewController has to be added to the parent ViewController, otherwise the transport controls won't be displayed.
+#if IOS16_0_OR_GREATER || MACCATALYST16_1_OR_GREATER
+		// On iOS 16+ and macOS 13+ the AVPlayerViewController has to be added to the parent ViewController, otherwise the transport controls won't be displayed.
 		var viewController = WindowStateManager.Default.GetCurrentUIViewController() ?? throw new NullReferenceException("ViewController can't be null.");
 
 		_ = viewController.View ?? throw new NullReferenceException(nameof(viewController.View));
