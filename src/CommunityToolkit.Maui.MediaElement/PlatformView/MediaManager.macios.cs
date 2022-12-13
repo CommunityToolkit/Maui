@@ -99,8 +99,13 @@ public partial class MediaManager : IDisposable
 		{
 			if (player?.CurrentItem?.Error != null)
 			{
+				var message = player?.CurrentItem?.Error?.LocalizedDescription ??
+					"Media playback failed for an unknown reason.";
+
 				mediaElement.MediaFailed(
-					new MediaFailedEventArgs(player?.CurrentItem?.Error?.LocalizedDescription ?? ""));
+					new MediaFailedEventArgs(message));
+
+				Logger?.LogError("{logMessage}", message);
 			}
 		});
 
@@ -302,17 +307,11 @@ public partial class MediaManager : IDisposable
 
 	void TimeControlStatusChanged(NSObservedChange obj)
 	{
-		if (player is null)
+		if (player is null || player.Status == AVPlayerStatus.Unknown
+			|| player.CurrentItem?.Error is not null)
 		{
 			return;
 		}
-
-		if (player.Status == AVPlayerStatus.Unknown)
-		{
-			return;
-		}
-		
-		if (player.CurrentItem?.Error is not null)	{ return; }
 
 		MediaElementState newState = mediaElement.CurrentState;
 
@@ -342,11 +341,14 @@ public partial class MediaManager : IDisposable
 			message = error.LocalizedDescription;
 			
 			mediaElement.MediaFailed(new MediaFailedEventArgs(message));
+			Logger?.LogError("{logMessage}", message);
 		}
 		else
 		{
 			// Non-fatal error, just log
-			message = args.Notification?.ToString() ?? "MediaItem failed with unknown reason";
+			message = args.Notification?.ToString() ??
+				"Media playback failed for an unknown reason.";
+
 			Logger?.LogWarning("{logMessage}", message);
 		}
 	}
@@ -371,8 +373,8 @@ public partial class MediaManager : IDisposable
 			}
 			catch (Exception e)
 			{
-				Logger?.LogWarning("{logMessage}",
-					$"Failed to play media to end, exception: {e}");
+				Logger?.LogWarning(e, "{logMessage}",
+					$"Failed to play media to end.");
 			}
 		}
 	}

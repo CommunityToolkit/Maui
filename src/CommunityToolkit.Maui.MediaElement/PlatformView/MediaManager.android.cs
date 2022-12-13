@@ -7,6 +7,7 @@ using Com.Google.Android.Exoplayer2.Text;
 using Com.Google.Android.Exoplayer2.Trackselection;
 using Com.Google.Android.Exoplayer2.UI;
 using Com.Google.Android.Exoplayer2.Video;
+using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.MediaElement;
 
@@ -159,9 +160,13 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			errorCode = $"Error codename: {error?.ErrorCodeName}";
 		}
 
-		mediaElement.MediaFailed(new MediaFailedEventArgs(
-			string.Join(", ", new[] { errorCodeName, errorCode, errorMessage }
-			.Where(s => !string.IsNullOrEmpty(s)))));
+		var message = string.Join(", ",
+			new[] { errorCodeName, errorCode, errorMessage }
+			.Where(s => !string.IsNullOrEmpty(s)));
+
+		mediaElement.MediaFailed(new MediaFailedEventArgs(message));
+
+		Logger?.LogError("{logMessage}", message);
 	}
 
 	/// <summary>

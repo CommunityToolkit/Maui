@@ -243,8 +243,13 @@ partial class MediaManager : IDisposable
 			errorCode = $"Error code: {args.ExtendedErrorCode.Message}";
 		}
 
-		mediaElement?.MediaFailed(new MediaFailedEventArgs(
-			string.Join(", ", new[] { error, errorCode, errorMessage }.Where(s => !string.IsNullOrEmpty(s)))));
+		var message = string.Join(", ",
+			new[] { error, errorCode, errorMessage }
+			.Where(s => !string.IsNullOrEmpty(s)))
+
+		mediaElement?.MediaFailed(new MediaFailedEventArgs(message));
+
+		Logger?.LogError("{logMessage}", message);
 	}
 
 	void PlaybackSession_PlaybackStateChanged(MediaPlaybackSession sender, object args)
