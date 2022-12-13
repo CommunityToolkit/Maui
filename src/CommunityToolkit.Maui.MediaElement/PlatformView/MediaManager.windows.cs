@@ -1,4 +1,5 @@
-﻿using Windows.Media.Playback;
+﻿using Microsoft.Extensions.Logging;
+using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.System.Display;
 using WinMediaSource = Windows.Media.Core.MediaSource;
@@ -148,6 +149,12 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
+		if (mediaElement.Source is null)
+		{
+			player.Source = null;
+			return;
+		}
+
 		var hasSetSource = false;
 
 		player.AutoPlay = mediaElement.AutoPlay;
@@ -176,14 +183,14 @@ partial class MediaManager : IDisposable
 			string path = "ms-appx:///" + (mediaElement.Source as ResourceMediaSource)!.Path!;
 			if (!string.IsNullOrWhiteSpace(path))
 			{
-				player.Source = MediaSource.CreateFromUri(new Uri(path));
+				player.Source = WinMediaSource.CreateFromUri(new Uri(path));
 				hasSetSource = true;
 			}
 		}
 
 		if (hasSetSource && !isMediaPlayerAttached)
 		{
-			MainThread.BeginInvokeOnMainThread(() =>
+			Dispatcher.GetForCurrentThread()?.DispatchAsync(() =>
 			{
 				player.MediaPlayer.MediaOpened += MediaPlayer_MediaOpened;
 			});
@@ -213,7 +220,7 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
-		MainThread.BeginInvokeOnMainThread(() =>
+		Dispatcher.GetForCurrentThread()?.DispatchAsync(() =>
 		{
 			mediaElement.Duration = player.MediaPlayer.NaturalDuration;
 			mediaElement.MediaOpened();
@@ -254,7 +261,7 @@ partial class MediaManager : IDisposable
 
 		var message = string.Join(", ",
 			new[] { error, errorCode, errorMessage }
-			.Where(s => !string.IsNullOrEmpty(s)))
+			.Where(s => !string.IsNullOrEmpty(s)));
 
 		mediaElement?.MediaFailed(new MediaFailedEventArgs(message));
 
@@ -279,7 +286,7 @@ partial class MediaManager : IDisposable
 	{
 		if (isMediaPlayerAttached && mediaElement is not null)
 		{
-			MainThread.BeginInvokeOnMainThread(() =>
+			Dispatcher.GetForCurrentThread()?.DispatchAsync(() =>
 			{
 				mediaElement.Position = sender.Position;
 			});

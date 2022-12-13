@@ -245,6 +245,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			return;
 		}
 
+		if (mediaElement.Source is null)
+		{
+			player.SetMediaItem(null);
+			return;
+		}
+
 		player.PlayWhenReady = mediaElement.AutoPlay;
 
 		if (mediaElement.Source is UriMediaSource)
