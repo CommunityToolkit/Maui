@@ -115,8 +115,8 @@ public partial class MediaManager : IDisposable
 		{
 			if (player?.CurrentItem?.Error != null)
 			{
-				var message = player?.CurrentItem?.Error?.LocalizedDescription ??
-					"Media playback failed for an unknown reason.";
+				var message = $"{player?.CurrentItem?.Error?.LocalizedDescription} - " +
+				$"{player?.CurrentItem?.Error?.LocalizedFailureReason}";
 
 				mediaElement.MediaFailed(
 					new MediaFailedEventArgs(message));
