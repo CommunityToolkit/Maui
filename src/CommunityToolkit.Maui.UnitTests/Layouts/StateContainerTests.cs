@@ -132,7 +132,7 @@ public class StateContainerTests : BaseTest
 			AsyncContext.Run(() => StateContainer.SetCurrentState(layout, StateKey.Anything));
 		});
 
-		exception.Message.Should().StartWith("CanSateChange is false. CurrentState cannot be changed while a state change is in progress.");
+		exception.Message.Should().StartWith("CanStateChange is false. CurrentState cannot be changed while a state change is in progress.");
 	}
 
 	[Fact]
