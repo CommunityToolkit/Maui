@@ -1,9 +1,9 @@
-﻿using System.Diagnostics;
-using AVFoundation;
+﻿using AVFoundation;
 using AVKit;
 using CoreFoundation;
 using CoreMedia;
 using Foundation;
+using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.MediaElement;
 
@@ -198,7 +198,7 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateIsLooping()
 	{
-		// no-op
+		// no-op we loop through using the playedToEndObserver
 	}
 
 	protected virtual void Dispose(bool disposing)
@@ -345,8 +345,9 @@ public partial class MediaManager : IDisposable
 		}
 		else
 		{
-			// Non-fatal error, TODO log?
+			// Non-fatal error, just log
 			message = args.Notification?.ToString() ?? "MediaItem failed with unknown reason";
+			Logger?.LogWarning("{logMessage}", message);
 		}
 	}
 
@@ -370,8 +371,8 @@ public partial class MediaManager : IDisposable
 			}
 			catch (Exception e)
 			{
-				// TODO inject ILogger everywhere and report there?
-				//Log.Warning("MediaElement", $"Failed to play media to end: {e}");
+				Logger?.LogWarning("{logMessage}",
+					$"Failed to play media to end, exception: {e}");
 			}
 		}
 	}

@@ -17,6 +17,7 @@ using CommunityToolkit.Maui.Sample.ViewModels.ImageSources;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
+using Microsoft.Extensions.Logging;
 using Polly;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
@@ -49,6 +50,10 @@ public static class MauiProgram
 
 		RegisterViewsAndViewModels(builder.Services);
 		RegisterEssentials(builder.Services);
+
+#if DEBUG
+		builder.Logging.AddDebug().SetMinimumLevel(LogLevel.Trace);
+#endif
 
 		return builder.Build();
 

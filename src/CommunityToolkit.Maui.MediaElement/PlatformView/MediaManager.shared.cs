@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.MediaElement;
 
@@ -27,7 +27,12 @@ public partial class MediaManager
 	{
 		this.mauiContext = context;
 		this.mediaElement = mediaElement;
+
+		Logger = mauiContext.Services.GetService<ILoggerFactory>()?
+			.CreateLogger(nameof(MediaManager));
 	}
+
+	public ILogger? Logger { get; }
 
 	public void Play()
 	{
@@ -48,10 +53,12 @@ public partial class MediaManager
 	{
 		PlatformUpdateSource();
 	}
+
 	public void UpdateSpeed()
 	{
 		PlatformUpdateSpeed();
 	}
+
 	public void UpdateShowsPlaybackControls()
 	{
 		PlatformUpdateShowsPlaybackControls();

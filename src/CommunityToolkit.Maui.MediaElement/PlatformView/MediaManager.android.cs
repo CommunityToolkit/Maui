@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Android.Support.V4.Media.Session;
+﻿using Android.Support.V4.Media.Session;
 using Android.Widget;
 using Com.Google.Android.Exoplayer2;
 using Com.Google.Android.Exoplayer2.Audio;
@@ -161,7 +160,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		}
 
 		mediaElement.MediaFailed(new MediaFailedEventArgs(
-			string.Join(", ", new[] { errorCodeName, errorCode, errorMessage }.Where(s => !string.IsNullOrEmpty(s)))));
+			string.Join(", ", new[] { errorCodeName, errorCode, errorMessage }
+			.Where(s => !string.IsNullOrEmpty(s)))));
 	}
 
 	/// <summary>
