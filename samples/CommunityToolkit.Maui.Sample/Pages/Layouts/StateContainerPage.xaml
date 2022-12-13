@@ -22,7 +22,10 @@
     </pages:BasePage.Resources>
 
     <ScrollView>
-        <VerticalStackLayout mct:StateContainer.CurrentState="{Binding FullPageState}" Spacing="10">
+        <VerticalStackLayout
+            mct:StateContainer.CurrentState="{Binding FullPageState}"
+            mct:StateContainer.ShouldAnimateOnStateChange="true"
+            Spacing="10">
 
             <mct:StateContainer.StateViews>
                 <VerticalStackLayout mct:StateView.StateKey="Loading">
@@ -90,7 +93,8 @@
 
             <Grid
                 mct:StateContainer.CurrentState="{Binding GridState}"
-                mct:StateContainer.ShouldAnimateOnStateChange="True"
+                mct:StateContainer.ShouldAnimateOnStateChange="true"
+                mct:StateContainer.CanStateChange="{Binding CanGridStateChange}"
                 ColumnDefinitions="1*, 1*, 1*"
                 RowDefinitions="1*, 1*">
 
@@ -132,7 +136,9 @@
             <Button Command="{Binding ToggleNoAnimateStateCommand}" Text="Toggle State Without Animation" />
             <Label Text="ShouldAnimateOnStateChange can be set to false to disable the fade animation." />
 
-            <VerticalStackLayout mct:StateContainer.CurrentState="{Binding NoAnimateState}" mct:StateContainer.ShouldAnimateOnStateChange="False">
+            <VerticalStackLayout
+                mct:StateContainer.CurrentState="{Binding NoAnimateState}"
+                mct:StateContainer.ShouldAnimateOnStateChange="False">
 
                 <mct:StateContainer.StateViews>
                     <Border
