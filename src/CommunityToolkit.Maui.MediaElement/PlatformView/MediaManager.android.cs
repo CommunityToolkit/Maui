@@ -245,13 +245,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			string uri = (mediaElement.Source as UriMediaSource)!.Uri!.AbsoluteUri;
 			if (!string.IsNullOrWhiteSpace(uri))
 			{
-				//Com.Google.Android.Exoplayer2.Util.Util.InferContentType()
-				//var httpDataSourceFactory = new DefaultHttpDataSource.Factory();
-				//var mediaSource = new DashMediaSource.Factory(httpDataSourceFactory)
-				//.CreateMediaSource(MediaItem.FromUri(uri));
-
-				//player.SetMediaSource(mediaSource);
-
 				player.SetMediaItem(MediaItem.FromUri(uri));
 				player.Prepare();
 
