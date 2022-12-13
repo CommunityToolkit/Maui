@@ -100,7 +100,7 @@ public static class StateContainer
 
 		if(!GetCanStateChange(bindable))
 		{
-			throw new StateContainerException($"{canStateChangePropertyName} is false. {currentStatePropertyName} cannot be changed while a state change is in progress.");
+			throw new StateContainerException($"{canStateChangePropertyName} is false. {currentStatePropertyName} cannot be changed while a state change is in progress. To avoid this exception due to active animations, first verify {canStateChangePropertyName} is {true} before changing {currentStatePropertyName}");
 		}
 
 		SetCanStateChange(bindable, false);
