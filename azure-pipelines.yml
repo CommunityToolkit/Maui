@@ -84,6 +84,12 @@ jobs:
         displayName: 'Build Community Toolkit Sample'
         inputs:
           script: |
+            initialXcodeVersion=`xcode-select -p`
+            echo Initial Xcode Version: $initialXcodeVersion
+            echo Updating Xcode to $(Latest_Xcode_Version)...
+            sudo xcode-select -s /Applications/Xcode_$(Latest_Xcode_Version).app
+            updatedXcodeVersion=`xcode-select -p`
+            echo Updated Xcode Version: $updatedXcodeVersion
             dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release
 
   - job: build_library
