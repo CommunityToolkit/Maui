@@ -1,9 +1,9 @@
 ﻿using System;
 namespace CommunityToolkit.Maui.MediaElement;
 
-public class MediaPositionEventArgs : EventArgs
+public sealed class MediaPositionEventArgs : EventArgs
 {
-	public TimeSpan Position { get; private set; }
+	public TimeSpan Position { get; }
 
 	public MediaPositionEventArgs(TimeSpan position)
 	{
