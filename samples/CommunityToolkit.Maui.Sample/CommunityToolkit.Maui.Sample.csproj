@@ -21,6 +21,8 @@
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
 
+    <PublishReadyToRun>False</PublishReadyToRun>
+
     <!--
     Uncomment these lines if you need to debug the SG code
     If you see any LongPath issue on Windows, check this doc
