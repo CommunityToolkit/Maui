@@ -53,6 +53,18 @@ jobs:
     pool:
       vmImage: $(image)
     steps:
+      - task: CmdLine@2
+        displayName: 'Set Xcode v$(Latest_Xcode_Version)'
+        condition: eq(variables['Agent.OS'], 'Darwin') # Only run this step on macOS
+        inputs:
+          script: |
+            initialXcodeVersion=`xcode-select -p`
+            echo Initial Xcode Version: $initialXcodeVersion
+            echo Updating Xcode to $(Latest_Xcode_Version)...
+            sudo xcode-select -s /Applications/Xcode_$(Latest_Xcode_Version).app
+            updatedXcodeVersion=`xcode-select -p`
+            echo Updated Xcode Version: $updatedXcodeVersion
+
       - task: UseDotNet@2
         displayName: 'Install Latest .NET SDK, v$(LATEST_NET_VERSION)'
         inputs:
@@ -66,18 +78,6 @@ jobs:
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
           .\workload-install.ps1
         displayName: Install Tizen Workload
-
-      - task: CmdLine@2
-        displayName: 'Set Xcode v$(Latest_Xcode_Version)'
-        condition: eq(variables['Agent.OS'], 'Darwin') # Only run this step on macOS
-        inputs:
-          script: |
-            initialXcodeVersion=`xcode-select -p`
-            echo Initial Xcode Version: $initialXcodeVersion
-            echo Updating Xcode to $(Latest_Xcode_Version)...
-            sudo xcode-select -s /Applications/Xcode_$(Latest_Xcode_Version).app
-            updatedXcodeVersion=`xcode-select -p`
-            echo Updated Xcode Version: $updatedXcodeVersion
 
       # build sample
       - task: CmdLine@2
