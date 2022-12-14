@@ -68,6 +68,9 @@ jobs:
           .\workload-install.ps1
         displayName: Install Tizen Workload
 
+      - script: 'sudo xcode-select -s /Applications/Xcode_$(XCODE_VERSION).app'
+        displayName: Set Xcode v$(XCODE_VERSION)
+
       # build sample
       - task: CmdLine@2
         displayName: 'Build Community Toolkit Sample'
@@ -106,7 +109,7 @@ jobs:
         displayName: Set NuGet Version to PR Version
         condition: and(succeeded(), ne( variables['Agent.OS'], 'Darwin' ), eq(variables['build.reason'], 'PullRequest'))
       
-      - script: 'sudo xcode-select -s /Applications/$(XCODE_VERSION).app'
+      - script: 'sudo xcode-select -s /Applications/Xcode_$(XCODE_VERSION).app'
         displayName: Set Xcode v$(XCODE_VERSION)
 
       - task: UseDotNet@2
