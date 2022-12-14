@@ -74,9 +74,10 @@ jobs:
           script: |
             initialXcodeVersion=`xcode-select -p`
             echo Initial Xcode Version: $initialXcodeVersion
-            sudo xcode-select -s /Applications/Xcode_$(CommunityToolkit_Xcode_Version).app
+            echo Updating Xcode to $(Latest_Xcode_Version)...
+            sudo xcode-select -s /Applications/Xcode_$(Latest_Xcode_Version).app
             updatedXcodeVersion=`xcode-select -p`
-            echo Updated Xcode Version $updatedXcodeVersion
+            echo Updated Xcode Version: $updatedXcodeVersion
 
       # build sample
       - task: CmdLine@2
@@ -123,9 +124,10 @@ jobs:
           script: |
             initialXcodeVersion=`xcode-select -p`
             echo Initial Xcode Version: $initialXcodeVersion
+            echo Updating Xcode to $(CommunityToolkit_Xcode_Version)...
             sudo xcode-select -s /Applications/Xcode_$(CommunityToolkit_Xcode_Version).app
             updatedXcodeVersion=`xcode-select -p`
-            echo Updated Xcode Version $updatedXcodeVersion
+            echo Updated Xcode Version: $updatedXcodeVersion
 
       - task: UseDotNet@2
         displayName: Install .NET v$(TOOLKIT_NET_VERSION)
