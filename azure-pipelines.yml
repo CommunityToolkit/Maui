@@ -16,7 +16,7 @@ variables:
   PathToCommunityToolkitAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Analyzers.CodeFixes/CommunityToolkit.Maui.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
   DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/7.0.49.json'
-  Latest_Xcode_Version: '14.1'
+  Latest_Xcode_Version: '14.1.0'
   CommunityToolkit_Xcode_Version: '14.0.1'
 
 trigger:
@@ -71,7 +71,12 @@ jobs:
         displayName: 'Set Xcode v$(Latest_Xcode_Version)'
         condition: eq(variables['Agent.OS'], 'Darwin') # Only run this step on macOS
         inputs:
-          script: 'sudo xcode-select -s /Applications/Xcode_$(Latest_Xcode_Version).app'
+          script: |
+            initialXcodeVersion=`xcode-select -p`
+            echo Initial Xcode Version: $initialXcodeVersion
+            sudo xcode-select -s /Applications/Xcode_$(CommunityToolkit_Xcode_Version).app
+            updatedXcodeVersion=`xcode-select -p`
+            echo Updated Xcode Version $updatedXcodeVersion
 
       # build sample
       - task: CmdLine@2
@@ -115,7 +120,12 @@ jobs:
         displayName: 'Set Xcode v$(CommunityToolkit_Xcode_Version)'
         condition: eq(variables['Agent.OS'], 'Darwin') # Only run this step on macOS
         inputs:
-          script: 'sudo xcode-select -s /Applications/Xcode_$(CommunityToolkit_Xcode_Version).app'
+          script: |
+            initialXcodeVersion=`xcode-select -p`
+            echo Initial Xcode Version: $initialXcodeVersion
+            sudo xcode-select -s /Applications/Xcode_$(CommunityToolkit_Xcode_Version).app
+            updatedXcodeVersion=`xcode-select -p`
+            echo Updated Xcode Version $updatedXcodeVersion
 
       - task: UseDotNet@2
         displayName: Install .NET v$(TOOLKIT_NET_VERSION)
