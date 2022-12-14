@@ -3,7 +3,7 @@ variables:
   PreviewNumber: $[counter(variables['CurrentSemanticVersionBase'], 1001)]
   CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(PreviewNumber)'
   NugetPackageVersion: '$(CurrentSemanticVersion)'
-  TOOLKIT_NET_VERSION: '7.0.x'
+  TOOLKIT_NET_VERSION: '7.0.100'
   LATEST_NET_VERSION: '7.0.x'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
@@ -16,7 +16,6 @@ variables:
   PathToCommunityToolkitAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Analyzers.CodeFixes/CommunityToolkit.Maui.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
   DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/7.0.49.json'
-  ShouldCheckDependencies: true
   Latest_Xcode_Version: '14.1'
   CommunityToolkit_Xcode_Version: '14.0.1'
 
@@ -55,11 +54,10 @@ jobs:
       vmImage: $(image)
     steps:
       - task: UseDotNet@2
-        displayName: 'Install Latest .NET SDK'
+        displayName: 'Install Latest .NET SDK, v$(LATEST_NET_VERSION)'
         inputs:
           packageType: 'sdk'
           version: '$(LATEST_NET_VERSION)'
-          includePreviewVersions: true
 
       - powershell: dotnet workload install maui
         displayName: Install Latest .NET MAUI Workload
@@ -100,7 +98,7 @@ jobs:
           Write-Host("Branch = $buildSourceBranch, Version = $tagVersion");
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$tagVersion")
         displayName: Set NuGet Version to Tag Number
-        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/') # Only run this step when a Tag has triggered the CI Pipeline
 
       # if this is a PR build, then update the version number
       - powershell: |
@@ -111,7 +109,7 @@ jobs:
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$fullVersionString")
           Write-Host "##vso[build.updatebuildnumber]$fullVersionString"
         displayName: Set NuGet Version to PR Version
-        condition: and(succeeded(), ne( variables['Agent.OS'], 'Darwin' ), eq(variables['build.reason'], 'PullRequest'))
+        condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['build.reason'], 'PullRequest')) # Only run this step on Windows when a Pull Request has triggered the CI Pipeline
       
       - task: CmdLine@2
         displayName: 'Set Xcode v$(CommunityToolkit_Xcode_Version)'
@@ -120,11 +118,10 @@ jobs:
           script: 'sudo xcode-select -s /Applications/Xcode_$(CommunityToolkit_Xcode_Version).app'
 
       - task: UseDotNet@2
-        displayName: Install .NET $(TOOLKIT_NET_VERSION)
+        displayName: Install .NET v$(TOOLKIT_NET_VERSION)
         inputs:
           packageType: 'sdk'
           version: '$(TOOLKIT_NET_VERSION)'
-          includePreviewVersions: true
 
       - task: CmdLine@2
         displayName: 'Install .NET MAUI Workload $(TOOLKIT_NET_VERSION)'
@@ -162,7 +159,7 @@ jobs:
           script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory $(Agent.TempDirectory)'
 
       - task: PublishTestResults@2
-        condition: ne( variables['Agent.OS'], 'Darwin' )
+        condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
         displayName: 'Publish Test Results'
         inputs:
           testResultsFormat: VSTest
@@ -170,7 +167,7 @@ jobs:
           searchFolder: $(Agent.TempDirectory)
 
       - task: PublishCodeCoverageResults@1
-        condition: ne( variables['Agent.OS'], 'Darwin' )
+        condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
         displayName: 'Publish Code Coverage Results'
         inputs:
           codeCoverageTool: 'Cobertura'
@@ -198,11 +195,11 @@ jobs:
 
           exit 0;
         displayName: 'Check Dependencies'
-        condition: and(ne( variables['Agent.OS'], 'Darwin' ), eq(variables.ShouldCheckDependencies, true))
+        condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
       
       # publish
       - task: PowerShell@2
-        condition: ne( variables['Agent.OS'], 'Darwin' )
+        condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
         displayName: 'Copy NuGet Packages to Staging Directory'
         inputs:
           targetType: 'inline'
@@ -221,11 +218,11 @@ jobs:
           SignClientUser: $(SignClientUser)
           SignClientSecret: $(SignClientSecret)
           ArtifactDirectory: $(Build.ArtifactStagingDirectory)
-        condition: and(succeeded(), ne( variables['Agent.OS'], 'Darwin' ), not(eq(variables['build.reason'], 'PullRequest')), not(eq(variables['SignClientSecret'], '')), not(eq(variables['SignClientUser'], '')))
+        condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'), not(eq(variables['build.reason'], 'PullRequest')), not(eq(variables['SignClientSecret'], '')), not(eq(variables['SignClientUser'], ''))) # Only run this step on Windows when the CI Pipeline has not been triggered by a Pull Request and the NuGet Signing Certificate is valid
       
       # publish the packages
       - task: PublishBuildArtifacts@1
-        condition: ne( variables['Agent.OS'], 'Darwin' )        
+        condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
         displayName: 'Publish NuGets'
         inputs:
           artifactName: nuget
