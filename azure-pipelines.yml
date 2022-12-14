@@ -17,7 +17,8 @@ variables:
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
   DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/7.0.49.json'
   ShouldCheckDependencies: true
-  XCODE_VERSION: '14.1'
+  Latest_Xcode_Version: '14.1'
+  CommunityToolkit_Xcode_Version: '14.0.1'
 
 trigger:
   branches:
@@ -69,10 +70,10 @@ jobs:
         displayName: Install Tizen Workload
 
       - task: CmdLine@2
-        displayName: 'Set Xcode v$(XCODE_VERSION)'
-        condition: eq(variables['Agent.OS'], 'Darwin')
+        displayName: 'Set Xcode v$(Latest_Xcode_Version)'
+        condition: eq(variables['Agent.OS'], 'Darwin') # Only run this step on macOS
         inputs:
-          script: 'sudo xcode-select -s /Applications/Xcode_$(XCODE_VERSION).app'
+          script: 'sudo xcode-select -s /Applications/Xcode_$(Latest_Xcode_Version).app'
 
       # build sample
       - task: CmdLine@2
@@ -113,10 +114,10 @@ jobs:
         condition: and(succeeded(), ne( variables['Agent.OS'], 'Darwin' ), eq(variables['build.reason'], 'PullRequest'))
       
       - task: CmdLine@2
-        displayName: 'Set Xcode v$(XCODE_VERSION)'
-        condition: eq(variables['Agent.OS'], 'Darwin')
+        displayName: 'Set Xcode v$(CommunityToolkit_Xcode_Version)'
+        condition: eq(variables['Agent.OS'], 'Darwin') # Only run this step on macOS
         inputs:
-          script: 'sudo xcode-select -s /Applications/Xcode_$(XCODE_VERSION).app'
+          script: 'sudo xcode-select -s /Applications/Xcode_$(CommunityToolkit_Xcode_Version).app'
 
       - task: UseDotNet@2
         displayName: Install .NET $(TOOLKIT_NET_VERSION)
