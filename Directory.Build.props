@@ -12,9 +12,17 @@
     <!--CS1571: XML comment on [construct] has a duplicate param tag for [parameter] -->
     <!--CS1572: XML comment has a param tag for '[parameter]', but there is no parameter by that name -->
     <!--CS1573: Parameter has no matching param tag in the XML comment -->
-    <!--CS1574: XML comment has cref attribute that could not be resolved-->
+    <!--CS1574: XML comment has cref attribute that could not be resolved -->
+    <!--CS1580: Invalid type for parameter 'parameter number' in XML comment cref attribute -->
+    <!--CS1581: Invalid return type in XML comment cref attribute -->
+    <!--CS1584: XML comment has syntactically incorrect cref attribute -->
+    <!--CS1589: The syntax of a tag which referenced a file was incorrect -->
+    <!--CS1590: Invalid XML include element Missing file attribute -->
+    <!--CS1592: Badly formed XML in included comments file -->
+    <!--CS1598: XML parser could not be loaded. The XML documentation file will not be generated. -->
+    <!--CS1658: Identifier expected; 'true' is a keyword -->
     <!--CS1734: XML comment has a paramref tag, but there is no parameter by that name-->
-    <WarningsAsErrors>nullable,CS1570,CS1571,CS1572,CS1573,CS1574,CS1734</WarningsAsErrors>
+    <WarningsAsErrors>nullable,CS1570,CS1571,CS1572,CS1573,CS1574,CS1580,CS1581,CS1584,CS1589,CS1590,CS1592,CS1598,CS1658,CS1734</WarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
