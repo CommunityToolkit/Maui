@@ -57,15 +57,7 @@ jobs:
         displayName: 'Set Xcode v$(Latest_Xcode_Version)'
         condition: eq(variables['Agent.OS'], 'Darwin') # Only run this step on macOS
         inputs:
-          script: |
-            initialXcodeVersion=`xcode-select -p`
-            echo Initial Xcode Version: $initialXcodeVersion
-            echo Updating Xcode to $(Latest_Xcode_Version)...
-            sudo xcode-select -s /Applications/Xcode_$(Latest_Xcode_Version).app
-            sudo rm -rf /Applications/Xcode.app
-            sudo ln -s /Applications/Xcode_$(Latest_Xcode_Version)app /Applications/Xcode.app
-            updatedXcodeVersion=`xcode-select -p`
-            echo Updated Xcode Version: $updatedXcodeVersion
+          script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(Latest_Xcode_Version).app;sudo xcode-select --switch /Applications/Xcode_$(Latest_Xcode_Version).app/Contents/Developer
 
       - task: UseDotNet@2
         displayName: 'Install Latest .NET SDK, v$(LATEST_NET_VERSION)'
@@ -122,15 +114,7 @@ jobs:
         displayName: 'Set Xcode v$(CommunityToolkit_Xcode_Version)'
         condition: eq(variables['Agent.OS'], 'Darwin') # Only run this step on macOS
         inputs:
-          script: |
-            initialXcodeVersion=`xcode-select -p`
-            echo Initial Xcode Version: $initialXcodeVersion
-            echo Updating Xcode to $(CommunityToolkit_Xcode_Version)...
-            sudo xcode-select -s /Applications/Xcode_$(CommunityToolkit_Xcode_Version).app
-            sudo rm -rf /Applications/Xcode.app
-            sudo ln -s /Applications/Xcode_$(CommunityToolkit_Xcode_Version)app /Applications/Xcode.app
-            updatedXcodeVersion=`xcode-select -p`
-            echo Updated Xcode Version: $updatedXcodeVersion
+          script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(CommunityToolkit_Xcode_Version).app;sudo xcode-select --switch /Applications/Xcode_$(CommunityToolkit_Xcode_Version).app/Contents/Developer
 
       - task: UseDotNet@2
         displayName: Install .NET v$(TOOLKIT_NET_VERSION)
