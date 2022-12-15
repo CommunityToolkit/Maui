@@ -75,7 +75,7 @@
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))=='false' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='maccatalyst' and $(Configuration) == 'Debug'">
     <RuntimeIdentifiers>maccatalyst-arm64;maccatalyst-x64</RuntimeIdentifiers>
   </PropertyGroup>
-
+  
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.221116.1" />
   </ItemGroup>
