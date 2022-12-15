@@ -84,6 +84,7 @@ jobs:
         displayName: 'Build Community Toolkit Sample'
         inputs:
           script: |
+            sudo rm -rf /Applications/Xcode_14.0.1.app
             dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release
 
   - job: build_library
