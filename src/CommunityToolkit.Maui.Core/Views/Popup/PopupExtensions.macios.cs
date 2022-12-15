@@ -117,6 +117,12 @@ public static class PopupExtensions
 				Microsoft.Maui.Primitives.LayoutAlignment.Center => frame.GetMidX(),
 				_ => 0f
 			};
+
+			if(DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && popup.HorizontalOptions == Microsoft.Maui.Primitives.LayoutAlignment.Center)
+			{
+				originX = originX - (mauiPopup.PreferredContentSize.Width / 2);
+			}
+			
 			mauiPopup.PopoverPresentationController.SourceRect = new CGRect(originX, originY, 0, 0);
 			mauiPopup.PopoverPresentationController.PermittedArrowDirections = 0;
 		}
