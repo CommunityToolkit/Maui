@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using CommunityToolkit.Maui.Core.Extensions;
+using Microsoft.Maui;
 using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Core.Views;
