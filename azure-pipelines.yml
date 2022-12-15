@@ -62,6 +62,8 @@ jobs:
             echo Initial Xcode Version: $initialXcodeVersion
             echo Updating Xcode to $(Latest_Xcode_Version)...
             sudo xcode-select -s /Applications/Xcode_$(Latest_Xcode_Version).app
+            sudo rm -rf /Applications/Xcode.app
+            sudo ln -s /Applications/Xcode_$(Latest_Xcode_Version)app /Applications/Xcode.app
             updatedXcodeVersion=`xcode-select -p`
             echo Updated Xcode Version: $updatedXcodeVersion
 
@@ -83,9 +85,7 @@ jobs:
       - task: CmdLine@2
         displayName: 'Build Community Toolkit Sample'
         inputs:
-          script: |
-            sudo rm -rf /Applications/Xcode_14.0.1.app
-            dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release
+          script: 'dotnet build $(PathToCommunityToolkitSampleCsproj) -c Release'
 
   - job: build_library
     displayName: Build Library
@@ -127,6 +127,8 @@ jobs:
             echo Initial Xcode Version: $initialXcodeVersion
             echo Updating Xcode to $(CommunityToolkit_Xcode_Version)...
             sudo xcode-select -s /Applications/Xcode_$(CommunityToolkit_Xcode_Version).app
+            sudo rm -rf /Applications/Xcode.app
+            sudo ln -s /Applications/Xcode_$(CommunityToolkit_Xcode_Version)app /Applications/Xcode.app
             updatedXcodeVersion=`xcode-select -p`
             echo Updated Xcode Version: $updatedXcodeVersion
 
