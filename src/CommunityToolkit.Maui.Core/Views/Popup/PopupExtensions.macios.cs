@@ -106,19 +106,29 @@ public static class PopupExtensions
 		{
 			var originY = popup.VerticalOptions switch
 			{
-				Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Height-1,
+				Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Height,
 				Microsoft.Maui.Primitives.LayoutAlignment.Center => frame.GetMidY(),
 				_ => 0f
 			};
 
 			var originX = popup.HorizontalOptions switch
 			{
-				Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Width-1,
+				Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Width,
 				Microsoft.Maui.Primitives.LayoutAlignment.Center => frame.GetMidX(),
 				_ => 0f
 			};
 
-			if(DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && popup.HorizontalOptions == Microsoft.Maui.Primitives.LayoutAlignment.Center)
+			if (DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && popup.VerticalOptions == Microsoft.Maui.Primitives.LayoutAlignment.End)
+			{
+				originY = originY - (mauiPopup.PreferredContentSize.Height / 2);
+			}
+
+			if (DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && popup.HorizontalOptions == Microsoft.Maui.Primitives.LayoutAlignment.End)
+			{
+				originX = originX - (mauiPopup.PreferredContentSize.Width);
+			}
+
+			if (DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && popup.HorizontalOptions == Microsoft.Maui.Primitives.LayoutAlignment.Center)
 			{
 				originX = originX - (mauiPopup.PreferredContentSize.Width / 2);
 			}
