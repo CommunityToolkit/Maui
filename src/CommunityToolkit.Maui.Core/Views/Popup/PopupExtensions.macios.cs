@@ -106,14 +106,14 @@ public static class PopupExtensions
 		{
 			var originY = popup.VerticalOptions switch
 			{
-				Microsoft.Maui.Primitives.LayoutAlignment.End => UIScreen.MainScreen.Bounds.Height,
+				Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Height-1,
 				Microsoft.Maui.Primitives.LayoutAlignment.Center => frame.GetMidY(),
 				_ => 0f
 			};
 
 			var originX = popup.HorizontalOptions switch
 			{
-				Microsoft.Maui.Primitives.LayoutAlignment.End => UIScreen.MainScreen.Bounds.Width,
+				Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Width-1,
 				Microsoft.Maui.Primitives.LayoutAlignment.Center => frame.GetMidX(),
 				_ => 0f
 			};
