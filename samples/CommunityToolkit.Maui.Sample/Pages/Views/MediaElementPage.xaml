@@ -9,7 +9,8 @@
              x:TypeArguments="viewModels:MediaElementViewModel"
              x:DataType="viewModels:MediaElementViewModel"
              x:Class="CommunityToolkit.Maui.Sample.Pages.Views.MediaElementPage"
-             Title="MediaElement">
+             Title="MediaElement"
+             Unloaded="BasePage_Unloaded">
     <pages:BasePage.Resources>
         <mct:TimeSpanToSecondsConverter x:Key="TimeSpanConverter" />
         <converters:SecondsToStringConverter x:Key="SecondsToStringConverter" />
