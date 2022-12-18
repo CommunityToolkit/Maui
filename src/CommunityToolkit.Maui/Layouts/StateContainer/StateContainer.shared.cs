@@ -23,16 +23,16 @@ public static class StateContainer
 
 	/// <summary>
 	/// Backing <see cref="BindableProperty"/> for the <see cref="GetCurrentState"/> and <see cref="SetCurrentState"/> methods.
-	/// When <see cref="ShouldAnimateOnStateChangeProperty"/> is <see cref="true"/>, a <see cref="StateContainerException"/> may be thrown when <see cref="CurrentStateProperty"/> is changed while an animation is in progress
-	/// To ensure <see cref="StateContainer"/> does not throw a <see cref="StateContainerException"/> due to active animations, first verify <see cref="CanStateChangeProperty"/> is <see cref="true"/> before changing <see cref="CurrentStateProperty"/>
+	/// When <see cref="ShouldAnimateOnStateChangeProperty"/> is <see langword="true"/>, a <see cref="StateContainerException"/> may be thrown when <see cref="CurrentStateProperty"/> is changed while an animation is in progress
+	/// To ensure <see cref="StateContainer"/> does not throw a <see cref="StateContainerException"/> due to active animations, first verify <see cref="CanStateChangeProperty"/> is <see langword="true"/> before changing <see cref="CurrentStateProperty"/>
 	/// </summary>
 	public static readonly BindableProperty CurrentStateProperty
 		= BindableProperty.CreateAttached(currentStatePropertyName, typeof(string), typeof(StateContainer), default(string), propertyChanged: OnCurrentStateChanged);
 
 	/// <summary>
 	/// Backing <see cref="BindableProperty"/> for the <see cref="GetShouldAnimateOnStateChange"/> and <see cref="SetShouldAnimateOnStateChange"/> methods.
-	/// When <see cref="true"/>, a <see cref="StateContainerException"/> may be thrown when <see cref="CurrentStateProperty"/> is changed while an animation is in progress
-	/// To ensure <see cref="StateContainer"/> does not throw a <see cref="StateContainerException"/> due to active animations, first verify <see cref="CanStateChangeProperty"/> is <see cref="true"/> before changing <see cref="CurrentStateProperty"/>
+	/// When <see langword="true"/>, a <see cref="StateContainerException"/> may be thrown when <see cref="CurrentStateProperty"/> is changed while an animation is in progress
+	/// To ensure <see cref="StateContainer"/> does not throw a <see cref="StateContainerException"/> due to active animations, first verify <see cref="CanStateChangeProperty"/> is <see langword="true"/> before changing <see cref="CurrentStateProperty"/>
 	/// </summary>
 	public static readonly BindableProperty ShouldAnimateOnStateChangeProperty
 		= BindableProperty.CreateAttached(shouldAnimateOnStateChangePropertyName, typeof(bool), typeof(StateContainer), false, propertyChanged: OnShouldAnimateOnStateChangeChanged);
@@ -98,7 +98,7 @@ public static class StateContainer
 			return;
 		}
 
-		if(!GetCanStateChange(bindable))
+		if (!GetCanStateChange(bindable))
 		{
 			throw new StateContainerException($"{canStateChangePropertyName} is false. {currentStatePropertyName} cannot be changed while a state change is in progress. To avoid this exception due to active animations, first verify {canStateChangePropertyName} is {true} before changing {currentStatePropertyName}");
 		}
