@@ -66,9 +66,9 @@ public class MauiPopup : UIViewController
 	[MemberNotNull(nameof(VirtualView), nameof(ViewController))]
 	public void SetElement(IPopup element)
 	{
-		if (element.Parent?.Handler is not PageHandler)
+		if (element.Parent?.Handler is null)
 		{
-			throw new InvalidOperationException($"The {nameof(element.Parent)} must be of type {typeof(PageHandler)}.");
+			throw new InvalidOperationException($"The {nameof(element.Parent)} cannot be null.");
 		}
 
 		VirtualView = element;
