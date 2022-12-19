@@ -9,7 +9,14 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Generators;
 
-[Generator(LanguageNames.CSharp)]
+// IF you want to perform any change in the pipeline or in the generated code
+// add this line right before the `#nullable enable` line
+// // Final version: {DateTime.Now}
+// Use this as a check, if the DateTime value changes when you change a code
+// that has not to do with the generator (changing a code in another class, e.g.)
+// then you broke the Incremental behavior of it and it need to be fixed before submit a PR
+
+[Generator]
 class TextColorToGenerator : IIncrementalGenerator
 {
 	const string iTextStyleInterface = "Microsoft.Maui.ITextStyle";
@@ -21,91 +28,66 @@ class TextColorToGenerator : IIncrementalGenerator
 		// Get All Classes in User Library
 		var userGeneratedClassesProvider = context.SyntaxProvider.CreateSyntaxProvider(
 			static (syntaxNode, cancellationToken) => syntaxNode is ClassDeclarationSyntax { BaseList: not null },
-			static (context, cancellationToken) => (ClassDeclarationSyntax)context.Node);
+			static (context, cancellationToken) =>
+			{
+				var compilation = context.SemanticModel.Compilation;
 
-		// Get Microsoft.Maui.Controls Assembly Symbol
+				var iTextStyleInterfaceSymbol = compilation.GetTypeByMetadataName(iTextStyleInterface);
+				var iAnimatableInterfaceSymbol = compilation.GetTypeByMetadataName(iAnimatableInterface);
+
+				if (iTextStyleInterfaceSymbol is null || iAnimatableInterfaceSymbol is null)
+				{
+					throw new Exception("There's no .NET MAUI referenced in the project.");
+				}
+
+				var classSymbol = (INamedTypeSymbol?)context.SemanticModel.GetDeclaredSymbol(context.Node);
+
+				// If the ClassDlecarationSyntax doesn't implements those interfaces we just return null
+				if (classSymbol is null
+					|| !(classSymbol.AllInterfaces.Contains(iAnimatableInterfaceSymbol, SymbolEqualityComparer.Default)
+							&& classSymbol.AllInterfaces.Contains(iTextStyleInterfaceSymbol, SymbolEqualityComparer.Default)))
+				{
+					return null;
+				}
+
+				return classSymbol;
+			});
+
+		// Get Microsoft.Maui.Controls Symbols that implements the desired interfaces
 		var mauiControlsAssemblySymbolProvider = context.CompilationProvider.Select(
-			static (compilation, token) => compilation.SourceModule.ReferencedAssemblySymbols.Single(q => q.Name == mauiControlsAssembly));
+			static (compilation, token) =>
+			{
+				var iTextStyleInterfaceSymbol = compilation.GetTypeByMetadataName(iTextStyleInterface);
+				var iAnimatableInterfaceSymbol = compilation.GetTypeByMetadataName(iAnimatableInterface);
 
+				if (iTextStyleInterfaceSymbol is null || iAnimatableInterfaceSymbol is null)
+				{
+					throw new Exception("There's no .NET MAUI referenced in the project.");
+				}
+
+				var mauiAssembly = compilation.SourceModule.ReferencedAssemblySymbols.Single(q => q.Name == mauiControlsAssembly);
+				var symbols = GetMauiInterfaceImplementors(mauiAssembly, iAnimatableInterfaceSymbol, iTextStyleInterfaceSymbol).Where(static x => x is not null);
+
+				return symbols;
+			});
+
+
+		// Here we Collect all the Classes candidates from the first pipeline
+		// Then we merge them with the Maui.Controls that implements the desired interfaces
+		// Then we make sure they are unique and the user control doesn't inherit from any Maui control that implements the desired interface already
+		// Then we transform the ISymbol to be a type that we can compare and preserve the Incremental behavior of this Source Generator
 		var inputs = userGeneratedClassesProvider.Collect()
-						.Combine(mauiControlsAssemblySymbolProvider)
-						.Select(static (combined, cancellationToken) => (UserGeneratedClassesProvider: combined.Left, MauiControlsAssemblySymbolProvider: combined.Right))
-						.Combine(context.CompilationProvider)
-						.Select(static (combined, cancellationToken) => (combined.Left.UserGeneratedClassesProvider, combined.Left.MauiControlsAssemblySymbolProvider, Compilation: combined.Right));
+			.Combine(mauiControlsAssemblySymbolProvider)
+			.SelectMany(static (x, _) => Deduplicate(x.Left, x.Right).ToImmutableArray())
+			.Select(static (x, _) => GenerateMetadata(x));
 
-		context.RegisterSourceOutput(inputs, (context, collectedValues) =>
-		Execute(context, collectedValues.Compilation, collectedValues.UserGeneratedClassesProvider, collectedValues.MauiControlsAssemblySymbolProvider));
+		context.RegisterSourceOutput(inputs, Execution);
 	}
 
-	static void Execute(SourceProductionContext context, Compilation compilation, ImmutableArray<ClassDeclarationSyntax> userGeneratedClassesProvider, IAssemblySymbol mauiControlsAssemblySymbolProvider)
+	static void Execution(SourceProductionContext context, TextStyleClassMetadata textStyleClassMetadata)
 	{
-		var textStyleSymbol = compilation.GetTypeByMetadataName(iTextStyleInterface);
-		var iAnimatableSymbol = compilation.GetTypeByMetadataName(iAnimatableInterface);
 
-		if (textStyleSymbol is null || iAnimatableSymbol is null)
-		{
-			var diag = Diagnostic.Create(TextColorToDiagnostic.MauiReferenceIsMissing, Location.None);
-			context.ReportDiagnostic(diag);
-			return;
-		}
-
-		var textStyleClassList = new List<(string ClassName, string ClassAcessModifier, string Namespace, string GenericArguments, string GenericConstraints)>();
-
-		// Collect Microsoft.Maui.Controls that Implement ITextStyle
-		var mauiTextStyleImplementors = mauiControlsAssemblySymbolProvider.GlobalNamespace.GetNamedTypeSymbols().Where(x => x.AllInterfaces.Contains(textStyleSymbol, SymbolEqualityComparer.Default)
-				&& x.AllInterfaces.Contains(iAnimatableSymbol, SymbolEqualityComparer.Default));
-
-		foreach (var namedTypeSymbol in mauiTextStyleImplementors)
-		{
-			textStyleClassList.Add((namedTypeSymbol.Name, "public", namedTypeSymbol.ContainingNamespace.ToDisplayString(), namedTypeSymbol.TypeArguments.GetGenericTypeArgumentsString(), namedTypeSymbol.GetGenericTypeConstraintsAsString()));
-		}
-
-		// Collect All Classes in User Library that Implement ITextStyle
-		foreach (var classDeclarationSyntax in userGeneratedClassesProvider)
-		{
-			var declarationSymbol = compilation.GetSymbol<INamedTypeSymbol>(classDeclarationSyntax);
-			if (declarationSymbol is null)
-			{
-				var diag = Diagnostic.Create(TextColorToDiagnostic.InvalidClassDeclarationSyntax, Location.None, classDeclarationSyntax.Identifier.Text);
-				context.ReportDiagnostic(diag);
-				continue;
-			}
-
-			// If the control is inherit from a Maui control that implements ITextStyle
-			// We don't need to generate a extension method for it.
-			// We just generate a method if the Control is a new implementation of ITextStyle and IAnimatable
-			var doesContainSymbolBaseType = mauiTextStyleImplementors.ContainsSymbolBaseType(declarationSymbol);
-
-			if (!doesContainSymbolBaseType
-				&& declarationSymbol.AllInterfaces.Contains(textStyleSymbol, SymbolEqualityComparer.Default)
-				&& declarationSymbol.AllInterfaces.Contains(iAnimatableSymbol, SymbolEqualityComparer.Default))
-			{
-				if (declarationSymbol.ContainingNamespace.IsGlobalNamespace)
-				{
-					var diag = Diagnostic.Create(TextColorToDiagnostic.GlobalNamespace, Location.None, declarationSymbol.Name);
-					context.ReportDiagnostic(diag);
-					continue;
-				}
-
-				var nameSpace = declarationSymbol.ContainingNamespace.ToDisplayString();
-
-				var accessModifier = GetClassAccessModifier(declarationSymbol);
-
-				if (accessModifier == string.Empty)
-				{
-					var diag = Diagnostic.Create(TextColorToDiagnostic.InvalidModifierAccess, Location.None, declarationSymbol.Name);
-					context.ReportDiagnostic(diag);
-					continue;
-				}
-
-				textStyleClassList.Add((declarationSymbol.Name, accessModifier, nameSpace, declarationSymbol.TypeArguments.GetGenericTypeArgumentsString(), declarationSymbol.GetGenericTypeConstraintsAsString()));
-			}
-		}
-
-		var options = ((CSharpCompilation)compilation).SyntaxTrees[0].Options as CSharpParseOptions;
-		foreach (var textStyleClass in textStyleClassList)
-		{
-			var textColorToBuilder = @"
+		var textColorToBuilder = $$"""
 // <auto-generated>
 // See: CommunityToolkit.Maui.SourceGenerators.TextColorToGenerator
 
@@ -118,27 +100,27 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
-namespace " + textStyleClass.Namespace + @";
+namespace {{textStyleClassMetadata.Namespace}};
 
-" + textStyleClass.ClassAcessModifier + @" static partial class ColorAnimationExtensions_" + textStyleClass.ClassName + @"
+{{textStyleClassMetadata.ClassAcessModifier}} static partial class ColorAnimationExtensions_{{textStyleClassMetadata.ClassName}}
 {
 	/// <summary>
-	/// Animates the TextColor of an <see cref=""Microsoft.Maui.ITextStyle""/> to the given color
+	/// Animates the TextColor of an <see cref="Microsoft.Maui.ITextStyle"/> to the given color
 	/// </summary>
-	/// <param name=""element""></param>
-	/// <param name=""color"">The target color to animate the <see cref=""Microsoft.Maui.ITextStyle.TextColor""/> to</param>
-	/// <param name=""rate"">The time, in milliseconds, between the frames of the animation</param>
-	/// <param name=""length"">The duration, in milliseconds, of the animation</param>
-	/// <param name=""easing"">The easing function to be used in the animation</param>
+	/// <param name="element"></param>
+	/// <param name="color">The target color to animate the <see cref="Microsoft.Maui.ITextStyle.TextColor"/> to</param>
+	/// <param name="rate">The time, in milliseconds, between the frames of the animation</param>
+	/// <param name="length">The duration, in milliseconds, of the animation</param>
+	/// <param name="easing">The easing function to be used in the animation</param>
 	/// <returns>Value indicating if the animation completed successfully or not</returns>
-	public static Task<bool> TextColorTo" + textStyleClass.GenericArguments + "(this " + textStyleClass.Namespace + "." + textStyleClass.ClassName + textStyleClass.GenericArguments + @" element, Color color, uint rate = 16u, uint length = 250u, Easing? easing = null)
-" + textStyleClass.GenericConstraints + @"
+	public static Task<bool> TextColorTo{{textStyleClassMetadata.GenericArguments}}(this {{textStyleClassMetadata.Namespace}}.{{textStyleClassMetadata.ClassName}}{{textStyleClassMetadata.GenericArguments}} element, Color color, uint rate = 16u, uint length = 250u, Easing? easing = null)
+{{textStyleClassMetadata.GenericConstraints}}
 	{
 		ArgumentNullException.ThrowIfNull(element);
 		ArgumentNullException.ThrowIfNull(color);
 
 		if(element is not Microsoft.Maui.ITextStyle)
-			throw new ArgumentException($""Element must implement {nameof(Microsoft.Maui.ITextStyle)}"", nameof(element));
+			throw new ArgumentException($"Element must implement {nameof(Microsoft.Maui.ITextStyle)}", nameof(element));
 
 		//Although TextColor is defined as not-nullable, it CAN be null
 		//If null => set it to Transparent as Animation will crash on null BackgroundColor
@@ -161,30 +143,67 @@ namespace " + textStyleClass.Namespace + @";
 		{
 			//When creating an Animation too early in the lifecycle of the Page, i.e. in the OnAppearing method,
 			//the Page might not have an 'IAnimationManager' yet, resulting in an ArgumentException.
-			System.Diagnostics.Debug.WriteLine($""{aex.GetType().Name} thrown in {typeof(ColorAnimationExtensions_" + textStyleClass.ClassName + @").FullName}: {aex.Message}"");
+			System.Diagnostics.Debug.WriteLine($"{aex.GetType().Name} thrown in {typeof(ColorAnimationExtensions_{{textStyleClassMetadata.ClassName}}).FullName}: {aex.Message}");
 			animationCompletionSource.SetResult(false);
 		}
 
 		return animationCompletionSource.Task;
 
 
-		static Animation GetRedTransformAnimation(" + textStyleClass.Namespace + "." + textStyleClass.ClassName + textStyleClass.GenericArguments + @"  element, float targetRed) =>
+		static Animation GetRedTransformAnimation({{textStyleClassMetadata.Namespace}}.{{textStyleClassMetadata.ClassName}}{{textStyleClassMetadata.GenericArguments}} element, float targetRed) =>
 			new(v => element.TextColor = element.TextColor.WithRed(v), element.TextColor.Red, targetRed);
 
-		static Animation GetGreenTransformAnimation(" + textStyleClass.Namespace + "." + textStyleClass.ClassName + textStyleClass.GenericArguments + @"  element, float targetGreen) =>
+		static Animation GetGreenTransformAnimation({{textStyleClassMetadata.Namespace}}.{{textStyleClassMetadata.ClassName}}{{textStyleClassMetadata.GenericArguments}} element, float targetGreen) =>
 			new(v => element.TextColor = element.TextColor.WithGreen(v), element.TextColor.Green, targetGreen);
 
-		static Animation GetBlueTransformAnimation(" + textStyleClass.Namespace + "." + textStyleClass.ClassName + textStyleClass.GenericArguments + @"  element, float targetBlue) =>
+		static Animation GetBlueTransformAnimation({{textStyleClassMetadata.Namespace}}.{{textStyleClassMetadata.ClassName}}{{textStyleClassMetadata.GenericArguments}} element, float targetBlue) =>
 			new(v => element.TextColor = element.TextColor.WithBlue(v), element.TextColor.Blue, targetBlue);
 
-		static Animation GetAlphaTransformAnimation(" + textStyleClass.Namespace + "." + textStyleClass.ClassName + textStyleClass.GenericArguments + @"  element, float targetAlpha) =>
+		static Animation GetAlphaTransformAnimation({{textStyleClassMetadata.Namespace}}.{{textStyleClassMetadata.ClassName}}{{textStyleClassMetadata.GenericArguments}} element, float targetAlpha) =>
 			new(v => element.TextColor = element.TextColor.WithAlpha((float)v), element.TextColor.Alpha, targetAlpha);
 	}
-}";
-			var source = textColorToBuilder.ToString();
-			SourceStringExtensions.FormatText(ref source, options);
-			context.AddSource($"{textStyleClass.ClassName}TextColorTo.g.shared.cs", SourceText.From(source, Encoding.UTF8));
+}
+""";
+		var source = textColorToBuilder.ToString();
+		SourceStringService.FormatText(ref source);
+		context.AddSource($"{textStyleClassMetadata.ClassName}TextColorTo.g.shared.cs", SourceText.From(source, Encoding.UTF8));
+	}
+
+	static TextStyleClassMetadata GenerateMetadata(INamedTypeSymbol namedTypeSymbol)
+	{
+		var accessModifier = mauiControlsAssembly == namedTypeSymbol.ContainingNamespace.ToDisplayString()
+			? "internal"
+			: GetClassAccessModifier(namedTypeSymbol);
+
+		return new(namedTypeSymbol.Name, accessModifier, namedTypeSymbol.ContainingNamespace.ToDisplayString(), namedTypeSymbol.TypeArguments.GetGenericTypeArgumentsString(), namedTypeSymbol.GetGenericTypeConstraintsAsString());
+	}
+
+	static IEnumerable<INamedTypeSymbol> Deduplicate(ImmutableArray<INamedTypeSymbol?> left, IEnumerable<INamedTypeSymbol> right)
+	{
+		foreach (var leftItem in left)
+		{
+			if (leftItem is null)
+			{
+				continue;
+			}
+
+			var result = right.ContainsSymbolBaseType(leftItem);
+			if (!result)
+			{
+				yield return leftItem;
+			}
 		}
+
+		foreach (var rightItem in right)
+		{
+			yield return rightItem;
+		}
+	}
+
+	static IEnumerable<INamedTypeSymbol> GetMauiInterfaceImplementors(IAssemblySymbol mauiControlsAssemblySymbolProvider, INamedTypeSymbol iAnimatableSymbol, INamedTypeSymbol itextStyleSymbol)
+	{
+		return mauiControlsAssemblySymbolProvider.GlobalNamespace.GetNamedTypeSymbols().Where(x => x.AllInterfaces.Contains(itextStyleSymbol, SymbolEqualityComparer.Default)
+																									&& x.AllInterfaces.Contains(iAnimatableSymbol, SymbolEqualityComparer.Default));
 	}
 
 	static string GetClassAccessModifier(INamedTypeSymbol namedTypeSymbol) => namedTypeSymbol.DeclaredAccessibility switch
@@ -193,4 +212,6 @@ namespace " + textStyleClass.Namespace + @";
 		Accessibility.Internal => "internal",
 		_ => string.Empty
 	};
+
+	record TextStyleClassMetadata(string ClassName, string ClassAcessModifier, string Namespace, string GenericArguments, string GenericConstraints);
 }

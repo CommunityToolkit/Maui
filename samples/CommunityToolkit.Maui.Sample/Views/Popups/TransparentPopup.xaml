@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <mct:Popup
     x:Class="CommunityToolkit.Maui.Sample.TransparentPopup"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -6,17 +6,11 @@
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     Color="Transparent">
 
-    <Frame
-        BackgroundColor="Red"
+    <Grid RowDefinitions="96, *,60" BackgroundColor="Transparent">
+		<Label Text="The background should be transparent"
+               Grid.Row="0"
+               HorizontalOptions="Center"/>
 
-        HorizontalOptions="Center"
-        VerticalOptions="Center"
-
-        CornerRadius="{OnPlatform Default='25',
-                                  Android='50',
-                                  WinUI='50'}"
-        HeightRequest="{OnPlatform Default='50',
-                                   Android='100'}"
-        WidthRequest="{OnPlatform Default='50',
-                                  Android='100'}" />
+		<Button Grid.Row="2" Text="Close" Clicked="CloseButtonClicked" />
+	</Grid>
 </mct:Popup>
