@@ -118,19 +118,22 @@ public static class PopupExtensions
 				_ => 0f
 			};
 
-			if (DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && popup.VerticalOptions == Microsoft.Maui.Primitives.LayoutAlignment.End)
+			if (DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst)
 			{
-				originY = originY - (mauiPopup.PreferredContentSize.Height / 2);
-			}
+				if (popup.VerticalOptions == Microsoft.Maui.Primitives.LayoutAlignment.End)
+				{
+					originY -= (mauiPopup.PreferredContentSize.Height / 2);
+				}
 
-			if (DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && popup.HorizontalOptions == Microsoft.Maui.Primitives.LayoutAlignment.End)
-			{
-				originX = originX - (mauiPopup.PreferredContentSize.Width);
-			}
+				if (popup.HorizontalOptions == Microsoft.Maui.Primitives.LayoutAlignment.End)
+				{
+					originX -= (mauiPopup.PreferredContentSize.Width);
+				}
 
-			if (DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst && popup.HorizontalOptions == Microsoft.Maui.Primitives.LayoutAlignment.Center)
-			{
-				originX = originX - (mauiPopup.PreferredContentSize.Width / 2);
+				if (popup.HorizontalOptions == Microsoft.Maui.Primitives.LayoutAlignment.Center)
+				{
+					originX -= (mauiPopup.PreferredContentSize.Width / 2);
+				}
 			}
 			
 			mauiPopup.PopoverPresentationController.SourceRect = new CGRect(originX, originY, 0, 0);
