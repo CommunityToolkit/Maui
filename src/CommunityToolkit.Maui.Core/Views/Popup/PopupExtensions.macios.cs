@@ -135,7 +135,7 @@ public static class PopupExtensions
 					originX -= (mauiPopup.PreferredContentSize.Width / 2);
 				}
 			}
-			
+
 			mauiPopup.PopoverPresentationController.SourceRect = new CGRect(originX, originY, 0, 0);
 			mauiPopup.PopoverPresentationController.PermittedArrowDirections = 0;
 		}
