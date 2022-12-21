@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using CommunityToolkit.Maui.Core.Extensions;
+using Microsoft.Maui;
 using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -105,17 +106,36 @@ public static class PopupExtensions
 		{
 			var originY = popup.VerticalOptions switch
 			{
-				Microsoft.Maui.Primitives.LayoutAlignment.End => UIScreen.MainScreen.Bounds.Height,
+				Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Height,
 				Microsoft.Maui.Primitives.LayoutAlignment.Center => frame.GetMidY(),
 				_ => 0f
 			};
 
 			var originX = popup.HorizontalOptions switch
 			{
-				Microsoft.Maui.Primitives.LayoutAlignment.End => UIScreen.MainScreen.Bounds.Width,
+				Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Width,
 				Microsoft.Maui.Primitives.LayoutAlignment.Center => frame.GetMidX(),
 				_ => 0f
 			};
+
+			if (DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst)
+			{
+				if (popup.VerticalOptions == Microsoft.Maui.Primitives.LayoutAlignment.End)
+				{
+					originY -= (mauiPopup.PreferredContentSize.Height / 2);
+				}
+
+				if (popup.HorizontalOptions == Microsoft.Maui.Primitives.LayoutAlignment.End)
+				{
+					originX -= (mauiPopup.PreferredContentSize.Width);
+				}
+
+				if (popup.HorizontalOptions == Microsoft.Maui.Primitives.LayoutAlignment.Center)
+				{
+					originX -= (mauiPopup.PreferredContentSize.Width / 2);
+				}
+			}
+
 			mauiPopup.PopoverPresentationController.SourceRect = new CGRect(originX, originY, 0, 0);
 			mauiPopup.PopoverPresentationController.PermittedArrowDirections = 0;
 		}
