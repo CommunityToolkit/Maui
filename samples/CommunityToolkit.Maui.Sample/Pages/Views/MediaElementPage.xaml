@@ -26,6 +26,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <media:MediaElement
                 x:Name="mediaElement"
@@ -34,6 +35,7 @@
                 MediaEnded="OnMediaEnded"
                 MediaFailed="OnMediaFailed"
                 MediaOpened="OnMediaOpened"
+                PositionChanged="OnPositionChanged"
                 StateChanged="OnStateChanged"
                 SeekCompleted="OnSeekCompleted"/>
 
@@ -56,11 +58,13 @@
                 <Button Grid.Column="2" Text="Stop" Clicked="StopClicked" />
             </Grid>
 
+            <!-- TODO In the Slider blow, the Value should be BindingMode.OneWay, but somehow that breaks the binding... Why?! -->
             <Slider
                 Grid.Row="3"
                 MinimumTrackColor="Gray"
                 Maximum="{Binding Duration, Source={x:Reference mediaElement}, Converter={StaticResource TimeSpanConverter}}"
-                Value="{Binding Position, Source={x:Reference mediaElement}, Converter={StaticResource TimeSpanConverter}}" />
+                Value="{Binding Position, Mode=OneWay, Source={x:Reference mediaElement}, Converter={StaticResource TimeSpanConverter}}"
+                DragCompleted="Slider_DragCompleted"/>
 
             <VerticalStackLayout Padding="0,20,0,0" Grid.Row="4" Spacing="5">
                 <Button
@@ -93,8 +97,22 @@
                 <Button Text="-" Clicked="SpeedMinusClicked" />
                 <Button Text="+" Clicked="SpeedPlusClicked" />
             </HorizontalStackLayout>
+
+            <HorizontalStackLayout Grid.Row="6" Padding="0,10,0,10" Spacing="5">
+                <Label Margin="20,10">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="Volume:" />
+                            <Span Text="{Binding Source={x:Reference mediaElement}, Path=Volume, StringFormat='{}{0:P0}'}" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+
+                <Button Text="-" Clicked="VolumeMinusClicked" />
+                <Button Text="+" Clicked="VolumePlusClicked" />
+            </HorizontalStackLayout>
         
-            <VerticalStackLayout Grid.Row="6">
+            <VerticalStackLayout Grid.Row="7">
                 <HorizontalStackLayout Padding="0,0,0,10">
                     <Switch
                         Margin="0,0,5,0"

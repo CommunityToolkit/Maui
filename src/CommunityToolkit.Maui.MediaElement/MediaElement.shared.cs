@@ -10,6 +10,8 @@ public class MediaElement : View, IMediaElement
 	internal event EventHandler? UpdateStatus;
 	internal event EventHandler? PlayRequested;
 	internal event EventHandler? PauseRequested;
+	internal event EventHandler? PositionRequested;
+	internal event EventHandler<SeekRequestedEventArgs>? SeekRequested;
 	internal event EventHandler? StopRequested;
 
 	public MediaElement()
@@ -33,15 +35,14 @@ public class MediaElement : View, IMediaElement
 	/// </summary>
 	public event EventHandler? MediaOpened;
 
-	/// <summary>
-	/// Occurs when a seek operation has completed.
-	/// </summary>
+	/// <inheritdoc/>
 	public event EventHandler? SeekCompleted;
 
-	/// <summary>
-	/// Occurs when <see cref="CurrentState"/> changes.
-	/// </summary>
+	/// <inheritdoc/>
 	public event EventHandler<MediaStateChangedEventArgs>? StateChanged;
+
+	/// <inheritdoc/>
+	public event EventHandler<MediaPositionEventArgs>? PositionChanged;
 
 	public static readonly BindableProperty AutoPlayProperty =
 		BindableProperty.Create(nameof(AutoPlay), typeof(bool), typeof(MediaElement), false,
@@ -51,8 +52,11 @@ public class MediaElement : View, IMediaElement
 		  BindableProperty.Create(nameof(CurrentState), typeof(MediaElementState), typeof(MediaElement),
 			  MediaElementState.None);
 
-	public static readonly BindableProperty DurationProperty =
-		  BindableProperty.Create(nameof(Duration), typeof(TimeSpan), typeof(MediaElement), null);
+	static readonly BindablePropertyKey durationPropertyKey =
+		  BindableProperty.CreateReadOnly(nameof(Duration), typeof(TimeSpan), typeof(MediaElement),
+			  TimeSpan.Zero);
+
+	public static readonly BindableProperty DurationProperty = durationPropertyKey.BindableProperty;
 
 	public static readonly BindableProperty IsLoopingProperty =
 		  BindableProperty.Create(nameof(IsLooping), typeof(bool), typeof(MediaElement), false);
@@ -96,11 +100,9 @@ public class MediaElement : View, IMediaElement
 		private set => SetValue(CurrentStateProperty, value);
 	}
 
-	// TODO Change this to be a Readonly BP
 	public TimeSpan Duration
 	{
 		get => (TimeSpan)GetValue(DurationProperty);
-		set => SetValue(DurationProperty, value);
 	}
 
 	public bool IsLooping
@@ -117,8 +119,7 @@ public class MediaElement : View, IMediaElement
 
 	public TimeSpan Position
 	{
-		get { return (TimeSpan)GetValue(PositionProperty); }
-		set { SetValue(PositionProperty, value); }
+		get => (TimeSpan)GetValue(PositionProperty);
 	}
 
 	public bool ShowsPlaybackControls
@@ -161,28 +162,36 @@ public class MediaElement : View, IMediaElement
 	public void Play()
 	{
 		InitTimer();
-		MediaPositionEventArgs args = new(Position);
-		PlayRequested?.Invoke(this, args);
-		Handler?.Invoke(nameof(MediaElement.PlayRequested), args);
+		PlayRequested?.Invoke(this, EventArgs.Empty);
+		Handler?.Invoke(nameof(MediaElement.PlayRequested));
 	}
 
 	public void Pause()
 	{
-		MediaPositionEventArgs args = new(Position);
-		PauseRequested?.Invoke(this, args);
-		Handler?.Invoke(nameof(MediaElement.PauseRequested), args);
+		PauseRequested?.Invoke(this, EventArgs.Empty);
+		Handler?.Invoke(nameof(MediaElement.PauseRequested));
+	}
+
+	public void SeekTo(TimeSpan position)
+	{
+		SeekRequestedEventArgs args = new(position);
+		Handler?.Invoke(nameof(MediaElement.SeekRequested), args);
 	}
 
 	public void Stop()
 	{
 		ClearTimer();
-		MediaPositionEventArgs args = new(Position);
-		StopRequested?.Invoke(this, args);
-		Handler?.Invoke(nameof(MediaElement.StopRequested), args);
+		StopRequested?.Invoke(this, EventArgs.Empty);
+		Handler?.Invoke(nameof(MediaElement.StopRequested));
 	}
 
 	void OnTimerTick(object? sender, EventArgs e)
 	{
+		if (Source is not null)
+		{
+			PositionRequested?.Invoke(this, EventArgs.Empty);
+		}
+
 		UpdateStatus?.Invoke(this, EventArgs.Empty);
 		Handler?.Invoke(nameof(MediaElement.UpdateStatus));
 	}
@@ -195,7 +204,7 @@ public class MediaElement : View, IMediaElement
 		}
 
 		timer = Dispatcher.CreateTimer();
-		timer.Interval = TimeSpan.FromMilliseconds(100);
+		timer.Interval = TimeSpan.FromMilliseconds(1000);
 		timer.Tick += OnTimerTick;
 		timer.Start();
 	}
@@ -220,12 +229,12 @@ public class MediaElement : View, IMediaElement
 
 	internal void OnMediaFailed(MediaFailedEventArgs args)
 	{
-		Duration = Position = TimeSpan.Zero;
+		((IMediaElement)this).Duration = ((IMediaElement)this).Position = TimeSpan.Zero;
 
 		var previousState = CurrentState;
 		CurrentState = MediaElementState.Failed;
 
-		StateChanged?.Invoke(this, new MediaStateChangedEventArgs(previousState, CurrentState));
+		StateChanged?.Invoke(this, new(previousState, CurrentState));
 
 		MediaFailed?.Invoke(this, args);
 	}
@@ -296,6 +305,21 @@ public class MediaElement : View, IMediaElement
 		return volume >= 0.0 && volume <= 1.0;
 	}
 
+	TimeSpan IMediaElement.Position
+	{
+		get => (TimeSpan)GetValue(PositionProperty);
+		set
+		{
+			var currentValue = (TimeSpan)GetValue(PositionProperty);
+
+			if (currentValue != value)
+			{
+				SetValue(PositionProperty, value);
+				PositionChanged?.Invoke(this, new(value));
+			}
+		}
+	}
+
 	void IMediaElement.MediaEnded()
 	{
 		OnMediaEnded();
@@ -316,14 +340,20 @@ public class MediaElement : View, IMediaElement
 		SeekCompleted?.Invoke(this, EventArgs.Empty);
 	}
 
+	TimeSpan IMediaElement.Duration
+	{
+		get => (TimeSpan)GetValue(DurationProperty);
+		set => SetValue(durationPropertyKey, value);
+	}
+
 	void IMediaElement.CurrentStateChanged(MediaElementState newState)
 	{
 		if (CurrentState != newState)
 		{
 			var previousState = CurrentState;
 			CurrentState = newState;
-			StateChanged?.Invoke(this,
-				new MediaStateChangedEventArgs(previousState, CurrentState));
+
+			StateChanged?.Invoke(this, new(previousState, CurrentState));
 		}
 	}
 }

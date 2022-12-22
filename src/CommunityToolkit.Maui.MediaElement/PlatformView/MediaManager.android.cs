@@ -27,6 +27,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			ControllerAutoShow = false,
 			LayoutParameters = new RelativeLayout.LayoutParams(Android.Views.ViewGroup.LayoutParams.MatchParent, Android.Views.ViewGroup.LayoutParams.MatchParent),
 		};
+
 		return (player, playerView);
 	}
 
@@ -224,6 +225,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		player.Pause();
 	}
 
+	protected virtual partial void PlatformSeek(TimeSpan position)
+	{
+		player?.SeekTo((long)position.TotalMilliseconds);
+	}
+
 	protected virtual partial void PlatformStop()
 	{
 		if (player is null || mediaElement is null
@@ -330,19 +336,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		playerView.UseController = mediaElement.ShowsPlaybackControls;
 	}
 
-	protected virtual partial void PlatformUpdatePosition()
-	{
-		if (mediaElement is null || player is null)
-		{
-			return;
-		}
-
-		if (Math.Abs(player.CurrentPosition - mediaElement.Position.TotalMilliseconds) > 1000)
-		{
-			player.SeekTo((long)mediaElement.Position.TotalMilliseconds);
-		}
-	}
-
 	protected virtual partial void PlatformUpdateStatus()
 	{
 		if (mediaElement is null || player is null)
@@ -350,7 +343,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			return;
 		}
 
-		mediaElement.Position = TimeSpan.FromMilliseconds(player.CurrentPosition);
+		if (mediaElement.Duration != TimeSpan.Zero)
+		{
+			mediaElement.Position = TimeSpan.FromMilliseconds(player.CurrentPosition);
+		}
 	}
 
 	protected virtual partial void PlatformUpdateVolume()

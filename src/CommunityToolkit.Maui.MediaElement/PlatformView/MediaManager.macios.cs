@@ -4,7 +4,6 @@ using CoreFoundation;
 using CoreMedia;
 using Foundation;
 using Microsoft.Extensions.Logging;
-using UIKit;
 
 namespace CommunityToolkit.Maui.MediaElement;
 
@@ -13,17 +12,17 @@ public partial class MediaManager : IDisposable
 	const NSKeyValueObservingOptions valueObserverOptions =
 		NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.New;
 
-	protected NSObject? playedToEndObserver;
-	protected NSObject? itemFailedToPlayToEndTimeObserver;
-	protected NSObject? playbackStalledObserver;
-	protected NSObject? errorObserver;
-	protected IDisposable? statusObserver;
-	protected IDisposable? rateObserver;
-	protected IDisposable? timeControlStatusObserver;
-	protected IDisposable? currentItemErrorObserver;
-	protected IDisposable? currentItemStatusObserver;
-	protected AVPlayerViewController? playerViewController;
-	protected AVPlayerItem? playerItem;
+	NSObject? playedToEndObserver;
+	NSObject? itemFailedToPlayToEndTimeObserver;
+	NSObject? playbackStalledObserver;
+	NSObject? errorObserver;
+	IDisposable? statusObserver;
+	IDisposable? volumeObserver;
+	IDisposable? rateObserver;
+	IDisposable? timeControlStatusObserver;
+	IDisposable? currentItemErrorObserver;
+	AVPlayerViewController? playerViewController;
+	AVPlayerItem? playerItem;
 
 	public (PlatformMediaView player, AVPlayerViewController playerViewController) CreatePlatformView()
 	{
@@ -42,12 +41,44 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformPlay()
 	{
+		if (player?.CurrentTime == playerItem?.Duration)
+		{
+			return;
+		}
+
 		player?.Play();
 	}
 
 	protected virtual partial void PlatformPause()
 	{
 		player?.Pause();
+	}
+
+	protected virtual partial void PlatformSeek(TimeSpan position)
+	{
+		if (playerItem is null || player?.CurrentItem is null
+			|| player?.Status != AVPlayerStatus.ReadyToPlay)
+		{
+			return;
+		}
+
+		var ranges = player.CurrentItem.SeekableTimeRanges;
+		var seekTo = new CMTime(Convert.ToInt64(position.TotalMilliseconds), 1000);
+		foreach (var v in ranges)
+		{
+			if (seekTo >= (seekTo - v.CMTimeRangeValue.Start)
+				&& seekTo < (v.CMTimeRangeValue.Start + v.CMTimeRangeValue.Duration))
+			{
+				player.Seek(seekTo + v.CMTimeRangeValue.Start, (complete) =>
+				{
+					if (complete)
+					{
+						mediaElement?.SeekCompleted();
+					}
+				});
+				break;
+			}
+		}
 	}
 
 	protected virtual partial void PlatformStop()
@@ -161,27 +192,6 @@ public partial class MediaManager : IDisposable
 			mediaElement.ShowsPlaybackControls;
 	}
 
-	protected virtual partial void PlatformUpdatePosition()
-	{
-		if (player is null)
-		{
-			return;
-		}
-
-		var controlPosition = ConvertTime(player.CurrentTime);
-		if (Math.Abs((controlPosition - mediaElement.Position).TotalSeconds) > 1)
-		{
-			player.Seek(CMTime.FromSeconds(mediaElement.Position.TotalSeconds, 1),
-				(complete) =>
-				{
-					if (complete)
-					{
-						mediaElement?.SeekCompleted();
-					}
-				});
-		}
-	}
-
 	protected virtual partial void PlatformUpdateStatus()
 	{
 		if (player is null)
@@ -191,8 +201,21 @@ public partial class MediaManager : IDisposable
 
 		if (playerItem is not null)
 		{
-			mediaElement.Duration = ConvertTime(playerItem.Duration);
-			mediaElement.Position = ConvertTime(playerItem.CurrentTime);
+			if (playerItem.Duration == CMTime.Indefinite)
+			{
+				var range = playerItem.SeekableTimeRanges?.LastOrDefault();
+
+				if (range?.CMTimeRangeValue is not null)
+				{
+					mediaElement.Duration = ConvertTime(range.CMTimeRangeValue.Duration);
+					mediaElement.Position = ConvertTime(playerItem.CurrentTime);
+				}
+			}
+			else
+			{
+				mediaElement.Duration = ConvertTime(playerItem.Duration);
+				mediaElement.Position = ConvertTime(playerItem.CurrentTime);
+			}
 		}
 		else
 		{
@@ -232,12 +255,14 @@ public partial class MediaManager : IDisposable
 		{
 			if (player is not null)
 			{
+				player.Pause();
 				DestroyErrorObservers();
 				DestroyPlayedToEndObserver();
 
 				rateObserver?.Dispose();
 				currentItemErrorObserver?.Dispose();
 				player.ReplaceCurrentItemWithPlayerItem(null);
+				volumeObserver?.Dispose();
 				statusObserver?.Dispose();
 				timeControlStatusObserver?.Dispose();
 				player.Dispose();
@@ -266,16 +291,28 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
+		volumeObserver = player.AddObserver("volume", NSKeyValueObservingOptions.New,
+					VolumeChanged);
 		statusObserver = player.AddObserver("status", valueObserverOptions, StatusChanged);
 		timeControlStatusObserver = player.AddObserver("timeControlStatus",
 			valueObserverOptions, TimeControlStatusChanged);
 		rateObserver = AVPlayer.Notifications.ObserveRateDidChange(RateChanged);
 	}
 
+	void VolumeChanged(NSObservedChange e)
+	{
+		if (mediaElement is null || player is null)
+		{
+			return;
+		}
+
+		mediaElement.Volume = player.Volume;
+	}
+
 	void AddErrorObservers()
 	{
 		DestroyErrorObservers();
-		
+
 		itemFailedToPlayToEndTimeObserver = AVPlayerItem.Notifications.ObserveItemFailedToPlayToEndTime(ErrorOccured);
 		playbackStalledObserver = AVPlayerItem.Notifications.ObservePlaybackStalled(ErrorOccured);
 		errorObserver = AVPlayerItem.Notifications.ObserveNewErrorLogEntry(ErrorOccured);
@@ -307,7 +344,7 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		MediaElementState newState = mediaElement.CurrentState;
+		var newState = mediaElement.CurrentState;
 
 		switch (player.Status)
 		{
@@ -333,7 +370,7 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		MediaElementState newState = mediaElement.CurrentState;
+		var newState = mediaElement.CurrentState;
 
 		switch (player.TimeControlStatus)
 		{
@@ -406,6 +443,9 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		mediaElement.Speed = player.Rate;
+		if (mediaElement.Speed != player.Rate)
+		{
+			mediaElement.Speed = player.Rate;
+		}
 	}
 }

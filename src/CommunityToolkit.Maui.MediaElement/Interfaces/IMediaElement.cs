@@ -16,10 +16,10 @@ public interface IMediaElement : IView
 	MediaElementState CurrentState { get; }
 
 	/// <summary>
-	/// Occurs when <see cref="CurrentState"/> changes.
+	/// Triggers a <see cref="CurrentState"/> change.
 	/// </summary>
 	/// <param name="newState">The new state the <see cref="MediaElement"/> transitioned to.</param>
-	void CurrentStateChanged(MediaElementState newState);
+	internal void CurrentStateChanged(MediaElementState newState);
 
 	/// <summary>
 	/// Gets total duration of the loaded media.
@@ -60,9 +60,9 @@ public interface IMediaElement : IView
 	TimeSpan Position { get; set; }
 
 	/// <summary>
-	/// Fired when a seek action has been completed.
+	/// Occurs when the <see cref="Position"/> changes;
 	/// </summary>
-	void SeekCompleted();
+	event EventHandler<MediaPositionEventArgs>? PositionChanged;
 
 	/// <summary>
 	/// Gets or sets whether to show the playback controls.
@@ -78,8 +78,19 @@ public interface IMediaElement : IView
 	/// Gets or sets if media playback will prevent the device display from going to sleep.
 	/// If media is paused, stopped or has completed playing, the display will turn off.
 	/// </summary>
-	/// <remarks>Only works on mobile devices.</remarks>
-	public bool KeepScreenOn { get; set; }
+	bool KeepScreenOn { get; set; }
+
+	/// <summary>
+	/// Triggered when a seek action has been completed.
+	/// </summary>
+	void SeekCompleted();
+
+	/// <summary>
+	/// Seek to a specific position in the currently playing media.
+	/// </summary>
+	/// <param name="position">The requested position to seek to.</param>
+	/// <remarks>If <paramref name="position"/> is outside of the range of the current media item, nothing will happen.</remarks>
+	void SeekTo(TimeSpan position);
 
 	/// <summary>
 	/// The source of the media to play.

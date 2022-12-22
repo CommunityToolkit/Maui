@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Maui.Handlers;
+﻿using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.MediaElement;
 
@@ -15,5 +14,6 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, object>
 	public static void MapVolume(object handler, MediaElement mediaElement) { }
 	public static void MapPlayRequested(MediaElementHandler handler, MediaElement mediaElement, object? args) { }
 	public static void MapPauseRequested(MediaElementHandler handler, MediaElement mediaElement, object? args) { }
+	public static void MapSeekRequested(MediaElementHandler handler, MediaElement mediaElement, object? args) { }
 	public static void MapStopRequested(MediaElementHandler handler, MediaElement mediaElement, object? args) { }
 }

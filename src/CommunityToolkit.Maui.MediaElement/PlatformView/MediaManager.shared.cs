@@ -8,11 +8,6 @@ global using PlatformMediaView = AVFoundation.AVPlayer;
 global using PlatformMediaView = Microsoft.UI.Xaml.Controls.MediaPlayerElement;
 #endif
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.MediaElement;
@@ -34,6 +29,8 @@ public partial class MediaManager
 
 	public ILogger? Logger { get; }
 
+	public TimeSpan Position { get; set; }
+
 	public void Play()
 	{
 		PlatformPlay();
@@ -42,6 +39,11 @@ public partial class MediaManager
 	public void Pause()
 	{
 		PlatformPause();
+	}
+
+	public void Seek(TimeSpan position)
+	{
+		PlatformSeek(position);
 	}
 
 	public void Stop()
@@ -62,11 +64,6 @@ public partial class MediaManager
 	public void UpdateShowsPlaybackControls()
 	{
 		PlatformUpdateShowsPlaybackControls();
-	}
-
-	public void UpdatePosition()
-	{
-		PlatformUpdatePosition();
 	}
 
 	public void UpdateStatus()
@@ -91,11 +88,11 @@ public partial class MediaManager
 
 	protected virtual partial void PlatformPlay();
 	protected virtual partial void PlatformPause();
+	protected virtual partial void PlatformSeek(TimeSpan position);
 	protected virtual partial void PlatformStop();
 	protected virtual partial void PlatformUpdateSource();
 	protected virtual partial void PlatformUpdateSpeed();
 	protected virtual partial void PlatformUpdateShowsPlaybackControls();
-	protected virtual partial void PlatformUpdatePosition();
 	protected virtual partial void PlatformUpdateStatus();
 	protected virtual partial void PlatformUpdateVolume();
 	protected virtual partial void PlatformUpdateKeepScreenOn();
@@ -116,6 +113,11 @@ partial class MediaManager
 
 	}
 
+	protected virtual partial void PlatformSeek(TimeSpan position)
+	{
+
+	}
+
 	protected virtual partial void PlatformStop()
 	{
 
@@ -132,11 +134,6 @@ partial class MediaManager
 	}
 
 	protected virtual partial void PlatformUpdateShowsPlaybackControls()
-	{
-
-	}
-
-	protected virtual partial void PlatformUpdatePosition()
 	{
 
 	}

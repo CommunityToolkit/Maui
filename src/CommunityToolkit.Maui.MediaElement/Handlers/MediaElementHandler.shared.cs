@@ -9,7 +9,6 @@ public partial class MediaElementHandler
 		[nameof(IMediaElement.Source)] = MapSource,
 		[nameof(IMediaElement.Speed)] = MapSpeed,
 		[nameof(IMediaElement.Volume)] = MapVolume,
-		[nameof(IMediaElement.Position)] = MapPosition,
 #if __ANDROID__ || __IOS__ || __MACCATALYST__
 		[nameof(IMediaElement.KeepScreenOn)] = MapKeepScreenOn,
 #endif
@@ -23,6 +22,7 @@ public partial class MediaElementHandler
 		[nameof(MediaElement.UpdateStatus)] = MapUpdateStatus,
 		[nameof(MediaElement.PlayRequested)] = MapPlayRequested,
 		[nameof(MediaElement.PauseRequested)] = MapPauseRequested,
+		[nameof(MediaElement.SeekRequested)] = MapSeekRequested,
 		[nameof(MediaElement.StopRequested)] = MapStopRequested
 	};
 

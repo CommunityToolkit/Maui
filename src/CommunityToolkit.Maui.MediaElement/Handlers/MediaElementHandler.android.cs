@@ -24,11 +24,6 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		handler?.mediaManager?.UpdateIsLooping();
 	}
 
-	public static void MapPosition(MediaElementHandler handler, MediaElement mediaElement)
-	{
-		handler?.mediaManager?.UpdatePosition();
-	}
-
 	public static void MapShowsPlaybackControls(MediaElementHandler handler, MediaElement mediaElement)
 	{
 		handler?.mediaManager?.UpdateShowsPlaybackControls();
@@ -67,6 +62,16 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	public static void MapPauseRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
 		handler.mediaManager?.Pause();
+	}
+
+	public static void MapSeekRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
+	{
+		if (args is not SeekRequestedEventArgs positionArgs)
+		{
+			return;
+		}
+
+		handler.mediaManager?.Seek(positionArgs.RequestedPosition);
 	}
 
 	public static void MapStopRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)

@@ -24,13 +24,15 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 	void OnMediaEnded(object? sender, EventArgs e) => logger?.LogInformation("Media ended.");
 
+	void OnPositionChanged(object? sender, MediaPositionEventArgs e) => logger?.LogInformation("Position changed to {position}", e.Position);
+
 	void OnSeekCompleted(object? sender, EventArgs e) => logger?.LogInformation("Seek completed.");
 
 	void OnResetClicked(object? sender, EventArgs e) => mediaElement.Source = null;
 
 	void OnMp4OnlineSourceClicked(object? sender, EventArgs e) => mediaElement.Source = MediaSource.FromUri("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
 
-	void OnHlsSourceClicked(object? sender, EventArgs e) => mediaElement.Source = MediaSource.FromUri("https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_4x3/gear1/prog_index.m3u8");
+	void OnHlsSourceClicked(object? sender, EventArgs e) => mediaElement.Source = MediaSource.FromUri("https://wowza.peer5.com/live/smil:bbb_abr.smil/playlist.m3u8");
 
 	void OnResourceSourceClicked(object? sender, EventArgs e)
 	{
@@ -65,6 +67,36 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
+	void VolumeMinusClicked(object sender, EventArgs e)
+	{
+		if (mediaElement.Volume >= 0)
+		{
+			if (mediaElement.Volume < .1)
+			{
+				mediaElement.Volume = 0;
+
+				return;
+			}
+
+			mediaElement.Volume -= .1;
+		}
+	}
+
+	void VolumePlusClicked(object sender, EventArgs e)
+	{
+		if (mediaElement.Volume < 1)
+		{
+			if (mediaElement.Volume > .9)
+			{
+				mediaElement.Volume = 1;
+
+				return;
+			}
+
+			mediaElement.Volume += .1;
+		}
+	}
+
 	void PlayClicked(object sender, EventArgs e)
 	{
 		mediaElement.Play();
@@ -78,5 +110,17 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	void StopClicked(object sender, EventArgs e)
 	{
 		mediaElement.Stop();
+	}
+
+	void BasePage_Unloaded(object sender, EventArgs e)
+	{
+		// Stop and cleanup MediaElement when we navigate away
+		mediaElement.Handler?.DisconnectHandler();
+	}
+
+	void Slider_DragCompleted(object sender, EventArgs e)
+	{
+		var newValue = ((Slider)sender).Value;
+		mediaElement.SeekTo(TimeSpan.FromSeconds(newValue));
 	}
 }

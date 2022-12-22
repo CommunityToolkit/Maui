@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
+using Microsoft.Extensions.Logging;
 using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.System.Display;
@@ -52,6 +53,14 @@ partial class MediaManager : IDisposable
 		}
 	}
 
+	protected virtual partial void PlatformSeek(TimeSpan position)
+	{
+		if (isMediaPlayerAttached && player is not null)
+		{
+			player.MediaPlayer.Position = position;
+		}
+	}
+
 	protected virtual partial void PlatformStop()
 	{
 		if (!isMediaPlayerAttached || player is null)
@@ -90,17 +99,6 @@ partial class MediaManager : IDisposable
 		}
 
 		player.AreTransportControlsEnabled = mediaElement.ShowsPlaybackControls;
-	}
-
-	protected virtual partial void PlatformUpdatePosition()
-	{
-		if (isMediaPlayerAttached && player is not null)
-		{
-			if (Math.Abs((player.MediaPlayer.Position - mediaElement.Position).TotalSeconds) > 1)
-			{
-				player.MediaPlayer.Position = mediaElement.Position;
-			}
-		}
 	}
 
 	protected virtual partial void PlatformUpdateStatus()
