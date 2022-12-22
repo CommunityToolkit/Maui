@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.System.Display;
@@ -55,7 +54,8 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformSeek(TimeSpan position)
 	{
-		if (isMediaPlayerAttached && player is not null)
+		if (isMediaPlayerAttached && player is not null
+			&& player.MediaPlayer.CanSeek)
 		{
 			player.MediaPlayer.Position = position;
 		}
@@ -103,14 +103,21 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateStatus()
 	{
-		// no-op
+		if (isMediaPlayerAttached && mediaElement is not null
+			&& player is not null)
+		{
+			mediaElement.Position = player.MediaPlayer.Position;
+		}
 	}
 
 	protected virtual partial void PlatformUpdateVolume()
 	{
 		if (isMediaPlayerAttached && player is not null)
 		{
-			player.MediaPlayer.Volume = mediaElement.Volume;
+			MainThread.BeginInvokeOnMainThread(() =>
+			{
+				player.MediaPlayer.Volume = mediaElement.Volume;
+			});
 		}
 	}
 
@@ -157,8 +164,6 @@ partial class MediaManager : IDisposable
 
 		var hasSetSource = false;
 
-		player.AutoPlay = mediaElement.AutoPlay;
-
 		if (mediaElement.Source is UriMediaSource)
 		{
 			var uri = (mediaElement.Source as UriMediaSource)?.Uri?.AbsoluteUri!;
@@ -190,11 +195,13 @@ partial class MediaManager : IDisposable
 
 		if (hasSetSource && !isMediaPlayerAttached)
 		{
-			Dispatcher.GetForCurrentThread()?.DispatchAsync(() =>
+			MainThread.BeginInvokeOnMainThread(() =>
 			{
 				player.MediaPlayer.MediaOpened += MediaPlayer_MediaOpened;
 			});
 		}
+
+		player.AutoPlay = mediaElement.AutoPlay;
 
 		if (hasSetSource && mediaElement.KeepScreenOn && !displayActiveRequested)
 		{
@@ -220,7 +227,7 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
-		Dispatcher.GetForCurrentThread()?.DispatchAsync(() =>
+		MainThread.BeginInvokeOnMainThread(() =>
 		{
 			mediaElement.Duration = player.MediaPlayer.NaturalDuration;
 			mediaElement.MediaOpened();
@@ -230,10 +237,10 @@ partial class MediaManager : IDisposable
 				isMediaPlayerAttached = true;
 
 				player.MediaPlayer.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged;
-				player.MediaPlayer.PlaybackSession.PositionChanged += PlaybackSession_PositionChanged;
 				player.MediaPlayer.PlaybackSession.SeekCompleted += PlaybackSession_SeekCompleted;
 				player.MediaPlayer.MediaFailed += MediaPlayer_MediaFailed;
 				player.MediaPlayer.MediaEnded += MediaPlayer_MediaEnded;
+				player.MediaPlayer.VolumeChanged += MediaPlayer_VolumeChanged;
 			}
 		});
 	}
@@ -268,6 +275,14 @@ partial class MediaManager : IDisposable
 		Logger?.LogError("{logMessage}", message);
 	}
 
+	void MediaPlayer_VolumeChanged(MediaPlayer sender, object args)
+	{
+		if (mediaElement is not null)
+		{
+			mediaElement.Volume = sender.Volume;
+		}
+	}
+
 	void PlaybackSession_PlaybackStateChanged(MediaPlaybackSession sender, object args)
 	{
 		var newState = sender.PlaybackState switch
@@ -282,17 +297,6 @@ partial class MediaManager : IDisposable
 		mediaElement?.CurrentStateChanged(newState);
 	}
 
-	void PlaybackSession_PositionChanged(MediaPlaybackSession sender, object args)
-	{
-		if (isMediaPlayerAttached && mediaElement is not null)
-		{
-			Dispatcher.GetForCurrentThread()?.DispatchAsync(() =>
-			{
-				mediaElement.Position = sender.Position;
-			});
-		}
-	}
-
 	void PlaybackSession_SeekCompleted(MediaPlaybackSession sender, object args)
 	{
 		mediaElement?.SeekCompleted();
@@ -304,17 +308,20 @@ partial class MediaManager : IDisposable
 		{
 			if (player?.MediaPlayer is not null)
 			{
-				displayRequest.RequestRelease();
-				displayActiveRequested = false;
+				if (displayActiveRequested)
+				{
+					displayRequest.RequestRelease();
+					displayActiveRequested = false;
+				}
 
 				player.MediaPlayer.MediaOpened -= MediaPlayer_MediaOpened;
 				player.MediaPlayer.MediaFailed -= MediaPlayer_MediaFailed;
 				player.MediaPlayer.MediaEnded -= MediaPlayer_MediaEnded;
+				player.MediaPlayer.VolumeChanged -= MediaPlayer_VolumeChanged;
 
 				if (player.MediaPlayer.PlaybackSession is not null)
 				{
 					player.MediaPlayer.PlaybackSession.PlaybackStateChanged -= PlaybackSession_PlaybackStateChanged;
-					player.MediaPlayer.PlaybackSession.PositionChanged -= PlaybackSession_PositionChanged;
 					player.MediaPlayer.PlaybackSession.SeekCompleted -= PlaybackSession_SeekCompleted;
 				}
 			}
