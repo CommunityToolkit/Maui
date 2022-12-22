@@ -1,6 +1,6 @@
 ﻿namespace CommunityToolkit.Maui.MediaElement;
 
-class SeekRequestedEventArgs
+class SeekRequestedEventArgs : EventArgs
 {
 	public TimeSpan RequestedPosition { get; }
 
