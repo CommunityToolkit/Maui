@@ -53,7 +53,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	void SpeedMinusClicked(object sender, EventArgs e)
+	void SpeedMinusClicked(object? sender, EventArgs e)
 	{
 		if (mediaElement.Speed >= 1)
 		{
@@ -61,7 +61,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	void SpeedPlusClicked(object sender, EventArgs e)
+	void SpeedPlusClicked(object? sender, EventArgs e)
 	{
 		if (mediaElement.Speed < 10)
 		{
@@ -69,7 +69,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	void VolumeMinusClicked(object sender, EventArgs e)
+	void VolumeMinusClicked(object? sender, EventArgs e)
 	{
 		if (mediaElement.Volume >= 0)
 		{
@@ -84,7 +84,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	void VolumePlusClicked(object sender, EventArgs e)
+	void VolumePlusClicked(object? sender, EventArgs e)
 	{
 		if (mediaElement.Volume < 1)
 		{
@@ -99,29 +99,31 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	void PlayClicked(object sender, EventArgs e)
+	void PlayClicked(object? sender, EventArgs e)
 	{
 		mediaElement.Play();
 	}
 
-	void PauseClicked(object sender, EventArgs e)
+	void PauseClicked(object? sender, EventArgs e)
 	{
 		mediaElement.Pause();
 	}
 
-	void StopClicked(object sender, EventArgs e)
+	void StopClicked(object? sender, EventArgs e)
 	{
 		mediaElement.Stop();
 	}
 
-	void BasePage_Unloaded(object sender, EventArgs e)
+	void BasePage_Unloaded(object? sender, EventArgs e)
 	{
 		// Stop and cleanup MediaElement when we navigate away
 		mediaElement.Handler?.DisconnectHandler();
 	}
 
-	void Slider_DragCompleted(object sender, EventArgs e)
+	void Slider_DragCompleted(object? sender, EventArgs e)
 	{
+		ArgumentNullException.ThrowIfNull(sender);
+
 		var newValue = ((Slider)sender).Value;
 		mediaElement.SeekTo(TimeSpan.FromSeconds(newValue));
 	}
