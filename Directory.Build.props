@@ -3,7 +3,7 @@
   <PropertyGroup>
     <!-- Fixes https://github.com/dotnet/maui/pull/12114 -->
     <PublishReadyToRun>false</PublishReadyToRun>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <NoWarn>NETSDK1023</NoWarn>

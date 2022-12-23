@@ -1,6 +1,6 @@
 using Android.Content;
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
+using Microsoft.Maui.ApplicationModel;
 using AndroidUri = Android.Net.Uri;
 
 namespace CommunityToolkit.Maui.Storage;
@@ -11,7 +11,7 @@ public class FolderPickerImplementation : IFolderPicker
 	const int requestCodeFolderPicker = 12345;
 
 	/// <inheritdoc />
-	public async Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)
+	public async ValueTask<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)
 	{
 		var status = await Permissions.RequestAsync<Permissions.StorageRead>();
 		if (status is not PermissionStatus.Granted)
@@ -20,12 +20,12 @@ public class FolderPickerImplementation : IFolderPicker
 		}
 
 		var intent = new Intent(Intent.ActionOpenDocumentTree);
-		var pickerIntent = Intent.CreateChooser(intent, "Select folder") ?? throw new InvalidOperationException($"Unable to create intent.");
+		var pickerIntent = Intent.CreateChooser(intent, string.Empty) ?? throw new InvalidOperationException("Unable to create intent.");
 
 		Folder? folder = null;
-		void OnResult(Intent intent)
+		void OnResult(Intent resultIntent)
 		{
-			var path = EnsurePhysicalPath(intent.Data);
+			var path = EnsurePhysicalPath(resultIntent.Data);
 			folder = new Folder(path, Path.GetFileName(path));
 		}
 
@@ -35,7 +35,7 @@ public class FolderPickerImplementation : IFolderPicker
 	}
 
 	/// <inheritdoc />
-	public Task<Folder> PickAsync(CancellationToken cancellationToken)
+	public ValueTask<Folder> PickAsync(CancellationToken cancellationToken)
 	{
 		return PickAsync(GetExternalDirectory(), cancellationToken);
 	}

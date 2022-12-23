@@ -1,7 +1,7 @@
 using Android.Content;
 using Android.Webkit;
-using CommunityToolkit.Maui.Core;
 using Java.IO;
+using Microsoft.Maui.ApplicationModel;
 using AndroidUri = Android.Net.Uri;
 using Application = Android.App.Application;
 
@@ -11,8 +11,9 @@ namespace CommunityToolkit.Maui.Storage;
 public partial class SaveFileDialogImplementation : ISaveFileDialog
 {
 	const int requestCodeSaveFilePicker = 54321;
+
 	/// <inheritdoc/>
-	public async Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
+	public async ValueTask<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		var status = await Permissions.RequestAsync<Permissions.StorageWrite>();
 		if (status is not PermissionStatus.Granted)
@@ -24,12 +25,12 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 		intent.AddCategory(Intent.CategoryOpenable);
 		intent.SetType(MimeTypeMap.Singleton?.GetMimeTypeFromExtension(GetExtension(fileName)) ?? "*/*");
 		intent.PutExtra(Intent.ExtraTitle, fileName);
-		var pickerIntent = Intent.CreateChooser(intent, "Select folder") ?? throw new InvalidOperationException($"Unable to create intent.");
+		var pickerIntent = Intent.CreateChooser(intent, string.Empty) ?? throw new InvalidOperationException("Unable to create intent.");
 
 		AndroidUri? filePath = null;
-		void OnResult(Intent intent)
+		void OnResult(Intent resultIntent)
 		{
-			filePath = EnsurePhysicalPath(intent.Data);
+			filePath = EnsurePhysicalPath(resultIntent.Data);
 		}
 
 		await IntermediateActivity.StartAsync(pickerIntent, requestCodeSaveFilePicker, onResult: OnResult);
@@ -43,7 +44,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 	}
 
 	/// <inheritdoc />
-	public Task<string> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
+	public ValueTask<string> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		return SaveAsync(GetExternalDirectory(), fileName, stream, cancellationToken);
 	}

@@ -1,12 +1,12 @@
 ﻿namespace CommunityToolkit.Maui.Storage;
 
 /// <summary>
-/// Exception occured if error has occured during picking the folder
+/// Exception occurred if error has occurred during picking the folder
 /// </summary>
 public class FolderPickerException : Exception
 {
 	/// <summary>
-	/// Inititalizes a new instance of <see cref="FolderPickerException"/>
+	/// Initializes a new instance of <see cref="FolderPickerException"/>
 	/// </summary>
 	public FolderPickerException(string message) : base(message)
 	{

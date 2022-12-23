@@ -1,4 +1,4 @@
-namespace CommunityToolkit.Maui.Core;
+namespace CommunityToolkit.Maui.Storage;
 
 /// <summary>
 /// Allows selecting target folder and saving files to the file system.
@@ -12,7 +12,7 @@ public interface ISaveFileDialog
 	/// <param name="fileName">File name with extension</param>
 	/// <param name="stream"><see cref="Stream"/></param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
-	Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken);
+	ValueTask<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Allows selecting target folder and saving files to the file system.
@@ -20,5 +20,5 @@ public interface ISaveFileDialog
 	/// <param name="fileName">File name with extension</param>
 	/// <param name="stream"><see cref="Stream"/></param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
-	Task<string> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken);
+	ValueTask<string> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken);
 }

@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Storage;
 public partial class SaveFileDialogImplementation : ISaveFileDialog
 {
 	/// <inheritdoc />
-	public async Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
+	public async ValueTask<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		var status = await Permissions.RequestAsync<Permissions.StorageRead>();
 		if (status is not PermissionStatus.Granted)
@@ -27,7 +27,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 	}
 
 	/// <inheritdoc />
-	public Task<string> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
+	public ValueTask<string> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		return SaveAsync(FileFolderDialog.TryGetExternalDirectory(), fileName, stream, cancellationToken);
 	}

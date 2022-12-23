@@ -1,6 +1,6 @@
 using CommunityToolkit.Maui.Core.Primitives;
 
-namespace CommunityToolkit.Maui.Core;
+namespace CommunityToolkit.Maui.Storage;
 
 /// <summary>
 /// Allows picking a folder from the file system.
@@ -13,12 +13,12 @@ public interface IFolderPicker
 	/// <param name="initialPath">Initial path</param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="Folder"/></returns>
-	Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken);
+	ValueTask<Folder> PickAsync(string initialPath, CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Allows picking a folder from the file system.
 	/// </summary>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="Folder"/></returns>
-	Task<Folder> PickAsync(CancellationToken cancellationToken);
+	ValueTask<Folder> PickAsync(CancellationToken cancellationToken);
 }

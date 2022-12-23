@@ -33,6 +33,16 @@ sealed class FileFolderDialog : Popup<string>, IDisposable
 	string selectedPath;
 	string selectedFileName;
 
+	public static void SetFileSaveString(string fileSaveStringValue)
+	{
+		fileSaveString = fileSaveStringValue;
+	}
+
+	public static void SetSelectFolderString(string setFolderStringValue)
+	{
+		selectFolderString = selectFolderStringValue;
+	}
+
 	public static string TryGetExternalDirectory()
 	{
 		string? externalDirectory = null;

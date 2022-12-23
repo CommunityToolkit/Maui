@@ -1,6 +1,4 @@
-using System;
 using System.Diagnostics;
-using CommunityToolkit.Maui.Core;
 using Windows.Storage.Pickers;
 
 namespace CommunityToolkit.Maui.Storage;
@@ -8,10 +6,10 @@ namespace CommunityToolkit.Maui.Storage;
 /// <inheritdoc />
 public partial class SaveFileDialogImplementation : ISaveFileDialog
 {
-	List<string> allFilesExtension = new List<string> { "." };
+	readonly List<string> allFilesExtension = new() { "." };
 
 	/// <inheritdoc />
-	public async Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
+	public async ValueTask<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		var savePicker = new FileSavePicker
 		{
@@ -19,7 +17,8 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 		};
 		WinRT.Interop.InitializeWithWindow.Initialize(savePicker, Process.GetCurrentProcess().MainWindowHandle);
 
-		savePicker.FileTypeChoices.Add(GetExtension(fileName), new List<string> { GetExtension(fileName) });
+		var extension = GetExtension(fileName);
+		savePicker.FileTypeChoices.Add(extension, new List<string> { extension });
 		savePicker.FileTypeChoices.Add("All files", allFilesExtension);
 		savePicker.SuggestedFileName = GetFileName(fileName);
 
@@ -35,7 +34,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 	}
 
 	/// <inheritdoc />
-	public Task<string> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
+	public ValueTask<string> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		return SaveAsync(string.Empty, fileName, stream, cancellationToken);
 	}

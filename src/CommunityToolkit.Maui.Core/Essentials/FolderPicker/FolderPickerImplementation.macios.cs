@@ -1,12 +1,9 @@
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
-using Foundation;
-using UIKit;
 using UniformTypeIdentifiers;
 
 namespace CommunityToolkit.Maui.Storage;
 
-/// <inheritdoc />
+/// <inheritdoc cref="IFolderPicker" />
 public sealed class FolderPickerImplementation : IFolderPicker, IDisposable
 {
 	readonly UIDocumentPickerViewController documentPickerViewController;
@@ -22,8 +19,9 @@ public sealed class FolderPickerImplementation : IFolderPicker, IDisposable
 			AllowsMultipleSelection = false
 		};
 	}
+	
 	/// <inheritdoc />
-	public Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)
+	public async ValueTask<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)
 	{
 		documentPickerViewController.DirectoryUrl = NSUrl.FromString(initialPath);
 		var currentViewController = Microsoft.Maui.Platform.UIApplicationExtensions.GetKeyWindow(UIApplication.SharedApplication)?.RootViewController;
@@ -31,7 +29,7 @@ public sealed class FolderPickerImplementation : IFolderPicker, IDisposable
 		documentPickerViewController.DidPickDocumentAtUrls += DocumentPickerViewControllerOnDidPickDocumentAtUrls;
 		documentPickerViewController.WasCancelled += DocumentPickerViewControllerOnWasCancelled;
 		currentViewController?.PresentViewController(documentPickerViewController, true, null);
-		return taskCompetedSource.Task;
+		return await taskCompetedSource.Task;
 	}
 
 	void DocumentPickerViewControllerOnWasCancelled(object? sender, EventArgs e)
@@ -46,7 +44,7 @@ public sealed class FolderPickerImplementation : IFolderPicker, IDisposable
 	}
 
 	/// <inheritdoc />
-	public Task<Folder> PickAsync(CancellationToken cancellationToken)
+	public ValueTask<Folder> PickAsync(CancellationToken cancellationToken)
 	{
 		return PickAsync("/", cancellationToken);
 	}
