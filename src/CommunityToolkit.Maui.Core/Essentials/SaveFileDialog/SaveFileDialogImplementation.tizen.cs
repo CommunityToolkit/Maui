@@ -8,14 +8,14 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 	/// <inheritdoc />
 	public async ValueTask<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
-		var status = await Permissions.RequestAsync<Permissions.StorageRead>();
+		var status = await Permissions.RequestAsync<Permissions.StorageRead>().WaitAsync(cancellationToken);
 		if (status is not PermissionStatus.Granted)
 		{
 			throw new PermissionException("Storage permission is not granted.");
 		}
 
 		var dialog = new FileFolderDialog(true, initialPath, fileName: fileName, cancellationToken: cancellationToken);
-		var path = await dialog.Open();
+		var path = await dialog.Open().WaitAsync(cancellationToken).ConfigureAwait(false);
 
 		if (string.IsNullOrEmpty(path))
 		{

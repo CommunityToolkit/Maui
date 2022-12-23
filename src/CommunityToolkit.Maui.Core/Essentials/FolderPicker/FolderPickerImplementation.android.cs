@@ -13,7 +13,7 @@ public class FolderPickerImplementation : IFolderPicker
 	/// <inheritdoc />
 	public async ValueTask<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)
 	{
-		var status = await Permissions.RequestAsync<Permissions.StorageRead>();
+		var status = await Permissions.RequestAsync<Permissions.StorageRead>().WaitAsync(cancellationToken).ConfigureAwait(false);
 		if (status is not PermissionStatus.Granted)
 		{
 			throw new PermissionException("Storage permission is not granted.");

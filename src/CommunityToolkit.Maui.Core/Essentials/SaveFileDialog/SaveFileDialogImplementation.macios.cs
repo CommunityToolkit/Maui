@@ -22,7 +22,7 @@ public sealed partial class SaveFileDialogImplementation : ISaveFileDialog, IDis
 		var currentViewController = Microsoft.Maui.Platform.UIApplicationExtensions.GetKeyWindow(UIApplication.SharedApplication)?.RootViewController;
 		currentViewController?.PresentViewController(documentPickerViewController, true, null);
 
-		return await taskCompetedSource.Task;
+		return await taskCompetedSource.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
 	}
 
 	/// <inheritdoc/>

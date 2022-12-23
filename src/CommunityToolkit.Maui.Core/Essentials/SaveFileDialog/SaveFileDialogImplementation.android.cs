@@ -15,7 +15,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 	/// <inheritdoc/>
 	public async ValueTask<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
-		var status = await Permissions.RequestAsync<Permissions.StorageWrite>();
+		var status = await Permissions.RequestAsync<Permissions.StorageWrite>().WaitAsync(cancellationToken).ConfigureAwait(false);
 		if (status is not PermissionStatus.Granted)
 		{
 			throw new PermissionException("Storage permission is not granted.");
@@ -28,19 +28,20 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 		var pickerIntent = Intent.CreateChooser(intent, string.Empty) ?? throw new InvalidOperationException("Unable to create intent.");
 
 		AndroidUri? filePath = null;
-		void OnResult(Intent resultIntent)
-		{
-			filePath = EnsurePhysicalPath(resultIntent.Data);
-		}
 
-		await IntermediateActivity.StartAsync(pickerIntent, requestCodeSaveFilePicker, onResult: OnResult);
+		await IntermediateActivity.StartAsync(pickerIntent, requestCodeSaveFilePicker, onResult: OnResult).WaitAsync(cancellationToken).ConfigureAwait(false);
 
 		if (filePath is null)
 		{
 			throw new FileSaveException("Path doesn't exist.");
 		}
-		
-		return await SaveDocument(filePath, stream, cancellationToken);
+
+		return await SaveDocument(filePath, stream, cancellationToken).ConfigureAwait(false);
+
+		void OnResult(Intent resultIntent)
+		{
+			filePath = EnsurePhysicalPath(resultIntent.Data);
+		}
 	}
 
 	/// <inheritdoc />
@@ -60,27 +61,30 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 		{
 			throw new FolderPickerException("Path is not selected.");
 		}
-		
+
 		const string uriSchemeFolder = "content";
 		if (uri.Scheme != null && uri.Scheme.Equals(uriSchemeFolder, StringComparison.OrdinalIgnoreCase))
 		{
-			return uri ?? throw new FolderPickerException("Unable to resolve path.");
+			return uri;
 		}
 
 		throw new FolderPickerException($"Unable to resolve absolute path or retrieve contents of URI '{uri}'.");
 	}
-	
+
 	static async Task<string> SaveDocument(AndroidUri uri, Stream stream, CancellationToken cancellationToken)
 	{
 		var parcelFileDescriptor = Application.Context.ContentResolver?.OpenFileDescriptor(uri, "w");
 		var fileOutputStream = new FileOutputStream(parcelFileDescriptor?.FileDescriptor);
 		await using var memoryStream = new MemoryStream();
+
 		stream.Seek(0, SeekOrigin.Begin);
 		await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
-		await fileOutputStream.WriteAsync(memoryStream.ToArray());
+		await fileOutputStream.WriteAsync(memoryStream.ToArray()).WaitAsync(cancellationToken).ConfigureAwait(false);
+
 		fileOutputStream.Close();
 		parcelFileDescriptor?.Close();
-		var split = uri.Path? .Split(":") ?? throw new FolderPickerException("Unable to resolve path.");
+		var split = uri.Path?.Split(":") ?? throw new FolderPickerException("Unable to resolve path.");
+
 		return Android.OS.Environment.ExternalStorageDirectory + "/" + split[1];
 	}
 }

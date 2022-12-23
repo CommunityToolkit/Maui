@@ -16,7 +16,7 @@ public class FolderPickerImplementation : IFolderPicker
 		};
 		WinRT.Interop.InitializeWithWindow.Initialize(folderPicker, Process.GetCurrentProcess().MainWindowHandle);
 		folderPicker.FileTypeFilter.Add("*");
-		var folder = await folderPicker.PickSingleFolderAsync();
+		var folder = await folderPicker.PickSingleFolderAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
 		if (folder is null)
 		{
 			throw new FolderPickerException("Folder doesn't exist.");

@@ -30,5 +30,5 @@ public static class FolderPicker
 		Default.PickAsync(cancellationToken);
 
 	internal static void SetDefault(IFolderPicker implementation) =>
-		defaultImplementation = new Lazy<IFolderPicker>(implementation);
+		defaultImplementation = new(implementation);
 }
