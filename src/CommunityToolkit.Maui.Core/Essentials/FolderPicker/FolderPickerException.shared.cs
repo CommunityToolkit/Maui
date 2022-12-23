@@ -3,7 +3,7 @@
 /// <summary>
 /// Exception occurred if error has occurred during picking the folder
 /// </summary>
-public class FolderPickerException : Exception
+public sealed class FolderPickerException : Exception
 {
 	/// <summary>
 	/// Initializes a new instance of <see cref="FolderPickerException"/>
