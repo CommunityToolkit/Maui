@@ -8,6 +8,8 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 {
 	ILogger? logger;
 
+	public (double, double, double) MediaElementPosition { get; set; }
+
 	public MediaElementPage(MediaElementViewModel viewModel, ILogger<MediaElementPage> logger)
 		: base(viewModel)
 	{
