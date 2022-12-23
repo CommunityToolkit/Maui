@@ -204,7 +204,7 @@ public class MediaElement : View, IMediaElement
 		}
 
 		timer = Dispatcher.CreateTimer();
-		timer.Interval = TimeSpan.FromMilliseconds(1000);
+		timer.Interval = TimeSpan.FromMilliseconds(200);
 		timer.Tick += OnTimerTick;
 		timer.Start();
 	}

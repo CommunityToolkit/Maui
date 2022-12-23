@@ -12,24 +12,29 @@ partial class MediaManager : IDisposable
 	bool displayActiveRequested;
 	readonly DisplayRequest displayRequest = new();
 
-	protected bool isMediaPlayerAttached;
-
 	public PlatformMediaView CreatePlatformView()
 	{
 		player = new();
+		MediaPlayer mediaPlayer = new();
+		mediaPlayer.MediaOpened += MediaPlayer_MediaOpened;
+
+		player.SetMediaPlayer(mediaPlayer);
+
+		player.MediaPlayer.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged;
+		player.MediaPlayer.PlaybackSession.SeekCompleted += PlaybackSession_SeekCompleted;
+		player.MediaPlayer.MediaFailed += MediaPlayer_MediaFailed;
+		player.MediaPlayer.MediaEnded += MediaPlayer_MediaEnded;
+		player.MediaPlayer.VolumeChanged += MediaPlayer_VolumeChanged;
+
 		return player;
 	}
 
 	protected virtual partial void PlatformPlay()
 	{
-		if (!isMediaPlayerAttached || player is null)
-		{
-			return;
-		}
-		
-		player.MediaPlayer.Play();
+		player?.MediaPlayer.Play();
 
-		if (mediaElement.KeepScreenOn) 
+		if (mediaElement.KeepScreenOn
+			&& !displayActiveRequested) 
 		{
 			displayRequest.RequestActive();
 			displayActiveRequested = true;
@@ -38,12 +43,7 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformPause()
 	{
-		if (!isMediaPlayerAttached || player is null)
-		{
-			return;
-		}
-		
-		player.MediaPlayer.Pause();
+		player?.MediaPlayer.Pause();
 
 		if (displayActiveRequested)
 		{
@@ -54,8 +54,7 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformSeek(TimeSpan position)
 	{
-		if (isMediaPlayerAttached && player is not null
-			&& player.MediaPlayer.CanSeek)
+		if (player?.MediaPlayer.CanSeek ?? false)
 		{
 			player.MediaPlayer.Position = position;
 		}
@@ -63,7 +62,7 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformStop()
 	{
-		if (!isMediaPlayerAttached || player is null)
+		if (player is null)
 		{
 			return;
 		}
@@ -83,7 +82,7 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateSpeed()
 	{
-		if (!isMediaPlayerAttached || player is null)
+		if (player is null)
 		{
 			return;
 		}
@@ -98,13 +97,14 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
-		player.AreTransportControlsEnabled = mediaElement.ShowsPlaybackControls;
+		player.AreTransportControlsEnabled =
+			mediaElement.ShowsPlaybackControls;
 	}
 
 	protected virtual partial void PlatformUpdateStatus()
 	{
-		if (isMediaPlayerAttached && mediaElement is not null
-			&& player is not null)
+		if (mediaElement is not null && player is not null
+			&& mediaElement.CurrentState == MediaElementState.Playing)
 		{
 			mediaElement.Position = player.MediaPlayer.Position;
 		}
@@ -112,7 +112,7 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateVolume()
 	{
-		if (isMediaPlayerAttached && player is not null)
+		if (player is not null)
 		{
 			MainThread.BeginInvokeOnMainThread(() =>
 			{
@@ -162,7 +162,7 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
-		var hasSetSource = false;
+		player.AutoPlay = mediaElement.AutoPlay;
 
 		if (mediaElement.Source is UriMediaSource)
 		{
@@ -170,7 +170,6 @@ partial class MediaManager : IDisposable
 			if (!string.IsNullOrWhiteSpace(uri))
 			{
 				player.Source = WinMediaSource.CreateFromUri(new Uri(uri));
-				hasSetSource = true;
 			}
 		}
 		else if (mediaElement.Source is FileMediaSource)
@@ -180,7 +179,6 @@ partial class MediaManager : IDisposable
 			{
 				StorageFile storageFile = await StorageFile.GetFileFromPathAsync(filename);
 				player.Source = WinMediaSource.CreateFromStorageFile(storageFile);
-				hasSetSource = true;
 			}
 		}
 		else if (mediaElement.Source is ResourceMediaSource)
@@ -189,24 +187,7 @@ partial class MediaManager : IDisposable
 			if (!string.IsNullOrWhiteSpace(path))
 			{
 				player.Source = WinMediaSource.CreateFromUri(new Uri(path));
-				hasSetSource = true;
 			}
-		}
-
-		if (hasSetSource && !isMediaPlayerAttached)
-		{
-			MainThread.BeginInvokeOnMainThread(() =>
-			{
-				player.MediaPlayer.MediaOpened += MediaPlayer_MediaOpened;
-			});
-		}
-
-		player.AutoPlay = mediaElement.AutoPlay;
-
-		if (hasSetSource && mediaElement.KeepScreenOn && !displayActiveRequested)
-		{
-			displayRequest.RequestActive();
-			displayActiveRequested = true;
 		}
 	}
 
@@ -229,19 +210,11 @@ partial class MediaManager : IDisposable
 
 		MainThread.BeginInvokeOnMainThread(() =>
 		{
-			mediaElement.Duration = player.MediaPlayer.NaturalDuration;
+			mediaElement.Duration = player.MediaPlayer.NaturalDuration == TimeSpan.MaxValue ?
+				TimeSpan.Zero
+				: player.MediaPlayer.NaturalDuration;
+
 			mediaElement.MediaOpened();
-
-			if (!isMediaPlayerAttached)
-			{
-				isMediaPlayerAttached = true;
-
-				player.MediaPlayer.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged;
-				player.MediaPlayer.PlaybackSession.SeekCompleted += PlaybackSession_SeekCompleted;
-				player.MediaPlayer.MediaFailed += MediaPlayer_MediaFailed;
-				player.MediaPlayer.MediaEnded += MediaPlayer_MediaEnded;
-				player.MediaPlayer.VolumeChanged += MediaPlayer_VolumeChanged;
-			}
 		});
 	}
 
