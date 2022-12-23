@@ -36,9 +36,9 @@ public static class MauiProgram
 #else
 								.UseMauiCommunityToolkit(options =>
 								{
-									options.SetShouldSuppressExceptionsInConverters(false);
-									options.SetShouldSuppressExceptionsInBehaviors(false);
-									options.SetShouldSuppressExceptionsInAnimations(false);
+									options.SetShouldSuppressExceptionsInConverters(true);
+									options.SetShouldSuppressExceptionsInBehaviors(true);
+									options.SetShouldSuppressExceptionsInAnimations(true);
 								})
 #endif
 								.UseMauiCommunityToolkitMarkup()
@@ -140,6 +140,10 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<TextCaseConverterPage, TextCaseConverterViewModel>();
 		services.AddTransientWithShellRoute<VariableMultiValueConverterPage, VariableMultiValueConverterViewModel>();
 
+		// Add Essentials Pfes + ViewModels
+		services.AddTransientWithShellRoute<FolderPickerPage, FolderPickerViewModel>();
+		services.AddTransientWithShellRoute<SaveFileDialogPage, SaveFileDialogViewModel>();
+
 		// Add Extensions Pages + ViewModels
 		services.AddTransientWithShellRoute<ColorAnimationExtensionsPage, ColorAnimationExtensionsViewModel>();
 
@@ -161,10 +165,6 @@ public static class MauiProgram
 		// Add Popups
 		services.AddTransient<CsharpBindingPopup, CsharpBindingPopupViewModel>();
 		services.AddTransient<XamlBindingPopup, XamlBindingPopupViewModel>();
-
-		// Add Essentials
-		services.AddTransientWithShellRoute<FolderPickerPage, FolderPickerViewModel>();
-		services.AddTransientWithShellRoute<SaveFileDialogPage, SaveFileDialogViewModel>();
 	}
 
 	static void RegisterEssentials(in IServiceCollection services)

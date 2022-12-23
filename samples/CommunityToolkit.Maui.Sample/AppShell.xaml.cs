@@ -81,6 +81,10 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<TextCaseConverterPage, TextCaseConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<VariableMultiValueConverterPage, VariableMultiValueConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 
+		// Add Essentials View Models
+		CreateViewModelMapping<FolderPickerPage, FolderPickerViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
+		CreateViewModelMapping<SaveFileDialogPage, SaveFileDialogViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
+
 		// Add Extensions View Models
 		CreateViewModelMapping<ColorAnimationExtensionsPage, ColorAnimationExtensionsViewModel, ExtensionsGalleryPage, ExtensionsGalleryViewModel>(),
 
@@ -109,10 +113,6 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<MultiplePopupPage, MultiplePopupViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<PopupAnchorPage, PopupAnchorViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<PopupPositionPage, PopupPositionViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
-		
-		// Essentials View Models
-		CreateViewModelMapping<FolderPickerPage, FolderPickerViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
-		CreateViewModelMapping<SaveFileDialogPage, SaveFileDialogViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
 	});
 
 	public AppShell() => InitializeComponent();

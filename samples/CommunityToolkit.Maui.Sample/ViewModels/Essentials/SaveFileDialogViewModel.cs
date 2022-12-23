@@ -7,13 +7,20 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Essentials;
 
 public partial class SaveFileDialogViewModel : BaseViewModel
 {
+	readonly ISaveFileDialog saveFileDialog;
+
+	public SaveFileDialogViewModel(ISaveFileDialog saveFileDialog)
+	{
+		this.saveFileDialog = saveFileDialog;
+	}
+
 	[RelayCommand]
 	async Task SaveFile(CancellationToken cancellationToken)
 	{
 		using var stream = new MemoryStream(Encoding.Default.GetBytes("Hello from the Community Toolkit!"));
 		try
 		{
-			var fileLocation = await SaveFileDialog.SaveAsync("test.txt", stream, cancellationToken);
+			var fileLocation = await saveFileDialog.SaveAsync("test.txt", stream, cancellationToken);
 			await Toast.Make($"File is saved: {fileLocation}").Show(cancellationToken);
 		}
 		catch (Exception ex)
