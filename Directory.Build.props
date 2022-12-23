@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <Project>
   <PropertyGroup>
-    <!-- Temporary workaround to fix build: https://github.com/dotnet/maui/pull/12114 -->
+    <!-- Fixes https://github.com/dotnet/maui/pull/12114 -->
     <PublishReadyToRun>false</PublishReadyToRun>
 
     <LangVersion>latest</LangVersion>
