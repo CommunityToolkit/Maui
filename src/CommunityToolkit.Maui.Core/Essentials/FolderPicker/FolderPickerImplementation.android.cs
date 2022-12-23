@@ -19,19 +19,20 @@ public class FolderPickerImplementation : IFolderPicker
 			throw new PermissionException("Storage permission is not granted.");
 		}
 
+		Folder? folder = null;
+
 		var intent = new Intent(Intent.ActionOpenDocumentTree);
 		var pickerIntent = Intent.CreateChooser(intent, string.Empty) ?? throw new InvalidOperationException("Unable to create intent.");
 
-		Folder? folder = null;
+		await IntermediateActivity.StartAsync(pickerIntent, requestCodeFolderPicker, onResult: OnResult).WaitAsync(cancellationToken);
+
+		return folder ?? throw new FolderPickerException("Unable to get folder.");
+
 		void OnResult(Intent resultIntent)
 		{
 			var path = EnsurePhysicalPath(resultIntent.Data);
 			folder = new Folder(path, Path.GetFileName(path));
 		}
-
-		await IntermediateActivity.StartAsync(pickerIntent, requestCodeFolderPicker, onResult: OnResult);
-
-		return folder ?? throw new FolderPickerException("Unable to get folder.");
 	}
 
 	/// <inheritdoc />
