@@ -5,13 +5,12 @@ namespace CommunityToolkit.Maui.Storage;
 /// <inheritdoc cref="IFolderPicker"/> 
 public static class FolderPicker
 {
-	static IFolderPicker? defaultImplementation;
+	static Lazy<IFolderPicker> defaultImplementation = new(new FolderPickerImplementation());
 
 	/// <summary>
 	/// Default implementation to use
 	/// </summary>
-	public static IFolderPicker Default =>
-		defaultImplementation ??= new FolderPickerImplementation();
+	public static IFolderPicker Default => defaultImplementation.Value;
 
 	/// <summary>
 	/// Allows picking a folder from the file system.
@@ -30,6 +29,6 @@ public static class FolderPicker
 	public static ValueTask<Folder> PickAsync(CancellationToken cancellationToken) =>
 		Default.PickAsync(cancellationToken);
 
-	internal static void SetDefault(IFolderPicker? implementation) =>
-		defaultImplementation = implementation;
+	internal static void SetDefault(IFolderPicker implementation) =>
+		defaultImplementation = new Lazy<IFolderPicker>(implementation);
 }
