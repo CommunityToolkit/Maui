@@ -12,8 +12,7 @@ public sealed class UriMediaSource : MediaSource
 	/// Backing store for the <see cref="Uri"/> property.
 	/// </summary>
 	public static readonly BindableProperty UriProperty =
-		BindableProperty.Create(nameof(Uri), typeof(Uri), typeof(UriMediaSource),
-			propertyChanged: OnUriSourceChanged, validateValue: UriValueValidator);
+		BindableProperty.Create(nameof(Uri), typeof(Uri), typeof(UriMediaSource), propertyChanged: OnUriSourceChanged, validateValue: UriValueValidator);
 
 	/// <summary>
 	/// Gets or sets the URI to use as a media source.

@@ -13,8 +13,7 @@ public sealed class FileMediaSource : MediaSource
 	/// Backing store for the <see cref="Path"/> property.
 	/// </summary>
 	public static readonly BindableProperty PathProperty
-		= BindableProperty.Create(nameof(Path), typeof(string), typeof(FileMediaSource),
-			propertyChanged: OnFileMediaSourceChanged);
+		= BindableProperty.Create(nameof(Path), typeof(string), typeof(FileMediaSource), propertyChanged: OnFileMediaSourceChanged);
 
 	/// <summary>
 	/// Gets or sets the full path to the local file to use as a media source.
@@ -25,9 +24,6 @@ public sealed class FileMediaSource : MediaSource
 		get => (string?)GetValue(PathProperty);
 		set => SetValue(PathProperty, value);
 	}
-
-	/// <inheritdoc/>
-	public override string ToString() => $"File: {Path}";
 
 	/// <summary>
 	/// An implicit operator to convert a string value into a <see cref="FileMediaSource"/>.
@@ -40,6 +36,9 @@ public sealed class FileMediaSource : MediaSource
 	/// </summary>
 	/// <param name="fileMediaSource">A <see cref="FileMediaSource"/> instance to convert to a string value.</param>
 	public static implicit operator string?(FileMediaSource? fileMediaSource) => fileMediaSource?.Path;
+
+	/// <inheritdoc/>
+	public override string ToString() => $"File: {Path}";
 
 	static void OnFileMediaSourceChanged(BindableObject bindable, object oldValue, object newValue) =>
 		((FileMediaSource)bindable).OnSourceChanged();

@@ -12,47 +12,11 @@ public abstract class MediaSource : Element
 {
 	readonly WeakEventManager weakEventManager = new();
 
-	/// <summary>
-	/// Creates a <see cref="FileMediaSource"/> from a local path.
-	/// </summary>
-	/// <param name="path">Full path to the file to load.</param>
-	/// <returns>A <see cref="FileMediaSource"/> instance.</returns>
-	public static MediaSource FromFile(string? path) =>
-		new FileMediaSource { Path = path };
-
-	/// <summary>
-	/// Creates a <see cref="UriMediaSource"/> from an absolute URI.
-	/// </summary>
-	/// <param name="uri">Absolute URI to load.</param>
-	/// <returns>A <see cref="UriMediaSource"/> instance.</returns>
-	/// <exception cref="ArgumentException">Thrown if <paramref name="uri"/> is not an absolute URI.</exception>
-	public static MediaSource? FromUri(Uri? uri)
+	internal event EventHandler SourceChanged
 	{
-		if (uri == null)
-		{
-			return null;
-		}
-
-		return !uri.IsAbsoluteUri ? 
-			throw new ArgumentException("Uri must be absolute",
-			nameof(uri)) : new UriMediaSource { Uri = uri };
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
 	}
-
-	/// <summary>
-	/// Creates a <see cref="ResourceMediaSource"/> from an absolute URI.
-	/// </summary>
-	/// <param name="path">Full path to the resource file, relative to the application's resources folder.</param>
-	/// <returns>A <see cref="ResourceMediaSource"/> instance.</returns>
-	public static MediaSource FromResource(string? path) =>
-		new ResourceMediaSource { Path = path };
-
-	/// <summary>
-	/// Creates a <see cref="UriMediaSource"/> from an string that contains an absolute URI.
-	/// </summary>
-	/// <param name="uri">String representation or an absolute URI to load.</param>
-	/// <returns>A <see cref="UriMediaSource"/> instance.</returns>
-	/// <exception cref="ArgumentException">Thrown if <paramref name="uri"/> is not an absolute URI.</exception>
-	public static MediaSource? FromUri(string uri) => FromUri(new Uri(uri));
 
 	/// <summary>
 	/// An implicit operator to convert a string value into a <see cref="MediaSource"/>.
@@ -72,14 +36,50 @@ public abstract class MediaSource : Element
 	public static implicit operator MediaSource?(Uri? uri) => FromUri(uri);
 
 	/// <summary>
+	/// Creates a <see cref="ResourceMediaSource"/> from an absolute URI.
+	/// </summary>
+	/// <param name="path">Full path to the resource file, relative to the application's resources folder.</param>
+	/// <returns>A <see cref="ResourceMediaSource"/> instance.</returns>
+	public static MediaSource FromResource(string? path) => new ResourceMediaSource { Path = path };
+
+	/// <summary>
+	/// Creates a <see cref="UriMediaSource"/> from an string that contains an absolute URI.
+	/// </summary>
+	/// <param name="uri">String representation or an absolute URI to load.</param>
+	/// <returns>A <see cref="UriMediaSource"/> instance.</returns>
+	/// <exception cref="ArgumentException">Thrown if <paramref name="uri"/> is not an absolute URI.</exception>
+	public static MediaSource? FromUri(string uri) => FromUri(new Uri(uri));
+
+	/// <summary>
+	/// Creates a <see cref="FileMediaSource"/> from a local path.
+	/// </summary>
+	/// <param name="path">Full path to the file to load.</param>
+	/// <returns>A <see cref="FileMediaSource"/> instance.</returns>
+	public static MediaSource FromFile(string? path) => new FileMediaSource { Path = path };
+
+	/// <summary>
+	/// Creates a <see cref="UriMediaSource"/> from an absolute URI.
+	/// </summary>
+	/// <param name="uri">Absolute URI to load.</param>
+	/// <returns>A <see cref="UriMediaSource"/> instance.</returns>
+	/// <exception cref="ArgumentException">Thrown if <paramref name="uri"/> is not an absolute URI.</exception>
+	public static MediaSource? FromUri(Uri? uri)
+	{
+		if (uri is null)
+		{
+			return null;
+		}
+
+		if (!uri.IsAbsoluteUri)
+		{
+			throw new ArgumentException("Uri must be absolute", nameof(uri));
+		}
+
+		return new UriMediaSource { Uri = uri };
+	}
+
+	/// <summary>
 	/// Triggers the <see cref="SourceChanged"/> event.
 	/// </summary>
-	protected void OnSourceChanged() =>
-		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(SourceChanged));
-
-	internal event EventHandler SourceChanged
-	{
-		add => weakEventManager.AddEventHandler(value);
-		remove => weakEventManager.RemoveEventHandler(value);
-	}
+	protected void OnSourceChanged() => weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(SourceChanged));
 }

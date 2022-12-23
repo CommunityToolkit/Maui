@@ -13,8 +13,7 @@ public sealed class ResourceMediaSource : MediaSource
 	/// Backing store for the <see cref="Path"/> property.
 	/// </summary>
 	public static readonly BindableProperty PathProperty
-		= BindableProperty.Create(nameof(Path), typeof(string), typeof(ResourceMediaSource),
-			propertyChanged: OnResourceMediaSourceMediaSourceChanged);
+		= BindableProperty.Create(nameof(Path), typeof(string), typeof(ResourceMediaSource), propertyChanged: OnResourceMediaSourceMediaSourceChanged);
 
 	/// <summary>
 	/// Gets or sets the full path to the resource file to use as a media source.

@@ -156,11 +156,9 @@ public partial class MediaElementHandler
 	/// <remarks><paramref name="args"/> should be of type <see cref="MediaSeekRequestedEventArgs"/>, otherwise nothing happens.</remarks>
 	public static void MapSeekRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
-		if (args is not MediaSeekRequestedEventArgs positionArgs)
-		{
-			return;
-		}
+		ArgumentNullException.ThrowIfNull(args);
 
+		var positionArgs = (MediaSeekRequestedEventArgs)args;
 		handler.mediaManager?.Seek(positionArgs.RequestedPosition);
 	}
 
@@ -177,6 +175,15 @@ public partial class MediaElementHandler
 	}
 
 	/// <summary>
+	/// Releases the managed and unmanaged resources used by the <see cref="MediaElement"/>.
+	/// </summary>
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	/// <summary>
 	/// Releases the unmanaged resources used by the <see cref="MediaElement"/> and optionally releases the managed resources.
 	/// </summary>
 	/// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
@@ -187,15 +194,6 @@ public partial class MediaElementHandler
 			mediaManager?.Dispose();
 			mediaManager = null;
 		}
-	}
-
-	/// <summary>
-	/// Releases the managed and unmanaged resources used by the <see cref="MediaElement"/>.
-	/// </summary>
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
 	}
 #endif
 }

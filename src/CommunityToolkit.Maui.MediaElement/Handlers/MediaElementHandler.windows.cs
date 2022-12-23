@@ -5,6 +5,17 @@ namespace CommunityToolkit.Maui.MediaElement;
 
 public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaElement>, IDisposable
 {
+	/// <summary>
+	/// Maps the <see cref="IMediaElement.IsLooping"/> property between the abstract
+	/// <see cref="MediaElement"/> and platform counterpart.
+	/// </summary>
+	/// <param name="handler">The associated handler.</param>
+	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	public static void MapIsLooping(MediaElementHandler handler, MediaElement mediaElement)
+	{
+		handler?.mediaManager?.UpdateIsLooping();
+	}
+
 	/// <inheritdoc/>
 	protected override MauiMediaElement CreatePlatformView()
 	{
@@ -19,16 +30,5 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		platformView.Dispose();
 		Dispose();
 		base.DisconnectHandler(platformView);
-	}
-
-	/// <summary>
-	/// Maps the <see cref="IMediaElement.IsLooping"/> property between the abstract
-	/// <see cref="MediaElement"/> and platform counterpart.
-	/// </summary>
-	/// <param name="handler">The associated handler.</param>
-	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
-	public static void MapIsLooping(MediaElementHandler handler, MediaElement mediaElement)
-	{
-		handler?.mediaManager?.UpdateIsLooping();
 	}
 }
