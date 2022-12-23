@@ -31,16 +31,6 @@ public sealed partial class SaveFileDialogImplementation : ISaveFileDialog, IDis
 		return SaveAsync("/", fileName, stream, cancellationToken);
 	}
 
-	void DocumentPickerViewControllerOnWasCancelled(object? sender, EventArgs e)
-	{
-		taskCompetedSource?.SetException(new FolderPickerException("Operation cancelled."));
-	}
-
-	void DocumentPickerViewControllerOnDidPickDocumentAtUrls(object? sender, UIDocumentPickedAtUrlsEventArgs e)
-	{
-		taskCompetedSource?.SetResult(e.Urls[0].Path ?? throw new FileSaveException("Unable to retrieve the path of the saved file."));
-	}
-
 	/// <inheritdoc />
 	public void Dispose()
 	{
@@ -50,5 +40,15 @@ public sealed partial class SaveFileDialogImplementation : ISaveFileDialog, IDis
 			documentPickerViewController.WasCancelled -= DocumentPickerViewControllerOnWasCancelled;
 			documentPickerViewController.Dispose();
 		}
+	}
+
+	void DocumentPickerViewControllerOnWasCancelled(object? sender, EventArgs e)
+	{
+		taskCompetedSource?.SetException(new FolderPickerException("Operation cancelled."));
+	}
+
+	void DocumentPickerViewControllerOnDidPickDocumentAtUrls(object? sender, UIDocumentPickedAtUrlsEventArgs e)
+	{
+		taskCompetedSource?.SetResult(e.Urls[0].Path ?? throw new FileSaveException("Unable to retrieve the path of the saved file."));
 	}
 }

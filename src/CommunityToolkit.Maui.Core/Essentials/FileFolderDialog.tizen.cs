@@ -33,6 +33,19 @@ sealed class FileFolderDialog : Popup<string>, IDisposable
 	string selectedPath;
 	string selectedFileName;
 
+	public FileFolderDialog(bool isFileSelection, string initialPath, CancellationToken cancellationToken = default, string fileName = "default")
+	{
+		if (!File.Exists(initialPath) && !Directory.Exists(initialPath))
+		{
+			throw new FileNotFoundException($"Could not locate {initialPath}");
+		}
+
+		selectedFileName = fileName;
+		selectedPath = initialFileFolderPath = initialPath;
+		directoyViews = new List<View>();
+		isFileSelectionMode = isFileSelection;
+	}
+
 	public static void SetFileSaveString(string fileSaveStringValue)
 	{
 		fileSaveString = fileSaveStringValue;
@@ -62,17 +75,13 @@ sealed class FileFolderDialog : Popup<string>, IDisposable
 		return externalDirectory ?? throw new InvalidOperationException("Cannot locate external directory.");
 	}
 
-	public FileFolderDialog(bool isFileSelection, string initialPath, CancellationToken cancellationToken = default, string fileName = "default")
+	public bool IsDirectory(string path)
 	{
-		if (!File.Exists(initialPath) && !Directory.Exists(initialPath))
+		if (((File.GetAttributes(path) & FileAttributes.Directory) == FileAttributes.Directory))
 		{
-			throw new FileNotFoundException($"Could not locate {initialPath}");
+			return true;
 		}
-
-		selectedFileName = fileName;
-		selectedPath = initialFileFolderPath = initialPath;
-		directoyViews = new List<View>();
-		isFileSelectionMode = isFileSelection;
+		return false;
 	}
 
 	protected override View CreateContent()
@@ -261,6 +270,12 @@ sealed class FileFolderDialog : Popup<string>, IDisposable
 		return content;
 	}
 
+	static bool CreateSubDirectory(string newDirectory)
+	{
+		Directory.CreateDirectory(newDirectory);
+		return Directory.Exists(newDirectory);
+	}
+
 	void ProcessSelect(string selectedItem)
 	{
 		if (selectedItem.Equals(previousDirectorySymbol, StringComparison.Ordinal))
@@ -346,21 +361,6 @@ sealed class FileFolderDialog : Popup<string>, IDisposable
 			}
 			directoryScrollView.SizeHeight = 30d.ToPixel() * Math.Min(listItems.Count(), 5);
 		}
-	}
-
-	public bool IsDirectory(string path)
-	{
-		if (((File.GetAttributes(path) & FileAttributes.Directory) == FileAttributes.Directory))
-		{
-			return true;
-		}
-		return false;
-	}
-
-	static bool CreateSubDirectory(string newDirectory)
-	{
-		Directory.CreateDirectory(newDirectory);
-		return Directory.Exists(newDirectory);
 	}
 
 	IEnumerable<string> GetDirectories(string path)
