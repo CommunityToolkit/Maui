@@ -1,8 +1,11 @@
 ﻿namespace CommunityToolkit.Maui.MediaElement;
 
+/// <summary>
+/// Represents the different states media can go through.
+/// </summary>
 public enum MediaElementState
 {
-	/// <summary>No current state or state unkown.</summary>
+	/// <summary>No current state or state unknown.</summary>
 	None,
 
 	/// <summary>The media source is currently being opened.</summary>

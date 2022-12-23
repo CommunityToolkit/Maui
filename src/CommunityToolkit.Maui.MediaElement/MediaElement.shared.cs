@@ -3,6 +3,9 @@ using CommunityToolkit.Maui.MediaElement.Converters;
 
 namespace CommunityToolkit.Maui.MediaElement;
 
+/// <summary>
+/// Represents an object that to render audio and video to the display.
+/// </summary>
 public class MediaElement : View, IMediaElement
 {
 	Microsoft.Maui.Dispatching.IDispatcherTimer? timer;
@@ -11,43 +14,45 @@ public class MediaElement : View, IMediaElement
 	internal event EventHandler? PlayRequested;
 	internal event EventHandler? PauseRequested;
 	internal event EventHandler? PositionRequested;
-	internal event EventHandler<SeekRequestedEventArgs>? SeekRequested;
+	internal event EventHandler<MediaSeekRequestedEventArgs>? SeekRequested;
 	internal event EventHandler? StopRequested;
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="MediaElement"/> class.
+	/// </summary>
 	public MediaElement()
 	{
 		InitTimer();
 	}
 
-	/// <summary>
-	/// Occurs when the media has reached the end successfully.
-	/// </summary>
-	/// <remarks>This is not triggered when the media fails during playback.</remarks>
+	/// <inheritdoc cref="IMediaElement.MediaEnded"/>
 	public event EventHandler? MediaEnded;
 
-	/// <summary>
-	/// Occurs when the media fails to load or fails during playback.
-	/// </summary>
+	/// <inheritdoc cref="IMediaElement.MediaFailed(MediaFailedEventArgs)"/>
 	public event EventHandler<MediaFailedEventArgs>? MediaFailed;
 
-	/// <summary>
-	/// Occurs when the media has opened successfully and is ready for playback.
-	/// </summary>
+	/// <inheritdoc cref="IMediaElement.MediaOpened"/>
 	public event EventHandler? MediaOpened;
 
-	/// <inheritdoc/>
+	/// <inheritdoc cref="IMediaElement.SeekCompleted"/>
 	public event EventHandler? SeekCompleted;
 
-	/// <inheritdoc/>
+	/// <inheritdoc cref="IMediaElement.StateChanged"/>
 	public event EventHandler<MediaStateChangedEventArgs>? StateChanged;
 
-	/// <inheritdoc/>
-	public event EventHandler<MediaPositionEventArgs>? PositionChanged;
+	/// <inheritdoc cref="IMediaElement.PositionChanged"/>
+	public event EventHandler<MediaPositionChangedEventArgs>? PositionChanged;
 
+	/// <summary>
+	/// Backing store for the <see cref="AutoPlay"/> property.
+	/// </summary>
 	public static readonly BindableProperty AutoPlayProperty =
 		BindableProperty.Create(nameof(AutoPlay), typeof(bool), typeof(MediaElement), false,
 			propertyChanged: OnAutoPlayPropertyChanged);
 
+	/// <summary>
+	/// Backing store for the <see cref="CurrentState"/> property.
+	/// </summary>
 	public static readonly BindableProperty CurrentStateProperty =
 		  BindableProperty.Create(nameof(CurrentState), typeof(MediaElementState), typeof(MediaElement),
 			  MediaElementState.None);
@@ -56,78 +61,161 @@ public class MediaElement : View, IMediaElement
 		  BindableProperty.CreateReadOnly(nameof(Duration), typeof(TimeSpan), typeof(MediaElement),
 			  TimeSpan.Zero);
 
+	/// <summary>
+	/// Backing store for the <see cref="Duration"/> property.
+	/// </summary>
 	public static readonly BindableProperty DurationProperty = durationPropertyKey.BindableProperty;
 
+	/// <summary>
+	/// Backing store for the <see cref="IsLooping"/> property.
+	/// </summary>
 	public static readonly BindableProperty IsLoopingProperty =
 		  BindableProperty.Create(nameof(IsLooping), typeof(bool), typeof(MediaElement), false);
 
+	/// <summary>
+	/// Backing store for the <see cref="KeepScreenOn"/> property.
+	/// </summary>
 	public static readonly BindableProperty KeepScreenOnProperty =
 		  BindableProperty.Create(nameof(KeepScreenOn), typeof(bool), typeof(MediaElement), false);
 
+	/// <summary>
+	/// Backing store for the <see cref="Position"/> property.
+	/// </summary>
 	public static readonly BindableProperty PositionProperty =
 		  BindableProperty.Create(nameof(Position), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero);
 
+	/// <summary>
+	/// Backing store for the <see cref="ShowsPlaybackControls"/> property.
+	/// </summary>
 	public static readonly BindableProperty ShowsPlaybackControlsProperty =
 		  BindableProperty.Create(nameof(ShowsPlaybackControls), typeof(bool), typeof(MediaElement), true);
 
+	/// <summary>
+	/// Backing store for the <see cref="Source"/> property.
+	/// </summary>
 	public static readonly BindableProperty SourceProperty =
 		BindableProperty.Create(nameof(Source), typeof(MediaSource), typeof(MediaElement), null,
 			propertyChanging: OnSourcePropertyChanging, propertyChanged: OnSourcePropertyChanged);
 
+	/// <summary>
+	/// Backing store for the <see cref="Speed"/> property.
+	/// </summary>
 	public static readonly BindableProperty SpeedProperty =
 		  BindableProperty.Create(nameof(Speed), typeof(double), typeof(MediaElement), 1.0,
 			  propertyChanged: OnSpeedPropertyChanged);
 
+	/// <summary>
+	/// Backing store for the <see cref="VideoHeight"/> property.
+	/// </summary>
 	public static readonly BindableProperty VideoHeightProperty =
 		BindableProperty.Create(nameof(VideoHeight), typeof(int), typeof(MediaElement));
 
+	/// <summary>
+	/// Backing store for the <see cref="VideoWidth"/> property.
+	/// </summary>
 	public static readonly BindableProperty VideoWidthProperty =
 		BindableProperty.Create(nameof(VideoWidth), typeof(int), typeof(MediaElement));
 
+	/// <summary>
+	/// Backing store for the <see cref="Volume"/> property.
+	/// </summary>
 	public static readonly BindableProperty VolumeProperty =
 		  BindableProperty.Create(nameof(Volume), typeof(double), typeof(MediaElement), 1.0,
 			  BindingMode.TwoWay, new BindableProperty.ValidateValueDelegate(ValidateVolume));
 
+	/// <summary>
+	/// Gets or sets whether the media should start playing as soon as it's loaded.
+	/// Default is <see langword="false"/>. This is a bindable property.
+	/// </summary>
 	public bool AutoPlay
 	{
 		get { return (bool)GetValue(AutoPlayProperty); }
 		set { SetValue(AutoPlayProperty, value); }
 	}
 
+	/// <summary>
+	/// The current state of the <see cref="MediaElement"/>. This is a bindable property.
+	/// </summary>
 	public MediaElementState CurrentState
 	{
 		get => (MediaElementState)GetValue(CurrentStateProperty);
 		private set => SetValue(CurrentStateProperty, value);
 	}
 
+	/// <summary>
+	/// Gets total duration of the loaded media. This is a bindable property.
+	/// </summary>
+	/// <remarks>Might not be available for some types, like live streams.</remarks>
 	public TimeSpan Duration
 	{
 		get => (TimeSpan)GetValue(DurationProperty);
 	}
 
+	/// <summary>
+	/// Gets or sets if the video will play when reaches the end.
+	/// Default is <see langword="false"/>. This is a bindable property.
+	/// </summary>
 	public bool IsLooping
 	{
 		get => (bool)GetValue(IsLoopingProperty);
 		set => SetValue(IsLoopingProperty, value);
 	}
 
+	/// <summary>
+	/// Gets or sets if media playback will prevent the device display from going to sleep.
+	/// This is a bindable property.
+	/// </summary>
+	/// <remarks>If media is paused, stopped or has completed playing, the display will turn off.</remarks>
 	public bool KeepScreenOn
 	{
 		get => (bool)GetValue(KeepScreenOnProperty);
 		set => SetValue(KeepScreenOnProperty, value);
 	}
 
+	/// <inheritdoc cref="IMediaElement.Pause"/>
+	public void Pause()
+	{
+		PauseRequested?.Invoke(this, EventArgs.Empty);
+		Handler?.Invoke(nameof(PauseRequested));
+	}
+
+	/// <inheritdoc cref="IMediaElement.Play"/>
+	public void Play()
+	{
+		InitTimer();
+		PlayRequested?.Invoke(this, EventArgs.Empty);
+		Handler?.Invoke(nameof(PlayRequested));
+	}
+
+	/// <summary>
+	/// The current position of the playing media. This is a bindable property.
+	/// </summary>
 	public TimeSpan Position
 	{
 		get => (TimeSpan)GetValue(PositionProperty);
 	}
 
+	/// <inheritdoc cref="IMediaElement.SeekTo(TimeSpan)"/>
+	public void SeekTo(TimeSpan position)
+	{
+		MediaSeekRequestedEventArgs args = new(position);
+		Handler?.Invoke(nameof(SeekRequested), args);
+	}
+
+	/// <summary>
+	/// Gets or sets whether the player should show the platform playback controls.
+	/// This is a bindable property.
+	/// </summary>
 	public bool ShowsPlaybackControls
 	{
 		get => (bool)GetValue(ShowsPlaybackControlsProperty);
 		set => SetValue(ShowsPlaybackControlsProperty, value);
 	}
 
+	/// <summary>
+	/// Gets or sets the source of the media to play.
+	/// This is a bindable property.
+	/// </summary>
 	[TypeConverter(typeof(MediaSourceConverter))]
 	public MediaSource? Source
 	{
@@ -135,65 +223,63 @@ public class MediaElement : View, IMediaElement
 		set { SetValue(SourceProperty, value); }
 	}
 
+	/// <summary>
+	/// Gets or sets the speed with which the media should be played.
+	/// This is a bindable property.
+	/// </summary>
+	/// <remarks>A value of 1 means normal speed.
+	/// Anything more than 1 is faster speed, anything less than 1 is slower speed.</remarks>
 	public double Speed
 	{
 		get => (double)GetValue(SpeedProperty);
 		set => SetValue(SpeedProperty, value);
 	}
 
+	/// <inheritdoc cref="IMediaElement.Stop"/>
+	public void Stop()
+	{
+		ClearTimer();
+		StopRequested?.Invoke(this, EventArgs.Empty);
+		Handler?.Invoke(nameof(StopRequested));
+	}
+
+	/// <summary>
+	/// Gets the height (in pixels) of the loaded media in pixels.
+	/// This is a bindable property.
+	/// </summary>
+	/// <remarks>Not reported for non-visual media.</remarks>
 	public int VideoHeight
 	{
 		get => (int)GetValue(VideoHeightProperty);
 		internal set => SetValue(VideoHeightProperty, value);
 	}
 
+	/// <summary>
+	/// Gets the width (in pixels) of the loaded media in pixels.
+	/// This is a bindable property.
+	/// </summary>
+	/// <remarks>Not reported for non-visual media.</remarks>
 	public int VideoWidth
 	{
 		get => (int)GetValue(VideoWidthProperty);
 		internal set => SetValue(VideoWidthProperty, value);
 	}
 
+	/// <summary>
+	/// Gets or sets the volume of the audio for the media.
+	/// </summary>
+	/// <remarks>A value of 1 means full volume, 0 is silence.</remarks>
 	public double Volume
 	{
 		get => (double)GetValue(VolumeProperty);
 		set => SetValue(VolumeProperty, value);
 	}
 
-	public void Play()
-	{
-		InitTimer();
-		PlayRequested?.Invoke(this, EventArgs.Empty);
-		Handler?.Invoke(nameof(MediaElement.PlayRequested));
-	}
-
-	public void Pause()
-	{
-		PauseRequested?.Invoke(this, EventArgs.Empty);
-		Handler?.Invoke(nameof(MediaElement.PauseRequested));
-	}
-
-	public void SeekTo(TimeSpan position)
-	{
-		SeekRequestedEventArgs args = new(position);
-		Handler?.Invoke(nameof(MediaElement.SeekRequested), args);
-	}
-
-	public void Stop()
-	{
-		ClearTimer();
-		StopRequested?.Invoke(this, EventArgs.Empty);
-		Handler?.Invoke(nameof(MediaElement.StopRequested));
-	}
-
 	void OnTimerTick(object? sender, EventArgs e)
 	{
-		if (Source is not null)
-		{
-			PositionRequested?.Invoke(this, EventArgs.Empty);
-		}
-
+		PositionRequested?.Invoke(this, EventArgs.Empty);
 		UpdateStatus?.Invoke(this, EventArgs.Empty);
-		Handler?.Invoke(nameof(MediaElement.UpdateStatus));
+		Handler?.Invoke(nameof(UpdateStatus));
 	}
 
 	void InitTimer()
@@ -245,6 +331,7 @@ public class MediaElement : View, IMediaElement
 		MediaOpened?.Invoke(this, EventArgs.Empty);
 	}
 
+	/// <inheritdoc/>
 	protected override void OnBindingContextChanged()
 	{
 		if (Source != null)
@@ -266,31 +353,31 @@ public class MediaElement : View, IMediaElement
 		InvalidateMeasure();
 	}
 
-	static void OnSourcePropertyChanged(BindableObject bindable, object oldvalue, object newvalue) =>
-			((MediaElement)bindable).OnSourcePropertyChanged((MediaSource)newvalue);
+	static void OnSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
+			((MediaElement)bindable).OnSourcePropertyChanged((MediaSource)newValue);
 
-	void OnSourcePropertyChanged(MediaSource newvalue)
+	void OnSourcePropertyChanged(MediaSource newValue)
 	{
-		if (newvalue is not null)
+		if (newValue is not null)
 		{
-			newvalue.SourceChanged += OnSourceChanged;
-			SetInheritedBindingContext(newvalue, BindingContext);
+			newValue.SourceChanged += OnSourceChanged;
+			SetInheritedBindingContext(newValue, BindingContext);
 		}
 
 		InvalidateMeasure();
 	}
 
-	static void OnSourcePropertyChanging(BindableObject bindable, object oldvalue, object newvalue) =>
-			((MediaElement)bindable).OnSourcePropertyChanging((MediaSource)oldvalue);
+	static void OnSourcePropertyChanging(BindableObject bindable, object oldValue, object newValue) =>
+			((MediaElement)bindable).OnSourcePropertyChanging((MediaSource)oldValue);
 
-	void OnSourcePropertyChanging(MediaSource oldvalue)
+	void OnSourcePropertyChanging(MediaSource oldValue)
 	{
-		if (oldvalue is null)
+		if (oldValue is null)
 		{
 			return;
 		}
 
-		oldvalue.SourceChanged -= OnSourceChanged;
+		oldValue.SourceChanged -= OnSourceChanged;
 	}
 
 	static void OnSpeedPropertyChanged(BindableObject bindable, object oldValue, object newValue)

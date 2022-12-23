@@ -1,5 +1,8 @@
 ﻿namespace CommunityToolkit.Maui.MediaElement;
 
+/// <summary>
+/// Represents event data for when media state has changed.
+/// </summary>
 public sealed class MediaStateChangedEventArgs : EventArgs
 {
 	/// <summary>
@@ -12,6 +15,11 @@ public sealed class MediaStateChangedEventArgs : EventArgs
 	/// </summary>
 	public MediaElementState NewState { get; }
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="MediaStateChangedEventArgs"/> class.
+	/// </summary>
+	/// <param name="previousState">The previous state.</param>
+	/// <param name="newState">The new state.</param>
 	public MediaStateChangedEventArgs(MediaElementState previousState,
 		MediaElementState newState)
 	{

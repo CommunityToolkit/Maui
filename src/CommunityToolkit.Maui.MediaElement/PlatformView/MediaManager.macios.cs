@@ -24,6 +24,10 @@ public partial class MediaManager : IDisposable
 	AVPlayerViewController? playerViewController;
 	AVPlayerItem? playerItem;
 
+	/// <summary>
+	/// Creates the corresponding platform view of <see cref="MediaElement"/> on iOS and macOS.
+	/// </summary>
+	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
 	public (PlatformMediaView player, AVPlayerViewController playerViewController) CreatePlatformView()
 	{
 		player = new();
@@ -92,6 +96,8 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateSource()
 	{
+		mediaElement.CurrentStateChanged(MediaElementState.Opening);
+
 		AVAsset? asset = null;
 
 		if (mediaElement.Source is UriMediaSource)
@@ -105,7 +111,7 @@ public partial class MediaManager : IDisposable
 		}
 		else if (mediaElement.Source is FileMediaSource)
 		{
-			string uri = (mediaElement.Source as FileMediaSource)!.File!;
+			string uri = (mediaElement.Source as FileMediaSource)!.Path!;
 
 			if (!string.IsNullOrWhiteSpace(uri))
 			{
@@ -192,7 +198,7 @@ public partial class MediaManager : IDisposable
 			mediaElement.ShowsPlaybackControls;
 	}
 
-	protected virtual partial void PlatformUpdateStatus()
+	protected virtual partial void PlatformUpdatePosition()
 	{
 		if (player is null)
 		{
@@ -249,6 +255,10 @@ public partial class MediaManager : IDisposable
 		// no-op we loop through using the playedToEndObserver
 	}
 
+	/// <summary>
+	/// Releases the unmanaged resources used by the <see cref="MediaManager"/> and optionally releases the managed resources.
+	/// </summary>
+	/// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
 	protected virtual void Dispose(bool disposing)
 	{
 		if (disposing)
@@ -272,6 +282,9 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Releases the managed and unmanaged resources used by the <see cref="MediaManager"/>.
+	/// </summary>
 	public void Dispose()
 	{
 		Dispose(true);
@@ -313,9 +326,9 @@ public partial class MediaManager : IDisposable
 	{
 		DestroyErrorObservers();
 
-		itemFailedToPlayToEndTimeObserver = AVPlayerItem.Notifications.ObserveItemFailedToPlayToEndTime(ErrorOccured);
-		playbackStalledObserver = AVPlayerItem.Notifications.ObservePlaybackStalled(ErrorOccured);
-		errorObserver = AVPlayerItem.Notifications.ObserveNewErrorLogEntry(ErrorOccured);
+		itemFailedToPlayToEndTimeObserver = AVPlayerItem.Notifications.ObserveItemFailedToPlayToEndTime(ErrorOccurred);
+		playbackStalledObserver = AVPlayerItem.Notifications.ObservePlaybackStalled(ErrorOccurred);
+		errorObserver = AVPlayerItem.Notifications.ObserveNewErrorLogEntry(ErrorOccurred);
 	}
 
 	void AddPlayedToEndObserver()
@@ -388,7 +401,7 @@ public partial class MediaManager : IDisposable
 		mediaElement.CurrentStateChanged(newState);
 	}
 
-	void ErrorOccured(object? sender, NSNotificationEventArgs args)
+	void ErrorOccurred(object? sender, NSNotificationEventArgs args)
 	{
 		string message;
 		

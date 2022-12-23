@@ -6,7 +6,7 @@
 public interface IMediaElement : IView
 {
 	/// <summary>
-	/// Gets or sets whether the media should start playing as soon as it's loaded. Default is <see langword="false"/>.
+	/// Gets or sets whether the media should start playing as soon as it's loaded.
 	/// </summary>
 	bool AutoPlay { get; set; }
 
@@ -57,17 +57,12 @@ public interface IMediaElement : IView
 	/// <summary>
 	/// The current position of the playing media.
 	/// </summary>
-	TimeSpan Position { get; set; }
+	TimeSpan Position { get; internal set; }
 
 	/// <summary>
 	/// Occurs when the <see cref="Position"/> changes;
 	/// </summary>
-	event EventHandler<MediaPositionEventArgs>? PositionChanged;
-
-	/// <summary>
-	/// Gets or sets whether to show the playback controls.
-	/// </summary>
-	bool ShowsPlaybackControls { get; set; }
+	event EventHandler<MediaPositionChangedEventArgs>? PositionChanged;
 
 	/// <summary>
 	/// Gets or sets if the video will play when reaches the end.
@@ -76,8 +71,8 @@ public interface IMediaElement : IView
 
 	/// <summary>
 	/// Gets or sets if media playback will prevent the device display from going to sleep.
-	/// If media is paused, stopped or has completed playing, the display will turn off.
 	/// </summary>
+	/// <remarks>If media is paused, stopped or has completed playing, the display will turn off.</remarks>
 	bool KeepScreenOn { get; set; }
 
 	/// <summary>
@@ -93,7 +88,12 @@ public interface IMediaElement : IView
 	void SeekTo(TimeSpan position);
 
 	/// <summary>
-	/// The source of the media to play.
+	/// Gets or sets whether the player should show the platform playback controls.
+	/// </summary>
+	bool ShowsPlaybackControls { get; set; }
+
+	/// <summary>
+	/// Gets or sets the source of the media to play.
 	/// </summary>
 	MediaSource? Source { get; set; }
 
@@ -105,18 +105,23 @@ public interface IMediaElement : IView
 	double Speed { get; set; }
 
 	/// <summary>
+	/// Occurs when <see cref="CurrentState"/> changed.
+	/// </summary>
+	event EventHandler<MediaStateChangedEventArgs>? StateChanged;
+
+	/// <summary>
 	/// Stops playing the currently playing media and resets the <see cref="Position"/>.
 	/// </summary>
 	void Stop();
 
 	/// <summary>
-	/// The height (in pixels) of the loaded media in pixels.
+	/// Gets the height (in pixels) of the loaded media in pixels.
 	/// </summary>
 	/// <remarks>Not reported for non-visual media.</remarks>
 	int VideoHeight { get; }
 
 	/// <summary>
-	/// The width (in pixels) of the loaded media in pixels.
+	/// Gets the width (in pixels) of the loaded media in pixels.
 	/// </summary>
 	/// <remarks>Not reported for non-visual media.</remarks>
 	int VideoWidth { get; }

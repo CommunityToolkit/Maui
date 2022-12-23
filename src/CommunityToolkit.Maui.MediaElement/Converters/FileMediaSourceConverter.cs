@@ -3,9 +3,14 @@ using System.Globalization;
 
 namespace CommunityToolkit.Maui.MediaElement.Converters;
 
+/// <summary>
+/// A <see cref="TypeConverter"/> specific to converting a string value to a <see cref="FileMediaSource"/>.
+/// </summary>
 [TypeConverter(typeof(FileMediaSource))]
 public sealed class FileMediaSourceConverter : TypeConverter
 {
+	/// <inheritdoc/>
+	/// <exception cref="InvalidOperationException">Thrown when <paramref name="value"/> is <see langword="null"/> or empty.</exception>
 	public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 	{
 		return string.IsNullOrWhiteSpace(value.ToString())

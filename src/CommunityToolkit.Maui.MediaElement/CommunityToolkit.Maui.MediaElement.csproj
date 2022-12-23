@@ -43,6 +43,8 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>dotnet,maui,toolkit,kit,communitytoolkit,dotnetcommunitytoolkit,mediaelement,audio,video</PackageTags>
     <Configurations>Debug;Release</Configurations>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

@@ -6,10 +6,18 @@ using Com.Google.Android.Exoplayer2.UI;
 
 namespace CommunityToolkit.Maui.MediaElement.PlatformView;
 
+/// <summary>
+/// The user-interface element that represents the <see cref="MediaElement"/> on Android.
+/// </summary>
 public class MauiMediaElement : CoordinatorLayout
 {
 	StyledPlayerView? playerView;
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
+	/// </summary>
+	/// <param name="context">The application's <see cref="Context"/>.</param>
+	/// <param name="playerView">The <see cref="StyledPlayerView"/> that acts as the platform media player.</param>
 	public MauiMediaElement(Context context, StyledPlayerView playerView)
 		 : base(context)
 	{
@@ -28,6 +36,10 @@ public class MauiMediaElement : CoordinatorLayout
 		AddView(relativeLayout);
 	}
 
+	/// <summary>
+	/// Releases the unmanaged resources used by the <see cref="MediaElement"/> and optionally releases the managed resources.
+	/// </summary>
+	/// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
 	protected override void Dispose(bool disposing)
 	{
 		if (disposing)

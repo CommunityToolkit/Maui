@@ -15,6 +15,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
 	protected StyledPlayerView? playerView;
 
+	/// <summary>
+	/// Creates the corresponding platform view of <see cref="MediaElement"/> on Android.
+	/// </summary>
+	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
+	/// <exception cref="NullReferenceException">Thrown when <see cref="Android.Content.Context"/> is <see langword="null"/> or when the platform view could not be created.</exception>
 	public (PlatformMediaView platformView, StyledPlayerView playerView) CreatePlatformView()
 	{
 		ArgumentNullException.ThrowIfNull(mauiContext.Context);
@@ -175,7 +180,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	}
 
 	/// <summary>
-	/// Invoked when TODO
+	/// Invoked when a seek operation has been processed.
 	/// </summary>
 	/// <remarks>
 	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
@@ -263,6 +268,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			return;
 		}
 
+		mediaElement.CurrentStateChanged(MediaElementState.Opening);
+
 		player.PlayWhenReady = mediaElement.AutoPlay;
 
 		if (mediaElement.Source is UriMediaSource)
@@ -278,7 +285,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		}
 		else if (mediaElement.Source is FileMediaSource)
 		{
-			string filePath = (mediaElement.Source as FileMediaSource)!.File!;
+			string filePath = (mediaElement.Source as FileMediaSource)!.Path!;
 			if (!string.IsNullOrWhiteSpace(filePath))
 			{
 				player.SetMediaItem(MediaItem.FromUri(filePath));
@@ -336,7 +343,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		playerView.UseController = mediaElement.ShowsPlaybackControls;
 	}
 
-	protected virtual partial void PlatformUpdateStatus()
+	protected virtual partial void PlatformUpdatePosition()
 	{
 		if (mediaElement is null || player is null)
 		{

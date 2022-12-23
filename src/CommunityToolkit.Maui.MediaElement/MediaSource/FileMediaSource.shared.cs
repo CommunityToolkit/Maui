@@ -3,23 +3,43 @@ using CommunityToolkit.Maui.MediaElement.Converters;
 
 namespace CommunityToolkit.Maui.MediaElement;
 
+/// <summary>
+/// Represents a source, loaded from local filesystem, that can be played by <see cref="MediaElement"/>.
+/// </summary>
 [TypeConverter(typeof(FileMediaSourceConverter))]
 public sealed class FileMediaSource : MediaSource
 {
-	public static readonly BindableProperty FileProperty
-		= BindableProperty.Create(nameof(File), typeof(string), typeof(FileMediaSource), propertyChanged: OnFileMediaSourceChanged);
+	/// <summary>
+	/// Backing store for the <see cref="Path"/> property.
+	/// </summary>
+	public static readonly BindableProperty PathProperty
+		= BindableProperty.Create(nameof(Path), typeof(string), typeof(FileMediaSource),
+			propertyChanged: OnFileMediaSourceChanged);
 
-	public string? File
+	/// <summary>
+	/// Gets or sets the full path to the local file to use as a media source.
+	/// This is a bindable property.
+	/// </summary>
+	public string? Path
 	{
-		get => (string?)GetValue(FileProperty);
-		set => SetValue(FileProperty, value);
+		get => (string?)GetValue(PathProperty);
+		set => SetValue(PathProperty, value);
 	}
 
-	public override string ToString() => $"File: {File}";
+	/// <inheritdoc/>
+	public override string ToString() => $"File: {Path}";
 
-	public static implicit operator FileMediaSource(string file) => (FileMediaSource)FromFile(file);
+	/// <summary>
+	/// An implicit operator to convert a string value into a <see cref="FileMediaSource"/>.
+	/// </summary>
+	/// <param name="path">Full path to the local file. Can be a relative or absolute path.</param>
+	public static implicit operator FileMediaSource(string path) => (FileMediaSource)FromFile(path);
 
-	public static implicit operator string?(FileMediaSource? file) => file?.File;
+	/// <summary>
+	/// An implicit operator to convert a <see cref="FileMediaSource"/> into a string value.
+	/// </summary>
+	/// <param name="fileMediaSource">A <see cref="FileMediaSource"/> instance to convert to a string value.</param>
+	public static implicit operator string?(FileMediaSource? fileMediaSource) => fileMediaSource?.Path;
 
 	static void OnFileMediaSourceChanged(BindableObject bindable, object oldValue, object newValue) =>
 		((FileMediaSource)bindable).OnSourceChanged();

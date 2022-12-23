@@ -24,7 +24,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 	void OnMediaEnded(object? sender, EventArgs e) => logger?.LogInformation("Media ended.");
 
-	void OnPositionChanged(object? sender, MediaPositionEventArgs e) => logger?.LogInformation("Position changed to {position}", e.Position);
+	void OnPositionChanged(object? sender, MediaPositionChangedEventArgs e) => logger?.LogInformation("Position changed to {position}", e.Position);
 
 	void OnSeekCompleted(object? sender, EventArgs e) => logger?.LogInformation("Seek completed.");
 

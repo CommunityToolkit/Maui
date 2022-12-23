@@ -12,6 +12,10 @@ partial class MediaManager : IDisposable
 	bool displayActiveRequested;
 	readonly DisplayRequest displayRequest = new();
 
+	/// <summary>
+	/// Creates the corresponding platform view of <see cref="MediaElement"/> on Windows.
+	/// </summary>
+	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
 	public PlatformMediaView CreatePlatformView()
 	{
 		player = new();
@@ -101,7 +105,7 @@ partial class MediaManager : IDisposable
 			mediaElement.ShowsPlaybackControls;
 	}
 
-	protected virtual partial void PlatformUpdateStatus()
+	protected virtual partial void PlatformUpdatePosition()
 	{
 		if (mediaElement is not null && player is not null
 			&& mediaElement.CurrentState == MediaElementState.Playing)
@@ -174,7 +178,7 @@ partial class MediaManager : IDisposable
 		}
 		else if (mediaElement.Source is FileMediaSource)
 		{
-			string filename = (mediaElement.Source as FileMediaSource)?.File!;
+			string filename = (mediaElement.Source as FileMediaSource)?.Path!;
 			if (!string.IsNullOrWhiteSpace(filename))
 			{
 				StorageFile storageFile = await StorageFile.GetFileFromPathAsync(filename);
@@ -275,6 +279,10 @@ partial class MediaManager : IDisposable
 		mediaElement?.SeekCompleted();
 	}
 
+	/// <summary>
+	/// Releases the unmanaged resources used by the <see cref="MediaManager"/> and optionally releases the managed resources.
+	/// </summary>
+	/// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
 	protected virtual void Dispose(bool disposing)
 	{
 		if (disposing)
@@ -301,6 +309,9 @@ partial class MediaManager : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Releases the managed and unmanaged resources used by the <see cref="MediaManager"/>.
+	/// </summary>
 	public void Dispose()
 	{
 		Dispose(true);
