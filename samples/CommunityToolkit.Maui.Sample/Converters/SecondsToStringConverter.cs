@@ -3,7 +3,7 @@ using System.Text;
 
 namespace CommunityToolkit.Maui.Sample.Converters;
 
-public class SecondsToStringConverter : IValueConverter
+sealed class SecondsToStringConverter : IValueConverter
 {
 	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 	{
