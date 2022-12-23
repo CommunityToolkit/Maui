@@ -3,7 +3,7 @@
 /// <summary>
 /// Exception occurred if file is not saved
 /// </summary>
-public class FileSaveException : Exception
+public sealed class FileSaveException : Exception
 {
 	/// <summary>
 	/// Initializes a new instance of <see cref="FileSaveException"/>
