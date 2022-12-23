@@ -54,9 +54,9 @@
             </HorizontalStackLayout>
 
             <Grid Grid.Row="2" Padding="0,10,0,10" ColumnDefinitions="*,*,*" ColumnSpacing="5">          
-                <Button Grid.Column="0" Text="Play" Clicked="PlayClicked" />
-                <Button Grid.Column="1" Text="Pause" Clicked="PauseClicked" />
-                <Button Grid.Column="2" Text="Stop" Clicked="StopClicked" />
+                <Button Grid.Column="0" Text="Play" Clicked="OnPlayClicked" />
+                <Button Grid.Column="1" Text="Pause" Clicked="OnPauseClicked" />
+                <Button Grid.Column="2" Text="Stop" Clicked="OnStopClicked" />
             </Grid>
 
             <views:PositionSlider
@@ -94,8 +94,8 @@
                     </Label.FormattedText>
                 </Label>
 
-                <Button Text="-" Clicked="SpeedMinusClicked" />
-                <Button Text="+" Clicked="SpeedPlusClicked" />
+                <Button Text="-" Clicked="OnSpeedMinusClicked" />
+                <Button Text="+" Clicked="OnSpeedPlusClicked" />
             </HorizontalStackLayout>
 
             <HorizontalStackLayout Grid.Row="6" Padding="0,10,0,10" Spacing="5">
@@ -108,8 +108,8 @@
                     </Label.FormattedText>
                 </Label>
 
-                <Button Text="-" Clicked="VolumeMinusClicked" />
-                <Button Text="+" Clicked="VolumePlusClicked" />
+                <Button Text="-" Clicked="OnVolumeMinusClicked" />
+                <Button Text="+" Clicked="OnVolumePlusClicked" />
             </HorizontalStackLayout>
         
             <VerticalStackLayout Grid.Row="7">

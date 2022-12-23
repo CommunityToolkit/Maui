@@ -8,10 +8,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 {
 	readonly ILogger logger;
 
-	public (double, double, double) MediaElementPosition { get; set; }
-
-	public MediaElementPage(MediaElementViewModel viewModel, ILogger<MediaElementPage> logger)
-		: base(viewModel)
+	public MediaElementPage(MediaElementViewModel viewModel, ILogger<MediaElementPage> logger) : base(viewModel)
 	{
 		InitializeComponent();
 
@@ -30,20 +27,32 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 	void OnSeekCompleted(object? sender, EventArgs e) => logger.LogInformation("Seek completed.");
 
-	void OnResetClicked(object? sender, EventArgs e) => mediaElement.Source = null;
+	void OnResetClicked(object? sender, EventArgs e)
+	{
+		mediaElement.Source = null;
+	}
 
-	void OnMp4OnlineSourceClicked(object? sender, EventArgs e) => mediaElement.Source = MediaSource.FromUri("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
+	void OnMp4OnlineSourceClicked(object? sender, EventArgs e)
+	{
+		mediaElement.Source = MediaSource.FromUri("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
+	}
 
-	void OnHlsSourceClicked(object? sender, EventArgs e) => mediaElement.Source = MediaSource.FromUri("https://wowza.peer5.com/live/smil:bbb_abr.smil/playlist.m3u8");
+	void OnHlsSourceClicked(object? sender, EventArgs e)
+	{
+		mediaElement.Source = MediaSource.FromUri("https://wowza.peer5.com/live/smil:bbb_abr.smil/playlist.m3u8");
+	}
 
 	void OnResourceSourceClicked(object? sender, EventArgs e)
 	{
+		ArgumentNullException.ThrowIfNull(sender);
+		var mediaElement = (MediaElement.MediaElement)sender;
+
 		if (DeviceInfo.Platform == DevicePlatform.MacCatalyst
 			|| DeviceInfo.Platform == DevicePlatform.iOS)
 		{
 			mediaElement.Source = MediaSource.FromResource("AppleVideo.mp4");
 		}
-		else if(DeviceInfo.Platform == DevicePlatform.Android)
+		else if (DeviceInfo.Platform == DevicePlatform.Android)
 		{
 			mediaElement.Source = MediaSource.FromResource("AndroidVideo.mp4");
 		}
@@ -53,7 +62,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	void SpeedMinusClicked(object? sender, EventArgs e)
+	void OnSpeedMinusClicked(object? sender, EventArgs e)
 	{
 		if (mediaElement.Speed >= 1)
 		{
@@ -61,7 +70,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	void SpeedPlusClicked(object? sender, EventArgs e)
+	void OnSpeedPlusClicked(object? sender, EventArgs e)
 	{
 		if (mediaElement.Speed < 10)
 		{
@@ -69,7 +78,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	void VolumeMinusClicked(object? sender, EventArgs e)
+	void OnVolumeMinusClicked(object? sender, EventArgs e)
 	{
 		if (mediaElement.Volume >= 0)
 		{
@@ -84,7 +93,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	void VolumePlusClicked(object? sender, EventArgs e)
+	void OnVolumePlusClicked(object? sender, EventArgs e)
 	{
 		if (mediaElement.Volume < 1)
 		{
@@ -99,17 +108,17 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	void PlayClicked(object? sender, EventArgs e)
+	void OnPlayClicked(object? sender, EventArgs e)
 	{
 		mediaElement.Play();
 	}
 
-	void PauseClicked(object? sender, EventArgs e)
+	void OnPauseClicked(object? sender, EventArgs e)
 	{
 		mediaElement.Pause();
 	}
 
-	void StopClicked(object? sender, EventArgs e)
+	void OnStopClicked(object? sender, EventArgs e)
 	{
 		mediaElement.Stop();
 	}
