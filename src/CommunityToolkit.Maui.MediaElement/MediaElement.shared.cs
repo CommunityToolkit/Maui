@@ -8,58 +8,24 @@ namespace CommunityToolkit.Maui.MediaElement;
 /// </summary>
 public class MediaElement : View, IMediaElement
 {
+	readonly WeakEventManager eventManager = new();
+
 	Microsoft.Maui.Dispatching.IDispatcherTimer? timer;
 
-	internal event EventHandler? UpdateStatus;
-	internal event EventHandler? PlayRequested;
-	internal event EventHandler? PauseRequested;
-	internal event EventHandler? PositionRequested;
-	internal event EventHandler<MediaSeekRequestedEventArgs>? SeekRequested;
-	internal event EventHandler? StopRequested;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="MediaElement"/> class.
-	/// </summary>
-	public MediaElement()
-	{
-		InitTimer();
-	}
-
-	/// <inheritdoc cref="IMediaElement.MediaEnded"/>
-	public event EventHandler? MediaEnded;
-
-	/// <inheritdoc cref="IMediaElement.MediaFailed(MediaFailedEventArgs)"/>
-	public event EventHandler<MediaFailedEventArgs>? MediaFailed;
-
-	/// <inheritdoc cref="IMediaElement.MediaOpened"/>
-	public event EventHandler? MediaOpened;
-
-	/// <inheritdoc cref="IMediaElement.SeekCompleted"/>
-	public event EventHandler? SeekCompleted;
-
-	/// <inheritdoc cref="IMediaElement.StateChanged"/>
-	public event EventHandler<MediaStateChangedEventArgs>? StateChanged;
-
-	/// <inheritdoc cref="IMediaElement.PositionChanged"/>
-	public event EventHandler<MediaPositionChangedEventArgs>? PositionChanged;
+	static readonly BindablePropertyKey durationPropertyKey =
+	  BindableProperty.CreateReadOnly(nameof(Duration), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero);
 
 	/// <summary>
 	/// Backing store for the <see cref="AutoPlay"/> property.
 	/// </summary>
 	public static readonly BindableProperty AutoPlayProperty =
-		BindableProperty.Create(nameof(AutoPlay), typeof(bool), typeof(MediaElement), false,
-			propertyChanged: OnAutoPlayPropertyChanged);
+		BindableProperty.Create(nameof(AutoPlay), typeof(bool), typeof(MediaElement), false, propertyChanged: OnAutoPlayPropertyChanged);
 
 	/// <summary>
 	/// Backing store for the <see cref="CurrentState"/> property.
 	/// </summary>
 	public static readonly BindableProperty CurrentStateProperty =
-		  BindableProperty.Create(nameof(CurrentState), typeof(MediaElementState), typeof(MediaElement),
-			  MediaElementState.None);
-
-	static readonly BindablePropertyKey durationPropertyKey =
-		  BindableProperty.CreateReadOnly(nameof(Duration), typeof(TimeSpan), typeof(MediaElement),
-			  TimeSpan.Zero);
+		  BindableProperty.Create(nameof(CurrentState), typeof(MediaElementState), typeof(MediaElement), MediaElementState.None, propertyChanged: OnCurrentStatePropertyChanged);
 
 	/// <summary>
 	/// Backing store for the <see cref="Duration"/> property.
@@ -101,8 +67,7 @@ public class MediaElement : View, IMediaElement
 	/// Backing store for the <see cref="Speed"/> property.
 	/// </summary>
 	public static readonly BindableProperty SpeedProperty =
-		  BindableProperty.Create(nameof(Speed), typeof(double), typeof(MediaElement), 1.0,
-			  propertyChanged: OnSpeedPropertyChanged);
+		  BindableProperty.Create(nameof(Speed), typeof(double), typeof(MediaElement), 1.0, propertyChanged: OnSpeedPropertyChanged);
 
 	/// <summary>
 	/// Backing store for the <see cref="VideoHeight"/> property.
@@ -124,31 +89,110 @@ public class MediaElement : View, IMediaElement
 			  BindingMode.TwoWay, new BindableProperty.ValidateValueDelegate(ValidateVolume));
 
 	/// <summary>
-	/// Gets or sets whether the media should start playing as soon as it's loaded.
-	/// Default is <see langword="false"/>. This is a bindable property.
+	/// Initializes a new instance of the <see cref="MediaElement"/> class.
 	/// </summary>
-	public bool AutoPlay
+	public MediaElement()
 	{
-		get { return (bool)GetValue(AutoPlayProperty); }
-		set { SetValue(AutoPlayProperty, value); }
+		InitTimer();
+	}
+
+	/// <inheritdoc cref="IMediaElement.MediaEnded"/>
+	public event EventHandler MediaEnded
+	{
+		add => eventManager.AddEventHandler(value);
+		remove => eventManager.RemoveEventHandler(value);
+	}
+
+	/// <inheritdoc cref="IMediaElement.MediaFailed(MediaFailedEventArgs)"/>
+	public event EventHandler<MediaFailedEventArgs> MediaFailed
+	{
+		add => eventManager.AddEventHandler(value);
+		remove => eventManager.RemoveEventHandler(value);
+	}
+
+	/// <inheritdoc cref="IMediaElement.MediaOpened"/>
+	public event EventHandler MediaOpened
+	{
+		add => eventManager.AddEventHandler(value);
+		remove => eventManager.RemoveEventHandler(value);
+	}
+
+	/// <inheritdoc cref="IMediaElement.SeekCompleted"/>
+	public event EventHandler SeekCompleted
+	{
+		add => eventManager.AddEventHandler(value);
+		remove => eventManager.RemoveEventHandler(value);
+	}
+
+	/// <inheritdoc cref="IMediaElement.StateChanged"/>
+	public event EventHandler<MediaStateChangedEventArgs> StateChanged
+	{
+		add => eventManager.AddEventHandler(value);
+		remove => eventManager.RemoveEventHandler(value);
+	}
+
+	/// <inheritdoc cref="IMediaElement.PositionChanged"/>
+	public event EventHandler<MediaPositionChangedEventArgs> PositionChanged
+	{
+		add => eventManager.AddEventHandler(value);
+		remove => eventManager.RemoveEventHandler(value);
+	}
+
+	internal event EventHandler UpdateStatus
+	{
+		add => eventManager.AddEventHandler(value);
+		remove => eventManager.RemoveEventHandler(value);
+	}
+
+	internal event EventHandler PlayRequested
+	{
+		add => eventManager.AddEventHandler(value);
+		remove => eventManager.RemoveEventHandler(value);
+	}
+
+	internal event EventHandler PauseRequested
+	{
+		add => eventManager.AddEventHandler(value);
+		remove => eventManager.RemoveEventHandler(value);
+	}
+
+	internal event EventHandler PositionRequested
+	{
+		add => eventManager.AddEventHandler(value);
+		remove => eventManager.RemoveEventHandler(value);
+	}
+
+	internal event EventHandler<MediaSeekRequestedEventArgs> SeekRequested
+	{
+		add => eventManager.AddEventHandler(value);
+		remove => eventManager.RemoveEventHandler(value);
+	}
+
+	internal event EventHandler StopRequested
+	{
+		add => eventManager.AddEventHandler(value);
+		remove => eventManager.RemoveEventHandler(value);
 	}
 
 	/// <summary>
-	/// The current state of the <see cref="MediaElement"/>. This is a bindable property.
+	/// The current position of the playing media. This is a bindable property.
 	/// </summary>
-	public MediaElementState CurrentState
-	{
-		get => (MediaElementState)GetValue(CurrentStateProperty);
-		private set => SetValue(CurrentStateProperty, value);
-	}
+	public TimeSpan Position => (TimeSpan)GetValue(PositionProperty);
 
 	/// <summary>
 	/// Gets total duration of the loaded media. This is a bindable property.
 	/// </summary>
 	/// <remarks>Might not be available for some types, like live streams.</remarks>
-	public TimeSpan Duration
+	public TimeSpan Duration => (TimeSpan)GetValue(DurationProperty);
+
+	/// <summary>
+	/// Gets or sets whether the media should start playing as soon as it's loaded.
+	/// Default is <see langword="false"/>. This is a bindable property.
+	/// </summary>
+	public bool AutoPlay
 	{
-		get => (TimeSpan)GetValue(DurationProperty);
+		get => (bool)GetValue(AutoPlayProperty);
+		set => SetValue(AutoPlayProperty, value);
 	}
 
 	/// <summary>
@@ -172,36 +216,6 @@ public class MediaElement : View, IMediaElement
 		set => SetValue(KeepScreenOnProperty, value);
 	}
 
-	/// <inheritdoc cref="IMediaElement.Pause"/>
-	public void Pause()
-	{
-		PauseRequested?.Invoke(this, EventArgs.Empty);
-		Handler?.Invoke(nameof(PauseRequested));
-	}
-
-	/// <inheritdoc cref="IMediaElement.Play"/>
-	public void Play()
-	{
-		InitTimer();
-		PlayRequested?.Invoke(this, EventArgs.Empty);
-		Handler?.Invoke(nameof(PlayRequested));
-	}
-
-	/// <summary>
-	/// The current position of the playing media. This is a bindable property.
-	/// </summary>
-	public TimeSpan Position
-	{
-		get => (TimeSpan)GetValue(PositionProperty);
-	}
-
-	/// <inheritdoc cref="IMediaElement.SeekTo(TimeSpan)"/>
-	public void SeekTo(TimeSpan position)
-	{
-		MediaSeekRequestedEventArgs args = new(position);
-		Handler?.Invoke(nameof(SeekRequested), args);
-	}
-
 	/// <summary>
 	/// Gets or sets whether the player should show the platform playback controls.
 	/// This is a bindable property.
@@ -219,8 +233,18 @@ public class MediaElement : View, IMediaElement
 	[TypeConverter(typeof(MediaSourceConverter))]
 	public MediaSource? Source
 	{
-		get { return (MediaSource)GetValue(SourceProperty); }
-		set { SetValue(SourceProperty, value); }
+		get => (MediaSource)GetValue(SourceProperty);
+		set => SetValue(SourceProperty, value);
+	}
+
+	/// <summary>
+	/// Gets or sets the volume of the audio for the media.
+	/// </summary>
+	/// <remarks>A value of 1 means full volume, 0 is silence.</remarks>
+	public double Volume
+	{
+		get => (double)GetValue(VolumeProperty);
+		set => SetValue(VolumeProperty, value);
 	}
 
 	/// <summary>
@@ -233,14 +257,6 @@ public class MediaElement : View, IMediaElement
 	{
 		get => (double)GetValue(SpeedProperty);
 		set => SetValue(SpeedProperty, value);
-	}
-
-	/// <inheritdoc cref="IMediaElement.Stop"/>
-	public void Stop()
-	{
-		ClearTimer();
-		StopRequested?.Invoke(this, EventArgs.Empty);
-		Handler?.Invoke(nameof(StopRequested));
 	}
 
 	/// <summary>
@@ -266,19 +282,129 @@ public class MediaElement : View, IMediaElement
 	}
 
 	/// <summary>
-	/// Gets or sets the volume of the audio for the media.
+	/// The current state of the <see cref="MediaElement"/>. This is a bindable property.
 	/// </summary>
-	/// <remarks>A value of 1 means full volume, 0 is silence.</remarks>
-	public double Volume
+	public MediaElementState CurrentState
 	{
-		get => (double)GetValue(VolumeProperty);
-		set => SetValue(VolumeProperty, value);
+		get => (MediaElementState)GetValue(CurrentStateProperty);
+		private set => SetValue(CurrentStateProperty, value);
+	}
+
+	TimeSpan IMediaElement.Position
+	{
+		get => (TimeSpan)GetValue(PositionProperty);
+		set
+		{
+			var currentValue = (TimeSpan)GetValue(PositionProperty);
+
+			if (currentValue != value)
+			{
+				SetValue(PositionProperty, value);
+				OnPositionChanged(new(value));
+			}
+		}
+	}
+
+	TimeSpan IMediaElement.Duration
+	{
+		get => (TimeSpan)GetValue(DurationProperty);
+		set => SetValue(durationPropertyKey, value);
+	}
+
+	/// <inheritdoc cref="IMediaElement.Pause"/>
+	public void Pause()
+	{
+		OnPauseRequested();
+		Handler?.Invoke(nameof(PauseRequested));
+	}
+
+	/// <inheritdoc cref="IMediaElement.Play"/>
+	public void Play()
+	{
+		InitTimer();
+		OnPlayRequested();
+		Handler?.Invoke(nameof(PlayRequested));
+	}
+
+	/// <inheritdoc cref="IMediaElement.SeekTo(TimeSpan)"/>
+	public void SeekTo(TimeSpan position)
+	{
+		MediaSeekRequestedEventArgs args = new(position);
+		Handler?.Invoke(nameof(SeekRequested), args);
+	}
+
+	/// <inheritdoc cref="IMediaElement.Stop"/>
+	public void Stop()
+	{
+		ClearTimer();
+		OnStopRequested();
+		Handler?.Invoke(nameof(StopRequested));
+	}
+
+	internal void OnMediaEnded()
+	{
+		ClearTimer();
+		CurrentState = MediaElementState.Stopped;
+		eventManager.HandleEvent(this, EventArgs.Empty, nameof(MediaEnded));
+	}
+
+	internal void OnMediaFailed(MediaFailedEventArgs args)
+	{
+		((IMediaElement)this).Duration = ((IMediaElement)this).Position = TimeSpan.Zero;
+
+		CurrentState = MediaElementState.Failed;
+		eventManager.HandleEvent(this, args, nameof(MediaFailed));
+	}
+
+	internal void OnMediaOpened()
+	{
+		InitTimer();
+		eventManager.HandleEvent(this, EventArgs.Empty, nameof(MediaOpened));
+	}
+
+	/// <inheritdoc/>
+	protected override void OnBindingContextChanged()
+	{
+		if (Source != null)
+		{
+			SetInheritedBindingContext(Source, BindingContext);
+		}
+
+		base.OnBindingContextChanged();
+	}
+
+	static void OnAutoPlayPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
+		((MediaElement)bindable).AutoPlay = (bool)newValue;
+
+	static void OnSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
+		((MediaElement)bindable).OnSourcePropertyChanged((MediaSource?)newValue);
+
+	static void OnSourcePropertyChanging(BindableObject bindable, object oldValue, object newValue) =>
+		((MediaElement)bindable).OnSourcePropertyChanging((MediaSource?)oldValue);
+
+	static void OnSpeedPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
+		((MediaElement)bindable).Speed = (double)newValue;
+
+	static void OnCurrentStatePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var mediaElement = (MediaElement)bindable;
+		var previousState = (MediaElementState)oldValue;
+		var newState = (MediaElementState)newValue;
+
+		mediaElement.OnStateChanged(new MediaStateChangedEventArgs(previousState, newState));
+	}
+
+	static bool ValidateVolume(BindableObject o, object newValue)
+	{
+		var volume = (double)newValue;
+
+		return volume >= 0.0 && volume <= 1.0;
 	}
 
 	void OnTimerTick(object? sender, EventArgs e)
 	{
-		PositionRequested?.Invoke(this, EventArgs.Empty);
-		UpdateStatus?.Invoke(this, EventArgs.Empty);
+		OnPositionRequested();
+		OnUpdateStatus();
 		Handler?.Invoke(nameof(UpdateStatus));
 	}
 
@@ -301,50 +427,10 @@ public class MediaElement : View, IMediaElement
 		{
 			return;
 		}
+
 		timer.Tick -= OnTimerTick;
 		timer.Stop();
 		timer = null;
-	}
-
-	internal void OnMediaEnded()
-	{
-		ClearTimer();
-		CurrentState = MediaElementState.Stopped;
-		MediaEnded?.Invoke(this, EventArgs.Empty);
-	}
-
-	internal void OnMediaFailed(MediaFailedEventArgs args)
-	{
-		((IMediaElement)this).Duration = ((IMediaElement)this).Position = TimeSpan.Zero;
-
-		var previousState = CurrentState;
-		CurrentState = MediaElementState.Failed;
-
-		StateChanged?.Invoke(this, new(previousState, CurrentState));
-
-		MediaFailed?.Invoke(this, args);
-	}
-
-	internal void OnMediaOpened()
-	{
-		InitTimer();
-		MediaOpened?.Invoke(this, EventArgs.Empty);
-	}
-
-	/// <inheritdoc/>
-	protected override void OnBindingContextChanged()
-	{
-		if (Source != null)
-		{
-			SetInheritedBindingContext(Source, BindingContext);
-		}
-
-		base.OnBindingContextChanged();
-	}
-
-	static void OnAutoPlayPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		((MediaElement)bindable).AutoPlay = (bool)newValue;
 	}
 
 	void OnSourceChanged(object? sender, EventArgs eventArgs)
@@ -353,10 +439,7 @@ public class MediaElement : View, IMediaElement
 		InvalidateMeasure();
 	}
 
-	static void OnSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
-			((MediaElement)bindable).OnSourcePropertyChanged((MediaSource)newValue);
-
-	void OnSourcePropertyChanged(MediaSource newValue)
+	void OnSourcePropertyChanged(MediaSource? newValue)
 	{
 		if (newValue is not null)
 		{
@@ -367,10 +450,7 @@ public class MediaElement : View, IMediaElement
 		InvalidateMeasure();
 	}
 
-	static void OnSourcePropertyChanging(BindableObject bindable, object oldValue, object newValue) =>
-			((MediaElement)bindable).OnSourcePropertyChanging((MediaSource)oldValue);
-
-	void OnSourcePropertyChanging(MediaSource oldValue)
+	void OnSourcePropertyChanging(MediaSource? oldValue)
 	{
 		if (oldValue is null)
 		{
@@ -378,33 +458,6 @@ public class MediaElement : View, IMediaElement
 		}
 
 		oldValue.SourceChanged -= OnSourceChanged;
-	}
-
-	static void OnSpeedPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		((MediaElement)bindable).Speed = (double)newValue;
-	}
-
-	static bool ValidateVolume(BindableObject o, object newValue)
-	{
-		var volume = (double)newValue;
-
-		return volume >= 0.0 && volume <= 1.0;
-	}
-
-	TimeSpan IMediaElement.Position
-	{
-		get => (TimeSpan)GetValue(PositionProperty);
-		set
-		{
-			var currentValue = (TimeSpan)GetValue(PositionProperty);
-
-			if (currentValue != value)
-			{
-				SetValue(PositionProperty, value);
-				PositionChanged?.Invoke(this, new(value));
-			}
-		}
 	}
 
 	void IMediaElement.MediaEnded()
@@ -424,23 +477,26 @@ public class MediaElement : View, IMediaElement
 
 	void IMediaElement.SeekCompleted()
 	{
-		SeekCompleted?.Invoke(this, EventArgs.Empty);
+		OnSeekCompeted();
 	}
 
-	TimeSpan IMediaElement.Duration
-	{
-		get => (TimeSpan)GetValue(DurationProperty);
-		set => SetValue(durationPropertyKey, value);
-	}
+	void IMediaElement.CurrentStateChanged(MediaElementState newState) => CurrentState = newState;
 
-	void IMediaElement.CurrentStateChanged(MediaElementState newState)
-	{
-		if (CurrentState != newState)
-		{
-			var previousState = CurrentState;
-			CurrentState = newState;
+	void OnPositionChanged(MediaPositionChangedEventArgs mediaPositionChangedEventArgs) =>
+		eventManager.HandleEvent(this, mediaPositionChangedEventArgs, nameof(PositionChanged));
 
-			StateChanged?.Invoke(this, new(previousState, CurrentState));
-		}
-	}
+	void OnStateChanged(MediaStateChangedEventArgs mediaStateChangedEventArgs) =>
+		eventManager.HandleEvent(this, mediaStateChangedEventArgs, nameof(StateChanged));
+
+	void OnPauseRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(PauseRequested));
+
+	void OnPlayRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(PlayRequested));
+
+	void OnStopRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(StopRequested));
+
+	void OnSeekCompeted() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(SeekCompleted));
+
+	void OnPositionRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(PositionRequested));
+
+	void OnUpdateStatus() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(UpdateStatus));
 }
