@@ -9,7 +9,7 @@
     
     <VerticalStackLayout Spacing="12">
         
-        <Label Text="The folder picker allows you to pick a folder from the device."
+        <Label Text="The FolderPicker allows you to pick a folder from the device."
                 LineBreakMode = "WordWrap" />
         
         <Button Command="{Binding PickFolderCommand}" Text="Pick Folder" />

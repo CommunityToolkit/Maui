@@ -8,8 +8,8 @@
                 x:DataType="vm:SaveFileDialogViewModel">
     
     <VerticalStackLayout Spacing="12">
-        
-        <Label Text="The SaveFileDialog ."
+
+        <Label Text="The SaveFileDialog allows selecting target folder and saving files to the file system."
                 LineBreakMode = "WordWrap" />
         
         <Button Command="{Binding SaveFileCommand}" Text="Save" />
