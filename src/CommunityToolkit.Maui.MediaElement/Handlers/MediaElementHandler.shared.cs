@@ -5,7 +5,7 @@
 /// </summary>
 public partial class MediaElementHandler
 {
-#if ANDROID || IOS || MACCATALYST || WINDOWS
+#if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
 	MediaManager? mediaManager;
 #endif
 
@@ -55,7 +55,7 @@ public partial class MediaElementHandler
 
 	}
 
-#if ANDROID || IOS || MACCATALYST || WINDOWS
+#if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
 	/// <summary>
 	/// Maps the <see cref="IMediaElement.ShowsPlaybackControls"/> property between the abstract
 	/// <see cref="MediaElement"/> and platform counterpart.
