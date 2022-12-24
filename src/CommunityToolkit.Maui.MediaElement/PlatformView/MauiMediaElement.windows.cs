@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.MediaElement.PlatformView;
 /// </summary>
 public class MauiMediaElement : Grid
 {
-	MediaPlayerElement? mediaPlayerElement;
+	readonly MediaPlayerElement mediaPlayerElement;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
@@ -28,7 +28,6 @@ public class MauiMediaElement : Grid
 		if (mediaPlayerElement is not null)
 		{
 			mediaPlayerElement?.MediaPlayer.Dispose();
-			mediaPlayerElement = null;
 		}
 	}
 }

@@ -8,9 +8,10 @@ namespace CommunityToolkit.Maui.MediaElement;
 
 partial class MediaManager : IDisposable
 {
+	readonly DisplayRequest displayRequest = new();
+
 	// The requests to keep display active are cumulative, this bool makes sure it only gets requested once
 	bool displayActiveRequested;
-	readonly DisplayRequest displayRequest = new();
 
 	/// <summary>
 	/// Creates the corresponding platform view of <see cref="MediaElement"/> on Windows.
@@ -170,7 +171,7 @@ partial class MediaManager : IDisposable
 
 		if (mediaElement.Source is UriMediaSource)
 		{
-			var uri = (mediaElement.Source as UriMediaSource)?.Uri?.AbsoluteUri!;
+			var uri = (mediaElement.Source as UriMediaSource)?.Uri?.AbsoluteUri;
 			if (!string.IsNullOrWhiteSpace(uri))
 			{
 				player.Source = WinMediaSource.CreateFromUri(new Uri(uri));
@@ -178,7 +179,7 @@ partial class MediaManager : IDisposable
 		}
 		else if (mediaElement.Source is FileMediaSource)
 		{
-			string filename = (mediaElement.Source as FileMediaSource)?.Path!;
+			string filename = (mediaElement.Source as FileMediaSource)?.Path;
 			if (!string.IsNullOrWhiteSpace(filename))
 			{
 				StorageFile storageFile = await StorageFile.GetFileFromPathAsync(filename);
@@ -187,7 +188,7 @@ partial class MediaManager : IDisposable
 		}
 		else if (mediaElement.Source is ResourceMediaSource)
 		{
-			string path = "ms-appx:///" + (mediaElement.Source as ResourceMediaSource)!.Path!;
+			string path = "ms-appx:///" + (mediaElement.Source as ResourceMediaSource).Path;
 			if (!string.IsNullOrWhiteSpace(path))
 			{
 				player.Source = WinMediaSource.CreateFromUri(new Uri(path));

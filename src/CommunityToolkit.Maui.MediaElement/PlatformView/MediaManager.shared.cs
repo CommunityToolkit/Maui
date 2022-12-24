@@ -19,7 +19,7 @@ public partial class MediaManager
 {
 	readonly IMauiContext mauiContext;
 	readonly IMediaElement mediaElement;
-#if ANDROID || IOS || MACCATALYST || WINDOWS
+#if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
 	PlatformMediaView? player;
 #endif
 
@@ -33,14 +33,13 @@ public partial class MediaManager
 		this.mauiContext = context;
 		this.mediaElement = mediaElement;
 
-		Logger = mauiContext.Services.GetService<ILoggerFactory>()?
-			.CreateLogger(nameof(MediaManager));
+		Logger = mauiContext.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(MediaManager));
 	}
 
 	/// <summary>
 	/// Gets the <see cref="ILogger"/> instance for logging purposes.
 	/// </summary>
-	public ILogger? Logger { get; }
+	public ILogger Logger { get; }
 
 	/// <summary>
 	/// Invokes the play operation on the platform element.
@@ -190,7 +189,7 @@ public partial class MediaManager
 	protected virtual partial void PlatformUpdateIsLooping();
 }
 
-#if !(WINDOWS || ANDROID || IOS || MACCATALYST)
+#if !(WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN)
 partial class MediaManager
 {
 	protected virtual partial void PlatformPlay() { }

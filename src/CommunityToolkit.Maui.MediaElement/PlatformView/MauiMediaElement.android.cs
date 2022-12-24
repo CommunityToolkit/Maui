@@ -11,16 +11,17 @@ namespace CommunityToolkit.Maui.MediaElement.PlatformView;
 /// </summary>
 public class MauiMediaElement : CoordinatorLayout
 {
-	StyledPlayerView? playerView;
+	readonly StyledPlayerView playerView;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
 	/// </summary>
 	/// <param name="context">The application's <see cref="Context"/>.</param>
 	/// <param name="playerView">The <see cref="StyledPlayerView"/> that acts as the platform media player.</param>
-	public MauiMediaElement(Context context, StyledPlayerView playerView)
-		 : base(context)
+	public MauiMediaElement(Context context, StyledPlayerView playerView) : base(context)
 	{
+		this.playerView = playerView;
+
 		// Create a RelativeLayout for sizing the video
 		RelativeLayout relativeLayout = new(context)
 		{
@@ -29,8 +30,6 @@ public class MauiMediaElement : CoordinatorLayout
 				Gravity = (int)GravityFlags.Center
 			}
 		};
-
-		this.playerView = playerView;
 
 		relativeLayout.AddView(playerView);
 		AddView(relativeLayout);
@@ -45,12 +44,11 @@ public class MauiMediaElement : CoordinatorLayout
 		if (disposing)
 		{
 			if (playerView is not null)
-			{                
+			{
 				// https://github.com/google/ExoPlayer/issues/1855#issuecomment-251041500
 				playerView.Player?.Release();
 				playerView.Player?.Dispose();
 				playerView.Dispose();
-				playerView = null;
 			}
 		}
 

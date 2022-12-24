@@ -126,7 +126,7 @@ public partial class MediaManager : IDisposable
 			{
 				string directory = Path.GetDirectoryName(path) ?? "";
 				string filename = Path.GetFileNameWithoutExtension(path);
-				string extension = Path.GetExtension(path).Substring(1);
+				string extension = Path.GetExtension(path)[1..];
 				var url = NSBundle.MainBundle.GetUrlForResource(filename,
 					extension, directory);
 

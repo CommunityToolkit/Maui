@@ -15,15 +15,17 @@ public class MauiMediaElement : UIView
 	/// <exception cref="NullReferenceException">Thrown when <paramref name="playerViewController"/><c>.View</c> is <see langword="null"/>.</exception>
 	public MauiMediaElement(AVPlayerViewController playerViewController)
 	{
-		_ = playerViewController.View ?? throw new NullReferenceException(nameof(playerViewController.View));
+		ArgumentNullException.ThrowIfNull(playerViewController.View);
 		playerViewController.View.Frame = Bounds;
 
 #if IOS16_0_OR_GREATER || MACCATALYST16_1_OR_GREATER
 		// On iOS 16+ and macOS 13+ the AVPlayerViewController has to be added to the parent ViewController, otherwise the transport controls won't be displayed.
-		var viewController = WindowStateManager.Default.GetCurrentUIViewController()
-			?? throw new NullReferenceException("ViewController can't be null.");
+		var viewController = WindowStateManager.Default.GetCurrentUIViewController() ?? throw new InvalidOperationException("ViewController can't be null.");
 
-		_ = viewController.View ?? throw new NullReferenceException(nameof(viewController.View));
+		if (viewController.View is null)
+		{
+			throw new NullReferenceException($"{nameof(viewController.View)} cannot be null");
+		}
 
 		// Zero out the safe area insets of the AVPlayerViewController
 		UIEdgeInsets insets = viewController.View.SafeAreaInsets;
