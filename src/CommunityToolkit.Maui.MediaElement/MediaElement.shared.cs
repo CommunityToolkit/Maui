@@ -93,7 +93,7 @@ public class MediaElement : View, IMediaElement
 	/// </summary>
 	public MediaElement()
 	{
-		InitTimer();
+		InitializeTimer();
 	}
 
 	/// <inheritdoc cref="IMediaElement.MediaEnded"/>
@@ -321,7 +321,7 @@ public class MediaElement : View, IMediaElement
 	/// <inheritdoc cref="IMediaElement.Play"/>
 	public void Play()
 	{
-		InitTimer();
+		InitializeTimer();
 		OnPlayRequested();
 		Handler?.Invoke(nameof(PlayRequested));
 	}
@@ -358,7 +358,7 @@ public class MediaElement : View, IMediaElement
 
 	internal void OnMediaOpened()
 	{
-		InitTimer();
+		InitializeTimer();
 		eventManager.HandleEvent(this, EventArgs.Empty, nameof(MediaOpened));
 	}
 
@@ -408,7 +408,7 @@ public class MediaElement : View, IMediaElement
 		Handler?.Invoke(nameof(UpdateStatus));
 	}
 
-	void InitTimer()
+	void InitializeTimer()
 	{
 		if (timer is not null)
 		{
