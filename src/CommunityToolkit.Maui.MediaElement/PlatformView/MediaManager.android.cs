@@ -272,20 +272,20 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		player.PlayWhenReady = mediaElement.AutoPlay;
 
-		if (mediaElement.Source is UriMediaSource)
+		if (mediaElement.Source is UriMediaSource uriMediaSource)
 		{
-			string uri = (mediaElement.Source as UriMediaSource)!.Uri!.AbsoluteUri;
-			if (!string.IsNullOrWhiteSpace(uri))
+			var uri = uriMediaSource.Uri;
+			if (!string.IsNullOrWhiteSpace(uri?.AbsolutePath))
 			{
-				player.SetMediaItem(MediaItem.FromUri(uri));
+				player.SetMediaItem(MediaItem.FromUri(uri.AbsolutePath));
 				player.Prepare();
 
 				hasSetSource = true;
 			}
 		}
-		else if (mediaElement.Source is FileMediaSource)
+		else if (mediaElement.Source is FileMediaSource fileMediaSource)
 		{
-			string filePath = (mediaElement.Source as FileMediaSource)!.Path!;
+			var filePath = fileMediaSource.Path;
 			if (!string.IsNullOrWhiteSpace(filePath))
 			{
 				player.SetMediaItem(MediaItem.FromUri(filePath));
@@ -294,10 +294,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 				hasSetSource = true;
 			}
 		}
-		else if (mediaElement.Source is ResourceMediaSource)
+		else if (mediaElement.Source is ResourceMediaSource resourceMediaSource)
 		{
-			string package = playerView?.Context?.PackageName ?? "";
-			string path = (mediaElement.Source as ResourceMediaSource)!.Path!;
+			var package = playerView?.Context?.PackageName ?? "";
+			var path = resourceMediaSource.Path;
 			if (!string.IsNullOrWhiteSpace(path))
 			{
 				string assetFilePath = "asset://" + package + "/" + path;

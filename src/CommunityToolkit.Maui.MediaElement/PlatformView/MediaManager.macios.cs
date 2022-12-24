@@ -100,27 +100,27 @@ public partial class MediaManager : IDisposable
 
 		AVAsset? asset = null;
 
-		if (mediaElement.Source is UriMediaSource)
+		if (mediaElement.Source is UriMediaSource uriMediaSource)
 		{
-			string uri = (mediaElement.Source as UriMediaSource)!.Uri!.AbsoluteUri;
+			var uri = uriMediaSource.Uri;
 
-			if (!string.IsNullOrWhiteSpace(uri))
+			if (!string.IsNullOrWhiteSpace(uri?.AbsolutePath))
 			{
-				asset = AVAsset.FromUrl(new NSUrl(uri));
+				asset = AVAsset.FromUrl(new NSUrl(uri.AbsolutePath));
 			}
 		}
-		else if (mediaElement.Source is FileMediaSource)
+		else if (mediaElement.Source is FileMediaSource fileMediaSource)
 		{
-			string uri = (mediaElement.Source as FileMediaSource)!.Path!;
+			var uri = fileMediaSource.Path;
 
 			if (!string.IsNullOrWhiteSpace(uri))
 			{
 				asset = AVAsset.FromUrl(NSUrl.CreateFileUrl(new[] { uri }));
 			}
 		}
-		else if (mediaElement.Source is ResourceMediaSource)
+		else if (mediaElement.Source is ResourceMediaSource resourceMediaSource)
 		{
-			string path = (mediaElement.Source as ResourceMediaSource)!.Path!;
+			var path = resourceMediaSource.Path;
 
 			if (!string.IsNullOrWhiteSpace(path))
 			{
@@ -194,8 +194,7 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		playerViewController.ShowsPlaybackControls =
-			mediaElement.ShowsPlaybackControls;
+		playerViewController.ShowsPlaybackControls = mediaElement.ShowsPlaybackControls;
 	}
 
 	protected virtual partial void PlatformUpdatePosition()
@@ -404,12 +403,12 @@ public partial class MediaManager : IDisposable
 	void ErrorOccurred(object? sender, NSNotificationEventArgs args)
 	{
 		string message;
-		
+
 		var error = player?.CurrentItem?.Error;
 		if (error != null)
 		{
 			message = error.LocalizedDescription;
-			
+
 			mediaElement.MediaFailed(new MediaFailedEventArgs(message));
 			Logger?.LogError("{logMessage}", message);
 		}
