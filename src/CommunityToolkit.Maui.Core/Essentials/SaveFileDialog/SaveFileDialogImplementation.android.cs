@@ -10,8 +10,6 @@ namespace CommunityToolkit.Maui.Storage;
 /// <inheritdoc />
 public partial class SaveFileDialogImplementation : ISaveFileDialog
 {
-	const int requestCodeSaveFilePicker = 54321;
-
 	/// <inheritdoc/>
 	public async Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
@@ -29,7 +27,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 
 		AndroidUri? filePath = null;
 
-		await IntermediateActivity.StartAsync(pickerIntent, requestCodeSaveFilePicker, onResult: OnResult).WaitAsync(cancellationToken).ConfigureAwait(false);
+		await IntermediateActivity.StartAsync(pickerIntent, (int)AndroidRequestCode.RequestCodeSaveFilePicker, onResult: OnResult).WaitAsync(cancellationToken).ConfigureAwait(false);
 
 		if (filePath is null)
 		{

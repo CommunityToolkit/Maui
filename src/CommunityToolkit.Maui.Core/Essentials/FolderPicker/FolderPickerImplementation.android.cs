@@ -8,8 +8,6 @@ namespace CommunityToolkit.Maui.Storage;
 /// <inheritdoc />
 public class FolderPickerImplementation : IFolderPicker
 {
-	const int requestCodeFolderPicker = 12345;
-
 	/// <inheritdoc />
 	public async Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)
 	{
@@ -24,7 +22,7 @@ public class FolderPickerImplementation : IFolderPicker
 		var intent = new Intent(Intent.ActionOpenDocumentTree);
 		var pickerIntent = Intent.CreateChooser(intent, string.Empty) ?? throw new InvalidOperationException("Unable to create intent.");
 
-		await IntermediateActivity.StartAsync(pickerIntent, requestCodeFolderPicker, onResult: OnResult).WaitAsync(cancellationToken);
+		await IntermediateActivity.StartAsync(pickerIntent, (int)AndroidRequestCode.RequestCodeFolderPicker, onResult: OnResult).WaitAsync(cancellationToken);
 
 		return folder ?? throw new FolderPickerException("Unable to get folder.");
 
