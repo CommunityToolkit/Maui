@@ -1,5 +1,5 @@
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
+using Microsoft.Maui.ApplicationModel;
 
 namespace CommunityToolkit.Maui.Storage;
 

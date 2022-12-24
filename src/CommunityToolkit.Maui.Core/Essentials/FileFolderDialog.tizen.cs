@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
-using Microsoft.Maui.Platform;
+﻿using Microsoft.Maui.Platform;
 using Tizen.NUI;
 using Tizen.NUI.BaseComponents;
 using Tizen.UIExtensions.NUI;
@@ -17,10 +16,10 @@ using Window = Tizen.NUI.Window;
 
 namespace CommunityToolkit.Maui.Storage;
 
-sealed class FileFolderDialog : Popup<string>, IDisposable
-{
-	const string fileSaveString = "Save As";
-	const string selectFolderString = "Select Folder";
+sealed class FileFolderDialog : Popup<string>
+{ 
+	static string fileSaveString = "Save As";
+	static string selectFolderString = "Select Folder";
 	const string previousDirectorySymbol = "..";
 	const string slashSymbol = "/";
 
@@ -51,7 +50,7 @@ sealed class FileFolderDialog : Popup<string>, IDisposable
 		fileSaveString = fileSaveStringValue;
 	}
 
-	public static void SetSelectFolderString(string setFolderStringValue)
+	public static void SetSelectFolderString(string selectFolderStringValue)
 	{
 		selectFolderString = selectFolderStringValue;
 	}
