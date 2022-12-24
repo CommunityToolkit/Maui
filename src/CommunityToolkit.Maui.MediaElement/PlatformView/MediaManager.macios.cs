@@ -43,6 +43,15 @@ public partial class MediaManager : IDisposable
 		return (player, playerViewController);
 	}
 
+	/// <summary>
+	/// Releases the managed and unmanaged resources used by the <see cref="MediaManager"/>.
+	/// </summary>
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
 	protected virtual partial void PlatformPlay()
 	{
 		if (player?.CurrentTime == playerItem?.Duration)
@@ -281,20 +290,7 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
-	/// <summary>
-	/// Releases the managed and unmanaged resources used by the <see cref="MediaManager"/>.
-	/// </summary>
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
-	}
-
-	static TimeSpan ConvertTime(CMTime cmTime)
-	{
-		return TimeSpan.FromSeconds(
-			double.IsNaN(cmTime.Seconds) ? 0 : cmTime.Seconds);
-	}
+	static TimeSpan ConvertTime(CMTime cmTime) => TimeSpan.FromSeconds(double.IsNaN(cmTime.Seconds) ? 0 : cmTime.Seconds);
 
 	void AddStatusObservers()
 	{

@@ -34,6 +34,15 @@ partial class MediaManager : IDisposable
 		return player;
 	}
 
+	/// <summary>
+	/// Releases the managed and unmanaged resources used by the <see cref="MediaManager"/>.
+	/// </summary>
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
 	protected virtual partial void PlatformPlay()
 	{
 		player?.MediaPlayer.Play();
@@ -169,26 +178,26 @@ partial class MediaManager : IDisposable
 
 		player.AutoPlay = mediaElement.AutoPlay;
 
-		if (mediaElement.Source is UriMediaSource)
+		if (mediaElement.Source is UriMediaSource uriMediaSource)
 		{
-			var uri = (mediaElement.Source as UriMediaSource)?.Uri?.AbsoluteUri;
+			var uri = uriMediaSource.Uri?.AbsoluteUri;
 			if (!string.IsNullOrWhiteSpace(uri))
 			{
 				player.Source = WinMediaSource.CreateFromUri(new Uri(uri));
 			}
 		}
-		else if (mediaElement.Source is FileMediaSource)
+		else if (mediaElement.Source is FileMediaSource fileMediaSource)
 		{
-			string filename = (mediaElement.Source as FileMediaSource)?.Path;
+			var filename = fileMediaSource.Path;
 			if (!string.IsNullOrWhiteSpace(filename))
 			{
 				StorageFile storageFile = await StorageFile.GetFileFromPathAsync(filename);
 				player.Source = WinMediaSource.CreateFromStorageFile(storageFile);
 			}
 		}
-		else if (mediaElement.Source is ResourceMediaSource)
+		else if (mediaElement.Source is ResourceMediaSource resourceMediaSource)
 		{
-			string path = "ms-appx:///" + (mediaElement.Source as ResourceMediaSource).Path;
+			string path = "ms-appx:///" + resourceMediaSource.Path;
 			if (!string.IsNullOrWhiteSpace(path))
 			{
 				player.Source = WinMediaSource.CreateFromUri(new Uri(path));
@@ -204,6 +213,36 @@ partial class MediaManager : IDisposable
 		}
 
 		player.MediaPlayer.IsLoopingEnabled = mediaElement.IsLooping;
+	}
+
+	/// <summary>
+	/// Releases the unmanaged resources used by the <see cref="MediaManager"/> and optionally releases the managed resources.
+	/// </summary>
+	/// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
+	protected virtual void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			if (player?.MediaPlayer is not null)
+			{
+				if (displayActiveRequested)
+				{
+					displayRequest.RequestRelease();
+					displayActiveRequested = false;
+				}
+
+				player.MediaPlayer.MediaOpened -= MediaPlayer_MediaOpened;
+				player.MediaPlayer.MediaFailed -= MediaPlayer_MediaFailed;
+				player.MediaPlayer.MediaEnded -= MediaPlayer_MediaEnded;
+				player.MediaPlayer.VolumeChanged -= MediaPlayer_VolumeChanged;
+
+				if (player.MediaPlayer.PlaybackSession is not null)
+				{
+					player.MediaPlayer.PlaybackSession.PlaybackStateChanged -= PlaybackSession_PlaybackStateChanged;
+					player.MediaPlayer.PlaybackSession.SeekCompleted -= PlaybackSession_SeekCompleted;
+				}
+			}
+		}
 	}
 
 	void MediaPlayer_MediaOpened(MediaPlayer sender, object args)
@@ -278,44 +317,5 @@ partial class MediaManager : IDisposable
 	void PlaybackSession_SeekCompleted(MediaPlaybackSession sender, object args)
 	{
 		mediaElement?.SeekCompleted();
-	}
-
-	/// <summary>
-	/// Releases the unmanaged resources used by the <see cref="MediaManager"/> and optionally releases the managed resources.
-	/// </summary>
-	/// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
-	protected virtual void Dispose(bool disposing)
-	{
-		if (disposing)
-		{
-			if (player?.MediaPlayer is not null)
-			{
-				if (displayActiveRequested)
-				{
-					displayRequest.RequestRelease();
-					displayActiveRequested = false;
-				}
-
-				player.MediaPlayer.MediaOpened -= MediaPlayer_MediaOpened;
-				player.MediaPlayer.MediaFailed -= MediaPlayer_MediaFailed;
-				player.MediaPlayer.MediaEnded -= MediaPlayer_MediaEnded;
-				player.MediaPlayer.VolumeChanged -= MediaPlayer_VolumeChanged;
-
-				if (player.MediaPlayer.PlaybackSession is not null)
-				{
-					player.MediaPlayer.PlaybackSession.PlaybackStateChanged -= PlaybackSession_PlaybackStateChanged;
-					player.MediaPlayer.PlaybackSession.SeekCompleted -= PlaybackSession_SeekCompleted;
-				}
-			}
-		}
-	}
-
-	/// <summary>
-	/// Releases the managed and unmanaged resources used by the <see cref="MediaManager"/>.
-	/// </summary>
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
 	}
 }

@@ -76,22 +76,23 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		var newState = playbackState switch
 		{
 			PlaybackStateCompat.StateFastForwarding
-			or PlaybackStateCompat.StateRewinding
-			or PlaybackStateCompat.StateSkippingToNext
-			or PlaybackStateCompat.StateSkippingToPrevious
-			or PlaybackStateCompat.StateSkippingToQueueItem
-			or PlaybackStateCompat.StatePlaying => playWhenReady ?
-				MediaElementState.Playing : MediaElementState.Paused,
+				or PlaybackStateCompat.StateRewinding
+				or PlaybackStateCompat.StateSkippingToNext
+				or PlaybackStateCompat.StateSkippingToPrevious
+				or PlaybackStateCompat.StateSkippingToQueueItem
+				or PlaybackStateCompat.StatePlaying => playWhenReady
+														? MediaElementState.Playing
+														: MediaElementState.Paused,
 
 			PlaybackStateCompat.StatePaused => MediaElementState.Paused,
 
 			PlaybackStateCompat.StateConnecting
-			or PlaybackStateCompat.StateBuffering => MediaElementState.Buffering,
+				or PlaybackStateCompat.StateBuffering => MediaElementState.Buffering,
 
 			PlaybackStateCompat.StateNone => MediaElementState.None,
-			PlaybackStateCompat.StateStopped
-				=> mediaElement.CurrentState != MediaElementState.Failed ?
-				MediaElementState.Stopped : MediaElementState.Failed,
+			PlaybackStateCompat.StateStopped => mediaElement.CurrentState is not MediaElementState.Failed
+												? MediaElementState.Stopped
+												: MediaElementState.Failed,
 
 			PlaybackStateCompat.StateError => MediaElementState.Failed,
 			_ => MediaElementState.None,
@@ -99,10 +100,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		mediaElement.CurrentStateChanged(newState);
 
-		if (playbackState == IPlayer.StateReady)
+		if (playbackState is IPlayer.StateReady)
 		{
-			mediaElement.Duration = TimeSpan.FromMilliseconds(
-				player.Duration < 0 ? 0 : player.Duration);
+			mediaElement.Duration = TimeSpan.FromMilliseconds(player.Duration < 0 ? 0 : player.Duration);
 		}
 	}
 
@@ -151,16 +151,16 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			return;
 		}
 
-		string errorMessage = string.Empty;
-		string errorCode = string.Empty;
-		string errorCodeName = string.Empty;
-		
+		var errorMessage = string.Empty;
+		var errorCode = string.Empty;
+		var errorCodeName = string.Empty;
+
 		if (!string.IsNullOrWhiteSpace(error?.LocalizedMessage))
 		{
 			errorMessage = $"Error message: {error.LocalizedMessage}";
 		}
 
-		if (error?.ErrorCode != null)
+		if (error?.ErrorCode is not null)
 		{
 			errorCode = $"Error code: {error?.ErrorCode}";
 		}
@@ -170,9 +170,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			errorCode = $"Error codename: {error?.ErrorCodeName}";
 		}
 
-		var message = string.Join(", ",
-			new[] { errorCodeName, errorCode, errorMessage }
-			.Where(s => !string.IsNullOrEmpty(s)));
+		var message = string.Join(", ", new[] { errorCodeName, errorCode, errorMessage }.Where(s => !string.IsNullOrEmpty(s)));
 
 		mediaElement.MediaFailed(new MediaFailedEventArgs(message));
 
@@ -383,8 +381,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			return;
 		}
 
-		player.RepeatMode = mediaElement.IsLooping ?
-			IPlayer.RepeatModeOne : IPlayer.RepeatModeOff;
+		player.RepeatMode = mediaElement.IsLooping ? IPlayer.RepeatModeOne : IPlayer.RepeatModeOff;
 	}
 
 	#region IPlayer.IListener implementation method stubs

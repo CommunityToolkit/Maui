@@ -30,8 +30,8 @@ public partial class MediaManager
 	/// <param name="mediaElement">The <see cref="IMediaElement"/> instance that is managed through this class.</param>
 	public MediaManager(IMauiContext context, IMediaElement mediaElement)
 	{
-		this.mauiContext = context;
 		this.mediaElement = mediaElement;
+		mauiContext = context;
 
 		Logger = mauiContext.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(MediaManager));
 	}
