@@ -18,7 +18,7 @@ public static class FolderPicker
 	/// <param name="initialPath">Initial path</param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="Folder"/></returns>
-	public static ValueTask<Folder> PickAsync(string initialPath, CancellationToken cancellationToken) =>
+	public static Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken) =>
 		Default.PickAsync(initialPath, cancellationToken);
 
 	/// <summary>
@@ -26,7 +26,7 @@ public static class FolderPicker
 	/// </summary>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="Folder"/></returns>
-	public static ValueTask<Folder> PickAsync(CancellationToken cancellationToken) =>
+	public static Task<Folder> PickAsync(CancellationToken cancellationToken) =>
 		Default.PickAsync(cancellationToken);
 
 	internal static void SetDefault(IFolderPicker implementation) =>

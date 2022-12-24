@@ -13,12 +13,12 @@ public interface IFolderPicker
 	/// <param name="initialPath">Initial path</param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="Folder"/></returns>
-	ValueTask<Folder> PickAsync(string initialPath, CancellationToken cancellationToken);
+	Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Allows picking a folder from the file system.
 	/// </summary>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="Folder"/></returns>
-	ValueTask<Folder> PickAsync(CancellationToken cancellationToken);
+	Task<Folder> PickAsync(CancellationToken cancellationToken);
 }

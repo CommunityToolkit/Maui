@@ -4,17 +4,17 @@ using CommunityToolkit.Maui.Storage;
 namespace CommunityToolkit.Maui.UnitTests.Mocks;
 class FolderPickerImplementationMock : IFolderPicker
 {
-	public ValueTask<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)
+	public Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)
 	{
 		if (string.IsNullOrWhiteSpace(initialPath))
 		{
-			return ValueTask.FromException<Folder>(new FolderPickerException("error"));
+			return Task.FromException<Folder>(new FolderPickerException("error"));
 		}
 
-		return ValueTask.FromResult<Folder>(new Folder(initialPath, "name"));
+		return Task.FromResult<Folder>(new Folder(initialPath, "name"));
 	}
 
-	public ValueTask<Folder> PickAsync(CancellationToken cancellationToken)
+	public Task<Folder> PickAsync(CancellationToken cancellationToken)
 	{
 		return PickAsync(string.Empty, cancellationToken);
 	}

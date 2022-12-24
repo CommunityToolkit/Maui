@@ -9,7 +9,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 	readonly List<string> allFilesExtension = new() { "." };
 
 	/// <inheritdoc />
-	public async ValueTask<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
+	public async Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		var savePicker = new FileSavePicker
 		{
@@ -22,7 +22,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 		savePicker.FileTypeChoices.Add("All files", allFilesExtension);
 		savePicker.SuggestedFileName = GetFileName(fileName);
 
-		var file = await savePicker.PickSaveFileAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
+		var file = await savePicker.PickSaveFileAsync();
 
 		if (string.IsNullOrEmpty(file?.Path))
 		{
@@ -34,7 +34,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 	}
 
 	/// <inheritdoc />
-	public ValueTask<string> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
+	public Task<string> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		return SaveAsync(string.Empty, fileName, stream, cancellationToken);
 	}

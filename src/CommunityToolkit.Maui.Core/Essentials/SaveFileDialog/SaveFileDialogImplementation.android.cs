@@ -13,7 +13,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 	const int requestCodeSaveFilePicker = 54321;
 
 	/// <inheritdoc/>
-	public async ValueTask<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
+	public async Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		var status = await Permissions.RequestAsync<Permissions.StorageWrite>().WaitAsync(cancellationToken).ConfigureAwait(false);
 		if (status is not PermissionStatus.Granted)
@@ -45,7 +45,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 	}
 
 	/// <inheritdoc />
-	public ValueTask<string> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
+	public Task<string> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		return SaveAsync(GetExternalDirectory(), fileName, stream, cancellationToken);
 	}

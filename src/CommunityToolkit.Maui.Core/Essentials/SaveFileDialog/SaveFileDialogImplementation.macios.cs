@@ -7,7 +7,7 @@ public sealed partial class SaveFileDialogImplementation : ISaveFileDialog, IDis
 	TaskCompletionSource<string>? taskCompetedSource;
 	
 	/// <inheritdoc/>
-	public async ValueTask<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
+	public async Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		var fileManager = NSFileManager.DefaultManager;
 		var fileUrl = fileManager.GetTemporaryDirectory().Append($"{Guid.NewGuid()}{GetExtension(fileName)}", false);
@@ -26,7 +26,7 @@ public sealed partial class SaveFileDialogImplementation : ISaveFileDialog, IDis
 	}
 
 	/// <inheritdoc/>
-	public ValueTask<string> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
+	public Task<string> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		return SaveAsync("/", fileName, stream, cancellationToken);
 	}

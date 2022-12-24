@@ -6,8 +6,8 @@ namespace CommunityToolkit.Maui.Storage;
 public class FolderPickerImplementation : IFolderPicker
 {
 	/// <inheritdoc />
-	public ValueTask<Folder> PickAsync(string initialPath, CancellationToken cancellationToken) => throw new NotImplementedException();
+	public Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken) => throw new NotImplementedException();
 
 	/// <inheritdoc />
-	public ValueTask<Folder> PickAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
+	public Task<Folder> PickAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
 }

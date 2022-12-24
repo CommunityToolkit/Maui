@@ -11,7 +11,7 @@ public class FolderPickerImplementation : IFolderPicker
 	const int requestCodeFolderPicker = 12345;
 
 	/// <inheritdoc />
-	public async ValueTask<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)
+	public async Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)
 	{
 		var status = await Permissions.RequestAsync<Permissions.StorageRead>().WaitAsync(cancellationToken).ConfigureAwait(false);
 		if (status is not PermissionStatus.Granted)
@@ -36,7 +36,7 @@ public class FolderPickerImplementation : IFolderPicker
 	}
 
 	/// <inheritdoc />
-	public ValueTask<Folder> PickAsync(CancellationToken cancellationToken)
+	public Task<Folder> PickAsync(CancellationToken cancellationToken)
 	{
 		return PickAsync(GetExternalDirectory(), cancellationToken);
 	}

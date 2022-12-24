@@ -23,7 +23,7 @@ public sealed class FolderPickerImplementation : IFolderPicker, IDisposable
 	}
 
 	/// <inheritdoc />
-	public async ValueTask<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)
+	public async Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)
 	{
 		documentPickerViewController.DirectoryUrl = NSUrl.FromString(initialPath);
 		var currentViewController = Microsoft.Maui.Platform.UIApplicationExtensions.GetKeyWindow(UIApplication.SharedApplication)?.RootViewController;
@@ -35,7 +35,7 @@ public sealed class FolderPickerImplementation : IFolderPicker, IDisposable
 	}
 
 	/// <inheritdoc />
-	public ValueTask<Folder> PickAsync(CancellationToken cancellationToken)
+	public Task<Folder> PickAsync(CancellationToken cancellationToken)
 	{
 		return PickAsync("/", cancellationToken);
 	}
