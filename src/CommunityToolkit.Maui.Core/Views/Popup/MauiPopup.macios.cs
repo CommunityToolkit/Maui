@@ -127,6 +127,7 @@ public class MauiPopup : UIViewController
 		_ = ViewController ?? throw new InvalidOperationException($"{nameof(ViewController)} cannot be null.");
 		AddToCurrentPageViewController(ViewController);
 
+		this.SetSize(virtualView);
 		this.SetLayout(virtualView);
 	}
 

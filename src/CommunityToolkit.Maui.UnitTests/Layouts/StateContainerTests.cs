@@ -1,4 +1,8 @@
-﻿using CommunityToolkit.Maui.Layouts;
+﻿using System.ComponentModel;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using CommunityToolkit.Maui.Layouts;
+using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Nito.AsyncEx;
 using Xunit;
@@ -89,6 +93,46 @@ public class StateContainerTests : BaseTest
 	{
 		StateContainer.SetShouldAnimateOnStateChange(layout, true);
 		Assert.True(StateContainer.GetShouldAnimateOnStateChange(layout));
+	}
+
+	[Fact]
+	public void StateContainer_CanStateChangePropertyReadOnly()
+	{
+		var viewModel = new ViewModel
+		{
+			CanChangeState = false
+		};
+		layout.BindingContext = viewModel;
+		layout.SetBinding(StateContainer.CanStateChangeProperty, nameof(ViewModel.CanChangeState));
+
+		Assert.True(StateContainer.GetCanStateChange(layout));
+		Assert.True(viewModel.CanChangeState);
+
+		StateContainer.SetCurrentState(layout, StateKey.Anything);
+		Assert.Equal(StateKey.Anything, StateContainer.GetCurrentState(layout));
+	}
+
+	[Fact]
+	public void StateContainer_ChangingStateWhenCanStateChangePropertyIsFalse()
+	{
+		layout.EnableAnimations();
+		foreach (var child in layout.Children)
+		{
+			child.EnableAnimations();
+		}
+
+		StateContainer.SetShouldAnimateOnStateChange(layout, true);
+		StateContainer.SetCurrentState(layout, StateKey.Error);
+
+		Assert.False(StateContainer.GetCanStateChange(layout));
+
+		var exception = Assert.Throws<StateContainerException>(() =>
+		{
+			// Use AsyncContext to test `async void` methods https://stackoverflow.com/a/14207615/5953643
+			AsyncContext.Run(() => StateContainer.SetCurrentState(layout, StateKey.Anything));
+		});
+
+		exception.Message.Should().StartWith("CanStateChange is false. CurrentState cannot be changed while a state change is in progress.");
 	}
 
 	[Fact]
@@ -230,6 +274,33 @@ public class StateContainerTests : BaseTest
 		Assert.IsType<Label>(label);
 		Assert.Equal(((VerticalStackLayout)innerLayout).VerticalOptions, ((Label)label).VerticalOptions);
 		Assert.Equal(((VerticalStackLayout)innerLayout).HorizontalOptions, ((Label)label).HorizontalOptions);
+	}
+
+	class ViewModel : INotifyPropertyChanged
+	{
+		bool canStateChange;
+		Command? changeStateCommand;
+
+		public bool CanChangeState
+		{
+			get => canStateChange;
+			set
+			{
+				if (value != canStateChange)
+				{
+					canStateChange = value;
+					OnPropertyChanged();
+					ChangeStateCommand.ChangeCanExecute();
+				}
+			}
+		}
+
+		Command ChangeStateCommand => changeStateCommand ??= new Command(() => Debug.WriteLine("Command Tapped"), () => CanChangeState);
+
+		public event PropertyChangedEventHandler? PropertyChanged;
+
+		void OnPropertyChanged([CallerMemberName] string propertyName = "") =>
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 	}
 
 	static class StateKey
