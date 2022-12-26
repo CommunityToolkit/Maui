@@ -14,7 +14,7 @@
 		<Grid
 			Padding="20" 
 			ColumnDefinitions="*,*"
-			RowDefinitions="Auto, Auto, 60, 60, 60"
+			RowDefinitions="Auto, Auto, 60, 60, 60, Auto"
 			RowSpacing="20">
 
 			<Label
@@ -75,6 +75,11 @@
 						<mct:IconTintColorBehavior TintColor="{Binding Source={x:Reference this}, Path=BindingContext.ChangedColor}" />
 					</ImageButton.Behaviors>
 				</ImageButton>
+
+			<Label
+				Grid.Row="5"
+				Grid.Column="1"
+				Text="The ImageButton above uses Binding in order to change the TintColor. Click it!"/>
 			</Grid>
 	</ScrollView>
 </pages:BasePage>
