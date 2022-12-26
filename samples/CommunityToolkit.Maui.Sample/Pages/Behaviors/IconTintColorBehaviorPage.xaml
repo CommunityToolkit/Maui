@@ -8,7 +8,8 @@
 	xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
 	Title="IconTintColorBehaviorPage"
 	x:DataType="vm:IconTintColorBehaviorViewModel"
-	x:TypeArguments="vm:IconTintColorBehaviorViewModel">
+	x:TypeArguments="vm:IconTintColorBehaviorViewModel"
+	x:Name="this">
 	<ScrollView>
 		<Grid
 			Padding="20" 
@@ -68,9 +69,10 @@
 				<ImageButton
 					Grid.Row="4"
 					Grid.Column="1"
+					Command="{Binding ChangeCommand}"
 					Source="shield.png">
 					<ImageButton.Behaviors>
-						<mct:IconTintColorBehavior TintColor="Green" />
+						<mct:IconTintColorBehavior TintColor="{Binding Source={x:Reference this}, Path=BindingContext.ChangedColor}" />
 					</ImageButton.Behaviors>
 				</ImageButton>
 			</Grid>
