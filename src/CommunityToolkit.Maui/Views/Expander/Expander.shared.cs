@@ -1,7 +1,15 @@
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
+#if IOS || MACCATALYST
+using CoreGraphics;
+using Microsoft.Maui.Devices.Sensors;
+using UIKit;
+
+#endif
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -45,7 +53,7 @@ public class Expander : ContentView, IExpander
 	public static readonly BindableProperty CommandProperty
 		= BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(Expander));
 
-	readonly IGestureRecognizer tapGestureRecognizer;
+	readonly TapGestureRecognizer tapGestureRecognizer;
 	readonly WeakEventManager tappedEventManager = new();
 
 	/// <summary>
@@ -53,10 +61,8 @@ public class Expander : ContentView, IExpander
 	/// </summary>
 	public Expander()
 	{
-		tapGestureRecognizer = new TapGestureRecognizer
-		{
-			Command = new Command(() => IsExpanded = !IsExpanded)
-		};
+		tapGestureRecognizer = new TapGestureRecognizer();
+		tapGestureRecognizer.Tapped += TapGestureRecognizer_Tapped;
 
 		base.Content = new Grid
 		{
@@ -66,6 +72,14 @@ public class Expander : ContentView, IExpander
 				new RowDefinition(GridLength.Auto)
 			}
 		};
+	}
+
+	void TapGestureRecognizer_Tapped(object? sender, TappedEventArgs e)
+	{
+		IsExpanded = !IsExpanded;
+#if IOS || MACCATALYST || WINDOWS
+		ForceUpdateLayoutSizeForItemsView(this, e);
+#endif
 	}
 
 	/// <summary>
@@ -172,11 +186,6 @@ public class Expander : ContentView, IExpander
 
 	static void OnIsExpandedPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		var expander = (Expander)bindable;
-#if IOS || MACCATALYST || WINDOWS
-		ForceUpdateLayoutSizeForItemsView(expander);
-#endif
-
 		((IExpander)bindable).ExpandedChanged(((IExpander)bindable).IsExpanded);
 	}
 
@@ -214,7 +223,7 @@ public class Expander : ContentView, IExpander
 		headerView.GestureRecognizers.Add(tapGestureRecognizer);
 	}
 
-	static async void ForceUpdateLayoutSizeForItemsView(Expander expander)
+	static void ForceUpdateLayoutSizeForItemsView(Expander expander, TappedEventArgs tappedEventArgs)
 	{
 		if (expander.Header is null)
 		{
@@ -225,6 +234,7 @@ public class Expander : ContentView, IExpander
 		var size = expander.IsExpanded
 				? expander.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins).Request
 				: expander.Header.Measure(double.PositiveInfinity, double.PositiveInfinity);
+		
 		while (element is not null)
 		{
 			if (element.Parent is ListView listView)
@@ -239,10 +249,47 @@ public class Expander : ContentView, IExpander
 				var uiCollectionViewController = controller?.GetValue(handler) as UIKit.UICollectionViewController;
 				if (uiCollectionViewController?.CollectionView.CollectionViewLayout is UIKit.UICollectionViewFlowLayout layout)
 				{
-					layout.EstimatedItemSize = new CoreGraphics.CGSize(size.Width, size.Height);
-					layout.ItemSize = layout.EstimatedItemSize;
-					await Task.Delay(500);
-					layout.InvalidateLayout();
+					var tapLocation = tappedEventArgs.GetPosition(collectionView);
+					if (tapLocation is null)
+					{
+						break;
+					}
+
+					var cells = layout.CollectionView.VisibleCells.OrderBy(x => x.Frame.Y).ToArray();
+					var clickedCell = GetCellByPoint(cells, new CGPoint(tapLocation.Value.X, tapLocation.Value.Y));
+					if (clickedCell is null)
+					{
+						continue;
+					}
+
+					for (int i = 0; i < cells.Length; i++)
+					{
+						var cell = cells[i];
+
+						if (i > 0)
+						{
+							var prevCellFrame = cells[i - 1].Frame;
+							cell.Frame = new CGRect(cell.Frame.X, prevCellFrame.Y + prevCellFrame.Height, cell.Frame.Width, cell.Frame.Height);
+						}
+
+						if (cell == clickedCell)
+						{
+							cell.Frame = new CGRect(cell.Frame.X, cell.Frame.Y, cell.Frame.Width, size.Height);
+						}
+					}
+				}
+
+				static UICollectionViewCell? GetCellByPoint(UICollectionViewCell[] cells, CGPoint point)
+				{
+					foreach (var cell in cells)
+					{
+						if (cell.Frame.Contains(point))
+						{
+							return cell;
+						}
+					}
+
+					return null;
 				}
 #elif WINDOWS
 				var formsListView = collectionView.Handler?.PlatformView as Microsoft.Maui.Controls.Platform.FormsListView;
