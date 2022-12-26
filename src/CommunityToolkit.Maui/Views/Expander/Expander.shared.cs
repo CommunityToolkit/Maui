@@ -1,21 +1,12 @@
 using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
-#if IOS || MACCATALYST
-using CoreGraphics;
-using Microsoft.Maui.Devices.Sensors;
-using UIKit;
-
-#endif
 
 namespace CommunityToolkit.Maui.Views;
 
 /// <inheritdoc cref="IExpander"/>
 [ContentProperty(nameof(Content))]
-public class Expander : ContentView, IExpander
+public partial class Expander : ContentView, IExpander
 {
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Header"/> property.
@@ -72,14 +63,6 @@ public class Expander : ContentView, IExpander
 				new RowDefinition(GridLength.Auto)
 			}
 		};
-	}
-
-	void TapGestureRecognizer_Tapped(object? sender, TappedEventArgs e)
-	{
-		IsExpanded = !IsExpanded;
-#if IOS || MACCATALYST || WINDOWS
-		ForceUpdateLayoutSizeForItemsView(this, e);
-#endif
 	}
 
 	/// <summary>
@@ -223,92 +206,36 @@ public class Expander : ContentView, IExpander
 		headerView.GestureRecognizers.Add(tapGestureRecognizer);
 	}
 
-	static void ForceUpdateLayoutSizeForItemsView(Expander expander, TappedEventArgs tappedEventArgs)
+	
+	void TapGestureRecognizer_Tapped(object? sender, TappedEventArgs tappedEventArgs)
 	{
-		if (expander.Header is null)
+		IsExpanded = !IsExpanded;
+#if IOS || MACCATALYST || WINDOWS
+		if (Header is null)
 		{
 			return;
 		}
 
-		Element element = expander;
-		var size = expander.IsExpanded
-				? expander.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins).Request
-				: expander.Header.Measure(double.PositiveInfinity, double.PositiveInfinity);
+		Element element = this;
+		var size = IsExpanded
+				? Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins).Request
+				: Header.Measure(double.PositiveInfinity, double.PositiveInfinity);
 		
 		while (element is not null)
 		{
-			if (element.Parent is ListView listView)
+			if (element.Parent is ListView)
 			{
 				(element as Cell)?.ForceUpdateSize();
 			}
 			else if (element is CollectionView collectionView)
 			{
-#if IOS || MACCATALYST
-				var handler = collectionView.Handler as Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler;
-				var controller = handler?.GetType().BaseType?.BaseType?.BaseType?.BaseType?.BaseType?.GetProperty("Controller", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
-				var uiCollectionViewController = controller?.GetValue(handler) as UIKit.UICollectionViewController;
-				if (uiCollectionViewController?.CollectionView.CollectionViewLayout is UIKit.UICollectionViewFlowLayout layout)
-				{
-					var tapLocation = tappedEventArgs.GetPosition(collectionView);
-					if (tapLocation is null)
-					{
-						break;
-					}
-
-					var cells = layout.CollectionView.VisibleCells.OrderBy(x => x.Frame.Y).ToArray();
-					var clickedCell = GetCellByPoint(cells, new CGPoint(tapLocation.Value.X, tapLocation.Value.Y));
-					if (clickedCell is null)
-					{
-						continue;
-					}
-
-					for (int i = 0; i < cells.Length; i++)
-					{
-						var cell = cells[i];
-
-						if (i > 0)
-						{
-							var prevCellFrame = cells[i - 1].Frame;
-							cell.Frame = new CGRect(cell.Frame.X, prevCellFrame.Y + prevCellFrame.Height, cell.Frame.Width, cell.Frame.Height);
-						}
-
-						if (cell == clickedCell)
-						{
-							cell.Frame = new CGRect(cell.Frame.X, cell.Frame.Y, cell.Frame.Width, size.Height);
-						}
-					}
-				}
-
-				static UICollectionViewCell? GetCellByPoint(UICollectionViewCell[] cells, CGPoint point)
-				{
-					foreach (var cell in cells)
-					{
-						if (cell.Frame.Contains(point))
-						{
-							return cell;
-						}
-					}
-
-					return null;
-				}
-#elif WINDOWS
-				var formsListView = collectionView.Handler?.PlatformView as Microsoft.Maui.Controls.Platform.FormsListView;
-				if (formsListView is not null)
-				{
-					foreach (var item in formsListView.Items)
-					{
-						var cell = formsListView.ContainerFromItem(item) as Microsoft.UI.Xaml.Controls.ListViewItem;
-						if (cell is not null)
-						{
-							cell.Height = size.Height;
-						}
-					}
-				}
-#endif
+				var tapLocation = tappedEventArgs.GetPosition(collectionView);
+				ForceUpdateCellSize(collectionView, size, tapLocation);
 			}
 
 			element = element.Parent;
 		}
+#endif
 	}
 
 	void IExpander.ExpandedChanged(bool isExpanded)
