@@ -1,4 +1,4 @@
-﻿#if !(ANDROID || IOS || WINDOWS || MACCATALYST)
+﻿#if !(ANDROID || IOS || WINDOWS || MACCATALYST || TIZEN)
 global using PlatformMediaView = System.Object;
 #elif ANDROID
 global using PlatformMediaView = Com.Google.Android.Exoplayer2.IExoPlayer;
@@ -6,6 +6,8 @@ global using PlatformMediaView = Com.Google.Android.Exoplayer2.IExoPlayer;
 global using PlatformMediaView = AVFoundation.AVPlayer;
 #elif WINDOWS
 global using PlatformMediaView = Microsoft.UI.Xaml.Controls.MediaPlayerElement;
+#elif TIZEN
+global using PlatformMediaView = Tizen.Multimedia.Player;
 #endif
 
 using Microsoft.Extensions.Logging;

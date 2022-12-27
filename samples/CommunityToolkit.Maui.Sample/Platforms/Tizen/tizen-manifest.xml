@@ -9,6 +9,7 @@
   <shortcut-list />
   <privileges>
     <privilege>http://tizen.org/privilege/internet</privilege>
+    <privilege>http://tizen.org/privilege/mediastorage</privilege>
   </privileges> 
   <dependencies />
   <provides-appdefined-privileges />

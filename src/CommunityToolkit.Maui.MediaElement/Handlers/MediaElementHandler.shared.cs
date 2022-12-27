@@ -19,7 +19,7 @@ public partial class MediaElementHandler
 		[nameof(IMediaElement.Speed)] = MapSpeed,
 		[nameof(IMediaElement.Volume)] = MapVolume,
 		[nameof(IMediaElement.KeepScreenOn)] = MapKeepScreenOn,
-#if ANDROID || WINDOWS
+#if ANDROID || WINDOWS || TIZEN
 		[nameof(MediaElement.IsLooping)] = MapIsLooping
 #endif
 	};
