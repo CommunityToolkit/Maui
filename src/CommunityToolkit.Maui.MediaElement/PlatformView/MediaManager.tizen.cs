@@ -10,6 +10,9 @@ namespace CommunityToolkit.Maui.MediaElement;
 /// </summary>
 public class TizenPlayer : MPlayer
 {
+
+	bool isInitialized;
+
 	/// <summary>
 	/// 
 	/// </summary>
@@ -17,39 +20,50 @@ public class TizenPlayer : MPlayer
 	public TizenPlayer(IntPtr handle) : base(handle, (code, message) => { throw GetException(code, message); })
 	{
 	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	public void InitializePlayer()
+	{
+		if (!isInitialized)
+		{
+			Initialize();
+			isInitialized = true;
+		}
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	public bool IsSourceSet => base.HasSource;
 }
 
 public partial class MediaManager : IDisposable
 {
 	VideoView? videoView;
+	MediaSource? source;
+	bool isPlayerPrepared;
 	bool isUriStreaming;
-	float playbackRate;
 
 	/// <summary>
 	/// Creates the corresponding platform view of <see cref="MediaElement"/> on Tizen.
 	/// </summary>
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
-	public (PlatformMediaView platformView, VideoView videoView) CreatePlatformView()
+	public (PlatformMediaView? platformView, VideoView videoView) CreatePlatformView()
 	{
 		var nativeWindow = mauiContext.Services.GetRequiredService<Tizen.NUI.Window>();
 		videoView = new VideoView()
 		{
 			WidthSpecification = LayoutParamPolicies.MatchParent,
-			HeightSpecification = LayoutParamPolicies.MatchParent,
+			HeightSpecification = LayoutParamPolicies.MatchParent
 		};
-		videoView.Finished += VideoViewFinished;
-		nativeWindow.Add(videoView);
-		nativeWindow!.Remove(videoView);
-		playbackRate = 1;
-		player = GetPlayer(videoView);
+		videoView.AddedToWindow += (s, e) =>
+		{
+			InitializePlayer(videoView);
+		};
 
-		return (player, videoView);
-	}
-
-	void VideoViewFinished(object? sender, VideoView.FinishedEventArgs e)
-	{
-		mediaElement.MediaEnded();
-		UpdateCurrentState();
+		return (null, videoView);
 	}
 
 	TizenPlayer GetPlayer(VideoView videoView)
@@ -60,18 +74,54 @@ public partial class MediaManager : IDisposable
 			throw new InvalidOperationException();
 		}
 		var tizenPlayer = new TizenPlayer(handle.DangerousGetHandle());
+		tizenPlayer.InitializePlayer();
+
+		tizenPlayer.PlaybackCompleted += OnPlaybackCompleted;
+		tizenPlayer.ErrorOccurred += OnErrorOccured;
+		tizenPlayer.BufferingProgressChanged += OnBufferingProgressChanged;
 
 		return tizenPlayer;
 	}
 
+	void OnPlaybackCompleted(object? sender, EventArgs e)
+	{
+		mediaElement.MediaEnded();
+		mediaElement.CurrentStateChanged(MediaElementState.Stopped);
+	}
+
+	void OnErrorOccured(object? sender, PlayerErrorOccurredEventArgs e)
+	{
+		mediaElement.MediaFailed(new MediaFailedEventArgs(e.Error.ToString()));
+	}
+
+	void OnBufferingProgressChanged(object? sender, BufferingProgressChangedEventArgs e)
+	{
+		if (e.Percent == 100)
+		{
+			mediaElement.CurrentStateChanged(MediaElementState.Opening);
+		}
+		else
+		{
+			mediaElement.CurrentStateChanged(MediaElementState.Buffering);
+		}
+	}
+
+	void InitializePlayer(VideoView videoView)
+	{
+		player = GetPlayer(videoView);
+		if (!player.IsSourceSet)
+		{
+			PlatformUpdateSource();
+		}
+	}
+
 	void UpdateCurrentState()
 	{
-		if (videoView is null)
+		if (player is null)
 		{
 			return;
 		}
 
-		player = GetPlayer(videoView);
 		var newsState = player.State switch
 		{
 			PlayerState.Idle => MediaElementState.None,
@@ -85,70 +135,89 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformPlay()
 	{
-		if (player is null || mediaElement.Source is null)
+		if (player is null)
 		{
 			return;
 		}
 
-		videoView?.Play();
-		UpdateCurrentState();
+		if (player.State == PlayerState.Ready || player.State == PlayerState.Paused)
+		{
+			player.Start();
+			UpdateCurrentState();
+		}
 	}
 
 	protected virtual partial void PlatformPause()
 	{
-		if (player is null || mediaElement.Source is null)
+		if (player is null)
 		{
 			return;
 		}
 
-		videoView?.Pause();
-		UpdateCurrentState();
+		if (player.State == PlayerState.Playing)
+		{
+			player.Pause();
+			UpdateCurrentState();
+		}
 	}
 
 	protected virtual partial void PlatformSeek(TimeSpan position)
 	{
-		if (mediaElement is null || player is null)
+		if (player is null)
 		{
 			return;
 		}
 
-		player = GetPlayer(videoView!);
 		if (player.State == PlayerState.Ready || player.State == PlayerState.Playing || player.State == PlayerState.Paused)
 		{
-			player.SetPlayPositionAsync((int)mediaElement.Position.TotalMilliseconds, false);
+			player.SetPlayPositionAsync((int)position.TotalMilliseconds, false);
+			mediaElement.SeekCompleted();
 		}
 	}
 
 	protected virtual partial void PlatformStop()
 	{
-		if (player is null || mediaElement is null
-			 || mediaElement.Source is null)
+		if (player is null)
 		{
 			return;
 		}
 
-		videoView?.Stop();
+		if (player.State == PlayerState.Playing || player.State == PlayerState.Paused)
+		{
+			player.Stop();
+			mediaElement.Position = TimeSpan.Zero;
+			mediaElement.CurrentStateChanged(MediaElementState.Stopped);
+		}
 		mediaElement.Position = TimeSpan.Zero;
-		UpdateCurrentState();
 	}
 
-	
+	async void PreparePlayer()
+	{
+		if (player is not null)
+		{
+			await player.PrepareAsync();
+			PlatformUpdatePosition();
+			UpdateCurrentState();
+		}
+	}
 
 	protected virtual partial void PlatformUpdateSource()
 	{
-		var hasSetSource = false;
-
-		if (player is null || videoView is null)
+		if (player is null)
 		{
 			return;
+		}
+
+		if (player.State is not PlayerState.Idle)
+		{
+			player.Unprepare();
 		}
 
 		if (mediaElement.Source is null)
 		{
-			videoView.ResourceUrl = null;
+			player.SetSource(null);
 			mediaElement.Duration = TimeSpan.Zero;
 			mediaElement.CurrentStateChanged(MediaElementState.None);
-
 			return;
 		}
 
@@ -159,20 +228,17 @@ public partial class MediaManager : IDisposable
 			var uri = uriMediaSource.Uri;
 			if (!string.IsNullOrWhiteSpace(uri?.AbsolutePath))
 			{
-				videoView!.ResourceUrl = uri.ToString();
+				player.SetSource(new MediaUriSource(uri.ToString()));
 				isUriStreaming = true;
-				hasSetSource = true;
 			}
 		}
 		else if (mediaElement.Source is FileMediaSource fileMediaSource)
 		{
-			var filePath = fileMediaSource.Path;
-			if (!string.IsNullOrWhiteSpace(filePath))
+			var path = fileMediaSource.Path;
+			if (!string.IsNullOrWhiteSpace(path))
 			{
-				videoView!.ResourceUrl = ResourcePath.GetPath(filePath);
-
+				player.SetSource(new MediaUriSource(path));
 				isUriStreaming = false;
-				hasSetSource = true;
 			}
 		}
 		else if (mediaElement.Source is ResourceMediaSource resourceMediaSource)
@@ -180,14 +246,14 @@ public partial class MediaManager : IDisposable
 			var path = resourceMediaSource.Path;
 			if (!string.IsNullOrWhiteSpace(path))
 			{
-				videoView!.ResourceUrl = ResourcePath.GetPath(path);
+				player.SetSource(new MediaUriSource(ResourcePath.GetPath(path)));
 				isUriStreaming = false;
-				hasSetSource = true;
 			}
 		}
 
-		if (hasSetSource)
+		if (player.IsSourceSet)
 		{
+			PreparePlayer();
 			mediaElement.MediaOpened();
 		}
 	}
@@ -198,15 +264,12 @@ public partial class MediaManager : IDisposable
 		{
 			return;
 		}
-		
-		if (!isUriStreaming && mediaElement.Speed <= 5.0f && mediaElement.Speed >= -5.0f && mediaElement.Speed != 0
-				&& playbackRate != (float)mediaElement.Speed)
+
+		if (!isUriStreaming && mediaElement.Speed <= 5.0f && mediaElement.Speed >= -5.0f && mediaElement.Speed != 0)
 		{
-			player = GetPlayer(videoView!);
 			if (player.State == PlayerState.Ready || player.State == PlayerState.Playing || player.State == PlayerState.Paused)
 			{
 				player.SetPlaybackRate((float)mediaElement.Speed);
-				playbackRate = (float)mediaElement.Speed;
 			}
 		}
 	}
@@ -218,7 +281,7 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		//videoView.UseController = mediaElement.ShowsPlaybackControls;
+		// Not Supported
 	}
 
 	protected virtual partial void PlatformUpdatePosition()
@@ -228,7 +291,6 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		player = GetPlayer(videoView!);
 		if (player.State == PlayerState.Ready || player.State == PlayerState.Playing || player.State == PlayerState.Paused)
 		{
 			mediaElement.Duration = TimeSpan.FromMilliseconds(player.StreamInfo.GetDuration());
@@ -247,8 +309,10 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		player = GetPlayer(videoView!);
-		player.Volume = (float)mediaElement.Volume;
+		if (mediaElement.Volume >= 0.0 && mediaElement.Volume <= 1.0)
+		{
+			player.Volume = (float)mediaElement.Volume;
+		}
 	}
 
 	protected virtual partial void PlatformUpdateKeepScreenOn()
@@ -268,7 +332,8 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		videoView.Looping = mediaElement.IsLooping;
+		player.IsLooping = mediaElement.IsLooping;
+
 	}
 
 	/// <summary>
@@ -281,11 +346,13 @@ public partial class MediaManager : IDisposable
 		{
 			if (player is not null)
 			{
+				player.PlaybackCompleted -= OnPlaybackCompleted;
+				player.ErrorOccurred -= OnErrorOccured;
+				player.BufferingProgressChanged -= OnBufferingProgressChanged;
 				player.Dispose();
 			}
 			if (videoView is not null)
 			{
-				videoView.Finished -= VideoViewFinished;
 				videoView.Dispose();
 			}
 		}

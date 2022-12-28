@@ -7,7 +7,7 @@ global using PlatformMediaView = AVFoundation.AVPlayer;
 #elif WINDOWS
 global using PlatformMediaView = Microsoft.UI.Xaml.Controls.MediaPlayerElement;
 #elif TIZEN
-global using PlatformMediaView = Tizen.Multimedia.Player;
+global using PlatformMediaView = CommunityToolkit.Maui.MediaElement.TizenPlayer;
 #endif
 
 using Microsoft.Extensions.Logging;
