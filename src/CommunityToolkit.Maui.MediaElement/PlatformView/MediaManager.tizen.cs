@@ -1,20 +1,19 @@
 ﻿using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 using Tizen.Multimedia;
 using Tizen.NUI.BaseComponents;
-using MPlayer = Tizen.Multimedia.Player;
 
 namespace CommunityToolkit.Maui.MediaElement;
 
 /// <summary>
-///	
+///	The native multimedia player that controls the native video view on Tizen.
 /// </summary>
-public class TizenPlayer : MPlayer
+public class TizenPlayer : Tizen.Multimedia.Player
 {
 
 	bool isInitialized;
 
 	/// <summary>
-	/// 
+	/// Initializes a new instance of the TizenPlayer class.
 	/// </summary>
 	/// <param name="handle"></param>
 	public TizenPlayer(IntPtr handle) : base(handle, (code, message) => { throw GetException(code, message); })
@@ -22,7 +21,7 @@ public class TizenPlayer : MPlayer
 	}
 
 	/// <summary>
-	/// 
+	/// Initializes the Tizen native multimedia player.
 	/// </summary>
 	public void InitializePlayer()
 	{
@@ -34,7 +33,7 @@ public class TizenPlayer : MPlayer
 	}
 
 	/// <summary>
-	/// 
+	/// Indicates whether or not the source is set.
 	/// </summary>
 	public bool IsSourceSet => base.HasSource;
 }
@@ -42,9 +41,8 @@ public class TizenPlayer : MPlayer
 public partial class MediaManager : IDisposable
 {
 	VideoView? videoView;
-	MediaSource? source;
-	bool isPlayerPrepared;
 	bool isUriStreaming;
+	bool isScreenLocked;
 
 	/// <summary>
 	/// Creates the corresponding platform view of <see cref="MediaElement"/> on Tizen.
@@ -96,9 +94,9 @@ public partial class MediaManager : IDisposable
 
 	void OnBufferingProgressChanged(object? sender, BufferingProgressChangedEventArgs e)
 	{
-		if (e.Percent == 100)
+		if (e.Percent is 100)
 		{
-			mediaElement.CurrentStateChanged(MediaElementState.Opening);
+			UpdateCurrentState();
 		}
 		else
 		{
@@ -140,7 +138,7 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		if (player.State == PlayerState.Ready || player.State == PlayerState.Paused)
+		if (player.State is PlayerState.Ready || player.State is PlayerState.Paused)
 		{
 			player.Start();
 			UpdateCurrentState();
@@ -154,7 +152,7 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		if (player.State == PlayerState.Playing)
+		if (player.State is PlayerState.Playing)
 		{
 			player.Pause();
 			UpdateCurrentState();
@@ -168,7 +166,7 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		if (player.State == PlayerState.Ready || player.State == PlayerState.Playing || player.State == PlayerState.Paused)
+		if (player.State is PlayerState.Ready || player.State is PlayerState.Playing || player.State is PlayerState.Paused)
 		{
 			player.SetPlayPositionAsync((int)position.TotalMilliseconds, false);
 			mediaElement.SeekCompleted();
@@ -182,7 +180,7 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		if (player.State == PlayerState.Playing || player.State == PlayerState.Paused)
+		if (player.State is PlayerState.Playing || player.State is PlayerState.Paused)
 		{
 			player.Stop();
 			mediaElement.Position = TimeSpan.Zero;
@@ -267,7 +265,7 @@ public partial class MediaManager : IDisposable
 
 		if (!isUriStreaming && mediaElement.Speed <= 5.0f && mediaElement.Speed >= -5.0f && mediaElement.Speed != 0)
 		{
-			if (player.State == PlayerState.Ready || player.State == PlayerState.Playing || player.State == PlayerState.Paused)
+			if (player.State is PlayerState.Ready || player.State is PlayerState.Playing || player.State is PlayerState.Paused)
 			{
 				player.SetPlaybackRate((float)mediaElement.Speed);
 			}
@@ -280,8 +278,6 @@ public partial class MediaManager : IDisposable
 		{
 			return;
 		}
-
-		// Not Supported
 	}
 
 	protected virtual partial void PlatformUpdatePosition()
@@ -291,7 +287,7 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		if (player.State == PlayerState.Ready || player.State == PlayerState.Playing || player.State == PlayerState.Paused)
+		if (player.State is PlayerState.Ready || player.State is PlayerState.Playing || player.State is PlayerState.Paused)
 		{
 			mediaElement.Duration = TimeSpan.FromMilliseconds(player.StreamInfo.GetDuration());
 			mediaElement.Position = TimeSpan.FromMilliseconds(player.GetPlayPosition());
@@ -322,7 +318,18 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		//videoView.KeepScreenOn = mediaElement.KeepScreenOn;
+		if (mediaElement.KeepScreenOn && !isScreenLocked)
+		{
+			Tizen.System.Power.RequestLock(Tizen.System.PowerLock.DisplayNormal, 0);
+			Tizen.System.Power.RequestLock(Tizen.System.PowerLock.Cpu, 0);
+			isScreenLocked = true;
+		}
+		else if (!mediaElement.KeepScreenOn && isScreenLocked)
+		{
+			Tizen.System.Power.ReleaseLock(Tizen.System.PowerLock.DisplayNormal);
+			Tizen.System.Power.ReleaseLock(Tizen.System.PowerLock.Cpu);
+			isScreenLocked = false;
+		}
 	}
 
 	protected virtual partial void PlatformUpdateIsLooping()
