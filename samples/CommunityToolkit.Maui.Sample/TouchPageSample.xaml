@@ -1,69 +1,66 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="CommunityToolkit.Maui.Sample.TouchPageSample"
-             xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-             Title="TouchPageSample"
-             x:Name="Page">
+<ContentPage x:Class="CommunityToolkit.Maui.Sample.TouchPageSample"
+			 xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+			 x:Name="Page"
+			 Title="TouchPageSample">
 
-    <ContentPage.Resources>
-        <ResourceDictionary>
-            <Style x:Key="GridRowContentStyle" TargetType="StackLayout">
-                <Setter Property="HorizontalOptions" Value="CenterAndExpand" />
-                <Setter Property="VerticalOptions" Value="CenterAndExpand" />
-                <Setter Property="Spacing" Value="10" />
-            </Style>
-        </ResourceDictionary>
-    </ContentPage.Resources>
-    <VerticalStackLayout>
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<Style x:Key="GridRowContentStyle" TargetType="StackLayout">
+				<Setter Property="HorizontalOptions" Value="CenterAndExpand" />
+				<Setter Property="VerticalOptions" Value="CenterAndExpand" />
+				<Setter Property="Spacing" Value="10" />
+			</Style>
+		</ResourceDictionary>
+	</ContentPage.Resources>
+	<VerticalStackLayout>
 
-            <StackLayout
-                Orientation="Horizontal">
-                <Label
-                    HorizontalOptions="FillAndExpand"
-                    FontSize="Title"
-                    TextColor="Black"
-                    Text="NativeAnimationBorderless"/>
-                <Switch
-                    IsToggled="{Binding NativeAnimationBorderless, Source={x:Reference Page}}"/>
-            </StackLayout>
+		<HorizontalStackLayout>
+			<Label FontSize="Title"
+				   HorizontalOptions="FillAndExpand"
+				   Text="NativeAnimationBorderless"
+				   TextColor="Black" />
+			<Switch IsToggled="{Binding NativeAnimationBorderless, Source={x:Reference Page}}" />
+		</HorizontalStackLayout>
 
-            <Label
-               HorizontalOptions="CenterAndExpand"
-               FontSize="Title"
-               TextColor="Black"
-               Text="{Binding TouchCount, StringFormat='Touches: {0}', Source={x:Reference Page}}" />
+		<Label FontSize="Title"
+			   HorizontalOptions="CenterAndExpand"
+			   Text="{Binding TouchCount, StringFormat='Touches: {0}', Source={x:Reference Page}}"
+			   TextColor="Black" />
 
-            <StackLayout Style="{StaticResource GridRowContentStyle}">
-                <Label Text="Image | Toggle" />
-            <Image HeightRequest="40" BackgroundColor="Red" x:Name="img">
-                <Image.Behaviors>
-                    <mct:TouchBehavior NormalBackgroundImageSource="shield.png"
-                                       IsToggled="false"
-                                       Command="{Binding TouchCountCommand, Source={x:Reference Page}}"
-                                       PressedBackgroundImageSource="avatar_icon"/>
-                </Image.Behaviors>
-            </Image>
+		<VerticalStackLayout Style="{StaticResource GridRowContentStyle}">
+			<Label Text="Image | Toggle" />
+			<Image x:Name="img"
+				   BackgroundColor="Red"
+				   HeightRequest="40">
+				<Image.Behaviors>
+					<mct:TouchBehavior Command="{Binding TouchCountCommand, Source={x:Reference Page}}"
+									   IsToggled="false"
+									   NormalBackgroundImageSource="shield.png"
+									   PressedBackgroundImageSource="avatar_icon" />
+				</Image.Behaviors>
+			</Image>
 
-        </StackLayout>
+		</VerticalStackLayout>
 
-            <StackLayout Style="{StaticResource GridRowContentStyle}">
-                <Label Text="Scale | Fade | Animated" />
+		<VerticalStackLayout Style="{StaticResource GridRowContentStyle}">
+			<Label Text="Scale | Fade | Animated" />
 
-                <StackLayout Orientation="Horizontal"
-                         HorizontalOptions="CenterAndExpand">
+			<HorizontalStackLayout HorizontalOptions="CenterAndExpand">
 
-                <!--<StackLayout.Behaviors>
-                    <mct:TouchBehavior AnimationDuration="250"
-                                       AnimationEasing="{x:Static Easing.CubicInOut}"
-                                       PressedScale="0.8"
-                                       PressedOpacity="0.6"/>
-                </StackLayout.Behaviors>-->
+				<HorizontalStackLayout.Behaviors>
+					<mct:TouchBehavior AnimationDuration="250"
+									   AnimationEasing="{x:Static Easing.CubicInOut}"
+									   PressedOpacity="0.6"
+									   PressedScale="0.8" />
+				</HorizontalStackLayout.Behaviors>
 
-                    <BoxView Color="Gold" HeightRequest="100"/>
-                    <Label Text="The entire layout receives touches" />
-                    <BoxView Color="Gold" HeightRequest="100"/>
-                </StackLayout>
-            </StackLayout>
-    </VerticalStackLayout>
+				<BoxView HeightRequest="100" Color="Gold" />
+				<Label Text="The entire layout receives touches" />
+				<BoxView HeightRequest="100" Color="Gold" />
+			</HorizontalStackLayout>
+		</VerticalStackLayout>
+	</VerticalStackLayout>
 </ContentPage>
