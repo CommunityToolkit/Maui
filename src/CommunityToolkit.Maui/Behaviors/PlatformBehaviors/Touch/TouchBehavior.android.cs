@@ -524,7 +524,9 @@ public partial class TouchBehavior
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
+			{
 				platformTouchEffect = null;
+			}
 
 			base.Dispose(disposing);
 		}
