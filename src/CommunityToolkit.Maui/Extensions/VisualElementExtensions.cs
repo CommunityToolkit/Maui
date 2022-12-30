@@ -36,6 +36,11 @@ static class VisualElementExtensions
 
 		var animationCompletionSource = new TaskCompletionSource<bool>();
 
+		if (element.BackgroundColor is null)
+		{
+			return Task.FromResult(false);
+		}
+
 		new Animation
 	{
 		{ 0, 1, new Animation(v => element.BackgroundColor = new Color((float)v, element.BackgroundColor.Green, element.BackgroundColor.Blue, element.BackgroundColor.Alpha), element.BackgroundColor.Red, color.Red) },
