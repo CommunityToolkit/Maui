@@ -34,6 +34,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Analy
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.MediaElement", "..\src\CommunityToolkit.Maui.MediaElement\CommunityToolkit.Maui.MediaElement.csproj", "{A651D248-B102-4B8B-90C2-3C4C28425EFF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.MediaElement.Analyzers", "..\src\CommunityToolkit.Maui.MediaElement.Analyzers\CommunityToolkit.Maui.MediaElement.Analyzers.csproj", "{3EBD209D-12F3-4428-82CE-C7AEB36F85E4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -80,6 +82,10 @@ Global
 		{A651D248-B102-4B8B-90C2-3C4C28425EFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A651D248-B102-4B8B-90C2-3C4C28425EFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A651D248-B102-4B8B-90C2-3C4C28425EFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EBD209D-12F3-4428-82CE-C7AEB36F85E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EBD209D-12F3-4428-82CE-C7AEB36F85E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EBD209D-12F3-4428-82CE-C7AEB36F85E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EBD209D-12F3-4428-82CE-C7AEB36F85E4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -91,6 +97,7 @@ Global
 		{BB7A6C2F-B8F1-49FF-8E67-C436EF062A22} = {9BFC4026-BC8F-43E2-BAA9-5BC2D764D37D}
 		{20792D38-690A-4760-82FD-94E9510F86C9} = {9BFC4026-BC8F-43E2-BAA9-5BC2D764D37D}
 		{60B976B2-F3FA-494E-A28B-7BED2EAE990E} = {9F7D54C0-EA17-409A-804F-B2E8D7F4A7F3}
+		{3EBD209D-12F3-4428-82CE-C7AEB36F85E4} = {9BFC4026-BC8F-43E2-BAA9-5BC2D764D37D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1E9E61C1-5CB7-4C8E-87BA-6C1D38238679}
