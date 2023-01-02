@@ -113,9 +113,9 @@ public partial class MediaManager : IDisposable
 		{
 			var uri = uriMediaSource.Uri;
 
-			if (!string.IsNullOrWhiteSpace(uri?.AbsolutePath))
+			if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
 			{
-				asset = AVAsset.FromUrl(new NSUrl(uri.AbsolutePath));
+				asset = AVAsset.FromUrl(new NSUrl(uri.AbsoluteUri));
 			}
 		}
 		else if (mediaElement.Source is FileMediaSource fileMediaSource)

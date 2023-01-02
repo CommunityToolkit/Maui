@@ -273,9 +273,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		if (mediaElement.Source is UriMediaSource uriMediaSource)
 		{
 			var uri = uriMediaSource.Uri;
-			if (!string.IsNullOrWhiteSpace(uri?.AbsolutePath))
+			if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
 			{
-				player.SetMediaItem(MediaItem.FromUri(uri.AbsolutePath));
+				player.SetMediaItem(MediaItem.FromUri(uri.AbsoluteUri));
 				player.Prepare();
 
 				hasSetSource = true;

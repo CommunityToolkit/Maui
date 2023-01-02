@@ -44,9 +44,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 	void OnResourceSourceClicked(object? sender, EventArgs e)
 	{
-		ArgumentNullException.ThrowIfNull(sender);
-		var mediaElement = (MediaElement.MediaElement)sender;
-
 		if (DeviceInfo.Platform == DevicePlatform.MacCatalyst
 			|| DeviceInfo.Platform == DevicePlatform.iOS)
 		{
