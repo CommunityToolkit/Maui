@@ -5,7 +5,6 @@
 /// </summary>
 public class TizenPlayer : Tizen.Multimedia.Player
 {
-
 	bool isInitialized;
 
 	/// <summary>

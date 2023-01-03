@@ -7,6 +7,7 @@ namespace CommunityToolkit.Maui.MediaElement;
 public partial class MediaManager : IDisposable
 {
 	VideoView? videoView;
+	bool isPlayerInitialized;
 	bool isUriStreaming;
 	bool isScreenLocked;
 
@@ -14,9 +15,8 @@ public partial class MediaManager : IDisposable
 	/// Creates the corresponding platform view of <see cref="MediaElement"/> on Tizen.
 	/// </summary>
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
-	public (PlatformMediaView? platformView, VideoView videoView) CreatePlatformView()
+	public VideoView CreatePlatformView()
 	{
-		var nativeWindow = mauiContext.Services.GetRequiredService<Tizen.NUI.Window>();
 		videoView = new VideoView()
 		{
 			WidthSpecification = LayoutParamPolicies.MatchParent,
@@ -24,27 +24,14 @@ public partial class MediaManager : IDisposable
 		};
 		videoView.AddedToWindow += (s, e) =>
 		{
-			InitializePlayer(videoView);
+			if (!isPlayerInitialized)
+			{
+				InitializePlayer(videoView);
+				isPlayerInitialized = true;
+			}
 		};
 
-		return (null, videoView);
-	}
-
-	TizenPlayer GetPlayer(VideoView videoView)
-	{
-		var handle = videoView.NativeHandle;
-		if (handle.IsInvalid)
-		{
-			throw new InvalidOperationException();
-		}
-		var tizenPlayer = new TizenPlayer(handle.DangerousGetHandle());
-		tizenPlayer.InitializePlayer();
-
-		tizenPlayer.PlaybackCompleted += OnPlaybackCompleted;
-		tizenPlayer.ErrorOccurred += OnErrorOccured;
-		tizenPlayer.BufferingProgressChanged += OnBufferingProgressChanged;
-
-		return tizenPlayer;
+		return videoView;
 	}
 
 	void OnPlaybackCompleted(object? sender, EventArgs e)
@@ -72,9 +59,19 @@ public partial class MediaManager : IDisposable
 
 	void InitializePlayer(VideoView videoView)
 	{
-		player = GetPlayer(videoView);
-		if (!player.IsSourceSet)
+		var handle = videoView.NativeHandle;
+		if (handle.IsInvalid)
 		{
+			throw new InvalidOperationException();
+		}
+
+		if (player == null)
+		{
+			player = new TizenPlayer(handle.DangerousGetHandle());
+			player.InitializePlayer();
+			player.PlaybackCompleted += OnPlaybackCompleted;
+			player.ErrorOccurred += OnErrorOccured;
+			player.BufferingProgressChanged += OnBufferingProgressChanged;
 			PlatformUpdateSource();
 		}
 	}
@@ -83,7 +80,7 @@ public partial class MediaManager : IDisposable
 	{
 		if (player is null)
 		{
-			return;
+			throw new InvalidOperationException("TizenPlayer must not be null.");
 		}
 
 		var newsState = player.State switch

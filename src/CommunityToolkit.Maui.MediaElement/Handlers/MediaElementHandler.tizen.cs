@@ -10,7 +10,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	protected override MauiMediaElement CreatePlatformView()
 	{
 		mediaManager ??= new(MauiContext ?? throw new NullReferenceException(), VirtualView);
-		var (_, playerView) = mediaManager.CreatePlatformView();
+		var playerView = mediaManager.CreatePlatformView();
 		return new (playerView);
 	}
 
