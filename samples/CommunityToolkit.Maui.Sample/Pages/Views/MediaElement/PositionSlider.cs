@@ -15,7 +15,7 @@ public class PositionSlider : Slider
 			});
 
 	public static readonly BindableProperty PositionProperty =
-		BindableProperty.Create(nameof(Position), typeof(TimeSpan), typeof(PositionSlider), new TimeSpan(0),
+		BindableProperty.Create(nameof(Position), typeof(TimeSpan), typeof(PositionSlider), TimeSpan.Zero,
 			propertyChanged: (bindable, oldValue, newValue) =>
 			{
 				double seconds = ((TimeSpan)newValue).TotalSeconds;

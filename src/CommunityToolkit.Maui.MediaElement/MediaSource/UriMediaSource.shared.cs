@@ -42,7 +42,7 @@ public sealed class UriMediaSource : MediaSource
 	public static implicit operator string?(UriMediaSource? uriMediaSource) => uriMediaSource?.Uri?.ToString();
 
 	static bool UriValueValidator(BindableObject bindable, object value) =>
-		value == null || ((Uri)value).IsAbsoluteUri;
+		value is null || ((Uri)value).IsAbsoluteUri;
 
 	static void OnUriSourceChanged(BindableObject bindable, object oldValue, object newValue) =>
 		((UriMediaSource)bindable).OnSourceChanged();

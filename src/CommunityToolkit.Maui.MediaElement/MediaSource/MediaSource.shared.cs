@@ -22,7 +22,6 @@ public abstract class MediaSource : Element
 	/// An implicit operator to convert a string value into a <see cref="MediaSource"/>.
 	/// </summary>
 	/// <param name="source">Full path to a local file (starting with <c>file://</c>) or an absolute URI.</param>
-	[Preserve(Conditional = true)]
 	public static implicit operator MediaSource?(string? source) =>
 		Uri.TryCreate(source, UriKind.Absolute, out var uri) && uri.Scheme != "file"
 			? FromUri(uri)
@@ -32,7 +31,6 @@ public abstract class MediaSource : Element
 	/// An implicit operator to convert a <see cref="Uri"/> object into a <see cref="UriMediaSource"/>.
 	/// </summary>
 	/// <param name="uri">Absolute URI to load.</param>
-	[Preserve(Conditional = true)]
 	public static implicit operator MediaSource?(Uri? uri) => FromUri(uri);
 
 	/// <summary>
