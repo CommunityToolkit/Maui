@@ -9,10 +9,12 @@ public sealed partial class SaveFileDialogImplementation : ISaveFileDialog, IDis
 	/// <inheritdoc/>
 	public async Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
+		cancellationToken.ThrowIfCancellationRequested();
 		var fileManager = NSFileManager.DefaultManager;
 		var fileUrl = fileManager.GetTemporaryDirectory().Append($"{Guid.NewGuid()}{GetExtension(fileName)}", false);
-		await WriteStream(stream, fileUrl.Path ?? throw new Exception("Path cannot be null."), cancellationToken); 
-		
+		await WriteStream(stream, fileUrl.Path ?? throw new Exception("Path cannot be null."), cancellationToken);
+
+		cancellationToken.ThrowIfCancellationRequested();
 		taskCompetedSource = new TaskCompletionSource<string>();
 		
 		documentPickerViewController = new UIDocumentPickerViewController(new[] { fileUrl });

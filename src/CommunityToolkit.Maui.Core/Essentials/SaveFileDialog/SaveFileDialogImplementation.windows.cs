@@ -22,8 +22,15 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 		savePicker.FileTypeChoices.Add("All files", allFilesExtension);
 		savePicker.SuggestedFileName = GetFileName(fileName);
 
-		var file = await savePicker.PickSaveFileAsync();
+		var filePickerOperation = savePicker.PickSaveFileAsync();
 
+		void CancelFilePickerOperation()
+		{
+			filePickerOperation.Cancel();
+		}
+
+		cancellationToken.Register(CancelFilePickerOperation);
+		var file = await filePickerOperation;
 		if (string.IsNullOrEmpty(file?.Path))
 		{
 			throw new FileSaveException("Path doesn't exist.");
