@@ -235,7 +235,7 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
-	protected virtual partial void PlatformUpdateShowsPlaybackControls()
+	protected virtual partial void PlatformUpdateShouldShowPlaybackControls()
 	{
 		if (mediaElement is null || videoView is null)
 		{
@@ -274,7 +274,7 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
-	protected virtual partial void PlatformUpdateKeepScreenOn()
+	protected virtual partial void PlatformUpdateShouldKeepScreenOn()
 	{
 		if (videoView is null)
 		{
@@ -295,7 +295,7 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
-	protected virtual partial void PlatformUpdateIsLooping()
+	protected virtual partial void PlatformUpdateShouldLoopPlayback()
 	{
 		if (mediaElement is null || player is null || videoView is null)
 		{
