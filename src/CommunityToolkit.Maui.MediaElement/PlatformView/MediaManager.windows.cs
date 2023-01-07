@@ -104,7 +104,7 @@ partial class MediaManager : IDisposable
 		player.MediaPlayer.PlaybackRate = mediaElement.Speed;
 	}
 
-	protected virtual partial void PlatformUpdateShowsPlaybackControls()
+	protected virtual partial void PlatformUpdateShouldShowPlaybackControls()
 	{
 		if (player is null)
 		{
@@ -135,7 +135,7 @@ partial class MediaManager : IDisposable
 		}
 	}
 
-	protected virtual partial void PlatformUpdateKeepScreenOn()
+	protected virtual partial void PlatformUpdateShouldKeepScreenOn()
 	{
 		if (mediaElement is null)
 		{
@@ -205,7 +205,7 @@ partial class MediaManager : IDisposable
 		}
 	}
 
-	protected virtual partial void PlatformUpdateIsLooping()
+	protected virtual partial void PlatformUpdateShouldLoopPlayback()
 	{
 		if (mediaElement is null || player is null)
 		{
