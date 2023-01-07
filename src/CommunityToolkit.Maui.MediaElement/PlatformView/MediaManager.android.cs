@@ -268,7 +268,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		mediaElement.CurrentStateChanged(MediaElementState.Opening);
 
-		player.PlayWhenReady = mediaElement.AutoPlay;
+		player.PlayWhenReady = mediaElement.ShouldAutoPlay;
 
 		if (mediaElement.Source is UriMediaSource uriMediaSource)
 		{
@@ -338,7 +338,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			return;
 		}
 
-		playerView.UseController = mediaElement.ShowsPlaybackControls;
+		playerView.UseController = mediaElement.ShouldShowPlaybackControls;
 	}
 
 	protected virtual partial void PlatformUpdatePosition()
@@ -371,7 +371,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			return;
 		}
 
-		playerView.KeepScreenOn = mediaElement.KeepScreenOn;
+		playerView.KeepScreenOn = mediaElement.ShouldKeepScreenOn;
 	}
 
 	protected virtual partial void PlatformUpdateIsLooping()
@@ -381,7 +381,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			return;
 		}
 
-		player.RepeatMode = mediaElement.IsLooping ? IPlayer.RepeatModeOne : IPlayer.RepeatModeOff;
+		player.RepeatMode = mediaElement.ShouldLoopPlayback ? IPlayer.RepeatModeOne : IPlayer.RepeatModeOff;
 	}
 
 	#region IPlayer.IListener implementation method stubs

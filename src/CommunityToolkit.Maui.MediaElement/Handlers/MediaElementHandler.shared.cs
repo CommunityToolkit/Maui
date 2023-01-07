@@ -14,13 +14,13 @@ public partial class MediaElementHandler
 	/// </summary>
 	public static IPropertyMapper<MediaElement, MediaElementHandler> PropertyMapper = new PropertyMapper<MediaElement, MediaElementHandler>(ViewMapper)
 	{
-		[nameof(IMediaElement.ShowsPlaybackControls)] = MapShowsPlaybackControls,
+		[nameof(IMediaElement.ShouldShowPlaybackControls)] = MapShowsPlaybackControls,
 		[nameof(IMediaElement.Source)] = MapSource,
 		[nameof(IMediaElement.Speed)] = MapSpeed,
 		[nameof(IMediaElement.Volume)] = MapVolume,
-		[nameof(IMediaElement.KeepScreenOn)] = MapKeepScreenOn,
+		[nameof(IMediaElement.ShouldKeepScreenOn)] = MapKeepScreenOn,
 #if ANDROID || WINDOWS || TIZEN
-		[nameof(MediaElement.IsLooping)] = MapIsLooping
+		[nameof(MediaElement.ShouldLoopPlayback)] = MapIsLooping
 #endif
 	};
 
@@ -57,7 +57,7 @@ public partial class MediaElementHandler
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
 	/// <summary>
-	/// Maps the <see cref="IMediaElement.ShowsPlaybackControls"/> property between the abstract
+	/// Maps the <see cref="IMediaElement.ShouldShowPlaybackControls"/> property between the abstract
 	/// <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
@@ -113,7 +113,7 @@ public partial class MediaElementHandler
 	}
 
 	/// <summary>
-	/// Maps the <see cref="IMediaElement.KeepScreenOn"/> property between the abstract
+	/// Maps the <see cref="IMediaElement.ShouldKeepScreenOn"/> property between the abstract
 	/// <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>

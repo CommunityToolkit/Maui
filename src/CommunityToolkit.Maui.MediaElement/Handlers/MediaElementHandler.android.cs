@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.MediaElement;
 public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaElement>, IDisposable
 {
 	/// <summary>
-	/// Maps the <see cref="IMediaElement.IsLooping"/> property between the abstract
+	/// Maps the <see cref="IMediaElement.ShouldLoopPlayback"/> property between the abstract
 	/// <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>

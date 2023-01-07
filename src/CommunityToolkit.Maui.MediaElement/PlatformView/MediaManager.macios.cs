@@ -175,7 +175,7 @@ public partial class MediaManager : IDisposable
 		{
 			mediaElement.MediaOpened();
 
-			if (mediaElement.AutoPlay)
+			if (mediaElement.ShouldAutoPlay)
 			{
 				player?.Play();
 			}
@@ -203,7 +203,7 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		playerViewController.ShowsPlaybackControls = mediaElement.ShowsPlaybackControls;
+		playerViewController.ShowsPlaybackControls = mediaElement.ShouldShowPlaybackControls;
 	}
 
 	protected virtual partial void PlatformUpdatePosition()
@@ -255,7 +255,7 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		player.PreventsDisplaySleepDuringVideoPlayback = mediaElement.KeepScreenOn;
+		player.PreventsDisplaySleepDuringVideoPlayback = mediaElement.ShouldKeepScreenOn;
 	}
 
 	protected virtual partial void PlatformUpdateIsLooping()
@@ -425,7 +425,7 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		if (mediaElement.IsLooping)
+		if (mediaElement.ShouldLoopPlayback)
 		{
 			playerViewController?.Player?.Seek(CMTime.Zero);
 			player.Play();
