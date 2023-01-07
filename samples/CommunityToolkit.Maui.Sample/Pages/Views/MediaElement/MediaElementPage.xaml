@@ -31,7 +31,7 @@
             </Grid.RowDefinitions>
             <media:MediaElement
                 x:Name="mediaElement"
-                AutoPlay="True"
+                ShouldAutoPlay="True"
                 Source="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
                 MediaEnded="OnMediaEnded"
                 MediaFailed="OnMediaFailed"
@@ -118,7 +118,7 @@
                         Margin="0,0,5,0"
                         ThumbColor="White"
                         OnColor="LimeGreen"
-                        IsToggled="{Binding Source={x:Reference mediaElement}, Path=ShowsPlaybackControls}" />
+                        IsToggled="{Binding Source={x:Reference mediaElement}, Path=ShouldShowPlaybackControls}" />
                     <Label
                         VerticalOptions="Center"
                         Text="Show playback controls" />
@@ -128,17 +128,17 @@
                         Margin="0,0,5,0"
                         ThumbColor="White"
                         OnColor="LimeGreen"
-                        IsToggled="{Binding Source={x:Reference mediaElement}, Path=IsLooping}" />
+                        IsToggled="{Binding Source={x:Reference mediaElement}, Path=ShouldLoopPlayback}" />
                     <Label
                         VerticalOptions="Center"
-                        Text="Loop video" />
+                        Text="Loop media" />
                 </HorizontalStackLayout>
                 <HorizontalStackLayout>
                     <Switch
                         Margin="0,0,5,0"
                         ThumbColor="White"
                         OnColor="LimeGreen"
-                        IsToggled="{Binding Source={x:Reference mediaElement}, Path=KeepScreenOn}" />
+                        IsToggled="{Binding Source={x:Reference mediaElement}, Path=ShouldKeepScreenOn}" />
                     <Label
                         VerticalOptions="Center"
                         Text="Keep screen on" />
