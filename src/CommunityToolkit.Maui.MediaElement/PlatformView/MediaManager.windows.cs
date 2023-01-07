@@ -47,7 +47,7 @@ partial class MediaManager : IDisposable
 	{
 		player?.MediaPlayer.Play();
 
-		if (mediaElement.KeepScreenOn
+		if (mediaElement.ShouldKeepScreenOn
 			&& !displayActiveRequested) 
 		{
 			displayRequest.RequestActive();
@@ -112,7 +112,7 @@ partial class MediaManager : IDisposable
 		}
 
 		player.AreTransportControlsEnabled =
-			mediaElement.ShowsPlaybackControls;
+			mediaElement.ShouldShowPlaybackControls;
 	}
 
 	protected virtual partial void PlatformUpdatePosition()
@@ -142,7 +142,7 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
-		if (mediaElement.KeepScreenOn)
+		if (mediaElement.ShouldKeepScreenOn)
 		{
 			if (mediaElement?.CurrentState == MediaElementState.Playing
 				&& !displayActiveRequested)
@@ -176,7 +176,7 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
-		player.AutoPlay = mediaElement.AutoPlay;
+		player.AutoPlay = mediaElement.ShouldAutoPlay;
 
 		if (mediaElement.Source is UriMediaSource uriMediaSource)
 		{

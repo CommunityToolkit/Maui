@@ -281,13 +281,13 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		if (mediaElement.KeepScreenOn && !isScreenLocked)
+		if (mediaElement.ShouldKeepScreenOn && !isScreenLocked)
 		{
 			Tizen.System.Power.RequestLock(Tizen.System.PowerLock.DisplayNormal, 0);
 			Tizen.System.Power.RequestLock(Tizen.System.PowerLock.Cpu, 0);
 			isScreenLocked = true;
 		}
-		else if (!mediaElement.KeepScreenOn && isScreenLocked)
+		else if (!mediaElement.ShouldKeepScreenOn && isScreenLocked)
 		{
 			Tizen.System.Power.ReleaseLock(Tizen.System.PowerLock.DisplayNormal);
 			Tizen.System.Power.ReleaseLock(Tizen.System.PowerLock.Cpu);
@@ -302,7 +302,7 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		player.IsLooping = mediaElement.IsLooping;
+		player.IsLooping = mediaElement.ShoudLoopPlayback;
 
 	}
 

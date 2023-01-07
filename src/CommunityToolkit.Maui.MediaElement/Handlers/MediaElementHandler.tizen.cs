@@ -24,6 +24,6 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	/// <inheritdoc/>
 	public static void ShouldLoopPlayback(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler?.mediaManager?.UpdateIsLooping();
+		handler.mediaManager?.UpdateIsLooping();
 	}
 }

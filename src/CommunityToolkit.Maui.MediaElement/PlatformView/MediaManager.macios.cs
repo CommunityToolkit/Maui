@@ -347,7 +347,7 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		volumeObserver = player.AddObserver("volume", NSKeyValueObservingOptions.New,
+		volumeObserver = player.AddObserver("volume", valueObserverOptions,
 					VolumeChanged);
 		statusObserver = player.AddObserver("status", valueObserverOptions, StatusChanged);
 		timeControlStatusObserver = player.AddObserver("timeControlStatus",
