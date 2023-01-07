@@ -64,7 +64,7 @@ public partial class MediaElementHandler
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	public static void MapShowsPlaybackControls(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler?.mediaManager?.UpdateShowsPlaybackControls();
+		handler.mediaManager?.UpdateShowsPlaybackControls();
 	}
 
 	/// <summary>
@@ -75,7 +75,7 @@ public partial class MediaElementHandler
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	public static void MapSource(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler?.mediaManager?.UpdateSource();
+		handler.mediaManager?.UpdateSource();
 	}
 
 	/// <summary>
@@ -86,7 +86,7 @@ public partial class MediaElementHandler
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	public static void MapSpeed(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler?.mediaManager?.UpdateSpeed();
+		handler.mediaManager?.UpdateSpeed();
 	}
 
 	/// <summary>
@@ -109,7 +109,7 @@ public partial class MediaElementHandler
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	public static void MapVolume(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler?.mediaManager?.UpdateVolume();
+		handler.mediaManager?.UpdateVolume();
 	}
 
 	/// <summary>
@@ -120,7 +120,7 @@ public partial class MediaElementHandler
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	public static void MapKeepScreenOn(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler?.mediaManager?.UpdateKeepScreenOn();
+		handler.mediaManager?.UpdateKeepScreenOn();
 	}
 
 	/// <summary>
