@@ -22,7 +22,7 @@ public partial class MediaManager
 	readonly IMauiContext mauiContext;
 	readonly IMediaElement mediaElement;
 #if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
-	PlatformMediaView? player;
+	protected PlatformMediaView? player;
 #endif
 
 	/// <summary>

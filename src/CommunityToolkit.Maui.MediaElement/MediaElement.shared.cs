@@ -365,7 +365,7 @@ public class MediaElement : View, IMediaElement
 	/// <inheritdoc/>
 	protected override void OnBindingContextChanged()
 	{
-		if (Source != null)
+		if (Source is not null)
 		{
 			SetInheritedBindingContext(Source, BindingContext);
 		}

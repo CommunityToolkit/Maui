@@ -9,20 +9,20 @@ namespace CommunityToolkit.Maui.MediaElement;
 
 public partial class MediaManager : IDisposable
 {
-	const NSKeyValueObservingOptions valueObserverOptions =
+	protected const NSKeyValueObservingOptions valueObserverOptions =
 		NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.New;
 
-	NSObject? playedToEndObserver;
-	NSObject? itemFailedToPlayToEndTimeObserver;
-	NSObject? playbackStalledObserver;
-	NSObject? errorObserver;
-	IDisposable? statusObserver;
-	IDisposable? volumeObserver;
-	IDisposable? rateObserver;
-	IDisposable? timeControlStatusObserver;
-	IDisposable? currentItemErrorObserver;
-	AVPlayerViewController? playerViewController;
-	AVPlayerItem? playerItem;
+	protected NSObject? playedToEndObserver;
+	protected NSObject? itemFailedToPlayToEndTimeObserver;
+	protected NSObject? playbackStalledObserver;
+	protected NSObject? errorObserver;
+	protected IDisposable? statusObserver;
+	protected IDisposable? volumeObserver;
+	protected IDisposable? rateObserver;
+	protected IDisposable? timeControlStatusObserver;
+	protected IDisposable? currentItemErrorObserver;
+	protected AVPlayerViewController? playerViewController;
+	protected AVPlayerItem? playerItem;
 
 	/// <summary>
 	/// Creates the corresponding platform view of <see cref="MediaElement"/> on iOS and macOS.
@@ -159,16 +159,18 @@ public partial class MediaManager : IDisposable
 		currentItemErrorObserver = playerItem?.AddObserver("error",
 			valueObserverOptions, (NSObservedChange change) =>
 		{
-			if (player?.CurrentItem?.Error != null)
+			if (player?.CurrentItem?.Error is null)
 			{
-				var message = $"{player?.CurrentItem?.Error?.LocalizedDescription} - " +
-				$"{player?.CurrentItem?.Error?.LocalizedFailureReason}";
-
-				mediaElement.MediaFailed(
-					new MediaFailedEventArgs(message));
-
-				Logger?.LogError("{logMessage}", message);
+				return;
 			}
+
+			var message = $"{player?.CurrentItem?.Error?.LocalizedDescription} - " +
+			$"{player?.CurrentItem?.Error?.LocalizedFailureReason}";
+
+			mediaElement.MediaFailed(
+				new MediaFailedEventArgs(message));
+
+			Logger?.LogError("{logMessage}", message);
 		});
 
 		if (playerItem is not null && playerItem.Error is null)
@@ -401,7 +403,7 @@ public partial class MediaManager : IDisposable
 		string message;
 
 		var error = player?.CurrentItem?.Error;
-		if (error != null)
+		if (error is not null)
 		{
 			message = error.LocalizedDescription;
 

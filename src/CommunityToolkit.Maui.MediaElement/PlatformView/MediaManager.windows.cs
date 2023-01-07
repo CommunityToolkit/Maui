@@ -21,15 +21,15 @@ partial class MediaManager : IDisposable
 	{
 		player = new();
 		MediaPlayer mediaPlayer = new();
-		mediaPlayer.MediaOpened += MediaPlayer_MediaOpened;
+		mediaPlayer.MediaOpened += OnMediaPlayerMediaOpened;
 
 		player.SetMediaPlayer(mediaPlayer);
 
-		player.MediaPlayer.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged;
-		player.MediaPlayer.PlaybackSession.SeekCompleted += PlaybackSession_SeekCompleted;
-		player.MediaPlayer.MediaFailed += MediaPlayer_MediaFailed;
-		player.MediaPlayer.MediaEnded += MediaPlayer_MediaEnded;
-		player.MediaPlayer.VolumeChanged += MediaPlayer_VolumeChanged;
+		player.MediaPlayer.PlaybackSession.PlaybackStateChanged += OnPlaybackSessionPlaybackStateChanged;
+		player.MediaPlayer.PlaybackSession.SeekCompleted += OnPlaybackSessionSeekCompleted;
+		player.MediaPlayer.MediaFailed += OnMediaPlayerMediaFailed;
+		player.MediaPlayer.MediaEnded += OnMediaPlayerMediaEnded;
+		player.MediaPlayer.VolumeChanged += OnMediaPlayerVolumeChanged;
 
 		return player;
 	}
@@ -231,21 +231,21 @@ partial class MediaManager : IDisposable
 					displayActiveRequested = false;
 				}
 
-				player.MediaPlayer.MediaOpened -= MediaPlayer_MediaOpened;
-				player.MediaPlayer.MediaFailed -= MediaPlayer_MediaFailed;
-				player.MediaPlayer.MediaEnded -= MediaPlayer_MediaEnded;
-				player.MediaPlayer.VolumeChanged -= MediaPlayer_VolumeChanged;
+				player.MediaPlayer.MediaOpened -= OnMediaPlayerMediaOpened;
+				player.MediaPlayer.MediaFailed -= OnMediaPlayerMediaFailed;
+				player.MediaPlayer.MediaEnded -= OnMediaPlayerMediaEnded;
+				player.MediaPlayer.VolumeChanged -= OnMediaPlayerVolumeChanged;
 
 				if (player.MediaPlayer.PlaybackSession is not null)
 				{
-					player.MediaPlayer.PlaybackSession.PlaybackStateChanged -= PlaybackSession_PlaybackStateChanged;
-					player.MediaPlayer.PlaybackSession.SeekCompleted -= PlaybackSession_SeekCompleted;
+					player.MediaPlayer.PlaybackSession.PlaybackStateChanged -= OnPlaybackSessionPlaybackStateChanged;
+					player.MediaPlayer.PlaybackSession.SeekCompleted -= OnPlaybackSessionSeekCompleted;
 				}
 			}
 		}
 	}
 
-	void MediaPlayer_MediaOpened(MediaPlayer sender, object args)
+	void OnMediaPlayerMediaOpened(MediaPlayer sender, object args)
 	{
 		if (mediaElement is null || player is null)
 		{
@@ -262,12 +262,12 @@ partial class MediaManager : IDisposable
 		});
 	}
 
-	void MediaPlayer_MediaEnded(MediaPlayer sender, object args)
+	void OnMediaPlayerMediaEnded(MediaPlayer sender, object args)
 	{
 		mediaElement?.MediaEnded();
 	}
 
-	void MediaPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
+	void OnMediaPlayerMediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
 	{
 		string errorMessage = string.Empty;
 		string errorCode = string.Empty;
@@ -292,7 +292,7 @@ partial class MediaManager : IDisposable
 		Logger?.LogError("{logMessage}", message);
 	}
 
-	void MediaPlayer_VolumeChanged(MediaPlayer sender, object args)
+	void OnMediaPlayerVolumeChanged(MediaPlayer sender, object args)
 	{
 		if (mediaElement is not null)
 		{
@@ -300,7 +300,7 @@ partial class MediaManager : IDisposable
 		}
 	}
 
-	void PlaybackSession_PlaybackStateChanged(MediaPlaybackSession sender, object args)
+	void OnPlaybackSessionPlaybackStateChanged(MediaPlaybackSession sender, object args)
 	{
 		var newState = sender.PlaybackState switch
 		{
@@ -314,7 +314,7 @@ partial class MediaManager : IDisposable
 		mediaElement?.CurrentStateChanged(newState);
 	}
 
-	void PlaybackSession_SeekCompleted(MediaPlaybackSession sender, object args)
+	void OnPlaybackSessionSeekCompleted(MediaPlaybackSession sender, object args)
 	{
 		mediaElement?.SeekCompleted();
 	}
