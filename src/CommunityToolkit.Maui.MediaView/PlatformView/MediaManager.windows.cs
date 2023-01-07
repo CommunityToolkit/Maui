@@ -47,7 +47,7 @@ partial class MediaManager : IDisposable
 	{
 		player?.MediaPlayer.Play();
 
-		if (MediaView.ShouldKeepScreenOn
+		if (mediaView.ShouldKeepScreenOn
 			&& !displayActiveRequested) 
 		{
 			displayRequest.RequestActive();
@@ -85,7 +85,7 @@ partial class MediaManager : IDisposable
 		player.MediaPlayer.Pause();
 		player.MediaPlayer.Position = TimeSpan.Zero;
 
-		MediaView.CurrentStateChanged(MediaViewState.Stopped);
+		mediaView.CurrentStateChanged(MediaViewState.Stopped);
 
 		if (displayActiveRequested)
 		{
@@ -101,7 +101,7 @@ partial class MediaManager : IDisposable
 			return;
 		}
 		
-		player.MediaPlayer.PlaybackRate = MediaView.Speed;
+		player.MediaPlayer.PlaybackRate = mediaView.Speed;
 	}
 
 	protected virtual partial void PlatformUpdateShouldShowPlaybackControls()
@@ -112,15 +112,15 @@ partial class MediaManager : IDisposable
 		}
 
 		player.AreTransportControlsEnabled =
-			MediaView.ShouldShowPlaybackControls;
+			mediaView.ShouldShowPlaybackControls;
 	}
 
 	protected virtual partial void PlatformUpdatePosition()
 	{
-		if (MediaView is not null && player is not null
-			&& MediaView.CurrentState == MediaViewState.Playing)
+		if (mediaView is not null && player is not null
+			&& mediaView.CurrentState == MediaViewState.Playing)
 		{
-			MediaView.Position = player.MediaPlayer.Position;
+			mediaView.Position = player.MediaPlayer.Position;
 		}
 	}
 
@@ -130,21 +130,21 @@ partial class MediaManager : IDisposable
 		{
 			MainThread.BeginInvokeOnMainThread(() =>
 			{
-				player.MediaPlayer.Volume = MediaView.Volume;
+				player.MediaPlayer.Volume = mediaView.Volume;
 			});
 		}
 	}
 
 	protected virtual partial void PlatformUpdateShouldKeepScreenOn()
 	{
-		if (MediaView is null)
+		if (mediaView is null)
 		{
 			return;
 		}
 
-		if (MediaView.ShouldKeepScreenOn)
+		if (mediaView.ShouldKeepScreenOn)
 		{
-			if (MediaView?.CurrentState == MediaViewState.Playing
+			if (mediaView?.CurrentState == MediaViewState.Playing
 				&& !displayActiveRequested)
 			{
 				displayRequest.RequestActive();
@@ -163,22 +163,22 @@ partial class MediaManager : IDisposable
 
 	protected virtual async partial void PlatformUpdateSource()
 	{
-		if (MediaView is null || player is null)
+		if (mediaView is null || player is null)
 		{
 			return;
 		}
 
-		if (MediaView.Source is null)
+		if (mediaView.Source is null)
 		{
 			player.Source = null;
-			MediaView.CurrentStateChanged(MediaViewState.None);
+			mediaView.CurrentStateChanged(MediaViewState.None);
 
 			return;
 		}
 
-		player.AutoPlay = MediaView.ShouldAutoPlay;
+		player.AutoPlay = mediaView.ShouldAutoPlay;
 
-		if (MediaView.Source is UriMediaSource uriMediaSource)
+		if (mediaView.Source is UriMediaSource uriMediaSource)
 		{
 			var uri = uriMediaSource.Uri?.AbsoluteUri;
 			if (!string.IsNullOrWhiteSpace(uri))
@@ -186,7 +186,7 @@ partial class MediaManager : IDisposable
 				player.Source = WinMediaSource.CreateFromUri(new Uri(uri));
 			}
 		}
-		else if (MediaView.Source is FileMediaSource fileMediaSource)
+		else if (mediaView.Source is FileMediaSource fileMediaSource)
 		{
 			var filename = fileMediaSource.Path;
 			if (!string.IsNullOrWhiteSpace(filename))
@@ -195,7 +195,7 @@ partial class MediaManager : IDisposable
 				player.Source = WinMediaSource.CreateFromStorageFile(storageFile);
 			}
 		}
-		else if (MediaView.Source is ResourceMediaSource resourceMediaSource)
+		else if (mediaView.Source is ResourceMediaSource resourceMediaSource)
 		{
 			string path = "ms-appx:///" + resourceMediaSource.Path;
 			if (!string.IsNullOrWhiteSpace(path))
@@ -207,12 +207,12 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateShouldLoopPlayback()
 	{
-		if (MediaView is null || player is null)
+		if (mediaView is null || player is null)
 		{
 			return;
 		}
 
-		player.MediaPlayer.IsLoopingEnabled = MediaView.IsLooping;
+		player.MediaPlayer.IsLoopingEnabled = mediaView.IsLooping;
 	}
 
 	/// <summary>
@@ -247,24 +247,24 @@ partial class MediaManager : IDisposable
 
 	void OnMediaPlayerMediaOpened(MediaPlayer sender, object args)
 	{
-		if (MediaView is null || player is null)
+		if (mediaView is null || player is null)
 		{
 			return;
 		}
 
 		MainThread.BeginInvokeOnMainThread(() =>
 		{
-			MediaView.Duration = player.MediaPlayer.NaturalDuration == TimeSpan.MaxValue ?
+			mediaView.Duration = player.MediaPlayer.NaturalDuration == TimeSpan.MaxValue ?
 				TimeSpan.Zero
 				: player.MediaPlayer.NaturalDuration;
 
-			MediaView.MediaOpened();
+			mediaView.MediaOpened();
 		});
 	}
 
 	void OnMediaPlayerMediaEnded(MediaPlayer sender, object args)
 	{
-		MediaView?.MediaEnded();
+		mediaView?.MediaEnded();
 	}
 
 	void OnMediaPlayerMediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
@@ -287,16 +287,16 @@ partial class MediaManager : IDisposable
 			new[] { error, errorCode, errorMessage }
 			.Where(s => !string.IsNullOrEmpty(s)));
 
-		MediaView?.MediaFailed(new MediaFailedEventArgs(message));
+		mediaView?.MediaFailed(new MediaFailedEventArgs(message));
 
 		Logger?.LogError("{logMessage}", message);
 	}
 
 	void OnMediaPlayerVolumeChanged(MediaPlayer sender, object args)
 	{
-		if (MediaView is not null)
+		if (mediaView is not null)
 		{
-			MediaView.Volume = sender.Volume;
+			mediaView.Volume = sender.Volume;
 		}
 	}
 
@@ -310,12 +310,12 @@ partial class MediaManager : IDisposable
 			MediaPlaybackState.Opening => MediaViewState.Opening,
 			_ => MediaViewState.None,
 		};
-		
-		MediaView?.CurrentStateChanged(newState);
+
+		mediaView?.CurrentStateChanged(newState);
 	}
 
 	void OnPlaybackSessionSeekCompleted(MediaPlaybackSession sender, object args)
 	{
-		MediaView?.SeekCompleted();
+		mediaView?.SeekCompleted();
 	}
 }
