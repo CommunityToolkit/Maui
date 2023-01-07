@@ -32,7 +32,7 @@
             <media:MediaView
                 x:Name="mediaView"
                 ShouldAutoPlay="True"
-                Source="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                Source="embed://AndroidVideo.mp4"
                 MediaEnded="OnMediaEnded"
                 MediaFailed="OnMediaFailed"
                 MediaOpened="OnMediaOpened"
