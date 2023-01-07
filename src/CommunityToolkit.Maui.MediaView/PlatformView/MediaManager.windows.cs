@@ -212,7 +212,7 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
-		player.MediaPlayer.IsLoopingEnabled = mediaView.IsLooping;
+		player.MediaPlayer.IsLoopingEnabled = mediaView.ShouldLoopPlayback;
 	}
 
 	/// <summary>
