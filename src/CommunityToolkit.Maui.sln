@@ -28,7 +28,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{60926304
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Analyzers.UnitTests", "CommunityToolkit.Maui.Analyzers.UnitTests\CommunityToolkit.Maui.Analyzers.UnitTests.csproj", "{36ED21C6-EAA1-4472-B9DC-C0DC5EF7CBBF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.MediaElement", "CommunityToolkit.Maui.MediaElement\CommunityToolkit.Maui.MediaElement.csproj", "{D6FB00E5-B2BE-4F02-857B-985E991653CB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.MediaView", "CommunityToolkit.Maui.MediaView\CommunityToolkit.Maui.MediaView.csproj", "{D6FB00E5-B2BE-4F02-857B-985E991653CB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

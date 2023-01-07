@@ -2,9 +2,9 @@
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public partial class MediaElementViewModel : BaseViewModel
+public partial class MediaViewViewModel : BaseViewModel
 {
-	public MediaElementViewModel()
+	public MediaViewViewModel()
 	{
 
 	}

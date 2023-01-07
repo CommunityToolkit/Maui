@@ -1,0 +1,150 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+             xmlns:views="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Views"
+             xmlns:media="clr-namespace:CommunityToolkit.Maui.MediaView;assembly=CommunityToolkit.Maui.MediaView"
+             xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
+             xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+             xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Converters"
+             x:TypeArguments="viewModels:MediaViewViewModel"
+             x:DataType="viewModels:MediaViewViewModel"
+             x:Class="CommunityToolkit.Maui.Sample.Pages.Views.MediaViewPage"
+             Title="MediaView"
+             Unloaded="BasePage_Unloaded">
+    <pages:BasePage.Resources>
+        <mct:TimeSpanToSecondsConverter x:Key="TimeSpanConverter" />
+        <converters:SecondsToStringConverter x:Key="SecondsToStringConverter" />
+    </pages:BasePage.Resources>
+
+    <ScrollView>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="220" />
+                <RowDefinition Height="50" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <media:MediaView
+                x:Name="mediaView"
+                ShouldAutoPlay="True"
+                Source="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                MediaEnded="OnMediaEnded"
+                MediaFailed="OnMediaFailed"
+                MediaOpened="OnMediaOpened"
+                PositionChanged="OnPositionChanged"
+                StateChanged="OnStateChanged"
+                SeekCompleted="OnSeekCompleted"/>
+
+            <HorizontalStackLayout Grid.Row="1" Padding="0,0,0,15">
+                <Label HorizontalOptions="Center">
+                    <Label.Text>
+                        <MultiBinding StringFormat="{}Position: {0}/{1} - Current State: {2}">
+                            <Binding Path="Position" Source="{x:Reference mediaView}" Converter="{StaticResource SecondsToStringConverter}" />
+                            <Binding Path="Duration" Source="{x:Reference mediaView}" Converter="{StaticResource SecondsToStringConverter}" />
+                            <Binding Path="CurrentState" Source="{x:Reference mediaView}" />
+                        </MultiBinding>
+                    </Label.Text>
+                </Label>
+
+            </HorizontalStackLayout>
+
+            <Grid Grid.Row="2" Padding="0,10,0,10" ColumnDefinitions="*,*,*" ColumnSpacing="5">          
+                <Button Grid.Column="0" Text="Play" Clicked="OnPlayClicked" />
+                <Button Grid.Column="1" Text="Pause" Clicked="OnPauseClicked" />
+                <Button Grid.Column="2" Text="Stop" Clicked="OnStopClicked" />
+            </Grid>
+
+            <views:PositionSlider
+                x:Name="positionSlider"
+                Grid.Row="3"
+                MinimumTrackColor="Gray"
+                Duration="{Binding Duration, Source={x:Reference mediaView}}"
+                Position="{Binding Position, Source={x:Reference mediaView}}"
+                DragCompleted="Slider_DragCompleted"/>
+
+            <VerticalStackLayout Padding="0,20,0,0" Grid.Row="4" Spacing="5">
+                <Button
+                    Clicked="OnMp4OnlineSourceClicked"
+                    Text="Load MP4" />
+
+                <Button
+                    Clicked="OnHlsSourceClicked"
+                    Text="Load HLS" />
+
+                <Button
+                    Clicked="OnResourceSourceClicked"
+                    Text="Load Local Resource" />
+
+                <Button
+                    Clicked="OnResetClicked"
+                    Text="Reset Source (null)" />
+            </VerticalStackLayout>
+
+            <HorizontalStackLayout Grid.Row="5" Padding="0,10,0,10" Spacing="5">
+                <Label Margin="20,10">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="Speed:" />
+                            <Span Text="{Binding Source={x:Reference mediaView}, Path=Speed}" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+
+                <Button Text="-" Clicked="OnSpeedMinusClicked" />
+                <Button Text="+" Clicked="OnSpeedPlusClicked" />
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Grid.Row="6" Padding="0,10,0,10" Spacing="5">
+                <Label Margin="20,10">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="Volume:" />
+                            <Span Text="{Binding Source={x:Reference mediaView}, Path=Volume, StringFormat='{}{0:P0}'}" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+
+                <Button Text="-" Clicked="OnVolumeMinusClicked" />
+                <Button Text="+" Clicked="OnVolumePlusClicked" />
+            </HorizontalStackLayout>
+        
+            <VerticalStackLayout Grid.Row="7">
+                <HorizontalStackLayout Padding="0,0,0,10">
+                    <Switch
+                        Margin="0,0,5,0"
+                        ThumbColor="White"
+                        OnColor="LimeGreen"
+                        IsToggled="{Binding Source={x:Reference mediaView}, Path=ShouldShowPlaybackControls}" />
+                    <Label
+                        VerticalOptions="Center"
+                        Text="Show playback controls" />
+                </HorizontalStackLayout>
+                <HorizontalStackLayout Padding="0,0,0,10">
+                    <Switch
+                        Margin="0,0,5,0"
+                        ThumbColor="White"
+                        OnColor="LimeGreen"
+                        IsToggled="{Binding Source={x:Reference mediaView}, Path=ShouldLoopPlayback}" />
+                    <Label
+                        VerticalOptions="Center"
+                        Text="Loop media" />
+                </HorizontalStackLayout>
+                <HorizontalStackLayout>
+                    <Switch
+                        Margin="0,0,5,0"
+                        ThumbColor="White"
+                        OnColor="LimeGreen"
+                        IsToggled="{Binding Source={x:Reference mediaView}, Path=ShouldKeepScreenOn}" />
+                    <Label
+                        VerticalOptions="Center"
+                        Text="Keep screen on" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+        </Grid>
+    </ScrollView>
+</pages:BasePage>
