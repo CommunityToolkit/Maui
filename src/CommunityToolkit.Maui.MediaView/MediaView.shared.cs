@@ -19,7 +19,7 @@ public class MediaView : View, IMediaView
 	/// Backing store for the <see cref="ShouldAutoPlay"/> property.
 	/// </summary>
 	public static readonly BindableProperty AutoPlayProperty =
-		BindableProperty.Create(nameof(ShouldAutoPlay), typeof(bool), typeof(MediaView), false, propertyChanged: OnAutoPlayPropertyChanged);
+		BindableProperty.Create(nameof(ShouldAutoPlay), typeof(bool), typeof(MediaView), false);
 
 	/// <summary>
 	/// Backing store for the <see cref="CurrentState"/> property.
@@ -67,7 +67,7 @@ public class MediaView : View, IMediaView
 	/// Backing store for the <see cref="Speed"/> property.
 	/// </summary>
 	public static readonly BindableProperty SpeedProperty =
-		  BindableProperty.Create(nameof(Speed), typeof(double), typeof(MediaView), 1.0, propertyChanged: OnSpeedPropertyChanged);
+		  BindableProperty.Create(nameof(Speed), typeof(double), typeof(MediaView), 1.0);
 
 	/// <summary>
 	/// Backing store for the <see cref="MediaHeight"/> property.
@@ -373,17 +373,11 @@ public class MediaView : View, IMediaView
 		base.OnBindingContextChanged();
 	}
 
-	static void OnAutoPlayPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
-		((MediaView)bindable).ShouldAutoPlay = (bool)newValue;
-
 	static void OnSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
 		((MediaView)bindable).OnSourcePropertyChanged((MediaSource?)newValue);
 
 	static void OnSourcePropertyChanging(BindableObject bindable, object oldValue, object newValue) =>
 		((MediaView)bindable).OnSourcePropertyChanging((MediaSource?)oldValue);
-
-	static void OnSpeedPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
-		((MediaView)bindable).Speed = (double)newValue;
 
 	static void OnCurrentStatePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
