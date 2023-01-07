@@ -331,7 +331,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		}
 	}
 
-	protected virtual partial void PlatformUpdateShowsPlaybackControls()
+	protected virtual partial void PlatformUpdateShouldShowPlaybackControls()
 	{
 		if (mediaElement is null || playerView is null)
 		{
@@ -364,7 +364,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		player.Volume = (float)mediaElement.Volume;
 	}
 
-	protected virtual partial void PlatformUpdateKeepScreenOn()
+	protected virtual partial void PlatformUpdateShouldKeepScreenOn()
 	{
 		if (playerView is null)
 		{
@@ -374,7 +374,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		playerView.KeepScreenOn = mediaElement.ShouldKeepScreenOn;
 	}
 
-	protected virtual partial void PlatformUpdateIsLooping()
+	protected virtual partial void PlatformUpdateShouldLoopPlayback()
 	{
 		if (mediaElement is null || player is null)
 		{

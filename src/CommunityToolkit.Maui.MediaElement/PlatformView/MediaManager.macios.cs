@@ -9,20 +9,66 @@ namespace CommunityToolkit.Maui.MediaElement;
 
 public partial class MediaManager : IDisposable
 {
+	/// <summary>
+	/// The default <see cref="NSKeyValueObservingOptions"/> flags used in the iOS and macOS observers.
+	/// </summary>
 	protected const NSKeyValueObservingOptions valueObserverOptions =
 		NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.New;
 
-	protected NSObject? playedToEndObserver;
-	protected NSObject? itemFailedToPlayToEndTimeObserver;
-	protected NSObject? playbackStalledObserver;
-	protected NSObject? errorObserver;
-	protected IDisposable? statusObserver;
-	protected IDisposable? volumeObserver;
-	protected IDisposable? rateObserver;
-	protected IDisposable? timeControlStatusObserver;
+	/// <summary>
+	/// Observer that tracks when an error has occurred in the playback of the current item.
+	/// </summary>
 	protected IDisposable? currentItemErrorObserver;
-	protected AVPlayerViewController? playerViewController;
+
+	/// <summary>
+	/// Observer that tracks when an error has occured with media playback.
+	/// </summary>
+	protected NSObject? errorObserver;
+
+	/// <summary>
+	/// Observer that tracks when the media has failed to play to the end.
+	/// </summary>
+	protected NSObject? itemFailedToPlayToEndTimeObserver;
+
+	/// <summary>
+	/// Observer that tracks when the playback of media has stalled.
+	/// </summary>
+	protected NSObject? playbackStalledObserver;
+
+	/// <summary>
+	/// Observer that tracks when the media has played to the end.
+	/// </summary>
+	protected NSObject? playedToEndObserver;
+
+	/// <summary>
+	/// The current media playback item.
+	/// </summary>
 	protected AVPlayerItem? playerItem;
+
+	/// <summary>
+	/// The <see cref="AVPlayerViewController"/> that hosts the media player.
+	/// </summary>
+	protected AVPlayerViewController? playerViewController;
+
+	/// <summary>
+	/// Observer that tracks the playback rate of the media.
+	/// </summary>
+	protected IDisposable? rateObserver;
+
+	/// <summary>
+	/// Observer that tracks the status of the media.
+	/// </summary>
+	protected IDisposable? statusObserver;
+
+	/// <summary>
+	/// Observer that tracks the time control status of the media.
+	/// </summary>
+	protected IDisposable? timeControlStatusObserver;
+
+	/// <summary>
+	/// Observer that tracks the volume of the media playback.
+	/// </summary>
+	protected IDisposable? volumeObserver;
 
 	/// <summary>
 	/// Creates the corresponding platform view of <see cref="MediaElement"/> on iOS and macOS.
@@ -198,7 +244,7 @@ public partial class MediaManager : IDisposable
 		playerViewController.Player.Rate = (float)mediaElement.Speed;
 	}
 
-	protected virtual partial void PlatformUpdateShowsPlaybackControls()
+	protected virtual partial void PlatformUpdateShouldShowPlaybackControls()
 	{
 		if (playerViewController is null)
 		{
@@ -250,7 +296,7 @@ public partial class MediaManager : IDisposable
 		playerViewController.Player.Volume = (float)mediaElement.Volume;
 	}
 
-	protected virtual partial void PlatformUpdateKeepScreenOn()
+	protected virtual partial void PlatformUpdateShouldKeepScreenOn()
 	{
 		if (player is null || mediaElement is null)
 		{
@@ -260,7 +306,7 @@ public partial class MediaManager : IDisposable
 		player.PreventsDisplaySleepDuringVideoPlayback = mediaElement.ShouldKeepScreenOn;
 	}
 
-	protected virtual partial void PlatformUpdateIsLooping()
+	protected virtual partial void PlatformUpdateShouldLoopPlayback()
 	{
 		// no-op we loop through using the playedToEndObserver
 	}

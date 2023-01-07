@@ -11,7 +11,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
-	public static void MapIsLooping(MediaElementHandler handler, MediaElement mediaElement)
+	public static void ShouldLoopPlayback(MediaElementHandler handler, MediaElement mediaElement)
 	{
 		handler?.mediaManager?.UpdateIsLooping();
 	}

@@ -138,7 +138,7 @@ public class MediaElement : View, IMediaElement
 		remove => eventManager.RemoveEventHandler(value);
 	}
 
-	internal event EventHandler UpdateStatus
+	internal event EventHandler StatusUpdated
 	{
 		add => eventManager.AddEventHandler(value);
 		remove => eventManager.RemoveEventHandler(value);
@@ -405,7 +405,7 @@ public class MediaElement : View, IMediaElement
 	{
 		OnPositionRequested();
 		OnUpdateStatus();
-		Handler?.Invoke(nameof(UpdateStatus));
+		Handler?.Invoke(nameof(StatusUpdated));
 	}
 
 	void InitializeTimer()
@@ -498,5 +498,5 @@ public class MediaElement : View, IMediaElement
 
 	void OnPositionRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(PositionRequested));
 
-	void OnUpdateStatus() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(UpdateStatus));
+	void OnUpdateStatus() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(StatusUpdated));
 }

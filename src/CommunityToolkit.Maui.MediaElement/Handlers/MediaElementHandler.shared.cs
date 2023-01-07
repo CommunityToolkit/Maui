@@ -14,13 +14,13 @@ public partial class MediaElementHandler
 	/// </summary>
 	public static IPropertyMapper<MediaElement, MediaElementHandler> PropertyMapper = new PropertyMapper<MediaElement, MediaElementHandler>(ViewMapper)
 	{
-		[nameof(IMediaElement.ShouldShowPlaybackControls)] = MapShowsPlaybackControls,
+		[nameof(IMediaElement.ShouldShowPlaybackControls)] = MapShouldShowPlaybackControls,
 		[nameof(IMediaElement.Source)] = MapSource,
 		[nameof(IMediaElement.Speed)] = MapSpeed,
 		[nameof(IMediaElement.Volume)] = MapVolume,
-		[nameof(IMediaElement.ShouldKeepScreenOn)] = MapKeepScreenOn,
+		[nameof(IMediaElement.ShouldKeepScreenOn)] = MapShouldKeepScreenOn,
 #if ANDROID || WINDOWS || TIZEN
-		[nameof(MediaElement.ShouldLoopPlayback)] = MapIsLooping
+		[nameof(MediaElement.ShouldLoopPlayback)] = ShouldLoopPlayback
 #endif
 	};
 
@@ -29,7 +29,7 @@ public partial class MediaElementHandler
 	/// </summary>
 	public static CommandMapper<MediaElement, MediaElementHandler> CommandMapper = new(ViewCommandMapper)
 	{
-		[nameof(MediaElement.UpdateStatus)] = MapUpdateStatus,
+		[nameof(MediaElement.StatusUpdated)] = MapStatusUpdated,
 		[nameof(MediaElement.PlayRequested)] = MapPlayRequested,
 		[nameof(MediaElement.PauseRequested)] = MapPauseRequested,
 		[nameof(MediaElement.SeekRequested)] = MapSeekRequested,
@@ -62,9 +62,9 @@ public partial class MediaElementHandler
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
-	public static void MapShowsPlaybackControls(MediaElementHandler handler, MediaElement mediaElement)
+	public static void MapShouldShowPlaybackControls(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler.mediaManager?.UpdateShowsPlaybackControls();
+		handler.mediaManager?.UpdateShouldShowPlaybackControls();
 	}
 
 	/// <summary>
@@ -96,7 +96,7 @@ public partial class MediaElementHandler
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> is not used.</remarks>
-	public static void MapUpdateStatus(MediaElementHandler handler, MediaElement mediaElement, object? args)
+	public static void MapStatusUpdated(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
 		handler.mediaManager?.UpdateStatus();
 	}
@@ -118,9 +118,9 @@ public partial class MediaElementHandler
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
-	public static void MapKeepScreenOn(MediaElementHandler handler, MediaElement mediaElement)
+	public static void MapShouldKeepScreenOn(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler.mediaManager?.UpdateKeepScreenOn();
+		handler.mediaManager?.UpdateShouldKeepScreenOn();
 	}
 
 	/// <summary>

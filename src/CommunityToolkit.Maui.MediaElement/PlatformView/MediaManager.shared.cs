@@ -22,6 +22,9 @@ public partial class MediaManager
 	readonly IMauiContext mauiContext;
 	readonly IMediaElement mediaElement;
 #if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
+	/// <summary>
+	/// The platform-specific media player.
+	/// </summary>
 	protected PlatformMediaView? player;
 #endif
 
@@ -93,11 +96,28 @@ public partial class MediaManager
 	}
 
 	/// <summary>
+	/// Update whether of not the screen should stay on while media is being played.
+	/// </summary>
+	public void UpdateShouldKeepScreenOn()
+	{
+		PlatformUpdateShouldKeepScreenOn();
+	}
+
+	/// <summary>
+	/// Update whether or not the media should start playing from the beginning
+	/// when it reached the end.
+	/// </summary>
+	public void UpdateShouldLoopPlayback()
+	{
+		PlatformUpdateShouldLoopPlayback();
+	}
+
+	/// <summary>
 	/// Update whether or not to show the platform playback controls.
 	/// </summary>
-	public void UpdateShowsPlaybackControls()
+	public void UpdateShouldShowPlaybackControls()
 	{
-		PlatformUpdateShowsPlaybackControls();
+		PlatformUpdateShouldShowPlaybackControls();
 	}
 
 	/// <summary>
@@ -114,23 +134,6 @@ public partial class MediaManager
 	public void UpdateVolume()
 	{
 		PlatformUpdateVolume();
-	}
-
-	/// <summary>
-	/// Update whether of not the screen should stay on while media is being played.
-	/// </summary>
-	public void UpdateKeepScreenOn()
-	{
-		PlatformUpdateKeepScreenOn();
-	}
-
-	/// <summary>
-	/// Update whether or not the media should start playing from the beginning
-	/// when it reached the end.
-	/// </summary>
-	public void UpdateIsLooping()
-	{
-		PlatformUpdateIsLooping();
 	}
 
 	/// <summary>
@@ -165,9 +168,20 @@ public partial class MediaManager
 	protected virtual partial void PlatformUpdateSpeed();
 
 	/// <summary>
+	/// Invokes the platform functionality to toggle the media playback loop behavior.
+	/// </summary>
+	protected virtual partial void PlatformUpdateShouldLoopPlayback();
+
+	/// <summary>
+	/// Invokes the platform functionality to toggle keeping the screen on
+	/// during media playback.
+	/// </summary>
+	protected virtual partial void PlatformUpdateShouldKeepScreenOn();
+
+	/// <summary>
 	/// Invokes the platform functionality to show or hide the platform playback controls.
 	/// </summary>
-	protected virtual partial void PlatformUpdateShowsPlaybackControls();
+	protected virtual partial void PlatformUpdateShouldShowPlaybackControls();
 
 	/// <summary>
 	/// Invokes the platform functionality to update the media playback position.
@@ -178,17 +192,6 @@ public partial class MediaManager
 	/// Invokes the platform functionality to update the media playback volume.
 	/// </summary>
 	protected virtual partial void PlatformUpdateVolume();
-
-	/// <summary>
-	/// Invokes the platform functionality to toggle keeping the screen on
-	/// during media playback.
-	/// </summary>
-	protected virtual partial void PlatformUpdateKeepScreenOn();
-
-	/// <summary>
-	/// Invokes the platform functionality to toggle the media playback loop behavior.
-	/// </summary>
-	protected virtual partial void PlatformUpdateIsLooping();
 }
 
 #if !(WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN)
@@ -200,10 +203,10 @@ partial class MediaManager
 	protected virtual partial void PlatformStop() { }
 	protected virtual partial void PlatformUpdateSource() { }
 	protected virtual partial void PlatformUpdateSpeed() { }
-	protected virtual partial void PlatformUpdateShowsPlaybackControls() { }
+	protected virtual partial void PlatformUpdateShouldShowPlaybackControls() { }
 	protected virtual partial void PlatformUpdatePosition() { }
 	protected virtual partial void PlatformUpdateVolume() { }
-	protected virtual partial void PlatformUpdateKeepScreenOn() { }
-	protected virtual partial void PlatformUpdateIsLooping() { }
+	protected virtual partial void PlatformUpdateShouldKeepScreenOn() { }
+	protected virtual partial void PlatformUpdateShouldLoopPlayback() { }
 }
 #endif
