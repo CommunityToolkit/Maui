@@ -8,6 +8,9 @@ namespace CommunityToolkit.Maui.MediaView.Converters;
 /// </summary>
 public sealed class MediaSourceConverter : TypeConverter
 {
+	const string embeddedResourcePrefix = "embed://";
+	const string fileSystemPrefix = "filesystem://";
+
 	/// <inheritdoc/>
 	public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 			=> sourceType == typeof(string);
@@ -26,7 +29,17 @@ public sealed class MediaSourceConverter : TypeConverter
 			return null;
 		}
 
-		// TODO smarter detection of filesystem files/resource file/url/other
+		var valueAsStringLowercase = valueAsString.ToLowerInvariant();
+
+		if (valueAsStringLowercase.StartsWith(embeddedResourcePrefix))
+		{
+			return MediaSource.FromResource(
+				valueAsString[embeddedResourcePrefix.Length..]);
+		}
+		else if (valueAsStringLowercase.StartsWith(fileSystemPrefix))
+		{
+			return MediaSource.FromFile(valueAsString[fileSystemPrefix.Length..]);
+		}
 
 		return Uri.TryCreate(valueAsString, UriKind.Absolute, out var uri) && uri.Scheme != "file"
 			? MediaSource.FromUri(uri)
