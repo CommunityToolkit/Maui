@@ -8,7 +8,7 @@ using Application = Android.App.Application;
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc />
-public partial class SaveFileDialogImplementation : ISaveFileDialog
+partial class SaveFileDialogImplementation : ISaveFileDialog
 {
 	/// <inheritdoc/>
 	public async Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)

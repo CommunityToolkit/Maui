@@ -4,7 +4,7 @@ using Windows.Storage.Pickers;
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc />
-public partial class SaveFileDialogImplementation : ISaveFileDialog
+partial class SaveFileDialogImplementation : ISaveFileDialog
 {
 	readonly List<string> allFilesExtension = new() { "." };
 

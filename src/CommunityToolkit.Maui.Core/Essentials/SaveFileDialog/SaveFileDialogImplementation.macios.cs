@@ -1,7 +1,7 @@
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc cref="ISaveFileDialog" />
-public sealed partial class SaveFileDialogImplementation : ISaveFileDialog, IDisposable
+sealed partial class SaveFileDialogImplementation : ISaveFileDialog, IDisposable
 {
 	UIDocumentPickerViewController? documentPickerViewController;
 	TaskCompletionSource<string>? taskCompetedSource;
