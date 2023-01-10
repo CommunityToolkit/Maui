@@ -14,7 +14,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 			throw new PermissionException("Storage permission is not granted.");
 		}
 
-		var dialog = new FileFolderDialog(true, initialPath, fileName: fileName);
+		using var dialog = new FileFolderDialog(true, initialPath, fileName: fileName);
 		var path = await dialog.Open().WaitAsync(cancellationToken).ConfigureAwait(false);
 
 		if (string.IsNullOrEmpty(path))

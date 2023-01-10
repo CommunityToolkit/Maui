@@ -15,7 +15,7 @@ public sealed class FolderPickerImplementation : IFolderPicker
 			throw new PermissionException("Storage permission is not granted.");
 		}
 
-		var dialog = new FileFolderDialog(false, initialPath);
+		using var dialog = new FileFolderDialog(false, initialPath);
 		var path = await dialog.Open().WaitAsync(cancellationToken).ConfigureAwait(false);
 
 		return new Folder(path, Path.GetFileName(path));

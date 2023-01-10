@@ -1,6 +1,7 @@
 ﻿using Microsoft.Maui.Platform;
 using Tizen.NUI;
 using Tizen.NUI.BaseComponents;
+using Tizen.NUI.Components;
 using Tizen.UIExtensions.NUI;
 using Path = System.IO.Path;
 using Button = Tizen.UIExtensions.NUI.Button;
@@ -16,55 +17,8 @@ using Window = Tizen.NUI.Window;
 
 namespace CommunityToolkit.Maui.Storage;
 
-/// <summary>
-/// FileFolderDialog Localization Strings.
-/// </summary>
-public static class FileFolderDialogLocalization
-{
-	/// <summary>
-	/// Gets or sets the action label.
-	/// </summary>
-	public static string FileSaveAs { get; set; } = "Save As";
-	
-	/// <summary>
-	/// Gets or sets the action button text.
-	/// </summary>
-	public static string SaveButton { get; set; } = "Save";
-	
-	/// <summary>
-	/// Gets or sets the action button text.
-	/// </summary>
-	public static string OkButton { get; set; } = "OK";
-	
-	/// <summary>
-	/// Gets or sets the cancel button text.
-	/// </summary>
-	public static string CancelButton { get; set; } = "Cancel";
-
-	/// <summary>
-	/// Gets or sets the action button text.
-	/// </summary>
-	public static string SelectFolder { get; set; } = "Select Folder";
-
-	/// <summary>
-	/// Gets or sets the NewFolder action button text.
-	/// </summary>
-	public static string NewFolderButton { get; set; } = "New Folder";
-	
-	/// <summary>
-	/// Gets or sets the NewFolder prompt title.
-	/// </summary>
-	public static string NewFolderNameTitle { get; set; } = "New Folder Name";
-	
-	/// <summary>
-	/// Gets or sets the Create folder error message.
-	/// </summary>
-	public static string CreateFolderErrorMessage { get; set; } = "Failed to create new folder";
-}
-
 sealed class FileFolderDialog : Popup<string>
 {
-
 	const string previousDirectorySymbol = "..";
 	const string slashSymbol = "/";
 
@@ -72,8 +26,10 @@ sealed class FileFolderDialog : Popup<string>
 	readonly string initialFileFolderPath;
 
 	ScrollView? directoryScrollView;
+	View? content;
+	Button? okButton, cancelButton;
 	Entry? fileNameEntry;
-	List<View> directoryViews;
+	readonly List<View> directoryViews;
 	string selectedPath;
 	string selectedFileName;
 
@@ -110,7 +66,7 @@ sealed class FileFolderDialog : Popup<string>
 		return externalDirectory ?? throw new InvalidOperationException("Cannot locate external directory.");
 	}
 
-	public bool IsDirectory(string path)
+	public static bool IsDirectory(string path)
 	{
 		return (File.GetAttributes(path) & FileAttributes.Directory) == FileAttributes.Directory;
 	}
@@ -128,7 +84,7 @@ sealed class FileFolderDialog : Popup<string>
 		var margin2 = (ushort)10d.ToPixel();
 		var radius = 8d.ToPixel();
 
-		var content = new View
+		content = new View
 		{
 			CornerRadius = radius,
 			BoxShadow = new Shadow(20d.ToPixel(), TColor.Black.ToNative()),
@@ -228,14 +184,14 @@ sealed class FileFolderDialog : Popup<string>
 				Margin = new Extents(margin1, margin1, 0, 0),
 				WidthSpecification = LayoutParamPolicies.MatchParent
 			};
-			PropertyMap underline = new PropertyMap();
+			var underline = new PropertyMap();
 			underline.Add("enable", new PropertyValue("True"));
 			fileNameEntry.Underline = underline;
 			fileNameEntry.PixelSize = 15d.ToPixel();
 			content.Add(fileNameEntry);
 		}
 
-		var hlayout = new View
+		var horizontalLayout = new View
 		{
 			Margin = new Extents(margin1, margin1, margin2, margin1),
 			Layout = new LinearLayout
@@ -247,9 +203,9 @@ sealed class FileFolderDialog : Popup<string>
 			WidthSpecification = LayoutParamPolicies.MatchParent,
 			HeightSpecification = LayoutParamPolicies.WrapContent
 		};
-		content.Add(hlayout);
+		content.Add(horizontalLayout);
 
-		var cancelButton = new Button
+		cancelButton = new Button
 		{
 			Focusable = true,
 			Text = FileFolderDialogLocalization.CancelButton,
@@ -258,10 +214,10 @@ sealed class FileFolderDialog : Popup<string>
 		};
 		cancelButton.TextLabel.PixelSize = 15d.ToPixel();
 		cancelButton.SizeWidth = cancelButton.TextLabel.NaturalSize.Width + 15d.ToPixel() * 2;
-		cancelButton.Clicked += (_, _) => SendCancel();
-		hlayout.Add(cancelButton);
+		cancelButton.Clicked += CancelButtonOnClicked;
+		horizontalLayout.Add(cancelButton);
 
-		var okButton = new Button
+		okButton = new Button
 		{
 			Focusable = true,
 			Text = isFileSelectionMode ? FileFolderDialogLocalization.SaveButton : FileFolderDialogLocalization.OkButton,
@@ -270,33 +226,45 @@ sealed class FileFolderDialog : Popup<string>
 		};
 		okButton.TextLabel.PixelSize = 15d.ToPixel();
 		okButton.SizeWidth = okButton.TextLabel.NaturalSize.Width + 15d.ToPixel() * 2;
-		okButton.Clicked += (_, _) =>
+		okButton.Clicked += OkButtonOnClicked;
+		horizontalLayout.Add(okButton);
+
+		Relayout += OnRelayout;
+
+		return content;
+	}
+
+	void CancelButtonOnClicked(object? sender, ClickedEventArgs e)
+	{
+		SendCancel();
+	}
+
+	void OkButtonOnClicked(object? sender, ClickedEventArgs e)
+	{
+		if (isFileSelectionMode)
 		{
-			if (isFileSelectionMode)
+			if (IsDirectory(selectedPath))
 			{
-				if (IsDirectory(selectedPath))
-				{
-					selectedFileName = fileNameEntry is null ? selectedFileName : fileNameEntry.Text;
-					SendSubmit(selectedPath + selectedFileName);
-				}
-				else
-				{
-					SendSubmit(selectedPath);
-				}
+				selectedFileName = fileNameEntry is null ? selectedFileName : fileNameEntry.Text;
+				SendSubmit(selectedPath + selectedFileName);
 			}
 			else
 			{
 				SendSubmit(selectedPath);
 			}
-		};
-		hlayout.Add(okButton);
+		}
+		else
+		{
+			SendSubmit(selectedPath);
+		}
+	}
 
-		Relayout += (_, _) =>
+	void OnRelayout(object? sender, EventArgs e)
+	{
+		if (content is not null)
 		{
 			content.SizeWidth = Window.Instance.WindowSize.Width * (IsHorizontal() ? 0.5f : 0.8f);
-		};
-
-		return content;
+		}
 	}
 
 	static bool IsHorizontal()
@@ -319,6 +287,7 @@ sealed class FileFolderDialog : Popup<string>
 			{
 				return;
 			}
+			
 			selectedPath = Path.GetDirectoryName(selectedPath) ?? initialFileFolderPath;
 			selectedPath = selectedPath[..selectedPath.LastIndexOf(slashSymbol, StringComparison.Ordinal)];
 		}
@@ -353,6 +322,7 @@ sealed class FileFolderDialog : Popup<string>
 		{
 			directoryScrollView.ContentContainer.Remove(view);
 		}
+		
 		directoryViews.Clear();
 
 		var listItems = GetDirectories(path);
@@ -377,6 +347,7 @@ sealed class FileFolderDialog : Popup<string>
 					ProcessSelect(item);
 					return true;
 				}
+				
 				return false;
 			};
 			itemLabel.KeyEvent += (_, e) =>
@@ -386,6 +357,7 @@ sealed class FileFolderDialog : Popup<string>
 					ProcessSelect(item);
 					return true;
 				}
+				
 				return false;
 			};
 			directoryScrollView.ContentContainer.Add(itemLabel);
@@ -426,5 +398,26 @@ sealed class FileFolderDialog : Popup<string>
 
 		directories.Sort();
 		return directories;
+	}
+
+	protected override void Dispose(bool disposing)
+	{
+		Relayout -= OnRelayout;
+		if (okButton != null)
+		{
+			okButton.Clicked -= OkButtonOnClicked;
+			okButton.Dispose();
+		}
+		
+		if (cancelButton != null)
+		{
+			cancelButton.Clicked -= CancelButtonOnClicked;
+			cancelButton.Dispose();
+		}
+
+		fileNameEntry?.Dispose();
+		directoryScrollView?.Dispose();
+		content?.Dispose();
+		base.Dispose(disposing);
 	}
 }
