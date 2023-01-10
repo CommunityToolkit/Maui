@@ -5,14 +5,19 @@
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Essentials.FolderPickerPage"
                 xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Essentials"
                 x:TypeArguments="vm:FolderPickerViewModel"
-                x:DataType="vm:FolderPickerViewModel">
+                x:DataType="vm:FolderPickerViewModel"
+                Title="FolderPicker">
     
     <VerticalStackLayout Spacing="12">
         
-        <Label Text="The FolderPicker allows you to pick a folder from the device."
-                LineBreakMode = "WordWrap" />
+        <Label Text="FolderPicker allows you to pick a folder from the device"
+               LineBreakMode = "WordWrap"
+               HorizontalOptions="Center"
+               HorizontalTextAlignment="Center"/>
         
-        <Button Command="{Binding PickFolderCommand}" Text="Pick Folder" />
+        <Button Command="{Binding PickFolderCommand}"
+                Text="Pick Folder"
+                HorizontalOptions="Center"/>
 
     </VerticalStackLayout>
     

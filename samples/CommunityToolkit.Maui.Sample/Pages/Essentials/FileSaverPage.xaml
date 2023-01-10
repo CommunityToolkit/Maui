@@ -5,14 +5,19 @@
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Essentials.FileSaverPage"
                 xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Essentials"
                 x:TypeArguments="vm:FileSaverViewModel"
-                x:DataType="vm:FileSaverViewModel">
+                x:DataType="vm:FileSaverViewModel"
+                Title="FileSaver">
     
     <VerticalStackLayout Spacing="12">
 
-        <Label Text="The FileSaver allows selecting target folder and saving files to the file system."
-                LineBreakMode = "WordWrap" />
+        <Label Text="FileSaver allows selecting target folder and saving files to the file system"
+               LineBreakMode = "WordWrap"
+               HorizontalOptions="Center"
+               HorizontalTextAlignment="Center"/>
         
-        <Button Command="{Binding SaveFileCommand}" Text="Save" />
+        <Button Command="{Binding SaveFileCommand}"
+                Text="Save"
+                HorizontalOptions="Center"/>
 
     </VerticalStackLayout>
     
