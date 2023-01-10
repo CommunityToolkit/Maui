@@ -27,7 +27,7 @@ sealed class FileFolderDialog : Popup<string>
 
 	ScrollView? directoryScrollView;
 	View? content;
-	Button? okButton, cancelButton;
+	Button? okButton, cancelButton, newFolderButton;
 	Entry? fileNameEntry;
 	readonly List<View> directoryViews;
 	string selectedPath;
@@ -79,7 +79,7 @@ sealed class FileFolderDialog : Popup<string>
 			HorizontalAlignment = HorizontalAlignment.Center
 		};
 		BackgroundColor = new TColor(0.1f, 0.1f, 0.1f, 0.5f).ToNative();
-		
+
 		var margin1 = (ushort)20d.ToPixel();
 		var margin2 = (ushort)10d.ToPixel();
 		var radius = 8d.ToPixel();
@@ -140,7 +140,7 @@ sealed class FileFolderDialog : Popup<string>
 
 		if (isFileSelectionMode)
 		{
-			var newFolderButton = new Button
+			newFolderButton = new Button
 			{
 				Focusable = true,
 				Text = FileFolderDialogLocalization.NewFolderButton,
@@ -149,30 +149,7 @@ sealed class FileFolderDialog : Popup<string>
 				Margin = new Extents(margin1, margin1, 0, 0),
 				WidthSpecification = LayoutParamPolicies.MatchParent
 			};
-			newFolderButton.Clicked += async (_, _) =>
-			{
-				try
-				{
-					var newDirectoryName = await new PromptPopup(FileFolderDialogLocalization.NewFolderNameTitle, "").Open();
-					var newDirectoryPath = IsDirectory(selectedPath) ? selectedPath : Path.GetDirectoryName(selectedPath);
-					if (string.IsNullOrEmpty(newDirectoryPath) || string.IsNullOrEmpty(newDirectoryName))
-					{
-						return;
-					}
-					newDirectoryPath = newDirectoryPath.EndsWith(slashSymbol) ? newDirectoryPath : newDirectoryPath + slashSymbol;
-					if (CreateSubDirectory(newDirectoryPath + newDirectoryName))
-					{
-						UpdateDirectoryScrollView(selectedPath);
-					}
-				}
-				catch (Exception ex)
-				{
-					new Tizen.Applications.ToastMessage
-					{
-						Message = $"{FileFolderDialogLocalization.CreateFolderErrorMessage}, {ex.Message}"
-					}.Post();
-				}
-			};
+			newFolderButton.Clicked += NewFolderButtonOnClicked;
 			content.Add(newFolderButton);
 		}
 
@@ -234,6 +211,31 @@ sealed class FileFolderDialog : Popup<string>
 		return content;
 	}
 
+	async void NewFolderButtonOnClicked(object? sender, ClickedEventArgs e)
+	{
+		try
+		{
+			var newDirectoryName = await new PromptPopup(FileFolderDialogLocalization.NewFolderNameTitle, string.Empty).Open();
+			var newDirectoryPath = IsDirectory(selectedPath) ? selectedPath : Path.GetDirectoryName(selectedPath);
+			if (string.IsNullOrEmpty(newDirectoryPath) || string.IsNullOrEmpty(newDirectoryName))
+			{
+				return;
+			}
+			newDirectoryPath = newDirectoryPath.EndsWith(slashSymbol) ? newDirectoryPath : newDirectoryPath + slashSymbol;
+			if (CreateSubDirectory(newDirectoryPath + newDirectoryName))
+			{
+				UpdateDirectoryScrollView(selectedPath);
+			}
+		}
+		catch (Exception ex)
+		{
+			new Tizen.Applications.ToastMessage
+			{
+				Message = $"{FileFolderDialogLocalization.CreateFolderErrorMessage}, {ex.Message}"
+			}.Post();
+		}
+	}
+
 	void CancelButtonOnClicked(object? sender, ClickedEventArgs e)
 	{
 		SendCancel();
@@ -287,7 +289,7 @@ sealed class FileFolderDialog : Popup<string>
 			{
 				return;
 			}
-			
+
 			selectedPath = Path.GetDirectoryName(selectedPath) ?? initialFileFolderPath;
 			selectedPath = selectedPath[..selectedPath.LastIndexOf(slashSymbol, StringComparison.Ordinal)];
 		}
@@ -322,7 +324,7 @@ sealed class FileFolderDialog : Popup<string>
 		{
 			directoryScrollView.ContentContainer.Remove(view);
 		}
-		
+
 		directoryViews.Clear();
 
 		var listItems = GetDirectories(path);
@@ -347,7 +349,7 @@ sealed class FileFolderDialog : Popup<string>
 					ProcessSelect(item);
 					return true;
 				}
-				
+
 				return false;
 			};
 			itemLabel.KeyEvent += (_, e) =>
@@ -357,7 +359,7 @@ sealed class FileFolderDialog : Popup<string>
 					ProcessSelect(item);
 					return true;
 				}
-				
+
 				return false;
 			};
 			directoryScrollView.ContentContainer.Add(itemLabel);
@@ -403,16 +405,22 @@ sealed class FileFolderDialog : Popup<string>
 	protected override void Dispose(bool disposing)
 	{
 		Relayout -= OnRelayout;
-		if (okButton != null)
+		if (okButton is not null)
 		{
 			okButton.Clicked -= OkButtonOnClicked;
 			okButton.Dispose();
 		}
-		
-		if (cancelButton != null)
+
+		if (cancelButton is not null)
 		{
 			cancelButton.Clicked -= CancelButtonOnClicked;
 			cancelButton.Dispose();
+		}
+
+		if (newFolderButton is not null)
+		{
+			newFolderButton.Clicked -= NewFolderButtonOnClicked;
+			newFolderButton.Dispose();
 		}
 
 		fileNameEntry?.Dispose();
