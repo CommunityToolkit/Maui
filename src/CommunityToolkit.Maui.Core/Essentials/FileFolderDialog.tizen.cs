@@ -65,7 +65,8 @@ sealed class FileFolderDialog : Popup<string>
 				externalDirectory = storage.RootDirectory;
 				break;
 			}
-			else if (storage.StorageType == Tizen.System.StorageArea.Internal)
+
+			if (storage.StorageType == Tizen.System.StorageArea.Internal)
 			{
 				externalDirectory = storage.RootDirectory;
 			}
@@ -76,11 +77,7 @@ sealed class FileFolderDialog : Popup<string>
 
 	public bool IsDirectory(string path)
 	{
-		if (((File.GetAttributes(path) & FileAttributes.Directory) == FileAttributes.Directory))
-		{
-			return true;
-		}
-		return false;
+		return (File.GetAttributes(path) & FileAttributes.Directory) == FileAttributes.Directory;
 	}
 
 	protected override View CreateContent()
@@ -321,48 +318,45 @@ sealed class FileFolderDialog : Popup<string>
 		directoyViews.Clear();
 
 		var listItems = GetDirectories(path);
-
-		if (listItems is not null)
+		
+		foreach (var item in listItems)
 		{
-			foreach (var item in listItems)
+			var itemLabel = new Label
 			{
-				var itemLabel = new Label
+				Text = item,
+				Focusable = true,
+				HorizontalTextAlignment = Tizen.UIExtensions.Common.TextAlignment.Start,
+				PixelSize = 16d.ToPixel(),
+				WidthSpecification = LayoutParamPolicies.MatchParent,
+				HeightSpecification = LayoutParamPolicies.WrapContent,
+				Margin = new Extents(0, 0, (ushort)5d.ToPixel(), (ushort)5d.ToPixel()),
+			};
+			itemLabel.TouchEvent += (s, e) =>
+			{
+				var state = e.Touch.GetState(0);
+				if (state == PointStateType.Up && itemLabel.IsInside(e.Touch.GetLocalPosition(0)))
 				{
-					Text = item,
-					Focusable = true,
-					HorizontalTextAlignment = Tizen.UIExtensions.Common.TextAlignment.Start,
-					PixelSize = 16d.ToPixel(),
-					WidthSpecification = LayoutParamPolicies.MatchParent,
-					HeightSpecification = LayoutParamPolicies.WrapContent,
-					Margin = new Extents(0, 0, (ushort)5d.ToPixel(), (ushort)5d.ToPixel()),
-				};
-				itemLabel.TouchEvent += (s, e) =>
+					ProcessSelect(item);
+					return true;
+				}
+				return false;
+			};
+			itemLabel.KeyEvent += (s, e) =>
+			{
+				if (e.Key.IsAcceptKeyEvent())
 				{
-					var state = e.Touch.GetState(0);
-					if (state == PointStateType.Up && itemLabel.IsInside(e.Touch.GetLocalPosition(0)))
-					{
-						ProcessSelect(item);
-						return true;
-					}
-					return false;
-				};
-				itemLabel.KeyEvent += (s, e) =>
-				{
-					if (e.Key.IsAcceptKeyEvent())
-					{
-						ProcessSelect(item);
-						return true;
-					}
-					return false;
-				};
-				directoryScrollView.ContentContainer.Add(itemLabel);
-				directoyViews.Add(itemLabel);
-			}
-			directoryScrollView.SizeHeight = 30d.ToPixel() * Math.Min(listItems.Count(), 5);
+					ProcessSelect(item);
+					return true;
+				}
+				return false;
+			};
+			directoryScrollView.ContentContainer.Add(itemLabel);
+			directoyViews.Add(itemLabel);
 		}
+		directoryScrollView.SizeHeight = 30d.ToPixel() * Math.Min(listItems.Count, 5);
 	}
 
-	IEnumerable<string> GetDirectories(string path)
+	List<string> GetDirectories(string path)
 	{
 		var directories = new List<string>();
 		var directoryPath = IsDirectory(path) ? path : Path.GetDirectoryName(path);

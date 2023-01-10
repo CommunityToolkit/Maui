@@ -52,7 +52,7 @@ public class FolderPickerImplementation : IFolderPicker
 		}
 		
 		const string uriSchemeFolder = "content";
-		if (uri.Scheme != null && uri.Scheme.Equals(uriSchemeFolder, StringComparison.OrdinalIgnoreCase))
+		if (uri.Scheme is not null && uri.Scheme.Equals(uriSchemeFolder, StringComparison.OrdinalIgnoreCase))
 		{
 			var split = uri.Path? .Split(":") ?? throw new FolderPickerException("Unable to resolve path.");
 			return Android.OS.Environment.ExternalStorageDirectory + "/" + split[1];

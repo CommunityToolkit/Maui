@@ -24,7 +24,7 @@ public class FolderPickerImplementation : IFolderPicker
 			folderPickerOperation.Cancel();
 		}
 
-		cancellationToken.Register(CancelFolderPickerOperation);
+		await using var _ = cancellationToken.Register(CancelFolderPickerOperation);
 		var folder = await folderPickerOperation;
 		if (folder is null)
 		{

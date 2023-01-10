@@ -3,7 +3,7 @@ namespace CommunityToolkit.Maui.Storage;
 /// <summary>
 /// Allows selecting target folder and saving files to the file system.
 /// </summary>
-public interface ISaveFileDialog
+public interface IFileSaver
 {
 	/// <summary>
 	/// Allows selecting target folder and saving files to the file system.

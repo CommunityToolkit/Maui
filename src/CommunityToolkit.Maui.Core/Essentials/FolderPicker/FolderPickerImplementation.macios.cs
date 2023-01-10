@@ -44,19 +44,32 @@ public sealed class FolderPickerImplementation : IFolderPicker, IDisposable
 	/// <inheritdoc />
 	public void Dispose()
 	{
-		documentPickerViewController.DidPickDocumentAtUrls -= DocumentPickerViewControllerOnDidPickDocumentAtUrls;
-		documentPickerViewController.WasCancelled -= DocumentPickerViewControllerOnWasCancelled;
-		documentPickerViewController.Dispose();
+		InternalDispose();
 	}
 
 	void DocumentPickerViewControllerOnWasCancelled(object? sender, EventArgs e)
 	{
 		taskCompetedSource?.SetException(new FolderPickerException("Operation cancelled."));
+		InternalDispose();
 	}
 
 	void DocumentPickerViewControllerOnDidPickDocumentAtUrls(object? sender, UIDocumentPickedAtUrlsEventArgs e)
 	{
-		var path = e.Urls[0].AbsoluteString ?? throw new FolderPickerException("Path cannot be null.");
-		taskCompetedSource?.SetResult(new Folder(path, new DirectoryInfo(path).Name));
+		try
+		{
+			var path = e.Urls[0].AbsoluteString ?? throw new FolderPickerException("Path cannot be null.");
+			taskCompetedSource?.SetResult(new Folder(path, new DirectoryInfo(path).Name));
+		}
+		finally
+		{
+			InternalDispose();
+		}
+	}
+
+	void InternalDispose()
+	{
+		documentPickerViewController.DidPickDocumentAtUrls -= DocumentPickerViewControllerOnDidPickDocumentAtUrls;
+		documentPickerViewController.WasCancelled -= DocumentPickerViewControllerOnWasCancelled;
+		documentPickerViewController.Dispose();
 	}
 }

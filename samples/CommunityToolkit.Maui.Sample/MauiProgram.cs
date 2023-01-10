@@ -140,9 +140,9 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<TextCaseConverterPage, TextCaseConverterViewModel>();
 		services.AddTransientWithShellRoute<VariableMultiValueConverterPage, VariableMultiValueConverterViewModel>();
 
-		// Add Essentials Pfes + ViewModels
+		// Add Essentials Pages + ViewModels
 		services.AddTransientWithShellRoute<FolderPickerPage, FolderPickerViewModel>();
-		services.AddTransientWithShellRoute<SaveFileDialogPage, SaveFileDialogViewModel>();
+		services.AddTransientWithShellRoute<FileSaverPage, FileSaverViewModel>();
 
 		// Add Extensions Pages + ViewModels
 		services.AddTransientWithShellRoute<ColorAnimationExtensionsPage, ColorAnimationExtensionsViewModel>();
@@ -173,7 +173,7 @@ public static class MauiProgram
 		services.AddSingleton<IDeviceDisplay>(DeviceDisplay.Current);
 
 		services.AddSingleton<IFolderPicker>(FolderPicker.Default);
-		services.AddSingleton<ISaveFileDialog>(SaveFileDialog.Default);
+		services.AddSingleton<IFileSaver>(FileSaver.Default);
 	}
 
 	static IServiceCollection AddTransientWithShellRoute<TPage, TViewModel>(this IServiceCollection services) where TPage : BasePage<TViewModel>

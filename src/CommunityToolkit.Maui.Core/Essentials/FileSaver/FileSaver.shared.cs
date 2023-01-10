@@ -1,14 +1,14 @@
 namespace CommunityToolkit.Maui.Storage;
 
-/// <inheritdoc cref="ISaveFileDialog"/>
-public static class SaveFileDialog
+/// <inheritdoc cref="IFileSaver"/>
+public static class FileSaver
 {
-	static Lazy<ISaveFileDialog> defaultImplementation = new(new SaveFileDialogImplementation());
+	static Lazy<IFileSaver> defaultImplementation = new(new FileSaverImplementation());
 
 	/// <summary>
 	/// Default implementation to use.
 	/// </summary>
-	public static ISaveFileDialog Default => defaultImplementation.Value;
+	public static IFileSaver Default => defaultImplementation.Value;
 
 	/// <summary>
 	/// Allows selecting target folder and saving files to the file system.
@@ -29,6 +29,6 @@ public static class SaveFileDialog
 	public static Task<string> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken) =>
 		Default.SaveAsync(fileName, stream, cancellationToken);
 
-	internal static void SetDefault(ISaveFileDialog implementation) =>
+	internal static void SetDefault(IFileSaver implementation) =>
 		defaultImplementation = new(implementation);
 }

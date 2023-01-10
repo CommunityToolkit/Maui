@@ -8,7 +8,7 @@ using Application = Android.App.Application;
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc />
-public partial class SaveFileDialogImplementation : ISaveFileDialog
+public partial class FileSaverImplementation : IFileSaver
 {
 	/// <inheritdoc/>
 	public async Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
@@ -61,7 +61,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 		}
 
 		const string uriSchemeFolder = "content";
-		if (uri.Scheme != null && uri.Scheme.Equals(uriSchemeFolder, StringComparison.OrdinalIgnoreCase))
+		if (uri.Scheme is not null && uri.Scheme.Equals(uriSchemeFolder, StringComparison.OrdinalIgnoreCase))
 		{
 			return uri;
 		}

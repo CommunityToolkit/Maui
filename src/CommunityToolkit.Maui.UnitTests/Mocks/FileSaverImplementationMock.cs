@@ -2,7 +2,7 @@
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
-class SaveFileDialogImplementationMock : ISaveFileDialog
+class FileSaverImplementationMock : IFileSaver
 {
 	public Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{

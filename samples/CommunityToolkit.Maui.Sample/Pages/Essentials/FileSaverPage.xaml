@@ -2,14 +2,14 @@
 <pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-                x:Class="CommunityToolkit.Maui.Sample.Pages.Essentials.SaveFileDialogPage"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Essentials.FileSaverPage"
                 xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Essentials"
-                x:TypeArguments="vm:SaveFileDialogViewModel"
-                x:DataType="vm:SaveFileDialogViewModel">
+                x:TypeArguments="vm:FileSaverViewModel"
+                x:DataType="vm:FileSaverViewModel">
     
     <VerticalStackLayout Spacing="12">
 
-        <Label Text="The SaveFileDialog allows selecting target folder and saving files to the file system."
+        <Label Text="The FileSaver allows selecting target folder and saving files to the file system."
                 LineBreakMode = "WordWrap" />
         
         <Button Command="{Binding SaveFileCommand}" Text="Save" />

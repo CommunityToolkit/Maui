@@ -4,7 +4,7 @@ using Windows.Storage.Pickers;
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc />
-public partial class SaveFileDialogImplementation : ISaveFileDialog
+public partial class FileSaverImplementation : IFileSaver
 {
 	readonly List<string> allFilesExtension = new() { "." };
 
@@ -29,7 +29,7 @@ public partial class SaveFileDialogImplementation : ISaveFileDialog
 			filePickerOperation.Cancel();
 		}
 
-		cancellationToken.Register(CancelFilePickerOperation);
+		await using var _ = cancellationToken.Register(CancelFilePickerOperation);
 		var file = await filePickerOperation;
 		if (string.IsNullOrEmpty(file?.Path))
 		{

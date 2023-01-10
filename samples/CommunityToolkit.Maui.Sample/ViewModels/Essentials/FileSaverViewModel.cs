@@ -5,13 +5,13 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Essentials;
 
-public partial class SaveFileDialogViewModel : BaseViewModel
+public partial class FileSaverViewModel : BaseViewModel
 {
-	readonly ISaveFileDialog saveFileDialog;
+	readonly IFileSaver fileSaver;
 
-	public SaveFileDialogViewModel(ISaveFileDialog saveFileDialog)
+	public FileSaverViewModel(IFileSaver fileSaver)
 	{
-		this.saveFileDialog = saveFileDialog;
+		this.fileSaver = fileSaver;
 	}
 
 	[RelayCommand]
@@ -20,7 +20,7 @@ public partial class SaveFileDialogViewModel : BaseViewModel
 		using var stream = new MemoryStream(Encoding.Default.GetBytes("Hello from the Community Toolkit!"));
 		try
 		{
-			var fileLocation = await saveFileDialog.SaveAsync("test.txt", stream, cancellationToken);
+			var fileLocation = await fileSaver.SaveAsync("test.txt", stream, cancellationToken);
 			await Toast.Make($"File is saved: {fileLocation}").Show(cancellationToken);
 		}
 		catch (Exception ex)

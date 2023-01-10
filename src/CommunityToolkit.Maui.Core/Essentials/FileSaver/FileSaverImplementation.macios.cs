@@ -1,7 +1,7 @@
 namespace CommunityToolkit.Maui.Storage;
 
-/// <inheritdoc cref="ISaveFileDialog" />
-public sealed partial class SaveFileDialogImplementation : ISaveFileDialog, IDisposable
+/// <inheritdoc cref="IFileSaver" />
+public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 {
 	UIDocumentPickerViewController? documentPickerViewController;
 	TaskCompletionSource<string>? taskCompetedSource;
@@ -36,21 +36,34 @@ public sealed partial class SaveFileDialogImplementation : ISaveFileDialog, IDis
 	/// <inheritdoc />
 	public void Dispose()
 	{
+		InternalDispose();
+	}
+
+	void DocumentPickerViewControllerOnWasCancelled(object? sender, EventArgs e)
+	{
+		taskCompetedSource?.SetException(new FolderPickerException("Operation cancelled."));
+		InternalDispose();
+	}
+
+	void DocumentPickerViewControllerOnDidPickDocumentAtUrls(object? sender, UIDocumentPickedAtUrlsEventArgs e)
+	{
+		try
+		{
+			taskCompetedSource?.SetResult(e.Urls[0].Path ?? throw new FileSaveException("Unable to retrieve the path of the saved file."));
+		}
+		finally
+		{
+			InternalDispose();
+		}
+	}
+
+	void InternalDispose()
+	{
 		if (documentPickerViewController is not null)
 		{
 			documentPickerViewController.DidPickDocumentAtUrls -= DocumentPickerViewControllerOnDidPickDocumentAtUrls;
 			documentPickerViewController.WasCancelled -= DocumentPickerViewControllerOnWasCancelled;
 			documentPickerViewController.Dispose();
 		}
-	}
-
-	void DocumentPickerViewControllerOnWasCancelled(object? sender, EventArgs e)
-	{
-		taskCompetedSource?.SetException(new FolderPickerException("Operation cancelled."));
-	}
-
-	void DocumentPickerViewControllerOnDidPickDocumentAtUrls(object? sender, UIDocumentPickedAtUrlsEventArgs e)
-	{
-		taskCompetedSource?.SetResult(e.Urls[0].Path ?? throw new FileSaveException("Unable to retrieve the path of the saved file."));
 	}
 }

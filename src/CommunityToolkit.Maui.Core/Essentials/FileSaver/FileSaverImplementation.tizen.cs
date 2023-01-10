@@ -3,7 +3,7 @@ using Microsoft.Maui.ApplicationModel;
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc />
-public partial class SaveFileDialogImplementation : ISaveFileDialog
+public partial class FileSaverImplementation : IFileSaver
 {
 	/// <inheritdoc />
 	public async Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
