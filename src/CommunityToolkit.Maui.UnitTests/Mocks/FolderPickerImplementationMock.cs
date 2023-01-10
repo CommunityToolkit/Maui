@@ -2,6 +2,7 @@
 using CommunityToolkit.Maui.Storage;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks;
+
 class FolderPickerImplementationMock : IFolderPicker
 {
 	public Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)

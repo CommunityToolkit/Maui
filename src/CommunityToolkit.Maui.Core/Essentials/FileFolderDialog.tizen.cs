@@ -1,18 +1,19 @@
-﻿using Microsoft.Maui.Platform;
+﻿using System.Collections.Generic;
+using Microsoft.Maui.Platform;
 using Tizen.NUI;
 using Tizen.NUI.BaseComponents;
 using Tizen.NUI.Components;
 using Tizen.UIExtensions.NUI;
-using Path = System.IO.Path;
 using Button = Tizen.UIExtensions.NUI.Button;
 using Entry = Tizen.UIExtensions.NUI.Entry;
+using HorizontalAlignment = Tizen.NUI.HorizontalAlignment;
 using Label = Tizen.UIExtensions.NUI.Label;
-using TColor = Tizen.UIExtensions.Common.Color;
+using Path = System.IO.Path;
 using ScrollView = Tizen.UIExtensions.NUI.ScrollView;
 using Shadow = Tizen.NUI.Shadow;
-using HorizontalAlignment = Tizen.NUI.HorizontalAlignment;
-using VerticalAlignment = Tizen.NUI.VerticalAlignment;
+using TColor = Tizen.UIExtensions.Common.Color;
 using View = Tizen.NUI.BaseComponents.View;
+using VerticalAlignment = Tizen.NUI.VerticalAlignment;
 using Window = Tizen.NUI.Window;
 
 namespace CommunityToolkit.Maui.Storage;
@@ -24,12 +25,12 @@ sealed class FileFolderDialog : Popup<string>
 
 	readonly bool isFileSelectionMode;
 	readonly string initialFileFolderPath;
+	readonly List<View> directoryViews = new();
 
 	ScrollView? directoryScrollView;
 	View? content;
 	Button? okButton, cancelButton, newFolderButton;
 	Entry? fileNameEntry;
-	readonly List<View> directoryViews;
 	string selectedPath;
 	string selectedFileName;
 
@@ -42,11 +43,10 @@ sealed class FileFolderDialog : Popup<string>
 
 		selectedFileName = fileName;
 		selectedPath = initialFileFolderPath = initialPath;
-		directoryViews = new List<View>();
 		isFileSelectionMode = isFileSelection;
 	}
 
-	public static string TryGetExternalDirectory()
+	public static string GetExternalDirectory()
 	{
 		string? externalDirectory = null;
 		foreach (var storage in Tizen.System.StorageManager.Storages)
@@ -69,6 +69,33 @@ sealed class FileFolderDialog : Popup<string>
 	public static bool IsDirectory(string path)
 	{
 		return (File.GetAttributes(path) & FileAttributes.Directory) == FileAttributes.Directory;
+	}
+
+	protected override void Dispose(bool disposing)
+	{
+		Relayout -= OnRelayout;
+		if (okButton is not null)
+		{
+			okButton.Clicked -= OnOkButtonClicked;
+			okButton.Dispose();
+		}
+
+		if (cancelButton is not null)
+		{
+			cancelButton.Clicked -= OnCancelButtonClicked;
+			cancelButton.Dispose();
+		}
+
+		if (newFolderButton is not null)
+		{
+			newFolderButton.Clicked -= OnNewFolderButtonClicked;
+			newFolderButton.Dispose();
+		}
+
+		fileNameEntry?.Dispose();
+		directoryScrollView?.Dispose();
+		content?.Dispose();
+		base.Dispose(disposing);
 	}
 
 	protected override View CreateContent()
@@ -149,7 +176,7 @@ sealed class FileFolderDialog : Popup<string>
 				Margin = new Extents(margin1, margin1, 0, 0),
 				WidthSpecification = LayoutParamPolicies.MatchParent
 			};
-			newFolderButton.Clicked += NewFolderButtonOnClicked;
+			newFolderButton.Clicked += OnNewFolderButtonClicked;
 			content.Add(newFolderButton);
 		}
 
@@ -191,7 +218,7 @@ sealed class FileFolderDialog : Popup<string>
 		};
 		cancelButton.TextLabel.PixelSize = 15d.ToPixel();
 		cancelButton.SizeWidth = cancelButton.TextLabel.NaturalSize.Width + 15d.ToPixel() * 2;
-		cancelButton.Clicked += CancelButtonOnClicked;
+		cancelButton.Clicked += OnCancelButtonClicked;
 		horizontalLayout.Add(cancelButton);
 
 		okButton = new Button
@@ -203,7 +230,7 @@ sealed class FileFolderDialog : Popup<string>
 		};
 		okButton.TextLabel.PixelSize = 15d.ToPixel();
 		okButton.SizeWidth = okButton.TextLabel.NaturalSize.Width + 15d.ToPixel() * 2;
-		okButton.Clicked += OkButtonOnClicked;
+		okButton.Clicked += OnOkButtonClicked;
 		horizontalLayout.Add(okButton);
 
 		Relayout += OnRelayout;
@@ -211,7 +238,7 @@ sealed class FileFolderDialog : Popup<string>
 		return content;
 	}
 
-	async void NewFolderButtonOnClicked(object? sender, ClickedEventArgs e)
+	async void OnNewFolderButtonClicked(object? sender, ClickedEventArgs e)
 	{
 		try
 		{
@@ -236,12 +263,12 @@ sealed class FileFolderDialog : Popup<string>
 		}
 	}
 
-	void CancelButtonOnClicked(object? sender, ClickedEventArgs e)
+	void OnCancelButtonClicked(object? sender, ClickedEventArgs e)
 	{
 		SendCancel();
 	}
 
-	void OkButtonOnClicked(object? sender, ClickedEventArgs e)
+	void OnOkButtonClicked(object? sender, ClickedEventArgs e)
 	{
 		if (isFileSelectionMode)
 		{
@@ -368,7 +395,7 @@ sealed class FileFolderDialog : Popup<string>
 		directoryScrollView.SizeHeight = 30d.ToPixel() * Math.Min(listItems.Count, 5);
 	}
 
-	List<string> GetDirectories(string path)
+	IReadOnlyList<string> GetDirectories(string path)
 	{
 		var directories = new List<string>();
 		var directoryPath = IsDirectory(path) ? path : Path.GetDirectoryName(path);
@@ -383,8 +410,7 @@ sealed class FileFolderDialog : Popup<string>
 			return directories;
 		}
 
-		var allFilesAndDirectories = Directory.GetDirectories(directoryPath);
-		allFilesAndDirectories = allFilesAndDirectories.Concat(Directory.GetFiles(directoryPath)).ToArray();
+		var allFilesAndDirectories = Directory.GetDirectories(directoryPath).Concat(Directory.GetFiles(directoryPath));
 		foreach (var item in allFilesAndDirectories)
 		{
 			var fileName = Path.GetFileName(item);
@@ -400,32 +426,5 @@ sealed class FileFolderDialog : Popup<string>
 
 		directories.Sort();
 		return directories;
-	}
-
-	protected override void Dispose(bool disposing)
-	{
-		Relayout -= OnRelayout;
-		if (okButton is not null)
-		{
-			okButton.Clicked -= OkButtonOnClicked;
-			okButton.Dispose();
-		}
-
-		if (cancelButton is not null)
-		{
-			cancelButton.Clicked -= CancelButtonOnClicked;
-			cancelButton.Dispose();
-		}
-
-		if (newFolderButton is not null)
-		{
-			newFolderButton.Clicked -= NewFolderButtonOnClicked;
-			newFolderButton.Dispose();
-		}
-
-		fileNameEntry?.Dispose();
-		directoryScrollView?.Dispose();
-		content?.Dispose();
-		base.Dispose(disposing);
 	}
 }

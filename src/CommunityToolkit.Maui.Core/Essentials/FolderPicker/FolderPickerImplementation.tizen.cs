@@ -24,6 +24,6 @@ public sealed class FolderPickerImplementation : IFolderPicker
 	/// <inheritdoc />
 	public Task<Folder> PickAsync(CancellationToken cancellationToken)
 	{
-		return PickAsync(FileFolderDialog.TryGetExternalDirectory(), cancellationToken);
+		return PickAsync(FileFolderDialog.GetExternalDirectory(), cancellationToken);
 	}
 }

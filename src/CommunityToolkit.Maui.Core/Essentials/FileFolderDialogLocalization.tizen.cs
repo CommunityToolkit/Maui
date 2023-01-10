@@ -54,6 +54,7 @@ public static class FileFolderDialogLocalization
 			okButton = value;
 		}
 	}
+
 	/// <summary>
 	/// Gets or sets the cancel button text.
 	/// </summary>

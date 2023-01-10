@@ -50,11 +50,11 @@ public sealed class FolderPickerImplementation : IFolderPicker
 		{
 			throw new FolderPickerException("Path is not selected.");
 		}
-		
+
 		const string uriSchemeFolder = "content";
 		if (uri.Scheme is not null && uri.Scheme.Equals(uriSchemeFolder, StringComparison.OrdinalIgnoreCase))
 		{
-			var split = uri.Path? .Split(":") ?? throw new FolderPickerException("Unable to resolve path.");
+			var split = uri.Path?.Split(":") ?? throw new FolderPickerException("Unable to resolve path.");
 			return Android.OS.Environment.ExternalStorageDirectory + "/" + split[1];
 		}
 

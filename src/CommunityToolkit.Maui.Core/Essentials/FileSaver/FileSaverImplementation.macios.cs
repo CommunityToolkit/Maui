@@ -5,7 +5,7 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 {
 	UIDocumentPickerViewController? documentPickerViewController;
 	TaskCompletionSource<string>? taskCompetedSource;
-	
+
 	/// <inheritdoc/>
 	public async Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
@@ -16,11 +16,11 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 
 		cancellationToken.ThrowIfCancellationRequested();
 		taskCompetedSource = new TaskCompletionSource<string>();
-		
+
 		documentPickerViewController = new UIDocumentPickerViewController(new[] { fileUrl });
 		documentPickerViewController.DidPickDocumentAtUrls += DocumentPickerViewControllerOnDidPickDocumentAtUrls;
 		documentPickerViewController.WasCancelled += DocumentPickerViewControllerOnWasCancelled;
-		
+
 		var currentViewController = Microsoft.Maui.Platform.UIApplicationExtensions.GetKeyWindow(UIApplication.SharedApplication)?.RootViewController;
 		currentViewController?.PresentViewController(documentPickerViewController, true, null);
 

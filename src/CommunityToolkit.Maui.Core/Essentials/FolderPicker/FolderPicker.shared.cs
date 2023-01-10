@@ -8,24 +8,15 @@ public static class FolderPicker
 	static Lazy<IFolderPicker> defaultImplementation = new(new FolderPickerImplementation());
 
 	/// <summary>
-	/// Default implementation to use
+	/// Default implementation of <see cref="IFolderPicker"/>
 	/// </summary>
 	public static IFolderPicker Default => defaultImplementation.Value;
 
-	/// <summary>
-	/// Allows picking a folder from the file system.
-	/// </summary>
-	/// <param name="initialPath">Initial path</param>
-	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
-	/// <returns><see cref="Folder"/></returns>
+	/// <inheritdoc cref="IFolderPicker.PickAsync(string, CancellationToken)"/> 
 	public static Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken) =>
 		Default.PickAsync(initialPath, cancellationToken);
 
-	/// <summary>
-	/// Allows picking a folder from the file system.
-	/// </summary>
-	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
-	/// <returns><see cref="Folder"/></returns>
+	/// <inheritdoc cref="IFolderPicker.PickAsync(CancellationToken)"/> 
 	public static Task<Folder> PickAsync(CancellationToken cancellationToken) =>
 		Default.PickAsync(cancellationToken);
 

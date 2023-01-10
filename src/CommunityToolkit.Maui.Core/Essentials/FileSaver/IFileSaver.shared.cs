@@ -1,12 +1,12 @@
 namespace CommunityToolkit.Maui.Storage;
 
 /// <summary>
-/// Allows selecting target folder and saving files to the file system.
+/// Allows the user to save files to the filesystem
 /// </summary>
 public interface IFileSaver
 {
 	/// <summary>
-	/// Allows selecting target folder and saving files to the file system.
+	/// Saves a file to a target folder on the file system
 	/// </summary>
 	/// <param name="initialPath">Initial path</param>
 	/// <param name="fileName">File name with extension</param>
@@ -15,7 +15,7 @@ public interface IFileSaver
 	Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken);
 
 	/// <summary>
-	/// Allows selecting target folder and saving files to the file system.
+	/// Saves a file to the default folder on the file system
 	/// </summary>
 	/// <param name="fileName">File name with extension</param>
 	/// <param name="stream"><see cref="Stream"/></param>
