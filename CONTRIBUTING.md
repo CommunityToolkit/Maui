@@ -44,7 +44,7 @@ We will take appropriate actions and measures if necessary.
 
 You will need to complete a Contribution License Agreement before any pull request can be accepted. Complete the CLA at https://cla.dotnetfoundation.org/. This will also be triggered whenever you open a PR and the link should guide you through it.
 
-## Reporting an bug
+## Reporting a bug
 
 If you found something that looks like a bug don't hesitate in opening an issue reporting it. We strongly recommend you to follow our template, if you don't follow your issue can be closed, and that's because we don't have a lot of resources, so we will focus on issues that have most information that we need to work with. And, we would say, the most important part is the reproduction sample that shows the bug.
 
