@@ -3,7 +3,7 @@ using Microsoft.Maui.ApplicationModel;
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc />
-partial class FileSaverImplementation : IFileSaver
+public sealed partial class FileSaverImplementation : IFileSaver
 {
 	/// <inheritdoc />
 	public async Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
@@ -14,7 +14,7 @@ partial class FileSaverImplementation : IFileSaver
 			throw new PermissionException("Storage permission is not granted.");
 		}
 
-		var dialog = new FileFolderDialog(true, initialPath, fileName: fileName, cancellationToken: cancellationToken);
+		var dialog = new FileFolderDialog(true, initialPath, fileName: fileName);
 		var path = await dialog.Open().WaitAsync(cancellationToken).ConfigureAwait(false);
 
 		if (string.IsNullOrEmpty(path))

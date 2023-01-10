@@ -5,7 +5,7 @@ using Windows.Storage.Pickers;
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc />
-class FolderPickerImplementation : IFolderPicker
+public sealed class FolderPickerImplementation : IFolderPicker
 {
 	/// <inheritdoc />
 	public async Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)

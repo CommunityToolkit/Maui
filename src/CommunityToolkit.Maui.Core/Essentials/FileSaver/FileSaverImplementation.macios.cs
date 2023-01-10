@@ -1,7 +1,7 @@
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc cref="IFileSaver" />
-sealed partial class FileSaverImplementation : IFileSaver, IDisposable
+public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 {
 	UIDocumentPickerViewController? documentPickerViewController;
 	TaskCompletionSource<string>? taskCompetedSource;

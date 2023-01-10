@@ -16,10 +16,55 @@ using Window = Tizen.NUI.Window;
 
 namespace CommunityToolkit.Maui.Storage;
 
+/// <summary>
+/// FileFolderDialog Localization Strings.
+/// </summary>
+public static class FileFolderDialogLocalization
+{
+	/// <summary>
+	/// Gets or sets the action label.
+	/// </summary>
+	public static string FileSaveAs { get; set; } = "Save As";
+	
+	/// <summary>
+	/// Gets or sets the action button text.
+	/// </summary>
+	public static string SaveButton { get; set; } = "Save";
+	
+	/// <summary>
+	/// Gets or sets the action button text.
+	/// </summary>
+	public static string OkButton { get; set; } = "OK";
+	
+	/// <summary>
+	/// Gets or sets the cancel button text.
+	/// </summary>
+	public static string CancelButton { get; set; } = "Cancel";
+
+	/// <summary>
+	/// Gets or sets the action button text.
+	/// </summary>
+	public static string SelectFolder { get; set; } = "Select Folder";
+
+	/// <summary>
+	/// Gets or sets the NewFolder action button text.
+	/// </summary>
+	public static string NewFolderButton { get; set; } = "New Folder";
+	
+	/// <summary>
+	/// Gets or sets the NewFolder prompt title.
+	/// </summary>
+	public static string NewFolderNameTitle { get; set; } = "New Folder Name";
+	
+	/// <summary>
+	/// Gets or sets the Create folder error message.
+	/// </summary>
+	public static string CreateFolderErrorMessage { get; set; } = "Failed to create new folder";
+}
+
 sealed class FileFolderDialog : Popup<string>
-{ 
-	static string fileSaveString = "Save As";
-	static string selectFolderString = "Select Folder";
+{
+
 	const string previousDirectorySymbol = "..";
 	const string slashSymbol = "/";
 
@@ -28,11 +73,11 @@ sealed class FileFolderDialog : Popup<string>
 
 	ScrollView? directoryScrollView;
 	Entry? fileNameEntry;
-	List<View> directoyViews;
+	List<View> directoryViews;
 	string selectedPath;
 	string selectedFileName;
 
-	public FileFolderDialog(bool isFileSelection, string initialPath, CancellationToken cancellationToken = default, string fileName = "default")
+	public FileFolderDialog(bool isFileSelection, string initialPath, string fileName = "default")
 	{
 		if (!File.Exists(initialPath) && !Directory.Exists(initialPath))
 		{
@@ -41,18 +86,8 @@ sealed class FileFolderDialog : Popup<string>
 
 		selectedFileName = fileName;
 		selectedPath = initialFileFolderPath = initialPath;
-		directoyViews = new List<View>();
+		directoryViews = new List<View>();
 		isFileSelectionMode = isFileSelection;
-	}
-
-	public static void SetFileSaveString(string fileSaveStringValue)
-	{
-		fileSaveString = fileSaveStringValue;
-	}
-
-	public static void SetSelectFolderString(string selectFolderStringValue)
-	{
-		selectFolderString = selectFolderStringValue;
 	}
 
 	public static string TryGetExternalDirectory()
@@ -89,7 +124,6 @@ sealed class FileFolderDialog : Popup<string>
 		};
 		BackgroundColor = new TColor(0.1f, 0.1f, 0.1f, 0.5f).ToNative();
 		
-		var isHorizontal = Window.Instance.WindowSize.Width > Window.Instance.WindowSize.Height;
 		var margin1 = (ushort)20d.ToPixel();
 		var margin2 = (ushort)10d.ToPixel();
 		var radius = 8d.ToPixel();
@@ -104,13 +138,13 @@ sealed class FileFolderDialog : Popup<string>
 				HorizontalAlignment = HorizontalAlignment.Center,
 				LinearOrientation = LinearLayout.Orientation.Vertical,
 			},
-			SizeWidth = Window.Instance.WindowSize.Width * (isHorizontal ? 0.5f : 0.8f),
+			SizeWidth = Window.Instance.WindowSize.Width * (IsHorizontal() ? 0.5f : 0.8f),
 			BackgroundColor = TColor.White.ToNative(),
 		};
 
 		content.Add(new Label
 		{
-			Text = isFileSelectionMode ? fileSaveString : selectFolderString,
+			Text = isFileSelectionMode ? FileFolderDialogLocalization.FileSaveAs : FileFolderDialogLocalization.SelectFolder,
 			Margin = new Extents(margin1, margin1, margin1, margin2),
 			WidthSpecification = LayoutParamPolicies.MatchParent,
 			HorizontalTextAlignment = Tizen.UIExtensions.Common.TextAlignment.Start,
@@ -153,17 +187,17 @@ sealed class FileFolderDialog : Popup<string>
 			var newFolderButton = new Button
 			{
 				Focusable = true,
-				Text = "New Folder",
+				Text = FileFolderDialogLocalization.NewFolderButton,
 				TextColor = TColor.Black,
 				BackgroundColor = TColor.Transparent.ToNative(),
 				Margin = new Extents(margin1, margin1, 0, 0),
 				WidthSpecification = LayoutParamPolicies.MatchParent
 			};
-			newFolderButton.Clicked += async (sender, args) =>
+			newFolderButton.Clicked += async (_, _) =>
 			{
 				try
 				{
-					var newDirectoryName = await new PromptPopup("New Folder Name", "").Open();
+					var newDirectoryName = await new PromptPopup(FileFolderDialogLocalization.NewFolderNameTitle, "").Open();
 					var newDirectoryPath = IsDirectory(selectedPath) ? selectedPath : Path.GetDirectoryName(selectedPath);
 					if (string.IsNullOrEmpty(newDirectoryPath) || string.IsNullOrEmpty(newDirectoryName))
 					{
@@ -179,7 +213,7 @@ sealed class FileFolderDialog : Popup<string>
 				{
 					new Tizen.Applications.ToastMessage
 					{
-						Message = $"Failed to create new folder, {ex.Message}"
+						Message = $"{FileFolderDialogLocalization.CreateFolderErrorMessage}, {ex.Message}"
 					}.Post();
 				}
 			};
@@ -218,25 +252,25 @@ sealed class FileFolderDialog : Popup<string>
 		var cancelButton = new Button
 		{
 			Focusable = true,
-			Text = "Cancel",
+			Text = FileFolderDialogLocalization.CancelButton,
 			TextColor = TColor.Black,
 			BackgroundColor = TColor.Transparent.ToNative(),
 		};
 		cancelButton.TextLabel.PixelSize = 15d.ToPixel();
 		cancelButton.SizeWidth = cancelButton.TextLabel.NaturalSize.Width + 15d.ToPixel() * 2;
-		cancelButton.Clicked += (s, e) => SendCancel();
+		cancelButton.Clicked += (_, _) => SendCancel();
 		hlayout.Add(cancelButton);
 
 		var okButton = new Button
 		{
 			Focusable = true,
-			Text = isFileSelectionMode ? "Save" : "OK",
+			Text = isFileSelectionMode ? FileFolderDialogLocalization.SaveButton : FileFolderDialogLocalization.OkButton,
 			TextColor = TColor.Black,
 			BackgroundColor = TColor.Transparent.ToNative(),
 		};
 		okButton.TextLabel.PixelSize = 15d.ToPixel();
 		okButton.SizeWidth = okButton.TextLabel.NaturalSize.Width + 15d.ToPixel() * 2;
-		okButton.Clicked += (s, e) =>
+		okButton.Clicked += (_, _) =>
 		{
 			if (isFileSelectionMode)
 			{
@@ -257,13 +291,17 @@ sealed class FileFolderDialog : Popup<string>
 		};
 		hlayout.Add(okButton);
 
-		Relayout += (s, e) =>
+		Relayout += (_, _) =>
 		{
-			var isHorizontal = Window.Instance.WindowSize.Width > Window.Instance.WindowSize.Height;
-			content.SizeWidth = Window.Instance.WindowSize.Width * (isHorizontal ? 0.5f : 0.8f);
+			content.SizeWidth = Window.Instance.WindowSize.Width * (IsHorizontal() ? 0.5f : 0.8f);
 		};
 
 		return content;
+	}
+
+	static bool IsHorizontal()
+	{
+		return Window.Instance.WindowSize.Width > Window.Instance.WindowSize.Height;
 	}
 
 	static bool CreateSubDirectory(string newDirectory)
@@ -311,14 +349,14 @@ sealed class FileFolderDialog : Popup<string>
 			return;
 		}
 
-		foreach(var view in directoyViews)
+		foreach (var view in directoryViews)
 		{
 			directoryScrollView.ContentContainer.Remove(view);
 		}
-		directoyViews.Clear();
+		directoryViews.Clear();
 
 		var listItems = GetDirectories(path);
-		
+
 		foreach (var item in listItems)
 		{
 			var itemLabel = new Label
@@ -331,7 +369,7 @@ sealed class FileFolderDialog : Popup<string>
 				HeightSpecification = LayoutParamPolicies.WrapContent,
 				Margin = new Extents(0, 0, (ushort)5d.ToPixel(), (ushort)5d.ToPixel()),
 			};
-			itemLabel.TouchEvent += (s, e) =>
+			itemLabel.TouchEvent += (_, e) =>
 			{
 				var state = e.Touch.GetState(0);
 				if (state == PointStateType.Up && itemLabel.IsInside(e.Touch.GetLocalPosition(0)))
@@ -341,7 +379,7 @@ sealed class FileFolderDialog : Popup<string>
 				}
 				return false;
 			};
-			itemLabel.KeyEvent += (s, e) =>
+			itemLabel.KeyEvent += (_, e) =>
 			{
 				if (e.Key.IsAcceptKeyEvent())
 				{
@@ -351,7 +389,7 @@ sealed class FileFolderDialog : Popup<string>
 				return false;
 			};
 			directoryScrollView.ContentContainer.Add(itemLabel);
-			directoyViews.Add(itemLabel);
+			directoryViews.Add(itemLabel);
 		}
 		directoryScrollView.SizeHeight = 30d.ToPixel() * Math.Min(listItems.Count, 5);
 	}
@@ -373,7 +411,7 @@ sealed class FileFolderDialog : Popup<string>
 
 		var allFilesAndDirectories = Directory.GetDirectories(directoryPath);
 		allFilesAndDirectories = allFilesAndDirectories.Concat(Directory.GetFiles(directoryPath)).ToArray();
-		foreach (var item in allFilesAndDirectories ?? Array.Empty<string>())
+		foreach (var item in allFilesAndDirectories)
 		{
 			var fileName = Path.GetFileName(item);
 			if (IsDirectory(item))

@@ -1,7 +1,7 @@
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc />
-public partial class FileSaverImplementation : IFileSaver
+public sealed partial class FileSaverImplementation : IFileSaver
 {
 	/// <inheritdoc />
 	public Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)

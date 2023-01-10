@@ -8,7 +8,7 @@ using Application = Android.App.Application;
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc />
-partial class FileSaverImplementation : IFileSaver
+public sealed partial class FileSaverImplementation : IFileSaver
 {
 	/// <inheritdoc/>
 	public async Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)

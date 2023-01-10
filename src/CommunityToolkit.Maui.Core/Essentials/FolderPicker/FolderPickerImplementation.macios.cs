@@ -4,7 +4,7 @@ using UniformTypeIdentifiers;
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc cref="IFolderPicker" />
-sealed class FolderPickerImplementation : IFolderPicker, IDisposable
+public sealed class FolderPickerImplementation : IFolderPicker, IDisposable
 {
 	readonly UIDocumentPickerViewController documentPickerViewController = new(new[] { UTTypes.Folder })
 	{
