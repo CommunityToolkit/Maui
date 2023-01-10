@@ -1,6 +1,6 @@
 namespace CommunityToolkit.Maui.Storage;
 
-public partial class FileSaverImplementation
+partial class FileSaverImplementation
 {
 	static async Task WriteStream(Stream stream, string filePath, CancellationToken cancellationToken)
 	{

@@ -4,7 +4,7 @@ using Windows.Storage.Pickers;
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc />
-public partial class FileSaverImplementation : IFileSaver
+partial class FileSaverImplementation : IFileSaver
 {
 	readonly List<string> allFilesExtension = new() { "." };
 

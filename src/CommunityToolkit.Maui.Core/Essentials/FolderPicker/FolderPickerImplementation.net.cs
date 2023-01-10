@@ -3,7 +3,7 @@ using CommunityToolkit.Maui.Core.Primitives;
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc />
-public class FolderPickerImplementation : IFolderPicker
+class FolderPickerImplementation : IFolderPicker
 {
 	/// <inheritdoc />
 	public Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken) => throw new NotImplementedException();
