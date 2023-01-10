@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.Pages;
@@ -20,6 +19,7 @@ using CommunityToolkit.Maui.Sample.ViewModels.ImageSources;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
+using CommunityToolkit.Maui.Storage;
 using Polly;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
@@ -63,11 +63,11 @@ public static class MauiProgram
 		services.AddTransient<AlertsGalleryPage, AlertsGalleryViewModel>();
 		services.AddTransient<BehaviorsGalleryPage, BehaviorsGalleryViewModel>();
 		services.AddTransient<ConvertersGalleryPage, ConvertersGalleryViewModel>();
+		services.AddTransient<EssentialsGalleryPage, EssentialsGalleryViewModel>();
 		services.AddTransient<ExtensionsGalleryPage, ExtensionsGalleryViewModel>();
 		services.AddTransient<ImageSourcesGalleryPage, ImageSourcesGalleryViewModel>();
 		services.AddTransient<LayoutsGalleryPage, LayoutsGalleryViewModel>();
 		services.AddTransient<ViewsGalleryPage, ViewsGalleryViewModel>();
-		services.AddTransient<EssentialsGalleryPage, EssentialsGalleryViewModel>();
 
 		// Add Alerts Pages + ViewModels
 		services.AddTransientWithShellRoute<SnackbarPage, SnackbarViewModel>();
@@ -141,8 +141,8 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<VariableMultiValueConverterPage, VariableMultiValueConverterViewModel>();
 
 		// Add Essentials Pages + ViewModels
-		services.AddTransientWithShellRoute<FolderPickerPage, FolderPickerViewModel>();
 		services.AddTransientWithShellRoute<FileSaverPage, FileSaverViewModel>();
+		services.AddTransientWithShellRoute<FolderPickerPage, FolderPickerViewModel>();
 
 		// Add Extensions Pages + ViewModels
 		services.AddTransientWithShellRoute<ColorAnimationExtensionsPage, ColorAnimationExtensionsViewModel>();
@@ -171,9 +171,8 @@ public static class MauiProgram
 	{
 		services.AddSingleton<IDeviceInfo>(DeviceInfo.Current);
 		services.AddSingleton<IDeviceDisplay>(DeviceDisplay.Current);
-
-		services.AddSingleton<IFolderPicker>(FolderPicker.Default);
 		services.AddSingleton<IFileSaver>(FileSaver.Default);
+		services.AddSingleton<IFolderPicker>(FolderPicker.Default);
 	}
 
 	static IServiceCollection AddTransientWithShellRoute<TPage, TViewModel>(this IServiceCollection services) where TPage : BasePage<TViewModel>

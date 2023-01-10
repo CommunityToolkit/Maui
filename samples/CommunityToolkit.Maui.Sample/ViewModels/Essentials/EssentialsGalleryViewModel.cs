@@ -7,8 +7,8 @@ public class EssentialsGalleryViewModel : BaseGalleryViewModel
 	public EssentialsGalleryViewModel()
 		: base(new[]
 		{
-			SectionModel.Create<FolderPickerViewModel>("FolderPicker", "Allows pick folder from local file storage"),
-			SectionModel.Create<FileSaverViewModel>("FileSaver", "Allows save file to local file storage")
+			SectionModel.Create<FileSaverViewModel>("FileSaver", "Allows save file to local file storage"),
+			SectionModel.Create<FolderPickerViewModel>("FolderPicker", "Allows pick folder from local file storage")
 		})
 	{
 	}
