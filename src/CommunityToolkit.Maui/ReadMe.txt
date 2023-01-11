@@ -7,14 +7,26 @@ In order to use the .NET MAUI Community Toolkit you need to call the extension m
 ```csharp
 using CommunityToolkit.Maui;
 
-public static MauiApp CreateMauiApp()
+public static class MauiProgram
 {
-    var builder = MauiApp.CreateBuilder();
+	public static MauiApp CreateMauiApp()
+	{
+		var builder = MauiApp.CreateBuilder();
+		builder
+			.UseMauiApp<App>()
+			// Initialize the .NET MAUI Community Toolkit by adding the below line of code
+			.UseMauiCommunityToolkit()
+			// After initializing the .NET MAUI Community Toolkit, optionally add additional fonts
+			.ConfigureFonts(fonts =>
+			{
+				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+			});
 
-    // Initialise the toolkit
-	builder.UseMauiApp<App>().UseMauiCommunityToolkit();
+		// Continue initializing your .NET MAUI App here
 
-    // the rest of your logic...
+		return builder.Build();
+	}
 }
 ```
 
