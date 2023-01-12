@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
+using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -206,21 +207,23 @@ public partial class Expander : ContentView, IExpander
 		headerView.GestureRecognizers.Add(tapGestureRecognizer);
 	}
 
-	
-	void TapGestureRecognizer_Tapped(object? sender, TappedEventArgs tappedEventArgs)
+	/// <summary>
+	/// Default <see cref="Delegate"/> to handle with Expander issues for iOS, Mac Catalyst, and Windows.
+	/// </summary>
+	/// <param name="tappedEventArgs">the <see cref="TappedEventArgs"/> passed by the internal implementation.</param>
+	/// <param name="expander">the <see cref="Expander"/> view that will be handled.</param>
+	public static void DefaultHandleOnExpandAction(TappedEventArgs tappedEventArgs, Expander expander)
 	{
-		IsExpanded = !IsExpanded;
-#if IOS || MACCATALYST || WINDOWS
-		if (Header is null)
+		if (expander.Header is null)
 		{
 			return;
 		}
 
-		Element element = this;
-		var size = IsExpanded
-				? Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins).Request
-				: Header.Measure(double.PositiveInfinity, double.PositiveInfinity);
-		
+		Element element = expander;
+		var size = expander.IsExpanded
+				? expander.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins).Request
+				: expander.Header.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
 		while (element is not null)
 		{
 			if (element.Parent is ListView)
@@ -230,13 +233,26 @@ public partial class Expander : ContentView, IExpander
 			else if (element is CollectionView collectionView)
 			{
 				var tapLocation = tappedEventArgs.GetPosition(collectionView);
-				ForceUpdateCellSize(collectionView, size, tapLocation);
+#if IOS || MACCATALYST || WINDOWS
+				ForceUpdateCellSize(expander, collectionView, size, tapLocation);
+#endif
 			}
 
 			element = element.Parent;
 		}
-#endif
 	}
+	
+	void TapGestureRecognizer_Tapped(object? sender, TappedEventArgs tappedEventArgs)
+	{
+		IsExpanded = !IsExpanded;
+
+		HandleExpandAction?.Invoke(tappedEventArgs, this);
+	}
+
+	/// <summary>
+	/// <see cref="Action{TappedEventArgs, Expander}"/>
+	/// </summary>
+	public static Action<TappedEventArgs, Expander>? HandleExpandAction { get; set; }
 
 	void IExpander.ExpandedChanged(bool isExpanded)
 	{
