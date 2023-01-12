@@ -9,7 +9,9 @@ public class ExpanderPageCS : ContentPage
 	public ExpanderPageCS()
 	{
 		Title = "Expander Page, C# UI";
-
+#if IOS || MACCATALYST || WINDOWS
+		Expander.HandleExpandAction = Expander.DefaultHandleOnExpandAction;
+#endif
 		Content = new VerticalStackLayout()
 		{
 			Spacing = 12,

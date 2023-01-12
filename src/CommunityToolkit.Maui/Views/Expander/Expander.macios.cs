@@ -6,17 +6,19 @@ namespace CommunityToolkit.Maui.Views;
 
 public partial class Expander
 {
-	static void ForceUpdateCellSize(CollectionView collectionView, Size size, Point? tapLocation)
+	// Let's cache this value to use reflection just once, that way we'll improve performance.
+	UIKit.UICollectionViewController? uiCollectionViewController;
+
+	static void ForceUpdateCellSize(Expander expander, CollectionView collectionView, Size size, Point? tapLocation)
 	{
 		if (tapLocation is null)
 		{
 			return;
 		}
 		
-		var handler = collectionView.Handler as Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler;
-		var controller = handler?.GetType().BaseType?.BaseType?.BaseType?.BaseType?.BaseType?.GetProperty("Controller", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
-		var uiCollectionViewController = controller?.GetValue(handler) as UIKit.UICollectionViewController;
-		if (uiCollectionViewController?.CollectionView.CollectionViewLayout is UIKit.UICollectionViewFlowLayout layout)
+		expander.uiCollectionViewController ??= GetControler(collectionView);
+
+		if (expander.uiCollectionViewController?.CollectionView.CollectionViewLayout is UIKit.UICollectionViewFlowLayout layout)
 		{
 			var cells = layout.CollectionView.VisibleCells.OrderBy(x => x.Frame.Y).ToArray();
 			var clickedCell = GetCellByPoint(cells, new CGPoint(tapLocation.Value.X, tapLocation.Value.Y));
@@ -41,6 +43,14 @@ public partial class Expander
 				}
 			}
 		}
+	}
+
+	static UICollectionViewController? GetControler(CollectionView collectionView)
+	{
+		var handler = collectionView.Handler as Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler;
+		var controller = handler?.GetType().BaseType?.BaseType?.BaseType?.BaseType?.BaseType?.GetProperty("Controller", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
+		var uiCollectionViewController = controller?.GetValue(handler) as UIKit.UICollectionViewController;
+		return uiCollectionViewController;
 	}
 
 	static UICollectionViewCell? GetCellByPoint(UICollectionViewCell[] cells, CGPoint point)
