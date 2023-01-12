@@ -2,7 +2,7 @@ namespace CommunityToolkit.Maui.Views;
 
 public partial class Expander 
 {
-	static void ForceUpdateCellSize(CollectionView collectionView, Size size, Point? tapLocation)
+	static void ForceUpdateCellSize(Expander expander, CollectionView collectionView, Size size, Point? tapLocation)
 	{
 		var formsListView = collectionView.Handler?.PlatformView as Microsoft.Maui.Controls.Platform.FormsListView;
 		if (formsListView is not null)
