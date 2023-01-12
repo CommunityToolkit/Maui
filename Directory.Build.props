@@ -3,7 +3,6 @@
   <PropertyGroup>
     <!-- Fixes https://github.com/dotnet/maui/pull/12114 -->
     <PublishReadyToRun>false</PublishReadyToRun>
-
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

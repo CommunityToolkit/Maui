@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31521.260
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.UnitTests", "..\src\CommunityToolkit.Maui.UnitTests\CommunityToolkit.Maui.UnitTests.csproj", "{7D49CC16-93CF-471B-B1FA-0BA44DECC15D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.UnitTests", "..\src\CommunityToolkit.Maui.UnitTests\CommunityToolkit.Maui.UnitTests.csproj", "{7D49CC16-93CF-471B-B1FA-0BA44DECC15D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{AE67B86A-46F2-4078-BF02-0614B7E0E3F5}"
 EndProject
@@ -30,7 +30,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Analy
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{9F7D54C0-EA17-409A-804F-B2E8D7F4A7F3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Analyzers.UnitTests", "..\src\CommunityToolkit.Maui.Analyzers.UnitTests\CommunityToolkit.Maui.Analyzers.UnitTests.csproj", "{60B976B2-F3FA-494E-A28B-7BED2EAE990E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.Analyzers.UnitTests", "..\src\CommunityToolkit.Maui.Analyzers.UnitTests\CommunityToolkit.Maui.Analyzers.UnitTests.csproj", "{60B976B2-F3FA-494E-A28B-7BED2EAE990E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.MediaView", "..\src\CommunityToolkit.Maui.MediaView\CommunityToolkit.Maui.MediaView.csproj", "{A651D248-B102-4B8B-90C2-3C4C28425EFF}"
 EndProject

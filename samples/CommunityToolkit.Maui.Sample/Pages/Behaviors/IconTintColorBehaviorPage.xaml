@@ -8,12 +8,13 @@
 	xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
 	Title="IconTintColorBehaviorPage"
 	x:DataType="vm:IconTintColorBehaviorViewModel"
-	x:TypeArguments="vm:IconTintColorBehaviorViewModel">
+	x:TypeArguments="vm:IconTintColorBehaviorViewModel"
+	x:Name="this">
 	<ScrollView>
 		<Grid
 			Padding="20" 
 			ColumnDefinitions="*,*"
-			RowDefinitions="Auto, Auto, 60, 60, 60"
+			RowDefinitions="Auto, Auto, 60, 60, 60, Auto"
 			RowSpacing="20">
 
 			<Label
@@ -68,11 +69,17 @@
 				<ImageButton
 					Grid.Row="4"
 					Grid.Column="1"
+					Command="{Binding ChangeCommand}"
 					Source="shield.png">
 					<ImageButton.Behaviors>
-						<mct:IconTintColorBehavior TintColor="Green" />
+						<mct:IconTintColorBehavior TintColor="{Binding Source={x:Reference this}, Path=BindingContext.ChangedColor}" />
 					</ImageButton.Behaviors>
 				</ImageButton>
+
+			<Label
+				Grid.Row="5"
+				Grid.Column="1"
+				Text="The ImageButton above uses Binding in order to change the TintColor. Click it!"/>
 			</Grid>
 	</ScrollView>
 </pages:BasePage>
