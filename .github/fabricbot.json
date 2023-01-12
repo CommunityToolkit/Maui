@@ -654,6 +654,12 @@
             "parameters": {
               "comment": "This issue has been automatically marked as stale because it has been marked as requiring author feedback but has not had any activity for **3 days**. It will be closed if no further activity occurs **within 2 days of this comment**. If it *is* closed, feel free to comment when you are able to provide the additional information and we will re-investigate."
             }
+          },
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "stale"
+            }
           }
         ]
       }
@@ -828,9 +834,15 @@
             }
           },
           {
+            "name": "hasLabel",
+            "parameters": {
+              "label": "stale"
+            }
+          },
+          {
             "name": "noActivitySince",
             "parameters": {
-              "days": 5
+              "days": 2
             }
           }
         ],
@@ -876,6 +888,47 @@
             "name": "addReply",
             "parameters": {
               "comment": "Hi @${issueAuthor}. We have added the \"needs reproduction\" label to this issue, which indicates that we cannot take further action. This issue will be closed automatically in 5 days if we do not hear back from you by then - please feel free to re-open it if you come back to this issue after that time."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "IssuesOnlyResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "hasLabel",
+              "parameters": {
+                "label": "stale"
+              }
+            },
+            {
+              "name": "isActivitySender",
+              "parameters": {
+                "user": {
+                  "type": "author"
+                }
+              }
+            }
+          ]
+        },
+        "eventType": "issue",
+        "eventNames": [
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Remove stale label",
+        "actions": [
+          {
+            "name": "removeLabel",
+            "parameters": {
+              "label": "stale"
             }
           }
         ]
