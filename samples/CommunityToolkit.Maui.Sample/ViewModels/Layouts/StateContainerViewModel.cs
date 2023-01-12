@@ -6,19 +6,10 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 public partial class StateContainerViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	string? currentState;
+	string? currentState, gridState, noAnimateState, notFoundState, fullPageState;
 
 	[ObservableProperty]
-	string? gridState;
-
-	[ObservableProperty]
-	string? noAnimateState;
-
-	[ObservableProperty]
-	string? notFoundState;
-
-	[ObservableProperty]
-	string? fullPageState;
+	bool canGridStateChange;
 
 	[RelayCommand]
 	async Task CycleStates()
@@ -36,7 +27,7 @@ public partial class StateContainerViewModel : BaseViewModel
 		CurrentState = string.Empty;
 	}
 
-	[RelayCommand]
+	[RelayCommand(CanExecute = nameof(CanGridStateChange))]
 	void ToggleGridState() => GridState = GridState switch
 	{
 		StateKey.ReplaceGrid => null,
@@ -64,13 +55,18 @@ public partial class StateContainerViewModel : BaseViewModel
 		_ => StateKey.Loading
 	};
 
+	partial void OnCanGridStateChangeChanged(bool value)
+	{
+		ToggleGridStateCommand.NotifyCanExecuteChanged();
+	}
+
 	static class StateKey
 	{
-		public const string Loading = "Loading";
-		public const string Success = "Success";
+		public const string Loading = nameof(Loading);
+		public const string Success = nameof(Success);
 		public const string Anything = "StateKey can be anything!";
-		public const string ReplaceGrid = "ReplaceGrid";
-		public const string NoAnimate = "NoAnimate";
-		public const string NotFound = "NotFoundExampleKey";
+		public const string ReplaceGrid = nameof(ReplaceGrid);
+		public const string NoAnimate = nameof(NoAnimate);
+		public const string NotFound = nameof(NotFound);
 	}
 }

@@ -4,9 +4,8 @@ using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Converters;
 
-sealed class MathExpression
+sealed partial class MathExpression
 {
-	const string regexPattern = @"(?<!\d)\-?(?:\d+\.\d+|\d+)|\+|\-|\/|\*|\(|\)|\^|\%|\,|\w+";
 	const NumberStyles numberStyle = NumberStyles.Float | NumberStyles.AllowThousands;
 
 	static readonly IFormatProvider formatProvider = new CultureInfo("en-US");
@@ -14,14 +13,9 @@ sealed class MathExpression
 	readonly IReadOnlyList<MathOperator> operators;
 	readonly IReadOnlyList<double> arguments;
 
-	internal string Expression { get; }
-
 	internal MathExpression(string expression, IEnumerable<double>? arguments = null)
 	{
-		if (string.IsNullOrEmpty(expression))
-		{
-			throw new ArgumentNullException(nameof(expression), "Expression can't be null or empty.");
-		}
+		ArgumentNullException.ThrowIfNullOrEmpty(expression, "Expression can't be null or empty.");
 
 		Expression = expression.ToLower();
 		this.arguments = arguments?.ToList() ?? new List<double>();
@@ -78,6 +72,8 @@ sealed class MathExpression
 		this.operators = operators;
 	}
 
+	internal string Expression { get; }
+
 	public double Calculate()
 	{
 		var rpn = GetReversePolishNotation(Expression);
@@ -95,7 +91,7 @@ sealed class MathExpression
 			var mathOperator = operators.FirstOrDefault(x => x.Name == value) ??
 				throw new ArgumentException($"Invalid math expression. Can't find operator or value with name \"{value}\".");
 
-			if (mathOperator.Precedence == MathOperatorPrecedence.Constant)
+			if (mathOperator.Precedence is MathOperatorPrecedence.Constant)
 			{
 				stack.Push(mathOperator.CalculateFunc(Array.Empty<double>()));
 				continue;
@@ -127,15 +123,12 @@ sealed class MathExpression
 		return stack.Pop();
 	}
 
+	[GeneratedRegex(@"(?<!\d)\-?(?:\d+\.\d+|\d+)|\+|\-|\/|\*|\(|\)|\^|\%|\,|\w+")]
+	private static partial Regex MathExpressionRegexPattern();
+
 	IEnumerable<string> GetReversePolishNotation(string expression)
 	{
-		var regex = new Regex(regexPattern);
-
-		var matches = regex.Matches(expression);
-		if (matches == null)
-		{
-			throw new ArgumentException("Invalid math expression.");
-		}
+		var matches = MathExpressionRegexPattern().Matches(expression) ?? throw new ArgumentException("Invalid math expression.");
 
 		var output = new List<string>();
 		var stack = new Stack<(string Name, MathOperatorPrecedence Precedence)>();
@@ -170,7 +163,7 @@ sealed class MathExpression
 			var @operator = operators.FirstOrDefault(x => x.Name == value);
 			if (@operator != null)
 			{
-				if (@operator.Precedence == MathOperatorPrecedence.Constant)
+				if (@operator.Precedence is MathOperatorPrecedence.Constant)
 				{
 					output.Add(value);
 					continue;
@@ -191,11 +184,11 @@ sealed class MathExpression
 
 				stack.Push((value, @operator.Precedence));
 			}
-			else if (value == "(")
+			else if (value is "(")
 			{
 				stack.Push((value, MathOperatorPrecedence.Lowest));
 			}
-			else if (value == ")")
+			else if (value is ")")
 			{
 				var isFound = false;
 				for (var i = stack.Count - 1; i >= 0; i--)
@@ -206,7 +199,7 @@ sealed class MathExpression
 					}
 
 					var stackValue = stack.Pop().Name;
-					if (stackValue == "(")
+					if (stackValue is "(")
 					{
 						isFound = true;
 						break;
@@ -220,7 +213,7 @@ sealed class MathExpression
 					throw new ArgumentException("Invalid math expression.");
 				}
 			}
-			else if (value == ",")
+			else if (value is ",")
 			{
 				while (stack.Count > 0)
 				{
@@ -240,7 +233,7 @@ sealed class MathExpression
 		for (var i = stack.Count - 1; i >= 0; i--)
 		{
 			var (name, precedence) = stack.Pop();
-			if (name == "(")
+			if (name is "(")
 			{
 				throw new ArgumentException("Invalid math expression.");
 			}

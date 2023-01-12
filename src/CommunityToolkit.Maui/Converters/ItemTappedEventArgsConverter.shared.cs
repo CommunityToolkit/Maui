@@ -17,7 +17,7 @@ public class ItemTappedEventArgsConverter : BaseConverterOneWay<ItemTappedEventA
 	/// <param name="value">The value to convert.</param>
 	/// <param name="culture">(Not Used)</param>
 	/// <returns>A <see cref="ItemTappedEventArgs.Item"/> object from object of type <see cref="ItemTappedEventArgs"/>.</returns>
-	[return: NotNullIfNotNull("value")]
+	[return: NotNullIfNotNull(nameof(value))]
 	public override object? ConvertFrom(ItemTappedEventArgs? value, CultureInfo? culture = null) => value switch
 	{
 		null => null,

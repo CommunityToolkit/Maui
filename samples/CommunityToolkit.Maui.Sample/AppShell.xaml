@@ -10,6 +10,7 @@
        xmlns:imagesources="clr-namespace:CommunityToolkit.Maui.Sample.Pages.ImageSources"
        xmlns:layouts="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Layouts"
        xmlns:views="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Views"
+       xmlns:essentials="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Essentials"
        xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
        xmlns:sys="clr-namespace:System;assembly=netstandard"
        Padding="4,0,0,0">
@@ -50,6 +51,12 @@
                 Route="ConvertersGalleryPage"
                 Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst={x:Null}}">
         <ShellContent ContentTemplate="{DataTemplate converters:ConvertersGalleryPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Essentials"
+                Route="EssentialsGalleryPage"
+                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst={x:Null}}">
+        <ShellContent ContentTemplate="{DataTemplate essentials:EssentialsGalleryPage}" />
     </FlyoutItem>
 
     <FlyoutItem Title="Extensions"

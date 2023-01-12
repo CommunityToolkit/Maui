@@ -1,0 +1,112 @@
+name: Open a New Feature Proposal
+description: For proposals that have been discussed in the Discussions tab and have been approved by a member of the core .NET MAUI Toolkit team
+title: "[Proposal] "
+labels: [new, proposal]
+body:
+
+- type: input
+  attributes:
+    label: Feature name
+    description: Please add a name of the feature
+  validations:
+    required: true
+
+- type: input
+  attributes:
+    label: Link to discussion
+    description: Please link to the completed/approved [Discussion](https://github.com/communitytoolkit/maui/discussions)
+  validations:
+    required: true
+
+- type: checkboxes
+  attributes:
+    label: Progress tracker
+    options:
+    - label: Android Implementation
+    - label: iOS Implementation
+    - label: MacCatalyst Implementation
+    - label: Windows Implementation
+    - label: Tizen Implementation
+    - label: Unit Tests
+    - label: Samples
+    - label: Documentation
+
+- type: textarea
+  attributes:
+    label: Summary
+    description: One paragraph explanation of the feature.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Motivation
+    description: Why are we doing this? Which use cases does it enable? What is the expected outcome?
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Detailed Design
+    description: This is the bulk of the proposal. Explain the design in enough detail for somebody familiar with .NET MAUI to understand, and for somebody familiar with the Community Toolkit to implement, and include examples of how the feature is used. Please include syntax and desired semantics for the change, including linking to the relevant parts of the existing .NET MAUI Toolkit spec to describe the changes necessary to implement this feature. An initial proposal does not need to cover all cases, but it should have enough detail to enable a community member to bring this proposal to design if they so choose.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Usage Syntax
+    render: markdown
+    description: Please provide an example of how an end-user will use this feature. If this is a UI control, please an example of the feature being consumed in both a C# UIand a XAML UI.
+    placeholder: |  
+        Here is an example from CharactersValidationBehavior: 
+
+        ### XAML Usage
+
+        ```xml
+        <Entry>
+            <Entry.Behaviors>
+                <toolkit:CharactersValidationBehavior
+                    CharacterType="Digit"
+                    MaximumCharacterCount="10"
+                />
+            </Entry.Behaviors>
+        </Entry>
+        ```
+
+        ### C# Usage
+
+        ```cs
+        var phoneEntry = new Entry();
+        phoneEntry.Behaviors.Add(new CharactersValidationBehavior
+        {
+            CharacterType = CharacterType.Digit,
+            MaximumCharacterCount = 10
+        });
+        ```
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Drawbacks
+    description: Why should we *not* do this?
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Alternatives
+    description: What other designs have been considered? What is the impact of not doing this?
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Unresolved Questions
+    description: What parts of the design are still undecided?
+  validations:
+    required: false
+
+- type: markdown
+  attributes:
+    value: Thanks for taking the time to fill out this feature proposal.

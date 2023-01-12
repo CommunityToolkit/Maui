@@ -75,7 +75,7 @@ public static class DrawingViewService
 		Color strokeColor,
 		Paint? background)
 	{
-		var (image, offset) = GetBitmap(points);
+		var (image, offset) = GetBitmap(points, lineWidth);
 		if (image is null)
 		{
 			return null;
@@ -90,7 +90,8 @@ public static class DrawingViewService
 	static Bitmap? GetBitmapForLines(IList<IDrawingLine> lines, Paint? background)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
-		var (image, offset) = GetBitmap(points);
+		var maxLineWidth = lines.Select(x => x.LineWidth).Max();
+		var (image, offset) = GetBitmap(points, maxLineWidth);
 		if (image is null)
 		{
 			return null;
@@ -106,17 +107,17 @@ public static class DrawingViewService
 		return image;
 	}
 
-	static (Bitmap?, SizeF offset) GetBitmap(ICollection<PointF> points)
+	static (Bitmap?, SizeF offset) GetBitmap(ICollection<PointF> points, float maxLineWidth)
 	{
 		if (points.Count is 0)
 		{
 			return (null, SizeF.Zero);
 		}
 
-		var minPointX = points.Min(p => p.X);
-		var minPointY = points.Min(p => p.Y);
-		var drawingWidth = points.Max(p => p.X) - minPointX;
-		var drawingHeight = points.Max(p => p.Y) - minPointY;
+		var minPointX = points.Min(p => p.X) - maxLineWidth;
+		var minPointY = points.Min(p => p.Y) - maxLineWidth;
+		var drawingWidth = points.Max(p => p.X) - minPointX + maxLineWidth;
+		var drawingHeight = points.Max(p => p.Y) - minPointY + maxLineWidth;
 		const int minSize = 1;
 		if (drawingWidth < minSize || drawingHeight < minSize)
 		{

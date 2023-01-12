@@ -21,7 +21,7 @@ sealed class StateContainerController : IDisposable
 	/// <summary>
 	/// The StateViews defined in the StateContainer.
 	/// </summary>
-	public IList<View> StateViews { get; set; } = Enumerable.Empty<View>().ToList();
+	public required IList<View> StateViews { get; set; }
 
 	/// <summary>
 	/// Dispose <see cref="StateContainerController"/>
@@ -87,7 +87,7 @@ sealed class StateContainerController : IDisposable
 		// If the layout we're applying StateContainer to is a Grid,
 		// we want to have the StateContainer span the entire Grid surface.
 		// Otherwise it would just end up in row 0 : column 0.
-		if (layout is Grid grid)
+		if (layout is IGridLayout grid)
 		{
 			// We create a VerticalStackLayout spanning the Grid.
 			// It takes VerticalOptions and HorizontalOptions from the

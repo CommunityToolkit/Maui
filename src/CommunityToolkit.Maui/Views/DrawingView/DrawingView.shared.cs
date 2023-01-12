@@ -42,7 +42,7 @@ public class DrawingView : View, IDrawingView
 	/// Backing BindableProperty for the <see cref="Lines"/> property.
 	/// </summary>
 	public static readonly BindableProperty LinesProperty = BindableProperty.Create(
-		nameof(Lines), typeof(ObservableCollection<IDrawingLine>), typeof(DrawingView), new ObservableCollection<IDrawingLine>(), BindingMode.TwoWay);
+		nameof(Lines), typeof(ObservableCollection<IDrawingLine>), typeof(DrawingView), defaultValueCreator: (_) => new ObservableCollection<IDrawingLine>(), defaultBindingMode: BindingMode.TwoWay);
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="DrawingLineCompletedCommand"/> property.

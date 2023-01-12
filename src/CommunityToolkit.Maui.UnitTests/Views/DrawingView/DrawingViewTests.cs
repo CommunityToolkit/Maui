@@ -38,6 +38,12 @@ public class DrawingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
+	public void DefaultLinesShouldNotBeShared()
+	{
+		new Maui.Views.DrawingView().Lines.Should().NotBeSameAs(new Maui.Views.DrawingView().Lines);
+	}
+
+	[Fact]
 	public void OnLinesCollectionChangedHandlerIsCalled()
 	{
 		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
