@@ -9,9 +9,7 @@ public class ExpanderPageCS : ContentPage
 	public ExpanderPageCS()
 	{
 		Title = "Expander Page, C# UI";
-#if IOS || MACCATALYST || WINDOWS
-		Expander.HandleExpandAction = Expander.DefaultHandleOnExpandAction;
-#endif
+
 		Content = new VerticalStackLayout()
 		{
 			Spacing = 12,
@@ -21,7 +19,7 @@ public class ExpanderPageCS : ContentPage
 				new Label()
 					.Text("Expander C# Sample")
 					.Font(bold: true, size: 24)
-					.CenterHorizontal(),
+					.CenterHorizontal().TextCenter(),
 
 				new Picker() { ItemsSource = Enum.GetValues<ExpandDirection>(), Title = "Direction" }
 					.CenterHorizontal().TextCenter()

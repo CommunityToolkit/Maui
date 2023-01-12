@@ -9,9 +9,6 @@ public partial class ExpanderPage : BasePage<ExpanderViewModel>
 	public ExpanderPage(ExpanderViewModel viewModel) : base(viewModel)
 	{
 		InitializeComponent();
-#if IOS || MACCATALYST || WINDOWS
-		Expander.HandleExpandAction = Expander.DefaultHandleOnExpandAction;
-#endif
 	}
 
 	async void Expander_ExpandedChanged(object sender, Core.ExpandedChangedEventArgs e)

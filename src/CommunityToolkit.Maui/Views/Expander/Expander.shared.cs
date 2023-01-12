@@ -45,7 +45,7 @@ public partial class Expander : ContentView, IExpander
 	public static readonly BindableProperty CommandProperty
 		= BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(Expander));
 
-	readonly TapGestureRecognizer tapGestureRecognizer;
+	readonly TapGestureRecognizer tapGestureRecognizer = new();
 	readonly WeakEventManager tappedEventManager = new();
 
 	/// <summary>
@@ -53,7 +53,6 @@ public partial class Expander : ContentView, IExpander
 	/// </summary>
 	public Expander()
 	{
-		tapGestureRecognizer = new TapGestureRecognizer();
 		tapGestureRecognizer.Tapped += TapGestureRecognizer_Tapped;
 
 		base.Content = new Grid
@@ -131,6 +130,44 @@ public partial class Expander : ContentView, IExpander
 
 	Grid ContentGrid => (Grid)base.Content;
 
+	/// <summary>
+	/// Overridable method that executes each time the <see cref="Header"/> is tapped
+	/// </summary>
+	/// <param name="tappedEventArgs">The <see cref="TappedEventArgs"/> provided by <see cref="Expander.tapGestureRecognizer"/>.</param>
+	public virtual void OnHeaderTapped(TappedEventArgs tappedEventArgs)
+	{
+		if (Header is null)
+		{
+			return;
+		}
+
+		Element element = this;
+		var size = IsExpanded
+					? Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins).Request
+					: Header.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+		while (element is not null)
+		{
+			if (element.Parent is ListView && element is Cell cell)
+			{
+#if IOS || MACCATALYST
+				throw new NotSupportedException($"{nameof(Expander)} is not yet supported in {nameof(ListView)}");
+#else
+				cell.ForceUpdateSize();
+#endif
+			}
+#if IOS || MACCATALYST || WINDOWS
+			else if (element is CollectionView collectionView)
+			{
+				var tapLocation = tappedEventArgs.GetPosition(collectionView);
+				ForceUpdateCellSize(this, collectionView, size, tapLocation);
+			}
+#endif
+
+			element = element.Parent;
+		}
+	}
+
 	static void OnContentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var expander = (Expander)bindable;
@@ -207,52 +244,12 @@ public partial class Expander : ContentView, IExpander
 		headerView.GestureRecognizers.Add(tapGestureRecognizer);
 	}
 
-	/// <summary>
-	/// Default <see cref="Delegate"/> to handle with Expander issues for iOS, Mac Catalyst, and Windows.
-	/// </summary>
-	/// <param name="tappedEventArgs">the <see cref="TappedEventArgs"/> passed by the internal implementation.</param>
-	/// <param name="expander">the <see cref="Expander"/> view that will be handled.</param>
-	public static void DefaultHandleOnExpandAction(TappedEventArgs tappedEventArgs, Expander expander)
-	{
-		if (expander.Header is null)
-		{
-			return;
-		}
-
-		Element element = expander;
-		var size = expander.IsExpanded
-				? expander.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins).Request
-				: expander.Header.Measure(double.PositiveInfinity, double.PositiveInfinity);
-
-		while (element is not null)
-		{
-			if (element.Parent is ListView)
-			{
-				(element as Cell)?.ForceUpdateSize();
-			}
-			else if (element is CollectionView collectionView)
-			{
-				var tapLocation = tappedEventArgs.GetPosition(collectionView);
-#if IOS || MACCATALYST || WINDOWS
-				ForceUpdateCellSize(expander, collectionView, size, tapLocation);
-#endif
-			}
-
-			element = element.Parent;
-		}
-	}
-	
 	void TapGestureRecognizer_Tapped(object? sender, TappedEventArgs tappedEventArgs)
 	{
 		IsExpanded = !IsExpanded;
 
-		HandleExpandAction?.Invoke(tappedEventArgs, this);
+		OnHeaderTapped(tappedEventArgs);
 	}
-
-	/// <summary>
-	/// <see cref="Action{TappedEventArgs, Expander}"/>
-	/// </summary>
-	public static Action<TappedEventArgs, Expander>? HandleExpandAction { get; set; }
 
 	void IExpander.ExpandedChanged(bool isExpanded)
 	{
