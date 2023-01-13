@@ -63,14 +63,21 @@ public class StatusBarBehavior : PlatformBehavior<Page>
 	/// <inheritdoc /> 
 	protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
 	{
+		base.OnPropertyChanged(propertyName);
+		
 		if (string.IsNullOrWhiteSpace(propertyName))
 		{
 			return;
 		}
 
-		base.OnPropertyChanged(propertyName);
+#if ANDROID
+		if (Platform.CurrentActivity is null)
+		{
+			return;
+		}
+#endif
 
-		if (propertyName.IsOneOf(StatusBarColorProperty, Page.WidthProperty, Page.HeightProperty))
+		if (propertyName.IsOneOf(StatusBarColorProperty, VisualElement.WidthProperty, VisualElement.HeightProperty))
 		{
 			StatusBar.SetColor(StatusBarColor);
 		}
