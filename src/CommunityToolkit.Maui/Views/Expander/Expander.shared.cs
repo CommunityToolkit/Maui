@@ -53,6 +53,7 @@ public partial class Expander : ContentView, IExpander
 	/// </summary>
 	public Expander()
 	{
+		HandleHeaderTapped = ResizeExpanderInItemsView;
 		tapGestureRecognizer.Tapped += TapGestureRecognizer_Tapped;
 
 		base.Content = new Grid
@@ -66,13 +67,22 @@ public partial class Expander : ContentView, IExpander
 	}
 
 	/// <summary>
-	///	Triggered when 
+	///	Triggered when the value of <see cref="IsExpanded"/> changes
 	/// </summary>
 	public event EventHandler<ExpandedChangedEventArgs> ExpandedChanged
 	{
 		add => tappedEventManager.AddEventHandler(value);
 		remove => tappedEventManager.RemoveEventHandler(value);
 	}
+
+	/// <summary>
+	/// The Action that fires when <see cref="Header"/> is tapped.
+	/// By default, this <see cref="Action"/> runs <see cref="ResizeExpanderInItemsView(TappedEventArgs)"/>.
+	/// </summary>
+	/// <remarks>
+	/// Warning: Overriding this <see cref="Action"/> may cause <see cref="Expander"/> to work improperly when placed inside of a <see cref="CollectionView"/> and placed inside of a <see cref="ListView"/>.
+	/// </remarks>
+	public Action<TappedEventArgs>? HandleHeaderTapped { get; set; }
 
 	/// <inheritdoc />
 	public IView? Header
@@ -129,44 +139,6 @@ public partial class Expander : ContentView, IExpander
 	}
 
 	Grid ContentGrid => (Grid)base.Content;
-
-	/// <summary>
-	/// Overridable method that executes each time the <see cref="Header"/> is tapped
-	/// </summary>
-	/// <param name="tappedEventArgs">The <see cref="TappedEventArgs"/> provided by <see cref="Expander.tapGestureRecognizer"/>.</param>
-	public virtual void OnHeaderTapped(TappedEventArgs tappedEventArgs)
-	{
-		if (Header is null)
-		{
-			return;
-		}
-
-		Element element = this;
-		var size = IsExpanded
-					? Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins).Request
-					: Header.Measure(double.PositiveInfinity, double.PositiveInfinity);
-
-		while (element is not null)
-		{
-			if (element.Parent is ListView && element is Cell cell)
-			{
-#if IOS || MACCATALYST
-				throw new NotSupportedException($"{nameof(Expander)} is not yet supported in {nameof(ListView)}");
-#else
-				cell.ForceUpdateSize();
-#endif
-			}
-#if IOS || MACCATALYST || WINDOWS
-			else if (element is CollectionView collectionView)
-			{
-				var tapLocation = tappedEventArgs.GetPosition(collectionView);
-				ForceUpdateCellSize(this, collectionView, size, tapLocation);
-			}
-#endif
-
-			element = element.Parent;
-		}
-	}
 
 	static void OnContentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
@@ -248,7 +220,41 @@ public partial class Expander : ContentView, IExpander
 	{
 		IsExpanded = !IsExpanded;
 
-		OnHeaderTapped(tappedEventArgs);
+		HandleHeaderTapped?.Invoke(tappedEventArgs);
+	}
+
+	void ResizeExpanderInItemsView(TappedEventArgs tappedEventArgs)
+	{
+		if (Header is null)
+		{
+			return;
+		}
+
+		Element element = this;
+		var size = IsExpanded
+					? Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins).Request
+					: Header.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+		while (element is not null)
+		{
+			if (element.Parent is ListView && element is Cell cell)
+			{
+#if IOS || MACCATALYST
+				throw new NotSupportedException($"{nameof(Expander)} is not yet supported in {nameof(ListView)}");
+#else
+				cell.ForceUpdateSize();
+#endif
+			}
+#if IOS || MACCATALYST || WINDOWS
+			else if (element is CollectionView collectionView)
+			{
+				var tapLocation = tappedEventArgs.GetPosition(collectionView);
+				ForceUpdateCellSize(this, collectionView, size, tapLocation);
+			}
+#endif
+
+			element = element.Parent;
+		}
 	}
 
 	void IExpander.ExpandedChanged(bool isExpanded)
