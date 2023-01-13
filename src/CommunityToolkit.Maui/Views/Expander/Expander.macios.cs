@@ -15,7 +15,7 @@ public partial class Expander
 		{
 			return;
 		}
-		
+
 		expander.uiCollectionViewController ??= GetControler(collectionView);
 
 		if (expander.uiCollectionViewController?.CollectionView.CollectionViewLayout is UIKit.UICollectionViewFlowLayout layout)

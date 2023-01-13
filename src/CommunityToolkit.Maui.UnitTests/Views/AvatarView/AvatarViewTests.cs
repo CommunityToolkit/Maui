@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 using Xunit;
 
-namespace CommunityToolkit.Maui.UnitTests.Views.AvatarView;
+namespace CommunityToolkit.Maui.UnitTests.Views;
 
 public class AvatarViewTests : BaseHandlerTest
 {
