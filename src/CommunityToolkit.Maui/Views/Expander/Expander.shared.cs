@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
-using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -45,7 +44,6 @@ public partial class Expander : ContentView, IExpander
 	public static readonly BindableProperty CommandProperty
 		= BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(Expander));
 
-	readonly TapGestureRecognizer tapGestureRecognizer = new();
 	readonly WeakEventManager tappedEventManager = new();
 
 	/// <summary>
@@ -54,7 +52,7 @@ public partial class Expander : ContentView, IExpander
 	public Expander()
 	{
 		HandleHeaderTapped = ResizeExpanderInItemsView;
-		tapGestureRecognizer.Tapped += TapGestureRecognizer_Tapped;
+		HeaderTapGestureRecognizer.Tapped += OnHeaderTapGestureRecognizerTapped;
 
 		base.Content = new Grid
 		{
@@ -74,6 +72,8 @@ public partial class Expander : ContentView, IExpander
 		add => tappedEventManager.AddEventHandler(value);
 		remove => tappedEventManager.RemoveEventHandler(value);
 	}
+
+	internal TapGestureRecognizer HeaderTapGestureRecognizer { get; } = new();
 
 	/// <summary>
 	/// The Action that fires when <see cref="Header"/> is tapped.
@@ -212,11 +212,11 @@ public partial class Expander : ContentView, IExpander
 	void SetHeaderGestures(in IView header)
 	{
 		var headerView = (View)header;
-		headerView.GestureRecognizers.Remove(tapGestureRecognizer);
-		headerView.GestureRecognizers.Add(tapGestureRecognizer);
+		headerView.GestureRecognizers.Remove(HeaderTapGestureRecognizer);
+		headerView.GestureRecognizers.Add(HeaderTapGestureRecognizer);
 	}
 
-	void TapGestureRecognizer_Tapped(object? sender, TappedEventArgs tappedEventArgs)
+	void OnHeaderTapGestureRecognizerTapped(object? sender, TappedEventArgs tappedEventArgs)
 	{
 		IsExpanded = !IsExpanded;
 
