@@ -63,7 +63,7 @@ public class ExpanderTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void EnsureExpandedCahnged()
+	public void EnsureExpandedChanged()
 	{
 		var isExpanded_Initial = expander.IsExpanded;
 
