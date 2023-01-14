@@ -7,6 +7,7 @@
                 xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
                 x:TypeArguments="viewModels:ExpanderViewModel"
                 x:DataType="viewModels:ExpanderViewModel"
+                Padding="12,0"
                 Title="Expander">
 
     <ScrollView>
@@ -21,7 +22,7 @@
                 </mct:Expander.Header>
 
                 <mct:Expander.Content>
-                    <VerticalStackLayout BackgroundColor="LightGray">
+                    <VerticalStackLayout>
                         <Label Text="Item 1"/>
                         <Label Text="Item 2"/>
                     </VerticalStackLayout>

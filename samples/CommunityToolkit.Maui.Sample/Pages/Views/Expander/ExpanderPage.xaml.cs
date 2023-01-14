@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
-using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
