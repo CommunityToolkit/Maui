@@ -24,41 +24,47 @@
                  Spacing="25"
                  VerticalOptions="StartAndExpand">
             <Label Text="Text color will change accordingly to the style that is configured when an invalid string is entered."/>
-            <Frame
-               CornerRadius="10">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Label Text="CharacterType"/>
-                    <Picker Grid.Column="1"
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Label Text="CharacterType"/>
+                <Picker
+                        x:Name="CharacterTypePicker"
+                        Grid.Row="0"
+                        Grid.Column="1"
                         Title="CharacterType"
-                        ItemsSource="{Binding CharacterTypes, Source={x:Reference Page}, Mode=OneTime}"
+                        ItemsSource="{Binding CharacterTypes, Mode=OneTime}"
                         SelectedIndex="1"/>
-                    <Label Grid.Row="1"
-                        VerticalOptions="FillAndExpand"
+                <Label Grid.Row="1"
+                           Grid.Column="0"
+                           VerticalOptions="FillAndExpand"
                         VerticalTextAlignment="Center"
                         Text="MinimumCharacterCountEntry"/>
-                    <Entry Grid.Row="1" Grid.Column="1"
+                <Entry Grid.Row="1" Grid.Column="1"
+                       x:Name="MinimumCharacterCountEntry"
                         Keyboard="Numeric"
                         Text="2"
                         VerticalOptions="FillAndExpand"/>
-                    <Label Grid.Row="2"
+                <Label Grid.Row="2"
+                       Grid.Column="0"
                         VerticalOptions="FillAndExpand"
                         VerticalTextAlignment="Center"
                         Text="MaximumCharacterCountEntry"/>
-                    <Entry Grid.Row="2" Grid.Column="1"
+                <Entry Grid.Row="2" Grid.Column="1"
+                       x:Name="MaximumCharacterCountEntry"
                         Keyboard="Numeric"
                         Text="20"
                         VerticalOptions="FillAndExpand"/>
-                </Grid>
-            </Frame>
+            </Grid>
+
             <Label Text="Type characters for validation behavior according to the settings you set upon."/>
             <Entry Placeholder="Type characters...">
                 <Entry.Behaviors>
