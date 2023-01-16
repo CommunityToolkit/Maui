@@ -64,7 +64,7 @@ public class StatusBarBehavior : PlatformBehavior<Page>
 	protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
 	{
 		base.OnPropertyChanged(propertyName);
-		
+
 		if (string.IsNullOrWhiteSpace(propertyName))
 		{
 			return;
