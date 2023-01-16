@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Converters;
+﻿using System.ComponentModel;
 using CommunityToolkit.Maui.MediaPlayer;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using Microsoft.Extensions.Logging;
@@ -14,31 +14,31 @@ public partial class MediaPlayerPage : BasePage<MediaPlayerViewModel>
 		InitializeComponent();
 
 		this.logger = logger;
+		mediaPlayer.PropertyChanged += MediaPlayer_PropertyChanged;
+	}
+
+	void MediaPlayer_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+	{
+		if (e.PropertyName == "Duration")
+		{
+			logger.LogInformation($"Duration: {mediaPlayer.Duration}");
+			positionSlider.Maximum = mediaPlayer.Duration.TotalSeconds;
+		}
 	}
 
 	void OnMediaOpened(object? sender, EventArgs e) => logger.LogInformation("Media opened.");
 
-	void OnStateChanged(object? sender, MediaStateChangedEventArgs e)
-	{
-		logger.LogInformation("Media State Changed. Old State: {PreviousState}, New State: {NewState}", e.PreviousState, e.NewState);
-
-		//if (e.NewState == MediaPlayerState.Playing)
-		//{
-		//	positionSlider.SetBinding(PositionSlider.DurationProperty,
-		//		new Binding(nameof(mediaPlayer.Duration),
-		//		source: mediaPlayer));
-
-		//	positionSlider.SetBinding(PositionSlider.PositionProperty,
-		//		new Binding(nameof(mediaPlayer.Position),
-		//		source: mediaPlayer));
-		//}
-	}
+	void OnStateChanged(object? sender, MediaStateChangedEventArgs e) => logger.LogInformation("Media State Changed. Old State: {PreviousState}, New State: {NewState}", e.PreviousState, e.NewState);
 
 	void OnMediaFailed(object? sender, MediaFailedEventArgs e) => logger.LogInformation("Media failed. Error: {ErrorMessage}", e.ErrorMessage);
 
 	void OnMediaEnded(object? sender, EventArgs e) => logger.LogInformation("Media ended.");
 
-	void OnPositionChanged(object? sender, MediaPositionChangedEventArgs e) => logger.LogInformation("Position changed to {position}", e.Position);
+	void OnPositionChanged(object? sender, MediaPositionChangedEventArgs e)
+	{
+		logger.LogInformation("Position changed to {position}", e.Position);
+		positionSlider.Value = e.Position.TotalSeconds;
+	}
 
 	void OnSeekCompleted(object? sender, EventArgs e) => logger.LogInformation("Seek completed.");
 

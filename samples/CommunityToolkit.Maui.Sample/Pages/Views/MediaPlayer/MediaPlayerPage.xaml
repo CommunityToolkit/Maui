@@ -63,8 +63,6 @@
                 x:Name="positionSlider"
                 Grid.Row="3"
                 MinimumTrackColor="Gray"
-                Maximum="{Binding Duration, Source={x:Reference mediaPlayer}}"
-                Value="{Binding Position, Source={x:Reference mediaPlayer}}"
                 DragStarted="Slider_DragStarted"
                 DragCompleted="Slider_DragCompleted"/>
 
