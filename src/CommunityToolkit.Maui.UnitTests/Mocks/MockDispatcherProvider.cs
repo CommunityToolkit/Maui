@@ -39,38 +39,44 @@ sealed class MockDispatcherProvider : IDispatcherProvider, IDisposable
 		}
 	}
 
-	class DispatcherTimerStub : IDispatcherTimer
+	class DispatcherTimerStub : IDispatcherTimer, IDisposable
 	{
-		readonly DispatcherMock _dispatcher;
+		readonly DispatcherMock dispatcher;
 
-		Timer? _timer;
+		Timer? timer;
 
 		public DispatcherTimerStub(DispatcherMock dispatcher)
 		{
-			_dispatcher = dispatcher;
+			this.dispatcher = dispatcher;
 		}
 
 		public TimeSpan Interval { get; set; }
 
 		public bool IsRepeating { get; set; }
 
-		public bool IsRunning => _timer != null;
+		public bool IsRunning => timer != null;
 
 		public event EventHandler? Tick;
 
 		public void Start()
 		{
-			_timer = new Timer(OnTimeout, null, Interval, IsRepeating ? Interval : Timeout.InfiniteTimeSpan);
+			timer = new Timer(OnTimeout, null, Interval, IsRepeating ? Interval : Timeout.InfiniteTimeSpan);
 
-			void OnTimeout(object? state) {
-				_dispatcher.Dispatch(() => Tick?.Invoke(this, EventArgs.Empty));
+			void OnTimeout(object? state)
+			{
+				dispatcher.Dispatch(() => Tick?.Invoke(this, EventArgs.Empty));
 			}
 		}
 
 		public void Stop()
 		{
-			_timer?.Dispose();
-			_timer = null;
+			Dispose();
+		}
+
+		public void Dispose()
+		{
+			timer?.Dispose();
+			timer = null;
 		}
 	}
 }
