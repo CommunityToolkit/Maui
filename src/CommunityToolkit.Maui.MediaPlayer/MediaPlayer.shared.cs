@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel;
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.MediaPlayer;
 using CommunityToolkit.Maui.MediaPlayer.Converters;
 
-namespace CommunityToolkit.Maui.MediaPlayer;
+namespace CommunityToolkit.Maui.Views;
 
 /// <summary>
 /// Represents an object that to render audio and video to the display.
@@ -87,14 +89,6 @@ public class MediaPlayer : View, IMediaPlayer
 	public static readonly BindableProperty VolumeProperty =
 		  BindableProperty.Create(nameof(Volume), typeof(double), typeof(MediaPlayer), 1.0,
 			  BindingMode.TwoWay, new BindableProperty.ValidateValueDelegate(ValidateVolume));
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="MediaPlayer"/> class.
-	/// </summary>
-	public MediaPlayer()
-	{
-		InitializeTimer();
-	}
 
 	/// <inheritdoc cref="IMediaPlayer.MediaEnded"/>
 	public event EventHandler MediaEnded

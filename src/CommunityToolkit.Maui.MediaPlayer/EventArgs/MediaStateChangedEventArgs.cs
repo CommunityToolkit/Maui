@@ -18,12 +18,12 @@ public sealed class MediaStateChangedEventArgs : EventArgs
 	}
 
 	/// <summary>
-	/// Gets the previous state that the <see cref="IMediaPlayer"/> instance is transitioning from.
+	/// Gets the previous state that the <see cref="Core.IMediaPlayer"/> instance is transitioning from.
 	/// </summary>
 	public MediaPlayerState PreviousState { get; }
 
 	/// <summary>
-	/// Gets the new state that the <see cref="IMediaPlayer"/> instance is transitioning to.
+	/// Gets the new state that the <see cref="Core.IMediaPlayer"/> instance is transitioning to.
 	/// </summary>
 	public MediaPlayerState NewState { get; }
 }

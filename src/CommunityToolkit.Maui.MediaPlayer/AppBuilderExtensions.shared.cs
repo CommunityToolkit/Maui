@@ -14,7 +14,7 @@ public static class AppBuilderExtensions
 	{
 		builder.ConfigureMauiHandlers(h =>
 		{
-			h.AddHandler<MediaPlayer, MediaPlayerHandler>();
+			h.AddHandler<Views.MediaPlayer, MediaPlayerHandler>();
 		});
 
 		return builder;

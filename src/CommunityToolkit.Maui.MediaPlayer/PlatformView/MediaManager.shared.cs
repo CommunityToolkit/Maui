@@ -15,12 +15,12 @@ using Microsoft.Extensions.Logging;
 namespace CommunityToolkit.Maui.MediaPlayer;
 
 /// <summary>
-/// An class that acts as a manager for an <see cref="IMediaPlayer"/> instance.
+/// An class that acts as a manager for an <see cref="Core.IMediaPlayer"/> instance.
 /// </summary>
 public partial class MediaManager
 {
 	readonly IMauiContext mauiContext;
-	readonly IMediaPlayer mediaPlayer;
+	readonly Core.IMediaPlayer mediaPlayer;
 #if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
 	/// <summary>
 	/// The platform-specific media player.
@@ -32,8 +32,8 @@ public partial class MediaManager
 	/// Initializes a new instance of the <see cref="MediaManager"/> class.
 	/// </summary>
 	/// <param name="context">This application's <see cref="IMauiContext"/>.</param>
-	/// <param name="mediaPlayer">The <see cref="IMediaPlayer"/> instance that is managed through this class.</param>
-	public MediaManager(IMauiContext context, IMediaPlayer mediaPlayer)
+	/// <param name="mediaPlayer">The <see cref="Core.IMediaPlayer"/> instance that is managed through this class.</param>
+	public MediaManager(IMauiContext context, Core.IMediaPlayer mediaPlayer)
 	{
 		this.mediaPlayer = mediaPlayer;
 		mauiContext = context;

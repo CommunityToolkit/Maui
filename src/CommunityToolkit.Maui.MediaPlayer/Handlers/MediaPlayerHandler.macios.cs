@@ -3,7 +3,7 @@ using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.MediaPlayer;
 
-public partial class MediaPlayerHandler : ViewHandler<MediaPlayer, MauiMediaPlayer>, IDisposable
+public partial class MediaPlayerHandler : ViewHandler<Views.MediaPlayer, MauiMediaPlayer>, IDisposable
 {
 	/// <inheritdoc/>
 	/// <exception cref="NullReferenceException">Thrown if <see cref="MauiContext"/> is <see langword="null"/>.</exception>

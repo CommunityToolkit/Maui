@@ -3,7 +3,7 @@ using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.MediaPlayer;
 
-public partial class MediaPlayerHandler : ViewHandler<MediaPlayer, MauiMediaPlayer>
+public partial class MediaPlayerHandler : ViewHandler<Views.MediaPlayer, MauiMediaPlayer>
 {
 	/// <inheritdoc/>
 	/// <exception cref="NullReferenceException">Thrown if <see cref="MauiContext"/> is <see langword="null"/>.</exception>
@@ -22,7 +22,7 @@ public partial class MediaPlayerHandler : ViewHandler<MediaPlayer, MauiMediaPlay
 	}
 
 	/// <inheritdoc/>
-	public static void ShouldLoopPlayback(MediaPlayerHandler handler, MediaPlayer MediaPlayer)
+	public static void ShouldLoopPlayback(MediaPlayerHandler handler, Views.MediaPlayer MediaPlayer)
 	{
 		handler.mediaManager?.UpdateShouldLoopPlayback();
 	}

@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.MediaPlayer;
+﻿using CommunityToolkit.Maui.MediaPlayer;
+
+namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// With MediaPlayer you can play multimedia inside of your app.
