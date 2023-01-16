@@ -9,14 +9,14 @@ variables:
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
   PathToCommunityToolkitCoreCsproj: 'src/CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj'
-  PathToCommunityToolkitMediaViewCsproj: 'src/CommunityToolkit.Maui.MediaView/CommunityToolkit.Maui.MediaView.csproj'
+  PathToCommunityToolkitMediaPlayerCsproj: 'src/CommunityToolkit.Maui.MediaPlayer/CommunityToolkit.Maui.MediaPlayer.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
   PathToCommunityToolkitAnalyzersCsproj: 'src/CommunityToolkit.Maui.Analyzers/CommunityToolkit.Maui.Analyzers.csproj'
-  PathToCommunityToolkitMediaViewAnalyzersCsproj: 'src/CommunityToolkit.Maui.MediaView.Analyzers/CommunityToolkit.Maui.MediaView.Analyzers.csproj'
+  PathToCommunityToolkitMediaPlayerAnalyzersCsproj: 'src/CommunityToolkit.Maui.MediaPlayer.Analyzers/CommunityToolkit.Maui.MediaPlayer.Analyzers.csproj'
   PathToCommunityToolkitSourceGeneratorsCsproj: 'src/CommunityToolkit.Maui.SourceGenerators/CommunityToolkit.Maui.SourceGenerators.csproj'
   PathToCommunityToolkitAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Analyzers.CodeFixes/CommunityToolkit.Maui.Analyzers.CodeFixes.csproj'
-  PathToCommunityToolkitMediaViewAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaView.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaView.Analyzers.CodeFixes.csproj'
+  PathToCommunityToolkitMediaPlayerAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaPlayer.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaPlayer.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
   DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/7.0.49.json'
   Latest_Xcode_Version: '14.1.0'
@@ -146,14 +146,14 @@ jobs:
           script: 'dotnet build -c Release $(PathToCommunityToolkitAnalyzersCodeFixCsproj)'
 
       - task: CmdLine@2
-        displayName: 'Build CommunityToolkit.Maui.MediaView.Analyzers'
+        displayName: 'Build CommunityToolkit.Maui.MediaPlayer.Analyzers'
         inputs:
-          script: 'dotnet build -c Release $(PathToCommunityToolkitMediaViewAnalyzersCsproj)'
+          script: 'dotnet build -c Release $(PathToCommunityToolkitMediaPlayerAnalyzersCsproj)'
 
       - task: CmdLine@2
-        displayName: 'Build CommunityToolkit.Maui.MediaView.Analyzers.CodeFixes'
+        displayName: 'Build CommunityToolkit.Maui.MediaPlayer.Analyzers.CodeFixes'
         inputs:
-          script: 'dotnet build -c Release $(PathToCommunityToolkitMediaViewAnalyzersCodeFixCsproj)'
+          script: 'dotnet build -c Release $(PathToCommunityToolkitMediaPlayerAnalyzersCodeFixCsproj)'
 
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.SourceGenerators'
@@ -197,9 +197,9 @@ jobs:
           script: 'dotnet pack $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
 
       - task: CmdLine@2
-        displayName: 'Pack CommunityToolkit.Maui.MediaView NuGet'
+        displayName: 'Pack CommunityToolkit.Maui.MediaPlayer NuGet'
         inputs:
-          script: 'dotnet pack $(PathToCommunityToolkitMediaViewCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
+          script: 'dotnet pack $(PathToCommunityToolkitMediaPlayerCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
 
       # check vulnerabilities
       - powershell: |
