@@ -8,14 +8,14 @@ namespace CommunityToolkit.Maui.Core;
 public interface IMediaPlayer : IView
 {
 	/// <summary>
-	/// The current state of the <see cref="MediaPlayer"/>.
+	/// The current state of the <see cref="Views.MediaPlayer"/>.
 	/// </summary>
 	MediaPlayerState CurrentState { get; }
 
 	/// <summary>
 	/// Triggers a <see cref="CurrentState"/> change.
 	/// </summary>
-	/// <param name="newState">The new state the <see cref="MediaPlayer"/> transitioned to.</param>
+	/// <param name="newState">The new state the <see cref="Views.MediaPlayer"/> transitioned to.</param>
 	internal void CurrentStateChanged(MediaPlayerState newState);
 
 	/// <summary>
@@ -62,9 +62,9 @@ public interface IMediaPlayer : IView
 	event EventHandler<MediaPositionChangedEventArgs> PositionChanged;
 
 	/// <summary>
-	/// Triggered when a seek action has been completed.
+	/// Triggers the <see cref="Views.MediaPlayer.SeekCompleted"/> event.
 	/// </summary>
-	void SeekCompleted();
+	internal void SeekCompleted();
 
 	/// <summary>
 	/// Seek to a specific position in the currently playing media.
