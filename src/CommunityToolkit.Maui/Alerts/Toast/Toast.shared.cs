@@ -8,9 +8,9 @@ public partial class Toast : IToast
 {
 	bool isDisposed;
 
-	string text = string.Empty;
-	ToastDuration duration = ToastDuration.Short;
-	double textSize = AlertDefaults.FontSize;
+	readonly string text = string.Empty;
+	readonly ToastDuration duration = ToastDuration.Short;
+	readonly double textSize = AlertDefaults.FontSize;
 
 	/// <inheritdoc/>
 	public string Text
@@ -74,17 +74,25 @@ public partial class Toast : IToast
 	/// </summary>
 	public virtual Task Show(CancellationToken token = default)
 	{
+#if WINDOWS
+		return ShowPlatform(token);
+#else
 		ShowPlatform(token);
 		return Task.CompletedTask;
+#endif
 	}
-
+	
 	/// <summary>
 	/// Dismiss Toast
 	/// </summary>
 	public virtual Task Dismiss(CancellationToken token = default)
 	{
+#if WINDOWS
+		return DismissPlatform(token);
+#else
 		DismissPlatform(token);
 		return Task.CompletedTask;
+#endif
 	}
 
 	/// <summary>

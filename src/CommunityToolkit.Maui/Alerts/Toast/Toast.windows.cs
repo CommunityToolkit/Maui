@@ -1,11 +1,13 @@
-﻿using Windows.UI.Notifications;
-using static CommunityToolkit.Maui.Extensions.ToastNotificationExtensions;
+﻿using Microsoft.Windows.AppNotifications;
+using Microsoft.Windows.AppNotifications.Builder;
+using System.ComponentModel;
+using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Toast
 {
-	static Windows.UI.Notifications.ToastNotification? PlatformToast { get; set; }
+	static AppNotification? PlatformToast { get; set; }
 
 	/// <summary>
 	/// Dispose Toast
@@ -24,28 +26,36 @@ public partial class Toast
 		isDisposed = true;
 	}
 
-	static void DismissPlatform(CancellationToken token)
+	static async Task DismissPlatform(CancellationToken token)
 	{
-		if (PlatformToast is not null)
+		if (PlatformToast is null)
 		{
-			token.ThrowIfCancellationRequested();
-			ToastNotificationManager.History.Clear();
-
-			PlatformToast.ExpirationTime = DateTimeOffset.Now;
-			PlatformToast = null;
+			return;
 		}
-	}
 
-	void ShowPlatform(CancellationToken token)
-	{
-		DismissPlatform(token);
 		token.ThrowIfCancellationRequested();
+		await AppNotificationManager.Default.RemoveAllAsync();
 
-		PlatformToast = new ToastNotification(BuildToastNotificationContent(Text))
-		{
-			ExpirationTime = DateTimeOffset.Now.Add(GetDuration(Duration))
-		};
-
-		ToastNotificationManager.CreateToastNotifier().Show(PlatformToast);
+		PlatformToast.Expiration = DateTimeOffset.Now;
+		PlatformToast = null;
 	}
+
+	async Task ShowPlatform(CancellationToken token)
+	{
+		await DismissPlatform(token);
+		token.ThrowIfCancellationRequested();
+		PlatformToast = new AppNotificationBuilder()
+			.AddText(Text)
+			.SetDuration(GetAppNotificationDuration(Duration))
+			.BuildNotification();
+		PlatformToast.Expiration = DateTimeOffset.Now.Add(GetDuration(Duration));
+		AppNotificationManager.Default.Show(PlatformToast);
+	}
+	
+	static AppNotificationDuration GetAppNotificationDuration(ToastDuration duration) => duration switch
+	{
+		ToastDuration.Short => AppNotificationDuration.Default,
+		ToastDuration.Long => AppNotificationDuration.Long,
+		_ => throw new InvalidEnumArgumentException(nameof(Duration), (int)duration, typeof(ToastDuration))
+	};
 }
