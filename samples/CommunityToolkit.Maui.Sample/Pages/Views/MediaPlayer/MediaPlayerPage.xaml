@@ -4,7 +4,6 @@
              xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
              xmlns:views="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Views"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-             xmlns:mct="clr-namespace:CommunityToolkit.Maui.Converters;assembly=CommunityToolkit.Maui"
              xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
              xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Converters"
              x:TypeArguments="viewModels:MediaPlayerViewModel"
@@ -13,7 +12,7 @@
              Title="MediaPlayer"
              Unloaded="BasePage_Unloaded">
     <pages:BasePage.Resources>
-        <mct:TimeSpanToSecondsConverter x:Key="TimeSpanConverter" />
+        <toolkit:TimeSpanToSecondsConverter x:Key="TimeSpanConverter" />
         <converters:SecondsToStringConverter x:Key="SecondsToStringConverter" />
     </pages:BasePage.Resources>
 
@@ -82,6 +81,11 @@
                 <Button
                     Clicked="OnResetClicked"
                     Text="Reset Source (null)" />
+
+                <Grid ColumnDefinitions="*, 100" ColumnSpacing="5">
+                    <Entry x:Name="customSourceEntry" Placeholder="Enter URL" HorizontalOptions="FillAndExpand" />
+                    <Button Grid.Column="1" Clicked="Button_Clicked" Text="Load" />
+                </Grid>
             </VerticalStackLayout>
 
             <HorizontalStackLayout Grid.Row="5" Padding="0,10,0,10" Spacing="5">

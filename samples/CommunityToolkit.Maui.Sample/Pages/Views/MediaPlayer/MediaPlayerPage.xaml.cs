@@ -19,16 +19,17 @@ public partial class MediaPlayerPage : BasePage<MediaPlayerViewModel>
 
 	void MediaPlayer_PropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
-		if (e.PropertyName == "Duration")
+		if (e.PropertyName == nameof(mediaPlayer.Duration))
 		{
-			logger.LogInformation($"Duration: {mediaPlayer.Duration}");
+			logger.LogInformation("Duration: {newDuration}", mediaPlayer.Duration);
 			positionSlider.Maximum = mediaPlayer.Duration.TotalSeconds;
 		}
 	}
 
 	void OnMediaOpened(object? sender, EventArgs e) => logger.LogInformation("Media opened.");
 
-	void OnStateChanged(object? sender, MediaStateChangedEventArgs e) => logger.LogInformation("Media State Changed. Old State: {PreviousState}, New State: {NewState}", e.PreviousState, e.NewState);
+	void OnStateChanged(object? sender, MediaStateChangedEventArgs e) =>
+		logger.LogInformation("Media State Changed. Old State: {PreviousState}, New State: {NewState}", e.PreviousState, e.NewState);
 
 	void OnMediaFailed(object? sender, MediaFailedEventArgs e) => logger.LogInformation("Media failed. Error: {ErrorMessage}", e.ErrorMessage);
 
@@ -154,4 +155,18 @@ public partial class MediaPlayerPage : BasePage<MediaPlayerViewModel>
 	{
 		mediaPlayer.Pause();
     }
+
+	void Button_Clicked(object? sender, EventArgs e)
+	{
+		if (string.IsNullOrWhiteSpace(customSourceEntry.Text))
+		{
+			DisplayAlert("Error Loading URL Source", "No value was found to load as a media source. " +
+				"When you do enter a value, make sure it's a valid URL. No additional validation is done.",
+				"OK");
+
+			return;
+		}
+
+		mediaPlayer.Source = MediaSource.FromUri(customSourceEntry.Text);
+	}
 }

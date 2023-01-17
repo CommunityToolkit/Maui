@@ -32,7 +32,9 @@ public class MauiMediaPlayer : UIView
 		playerViewController.AdditionalSafeAreaInsets =
 			new UIEdgeInsets(insets.Top * -1, insets.Left, insets.Bottom * -1, insets.Right);
 
+
 		// Add the View from the AVPlayerViewController to the parent ViewController
+		viewController.AddChildViewController(playerViewController);
 		viewController.View.AddSubview(playerViewController.View);
 #endif
 
