@@ -75,13 +75,13 @@ public class MediaPlayer : View, IMediaPlayer
 	/// <summary>
 	/// Backing store for the <see cref="MediaHeight"/> property.
 	/// </summary>
-	public static readonly BindableProperty VideoHeightProperty =
+	public static readonly BindableProperty MediaHeightProperty =
 		BindableProperty.Create(nameof(MediaHeight), typeof(int), typeof(MediaPlayer));
 
 	/// <summary>
 	/// Backing store for the <see cref="MediaWidth"/> property.
 	/// </summary>
-	public static readonly BindableProperty VideoWidthProperty =
+	public static readonly BindableProperty MediaWidthProperty =
 		BindableProperty.Create(nameof(MediaWidth), typeof(int), typeof(MediaPlayer));
 
 	/// <summary>
@@ -261,8 +261,8 @@ public class MediaPlayer : View, IMediaPlayer
 	/// <remarks>Not reported for non-visual media.</remarks>
 	public int MediaHeight
 	{
-		get => (int)GetValue(VideoHeightProperty);
-		internal set => SetValue(VideoHeightProperty, value);
+		get => (int)GetValue(MediaHeightProperty);
+		internal set => SetValue(MediaHeightProperty, value);
 	}
 
 	/// <summary>
@@ -272,8 +272,8 @@ public class MediaPlayer : View, IMediaPlayer
 	/// <remarks>Not reported for non-visual media.</remarks>
 	public int MediaWidth
 	{
-		get => (int)GetValue(VideoWidthProperty);
-		internal set => SetValue(VideoWidthProperty, value);
+		get => (int)GetValue(MediaWidthProperty);
+		internal set => SetValue(MediaWidthProperty, value);
 	}
 
 	/// <summary>
