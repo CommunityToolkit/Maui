@@ -21,7 +21,7 @@ public partial class Snackbar : ISnackbar
 	}
 
 	/// <summary>
-	/// Returns true if the <see cref="Snackbar"/> is currently visible.
+	/// Returns <see langword="true"/> if the <see cref="Snackbar"/> is currently visible.
 	/// </summary>
 	public static bool IsShown { get; private set; }
 
@@ -52,7 +52,7 @@ public partial class Snackbar : ISnackbar
 	public IView? Anchor { get; init; }
 
 	/// <summary>
-	/// Event occurred when <see cref="IsShown"/> changes.
+	/// Occurs when <see cref="IsShown"/> changes.
 	/// </summary>
 	public static event EventHandler Shown
 	{
@@ -61,7 +61,7 @@ public partial class Snackbar : ISnackbar
 	}
 
 	/// <summary>
-	/// Event occurred when Snackbar dismisses.
+	/// Occurs when Snackbar is dismissed.
 	/// </summary>
 	public static event EventHandler Dismissed
 	{
