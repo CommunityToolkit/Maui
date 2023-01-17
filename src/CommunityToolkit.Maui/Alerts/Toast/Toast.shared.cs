@@ -72,36 +72,28 @@ public partial class Toast : IToast
 	/// <summary>
 	/// Show Toast
 	/// </summary>
-#if WINDOWS
-	public virtual async Task Show(CancellationToken token = default)
-	{
-		await ShowPlatform(token);
-		await Task.CompletedTask;
-	}
-#else
 	public virtual Task Show(CancellationToken token = default)
 	{
+#if WINDOWS
+		return ShowPlatform(token);
+#else
 		ShowPlatform(token);
 		return Task.CompletedTask;
-	}
 #endif
+	}
 	
 	/// <summary>
 	/// Dismiss Toast
 	/// </summary>
-#if WINDOWS
-	public virtual async Task Dismiss(CancellationToken token = default)
-	{
-		await DismissPlatform(token);
-		await Task.CompletedTask;
-	}
-#else
 	public virtual Task Dismiss(CancellationToken token = default)
 	{
+#if WINDOWS
+		return DismissPlatform(token);
+#else
 		DismissPlatform(token);
 		return Task.CompletedTask;
-	}
 #endif
+	}
 
 	/// <summary>
 	/// Dispose Toast

@@ -28,14 +28,16 @@ public partial class Toast
 
 	static async Task DismissPlatform(CancellationToken token)
 	{
-		if (PlatformToast is not null)
+		if (PlatformToast is null)
 		{
-			token.ThrowIfCancellationRequested();
-			await AppNotificationManager.Default.RemoveAllAsync();
-
-			PlatformToast.Expiration = DateTimeOffset.Now;
-			PlatformToast = null;
+			return;
 		}
+
+		token.ThrowIfCancellationRequested();
+		await AppNotificationManager.Default.RemoveAllAsync();
+
+		PlatformToast.Expiration = DateTimeOffset.Now;
+		PlatformToast = null;
 	}
 
 	async Task ShowPlatform(CancellationToken token)
