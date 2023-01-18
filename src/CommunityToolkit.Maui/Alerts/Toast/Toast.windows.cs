@@ -1,7 +1,7 @@
-﻿using Microsoft.Windows.AppNotifications;
-using Microsoft.Windows.AppNotifications.Builder;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using CommunityToolkit.Maui.Core;
+using Microsoft.Windows.AppNotifications;
+using Microsoft.Windows.AppNotifications.Builder;
 
 namespace CommunityToolkit.Maui.Alerts;
 
@@ -51,7 +51,7 @@ public partial class Toast
 		PlatformToast.Expiration = DateTimeOffset.Now.Add(GetDuration(Duration));
 		AppNotificationManager.Default.Show(PlatformToast);
 	}
-	
+
 	static AppNotificationDuration GetAppNotificationDuration(ToastDuration duration) => duration switch
 	{
 		ToastDuration.Short => AppNotificationDuration.Default,

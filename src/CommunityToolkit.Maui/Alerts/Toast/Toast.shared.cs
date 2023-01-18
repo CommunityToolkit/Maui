@@ -81,7 +81,7 @@ public partial class Toast : IToast
 		return Task.CompletedTask;
 #endif
 	}
-	
+
 	/// <summary>
 	/// Dismiss Toast
 	/// </summary>
