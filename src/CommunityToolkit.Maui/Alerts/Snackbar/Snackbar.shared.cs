@@ -8,8 +8,8 @@ public partial class Snackbar : ISnackbar
 	static readonly WeakEventManager weakEventManager = new();
 
 	bool isDisposed;
-	string text = string.Empty;
-	string actionButtonText = AlertDefaults.ActionButtonText;
+	readonly string text = string.Empty;
+	readonly string actionButtonText = AlertDefaults.ActionButtonText;
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="Snackbar"/>
@@ -20,7 +20,9 @@ public partial class Snackbar : ISnackbar
 		VisualOptions = new SnackbarOptions();
 	}
 
-	/// <inheritdoc/>
+	/// <summary>
+	/// Returns <see langword="true"/> if the <see cref="Snackbar"/> is currently visible.
+	/// </summary>
 	public static bool IsShown { get; private set; }
 
 	/// <inheritdoc/>
@@ -49,14 +51,18 @@ public partial class Snackbar : ISnackbar
 	/// <inheritdoc/>
 	public IView? Anchor { get; init; }
 
-	/// <inheritdoc/>
+	/// <summary>
+	/// Occurs when <see cref="IsShown"/> changes.
+	/// </summary>
 	public static event EventHandler Shown
 	{
 		add => weakEventManager.AddEventHandler(value);
 		remove => weakEventManager.RemoveEventHandler(value);
 	}
 
-	/// <inheritdoc/>
+	/// <summary>
+	/// Occurs when Snackbar is dismissed.
+	/// </summary>
 	public static event EventHandler Dismissed
 	{
 		add => weakEventManager.AddEventHandler(value);
