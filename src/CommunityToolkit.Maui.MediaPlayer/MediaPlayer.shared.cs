@@ -6,7 +6,7 @@ using CommunityToolkit.Maui.MediaPlayer.Converters;
 namespace CommunityToolkit.Maui.Views;
 
 /// <summary>
-/// Represents an object that to render audio and video to the display.
+/// Represents an object that is used to render audio and video to the display.
 /// </summary>
 public class MediaPlayer : View, IMediaPlayer
 {
