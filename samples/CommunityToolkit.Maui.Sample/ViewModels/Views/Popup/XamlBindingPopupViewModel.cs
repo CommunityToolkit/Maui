@@ -1,9 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
-
-[INotifyPropertyChanged]
-public sealed partial class XamlBindingPopupViewModel
+public sealed partial class XamlBindingPopupViewModel : BaseViewModel
 {
 	public string Title { get; } = "Xaml Binding Popup";
 
