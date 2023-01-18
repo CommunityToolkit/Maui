@@ -10,7 +10,4 @@ public partial class CharactersValidationBehaviorPage : BasePage<CharactersValid
 	{
 		InitializeComponent();
 	}
-
-	public IReadOnlyList<CharacterType> CharacterTypes { get; } =
-		Enum.GetValues(typeof(CharacterType)).Cast<CharacterType>().ToList();
 }
