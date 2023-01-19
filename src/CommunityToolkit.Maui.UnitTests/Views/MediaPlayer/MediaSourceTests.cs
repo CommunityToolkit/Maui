@@ -1,9 +1,9 @@
 ﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.MediaPlayer;
+using CommunityToolkit.Maui.MediaElement;
 using FluentAssertions;
 using Xunit;
 
-namespace CommunityToolkit.Maui.UnitTests.Views.MediaPlayer;
+namespace CommunityToolkit.Maui.UnitTests.Views.MediaElement;
 
 public class MediaSourceTests
 {
@@ -27,7 +27,7 @@ public class MediaSourceTests
 	[Fact]
 	public void MediaSourceFromResourceShouldBeResourceMediaSource()
 	{
-		var mediaPlayer = new Maui.Views.MediaPlayer();
+		var mediaElement = new Maui.Views.MediaElement();
 		var mediaSource = MediaSource.FromResource("file.mp4");
 
 		mediaSource.Should().BeAssignableTo<ResourceMediaSource>();

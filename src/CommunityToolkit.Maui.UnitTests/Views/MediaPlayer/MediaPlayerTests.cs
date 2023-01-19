@@ -1,56 +1,56 @@
 ﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.MediaPlayer;
+using CommunityToolkit.Maui.MediaElement;
 using FluentAssertions;
 using Xunit;
 
-namespace CommunityToolkit.Maui.UnitTests.Views.MediaPlayer;
+namespace CommunityToolkit.Maui.UnitTests.Views.MediaElement;
 
-public class MediaPlayerTests : BaseHandlerTest
+public class MediaElementTests : BaseHandlerTest
 {
-	public MediaPlayerTests()
+	public MediaElementTests()
 	{
-		Assert.IsAssignableFrom<IMediaPlayer>(new Maui.Views.MediaPlayer());
+		Assert.IsAssignableFrom<IMediaElement>(new Maui.Views.MediaElement());
 	}
 
 	[Fact]
 	public void BindingContextPropagation()
 	{
 		object context = new();
-		Maui.Views.MediaPlayer mediaPlayer = new();
+		Maui.Views.MediaElement mediaElement = new();
 		FileMediaSource mediaSource = new();
 
-		mediaPlayer.Source = mediaSource;
+		mediaElement.Source = mediaSource;
 
-		mediaPlayer.BindingContext = context;
+		mediaElement.BindingContext = context;
 
 		mediaSource.BindingContext.Should().Be(context);
 	}
 
 	[Fact]
-	public void MediaPlayerShouldBeAssignedToIMediaPlayer()
+	public void MediaElementShouldBeAssignedToIMediaElement()
 	{
-		new Maui.Views.MediaPlayer().Should().BeAssignableTo<IMediaPlayer>();
+		new Maui.Views.MediaElement().Should().BeAssignableTo<IMediaElement>();
 	}
 
 	[Fact]
-	public void MediaPlayerVolumeShouldNotBeMoreThan1()
+	public void MediaElementVolumeShouldNotBeMoreThan1()
 	{
-		Maui.Views.MediaPlayer mediaPlayer = new();
+		Maui.Views.MediaElement mediaElement = new();
 
-		mediaPlayer.Invoking(player =>
+		mediaElement.Invoking(player =>
 		{
-			mediaPlayer.Volume = 2d;
+			mediaElement.Volume = 2d;
 		}).Should().Throw<ArgumentException>();
 	}
 
 	[Fact]
-	public void MediaPlayerVolumeShouldNotBeLessThan0()
+	public void MediaElementVolumeShouldNotBeLessThan0()
 	{
-		Maui.Views.MediaPlayer mediaPlayer = new();
+		Maui.Views.MediaElement mediaElement = new();
 
-		mediaPlayer.Invoking(player =>
+		mediaElement.Invoking(player =>
 		{
-			mediaPlayer.Volume = -2d;
+			mediaElement.Volume = -2d;
 		}).Should().Throw<ArgumentException>();
 	}
 }

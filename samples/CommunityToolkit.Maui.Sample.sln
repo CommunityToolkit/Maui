@@ -32,11 +32,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{9F7D54C0
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.Analyzers.UnitTests", "..\src\CommunityToolkit.Maui.Analyzers.UnitTests\CommunityToolkit.Maui.Analyzers.UnitTests.csproj", "{60B976B2-F3FA-494E-A28B-7BED2EAE990E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.MediaPlayer", "..\src\CommunityToolkit.Maui.MediaPlayer\CommunityToolkit.Maui.MediaPlayer.csproj", "{A651D248-B102-4B8B-90C2-3C4C28425EFF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.MediaElement", "..\src\CommunityToolkit.Maui.MediaElement\CommunityToolkit.Maui.MediaElement.csproj", "{A651D248-B102-4B8B-90C2-3C4C28425EFF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.MediaPlayer.Analyzers", "..\src\CommunityToolkit.Maui.MediaPlayer.Analyzers\CommunityToolkit.Maui.MediaPlayer.Analyzers.csproj", "{85B875BD-62F6-4EC3-BCFF-4DC25E94BCAE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.MediaElement.Analyzers", "..\src\CommunityToolkit.Maui.MediaElement.Analyzers\CommunityToolkit.Maui.MediaElement.Analyzers.csproj", "{85B875BD-62F6-4EC3-BCFF-4DC25E94BCAE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.MediaPlayer.Analyzers.CodeFixes", "..\src\CommunityToolkit.Maui.MediaPlayer.Analyzers.CodeFixes\CommunityToolkit.Maui.MediaPlayer.Analyzers.CodeFixes.csproj", "{215083C8-D9CA-48FA-8B0A-1D21A989D055}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes", "..\src\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj", "{215083C8-D9CA-48FA-8B0A-1D21A989D055}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

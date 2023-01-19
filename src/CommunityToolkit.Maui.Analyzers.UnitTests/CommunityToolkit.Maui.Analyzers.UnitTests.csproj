@@ -33,7 +33,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CommunityToolkit.Maui.Analyzers.CodeFixes\CommunityToolkit.Maui.Analyzers.CodeFixes.csproj" />
-    <ProjectReference Include="..\CommunityToolkit.Maui.MediaPlayer.Analyzers.CodeFixes\CommunityToolkit.Maui.MediaPlayer.Analyzers.CodeFixes.csproj" />
+    <ProjectReference Include="..\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj" />
   </ItemGroup>
 
 </Project>

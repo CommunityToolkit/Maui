@@ -1,6 +1,6 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Markup;
-using CommunityToolkit.Maui.MediaPlayer;
+using CommunityToolkit.Maui.MediaElement;
 using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.Pages;
 using CommunityToolkit.Maui.Sample.Pages.Alerts;
@@ -44,7 +44,7 @@ public static class MauiProgram
 								})
 #endif
 								.UseMauiCommunityToolkitMarkup()
-								.UseMauiCommunityToolkitMediaPlayer()
+								.UseMauiCommunityToolkitMediaElement()
 								.UseMauiApp<App>();
 
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>()
@@ -165,7 +165,7 @@ public static class MauiProgram
 		// Add Views Pages + ViewModels
 		services.AddTransientWithShellRoute<DrawingViewPage, DrawingViewViewModel>();
 		services.AddTransientWithShellRoute<ExpanderPage, ExpanderViewModel>();
-		services.AddTransientWithShellRoute<MediaPlayerPage, MediaPlayerViewModel>();
+		services.AddTransientWithShellRoute<MediaElementPage, MediaElementViewModel>();
 		services.AddTransientWithShellRoute<MultiplePopupPage, MultiplePopupViewModel>();
 		services.AddTransientWithShellRoute<PopupAnchorPage, PopupAnchorViewModel>();
 		services.AddTransientWithShellRoute<PopupPositionPage, PopupPositionViewModel>();

@@ -1,13 +1,13 @@
-﻿using CommunityToolkit.Maui.MediaPlayer.Analyzers;
+﻿using CommunityToolkit.Maui.MediaElement.Analyzers;
 using Xunit;
 
 namespace CommunityToolkit.Maui.Analyzers.UnitTests;
 
-public class UseCommunityToolkitMediaPlayerInitializationAnalyzerTests
+public class UseCommunityToolkitMediaElementInitializationAnalyzerTests
 {
 	[Fact]
-	public void UseCommunityToolkitMediaPlayerInitializationAnalyzerId()
+	public void UseCommunityToolkitMediaElementInitializationAnalyzerId()
 	{
-		Assert.Equal("MCTME001", UseCommunityToolkitMediaPlayerInitializationAnalyzer.DiagnosticId);
+		Assert.Equal("MCTME001", UseCommunityToolkitMediaElementInitializationAnalyzer.DiagnosticId);
 	}
 }

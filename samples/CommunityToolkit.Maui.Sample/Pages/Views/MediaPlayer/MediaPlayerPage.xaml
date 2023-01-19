@@ -6,10 +6,10 @@
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
              xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Converters"
-             x:TypeArguments="viewModels:MediaPlayerViewModel"
-             x:DataType="viewModels:MediaPlayerViewModel"
-             x:Class="CommunityToolkit.Maui.Sample.Pages.Views.MediaPlayerPage"
-             Title="MediaPlayer"
+             x:TypeArguments="viewModels:MediaElementViewModel"
+             x:DataType="viewModels:MediaElementViewModel"
+             x:Class="CommunityToolkit.Maui.Sample.Pages.Views.MediaElementPage"
+             Title="MediaElement"
              Unloaded="BasePage_Unloaded">
     <pages:BasePage.Resources>
         <toolkit:TimeSpanToSecondsConverter x:Key="TimeSpanConverter" />
@@ -28,8 +28,8 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <toolkit:MediaPlayer
-                x:Name="mediaPlayer"
+            <toolkit:MediaElement
+                x:Name="mediaElement"
                 ShouldAutoPlay="True"
                 Source="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
                 MediaEnded="OnMediaEnded"
@@ -43,9 +43,9 @@
                 <Label HorizontalOptions="Center">
                     <Label.Text>
                         <MultiBinding StringFormat="{}Position: {0}/{1} - Current State: {2}">
-                            <Binding Path="Position" Source="{x:Reference mediaPlayer}" Converter="{StaticResource SecondsToStringConverter}" />
-                            <Binding Path="Duration" Source="{x:Reference mediaPlayer}" Converter="{StaticResource SecondsToStringConverter}" />
-                            <Binding Path="CurrentState" Source="{x:Reference mediaPlayer}" />
+                            <Binding Path="Position" Source="{x:Reference mediaElement}" Converter="{StaticResource SecondsToStringConverter}" />
+                            <Binding Path="Duration" Source="{x:Reference mediaElement}" Converter="{StaticResource SecondsToStringConverter}" />
+                            <Binding Path="CurrentState" Source="{x:Reference mediaElement}" />
                         </MultiBinding>
                     </Label.Text>
                 </Label>
@@ -93,7 +93,7 @@
                     <Label.FormattedText>
                         <FormattedString>
                             <Span Text="Speed:" />
-                            <Span Text="{Binding Source={x:Reference mediaPlayer}, Path=Speed}" />
+                            <Span Text="{Binding Source={x:Reference mediaElement}, Path=Speed}" />
                         </FormattedString>
                     </Label.FormattedText>
                 </Label>
@@ -107,7 +107,7 @@
                     <Label.FormattedText>
                         <FormattedString>
                             <Span Text="Volume:" />
-                            <Span Text="{Binding Source={x:Reference mediaPlayer}, Path=Volume, StringFormat='{}{0:P0}'}" />
+                            <Span Text="{Binding Source={x:Reference mediaElement}, Path=Volume, StringFormat='{}{0:P0}'}" />
                         </FormattedString>
                     </Label.FormattedText>
                 </Label>
@@ -122,7 +122,7 @@
                         Margin="0,0,5,0"
                         ThumbColor="White"
                         OnColor="LimeGreen"
-                        IsToggled="{Binding Source={x:Reference mediaPlayer}, Path=ShouldShowPlaybackControls}" />
+                        IsToggled="{Binding Source={x:Reference mediaElement}, Path=ShouldShowPlaybackControls}" />
                     <Label
                         VerticalOptions="Center"
                         Text="Show playback controls" />
@@ -132,7 +132,7 @@
                         Margin="0,0,5,0"
                         ThumbColor="White"
                         OnColor="LimeGreen"
-                        IsToggled="{Binding Source={x:Reference mediaPlayer}, Path=ShouldLoopPlayback}" />
+                        IsToggled="{Binding Source={x:Reference mediaElement}, Path=ShouldLoopPlayback}" />
                     <Label
                         VerticalOptions="Center"
                         Text="Loop media" />
@@ -142,7 +142,7 @@
                         Margin="0,0,5,0"
                         ThumbColor="White"
                         OnColor="LimeGreen"
-                        IsToggled="{Binding Source={x:Reference mediaPlayer}, Path=ShouldKeepScreenOn}" />
+                        IsToggled="{Binding Source={x:Reference mediaElement}, Path=ShouldKeepScreenOn}" />
                     <Label
                         VerticalOptions="Center"
                         Text="Keep screen on" />
