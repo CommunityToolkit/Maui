@@ -1,7 +1,7 @@
 ﻿using Tizen.NUI.BaseComponents;
 using Tizen.UIExtensions.NUI;
 
-namespace CommunityToolkit.Maui.MediaElement.PlatformView;
+namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// The user-interface element that represents the <see cref="MediaElement"/> on Tizen.

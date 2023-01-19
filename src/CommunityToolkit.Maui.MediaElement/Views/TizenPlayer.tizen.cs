@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.MediaElement;
+﻿namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 ///	The native multimedia player that controls the native video view on Tizen.

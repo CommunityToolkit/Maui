@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using UriTypeConverter = Microsoft.Maui.Controls.UriTypeConverter;
 
-namespace CommunityToolkit.Maui.MediaElement;
+namespace CommunityToolkit.Maui.Views;
 
 /// <summary>
 /// Represents a source, loaded from a remote URI, that can be played by <see cref="MediaElement"/>.

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.MediaElement;
+﻿using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Core;
 
@@ -8,14 +9,14 @@ namespace CommunityToolkit.Maui.Core;
 public interface IMediaElement : IView
 {
 	/// <summary>
-	/// The current state of the <see cref="Views.MediaElement"/>.
+	/// The current state of the <see cref="MediaElement"/>.
 	/// </summary>
 	MediaElementState CurrentState { get; }
 
 	/// <summary>
 	/// Triggers a <see cref="CurrentState"/> change.
 	/// </summary>
-	/// <param name="newState">The new state the <see cref="Views.MediaElement"/> transitioned to.</param>
+	/// <param name="newState">The new state the <see cref="MediaElement"/> transitioned to.</param>
 	internal void CurrentStateChanged(MediaElementState newState);
 
 	/// <summary>
@@ -62,7 +63,7 @@ public interface IMediaElement : IView
 	event EventHandler<MediaPositionChangedEventArgs> PositionChanged;
 
 	/// <summary>
-	/// Triggers the <see cref="Views.MediaElement.SeekCompleted"/> event.
+	/// Triggers the <see cref="MediaElement.SeekCompleted"/> event.
 	/// </summary>
 	internal void SeekCompleted();
 

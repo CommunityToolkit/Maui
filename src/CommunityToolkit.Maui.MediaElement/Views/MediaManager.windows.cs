@@ -4,8 +4,10 @@ using Windows.Storage;
 using Windows.System.Display;
 using WinMediaSource = Windows.Media.Core.MediaSource;
 using WindowsMediaElement = Windows.Media.Playback.MediaPlayer;
+using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Views;
 
-namespace CommunityToolkit.Maui.MediaElement;
+namespace CommunityToolkit.Maui.Core.Views;
 
 partial class MediaManager : IDisposable
 {

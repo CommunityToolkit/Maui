@@ -1,7 +1,8 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using CommunityToolkit.Maui.Views;
+using Microsoft.UI.Xaml.Controls;
 using Grid = Microsoft.UI.Xaml.Controls.Grid;
 
-namespace CommunityToolkit.Maui.MediaElement.PlatformView;
+namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// The user-interface element that represents the <see cref="MediaElement"/> on Windows.

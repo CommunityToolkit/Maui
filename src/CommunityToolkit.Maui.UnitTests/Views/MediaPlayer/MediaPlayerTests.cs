@@ -1,5 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.MediaElement;
+using CommunityToolkit.Maui.Views;
 using FluentAssertions;
 using Xunit;
 

@@ -7,9 +7,11 @@ using Com.Google.Android.Exoplayer2.Text;
 using Com.Google.Android.Exoplayer2.Trackselection;
 using Com.Google.Android.Exoplayer2.UI;
 using Com.Google.Android.Exoplayer2.Video;
+using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 
-namespace CommunityToolkit.Maui.MediaElement;
+namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {

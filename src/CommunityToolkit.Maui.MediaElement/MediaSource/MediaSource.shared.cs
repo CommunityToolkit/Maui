@@ -1,8 +1,7 @@
 ﻿using System.ComponentModel;
-using CommunityToolkit.Maui.MediaElement.Converters;
-using Microsoft.Maui.Controls.Internals;
+using CommunityToolkit.Maui.Converters;
 
-namespace CommunityToolkit.Maui.MediaElement;
+namespace CommunityToolkit.Maui.Views;
 
 /// <summary>
 /// Represents a source that can be played by <see cref="MediaElement"/>.

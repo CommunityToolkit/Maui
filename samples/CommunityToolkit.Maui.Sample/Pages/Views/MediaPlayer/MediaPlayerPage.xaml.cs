@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
-using CommunityToolkit.Maui.MediaElement;
+using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
+using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;

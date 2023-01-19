@@ -1,4 +1,8 @@
-﻿namespace CommunityToolkit.Maui.MediaElement;
+﻿using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Core.Views;
+using CommunityToolkit.Maui.Views;
+
+namespace CommunityToolkit.Maui.Core.Handlers;
 
 /// <summary>
 /// Handler class for <see cref="MediaElement"/>.
@@ -12,28 +16,28 @@ public partial class MediaElementHandler
 	/// <summary>
 	/// The default property mapper for this handler.
 	/// </summary>
-	public static IPropertyMapper<Views.MediaElement, MediaElementHandler> PropertyMapper = new PropertyMapper<Views.MediaElement, MediaElementHandler>(ViewMapper)
+	public static IPropertyMapper<MediaElement, MediaElementHandler> PropertyMapper = new PropertyMapper<MediaElement, MediaElementHandler>(ViewMapper)
 	{
-		[nameof(Core.IMediaElement.ShouldShowPlaybackControls)] = MapShouldShowPlaybackControls,
-		[nameof(Core.IMediaElement.Source)] = MapSource,
-		[nameof(Core.IMediaElement.Speed)] = MapSpeed,
-		[nameof(Core.IMediaElement.Volume)] = MapVolume,
-		[nameof(Core.IMediaElement.ShouldKeepScreenOn)] = MapShouldKeepScreenOn,
+		[nameof(IMediaElement.ShouldShowPlaybackControls)] = MapShouldShowPlaybackControls,
+		[nameof(IMediaElement.Source)] = MapSource,
+		[nameof(IMediaElement.Speed)] = MapSpeed,
+		[nameof(IMediaElement.Volume)] = MapVolume,
+		[nameof(IMediaElement.ShouldKeepScreenOn)] = MapShouldKeepScreenOn,
 #if ANDROID || WINDOWS || TIZEN
-		[nameof(Core.IMediaElement.ShouldLoopPlayback)] = ShouldLoopPlayback
+		[nameof(IMediaElement.ShouldLoopPlayback)] = ShouldLoopPlayback
 #endif
 	};
 
 	/// <summary>
 	/// The default command mapper for this handler.
 	/// </summary>
-	public static CommandMapper<Views.MediaElement, MediaElementHandler> CommandMapper = new(ViewCommandMapper)
+	public static CommandMapper<MediaElement, MediaElementHandler> CommandMapper = new(ViewCommandMapper)
 	{
-		[nameof(Views.MediaElement.StatusUpdated)] = MapStatusUpdated,
-		[nameof(Views.MediaElement.PlayRequested)] = MapPlayRequested,
-		[nameof(Views.MediaElement.PauseRequested)] = MapPauseRequested,
-		[nameof(Views.MediaElement.SeekRequested)] = MapSeekRequested,
-		[nameof(Views.MediaElement.StopRequested)] = MapStopRequested
+		[nameof(MediaElement.StatusUpdated)] = MapStatusUpdated,
+		[nameof(MediaElement.PlayRequested)] = MapPlayRequested,
+		[nameof(MediaElement.PauseRequested)] = MapPauseRequested,
+		[nameof(MediaElement.SeekRequested)] = MapSeekRequested,
+		[nameof(MediaElement.StopRequested)] = MapStopRequested
 	};
 
 	/// <summary>
@@ -57,34 +61,34 @@ public partial class MediaElementHandler
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
 	/// <summary>
-	/// Maps the <see cref="Core.IMediaElement.ShouldShowPlaybackControls"/> property between the abstract
-	/// <see cref="Views.MediaElement"/> and platform counterpart.
+	/// Maps the <see cref="IMediaElement.ShouldShowPlaybackControls"/> property between the abstract
+	/// <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
-	/// <param name="MediaElement">The associated <see cref="Views.MediaElement"/> instance.</param>
-	public static void MapShouldShowPlaybackControls(MediaElementHandler handler, Views.MediaElement MediaElement)
+	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	public static void MapShouldShowPlaybackControls(MediaElementHandler handler, MediaElement MediaElement)
 	{
 		handler.mediaManager?.UpdateShouldShowPlaybackControls();
 	}
 
 	/// <summary>
-	/// Maps the <see cref="Core.IMediaElement.Source"/> property between the abstract
+	/// Maps the <see cref="IMediaElement.Source"/> property between the abstract
 	/// <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
 	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
-	public static void MapSource(MediaElementHandler handler, Views.MediaElement MediaElement)
+	public static void MapSource(MediaElementHandler handler, MediaElement MediaElement)
 	{
 		handler.mediaManager?.UpdateSource();
 	}
 
 	/// <summary>
 	/// Maps the <see cref="Core.IMediaElement.Speed"/> property between the abstract
-	/// <see cref="Views.MediaElement"/> and platform counterpart.
+	/// <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
-	/// <param name="MediaElement">The associated <see cref="Views.MediaElement"/> instance.</param>
-	public static void MapSpeed(MediaElementHandler handler, Views.MediaElement MediaElement)
+	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	public static void MapSpeed(MediaElementHandler handler, MediaElement MediaElement)
 	{
 		handler.mediaManager?.UpdateSpeed();
 	}
@@ -96,7 +100,7 @@ public partial class MediaElementHandler
 	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> is not used.</remarks>
-	public static void MapStatusUpdated(MediaElementHandler handler, Views.MediaElement MediaElement, object? args)
+	public static void MapStatusUpdated(MediaElementHandler handler, MediaElement MediaElement, object? args)
 	{
 		handler.mediaManager?.UpdateStatus();
 	}
@@ -107,7 +111,7 @@ public partial class MediaElementHandler
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
 	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
-	public static void MapVolume(MediaElementHandler handler, Views.MediaElement MediaElement)
+	public static void MapVolume(MediaElementHandler handler, MediaElement MediaElement)
 	{
 		handler.mediaManager?.UpdateVolume();
 	}
@@ -118,7 +122,7 @@ public partial class MediaElementHandler
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
 	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
-	public static void MapShouldKeepScreenOn(MediaElementHandler handler, Views.MediaElement MediaElement)
+	public static void MapShouldKeepScreenOn(MediaElementHandler handler, MediaElement MediaElement)
 	{
 		handler.mediaManager?.UpdateShouldKeepScreenOn();
 	}
@@ -130,7 +134,7 @@ public partial class MediaElementHandler
 	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> is not used.</remarks>
-	public static void MapPlayRequested(MediaElementHandler handler, Views.MediaElement MediaElement, object? args)
+	public static void MapPlayRequested(MediaElementHandler handler, MediaElement MediaElement, object? args)
 	{
 		handler.mediaManager?.Play();
 	}
@@ -142,7 +146,7 @@ public partial class MediaElementHandler
 	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> is not used.</remarks>
-	public static void MapPauseRequested(MediaElementHandler handler, Views.MediaElement MediaElement, object? args)
+	public static void MapPauseRequested(MediaElementHandler handler, MediaElement MediaElement, object? args)
 	{
 		handler.mediaManager?.Pause();
 	}
@@ -154,7 +158,7 @@ public partial class MediaElementHandler
 	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> should be of type <see cref="MediaSeekRequestedEventArgs"/>, otherwise nothing happens.</remarks>
-	public static void MapSeekRequested(MediaElementHandler handler, Views.MediaElement MediaElement, object? args)
+	public static void MapSeekRequested(MediaElementHandler handler, MediaElement MediaElement, object? args)
 	{
 		ArgumentNullException.ThrowIfNull(args);
 
@@ -169,13 +173,13 @@ public partial class MediaElementHandler
 	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> is not used.</remarks>
-	public static void MapStopRequested(MediaElementHandler handler, Views.MediaElement MediaElement, object? args)
+	public static void MapStopRequested(MediaElementHandler handler, MediaElement MediaElement, object? args)
 	{
 		handler.mediaManager?.Stop();
 	}
 
 	/// <summary>
-	/// Releases the managed and unmanaged resources used by the <see cref="Views.MediaElement"/>.
+	/// Releases the managed and unmanaged resources used by the <see cref="MediaElement"/>.
 	/// </summary>
 	public void Dispose()
 	{
@@ -184,7 +188,7 @@ public partial class MediaElementHandler
 	}
 
 	/// <summary>
-	/// Releases the unmanaged resources used by the <see cref="Views.MediaElement"/> and optionally releases the managed resources.
+	/// Releases the unmanaged resources used by the <see cref="MediaElement"/> and optionally releases the managed resources.
 	/// </summary>
 	/// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
 	protected virtual void Dispose(bool disposing)

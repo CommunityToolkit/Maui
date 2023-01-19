@@ -2,7 +2,7 @@
 using Tizen.Multimedia;
 using Tizen.NUI.BaseComponents;
 
-namespace CommunityToolkit.Maui.MediaElement;
+namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : IDisposable
 {

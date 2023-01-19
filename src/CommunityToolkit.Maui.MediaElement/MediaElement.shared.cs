@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.MediaElement;
-using CommunityToolkit.Maui.MediaElement.Converters;
+using CommunityToolkit.Maui.Converters;
+using CommunityToolkit.Maui.Core.Primitives;
 
 namespace CommunityToolkit.Maui.Views;
 

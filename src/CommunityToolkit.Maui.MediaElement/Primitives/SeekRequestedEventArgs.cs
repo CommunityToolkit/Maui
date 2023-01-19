@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.MediaElement;
+﻿namespace CommunityToolkit.Maui.Core.Primitives;
 
 /// <summary>
 /// Represents event data for when a seek operation is requested on media.

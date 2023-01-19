@@ -3,8 +3,9 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using Com.Google.Android.Exoplayer2.UI;
+using CommunityToolkit.Maui.Views;
 
-namespace CommunityToolkit.Maui.MediaElement.PlatformView;
+namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// The user-interface element that represents the <see cref="MediaElement"/> on Android.

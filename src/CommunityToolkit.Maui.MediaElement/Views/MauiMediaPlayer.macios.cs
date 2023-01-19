@@ -1,7 +1,8 @@
 ﻿using AVKit;
+using CommunityToolkit.Maui.Views;
 using UIKit;
 
-namespace CommunityToolkit.Maui.MediaElement.PlatformView;
+namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// The user-interface element that represents the <see cref="MediaElement"/> on iOS and macOS.

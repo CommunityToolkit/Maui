@@ -1,7 +1,8 @@
 ﻿using System.ComponentModel;
 using System.Globalization;
+using CommunityToolkit.Maui.Views;
 
-namespace CommunityToolkit.Maui.MediaElement.Converters;
+namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>
 /// A <see cref="TypeConverter"/> specific to converting a string value to a <see cref="MediaSource"/>.

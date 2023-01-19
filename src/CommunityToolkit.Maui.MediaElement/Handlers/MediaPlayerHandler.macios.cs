@@ -1,9 +1,10 @@
-﻿using CommunityToolkit.Maui.MediaElement.PlatformView;
+﻿using CommunityToolkit.Maui.Core.Views;
+using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Handlers;
 
-namespace CommunityToolkit.Maui.MediaElement;
+namespace CommunityToolkit.Maui.Core.Handlers;
 
-public partial class MediaElementHandler : ViewHandler<Views.MediaElement, MauiMediaElement>, IDisposable
+public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaElement>, IDisposable
 {
 	/// <inheritdoc/>
 	/// <exception cref="NullReferenceException">Thrown if <see cref="MauiContext"/> is <see langword="null"/>.</exception>

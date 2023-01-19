@@ -13,7 +13,7 @@ global using PlatformMediaElement = CommunityToolkit.Maui.MediaElement.TizenPlay
 using Microsoft.Extensions.Logging;
 using CommunityToolkit.Maui.Core;
 
-namespace CommunityToolkit.Maui.MediaElement;
+namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// A class that acts as a manager for an <see cref="IMediaElement"/> instance.

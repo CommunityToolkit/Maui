@@ -1,4 +1,7 @@
-﻿namespace CommunityToolkit.Maui.MediaElement;
+﻿using CommunityToolkit.Maui.Core.Handlers;
+using CommunityToolkit.Maui.Views;
+
+namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// This class contains MediaElement's <see cref="MauiAppBuilder"/> extensions.
@@ -14,7 +17,7 @@ public static class AppBuilderExtensions
 	{
 		builder.ConfigureMauiHandlers(h =>
 		{
-			h.AddHandler<Views.MediaElement, MediaElementHandler>();
+			h.AddHandler<MediaElement, MediaElementHandler>();
 		});
 
 		return builder;

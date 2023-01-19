@@ -1,11 +1,13 @@
 ﻿using AVFoundation;
 using AVKit;
+using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Views;
 using CoreFoundation;
 using CoreMedia;
 using Foundation;
 using Microsoft.Extensions.Logging;
 
-namespace CommunityToolkit.Maui.MediaElement;
+namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : IDisposable
 {
@@ -21,7 +23,7 @@ public partial class MediaManager : IDisposable
 	protected IDisposable? currentItemErrorObserver;
 
 	/// <summary>
-	/// Observer that tracks when an error has occured with media playback.
+	/// Observer that tracks when an error has occurred with media playback.
 	/// </summary>
 	protected NSObject? errorObserver;
 

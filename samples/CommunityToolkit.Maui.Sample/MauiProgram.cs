@@ -1,6 +1,5 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Markup;
-using CommunityToolkit.Maui.MediaElement;
 using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.Pages;
 using CommunityToolkit.Maui.Sample.Pages.Alerts;
