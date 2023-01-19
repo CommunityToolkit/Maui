@@ -16,7 +16,7 @@
     <value>`.UseMauiCommunityToolkit()` must be chained to `.UseMauiApp&lt;T&gt;()`</value>
   </data>
   <data name="InitializationErrorMessage" xml:space="preserve">
-    <value>`.UseMauiCommunityToolkit()` is required to initalize .NET MAUI Community Toolkit</value>
+    <value>`.UseMauiCommunityToolkit()` is required to initalize .NET MAUI Community Toolkit.</value>
   </data>
   <data name="InitializationErrorTitle" xml:space="preserve">
     <value>`.UseMauiCommunityToolkit()` Not Found on MauiAppBuilder</value>
