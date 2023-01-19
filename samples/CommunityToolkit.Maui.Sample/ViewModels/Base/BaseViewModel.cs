@@ -2,7 +2,6 @@
 
 namespace CommunityToolkit.Maui.Sample.ViewModels;
 
-[INotifyPropertyChanged]
-public abstract partial class BaseViewModel
+public abstract partial class BaseViewModel : ObservableObject
 {
 }
