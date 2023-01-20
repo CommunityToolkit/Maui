@@ -10,6 +10,9 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 public partial class MediaElementHandler
 {
 #if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
+	/// <summary>
+	/// The <see cref="MediaManager"/> that is managing the <see cref="IMediaElement"/> instance.
+	/// </summary>
 	protected MediaManager? mediaManager;
 #endif
 
