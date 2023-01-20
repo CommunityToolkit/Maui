@@ -328,7 +328,7 @@ public partial class MediaManager : IDisposable
 			if (player is not null)
 			{
 				player.PlaybackCompleted -= OnPlaybackCompleted;
-				player.ErrorOccurred -= OnErrorOccured;
+				player.ErrorOccurred -= OnErrorOccurred;
 				player.BufferingProgressChanged -= OnBufferingProgressChanged;
 				player.Dispose();
 			}
