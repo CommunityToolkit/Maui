@@ -6,10 +6,10 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : IDisposable
 {
-	VideoView? videoView;
-	bool isPlayerInitialized;
-	bool isUriStreaming;
-	bool isScreenLocked;
+	protected VideoView? videoView;
+	protected bool isPlayerInitialized;
+	protected bool isUriStreaming;
+	protected bool isScreenLocked;
 
 	/// <summary>
 	/// Creates the corresponding platform view of <see cref="MediaElement"/> on Tizen.
@@ -62,10 +62,10 @@ public partial class MediaManager : IDisposable
 		var handle = videoView.NativeHandle;
 		if (handle.IsInvalid)
 		{
-			throw new InvalidOperationException();
+			throw new InvalidOperationException("The NativeHandler is invalid");
 		}
 
-		if (player == null)
+		if (player is null)
 		{
 			player = new TizenPlayer(handle.DangerousGetHandle());
 			player.InitializePlayer();

@@ -11,7 +11,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 partial class MediaManager : IDisposable
 {
-	readonly DisplayRequest displayRequest = new();
+	protected readonly DisplayRequest displayRequest = new();
 
 	// The requests to keep display active are cumulative, this bool makes sure it only gets requested once
 	bool displayActiveRequested;
