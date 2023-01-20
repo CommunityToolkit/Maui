@@ -10,9 +10,24 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : IDisposable
 {
+	/// <summary>
+	/// The platform native counterpart of <see cref="MediaElement"/>.
+	/// </summary>
 	protected VideoView? videoView;
+
+	/// <summary>
+	/// Indicates whether <see cref="videoView"/> is initialized.
+	/// </summary>
 	protected bool isPlayerInitialized;
+
+	/// <summary>
+	/// Indicates whether the loaded <see cref="MediaElement.Source"/> is streaming from a URI.
+	/// </summary>
 	protected bool isUriStreaming;
+
+	/// <summary>
+	/// Indicates whether the device's screen is locked.
+	/// </summary>
 	protected bool isScreenLocked;
 
 	/// <summary>

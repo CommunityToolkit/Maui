@@ -15,6 +15,9 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
+	/// <summary>
+	/// The platform native counterpart of <see cref="MediaElement"/>.
+	/// </summary>
 	protected StyledPlayerView? playerView;
 
 	/// <summary>

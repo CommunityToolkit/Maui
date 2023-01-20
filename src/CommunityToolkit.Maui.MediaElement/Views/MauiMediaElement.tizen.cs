@@ -1,4 +1,5 @@
-﻿using Tizen.NUI.BaseComponents;
+﻿using CommunityToolkit.Maui.Views;
+using Tizen.NUI.BaseComponents;
 using Tizen.UIExtensions.NUI;
 
 namespace CommunityToolkit.Maui.Core.Views;
