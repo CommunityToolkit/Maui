@@ -11,6 +11,13 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 partial class MediaManager : IDisposable
 {
+	/// <summary>
+	/// The <see cref="DisplayRequest"/> is used to enable the <see cref="MediaElement.ShouldKeepScreenOn"/> functionality.
+	/// </summary>
+	/// <remarks>
+	/// Calls to <see cref="DisplayRequest.RequestActive"/> and <see cref="DisplayRequest.RequestRelease"/> should be in balance.
+	/// Not doing so will result in the screen staying on and negatively impacting the environment :(
+	/// </remarks>
 	protected readonly DisplayRequest displayRequest = new();
 
 	// The requests to keep display active are cumulative, this bool makes sure it only gets requested once

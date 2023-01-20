@@ -1,4 +1,7 @@
-﻿using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
+﻿using System;
+using CommunityToolkit.Maui.Core.Views;
+using CommunityToolkit.Maui.Views;
+using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 using Tizen.Multimedia;
 using Tizen.NUI.BaseComponents;
 
@@ -22,16 +25,21 @@ public partial class MediaManager : IDisposable
 			WidthSpecification = LayoutParamPolicies.MatchParent,
 			HeightSpecification = LayoutParamPolicies.MatchParent
 		};
-		videoView.AddedToWindow += (s, e) =>
-		{
-			if (!isPlayerInitialized)
-			{
-				InitializePlayer(videoView);
-				isPlayerInitialized = true;
-			}
-		};
+
+		videoView.AddedToWindow += AddedToWindow;
 
 		return videoView;
+	}
+
+	void AddedToWindow(object? sender, EventArgs e)
+	{
+		if (!isPlayerInitialized)
+		{
+			InitializePlayer(videoView);
+			isPlayerInitialized = true;
+
+			videoView.AddedToWindow -= AddedToWindow;
+		}
 	}
 
 	void OnPlaybackCompleted(object? sender, EventArgs e)
@@ -40,7 +48,7 @@ public partial class MediaManager : IDisposable
 		mediaElement.CurrentStateChanged(MediaElementState.Stopped);
 	}
 
-	void OnErrorOccured(object? sender, PlayerErrorOccurredEventArgs e)
+	void OnErrorOccurred(object? sender, PlayerErrorOccurredEventArgs e)
 	{
 		mediaElement.MediaFailed(new MediaFailedEventArgs(e.Error.ToString()));
 	}

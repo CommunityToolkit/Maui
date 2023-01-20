@@ -23,7 +23,7 @@ public sealed class MediaSourceConverter : TypeConverter
 	/// <inheritdoc/>
 	public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 	{
-		var valueAsString = value.ToString();
+		var valueAsString = value?.ToString() ?? string.Empty;
 
 		if (string.IsNullOrWhiteSpace(valueAsString))
 		{

@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Views;
 
-namespace CommunityToolkit.Maui.Core;
+namespace CommunityToolkit.Maui;
 
 /// <summary>
 /// This class contains MediaElement's <see cref="MauiAppBuilder"/> extensions.

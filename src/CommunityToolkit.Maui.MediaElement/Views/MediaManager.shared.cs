@@ -11,7 +11,6 @@ global using PlatformMediaElement = CommunityToolkit.Maui.MediaElement.TizenPlay
 #endif
 
 using Microsoft.Extensions.Logging;
-using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -20,8 +19,15 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public partial class MediaManager
 {
-	readonly IMauiContext mauiContext;
-	readonly IMediaElement mediaElement;
+	/// <summary>
+	/// The <see cref="IMauiContext"/> used by this class.
+	/// </summary>
+	protected readonly IMauiContext mauiContext;
+
+	/// <summary>
+	/// The <see cref="IMediaElement"/> instance managed by this manager.
+	/// </summary>
+	protected readonly IMediaElement mediaElement;
 #if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
 	/// <summary>
 	/// The platform-specific media player.
@@ -45,7 +51,7 @@ public partial class MediaManager
 	/// <summary>
 	/// Gets the <see cref="ILogger"/> instance for logging purposes.
 	/// </summary>
-	public ILogger Logger { get; }
+	protected ILogger Logger { get; }
 
 	/// <summary>
 	/// Invokes the play operation on the platform element.
