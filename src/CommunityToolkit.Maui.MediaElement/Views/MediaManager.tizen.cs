@@ -1,4 +1,5 @@
 ﻿using System;
+using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
@@ -33,7 +34,7 @@ public partial class MediaManager : IDisposable
 
 	void AddedToWindow(object? sender, EventArgs e)
 	{
-		if (!isPlayerInitialized)
+		if (!isPlayerInitialized && videoView is not null)
 		{
 			InitializePlayer(videoView);
 			isPlayerInitialized = true;
@@ -78,7 +79,7 @@ public partial class MediaManager : IDisposable
 			player = new TizenPlayer(handle.DangerousGetHandle());
 			player.InitializePlayer();
 			player.PlaybackCompleted += OnPlaybackCompleted;
-			player.ErrorOccurred += OnErrorOccured;
+			player.ErrorOccurred += OnErrorOccurred;
 			player.BufferingProgressChanged += OnBufferingProgressChanged;
 			PlatformUpdateSource();
 		}
