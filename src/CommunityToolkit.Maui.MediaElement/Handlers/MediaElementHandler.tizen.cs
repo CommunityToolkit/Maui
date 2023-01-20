@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.MediaElement.PlatformView;
+﻿using CommunityToolkit.Maui.Core.Views;
+using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
