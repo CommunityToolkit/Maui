@@ -55,7 +55,10 @@ public partial class MediaManager : IDisposable
 			isPlayerInitialized = true;
 		}
 
-		videoView.AddedToWindow -= AddedToWindow;
+		if (videoView is not null)
+		{
+			videoView.AddedToWindow -= AddedToWindow;
+		}
 	}
 
 	void OnPlaybackCompleted(object? sender, EventArgs e)
