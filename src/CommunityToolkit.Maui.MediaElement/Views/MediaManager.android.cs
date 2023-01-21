@@ -18,27 +18,27 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
 	/// </summary>
-	protected StyledPlayerView? playerView;
+	protected StyledPlayerView? PlayerView { get; set; }
 
 	/// <summary>
 	/// Creates the corresponding platform view of <see cref="MediaElement"/> on Android.
 	/// </summary>
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
 	/// <exception cref="NullReferenceException">Thrown when <see cref="Android.Content.Context"/> is <see langword="null"/> or when the platform view could not be created.</exception>
-	public (PlatformMediaElement platformView, StyledPlayerView playerView) CreatePlatformView()
+	public (PlatformMediaElement platformView, StyledPlayerView PlayerView) CreatePlatformView()
 	{
-		ArgumentNullException.ThrowIfNull(mauiContext.Context);
-		player = new IExoPlayer.Builder(mauiContext.Context).Build() ?? throw new NullReferenceException();
-		player.AddListener(this);
-		playerView = new StyledPlayerView(mauiContext.Context)
+		ArgumentNullException.ThrowIfNull(MauiContext.Context);
+		Player = new IExoPlayer.Builder(MauiContext.Context).Build() ?? throw new NullReferenceException();
+		Player.AddListener(this);
+		PlayerView = new StyledPlayerView(MauiContext.Context)
 		{
-			Player = player,
+			Player = Player,
 			UseController = false,
 			ControllerAutoShow = false,
 			LayoutParameters = new RelativeLayout.LayoutParams(Android.Views.ViewGroup.LayoutParams.MatchParent, Android.Views.ViewGroup.LayoutParams.MatchParent),
 		};
 
-		return (player, playerView);
+		return (Player, PlayerView);
 	}
 
 	/// <summary>
@@ -51,14 +51,14 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// </remarks>
 	public void OnPlaybackParametersChanged(PlaybackParameters? playbackParameters)
 	{
-		if (playbackParameters is null || mediaElement is null)
+		if (playbackParameters is null || MediaElement is null)
 		{
 			return;
 		}
 
-		if ((double)playbackParameters.Speed != mediaElement.Speed)
+		if ((double)playbackParameters.Speed != MediaElement.Speed)
 		{
-			mediaElement.Speed = (double)playbackParameters.Speed;
+			MediaElement.Speed = (double)playbackParameters.Speed;
 		}
 	}
 
@@ -73,7 +73,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// </remarks>
 	public void OnPlayerStateChanged(bool playWhenReady, int playbackState)
 	{
-		if (player is null || mediaElement.Source is null)
+		if (Player is null || MediaElement.Source is null)
 		{
 			return;
 		}
@@ -95,7 +95,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 				or PlaybackStateCompat.StateBuffering => MediaElementState.Buffering,
 
 			PlaybackStateCompat.StateNone => MediaElementState.None,
-			PlaybackStateCompat.StateStopped => mediaElement.CurrentState is not MediaElementState.Failed
+			PlaybackStateCompat.StateStopped => MediaElement.CurrentState is not MediaElementState.Failed
 												? MediaElementState.Stopped
 												: MediaElementState.Failed,
 
@@ -103,11 +103,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			_ => MediaElementState.None,
 		};
 
-		mediaElement.CurrentStateChanged(newState);
+		MediaElement.CurrentStateChanged(newState);
 
 		if (playbackState is IPlayer.StateReady)
 		{
-			mediaElement.Duration = TimeSpan.FromMilliseconds(player.Duration < 0 ? 0 : player.Duration);
+			MediaElement.Duration = TimeSpan.FromMilliseconds(Player.Duration < 0 ? 0 : Player.Duration);
 		}
 	}
 
@@ -121,12 +121,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// </remarks>
 	public void OnPlaybackStateChanged(int playbackState)
 	{
-		if (mediaElement.Source is null)
+		if (MediaElement.Source is null)
 		{
 			return;
 		}
 
-		MediaElementState newState = mediaElement.CurrentState;
+		MediaElementState newState = MediaElement.CurrentState;
 
 		switch (playbackState)
 		{
@@ -134,11 +134,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 				newState = MediaElementState.Buffering;
 				break;
 			case IPlayer.StateEnded:
-				mediaElement.MediaEnded();
+				MediaElement.MediaEnded();
 				break;
 		}
 
-		mediaElement.CurrentStateChanged(newState);
+		MediaElement.CurrentStateChanged(newState);
 	}
 
 	/// <summary>
@@ -151,7 +151,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// </remarks>
 	public void OnPlayerError(PlaybackException? error)
 	{
-		if (mediaElement is null)
+		if (MediaElement is null)
 		{
 			return;
 		}
@@ -177,7 +177,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		var message = string.Join(", ", new[] { errorCodeName, errorCode, errorMessage }.Where(s => !string.IsNullOrEmpty(s)));
 
-		mediaElement.MediaFailed(new MediaFailedEventArgs(message));
+		MediaElement.MediaFailed(new MediaFailedEventArgs(message));
 
 		Logger?.LogError("{logMessage}", message);
 	}
@@ -191,7 +191,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// </remarks>
 	public void OnSeekProcessed()
 	{
-		mediaElement?.SeekCompleted();
+		MediaElement?.SeekCompleted();
 	}
 
 	/// <summary>
@@ -204,189 +204,189 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// </remarks>
 	public void OnVolumeChanged(float volume)
 	{
-		if (player is null || mediaElement is null)
+		if (Player is null || MediaElement is null)
 		{
 			return;
 		}
 
-		mediaElement.Volume = volume;
+		MediaElement.Volume = volume;
 	}
 
 	protected virtual partial void PlatformPlay()
 	{
-		if (player is null || mediaElement.Source is null)
+		if (Player is null || MediaElement.Source is null)
 		{
 			return;
 		}
 
-		player.Prepare();
-		player.Play();
+		Player.Prepare();
+		Player.Play();
 	}
 
 	protected virtual partial void PlatformPause()
 	{
-		if (player is null || mediaElement.Source is null)
+		if (Player is null || MediaElement.Source is null)
 		{
 			return;
 		}
 
-		player.Pause();
+		Player.Pause();
 	}
 
 	protected virtual partial void PlatformSeek(TimeSpan position)
 	{
-		player?.SeekTo((long)position.TotalMilliseconds);
+		Player?.SeekTo((long)position.TotalMilliseconds);
 	}
 
 	protected virtual partial void PlatformStop()
 	{
-		if (player is null || mediaElement is null
-			 || mediaElement.Source is null)
+		if (Player is null || MediaElement is null
+			 || MediaElement.Source is null)
 		{
 			return;
 		}
 
 		// Stops and resets the media player
-		player.SeekTo(0);
-		player.Stop();
+		Player.SeekTo(0);
+		Player.Stop();
 
-		mediaElement.Position = TimeSpan.Zero;
+		MediaElement.Position = TimeSpan.Zero;
 	}
 
 	protected virtual partial void PlatformUpdateSource()
 	{
 		var hasSetSource = false;
 
-		if (player is null)
+		if (Player is null)
 		{
 			return;
 		}
 
-		if (mediaElement.Source is null)
+		if (MediaElement.Source is null)
 		{
-			player.ClearMediaItems();
-			mediaElement.Duration = TimeSpan.Zero;
-			mediaElement.CurrentStateChanged(MediaElementState.None);
+			Player.ClearMediaItems();
+			MediaElement.Duration = TimeSpan.Zero;
+			MediaElement.CurrentStateChanged(MediaElementState.None);
 
 			return;
 		}
 
-		mediaElement.CurrentStateChanged(MediaElementState.Opening);
+		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 
-		player.PlayWhenReady = mediaElement.ShouldAutoPlay;
+		Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
 
-		if (mediaElement.Source is UriMediaSource uriMediaSource)
+		if (MediaElement.Source is UriMediaSource uriMediaSource)
 		{
 			var uri = uriMediaSource.Uri;
 			if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
 			{
-				player.SetMediaItem(MediaItem.FromUri(uri.AbsoluteUri));
-				player.Prepare();
+				Player.SetMediaItem(MediaItem.FromUri(uri.AbsoluteUri));
+				Player.Prepare();
 
 				hasSetSource = true;
 			}
 		}
-		else if (mediaElement.Source is FileMediaSource fileMediaSource)
+		else if (MediaElement.Source is FileMediaSource fileMediaSource)
 		{
 			var filePath = fileMediaSource.Path;
 			if (!string.IsNullOrWhiteSpace(filePath))
 			{
-				player.SetMediaItem(MediaItem.FromUri(filePath));
-				player.Prepare();
+				Player.SetMediaItem(MediaItem.FromUri(filePath));
+				Player.Prepare();
 
 				hasSetSource = true;
 			}
 		}
-		else if (mediaElement.Source is ResourceMediaSource resourceMediaSource)
+		else if (MediaElement.Source is ResourceMediaSource resourceMediaSource)
 		{
-			var package = playerView?.Context?.PackageName ?? "";
+			var package = PlayerView?.Context?.PackageName ?? "";
 			var path = resourceMediaSource.Path;
 			if (!string.IsNullOrWhiteSpace(path))
 			{
 				string assetFilePath = "asset://" + package + "/" + path;
 
-				player.SetMediaItem(MediaItem.FromUri(assetFilePath));
-				player.Prepare();
+				Player.SetMediaItem(MediaItem.FromUri(assetFilePath));
+				Player.Prepare();
 
 				hasSetSource = true;
 			}
 		}
 
-		if (hasSetSource && player.PlayerError is null)
+		if (hasSetSource && Player.PlayerError is null)
 		{
-			mediaElement.MediaOpened();
+			MediaElement.MediaOpened();
 		}
 	}
 
 	protected virtual partial void PlatformUpdateSpeed()
 	{
-		if (mediaElement is null || player is null)
+		if (MediaElement is null || Player is null)
 		{
 			return;
 		}
 
-		if (mediaElement.Speed > 0)
+		if (MediaElement.Speed > 0)
 		{
-			player.SetPlaybackSpeed((float)mediaElement.Speed);
-			player.Play();
+			Player.SetPlaybackSpeed((float)MediaElement.Speed);
+			Player.Play();
 		}
 		else
 		{
-			player.Pause();
+			Player.Pause();
 		}
 	}
 
 	protected virtual partial void PlatformUpdateShouldShowPlaybackControls()
 	{
-		if (mediaElement is null || playerView is null)
+		if (MediaElement is null || PlayerView is null)
 		{
 			return;
 		}
 
-		playerView.UseController = mediaElement.ShouldShowPlaybackControls;
+		PlayerView.UseController = MediaElement.ShouldShowPlaybackControls;
 	}
 
 	protected virtual partial void PlatformUpdatePosition()
 	{
-		if (mediaElement is null || player is null)
+		if (MediaElement is null || Player is null)
 		{
 			return;
 		}
 
-		if (mediaElement.Duration != TimeSpan.Zero)
+		if (MediaElement.Duration != TimeSpan.Zero)
 		{
-			mediaElement.Position = TimeSpan.FromMilliseconds(player.CurrentPosition);
+			MediaElement.Position = TimeSpan.FromMilliseconds(Player.CurrentPosition);
 		}
 	}
 
 	protected virtual partial void PlatformUpdateVolume()
 	{
-		if (mediaElement is null || player is null)
+		if (MediaElement is null || Player is null)
 		{
 			return;
 		}
 
-		player.Volume = (float)mediaElement.Volume;
+		Player.Volume = (float)MediaElement.Volume;
 	}
 
 	protected virtual partial void PlatformUpdateShouldKeepScreenOn()
 	{
-		if (playerView is null)
+		if (PlayerView is null)
 		{
 			return;
 		}
 
-		playerView.KeepScreenOn = mediaElement.ShouldKeepScreenOn;
+		PlayerView.KeepScreenOn = MediaElement.ShouldKeepScreenOn;
 	}
 
 	protected virtual partial void PlatformUpdateShouldLoopPlayback()
 	{
-		if (mediaElement is null || player is null)
+		if (MediaElement is null || Player is null)
 		{
 			return;
 		}
 
-		player.RepeatMode = mediaElement.ShouldLoopPlayback ? IPlayer.RepeatModeOne : IPlayer.RepeatModeOff;
+		Player.RepeatMode = MediaElement.ShouldLoopPlayback ? IPlayer.RepeatModeOne : IPlayer.RepeatModeOff;
 	}
 
 	#region IPlayer.IListener implementation method stubs

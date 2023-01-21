@@ -20,7 +20,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 	void MediaElement_PropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
-		if (e.PropertyName == nameof(mediaElement.Duration))
+		if (e.PropertyName == MediaElement.DurationProperty.PropertyName)
 		{
 			logger.LogInformation("Duration: {newDuration}", mediaElement.Duration);
 			positionSlider.Maximum = mediaElement.Duration.TotalSeconds;
@@ -155,7 +155,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	void Slider_DragStarted(object sender, EventArgs e)
 	{
 		mediaElement.Pause();
-    }
+	}
 
 	void Button_Clicked(object? sender, EventArgs e)
 	{

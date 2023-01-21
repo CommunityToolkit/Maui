@@ -16,6 +16,11 @@ public class TizenPlayer : Tizen.Multimedia.Player
 	}
 
 	/// <summary>
+	/// Indicates whether or not the source is set.
+	/// </summary>
+	public bool IsSourceSet => base.HasSource;
+
+	/// <summary>
 	/// Initializes the Tizen native multimedia player.
 	/// </summary>
 	public void InitializePlayer()
@@ -26,10 +31,5 @@ public class TizenPlayer : Tizen.Multimedia.Player
 			isInitialized = true;
 		}
 	}
-
-	/// <summary>
-	/// Indicates whether or not the source is set.
-	/// </summary>
-	public bool IsSourceSet => base.HasSource;
 }
 

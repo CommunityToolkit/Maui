@@ -10,8 +10,7 @@ public sealed class MediaStateChangedEventArgs : EventArgs
 	/// </summary>
 	/// <param name="previousState">The previous state.</param>
 	/// <param name="newState">The new state.</param>
-	public MediaStateChangedEventArgs(MediaElementState previousState,
-		MediaElementState newState)
+	public MediaStateChangedEventArgs(MediaElementState previousState, MediaElementState newState)
 	{
 		PreviousState = previousState;
 		NewState = newState;

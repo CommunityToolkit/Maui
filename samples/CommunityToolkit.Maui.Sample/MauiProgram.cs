@@ -18,8 +18,8 @@ using CommunityToolkit.Maui.Sample.ViewModels.ImageSources;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
-using Microsoft.Extensions.Logging;
 using CommunityToolkit.Maui.Storage;
+using Microsoft.Extensions.Logging;
 using Polly;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]

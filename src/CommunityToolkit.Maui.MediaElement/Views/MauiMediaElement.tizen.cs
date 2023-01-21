@@ -20,7 +20,7 @@ public class MauiMediaElement : ViewGroup
 		this.videoView = videoView;
 		Children.Add(videoView);
 	}
-	
+
 	/// <summary>
 	/// Releases the unmanaged resources used by the <see cref="MediaElement"/> and optionally releases the managed resources.
 	/// </summary>
@@ -29,10 +29,7 @@ public class MauiMediaElement : ViewGroup
 	{
 		if (disposing)
 		{
-			if (videoView is not null)
-			{
-				videoView.Dispose();
-			}
+			videoView?.Dispose();
 		}
 
 		base.Dispose(disposing);
