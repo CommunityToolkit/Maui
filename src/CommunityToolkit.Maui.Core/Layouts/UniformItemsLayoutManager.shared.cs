@@ -44,6 +44,7 @@ public class UniformItemsLayoutManager : LayoutManager
 				var item = visibleChildren[count];
 				bounds.X = j * boundsWidth + uniformItemsLayout.Padding.Left;
 				bounds.Y = i * boundsHeight + uniformItemsLayout.Padding.Top;
+				item.Measure(bounds.Width, bounds.Height);
 				item.Arrange(bounds);
 				count++;
 			}
