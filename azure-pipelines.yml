@@ -107,7 +107,7 @@ jobs:
       - powershell: |
           $buildSourceBranch = "$(Build.SourceBranch)"
           $tagVersion = $buildSourceBranch.Substring($buildSourceBranch.LastIndexOf("/") + 1)
-          $tagVersion = $tagVersion.Substring(0, $buildSourceBranch.LastIndexOf("-"))
+          $tagVersion = $tagVersion.Substring(0, $tagVersion.LastIndexOf("-"))
           Write-Host("Branch = $buildSourceBranch, Version = $tagVersion");
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersionMediaElement;]$tagVersion")
         displayName: Set NuGet Version to Tag Number
