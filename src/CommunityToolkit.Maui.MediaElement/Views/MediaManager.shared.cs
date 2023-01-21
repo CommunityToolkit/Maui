@@ -20,38 +20,40 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MediaManager
 {
 	/// <summary>
-	/// The <see cref="IMauiContext"/> used by this class.
-	/// </summary>
-	protected readonly IMauiContext mauiContext;
-
-	/// <summary>
-	/// The <see cref="IMediaElement"/> instance managed by this manager.
-	/// </summary>
-	protected readonly IMediaElement mediaElement;
-#if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
-	/// <summary>
-	/// The platform-specific media player.
-	/// </summary>
-	protected PlatformMediaElement? player;
-#endif
-
-	/// <summary>
 	/// Initializes a new instance of the <see cref="MediaManager"/> class.
 	/// </summary>
 	/// <param name="context">This application's <see cref="IMauiContext"/>.</param>
 	/// <param name="mediaElement">The <see cref="IMediaElement"/> instance that is managed through this class.</param>
 	public MediaManager(IMauiContext context, IMediaElement mediaElement)
 	{
-		this.mediaElement = mediaElement;
-		mauiContext = context;
+		this.MediaElement = mediaElement;
+		MauiContext = context;
 
-		Logger = mauiContext.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(MediaManager));
+		Logger = MauiContext.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(MediaManager));
 	}
+
+	/// <summary>
+	/// The <see cref="IMediaElement"/> instance managed by this manager.
+	/// </summary>
+	protected IMediaElement MediaElement { get; }
+
+	/// <summary>
+	/// The <see cref="IMauiContext"/> used by this class.
+	/// </summary>
+	protected IMauiContext MauiContext { get; }
 
 	/// <summary>
 	/// Gets the <see cref="ILogger"/> instance for logging purposes.
 	/// </summary>
 	protected ILogger Logger { get; }
+
+
+#if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
+	/// <summary>
+	/// The platform-specific media player.
+	/// </summary>
+	protected PlatformMediaElement? Player { get; set; }
+#endif
 
 	/// <summary>
 	/// Invokes the play operation on the platform element.

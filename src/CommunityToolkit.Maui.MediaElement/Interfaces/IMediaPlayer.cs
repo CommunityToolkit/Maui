@@ -14,43 +14,16 @@ public interface IMediaElement : IView
 	MediaElementState CurrentState { get; }
 
 	/// <summary>
-	/// Triggers a <see cref="CurrentState"/> change.
+	/// Gets the height (in pixels) of the loaded media in pixels.
 	/// </summary>
-	/// <param name="newState">The new state the <see cref="MediaElement"/> transitioned to.</param>
-	internal void CurrentStateChanged(MediaElementState newState);
+	/// <remarks>Not reported for non-visual media.</remarks>
+	int MediaHeight { get; }
 
 	/// <summary>
-	/// Gets total duration of the loaded media.
+	/// Gets the width (in pixels) of the loaded media in pixels.
 	/// </summary>
-	/// <remarks>Might not be available for some types, like live streams.</remarks>
-	TimeSpan Duration { get; set; }
-
-	/// <summary>
-	/// Occurs when the media has ended playing successfully.
-	/// </summary>
-	/// <remarks>This does not trigger when the media has failed during playback.</remarks>
-	void MediaEnded();
-
-	/// <summary>
-	/// Occurs when the media has failed loading.
-	/// </summary>
-	/// <param name="args">Event arguments containing extra information about this event.</param>
-	void MediaFailed(MediaFailedEventArgs args);
-
-	/// <summary>
-	/// Occurs when the media has been loaded and is ready to play.
-	/// </summary>
-	void MediaOpened();
-
-	/// <summary>
-	/// Pauses the currently playing media.
-	/// </summary>
-	void Pause();
-
-	/// <summary>
-	/// Starts playing the loaded media.
-	/// </summary>
-	void Play();
+	/// <remarks>Not reported for non-visual media.</remarks>
+	int MediaWidth { get; }
 
 	/// <summary>
 	/// The current position of the playing media.
@@ -58,21 +31,10 @@ public interface IMediaElement : IView
 	TimeSpan Position { get; internal set; }
 
 	/// <summary>
-	/// Occurs when the <see cref="Position"/> changes;
+	/// Gets total duration of the loaded media.
 	/// </summary>
-	event EventHandler<MediaPositionChangedEventArgs> PositionChanged;
-
-	/// <summary>
-	/// Triggers the <see cref="MediaElement.SeekCompleted"/> event.
-	/// </summary>
-	internal void SeekCompleted();
-
-	/// <summary>
-	/// Seek to a specific position in the currently playing media.
-	/// </summary>
-	/// <param name="position">The requested position to seek to.</param>
-	/// <remarks>If <paramref name="position"/> is outside of the range of the current media item, nothing will happen.</remarks>
-	void SeekTo(TimeSpan position);
+	/// <remarks>Might not be available for some types, like live streams.</remarks>
+	TimeSpan Duration { get; set; }
 
 	/// <summary>
 	/// Gets or sets whether the media should start playing as soon as it's loaded.
@@ -108,9 +70,54 @@ public interface IMediaElement : IView
 	double Speed { get; set; }
 
 	/// <summary>
+	/// Gets or sets the volume of the audio for the media.
+	/// </summary>
+	/// <remarks>A value of 1 means full volume, 0 is silence.</remarks>
+	double Volume { get; set; }
+
+	/// <summary>
 	/// Occurs when <see cref="CurrentState"/> changed.
 	/// </summary>
 	event EventHandler<MediaStateChangedEventArgs> StateChanged;
+
+	/// <summary>
+	/// Occurs when the <see cref="Position"/> changes;
+	/// </summary>
+	event EventHandler<MediaPositionChangedEventArgs> PositionChanged;
+
+	/// <summary>
+	/// Occurs when the media has ended playing successfully.
+	/// </summary>
+	/// <remarks>This does not trigger when the media has failed during playback.</remarks>
+	void MediaEnded();
+
+	/// <summary>
+	/// Occurs when the media has failed loading.
+	/// </summary>
+	/// <param name="args">Event arguments containing extra information about this event.</param>
+	void MediaFailed(MediaFailedEventArgs args);
+
+	/// <summary>
+	/// Occurs when the media has been loaded and is ready to play.
+	/// </summary>
+	void MediaOpened();
+
+	/// <summary>
+	/// Pauses the currently playing media.
+	/// </summary>
+	void Pause();
+
+	/// <summary>
+	/// Starts playing the loaded media.
+	/// </summary>
+	void Play();
+
+	/// <summary>
+	/// Seek to a specific position in the currently playing media.
+	/// </summary>
+	/// <param name="position">The requested position to seek to.</param>
+	/// <remarks>If <paramref name="position"/> is outside of the range of the current media item, nothing will happen.</remarks>
+	void SeekTo(TimeSpan position);
 
 	/// <summary>
 	/// Stops playing the currently playing media and resets the <see cref="Position"/>.
@@ -118,20 +125,13 @@ public interface IMediaElement : IView
 	void Stop();
 
 	/// <summary>
-	/// Gets the height (in pixels) of the loaded media in pixels.
+	/// Triggers the <see cref="MediaElement.SeekCompleted"/> event.
 	/// </summary>
-	/// <remarks>Not reported for non-visual media.</remarks>
-	int MediaHeight { get; }
+	internal void SeekCompleted();
 
 	/// <summary>
-	/// Gets the width (in pixels) of the loaded media in pixels.
+	/// Triggers a <see cref="CurrentState"/> change.
 	/// </summary>
-	/// <remarks>Not reported for non-visual media.</remarks>
-	int MediaWidth { get; }
-
-	/// <summary>
-	/// Gets or sets the volume of the audio for the media.
-	/// </summary>
-	/// <remarks>A value of 1 means full volume, 0 is silence.</remarks>
-	double Volume { get; set; }
+	/// <param name="newState">The new state the <see cref="MediaElement"/> transitioned to.</param>
+	internal void CurrentStateChanged(MediaElementState newState);
 }

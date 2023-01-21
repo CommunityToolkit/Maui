@@ -83,6 +83,7 @@ public class UseCommunityToolkitMediaElementInitializationAnalyzer : DiagnosticA
 				}
 			}
 		}
+
 		throw new InvalidOperationException("Wow, this shouldn't happen, please open a bug here: https://github.com/CommunityToolkit/Maui/issues/new/choose");
 	}
 }

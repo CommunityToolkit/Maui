@@ -26,9 +26,6 @@ public class MauiMediaElement : Grid
 	/// </summary>
 	public void Dispose()
 	{
-		if (mediaElement is not null)
-		{
-			mediaElement?.MediaPlayer.Dispose();
-		}
+		mediaElement?.MediaPlayer.Dispose();
 	}
 }

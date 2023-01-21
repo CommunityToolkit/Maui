@@ -10,12 +10,10 @@ namespace CommunityToolkit.Maui.Views;
 /// </summary>
 public class MediaElement : View, IMediaElement
 {
-	readonly WeakEventManager eventManager = new();
-
-	Microsoft.Maui.Dispatching.IDispatcherTimer? timer;
-
 	static readonly BindablePropertyKey durationPropertyKey =
 	  BindableProperty.CreateReadOnly(nameof(Duration), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero);
+
+	readonly WeakEventManager eventManager = new();
 
 	/// <summary>
 	/// Backing store for the <see cref="CurrentState"/> property.
@@ -90,6 +88,8 @@ public class MediaElement : View, IMediaElement
 	public static readonly BindableProperty VolumeProperty =
 		  BindableProperty.Create(nameof(Volume), typeof(double), typeof(MediaElement), 1.0,
 			  BindingMode.TwoWay, new BindableProperty.ValidateValueDelegate(ValidateVolume));
+
+	Microsoft.Maui.Dispatching.IDispatcherTimer? timer;
 
 	/// <inheritdoc cref="IMediaElement.MediaEnded"/>
 	public event EventHandler MediaEnded
