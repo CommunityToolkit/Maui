@@ -9,11 +9,14 @@ variables:
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
   PathToCommunityToolkitCoreCsproj: 'src/CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj'
+  PathToCommunityToolkitMediaElementCsproj: 'src/CommunityToolkit.Maui.MediaElement/CommunityToolkit.Maui.MediaElement.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
   PathToCommunityToolkitAnalyzersCsproj: 'src/CommunityToolkit.Maui.Analyzers/CommunityToolkit.Maui.Analyzers.csproj'
+  PathToCommunityToolkitMediaElementAnalyzersCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers/CommunityToolkit.Maui.MediaElement.Analyzers.csproj'
   PathToCommunityToolkitSourceGeneratorsCsproj: 'src/CommunityToolkit.Maui.SourceGenerators/CommunityToolkit.Maui.SourceGenerators.csproj'
   PathToCommunityToolkitAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Analyzers.CodeFixes/CommunityToolkit.Maui.Analyzers.CodeFixes.csproj'
+  PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
   DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/7.0.49.json'
   Latest_Xcode_Version: '14.1.0'
@@ -143,6 +146,16 @@ jobs:
           script: 'dotnet build -c Release $(PathToCommunityToolkitAnalyzersCodeFixCsproj)'
 
       - task: CmdLine@2
+        displayName: 'Build CommunityToolkit.Maui.MediaElement.Analyzers'
+        inputs:
+          script: 'dotnet build -c Release $(PathToCommunityToolkitMediaElementAnalyzersCsproj)'
+
+      - task: CmdLine@2
+        displayName: 'Build CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes'
+        inputs:
+          script: 'dotnet build -c Release $(PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj)'
+
+      - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.SourceGenerators'
         inputs:
           script: 'dotnet build -c Release $(PathToCommunityToolkitSourceGeneratorsCsproj)'
@@ -182,6 +195,11 @@ jobs:
         displayName: 'Pack CommunityToolkit.Maui NuGet'
         inputs:
           script: 'dotnet pack $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
+
+      - task: CmdLine@2
+        displayName: 'Pack CommunityToolkit.Maui.MediaElement NuGet'
+        inputs:
+          script: 'dotnet pack $(PathToCommunityToolkitMediaElementCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
 
       # check vulnerabilities
       - powershell: |

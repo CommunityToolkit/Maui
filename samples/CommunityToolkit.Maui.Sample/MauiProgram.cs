@@ -1,4 +1,3 @@
-﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.Pages;
@@ -20,6 +19,7 @@ using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
 using CommunityToolkit.Maui.Storage;
+using Microsoft.Extensions.Logging;
 using Polly;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
@@ -42,6 +42,7 @@ public static class MauiProgram
 								})
 #endif
 								.UseMauiCommunityToolkitMarkup()
+								.UseMauiCommunityToolkitMediaElement()
 								.UseMauiApp<App>();
 
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>()
@@ -51,6 +52,10 @@ public static class MauiProgram
 
 		RegisterViewsAndViewModels(builder.Services);
 		RegisterEssentials(builder.Services);
+
+#if DEBUG
+		builder.Logging.AddDebug().SetMinimumLevel(LogLevel.Trace);
+#endif
 
 		return builder.Build();
 
@@ -158,6 +163,7 @@ public static class MauiProgram
 		// Add Views Pages + ViewModels
 		services.AddTransientWithShellRoute<DrawingViewPage, DrawingViewViewModel>();
 		services.AddTransientWithShellRoute<ExpanderPage, ExpanderViewModel>();
+		services.AddTransientWithShellRoute<MediaElementPage, MediaElementViewModel>();
 		services.AddTransientWithShellRoute<MultiplePopupPage, MultiplePopupViewModel>();
 		services.AddTransientWithShellRoute<PopupAnchorPage, PopupAnchorViewModel>();
 		services.AddTransientWithShellRoute<PopupPositionPage, PopupPositionViewModel>();
