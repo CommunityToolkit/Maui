@@ -226,9 +226,9 @@ jobs:
         displayName: 'Check Dependencies'
         condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
       
-      # publish
+      # Copy all NuGet packages
       - task: PowerShell@2
-        condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
+        condition: and(eq(variables['Agent.OS'], 'Windows_NT'), not(startsWith(variables['Build.SourceBranch'], 'refs/tags/'))) # Only run this step on Windows and when it's not a tagged build
         displayName: 'Copy NuGet Packages to Staging Directory'
         inputs:
           targetType: 'inline'
@@ -236,6 +236,30 @@ jobs:
             $source = ".\src"
             $filter = "nupkg"
             Get-ChildItem -Path $source -Recurse | Where-Object { $_.Extension -match $filter } | Copy-Item -Destination "$(Build.ArtifactStagingDirectory)"
+          pwsh: true
+
+      # Copy CommunityToolkit.Maui & CommunityToolkit.Maui.Core packages
+      - task: PowerShell@2
+        condition: and(eq(variables['Agent.OS'], 'Windows_NT'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), not(endsWith(variables['Build.SourceBranch'], '-mediaelement'))) # Only run this step on Windows and when it's a tagged build and the tag does NOT end with -mediaelement
+        displayName: 'Copy CommunityToolkit.Maui & CommunityToolkit.Maui.Core NuGet Packages to Staging Directory'
+        inputs:
+          targetType: 'inline'
+          script: |
+            $source = ".\src"
+            $filter = "CommunityToolkit.Maui.(Core.)*[0-9]+.[0-9]+.[0-9]+(-[a-zA-Z0-9]*)*.nupkg"
+            Get-ChildItem -Path $source -Recurse | Where-Object { $_.Name -match $filter } | Copy-Item -Destination "$(Build.ArtifactStagingDirectory)"
+          pwsh: true
+
+      # Copy CommunityToolkit.Maui.MediaElement package
+      - task: PowerShell@2
+        condition: and(eq(variables['Agent.OS'], 'Windows_NT'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), endsWith(variables['Build.SourceBranch'], '-mediaelement')) # Only run this step on Windows and when it's a tagged build and the tag ends with -mediaelement
+        displayName: 'Copy CommunityToolkit.Maui.MediaElement NuGet Package to Staging Directory'
+        inputs:
+          targetType: 'inline'
+          script: |
+            $source = ".\src"
+            $filter = "CommunityToolkit.Maui.MediaElement.[0-9]+.[0-9]+.[0-9]+(-[a-zA-Z0-9]*)*.nupkg"
+            Get-ChildItem -Path $source -Recurse | Where-Object { $_.Name -match $filter } | Copy-Item -Destination "$(Build.ArtifactStagingDirectory)"
           pwsh: true
       
       # Sign NuGet Packages
@@ -249,7 +273,7 @@ jobs:
           ArtifactDirectory: $(Build.ArtifactStagingDirectory)
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'), not(eq(variables['build.reason'], 'PullRequest')), not(eq(variables['SignClientSecret'], '')), not(eq(variables['SignClientUser'], ''))) # Only run this step on Windows when the CI Pipeline has not been triggered by a Pull Request and the NuGet Signing Certificate is valid
       
-      # publish the packages
+      # Publish build artifacts
       - task: PublishBuildArtifacts@1
         condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
         displayName: 'Publish NuGets'
