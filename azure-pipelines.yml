@@ -3,6 +3,7 @@ variables:
   PreviewNumber: $[counter(variables['CurrentSemanticVersionBase'], 1001)]
   CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(PreviewNumber)'
   NugetPackageVersion: '$(CurrentSemanticVersion)'
+  NugetPackageVersionMediaElement: '$(CurrentSemanticVersion)'
   TOOLKIT_NET_VERSION: '7.0.100'
   LATEST_NET_VERSION: '7.0.x'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
@@ -93,14 +94,24 @@ jobs:
     pool:
       vmImage: $(image)
     steps:
-      # if this is a tagged build, then update the version number
+      # if this is a tagged build for CommunityToolkit.Maui, then update the version number
       - powershell: |
           $buildSourceBranch = "$(Build.SourceBranch)"
           $tagVersion = $buildSourceBranch.Substring($buildSourceBranch.LastIndexOf("/") + 1)
           Write-Host("Branch = $buildSourceBranch, Version = $tagVersion");
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$tagVersion")
         displayName: Set NuGet Version to Tag Number
-        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/') # Only run this step when a Tag has triggered the CI Pipeline
+        condition: and(startsWith(variables['Build.SourceBranch'], 'refs/tags/'), not(endsWith(variables['Build.SourceBranch'], '-mediaelement'))) # Only run this step when a Tag has triggered the CI Pipeline
+
+      # if this is a tagged build for CommunityToolkit.Maui.MediaElement, then update the version number
+      - powershell: |
+          $buildSourceBranch = "$(Build.SourceBranch)"
+          $tagVersion = $buildSourceBranch.Substring($buildSourceBranch.LastIndexOf("/") + 1)
+          $tagVersion = $tagVersion.Substring(0, $tagVersion.LastIndexOf("-"))
+          Write-Host("Branch = $buildSourceBranch, Version = $tagVersion");
+          Write-Host ("##vso[task.setvariable variable=NugetPackageVersionMediaElement;]$tagVersion")
+        displayName: Set NuGet Version to Tag Number
+        condition: and(startsWith(variables['Build.SourceBranch'], 'refs/tags/'), endsWith(variables['Build.SourceBranch'], '-mediaelement')) # Only run this step when a Tag has triggered the CI Pipeline        
 
       # if this is a PR build, then update the version number
       - powershell: |
@@ -109,6 +120,7 @@ jobs:
           $fullVersionString = "$(CurrentSemanticVersionBase)-build-$prNumber.$(Build.BuildId)+$commitId"
           Write-Host("GitHub PR = $prNumber, Commit = $commitId");
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$fullVersionString")
+          Write-Host ("##vso[task.setvariable variable=NugetPackageVersionMediaElement;]$fullVersionString")
           Write-Host "##vso[build.updatebuildnumber]$fullVersionString"
         displayName: Set NuGet Version to PR Version
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['build.reason'], 'PullRequest')) # Only run this step on Windows when a Pull Request has triggered the CI Pipeline
@@ -199,7 +211,7 @@ jobs:
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit.Maui.MediaElement NuGet'
         inputs:
-          script: 'dotnet pack $(PathToCommunityToolkitMediaElementCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
+          script: 'dotnet pack $(PathToCommunityToolkitMediaElementCsproj) -c Release -p:PackageVersion=$(NugetPackageVersionMediaElement)'
 
       # check vulnerabilities
       - powershell: |
