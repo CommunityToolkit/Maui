@@ -155,7 +155,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	void Slider_DragStarted(object sender, EventArgs e)
 	{
 		mediaElement.Pause();
-    }
+	}
 
 	void Button_Clicked(object? sender, EventArgs e)
 	{

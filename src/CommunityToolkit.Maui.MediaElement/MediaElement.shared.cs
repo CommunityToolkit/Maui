@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Converters;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
 
 namespace CommunityToolkit.Maui.Views;

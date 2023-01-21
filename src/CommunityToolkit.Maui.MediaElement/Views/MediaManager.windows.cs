@@ -1,11 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Views;
+using Microsoft.Extensions.Logging;
 using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.System.Display;
-using WinMediaSource = Windows.Media.Core.MediaSource;
 using WindowsMediaElement = Windows.Media.Playback.MediaPlayer;
-using CommunityToolkit.Maui.Core.Primitives;
-using CommunityToolkit.Maui.Views;
+using WinMediaSource = Windows.Media.Core.MediaSource;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -58,7 +58,7 @@ partial class MediaManager : IDisposable
 		player?.MediaPlayer.Play();
 
 		if (mediaElement.ShouldKeepScreenOn
-			&& !displayActiveRequested) 
+			&& !displayActiveRequested)
 		{
 			displayRequest.RequestActive();
 			displayActiveRequested = true;
@@ -110,7 +110,7 @@ partial class MediaManager : IDisposable
 		{
 			return;
 		}
-		
+
 		player.MediaPlayer.PlaybackRate = mediaElement.Speed;
 	}
 
@@ -160,7 +160,7 @@ partial class MediaManager : IDisposable
 				displayRequest.RequestActive();
 				displayActiveRequested = true;
 			}
-		} 
+		}
 		else
 		{
 			if (displayActiveRequested)
