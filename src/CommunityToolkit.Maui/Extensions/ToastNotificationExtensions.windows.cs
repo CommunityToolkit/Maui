@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Extensions;
 /// <summary>
 /// Toast Notification Extensions
 /// </summary>
-public static class ToastNotificationExtensions
+static class ToastNotificationExtensions
 {
 	/// <summary>
 	/// Build Toast Text Notification with actions
@@ -14,7 +14,7 @@ public static class ToastNotificationExtensions
 	/// <param name="text">Notification text</param>
 	/// <param name="actionText">Action Button text</param>
 	/// <returns><see cref="XmlDocument"/></returns>
-	public static XmlDocument BuildToastNotificationContent(string text, string actionText)
+	internal static XmlDocument BuildToastNotificationContent(string text, string actionText)
 	{
 		var toastXml = ToastNotificationManager.GetTemplateContent(ToastTemplateType.ToastText01);
 		toastXml.GetElementsByTagName("text").SetContentText(text);
