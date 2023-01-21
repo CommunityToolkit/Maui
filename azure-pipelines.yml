@@ -101,7 +101,7 @@ jobs:
           Write-Host("Branch = $buildSourceBranch, Version = $tagVersion");
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$tagVersion")
         displayName: Set NuGet Version to Tag Number
-        condition: and(startsWith(variables['Build.SourceBranch'], 'refs/tags/'), not(endsWith(variables['Build.SourceBranch'].ToLowerInvariant(), '-mediaelement'))) # Only run this step when a Tag has triggered the CI Pipeline
+        condition: and(startsWith(variables['Build.SourceBranch'], 'refs/tags/'), not(endsWith(variables['Build.SourceBranch'], '-mediaelement'))) # Only run this step when a Tag has triggered the CI Pipeline
 
       # if this is a tagged build for CommunityToolkit.Maui.MediaElement, then update the version number
       - powershell: |
@@ -111,7 +111,7 @@ jobs:
           Write-Host("Branch = $buildSourceBranch, Version = $tagVersion");
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersionMediaElement;]$tagVersion")
         displayName: Set NuGet Version to Tag Number
-        condition: and(startsWith(variables['Build.SourceBranch'], 'refs/tags/'), endsWith(variables['Build.SourceBranch'].ToLowerInvariant(), '-mediaelement')) # Only run this step when a Tag has triggered the CI Pipeline        
+        condition: and(startsWith(variables['Build.SourceBranch'], 'refs/tags/'), endsWith(variables['Build.SourceBranch'], '-mediaelement')) # Only run this step when a Tag has triggered the CI Pipeline        
 
       # if this is a PR build, then update the version number
       - powershell: |
