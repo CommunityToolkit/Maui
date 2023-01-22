@@ -89,6 +89,14 @@ public partial class MediaManager
 	}
 
 	/// <summary>
+	/// Update the media aspect.
+	/// </summary>
+	public void UpdateAspect()
+	{
+		PlatformUpdateAspect();
+	}
+
+	/// <summary>
 	/// Update the media source.
 	/// </summary>
 	public void UpdateSource()
@@ -167,6 +175,11 @@ public partial class MediaManager
 	protected virtual partial void PlatformStop();
 
 	/// <summary>
+	/// Invokes the platform functionality to update the media aspect.
+	/// </summary>
+	protected virtual partial void PlatformUpdateAspect();
+
+	/// <summary>
 	/// Invokes the platform functionality to update the media source.
 	/// </summary>
 	protected virtual partial void PlatformUpdateSource();
@@ -210,6 +223,7 @@ partial class MediaManager
 	protected virtual partial void PlatformPause() { }
 	protected virtual partial void PlatformSeek(TimeSpan position) { }
 	protected virtual partial void PlatformStop() { }
+	protected virtual partial void PlatformUpdateAspect() { }
 	protected virtual partial void PlatformUpdateSource() { }
 	protected virtual partial void PlatformUpdateSpeed() { }
 	protected virtual partial void PlatformUpdateShouldShowPlaybackControls() { }

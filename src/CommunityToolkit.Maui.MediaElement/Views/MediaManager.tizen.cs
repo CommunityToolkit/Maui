@@ -191,6 +191,10 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
+	protected virtual partial void PlatformUpdateAspect()
+	{
+	}
+
 	protected virtual partial void PlatformUpdateSource()
 	{
 		if (Player is null)

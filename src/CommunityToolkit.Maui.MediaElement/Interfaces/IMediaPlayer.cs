@@ -9,6 +9,12 @@ namespace CommunityToolkit.Maui.Core;
 public interface IMediaElement : IView
 {
 	/// <summary>
+	/// Gets or sets the media aspect.
+	/// </summary>
+	/// <remarks>Not functional for non-visual media.</remarks>
+	Aspect Aspect { get; set; }
+
+	/// <summary>
 	/// The current state of the <see cref="MediaElement"/>.
 	/// </summary>
 	MediaElementState CurrentState { get; }
