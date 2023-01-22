@@ -134,6 +134,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 				newState = MediaElementState.Buffering;
 				break;
 			case IPlayer.StateEnded:
+				newState = MediaElementState.Stopped;
 				MediaElement.MediaEnded();
 				break;
 		}
