@@ -151,6 +151,21 @@ public partial class MediaManager : IDisposable
 		MediaElement.CurrentStateChanged(MediaElementState.Stopped);
 	}
 
+	protected virtual partial void PlatformUpdateAspect()
+	{
+		if (PlayerViewController is null)
+		{
+			return;
+		}
+
+		PlayerViewController.VideoGravity = MediaElement.Aspect switch
+		{
+			Aspect.Fill => AVLayerVideoGravity.Resize,
+			Aspect.AspectFill => AVLayerVideoGravity.ResizeAspectFill,
+			_ => AVLayerVideoGravity.ResizeAspect,
+		};
+	}
+
 	protected virtual partial void PlatformUpdateSource()
 	{
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);

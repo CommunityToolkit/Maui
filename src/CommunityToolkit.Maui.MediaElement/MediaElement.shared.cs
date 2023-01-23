@@ -10,6 +10,12 @@ namespace CommunityToolkit.Maui.Views;
 /// </summary>
 public class MediaElement : View, IMediaElement
 {
+	/// <summary>
+	/// Backing store for the <see cref="Aspect"/> property.
+	/// </summary>
+	public static readonly BindableProperty AspectProperty =
+		  BindableProperty.Create(nameof(Aspect), typeof(Aspect), typeof(MediaElement), Aspect.AspectFit);
+
 	static readonly BindablePropertyKey durationPropertyKey =
 	  BindableProperty.CreateReadOnly(nameof(Duration), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero);
 
@@ -274,6 +280,16 @@ public class MediaElement : View, IMediaElement
 	{
 		get => (int)GetValue(MediaWidthProperty);
 		internal set => SetValue(MediaWidthProperty, value);
+	}
+
+	/// <summary>
+	/// Gets or sets how the media will be scaled to fit the display area.
+	/// Default value is <see cref="Aspect.AspectFit"/>. This is a bindable property.
+	/// </summary>
+	public Aspect Aspect
+	{
+		get => (Aspect)GetValue(AspectProperty);
+		set => SetValue(AspectProperty, value);
 	}
 
 	/// <summary>
