@@ -204,7 +204,7 @@ public partial class MediaManager : IDisposable
 			Aspect.AspectFit => DisplayAspectMode.AspectFit,
 			Aspect.Fill => DisplayAspectMode.Fill,
 			_ => DisplayAspectMode.AspectFit,
-		}
+		};
 	}
 
 	protected virtual partial void PlatformUpdateSource()
