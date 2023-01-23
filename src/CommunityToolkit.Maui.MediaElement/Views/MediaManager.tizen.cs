@@ -200,10 +200,10 @@ public partial class MediaManager : IDisposable
 
 		Player.DisplaySettings.Mode = MediaElement.Aspect switch
 		{
-			Aspect.AspectFill => DisplayAspectMode.AspectFill,
-			Aspect.AspectFit => DisplayAspectMode.AspectFit,
-			Aspect.Fill => DisplayAspectMode.Fill,
-			_ => DisplayAspectMode.AspectFit,
+			Aspect.AspectFill => PlayerDisplayMode.CroppedFull,
+			Aspect.AspectFit => PlayerDisplayMode.LetterBox,
+			Aspect.Fill => PlayerDisplayMode.FullScreen,
+			_ => PlayerDisplayMode.LetterBox,
 		};
 	}
 
