@@ -193,6 +193,18 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateAspect()
 	{
+		if (Player is null || MediaElement is null)
+		{
+			return;
+		}
+
+		Player.DisplaySettings.Mode = MediaElement.Aspect switch
+		{
+			Aspect.AspectFill => DisplayAspectMode.AspectFill,
+			Aspect.AspectFit => DisplayAspectMode.AspectFit,
+			Aspect.Fill => DisplayAspectMode.Fill,
+			_ => DisplayAspectMode.AspectFit,
+		}
 	}
 
 	protected virtual partial void PlatformUpdateSource()
