@@ -106,6 +106,17 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateAspect()
 	{
+		if (Player is null || MediaElement is null)
+		{
+			return;
+		}
+
+		Player.Stretch = MediaElement.Aspect switch
+		{
+			Aspect.Fill => Microsoft.UI.Xaml.Media.Stretch.Fill,
+			Aspect.AspectFill => Microsoft.UI.Xaml.Media.Stretch.UniformToFill,
+			_ => Microsoft.UI.Xaml.Media.Stretch.Uniform,
+		};
 	}
 
 	protected virtual partial void PlatformUpdateSpeed()
