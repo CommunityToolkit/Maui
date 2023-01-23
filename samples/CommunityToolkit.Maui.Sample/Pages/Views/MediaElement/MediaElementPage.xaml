@@ -66,26 +66,14 @@
                 DragCompleted="Slider_DragCompleted"/>
 
             <VerticalStackLayout Padding="0,20,0,0" Grid.Row="4" Spacing="5">
-                <Button
-                    Clicked="OnMp4OnlineSourceClicked"
-                    Text="Load MP4" />
-
-                <Button
-                    Clicked="OnHlsSourceClicked"
-                    Text="Load HLS" />
-
-                <Button
-                    Clicked="OnResourceSourceClicked"
-                    Text="Load Local Resource" />
-
-                <Button
-                    Clicked="OnResetClicked"
-                    Text="Reset Source (null)" />
+                <Button Text="Change Source" Clicked="ChangeSourceClicked" />
 
                 <Grid ColumnDefinitions="*, 100" ColumnSpacing="5">
                     <Entry x:Name="customSourceEntry" Placeholder="Enter URL" HorizontalOptions="FillAndExpand" />
                     <Button Grid.Column="1" Clicked="Button_Clicked" Text="Load" />
                 </Grid>
+
+                <Button Text="Change Aspect" Clicked="ChangeAspectClicked" />
             </VerticalStackLayout>
 
             <HorizontalStackLayout Grid.Row="5" Padding="0,10,0,10" Spacing="5">

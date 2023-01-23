@@ -10,6 +10,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, object>
 
 	// Ignoring XML comments for this implementation since it's not used.
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public static void MapAspect(object handler, MediaElement MediaElement) => throw new NotImplementedException();
 	public static void MapPosition(object handler, MediaElement MediaElement) => throw new NotImplementedException();
 	public static void MapShouldKeepScreenOn(object handler, MediaElement MediaElement) => throw new NotImplementedException();
 	public static void MapShouldShowPlaybackControls(object handler, MediaElement MediaElement) => throw new NotImplementedException();

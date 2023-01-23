@@ -9,6 +9,10 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 public partial class MediaElementPage : BasePage<MediaElementViewModel>
 {
 	readonly ILogger logger;
+	const string loadOnlineMp4 = "Load Online MP4";
+	const string loadHls = "Load HTTP Live Stream (HLS)";
+	const string loadLocalResource = "Load Local Resource";
+	const string resetSource = "Reset Source to null";
 
 	public MediaElementPage(MediaElementViewModel viewModel, ILogger<MediaElementPage> logger) : base(viewModel)
 	{
@@ -43,38 +47,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	}
 
 	void OnSeekCompleted(object? sender, EventArgs e) => logger.LogInformation("Seek completed.");
-
-	void OnResetClicked(object? sender, EventArgs e)
-	{
-		mediaElement.Source = null;
-	}
-
-	void OnMp4OnlineSourceClicked(object? sender, EventArgs e)
-	{
-		mediaElement.Source = MediaSource.FromUri("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
-	}
-
-	void OnHlsSourceClicked(object? sender, EventArgs e)
-	{
-		mediaElement.Source = MediaSource.FromUri("https://wowza.peer5.com/live/smil:bbb_abr.smil/playlist.m3u8");
-	}
-
-	void OnResourceSourceClicked(object? sender, EventArgs e)
-	{
-		if (DeviceInfo.Platform == DevicePlatform.MacCatalyst
-			|| DeviceInfo.Platform == DevicePlatform.iOS)
-		{
-			mediaElement.Source = MediaSource.FromResource("AppleVideo.mp4");
-		}
-		else if (DeviceInfo.Platform == DevicePlatform.Android)
-		{
-			mediaElement.Source = MediaSource.FromResource("AndroidVideo.mp4");
-		}
-		else if (DeviceInfo.Platform == DevicePlatform.WinUI)
-		{
-			mediaElement.Source = MediaSource.FromResource("WindowsVideo.mp4");
-		}
-	}
 
 	void OnSpeedMinusClicked(object? sender, EventArgs e)
 	{
@@ -169,5 +141,69 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 
 		mediaElement.Source = MediaSource.FromUri(customSourceEntry.Text);
+	}
+
+	async void ChangeSourceClicked(System.Object sender, System.EventArgs e)
+	{
+		var result = await DisplayActionSheet("Choose a source", "Cancel", null,
+			loadOnlineMp4, loadHls, loadLocalResource, resetSource);
+
+		switch (result)
+		{
+			case loadOnlineMp4:
+				mediaElement.Source =
+					MediaSource.FromUri(
+						"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
+				return;
+
+			case loadHls:
+				mediaElement.Source
+					= MediaSource.FromUri(
+						"https://wowza.peer5.com/live/smil:bbb_abr.smil/playlist.m3u8");
+				return;
+
+			case resetSource:
+				mediaElement.Source = null;
+				return;
+
+			case loadLocalResource:
+				if (DeviceInfo.Platform == DevicePlatform.MacCatalyst
+					|| DeviceInfo.Platform == DevicePlatform.iOS)
+				{
+					mediaElement.Source = MediaSource.FromResource("AppleVideo.mp4");
+				}
+				else if (DeviceInfo.Platform == DevicePlatform.Android)
+				{
+					mediaElement.Source = MediaSource.FromResource("AndroidVideo.mp4");
+				}
+				else if (DeviceInfo.Platform == DevicePlatform.WinUI)
+				{
+					mediaElement.Source = MediaSource.FromResource("WindowsVideo.mp4");
+				}
+				return;
+		}
+	}
+
+	async void ChangeAspectClicked(System.Object sender, System.EventArgs e)
+	{
+		var resultAspect = await DisplayActionSheet("Choose aspect ratio",
+			"Cancel", null, Aspect.AspectFit.ToString(),
+			Aspect.AspectFill.ToString(), Aspect.Fill.ToString());
+
+		if (resultAspect.Equals("Cancel"))
+		{
+			return;
+		}
+
+		if (!Enum.TryParse(typeof(Aspect), resultAspect, true, out var aspectEnum)
+			|| aspectEnum is null)
+		{
+			await DisplayAlert("Error", "There was an error determining the selected aspect",
+				"OK");
+
+			return;
+		}
+
+		mediaElement.Aspect = (Aspect)aspectEnum;
 	}
 }

@@ -319,6 +319,22 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		}
 	}
 
+	protected virtual partial void PlatformUpdateAspect()
+	{
+		if (PlayerView is null)
+		{
+			return;
+		}
+
+		PlayerView.ResizeMode = MediaElement.Aspect switch
+		{
+			Aspect.AspectFill => AspectRatioFrameLayout.ResizeModeZoom,
+			Aspect.Fill => AspectRatioFrameLayout.ResizeModeFill,
+			_ => AspectRatioFrameLayout.ResizeModeFit,
+
+		};
+	}
+
 	protected virtual partial void PlatformUpdateSpeed()
 	{
 		if (MediaElement is null || Player is null)

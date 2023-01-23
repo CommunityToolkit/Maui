@@ -191,6 +191,22 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
+	protected virtual partial void PlatformUpdateAspect()
+	{
+		if (Player is null || MediaElement is null)
+		{
+			return;
+		}
+
+		Player.DisplaySettings.Mode = MediaElement.Aspect switch
+		{
+			Aspect.AspectFill => PlayerDisplayMode.CroppedFull,
+			Aspect.AspectFit => PlayerDisplayMode.LetterBox,
+			Aspect.Fill => PlayerDisplayMode.FullScreen,
+			_ => PlayerDisplayMode.LetterBox,
+		};
+	}
+
 	protected virtual partial void PlatformUpdateSource()
 	{
 		if (Player is null)
