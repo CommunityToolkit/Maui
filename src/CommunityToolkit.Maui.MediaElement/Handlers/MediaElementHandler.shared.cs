@@ -21,6 +21,7 @@ public partial class MediaElementHandler
 	/// </summary>
 	public static IPropertyMapper<MediaElement, MediaElementHandler> PropertyMapper = new PropertyMapper<MediaElement, MediaElementHandler>(ViewMapper)
 	{
+		[nameof(IMediaElement.Aspect)] = MapAspect,
 		[nameof(IMediaElement.ShouldShowPlaybackControls)] = MapShouldShowPlaybackControls,
 		[nameof(IMediaElement.Source)] = MapSource,
 		[nameof(IMediaElement.Speed)] = MapSpeed,
@@ -63,6 +64,17 @@ public partial class MediaElementHandler
 	}
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
+	/// <summary>
+	/// Maps the <see cref="IMediaElement.Aspect"/> property between the abstract
+	/// <see cref="MediaElement"/> and platform counterpart.
+	/// </summary>
+	/// <param name="handler">The associated handler.</param>
+	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	public static void MapAspect(MediaElementHandler handler, MediaElement MediaElement)
+	{
+		handler.mediaManager?.UpdateAspect();
+	}
+
 	/// <summary>
 	/// Maps the <see cref="IMediaElement.ShouldShowPlaybackControls"/> property between the abstract
 	/// <see cref="MediaElement"/> and platform counterpart.
