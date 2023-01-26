@@ -76,10 +76,6 @@
     <RuntimeIdentifiers>maccatalyst-arm64;maccatalyst-x64</RuntimeIdentifiers>
   </PropertyGroup>
   
-  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.221209.1" />
-  </ItemGroup>
-  
   <ItemGroup>
     <Compile Update="Pages\Views\MediaElement\MediaElementPage.xaml.cs">
       <DependentUpon>MediaElementPage.xaml</DependentUpon>

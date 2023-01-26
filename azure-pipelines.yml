@@ -20,8 +20,8 @@ variables:
   PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
   DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/7.0.49.json'
-  Latest_Xcode_Version: '14.1.0'
-  CommunityToolkit_Xcode_Version: '14.0.1'
+  CommunityToolkitSampleApp_Xcode_Version: '14.2.0'
+  CommunityToolkitLibrary_Xcode_Version: '14.0.1'
 
 trigger:
   branches:
@@ -58,10 +58,10 @@ jobs:
       vmImage: $(image)
     steps:
       - task: CmdLine@2
-        displayName: 'Set Xcode v$(Latest_Xcode_Version)'
+        displayName: 'Set Xcode v$(CommunityToolkitSampleApp_Xcode_Version)'
         condition: eq(variables['Agent.OS'], 'Darwin') # Only run this step on macOS
         inputs:
-          script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(Latest_Xcode_Version).app;sudo xcode-select --switch /Applications/Xcode_$(Latest_Xcode_Version).app/Contents/Developer
+          script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(CommunityToolkitSampleApp_Xcode_Version).app;sudo xcode-select --switch /Applications/Xcode_$(CommunityToolkitSampleApp_Xcode_Version).app/Contents/Developer
 
       - task: UseDotNet@2
         displayName: 'Install Latest .NET SDK, v$(LATEST_NET_VERSION)'
@@ -126,10 +126,10 @@ jobs:
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['build.reason'], 'PullRequest')) # Only run this step on Windows when a Pull Request has triggered the CI Pipeline
       
       - task: CmdLine@2
-        displayName: 'Set Xcode v$(CommunityToolkit_Xcode_Version)'
+        displayName: 'Set Xcode v$(CommunityToolkitLibrary_Xcode_Version)'
         condition: eq(variables['Agent.OS'], 'Darwin') # Only run this step on macOS
         inputs:
-          script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(CommunityToolkit_Xcode_Version).app;sudo xcode-select --switch /Applications/Xcode_$(CommunityToolkit_Xcode_Version).app/Contents/Developer
+          script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(CommunityToolkitLibrary_Xcode_Version).app;sudo xcode-select --switch /Applications/Xcode_$(CommunityToolkitLibrary_Xcode_Version).app/Contents/Developer
 
       - task: UseDotNet@2
         displayName: Install .NET v$(TOOLKIT_NET_VERSION)
