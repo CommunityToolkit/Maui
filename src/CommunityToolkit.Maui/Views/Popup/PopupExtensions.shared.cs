@@ -60,13 +60,12 @@ public static partial class PopupExtensions
 		{
 			var taskCompletionSource = new TaskCompletionSource<object?>();
 
-			async void handler(object? sender, NavigatedToEventArgs args)
+			void handler(object? sender, NavigatedToEventArgs args)
 			{
 				page.NavigatedTo -= handler;
 
-				var result = await CreateAndShowPopupAsync(page, popup);
-
-				taskCompletionSource.TrySetResult(result);
+				CreateAndShowPopupAsync(page, popup)
+					.ContinueWith(antecedent => taskCompletionSource.TrySetResult(antecedent.Result));
 			}
 
 			page.NavigatedTo += handler;
