@@ -21,12 +21,17 @@ public static partial class PopupExtensions
 	/// </param>
 	public static void ShowPopup<TPopup>(this Page page, TPopup popup) where TPopup : Popup
 	{
-#if WINDOWS
-		PlatformShowPopup(popup, GetMauiContext(page));
-#else
-		CreatePopup(page, popup);
-#endif
-
+		if (page.IsPlatformEnabled)
+		{
+			CreateAndShowPopup(page, popup);
+		}
+		else
+		{
+			page.NavigatedTo += (o, e) =>
+			{
+				CreateAndShowPopup(page, popup);
+			};
+		}
 	}
 
 	/// <summary>
@@ -43,13 +48,23 @@ public static partial class PopupExtensions
 	/// </returns>
 	public static Task<object?> ShowPopupAsync<TPopup>(this Page page, TPopup popup) where TPopup : Popup
 	{
-#if WINDOWS
-		return PlatformShowPopupAsync(popup, GetMauiContext(page));
-#else
+		if (page.IsPlatformEnabled)
+		{
+			return CreateAndShowPopupAsync(page, popup);
+		}
+		else
+		{
+			var taskCompletionSource = new TaskCompletionSource<object?>();
 
-		CreatePopup(page, popup);
-		return popup.Result;
-#endif
+			page.NavigatedTo += async (o, e) =>
+			{
+				var result = await CreateAndShowPopupAsync(page, popup);
+
+				taskCompletionSource.TrySetResult(result);
+			};
+
+			return taskCompletionSource.Task;
+		}
 	}
 
 	static void CreatePopup(Page page, Popup popup)
@@ -64,5 +79,25 @@ public static partial class PopupExtensions
 	static IMauiContext GetMauiContext(Page page)
 	{
 		return page.Handler?.MauiContext ?? throw new InvalidOperationException("Could not locate MauiContext.");
+	}
+
+	static void CreateAndShowPopup<TPopup>(Page page, TPopup popup) where TPopup : Popup
+	{
+#if WINDOWS
+		PlatformShowPopup(popup, GetMauiContext(page));
+#else
+		CreatePopup(page, popup);
+#endif
+	}
+
+	static Task<object?> CreateAndShowPopupAsync<TPopup>(this Page page, TPopup popup) where TPopup : Popup
+	{
+#if WINDOWS
+		return PlatformShowPopupAsync(popup, GetMauiContext(page));
+#else
+		CreatePopup(page, popup);
+
+		return popup.Result;
+#endif
 	}
 }
