@@ -35,6 +35,7 @@ partial class MediaManager : IDisposable
 
 		Player.SetMediaPlayer(MediaElement);
 
+		Player.MediaPlayer.PlaybackSession.PlaybackRateChanged += OnPlaybackSessionPlaybackRateChanged;
 		Player.MediaPlayer.PlaybackSession.PlaybackStateChanged += OnPlaybackSessionPlaybackStateChanged;
 		Player.MediaPlayer.PlaybackSession.SeekCompleted += OnPlaybackSessionSeekCompleted;
 		Player.MediaPlayer.MediaFailed += OnMediaElementMediaFailed;
@@ -275,6 +276,7 @@ partial class MediaManager : IDisposable
 
 				if (Player.MediaPlayer.PlaybackSession is not null)
 				{
+					Player.MediaPlayer.PlaybackSession.PlaybackRateChanged -= OnPlaybackSessionPlaybackRateChanged;
 					Player.MediaPlayer.PlaybackSession.PlaybackStateChanged -= OnPlaybackSessionPlaybackStateChanged;
 					Player.MediaPlayer.PlaybackSession.SeekCompleted -= OnPlaybackSessionSeekCompleted;
 				}
@@ -337,6 +339,22 @@ partial class MediaManager : IDisposable
 		}
 	}
 
+	void OnPlaybackSessionPlaybackRateChanged(MediaPlaybackSession sender, object args)
+	{
+		if (MediaElement is null)
+		{
+			return;
+		}
+
+		if (MediaElement.Speed != sender.PlaybackRate)
+		{
+			MainThread.BeginInvokeOnMainThread(() =>
+			{
+				MediaElement.Speed = sender.PlaybackRate;
+			});
+		}
+	}
+
 	void OnPlaybackSessionPlaybackStateChanged(MediaPlaybackSession sender, object args)
 	{
 		var newState = sender.PlaybackState switch
@@ -349,6 +367,14 @@ partial class MediaManager : IDisposable
 		};
 
 		MediaElement?.CurrentStateChanged(newState);
+
+		if (sender.PlaybackState == MediaPlaybackState.Playing && sender.PlaybackRate == 0)
+		{
+			MainThread.BeginInvokeOnMainThread(() =>
+			{
+				sender.PlaybackRate = 1;
+			});
+		}
 	}
 
 	void OnPlaybackSessionSeekCompleted(MediaPlaybackSession sender, object args)
