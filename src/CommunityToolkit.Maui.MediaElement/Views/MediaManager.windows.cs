@@ -127,6 +127,15 @@ partial class MediaManager : IDisposable
 		}
 
 		Player.MediaPlayer.PlaybackRate = MediaElement.Speed;
+
+		if (MediaElement.Speed == 0)
+		{
+			MediaElement.Pause();
+		}
+		else
+		{
+			MediaElement.Play();
+		}
 	}
 
 	protected virtual partial void PlatformUpdateShouldShowPlaybackControls()
