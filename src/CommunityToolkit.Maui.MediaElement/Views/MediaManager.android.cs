@@ -15,6 +15,8 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
+	double previousSpeed = -1;
+
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
 	/// </summary>
@@ -342,13 +344,26 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			return;
 		}
 
+		// First time we're getting a playback speed, set initial value
+		if (previousSpeed == -1)
+		{
+			previousSpeed = MediaElement.Speed;
+		}
+
 		if (MediaElement.Speed > 0)
 		{
 			Player.SetPlaybackSpeed((float)MediaElement.Speed);
-			Player.Play();
+
+			if (previousSpeed == 0)
+			{
+				Player.Play();
+			}
+
+			previousSpeed = MediaElement.Speed;
 		}
 		else
 		{
+			previousSpeed = 0;
 			Player.Pause();
 		}
 	}
