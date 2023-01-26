@@ -77,7 +77,7 @@
   </PropertyGroup>
   
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.221209.1" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.230118.102" />
   </ItemGroup>
   
   <ItemGroup>

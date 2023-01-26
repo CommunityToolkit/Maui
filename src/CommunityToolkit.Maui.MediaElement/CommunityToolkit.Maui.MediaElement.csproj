@@ -63,7 +63,7 @@
     <PackageReference Include="Xam.Plugins.Android.ExoPlayer.Transformer" Version="2.18.8" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.221209.1" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.230118.102" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
   </ItemGroup>
 </Project>
