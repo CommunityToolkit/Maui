@@ -27,10 +27,14 @@ public static partial class PopupExtensions
 		}
 		else
 		{
-			page.NavigatedTo += (o, e) =>
+			void handler(object? sender, NavigatedToEventArgs args)
 			{
+				page.NavigatedTo -= handler;
+
 				CreateAndShowPopup(page, popup);
-			};
+			}
+
+			page.NavigatedTo += handler;
 		}
 	}
 
@@ -56,12 +60,16 @@ public static partial class PopupExtensions
 		{
 			var taskCompletionSource = new TaskCompletionSource<object?>();
 
-			page.NavigatedTo += async (o, e) =>
+			async void handler(object? sender, NavigatedToEventArgs args)
 			{
+				page.NavigatedTo -= handler;
+
 				var result = await CreateAndShowPopupAsync(page, popup);
 
 				taskCompletionSource.TrySetResult(result);
-			};
+			}
+
+			page.NavigatedTo += handler;
 
 			return taskCompletionSource.Task;
 		}
