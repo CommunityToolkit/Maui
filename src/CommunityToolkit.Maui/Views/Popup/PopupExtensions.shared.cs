@@ -65,7 +65,17 @@ public static partial class PopupExtensions
 				page.NavigatedTo -= handler;
 
 				CreateAndShowPopupAsync(page, popup)
-					.ContinueWith(antecedent => taskCompletionSource.TrySetResult(antecedent.Result));
+.ContinueWith(antecedent =>
+					{
+						if (antecedent.Status == TaskStatus.RanToCompletion)
+						{
+							taskCompletionSource.TrySetResult(antecedent.Result);
+						}
+						else if (antecedent.Status == TaskStatus.Faulted && antecedent.Exception?.InnerException is Exception ex)
+						{
+							taskCompletionSource.TrySetException(ex);
+						}
+					});
 			}
 
 			page.NavigatedTo += handler;
