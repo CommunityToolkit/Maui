@@ -19,7 +19,6 @@ public partial class ShowPopupInOnAppearingPage : BasePage<ShowPopupInOnAppearin
 
 	protected override async void OnAppearing()
 	{
-		base.OnAppearing();
 
 		// Proves that we now support showing a popup before the platform is even ready.
 		var result = await this.ShowPopupAsync(new ReturnResultPopup(popupSizeConstants));
