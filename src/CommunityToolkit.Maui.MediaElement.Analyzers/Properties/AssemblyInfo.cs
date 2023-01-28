@@ -1,1 +1,1 @@
-﻿[assembly: System.Resources.NeutralResourcesLanguage("en")]
+﻿//[assembly: System.Resources.NeutralResourcesLanguage("en")]
