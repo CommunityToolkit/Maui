@@ -77,6 +77,31 @@ jobs:
           .\workload-install.ps1
         displayName: Install Tizen Workload
 
+      - task: CmdLine@2
+        displayName: 'Build CommunityToolkit.Maui.Analyzers'
+        inputs:
+          script: 'dotnet build -c Release $(PathToCommunityToolkitAnalyzersCsproj)'
+
+      - task: CmdLine@2
+        displayName: 'Build CommunityToolkit.Maui.Analyzers.CodeFixes'
+        inputs:
+          script: 'dotnet build -c Release $(PathToCommunityToolkitAnalyzersCodeFixCsproj)'
+
+      - task: CmdLine@2
+        displayName: 'Build CommunityToolkit.Maui.MediaElement.Analyzers'
+        inputs:
+          script: 'dotnet build -c Release $(PathToCommunityToolkitMediaElementAnalyzersCsproj)'
+
+      - task: CmdLine@2
+        displayName: 'Build CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes'
+        inputs:
+          script: 'dotnet build -c Release $(PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj)'
+
+      - task: CmdLine@2
+        displayName: 'Build CommunityToolkit.Maui.SourceGenerators'
+        inputs:
+          script: 'dotnet build -c Release $(PathToCommunityToolkitSourceGeneratorsCsproj)'
+
       # build sample
       - task: CmdLine@2
         displayName: 'Build Community Toolkit Sample'
