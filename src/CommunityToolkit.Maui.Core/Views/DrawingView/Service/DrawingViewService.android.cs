@@ -176,7 +176,8 @@ public static class DrawingViewService
 
 		var width = maxResizeFactor * sourceSize.Width;
 		var height = maxResizeFactor * sourceSize.Height;
-		return Bitmap.CreateScaledBitmap(sourceImage, (int)width, (int)height, false)!;
+		return Bitmap.CreateScaledBitmap(sourceImage, (int)width, (int)height, false)
+				?? throw new InvalidOperationException("Failed to create Bitmap");
 	}
 
 	static void DrawBackground(Canvas canvas, Paint? brush)
