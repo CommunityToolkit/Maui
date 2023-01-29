@@ -16,7 +16,7 @@ body:
     description: If you don't read, please take a moment to do it and avoid your report being closed. You can find it at [CONTRIBUTING.md](https://github.com/CommunityToolkit/Maui/blob/main/CONTRIBUTING.md#reporting-a-bug).
 
     options:
-    - label: I have read the "Reporting a bug" section on Contributing file.
+    - label: I have read the "Reporting a bug" section on Contributing file: https://github.com/CommunityToolkit/Maui/blob/main/CONTRIBUTING.md#reporting-a-bug
       required: true
 - type: textarea
   attributes:
