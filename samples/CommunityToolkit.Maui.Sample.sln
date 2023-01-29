@@ -32,6 +32,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{9F7D54C0
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.Analyzers.UnitTests", "..\src\CommunityToolkit.Maui.Analyzers.UnitTests\CommunityToolkit.Maui.Analyzers.UnitTests.csproj", "{60B976B2-F3FA-494E-A28B-7BED2EAE990E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.MediaElement", "..\src\CommunityToolkit.Maui.MediaElement\CommunityToolkit.Maui.MediaElement.csproj", "{A651D248-B102-4B8B-90C2-3C4C28425EFF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.MediaElement.Analyzers", "..\src\CommunityToolkit.Maui.MediaElement.Analyzers\CommunityToolkit.Maui.MediaElement.Analyzers.csproj", "{85B875BD-62F6-4EC3-BCFF-4DC25E94BCAE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes", "..\src\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj", "{215083C8-D9CA-48FA-8B0A-1D21A989D055}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,6 +80,18 @@ Global
 		{60B976B2-F3FA-494E-A28B-7BED2EAE990E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{60B976B2-F3FA-494E-A28B-7BED2EAE990E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{60B976B2-F3FA-494E-A28B-7BED2EAE990E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A651D248-B102-4B8B-90C2-3C4C28425EFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A651D248-B102-4B8B-90C2-3C4C28425EFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A651D248-B102-4B8B-90C2-3C4C28425EFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A651D248-B102-4B8B-90C2-3C4C28425EFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85B875BD-62F6-4EC3-BCFF-4DC25E94BCAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85B875BD-62F6-4EC3-BCFF-4DC25E94BCAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85B875BD-62F6-4EC3-BCFF-4DC25E94BCAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85B875BD-62F6-4EC3-BCFF-4DC25E94BCAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{215083C8-D9CA-48FA-8B0A-1D21A989D055}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{215083C8-D9CA-48FA-8B0A-1D21A989D055}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{215083C8-D9CA-48FA-8B0A-1D21A989D055}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{215083C8-D9CA-48FA-8B0A-1D21A989D055}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -85,6 +103,8 @@ Global
 		{BB7A6C2F-B8F1-49FF-8E67-C436EF062A22} = {9BFC4026-BC8F-43E2-BAA9-5BC2D764D37D}
 		{20792D38-690A-4760-82FD-94E9510F86C9} = {9BFC4026-BC8F-43E2-BAA9-5BC2D764D37D}
 		{60B976B2-F3FA-494E-A28B-7BED2EAE990E} = {9F7D54C0-EA17-409A-804F-B2E8D7F4A7F3}
+		{85B875BD-62F6-4EC3-BCFF-4DC25E94BCAE} = {9BFC4026-BC8F-43E2-BAA9-5BC2D764D37D}
+		{215083C8-D9CA-48FA-8B0A-1D21A989D055} = {9BFC4026-BC8F-43E2-BAA9-5BC2D764D37D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1E9E61C1-5CB7-4C8E-87BA-6C1D38238679}
