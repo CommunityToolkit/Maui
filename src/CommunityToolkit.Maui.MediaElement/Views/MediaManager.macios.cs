@@ -73,6 +73,11 @@ public partial class MediaManager : IDisposable
 	protected IDisposable? VolumeObserver { get; set; }
 
 	/// <summary>
+	/// Observer that tracks if the audio is muted.
+	/// </summary>
+	protected IDisposable? MutedObserver { get; set; }
+
+	/// <summary>
 	/// Creates the corresponding platform view of <see cref="MediaElement"/> on iOS and macOS.
 	/// </summary>
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
@@ -356,6 +361,7 @@ public partial class MediaManager : IDisposable
 				RateObserver?.Dispose();
 				CurrentItemErrorObserver?.Dispose();
 				Player.ReplaceCurrentItemWithPlayerItem(null);
+				MutedObserver?.Dispose();
 				VolumeObserver?.Dispose();
 				StatusObserver?.Dispose();
 				TimeControlStatusObserver?.Dispose();
@@ -375,6 +381,8 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
+		MutedObserver = Player.AddObserver("muted", valueObserverOptions,
+					MutedChanged);
 		VolumeObserver = Player.AddObserver("volume", valueObserverOptions,
 					VolumeChanged);
 		StatusObserver = Player.AddObserver("status", valueObserverOptions, StatusChanged);
@@ -391,6 +399,16 @@ public partial class MediaManager : IDisposable
 		}
 
 		MediaElement.Volume = Player.Volume;
+	}
+
+	void MutedChanged(NSObservedChange e)
+	{
+		if (MediaElement is null || Player is null)
+		{
+			return;
+		}
+
+		MediaElement.ShouldMute = Player.Muted;
 	}
 
 	void AddErrorObservers()
