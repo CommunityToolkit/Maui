@@ -324,6 +324,16 @@ public partial class MediaManager : IDisposable
 		Player.PreventsDisplaySleepDuringVideoPlayback = MediaElement.ShouldKeepScreenOn;
 	}
 
+	protected virtual partial void PlatformUpdateShouldMute()
+	{
+		if (Player is null || MediaElement is null)
+		{
+			return;
+		}
+
+		Player.Muted = MediaElement.ShouldMute;
+	}
+
 	protected virtual partial void PlatformUpdateShouldLoopPlayback()
 	{
 		// no-op we loop through using the PlayedToEndObserver

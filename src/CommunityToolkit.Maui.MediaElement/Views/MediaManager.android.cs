@@ -411,6 +411,24 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		PlayerView.KeepScreenOn = MediaElement.ShouldKeepScreenOn;
 	}
 
+	float volumeBeforeMute = 1;
+	protected virtual partial void PlatformUpdateShouldMute()
+	{
+		if (Player is null || MediaElement is null)
+		{
+			return;
+		}
+
+		// We're going to muted state, capture current volume first
+		// so we can restore later
+		if (MediaElement.ShouldMute == true)
+		{
+			volumeBeforeMute = Player.Volume;
+		}
+
+		Player.Volume = MediaElement.ShouldMute ? 0 : volumeBeforeMute;
+	}
+
 	protected virtual partial void PlatformUpdateShouldLoopPlayback()
 	{
 		if (MediaElement is null || Player is null)

@@ -52,10 +52,11 @@
 
             </HorizontalStackLayout>
 
-            <Grid Grid.Row="2" Padding="0,10,0,10" ColumnDefinitions="*,*,*" ColumnSpacing="5">          
+            <Grid Grid.Row="2" Padding="0,10,0,10" ColumnDefinitions="*,*,*,*" ColumnSpacing="5">          
                 <Button Grid.Column="0" Text="Play" Clicked="OnPlayClicked" />
                 <Button Grid.Column="1" Text="Pause" Clicked="OnPauseClicked" />
                 <Button Grid.Column="2" Text="Stop" Clicked="OnStopClicked" />
+                <Button Grid.Column="3" Text="Mute" Clicked="OnMuteClicked" />
             </Grid>
 
             <Slider

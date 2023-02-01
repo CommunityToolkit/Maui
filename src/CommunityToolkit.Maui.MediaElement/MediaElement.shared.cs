@@ -52,6 +52,12 @@ public class MediaElement : View, IMediaElement
 		  BindableProperty.Create(nameof(ShouldKeepScreenOn), typeof(bool), typeof(MediaElement), false);
 
 	/// <summary>
+	/// Backing store for the <see cref="ShouldMute"/> property.
+	/// </summary>
+	public static readonly BindableProperty ShouldMuteProperty =
+		  BindableProperty.Create(nameof(ShouldMute), typeof(bool), typeof(MediaElement), false);
+
+	/// <summary>
 	/// Backing store for the <see cref="Position"/> property.
 	/// </summary>
 	public static readonly BindableProperty PositionProperty =
@@ -215,6 +221,15 @@ public class MediaElement : View, IMediaElement
 	{
 		get => (bool)GetValue(ShouldKeepScreenOnProperty);
 		set => SetValue(ShouldKeepScreenOnProperty, value);
+	}
+
+	/// <summary>
+	/// Gets or sets if audio should be muted. This is a bindable property.
+	/// </summary>
+	public bool ShouldMute
+	{
+		get => (bool)GetValue(ShouldMuteProperty);
+		set => SetValue(ShouldMuteProperty, value);
 	}
 
 	/// <summary>
