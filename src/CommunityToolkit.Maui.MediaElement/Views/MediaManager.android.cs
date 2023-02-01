@@ -16,6 +16,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
 	double previousSpeed = -1;
+	float volumeBeforeMute = 1;
 
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
@@ -411,7 +412,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		PlayerView.KeepScreenOn = MediaElement.ShouldKeepScreenOn;
 	}
 
-	float volumeBeforeMute = 1;
 	protected virtual partial void PlatformUpdateShouldMute()
 	{
 		if (Player is null || MediaElement is null)
