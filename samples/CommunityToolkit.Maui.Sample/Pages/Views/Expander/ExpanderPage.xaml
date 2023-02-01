@@ -7,6 +7,7 @@
                 xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
                 x:TypeArguments="viewModels:ExpanderViewModel"
                 x:DataType="viewModels:ExpanderViewModel"
+                Padding="12,0"
                 Title="Expander">
 
     <ScrollView>
@@ -21,7 +22,7 @@
                 </mct:Expander.Header>
 
                 <mct:Expander.Content>
-                    <VerticalStackLayout BackgroundColor="LightGray">
+                    <VerticalStackLayout>
                         <Label Text="Item 1"/>
                         <Label Text="Item 2"/>
                     </VerticalStackLayout>
@@ -45,6 +46,55 @@
                     </mct:Expander>
                 </mct:Expander.Content>
             </mct:Expander>
+
+            <Label Text="Expander in ListView" FontSize="24" FontAttributes="Bold"/>
+
+            <ListView ItemsSource="{Binding ContentCreators}"
+                      HasUnevenRows="True">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <mct:Expander x:DataType="viewModels:ContentCreator"
+                                          ExpandedChanged="Expander_ExpandedChanged">
+                                <mct:Expander.Header>
+                                    <Label Text="{Binding Name}"/>
+                                </mct:Expander.Header>
+                                <mct:Expander.Content>
+                                    <VerticalStackLayout>
+                                        <Label Text="{Binding Resource}"/>
+                                        <Image Source="{Binding Image}"
+                                               WidthRequest="100"
+                                               HeightRequest="100"/>
+                                    </VerticalStackLayout>
+                                </mct:Expander.Content>
+                            </mct:Expander>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <Label Text="Expander in CollectionView" FontSize="24" FontAttributes="Bold"/>
+
+            <CollectionView ItemsSource="{Binding ContentCreators}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <mct:Expander x:DataType="viewModels:ContentCreator"
+                                      ExpandedChanged="Expander_ExpandedChanged">
+                            <mct:Expander.Header>
+                                <Label Text="{Binding Name}"/>
+                            </mct:Expander.Header>
+                            <mct:Expander.Content>
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding Resource}" HorizontalOptions="Center"/>
+                                    <Image Source="{Binding Image}"
+                                               WidthRequest="100"
+                                               HeightRequest="100"/>
+                                </VerticalStackLayout>
+                            </mct:Expander.Content>
+                        </mct:Expander>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
         </VerticalStackLayout>
     </ScrollView>
 </pages:BasePage>
