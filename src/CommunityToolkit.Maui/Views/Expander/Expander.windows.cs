@@ -1,16 +1,17 @@
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.UI.Xaml.Controls;
+
 namespace CommunityToolkit.Maui.Views;
 
 public partial class Expander 
 {
-	static void ForceUpdateCellSize(Expander expander, CollectionView collectionView, Size size, Point? tapLocation)
+	static void ForceUpdateCellSize(CollectionView collectionView, Size size, Point? tapLocation)
 	{
-		var formsListView = collectionView.Handler?.PlatformView as Microsoft.Maui.Controls.Platform.FormsListView;
-		if (formsListView is not null)
+		if (collectionView.Handler?.PlatformView is FormsListView formsListView)
 		{
 			foreach (var item in formsListView.Items)
 			{
-				var cell = formsListView.ContainerFromItem(item) as Microsoft.UI.Xaml.Controls.ListViewItem;
-				if (cell is not null)
+				if (formsListView.ContainerFromItem(item) is ListViewItem cell)
 				{
 					cell.Height = size.Height;
 				}

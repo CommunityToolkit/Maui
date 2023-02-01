@@ -91,7 +91,7 @@ public partial class Expander : ContentView, IExpander
 		set => SetValue(HeaderProperty, value);
 	}
 
-	/// <inheritdoc />
+	/// <inheritdoc cref="ContentView.Content" />
 	public new IView? Content
 	{
 		get => (IView?)GetValue(Expander.ContentProperty);
@@ -219,7 +219,6 @@ public partial class Expander : ContentView, IExpander
 	void OnHeaderTapGestureRecognizerTapped(object? sender, TappedEventArgs tappedEventArgs)
 	{
 		IsExpanded = !IsExpanded;
-
 		HandleHeaderTapped?.Invoke(tappedEventArgs);
 	}
 
@@ -249,7 +248,7 @@ public partial class Expander : ContentView, IExpander
 			else if (element is CollectionView collectionView)
 			{
 				var tapLocation = tappedEventArgs.GetPosition(collectionView);
-				ForceUpdateCellSize(this, collectionView, size, tapLocation);
+				ForceUpdateCellSize(collectionView, size, tapLocation);
 			}
 #endif
 
