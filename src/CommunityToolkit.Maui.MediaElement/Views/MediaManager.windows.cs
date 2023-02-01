@@ -41,6 +41,7 @@ partial class MediaManager : IDisposable
 		Player.MediaPlayer.MediaFailed += OnMediaElementMediaFailed;
 		Player.MediaPlayer.MediaEnded += OnMediaElementMediaEnded;
 		Player.MediaPlayer.VolumeChanged += OnMediaElementVolumeChanged;
+		Player.MediaPlayer.IsMutedChanged += OnMediaElementIsMutedChanged;
 
 		return Player;
 	}
@@ -201,12 +202,12 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateShouldMute()
 	{
-		if (MediaElement is null || Player is null)
+		if (MediaElement is null || Player?.MediaPlayer is null)
 		{
 			return;
 		}
 
-		Player.IsMuted = MediaElement.ShouldMute;
+		Player.MediaPlayer.IsMuted = MediaElement.ShouldMute;
 	}
 
 	protected virtual async partial void PlatformUpdateSource()
@@ -283,6 +284,7 @@ partial class MediaManager : IDisposable
 				Player.MediaPlayer.MediaFailed -= OnMediaElementMediaFailed;
 				Player.MediaPlayer.MediaEnded -= OnMediaElementMediaEnded;
 				Player.MediaPlayer.VolumeChanged -= OnMediaElementVolumeChanged;
+				Player.MediaPlayer.IsMutedChanged -= OnMediaElementIsMutedChanged;
 
 				if (Player.MediaPlayer.PlaybackSession is not null)
 				{
@@ -339,6 +341,14 @@ partial class MediaManager : IDisposable
 		MediaElement?.MediaFailed(new MediaFailedEventArgs(message));
 
 		Logger?.LogError("{logMessage}", message);
+	}
+
+	void OnMediaElementIsMutedChanged(WindowsMediaElement sender, object args)
+	{
+		if (MediaElement is not null)
+		{
+			MediaElement.ShouldMute = sender.IsMuted;
+		}
 	}
 
 	void OnMediaElementVolumeChanged(WindowsMediaElement sender, object args)

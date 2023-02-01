@@ -421,7 +421,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		// We're going to muted state, capture current volume first
 		// so we can restore later
-		if (MediaElement.ShouldMute == true)
+		if (MediaElement.ShouldMute)
 		{
 			volumeBeforeMute = Player.Volume;
 		}
