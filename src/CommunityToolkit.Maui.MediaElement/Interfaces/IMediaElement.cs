@@ -61,7 +61,7 @@ public interface IMediaElement : IView
 	/// <summary>
 	/// Gets or sets if audio should be muted.
 	/// </summary>
-	public bool ShouldMute { get; set; }
+	bool ShouldMute { get; set; }
 
 	/// <summary>
 	/// Gets or sets whether the player should show the platform playback controls.
