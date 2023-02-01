@@ -3,7 +3,7 @@ using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
 
-namespace CommunityToolkit.Maui.UnitTests.Views.AvatarView;
+namespace CommunityToolkit.Maui.UnitTests.Views;
 
 public class AvatarViewInterfaceTests : BaseHandlerTest
 {

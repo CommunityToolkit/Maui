@@ -4,7 +4,7 @@ using CommunityToolkit.Maui.Core.Views;
 using FluentAssertions;
 using Xunit;
 
-namespace CommunityToolkit.Maui.UnitTests.Views.Expander;
+namespace CommunityToolkit.Maui.UnitTests.Views;
 
 public class ExpandedChangedEventArgsTests : BaseHandlerTest
 {
