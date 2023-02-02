@@ -4,7 +4,7 @@ using CommunityToolkit.Maui.Core.Views;
 using FluentAssertions;
 using Xunit;
 
-namespace CommunityToolkit.Maui.UnitTests.Views.DrawingView;
+namespace CommunityToolkit.Maui.UnitTests.Views;
 
 public class MauiDrawingLineCompletedEventArgsTests : BaseHandlerTest
 {
