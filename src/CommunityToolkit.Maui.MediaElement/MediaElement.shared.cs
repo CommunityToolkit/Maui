@@ -226,6 +226,11 @@ public class MediaElement : View, IMediaElement
 	/// <summary>
 	/// Gets or sets if audio should be muted. This is a bindable property.
 	/// </summary>
+	/// <remarks>
+	/// When <see cref="ShouldMute"/> is <see langword="true" />, changes to <see cref="Volume"/> are ignored.
+	/// The new volume will be applied when <see cref="ShouldMute"/> is set to <see langword="false" /> again.
+	/// When the user uses the platform player controls to influence the volume, it might still unmute.
+	/// </remarks>
 	public bool ShouldMute
 	{
 		get => (bool)GetValue(ShouldMuteProperty);
@@ -259,7 +264,8 @@ public class MediaElement : View, IMediaElement
 	/// <remarks>
 	/// <para>A value of 1 means full volume, 0 is silence.</para>
 	/// <para>When <see cref="ShouldMute"/> is <see langword="true" />, changes to <see cref="Volume"/> are ignored.
-	/// The new volume will be applied when <see cref="ShouldMute"/> is set to <see langword="false" /> again.</para>
+	/// The new volume will be applied when <see cref="ShouldMute"/> is set to <see langword="false" /> again.
+	/// When the user uses the platform player controls to influence the volume, it might still unmute.</para>
 	/// </remarks>
 	public double Volume
 	{

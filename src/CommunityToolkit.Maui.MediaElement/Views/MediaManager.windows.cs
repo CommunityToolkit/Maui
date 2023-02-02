@@ -165,13 +165,21 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateVolume()
 	{
-		if (Player is not null)
+		if (Player is null || MediaElement is null)
 		{
-			MainThread.BeginInvokeOnMainThread(() =>
-			{
-				Player.MediaPlayer.Volume = MediaElement.Volume;
-			});
+			return;
 		}
+
+		// If currently muted, ignore
+		if (MediaElement.ShouldMute) 
+		{
+			return;
+		}
+
+		MainThread.BeginInvokeOnMainThread(() =>
+		{
+			Player.MediaPlayer.Volume = MediaElement.Volume;
+		});
 	}
 
 	protected virtual partial void PlatformUpdateShouldKeepScreenOn()
