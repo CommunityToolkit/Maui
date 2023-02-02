@@ -315,7 +315,6 @@ public partial class MediaManager : IDisposable
 		{
 			return;
 		}
-		System.Console.WriteLine("--- UpdateVolumeCalled");
 
 		var volumeDiff = Math.Abs(Player.Volume - MediaElement.Volume);
 		if (volumeDiff > 0.01)
