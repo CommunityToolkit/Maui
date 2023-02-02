@@ -16,7 +16,17 @@
                HorizontalTextAlignment="Center"/>
         
         <Button Command="{Binding SaveFileCommand}"
-                Text="Save"
+                Text="Save using FileSaver from DI Container"
+                HorizontalOptions="Center"/>
+
+        
+        <Button Command="{Binding SaveFileStaticCommand}"
+                Text="Save using static FileSaver"
+                HorizontalOptions="Center"/>
+
+        
+        <Button Command="{Binding SaveFileInstanceCommand}"
+                Text="Save using new instance of FileSaver"
                 HorizontalOptions="Center"/>
 
     </VerticalStackLayout>

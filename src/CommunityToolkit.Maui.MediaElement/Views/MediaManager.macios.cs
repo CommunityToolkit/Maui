@@ -11,6 +11,10 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : IDisposable
 {
+	// Media would still start playing when Speed was set although ShouldAutoPlay=False
+	// This field was added to overcome that.
+	bool initialSpeedSet;
+
 	/// <summary>
 	/// The default <see cref="NSKeyValueObservingOptions"/> flags used in the iOS and macOS observers.
 	/// </summary>
@@ -258,12 +262,20 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateSpeed()
 	{
-		if (PlayerViewController?.Player is null)
+		if (PlayerViewController?.Player is null || MediaElement is null)
 		{
 			return;
 		}
 
+		// First time we're getting a playback speed and should NOT auto play, do nothing.
+		if (!initialSpeedSet && !MediaElement.ShouldAutoPlay)
+		{
+			initialSpeedSet = true;
+			return;
+		}
+
 		PlayerViewController.Player.Rate = (float)MediaElement.Speed;
+
 	}
 
 	protected virtual partial void PlatformUpdateShouldShowPlaybackControls()

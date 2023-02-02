@@ -16,9 +16,18 @@
                HorizontalTextAlignment="Center"/>
         
         <Button Command="{Binding PickFolderCommand}"
-                Text="Pick Folder"
+                Text="Pick Folder using FolderPicker from DI Container"
                 HorizontalOptions="Center"/>
 
+        
+        <Button Command="{Binding PickFolderStaticCommand}"
+                Text="Pick Folder using static FolderPicker"
+                HorizontalOptions="Center"/>
+
+        
+        <Button Command="{Binding PickFolderInstanceCommand}"
+                Text="Pick Folder using new instance of FolderPicker"
+                HorizontalOptions="Center"/>
     </VerticalStackLayout>
     
 </pages:BasePage>
