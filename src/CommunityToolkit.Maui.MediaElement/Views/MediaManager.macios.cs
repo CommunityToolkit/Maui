@@ -311,12 +311,17 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateVolume()
 	{
-		if (PlayerViewController?.Player is null)
+		if (Player is null)
 		{
 			return;
 		}
+		System.Console.WriteLine("--- UpdateVolumeCalled");
 
-		PlayerViewController.Player.Volume = (float)MediaElement.Volume;
+		var volumeDiff = Math.Abs(Player.Volume - MediaElement.Volume);
+		if (volumeDiff > 0.01)
+		{
+			Player.Volume = (float)MediaElement.Volume;
+		}
 	}
 
 	protected virtual partial void PlatformUpdateShouldKeepScreenOn()
@@ -398,7 +403,11 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		MediaElement.Volume = Player.Volume;
+		var volumeDiff = Math.Abs(Player.Volume - MediaElement.Volume);
+		if (volumeDiff > 0.01)
+		{
+			MediaElement.Volume = (double)Player.Volume;
+		}
 	}
 
 	void MutedChanged(NSObservedChange e)
