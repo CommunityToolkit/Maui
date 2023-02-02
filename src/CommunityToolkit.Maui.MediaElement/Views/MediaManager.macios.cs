@@ -178,7 +178,17 @@ public partial class MediaManager : IDisposable
 
 			if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
 			{
-				asset = AVAsset.FromUrl(new NSUrl(uri.AbsoluteUri));
+				var platformUrl = new NSUrl(uri.AbsoluteUri);
+
+				if (MediaElement.SourceRequestHeaders?.Any() ?? false)
+				{
+					asset = GetUrlAssetWithHeaders(platformUrl,
+						MediaElement.SourceRequestHeaders);
+				}
+				else
+				{
+					asset = AVAsset.FromUrl(platformUrl);
+				}
 			}
 		}
 		else if (MediaElement.Source is FileMediaSource fileMediaSource)
@@ -521,5 +531,20 @@ public partial class MediaManager : IDisposable
 		{
 			MediaElement.Speed = Player.Rate;
 		}
+	}
+
+	AVUrlAsset GetUrlAssetWithHeaders(NSUrl sourceUrl, Dictionary<string, string> headers)
+	{
+		var platformHeaders = NSDictionary.FromObjectsAndKeys(
+			headers.Values.ToArray(), headers.Keys.ToArray());
+
+		var platformHeadersKey = new NSString("AVURLAssetHTTPHeaderFieldsKey");
+
+		var options = new AVUrlAssetOptions(NSDictionary.FromObjectAndKey(
+			platformHeaders,
+			platformHeadersKey
+		));
+
+		return new AVUrlAsset(sourceUrl, options);
 	}
 }

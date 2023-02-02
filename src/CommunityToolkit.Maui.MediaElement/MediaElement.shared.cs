@@ -239,6 +239,11 @@ public class MediaElement : View, IMediaElement
 	}
 
 	/// <summary>
+	/// Gets or sets the HTTP request headers and their values for loading <see cref="Source"/>.
+	/// </summary>
+	public Dictionary<string, string> SourceRequestHeaders { get; set; } = new();
+
+	/// <summary>
 	/// Gets or sets the volume of the audio for the media.
 	/// </summary>
 	/// <remarks>A value of 1 means full volume, 0 is silence.</remarks>

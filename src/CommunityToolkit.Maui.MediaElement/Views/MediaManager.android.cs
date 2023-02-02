@@ -1,11 +1,15 @@
 ﻿using Android.Support.V4.Media.Session;
 using Android.Widget;
+using Bumptech.Glide.Load;
 using Com.Google.Android.Exoplayer2;
 using Com.Google.Android.Exoplayer2.Audio;
 using Com.Google.Android.Exoplayer2.Metadata;
+using Com.Google.Android.Exoplayer2.Source;
+using Com.Google.Android.Exoplayer2.Source.Hls;
 using Com.Google.Android.Exoplayer2.Text;
 using Com.Google.Android.Exoplayer2.Trackselection;
 using Com.Google.Android.Exoplayer2.UI;
+using Com.Google.Android.Exoplayer2.Upstream;
 using Com.Google.Android.Exoplayer2.Video;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Views;
@@ -283,8 +287,21 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			var uri = uriMediaSource.Uri;
 			if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
 			{
-				Player.SetMediaItem(MediaItem.FromUri(uri.AbsoluteUri));
-				Player.Prepare();
+				if (MediaElement.SourceRequestHeaders?.Any() ?? false)
+				{
+					// TODO user-agent
+					var HttpDataSourceFactory = new DefaultHttpDataSource.Factory().SetAllowCrossProtocolRedirects(true);
+					HttpDataSourceFactory!.SetDefaultRequestProperties(MediaElement.SourceRequestHeaders);
+					var progressiveMediaSource = new ProgressiveMediaSource.Factory(HttpDataSourceFactory);
+
+					// TODO This Prepare overload is deprecated... How do it then? Recreate Player?!
+					Player.Prepare(progressiveMediaSource.CreateMediaSource(MediaItem.FromUri(uri.AbsoluteUri)));
+				}
+				else
+				{
+					Player.SetMediaItem(MediaItem.FromUri(uri?.AbsoluteUri));
+					Player.Prepare();
+				}
 
 				hasSetSource = true;
 			}

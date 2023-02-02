@@ -69,6 +69,11 @@ public interface IMediaElement : IView
 	MediaSource? Source { get; set; }
 
 	/// <summary>
+	/// Gets or sets the HTTP request headers and their values for loading <see cref="Source"/>.
+	/// </summary>
+	Dictionary<string, string> SourceRequestHeaders { get; set; }
+
+	/// <summary>
 	/// Gets or sets the speed with which the media should be played.
 	/// </summary>
 	/// <remarks>A value of 1 means normal speed.
