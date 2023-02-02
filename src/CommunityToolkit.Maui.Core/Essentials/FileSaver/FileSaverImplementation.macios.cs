@@ -1,6 +1,10 @@
+using System.Runtime.Versioning;
+
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc cref="IFileSaver" />
+[SupportedOSPlatform("iOS14.0")]
+[SupportedOSPlatform("MacCatalyst14.0")]
 public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 {
 	UIDocumentPickerViewController? documentPickerViewController;
