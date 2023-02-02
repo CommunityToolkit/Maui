@@ -256,7 +256,11 @@ public class MediaElement : View, IMediaElement
 	/// <summary>
 	/// Gets or sets the volume of the audio for the media.
 	/// </summary>
-	/// <remarks>A value of 1 means full volume, 0 is silence.</remarks>
+	/// <remarks>
+	/// <para>A value of 1 means full volume, 0 is silence.</para>
+	/// <para>When <see cref="ShouldMute"/> is <see langword="true" />, changes to <see cref="Volume"/> are ignored.
+	/// The new volume will be applied when <see cref="ShouldMute"/> is set to <see langword="false" /> again.</para>
+	/// </remarks>
 	public double Volume
 	{
 		get => (double)GetValue(VolumeProperty);
