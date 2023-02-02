@@ -121,7 +121,7 @@ public partial class MediaManager
 	}
 
 	/// <summary>
-	/// Update whether of not the audio should be muted.
+	/// Update whether or not the audio should be muted.
 	/// </summary>
 	public void UpdateShouldMute()
 	{
