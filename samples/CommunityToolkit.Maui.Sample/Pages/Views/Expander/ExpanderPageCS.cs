@@ -45,7 +45,10 @@ public class ExpanderPageCS : ContentPage
 					}.Padding(10)
 
 				}.CenterHorizontal()
-				 .Bind(Expander.DirectionProperty, nameof(Picker.SelectedIndex), source: picker, convert: (int selectedIndex) => Enum.IsDefined(typeof(ExpandDirection), selectedIndex) ? (ExpandDirection)selectedIndex : default)
+				 .Bind(Expander.DirectionProperty,
+						static(Picker picker) => picker.SelectedIndex,
+						source: picker,
+						convert: (int selectedIndex) => Enum.IsDefined(typeof(ExpandDirection), selectedIndex) ? (ExpandDirection)selectedIndex : default)
 			 }
 		};
 	}
