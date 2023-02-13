@@ -19,7 +19,7 @@ public class ExpanderPageCS : ContentPage
 				new Label()
 					.Text("Expander C# Sample")
 					.Font(bold: true, size: 24)
-					.CenterHorizontal(),
+					.CenterHorizontal().TextCenter(),
 
 				new Picker() { ItemsSource = Enum.GetValues<ExpandDirection>(), Title = "Direction" }
 					.CenterHorizontal().TextCenter()
@@ -45,7 +45,10 @@ public class ExpanderPageCS : ContentPage
 					}.Padding(10)
 
 				}.CenterHorizontal()
-				 .Bind(Expander.DirectionProperty, nameof(Picker.SelectedIndex), source: picker, convert: (int selectedIndex) => Enum.IsDefined(typeof(ExpandDirection), selectedIndex) ? (ExpandDirection)selectedIndex : default)
+				 .Bind(Expander.DirectionProperty,
+						static(Picker picker) => picker.SelectedIndex,
+						source: picker,
+						convert: (int selectedIndex) => Enum.IsDefined(typeof(ExpandDirection), selectedIndex) ? (ExpandDirection)selectedIndex : default)
 			 }
 		};
 	}

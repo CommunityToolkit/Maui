@@ -1,10 +1,9 @@
 ﻿using System.ComponentModel;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
 
-namespace CommunityToolkit.Maui.UnitTests.Views.Expander;
+namespace CommunityToolkit.Maui.UnitTests.Views;
 
 public class ExpanderTests : BaseHandlerTest
 {
@@ -13,7 +12,7 @@ public class ExpanderTests : BaseHandlerTest
 	[Fact]
 	public void ExpanderShouldBeAssignedToIExpander()
 	{
-		new Maui.Views.Expander().Should().BeAssignableTo<IExpander>();
+		expander.Should().BeAssignableTo<IExpander>();
 	}
 
 	[Fact]
@@ -61,5 +60,54 @@ public class ExpanderTests : BaseHandlerTest
 	public void ExpanderDirectionThrowsInvalidEnumArgumentException(ExpandDirection direction)
 	{
 		Assert.Throws<InvalidEnumArgumentException>(() => expander.Direction = direction);
+	}
+
+	[Fact]
+	public void EnsureExpandedChanged()
+	{
+		var isExpanded_Initial = expander.IsExpanded;
+
+		var header = new View();
+		expander.Header = header;
+
+		expander.HeaderTapGestureRecognizer.SendTapped(header);
+		var isExpanded_Final = expander.IsExpanded;
+
+		Assert.True(isExpanded_Final);
+		Assert.False(isExpanded_Initial);
+		Assert.NotEqual(isExpanded_Initial, isExpanded_Final);
+
+		expander.HeaderTapGestureRecognizer.SendTapped(header);
+
+		Assert.False(expander.IsExpanded);
+	}
+
+	[Fact]
+	public void EnsureHandleHeaderTappedExecutesWhenHeaderTapped()
+	{
+		int handleHeaderTappedCount = 0;
+		bool didHandleHeaderTappedExecute = false;
+
+		var header = new View();
+		expander.Header = new View();
+		expander.HandleHeaderTapped = HandleHeaderTapped;
+
+		expander.HeaderTapGestureRecognizer.SendTapped(header);
+
+		Assert.True(didHandleHeaderTappedExecute);
+		Assert.Equal(1, handleHeaderTappedCount);
+
+		expander.HandleHeaderTapped = null;
+
+		expander.HeaderTapGestureRecognizer.SendTapped(header);
+
+		Assert.True(didHandleHeaderTappedExecute);
+		Assert.Equal(1, handleHeaderTappedCount);
+
+		void HandleHeaderTapped(TappedEventArgs tappedEventArgs)
+		{
+			handleHeaderTappedCount++;
+			didHandleHeaderTappedExecute = true;
+		}
 	}
 }

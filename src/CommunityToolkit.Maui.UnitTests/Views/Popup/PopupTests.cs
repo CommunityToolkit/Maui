@@ -4,7 +4,7 @@ using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.Views;
 using Xunit;
 
-namespace CommunityToolkit.Maui.UnitTests.Views.Popup;
+namespace CommunityToolkit.Maui.UnitTests.Views;
 
 public class PopupTests : BaseHandlerTest
 {
