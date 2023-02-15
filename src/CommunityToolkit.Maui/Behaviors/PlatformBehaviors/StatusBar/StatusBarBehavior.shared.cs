@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// <summary>
 /// <see cref="PlatformBehavior{TView,TPlatformView}"/> that controls the Status bar color
 /// </summary>
-[UnsupportedOSPlatform("Windows"), UnsupportedOSPlatform("MacCatalyst"), UnsupportedOSPlatform("MacOS"), UnsupportedOSPlatform("Tizen")]
+[UnsupportedOSPlatform("Windows"), UnsupportedOSPlatform("MacCatalyst"), UnsupportedOSPlatform("MacOS")]
 public class StatusBarBehavior : PlatformBehavior<Page>
 {
 	/// <summary>

@@ -3,7 +3,6 @@ using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Core.Platform;
 
-[UnsupportedOSPlatform("Tizen")]
 static partial class StatusBar
 {
 	static void PlatformSetColor(Color color)
