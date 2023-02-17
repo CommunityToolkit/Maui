@@ -20,6 +20,14 @@ public static class FolderPicker
 	public static Task<Folder> PickAsync(CancellationToken cancellationToken) =>
 		Default.PickAsync(cancellationToken);
 
+	/// <inheritdoc cref="IFolderPicker.PickSafeAsync(string, CancellationToken)"/> 
+	public static Task<FolderPickerResult> PickSafeAsync(string initialPath, CancellationToken cancellationToken) =>
+		Default.PickSafeAsync(initialPath, cancellationToken);
+
+	/// <inheritdoc cref="IFolderPicker.PickSafeAsync(CancellationToken)"/> 
+	public static Task<FolderPickerResult> PickSafeAsync(CancellationToken cancellationToken) =>
+		Default.PickSafeAsync(cancellationToken);
+
 	internal static void SetDefault(IFolderPicker implementation) =>
 		defaultImplementation = new(implementation);
 }

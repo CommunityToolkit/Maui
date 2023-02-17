@@ -33,14 +33,14 @@ public partial class FileSaverViewModel : BaseViewModel
 	async Task SaveFileStatic(CancellationToken cancellationToken)
 	{
 		using var stream = new MemoryStream(Encoding.Default.GetBytes("Hello from the Community Toolkit!"));
-		try
+		var fileSaveResult = await FileSaver.SaveSafeAsync("DCIM", "test.txt", stream, cancellationToken);
+		if (fileSaveResult.IsSuccessful)
 		{
-			var fileLocation = await FileSaver.SaveAsync("test.txt", stream, cancellationToken);
-			await Toast.Make($"File is saved: {fileLocation}").Show(cancellationToken);
+			await Toast.Make($"File is saved: {fileSaveResult.FilePath}").Show(cancellationToken);
 		}
-		catch (Exception ex)
+		else
 		{
-			await Toast.Make($"File is not saved, {ex.Message}").Show(cancellationToken);
+			await Toast.Make($"File is not saved, {fileSaveResult.Exception.Message}").Show(cancellationToken);
 		}
 	}
 

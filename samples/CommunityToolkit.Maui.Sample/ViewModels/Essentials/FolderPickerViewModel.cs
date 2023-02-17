@@ -32,15 +32,16 @@ public partial class FolderPickerViewModel : BaseViewModel
 	[RelayCommand]
 	async Task PickFolderStatic(CancellationToken cancellationToken)
 	{
-		try
-		{
-			var folder = await FolderPicker.PickAsync(cancellationToken);
-			await Toast.Make($"Folder picked: Name - {folder.Name}, Path - {folder.Path}", ToastDuration.Long).Show(cancellationToken);
-		}
-		catch (Exception ex)
-		{
-			await Toast.Make($"Folder is not picked, {ex.Message}").Show(cancellationToken);
-		}
+			var folderResult = await FolderPicker.PickSafeAsync("DCIM", cancellationToken);
+			if (folderResult.IsSuccessful)
+			{
+				await Toast.Make($"Folder picked: Name - {folderResult.Folder.Name}, Path - {folderResult.Folder.Path}", ToastDuration.Long).Show(cancellationToken);
+
+			}
+			else
+			{
+				await Toast.Make($"Folder is not picked, {folderResult.Exception.Message}").Show(cancellationToken);
+			}
 	}
 
 	[RelayCommand]

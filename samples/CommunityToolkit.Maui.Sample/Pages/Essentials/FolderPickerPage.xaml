@@ -21,7 +21,7 @@
 
         
         <Button Command="{Binding PickFolderStaticCommand}"
-                Text="Pick Folder using static FolderPicker"
+                Text="Pick Folder safe using static FolderPicker"
                 HorizontalOptions="Center"/>
 
         

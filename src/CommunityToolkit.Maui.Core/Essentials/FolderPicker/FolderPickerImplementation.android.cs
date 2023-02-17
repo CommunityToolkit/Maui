@@ -1,3 +1,4 @@
+using System.Web;
 using Android.Content;
 using CommunityToolkit.Maui.Core.Primitives;
 using Microsoft.Maui.ApplicationModel;
@@ -18,8 +19,16 @@ public sealed class FolderPickerImplementation : IFolderPicker
 		}
 
 		Folder? folder = null;
+		const string baseUrl = "content://com.android.externalstorage.documents/document/primary%3A";
+		if (Android.OS.Environment.ExternalStorageDirectory is not null)
+		{
+			initialPath = initialPath.Replace(Android.OS.Environment.ExternalStorageDirectory.ToString(), string.Empty);
+		}
+
+		var initialFolderUri = Android.Net.Uri.Parse(baseUrl + HttpUtility.UrlEncode(initialPath));
 
 		var intent = new Intent(Intent.ActionOpenDocumentTree);
+		intent.PutExtra("android.provider.extra.INITIAL_URI", initialFolderUri);
 		var pickerIntent = Intent.CreateChooser(intent, string.Empty) ?? throw new InvalidOperationException("Unable to create intent.");
 
 		await IntermediateActivity.StartAsync(pickerIntent, (int)AndroidRequestCode.RequestCodeFolderPicker, onResult: OnResult).WaitAsync(cancellationToken);

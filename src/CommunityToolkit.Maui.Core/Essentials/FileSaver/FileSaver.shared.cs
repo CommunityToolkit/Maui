@@ -18,6 +18,14 @@ public static class FileSaver
 	public static Task<string> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken) =>
 		Default.SaveAsync(fileName, stream, cancellationToken);
 
+	/// <inheritdoc cref="IFileSaver.SaveSafeAsync(string, string, Stream, CancellationToken)"/>
+	public static Task<FileSaverResult> SaveSafeAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken) =>
+		Default.SaveSafeAsync(initialPath, fileName, stream, cancellationToken);
+
+	/// <inheritdoc cref="IFileSaver.SaveSafeAsync(string, Stream, CancellationToken)"/>
+	public static Task<FileSaverResult> SaveSafeAsync(string fileName, Stream stream, CancellationToken cancellationToken) =>
+		Default.SaveSafeAsync(fileName, stream, cancellationToken);
+
 	internal static void SetDefault(IFileSaver implementation) =>
 		defaultImplementation = new(implementation);
 }
