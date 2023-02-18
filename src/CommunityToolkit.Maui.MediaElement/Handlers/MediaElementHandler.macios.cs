@@ -20,7 +20,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 
 		// Retrieve the parenting page so we can provide that to the platform control
 		var parent = VirtualView.Parent;
-		while (parent != null)
+		while (parent is not null)
 		{
 			if (parent is Page)
 			{
