@@ -15,4 +15,15 @@ public record FileSaverResult(string? FilePath, Exception? Exception)
 	[MemberNotNullWhen(true, nameof(FilePath))]
 	[MemberNotNullWhen(false, nameof(Exception))]
 	public bool IsSuccessful => Exception is null;
+
+	/// <summary>
+	/// Check if operation was successful.
+	/// </summary>
+	public void EnsureSuccess()
+	{
+		if (!IsSuccessful)
+		{
+			throw Exception;
+		}
+	}
 }

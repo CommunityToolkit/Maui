@@ -1,6 +1,7 @@
 using System.Web;
 using Android.Content;
 using Android.OS.Storage;
+using Android.Provider;
 using Android.Webkit;
 using Java.IO;
 using Microsoft.Maui.ApplicationModel;
@@ -24,7 +25,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		const string baseUrl = "content://com.android.externalstorage.documents/document/primary%3A";
 		if (Android.OS.Environment.ExternalStorageDirectory is not null)
 		{
-			initialPath = initialPath.Replace(Android.OS.Environment.ExternalStorageDirectory.ToString(), string.Empty);
+			initialPath = initialPath.Replace(Android.OS.Environment.ExternalStorageDirectory.ToString(), string.Empty, StringComparison.InvariantCulture);
 		}
 
 		var initialFolderUri = Android.Net.Uri.Parse(baseUrl + HttpUtility.UrlEncode(initialPath));
@@ -33,7 +34,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		intent.AddCategory(Intent.CategoryOpenable);
 		intent.SetType(MimeTypeMap.Singleton?.GetMimeTypeFromExtension(MimeTypeMap.GetFileExtensionFromUrl(fileName)) ?? "*/*");
 		intent.PutExtra(Intent.ExtraTitle, fileName);
-		intent.PutExtra("android.provider.extra.INITIAL_URI", initialFolderUri);
+		intent.PutExtra(DocumentsContract.ExtraInitialUri, initialFolderUri);
 		var pickerIntent = Intent.CreateChooser(intent, string.Empty) ?? throw new InvalidOperationException("Unable to create intent.");
 
 		AndroidUri? filePath = null;
@@ -92,8 +93,8 @@ public sealed partial class FileSaverImplementation : IFileSaver
 
 		fileOutputStream.Close();
 		parcelFileDescriptor?.Close();
-		var split = uri.Path?.Split(":") ?? throw new FolderPickerException("Unable to resolve path.");
+		var split = uri.Path?.Split(':') ?? throw new FolderPickerException("Unable to resolve path.");
 
-		return Android.OS.Environment.ExternalStorageDirectory + "/" + split.Last();
+		return $"{Android.OS.Environment.ExternalStorageDirectory}/{split[^1]}";
 	}
 }

@@ -34,6 +34,7 @@ public interface IFileSaver
 	{
 		try
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			var path = await SaveAsync(initialPath, fileName, stream, cancellationToken);
 			return new FileSaverResult(path, null);
 		}
@@ -54,6 +55,7 @@ public interface IFileSaver
 	{
 		try
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			var path = await SaveAsync(fileName, stream, cancellationToken);
 			return new FileSaverResult(path, null);
 		}

@@ -1,5 +1,6 @@
 using System.Web;
 using Android.Content;
+using Android.Provider;
 using CommunityToolkit.Maui.Core.Primitives;
 using Microsoft.Maui.ApplicationModel;
 using AndroidUri = Android.Net.Uri;
@@ -22,13 +23,13 @@ public sealed class FolderPickerImplementation : IFolderPicker
 		const string baseUrl = "content://com.android.externalstorage.documents/document/primary%3A";
 		if (Android.OS.Environment.ExternalStorageDirectory is not null)
 		{
-			initialPath = initialPath.Replace(Android.OS.Environment.ExternalStorageDirectory.ToString(), string.Empty);
+			initialPath = initialPath.Replace(Android.OS.Environment.ExternalStorageDirectory.ToString(), string.Empty, StringComparison.InvariantCulture);
 		}
 
 		var initialFolderUri = Android.Net.Uri.Parse(baseUrl + HttpUtility.UrlEncode(initialPath));
 
 		var intent = new Intent(Intent.ActionOpenDocumentTree);
-		intent.PutExtra("android.provider.extra.INITIAL_URI", initialFolderUri);
+		intent.PutExtra(DocumentsContract.ExtraInitialUri, initialFolderUri);
 		var pickerIntent = Intent.CreateChooser(intent, string.Empty) ?? throw new InvalidOperationException("Unable to create intent.");
 
 		await IntermediateActivity.StartAsync(pickerIntent, (int)AndroidRequestCode.RequestCodeFolderPicker, onResult: OnResult).WaitAsync(cancellationToken);
@@ -63,8 +64,8 @@ public sealed class FolderPickerImplementation : IFolderPicker
 		const string uriSchemeFolder = "content";
 		if (uri.Scheme is not null && uri.Scheme.Equals(uriSchemeFolder, StringComparison.OrdinalIgnoreCase))
 		{
-			var split = uri.Path?.Split(":") ?? throw new FolderPickerException("Unable to resolve path.");
-			return Android.OS.Environment.ExternalStorageDirectory + "/" + split[1];
+			var split = uri.Path?.Split(':') ?? throw new FolderPickerException("Unable to resolve path.");
+			return $"{Android.OS.Environment.ExternalStorageDirectory}/{split[^1]}";
 		}
 
 		throw new FolderPickerException($"Unable to resolve absolute path or retrieve contents of URI '{uri}'.");

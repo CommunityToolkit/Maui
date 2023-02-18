@@ -33,6 +33,7 @@ public interface IFolderPicker
 	{
 		try
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			var folder = await PickAsync(initialPath, cancellationToken);
 			return new FolderPickerResult(folder, null);
 		}
@@ -52,6 +53,7 @@ public interface IFolderPicker
 	{
 		try
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			var folder = await PickAsync(cancellationToken);
 			return new FolderPickerResult(folder, null);
 		}
