@@ -19,6 +19,7 @@ public record FileSaverResult(string? FilePath, Exception? Exception)
 	/// <summary>
 	/// Check if operation was successful.
 	/// </summary>
+	[MemberNotNull(nameof(FilePath))]
 	public void EnsureSuccess()
 	{
 		if (!IsSuccessful)

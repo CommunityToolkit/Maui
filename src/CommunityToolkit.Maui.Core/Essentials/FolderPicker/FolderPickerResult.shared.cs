@@ -20,6 +20,7 @@ public record FolderPickerResult(Folder? Folder, Exception? Exception)
 	/// <summary>
 	/// Check if operation was successful.
 	/// </summary>
+	[MemberNotNull(nameof(Folder))]
 	public void EnsureSuccess()
 	{
 		if (!IsSuccessful)
