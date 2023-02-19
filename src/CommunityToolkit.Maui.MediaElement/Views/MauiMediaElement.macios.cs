@@ -13,15 +13,16 @@ public class MauiMediaElement : UIView
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
 	/// </summary>
 	/// <param name="playerViewController">The <see cref="AVPlayerViewController"/> that acts as the platform media player.</param>
+	/// <param name="parentViewController">The <see cref="UIViewController"/> that acts as the parent for <paramref name="playerViewController"/>.</param>
 	/// <exception cref="NullReferenceException">Thrown when <paramref name="playerViewController"/><c>.View</c> is <see langword="null"/>.</exception>
-	public MauiMediaElement(AVPlayerViewController playerViewController)
+	public MauiMediaElement(AVPlayerViewController playerViewController, UIViewController? parentViewController)
 	{
 		ArgumentNullException.ThrowIfNull(playerViewController.View);
 		playerViewController.View.Frame = Bounds;
 
 #if IOS16_0_OR_GREATER || MACCATALYST16_1_OR_GREATER
-		// On iOS 16+ and macOS 13+, in combination with Shell the AVPlayerViewController has to be added to the parent ViewController, otherwise the transport controls won't be displayed.
-		var viewController = WindowStateManager.Default.GetCurrentUIViewController();
+		// On iOS 16+ and macOS 13+ the AVPlayerViewController has to be added to a parent ViewController, otherwise the transport controls won't be displayed.
+		var viewController = parentViewController ?? WindowStateManager.Default.GetCurrentUIViewController();
 
 		// If we don't find the viewController, assume it's not Shell and still continue, the transport controls will still be displayed
 		if (viewController?.View is not null)
@@ -36,6 +37,7 @@ public class MauiMediaElement : UIView
 			viewController.AddChildViewController(playerViewController);
 			viewController.View.AddSubview(playerViewController.View);
 		}
+
 #endif
 
 		AddSubview(playerViewController.View);
