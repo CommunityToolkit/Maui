@@ -25,7 +25,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		const string baseUrl = "content://com.android.externalstorage.documents/document/primary%3A";
 		if (Android.OS.Environment.ExternalStorageDirectory is not null)
 		{
-			initialPath = initialPath.Replace(Android.OS.Environment.ExternalStorageDirectory.ToString(), string.Empty, StringComparison.InvariantCulture);
+			initialPath = initialPath.Replace(Android.OS.Environment.ExternalStorageDirectory.AbsolutePath, string.Empty, StringComparison.InvariantCulture);
 		}
 
 		var initialFolderUri = Android.Net.Uri.Parse(baseUrl + HttpUtility.UrlEncode(initialPath));
