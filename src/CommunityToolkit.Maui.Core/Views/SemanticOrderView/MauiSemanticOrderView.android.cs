@@ -6,7 +6,7 @@ using Microsoft.Maui.Platform;
 namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
-/// The native implementation of the SemanticOrderView control.
+/// The native implementation of the <see href="SemanticOrderView"/> control.
 /// </summary>
 public class MauiSemanticOrderView : ContentViewGroup
 {

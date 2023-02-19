@@ -6,7 +6,7 @@ using UIKit;
 namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
-/// The native implementation of the SemanticOrderView control.
+/// The native implementation of the <see href="SemanticOrderView"/> control.
 /// </summary>
 public class MauiSemanticOrderView : ContentView, IUIAccessibilityContainer
 {
@@ -25,31 +25,28 @@ public class MauiSemanticOrderView : ContentView, IUIAccessibilityContainer
 	{
 		var result = GetAccessibilityElements();
 
-		if (result != null)
+		if (result is not null)
 		{
 			this.SetAccessibilityElements(NSArray.FromNSObjects(result.ToArray()));
 		}
 	}
 
-	List<NSObject>? GetAccessibilityElements()
+	IEnumerable<NSObject> GetAccessibilityElements()
 	{
 		if (VirtualView is null)
 		{
-			return null;
+			yield break;
 		}
 
 		var viewOrder = VirtualView.ViewOrder;
 
-		var returnValue = new List<NSObject>();
 		foreach (var view in viewOrder)
 		{
 			if (view.Handler is IPlatformViewHandler pvh &&
 				pvh.PlatformView is not null)
 			{
-				returnValue.Add(pvh.PlatformView);
+				yield return pvh.PlatformView;
 			}
 		}
-
-		return returnValue.Count == 0 ? null : returnValue;
 	}
 }

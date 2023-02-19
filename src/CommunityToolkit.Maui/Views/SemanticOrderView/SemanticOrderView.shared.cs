@@ -13,7 +13,7 @@ public class SemanticOrderView : ContentView, ISemanticOrderView
 	/// Backing BindableProperty for the <see cref="ViewOrder"/> property.
 	/// </summary>
 	public static readonly BindableProperty ViewOrderProperty =
-		BindableProperty.Create(nameof(ViewOrder), typeof(IEnumerable), typeof(SemanticOrderView), new View[0]);
+		BindableProperty.Create(nameof(ViewOrder), typeof(IEnumerable), typeof(SemanticOrderView), Enumerable.Empty<View>());
 
 	/// <inheritdoc />
 	public IEnumerable ViewOrder

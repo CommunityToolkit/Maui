@@ -9,7 +9,7 @@
                 x:TypeArguments="viewModels:SemanticOrderViewPageViewModel"
                 x:DataType="viewModels:SemanticOrderViewPageViewModel">
     <ContentPage.Content>
-        <StackLayout Margin="20">
+        <VerticalStackLayout Margin="20">
             <Button Text="Element outside the Semantic View"></Button>
             <mct:SemanticOrderView x:Name="acv">
                 <StackLayout>
@@ -20,6 +20,6 @@
                     <Button x:Name="first" Text="First" Margin="0,20" />
                 </StackLayout>
             </mct:SemanticOrderView>
-        </StackLayout>
+        </VerticalStackLayout>
     </ContentPage.Content>
 </pages:BasePage>

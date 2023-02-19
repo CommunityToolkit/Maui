@@ -40,10 +40,10 @@ public partial class SemanticOrderViewHandler : ContentViewHandler
 	{
 	}
 
-	static void MapViewOrder(SemanticOrderViewHandler arg1, ISemanticOrderView arg2)
+	static void MapViewOrder(SemanticOrderViewHandler handler, ISemanticOrderView view)
 	{
 #if WINDOWS || IOS || MACCATALYST || ANDROID
-		if (arg1.PlatformView is MauiSemanticOrderView mso)
+		if (handler.PlatformView is MauiSemanticOrderView mso)
 		{
 			mso.UpdateViewOrder();
 		}
