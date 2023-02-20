@@ -30,7 +30,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 			parent = parent.Parent;
 		}
 
-		var parentPage = (parent as Page)?.ToHandler(MauiContext);		
+		var parentPage = (parent as Page)?.ToHandler(MauiContext);
 
 		var (_, playerViewController) = mediaManager.CreatePlatformView();
 		return new(playerViewController, parentPage?.ViewController);
