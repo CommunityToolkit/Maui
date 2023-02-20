@@ -3,10 +3,10 @@ using Tizen.UIExtensions.NUI;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
 
-public partial class SemanticOrderViewHandler : Microsoft.Maui.Handlers.ElementHandler<ISemanticOrderView, object>
+public partial class SemanticOrderViewHandler
 {
 	/// <inheritdoc/>
-	protected override object CreatePlatformElement()
+	protected override ContentViewGroup CreatePlatformElement()
 	{
 		throw new System.NotImplementedException();
 	}

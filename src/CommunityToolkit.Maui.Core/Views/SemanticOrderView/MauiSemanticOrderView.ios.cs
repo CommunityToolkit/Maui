@@ -23,12 +23,7 @@ public class MauiSemanticOrderView : ContentView, IUIAccessibilityContainer
 
 	internal void UpdateViewOrder()
 	{
-		var result = GetAccessibilityElements();
-
-		if (result is not null)
-		{
-			this.SetAccessibilityElements(NSArray.FromNSObjects(result.ToArray()));
-		}
+		this.SetAccessibilityElements(NSArray.FromNSObjects(GetAccessibilityElements().ToArray()));
 	}
 
 	IEnumerable<NSObject> GetAccessibilityElements()
