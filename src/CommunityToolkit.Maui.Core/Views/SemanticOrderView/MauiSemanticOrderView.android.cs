@@ -52,6 +52,16 @@ public class MauiSemanticOrderView : ContentViewGroup
 				return;
 			}
 
+			if (view1.Id <= 0)
+			{
+				view1.Id = View.GenerateViewId();
+			}
+
+			if (view2.Id <= 0)
+			{
+				view2.Id = View.GenerateViewId();
+			}
+
 			if (OperatingSystem.IsAndroidVersionAtLeast(22))
 			{
 				view2.AccessibilityTraversalAfter = view1.Id;
