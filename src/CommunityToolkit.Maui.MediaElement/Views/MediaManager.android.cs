@@ -16,6 +16,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
 	double previousSpeed = -1;
+	float volumeBeforeMute = 1;
 
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
@@ -212,6 +213,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			return;
 		}
 
+		// When currently muted, ignore
+		if (MediaElement.ShouldMute)
+		{
+			return;
+		}
+
 		MediaElement.Volume = volume;
 	}
 
@@ -398,6 +405,14 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			return;
 		}
 
+		// If the user changes while muted, change the internal field
+		// and do not update the actual volume.
+		if (MediaElement.ShouldMute)
+		{
+			volumeBeforeMute = (float)MediaElement.Volume;
+			return;
+		}
+
 		Player.Volume = (float)MediaElement.Volume;
 	}
 
@@ -409,6 +424,27 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		}
 
 		PlayerView.KeepScreenOn = MediaElement.ShouldKeepScreenOn;
+	}
+
+	protected virtual partial void PlatformUpdateShouldMute()
+	{
+		if (Player is null || MediaElement is null)
+		{
+			return;
+		}
+
+		// We're going to muted state, capture current volume first
+		// so we can restore later
+		if (MediaElement.ShouldMute)
+		{
+			volumeBeforeMute = Player.Volume;
+		}
+		else if (volumeBeforeMute != Player.Volume && Player.Volume > 0)
+		{
+			volumeBeforeMute = Player.Volume;
+		}
+
+		Player.Volume = MediaElement.ShouldMute ? 0 : volumeBeforeMute;
 	}
 
 	protected virtual partial void PlatformUpdateShouldLoopPlayback()
