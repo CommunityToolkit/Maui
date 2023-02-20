@@ -1,4 +1,4 @@
-<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+﻿<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
                 xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
@@ -28,7 +28,7 @@
 
                 <Button Text="XAML Binding Popup" Clicked="HandleXamlBindingPopupPopupButtonClicked" />
 
-                <Button Text="C# Binding Popup" Clicked="HandleCsharpBindingPopupButtonClicked" />
+                <Button Text="C# Binding Popup" Command="{Binding CsharpBindingPopupCommand}" />
             </VerticalStackLayout>
         </ScrollView>
     </ContentPage.Content>
