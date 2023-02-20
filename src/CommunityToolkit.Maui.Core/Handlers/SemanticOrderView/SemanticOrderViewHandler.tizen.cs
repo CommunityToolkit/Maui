@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 public partial class SemanticOrderViewHandler
 {
 	/// <inheritdoc/>
-	protected override ContentViewGroup CreatePlatformElement()
+	protected override ContentViewGroup CreatePlatformView()
 	{
 		throw new System.NotImplementedException();
 	}
