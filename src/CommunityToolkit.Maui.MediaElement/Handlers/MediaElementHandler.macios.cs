@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
 
@@ -10,9 +11,29 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	/// <exception cref="NullReferenceException">Thrown if <see cref="MauiContext"/> is <see langword="null"/>.</exception>
 	protected override MauiMediaElement CreatePlatformView()
 	{
-		mediaManager ??= new(MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null"), VirtualView);
+		if (MauiContext is null)
+		{
+			throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null");
+		}
+
+		mediaManager ??= new(MauiContext, VirtualView);
+
+		// Retrieve the parenting page so we can provide that to the platform control
+		var parent = VirtualView.Parent;
+		while (parent is not null)
+		{
+			if (parent is Page)
+			{
+				break;
+			}
+
+			parent = parent.Parent;
+		}
+
+		var parentPage = (parent as Page)?.ToHandler(MauiContext);
+
 		var (_, playerViewController) = mediaManager.CreatePlatformView();
-		return new(playerViewController);
+		return new(playerViewController, parentPage?.ViewController);
 	}
 
 	/// <inheritdoc/>

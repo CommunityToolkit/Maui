@@ -165,7 +165,10 @@ public class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
 
 					new ExampleLabel()
 						.Row(Row.DoubleExample2).Column(Column.Input)
-						.Bind(Label.TextProperty, nameof(Stepper.Value), BindingMode.OneWay, convert: (double stepperValue) => $"Double Compare {stepperValue} is Greater Than or Equal to 5", source: doubleInputStepper),
+						.Bind(Label.TextProperty,
+								static(Stepper stepper) => stepper.Value,
+								mode: BindingMode.OneWay,
+								convert: (double stepperValue) => $"Double Compare {stepperValue} is Greater Than or Equal to 5", source: doubleInputStepper),
 
 					new Label()
 						.Row(Row.DoubleExample2).Column(Column.Result)
@@ -183,7 +186,10 @@ public class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
 
 					new ExampleLabel()
 						.Row(Row.DoubleExample3).Column(Column.Input)
-						.Bind(Label.TextProperty, nameof(Stepper.Value), BindingMode.OneWay, convert: (double stepperValue) => $"Double Compare {stepperValue} is Less Than or Equal To 10", source: doubleInputStepper),
+						.Bind(Label.TextProperty,
+								static(Stepper stepper) => stepper.Value,
+								mode: BindingMode.OneWay,
+								convert: (double stepperValue) => $"Double Compare {stepperValue} is Less Than or Equal To 10", source: doubleInputStepper),
 
 					new Label()
 						.Row(Row.DoubleExample3).Column(Column.Result)
@@ -276,7 +282,9 @@ public class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
 					new Entry { MaxLength = 1  }
 						.Row(Row.CharInput).Column(Column.Input)
 						.Start().CenterVertical()
-						.Bind(Entry.TextProperty, nameof(IsInRangeConverterViewModel.InputString)),
+						.Bind(Entry.TextProperty,
+								static (IsInRangeConverterViewModel vm) => vm.InputString,
+								static (IsInRangeConverterViewModel vm, string text) => vm.InputString = text),
 
 					new ExampleLabel()
 						.Row(Row.CharExample1).Column(Column.Input)
@@ -334,7 +342,10 @@ public class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
 						.Row(Row.CharSeparator).ColumnSpan(All<Column>()),
 				}
 			}.Center()
-			 .Bind(Grid.WidthRequestProperty, nameof(Width), source: this, convert: (double input) => input is -1 ? -1 : input - 30) // Work-around for ScrollView width bug
+			 .Bind(Grid.WidthRequestProperty,
+					static (Page page) => page.Width,
+					convert: (double input) => input is -1 ? -1 : input - 30, // Work-around for ScrollView width bug
+					source: this)
 		}.Margin(0).Padding(0);
 	}
 
