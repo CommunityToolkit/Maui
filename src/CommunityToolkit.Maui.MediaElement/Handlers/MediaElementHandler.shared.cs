@@ -27,6 +27,7 @@ public partial class MediaElementHandler
 		[nameof(IMediaElement.Speed)] = MapSpeed,
 		[nameof(IMediaElement.Volume)] = MapVolume,
 		[nameof(IMediaElement.ShouldKeepScreenOn)] = MapShouldKeepScreenOn,
+		[nameof(IMediaElement.ShouldMute)] = MapShouldMute,
 #if ANDROID || WINDOWS || TIZEN
 		[nameof(IMediaElement.ShouldLoopPlayback)] = ShouldLoopPlayback
 #endif
@@ -140,6 +141,17 @@ public partial class MediaElementHandler
 	public static void MapShouldKeepScreenOn(MediaElementHandler handler, MediaElement MediaElement)
 	{
 		handler.mediaManager?.UpdateShouldKeepScreenOn();
+	}
+
+	/// <summary>
+	/// Maps the <see cref="Core.IMediaElement.ShouldMute"/> property between the abstract
+	/// <see cref="MediaElement"/> and platform counterpart.
+	/// </summary>
+	/// <param name="handler">The associated handler.</param>
+	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	public static void MapShouldMute(MediaElementHandler handler, MediaElement MediaElement)
+	{
+		handler.mediaManager?.UpdateShouldMute();
 	}
 
 	/// <summary>
