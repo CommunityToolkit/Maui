@@ -80,10 +80,15 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformSeek(TimeSpan position)
 	{
-		if (Player?.MediaPlayer.CanSeek ?? false)
+		MainThread.BeginInvokeOnMainThread(() =>
 		{
-			Player.MediaPlayer.Position = position;
-		}
+			if (Player?.MediaPlayer.CanSeek ?? false)
+			{
+			
+					Player.MediaPlayer.Position = position;
+		
+			}
+		});
 	}
 
 	protected virtual partial void PlatformStop()
