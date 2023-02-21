@@ -27,6 +27,6 @@ public sealed partial class FileSaverImplementation : IFileSaver
 
 	Task<string> InternalSaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
 	{
-		return SaveAsync(FileFolderDialog.GetExternalDirectory(), fileName, stream, cancellationToken);
+		return InternalSaveAsync(FileFolderDialog.GetExternalDirectory(), fileName, stream, cancellationToken);
 	}
 }
