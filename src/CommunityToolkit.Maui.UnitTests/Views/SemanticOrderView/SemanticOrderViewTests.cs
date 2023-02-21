@@ -6,7 +6,6 @@ namespace CommunityToolkit.Maui.UnitTests.Views;
 
 public class SemanticOrderViewTests : BaseHandlerTest
 {
-	const string resultWhenUserTapsOutsideOfSemanticOrderView = "User Tapped Outside of SemanticOrderView";
 	readonly ISemanticOrderView semanticOrderView = new MockSemanticOrderView();
 
 	public SemanticOrderViewTests()
@@ -15,16 +14,36 @@ public class SemanticOrderViewTests : BaseHandlerTest
 	}
 
 	[Fact]
+	public void HandlerSetsOnVirtualView()
+	{
+		var semanticOrderViewHandler = CreateViewHandler<MockSemanticOrderViewHandler>(semanticOrderView);
+		Assert.NotNull(semanticOrderView.Handler);
+		Assert.Equal(semanticOrderViewHandler, semanticOrderView.Handler);
+	}
+
+	[Fact]
 	public void OnViewOrderIsCalled()
 	{
 		var semanticOrderViewHandler = CreateViewHandler<MockSemanticOrderViewHandler>(semanticOrderView);
 		Assert.NotNull(semanticOrderView.Handler);
 		Assert.Equal(1, semanticOrderViewHandler.OnViewOrderCount);
-		var button = new Button();
-		((MockSemanticOrderView)semanticOrderView).ViewOrder = new[] { button };
-		Assert.Single(semanticOrderView.ViewOrder);
-		Assert.Equal(button, semanticOrderView.ViewOrder.First());
+		((MockSemanticOrderView)semanticOrderView).ViewOrder = new[] { new Button() };
 		Assert.Equal(2, semanticOrderViewHandler.OnViewOrderCount);
+	}
+
+	[Fact]
+	public void ISemanticOrderViewViewOrderReturnsCorrectViews()
+	{
+		_ = CreateViewHandler<MockSemanticOrderViewHandler>(semanticOrderView);
+
+		var button = new Button();
+		var entry = new Entry();
+
+		((MockSemanticOrderView)semanticOrderView).ViewOrder = new IView[] { button, entry };
+
+		Assert.Equal(2, semanticOrderView.ViewOrder.Count());
+		Assert.Equal(button, semanticOrderView.ViewOrder.First());
+		Assert.Equal(entry, semanticOrderView.ViewOrder.Skip(1).First());
 	}
 
 	class MockSemanticOrderView : Maui.Views.SemanticOrderView
