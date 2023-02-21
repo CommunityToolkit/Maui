@@ -19,15 +19,7 @@ public class FileSaverTests
 	public async Task SaveAsyncFailsOnNet()
 	{
 		FileSaver.SetDefault(new FileSaverImplementation());
-		await Assert.ThrowsAsync<NotImplementedException>(() => FileSaver.SaveAsync("file name", Stream.Null, CancellationToken.None));
-		await Assert.ThrowsAsync<NotImplementedException>(() => FileSaver.SaveAsync("initial path", "file name", Stream.Null, CancellationToken.None));
-	}
-
-	[Fact]
-	public async Task SaveSafeAsyncFailsOnNet()
-	{
-		FileSaver.SetDefault(new FileSaverImplementation());
-		var result = await FileSaver.SaveSafeAsync("fileName", Stream.Null, CancellationToken.None);
+		var result = await FileSaver.SaveAsync("fileName", Stream.Null, CancellationToken.None);
 		result.Should().NotBeNull();
 		result.Exception.Should().BeOfType<NotImplementedException>();
 		result.FilePath.Should().BeNull();
@@ -36,10 +28,10 @@ public class FileSaverTests
 	}
 
 	[Fact]
-	public async Task SaveSafeAsyncWithInitialPathFailsOnNet()
+	public async Task SaveAsyncWithInitialPathFailsOnNet()
 	{
 		FileSaver.SetDefault(new FileSaverImplementation());
-		var result = await FileSaver.SaveSafeAsync("initial path","fileName", Stream.Null, CancellationToken.None);
+		var result = await FileSaver.SaveAsync("initial path","fileName", Stream.Null, CancellationToken.None);
 		result.Should().NotBeNull();
 		result.Exception.Should().BeOfType<NotImplementedException>();
 		result.FilePath.Should().BeNull();

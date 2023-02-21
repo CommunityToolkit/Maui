@@ -11,20 +11,12 @@ public static class FileSaver
 	public static IFileSaver Default => defaultImplementation.Value;
 
 	/// <inheritdoc cref="IFileSaver.SaveAsync(string, string, Stream, CancellationToken)"/>
-	public static Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken) =>
+	public static Task<FileSaverResult> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken) =>
 		Default.SaveAsync(initialPath, fileName, stream, cancellationToken);
 
 	/// <inheritdoc cref="IFileSaver.SaveAsync(string, Stream, CancellationToken)"/>
-	public static Task<string> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken) =>
+	public static Task<FileSaverResult> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken) =>
 		Default.SaveAsync(fileName, stream, cancellationToken);
-
-	/// <inheritdoc cref="IFileSaver.SaveSafeAsync(string, string, Stream, CancellationToken)"/>
-	public static Task<FileSaverResult> SaveSafeAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken) =>
-		Default.SaveSafeAsync(initialPath, fileName, stream, cancellationToken);
-
-	/// <inheritdoc cref="IFileSaver.SaveSafeAsync(string, Stream, CancellationToken)"/>
-	public static Task<FileSaverResult> SaveSafeAsync(string fileName, Stream stream, CancellationToken cancellationToken) =>
-		Default.SaveSafeAsync(fileName, stream, cancellationToken);
 
 	internal static void SetDefault(IFileSaver implementation) =>
 		defaultImplementation = new(implementation);

@@ -21,7 +21,7 @@
 
         
         <Button Command="{Binding SaveFileStaticCommand}"
-                Text="Save safe using static FileSaver"
+                Text="Save using static FileSaver"
                 HorizontalOptions="Center"/>
 
         

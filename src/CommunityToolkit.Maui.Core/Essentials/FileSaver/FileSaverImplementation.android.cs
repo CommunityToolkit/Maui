@@ -1,6 +1,5 @@
 using System.Web;
 using Android.Content;
-using Android.OS.Storage;
 using Android.Provider;
 using Android.Webkit;
 using Java.IO;
@@ -13,8 +12,7 @@ namespace CommunityToolkit.Maui.Storage;
 /// <inheritdoc />
 public sealed partial class FileSaverImplementation : IFileSaver
 {
-	/// <inheritdoc/>
-	public async Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
+	static async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		var status = await Permissions.RequestAsync<Permissions.StorageWrite>().WaitAsync(cancellationToken).ConfigureAwait(false);
 		if (status is not PermissionStatus.Granted)
@@ -54,10 +52,9 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		}
 	}
 
-	/// <inheritdoc />
-	public Task<string> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
+	static Task<string> InternalSaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
 	{
-		return SaveAsync(GetExternalDirectory(), fileName, stream, cancellationToken);
+		return InternalSaveAsync(GetExternalDirectory(), fileName, stream, cancellationToken);
 	}
 
 	static string GetExternalDirectory()

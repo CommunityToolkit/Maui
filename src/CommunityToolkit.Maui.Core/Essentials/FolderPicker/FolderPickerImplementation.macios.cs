@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.Storage;
 /// <inheritdoc cref="IFolderPicker" />
 [SupportedOSPlatform("iOS14.0")]
 [SupportedOSPlatform("MacCatalyst14.0")]
-public sealed class FolderPickerImplementation : IFolderPicker, IDisposable
+public sealed partial class FolderPickerImplementation : IFolderPicker, IDisposable
 {
 	readonly UIDocumentPickerViewController documentPickerViewController = new(new[] { UTTypes.Folder })
 	{
@@ -25,8 +25,7 @@ public sealed class FolderPickerImplementation : IFolderPicker, IDisposable
 		documentPickerViewController.WasCancelled += DocumentPickerViewControllerOnWasCancelled;
 	}
 
-	/// <inheritdoc />
-	public async Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)
+	async Task<Folder> InternalPickAsync(string initialPath, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 		documentPickerViewController.DirectoryUrl = NSUrl.FromString(initialPath);
@@ -38,10 +37,9 @@ public sealed class FolderPickerImplementation : IFolderPicker, IDisposable
 		return await taskCompetedSource.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
 	}
 
-	/// <inheritdoc />
-	public Task<Folder> PickAsync(CancellationToken cancellationToken)
+	Task<Folder> InternalPickAsync(CancellationToken cancellationToken)
 	{
-		return PickAsync("/", cancellationToken);
+		return InternalPickAsync("/", cancellationToken);
 	}
 
 	/// <inheritdoc />
