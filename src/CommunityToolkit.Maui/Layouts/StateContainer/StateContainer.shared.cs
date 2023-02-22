@@ -98,20 +98,15 @@ public static class StateContainer
 			return;
 		}
 
-		if (!GetCanStateChange(bindable))
-		{
-			throw new StateContainerException($"{canStateChangePropertyName} is false. {currentStatePropertyName} cannot be changed while a state change is in progress. To avoid this exception due to active animations, first verify {canStateChangePropertyName} is {true} before changing {currentStatePropertyName}");
-		}
-
 		SetCanStateChange(bindable, false);
 
 		var newState = (string)newValue;
 
-		if (string.IsNullOrEmpty(newState))
+		if (string.IsNullOrEmpty(newState)) 
 		{
 			await GetContainerController(bindable).SwitchToContent(GetShouldAnimateOnStateChange(bindable));
 		}
-		else
+		else 
 		{
 			await GetContainerController(bindable).SwitchToState(newState, GetShouldAnimateOnStateChange(bindable));
 		}

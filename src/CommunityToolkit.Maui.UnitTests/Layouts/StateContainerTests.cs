@@ -125,14 +125,6 @@ public class StateContainerTests : BaseTest
 		StateContainer.SetCurrentState(layout, StateKey.Error);
 
 		Assert.False(StateContainer.GetCanStateChange(layout));
-
-		var exception = Assert.Throws<StateContainerException>(() =>
-		{
-			// Use AsyncContext to test `async void` methods https://stackoverflow.com/a/14207615/5953643
-			AsyncContext.Run(() => StateContainer.SetCurrentState(layout, StateKey.Anything));
-		});
-
-		exception.Message.Should().StartWith("CanStateChange is false. CurrentState cannot be changed while a state change is in progress.");
 	}
 
 	[Fact]
@@ -166,24 +158,6 @@ public class StateContainerTests : BaseTest
 
 		Assert.True(token.IsCancellationRequested);
 		Assert.False(newToken.IsCancellationRequested);
-	}
-
-	[Fact]
-	public async Task Controller_CanceledSwitchToStateThrowsException()
-	{
-		var cts = new CancellationTokenSource();
-		cts.Cancel();
-
-		await Assert.ThrowsAsync<OperationCanceledException>(() => controller.SwitchToState(StateKey.Loading, false, cts.Token));
-	}
-
-	[Fact]
-	public async Task Controller_CanceledSwitchToContentThrowsException()
-	{
-		var cts = new CancellationTokenSource();
-		cts.Cancel();
-
-		await Assert.ThrowsAsync<OperationCanceledException>(() => controller.SwitchToContent(false, cts.Token));
 	}
 
 	[Fact]
