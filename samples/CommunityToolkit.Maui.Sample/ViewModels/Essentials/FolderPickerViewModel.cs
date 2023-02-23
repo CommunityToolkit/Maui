@@ -20,13 +20,11 @@ public partial class FolderPickerViewModel : BaseViewModel
 		var folderPickerResult = await folderPicker.PickAsync(cancellationToken);
 		if (folderPickerResult.IsSuccessful)
 		{
-			await Toast.Make($"Folder picked: Name - {folderPickerResult.Folder.Name}, Path - {folderPickerResult.Folder.Path}",
-				ToastDuration.Long).Show(cancellationToken);
+			await Toast.Make($"Folder picked: Name - {folderPickerResult.Folder.Name}, Path - {folderPickerResult.Folder.Path}", ToastDuration.Long).Show(cancellationToken);
 		}
 		else
 		{
 			await Toast.Make($"Folder is not picked, {folderPickerResult.Exception.Message}").Show(cancellationToken);
-
 		}
 	}
 
@@ -37,7 +35,6 @@ public partial class FolderPickerViewModel : BaseViewModel
 		if (folderResult.IsSuccessful)
 		{
 			await Toast.Make($"Folder picked: Name - {folderResult.Folder.Name}, Path - {folderResult.Folder.Path}", ToastDuration.Long).Show(cancellationToken);
-
 		}
 		else
 		{
@@ -49,18 +46,19 @@ public partial class FolderPickerViewModel : BaseViewModel
 	async Task PickFolderInstance(CancellationToken cancellationToken)
 	{
 		var folderPickerInstance = new FolderPickerImplementation();
-		var folderPickerResult = await folderPickerInstance.PickAsync(cancellationToken);
-		if (folderPickerResult.IsSuccessful)
+		try
 		{
-			await Toast.Make($"Folder picked: Name - {folderPickerResult.Folder.Name}, Path - {folderPickerResult.Folder.Path}",
-				ToastDuration.Long).Show(cancellationToken);
+			var folderPickerResult = await folderPickerInstance.PickAsync(cancellationToken);
+			folderPickerResult.EnsureSuccess();
+
+			await Toast.Make($"Folder picked: Name - {folderPickerResult.Folder.Name}, Path - {folderPickerResult.Folder.Path}", ToastDuration.Long).Show(cancellationToken);
 #if IOS || MACCATALYST
 			folderPickerInstance.Dispose();
 #endif
 		}
-		else
+		catch (Exception e)
 		{
-			await Toast.Make($"Folder is not picked, {folderPickerResult.Exception.Message}").Show(cancellationToken);
+			await Toast.Make($"Folder is not picked, {e.Message}").Show(cancellationToken);
 		}
 	}
 }
