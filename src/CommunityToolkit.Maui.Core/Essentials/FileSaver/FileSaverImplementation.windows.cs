@@ -23,11 +23,6 @@ public sealed partial class FileSaverImplementation : IFileSaver
 
 		var filePickerOperation = savePicker.PickSaveFileAsync();
 
-		void CancelFilePickerOperation()
-		{
-			filePickerOperation.Cancel();
-		}
-
 		await using var _ = cancellationToken.Register(CancelFilePickerOperation);
 		var file = await filePickerOperation;
 		if (string.IsNullOrEmpty(file?.Path))
@@ -37,6 +32,11 @@ public sealed partial class FileSaverImplementation : IFileSaver
 
 		await WriteStream(stream, file.Path, cancellationToken).ConfigureAwait(false);
 		return file.Path;
+
+		void CancelFilePickerOperation()
+		{
+			filePickerOperation.Cancel();
+		}
 	}
 	
 	Task<string> InternalSaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)

@@ -9,7 +9,13 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 {
 	UIDocumentPickerViewController? documentPickerViewController;
 	TaskCompletionSource<string>? taskCompetedSource;
-	
+
+	/// <inheritdoc />
+	public void Dispose()
+	{
+		InternalDispose();
+	}
+
 	async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
@@ -34,12 +40,6 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 	Task<string> InternalSaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		return InternalSaveAsync("/", fileName, stream, cancellationToken);
-	}
-
-	/// <inheritdoc />
-	public void Dispose()
-	{
-		InternalDispose();
 	}
 
 	void DocumentPickerViewControllerOnWasCancelled(object? sender, EventArgs e)

@@ -25,7 +25,7 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 			initialPath = initialPath.Replace(Android.OS.Environment.ExternalStorageDirectory.AbsolutePath, string.Empty, StringComparison.InvariantCulture);
 		}
 
-		var initialFolderUri = Android.Net.Uri.Parse(baseUrl + HttpUtility.UrlEncode(initialPath));
+		var initialFolderUri = AndroidUri.Parse(baseUrl + HttpUtility.UrlEncode(initialPath));
 
 		var intent = new Intent(Intent.ActionOpenDocumentTree);
 		intent.PutExtra(DocumentsContract.ExtraInitialUri, initialFolderUri);

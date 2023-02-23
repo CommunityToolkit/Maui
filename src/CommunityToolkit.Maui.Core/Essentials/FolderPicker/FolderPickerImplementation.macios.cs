@@ -25,6 +25,14 @@ public sealed partial class FolderPickerImplementation : IFolderPicker, IDisposa
 		documentPickerViewController.WasCancelled += DocumentPickerViewControllerOnWasCancelled;
 	}
 
+	/// <inheritdoc />
+	public void Dispose()
+	{
+		documentPickerViewController.DidPickDocumentAtUrls -= DocumentPickerViewControllerOnDidPickDocumentAtUrls;
+		documentPickerViewController.WasCancelled -= DocumentPickerViewControllerOnWasCancelled;
+		documentPickerViewController.Dispose();
+	}
+
 	async Task<Folder> InternalPickAsync(string initialPath, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
@@ -40,14 +48,6 @@ public sealed partial class FolderPickerImplementation : IFolderPicker, IDisposa
 	Task<Folder> InternalPickAsync(CancellationToken cancellationToken)
 	{
 		return InternalPickAsync("/", cancellationToken);
-	}
-
-	/// <inheritdoc />
-	public void Dispose()
-	{
-		documentPickerViewController.DidPickDocumentAtUrls -= DocumentPickerViewControllerOnDidPickDocumentAtUrls;
-		documentPickerViewController.WasCancelled -= DocumentPickerViewControllerOnWasCancelled;
-		documentPickerViewController.Dispose();
 	}
 
 	void DocumentPickerViewControllerOnWasCancelled(object? sender, EventArgs e)
