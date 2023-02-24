@@ -48,11 +48,9 @@ public class StateContainerTests : BaseTest
 		StateView.SetStateKey(stateViews[0], StateKey.Loading);
 		StateView.SetStateKey(stateViews[1], StateKey.Error);
 		StateView.SetStateKey(stateViews[2], StateKey.Anything);
-
-		StateContainer.SetShouldAnimateOnStateChange(layout, false);
+		
 		StateContainer.SetStateViews(layout, stateViews);
-
-		StateContainer.SetShouldAnimateOnStateChange(grid, false);
+		
 		StateContainer.SetStateViews(grid, stateViews);
 
 		controller = new StateContainerController(layout)
@@ -87,14 +85,7 @@ public class StateContainerTests : BaseTest
 		StateContainer.SetCurrentState(layout, StateKey.Loading);
 		Assert.Equal(StateKey.Loading, StateContainer.GetCurrentState(layout));
 	}
-
-	[Fact]
-	public void StateContainer_SetsShouldAnimateOnStateChange()
-	{
-		StateContainer.SetShouldAnimateOnStateChange(layout, true);
-		Assert.True(StateContainer.GetShouldAnimateOnStateChange(layout));
-	}
-
+	
 	[Fact]
 	public void StateContainer_CanStateChangePropertyReadOnly()
 	{
@@ -110,21 +101,6 @@ public class StateContainerTests : BaseTest
 
 		StateContainer.SetCurrentState(layout, StateKey.Anything);
 		Assert.Equal(StateKey.Anything, StateContainer.GetCurrentState(layout));
-	}
-
-	[Fact]
-	public void StateContainer_ChangingStateWhenCanStateChangePropertyIsFalse()
-	{
-		layout.EnableAnimations();
-		foreach (var child in layout.Children)
-		{
-			child.EnableAnimations();
-		}
-
-		StateContainer.SetShouldAnimateOnStateChange(layout, true);
-		StateContainer.SetCurrentState(layout, StateKey.Error);
-
-		Assert.False(StateContainer.GetCanStateChange(layout));
 	}
 
 	[Fact]
@@ -149,27 +125,17 @@ public class StateContainerTests : BaseTest
 		Assert.NotNull(controller);
 		Assert.IsType<VerticalStackLayout>(controller.GetLayout());
 	}
-
+	
 	[Fact]
-	public void Controller_CancelsAnimationTokenOnRebuild()
+	public void Controller_ReturnsErrorLabelOnInvalidState()
 	{
-		var token = controller.RebuildAnimationTokenSource(layout);
-		var newToken = controller.RebuildAnimationTokenSource(layout);
-
-		Assert.True(token.IsCancellationRequested);
-		Assert.False(newToken.IsCancellationRequested);
+		Assert.Throws<StateContainerException>(() => controller.SwitchToState("InvalidStateKey"));
 	}
 
 	[Fact]
-	public async Task Controller_ReturnsErrorLabelOnInvalidState()
+	public void Controller_SwitchesToStateFromContentSuccess()
 	{
-		await Assert.ThrowsAsync<StateContainerException>(() => controller.SwitchToState("InvalidStateKey", false));
-	}
-
-	[Fact]
-	public async Task Controller_SwitchesToStateFromContentSuccess()
-	{
-		await controller.SwitchToState(StateKey.Loading, false);
+		controller.SwitchToState(StateKey.Loading);
 		var state = controller.GetLayout().Children.First();
 
 		Assert.IsType<Label>(state);
@@ -177,15 +143,15 @@ public class StateContainerTests : BaseTest
 	}
 
 	[Fact]
-	public async Task Controller_SwitchesToContentFromStateSuccess()
+	public void Controller_SwitchesToContentFromStateSuccess()
 	{
-		await controller.SwitchToState(StateKey.Loading, false);
+		controller.SwitchToState(StateKey.Loading);
 		var label = controller.GetLayout().Children.First();
 
 		Assert.IsType<Label>(label);
 		Assert.Equal("Loading", ((Label)label).Text);
 
-		await controller.SwitchToContent(false);
+		controller.SwitchToContent();
 		label = controller.GetLayout().Children.First();
 
 		Assert.IsType<Label>(label);
@@ -193,15 +159,15 @@ public class StateContainerTests : BaseTest
 	}
 
 	[Fact]
-	public async Task Controller_SwitchesToStateFromStateSuccess()
+	public void Controller_SwitchesToStateFromStateSuccess()
 	{
-		await controller.SwitchToState(StateKey.Anything, false);
+		controller.SwitchToState(StateKey.Anything);
 		var label = controller.GetLayout().Children.First();
 
 		Assert.IsType<Label>(label);
 		Assert.Equal("Anything", ((Label)label).Text);
 
-		await controller.SwitchToState(StateKey.Loading, false);
+		controller.SwitchToState(StateKey.Loading);
 		label = controller.GetLayout().Children.First();
 
 		Assert.IsType<Label>(label);
@@ -209,15 +175,15 @@ public class StateContainerTests : BaseTest
 	}
 
 	[Fact]
-	public async Task Controller_SwitchesToStateFromSameStateSuccess()
+	public void Controller_SwitchesToStateFromSameStateSuccess()
 	{
-		await controller.SwitchToState(StateKey.Loading, false);
+		controller.SwitchToState(StateKey.Loading);
 		var label = controller.GetLayout().Children.First();
 
 		Assert.IsType<Label>(label);
 		Assert.Equal("Loading", ((Label)label).Text);
 
-		await controller.SwitchToState(StateKey.Loading, false);
+		controller.SwitchToState(StateKey.Loading);
 		label = controller.GetLayout().Children.First();
 
 		Assert.IsType<Label>(label);
@@ -225,9 +191,9 @@ public class StateContainerTests : BaseTest
 	}
 
 	[Fact]
-	public async Task Controller_GridStateInnerLayoutSpansParent()
+	public void Controller_GridStateInnerLayoutSpansParent()
 	{
-		await gridController.SwitchToState(StateKey.Loading, false);
+		gridController.SwitchToState(StateKey.Loading);
 		var innerLayout = gridController.GetLayout().Children.First();
 
 		Assert.IsType<VerticalStackLayout>(innerLayout);
@@ -236,9 +202,9 @@ public class StateContainerTests : BaseTest
 	}
 
 	[Fact]
-	public async Task Controller_GridStateInnerLayoutRespectsViewOptions()
+	public void Controller_GridStateInnerLayoutRespectsViewOptions()
 	{
-		await gridController.SwitchToState(StateKey.Anything, false);
+		gridController.SwitchToState(StateKey.Anything);
 		var innerLayout = gridController.GetLayout().Children.First();
 
 		Assert.IsType<VerticalStackLayout>(innerLayout);

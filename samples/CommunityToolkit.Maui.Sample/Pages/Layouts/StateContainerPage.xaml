@@ -24,7 +24,6 @@
     <ScrollView>
         <VerticalStackLayout
             mct:StateContainer.CurrentState="{Binding FullPageState}"
-            mct:StateContainer.ShouldAnimateOnStateChange="true"
             Spacing="10">
 
             <mct:StateContainer.StateViews>
@@ -48,8 +47,7 @@
 
             <VerticalStackLayout
                 Padding="10"
-                mct:StateContainer.CurrentState="{Binding CurrentState}"
-                mct:StateContainer.ShouldAnimateOnStateChange="True">
+                mct:StateContainer.CurrentState="{Binding CurrentState}">
                 <mct:StateContainer.StateViews>
 
                     <Border
@@ -93,7 +91,6 @@
 
             <Grid
                 mct:StateContainer.CurrentState="{Binding GridState}"
-                mct:StateContainer.ShouldAnimateOnStateChange="true"
                 mct:StateContainer.CanStateChange="{Binding CanGridStateChange}"
                 ColumnDefinitions="1*, 1*, 1*"
                 RowDefinitions="1*, 1*">
@@ -137,8 +134,7 @@
             <Label Text="ShouldAnimateOnStateChange can be set to false to disable the fade animation." />
 
             <VerticalStackLayout
-                mct:StateContainer.CurrentState="{Binding NoAnimateState}"
-                mct:StateContainer.ShouldAnimateOnStateChange="False">
+                mct:StateContainer.CurrentState="{Binding NoAnimateState}">
 
                 <mct:StateContainer.StateViews>
                     <Border
@@ -165,7 +161,7 @@
                 </Label.FormattedText>
             </Label>
 
-            <VerticalStackLayout mct:StateContainer.CurrentState="{Binding NotFoundState}" mct:StateContainer.ShouldAnimateOnStateChange="True">
+            <VerticalStackLayout mct:StateContainer.CurrentState="{Binding NotFoundState}" >
 
                 <Border Style="{StaticResource BorderStyle}">
                     <Label Text="This is the default content." VerticalTextAlignment="Center" />
@@ -173,6 +169,47 @@
 
             </VerticalStackLayout>
 
+            <Button Clicked="ChangeStateWithFadeAnimation" Text="Change State with animation" />
+            <Button Clicked="ChangeStateWithCustomAnimation" Text="Change State with custom animation" />
+            <Grid
+                x:Name="GridWithAnimation"
+                ColumnDefinitions="1*, 1*, 1*"
+                RowDefinitions="1*, 1*">
+
+                <mct:StateContainer.StateViews>
+                    <Border
+                        mct:StateView.StateKey="ReplaceGrid"
+                        Stroke="Green"
+                        Style="{StaticResource BorderStyle}">
+                        <Label Text="State replacing the Grid content" VerticalTextAlignment="Center" />
+                    </Border>
+                </mct:StateContainer.StateViews>
+
+                <Button
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    BackgroundColor="Red" />
+                <Button
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    BackgroundColor="Green" />
+                <Button
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    BackgroundColor="Blue" />
+                <Button
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    BackgroundColor="Purple" />
+                <Button
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    BackgroundColor="Yellow" />
+                <Button
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    BackgroundColor="Orange" />
+            </Grid>
         </VerticalStackLayout>
     </ScrollView>
 </pages:BasePage>

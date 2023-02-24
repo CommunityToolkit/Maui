@@ -1,4 +1,7 @@
-﻿namespace CommunityToolkit.Maui.Layouts;
+﻿using CommunityToolkit.Maui.Animations;
+using Microsoft.Maui.Controls;
+
+namespace CommunityToolkit.Maui.Layouts;
 
 /// <summary>
 /// The <see cref="StateContainer"/> attached properties enable any <see cref="Layout"/> inheriting element to become state-aware.
@@ -10,7 +13,6 @@ public static class StateContainer
 	const string currentStatePropertyName = "CurrentState";
 	const string canStateChangePropertyName = "CanStateChange";
 	const string layoutControllerPropertyName = "LayoutController";
-	const string shouldAnimateOnStateChangePropertyName = "ShouldAnimateOnStateChange";
 
 	internal static readonly BindableProperty LayoutControllerProperty
 		= BindableProperty.CreateAttached(layoutControllerPropertyName, typeof(StateContainerController), typeof(StateContainer), default(StateContainerController), defaultValueCreator: ContainerControllerCreator);
@@ -19,23 +21,14 @@ public static class StateContainer
 	/// Backing <see cref="BindableProperty"/> for the <see cref="GetStateViews"/> and <see cref="SetStateViews"/> methods.
 	/// </summary>
 	public static readonly BindableProperty StateViewsProperty
-		= BindableProperty.CreateAttached(stateViewsPropertyName, typeof(IList<View>), typeof(StateContainer), default(IList<View>), defaultValueCreator: bindable => new List<View>());
+		= BindableProperty.CreateAttached(stateViewsPropertyName, typeof(IList<View>), typeof(StateContainer), default(IList<View>), defaultValueCreator: _ => new List<View>());
 
 	/// <summary>
 	/// Backing <see cref="BindableProperty"/> for the <see cref="GetCurrentState"/> and <see cref="SetCurrentState"/> methods.
-	/// When <see cref="ShouldAnimateOnStateChangeProperty"/> is <see langword="true"/>, a <see cref="StateContainerException"/> may be thrown when <see cref="CurrentStateProperty"/> is changed while an animation is in progress
 	/// To ensure <see cref="StateContainer"/> does not throw a <see cref="StateContainerException"/> due to active animations, first verify <see cref="CanStateChangeProperty"/> is <see langword="true"/> before changing <see cref="CurrentStateProperty"/>
 	/// </summary>
 	public static readonly BindableProperty CurrentStateProperty
-		= BindableProperty.CreateAttached(currentStatePropertyName, typeof(string), typeof(StateContainer), default(string), propertyChanged: OnCurrentStateChanged);
-
-	/// <summary>
-	/// Backing <see cref="BindableProperty"/> for the <see cref="GetShouldAnimateOnStateChange"/> and <see cref="SetShouldAnimateOnStateChange"/> methods.
-	/// When <see langword="true"/>, a <see cref="StateContainerException"/> may be thrown when <see cref="CurrentStateProperty"/> is changed while an animation is in progress
-	/// To ensure <see cref="StateContainer"/> does not throw a <see cref="StateContainerException"/> due to active animations, first verify <see cref="CanStateChangeProperty"/> is <see langword="true"/> before changing <see cref="CurrentStateProperty"/>
-	/// </summary>
-	public static readonly BindableProperty ShouldAnimateOnStateChangeProperty
-		= BindableProperty.CreateAttached(shouldAnimateOnStateChangePropertyName, typeof(bool), typeof(StateContainer), false, propertyChanged: OnShouldAnimateOnStateChangeChanged);
+		= BindableProperty.CreateAttached(currentStatePropertyName, typeof(string), typeof(StateContainer), default(string), propertyChanging: ChangeState);
 
 	/// <summary>
 	/// Backing <see cref="BindableProperty"/> for the <see cref="GetCanStateChange"/> method.
@@ -72,30 +65,23 @@ public static class StateContainer
 	/// </summary>
 	public static string GetCurrentState(BindableObject b)
 		=> (string)b.GetValue(CurrentStateProperty);
-
-	/// <summary>
-	/// Set the ShouldAnimateOnStateChange property
-	/// </summary>
-	public static void SetShouldAnimateOnStateChange(BindableObject b, bool value)
-		=> b.SetValue(ShouldAnimateOnStateChangeProperty, value);
-
-	/// <summary>
-	/// Get the ShouldAnimateOnStateChange property
-	/// </summary>
-	public static bool GetShouldAnimateOnStateChange(BindableObject b)
-		=> (bool)b.GetValue(ShouldAnimateOnStateChangeProperty);
-
+	
 	internal static StateContainerController GetContainerController(BindableObject b) =>
 		(StateContainerController)b.GetValue(LayoutControllerProperty);
 
 	static void SetCanStateChange(BindableObject b, bool value)
 		=> b.SetValue(CanStateChangeProperty, value);
 
-	static async void OnCurrentStateChanged(BindableObject bindable, object oldValue, object newValue)
+	static void ChangeState(BindableObject bindable, object oldValue, object newValue)
 	{
 		if (oldValue == newValue)
 		{
 			return;
+		}
+
+		if (!GetCanStateChange(bindable)) 
+		{
+			throw new StateContainerException($"{canStateChangePropertyName} is false. {currentStatePropertyName} cannot be changed while a state change is in progress. To avoid this exception, first verify {canStateChangePropertyName} is {true} before changing {currentStatePropertyName}.");
 		}
 
 		SetCanStateChange(bindable, false);
@@ -104,18 +90,15 @@ public static class StateContainer
 
 		if (string.IsNullOrEmpty(newState)) 
 		{
-			await GetContainerController(bindable).SwitchToContent(GetShouldAnimateOnStateChange(bindable));
+			GetContainerController(bindable).SwitchToContent();
 		}
 		else 
 		{
-			await GetContainerController(bindable).SwitchToState(newState, GetShouldAnimateOnStateChange(bindable));
+			GetContainerController(bindable).SwitchToState(newState);
 		}
 
 		SetCanStateChange(bindable, true);
 	}
-
-	static void OnShouldAnimateOnStateChangeChanged(BindableObject bindable, object oldValue, object newValue)
-		=> bindable.SetValue(ShouldAnimateOnStateChangeProperty, newValue);
 
 	static object ContainerControllerCreator(BindableObject bindable)
 	{
@@ -129,6 +112,69 @@ public static class StateContainer
 			StateViews = GetStateViews(layoutView)
 		};
 	}
+
+	/// <summary>
+	/// Change state with custom animation.
+	/// </summary>
+	public static void ChangeStateWithAnimation(BindableObject bindable, string state, Animation beforeStateChange,
+		Animation afterStateChange)
+	{
+		var container = GetContainerController(bindable);
+		var layout = container.GetLayout();
+		if (layout.Children.Count > 0)
+		{
+			layout.Children.OfType<View>().ForEach(view => view.Animate("beforeStateChange", beforeStateChange));
+		}
+
+		container.SwitchToState(state);
+
+		if (layout.Children.Count > 0) 
+		{
+			layout.Children.OfType<View>().ForEach(view => view.Animate("afterStateChange", afterStateChange));
+		}
+	}
+
+	/// <summary>
+	/// Change state with custom animation.
+	/// </summary>
+	public static async Task ChangeStateWithAnimation(BindableObject bindable, string state, Func<VisualElement, CancellationToken, Task> beforeStateChange,
+		Func<VisualElement, CancellationToken, Task> afterStateChange, CancellationToken cancellationToken)
+	{
+		var container = GetContainerController(bindable);
+		var layout = container.GetLayout();
+		if (layout.Children.Count > 0)
+		{
+			await beforeStateChange.Invoke(layout, cancellationToken);
+		}
+
+		container.SwitchToState(state);
+		
+		if (layout.Children.Count > 0) 
+		{
+			await afterStateChange.Invoke(layout, cancellationToken);
+		}
+	}
+
+	/// <summary>
+	/// Change state with fade animation.
+	/// </summary>
+	public static async Task ChangeStateWithAnimation(BindableObject bindable, string state, CancellationToken token)
+	{
+		var container = GetContainerController(bindable);
+		var layout = container.GetLayout();
+		if (layout.Children.Count > 0) 
+		{
+			await Task.WhenAll(layout.Children.OfType<View>().Select(view => view.FadeTo(0))).WaitAsync(token);
+		}
+
+		container.SwitchToState(state);
+
+		if (layout.Children.Count > 0) 
+		{
+			await Task.WhenAll(layout.Children.OfType<View>().Select(view => view.FadeTo(1))).WaitAsync(token);
+		}
+	}
+
 }
 
 /// <summary>
