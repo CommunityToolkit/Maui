@@ -6,6 +6,7 @@
 sealed class StateContainerController
 {
 	readonly WeakReference<Layout> layoutWeakReference;
+
 	string? previousState;
 	List<View> originalContent = Enumerable.Empty<View>().ToList();
 
