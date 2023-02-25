@@ -44,6 +44,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 				ActionButtonTextColor = Colors.Yellow,
 				CornerRadius = new CornerRadius(10),
 				Font = Font.SystemFontOfSize(14),
+				ActionButtonFont = Font.OfSize("FABrands", 16, enableScaling: false),
 			};
 
 			customSnackbar = Snackbar.Make(
@@ -53,7 +54,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 					await DisplayCustomSnackbarButton.BackgroundColorTo(colors[Random.Shared.Next(colors.Count)], length: 500);
 					DisplayCustomSnackbarButton.Text = displayCustomSnackbarText;
 				},
-				"Change Button Color",
+				CommunityToolkit.Maui.Sample.Resources.Fonts.FontAwesomeIcons.Microsoft,
 				TimeSpan.FromSeconds(30),
 				options,
 				DisplayCustomSnackbarButton);

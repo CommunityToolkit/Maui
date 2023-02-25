@@ -1,5 +1,5 @@
-﻿using System.Runtime.InteropServices;
-using CommunityToolkit.Maui.Core.Views;
+﻿using CommunityToolkit.Maui.Core.Views;
+using CommunityToolkit.Maui.Extensions;
 using CoreGraphics;
 using Microsoft.Maui.Platform;
 using UIKit;
@@ -58,11 +58,11 @@ public partial class Snackbar
 											VisualOptions.BackgroundColor.ToPlatform(),
 											cornerRadius,
 											VisualOptions.TextColor.ToPlatform(),
-											UIFont.SystemFontOfSize((NFloat)VisualOptions.Font.Size),
+											VisualOptions.Font.ToUIFont(),
 											VisualOptions.CharacterSpacing,
 											ActionButtonText,
 											VisualOptions.ActionButtonTextColor.ToPlatform(),
-											UIFont.SystemFontOfSize((NFloat)VisualOptions.ActionButtonFont.Size),
+											VisualOptions.ActionButtonFont.ToUIFont(),
 											padding)
 		{
 			Action = Action,

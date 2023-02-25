@@ -43,7 +43,13 @@ public static class MauiProgram
 #endif
 								.UseMauiCommunityToolkitMarkup()
 								.UseMauiCommunityToolkitMediaElement()
-								.UseMauiApp<App>();
+								.UseMauiApp<App>()
+								.ConfigureFonts(fonts =>
+								{
+									fonts.AddFont("Font Awesome 6 Free-Solid-900.otf", "FASolid");
+									fonts.AddFont("Font Awesome 6 Brands-Regular-400.otf", "FABrands");
+									fonts.AddFont("Font Awesome 6 Free-Regular-400.otf", "FARegular");
+								});
 
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>()
 						.AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(3, sleepDurationProvider));
