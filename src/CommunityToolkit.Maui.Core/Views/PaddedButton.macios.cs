@@ -44,10 +44,8 @@ public sealed class PaddedButton : UIButton
 	{
 		if (OperatingSystem.IsIOSVersionAtLeast(15))
 		{
-			if (Configuration is not null)
-			{
-				Configuration.ContentInsets = new NSDirectionalEdgeInsets(topPadding, leftPadding, bottomPadding, rightPadding);
-			}
+			Configuration ??= UIButtonConfiguration.PlainButtonConfiguration;
+			Configuration.ContentInsets = new NSDirectionalEdgeInsets(topPadding, leftPadding, bottomPadding, rightPadding);
 		}
 		else
 		{
