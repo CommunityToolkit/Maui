@@ -24,7 +24,7 @@
     <ScrollView>
         <VerticalStackLayout
             mct:StateContainer.CurrentState="{Binding FullPageState}"
-            Spacing="16">
+            Spacing="12">
 
             <mct:StateContainer.StateViews>
                 <VerticalStackLayout

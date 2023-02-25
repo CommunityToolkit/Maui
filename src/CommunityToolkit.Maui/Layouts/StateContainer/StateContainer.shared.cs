@@ -54,7 +54,7 @@ public static class StateContainer
 	/// <summary>
 	/// Set the CurrentState property
 	/// </summary>
-	public static void SetCurrentState(BindableObject b, string value)
+	public static void SetCurrentState(BindableObject b, string? value)
 		=> b.SetValue(CurrentStateProperty, value);
 
 	/// <summary>
@@ -68,7 +68,7 @@ public static class StateContainer
 	/// </summary>
 	public static async Task ChangeStateWithAnimation(
 		BindableObject bindable,
-		string state,
+		string? state,
 		Animation? beforeStateChange,
 		Animation? afterStateChange,
 		CancellationToken token)
@@ -88,7 +88,7 @@ public static class StateContainer
 			if (layout.Children.Count > 0 && beforeStateChange is not null)
 			{
 				var beforeAnimationTCS = new TaskCompletionSource<bool>();
-				layout.Children.OfType<View>().ForEach(view => view.Animate("beforeStateChange", beforeStateChange, finished: (_, result) => beforeAnimationTCS.SetResult(result)));
+				layout.Children.OfType<View>().ForEach(view => view.Animate(nameof(beforeStateChange), beforeStateChange, finished: (_, result) => beforeAnimationTCS.SetResult(result)));
 
 				await beforeAnimationTCS.Task.WaitAsync(token);
 			}
@@ -98,7 +98,7 @@ public static class StateContainer
 			if (layout.Children.Count > 0 && afterStateChange is not null)
 			{
 				var animationAnimationTCS = new TaskCompletionSource<bool>();
-				layout.Children.OfType<View>().ForEach(view => view.Animate("afterStateChange", afterStateChange, finished: (_, result) => animationAnimationTCS.SetResult(result)));
+				layout.Children.OfType<View>().ForEach(view => view.Animate(nameof(afterStateChange), afterStateChange, finished: (_, result) => animationAnimationTCS.SetResult(result)));
 
 				await animationAnimationTCS.Task.WaitAsync(token);
 			}
@@ -115,7 +115,7 @@ public static class StateContainer
 	/// </summary>
 	public static async Task ChangeStateWithAnimation(
 		BindableObject bindable,
-		string state,
+		string? state,
 		Func<VisualElement, CancellationToken, Task>? beforeStateChange,
 		Func<VisualElement, CancellationToken, Task>? afterStateChange,
 		CancellationToken cancellationToken)
@@ -155,7 +155,7 @@ public static class StateContainer
 	/// <summary>
 	/// Change state using the default fade animation.
 	/// </summary>
-	public static async Task ChangeStateWithAnimation(BindableObject bindable, string state, CancellationToken token)
+	public static async Task ChangeStateWithAnimation(BindableObject bindable, string? state, CancellationToken token)
 	{
 		ValidateCanStateChange(bindable);
 		SetCanStateChange(bindable, false);
