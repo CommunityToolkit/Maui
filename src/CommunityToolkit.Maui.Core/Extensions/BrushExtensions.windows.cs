@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml.Media;
+using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml.Media;
 
 namespace CommunityToolkit.Maui.Core.Extensions;
 
