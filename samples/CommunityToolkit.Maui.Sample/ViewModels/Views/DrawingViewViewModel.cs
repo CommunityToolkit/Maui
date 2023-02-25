@@ -2,8 +2,10 @@
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
+using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
@@ -52,5 +54,12 @@ public partial class DrawingViewViewModel : BaseViewModel
 		{
 			yield return new PointF(Random.Shared.Next(1, maxWidthInt), Random.Shared.Next(1, maxHeightInt));
 		}
+	}
+
+	[RelayCommand]
+	public async Task Save(CancellationToken cancellationToken)
+	{
+		await using var stream =  await DrawingView.GetImageStream(Lines, new Size(1920, 1080), Brush.Blue);
+		await FileSaver.SaveAsync("drawing.png", stream, cancellationToken);
 	}
 }
