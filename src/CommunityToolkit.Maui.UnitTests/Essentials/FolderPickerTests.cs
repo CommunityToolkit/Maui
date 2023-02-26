@@ -4,6 +4,7 @@ using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Essentials;
+
 public class FolderPickerTests
 {
 	[Fact]
