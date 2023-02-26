@@ -46,13 +46,11 @@ public static class MauiProgram
 								.UseMauiApp<App>()
 								.ConfigureFonts(fonts =>
 								{
-									fonts.AddFont("Font Awesome 6 Free-Solid-900.otf", "FASolid");
 									fonts.AddFont("Font Awesome 6 Brands-Regular-400.otf", "FABrands");
-									fonts.AddFont("Font Awesome 6 Free-Regular-400.otf", "FARegular");
 								});
 
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>()
-						.AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(3, sleepDurationProvider));
+						.AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(3, SleepDurationProvider));
 
 		builder.Services.AddSingleton<PopupSizeConstants>();
 
@@ -65,7 +63,7 @@ public static class MauiProgram
 
 		return builder.Build();
 
-		static TimeSpan sleepDurationProvider(int attemptNumber) => TimeSpan.FromSeconds(Math.Pow(2, attemptNumber));
+		static TimeSpan SleepDurationProvider(int attemptNumber) => TimeSpan.FromSeconds(Math.Pow(2, attemptNumber));
 	}
 
 	static void RegisterViewsAndViewModels(in IServiceCollection services)
