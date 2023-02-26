@@ -186,8 +186,8 @@ public static class StateContainer
 	internal static StateContainerController GetContainerController(BindableObject b) =>
 		(StateContainerController)b.GetValue(LayoutControllerProperty);
 
-	static void SetCanStateChange(BindableObject b, bool value) =>
-		b.SetValue(CanStateChangeProperty, value);
+	static void SetCanStateChange(BindableObject b, bool value)
+		=> b.SetValue(CanStateChangeProperty, value);
 
 	static void OnCurrentStateChanging(BindableObject bindable, object oldValue, object newValue)
 	{
