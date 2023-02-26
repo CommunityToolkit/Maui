@@ -9,6 +9,7 @@ using CommunityToolkit.Maui.Sample.Pages.Extensions;
 using CommunityToolkit.Maui.Sample.Pages.ImageSources;
 using CommunityToolkit.Maui.Sample.Pages.Layouts;
 using CommunityToolkit.Maui.Sample.Pages.Views;
+using CommunityToolkit.Maui.Sample.Resources.Fonts;
 using CommunityToolkit.Maui.Sample.ViewModels;
 using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
@@ -46,7 +47,7 @@ public static class MauiProgram
 								.UseMauiApp<App>()
 								.ConfigureFonts(fonts =>
 								{
-									fonts.AddFont("Font Awesome 6 Brands-Regular-400.otf", "FABrands");
+									fonts.AddFont("Font Awesome 6 Brands-Regular-400.otf", FontFamilies.FontAwesomeBrands);
 								});
 
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>()
