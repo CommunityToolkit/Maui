@@ -1,19 +1,26 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
+using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
+using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public partial class DrawingViewViewModel : BaseViewModel
 {
+	readonly IFileSaver fileSaver;
+
 	[ObservableProperty]
 	string logs = string.Empty;
 
-	public DrawingViewViewModel()
+	public DrawingViewViewModel(IFileSaver fileSaver)
 	{
+		this.fileSaver = fileSaver;
+
 		DrawingLineCompletedCommand = new Command<IDrawingLine>(line => Logs = "GestureCompletedCommand executed." + Environment.NewLine + $"Line points count: {line.Points.Count}" + Environment.NewLine + Environment.NewLine + Logs);
 
 		ClearLinesCommand = new Command(Lines.Clear);
@@ -51,6 +58,28 @@ public partial class DrawingViewViewModel : BaseViewModel
 		for (var i = 0; i < count; i++)
 		{
 			yield return new PointF(Random.Shared.Next(1, maxWidthInt), Random.Shared.Next(1, maxHeightInt));
+		}
+	}
+
+	[RelayCommand]
+	public async Task Save(CancellationToken cancellationToken)
+	{
+		try
+		{
+			await using var stream = await DrawingView.GetImageStream(Lines, new Size(1920, 1080), Brush.Blue);
+
+			await Permissions.RequestAsync<Permissions.StorageRead>().WaitAsync(cancellationToken);
+			await Permissions.RequestAsync<Permissions.StorageWrite>().WaitAsync(cancellationToken);
+
+			await fileSaver.SaveAsync("drawing.png", stream, cancellationToken);
+		}
+		catch (PermissionException e)
+		{
+			await Toast.Make($"Save Failed: {e.Message}").Show(cancellationToken);
+		}
+		catch (InvalidOperationException)
+		{
+			await Toast.Make("Save Failed: No Lines Drawn").Show(cancellationToken);
 		}
 	}
 }
