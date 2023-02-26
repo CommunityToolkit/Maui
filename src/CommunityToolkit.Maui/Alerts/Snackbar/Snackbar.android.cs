@@ -106,7 +106,7 @@ public partial class Snackbar
 			PlatformSnackbar.SetAnchorView(Anchor?.Handler?.PlatformView as View);
 		}
 
-		var fontManager = Application.Current?.RequireFontManager();
+		var fontManager = Application.Current?.RequireFontManager() ?? throw new InvalidOperationException($"{nameof(IFontManager)} Required");
 		SetLayoutParametersForView(snackbarView);
 		SetContainerForView(snackbarView);
 		SetMessageForView(snackbarView, fontManager);
@@ -140,7 +140,7 @@ public partial class Snackbar
 		}
 	}
 
-	void SetMessageForView(in View snackbarView, IFontManager? fontManager)
+	void SetMessageForView(in View snackbarView, IFontManager fontManager)
 	{
 		var snackTextView = snackbarView.FindViewById<TextView>(Resource.Id.snackbar_text) ?? throw new InvalidOperationException("Unable to find Snackbar text view");
 		snackTextView.SetMaxLines(10);
@@ -151,16 +151,13 @@ public partial class Snackbar
 			snackTextView.SetTextSize(ComplexUnitType.Dip, (float)VisualOptions.Font.Size);
 		}
 
-		if (fontManager is not null)
-		{
-			snackTextView.SetTypeface(fontManager.GetTypeface(VisualOptions.Font), TypefaceStyle.Normal);
-		}
-		
+		snackTextView.SetTypeface(fontManager.GetTypeface(VisualOptions.Font), TypefaceStyle.Normal);
+
 		snackTextView.LetterSpacing = (float)VisualOptions.CharacterSpacing;
 	}
 
 	[MemberNotNull(nameof(dismissedTCS))]
-	void SetActionForSnackbar(in Google.Android.Material.Snackbar.Snackbar platformSnackbar, IFontManager? fontManager)
+	void SetActionForSnackbar(in Google.Android.Material.Snackbar.Snackbar platformSnackbar, IFontManager fontManager)
 	{
 		var snackActionButtonView = platformSnackbar.View.FindViewById<TextView>(Resource.Id.snackbar_action) ?? throw new InvalidOperationException("Unable to find Snackbar action button");
 
@@ -170,11 +167,8 @@ public partial class Snackbar
 			snackActionButtonView.SetTextSize(ComplexUnitType.Dip, (float)VisualOptions.ActionButtonFont.Size);
 		}
 
-		if (fontManager is not null)
-		{
-			snackActionButtonView.SetTypeface(fontManager.GetTypeface(VisualOptions.ActionButtonFont), TypefaceStyle.Normal);
-		}
-		
+		snackActionButtonView.SetTypeface(fontManager.GetTypeface(VisualOptions.ActionButtonFont), TypefaceStyle.Normal);
+
 		platformSnackbar.SetAction(ActionButtonText, _ => Action?.Invoke());
 
 		platformSnackbar.AddCallback(new SnackbarCallback(this, dismissedTCS = new()));
