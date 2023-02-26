@@ -10,7 +10,7 @@
                 Title="DrawingView">
 
     <ScrollView>
-        <Grid RowDefinitions="40,40,40,40,40,40,40,40,40,200,200,100" ColumnDefinitions="*,*">
+        <Grid RowDefinitions="40,40,40,40,40,40,40,40,40,200,200,100" ColumnDefinitions="*,*" RowSpacing="12" >
             <Label Grid.Row="0" Grid.Column="0" Text="Clear on Finish" Margin="0,0,5,0" HorizontalOptions="End" HorizontalTextAlignment="End"/>
             <Switch Grid.Row="0" Grid.Column="1" x:Name="ClearOnFinish" HorizontalOptions="Start" />
             <Label Grid.Row="1" Grid.Column="0" Text="Multi-Line Mode" Margin="0,0,5,0" HorizontalOptions="End" HorizontalTextAlignment="End"/>
