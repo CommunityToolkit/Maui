@@ -11,13 +11,13 @@
     <ContentPage.Content>
         <VerticalStackLayout Margin="20">
             <Button Text="Element outside the Semantic View"></Button>
-            <mct:SemanticOrderView x:Name="acv">
+            <mct:SemanticOrderView x:Name="SemanticOrderView">
                 <StackLayout>
-                    <Label x:Name="second" Text="Second" Margin="0,20" />
-                    <Button x:Name="third" Text="Third" Margin="0,20" />
-                    <Label x:Name="fourth" Text="Fourth" Margin="0,20" />
-                    <Button x:Name="fifth" Text="Fifth and last" Margin="0,20" />
-                    <Button x:Name="first" Text="First" Margin="0,20" />
+                    <Label x:Name="Second" Text="Second" Margin="0,20" />
+                    <Button x:Name="Third" Text="Third" Margin="0,20" />
+                    <Label x:Name="Fourth" Text="Fourth" Margin="0,20" />
+                    <Button x:Name="Fifth" Text="Fifth and last" Margin="0,20" />
+                    <Button x:Name="First" Text="First" Margin="0,20" />
                 </StackLayout>
             </mct:SemanticOrderView>
         </VerticalStackLayout>
