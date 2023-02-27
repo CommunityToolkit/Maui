@@ -20,8 +20,10 @@ public partial class FileSaverViewModel : BaseViewModel
 		using var stream = new MemoryStream(Encoding.Default.GetBytes("Hello from the Community Toolkit!"));
 		try
 		{
-			var fileLocation = await fileSaver.SaveAsync("test.txt", stream, cancellationToken);
-			await Toast.Make($"File is saved: {fileLocation}").Show(cancellationToken);
+			var fileLocationResult = await fileSaver.SaveAsync("test.txt", stream, cancellationToken);
+			fileLocationResult.EnsureSuccess();
+
+			await Toast.Make($"File is saved: {fileLocationResult.FilePath}").Show(cancellationToken);
 		}
 		catch (Exception ex)
 		{
@@ -33,14 +35,14 @@ public partial class FileSaverViewModel : BaseViewModel
 	async Task SaveFileStatic(CancellationToken cancellationToken)
 	{
 		using var stream = new MemoryStream(Encoding.Default.GetBytes("Hello from the Community Toolkit!"));
-		try
+		var fileSaveResult = await FileSaver.SaveAsync("DCIM", "test.txt", stream, cancellationToken);
+		if (fileSaveResult.IsSuccessful)
 		{
-			var fileLocation = await FileSaver.SaveAsync("test.txt", stream, cancellationToken);
-			await Toast.Make($"File is saved: {fileLocation}").Show(cancellationToken);
+			await Toast.Make($"File is saved: {fileSaveResult.FilePath}").Show(cancellationToken);
 		}
-		catch (Exception ex)
+		else
 		{
-			await Toast.Make($"File is not saved, {ex.Message}").Show(cancellationToken);
+			await Toast.Make($"File is not saved, {fileSaveResult.Exception.Message}").Show(cancellationToken);
 		}
 	}
 
@@ -51,8 +53,10 @@ public partial class FileSaverViewModel : BaseViewModel
 		try
 		{
 			var fileSaverInstance = new FileSaverImplementation();
-			var fileLocation = await fileSaverInstance.SaveAsync("test.txt", stream, cancellationToken);
-			await Toast.Make($"File is saved: {fileLocation}").Show(cancellationToken);
+			var fileSaverResult = await fileSaverInstance.SaveAsync("test.txt", stream, cancellationToken);
+			fileSaverResult.EnsureSuccess();
+
+			await Toast.Make($"File is saved: {fileSaverResult.FilePath}").Show(cancellationToken);
 #if IOS || MACCATALYST
 			fileSaverInstance.Dispose();
 #endif

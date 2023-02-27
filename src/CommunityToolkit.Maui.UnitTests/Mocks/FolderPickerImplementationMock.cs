@@ -5,17 +5,17 @@ namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
 class FolderPickerImplementationMock : IFolderPicker
 {
-	public Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)
+	public Task<FolderPickerResult> PickAsync(string initialPath, CancellationToken cancellationToken)
 	{
 		if (string.IsNullOrWhiteSpace(initialPath))
 		{
-			return Task.FromException<Folder>(new FolderPickerException("error"));
+			return Task.FromResult(new FolderPickerResult(null, new FolderPickerException("error")));
 		}
 
-		return Task.FromResult<Folder>(new Folder(initialPath, "name"));
+		return Task.FromResult(new FolderPickerResult(new Folder(initialPath, "name"), null));
 	}
 
-	public Task<Folder> PickAsync(CancellationToken cancellationToken)
+	public Task<FolderPickerResult> PickAsync(CancellationToken cancellationToken)
 	{
 		return PickAsync(string.Empty, cancellationToken);
 	}

@@ -24,11 +24,12 @@
     <ScrollView>
         <VerticalStackLayout
             mct:StateContainer.CurrentState="{Binding FullPageState}"
-            mct:StateContainer.ShouldAnimateOnStateChange="true"
-            Spacing="10">
+            Spacing="12">
 
             <mct:StateContainer.StateViews>
-                <VerticalStackLayout mct:StateView.StateKey="Loading">
+                <VerticalStackLayout
+                    mct:StateView.StateKey="Loading"
+                    mct:StateContainer.CanStateChange="{Binding CanFullPageStateChange}">
                     <ActivityIndicator
                         HorizontalOptions="Center"
                         IsRunning="True"
@@ -39,7 +40,7 @@
             </mct:StateContainer.StateViews>
 
             <Label Text="The StateContainer properties allow any Layout derived element to become state-aware." />
-            <Button Command="{Binding CycleStatesCommand}" Text="Cycle States" />
+            <Button Command="{Binding CycleStatesCommand}" Text="Cycle States Without Animation" />
             <Label Text="This will show several states at an interval of 2 seconds." />
             <Label
                 FontSize="Small"
@@ -47,9 +48,9 @@
                 VerticalTextAlignment="Center" />
 
             <VerticalStackLayout
-                Padding="10"
+                Padding="24,0"
                 mct:StateContainer.CurrentState="{Binding CurrentState}"
-                mct:StateContainer.ShouldAnimateOnStateChange="True">
+                mct:StateContainer.CanStateChange="{Binding CanCycleStateChange}">
                 <mct:StateContainer.StateViews>
 
                     <Border
@@ -88,15 +89,15 @@
 
             </VerticalStackLayout>
 
-            <Button Command="{Binding ToggleGridStateCommand}" Text="Toggle State in Grid" />
+            <Button Command="{Binding ToggleGridStateCommand}" Text="Toggle State in Grid Without Animation" />
             <Label Text="A state inside a Grid spans its rows and columns." />
 
             <Grid
                 mct:StateContainer.CurrentState="{Binding GridState}"
-                mct:StateContainer.ShouldAnimateOnStateChange="true"
                 mct:StateContainer.CanStateChange="{Binding CanGridStateChange}"
                 ColumnDefinitions="1*, 1*, 1*"
-                RowDefinitions="1*, 1*">
+                RowDefinitions="1*, 1*"
+                Padding="24,0">
 
                 <mct:StateContainer.StateViews>
                     <Border
@@ -133,27 +134,54 @@
                     BackgroundColor="Orange" />
             </Grid>
 
-            <Button Command="{Binding ToggleNoAnimateStateCommand}" Text="Toggle State Without Animation" />
-            <Label Text="ShouldAnimateOnStateChange can be set to false to disable the fade animation." />
+            <Button Clicked="ChangeStateWithFadeAnimation"
+                    Text="Change State with default fade animation"
+                    IsEnabled="{Binding CanAnimationStateChange}"/>
 
-            <VerticalStackLayout
-                mct:StateContainer.CurrentState="{Binding NoAnimateState}"
-                mct:StateContainer.ShouldAnimateOnStateChange="False">
+            <Button Clicked="ChangeStateWithCustomAnimation"
+                    Text="Change State with custom animation"
+                    IsEnabled="{Binding CanAnimationStateChange}"/>
+            <Grid
+                x:Name="GridWithAnimation"
+                ColumnDefinitions="1*, 1*, 1*"
+                RowDefinitions="1*, 1*"
+                Padding="24,0"
+                mct:StateContainer.CanStateChange="{Binding CanAnimationStateChange}">
 
                 <mct:StateContainer.StateViews>
                     <Border
-                        mct:StateView.StateKey="NoAnimate"
-                        Stroke="Fuchsia"
+                        mct:StateView.StateKey="ReplaceGrid"
+                        Stroke="Green"
                         Style="{StaticResource BorderStyle}">
-                        <Label Text="Hi, I changed, but I didn't animate." VerticalTextAlignment="Center" />
+                        <Label Text="State replacing the Grid content" VerticalTextAlignment="Center" />
                     </Border>
                 </mct:StateContainer.StateViews>
 
-                <Border Style="{StaticResource BorderStyle}">
-                    <Label Text="This is the default content." VerticalTextAlignment="Center" />
-                </Border>
-
-            </VerticalStackLayout>
+                <Button
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    BackgroundColor="Red" />
+                <Button
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    BackgroundColor="Green" />
+                <Button
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    BackgroundColor="Blue" />
+                <Button
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    BackgroundColor="Purple" />
+                <Button
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    BackgroundColor="Yellow" />
+                <Button
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    BackgroundColor="Orange" />
+            </Grid>
 
             <Button Command="{Binding ToggleNotFoundStateCommand}" Text="Toggle Nonexistent State" />
             <Label TextColor="Red">
@@ -165,14 +193,13 @@
                 </Label.FormattedText>
             </Label>
 
-            <VerticalStackLayout mct:StateContainer.CurrentState="{Binding NotFoundState}" mct:StateContainer.ShouldAnimateOnStateChange="True">
+            <VerticalStackLayout mct:StateContainer.CurrentState="{Binding NotFoundState}" >
 
                 <Border Style="{StaticResource BorderStyle}">
                     <Label Text="This is the default content." VerticalTextAlignment="Center" />
                 </Border>
 
             </VerticalStackLayout>
-
         </VerticalStackLayout>
     </ScrollView>
 </pages:BasePage>
