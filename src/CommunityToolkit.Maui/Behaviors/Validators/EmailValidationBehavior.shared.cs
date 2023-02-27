@@ -49,24 +49,12 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 		// Pull out and process domain name (throws ArgumentException on invalid)
 		var asciiDomainName = idn.GetAscii(domainName);
 
-		if (asciiDomainName.All(x => char.IsDigit(x)
-									|| x is '.'
-									|| x is '['
-									|| x is ']')
-				&& !IsValidIPv4(asciiDomainName))
+		if (!IsValidIPv4(asciiDomainName))
 		{
 			throw new ArgumentException("Invalid IPv4 Address.");
 		}
 
-		// `[IPv6:..]` is required for IPv6 Address-Literals https://www.rfc-editor.org/rfc/rfc5321#section-4.1.3
-		if (asciiDomainName.All(x => char.IsAsciiHexDigit(x)
-									|| x is ':'
-									|| x is '['
-									|| x is ']'
-									|| x is 'I'
-									|| x is 'P'
-									|| x is 'v')
-				&& !IsValidIPv6(asciiDomainName))
+		if (!IsValidIPv6(asciiDomainName))
 		{
 			throw new ArgumentException("Invalid IPv6 Address.");
 		}
@@ -152,7 +140,11 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 	{
 		var normalizedDomain = domain.TrimStart('[').TrimEnd(']');
 
-		return IPAddress.TryParse(normalizedDomain, out var address)
+		return domain.All(x => char.IsDigit(x)
+									|| x is '.'
+									|| x is '['
+									|| x is ']') 
+				&& IPAddress.TryParse(normalizedDomain, out var address)
 				&& address.AddressFamily is System.Net.Sockets.AddressFamily.InterNetwork;
 	}
 
@@ -167,7 +159,14 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 										.TrimStart(':')
 										.TrimEnd(']');
 
-		return IPAddress.TryParse(normalizedDomain, out var address)
+		return domain.All(x => char.IsAsciiHexDigit(x)
+									|| x is ':'
+									|| x is '['
+									|| x is ']'
+									|| x is 'I'
+									|| x is 'P'
+									|| x is 'v')
+				&& IPAddress.TryParse(normalizedDomain, out var address)
 				&& address.AddressFamily is System.Net.Sockets.AddressFamily.InterNetworkV6;
 	}
 }
