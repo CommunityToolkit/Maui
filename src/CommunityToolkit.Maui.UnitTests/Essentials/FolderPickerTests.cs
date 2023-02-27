@@ -1,10 +1,10 @@
-﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Storage;
+﻿using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Essentials;
+
 public class FolderPickerTests
 {
 	[Fact]
@@ -20,7 +20,23 @@ public class FolderPickerTests
 	public async Task PickAsyncFailsOnNet()
 	{
 		FolderPicker.SetDefault(new FolderPickerImplementation());
-		await Assert.ThrowsAsync<NotImplementedException>(() => FolderPicker.PickAsync(CancellationToken.None));
-		await Assert.ThrowsAsync<NotImplementedException>(() => FolderPicker.PickAsync("initial path", CancellationToken.None));
+		var result = await FolderPicker.PickAsync(CancellationToken.None);
+		result.Should().NotBeNull();
+		result.Exception.Should().BeOfType<NotImplementedException>();
+		result.Folder.Should().BeNull();
+		result.IsSuccessful.Should().BeFalse();
+		Assert.Throws<NotImplementedException>(result.EnsureSuccess);
+	}
+
+	[Fact]
+	public async Task PickAsyncWithInitialPathFailsOnNet()
+	{
+		FolderPicker.SetDefault(new FolderPickerImplementation());
+		var result = await FolderPicker.PickAsync("initial path", CancellationToken.None);
+		result.Should().NotBeNull();
+		result.Exception.Should().BeOfType<NotImplementedException>();
+		result.Folder.Should().BeNull();
+		result.IsSuccessful.Should().BeFalse();
+		Assert.Throws<NotImplementedException>(result.EnsureSuccess);
 	}
 }
