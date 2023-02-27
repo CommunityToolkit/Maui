@@ -3,11 +3,9 @@ using CommunityToolkit.Maui.Core.Primitives;
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc />
-public sealed class FolderPickerImplementation : IFolderPicker
+public sealed partial class FolderPickerImplementation : IFolderPicker
 {
-	/// <inheritdoc />
-	public Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken) => throw new NotImplementedException();
+	Task<Folder> InternalPickAsync(string initialPath, CancellationToken cancellationToken) => throw new NotImplementedException();
 
-	/// <inheritdoc />
-	public Task<Folder> PickAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
+	Task<Folder> InternalPickAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
 }
