@@ -46,12 +46,12 @@ public class MauiSemanticOrderView : ContentViewGroup
 				{
 					if (wv.Content is not null)
 					{
-						accessibilityManager.SetFocusOrder(wv.Content, (uint)order);
+						accessibilityManager.SetFocusOrder(wv.Content, order);
 					}
 				}
 				else
 				{
-					accessibilityManager.SetFocusOrder(pvh.PlatformView, (uint)order);
+					accessibilityManager.SetFocusOrder(pvh.PlatformView, order);
 				}
 				order++;
 			}
