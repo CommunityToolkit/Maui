@@ -14,11 +14,6 @@ public static class UIFontExtensions
 	public static UIFont ToUIFont(this Font font)
 	{
 		var fontManager = Application.Current?.RequireFontManager();
-		if (fontManager is null)
-		{
-			return UIFont.SystemFontOfSize((nfloat)font.Size);
-		}
-		
-		return fontManager.GetFont(font, UIFont.SystemFontSize);
+		return fontManager is null ? UIFont.SystemFontOfSize((nfloat)font.Size) : fontManager.GetFont(font, UIFont.SystemFontSize);
 	}
 }
