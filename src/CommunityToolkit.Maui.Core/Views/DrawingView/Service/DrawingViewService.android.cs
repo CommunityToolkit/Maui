@@ -169,7 +169,7 @@ public static class DrawingViewService
 	{
 		var sourceSize = new Size(sourceImage.Width, sourceImage.Height);
 		var maxResizeFactor = Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
-		
+
 		var width = Math.Max(maxResizeFactor * sourceSize.Width, 1);
 		var height = Math.Max(maxResizeFactor * sourceSize.Height, 1);
 		return Bitmap.CreateScaledBitmap(sourceImage, (int)width, (int)height, false)

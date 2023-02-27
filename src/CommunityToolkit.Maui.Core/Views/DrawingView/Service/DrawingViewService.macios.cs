@@ -121,7 +121,7 @@ public static class DrawingViewService
 	{
 		var sourceSize = sourceImage.Size;
 		var maxResizeFactor = Math.Min(maxWidth / sourceSize.Width.Value, maxHeight / sourceSize.Height.Value);
-		
+
 		var width = Math.Max(maxResizeFactor * sourceSize.Width.Value, 1);
 		var height = Math.Max(maxResizeFactor * sourceSize.Height.Value, 1);
 
