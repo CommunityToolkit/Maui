@@ -42,19 +42,23 @@ public partial class SemanticOrderViewHandler : ContentViewHandler
 
 	static void MapViewOrder(SemanticOrderViewHandler handler, ISemanticOrderView view)
 	{
+#if WINDOWS || IOS || MACCATALYST || ANDROID || TIZEN
 		if (handler.PlatformView is MauiSemanticOrderView mso)
 		{
 			mso.UpdateViewOrder();
 		}
+#endif
 	}
 
 	/// <inheritdoc/>
 	public override void SetVirtualView(IView view)
 	{
 		base.SetVirtualView(view);
+#if WINDOWS || IOS || MACCATALYST || ANDROID || TIZEN
 		if (PlatformView is MauiSemanticOrderView mso)
 		{
 			mso.VirtualView = (ISemanticOrderView)VirtualView;
 		}
+#endif
 	}
 }
