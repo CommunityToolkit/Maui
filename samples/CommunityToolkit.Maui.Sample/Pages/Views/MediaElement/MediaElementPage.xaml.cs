@@ -109,6 +109,11 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		mediaElement.Stop();
 	}
 
+	void OnMuteClicked(object? sender, EventArgs e)
+	{
+		mediaElement.ShouldMute = !mediaElement.ShouldMute;
+	}
+
 	void BasePage_Unloaded(object? sender, EventArgs e)
 	{
 		// Stop and cleanup MediaElement when we navigate away

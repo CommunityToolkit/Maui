@@ -10,7 +10,7 @@
                 Title="DrawingView">
 
     <ScrollView>
-        <Grid RowDefinitions="40,40,40,40,40,40,40,40,200,200,100" ColumnDefinitions="*,*">
+        <Grid RowDefinitions="40,40,40,40,40,40,40,40,40,200,200,100" ColumnDefinitions="*,*" RowSpacing="12" >
             <Label Grid.Row="0" Grid.Column="0" Text="Clear on Finish" Margin="0,0,5,0" HorizontalOptions="End" HorizontalTextAlignment="End"/>
             <Switch Grid.Row="0" Grid.Column="1" x:Name="ClearOnFinish" HorizontalOptions="Start" />
             <Label Grid.Row="1" Grid.Column="0" Text="Multi-Line Mode" Margin="0,0,5,0" HorizontalOptions="End" HorizontalTextAlignment="End"/>
@@ -51,13 +51,21 @@
                 Clicked="GenerateImageButtonClicked"
                 Text="Generate Image with Random Lines"
                 TextColor="Black" />
+            
+            <Button
+                Grid.Row="7" Grid.Column="0"
+                Grid.ColumnSpan="2"
+                BackgroundColor="White"
+                Command="{Binding SaveCommand}"
+                Text="Save image"
+                TextColor="Black" />
 
             <Label Text="DrawingView"
-                   Grid.Row="7" Grid.Column="0"
+                   Grid.Row="8" Grid.Column="0"
                    Grid.ColumnSpan="2"/>
             <mct:DrawingView x:Name="DrawingViewControl"
                              Margin="0,0,0,10"
-                             Grid.Row="8" Grid.Column="0"
+                             Grid.Row="9" Grid.Column="0"
                              Grid.ColumnSpan="2"
                              LineColor="Green"
                              LineWidth="5"
@@ -78,12 +86,12 @@
             </mct:DrawingView>
 
             <Image
-                Grid.Row="9" Grid.Column="0"
+                Grid.Row="10" Grid.Column="0"
                 Grid.ColumnSpan="2"
                 x:Name="GestureImage"
                 Margin="0,0,0,10"/>
 
-            <Label Grid.Row="10" Grid.Column="0"
+            <Label Grid.Row="11" Grid.Column="0"
                     Grid.ColumnSpan="2"
                     BackgroundColor="Gray"
                     TextColor="Black"

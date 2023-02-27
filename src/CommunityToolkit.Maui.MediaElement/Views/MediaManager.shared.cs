@@ -121,6 +121,14 @@ public partial class MediaManager
 	}
 
 	/// <summary>
+	/// Update whether or not the audio should be muted.
+	/// </summary>
+	public void UpdateShouldMute()
+	{
+		PlatformUpdateShouldMute();
+	}
+
+	/// <summary>
 	/// Update whether or not the media should start playing from the beginning
 	/// when it reached the end.
 	/// </summary>
@@ -201,6 +209,11 @@ public partial class MediaManager
 	protected virtual partial void PlatformUpdateShouldKeepScreenOn();
 
 	/// <summary>
+	/// Invokes the platform functionality to toggle muting the audio.
+	/// </summary>
+	protected virtual partial void PlatformUpdateShouldMute();
+
+	/// <summary>
 	/// Invokes the platform functionality to show or hide the platform playback controls.
 	/// </summary>
 	protected virtual partial void PlatformUpdateShouldShowPlaybackControls();
@@ -230,6 +243,7 @@ partial class MediaManager
 	protected virtual partial void PlatformUpdatePosition() { }
 	protected virtual partial void PlatformUpdateVolume() { }
 	protected virtual partial void PlatformUpdateShouldKeepScreenOn() { }
+	protected virtual partial void PlatformUpdateShouldMute() { }
 	protected virtual partial void PlatformUpdateShouldLoopPlayback() { }
 }
 #endif

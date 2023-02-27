@@ -17,7 +17,7 @@ public static class DrawingViewService
 	/// Get image stream from lines
 	/// </summary>
 	/// <param name="lines">Drawing lines</param>
-	/// <param name="imageSize">Image size</param>
+	/// <param name="imageSize">Maximum image size. The image will be resized proportionally.</param>
 	/// <param name="background">Image background</param>
 	/// <returns>Image stream</returns>
 	public static ValueTask<Stream> GetImageStream(in IList<IDrawingLine> lines,
@@ -33,7 +33,7 @@ public static class DrawingViewService
 	/// Get image stream from points
 	/// </summary>
 	/// <param name="points">Drawing points</param>
-	/// <param name="imageSize">Image size</param>
+	/// <param name="imageSize">Maximum image size. The image will be resized proportionally.</param>
 	/// <param name="lineWidth">Line Width</param>
 	/// <param name="strokeColor">Line color</param>
 	/// <param name="background">Image background</param>
@@ -168,14 +168,10 @@ public static class DrawingViewService
 	static Bitmap GetMaximumBitmap(in Bitmap sourceImage, in float maxWidth, in float maxHeight)
 	{
 		var sourceSize = new Size(sourceImage.Width, sourceImage.Height);
-		var maxResizeFactor = Math.Max(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
-		if (maxResizeFactor > 1)
-		{
-			return sourceImage;
-		}
+		var maxResizeFactor = Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
 
-		var width = maxResizeFactor * sourceSize.Width;
-		var height = maxResizeFactor * sourceSize.Height;
+		var width = Math.Max(maxResizeFactor * sourceSize.Width, 1);
+		var height = Math.Max(maxResizeFactor * sourceSize.Height, 1);
 		return Bitmap.CreateScaledBitmap(sourceImage, (int)width, (int)height, false)
 				?? throw new InvalidOperationException("Failed to create Bitmap");
 	}
