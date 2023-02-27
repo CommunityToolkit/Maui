@@ -13,8 +13,7 @@ public class MauiSemanticOrderView : ContentViewGroup
 	/// <summary>
 	/// Constructor for MauiSemanticOrderView.
 	/// </summary>
-	public MauiSemanticOrderView(IView virtualView)
-		: base(virtualView)
+	public MauiSemanticOrderView(IView virtualView) : base(virtualView)
 	{
 	}
 
@@ -40,19 +39,20 @@ public class MauiSemanticOrderView : ContentViewGroup
 
 		foreach (var view in VirtualView.ViewOrder)
 		{
-			if (view.Handler is IPlatformViewHandler pvh && pvh.PlatformView is not null)
+			if (view.Handler is IPlatformViewHandler platformViewHandler && platformViewHandler.PlatformView is not null)
 			{
-				if (pvh.PlatformView is WrapperView wv)
+				if (platformViewHandler.PlatformView is WrapperView wrapperView)
 				{
-					if (wv.Content is not null)
+					if (wrapperView.Content is not null)
 					{
-						accessibilityManager.SetFocusOrder(wv.Content, order);
+						accessibilityManager.SetFocusOrder(wrapperView.Content, order);
 					}
 				}
 				else
 				{
-					accessibilityManager.SetFocusOrder(pvh.PlatformView, order);
+					accessibilityManager.SetFocusOrder(platformViewHandler.PlatformView, order);
 				}
+
 				order++;
 			}
 		}

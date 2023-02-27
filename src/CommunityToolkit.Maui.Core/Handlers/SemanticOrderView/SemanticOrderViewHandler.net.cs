@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Handlers;
-
-namespace CommunityToolkit.Maui.Core.Handlers;
+﻿namespace CommunityToolkit.Maui.Core.Handlers;
 
 public partial class SemanticOrderViewHandler
 {

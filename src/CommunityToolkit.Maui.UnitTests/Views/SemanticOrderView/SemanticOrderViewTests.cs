@@ -34,7 +34,7 @@ public class SemanticOrderViewTests : BaseHandlerTest
 	[Fact]
 	public void ISemanticOrderViewViewOrderReturnsCorrectViews()
 	{
-		_ = CreateViewHandler<MockSemanticOrderViewHandler>(semanticOrderView);
+		CreateViewHandler<MockSemanticOrderViewHandler>(semanticOrderView);
 
 		var button = new Button();
 		var entry = new Entry();

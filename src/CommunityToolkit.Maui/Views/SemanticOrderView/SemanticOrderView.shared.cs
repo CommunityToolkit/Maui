@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections;
 using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Views;
@@ -23,11 +20,4 @@ public class SemanticOrderView : ContentView, ISemanticOrderView
 	}
 
 	IEnumerable<IView> ISemanticOrderView.ViewOrder => ViewOrder.OfType<IView>();
-
-	/// <summary>
-	/// Initialize a new instance of <see cref="SemanticOrderView"/>.
-	/// </summary>
-	public SemanticOrderView()
-	{
-	}
 }

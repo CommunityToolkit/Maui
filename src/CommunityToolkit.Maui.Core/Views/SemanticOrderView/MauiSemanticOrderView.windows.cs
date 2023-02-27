@@ -34,10 +34,10 @@ public class MauiSemanticOrderView : ContentPanel
 		var i = 1;
 		foreach (var element in VirtualView.ViewOrder)
 		{
-			if (element.Handler is IPlatformViewHandler pvh &&
-				pvh.PlatformView is not null)
+			if (element.Handler is IPlatformViewHandler platformViewHandler
+				&& platformViewHandler.PlatformView is not null)
 			{
-				pvh.PlatformView.TabIndex = i++;
+				platformViewHandler.PlatformView.TabIndex = i++;
 			}
 		}
 	}

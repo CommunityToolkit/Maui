@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using Foundation;
-using Microsoft.Maui.Platform;
-using UIKit;
+﻿using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -11,6 +8,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 public class MauiSemanticOrderView : ContentView, IUIAccessibilityContainer
 {
 	ISemanticOrderView? virtualView;
+
 	internal ISemanticOrderView? VirtualView
 	{
 		get => virtualView;
@@ -37,10 +35,10 @@ public class MauiSemanticOrderView : ContentView, IUIAccessibilityContainer
 
 		foreach (var view in viewOrder)
 		{
-			if (view.Handler is IPlatformViewHandler pvh &&
-				pvh.PlatformView is not null)
+			if (view.Handler is IPlatformViewHandler platformViewHandler
+				&& platformViewHandler.PlatformView is not null)
 			{
-				yield return pvh.PlatformView;
+				yield return platformViewHandler.PlatformView;
 			}
 		}
 	}

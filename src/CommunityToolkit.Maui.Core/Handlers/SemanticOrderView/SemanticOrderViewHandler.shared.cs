@@ -18,7 +18,7 @@ public partial class SemanticOrderViewHandler : ContentViewHandler
 	/// <summary>
 	/// <see cref ="CommandMapper"/> for SemanticOrderView Control.
 	/// </summary>
-	public static CommandMapper<ISemanticOrderView, SemanticOrderViewHandler> SemanticOrderViewCommandMapper = new(ContentViewHandler.CommandMapper)
+	public static CommandMapper<ISemanticOrderView, SemanticOrderViewHandler> SemanticOrderViewCommandMapper = new(CommandMapper)
 	{
 	};
 
@@ -35,19 +35,9 @@ public partial class SemanticOrderViewHandler : ContentViewHandler
 	/// <summary>
 	/// Default Constructor for <see cref="SemanticOrderViewHandler"/>.
 	/// </summary>
-	public SemanticOrderViewHandler()
-		: base(SemanticOrderViewMapper, SemanticOrderViewCommandMapper)
+	public SemanticOrderViewHandler() : base(SemanticOrderViewMapper, SemanticOrderViewCommandMapper)
 	{
-	}
 
-	static void MapViewOrder(SemanticOrderViewHandler handler, ISemanticOrderView view)
-	{
-#if WINDOWS || IOS || MACCATALYST || ANDROID || TIZEN
-		if (handler.PlatformView is MauiSemanticOrderView mso)
-		{
-			mso.UpdateViewOrder();
-		}
-#endif
 	}
 
 	/// <inheritdoc/>
@@ -55,9 +45,19 @@ public partial class SemanticOrderViewHandler : ContentViewHandler
 	{
 		base.SetVirtualView(view);
 #if WINDOWS || IOS || MACCATALYST || ANDROID || TIZEN
-		if (PlatformView is MauiSemanticOrderView mso)
+		if (PlatformView is MauiSemanticOrderView semanticOrderView)
 		{
-			mso.VirtualView = (ISemanticOrderView)VirtualView;
+			semanticOrderView.VirtualView = (ISemanticOrderView)VirtualView;
+		}
+#endif
+	}
+
+	static void MapViewOrder(SemanticOrderViewHandler handler, ISemanticOrderView view)
+	{
+#if WINDOWS || IOS || MACCATALYST || ANDROID || TIZEN
+		if (handler.PlatformView is MauiSemanticOrderView semanticOrderView)
+		{
+			semanticOrderView.UpdateViewOrder();
 		}
 #endif
 	}

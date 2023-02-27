@@ -1,6 +1,4 @@
-﻿using System.Linq;
-using Android.Content;
-using Android.Views;
+﻿using Android.Content;
 using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -12,8 +10,7 @@ public class MauiSemanticOrderView : ContentViewGroup
 {
 	ISemanticOrderView? virtualView;
 
-	public MauiSemanticOrderView(Context context)
-		: base(context)
+	public MauiSemanticOrderView(Context context) : base(context)
 	{
 	}
 
@@ -25,12 +22,6 @@ public class MauiSemanticOrderView : ContentViewGroup
 			virtualView = value;
 			UpdateViewOrder();
 		}
-	}
-
-	protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
-	{
-		UpdateViewOrder();
-		base.OnLayout(changed, left, top, right, bottom);
 	}
 
 	internal void UpdateViewOrder()
@@ -54,12 +45,12 @@ public class MauiSemanticOrderView : ContentViewGroup
 
 			if (view1.Id <= 0)
 			{
-				view1.Id = View.GenerateViewId();
+				view1.Id = GenerateViewId();
 			}
 
 			if (view2.Id <= 0)
 			{
-				view2.Id = View.GenerateViewId();
+				view2.Id = GenerateViewId();
 			}
 
 			if (OperatingSystem.IsAndroidVersionAtLeast(22))
@@ -68,5 +59,11 @@ public class MauiSemanticOrderView : ContentViewGroup
 				view1.AccessibilityTraversalBefore = view2.Id;
 			}
 		}
+	}
+
+	protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+	{
+		UpdateViewOrder();
+		base.OnLayout(changed, left, top, right, bottom);
 	}
 }
