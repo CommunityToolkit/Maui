@@ -13,7 +13,7 @@ public static class DrawingViewService
 	/// Get image stream from lines
 	/// </summary>
 	/// <param name="lines">Drawing lines</param>
-	/// <param name="imageSize">Image size</param>
+	/// <param name="imageSize">Maximum image size. The image will be resized proportionally.</param>
 	/// <param name="background">Image background</param>
 	/// <returns>Image stream</returns>
 	public static ValueTask<Stream> GetImageStream(in IList<IDrawingLine> lines, in Size imageSize, in Paint? background)
@@ -120,14 +120,10 @@ public static class DrawingViewService
 	static UIImage GetMaximumUIImage(UIImage sourceImage, double maxWidth, double maxHeight)
 	{
 		var sourceSize = sourceImage.Size;
-		var maxResizeFactor = Math.Max(maxWidth / sourceSize.Width.Value, maxHeight / sourceSize.Height.Value);
-		if (maxResizeFactor > 1)
-		{
-			return sourceImage;
-		}
+		var maxResizeFactor = Math.Min(maxWidth / sourceSize.Width.Value, maxHeight / sourceSize.Height.Value);
 
-		var width = maxResizeFactor * sourceSize.Width.Value;
-		var height = maxResizeFactor * sourceSize.Height.Value;
+		var width = Math.Max(maxResizeFactor * sourceSize.Width.Value, 1);
+		var height = Math.Max(maxResizeFactor * sourceSize.Height.Value, 1);
 
 		UIGraphics.BeginImageContext(new CGSize(width, height));
 		sourceImage.Draw(new CGRect(0, 0, width, height));
