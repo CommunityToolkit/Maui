@@ -49,12 +49,12 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 		// Pull out and process domain name (throws ArgumentException on invalid)
 		var asciiDomainName = idn.GetAscii(domainName);
 
-		if (!IsValidIPv4(asciiDomainName))
+		if (IsIPv4(asciiDomainName) && !IsValidIPv4(asciiDomainName))
 		{
 			throw new ArgumentException("Invalid IPv4 Address.");
 		}
 
-		if (!IsValidIPv6(asciiDomainName))
+		if (IsIPv6(asciiDomainName) && !IsValidIPv6(asciiDomainName))
 		{
 			throw new ArgumentException("Invalid IPv6 Address.");
 		}
@@ -136,15 +136,30 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 
 	static string GetDomain(in string emailAddress) => EmailDomainRegex().Match(emailAddress).Groups[2].Value;
 
+	static bool IsIPv4(in string domain)
+	{
+		return domain.All(x => char.IsDigit(x)
+								   || x is '.'
+								   || x is '['
+								   || x is ']');
+	}
+
+	static bool IsIPv6(in string domain)
+	{
+		return domain.All(x => char.IsAsciiHexDigit(x)
+									|| x is ':'
+									|| x is '['
+									|| x is ']'
+									|| x is 'I'
+									|| x is 'P'
+									|| x is 'v');
+	}
+
 	static bool IsValidIPv4(in string domain)
 	{
 		var normalizedDomain = domain.TrimStart('[').TrimEnd(']');
 
-		return domain.All(x => char.IsDigit(x)
-									|| x is '.'
-									|| x is '['
-									|| x is ']') 
-				&& IPAddress.TryParse(normalizedDomain, out var address)
+		return IPAddress.TryParse(normalizedDomain, out var address)
 				&& address.AddressFamily is System.Net.Sockets.AddressFamily.InterNetwork;
 	}
 
@@ -159,14 +174,7 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 										.TrimStart(':')
 										.TrimEnd(']');
 
-		return domain.All(x => char.IsAsciiHexDigit(x)
-									|| x is ':'
-									|| x is '['
-									|| x is ']'
-									|| x is 'I'
-									|| x is 'P'
-									|| x is 'v')
-				&& IPAddress.TryParse(normalizedDomain, out var address)
+		return IPAddress.TryParse(normalizedDomain, out var address)
 				&& address.AddressFamily is System.Net.Sockets.AddressFamily.InterNetworkV6;
 	}
 }
