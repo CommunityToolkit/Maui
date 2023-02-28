@@ -38,7 +38,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 			filePickerOperation.Cancel();
 		}
 	}
-	
+
 	Task<string> InternalSaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		return InternalSaveAsync(string.Empty, fileName, stream, cancellationToken);

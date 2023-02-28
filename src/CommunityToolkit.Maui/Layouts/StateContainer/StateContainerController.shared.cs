@@ -20,7 +20,7 @@ sealed class StateContainerController
 	/// The StateViews defined in the StateContainer.
 	/// </summary>
 	public required IList<View> StateViews { get; set; }
-	
+
 	/// <summary>
 	/// Display the default content.
 	/// </summary>
