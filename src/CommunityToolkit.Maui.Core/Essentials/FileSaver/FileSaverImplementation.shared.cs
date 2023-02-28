@@ -16,7 +16,7 @@ public sealed partial class FileSaverImplementation
 			return new FileSaverResult(null, e);
 		}
 	}
-	
+
 	/// <inheritdoc/>
 	public async Task<FileSaverResult> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
 	{
