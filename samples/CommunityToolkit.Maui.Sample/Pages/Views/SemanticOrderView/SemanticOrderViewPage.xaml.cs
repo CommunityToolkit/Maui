@@ -4,7 +4,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class SemanticOrderViewPage : BasePage<SemanticOrderViewPageViewModel>
 {
-	public SemanticOrderViewPage(SemanticOrderViewPageViewModel vm) : base(vm)
+	public SemanticOrderViewPage(SemanticOrderViewPageViewModel semanticOrderViewPageViewModel) : base(semanticOrderViewPageViewModel)
 	{
 		InitializeComponent();
 		SemanticOrderView.ViewOrder = new List<View> { First, Second, Third, Fourth, Fifth };
