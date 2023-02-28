@@ -13,11 +13,9 @@ public class SemanticOrderView : ContentView, ISemanticOrderView
 		BindableProperty.Create(nameof(ViewOrder), typeof(IEnumerable), typeof(SemanticOrderView), Enumerable.Empty<View>());
 
 	/// <inheritdoc />
-	public IEnumerable ViewOrder
+	public IEnumerable<IView> ViewOrder
 	{
-		get => (IEnumerable)GetValue(ViewOrderProperty);
+		get => (IEnumerable<IView>)GetValue(ViewOrderProperty);
 		set => SetValue(ViewOrderProperty, value);
 	}
-
-	IEnumerable<IView> ISemanticOrderView.ViewOrder => ViewOrder.OfType<IView>();
 }
