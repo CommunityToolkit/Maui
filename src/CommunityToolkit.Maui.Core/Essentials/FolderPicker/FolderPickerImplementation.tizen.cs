@@ -4,10 +4,9 @@ using Microsoft.Maui.ApplicationModel;
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc />
-public sealed class FolderPickerImplementation : IFolderPicker
+public sealed partial class FolderPickerImplementation : IFolderPicker
 {
-	/// <inheritdoc />
-	public async Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)
+	async Task<Folder> InternalPickAsync(string initialPath, CancellationToken cancellationToken)
 	{
 		var status = await Permissions.RequestAsync<Permissions.StorageRead>().WaitAsync(cancellationToken);
 		if (status is not PermissionStatus.Granted)
@@ -21,9 +20,8 @@ public sealed class FolderPickerImplementation : IFolderPicker
 		return new Folder(path, Path.GetFileName(path));
 	}
 
-	/// <inheritdoc />
-	public Task<Folder> PickAsync(CancellationToken cancellationToken)
+	Task<Folder> InternalPickAsync(CancellationToken cancellationToken)
 	{
-		return PickAsync(FileFolderDialog.GetExternalDirectory(), cancellationToken);
+		return InternalPickAsync(FileFolderDialog.GetExternalDirectory(), cancellationToken);
 	}
 }
