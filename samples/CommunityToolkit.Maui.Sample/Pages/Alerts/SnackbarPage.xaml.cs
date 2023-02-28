@@ -3,6 +3,7 @@ using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Markup;
+using CommunityToolkit.Maui.Sample.Resources.Fonts;
 using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 using CommunityToolkit.Mvvm.Input;
 using Font = Microsoft.Maui.Font;
@@ -44,6 +45,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 				ActionButtonTextColor = Colors.Yellow,
 				CornerRadius = new CornerRadius(10),
 				Font = Font.SystemFontOfSize(14),
+				ActionButtonFont = Font.OfSize(FontFamilies.FontAwesomeBrands, 16, enableScaling: false),
 			};
 
 			customSnackbar = Snackbar.Make(
@@ -53,7 +55,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 					await DisplayCustomSnackbarButton.BackgroundColorTo(colors[Random.Shared.Next(colors.Count)], length: 500);
 					DisplayCustomSnackbarButton.Text = displayCustomSnackbarText;
 				},
-				"Change Button Color",
+				FontAwesomeIcons.Microsoft,
 				TimeSpan.FromSeconds(30),
 				options,
 				DisplayCustomSnackbarButton);
