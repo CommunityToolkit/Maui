@@ -36,7 +36,7 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 
 		return await taskCompetedSource.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
 	}
-	
+
 	Task<string> InternalSaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		return InternalSaveAsync("/", fileName, stream, cancellationToken);

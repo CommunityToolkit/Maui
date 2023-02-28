@@ -16,7 +16,7 @@ public sealed partial class FolderPickerImplementation
 			return new FolderPickerResult(null, e);
 		}
 	}
-	
+
 	/// <inheritdoc/>
 	public async Task<FolderPickerResult> PickAsync(CancellationToken cancellationToken)
 	{
