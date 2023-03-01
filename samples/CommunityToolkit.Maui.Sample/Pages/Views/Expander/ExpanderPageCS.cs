@@ -46,7 +46,7 @@ public class ExpanderPageCS : ContentPage
 
 				}.CenterHorizontal()
 				 .Bind(Expander.DirectionProperty,
-						static(Picker picker) => picker.SelectedIndex,
+						static (Picker picker) => picker.SelectedIndex,
 						source: picker,
 						convert: (int selectedIndex) => Enum.IsDefined(typeof(ExpandDirection), selectedIndex) ? (ExpandDirection)selectedIndex : default)
 			 }
