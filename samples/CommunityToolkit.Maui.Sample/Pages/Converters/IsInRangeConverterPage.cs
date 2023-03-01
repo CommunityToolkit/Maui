@@ -79,7 +79,7 @@ public class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
 
 					new ExampleLabel()
 						.Row(Row.StringExample1).Column(Column.Input)
-						.Text("String Compare Between \".NET\" and \"Toolkit\""),
+						.Text("String Compare Is Equal To or Between \".NET\" and \"Toolkit\""),
 
 					new Label()
 						.Row(Row.StringExample1).Column(Column.Result)
@@ -142,7 +142,7 @@ public class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
 						.Row(Row.DoubleTitle).Column(Column.Input)
 						.Text("Double Input").Font(size: 24, bold: true),
 
-					new Stepper { Increment = 0.5, Minimum = 0, Maximum = 10, Value = 5 }
+					new Stepper { Increment = 0.5, Minimum = 0, Maximum = 11, Value = 5 }
 						.Row(Row.DoubleInput).Column(Column.Input)
 						.Start().CenterVertical()
 						.Assign(out Stepper doubleInputStepper),
@@ -152,7 +152,7 @@ public class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
 						.Bind(Label.TextProperty,
 								static (Stepper doubleInputStepper) => doubleInputStepper.Value,
 								mode: BindingMode.OneWay,
-								convert: (double stepperValue) => $"Double Compare {stepperValue} is Between 5-10",
+								convert: (double stepperValue) => $"Double Compare {stepperValue} is Equal To or Between 5-10",
 								source: doubleInputStepper),
 
 					new Label()
@@ -229,7 +229,7 @@ public class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
 
 					new ExampleLabel()
 						.Row(Row.TimeSpanExample1).Column(Column.Input)
-						.Text("Timespan Compare is Between 0700 - 1700"),
+						.Text("Timespan Compare is Equal To or Between 0700 - 1700"),
 
 					new Label()
 						.Row(Row.TimeSpanExample1).Column(Column.Result)
@@ -300,7 +300,7 @@ public class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
 
 					new ExampleLabel()
 						.Row(Row.CharExample1).Column(Column.Input)
-						.Text("Char Compare is Between H - L (case sensitive)"),
+						.Text("Char Compare is Equal To or Between H - L (case sensitive)"),
 
 					new Label()
 						.Row(Row.CharExample1).Column(Column.Result)
