@@ -45,7 +45,7 @@ public partial class Expander
 	static UICollectionViewController? GetController(CollectionView collectionView)
 	{
 		var handler = collectionView.Handler as Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler;
-		return handler?.Controller;
+		return null;// handler?.Controller;
 	}
 
 	static UICollectionViewCell? GetCellByPoint(UICollectionViewCell[] cells, CGPoint point)
