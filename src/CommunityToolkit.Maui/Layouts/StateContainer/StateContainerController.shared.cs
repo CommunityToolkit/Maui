@@ -1,16 +1,14 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace CommunityToolkit.Maui.Layouts;
+﻿namespace CommunityToolkit.Maui.Layouts;
 
 /// <summary>
 /// StateContainer Controller
 /// </summary>
-sealed class StateContainerController : IDisposable
+sealed class StateContainerController
 {
 	readonly WeakReference<Layout> layoutWeakReference;
-	string? previousState = null;
+
+	string? previousState;
 	List<View> originalContent = Enumerable.Empty<View>().ToList();
-	CancellationTokenSource? animationTokenSource;
 
 	/// <summary>
 	/// Initialize <see cref="StateContainerController"/> with a <see cref="Layout"/>
@@ -24,51 +22,28 @@ sealed class StateContainerController : IDisposable
 	public required IList<View> StateViews { get; set; }
 
 	/// <summary>
-	/// Dispose <see cref="StateContainerController"/>
-	/// </summary>
-	public void Dispose() => animationTokenSource?.Dispose();
-
-	/// <summary>
 	/// Display the default content.
 	/// </summary>
-	/// <param name="shouldAnimate"></param>
-	/// <param name="cancellationToken"></param>
-	public async Task SwitchToContent(bool shouldAnimate, CancellationToken? cancellationToken = null)
+	public void SwitchToContent()
 	{
 		var layout = GetLayout();
-		var token = cancellationToken ?? RebuildAnimationTokenSource(layout);
-
-		await FadeLayoutChildren(layout, shouldAnimate, true, token);
-		token.ThrowIfCancellationRequested();
-
 		previousState = null;
 		layout.Children.Clear();
 
 		// Put the original content back in.
 		foreach (var item in originalContent)
 		{
-			item.Opacity = shouldAnimate ? 0 : 1;
 			layout.Children.Add(item);
 		}
-
-		token.ThrowIfCancellationRequested();
-		await FadeLayoutChildren(layout, shouldAnimate, false, token);
 	}
 
 	/// <summary>
 	/// Display the <see cref="View"/> for the given StateKey.
 	/// </summary>
-	/// <param name="state"></param>
-	/// <param name="shouldAnimate"></param>
-	/// <param name="cancellationToken"></param>
-	public async Task SwitchToState(string state, bool shouldAnimate, CancellationToken? cancellationToken = null)
+	public void SwitchToState(string state)
 	{
 		var layout = GetLayout();
-		var token = cancellationToken ?? RebuildAnimationTokenSource(layout);
 		var view = GetViewForState(state);
-
-		await FadeLayoutChildren(layout, shouldAnimate, true, token);
-		token.ThrowIfCancellationRequested();
 
 		// Put the original content somewhere where we can restore it.
 		if (previousState is null)
@@ -94,7 +69,6 @@ sealed class StateContainerController : IDisposable
 			// view to allow for more control over how it layouts.
 			var innerLayout = new VerticalStackLayout
 			{
-				Opacity = shouldAnimate ? 0 : 1,
 				VerticalOptions = view.VerticalOptions,
 				HorizontalOptions = view.HorizontalOptions
 			};
@@ -110,7 +84,7 @@ sealed class StateContainerController : IDisposable
 			}
 
 			// We need to delete the view reference from its parent if it was previously added.
-			((Layout)view.Parent)?.Remove(view);
+			((Layout?)view.Parent)?.Remove(view);
 
 			innerLayout.Children.Add(view);
 			layout.Children.Add(innerLayout);
@@ -119,9 +93,6 @@ sealed class StateContainerController : IDisposable
 		{
 			layout.Children.Add(view);
 		}
-
-		token.ThrowIfCancellationRequested();
-		await FadeLayoutChildren(layout, shouldAnimate, false, token);
 	}
 
 	internal Layout GetLayout()
@@ -130,41 +101,9 @@ sealed class StateContainerController : IDisposable
 		return layout ?? throw new ObjectDisposedException("Layout Disposed");
 	}
 
-	static async ValueTask FadeLayoutChildren(Layout layout, bool shouldAnimate, bool isHidden, CancellationToken token)
-	{
-		if (shouldAnimate && layout.Children.Count > 0)
-		{
-			var opacity = 1;
-			var length = 500u;
-
-			if (isHidden)
-			{
-				opacity = 0;
-				length = 100u;
-			}
-
-			await Task.WhenAll(layout.Children.OfType<View>().Select(view => view.FadeTo(opacity, length))).WaitAsync(token);
-		}
-	}
-
 	View GetViewForState(string state)
 	{
 		var view = StateViews.FirstOrDefault(x => StateView.GetStateKey(x) == state);
 		return view ?? throw new StateContainerException($"View for {state} not defined.");
-	}
-
-	[MemberNotNull(nameof(animationTokenSource))]
-	internal CancellationToken RebuildAnimationTokenSource(Layout layout)
-	{
-		animationTokenSource?.Cancel();
-		animationTokenSource?.Dispose();
-
-		foreach (var child in layout.Children)
-		{
-			((View)child).CancelAnimations();
-		}
-
-		animationTokenSource = new CancellationTokenSource();
-		return animationTokenSource.Token;
 	}
 }

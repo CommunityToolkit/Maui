@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Views.SemanticOrderViewPage"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                Title="Semantic Order View"
+                xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+                x:TypeArguments="viewModels:SemanticOrderViewPageViewModel"
+                x:DataType="viewModels:SemanticOrderViewPageViewModel">
+    <ContentPage.Content>
+        <VerticalStackLayout Margin="20" Spacing="12">
+            <Label Text="SemanticOrderView allows developers to indicate the focus order of visible controls when a user is navigating via TalkBack (Android), VoiceOver (iOS) or Narrator (Windows)" />
+            <Button Text="This Button is not included in the SemanticOrderView"></Button>
+            <mct:SemanticOrderView x:Name="SemanticOrderView">
+                <Border StrokeThickness="2" Stroke="#C0C0C0" Padding="8,0,8,8">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="10" />
+                    </Border.StrokeShape>
+                    <VerticalStackLayout Spacing="6" Padding="0">
+                        <Label Text="SemanticOrderView" HorizontalTextAlignment="Center" HorizontalOptions="Center" FontAttributes="Bold" VerticalOptions="Start" VerticalTextAlignment="Start" Padding="0"/>
+                        <Label x:Name="Second" Text="This Label text is read 2nd by TalkBack/ VoiceOver / Narrator" />
+                        <Button x:Name="Third" Text="This Button text is read 3rd by TalkBack/ VoiceOver / Narrator" />
+                        <Label x:Name="Fourth" Text="This Label text is read 4th by TalkBack/ VoiceOver / Narrator" />
+                        <Button x:Name="Fifth" Text="This Button text is read 5th by TalkBack/ VoiceOver / Narrator" />
+                        <Button x:Name="First" Text="This Button text is read 1st by TalkBack/ VoiceOver / Narrator" />
+                    </VerticalStackLayout>
+                </Border>
+            </mct:SemanticOrderView>
+        </VerticalStackLayout>
+    </ContentPage.Content>
+</pages:BasePage>

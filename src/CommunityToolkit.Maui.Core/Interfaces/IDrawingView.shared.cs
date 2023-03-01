@@ -43,8 +43,8 @@ public interface IDrawingView : IView
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of the <see cref="Lines"/> that are currently drawn on the <see cref="IDrawingView"/>.
 	/// </summary>
-	/// <param name="imageSizeWidth">Desired width of the image that is returned.</param>
-	/// <param name="imageSizeHeight">Desired height of the image that is returned.</param>
+	/// <param name="imageSizeWidth">Desired width of the image that is returned. The image will be resized proportionally.</param>
+	/// <param name="imageSizeHeight">Desired height of the image that is returned. The image will be resized proportionally.</param>
 	/// <returns><see cref="Task{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
 	ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight);
 

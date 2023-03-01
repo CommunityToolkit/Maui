@@ -9,6 +9,7 @@ using CommunityToolkit.Maui.Sample.Pages.Extensions;
 using CommunityToolkit.Maui.Sample.Pages.ImageSources;
 using CommunityToolkit.Maui.Sample.Pages.Layouts;
 using CommunityToolkit.Maui.Sample.Pages.Views;
+using CommunityToolkit.Maui.Sample.Resources.Fonts;
 using CommunityToolkit.Maui.Sample.ViewModels;
 using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
@@ -43,10 +44,14 @@ public static class MauiProgram
 #endif
 								.UseMauiCommunityToolkitMarkup()
 								.UseMauiCommunityToolkitMediaElement()
-								.UseMauiApp<App>();
+								.UseMauiApp<App>()
+								.ConfigureFonts(fonts =>
+								{
+									fonts.AddFont("Font Awesome 6 Brands-Regular-400.otf", FontFamilies.FontAwesomeBrands);
+								});
 
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>()
-						.AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(3, sleepDurationProvider));
+						.AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(3, SleepDurationProvider));
 
 		builder.Services.AddSingleton<PopupSizeConstants>();
 
@@ -59,7 +64,7 @@ public static class MauiProgram
 
 		return builder.Build();
 
-		static TimeSpan sleepDurationProvider(int attemptNumber) => TimeSpan.FromSeconds(Math.Pow(2, attemptNumber));
+		static TimeSpan SleepDurationProvider(int attemptNumber) => TimeSpan.FromSeconds(Math.Pow(2, attemptNumber));
 	}
 
 	static void RegisterViewsAndViewModels(in IServiceCollection services)
@@ -168,6 +173,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<PopupAnchorPage, PopupAnchorViewModel>();
 		services.AddTransientWithShellRoute<PopupPositionPage, PopupPositionViewModel>();
 		services.AddTransientWithShellRoute<ShowPopupInOnAppearingPage, ShowPopupInOnAppearingPageViewModel>();
+		services.AddTransientWithShellRoute<SemanticOrderViewPage, SemanticOrderViewPageViewModel>();
 
 		// Add Popups
 		services.AddTransient<CsharpBindingPopup, CsharpBindingPopupViewModel>();

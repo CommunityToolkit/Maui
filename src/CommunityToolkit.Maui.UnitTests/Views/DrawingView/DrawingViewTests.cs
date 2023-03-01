@@ -7,7 +7,7 @@ using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace CommunityToolkit.Maui.UnitTests.Views.DrawingView;
+namespace CommunityToolkit.Maui.UnitTests.Views;
 
 public class DrawingViewTests : BaseHandlerTest
 {

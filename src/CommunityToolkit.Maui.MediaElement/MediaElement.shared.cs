@@ -52,6 +52,12 @@ public class MediaElement : View, IMediaElement
 		  BindableProperty.Create(nameof(ShouldKeepScreenOn), typeof(bool), typeof(MediaElement), false);
 
 	/// <summary>
+	/// Backing store for the <see cref="ShouldMute"/> property.
+	/// </summary>
+	public static readonly BindableProperty ShouldMuteProperty =
+		  BindableProperty.Create(nameof(ShouldMute), typeof(bool), typeof(MediaElement), false);
+
+	/// <summary>
 	/// Backing store for the <see cref="Position"/> property.
 	/// </summary>
 	public static readonly BindableProperty PositionProperty =
@@ -218,6 +224,20 @@ public class MediaElement : View, IMediaElement
 	}
 
 	/// <summary>
+	/// Gets or sets if audio should be muted. This is a bindable property.
+	/// </summary>
+	/// <remarks>
+	/// When <see cref="ShouldMute"/> is <see langword="true" />, changes to <see cref="Volume"/> are ignored.
+	/// The new volume will be applied when <see cref="ShouldMute"/> is set to <see langword="false" /> again.
+	/// When the user uses the platform player controls to influence the volume, it might still unmute.
+	/// </remarks>
+	public bool ShouldMute
+	{
+		get => (bool)GetValue(ShouldMuteProperty);
+		set => SetValue(ShouldMuteProperty, value);
+	}
+
+	/// <summary>
 	/// Gets or sets whether the player should show the platform playback controls.
 	/// This is a bindable property.
 	/// </summary>
@@ -241,7 +261,12 @@ public class MediaElement : View, IMediaElement
 	/// <summary>
 	/// Gets or sets the volume of the audio for the media.
 	/// </summary>
-	/// <remarks>A value of 1 means full volume, 0 is silence.</remarks>
+	/// <remarks>
+	/// <para>A value of 1 means full volume, 0 is silence.</para>
+	/// <para>When <see cref="ShouldMute"/> is <see langword="true" />, changes to <see cref="Volume"/> are ignored.
+	/// The new volume will be applied when <see cref="ShouldMute"/> is set to <see langword="false" /> again.
+	/// When the user uses the platform player controls to influence the volume, it might still unmute.</para>
+	/// </remarks>
 	public double Volume
 	{
 		get => (double)GetValue(VolumeProperty);

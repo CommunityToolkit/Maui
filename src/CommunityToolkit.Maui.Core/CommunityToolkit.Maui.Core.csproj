@@ -29,7 +29,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/CommunityToolkit/Maui</PackageProjectUrl>
     <RepositoryUrl>https://github.com/CommunityToolkit/Maui</RepositoryUrl>
-    <PackageReleaseNotes>TBD</PackageReleaseNotes>
+    <PackageReleaseNotes>See https://github.com/CommunityToolkit/Maui/releases</PackageReleaseNotes>
     <DefineConstants>$(DefineConstants);</DefineConstants>
     <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
     <Title>CommunityToolkit.Maui.Core</Title>
