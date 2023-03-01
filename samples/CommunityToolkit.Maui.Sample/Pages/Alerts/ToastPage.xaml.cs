@@ -25,10 +25,14 @@ public partial class ToastPage : BasePage<ToastViewModel>
 		await toast.Show();
 	}
 
-	async void DisplayToastInModalButtonClicked(object? sender, EventArgs e) {
-		if (Application.Current?.MainPage is not null) {
-			await Application.Current.MainPage.Navigation.PushModalAsync(new ContentPage {
-				Content = new VerticalStackLayout {
+	async void DisplayToastInModalButtonClicked(object? sender, EventArgs e)
+	{
+		if (Application.Current?.MainPage is not null)
+		{
+			await Application.Current.MainPage.Navigation.PushModalAsync(new ContentPage
+			{
+				Content = new VerticalStackLayout
+				{
 					Spacing = 12,
 
 					Children =
