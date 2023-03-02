@@ -35,6 +35,7 @@ public sealed partial class FileSaverImplementation
 	static async Task WriteStream(Stream stream, string filePath, CancellationToken cancellationToken)
 	{
 		await using var fileStream = new FileStream(filePath, FileMode.OpenOrCreate);
+		fileStream.SetLength(0);
 		stream.Seek(0, SeekOrigin.Begin);
 		await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
 	}
