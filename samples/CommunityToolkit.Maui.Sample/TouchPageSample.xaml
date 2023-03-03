@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage x:Class="CommunityToolkit.Maui.Sample.TouchPageSample"
-			 xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			 xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-			 x:Name="Page"
-			 Title="TouchPageSample">
+<ContentPage
+	x:Class="CommunityToolkit.Maui.Sample.TouchPageSample"
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+	x:Name="Page"
+	Title="TouchPageSample">
 
 	<ContentPage.Resources>
 		<ResourceDictionary>
@@ -18,28 +19,33 @@
 	<VerticalStackLayout>
 
 		<HorizontalStackLayout>
-			<Label FontSize="Title"
-				   HorizontalOptions="FillAndExpand"
-				   Text="NativeAnimationBorderless"
-				   TextColor="Black" />
+			<Label
+				FontSize="Title"
+				HorizontalOptions="FillAndExpand"
+				Text="NativeAnimationBorderless"
+				TextColor="Black" />
 			<Switch IsToggled="{Binding NativeAnimationBorderless, Source={x:Reference Page}}" />
 		</HorizontalStackLayout>
 
-		<Label FontSize="Title"
-			   HorizontalOptions="CenterAndExpand"
-			   Text="{Binding TouchCount, StringFormat='Touches: {0}', Source={x:Reference Page}}"
-			   TextColor="Black" />
+		<Label
+			FontSize="Title"
+			HorizontalOptions="CenterAndExpand"
+			Text="{Binding TouchCount, StringFormat='Touches: {0}', Source={x:Reference Page}}"
+			TextColor="Black" />
 
 		<VerticalStackLayout Style="{StaticResource GridRowContentStyle}">
 			<Label Text="Image | Toggle" />
-			<Image x:Name="img"
-				   BackgroundColor="Red"
-				   HeightRequest="40">
+			<Image
+				x:Name="img"
+				BackgroundColor="Red"
+				HeightRequest="40">
 				<Image.Behaviors>
-					<mct:TouchBehavior Command="{Binding TouchCountCommand, Source={x:Reference Page}}"
-									   IsToggled="false"
-									   NormalBackgroundImageSource="shield.png"
-									   PressedBackgroundImageSource="avatar_icon" />
+					<mct:TouchBehavior
+						Command="{Binding TouchCountCommand, Source={x:Reference Page}}"
+						IsToggled="false"
+						NativeAnimation="True"
+						NormalBackgroundImageSource="shield.png"
+						PressedBackgroundImageSource="avatar_icon.png" />
 				</Image.Behaviors>
 			</Image>
 
@@ -51,10 +57,11 @@
 			<HorizontalStackLayout HorizontalOptions="CenterAndExpand">
 
 				<HorizontalStackLayout.Behaviors>
-					<mct:TouchBehavior AnimationDuration="250"
-									   AnimationEasing="{x:Static Easing.CubicInOut}"
-									   PressedOpacity="0.6"
-									   PressedScale="0.8" />
+					<mct:TouchBehavior
+						AnimationDuration="250"
+						AnimationEasing="{x:Static Easing.CubicInOut}"
+						PressedOpacity="0.6"
+						PressedScale="0.8" />
 				</HorizontalStackLayout.Behaviors>
 
 				<BoxView HeightRequest="100" Color="Gold" />
