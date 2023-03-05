@@ -22,9 +22,9 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 		var fileManager = NSFileManager.DefaultManager;
 		var tempDirectoryPath = fileManager.GetTemporaryDirectory().Append(Guid.NewGuid().ToString(), true);
 		var isDirectoryCreated = fileManager.CreateDirectory(tempDirectoryPath, true, null, out var error);
-		if (!isDirectoryCreated)
+		if (!isDirectoryCreated || error is not null)
 		{
-			throw new Exception(error.LocalizedDescription);
+			throw new Exception(error?.LocalizedDescription ?? "Unable to create temp directory.");
 		}
 
 		var fileUrl = tempDirectoryPath.Append(fileName, false);
