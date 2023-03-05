@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Extensions.KeyboardManagerExtensionsPage"
+    Title="KeyboardManagerExtensionsPage"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Extensions"
+    x:TypeArguments="vm:KeyboardManagerExtensionsViewModel"
+    x:DataType="vm:KeyboardManagerExtensionsViewModel">
+    <pages:BasePage.Content>
+        <VerticalStackLayout Spacing="12">
+            <Entry Text="Hello" x:Name="entry"></Entry>
+            <Button Text="Show Keyboard" CommandParameter="{x:Reference Name=entry}" Command="{Binding ShowKeyboard}"></Button>
+            <Button Text="Hide Keyboard" CommandParameter="{x:Reference Name=entry}" Command="{Binding HideKeyboard}"></Button>
+        </VerticalStackLayout>
+    </pages:BasePage.Content>
+</pages:BasePage>
