@@ -27,7 +27,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		var file = await filePickerOperation;
 		if (string.IsNullOrEmpty(file?.Path))
 		{
-			throw new FileSaveException("Path doesn't exist.");
+			throw new FileSaveException("Operation cancelled or Path doesn't exist.");
 		}
 
 		await WriteStream(stream, file.Path, cancellationToken).ConfigureAwait(false);
