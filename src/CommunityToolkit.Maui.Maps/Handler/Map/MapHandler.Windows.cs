@@ -7,24 +7,27 @@ using IMap = Microsoft.Maui.Maps.IMap;
 using Windows.Devices.Geolocation;
 using System.Text.Json;
 using Microsoft.Maui.Controls.Maps;
-using Microsoft.Maui.Devices.Sensors;
 
 namespace CommunityToolkit.Maui.Maps.Handlers;
 
+/// <inheritdoc />
 public partial class MapHandlerWindows : MapHandler
 {
 	internal static string? MapsKey;
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="MapHandlerWindows"/> class.
+	/// </summary>
 	public MapHandlerWindows() : base(Mapper, CommandMapper)
 	{
-		Mapper.ModifyMapping(nameof(IMap.MapType), (handler, map, action) => MapMapType(handler, map));
-		Mapper.ModifyMapping(nameof(IMap.IsShowingUser), (handler, map, action) => MapIsShowingUser(handler, map));
-		Mapper.ModifyMapping(nameof(IMap.IsScrollEnabled), (handler, map, action) => MapIsScrollEnabled(handler, map));
-		Mapper.ModifyMapping(nameof(IMap.IsTrafficEnabled), (handler, map, action) => MapIsTrafficEnabled(handler, map));
-		Mapper.ModifyMapping(nameof(IMap.IsZoomEnabled), (handler, map, action) => MapIsZoomEnabled(handler, map));
-		Mapper.ModifyMapping(nameof(IMap.Pins), (handler, map, action) => MapPins(handler, map));
-		Mapper.ModifyMapping(nameof(IMap.Elements), (handler, map, action) => MapElements(handler, map));
-		CommandMapper.ModifyMapping(nameof(IMap.MoveToRegion), (handler, map, args, action) => MapMoveToRegion(handler, map, args));
+		Mapper.ModifyMapping(nameof(IMap.MapType), (handler, map, _) => MapMapType(handler, map));
+		Mapper.ModifyMapping(nameof(IMap.IsShowingUser), (handler, map, _) => MapIsShowingUser(handler, map));
+		Mapper.ModifyMapping(nameof(IMap.IsScrollEnabled), (handler, map, _) => MapIsScrollEnabled(handler, map));
+		Mapper.ModifyMapping(nameof(IMap.IsTrafficEnabled), (handler, map, _) => MapIsTrafficEnabled(handler, map));
+		Mapper.ModifyMapping(nameof(IMap.IsZoomEnabled), (handler, map, _) => MapIsZoomEnabled(handler, map));
+		Mapper.ModifyMapping(nameof(IMap.Pins), (handler, map, _) => MapPins(handler, map));
+		Mapper.ModifyMapping(nameof(IMap.Elements), (handler, map, _) => MapElements(handler, map));
+		CommandMapper.ModifyMapping(nameof(IMap.MoveToRegion), (handler, map, args, _) => MapMoveToRegion(handler, map, args));
 	}
 
 	/// <inheritdoc/>
@@ -44,6 +47,7 @@ public partial class MapHandlerWindows : MapHandler
 		return webView;
 	}
 
+	/// <inheritdoc />
 	protected override void DisconnectHandler(FrameworkElement platformView)
 	{
 		if (PlatformView is MauiWebView mauiWebView)
@@ -54,27 +58,42 @@ public partial class MapHandlerWindows : MapHandler
 		base.DisconnectHandler(platformView);
 	}
 
-	public static void MapMapType(IMapHandler handler, IMap map)
+	/// <summary>
+	/// Maps Map type
+	/// </summary>
+	public static new void MapMapType(IMapHandler handler, IMap map)
 	{
 		CallJSMethod(handler.PlatformView, $"setMapType('{map.MapType}');");
 	}
 
-	public static void MapIsZoomEnabled(IMapHandler handler, IMap map)
+	/// <summary>
+	/// Maps IsZoomEnabled
+	/// </summary>
+	public static new void MapIsZoomEnabled(IMapHandler handler, IMap map)
 	{
 		CallJSMethod(handler.PlatformView, $"disableMapZoom({(!map.IsZoomEnabled).ToString().ToLower()});");
 	}
 
-	public static void MapIsScrollEnabled(IMapHandler handler, IMap map)
+	/// <summary>
+	/// Maps IsScrollEnabled
+	/// </summary>
+	public static new void MapIsScrollEnabled(IMapHandler handler, IMap map)
 	{
 		CallJSMethod(handler.PlatformView, $"disablePanning({(!map.IsScrollEnabled).ToString().ToLower()});");
 	}
 
-	public static void MapIsTrafficEnabled(IMapHandler handler, IMap map)
+	/// <summary>
+	/// Maps IsTrafficEnabled
+	/// </summary>
+	public static new void MapIsTrafficEnabled(IMapHandler handler, IMap map)
 	{
 		CallJSMethod(handler.PlatformView, $"disableTraffic({(!map.IsTrafficEnabled).ToString().ToLower()});");
 	}
 
-	public static async void MapIsShowingUser(IMapHandler handler, IMap map)
+	/// <summary>
+	/// Maps IsShowingUser
+	/// </summary>
+	public static new async void MapIsShowingUser(IMapHandler handler, IMap map)
 	{
 		if (map.IsShowingUser)
 		{
@@ -90,7 +109,10 @@ public partial class MapHandlerWindows : MapHandler
 		}
 	}
 
-	public static void MapPins(IMapHandler handler, IMap map)
+	/// <summary>
+	/// Map Pins
+	/// </summary>
+	public static new void MapPins(IMapHandler handler, IMap map)
 	{
 		CallJSMethod(handler.PlatformView, "removeAllPins();");
 		foreach (var pin in map.Pins)
@@ -99,27 +121,30 @@ public partial class MapHandlerWindows : MapHandler
 		}
 	}
 
-	public static void MapElements(IMapHandler handler, IMap map) { }
-
-	public void UpdateMapElement(IMapElement element)
-	{
-
-	}
+	/// <summary>
+	/// Map Elements
+	/// </summary>
+	public static new void MapElements(IMapHandler handler, IMap map) { }
 
 	MapSpan? regionToGo;
-	public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
+	/// <summary>
+	/// Maps MoveToRegion
+	/// </summary>
+	public static new void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
 	{
-		MapSpan? newRegion = arg as MapSpan;
-		if (newRegion != null)
+		var newRegion = arg as MapSpan;
+		if (newRegion == null)
 		{
-			if (handler is MapHandlerWindows mapHandler)
-			{
-				mapHandler.regionToGo = newRegion;
-			}
-			CallJSMethod(handler.PlatformView, $"setRegion({newRegion.Center.Latitude},{newRegion.Center.Longitude});");
+			return;
 		}
-	}
 
+		if (handler is MapHandlerWindows mapHandler)
+		{
+			mapHandler.regionToGo = newRegion;
+		}
+		CallJSMethod(handler.PlatformView, $"setRegion({newRegion.Center.Latitude},{newRegion.Center.Longitude});");
+	}
+	
 	static void CallJSMethod(FrameworkElement platformWebView, string script)
 	{
 		if (platformWebView is WebView2 webView2 && webView2.CoreWebView2 != null)
@@ -278,12 +303,9 @@ public partial class MapHandlerWindows : MapHandler
 
 	static async Task<Location?> GetCurrentLocation()
 	{
-		Location? location;
-		var geolocator = new Geolocator();
-		var position = await geolocator.GetGeopositionAsync();
-		location = new Location(position.Coordinate.Latitude, position.Coordinate.Longitude);
-
-		return location;
+		var geoLocator = new Geolocator();
+		var position = await geoLocator.GetGeopositionAsync();
+		return new Location(position.Coordinate.Latitude, position.Coordinate.Longitude);
 	}
 
 	void WebViewNavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)

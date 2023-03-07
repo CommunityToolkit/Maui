@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Maui.Maps.Handlers;
+﻿namespace CommunityToolkit.Maui.Maps;
 
-namespace CommunityToolkit.Maui.Maps;
-
+/// <summary>
+/// Maps Extensions for <see cref="MauiAppBuilder"/>
+/// </summary>
 public static class AppHostBuilderExtensions
 {
 	/// <summary>
@@ -17,23 +13,15 @@ public static class AppHostBuilderExtensions
 	/// <returns><see cref="MauiAppBuilder"/></returns>
 	public static MauiAppBuilder UseMauiCommunityToolkitMaps(this MauiAppBuilder builder, string key)
 	{
+		builder.UseMauiMaps();
 		builder.ConfigureMauiHandlers(handlers =>
 		{
 #if WINDOWS
 			CommunityToolkit.Maui.Maps.Handlers.MapHandlerWindows.MapsKey = key;
+			handlers.AddHandler<Microsoft.Maui.Controls.Maps.Map, CommunityToolkit.Maui.Maps.Handlers.MapHandlerWindows>();
 #endif
-			handlers.AddMauiCommunityToolkitMaps();
 		});
 
 		return builder;
-	}
-
-
-	public static IMauiHandlersCollection AddMauiCommunityToolkitMaps(this IMauiHandlersCollection handlersCollection)
-	{
-#if WINDOWS
-		handlersCollection.AddHandler<Microsoft.Maui.Controls.Maps.Map, CommunityToolkit.Maui.Maps.Handlers.MapHandlerWindows>();
-#endif
-		return handlersCollection;
 	}
 }

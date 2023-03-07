@@ -46,7 +46,6 @@ public static class MauiProgram
 #endif
 								.UseMauiCommunityToolkitMarkup()
 								.UseMauiCommunityToolkitMediaElement()
-								.UseMauiMaps()
 								.UseMauiCommunityToolkitMaps("")
 								.UseMauiApp<App>()
 								.ConfigureFonts(fonts =>
