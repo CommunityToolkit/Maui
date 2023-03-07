@@ -3,21 +3,25 @@ variables:
   PreviewNumber: $[counter(variables['CurrentSemanticVersionBase'], 1001)]
   CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(PreviewNumber)'
   NugetPackageVersion: '$(CurrentSemanticVersion)'
-  TOOLKIT_NET_VERSION: '7.0.100'
+  NugetPackageVersionMediaElement: '$(CurrentSemanticVersion)'
+  TOOLKIT_NET_VERSION: '7.0.200'
   LATEST_NET_VERSION: '7.0.x'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
   PathToCommunityToolkitCoreCsproj: 'src/CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj'
+  PathToCommunityToolkitMediaElementCsproj: 'src/CommunityToolkit.Maui.MediaElement/CommunityToolkit.Maui.MediaElement.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
   PathToCommunityToolkitAnalyzersCsproj: 'src/CommunityToolkit.Maui.Analyzers/CommunityToolkit.Maui.Analyzers.csproj'
+  PathToCommunityToolkitMediaElementAnalyzersCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers/CommunityToolkit.Maui.MediaElement.Analyzers.csproj'
   PathToCommunityToolkitSourceGeneratorsCsproj: 'src/CommunityToolkit.Maui.SourceGenerators/CommunityToolkit.Maui.SourceGenerators.csproj'
   PathToCommunityToolkitAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Analyzers.CodeFixes/CommunityToolkit.Maui.Analyzers.CodeFixes.csproj'
+  PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
-  DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/7.0.49.json'
-  Latest_Xcode_Version: '14.1.0'
-  CommunityToolkit_Xcode_Version: '14.0.1'
+  DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/7.0.59.json'
+  CommunityToolkitSampleApp_Xcode_Version: '14.2.0'
+  CommunityToolkitLibrary_Xcode_Version: '14.0.1'
 
 trigger:
   branches:
@@ -54,10 +58,10 @@ jobs:
       vmImage: $(image)
     steps:
       - task: CmdLine@2
-        displayName: 'Set Xcode v$(Latest_Xcode_Version)'
+        displayName: 'Set Xcode v$(CommunityToolkitSampleApp_Xcode_Version)'
         condition: eq(variables['Agent.OS'], 'Darwin') # Only run this step on macOS
         inputs:
-          script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(Latest_Xcode_Version).app;sudo xcode-select --switch /Applications/Xcode_$(Latest_Xcode_Version).app/Contents/Developer
+          script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(CommunityToolkitSampleApp_Xcode_Version).app;sudo xcode-select --switch /Applications/Xcode_$(CommunityToolkitSampleApp_Xcode_Version).app/Contents/Developer
 
       - task: UseDotNet@2
         displayName: 'Install Latest .NET SDK, v$(LATEST_NET_VERSION)'
@@ -72,6 +76,31 @@ jobs:
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
           .\workload-install.ps1
         displayName: Install Tizen Workload
+
+      - task: CmdLine@2
+        displayName: 'Build CommunityToolkit.Maui.Analyzers'
+        inputs:
+          script: 'dotnet build -c Release $(PathToCommunityToolkitAnalyzersCsproj)'
+
+      - task: CmdLine@2
+        displayName: 'Build CommunityToolkit.Maui.Analyzers.CodeFixes'
+        inputs:
+          script: 'dotnet build -c Release $(PathToCommunityToolkitAnalyzersCodeFixCsproj)'
+
+      - task: CmdLine@2
+        displayName: 'Build CommunityToolkit.Maui.MediaElement.Analyzers'
+        inputs:
+          script: 'dotnet build -c Release $(PathToCommunityToolkitMediaElementAnalyzersCsproj)'
+
+      - task: CmdLine@2
+        displayName: 'Build CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes'
+        inputs:
+          script: 'dotnet build -c Release $(PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj)'
+
+      - task: CmdLine@2
+        displayName: 'Build CommunityToolkit.Maui.SourceGenerators'
+        inputs:
+          script: 'dotnet build -c Release $(PathToCommunityToolkitSourceGeneratorsCsproj)'
 
       # build sample
       - task: CmdLine@2
@@ -90,14 +119,24 @@ jobs:
     pool:
       vmImage: $(image)
     steps:
-      # if this is a tagged build, then update the version number
+      # if this is a tagged build for CommunityToolkit.Maui, then update the version number
       - powershell: |
           $buildSourceBranch = "$(Build.SourceBranch)"
           $tagVersion = $buildSourceBranch.Substring($buildSourceBranch.LastIndexOf("/") + 1)
           Write-Host("Branch = $buildSourceBranch, Version = $tagVersion");
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$tagVersion")
         displayName: Set NuGet Version to Tag Number
-        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/') # Only run this step when a Tag has triggered the CI Pipeline
+        condition: and(startsWith(variables['Build.SourceBranch'], 'refs/tags/'), not(endsWith(variables['Build.SourceBranch'], '-mediaelement'))) # Only run this step when a Tag has triggered the CI Pipeline
+
+      # if this is a tagged build for CommunityToolkit.Maui.MediaElement, then update the version number
+      - powershell: |
+          $buildSourceBranch = "$(Build.SourceBranch)"
+          $tagVersion = $buildSourceBranch.Substring($buildSourceBranch.LastIndexOf("/") + 1)
+          $tagVersion = $tagVersion.Substring(0, $tagVersion.LastIndexOf("-"))
+          Write-Host("Branch = $buildSourceBranch, Version = $tagVersion");
+          Write-Host ("##vso[task.setvariable variable=NugetPackageVersionMediaElement;]$tagVersion")
+        displayName: Set NuGet Version to Tag Number
+        condition: and(startsWith(variables['Build.SourceBranch'], 'refs/tags/'), endsWith(variables['Build.SourceBranch'], '-mediaelement')) # Only run this step when a Tag has triggered the CI Pipeline        
 
       # if this is a PR build, then update the version number
       - powershell: |
@@ -106,15 +145,16 @@ jobs:
           $fullVersionString = "$(CurrentSemanticVersionBase)-build-$prNumber.$(Build.BuildId)+$commitId"
           Write-Host("GitHub PR = $prNumber, Commit = $commitId");
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$fullVersionString")
+          Write-Host ("##vso[task.setvariable variable=NugetPackageVersionMediaElement;]$fullVersionString")
           Write-Host "##vso[build.updatebuildnumber]$fullVersionString"
         displayName: Set NuGet Version to PR Version
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['build.reason'], 'PullRequest')) # Only run this step on Windows when a Pull Request has triggered the CI Pipeline
       
       - task: CmdLine@2
-        displayName: 'Set Xcode v$(CommunityToolkit_Xcode_Version)'
+        displayName: 'Set Xcode v$(CommunityToolkitLibrary_Xcode_Version)'
         condition: eq(variables['Agent.OS'], 'Darwin') # Only run this step on macOS
         inputs:
-          script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(CommunityToolkit_Xcode_Version).app;sudo xcode-select --switch /Applications/Xcode_$(CommunityToolkit_Xcode_Version).app/Contents/Developer
+          script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(CommunityToolkitLibrary_Xcode_Version).app;sudo xcode-select --switch /Applications/Xcode_$(CommunityToolkitLibrary_Xcode_Version).app/Contents/Developer
 
       - task: UseDotNet@2
         displayName: Install .NET v$(TOOLKIT_NET_VERSION)
@@ -141,6 +181,16 @@ jobs:
         displayName: 'Build CommunityToolkit.Maui.Analyzers.CodeFixes'
         inputs:
           script: 'dotnet build -c Release $(PathToCommunityToolkitAnalyzersCodeFixCsproj)'
+
+      - task: CmdLine@2
+        displayName: 'Build CommunityToolkit.Maui.MediaElement.Analyzers'
+        inputs:
+          script: 'dotnet build -c Release $(PathToCommunityToolkitMediaElementAnalyzersCsproj)'
+
+      - task: CmdLine@2
+        displayName: 'Build CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes'
+        inputs:
+          script: 'dotnet build -c Release $(PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj)'
 
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.SourceGenerators'
@@ -183,6 +233,11 @@ jobs:
         inputs:
           script: 'dotnet pack $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
 
+      - task: CmdLine@2
+        displayName: 'Pack CommunityToolkit.Maui.MediaElement NuGet'
+        inputs:
+          script: 'dotnet pack $(PathToCommunityToolkitMediaElementCsproj) -c Release -p:PackageVersion=$(NugetPackageVersionMediaElement)'
+
       # check vulnerabilities
       - powershell: |
           dotnet list $(PathToLibrarySolution) package --vulnerable --include-transitive | findstr /S /c:"has the following vulnerable packages";
@@ -196,9 +251,9 @@ jobs:
         displayName: 'Check Dependencies'
         condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
       
-      # publish
+      # Copy all NuGet packages
       - task: PowerShell@2
-        condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
+        condition: and(eq(variables['Agent.OS'], 'Windows_NT'), not(startsWith(variables['Build.SourceBranch'], 'refs/tags/'))) # Only run this step on Windows and when it's not a tagged build
         displayName: 'Copy NuGet Packages to Staging Directory'
         inputs:
           targetType: 'inline'
@@ -206,6 +261,30 @@ jobs:
             $source = ".\src"
             $filter = "nupkg"
             Get-ChildItem -Path $source -Recurse | Where-Object { $_.Extension -match $filter } | Copy-Item -Destination "$(Build.ArtifactStagingDirectory)"
+          pwsh: true
+
+      # Copy CommunityToolkit.Maui & CommunityToolkit.Maui.Core packages
+      - task: PowerShell@2
+        condition: and(eq(variables['Agent.OS'], 'Windows_NT'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), not(endsWith(variables['Build.SourceBranch'], '-mediaelement'))) # Only run this step on Windows and when it's a tagged build and the tag does NOT end with -mediaelement
+        displayName: 'Copy CommunityToolkit.Maui & CommunityToolkit.Maui.Core NuGet Packages to Staging Directory'
+        inputs:
+          targetType: 'inline'
+          script: |
+            $source = ".\src"
+            $filter = "CommunityToolkit.Maui.(Core.)*[0-9]+.[0-9]+.[0-9]+(-[a-zA-Z0-9]*)*.nupkg"
+            Get-ChildItem -Path $source -Recurse | Where-Object { $_.Name -match $filter } | Copy-Item -Destination "$(Build.ArtifactStagingDirectory)"
+          pwsh: true
+
+      # Copy CommunityToolkit.Maui.MediaElement package
+      - task: PowerShell@2
+        condition: and(eq(variables['Agent.OS'], 'Windows_NT'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), endsWith(variables['Build.SourceBranch'], '-mediaelement')) # Only run this step on Windows and when it's a tagged build and the tag ends with -mediaelement
+        displayName: 'Copy CommunityToolkit.Maui.MediaElement NuGet Package to Staging Directory'
+        inputs:
+          targetType: 'inline'
+          script: |
+            $source = ".\src"
+            $filter = "CommunityToolkit.Maui.MediaElement.[0-9]+.[0-9]+.[0-9]+(-[a-zA-Z0-9]*)*.nupkg"
+            Get-ChildItem -Path $source -Recurse | Where-Object { $_.Name -match $filter } | Copy-Item -Destination "$(Build.ArtifactStagingDirectory)"
           pwsh: true
       
       # Sign NuGet Packages
@@ -219,7 +298,7 @@ jobs:
           ArtifactDirectory: $(Build.ArtifactStagingDirectory)
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'), not(eq(variables['build.reason'], 'PullRequest')), not(eq(variables['SignClientSecret'], '')), not(eq(variables['SignClientUser'], ''))) # Only run this step on Windows when the CI Pipeline has not been triggered by a Pull Request and the NuGet Signing Certificate is valid
       
-      # publish the packages
+      # Publish build artifacts
       - task: PublishBuildArtifacts@1
         condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
         displayName: 'Publish NuGets'

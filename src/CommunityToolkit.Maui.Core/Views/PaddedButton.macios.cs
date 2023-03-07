@@ -16,7 +16,6 @@ public sealed class PaddedButton : UIButton
 		TopPadding = topPadding;
 		RightPadding = rightPadding;
 		BottomPadding = bottomPadding;
-
 		SetPadding(leftPadding, topPadding, rightPadding, bottomPadding);
 	}
 
@@ -42,12 +41,9 @@ public sealed class PaddedButton : UIButton
 
 	void SetPadding(NFloat leftPadding, NFloat topPadding, NFloat rightPadding, NFloat bottomPadding)
 	{
-		if (OperatingSystem.IsIOSVersionAtLeast(15))
+		if (OperatingSystem.IsIOSVersionAtLeast(15) && Configuration is not null)
 		{
-			if (Configuration is not null)
-			{
-				Configuration.ContentInsets = new NSDirectionalEdgeInsets(topPadding, leftPadding, bottomPadding, rightPadding);
-			}
+			Configuration.ContentInsets = new NSDirectionalEdgeInsets(topPadding, leftPadding, bottomPadding, rightPadding);
 		}
 		else
 		{

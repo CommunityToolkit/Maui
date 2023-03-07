@@ -4,6 +4,7 @@ using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Essentials;
+
 public class FileSaverTests
 {
 	[Fact]
@@ -19,7 +20,23 @@ public class FileSaverTests
 	public async Task SaveAsyncFailsOnNet()
 	{
 		FileSaver.SetDefault(new FileSaverImplementation());
-		await Assert.ThrowsAsync<NotImplementedException>(() => FileSaver.SaveAsync("file name", Stream.Null, CancellationToken.None));
-		await Assert.ThrowsAsync<NotImplementedException>(() => FileSaver.SaveAsync("initial path", "file name", Stream.Null, CancellationToken.None));
+		var result = await FileSaver.SaveAsync("fileName", Stream.Null, CancellationToken.None);
+		result.Should().NotBeNull();
+		result.Exception.Should().BeOfType<NotImplementedException>();
+		result.FilePath.Should().BeNull();
+		result.IsSuccessful.Should().BeFalse();
+		Assert.Throws<NotImplementedException>(result.EnsureSuccess);
+	}
+
+	[Fact]
+	public async Task SaveAsyncWithInitialPathFailsOnNet()
+	{
+		FileSaver.SetDefault(new FileSaverImplementation());
+		var result = await FileSaver.SaveAsync("initial path", "fileName", Stream.Null, CancellationToken.None);
+		result.Should().NotBeNull();
+		result.Exception.Should().BeOfType<NotImplementedException>();
+		result.FilePath.Should().BeNull();
+		result.IsSuccessful.Should().BeFalse();
+		Assert.Throws<NotImplementedException>(result.EnsureSuccess);
 	}
 }

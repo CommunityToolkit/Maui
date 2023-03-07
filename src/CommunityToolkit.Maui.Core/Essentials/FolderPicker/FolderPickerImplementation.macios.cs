@@ -1,10 +1,13 @@
+using System.Runtime.Versioning;
 using CommunityToolkit.Maui.Core.Primitives;
 using UniformTypeIdentifiers;
 
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc cref="IFolderPicker" />
-public sealed class FolderPickerImplementation : IFolderPicker, IDisposable
+[SupportedOSPlatform("iOS14.0")]
+[SupportedOSPlatform("MacCatalyst14.0")]
+public sealed partial class FolderPickerImplementation : IFolderPicker, IDisposable
 {
 	readonly UIDocumentPickerViewController documentPickerViewController = new(new[] { UTTypes.Folder })
 	{
@@ -23,7 +26,14 @@ public sealed class FolderPickerImplementation : IFolderPicker, IDisposable
 	}
 
 	/// <inheritdoc />
-	public async Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)
+	public void Dispose()
+	{
+		documentPickerViewController.DidPickDocumentAtUrls -= DocumentPickerViewControllerOnDidPickDocumentAtUrls;
+		documentPickerViewController.WasCancelled -= DocumentPickerViewControllerOnWasCancelled;
+		documentPickerViewController.Dispose();
+	}
+
+	async Task<Folder> InternalPickAsync(string initialPath, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 		documentPickerViewController.DirectoryUrl = NSUrl.FromString(initialPath);
@@ -35,41 +45,19 @@ public sealed class FolderPickerImplementation : IFolderPicker, IDisposable
 		return await taskCompetedSource.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
 	}
 
-	/// <inheritdoc />
-	public Task<Folder> PickAsync(CancellationToken cancellationToken)
+	Task<Folder> InternalPickAsync(CancellationToken cancellationToken)
 	{
-		return PickAsync("/", cancellationToken);
-	}
-
-	/// <inheritdoc />
-	public void Dispose()
-	{
-		InternalDispose();
+		return InternalPickAsync("/", cancellationToken);
 	}
 
 	void DocumentPickerViewControllerOnWasCancelled(object? sender, EventArgs e)
 	{
 		taskCompetedSource?.SetException(new FolderPickerException("Operation cancelled."));
-		InternalDispose();
 	}
 
 	void DocumentPickerViewControllerOnDidPickDocumentAtUrls(object? sender, UIDocumentPickedAtUrlsEventArgs e)
 	{
-		try
-		{
-			var path = e.Urls[0].AbsoluteString ?? throw new FolderPickerException("Path cannot be null.");
-			taskCompetedSource?.SetResult(new Folder(path, new DirectoryInfo(path).Name));
-		}
-		finally
-		{
-			InternalDispose();
-		}
-	}
-
-	void InternalDispose()
-	{
-		documentPickerViewController.DidPickDocumentAtUrls -= DocumentPickerViewControllerOnDidPickDocumentAtUrls;
-		documentPickerViewController.WasCancelled -= DocumentPickerViewControllerOnWasCancelled;
-		documentPickerViewController.Dispose();
+		var path = e.Urls[0].Path ?? throw new FolderPickerException("Path cannot be null.");
+		taskCompetedSource?.SetResult(new Folder(path, new DirectoryInfo(path).Name));
 	}
 }

@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Views;
 
 /// <inheritdoc cref="IExpander"/>
 [ContentProperty(nameof(Content))]
-public class Expander : ContentView, IExpander
+public partial class Expander : ContentView, IExpander
 {
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Header"/> property.
@@ -44,7 +44,6 @@ public class Expander : ContentView, IExpander
 	public static readonly BindableProperty CommandProperty
 		= BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(Expander));
 
-	readonly IGestureRecognizer tapGestureRecognizer;
 	readonly WeakEventManager tappedEventManager = new();
 
 	/// <summary>
@@ -52,10 +51,8 @@ public class Expander : ContentView, IExpander
 	/// </summary>
 	public Expander()
 	{
-		tapGestureRecognizer = new TapGestureRecognizer
-		{
-			Command = new Command(() => IsExpanded = !IsExpanded)
-		};
+		HandleHeaderTapped = ResizeExpanderInItemsView;
+		HeaderTapGestureRecognizer.Tapped += OnHeaderTapGestureRecognizerTapped;
 
 		base.Content = new Grid
 		{
@@ -68,13 +65,24 @@ public class Expander : ContentView, IExpander
 	}
 
 	/// <summary>
-	///	Triggered when 
+	///	Triggered when the value of <see cref="IsExpanded"/> changes
 	/// </summary>
 	public event EventHandler<ExpandedChangedEventArgs> ExpandedChanged
 	{
 		add => tappedEventManager.AddEventHandler(value);
 		remove => tappedEventManager.RemoveEventHandler(value);
 	}
+
+	internal TapGestureRecognizer HeaderTapGestureRecognizer { get; } = new();
+
+	/// <summary>
+	/// The Action that fires when <see cref="Header"/> is tapped.
+	/// By default, this <see cref="Action"/> runs <see cref="ResizeExpanderInItemsView(TappedEventArgs)"/>.
+	/// </summary>
+	/// <remarks>
+	/// Warning: Overriding this <see cref="Action"/> may cause <see cref="Expander"/> to work improperly when placed inside of a <see cref="CollectionView"/> and placed inside of a <see cref="ListView"/>.
+	/// </remarks>
+	public Action<TappedEventArgs>? HandleHeaderTapped { get; set; }
 
 	/// <inheritdoc />
 	public IView? Header
@@ -83,7 +91,7 @@ public class Expander : ContentView, IExpander
 		set => SetValue(HeaderProperty, value);
 	}
 
-	/// <inheritdoc />
+	/// <inheritdoc cref="ContentView.Content" />
 	public new IView? Content
 	{
 		get => (IView?)GetValue(Expander.ContentProperty);
@@ -132,20 +140,12 @@ public class Expander : ContentView, IExpander
 
 	Grid ContentGrid => (Grid)base.Content;
 
-	/// <inheritdoc/>
-	protected override async void OnParentChanged()
-	{
-		base.OnParentChanged();
-
-		await EnsureParentIsNotItemsView().ConfigureAwait(false);
-	}
-
 	static void OnContentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var expander = (Expander)bindable;
 		if (newValue is View view)
 		{
-			view.SetBinding(IsVisibleProperty, new Binding(nameof(Expander.IsExpanded), source: bindable));
+			view.SetBinding(IsVisibleProperty, new Binding(nameof(IsExpanded), source: bindable));
 
 			expander.ContentGrid.Remove(oldValue);
 			expander.ContentGrid.Add(newValue);
@@ -177,34 +177,13 @@ public class Expander : ContentView, IExpander
 		}
 	}
 
-	static void OnIsExpandedPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
+	static void OnIsExpandedPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
 		((IExpander)bindable).ExpandedChanged(((IExpander)bindable).IsExpanded);
+	}
 
 	static void OnDirectionPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
 		((Expander)bindable).HandleDirectionChanged((ExpandDirection)newValue);
-
-	// Expander is not currently supported for ListView or CollectionView
-	Task EnsureParentIsNotItemsView()
-	{
-		var parentElement = Parent;
-
-		// The UI Thread is not required for this check
-		// Run this on a background thread to avoid performance impact on the UI Thread
-		return Task.Run(() =>
-		{
-			while (parentElement is not null)
-			{
-				if (parentElement is ListView or ItemsView)
-				{
-					// Marshall the exception to the UI Thread to ensure Exception is surfaced to the developer, stopping the app
-					// Required for MacCatalyst
-					Dispatcher.DispatchIfRequired(() => throw new NotSupportedException($"{nameof(Expander)} is not yet supported in {parentElement.GetType().Name}"));
-				}
-
-				parentElement = parentElement.Parent;
-			}
-		});
-	}
 
 	void HandleDirectionChanged(ExpandDirection expandDirection)
 	{
@@ -233,8 +212,48 @@ public class Expander : ContentView, IExpander
 	void SetHeaderGestures(in IView header)
 	{
 		var headerView = (View)header;
-		headerView.GestureRecognizers.Remove(tapGestureRecognizer);
-		headerView.GestureRecognizers.Add(tapGestureRecognizer);
+		headerView.GestureRecognizers.Remove(HeaderTapGestureRecognizer);
+		headerView.GestureRecognizers.Add(HeaderTapGestureRecognizer);
+	}
+
+	void OnHeaderTapGestureRecognizerTapped(object? sender, TappedEventArgs tappedEventArgs)
+	{
+		IsExpanded = !IsExpanded;
+		HandleHeaderTapped?.Invoke(tappedEventArgs);
+	}
+
+	void ResizeExpanderInItemsView(TappedEventArgs tappedEventArgs)
+	{
+		if (Header is null)
+		{
+			return;
+		}
+
+		Element element = this;
+		var size = IsExpanded
+					? Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins).Request
+					: Header.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+		while (element is not null)
+		{
+			if (element.Parent is ListView && element is Cell cell)
+			{
+#if IOS || MACCATALYST
+				throw new NotSupportedException($"{nameof(Expander)} is not yet supported in {nameof(ListView)}");
+#else
+				cell.ForceUpdateSize();
+#endif
+			}
+#if IOS || MACCATALYST || WINDOWS
+			else if (element is CollectionView collectionView)
+			{
+				var tapLocation = tappedEventArgs.GetPosition(collectionView);
+				ForceUpdateCellSize(collectionView, size, tapLocation);
+			}
+#endif
+
+			element = element.Parent;
+		}
 	}
 
 	void IExpander.ExpandedChanged(bool isExpanded)

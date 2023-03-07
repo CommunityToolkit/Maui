@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Views.ShowPopupInOnAppearingPage"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+                Title="ShowPopupInOnAppearingPage"
+                x:TypeArguments="viewModels:ShowPopupInOnAppearingPageViewModel"
+                x:DataType="viewModels:ShowPopupInOnAppearingPageViewModel">
+    <VerticalStackLayout>
+        <Label 
+            Text="Proves that we now support showing a popup before the platform is even ready."
+            VerticalOptions="Center" 
+            HorizontalOptions="Center" />
+    </VerticalStackLayout>
+</pages:BasePage>

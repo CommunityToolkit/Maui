@@ -17,7 +17,9 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 		{
 			SelectionMode = SelectionMode.Single,
 		}.ItemTemplate(new GalleryDataTemplate())
-		 .Bind(ItemsView.ItemsSourceProperty, nameof(BaseGalleryViewModel.Items))
+		 .Bind(ItemsView.ItemsSourceProperty,
+					static (BaseGalleryViewModel vm) => vm.Items,
+					mode: BindingMode.OneTime)
 		 .Invoke(collectionView => collectionView.SelectionChanged += HandleSelectionChanged);
 	}
 
@@ -82,12 +84,16 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 					{
 						new Label()
 							.Row(CardRow.Title)
-							.Bind(Label.TextProperty, nameof(SectionModel.Title))
+							.Bind(Label.TextProperty,
+									static (SectionModel section) => section.Title,
+									mode: BindingMode.OneTime)
 							.DynamicResource(Label.StyleProperty, "label_section_title"),
 
 						new Label { MaxLines = 4, LineBreakMode = LineBreakMode.WordWrap }
 							.Row(CardRow.Description).TextStart().TextTop()
-							.Bind(Label.TextProperty, nameof(SectionModel.Description))
+							.Bind(Label.TextProperty,
+									static (SectionModel section) => section.Description,
+									mode: BindingMode.OneTime)
 							.DynamicResource(Label.StyleProperty, "label_section_text")
 					}
 				};

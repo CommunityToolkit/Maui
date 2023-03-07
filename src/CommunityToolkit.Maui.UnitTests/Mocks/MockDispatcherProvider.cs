@@ -23,7 +23,7 @@ sealed class MockDispatcherProvider : IDispatcherProvider, IDisposable
 
 		public IDispatcherTimer CreateTimer()
 		{
-			throw new NotImplementedException();
+			return new DispatcherTimerStub(this);
 		}
 
 		public bool Dispatch(Action action)
@@ -36,6 +36,47 @@ sealed class MockDispatcherProvider : IDispatcherProvider, IDisposable
 		public bool DispatchDelayed(TimeSpan delay, Action action)
 		{
 			return false;
+		}
+	}
+
+	class DispatcherTimerStub : IDispatcherTimer, IDisposable
+	{
+		readonly DispatcherMock dispatcher;
+
+		Timer? timer;
+
+		public DispatcherTimerStub(DispatcherMock dispatcher)
+		{
+			this.dispatcher = dispatcher;
+		}
+
+		public TimeSpan Interval { get; set; }
+
+		public bool IsRepeating { get; set; }
+
+		public bool IsRunning => timer != null;
+
+		public event EventHandler? Tick;
+
+		public void Start()
+		{
+			timer = new Timer(OnTimeout, null, Interval, IsRepeating ? Interval : Timeout.InfiniteTimeSpan);
+
+			void OnTimeout(object? state)
+			{
+				dispatcher.Dispatch(() => Tick?.Invoke(this, EventArgs.Empty));
+			}
+		}
+
+		public void Stop()
+		{
+			Dispose();
+		}
+
+		public void Dispose()
+		{
+			timer?.Dispose();
+			timer = null;
 		}
 	}
 }

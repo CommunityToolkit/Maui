@@ -34,7 +34,7 @@ public sealed partial class ByteArrayToImageSourceConverterViewModel : BaseViewM
 		DotNetBotImageByteArray = null;
 	}
 
-	bool CanDownloadDotNetBotImageComandExecute => !IsDownloadingImage && dotNetBotImageByteArray is null;
+	bool CanDownloadDotNetBotImageComandExecute => !IsDownloadingImage && DotNetBotImageByteArray is null;
 
 	[RelayCommand(CanExecute = nameof(CanDownloadDotNetBotImageComandExecute))]
 	async Task DownloadDotNetBotImage()

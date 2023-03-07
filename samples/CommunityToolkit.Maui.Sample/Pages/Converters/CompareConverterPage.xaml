@@ -10,6 +10,8 @@
     <pages:BasePage.Resources>
         <ResourceDictionary>
             <x:Double x:Key="ComparingValue">0.5</x:Double>
+            <Color x:Key="LightGreen">LightGreen</Color>
+            <Color x:Key="PaleVioletRed">PaleVioletRed</Color>
         </ResourceDictionary>
     </pages:BasePage.Resources>
     
@@ -27,7 +29,7 @@
 
         <Label 
             Text="The background of this label will be green if the value of the slider is greater than or equal to 50%, and red otherwise."
-            BackgroundColor="{Binding SliderValue, Mode=OneWay, Converter={mct:CompareConverter ComparingValue={StaticResource ComparingValue}, ComparisonOperator=GreaterOrEqual, TrueObject=LightGreen, FalseObject=PaleVioletRed}}"
+            BackgroundColor="{Binding SliderValue, Mode=OneWay, Converter={mct:CompareConverter ComparingValue={StaticResource ComparingValue}, ComparisonOperator=GreaterOrEqual, TrueObject={StaticResource LightGreen}, FalseObject={StaticResource PaleVioletRed}}}"
             TextColor="Black"
             Padding="4, 0"/>
 
