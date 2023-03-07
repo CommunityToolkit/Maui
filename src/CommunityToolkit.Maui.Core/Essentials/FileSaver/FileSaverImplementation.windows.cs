@@ -16,10 +16,14 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		};
 		WinRT.Interop.InitializeWithWindow.Initialize(savePicker, Process.GetCurrentProcess().MainWindowHandle);
 
-		var extension = GetExtension(fileName);
-		savePicker.FileTypeChoices.Add(extension, new List<string> { extension });
+		var extension = Path.GetExtension(fileName);
+		if (!string.IsNullOrEmpty(extension))
+		{
+			savePicker.FileTypeChoices.Add(extension, new List<string> { extension });
+		}
+
 		savePicker.FileTypeChoices.Add("All files", allFilesExtension);
-		savePicker.SuggestedFileName = GetFileName(fileName);
+		savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(fileName);
 
 		var filePickerOperation = savePicker.PickSaveFileAsync();
 
