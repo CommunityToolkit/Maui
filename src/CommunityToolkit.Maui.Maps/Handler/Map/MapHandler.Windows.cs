@@ -6,6 +6,8 @@ using Microsoft.UI.Xaml;
 using IMap = Microsoft.Maui.Maps.IMap;
 using Windows.Devices.Geolocation;
 using System.Text.Json;
+using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Devices.Sensors;
 
 namespace CommunityToolkit.Maui.Maps.Handlers;
 
@@ -84,11 +86,18 @@ public partial class MapHandlerWindows : MapHandler
 		}
 		else
 		{
-			CallJSMethod(handler.PlatformView, $"removeLocationPin();");
+			CallJSMethod(handler.PlatformView, "removeLocationPin();");
 		}
 	}
 
-	public static void MapPins(IMapHandler handler, IMap map) { }
+	public static void MapPins(IMapHandler handler, IMap map)
+	{
+		CallJSMethod(handler.PlatformView, "removeAllPins();");
+		foreach (var pin in map.Pins)
+		{
+			CallJSMethod(handler.PlatformView, $"addPin({pin.Location.Latitude},{pin.Location.Longitude},'{pin.Label}', '{pin.Address}');");
+		}
+	}
 
 	public static void MapElements(IMapHandler handler, IMap map) { }
 
@@ -151,7 +160,6 @@ public partial class MapHandlerWindows : MapHandler
 							{
 								Microsoft.Maps.loadModule('Microsoft.Maps.Traffic', function () {
 									 trafficManager = new Microsoft.Maps.Traffic.TrafficManager(map);
-									 
 								});
 							}
 
@@ -224,6 +232,31 @@ public partial class MapHandlerWindows : MapHandler
 								}
 							}
 
+							function removeAllPins()
+							{
+								map.entities.clear();
+								locationPin = null;
+							}
+
+							function addPin(latitude, longitude, label, address)
+							{
+								var location = new Microsoft.Maps.Location(latitude, longitude);
+								var pin = new Microsoft.Maps.Pushpin(location, {
+								            title: label,
+											subTitle: address
+								        });
+								map.entities.push(pin);
+								Microsoft.Maps.Events.addHandler(pin, 'click', function (e) 
+								{
+									var clickedPin = {
+										label: e.target.getTitle(),
+										address: e.target.getSubTitle(),
+										location : e.target.getLocation()
+									};
+									invokeHandlerAction(clickedPin);
+								});
+							}
+
 							function invokeHandlerAction(data)
 							{
 								window.chrome.webview.postMessage(data);
@@ -266,8 +299,21 @@ public partial class MapHandlerWindows : MapHandler
 
 	void WebViewWebMessageReceived(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs args)
 	{
-		Bounds? mapRect = JsonSerializer.Deserialize<Bounds>(args.WebMessageAsJson);
-		if (mapRect != null)
+		var options = new JsonSerializerOptions()
+		{
+			PropertyNameCaseInsensitive = true
+		};
+
+		var clickedPin = JsonSerializer.Deserialize<Pin>(args.WebMessageAsJson, options);
+		if (clickedPin?.Location != null)
+		{
+			clickedPin.SendMarkerClick();
+			clickedPin.SendInfoWindowClick();
+			return;
+		}
+
+		var mapRect = JsonSerializer.Deserialize<Bounds>(args.WebMessageAsJson, options);
+		if (mapRect?.Center != null)
 		{
 			VirtualView.VisibleRegion = new MapSpan(new Location(mapRect.Center?.Latitude ?? 0, mapRect.Center?.Longitude ?? 0), mapRect.Height, mapRect.Width);
 		}

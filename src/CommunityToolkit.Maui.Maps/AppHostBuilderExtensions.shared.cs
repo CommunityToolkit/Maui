@@ -17,9 +17,7 @@ public static class AppHostBuilderExtensions
 	/// <returns><see cref="MauiAppBuilder"/></returns>
 	public static MauiAppBuilder UseMauiCommunityToolkitMaps(this MauiAppBuilder builder, string key)
 	{
-
-		builder
-		.ConfigureMauiHandlers(handlers =>
+		builder.ConfigureMauiHandlers(handlers =>
 		{
 #if WINDOWS
 			CommunityToolkit.Maui.Maps.Handlers.MapHandlerWindows.MapsKey = key;
