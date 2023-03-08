@@ -18,7 +18,7 @@ using IPlatformViewHandler = Microsoft.Maui.IViewHandler;
 namespace CommunityToolkit.Maui.Core.Platform;
 
 /// <summary>
-/// 
+/// Extension methods for interacting with a platforms Soft Keyboard Pane
 /// </summary>
 public static partial class KeyboardExtensions
 {
@@ -39,7 +39,6 @@ public static partial class KeyboardExtensions
 
 		if (iView.Handler?.PlatformView is not PlatformView platform)
 		{
-
 			platformView = null;
 			handler = null;
 			view = null;

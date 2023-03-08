@@ -11,7 +11,7 @@
     <pages:BasePage.Content>
         <ScrollView>
             <VerticalStackLayout Spacing="12">
-                <Label Text="The Keyboard extension method provides an easy way to open and close the SoftInput Keyboard device on platfomrs that support it." />
+                <Label Text="The Keyboard extension method provides an easy way to open and close the SoftInput Keyboard device on platforms that support it." />
 
                 <Label Text="{Binding KeyboardShowingText}"></Label>
                 <Label Text="{Binding OperationResult}"></Label>
