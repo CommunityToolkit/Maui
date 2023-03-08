@@ -4,26 +4,67 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CommunityToolkit.Maui.Core.Platform;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Extensions;
-public class KeyboardExtensionsViewModel : BaseViewModel
+public partial class KeyboardExtensionsViewModel : BaseViewModel
 {
-	public Command<ITextInput> ShowKeyboard { get; }
-	public Command<ITextInput> HideKeyboard { get; }
 
 	public KeyboardExtensionsViewModel()
 	{
 		ShowKeyboard = new Command<ITextInput>(OnShowKeyboard);
 		HideKeyboard = new Command<ITextInput>(OnHideKeyboard);
+		IsKeyboardShowing = new Command<ITextInput>(OnIsKeyboardShowing);
 	}
 
-	void OnHideKeyboard(ITextInput view)
+	void OnIsKeyboardShowing(ITextInput view)
 	{
-		view.HideKeyboard();
+		if (!view.IsSoftKeyboardShowing())
+		{
+			KeyboardShowingText = $"Soft Input Is Currently Hidden";
+		}
+		else
+		{
+			KeyboardShowingText = $"Soft Input Is Currently Showing";
+		}
 	}
 
-	void OnShowKeyboard(ITextInput view)
+	async void OnHideKeyboard(ITextInput view)
 	{
-		view.ShowKeyboard();
+		if (await view.HideKeyboardAsync())
+		{
+			OperationResult = "Hide Succeeded";
+		}
+		else
+		{
+			OperationResult = "Hide Failed";
+		}
 	}
+
+	async void OnShowKeyboard(ITextInput view)
+	{
+		if (await view.ShowKeyboardAsync())
+		{
+			OperationResult = "Show Succeeded";
+		}
+		else
+		{
+			OperationResult = "Show Failed";
+		}
+	}
+
+	[ObservableProperty]
+	string? keyboardShowingText;
+
+	[ObservableProperty]
+	string? operationResult;
+
+	[ObservableProperty]
+	Command<ITextInput>? showKeyboard;
+
+	[ObservableProperty]
+	Command<ITextInput>? hideKeyboard;
+
+	[ObservableProperty]
+	Command<ITextInput>? isKeyboardShowing;
 }

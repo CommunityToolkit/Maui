@@ -6,15 +6,17 @@ namespace CommunityToolkit.Maui.Core.Platform;
 
 public static partial class KeyboardExtensions
 {
-	static void HideKeyboard(this object _)
+	static bool HideKeyboard(this object _)
 	{
+		return false;
 	}
 
-	static void ShowKeyboard(this object _)
+	static bool ShowKeyboard(this object _)
 	{
+		return false;
 	}
 
-	static bool IsSoftKeyboardVisible(this object _)
+	static bool IsSoftKeyboardShowing(this object _)
 	{
 		return false;
 	}

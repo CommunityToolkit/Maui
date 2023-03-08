@@ -22,27 +22,27 @@ public static partial class KeyboardExtensions
 		}
 	}
 
-	static void HideKeyboard(this FrameworkElement _)
+	static bool HideKeyboard(this FrameworkElement _)
 	{
 		if (InputPane is not InputPane inputPane)
 		{
-			return;
+			return false;
 		}
 
-		inputPane.TryHide();
+		return inputPane.TryHide();
 	}
 
-	static void ShowKeyboard(this FrameworkElement _)
+	static bool ShowKeyboard(this FrameworkElement _)
 	{
 		if (InputPane is not InputPane inputPane)
 		{
-			return;
+			return false;
 		}
 
-		inputPane.TryShow();
+		return inputPane.TryShow();
 	}
 
-	static bool IsSoftKeyboardVisible(this FrameworkElement _)
+	static bool IsSoftKeyboardShowing(this FrameworkElement _)
 	{
 		if (InputPane is not InputPane inputPane)
 		{

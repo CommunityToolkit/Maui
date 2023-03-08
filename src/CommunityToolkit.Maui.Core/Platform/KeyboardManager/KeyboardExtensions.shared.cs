@@ -54,57 +54,65 @@ public static partial class KeyboardExtensions
 	}
 
 	/// <summary>
-	/// 
+	/// If a soft input device is currently showing, this will attempt to hide it.
 	/// </summary>
 	/// <param name="targetView"></param>
-	public static void HideKeyboard(this ITextInput targetView)
+	/// <returns>
+	/// Returns <c>true</c> if the platform was able to hide the soft input device.</returns>
+	public static Task<bool> HideKeyboardAsync(this ITextInput targetView)
 	{
 		if (!targetView.TryGetPlatformView(
 			out var platformView,
 			out _,
 			out _))
 		{
-			return;
+			return Task.FromResult(false);
 		}
 
-		HideKeyboard(platformView);
+		return Task.FromResult(HideKeyboard(platformView));
 	}
 
 	/// <summary>
-	/// 
+	/// If a soft input device is currently hiding, this will attempt to show it.
 	/// </summary>
 	/// <param name="targetView"></param>
-	public static void ShowKeyboard(this ITextInput targetView)
+	/// <returns>
+	/// Returns <c>true</c> if the platform was able to show the soft input device.</returns>
+	public static Task<bool> ShowKeyboardAsync(this ITextInput targetView)
 	{
 		if (!targetView.TryGetPlatformView(
-			out var platformView, 
+			out var platformView,
 			out var handler,
 			out var view))
 		{
-			return;
+			return Task.FromResult(false);
 		}
 
 		if (!view.IsFocused)
 		{
+			TaskCompletionSource<bool> result = new TaskCompletionSource<bool>();
 			handler.Invoke(nameof(IView.Focus), new FocusRequest(false));
 			handler.GetRequiredService<IDispatcher>()
 				.Dispatch(() =>
 				{
-					platformView.ShowKeyboard();
+					result.TrySetResult(platformView.ShowKeyboard());
 				});
+
+			return result.Task;
 		}
 		else
 		{
-			platformView.ShowKeyboard();
+			return Task.FromResult(platformView.ShowKeyboard());
 		}
 	}
 
 	/// <summary>
-	/// 
+	/// Checks to see if the platform is currently showing the soft input pane
 	/// </summary>
 	/// <param name="targetView"></param>
-	/// <returns></returns>
-	public static bool IsSoftKeyboardVisible(this ITextInput targetView)
+	/// <returns>
+	/// Returns <c>true</c> if the soft input device is currently showing.</returns>
+	public static bool IsSoftKeyboardShowing(this ITextInput targetView)
 	{
 		if (!targetView.TryGetPlatformView(
 			out var platformView,
@@ -114,6 +122,6 @@ public static partial class KeyboardExtensions
 			return false;
 		}
 
-		return platformView.IsSoftKeyboardVisible();
+		return platformView.IsSoftKeyboardShowing();
 	}
 }
