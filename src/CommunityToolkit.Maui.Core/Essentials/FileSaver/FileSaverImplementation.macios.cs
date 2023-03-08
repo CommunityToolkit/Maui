@@ -20,7 +20,14 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 		var fileManager = NSFileManager.DefaultManager;
-		var fileUrl = fileManager.GetTemporaryDirectory().Append($"{Guid.NewGuid()}{GetExtension(fileName)}", false);
+		var tempDirectoryPath = fileManager.GetTemporaryDirectory().Append(Guid.NewGuid().ToString(), true);
+		var isDirectoryCreated = fileManager.CreateDirectory(tempDirectoryPath, true, null, out var error);
+		if (!isDirectoryCreated)
+		{
+			throw new Exception(error?.LocalizedDescription ?? "Unable to create temp directory.");
+		}
+
+		var fileUrl = tempDirectoryPath.Append(fileName, false);
 		await WriteStream(stream, fileUrl.Path ?? throw new Exception("Path cannot be null."), cancellationToken);
 
 		cancellationToken.ThrowIfCancellationRequested();
