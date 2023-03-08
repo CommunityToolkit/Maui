@@ -3,9 +3,9 @@ using CommunityToolkit.Maui.Sample.ViewModels.Extensions;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Extensions;
 
-public partial class KeyboardManagerExtensionsPage : BasePage<KeyboardManagerExtensionsViewModel>
+public partial class KeyboardExtensionsPage : BasePage<KeyboardExtensionsViewModel>
 {
-	public KeyboardManagerExtensionsPage(KeyboardManagerExtensionsViewModel viewModel) :
+	public KeyboardExtensionsPage(KeyboardExtensionsViewModel viewModel) :
 		base(viewModel)
 	{
 		InitializeComponent();

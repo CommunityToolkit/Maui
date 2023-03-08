@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 using CommunityToolkit.Maui.Core.Platform;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Extensions;
-public class KeyboardManagerExtensionsViewModel : BaseViewModel
+public class KeyboardExtensionsViewModel : BaseViewModel
 {
 	public Command<ITextInput> ShowKeyboard { get; }
 	public Command<ITextInput> HideKeyboard { get; }
 
-	public KeyboardManagerExtensionsViewModel()
+	public KeyboardExtensionsViewModel()
 	{
 		ShowKeyboard = new Command<ITextInput>(OnShowKeyboard);
 		HideKeyboard = new Command<ITextInput>(OnHideKeyboard);

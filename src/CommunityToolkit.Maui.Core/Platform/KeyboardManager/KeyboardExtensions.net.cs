@@ -4,7 +4,7 @@ using System.Reflection.Metadata;
 
 namespace CommunityToolkit.Maui.Core.Platform;
 
-public static partial class KeyboardManager
+public static partial class KeyboardExtensions
 {
 	static void HideKeyboard(this object _)
 	{

@@ -4,7 +4,7 @@ using UIKit;
 namespace CommunityToolkit.Maui.Core.Platform;
 
 [UnsupportedOSPlatform("MacOS")]
-public static partial class KeyboardManager
+public static partial class KeyboardExtensions
 {
 	static void HideKeyboard(this UIView inputView)
 	{

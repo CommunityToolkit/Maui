@@ -20,7 +20,7 @@ namespace CommunityToolkit.Maui.Core.Platform;
 /// <summary>
 /// 
 /// </summary>
-public static partial class KeyboardManager
+public static partial class KeyboardExtensions
 {
 	static bool TryGetPlatformView(
 		this ITextInput textInput,

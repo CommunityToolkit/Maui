@@ -88,7 +88,7 @@ public partial class AppShell : Shell
 
 		// Add Extensions View Models
 		CreateViewModelMapping<ColorAnimationExtensionsPage, ColorAnimationExtensionsViewModel, ExtensionsGalleryPage, ExtensionsGalleryViewModel>(),
-		CreateViewModelMapping<KeyboardManagerExtensionsPage, KeyboardManagerExtensionsViewModel, ExtensionsGalleryPage, ExtensionsGalleryViewModel>(),
+		CreateViewModelMapping<KeyboardExtensionsPage, KeyboardExtensionsViewModel, ExtensionsGalleryPage, ExtensionsGalleryViewModel>(),
 
 		// Add ImageSources View Models
 		CreateViewModelMapping<GravatarImageSourcePage, GravatarImageSourceViewModel, ImageSourcesGalleryPage, ImageSourcesGalleryViewModel>(),

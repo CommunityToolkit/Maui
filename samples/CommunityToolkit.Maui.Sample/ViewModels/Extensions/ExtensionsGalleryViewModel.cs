@@ -13,7 +13,7 @@ public class ExtensionsGalleryViewModel : BaseGalleryViewModel
 			SectionModel.Create<ColorAnimationExtensionsViewModel>(nameof(ColorAnimationExtensions),
 				"Extension methods that provide color animations"),
 
-			SectionModel.Create<KeyboardManagerExtensionsViewModel>(nameof(KeyboardManager),
+			SectionModel.Create<KeyboardExtensionsViewModel>(nameof(KeyboardExtensions),
 				"Extension methods that provide keyboard interactions"),
 		})
 	{

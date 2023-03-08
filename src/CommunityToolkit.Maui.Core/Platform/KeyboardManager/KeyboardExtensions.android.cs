@@ -8,22 +8,17 @@ using AView = Android.Views.View;
 
 namespace CommunityToolkit.Maui.Core.Platform;
 
-public static partial class KeyboardManager
+public static partial class KeyboardExtensions
 {
 	static void HideKeyboard(this AView inputView)
 	{
-		if (inputView?.Context == null)
-		{
-			throw new ArgumentNullException(nameof(inputView), "Must be set before the keyboard can be hidden.");
-		}
-
 		var focusedView = inputView.Context?.GetActivity()?.Window?.CurrentFocus;
 		AView tokenView = focusedView ?? inputView;
 
-		using (var inputMethodManager = (InputMethodManager)tokenView.Context?.GetSystemService(Context.InputMethodService)!)
+		using (var inputMethodManager = (InputMethodManager?)tokenView.Context?.GetSystemService(Context.InputMethodService))
 		{
 			var windowToken = tokenView.WindowToken;
-			if (windowToken != null && inputMethodManager != null)
+			if (windowToken is not null && inputMethodManager is not null)
 			{
 				inputMethodManager.HideSoftInputFromWindow(windowToken, HideSoftInputFlags.None);
 			}
@@ -32,12 +27,7 @@ public static partial class KeyboardManager
 
 	static void ShowKeyboard(this TextView inputView)
 	{
-		if (inputView?.Context == null)
-		{
-			throw new ArgumentNullException(nameof(inputView), "Must be set before the keyboard can be shown.");
-		}
-
-		using (var inputMethodManager = (InputMethodManager)inputView.Context.GetSystemService(Context.InputMethodService)!)
+		using (var inputMethodManager = (InputMethodManager?)inputView.Context?.GetSystemService(Context.InputMethodService))
 		{
 			// The zero value for the second parameter comes from 
 			// https://developer.android.com/reference/android/view/inputmethod/InputMethodManager#showSoftInput(android.view.View,%20int)
@@ -62,7 +52,7 @@ public static partial class KeyboardManager
 	static bool IsSoftKeyboardVisible(this AView view)
 	{
 		var insets = ViewCompat.GetRootWindowInsets(view);
-		if (insets == null)
+		if (insets is null)
 		{
 			return false;
 		}

@@ -6,7 +6,7 @@ using Windows.UI.ViewManagement;
 
 namespace CommunityToolkit.Maui.Core.Platform;
 
-public static partial class KeyboardManager
+public static partial class KeyboardExtensions
 {
 	static InputPane? InputPane
 	{
