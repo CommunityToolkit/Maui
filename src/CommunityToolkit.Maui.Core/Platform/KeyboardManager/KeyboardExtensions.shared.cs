@@ -81,6 +81,7 @@ public static partial class KeyboardExtensions
 	/// Returns <c>true</c> if the platform was able to show the soft input device.</returns>
 	public static Task<bool> ShowKeyboardAsync(this ITextInput targetView, CancellationToken token)
 	{
+	    token.ThrowIfCancellationRequested();
 		if (!targetView.TryGetPlatformView(
 			out var platformView,
 			out var handler,
