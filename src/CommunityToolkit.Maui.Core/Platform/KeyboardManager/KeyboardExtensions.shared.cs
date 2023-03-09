@@ -56,28 +56,30 @@ public static partial class KeyboardExtensions
 	/// If a soft input device is currently showing, this will attempt to hide it.
 	/// </summary>
 	/// <param name="targetView"></param>
+	/// <param name="token">Cancellation token</param>
 	/// <returns>
 	/// Returns <c>true</c> if the platform was able to hide the soft input device.</returns>
-	public static Task<bool> HideKeyboardAsync(this ITextInput targetView)
+	public static Task<bool> HideKeyboardAsync(this ITextInput targetView, CancellationToken token)
 	{
 		if (!targetView.TryGetPlatformView(
 			out var platformView,
 			out _,
 			out _))
 		{
-			return Task.FromResult(false);
+			return Task.FromResult(false).WaitAsync(token);
 		}
 
-		return Task.FromResult(HideKeyboard(platformView));
+		return Task.FromResult(HideKeyboard(platformView)).WaitAsync(token);
 	}
 
 	/// <summary>
 	/// If a soft input device is currently hiding, this will attempt to show it.
 	/// </summary>
 	/// <param name="targetView"></param>
+	/// <param name="token">Cancellation token</param>
 	/// <returns>
 	/// Returns <c>true</c> if the platform was able to show the soft input device.</returns>
-	public static Task<bool> ShowKeyboardAsync(this ITextInput targetView)
+	public static Task<bool> ShowKeyboardAsync(this ITextInput targetView, CancellationToken token)
 	{
 		if (!targetView.TryGetPlatformView(
 			out var platformView,
@@ -97,11 +99,11 @@ public static partial class KeyboardExtensions
 					result.TrySetResult(platformView.ShowKeyboard());
 				});
 
-			return result.Task;
+			return result.Task.WaitAsync(token);
 		}
 		else
 		{
-			return Task.FromResult(platformView.ShowKeyboard());
+			return Task.FromResult(platformView.ShowKeyboard()).WaitAsync(token);
 		}
 	}
 

@@ -8,16 +8,16 @@ public static partial class KeyboardExtensions
 {
 	static bool HideKeyboard(this object _)
 	{
-		return false;
+		throw new NotSupportedException();
 	}
 
 	static bool ShowKeyboard(this object _)
 	{
-		return false;
+		throw new NotSupportedException();
 	}
 
 	static bool IsSoftKeyboardShowing(this object _)
 	{
-		return false;
+		throw new NotSupportedException();
 	}
 }

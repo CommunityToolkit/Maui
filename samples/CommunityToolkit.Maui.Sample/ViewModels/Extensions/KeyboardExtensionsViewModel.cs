@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CommunityToolkit.Maui.Core.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Extensions;
 public partial class KeyboardExtensionsViewModel : BaseViewModel
@@ -12,26 +13,25 @@ public partial class KeyboardExtensionsViewModel : BaseViewModel
 
 	public KeyboardExtensionsViewModel()
 	{
-		ShowKeyboard = new Command<ITextInput>(OnShowKeyboard);
-		HideKeyboard = new Command<ITextInput>(OnHideKeyboard);
-		IsKeyboardShowing = new Command<ITextInput>(OnIsKeyboardShowing);
 	}
 
+	[RelayCommand]
 	void OnIsKeyboardShowing(ITextInput view)
 	{
-		if (!view.IsSoftKeyboardShowing())
-		{
-			KeyboardShowingText = $"Soft Input Is Currently Hidden";
-		}
-		else
+		if (view.IsSoftKeyboardShowing())
 		{
 			KeyboardShowingText = $"Soft Input Is Currently Showing";
 		}
+		else
+		{
+			KeyboardShowingText = $"Soft Input Is Currently Hidden";
+		}
 	}
 
-	async void OnHideKeyboard(ITextInput view)
+	[RelayCommand]
+	async Task OnHideKeyboard(ITextInput view)
 	{
-		if (await view.HideKeyboardAsync())
+		if (await view.HideKeyboardAsync(CancellationToken.None))
 		{
 			OperationResult = "Hide Succeeded";
 		}
@@ -41,9 +41,10 @@ public partial class KeyboardExtensionsViewModel : BaseViewModel
 		}
 	}
 
-	async void OnShowKeyboard(ITextInput view)
+	[RelayCommand]
+	async Task OnShowKeyboard(ITextInput view)
 	{
-		if (await view.ShowKeyboardAsync())
+		if (await view.ShowKeyboardAsync(CancellationToken.None))
 		{
 			OperationResult = "Show Succeeded";
 		}
@@ -58,13 +59,4 @@ public partial class KeyboardExtensionsViewModel : BaseViewModel
 
 	[ObservableProperty]
 	string? operationResult;
-
-	[ObservableProperty]
-	Command<ITextInput>? showKeyboard;
-
-	[ObservableProperty]
-	Command<ITextInput>? hideKeyboard;
-
-	[ObservableProperty]
-	Command<ITextInput>? isKeyboardShowing;
 }

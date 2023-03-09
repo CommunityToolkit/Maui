@@ -18,9 +18,9 @@
 
                 <Entry Text="" x:Name="entryToFocus"></Entry>
                 <Entry Text="" x:Name="secondEntry"></Entry>
-                <Button Text="Show Keyboard" CommandParameter="{x:Reference Name=entryToFocus}" Command="{Binding ShowKeyboard}"></Button>
-                <Button Text="Hide Keyboard" CommandParameter="{x:Reference Name=entryToFocus}" Command="{Binding HideKeyboard}"></Button>
-                <Button Text="Check Keyboard State" CommandParameter="{x:Reference Name=entryToFocus}" Command="{Binding IsKeyboardShowing}"></Button>
+                <Button Text="Show Keyboard" CommandParameter="{x:Reference Name=entryToFocus}" Command="{Binding ShowKeyboardCommand}"></Button>
+                <Button Text="Hide Keyboard" CommandParameter="{x:Reference Name=entryToFocus}" Command="{Binding HideKeyboardCommand}"></Button>
+                <Button Text="Check Keyboard State" CommandParameter="{x:Reference Name=entryToFocus}" Command="{Binding IsKeyboardShowingCommand}"></Button>
 
             </VerticalStackLayout>
         </ScrollView>
