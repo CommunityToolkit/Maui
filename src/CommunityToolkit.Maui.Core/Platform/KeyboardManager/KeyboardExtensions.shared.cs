@@ -61,6 +61,7 @@ public static partial class KeyboardExtensions
 	/// Returns <c>true</c> if the platform was able to hide the soft input device.</returns>
 	public static Task<bool> HideKeyboardAsync(this ITextInput targetView, CancellationToken token)
 	{
+	    token.ThrowIfCancellationRequested();
 		if (!targetView.TryGetPlatformView(
 			out var platformView,
 			out _,
