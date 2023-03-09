@@ -34,7 +34,7 @@ public partial class CameraManager
 	protected virtual partial void PlatformTakePicture();
 }
 
-#if NET6_0 && !ANDROID
+#if NET7_0 && !ANDROID
 public partial class CameraManager
 {
 	protected virtual partial void PlatformConnect() { }
