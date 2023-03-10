@@ -1,9 +1,7 @@
-using System;
 using Android.Content;
 using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.Core.View;
-using Kotlin.Contracts;
 using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
 
@@ -16,13 +14,12 @@ public static partial class KeyboardExtensions
 		var focusedView = inputView.Context?.GetActivity()?.Window?.CurrentFocus;
 		AView tokenView = focusedView ?? inputView;
 
-		using (var inputMethodManager = (InputMethodManager?)tokenView.Context?.GetSystemService(Context.InputMethodService))
+		using var inputMethodManager = (InputMethodManager?)tokenView.Context?.GetSystemService(Context.InputMethodService);
+		var windowToken = tokenView.WindowToken;
+
+		if (windowToken is not null && inputMethodManager is not null)
 		{
-			var windowToken = tokenView.WindowToken;
-			if (windowToken is not null && inputMethodManager is not null)
-			{
-				return inputMethodManager.HideSoftInputFromWindow(windowToken, HideSoftInputFlags.None);
-			}
+			return inputMethodManager.HideSoftInputFromWindow(windowToken, HideSoftInputFlags.None);
 		}
 
 		return false;
@@ -30,27 +27,20 @@ public static partial class KeyboardExtensions
 
 	static bool ShowKeyboard(this TextView inputView)
 	{
-		using (var inputMethodManager = (InputMethodManager?)inputView.Context?.GetSystemService(Context.InputMethodService))
-		{
-			// The zero value for the second parameter comes from 
-			// https://developer.android.com/reference/android/view/inputmethod/InputMethodManager#showSoftInput(android.view.View,%20int)
-			// Apparently there's no named value for zero in this case
-			return inputMethodManager?.ShowSoftInput(inputView, 0) == true;
-		}
+		using var inputMethodManager = (InputMethodManager?)inputView.Context?.GetSystemService(Context.InputMethodService);
+
+		// The zero value for the second parameter comes from 
+		// https://developer.android.com/reference/android/view/inputmethod/InputMethodManager#showSoftInput(android.view.View,%20int)
+		// Apparently there's no named value for zero in this case
+		return inputMethodManager?.ShowSoftInput(inputView, 0) is true;
 	}
 
-	static bool ShowKeyboard(this AView view)
+	static bool ShowKeyboard(this AView view) => view switch
 	{
-		switch (view)
-		{
-			case TextView textView:
-				return textView.ShowKeyboard();
-			case ViewGroup viewGroup:
-				return viewGroup.GetFirstChildOfType<TextView>()?.ShowKeyboard() == true;
-		}
-
-		return false;
-	}
+		TextView textView => textView.ShowKeyboard(),
+		ViewGroup viewGroup => viewGroup.GetFirstChildOfType<TextView>()?.ShowKeyboard() is true,
+		_ => false,
+	};
 
 	static bool IsSoftKeyboardShowing(this AView view)
 	{

@@ -1,4 +1,3 @@
-using CommunityToolkit.Maui.Sample.ViewModels.Converters;
 using CommunityToolkit.Maui.Sample.ViewModels.Extensions;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Extensions;

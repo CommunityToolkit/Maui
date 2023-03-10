@@ -1,6 +1,3 @@
-using System;
-using UIKit;
-
 namespace CommunityToolkit.Maui.Core.Platform;
 
 public static partial class KeyboardExtensions
