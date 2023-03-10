@@ -1,7 +1,5 @@
-using Microsoft.UI.Xaml;
-using System;
 using System.Diagnostics;
-using System.Reflection.Metadata;
+using Microsoft.UI.Xaml;
 using Windows.UI.ViewManagement;
 
 namespace CommunityToolkit.Maui.Core.Platform;
