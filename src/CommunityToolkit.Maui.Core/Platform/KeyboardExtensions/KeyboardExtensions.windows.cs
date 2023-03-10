@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI.Xaml;
 using Windows.UI.ViewManagement;
 
@@ -6,47 +7,47 @@ namespace CommunityToolkit.Maui.Core.Platform;
 
 public static partial class KeyboardExtensions
 {
-	static InputPane? InputPane
+	static bool HideKeyboard(this FrameworkElement element)
 	{
-		get
+		if (TryGetInputPane(out var inputPane))
 		{
-			var handleId = Process.GetCurrentProcess().MainWindowHandle;
-			if (handleId == IntPtr.Zero)
-			{
-				return null;
-			}
-
-			return InputPaneInterop.GetForWindow(handleId);
+			return inputPane.TryHide();
 		}
+
+		return false;
 	}
 
-	static bool HideKeyboard(this FrameworkElement _)
+	static bool ShowKeyboard(this FrameworkElement element)
 	{
-		if (InputPane is not InputPane inputPane)
+		if (TryGetInputPane(out var inputPane))
 		{
+			return inputPane.TryShow();
+		}
+
+		return false;
+	}
+
+	static bool IsSoftKeyboardShowing(this FrameworkElement element)
+	{
+		if (TryGetInputPane(out var inputPane))
+		{
+			return inputPane.Visible;
+		}
+
+		return false;
+	}
+
+	static bool TryGetInputPane([NotNullWhen(true)] out InputPane? inputPane)
+	{
+		var handleId = Process.GetCurrentProcess().MainWindowHandle;
+		if (handleId == IntPtr.Zero)
+		{
+			inputPane = null;
+
 			return false;
 		}
 
-		return inputPane.TryHide();
-	}
-
-	static bool ShowKeyboard(this FrameworkElement _)
-	{
-		if (InputPane is not InputPane inputPane)
-		{
-			return false;
-		}
-
-		return inputPane.TryShow();
-	}
-
-	static bool IsSoftKeyboardShowing(this FrameworkElement _)
-	{
-		if (InputPane is not InputPane inputPane)
-		{
-			return false;
-		}
-
-		return inputPane.Visible;
+		inputPane = InputPaneInterop.GetForWindow(handleId);
+		return true;
 	}
 }
