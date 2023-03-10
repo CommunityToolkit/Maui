@@ -110,6 +110,7 @@ public static partial class KeyboardExtensions
 			platformView = null;
 			handler = null;
 			view = null;
+
 			return false;
 		}
 
@@ -118,6 +119,7 @@ public static partial class KeyboardExtensions
 			platformView = null;
 			handler = null;
 			view = null;
+
 			return false;
 		}
 
