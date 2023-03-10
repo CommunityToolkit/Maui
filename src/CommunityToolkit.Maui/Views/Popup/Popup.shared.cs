@@ -55,9 +55,6 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 		platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Popup>>(() => new(this));
 
 		VerticalOptions = HorizontalOptions = LayoutAlignment.Center;
-#if WINDOWS
-		this.HandlerChanged += OnPopupHandlerChanged;
-#endif
 	}
 
 	/// <summary>
