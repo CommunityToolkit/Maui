@@ -1,17 +1,19 @@
 ﻿using CommunityToolkit.Maui.Core.Handlers;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 using WindowsThickness = Microsoft.UI.Xaml.Thickness;
-using XamlStyle = Microsoft.UI.Xaml.Style;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// The native implementation of Popup control.
 /// </summary>
-public class MauiPopup : Flyout
+public class MauiPopup : FrameworkElement
 {
 	const double defaultBorderThickness = 0;
 	const double defaultSize = 600;
@@ -25,6 +27,12 @@ public class MauiPopup : Flyout
 	public MauiPopup(IMauiContext mauiContext)
 	{
 		this.mauiContext = mauiContext ?? throw new ArgumentNullException(nameof(mauiContext));
+		var style = new Style(typeof(Popup));
+		style.BasedOn = new Style(typeof(FrameworkElement));
+		Control = new Popup
+		{
+			Style = style
+		};
 	}
 
 	/// <summary>
@@ -32,11 +40,7 @@ public class MauiPopup : Flyout
 	/// </summary>
 	public IPopup? VirtualView { get; private set; }
 
-	internal Panel? Control { get; set; }
-	internal XamlStyle FlyoutStyle { get; private set; } = new(typeof(FlyoutPresenter));
-
-	Action<Panel>? panelCleanUp;
-	Func<PopupHandler, Panel?>? createControl;
+	internal Popup Control { get; set; }
 
 	/// <summary>
 	/// Method to initialize the native implementation.
@@ -45,23 +49,14 @@ public class MauiPopup : Flyout
 	public void SetElement(IPopup element)
 	{
 		VirtualView = element;
-		Closing += OnClosing;
+		Control.Opened += OnOpened;
 	}
 
 	/// <summary>
-	/// Method to setup the Content of the Popup using a WrapperControl
+	/// Method to setup the Content of the Popup
 	/// </summary>
-	/// <param name="panelCleanUp">Action to be executed when the Handler discconect</param>
-	/// <param name="createControl">Function to be executed during the create of the popup content</param>
-	public void SetUpPlatformView(Action<Panel> panelCleanUp, Func<PopupHandler, Panel?> createControl)
+	public void SetUpPlatformView()
 	{
-		ArgumentNullException.ThrowIfNull(panelCleanUp);
-		ArgumentNullException.ThrowIfNull(createControl);
-
-		this.panelCleanUp = panelCleanUp;
-		this.createControl = createControl;
-
-		CreateControl();
 		ConfigureControl();
 	}
 
@@ -74,11 +69,15 @@ public class MauiPopup : Flyout
 		{
 			return;
 		}
-		FlyoutStyle = new(typeof(FlyoutPresenter));
+
+		if (VirtualView?.Content is not null && VirtualView.Handler is PopupHandler handler)
+		{
+			Control.Child = handler.VirtualView.Content?.ToPlatform(mauiContext);
+		}
+
 		SetFlyoutColor();
 		SetSize();
 		SetLayout();
-		ApplyStyles();
 	}
 
 	/// <summary>
@@ -96,16 +95,11 @@ public class MauiPopup : Flyout
 		if (VirtualView.Anchor is not null)
 		{
 			var anchor = VirtualView.Anchor.ToPlatform(mauiContext);
-			SetAttachedFlyout(anchor, this);
-			ShowAttachedFlyout(anchor);
+			Control.PlacementTarget = anchor;
 		}
-		else
-		{
-			var frameworkElement = VirtualView.Parent.ToPlatform(mauiContext);
-			frameworkElement.ContextFlyout = this;
-			SetAttachedFlyout(frameworkElement, this);
-			ShowAttachedFlyout(frameworkElement);
-		}
+		
+		Control.XamlRoot = VirtualView.Parent.ToPlatform(mauiContext).XamlRoot;
+		Control.IsOpen = true;
 		VirtualView.OnOpened();
 	}
 
@@ -114,38 +108,16 @@ public class MauiPopup : Flyout
 	/// </summary>
 	public void CleanUp()
 	{
-		Closing -= OnClosing;
-		Hide();
-
-
-		if (Control is not null)
-		{
-			panelCleanUp?.Invoke(Control);
-		}
+		Control.Opened -= OnOpened;
+		Control.IsOpen = false;
 
 		VirtualView = null;
-		Control = null;
-		Target.ContextFlyout = null;
-	}
-
-	void CreateControl()
-	{
-		if (Control is null && VirtualView?.Content is not null && createControl is not null && VirtualView.Handler is PopupHandler handler)
-		{
-			Control = createControl(handler);
-			Content = Control;
-		}
 	}
 
 	void SetSize()
 	{
 		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null.");
-
-		if (Control is null)
-		{
-			return;
-		}
-
+		
 		var standardSize = new Size { Width = defaultSize, Height = defaultSize / 2 };
 
 		var currentSize = VirtualView.Size != default ? VirtualView.Size : standardSize;
@@ -168,17 +140,20 @@ public class MauiPopup : Flyout
 
 		Control.Width = currentSize.Width;
 		Control.Height = currentSize.Height;
-
-		FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.MinHeightProperty, currentSize.Height + (defaultBorderThickness * 2)));
-		FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.MinWidthProperty, currentSize.Width + (defaultBorderThickness * 2)));
-		FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.MaxHeightProperty, currentSize.Height + (defaultBorderThickness * 2)));
-		FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.MaxWidthProperty, currentSize.Width + (defaultBorderThickness * 2)));
+		Control.MinWidth = Control.MaxWidth = currentSize.Width + (defaultBorderThickness * 2);
+		Control.MinHeight = Control.MaxHeight = currentSize.Height + (defaultBorderThickness * 2);
+		if (VirtualView.Parent is IView parent && VirtualView.Anchor is null)
+		{
+			VirtualView.Content?.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var contentSize = VirtualView.Content?.ToPlatform(mauiContext).DesiredSize ?? Windows.Foundation.Size.Empty;
+			Control.HorizontalOffset = (parent.Frame.Width - contentSize.Width) / 2;
+			Control.VerticalOffset = (parent.Frame.Height - contentSize.Height) / 2;
+		}
+		
 	}
 
 	void SetLayout()
 	{
-		LightDismissOverlayMode = LightDismissOverlayMode.On;
-
 		if (VirtualView is not null)
 		{
 			this.SetDialogPosition(VirtualView.VerticalOptions, VirtualView.HorizontalOptions);
@@ -191,71 +166,61 @@ public class MauiPopup : Flyout
 
 		var color = VirtualView.Color ?? Colors.Transparent;
 
-		FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.BackgroundProperty, color.ToWindowsColor()));
+		//Control.Style.Setters.Add(new Microsoft.UI.Xaml.Setter(Popup.co.BackgroundProperty, color.ToWindowsColor()));
 
-		if (VirtualView.Color == Colors.Transparent)
+		if (Equals(VirtualView.Color, Colors.Transparent))
 		{
-			FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.IsDefaultShadowEnabledProperty, false));
+		//	Control.Style.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.IsDefaultShadowEnabledProperty, false));
 		}
 
-		//Configure border
-
-		FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.PaddingProperty, 0));
-		FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.BorderThicknessProperty, new WindowsThickness(defaultBorderThickness)));
-		FlyoutStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(FlyoutPresenter.BorderBrushProperty, Color.FromArgb("#2e6da0").ToWindowsColor()));
-	}
-
-	void ApplyStyles()
-	{
-		if (Control is null)
-		{
-			return;
-		}
-
-		FlyoutPresenterStyle = FlyoutStyle;
+		////Configure border
+		
+		//Control.Style.Setters.Add(new Microsoft.UI.Xaml.Setter(Microsoft.UI.Xaml.Controls.Control.PaddingProperty, 0));
+		//Control.Style.Setters.Add(new Microsoft.UI.Xaml.Setter(Microsoft.UI.Xaml.Controls.Control.BorderThicknessProperty, new WindowsThickness(defaultBorderThickness)));
+		//Control.Style.Setters.Add(new Microsoft.UI.Xaml.Setter(Microsoft.UI.Xaml.Controls.Control.BorderBrushProperty, Color.FromArgb("#2e6da0").ToWindowsColor()));
 	}
 
 	void SetDialogPosition(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions)
 	{
 		if (IsTopLeft(verticalOptions, horizontalOptions))
 		{
-			Placement = FlyoutPlacementMode.TopEdgeAlignedLeft;
+			Control.DesiredPlacement = PopupPlacementMode.TopEdgeAlignedLeft;
 		}
 		else if (IsTop(verticalOptions, horizontalOptions))
 		{
-			Placement = FlyoutPlacementMode.Top;
+			Control.DesiredPlacement = PopupPlacementMode.Top;
 		}
 		else if (IsTopRight(verticalOptions, horizontalOptions))
 		{
-			Placement = FlyoutPlacementMode.TopEdgeAlignedRight;
+			Control.DesiredPlacement = PopupPlacementMode.TopEdgeAlignedRight;
 		}
 		else if (IsRight(verticalOptions, horizontalOptions))
 		{
-			Placement = FlyoutPlacementMode.Right;
+			Control.DesiredPlacement = PopupPlacementMode.Right;
 		}
 		else if (IsBottomRight(verticalOptions, horizontalOptions))
 		{
-			Placement = FlyoutPlacementMode.BottomEdgeAlignedRight;
+			Control.DesiredPlacement = PopupPlacementMode.BottomEdgeAlignedRight;
 		}
 		else if (IsBottom(verticalOptions, horizontalOptions))
 		{
-			Placement = FlyoutPlacementMode.Bottom;
+			Control.DesiredPlacement = PopupPlacementMode.Bottom;
 		}
 		else if (IsBottomLeft(verticalOptions, horizontalOptions))
 		{
-			Placement = FlyoutPlacementMode.BottomEdgeAlignedLeft;
+			Control.DesiredPlacement = PopupPlacementMode.BottomEdgeAlignedLeft;
 		}
 		else if (IsLeft(verticalOptions, horizontalOptions))
 		{
-			Placement = FlyoutPlacementMode.Left;
+			Control.DesiredPlacement = PopupPlacementMode.Left;
 		}
 		else if (VirtualView is not null && VirtualView.Anchor is null)
 		{
-			Placement = FlyoutPlacementMode.Full;
+			Control.DesiredPlacement = PopupPlacementMode.Auto;
 		}
 		else
 		{
-			Placement = FlyoutPlacementMode.Top;
+			Control.DesiredPlacement = PopupPlacementMode.Top;
 		}
 
 		static bool IsTopLeft(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Start && horizontalOptions == LayoutAlignment.Start;
@@ -268,15 +233,14 @@ public class MauiPopup : Flyout
 		static bool IsLeft(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Center && horizontalOptions == LayoutAlignment.Start;
 	}
 
-	void OnClosing(object? sender, FlyoutBaseClosingEventArgs e)
+	void OnOpened(object? sender, object e)
 	{
 		var isLightDismissEnabled = VirtualView?.CanBeDismissedByTappingOutsideOfPopup is true;
-		if (!isLightDismissEnabled)
-		{
-			e.Cancel = true;
-		}
-
-		if (IsOpen && isLightDismissEnabled)
+		Control.IsLightDismissEnabled = isLightDismissEnabled;
+		Control.LightDismissOverlayMode = isLightDismissEnabled ? LightDismissOverlayMode.On : LightDismissOverlayMode.Off;
+		Control.ManipulationMode = ManipulationModes.None;
+		
+		if (!Control.IsOpen && isLightDismissEnabled)
 		{
 			VirtualView?.Handler?.Invoke(nameof(IPopup.OnDismissedByTappingOutsideOfPopup));
 		}
