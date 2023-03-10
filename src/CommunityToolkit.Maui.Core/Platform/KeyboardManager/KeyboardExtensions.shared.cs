@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using CommunityToolkit.Maui.Core.Extensions;
 using Microsoft.Maui.Dispatching;
 
 #if IOS || MACCATALYST
@@ -22,11 +21,88 @@ namespace CommunityToolkit.Maui.Core.Platform;
 /// </summary>
 public static partial class KeyboardExtensions
 {
-	static bool TryGetPlatformView(
-		this ITextInput textInput,
-		[NotNullWhen(true)] out PlatformView? platformView,
-		[NotNullWhen(true)] out IPlatformViewHandler? handler,
-		[NotNullWhen(true)] out IView? view)
+	/// <summary>
+	/// If a soft input device is currently showing, this will attempt to hide it.
+	/// </summary>
+	/// <param name="targetView"></param>
+	/// <param name="token">Cancellation token</param>
+	/// <returns>
+	/// Returns <c>true</c> if the platform was able to hide the soft input device.</returns>
+	public static ValueTask<bool> HideKeyboardAsync(this ITextInput targetView, CancellationToken token)
+	{
+		token.ThrowIfCancellationRequested();
+		if (!targetView.TryGetPlatformView(out var platformView, out _, out _))
+		{
+			return ValueTask.FromResult(false);
+		}
+
+		return ValueTask.FromResult(HideKeyboard(platformView));
+	}
+
+	/// <summary>
+	/// If a soft input device is currently hiding, this will attempt to show it.
+	/// </summary>
+	/// <param name="targetView"></param>
+	/// <param name="token">Cancellation token</param>
+	/// <returns>
+	/// Returns <c>true</c> if the platform was able to show the soft input device.</returns>
+	public static Task<bool> ShowKeyboardAsync(this ITextInput targetView, CancellationToken token)
+	{
+		token.ThrowIfCancellationRequested();
+
+		if (!targetView.TryGetPlatformView(out var platformView, out var handler, out var view))
+		{
+			return Task.FromResult(false);
+		}
+
+		if (!view.IsFocused)
+		{
+			var showKeyboardTCS = new TaskCompletionSource<bool>();
+
+			handler.Invoke(nameof(IView.Focus), new FocusRequest(false));
+
+			handler.GetRequiredService<IDispatcher>().Dispatch(() =>
+			{
+				try
+				{
+					var result = platformView.ShowKeyboard();
+					showKeyboardTCS.SetResult(result);
+				}
+				catch (Exception e)
+				{
+					showKeyboardTCS.SetException(e);
+				}
+			});
+
+			return showKeyboardTCS.Task.WaitAsync(token);
+		}
+		else
+		{
+			var result = platformView.ShowKeyboard();
+			return Task.FromResult(result).WaitAsync(token);
+		}
+	}
+
+	/// <summary>
+	/// Checks to see if the platform is currently showing the soft input pane
+	/// </summary>
+	/// <param name="targetView"></param>
+	/// <returns>
+	/// Returns <c>true</c> if the soft input device is currently showing.</returns>
+	public static bool IsSoftKeyboardShowing(this ITextInput targetView)
+	{
+		if (!targetView.TryGetPlatformView(out var platformView, out _, out _))
+		{
+			return false;
+		}
+
+		return platformView.IsSoftKeyboardShowing();
+	}
+
+	static bool TryGetPlatformView(this ITextInput textInput,
+									[NotNullWhen(true)] out PlatformView? platformView,
+									[NotNullWhen(true)] out IPlatformViewHandler? handler,
+									[NotNullWhen(true)] out IView? view)
 	{
 		if (textInput is not IView iView ||
 			iView.Handler is not IPlatformViewHandler platformViewHandler)
@@ -50,81 +126,5 @@ public static partial class KeyboardExtensions
 		view = iView;
 
 		return true;
-	}
-
-	/// <summary>
-	/// If a soft input device is currently showing, this will attempt to hide it.
-	/// </summary>
-	/// <param name="targetView"></param>
-	/// <param name="token">Cancellation token</param>
-	/// <returns>
-	/// Returns <c>true</c> if the platform was able to hide the soft input device.</returns>
-	public static ValueTask<bool> HideKeyboardAsync(this ITextInput targetView, CancellationToken token)
-	{
-		token.ThrowIfCancellationRequested();
-		if (!targetView.TryGetPlatformView(
-			out var platformView,
-			out _,
-			out _))
-		{
-			return ValueTask.FromResult(false);
-		}
-
-		return ValueTask.FromResult(HideKeyboard(platformView));
-	}
-
-	/// <summary>
-	/// If a soft input device is currently hiding, this will attempt to show it.
-	/// </summary>
-	/// <param name="targetView"></param>
-	/// <param name="token">Cancellation token</param>
-	/// <returns>
-	/// Returns <c>true</c> if the platform was able to show the soft input device.</returns>
-	public static Task<bool> ShowKeyboardAsync(this ITextInput targetView, CancellationToken token)
-	{
-		token.ThrowIfCancellationRequested();
-		if (!targetView.TryGetPlatformView(
-			out var platformView,
-			out var handler,
-			out var view))
-		{
-			return Task.FromResult(false);
-		}
-
-		if (!view.IsFocused)
-		{
-			TaskCompletionSource<bool> result = new TaskCompletionSource<bool>();
-			handler.Invoke(nameof(IView.Focus), new FocusRequest(false));
-			handler.GetRequiredService<IDispatcher>()
-				.Dispatch(() =>
-				{
-					result.TrySetResult(platformView.ShowKeyboard());
-				});
-
-			return result.Task.WaitAsync(token);
-		}
-		else
-		{
-			return Task.FromResult(platformView.ShowKeyboard()).WaitAsync(token);
-		}
-	}
-
-	/// <summary>
-	/// Checks to see if the platform is currently showing the soft input pane
-	/// </summary>
-	/// <param name="targetView"></param>
-	/// <returns>
-	/// Returns <c>true</c> if the soft input device is currently showing.</returns>
-	public static bool IsSoftKeyboardShowing(this ITextInput targetView)
-	{
-		if (!targetView.TryGetPlatformView(
-			out var platformView,
-			out _,
-			out _))
-		{
-			return false;
-		}
-
-		return platformView.IsSoftKeyboardShowing();
 	}
 }
