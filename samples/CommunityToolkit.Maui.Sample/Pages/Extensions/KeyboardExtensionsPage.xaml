@@ -17,7 +17,7 @@
 
                 <Label Text="{Binding OperationResult}"></Label>
 
-                <Entry Text="" x:Name="entryToFocus"></Entry>
+                <Entry Text="" x:Name="entryToFocus" Focused="OnEntryFocused"></Entry>
 
                 <Button Text="Show Keyboard" CommandParameter="{x:Reference Name=entryToFocus}" Command="{Binding ShowKeyboardCommand}"></Button>
                 <Button Text="Hide Keyboard" CommandParameter="{x:Reference Name=entryToFocus}" Command="{Binding HideKeyboardCommand}"></Button>
