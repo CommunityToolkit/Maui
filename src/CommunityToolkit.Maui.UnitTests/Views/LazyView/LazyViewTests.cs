@@ -12,29 +12,29 @@ public class LazyViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void CheckIsLoadedTrueAfterCallLoadViewAsync()
+	public async Task CheckIsLoadedTrueAfterCallLoadView()
 	{
 		var lazyView = new LazyView<Button>();
-		lazyView.LoadViewAsync();
+		await lazyView.LoadViewAsync();
 		Assert.True(lazyView.IsLoaded);
 	}
 
 	[Fact]
-	public void CheckContentSetAfterLoadViewAsync()
+	public async Task CheckContentSetAfterLoadView()
 	{
 		var lazyView = new LazyView<Button>();
-		lazyView.LoadViewAsync();
+		await lazyView.LoadViewAsync();
 		Assert.True(lazyView.IsLoaded);
 		Assert.True(lazyView.Content is Button);
 	}
 
 	[Fact]
-	public void CheckBindingContextIsPassedToCreatedView()
+	public async Task CheckBindingContextIsPassedToCreatedView()
 	{
 		var lazyView = new LazyView<Button>();
 		var bindingContext = new object();
 		lazyView.BindingContext = bindingContext;
-		lazyView.LoadViewAsync();
+		await lazyView.LoadViewAsync();
 		Assert.True(lazyView.IsLoaded);
 		Assert.True(lazyView.Content is Button);
 		Assert.Equal(bindingContext, lazyView.Content.BindingContext);
