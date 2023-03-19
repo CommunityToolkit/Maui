@@ -31,7 +31,7 @@ public abstract class BaseLazyView : ContentView
 	/// <inheritdoc/>
 	protected override void OnBindingContextChanged()
 	{
-		if (Content is not null && Content is not ActivityIndicator))
+		if (Content is not null && Content is not ActivityIndicator)
 		{
 			Content.BindingContext = BindingContext;
 		}
