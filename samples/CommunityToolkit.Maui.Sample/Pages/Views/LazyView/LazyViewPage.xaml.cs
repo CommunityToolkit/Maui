@@ -1,8 +1,4 @@
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
-using System.ComponentModel;
-using CommunityToolkit.Maui.Core.Primitives;
-using CommunityToolkit.Maui.Views;
-using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
