@@ -14,7 +14,7 @@ public class LazyView<TView> : LazyView where TView : View, new()
 	{
 		Content = new TView { BindingContext = BindingContext };
 
-		SetHasLazyViewLoadedLoaded(true);
+		SetHasLazyViewLoaded(true);
 
 		return ValueTask.CompletedTask;
 	}
@@ -56,5 +56,5 @@ public abstract class LazyView : ContentView
 	/// This method change the value of the <see cref="HasLazyViewLoaded"/> property.
 	/// </summary>
 	/// <param name="isLoaded"></param>
-	protected void SetHasLazyViewLoadedLoaded(bool isLoaded) => SetValue(HasLazyViewLoadedPropertyKey, isLoaded);
+	protected void SetHasLazyViewLoaded(bool isLoaded) => SetValue(HasLazyViewLoadedPropertyKey, isLoaded);
 }

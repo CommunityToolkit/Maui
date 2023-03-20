@@ -15,7 +15,7 @@ public class CustomLazyView<TView> : Maui.Views.LazyView where TView : View, new
 		// load the view
 		Content = new TView { BindingContext = BindingContext };
 
-		SetHasLazyViewLoadedLoaded(true);
+		SetHasLazyViewLoaded(true);
 	}
 }
 
