@@ -38,7 +38,7 @@ public abstract class LazyView : ContentView
 	public bool HasLazyViewLoaded => (bool)GetValue(HasLazyViewLoadedProperty);
 
 	/// <summary>
-	/// Use this method to do the initialization of the <see cref="View"/> and change the status IsLoaded value here.
+	/// Use this method to do the initialization of the <see cref="View"/> and change the status HasViewLoaded value here.
 	/// </summary>
 	/// <returns><see cref="ValueTask"/></returns>
 	public abstract ValueTask LoadViewAsync();
@@ -55,6 +55,6 @@ public abstract class LazyView : ContentView
 	/// <summary>
 	/// This method change the value of the <see cref="HasLazyViewLoaded"/> property.
 	/// </summary>
-	/// <param name="isLoaded"></param>
-	protected void SetHasLazyViewLoaded(bool isLoaded) => SetValue(HasLazyViewLoadedPropertyKey, isLoaded);
+	/// <param name="hasLoaded"></param>
+	protected void SetHasLazyViewLoaded(bool hasLoaded) => SetValue(HasLazyViewLoadedPropertyKey, hasLoaded);
 }

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
             xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
@@ -46,14 +46,14 @@
             <Line Style="{StaticResource HR}" />
             
             <Label Text="Lazy Loading After Page Activation" Style="{StaticResource Heading}"/>
-            <Label Text="{Binding Source={x:Reference LazyActiviation}, Path=IsLoaded, StringFormat='IsLoaded = {0}'}" Style="{StaticResource Heading}"/>
+            <Label Text="{Binding Source={x:Reference LazyActiviation}, Path=HasLazyViewLoaded, StringFormat='HasLazyViewLoaded = {0}'}" Style="{StaticResource Heading}"/>
             <local:CustomLazyView x:Name="LazyActiviation" x:TypeArguments="local:MyView" Style="{StaticResource MyViewStyle}"/>
             
             <Line Style="{StaticResource HR}" />
             
             <Label Text="Lazy Loading Based On User Action" Style="{StaticResource Heading}"/>
-            <Label Text="{Binding Source={x:Reference LazyUserAction}, Path=IsLoaded, StringFormat='IsLoaded = {0}'}" Style="{StaticResource Heading}"/>
-            <Button Text="Load View Now" Clicked="LoadLazyView_Clicked" WidthRequest="200" IsVisible="{Binding Source={x:Reference LazyUserAction}, Path=IsLoaded, Converter={mct:InvertedBoolConverter}}" />
+            <Label Text="{Binding Source={x:Reference LazyUserAction}, Path=HasLazyViewLoaded, StringFormat='HasLazyViewLoaded = {0}'}" Style="{StaticResource Heading}"/>
+            <Button Text="Load View Now" Clicked="LoadLazyView_Clicked" WidthRequest="200" IsVisible="{Binding Source={x:Reference LazyUserAction}, Path=HasLazyViewLoaded, Converter={mct:InvertedBoolConverter}}" />
             <local:MyLazyView x:Name="LazyUserAction" Style="{StaticResource MyViewStyle}"/>
         </VerticalStackLayout>
     </ScrollView>

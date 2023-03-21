@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.UnitTests.Views;
 public class LazyViewTests : BaseHandlerTest
 {
 	[Fact]
-	public void CheckIsLoadedFalseAfterConstruction()
+	public void CheckHasLoadedFalseAfterConstruction()
 	{
 		var lazyView = new LazyView<Button>();
 
@@ -14,7 +14,7 @@ public class LazyViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public async Task CheckIsLoadedTrueAfterCallLoadView()
+	public async Task CheckHasLoadedTrueAfterCallLoadView()
 	{
 		var lazyView = new LazyView<Button>();
 
