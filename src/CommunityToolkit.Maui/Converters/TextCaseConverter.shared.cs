@@ -57,7 +57,7 @@ public class TextCaseConverter : BaseConverterOneWay<string?, string?, TextCaseT
 	/// <param name="parameter">The desired text case that the text should be converted to. Must match <see cref="TextCaseType"/> enum value.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>The converted text representation with the desired casing.</returns>
-	[return: NotNullIfNotNull("value")]
+	[return: NotNullIfNotNull(nameof(value))]
 	public override string? ConvertFrom(string? value, TextCaseType? parameter = null, CultureInfo? culture = null)
 	{
 		if (string.IsNullOrWhiteSpace(value))

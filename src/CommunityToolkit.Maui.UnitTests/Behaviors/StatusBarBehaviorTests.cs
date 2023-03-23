@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Core;
+using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
@@ -12,11 +13,11 @@ public class StatusBarBehaviorTests : BaseTest
 		var statusBarBehavior = new StatusBarBehavior();
 
 		Assert.Equal(Colors.Transparent, statusBarBehavior.StatusBarColor);
-		Assert.Equal(Core.StatusBarStyle.Default, statusBarBehavior.StatusBarStyle);
+		Assert.Equal(StatusBarStyle.Default, statusBarBehavior.StatusBarStyle);
 	}
 
 	[Fact]
-	public void VerifyAttachToPageSuceedes()
+	public void VerifyAttachToPageSucceeds()
 	{
 		var statusBarBehavior = new StatusBarBehavior();
 
@@ -36,5 +37,21 @@ public class StatusBarBehaviorTests : BaseTest
 		var view = new View();
 
 		Assert.Throws<InvalidOperationException>(() => view.Behaviors.Add(statusBarBehavior));
+	}
+
+	[Fact]
+	public void VerifyStatusBarColorCallsOnPropertyChangedThrowsExceptionOnUnsupportedPlatform()
+	{
+		var statusBarBehavior = new StatusBarBehavior();
+		var exception = Assert.Throws<NotSupportedException>(() => statusBarBehavior.StatusBarColor = Colors.Red);
+		exception.Message.Should().Be("PlatformSetColor is only supported on net6.0-ios and net6.0-android and later");
+	}
+
+	[Fact]
+	public void VerifyStatusBarStyleCallsOnPropertyChangedThrowsExceptionOnUnsupportedPlatform()
+	{
+		var statusBarBehavior = new StatusBarBehavior();
+		var exception = Assert.Throws<NotSupportedException>(() => statusBarBehavior.StatusBarStyle = StatusBarStyle.DarkContent);
+		exception.Message.Should().Be("PlatformSetStyle is only supported on net6.0-ios and net6.0-android and later");
 	}
 }

@@ -12,8 +12,18 @@ namespace CommunityToolkit.Maui.Behaviors;
 public partial class IconTintColorBehavior
 {
 	/// <inheritdoc/>
-	protected override void OnAttachedTo(View bindable, AView platformView) =>
+	protected override void OnAttachedTo(View bindable, AView platformView)
+	{
 		ApplyTintColor(bindable, platformView);
+
+		this.PropertyChanged += (s, e) =>
+		{
+			if (e.PropertyName == TintColorProperty.PropertyName)
+			{
+				ApplyTintColor(bindable, platformView);
+			}
+		};
+	}
 
 	/// <inheritdoc/>
 	protected override void OnDetachedFrom(View bindable, AView platformView) =>
@@ -77,8 +87,7 @@ public partial class IconTintColorBehavior
 			return;
 		}
 
-		if (!propertyName.Equals(TintColorProperty.PropertyName, StringComparison.Ordinal)
-			&& !propertyName.Equals(Image.SourceProperty.PropertyName, StringComparison.Ordinal)
+		if (!propertyName.Equals(Image.SourceProperty.PropertyName, StringComparison.Ordinal)
 			&& !propertyName.Equals(ImageButton.SourceProperty.PropertyName, StringComparison.Ordinal))
 		{
 			return;

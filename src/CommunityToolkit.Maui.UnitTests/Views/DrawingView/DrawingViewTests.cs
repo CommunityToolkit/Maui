@@ -7,7 +7,7 @@ using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace CommunityToolkit.Maui.UnitTests.Views.DrawingView;
+namespace CommunityToolkit.Maui.UnitTests.Views;
 
 public class DrawingViewTests : BaseHandlerTest
 {
@@ -35,6 +35,12 @@ public class DrawingViewTests : BaseHandlerTest
 		var ex = Assert.Throws<InvalidOperationException>(() => handlerStub.GetRequiredService<IDrawingView>());
 
 		ex.Message.Should().Be("Unable to find the context. The MauiContext property should have been set by the host.");
+	}
+
+	[Fact]
+	public void DefaultLinesShouldNotBeShared()
+	{
+		new Maui.Views.DrawingView().Lines.Should().NotBeSameAs(new Maui.Views.DrawingView().Lines);
 	}
 
 	[Fact]

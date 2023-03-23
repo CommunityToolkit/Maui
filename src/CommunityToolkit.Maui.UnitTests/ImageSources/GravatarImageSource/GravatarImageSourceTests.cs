@@ -1,7 +1,7 @@
-﻿namespace CommunityToolkit.Maui.UnitTests.ImageSources.GravatarImageSource;
-
-using CommunityToolkit.Maui.ImageSources;
+﻿using CommunityToolkit.Maui.ImageSources;
 using Xunit;
+
+namespace CommunityToolkit.Maui.UnitTests.ImageSources;
 
 public class GravatarImageSourceTests : BaseHandlerTest
 {

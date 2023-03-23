@@ -31,8 +31,6 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 
 	static readonly Lazy<HttpClient> singletonHttpClientHolder = new();
 
-	readonly CancellationTokenSource? tokenSource;
-
 	int gravatarSize = -1;
 	Uri? lastDispatch;
 
@@ -40,7 +38,7 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 	public GravatarImageSource()
 	{
 		Uri = new Uri(defaultGravatarImageAddress);
-		Stream = new Func<CancellationToken, Task<Stream>>(cancelationToken => SingletonHttpClient.DownloadStreamAsync(Uri, cancelationToken));
+		Stream = cancellationToken => SingletonHttpClient.DownloadStreamAsync(Uri, cancellationToken);
 	}
 
 	/// <summary>Gets a value indicating whether the control email is empty.</summary>
@@ -118,11 +116,6 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 		if (!IsDisposed)
 		{
 			IsDisposed = true;
-
-			if (isDisposing)
-			{
-				tokenSource?.Dispose();
-			}
 		}
 	}
 
@@ -131,7 +124,7 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 	{
 		base.OnParentSet();
 
-		if (Parent is not VisualElement parentElement || parentElement is null)
+		if (Parent is not VisualElement parentElement)
 		{
 			GravatarSize = defaultSize;
 			return;
@@ -194,19 +187,6 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 
 	async Task OnUriChanged()
 	{
-		if (tokenSource is not null)
-		{
-			try
-			{
-				tokenSource.Cancel();
-				tokenSource.Dispose();
-			}
-			catch
-			{
-				// Left intentionally empty, as we don't need to catch anything.
-			}
-		}
-
 		if (Uri.Equals(lastDispatch))
 		{
 			return;
@@ -214,22 +194,14 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 
 		try
 		{
-			if (tokenSource?.Token is not null)
-			{
-				await Task.Delay(cancellationTokenSourceTimeout, tokenSource.Token);
-			}
-			else
-			{
-				await Task.Delay(cancellationTokenSourceTimeout);
-			}
-
+			await Task.Delay(cancellationTokenSourceTimeout);
 			CancellationTokenSource?.Cancel();
 			lastDispatch = Uri;
 			await Dispatcher.DispatchIfRequiredAsync(OnSourceChanged);
 		}
 		catch (TaskCanceledException)
 		{
-
+			// Do nothing
 		}
 	}
 }

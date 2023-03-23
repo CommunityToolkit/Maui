@@ -43,7 +43,7 @@ public class DateTimeOffsetConverter : BaseConverter<DateTimeOffset, DateTime>
 		};
 
 		return culture is null ?
-			new DateTimeOffset(value, offset) :
+			value.Kind == DateTimeKind.Local ? new DateTimeOffset(value) : new DateTimeOffset(value, offset) :
 			new DateTimeOffset(value.Year, value.Month, value.Day, value.Hour, value.Minute, value.Second, value.Millisecond, culture.Calendar, offset);
 
 	}

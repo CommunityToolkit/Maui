@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Essentials.FileSaverPage"
+                xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Essentials"
+                x:TypeArguments="vm:FileSaverViewModel"
+                x:DataType="vm:FileSaverViewModel"
+                Title="FileSaver">
+    
+    <VerticalStackLayout Spacing="12">
+
+        <Label Text="FileSaver allows selecting target folder and saving files to the file system"
+               LineBreakMode = "WordWrap"
+               HorizontalOptions="Center"
+               HorizontalTextAlignment="Center"/>
+        
+        <Button Command="{Binding SaveFileCommand}"
+                Text="Save using FileSaver from DI Container"
+                HorizontalOptions="Center"/>
+
+        
+        <Button Command="{Binding SaveFileStaticCommand}"
+                Text="Save using static FileSaver"
+                HorizontalOptions="Center"/>
+
+        
+        <Button Command="{Binding SaveFileInstanceCommand}"
+                Text="Save using new instance of FileSaver"
+                HorizontalOptions="Center"/>
+
+    </VerticalStackLayout>
+    
+</pages:BasePage>

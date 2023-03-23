@@ -1,5 +1,7 @@
-﻿using CommunityToolkit.Maui.UnitTests.Extensions.TextStyle;
+﻿using System.Reflection;
 using CommunityToolkit.Maui.UnitTests.Mocks;
+using Unique.Interface.Namespace.TextStyle;
+using Unique.Namespace.TextStyle;
 using Xunit;
 using Font = Microsoft.Maui.Font;
 
@@ -156,10 +158,45 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 
 			Assert.True(isSuccessful);
 		}
+
+		[Fact]
+		public void AccessModifierForMauiControlsShouldNotBePublic()
+		{
+			foreach (var (generatedType, control) in GetGeneratedColorAnimationExtensionTypes())
+			{
+				if (control.Assembly == typeof(Button).Assembly)
+				{
+					Assert.False(generatedType.IsPublic);
+				}
+			}
+		}
+
+		[Fact]
+		public void AccessModifierForCustomControlsShouldMatchTheControl()
+		{
+			var executingAssembly = Assembly.GetExecutingAssembly();
+
+			foreach (var (generatedType, control) in GetGeneratedColorAnimationExtensionTypes())
+			{
+				if (control.Assembly == executingAssembly)
+				{
+					Assert.Equal(control.IsPublic, generatedType.IsPublic);
+				}
+			}
+		}
+
+		static IEnumerable<(Type generatedType, Type control)> GetGeneratedColorAnimationExtensionTypes()
+		{
+			return from type in Assembly.GetExecutingAssembly().GetTypes()
+				   where type.Name.StartsWith("ColorAnimationExtensions_")
+				   let method = type.GetMethods().Single(m => m.Name.StartsWith("TextColorTo"))
+				   let control = method.GetParameters()[0].ParameterType
+				   select (type, control);
+		}
 	}
 }
 
-namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
+namespace Unique.Namespace.TextStyle
 {
 	public class PublicTextStyleView : View, ICustomTextStyle
 	{
@@ -181,11 +218,6 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
 
 	// Ensures custom ITextStyle interfaces are supported
 	interface ICustomTextStyle : ITextStyle
-	{
-
-	}
-
-	public interface ISomeInterface
 	{
 
 	}
@@ -255,5 +287,13 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions.TextStyle
 		public Color TextColor { get; set; } = Colors.Transparent;
 
 		public Font Font { get; set; }
+	}
+}
+
+namespace Unique.Interface.Namespace.TextStyle
+{
+	public interface ISomeInterface
+	{
+
 	}
 }

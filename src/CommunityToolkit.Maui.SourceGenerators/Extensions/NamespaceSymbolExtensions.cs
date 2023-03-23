@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Extensions;
@@ -89,19 +91,13 @@ static class NamespaceSymbolExtensions
 
 		foreach (var typeParameterSymbol in type.TypeParameters)
 		{
-			bool isFirstConstraint = true;
-
 			if (typeParameterSymbol.HasNotNullConstraint)
 			{
 				constraints.Append("notnull");
-
-				isFirstConstraint = false;
 			}
 			else if (typeParameterSymbol.HasUnmanagedTypeConstraint)
 			{
 				constraints.Append("unmanaged");
-
-				isFirstConstraint = false;
 			}
 			else if (typeParameterSymbol.HasReferenceTypeConstraint)
 			{
@@ -111,33 +107,27 @@ static class NamespaceSymbolExtensions
 				{
 					constraints.Append("?");
 				}
-
-				isFirstConstraint = false;
 			}
 			else if (typeParameterSymbol.HasValueTypeConstraint)
 			{
 				constraints.Append("struct");
-
-				isFirstConstraint = false;
 			}
 
 			foreach (INamedTypeSymbol contstraintType in typeParameterSymbol.ConstraintTypes.Cast<INamedTypeSymbol>())
 			{
-				if (!isFirstConstraint)
+				if (constraints.Length > 0)
 				{
 					constraints.Append(", ");
 				}
-				else
-				{
-					isFirstConstraint = false;
-				}
 
-				constraints.Append(contstraintType.GetFullTypeString());
+				var symbolDisplayFormat = new SymbolDisplayFormat(typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+																	miscellaneousOptions: SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
+				constraints.Append(contstraintType.ToDisplayString(symbolDisplayFormat));
 			}
 
 			if (typeParameterSymbol.HasConstructorConstraint)
 			{
-				if (!isFirstConstraint)
+				if (constraints.Length > 0)
 				{
 					constraints.Append(", ");
 				}

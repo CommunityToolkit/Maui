@@ -13,7 +13,7 @@ public static class DrawingViewService
 	/// Get image stream from lines
 	/// </summary>
 	/// <param name="lines">Drawing lines</param>
-	/// <param name="imageSize">Image size</param>
+	/// <param name="imageSize">Maximum image size. The image will be resized proportionally.</param>
 	/// <param name="background">Image background</param>
 	/// <returns>Image stream</returns>
 	public static ValueTask<Stream> GetImageStream(in IList<IDrawingLine> lines, in Size imageSize, in Paint? background)
@@ -59,28 +59,29 @@ public static class DrawingViewService
 		return GetUIImage(points, (context, offset) =>
 		{
 			DrawStrokes(context, points.ToList(), lineWidth, strokeColor, offset);
-		}, background);
+		}, background, lineWidth);
 	}
 
 	static UIImage? GetUIImageForLines(IList<IDrawingLine> lines, in Paint? background)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
+		var maxLineWidth = lines.Select(x => x.LineWidth).Max();
 		return GetUIImage(points, (context, offset) =>
 		{
 			foreach (var line in lines)
 			{
 				DrawStrokes(context, line.Points, line.LineWidth, line.LineColor, offset);
 			}
-		}, background);
+		}, background, maxLineWidth);
 	}
 
-	static UIImage? GetUIImage(ICollection<PointF> points, Action<CGContext, Size> drawStrokes, Paint? background)
+	static UIImage? GetUIImage(ICollection<PointF> points, Action<CGContext, Size> drawStrokes, Paint? background, NFloat maxLineWidth)
 	{
 		const int minSize = 1;
-		var minPointX = points.Min(p => p.X);
-		var minPointY = points.Min(p => p.Y);
-		var drawingWidth = points.Max(p => p.X) - minPointX;
-		var drawingHeight = points.Max(p => p.Y) - minPointY;
+		var minPointX = points.Min(p => p.X) - maxLineWidth;
+		var minPointY = points.Min(p => p.Y) - maxLineWidth;
+		var drawingWidth = points.Max(p => p.X) - minPointX + maxLineWidth;
+		var drawingHeight = points.Max(p => p.Y) - minPointY + maxLineWidth;
 
 		if (drawingWidth < minSize || drawingHeight < minSize)
 		{
@@ -119,14 +120,10 @@ public static class DrawingViewService
 	static UIImage GetMaximumUIImage(UIImage sourceImage, double maxWidth, double maxHeight)
 	{
 		var sourceSize = sourceImage.Size;
-		var maxResizeFactor = Math.Max(maxWidth / sourceSize.Width.Value, maxHeight / sourceSize.Height.Value);
-		if (maxResizeFactor > 1)
-		{
-			return sourceImage;
-		}
+		var maxResizeFactor = Math.Min(maxWidth / sourceSize.Width.Value, maxHeight / sourceSize.Height.Value);
 
-		var width = maxResizeFactor * sourceSize.Width.Value;
-		var height = maxResizeFactor * sourceSize.Height.Value;
+		var width = Math.Max(maxResizeFactor * sourceSize.Width.Value, 1);
+		var height = Math.Max(maxResizeFactor * sourceSize.Height.Value, 1);
 
 		UIGraphics.BeginImageContext(new CGSize(width, height));
 		sourceImage.Draw(new CGRect(0, 0, width, height));

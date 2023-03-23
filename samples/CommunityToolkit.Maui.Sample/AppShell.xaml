@@ -10,6 +10,7 @@
        xmlns:imagesources="clr-namespace:CommunityToolkit.Maui.Sample.Pages.ImageSources"
        xmlns:layouts="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Layouts"
        xmlns:views="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Views"
+       xmlns:essentials="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Essentials"
        xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
        xmlns:sys="clr-namespace:System;assembly=netstandard"
        Padding="4,0,0,0">
@@ -30,49 +31,55 @@
 
     <FlyoutItem Title="Welcome"
                 Route="WelcomePage"
-                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst=''}">
+                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst={x:Null}}">
         <ShellContent ContentTemplate="{DataTemplate pages:WelcomePage}" />
     </FlyoutItem>
 
     <FlyoutItem Title="Alerts"
                 Route="AlertsGalleryPage"
-                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst=''}">
+                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst={x:Null}}">
         <ShellContent ContentTemplate="{DataTemplate alerts:AlertsGalleryPage}" />
     </FlyoutItem>
 
     <FlyoutItem Title="Behaviors"
                 Route="BehaviorsGalleryPage"
-                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst=''}">
+                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst={x:Null}}">
         <ShellContent ContentTemplate="{DataTemplate behaviors:BehaviorsGalleryPage}" />
     </FlyoutItem>
 
     <FlyoutItem Title="Converters"
                 Route="ConvertersGalleryPage"
-                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst=''}">
+                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst={x:Null}}">
         <ShellContent ContentTemplate="{DataTemplate converters:ConvertersGalleryPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Essentials"
+                Route="EssentialsGalleryPage"
+                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst={x:Null}}">
+        <ShellContent ContentTemplate="{DataTemplate essentials:EssentialsGalleryPage}" />
     </FlyoutItem>
 
     <FlyoutItem Title="Extensions"
                 Route="ExtensionsGalleryPage"
-                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst=''}">
+                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst={x:Null}}">
         <ShellContent ContentTemplate="{DataTemplate extensions:ExtensionsGalleryPage}" />
     </FlyoutItem>
 
     <FlyoutItem Title="ImageSources"
                 Route="ImageSourcesGalleryPage"
-                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst=''}">
+                FlyoutIcon="{OnPlatform Default='dotnet_bot.png', MacCatalyst={x:Null}}">
         <ShellContent ContentTemplate="{DataTemplate imagesources:ImageSourcesGalleryPage}" />
     </FlyoutItem>
 
     <FlyoutItem Title="Layouts"
                 Route="LayoutsGalleryPage"
-                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst=''}">
+                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst={x:Null}}">
         <ShellContent ContentTemplate="{DataTemplate layouts:LayoutsGalleryPage}" />
     </FlyoutItem>
 
     <FlyoutItem Title="Views"
                 Route="ViewsGalleryPage"
-                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst=''}">
+                Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst={x:Null}}">
         <ShellContent ContentTemplate="{DataTemplate views:ViewsGalleryPage}" />
     </FlyoutItem>
 

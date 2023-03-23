@@ -24,7 +24,7 @@
                     <Setter Property="VerticalTextAlignment" Value="Center" />
                 </Style>
                 <Style x:Key="PopupLayout" TargetType="StackLayout">
-                    <Setter Property="Padding" Value="{OnPlatform Android=20, WinUI=20, iOS=5, MacCatalyst=5}" />
+                    <Setter Property="Padding" Value="{OnPlatform Android=20, WinUI=20, iOS=5, MacCatalyst=5, Tizen=20}" />
                 </Style>
             </ResourceDictionary>
         </VerticalStackLayout.Resources>

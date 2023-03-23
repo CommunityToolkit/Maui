@@ -2,8 +2,8 @@
 <pages:BasePage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-    xmlns:mct="clr-namespace:CommunityToolkit.Maui.Layouts;assembly=CommunityToolkit.Maui"
     xmlns:layouts="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Layouts"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Layouts.UniformItemsLayoutPage"
     x:TypeArguments="layouts:UniformItemsLayoutViewModel"
@@ -78,6 +78,41 @@
                 <Button BackgroundColor="Purple" />
                 <Button BackgroundColor="SkyBlue" />
                 <Button BackgroundColor="Orange" />
+            </mct:UniformItemsLayout>
+
+            <mct:UniformItemsLayout>
+                <StackLayout>
+                    <Label Text="Test1" />
+                    <Label Text="Test12" />
+                    <StackLayout>
+                        <Label Text="Test1.1"/>
+                        <Label Text="Test1.2"/>
+                    </StackLayout>
+                </StackLayout>
+                <StackLayout>
+                    <Label Text="Test2"/>
+                    <Label Text="Test22"/>
+                    <StackLayout>
+                        <Label Text="Test2.1"/>
+                        <Label Text="Test2.2"/>
+                    </StackLayout>
+                </StackLayout>
+                <StackLayout>
+                    <Label Text="Test3"/>
+                    <Label Text="Test32"/>
+                    <StackLayout>
+                        <Label Text="Test3.1"/>
+                        <Label Text="Test3.2"/>
+                    </StackLayout>
+                </StackLayout>
+                <StackLayout>
+                    <Label Text="Test4"/>
+                    <Label Text="Test42"/>
+                    <StackLayout>
+                        <Label Text="Test4.1"/>
+                        <Label Text="Test4.2"/>
+                    </StackLayout>
+                </StackLayout>
             </mct:UniformItemsLayout>
         </VerticalStackLayout>
     </ScrollView>

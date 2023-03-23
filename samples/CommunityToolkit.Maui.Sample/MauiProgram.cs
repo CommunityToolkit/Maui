@@ -1,21 +1,26 @@
-﻿using CommunityToolkit.Maui.Markup;
+using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.Pages;
 using CommunityToolkit.Maui.Sample.Pages.Alerts;
 using CommunityToolkit.Maui.Sample.Pages.Behaviors;
 using CommunityToolkit.Maui.Sample.Pages.Converters;
+using CommunityToolkit.Maui.Sample.Pages.Essentials;
 using CommunityToolkit.Maui.Sample.Pages.Extensions;
 using CommunityToolkit.Maui.Sample.Pages.ImageSources;
 using CommunityToolkit.Maui.Sample.Pages.Layouts;
 using CommunityToolkit.Maui.Sample.Pages.Views;
+using CommunityToolkit.Maui.Sample.Resources.Fonts;
 using CommunityToolkit.Maui.Sample.ViewModels;
 using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
+using CommunityToolkit.Maui.Sample.ViewModels.Essentials;
 using CommunityToolkit.Maui.Sample.ViewModels.ImageSources;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
+using CommunityToolkit.Maui.Storage;
+using Microsoft.Extensions.Logging;
 using Polly;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
@@ -32,25 +37,34 @@ public static class MauiProgram
 #else
 								.UseMauiCommunityToolkit(options =>
 								{
-									options.SetShouldSuppressExceptionsInConverters(false);
-									options.SetShouldSuppressExceptionsInBehaviors(false);
-									options.SetShouldSuppressExceptionsInAnimations(false);
+									options.SetShouldSuppressExceptionsInConverters(true);
+									options.SetShouldSuppressExceptionsInBehaviors(true);
+									options.SetShouldSuppressExceptionsInAnimations(true);
 								})
 #endif
 								.UseMauiCommunityToolkitMarkup()
-								.UseMauiApp<App>();
+								.UseMauiCommunityToolkitMediaElement()
+								.UseMauiApp<App>()
+								.ConfigureFonts(fonts =>
+								{
+									fonts.AddFont("Font Awesome 6 Brands-Regular-400.otf", FontFamilies.FontAwesomeBrands);
+								});
 
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>()
-						.AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(3, sleepDurationProvider));
+						.AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(3, SleepDurationProvider));
 
 		builder.Services.AddSingleton<PopupSizeConstants>();
 
 		RegisterViewsAndViewModels(builder.Services);
 		RegisterEssentials(builder.Services);
 
+#if DEBUG
+		builder.Logging.AddDebug().SetMinimumLevel(LogLevel.Trace);
+#endif
+
 		return builder.Build();
 
-		static TimeSpan sleepDurationProvider(int attemptNumber) => TimeSpan.FromSeconds(Math.Pow(2, attemptNumber));
+		static TimeSpan SleepDurationProvider(int attemptNumber) => TimeSpan.FromSeconds(Math.Pow(2, attemptNumber));
 	}
 
 	static void RegisterViewsAndViewModels(in IServiceCollection services)
@@ -59,6 +73,7 @@ public static class MauiProgram
 		services.AddTransient<AlertsGalleryPage, AlertsGalleryViewModel>();
 		services.AddTransient<BehaviorsGalleryPage, BehaviorsGalleryViewModel>();
 		services.AddTransient<ConvertersGalleryPage, ConvertersGalleryViewModel>();
+		services.AddTransient<EssentialsGalleryPage, EssentialsGalleryViewModel>();
 		services.AddTransient<ExtensionsGalleryPage, ExtensionsGalleryViewModel>();
 		services.AddTransient<ImageSourcesGalleryPage, ImageSourcesGalleryViewModel>();
 		services.AddTransient<LayoutsGalleryPage, LayoutsGalleryViewModel>();
@@ -114,6 +129,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<IntToBoolConverterPage, IntToBoolConverterViewModel>();
 		services.AddTransientWithShellRoute<InvertedBoolConverterPage, InvertedBoolConverterViewModel>();
 		services.AddTransientWithShellRoute<IsEqualConverterPage, IsEqualConverterViewModel>();
+		services.AddTransientWithShellRoute<IsInRangeConverterPage, IsInRangeConverterViewModel>();
 		services.AddTransientWithShellRoute<IsListNotNullOrEmptyConverterPage, IsListNotNullOrEmptyConverterViewModel>();
 		services.AddTransientWithShellRoute<IsListNullOrEmptyConverterPage, IsListNullOrEmptyConverterViewModel>();
 		services.AddTransientWithShellRoute<IsNotEqualConverterPage, IsNotEqualConverterViewModel>();
@@ -134,20 +150,30 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<TextCaseConverterPage, TextCaseConverterViewModel>();
 		services.AddTransientWithShellRoute<VariableMultiValueConverterPage, VariableMultiValueConverterViewModel>();
 
+		// Add Essentials Pages + ViewModels
+		services.AddTransientWithShellRoute<FileSaverPage, FileSaverViewModel>();
+		services.AddTransientWithShellRoute<FolderPickerPage, FolderPickerViewModel>();
+
 		// Add Extensions Pages + ViewModels
 		services.AddTransientWithShellRoute<ColorAnimationExtensionsPage, ColorAnimationExtensionsViewModel>();
 
-		// Add ImageSources pages + ViewModels
+		// Add ImageSources Pages + ViewModels
 		services.AddTransientWithShellRoute<GravatarImageSourcePage, GravatarImageSourceViewModel>();
 
 		// Add Layouts Pages + ViewModels
+		services.AddTransientWithShellRoute<DockLayoutPage, DockLayoutViewModel>();
+		services.AddTransientWithShellRoute<StateContainerPage, StateContainerViewModel>();
 		services.AddTransientWithShellRoute<UniformItemsLayoutPage, UniformItemsLayoutViewModel>();
 
 		// Add Views Pages + ViewModels
 		services.AddTransientWithShellRoute<DrawingViewPage, DrawingViewViewModel>();
+		services.AddTransientWithShellRoute<ExpanderPage, ExpanderViewModel>();
+		services.AddTransientWithShellRoute<MediaElementPage, MediaElementViewModel>();
 		services.AddTransientWithShellRoute<MultiplePopupPage, MultiplePopupViewModel>();
 		services.AddTransientWithShellRoute<PopupAnchorPage, PopupAnchorViewModel>();
 		services.AddTransientWithShellRoute<PopupPositionPage, PopupPositionViewModel>();
+		services.AddTransientWithShellRoute<ShowPopupInOnAppearingPage, ShowPopupInOnAppearingPageViewModel>();
+		services.AddTransientWithShellRoute<SemanticOrderViewPage, SemanticOrderViewPageViewModel>();
 
 		// Add Popups
 		services.AddTransient<CsharpBindingPopup, CsharpBindingPopupViewModel>();
@@ -158,6 +184,8 @@ public static class MauiProgram
 	{
 		services.AddSingleton<IDeviceInfo>(DeviceInfo.Current);
 		services.AddSingleton<IDeviceDisplay>(DeviceDisplay.Current);
+		services.AddSingleton<IFileSaver>(FileSaver.Default);
+		services.AddSingleton<IFolderPicker>(FolderPicker.Default);
 	}
 
 	static IServiceCollection AddTransientWithShellRoute<TPage, TViewModel>(this IServiceCollection services) where TPage : BasePage<TViewModel>
