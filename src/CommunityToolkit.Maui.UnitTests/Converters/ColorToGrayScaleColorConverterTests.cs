@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Maui.Converters;
 using Xunit;
 
-namespace CommunityToolkit.Maui.UnitTests;
+namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToGrayScaleColorConverterTests : BaseOneWayConverterTest<ColorToGrayScaleColorConverter>
 {
