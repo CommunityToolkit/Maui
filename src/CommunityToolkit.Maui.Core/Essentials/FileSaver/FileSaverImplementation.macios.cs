@@ -10,18 +10,31 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 	UIDocumentPickerViewController? documentPickerViewController;
 	TaskCompletionSource<string>? taskCompetedSource;
 
-	/// <inheritdoc/>
-	public async Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
+	/// <inheritdoc />
+	public void Dispose()
+	{
+		InternalDispose();
+	}
+
+	async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 		var fileManager = NSFileManager.DefaultManager;
-		var fileUrl = fileManager.GetTemporaryDirectory().Append($"{Guid.NewGuid()}{GetExtension(fileName)}", false);
+		var tempDirectoryPath = fileManager.GetTemporaryDirectory().Append(Guid.NewGuid().ToString(), true);
+		var isDirectoryCreated = fileManager.CreateDirectory(tempDirectoryPath, true, null, out var error);
+		if (!isDirectoryCreated)
+		{
+			throw new Exception(error?.LocalizedDescription ?? "Unable to create temp directory.");
+		}
+
+		var fileUrl = tempDirectoryPath.Append(fileName, false);
 		await WriteStream(stream, fileUrl.Path ?? throw new Exception("Path cannot be null."), cancellationToken);
 
 		cancellationToken.ThrowIfCancellationRequested();
 		taskCompetedSource = new TaskCompletionSource<string>();
 
 		documentPickerViewController = new UIDocumentPickerViewController(new[] { fileUrl });
+		documentPickerViewController.DirectoryUrl = NSUrl.FromString(initialPath);
 		documentPickerViewController.DidPickDocumentAtUrls += DocumentPickerViewControllerOnDidPickDocumentAtUrls;
 		documentPickerViewController.WasCancelled += DocumentPickerViewControllerOnWasCancelled;
 
@@ -31,16 +44,9 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 		return await taskCompetedSource.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
 	}
 
-	/// <inheritdoc/>
-	public Task<string> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
+	Task<string> InternalSaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
 	{
-		return SaveAsync("/", fileName, stream, cancellationToken);
-	}
-
-	/// <inheritdoc />
-	public void Dispose()
-	{
-		InternalDispose();
+		return InternalSaveAsync("/", fileName, stream, cancellationToken);
 	}
 
 	void DocumentPickerViewControllerOnWasCancelled(object? sender, EventArgs e)

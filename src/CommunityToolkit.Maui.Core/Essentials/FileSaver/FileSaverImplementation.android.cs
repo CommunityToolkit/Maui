@@ -1,4 +1,6 @@
+using System.Web;
 using Android.Content;
+using Android.Provider;
 using Android.Webkit;
 using Java.IO;
 using Microsoft.Maui.ApplicationModel;
@@ -10,8 +12,7 @@ namespace CommunityToolkit.Maui.Storage;
 /// <inheritdoc />
 public sealed partial class FileSaverImplementation : IFileSaver
 {
-	/// <inheritdoc/>
-	public async Task<string> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
+	static async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
 		var status = await Permissions.RequestAsync<Permissions.StorageWrite>().WaitAsync(cancellationToken).ConfigureAwait(false);
 		if (status is not PermissionStatus.Granted)
@@ -19,15 +20,21 @@ public sealed partial class FileSaverImplementation : IFileSaver
 			throw new PermissionException("Storage permission is not granted.");
 		}
 
+		const string baseUrl = "content://com.android.externalstorage.documents/document/primary%3A";
+		if (Android.OS.Environment.ExternalStorageDirectory is not null)
+		{
+			initialPath = initialPath.Replace(Android.OS.Environment.ExternalStorageDirectory.AbsolutePath, string.Empty, StringComparison.InvariantCulture);
+		}
+
+		var initialFolderUri = AndroidUri.Parse(baseUrl + HttpUtility.UrlEncode(initialPath));
 		var intent = new Intent(Intent.ActionCreateDocument);
+
 		intent.AddCategory(Intent.CategoryOpenable);
-		intent.SetType(MimeTypeMap.Singleton?.GetMimeTypeFromExtension(GetExtension(fileName)) ?? "*/*");
+		intent.SetType(MimeTypeMap.Singleton?.GetMimeTypeFromExtension(MimeTypeMap.GetFileExtensionFromUrl(fileName)) ?? "*/*");
 		intent.PutExtra(Intent.ExtraTitle, fileName);
-		var pickerIntent = Intent.CreateChooser(intent, string.Empty) ?? throw new InvalidOperationException("Unable to create intent.");
-
+		intent.PutExtra(DocumentsContract.ExtraInitialUri, initialFolderUri);
 		AndroidUri? filePath = null;
-
-		await IntermediateActivity.StartAsync(pickerIntent, (int)AndroidRequestCode.RequestCodeSaveFilePicker, onResult: OnResult).WaitAsync(cancellationToken).ConfigureAwait(false);
+		await IntermediateActivity.StartAsync(intent, (int)AndroidRequestCode.RequestCodeSaveFilePicker, onResult: OnResult).WaitAsync(cancellationToken).ConfigureAwait(false);
 
 		if (filePath is null)
 		{
@@ -42,10 +49,9 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		}
 	}
 
-	/// <inheritdoc />
-	public Task<string> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
+	static Task<string> InternalSaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
 	{
-		return SaveAsync(GetExternalDirectory(), fileName, stream, cancellationToken);
+		return InternalSaveAsync(GetExternalDirectory(), fileName, stream, cancellationToken);
 	}
 
 	static string GetExternalDirectory()
@@ -81,8 +87,8 @@ public sealed partial class FileSaverImplementation : IFileSaver
 
 		fileOutputStream.Close();
 		parcelFileDescriptor?.Close();
-		var split = uri.Path?.Split(":") ?? throw new FolderPickerException("Unable to resolve path.");
+		var split = uri.Path?.Split(':') ?? throw new FolderPickerException("Unable to resolve path.");
 
-		return Android.OS.Environment.ExternalStorageDirectory + "/" + split[1];
+		return $"{Android.OS.Environment.ExternalStorageDirectory}/{split[^1]}";
 	}
 }

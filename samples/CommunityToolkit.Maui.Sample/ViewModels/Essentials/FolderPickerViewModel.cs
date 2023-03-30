@@ -1,4 +1,3 @@
-using System.Text;
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Storage;
@@ -18,47 +17,49 @@ public partial class FolderPickerViewModel : BaseViewModel
 	[RelayCommand]
 	async Task PickFolder(CancellationToken cancellationToken)
 	{
-		try
+		var folderPickerResult = await folderPicker.PickAsync(cancellationToken);
+		if (folderPickerResult.IsSuccessful)
 		{
-			var folder = await folderPicker.PickAsync(cancellationToken);
-			await Toast.Make($"Folder picked: Name - {folder.Name}, Path - {folder.Path}", ToastDuration.Long).Show(cancellationToken);
+			await Toast.Make($"Folder picked: Name - {folderPickerResult.Folder.Name}, Path - {folderPickerResult.Folder.Path}", ToastDuration.Long).Show(cancellationToken);
 		}
-		catch (Exception ex)
+		else
 		{
-			await Toast.Make($"Folder is not picked, {ex.Message}").Show(cancellationToken);
+			await Toast.Make($"Folder is not picked, {folderPickerResult.Exception.Message}").Show(cancellationToken);
 		}
 	}
 
 	[RelayCommand]
 	async Task PickFolderStatic(CancellationToken cancellationToken)
 	{
-		try
+		var folderResult = await FolderPicker.PickAsync("DCIM", cancellationToken);
+		if (folderResult.IsSuccessful)
 		{
-			var folder = await FolderPicker.PickAsync(cancellationToken);
-			await Toast.Make($"Folder picked: Name - {folder.Name}, Path - {folder.Path}", ToastDuration.Long).Show(cancellationToken);
+			var filesCount = Directory.EnumerateFiles(folderResult.Folder.Path).Count();
+			await Toast.Make($"Folder picked: Name - {folderResult.Folder.Name}, Path - {folderResult.Folder.Path}, Files count - {filesCount}", ToastDuration.Long).Show(cancellationToken);
 		}
-		catch (Exception ex)
+		else
 		{
-			await Toast.Make($"Folder is not picked, {ex.Message}").Show(cancellationToken);
+			await Toast.Make($"Folder is not picked, {folderResult.Exception.Message}").Show(cancellationToken);
 		}
 	}
 
 	[RelayCommand]
 	async Task PickFolderInstance(CancellationToken cancellationToken)
 	{
-		using var stream = new MemoryStream(Encoding.Default.GetBytes("Hello from the Community Toolkit!"));
+		var folderPickerInstance = new FolderPickerImplementation();
 		try
 		{
-			var folderPickerInstance = new FolderPickerImplementation();
-			var folder = await folderPickerInstance.PickAsync(cancellationToken);
-			await Toast.Make($"Folder picked: Name - {folder.Name}, Path - {folder.Path}", ToastDuration.Long).Show(cancellationToken);
+			var folderPickerResult = await folderPickerInstance.PickAsync(cancellationToken);
+			folderPickerResult.EnsureSuccess();
+
+			await Toast.Make($"Folder picked: Name - {folderPickerResult.Folder.Name}, Path - {folderPickerResult.Folder.Path}", ToastDuration.Long).Show(cancellationToken);
 #if IOS || MACCATALYST
 			folderPickerInstance.Dispose();
 #endif
 		}
-		catch (Exception ex)
+		catch (Exception e)
 		{
-			await Toast.Make($"Folder is not picked, {ex.Message}").Show(cancellationToken);
+			await Toast.Make($"Folder is not picked, {e.Message}").Show(cancellationToken);
 		}
 	}
 }

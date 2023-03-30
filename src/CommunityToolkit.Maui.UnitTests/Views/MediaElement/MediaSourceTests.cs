@@ -2,7 +2,7 @@
 using FluentAssertions;
 using Xunit;
 
-namespace CommunityToolkit.Maui.UnitTests.Views.MediaElement;
+namespace CommunityToolkit.Maui.UnitTests.Views;
 
 public class MediaSourceTests
 {

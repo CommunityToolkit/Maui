@@ -176,7 +176,7 @@ partial class MediaManager : IDisposable
 		}
 
 		// If currently muted, ignore
-		if (MediaElement.ShouldMute) 
+		if (MediaElement.ShouldMute)
 		{
 			return;
 		}

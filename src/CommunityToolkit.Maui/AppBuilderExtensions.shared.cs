@@ -27,6 +27,7 @@ public static class AppBuilderExtensions
 		{
 			h.AddHandler<DrawingView, DrawingViewHandler>();
 			h.AddHandler<Popup, PopupHandler>();
+			h.AddHandler<SemanticOrderView, SemanticOrderViewHandler>();
 		});
 
 		Popup.RemapForControls();

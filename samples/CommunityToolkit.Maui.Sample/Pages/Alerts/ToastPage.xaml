@@ -21,6 +21,9 @@
          <Button Clicked="ShowCustomToastButtonClicked"
                 Text="Display Custom Toast"/>
 
+        <Button Text="Show Toast in Modal Page"
+                Clicked="DisplayToastInModalButtonClicked"/>
+
     </VerticalStackLayout>
     
 </pages:BasePage>
