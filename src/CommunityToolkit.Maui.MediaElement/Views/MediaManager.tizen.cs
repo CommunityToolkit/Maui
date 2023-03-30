@@ -31,6 +31,14 @@ public partial class MediaManager : IDisposable
 	protected bool IsScreenLocked { get; set; }
 
 	/// <summary>
+	/// Releases the managed and unmanaged resources used by the <see cref="MediaManager"/>.
+	/// </summary>
+	public void Dispose()
+	{
+		Dispose(true);
+	}
+
+	/// <summary>
 	/// Creates the corresponding platform view of <see cref="MediaElement"/> on Tizen.
 	/// </summary>
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
@@ -45,81 +53,6 @@ public partial class MediaManager : IDisposable
 		VideoView.AddedToWindow += AddedToWindow;
 
 		return VideoView;
-	}
-
-	void AddedToWindow(object? sender, EventArgs e)
-	{
-		if (!IsPlayerInitialized && VideoView is not null)
-		{
-			InitializePlayer(VideoView);
-			IsPlayerInitialized = true;
-		}
-
-		if (VideoView is not null)
-		{
-			VideoView.AddedToWindow -= AddedToWindow;
-		}
-	}
-
-	void OnPlaybackCompleted(object? sender, EventArgs e)
-	{
-		MediaElement.MediaEnded();
-		MediaElement.CurrentStateChanged(MediaElementState.Stopped);
-	}
-
-	void OnErrorOccurred(object? sender, PlayerErrorOccurredEventArgs e)
-	{
-		MediaElement.MediaFailed(new MediaFailedEventArgs(e.Error.ToString()));
-	}
-
-	void OnBufferingProgressChanged(object? sender, BufferingProgressChangedEventArgs e)
-	{
-		if (e.Percent is 100)
-		{
-			UpdateCurrentState();
-		}
-		else
-		{
-			MediaElement.CurrentStateChanged(MediaElementState.Buffering);
-		}
-	}
-
-	void InitializePlayer(VideoView VideoView)
-	{
-		var handle = VideoView.NativeHandle;
-		if (handle.IsInvalid)
-		{
-			throw new InvalidOperationException("The NativeHandler is invalid");
-		}
-
-		if (Player is null)
-		{
-			Player = new TizenPlayer(handle.DangerousGetHandle());
-			Player.InitializePlayer();
-			Player.PlaybackCompleted += OnPlaybackCompleted;
-			Player.ErrorOccurred += OnErrorOccurred;
-			Player.BufferingProgressChanged += OnBufferingProgressChanged;
-			PlatformUpdateSource();
-		}
-	}
-
-	void UpdateCurrentState()
-	{
-		if (Player is null)
-		{
-			throw new InvalidOperationException("TizenPlayer must not be null.");
-		}
-
-		var newsState = Player.State switch
-		{
-			PlayerState.Idle => MediaElementState.None,
-			PlayerState.Ready => MediaElementState.Opening,
-			PlayerState.Playing => MediaElementState.Playing,
-			PlayerState.Paused => MediaElementState.Paused,
-			_ => MediaElementState.None
-		};
-
-		MediaElement.CurrentStateChanged(newsState);
 	}
 
 	protected virtual partial void PlatformPlay()
@@ -150,18 +83,20 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
-	protected virtual partial void PlatformSeek(TimeSpan position)
+	protected virtual partial ValueTask PlatformSeek(TimeSpan position)
 	{
 		if (Player is null)
 		{
-			return;
+			return ValueTask.CompletedTask;
 		}
 
-		if (Player.State is PlayerState.Ready || Player.State is PlayerState.Playing || Player.State is PlayerState.Paused)
+		if (Player.State is PlayerState.Ready or PlayerState.Playing or PlayerState.Paused)
 		{
 			Player.SetPlayPositionAsync((int)position.TotalMilliseconds, false);
 			MediaElement.SeekCompleted();
 		}
+
+		return ValueTask.CompletedTask;
 	}
 
 	protected virtual partial void PlatformStop()
@@ -179,16 +114,6 @@ public partial class MediaManager : IDisposable
 		}
 
 		MediaElement.Position = TimeSpan.Zero;
-	}
-
-	async void PreparePlayer()
-	{
-		if (Player is not null)
-		{
-			await Player.PrepareAsync();
-			PlatformUpdatePosition();
-			UpdateCurrentState();
-		}
 	}
 
 	protected virtual partial void PlatformUpdateAspect()
@@ -305,7 +230,7 @@ public partial class MediaManager : IDisposable
 			MediaElement.Duration = MediaElement.Position = TimeSpan.Zero;
 		}
 	}
-	
+
 	protected virtual partial void PlatformUpdateVolume()
 	{
 		if (MediaElement is null || Player is null)
@@ -383,11 +308,88 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
-	/// <summary>
-	/// Releases the managed and unmanaged resources used by the <see cref="MediaManager"/>.
-	/// </summary>
-	public void Dispose()
+	void AddedToWindow(object? sender, EventArgs e)
 	{
-		Dispose(true);
+		if (!IsPlayerInitialized && VideoView is not null)
+		{
+			InitializePlayer(VideoView);
+			IsPlayerInitialized = true;
+		}
+
+		if (VideoView is not null)
+		{
+			VideoView.AddedToWindow -= AddedToWindow;
+		}
+	}
+
+	void OnPlaybackCompleted(object? sender, EventArgs e)
+	{
+		MediaElement.MediaEnded();
+		MediaElement.CurrentStateChanged(MediaElementState.Stopped);
+	}
+
+	void OnErrorOccurred(object? sender, PlayerErrorOccurredEventArgs e)
+	{
+		MediaElement.MediaFailed(new MediaFailedEventArgs(e.Error.ToString()));
+	}
+
+	void OnBufferingProgressChanged(object? sender, BufferingProgressChangedEventArgs e)
+	{
+		if (e.Percent is 100)
+		{
+			UpdateCurrentState();
+		}
+		else
+		{
+			MediaElement.CurrentStateChanged(MediaElementState.Buffering);
+		}
+	}
+
+	void InitializePlayer(VideoView VideoView)
+	{
+		var handle = VideoView.NativeHandle;
+		if (handle.IsInvalid)
+		{
+			throw new InvalidOperationException("The NativeHandler is invalid");
+		}
+
+		if (Player is null)
+		{
+			Player = new TizenPlayer(handle.DangerousGetHandle());
+			Player.InitializePlayer();
+			Player.PlaybackCompleted += OnPlaybackCompleted;
+			Player.ErrorOccurred += OnErrorOccurred;
+			Player.BufferingProgressChanged += OnBufferingProgressChanged;
+			PlatformUpdateSource();
+		}
+	}
+
+	void UpdateCurrentState()
+	{
+		if (Player is null)
+		{
+			throw new InvalidOperationException("TizenPlayer must not be null.");
+		}
+
+		var newsState = Player.State switch
+		{
+			PlayerState.Idle => MediaElementState.None,
+			PlayerState.Ready => MediaElementState.Opening,
+			PlayerState.Playing => MediaElementState.Playing,
+			PlayerState.Paused => MediaElementState.Paused,
+			_ => MediaElementState.None
+		};
+
+		MediaElement.CurrentStateChanged(newsState);
+	}
+
+	async void PreparePlayer()
+	{
+		if (Player is not null)
+		{
+			await Player.PrepareAsync();
+			PlatformUpdatePosition();
+			UpdateCurrentState();
+		}
 	}
 }

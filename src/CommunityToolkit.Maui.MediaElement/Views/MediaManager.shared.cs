@@ -24,10 +24,12 @@ public partial class MediaManager
 	/// </summary>
 	/// <param name="context">This application's <see cref="IMauiContext"/>.</param>
 	/// <param name="mediaElement">The <see cref="IMediaElement"/> instance that is managed through this class.</param>
-	public MediaManager(IMauiContext context, IMediaElement mediaElement)
+	/// <param name="dispatcher">The <see cref="IDispatcher"/> instance that allows propagation to the main thread.</param>
+	public MediaManager(IMauiContext context, IMediaElement mediaElement, IDispatcher dispatcher)
 	{
-		this.MediaElement = mediaElement;
 		MauiContext = context;
+		Dispatcher = dispatcher;
+		MediaElement = mediaElement;
 
 		Logger = MauiContext.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(MediaManager));
 	}
@@ -41,6 +43,11 @@ public partial class MediaManager
 	/// The <see cref="IMauiContext"/> used by this class.
 	/// </summary>
 	protected IMauiContext MauiContext { get; }
+
+	/// <summary>
+	/// The <see cref="IDispatcher"/> that allows propagation to the main thread
+	/// </summary>
+	protected IDispatcher Dispatcher { get; }
 
 	/// <summary>
 	/// Gets the <see cref="ILogger"/> instance for logging purposes.
@@ -75,9 +82,9 @@ public partial class MediaManager
 	/// Invokes the seek operation on the platform element.
 	/// </summary>
 	/// <param name="position">The position to seek to.</param>
-	public void Seek(TimeSpan position)
+	public async ValueTask Seek(TimeSpan position)
 	{
-		PlatformSeek(position);
+		await PlatformSeek(position);
 	}
 
 	/// <summary>
@@ -175,7 +182,7 @@ public partial class MediaManager
 	/// Invokes the platform seek functionality and seeks to a specific position.
 	/// </summary>
 	/// <param name="position">The position to seek to.</param>
-	protected virtual partial void PlatformSeek(TimeSpan position);
+	protected virtual partial ValueTask PlatformSeek(TimeSpan position);
 
 	/// <summary>
 	/// Invokes the platform stop functionality and stops media playback.
@@ -232,9 +239,9 @@ public partial class MediaManager
 #if !(WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN)
 partial class MediaManager
 {
+	protected virtual partial ValueTask PlatformSeek(TimeSpan position) => ValueTask.CompletedTask;
 	protected virtual partial void PlatformPlay() { }
 	protected virtual partial void PlatformPause() { }
-	protected virtual partial void PlatformSeek(TimeSpan position) { }
 	protected virtual partial void PlatformStop() { }
 	protected virtual partial void PlatformUpdateAspect() { }
 	protected virtual partial void PlatformUpdateSource() { }
