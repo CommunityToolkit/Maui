@@ -56,4 +56,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net7.0-android'">
+    <PackageReference Include="Xamarin.Android.ShortcutBadger" Version="1.2.0" />
+  </ItemGroup>
 </Project>

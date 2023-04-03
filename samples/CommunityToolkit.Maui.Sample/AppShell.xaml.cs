@@ -82,6 +82,7 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<VariableMultiValueConverterPage, VariableMultiValueConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 
 		// Add Essentials View Models
+		CreateViewModelMapping<BadgeCounterPage, BadgeCounterViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
 		CreateViewModelMapping<FileSaverPage, FileSaverViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
 		CreateViewModelMapping<FolderPickerPage, FolderPickerViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
 

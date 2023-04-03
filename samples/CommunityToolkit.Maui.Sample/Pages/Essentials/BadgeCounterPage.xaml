@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Essentials.BadgeCounterPage"
+                xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Essentials"
+                x:TypeArguments="vm:BadgeCounterViewModel"
+                x:DataType="vm:BadgeCounterViewModel"
+                Title="BadgeCounter">
+    
+    <Grid
+        RowDefinitions="*, *"
+        ColumnDefinitions="*, *"
+        VerticalOptions="Center">
+
+        <Label
+            Grid.ColumnSpan="2"
+            Text="Badge Counter"
+            FontSize="18"
+            VerticalOptions="End"
+            HorizontalOptions="Center" />
+
+        <Button
+            Text="+"
+            Grid.Column="0"
+            Grid.Row="1"
+            SemanticProperties.Hint="Increments AppIcon badge"
+            Command="{Binding IncrementCommand}"
+            VerticalOptions="Start"
+            HorizontalOptions="End" />
+
+        <Button
+            Text="-"
+            Grid.Column="1"
+            Grid.Row="1"
+            SemanticProperties.Hint="Decrements AppIcon badge"
+            Command="{Binding DecrementCommand}"
+            VerticalOptions="Start"
+            HorizontalOptions="Start" />
+
+    </Grid>
+    
+</pages:BasePage>

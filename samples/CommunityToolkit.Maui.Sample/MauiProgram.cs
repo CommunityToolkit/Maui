@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.BadgeCounter;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.Pages;
@@ -151,6 +152,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<VariableMultiValueConverterPage, VariableMultiValueConverterViewModel>();
 
 		// Add Essentials Pages + ViewModels
+		services.AddTransientWithShellRoute<BadgeCounterPage, BadgeCounterViewModel>();
 		services.AddTransientWithShellRoute<FileSaverPage, FileSaverViewModel>();
 		services.AddTransientWithShellRoute<FolderPickerPage, FolderPickerViewModel>();
 
@@ -187,6 +189,7 @@ public static class MauiProgram
 		services.AddSingleton<IDeviceDisplay>(DeviceDisplay.Current);
 		services.AddSingleton<IFileSaver>(FileSaver.Default);
 		services.AddSingleton<IFolderPicker>(FolderPicker.Default);
+		services.AddSingleton<IBadgeCounter>(BadgeCounter.BadgeCounter.Default);
 	}
 
 	static IServiceCollection AddTransientWithShellRoute<TPage, TViewModel>(this IServiceCollection services) where TPage : BasePage<TViewModel>
