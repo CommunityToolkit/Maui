@@ -1,13 +1,11 @@
 using System.Globalization;
-
-namespace CommunityToolkit.Maui.SpeechToText;
-
-
 using System.Speech.Recognition;
 using Microsoft.Maui.Networking;
 using Windows.Globalization;
 using Windows.Media.SpeechRecognition;
 using SpeechRecognizer = Windows.Media.SpeechRecognition.SpeechRecognizer;
+
+namespace CommunityToolkit.Maui.SpeechToText;
 
 /// <inheritdoc />
 public sealed class SpeechToTextImplementation : ISpeechToText

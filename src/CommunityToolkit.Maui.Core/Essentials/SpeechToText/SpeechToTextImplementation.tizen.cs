@@ -1,4 +1,4 @@
-using Microsoft.Maui.ApplicationModel;
+using System.Globalization;
 
 namespace CommunityToolkit.Maui.SpeechToText;
 
