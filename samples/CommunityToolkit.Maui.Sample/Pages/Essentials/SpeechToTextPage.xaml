@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Essentials.SpeechToTextPage"
+                xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Essentials"
+                xmlns:essentials="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Essentials"
+                x:TypeArguments="vm:SpeechToTextViewModel"
+                x:DataType="vm:SpeechToTextViewModel"
+                Title="SpeechToText">
+
+    <ContentPage.Resources>
+        <essentials:PickerDisplayConverter x:Key="PickerDisplayConverter" />
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout
+            Spacing="25"
+            Padding="30,0"
+            VerticalOptions="Center">
+
+            <Picker ItemsSource="{Binding Locales}"
+                    SelectedItem="{Binding Locale}"
+                    ItemDisplayBinding="{Binding ., Converter={StaticResource PickerDisplayConverter}}">
+            </Picker>
+
+            <Editor
+                Text="{Binding Text}"
+                FontSize="18"
+                HorizontalOptions="Center" />
+
+            <Button
+                Text="Play"
+                Command="{Binding PlayCommand}"
+                HorizontalOptions="Center" />
+
+            <Label
+                Text="{Binding RecognitionText}"
+                FontSize="18"
+                HorizontalOptions="Center" />
+
+            <Button
+                Text="Listen"
+                Command="{Binding ListenCommand}"
+                HorizontalOptions="Center" />
+
+            <Button
+                Text="Listen Cancel"
+                Command="{Binding ListenCancelCommand}"
+                HorizontalOptions="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+    
+</pages:BasePage>

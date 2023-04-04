@@ -19,6 +19,7 @@ using CommunityToolkit.Maui.Sample.ViewModels.ImageSources;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
+using CommunityToolkit.Maui.SpeechToText;
 using CommunityToolkit.Maui.Storage;
 using Microsoft.Extensions.Logging;
 using Polly;
@@ -153,6 +154,7 @@ public static class MauiProgram
 		// Add Essentials Pages + ViewModels
 		services.AddTransientWithShellRoute<FileSaverPage, FileSaverViewModel>();
 		services.AddTransientWithShellRoute<FolderPickerPage, FolderPickerViewModel>();
+		services.AddTransientWithShellRoute<SpeechToTextPage, SpeechToTextViewModel>();
 
 		// Add Extensions Pages + ViewModels
 		services.AddTransientWithShellRoute<ColorAnimationExtensionsPage, ColorAnimationExtensionsViewModel>();
@@ -187,6 +189,8 @@ public static class MauiProgram
 		services.AddSingleton<IDeviceDisplay>(DeviceDisplay.Current);
 		services.AddSingleton<IFileSaver>(FileSaver.Default);
 		services.AddSingleton<IFolderPicker>(FolderPicker.Default);
+		services.AddSingleton<ITextToSpeech>(TextToSpeech.Default);
+		services.AddSingleton<ISpeechToText>(SpeechToText.SpeechToText.Default);
 	}
 
 	static IServiceCollection AddTransientWithShellRoute<TPage, TViewModel>(this IServiceCollection services) where TPage : BasePage<TViewModel>
