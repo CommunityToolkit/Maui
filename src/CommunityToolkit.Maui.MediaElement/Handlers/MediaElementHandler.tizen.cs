@@ -12,7 +12,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	{
 		mediaManager ??= new(MauiContext ?? throw new NullReferenceException(), VirtualView);
 		var playerView = mediaManager.CreatePlatformView();
-		return new (playerView);
+		return new(playerView);
 	}
 
 	/// <inheritdoc/>

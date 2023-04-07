@@ -305,7 +305,7 @@ public partial class MediaManager : IDisposable
 			MediaElement.Duration = MediaElement.Position = TimeSpan.Zero;
 		}
 	}
-	
+
 	protected virtual partial void PlatformUpdateVolume()
 	{
 		if (MediaElement is null || Player is null)

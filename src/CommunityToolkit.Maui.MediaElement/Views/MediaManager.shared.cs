@@ -87,7 +87,20 @@ public partial class MediaManager
 	{
 		PlatformStop();
 	}
-
+	/// <summary>
+	/// Invokes the Full Screen operation on the platform element
+	/// </summary>
+	public void FullScreen()
+	{
+		PlatformFullScreen();
+	}
+	/// <summary>
+	/// Invokes the Restore Screen operation on the platform element
+	/// </summary>
+	public void RestoreScreen()
+	{
+		PlatformRestoreScreen();
+	}
 	/// <summary>
 	/// Update the media aspect.
 	/// </summary>
@@ -183,6 +196,16 @@ public partial class MediaManager
 	protected virtual partial void PlatformStop();
 
 	/// <summary>
+	/// Invokes the platform Full screen functionality.
+	/// </summary>
+	protected virtual partial void PlatformFullScreen();
+
+	/// <summary>
+	/// Invokes the platform Restore screen functionality.
+	/// </summary>
+	protected virtual partial void PlatformRestoreScreen();
+
+	/// <summary>
 	/// Invokes the platform functionality to update the media aspect.
 	/// </summary>
 	protected virtual partial void PlatformUpdateAspect();
@@ -236,6 +259,8 @@ partial class MediaManager
 	protected virtual partial void PlatformPause() { }
 	protected virtual partial void PlatformSeek(TimeSpan position) { }
 	protected virtual partial void PlatformStop() { }
+	protected virtual partial void PlatformFullScreen() { }
+	protected virtual partial void PlatformRestoreScreen() { }
 	protected virtual partial void PlatformUpdateAspect() { }
 	protected virtual partial void PlatformUpdateSource() { }
 	protected virtual partial void PlatformUpdateSpeed() { }

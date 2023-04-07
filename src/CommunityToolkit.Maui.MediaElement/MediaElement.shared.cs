@@ -180,7 +180,16 @@ public class MediaElement : View, IMediaElement
 		add => eventManager.AddEventHandler(value);
 		remove => eventManager.RemoveEventHandler(value);
 	}
-
+	internal event EventHandler FullScreenRequested
+	{
+		add => eventManager.AddEventHandler(value);
+		remove => eventManager.RemoveEventHandler(value);
+	}
+	internal event EventHandler RestoreScreenRequested
+	{
+		add => eventManager.AddEventHandler(value);
+		remove => eventManager.RemoveEventHandler(value);
+	}
 	/// <summary>
 	/// The current position of the playing media. This is a bindable property.
 	/// </summary>
@@ -376,7 +385,22 @@ public class MediaElement : View, IMediaElement
 		OnStopRequested();
 		Handler?.Invoke(nameof(StopRequested));
 	}
-
+	/// <summary>
+	/// Restores screen position.
+	/// </summary>
+	public void RestoreScreen()
+	{
+		onRestoreScreenRequested();
+		Handler?.Invoke(nameof(RestoreScreenRequested));
+	}
+	/// <summary>
+	/// Sets full screen.
+	/// </summary>
+	public void FullScreen()
+	{
+		onFullScreenRequested();
+		Handler?.Invoke(nameof(FullScreenRequested));
+	}
 	internal void OnMediaEnded()
 	{
 		ClearTimer();
@@ -462,7 +486,6 @@ public class MediaElement : View, IMediaElement
 		timer.Stop();
 		timer = null;
 	}
-
 	void OnSourceChanged(object? sender, EventArgs eventArgs)
 	{
 		OnPropertyChanged(SourceProperty.PropertyName);
@@ -509,7 +532,6 @@ public class MediaElement : View, IMediaElement
 	{
 		OnSeekCompleted();
 	}
-
 	void IMediaElement.CurrentStateChanged(MediaElementState newState) => CurrentState = newState;
 
 	void OnPositionChanged(MediaPositionChangedEventArgs mediaPositionChangedEventArgs) =>
@@ -517,6 +539,8 @@ public class MediaElement : View, IMediaElement
 
 	void OnStateChanged(MediaStateChangedEventArgs mediaStateChangedEventArgs) =>
 		eventManager.HandleEvent(this, mediaStateChangedEventArgs, nameof(StateChanged));
+	void onFullScreenRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(FullScreenRequested));
+	void onRestoreScreenRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(RestoreScreenRequested));
 
 	void OnPauseRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(PauseRequested));
 

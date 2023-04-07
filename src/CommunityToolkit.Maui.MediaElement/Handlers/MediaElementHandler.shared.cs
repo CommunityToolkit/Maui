@@ -42,7 +42,9 @@ public partial class MediaElementHandler
 		[nameof(MediaElement.PlayRequested)] = MapPlayRequested,
 		[nameof(MediaElement.PauseRequested)] = MapPauseRequested,
 		[nameof(MediaElement.SeekRequested)] = MapSeekRequested,
-		[nameof(MediaElement.StopRequested)] = MapStopRequested
+		[nameof(MediaElement.StopRequested)] = MapStopRequested,
+		[nameof(MediaElement.FullScreenRequested)] = MapFullScreenRequested,
+		[nameof(MediaElement.RestoreScreenRequested)] = MapRestoreScreenRequested
 	};
 
 	/// <summary>
@@ -177,7 +179,28 @@ public partial class MediaElementHandler
 	{
 		handler.mediaManager?.Pause();
 	}
-
+	/// <summary>
+	/// Maps the pause operation request between the abstract <see cref="MediaElement"/> and platform counterpart.
+	/// </summary>
+	/// <param name="handler">The associated handler.</param>
+	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	/// <param name="args">The associated event arguments for this request.</param>
+	/// <remarks><paramref name="args"/> is not used.</remarks>
+	public static void MapFullScreenRequested(MediaElementHandler handler, MediaElement MediaElement, object? args)
+	{
+		handler.mediaManager?.FullScreen();
+	}
+	/// <summary>
+	/// Maps the pause operation request between the abstract <see cref="MediaElement"/> and platform counterpart.
+	/// </summary>
+	/// <param name="handler">The associated handler.</param>
+	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	/// <param name="args">The associated event arguments for this request.</param>
+	/// <remarks><paramref name="args"/> is not used.</remarks>
+	public static void MapRestoreScreenRequested(MediaElementHandler handler, MediaElement MediaElement, object? args)
+	{
+		handler.mediaManager?.RestoreScreen();
+	}
 	/// <summary>
 	/// Maps the seek operation request between the abstract <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>

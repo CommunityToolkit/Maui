@@ -134,6 +134,14 @@ public interface IMediaElement : IView
 	/// Stops playing the currently playing media and resets the <see cref="Position"/>.
 	/// </summary>
 	void Stop();
+	/// <summary>
+	/// Sets the player to full screen.
+	/// </summary>
+	void FullScreen();
+	/// <summary>
+	/// Sets the player to restore scrreen.
+	/// </summary>
+	void RestoreScreen();
 
 	/// <summary>
 	/// Triggers the <see cref="MediaElement.SeekCompleted"/> event.

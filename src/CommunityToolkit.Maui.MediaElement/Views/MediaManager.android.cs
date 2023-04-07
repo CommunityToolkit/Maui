@@ -11,12 +11,17 @@ using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 
+
 namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
 	double previousSpeed = -1;
 	float volumeBeforeMute = 1;
+
+	Page currentPage = Shell.Current.CurrentPage;
+	bool navBarIsVisible = false;
+	bool tabBarIsVisible = false;
 
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
@@ -262,7 +267,46 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		MediaElement.Position = TimeSpan.Zero;
 	}
+	protected virtual partial void PlatformFullScreen()
+	{
+		var activity = Platform.CurrentActivity;
 
+		if (activity == null || activity.Window == null || Shell.Current == null)
+		{
+			return;
+		}
+
+		navBarIsVisible = Shell.GetNavBarIsVisible(currentPage);
+		tabBarIsVisible = Shell.GetTabBarIsVisible(currentPage);
+		NavigationPage.SetHasNavigationBar(currentPage, false);
+		Shell.SetNavBarIsVisible(currentPage, false);
+		Shell.SetTabBarIsVisible(currentPage, false);
+		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(activity.Window, false);
+		var windowInsetsControllerCompat = AndroidX.Core.View.WindowCompat.GetInsetsController(activity.Window, activity.Window.DecorView);
+		var types = AndroidX.Core.View.WindowInsetsCompat.Type.StatusBars() |
+					AndroidX.Core.View.WindowInsetsCompat.Type.NavigationBars();
+
+		windowInsetsControllerCompat.SystemBarsBehavior = AndroidX.Core.View.WindowInsetsControllerCompat.BehaviorShowBarsBySwipe;
+		windowInsetsControllerCompat.Hide(types);
+	}
+	protected virtual partial void PlatformRestoreScreen()
+	{
+		var activity = Platform.CurrentActivity;
+
+		if (activity == null || activity.Window == null || Shell.Current == null)
+		{
+			return;
+		}
+
+		NavigationPage.SetHasNavigationBar(currentPage, navBarIsVisible);
+		Shell.SetNavBarIsVisible(currentPage, navBarIsVisible);
+		Shell.SetTabBarIsVisible(currentPage, tabBarIsVisible);
+		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(activity.Window, false);
+		var windowInsetsControllerCompat = AndroidX.Core.View.WindowCompat.GetInsetsController(activity.Window, activity.Window.DecorView);
+		var types = AndroidX.Core.View.WindowInsetsCompat.Type.StatusBars() |
+					AndroidX.Core.View.WindowInsetsCompat.Type.NavigationBars();
+		windowInsetsControllerCompat.Show(types);
+	}
 	protected virtual partial void PlatformUpdateSource()
 	{
 		var hasSetSource = false;

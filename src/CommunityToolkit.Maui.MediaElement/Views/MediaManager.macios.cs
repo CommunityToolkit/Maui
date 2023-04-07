@@ -123,6 +123,14 @@ public partial class MediaManager : IDisposable
 	{
 		Player?.Pause();
 	}
+	protected virtual partial void PlatformFullScreen()
+	{
+		// not implemented
+	}
+	protected virtual partial void PlatformRestoreScreen()
+	{
+		// not implemented
+	}
 
 	protected virtual partial void PlatformSeek(TimeSpan position)
 	{
@@ -230,20 +238,20 @@ public partial class MediaManager : IDisposable
 
 		CurrentItemErrorObserver = PlayerItem?.AddObserver("error",
 			valueObserverOptions, (NSObservedChange change) =>
-		{
-			if (Player?.CurrentItem?.Error is null)
 			{
-				return;
-			}
+				if (Player?.CurrentItem?.Error is null)
+				{
+					return;
+				}
 
-			var message = $"{Player?.CurrentItem?.Error?.LocalizedDescription} - " +
-			$"{Player?.CurrentItem?.Error?.LocalizedFailureReason}";
+				var message = $"{Player?.CurrentItem?.Error?.LocalizedDescription} - " +
+				$"{Player?.CurrentItem?.Error?.LocalizedFailureReason}";
 
-			MediaElement.MediaFailed(
-				new MediaFailedEventArgs(message));
+				MediaElement.MediaFailed(
+					new MediaFailedEventArgs(message));
 
-			Logger?.LogError("{logMessage}", message);
-		});
+				Logger?.LogError("{logMessage}", message);
+			});
 
 		if (PlayerItem is not null && PlayerItem.Error is null)
 		{
