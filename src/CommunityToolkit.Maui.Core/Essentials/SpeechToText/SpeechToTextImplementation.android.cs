@@ -4,7 +4,7 @@ using Android.Runtime;
 using Android.Speech;
 using Microsoft.Maui.ApplicationModel;
 
-namespace CommunityToolkit.Maui.SpeechToText;
+namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc />
 public sealed class SpeechToTextImplementation : ISpeechToText
@@ -13,7 +13,7 @@ public sealed class SpeechToTextImplementation : ISpeechToText
 	SpeechRecognizer? speechRecognizer;
 
 	/// <inheritdoc />
-	public async Task<string> Listen(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
+	public async Task<string> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
 		if (!await RequestPermissions())
 		{

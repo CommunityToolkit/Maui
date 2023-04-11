@@ -1,12 +1,12 @@
 using System.Globalization;
 
-namespace CommunityToolkit.Maui.SpeechToText;
+namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc />
 public sealed class SpeechToTextImplementation : ISpeechToText
 {
 	/// <inheritdoc />
-	public Task<string> Listen(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
+	public Task<string> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
 		throw new NotImplementedException();
 	}
@@ -14,6 +14,6 @@ public sealed class SpeechToTextImplementation : ISpeechToText
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()
 	{
-		return ValueTask.CompletedTask;
+		throw new NotImplementedException();
 	}
 }

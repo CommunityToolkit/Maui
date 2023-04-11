@@ -1,6 +1,6 @@
 using System.Globalization;
 using CommunityToolkit.Maui.Alerts;
-using CommunityToolkit.Maui.SpeechToText;
+using CommunityToolkit.Maui.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -54,7 +54,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	{
 		try
 		{
-			RecognitionText = await speechToText.Listen(CultureInfo.GetCultureInfo(Locale?.Language ?? "en-us"), new Progress<string>(partialText =>
+			RecognitionText = await speechToText.ListenAsync(CultureInfo.GetCultureInfo(Locale?.Language ?? "en-us"), new Progress<string>(partialText =>
 			{
 				RecognitionText += partialText + " ";
 			}), cancellationToken);

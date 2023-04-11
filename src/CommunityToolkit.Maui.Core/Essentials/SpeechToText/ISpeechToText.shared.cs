@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace CommunityToolkit.Maui.SpeechToText;
+namespace CommunityToolkit.Maui.Media;
 
 /// <summary>
 /// Allows the user to convert speech to text in real time.
@@ -14,5 +14,5 @@ public interface ISpeechToText : IAsyncDisposable
 	/// <param name="recognitionResult">Intermediate convertion result.</param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns>Final convertion result</returns>
-	Task<string> Listen(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken);
+	Task<string> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken);
 }

@@ -3,57 +3,43 @@ using AVFoundation;
 using Microsoft.Maui.ApplicationModel;
 using Speech;
 
-namespace CommunityToolkit.Maui.SpeechToText;
+namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc />
-public sealed class SpeechToTextImplementation : ISpeechToText
+public sealed class SpeechToTextImplementation : BaseSpeechToTextImplementation, ISpeechToText
 {
-	AVAudioEngine? audioEngine;
-	SFSpeechAudioBufferRecognitionRequest? liveSpeechRequest;
-	SFSpeechRecognizer? speechRecognizer;
-	SFSpeechRecognitionTask? recognitionTask;
-
 	/// <inheritdoc />
-	public ValueTask DisposeAsync()
+	public async Task<string> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
-		audioEngine?.Dispose();
-		speechRecognizer?.Dispose();
-		liveSpeechRequest?.Dispose();
-		recognitionTask?.Dispose();
-		return ValueTask.CompletedTask;
-	}
-
-	/// <inheritdoc />
-	public async Task<string> Listen(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
-	{
-		if (!await RequestPermissions())
+		var isSpeechPermissionAuthorized = await IsSpeechPermissionAuthorized();
+		if (!isSpeechPermissionAuthorized)
 		{
 			throw new PermissionException("Microphone permission is not granted");
 		}
 
-		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(culture.Name));
+		SpeechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(culture.Name));
 
-		if (!speechRecognizer.Available)
+		if (!SpeechRecognizer.Available)
 		{
 			throw new ArgumentException("Speech recognizer is not available");
 		}
 
-		if (SFSpeechRecognizer.AuthorizationStatus != SFSpeechRecognizerAuthorizationStatus.Authorized)
+		if (SFSpeechRecognizer.AuthorizationStatus is not SFSpeechRecognizerAuthorizationStatus.Authorized)
 		{
-			throw new Exception("Permission denied");
+			throw new PermissionException("Permission denied");
 		}
 
-		audioEngine = new AVAudioEngine();
-		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest();
-		var node = audioEngine.InputNode;
+		AudioEngine = new AVAudioEngine();
+		LiveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest();
+		var node = AudioEngine.InputNode;
 		var recordingFormat = node.GetBusOutputFormat(new nuint(0));
 		node.InstallTapOnBus(new nuint(0), 1024, recordingFormat, (buffer, _) =>
 		{
-			liveSpeechRequest.Append(buffer);
+			LiveSpeechRequest.Append(buffer);
 		});
 
-		audioEngine.Prepare();
-		audioEngine.StartAndReturnError(out var error);
+		AudioEngine.Prepare();
+		AudioEngine.StartAndReturnError(out var error);
 
 		if (error is not null)
 		{
@@ -62,7 +48,7 @@ public sealed class SpeechToTextImplementation : ISpeechToText
 
 		var currentIndex = 0;
 		var taskResult = new TaskCompletionSource<string>();
-		recognitionTask = speechRecognizer.GetRecognitionTask(liveSpeechRequest, (result, err) =>
+		RecognitionTask = SpeechRecognizer.GetRecognitionTask(LiveSpeechRequest, (result, err) =>
 		{
 			if (err is not null)
 			{
@@ -97,24 +83,5 @@ public sealed class SpeechToTextImplementation : ISpeechToText
 		{
 			return await taskResult.Task;
 		}
-	}
-
-	void StopRecording()
-	{
-		audioEngine?.InputNode.RemoveTapOnBus(new nuint(0));
-		audioEngine?.Stop();
-		liveSpeechRequest?.EndAudio();
-		recognitionTask?.Cancel();
-	}
-
-	Task<bool> RequestPermissions()
-	{
-		var taskResult = new TaskCompletionSource<bool>();
-		SFSpeechRecognizer.RequestAuthorization(status =>
-		{
-			taskResult.SetResult(status == SFSpeechRecognizerAuthorizationStatus.Authorized);
-		});
-
-		return taskResult.Task;
 	}
 }

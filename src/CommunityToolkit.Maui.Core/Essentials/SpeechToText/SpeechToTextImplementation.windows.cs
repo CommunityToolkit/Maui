@@ -5,7 +5,7 @@ using Windows.Globalization;
 using Windows.Media.SpeechRecognition;
 using SpeechRecognizer = Windows.Media.SpeechRecognition.SpeechRecognizer;
 
-namespace CommunityToolkit.Maui.SpeechToText;
+namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc />
 public sealed class SpeechToTextImplementation : ISpeechToText
@@ -15,7 +15,7 @@ public sealed class SpeechToTextImplementation : ISpeechToText
 	string? recognitionText;
 
 	/// <inheritdoc />
-	public Task<string> Listen(CultureInfo culture,
+	public Task<string> ListenAsync(CultureInfo culture,
 		IProgress<string>? recognitionResult,
 		CancellationToken cancellationToken)
 	{
