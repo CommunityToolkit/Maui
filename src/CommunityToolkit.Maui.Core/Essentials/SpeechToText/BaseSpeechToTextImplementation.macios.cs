@@ -6,30 +6,25 @@ namespace CommunityToolkit.Maui.Media;
 /// <summary>
 /// Base class for <see cref="SpeechToTextImplementation"/> on iOS + MacCatalyst
 /// </summary>
-public abstract class BaseSpeechToTextImplementation
+public sealed partial class SpeechToTextImplementation
 {
-	// Use private protected to prevent external libraries 
-	private protected BaseSpeechToTextImplementation()
-	{
-	}
-
-	private protected AVAudioEngine? AudioEngine { get; set; }
-	private protected SFSpeechAudioBufferRecognitionRequest? LiveSpeechRequest { get; set; }
-	private protected SFSpeechRecognizer? SpeechRecognizer { get; set; }
-	private protected SFSpeechRecognitionTask? RecognitionTask { get; set; }
+	AVAudioEngine? audioEngine;
+	SFSpeechAudioBufferRecognitionRequest? liveSpeechRequest;
+	SFSpeechRecognizer? speechRecognizer;
+	SFSpeechRecognitionTask? recognitionTask;
 
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()
 	{
-		AudioEngine?.Dispose();
-		SpeechRecognizer?.Dispose();
-		LiveSpeechRequest?.Dispose();
-		RecognitionTask?.Dispose();
+		audioEngine?.Dispose();
+		speechRecognizer?.Dispose();
+		liveSpeechRequest?.Dispose();
+		recognitionTask?.Dispose();
 		return ValueTask.CompletedTask;
 	}
 
 
-	private protected static Task<bool> IsSpeechPermissionAuthorized()
+	static Task<bool> IsSpeechPermissionAuthorized()
 	{
 		var taskResult = new TaskCompletionSource<bool>();
 		SFSpeechRecognizer.RequestAuthorization(status =>
@@ -40,12 +35,12 @@ public abstract class BaseSpeechToTextImplementation
 		return taskResult.Task;
 	}
 
-	private protected void StopRecording()
+	void StopRecording()
 	{
-		AudioEngine?.InputNode.RemoveTapOnBus(new nuint(0));
-		AudioEngine?.Stop();
-		LiveSpeechRequest?.EndAudio();
-		RecognitionTask?.Cancel();
+		audioEngine?.InputNode.RemoveTapOnBus(new nuint(0));
+		audioEngine?.Stop();
+		liveSpeechRequest?.EndAudio();
+		recognitionTask?.Cancel();
 	}
 }
 

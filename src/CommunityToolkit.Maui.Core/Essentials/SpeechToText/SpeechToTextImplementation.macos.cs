@@ -6,20 +6,20 @@ using Speech;
 namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc />
-public sealed class SpeechToTextImplementation : BaseSpeechToTextImplementation, ISpeechToText
+public sealed partial class SpeechToTextImplementation : ISpeechToText
 {
 	/// <inheritdoc />
 	public async Task<string> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
-		var isPermissionAuthorized = await IsSpeechPermissionAuthorized();
-		if (!isPermissionAuthorized)
+		var isSpeechPermissionAuthorized = await IsSpeechPermissionAuthorized();
+		if (!isSpeechPermissionAuthorized)
 		{
 			throw new PermissionException("Microphone permission is not granted");
 		}
 
-		SpeechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(culture.Name));
+		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(culture.Name));
 
-		if (!SpeechRecognizer.Available)
+		if (!speechRecognizer.Available)
 		{
 			throw new ArgumentException("Speech recognizer is not available");
 		}
@@ -29,8 +29,8 @@ public sealed class SpeechToTextImplementation : BaseSpeechToTextImplementation,
 			throw new PermissionException("Permission denied");
 		}
 
-		AudioEngine = new AVAudioEngine();
-		LiveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest();
+		audioEngine = new AVAudioEngine();
+		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest();
 		var audioSession = AVAudioSession.SharedInstance();
 		audioSession.SetCategory(AVAudioSessionCategory.Record, AVAudioSessionCategoryOptions.DefaultToSpeaker);
 
@@ -46,15 +46,15 @@ public sealed class SpeechToTextImplementation : BaseSpeechToTextImplementation,
 			throw new Exception(audioSessionError.LocalizedDescription);
 		}
 
-		var node = AudioEngine.InputNode;
+		var node = audioEngine.InputNode;
 		var recordingFormat = node.GetBusOutputFormat(new nuint(0));
 		node.InstallTapOnBus(new nuint(0), 1024, recordingFormat, (buffer, _) =>
 		{
-			LiveSpeechRequest.Append(buffer);
+			liveSpeechRequest.Append(buffer);
 		});
 
-		AudioEngine.Prepare();
-		AudioEngine.StartAndReturnError(out var error);
+		audioEngine.Prepare();
+		audioEngine.StartAndReturnError(out var error);
 
 		if (error is not null)
 		{
@@ -62,13 +62,14 @@ public sealed class SpeechToTextImplementation : BaseSpeechToTextImplementation,
 		}
 
 		var currentIndex = 0;
-		var taskResult = new TaskCompletionSource<string>();
-		RecognitionTask = SpeechRecognizer.GetRecognitionTask(LiveSpeechRequest, (result, err) =>
+		var getRecognitionTaskCompletionSource = new TaskCompletionSource<string>();
+
+		recognitionTask = speechRecognizer.GetRecognitionTask(liveSpeechRequest, (result, err) =>
 		{
 			if (err is not null)
 			{
 				StopRecording();
-				taskResult.TrySetException(new Exception(err.LocalizedDescription));
+				getRecognitionTaskCompletionSource.TrySetException(new Exception(err.LocalizedDescription));
 			}
 			else
 			{
@@ -76,7 +77,7 @@ public sealed class SpeechToTextImplementation : BaseSpeechToTextImplementation,
 				{
 					currentIndex = 0;
 					StopRecording();
-					taskResult.TrySetResult(result.BestTranscription.FormattedString);
+					getRecognitionTaskCompletionSource.TrySetResult(result.BestTranscription.FormattedString);
 				}
 				else
 				{
@@ -93,10 +94,10 @@ public sealed class SpeechToTextImplementation : BaseSpeechToTextImplementation,
 		await using (cancellationToken.Register(() =>
 		{
 			StopRecording();
-			taskResult.TrySetCanceled();
+			getRecognitionTaskCompletionSource.TrySetCanceled();
 		}))
 		{
-			return await taskResult.Task;
+			return await getRecognitionTaskCompletionSource.Task;
 		}
 	}
 }
