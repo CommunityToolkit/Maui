@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Speech.Recognition;
+using System.Threading.Tasks;
 using Microsoft.Maui.Networking;
 using Windows.Globalization;
 using Windows.Media.SpeechRecognition;
@@ -8,11 +9,20 @@ using SpeechRecognizer = Windows.Media.SpeechRecognition.SpeechRecognizer;
 namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc />
-public sealed class SpeechToTextImplementation : ISpeechToText
+sealed class SpeechToTextImplementation : ISpeechToText
 {
-	SpeechRecognitionEngine? speechRecognitionEngine;
-	SpeechRecognizer? speechRecognizer;
 	string? recognitionText;
+	SpeechRecognizer? speechRecognizer;
+	SpeechRecognitionEngine? speechRecognitionEngine;
+
+	/// <inheritdoc />
+	public async ValueTask DisposeAsync()
+	{
+		await StopRecording();
+		StopOfflineRecording();
+		speechRecognitionEngine?.Dispose();
+		speechRecognizer?.Dispose();
+	}
 
 	/// <inheritdoc />
 	public Task<string> ListenAsync(CultureInfo culture,
@@ -33,24 +43,25 @@ public sealed class SpeechToTextImplementation : ISpeechToText
 		speechRecognizer = new SpeechRecognizer(new Language(culture.IetfLanguageTag));
 		await speechRecognizer.CompileConstraintsAsync();
 
-		var taskResult = new TaskCompletionSource<string>();
+		var speechRecognitionTaskCompletionSource = new TaskCompletionSource<string>();
 		speechRecognizer.ContinuousRecognitionSession.ResultGenerated += (s, e) =>
 		{
 			recognitionText += e.Result.Text;
 			recognitionResult?.Report(e.Result.Text);
 		};
+
 		speechRecognizer.ContinuousRecognitionSession.Completed += (s, e) =>
 		{
 			switch (e.Status)
 			{
 				case SpeechRecognitionResultStatus.Success:
-					taskResult.TrySetResult(recognitionText);
+					speechRecognitionTaskCompletionSource.TrySetResult(recognitionText);
 					break;
 				case SpeechRecognitionResultStatus.UserCanceled:
-					taskResult.TrySetCanceled();
+					speechRecognitionTaskCompletionSource.TrySetCanceled();
 					break;
 				default:
-					taskResult.TrySetException(new Exception(e.Status.ToString()));
+					speechRecognitionTaskCompletionSource.TrySetException(new Exception(e.Status.ToString()));
 					break;
 			}
 		};
@@ -58,10 +69,10 @@ public sealed class SpeechToTextImplementation : ISpeechToText
 		await using (cancellationToken.Register(async () =>
 		{
 			await StopRecording();
-			taskResult.TrySetCanceled();
+			speechRecognitionTaskCompletionSource.SetCanceled();
 		}))
 		{
-			return await taskResult.Task;
+			return await speechRecognitionTaskCompletionSource.Task;
 		}
 	}
 
@@ -75,14 +86,15 @@ public sealed class SpeechToTextImplementation : ISpeechToText
 		};
 		speechRecognitionEngine.SetInputToDefaultAudioDevice();
 		speechRecognitionEngine.RecognizeAsync(RecognizeMode.Multiple);
-		var taskResult = new TaskCompletionSource<string>();
+
+		var speechRecognitionTaskCompletionSource = new TaskCompletionSource<string>();
 		await using (cancellationToken.Register(() =>
 		{
 			StopOfflineRecording();
-			taskResult.TrySetCanceled();
+			speechRecognitionTaskCompletionSource.TrySetCanceled();
 		}))
 		{
-			return await taskResult.Task;
+			return await speechRecognitionTaskCompletionSource.Task;
 		}
 	}
 
@@ -101,14 +113,5 @@ public sealed class SpeechToTextImplementation : ISpeechToText
 	void StopOfflineRecording()
 	{
 		speechRecognitionEngine?.RecognizeAsyncCancel();
-	}
-
-	/// <inheritdoc />
-	public async ValueTask DisposeAsync()
-	{
-		await StopRecording();
-		StopOfflineRecording();
-		speechRecognitionEngine?.Dispose();
-		speechRecognizer?.Dispose();
 	}
 }

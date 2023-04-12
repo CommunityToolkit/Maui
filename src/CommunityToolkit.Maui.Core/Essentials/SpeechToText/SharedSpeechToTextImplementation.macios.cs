@@ -9,9 +9,9 @@ namespace CommunityToolkit.Maui.Media;
 public sealed partial class SpeechToTextImplementation
 {
 	AVAudioEngine? audioEngine;
-	SFSpeechAudioBufferRecognitionRequest? liveSpeechRequest;
 	SFSpeechRecognizer? speechRecognizer;
 	SFSpeechRecognitionTask? recognitionTask;
+	SFSpeechAudioBufferRecognitionRequest? liveSpeechRequest;
 
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()

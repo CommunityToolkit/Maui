@@ -6,7 +6,7 @@ using Speech;
 namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc />
-public sealed partial class SpeechToTextImplementation : ISpeechToText
+sealed partial class SpeechToTextImplementation : ISpeechToText
 {
 	/// <inheritdoc />
 	public async Task<string> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
