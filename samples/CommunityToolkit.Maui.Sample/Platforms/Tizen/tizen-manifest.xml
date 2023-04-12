@@ -12,7 +12,9 @@
         <privilege>http://tizen.org/privilege/internet</privilege>
         <privilege>http://tizen.org/privilege/mediastorage</privilege>
         <privilege>http://tizen.org/privilege/externalstorage</privilege>
+        <privilege>http://tizen.org/privilege/recorder</privilege>
     </privileges>
     <dependencies />
     <provides-appdefined-privileges />
+    <feature name="http://tizen.org/feature/microphone">true</feature>
 </manifest>
