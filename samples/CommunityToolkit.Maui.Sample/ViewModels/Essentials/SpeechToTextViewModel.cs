@@ -79,6 +79,10 @@ public partial class SpeechToTextViewModel : BaseViewModel
 		{
 			await Toast.Make("Listening Stopped by User").Show(CancellationToken.None);
 		}
+		catch (Exception e)
+		{
+			await Toast.Make(e.Message).Show(CancellationToken.None);
+		}
 		finally
 		{
 			if (RecognitionText is beginSpeakingPrompt)

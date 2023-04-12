@@ -1,8 +1,9 @@
 using System.Globalization;
 using System.Speech.Recognition;
-using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Networking;
 using Windows.Globalization;
+using Windows.Media.Capture;
 using Windows.Media.SpeechRecognition;
 using SpeechRecognizer = Windows.Media.SpeechRecognition.SpeechRecognizer;
 
@@ -11,6 +12,9 @@ namespace CommunityToolkit.Maui.Media;
 /// <inheritdoc />
 sealed class SpeechToTextImplementation : ISpeechToText
 {
+	const uint privacyStatementDeclinedCode = 0x80045509;
+	const int noCaptureDevicesCode = -1072845856;
+
 	string? recognitionText;
 	SpeechRecognizer? speechRecognizer;
 	SpeechRecognitionEngine? speechRecognitionEngine;
@@ -25,16 +29,24 @@ sealed class SpeechToTextImplementation : ISpeechToText
 	}
 
 	/// <inheritdoc />
-	public Task<string> ListenAsync(CultureInfo culture,
+	public async Task<string> ListenAsync(CultureInfo culture,
 		IProgress<string>? recognitionResult,
 		CancellationToken cancellationToken)
 	{
-		if (Connectivity.NetworkAccess == NetworkAccess.Internet)
+		await RequestMicrophonePermission();
+
+		var microphonePermissionStatus = await Permissions.CheckStatusAsync<Permissions.Microphone>();
+		if (microphonePermissionStatus is not PermissionStatus.Granted)
 		{
-			return ListenOnline(culture, recognitionResult, cancellationToken);
+			throw new PermissionException("Microphone Permission Not Granted");
 		}
 
-		return ListenOffline(culture, recognitionResult, cancellationToken);
+		if (Connectivity.NetworkAccess is NetworkAccess.Internet)
+		{
+			return await ListenOnline(culture, recognitionResult, cancellationToken);
+		}
+
+		return await ListenOffline(culture, recognitionResult, cancellationToken);
 	}
 
 	async Task<string> ListenOnline(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
@@ -65,7 +77,17 @@ sealed class SpeechToTextImplementation : ISpeechToText
 					break;
 			}
 		};
-		await speechRecognizer.ContinuousRecognitionSession.StartAsync();
+
+		try
+		{
+			await speechRecognizer.ContinuousRecognitionSession.StartAsync();
+		}
+		catch (Exception ex) when ((uint)ex.HResult is privacyStatementDeclinedCode)
+		{
+			// https://learn.microsoft.com/en-us/windows/apps/design/input/speech-recognition#predefined-grammars
+			throw new PermissionException("Online Speech Recognition Disabled in Privacy Settings");
+		}
+
 		await using (cancellationToken.Register(async () =>
 		{
 			await StopRecording();
@@ -73,6 +95,25 @@ sealed class SpeechToTextImplementation : ISpeechToText
 		}))
 		{
 			return await speechRecognitionTaskCompletionSource.Task;
+		}
+	}
+
+	// https://learn.microsoft.com/en-us/windows/apps/design/input/speech-recognition#configure-speech-recognition
+	static async Task RequestMicrophonePermission()
+	{
+		try
+		{
+			var capture = new MediaCapture();
+
+			await capture.InitializeAsync(new()
+			{
+				StreamingCaptureMode = StreamingCaptureMode.Audio,
+				MediaCategory = MediaCategory.Speech
+			});
+		}
+		catch (Exception exception) when (exception.HResult is noCaptureDevicesCode)
+		{
+			throw new InvalidOperationException("No Audio Capture devices are present on this system");
 		}
 	}
 
