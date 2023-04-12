@@ -10,7 +10,7 @@ using SpeechRecognizer = Windows.Media.SpeechRecognition.SpeechRecognizer;
 namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc />
-sealed class SpeechToTextImplementation : ISpeechToText
+public sealed class SpeechToTextImplementation : ISpeechToText
 {
 	const uint privacyStatementDeclinedCode = 0x80045509;
 	const int noCaptureDevicesCode = -1072845856;

@@ -7,7 +7,7 @@ using Microsoft.Maui.ApplicationModel;
 namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc />
-sealed class SpeechToTextImplementation : ISpeechToText
+public sealed class SpeechToTextImplementation : ISpeechToText
 {
 	SpeechRecognizer? speechRecognizer;
 	SpeechRecognitionListener? listener;
