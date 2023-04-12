@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Sample.ViewModels.Essentials;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Essentials;
@@ -9,22 +10,21 @@ public partial class SpeechToTextPage : BasePage<SpeechToTextViewModel>
 	{
 		InitializeComponent();
 	}
+
+	protected override async void OnAppearing()
+	{
+		base.OnAppearing();
+
+		await BindingContext.SetLocalesCommand.ExecuteAsync(null);
+	}
 }
 
-public class PickerDisplayConverter : IValueConverter
+class PickerLocaleDisplayConverter : BaseConverterOneWay<Locale, string>
 {
-	public object? Convert(object value, Type targetType, object parameter, CultureInfo culture)
-	{
-		if (value is Locale locale)
-		{
-			return $"{locale.Language} {locale.Name}";
-		}
+	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
 
-		return null;
-	}
-
-	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+	public override string ConvertFrom(Locale value, CultureInfo? culture)
 	{
-		throw new NotImplementedException();
+		return $"{value.Language} {value.Name}";
 	}
 }
