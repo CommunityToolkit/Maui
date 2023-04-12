@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Markup;
+using CommunityToolkit.Maui.Media;
 using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.Pages;
 using CommunityToolkit.Maui.Sample.Pages.Alerts;
@@ -19,7 +20,6 @@ using CommunityToolkit.Maui.Sample.ViewModels.ImageSources;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
-using CommunityToolkit.Maui.Media;
 using CommunityToolkit.Maui.Storage;
 using Microsoft.Extensions.Logging;
 using Polly;

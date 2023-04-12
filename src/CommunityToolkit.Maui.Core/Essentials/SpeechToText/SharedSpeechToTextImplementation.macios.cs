@@ -43,4 +43,3 @@ public sealed partial class SpeechToTextImplementation
 		recognitionTask?.Cancel();
 	}
 }
-

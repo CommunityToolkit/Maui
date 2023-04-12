@@ -30,7 +30,7 @@ sealed class SpeechToTextImplementation : ISpeechToText
 		}
 
 		var isSpeechRecognitionAvailable = IsSpeechRecognitionAvailable();
-		if(!isSpeechRecognitionAvailable)
+		if (!isSpeechRecognitionAvailable)
 		{
 			throw new FeatureNotSupportedException("Speech Recognition is not available on this device");
 		}
