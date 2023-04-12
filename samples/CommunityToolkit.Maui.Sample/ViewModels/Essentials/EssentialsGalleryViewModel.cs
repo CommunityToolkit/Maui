@@ -9,7 +9,7 @@ public class EssentialsGalleryViewModel : BaseGalleryViewModel
 		{
 			SectionModel.Create<FileSaverViewModel>("FileSaver", "Allows the user to save files to the filesystem"),
 			SectionModel.Create<FolderPickerViewModel>("FolderPicker", "Allows picking folders from the file system"),
-			SectionModel.Create<SpeechToTextViewModel>("SpeechToText", "Allows converts speech to text"),
+			SectionModel.Create<SpeechToTextViewModel>("SpeechToText", "Converts speech to text"),
 		})
 	{
 	}
