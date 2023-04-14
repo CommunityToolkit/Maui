@@ -12,7 +12,7 @@ public partial class LazyViewPage : BasePage<LazyViewViewModel>
 	protected override async void OnAppearing()
 	{
 		base.OnAppearing();
-		await LazyActiviation.LoadViewAsync();
+		await LazyActivation.LoadViewAsync();
 	}
 
 	async void LoadLazyView_Clicked(object sender, EventArgs e)
