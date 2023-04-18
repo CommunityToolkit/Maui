@@ -12,7 +12,7 @@ And – the best part – the features you add to the .NET MAUI Toolkit may one 
 
 ## Documentation
 
-<img href="https://learn.microsoft.com/dotnet/communitytoolkit/maui/get-started?tabs=CommunityToolkitMaui" width="200" alt="image" src="https://user-images.githubusercontent.com/13558917/232885041-35b62d65-26d3-44a7-a525-5239ac811498.png">
+<a href="https://learn.microsoft.com/dotnet/communitytoolkit/maui/get-started?tabs=CommunityToolkitMaui"><img width="200" alt="image" src="https://user-images.githubusercontent.com/13558917/232885041-35b62d65-26d3-44a7-a525-5239ac811498.png"></a>
 
 All of the [documentation](https://learn.microsoft.com/dotnet/communitytoolkit/maui/get-started?tabs=CommunityToolkitMaui) for `CommunityToolkit.Maui` can be found here on [Microsoft Learn](https://learn.microsoft.com/dotnet/communitytoolkit/maui/get-started?tabs=CommunityToolkitMaui):
 
