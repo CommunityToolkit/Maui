@@ -16,6 +16,7 @@ using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Converters;
 using CommunityToolkit.Maui.Sample.ViewModels.Essentials;
+using CommunityToolkit.Maui.Sample.ViewModels.Extensions;
 using CommunityToolkit.Maui.Sample.ViewModels.ImageSources;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
@@ -158,6 +159,7 @@ public static class MauiProgram
 
 		// Add Extensions Pages + ViewModels
 		services.AddTransientWithShellRoute<ColorAnimationExtensionsPage, ColorAnimationExtensionsViewModel>();
+		services.AddTransientWithShellRoute<KeyboardExtensionsPage, KeyboardExtensionsViewModel>();
 
 		// Add ImageSources Pages + ViewModels
 		services.AddTransientWithShellRoute<GravatarImageSourcePage, GravatarImageSourceViewModel>();
