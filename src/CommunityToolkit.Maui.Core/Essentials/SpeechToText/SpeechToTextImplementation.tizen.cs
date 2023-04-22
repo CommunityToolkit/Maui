@@ -5,20 +5,17 @@ using Tizen.Uix.Stt;
 namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc />
-public sealed class SpeechToTextImplementation : ISpeechToText
+public sealed class SpeechToTextImplementation
 {
-
 	SttClient? sttClient;
-
+	TaskCompletionSource<string>? taskResult;
+	IProgress<string>? recognitionResult;
+	
 	/// <inheritdoc />
-	public async Task<string> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
+	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
-		if (!await RequestPermissions())
-		{
-			throw new PermissionException("Microphone permission is not granted");
-		}
-
-		var taskResult = new TaskCompletionSource<string>();
+		this.recognitionResult = recognitionResult;
+		taskResult ??= new TaskCompletionSource<string>();
 		sttClient = new SttClient();
 		try
 		{
@@ -29,28 +26,8 @@ public sealed class SpeechToTextImplementation : ISpeechToText
 			taskResult.TrySetException(new Exception("STT is not available - " + ex));
 		}
 
-		sttClient.ErrorOccurred += (s, e) =>
-		{
-			taskResult.TrySetException(new Exception("STT failed - " + e.ErrorMessage));
-		};
-
-		sttClient.RecognitionResult += (s, e) =>
-		{
-			if (e.Result == ResultEvent.Error)
-			{
-				StopRecording();
-				taskResult.TrySetException(new Exception("Failure in speech engine - " + e.Message));
-			}
-			else if (e.Result == ResultEvent.PartialResult)
-			{
-				recognitionResult?.Report(e.Data.ToString() ?? string.Empty);
-			}
-			else
-			{
-				StopRecording();
-				taskResult.TrySetResult(e.Data.ToString() ?? string.Empty);
-			}
-		};
+		sttClient.ErrorOccurred += OnErrorOccurred;
+		sttClient.RecognitionResult += OnRecognitionResult;
 
 		RecognitionType recognitionType = sttClient.IsRecognitionTypeSupported(RecognitionType.Partial) ?
 			RecognitionType.Partial : RecognitionType.Free;
@@ -65,9 +42,35 @@ public sealed class SpeechToTextImplementation : ISpeechToText
 			return await taskResult.Task;
 		}
 	}
+	
+	void OnErrorOccurred(object sender, ErrorOccurredEventArgs e)
+	{
+		StopRecording();
+		taskResult?.TrySetException(new Exception("STT failed - " + e.ErrorMessage));
+	}
+	
+	void OnRecognitionResult(object sender, RecognitionResultEventArgs e)
+	{
+		if (e.Result == ResultEvent.Error)
+		{
+			StopRecording();
+			taskResult?.TrySetException(new Exception("Failure in speech engine - " + e.Message));
+		}
+		else if (e.Result == ResultEvent.PartialResult)
+		{
+			recognitionResult?.Report(e.Data.ToString() ?? string.Empty);
+		}
+		else
+		{
+			StopRecording();
+			taskResult.TrySetResult(e.Data.ToString() ?? string.Empty);
+		}
+	};
 
 	void StopRecording()
 	{
+		sttClient?.RecognitionResult -= OnRecognitionResult;
+		sttClient?.ErrorOccurred -= OnErrorOccurred;
 		sttClient?.Stop();
 		sttClient?.Unprepare();
 	}
@@ -75,13 +78,9 @@ public sealed class SpeechToTextImplementation : ISpeechToText
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()
 	{
+		sttClient?.RecognitionResult -= OnRecognitionResult;
+		sttClient?.ErrorOccurred -= OnErrorOccurred;
 		sttClient?.Dispose();
 		return ValueTask.CompletedTask;
-	}
-
-	async Task<bool> RequestPermissions()
-	{
-		var status = await Permissions.RequestAsync<Permissions.Microphone>();
-		return status == PermissionStatus.Granted;
 	}
 }

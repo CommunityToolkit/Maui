@@ -11,8 +11,15 @@ public interface ISpeechToText : IAsyncDisposable
 	/// Converts speech to text in real time.
 	/// </summary>
 	/// <param name="culture">Speak language</param>
-	/// <param name="recognitionResult">Intermediate convertion result.</param>
+	/// <param name="recognitionResult">Intermediate recognition result.</param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
-	/// <returns>Final convertion result</returns>
-	Task<string> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken);
+	/// <returns>Final recognition result</returns>
+	Task<SpeechToTextResult> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken);
+	
+	/// <summary>
+	/// Request permissions for speech to text.
+	/// </summary>
+	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
+	/// <returns>True if permissions granted</returns>
+	Task<bool> RequestPermissions(CancellationToken cancellationToken);
 }

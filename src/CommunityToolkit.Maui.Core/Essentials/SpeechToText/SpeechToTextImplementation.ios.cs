@@ -6,17 +6,11 @@ using Speech;
 namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc />
-public sealed partial class SpeechToTextImplementation : ISpeechToText
+public sealed partial class SpeechToTextImplementation
 {
 	/// <inheritdoc />
-	public async Task<string> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
+	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
-		var isSpeechPermissionAuthorized = await IsSpeechPermissionAuthorized();
-		if (!isSpeechPermissionAuthorized)
-		{
-			throw new PermissionException("Microphone permission is not granted");
-		}
-
 		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(culture.Name));
 
 		if (!speechRecognizer.Available)

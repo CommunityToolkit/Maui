@@ -10,7 +10,12 @@ class SpeechToTextImplementationMock : ISpeechToText
 		return ValueTask.CompletedTask;
 	}
 
-	public Task<string> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
+	public Task<bool> RequestPermissions(CancellationToken cancellationToken)
+	{
+		throw new NotImplementedException();
+	}
+
+	Task<SpeechToTextResult> ISpeechToText.ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
 		throw new NotImplementedException();
 	}

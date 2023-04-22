@@ -18,9 +18,16 @@ public class SpeechToTextTests
 	}
 
 	[Fact]
-	public async Task SaveAsyncFailsOnNet()
+	public async Task ListenAsyncFailsOnNet()
 	{
 		SpeechToText.SetDefault(new SpeechToTextImplementation());
 		await Assert.ThrowsAsync<NotImplementedException>(() => SpeechToText.ListenAsync(CultureInfo.CurrentCulture, null, CancellationToken.None));
+	}
+
+	[Fact]
+	public async Task RequestPermissionsFailsOnNet()
+	{
+		SpeechToText.SetDefault(new SpeechToTextImplementation());
+		await Assert.ThrowsAsync<NotImplementedException>(() => SpeechToText.RequestPermissions(CancellationToken.None));
 	}
 }

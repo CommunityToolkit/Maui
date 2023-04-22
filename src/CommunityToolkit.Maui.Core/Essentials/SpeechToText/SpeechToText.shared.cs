@@ -13,8 +13,12 @@ public static class SpeechToText
 	public static ISpeechToText Default => defaultImplementation.Value;
 
 	/// <inheritdoc cref="ISpeechToText.ListenAsync"/>
-	public static Task<string> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken) =>
+	public static Task<SpeechToTextResult> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken) =>
 		Default.ListenAsync(culture, recognitionResult, cancellationToken);
+	
+	/// <inheritdoc cref="ISpeechToText.RequestPermissions"/>
+	public static Task<bool> RequestPermissions(CancellationToken cancellationToken) =>
+		Default.RequestPermissions(cancellationToken);
 
 	internal static void SetDefault(ISpeechToText implementation) =>
 		defaultImplementation = new(implementation);

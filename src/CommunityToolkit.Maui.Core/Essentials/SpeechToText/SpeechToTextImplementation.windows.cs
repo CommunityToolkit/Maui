@@ -10,7 +10,7 @@ using SpeechRecognizer = Windows.Media.SpeechRecognition.SpeechRecognizer;
 namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc />
-public sealed class SpeechToTextImplementation : ISpeechToText
+public sealed partial class SpeechToTextImplementation
 {
 	const uint privacyStatementDeclinedCode = 0x80045509;
 	const int noCaptureDevicesCode = -1072845856;
@@ -29,18 +29,10 @@ public sealed class SpeechToTextImplementation : ISpeechToText
 	}
 
 	/// <inheritdoc />
-	public async Task<string> ListenAsync(CultureInfo culture,
+	async Task<string> InternalListenAsync(CultureInfo culture,
 		IProgress<string>? recognitionResult,
 		CancellationToken cancellationToken)
 	{
-		await RequestMicrophonePermission();
-
-		var microphonePermissionStatus = await Permissions.CheckStatusAsync<Permissions.Microphone>();
-		if (microphonePermissionStatus is not PermissionStatus.Granted)
-		{
-			throw new PermissionException("Microphone Permission Not Granted");
-		}
-
 		if (Connectivity.NetworkAccess is NetworkAccess.Internet)
 		{
 			return await ListenOnline(culture, recognitionResult, cancellationToken);
@@ -98,23 +90,16 @@ public sealed class SpeechToTextImplementation : ISpeechToText
 		}
 	}
 
-	// https://learn.microsoft.com/en-us/windows/apps/design/input/speech-recognition#configure-speech-recognition
-	static async Task RequestMicrophonePermission()
+	public async Task<bool> RequestPermissions(CancellationToken cancellationToken)
 	{
-		try
-		{
-			var capture = new MediaCapture();
+		var status = await Permissions.RequestAsync<Permissions.Microphone>();
+		return status == PermissionStatus.Granted;
+	}
 
-			await capture.InitializeAsync(new()
-			{
-				StreamingCaptureMode = StreamingCaptureMode.Audio,
-				MediaCategory = MediaCategory.Speech
-			});
-		}
-		catch (Exception exception) when (exception.HResult is noCaptureDevicesCode)
-		{
-			throw new InvalidOperationException("No Audio Capture devices are present on this system");
-		}
+	public async Task<bool> IsSpeechPermissionAuthorized(CancellationToken cancellationToken)
+	{
+		var status = await Permissions.CheckStatusAsync<>()<Permissions.Microphone>();
+		return status == PermissionStatus.Granted;
 	}
 
 	async Task<string> ListenOffline(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)

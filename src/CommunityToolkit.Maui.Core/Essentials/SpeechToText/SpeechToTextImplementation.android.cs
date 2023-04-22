@@ -7,7 +7,7 @@ using Microsoft.Maui.ApplicationModel;
 namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc />
-public sealed class SpeechToTextImplementation : ISpeechToText
+public sealed partial class SpeechToTextImplementation
 {
 	SpeechRecognizer? speechRecognizer;
 	SpeechRecognitionListener? listener;
@@ -20,15 +20,8 @@ public sealed class SpeechToTextImplementation : ISpeechToText
 		return ValueTask.CompletedTask;
 	}
 
-	/// <inheritdoc />
-	public async Task<string> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
+	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
-		var isMicrophonePermissionGranted = await IsMicrophonePermissionGranted();
-		if (!isMicrophonePermissionGranted)
-		{
-			throw new PermissionException("Microphone permission is not granted");
-		}
-
 		var isSpeechRecognitionAvailable = IsSpeechRecognitionAvailable();
 		if (!isSpeechRecognitionAvailable)
 		{
@@ -76,13 +69,6 @@ public sealed class SpeechToTextImplementation : ISpeechToText
 		return intent;
 	}
 
-	static async Task<bool> IsMicrophonePermissionGranted()
-	{
-		var isMicrophonePermissionGranted = await Permissions.RequestAsync<Permissions.Microphone>();
-
-		return isMicrophonePermissionGranted is PermissionStatus.Granted;
-	}
-
 	static bool IsSpeechRecognitionAvailable() => SpeechRecognizer.IsRecognitionAvailable(Application.Context);
 
 	void StopRecording()
@@ -93,13 +79,12 @@ public sealed class SpeechToTextImplementation : ISpeechToText
 
 	class SpeechRecognitionListener : Java.Lang.Object, IRecognitionListener
 	{
-		public Action<SpeechRecognizerError>? Error { get; set; }
-		public Action<string>? PartialResults { get; set; }
-		public Action<string>? Results { get; set; }
+		public Action<SpeechRecognizerError>? Error { get; init; }
+		public Action<string>? PartialResults { get; init; }
+		public Action<string>? Results { get; init; }
 
 		public void OnBeginningOfSpeech()
 		{
-
 		}
 
 		public void OnBufferReceived(byte[]? buffer)
@@ -140,12 +125,12 @@ public sealed class SpeechToTextImplementation : ISpeechToText
 		static void SendResults(Bundle? bundle, Action<string>? action)
 		{
 			var matches = bundle?.GetStringArrayList(SpeechRecognizer.ResultsRecognition);
-			if (matches == null || matches.Count == 0)
+			if (matches is null || matches.Count is 0)
 			{
 				return;
 			}
 
-			action?.Invoke(matches.First());
+			action?.Invoke(matches[0]);
 		}
 	}
 }

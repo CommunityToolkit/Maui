@@ -19,7 +19,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	Locale? locale;
 
 	[ObservableProperty]
-	string recognitionText = "Welcome to .NET MAUI Community Toolkit!";
+	string? recognitionText = "Welcome to .NET MAUI Community Toolkit!";
 
 	public SpeechToTextViewModel(ITextToSpeech textToSpeech, ISpeechToText speechToText)
 	{
@@ -48,7 +48,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	[RelayCommand]
 	async Task Play(CancellationToken cancellationToken)
 	{
-		await textToSpeech.SpeakAsync(RecognitionText, new()
+		await textToSpeech.SpeakAsync(RecognitionText ?? "Welcome to .NET MAUI Community Toolkit!", new()
 		{
 			Locale = Locale,
 			Pitch = 2,
@@ -59,13 +59,18 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	[RelayCommand(IncludeCancelCommand = true)]
 	async Task Listen(CancellationToken cancellationToken)
 	{
+		var isGranted = await speechToText.RequestPermissions(cancellationToken);
+		if (!isGranted)
+		{
+			await Toast.Make("Permission not granted").Show(CancellationToken.None);
+			return;
+		}
+		
 		const string beginSpeakingPrompt = "Begin speaking...";
 
 		RecognitionText = beginSpeakingPrompt;
 
-		try
-		{
-			RecognitionText = await speechToText.ListenAsync(CultureInfo.GetCultureInfo(Locale?.Language ?? defaultLanguage), new Progress<string>(partialText =>
+		var recognitionResult = await speechToText.ListenAsync(CultureInfo.GetCultureInfo(Locale?.Language ?? defaultLanguage), new Progress<string>(partialText =>
 			{
 				if (RecognitionText is beginSpeakingPrompt)
 				{
@@ -74,21 +79,18 @@ public partial class SpeechToTextViewModel : BaseViewModel
 
 				RecognitionText += partialText + " ";
 			}), cancellationToken);
-		}
-		catch (TaskCanceledException)
+		if (recognitionResult.IsSuccessful)
 		{
-			await Toast.Make("Listening Stopped by User").Show(CancellationToken.None);
+			RecognitionText = recognitionResult.Text;
 		}
-		catch (Exception e)
+		else
 		{
-			await Toast.Make(e.Message).Show(CancellationToken.None);
+			await Toast.Make(recognitionResult.Exception?.Message ?? "Unable to recognize speech").Show(CancellationToken.None);
 		}
-		finally
+		
+		if (RecognitionText is beginSpeakingPrompt)
 		{
-			if (RecognitionText is beginSpeakingPrompt)
-			{
-				RecognitionText = string.Empty;
-			}
+			RecognitionText = string.Empty;
 		}
 	}
 

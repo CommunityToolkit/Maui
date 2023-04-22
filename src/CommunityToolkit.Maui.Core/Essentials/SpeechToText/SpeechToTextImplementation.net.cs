@@ -3,17 +3,17 @@ using System.Globalization;
 namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc />
-public sealed class SpeechToTextImplementation : ISpeechToText
+public sealed partial class SpeechToTextImplementation
 {
 	/// <inheritdoc />
-	public Task<string> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
+	Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
 		throw new NotImplementedException();
 	}
-
+	
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()
 	{
-		throw new NotImplementedException();
+		return ValueTask.CompletedTask;
 	}
 }
