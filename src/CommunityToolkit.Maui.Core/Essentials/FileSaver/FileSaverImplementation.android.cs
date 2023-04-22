@@ -33,11 +33,8 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		intent.SetType(MimeTypeMap.Singleton?.GetMimeTypeFromExtension(MimeTypeMap.GetFileExtensionFromUrl(fileName)) ?? "*/*");
 		intent.PutExtra(Intent.ExtraTitle, fileName);
 		intent.PutExtra(DocumentsContract.ExtraInitialUri, initialFolderUri);
-		var pickerIntent = Intent.CreateChooser(intent, string.Empty) ?? throw new InvalidOperationException("Unable to create intent.");
-
 		AndroidUri? filePath = null;
-
-		await IntermediateActivity.StartAsync(pickerIntent, (int)AndroidRequestCode.RequestCodeSaveFilePicker, onResult: OnResult).WaitAsync(cancellationToken).ConfigureAwait(false);
+		await IntermediateActivity.StartAsync(intent, (int)AndroidRequestCode.RequestCodeSaveFilePicker, onResult: OnResult).WaitAsync(cancellationToken).ConfigureAwait(false);
 
 		if (filePath is null)
 		{

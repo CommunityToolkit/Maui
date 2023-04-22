@@ -27,7 +27,7 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 		var folder = await folderPickerOperation;
 		if (folder is null)
 		{
-			throw new FolderPickerException("Folder doesn't exist.");
+			throw new FolderPickerException("Operation cancelled or Folder doesn't exist.");
 		}
 
 		return new Folder(folder.Path, folder.Name);

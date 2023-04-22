@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+            xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+            xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+            xmlns:local="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Views.LazyView"
+            x:Class="CommunityToolkit.Maui.Sample.Pages.Views.LazyViewPage"
+            Title="LazyView Page"
+            xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+            Padding="0"
+            x:TypeArguments="viewModels:LazyViewViewModel"
+            x:DataType="viewModels:LazyViewViewModel">
+   
+
+    <ScrollView VerticalScrollBarVisibility="Always" Padding="12">
+        <VerticalStackLayout x:Name="LayoutContainer" Spacing="12" >
+            <VerticalStackLayout.Resources>
+                <ResourceDictionary>
+                    <Style x:Key="Heading" TargetType="Label">
+                        <Setter Property="VerticalTextAlignment" Value="Center" />
+                        <Setter Property="HorizontalTextAlignment" Value="Center" />
+                        <Setter Property="FontSize" Value="Medium" />
+                        <Setter Property="HorizontalOptions" Value="Center"/>
+                        <Setter Property="LineBreakMode" Value="WordWrap" />
+                        <Setter Property="Margin" Value="10" />
+                    </Style>
+                    <Style x:Key="MyViewStyle" TargetType="local:MyView">
+                        <Setter Property="HorizontalOptions" Value="Center"/>
+                        <Setter Property="WidthRequest" Value="200"/>
+                        <Setter Property="HeightRequest" Value="200"/>
+                    </Style>
+                    <Style x:Key="HR" TargetType="Line">
+                        <Setter Property="Stroke" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                        <Setter Property="X2" Value="300" />
+                        <Setter Property="HorizontalOptions" Value="Center" />
+                    </Style>
+                </ResourceDictionary>
+            </VerticalStackLayout.Resources>
+
+            <Label Text="This page demonstrates the LazyView. It instantiates 'MyView' in 3 different ways."
+                   Style="{StaticResource Heading}"/>
+
+            <Label Text="With Page Initialization" Style="{StaticResource Heading}"/>
+            <local:MyView Style="{StaticResource MyViewStyle}"/>
+            
+            <Line Style="{StaticResource HR}" />
+            
+            <Label Text="Lazy Loading After Page Activation" Style="{StaticResource Heading}"/>
+            <Label Text="{Binding Source={x:Reference LazyActiviation}, Path=HasLazyViewLoaded, StringFormat='HasLazyViewLoaded = {0}'}" Style="{StaticResource Heading}"/>
+            <local:CustomLazyView x:Name="LazyActiviation" x:TypeArguments="local:MyView" Style="{StaticResource MyViewStyle}"/>
+            
+            <Line Style="{StaticResource HR}" />
+            
+            <Label Text="Lazy Loading Based On User Action" Style="{StaticResource Heading}"/>
+            <Label Text="{Binding Source={x:Reference LazyUserAction}, Path=HasLazyViewLoaded, StringFormat='HasLazyViewLoaded = {0}'}" Style="{StaticResource Heading}"/>
+            <Button Text="Load View Now" Clicked="LoadLazyView_Clicked" WidthRequest="200" IsVisible="{Binding Source={x:Reference LazyUserAction}, Path=HasLazyViewLoaded, Converter={mct:InvertedBoolConverter}}" />
+            <local:MyLazyView x:Name="LazyUserAction" Style="{StaticResource MyViewStyle}"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</pages:BasePage>
