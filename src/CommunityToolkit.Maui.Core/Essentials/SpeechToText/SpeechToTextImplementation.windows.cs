@@ -90,18 +90,6 @@ public sealed partial class SpeechToTextImplementation
 		}
 	}
 
-	public async Task<bool> RequestPermissions(CancellationToken cancellationToken)
-	{
-		var status = await Permissions.RequestAsync<Permissions.Microphone>();
-		return status == PermissionStatus.Granted;
-	}
-
-	public async Task<bool> IsSpeechPermissionAuthorized(CancellationToken cancellationToken)
-	{
-		var status = await Permissions.CheckStatusAsync<>()<Permissions.Microphone>();
-		return status == PermissionStatus.Granted;
-	}
-
 	async Task<string> ListenOffline(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
 		speechRecognitionEngine = new SpeechRecognitionEngine(culture);

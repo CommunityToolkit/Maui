@@ -21,13 +21,15 @@ public class SpeechToTextTests
 	public async Task ListenAsyncFailsOnNet()
 	{
 		SpeechToText.SetDefault(new SpeechToTextImplementation());
-		await Assert.ThrowsAsync<NotImplementedException>(() => SpeechToText.ListenAsync(CultureInfo.CurrentCulture, null, CancellationToken.None));
+		var result = await SpeechToText.ListenAsync(CultureInfo.CurrentCulture, null, CancellationToken.None);
+		result.Text.Should().BeNull();
+		result.Exception.Should().BeOfType<NotImplementedInReferenceAssemblyException>();
 	}
 
 	[Fact]
 	public async Task RequestPermissionsFailsOnNet()
 	{
 		SpeechToText.SetDefault(new SpeechToTextImplementation());
-		await Assert.ThrowsAsync<NotImplementedException>(() => SpeechToText.RequestPermissions(CancellationToken.None));
+		await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => SpeechToText.RequestPermissions(CancellationToken.None));
 	}
 }
