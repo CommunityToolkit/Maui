@@ -1,20 +1,18 @@
 using System.Globalization;
-using Microsoft.Maui.ApplicationModel;
 using Tizen.Uix.Stt;
 
 namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc />
-public sealed class SpeechToTextImplementation
+public sealed partial class SpeechToTextImplementation
 {
 	SttClient? sttClient;
 	TaskCompletionSource<string>? taskResult;
-	IProgress<string>? recognitionResult;
+	IProgress<string>? recognitionProgress;
 	
-	/// <inheritdoc />
 	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
-		this.recognitionResult = recognitionResult;
+		this.recognitionProgress = recognitionResult;
 		taskResult ??= new TaskCompletionSource<string>();
 		sttClient = new SttClient();
 		try
@@ -29,7 +27,7 @@ public sealed class SpeechToTextImplementation
 		sttClient.ErrorOccurred += OnErrorOccurred;
 		sttClient.RecognitionResult += OnRecognitionResult;
 
-		RecognitionType recognitionType = sttClient.IsRecognitionTypeSupported(RecognitionType.Partial) ?
+		var recognitionType = sttClient.IsRecognitionTypeSupported(RecognitionType.Partial) ?
 			RecognitionType.Partial : RecognitionType.Free;
 		sttClient.Start(culture.Name, recognitionType);
 
@@ -43,13 +41,13 @@ public sealed class SpeechToTextImplementation
 		}
 	}
 	
-	void OnErrorOccurred(object sender, ErrorOccurredEventArgs e)
+	void OnErrorOccurred(object? sender, ErrorOccurredEventArgs e)
 	{
 		StopRecording();
 		taskResult?.TrySetException(new Exception("STT failed - " + e.ErrorMessage));
 	}
 	
-	void OnRecognitionResult(object sender, RecognitionResultEventArgs e)
+	void OnRecognitionResult(object? sender, RecognitionResultEventArgs e)
 	{
 		if (e.Result == ResultEvent.Error)
 		{
@@ -58,29 +56,38 @@ public sealed class SpeechToTextImplementation
 		}
 		else if (e.Result == ResultEvent.PartialResult)
 		{
-			recognitionResult?.Report(e.Data.ToString() ?? string.Empty);
+			recognitionProgress?.Report(e.Data.ToString() ?? string.Empty);
 		}
 		else
 		{
 			StopRecording();
-			taskResult.TrySetResult(e.Data.ToString() ?? string.Empty);
+			taskResult?.TrySetResult(e.Data.ToString() ?? string.Empty);
 		}
-	};
+	}
 
 	void StopRecording()
 	{
-		sttClient?.RecognitionResult -= OnRecognitionResult;
-		sttClient?.ErrorOccurred -= OnErrorOccurred;
-		sttClient?.Stop();
-		sttClient?.Unprepare();
+		if (sttClient is null)
+		{
+			return;
+		}
+
+		sttClient.RecognitionResult -= OnRecognitionResult;
+		sttClient.ErrorOccurred -= OnErrorOccurred;
+		sttClient.Stop();
+		sttClient.Unprepare();
 	}
 
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()
 	{
-		sttClient?.RecognitionResult -= OnRecognitionResult;
-		sttClient?.ErrorOccurred -= OnErrorOccurred;
-		sttClient?.Dispose();
+		if (sttClient is not null)
+		{
+			sttClient.RecognitionResult -= OnRecognitionResult;
+			sttClient.ErrorOccurred -= OnErrorOccurred;
+			sttClient.Dispose();
+		}
+
 		return ValueTask.CompletedTask;
 	}
 }
