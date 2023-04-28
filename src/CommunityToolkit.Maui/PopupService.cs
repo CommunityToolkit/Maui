@@ -30,11 +30,11 @@ public class PopupService : IPopupService
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}()"/>
-	public void ShowPopup<TViewModel>() =>
+	public void ShowPopup<TViewModel>() where TViewModel : INotifyPropertyChanged =>
 		ShowPopup(GetViewModel<TViewModel>());
 
 	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(TViewModel)"/>
-	public void ShowPopup<TViewModel>(TViewModel viewModel)
+	public void ShowPopup<TViewModel>(TViewModel viewModel) where TViewModel : INotifyPropertyChanged
 	{
 		ArgumentNullException.ThrowIfNull(viewModel);
 
@@ -43,14 +43,40 @@ public class PopupService : IPopupService
 		GetMainPage().ShowPopup(popup);
 	}
 
+	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(IDictionary{string, object})"/>
+	public void ShowPopup<TViewModel>(IDictionary<string, object> query) where TViewModel : IQueryAttributable
+	{
+		ArgumentNullException.ThrowIfNull(query);
+
+		var viewModel = GetViewModel<TViewModel>();
+		viewModel.ApplyQueryAttributes(query);
+
+		var popup = GetPopup(viewModel);
+
+		GetMainPage().ShowPopup(popup);
+	}
+
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}()"/>
-	public Task<object?> ShowPopupAsync<TViewModel>() =>
+	public Task<object?> ShowPopupAsync<TViewModel>() where TViewModel : INotifyPropertyChanged =>
 		ShowPopupAsync(GetViewModel<TViewModel>());
 
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(TViewModel)"/>
-	public Task<object?> ShowPopupAsync<TViewModel>(TViewModel viewModel)
+	public Task<object?> ShowPopupAsync<TViewModel>(TViewModel viewModel) where TViewModel : INotifyPropertyChanged
 	{
 		ArgumentNullException.ThrowIfNull(viewModel);
+
+		var popup = GetPopup(viewModel);
+
+		return GetMainPage().ShowPopupAsync(popup);
+	}
+
+	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(IDictionary{string, object})"/>
+	public Task<object?> ShowPopupAsync<TViewModel>(IDictionary<string, object> query) where TViewModel : IQueryAttributable
+	{
+		ArgumentNullException.ThrowIfNull(query);
+
+		var viewModel = GetViewModel<TViewModel>();
+		viewModel.ApplyQueryAttributes(query);
 
 		var popup = GetPopup(viewModel);
 
