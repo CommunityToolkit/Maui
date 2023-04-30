@@ -17,7 +17,7 @@ public interface IPopupService
 	/// Resolves and displays a <see cref="CommunityToolkit.Maui.Views.Popup"/> and <typeparamref name="TViewModel"/> pair that was registered with <c>AddTransientPopup</c>.
 	/// </summary>
 	/// <typeparam name="TViewModel">The type of the view model registered with the <see cref="CommunityToolkit.Maui.Views.Popup"/>.</typeparam>
-	/// <param name="query">Any parameters that can be passed across to the Popup or underlying view model.</param>
+	/// <param name="query">Any parameters that can be passed across to the resolved view model.</param>
 	void ShowPopup<TViewModel>(IDictionary<string, object> query) where TViewModel : IQueryAttributable;
 
 	/// <summary>
@@ -39,7 +39,7 @@ public interface IPopupService
 	/// </summary>
 	/// <typeparam name="TViewModel">The type of the view model registered with the <see cref="CommunityToolkit.Maui.Views.Popup"/>.</typeparam>
 	/// <returns>A <see cref="Task"/> that can be awaited to return the result of the <see cref="CommunityToolkit.Maui.Views.Popup"/> once it has been dismissed.</returns>
-	/// <param name="query">Any parameters that can be passed across to the Popup or underlying view model.</param>
+	/// <param name="query">Any parameters that can be passed across to the resolved view model.</param>
 	Task<object?> ShowPopupAsync<TViewModel>(IDictionary<string, object> query) where TViewModel : IQueryAttributable;
 
 	/// <summary>
