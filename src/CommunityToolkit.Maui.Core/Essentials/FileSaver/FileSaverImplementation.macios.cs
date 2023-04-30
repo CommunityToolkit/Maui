@@ -43,13 +43,13 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 		documentPickerViewController.WasCancelled += DocumentPickerViewControllerOnWasCancelled;
 
 		var currentViewController = Platform.GetCurrentUIViewController();
-		if (currentViewController != null)
+		if (currentViewController is not null)
 		{
 			currentViewController.PresentViewController(documentPickerViewController, true, null);
 		}
 		else
 		{
-			throw new FileSaveException("Unable to get a window where to present the file saver UI");
+			throw new FileSaveException("Unable to get a window where to present the file saver UI.");
 		}
 
 		return await tcs.Task.WaitAsync(cancellationToken).ConfigureAwait(false);

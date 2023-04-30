@@ -42,13 +42,13 @@ public sealed partial class FolderPickerImplementation : IFolderPicker, IDisposa
 
 		taskCompetedSource?.TrySetCanceled(CancellationToken.None);
 		var tcs = taskCompetedSource = new ();
-		if (currentViewController != null)
+		if (currentViewController is not null)
 		{
 			currentViewController.PresentViewController(documentPickerViewController, true, null);
 		}
 		else
 		{
-			throw new FileSaveException("Unable to get a window where to present the folder picker UI");
+			throw new FolderPickerException("Unable to get a window where to present the folder picker UI.");
 		}
 
 		return await tcs.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
