@@ -116,11 +116,16 @@ partial class MediaManager : IDisposable
 		{
 			return;
 		}
-		navBarIsVisible = Shell.GetNavBarIsVisible(currentPage);
-		tabBarIsVisible = Shell.GetTabBarIsVisible(currentPage);
-		NavigationPage.SetHasNavigationBar(currentPage, false);
-		Shell.SetNavBarIsVisible(currentPage, false);
-		Shell.SetTabBarIsVisible(currentPage, false);
+
+		if (currentPage is not null)
+		{
+			navBarIsVisible = Shell.GetNavBarIsVisible(currentPage);
+			tabBarIsVisible = Shell.GetTabBarIsVisible(currentPage);
+			NavigationPage.SetHasNavigationBar(currentPage, false);
+			Shell.SetNavBarIsVisible(currentPage, false);
+			Shell.SetTabBarIsVisible(currentPage, false);
+		}
+		
 		var currentWindow = GetAppWindow(window);
 		switch (currentWindow.Presenter)
 		{
@@ -136,9 +141,14 @@ partial class MediaManager : IDisposable
 		{
 			return;
 		}
-		NavigationPage.SetHasNavigationBar(currentPage, navBarIsVisible);
-		Shell.SetNavBarIsVisible(currentPage, navBarIsVisible);
-		Shell.SetTabBarIsVisible(currentPage, tabBarIsVisible);
+
+		if (currentPage is not null)
+		{
+			NavigationPage.SetHasNavigationBar(currentPage, navBarIsVisible);
+			Shell.SetNavBarIsVisible(currentPage, navBarIsVisible);
+			Shell.SetTabBarIsVisible(currentPage, tabBarIsVisible);
+		}
+		
 		var currentWindow = GetAppWindow(window);
 		switch (currentWindow.Presenter)
 		{

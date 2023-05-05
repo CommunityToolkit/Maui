@@ -271,16 +271,20 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	{
 		var activity = Platform.CurrentActivity;
 
-		if (activity is null || activity.Window is null || Shell.Current is null)
+		if (activity is null || activity.Window is null)
 		{
 			return;
 		}
 
-		navBarIsVisible = Shell.GetNavBarIsVisible(currentPage);
-		tabBarIsVisible = Shell.GetTabBarIsVisible(currentPage);
-		NavigationPage.SetHasNavigationBar(currentPage, false);
-		Shell.SetNavBarIsVisible(currentPage, false);
-		Shell.SetTabBarIsVisible(currentPage, false);
+		if (currentPage is not null)
+		{
+			navBarIsVisible = Shell.GetNavBarIsVisible(currentPage);
+			tabBarIsVisible = Shell.GetTabBarIsVisible(currentPage);
+			NavigationPage.SetHasNavigationBar(currentPage, false);
+			Shell.SetNavBarIsVisible(currentPage, false);
+			Shell.SetTabBarIsVisible(currentPage, false);
+		}
+
 		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(activity.Window, false);
 		var windowInsetsControllerCompat = AndroidX.Core.View.WindowCompat.GetInsetsController(activity.Window, activity.Window.DecorView);
 		var types = AndroidX.Core.View.WindowInsetsCompat.Type.StatusBars() |
@@ -293,14 +297,18 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	{
 		var activity = Platform.CurrentActivity;
 
-		if (activity == null || activity.Window == null || Shell.Current == null)
+		if (activity == null || activity.Window == null)
 		{
 			return;
 		}
 
-		NavigationPage.SetHasNavigationBar(currentPage, navBarIsVisible);
-		Shell.SetNavBarIsVisible(currentPage, navBarIsVisible);
-		Shell.SetTabBarIsVisible(currentPage, tabBarIsVisible);
+		if (currentPage is not null)
+		{
+			NavigationPage.SetHasNavigationBar(currentPage, navBarIsVisible);
+			Shell.SetNavBarIsVisible(currentPage, navBarIsVisible);
+			Shell.SetTabBarIsVisible(currentPage, tabBarIsVisible);
+		}
+
 		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(activity.Window, false);
 		var windowInsetsControllerCompat = AndroidX.Core.View.WindowCompat.GetInsetsController(activity.Window, activity.Window.DecorView);
 		var types = AndroidX.Core.View.WindowInsetsCompat.Type.StatusBars() |
