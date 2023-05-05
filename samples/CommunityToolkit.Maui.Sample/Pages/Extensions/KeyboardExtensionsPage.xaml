@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Extensions.KeyboardExtensionsPage"
+    Title="KeyboardExtensionsPage"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Extensions"
+    x:TypeArguments="vm:KeyboardExtensionsViewModel"
+    x:DataType="vm:KeyboardExtensionsViewModel">
+    <pages:BasePage.Content>
+        <ScrollView>
+            <VerticalStackLayout Spacing="12">
+                <Label Text="The Keyboard extension method provides an easy way to open and close the SoftInput Keyboard device on platforms that support it."
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center"/>
+
+                <Label Text="{Binding OperationResult}"></Label>
+
+                <Entry Text="" x:Name="entryToFocus" Focused="OnEntryFocused"></Entry>
+
+                <Button Text="Show Keyboard" CommandParameter="{x:Reference Name=entryToFocus}" Command="{Binding ShowKeyboardCommand}"></Button>
+                <Button Text="Hide Keyboard" CommandParameter="{x:Reference Name=entryToFocus}" Command="{Binding HideKeyboardCommand}"></Button>
+                <Button Text="Check Keyboard State" CommandParameter="{x:Reference Name=entryToFocus}" Command="{Binding IsKeyboardShowingCommand}"></Button>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </pages:BasePage.Content>
+</pages:BasePage>

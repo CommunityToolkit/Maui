@@ -1,5 +1,6 @@
 using System.Runtime.Versioning;
 using CommunityToolkit.Maui.Core.Primitives;
+using Microsoft.Maui.ApplicationModel;
 using UniformTypeIdentifiers;
 
 namespace CommunityToolkit.Maui.Storage;
@@ -37,12 +38,20 @@ public sealed partial class FolderPickerImplementation : IFolderPicker, IDisposa
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 		documentPickerViewController.DirectoryUrl = NSUrl.FromString(initialPath);
-		var currentViewController = Microsoft.Maui.Platform.UIApplicationExtensions.GetKeyWindow(UIApplication.SharedApplication)?.RootViewController;
+		var currentViewController = Platform.GetCurrentUIViewController();
 
-		taskCompetedSource = new TaskCompletionSource<Folder>();
-		currentViewController?.PresentViewController(documentPickerViewController, true, null);
+		taskCompetedSource?.TrySetCanceled(CancellationToken.None);
+		var tcs = taskCompetedSource = new ();
+		if (currentViewController is not null)
+		{
+			currentViewController.PresentViewController(documentPickerViewController, true, null);
+		}
+		else
+		{
+			throw new FolderPickerException("Unable to get a window where to present the folder picker UI.");
+		}
 
-		return await taskCompetedSource.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
+		return await tcs.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
 	}
 
 	Task<Folder> InternalPickAsync(CancellationToken cancellationToken)
