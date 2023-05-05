@@ -271,7 +271,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	{
 		var activity = Platform.CurrentActivity;
 
-		if (activity == null || activity.Window == null || Shell.Current == null)
+		if (activity is null || activity.Window is null || Shell.Current is null)
 		{
 			return;
 		}
