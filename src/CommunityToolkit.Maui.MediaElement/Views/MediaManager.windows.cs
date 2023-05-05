@@ -112,46 +112,44 @@ partial class MediaManager : IDisposable
 	}
 	protected virtual partial void PlatformFullScreen()
 	{
-		var window = currentPage.GetParentWindow().Handler.PlatformView as MauiWinUIWindow;
-		if (window is not null)
+		if (currentPage.GetParentWindow().Handler.PlatformView is not MauiWinUIWindow window)
 		{
-			navBarIsVisible = Shell.GetNavBarIsVisible(currentPage);
-			tabBarIsVisible = Shell.GetTabBarIsVisible(currentPage);
-			NavigationPage.SetHasNavigationBar(currentPage, false);
-			Shell.SetNavBarIsVisible(currentPage, false);
-			Shell.SetTabBarIsVisible(currentPage, false);
-			var currentWindow = GetAppWindow(window);
-			switch (currentWindow.Presenter)
-			{
-				case OverlappedPresenter overlappedPresenter:
-					overlappedPresenter.SetBorderAndTitleBar(false, false);
-					overlappedPresenter.Maximize();
-					break;
-			}
+			return;
 		}
-
+		navBarIsVisible = Shell.GetNavBarIsVisible(currentPage);
+		tabBarIsVisible = Shell.GetTabBarIsVisible(currentPage);
+		NavigationPage.SetHasNavigationBar(currentPage, false);
+		Shell.SetNavBarIsVisible(currentPage, false);
+		Shell.SetTabBarIsVisible(currentPage, false);
+		var currentWindow = GetAppWindow(window);
+		switch (currentWindow.Presenter)
+		{
+			case OverlappedPresenter overlappedPresenter:
+				overlappedPresenter.SetBorderAndTitleBar(false, false);
+				overlappedPresenter.Maximize();
+				break;
+		}
 	}
 	protected virtual partial void PlatformRestoreScreen()
 	{
-		var window = currentPage.GetParentWindow().Handler.PlatformView as MauiWinUIWindow;
-		if (window is not null)
+		if (currentPage.GetParentWindow().Handler.PlatformView is not MauiWinUIWindow window)
 		{
-			NavigationPage.SetHasNavigationBar(currentPage, navBarIsVisible);
-			Shell.SetNavBarIsVisible(currentPage, navBarIsVisible);
-			Shell.SetTabBarIsVisible(currentPage, tabBarIsVisible);
-			var currentWindow = GetAppWindow(window);
-			switch (currentWindow.Presenter)
-			{
-				case OverlappedPresenter overlappedPresenter:
-					if (overlappedPresenter.State == Microsoft.UI.Windowing.OverlappedPresenterState.Maximized)
-					{
-						overlappedPresenter.SetBorderAndTitleBar(true, true);
-						overlappedPresenter.Restore();
-					}
-					break;
-			}
+			return;
 		}
-
+		NavigationPage.SetHasNavigationBar(currentPage, navBarIsVisible);
+		Shell.SetNavBarIsVisible(currentPage, navBarIsVisible);
+		Shell.SetTabBarIsVisible(currentPage, tabBarIsVisible);
+		var currentWindow = GetAppWindow(window);
+		switch (currentWindow.Presenter)
+		{
+			case OverlappedPresenter overlappedPresenter:
+				if (overlappedPresenter.State == Microsoft.UI.Windowing.OverlappedPresenterState.Maximized)
+				{
+					overlappedPresenter.SetBorderAndTitleBar(true, true);
+					overlappedPresenter.Restore();
+				}
+				break;
+		}
 	}
 	static AppWindow GetAppWindow(MauiWinUIWindow window)
 	{

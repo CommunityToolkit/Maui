@@ -390,7 +390,7 @@ public class MediaElement : View, IMediaElement
 	/// </summary>
 	public void RestoreScreen()
 	{
-		onRestoreScreenRequested();
+		OnRestoreScreenRequested();
 		Handler?.Invoke(nameof(RestoreScreenRequested));
 	}
 	/// <summary>
@@ -398,7 +398,7 @@ public class MediaElement : View, IMediaElement
 	/// </summary>
 	public void FullScreen()
 	{
-		onFullScreenRequested();
+		OnFullScreenRequested();
 		Handler?.Invoke(nameof(FullScreenRequested));
 	}
 	internal void OnMediaEnded()
@@ -539,7 +539,7 @@ public class MediaElement : View, IMediaElement
 
 	void OnStateChanged(MediaStateChangedEventArgs mediaStateChangedEventArgs) =>
 		eventManager.HandleEvent(this, mediaStateChangedEventArgs, nameof(StateChanged));
-	void onFullScreenRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(FullScreenRequested));
+	void OnFullScreenRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(FullScreenRequested));
 	void OnRestoreScreenRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(RestoreScreenRequested));
 
 	void OnPauseRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(PauseRequested));
