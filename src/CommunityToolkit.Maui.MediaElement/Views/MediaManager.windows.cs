@@ -12,7 +12,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 partial class MediaManager : IDisposable
 {
-	Page? currentPage = Shell.Current.CurrentPage;
+	readonly Page currentPage = Application.Current?.MainPage ?? throw new NullReferenceException();
 	bool navBarIsVisible = false;
 	bool tabBarIsVisible = false;
 
@@ -117,7 +117,7 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
-		if (currentPage is not null)
+		if (Shell.Current is not null)
 		{
 			navBarIsVisible = Shell.GetNavBarIsVisible(currentPage);
 			tabBarIsVisible = Shell.GetTabBarIsVisible(currentPage);
@@ -142,7 +142,7 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
-		if (currentPage is not null)
+		if (Shell.Current is not null)
 		{
 			NavigationPage.SetHasNavigationBar(currentPage, navBarIsVisible);
 			Shell.SetNavBarIsVisible(currentPage, navBarIsVisible);

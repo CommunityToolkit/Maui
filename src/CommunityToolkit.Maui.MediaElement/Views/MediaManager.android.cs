@@ -18,7 +18,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
 	double previousSpeed = -1;
 	float volumeBeforeMute = 1;
-	Page? currentPage = Shell.Current.CurrentPage;
+	readonly Page currentPage = Application.Current?.MainPage ?? throw new NullReferenceException();
 	bool navBarIsVisible = false;
 	bool tabBarIsVisible = false;
 
@@ -275,7 +275,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			return;
 		}
 
-		if (currentPage is not null)
+		if (Shell.Current is not null)
 		{
 			navBarIsVisible = Shell.GetNavBarIsVisible(currentPage);
 			tabBarIsVisible = Shell.GetTabBarIsVisible(currentPage);
@@ -283,7 +283,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			Shell.SetNavBarIsVisible(currentPage, false);
 			Shell.SetTabBarIsVisible(currentPage, false);
 		}
-
+		
 		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(activity.Window, false);
 		var windowInsetsControllerCompat = AndroidX.Core.View.WindowCompat.GetInsetsController(activity.Window, activity.Window.DecorView);
 		var types = AndroidX.Core.View.WindowInsetsCompat.Type.StatusBars() |
@@ -301,13 +301,13 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			return;
 		}
 
-		if (currentPage is not null)
+		if (Shell.Current is not null)
 		{
 			NavigationPage.SetHasNavigationBar(currentPage, navBarIsVisible);
 			Shell.SetNavBarIsVisible(currentPage, navBarIsVisible);
 			Shell.SetTabBarIsVisible(currentPage, tabBarIsVisible);
 		}
-
+		
 		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(activity.Window, false);
 		var windowInsetsControllerCompat = AndroidX.Core.View.WindowCompat.GetInsetsController(activity.Window, activity.Window.DecorView);
 		var types = AndroidX.Core.View.WindowInsetsCompat.Type.StatusBars() |
