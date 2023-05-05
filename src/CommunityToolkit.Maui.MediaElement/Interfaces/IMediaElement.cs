@@ -139,7 +139,7 @@ public interface IMediaElement : IView
 	/// </summary>
 	void FullScreen();
 	/// <summary>
-	/// Sets the player to restore scrreen.
+	/// Sets the player to restore screen.
 	/// </summary>
 	void RestoreScreen();
 
