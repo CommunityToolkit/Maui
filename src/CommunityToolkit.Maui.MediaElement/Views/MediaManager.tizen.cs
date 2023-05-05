@@ -360,6 +360,14 @@ public partial class MediaManager : IDisposable
 		Player.IsLooping = MediaElement.ShouldLoopPlayback;
 
 	}
+	protected virtual partial void PlatformFullScreen()
+	{
+		// not implemented
+	}
+	protected virtual partial void PlatformRestoreScreen()
+	{
+		// not implemented
+	}
 
 	/// <summary>
 	/// Releases the unmanaged resources used by the <see cref="MediaManager"/> and optionally releases the managed resources.
