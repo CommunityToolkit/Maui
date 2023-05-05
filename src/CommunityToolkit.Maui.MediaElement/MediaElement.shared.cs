@@ -540,7 +540,7 @@ public class MediaElement : View, IMediaElement
 	void OnStateChanged(MediaStateChangedEventArgs mediaStateChangedEventArgs) =>
 		eventManager.HandleEvent(this, mediaStateChangedEventArgs, nameof(StateChanged));
 	void onFullScreenRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(FullScreenRequested));
-	void onRestoreScreenRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(RestoreScreenRequested));
+	void OnRestoreScreenRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(RestoreScreenRequested));
 
 	void OnPauseRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(PauseRequested));
 
