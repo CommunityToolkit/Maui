@@ -3,7 +3,6 @@ using System.Speech.Recognition;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Networking;
 using Windows.Globalization;
-using Windows.Media.Capture;
 using Windows.Media.SpeechRecognition;
 using SpeechRecognizer = Windows.Media.SpeechRecognition.SpeechRecognizer;
 
@@ -13,7 +12,6 @@ namespace CommunityToolkit.Maui.Media;
 public sealed partial class SpeechToTextImplementation
 {
 	const uint privacyStatementDeclinedCode = 0x80045509;
-	const int noCaptureDevicesCode = -1072845856;
 
 	string? recognitionText;
 	SpeechRecognizer? speechRecognizer;
@@ -27,8 +25,7 @@ public sealed partial class SpeechToTextImplementation
 		speechRecognitionEngine?.Dispose();
 		speechRecognizer?.Dispose();
 	}
-
-	/// <inheritdoc />
+	
 	async Task<string> InternalListenAsync(CultureInfo culture,
 		IProgress<string>? recognitionResult,
 		CancellationToken cancellationToken)
@@ -48,13 +45,13 @@ public sealed partial class SpeechToTextImplementation
 		await speechRecognizer.CompileConstraintsAsync();
 
 		var speechRecognitionTaskCompletionSource = new TaskCompletionSource<string>();
-		speechRecognizer.ContinuousRecognitionSession.ResultGenerated += (s, e) =>
+		speechRecognizer.ContinuousRecognitionSession.ResultGenerated += (_, e) =>
 		{
 			recognitionText += e.Result.Text;
 			recognitionResult?.Report(e.Result.Text);
 		};
 
-		speechRecognizer.ContinuousRecognitionSession.Completed += (s, e) =>
+		speechRecognizer.ContinuousRecognitionSession.Completed += (_, e) =>
 		{
 			switch (e.Status)
 			{
@@ -94,7 +91,7 @@ public sealed partial class SpeechToTextImplementation
 	{
 		speechRecognitionEngine = new SpeechRecognitionEngine(culture);
 		speechRecognitionEngine.LoadGrammarAsync(new DictationGrammar());
-		speechRecognitionEngine.SpeechRecognized += (s, e) =>
+		speechRecognitionEngine.SpeechRecognized += (_, e) =>
 		{
 			recognitionResult?.Report(e.Result.Text);
 		};

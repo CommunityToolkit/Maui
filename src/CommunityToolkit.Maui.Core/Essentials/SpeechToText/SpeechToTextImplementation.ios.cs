@@ -8,7 +8,6 @@ namespace CommunityToolkit.Maui.Media;
 /// <inheritdoc />
 public sealed partial class SpeechToTextImplementation
 {
-	/// <inheritdoc />
 	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
 		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(culture.Name));
@@ -26,8 +25,8 @@ public sealed partial class SpeechToTextImplementation
 		audioEngine = new AVAudioEngine();
 		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest();
 		var node = audioEngine.InputNode;
-		var recordingFormat = node.GetBusOutputFormat(new nuint(0));
-		node.InstallTapOnBus(new nuint(0), 1024, recordingFormat, (buffer, _) =>
+		var recordingFormat = node.GetBusOutputFormat(0);
+		node.InstallTapOnBus(0, 1024, recordingFormat, (buffer, _) =>
 		{
 			liveSpeechRequest.Append(buffer);
 		});
