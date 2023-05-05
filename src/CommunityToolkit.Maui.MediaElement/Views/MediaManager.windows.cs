@@ -12,7 +12,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 partial class MediaManager : IDisposable
 {
-	Page currentPage = Shell.Current.CurrentPage;
+	Page? currentPage = Shell.Current.CurrentPage;
 	bool navBarIsVisible = false;
 	bool tabBarIsVisible = false;
 
@@ -112,7 +112,7 @@ partial class MediaManager : IDisposable
 	}
 	protected virtual partial void PlatformFullScreen()
 	{
-		if (currentPage.GetParentWindow().Handler.PlatformView is not MauiWinUIWindow window)
+		if (currentPage?.GetParentWindow().Handler.PlatformView is not MauiWinUIWindow window)
 		{
 			return;
 		}
@@ -137,7 +137,7 @@ partial class MediaManager : IDisposable
 	}
 	protected virtual partial void PlatformRestoreScreen()
 	{
-		if (currentPage.GetParentWindow().Handler.PlatformView is not MauiWinUIWindow window)
+		if (currentPage?.GetParentWindow().Handler.PlatformView is not MauiWinUIWindow window)
 		{
 			return;
 		}

@@ -18,8 +18,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
 	double previousSpeed = -1;
 	float volumeBeforeMute = 1;
-
-	Page currentPage = Shell.Current.CurrentPage;
+	Page? currentPage = Shell.Current.CurrentPage;
 	bool navBarIsVisible = false;
 	bool tabBarIsVisible = false;
 
