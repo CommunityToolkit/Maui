@@ -277,7 +277,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	{
 		var activity = Platform.CurrentActivity;
 		// Will rerwrite currentPage as per Vladislav Antonyuk suggested method of using Page Extension class. I spend today reducing code from another suggestion.
-		var currentPage = Microsoft.Maui.Controls.Application.Current?.MainPage ?? throw new NullReferenceException();
+		var currentPage = Microsoft.Maui.Controls.Application.Current?.MainPage ?? throw new NullReferenceException(); // Will rewrite this as suggested!
 		if (activity is null || activity.Window is null)
 		{
 			return;
