@@ -142,23 +142,22 @@ partial class MediaManager : IDisposable
 					Shell.SetNavBarIsVisible(currentPage, navBarIsVisible);
 					Shell.SetTabBarIsVisible(currentPage, tabBarIsVisible);
 					break;
-			}
-			var currentWindow = GetAppWindow(window);
-			
-			switch (currentWindow.Presenter)
-			{
-				case OverlappedPresenter overlappedPresenter:
-					if (overlappedPresenter.State == Microsoft.UI.Windowing.OverlappedPresenterState.Maximized)
-					{
-						overlappedPresenter.SetBorderAndTitleBar(true, true);
-						overlappedPresenter.Restore();
-						break;
-					}
-					overlappedPresenter.SetBorderAndTitleBar(false, false);
-					overlappedPresenter.Maximize();
+			}	
+		}
+
+		var currentWindow = GetAppWindow(window);
+		switch (currentWindow.Presenter)
+		{
+			case OverlappedPresenter overlappedPresenter:
+				if (overlappedPresenter.State == Microsoft.UI.Windowing.OverlappedPresenterState.Maximized)
+				{
+					overlappedPresenter.SetBorderAndTitleBar(true, true);
+					overlappedPresenter.Restore();
 					break;
-			}
-			
+				}
+				overlappedPresenter.SetBorderAndTitleBar(false, false);
+				overlappedPresenter.Maximize();
+				break;
 		}
 	}
 	static AppWindow GetAppWindow(MauiWinUIWindow window)
