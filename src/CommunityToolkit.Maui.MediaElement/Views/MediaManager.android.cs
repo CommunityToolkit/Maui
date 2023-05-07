@@ -281,8 +281,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		// let's cache the CurrentPage here, since the user can navigate or background the app
 		// while this method is running
 		var currentPage = CurrentPage;
-		// Will rerwrite CurrentPage as per Vladislav Antonyuk suggested method of using Page Extension class. I spend today reducing code from another suggestion.
-		
+
 		if (activity is null || activity.Window is null)
 		{
 			return;

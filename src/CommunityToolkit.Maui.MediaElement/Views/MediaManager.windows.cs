@@ -119,8 +119,10 @@ partial class MediaManager : IDisposable
 	}
 	void SetScreenStatus(bool fullScreenStatus)
 	{
-		// Will rerwrite currentPage as per Vladislav Antonyuk suggested method of using Page Extension class. I spend today reducing code from another suggestion.
-		var currentPage = Microsoft.Maui.Controls.Application.Current?.MainPage ?? throw new NullReferenceException(); // Will rewrite this as suggested!
+		// let's cache the CurrentPage here, since the user can navigate or background the app
+		// while this method is running
+		var currentPage = CurrentPage;
+
 		if (currentPage?.GetParentWindow().Handler.PlatformView is not MauiWinUIWindow window)
 		{
 			return;
