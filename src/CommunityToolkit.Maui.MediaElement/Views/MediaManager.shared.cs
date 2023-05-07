@@ -10,6 +10,7 @@ global using PlatformMediaElement = Microsoft.UI.Xaml.Controls.MediaPlayerElemen
 global using PlatformMediaElement = CommunityToolkit.Maui.Core.Views.TizenPlayer;
 #endif
 
+using CommunityToolkit.Maui.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -46,6 +47,13 @@ public partial class MediaManager
 	/// Gets the <see cref="ILogger"/> instance for logging purposes.
 	/// </summary>
 	protected ILogger Logger { get; }
+
+	/// <summary>
+	/// Gets the presented page.
+	/// </summary>
+	protected Page CurrentPage =>
+		PageExtensions.GetCurrentPage(Application.Current?.MainPage ??
+		                              throw new NullReferenceException("MainPage is null."));
 
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
