@@ -13,7 +13,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	const string loadHls = "Load HTTP Live Stream (HLS)";
 	const string loadLocalResource = "Load Local Resource";
 	const string resetSource = "Reset Source to null";
-
+	bool fullScreen = false;
 	public MediaElementPage(MediaElementViewModel viewModel, ILogger<MediaElementPage> logger) : base(viewModel)
 	{
 		InitializeComponent();
@@ -211,4 +211,18 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 		mediaElement.Aspect = (Aspect)aspectEnum;
 	}
+
+	private void OnFullScreenClicked(object sender, EventArgs e)
+	{
+		if (fullScreen)
+		{
+			fullScreen = false;
+			mediaElement.RestoreScreen();
+		}
+		else
+		{
+			fullScreen = true;
+			mediaElement.FullScreen();
+		}
+    }
 }

@@ -22,6 +22,8 @@ public partial class MediaManager
 {
 	bool navBarIsVisible = false;
 	bool tabBarIsVisible = false;
+	bool backButton = false;
+	string backButtonTitle = string.Empty;
 	string pageTitle = string.Empty;
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MediaManager"/> class.
@@ -75,7 +77,10 @@ public partial class MediaManager
 			case true:
 				navBarIsVisible = Shell.GetNavBarIsVisible(currentPage);
 				tabBarIsVisible = Shell.GetTabBarIsVisible(currentPage);
-
+				backButton = NavigationPage.GetHasBackButton(currentPage);
+				backButtonTitle = NavigationPage.GetBackButtonTitle(currentPage);
+				NavigationPage.SetBackButtonTitle(currentPage, string.Empty);
+				NavigationPage.SetHasBackButton(currentPage, false);
 				pageTitle = currentPage.Title;
 				currentPage.Title = string.Empty;
 				Shell.SetNavBarIsVisible(currentPage, false);
@@ -85,6 +90,8 @@ public partial class MediaManager
 
 			case false:
 				NavigationPage.SetHasNavigationBar(currentPage, navBarIsVisible);
+				NavigationPage.SetHasBackButton(currentPage, backButton);
+				NavigationPage.SetBackButtonTitle(currentPage, backButtonTitle);
 				Shell.SetNavBarIsVisible(currentPage, navBarIsVisible);
 				Shell.SetTabBarIsVisible(currentPage, tabBarIsVisible);
 				currentPage.Title = pageTitle;
