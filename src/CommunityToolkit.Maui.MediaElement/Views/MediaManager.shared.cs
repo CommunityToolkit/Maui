@@ -25,6 +25,7 @@ public partial class MediaManager
 	bool backButton = false;
 	string backButtonTitle = string.Empty;
 	string pageTitle = string.Empty;
+
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MediaManager"/> class.
 	/// </summary>
@@ -32,7 +33,7 @@ public partial class MediaManager
 	/// <param name="mediaElement">The <see cref="IMediaElement"/> instance that is managed through this class.</param>
 	public MediaManager(IMauiContext context, IMediaElement mediaElement)
 	{
-		this.MediaElement = mediaElement;
+		MediaElement = mediaElement;
 		MauiContext = context;
 
 		Logger = MauiContext.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(MediaManager));
@@ -57,47 +58,7 @@ public partial class MediaManager
 	/// Gets the presented page.
 	/// </summary>
 	protected Page CurrentPage =>
-		PageExtensions.GetCurrentPage(Application.Current?.MainPage ??
-		                              throw new NullReferenceException("MainPage is null."));
-	/// <summary>
-	/// Sets the Navbar and Status Bar.
-	/// </summary>
-	/// <param name="fullScreenStatus"></param>
-	protected void SetBarStatus(bool fullScreenStatus)
-	{
-#if IOS || MACCATALYST
-		UIKit.UIApplication.SharedApplication.SetStatusBarHidden(fullScreenStatus, UIKit.UIStatusBarAnimation.Fade);
-#endif
-		// let's cache the CurrentPage here, since the user can navigate or background the app
-		// while this method is running
-		var currentPage = CurrentPage;
-		 
-		switch (fullScreenStatus)
-		{
-			case true:
-				navBarIsVisible = Shell.GetNavBarIsVisible(currentPage);
-				tabBarIsVisible = Shell.GetTabBarIsVisible(currentPage);
-				backButton = NavigationPage.GetHasBackButton(currentPage);
-				backButtonTitle = NavigationPage.GetBackButtonTitle(currentPage);
-				NavigationPage.SetBackButtonTitle(currentPage, string.Empty);
-				NavigationPage.SetHasBackButton(currentPage, false);
-				pageTitle = currentPage.Title;
-				currentPage.Title = string.Empty;
-				Shell.SetNavBarIsVisible(currentPage, false);
-				Shell.SetTabBarIsVisible(currentPage, false);
-				NavigationPage.SetHasNavigationBar(currentPage, false);
-				break;
-
-			case false:
-				NavigationPage.SetHasNavigationBar(currentPage, navBarIsVisible);
-				NavigationPage.SetHasBackButton(currentPage, backButton);
-				NavigationPage.SetBackButtonTitle(currentPage, backButtonTitle);
-				Shell.SetNavBarIsVisible(currentPage, navBarIsVisible);
-				Shell.SetTabBarIsVisible(currentPage, tabBarIsVisible);
-				currentPage.Title = pageTitle;
-				break;
-		}
-	}
+		PageExtensions.GetCurrentPage(Application.Current?.MainPage ?? throw new InvalidOperationException($"{nameof(Application.Current.MainPage)} cannot be null."));
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
 	/// <summary>
@@ -301,6 +262,46 @@ public partial class MediaManager
 	/// Invokes the platform functionality to update the media playback volume.
 	/// </summary>
 	protected virtual partial void PlatformUpdateVolume();
+
+	/// <summary>
+	/// Sets the Navbar and Status Bar.
+	/// </summary>
+	/// <param name="fullScreenStatus"></param>
+	protected void SetBarStatus(bool fullScreenStatus)
+	{
+#if IOS || MACCATALYST
+		UIKit.UIApplication.SharedApplication.SetStatusBarHidden(fullScreenStatus, UIKit.UIStatusBarAnimation.Fade);
+#endif
+		// let's cache the CurrentPage here, since the user can navigate or background the app
+		// while this method is running
+		var currentPage = CurrentPage;
+
+		switch (fullScreenStatus)
+		{
+			case true:
+				navBarIsVisible = Shell.GetNavBarIsVisible(currentPage);
+				tabBarIsVisible = Shell.GetTabBarIsVisible(currentPage);
+				backButton = NavigationPage.GetHasBackButton(currentPage);
+				backButtonTitle = NavigationPage.GetBackButtonTitle(currentPage);
+				NavigationPage.SetBackButtonTitle(currentPage, string.Empty);
+				NavigationPage.SetHasBackButton(currentPage, false);
+				pageTitle = currentPage.Title;
+				currentPage.Title = string.Empty;
+				Shell.SetNavBarIsVisible(currentPage, false);
+				Shell.SetTabBarIsVisible(currentPage, false);
+				NavigationPage.SetHasNavigationBar(currentPage, false);
+				break;
+
+			case false:
+				NavigationPage.SetHasNavigationBar(currentPage, navBarIsVisible);
+				NavigationPage.SetHasBackButton(currentPage, backButton);
+				NavigationPage.SetBackButtonTitle(currentPage, backButtonTitle);
+				Shell.SetNavBarIsVisible(currentPage, navBarIsVisible);
+				Shell.SetTabBarIsVisible(currentPage, tabBarIsVisible);
+				currentPage.Title = pageTitle;
+				break;
+		}
+	}
 }
 
 #if !(WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN)
