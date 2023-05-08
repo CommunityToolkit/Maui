@@ -360,11 +360,13 @@ public partial class MediaManager : IDisposable
 		Player.IsLooping = MediaElement.ShouldLoopPlayback;
 
 	}
+
 	protected virtual partial void PlatformFullScreen()
 	{
 		// I have no idea if this is enough for Tizen? I have no way to test?
 		SetBarStatus(true);
 	}
+
 	protected virtual partial void PlatformRestoreScreen()
 	{
 		SetBarStatus(false);
