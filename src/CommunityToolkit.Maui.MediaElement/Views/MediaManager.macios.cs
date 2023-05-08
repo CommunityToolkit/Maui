@@ -125,11 +125,12 @@ public partial class MediaManager : IDisposable
 	}
 	protected virtual partial void PlatformFullScreen()
 	{
-		// not implemented
+		// Still have to hide status bar
+		SetBarStatus(true);
 	}
 	protected virtual partial void PlatformRestoreScreen()
 	{
-		// not implemented
+		SetBarStatus(false);
 	}
 
 	protected virtual partial void PlatformSeek(TimeSpan position)

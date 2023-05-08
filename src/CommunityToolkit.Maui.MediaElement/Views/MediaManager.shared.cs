@@ -20,6 +20,9 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public partial class MediaManager
 {
+	bool navBarIsVisible = false;
+	bool tabBarIsVisible = false;
+	string pageTitle = string.Empty;
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MediaManager"/> class.
 	/// </summary>
@@ -54,7 +57,37 @@ public partial class MediaManager
 	protected Page CurrentPage =>
 		PageExtensions.GetCurrentPage(Application.Current?.MainPage ??
 		                              throw new NullReferenceException("MainPage is null."));
+	/// <summary>
+	/// Sets the Navbar and Status Bar.
+	/// </summary>
+	/// <param name="fullScreenStatus"></param>
+	protected void SetBarStatus(bool fullScreenStatus)
+	{
+		// let's cache the CurrentPage here, since the user can navigate or background the app
+		// while this method is running
+		var currentPage = CurrentPage;
+		 
+		switch (fullScreenStatus)
+		{
+			case true:
+				navBarIsVisible = Shell.GetNavBarIsVisible(currentPage);
+				tabBarIsVisible = Shell.GetTabBarIsVisible(currentPage);
 
+				pageTitle = currentPage.Title;
+				currentPage.Title = string.Empty;
+				Shell.SetNavBarIsVisible(currentPage, false);
+				Shell.SetTabBarIsVisible(currentPage, false);
+				NavigationPage.SetHasNavigationBar(currentPage, false);
+				break;
+
+			case false:
+				NavigationPage.SetHasNavigationBar(currentPage, navBarIsVisible);
+				Shell.SetNavBarIsVisible(currentPage, navBarIsVisible);
+				Shell.SetTabBarIsVisible(currentPage, tabBarIsVisible);
+				currentPage.Title = pageTitle;
+				break;
+		}
+	}
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
 	/// <summary>

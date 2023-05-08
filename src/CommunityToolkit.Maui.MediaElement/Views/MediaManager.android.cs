@@ -18,8 +18,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
 	double previousSpeed = -1;
 	float volumeBeforeMute = 1;
-	bool navBarIsVisible = false;
-	bool tabBarIsVisible = false;
 
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
@@ -278,34 +276,13 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	{
 		var activity = Platform.CurrentActivity;
 
-		// let's cache the CurrentPage here, since the user can navigate or background the app
-		// while this method is running
-		var currentPage = CurrentPage;
-
 		if (activity is null || activity.Window is null)
 		{
 			return;
 		}
 
-		if (Shell.Current is not null)
-		{
-			switch (fullScreenStatus)
-			{
-				case true:
-					navBarIsVisible = Shell.GetNavBarIsVisible(currentPage);
-					tabBarIsVisible = Shell.GetTabBarIsVisible(currentPage);
-					NavigationPage.SetHasNavigationBar(currentPage, false);
-					Shell.SetNavBarIsVisible(currentPage, false);
-					Shell.SetTabBarIsVisible(currentPage, false);
-					break;
-				case false:
-					NavigationPage.SetHasNavigationBar(currentPage, navBarIsVisible);
-					Shell.SetNavBarIsVisible(currentPage, navBarIsVisible);
-					Shell.SetTabBarIsVisible(currentPage, tabBarIsVisible);
-					break;
-			}
-		}
-
+		SetBarStatus(fullScreenStatus);
+		
 		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(activity.Window, false);
 		var windowInsetsControllerCompat = AndroidX.Core.View.WindowCompat.GetInsetsController(activity.Window, activity.Window.DecorView);
 		var types = AndroidX.Core.View.WindowInsetsCompat.Type.StatusBars() |

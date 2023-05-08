@@ -12,9 +12,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 partial class MediaManager : IDisposable
 {
-	bool navBarIsVisible = false;
-	bool tabBarIsVisible = false;
-
 	// The requests to keep display active are cumulative, this bool makes sure it only gets requested once
 	bool displayActiveRequested;
 
@@ -122,31 +119,13 @@ partial class MediaManager : IDisposable
 		// let's cache the CurrentPage here, since the user can navigate or background the app
 		// while this method is running
 		var currentPage = CurrentPage;
-
+		
 		if (currentPage?.GetParentWindow().Handler.PlatformView is not MauiWinUIWindow window)
 		{
 			return;
 		}
 
-		if (Shell.Current is not null)
-		{
-			switch (fullScreenStatus)
-			{
-				case true:
-					navBarIsVisible = Shell.GetNavBarIsVisible(currentPage);
-					tabBarIsVisible = Shell.GetTabBarIsVisible(currentPage);
-					NavigationPage.SetHasNavigationBar(currentPage, false);
-					Shell.SetNavBarIsVisible(currentPage, false);
-					Shell.SetTabBarIsVisible(currentPage, false);
-					break;
-				case false:
-					NavigationPage.SetHasNavigationBar(currentPage, navBarIsVisible);
-					Shell.SetNavBarIsVisible(currentPage, navBarIsVisible);
-					Shell.SetTabBarIsVisible(currentPage, tabBarIsVisible);
-					break;
-			}	
-		}
-
+		SetBarStatus(fullScreenStatus);
 		var currentWindow = GetAppWindow(window);
 		switch (currentWindow.Presenter)
 		{
