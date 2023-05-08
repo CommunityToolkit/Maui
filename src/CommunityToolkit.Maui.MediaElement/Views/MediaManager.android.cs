@@ -16,7 +16,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
-	double previousSpeed = -1;
+	double? previousSpeed = null;
 	float volumeBeforeMute = 1;
 
 	/// <summary>
@@ -263,38 +263,17 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		MediaElement.Position = TimeSpan.Zero;
 	}
+
 	protected virtual partial void PlatformFullScreen()
 	{
 		SetScreenStatus(true);
 	}
+
 	protected virtual partial void PlatformRestoreScreen()
 	{
 		SetScreenStatus(false);
 	}
 
-	void SetScreenStatus(bool fullScreenStatus)
-	{
-		var activity = Platform.CurrentActivity;
-
-		if (activity is null || activity.Window is null)
-		{
-			return;
-		}
-
-		SetBarStatus(fullScreenStatus);
-		
-		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(activity.Window, false);
-		var windowInsetsControllerCompat = AndroidX.Core.View.WindowCompat.GetInsetsController(activity.Window, activity.Window.DecorView);
-		var types = AndroidX.Core.View.WindowInsetsCompat.Type.StatusBars() |
-					AndroidX.Core.View.WindowInsetsCompat.Type.NavigationBars();
-		if (fullScreenStatus)
-		{
-			windowInsetsControllerCompat.SystemBarsBehavior = AndroidX.Core.View.WindowInsetsControllerCompat.BehaviorShowBarsBySwipe;
-			windowInsetsControllerCompat.Hide(types);
-			return;
-		}
-		windowInsetsControllerCompat.Show(types);
-	}
 	protected virtual partial void PlatformUpdateSource()
 	{
 		var hasSetSource = false;
@@ -383,17 +362,14 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			return;
 		}
 
-		// First time we're getting a playback speed, set initial value
-		if (previousSpeed == -1)
-		{
-			previousSpeed = MediaElement.Speed;
-		}
+		// If previousSpeed has never been set (e.g. it is still null), set its initial value
+		previousSpeed ??= MediaElement.Speed;
 
 		if (MediaElement.Speed > 0)
 		{
 			Player.SetPlaybackSpeed((float)MediaElement.Speed);
 
-			if (previousSpeed == 0)
+			if (previousSpeed is 0)
 			{
 				Player.Play();
 			}
@@ -487,6 +463,33 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		}
 
 		Player.RepeatMode = MediaElement.ShouldLoopPlayback ? IPlayer.RepeatModeOne : IPlayer.RepeatModeOff;
+	}
+
+	void SetScreenStatus(bool fullScreenStatus)
+	{
+		var activity = Platform.CurrentActivity;
+
+		if (activity?.Window is null)
+		{
+			return;
+		}
+
+		SetBarStatus(fullScreenStatus);
+
+		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(activity.Window, false);
+
+		var windowInsetsControllerCompat = AndroidX.Core.View.WindowCompat.GetInsetsController(activity.Window, activity.Window.DecorView);
+		var types = AndroidX.Core.View.WindowInsetsCompat.Type.StatusBars()
+					| AndroidX.Core.View.WindowInsetsCompat.Type.NavigationBars();
+
+		if (fullScreenStatus)
+		{
+			windowInsetsControllerCompat.SystemBarsBehavior = AndroidX.Core.View.WindowInsetsControllerCompat.BehaviorShowBarsBySwipe;
+			windowInsetsControllerCompat.Hide(types);
+			return;
+		}
+
+		windowInsetsControllerCompat.Show(types);
 	}
 
 	#region IPlayer.IListener implementation method stubs

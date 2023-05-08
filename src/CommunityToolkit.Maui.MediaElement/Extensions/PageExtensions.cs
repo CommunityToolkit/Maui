@@ -10,17 +10,20 @@ static class PageExtensions
 		{
 			return modal;
 		}
-		if (currentPage is FlyoutPage fp)
+
+		if (currentPage is FlyoutPage flyoutPage)
 		{
-			return GetCurrentPage(fp.Detail);
+			return GetCurrentPage(flyoutPage.Detail);
 		}
-		if (currentPage is Shell shell && shell.CurrentItem?.CurrentItem is IShellSectionController ssc)
+
+		if (currentPage is Shell shell && shell.CurrentItem?.CurrentItem is IShellSectionController shellSectionController)
 		{
-			return ssc.PresentedPage;
+			return shellSectionController.PresentedPage;
 		}
-		if (currentPage is IPageContainer<Page> pc)
+
+		if (currentPage is IPageContainer<Page> paigeContainer)
 		{
-			return GetCurrentPage(pc.CurrentPage);
+			return GetCurrentPage(paigeContainer.CurrentPage);
 		}
 
 		return currentPage;

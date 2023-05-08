@@ -179,6 +179,7 @@ public partial class MediaElementHandler
 	{
 		handler.mediaManager?.Pause();
 	}
+
 	/// <summary>
 	/// Maps the pause operation request between the abstract <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>
@@ -190,6 +191,7 @@ public partial class MediaElementHandler
 	{
 		handler.mediaManager?.FullScreen();
 	}
+
 	/// <summary>
 	/// Maps the pause operation request between the abstract <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>
@@ -201,6 +203,7 @@ public partial class MediaElementHandler
 	{
 		handler.mediaManager?.RestoreScreen();
 	}
+
 	/// <summary>
 	/// Maps the seek operation request between the abstract <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>

@@ -106,14 +106,17 @@ partial class MediaManager : IDisposable
 			displayActiveRequested = false;
 		}
 	}
+
 	protected virtual partial void PlatformFullScreen()
 	{
 		SetScreenStatus(true);
 	}
+
 	protected virtual partial void PlatformRestoreScreen()
 	{
 		SetScreenStatus(false);
 	}
+
 	void SetScreenStatus(bool fullScreenStatus)
 	{
 		// let's cache the CurrentPage here, since the user can navigate or background the app
@@ -141,13 +144,7 @@ partial class MediaManager : IDisposable
 				break;
 		}
 	}
-	static AppWindow GetAppWindow(MauiWinUIWindow window)
-	{
-		var handle = WinRT.Interop.WindowNative.GetWindowHandle(window);
-		var id = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(handle);
-		var appWindows = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(id);
-		return appWindows;
-	}
+
 	protected virtual partial void PlatformUpdateAspect()
 	{
 		if (Player is null || MediaElement is null)
@@ -344,6 +341,14 @@ partial class MediaManager : IDisposable
 				}
 			}
 		}
+	}
+
+	static AppWindow GetAppWindow(MauiWinUIWindow window)
+	{
+		var handle = WinRT.Interop.WindowNative.GetWindowHandle(window);
+		var id = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(handle);
+		var appWindows = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(id);
+		return appWindows;
 	}
 
 	void OnMediaElementMediaOpened(WindowsMediaElement sender, object args)

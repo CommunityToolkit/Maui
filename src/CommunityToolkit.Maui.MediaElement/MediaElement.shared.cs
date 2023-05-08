@@ -180,16 +180,19 @@ public class MediaElement : View, IMediaElement
 		add => eventManager.AddEventHandler(value);
 		remove => eventManager.RemoveEventHandler(value);
 	}
+
 	internal event EventHandler FullScreenRequested
 	{
 		add => eventManager.AddEventHandler(value);
 		remove => eventManager.RemoveEventHandler(value);
 	}
+
 	internal event EventHandler RestoreScreenRequested
 	{
 		add => eventManager.AddEventHandler(value);
 		remove => eventManager.RemoveEventHandler(value);
 	}
+
 	/// <summary>
 	/// The current position of the playing media. This is a bindable property.
 	/// </summary>
@@ -385,6 +388,7 @@ public class MediaElement : View, IMediaElement
 		OnStopRequested();
 		Handler?.Invoke(nameof(StopRequested));
 	}
+
 	/// <summary>
 	/// Restores screen position.
 	/// </summary>
@@ -393,6 +397,7 @@ public class MediaElement : View, IMediaElement
 		OnRestoreScreenRequested();
 		Handler?.Invoke(nameof(RestoreScreenRequested));
 	}
+
 	/// <summary>
 	/// Sets full screen.
 	/// </summary>
@@ -401,6 +406,7 @@ public class MediaElement : View, IMediaElement
 		OnFullScreenRequested();
 		Handler?.Invoke(nameof(FullScreenRequested));
 	}
+
 	internal void OnMediaEnded()
 	{
 		ClearTimer();
@@ -532,6 +538,7 @@ public class MediaElement : View, IMediaElement
 	{
 		OnSeekCompleted();
 	}
+
 	void IMediaElement.CurrentStateChanged(MediaElementState newState) => CurrentState = newState;
 
 	void OnPositionChanged(MediaPositionChangedEventArgs mediaPositionChangedEventArgs) =>
@@ -539,7 +546,9 @@ public class MediaElement : View, IMediaElement
 
 	void OnStateChanged(MediaStateChangedEventArgs mediaStateChangedEventArgs) =>
 		eventManager.HandleEvent(this, mediaStateChangedEventArgs, nameof(StateChanged));
+
 	void OnFullScreenRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(FullScreenRequested));
+
 	void OnRestoreScreenRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(RestoreScreenRequested));
 
 	void OnPauseRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(PauseRequested));

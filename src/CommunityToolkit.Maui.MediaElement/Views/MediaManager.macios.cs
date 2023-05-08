@@ -1,4 +1,5 @@
-﻿using AVFoundation;
+﻿using System;
+using AVFoundation;
 using AVKit;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Views;
@@ -123,10 +124,12 @@ public partial class MediaManager : IDisposable
 	{
 		Player?.Pause();
 	}
+
 	protected virtual partial void PlatformFullScreen()
 	{
 		SetBarStatus(true);
 	}
+
 	protected virtual partial void PlatformRestoreScreen()
 	{
 		SetBarStatus(false);
@@ -134,14 +137,16 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformSeek(TimeSpan position)
 	{
-		if (PlayerItem is null || Player?.CurrentItem is null
-			|| Player?.Status != AVPlayerStatus.ReadyToPlay)
+		if (PlayerItem is null
+			|| Player?.CurrentItem is null
+			|| Player?.Status is not AVPlayerStatus.ReadyToPlay)
 		{
 			return;
 		}
 
 		var ranges = Player.CurrentItem.SeekableTimeRanges;
 		var seekTo = new CMTime(Convert.ToInt64(position.TotalMilliseconds), 1000);
+
 		foreach (var v in ranges)
 		{
 			if (seekTo >= (seekTo - v.CMTimeRangeValue.Start)
@@ -154,6 +159,7 @@ public partial class MediaManager : IDisposable
 						MediaElement?.SeekCompleted();
 					}
 				});
+
 				break;
 			}
 		}
@@ -216,42 +222,19 @@ public partial class MediaManager : IDisposable
 				string directory = Path.GetDirectoryName(path) ?? "";
 				string filename = Path.GetFileNameWithoutExtension(path);
 				string extension = Path.GetExtension(path)[1..];
-				var url = NSBundle.MainBundle.GetUrlForResource(filename,
-					extension, directory);
+				var url = NSBundle.MainBundle.GetUrlForResource(filename, extension, directory);
 
 				asset = AVAsset.FromUrl(url);
 			}
 		}
 
-		if (asset is not null)
-		{
-			PlayerItem = new AVPlayerItem(asset);
-		}
-		else
-		{
-			PlayerItem = null;
-		}
+		PlayerItem = asset is not null ? new AVPlayerItem(asset) : null;
 
 		CurrentItemErrorObserver?.Dispose();
 
 		Player?.ReplaceCurrentItemWithPlayerItem(PlayerItem);
 
-		CurrentItemErrorObserver = PlayerItem?.AddObserver("error",
-			valueObserverOptions, (NSObservedChange change) =>
-			{
-				if (Player?.CurrentItem?.Error is null)
-				{
-					return;
-				}
-
-				var message = $"{Player?.CurrentItem?.Error?.LocalizedDescription} - " +
-				$"{Player?.CurrentItem?.Error?.LocalizedFailureReason}";
-
-				MediaElement.MediaFailed(
-					new MediaFailedEventArgs(message));
-
-				Logger?.LogError("{logMessage}", message);
-			});
+		CurrentItemErrorObserver = PlayerItem?.AddObserver("error", valueObserverOptions, HandleObserverChange);
 
 		if (PlayerItem is not null && PlayerItem.Error is null)
 		{
@@ -265,6 +248,20 @@ public partial class MediaManager : IDisposable
 		else if (PlayerItem is null)
 		{
 			MediaElement.CurrentStateChanged(MediaElementState.None);
+		}
+
+		void HandleObserverChange(NSObservedChange change)
+		{
+			if (Player?.CurrentItem?.Error is null)
+			{
+				return;
+			}
+
+			var message = $"{Player?.CurrentItem?.Error?.LocalizedDescription} - {Player?.CurrentItem?.Error?.LocalizedFailureReason}";
+
+			MediaElement.MediaFailed(new MediaFailedEventArgs(message));
+
+			Logger?.LogError("{logMessage}", message);
 		}
 	}
 

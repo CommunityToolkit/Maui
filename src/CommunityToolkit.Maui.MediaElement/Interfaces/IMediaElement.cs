@@ -134,10 +134,12 @@ public interface IMediaElement : IView
 	/// Stops playing the currently playing media and resets the <see cref="Position"/>.
 	/// </summary>
 	void Stop();
+
 	/// <summary>
 	/// Sets the player to full screen.
 	/// </summary>
 	void FullScreen();
+
 	/// <summary>
 	/// Sets the player to restore screen.
 	/// </summary>

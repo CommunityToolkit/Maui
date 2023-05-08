@@ -8,12 +8,15 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class MediaElementPage : BasePage<MediaElementViewModel>
 {
-	readonly ILogger logger;
 	const string loadOnlineMp4 = "Load Online MP4";
 	const string loadHls = "Load HTTP Live Stream (HLS)";
 	const string loadLocalResource = "Load Local Resource";
 	const string resetSource = "Reset Source to null";
+
+	readonly ILogger logger;
+
 	bool fullScreen = false;
+
 	public MediaElementPage(MediaElementViewModel viewModel, ILogger<MediaElementPage> logger) : base(viewModel)
 	{
 		InitializeComponent();
@@ -212,7 +215,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		mediaElement.Aspect = (Aspect)aspectEnum;
 	}
 
-	private void OnFullScreenClicked(object sender, EventArgs e)
+	void OnFullScreenClicked(object sender, EventArgs e)
 	{
 		if (fullScreen)
 		{
