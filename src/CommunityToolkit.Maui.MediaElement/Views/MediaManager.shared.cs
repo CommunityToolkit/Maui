@@ -65,7 +65,7 @@ public partial class MediaManager
 	/// <param name="fullScreenStatus"></param>
 	protected void SetBarStatus(bool fullScreenStatus)
 	{
-#if IOS
+#if IOS || MACCATALYST
 		UIKit.UIApplication.SharedApplication.SetStatusBarHidden(fullScreenStatus, UIKit.UIStatusBarAnimation.Fade);
 #endif
 		// let's cache the CurrentPage here, since the user can navigate or background the app
