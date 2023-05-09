@@ -20,7 +20,7 @@
   <PropertyGroup>
     <GitInfoReportImportance>high</GitInfoReportImportance>
     <PackageId>CommunityToolkit.Maui.Core</PackageId>
-    <Summary>CommunityToolkit.Maui.Core is an abstraction for CommunityToolkit.Maui. It contains interfaces, handlers and platform controls. It is intended to be levergaed by other developers who wish to implement their own MAUI controls using our abstractions and for developers who are not building a cross-platform UI.</Summary>
+    <Summary>CommunityToolkit.Maui.Core is an abstraction for CommunityToolkit.Maui. It contains interfaces, handlers and platform controls. It is intended to be leveraged by other developers who wish to implement their own MAUI controls using our abstractions and for developers who are not building a cross-platform UI.</Summary>
     <Authors>Microsoft</Authors>
     <Owners>Microsoft</Owners>
     <NeutralLanguage>en</NeutralLanguage>
