@@ -102,16 +102,16 @@ public partial class MediaManager
 	/// <summary>
 	/// Invokes the Full Screen operation on the platform element
 	/// </summary>
-	public void FullScreen()
+	public void EnlargeVideoToFullScreen()
 	{
-		PlatformFullScreen();
+		PlatformEnlargeVideoToFullScreen();
 	}
 	/// <summary>
 	/// Invokes the Restore Screen operation on the platform element
 	/// </summary>
-	public void RestoreScreen()
+	public void RevertFromFullScreen()
 	{
-		PlatformRestoreScreen();
+		PlatformRevertFromFullScreen();
 	}
 	/// <summary>
 	/// Update the media aspect.
@@ -210,12 +210,12 @@ public partial class MediaManager
 	/// <summary>
 	/// Invokes the platform Full screen functionality.
 	/// </summary>
-	protected virtual partial void PlatformFullScreen();
+	protected virtual partial void PlatformEnlargeVideoToFullScreen();
 
 	/// <summary>
 	/// Invokes the platform Restore screen functionality.
 	/// </summary>
-	protected virtual partial void PlatformRestoreScreen();
+	protected virtual partial void PlatformRevertFromFullScreen();
 
 	/// <summary>
 	/// Invokes the platform functionality to update the media aspect.
@@ -266,40 +266,38 @@ public partial class MediaManager
 	/// <summary>
 	/// Sets the Navbar and Status Bar.
 	/// </summary>
-	/// <param name="fullScreenStatus"></param>
-	protected void SetBarStatus(bool fullScreenStatus)
+	/// <param name="shouldBeFullScreen"></param>
+	protected void SetBarStatus(bool shouldBeFullScreen)
 	{
 #if IOS || MACCATALYST
-		UIKit.UIApplication.SharedApplication.SetStatusBarHidden(fullScreenStatus, UIKit.UIStatusBarAnimation.Fade);
+		UIKit.UIApplication.SharedApplication.SetStatusBarHidden(shouldBeFullScreen, UIKit.UIStatusBarAnimation.Fade);
 #endif
 		// let's cache the CurrentPage here, since the user can navigate or background the app
 		// while this method is running
 		var currentPage = CurrentPage;
 
-		switch (fullScreenStatus)
+		if (shouldBeFullScreen)
 		{
-			case true:
-				navBarIsVisible = Shell.GetNavBarIsVisible(currentPage);
-				tabBarIsVisible = Shell.GetTabBarIsVisible(currentPage);
-				backButton = NavigationPage.GetHasBackButton(currentPage);
-				backButtonTitle = NavigationPage.GetBackButtonTitle(currentPage);
-				NavigationPage.SetBackButtonTitle(currentPage, string.Empty);
-				NavigationPage.SetHasBackButton(currentPage, false);
-				pageTitle = currentPage.Title;
-				currentPage.Title = string.Empty;
-				Shell.SetNavBarIsVisible(currentPage, false);
-				Shell.SetTabBarIsVisible(currentPage, false);
-				NavigationPage.SetHasNavigationBar(currentPage, false);
-				break;
-
-			case false:
-				NavigationPage.SetHasNavigationBar(currentPage, navBarIsVisible);
-				NavigationPage.SetHasBackButton(currentPage, backButton);
-				NavigationPage.SetBackButtonTitle(currentPage, backButtonTitle);
-				Shell.SetNavBarIsVisible(currentPage, navBarIsVisible);
-				Shell.SetTabBarIsVisible(currentPage, tabBarIsVisible);
-				currentPage.Title = pageTitle;
-				break;
+			navBarIsVisible = Shell.GetNavBarIsVisible(currentPage);
+			tabBarIsVisible = Shell.GetTabBarIsVisible(currentPage);
+			backButton = NavigationPage.GetHasBackButton(currentPage);
+			backButtonTitle = NavigationPage.GetBackButtonTitle(currentPage);
+			NavigationPage.SetBackButtonTitle(currentPage, string.Empty);
+			NavigationPage.SetHasBackButton(currentPage, false);
+			pageTitle = currentPage.Title;
+			currentPage.Title = string.Empty;
+			Shell.SetNavBarIsVisible(currentPage, false);
+			Shell.SetTabBarIsVisible(currentPage, false);
+			NavigationPage.SetHasNavigationBar(currentPage, false);
+		}
+		else
+		{
+			NavigationPage.SetHasNavigationBar(currentPage, navBarIsVisible);
+			NavigationPage.SetHasBackButton(currentPage, backButton);
+			NavigationPage.SetBackButtonTitle(currentPage, backButtonTitle);
+			Shell.SetNavBarIsVisible(currentPage, navBarIsVisible);
+			Shell.SetTabBarIsVisible(currentPage, tabBarIsVisible);
+			currentPage.Title = pageTitle;
 		}
 	}
 }
@@ -311,8 +309,8 @@ partial class MediaManager
 	protected virtual partial void PlatformPause() { }
 	protected virtual partial void PlatformSeek(TimeSpan position) { }
 	protected virtual partial void PlatformStop() { }
-	protected virtual partial void PlatformFullScreen() { }
-	protected virtual partial void PlatformRestoreScreen() { }
+	protected virtual partial void PlatformEnlargeVideoToFullScreen() { }
+	protected virtual partial void PlatformRevertFromFullScreen() { }
 	protected virtual partial void PlatformUpdateAspect() { }
 	protected virtual partial void PlatformUpdateSource() { }
 	protected virtual partial void PlatformUpdateSpeed() { }

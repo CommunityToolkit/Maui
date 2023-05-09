@@ -107,12 +107,12 @@ partial class MediaManager : IDisposable
 		}
 	}
 
-	protected virtual partial void PlatformFullScreen()
+	protected virtual partial void PlatformEnlargeVideoToFullScreen()
 	{
 		SetScreenStatus(true);
 	}
 
-	protected virtual partial void PlatformRestoreScreen()
+	protected virtual partial void PlatformRevertFromFullScreen()
 	{
 		SetScreenStatus(false);
 	}

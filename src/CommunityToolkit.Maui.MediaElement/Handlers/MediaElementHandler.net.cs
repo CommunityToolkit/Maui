@@ -20,8 +20,8 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, object>
 	public static void MapStatusUpdated(MediaElementHandler handler, MediaElement MediaElement, object? args) => throw new NotImplementedException();
 	public static void MapVolume(object handler, MediaElement MediaElement) => throw new NotImplementedException();
 	public static void MapPlayRequested(MediaElementHandler handler, MediaElement MediaElement, object? args) => throw new NotImplementedException();
-	public static void MapFullScreenRequested(MediaElementHandler handler, MediaElement MediaElement, object? args) => throw new NotImplementedException();
-	public static void MapRestoreScreenRequested(MediaElementHandler handler, MediaElement MediaElement, object? args) => throw new NotImplementedException();
+	public static void MapEnlargeVideoToFullScreenRequested(MediaElementHandler handler, MediaElement MediaElement, object? args) => throw new NotImplementedException();
+	public static void MapRevertFromFullScreenRequested(MediaElementHandler handler, MediaElement MediaElement, object? args) => throw new NotImplementedException();
 	public static void MapPauseRequested(MediaElementHandler handler, MediaElement MediaElement, object? args) => throw new NotImplementedException();
 	public static void MapSeekRequested(MediaElementHandler handler, MediaElement MediaElement, object? args) => throw new NotImplementedException();
 	public static void MapStopRequested(MediaElementHandler handler, MediaElement MediaElement, object? args) => throw new NotImplementedException();

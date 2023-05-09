@@ -181,13 +181,13 @@ public class MediaElement : View, IMediaElement
 		remove => eventManager.RemoveEventHandler(value);
 	}
 
-	internal event EventHandler FullScreenRequested
+	internal event EventHandler EnlargeVideoToFullScreenRequested
 	{
 		add => eventManager.AddEventHandler(value);
 		remove => eventManager.RemoveEventHandler(value);
 	}
 
-	internal event EventHandler RestoreScreenRequested
+	internal event EventHandler RevertFromFullScreenRequested
 	{
 		add => eventManager.AddEventHandler(value);
 		remove => eventManager.RemoveEventHandler(value);
@@ -392,19 +392,19 @@ public class MediaElement : View, IMediaElement
 	/// <summary>
 	/// Restores screen position.
 	/// </summary>
-	public void RestoreScreen()
+	public void RevertFromFullScreen()
 	{
-		OnRestoreScreenRequested();
-		Handler?.Invoke(nameof(RestoreScreenRequested));
+		OnRevertFromFullScreenRequested();
+		Handler?.Invoke(nameof(RevertFromFullScreenRequested));
 	}
 
 	/// <summary>
 	/// Sets full screen.
 	/// </summary>
-	public void FullScreen()
+	public void EnlargeVideoToFullScreen()
 	{
-		OnFullScreenRequested();
-		Handler?.Invoke(nameof(FullScreenRequested));
+		OnEnlargeVideoToFullScreenRequested();
+		Handler?.Invoke(nameof(EnlargeVideoToFullScreenRequested));
 	}
 
 	internal void OnMediaEnded()
@@ -547,9 +547,9 @@ public class MediaElement : View, IMediaElement
 	void OnStateChanged(MediaStateChangedEventArgs mediaStateChangedEventArgs) =>
 		eventManager.HandleEvent(this, mediaStateChangedEventArgs, nameof(StateChanged));
 
-	void OnFullScreenRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(FullScreenRequested));
+	void OnEnlargeVideoToFullScreenRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(EnlargeVideoToFullScreenRequested));
 
-	void OnRestoreScreenRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(RestoreScreenRequested));
+	void OnRevertFromFullScreenRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(RevertFromFullScreenRequested));
 
 	void OnPauseRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(PauseRequested));
 

@@ -264,12 +264,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		MediaElement.Position = TimeSpan.Zero;
 	}
 
-	protected virtual partial void PlatformFullScreen()
+	protected virtual partial void PlatformEnlargeVideoToFullScreen()
 	{
 		SetScreenStatus(true);
 	}
 
-	protected virtual partial void PlatformRestoreScreen()
+	protected virtual partial void PlatformRevertFromFullScreen()
 	{
 		SetScreenStatus(false);
 	}

@@ -43,8 +43,8 @@ public partial class MediaElementHandler
 		[nameof(MediaElement.PauseRequested)] = MapPauseRequested,
 		[nameof(MediaElement.SeekRequested)] = MapSeekRequested,
 		[nameof(MediaElement.StopRequested)] = MapStopRequested,
-		[nameof(MediaElement.FullScreenRequested)] = MapFullScreenRequested,
-		[nameof(MediaElement.RestoreScreenRequested)] = MapRestoreScreenRequested
+		[nameof(MediaElement.EnlargeVideoToFullScreenRequested)] = MapEnlargeVideoToFullScreenRequested,
+		[nameof(MediaElement.RevertFromFullScreenRequested)] = MapRevertFromFullScreenRequested
 	};
 
 	/// <summary>
@@ -187,9 +187,9 @@ public partial class MediaElementHandler
 	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> is not used.</remarks>
-	public static void MapFullScreenRequested(MediaElementHandler handler, MediaElement MediaElement, object? args)
+	public static void MapEnlargeVideoToFullScreenRequested(MediaElementHandler handler, MediaElement MediaElement, object? args)
 	{
-		handler.mediaManager?.FullScreen();
+		handler.mediaManager?.EnlargeVideoToFullScreen();
 	}
 
 	/// <summary>
@@ -199,9 +199,9 @@ public partial class MediaElementHandler
 	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> is not used.</remarks>
-	public static void MapRestoreScreenRequested(MediaElementHandler handler, MediaElement MediaElement, object? args)
+	public static void MapRevertFromFullScreenRequested(MediaElementHandler handler, MediaElement MediaElement, object? args)
 	{
-		handler.mediaManager?.RestoreScreen();
+		handler.mediaManager?.RevertFromFullScreen();
 	}
 
 	/// <summary>

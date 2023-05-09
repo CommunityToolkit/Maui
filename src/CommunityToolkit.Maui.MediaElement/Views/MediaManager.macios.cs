@@ -125,12 +125,12 @@ public partial class MediaManager : IDisposable
 		Player?.Pause();
 	}
 
-	protected virtual partial void PlatformFullScreen()
+	protected virtual partial void PlatformEnlargeVideoToFullScreen()
 	{
 		SetBarStatus(true);
 	}
 
-	protected virtual partial void PlatformRestoreScreen()
+	protected virtual partial void PlatformRevertFromFullScreen()
 	{
 		SetBarStatus(false);
 	}

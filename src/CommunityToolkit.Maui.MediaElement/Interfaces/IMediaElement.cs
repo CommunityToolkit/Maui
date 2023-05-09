@@ -138,12 +138,12 @@ public interface IMediaElement : IView
 	/// <summary>
 	/// Sets the player to full screen.
 	/// </summary>
-	void FullScreen();
+	void EnlargeVideoToFullScreen();
 
 	/// <summary>
 	/// Sets the player to restore screen.
 	/// </summary>
-	void RestoreScreen();
+	void RevertFromFullScreen();
 
 	/// <summary>
 	/// Triggers the <see cref="MediaElement.SeekCompleted"/> event.
