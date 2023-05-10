@@ -2,7 +2,7 @@
 using CommunityToolkit.Maui.Converters;
 using Xunit;
 
-namespace CommunityToolkit.Maui.UnitTests;
+namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public abstract class BaseOneWayConverterTest<TConverter> : ConverterTest<TConverter> where TConverter : ICommunityToolkitValueConverter, new()
 {
