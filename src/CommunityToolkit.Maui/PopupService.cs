@@ -38,7 +38,7 @@ public class PopupService : IPopupService
 	{
 		ArgumentNullException.ThrowIfNull(viewModel);
 
-		var popup = GetPopup(viewModel);
+		var popup = GetPopup(typeof(TViewModel));
 
 		GetMainPage().ShowPopup(popup);
 	}
@@ -48,10 +48,14 @@ public class PopupService : IPopupService
 	{
 		ArgumentNullException.ThrowIfNull(query);
 
-		var viewModel = GetViewModel<TViewModel>();
-		viewModel.ApplyQueryAttributes(query);
+		var popup = GetPopup(typeof(TViewModel));
 
-		var popup = GetPopup(viewModel);
+		if (popup.BindingContext is null)
+		{
+			var viewModel = GetViewModel<TViewModel>();
+			viewModel.ApplyQueryAttributes(query);
+			popup.BindingContext = viewModel;
+		}
 
 		GetMainPage().ShowPopup(popup);
 	}
@@ -65,7 +69,7 @@ public class PopupService : IPopupService
 	{
 		ArgumentNullException.ThrowIfNull(viewModel);
 
-		var popup = GetPopup(viewModel);
+		var popup = GetPopup(typeof(TViewModel));
 
 		return GetMainPage().ShowPopupAsync(popup);
 	}
@@ -75,10 +79,14 @@ public class PopupService : IPopupService
 	{
 		ArgumentNullException.ThrowIfNull(query);
 
-		var viewModel = GetViewModel<TViewModel>();
-		viewModel.ApplyQueryAttributes(query);
+		var popup = GetPopup(typeof(TViewModel));
 
-		var popup = GetPopup(viewModel);
+		if (popup.BindingContext is null)
+		{
+			var viewModel = GetViewModel<TViewModel>();
+			viewModel.ApplyQueryAttributes(query);
+			popup.BindingContext = viewModel;
+		}
 
 		return GetMainPage().ShowPopupAsync(popup);
 	}
@@ -96,18 +104,15 @@ public class PopupService : IPopupService
 		return mainPage;
 	}
 
-	Popup GetPopup<TViewModel>(TViewModel viewModel)
+	Popup GetPopup(Type viewModelType)
 	{
-		var viewModelType = typeof(TViewModel);
 		var popup = this.serviceProvider.GetService(viewModelToViewMappings[viewModelType]) as Popup;
 
 		if (popup is null)
 		{
 			throw new InvalidOperationException(
-				$"Unable to resolve popup type for {typeof(TViewModel)} please make sure that you have called {nameof(AddTransientPopup)}");
+				$"Unable to resolve popup type for {viewModelType} please make sure that you have called {nameof(AddTransientPopup)}");
 		}
-
-		popup.BindingContext = viewModel;
 
 		return popup;
 	}
