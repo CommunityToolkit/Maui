@@ -9,5 +9,5 @@ public interface IArgumentsReceiver
 	/// Sets the arguments ready for use.
 	/// </summary>
 	/// <param name="arguments">A set of arguments.</param>
-	void SetArguments(IDictionary<string, object> arguments);
+	void SetArguments(IReadOnlyDictionary<string, object> arguments);
 }

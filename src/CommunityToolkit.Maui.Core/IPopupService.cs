@@ -19,7 +19,7 @@ public interface IPopupService
 	/// </summary>
 	/// <typeparam name="TViewModel">The type of the view model registered with the <see cref="CommunityToolkit.Maui.Core.IPopup"/>.</typeparam>
 	/// <param name="arguments">Any parameters that can be passed across to the resolved view model.</param>
-	void ShowPopup<TViewModel>(IDictionary<string, object> arguments) where TViewModel : IArgumentsReceiver, INotifyPropertyChanged;
+	void ShowPopup<TViewModel>(IReadOnlyDictionary<string, object> arguments) where TViewModel : IArgumentsReceiver, INotifyPropertyChanged;
 
 	/// <summary>
 	/// Resolves and displays a <see cref="CommunityToolkit.Maui.Core.IPopup"/> and <typeparamref name="TViewModel"/> pair that was registered with <c>AddTransientPopup</c>.
@@ -42,7 +42,7 @@ public interface IPopupService
 	/// <typeparam name="TViewModel">The type of the view model registered with the <see cref="CommunityToolkit.Maui.Core.IPopup"/>.</typeparam>
 	/// <returns>A <see cref="Task"/> that can be awaited to return the result of the <see cref="CommunityToolkit.Maui.Core.IPopup"/> once it has been dismissed.</returns>
 	/// <param name="arguments">Any parameters that can be passed across to the resolved view model.</param>
-	Task<object?> ShowPopupAsync<TViewModel>(IDictionary<string, object> arguments) where TViewModel : IArgumentsReceiver, INotifyPropertyChanged;
+	Task<object?> ShowPopupAsync<TViewModel>(IReadOnlyDictionary<string, object> arguments) where TViewModel : IArgumentsReceiver, INotifyPropertyChanged;
 
 	/// <summary>
 	/// Resolves and displays a <see cref="CommunityToolkit.Maui.Core.IPopup"/> and <typeparamref name="TViewModel"/> pair that was registered with <c>AddTransientPopup</c>.
