@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
+using Microsoft.Maui.Controls.Platform;
 using System.ComponentModel;
 
 namespace CommunityToolkit.Maui;
@@ -10,6 +11,10 @@ public class PopupService : IPopupService
 	readonly IServiceProvider serviceProvider;
 
 	static readonly IDictionary<Type, Type> viewModelToViewMappings = new Dictionary<Type, Type>();
+
+	static Page CurrentPage =>
+		PageExtensions.GetCurrentPage(
+			Application.Current?.MainPage ?? throw new NullReferenceException("MainPage is null."));
 
 	/// <summary>
 	/// Creates a new instance of <see cref="PopupService"/>.
@@ -41,7 +46,7 @@ public class PopupService : IPopupService
 
 		var popup = GetPopup(typeof(TViewModel));
 
-		GetMainPage().ShowPopup(popup);
+		CurrentPage.ShowPopup(popup);
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(IDictionary{string, object})"/>
@@ -58,7 +63,7 @@ public class PopupService : IPopupService
 			popup.BindingContext = viewModel;
 		}
 
-		GetMainPage().ShowPopup(popup);
+		CurrentPage.ShowPopup(popup);
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}()"/>
@@ -72,7 +77,7 @@ public class PopupService : IPopupService
 
 		var popup = GetPopup(typeof(TViewModel));
 
-		return GetMainPage().ShowPopupAsync(popup);
+		return CurrentPage.ShowPopupAsync(popup);
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(IDictionary{string, object})"/>
@@ -89,20 +94,7 @@ public class PopupService : IPopupService
 			popup.BindingContext = viewModel;
 		}
 
-		return GetMainPage().ShowPopupAsync(popup);
-	}
-
-	static Page GetMainPage()
-	{
-		var currentApplication = Application.Current;
-
-		ArgumentNullException.ThrowIfNull(currentApplication);
-
-		var mainPage = currentApplication.MainPage;
-
-		ArgumentNullException.ThrowIfNull(mainPage);
-
-		return mainPage;
+		return CurrentPage.ShowPopupAsync(popup);
 	}
 
 	Popup GetPopup(Type viewModelType)
