@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using CommunityToolkit.Maui.UnitTests.Mocks;
-using Microsoft.Maui.Dispatching;
 
 namespace CommunityToolkit.Maui.UnitTests;
 

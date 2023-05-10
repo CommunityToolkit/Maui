@@ -10,6 +10,7 @@
     <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
     <!-- WarningsAsErrors
      CS0419: Ambiguous reference in cref attribute 
      CS1570: XML comment has badly formed XML 'Expected an end tag for element [parameter] 

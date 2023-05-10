@@ -20,7 +20,8 @@ public partial class FileSaverViewModel : BaseViewModel
 		using var stream = new MemoryStream(Encoding.Default.GetBytes("Hello from the Community Toolkit!"));
 		try
 		{
-			var fileLocationResult = await fileSaver.SaveAsync("test.txt", stream, cancellationToken);
+			var fileName = Application.Current?.MainPage?.DisplayPromptAsync("FileSaver", "Choose filename") ?? Task.FromResult("test.txt");
+			var fileLocationResult = await fileSaver.SaveAsync(await fileName, stream, cancellationToken);
 			fileLocationResult.EnsureSuccess();
 
 			await Toast.Make($"File is saved: {fileLocationResult.FilePath}").Show(cancellationToken);
@@ -49,11 +50,12 @@ public partial class FileSaverViewModel : BaseViewModel
 	[RelayCommand]
 	async Task SaveFileInstance(CancellationToken cancellationToken)
 	{
-		using var stream = new MemoryStream(Encoding.Default.GetBytes("Hello from the Community Toolkit!"));
+		using var client = new HttpClient();
+		await using var stream = await client.GetStreamAsync("https://www.nuget.org/api/v2/package/CommunityToolkit.Maui/5.0.0", cancellationToken);
 		try
 		{
 			var fileSaverInstance = new FileSaverImplementation();
-			var fileSaverResult = await fileSaverInstance.SaveAsync("test.txt", stream, cancellationToken);
+			var fileSaverResult = await fileSaverInstance.SaveAsync("communitytoolkit.maui.5.0.0.nupkg", stream, cancellationToken);
 			fileSaverResult.EnsureSuccess();
 
 			await Toast.Make($"File is saved: {fileSaverResult.FilePath}").Show(cancellationToken);

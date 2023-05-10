@@ -34,7 +34,8 @@ public partial class FolderPickerViewModel : BaseViewModel
 		var folderResult = await FolderPicker.PickAsync("DCIM", cancellationToken);
 		if (folderResult.IsSuccessful)
 		{
-			await Toast.Make($"Folder picked: Name - {folderResult.Folder.Name}, Path - {folderResult.Folder.Path}", ToastDuration.Long).Show(cancellationToken);
+			var filesCount = Directory.EnumerateFiles(folderResult.Folder.Path).Count();
+			await Toast.Make($"Folder picked: Name - {folderResult.Folder.Name}, Path - {folderResult.Folder.Path}, Files count - {filesCount}", ToastDuration.Long).Show(cancellationToken);
 		}
 		else
 		{
