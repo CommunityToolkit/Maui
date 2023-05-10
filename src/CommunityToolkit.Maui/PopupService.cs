@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Views;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Views;
 using System.ComponentModel;
 
 namespace CommunityToolkit.Maui;
@@ -44,16 +45,16 @@ public class PopupService : IPopupService
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(IDictionary{string, object})"/>
-	public void ShowPopup<TViewModel>(IDictionary<string, object> query) where TViewModel : IQueryAttributable
+	public void ShowPopup<TViewModel>(IDictionary<string, object> arguments) where TViewModel : IArgumentsReceiver, INotifyPropertyChanged
 	{
-		ArgumentNullException.ThrowIfNull(query);
+		ArgumentNullException.ThrowIfNull(arguments);
 
 		var popup = GetPopup(typeof(TViewModel));
 
 		if (popup.BindingContext is null)
 		{
 			var viewModel = GetViewModel<TViewModel>();
-			viewModel.ApplyQueryAttributes(query);
+			viewModel.SetArguments(arguments);
 			popup.BindingContext = viewModel;
 		}
 
@@ -75,16 +76,16 @@ public class PopupService : IPopupService
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(IDictionary{string, object})"/>
-	public Task<object?> ShowPopupAsync<TViewModel>(IDictionary<string, object> query) where TViewModel : IQueryAttributable
+	public Task<object?> ShowPopupAsync<TViewModel>(IDictionary<string, object> arguments) where TViewModel : IArgumentsReceiver, INotifyPropertyChanged
 	{
-		ArgumentNullException.ThrowIfNull(query);
+		ArgumentNullException.ThrowIfNull(arguments);
 
 		var popup = GetPopup(typeof(TViewModel));
 
 		if (popup.BindingContext is null)
 		{
 			var viewModel = GetViewModel<TViewModel>();
-			viewModel.ApplyQueryAttributes(query);
+			viewModel.SetArguments(arguments);
 			popup.BindingContext = viewModel;
 		}
 
