@@ -1,6 +1,4 @@
-﻿using System.Runtime.Versioning;
-
-namespace CommunityToolkit.Maui.Behaviors;
+﻿namespace CommunityToolkit.Maui.Behaviors;
 
 /// <summary>
 /// A behavior that allows you to tint an icon with a specified <see cref="Color"/>.

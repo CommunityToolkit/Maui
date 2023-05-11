@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Composition;
@@ -6,8 +7,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
-using WImage = Microsoft.UI.Xaml.Controls.Image;
 using WButton = Microsoft.UI.Xaml.Controls.Button;
+using WImage = Microsoft.UI.Xaml.Controls.Image;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -43,19 +44,40 @@ public partial class IconTintColorBehavior
 	void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (e.PropertyName is not string propertyName
-		    || sender is not View bindable
-		    || bindable.Handler?.PlatformView is not FrameworkElement platformView)
+			|| sender is not View bindable
+			|| bindable.Handler?.PlatformView is not FrameworkElement platformView)
 		{
 			return;
 		}
 
-		if (!propertyName.Equals(Image.SourceProperty.PropertyName, StringComparison.Ordinal)
-		    && !propertyName.Equals(ImageButton.SourceProperty.PropertyName, StringComparison.Ordinal))
+		if (propertyName.Equals(Image.SourceProperty.PropertyName, StringComparison.Ordinal)
+			|| propertyName.Equals(ImageButton.SourceProperty.PropertyName, StringComparison.Ordinal))
 		{
-			return;
+			ApplyTintColor(platformView, bindable, TintColor);
+		}
+	}
+
+	static bool TryGetSourceImageUri(WImage? imageControl, IImageElement? imageElement, [NotNullWhen(true)] out Uri? uri)
+	{
+		if (imageElement?.Source is UriImageSource uriImageSource)
+		{
+			uri = uriImageSource.Uri;
+			return true;
 		}
 
-		ApplyTintColor(platformView, bindable, TintColor);
+		if (imageControl?.Source is BitmapImage bitmapImage)
+		{
+			uri = bitmapImage.UriSource;
+			return true;
+		}
+
+		uri = null;
+		return false;
+	}
+
+	static WImage? TryGetButtonImage(WButton button)
+	{
+		return button.Content as WImage;
 	}
 
 	void ApplyTintColor(FrameworkElement platformView, View element, Color? color)
@@ -63,30 +85,28 @@ public partial class IconTintColorBehavior
 		if (color is null)
 		{
 			RemoveTintColor(platformView);
-			return;
 		}
-
-		switch (platformView)
+		else
 		{
-			case WImage image:
+			switch (platformView)
 			{
-				LoadAndApplyImageTintColor(element, image, color);
-				break;
-			}
-			case WButton button:
-			{
-				var image = TryGetButtonImage(button);
-				if (image is null)
-				{
-					return;
-				}
+				case WImage wImage:
+					LoadAndApplyImageTintColor(element, wImage, color);
+					break;
 
-				LoadAndApplyImageTintColor(element, image, color);
-				break;
+				case WButton button:
+					var image = TryGetButtonImage(button);
+					if (image is null)
+					{
+						return;
+					}
+
+					LoadAndApplyImageTintColor(element, image, color);
+					break;
+
+				default:
+					throw new NotSupportedException($"{nameof(IconTintColorBehavior)} only currently supports {typeof(WImage)} and {typeof(WButton)}.");
 			}
-			default:
-				throw new NotSupportedException(
-					$"{nameof(IconTintColorBehavior)} only currently supports {nameof(WImage)} and {nameof(WButton)}.");
 		}
 	}
 
@@ -101,21 +121,20 @@ public partial class IconTintColorBehavior
 		}
 		else
 		{
-			void OnButtonImageSizeInitialized(object sender, SizeChangedEventArgs e)
-			{
-				image.SizeChanged -= OnButtonImageSizeInitialized;
-				ApplyImageTintColor(element, image, color);
-			}
-
 			image.SizeChanged += OnButtonImageSizeInitialized;
+		}
+
+		void OnButtonImageSizeInitialized(object sender, SizeChangedEventArgs e)
+		{
+			image.SizeChanged -= OnButtonImageSizeInitialized;
+			ApplyImageTintColor(element, image, color);
 		}
 	}
 
 
 	void ApplyImageTintColor(View element, WImage image, Color color)
 	{
-		var uri = TryGetSourceImageUri(image, element as IImageElement);
-		if (uri is null)
+		if (!TryGetSourceImageUri(image, (IImageElement)element, out var uri))
 		{
 			return;
 		}
@@ -150,8 +169,7 @@ public partial class IconTintColorBehavior
 		return new Vector2((float)image.Width, (float)image.Height);
 	}
 
-	void ApplyTintCompositionEffect(FrameworkElement platformView, Color color, float width, float height,
-		Vector3 offset, Uri surfaceMaskUri)
+	void ApplyTintCompositionEffect(FrameworkElement platformView, Color color, float width, float height, Vector3 offset, Uri surfaceMaskUri)
 	{
 		var compositor = ElementCompositionPreview.GetElementVisual(platformView).Compositor;
 
@@ -181,20 +199,20 @@ public partial class IconTintColorBehavior
 
 		switch (platformView)
 		{
-			case WImage image:
-			{
-				RestoreOriginalImageSize(image);
+			case WImage wImage:
+				RestoreOriginalImageSize(wImage);
 				break;
-			}
+
 			case WButton button:
-			{
 				var image = TryGetButtonImage(button);
 				if (image is not null)
 				{
 					RestoreOriginalImageSize(image);
 				}
 				break;
-			}
+
+			default:
+				throw new NotSupportedException($"{nameof(IconTintColorBehavior)} only currently supports {typeof(WImage)} and {typeof(WButton)}.");
 		}
 
 		spriteVisual.Brush = null;
@@ -212,25 +230,5 @@ public partial class IconTintColorBehavior
 		// Restore in Width/Height since ActualSize is readonly
 		image.Width = originalImageSize.Value.X;
 		image.Height = originalImageSize.Value.Y;
-	}
-
-	static Uri? TryGetSourceImageUri(WImage? imageControl, IImageElement? imageElement)
-	{
-		if (imageElement?.Source is UriImageSource uriImageSource)
-		{
-			return uriImageSource.Uri;
-		}
-
-		if (imageControl?.Source is BitmapImage bitmapImage)
-		{
-			return bitmapImage.UriSource;
-		}
-
-		return null;
-	}
-
-	static WImage? TryGetButtonImage(WButton button)
-	{
-		return button.Content as WImage;
 	}
 }
