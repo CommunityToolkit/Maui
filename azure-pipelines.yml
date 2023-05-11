@@ -115,7 +115,7 @@ jobs:
         'Windows':
           image: 'windows-latest'
         'macOS':
-          image: 'macos-13'
+          image: 'macos-12'
     pool:
       vmImage: $(image)
     steps:
