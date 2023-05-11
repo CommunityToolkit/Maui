@@ -7,8 +7,8 @@ using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Visibility = Microsoft.UI.Xaml.Visibility;
-using MImage = Microsoft.UI.Xaml.Controls.Image;
-using MButton = Microsoft.UI.Xaml.Controls.Button;
+using WImage = Microsoft.UI.Xaml.Controls.Image;
+using WButton = Microsoft.UI.Xaml.Controls.Button;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -66,7 +66,7 @@ public partial class IconTintColorBehavior
 
 		switch (platformView)
 		{
-			case MImage image:
+			case WImage image:
 			{
 				if (image.ActualSize != Vector2.Zero)
 				{
@@ -79,12 +79,12 @@ public partial class IconTintColorBehavior
 						image.SizeChanged -= OnImageSizeInitialized;
 						ApplyImageTintColor(element, image, color);
 					}
-					
+
 					image.SizeChanged += OnImageSizeInitialized;
 				}
 				break;
 			}
-			case MButton button:
+			case WButton button:
 			{
 				var image = TryGetButtonImage(button);
 				if (image is null)
@@ -110,11 +110,11 @@ public partial class IconTintColorBehavior
 			}
 			default:
 				throw new NotSupportedException(
-					$"{nameof(IconTintColorBehavior)} only currently supports {nameof(MImage)} and {nameof(MButton)}.");
+					$"{nameof(IconTintColorBehavior)} only currently supports {nameof(WImage)} and {nameof(WButton)}.");
 		}
 	}
 
-	void ApplyButtonImageTintColor(View element, MButton button, MImage image, Color color)
+	void ApplyButtonImageTintColor(View element, WButton button, WImage image, Color color)
 	{
 		var offset = image.ActualOffset;
 		var width = (float)image.ActualWidth;
@@ -132,7 +132,7 @@ public partial class IconTintColorBehavior
 		ApplyTintCompositionEffect(button, color, width, height, offset, uri);
 	}
 
-	void ApplyImageTintColor(View element, MImage image, Color color)
+	void ApplyImageTintColor(View element, WImage image, Color color)
 	{
 		var uri = TryGetSourceImageUri(image, element as IImageElement);
 		if (uri is null)
@@ -154,7 +154,7 @@ public partial class IconTintColorBehavior
 		ApplyTintCompositionEffect(image, color, width, height, offset, uri);
 	}
 
-	Vector2 GetTintImageSize(MImage image)
+	Vector2 GetTintImageSize(WImage image)
 	{
 		// ActualSize is set by the renderer when loaded. Without the zero size workaround, it's usually always what we want (default). 
 		if (image.ActualSize != Vector2.Zero)
@@ -208,12 +208,12 @@ public partial class IconTintColorBehavior
 
 		switch (platformView)
 		{
-			case MImage image:
+			case WImage image:
 			{
 				RestoreOriginalImageSize(image);
 				break;
 			}
-			case MButton button:
+			case WButton button:
 			{
 				var image = TryGetButtonImage(button);
 				if (image is not null)
@@ -228,7 +228,7 @@ public partial class IconTintColorBehavior
 		ElementCompositionPreview.SetElementChildVisual(platformView, null);
 	}
 
-	void RestoreOriginalImageSize(MImage image)
+	void RestoreOriginalImageSize(WImage image)
 	{
 		if (!originalImageSize.HasValue)
 		{
@@ -239,7 +239,7 @@ public partial class IconTintColorBehavior
 		image.Height = originalImageSize.Value.Y;
 	}
 
-	static Uri? TryGetSourceImageUri(MImage? imageControl, IImageElement? imageElement)
+	static Uri? TryGetSourceImageUri(WImage? imageControl, IImageElement? imageElement)
 	{
 		if (imageElement?.Source is UriImageSource uriImageSource)
 		{
@@ -254,8 +254,8 @@ public partial class IconTintColorBehavior
 		return null;
 	}
 
-	static MImage? TryGetButtonImage(MButton button)
+	static WImage? TryGetButtonImage(WButton button)
 	{
-		return button.Content as MImage;
+		return button.Content as WImage;
 	}
 }
