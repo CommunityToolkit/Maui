@@ -1,4 +1,6 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Threading.Tasks;
 using Tizen.Uix.Stt;
 
 namespace CommunityToolkit.Maui.Media;
@@ -9,7 +11,31 @@ public sealed partial class SpeechToTextImplementation
 	SttClient? sttClient;
 	TaskCompletionSource<string>? taskResult;
 	IProgress<string>? recognitionProgress;
-	
+
+	/// <inheritdoc />
+	public ValueTask DisposeAsync()
+	{
+		if (sttClient is not null)
+		{
+			sttClient.RecognitionResult -= OnRecognitionResult;
+			sttClient.ErrorOccurred -= OnErrorOccurred;
+			sttClient.Dispose();
+
+			sttClient = null;
+		}
+
+		return ValueTask.CompletedTask;
+	}
+
+	static void StopRecording(in SttClient sttClient)
+	{
+		sttClient.RecognitionResult -= OnRecognitionResult;
+		sttClient.ErrorOccurred -= OnErrorOccurred;
+		sttClient.Stop();
+		sttClient.Unprepare();
+	}
+
+	[MemberNotNull(nameof(sttClient), nameof(taskResult), nameof(recognitionProgress))]
 	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
 		this.recognitionProgress = recognitionResult;
@@ -27,67 +53,54 @@ public sealed partial class SpeechToTextImplementation
 		sttClient.ErrorOccurred += OnErrorOccurred;
 		sttClient.RecognitionResult += OnRecognitionResult;
 
-		var recognitionType = sttClient.IsRecognitionTypeSupported(RecognitionType.Partial) ?
-			RecognitionType.Partial : RecognitionType.Free;
+		var recognitionType = sttClient.IsRecognitionTypeSupported(RecognitionType.Partial)
+								? RecognitionType.Partial
+								: RecognitionType.Free;
+
 		sttClient.Start(culture.Name, recognitionType);
 
 		await using (cancellationToken.Register(() =>
 		{
-			StopRecording();
+			StopRecording(sttClient);
 			taskResult.TrySetCanceled();
 		}))
 		{
 			return await taskResult.Task;
 		}
 	}
-	
+
 	void OnErrorOccurred(object? sender, ErrorOccurredEventArgs e)
 	{
-		StopRecording();
+		if (sttClient is not null)
+		{
+			StopRecording(sttClient);
+		}
+
 		taskResult?.TrySetException(new Exception("STT failed - " + e.ErrorMessage));
 	}
-	
+
 	void OnRecognitionResult(object? sender, RecognitionResultEventArgs e)
 	{
-		if (e.Result == ResultEvent.Error)
+		if (e.Result is ResultEvent.Error)
 		{
-			StopRecording();
+			if (sttClient is not null)
+			{
+				StopRecording(sttClient);
+			}
+
 			taskResult?.TrySetException(new Exception("Failure in speech engine - " + e.Message));
 		}
-		else if (e.Result == ResultEvent.PartialResult)
+		else if (e.Result is ResultEvent.PartialResult)
 		{
 			recognitionProgress?.Report(e.Data.ToString() ?? string.Empty);
 		}
 		else
 		{
-			StopRecording();
+			if (sttClient is not null)
+			{
+				StopRecording(sttClient);
+			}
 			taskResult?.TrySetResult(e.Data.ToString() ?? string.Empty);
 		}
-	}
-
-	void StopRecording()
-	{
-		if (sttClient is null)
-		{
-			return;
-		}
-
-		sttClient.RecognitionResult -= OnRecognitionResult;
-		sttClient.ErrorOccurred -= OnErrorOccurred;
-		sttClient.Stop();
-		sttClient.Unprepare();
-	}
-
-	/// <inheritdoc />
-	public ValueTask DisposeAsync()
-	{
-		if (sttClient is not null)
-		{
-			sttClient.RecognitionResult -= OnRecognitionResult;
-			sttClient.ErrorOccurred -= OnErrorOccurred;
-			sttClient.Dispose();
-		}
-
-		return ValueTask.CompletedTask;
 	}
 }

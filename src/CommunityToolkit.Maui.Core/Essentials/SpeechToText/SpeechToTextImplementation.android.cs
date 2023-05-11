@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Android.Content;
 using Android.Runtime;
@@ -17,9 +18,14 @@ public sealed partial class SpeechToTextImplementation
 	{
 		listener?.Dispose();
 		speechRecognizer?.Dispose();
+
+		listener = null;
+		speechRecognizer = null;
+
 		return ValueTask.CompletedTask;
 	}
 
+	[MemberNotNull(nameof(speechRecognizer), nameof(listener))]
 	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
 		var isSpeechRecognitionAvailable = IsSpeechRecognitionAvailable();
@@ -38,9 +44,9 @@ public sealed partial class SpeechToTextImplementation
 
 		listener = new SpeechRecognitionListener
 		{
-			Error = ex => speechRecognitionListenerTaskCompletionSource.TrySetException(new Exception("Failure in speech engine - " + ex)),
-			PartialResults = sentence => recognitionResult?.Report(sentence),
-			Results = result => speechRecognitionListenerTaskCompletionSource.TrySetResult(result)
+			Error = HandleListenerError,
+			PartialResults = HandleListenerPartialResults,
+			Results = HandleListenerResults
 		};
 		speechRecognizer.SetRecognitionListener(listener);
 		speechRecognizer.StartListening(CreateSpeechIntent(culture));
@@ -53,6 +59,15 @@ public sealed partial class SpeechToTextImplementation
 		{
 			return await speechRecognitionListenerTaskCompletionSource.Task;
 		}
+
+		void HandleListenerError(SpeechRecognizerError error)
+			=> speechRecognitionListenerTaskCompletionSource.TrySetException(new Exception("Failure in speech engine - " + error));
+
+		void HandleListenerPartialResults(string sentence)
+			=> recognitionResult?.Report(sentence);
+
+		void HandleListenerResults(string result)
+			=> speechRecognitionListenerTaskCompletionSource.TrySetResult(result);
 	}
 
 	static Intent CreateSpeechIntent(CultureInfo culture)
@@ -79,9 +94,9 @@ public sealed partial class SpeechToTextImplementation
 
 	class SpeechRecognitionListener : Java.Lang.Object, IRecognitionListener
 	{
-		public Action<SpeechRecognizerError>? Error { get; init; }
-		public Action<string>? PartialResults { get; init; }
-		public Action<string>? Results { get; init; }
+		public required Action<SpeechRecognizerError> Error { get; init; }
+		public required Action<string> PartialResults { get; init; }
+		public required Action<string> Results { get; init; }
 
 		public void OnBeginningOfSpeech()
 		{
@@ -97,7 +112,7 @@ public sealed partial class SpeechToTextImplementation
 
 		public void OnError([GeneratedEnum] SpeechRecognizerError error)
 		{
-			Error?.Invoke(error);
+			Error.Invoke(error);
 		}
 
 		public void OnEvent(int eventType, Bundle? @params)
@@ -122,15 +137,15 @@ public sealed partial class SpeechToTextImplementation
 		{
 		}
 
-		static void SendResults(Bundle? bundle, Action<string>? action)
+		static void SendResults(Bundle? bundle, Action<string> action)
 		{
 			var matches = bundle?.GetStringArrayList(SpeechRecognizer.ResultsRecognition);
-			if (matches is null || matches.Count is 0)
+			if (matches?.Any() is not true)
 			{
 				return;
 			}
 
-			action?.Invoke(matches[0]);
+			action.Invoke(matches[0]);
 		}
 	}
 }

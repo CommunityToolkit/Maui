@@ -187,12 +187,12 @@ public static class MauiProgram
 
 	static void RegisterEssentials(in IServiceCollection services)
 	{
-		services.AddSingleton<IDeviceInfo>(DeviceInfo.Current);
 		services.AddSingleton<IDeviceDisplay>(DeviceDisplay.Current);
+		services.AddSingleton<IDeviceInfo>(DeviceInfo.Current);
 		services.AddSingleton<IFileSaver>(FileSaver.Default);
 		services.AddSingleton<IFolderPicker>(FolderPicker.Default);
-		services.AddSingleton<ITextToSpeech>(TextToSpeech.Default);
 		services.AddSingleton<ISpeechToText>(SpeechToText.Default);
+		services.AddSingleton<ITextToSpeech>(TextToSpeech.Default);
 	}
 
 	static IServiceCollection AddTransientWithShellRoute<TPage, TViewModel>(this IServiceCollection services) where TPage : BasePage<TViewModel>

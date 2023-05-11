@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Speech.Recognition;
 using Microsoft.Maui.ApplicationModel;
@@ -22,8 +23,12 @@ public sealed partial class SpeechToTextImplementation
 	{
 		await StopRecording();
 		StopOfflineRecording();
+
 		speechRecognitionEngine?.Dispose();
 		speechRecognizer?.Dispose();
+
+		speechRecognitionEngine = null;
+		speechRecognizer = null;
 	}
 	
 	async Task<string> InternalListenAsync(CultureInfo culture,
@@ -38,6 +43,7 @@ public sealed partial class SpeechToTextImplementation
 		return await ListenOffline(culture, recognitionResult, cancellationToken);
 	}
 
+	[MemberNotNull(nameof(recognitionText), nameof(speechRecognizer))]
 	async Task<string> ListenOnline(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
 		recognitionText = string.Empty;

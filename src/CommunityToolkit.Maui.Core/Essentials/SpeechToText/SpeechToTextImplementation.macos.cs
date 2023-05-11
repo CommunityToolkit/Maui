@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using AVFoundation;
 using Speech;
@@ -7,6 +8,7 @@ namespace CommunityToolkit.Maui.Media;
 /// <inheritdoc />
 public sealed partial class SpeechToTextImplementation
 {
+	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest))]
 	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
 		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(culture.Name));
@@ -21,7 +23,7 @@ public sealed partial class SpeechToTextImplementation
 		var audioSession = AVAudioSession.SharedInstance();
 		audioSession.SetCategory(AVAudioSessionCategory.Record, AVAudioSessionCategoryOptions.DefaultToSpeaker);
 
-		var mode = audioSession.AvailableModes.Contains("AVAudioSessionModeMeasurement") ? "AVAudioSessionModeMeasurement" : audioSession.AvailableModes[0];
+		var mode = audioSession.AvailableModes.Contains(AVAudioSession.ModeMeasurement) ? AVAudioSession.ModeMeasurement : audioSession.AvailableModes[0];
 		audioSession.SetMode(new NSString(mode), out var audioSessionError);
 		if (audioSessionError is not null)
 		{

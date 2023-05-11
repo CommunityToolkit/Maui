@@ -3,9 +3,6 @@ using Speech;
 
 namespace CommunityToolkit.Maui.Media;
 
-/// <summary>
-/// Base class for <see cref="SpeechToTextImplementation"/> on iOS + MacCatalyst
-/// </summary>
 public sealed partial class SpeechToTextImplementation
 {
 	AVAudioEngine? audioEngine;
@@ -20,6 +17,12 @@ public sealed partial class SpeechToTextImplementation
 		speechRecognizer?.Dispose();
 		liveSpeechRequest?.Dispose();
 		recognitionTask?.Dispose();
+
+		audioEngine = null;
+		speechRecognizer = null;
+		liveSpeechRequest = null;
+		recognitionTask = null;
+
 		return ValueTask.CompletedTask;
 	}
 	
@@ -32,10 +35,8 @@ public sealed partial class SpeechToTextImplementation
 	public Task<bool> RequestPermissions(CancellationToken cancellationToken)
 	{
 		var taskResult = new TaskCompletionSource<bool>(cancellationToken);
-		SFSpeechRecognizer.RequestAuthorization(status =>
-		{
-			taskResult.SetResult(status is SFSpeechRecognizerAuthorizationStatus.Authorized);
-		});
+
+		SFSpeechRecognizer.RequestAuthorization(status => taskResult.SetResult(status is SFSpeechRecognizerAuthorizationStatus.Authorized));
 
 		return taskResult.Task;
 	}

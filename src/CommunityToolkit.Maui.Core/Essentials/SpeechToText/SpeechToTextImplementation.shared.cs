@@ -32,13 +32,13 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 	public async Task<bool> RequestPermissions(CancellationToken cancellationToken)
 	{
 		var status = await Permissions.RequestAsync<Permissions.Microphone>();
-		return status == PermissionStatus.Granted;
+		return status is PermissionStatus.Granted;
 	}
-	
-	async Task<bool> IsSpeechPermissionAuthorized()
+
+	static async Task<bool> IsSpeechPermissionAuthorized()
 	{
 		var status = await Permissions.CheckStatusAsync<Permissions.Microphone>();
-		return status == PermissionStatus.Granted;
+		return status is PermissionStatus.Granted;
 	}
 #endif
 }

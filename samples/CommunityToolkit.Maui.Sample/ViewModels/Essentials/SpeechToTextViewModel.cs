@@ -11,6 +11,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Essentials;
 public partial class SpeechToTextViewModel : BaseViewModel
 {
 	const string defaultLanguage = "en-US";
+	const string defaultLanguage_android = "en";
 
 	readonly ITextToSpeech textToSpeech;
 	readonly ISpeechToText speechToText;
@@ -42,7 +43,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 			Locales.Add(locale);
 		}
 
-		Locale = Locales.FirstOrDefault(x => x.Language is defaultLanguage) ?? Locales.FirstOrDefault();
+		Locale = Locales.FirstOrDefault(x => x.Language is defaultLanguage or defaultLanguage_android) ?? Locales.FirstOrDefault();
 	}
 
 	[RelayCommand]
@@ -70,15 +71,18 @@ public partial class SpeechToTextViewModel : BaseViewModel
 
 		RecognitionText = beginSpeakingPrompt;
 
-		var recognitionResult = await speechToText.ListenAsync(CultureInfo.GetCultureInfo(Locale?.Language ?? defaultLanguage), new Progress<string>(partialText =>
-			{
-				if (RecognitionText is beginSpeakingPrompt)
-				{
-					RecognitionText = string.Empty;
-				}
+		var recognitionResult = await speechToText.ListenAsync(
+											CultureInfo.GetCultureInfo(Locale?.Language ?? defaultLanguage),
+											new Progress<string>(partialText =>
+											{
+												if (RecognitionText is beginSpeakingPrompt)
+												{
+													RecognitionText = string.Empty;
+												}
 
-				RecognitionText += partialText + " ";
-			}), cancellationToken);
+												RecognitionText += partialText + " ";
+											}), cancellationToken);
+
 		if (recognitionResult.IsSuccessful)
 		{
 			RecognitionText = recognitionResult.Text;
