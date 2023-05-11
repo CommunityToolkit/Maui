@@ -41,20 +41,10 @@ public partial class IconTintColorBehavior
 		originalImageSize = null;
 	}
 
-	void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
+	static bool TryGetButtonImage(WButton button, [NotNullWhen(true)] out WImage? image)
 	{
-		if (e.PropertyName is not string propertyName
-			|| sender is not View bindable
-			|| bindable.Handler?.PlatformView is not FrameworkElement platformView)
-		{
-			return;
-		}
-
-		if (propertyName.Equals(Image.SourceProperty.PropertyName, StringComparison.Ordinal)
-			|| propertyName.Equals(ImageButton.SourceProperty.PropertyName, StringComparison.Ordinal))
-		{
-			ApplyTintColor(platformView, bindable, TintColor);
-		}
+		image = button.Content as WImage;
+		return image is not null;
 	}
 
 	static bool TryGetSourceImageUri(WImage? imageControl, IImageElement? imageElement, [NotNullWhen(true)] out Uri? uri)
@@ -75,9 +65,20 @@ public partial class IconTintColorBehavior
 		return false;
 	}
 
-	static WImage? TryGetButtonImage(WButton button)
+	void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
-		return button.Content as WImage;
+		if (e.PropertyName is not string propertyName
+			|| sender is not View bindable
+			|| bindable.Handler?.PlatformView is not FrameworkElement platformView)
+		{
+			return;
+		}
+
+		if (propertyName.Equals(Image.SourceProperty.PropertyName, StringComparison.Ordinal)
+			|| propertyName.Equals(ImageButton.SourceProperty.PropertyName, StringComparison.Ordinal))
+		{
+			ApplyTintColor(platformView, bindable, TintColor);
+		}
 	}
 
 	void ApplyTintColor(FrameworkElement platformView, View element, Color? color)
@@ -95,8 +96,7 @@ public partial class IconTintColorBehavior
 					break;
 
 				case WButton button:
-					var image = TryGetButtonImage(button);
-					if (image is null)
+					if (!TryGetButtonImage(button, out var image))
 					{
 						return;
 					}
@@ -204,8 +204,7 @@ public partial class IconTintColorBehavior
 				break;
 
 			case WButton button:
-				var image = TryGetButtonImage(button);
-				if (image is not null)
+				if (TryGetButtonImage(button, out var image))
 				{
 					RestoreOriginalImageSize(image);
 				}
