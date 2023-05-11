@@ -27,7 +27,7 @@ public sealed partial class SpeechToTextImplementation
 		return ValueTask.CompletedTask;
 	}
 
-	static void StopRecording(in SttClient sttClient)
+	void StopRecording(in SttClient sttClient)
 	{
 		sttClient.RecognitionResult -= OnRecognitionResult;
 		sttClient.ErrorOccurred -= OnErrorOccurred;
@@ -35,7 +35,7 @@ public sealed partial class SpeechToTextImplementation
 		sttClient.Unprepare();
 	}
 
-	[MemberNotNull(nameof(sttClient), nameof(taskResult), nameof(recognitionProgress))]
+	[MemberNotNull(nameof(sttClient), nameof(taskResult))]
 	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
 		this.recognitionProgress = recognitionResult;
