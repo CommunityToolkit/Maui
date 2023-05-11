@@ -6,7 +6,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
-using Visibility = Microsoft.UI.Xaml.Visibility;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using WButton = Microsoft.UI.Xaml.Controls.Button;
 
@@ -16,6 +15,7 @@ public partial class IconTintColorBehavior
 {
 	SpriteVisual? spriteVisual;
 	Vector2? originalImageSize;
+	bool IsUpdate => originalImageSize is not null;
 
 	/// <inheritdoc/>
 	protected override void OnAttachedTo(View bindable, FrameworkElement platformView)
@@ -37,23 +37,25 @@ public partial class IconTintColorBehavior
 	{
 		bindable.PropertyChanged -= OnElementPropertyChanged;
 		RemoveTintColor(platformView);
+		originalImageSize = null;
 	}
 
 	void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
-		if (e.PropertyName != ImageButton.IsLoadingProperty.PropertyName
-		    || e.PropertyName != Image.SourceProperty.PropertyName
-		    || e.PropertyName != ImageButton.SourceProperty.PropertyName
-		    || sender is not IImageElement element
-		    || (sender as VisualElement)?.Handler?.PlatformView is not FrameworkElement platformView)
+		if (e.PropertyName is not string propertyName
+		    || sender is not View bindable
+		    || bindable.Handler?.PlatformView is not FrameworkElement platformView)
 		{
 			return;
 		}
 
-		if (!element.IsLoading)
+		if (!propertyName.Equals(Image.SourceProperty.PropertyName, StringComparison.Ordinal)
+		    && !propertyName.Equals(ImageButton.SourceProperty.PropertyName, StringComparison.Ordinal))
 		{
-			ApplyTintColor(platformView, (View)element, TintColor);
+			return;
 		}
+
+		ApplyTintColor(platformView, bindable, TintColor);
 	}
 
 	void ApplyTintColor(FrameworkElement platformView, View element, Color? color)
@@ -68,20 +70,7 @@ public partial class IconTintColorBehavior
 		{
 			case WImage image:
 			{
-				if (image.ActualSize != Vector2.Zero)
-				{
-					ApplyImageTintColor(element, image, color);
-				}
-				else
-				{
-					void OnImageSizeInitialized(object sender, SizeChangedEventArgs e)
-					{
-						image.SizeChanged -= OnImageSizeInitialized;
-						ApplyImageTintColor(element, image, color);
-					}
-
-					image.SizeChanged += OnImageSizeInitialized;
-				}
+				LoadAndApplyImageTintColor(element, image, color);
 				break;
 			}
 			case WButton button:
@@ -92,20 +81,7 @@ public partial class IconTintColorBehavior
 					return;
 				}
 
-				if (image.ActualSize != Vector2.Zero)
-				{
-					ApplyButtonImageTintColor(element, button, image, color);
-				}
-				else
-				{
-					void OnButtonImageSizeInitialized(object sender, SizeChangedEventArgs e)
-					{
-						image.SizeChanged -= OnButtonImageSizeInitialized;	
-						ApplyButtonImageTintColor(element, button, image, color);
-					}
-
-					image.SizeChanged += OnButtonImageSizeInitialized;
-				}
+				LoadAndApplyImageTintColor(element, image, color);
 				break;
 			}
 			default:
@@ -114,23 +90,27 @@ public partial class IconTintColorBehavior
 		}
 	}
 
-	void ApplyButtonImageTintColor(View element, WButton button, WImage image, Color color)
+	void LoadAndApplyImageTintColor(View element, WImage image, Color color)
 	{
-		var offset = image.ActualOffset;
-		var width = (float)image.ActualWidth;
-		var height = (float)image.ActualHeight;
+		// There seems to be no other indicator if the image is loaded and the ActualSize is available.
+		var isLoaded = image.ActualSize != Vector2.Zero;
 
-		var uri = TryGetSourceImageUri(image, element as IImageElement);
-		if (uri is null)
+		if (isLoaded || IsUpdate)
 		{
-			return;
+			ApplyImageTintColor(element, image, color);
 		}
+		else
+		{
+			void OnButtonImageSizeInitialized(object sender, SizeChangedEventArgs e)
+			{
+				image.SizeChanged -= OnButtonImageSizeInitialized;
+				ApplyImageTintColor(element, image, color);
+			}
 
-		// Hide possible visible pixels from original image
-		image.Visibility = Visibility.Collapsed;
-
-		ApplyTintCompositionEffect(button, color, width, height, offset, uri);
+			image.SizeChanged += OnButtonImageSizeInitialized;
+		}
 	}
+
 
 	void ApplyImageTintColor(View element, WImage image, Color color)
 	{
@@ -145,10 +125,10 @@ public partial class IconTintColorBehavior
 		var height = originalImageSize.Value.Y;
 
 		// Hide possible visible pixels from original image.
-		// Workaround as it's not possible to hide parent without also hiding children using Visibility.Collapsed.
+		// Workaround since the tinted image is added as a child to the current image and it's not possible to hide a parent without hiding its children using Visibility.Collapsed.
 		image.Width = image.Height = 0;
 
-		// Workaround requires offset to re-center tinted image
+		// Workaround requires offset to re-center tinted image.
 		var offset = new Vector3(-width * .5f, -height * .5f, 0f);
 
 		ApplyTintCompositionEffect(image, color, width, height, offset, uri);
@@ -156,21 +136,17 @@ public partial class IconTintColorBehavior
 
 	Vector2 GetTintImageSize(WImage image)
 	{
-		// ActualSize is set by the renderer when loaded. Without the zero size workaround, it's usually always what we want (default). 
+		// ActualSize is set by the layout process when loaded. Without the zero size workaround, it's always what we want (default). 
 		if (image.ActualSize != Vector2.Zero)
 		{
 			return image.ActualSize;
 		}
 
-		// (Fallback 1) Required when the Source property changes, because the size has been set to zero to hide the original image.
 		if (originalImageSize.HasValue)
 		{
 			return originalImageSize.Value;
 		}
 
-		// (Fallback 2) Required when previous effect was removed and image was hidden using zero size workaround.
-		// The image size is restored in Width/Height during OnDetach.
-		// However the values are not reflected in the "ActualSize", therefore this extra fallback is required.
 		return new Vector2((float)image.Width, (float)image.Height);
 	}
 
@@ -191,10 +167,7 @@ public partial class IconTintColorBehavior
 		spriteVisual = compositor.CreateSpriteVisual();
 		spriteVisual.Brush = maskBrush;
 		spriteVisual.Size = new Vector2(width, height);
-		spriteVisual.AnchorPoint = Vector2.Zero;
-		spriteVisual.CenterPoint = new Vector3(width * .5f, height * .5f, 0f);
 		spriteVisual.Offset = offset;
-		spriteVisual.BorderMode = CompositionBorderMode.Soft;
 
 		ElementCompositionPreview.SetElementChildVisual(platformView, spriteVisual);
 	}
@@ -218,23 +191,25 @@ public partial class IconTintColorBehavior
 				var image = TryGetButtonImage(button);
 				if (image is not null)
 				{
-					image.Visibility = Visibility.Visible;
+					RestoreOriginalImageSize(image);
 				}
 				break;
 			}
 		}
 
 		spriteVisual.Brush = null;
+		spriteVisual = null;
 		ElementCompositionPreview.SetElementChildVisual(platformView, null);
 	}
 
 	void RestoreOriginalImageSize(WImage image)
 	{
-		if (!originalImageSize.HasValue)
+		if (originalImageSize is null)
 		{
 			return;
 		}
 
+		// Restore in Width/Height since ActualSize is readonly
 		image.Width = originalImageSize.Value.X;
 		image.Height = originalImageSize.Value.Y;
 	}
