@@ -74,10 +74,13 @@ public partial class IconTintColorBehavior
 				}
 				else
 				{
-					image.SizeChanged += (sender, args) => 
-					{ 
-						ApplyImageTintColor(element, image, color); 
-					};
+					void OnImageSizeInitialized(object sender, SizeChangedEventArgs e)
+					{
+						image.SizeChanged -= OnImageSizeInitialized;
+						ApplyImageTintColor(element, image, color);
+					}
+					
+					image.SizeChanged += OnImageSizeInitialized;
 				}
 				break;
 			}
@@ -95,10 +98,13 @@ public partial class IconTintColorBehavior
 				}
 				else
 				{
-					image.SizeChanged += (sender, args) =>
+					void OnButtonImageSizeInitialized(object sender, SizeChangedEventArgs e)
 					{
+						image.SizeChanged -= OnButtonImageSizeInitialized;	
 						ApplyButtonImageTintColor(element, button, image, color);
-					};
+					}
+
+					image.SizeChanged += OnButtonImageSizeInitialized;
 				}
 				break;
 			}
