@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
@@ -15,8 +16,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 public partial class IconTintColorBehavior
 {
 	SpriteVisual? spriteVisual;
-	Vector2? originalImageSize;
-	bool IsUpdate => originalImageSize is not null;
+	Vector2? originalImageSize;	
 
 	/// <inheritdoc/>
 	protected override void OnAttachedTo(View bindable, FrameworkElement platformView)
@@ -83,54 +83,43 @@ public partial class IconTintColorBehavior
 
 	void ApplyTintColor(FrameworkElement platformView, View element, Color? color)
 	{
+		RemoveTintColor(platformView);
+
 		if (color is null)
 		{
-			RemoveTintColor(platformView);
+			return;
 		}
-		else
+		
+		switch (platformView)
 		{
-			switch (platformView)
-			{
-				case WImage wImage:
-					LoadAndApplyImageTintColor(element, wImage, color);
-					break;
+			case WImage wImage:
+				LoadAndApplyImageTintColor(element, wImage, color);
+				break;
 
-				case WButton button:
-					if (!TryGetButtonImage(button, out var image))
-					{
-						return;
-					}
+			case WButton button:
+				if (!TryGetButtonImage(button, out var image))
+				{
+					return;
+				}
 
-					LoadAndApplyImageTintColor(element, image, color);
-					break;
+				LoadAndApplyImageTintColor(element, image, color);
+				break;
 
-				default:
-					throw new NotSupportedException($"{nameof(IconTintColorBehavior)} only currently supports {typeof(WImage)} and {typeof(WButton)}.");
-			}
-		}
+			default:
+				throw new NotSupportedException($"{nameof(IconTintColorBehavior)} only currently supports {typeof(WImage)} and {typeof(WButton)}.");
+		}		
 	}
 
 	void LoadAndApplyImageTintColor(View element, WImage image, Color color)
 	{
-		// There seems to be no other indicator if the image is loaded and the ActualSize is available.
-		var isLoaded = image.ActualSize != Vector2.Zero;
+		image.ImageOpened += OnImageOpened;		
 
-		if (isLoaded || IsUpdate)
+		void OnImageOpened(object sender, RoutedEventArgs e)
 		{
-			ApplyImageTintColor(element, image, color);
-		}
-		else
-		{
-			image.SizeChanged += OnButtonImageSizeInitialized;
-		}
-
-		void OnButtonImageSizeInitialized(object sender, SizeChangedEventArgs e)
-		{
-			image.SizeChanged -= OnButtonImageSizeInitialized;
+			image.ImageOpened -= OnImageOpened;
 			ApplyImageTintColor(element, image, color);
 		}
 	}
-
 
 	void ApplyImageTintColor(View element, WImage image, Color color)
 	{
@@ -201,12 +190,14 @@ public partial class IconTintColorBehavior
 		{
 			case WImage wImage:
 				RestoreOriginalImageSize(wImage);
+				ElementCompositionPreview.SetElementChildVisual(platformView, null);
 				break;
 
 			case WButton button:
 				if (TryGetButtonImage(button, out var image))
 				{
 					RestoreOriginalImageSize(image);
+					ElementCompositionPreview.SetElementChildVisual(image, null);
 				}
 				break;
 
@@ -216,7 +207,6 @@ public partial class IconTintColorBehavior
 
 		spriteVisual.Brush = null;
 		spriteVisual = null;
-		ElementCompositionPreview.SetElementChildVisual(platformView, null);
 	}
 
 	void RestoreOriginalImageSize(WImage image)
