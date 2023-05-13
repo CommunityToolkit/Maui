@@ -28,5 +28,7 @@
 	<string>Assets.xcassets/appicon.appiconset</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>ISpeechToText Uses Speech Recognition</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>ISpeechToText Uses Microphone</string>
 </dict>
 </plist>
