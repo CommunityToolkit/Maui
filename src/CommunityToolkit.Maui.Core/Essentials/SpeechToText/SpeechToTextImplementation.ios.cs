@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using AVFoundation;
 using Microsoft.Maui.ApplicationModel;
@@ -8,6 +9,7 @@ namespace CommunityToolkit.Maui.Media;
 /// <inheritdoc />
 public sealed partial class SpeechToTextImplementation
 {
+	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest))]
 	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
 		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(culture.Name));
@@ -17,13 +19,14 @@ public sealed partial class SpeechToTextImplementation
 			throw new ArgumentException("Speech recognizer is not available");
 		}
 
-		if (SFSpeechRecognizer.AuthorizationStatus is not SFSpeechRecognizerAuthorizationStatus.Authorized)
+		if (UIDevice.CurrentDevice.CheckSystemVersion(15, 0))
 		{
-			throw new PermissionException("Permission denied");
+			AVAudioSession.SharedInstance().SetSupportsMultichannelContent(true, out _);
 		}
 
 		audioEngine = new AVAudioEngine();
 		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest();
+
 		var node = audioEngine.InputNode;
 		var recordingFormat = node.GetBusOutputFormat(0);
 		node.InstallTapOnBus(0, 1024, recordingFormat, (buffer, _) =>

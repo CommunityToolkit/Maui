@@ -15,7 +15,7 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 			var isPermissionGranted = await IsSpeechPermissionAuthorized();
 			if (!isPermissionGranted)
 			{
-				return new SpeechToTextResult(null, new Exception("Permission not granted"));
+				return new SpeechToTextResult(null, new Exception("Speech Recognizer Permission not granted"));
 			}
 			
 			var finalResult = await InternalListenAsync(culture, recognitionResult, cancellationToken);

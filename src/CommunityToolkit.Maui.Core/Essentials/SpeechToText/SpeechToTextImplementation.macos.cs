@@ -21,6 +21,12 @@ public sealed partial class SpeechToTextImplementation
 		audioEngine = new AVAudioEngine();
 		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest();
 		var audioSession = AVAudioSession.SharedInstance();
+
+		if (UIDevice.CurrentDevice.CheckSystemVersion(15, 0))
+		{
+			audioSession.SetSupportsMultichannelContent(true, out _);
+		}
+
 		audioSession.SetCategory(AVAudioSessionCategory.Record, AVAudioSessionCategoryOptions.DefaultToSpeaker);
 
 		var mode = audioSession.AvailableModes.Contains(AVAudioSession.ModeMeasurement) ? AVAudioSession.ModeMeasurement : audioSession.AvailableModes[0];
