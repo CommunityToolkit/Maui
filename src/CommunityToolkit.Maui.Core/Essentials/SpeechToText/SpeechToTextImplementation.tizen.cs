@@ -54,8 +54,8 @@ public sealed partial class SpeechToTextImplementation
 		sttClient.RecognitionResult += OnRecognitionResult;
 
 		var recognitionType = sttClient.IsRecognitionTypeSupported(RecognitionType.Partial)
-		? RecognitionType.Partial
-		: RecognitionType.Free;
+			? RecognitionType.Partial
+			: RecognitionType.Free;
 
 		sttClient.Start(defaultSttEngineLocale, recognitionType);
 
