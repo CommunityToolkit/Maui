@@ -12,6 +12,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 {
 	const string defaultLanguage = "en-US";
 	const string defaultLanguage_android = "en";
+	const string defaultLanguage_tizen= "en_US";
 
 	readonly ITextToSpeech textToSpeech;
 	readonly ISpeechToText speechToText;
@@ -38,12 +39,13 @@ public partial class SpeechToTextViewModel : BaseViewModel
 		Locales.Clear();
 
 		var locales = await textToSpeech.GetLocalesAsync();
+
 		foreach (var locale in locales.OrderBy(x => x.Language).ThenBy(x => x.Name))
 		{
 			Locales.Add(locale);
 		}
 
-		Locale = Locales.FirstOrDefault(x => x.Language is defaultLanguage or defaultLanguage_android) ?? Locales.FirstOrDefault();
+		Locale = Locales.FirstOrDefault(x => x.Language is defaultLanguage or defaultLanguage_android or defaultLanguage_tizen) ?? Locales.FirstOrDefault();
 	}
 
 	[RelayCommand]
