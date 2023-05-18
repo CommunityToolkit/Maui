@@ -82,9 +82,9 @@ public partial class MediaManager
 	/// Invokes the seek operation on the platform element.
 	/// </summary>
 	/// <param name="position">The position to seek to.</param>
-	public async ValueTask Seek(TimeSpan position)
+	public ValueTask Seek(TimeSpan position)
 	{
-		await PlatformSeek(position);
+		return PlatformSeek(position);
 	}
 
 	/// <summary>
