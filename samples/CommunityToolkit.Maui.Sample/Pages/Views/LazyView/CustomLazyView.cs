@@ -18,4 +18,3 @@ public class CustomLazyView<TView> : Maui.Views.LazyView where TView : View, new
 		SetHasLazyViewLoaded(true);
 	}
 }
-
