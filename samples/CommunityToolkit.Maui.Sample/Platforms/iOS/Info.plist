@@ -28,7 +28,11 @@
 	</array>
 	<key>XSAppIconAssets</key>
 	<string>Assets.xcassets/appicon.appiconset</string>
-    <key>UIViewControllerBasedStatusBarAppearance</key>
-    <false/>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>ISpeechToText Uses Speech Recognition</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>ISpeechToText Uses Microphone</string>
 </dict>
 </plist>

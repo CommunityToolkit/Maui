@@ -1,4 +1,5 @@
 using System.Runtime.Versioning;
+using Microsoft.Maui.ApplicationModel;
 
 namespace CommunityToolkit.Maui.Storage;
 
@@ -31,17 +32,27 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 		await WriteStream(stream, fileUrl.Path ?? throw new Exception("Path cannot be null."), cancellationToken);
 
 		cancellationToken.ThrowIfCancellationRequested();
-		taskCompetedSource = new TaskCompletionSource<string>();
+		taskCompetedSource?.TrySetCanceled(CancellationToken.None);
+		var tcs = taskCompetedSource = new (cancellationToken);
 
-		documentPickerViewController = new UIDocumentPickerViewController(new[] { fileUrl });
-		documentPickerViewController.DirectoryUrl = NSUrl.FromString(initialPath);
+		documentPickerViewController = new(new[] { fileUrl })
+		{
+			DirectoryUrl = NSUrl.FromString(initialPath)
+		};
 		documentPickerViewController.DidPickDocumentAtUrls += DocumentPickerViewControllerOnDidPickDocumentAtUrls;
 		documentPickerViewController.WasCancelled += DocumentPickerViewControllerOnWasCancelled;
 
-		var currentViewController = Microsoft.Maui.Platform.UIApplicationExtensions.GetKeyWindow(UIApplication.SharedApplication)?.RootViewController;
-		currentViewController?.PresentViewController(documentPickerViewController, true, null);
+		var currentViewController = Platform.GetCurrentUIViewController();
+		if (currentViewController is not null)
+		{
+			currentViewController.PresentViewController(documentPickerViewController, true, null);
+		}
+		else
+		{
+			throw new FileSaveException("Unable to get a window where to present the file saver UI.");
+		}
 
-		return await taskCompetedSource.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
+		return await tcs.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
 	}
 
 	Task<string> InternalSaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
@@ -51,7 +62,7 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 
 	void DocumentPickerViewControllerOnWasCancelled(object? sender, EventArgs e)
 	{
-		taskCompetedSource?.SetException(new FolderPickerException("Operation cancelled."));
+		taskCompetedSource?.SetException(new FileSaveException("Operation cancelled."));
 		InternalDispose();
 	}
 
@@ -59,7 +70,7 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 	{
 		try
 		{
-			taskCompetedSource?.SetResult(e.Urls[0].Path ?? throw new FileSaveException("Unable to retrieve the path of the saved file."));
+			taskCompetedSource?.TrySetResult(e.Urls[0].Path ?? throw new FileSaveException("Unable to retrieve the path of the saved file."));
 		}
 		finally
 		{
