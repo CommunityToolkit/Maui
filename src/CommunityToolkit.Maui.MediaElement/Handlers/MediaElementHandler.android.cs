@@ -19,7 +19,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 
 	protected override MauiMediaElement CreatePlatformView()
 	{
-		mediaManager ??= new(MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null"), 
+		mediaManager ??= new(MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null"),
 								VirtualView,
 								Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"));
 

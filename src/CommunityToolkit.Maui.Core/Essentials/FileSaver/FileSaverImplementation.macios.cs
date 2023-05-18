@@ -33,7 +33,7 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 
 		cancellationToken.ThrowIfCancellationRequested();
 		taskCompetedSource?.TrySetCanceled(CancellationToken.None);
-		var tcs = taskCompetedSource = new (cancellationToken);
+		var tcs = taskCompetedSource = new(cancellationToken);
 
 		documentPickerViewController = new(new[] { fileUrl })
 		{

@@ -41,7 +41,7 @@ public sealed partial class FolderPickerImplementation : IFolderPicker, IDisposa
 		var currentViewController = Platform.GetCurrentUIViewController();
 
 		taskCompetedSource?.TrySetCanceled(CancellationToken.None);
-		var tcs = taskCompetedSource = new ();
+		var tcs = taskCompetedSource = new();
 		if (currentViewController is not null)
 		{
 			currentViewController.PresentViewController(documentPickerViewController, true, null);

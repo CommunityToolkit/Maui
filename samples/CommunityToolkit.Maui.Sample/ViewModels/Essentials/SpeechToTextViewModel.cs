@@ -12,7 +12,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 {
 	const string defaultLanguage = "en-US";
 	const string defaultLanguage_android = "en";
-	const string defaultLanguage_tizen= "en_US";
+	const string defaultLanguage_tizen = "en_US";
 
 	readonly ITextToSpeech textToSpeech;
 	readonly ISpeechToText speechToText;
@@ -68,7 +68,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 			await Toast.Make("Permission not granted").Show(CancellationToken.None);
 			return;
 		}
-		
+
 		const string beginSpeakingPrompt = "Begin speaking...";
 
 		RecognitionText = beginSpeakingPrompt;
@@ -93,7 +93,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 		{
 			await Toast.Make(recognitionResult.Exception?.Message ?? "Unable to recognize speech").Show(CancellationToken.None);
 		}
-		
+
 		if (RecognitionText is beginSpeakingPrompt)
 		{
 			RecognitionText = string.Empty;
