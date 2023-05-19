@@ -15,8 +15,9 @@ namespace CommunityToolkit.Maui.Behaviors;
 
 public partial class IconTintColorBehavior
 {
-	SpriteVisual? spriteVisual;
+	SpriteVisual? currentSpriteVisual;
 	Vector2? originalImageSize;	
+	CompositionColorBrush? currentColorBrush;
 
 	/// <inheritdoc/>
 	protected override void OnAttachedTo(View bindable, FrameworkElement platformView)
@@ -28,7 +29,14 @@ public partial class IconTintColorBehavior
 		{
 			if (e.PropertyName == TintColorProperty.PropertyName)
 			{
-				ApplyTintColor(platformView, bindable, TintColor);
+				if (currentColorBrush is not null && TintColor is not null)
+				{
+					currentColorBrush.Color = TintColor.ToWindowsColor();
+				} 
+				else
+				{
+					ApplyTintColor(platformView, bindable, TintColor);
+				}
 			}
 		};
 	}
@@ -112,7 +120,7 @@ public partial class IconTintColorBehavior
 
 	void LoadAndApplyImageTintColor(View element, WImage image, Color color)
 	{
-		image.ImageOpened += OnImageOpened;		
+		image.ImageOpened += OnImageOpened;
 
 		void OnImageOpened(object sender, RoutedEventArgs e)
 		{
@@ -120,7 +128,7 @@ public partial class IconTintColorBehavior
 			ApplyImageTintColor(element, image, color);
 		}
 	}
-
+	
 	void ApplyImageTintColor(View element, WImage image, Color color)
 	{
 		if (!TryGetSourceImageUri(image, (IImageElement)element, out var uri))
@@ -162,26 +170,26 @@ public partial class IconTintColorBehavior
 	{
 		var compositor = ElementCompositionPreview.GetElementVisual(platformView).Compositor;
 
-		var sourceColorBrush = compositor.CreateColorBrush();
-		sourceColorBrush.Color = color.ToWindowsColor();
+		currentColorBrush = compositor.CreateColorBrush();
+		currentColorBrush.Color = color.ToWindowsColor();
 
 		var loadedSurfaceMask = LoadedImageSurface.StartLoadFromUri(surfaceMaskUri);
 
 		var maskBrush = compositor.CreateMaskBrush();
-		maskBrush.Source = sourceColorBrush;
+		maskBrush.Source = currentColorBrush;
 		maskBrush.Mask = compositor.CreateSurfaceBrush(loadedSurfaceMask);
 
-		spriteVisual = compositor.CreateSpriteVisual();
-		spriteVisual.Brush = maskBrush;
-		spriteVisual.Size = new Vector2(width, height);
-		spriteVisual.Offset = offset;
+		currentSpriteVisual = compositor.CreateSpriteVisual();
+		currentSpriteVisual.Brush = maskBrush;
+		currentSpriteVisual.Size = new Vector2(width, height);
+		currentSpriteVisual.Offset = offset;
 
-		ElementCompositionPreview.SetElementChildVisual(platformView, spriteVisual);
+		ElementCompositionPreview.SetElementChildVisual(platformView, currentSpriteVisual);
 	}
 
 	void RemoveTintColor(FrameworkElement platformView)
 	{
-		if (spriteVisual is null)
+		if (currentSpriteVisual is null)
 		{
 			return;
 		}
@@ -200,13 +208,11 @@ public partial class IconTintColorBehavior
 					ElementCompositionPreview.SetElementChildVisual(image, null);
 				}
 				break;
-
-			default:
-				throw new NotSupportedException($"{nameof(IconTintColorBehavior)} only currently supports {typeof(WImage)} and {typeof(WButton)}.");
 		}
 
-		spriteVisual.Brush = null;
-		spriteVisual = null;
+		currentSpriteVisual.Brush = null;
+		currentSpriteVisual = null;
+		currentColorBrush = null;
 	}
 
 	void RestoreOriginalImageSize(WImage image)
