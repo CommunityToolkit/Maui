@@ -15,7 +15,7 @@ public interface ISpeechToText : IAsyncDisposable
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns>Final recognition result</returns>
 	Task<SpeechToTextResult> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken);
-	
+
 	/// <summary>
 	/// Request permissions for speech to text.
 	/// </summary>
