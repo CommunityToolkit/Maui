@@ -25,12 +25,12 @@ public sealed partial class SpeechToTextImplementation
 
 		return ValueTask.CompletedTask;
 	}
-	
+
 	static Task<bool> IsSpeechPermissionAuthorized()
 	{
 		return Task.FromResult(SFSpeechRecognizer.AuthorizationStatus is SFSpeechRecognizerAuthorizationStatus.Authorized);
 	}
-	
+
 	/// <inheritdoc />
 	public Task<bool> RequestPermissions(CancellationToken cancellationToken)
 	{
