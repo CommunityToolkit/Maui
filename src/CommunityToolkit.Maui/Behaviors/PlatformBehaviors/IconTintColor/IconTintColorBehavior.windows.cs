@@ -16,7 +16,6 @@ namespace CommunityToolkit.Maui.Behaviors;
 public partial class IconTintColorBehavior
 {
 	SpriteVisual? currentSpriteVisual;
-	Vector2? originalImageSize;	
 	CompositionColorBrush? currentColorBrush;
 
 	/// <inheritdoc/>
@@ -46,7 +45,6 @@ public partial class IconTintColorBehavior
 	{
 		bindable.PropertyChanged -= OnElementPropertyChanged;
 		RemoveTintColor(platformView);
-		originalImageSize = null;
 	}
 
 	static bool TryGetButtonImage(WButton button, [NotNullWhen(true)] out WImage? image)
@@ -125,7 +123,22 @@ public partial class IconTintColorBehavior
 		void OnImageOpened(object sender, RoutedEventArgs e)
 		{
 			image.ImageOpened -= OnImageOpened;
-			ApplyImageTintColor(element, image, color);
+
+			if (image.ActualSize != Vector2.Zero)
+			{
+				ApplyImageTintColor(element, image, color);
+			}
+			else
+			{
+				// Sometimes the ActualSize of the image is still not ready, therefore we have to wait for the next SizeChange event. 
+				image.SizeChanged += OnImageSizeChanged;
+
+				void OnImageSizeChanged(object sender, SizeChangedEventArgs e)
+				{
+					image.SizeChanged -= OnImageSizeChanged;
+					ApplyImageTintColor(element, image, color);
+				}
+			}
 		}
 	}
 	
@@ -136,9 +149,8 @@ public partial class IconTintColorBehavior
 			return;
 		}
 
-		originalImageSize = GetTintImageSize(image);
-		var width = originalImageSize.Value.X;
-		var height = originalImageSize.Value.Y;
+		var width = (float)image.ActualWidth;
+		var height = (float)image.ActualHeight;
 
 		// Hide possible visible pixels from original image.
 		// Workaround since the tinted image is added as a child to the current image and it's not possible to hide a parent without hiding its children using Visibility.Collapsed.
@@ -148,22 +160,6 @@ public partial class IconTintColorBehavior
 		var offset = new Vector3(-width * .5f, -height * .5f, 0f);
 
 		ApplyTintCompositionEffect(image, color, width, height, offset, uri);
-	}
-
-	Vector2 GetTintImageSize(WImage image)
-	{
-		// ActualSize is set by the layout process when loaded. Without the zero size workaround, it's always what we want (default). 
-		if (image.ActualSize != Vector2.Zero)
-		{
-			return image.ActualSize;
-		}
-
-		if (originalImageSize.HasValue)
-		{
-			return originalImageSize.Value;
-		}
-
-		return new Vector2((float)image.Width, (float)image.Height);
 	}
 
 	void ApplyTintCompositionEffect(FrameworkElement platformView, Color color, float width, float height, Vector3 offset, Uri surfaceMaskUri)
@@ -217,13 +213,13 @@ public partial class IconTintColorBehavior
 
 	void RestoreOriginalImageSize(WImage image)
 	{
-		if (originalImageSize is null)
+		if (currentSpriteVisual is null)
 		{
 			return;
 		}
 
 		// Restore in Width/Height since ActualSize is readonly
-		image.Width = originalImageSize.Value.X;
-		image.Height = originalImageSize.Value.Y;
+		image.Width = currentSpriteVisual.Size.X;
+		image.Height = currentSpriteVisual.Size.Y;
 	}
 }
