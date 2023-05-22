@@ -16,7 +16,9 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 			throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null");
 		}
 
-		mediaManager ??= new(MauiContext, VirtualView);
+		mediaManager ??= new(MauiContext,
+								VirtualView,
+								Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"));
 
 		// Retrieve the parenting page so we can provide that to the platform control
 		var parent = VirtualView.Parent;
