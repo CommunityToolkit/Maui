@@ -19,7 +19,7 @@
 
 			<Label
 				Margin="0,0,0,20"
-				Text="With the IconTintColorBehavior you set the tint color of an image. This behavior works on the Image and ImageButton controls and is implemented for the Android, iOS, and maccatalyst platforms."
+				Text="With the IconTintColorBehavior you set the tint color of an image. This behavior works on the Image and ImageButton controls and is implemented for the Android, iOS, maccatalyst and Windows platforms."
 				HorizontalTextAlignment="Center"
 				Grid.ColumnSpan="2"/>
 
