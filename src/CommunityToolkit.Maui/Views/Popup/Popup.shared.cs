@@ -265,7 +265,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 		ArgumentNullException.ThrowIfNull(newValue);
 	}
 
-	void IPopup.OnClosed(object? result) => Handler.Invoke(nameof(IPopup.OnClosed), result);
+	void IPopup.OnClosed(object? result) => Handler?.Invoke(nameof(IPopup.OnClosed), result);
 
 	void IPopup.OnOpened() => OnOpened();
 
