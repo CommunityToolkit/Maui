@@ -14,6 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\.editorconfig = ..\.editorconfig
 		..\Directory.Build.props = ..\Directory.Build.props
 		..\global.json = ..\global.json
+		..\Directory.Build.targets = ..\Directory.Build.targets
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.Core", "..\src\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj", "{6B572EAD-1581-46BE-A08B-1C7F2246BA2E}"

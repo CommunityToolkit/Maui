@@ -124,12 +124,12 @@ public partial class MediaManager : IDisposable
 		Player?.Pause();
 	}
 
-	protected virtual partial void PlatformSeek(TimeSpan position)
+	protected virtual partial ValueTask PlatformSeek(TimeSpan position)
 	{
 		if (PlayerItem is null || Player?.CurrentItem is null
 			|| Player?.Status != AVPlayerStatus.ReadyToPlay)
 		{
-			return;
+			return ValueTask.CompletedTask;
 		}
 
 		var ranges = Player.CurrentItem.SeekableTimeRanges;
@@ -149,6 +149,8 @@ public partial class MediaManager : IDisposable
 				break;
 			}
 		}
+
+		return ValueTask.CompletedTask;
 	}
 
 	protected virtual partial void PlatformStop()

@@ -33,11 +33,8 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		intent.SetType(MimeTypeMap.Singleton?.GetMimeTypeFromExtension(MimeTypeMap.GetFileExtensionFromUrl(fileName)) ?? "*/*");
 		intent.PutExtra(Intent.ExtraTitle, fileName);
 		intent.PutExtra(DocumentsContract.ExtraInitialUri, initialFolderUri);
-		var pickerIntent = Intent.CreateChooser(intent, string.Empty) ?? throw new InvalidOperationException("Unable to create intent.");
-
 		AndroidUri? filePath = null;
-
-		await IntermediateActivity.StartAsync(pickerIntent, (int)AndroidRequestCode.RequestCodeSaveFilePicker, onResult: OnResult).WaitAsync(cancellationToken).ConfigureAwait(false);
+		await IntermediateActivity.StartAsync(intent, (int)AndroidRequestCode.RequestCodeSaveFilePicker, onResult: OnResult).WaitAsync(cancellationToken).ConfigureAwait(false);
 
 		if (filePath is null)
 		{
@@ -80,18 +77,12 @@ public sealed partial class FileSaverImplementation : IFileSaver
 
 	static async Task<string> SaveDocument(AndroidUri uri, Stream stream, CancellationToken cancellationToken)
 	{
-		var parcelFileDescriptor = Application.Context.ContentResolver?.OpenFileDescriptor(uri, "w");
-		var fileOutputStream = new FileOutputStream(parcelFileDescriptor?.FileDescriptor);
+		using var parcelFileDescriptor = Application.Context.ContentResolver?.OpenFileDescriptor(uri, "wt");
+		using var fileOutputStream = new FileOutputStream(parcelFileDescriptor?.FileDescriptor);
 		await using var memoryStream = new MemoryStream();
-
-		stream.Seek(0, SeekOrigin.Begin);
 		await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
 		await fileOutputStream.WriteAsync(memoryStream.ToArray()).WaitAsync(cancellationToken).ConfigureAwait(false);
-
-		fileOutputStream.Close();
-		parcelFileDescriptor?.Close();
 		var split = uri.Path?.Split(':') ?? throw new FolderPickerException("Unable to resolve path.");
-
 		return $"{Android.OS.Environment.ExternalStorageDirectory}/{split[^1]}";
 	}
 }

@@ -78,11 +78,18 @@ partial class MediaManager : IDisposable
 		}
 	}
 
-	protected virtual partial void PlatformSeek(TimeSpan position)
+	protected virtual async partial ValueTask PlatformSeek(TimeSpan position)
 	{
 		if (Player?.MediaPlayer.CanSeek ?? false)
 		{
-			Player.MediaPlayer.Position = position;
+			if (Dispatcher.IsDispatchRequired)
+			{
+				await Dispatcher.DispatchAsync(() => Player.MediaPlayer.Position = position);
+			}
+			else
+			{
+				Player.MediaPlayer.Position = position;
+			}
 		}
 	}
 
