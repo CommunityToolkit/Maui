@@ -1,13 +1,13 @@
-﻿namespace CommunityToolkit.Maui.BadgeCounter;
+﻿namespace CommunityToolkit.Maui.ApplicationModel;
 
 using Windows.Data.Xml.Dom;
 using Windows.UI.Notifications;
 
 /// <inheritdoc />
-public class BadgeCounterImplementation : IBadgeCounter
+public class BadgeImplementation : IBadge
 {
 	/// <inheritdoc />
-	public void SetBadgeCount(int count)
+	public void SetCount(int count)
 	{
 		var badgeUpdater = BadgeUpdateManager.CreateBadgeUpdaterForApplication();
 		if (count <= 0)

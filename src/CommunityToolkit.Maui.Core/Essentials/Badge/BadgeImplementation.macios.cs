@@ -1,10 +1,10 @@
-﻿namespace CommunityToolkit.Maui.BadgeCounter;
+﻿namespace CommunityToolkit.Maui.ApplicationModel;
 
 using UIKit;
 using UserNotifications;
 
 /// <inheritdoc />
-public class BadgeCounterImplementation : IBadgeCounter
+public class BadgeImplementation : IBadge
 {
 	/// <inheritdoc />
 	public void SetBadgeCount(int count)

@@ -1,13 +1,13 @@
-﻿namespace CommunityToolkit.Maui.BadgeCounter;
+﻿namespace CommunityToolkit.Maui.ApplicationModel;
 
 /// <summary>
-/// Badge counter
+/// Badge
 /// </summary>
-public interface IBadgeCounter
+public interface IBadge
 {
 	/// <summary>
 	/// Set the badge count
 	/// </summary>
 	/// <param name="count">Badge count</param>
-    void SetBadgeCount(int count);
+    void SetCount(int count);
 }

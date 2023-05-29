@@ -1,11 +1,11 @@
-﻿namespace CommunityToolkit.Maui.BadgeCounter;
+﻿namespace CommunityToolkit.Maui.ApplicationModel;
 
 using Android.App;
 using AndroidX.Core.App;
 
-//public class BadgeCounterImplementation : IBadgeCounter
+//public class BadgeImplementation : IBadge
 //{
-//	public void SetBadgeCount(int count)
+//	public void SetCount(int count)
 //	{
 //		var notificationManager = (NotificationManager)Application.Context.GetSystemService(Android.Content.Context.NotificationService);
 //		var channel = new NotificationChannel("default", "Default", NotificationImportance.Default);
@@ -15,11 +15,12 @@ using AndroidX.Core.App;
 //		notificationManager.Notify(0, builder.Build());
 //	}
 //}
+
 /// <inheritdoc />
-public class BadgeCounterImplementation : IBadgeCounter
+public class BadgeImplementation : IBadge
 {
 	/// <inheritdoc />
-	public void SetBadgeCount(int count)
+	public void SetCount(int count)
 	{
 		if (ME.Leolin.Shortcutbadger.ShortcutBadger.IsBadgeCounterSupported(Application.Context))
 		{

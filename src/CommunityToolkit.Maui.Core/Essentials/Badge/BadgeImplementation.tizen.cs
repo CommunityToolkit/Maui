@@ -1,13 +1,13 @@
-﻿namespace CommunityToolkit.Maui.BadgeCounter;
+﻿namespace CommunityToolkit.Maui.ApplicationModel;
 
 using Tizen.Applications;
 using Tizen.NUI;
 
 /// <inheritdoc />
-public class BadgeCounterImplementation : IBadgeCounter
+public class BadgeImplementation : IBadge
 {
 	/// <inheritdoc />
-	public void SetBadgeCount(int count)
+	public void SetCount(int count)
 	{
 		var appId = Application.Current.ApplicationInfo.ApplicationId;
 		if (count is 0)
