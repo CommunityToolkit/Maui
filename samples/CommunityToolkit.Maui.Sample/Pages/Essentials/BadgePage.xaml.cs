@@ -2,9 +2,9 @@
 
 namespace CommunityToolkit.Maui.Sample.Pages.Essentials;
 
-public partial class BadgeCounterPage : BasePage<BadgeCounterViewModel>
+public partial class BadgePage : BasePage<BadgeViewModel>
 {
-	public BadgeCounterPage(BadgeCounterViewModel viewModel) : base(viewModel)
+	public BadgePage(BadgeViewModel viewModel) : base(viewModel)
 	{
 		InitializeComponent();
 	}

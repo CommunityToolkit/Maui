@@ -7,7 +7,7 @@ using UserNotifications;
 public class BadgeImplementation : IBadge
 {
 	/// <inheritdoc />
-	public void SetBadgeCount(int count)
+	public void SetCount(int count)
 	{
 		UNUserNotificationCenter.Current.RequestAuthorization(UNAuthorizationOptions.Badge, (r, e) =>
 		{

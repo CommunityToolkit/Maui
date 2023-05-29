@@ -4,7 +4,7 @@ namespace CommunityToolkit.Maui.ApplicationModel;
 public class BadgeImplementation : IBadge
 {
 	/// <inheritdoc />
-	public void SetBadgeCount(int count)
+	public void SetCount(int count)
 	{
 		throw new NotImplementedException();
 	}

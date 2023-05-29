@@ -2,11 +2,11 @@
 <pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-                x:Class="CommunityToolkit.Maui.Sample.Pages.Essentials.BadgeCounterPage"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Essentials.BadgePage"
                 xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Essentials"
-                x:TypeArguments="vm:BadgeCounterViewModel"
-                x:DataType="vm:BadgeCounterViewModel"
-                Title="BadgeCounter">
+                x:TypeArguments="vm:BadgeViewModel"
+                x:DataType="vm:BadgeViewModel"
+                Title="Badge">
     
     <Grid
         RowDefinitions="*, *"
@@ -15,7 +15,7 @@
 
         <Label
             Grid.ColumnSpan="2"
-            Text="Badge Counter"
+            Text="Badge"
             FontSize="18"
             VerticalOptions="End"
             HorizontalOptions="Center" />
