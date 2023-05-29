@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Essentials.SpeechToTextPage"
+                xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Essentials"
+                xmlns:essentials="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Essentials"
+                x:TypeArguments="vm:SpeechToTextViewModel"
+                x:DataType="vm:SpeechToTextViewModel"
+                Title="SpeechToText">
+
+    <ContentPage.Resources>
+        <essentials:PickerLocaleDisplayConverter x:Key="PickerLocaleDisplayConverter" />
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <Grid
+            RowDefinitions="64, 24, 64, 24, auto, 60, 60, 60"
+            Padding="30,0">
+
+            <Label
+                Grid.Row="0"
+                Text="SpeechToText allows the user to convert speech to text in real time"/>
+
+            <Label
+                Grid.Row="1"
+                Text="Locale"
+                FontAttributes="Bold"/>
+
+            <Picker
+                Grid.Row="2"
+                ItemsSource="{Binding Locales}"
+                SelectedItem="{Binding Locale}"
+                ItemDisplayBinding="{Binding ., Converter={StaticResource PickerLocaleDisplayConverter}}"
+                Margin="0,0,0,20">
+            </Picker>
+
+            <Label
+                Grid.Row="3"
+                Text="Language Output"
+                FontAttributes="Bold"/>
+
+            <Label
+                Grid.Row="4"
+                Text="{Binding RecognitionText}"
+                FontSize="18"
+                HorizontalOptions="Center"
+                HorizontalTextAlignment="Center"
+                MinimumHeightRequest="100"
+                Margin="0,0,0,20" />
+
+            <Button
+                Grid.Row="5"
+                Text="Play"
+                Command="{Binding PlayCommand}"
+                HorizontalOptions="Center"
+                Margin="0,0,0,20"/>
+
+            <Button
+                Grid.Row="6"
+                Text="Listen"
+                Command="{Binding ListenCommand}"
+                HorizontalOptions="Center"
+                Margin="0,0,0,20"/>
+
+            <Button
+                Grid.Row="7"
+                Text="Stop Listening"
+                Command="{Binding ListenCancelCommand}"
+                HorizontalOptions="Center"/>
+
+        </Grid>
+    </ScrollView>
+    
+</pages:BasePage>
