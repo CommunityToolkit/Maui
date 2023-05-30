@@ -1,0 +1,81 @@
+﻿using Android.Content;
+using Android.Database;
+using CommunityToolkit.Maui.ApplicationModel;
+using Application = Android.App.Application;
+
+namespace CommunityToolkit.Maui.Sample;
+
+class SamsungBadgeProvider : IBadgeProvider
+{
+	const string contentStringUri = "content://com.sec.badge/apps?notify=true";
+	static readonly string[] contentProjection = { "_id", "class" };
+
+	public void SetCount(int count)
+	{
+		var contentUri = Android.Net.Uri.Parse(contentStringUri);
+		if (contentUri is null)
+		{
+			return;
+		}
+
+		var packageName = Application.Context.PackageName;
+		if (packageName is null)
+		{
+			return;
+		}
+
+		var componentName = Application.Context.PackageManager?.GetLaunchIntentForPackage(packageName)?.Component;
+		if (componentName is null)
+		{
+			return;
+		}
+
+
+		var contentResolver = Application.Context.ContentResolver;
+		ICursor? cursor = null;
+		try
+		{
+			cursor = contentResolver?.Query(contentUri, contentProjection, "package=?", new[] { packageName }, null);
+			if (cursor != null)
+			{
+				bool entryActivityExist = false;
+				while (cursor.MoveToNext())
+				{
+					var id = cursor.GetInt(0);
+					var contentValues = GetContentValues(componentName, count, false);
+					contentResolver?.Update(contentUri, contentValues, "_id=?", new[] { id.ToString() });
+					if (componentName.ClassName.Equals(cursor.GetString(cursor.GetColumnIndex("class"))))
+					{
+						entryActivityExist = true;
+					}
+				}
+
+				if (!entryActivityExist)
+				{
+					var contentValues = GetContentValues(componentName, count, true);
+					contentResolver?.Insert(contentUri, contentValues);
+				}
+			}
+		}
+		finally
+		{
+			if (cursor is { IsClosed: false })
+			{
+				cursor.Close();
+			}
+		}
+	}
+
+
+	private ContentValues GetContentValues(ComponentName componentName, int badgeCount, bool isInsert)
+	{
+		var contentValues = new ContentValues();
+		if (isInsert)
+		{
+			contentValues.Put("package", componentName.PackageName);
+			contentValues.Put("class", componentName.ClassName);
+		}
+		contentValues.Put("badgecount", badgeCount);
+		return contentValues;
+	}
+}

@@ -59,7 +59,4 @@
     <PackageReference Include="System.Speech" Version="7.0.0" Condition="'$(TargetFramework)' == 'net7.0-windows10.0.19041.0'" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net7.0-android'">
-    <PackageReference Include="Xamarin.Android.ShortcutBadger" Version="1.2.0" />
-  </ItemGroup>
 </Project>
