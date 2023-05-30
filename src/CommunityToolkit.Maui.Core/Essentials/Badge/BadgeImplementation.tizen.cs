@@ -19,7 +19,7 @@ public class BadgeImplementation : IBadge
 		var badge = BadgeControl.Find(appId);
 		if (badge is null)
 		{
-			badge = new Badge(appId, count);
+			badge = new Tizen.Applications.Badge(appId, count);
 			BadgeControl.Add(badge);
 		}
 		else
