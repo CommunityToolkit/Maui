@@ -8,7 +8,7 @@
              x:TypeArguments="vm:BasicMapsViewModel"
              Title="Windows Map">
     
-    <Grid RowDefinitions="Auto, Auto, *">
+    <Grid RowDefinitions="Auto, Auto, Auto, Auto, *">
         <HorizontalStackLayout Grid.Row="0">
             <Switch x:Name="ShowUserLocationSwitch" Margin="5"/>
             <Label Text="Show user" VerticalOptions="Center"/>
@@ -16,13 +16,23 @@
             <Label Text="Show traffic" VerticalOptions="Center"/>
         </HorizontalStackLayout>
         <HorizontalStackLayout Grid.Row="1">
+            <Label Text="MapType" VerticalOptions="Center"/>
+            <Picker x:Name="MapTypePicker" Margin="5" SelectedIndex="0" SelectedIndexChanged="MapTypePicker_OnSelectedIndexChanged">
+                <Picker.Items>
+                    <x:String>Hybrid</x:String>
+                    <x:String>Satellite</x:String>
+                    <x:String>Street</x:String>
+                </Picker.Items>
+            </Picker>
+        </HorizontalStackLayout>
+        <HorizontalStackLayout Grid.Row="2">
             <Switch x:Name="ZoomEnabledSwitch" Margin="5" IsToggled="True"/>
             <Label Text="Zoom enabled" VerticalOptions="Center"/>
             <Switch x:Name="ScrollEnabledSwitch" Margin="5" IsToggled="True"/>
             <Label Text="Scroll enabled" VerticalOptions="Center"/>
         </HorizontalStackLayout>
-        <Map x:Name="basicMap" Grid.Row="2" 
-             
+        <Button Text="Move to region" Clicked="Button_OnClicked" Grid.Row="3"/>
+        <Map x:Name="BasicMap" Grid.Row="4" 
              IsShowingUser="{Binding IsToggled, Source={x:Reference ShowUserLocationSwitch}}"
              IsTrafficEnabled="{Binding IsToggled, Source={x:Reference ShowTrafficSwitch}}"
              IsZoomEnabled="{Binding IsToggled, Source={x:Reference ZoomEnabledSwitch}}"

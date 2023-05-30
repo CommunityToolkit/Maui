@@ -9,10 +9,11 @@
              Title="Windows Maps Pins Sample">
     <Grid RowDefinitions="Auto, *">
         <HorizontalStackLayout Grid.Row="0">
+            <Button Text="Init region" Clicked="InitRegion_OnClicked" />
             <Button Text="Add Pin" Clicked="AddPin_Clicked" />
             <Button Text="Remove Pin" Clicked="RemovePin_Clicked" />
             <Button Text="Add 10 Pins" Clicked="Add10Pins_Clicked" />
         </HorizontalStackLayout>
-        <Map x:Name="pinsMap" Grid.Row="1" />
+        <Map x:Name="PinsMap" Grid.Row="1" />
     </Grid>
 </pages:BasePage>

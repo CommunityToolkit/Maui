@@ -7,11 +7,13 @@ public partial class BasicMapsPage : BasePage<BasicMapsViewModel>
 {
 	public BasicMapsPage(BasicMapsViewModel mapsViewModel) : base(mapsViewModel) => InitializeComponent();
 
-	protected override void OnNavigatedTo(NavigatedToEventArgs args)
+	private void MapTypePicker_OnSelectedIndexChanged(object? sender, EventArgs e)
 	{
-		base.OnNavigatedTo(args);
-
-		basicMap.MoveToRegion(MapSpan.FromCenterAndRadius(new Location(50, 6), Distance.FromKilometers(1)));
+		BasicMap.MapType = (MapType)MapTypePicker.SelectedIndex;
 	}
 
+	private void Button_OnClicked(object? sender, EventArgs e)
+	{
+		BasicMap.MoveToRegion(MapSpan.FromCenterAndRadius(new Location(50, 6), Distance.FromKilometers(1)));
+	}
 }

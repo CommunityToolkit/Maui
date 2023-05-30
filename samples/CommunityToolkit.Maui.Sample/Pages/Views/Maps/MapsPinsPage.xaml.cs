@@ -54,11 +54,46 @@ public partial class MapsPinsPage : BasePage<MapsPinsViewModel>
 		InitializeComponent();
 	}
 
-	protected override void OnNavigatedTo(NavigatedToEventArgs args)
+	void AddPin_Clicked(object sender, EventArgs e)
 	{
-		base.OnNavigatedTo(args);
+		AddPin();
+	}
 
+	void RemovePin_Clicked(object sender, EventArgs e)
+	{
+		if (PinsMap.Pins.Count > 0)
+		{
+			PinsMap.Pins.RemoveAt(PinsMap.Pins.Count - 1);
+			locationIncrement--;
+		}
+	}
+
+	void Add10Pins_Clicked(object sender, EventArgs e)
+	{
+		for (int i = 0; i <= 10; i++)
+		{
+			AddPin();
+		}
+	}
+
+	void AddPin()
+	{
+		PinsMap.Pins.Add(new Pin()
+		{
+			Label = $"Location {locationIncrement++}",
+			Location = randomLocations[locationRandomSeed.Next(0, randomLocations.Length)],
+		});
+	}
+
+	private void InitRegion_OnClicked(object? sender, EventArgs e)
+	{
 		var microsoftLocation = new Location(47.64232, -122.13684);
+		PinsMap.MoveToRegion(MapSpan.FromCenterAndRadius(microsoftLocation, Distance.FromKilometers(1)));
+
+		if (PinsMap.Pins.Any(x => x.Location == microsoftLocation))
+		{
+			return;
+		}
 
 		var microsoftPin = new Pin()
 		{
@@ -77,39 +112,6 @@ public partial class MapsPinsPage : BasePage<MapsPinsViewModel>
 			DisplayAlert("Info", "OK", "OK");
 		};
 
-		pinsMap.Pins.Add(microsoftPin);
-
-		pinsMap.MoveToRegion(MapSpan.FromCenterAndRadius(microsoftLocation, Distance.FromKilometers(1)));
-	}
-
-	void AddPin_Clicked(object sender, EventArgs e)
-	{
-		AddPin();
-	}
-
-	void RemovePin_Clicked(object sender, EventArgs e)
-	{
-		if (pinsMap.Pins.Count > 0)
-		{
-			pinsMap.Pins.RemoveAt(pinsMap.Pins.Count - 1);
-			locationIncrement--;
-		}
-	}
-
-	void Add10Pins_Clicked(object sender, EventArgs e)
-	{
-		for (int i = 0; i <= 10; i++)
-		{
-			AddPin();
-		}
-	}
-
-	void AddPin()
-	{
-		pinsMap.Pins.Add(new Pin()
-		{
-			Label = $"Location {locationIncrement++}",
-			Location = randomLocations[locationRandomSeed.Next(0, randomLocations.Length)],
-		});
+		PinsMap.Pins.Add(microsoftPin);
 	}
 }

@@ -21,7 +21,6 @@ using CommunityToolkit.Maui.Sample.ViewModels.ImageSources;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
-using Microsoft.Maui.Controls.Hosting;
 using CommunityToolkit.Maui.Maps;
 using CommunityToolkit.Maui.Storage;
 using Microsoft.Extensions.Logging;
@@ -48,7 +47,7 @@ public static class MauiProgram
 #endif
 								.UseMauiCommunityToolkitMarkup()
 								.UseMauiCommunityToolkitMediaElement()
-								.UseMauiCommunityToolkitMaps("")
+								.UseMauiCommunityToolkitMaps("") // You should add your own key here from bingmapsportal.com
 								.UseMauiApp<App>()
 								.ConfigureFonts(fonts =>
 								{
@@ -56,7 +55,7 @@ public static class MauiProgram
 								});
 
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>()
-						.AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(3, SleepDurationProvider));
+						.AddTransientHttpErrorPolicy(policyBuilder => policyBuilder.WaitAndRetryAsync(3, SleepDurationProvider));
 
 		builder.Services.AddSingleton<PopupSizeConstants>();
 
