@@ -21,6 +21,8 @@ public sealed class ViewsGalleryViewModel : BaseGalleryViewModel
 			SectionModel.Create<AvatarViewSizesViewModel>("AvatarView Sizes Page", Colors.Red, "A page demonstrating AvatarViews with various size options."),
 			SectionModel.Create<DrawingViewViewModel>("DrawingView", Colors.Red, "DrawingView provides a canvas for users to \"paint\" on the screen. The drawing can also be captured and displayed as an Image."),
 			SectionModel.Create<ExpanderViewModel>("Expander Page", Colors.Red, "Expander allows collapse and expand content."),
+			SectionModel.Create<BasicMapsViewModel>("Windows Maps Basic Page", Colors.Red, "A page demonstrating a basic example of .NET MAUI Maps for Windows."),
+			SectionModel.Create<MapsPinsViewModel>("Windows Maps Pins Page", Colors.Red, "A page demonstrating .NET MAUI Maps for Windows with Pins."),
 			SectionModel.Create<LazyViewViewModel>("LazyView", Colors.Red, "LazyView is a view that allows you to load its children in a delayed manner."),
 			SectionModel.Create<MediaElementViewModel>("MediaElement", Colors.Red, "MediaElement is a view for playing video and audio"),
 			SectionModel.Create<MultiplePopupViewModel>("Mutiple Popups Page", Colors.Red, "A page demonstrating multiple different Popups"),
