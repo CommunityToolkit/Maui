@@ -3,6 +3,7 @@ using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Behaviors;
+
 public partial class IconTintColorBehavior
 {
 	/// <inheritdoc/>
