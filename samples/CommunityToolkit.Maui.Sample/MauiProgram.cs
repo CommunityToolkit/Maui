@@ -22,6 +22,7 @@ using CommunityToolkit.Maui.Sample.ViewModels.ImageSources;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
+using CommunityToolkit.Maui.Maps;
 using CommunityToolkit.Maui.Storage;
 using Microsoft.Extensions.Logging;
 using Polly;
@@ -47,6 +48,7 @@ public static class MauiProgram
 #endif
 								.UseMauiCommunityToolkitMarkup()
 								.UseMauiCommunityToolkitMediaElement()
+								.UseMauiCommunityToolkitMaps("") // You should add your own key here from bingmapsportal.com
 								.UseMauiApp<App>()
 								.ConfigureFonts(fonts =>
 								{
@@ -54,7 +56,7 @@ public static class MauiProgram
 								});
 
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>()
-						.AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(3, SleepDurationProvider));
+						.AddTransientHttpErrorPolicy(policyBuilder => policyBuilder.WaitAndRetryAsync(3, SleepDurationProvider));
 
 		builder.Services.AddSingleton<PopupSizeConstants>();
 
@@ -174,8 +176,13 @@ public static class MauiProgram
 		// Add Views Pages + ViewModels
 		services.AddTransientWithShellRoute<DrawingViewPage, DrawingViewViewModel>();
 		services.AddTransientWithShellRoute<ExpanderPage, ExpanderViewModel>();
+
+		services.AddTransientWithShellRoute<BasicMapsPage, BasicMapsViewModel>();
+		services.AddTransientWithShellRoute<MapsPinsPage, MapsPinsViewModel>();
+
 		services.AddTransientWithShellRoute<LazyViewPage, LazyViewViewModel>();
 		services.AddTransientWithShellRoute<MediaElementPage, MediaElementViewModel>();
+
 		services.AddTransientWithShellRoute<MultiplePopupPage, MultiplePopupViewModel>();
 		services.AddTransientWithShellRoute<PopupAnchorPage, PopupAnchorViewModel>();
 		services.AddTransientWithShellRoute<PopupPositionPage, PopupPositionViewModel>();
