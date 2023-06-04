@@ -10,6 +10,9 @@ public class ExpanderPageCS : ContentPage
 	{
 		Title = "Expander Page, C# UI";
 
+		var button = new Button()
+							.Text("Learn more");
+		button.Clicked += (s,e) => Launcher.OpenAsync("https://dot.net/maui");
 		Content = new VerticalStackLayout()
 		{
 			Spacing = 12,
@@ -40,7 +43,9 @@ public class ExpanderPageCS : ContentPage
 
 						new Label()
 							.Text(".NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating mobile and desktop apps with C# and XAML. Using .NET MAUI, you can develop apps that can run on Android, iOS, iPadOS, macOS, and Windows from a single shared codebase.")
-							.Font(italic: true)
+							.Font(italic: true),
+
+						button
 
 					}.Padding(10)
 
