@@ -65,7 +65,7 @@ public class UniformItemsLayoutManager : LayoutManager
 
 		if (childWidth == 0)
 		{
-			var sizeRequest = visibleChildren[0].Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var sizeRequest = visibleChildren.Length == 0 ? Size.Zero : visibleChildren[0].Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 			childWidth = sizeRequest.Width;
 			childHeight = sizeRequest.Height;
