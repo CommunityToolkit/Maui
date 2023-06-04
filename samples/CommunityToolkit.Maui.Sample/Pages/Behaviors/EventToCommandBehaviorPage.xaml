@@ -35,7 +35,7 @@
                 <mct:EventToCommandBehavior
                         x:TypeArguments="system:EventArgs"
                         EventName="Clicked"
-                        Command="{Binding IncrementCommand2}" />
+                        Command="{Binding IncrementWithArgsCommand}" />
             </Button.Behaviors>
         </Button>
     </VerticalStackLayout>
