@@ -192,11 +192,17 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// <inheritdoc/>
 	IView? IPopup.Content => Content;
 
+	/// <inheritdoc/>
+	TaskCompletionSource IPopup.PopupDismissedTCS { get; set; } = new();
 
 	/// <summary>
 	/// Resets the Popup.
 	/// </summary>
-	public void Reset() => taskCompletionSource = new();
+	public void Reset()
+	{
+		taskCompletionSource = new();
+		((IPopup)this).PopupDismissedTCS = new();
+	}
 
 	/// <summary>
 	/// Close the current popup.
@@ -204,10 +210,21 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// <param name="result">
 	/// The result to return.
 	/// </param>
-	public void Close(object? result = null)
+	public async void Close(object? result = null) => await CloseAsync(result);
+
+	/// <summary>
+	/// Close the current popup.
+	/// </summary>
+	/// <remarks>
+	/// Returns once the operating system has dismissed the <see cref="IPopup"/> from the page
+	/// </remarks>
+	/// <param name="result">
+	/// The result to return.
+	/// </param>
+	public async Task CloseAsync(object? result = null)
 	{
+		await OnClosed(result, false);
 		taskCompletionSource.TrySetResult(result);
-		OnClosed(result, false);
 	}
 
 	/// <summary>
@@ -225,19 +242,22 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// /// <param name="wasDismissedByTappingOutsideOfPopup">
 	/// Sets the <see cref="PopupClosedEventArgs"/> Property of <see cref="PopupClosedEventArgs.WasDismissedByTappingOutsideOfPopup"/>/>.
 	/// </param>
-	protected void OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup)
+	protected virtual async Task OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup)
 	{
 		((IPopup)this).OnClosed(result);
+
+		await ((IPopup)this).PopupDismissedTCS.Task;
+
 		dismissWeakEventManager.HandleEvent(this, new PopupClosedEventArgs(result, wasDismissedByTappingOutsideOfPopup), nameof(Closed));
 	}
 
 	/// <summary>
 	/// Invoked when the popup is dismissed by tapping outside of the popup.
 	/// </summary>
-	protected internal virtual void OnDismissedByTappingOutsideOfPopup()
+	protected internal virtual async Task OnDismissedByTappingOutsideOfPopup()
 	{
+		await OnClosed(ResultWhenUserTapsOutsideOfPopup, true);
 		taskCompletionSource.TrySetResult(ResultWhenUserTapsOutsideOfPopup);
-		OnClosed(ResultWhenUserTapsOutsideOfPopup, true);
 	}
 
 	/// <summary>
@@ -269,7 +289,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 
 	void IPopup.OnOpened() => OnOpened();
 
-	void IPopup.OnDismissedByTappingOutsideOfPopup() => OnDismissedByTappingOutsideOfPopup();
+	async void IPopup.OnDismissedByTappingOutsideOfPopup() => await OnDismissedByTappingOutsideOfPopup();
 
 	void IPropertyPropagationController.PropagatePropertyChanged(string propertyName) =>
 		PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());

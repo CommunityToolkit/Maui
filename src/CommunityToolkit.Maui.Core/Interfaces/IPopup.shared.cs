@@ -44,6 +44,11 @@ public interface IPopup : IElement, IVisualTreeElement
 	LayoutAlignment VerticalOptions { get; }
 
 	/// <summary>
+	/// <see cref="TaskCompletionSource"/> that completes when the operating system has dismissed <see cref="IPopup"/> from the screen
+	/// </summary>
+	TaskCompletionSource PopupDismissedTCS { get; set; }
+
+	/// <summary>
 	/// Occurs when the Popup is closed.
 	/// </summary>
 	/// <param name="result">Return value from the Popup.</param>

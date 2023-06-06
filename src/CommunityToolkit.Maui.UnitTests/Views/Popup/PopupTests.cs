@@ -104,10 +104,11 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void OnDismissedWithResult()
+	public async Task OnDismissedWithResult()
 	{
 		object? result = null;
 		var isPopupDismissed = false;
+		var closedTCS = new TaskCompletionSource();
 		var app = Application.Current ?? throw new NullReferenceException();
 
 		var page = new ContentPage
@@ -133,9 +134,11 @@ public class PopupTests : BaseHandlerTest
 		{
 			result = e.Result;
 			isPopupDismissed = true;
+			closedTCS.TrySetResult();
 		};
 
 		((MockPopup)popup).Close(new object());
+		await closedTCS.Task;
 
 		Assert.True(isPopupDismissed);
 		Assert.NotNull(result);
@@ -143,7 +146,7 @@ public class PopupTests : BaseHandlerTest
 
 
 	[Fact]
-	public void OnDismissedWithoutResult()
+	public async Task OnDismissedWithoutResult()
 	{
 		object? result = null;
 		var isPopupDismissed = false;
@@ -174,7 +177,7 @@ public class PopupTests : BaseHandlerTest
 			isPopupDismissed = true;
 		};
 
-		((MockPopup)popup).Close();
+		await ((MockPopup)popup).CloseAsync();
 
 		Assert.True(isPopupDismissed);
 		Assert.Null(result);
@@ -184,24 +187,30 @@ public class PopupTests : BaseHandlerTest
 	public void NullColorThrowsArgumentNullException()
 	{
 		var popupViewModel = new PopupViewModel();
-		var popupWithBinding = new Maui.Views.Popup
+		var popupWithBinding = new Popup
 		{
 			BindingContext = popupViewModel
 		};
-		popupWithBinding.SetBinding(Maui.Views.Popup.ColorProperty, nameof(PopupViewModel.Color));
+		popupWithBinding.SetBinding(Popup.ColorProperty, nameof(PopupViewModel.Color));
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => new Maui.Views.Popup { Color = null });
-		Assert.Throws<ArgumentNullException>(() => new Maui.Views.Popup().Color = null);
+		Assert.Throws<ArgumentNullException>(() => new Popup { Color = null });
+		Assert.Throws<ArgumentNullException>(() => new Popup().Color = null);
 		Assert.Throws<ArgumentNullException>(() => popupViewModel.Color = null);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	class MockPopup : Maui.Views.Popup
+	class MockPopup : Popup
 	{
 		public MockPopup()
 		{
 			ResultWhenUserTapsOutsideOfPopup = resultWhenUserTapsOutsideOfPopup;
+		}
+
+		protected override Task OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup)
+		{
+			((IPopup)this).PopupDismissedTCS.TrySetResult();
+			return base.OnClosed(result, wasDismissedByTappingOutsideOfPopup);
 		}
 	}
 

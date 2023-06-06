@@ -19,6 +19,8 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 			await vc.DismissViewControllerAsync(true);
 		}
 
+		view.PopupDismissedTCS.TrySetResult();
+
 		handler.DisconnectHandler(handler.PlatformView);
 	}
 
