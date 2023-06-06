@@ -23,7 +23,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 			popup.Dismiss();
 		}
 
-		view.PopupDismissedTCS.TrySetResult();
+		view.PopupDismissedTaskCompletionSource.TrySetResult();
 
 		handler.DisconnectHandler(popup);
 	}

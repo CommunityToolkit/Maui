@@ -46,7 +46,7 @@ public interface IPopup : IElement, IVisualTreeElement
 	/// <summary>
 	/// <see cref="TaskCompletionSource"/> that completes when the operating system has dismissed <see cref="IPopup"/> from the screen
 	/// </summary>
-	TaskCompletionSource PopupDismissedTCS { get; set; }
+	TaskCompletionSource PopupDismissedTaskCompletionSource { get; }
 
 	/// <summary>
 	/// Occurs when the Popup is closed.

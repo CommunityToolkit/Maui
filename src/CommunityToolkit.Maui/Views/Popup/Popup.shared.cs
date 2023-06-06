@@ -44,7 +44,8 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	readonly WeakEventManager openedWeakEventManager = new();
 	readonly Lazy<PlatformConfigurationRegistry<Popup>> platformConfigurationRegistry;
 
-	TaskCompletionSource<object?> taskCompletionSource = new();
+	TaskCompletionSource popupDismissedTaskCompletionSource = new();
+	TaskCompletionSource<object?> resultTaskCompletionSource = new();
 	Window? window;
 
 	/// <summary>
@@ -81,7 +82,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// <summary>
 	/// Gets the final result of the dismissed popup.
 	/// </summary>
-	public Task<object?> Result => taskCompletionSource.Task;
+	public Task<object?> Result => resultTaskCompletionSource.Task;
 
 	/// <summary>
 	/// Gets or sets the <see cref="View"/> content to render in the Popup.
@@ -193,15 +194,15 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	IView? IPopup.Content => Content;
 
 	/// <inheritdoc/>
-	TaskCompletionSource IPopup.PopupDismissedTCS { get; set; } = new();
+	TaskCompletionSource IPopup.PopupDismissedTaskCompletionSource => popupDismissedTaskCompletionSource;
 
 	/// <summary>
 	/// Resets the Popup.
 	/// </summary>
 	public void Reset()
 	{
-		taskCompletionSource = new();
-		((IPopup)this).PopupDismissedTCS = new();
+		resultTaskCompletionSource = new();
+		popupDismissedTaskCompletionSource = new();
 	}
 
 	/// <summary>
@@ -224,7 +225,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	public async Task CloseAsync(object? result = null)
 	{
 		await OnClosed(result, false);
-		taskCompletionSource.TrySetResult(result);
+		resultTaskCompletionSource.TrySetResult(result);
 	}
 
 	/// <summary>
@@ -246,7 +247,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	{
 		((IPopup)this).OnClosed(result);
 
-		await ((IPopup)this).PopupDismissedTCS.Task;
+		await popupDismissedTaskCompletionSource.Task;
 
 		dismissWeakEventManager.HandleEvent(this, new PopupClosedEventArgs(result, wasDismissedByTappingOutsideOfPopup), nameof(Closed));
 	}
@@ -257,7 +258,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	protected internal virtual async Task OnDismissedByTappingOutsideOfPopup()
 	{
 		await OnClosed(ResultWhenUserTapsOutsideOfPopup, true);
-		taskCompletionSource.TrySetResult(ResultWhenUserTapsOutsideOfPopup);
+		resultTaskCompletionSource.TrySetResult(ResultWhenUserTapsOutsideOfPopup);
 	}
 
 	/// <summary>
