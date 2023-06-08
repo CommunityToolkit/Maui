@@ -208,6 +208,11 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// <summary>
 	/// Close the current popup.
 	/// </summary>
+	/// <remarks>
+	/// <see cref="Close(object?)"/> is an <see langword="async"/> <see langword="void"/> method, commonly referred to as a fire-and-forget method.
+	/// It will complete and return to the calling thread before the operating system has dismissed the <see cref="Popup"/> from the screen.
+	/// If you need to pause the execution of your method until the operating system has dismissed the <see cref="Popup"/> from the screen, use instead <see cref="CloseAsync(object?)"/>.
+	/// </remarks>
 	/// <param name="result">
 	/// The result to return.
 	/// </param>
