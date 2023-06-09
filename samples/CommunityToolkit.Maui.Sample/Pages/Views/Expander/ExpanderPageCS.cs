@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Views;
 
@@ -28,11 +29,16 @@ public class ExpanderPageCS : ContentPage
 				new Expander
 				{
 					Header = new Label()
-								.Text("Expander (Tap Me)")
+								.Text("Expander\n(Tap Me)")
+								.TextCenter()
 								.Font(bold: true, size: 18),
 
 					Content = new VerticalStackLayout()
 					{
+						new Button()
+							.Text("Click Me")
+							.Invoke(button => button.Clicked += async (sender, e) => await Toast.Make("Button Clicked").Show()),
+
 						new Image()
 							.Source("https://avatars.githubusercontent.com/u/9011267?v=4")
 							.Size(120)
