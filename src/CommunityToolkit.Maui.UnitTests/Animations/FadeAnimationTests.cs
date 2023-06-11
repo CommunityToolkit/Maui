@@ -5,12 +5,12 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Animations;
 
-public class FadeAnimationTests : BaseTest
+public class FadeAnimationTests : BaseAnimationTests<FadeAnimation>
 {
 	[Fact]
 	public async Task AnimateShouldThrowWithNullView()
 	{
-		FadeAnimation animation = new();
+		FadeAnimation animation = CreateAnimation();
 
 		var performAnimation = () => animation.Animate(null!);
 
@@ -20,7 +20,7 @@ public class FadeAnimationTests : BaseTest
 	[Fact]
 	public async Task AnimateShouldReturnToOriginalOpacity()
 	{
-		FadeAnimation animation = new();
+		FadeAnimation animation = CreateAnimation();
 
 		var label = new Label
 		{
