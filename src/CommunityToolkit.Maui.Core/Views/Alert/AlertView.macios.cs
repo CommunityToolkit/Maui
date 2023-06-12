@@ -108,6 +108,6 @@ public class AlertView : UIView
 			BackgroundColor = VisualOptions.BackgroundColor,
 			AutoresizingMask = UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleWidth
 		};
-		Subviews.First().InsertSubview(subView, atIndex: 0);
+		Subviews[0].InsertSubview(subView, atIndex: 0);
 	}
 }
