@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Core;
 /// <summary>
 /// Represents a small View that pops up at front the Page.
 /// </summary>
-public interface IPopup : IElement, IVisualTreeElement
+public interface IPopup : IElement, IVisualTreeElement, IAsynchronousHandler
 {
 	/// <summary>
 	/// Gets the View that Popup will be anchored.
@@ -42,11 +42,6 @@ public interface IPopup : IElement, IVisualTreeElement
 	/// Gets the vertical aspect of this element's arrangement in a container.
 	/// </summary>
 	LayoutAlignment VerticalOptions { get; }
-
-	/// <summary>
-	/// <see cref="TaskCompletionSource"/> that completes when the operating system has dismissed <see cref="IPopup"/> from the screen
-	/// </summary>
-	TaskCompletionSource PopupDismissedTaskCompletionSource { get; }
 
 	/// <summary>
 	/// Occurs when the Popup is closed.

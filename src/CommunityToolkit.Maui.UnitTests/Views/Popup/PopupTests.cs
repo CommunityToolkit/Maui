@@ -209,7 +209,7 @@ public class PopupTests : BaseHandlerTest
 
 		protected override Task OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup)
 		{
-			((IPopup)this).PopupDismissedTaskCompletionSource.TrySetResult();
+			((IPopup)this).HandlerCompleteTCS.TrySetResult();
 			return base.OnClosed(result, wasDismissedByTappingOutsideOfPopup);
 		}
 	}
