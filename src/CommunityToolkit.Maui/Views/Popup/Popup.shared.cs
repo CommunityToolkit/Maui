@@ -194,7 +194,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	IView? IPopup.Content => Content;
 
 	/// <inheritdoc/>
-	TaskCompletionSource IPopup.PopupDismissedTaskCompletionSource => popupDismissedTaskCompletionSource;
+	TaskCompletionSource IAsynchronousHandler.HandlerCompleteTCS => popupDismissedTaskCompletionSource;
 
 	/// <summary>
 	/// Resets the Popup.
