@@ -83,16 +83,11 @@ public class AlertView : UIView
 	[MemberNotNull(nameof(Container))]
 	void Initialize()
 	{
-		Container = new RoundedStackView(
-			VisualOptions.CornerRadius.X,
-			VisualOptions.CornerRadius.Y,
-			VisualOptions.CornerRadius.Width,
-			VisualOptions.CornerRadius.Height)
+		Container = new UIStackView()
 		{
 			Alignment = UIStackViewAlignment.Fill,
 			Distribution = UIStackViewDistribution.EqualSpacing,
 			Axis = UILayoutConstraintAxis.Horizontal,
-			BackgroundColor = VisualOptions.BackgroundColor,
 			TranslatesAutoresizingMaskIntoConstraints = false
 		};
 
@@ -103,5 +98,16 @@ public class AlertView : UIView
 
 		TranslatesAutoresizingMaskIntoConstraints = false;
 		AddSubview(Container);
+
+		var subView = new RoundedView(
+			VisualOptions.CornerRadius.X,
+			VisualOptions.CornerRadius.Y,
+			VisualOptions.CornerRadius.Width,
+			VisualOptions.CornerRadius.Height)
+		{
+			BackgroundColor = VisualOptions.BackgroundColor,
+			AutoresizingMask = UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleWidth
+		};
+		Subviews.First().InsertSubview(subView, atIndex: 0);
 	}
 }
