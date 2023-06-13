@@ -282,7 +282,10 @@ jobs:
 
       # Copy CommunityToolkit.Maui & CommunityToolkit.Maui.Core packages
       - task: PowerShell@2
-        condition: and(eq(variables['Agent.OS'], 'Windows_NT'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), not(endsWith(variables['Build.SourceBranch'], '-mediaelement'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), not(endsWith(variables['Build.SourceBranch'], '-maps')))) # Only run this step on Windows and when it's a tagged build and the tag does NOT end with -mediaelement and does NOT end with -maps
+        condition: and(eq(variables['Agent.OS'], 'Windows_NT'),
+          startsWith(variables['Build.SourceBranch'], 'refs/tags/'),
+          not(endsWith(variables['Build.SourceBranch'], '-mediaelement'), 
+          not(endsWith(variables['Build.SourceBranch'], '-maps')) # Only run this step on Windows and when it's a tagged build and the tag does NOT end with -mediaelement and does NOT end with -maps
         displayName: 'Copy CommunityToolkit.Maui & CommunityToolkit.Maui.Core NuGet Packages to Staging Directory'
         inputs:
           targetType: 'inline'
