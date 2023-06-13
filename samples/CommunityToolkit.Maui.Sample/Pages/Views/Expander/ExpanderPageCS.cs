@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Views;
 
@@ -28,7 +29,8 @@ public class ExpanderPageCS : ContentPage
 				new Expander
 				{
 					Header = new Label()
-								.Text("Expander (Tap Me)")
+								.Text("Expander\n(Tap Me)")
+								.TextCenter()
 								.Font(bold: true, size: 18),
 
 					Content = new VerticalStackLayout()
@@ -40,7 +42,11 @@ public class ExpanderPageCS : ContentPage
 
 						new Label()
 							.Text(".NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating mobile and desktop apps with C# and XAML. Using .NET MAUI, you can develop apps that can run on Android, iOS, iPadOS, macOS, and Windows from a single shared codebase.")
-							.Font(italic: true)
+							.Font(italic: true),
+
+						new Button()
+							.Text("Learn more")
+							.Invoke(button => button.Clicked += async (s, e) => await Launcher.OpenAsync("https://dot.net/maui"))
 
 					}.Padding(10)
 
