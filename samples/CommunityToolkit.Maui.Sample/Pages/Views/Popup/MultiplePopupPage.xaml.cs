@@ -1,6 +1,5 @@
 using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
-using CommunityToolkit.Maui.Sample.Views.Popups;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
@@ -82,11 +81,5 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 	{
 		var csharpBindingPopup = new CsharpBindingPopup(popupSizeConstants, csharpBindingPopupViewModel);
 		await this.ShowPopupAsync(csharpBindingPopup);
-	}
-
-	async void HandleNestedPopupClicked(object sender, EventArgs e)
-	{
-		var nestedPopup = new NestedPopup();
-		await this.ShowPopupAsync(nestedPopup);
 	}
 }
