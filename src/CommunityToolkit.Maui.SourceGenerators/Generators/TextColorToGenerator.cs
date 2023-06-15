@@ -72,7 +72,7 @@ class TextColorToGenerator : IIncrementalGenerator
 				{
 					if (assemblySymbol.Name == mauiControlsAssembly)
 					{
-						if (mauiAssembly != null)
+						if (mauiAssembly is not null)
 						{
 							throw new InvalidOperationException("There can only be one reference to the Maui Controls assembly.");
 						}
@@ -80,7 +80,7 @@ class TextColorToGenerator : IIncrementalGenerator
 						mauiAssembly = assemblySymbol;
 					}
 				}
-				if (mauiAssembly == null)
+				if (mauiAssembly is null)
 				{
 					throw new InvalidOperationException("There is no reference to the Maui Controls assembly.");
 				}
