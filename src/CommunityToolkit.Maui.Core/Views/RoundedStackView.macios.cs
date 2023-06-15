@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.ComponentModel;
+using System.Runtime.InteropServices;
 using CoreAnimation;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -7,6 +8,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// A rounded <see cref="UIStackView"/>
 /// </summary>
 [Obsolete("Use RoundedView")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public class RoundedStackView : UIStackView
 {
 	/// <summary>

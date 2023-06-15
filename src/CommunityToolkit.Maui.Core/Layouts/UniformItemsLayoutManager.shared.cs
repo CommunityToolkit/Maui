@@ -23,11 +23,11 @@ public class UniformItemsLayoutManager : LayoutManager
 	/// <summary>
 	/// Arrange children
 	/// </summary>
-	/// <param name="bounds">Grid rectangle</param>
+	/// <param name="rectangle">Grid rectangle</param>
 	/// <returns>Child size</returns>
-	public override Size ArrangeChildren(Rect bounds)
+	public override Size ArrangeChildren(Rect rectangle)
 	{
-		var width = bounds.Width - uniformItemsLayout.Padding.HorizontalThickness;
+		var width = rectangle.Width - uniformItemsLayout.Padding.HorizontalThickness;
 		var visibleChildren = uniformItemsLayout.Where(x => x.Visibility == Visibility.Visible).ToArray();
 
 		var columns = GetColumnsCount(visibleChildren.Length, width);

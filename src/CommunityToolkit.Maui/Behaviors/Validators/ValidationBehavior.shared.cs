@@ -104,7 +104,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 	/// <summary>
 	/// Initialize a new instance of ValidationBehavior
 	/// </summary>
-	protected ValidationBehavior() => DefaultForceValidateCommand = new Command(async () => await ForceValidate().ConfigureAwait(false));
+	public ValidationBehavior() => DefaultForceValidateCommand = new Command(async () => await ForceValidate().ConfigureAwait(false));
 
 	/// <summary>
 	/// Finalizer
