@@ -18,10 +18,4 @@ public static partial class StatusBar
 	/// <param name="statusBarStyle"> The <see cref="StatusBarStyle"/> that will used by status bar.</param>
 	public static void SetStyle(StatusBarStyle statusBarStyle) =>
 		PlatformSetStyle(statusBarStyle);
-
-	/// <summary>
-	/// Method to update the status bar size.
-	/// </summary>
-	public static void UpdateBarSize() =>
-		PlatformUpdateBarSize();
 }

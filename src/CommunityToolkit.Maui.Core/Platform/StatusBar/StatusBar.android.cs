@@ -43,11 +43,6 @@ static partial class StatusBar
 		}
 	}
 
-	static void PlatformUpdateBarSize()
-	{
-		throw new NotSupportedException("Android does not currently support updating the status bar size");
-	}
-
 	static void SetStatusBarAppearance(Activity activity, bool isLightStatusBars)
 	{
 		var window = GetCurrentWindow(activity);

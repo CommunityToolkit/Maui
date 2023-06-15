@@ -68,7 +68,10 @@ static partial class StatusBar
 		UpdateStatusBarAppearance();
 	}
 
-	static void PlatformUpdateBarSize()
+	/// <summary>
+	/// Method to update the status bar size.
+	/// </summary>
+	public static void UpdateBarSize()
 	{
 		if (OperatingSystem.IsIOSVersionAtLeast(13))
 		{
