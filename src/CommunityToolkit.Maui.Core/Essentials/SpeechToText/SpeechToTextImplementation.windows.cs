@@ -86,7 +86,7 @@ public sealed partial class SpeechToTextImplementation
 		await using (cancellationToken.Register(async () =>
 		{
 			await StopRecording();
-			speechRecognitionTaskCompletionSource.TrySetCanceled();
+			speechRecognitionTaskCompletionSource.SetCanceled();
 		}))
 		{
 			return await speechRecognitionTaskCompletionSource.Task;
