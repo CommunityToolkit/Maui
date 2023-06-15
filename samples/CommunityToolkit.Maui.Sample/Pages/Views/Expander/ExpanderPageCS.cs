@@ -46,7 +46,7 @@ public class ExpanderPageCS : ContentPage
 
 						new Button()
 							.Text("Learn more")
-							.Invoke(button => button.Clicked += async (s, e) => await Launcher.OpenAsync("https://dot.net/maui"))
+							.Invoke(button => button.Clicked += async (s, e) => await Launcher.OpenAsync(new Uri("https://dot.net/maui")))
 
 					}.Padding(10)
 

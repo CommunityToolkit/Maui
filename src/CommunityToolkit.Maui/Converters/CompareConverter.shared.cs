@@ -80,7 +80,8 @@ public abstract class CompareConverter<TObject> : BaseConverterOneWay<IComparabl
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
 	/// <param name="culture">The culture to use in the converter.  This is not implemented.</param>
-	/// <returns>The object assigned to <see cref="TrueObject"/> if (value <see cref="ComparisonOperator"/> <see cref="ComparingValue"/>) equals True and <see cref="TrueObject"/> is not null, if <see cref="TrueObject"/> is null it returns true, otherwise the value assigned to <see cref="FalseObject"/>, if no value is assigned then it returns false.</returns>
+	/// <returns>The object assigned to <see cref="TrueObject"/> if (value <see cref="ComparisonOperator"/> <see cref="ComparingValue"/>) equals True and <see cref="TrueObject"/> is not null,
+	/// if <see cref="TrueObject"/> is null it returns true, otherwise the value assigned to <see cref="FalseObject"/>, if no value is assigned then it returns false.</returns>
 	[MemberNotNull(nameof(ComparingValue))]
 	public override object ConvertFrom(IComparable value, CultureInfo? culture = null)
 	{

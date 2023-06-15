@@ -1,5 +1,4 @@
-﻿using System;
-namespace CommunityToolkit.Maui.Core.Views;
+﻿namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MauiDrawingView : IDisposable
 {

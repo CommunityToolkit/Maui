@@ -4,7 +4,8 @@ using System.Windows.Input;
 namespace CommunityToolkit.Maui.Behaviors;
 
 /// <summary>
-/// The <see cref="UserStoppedTypingBehavior"/> is a behavior that allows the user to trigger an action when a user has stopped data input any <see cref="InputView"/> derivate like <see cref="Entry"/> or <see cref="SearchBar"/>. Examples of its usage include triggering a search when a user has stopped entering their search query.
+/// The <see cref="UserStoppedTypingBehavior"/> is a behavior that allows the user to trigger an action when a user has stopped data input any <see cref="InputView"/> derivate like <see cref="Entry"/> or <see cref="SearchBar"/>.
+/// Examples of its usage include triggering a search when a user has stopped entering their search query.
 /// </summary>
 public class UserStoppedTypingBehavior : BaseBehavior<InputView>, IDisposable
 {
