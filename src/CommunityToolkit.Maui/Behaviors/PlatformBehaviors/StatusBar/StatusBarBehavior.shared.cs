@@ -57,8 +57,31 @@ public class StatusBarBehavior : PlatformBehavior<Page>
 	{
 		StatusBar.SetColor(StatusBarColor);
 		StatusBar.SetStyle(StatusBarStyle);
+#if IOS
+		bindable.SizeChanged -= new EventHandler(page_SizeChanged);
+#endif
 	}
 
+	/// <inheritdoc /> 
+#if IOS
+	protected override void OnDetachedFrom(Page bindable, UIKit.UIView platformView)
+#elif ANDROID
+	protected override void OnDetachedFrom(Page bindable, Android.Views.View platformView)
+#else
+	protected override void OnDetachedFrom(Page bindable, object platformView)
+#endif
+	{
+#if IOS
+		bindable.SizeChanged -= new EventHandler(page_SizeChanged);
+#endif
+	}
+
+#if IOS
+	void page_SizeChanged(object? sender, EventArgs e)
+	{
+		StatusBar.UpdateBarSize();
+	}
+#endif
 
 	/// <inheritdoc /> 
 	protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)

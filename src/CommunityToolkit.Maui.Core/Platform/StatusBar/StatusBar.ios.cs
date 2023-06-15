@@ -68,6 +68,44 @@ static partial class StatusBar
 		UpdateStatusBarAppearance();
 	}
 
+	static void PlatformUpdateBarSize()
+	{
+		if (OperatingSystem.IsIOSVersionAtLeast(13))
+		{
+			var statusBarTag = new IntPtr(38482);
+			foreach (var window in UIApplication.SharedApplication.Windows)
+			{
+				var statusBar = window.ViewWithTag(statusBarTag);
+				var statusBarFrame = window.WindowScene?.StatusBarManager?.StatusBarFrame;
+				if (statusBarFrame is null)
+				{
+					continue;
+				}
+
+				statusBar ??= new UIView(statusBarFrame.Value);
+				statusBar.Tag = statusBarTag;
+				statusBar.Frame = UIApplication.SharedApplication.StatusBarFrame;
+				var statusBarSubViews = window.Subviews.Where(x => x.Tag == statusBarTag).ToList();
+				foreach (var statusBarSubView in statusBarSubViews)
+				{
+					statusBarSubView.RemoveFromSuperview();
+				}
+
+				window.AddSubview(statusBar);
+
+				UpdateStatusBarAppearance(window);
+			}
+		}
+		else
+		{
+			if (UIApplication.SharedApplication.ValueForKey(new NSString("statusBar")) is UIView statusBar)
+			{
+				statusBar.Frame = UIApplication.SharedApplication.StatusBarFrame;
+			}
+
+			UpdateStatusBarAppearance();
+		}
+	}
 
 	static void UpdateStatusBarAppearance()
 	{

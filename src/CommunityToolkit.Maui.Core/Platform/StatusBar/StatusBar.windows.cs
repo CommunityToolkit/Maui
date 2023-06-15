@@ -14,4 +14,9 @@ static partial class StatusBar
 	{
 		throw new NotSupportedException("WinUI does not currently support changing the Windows status bar color");
 	}
+
+	static void PlatformUpdateBarSize()
+	{
+		throw new NotSupportedException("Tizen does not currently support updating the status bar size");
+	}
 }

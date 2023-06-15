@@ -15,4 +15,9 @@ static partial class StatusBar
 	{
 		throw new NotSupportedException("MacCatalyst does not currently support changing the macOS status bar color");
 	}
+
+	static void PlatformUpdateBarSize()
+	{
+		throw new NotSupportedException("MacCatalyst does not currently support updating the macOS status bar size");
+	}
 }
