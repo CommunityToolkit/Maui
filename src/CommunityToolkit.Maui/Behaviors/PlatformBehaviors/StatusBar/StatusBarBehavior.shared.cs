@@ -58,7 +58,7 @@ public class StatusBarBehavior : PlatformBehavior<Page>
 		StatusBar.SetColor(StatusBarColor);
 		StatusBar.SetStyle(StatusBarStyle);
 #if IOS
-		bindable.SizeChanged -= new EventHandler(page_SizeChanged);
+		bindable.SizeChanged += new EventHandler(page_SizeChanged);
 #endif
 	}
 
