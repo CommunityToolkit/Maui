@@ -102,7 +102,7 @@ public class EventToCommandBehavior : BaseBehavior<VisualElement>
 			return;
 		}
 
-		eventInfo = View.GetType()?.GetRuntimeEvent(eventName) ??
+		eventInfo = View.GetType().GetRuntimeEvent(eventName) ??
 			throw new ArgumentException($"{nameof(EventToCommandBehavior)}: Couldn't resolve the event.", nameof(EventName));
 
 		ArgumentNullException.ThrowIfNull(eventInfo.EventHandlerType);

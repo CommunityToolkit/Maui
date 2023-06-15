@@ -23,18 +23,18 @@ public class UniformItemsLayoutManager : LayoutManager
 	/// <summary>
 	/// Arrange children
 	/// </summary>
-	/// <param name="rectangle">Grid rectangle</param>
+	/// <param name="bounds">Grid rectangle</param>
 	/// <returns>Child size</returns>
-	public override Size ArrangeChildren(Rect rectangle)
+	public override Size ArrangeChildren(Rect bounds)
 	{
-		var width = rectangle.Width - uniformItemsLayout.Padding.HorizontalThickness;
+		var width = bounds.Width - uniformItemsLayout.Padding.HorizontalThickness;
 		var visibleChildren = uniformItemsLayout.Where(x => x.Visibility == Visibility.Visible).ToArray();
 
 		var columns = GetColumnsCount(visibleChildren.Length, width);
 		var rows = GetRowsCount(visibleChildren.Length, columns);
 		var boundsWidth = width / columns;
 		var boundsHeight = childHeight;
-		var bounds = new Rect(0, 0, boundsWidth, boundsHeight);
+		var rect = new Rect(0, 0, boundsWidth, boundsHeight);
 		var count = 0;
 
 		for (var i = 0; i < rows; i++)
@@ -42,15 +42,15 @@ public class UniformItemsLayoutManager : LayoutManager
 			for (var j = 0; j < columns && count < visibleChildren.Length; j++)
 			{
 				var item = visibleChildren[count];
-				bounds.X = j * boundsWidth + uniformItemsLayout.Padding.Left;
-				bounds.Y = i * boundsHeight + uniformItemsLayout.Padding.Top;
-				item.Measure(bounds.Width, bounds.Height);
-				item.Arrange(bounds);
+				rect.X = j * boundsWidth + uniformItemsLayout.Padding.Left;
+				rect.Y = i * boundsHeight + uniformItemsLayout.Padding.Top;
+				item.Measure(rect.Width, rect.Height);
+				item.Arrange(rect);
 				count++;
 			}
 		}
 
-		return bounds.Size;
+		return rect.Size;
 	}
 
 	/// <summary>

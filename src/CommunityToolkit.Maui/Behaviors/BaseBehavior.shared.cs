@@ -117,6 +117,6 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInBehaviors)
 		{
 			Debug.WriteLine(ex);
-		};
+		}
 	}
 }

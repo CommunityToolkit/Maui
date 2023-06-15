@@ -134,12 +134,12 @@ public partial class MediaManager : IDisposable
 
 		var ranges = Player.CurrentItem.SeekableTimeRanges;
 		var seekTo = new CMTime(Convert.ToInt64(position.TotalMilliseconds), 1000);
-		foreach (var v in ranges)
+		foreach (var v in ranges.Select(x=> x.CMTimeRangeValue))
 		{
-			if (seekTo >= (seekTo - v.CMTimeRangeValue.Start)
-				&& seekTo < (v.CMTimeRangeValue.Start + v.CMTimeRangeValue.Duration))
+			if (seekTo >= (seekTo - v.Start)
+				&& seekTo < (v.Start + v.Duration))
 			{
-				Player.Seek(seekTo + v.CMTimeRangeValue.Start, (complete) =>
+				Player.Seek(seekTo + v.Start, (complete) =>
 				{
 					if (complete)
 					{

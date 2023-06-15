@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// A rounded <see cref="UIStackView"/>
 /// </summary>
-[Obsolete]
+[Obsolete("Use RoundedView")]
 public class RoundedStackView : UIStackView
 {
 	/// <summary>

@@ -315,7 +315,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			var path = resourceMediaSource.Path;
 			if (!string.IsNullOrWhiteSpace(path))
 			{
-				string assetFilePath = "asset://" + package + "/" + path;
+				string assetFilePath = "asset://" + package + Path.PathSeparator + path;
 
 				Player.SetMediaItem(MediaItem.FromUri(assetFilePath));
 				Player.Prepare();
@@ -490,7 +490,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	public void OnSurfaceSizeChanged(int width, int height) { }
 	public void OnTimelineChanged(Timeline? timeline, int reason) { }
 	public void OnTracksChanged(Tracks? tracks) { }
-	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? trackSelectionParameters) { }
+	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? parameters) { }
 	public void OnVideoSizeChanged(VideoSize? videoSize) { }
 	#endregion
 }

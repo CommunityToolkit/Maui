@@ -118,10 +118,10 @@ static class AnimationExtensions
 
 			void OnFire()
 			{
-				var animations = this.animations.ToList();
-				animations.ForEach(AnimationTick);
+				var animationsList = animations.ToList();
+				animationsList.ForEach(AnimationTick);
 
-				if (!this.animations.Any())
+				if (!animations.Any())
 				{
 					Ticker.Stop();
 				}
@@ -130,7 +130,7 @@ static class AnimationExtensions
 				{
 					if (animation.HasFinished)
 					{
-						this.animations.Remove(animation);
+						animations.Remove(animation);
 						animation.RemoveFromParent();
 						return;
 					}
@@ -138,7 +138,7 @@ static class AnimationExtensions
 					animation.Tick(16);
 					if (animation.HasFinished)
 					{
-						this.animations.Remove(animation);
+						animations.Remove(animation);
 						animation.RemoveFromParent();
 					}
 				}

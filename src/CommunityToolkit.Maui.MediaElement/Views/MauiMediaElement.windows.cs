@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// The user-interface element that represents the <see cref="MediaElement"/> on Windows.
 /// </summary>
-public class MauiMediaElement : Grid
+public sealed class MauiMediaElement : Grid, IDisposable
 {
 	readonly MediaPlayerElement mediaElement;
 
@@ -17,8 +17,8 @@ public class MauiMediaElement : Grid
 	/// <param name="mediaElementElement"></param>
 	public MauiMediaElement(MediaPlayerElement mediaElementElement)
 	{
-		this.mediaElement = mediaElementElement;
-		Children.Add(this.mediaElement);
+		mediaElement = mediaElementElement;
+		Children.Add(mediaElement);
 	}
 
 	/// <summary>

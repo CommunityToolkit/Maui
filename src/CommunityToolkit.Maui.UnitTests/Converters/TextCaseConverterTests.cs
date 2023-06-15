@@ -22,13 +22,13 @@ public class TextCaseConverterTests : BaseOneWayConverterTest<TextCaseConverter>
 		new object?[] { t, TextCaseType.FirstUpperRestLower, "T" },
 		new object?[] { string.Empty, TextCaseType.FirstUpperRestLower, string.Empty },
 		new object?[] { null, TextCaseType.None, null },
-		new object?[] { MockEnum.Foo, TextCaseType.Lower, "foo" },
-		new object?[] { MockEnum.Bar, TextCaseType.None, "Bar" },
-		new object?[] { MockEnum.Baz, TextCaseType.Upper, "BAZ" },
+		new object?[] { Mock.Foo, TextCaseType.Lower, "foo" },
+		new object?[] { Mock.Bar, TextCaseType.None, "Bar" },
+		new object?[] { Mock.Baz, TextCaseType.Upper, "BAZ" },
 		new object?[] { new MockItem("Test Item", true), TextCaseType.Upper, "TEST ITEM IS COMPLETED" },
 	};
 
-	enum MockEnum { Foo, Bar, Baz }
+	enum Mock { Foo, Bar, Baz }
 
 	[Theory]
 	[InlineData((TextCaseType)int.MinValue)]

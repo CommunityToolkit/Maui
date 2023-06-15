@@ -1,8 +1,7 @@
 ﻿using System.ComponentModel;
 
 // Using root CommunityToolkit.Maui namespace so these extension methods
-// light up in MauiProgram when CommunityToolkit.Maui namespace is imported 
-// for UseMauiCommunityToolkit();
+// light up in MauiProgram when CommunityToolkit.Maui namespace is imported for UseMauiCommunityToolkit();
 namespace CommunityToolkit.Maui;
 
 /// <summary>

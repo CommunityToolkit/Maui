@@ -11,16 +11,15 @@ sealed partial class MathExpression
 	static readonly IFormatProvider formatProvider = new CultureInfo("en-US");
 
 	readonly IReadOnlyList<MathOperator> operators;
-	readonly IReadOnlyList<double> arguments;
 
 	internal MathExpression(string expression, IEnumerable<double>? arguments = null)
 	{
-		ArgumentNullException.ThrowIfNullOrEmpty(expression, "Expression can't be null or empty.");
+		ArgumentException.ThrowIfNullOrEmpty(expression);
 
 		Expression = expression.ToLower();
-		this.arguments = arguments?.ToList() ?? new List<double>();
+		var argumentsList =  arguments?.ToList() ?? new List<double>();
 
-		var operators = new List<MathOperator>
+		var mathOperators = new List<MathOperator>
 		{
 			new ("+", 2, MathOperatorPrecedence.Low, x => x[0] + x[1]),
 			new ("-", 2, MathOperatorPrecedence.Low, x => x[0] - x[1]),
@@ -56,20 +55,20 @@ sealed partial class MathExpression
 			new ("e", 0, MathOperatorPrecedence.Constant, _ => Math.E),
 		};
 
-		var argumentsCount = this.arguments.Count;
+		var argumentsCount =  argumentsList.Count;
 
 		if (argumentsCount > 0)
 		{
-			operators.Add(new MathOperator("x", 0, MathOperatorPrecedence.Constant, _ => this.arguments[0]));
+			mathOperators.Add(new MathOperator("x", 0, MathOperatorPrecedence.Constant, _ => argumentsList[0]));
 		}
 
 		for (var i = 0; i < argumentsCount; i++)
 		{
 			var index = i;
-			operators.Add(new MathOperator($"x{i}", 0, MathOperatorPrecedence.Constant, _ => this.arguments[index]));
+			mathOperators.Add(new MathOperator($"x{i}", 0, MathOperatorPrecedence.Constant, _ => argumentsList[index]));
 		}
 
-		this.operators = operators;
+		operators = mathOperators;
 	}
 
 	internal string Expression { get; }
@@ -171,7 +170,7 @@ sealed partial class MathExpression
 
 				while (stack.Count > 0)
 				{
-					var (name, precedence) = stack.Peek();
+					var (_, precedence) = stack.Peek();
 					if (precedence >= @operator.Precedence)
 					{
 						output.Add(stack.Pop().Name);
@@ -217,7 +216,7 @@ sealed partial class MathExpression
 			{
 				while (stack.Count > 0)
 				{
-					var (name, precedence) = stack.Peek();
+					var (_, precedence) = stack.Peek();
 					if (precedence >= MathOperatorPrecedence.Low)
 					{
 						output.Add(stack.Pop().Name);
@@ -232,7 +231,7 @@ sealed partial class MathExpression
 
 		for (var i = stack.Count - 1; i >= 0; i--)
 		{
-			var (name, precedence) = stack.Pop();
+			var (name, _) = stack.Pop();
 			if (name is "(")
 			{
 				throw new ArgumentException("Invalid math expression.");

@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.Layouts;
+﻿using System.Runtime.Serialization;
+
+namespace CommunityToolkit.Maui.Layouts;
 
 /// <summary>
 /// The <see cref="StateContainer"/> attached properties enable any <see cref="Layout"/> inheriting element to become state-aware.
@@ -238,8 +240,16 @@ public static class StateContainer
 /// <summary>
 /// An <see cref="InvalidOperationException"/> thrown when <see cref="StateContainer"/> enters an invalid state
 /// </summary>
-public sealed class StateContainerException : InvalidOperationException
+[Serializable]
+public class StateContainerException : InvalidOperationException
 {
+	/// <summary>
+	/// Constructor for <see cref="StateContainerException"/>
+	/// </summary>
+	public StateContainerException()
+	{
+	}
+
 	/// <summary>
 	/// Constructor for <see cref="StateContainerException"/>
 	/// </summary>
@@ -247,5 +257,19 @@ public sealed class StateContainerException : InvalidOperationException
 	public StateContainerException(string message) : base(message)
 	{
 
+	}
+
+	/// <summary>
+	/// Constructor for <see cref="StateContainerException"/>
+	/// </summary>
+	public StateContainerException(string message, Exception innerException) : base(message, innerException)
+	{
+	}
+
+	/// <summary>
+	/// Constructor for <see cref="StateContainerException"/>
+	/// </summary>
+	protected StateContainerException(SerializationInfo info, StreamingContext context) : base(info, context)
+	{
 	}
 }

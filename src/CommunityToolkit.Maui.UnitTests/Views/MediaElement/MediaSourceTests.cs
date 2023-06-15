@@ -19,7 +19,7 @@ public class MediaSourceTests
 	{
 		this.Invoking(player =>
 		{
-			var mediaSource = MediaSource.FromUri("invaliduri");
+			MediaSource.FromUri("invaliduri");
 		}).Should().Throw<UriFormatException>();
 	}
 

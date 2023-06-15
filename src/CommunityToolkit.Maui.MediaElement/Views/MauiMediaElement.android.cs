@@ -42,15 +42,12 @@ public class MauiMediaElement : CoordinatorLayout
 	/// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
 	protected override void Dispose(bool disposing)
 	{
-		if (disposing)
+		if (disposing && playerView is not null)
 		{
-			if (playerView is not null)
-			{
-				// https://github.com/google/ExoPlayer/issues/1855#issuecomment-251041500
-				playerView.Player?.Release();
-				playerView.Player?.Dispose();
-				playerView.Dispose();
-			}
+			// https://github.com/google/ExoPlayer/issues/1855#issuecomment-251041500
+			playerView.Player?.Release();
+			playerView.Player?.Dispose();
+			playerView.Dispose();
 		}
 
 		base.Dispose(disposing);
