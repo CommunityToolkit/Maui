@@ -1,9 +1,52 @@
-﻿using Android.Content;
+﻿using System.Diagnostics;
+using Android.Content;
 using Android.Database;
 using CommunityToolkit.Maui.ApplicationModel;
 using Application = Android.App.Application;
 
 namespace CommunityToolkit.Maui.Sample;
+
+class NovaBadgeProvider : IBadgeProvider
+{
+
+	public void SetCount(int count)
+	{
+		if (count < 0)
+		{
+			return;
+		}
+
+		var contentUri = Android.Net.Uri.Parse("content://com.teslacoilsw.notifier/unread_count");
+		if (contentUri is null)
+		{
+			return;
+		}
+
+		var packageName = Application.Context.PackageName;
+		if (packageName is null)
+		{
+			return;
+		}
+
+		var componentName = Application.Context.PackageManager?.GetLaunchIntentForPackage(packageName)?.Component;
+		if (componentName is null)
+		{
+			return;
+		}
+
+		try
+		{
+			var contentValues = new ContentValues();
+			contentValues.Put("tag", packageName + "/" + componentName.ClassName);
+			contentValues.Put("count", count);
+			Application.Context.ContentResolver?.Insert(contentUri, contentValues);
+		}
+		catch (Exception ex)
+		{
+			Debug.WriteLine("(NOVA) unable to set badge: " + ex.Message);
+		}
+	}
+}
 
 class SamsungBadgeProvider : IBadgeProvider
 {
@@ -29,7 +72,6 @@ class SamsungBadgeProvider : IBadgeProvider
 		{
 			return;
 		}
-
 
 		var contentResolver = Application.Context.ContentResolver;
 		ICursor? cursor = null;
@@ -67,7 +109,7 @@ class SamsungBadgeProvider : IBadgeProvider
 	}
 
 
-	private ContentValues GetContentValues(ComponentName componentName, int badgeCount, bool isInsert)
+	ContentValues GetContentValues(ComponentName componentName, int badgeCount, bool isInsert)
 	{
 		var contentValues = new ContentValues();
 		if (isInsert)

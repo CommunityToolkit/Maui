@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.ApplicationModel;
 /// </summary>
 public static class BadgeFactory
 {
-	private static readonly Dictionary<string, IBadgeProvider> providers = new();
+	static readonly Dictionary<string, IBadgeProvider> providers = new();
 
 	/// <summary>
 	/// Register provider for launcher type
@@ -33,10 +33,10 @@ public static class BadgeFactory
 		}
 
 		providers.TryGetValue(launcherType, out var provider);
-		return provider;
+		return provider ?? new DefaultBadgeProvider();
 	}
 
-	private static string? GetLauncherType()
+	static string? GetLauncherType()
 	{
 		var intent = new Intent(Intent.ActionMain);
 		intent.AddCategory(Intent.CategoryHome);
