@@ -37,12 +37,14 @@ class SamsungBadgeProvider : IBadgeProvider
 			cursor = contentResolver?.Query(contentUri, contentProjection, "package=?", new[] { packageName }, null);
 			if (cursor is not null)
 			{
-				bool entryActivityExist = false;
+				var entryActivityExist = false;
+				var selectionArgs = new string[1];
 				while (cursor.MoveToNext())
 				{
 					var id = cursor.GetInt(0);
+					selectionArgs[0] = id.ToString();
 					var contentValues = GetContentValues(componentName, count, false);
-					contentResolver?.Update(contentUri, contentValues, "_id=?", new[] { id.ToString() });
+					contentResolver?.Update(contentUri, contentValues, "_id=?", selectionArgs);
 					if (componentName.ClassName.Equals(cursor.GetString(cursor.GetColumnIndex("class"))))
 					{
 						entryActivityExist = true;
@@ -65,8 +67,7 @@ class SamsungBadgeProvider : IBadgeProvider
 		}
 	}
 
-
-	ContentValues GetContentValues(ComponentName componentName, int badgeCount, bool isInsert)
+	static ContentValues GetContentValues(ComponentName componentName, int badgeCount, bool isInsert)
 	{
 		var contentValues = new ContentValues();
 		if (isInsert)
