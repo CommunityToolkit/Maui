@@ -337,18 +337,15 @@ public partial class MapHandlerWindows : MapHandler
 
 	void WebViewWebMessageReceived(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs args)
 	{
-		var clickedPin = JsonSerializer.Deserialize<Pin>(args.WebMessageAsJson, jsonSerializerOptions);
-		if (clickedPin?.Location != null)
+		var clickedPinWebView = JsonSerializer.Deserialize<Pin>(args.WebMessageAsJson, jsonSerializerOptions);
+		var clickedPinWebViewId = clickedPinWebView?.MarkerId?.ToString();
+
+		if (clickedPinWebView?.Location != null && string.IsNullOrEmpty(clickedPinWebViewId))
 		{
-			var clickedPinId = clickedPin.MarkerId?.ToString();
+			var clickedPin = VirtualView.Pins.SingleOrDefault(p => (p as Pin)?.Id.ToString().Equals(clickedPinWebViewId) ?? false);
 
-			if (string.IsNullOrEmpty(clickedPinId))
-			{
-				return;
-			}
-
-			VirtualView.Pins.SingleOrDefault(p => (p as Pin)?.Id.ToString().Equals(clickedPinId) ?? false)?.SendMarkerClick();
-			clickedPin.SendInfoWindowClick();
+			clickedPin?.SendMarkerClick();
+			clickedPin?.SendInfoWindowClick();
 			return;
 		}
 
