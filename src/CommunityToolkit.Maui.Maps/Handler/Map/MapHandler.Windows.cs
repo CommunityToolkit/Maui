@@ -14,6 +14,12 @@ namespace CommunityToolkit.Maui.Maps.Handlers;
 public partial class MapHandlerWindows : MapHandler
 {
 	internal static string? MapsKey;
+	MapSpan? regionToGo;
+
+	JsonSerializerOptions jsonSerializerOptions = new()
+	{
+		PropertyNameCaseInsensitive = true
+	};
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MapHandlerWindows"/> class.
@@ -55,6 +61,7 @@ public partial class MapHandlerWindows : MapHandler
 			mauiWebView.NavigationCompleted -= WebViewNavigationCompleted;
 			mauiWebView.WebMessageReceived -= WebViewWebMessageReceived;
 		}
+
 		base.DisconnectHandler(platformView);
 	}
 
@@ -100,7 +107,7 @@ public partial class MapHandlerWindows : MapHandler
 			var location = await GetCurrentLocation();
 			if (location != null)
 			{
-				CallJSMethod(handler.PlatformView, $"addLocationPin({location.Latitude},{location.Longitude});");
+				CallJSMethod(handler.PlatformView, $"addLocationPin('{location.Latitude}','{location.Longitude}');");
 			}
 		}
 		else
@@ -115,9 +122,11 @@ public partial class MapHandlerWindows : MapHandler
 	public static new void MapPins(IMapHandler handler, IMap map)
 	{
 		CallJSMethod(handler.PlatformView, "removeAllPins();");
+		
 		foreach (var pin in map.Pins)
 		{
-			CallJSMethod(handler.PlatformView, $"addPin({pin.Location.Latitude},{pin.Location.Longitude},'{pin.Label}', '{pin.Address}');");
+			CallJSMethod(handler.PlatformView, $"addPin('{pin.Location.Latitude}'," +
+				$"'{pin.Location.Longitude}','{pin.Label}', '{pin.Address}', '{(pin as Pin)?.Id}');");
 		}
 	}
 
@@ -126,7 +135,6 @@ public partial class MapHandlerWindows : MapHandler
 	/// </summary>
 	public static new void MapElements(IMapHandler handler, IMap map) { }
 
-	MapSpan? regionToGo;
 	/// <summary>
 	/// Maps MoveToRegion
 	/// </summary>
@@ -142,7 +150,8 @@ public partial class MapHandlerWindows : MapHandler
 		{
 			mapHandler.regionToGo = newRegion;
 		}
-		CallJSMethod(handler.PlatformView, $"setRegion({newRegion.Center.Latitude},{newRegion.Center.Longitude});");
+
+		CallJSMethod(handler.PlatformView, $"setRegion('{newRegion.Center.Latitude}','{newRegion.Center.Longitude}');");
 	}
 	
 	static void CallJSMethod(FrameworkElement platformWebView, string script)
@@ -162,10 +171,11 @@ public partial class MapHandlerWindows : MapHandler
 						<meta http-equiv=""Content-Security-Policy"" content=""default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval' 'unsafe-inline' https://*.bing.com https://*.virtualearth.net; style-src 'self' 'unsafe-inline' https://*.bing.com https://*.virtualearth.net; media-src *"">
 						<meta name=""viewport"" content=""user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width"">
 						<script type='text/javascript' src='https://www.bing.com/api/maps/mapcontrol?key={key}'></script>";
-		str += @"	<script type='text/javascript'>
+		str += @"<script type='text/javascript'>
 			                var map;
 							var locationPin;
-							var trafficManager; 
+							var trafficManager;
+
 			                function loadMap() {
 			                    map = new Microsoft.Maps.Map(document.getElementById('myMap'), {
 									disableBirdseye : true,
@@ -250,7 +260,7 @@ public partial class MapHandlerWindows : MapHandler
 					
 							function removeLocationPin()
 							{
-								if(locationPin != null)
+								if (locationPin != null)
 								{
 									map.entities.remove(locationPin);
 									locationPin = null;
@@ -263,20 +273,26 @@ public partial class MapHandlerWindows : MapHandler
 								locationPin = null;
 							}
 
-							function addPin(latitude, longitude, label, address)
+							function addPin(latitude, longitude, label, address, id)
 							{
 								var location = new Microsoft.Maps.Location(latitude, longitude);
 								var pin = new Microsoft.Maps.Pushpin(location, {
 								            title: label,
 											subTitle: address
 								        });
+
+								pin.markerId = id;
 								map.entities.push(pin);
 								Microsoft.Maps.Events.addHandler(pin, 'click', function (e) 
 								{
+									if (e.targetType !== 'pushpin')
+										return;
+
 									var clickedPin = {
 										label: e.target.getTitle(),
 										address: e.target.getSubTitle(),
-										location : e.target.getLocation()
+										location: e.target.getLocation(),
+										markerId: e.target.markerId
 									};
 									invokeHandlerAction(clickedPin);
 								});
@@ -321,20 +337,22 @@ public partial class MapHandlerWindows : MapHandler
 
 	void WebViewWebMessageReceived(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs args)
 	{
-		var options = new JsonSerializerOptions()
-		{
-			PropertyNameCaseInsensitive = true
-		};
-
-		var clickedPin = JsonSerializer.Deserialize<Pin>(args.WebMessageAsJson, options);
+		var clickedPin = JsonSerializer.Deserialize<Pin>(args.WebMessageAsJson, jsonSerializerOptions);
 		if (clickedPin?.Location != null)
 		{
-			clickedPin.SendMarkerClick();
+			var clickedPinId = clickedPin.MarkerId?.ToString();
+
+			if (string.IsNullOrEmpty(clickedPinId))
+			{
+				return;
+			}
+
+			VirtualView.Pins.SingleOrDefault(p => (p as Pin)?.Id.ToString().Equals(clickedPinId) ?? false)?.SendMarkerClick();
 			clickedPin.SendInfoWindowClick();
 			return;
 		}
 
-		var mapRect = JsonSerializer.Deserialize<Bounds>(args.WebMessageAsJson, options);
+		var mapRect = JsonSerializer.Deserialize<Bounds>(args.WebMessageAsJson, jsonSerializerOptions);
 		if (mapRect?.Center != null)
 		{
 			VirtualView.VisibleRegion = new MapSpan(new Location(mapRect.Center?.Latitude ?? 0, mapRect.Center?.Longitude ?? 0), mapRect.Height, mapRect.Width);
