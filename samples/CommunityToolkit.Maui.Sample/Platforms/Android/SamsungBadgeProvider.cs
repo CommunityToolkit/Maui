@@ -35,7 +35,7 @@ class SamsungBadgeProvider : IBadgeProvider
 		try
 		{
 			cursor = contentResolver?.Query(contentUri, contentProjection, "package=?", new[] { packageName }, null);
-			if (cursor != null)
+			if (cursor is not null)
 			{
 				bool entryActivityExist = false;
 				while (cursor.MoveToNext())

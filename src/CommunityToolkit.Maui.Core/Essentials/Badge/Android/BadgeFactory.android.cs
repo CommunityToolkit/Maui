@@ -9,15 +9,16 @@ namespace CommunityToolkit.Maui.ApplicationModel;
 public static class BadgeFactory
 {
 	static readonly Dictionary<string, IBadgeProvider> providers = new();
+	static readonly DefaultBadgeProvider defaultBadgeProvider = new();
 
 	/// <summary>
 	/// Register provider for launcher type
 	/// </summary>
 	/// <param name="launcherType">Launcher type</param>
 	/// <param name="provider">Provider implementation</param>
-	public static void AddProvider(string launcherType, IBadgeProvider provider)
+	public static void SetProvider(string launcherType, IBadgeProvider provider)
 	{
-		providers.TryAdd(launcherType, provider);
+		providers[launcherType] = provider;
 	}
 	
 	/// <summary>
@@ -33,7 +34,7 @@ public static class BadgeFactory
 		}
 
 		providers.TryGetValue(launcherType, out var provider);
-		return provider ?? new DefaultBadgeProvider();
+		return provider ?? defaultBadgeProvider;
 	}
 
 	static string? GetLauncherType()
