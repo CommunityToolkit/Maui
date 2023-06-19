@@ -340,7 +340,7 @@ public partial class MapHandlerWindows : MapHandler
 		var clickedPinWebView = JsonSerializer.Deserialize<Pin>(args.WebMessageAsJson, jsonSerializerOptions);
 		var clickedPinWebViewId = clickedPinWebView?.MarkerId?.ToString();
 
-		if (clickedPinWebView?.Location != null && string.IsNullOrEmpty(clickedPinWebViewId))
+		if (!string.IsNullOrEmpty(clickedPinWebViewId))
 		{
 			var clickedPin = VirtualView.Pins.SingleOrDefault(p => (p as Pin)?.Id.ToString().Equals(clickedPinWebViewId) ?? false);
 
