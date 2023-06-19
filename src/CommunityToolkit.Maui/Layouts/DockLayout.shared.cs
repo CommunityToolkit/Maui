@@ -12,22 +12,38 @@ public class DockLayout : Layout, IDockLayout
 	/// <summary>
 	/// Docking position for a view.
 	/// </summary>
-	public static readonly BindableProperty DockPositionProperty = BindableProperty.Create(nameof(DockPosition), typeof(DockPosition), typeof(DockLayout), DockPosition.None);
+	public static readonly BindableProperty DockPositionProperty = BindableProperty.CreateAttached(nameof(DockPosition), typeof(DockPosition), typeof(DockLayout), DockPosition.None,
+		propertyChanged: InvalidateMeasure);
 
 	/// <summary>
 	/// If true, the last child is expanded to fill the remaining space (default: true).
 	/// </summary>
-	public static readonly BindableProperty ShouldExpandLastChildProperty = BindableProperty.Create(nameof(ShouldExpandLastChild), typeof(bool), typeof(DockLayout), true);
+	public static readonly BindableProperty ShouldExpandLastChildProperty = BindableProperty.Create(nameof(ShouldExpandLastChild), typeof(bool), typeof(DockLayout), true,
+		propertyChanged: InvalidateMeasure);
 
 	/// <summary>
 	/// Horizontal spacing between docked views.
 	/// </summary>
-	public static readonly BindableProperty HorizontalSpacingProperty = BindableProperty.Create(nameof(HorizontalSpacing), typeof(double), typeof(DockLayout), 0.0d);
+	public static readonly BindableProperty HorizontalSpacingProperty = BindableProperty.Create(nameof(HorizontalSpacing), typeof(double), typeof(DockLayout), 0.0d,
+		propertyChanged: InvalidateMeasure);
 
 	/// <summary>
 	/// Vertical spacing between docked views.
 	/// </summary>
-	public static readonly BindableProperty VerticalSpacingProperty = BindableProperty.Create(nameof(VerticalSpacing), typeof(double), typeof(DockLayout), 0.0d);
+	public static readonly BindableProperty VerticalSpacingProperty = BindableProperty.Create(nameof(VerticalSpacing), typeof(double), typeof(DockLayout), 0.0d,
+		propertyChanged: InvalidateMeasure);
+
+	static void InvalidateMeasure(BindableObject bindable, object oldValue, object newValue)
+	{
+		if (bindable is DockLayout dockLayout)
+		{
+			dockLayout.InvalidateMeasure();
+		}
+		else if (bindable is Element element && element.Parent is DockLayout parentDockLayout)
+		{
+			parentDockLayout.InvalidateMeasure();
+		}
+	}
 
 	/// <inheritdoc/>
 	public bool ShouldExpandLastChild
