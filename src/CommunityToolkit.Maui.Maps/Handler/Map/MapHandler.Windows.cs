@@ -388,9 +388,9 @@ public partial class MapHandlerWindows : MapHandler
 		}
 
 		var mapRect = JsonSerializer.Deserialize<Bounds>(args.WebMessageAsJson, jsonSerializerOptions);
-		if (mapRect?.Center != null)
+		if (mapRect?.Center is not null)
 		{
-			VirtualView.VisibleRegion = new MapSpan(new Location(mapRect.Center?.Latitude ?? 0, mapRect.Center?.Longitude ?? 0),
+			VirtualView.VisibleRegion = new MapSpan(new Location(mapRect.Center.Latitude, mapRect.Center.Longitude),
 				mapRect.Height, mapRect.Width);
 		}
 	}
