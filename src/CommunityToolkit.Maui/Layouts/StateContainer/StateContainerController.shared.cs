@@ -71,6 +71,7 @@ sealed class StateContainerController
 			{
 				VerticalOptions = view.VerticalOptions,
 				HorizontalOptions = view.HorizontalOptions,
+				InputTransparent = true
 			};
 
 			if (grid.RowDefinitions.Count > 0)
