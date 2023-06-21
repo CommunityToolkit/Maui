@@ -8,7 +8,7 @@ sealed class StateContainerController
 	readonly WeakReference<Layout> layoutWeakReference;
 
 	string? previousState;
-	List<View> originalContent = Enumerable.Empty<View>().ToList();
+	IList<IView> originalContent = Enumerable.Empty<IView>().ToList();
 
 	/// <summary>
 	/// Initialize <see cref="StateContainerController"/> with a <see cref="Layout"/>
@@ -48,11 +48,11 @@ sealed class StateContainerController
 		// Put the original content somewhere where we can restore it.
 		if (previousState is null)
 		{
-			originalContent = new List<View>();
+			originalContent = new List<IView>();
 
 			foreach (var item in layout.Children)
 			{
-				originalContent.Add((View)item);
+				originalContent.Add(item);
 			}
 		}
 
@@ -70,7 +70,7 @@ sealed class StateContainerController
 			var innerLayout = new VerticalStackLayout
 			{
 				VerticalOptions = view.VerticalOptions,
-				HorizontalOptions = view.HorizontalOptions
+				HorizontalOptions = view.HorizontalOptions,
 			};
 
 			if (grid.RowDefinitions.Count > 0)
