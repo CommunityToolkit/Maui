@@ -7,6 +7,8 @@ using IMap = Microsoft.Maui.Maps.IMap;
 using Windows.Devices.Geolocation;
 using System.Text.Json;
 using Microsoft.Maui.Controls.Maps;
+using System.Globalization;
+using Microsoft.Web.WebView2.Core;
 
 namespace CommunityToolkit.Maui.Maps.Handlers;
 
@@ -107,7 +109,7 @@ public partial class MapHandlerWindows : MapHandler
 			var location = await GetCurrentLocation();
 			if (location != null)
 			{
-				CallJSMethod(handler.PlatformView, $"addLocationPin('{location.Latitude}','{location.Longitude}');");
+				CallJSMethod(handler.PlatformView, $"addLocationPin({location.Latitude.ToString(CultureInfo.InvariantCulture)},{location.Longitude.ToString(CultureInfo.InvariantCulture)});");
 			}
 		}
 		else
@@ -125,8 +127,8 @@ public partial class MapHandlerWindows : MapHandler
 		
 		foreach (var pin in map.Pins)
 		{
-			CallJSMethod(handler.PlatformView, $"addPin('{pin.Location.Latitude}'," +
-				$"'{pin.Location.Longitude}','{pin.Label}', '{pin.Address}', '{(pin as Pin)?.Id}');");
+			CallJSMethod(handler.PlatformView, $"addPin({pin.Location.Latitude.ToString(CultureInfo.InvariantCulture)}," +
+				$"{pin.Location.Longitude.ToString(CultureInfo.InvariantCulture)},'{pin.Label}', '{pin.Address}', '{(pin as Pin)?.Id}');");
 		}
 	}
 
@@ -151,7 +153,7 @@ public partial class MapHandlerWindows : MapHandler
 			mapHandler.regionToGo = newRegion;
 		}
 
-		CallJSMethod(handler.PlatformView, $"setRegion('{newRegion.Center.Latitude}','{newRegion.Center.Longitude}');");
+		CallJSMethod(handler.PlatformView, $"setRegion({newRegion.Center.Latitude.ToString(CultureInfo.InvariantCulture)},{newRegion.Center.Longitude.ToString(CultureInfo.InvariantCulture)});");
 	}
 	
 	static void CallJSMethod(FrameworkElement platformWebView, string script)
@@ -351,7 +353,7 @@ public partial class MapHandlerWindows : MapHandler
 		return new Location(position.Coordinate.Latitude, position.Coordinate.Longitude);
 	}
 
-	void WebViewNavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
+	void WebViewNavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
 	{
 		// Update initial properties when our page is loaded
 		Mapper.UpdateProperties(this, VirtualView);
@@ -362,7 +364,7 @@ public partial class MapHandlerWindows : MapHandler
 		}
 	}
 
-	void WebViewWebMessageReceived(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs args)
+	void WebViewWebMessageReceived(WebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
 	{
 		// TODO make this better, separate events?
 		var clickedPinWebView = JsonSerializer.Deserialize<Pin>(args.WebMessageAsJson, jsonSerializerOptions);
