@@ -64,36 +64,21 @@ sealed class StateContainerController
 		// Otherwise it would just end up in row 0 : column 0.
 		if (layout is IGridLayout grid)
 		{
-			// We create a VerticalStackLayout spanning the Grid.
-			// It takes VerticalOptions and HorizontalOptions from the
-			// view to allow for more control over how it layouts.
-			var innerLayout = new VerticalStackLayout
-			{
-				VerticalOptions = view.VerticalOptions,
-				HorizontalOptions = view.HorizontalOptions,
-				InputTransparent = true
-			};
-
 			if (grid.RowDefinitions.Count > 0)
 			{
-				Grid.SetRowSpan(innerLayout, grid.RowDefinitions.Count);
+				Grid.SetRowSpan(view, grid.RowDefinitions.Count);
 			}
 
 			if (grid.ColumnDefinitions.Count > 0)
 			{
-				Grid.SetColumnSpan(innerLayout, grid.ColumnDefinitions.Count);
+				Grid.SetColumnSpan(view, grid.ColumnDefinitions.Count);
 			}
 
 			// We need to delete the view reference from its parent if it was previously added.
 			((Layout?)view.Parent)?.Remove(view);
+		}
 
-			innerLayout.Children.Add(view);
-			layout.Children.Add(innerLayout);
-		}
-		else
-		{
-			layout.Children.Add(view);
-		}
+		layout.Children.Add(view);
 	}
 
 	internal Layout GetLayout()
