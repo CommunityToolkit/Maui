@@ -57,22 +57,6 @@ public partial class StateContainerViewModel : BaseViewModel
 		_ => StateKey.Loading
 	};
 
-	[ObservableProperty]
-	private string? state;
-
-	[RelayCommand]
-	private void ToggleState()
-	{
-		State = State switch
-		{
-			"1" => "2",
-			"2" => "3",
-			"3" => "4",
-			"4" => "5",
-			_ => "1"
-		};
-	}
-
 	static class StateKey
 	{
 		public const string Loading = nameof(Loading);
