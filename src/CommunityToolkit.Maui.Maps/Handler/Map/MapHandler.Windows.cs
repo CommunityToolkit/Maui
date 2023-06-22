@@ -1,12 +1,12 @@
-﻿using Microsoft.Maui.Maps.Handlers;
-using Microsoft.Maui.Maps;
-using Microsoft.Maui.Platform;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml;
-using IMap = Microsoft.Maui.Maps.IMap;
-using Windows.Devices.Geolocation;
-using System.Text.Json;
+﻿using System.Text.Json;
 using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Maps;
+using Microsoft.Maui.Maps.Handlers;
+using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Windows.Devices.Geolocation;
+using IMap = Microsoft.Maui.Maps.IMap;
 
 namespace CommunityToolkit.Maui.Maps.Handlers;
 
@@ -144,7 +144,7 @@ public partial class MapHandlerWindows : MapHandler
 		}
 		CallJSMethod(handler.PlatformView, $"setRegion({newRegion.Center.Latitude},{newRegion.Center.Longitude});");
 	}
-	
+
 	static void CallJSMethod(FrameworkElement platformWebView, string script)
 	{
 		if (platformWebView is WebView2 webView2 && webView2.CoreWebView2 != null)
@@ -312,7 +312,7 @@ public partial class MapHandlerWindows : MapHandler
 	{
 		// Update initial properties when our page is loaded
 		Mapper.UpdateProperties(this, VirtualView);
-		
+
 		if (regionToGo != null)
 		{
 			MapMoveToRegion(this, VirtualView, regionToGo);
