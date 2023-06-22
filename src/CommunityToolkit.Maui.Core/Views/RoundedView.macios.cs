@@ -4,15 +4,14 @@ using CoreAnimation;
 namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
-/// A rounded <see cref="UIStackView"/>
+/// A rounded <see cref="UIView"/>
 /// </summary>
-[Obsolete]
-public class RoundedStackView : UIStackView
+public class RoundedView : UIView
 {
 	/// <summary>
-	/// Initialize <see cref="RoundedStackView"/>
+	/// Initialize <see cref="RoundedView"/>
 	/// </summary>
-	public RoundedStackView(NFloat leftPadding, NFloat topPadding, NFloat rightPadding, NFloat bottomPadding)
+	public RoundedView(NFloat leftPadding, NFloat topPadding, NFloat rightPadding, NFloat bottomPadding)
 	{
 		LeftPadding = leftPadding;
 		TopPadding = topPadding;

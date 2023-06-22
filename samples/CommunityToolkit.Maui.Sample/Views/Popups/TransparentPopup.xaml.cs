@@ -1,6 +1,6 @@
 using CommunityToolkit.Maui.Views;
 
-namespace CommunityToolkit.Maui.Sample;
+namespace CommunityToolkit.Maui.Sample.Views.Popups;
 
 public partial class TransparentPopup : Popup
 {

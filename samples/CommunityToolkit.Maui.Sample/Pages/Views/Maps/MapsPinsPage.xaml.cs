@@ -1,16 +1,16 @@
-using Microsoft.Maui.Controls.Maps;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
+using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Maps;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class MapsPinsPage : BasePage<MapsPinsViewModel>
 {
-	private readonly Random locationRandomSeed = new();
-	private int locationIncrement = 0;
+	readonly Random locationRandomSeed = new();
+	int locationIncrement = 0;
 
 	// TODO generate actual random pins
-	private readonly Location[] randomLocations =
+	readonly Location[] randomLocations =
 	{
 			new Location(51.8833333333333, 176.65),
 			new Location(21.3166666666667, 157.833333333333),
@@ -85,7 +85,7 @@ public partial class MapsPinsPage : BasePage<MapsPinsViewModel>
 		});
 	}
 
-	private void InitRegion_OnClicked(object? sender, EventArgs e)
+	void InitRegion_OnClicked(object? sender, EventArgs e)
 	{
 		var microsoftLocation = new Location(47.64232, -122.13684);
 		PinsMap.MoveToRegion(MapSpan.FromCenterAndRadius(microsoftLocation, Distance.FromKilometers(1)));
