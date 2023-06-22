@@ -1,14 +1,14 @@
-﻿using Microsoft.Maui.Maps.Handlers;
-using Microsoft.Maui.Maps;
-using Microsoft.Maui.Platform;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml;
-using IMap = Microsoft.Maui.Maps.IMap;
-using Windows.Devices.Geolocation;
+﻿using System.Globalization;
 using System.Text.Json;
 using Microsoft.Maui.Controls.Maps;
-using System.Globalization;
+using Microsoft.Maui.Maps;
+using Microsoft.Maui.Maps.Handlers;
+using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
+using Windows.Devices.Geolocation;
+using IMap = Microsoft.Maui.Maps.IMap;
 
 namespace CommunityToolkit.Maui.Maps.Handlers;
 
@@ -124,7 +124,7 @@ public partial class MapHandlerWindows : MapHandler
 	public static new void MapPins(IMapHandler handler, IMap map)
 	{
 		CallJSMethod(handler.PlatformView, "removeAllPins();");
-		
+
 		foreach (var pin in map.Pins)
 		{
 			CallJSMethod(handler.PlatformView, $"addPin({pin.Location.Latitude.ToString(CultureInfo.InvariantCulture)}," +
@@ -155,7 +155,7 @@ public partial class MapHandlerWindows : MapHandler
 
 		CallJSMethod(handler.PlatformView, $"setRegion({newRegion.Center.Latitude.ToString(CultureInfo.InvariantCulture)},{newRegion.Center.Longitude.ToString(CultureInfo.InvariantCulture)});");
 	}
-	
+
 	static void CallJSMethod(FrameworkElement platformWebView, string script)
 	{
 		if (platformWebView is WebView2 webView2 && webView2.CoreWebView2 != null)
@@ -357,7 +357,7 @@ public partial class MapHandlerWindows : MapHandler
 	{
 		// Update initial properties when our page is loaded
 		Mapper.UpdateProperties(this, VirtualView);
-		
+
 		if (regionToGo != null)
 		{
 			MapMoveToRegion(this, VirtualView, regionToGo);
@@ -380,7 +380,7 @@ public partial class MapHandlerWindows : MapHandler
 
 		var clickedInfoWindowWebView = JsonSerializer.Deserialize<InfoWindow>(args.WebMessageAsJson, jsonSerializerOptions);
 		var clickedInfoWindowWebViewId = clickedInfoWindowWebView?.InfoWindowMarkerId;
-		
+
 		if (!string.IsNullOrEmpty(clickedInfoWindowWebViewId))
 		{
 			var clickedPin = VirtualView.Pins.SingleOrDefault(p => (p as Pin)?.Id.ToString().Equals(clickedInfoWindowWebViewId) ?? false);

@@ -12,26 +12,38 @@ public class DockLayout : Layout, IDockLayout
 	/// <summary>
 	/// Docking position for a view.
 	/// </summary>
-	public static readonly BindableProperty DockPositionProperty = BindableProperty.CreateAttached(nameof(DockPosition), typeof(DockPosition), typeof(DockLayout), DockPosition.None,
-		propertyChanged: OnDockPositionPropertyChanged);
+	public static readonly BindableProperty DockPositionProperty = BindableProperty.CreateAttached(nameof(DockPosition), 
+																									typeof(DockPosition), 
+																									typeof(DockLayout), 
+																									DockPosition.None,
+																									propertyChanged: OnDockPositionPropertyChanged);
 
 	/// <summary>
 	/// If true, the last child is expanded to fill the remaining space (default: true).
 	/// </summary>
-	public static readonly BindableProperty ShouldExpandLastChildProperty = BindableProperty.Create(nameof(ShouldExpandLastChild), typeof(bool), typeof(DockLayout), true,
-		propertyChanged: OnShouldExpandLastChildPropertyChanged);
+	public static readonly BindableProperty ShouldExpandLastChildProperty = BindableProperty.Create(nameof(ShouldExpandLastChild), 
+																										typeof(bool), 
+																										typeof(DockLayout), 
+																										true,
+																										propertyChanged: OnShouldExpandLastChildPropertyChanged);
 
 	/// <summary>
 	/// Horizontal spacing between docked views.
 	/// </summary>
-	public static readonly BindableProperty HorizontalSpacingProperty = BindableProperty.Create(nameof(HorizontalSpacing), typeof(double), typeof(DockLayout), 0.0d,
-		propertyChanged: OnHorizontalSpacingPropertyChanged);
+	public static readonly BindableProperty HorizontalSpacingProperty = BindableProperty.Create(nameof(HorizontalSpacing), 
+																									typeof(double), 
+																									typeof(DockLayout), 
+																									0.0d,
+																									propertyChanged: OnHorizontalSpacingPropertyChanged);
 
 	/// <summary>
 	/// Vertical spacing between docked views.
 	/// </summary>
-	public static readonly BindableProperty VerticalSpacingProperty = BindableProperty.Create(nameof(VerticalSpacing), typeof(double), typeof(DockLayout), 0.0d,
-		propertyChanged: OnVerticalSpacingPropertyChanged);
+	public static readonly BindableProperty VerticalSpacingProperty = BindableProperty.Create(nameof(VerticalSpacing), 
+																								typeof(double), 
+																								typeof(DockLayout), 
+																								0.0d,
+																								propertyChanged: OnVerticalSpacingPropertyChanged);
 
 	/// <inheritdoc/>
 	public bool ShouldExpandLastChild
