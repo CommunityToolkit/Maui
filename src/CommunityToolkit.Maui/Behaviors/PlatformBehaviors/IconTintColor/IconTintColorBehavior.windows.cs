@@ -31,7 +31,7 @@ public partial class IconTintColorBehavior
 				if (currentColorBrush is not null && TintColor is not null)
 				{
 					currentColorBrush.Color = TintColor.ToWindowsColor();
-				} 
+				}
 				else
 				{
 					ApplyTintColor(platformView, bindable, TintColor);
@@ -95,7 +95,7 @@ public partial class IconTintColorBehavior
 		{
 			return;
 		}
-		
+
 		switch (platformView)
 		{
 			case WImage wImage:
@@ -113,7 +113,7 @@ public partial class IconTintColorBehavior
 
 			default:
 				throw new NotSupportedException($"{nameof(IconTintColorBehavior)} only currently supports {typeof(WImage)} and {typeof(WButton)}.");
-		}		
+		}
 	}
 
 	void LoadAndApplyImageTintColor(View element, WImage image, Color color)
@@ -141,7 +141,7 @@ public partial class IconTintColorBehavior
 			}
 		}
 	}
-	
+
 	void ApplyImageTintColor(View element, WImage image, Color color)
 	{
 		if (!TryGetSourceImageUri(image, (IImageElement)element, out var uri))
