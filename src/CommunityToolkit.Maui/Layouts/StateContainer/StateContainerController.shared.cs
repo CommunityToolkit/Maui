@@ -8,7 +8,7 @@ sealed class StateContainerController
 	readonly WeakReference<Layout> layoutWeakReference;
 
 	string? previousState;
-	IList<IView> originalContent = Enumerable.Empty<IView>().ToList();
+	List<IView> originalContent = Enumerable.Empty<IView>().ToList();
 
 	/// <summary>
 	/// Initialize <see cref="StateContainerController"/> with a <see cref="Layout"/>
