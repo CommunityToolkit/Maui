@@ -11,7 +11,7 @@
              Title="AppTheme">
     <pages:BasePage.Resources>
         <maui:AppThemeColor Light="Green" Dark="Red" x:Key="LabelTextColor" />
-        <maui:AppThemeResource x:DataType="Image" Light="dotnet_bot.png" Dark="avatar_icon.png" x:Key="ImageSource" />
+        <maui:AppThemeResource Light="dotnet_bot.png" Dark="avatar_icon.png" x:Key="ImageSource" />
 
         <Style x:Key="Headline" TargetType="Label">
             <Setter Property="FontFamily" Value="Segoe UI" />
