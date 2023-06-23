@@ -1,24 +1,20 @@
 ﻿namespace CommunityToolkit.Maui.Extensions;
 
 /// <summary>
-/// 
+/// A XAML markup extension that enables using <see cref="AppThemeColor"/> and <see cref="AppThemeResource"/> from XAML.
 /// </summary>
 [ContentProperty(nameof(Key))]
 public sealed class AppThemeExtension : IMarkupExtension<BindingBase>
 {
 	/// <summary>
-	/// 
+	/// Gets or sets the key that is used to access the <see cref="AppThemeColor"/> or <see cref="AppThemeResource"/> from the <see cref="ResourceDictionary"/>.
 	/// </summary>
 	public string? Key { get; set; }
 
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="serviceProvider"></param>
-	/// <returns></returns>
-	/// <exception cref="ArgumentNullException"></exception>
-	/// <exception cref="XamlParseException"></exception>
-	/// <exception cref="ArgumentException"></exception>
+	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown if <paramref name="serviceProvider"/> is <see langword="null"/>.</exception>
+	/// <exception cref="XamlParseException">Thrown if <see cref="Key"/> is <see langword="null"/> or if a resource with <see cref="Key"/> cannot be found.</exception>
+	/// <exception cref="ArgumentException">Thrown if <paramref name="serviceProvider"/> does no implement <see cref="IProvideParentValues"/>.</exception>
 	public BindingBase ProvideValue(IServiceProvider serviceProvider)
 	{
 		if (serviceProvider is null)
@@ -28,7 +24,7 @@ public sealed class AppThemeExtension : IMarkupExtension<BindingBase>
 
 		if (Key is null)
 		{
-			throw new XamlParseException("you must specify a key in {AppThemeColor}", serviceProvider);
+			throw new XamlParseException("You must specify a key in {AppThemeColor}", serviceProvider);
 		}
 
 		if (serviceProvider.GetService(typeof(IProvideValueTarget)) is not IProvideParentValues valueProvider)
@@ -40,7 +36,7 @@ public sealed class AppThemeExtension : IMarkupExtension<BindingBase>
 			&& !TryGetApplicationLevelResource(Key, out resource, out resourceDictionary))
 		{
 			var xmlLineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider ? xmlLineInfoProvider.XmlLineInfo : null;
-			throw new XamlParseException($"StaticResource not found for key {Key}", xmlLineInfo);
+			throw new XamlParseException($"Resource not found for key {Key}", xmlLineInfo);
 		}
 		else if (resource is AppThemeColor color)
 		{
@@ -53,7 +49,7 @@ public sealed class AppThemeExtension : IMarkupExtension<BindingBase>
 		else
 		{
 			var xmlLineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider ? xmlLineInfoProvider.XmlLineInfo : null;
-			throw new XamlParseException($"StaticResource for key {Key} is not an AppThemeColor or AppThemeResource", xmlLineInfo);
+			throw new XamlParseException($"Resource found for key {Key} is not of type {nameof(AppThemeColor)} or {nameof(AppThemeResource)}", xmlLineInfo);
 		}
 	}
 
@@ -78,6 +74,7 @@ public sealed class AppThemeExtension : IMarkupExtension<BindingBase>
 				return true;
 			}
 		}
+
 		return false;
 	}
 
@@ -86,7 +83,7 @@ public sealed class AppThemeExtension : IMarkupExtension<BindingBase>
 		resource = null;
 		resourceDictionary = null;
 		// TODO: Remove reference to Application.Current
-		return Application.Current != null
+		return Application.Current is not null
 			&& ((IResourcesProvider)Application.Current).IsResourcesCreated
 			&& Application.Current.Resources.TryGetValueAndSource(key, out resource, out resourceDictionary);
 	}
