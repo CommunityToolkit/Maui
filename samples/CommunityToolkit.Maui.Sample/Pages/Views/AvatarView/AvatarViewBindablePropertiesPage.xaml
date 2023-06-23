@@ -6,7 +6,7 @@
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:models="clr-namespace:CommunityToolkit.Maui.Sample.Models"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView" xmlns:maui="clr-namespace:CommunityToolkit.Maui;assembly=CommunityToolkit.Maui" xmlns:extensions="clr-namespace:CommunityToolkit.Maui.Extensions;assembly=CommunityToolkit.Maui"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView"
     Title="AvatarView Bindable"
     x:DataType="vm:AvatarViewBindablePropertiesViewModel"
     x:TypeArguments="vm:AvatarViewBindablePropertiesViewModel">
@@ -24,12 +24,10 @@
                     <Setter Property="X2" Value="300" />
                     <Setter Property="HorizontalOptions" Value="Center" />
                 </Style>
-                <maui:AppThemeColor Light="Yellow" Dark="Red" x:Key="Foo" />
             </ResourceDictionary>
         </VerticalStackLayout.Resources>
 
-        <Label Style="{StaticResource Description}" Text="AvatarView supports data binding." TextColor="{extensions:AppTheme Foo}">
-        </Label>
+        <Label Style="{StaticResource Description}" Text="AvatarView supports data binding." />
         <Line Style="{StaticResource HR}" />
         <CollectionView Margin="4" ItemsSource="{Binding AvatarList}" WidthRequest="200">
             <CollectionView.ItemsLayout>
