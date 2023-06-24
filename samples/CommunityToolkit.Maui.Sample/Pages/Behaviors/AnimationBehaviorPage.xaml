@@ -86,7 +86,62 @@
                     </mct:AnimationBehavior.AnimationType>
                 </mct:AnimationBehavior>
             </Frame.Behaviors>
-            <Label Text="Click this Frame" HorizontalOptions="Center"/>
+            <Label Text="Click to Fade this Frame" HorizontalOptions="Center"/>
+        </Frame>
+
+        <Frame BackgroundColor="LightGreen" Margin="16,0">
+            <Frame.Behaviors>
+                <mct:AnimationBehavior Command="{Binding AnimationCommand}">
+                    <mct:AnimationBehavior.AnimationType>
+                        <mct:FlipHorizontalAnimation />
+                    </mct:AnimationBehavior.AnimationType>
+                </mct:AnimationBehavior>
+            </Frame.Behaviors>
+            <Label Text="Click to Flip this Frame horizontally" HorizontalOptions="Center"/>
+        </Frame>
+
+        <Frame BackgroundColor="LightGreen" Margin="16,0">
+            <Frame.Behaviors>
+                <mct:AnimationBehavior Command="{Binding AnimationCommand}">
+                    <mct:AnimationBehavior.AnimationType>
+                        <mct:FlipVerticalAnimation />
+                    </mct:AnimationBehavior.AnimationType>
+                </mct:AnimationBehavior>
+            </Frame.Behaviors>
+            <Label Text="Click to Flip this Frame vertically" HorizontalOptions="Center"/>
+        </Frame>
+
+        <Frame BackgroundColor="LightGreen" Margin="16,0">
+            <Frame.Behaviors>
+                <mct:AnimationBehavior Command="{Binding AnimationCommand}">
+                    <mct:AnimationBehavior.AnimationType>
+                        <mct:RotateAnimation />
+                    </mct:AnimationBehavior.AnimationType>
+                </mct:AnimationBehavior>
+            </Frame.Behaviors>
+            <Label Text="Click to Rotate this Frame" HorizontalOptions="Center"/>
+        </Frame>
+
+        <Frame BackgroundColor="LightGreen" Margin="16,0">
+            <Frame.Behaviors>
+                <mct:AnimationBehavior Command="{Binding AnimationCommand}">
+                    <mct:AnimationBehavior.AnimationType>
+                        <mct:ScaleAnimation />
+                    </mct:AnimationBehavior.AnimationType>
+                </mct:AnimationBehavior>
+            </Frame.Behaviors>
+            <Label Text="Click to Scale this Frame" HorizontalOptions="Center"/>
+        </Frame>
+
+        <Frame BackgroundColor="LightGreen" Margin="16,0">
+            <Frame.Behaviors>
+                <mct:AnimationBehavior Command="{Binding AnimationCommand}">
+                    <mct:AnimationBehavior.AnimationType>
+                        <mct:ShakeAnimation />
+                    </mct:AnimationBehavior.AnimationType>
+                </mct:AnimationBehavior>
+            </Frame.Behaviors>
+            <Label Text="Click to Shake this Frame" HorizontalOptions="Center"/>
         </Frame>
     </VerticalStackLayout>
 </pages:BasePage>
