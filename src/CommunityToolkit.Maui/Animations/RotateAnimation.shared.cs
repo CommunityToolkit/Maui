@@ -52,11 +52,10 @@ public class RotateAnimation : BaseAnimation
 	/// <inheritdoc />
 	public override async Task Animate(VisualElement view)
 	{
-		if (view != null)
-		{
-			await view.RotateTo(Rotation, Length, Easing);
-			view.Rotation = 0;
-		}
+		ArgumentNullException.ThrowIfNull(view);
+
+		await view.RotateTo(Rotation, Length, Easing);
+		view.Rotation = 0;
 	}
 }
 

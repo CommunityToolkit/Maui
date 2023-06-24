@@ -19,10 +19,9 @@ public class FlipVerticalAnimation : RotateAnimation
 	/// <inheritdoc />
 	public override async Task Animate(VisualElement view)
 	{
-		if (view != null)
-		{
-			await view.RotateXTo(Rotation, Length, Easing);
-			await view.RotateXTo(0, Length, Easing);
-		}
+		ArgumentNullException.ThrowIfNull(view);
+
+		await view.RotateXTo(Rotation, Length, Easing);
+		await view.RotateXTo(0, Length, Easing);
 	}
 }
