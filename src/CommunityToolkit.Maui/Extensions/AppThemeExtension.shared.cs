@@ -24,7 +24,7 @@ public sealed class AppThemeExtension : IMarkupExtension<BindingBase>
 
 		if (Key is null)
 		{
-			throw new XamlParseException("You must specify a key for {AppThemeExtension} that specifies the AppTheme resource to use", serviceProvider);
+			throw new XamlParseException($"{nameof(AppThemeExtension)}.{nameof(Key)} Cannot be null. You must set a {nameof(Key)} that specifies the AppTheme resource to use", serviceProvider);
 		}
 
 		if (serviceProvider.GetService(typeof(IProvideValueTarget)) is not IProvideParentValues valueProvider)
@@ -53,9 +53,6 @@ public sealed class AppThemeExtension : IMarkupExtension<BindingBase>
 		}
 	}
 
-	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider) =>
-		ProvideValue(serviceProvider);
-
 	static bool TryGetResource(string key, IEnumerable<object> parentObjects, out object? resource, out ResourceDictionary? resourceDictionary)
 	{
 		resource = null;
@@ -63,7 +60,9 @@ public sealed class AppThemeExtension : IMarkupExtension<BindingBase>
 
 		foreach (var p in parentObjects)
 		{
-			var resDict = p is IResourcesProvider irp && irp.IsResourcesCreated ? irp.Resources : p as ResourceDictionary;
+			ResourceDictionary? resDict = p is IResourcesProvider irp && irp.IsResourcesCreated
+											? irp.Resources
+											: p as ResourceDictionary;
 			if (resDict is null)
 			{
 				continue;
@@ -87,4 +86,6 @@ public sealed class AppThemeExtension : IMarkupExtension<BindingBase>
 			&& ((IResourcesProvider)Application.Current).IsResourcesCreated
 			&& Application.Current.Resources.TryGetValueAndSource(key, out resource, out resourceDictionary);
 	}
+
+	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider) => ProvideValue(serviceProvider);
 }
