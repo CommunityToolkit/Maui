@@ -8,8 +8,17 @@ public partial class StateContainerViewModel : BaseViewModel
 	[ObservableProperty]
 	string? currentState, gridState, noAnimateState, notFoundState, fullPageState;
 
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ToggleGridStateCommand))]
+	bool canGridStateChange = true;
+
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(CycleStatesCommand))]
+	bool canCycleStateChange = true;
+
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ToggleFullPageStateCommand))]
+	bool canFullPageStateChange = true;
+
 	[ObservableProperty]
-	bool canGridStateChange = true, canCycleStateChange = true, canAnimationStateChange = true, canFullPageStateChange = true;
+	bool canAnimationStateChange = true;
 
 	[RelayCommand(CanExecute = nameof(CanCycleStateChange))]
 	async Task CycleStates()
@@ -47,21 +56,6 @@ public partial class StateContainerViewModel : BaseViewModel
 		StateKey.Loading => null,
 		_ => StateKey.Loading
 	};
-
-	partial void OnCanGridStateChangeChanged(bool value)
-	{
-		ToggleGridStateCommand.NotifyCanExecuteChanged();
-	}
-
-	partial void OnCanCycleStateChangeChanged(bool value)
-	{
-		CycleStatesCommand.NotifyCanExecuteChanged();
-	}
-
-	partial void OnCanFullPageStateChangeChanged(bool value)
-	{
-		ToggleFullPageStateCommand.NotifyCanExecuteChanged();
-	}
 
 	static class StateKey
 	{
