@@ -2,8 +2,7 @@
 
 public class AppThemeViewModel : BaseViewModel
 {
-	public AppThemeViewModel()
-		: base()
+	public AppThemeViewModel() : base()
 	{
 	}
 }
