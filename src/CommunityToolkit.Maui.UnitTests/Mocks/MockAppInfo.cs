@@ -2,25 +2,23 @@
 
 class MockAppInfo : IAppInfo
 {
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-	public string PackageName { get; set; }
+	public string PackageName { get; set; } = string.Empty;
 
-	public string Name { get; set; }
+	public string Name { get; set; } = string.Empty;
 
-	public string VersionString { get; set; }
+	public string VersionString { get; set; } = string.Empty;
 
-	public Version Version { get; set; }
+	public string BuildString { get; set; } = string.Empty;
 
-	public string BuildString { get; set; }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+	public Version Version { get; set; } = new Version(1, 0);
 
 	public LayoutDirection RequestedLayoutDirection { get; set; }
-
-	public void ShowSettingsUI()
-	{
-	}
 
 	public AppTheme RequestedTheme { get; set; }
 
 	public AppPackagingModel PackagingModel { get; set; }
+
+	public void ShowSettingsUI()
+	{
+	}
 }
