@@ -24,7 +24,7 @@ public sealed class AppThemeExtension : IMarkupExtension<BindingBase>
 
 		if (Key is null)
 		{
-			throw new XamlParseException("You must specify a key in {AppThemeColor}", serviceProvider);
+			throw new XamlParseException("You must specify a key for {AppThemeExtension} that specifies the AppTheme resource to use", serviceProvider);
 		}
 
 		if (serviceProvider.GetService(typeof(IProvideValueTarget)) is not IProvideParentValues valueProvider)
@@ -82,7 +82,7 @@ public sealed class AppThemeExtension : IMarkupExtension<BindingBase>
 	{
 		resource = null;
 		resourceDictionary = null;
-		// TODO: Remove reference to Application.Current
+		
 		return Application.Current is not null
 			&& ((IResourcesProvider)Application.Current).IsResourcesCreated
 			&& Application.Current.Resources.TryGetValueAndSource(key, out resource, out resourceDictionary);

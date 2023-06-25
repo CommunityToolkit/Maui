@@ -1,56 +1,34 @@
 ﻿using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.UnitTests.Mocks;
 using Xunit;
 
-namespace CommunityToolkit.Maui.UnitTests;
+namespace CommunityToolkit.Maui.UnitTests.Essentials;
 
 public class AppThemeTests : BaseTest
 {
-	class MockAppInfo : IAppInfo
-	{
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-		public string PackageName { get; set; }
-
-		public string Name { get; set; }
-
-		public string VersionString { get; set; }
-
-		public Version Version { get; set; }
-
-		public string BuildString { get; set; }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-
-		public LayoutDirection RequestedLayoutDirection { get; set; }
-
-		public void ShowSettingsUI()
-		{
-		}
-
-		public AppTheme RequestedTheme { get; set; }
-
-		public AppPackagingModel PackagingModel { get; set; }
-	}
-
-	MockAppInfo mockAppInfo;
-	Application app;
+	readonly MockAppInfo mockAppInfo;
+	readonly Application app;
 
 	public AppThemeTests()
 	{
-		AppInfo.SetCurrent(mockAppInfo = new MockAppInfo() { RequestedTheme = AppTheme.Light });
+		AppInfo.SetCurrent(mockAppInfo = new() { RequestedTheme = AppTheme.Light });
 		Application.Current = app = new Application();
 	}
 
 	[Fact]
 	public void AppThemeColorUsesCorrectColorForTheme()
 	{
-		var color = new AppThemeColor
+		AppThemeColor color = new()
 		{
 			Light = Colors.Green,
 			Dark = Colors.Red
 		};
-		var label = new Label
+
+		Label label = new()
 		{
 			Text = "Green on Light, Red on Dark"
 		};
+
 		label.SetAppThemeColor(Label.TextColorProperty, color);
 
 		Application.Current = null;
@@ -65,15 +43,17 @@ public class AppThemeTests : BaseTest
 	[Fact]
 	public void AppThemeColorUsesDefaultColorWhenDarkColorNotSet()
 	{
-		var color = new AppThemeColor
+		AppThemeColor color = new()
 		{
 			Light = Colors.Green,
 			Default = Colors.Blue
 		};
-		var label = new Label
+
+		Label label = new()
 		{
 			Text = "Green on Light, Red on Dark"
 		};
+
 		label.SetAppThemeColor(Label.TextColorProperty, color);
 
 		Application.Current = null;
@@ -88,15 +68,17 @@ public class AppThemeTests : BaseTest
 	[Fact]
 	public void AppThemeColorUsesDefaultColorWhenLightColorNotSet()
 	{
-		var color = new AppThemeColor
+		AppThemeColor color = new()
 		{
 			Default = Colors.Blue,
 			Dark = Colors.Red
 		};
-		var label = new Label
+
+		Label label = new()
 		{
 			Text = "Green on Light, Red on Dark"
 		};
+
 		label.SetAppThemeColor(Label.TextColorProperty, color);
 
 		Application.Current = null;
@@ -111,12 +93,14 @@ public class AppThemeTests : BaseTest
 	[Fact]
 	public void AppThemeResourceUpdatesLabelText()
 	{
-		var label = new Label();
-		var resource = new AppThemeResource
+		Label label = new();
+
+		AppThemeResource resource = new()
 		{
 			Light = "Light Theme",
 			Dark = "Dark Theme"
 		};
+
 		label.SetAppTheme(Label.TextProperty, resource);
 
 		Application.Current = null;
@@ -133,4 +117,3 @@ public class AppThemeTests : BaseTest
 		((IApplication)app).ThemeChanged();
 	}
 }
-

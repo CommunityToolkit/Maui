@@ -27,11 +27,23 @@ public abstract class AppThemeObject<T>
 	/// <returns>A <see cref="AppThemeBinding"/> instance with the respective theme values.</returns>
 	public virtual BindingBase GetBinding()
 	{
-		return new AppThemeBinding
+		var binding = new AppThemeBinding();
+
+		if (Light is not null)
 		{
-			Light = Light,
-			Dark = Dark,
-			Default = Default
-		};
+			binding.Light = Light;
+		}
+
+		if (Dark is not null)
+		{
+			binding.Dark = Dark;
+		}
+
+		if (Default is not null)
+		{
+			binding.Default = Default;
+		}
+
+		return binding;
 	}
 }
