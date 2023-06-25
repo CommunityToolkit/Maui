@@ -82,10 +82,9 @@ public sealed class AppThemeExtension : IMarkupExtension<BindingBase>
 	{
 		resource = null;
 		resourceDictionary = null;
-		
+
 		return Application.Current is not null
 			&& ((IResourcesProvider)Application.Current).IsResourcesCreated
 			&& Application.Current.Resources.TryGetValueAndSource(key, out resource, out resourceDictionary);
 	}
 }
-
