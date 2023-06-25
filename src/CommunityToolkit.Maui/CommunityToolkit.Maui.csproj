@@ -47,17 +47,10 @@
     <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0-ios|AnyCPU'">
-    <CreatePackage>false</CreatePackage>
-  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="Essentials\" />
-    <None Remove="Essentials\AppTheme\" />
-  </ItemGroup>
   <ItemGroup>
     <None Include="..\CommunityToolkit.Maui.SourceGenerators\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.SourceGenerators.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="..\CommunityToolkit.Maui.Analyzers\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
@@ -76,8 +69,4 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Essentials\" />
-    <Folder Include="Essentials\AppTheme\" />
-  </ItemGroup>
 </Project>
