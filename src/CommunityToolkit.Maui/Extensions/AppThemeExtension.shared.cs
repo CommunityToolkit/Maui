@@ -64,7 +64,7 @@ public sealed class AppThemeExtension : IMarkupExtension<BindingBase>
 		foreach (var p in parentObjects)
 		{
 			var resDict = p is IResourcesProvider irp && irp.IsResourcesCreated ? irp.Resources : p as ResourceDictionary;
-			if (resDict == null)
+			if (resDict is null)
 			{
 				continue;
 			}

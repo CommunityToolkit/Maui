@@ -3,6 +3,6 @@
 /// <summary>
 /// Represents a resource that is aware of the operating system theme.
 /// </summary>
-public class AppThemeResource : AppThemeObject<object>
+public sealed class AppThemeResource : AppThemeObject<object>
 {
 }
