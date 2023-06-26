@@ -8,4 +8,11 @@ public partial class AppThemePage : BasePage<AppThemeViewModel>
 	{
 		InitializeComponent();
 	}
+
+	void Switch_Toggled(object sender, ToggledEventArgs e)
+	{
+		Application.Current!.UserAppTheme =
+			Application.Current.UserAppTheme == AppTheme.Dark
+			? AppTheme.Light : AppTheme.Dark;
+	}
 }

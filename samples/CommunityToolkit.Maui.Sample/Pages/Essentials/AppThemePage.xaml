@@ -20,6 +20,10 @@
     </pages:BasePage.Resources>
 
     <VerticalStackLayout Spacing="10">
+        <HorizontalStackLayout Spacing="5" HorizontalOptions="Center" Margin="0,0,0,20">
+            <Switch Toggled="Switch_Toggled" />
+            <Label Text="Toggle Dark/Light Theme" VerticalOptions="Center" />
+        </HorizontalStackLayout>
         <Label 
             Text="This color comes from the resource dictionary!"
             FontSize="20"
