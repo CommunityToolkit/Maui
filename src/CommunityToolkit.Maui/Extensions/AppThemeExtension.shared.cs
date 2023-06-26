@@ -17,10 +17,7 @@ public sealed class AppThemeExtension : IMarkupExtension<BindingBase>
 	/// <exception cref="ArgumentException">Thrown if <paramref name="serviceProvider"/> does no implement <see cref="IProvideParentValues"/>.</exception>
 	public BindingBase ProvideValue(IServiceProvider serviceProvider)
 	{
-		if (serviceProvider is null)
-		{
-			throw new ArgumentNullException(nameof(serviceProvider));
-		}
+		ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
 
 		if (Key is null)
 		{
