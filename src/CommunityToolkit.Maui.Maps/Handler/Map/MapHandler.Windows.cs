@@ -447,7 +447,7 @@ public partial class MapHandlerWindows : MapHandler
 	{
 		public string Id { get; set; } = string.Empty;
 
-		public string? Payload { get; set; }
+		public object? Payload { get; set; }
 	}
 
 	enum EventIdentifier
