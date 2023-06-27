@@ -9,6 +9,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Windows.Devices.Geolocation;
 using IMap = Microsoft.Maui.Maps.IMap;
+using Map = Microsoft.Maui.Controls.Maps.Map;
 
 namespace CommunityToolkit.Maui.Maps.Handlers;
 
@@ -18,9 +19,9 @@ public partial class MapHandlerWindows : MapHandler
 	internal static string? MapsKey;
 	MapSpan? regionToGo;
 
-	JsonSerializerOptions jsonSerializerOptions = new()
+	readonly JsonSerializerOptions jsonSerializerOptions = new()
 	{
-		PropertyNameCaseInsensitive = true
+		PropertyNameCaseInsensitive = true,
 	};
 
 	/// <summary>
@@ -191,7 +192,20 @@ public partial class MapHandlerWindows : MapHandler
 									showTrafficButton: false
 								});
 								loadTrafficModule();
-								Microsoft.Maps.Events.addHandler(map, 'viewrendered', function () { var bounds = map.getBounds(); invokeHandlerAction(bounds); });
+								Microsoft.Maps.Events.addHandler(map, 'viewrendered', function () { var bounds = map.getBounds(); invokeHandlerAction('BoundsChanged', bounds); });
+
+								Microsoft.Maps.Events.addHandler(map, 'click', function (e) {
+									if (!e.isPrimary) {
+										return;
+									}
+
+									var clickedLocation = {
+										latitude: e.location.latitude,
+										longitude: e.location.longitude
+									};
+
+									invokeHandlerAction('MapClicked', clickedLocation);
+								});
 
 								infobox = new Microsoft.Maps.Infobox(map.getCenter(), {
 									visible: false
@@ -206,7 +220,7 @@ public partial class MapHandlerWindows : MapHandler
 										infoWindowMarkerId: infobox.infoWindowMarkerId									
 									};
 
-									invokeHandlerAction(infoWindow);
+									invokeHandlerAction('InfoWindowClicked', infoWindow);
 								});
 			                }
 							
@@ -323,13 +337,18 @@ public partial class MapHandlerWindows : MapHandler
 										location: e.target.getLocation(),
 										markerId: e.target.markerId
 									};
-									invokeHandlerAction(clickedPin);
+									invokeHandlerAction('PinClicked', clickedPin);
 								});
 							}
 
-							function invokeHandlerAction(data)
+							function invokeHandlerAction(id, data)
 							{
-								window.chrome.webview.postMessage(data);
+								var eventMessage = {
+									id: id,
+									payload: data
+								};
+
+								window.chrome.webview.postMessage(eventMessage);
 							}
 						</script>
 						<style>
@@ -366,35 +385,78 @@ public partial class MapHandlerWindows : MapHandler
 
 	void WebViewWebMessageReceived(WebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
 	{
-		// TODO make this better, separate events?
-		var clickedPinWebView = JsonSerializer.Deserialize<Pin>(args.WebMessageAsJson, jsonSerializerOptions);
-		var clickedPinWebViewId = clickedPinWebView?.MarkerId?.ToString();
+		var eventMessage = JsonSerializer.Deserialize<EventMessage>(args.WebMessageAsJson, jsonSerializerOptions);
 
-		if (!string.IsNullOrEmpty(clickedPinWebViewId))
+		if (eventMessage is null)
 		{
-			var clickedPin = VirtualView.Pins.SingleOrDefault(p => (p as Pin)?.Id.ToString().Equals(clickedPinWebViewId) ?? false);
-
-			clickedPin?.SendMarkerClick();
 			return;
 		}
 
-		var clickedInfoWindowWebView = JsonSerializer.Deserialize<InfoWindow>(args.WebMessageAsJson, jsonSerializerOptions);
-		var clickedInfoWindowWebViewId = clickedInfoWindowWebView?.InfoWindowMarkerId;
-
-		if (!string.IsNullOrEmpty(clickedInfoWindowWebViewId))
+		if (!Enum.TryParse<EventIdentifier>(eventMessage.Id, true, out var eventId))
 		{
-			var clickedPin = VirtualView.Pins.SingleOrDefault(p => (p as Pin)?.Id.ToString().Equals(clickedInfoWindowWebViewId) ?? false);
-
-			clickedPin?.SendInfoWindowClick();
 			return;
 		}
 
-		var mapRect = JsonSerializer.Deserialize<Bounds>(args.WebMessageAsJson, jsonSerializerOptions);
-		if (mapRect?.Center is not null)
+		switch (eventId)
 		{
-			VirtualView.VisibleRegion = new MapSpan(new Location(mapRect.Center.Latitude, mapRect.Center.Longitude),
-				mapRect.Height, mapRect.Width);
+			case EventIdentifier.BoundsChanged:
+				var mapRect = JsonSerializer.Deserialize<Bounds>(eventMessage.Payload?.ToString() ?? "", jsonSerializerOptions);
+				if (mapRect?.Center is not null)
+				{
+					VirtualView.VisibleRegion = new MapSpan(new Location(mapRect.Center.Latitude, mapRect.Center.Longitude),
+						mapRect.Height, mapRect.Width);
+				}
+				break;
+			case EventIdentifier.MapClicked:
+				var clickedLocation = JsonSerializer.Deserialize<Location>(eventMessage.Payload?.ToString() ?? "",
+					jsonSerializerOptions);
+				if (clickedLocation is not null)
+				{
+					VirtualView.Clicked(clickedLocation);
+				}
+				break;
+
+			case EventIdentifier.InfoWindowClicked:
+				var clickedInfoWindowWebView = JsonSerializer.Deserialize<InfoWindow>(eventMessage.Payload?.ToString() ?? "",
+					jsonSerializerOptions);
+				var clickedInfoWindowWebViewId = clickedInfoWindowWebView?.InfoWindowMarkerId;
+
+				if (!string.IsNullOrEmpty(clickedInfoWindowWebViewId))
+				{
+					var clickedPin = VirtualView.Pins.SingleOrDefault(p => (p as Pin)?.Id.ToString().Equals(clickedInfoWindowWebViewId) ?? false);
+
+					clickedPin?.SendInfoWindowClick();
+				}
+				break;
+
+			case EventIdentifier.PinClicked:
+				var clickedPinWebView = JsonSerializer.Deserialize<Pin>(eventMessage.Payload?.ToString() ?? "", jsonSerializerOptions);
+				var clickedPinWebViewId = clickedPinWebView?.MarkerId?.ToString();
+
+				if (!string.IsNullOrEmpty(clickedPinWebViewId))
+				{
+					var clickedPin = VirtualView.Pins.SingleOrDefault(p => (p as Pin)?.Id.ToString().Equals(clickedPinWebViewId) ?? false);
+
+					clickedPin?.SendMarkerClick();
+				}
+				break;
 		}
+	}
+
+	class EventMessage
+	{
+		public string Id { get; set; } = string.Empty;
+
+		public string? Payload { get; set; }
+	}
+
+	enum EventIdentifier
+	{
+		Unknown,
+		InfoWindowClicked,
+		BoundsChanged,
+		MapClicked,
+		PinClicked,
 	}
 
 	class InfoWindow
