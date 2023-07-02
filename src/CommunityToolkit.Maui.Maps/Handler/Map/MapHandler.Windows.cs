@@ -21,7 +21,7 @@ public partial class MapHandlerWindows : MapHandler
 
 	readonly JsonSerializerOptions jsonSerializerOptions = new()
 	{
-		PropertyNameCaseInsensitive = true,
+		PropertyNameCaseInsensitive = true
 	};
 
 	/// <summary>
