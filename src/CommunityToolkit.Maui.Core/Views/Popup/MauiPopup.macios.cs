@@ -62,9 +62,11 @@ public class MauiPopup : UIViewController
 	/// <inheritdoc/>
 	public override void ViewWillTransitionToSize(CGSize toSize, IUIViewControllerTransitionCoordinator coordinator)
 	{
-		coordinator.AnimateAlongsideTransition((IUIViewControllerTransitionCoordinatorContext obj) => {
+		coordinator.AnimateAlongsideTransition((IUIViewControllerTransitionCoordinatorContext obj) =>
+		{
 			// Before screen rotate
-		}, (IUIViewControllerTransitionCoordinatorContext obj) => {
+		}, (IUIViewControllerTransitionCoordinatorContext obj) =>
+		{
 			// After screen rotate
 			if (VirtualView is not null)
 			{

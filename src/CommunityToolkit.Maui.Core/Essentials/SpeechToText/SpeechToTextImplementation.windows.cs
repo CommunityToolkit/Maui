@@ -30,7 +30,7 @@ public sealed partial class SpeechToTextImplementation
 		speechRecognitionEngine = null;
 		speechRecognizer = null;
 	}
-	
+
 	async Task<string> InternalListenAsync(CultureInfo culture,
 		IProgress<string>? recognitionResult,
 		CancellationToken cancellationToken)
