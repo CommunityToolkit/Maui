@@ -9,7 +9,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Windows.Devices.Geolocation;
 using IMap = Microsoft.Maui.Maps.IMap;
-using Map = Microsoft.Maui.Controls.Maps.Map;
 
 namespace CommunityToolkit.Maui.Maps.Handlers;
 
@@ -385,14 +384,24 @@ public partial class MapHandlerWindows : MapHandler
 
 	void WebViewWebMessageReceived(WebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
 	{
-		var eventMessage = JsonSerializer.Deserialize<EventMessage>(args.WebMessageAsJson, jsonSerializerOptions);
-
-		if (eventMessage is null)
+		// For some reason the web message is empty
+		if (string.IsNullOrEmpty(args.WebMessageAsJson))
 		{
 			return;
 		}
 
-		if (!Enum.TryParse<EventIdentifier>(eventMessage.Id, true, out var eventId))
+		var eventMessage = JsonSerializer.Deserialize<EventMessage>(args.WebMessageAsJson, jsonSerializerOptions);
+
+		// The web message (or it's ID) could not be deserialized to something we recognize
+		if (eventMessage is null || !Enum.TryParse<EventIdentifier>(eventMessage.Id, true, out var eventId))
+		{
+			return;
+		}
+
+		var payloadAsString = eventMessage.Payload?.ToString();
+
+		// The web message does not have a payload
+		if (string.IsNullOrWhiteSpace(payloadAsString))
 		{
 			return;
 		}
@@ -400,7 +409,7 @@ public partial class MapHandlerWindows : MapHandler
 		switch (eventId)
 		{
 			case EventIdentifier.BoundsChanged:
-				var mapRect = JsonSerializer.Deserialize<Bounds>(eventMessage.Payload?.ToString() ?? "", jsonSerializerOptions);
+				var mapRect = JsonSerializer.Deserialize<Bounds>(payloadAsString, jsonSerializerOptions);
 				if (mapRect?.Center is not null)
 				{
 					VirtualView.VisibleRegion = new MapSpan(new Location(mapRect.Center.Latitude, mapRect.Center.Longitude),
@@ -408,7 +417,7 @@ public partial class MapHandlerWindows : MapHandler
 				}
 				break;
 			case EventIdentifier.MapClicked:
-				var clickedLocation = JsonSerializer.Deserialize<Location>(eventMessage.Payload?.ToString() ?? "",
+				var clickedLocation = JsonSerializer.Deserialize<Location>(payloadAsString,
 					jsonSerializerOptions);
 				if (clickedLocation is not null)
 				{
@@ -417,7 +426,7 @@ public partial class MapHandlerWindows : MapHandler
 				break;
 
 			case EventIdentifier.InfoWindowClicked:
-				var clickedInfoWindowWebView = JsonSerializer.Deserialize<InfoWindow>(eventMessage.Payload?.ToString() ?? "",
+				var clickedInfoWindowWebView = JsonSerializer.Deserialize<InfoWindow>(payloadAsString,
 					jsonSerializerOptions);
 				var clickedInfoWindowWebViewId = clickedInfoWindowWebView?.InfoWindowMarkerId;
 
@@ -430,7 +439,7 @@ public partial class MapHandlerWindows : MapHandler
 				break;
 
 			case EventIdentifier.PinClicked:
-				var clickedPinWebView = JsonSerializer.Deserialize<Pin>(eventMessage.Payload?.ToString() ?? "", jsonSerializerOptions);
+				var clickedPinWebView = JsonSerializer.Deserialize<Pin>(payloadAsString, jsonSerializerOptions);
 				var clickedPinWebViewId = clickedPinWebView?.MarkerId?.ToString();
 
 				if (!string.IsNullOrEmpty(clickedPinWebViewId))
@@ -441,41 +450,5 @@ public partial class MapHandlerWindows : MapHandler
 				}
 				break;
 		}
-	}
-
-	class EventMessage
-	{
-		public string Id { get; set; } = string.Empty;
-
-		public object? Payload { get; set; }
-	}
-
-	enum EventIdentifier
-	{
-		Unknown,
-		InfoWindowClicked,
-		BoundsChanged,
-		MapClicked,
-		PinClicked,
-	}
-
-	class InfoWindow
-	{
-		public string InfoWindowMarkerId { get; set; } = string.Empty;
-	}
-
-	class Center
-	{
-		public double Latitude { get; set; }
-		public double Longitude { get; set; }
-		public int Altitude { get; set; }
-		public int AltitudeReference { get; set; }
-	}
-
-	class Bounds
-	{
-		public Center? Center { get; set; }
-		public double Width { get; set; }
-		public double Height { get; set; }
 	}
 }
