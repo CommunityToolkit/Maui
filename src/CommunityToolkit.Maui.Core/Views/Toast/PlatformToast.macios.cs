@@ -38,7 +38,8 @@ public class PlatformToast : Alert, IDisposable
 
 		messageLabel = new PaddedLabel(padding, padding, padding, padding)
 		{
-			Lines = new IntPtr(0)
+			Lines = new IntPtr(0),
+			AdjustsFontSizeToFitWidth = true
 		};
 
 		Message = message;
