@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CommunityToolkit.Maui.Behaviors;
-public partial class TouchBehavior
+public partial class TouchBehavior : IDisposable
 {
 	readonly NullReferenceException nre = new(nameof(Element));
 	internal void RaiseInteractionStatusChanged()
@@ -130,5 +131,33 @@ public partial class TouchBehavior
 		}
 
 		view.InputTransparent = IsAvailable;
+	}
+
+	/// <inheritdoc/>
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	bool isDisposed;
+
+	/// <summary>
+	/// Dispose the object.
+	/// </summary>
+	protected virtual void Dispose(bool disposing)
+	{
+		if (isDisposed)
+		{
+			return;
+		}
+
+		if (disposing)
+		{
+			// free managed resources
+			gestureManager.Dispose();
+		}
+
+		isDisposed = true;
 	}
 }
