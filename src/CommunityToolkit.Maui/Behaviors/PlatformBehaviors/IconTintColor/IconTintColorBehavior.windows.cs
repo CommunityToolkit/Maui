@@ -157,7 +157,7 @@ public partial class IconTintColorBehavior
 		// Workaround since the tinted image is added as a child to the current image and it's not possible to hide a parent without hiding its children using Visibility.Collapsed.
 		image.Width = image.Height = 0;
 
-		// Apparently requested size requires additonal offset to re-center tinted image.
+		// Apparently requested size requires additional offset to re-center tinted image.
 		var requiresAdditionalCenterOffset = element.WidthRequest != -1 || element.HeightRequest != -1;		
 		var offset = requiresAdditionalCenterOffset ? new Vector3(width * anchorPoint.X, height * anchorPoint.Y, 0f) : Vector3.Zero; 
 		
