@@ -114,4 +114,9 @@ public partial class MapsPinsPage : BasePage<MapsPinsViewModel>
 
 		PinsMap.Pins.Add(microsoftPin);
 	}
+
+	void PinsMap_MapClicked(object sender, MapClickedEventArgs e)
+	{
+		DisplayAlert("Map Clicked", $"Location {e.Location.Latitude}, {e.Location.Longitude}", "OK");
+	}
 }
