@@ -5,8 +5,9 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Essentials;
 
 public partial class BadgeViewModel : BaseViewModel
 {
-	int count;
 	readonly IBadge badge;
+
+	int count;
 
 	public BadgeViewModel(IBadge badge)
 	{
