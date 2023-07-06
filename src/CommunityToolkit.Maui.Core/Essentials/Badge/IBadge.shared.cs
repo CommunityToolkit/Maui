@@ -9,5 +9,5 @@ public interface IBadge
 	/// Set the badge count
 	/// </summary>
 	/// <param name="count">Badge count</param>
-    void SetCount(int count);
+	void SetCount(int count);
 }

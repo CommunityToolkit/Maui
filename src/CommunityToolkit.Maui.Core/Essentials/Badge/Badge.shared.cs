@@ -3,18 +3,18 @@
 /// <inheritdoc cref="IBadge"/>
 public static class Badge
 {
-    static IBadge? defaultImplementation;
+	static IBadge? defaultImplementation;
 
-    /// <inheritdoc cref="IBadge.SetCount" />
+	/// <inheritdoc cref="IBadge.SetCount" />
 	public static void SetCount(int count)
-    {
-        Default.SetCount(count);
-    }
+	{
+		Default.SetCount(count);
+	}
 
-    /// <inheritdoc cref="IBadge" />
+	/// <inheritdoc cref="IBadge" />
 	public static IBadge Default =>
-        defaultImplementation ??= new BadgeImplementation();
+		defaultImplementation ??= new BadgeImplementation();
 
-    internal static void SetDefault(IBadge implementation) =>
-        defaultImplementation = implementation;
+	internal static void SetDefault(IBadge implementation) =>
+		defaultImplementation = implementation;
 }

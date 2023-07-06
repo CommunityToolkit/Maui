@@ -45,7 +45,7 @@ class DefaultBadgeProvider : IBadgeProvider
 			Debug.WriteLine("(DEFAULT) unable to set badge: " + ex.Message);
 		}
 	}
-	
+
 
 	bool IsSupported()
 	{

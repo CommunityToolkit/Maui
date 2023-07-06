@@ -12,14 +12,14 @@ public partial class BadgeViewModel : BaseViewModel
 	{
 		this.badge = badge;
 	}
-	
+
 	[RelayCommand]
 	void Increment()
 	{
 		count++;
 		badge.SetCount(count);
 	}
-	
+
 	[RelayCommand]
 	void Decrement()
 	{

@@ -20,7 +20,7 @@ public static class BadgeFactory
 	{
 		providers[launcherType] = provider;
 	}
-	
+
 	/// <summary>
 	/// Get badge provider for current launcher
 	/// </summary>
@@ -41,7 +41,7 @@ public static class BadgeFactory
 	{
 		var intent = new Intent(Intent.ActionMain);
 		intent.AddCategory(Intent.CategoryHome);
-		using var resolveInfo = OperatingSystem.IsAndroidVersionAtLeast(33) ? 
+		using var resolveInfo = OperatingSystem.IsAndroidVersionAtLeast(33) ?
 			Application.Context.PackageManager?.ResolveActivity(intent, PackageManager.ResolveInfoFlags.Of(0)) :
 			Application.Context.PackageManager?.ResolveActivity(intent, PackageInfoFlags.MatchDefaultOnly);
 
