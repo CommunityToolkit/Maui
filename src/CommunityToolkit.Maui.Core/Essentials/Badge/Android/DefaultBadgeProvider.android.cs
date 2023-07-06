@@ -46,14 +46,14 @@ class DefaultBadgeProvider : IBadgeProvider
 		}
 	}
 
-
-	bool IsSupported()
+	static bool IsSupported()
 	{
 		var intent = new Intent(intentAction);
 		var packageManager = Application.Context.PackageManager;
-		var receivers = OperatingSystem.IsAndroidVersionAtLeast(33) ?
-			packageManager?.QueryBroadcastReceivers(intent, PackageManager.ResolveInfoFlags.Of(0)) :
-			packageManager?.QueryBroadcastReceivers(intent, 0);
-		return receivers is { Count: > 0 };
+		var receivers = OperatingSystem.IsAndroidVersionAtLeast(33)
+						? packageManager?.QueryBroadcastReceivers(intent, PackageManager.ResolveInfoFlags.Of(0))
+						: packageManager?.QueryBroadcastReceivers(intent, 0);
+
+		return receivers?.Count > 0 ;
 	}
 }
