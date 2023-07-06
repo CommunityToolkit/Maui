@@ -60,7 +60,7 @@ class SamsungBadgeProvider : IBadgeProvider
 		}
 		finally
 		{
-			if (cursor is { IsClosed: false })
+			if (cursor?.IsClosed is false)
 			{
 				cursor.Close();
 			}
