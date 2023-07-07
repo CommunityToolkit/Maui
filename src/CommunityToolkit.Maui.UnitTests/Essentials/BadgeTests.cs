@@ -17,9 +17,16 @@ public class BadgeTests
 	}
 
 	[Fact]
+	public void GetBadgeFailsOnNet()
+	{
+		Badge.SetDefault(new BadgeImplementation());
+		Assert.Throws<NotSupportedException>(() => Badge.GetCount());
+	}
+
+	[Fact]
 	public void SetBadgeFailsOnNet()
 	{
 		Badge.SetDefault(new BadgeImplementation());
-		Assert.Throws<NotImplementedException>(() => Badge.SetCount(1));
+		Assert.Throws<NotSupportedException>(() => Badge.SetCount(1));
 	}
 }
