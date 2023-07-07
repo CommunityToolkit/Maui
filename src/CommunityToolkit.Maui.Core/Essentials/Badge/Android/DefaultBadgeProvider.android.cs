@@ -23,17 +23,20 @@ class DefaultBadgeProvider : IBadgeProvider
 		var packageName = Application.Context.PackageName;
 		if (packageName is null)
 		{
+			Debug.WriteLine("Unable to get package name");
 			return;
 		}
 
 		var component = Application.Context.PackageManager?.GetLaunchIntentForPackage(packageName)?.Component;
 		if (component is null)
 		{
+			Debug.WriteLine($"Unable to get launch intent component for package {packageName}");
 			return;
 		}
 
-		if (!IsSupported())
+		if (!CanSetBadgeCounter())
 		{
+			Debug.WriteLine("Current launcher doesn't support badge counter");
 			return;
 		}
 
@@ -51,8 +54,7 @@ class DefaultBadgeProvider : IBadgeProvider
 		}
 	}
 
-
-	bool IsSupported()
+	static bool CanSetBadgeCounter()
 	{
 		var intent = new Intent(intentAction);
 		var packageManager = Application.Context.PackageManager;
