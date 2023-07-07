@@ -11,6 +11,7 @@ public partial class BadgeViewModel : BaseViewModel
 	public BadgeViewModel(IBadge badge)
 	{
 		this.badge = badge;
+		count = badge.GetCount();
 	}
 
 	[RelayCommand]

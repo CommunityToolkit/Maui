@@ -5,6 +5,12 @@ public static class Badge
 {
 	static IBadge? defaultImplementation;
 
+	/// <inheritdoc cref="IBadge.GetCount" />
+	public static int GetCount()
+	{
+		return Default.GetCount();
+	}
+
 	/// <inheritdoc cref="IBadge.SetCount" />
 	public static void SetCount(int count)
 	{

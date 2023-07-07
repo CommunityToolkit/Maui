@@ -11,11 +11,13 @@
     <Grid
         RowDefinitions="*, *"
         ColumnDefinitions="*, *"
+        ColumnSpacing="12"
+        RowSpacing="12"
         VerticalOptions="Center">
 
         <Label
             Grid.ColumnSpan="2"
-            Text="Badge"
+            Text="Toggle Home Screen Icon Badge Count"
             FontSize="18"
             VerticalOptions="End"
             HorizontalOptions="Center" />
