@@ -17,6 +17,7 @@ public partial class TouchBehavior
 
 	Storyboard? pointerUpStoryboard;
 
+	/// <inheritdoc/>
 	protected override void OnAttachedTo(VisualElement bindable, FrameworkElement platformView)
 	{
 		Element = bindable;
@@ -66,6 +67,7 @@ public partial class TouchBehavior
 		}
 	}
 
+	/// <inheritdoc/>
 	protected override void OnDetachedFrom(VisualElement bindable, FrameworkElement platformView)
 	{
 		if (IsDisabled)
