@@ -13,7 +13,7 @@ public partial class PopupHandler : Microsoft.Maui.Handlers.ElementHandler<IPopu
 	/// <param name="result">The result that should return from this Popup.</param>
 	public static void MapOnClosed(PopupHandler handler, IPopup view, object? result)
 	{
-		view.HandlerCompleteTCS.TrySetResult();
+		throw new NotSupportedException();
 	}
 
 	/// <summary>
@@ -24,6 +24,7 @@ public partial class PopupHandler : Microsoft.Maui.Handlers.ElementHandler<IPopu
 	/// <param name="result">We don't need to provide the result parameter here.</param>
 	public static void MapOnOpened(PopupHandler handler, IPopup view, object? result)
 	{
+		throw new NotSupportedException();
 	}
 
 	/// <summary>
@@ -34,6 +35,7 @@ public partial class PopupHandler : Microsoft.Maui.Handlers.ElementHandler<IPopu
 	/// <param name="result">The result that should return from this Popup.</param>
 	public static void MapOnDismissedByTappingOutsideOfPopup(PopupHandler handler, IPopup view, object? result)
 	{
+		throw new NotSupportedException();
 	}
 
 	/// <summary>
@@ -43,6 +45,7 @@ public partial class PopupHandler : Microsoft.Maui.Handlers.ElementHandler<IPopu
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapAnchor(PopupHandler handler, IPopup view)
 	{
+		throw new NotSupportedException();
 	}
 
 	/// <summary>
@@ -52,6 +55,7 @@ public partial class PopupHandler : Microsoft.Maui.Handlers.ElementHandler<IPopu
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapCanBeDismissedByTappingOutsideOfPopup(PopupHandler handler, IPopup view)
 	{
+		throw new NotSupportedException();
 	}
 
 	/// <summary>
@@ -61,6 +65,7 @@ public partial class PopupHandler : Microsoft.Maui.Handlers.ElementHandler<IPopu
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapColor(PopupHandler handler, IPopup view)
 	{
+		throw new NotSupportedException();
 	}
 
 	/// <summary>
@@ -70,5 +75,6 @@ public partial class PopupHandler : Microsoft.Maui.Handlers.ElementHandler<IPopu
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapSize(PopupHandler handler, IPopup view)
 	{
+		throw new NotSupportedException();
 	}
 }
