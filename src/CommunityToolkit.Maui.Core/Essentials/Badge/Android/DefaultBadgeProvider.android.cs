@@ -54,7 +54,7 @@ class DefaultBadgeProvider : IBadgeProvider
 		}
 	}
 
-	static bool IsSupported()
+	static bool CanSetBadgeCounter()
 	{
 		var intent = new Intent(intentAction);
 		var packageManager = Application.Context.PackageManager;
