@@ -9,6 +9,7 @@ class SamsungBadgeProvider : IBadgeProvider
 {
 	const string contentStringUri = "content://com.sec.badge/apps?notify=true";
 	static readonly string[] contentProjection = { "_id", "class" };
+	static readonly string[] packageNameArray = new string[1];
 
 	public void SetCount(int count)
 	{
@@ -34,7 +35,8 @@ class SamsungBadgeProvider : IBadgeProvider
 		ICursor? cursor = null;
 		try
 		{
-			cursor = contentResolver?.Query(contentUri, contentProjection, "package=?", new[] { packageName }, null);
+			packageNameArray[0] = packageName;
+			cursor = contentResolver?.Query(contentUri, contentProjection, "package=?", packageNameArray, null);
 			if (cursor is not null)
 			{
 				var entryActivityExist = false;
@@ -78,5 +80,10 @@ class SamsungBadgeProvider : IBadgeProvider
 
 		contentValues.Put("badgecount", badgeCount);
 		return contentValues;
+	}
+
+	public int GetCount()
+	{
+		return 0;
 	}
 }

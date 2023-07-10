@@ -8,6 +8,11 @@ class DefaultBadgeProvider : IBadgeProvider
 {
 	const string intentAction = "android.intent.action.BADGE_COUNT_UPDATE";
 
+	public int GetCount()
+	{
+		return 0;
+	}
+
 	public void SetCount(int count)
 	{
 		if (count < 0)
@@ -18,17 +23,20 @@ class DefaultBadgeProvider : IBadgeProvider
 		var packageName = Application.Context.PackageName;
 		if (packageName is null)
 		{
+			Debug.WriteLine("Unable to get package name");
 			return;
 		}
 
 		var component = Application.Context.PackageManager?.GetLaunchIntentForPackage(packageName)?.Component;
 		if (component is null)
 		{
+			Debug.WriteLine($"Unable to get launch intent component for package {packageName}");
 			return;
 		}
 
-		if (!IsSupported())
+		if (!CanSetBadgeCounter())
 		{
+			Debug.WriteLine("Current launcher doesn't support badge counter");
 			return;
 		}
 

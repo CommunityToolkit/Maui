@@ -25,4 +25,11 @@ public class BadgeImplementation : IBadge
 			badgeUpdater.Update(badge);
 		}
 	}
+
+	/// <inheritdoc />
+	public int GetCount()
+	{
+		var badgeUpdater = BadgeUpdateManager.CreateBadgeUpdaterForApplication();
+		return 0;
+	}
 }

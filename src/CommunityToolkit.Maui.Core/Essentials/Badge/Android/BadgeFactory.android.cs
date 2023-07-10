@@ -16,7 +16,7 @@ public static class BadgeFactory
 	/// </summary>
 	/// <param name="launcherType">Launcher type</param>
 	/// <param name="provider">Provider implementation</param>
-	public static void SetProvider(string launcherType, IBadgeProvider provider)
+	public static void SetBadgeProvider(string launcherType, IBadgeProvider provider)
 	{
 		providers[launcherType] = provider;
 	}
@@ -25,12 +25,12 @@ public static class BadgeFactory
 	/// Get badge provider for current launcher
 	/// </summary>
 	/// <returns>Provider implementation</returns>
-	public static IBadgeProvider? GetBadgeProvider()
+	public static IBadgeProvider GetBadgeProvider()
 	{
 		var launcherType = GetLauncherType();
 		if (launcherType is null)
 		{
-			return null;
+			return defaultBadgeProvider;
 		}
 
 		providers.TryGetValue(launcherType, out var provider);

@@ -12,8 +12,8 @@ public class MainApplication : MauiApplication
 		: base(handle, ownership)
 	{
 		var samsungProvider = new SamsungBadgeProvider();
-		BadgeFactory.SetProvider("com.sec.android.app.launcher", samsungProvider);
-		BadgeFactory.SetProvider("com.sec.android.app.twlauncher", samsungProvider);
+		BadgeFactory.SetBadgeProvider("com.sec.android.app.launcher", samsungProvider);
+		BadgeFactory.SetBadgeProvider("com.sec.android.app.twlauncher", samsungProvider);
 	}
 
 	protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();

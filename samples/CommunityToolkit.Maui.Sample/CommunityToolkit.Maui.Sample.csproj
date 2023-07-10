@@ -29,7 +29,7 @@
     <!--<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles</CompilerGeneratedFilesOutputPath>-->
 
-    <!-- Uncomment these line if installation fails -->
+    <!-- Uncomment these lines if Android App installation fails -->
     <!--<EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>-->
   </PropertyGroup>
 

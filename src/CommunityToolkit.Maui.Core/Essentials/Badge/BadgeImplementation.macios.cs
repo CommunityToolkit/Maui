@@ -14,4 +14,13 @@ public class BadgeImplementation : IBadge
 		});
 		UIApplication.SharedApplication.ApplicationIconBadgeNumber = count;
 	}
+
+	/// <inheritdoc />
+	public int GetCount()
+	{
+		UNUserNotificationCenter.Current.RequestAuthorization(UNAuthorizationOptions.Badge, (r, e) =>
+		{
+		});
+		return (int)UIApplication.SharedApplication.ApplicationIconBadgeNumber;
+	}
 }
