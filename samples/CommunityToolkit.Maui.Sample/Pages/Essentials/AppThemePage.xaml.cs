@@ -11,8 +11,11 @@ public partial class AppThemePage : BasePage<AppThemeViewModel>
 
 	void Switch_Toggled(object sender, ToggledEventArgs e)
 	{
-		Application.Current!.UserAppTheme =
-			Application.Current.UserAppTheme == AppTheme.Dark
-			? AppTheme.Light : AppTheme.Dark;
+		if (Application.Current is not null)
+		{
+			Application.Current.UserAppTheme =
+				Application.Current.RequestedTheme == AppTheme.Dark
+				? AppTheme.Light : AppTheme.Dark;
+		}
 	}
 }

@@ -15,13 +15,13 @@
         <Style x:Key="Headline" TargetType="Label">
             <Setter Property="FontFamily" Value="Segoe UI" />
             <Setter Property="FontSize" Value="10" />
-            <Setter Property="TextColor" Value="{mct:AppTheme LabelTextColor}" />
+            <Setter Property="TextColor" Value="{mct:ThemeResource LabelTextColor}" />
         </Style>
     </pages:BasePage.Resources>
 
     <VerticalStackLayout Spacing="10">
         <HorizontalStackLayout Spacing="5" HorizontalOptions="Center" Margin="0,0,0,20">
-            <Switch Toggled="Switch_Toggled" />
+            <Switch x:Name="themeToggle" Toggled="Switch_Toggled" />
             <Label Text="Toggle Dark/Light Theme" VerticalOptions="Center" />
         </HorizontalStackLayout>
         <Label 
@@ -29,7 +29,7 @@
             FontSize="20"
             VerticalOptions="Center" 
             HorizontalOptions="Center"
-            TextColor="{mct:AppTheme LabelTextColor}"/>
+            TextColor="{mct:ThemeResource LabelTextColor}"/>
 
         <Label 
             Text="The below image comes from the resource dictionary!"
@@ -41,7 +41,7 @@
             HeightRequest="100"
             VerticalOptions="Center" 
             HorizontalOptions="Center"
-            Source="{mct:AppTheme ImageSource}"/>
+            Source="{mct:ThemeResource ImageSource}"/>
 
         <Label 
             Text="This color comes from a style!"
