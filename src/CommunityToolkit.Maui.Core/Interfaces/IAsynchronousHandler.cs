@@ -10,4 +10,3 @@ public interface IAsynchronousHandler
 	/// </summary>
 	TaskCompletionSource HandlerCompleteTCS { get; }
 }
-
