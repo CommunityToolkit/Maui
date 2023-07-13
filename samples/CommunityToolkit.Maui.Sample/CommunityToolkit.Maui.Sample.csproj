@@ -22,14 +22,14 @@
     <ApplicationVersion>1</ApplicationVersion>
 
     <!--
-    Uncomment these lines if you need to debug the SG code
+    Uncomment the line below if you need to debug the SG code
     If you see any LongPath issue on Windows, check this doc
     https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd#enable-long-paths-in-windows-10-version-1607-and-later
     -->
     <!--<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles</CompilerGeneratedFilesOutputPath>-->
 
-    <!-- Uncomment these lines if Android App installation fails -->
+    <!-- Uncomment the line below if Android App installation fails -->
     <!--<EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>-->
   </PropertyGroup>
 
