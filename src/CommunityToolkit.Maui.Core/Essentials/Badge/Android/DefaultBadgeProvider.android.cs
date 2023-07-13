@@ -50,7 +50,7 @@ class DefaultBadgeProvider : IBadgeProvider
 		}
 		catch (Exception ex)
 		{
-			Debug.WriteLine("(DEFAULT) unable to set badge: " + ex.Message);
+			Debug.WriteLine($"{nameof(DefaultBadgeProvider)} unable to set badge count: " + ex.Message);
 		}
 	}
 
@@ -62,6 +62,6 @@ class DefaultBadgeProvider : IBadgeProvider
 						? packageManager?.QueryBroadcastReceivers(intent, PackageManager.ResolveInfoFlags.Of(0))
 						: packageManager?.QueryBroadcastReceivers(intent, 0);
 
-		return receivers?.Count > 0 ;
+		return receivers?.Count > 0;
 	}
 }
