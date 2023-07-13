@@ -7,28 +7,21 @@ public partial class BadgeViewModel : BaseViewModel
 {
 	readonly IBadge badge;
 
-	int count;
-
 	public BadgeViewModel(IBadge badge)
 	{
 		this.badge = badge;
-		count = badge.GetCount();
 	}
 
 	[RelayCommand]
 	void Increment()
 	{
-		count++;
-		badge.SetCount(count);
+		badge.SetCount(badge.GetCount() + 1);
 	}
 
 	[RelayCommand]
 	void Decrement()
 	{
-		if (count > 0)
-		{
-			count--;
-			badge.SetCount(count);
-		}
+		// Do not allow the badge count to go negative
+		badge.SetCount(Math.Max(badge.GetCount() - 1, 0));
 	}
 }
