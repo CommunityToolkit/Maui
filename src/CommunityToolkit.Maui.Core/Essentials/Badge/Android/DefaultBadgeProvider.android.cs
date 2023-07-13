@@ -17,7 +17,7 @@ class DefaultBadgeProvider : IBadgeProvider
 	{
 		if (count < 0)
 		{
-			return;
+			throw new ArgumentOutOfRangeException(nameof(count), $"Badge count cannot be less than 0");
 		}
 
 		var packageName = Application.Context.PackageName;
