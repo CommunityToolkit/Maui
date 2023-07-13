@@ -9,20 +9,28 @@ public class BadgeImplementation : IBadge
 	/// <inheritdoc />
 	public void SetCount(int count)
 	{
-		UNUserNotificationCenter.Current.RequestAuthorization(UNAuthorizationOptions.Badge, (r, e) =>
+		UNUserNotificationCenter.Current.RequestAuthorization(UNAuthorizationOptions.Badge, (r, error) =>
 		{
-			Debug.WriteLine($"Error Requesting Authorization to Set Badge Count: {e.Description}");
+			if (error is not null)
+			{
+				Debug.WriteLine($"Error Requesting Authorization to Set Badge Count: {error.Description}");
+			}
 		});
+
 		UIApplication.SharedApplication.ApplicationIconBadgeNumber = count;
 	}
 
 	/// <inheritdoc />
 	public int GetCount()
 	{
-		UNUserNotificationCenter.Current.RequestAuthorization(UNAuthorizationOptions.Badge, (r, e) =>
+		UNUserNotificationCenter.Current.RequestAuthorization(UNAuthorizationOptions.Badge, (r, error) =>
 		{
-			Debug.WriteLine($"Error Requesting Authorization to Get Badge Count: {e.Description}");
+			if (error is not null)
+			{
+				Debug.WriteLine($"Error Requesting Authorization to Get Badge Count: {error.Description}");
+			}
 		});
+
 		return (int)UIApplication.SharedApplication.ApplicationIconBadgeNumber;
 	}
 }
