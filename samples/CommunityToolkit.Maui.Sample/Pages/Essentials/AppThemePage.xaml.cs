@@ -13,9 +13,9 @@ public partial class AppThemePage : BasePage<AppThemeViewModel>
 	{
 		if (Application.Current is not null)
 		{
-			Application.Current.UserAppTheme =
-				Application.Current.RequestedTheme == AppTheme.Dark
-				? AppTheme.Light : AppTheme.Dark;
+			Application.Current.UserAppTheme = Application.Current.RequestedTheme is AppTheme.Dark
+												? AppTheme.Light
+												: AppTheme.Dark;
 		}
 	}
 }
