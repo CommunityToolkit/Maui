@@ -10,7 +10,7 @@ public class BadgeImplementation : IBadge
 	public void SetCount(uint count)
 	{
 		var appId = Application.Current.ApplicationInfo.ApplicationId;
-		if (count <= 0)
+		if (count is 0)
 		{
 			BadgeControl.Remove(appId);
 			return;
