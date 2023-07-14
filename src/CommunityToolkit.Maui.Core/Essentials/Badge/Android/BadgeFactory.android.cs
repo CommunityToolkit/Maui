@@ -39,7 +39,7 @@ public static class BadgeFactory
 
 	static string? GetLauncherType()
 	{
-		var intent = new Intent(Intent.ActionMain);
+		using var intent = new Intent(Intent.ActionMain);
 		intent.AddCategory(Intent.CategoryHome);
 		using var resolveInfo = OperatingSystem.IsAndroidVersionAtLeast(33) ?
 			Application.Context.PackageManager?.ResolveActivity(intent, PackageManager.ResolveInfoFlags.Of(0)) :
