@@ -46,7 +46,7 @@ class DefaultBadgeProvider : IBadgeProvider
 
 	static bool CanSetBadgeCounter()
 	{
-		var intent = new Intent(intentAction);
+		using var intent = new Intent(intentAction);
 		var packageManager = Application.Context.PackageManager;
 		var receivers = OperatingSystem.IsAndroidVersionAtLeast(33)
 						? packageManager?.QueryBroadcastReceivers(intent, PackageManager.ResolveInfoFlags.Of(0))
