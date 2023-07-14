@@ -10,7 +10,7 @@ public class BadgeImplementation : IBadge
 	public void SetCount(uint count)
 	{
 		var badgeUpdater = BadgeUpdateManager.CreateBadgeUpdaterForApplication();
-		if (count <= 0)
+		if (count is 0)
 		{
 			badgeUpdater.Clear();
 		}
