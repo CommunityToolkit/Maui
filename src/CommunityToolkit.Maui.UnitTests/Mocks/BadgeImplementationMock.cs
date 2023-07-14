@@ -4,12 +4,7 @@ namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
 class BadgeImplementationMock : IBadge
 {
-	public int GetCount()
-	{
-		throw new NotImplementedException();
-	}
-
-	public void SetCount(int count)
+	public void SetCount(uint count)
 	{
 		throw new NotImplementedException();
 	}

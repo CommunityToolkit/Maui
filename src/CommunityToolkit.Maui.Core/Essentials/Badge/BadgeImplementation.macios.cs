@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.ApplicationModel;
 public class BadgeImplementation : IBadge
 {
 	/// <inheritdoc />
-	public void SetCount(int count)
+	public void SetCount(uint count)
 	{
 		UNUserNotificationCenter.Current.RequestAuthorization(UNAuthorizationOptions.Badge, (r, error) =>
 		{
@@ -17,20 +17,6 @@ public class BadgeImplementation : IBadge
 			}
 		});
 
-		UIApplication.SharedApplication.ApplicationIconBadgeNumber = count;
-	}
-
-	/// <inheritdoc />
-	public int GetCount()
-	{
-		UNUserNotificationCenter.Current.RequestAuthorization(UNAuthorizationOptions.Badge, (r, error) =>
-		{
-			if (error is not null)
-			{
-				Debug.WriteLine($"Error Requesting Authorization to Get Badge Count: {error.Description}");
-			}
-		});
-
-		return (int)UIApplication.SharedApplication.ApplicationIconBadgeNumber;
+		UIApplication.SharedApplication.ApplicationIconBadgeNumber = (int)count;
 	}
 }

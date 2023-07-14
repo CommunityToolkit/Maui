@@ -8,14 +8,8 @@ public static class Badge
 	/// <inheritdoc cref="IBadge" />
 	public static IBadge Default => defaultImplementationHolder.Value;
 
-	/// <inheritdoc cref="IBadge.GetCount" />
-	public static int GetCount()
-	{
-		return Default.GetCount();
-	}
-
 	/// <inheritdoc cref="IBadge.SetCount" />
-	public static void SetCount(int count)
+	public static void SetCount(uint count)
 	{
 		Default.SetCount(count);
 	}

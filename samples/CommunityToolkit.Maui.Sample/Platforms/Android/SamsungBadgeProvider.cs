@@ -11,7 +11,7 @@ class SamsungBadgeProvider : IBadgeProvider
 	static readonly string[] contentProjection = { "_id", "class" };
 	static readonly string[] packageNameArray = new string[1];
 
-	public void SetCount(int count)
+	public void SetCount(uint count)
 	{
 		var contentUri = Android.Net.Uri.Parse(contentStringUri);
 		if (contentUri is null)
@@ -69,7 +69,7 @@ class SamsungBadgeProvider : IBadgeProvider
 		}
 	}
 
-	static ContentValues GetContentValues(ComponentName componentName, int badgeCount, bool isInsert)
+	static ContentValues GetContentValues(ComponentName componentName, uint badgeCount, bool isInsert)
 	{
 		var contentValues = new ContentValues();
 		if (isInsert)
@@ -80,10 +80,5 @@ class SamsungBadgeProvider : IBadgeProvider
 
 		contentValues.Put("badgecount", badgeCount);
 		return contentValues;
-	}
-
-	public int GetCount()
-	{
-		return 0;
 	}
 }

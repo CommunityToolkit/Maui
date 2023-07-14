@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.ApplicationModel;
 public class BadgeImplementation : IBadge
 {
 	/// <inheritdoc />
-	public void SetCount(int count)
+	public void SetCount(uint count)
 	{
 		var appId = Application.Current.ApplicationInfo.ApplicationId;
 		if (count <= 0)
@@ -26,21 +26,6 @@ public class BadgeImplementation : IBadge
 		{
 			badge.Count = count;
 			BadgeControl.Update(badge);
-		}
-	}
-
-	/// <inheritdoc />
-	public int GetCount()
-	{
-		var appId = Application.Current.ApplicationInfo.ApplicationId;
-		var badge = BadgeControl.Find(appId);
-		if (badge is null)
-		{
-			return 0;
-		}
-		else
-		{
-			return badge.Count;
 		}
 	}
 }

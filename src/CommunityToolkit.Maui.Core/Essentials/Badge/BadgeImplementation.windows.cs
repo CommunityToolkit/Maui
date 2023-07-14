@@ -7,7 +7,7 @@ using Windows.UI.Notifications;
 public class BadgeImplementation : IBadge
 {
 	/// <inheritdoc />
-	public void SetCount(int count)
+	public void SetCount(uint count)
 	{
 		var badgeUpdater = BadgeUpdateManager.CreateBadgeUpdaterForApplication();
 		if (count <= 0)
@@ -24,12 +24,5 @@ public class BadgeImplementation : IBadge
 			var badge = new BadgeNotification(badgeXml);
 			badgeUpdater.Update(badge);
 		}
-	}
-
-	/// <inheritdoc />
-	public int GetCount()
-	{
-		var badgeUpdater = BadgeUpdateManager.CreateBadgeUpdaterForApplication();
-		return 0;
 	}
 }

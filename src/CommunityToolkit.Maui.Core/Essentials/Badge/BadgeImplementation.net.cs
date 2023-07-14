@@ -4,13 +4,7 @@ namespace CommunityToolkit.Maui.ApplicationModel;
 public class BadgeImplementation : IBadge
 {
 	/// <inheritdoc />
-	public void SetCount(int count)
-	{
-		throw new NotSupportedException($"{nameof(IBadge)} requires a platform-specific implementation of .NET");
-	}
-
-	/// <inheritdoc />
-	public int GetCount()
+	public void SetCount(uint count)
 	{
 		throw new NotSupportedException($"{nameof(IBadge)} requires a platform-specific implementation of .NET");
 	}
