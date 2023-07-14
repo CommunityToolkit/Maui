@@ -19,11 +19,12 @@
         </Style>
     </pages:BasePage.Resources>
 
-    <VerticalStackLayout Spacing="10">
-        <HorizontalStackLayout Spacing="5" HorizontalOptions="Center" Margin="0,0,0,20">
-            <Switch x:Name="themeToggle" Toggled="Switch_Toggled" />
-            <Label Text="Toggle Dark/Light Theme" VerticalOptions="Center" />
-        </HorizontalStackLayout>
+    <VerticalStackLayout Spacing="14">
+
+        <Label Text="AppTheme provides extension methods and markup extensions that make it easy to assign Light Theme, Dark Theme and Default Theme"
+               HorizontalTextAlignment="Center"
+               VerticalOptions="Center"/>
+
         <Label 
             Text="This color comes from the resource dictionary!"
             FontSize="20"
@@ -48,5 +49,10 @@
             VerticalOptions="Center" 
             HorizontalOptions="Center"
             Style="{StaticResource Headline}"/>
+
+        <HorizontalStackLayout Spacing="5" HorizontalOptions="Center" Margin="0,0,0,20">
+            <Switch x:Name="themeToggle" Toggled="Switch_Toggled" />
+            <Label Text="Toggle Dark/Light Theme" VerticalOptions="Center" />
+        </HorizontalStackLayout>
     </VerticalStackLayout>
 </pages:BasePage>
