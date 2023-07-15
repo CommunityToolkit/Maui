@@ -2,6 +2,7 @@
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Primitives;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -103,6 +104,27 @@ public class MediaElement : View, IMediaElement
 
 	Microsoft.Maui.Dispatching.IDispatcherTimer? timer;
 
+#if ANDROID
+	/// <inheritdoc cref="IMediaElement.ControllerVisibilityChanged"/>
+	public event EventHandler<MediaControllerVisibilityChangedEventArgs> ControllerVisibilityChanged
+	{
+		add => eventManager.AddEventHandler(value);
+		remove => eventManager.RemoveEventHandler(value);
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="mediaControllerVisibilityChangedEventArgs"></param>
+	public void ControllerVisibility(MediaControllerVisibilityChangedEventArgs mediaControllerVisibilityChangedEventArgs)
+	{
+		OnControllerVisibilityChanged(mediaControllerVisibilityChangedEventArgs);
+	}
+
+	void OnControllerVisibilityChanged(MediaControllerVisibilityChangedEventArgs mediaControllerVisibilityChangedEventArgs) =>
+	eventManager.HandleEvent(this, mediaControllerVisibilityChangedEventArgs, nameof(ControllerVisibilityChanged));
+
+#endif
 	/// <inheritdoc cref="IMediaElement.MediaEnded"/>
 	public event EventHandler MediaEnded
 	{

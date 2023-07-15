@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Core;
@@ -96,6 +97,15 @@ public interface IMediaElement : IView
 	/// </summary>
 	event EventHandler<MediaPositionChangedEventArgs> PositionChanged;
 
+#if ANDROID
+	/// <summary>
+	/// Occurs when the <see cref="Visibility"/> changes;
+	/// </summary>
+	event EventHandler<MediaControllerVisibilityChangedEventArgs> ControllerVisibilityChanged;
+
+	
+	internal void ControllerVisibility(MediaControllerVisibilityChangedEventArgs mediaControllerVisibilityChangedEventArgs);
+#endif
 	/// <summary>
 	/// Occurs when the media has ended playing successfully.
 	/// </summary>

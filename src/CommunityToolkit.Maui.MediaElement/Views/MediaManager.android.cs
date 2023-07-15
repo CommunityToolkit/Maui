@@ -8,6 +8,7 @@ using Com.Google.Android.Exoplayer2.Trackselection;
 using Com.Google.Android.Exoplayer2.UI;
 using Com.Google.Android.Exoplayer2.Video;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 
@@ -41,7 +42,29 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			LayoutParameters = new RelativeLayout.LayoutParams(Android.Views.ViewGroup.LayoutParams.MatchParent, Android.Views.ViewGroup.LayoutParams.MatchParent),
 		};
 
+		PlayerView.ControllerVisibility += PlayerView_ControllerVisibility;
 		return (Player, PlayerView);
+	}
+
+	void PlayerView_ControllerVisibility(object? sender, StyledPlayerView.ControllerVisibilityEventArgs e)
+	{
+		Visibility visibility = Visibility.Collapsed;
+		if(e.Visibility == 0)
+		{
+			visibility = Visibility.Visible;
+		}
+		else if(e.Visibility == 1)
+		{
+			visibility = Visibility.Hidden;
+
+		}
+		else if (e.Visibility == 2)
+		{
+			visibility = Visibility.Collapsed;
+
+		}
+
+		MediaElement.ControllerVisibility(new MediaControllerVisibilityChangedEventArgs(visibility));
 	}
 
 	/// <summary>
