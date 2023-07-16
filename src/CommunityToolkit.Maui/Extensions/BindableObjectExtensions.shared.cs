@@ -6,20 +6,20 @@
 public static class BindableObjectExtensions
 {
 	/// <summary>
-	/// Sets the <see cref="AppThemeColor"/> to the provided <see cref="BindableProperty"/> of the given <see cref="BindableObject"/>.
+	/// Sets the <see cref="ThemeColor"/> to the provided <see cref="BindableProperty"/> of the given <see cref="BindableObject"/>.
 	/// </summary>
 	/// <param name="self">The <see cref="BindableObject"/> on which the <paramref name="appThemeColor"/> will be applied to the provided property in <paramref name="targetProperty"/>.</param>
 	/// <param name="targetProperty">The <see cref="BindableProperty"/> on which to set the <paramref name="appThemeColor"/>.</param>
-	/// <param name="appThemeColor">The <see cref="AppThemeColor"/> to apply to <paramref name="targetProperty"/>.</param>
-	public static void SetAppThemeColor(this BindableObject self, BindableProperty targetProperty, AppThemeColor appThemeColor) =>
+	/// <param name="appThemeColor">The <see cref="ThemeColor"/> to apply to <paramref name="targetProperty"/>.</param>
+	public static void SetAppThemeColor(this BindableObject self, BindableProperty targetProperty, ThemeColor appThemeColor) =>
 		self.SetBinding(targetProperty, appThemeColor.GetBinding());
 
 	/// <summary>
-	/// Sets the <see cref="AppThemeResource"/> to the provided <see cref="BindableProperty"/> of the given <see cref="BindableObject"/>.
+	/// Sets the <see cref="ThemeResource"/> to the provided <see cref="BindableProperty"/> of the given <see cref="BindableObject"/>.
 	/// </summary>
 	/// <param name="self">The <see cref="BindableObject"/> on which the <paramref name="appThemeResource"/> will be applied to the provided property in <paramref name="targetProperty"/>.</param>
 	/// <param name="targetProperty">The <see cref="BindableProperty"/> on which to set the <paramref name="appThemeResource"/>.</param>
-	/// <param name="appThemeResource">The <see cref="AppThemeResource"/> to apply to <paramref name="targetProperty"/>.</param>
-	public static void SetAppTheme(this BindableObject self, BindableProperty targetProperty, AppThemeResource appThemeResource) =>
+	/// <param name="appThemeResource">The <see cref="ThemeResource"/> to apply to <paramref name="targetProperty"/>.</param>
+	public static void SetAppTheme(this BindableObject self, BindableProperty targetProperty, ThemeResource appThemeResource) =>
 		self.SetBinding(targetProperty, appThemeResource.GetBinding());
 }

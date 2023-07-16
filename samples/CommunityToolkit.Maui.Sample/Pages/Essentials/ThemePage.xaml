@@ -2,15 +2,15 @@
 <pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="CommunityToolkit.Maui.Sample.Pages.Essentials.AppThemePage"
+             x:Class="CommunityToolkit.Maui.Sample.Pages.Essentials.ThemePage"
              xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Essentials"
-             x:TypeArguments="vm:AppThemeViewModel"
-             x:DataType="vm:AppThemeViewModel"
-             Title="AppTheme">
+             x:TypeArguments="vm:ThemeViewModel"
+             x:DataType="vm:ThemeViewModel"
+             Title="Theme Resources">
     <pages:BasePage.Resources>
-        <mct:AppThemeColor Light="Green" Dark="Red" x:Key="LabelTextColor" />
-        <mct:AppThemeResource Light="dotnet_bot.png" Dark="avatar_icon.png" x:Key="ImageSource" />
+        <mct:ThemeColor Light="Green" Dark="Red" x:Key="LabelTextColor" />
+        <mct:ThemeResource Light="dotnet_bot.png" Dark="avatar_icon.png" x:Key="ImageSource" />
 
         <Style x:Key="Headline" TargetType="Label">
             <Setter Property="FontFamily" Value="Segoe UI" />

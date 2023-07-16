@@ -156,7 +156,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<VariableMultiValueConverterPage, VariableMultiValueConverterViewModel>();
 
 		// Add Essentials Pages + ViewModels
-		services.AddTransientWithShellRoute<AppThemePage, AppThemeViewModel>();
+		services.AddTransientWithShellRoute<AppThemePage, ThemeViewModel>();
 		services.AddTransientWithShellRoute<FileSaverPage, FileSaverViewModel>();
 		services.AddTransientWithShellRoute<FolderPickerPage, FolderPickerViewModel>();
 		services.AddTransientWithShellRoute<SpeechToTextPage, SpeechToTextViewModel>();

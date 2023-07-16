@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents an object that is aware of the operating system theme.
 /// </summary>
-public abstract class AppThemeObject<T>
+public abstract class ThemeObject<T>
 {
 	/// <summary>
 	/// The <see cref="object"/> that is used when the operating system uses light theme.

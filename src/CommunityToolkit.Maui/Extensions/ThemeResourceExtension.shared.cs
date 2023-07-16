@@ -1,13 +1,13 @@
 ﻿namespace CommunityToolkit.Maui.Extensions;
 
 /// <summary>
-/// A XAML markup extension that enables using <see cref="AppThemeColor"/> and <see cref="AppThemeResource"/> from XAML.
+/// A XAML markup extension that enables using <see cref="ThemeColor"/> and <see cref="ThemeResource"/> from XAML.
 /// </summary>
 [ContentProperty(nameof(Key))]
 public sealed class ThemeResourceExtension : IMarkupExtension<BindingBase>
 {
 	/// <summary>
-	/// Gets or sets the key that is used to access the <see cref="AppThemeColor"/> or <see cref="AppThemeResource"/> from the <see cref="ResourceDictionary"/>.
+	/// Gets or sets the key that is used to access the <see cref="ThemeColor"/> or <see cref="ThemeResource"/> from the <see cref="ResourceDictionary"/>.
 	/// </summary>
 	public string? Key { get; set; }
 
@@ -35,18 +35,18 @@ public sealed class ThemeResourceExtension : IMarkupExtension<BindingBase>
 			var xmlLineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider ? xmlLineInfoProvider.XmlLineInfo : null;
 			throw new XamlParseException($"Resource not found for key {Key}", xmlLineInfo);
 		}
-		else if (resource is AppThemeColor color)
+		else if (resource is ThemeColor color)
 		{
 			return color.GetBinding();
 		}
-		else if (resource is AppThemeResource themeResource)
+		else if (resource is ThemeResource themeResource)
 		{
 			return themeResource.GetBinding();
 		}
 		else
 		{
 			var xmlLineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider ? xmlLineInfoProvider.XmlLineInfo : null;
-			throw new XamlParseException($"Resource found for key {Key} is not of type {nameof(AppThemeColor)} or {nameof(AppThemeResource)}", xmlLineInfo);
+			throw new XamlParseException($"Resource found for key {Key} is not of type {nameof(ThemeColor)} or {nameof(ThemeResource)}", xmlLineInfo);
 		}
 	}
 

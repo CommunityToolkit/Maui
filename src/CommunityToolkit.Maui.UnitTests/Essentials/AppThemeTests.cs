@@ -18,7 +18,7 @@ public class AppThemeTests : BaseTest
 	[Fact]
 	public void AppThemeColorUsesCorrectColorForTheme()
 	{
-		AppThemeColor color = new()
+		ThemeColor color = new()
 		{
 			Light = Colors.Green,
 			Dark = Colors.Red
@@ -43,7 +43,7 @@ public class AppThemeTests : BaseTest
 	[Fact]
 	public void AppThemeColorUsesDefaultColorWhenDarkColorNotSet()
 	{
-		AppThemeColor color = new()
+		ThemeColor color = new()
 		{
 			Light = Colors.Green,
 			Default = Colors.Blue
@@ -68,7 +68,7 @@ public class AppThemeTests : BaseTest
 	[Fact]
 	public void AppThemeColorUsesDefaultColorWhenLightColorNotSet()
 	{
-		AppThemeColor color = new()
+		ThemeColor color = new()
 		{
 			Default = Colors.Blue,
 			Dark = Colors.Red
@@ -95,7 +95,7 @@ public class AppThemeTests : BaseTest
 	{
 		Label label = new();
 
-		AppThemeResource resource = new()
+		ThemeResource resource = new()
 		{
 			Light = "Light Theme",
 			Dark = "Dark Theme"

@@ -2,9 +2,9 @@
 
 namespace CommunityToolkit.Maui.Sample.Pages.Essentials;
 
-public partial class AppThemePage : BasePage<AppThemeViewModel>
+public partial class ThemePage : BasePage<ThemeViewModel>
 {
-	public AppThemePage(AppThemeViewModel viewModel) : base(viewModel)
+	public ThemePage(ThemeViewModel viewModel) : base(viewModel)
 	{
 		InitializeComponent();
 	}
