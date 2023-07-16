@@ -1,8 +1,8 @@
 ﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Essentials;
 
-public class ThemeViewModel : BaseViewModel
+public class AppThemeViewModel : BaseViewModel
 {
-	public ThemeViewModel() : base()
+	public AppThemeViewModel() : base()
 	{
 	}
 }
