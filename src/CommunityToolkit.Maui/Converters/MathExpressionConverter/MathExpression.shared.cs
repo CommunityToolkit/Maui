@@ -135,7 +135,7 @@ sealed partial class MathExpression
 
 		foreach (var match in matches.Cast<Match>())
 		{
-			if (match == null || string.IsNullOrEmpty(match.Value))
+			if (string.IsNullOrEmpty(match?.Value))
 			{
 				continue;
 			}

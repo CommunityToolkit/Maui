@@ -60,6 +60,17 @@ public class UniformItemsLayoutTests : BaseTest
 	}
 
 	[Fact]
+	public void MeasureUniformItemsLayout_NoItems_ZeroSize()
+	{
+		var expectedSize = Size.Zero;
+		var emptyUniformItemsLayout = new UniformItemsLayout();
+
+		var actualSize = emptyUniformItemsLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
+
+		Assert.Equal(expectedSize, actualSize);
+	}
+
+	[Fact]
 	public void MeasureUniformItemsLayout_WrapOnNextRow()
 	{
 		var expectedSize = new Size(childWidth, childHeight * childCount);

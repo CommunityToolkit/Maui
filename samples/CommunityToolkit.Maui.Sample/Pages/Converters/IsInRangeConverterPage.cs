@@ -79,20 +79,21 @@ public class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
 
 					new ExampleLabel()
 						.Row(Row.StringExample1).Column(Column.Input)
-						.Text("String Compare Between \".NET\" and \"Toolkit\""),
+						.Text("String Compare Is Equal To or Between \".NET\" and \"Toolkit\""),
 
 					new Label()
 						.Row(Row.StringExample1).Column(Column.Result)
 						.TextCenter()
-						.Bind(Label.StyleProperty,
-								nameof(Entry.Text),
-								BindingMode.OneWay,
-								new IsInRangeConverter
+						.Bind<Label, Entry, string, string>(
+								Label.StyleProperty,
+								static (Entry stringInputEntry) => stringInputEntry.Text,
+								mode: BindingMode.OneWay,
+								converter: new IsInRangeConverter
 								{
 									TrueObject = GetTrueLabelStyle(),
 									FalseObject = GetFalseLabelStyle(),
 									MinValue = ".NET",
-									MaxValue = "Tooklit"
+									MaxValue = "Toolkit"
 								},
 								source: stringInputEntry),
 
@@ -103,10 +104,11 @@ public class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
 					new Label()
 						.Row(Row.StringExample2).Column(Column.Result)
 						.TextCenter()
-						.Bind(Label.StyleProperty,
-								nameof(Entry.Text),
-								BindingMode.OneWay,
-								new IsInRangeConverter
+						.Bind<Label, Entry, string, string>(
+								Label.StyleProperty,
+								static (Entry stringInputEntry) => stringInputEntry.Text,
+								mode: BindingMode.OneWay,
+								converter: new IsInRangeConverter
 								{
 									TrueObject = GetTrueLabelStyle(),
 									FalseObject = GetFalseLabelStyle(),
@@ -121,10 +123,11 @@ public class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
 					new Label()
 						.Row(Row.StringExample3).Column(Column.Result)
 						.TextCenter()
-						.Bind(Label.StyleProperty,
-								nameof(Entry.Text),
-								BindingMode.OneWay,
-								new IsInRangeConverter
+						.Bind<Label, Entry, string, string>(
+								Label.StyleProperty,
+								static (Entry stringInputConverter) => stringInputConverter.Text,
+								mode: BindingMode.OneWay,
+								converter: new IsInRangeConverter
 								{
 									TrueObject = GetTrueLabelStyle(),
 									FalseObject = GetFalseLabelStyle(),
@@ -139,22 +142,27 @@ public class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
 						.Row(Row.DoubleTitle).Column(Column.Input)
 						.Text("Double Input").Font(size: 24, bold: true),
 
-					new Stepper { Increment = 0.5, Minimum = 0, Maximum = 10, Value = 5 }
+					new Stepper { Increment = 0.5, Minimum = 0, Maximum = 11, Value = 5 }
 						.Row(Row.DoubleInput).Column(Column.Input)
 						.Start().CenterVertical()
 						.Assign(out Stepper doubleInputStepper),
 
 					new ExampleLabel()
 						.Row(Row.DoubleExample1).Column(Column.Input)
-						.Bind(Label.TextProperty, nameof(Stepper.Value), BindingMode.OneWay, convert: (double stepperValue) => $"Double Compare {stepperValue} is Between 5-10", source: doubleInputStepper),
+						.Bind(Label.TextProperty,
+								static (Stepper doubleInputStepper) => doubleInputStepper.Value,
+								mode: BindingMode.OneWay,
+								convert: (double stepperValue) => $"Double Compare {stepperValue} is Equal To or Between 5-10",
+								source: doubleInputStepper),
 
 					new Label()
 						.Row(Row.DoubleExample1).Column(Column.Result)
 						.TextCenter()
-						.Bind(Label.StyleProperty,
-								nameof(Stepper.Value),
-								BindingMode.OneWay,
-								new IsInRangeConverter
+						.Bind<Label, Stepper, double, double>(
+								Label.StyleProperty,
+								static (Stepper doubleInputStepper) => doubleInputStepper.Value,
+								mode: BindingMode.OneWay,
+								converter: new IsInRangeConverter
 								{
 									TrueObject = GetTrueLabelStyle(),
 									FalseObject = GetFalseLabelStyle(),
@@ -166,17 +174,18 @@ public class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
 					new ExampleLabel()
 						.Row(Row.DoubleExample2).Column(Column.Input)
 						.Bind(Label.TextProperty,
-								static(Stepper stepper) => stepper.Value,
+								static (Stepper stepper) => stepper.Value,
 								mode: BindingMode.OneWay,
 								convert: (double stepperValue) => $"Double Compare {stepperValue} is Greater Than or Equal to 5", source: doubleInputStepper),
 
 					new Label()
 						.Row(Row.DoubleExample2).Column(Column.Result)
 						.TextCenter()
-						.Bind(Label.StyleProperty,
-								nameof(Stepper.Value),
-								BindingMode.OneWay,
-								new IsInRangeConverter
+						.Bind<Label, Stepper, double, double>(
+								Label.StyleProperty,
+								static (Stepper doubleInputStepper) => doubleInputStepper.Value,
+								mode: BindingMode.OneWay,
+								converter: new IsInRangeConverter
 								{
 									TrueObject = GetTrueLabelStyle(),
 									FalseObject = GetFalseLabelStyle(),
@@ -187,17 +196,18 @@ public class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
 					new ExampleLabel()
 						.Row(Row.DoubleExample3).Column(Column.Input)
 						.Bind(Label.TextProperty,
-								static(Stepper stepper) => stepper.Value,
+								static (Stepper stepper) => stepper.Value,
 								mode: BindingMode.OneWay,
 								convert: (double stepperValue) => $"Double Compare {stepperValue} is Less Than or Equal To 10", source: doubleInputStepper),
 
 					new Label()
 						.Row(Row.DoubleExample3).Column(Column.Result)
 						.TextCenter()
-						.Bind(Label.StyleProperty,
-								nameof(Stepper.Value),
-								BindingMode.OneWay,
-								new IsInRangeConverter
+						.Bind<Label, Stepper, double, double>(
+								Label.StyleProperty,
+								static (Stepper doubleInputStepper) => doubleInputStepper.Value,
+								mode: BindingMode.OneWay,
+								converter: new IsInRangeConverter
 								{
 									TrueObject = GetTrueLabelStyle(),
 									FalseObject = GetFalseLabelStyle(),
@@ -219,15 +229,15 @@ public class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
 
 					new ExampleLabel()
 						.Row(Row.TimeSpanExample1).Column(Column.Input)
-						.Text("Timespan Compare is Between 0700 - 1700"),
+						.Text("Timespan Compare is Equal To or Between 0700 - 1700"),
 
 					new Label()
 						.Row(Row.TimeSpanExample1).Column(Column.Result)
 						.TextCenter()
-						.Bind(Label.StyleProperty,
-								nameof(TimePicker.Time),
-								BindingMode.OneWay,
-								new IsInRangeConverter
+						.Bind<Label, TimePicker, TimeSpan, TimeSpan>(Label.StyleProperty,
+								static (TimePicker timeSpanInputPicker) => timeSpanInputPicker.Time,
+								mode: BindingMode.OneWay,
+								converter: new IsInRangeConverter
 								{
 									TrueObject = GetTrueLabelStyle(),
 									FalseObject = GetFalseLabelStyle(),
@@ -243,10 +253,11 @@ public class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
 					new Label()
 						.Row(Row.TimeSpanExample2).Column(Column.Result)
 						.TextCenter()
-						.Bind(Label.StyleProperty,
-								nameof(TimePicker.Time),
-								BindingMode.OneWay,
-								new IsInRangeConverter
+						.Bind<Label, TimePicker, TimeSpan, TimeSpan>(
+								Label.StyleProperty,
+								static (TimePicker timeSpanInputPicker) => timeSpanInputPicker.Time,
+								mode: BindingMode.OneWay,
+								converter: new IsInRangeConverter
 								{
 									TrueObject = GetTrueLabelStyle(),
 									FalseObject = GetFalseLabelStyle(),
@@ -261,10 +272,11 @@ public class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
 					new Label()
 						.Row(Row.TimeSpanExample3).Column(Column.Result)
 						.TextCenter()
-						.Bind(Label.StyleProperty,
-								nameof(TimePicker.Time),
-								BindingMode.OneWay,
-								new IsInRangeConverter
+						.Bind<Label, TimePicker, TimeSpan, TimeSpan>(
+								Label.StyleProperty,
+								static (TimePicker timeSpanInputPicker) => timeSpanInputPicker.Time,
+								mode: BindingMode.OneWay,
+								converter: new IsInRangeConverter
 								{
 									TrueObject = GetTrueLabelStyle(),
 									FalseObject = GetFalseLabelStyle(),
@@ -288,15 +300,16 @@ public class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
 
 					new ExampleLabel()
 						.Row(Row.CharExample1).Column(Column.Input)
-						.Text("Char Compare is Between H - L (case sensitive)"),
+						.Text("Char Compare is Equal To or Between H - L (case sensitive)"),
 
 					new Label()
 						.Row(Row.CharExample1).Column(Column.Result)
 						.TextCenter()
-						.Bind(Label.StyleProperty,
-								nameof(IsInRangeConverterViewModel.InputChar),
-								BindingMode.OneWay,
-								new IsInRangeConverter
+						.Bind<Label, IsInRangeConverterViewModel, char, char>(
+								Label.StyleProperty,
+								static (IsInRangeConverterViewModel vm) => vm.InputChar,
+								mode: BindingMode.OneWay,
+								converter: new IsInRangeConverter
 								{
 									TrueObject = GetTrueLabelStyle(),
 									FalseObject = GetFalseLabelStyle(),
@@ -311,10 +324,11 @@ public class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
 					new Label()
 						.Row(Row.CharExample2).Column(Column.Result)
 						.TextCenter()
-						.Bind(Label.StyleProperty,
-								nameof(IsInRangeConverterViewModel.InputChar),
-								BindingMode.OneWay,
-								new IsInRangeConverter
+						.Bind<Label, IsInRangeConverterViewModel, char, char>(
+								Label.StyleProperty,
+								static (IsInRangeConverterViewModel vm) => vm.InputChar,
+								mode: BindingMode.OneWay,
+								converter: new IsInRangeConverter
 								{
 									TrueObject = GetTrueLabelStyle(),
 									FalseObject = GetFalseLabelStyle(),
@@ -328,10 +342,11 @@ public class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
 					new Label()
 						.Row(Row.CharExample3).Column(Column.Result)
 						.TextCenter()
-						.Bind(Label.StyleProperty,
-								nameof(IsInRangeConverterViewModel.InputChar),
-								BindingMode.OneWay,
-								new IsInRangeConverter
+						.Bind<Label, IsInRangeConverterViewModel, char, char>(
+								Label.StyleProperty,
+								static (IsInRangeConverterViewModel vm) => vm.InputChar,
+								mode: BindingMode.OneWay,
+								converter: new IsInRangeConverter
 								{
 									TrueObject = GetTrueLabelStyle(),
 									FalseObject = GetFalseLabelStyle(),

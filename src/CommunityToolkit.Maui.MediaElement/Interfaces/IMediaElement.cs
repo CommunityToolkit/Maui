@@ -59,6 +59,11 @@ public interface IMediaElement : IView
 	bool ShouldKeepScreenOn { get; set; }
 
 	/// <summary>
+	/// Gets or sets if audio should be muted.
+	/// </summary>
+	bool ShouldMute { get; set; }
+
+	/// <summary>
 	/// Gets or sets whether the player should show the platform playback controls.
 	/// </summary>
 	bool ShouldShowPlaybackControls { get; set; }

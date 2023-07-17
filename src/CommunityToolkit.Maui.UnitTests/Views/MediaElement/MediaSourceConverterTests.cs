@@ -1,11 +1,11 @@
 ﻿using System.Globalization;
 using CommunityToolkit.Maui.Converters;
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using FluentAssertions;
 using Xunit;
 
-namespace CommunityToolkit.Maui.UnitTests.Views.MediaElement;
+namespace CommunityToolkit.Maui.UnitTests.Views;
+
 public class MediaSourceConverterTests
 {
 	[Fact]

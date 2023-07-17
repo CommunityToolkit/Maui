@@ -41,6 +41,7 @@ partial class MediaManager : IDisposable
 		Player.MediaPlayer.MediaFailed += OnMediaElementMediaFailed;
 		Player.MediaPlayer.MediaEnded += OnMediaElementMediaEnded;
 		Player.MediaPlayer.VolumeChanged += OnMediaElementVolumeChanged;
+		Player.MediaPlayer.IsMutedChanged += OnMediaElementIsMutedChanged;
 
 		return Player;
 	}
@@ -77,11 +78,18 @@ partial class MediaManager : IDisposable
 		}
 	}
 
-	protected virtual partial void PlatformSeek(TimeSpan position)
+	protected virtual async partial ValueTask PlatformSeek(TimeSpan position)
 	{
 		if (Player?.MediaPlayer.CanSeek ?? false)
 		{
-			Player.MediaPlayer.Position = position;
+			if (Dispatcher.IsDispatchRequired)
+			{
+				await Dispatcher.DispatchAsync(() => Player.MediaPlayer.Position = position);
+			}
+			else
+			{
+				Player.MediaPlayer.Position = position;
+			}
 		}
 	}
 
@@ -164,13 +172,21 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateVolume()
 	{
-		if (Player is not null)
+		if (Player is null || MediaElement is null)
 		{
-			MainThread.BeginInvokeOnMainThread(() =>
-			{
-				Player.MediaPlayer.Volume = MediaElement.Volume;
-			});
+			return;
 		}
+
+		// If currently muted, ignore
+		if (MediaElement.ShouldMute)
+		{
+			return;
+		}
+
+		MainThread.BeginInvokeOnMainThread(() =>
+		{
+			Player.MediaPlayer.Volume = MediaElement.Volume;
+		});
 	}
 
 	protected virtual partial void PlatformUpdateShouldKeepScreenOn()
@@ -197,6 +213,16 @@ partial class MediaManager : IDisposable
 				displayActiveRequested = false;
 			}
 		}
+	}
+
+	protected virtual partial void PlatformUpdateShouldMute()
+	{
+		if (MediaElement is null || Player?.MediaPlayer is null)
+		{
+			return;
+		}
+
+		Player.MediaPlayer.IsMuted = MediaElement.ShouldMute;
 	}
 
 	protected virtual async partial void PlatformUpdateSource()
@@ -273,6 +299,7 @@ partial class MediaManager : IDisposable
 				Player.MediaPlayer.MediaFailed -= OnMediaElementMediaFailed;
 				Player.MediaPlayer.MediaEnded -= OnMediaElementMediaEnded;
 				Player.MediaPlayer.VolumeChanged -= OnMediaElementVolumeChanged;
+				Player.MediaPlayer.IsMutedChanged -= OnMediaElementIsMutedChanged;
 
 				if (Player.MediaPlayer.PlaybackSession is not null)
 				{
@@ -329,6 +356,14 @@ partial class MediaManager : IDisposable
 		MediaElement?.MediaFailed(new MediaFailedEventArgs(message));
 
 		Logger?.LogError("{logMessage}", message);
+	}
+
+	void OnMediaElementIsMutedChanged(WindowsMediaElement sender, object args)
+	{
+		if (MediaElement is not null)
+		{
+			MediaElement.ShouldMute = sender.IsMuted;
+		}
 	}
 
 	void OnMediaElementVolumeChanged(WindowsMediaElement sender, object args)

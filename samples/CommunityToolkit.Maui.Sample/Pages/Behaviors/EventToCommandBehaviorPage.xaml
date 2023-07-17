@@ -5,6 +5,7 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
+    xmlns:system="clr-namespace:System;assembly=mscorlib"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.EventToCommandBehaviorPage"
     x:TypeArguments="vm:EventToCommandBehaviorViewModel"
     x:DataType="vm:EventToCommandBehaviorViewModel">
@@ -16,13 +17,25 @@
 
         <Label Text="{Binding ClickCount, StringFormat='{0} clicks'}" />
 
-        <Button Text="Click Me"
+        <Button Text="Increment (No Args)"
                     TextColor="White"
                     BackgroundColor="{StaticResource NormalButtonBackgroundColor}">
             <Button.Behaviors>
                 <mct:EventToCommandBehavior
                         EventName="Clicked"
                         Command="{Binding IncrementCommand}" />
+            </Button.Behaviors>
+        </Button>
+
+        
+        <Button Text="Click Me (Pass event args)"
+                    TextColor="White"
+                    BackgroundColor="{StaticResource NormalButtonBackgroundColor}">
+            <Button.Behaviors>
+                <mct:EventToCommandBehavior
+                        x:TypeArguments="system:EventArgs"
+                        EventName="Clicked"
+                        Command="{Binding IncrementWithArgsCommand}" />
             </Button.Behaviors>
         </Button>
     </VerticalStackLayout>

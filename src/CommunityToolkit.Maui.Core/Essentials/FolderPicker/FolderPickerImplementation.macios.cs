@@ -1,5 +1,6 @@
 using System.Runtime.Versioning;
 using CommunityToolkit.Maui.Core.Primitives;
+using Microsoft.Maui.ApplicationModel;
 using UniformTypeIdentifiers;
 
 namespace CommunityToolkit.Maui.Storage;
@@ -7,7 +8,7 @@ namespace CommunityToolkit.Maui.Storage;
 /// <inheritdoc cref="IFolderPicker" />
 [SupportedOSPlatform("iOS14.0")]
 [SupportedOSPlatform("MacCatalyst14.0")]
-public sealed class FolderPickerImplementation : IFolderPicker, IDisposable
+public sealed partial class FolderPickerImplementation : IFolderPicker, IDisposable
 {
 	readonly UIDocumentPickerViewController documentPickerViewController = new(new[] { UTTypes.Folder })
 	{
@@ -26,30 +27,36 @@ public sealed class FolderPickerImplementation : IFolderPicker, IDisposable
 	}
 
 	/// <inheritdoc />
-	public async Task<Folder> PickAsync(string initialPath, CancellationToken cancellationToken)
-	{
-		cancellationToken.ThrowIfCancellationRequested();
-		documentPickerViewController.DirectoryUrl = NSUrl.FromString(initialPath);
-		var currentViewController = Microsoft.Maui.Platform.UIApplicationExtensions.GetKeyWindow(UIApplication.SharedApplication)?.RootViewController;
-
-		taskCompetedSource = new TaskCompletionSource<Folder>();
-		currentViewController?.PresentViewController(documentPickerViewController, true, null);
-
-		return await taskCompetedSource.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
-	}
-
-	/// <inheritdoc />
-	public Task<Folder> PickAsync(CancellationToken cancellationToken)
-	{
-		return PickAsync("/", cancellationToken);
-	}
-
-	/// <inheritdoc />
 	public void Dispose()
 	{
 		documentPickerViewController.DidPickDocumentAtUrls -= DocumentPickerViewControllerOnDidPickDocumentAtUrls;
 		documentPickerViewController.WasCancelled -= DocumentPickerViewControllerOnWasCancelled;
 		documentPickerViewController.Dispose();
+	}
+
+	async Task<Folder> InternalPickAsync(string initialPath, CancellationToken cancellationToken)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		documentPickerViewController.DirectoryUrl = NSUrl.FromString(initialPath);
+		var currentViewController = Platform.GetCurrentUIViewController();
+
+		taskCompetedSource?.TrySetCanceled(CancellationToken.None);
+		var tcs = taskCompetedSource = new();
+		if (currentViewController is not null)
+		{
+			currentViewController.PresentViewController(documentPickerViewController, true, null);
+		}
+		else
+		{
+			throw new FolderPickerException("Unable to get a window where to present the folder picker UI.");
+		}
+
+		return await tcs.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
+	}
+
+	Task<Folder> InternalPickAsync(CancellationToken cancellationToken)
+	{
+		return InternalPickAsync("/", cancellationToken);
 	}
 
 	void DocumentPickerViewControllerOnWasCancelled(object? sender, EventArgs e)
@@ -59,7 +66,7 @@ public sealed class FolderPickerImplementation : IFolderPicker, IDisposable
 
 	void DocumentPickerViewControllerOnDidPickDocumentAtUrls(object? sender, UIDocumentPickedAtUrlsEventArgs e)
 	{
-		var path = e.Urls[0].AbsoluteString ?? throw new FolderPickerException("Path cannot be null.");
+		var path = e.Urls[0].Path ?? throw new FolderPickerException("Path cannot be null.");
 		taskCompetedSource?.SetResult(new Folder(path, new DirectoryInfo(path).Name));
 	}
 }

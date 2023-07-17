@@ -77,6 +77,11 @@ public partial class MediaManager : IDisposable
 	protected IDisposable? VolumeObserver { get; set; }
 
 	/// <summary>
+	/// Observer that tracks if the audio is muted.
+	/// </summary>
+	protected IDisposable? MutedObserver { get; set; }
+
+	/// <summary>
 	/// Creates the corresponding platform view of <see cref="MediaElement"/> on iOS and macOS.
 	/// </summary>
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
@@ -119,12 +124,12 @@ public partial class MediaManager : IDisposable
 		Player?.Pause();
 	}
 
-	protected virtual partial void PlatformSeek(TimeSpan position)
+	protected virtual partial ValueTask PlatformSeek(TimeSpan position)
 	{
 		if (PlayerItem is null || Player?.CurrentItem is null
 			|| Player?.Status != AVPlayerStatus.ReadyToPlay)
 		{
-			return;
+			return ValueTask.CompletedTask;
 		}
 
 		var ranges = Player.CurrentItem.SeekableTimeRanges;
@@ -144,6 +149,8 @@ public partial class MediaManager : IDisposable
 				break;
 			}
 		}
+
+		return ValueTask.CompletedTask;
 	}
 
 	protected virtual partial void PlatformStop()
@@ -318,12 +325,16 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateVolume()
 	{
-		if (PlayerViewController?.Player is null)
+		if (Player is null)
 		{
 			return;
 		}
 
-		PlayerViewController.Player.Volume = (float)MediaElement.Volume;
+		var volumeDiff = Math.Abs(Player.Volume - MediaElement.Volume);
+		if (volumeDiff > 0.01)
+		{
+			Player.Volume = (float)MediaElement.Volume;
+		}
 	}
 
 	protected virtual partial void PlatformUpdateShouldKeepScreenOn()
@@ -334,6 +345,16 @@ public partial class MediaManager : IDisposable
 		}
 
 		Player.PreventsDisplaySleepDuringVideoPlayback = MediaElement.ShouldKeepScreenOn;
+	}
+
+	protected virtual partial void PlatformUpdateShouldMute()
+	{
+		if (Player is null || MediaElement is null)
+		{
+			return;
+		}
+
+		Player.Muted = MediaElement.ShouldMute;
 	}
 
 	protected virtual partial void PlatformUpdateShouldLoopPlayback()
@@ -358,6 +379,7 @@ public partial class MediaManager : IDisposable
 				RateObserver?.Dispose();
 				CurrentItemErrorObserver?.Dispose();
 				Player.ReplaceCurrentItemWithPlayerItem(null);
+				MutedObserver?.Dispose();
 				VolumeObserver?.Dispose();
 				StatusObserver?.Dispose();
 				TimeControlStatusObserver?.Dispose();
@@ -377,6 +399,8 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
+		MutedObserver = Player.AddObserver("muted", valueObserverOptions,
+					MutedChanged);
 		VolumeObserver = Player.AddObserver("volume", valueObserverOptions,
 					VolumeChanged);
 		StatusObserver = Player.AddObserver("status", valueObserverOptions, StatusChanged);
@@ -392,7 +416,21 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		MediaElement.Volume = Player.Volume;
+		var volumeDiff = Math.Abs(Player.Volume - MediaElement.Volume);
+		if (volumeDiff > 0.01)
+		{
+			MediaElement.Volume = (double)Player.Volume;
+		}
+	}
+
+	void MutedChanged(NSObservedChange e)
+	{
+		if (MediaElement is null || Player is null)
+		{
+			return;
+		}
+
+		MediaElement.ShouldMute = Player.Muted;
 	}
 
 	void AddErrorObservers()

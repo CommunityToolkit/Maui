@@ -59,6 +59,24 @@ public class MauiPopup : UIViewController
 		base.ViewWillDisappear(animated);
 	}
 
+	/// <inheritdoc/>
+	public override void ViewWillTransitionToSize(CGSize toSize, IUIViewControllerTransitionCoordinator coordinator)
+	{
+		coordinator.AnimateAlongsideTransition((IUIViewControllerTransitionCoordinatorContext obj) =>
+		{
+			// Before screen rotate
+		}, (IUIViewControllerTransitionCoordinatorContext obj) =>
+		{
+			// After screen rotate
+			if (VirtualView is not null)
+			{
+				PopupExtensions.SetSize(this, VirtualView);
+				PopupExtensions.SetLayout(this, VirtualView);
+			}
+		});
+		base.ViewWillTransitionToSize(toSize, coordinator);
+	}
+
 	/// <summary>
 	/// Method to initialize the native implementation.
 	/// </summary>

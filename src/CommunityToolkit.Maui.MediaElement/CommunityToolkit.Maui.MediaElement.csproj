@@ -30,7 +30,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/CommunityToolkit/Maui</PackageProjectUrl>
     <RepositoryUrl>https://github.com/CommunityToolkit/Maui</RepositoryUrl>
-    <PackageReleaseNotes>TBD</PackageReleaseNotes>
+    <PackageReleaseNotes>See https://github.com/CommunityToolkit/Maui/releases</PackageReleaseNotes>
     <DefineConstants>$(DefineConstants);</DefineConstants>
     <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
     <Title>.NET MAUI MediaElement</Title>
@@ -59,7 +59,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
-    <PackageReference Include="Xam.Plugins.Android.ExoPlayer" Version="2.18.9" />
-    <PackageReference Include="Xam.Plugins.Android.ExoPlayer.Transformer" Version="2.18.9" />
+    <PackageReference Include="Xam.Plugins.Android.ExoPlayer" Version="2.18.10" />
+    <PackageReference Include="Xam.Plugins.Android.ExoPlayer.Transformer" Version="2.18.10" />
   </ItemGroup>
 </Project>
