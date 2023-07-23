@@ -3,7 +3,7 @@
 /// <summary>
 /// This class contains static extension methods for use with <see cref="BindableObject"/> objects.
 /// </summary>
-public static class BindableObjectExtensions
+public static class AppThemeObjectExtensions
 {
 	/// <summary>
 	/// Sets the <see cref="AppThemeColor"/> to the provided <see cref="BindableProperty"/> of the given <see cref="BindableObject"/>.
