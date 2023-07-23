@@ -1,13 +1,13 @@
 ﻿namespace CommunityToolkit.Maui.Extensions;
 
 /// <summary>
-/// A XAML markup extension that enables using <see cref="AppThemeColor"/> and <see cref="AppThemeResource"/> from XAML.
+/// A XAML markup extension that enables using <see cref="AppThemeColor"/> and <see cref="AppThemeObject"/> from XAML.
 /// </summary>
 [ContentProperty(nameof(Key))]
-public sealed class ThemeResourceExtension : IMarkupExtension<BindingBase>
+public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
 {
 	/// <summary>
-	/// Gets or sets the key that is used to access the <see cref="AppThemeColor"/> or <see cref="AppThemeResource"/> from the <see cref="ResourceDictionary"/>.
+	/// Gets or sets the key that is used to access the <see cref="AppThemeColor"/> or <see cref="AppThemeObject"/> from the <see cref="ResourceDictionary"/>.
 	/// </summary>
 	public string? Key { get; set; }
 
@@ -21,7 +21,7 @@ public sealed class ThemeResourceExtension : IMarkupExtension<BindingBase>
 
 		if (Key is null)
 		{
-			throw new XamlParseException($"{nameof(ThemeResourceExtension)}.{nameof(Key)} Cannot be null. You must set a {nameof(Key)} that specifies the AppTheme resource to use", serviceProvider);
+			throw new XamlParseException($"{nameof(AppThemeResourceExtension)}.{nameof(Key)} Cannot be null. You must set a {nameof(Key)} that specifies the AppTheme resource to use", serviceProvider);
 		}
 
 		if (serviceProvider.GetService(typeof(IProvideValueTarget)) is not IProvideParentValues valueProvider)
@@ -39,14 +39,14 @@ public sealed class ThemeResourceExtension : IMarkupExtension<BindingBase>
 		{
 			return color.GetBinding();
 		}
-		else if (resource is AppThemeResource themeResource)
+		else if (resource is AppThemeObject themeResource)
 		{
 			return themeResource.GetBinding();
 		}
 		else
 		{
 			var xmlLineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider ? xmlLineInfoProvider.XmlLineInfo : null;
-			throw new XamlParseException($"Resource found for key {Key} is not of type {nameof(AppThemeColor)} or {nameof(AppThemeResource)}", xmlLineInfo);
+			throw new XamlParseException($"Resource found for key {Key} is not of type {nameof(AppThemeColor)} or {nameof(AppThemeObject)}", xmlLineInfo);
 		}
 	}
 

@@ -95,7 +95,7 @@ public class AppThemeTests : BaseTest
 	{
 		Label label = new();
 
-		AppThemeResource resource = new()
+		AppThemeObject resource = new()
 		{
 			Light = "Light Theme",
 			Dark = "Dark Theme"
