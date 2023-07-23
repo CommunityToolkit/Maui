@@ -84,6 +84,7 @@ public partial class AppShell : Shell
 
 		// Add Essentials View Models
 		CreateViewModelMapping<AppThemePage, AppThemeViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
+		CreateViewModelMapping<BadgePage, BadgeViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
 		CreateViewModelMapping<FileSaverPage, FileSaverViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
 		CreateViewModelMapping<FolderPickerPage, FolderPickerViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
 		CreateViewModelMapping<SpeechToTextPage, SpeechToTextViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
