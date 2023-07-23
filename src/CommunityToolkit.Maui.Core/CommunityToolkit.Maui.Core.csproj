@@ -58,4 +58,5 @@
 
     <PackageReference Include="System.Speech" Version="7.0.0" Condition="'$(TargetFramework)' == 'net7.0-windows10.0.19041.0'" />
   </ItemGroup>
+
 </Project>
