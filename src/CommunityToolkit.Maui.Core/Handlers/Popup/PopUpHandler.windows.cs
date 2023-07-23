@@ -13,6 +13,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="result">The result that should return from this Popup.</param>
 	public static void MapOnClosed(PopupHandler handler, IPopup view, object? result)
 	{
+		view.HandlerCompleteTCS.TrySetResult();
 		handler.DisconnectHandler(handler.PlatformView);
 	}
 

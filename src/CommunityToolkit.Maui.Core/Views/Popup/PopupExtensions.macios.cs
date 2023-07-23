@@ -23,15 +23,10 @@ public static class PopupExtensions
 		else if (popup.Content is not null)
 		{
 			var content = popup.Content;
-			if (!content.Width.IsZeroOrNaN() || !content.Height.IsZeroOrNaN())
-			{
-				mauiPopup.PreferredContentSize = new CGSize(content.Width, content.Height);
-			}
-			else
-			{
-				var measure = popup.Content.Measure(double.PositiveInfinity, double.PositiveInfinity);
-				mauiPopup.PreferredContentSize = new CGSize(measure.Width, measure.Height);
-			}
+			var measure = popup.Content.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var width = content.Width.IsZeroOrNaN() ? measure.Width : content.Width;
+			var height = content.Height.IsZeroOrNaN() ? measure.Height : content.Height;
+			mauiPopup.PreferredContentSize = new CGSize(width, height);
 		}
 	}
 

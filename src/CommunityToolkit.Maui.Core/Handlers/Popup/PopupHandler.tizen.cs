@@ -19,6 +19,7 @@ public partial class PopupHandler : Microsoft.Maui.Handlers.ElementHandler<IPopu
 		{
 			popup.Close();
 		}
+		view.HandlerCompleteTCS.TrySetResult();
 
 		handler.DisconnectHandler(popup);
 	}
