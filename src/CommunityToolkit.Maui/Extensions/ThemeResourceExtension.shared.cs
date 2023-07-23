@@ -4,7 +4,7 @@
 /// A XAML markup extension that enables using <see cref="AppThemeColor"/> and <see cref="AppThemeResource"/> from XAML.
 /// </summary>
 [ContentProperty(nameof(Key))]
-public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
+public sealed class ThemeResourceExtension : IMarkupExtension<BindingBase>
 {
 	/// <summary>
 	/// Gets or sets the key that is used to access the <see cref="AppThemeColor"/> or <see cref="AppThemeResource"/> from the <see cref="ResourceDictionary"/>.
@@ -21,7 +21,7 @@ public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
 
 		if (Key is null)
 		{
-			throw new XamlParseException($"{nameof(AppThemeResourceExtension)}.{nameof(Key)} Cannot be null. You must set a {nameof(Key)} that specifies the AppTheme resource to use", serviceProvider);
+			throw new XamlParseException($"{nameof(ThemeResourceExtension)}.{nameof(Key)} Cannot be null. You must set a {nameof(Key)} that specifies the AppTheme resource to use", serviceProvider);
 		}
 
 		if (serviceProvider.GetService(typeof(IProvideValueTarget)) is not IProvideParentValues valueProvider)
