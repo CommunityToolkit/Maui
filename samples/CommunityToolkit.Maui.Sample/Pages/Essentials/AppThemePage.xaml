@@ -15,7 +15,7 @@
         <Style x:Key="Headline" TargetType="Label">
             <Setter Property="FontFamily" Value="Segoe UI" />
             <Setter Property="FontSize" Value="10" />
-            <Setter Property="TextColor" Value="{mct:ThemeResource LabelTextColor}" />
+            <Setter Property="TextColor" Value="{mct:AppThemeResource LabelTextColor}" />
         </Style>
     </pages:BasePage.Resources>
 
@@ -30,7 +30,7 @@
             FontSize="20"
             VerticalOptions="Center" 
             HorizontalOptions="Center"
-            TextColor="{mct:ThemeResource LabelTextColor}"/>
+            TextColor="{mct:AppThemeResource LabelTextColor}"/>
 
         <Label 
             Text="The below image comes from the resource dictionary!"
@@ -42,7 +42,7 @@
             HeightRequest="100"
             VerticalOptions="Center" 
             HorizontalOptions="Center"
-            Source="{mct:ThemeResource ImageSource}"/>
+            Source="{mct:AppThemeResource ImageSource}"/>
 
         <Label 
             Text="This color comes from a style!"
