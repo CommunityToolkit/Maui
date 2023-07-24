@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.ApplicationModel;
 class DefaultBadgeProvider : IBadgeProvider
 {
 	const string intentAction = "android.intent.action.BADGE_COUNT_UPDATE";
-	
+
 	public void SetCount(uint count)
 	{
 		var packageName = Application.Context.PackageName;
