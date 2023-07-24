@@ -30,7 +30,10 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 	{
 		ArgumentNullException.ThrowIfNull(view.Parent);
 		ArgumentNullException.ThrowIfNull(handler.MauiContext);
-		handler.PlatformView.XamlRoot = view.Parent.ToPlatform(handler.MauiContext).XamlRoot;
+		var parent = view.Parent.ToPlatform(handler.MauiContext);
+		parent.IsHitTestVisible = false;
+		handler.PlatformView.XamlRoot = parent.XamlRoot;
+		handler.PlatformView.IsHitTestVisible = true;
 		handler.PlatformView.IsOpen = true;
 		view.OnOpened();
 	}
@@ -85,12 +88,16 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapSize(PopupHandler handler, IPopup view)
 	{
-		handler.PlatformView.SetSize(view, handler.MauiContext);
+		handler.PlatformView.SetSize(view);
 	}
 
 	/// <inheritdoc/>
 	protected override void DisconnectHandler(Popup platformView)
 	{
+		ArgumentNullException.ThrowIfNull(VirtualView.Parent);
+		ArgumentNullException.ThrowIfNull(VirtualView.Handler?.MauiContext);
+		var parent = VirtualView.Parent.ToPlatform(VirtualView.Handler.MauiContext);
+		parent.IsHitTestVisible = true;
 		platformView.IsOpen = false;
 		platformView.Closed -= OnClosed;
 	}
@@ -98,7 +105,7 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 	/// <inheritdoc/>
 	protected override Popup CreatePlatformElement()
 	{
-		var popup =  new Popup();
+		var popup = new Popup();
 		return popup;
 	}
 
