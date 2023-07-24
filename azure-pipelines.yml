@@ -4,6 +4,7 @@ variables:
   CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(PreviewNumber)'
   NugetPackageVersion: '$(CurrentSemanticVersion)'
   NugetPackageVersionMediaElement: '$(CurrentSemanticVersion)'
+  NugetPackageVersionMaps: '$(CurrentSemanticVersion)'
   TOOLKIT_NET_VERSION: '7.0.200'
   LATEST_NET_VERSION: '7.0.x'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
@@ -11,6 +12,7 @@ variables:
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
   PathToCommunityToolkitCoreCsproj: 'src/CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj'
   PathToCommunityToolkitMediaElementCsproj: 'src/CommunityToolkit.Maui.MediaElement/CommunityToolkit.Maui.MediaElement.csproj'
+  PathToCommunityToolkitMapsCsproj: 'src/CommunityToolkit.Maui.Maps/CommunityToolkit.Maui.Maps.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
   PathToCommunityToolkitAnalyzersCsproj: 'src/CommunityToolkit.Maui.Analyzers/CommunityToolkit.Maui.Analyzers.csproj'
@@ -20,7 +22,7 @@ variables:
   PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
   DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/7.0.59.json'
-  CommunityToolkitSampleApp_Xcode_Version: '14.2.0'
+  CommunityToolkitSampleApp_Xcode_Version: '14.3.0'
   CommunityToolkitLibrary_Xcode_Version: '14.0.1'
 
 trigger:
@@ -53,7 +55,7 @@ jobs:
         'Windows':
           image: 'windows-latest'
         'macOS':
-          image: 'macos-12'
+          image: 'macos-13'
     pool:
       vmImage: $(image)
     steps:
@@ -137,6 +139,16 @@ jobs:
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersionMediaElement;]$tagVersion")
         displayName: Set NuGet Version to Tag Number
         condition: and(startsWith(variables['Build.SourceBranch'], 'refs/tags/'), endsWith(variables['Build.SourceBranch'], '-mediaelement')) # Only run this step when a Tag has triggered the CI Pipeline        
+
+      # if this is a tagged build for CommunityToolkit.Maui.Maps, then update the version number
+      - powershell: |
+          $buildSourceBranch = "$(Build.SourceBranch)"
+          $tagVersion = $buildSourceBranch.Substring($buildSourceBranch.LastIndexOf("/") + 1)
+          $tagVersion = $tagVersion.Substring(0, $tagVersion.LastIndexOf("-"))
+          Write-Host("Branch = $buildSourceBranch, Version = $tagVersion");
+          Write-Host ("##vso[task.setvariable variable=NugetPackageVersionMaps;]$tagVersion")
+        displayName: Set NuGet Version to Tag Number
+        condition: and(startsWith(variables['Build.SourceBranch'], 'refs/tags/'), endsWith(variables['Build.SourceBranch'], '-maps')) # Only run this step when a Tag has triggered the CI Pipeline        
 
       # if this is a PR build, then update the version number
       - powershell: |
@@ -238,6 +250,11 @@ jobs:
         inputs:
           script: 'dotnet pack $(PathToCommunityToolkitMediaElementCsproj) -c Release -p:PackageVersion=$(NugetPackageVersionMediaElement)'
 
+      - task: CmdLine@2
+        displayName: 'Pack CommunityToolkit.Maui.Maps NuGet'
+        inputs:
+          script: 'dotnet pack $(PathToCommunityToolkitMapsCsproj) -c Release -p:PackageVersion=$(NugetPackageVersionMaps)'
+
       # check vulnerabilities
       - powershell: |
           dotnet list $(PathToLibrarySolution) package --vulnerable --include-transitive | findstr /S /c:"has the following vulnerable packages";
@@ -265,7 +282,10 @@ jobs:
 
       # Copy CommunityToolkit.Maui & CommunityToolkit.Maui.Core packages
       - task: PowerShell@2
-        condition: and(eq(variables['Agent.OS'], 'Windows_NT'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), not(endsWith(variables['Build.SourceBranch'], '-mediaelement'))) # Only run this step on Windows and when it's a tagged build and the tag does NOT end with -mediaelement
+        condition: and(eq(variables['Agent.OS'], 'Windows_NT'),
+          startsWith(variables['Build.SourceBranch'], 'refs/tags/'),
+          not(endsWith(variables['Build.SourceBranch'], '-mediaelement')), 
+          not(endsWith(variables['Build.SourceBranch'], '-maps'))) # Only run this step on Windows and when it's a tagged build and the tag does NOT end with -mediaelement and does NOT end with -maps
         displayName: 'Copy CommunityToolkit.Maui & CommunityToolkit.Maui.Core NuGet Packages to Staging Directory'
         inputs:
           targetType: 'inline'
@@ -284,6 +304,18 @@ jobs:
           script: |
             $source = ".\src"
             $filter = "CommunityToolkit.Maui.MediaElement.[0-9]+.[0-9]+.[0-9]+(-[a-zA-Z0-9]*)*.nupkg"
+            Get-ChildItem -Path $source -Recurse | Where-Object { $_.Name -match $filter } | Copy-Item -Destination "$(Build.ArtifactStagingDirectory)"
+          pwsh: true
+
+      # Copy CommunityToolkit.Maui.Maps package
+      - task: PowerShell@2
+        condition: and(eq(variables['Agent.OS'], 'Windows_NT'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), endsWith(variables['Build.SourceBranch'], '-maps')) # Only run this step on Windows and when it's a tagged build and the tag ends with -maps
+        displayName: 'Copy CommunityToolkit.Maui.Maps NuGet Package to Staging Directory'
+        inputs:
+          targetType: 'inline'
+          script: |
+            $source = ".\src"
+            $filter = "CommunityToolkit.Maui.Maps.[0-9]+.[0-9]+.[0-9]+(-[a-zA-Z0-9]*)*.nupkg"
             Get-ChildItem -Path $source -Recurse | Where-Object { $_.Name -match $filter } | Copy-Item -Destination "$(Build.ArtifactStagingDirectory)"
           pwsh: true
       

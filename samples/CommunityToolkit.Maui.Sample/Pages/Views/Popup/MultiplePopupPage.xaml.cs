@@ -1,5 +1,6 @@
 using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
+using CommunityToolkit.Maui.Sample.Views.Popups;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
@@ -9,8 +10,7 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 	readonly PopupSizeConstants popupSizeConstants;
 	readonly CsharpBindingPopupViewModel csharpBindingPopupViewModel;
 
-	public MultiplePopupPage(IDeviceInfo deviceInfo,
-								PopupSizeConstants popupSizeConstants,
+	public MultiplePopupPage(PopupSizeConstants popupSizeConstants,
 								MultiplePopupViewModel multiplePopupViewModel,
 								CsharpBindingPopupViewModel csharpBindingPopupViewModel)
 		: base(multiplePopupViewModel)

@@ -1,7 +1,7 @@
 using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Views;
 
-namespace CommunityToolkit.Maui.Sample;
+namespace CommunityToolkit.Maui.Sample.Views.Popups;
 
 public partial class ReturnResultPopup : Popup
 {
@@ -13,5 +13,5 @@ public partial class ReturnResultPopup : Popup
 		ResultWhenUserTapsOutsideOfPopup = "User Tapped Outside of Popup";
 	}
 
-	void Button_Clicked(object? sender, EventArgs e) => Close("Close button tapped");
+	async void Button_Clicked(object? sender, EventArgs e) => await CloseAsync("Close button tapped");
 }

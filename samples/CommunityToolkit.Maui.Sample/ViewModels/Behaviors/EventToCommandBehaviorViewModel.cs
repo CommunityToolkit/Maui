@@ -1,5 +1,6 @@
 ﻿using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
@@ -8,10 +9,15 @@ public partial class EventToCommandBehaviorViewModel : BaseViewModel
 	[ObservableProperty]
 	int clickCount;
 
-	public EventToCommandBehaviorViewModel()
+	[RelayCommand]
+	void Increment()
 	{
-		IncrementCommand = new Command(() => ClickCount++);
+		ClickCount++;
 	}
 
-	public ICommand IncrementCommand { get; }
+	[RelayCommand]
+	void IncrementWithArgs(EventArgs eventArgs)
+	{
+		ClickCount++;
+	}
 }
