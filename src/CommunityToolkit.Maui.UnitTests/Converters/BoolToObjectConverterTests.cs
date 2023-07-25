@@ -125,7 +125,7 @@ public class BoolToObjectConverterTests : BaseConverterTest<BoolToObjectConverte
 	public void BoolToObjectTConverterNullInputTest()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new BoolToObjectConverter<string>()).Convert(null, typeof(object), null, null));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)new BoolToObjectConverter<string>()).Convert(null, typeof(object), null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new BoolToObjectConverter<string>()).Convert(true, null, null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new BoolToObjectConverter<string>()).ConvertBack(true, null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
