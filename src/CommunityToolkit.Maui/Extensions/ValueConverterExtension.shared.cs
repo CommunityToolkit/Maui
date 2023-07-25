@@ -15,18 +15,7 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 	private protected static bool IsNullable<T>()
 	{
 		var type = typeof(T);
-
-		if (!type.IsValueType)
-		{
-			return true; // ref-type
-		}
-
-		if (Nullable.GetUnderlyingType(type) is not null)
-		{
-			return true; // Nullable<T>
-		}
-
-		return false; // value-type
+		return IsNullable(type);
 	}
 	
 	private protected static bool IsNullable(Type type)
@@ -85,15 +74,12 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 	private protected static void PerformNullableTypeValidation<TTarget>(Type targetType)
 	{
 		var typeToCompare = targetType;
-		if (IsNullable(targetType))
+		var underlyingType = Nullable.GetUnderlyingType(targetType);
+		if (underlyingType is not null)
 		{
-			var underlyingType = Nullable.GetUnderlyingType(targetType);
-			if (underlyingType is not null)
-			{
-				typeToCompare = underlyingType;
-			}
+			typeToCompare = underlyingType;
 		}
-		
+
 		PerformTypeValidation<TTarget>(typeToCompare);
 	}
 
