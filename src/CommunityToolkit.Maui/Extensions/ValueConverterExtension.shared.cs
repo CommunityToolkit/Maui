@@ -91,10 +91,9 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 		{
 			PerformTypeValidation<TTarget>(underlyingType);
 		}
-			
 	}
 
-	private static void PerformTypeValidation<TTarget>(Type targetType)
+	private protected static void PerformTypeValidation<TTarget>(Type targetType)
 	{
 		if (!typeof(TTarget).IsAssignableFrom(targetType) && !IsValidTargetType<TTarget>(targetType))
 		{
