@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.ApplicationModel;
 using CommunityToolkit.Maui.Maps;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Media;
@@ -156,6 +157,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<VariableMultiValueConverterPage, VariableMultiValueConverterViewModel>();
 
 		// Add Essentials Pages + ViewModels
+		services.AddTransientWithShellRoute<BadgePage, BadgeViewModel>();
 		services.AddTransientWithShellRoute<FileSaverPage, FileSaverViewModel>();
 		services.AddTransientWithShellRoute<FolderPickerPage, FolderPickerViewModel>();
 		services.AddTransientWithShellRoute<SpeechToTextPage, SpeechToTextViewModel>();
@@ -199,6 +201,7 @@ public static class MauiProgram
 		services.AddSingleton<IDeviceInfo>(DeviceInfo.Current);
 		services.AddSingleton<IFileSaver>(FileSaver.Default);
 		services.AddSingleton<IFolderPicker>(FolderPicker.Default);
+		services.AddSingleton<IBadge>(Badge.Default);
 		services.AddSingleton<ISpeechToText>(SpeechToText.Default);
 		services.AddSingleton<ITextToSpeech>(TextToSpeech.Default);
 	}
