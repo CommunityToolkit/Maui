@@ -20,6 +20,22 @@ public class IsStringNotNullOrEmptyConverterTests : BaseOneWayConverterTest<IsSt
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
 	}
+	
+	[Theory]
+	[InlineData("Test", true)]
+	[InlineData(null, false)]
+	[InlineData("", false)]
+	[InlineData(" ", true)]
+	public void IsStringNotNullOrEmptyConverter_ValidStringValueNullableBool(string? value, bool expectedResult)
+	{
+		var isNotNullOrEmptyConverter = new IsStringNotNullOrEmptyConverter();
+
+		var convertResult = (bool?)((ICommunityToolkitValueConverter)isNotNullOrEmptyConverter).Convert(value, typeof(bool?), null, null);
+		var convertFromResult = isNotNullOrEmptyConverter.ConvertFrom(value);
+
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
+	}
 
 	[Theory]
 	[InlineData(17)]

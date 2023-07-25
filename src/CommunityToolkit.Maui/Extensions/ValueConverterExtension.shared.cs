@@ -68,29 +68,33 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 		static bool IsConvertingToString(in Type targetType) => targetType == typeof(string);
 		static bool CanBeConvertedToString() => typeof(T).GetMethods().Any(x => x.Name is nameof(ToString) && x.ReturnType == typeof(string));
 	}
-
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="targetType"></param>
-	/// <typeparam name="TTarget"></typeparam>
-	/// <exception cref="ArgumentException"></exception>
-	public static void ValidateTargetType<TTarget>(Type targetType)
+	
+	private protected static void ValidateTargetType<TTarget>(Type targetType)
 	{
 		ArgumentNullException.ThrowIfNull(targetType);
 
-		// Ensure TTo can be assigned to the given Target Type
-		if (!IsNullable(targetType))
+		if (IsNullable(targetType))
 		{
-			PerformTypeValidation<TTarget>(targetType);
+			PerformNullableTypeValidation<TTarget>(targetType);
 			return;
 		}
 		
-		var underlyingType = Nullable.GetUnderlyingType(targetType);
-		if (underlyingType is not null)
+		PerformTypeValidation<TTarget>(targetType);
+	}
+
+	private protected static void PerformNullableTypeValidation<TTarget>(Type targetType)
+	{
+		var typeToCompare = targetType;
+		if (IsNullable(targetType))
 		{
-			PerformTypeValidation<TTarget>(underlyingType);
+			var underlyingType = Nullable.GetUnderlyingType(targetType);
+			if (underlyingType is not null)
+			{
+				typeToCompare = underlyingType;
+			}
 		}
+		
+		PerformTypeValidation<TTarget>(typeToCompare);
 	}
 
 	private protected static void PerformTypeValidation<TTarget>(Type targetType)
