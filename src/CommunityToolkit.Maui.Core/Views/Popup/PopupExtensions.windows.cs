@@ -2,7 +2,6 @@
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.Primitives;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -25,19 +24,16 @@ public static class PopupExtensions
 		if (mauiPopup.Child is FrameworkElement content)
 		{
 			var backgroundProperty = content.GetType().GetProperty("Background");
-			if (backgroundProperty != null)
-			{
-				backgroundProperty.SetValue(content, color.ToPlatform());
-			}
+			backgroundProperty?.SetValue(content, color.ToPlatform());
 		}
 	}
 
 	/// <summary>
-	/// 
+	/// Method to update the popup anchor based on the <see cref="Maui.Core.IPopup.Anchor"/>.
 	/// </summary>
-	/// <param name="mauiPopup"></param>
-	/// <param name="popup"></param>
-	/// <param name="mauiContext"></param>
+	/// <param name="mauiPopup">An instance of <see cref="Popup"/>.</param>
+	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
+	/// <param name="mauiContext">An instance of <see cref="IMauiContext"/>.</param>
 	public static void SetAnchor(this Popup mauiPopup, IPopup popup, IMauiContext? mauiContext)
 	{
 		ArgumentNullException.ThrowIfNull(mauiContext);
@@ -45,29 +41,29 @@ public static class PopupExtensions
 	}
 
 	/// <summary>
-	/// 
+	///  Method to prepare control.
 	/// </summary>
-	/// <param name="platformPopup"></param>
-	/// <param name="popup"></param>
-	/// <param name="mauiContext"></param>
-	public static void ConfigureControl(this Popup platformPopup, IPopup popup, IMauiContext? mauiContext)
+	/// <param name="mauiPopup">An instance of <see cref="Popup"/>.</param>
+	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
+	/// <param name="mauiContext">An instance of <see cref="IMauiContext"/>.</param>
+	public static void ConfigureControl(this Popup mauiPopup, IPopup popup, IMauiContext? mauiContext)
 	{
 		ArgumentNullException.ThrowIfNull(mauiContext);
 		if (popup.Content is not null && popup.Handler is PopupHandler handler)
 		{
-			platformPopup.Child = handler.VirtualView.Content?.ToPlatform(mauiContext);
+			mauiPopup.Child = handler.VirtualView.Content?.ToPlatform(mauiContext);
 		}
 
-		platformPopup.SetSize(popup);
-		platformPopup.SetLayout(popup, mauiContext);
+		mauiPopup.SetSize(popup);
+		mauiPopup.SetLayout(popup, mauiContext);
 	}
 
 	/// <summary>
-	/// 
+	/// Method to update the popup size based on the <see cref="Maui.Core.IPopup.Size"/>.
 	/// </summary>
-	/// <param name="platformPopup"></param>
-	/// <param name="popup"></param>
-	public static void SetSize(this Popup platformPopup, IPopup popup)
+	/// <param name="mauiPopup">An instance of <see cref="Popup"/>.</param>
+	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
+	public static void SetSize(this Popup mauiPopup, IPopup popup)
 	{
 		const double defaultBorderThickness = 0;
 		const double defaultSize = 600;
@@ -98,18 +94,18 @@ public static class PopupExtensions
 			currentSize.Height = Math.Min(currentSize.Height, popupParent.Frame.Height);
 		}
 		
-		platformPopup.Width = currentSize.Width;
-		platformPopup.Height = currentSize.Height;
-		platformPopup.MinWidth = platformPopup.MaxWidth = currentSize.Width + (defaultBorderThickness * 2);
-		platformPopup.MinHeight = platformPopup.MaxHeight = currentSize.Height + (defaultBorderThickness * 2);
+		mauiPopup.Width = currentSize.Width;
+		mauiPopup.Height = currentSize.Height;
+		mauiPopup.MinWidth = mauiPopup.MaxWidth = currentSize.Width + (defaultBorderThickness * 2);
+		mauiPopup.MinHeight = mauiPopup.MaxHeight = currentSize.Height + (defaultBorderThickness * 2);
 	}
 
 	/// <summary>
-	/// 
+	///  Method to update the popup layout.
 	/// </summary>
-	/// <param name="platformPopup"></param>
-	/// <param name="popup"></param>
-	/// <param name="mauiContext"></param>
+	/// <param name="mauiPopup">An instance of <see cref="Popup"/>.</param>
+	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
+	/// <param name="mauiContext">An instance of <see cref="IMauiContext"/>.</param>
 	public static void SetLayout(this Popup platformPopup, IPopup popup, IMauiContext? mauiContext)
 	{
 		ArgumentNullException.ThrowIfNull(mauiContext);
@@ -177,8 +173,6 @@ public static class PopupExtensions
 		else
 		{
 			platformPopup.DesiredPlacement = PopupPlacementMode.Top;
-			platformPopup.HorizontalOffset = (popupParentFrame.Width - contentSize.Width) / 2;
-			platformPopup.VerticalOffset = 0;
 		}
 
 		static bool IsTopLeft(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Start && horizontalOptions == LayoutAlignment.Start;
