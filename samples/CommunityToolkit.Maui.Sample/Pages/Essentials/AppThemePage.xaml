@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CommunityToolkit.Maui.Sample.Pages.Essentials.AppThemePage"
+             xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Essentials"
+             x:TypeArguments="vm:AppThemeViewModel"
+             x:DataType="vm:AppThemeViewModel"
+             Title="AppTheme">
+    <pages:BasePage.Resources>
+        <mct:AppThemeColor Light="Green" Dark="Red" x:Key="LabelTextColor" />
+        <mct:AppThemeObject Light="dotnet_bot.png" Dark="avatar_icon.png" x:Key="ImageSource" />
+
+        <Style x:Key="Headline" TargetType="Label">
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="TextColor" Value="{mct:AppThemeResource LabelTextColor}" />
+        </Style>
+    </pages:BasePage.Resources>
+
+    <VerticalStackLayout Spacing="14">
+
+        <Label Text="AppTheme provides extension methods and markup extensions that make it easy to assign Light Theme, Dark Theme and Default Theme"
+               HorizontalTextAlignment="Center"
+               VerticalOptions="Center"/>
+
+        <Label 
+            Text="This color comes from the resource dictionary!"
+            FontSize="20"
+            VerticalOptions="Center" 
+            HorizontalOptions="Center"
+            TextColor="{mct:AppThemeResource LabelTextColor}"/>
+
+        <Label 
+            Text="The below image comes from the resource dictionary!"
+            VerticalOptions="Center" 
+            HorizontalOptions="Center"/>
+
+        <Image
+            WidthRequest="100"
+            HeightRequest="100"
+            VerticalOptions="Center" 
+            HorizontalOptions="Center"
+            Source="{mct:AppThemeResource ImageSource}"/>
+
+        <Label 
+            Text="This color comes from a style!"
+            VerticalOptions="Center" 
+            HorizontalOptions="Center"
+            Style="{StaticResource Headline}"/>
+
+        <HorizontalStackLayout Spacing="5" HorizontalOptions="Center" Margin="0,0,0,20">
+            <Switch x:Name="themeToggle" Toggled="Switch_Toggled" />
+            <Label Text="Toggle Dark/Light Theme" VerticalOptions="Center" />
+        </HorizontalStackLayout>
+    </VerticalStackLayout>
+</pages:BasePage>
