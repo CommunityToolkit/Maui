@@ -21,6 +21,23 @@ public class IsStringNotNullOrWhiteSpaceConverterTests : BaseOneWayConverterTest
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
 	}
+	
+	[Theory]
+	[InlineData("Test", true)]
+	[InlineData(null, false)]
+	[InlineData("", false)]
+	[InlineData(" ", false)]
+	[InlineData("         ", false)]
+	public void IsNotNullOrWhiteSpaceConverter_ValidStringValueNullableBool(string? value, bool expectedResult)
+	{
+		var isNotNullOrWhiteSpaceConverter = new IsStringNotNullOrWhiteSpaceConverter();
+
+		var convertResult = (bool?)((ICommunityToolkitValueConverter)isNotNullOrWhiteSpaceConverter).Convert(value, typeof(bool?), null, null);
+		var convertFromResult = isNotNullOrWhiteSpaceConverter.ConvertFrom(value);
+
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
+	}
 
 	[Theory]
 	[InlineData(17)]
