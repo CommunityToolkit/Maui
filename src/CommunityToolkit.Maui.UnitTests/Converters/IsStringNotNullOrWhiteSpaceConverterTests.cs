@@ -28,7 +28,7 @@ public class IsStringNotNullOrWhiteSpaceConverterTests : BaseOneWayConverterTest
 	[InlineData("", false)]
 	[InlineData(" ", false)]
 	[InlineData("         ", false)]
-	public void IsNotNullOrWhiteSpaceConverter_ValidStringValueNullableBool(string? value, bool expectedResult)
+	public void IsStringNotNullOrWhiteSpaceConverter_ShouldConvert_WhenTargetTypeIsNullableBool(string? value, bool expectedResult)
 	{
 		var isNotNullOrWhiteSpaceConverter = new IsStringNotNullOrWhiteSpaceConverter();
 

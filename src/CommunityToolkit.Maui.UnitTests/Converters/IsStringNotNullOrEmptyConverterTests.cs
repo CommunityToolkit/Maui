@@ -26,7 +26,7 @@ public class IsStringNotNullOrEmptyConverterTests : BaseOneWayConverterTest<IsSt
 	[InlineData(null, false)]
 	[InlineData("", false)]
 	[InlineData(" ", true)]
-	public void IsStringNotNullOrEmptyConverter_ValidStringValueNullableBool(string? value, bool expectedResult)
+	public void IsStringNotNullOrEmptyConverter_ShouldConvert_WhenTargetTypeIsNullableBool(string? value, bool expectedResult)
 	{
 		var isNotNullOrEmptyConverter = new IsStringNotNullOrEmptyConverter();
 
