@@ -27,7 +27,7 @@ public class IsListNotNullOrEmptyConverterTests : BaseOneWayConverterTest<IsList
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
 	}
-	
+
 	[Theory]
 	[MemberData(nameof(Data))]
 	public void IsListNotNullOrEmptyConverter_ShouldConvert_WhenTargetTypeIsNullableBool(IEnumerable? value, bool expectedResult)

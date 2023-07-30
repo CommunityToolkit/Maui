@@ -18,7 +18,7 @@ public class IsNullConverterTests : BaseTest
 		Assert.Equal(expectedResult, result);
 		Assert.Equal(expectedResult, typedResult);
 	}
-	
+
 	[Theory]
 	[ClassData(typeof(FooDataGenerator))]
 	public void IsNullConverter_ShouldConvert_WhenTargetTypeIsNullableBool(object? value, bool expectedResult)

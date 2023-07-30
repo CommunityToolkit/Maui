@@ -20,7 +20,7 @@ public class IsStringNotNullOrEmptyConverterTests : BaseOneWayConverterTest<IsSt
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
 	}
-	
+
 	[Theory]
 	[InlineData("Test", true)]
 	[InlineData(null, false)]

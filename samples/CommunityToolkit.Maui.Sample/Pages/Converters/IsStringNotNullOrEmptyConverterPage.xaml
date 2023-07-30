@@ -2,9 +2,9 @@
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.IsStringNotNullOrEmptyConverterPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Converters"
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:views="clr-namespace:CommunityToolkit.Maui.Sample.Views"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:DataType="vm:IsStringNotNullOrEmptyConverterViewModel"
     x:TypeArguments="vm:IsStringNotNullOrEmptyConverterViewModel">
@@ -29,7 +29,8 @@
                 Text="Enter text into the Entry, below. If the text is not null or empty, the value will be true."
                 TextColor="{StaticResource NormalLabelTextColor}" />
 
-            <converters:NullableBoolComponentWithLabel NullableIsVisible="{Binding LabelText, Mode=OneWay, Converter={StaticResource IsStringNotNullOrEmptyConverter}}" />
+            <views:NullableBoolComponentWithLabel
+                NullableIsVisible="{Binding LabelText, Mode=OneWay, Converter={StaticResource IsStringNotNullOrEmptyConverter}}" />
 
             <Entry
                 HorizontalOptions="Fill"

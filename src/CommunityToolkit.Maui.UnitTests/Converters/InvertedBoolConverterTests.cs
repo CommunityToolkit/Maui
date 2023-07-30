@@ -19,7 +19,7 @@ public class InvertedBoolConverterTests : BaseConverterTest<InvertedBoolConverte
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
 	}
-	
+
 	[Theory]
 	[InlineData(true, false)]
 	[InlineData(false, true)]

@@ -21,7 +21,7 @@ public class IsStringNotNullOrWhiteSpaceConverterTests : BaseOneWayConverterTest
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
 	}
-	
+
 	[Theory]
 	[InlineData("Test", true)]
 	[InlineData(null, false)]

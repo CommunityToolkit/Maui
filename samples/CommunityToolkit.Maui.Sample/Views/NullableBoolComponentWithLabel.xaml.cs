@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Converters;
+﻿namespace CommunityToolkit.Maui.Sample.Views;
 
 public partial class NullableBoolComponentWithLabel : ContentView
 {
@@ -15,7 +15,7 @@ public partial class NullableBoolComponentWithLabel : ContentView
 
 	public bool? NullableIsVisible
 	{
-		get => (bool?) GetValue(NullableIsVisibleProperty);
+		get => (bool?)GetValue(NullableIsVisibleProperty);
 		set => SetValue(NullableIsVisibleProperty, value);
 	}
 }

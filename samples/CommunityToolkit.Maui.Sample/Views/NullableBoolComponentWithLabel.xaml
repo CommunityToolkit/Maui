@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 
 <ContentView
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.NullableBoolComponentWithLabel"
+    x:Class="CommunityToolkit.Maui.Sample.Views.NullableBoolComponentWithLabel"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Name="This"
-    IsVisible="{Binding NullableIsVisible, Source={x:Reference This}}">
+    IsVisible="{Binding NullableIsVisible, Source={x:RelativeSource Self}}">
 
     <Label
-        Text="Binding to a nullable bool (bool?) is also allowed. If the bool? is null, the converter will return false."
+        Text="Binding to a nullable `bool` (`bool?`) is also allowed. If the `bool?` is null, the converter will return false."
         TextColor="{StaticResource NormalLabelTextColor}"
         VerticalOptions="Center" />
 </ContentView>

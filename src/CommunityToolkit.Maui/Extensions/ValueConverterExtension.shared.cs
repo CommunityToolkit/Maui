@@ -12,13 +12,42 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)
 		=> ((IMarkupExtension<ICommunityToolkitValueConverter>)this).ProvideValue(serviceProvider);
 
-	private protected static bool IsNullable<T>()
+	private protected static bool IsNullable<T>() => IsNullable(typeof(T));
+
+	private protected static void ValidateTargetType<TTarget>(Type targetType)
 	{
-		var type = typeof(T);
-		return IsNullable(type);
+		ArgumentNullException.ThrowIfNull(targetType);
+
+		if (IsNullable(targetType))
+		{
+			PerformNullableTypeValidation<TTarget>(targetType);
+			return;
+		}
+
+		PerformTypeValidation<TTarget>(targetType);
 	}
-	
-	private protected static bool IsNullable(Type type)
+
+#pragma warning disable CS8603 // Possible null reference return. If TParam is null (e.g. `string?`), a null return value is expected
+	private protected static TParam ConvertParameter<TParam>(object? parameter) => parameter switch
+	{
+		null when IsNullable<TParam>() => default,
+		null when !IsNullable<TParam>() => throw new ArgumentNullException(nameof(parameter), $"Value cannot be null because {nameof(TParam)} is not nullable."),
+		TParam convertedParameter => convertedParameter,
+		_ => throw new ArgumentException($"Parameter needs to be of type {typeof(TParam)}", nameof(parameter))
+	};
+#pragma warning restore CS8603 // Possible null reference return.
+
+#pragma warning disable CS8603 // Possible null reference return. If TValue is null (e.g. `string?`), a null return value is expected
+	private protected static TValue ConvertValue<TValue>(object? value) => value switch
+	{
+		null when IsNullable<TValue>() => default,
+		null when !IsNullable<TValue>() => throw new ArgumentNullException(nameof(value), $"Value cannot be null because {nameof(TValue)} is not nullable"),
+		TValue convertedValue => convertedValue,
+		_ => throw new ArgumentException($"Value needs to be of type {typeof(TValue)}", nameof(value))
+	};
+#pragma warning restore CS8603 // Possible null reference return.
+
+	static bool IsNullable(Type type)
 	{
 		if (!type.IsValueType)
 		{
@@ -33,7 +62,27 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 		return false; // value-type
 	}
 
-	private protected static bool IsValidTargetType<T>(in Type targetType)
+	static void PerformNullableTypeValidation<TTarget>(Type targetType)
+	{
+		var typeToCompare = targetType;
+		var underlyingType = Nullable.GetUnderlyingType(targetType);
+		if (underlyingType is not null)
+		{
+			typeToCompare = underlyingType;
+		}
+
+		PerformTypeValidation<TTarget>(typeToCompare);
+	}
+
+	static void PerformTypeValidation<TTarget>(Type targetType)
+	{
+		if (!typeof(TTarget).IsAssignableFrom(targetType) && !IsValidTargetType<TTarget>(targetType))
+		{
+			throw new ArgumentException($"targetType needs to be assignable from {typeof(TTarget)}.", nameof(targetType));
+		}
+	}
+
+	static bool IsValidTargetType<T>(in Type targetType)
 	{
 		if (IsConvertingToString(targetType) && CanBeConvertedToString())
 		{
@@ -57,57 +106,4 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 		static bool IsConvertingToString(in Type targetType) => targetType == typeof(string);
 		static bool CanBeConvertedToString() => typeof(T).GetMethods().Any(x => x.Name is nameof(ToString) && x.ReturnType == typeof(string));
 	}
-	
-	private protected static void ValidateTargetType<TTarget>(Type targetType)
-	{
-		ArgumentNullException.ThrowIfNull(targetType);
-
-		if (IsNullable(targetType))
-		{
-			PerformNullableTypeValidation<TTarget>(targetType);
-			return;
-		}
-		
-		PerformTypeValidation<TTarget>(targetType);
-	}
-
-	private protected static void PerformNullableTypeValidation<TTarget>(Type targetType)
-	{
-		var typeToCompare = targetType;
-		var underlyingType = Nullable.GetUnderlyingType(targetType);
-		if (underlyingType is not null)
-		{
-			typeToCompare = underlyingType;
-		}
-
-		PerformTypeValidation<TTarget>(typeToCompare);
-	}
-
-	private protected static void PerformTypeValidation<TTarget>(Type targetType)
-	{
-		if (!typeof(TTarget).IsAssignableFrom(targetType) && !IsValidTargetType<TTarget>(targetType))
-		{
-			throw new ArgumentException($"targetType needs to be assignable from {typeof(TTarget)}.", nameof(targetType));
-		}
-	}
-
-#pragma warning disable CS8603 // Possible null reference return. If TParam is null (e.g. `string?`), a null return value is expected
-	private protected static TParam ConvertParameter<TParam>(object? parameter) => parameter switch
-	{
-		null when IsNullable<TParam>() => default,
-		null when !IsNullable<TParam>() => throw new ArgumentNullException(nameof(parameter), $"Value cannot be null because {nameof(TParam)} is not nullable."),
-		TParam convertedParameter => convertedParameter,
-		_ => throw new ArgumentException($"Parameter needs to be of type {typeof(TParam)}", nameof(parameter))
-	};
-#pragma warning restore CS8603 // Possible null reference return.
-
-#pragma warning disable CS8603 // Possible null reference return. If TValue is null (e.g. `string?`), a null return value is expected
-	private protected static TValue ConvertValue<TValue>(object? value) => value switch
-	{
-		null when IsNullable<TValue>() => default,
-		null when !IsNullable<TValue>() => throw new ArgumentNullException(nameof(value), $"Value cannot be null because {nameof(TValue)} is not nullable"),
-		TValue convertedValue => convertedValue,
-		_ => throw new ArgumentException($"Value needs to be of type {typeof(TValue)}", nameof(value))
-	};
-#pragma warning restore CS8603 // Possible null reference return.
 }

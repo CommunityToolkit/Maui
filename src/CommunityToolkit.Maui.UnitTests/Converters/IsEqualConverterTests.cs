@@ -22,7 +22,7 @@ public class IsEqualConverterTests : BaseTest
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
 	}
-	
+
 	[Theory]
 	[InlineData(true, true, true)]
 	[InlineData(int.MaxValue, int.MinValue, false)]
