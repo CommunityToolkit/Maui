@@ -27,7 +27,7 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView, IDisposable
 		}
 		else
 		{
-			System.Diagnostics.Debug.WriteLine("DrawingView requires Windows 10.0.18362 or higher.");
+			System.Diagnostics.Trace.WriteLine("DrawingView requires Windows 10.0.18362 or higher.");
 		}
 
 		Lines.CollectionChanged += OnLinesCollectionChanged;
