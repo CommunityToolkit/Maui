@@ -379,7 +379,6 @@ public class MediaElement : View, IMediaElement
 
 	internal void OnMediaEnded()
 	{
-		ClearTimer();
 		CurrentState = MediaElementState.Stopped;
 		eventManager.HandleEvent(this, EventArgs.Empty, nameof(MediaEnded));
 	}
