@@ -119,6 +119,9 @@ Here we will have some:
 
 ## Contributing Code - Best Practices
 
+### Debug Logging
+* Always use `Trace.WriteLine()` instead of `Debug.WriteLine` for debug logging because `Debug.WriteLine` is removed by the compiler in Release builds
+
 ### Enums
 * Always use `Unknown` at index 0 for return types that may have a value that is not known
 * Always use `Default` at index 0 for option types that can use the system default option
