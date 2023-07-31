@@ -99,7 +99,7 @@ public class AnimationBehavior : EventToCommandBehavior
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInAnimations)
 		{
-			Debug.WriteLine(ex);
+			Trace.WriteLine(ex);
 			return Task.CompletedTask;
 		}
 	}
