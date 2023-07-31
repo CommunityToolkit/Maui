@@ -145,7 +145,7 @@ namespace {{textStyleClassMetadata.Namespace}};
 		{
 			//When creating an Animation too early in the lifecycle of the Page, i.e. in the OnAppearing method,
 			//the Page might not have an 'IAnimationManager' yet, resulting in an ArgumentException.
-			System.Diagnostics.Debug.WriteLine($"{aex.GetType().Name} thrown in {typeof(ColorAnimationExtensions_{{textStyleClassMetadata.ClassName}}).FullName}: {aex.Message}");
+			System.Diagnostics.Trace.WriteLine($"{aex.GetType().Name} thrown in {typeof(ColorAnimationExtensions_{{textStyleClassMetadata.ClassName}}).FullName}: {aex.Message}");
 			animationCompletionSource.SetResult(false);
 		}
 
