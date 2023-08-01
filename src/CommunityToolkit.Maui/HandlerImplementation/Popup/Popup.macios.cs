@@ -29,8 +29,6 @@ public partial class Popup
 				Content = view
 			};
 
-			contentPage.SetBinding(BindingContextProperty, new Binding { Source = view, Path = BindingContextProperty.PropertyName });
-
 			return (PageHandler)contentPage.ToHandler(mauiContext);
 		}
 	}
