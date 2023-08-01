@@ -349,6 +349,13 @@ public partial class MapHandlerWindows : MapHandler
 
 								window.chrome.webview.postMessage(eventMessage);
 							}
+
+							function hideInfoWindow()
+							{
+								infobox.setOptions({
+									visible: false
+								});
+							}
 						</script>
 						<style>
 							body, html{
@@ -434,7 +441,16 @@ public partial class MapHandlerWindows : MapHandler
 				{
 					var clickedPin = VirtualView.Pins.SingleOrDefault(p => (p as Pin)?.Id.ToString().Equals(clickedInfoWindowWebViewId) ?? false);
 
-					clickedPin?.SendInfoWindowClick();
+					if (clickedPin is null)
+					{
+						break;
+					}
+
+					var hideInfoWindow = clickedPin.SendInfoWindowClick();
+					if (hideInfoWindow)
+					{
+						CallJSMethod(PlatformView, "hideInfoWindow();");
+					}
 				}
 				break;
 
@@ -445,8 +461,16 @@ public partial class MapHandlerWindows : MapHandler
 				if (!string.IsNullOrEmpty(clickedPinWebViewId))
 				{
 					var clickedPin = VirtualView.Pins.SingleOrDefault(p => (p as Pin)?.Id.ToString().Equals(clickedPinWebViewId) ?? false);
+					if (clickedPin is null)
+					{
+						break;
+					}
 
-					clickedPin?.SendMarkerClick();
+					var hideInfoWindow = clickedPin.SendMarkerClick();
+					if (hideInfoWindow)
+					{
+						CallJSMethod(PlatformView, "hideInfoWindow();");
+					}
 				}
 				break;
 		}
