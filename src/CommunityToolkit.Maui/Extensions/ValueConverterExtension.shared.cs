@@ -9,22 +9,56 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 	public ICommunityToolkitValueConverter ProvideValue(IServiceProvider serviceProvider)
 		=> (ICommunityToolkitValueConverter)this;
 
-	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)
-		=> ((IMarkupExtension<ICommunityToolkitValueConverter>)this).ProvideValue(serviceProvider);
-
 	private protected static bool IsNullable<T>() => IsNullable(typeof(T));
 
-	private protected static void ValidateTargetType<TTarget>(Type targetType)
+	private protected static bool IsValidTargetType<T>(in Type targetType)
+	{
+		if (IsConvertingToString(targetType) && CanBeConvertedToString())
+		{
+			return true;
+		}
+
+		try
+		{
+			var instanceOfT = default(T);
+			instanceOfT ??= (T?)Activator.CreateInstance(targetType);
+
+			var result = Convert.ChangeType(instanceOfT, targetType);
+
+			return result is not null;
+		}
+		catch
+		{
+			return false;
+		}
+
+		static bool IsConvertingToString(in Type targetType) => targetType == typeof(string);
+		static bool CanBeConvertedToString() => typeof(T).GetMethods().Any(x => x.Name is nameof(ToString) && x.ReturnType == typeof(string));
+	}
+
+	private protected static void ValidateTargetType<TTarget>(Type targetType, bool shouldAllowNullableValueTypes)
 	{
 		ArgumentNullException.ThrowIfNull(targetType);
 
-		if (IsNullable(targetType))
+		// Ensure TTo can be assigned to the given Target Type
+		if (!typeof(TTarget).IsAssignableFrom(targetType) // Ensure TTarget can be assigned from targetType. Eg TTarget is IEnumerable and targetType is IList
+			&& !IsValidTargetType<TTarget>(targetType) // Ensure targetType be converted to TTarget? Eg `Convert.ChangeType()` returns a non-null value
+			&& !(shouldAllowNullableValueTypes && typeof(TTarget).IsValueType && IsValidNullableValueType(targetType))) // Is TTarget a Value Type and targetType a Nullable Value Type? Eg TTarget is bool and targetType is bool?
 		{
-			PerformNullableTypeValidation<TTarget>(targetType);
-			return;
+			throw new ArgumentException($"targetType needs to be assignable from {typeof(TTarget)}.", nameof(targetType));
 		}
 
-		PerformTypeValidation<TTarget>(targetType);
+		static bool IsValidNullableValueType(Type targetType)
+		{
+			if (!IsNullable(targetType))
+			{
+				return false;
+			}
+
+			var underlyingType = Nullable.GetUnderlyingType(targetType) ?? throw new InvalidOperationException("Non-nullable are not valid");
+
+			return underlyingType == typeof(TTarget);
+		}
 	}
 
 #pragma warning disable CS8603 // Possible null reference return. If TParam is null (e.g. `string?`), a null return value is expected
@@ -62,48 +96,6 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 		return false; // value-type
 	}
 
-	static void PerformNullableTypeValidation<TTarget>(Type targetType)
-	{
-		var typeToCompare = targetType;
-		var underlyingType = Nullable.GetUnderlyingType(targetType);
-		if (underlyingType is not null)
-		{
-			typeToCompare = underlyingType;
-		}
-
-		PerformTypeValidation<TTarget>(typeToCompare);
-	}
-
-	static void PerformTypeValidation<TTarget>(Type targetType)
-	{
-		if (!typeof(TTarget).IsAssignableFrom(targetType) && !IsValidTargetType<TTarget>(targetType))
-		{
-			throw new ArgumentException($"targetType needs to be assignable from {typeof(TTarget)}.", nameof(targetType));
-		}
-	}
-
-	static bool IsValidTargetType<T>(in Type targetType)
-	{
-		if (IsConvertingToString(targetType) && CanBeConvertedToString())
-		{
-			return true;
-		}
-
-		try
-		{
-			var instanceOfT = default(T);
-			instanceOfT ??= (T?)Activator.CreateInstance(targetType);
-
-			var result = Convert.ChangeType(instanceOfT, targetType);
-
-			return result is not null;
-		}
-		catch
-		{
-			return false;
-		}
-
-		static bool IsConvertingToString(in Type targetType) => targetType == typeof(string);
-		static bool CanBeConvertedToString() => typeof(T).GetMethods().Any(x => x.Name is nameof(ToString) && x.ReturnType == typeof(string));
-	}
+	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)
+		=> ((IMarkupExtension<ICommunityToolkitValueConverter>)this).ProvideValue(serviceProvider);
 }
