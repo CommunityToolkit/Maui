@@ -357,7 +357,6 @@ public class MediaElement : View, IMediaElement
 	/// <inheritdoc cref="IMediaElement.Play"/>
 	public void Play()
 	{
-		InitializeTimer();
 		OnPlayRequested();
 		Handler?.Invoke(nameof(PlayRequested));
 	}
@@ -372,7 +371,6 @@ public class MediaElement : View, IMediaElement
 	/// <inheritdoc cref="IMediaElement.Stop"/>
 	public void Stop()
 	{
-		ClearTimer();
 		OnStopRequested();
 		Handler?.Invoke(nameof(StopRequested));
 	}
@@ -448,18 +446,6 @@ public class MediaElement : View, IMediaElement
 		timer.Interval = TimeSpan.FromMilliseconds(200);
 		timer.Tick += OnTimerTick;
 		timer.Start();
-	}
-
-	void ClearTimer()
-	{
-		if (timer is null)
-		{
-			return;
-		}
-
-		timer.Tick -= OnTimerTick;
-		timer.Stop();
-		timer = null;
 	}
 
 	void OnSourceChanged(object? sender, EventArgs eventArgs)
