@@ -440,14 +440,9 @@ public partial class MapHandlerWindows : MapHandler
 				if (!string.IsNullOrEmpty(clickedInfoWindowWebViewId))
 				{
 					var clickedPin = VirtualView.Pins.SingleOrDefault(p => (p as Pin)?.Id.ToString().Equals(clickedInfoWindowWebViewId) ?? false);
-
-					if (clickedPin is null)
-					{
-						break;
-					}
-
-					var hideInfoWindow = clickedPin.SendInfoWindowClick();
-					if (hideInfoWindow)
+					
+					var hideInfoWindow = clickedPin?.SendInfoWindowClick();
+					if (hideInfoWindow is not false)
 					{
 						CallJSMethod(PlatformView, "hideInfoWindow();");
 					}
@@ -461,13 +456,9 @@ public partial class MapHandlerWindows : MapHandler
 				if (!string.IsNullOrEmpty(clickedPinWebViewId))
 				{
 					var clickedPin = VirtualView.Pins.SingleOrDefault(p => (p as Pin)?.Id.ToString().Equals(clickedPinWebViewId) ?? false);
-					if (clickedPin is null)
-					{
-						break;
-					}
-
-					var hideInfoWindow = clickedPin.SendMarkerClick();
-					if (hideInfoWindow)
+					
+					var hideInfoWindow = clickedPin?.SendMarkerClick();
+					if (hideInfoWindow is not false)
 					{
 						CallJSMethod(PlatformView, "hideInfoWindow();");
 					}
