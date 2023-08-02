@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using CommunityToolkit.Maui.Converters;
+﻿using CommunityToolkit.Maui.Converters;
 
 namespace CommunityToolkit.Maui.Extensions;
 
@@ -9,9 +8,6 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 	/// <inheritdoc />
 	public ICommunityToolkitValueConverter ProvideValue(IServiceProvider serviceProvider)
 		=> (ICommunityToolkitValueConverter)this;
-
-	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)
-		=> ((IMarkupExtension<ICommunityToolkitValueConverter>)this).ProvideValue(serviceProvider);
 
 	private protected static bool IsNullable<T>() => IsNullable(typeof(T));
 
@@ -27,7 +23,7 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 			var instanceOfT = default(T);
 			instanceOfT ??= (T?)Activator.CreateInstance(targetType);
 
-			var result = Convert.ChangeType(instanceOfT, targetType);
+			var result =  Convert.ChangeType(instanceOfT, targetType);
 
 			return result is not null;
 		}
@@ -45,8 +41,9 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 		ArgumentNullException.ThrowIfNull(targetType);
 
 		// Ensure TTo can be assigned to the given Target Type
-		if (!typeof(TTarget).IsAssignableFrom(targetType) && !IsValidTargetType<TTarget>(targetType)
-			&& !(shouldAllowNullableValueTypes && IsValidNullableValueType(targetType)))
+		if (!typeof(TTarget).IsAssignableFrom(targetType) // Ensure TTarget can be assigned from targetType. Eg TTarget is IEnumerable and targetType is IList
+			&& !IsValidTargetType<TTarget>(targetType) // Ensure targetType be converted to TTarget? Eg `Convert.ChangeType()` returns a non-null value
+			&& !(shouldAllowNullableValueTypes && typeof(TTarget).IsValueType && IsValidNullableValueType(targetType))) // Is TTarget a Value Type and targetType a Nullable Value Type? Eg TTarget is bool and targetType is bool?
 		{
 			throw new ArgumentException($"targetType needs to be assignable from {typeof(TTarget)}.", nameof(targetType));
 		}
@@ -60,7 +57,7 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 
 			var underlyingType = Nullable.GetUnderlyingType(targetType) ?? throw new InvalidOperationException("Non-nullable are not valid");
 
-			return underlyingType.Equals(typeof(TTarget));
+			return underlyingType == typeof(TTarget);
 		}
 	}
 
@@ -98,4 +95,7 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 
 		return false; // value-type
 	}
+
+	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)
+		=> ((IMarkupExtension<ICommunityToolkitValueConverter>)this).ProvideValue(serviceProvider);
 }
