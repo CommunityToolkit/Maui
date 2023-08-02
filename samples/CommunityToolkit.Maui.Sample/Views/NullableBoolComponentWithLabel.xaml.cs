@@ -1,6 +1,6 @@
 ﻿namespace CommunityToolkit.Maui.Sample.Views;
 
-public partial class NullableBoolComponentWithLabel : ContentView
+public partial class NullableBoolComponentWithLabel : Label
 {
 	public static readonly BindableProperty NullableIsVisibleProperty = BindableProperty.Create(
 		nameof(NullableIsVisible),
