@@ -34,6 +34,14 @@ public class InvertedBoolConverterTests : BaseConverterTest<InvertedBoolConverte
 		Assert.Equal(expectedResult, convertFromResult);
 	}
 
+	[Fact]
+	public void InvertedBoolConverter_ShouldThrowError_WhenInputTypeIsNullableBool()
+	{
+		var invertedBoolConverter = new InvertedBoolConverter();
+
+		Assert.Throws<ArgumentNullException>(() => (bool?)((ICommunityToolkitValueConverter)invertedBoolConverter).Convert(null, typeof(bool?), null, CultureInfo.CurrentCulture));
+	}
+
 	[Theory]
 	[InlineData(2)]
 	[InlineData("")]
