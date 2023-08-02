@@ -23,6 +23,23 @@ public class IsNotEqualConverterTests : BaseTest
 		Assert.Equal(expectedResult, convertFromResult);
 	}
 
+	[Theory]
+	[InlineData(true, true, false)]
+	[InlineData(int.MaxValue, int.MinValue, true)]
+	[InlineData("Test", true, true)]
+	[InlineData(null, null, false)]
+	[InlineData(null, true, true)]
+	public void IsNotEqualConverter_ShouldConvert_WhenTargetTypeIsNullableBool(object? value, object? comparedValue, bool expectedResult)
+	{
+		var notEqualConverter = new IsNotEqualConverter();
+
+		var convertResult = (bool?)((ICommunityToolkitValueConverter)notEqualConverter).Convert(value, typeof(bool?), comparedValue, CultureInfo.CurrentCulture);
+		var convertFromResult = notEqualConverter.ConvertFrom(value, comparedValue);
+
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
+	}
+
 	[Fact]
 	public void IsNotEqualConverterNullInputTest()
 	{
