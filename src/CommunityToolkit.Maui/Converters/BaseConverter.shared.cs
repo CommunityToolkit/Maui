@@ -70,7 +70,7 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInConverters)
 		{
-			Debug.WriteLine(ex);
+			Trace.WriteLine(ex);
 			return DefaultConvertBackReturnValue;
 		}
 	}
@@ -89,7 +89,7 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInConverters)
 		{
-			Debug.WriteLine(ex);
+			Trace.WriteLine(ex);
 			return DefaultConvertReturnValue;
 		}
 	}
@@ -152,7 +152,7 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInConverters)
 		{
-			Debug.WriteLine(ex);
+			Trace.WriteLine(ex);
 			return DefaultConvertBackReturnValue;
 		}
 	}
@@ -170,7 +170,7 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInConverters)
 		{
-			Debug.WriteLine(ex);
+			Trace.WriteLine(ex);
 			return DefaultConvertReturnValue;
 		}
 	}
