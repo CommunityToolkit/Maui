@@ -61,7 +61,7 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 	{
 		try
 		{
-			ValidateTargetType<TFrom>(targetType);
+			ValidateTargetType<TFrom>(targetType, false);
 
 			var converterParameter = ConvertParameter<TParam>(parameter);
 			var converterValue = ConvertValue<TTo>(value);
@@ -70,7 +70,7 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInConverters)
 		{
-			Debug.WriteLine(ex);
+			Trace.WriteLine(ex);
 			return DefaultConvertBackReturnValue;
 		}
 	}
@@ -80,7 +80,7 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 	{
 		try
 		{
-			ValidateTargetType<TTo>(targetType);
+			ValidateTargetType<TTo>(targetType, true);
 
 			var converterParameter = ConvertParameter<TParam>(parameter);
 			var converterValue = ConvertValue<TFrom>(value);
@@ -89,7 +89,7 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInConverters)
 		{
-			Debug.WriteLine(ex);
+			Trace.WriteLine(ex);
 			return DefaultConvertReturnValue;
 		}
 	}
@@ -144,7 +144,7 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 	{
 		try
 		{
-			ValidateTargetType<TFrom>(targetType);
+			ValidateTargetType<TFrom>(targetType, false);
 
 			var converterValue = ConvertValue<TTo>(value);
 
@@ -152,7 +152,7 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInConverters)
 		{
-			Debug.WriteLine(ex);
+			Trace.WriteLine(ex);
 			return DefaultConvertBackReturnValue;
 		}
 	}
@@ -162,7 +162,7 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 	{
 		try
 		{
-			ValidateTargetType<TTo>(targetType);
+			ValidateTargetType<TTo>(targetType, true);
 
 			var converterValue = ConvertValue<TFrom>(value);
 
@@ -170,7 +170,7 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInConverters)
 		{
-			Debug.WriteLine(ex);
+			Trace.WriteLine(ex);
 			return DefaultConvertReturnValue;
 		}
 	}

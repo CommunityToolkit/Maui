@@ -29,6 +29,19 @@ public class IsListNullOrEmptyConverterTests : BaseOneWayConverterTest<IsListNul
 	}
 
 	[Theory]
+	[MemberData(nameof(Data))]
+	public void IsListNullOrEmptyConverter_ShouldConvert_WhenTargetTypeIsNullableBool(IEnumerable? value, bool expectedResult)
+	{
+		var listIstNullOrEmptyConverter = new IsListNullOrEmptyConverter();
+
+		var convertResult = (bool?)((ICommunityToolkitValueConverter)listIstNullOrEmptyConverter).Convert(value, typeof(bool?), null, CultureInfo.CurrentCulture);
+		var convertFromResult = listIstNullOrEmptyConverter.ConvertFrom(value);
+
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
+	}
+
+	[Theory]
 	[InlineData(0)]
 	public void InvalidConverterValuesThrowArgumentException(object value)
 	{
