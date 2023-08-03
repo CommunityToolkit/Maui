@@ -105,6 +105,7 @@ public partial class MapsPinsPage : BasePage<MapsPinsViewModel>
 		microsoftPin.MarkerClicked += (s, a) =>
 		{
 			DisplayAlert("Marker", "OK", "OK");
+			a.HideInfoWindow = true;
 		};
 
 		microsoftPin.InfoWindowClicked += (s, a) =>
