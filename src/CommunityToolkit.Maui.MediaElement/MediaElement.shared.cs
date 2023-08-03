@@ -255,7 +255,15 @@ public class MediaElement : View, IMediaElement
 	public MediaSource? Source
 	{
 		get => (MediaSource)GetValue(SourceProperty);
-		set => SetValue(SourceProperty, value);
+		set
+		{
+			if (value == null)
+			{
+				ClearTimer();
+			}
+
+			SetValue(SourceProperty, value);
+		}
 	}
 
 	/// <summary>
@@ -446,6 +454,18 @@ public class MediaElement : View, IMediaElement
 		timer.Interval = TimeSpan.FromMilliseconds(200);
 		timer.Tick += OnTimerTick;
 		timer.Start();
+	}
+
+	void ClearTimer()
+	{
+		if (timer is null)
+		{
+			return;
+		}
+
+		timer.Tick -= OnTimerTick;
+		timer.Stop();
+		timer = null;
 	}
 
 	void OnSourceChanged(object? sender, EventArgs eventArgs)
