@@ -257,11 +257,7 @@ public class MediaElement : View, IMediaElement
 		get => (MediaSource)GetValue(SourceProperty);
 		set
 		{
-			if (value == null)
-			{
-				ClearTimer();
-			}
-
+			ClearTimer();
 			SetValue(SourceProperty, value);
 		}
 	}
