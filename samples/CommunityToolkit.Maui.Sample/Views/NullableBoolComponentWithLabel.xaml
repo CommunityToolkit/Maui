@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<Label
+    x:Class="CommunityToolkit.Maui.Sample.Views.NullableBoolComponentWithLabel"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Name="This"
+    IsVisible="{Binding NullableIsVisible, Source={x:RelativeSource Self}}"
+    Text="Binding to a nullable `bool` (`bool?`) is also allowed. If the `bool?` is null, the converter will return false."
+    TextColor="{StaticResource NormalLabelTextColor}"
+    VerticalOptions="Center" />
