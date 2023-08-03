@@ -49,4 +49,11 @@ public class PaddedLabel : UILabel
 		var insets = new UIEdgeInsets(TopPadding, LeftPadding, BottomPadding, RightPadding);
 		base.DrawText(insets.InsetRect(rect));
 	}
+
+	/// <inheritdoc/>
+	public override CGRect TextRectForBounds(CGRect bounds, nint numberOfLines)
+	{
+		var insets = new UIEdgeInsets(TopPadding, LeftPadding, BottomPadding, RightPadding);
+		return base.TextRectForBounds(insets.InsetRect(bounds), numberOfLines);
+	}
 }

@@ -6,8 +6,6 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class IsEqualConverterTests : BaseTest
 {
-	public const string TestValue = nameof(TestValue);
-
 	[Theory]
 	[InlineData(true, true, true)]
 	[InlineData(int.MaxValue, int.MinValue, false)]
@@ -19,6 +17,23 @@ public class IsEqualConverterTests : BaseTest
 		var isEqualConverter = new IsEqualConverter();
 
 		var convertResult = (bool?)((ICommunityToolkitValueConverter)isEqualConverter).Convert(value, typeof(bool), comparedValue, CultureInfo.CurrentCulture);
+		var convertFromResult = isEqualConverter.ConvertFrom(value, comparedValue);
+
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
+	}
+
+	[Theory]
+	[InlineData(true, true, true)]
+	[InlineData(int.MaxValue, int.MinValue, false)]
+	[InlineData("Test", true, false)]
+	[InlineData(null, null, true)]
+	[InlineData(null, true, false)]
+	public void IsEqualConverter_ShouldConvert_WhenTargetTypeIsNullableBool(object? value, object? comparedValue, bool expectedResult)
+	{
+		var isEqualConverter = new IsEqualConverter();
+
+		var convertResult = (bool?)((ICommunityToolkitValueConverter)isEqualConverter).Convert(value, typeof(bool?), comparedValue, CultureInfo.CurrentCulture);
 		var convertFromResult = isEqualConverter.ConvertFrom(value, comparedValue);
 
 		Assert.Equal(expectedResult, convertResult);

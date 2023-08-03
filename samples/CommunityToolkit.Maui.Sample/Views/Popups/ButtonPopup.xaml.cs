@@ -1,7 +1,7 @@
 using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Views;
 
-namespace CommunityToolkit.Maui.Sample;
+namespace CommunityToolkit.Maui.Sample.Views.Popups;
 
 public partial class ButtonPopup : Popup
 {
@@ -11,5 +11,5 @@ public partial class ButtonPopup : Popup
 		Size = popupSizeConstants.Medium;
 	}
 
-	void Button_Clicked(object? sender, EventArgs e) => Close();
+	async void Button_Clicked(object? sender, EventArgs e) => await CloseAsync();
 }
