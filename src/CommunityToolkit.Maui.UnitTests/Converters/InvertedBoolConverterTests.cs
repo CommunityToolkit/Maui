@@ -21,6 +21,30 @@ public class InvertedBoolConverterTests : BaseConverterTest<InvertedBoolConverte
 	}
 
 	[Theory]
+	[InlineData(true, false)]
+	[InlineData(false, true)]
+	public void InvertedBoolConverter_ShouldConvert_WhenTargetTypeIsNullableBool(bool value, bool expectedResult)
+	{
+		var invertedBoolConverter = new InvertedBoolConverter();
+
+		var convertResult = (bool?)((ICommunityToolkitValueConverter)invertedBoolConverter).Convert(value, typeof(bool?), null, CultureInfo.CurrentCulture);
+		var convertFromResult = invertedBoolConverter.ConvertFrom(value);
+
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
+	}
+
+	[Fact]
+	public void InvertedBoolConverter_ShouldThrowError_WhenInputTypeIsNullableBool()
+	{
+		var invertedBoolConverter = new InvertedBoolConverter();
+
+		bool? nullableBool = null;
+
+		Assert.Throws<ArgumentNullException>(() => (bool?)((ICommunityToolkitValueConverter)invertedBoolConverter).Convert(nullableBool, typeof(bool?), null, CultureInfo.CurrentCulture));
+	}
+
+	[Theory]
 	[InlineData(2)]
 	[InlineData("")]
 	[InlineData('c')]
