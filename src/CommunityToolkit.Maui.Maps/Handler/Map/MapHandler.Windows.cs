@@ -440,7 +440,7 @@ public partial class MapHandlerWindows : MapHandler
 				if (!string.IsNullOrEmpty(clickedInfoWindowWebViewId))
 				{
 					var clickedPin = VirtualView.Pins.SingleOrDefault(p => (p as Pin)?.Id.ToString().Equals(clickedInfoWindowWebViewId) ?? false);
-					
+
 					var hideInfoWindow = clickedPin?.SendInfoWindowClick();
 					if (hideInfoWindow is not false)
 					{
@@ -456,7 +456,7 @@ public partial class MapHandlerWindows : MapHandler
 				if (!string.IsNullOrEmpty(clickedPinWebViewId))
 				{
 					var clickedPin = VirtualView.Pins.SingleOrDefault(p => (p as Pin)?.Id.ToString().Equals(clickedPinWebViewId) ?? false);
-					
+
 					var hideInfoWindow = clickedPin?.SendMarkerClick();
 					if (hideInfoWindow is not false)
 					{
