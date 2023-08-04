@@ -109,6 +109,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	protected override void ConnectHandler(MauiPopup platformView)
 	{
 		Container = platformView.SetElement(VirtualView);
+
 		if (Container is not null)
 		{
 			Container.LayoutChange += OnLayoutChange;
@@ -119,6 +120,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	protected override void DisconnectHandler(MauiPopup platformView)
 	{
 		platformView.Dispose();
+
 		if (Container is not null)
 		{
 			Container.LayoutChange -= OnLayoutChange;
