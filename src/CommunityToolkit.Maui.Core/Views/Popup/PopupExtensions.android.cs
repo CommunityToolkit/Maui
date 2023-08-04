@@ -112,8 +112,17 @@ public static class PopupExtensions
 
 		if (context.GetWindow() is IWindow windowManager)
 		{
+			var resourceIdStatus = context.Resources?.GetIdentifier("status_bar_height", "dimen", "android") ?? 0;
+			var statusBarHeight = resourceIdStatus > 0 ? context.Resources?.GetDimensionPixelSize(resourceIdStatus) ?? 0 : 0;
+			var resourceIdNavigation = context.Resources?.GetIdentifier("navigation_bar_height", "dimen", "android") ?? 0;
+			var navigationBarHeight = resourceIdNavigation > 0 ? context.Resources?.GetDimensionPixelSize(resourceIdNavigation) ?? 0 : 0;
+			if (windowManager.Height < windowManager.Width)
+			{
+				navigationBarHeight = 0;
+			}
+
 			realWidth = realWidth <= windowManager.Width * density ? realWidth : (int)(windowManager.Width * density);
-			realHeight = realHeight <= windowManager.Height * density ? realHeight : (int)(windowManager.Height * density);
+			realHeight = realHeight <= (windowManager.Height * density - (navigationBarHeight + statusBarHeight)) ? realHeight : (int)(windowManager.Height * density - (navigationBarHeight + statusBarHeight));
 			window.SetLayout(realWidth, realHeight);
 		}
 
