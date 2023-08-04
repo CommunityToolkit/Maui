@@ -98,6 +98,7 @@ public static class PopupExtensions
 
 		var window = GetWindow(dialog);
 		var context = dialog.Context;
+		var density = context.GetDisplayDensity();
 
 		var decorView = (ViewGroup)window.DecorView;
 		var child = decorView.GetChildAt(0) ?? throw new NullReferenceException();
@@ -108,6 +109,13 @@ public static class PopupExtensions
 			realContentHeight = 0;
 
 		CalculateSizes(popup, context, ref realWidth, ref realHeight, ref realContentWidth, ref realContentHeight);
+
+		if (context.GetWindow() is IWindow windowManager)
+		{
+			realWidth = realWidth <= windowManager.Width * density ? realWidth : (int)(windowManager.Width * density);
+			realHeight = realHeight <= windowManager.Height * density ? realHeight : (int)(windowManager.Height * density);
+			window.SetLayout(realWidth, realHeight);
+		}
 
 		var childLayoutParams = (FrameLayout.LayoutParams)(child.LayoutParameters ?? throw new NullReferenceException());
 		childLayoutParams.Width = realWidth;
