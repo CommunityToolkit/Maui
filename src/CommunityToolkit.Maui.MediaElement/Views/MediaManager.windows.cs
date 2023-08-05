@@ -171,8 +171,8 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdatePosition()
 	{
-		if (MediaElement is not null 
-		    && Player is not null
+		if (MediaElement is not null
+			&& Player is not null
 			&& allowUpdatePositionStates.Contains(MediaElement.CurrentState))
 		{
 			MediaElement.Position = Player.MediaPlayer.Position;
@@ -208,8 +208,8 @@ partial class MediaManager : IDisposable
 		if (MediaElement.ShouldKeepScreenOn)
 		{
 			if (MediaElement != null
-			    && allowUpdatePositionStates.Contains(MediaElement.CurrentState)
-			    && !displayActiveRequested)
+				&& allowUpdatePositionStates.Contains(MediaElement.CurrentState)
+				&& !displayActiveRequested)
 			{
 				DisplayRequest.RequestActive();
 				displayActiveRequested = true;
