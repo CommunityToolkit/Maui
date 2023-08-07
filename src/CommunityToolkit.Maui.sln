@@ -43,6 +43,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.Camer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.Camera.Analyzers.CodeFixes", "CommunityToolkit.Maui.Camera.Analyzers.CodeFixes\CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.csproj", "{97B77E28-FA3C-4827-9893-4E934312234A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.BindablePropertySG", "CommunityToolkit.Maui.BindablePropertySG\CommunityToolkit.Maui.BindablePropertySG.csproj", "{95794482-715F-4632-A420-79453CA0B0F1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -93,18 +95,7 @@ Global
 		{DC82CAA2-90F9-4BA5-98F4-2232660DECF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC82CAA2-90F9-4BA5-98F4-2232660DECF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC82CAA2-90F9-4BA5-98F4-2232660DECF1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{338A9CC3-0B5C-4191-AA13-D3A9B599805E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{338A9CC3-0B5C-4191-AA13-D3A9B599805E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{338A9CC3-0B5C-4191-AA13-D3A9B599805E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{338A9CC3-0B5C-4191-AA13-D3A9B599805E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{40BC4B5C-DF0B-4C95-9155-AFBF617F2E99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{40BC4B5C-DF0B-4C95-9155-AFBF617F2E99}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{40BC4B5C-DF0B-4C95-9155-AFBF617F2E99}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{40BC4B5C-DF0B-4C95-9155-AFBF617F2E99}.Release|Any CPU.Build.0 = Release|Any CPU
-		{97B77E28-FA3C-4827-9893-4E934312234A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{97B77E28-FA3C-4827-9893-4E934312234A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{97B77E28-FA3C-4827-9893-4E934312234A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{97B77E28-FA3C-4827-9893-4E934312234A}.Release|Any CPU.Build.0 = Release|Any CPU
+
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -117,8 +108,6 @@ Global
 		{36ED21C6-EAA1-4472-B9DC-C0DC5EF7CBBF} = {60926304-6805-4E92-8E83-E63BB728E0E2}
 		{673856B7-78A5-4E61-AEBD-CBBC1A15B0D1} = {D6DE0F68-F76A-4D16-968C-9FE5FC6A459C}
 		{DC82CAA2-90F9-4BA5-98F4-2232660DECF1} = {D6DE0F68-F76A-4D16-968C-9FE5FC6A459C}
-		{40BC4B5C-DF0B-4C95-9155-AFBF617F2E99} = {D6DE0F68-F76A-4D16-968C-9FE5FC6A459C}
-		{97B77E28-FA3C-4827-9893-4E934312234A} = {D6DE0F68-F76A-4D16-968C-9FE5FC6A459C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {42B065EB-DA54-40BE-B676-3D47D59A81F2}
