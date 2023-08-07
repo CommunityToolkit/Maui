@@ -93,7 +93,7 @@ public static class PopupExtensions
 	/// <param name="dialog">An instance of <see cref="Dialog"/>.</param>
 	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
 	/// <param name="container">The native representation of <see cref="IPopup.Content"/>.</param>
-	/// <exception cref="NullReferenceException">if the <see cref="Android.Views.Window"/> is null an exception will be thrown. If the <paramref name="container"/> is null an exception will be thrown.</exception>
+	/// <exception cref="InvalidOperationException">if the <see cref="Android.Views.Window"/> is null an exception will be thrown. If the <paramref name="container"/> is null an exception will be thrown.</exception>
 	public static void SetSize(this Dialog dialog, in IPopup popup, in AView container)
 	{
 		ArgumentNullException.ThrowIfNull(popup.Content);
@@ -105,7 +105,7 @@ public static class PopupExtensions
 		var windowManager = window.WindowManager;
 
 		var decorView = (ViewGroup)window.DecorView;
-		var child = decorView.GetChildAt(0) ?? throw new NullReferenceException();
+		var child = decorView.GetChildAt(0) ?? throw new InvalidOperationException($"No child found in {nameof(ViewGroup)}");
 
 		int realWidth = 0,
 			realHeight = 0,
@@ -149,7 +149,7 @@ public static class PopupExtensions
 			window.SetLayout(realWidth, realHeight);
 		}
 
-		var childLayoutParams = (FrameLayout.LayoutParams)(child.LayoutParameters ?? throw new NullReferenceException());
+		var childLayoutParams = (FrameLayout.LayoutParams)(child.LayoutParameters ?? throw new InvalidOperationException($"{nameof(child.LayoutParameters)} cannot be null"));
 		childLayoutParams.Width = realWidth;
 		childLayoutParams.Height = realHeight;
 		child.LayoutParameters = childLayoutParams;
@@ -242,8 +242,8 @@ public static class PopupExtensions
 
 			if (realHeight is 0 || realWidth is 0)
 			{
-				realWidth = (int?)(context.Resources?.DisplayMetrics?.WidthPixels * 0.8) ?? throw new NullReferenceException();
-				realHeight = (int?)(context.Resources?.DisplayMetrics?.HeightPixels * 0.6) ?? throw new NullReferenceException();
+				realWidth = (int)(context.Resources?.DisplayMetrics?.WidthPixels * 0.8 ?? throw new InvalidOperationException($"Unable to determine width. {nameof(context.Resources.DisplayMetrics)} cannot be null"));
+				realHeight = (int)(context.Resources?.DisplayMetrics?.HeightPixels * 0.6 ?? throw new InvalidOperationException($"Unable to determine height. {nameof(context.Resources.DisplayMetrics)} cannot be null"));
 			}
 		}
 	}
