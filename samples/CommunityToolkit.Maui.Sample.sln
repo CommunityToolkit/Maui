@@ -43,7 +43,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Media
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Camera", "..\src\CommunityToolkit.Maui.Camera\CommunityToolkit.Maui.Camera.csproj", "{7F1458F2-BA8C-4BE0-ACBF-C0A2835E588A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.Camera.Analyzers", "..\src\CommunityToolkit.Maui.Camera.Analyzers\CommunityToolkit.Maui.Camera.Analyzers.csproj", "{56D98FC8-5FC2-4231-9161-9FD2672E8B6E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.BindablePropertySG", "..\src\CommunityToolkit.Maui.BindablePropertySG\CommunityToolkit.Maui.BindablePropertySG.csproj", "{2CF97C89-0AA4-4388-B967-4EE58640D3E1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.Camera.Analyzers.CodeFixes", "..\src\CommunityToolkit.Maui.Camera.Analyzers.CodeFixes\CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.csproj", "{372D6A40-A4E0-434A-A463-C001441C68EB}"
 EndProject
@@ -105,6 +105,10 @@ Global
 		{215083C8-D9CA-48FA-8B0A-1D21A989D055}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{215083C8-D9CA-48FA-8B0A-1D21A989D055}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{215083C8-D9CA-48FA-8B0A-1D21A989D055}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2CF97C89-0AA4-4388-B967-4EE58640D3E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2CF97C89-0AA4-4388-B967-4EE58640D3E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2CF97C89-0AA4-4388-B967-4EE58640D3E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2CF97C89-0AA4-4388-B967-4EE58640D3E1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7F1458F2-BA8C-4BE0-ACBF-C0A2835E588A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7F1458F2-BA8C-4BE0-ACBF-C0A2835E588A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F1458F2-BA8C-4BE0-ACBF-C0A2835E588A}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -130,8 +134,6 @@ Global
 		{60B976B2-F3FA-494E-A28B-7BED2EAE990E} = {9F7D54C0-EA17-409A-804F-B2E8D7F4A7F3}
 		{85B875BD-62F6-4EC3-BCFF-4DC25E94BCAE} = {9BFC4026-BC8F-43E2-BAA9-5BC2D764D37D}
 		{215083C8-D9CA-48FA-8B0A-1D21A989D055} = {9BFC4026-BC8F-43E2-BAA9-5BC2D764D37D}
-		{56D98FC8-5FC2-4231-9161-9FD2672E8B6E} = {9BFC4026-BC8F-43E2-BAA9-5BC2D764D37D}
-		{372D6A40-A4E0-434A-A463-C001441C68EB} = {9BFC4026-BC8F-43E2-BAA9-5BC2D764D37D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1E9E61C1-5CB7-4C8E-87BA-6C1D38238679}
