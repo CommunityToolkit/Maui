@@ -96,7 +96,9 @@ public static class PopupExtensions
 	/// <exception cref="InvalidOperationException">if the <see cref="Android.Views.Window"/> is null an exception will be thrown. If the <paramref name="container"/> is null an exception will be thrown.</exception>
 	public static void SetSize(this Dialog dialog, in IPopup popup, in AView container)
 	{
-		ArgumentNullException.ThrowIfNull(popup.Content);
+		ArgumentNullException.ThrowIfNull(dialog);
+		ArgumentNullException.ThrowIfNull(container);
+		ArgumentNullException.ThrowIfNull(popup?.Content);
 
 		int horizontalParams, verticalParams;
 
@@ -123,25 +125,34 @@ public static class PopupExtensions
 
 			if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.R))
 			{
-				WindowMetrics windowMetrics = windowManager.CurrentWindowMetrics;
-				AInsets windowInsets = windowMetrics.WindowInsets.GetInsetsIgnoringVisibility(WindowInsets.Type.SystemBars());
+				var windowMetrics = windowManager.CurrentWindowMetrics;
+				var windowInsets = windowMetrics.WindowInsets.GetInsetsIgnoringVisibility(WindowInsets.Type.SystemBars());
 				windowWidth = windowMetrics.Bounds.Width();
 				windowHeight = windowMetrics.Bounds.Height();
 				statusBarHeight = windowInsets.Top;
 				navigationBarHeight = windowHeight < windowWidth ? windowInsets.Left + windowInsets.Right : windowInsets.Bottom;
 			}
+			else if (windowManager.DefaultDisplay is null)
+			{
+				throw new InvalidOperationException($"{nameof(IWindowManager)}.{nameof(IWindowManager.DefaultDisplay)} cannot be null");
+			}
 			else
 			{
-				APoint? realSize = new APoint();
-				APoint? displaySize = new APoint();
-				ARect? contentRect = new ARect();
-				windowManager.DefaultDisplay?.GetRealSize(realSize);
-				windowManager.DefaultDisplay?.GetSize(displaySize);
+				APoint realSize = new();
+				APoint displaySize = new();
+				ARect contentRect = new();
+
+				windowManager.DefaultDisplay.GetRealSize(realSize);
+				windowManager.DefaultDisplay.GetSize(displaySize);
 				decorView.GetWindowVisibleDisplayFrame(contentRect);
-				windowWidth = realSize?.X ?? throw new NullReferenceException();
-				windowHeight = realSize?.Y ?? throw new NullReferenceException();
+
+				windowWidth = realSize.X;
+				windowHeight = realSize.Y;
 				statusBarHeight = contentRect.Top;
-				navigationBarHeight = (realSize?.Y < realSize?.X ? (realSize?.X - displaySize?.X) : (realSize?.Y - displaySize?.Y)) ?? throw new NullReferenceException();
+
+				navigationBarHeight = realSize.Y < realSize.X
+										? (realSize.X - displaySize.X)
+										: (realSize.Y - displaySize.Y);
 			}
 
 			realWidth = realWidth <= (windowWidth - (windowHeight < windowWidth ? navigationBarHeight : 0)) ? realWidth : (int)(windowWidth - (windowHeight < windowWidth ? navigationBarHeight : 0));
@@ -193,7 +204,7 @@ public static class PopupExtensions
 				containerLayoutParams.Gravity = GravityFlags.Bottom;
 				break;
 			default:
-				throw new NotSupportedException();
+				throw new NotSupportedException($"{nameof(popup.Content.HorizontalLayoutAlignment)} {popup.Content.VerticalLayoutAlignment} is not supported");
 		}
 
 		switch (popup.Content.HorizontalLayoutAlignment)
@@ -210,7 +221,7 @@ public static class PopupExtensions
 				containerLayoutParams.Gravity |= GravityFlags.Right;
 				break;
 			default:
-				throw new NotSupportedException();
+				throw new NotSupportedException($"{nameof(popup.Content.HorizontalLayoutAlignment)} {popup.Content.HorizontalLayoutAlignment} is not supported");
 		}
 
 		container.LayoutParameters = containerLayoutParams;
@@ -268,5 +279,5 @@ public static class PopupExtensions
 	}
 
 	static Android.Views.Window GetWindow(in Dialog dialog) =>
-		dialog.Window ?? throw new NullReferenceException("Android.Views.Window is null.");
+		dialog.Window ?? throw new InvalidOperationException($"{nameof(Dialog)}.{nameof(Dialog.Window)} cannot be null");
 }
