@@ -9,4 +9,3 @@ public class MyLazyView : LazyView<MyView>
 		await base.LoadViewAsync();
 	}
 }
-

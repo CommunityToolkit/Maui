@@ -65,7 +65,7 @@ static partial class StatusBar
 			return true;
 		}
 
-		System.Diagnostics.Debug.WriteLine($"This functionality is not available. Minimum supported API is {(int)BuildVersionCodes.M}");
+		System.Diagnostics.Trace.WriteLine($"This functionality is not available. Minimum supported API is {(int)BuildVersionCodes.M}");
 		return false;
 	}
 }

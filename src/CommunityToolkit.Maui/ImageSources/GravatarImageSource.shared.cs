@@ -93,7 +93,7 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 		set => gravatarSize = Math.Clamp(value, 1, 2048);
 	}
 
-	HttpClient SingletonHttpClient => singletonHttpClientHolder.Value;
+	static HttpClient SingletonHttpClient => singletonHttpClientHolder.Value;
 
 	/// <summary>Dispose <see cref="GravatarImageSource"/>.</summary>
 	public void Dispose()

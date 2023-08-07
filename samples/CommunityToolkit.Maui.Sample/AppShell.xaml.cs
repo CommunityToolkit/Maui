@@ -83,8 +83,11 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<VariableMultiValueConverterPage, VariableMultiValueConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 
 		// Add Essentials View Models
+		CreateViewModelMapping<AppThemePage, AppThemeViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
+		CreateViewModelMapping<BadgePage, BadgeViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
 		CreateViewModelMapping<FileSaverPage, FileSaverViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
 		CreateViewModelMapping<FolderPickerPage, FolderPickerViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
+		CreateViewModelMapping<SpeechToTextPage, SpeechToTextViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
 
 		// Add Extensions View Models
 		CreateViewModelMapping<ColorAnimationExtensionsPage, ColorAnimationExtensionsViewModel, ExtensionsGalleryPage, ExtensionsGalleryViewModel>(),
@@ -112,8 +115,13 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<AvatarViewSizesPage, AvatarViewSizesViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<DrawingViewPage, DrawingViewViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<ExpanderPage, ExpanderViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+
+		CreateViewModelMapping<BasicMapsPage, BasicMapsViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		CreateViewModelMapping<MapsPinsPage, MapsPinsViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+
 		CreateViewModelMapping<LazyViewPage, LazyViewViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<MediaElementPage, MediaElementViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+
 		CreateViewModelMapping<MultiplePopupPage, MultiplePopupViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<PopupAnchorPage, PopupAnchorViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<PopupPositionPage, PopupPositionViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),

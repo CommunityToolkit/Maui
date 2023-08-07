@@ -539,29 +539,13 @@ public class StateContainerTests : BaseTest
 	}
 
 	[Fact]
-	public void Controller_GridStateInnerLayoutSpansParent()
+	public void Controller_GridStateViewSpansParent()
 	{
 		gridController.SwitchToState(StateKey.Loading);
-		var innerLayout = gridController.GetLayout().Children.First();
+		var view = (View)gridController.GetLayout().Children.First();
 
-		Assert.IsType<VerticalStackLayout>(innerLayout);
-		Assert.Equal(Grid.GetColumnSpan((VerticalStackLayout)innerLayout), grid.ColumnDefinitions.Count);
-		Assert.Equal(Grid.GetRowSpan((VerticalStackLayout)innerLayout), grid.RowDefinitions.Count);
-	}
-
-	[Fact]
-	public void Controller_GridStateInnerLayoutRespectsViewOptions()
-	{
-		gridController.SwitchToState(StateKey.Anything);
-		var innerLayout = gridController.GetLayout().Children.First();
-
-		Assert.IsType<VerticalStackLayout>(innerLayout);
-
-		var label = ((VerticalStackLayout)innerLayout).Children.First();
-
-		Assert.IsType<Label>(label);
-		Assert.Equal(((VerticalStackLayout)innerLayout).VerticalOptions, ((Label)label).VerticalOptions);
-		Assert.Equal(((VerticalStackLayout)innerLayout).HorizontalOptions, ((Label)label).HorizontalOptions);
+		Assert.Equal(Grid.GetColumnSpan(view), grid.ColumnDefinitions.Count);
+		Assert.Equal(Grid.GetRowSpan(view), grid.RowDefinitions.Count);
 	}
 
 	class ViewModel : INotifyPropertyChanged
@@ -583,7 +567,7 @@ public class StateContainerTests : BaseTest
 			}
 		}
 
-		Command ChangeStateCommand => changeStateCommand ??= new Command(() => Debug.WriteLine("Command Tapped"), () => CanChangeState);
+		Command ChangeStateCommand => changeStateCommand ??= new Command(() => Trace.WriteLine("Command Tapped"), () => CanChangeState);
 
 		public event PropertyChangedEventHandler? PropertyChanged;
 
