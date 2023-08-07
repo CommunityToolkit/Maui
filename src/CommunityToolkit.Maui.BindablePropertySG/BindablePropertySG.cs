@@ -86,7 +86,13 @@ namespace {value.ClassInformation.ContainingNamespace};
 
 		static void GenerateBindableProperty(StringBuilder sb, BPInfo info)
 		{
-
+			/// <summary>
+			/// Backing BindableProperty for the <see cref="PropertyName"/> property.
+			/// </summary>
+			sb.AppendLine("/// <summary>")
+				.AppendLine($"/// Backing BindableProperty for the <see cref=\"{info.PropertyName}\"/> property.")
+				.AppendLine("/// </summary>");
+			
 			// public static readonly BindableProperty TextProperty = BindableProperty.Create(...);
 			sb.AppendLine($"public static readonly {bpFullName} {info.PropertyName}Property = ")
 							.Append($"{bpFullName}.Create(")
@@ -107,6 +113,10 @@ namespace {value.ClassInformation.ContainingNamespace};
 
 		static void GenerateProperty(StringBuilder sb, BPInfo info)
 		{
+
+			/// <inheritdoc />
+			sb.AppendLine("/// <inheritdoc />");
+			
 			//public string Text
 			//{
 			//	get => (string)GetValue(TextProperty);
