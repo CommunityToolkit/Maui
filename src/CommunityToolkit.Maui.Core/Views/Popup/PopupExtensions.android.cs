@@ -22,7 +22,7 @@ public static class PopupExtensions
 	/// </summary>
 	/// <param name="dialog">An instance of <see cref="Dialog"/>.</param>
 	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
-	/// <exception cref="NullReferenceException">if the <see cref="Android.Views.Window"/> is null an exception will be thrown.</exception>
+	/// <exception cref="InvalidOperationException">if the <see cref="Android.Views.Window"/> is null an exception will be thrown.</exception>
 	public static void SetAnchor(this Dialog dialog, in IPopup popup)
 	{
 		var window = GetWindow(dialog);
