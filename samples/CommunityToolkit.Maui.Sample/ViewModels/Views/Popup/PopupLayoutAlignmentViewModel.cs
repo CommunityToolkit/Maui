@@ -1,5 +1,5 @@
 ﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public class PopupLayoutViewModel : BaseViewModel
+public class PopupLayoutAlignmentViewModel : BaseViewModel
 {
 }

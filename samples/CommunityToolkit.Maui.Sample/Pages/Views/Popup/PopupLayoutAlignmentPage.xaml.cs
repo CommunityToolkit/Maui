@@ -4,9 +4,9 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
-public partial class PopupLayoutPage : BasePage<PopupLayoutViewModel>
+public partial class PopupLayoutAlignmentPage : BasePage<PopupLayoutAlignmentViewModel>
 {
-	public PopupLayoutPage(PopupLayoutViewModel popupLayoutViewModel) : base(popupLayoutViewModel)
+	public PopupLayoutAlignmentPage(PopupLayoutAlignmentViewModel popupLayoutViewModel) : base(popupLayoutViewModel)
 	{
 		InitializeComponent();
 	}
