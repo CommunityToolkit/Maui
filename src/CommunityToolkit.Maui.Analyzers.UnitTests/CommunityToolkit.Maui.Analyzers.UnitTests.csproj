@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>$(NetVersion)</TargetFramework>
     <IsPackable>false</IsPackable>
     <UseMaui>true</UseMaui>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
