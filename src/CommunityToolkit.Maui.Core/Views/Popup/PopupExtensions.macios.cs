@@ -133,7 +133,6 @@ public static class PopupExtensions
 
 			mauiPopup.PopoverPresentationController.SourceRect = new CGRect(originX, originY, 0, 0);
 			mauiPopup.PopoverPresentationController.PermittedArrowDirections = 0;
-			mauiPopup.PopoverPresentationController.PopoverLayoutMargins = new UIEdgeInsets(1, 0, 0, 0);
 		}
 		else
 		{
