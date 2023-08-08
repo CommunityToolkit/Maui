@@ -2,23 +2,25 @@ using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.Views.Popups;
 using CommunityToolkit.Maui.Views;
-
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 {
 	readonly PopupSizeConstants popupSizeConstants;
 	readonly CsharpBindingPopupViewModel csharpBindingPopupViewModel;
+	readonly DynamicSizeContentPopupViewModel dynamicSizeContentPopupViewModel;
 
 	public MultiplePopupPage(PopupSizeConstants popupSizeConstants,
 								MultiplePopupViewModel multiplePopupViewModel,
-								CsharpBindingPopupViewModel csharpBindingPopupViewModel)
+								CsharpBindingPopupViewModel csharpBindingPopupViewModel,
+								DynamicSizeContentPopupViewModel dynamicSizeContentPopupViewModel)
 		: base(multiplePopupViewModel)
 	{
 		InitializeComponent();
 
 		this.popupSizeConstants = popupSizeConstants;
 		this.csharpBindingPopupViewModel = csharpBindingPopupViewModel;
+		this.dynamicSizeContentPopupViewModel = dynamicSizeContentPopupViewModel;
 	}
 
 	async void HandleSimplePopupButtonClicked(object sender, EventArgs e)
@@ -81,5 +83,11 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 	{
 		var csharpBindingPopup = new CsharpBindingPopup(popupSizeConstants, csharpBindingPopupViewModel);
 		await this.ShowPopupAsync(csharpBindingPopup);
+	}
+
+	async void HandleDynamicSizeContentButtonClicked(object sender, EventArgs e)
+	{
+		var dynamicSizedContentPopup = new DynamicSizeContentPopup(dynamicSizeContentPopupViewModel);
+		await this.ShowPopupAsync(dynamicSizedContentPopup);
 	}
 }

@@ -194,6 +194,7 @@ public static class MauiProgram
 
 		// Add Popups
 		services.AddTransient<CsharpBindingPopup, CsharpBindingPopupViewModel>();
+		services.AddTransient<DynamicSizeContentPopup, DynamicSizeContentPopupViewModel>();
 		services.AddTransient<XamlBindingPopup, XamlBindingPopupViewModel>();
 	}
 

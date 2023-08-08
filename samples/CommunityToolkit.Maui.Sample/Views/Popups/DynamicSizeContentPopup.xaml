@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="CommunityToolkit.Maui.Sample.Views.Popups.DynamicSizeContentPopup"
+             Color="White">
+
+    <ScrollView MaximumHeightRequest="400">
+
+        <VerticalStackLayout Padding="35" Spacing="12">
+
+            <Label Text="Sample popup!"
+                    FontAttributes="Bold"
+                    FontSize="Title"
+                    Margin="0,0,0,20"/>
+
+            <Button Command="{Binding ToggleBoolCommand}"
+                    Text="Click to change content" />
+
+            <Label Text="Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum.  "
+                    FontSize="Medium"
+                    Margin="0,0,0,30"
+                    IsVisible="{Binding Toggle, Converter={toolkit:InvertedBoolConverter}}" />
+
+            <Label Text="Lorem ipsum."
+                    FontSize="Medium"
+                    Margin="0,0,0,20"
+                    IsVisible="{Binding Toggle, Converter={toolkit:InvertedBoolConverter}}" />
+
+            <Label Text="Lorem ipsum."
+                    FontSize="Medium"
+                    Margin="0,0,0,20"
+                    IsVisible="{Binding Toggle, Converter={toolkit:InvertedBoolConverter}}" />
+
+            <Label Text="Lorem ipsum."
+                    FontSize="Medium"
+                    Margin="0,0,0,20"
+                    IsVisible="{Binding Toggle, Converter={toolkit:InvertedBoolConverter}}" />
+
+            <Label Text="Lorem ipsum."
+                    FontSize="Medium"
+                    Margin="0,0,0,20"
+                    IsVisible="{Binding Toggle, Converter={toolkit:InvertedBoolConverter}}" />
+
+            <Label Text="Lorem ipsum."
+                    FontSize="Medium"
+                    Margin="0,0,0,20"
+                    IsVisible="{Binding Toggle, Converter={toolkit:InvertedBoolConverter}}" />
+
+            <Label Text="Lorem ipsum."
+                    FontSize="Medium"
+                    Margin="0,0,0,20"
+                    IsVisible="{Binding Toggle, Converter={toolkit:InvertedBoolConverter}}" />
+
+            <Label Text="Lorem ipsum."
+                    FontSize="Medium"
+                    Margin="0,0,0,20"
+                    IsVisible="{Binding Toggle, Converter={toolkit:InvertedBoolConverter}}" />
+
+            <Label Text="Lorem ipsum."
+                    FontSize="Medium"
+                    Margin="0,0,0,20"
+                    IsVisible="{Binding Toggle, Converter={toolkit:InvertedBoolConverter}}" />
+
+            <Label Text="Lorem ipsum."
+                    FontSize="Medium"
+                    Margin="0,0,0,20"
+                    IsVisible="{Binding Toggle, Converter={toolkit:InvertedBoolConverter}}" />
+
+            <Label Text="Lorem ipsum."
+                    FontSize="Medium"
+                    Margin="0,0,0,20"
+                    IsVisible="{Binding Toggle, Converter={toolkit:InvertedBoolConverter}}" />
+
+            <Label Text="Lorem ipsum."
+                    FontSize="Medium"
+                    Margin="0,0,0,20"
+                    IsVisible="{Binding Toggle, Converter={toolkit:InvertedBoolConverter}}" />
+
+            <Label Text="Lorem ipsum."
+                    FontSize="Medium"
+                    Margin="0,0,0,20"
+                    IsVisible="{Binding Toggle, Converter={toolkit:InvertedBoolConverter}}" />
+
+            <Label Text="Lorem ipsum."
+                    FontSize="Medium"
+                    Margin="0,0,0,20"
+                    IsVisible="{Binding Toggle, Converter={toolkit:InvertedBoolConverter}}" />
+
+        </VerticalStackLayout>
+
+    </ScrollView>
+
+</toolkit:Popup>
