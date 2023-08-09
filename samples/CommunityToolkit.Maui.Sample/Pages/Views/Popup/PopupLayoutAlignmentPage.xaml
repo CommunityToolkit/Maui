@@ -1,0 +1,213 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CommunityToolkit.Maui.Sample.Pages.Views.PopupLayoutAlignmentPage"
+             xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+             xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+             x:TypeArguments="viewModels:PopupLayoutAlignmentViewModel"
+             x:DataType="viewModels:PopupLayoutAlignmentViewModel"
+             Title="Popup Layout Alignment">
+
+    <Grid RowDefinitions="64,44,32,44,24,44,*"
+          ColumnDefinitions="*,*,*,*,*,*,*,*"
+          ColumnSpacing="5">
+        <Label Grid.Row="0"
+               Grid.ColumnSpan="8"
+               HorizontalTextAlignment="Center"
+               Text="Popup allows you to position it on the page using its LayoutAlignmentOptions, HorizontalOptions and VerticalOptions" />
+
+        <Label Grid.Row="1"
+               Grid.Column="0"
+               FontSize="12"
+               Text="Width"
+               FontAttributes="Bold"
+               VerticalOptions="Center"/>
+
+        <Entry Grid.Row="1"
+               Grid.Column="1"
+               Grid.ColumnSpan="2"
+               Text="100"
+               x:Name="widthEntry"
+               Keyboard="Numeric"
+               WidthRequest="100"
+               HorizontalTextAlignment="End" />
+
+        <Label Grid.Row="1"
+               Grid.Column="4"
+               FontSize="12"
+               Text="Height"
+               FontAttributes="Bold"
+               VerticalOptions="Center" />
+
+        <Entry Grid.Row="1"
+               Grid.Column="5"
+               Grid.ColumnSpan="2"
+               Text="100"
+               x:Name="heightEntry"
+               Keyboard="Numeric"
+               WidthRequest="100"
+               HorizontalTextAlignment="End" />
+
+        <Label
+            Grid.Row="2"
+            Grid.Column="0"
+            Grid.ColumnSpan="8"
+            Text="HorizontalOptions"
+            VerticalOptions="End"
+            FontAttributes="Bold" />
+
+        <Label
+            Grid.Row="3"
+            Grid.Column="0"
+            FontSize="13"
+            Text="Start"
+            VerticalOptions="Center"
+            HorizontalOptions="End"/>
+
+        <RadioButton
+            Grid.Row="3"
+            Grid.Column="1"
+            x:Name="HorizontalOptionsStartRadioButton"
+            IsChecked="True"
+            HorizontalOptions="Start"
+            VerticalOptions="Center"
+            GroupName="HorizontalLayoutOptions" />
+
+        <Label
+            Grid.Row="3"
+            FontSize="13"
+            Grid.Column="2"
+            Text="Center"
+            VerticalOptions="Center" />
+
+        <RadioButton
+            Grid.Row="3"
+            Grid.Column="3"
+            x:Name="HorizontalOptionsCenterRadioButton"
+            IsChecked="False"
+            HorizontalOptions="Start"
+            VerticalOptions="Center"
+            GroupName="HorizontalLayoutOptions" />
+
+        <Label
+            Grid.Row="3"
+            Grid.Column="4"
+            FontSize="13"
+            Text="End"
+            VerticalOptions="Center"
+            HorizontalOptions="End"/>
+
+        <RadioButton
+            Grid.Row="3"
+            Grid.Column="5"
+            x:Name="HorizontalOptionsEndRadioButton"
+            IsChecked="False"
+            HorizontalOptions="Start"
+            VerticalOptions="Center"
+            GroupName="HorizontalLayoutOptions" />
+
+        <Label
+            Grid.Row="3"
+            Grid.Column="6"
+            FontSize="13"
+            Text="Fill"
+            VerticalOptions="Center"
+            HorizontalOptions="End"/>
+
+        <RadioButton
+            Grid.Row="3"
+            Grid.Column="7"
+            x:Name="HorizontalOptionsFillRadioButton"
+            IsChecked="False"
+            HorizontalOptions="Start"
+            VerticalOptions="Center"
+            GroupName="HorizontalLayoutOptions" />
+
+        <Label
+            Grid.Row="4"
+            Grid.Column="0"
+            Grid.ColumnSpan="8"
+            Text="VerticalOptions"
+            VerticalOptions="End"
+            FontAttributes="Bold" />
+
+        <Label
+            Grid.Row="5"
+            Grid.Column="0"
+            FontSize="13"
+            Text="Start"
+            VerticalOptions="Center"
+            HorizontalOptions="End"/>
+
+        <RadioButton
+            Grid.Row="5"
+            Grid.Column="1"
+            x:Name="VerticalOptionsStartRadioButton"
+            IsChecked="True"
+            HorizontalOptions="Start"
+            VerticalOptions="Center"
+            GroupName="VerticalLayoutOptions" />
+
+        <Label
+            Grid.Row="5"
+            Grid.Column="2"
+            FontSize="13"
+            Text="Center"
+            VerticalOptions="Center" />
+
+        <RadioButton
+            Grid.Row="5"
+            Grid.Column="3"
+            x:Name="VerticalOptionsCenterRadioButton"
+            IsChecked="False"
+            HorizontalOptions="Start"
+            VerticalOptions="Center"
+            GroupName="VerticalLayoutOptions" />
+
+        <Label
+            Grid.Row="5"
+            Grid.Column="4"
+            FontSize="13"
+            Text="End"
+            VerticalOptions="Center"
+            HorizontalOptions="End"/>
+
+        <RadioButton
+            Grid.Row="5"
+            Grid.Column="5"
+            x:Name="VerticalOptionsEndRadioButton"
+            IsChecked="False"
+            HorizontalOptions="Start"
+            VerticalOptions="Center"
+            GroupName="VerticalLayoutOptions" />
+
+        <Label
+            Grid.Row="5"
+            Grid.Column="6"
+            FontSize="13"
+            Text="Fill"
+            VerticalOptions="Center"
+            HorizontalOptions="End"/>
+
+        <RadioButton
+            Grid.Row="5"
+            Grid.Column="7"
+            x:Name="VerticalOptionsFillRadioButton"
+            IsChecked="False"
+            HorizontalOptions="Start"
+            VerticalOptions="Center"
+            GroupName="VerticalLayoutOptions" />
+
+        <Button
+            Grid.Row="6"
+            Grid.Column="0"
+            Grid.ColumnSpan="8"
+            x:Name="ShowPopupButton"
+            Text="Show Popup"
+            BackgroundColor="Blue"
+            TextColor="White"
+            Margin="0,12,0,0"
+            VerticalOptions="Start"
+            Clicked="ShowPopupButtonClicked" />
+    </Grid>
+</pages:BasePage>

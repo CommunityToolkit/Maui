@@ -23,12 +23,11 @@ public partial class Popup
 		{
 			var mauiContext = virtualView.Handler?.MauiContext ?? throw new NullReferenceException(nameof(IMauiContext));
 			var view = (View?)virtualView.Content ?? throw new InvalidOperationException($"{nameof(IPopup.Content)} can't be null here.");
+			view.SetBinding(BindingContextProperty, new Binding { Source = virtualView, Path = BindingContextProperty.PropertyName });
 			var contentPage = new ContentPage
 			{
 				Content = view
 			};
-
-			contentPage.SetBinding(BindingContextProperty, new Binding { Source = virtualView, Path = BindingContextProperty.PropertyName });
 
 			return (PageHandler)contentPage.ToHandler(mauiContext);
 		}
