@@ -27,29 +27,29 @@ namespace CommunityToolkit.Maui.Behaviors;
 
 public partial class TouchBehavior
 {
-	static readonly MColor defaultNativeAnimationColor = MColor.FromRgba(128, 128, 128, 64);
-	bool isHoverSupported;
-	RippleDrawable? ripple;
-	AView? rippleView;
-	float startX;
-	float startY;
-	MColor? rippleColor;
-	int rippleRadius = -1;
-	AView? view = null;
-	ViewGroup? viewGroup;
+	private static readonly MColor defaultNativeAnimationColor = MColor.FromRgba(128, 128, 128, 64);
+	private bool isHoverSupported;
+	private RippleDrawable? ripple;
+	private AView? rippleView;
+	private float startX;
+	private float startY;
+	private MColor? rippleColor;
+	private int rippleRadius = -1;
+	private AView? view = null;
+	private ViewGroup? viewGroup;
 
-	AccessibilityManager? accessibilityManager;
-	AccessibilityListener? accessibilityListener;
+	private AccessibilityManager? accessibilityManager;
+	private AccessibilityListener? accessibilityListener;
 
-	bool IsAccessibilityMode => accessibilityManager is not null
-		&& accessibilityManager.IsEnabled
-		&& accessibilityManager.IsTouchExplorationEnabled;
+	private bool IsAccessibilityMode => accessibilityManager is not null
+	                                    && accessibilityManager.IsEnabled
+	                                    && accessibilityManager.IsTouchExplorationEnabled;
 
-	readonly bool isAtLeastM = IsAndroidVersionAtLeast((int)BuildVersionCodes.M);
+	private readonly bool isAtLeastM = IsAndroidVersionAtLeast((int) BuildVersionCodes.M);
 
 	internal bool IsCanceled { get; set; }
 
-	bool IsForegroundRippleWithTapGestureRecognizer =>
+	private bool IsForegroundRippleWithTapGestureRecognizer =>
 		ripple is not null &&
 		this.view is not null &&
 		ripple.IsAlive() &&
@@ -66,7 +66,7 @@ public partial class TouchBehavior
 	protected override void OnAttachedTo(VisualElement bindable, AView platformView)
 	{
 		Element = bindable;
-		this.view = platformView;
+		view = platformView;
 		viewGroup = Microsoft.Maui.Platform.ViewExtensions.GetParentOfType<ViewGroup>(platformView);
 		if (IsDisabled)
 		{
@@ -84,7 +84,7 @@ public partial class TouchBehavior
 			accessibilityManager.AddTouchExplorationStateChangeListener(accessibilityListener);
 		}
 
-		if (!IsAndroidVersionAtLeast((int)BuildVersionCodes.Lollipop) || !NativeAnimation)
+		if (!IsAndroidVersionAtLeast((int) BuildVersionCodes.Lollipop) || !NativeAnimation)
 		{
 			return;
 		}
@@ -106,7 +106,7 @@ public partial class TouchBehavior
 	protected override void OnDetachedFrom(VisualElement bindable, AView platformView)
 	{
 		element = bindable;
-		this.view = platformView;
+		view = platformView;
 
 		if (element is null)
 		{
@@ -126,11 +126,11 @@ public partial class TouchBehavior
 
 			RemoveRipple();
 
-			if (this.view is not null)
+			if (view is not null)
 			{
-				this.view.LayoutChange -= OnLayoutChange;
-				this.view.Touch -= OnTouch;
-				this.view.Click -= OnClick;
+				view.LayoutChange -= OnLayoutChange;
+				view.Touch -= OnTouch;
+				view.Click -= OnClick;
 			}
 
 			if (rippleView is not null)
@@ -145,10 +145,11 @@ public partial class TouchBehavior
 		{
 			// Suppress exception
 		}
+
 		isHoverSupported = false;
 	}
 
-	void OnLayoutChange(object? sender, AView.LayoutChangeEventArgs e)
+	private void OnLayoutChange(object? sender, AView.LayoutChangeEventArgs e)
 	{
 		if (sender is not AView view || rippleView is null)
 		{
@@ -159,13 +160,13 @@ public partial class TouchBehavior
 		rippleView.Bottom = view.Height;
 	}
 
-	void CreateRipple()
+	private void CreateRipple()
 	{
 		RemoveRipple();
 
 		var drawable = isAtLeastM && viewGroup is null
 			? view?.Foreground
-		: view?.Background;
+			: view?.Background;
 
 		var isBorderLess = NativeAnimationBorderless;
 		var isEmptyDrawable = Element is Layout || drawable is null;
@@ -173,7 +174,7 @@ public partial class TouchBehavior
 
 		if (drawable is RippleDrawable rippleDrawable && rippleDrawable.GetConstantState() is Drawable.ConstantState constantState)
 		{
-			ripple = (RippleDrawable)constantState.NewDrawable();
+			ripple = (RippleDrawable) constantState.NewDrawable();
 		}
 		else
 		{
@@ -186,7 +187,7 @@ public partial class TouchBehavior
 		UpdateRipple(color);
 	}
 
-	void RemoveRipple()
+	private void RemoveRipple()
 	{
 		if (ripple is null)
 		{
@@ -215,7 +216,7 @@ public partial class TouchBehavior
 		ripple = null;
 	}
 
-	void UpdateRipple(MColor color)
+	private void UpdateRipple(MColor color)
 	{
 		if (IsDisabled || (color == rippleColor && NativeAnimationRadius == rippleRadius))
 		{
@@ -227,21 +228,21 @@ public partial class TouchBehavior
 		ripple?.SetColor(GetColorStateList(color));
 		if (isAtLeastM && ripple is not null)
 		{
-			ripple.Radius = (int)(view?.Context?.Resources?.DisplayMetrics?.Density * NativeAnimationRadius ?? throw new NullReferenceException());
+			ripple.Radius = (int) (view?.Context?.Resources?.DisplayMetrics?.Density * NativeAnimationRadius ?? throw new NullReferenceException());
 		}
 	}
 
-	ColorStateList GetColorStateList(MColor? color)
+	private ColorStateList GetColorStateList(MColor? color)
 	{
 		var animationColor = color;
 		animationColor ??= defaultNativeAnimationColor;
 
 		return new ColorStateList(
-			new[] { Array.Empty<int>() },
-			new[] { (int)animationColor.ToAndroid() });
+			new[] {Array.Empty<int>()},
+			new[] {(int) animationColor.ToAndroid()});
 	}
 
-	void UpdateClickHandler()
+	private void UpdateClickHandler()
 	{
 		if (view is null || !view.IsAlive())
 		{
@@ -249,14 +250,14 @@ public partial class TouchBehavior
 		}
 
 		view.Click -= OnClick;
-		if (IsAccessibilityMode || ((IsAvailable) && (element?.IsEnabled ?? false)))
+		if (IsAccessibilityMode || (IsAvailable && (element?.IsEnabled ?? false)))
 		{
 			view.Click += OnClick;
 			return;
 		}
 	}
 
-	void ApplyRipple()
+	private void ApplyRipple()
 	{
 		if (ripple is null)
 		{
@@ -267,7 +268,7 @@ public partial class TouchBehavior
 
 		if (viewGroup is null && view is not null)
 		{
-			if (IsAndroidVersionAtLeast((int)BuildVersionCodes.M))
+			if (IsAndroidVersionAtLeast((int) BuildVersionCodes.M))
 			{
 				view.Foreground = ripple;
 			}
@@ -286,7 +287,7 @@ public partial class TouchBehavior
 				LayoutParameters = new ViewGroup.LayoutParams(-1, -1),
 				Clickable = false,
 				Focusable = false,
-				Enabled = false,
+				Enabled = false
 			};
 
 			viewGroup?.AddView(rippleView);
@@ -307,7 +308,7 @@ public partial class TouchBehavior
 		}
 	}
 
-	void OnClick(object? sender, EventArgs args)
+	private void OnClick(object? sender, EventArgs args)
 	{
 		if (IsDisabled)
 		{
@@ -322,7 +323,8 @@ public partial class TouchBehavior
 		IsCanceled = false;
 		HandleEnd(TouchStatus.Completed);
 	}
-	void HandleEnd(TouchStatus status)
+
+	private void HandleEnd(TouchStatus status)
 	{
 		if (IsCanceled)
 		{
@@ -342,7 +344,7 @@ public partial class TouchBehavior
 		EndRipple();
 	}
 
-	void EndRipple()
+	private void EndRipple()
 	{
 		if (IsDisabled)
 		{
@@ -367,7 +369,7 @@ public partial class TouchBehavior
 	}
 
 
-	void OnTouch(object? sender, AView.TouchEventArgs e)
+	private void OnTouch(object? sender, AView.TouchEventArgs e)
 	{
 		e.Handled = false;
 
@@ -404,7 +406,7 @@ public partial class TouchBehavior
 		}
 	}
 
-	void OnTouchDown(AView.TouchEventArgs e)
+	private void OnTouchDown(AView.TouchEventArgs e)
 	{
 		_ = e.Event ?? throw new NullReferenceException();
 
@@ -424,13 +426,17 @@ public partial class TouchBehavior
 		}
 	}
 
-	void OnTouchUp()
-		=> HandleEnd(Status == TouchStatus.Started ? TouchStatus.Completed : TouchStatus.Canceled);
+	private void OnTouchUp()
+	{
+		HandleEnd(Status == TouchStatus.Started ? TouchStatus.Completed : TouchStatus.Canceled);
+	}
 
-	void OnTouchCancel()
-		=> HandleEnd(TouchStatus.Canceled);
+	private void OnTouchCancel()
+	{
+		HandleEnd(TouchStatus.Canceled);
+	}
 
-	void OnTouchMove(object? sender, AView.TouchEventArgs e)
+	private void OnTouchMove(object? sender, AView.TouchEventArgs e)
 	{
 		if (IsCanceled || e.Event == null)
 		{
@@ -458,7 +464,7 @@ public partial class TouchBehavior
 		var status = viewRect.Contains(screenPointerCoords) ? TouchStatus.Started : TouchStatus.Canceled;
 
 		if (isHoverSupported && ((status == TouchStatus.Canceled && HoverStatus == HoverStatus.Entered)
-			|| (status == TouchStatus.Started && HoverStatus == HoverStatus.Exited)))
+		                         || (status == TouchStatus.Started && HoverStatus == HoverStatus.Exited)))
 		{
 			HandleHover(status == TouchStatus.Started ? HoverStatus.Entered : HoverStatus.Exited);
 		}
@@ -479,19 +485,19 @@ public partial class TouchBehavior
 		}
 	}
 
-	void OnHoverEnter()
+	private void OnHoverEnter()
 	{
 		isHoverSupported = true;
 		HandleHover(HoverStatus.Entered);
 	}
 
-	void OnHoverExit()
+	private void OnHoverExit()
 	{
 		isHoverSupported = true;
 		HandleHover(HoverStatus.Exited);
 	}
 
-	void StartRipple(float x, float y)
+	private void StartRipple(float x, float y)
 	{
 		if (IsDisabled || !NativeAnimation)
 		{
@@ -520,20 +526,26 @@ public partial class TouchBehavior
 		}
 	}
 
-	sealed class AccessibilityListener : Java.Lang.Object,
-											 AccessibilityManager.IAccessibilityStateChangeListener,
-											 AccessibilityManager.ITouchExplorationStateChangeListener
+	private sealed class AccessibilityListener : Java.Lang.Object,
+		AccessibilityManager.IAccessibilityStateChangeListener,
+		AccessibilityManager.ITouchExplorationStateChangeListener
 	{
-		TouchBehavior? platformTouchEffect;
+		private TouchBehavior? platformTouchEffect;
 
 		internal AccessibilityListener(TouchBehavior platformTouchEffect)
-			=> this.platformTouchEffect = platformTouchEffect;
+		{
+			this.platformTouchEffect = platformTouchEffect;
+		}
 
 		public void OnAccessibilityStateChanged(bool enabled)
-			=> platformTouchEffect?.UpdateClickHandler();
+		{
+			platformTouchEffect?.UpdateClickHandler();
+		}
 
 		public void OnTouchExplorationStateChanged(bool enabled)
-			=> platformTouchEffect?.UpdateClickHandler();
+		{
+			platformTouchEffect?.UpdateClickHandler();
+		}
 
 		protected override void Dispose(bool disposing)
 		{
@@ -547,17 +559,25 @@ public partial class TouchBehavior
 	}
 }
 
-static class JavaObjectExtensions
+internal static class JavaObjectExtensions
 {
 	public static bool IsDisposed(this Java.Lang.Object obj)
-		=> obj.Handle == IntPtr.Zero;
+	{
+		return obj.Handle == IntPtr.Zero;
+	}
 
 	public static bool IsAlive(this Java.Lang.Object obj)
-		=> obj != null && !obj.IsDisposed();
+	{
+		return obj != null && !obj.IsDisposed();
+	}
 
-	public static bool IsDisposed(this global::Android.Runtime.IJavaObject obj)
-		=> obj.Handle == IntPtr.Zero;
+	public static bool IsDisposed(this Android.Runtime.IJavaObject obj)
+	{
+		return obj.Handle == IntPtr.Zero;
+	}
 
-	public static bool IsAlive(this global::Android.Runtime.IJavaObject obj)
-		=> obj != null && !obj.IsDisposed();
+	public static bool IsAlive(this Android.Runtime.IJavaObject obj)
+	{
+		return obj != null && !obj.IsDisposed();
+	}
 }
