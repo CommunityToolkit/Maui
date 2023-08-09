@@ -14,13 +14,17 @@ using Android.Widget;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Controls.Platform;
 using static System.OperatingSystem;
 using AView = Android.Views.View;
 using Color = Android.Graphics.Color;
 using MColor = Microsoft.Maui.Graphics.Color;
 using MView = Microsoft.Maui.Controls.View;
+using PlatformView = Android.Views.View;
+using ParentView = Android.Views.IViewParent;
 
 namespace CommunityToolkit.Maui.Behaviors;
+
 public partial class TouchBehavior
 {
 	static readonly MColor defaultNativeAnimationColor = MColor.FromRgba(128, 128, 128, 64);
@@ -31,7 +35,7 @@ public partial class TouchBehavior
 	float startY;
 	MColor? rippleColor;
 	int rippleRadius = -1;
-	AView? platformView = null;
+	AView? view = null;
 	ViewGroup? viewGroup;
 
 	AccessibilityManager? accessibilityManager;
@@ -47,17 +51,22 @@ public partial class TouchBehavior
 
 	bool IsForegroundRippleWithTapGestureRecognizer =>
 		ripple is not null &&
-		platformView is not null &&
+		this.view is not null &&
 		ripple.IsAlive() &&
-		platformView.IsAlive() &&
-		(isAtLeastM ? platformView.Foreground : platformView.Background) == ripple &&
+		this.view.IsAlive() &&
+		(isAtLeastM ? this.view.Foreground : this.view.Background) == ripple &&
 		element is MView view &&
 		view.GestureRecognizers.Any(gesture => gesture is TapGestureRecognizer);
 
+	/// <summary>
+	/// Attaches the behavior to the platform view.
+	/// </summary>
+	/// <param name="bindable">Maui Visual Element</param>
+	/// <param name="platformView">Native View</param>
 	protected override void OnAttachedTo(VisualElement bindable, AView platformView)
 	{
 		Element = bindable;
-		this.platformView = platformView;
+		this.view = platformView;
 		viewGroup = Microsoft.Maui.Platform.ViewExtensions.GetParentOfType<ViewGroup>(platformView);
 		if (IsDisabled)
 		{
@@ -89,10 +98,15 @@ public partial class TouchBehavior
 		platformView.LayoutChange += OnLayoutChange;
 	}
 
+	/// <summary>
+	/// Detaches the behavior from the platform view.
+	/// </summary>
+	/// <param name="bindable">Maui Visual Element</param>
+	/// <param name="platformView">Native View</param>
 	protected override void OnDetachedFrom(VisualElement bindable, AView platformView)
 	{
 		element = bindable;
-		this.platformView = platformView;
+		this.view = platformView;
 
 		if (element is null)
 		{
@@ -112,11 +126,11 @@ public partial class TouchBehavior
 
 			RemoveRipple();
 
-			if (this.platformView is not null)
+			if (this.view is not null)
 			{
-				this.platformView.LayoutChange -= OnLayoutChange;
-				this.platformView.Touch -= OnTouch;
-				this.platformView.Click -= OnClick;
+				this.view.LayoutChange -= OnLayoutChange;
+				this.view.Touch -= OnTouch;
+				this.view.Click -= OnClick;
 			}
 
 			if (rippleView is not null)
@@ -136,7 +150,7 @@ public partial class TouchBehavior
 
 	void OnLayoutChange(object? sender, AView.LayoutChangeEventArgs e)
 	{
-		if (sender is not AView view || (viewGroup as IVisualElementRenderer)?.Element is null || rippleView is null)
+		if (sender is not AView view || rippleView is null)
 		{
 			return;
 		}
@@ -150,8 +164,8 @@ public partial class TouchBehavior
 		RemoveRipple();
 
 		var drawable = isAtLeastM && viewGroup is null
-			? platformView?.Foreground
-		: platformView?.Background;
+			? view?.Foreground
+		: view?.Background;
 
 		var isBorderLess = NativeAnimationBorderless;
 		var isEmptyDrawable = Element is Layout || drawable is null;
@@ -179,15 +193,15 @@ public partial class TouchBehavior
 			return;
 		}
 
-		if (platformView is not null)
+		if (view is not null)
 		{
-			if (isAtLeastM && platformView.Foreground == ripple)
+			if (isAtLeastM && view.Foreground == ripple)
 			{
-				platformView.Foreground = null;
+				view.Foreground = null;
 			}
-			else if (platformView.Background == ripple)
+			else if (view.Background == ripple)
 			{
-				platformView.Background = null;
+				view.Background = null;
 			}
 		}
 
@@ -213,7 +227,7 @@ public partial class TouchBehavior
 		ripple?.SetColor(GetColorStateList(color));
 		if (isAtLeastM && ripple is not null)
 		{
-			ripple.Radius = (int)(platformView?.Context?.Resources?.DisplayMetrics?.Density * NativeAnimationRadius ?? throw new NullReferenceException());
+			ripple.Radius = (int)(view?.Context?.Resources?.DisplayMetrics?.Density * NativeAnimationRadius ?? throw new NullReferenceException());
 		}
 	}
 
@@ -229,15 +243,15 @@ public partial class TouchBehavior
 
 	void UpdateClickHandler()
 	{
-		if (!platformView.IsAlive() || platformView is null)
+		if (view is null || !view.IsAlive())
 		{
 			return;
 		}
 
-		platformView.Click -= OnClick;
+		view.Click -= OnClick;
 		if (IsAccessibilityMode || ((IsAvailable) && (element?.IsEnabled ?? false)))
 		{
-			platformView.Click += OnClick;
+			view.Click += OnClick;
 			return;
 		}
 	}
@@ -251,15 +265,15 @@ public partial class TouchBehavior
 
 		var isBorderless = NativeAnimationBorderless;
 
-		if (viewGroup is null && platformView is not null)
+		if (viewGroup is null && view is not null)
 		{
 			if (IsAndroidVersionAtLeast((int)BuildVersionCodes.M))
 			{
-				platformView.Foreground = ripple;
+				view.Foreground = ripple;
 			}
 			else
 			{
-				platformView.Background = ripple;
+				view.Background = ripple;
 			}
 
 			return;
@@ -267,7 +281,7 @@ public partial class TouchBehavior
 
 		if (rippleView is null)
 		{
-			rippleView = new FrameLayout(viewGroup?.Context ?? platformView?.Context ?? throw new NullReferenceException())
+			rippleView = new FrameLayout(viewGroup?.Context ?? view?.Context ?? throw new NullReferenceException())
 			{
 				LayoutParameters = new ViewGroup.LayoutParams(-1, -1),
 				Clickable = false,
@@ -345,9 +359,9 @@ public partial class TouchBehavior
 		}
 		else if (IsForegroundRippleWithTapGestureRecognizer)
 		{
-			if (platformView?.Pressed ?? false)
+			if (view?.Pressed ?? false)
 			{
-				platformView.Pressed = false;
+				view.Pressed = false;
 			}
 		}
 	}
@@ -423,8 +437,8 @@ public partial class TouchBehavior
 			return;
 		}
 
-		var diffX = Math.Abs(e.Event.GetX() - startX) / platformView?.Context?.Resources?.DisplayMetrics?.Density ?? throw new NullReferenceException();
-		var diffY = Math.Abs(e.Event.GetY() - startY) / platformView?.Context?.Resources?.DisplayMetrics?.Density ?? throw new NullReferenceException();
+		var diffX = Math.Abs(e.Event.GetX() - startX) / this.view?.Context?.Resources?.DisplayMetrics?.Density ?? throw new NullReferenceException();
+		var diffY = Math.Abs(e.Event.GetY() - startY) / this.view?.Context?.Resources?.DisplayMetrics?.Density ?? throw new NullReferenceException();
 		var maxDiff = Math.Max(diffX, diffY);
 
 		var disallowTouchThreshold = DisallowTouchThreshold;
@@ -494,10 +508,10 @@ public partial class TouchBehavior
 				ripple?.SetHotspot(x, y);
 				rippleView.Pressed = true;
 			}
-			else if (IsForegroundRippleWithTapGestureRecognizer && platformView is not null)
+			else if (IsForegroundRippleWithTapGestureRecognizer && view is not null)
 			{
 				ripple?.SetHotspot(x, y);
-				platformView.Pressed = true;
+				view.Pressed = true;
 			}
 		}
 		else if (rippleView is null)
@@ -531,4 +545,19 @@ public partial class TouchBehavior
 			base.Dispose(disposing);
 		}
 	}
+}
+
+static class JavaObjectExtensions
+{
+	public static bool IsDisposed(this Java.Lang.Object obj)
+		=> obj.Handle == IntPtr.Zero;
+
+	public static bool IsAlive(this Java.Lang.Object obj)
+		=> obj != null && !obj.IsDisposed();
+
+	public static bool IsDisposed(this global::Android.Runtime.IJavaObject obj)
+		=> obj.Handle == IntPtr.Zero;
+
+	public static bool IsAlive(this global::Android.Runtime.IJavaObject obj)
+		=> obj != null && !obj.IsDisposed();
 }

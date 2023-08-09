@@ -348,7 +348,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	nameof(NormalBackgroundColor),
 	typeof(Color),
 	typeof(TouchBehavior),
-	Colors.Transparent);
+	null);
 
 	/// <summary>
 	/// Gets or sets the background color of the element when the touch is in the normal state.
@@ -366,7 +366,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(HoveredBackgroundColor),
 		typeof(Color),
 		typeof(TouchBehavior),
-		Colors.Transparent);
+		null);
 
 	/// <summary>
 	/// Gets or sets the background color of the element when the touch is in the hovered state.
@@ -384,7 +384,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(PressedBackgroundColor),
 		typeof(Color),
 		typeof(TouchBehavior),
-		Colors.Transparent);
+		null);
 
 	/// <summary>
 	/// Gets or sets the background color of the element when the touch is in the pressed state.
@@ -997,7 +997,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(NativeAnimationColor),
 		typeof(Color),
 		typeof(TouchBehavior),
-		Colors.Transparent);
+		null);
 
 	/// <summary>
 	/// Gets or sets the color of the native animation.
