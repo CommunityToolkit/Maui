@@ -10,7 +10,9 @@
         <vm:XamlBindingPopupViewModel />
     </mct:Popup.BindingContext>    
     
-    <VerticalStackLayout Style="{StaticResource PopupLayout}">
+    <VerticalStackLayout 
+        Style="{StaticResource PopupLayout}" 
+        HorizontalOptions="Center">
         <VerticalStackLayout.Resources>
             <ResourceDictionary>
                 <Style x:Key="Title" TargetType="Label">
@@ -39,6 +41,9 @@
                Text="{Binding Title}" />
         <BoxView Style="{StaticResource Divider}" />
         <Label Style="{StaticResource Content}" 
+               HorizontalTextAlignment="Center"
+               MaxLines="5"
+               LineBreakMode="WordWrap"
                Text="{Binding Message}" />
     </VerticalStackLayout>
 </mct:Popup>
