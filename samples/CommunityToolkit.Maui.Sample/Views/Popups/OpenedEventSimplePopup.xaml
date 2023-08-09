@@ -31,9 +31,11 @@
 
 
         <Label x:Name="Title" 
-                Style="{StaticResource Title}" />
+                Style="{StaticResource Title}" 
+                Text="This Title Is About To Change"/>
         <BoxView Style="{StaticResource Divider}" />
         <Label x:Name="Message" 
+                Text="This sample changes the title and message in Popup's OnAppearing method"
                 Style="{StaticResource Content}" />
     </VerticalStackLayout>
 </mct:Popup>
