@@ -1,20 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Android.Content;
+﻿using Android.Content;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
-using Android.Media.Effect;
 using Android.OS;
 using Android.Views;
 using Android.Views.Accessibility;
 using Android.Widget;
-using CommunityToolkit.Maui.Core;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
-using Microsoft.Maui.Controls.Platform;
 using static System.OperatingSystem;
 using AView = Android.Views.View;
 using Color = Android.Graphics.Color;
@@ -556,28 +547,5 @@ public partial class TouchBehavior
 
 			base.Dispose(disposing);
 		}
-	}
-}
-
-internal static class JavaObjectExtensions
-{
-	public static bool IsDisposed(this Java.Lang.Object obj)
-	{
-		return obj.Handle == IntPtr.Zero;
-	}
-
-	public static bool IsAlive(this Java.Lang.Object obj)
-	{
-		return obj != null && !obj.IsDisposed();
-	}
-
-	public static bool IsDisposed(this Android.Runtime.IJavaObject obj)
-	{
-		return obj.Handle == IntPtr.Zero;
-	}
-
-	public static bool IsAlive(this Android.Runtime.IJavaObject obj)
-	{
-		return obj != null && !obj.IsDisposed();
 	}
 }
