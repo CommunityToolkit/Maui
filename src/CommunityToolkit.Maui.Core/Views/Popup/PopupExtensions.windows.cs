@@ -93,7 +93,7 @@ public static class PopupExtensions
 			currentSize.Width = Math.Min(currentSize.Width, popupParent.Frame.Width);
 			currentSize.Height = Math.Min(currentSize.Height, popupParent.Frame.Height);
 		}
-		
+
 		mauiPopup.Width = currentSize.Width;
 		mauiPopup.Height = currentSize.Height;
 		mauiPopup.MinWidth = mauiPopup.MaxWidth = currentSize.Width + (defaultBorderThickness * 2);
@@ -144,13 +144,13 @@ public static class PopupExtensions
 		{
 			mauiPopup.DesiredPlacement = PopupPlacementMode.BottomEdgeAlignedRight;
 			mauiPopup.HorizontalOffset = (popupParentFrame.Width - contentSize.Width);
-			mauiPopup.VerticalOffset = popupParentFrame.Height + contentSize.Height/2;
+			mauiPopup.VerticalOffset = popupParentFrame.Height + contentSize.Height / 2;
 		}
 		else if (IsBottom(verticalOptions, horizontalOptions))
 		{
 			mauiPopup.DesiredPlacement = PopupPlacementMode.Bottom;
 			mauiPopup.HorizontalOffset = (popupParentFrame.Width - contentSize.Width) / 2;
-			mauiPopup.VerticalOffset = popupParentFrame.Height+contentSize.Height/2;
+			mauiPopup.VerticalOffset = popupParentFrame.Height + contentSize.Height / 2;
 		}
 		else if (IsBottomLeft(verticalOptions, horizontalOptions))
 		{
