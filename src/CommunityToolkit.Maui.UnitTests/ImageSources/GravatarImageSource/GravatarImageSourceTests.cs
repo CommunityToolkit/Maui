@@ -348,7 +348,7 @@ public class GravatarImageSourceTests : BaseHandlerTest
 		CancellationTokenSource cts = new();
 		var gravatarImageSource = new GravatarImageSource();
 		Stream? stream = await gravatarImageSource.Stream(cts.Token);
-		stream.Should().BeNull();
+		stream.Should().NotBeNull();
 	}
 
 	[Fact]
