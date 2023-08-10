@@ -115,7 +115,7 @@ namespace {{textStyleClassMetadata.Namespace}};
 	/// <param name="length">The duration, in milliseconds, of the animation</param>
 	/// <param name="easing">The easing function to be used in the animation</param>
 	/// <returns>Value indicating if the animation completed successfully or not</returns>
-	public static Task<bool> TextColorTo{{textStyleClassMetadata.GenericArguments}}(this {{textStyleClassMetadata.Namespace}}.{{textStyleClassMetadata.ClassName}}{{textStyleClassMetadata.GenericArguments}} element, Color color, uint rate = 16u, uint length = 250u, Easing? easing = null)
+	public static Task<bool> TextColorTo{{textStyleClassMetadata.GenericArguments}}(this {{textStyleClassMetadata.Namespace}}.{{textStyleClassMetadata.ClassName}}{{textStyleClassMetadata.GenericArguments}} element, Microsoft.Maui.Graphics.Color color, uint rate = 16u, uint length = 250u, Easing? easing = null)
 {{textStyleClassMetadata.GenericConstraints}}
 	{
 		ArgumentNullException.ThrowIfNull(element);
