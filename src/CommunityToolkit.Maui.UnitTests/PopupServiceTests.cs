@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.Views;
 using Xunit;
@@ -26,7 +25,7 @@ public class PopupServiceTests : BaseHandlerTest
 		var popupService = new PopupService(new MockServiceProvider());
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => popupService.ShowPopup<INotifyPropertyChanged>(null));
+		Assert.Throws<ArgumentNullException>(() => popupService.ShowPopup<INotifyPropertyChanged>(viewModel: null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 

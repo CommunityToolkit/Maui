@@ -15,6 +15,7 @@ public partial class MultiplePopupViewModel : BaseViewModel
 	[RelayCommand]
 	Task OnCsharpBindingPopup()
 	{
-		return this.popupService.ShowPopupAsync<CsharpBindingPopupViewModel>();
+		return this.popupService.ShowPopupAsync<CsharpBindingPopupViewModel>(
+			onPresenting: viewModel => viewModel.Load("This is a platform specific popup with a .NET MAUI View being rendered. The behaviors of the popup will confirm to 100% this platform look and feel, but still allows you to use your .NET MAUI Controls."));
 	}
 }

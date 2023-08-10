@@ -49,14 +49,30 @@ public class PopupService : IPopupService
 		CurrentPage.ShowPopup(popup);
 	}
 
-	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(IReadOnlyDictionary{string, object})"/>
-	public void ShowPopup<TViewModel>(IReadOnlyDictionary<string, object> arguments) where TViewModel : IArgumentsReceiver, INotifyPropertyChanged
+	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(Action{TViewModel})"/>
+	public void ShowPopup<TViewModel>(Action<TViewModel> onPresenting) where TViewModel : INotifyPropertyChanged
 	{
-		ArgumentNullException.ThrowIfNull(arguments);
+		ArgumentNullException.ThrowIfNull(onPresenting);
 
 		var popup = GetPopup(typeof(TViewModel));
 
-		AssignBindingContext<TViewModel>(popup, arguments);
+		var viewModel = AssignBindingContext<TViewModel>(popup);
+
+		onPresenting.Invoke(viewModel);
+
+		CurrentPage.ShowPopup(popup);
+	}
+
+	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(Func{TViewModel, Task})"/>
+	public async void ShowPopup<TViewModel>(Func<TViewModel, Task> onPresenting) where TViewModel : INotifyPropertyChanged
+	{
+		ArgumentNullException.ThrowIfNull(onPresenting);
+
+		var popup = GetPopup(typeof(TViewModel));
+
+		var viewModel = AssignBindingContext<TViewModel>(popup);
+
+		await onPresenting.Invoke(viewModel);
 
 		CurrentPage.ShowPopup(popup);
 	}
@@ -75,26 +91,42 @@ public class PopupService : IPopupService
 		return CurrentPage.ShowPopupAsync(popup);
 	}
 
-	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(IReadOnlyDictionary{string, object})"/>
-	public Task<object?> ShowPopupAsync<TViewModel>(IReadOnlyDictionary<string, object> arguments) where TViewModel : IArgumentsReceiver, INotifyPropertyChanged
+	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(Action{TViewModel})"/>
+	public Task<object?> ShowPopupAsync<TViewModel>(Action<TViewModel> onPresenting) where TViewModel : INotifyPropertyChanged
 	{
-		ArgumentNullException.ThrowIfNull(arguments);
+		ArgumentNullException.ThrowIfNull(onPresenting);
 
 		var popup = GetPopup(typeof(TViewModel));
 
-		AssignBindingContext<TViewModel>(popup, arguments);
+		var viewModel = AssignBindingContext<TViewModel>(popup);
+
+		onPresenting.Invoke(viewModel);
+
+		return CurrentPage.ShowPopupAsync(popup);
+	}
+
+	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(Func{TViewModel, Task})"/>
+	public async Task<object?> ShowPopupAsync<TViewModel>(Func<TViewModel, Task> onPresenting) where TViewModel : INotifyPropertyChanged
+	{
+		ArgumentNullException.ThrowIfNull(onPresenting);
+
+		var popup = GetPopup(typeof(TViewModel));
+
+		var viewModel = AssignBindingContext<TViewModel>(popup);
+
+		await onPresenting.Invoke(viewModel);
 
 		return CurrentPage.ShowPopupAsync(popup);
 	}
 
 	/// <summary>
-	/// Ensures that the BindingContext property of the Popup to present is either not set (in which case we will assign an instance through the magic of DI), or is of the expected type so that we can pass the <paramref name="arguments"/> over to it.
+	/// Ensures that the BindingContext property of the Popup to present is either not set (in which case we will assign an instance through the magic of DI),
+	/// or is of the expected type.
 	/// </summary>
 	/// <typeparam name="TViewModel"></typeparam>
 	/// <param name="popup">The popup to be presented.</param>
-	/// <param name="arguments">The arguments to provide.</param>
 	/// <exception cref="InvalidOperationException"></exception>
-	void AssignBindingContext<TViewModel>(Popup popup, IReadOnlyDictionary<string, object> arguments) where TViewModel : IArgumentsReceiver
+	TViewModel AssignBindingContext<TViewModel>(Popup popup)
 	{
 		if (popup.BindingContext is null)
 		{
@@ -102,12 +134,13 @@ public class PopupService : IPopupService
 			
 			popup.BindingContext = viewModel;
 		}
-		else if (popup.BindingContext is not TViewModel)
+
+		if (popup.BindingContext is not TViewModel assignedViewModel)
 		{
-			throw new InvalidOperationException($"Unexpected type has been assigned to the BindingContext of {popup.GetType()}. Expected type {typeof(TViewModel)} but was {popup.BindingContext.GetType()}");
+			throw new InvalidOperationException($"Unexpected type has been assigned to the BindingContext of {popup.GetType()}. Expected type {typeof(TViewModel)} but was {popup.BindingContext?.GetType()}");
 		}
 
-		((IArgumentsReceiver)popup.BindingContext).SetArguments(arguments);
+		return assignedViewModel;
 	}
 
 	Popup GetPopup(Type viewModelType)
