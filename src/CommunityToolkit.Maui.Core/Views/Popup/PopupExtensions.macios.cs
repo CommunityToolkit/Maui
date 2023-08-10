@@ -99,36 +99,36 @@ public static class PopupExtensions
 
 		if (popup.Anchor is null)
 		{
-			var originY = popup.VerticalOptions switch
+			nfloat originY;
+			if (mauiPopup.PreferredContentSize.Height < frame.Height)
 			{
-				Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Height,
-				Microsoft.Maui.Primitives.LayoutAlignment.Center => frame.GetMidY(),
-				_ => 0f
-			};
-
-			var originX = popup.HorizontalOptions switch
+				originY = popup.VerticalOptions switch
+				{
+					Microsoft.Maui.Primitives.LayoutAlignment.Start => mauiPopup.PreferredContentSize.Height / 2,
+					Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Height - (mauiPopup.PreferredContentSize.Height / 2),
+					Microsoft.Maui.Primitives.LayoutAlignment.Center or Microsoft.Maui.Primitives.LayoutAlignment.Fill => frame.GetMidY(),
+					_ => throw new NotSupportedException($"{nameof(Microsoft.Maui.Primitives.LayoutAlignment)} {popup.VerticalOptions} is not yet supported")
+				};
+			}
+			else
 			{
-				Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Width,
-				Microsoft.Maui.Primitives.LayoutAlignment.Center => frame.GetMidX(),
-				_ => 0f
-			};
+				originY = -frame.GetMidY();
+			}
 
-			if (DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst)
+			nfloat originX;
+			if (mauiPopup.PreferredContentSize.Width < frame.Width)
 			{
-				if (popup.VerticalOptions == Microsoft.Maui.Primitives.LayoutAlignment.End)
+				originX = popup.HorizontalOptions switch
 				{
-					originY -= (mauiPopup.PreferredContentSize.Height / 2);
-				}
-
-				if (popup.HorizontalOptions == Microsoft.Maui.Primitives.LayoutAlignment.End)
-				{
-					originX -= (mauiPopup.PreferredContentSize.Width);
-				}
-
-				if (popup.HorizontalOptions == Microsoft.Maui.Primitives.LayoutAlignment.Center)
-				{
-					originX -= (mauiPopup.PreferredContentSize.Width / 2);
-				}
+					Microsoft.Maui.Primitives.LayoutAlignment.Start => mauiPopup.PreferredContentSize.Width / 2,
+					Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Width - (mauiPopup.PreferredContentSize.Width / 2),
+					Microsoft.Maui.Primitives.LayoutAlignment.Center or Microsoft.Maui.Primitives.LayoutAlignment.Fill => frame.GetMidX(),
+					_ => throw new NotSupportedException($"{nameof(Microsoft.Maui.Primitives.LayoutAlignment)} {popup.VerticalOptions} is not yet supported")
+				};
+			}
+			else
+			{
+				originX = -frame.GetMidX();
 			}
 
 			mauiPopup.PopoverPresentationController.SourceRect = new CGRect(originX, originY, 0, 0);
