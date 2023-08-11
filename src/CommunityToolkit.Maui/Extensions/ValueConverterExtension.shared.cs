@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using CommunityToolkit.Maui.Converters;
+﻿using CommunityToolkit.Maui.Converters;
 
 namespace CommunityToolkit.Maui.Extensions;
 
@@ -10,25 +9,7 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 	public ICommunityToolkitValueConverter ProvideValue(IServiceProvider serviceProvider)
 		=> (ICommunityToolkitValueConverter)this;
 
-	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)
-		=> ((IMarkupExtension<ICommunityToolkitValueConverter>)this).ProvideValue(serviceProvider);
-
-	private protected static bool IsNullable<T>()
-	{
-		var type = typeof(T);
-
-		if (!type.IsValueType)
-		{
-			return true; // ref-type
-		}
-
-		if (Nullable.GetUnderlyingType(type) is not null)
-		{
-			return true; // Nullable<T>
-		}
-
-		return false; // value-type
-	}
+	private protected static bool IsNullable<T>() => IsNullable(typeof(T));
 
 	private protected static bool IsValidTargetType<T>(in Type targetType)
 	{
@@ -55,14 +36,28 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 		static bool CanBeConvertedToString() => typeof(T).GetMethods().Any(x => x.Name is nameof(ToString) && x.ReturnType == typeof(string));
 	}
 
-	private protected static void ValidateTargetType<TTarget>(Type targetType)
+	private protected static void ValidateTargetType<TTarget>(Type targetType, bool shouldAllowNullableValueTypes)
 	{
 		ArgumentNullException.ThrowIfNull(targetType);
 
 		// Ensure TTo can be assigned to the given Target Type
-		if (!typeof(TTarget).IsAssignableFrom(targetType) && !IsValidTargetType<TTarget>(targetType))
+		if (!typeof(TTarget).IsAssignableFrom(targetType) // Ensure TTarget can be assigned from targetType. Eg TTarget is IEnumerable and targetType is IList
+			&& !IsValidTargetType<TTarget>(targetType) // Ensure targetType be converted to TTarget? Eg `Convert.ChangeType()` returns a non-null value
+			&& !(shouldAllowNullableValueTypes && typeof(TTarget).IsValueType && IsValidNullableValueType(targetType))) // Is TTarget a Value Type and targetType a Nullable Value Type? Eg TTarget is bool and targetType is bool?
 		{
 			throw new ArgumentException($"targetType needs to be assignable from {typeof(TTarget)}.", nameof(targetType));
+		}
+
+		static bool IsValidNullableValueType(Type targetType)
+		{
+			if (!IsNullable(targetType))
+			{
+				return false;
+			}
+
+			var underlyingType = Nullable.GetUnderlyingType(targetType) ?? throw new InvalidOperationException("Non-nullable are not valid");
+
+			return underlyingType == typeof(TTarget);
 		}
 	}
 
@@ -85,4 +80,22 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 		_ => throw new ArgumentException($"Value needs to be of type {typeof(TValue)}", nameof(value))
 	};
 #pragma warning restore CS8603 // Possible null reference return.
+
+	static bool IsNullable(Type type)
+	{
+		if (!type.IsValueType)
+		{
+			return true; // ref-type
+		}
+
+		if (Nullable.GetUnderlyingType(type) is not null)
+		{
+			return true; // Nullable<T>
+		}
+
+		return false; // value-type
+	}
+
+	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)
+		=> ((IMarkupExtension<ICommunityToolkitValueConverter>)this).ProvideValue(serviceProvider);
 }
