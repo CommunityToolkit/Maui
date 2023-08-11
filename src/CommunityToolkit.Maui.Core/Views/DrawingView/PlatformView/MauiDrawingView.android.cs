@@ -1,5 +1,7 @@
+using System.Collections.ObjectModel;
 using Android.Content;
 using Android.Views;
+using CommunityToolkit.Maui.Core.Extensions;
 using Microsoft.Maui.Platform;
 using AColor = Android.Graphics.Color;
 using APaint = Android.Graphics.Paint;
@@ -84,5 +86,18 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 	void Redraw()
 	{
 		Invalidate();
+	}
+
+	static ObservableCollection<PointF> CreateCollectionWithNormalizedPoints(in ObservableCollection<PointF> points, in int drawingViewWidth, in int drawingViewHeight, in float canvasScale)
+	{
+		var newPoints = new List<PointF>();
+		foreach (var point in points)
+		{
+			var pointX = Math.Clamp(point.X, 0, drawingViewWidth / canvasScale);
+			var pointY = Math.Clamp(point.Y, 0, drawingViewHeight / canvasScale);
+			newPoints.Add(new PointF(pointX, pointY));
+		}
+
+		return newPoints.ToObservableCollection();
 	}
 }

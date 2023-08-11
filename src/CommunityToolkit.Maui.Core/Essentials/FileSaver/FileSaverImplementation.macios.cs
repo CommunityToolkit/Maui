@@ -25,7 +25,7 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 		var isDirectoryCreated = fileManager.CreateDirectory(tempDirectoryPath, true, null, out var error);
 		if (!isDirectoryCreated)
 		{
-			throw new Exception(error?.LocalizedDescription ?? "Unable to create temp directory.");
+			throw new FileSaveException(error?.LocalizedDescription ?? "Unable to create temp directory.");
 		}
 
 		var fileUrl = tempDirectoryPath.Append(fileName, false);
