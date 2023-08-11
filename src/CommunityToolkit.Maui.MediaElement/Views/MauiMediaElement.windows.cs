@@ -24,20 +24,20 @@ public class MauiMediaElement : Grid, IDisposable
 	/// <summary>
 	/// Releases the managed and unmanaged resources used by the <see cref="MauiMediaElement"/>.
 	/// </summary>
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	/// <summary>
+	/// Releases the managed and unmanaged resources used by the <see cref="MauiMediaElement"/>.
+	/// </summary>
 	protected virtual void Dispose(bool disposing)
 	{
 		if (disposing)
 		{
 			mediaElement.MediaPlayer.Dispose();
 		}
-	}
-
-	/// <summary>
-	/// Releases the managed and unmanaged resources used by the <see cref="MauiMediaElement"/>.
-	/// </summary>
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
 	}
 }
