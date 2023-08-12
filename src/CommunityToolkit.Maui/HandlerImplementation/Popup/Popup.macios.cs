@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 
@@ -23,17 +24,23 @@ public partial class Popup
 		{
 			var mauiContext = virtualView.Handler?.MauiContext ?? throw new NullReferenceException(nameof(IMauiContext));
 			var view = (View?)virtualView.Content ?? throw new InvalidOperationException($"{nameof(IPopup.Content)} can't be null here.");
+#if !NET8_0_OR_GREATER
 			view.SetBinding(BindingContextProperty, new Binding { Source = virtualView, Path = BindingContextProperty.PropertyName });
+#endif
 			var contentPage = new ContentPage
 			{
 				Content = view,
 			};
 
-			if (virtualView.Parent != null)
+			if (virtualView.Parent is Element element)
 			{
-				contentPage.Parent = (Element)virtualView.Parent;
+#if NET8_0_OR_GREATER
+				element.AddLogicalChild(contentPage);
+#else
+				contentPage.Parent = element;
+#endif
 			}
-			
+
 			return (PageHandler)contentPage.ToHandler(mauiContext);
 		}
 	}
