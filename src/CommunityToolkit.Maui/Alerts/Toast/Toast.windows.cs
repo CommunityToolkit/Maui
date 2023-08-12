@@ -19,10 +19,6 @@ public partial class Toast
 			return;
 		}
 
-		if (isDisposing)
-		{
-		}
-
 		isDisposed = true;
 	}
 

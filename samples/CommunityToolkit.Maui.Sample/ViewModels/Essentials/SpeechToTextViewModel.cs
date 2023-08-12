@@ -18,7 +18,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	readonly ISpeechToText speechToText;
 
 	[ObservableProperty]
-	Locale? locale;
+	Locale? currentLocale;
 
 	[ObservableProperty]
 	string? recognitionText = "Welcome to .NET MAUI Community Toolkit!";
@@ -45,7 +45,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 			Locales.Add(locale);
 		}
 
-		Locale = Locales.FirstOrDefault(x => x.Language is defaultLanguage or defaultLanguage_android or defaultLanguage_tizen) ?? Locales.FirstOrDefault();
+		CurrentLocale = Locales.FirstOrDefault(x => x.Language is defaultLanguage or defaultLanguage_android or defaultLanguage_tizen) ?? Locales.FirstOrDefault();
 	}
 
 	[RelayCommand]
@@ -53,7 +53,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	{
 		await textToSpeech.SpeakAsync(RecognitionText ?? "Welcome to .NET MAUI Community Toolkit!", new()
 		{
-			Locale = Locale,
+			Locale = CurrentLocale,
 			Pitch = 2,
 			Volume = 1
 		}, cancellationToken);
@@ -74,7 +74,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 		RecognitionText = beginSpeakingPrompt;
 
 		var recognitionResult = await speechToText.ListenAsync(
-											CultureInfo.GetCultureInfo(Locale?.Language ?? defaultLanguage),
+											CultureInfo.GetCultureInfo(CurrentLocale?.Language ?? defaultLanguage),
 											new Progress<string>(partialText =>
 											{
 												if (RecognitionText is beginSpeakingPrompt)
@@ -102,6 +102,6 @@ public partial class SpeechToTextViewModel : BaseViewModel
 
 	void HandleLocalesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 	{
-		OnPropertyChanged(nameof(Locale));
+		OnPropertyChanged(nameof(CurrentLocale));
 	}
 }
