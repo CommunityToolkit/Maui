@@ -31,9 +31,9 @@ public partial class Popup
 			};
 
 #if NET8_0_OR_GREATER
-			((Element?)virtualView.Parent)?.AddLogicalChild(contentPage);
+			(virtualView.Parent as Element)?.AddLogicalChild(contentPage);
 #else
-			contentPage.Parent = (Element)virtualView.Parent;
+			contentPage.Parent = virtualView.Parent as Element;
 #endif
 
 			return (PageHandler)contentPage.ToHandler(mauiContext);
