@@ -12,10 +12,13 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 {
 	async Task<Folder> InternalPickAsync(string initialPath, CancellationToken cancellationToken)
 	{
-		var status = await Permissions.RequestAsync<Permissions.StorageRead>().WaitAsync(cancellationToken).ConfigureAwait(false);
-		if (status is not PermissionStatus.Granted)
+		if (Android.OS.Build.VERSION.SdkInt < Android.OS.BuildVersionCodes.Tiramisu)
 		{
-			throw new PermissionException("Storage permission is not granted.");
+			var statusRead = await Permissions.RequestAsync<Permissions.StorageRead>().WaitAsync(cancellationToken).ConfigureAwait(false);
+			if (statusRead is not PermissionStatus.Granted)
+			{
+				throw new PermissionException("Storage permission is not granted.");
+			}
 		}
 
 		Folder? folder = null;

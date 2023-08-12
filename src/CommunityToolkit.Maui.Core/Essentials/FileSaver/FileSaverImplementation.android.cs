@@ -14,10 +14,13 @@ public sealed partial class FileSaverImplementation : IFileSaver
 {
 	static async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
-		var status = await Permissions.RequestAsync<Permissions.StorageWrite>().WaitAsync(cancellationToken).ConfigureAwait(false);
-		if (status is not PermissionStatus.Granted)
+		if (Android.OS.Build.VERSION.SdkInt < Android.OS.BuildVersionCodes.Tiramisu)
 		{
-			throw new PermissionException("Storage permission is not granted.");
+			var status = await Permissions.RequestAsync<Permissions.StorageWrite>().WaitAsync(cancellationToken).ConfigureAwait(false);
+			if (status is not PermissionStatus.Granted)
+			{
+				throw new PermissionException("Storage permission is not granted.");
+			}
 		}
 
 		const string baseUrl = "content://com.android.externalstorage.documents/document/primary%3A";
