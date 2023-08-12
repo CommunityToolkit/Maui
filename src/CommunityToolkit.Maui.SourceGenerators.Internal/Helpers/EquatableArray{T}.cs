@@ -8,7 +8,7 @@ using System.Collections;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
-namespace CommunityToolkit.Maui.BindablePropertySG.Helpers;
+namespace CommunityToolkit.Maui.SourceGenerators.Internal.Helpers;
 
 /// <summary>
 /// Extensions for <see cref="EquatableArray{T}"/>.

@@ -1,29 +1,29 @@
 ﻿using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Text;
-using CommunityToolkit.Maui.BindablePropertySG.Helpers;
-using CommunityToolkit.Maui.BindablePropertySG.Models;
+using CommunityToolkit.Maui.SourceGenerators.Internal.Helpers;
+using CommunityToolkit.Maui.SourceGenerators.Internal.Models;
 using CommunityToolkit.Maui.SourceGenerators.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
-namespace CommunityToolkit.Maui.BindablePropertySG;
+namespace CommunityToolkit.Maui.SourceGenerators.Internal;
 
 [Generator]
-public class BindablePropertySG : IIncrementalGenerator
+public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 {
-	static readonly SemanticValues emptySemanticValues = new(default, Array.Empty<BPInfo>().ToImmutableArray());
+	static readonly SemanticValues emptySemanticValues = new(default, Array.Empty<BindablePropertyModel>().ToImmutableArray());
 
 	const string bpFullName = "global::Microsoft.Maui.Controls.BindableProperty";
 	const string bindingModeFullName = "global::Microsoft.Maui.Controls.";
 
 	const string bpAttribute = """
 #nullable enable
-namespace CommunityToolkit.Maui.BindablePropertySG;
+namespace CommunityToolkit.Maui;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-public sealed class BindablePropertyAttribute<TReturnType> : Attribute
+sealed class BindablePropertyAttribute<TReturnType> : Attribute
 {
 	public string PropertyName { get; } = string.Empty;
 	public Type? OwnerType { get; set; }
@@ -46,9 +46,9 @@ public sealed class BindablePropertyAttribute<TReturnType> : Attribute
 	{
 		context.RegisterPostInitializationOutput(ctx => ctx.AddSource("BindablePropertyAttribute.g.cs", SourceText.From(bpAttribute, Encoding.UTF8)));
 
-		var provider = context.SyntaxProvider.ForAttributeWithMetadataName("CommunityToolkit.Maui.BindablePropertySG.BindablePropertyAttribute`1",
+		var provider = context.SyntaxProvider.ForAttributeWithMetadataName("CommunityToolkit.Maui.BindablePropertyAttribute`1",
 			SyntaxPredicate, SemanticTransform)
-			.Where(static x => x.ClassInformation != default || !x.BPInfos.IsEmpty)
+			.Where(static x => x.ClassInformation != default || !x.BindableProperties.IsEmpty)
 			.Collect()
 			.SelectMany(static (types, _) => types);
 
@@ -75,7 +75,7 @@ namespace {value.ClassInformation.ContainingNamespace};
 {{
 ");
 
-		foreach (var info in value.BPInfos)
+		foreach (var info in value.BindableProperties)
 		{
 			GenerateBindableProperty(sb, info);
 			GenerateProperty(sb, info);
@@ -84,7 +84,7 @@ namespace {value.ClassInformation.ContainingNamespace};
 		sb.AppendLine().Append("}");
 		return sb.ToString();
 
-		static void GenerateBindableProperty(StringBuilder sb, BPInfo info)
+		static void GenerateBindableProperty(StringBuilder sb, BindablePropertyModel info)
 		{
 			/// <summary>
 			/// Backing BindableProperty for the <see cref="PropertyName"/> property.
@@ -111,7 +111,7 @@ namespace {value.ClassInformation.ContainingNamespace};
 			sb.AppendLine().AppendLine();
 		}
 
-		static void GenerateProperty(StringBuilder sb, BPInfo info)
+		static void GenerateProperty(StringBuilder sb, BindablePropertyModel info)
 		{
 
 			/// <inheritdoc />
@@ -148,17 +148,17 @@ namespace {value.ClassInformation.ContainingNamespace};
 		var classInfo = new ClassInformation(classSymbol.Name, classSymbol.DeclaredAccessibility.ToString().ToLower(), classSymbol.ContainingNamespace.ToDisplayString());
 
 
-		var bpInfos = new List<BPInfo>(context.Attributes.Length);
+		var bindablePropertyModels = new List<BindablePropertyModel>(context.Attributes.Length);
 
 		foreach (var attributeData in context.Attributes)
 		{
-			bpInfos.Add(GetAttributeValues(attributeData, classSymbol?.ToString() ?? string.Empty));
+			bindablePropertyModels.Add(GetAttributeValues(attributeData, classSymbol?.ToString() ?? string.Empty));
 		}
 
-		return new(classInfo, bpInfos.ToImmutableArray());
+		return new(classInfo, bindablePropertyModels.ToImmutableArray());
 	}
 
-	static BPInfo GetAttributeValues(in AttributeData attributeData, in string declaringTypeString)
+	static BindablePropertyModel GetAttributeValues(in AttributeData attributeData, in string declaringTypeString)
 	{
 		_ = attributeData.AttributeClass ?? throw new NullReferenceException(nameof(attributeData.AttributeClass));
 		var bpType = attributeData.AttributeClass.TypeArguments[0];
@@ -172,7 +172,7 @@ namespace {value.ClassInformation.ContainingNamespace};
 		var propertyName = attributeData.GetConstructorArgumentsAttributeValueByNameAsString();
 		var validateValueMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString("ValidateValueMethodName");
 
-		return new BPInfo
+		return new BindablePropertyModel
 		{
 			CoerceValueMethodName = coerceValueMethodName,
 			DefaultBindingMode = defaultBindingMode,

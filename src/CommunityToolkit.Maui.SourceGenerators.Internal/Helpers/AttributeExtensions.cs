@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace CommunityToolkit.Maui.BindablePropertySG.Helpers;
+namespace CommunityToolkit.Maui.SourceGenerators.Internal.Helpers;
+
 static class AttributeExtensions
 {
 	public static TypedConstant GetAttributeValueByName(this AttributeData attribute, string name)

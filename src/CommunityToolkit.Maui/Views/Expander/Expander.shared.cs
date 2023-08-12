@@ -1,12 +1,11 @@
 using System.ComponentModel;
 using System.Windows.Input;
-using CommunityToolkit.Maui.BindablePropertySG;
 using CommunityToolkit.Maui.Core;
+
 namespace CommunityToolkit.Maui.Views;
 
 /// <inheritdoc cref="IExpander"/>
 [ContentProperty(nameof(Content))]
-
 [BindableProperty<IView>("Header", PropertyChangedMethodName = nameof(OnHeaderPropertyChanged))]
 [BindableProperty<IView>("Content", PropertyChangedMethodName = nameof(OnContentPropertyChanged))]
 [BindableProperty<bool>("IsExpanded", PropertyChangedMethodName = nameof(OnIsExpandedPropertyChanged))]
@@ -19,6 +18,7 @@ public partial class Expander : ContentView, IExpander
 	/// </summary>
 	public static readonly BindableProperty DirectionProperty
 		= BindableProperty.Create(nameof(Direction), typeof(ExpandDirection), typeof(Expander), ExpandDirection.Down, propertyChanged: OnDirectionPropertyChanged);
+
 	readonly WeakEventManager tappedEventManager = new();
 
 	/// <summary>

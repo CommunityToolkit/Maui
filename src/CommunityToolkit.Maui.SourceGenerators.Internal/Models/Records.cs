@@ -1,9 +1,9 @@
-﻿using CommunityToolkit.Maui.BindablePropertySG.Helpers;
+﻿using CommunityToolkit.Maui.SourceGenerators.Internal.Helpers;
 using Microsoft.CodeAnalysis;
 
-namespace CommunityToolkit.Maui.BindablePropertySG.Models;
+namespace CommunityToolkit.Maui.SourceGenerators.Internal.Models;
 
-record BPInfo
+record BindablePropertyModel
 {
 	public string PropertyName { get; set; } = string.Empty;
 	public ITypeSymbol? ReturnType { get; set; }
@@ -17,6 +17,6 @@ record BPInfo
 	public string DefaultValueCreatorMethodName { get; set; } = string.Empty;
 }
 
-record SemanticValues(ClassInformation ClassInformation, EquatableArray<BPInfo> BPInfos);
+record SemanticValues(ClassInformation ClassInformation, EquatableArray<BindablePropertyModel> BindableProperties);
 
 readonly record struct ClassInformation(string ClassName, string DeclaredAccessibility, string ContainingNamespace);

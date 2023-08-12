@@ -43,7 +43,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.Camer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.Camera.Analyzers.CodeFixes", "CommunityToolkit.Maui.Camera.Analyzers.CodeFixes\CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.csproj", "{97B77E28-FA3C-4827-9893-4E934312234A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.BindablePropertySG", "CommunityToolkit.Maui.BindablePropertySG\CommunityToolkit.Maui.BindablePropertySG.csproj", "{95794482-715F-4632-A420-79453CA0B0F1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.SourceGenerators.Internal", "CommunityToolkit.Maui.SourceGenerators.Internal\CommunityToolkit.Maui.SourceGenerators.Internal.csproj", "{DBB6D1E2-E155-4549-9AC0-9A044700A6A6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -95,7 +95,10 @@ Global
 		{DC82CAA2-90F9-4BA5-98F4-2232660DECF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC82CAA2-90F9-4BA5-98F4-2232660DECF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC82CAA2-90F9-4BA5-98F4-2232660DECF1}.Release|Any CPU.Build.0 = Release|Any CPU
-
+		{DBB6D1E2-E155-4549-9AC0-9A044700A6A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DBB6D1E2-E155-4549-9AC0-9A044700A6A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DBB6D1E2-E155-4549-9AC0-9A044700A6A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DBB6D1E2-E155-4549-9AC0-9A044700A6A6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -108,6 +111,7 @@ Global
 		{36ED21C6-EAA1-4472-B9DC-C0DC5EF7CBBF} = {60926304-6805-4E92-8E83-E63BB728E0E2}
 		{673856B7-78A5-4E61-AEBD-CBBC1A15B0D1} = {D6DE0F68-F76A-4D16-968C-9FE5FC6A459C}
 		{DC82CAA2-90F9-4BA5-98F4-2232660DECF1} = {D6DE0F68-F76A-4D16-968C-9FE5FC6A459C}
+		{95794482-715F-4632-A420-79453CA0B0F1} = {D6DE0F68-F76A-4D16-968C-9FE5FC6A459C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {42B065EB-DA54-40BE-B676-3D47D59A81F2}
