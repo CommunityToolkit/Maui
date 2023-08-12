@@ -29,7 +29,7 @@ public partial class Popup
 #endif
 			var contentPage = new ContentPage
 			{
-				Content = view,
+				Content = view
 			};
 
 			if (virtualView.Parent is Element element)
