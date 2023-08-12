@@ -85,7 +85,18 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		await using var memoryStream = new MemoryStream();
 		await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
 		await fileOutputStream.WriteAsync(memoryStream.ToArray()).WaitAsync(cancellationToken).ConfigureAwait(false);
-		var split = uri.Path?.Split(':') ?? throw new FolderPickerException("Unable to resolve path.");
-		return $"{Android.OS.Environment.ExternalStorageDirectory}/{split[^1]}";
+		var path = uri.PathSegments?[1] ?? throw new FolderPickerException("Unable to resolve path.");
+		var split = path.Split(':');
+		// Primary is the device's internal storage, and anything else is an SD card or other external storage
+		if (split[0].Equals("primary", StringComparison.OrdinalIgnoreCase))
+		{
+			// Example for internal path /storage/emulated/0/DCIM
+			return $"{Android.OS.Environment.ExternalStorageDirectory?.Path}/{split[1]}";
+		}
+		else
+		{
+			// Example for external path /storage/1B0B-0B1C/DCIM
+			return $"/storage/{split[0]}/{split[1]}";
+		}
 	}
 }
