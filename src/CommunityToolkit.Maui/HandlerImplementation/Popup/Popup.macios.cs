@@ -29,6 +29,11 @@ public partial class Popup
 				Content = view
 			};
 
+			if (virtualView.Parent is Element element)
+			{
+				contentPage.Parent = element;
+			}
+			
 			return (PageHandler)contentPage.ToHandler(mauiContext);
 		}
 	}
