@@ -91,7 +91,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		if (split[0].Equals("primary", StringComparison.OrdinalIgnoreCase))
 		{
 			// Example for internal path /storage/emulated/0/DCIM
-			return $"{Android.OS.Environment.ExternalStorageDirectory?.Path}/{split[1]}";
+			return $"{Android.OS.Environment.ExternalStorageDirectory?.Path}/{split[^1]}";
 		}
 		else
 		{
