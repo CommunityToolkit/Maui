@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.ApplicationModel;
 using CommunityToolkit.Maui.Maps;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Media;
@@ -48,7 +49,7 @@ public static class MauiProgram
 #endif
 								.UseMauiCommunityToolkitMarkup()
 								.UseMauiCommunityToolkitMediaElement()
-								.UseMauiCommunityToolkitMaps("") // You should add your own key here from bingmapsportal.com
+								.UseMauiCommunityToolkitMaps("KEY") // You should add your own key here from bingmapsportal.com
 								.UseMauiApp<App>()
 								.ConfigureFonts(fonts =>
 								{
@@ -156,6 +157,8 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<VariableMultiValueConverterPage, VariableMultiValueConverterViewModel>();
 
 		// Add Essentials Pages + ViewModels
+		services.AddTransientWithShellRoute<AppThemePage, AppThemeViewModel>();
+		services.AddTransientWithShellRoute<BadgePage, BadgeViewModel>();
 		services.AddTransientWithShellRoute<FileSaverPage, FileSaverViewModel>();
 		services.AddTransientWithShellRoute<FolderPickerPage, FolderPickerViewModel>();
 		services.AddTransientWithShellRoute<SpeechToTextPage, SpeechToTextViewModel>();
@@ -184,9 +187,10 @@ public static class MauiProgram
 
 		services.AddTransientWithShellRoute<MultiplePopupPage, MultiplePopupViewModel>();
 		services.AddTransientWithShellRoute<PopupAnchorPage, PopupAnchorViewModel>();
+		services.AddTransientWithShellRoute<PopupLayoutAlignmentPage, PopupLayoutAlignmentViewModel>();
 		services.AddTransientWithShellRoute<PopupPositionPage, PopupPositionViewModel>();
-		services.AddTransientWithShellRoute<ShowPopupInOnAppearingPage, ShowPopupInOnAppearingPageViewModel>();
 		services.AddTransientWithShellRoute<SemanticOrderViewPage, SemanticOrderViewPageViewModel>();
+		services.AddTransientWithShellRoute<ShowPopupInOnAppearingPage, ShowPopupInOnAppearingPageViewModel>();
 
 		// Add Popups
 		services.AddTransient<CsharpBindingPopup, CsharpBindingPopupViewModel>();
@@ -199,6 +203,7 @@ public static class MauiProgram
 		services.AddSingleton<IDeviceInfo>(DeviceInfo.Current);
 		services.AddSingleton<IFileSaver>(FileSaver.Default);
 		services.AddSingleton<IFolderPicker>(FolderPicker.Default);
+		services.AddSingleton<IBadge>(Badge.Default);
 		services.AddSingleton<ISpeechToText>(SpeechToText.Default);
 		services.AddSingleton<ITextToSpeech>(TextToSpeech.Default);
 	}

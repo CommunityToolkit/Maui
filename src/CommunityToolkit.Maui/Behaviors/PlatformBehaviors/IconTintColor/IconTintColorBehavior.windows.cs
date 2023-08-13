@@ -118,12 +118,24 @@ public partial class IconTintColorBehavior
 
 	void LoadAndApplyImageTintColor(View element, WImage image, Color color)
 	{
-		image.ImageOpened += OnImageOpened;
+		if (image.IsLoaded)
+		{
+			ApplyTintColor();
+		}
+		else
+		{
+			image.ImageOpened += OnImageOpened;
+		}
 
 		void OnImageOpened(object sender, RoutedEventArgs e)
 		{
 			image.ImageOpened -= OnImageOpened;
 
+			ApplyTintColor();
+		}
+
+		void ApplyTintColor()
+		{
 			if (image.ActualSize != Vector2.Zero)
 			{
 				ApplyImageTintColor(element, image, color);
@@ -151,18 +163,20 @@ public partial class IconTintColorBehavior
 
 		var width = (float)image.ActualWidth;
 		var height = (float)image.ActualHeight;
+		var anchorPoint = new Vector2((float)element.AnchorX, (float)element.AnchorY);
 
 		// Hide possible visible pixels from original image.
 		// Workaround since the tinted image is added as a child to the current image and it's not possible to hide a parent without hiding its children using Visibility.Collapsed.
 		image.Width = image.Height = 0;
 
-		// Workaround requires offset to re-center tinted image.
-		var offset = new Vector3(-width * .5f, -height * .5f, 0f);
+		// Requested size requires additional offset to re-center tinted image.
+		var requiresAdditionalCenterOffset = element.WidthRequest != -1 || element.HeightRequest != -1;
+		var offset = requiresAdditionalCenterOffset ? new Vector3(width * anchorPoint.X, height * anchorPoint.Y, 0f) : Vector3.Zero;
 
-		ApplyTintCompositionEffect(image, color, width, height, offset, uri);
+		ApplyTintCompositionEffect(image, color, width, height, offset, anchorPoint, uri);
 	}
 
-	void ApplyTintCompositionEffect(FrameworkElement platformView, Color color, float width, float height, Vector3 offset, Uri surfaceMaskUri)
+	void ApplyTintCompositionEffect(FrameworkElement platformView, Color color, float width, float height, Vector3 offset, Vector2 anchorPoint, Uri surfaceMaskUri)
 	{
 		var compositor = ElementCompositionPreview.GetElementVisual(platformView).Compositor;
 
@@ -179,6 +193,7 @@ public partial class IconTintColorBehavior
 		currentSpriteVisual.Brush = maskBrush;
 		currentSpriteVisual.Size = new Vector2(width, height);
 		currentSpriteVisual.Offset = offset;
+		currentSpriteVisual.AnchorPoint = anchorPoint;
 
 		ElementCompositionPreview.SetElementChildVisual(platformView, currentSpriteVisual);
 	}

@@ -53,7 +53,7 @@ public class IntToBoolConverterTests : BaseConverterTest<IntToBoolConverter>
 	{
 		var intToBoolConverter = new IntToBoolConverter();
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)intToBoolConverter).Convert(null, typeof(bool), null, CultureInfo.CurrentCulture));
-		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)intToBoolConverter).ConvertBack(null, typeof(bool), null, CultureInfo.CurrentCulture)); ;
+		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)intToBoolConverter).ConvertBack(null, typeof(bool), null, CultureInfo.CurrentCulture));
 	}
 
 	[Theory]
