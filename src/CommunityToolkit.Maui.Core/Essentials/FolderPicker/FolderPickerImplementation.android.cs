@@ -84,5 +84,4 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 
 		throw new FolderPickerException($"Unable to resolve absolute path or retrieve contents of URI '{uri}'.");
 	}
-
 }
