@@ -36,8 +36,14 @@ public class PopupService : IPopupService
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}()"/>
-	public void ShowPopup<TViewModel>() where TViewModel : INotifyPropertyChanged =>
-		ShowPopup(GetViewModel<TViewModel>());
+	public void ShowPopup<TViewModel>() where TViewModel : INotifyPropertyChanged
+	{
+		var popup = GetPopup(typeof(TViewModel));
+
+		var viewModel = AssignBindingContext(popup, GetViewModel<TViewModel>);
+
+		CurrentPage.ShowPopup(popup);
+	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(TViewModel)"/>
 	public void ShowPopup<TViewModel>(TViewModel viewModel) where TViewModel : INotifyPropertyChanged
@@ -45,6 +51,8 @@ public class PopupService : IPopupService
 		ArgumentNullException.ThrowIfNull(viewModel);
 
 		var popup = GetPopup(typeof(TViewModel));
+
+		AssignBindingContext(popup, () => viewModel);
 
 		CurrentPage.ShowPopup(popup);
 	}
@@ -56,23 +64,9 @@ public class PopupService : IPopupService
 
 		var popup = GetPopup(typeof(TViewModel));
 
-		var viewModel = AssignBindingContext<TViewModel>(popup);
+		var viewModel = AssignBindingContext(popup, GetViewModel<TViewModel>);
 
 		onPresenting.Invoke(viewModel);
-
-		CurrentPage.ShowPopup(popup);
-	}
-
-	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(Func{TViewModel, Task})"/>
-	public async void ShowPopup<TViewModel>(Func<TViewModel, Task> onPresenting) where TViewModel : INotifyPropertyChanged
-	{
-		ArgumentNullException.ThrowIfNull(onPresenting);
-
-		var popup = GetPopup(typeof(TViewModel));
-
-		var viewModel = AssignBindingContext<TViewModel>(popup);
-
-		await onPresenting.Invoke(viewModel);
 
 		CurrentPage.ShowPopup(popup);
 	}
@@ -88,6 +82,8 @@ public class PopupService : IPopupService
 
 		var popup = GetPopup(typeof(TViewModel));
 
+		AssignBindingContext(popup, () => viewModel);
+
 		return CurrentPage.ShowPopupAsync(popup);
 	}
 
@@ -98,23 +94,9 @@ public class PopupService : IPopupService
 
 		var popup = GetPopup(typeof(TViewModel));
 
-		var viewModel = AssignBindingContext<TViewModel>(popup);
+		var viewModel = AssignBindingContext(popup, GetViewModel<TViewModel>);
 
 		onPresenting.Invoke(viewModel);
-
-		return CurrentPage.ShowPopupAsync(popup);
-	}
-
-	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(Func{TViewModel, Task})"/>
-	public async Task<object?> ShowPopupAsync<TViewModel>(Func<TViewModel, Task> onPresenting) where TViewModel : INotifyPropertyChanged
-	{
-		ArgumentNullException.ThrowIfNull(onPresenting);
-
-		var popup = GetPopup(typeof(TViewModel));
-
-		var viewModel = AssignBindingContext<TViewModel>(popup);
-
-		await onPresenting.Invoke(viewModel);
 
 		return CurrentPage.ShowPopupAsync(popup);
 	}
@@ -125,12 +107,13 @@ public class PopupService : IPopupService
 	/// </summary>
 	/// <typeparam name="TViewModel"></typeparam>
 	/// <param name="popup">The popup to be presented.</param>
+	/// <param name="getViewModelInstance">Provides the instance of the view model ready to assign.</param>
 	/// <exception cref="InvalidOperationException"></exception>
-	TViewModel AssignBindingContext<TViewModel>(Popup popup)
+	static TViewModel AssignBindingContext<TViewModel>(Popup popup, Func<TViewModel> getViewModelInstance)
 	{
 		if (popup.BindingContext is null)
 		{
-			var viewModel = GetViewModel<TViewModel>();
+			var viewModel = getViewModelInstance.Invoke();
 			
 			popup.BindingContext = viewModel;
 		}
