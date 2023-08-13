@@ -263,3 +263,4 @@ paket-files/
 
 # Visual Studio Code
 .vscode
+/samples/workload-install.ps1
