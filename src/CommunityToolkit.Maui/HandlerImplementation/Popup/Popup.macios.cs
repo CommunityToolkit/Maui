@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 
@@ -26,7 +27,8 @@ public partial class Popup
 			view.SetBinding(BindingContextProperty, new Binding { Source = virtualView, Path = BindingContextProperty.PropertyName });
 			var contentPage = new ContentPage
 			{
-				Content = view
+				Content = view,
+				Parent = virtualView.Parent as Element
 			};
 
 			return (PageHandler)contentPage.ToHandler(mauiContext);
