@@ -12,7 +12,7 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 {
 	async Task<Folder> InternalPickAsync(string initialPath, CancellationToken cancellationToken)
 	{
-		if (Android.OS.Build.VERSION.SdkInt < Android.OS.BuildVersionCodes.Tiramisu)
+		if (OperatingSystem.IsAndroidVersionAtLeast(32))
 		{
 			var statusRead = await Permissions.RequestAsync<Permissions.StorageRead>().WaitAsync(cancellationToken).ConfigureAwait(false);
 			if (statusRead is not PermissionStatus.Granted)
