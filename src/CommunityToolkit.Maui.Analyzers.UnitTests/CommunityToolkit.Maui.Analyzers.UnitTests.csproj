@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>$(NetVersion)</TargetFramework>
     <IsPackable>false</IsPackable>
     <UseMaui>true</UseMaui>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
@@ -28,7 +28,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
-    <PackageReference Include="NuGet.Protocol" Version="6.6.1" />
+    <PackageReference Include="NuGet.Protocol" Version="6.7.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -36,13 +36,16 @@ Please see our [Code of Conduct](https://dotnetfoundation.org/code-of-conduct).
 
 As should be clear by now: we assume everyone tries to do their best, everyone should be treated with respect and equally.
 
-In the unfortunate event that doesn't happen, please feel free to report it to any of the team members or reach out to [Gerald](maillo:gerald.versluis@microsoft.com) directly.
+In the unfortunate event that doesn't happen, please feel free to report it to any of the team members or reach out to [Gerald](mailto:gerald.versluis@microsoft.com) directly.
 
 We will take appropriate actions and measures if necessary.
 
 ## Prerequisites
 
-You will need to complete a Contribution License Agreement before any pull request can be accepted. Complete the CLA at https://cla.dotnetfoundation.org/. This will also be triggered whenever you open a PR and the link should guide you through it.
+1. Install latest stable [.NET SDK](https://dotnet.microsoft.com/en-us/download)
+1. Install .NET MAUI workloads (we recommend using Visual Studio installer)
+
+> You will need to complete a Contribution License Agreement before any pull request can be accepted. Complete the CLA at https://cla.dotnetfoundation.org/. This will also be triggered whenever you open a PR and the link should guide you through it.
 
 ## Reporting a bug
 

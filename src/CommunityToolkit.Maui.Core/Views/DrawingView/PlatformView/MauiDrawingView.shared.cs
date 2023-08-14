@@ -192,8 +192,8 @@ public partial class MauiDrawingView
 			canvas.StrokeColor = lineColor;
 			canvas.StrokeSize = lineWidth;
 			canvas.StrokeDashOffset = 0;
-			canvas.StrokeLineCap = LineCap.Butt;
-			canvas.StrokeLineJoin = LineJoin.Miter;
+			canvas.StrokeLineCap = LineCap.Round;
+			canvas.StrokeLineJoin = LineJoin.Round;
 			canvas.StrokeDashPattern = Array.Empty<float>();
 		}
 
@@ -221,20 +221,5 @@ public partial class MauiDrawingView
 				}
 			}
 		}
-
-#if ANDROID
-		static ObservableCollection<PointF> CreateCollectionWithNormalizedPoints(in ObservableCollection<PointF> points, in int drawingViewWidth, in int drawingViewHeight, in float canvasScale)
-		{
-			var newPoints = new List<PointF>();
-			foreach (var point in points)
-			{
-				var pointX = Math.Clamp(point.X, 0, drawingViewWidth / canvasScale);
-				var pointY = Math.Clamp(point.Y, 0, drawingViewHeight / canvasScale);
-				newPoints.Add(new PointF(pointX, pointY));
-			}
-
-			return newPoints.ToObservableCollection();
-		}
-#endif
 	}
 }

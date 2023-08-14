@@ -66,14 +66,14 @@ public class StateContainerTests : BaseTest
 	[Fact]
 	public void StateView_HasStateKey()
 	{
-		var view = StateContainer.GetStateViews(layout).First();
+		var view = StateContainer.GetStateViews(layout)[0];
 		Assert.Equal(StateKey.Loading, StateView.GetStateKey(view));
 	}
 
 	[Fact]
 	public void StateView_SetsStateKey()
 	{
-		var view = (View)layout.Children.First();
+		var view = (View)layout.Children[0];
 		StateView.SetStateKey(view, StateKey.Anything);
 		Assert.Equal(StateKey.Anything, StateView.GetStateKey(view));
 	}
@@ -484,7 +484,7 @@ public class StateContainerTests : BaseTest
 	public void Controller_SwitchesToStateFromContentSuccess()
 	{
 		controller.SwitchToState(StateKey.Loading);
-		var state = controller.GetLayout().Children.First();
+		var state = controller.GetLayout().Children[0];
 
 		Assert.IsType<Label>(state);
 		Assert.Equal("Loading", ((Label)state).Text);
@@ -494,13 +494,13 @@ public class StateContainerTests : BaseTest
 	public void Controller_SwitchesToContentFromStateSuccess()
 	{
 		controller.SwitchToState(StateKey.Loading);
-		var label = controller.GetLayout().Children.First();
+		var label = controller.GetLayout().Children[0];
 
 		Assert.IsType<Label>(label);
 		Assert.Equal("Loading", ((Label)label).Text);
 
 		controller.SwitchToContent();
-		label = controller.GetLayout().Children.First();
+		label = controller.GetLayout().Children[0];
 
 		Assert.IsType<Label>(label);
 		Assert.Equal("Default", ((Label)label).Text);
@@ -510,13 +510,13 @@ public class StateContainerTests : BaseTest
 	public void Controller_SwitchesToStateFromStateSuccess()
 	{
 		controller.SwitchToState(StateKey.Anything);
-		var label = controller.GetLayout().Children.First();
+		var label = controller.GetLayout().Children[0];
 
 		Assert.IsType<Label>(label);
 		Assert.Equal("Anything", ((Label)label).Text);
 
 		controller.SwitchToState(StateKey.Loading);
-		label = controller.GetLayout().Children.First();
+		label = controller.GetLayout().Children[0];
 
 		Assert.IsType<Label>(label);
 		Assert.Equal("Loading", ((Label)label).Text);
@@ -526,13 +526,13 @@ public class StateContainerTests : BaseTest
 	public void Controller_SwitchesToStateFromSameStateSuccess()
 	{
 		controller.SwitchToState(StateKey.Loading);
-		var label = controller.GetLayout().Children.First();
+		var label = controller.GetLayout().Children[0];
 
 		Assert.IsType<Label>(label);
 		Assert.Equal("Loading", ((Label)label).Text);
 
 		controller.SwitchToState(StateKey.Loading);
-		label = controller.GetLayout().Children.First();
+		label = controller.GetLayout().Children[0];
 
 		Assert.IsType<Label>(label);
 		Assert.Equal("Loading", ((Label)label).Text);
@@ -542,7 +542,7 @@ public class StateContainerTests : BaseTest
 	public void Controller_GridStateViewSpansParent()
 	{
 		gridController.SwitchToState(StateKey.Loading);
-		var view = (View)gridController.GetLayout().Children.First();
+		var view = (View)gridController.GetLayout().Children[0];
 
 		Assert.Equal(Grid.GetColumnSpan(view), grid.ColumnDefinitions.Count);
 		Assert.Equal(Grid.GetRowSpan(view), grid.RowDefinitions.Count);

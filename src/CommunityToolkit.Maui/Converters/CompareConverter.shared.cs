@@ -76,7 +76,7 @@ public abstract class CompareConverter<TObject> : BaseConverterOneWay<IComparabl
 	public TObject? FalseObject { get; set; }
 
 	/// <summary>
-	/// Converts an object that implements IComparable to a specified object or a boolean based on a comparaison result.
+	/// Converts an object that implements IComparable to a specified object or a boolean based on a comparison result.
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
 	/// <param name="culture">The culture to use in the converter.  This is not implemented.</param>
@@ -90,7 +90,7 @@ public abstract class CompareConverter<TObject> : BaseConverterOneWay<IComparabl
 
 		if (!Enum.IsDefined(typeof(OperatorType), ComparisonOperator))
 		{
-			throw new ArgumentOutOfRangeException($"is expected to be of type {nameof(OperatorType)}", nameof(ComparisonOperator));
+			throw new ArgumentOutOfRangeException(nameof(ComparisonOperator), ComparingValue, $"is expected to be of type {nameof(OperatorType)}");
 		}
 
 		if (!(TrueObject is null ^ FalseObject is not null))
