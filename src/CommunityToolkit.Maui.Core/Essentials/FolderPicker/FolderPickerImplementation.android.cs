@@ -1,6 +1,7 @@
 using System.Web;
 using Android.Content;
 using Android.Provider;
+using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Maui.Core.Primitives;
 using Microsoft.Maui.ApplicationModel;
 using AndroidUri = Android.Net.Uri;
@@ -61,27 +62,6 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 			throw new FolderPickerException("Path is not selected.");
 		}
 
-		const string uriSchemeFolder = "content";
-		if (uri.Scheme is not null && uri.Scheme.Equals(uriSchemeFolder, StringComparison.OrdinalIgnoreCase))
-		{
-			// Example path would be /tree/primary:DCIM, or /tree/SDCare:DCIM
-			var path = uri.PathSegments?[1] ?? throw new FolderPickerException("Unable to resolve path.");
-
-			var split = path.Split(':');
-
-			// Primary is the device's internal storage, and anything else is an SD card or other external storage
-			if (split[0].Equals("primary", StringComparison.OrdinalIgnoreCase))
-			{
-				// Example for internal path /storage/emulated/0/DCIM
-				return $"{Android.OS.Environment.ExternalStorageDirectory?.Path}/{split[1]}";
-			}
-			else
-			{
-				// Example for external path /storage/1B0B-0B1C/DCIM
-				return $"/storage/{split[0]}/{split[1]}";
-			}
-		}
-
-		throw new FolderPickerException($"Unable to resolve absolute path or retrieve contents of URI '{uri}'.");
+		return uri.ToPhysicalPath() ?? throw new FolderPickerException($"Unable to resolve absolute path or retrieve contents of URI '{uri}'.");
 	}
 }
