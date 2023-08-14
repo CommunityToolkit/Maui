@@ -44,7 +44,8 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	readonly WeakEventManager openedWeakEventManager = new();
 	readonly Lazy<PlatformConfigurationRegistry<Popup>> platformConfigurationRegistry;
 
-	TaskCompletionSource<object?> taskCompletionSource = new();
+	TaskCompletionSource popupDismissedTaskCompletionSource = new();
+	TaskCompletionSource<object?> resultTaskCompletionSource = new();
 	Window? window;
 
 	/// <summary>
@@ -55,9 +56,6 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 		platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Popup>>(() => new(this));
 
 		VerticalOptions = HorizontalOptions = LayoutAlignment.Center;
-#if WINDOWS
-		this.HandlerChanged += OnPopupHandlerChanged;
-#endif
 	}
 
 	/// <summary>
@@ -81,7 +79,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// <summary>
 	/// Gets the final result of the dismissed popup.
 	/// </summary>
-	public Task<object?> Result => taskCompletionSource.Task;
+	public Task<object?> Result => resultTaskCompletionSource.Task;
 
 	/// <summary>
 	/// Gets or sets the <see cref="View"/> content to render in the Popup.
@@ -192,22 +190,44 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// <inheritdoc/>
 	IView? IPopup.Content => Content;
 
+	/// <inheritdoc/>
+	TaskCompletionSource IAsynchronousHandler.HandlerCompleteTCS => popupDismissedTaskCompletionSource;
 
 	/// <summary>
 	/// Resets the Popup.
 	/// </summary>
-	public void Reset() => taskCompletionSource = new();
+	public void Reset()
+	{
+		resultTaskCompletionSource = new();
+		popupDismissedTaskCompletionSource = new();
+	}
 
 	/// <summary>
 	/// Close the current popup.
 	/// </summary>
+	/// <remarks>
+	/// <see cref="Close(object?)"/> is an <see langword="async"/> <see langword="void"/> method, commonly referred to as a fire-and-forget method.
+	/// It will complete and return to the calling thread before the operating system has dismissed the <see cref="Popup"/> from the screen.
+	/// If you need to pause the execution of your method until the operating system has dismissed the <see cref="Popup"/> from the screen, use instead <see cref="CloseAsync(object?)"/>.
+	/// </remarks>
 	/// <param name="result">
 	/// The result to return.
 	/// </param>
-	public void Close(object? result = null)
+	public async void Close(object? result = null) => await CloseAsync(result);
+
+	/// <summary>
+	/// Close the current popup.
+	/// </summary>
+	/// <remarks>
+	/// Returns once the operating system has dismissed the <see cref="IPopup"/> from the page
+	/// </remarks>
+	/// <param name="result">
+	/// The result to return.
+	/// </param>
+	public async Task CloseAsync(object? result = null)
 	{
-		taskCompletionSource.TrySetResult(result);
-		OnClosed(result, false);
+		await OnClosed(result, false);
+		resultTaskCompletionSource.TrySetResult(result);
 	}
 
 	/// <summary>
@@ -225,19 +245,22 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// /// <param name="wasDismissedByTappingOutsideOfPopup">
 	/// Sets the <see cref="PopupClosedEventArgs"/> Property of <see cref="PopupClosedEventArgs.WasDismissedByTappingOutsideOfPopup"/>/>.
 	/// </param>
-	protected void OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup)
+	protected virtual async Task OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup)
 	{
 		((IPopup)this).OnClosed(result);
+
+		await popupDismissedTaskCompletionSource.Task;
+
 		dismissWeakEventManager.HandleEvent(this, new PopupClosedEventArgs(result, wasDismissedByTappingOutsideOfPopup), nameof(Closed));
 	}
 
 	/// <summary>
 	/// Invoked when the popup is dismissed by tapping outside of the popup.
 	/// </summary>
-	protected internal virtual void OnDismissedByTappingOutsideOfPopup()
+	protected internal virtual async Task OnDismissedByTappingOutsideOfPopup()
 	{
-		taskCompletionSource.TrySetResult(ResultWhenUserTapsOutsideOfPopup);
-		OnClosed(ResultWhenUserTapsOutsideOfPopup, true);
+		await OnClosed(ResultWhenUserTapsOutsideOfPopup, true);
+		resultTaskCompletionSource.TrySetResult(ResultWhenUserTapsOutsideOfPopup);
 	}
 
 	/// <summary>
@@ -269,7 +292,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 
 	void IPopup.OnOpened() => OnOpened();
 
-	void IPopup.OnDismissedByTappingOutsideOfPopup() => OnDismissedByTappingOutsideOfPopup();
+	async void IPopup.OnDismissedByTappingOutsideOfPopup() => await OnDismissedByTappingOutsideOfPopup();
 
 	void IPropertyPropagationController.PropagatePropertyChanged(string propertyName) =>
 		PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());

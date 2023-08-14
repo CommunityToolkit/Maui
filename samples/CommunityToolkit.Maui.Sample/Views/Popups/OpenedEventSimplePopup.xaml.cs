@@ -14,9 +14,11 @@ public partial class OpenedEventSimplePopup : Popup
 		Opened += OnOpened;
 	}
 
-	void OnOpened(object? sender, PopupOpenedEventArgs e)
+	async void OnOpened(object? sender, PopupOpenedEventArgs e)
 	{
 		Opened -= OnOpened;
+
+		await Task.Delay(TimeSpan.FromSeconds(1));
 
 		Title.Text = "Opened Event Popup";
 		Message.Text = "The content of this popup was updated after the popup was rendered";

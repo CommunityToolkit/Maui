@@ -39,7 +39,7 @@ sealed class MockDispatcherProvider : IDispatcherProvider, IDisposable
 		}
 	}
 
-	class DispatcherTimerStub : IDispatcherTimer, IDisposable
+	sealed class DispatcherTimerStub : IDispatcherTimer, IDisposable
 	{
 		readonly DispatcherMock dispatcher;
 

@@ -13,25 +13,21 @@
         <ResourceDictionary>
             <Style x:Key="Header"
                    TargetType="Label">
-                <Setter Property="VerticalOptions" Value="CenterAndExpand" />
-                <Setter Property="HorizontalOptions" Value="CenterAndExpand" />
+                <Setter Property="VerticalOptions" Value="Center" />
+                <Setter Property="HorizontalOptions" Value="Center" />
                 <Setter Property="Margin" Value="15, 10" />
             </Style>
             <Style TargetType="ScrollView">
-                <Setter Property="VerticalOptions" Value="FillAndExpand" />
-            </Style>
-            <Style x:Key="ItemsLayout"
-                   TargetType="StackLayout">
-                <Setter Property="Spacing" Value="16" />
+                <Setter Property="VerticalOptions" Value="Fill" />
             </Style>
         </ResourceDictionary>
     </ContentPage.Resources>
 
     <ScrollView>
         <Grid ColumnDefinitions="Auto, Auto, Auto"
-                HorizontalOptions="CenterAndExpand"
+                HorizontalOptions="Center"
                 RowDefinitions="Auto, Auto, Auto, Auto"
-                VerticalOptions="CenterAndExpand">
+                VerticalOptions="Center">
 
         <Label  Grid.Row="0"
                 Grid.ColumnSpan="3"
