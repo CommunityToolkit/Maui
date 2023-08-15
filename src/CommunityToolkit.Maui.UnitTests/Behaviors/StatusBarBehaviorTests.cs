@@ -44,7 +44,7 @@ public class StatusBarBehaviorTests : BaseTest
 	{
 		var statusBarBehavior = new StatusBarBehavior();
 		var exception = Assert.Throws<NotSupportedException>(() => statusBarBehavior.StatusBarColor = Colors.Red);
-		exception.Message.Should().Be("PlatformSetColor is only supported on net6.0-ios and net6.0-android and later");
+		exception.Message.Should().Be("PlatformSetColor is only supported on iOS and Android 23 and later");
 	}
 
 	[Fact]
@@ -52,6 +52,6 @@ public class StatusBarBehaviorTests : BaseTest
 	{
 		var statusBarBehavior = new StatusBarBehavior();
 		var exception = Assert.Throws<NotSupportedException>(() => statusBarBehavior.StatusBarStyle = StatusBarStyle.DarkContent);
-		exception.Message.Should().Be("PlatformSetStyle is only supported on net6.0-ios and net6.0-android and later");
+		exception.Message.Should().Be("PlatformSetStyle is only supported on iOS and Android 23 and later");
 	}
 }
