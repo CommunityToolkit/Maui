@@ -29,6 +29,8 @@
                 <Button Text="XAML Binding Popup" Clicked="HandleXamlBindingPopupPopupButtonClicked" />
 
                 <Button Text="C# Binding Popup" Command="{Binding CsharpBindingPopupCommand}" />
+
+                <Button Text="Updating Popup" Command="{Binding UpdatingPopupCommand}" />
             </VerticalStackLayout>
         </ScrollView>
     </ContentPage.Content>
