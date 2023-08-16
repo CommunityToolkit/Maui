@@ -11,6 +11,14 @@ public partial class UpdatingPopupViewModel : BaseViewModel
 	[Mvvm.ComponentModel.NotifyCanExecuteChangedFor(nameof(FinishCommand))]
 	double updateProgress;
 
+	readonly WeakEventManager finishedEventManager = new();
+
+	public event EventHandler<EventArgs> Finished
+	{
+		add => finishedEventManager.AddEventHandler(value);
+		remove => finishedEventManager.RemoveEventHandler(value);
+	}
+
 	public UpdatingPopupViewModel()
 	{
 	}
@@ -35,7 +43,7 @@ public partial class UpdatingPopupViewModel : BaseViewModel
 	[RelayCommand(CanExecute = nameof(CanFinish))]
 	void OnFinish()
 	{
-
+		finishedEventManager.HandleEvent(this, EventArgs.Empty, nameof(Finished));
 	}
 
 	bool CanFinish() => this.UpdateProgress == 1d;

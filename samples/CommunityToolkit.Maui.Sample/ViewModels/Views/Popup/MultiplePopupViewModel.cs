@@ -23,6 +23,6 @@ public partial class MultiplePopupViewModel : BaseViewModel
 	Task OnUpdatingPopup()
 	{
 		return this.popupService.ShowPopupAsync<UpdatingPopupViewModel>(
-			onPresenting: viewModel => viewModel.PerformUpdates(3));
+			onPresenting: viewModel => viewModel.PerformUpdates(10));
 	}
 }
