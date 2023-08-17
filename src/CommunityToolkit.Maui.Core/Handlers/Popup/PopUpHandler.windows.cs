@@ -89,7 +89,7 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapSize(PopupHandler handler, IPopup view)
 	{
-		handler.PlatformView.SetSize(view);
+		handler.PlatformView.SetSize(view, handler.MauiContext);
 	}
 
 	/// <inheritdoc/>
@@ -138,7 +138,7 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 	{
 		if (VirtualView is not null)
 		{
-			PopupExtensions.SetSize(PlatformView, VirtualView);
+			PopupExtensions.SetSize(PlatformView, VirtualView, MauiContext);
 			PopupExtensions.SetLayout(PlatformView, VirtualView, MauiContext);
 		}
 	}

@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Maui.Core.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.Primitives;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Primitives;
 
@@ -55,7 +54,7 @@ public static class PopupExtensions
 			mauiPopup.Child = handler.VirtualView.Content?.ToPlatform(mauiContext);
 		}
 
-		mauiPopup.SetSize(popup);
+		mauiPopup.SetSize(popup, mauiContext);
 		mauiPopup.SetLayout(popup, mauiContext);
 	}
 
@@ -64,11 +63,14 @@ public static class PopupExtensions
 	/// </summary>
 	/// <param name="mauiPopup">An instance of <see cref="Popup"/>.</param>
 	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
-	public static void SetSize(this Popup mauiPopup, IPopup popup)
+	/// <param name="mauiContext">An instance of <see cref="IMauiContext"/>.</param>
+	public static void SetSize(this Popup mauiPopup, IPopup popup, IMauiContext? mauiContext)
 	{
+		ArgumentNullException.ThrowIfNull(mauiContext);
 		const double defaultBorderThickness = 0;
 		const double defaultSize = 600;
 
+		var popupParent = mauiContext.GetPlatformWindow();
 		var standardSize = new Size { Width = defaultSize, Height = defaultSize / 2 };
 
 		var currentSize = popup.Size != default ? popup.Size : standardSize;
@@ -89,12 +91,9 @@ public static class PopupExtensions
 			}
 		}
 
-		if (popup.Parent is IView popupParent)
-		{
-			currentSize.Width = Math.Min(currentSize.Width, popupParent.Frame.Width);
-			currentSize.Height = Math.Min(currentSize.Height, popupParent.Frame.Height);
-		}
-		
+		currentSize.Width = Math.Min(currentSize.Width, popupParent.Bounds.Width);
+		currentSize.Height = Math.Min(currentSize.Height, popupParent.Bounds.Height);
+
 		mauiPopup.Width = currentSize.Width;
 		mauiPopup.Height = currentSize.Height;
 		mauiPopup.MinWidth = mauiPopup.MaxWidth = currentSize.Width + (defaultBorderThickness * 2);
@@ -102,8 +101,37 @@ public static class PopupExtensions
 
 		if (mauiPopup.Child is FrameworkElement control)
 		{
-			control.Width = mauiPopup.Width;
-			control.Height = mauiPopup.Height;
+			var verticalOptions = popup.VerticalOptions;
+			var horizontalOptions = popup.HorizontalOptions;
+
+			if (IsFillLeft(verticalOptions, horizontalOptions) || IsFillCenter(verticalOptions, horizontalOptions) || IsFillRight(verticalOptions, horizontalOptions))
+			{
+				control.Width = mauiPopup.Width;
+				control.Height = popupParent.Bounds.Height;
+			}
+			else if (IsTopFill(verticalOptions, horizontalOptions) || IsCenterFill(verticalOptions, horizontalOptions) || IsBottomFill(verticalOptions, horizontalOptions))
+			{
+				control.Width = popupParent.Bounds.Width;
+				control.Height = mauiPopup.Height;
+			}
+			else if (IsFill(verticalOptions, horizontalOptions))
+			{
+				control.Width = popupParent.Bounds.Width;
+				control.Height = popupParent.Bounds.Height;
+			}
+			else
+			{
+				control.Width = mauiPopup.Width;
+				control.Height = mauiPopup.Height;
+			}
+
+			static bool IsFillLeft(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Fill && horizontalOptions == LayoutAlignment.Start;
+			static bool IsFillCenter(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Fill && horizontalOptions == LayoutAlignment.Center;
+			static bool IsFillRight(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Fill && horizontalOptions == LayoutAlignment.End;
+			static bool IsTopFill(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Start && horizontalOptions == LayoutAlignment.Fill;
+			static bool IsCenterFill(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Center && horizontalOptions == LayoutAlignment.Fill;
+			static bool IsBottomFill(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.End && horizontalOptions == LayoutAlignment.Fill;
+			static bool IsFill(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Fill && horizontalOptions == LayoutAlignment.Fill;
 		}
 	}
 
@@ -116,12 +144,11 @@ public static class PopupExtensions
 	public static void SetLayout(this Popup mauiPopup, IPopup popup, IMauiContext? mauiContext)
 	{
 		ArgumentNullException.ThrowIfNull(mauiContext);
-		var popupParent = popup.Parent as IView;
+
+		var popupParent = mauiContext.GetPlatformWindow();
 		popup.Content?.Measure(double.PositiveInfinity, double.PositiveInfinity);
 		var contentSize = popup.Content?.ToPlatform(mauiContext).DesiredSize ?? Windows.Foundation.Size.Empty;
-		var popupParentFrame = popupParent?.Frame ?? new Rect(0, 0, contentSize.Width, contentSize.Height);
-
-		Rect? titleBarRect = GetTitleBarRectangle(mauiContext);
+		var popupParentFrame = popupParent.Bounds;
 
 		var verticalOptions = popup.VerticalOptions;
 		var horizontalOptions = popup.HorizontalOptions;
@@ -147,37 +174,85 @@ public static class PopupExtensions
 		{
 			mauiPopup.DesiredPlacement = PopupPlacementMode.Right;
 			mauiPopup.HorizontalOffset = (popupParentFrame.Width - contentSize.Width);
-			mauiPopup.VerticalOffset = (popupParentFrame.Height - contentSize.Height / 2 + titleBarRect?.Height ?? 0) / 2;
+			mauiPopup.VerticalOffset = (popupParentFrame.Height - contentSize.Height) / 2;
 		}
 		else if (IsBottomRight(verticalOptions, horizontalOptions))
 		{
 			mauiPopup.DesiredPlacement = PopupPlacementMode.BottomEdgeAlignedRight;
 			mauiPopup.HorizontalOffset = (popupParentFrame.Width - contentSize.Width);
-			mauiPopup.VerticalOffset = popupParentFrame.Height - contentSize.Height / 2 + titleBarRect?.Height ?? 0;
+			mauiPopup.VerticalOffset = popupParentFrame.Height - contentSize.Height;
 		}
 		else if (IsBottom(verticalOptions, horizontalOptions))
 		{
 			mauiPopup.DesiredPlacement = PopupPlacementMode.Bottom;
 			mauiPopup.HorizontalOffset = (popupParentFrame.Width - contentSize.Width) / 2;
-			mauiPopup.VerticalOffset = popupParentFrame.Height - contentSize.Height / 2 + titleBarRect?.Height ?? 0;
+			mauiPopup.VerticalOffset = popupParentFrame.Height - contentSize.Height;
 		}
 		else if (IsBottomLeft(verticalOptions, horizontalOptions))
 		{
 			mauiPopup.DesiredPlacement = PopupPlacementMode.BottomEdgeAlignedLeft;
 			mauiPopup.HorizontalOffset = 0;
-			mauiPopup.VerticalOffset = popupParentFrame.Height - contentSize.Height / 2 + titleBarRect?.Height ?? 0;
+			mauiPopup.VerticalOffset = popupParentFrame.Height - contentSize.Height;
 		}
 		else if (IsLeft(verticalOptions, horizontalOptions))
 		{
 			mauiPopup.DesiredPlacement = PopupPlacementMode.Left;
 			mauiPopup.HorizontalOffset = 0;
-			mauiPopup.VerticalOffset = (popupParentFrame.Height - contentSize.Height / 2 + titleBarRect?.Height ?? 0) / 2;
+			mauiPopup.VerticalOffset = (popupParentFrame.Height - contentSize.Height) / 2;
+		}
+		else if (IsCenter(verticalOptions, horizontalOptions))
+		{
+			mauiPopup.DesiredPlacement = PopupPlacementMode.Auto;
+			mauiPopup.HorizontalOffset = (popupParentFrame.Width - contentSize.Width) / 2;
+			mauiPopup.VerticalOffset = (popupParentFrame.Height - contentSize.Height) / 2;
+		}
+		else if (IsFillLeft(verticalOptions, horizontalOptions))
+		{
+			mauiPopup.DesiredPlacement = PopupPlacementMode.Auto;
+			mauiPopup.HorizontalOffset = 0;
+			mauiPopup.VerticalOffset = 0;
+		}
+		else if (IsFillCenter(verticalOptions, horizontalOptions))
+		{
+			mauiPopup.DesiredPlacement = PopupPlacementMode.Auto;
+			mauiPopup.HorizontalOffset = (popupParentFrame.Width - contentSize.Width) / 2;
+			mauiPopup.VerticalOffset = 0;
+		}
+		else if (IsFillRight(verticalOptions, horizontalOptions))
+		{
+			mauiPopup.DesiredPlacement = PopupPlacementMode.Auto;
+			mauiPopup.HorizontalOffset = (popupParentFrame.Width - contentSize.Width);
+			mauiPopup.VerticalOffset = 0;
+		}
+		else if (IsTopFill(verticalOptions, horizontalOptions))
+		{
+			mauiPopup.DesiredPlacement = PopupPlacementMode.Auto;
+			mauiPopup.HorizontalOffset = 0;
+			mauiPopup.VerticalOffset = 0;
+		}
+		else if (IsCenterFill(verticalOptions, horizontalOptions))
+		{
+			mauiPopup.DesiredPlacement = PopupPlacementMode.Auto;
+			mauiPopup.HorizontalOffset = 0;
+			mauiPopup.VerticalOffset = (popupParentFrame.Height - contentSize.Height) / 2;
+		}
+		else if (IsBottomFill(verticalOptions, horizontalOptions))
+		{
+			mauiPopup.DesiredPlacement = PopupPlacementMode.Auto;
+			mauiPopup.HorizontalOffset = 0;
+			mauiPopup.VerticalOffset = popupParentFrame.Height - contentSize.Height;
+		}
+		else if (IsFill(verticalOptions, horizontalOptions))
+		{
+			mauiPopup.DesiredPlacement = PopupPlacementMode.Auto;
+			mauiPopup.HorizontalOffset = 0;
+			mauiPopup.VerticalOffset = 0;
 		}
 		else if (popup.Anchor is null)
 		{
 			mauiPopup.DesiredPlacement = PopupPlacementMode.Auto;
 			mauiPopup.HorizontalOffset = (popupParentFrame.Width - contentSize.Width) / 2;
-			mauiPopup.VerticalOffset = (popupParentFrame.Height - contentSize.Height / 2 + titleBarRect?.Height ?? 0) / 2;
+			mauiPopup.VerticalOffset = (popupParentFrame.Height - contentSize.Height) / 2;
 		}
 		else
 		{
@@ -192,21 +267,13 @@ public static class PopupExtensions
 		static bool IsBottom(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.End && horizontalOptions == LayoutAlignment.Center;
 		static bool IsBottomLeft(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.End && horizontalOptions == LayoutAlignment.Start;
 		static bool IsLeft(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Center && horizontalOptions == LayoutAlignment.Start;
-	}
-
-	static Rect? GetTitleBarRectangle(IMauiContext? mauiContext)
-	{
-		if (!AppWindowTitleBar.IsCustomizationSupported())
-		{
-			return null;
-		}
-
-		if (mauiContext?.GetNavigationRootManager()?.RootView is WindowRootView rootView &&
-			rootView.AppTitleBarContainer is FrameworkElement element)
-		{
-			return new Rect((int)element.Margin.Left, 0, (int)element.ActualWidth, (int)element.ActualHeight);
-		}
-
-		return null;
+		static bool IsCenter(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Center && horizontalOptions == LayoutAlignment.Center;
+		static bool IsFillLeft(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Fill && horizontalOptions == LayoutAlignment.Start;
+		static bool IsFillCenter(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Fill && horizontalOptions == LayoutAlignment.Center;
+		static bool IsFillRight(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Fill && horizontalOptions == LayoutAlignment.End;
+		static bool IsTopFill(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Start && horizontalOptions == LayoutAlignment.Fill;
+		static bool IsCenterFill(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Center && horizontalOptions == LayoutAlignment.Fill;
+		static bool IsBottomFill(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.End && horizontalOptions == LayoutAlignment.Fill;
+		static bool IsFill(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Fill && horizontalOptions == LayoutAlignment.Fill;
 	}
 }
