@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.StyleSheets;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
+using Style = Microsoft.Maui.Controls.Style;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -8,7 +10,7 @@ namespace CommunityToolkit.Maui.Views;
 /// Represents a small View that pops up at front the Page. Implements <see cref="IPopup"/>.
 /// </summary>
 [ContentProperty(nameof(Content))]
-public partial class Popup : Element, IPopup, IWindowController, IPropertyPropagationController
+public partial class Popup : Element, IPopup, IWindowController, IPropertyPropagationController, IResourcesProvider, IStyleSelectable
 {
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="Content"/> property.
@@ -40,13 +42,21 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// </summary>
 	public static readonly BindableProperty HorizontalOptionsProperty = BindableProperty.Create(nameof(HorizontalOptions), typeof(LayoutAlignment), typeof(Popup), LayoutAlignment.Center);
 
+	/// <summary>
+	///  Backing BindableProperty for the <see cref="Style" /> property. 
+	/// </summary>
+	public static readonly BindableProperty StyleProperty = BindableProperty.Create(nameof(Style), typeof(Style), typeof(Popup), default(Style), propertyChanged: (bindable, oldValue, newValue) => ((Popup)bindable).mergedStyle.Style = (Style)newValue);
+
 	readonly WeakEventManager dismissWeakEventManager = new();
 	readonly WeakEventManager openedWeakEventManager = new();
 	readonly Lazy<PlatformConfigurationRegistry<Popup>> platformConfigurationRegistry;
+	readonly MergedStyle mergedStyle;
 
 	TaskCompletionSource popupDismissedTaskCompletionSource = new();
 	TaskCompletionSource<object?> resultTaskCompletionSource = new();
 	Window? window;
+	ResourceDictionary? resources;
+	bool IResourcesProvider.IsResourcesCreated => resources != null;
 
 	/// <summary>
 	/// Instantiates a new instance of <see cref="Popup"/>.
@@ -55,7 +65,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	{
 		platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Popup>>(() => new(this));
 
-		VerticalOptions = HorizontalOptions = LayoutAlignment.Center;
+		mergedStyle = new MergedStyle(GetType().BaseType, this);
 	}
 
 	/// <summary>
@@ -154,6 +164,15 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	}
 
 	/// <summary>
+	/// Gets or sets the <see cref="Style"/> of the Popup.
+	/// </summary>
+	public Style Style
+	{
+		get { return (Style)GetValue(StyleProperty); }
+		set { SetValue(StyleProperty, value); }
+	}
+
+	/// <summary>
 	/// Gets or sets the <see cref="View"/> anchor.
 	/// </summary>
 	/// <remarks>
@@ -177,6 +196,56 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 				controller.Window = value;
 			}
 		}
+	}
+
+	/// <summary>
+	/// Property that represent Resources of Popup.
+	/// </summary>
+	public ResourceDictionary Resources
+	{
+		get
+		{
+			if (resources != null)
+			{
+				return resources;
+			}
+
+			resources = new ResourceDictionary();
+			((IResourceDictionary)resources).ValuesChanged += OnResourcesChanged;
+			return resources;
+		}
+		set
+		{
+			if (resources == value)
+			{
+				return;
+			}
+
+			OnPropertyChanging();
+			if (resources != null)
+			{
+				((IResourceDictionary)resources).ValuesChanged -= OnResourcesChanged;
+			}
+
+			resources = value;
+			OnResourcesChanged(value);
+			if (resources != null)
+			{
+				((IResourceDictionary)resources).ValuesChanged += OnResourcesChanged;
+			}
+
+			OnPropertyChanged();
+		}
+	}
+
+	/// <summary>
+	/// Property that represent Style Class of Popup.
+	/// </summary>
+	[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
+	public IList<string> StyleClass
+	{
+		get { return mergedStyle.StyleClass; }
+		set { mergedStyle.StyleClass = value; }
 	}
 
 	/// <summary>
@@ -301,4 +370,51 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 		Content is null
 			? Enumerable.Empty<IVisualTreeElement>().ToList()
 			: new List<IVisualTreeElement> { Content };
+
+	internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
+	{
+		if (values == null)
+		{
+			return;
+		}
+
+		if (!((IResourcesProvider)this).IsResourcesCreated || Resources.Count == 0)
+		{
+			base.OnParentResourcesChanged(values);
+			return;
+		}
+
+		var innerKeys = new HashSet<string>(StringComparer.Ordinal);
+		var changedResources = new List<KeyValuePair<string, object>>();
+		foreach (KeyValuePair<string, object> c in Resources)
+		{
+			innerKeys.Add(c.Key);
+		}
+
+		foreach (KeyValuePair<string, object> value in values)
+		{
+			if (innerKeys.Add(value.Key))
+			{
+				changedResources.Add(value);
+			}
+			else if (value.Key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal))
+			{
+				var innerStyle = Resources[value.Key] as List<Style>;
+				var parentStyle = value.Value as List<Style>;
+				if (innerStyle is not null)
+				{
+					var mergedClassStyles = new List<Style>(innerStyle);
+					if (parentStyle is not null)
+					{
+						mergedClassStyles.AddRange(parentStyle);
+					}
+					changedResources.Add(new KeyValuePair<string, object>(value.Key, mergedClassStyles));
+				}
+			}
+		}
+		if (changedResources.Count != 0)
+		{
+			OnResourcesChanged(changedResources);
+		}
+	}
 }
