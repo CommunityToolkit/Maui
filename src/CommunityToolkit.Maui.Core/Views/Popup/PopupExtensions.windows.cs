@@ -121,7 +121,7 @@ public static class PopupExtensions
 		var contentSize = popup.Content?.ToPlatform(mauiContext).DesiredSize ?? Windows.Foundation.Size.Empty;
 		var popupParentFrame = popupParent?.Frame ?? new Rect(0, 0, contentSize.Width, contentSize.Height);
 
-		Rect? titleBarRect = GetTitleBarRectangles(mauiContext);
+		Rect? titleBarRect = GetTitleBarRectangle(mauiContext);
 
 		var verticalOptions = popup.VerticalOptions;
 		var horizontalOptions = popup.HorizontalOptions;
@@ -194,7 +194,7 @@ public static class PopupExtensions
 		static bool IsLeft(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Center && horizontalOptions == LayoutAlignment.Start;
 	}
 
-	static Rect? GetTitleBarRectangles(IMauiContext? mauiContext)
+	static Rect? GetTitleBarRectangle(IMauiContext? mauiContext)
 	{
 		if (!AppWindowTitleBar.IsCustomizationSupported())
 		{
