@@ -86,7 +86,6 @@ public sealed partial class SpeechToTextImplementation
 		await using (cancellationToken.Register(async () =>
 		{
 			await StopRecording();
-			speechRecognitionTaskCompletionSource.SetCanceled();
 		}))
 		{
 			return await speechRecognitionTaskCompletionSource.Task;
@@ -119,7 +118,10 @@ public sealed partial class SpeechToTextImplementation
 	{
 		try
 		{
-			await speechRecognizer?.ContinuousRecognitionSession.StopAsync();
+			if (speechRecognizer is not null)
+			{
+				await speechRecognizer.ContinuousRecognitionSession.StopAsync();
+			}
 		}
 		catch
 		{
