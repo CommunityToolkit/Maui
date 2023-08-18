@@ -33,6 +33,11 @@ public static class AndroidUriExtensions
 			}
 
 			var split = path.Split(':');
+			if (split.Length < 2)
+			{
+				return null;
+			}
+
 			// Primary is the device's internal storage, and anything else is an SD card or other external storage
 			if (split[0].Equals(AndroidStorageConstants.PrimaryStorage, StringComparison.OrdinalIgnoreCase))
 			{
