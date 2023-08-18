@@ -255,11 +255,7 @@ public class MediaElement : View, IMediaElement
 	public MediaSource? Source
 	{
 		get => (MediaSource)GetValue(SourceProperty);
-		set
-		{
-			ClearTimer();
-			SetValue(SourceProperty, value);
-		}
+		set => SetValue(SourceProperty, value);
 	}
 
 	/// <summary>
@@ -472,6 +468,8 @@ public class MediaElement : View, IMediaElement
 
 	void OnSourcePropertyChanged(MediaSource? newValue)
 	{
+		ClearTimer();
+
 		if (newValue is not null)
 		{
 			newValue.SourceChanged += OnSourceChanged;
