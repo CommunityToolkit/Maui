@@ -14,7 +14,6 @@ public static class AndroidUriExtensions
 	/// </summary>
 	public static string? ToPhysicalPath(this Uri uri)
 	{
-
 		const string uriSchemeFolder = "content";
 		if (uri.Scheme is not null && uri.Scheme.Equals(uriSchemeFolder, StringComparison.OrdinalIgnoreCase))
 		{
