@@ -8,7 +8,6 @@ namespace CommunityToolkit.Maui.Core.Extensions;
 /// </summary>
 public static class AndroidUriExtensions
 {
-
 	/// <summary>
 	/// Convert <see cref="Uri"/> to an absolute path (<see cref="string"/>).
 	/// It returns <see langword="null"/> if the <see cref="Uri"/> is not resolvable.
