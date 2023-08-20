@@ -45,7 +45,7 @@ public static class AndroidUriExtensions
 			else
 			{
 				// Example for external path /storage/1B0B-0B1C/DCIM
-				return $"/storage/{split[0]}/{split[1]}";
+				return $"/{AndroidStorageConstants.Storage}/{split[0]}/{split[1]}";
 			}
 		}
 
