@@ -119,14 +119,6 @@ public static class PopupExtensions
 
 		realWidth = realWidth <= windowSize.Width ? realWidth : (int)windowSize.Width;
 		realHeight = realHeight <= windowSize.Height ? realHeight : (int)windowSize.Height;
-		if (popup.HorizontalOptions == LayoutAlignment.Fill)
-		{
-			realWidth = (int)windowSize.Width;
-		}
-		if (popup.VerticalOptions == LayoutAlignment.Fill)
-		{
-			realHeight = (int)windowSize.Height;
-		}
 		window.SetLayout(realWidth, realHeight);
 
 		var childLayoutParams = (FrameLayout.LayoutParams)(child.LayoutParameters ?? throw new InvalidOperationException($"{nameof(child.LayoutParameters)} cannot be null"));
@@ -134,28 +126,8 @@ public static class PopupExtensions
 		childLayoutParams.Height = realHeight;
 		child.LayoutParameters = childLayoutParams;
 
-		if (realContentWidth > -1)
-		{
-			var inputMeasuredWidth = realContentWidth > realWidth ? realWidth : realContentWidth;
-			container.Measure(inputMeasuredWidth, (int)MeasureSpecMode.Unspecified);
-			horizontalParams = container.MeasuredWidth;
-		}
-		else
-		{
-			container.Measure(realWidth, (int)MeasureSpecMode.Unspecified);
-			horizontalParams = container.MeasuredWidth > realWidth ? realWidth : container.MeasuredWidth;
-		}
-
-		if (realContentHeight > -1)
-		{
-			verticalParams = realContentHeight;
-		}
-		else
-		{
-			var inputMeasuredWidth = realContentWidth > -1 ? horizontalParams : realWidth;
-			container.Measure(inputMeasuredWidth, (int)MeasureSpecMode.Unspecified);
-			verticalParams = container.MeasuredHeight > realHeight ? realHeight : container.MeasuredHeight;
-		}
+		horizontalParams = realWidth;
+		verticalParams = realHeight;
 
 		var containerLayoutParams = new FrameLayout.LayoutParams(horizontalParams, verticalParams);
 
@@ -200,6 +172,8 @@ public static class PopupExtensions
 		{
 			ArgumentNullException.ThrowIfNull(popup.Content);
 
+			var density = context.Resources?.DisplayMetrics?.Density ?? throw new InvalidOperationException($"Unable to determine density. {nameof(context.Resources.DisplayMetrics)} cannot be null");
+
 			if (!popup.Size.IsZero)
 			{
 				realWidth = (int)context.ToPixels(popup.Size.Width);
@@ -207,7 +181,6 @@ public static class PopupExtensions
 			}
 			if (double.IsNaN(popup.Content.Width) || double.IsNaN(popup.Content.Height))
 			{
-				var density = context.Resources?.DisplayMetrics?.Density ?? throw new InvalidOperationException($"Unable to determine density. {nameof(context.Resources.DisplayMetrics)} cannot be null");
 				var size = popup.Content.Measure(windowSize.Width / density, windowSize.Height / density);
 				realContentWidth = (int)context.ToPixels(size.Width);
 				realContentHeight = (int)context.ToPixels(size.Height);
@@ -226,6 +199,16 @@ public static class PopupExtensions
 				realWidth = (int)(context.Resources?.DisplayMetrics?.WidthPixels * 0.8 ?? throw new InvalidOperationException($"Unable to determine width. {nameof(context.Resources.DisplayMetrics)} cannot be null"));
 				realHeight = (int)(context.Resources?.DisplayMetrics?.HeightPixels * 0.6 ?? throw new InvalidOperationException($"Unable to determine height. {nameof(context.Resources.DisplayMetrics)} cannot be null"));
 			}
+
+			if (popup.HorizontalOptions == LayoutAlignment.Fill)
+			{
+				realWidth = (int)windowSize.Width;
+			}
+			if (popup.VerticalOptions == LayoutAlignment.Fill)
+			{
+				realHeight = (int)windowSize.Height;
+			}
+			popup.Content.Measure(realWidth / density, realHeight / density);
 		}
 
 		static Size GetWindowSize(IWindowManager? windowManager, ViewGroup decorView)
