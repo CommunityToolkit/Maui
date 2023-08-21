@@ -4,7 +4,6 @@ using Android.OS;
 using Android.Views;
 using Microsoft.Maui.Platform;
 using AColorRes = Android.Resource.Color;
-using AInsets = Android.Graphics.Insets;
 using APoint = Android.Graphics.Point;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
@@ -113,52 +112,22 @@ public static class PopupExtensions
 			realHeight = 0,
 			realContentWidth = 0,
 			realContentHeight = 0;
+		
+		var windowSize = GetWindowSize(windowManager, decorView);
 
-		CalculateSizes(popup, context, ref realWidth, ref realHeight, ref realContentWidth, ref realContentHeight);
+		CalculateSizes(popup, context, windowSize, ref realWidth, ref realHeight, ref realContentWidth, ref realContentHeight);
 
-		if (windowManager is not null)
+		realWidth = realWidth <= windowSize.Width ? realWidth : (int)windowSize.Width;
+		realHeight = realHeight <= windowSize.Height ? realHeight : (int)windowSize.Height;
+		if (popup.HorizontalOptions == LayoutAlignment.Fill)
 		{
-			int windowWidth;
-			int windowHeight;
-			int statusBarHeight;
-			int navigationBarHeight;
-
-			if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.R))
-			{
-				var windowMetrics = windowManager.CurrentWindowMetrics;
-				var windowInsets = windowMetrics.WindowInsets.GetInsetsIgnoringVisibility(WindowInsets.Type.SystemBars());
-				windowWidth = windowMetrics.Bounds.Width();
-				windowHeight = windowMetrics.Bounds.Height();
-				statusBarHeight = windowInsets.Top;
-				navigationBarHeight = windowHeight < windowWidth ? windowInsets.Left + windowInsets.Right : windowInsets.Bottom;
-			}
-			else if (windowManager.DefaultDisplay is null)
-			{
-				throw new InvalidOperationException($"{nameof(IWindowManager)}.{nameof(IWindowManager.DefaultDisplay)} cannot be null");
-			}
-			else
-			{
-				APoint realSize = new();
-				APoint displaySize = new();
-				ARect contentRect = new();
-
-				windowManager.DefaultDisplay.GetRealSize(realSize);
-				windowManager.DefaultDisplay.GetSize(displaySize);
-				decorView.GetWindowVisibleDisplayFrame(contentRect);
-
-				windowWidth = realSize.X;
-				windowHeight = realSize.Y;
-				statusBarHeight = contentRect.Top;
-
-				navigationBarHeight = realSize.Y < realSize.X
-										? (realSize.X - displaySize.X)
-										: (realSize.Y - displaySize.Y);
-			}
-
-			realWidth = realWidth <= (windowWidth - (windowHeight < windowWidth ? navigationBarHeight : 0)) ? realWidth : (int)(windowWidth - (windowHeight < windowWidth ? navigationBarHeight : 0));
-			realHeight = realHeight <= (windowHeight - ((windowHeight < windowWidth ? 0 : navigationBarHeight) + statusBarHeight)) ? realHeight : (int)(windowHeight - ((windowHeight < windowWidth ? 0 : navigationBarHeight) + statusBarHeight));
-			window.SetLayout(realWidth, realHeight);
+			realWidth = (int)windowSize.Width;
 		}
+		if (popup.VerticalOptions == LayoutAlignment.Fill)
+		{
+			realHeight = (int)windowSize.Height;
+		}
+		window.SetLayout(realWidth, realHeight);
 
 		var childLayoutParams = (FrameLayout.LayoutParams)(child.LayoutParameters ?? throw new InvalidOperationException($"{nameof(child.LayoutParameters)} cannot be null"));
 		childLayoutParams.Width = realWidth;
@@ -227,7 +196,7 @@ public static class PopupExtensions
 		container.LayoutParameters = containerLayoutParams;
 
 
-		static void CalculateSizes(IPopup popup, Context context, ref int realWidth, ref int realHeight, ref int realContentWidth, ref int realContentHeight)
+		static void CalculateSizes(IPopup popup, Context context, Size windowSize, ref int realWidth, ref int realHeight, ref int realContentWidth, ref int realContentHeight)
 		{
 			ArgumentNullException.ThrowIfNull(popup.Content);
 
@@ -238,7 +207,8 @@ public static class PopupExtensions
 			}
 			if (double.IsNaN(popup.Content.Width) || double.IsNaN(popup.Content.Height))
 			{
-				var size = popup.Content.Measure(double.PositiveInfinity, double.PositiveInfinity);
+				var density = context.Resources?.DisplayMetrics?.Density ?? throw new InvalidOperationException($"Unable to determine density. {nameof(context.Resources.DisplayMetrics)} cannot be null");
+				var size = popup.Content.Measure(windowSize.Width / density, windowSize.Height / density);
 				realContentWidth = (int)context.ToPixels(size.Width);
 				realContentHeight = (int)context.ToPixels(size.Height);
 			}
@@ -256,6 +226,53 @@ public static class PopupExtensions
 				realWidth = (int)(context.Resources?.DisplayMetrics?.WidthPixels * 0.8 ?? throw new InvalidOperationException($"Unable to determine width. {nameof(context.Resources.DisplayMetrics)} cannot be null"));
 				realHeight = (int)(context.Resources?.DisplayMetrics?.HeightPixels * 0.6 ?? throw new InvalidOperationException($"Unable to determine height. {nameof(context.Resources.DisplayMetrics)} cannot be null"));
 			}
+		}
+
+		static Size GetWindowSize(IWindowManager? windowManager, ViewGroup decorView)
+		{
+			ArgumentNullException.ThrowIfNull(windowManager);
+
+			int windowWidth;
+			int windowHeight;
+			int statusBarHeight;
+			int navigationBarHeight;
+
+			if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.R))
+			{
+				var windowMetrics = windowManager.CurrentWindowMetrics;
+				var windowInsets = windowMetrics.WindowInsets.GetInsetsIgnoringVisibility(WindowInsets.Type.SystemBars());
+				windowWidth = windowMetrics.Bounds.Width();
+				windowHeight = windowMetrics.Bounds.Height();
+				statusBarHeight = windowInsets.Top;
+				navigationBarHeight = windowHeight < windowWidth ? windowInsets.Left + windowInsets.Right : windowInsets.Bottom;
+			}
+			else if (windowManager.DefaultDisplay is null)
+			{
+				throw new InvalidOperationException($"{nameof(IWindowManager)}.{nameof(IWindowManager.DefaultDisplay)} cannot be null");
+			}
+			else
+			{
+				APoint realSize = new();
+				APoint displaySize = new();
+				ARect contentRect = new();
+
+				windowManager.DefaultDisplay.GetRealSize(realSize);
+				windowManager.DefaultDisplay.GetSize(displaySize);
+				decorView.GetWindowVisibleDisplayFrame(contentRect);
+
+				windowWidth = realSize.X;
+				windowHeight = realSize.Y;
+				statusBarHeight = contentRect.Top;
+
+				navigationBarHeight = realSize.Y < realSize.X
+										? (realSize.X - displaySize.X)
+										: (realSize.Y - displaySize.Y);
+			}
+
+			windowWidth = (windowWidth - (windowHeight < windowWidth ? navigationBarHeight : 0));
+			windowHeight = (windowHeight - ((windowHeight < windowWidth ? 0 : navigationBarHeight) + statusBarHeight));
+
+			return new Size(windowWidth, windowHeight);
 		}
 	}
 
