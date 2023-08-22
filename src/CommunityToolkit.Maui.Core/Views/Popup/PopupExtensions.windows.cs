@@ -73,22 +73,16 @@ public static class PopupExtensions
 		var popupParent = mauiContext.GetPlatformWindow();
 		var standardSize = new Size { Width = defaultSize, Height = defaultSize / 2 };
 
-		var currentSize = popup.Size != default ? popup.Size : standardSize;
+		Size currentSize = standardSize;
 
-		if (popup.Content is not null && popup.Size == default)
+		if (!popup.Size.IsZero)
 		{
-			var content = popup.Content;
-			// There are some situations when the Width and Height values will be NaN
-			// normally when the dev doesn't set the HeightRequest and WidthRequest
-			// and we can't use comparison on those, so the only to prevent the application to crash
-			// is using this try/catch
-			try
-			{
-				currentSize = new Size(content.Width, content.Height);
-			}
-			catch (ArgumentException)
-			{
-			}
+			currentSize.Width = popup.Size.Width;
+			currentSize.Height = popup.Size.Height;
+		}
+		else if (popup.Content is not null && popup.Size.IsZero)
+		{
+			currentSize = popup.Content.Measure(popupParent.Bounds.Width, popupParent.Bounds.Height);
 		}
 
 		currentSize.Width = Math.Min(currentSize.Width, popupParent.Bounds.Width);
@@ -101,29 +95,8 @@ public static class PopupExtensions
 
 		if (mauiPopup.Child is FrameworkElement control)
 		{
-			var verticalOptions = popup.VerticalOptions;
-			var horizontalOptions = popup.HorizontalOptions;
-
-			if (IsFillLeft(verticalOptions, horizontalOptions) || IsFillCenter(verticalOptions, horizontalOptions) || IsFillRight(verticalOptions, horizontalOptions))
-			{
-				control.Width = mauiPopup.Width;
-				control.Height = popupParent.Bounds.Height;
-			}
-			else if (IsTopFill(verticalOptions, horizontalOptions) || IsCenterFill(verticalOptions, horizontalOptions) || IsBottomFill(verticalOptions, horizontalOptions))
-			{
-				control.Width = popupParent.Bounds.Width;
-				control.Height = mauiPopup.Height;
-			}
-			else if (IsFill(verticalOptions, horizontalOptions))
-			{
-				control.Width = popupParent.Bounds.Width;
-				control.Height = popupParent.Bounds.Height;
-			}
-			else
-			{
-				control.Width = mauiPopup.Width;
-				control.Height = mauiPopup.Height;
-			}
+			control.Width = mauiPopup.Width;
+			control.Height = mauiPopup.Height;
 		}
 	}
 
@@ -136,10 +109,11 @@ public static class PopupExtensions
 	public static void SetLayout(this Popup mauiPopup, IPopup popup, IMauiContext? mauiContext)
 	{
 		ArgumentNullException.ThrowIfNull(mauiContext);
+		ArgumentNullException.ThrowIfNull(popup.Content);
 
 		var popupParent = mauiContext.GetPlatformWindow();
-		popup.Content?.Measure(double.PositiveInfinity, double.PositiveInfinity);
-		var contentSize = popup.Content?.ToPlatform(mauiContext).DesiredSize ?? Windows.Foundation.Size.Empty;
+		popup.Content.Measure(double.PositiveInfinity, double.PositiveInfinity);
+		var contentSize = popup.Content.ToPlatform(mauiContext).DesiredSize;
 		var popupParentFrame = popupParent.Bounds;
 
 		var verticalOptions = popup.VerticalOptions;
@@ -202,43 +176,43 @@ public static class PopupExtensions
 		{
 			mauiPopup.DesiredPlacement = PopupPlacementMode.Auto;
 			mauiPopup.HorizontalOffset = 0;
-			mauiPopup.VerticalOffset = 0;
+			mauiPopup.VerticalOffset = (popupParentFrame.Height - contentSize.Height) / 2;
 		}
 		else if (IsFillCenter(verticalOptions, horizontalOptions))
 		{
 			mauiPopup.DesiredPlacement = PopupPlacementMode.Auto;
 			mauiPopup.HorizontalOffset = (popupParentFrame.Width - contentSize.Width) / 2;
-			mauiPopup.VerticalOffset = 0;
+			mauiPopup.VerticalOffset = (popupParentFrame.Height - contentSize.Height) / 2;
 		}
 		else if (IsFillRight(verticalOptions, horizontalOptions))
 		{
 			mauiPopup.DesiredPlacement = PopupPlacementMode.Auto;
 			mauiPopup.HorizontalOffset = (popupParentFrame.Width - contentSize.Width);
-			mauiPopup.VerticalOffset = 0;
+			mauiPopup.VerticalOffset = (popupParentFrame.Height - contentSize.Height) / 2;
 		}
 		else if (IsTopFill(verticalOptions, horizontalOptions))
 		{
 			mauiPopup.DesiredPlacement = PopupPlacementMode.Auto;
-			mauiPopup.HorizontalOffset = 0;
+			mauiPopup.HorizontalOffset = (popupParentFrame.Width - contentSize.Width) / 2;
 			mauiPopup.VerticalOffset = 0;
 		}
 		else if (IsCenterFill(verticalOptions, horizontalOptions))
 		{
 			mauiPopup.DesiredPlacement = PopupPlacementMode.Auto;
-			mauiPopup.HorizontalOffset = 0;
+			mauiPopup.HorizontalOffset = (popupParentFrame.Width - contentSize.Width) / 2;
 			mauiPopup.VerticalOffset = (popupParentFrame.Height - contentSize.Height) / 2;
 		}
 		else if (IsBottomFill(verticalOptions, horizontalOptions))
 		{
 			mauiPopup.DesiredPlacement = PopupPlacementMode.Auto;
-			mauiPopup.HorizontalOffset = 0;
+			mauiPopup.HorizontalOffset = (popupParentFrame.Width - contentSize.Width) / 2;
 			mauiPopup.VerticalOffset = popupParentFrame.Height - contentSize.Height;
 		}
 		else if (IsFill(verticalOptions, horizontalOptions))
 		{
 			mauiPopup.DesiredPlacement = PopupPlacementMode.Auto;
-			mauiPopup.HorizontalOffset = 0;
-			mauiPopup.VerticalOffset = 0;
+			mauiPopup.HorizontalOffset = (popupParentFrame.Width - contentSize.Width) / 2;
+			mauiPopup.VerticalOffset = (popupParentFrame.Height - contentSize.Height) / 2;
 		}
 		else if (popup.Anchor is null)
 		{
@@ -260,13 +234,12 @@ public static class PopupExtensions
 		static bool IsBottomLeft(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.End && horizontalOptions == LayoutAlignment.Start;
 		static bool IsLeft(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Center && horizontalOptions == LayoutAlignment.Start;
 		static bool IsCenter(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Center && horizontalOptions == LayoutAlignment.Center;
+		static bool IsFillLeft(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Fill && horizontalOptions == LayoutAlignment.Start;
+		static bool IsFillCenter(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Fill && horizontalOptions == LayoutAlignment.Center;
+		static bool IsFillRight(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Fill && horizontalOptions == LayoutAlignment.End;
+		static bool IsTopFill(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Start && horizontalOptions == LayoutAlignment.Fill;
+		static bool IsCenterFill(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Center && horizontalOptions == LayoutAlignment.Fill;
+		static bool IsBottomFill(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.End && horizontalOptions == LayoutAlignment.Fill;
+		static bool IsFill(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Fill && horizontalOptions == LayoutAlignment.Fill;
 	}
-
-	static bool IsFillLeft(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Fill && horizontalOptions == LayoutAlignment.Start;
-	static bool IsFillCenter(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Fill && horizontalOptions == LayoutAlignment.Center;
-	static bool IsFillRight(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Fill && horizontalOptions == LayoutAlignment.End;
-	static bool IsTopFill(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Start && horizontalOptions == LayoutAlignment.Fill;
-	static bool IsCenterFill(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Center && horizontalOptions == LayoutAlignment.Fill;
-	static bool IsBottomFill(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.End && horizontalOptions == LayoutAlignment.Fill;
-	static bool IsFill(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Fill && horizontalOptions == LayoutAlignment.Fill;
 }
