@@ -112,7 +112,7 @@ public static class PopupExtensions
 			realHeight = 0,
 			realContentWidth = 0,
 			realContentHeight = 0;
-		
+
 		var windowSize = GetWindowSize(windowManager, decorView);
 
 		CalculateSizes(popup, context, windowSize, ref realWidth, ref realHeight, ref realContentWidth, ref realContentHeight);
@@ -200,14 +200,6 @@ public static class PopupExtensions
 				realHeight = (int)(context.Resources?.DisplayMetrics?.HeightPixels * 0.6 ?? throw new InvalidOperationException($"Unable to determine height. {nameof(context.Resources.DisplayMetrics)} cannot be null"));
 			}
 
-			if (popup.HorizontalOptions == LayoutAlignment.Fill)
-			{
-				realWidth = (int)windowSize.Width;
-			}
-			if (popup.VerticalOptions == LayoutAlignment.Fill)
-			{
-				realHeight = (int)windowSize.Height;
-			}
 			popup.Content.Measure(realWidth / density, realHeight / density);
 		}
 
