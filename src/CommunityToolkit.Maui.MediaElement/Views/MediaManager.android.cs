@@ -208,7 +208,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// </remarks>
 	public void OnVolumeChanged(float volume)
 	{
-		if (Player is null || MediaElement is null)
+		if (Player is null)
 		{
 			return;
 		}
@@ -252,8 +252,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 	protected virtual partial void PlatformStop()
 	{
-		if (Player is null || MediaElement is null
-			 || MediaElement.Source is null)
+		if (Player is null || MediaElement.Source is null)
 		{
 			return;
 		}
@@ -315,7 +314,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			var path = resourceMediaSource.Path;
 			if (!string.IsNullOrWhiteSpace(path))
 			{
-				string assetFilePath = "asset://" + package + "/" + path;
+				var assetFilePath = $"asset://{package}{Path.PathSeparator}{path}";
 
 				Player.SetMediaItem(MediaItem.FromUri(assetFilePath));
 				Player.Prepare();

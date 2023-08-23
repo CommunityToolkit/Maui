@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// The user-interface element that represents the <see cref="MediaElement"/> on Windows.
 /// </summary>
-public class MauiMediaElement : Grid
+public class MauiMediaElement : Grid, IDisposable
 {
 	readonly MediaPlayerElement mediaElement;
 
@@ -26,6 +26,18 @@ public class MauiMediaElement : Grid
 	/// </summary>
 	public void Dispose()
 	{
-		mediaElement?.MediaPlayer.Dispose();
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	/// <summary>
+	/// Releases the managed and unmanaged resources used by the <see cref="MauiMediaElement"/>.
+	/// </summary>
+	protected virtual void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			mediaElement.MediaPlayer.Dispose();
+		}
 	}
 }
