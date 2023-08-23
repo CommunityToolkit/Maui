@@ -33,7 +33,7 @@ public class EventToCommandBehavior : BaseBehavior<VisualElement>
 	public static readonly BindableProperty EventArgsConverterProperty =
 		BindableProperty.Create(nameof(EventArgsConverter), typeof(IValueConverter), typeof(EventToCommandBehavior));
 
-	readonly MethodInfo eventHandlerMethodInfo = typeof(EventToCommandBehavior).GetTypeInfo()?.GetDeclaredMethod(nameof(OnTriggerHandled)) ?? throw new InvalidOperationException($"Cannot find method {nameof(OnTriggerHandled)}");
+	readonly MethodInfo eventHandlerMethodInfo = typeof(EventToCommandBehavior).GetTypeInfo().GetDeclaredMethod(nameof(OnTriggerHandled)) ?? throw new InvalidOperationException($"Cannot find method {nameof(OnTriggerHandled)}");
 
 	Delegate? eventHandler;
 
@@ -102,7 +102,7 @@ public class EventToCommandBehavior : BaseBehavior<VisualElement>
 			return;
 		}
 
-		eventInfo = View.GetType()?.GetRuntimeEvent(eventName) ??
+		eventInfo = View.GetType().GetRuntimeEvent(eventName) ??
 			throw new ArgumentException($"{nameof(EventToCommandBehavior)}: Couldn't resolve the event.", nameof(EventName));
 
 		ArgumentNullException.ThrowIfNull(eventInfo.EventHandlerType);
