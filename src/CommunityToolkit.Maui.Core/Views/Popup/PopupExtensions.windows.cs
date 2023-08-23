@@ -67,6 +67,8 @@ public static class PopupExtensions
 	public static void SetSize(this Popup mauiPopup, IPopup popup, IMauiContext? mauiContext)
 	{
 		ArgumentNullException.ThrowIfNull(mauiContext);
+		ArgumentNullException.ThrowIfNull(popup.Content);
+
 		const double defaultBorderThickness = 0;
 		const double defaultSize = 600;
 
@@ -80,9 +82,26 @@ public static class PopupExtensions
 			currentSize.Width = popup.Size.Width;
 			currentSize.Height = popup.Size.Height;
 		}
-		else if (popup.Content is not null && popup.Size.IsZero)
+		else
 		{
-			currentSize = popup.Content.Measure(popupParent.Bounds.Width, popupParent.Bounds.Height);
+			if (double.IsNaN(popup.Content.Width) || (double.IsNaN(popup.Content.Height)))
+			{
+				currentSize = popup.Content.Measure(popupParent.Bounds.Width, popupParent.Bounds.Height);
+
+				if (double.IsNaN(popup.Content.Width))
+				{
+					currentSize.Width = popup.HorizontalOptions == LayoutAlignment.Fill ? popupParent.Bounds.Width : currentSize.Width;
+				}
+				if (double.IsNaN(popup.Content.Height))
+				{
+					currentSize.Height = popup.VerticalOptions == LayoutAlignment.Fill ? popupParent.Bounds.Height : currentSize.Height;
+				}
+			}
+			else
+			{
+				currentSize.Width = popup.Content.Width;
+				currentSize.Height = popup.Content.Height;
+			}
 		}
 
 		currentSize.Width = Math.Min(currentSize.Width, popupParent.Bounds.Width);
