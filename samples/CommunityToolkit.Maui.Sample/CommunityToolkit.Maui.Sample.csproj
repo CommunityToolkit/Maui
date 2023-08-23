@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(NetVersion)-ios;$(NetVersion)-android;$(NetVersion)-maccatalyst</TargetFrameworks>
@@ -42,6 +42,7 @@
 
     <!-- Images -->
     <MauiImage Include="Resources\Images\*" />
+    <MauiImage Update="Resources\Images\splash.svg" BaseSize="128,128" Color="#512BD4" Resize="false" />
 
     <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
@@ -49,7 +50,7 @@
     <EmbeddedResource Include="Resources\Embedded\*" />
 
     <!-- Custom Fonts -->
-		<MauiFont Include="Resources\Fonts\*" />
+    <MauiFont Include="Resources\Fonts\*" />
 
     <PackageReference Include="CommunityToolkit.Maui.Markup" Version="3.2.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
