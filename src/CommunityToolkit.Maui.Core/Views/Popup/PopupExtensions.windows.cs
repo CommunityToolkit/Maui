@@ -73,16 +73,9 @@ public static class PopupExtensions
 		const double defaultSize = 600;
 
 		var popupParent = mauiContext.GetPlatformWindow();
-		var standardSize = new Size { Width = defaultSize, Height = defaultSize / 2 };
+		var currentSize = new Size { Width = defaultSize, Height = defaultSize / 2 };
 
-		Size currentSize = standardSize;
-
-		if (!popup.Size.IsZero)
-		{
-			currentSize.Width = popup.Size.Width;
-			currentSize.Height = popup.Size.Height;
-		}
-		else
+		if (popup.Size.IsZero)
 		{
 			if (double.IsNaN(popup.Content.Width) || (double.IsNaN(popup.Content.Height)))
 			{
@@ -102,6 +95,11 @@ public static class PopupExtensions
 				currentSize.Width = popup.Content.Width;
 				currentSize.Height = popup.Content.Height;
 			}
+		}
+		else
+		{
+			currentSize.Width = popup.Size.Width;
+			currentSize.Height = popup.Size.Height;
 		}
 
 		currentSize.Width = Math.Min(currentSize.Width, popupParent.Bounds.Width);
