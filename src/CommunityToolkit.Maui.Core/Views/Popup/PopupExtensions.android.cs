@@ -116,9 +116,6 @@ public static class PopupExtensions
 		var windowSize = GetWindowSize(windowManager, decorView);
 
 		CalculateSizes(popup, context, windowSize, ref realWidth, ref realHeight, ref realContentWidth, ref realContentHeight);
-
-		realWidth = realWidth <= windowSize.Width ? realWidth : (int)windowSize.Width;
-		realHeight = realHeight <= windowSize.Height ? realHeight : (int)windowSize.Height;
 		window.SetLayout(realWidth, realHeight);
 
 		var childLayoutParams = (FrameLayout.LayoutParams)(child.LayoutParameters ?? throw new InvalidOperationException($"{nameof(child.LayoutParameters)} cannot be null"));
@@ -179,20 +176,32 @@ public static class PopupExtensions
 				realWidth = (int)context.ToPixels(popup.Size.Width);
 				realHeight = (int)context.ToPixels(popup.Size.Height);
 			}
-			if (double.IsNaN(popup.Content.Width) || double.IsNaN(popup.Content.Height))
-			{
-				var size = popup.Content.Measure(windowSize.Width / density, windowSize.Height / density);
-				realContentWidth = (int)context.ToPixels(size.Width);
-				realContentHeight = (int)context.ToPixels(size.Height);
-			}
 			else
 			{
-				realContentWidth = (int)context.ToPixels(popup.Content.Width);
-				realContentHeight = (int)context.ToPixels(popup.Content.Height);
+				if (double.IsNaN(popup.Content.Width) || double.IsNaN(popup.Content.Height))
+				{
+					var size = popup.Content.Measure(windowSize.Width / density, windowSize.Height / density);
+					realContentWidth = (int)context.ToPixels(size.Width);
+					realContentHeight = (int)context.ToPixels(size.Height);
+
+					if (double.IsNaN(popup.Content.Width))
+					{
+						realContentWidth = popup.HorizontalOptions == LayoutAlignment.Fill ? (int)windowSize.Width : realContentWidth;
+					}
+					if (double.IsNaN(popup.Content.Height))
+					{
+						realContentHeight = popup.VerticalOptions == LayoutAlignment.Fill ? (int)windowSize.Height : realContentHeight;
+					}
+				}
+				else
+				{
+					realContentWidth = (int)context.ToPixels(popup.Content.Width);
+					realContentHeight = (int)context.ToPixels(popup.Content.Height);
+				}
 			}
 
-			realWidth = realWidth is 0 ? realContentWidth : realWidth;
-			realHeight = realHeight is 0 ? realContentHeight : realHeight;
+			realWidth = Math.Min(realWidth is 0 ? realContentWidth : realWidth, (int)windowSize.Width);
+			realHeight = Math.Min(realHeight is 0 ? realContentHeight : realHeight, (int)windowSize.Height);
 
 			if (realHeight is 0 || realWidth is 0)
 			{

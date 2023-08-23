@@ -1,7 +1,6 @@
 using System.Runtime.InteropServices;
-using CommunityToolkit.Maui.Core.Extensions;
-using Microsoft.Maui;
 using Microsoft.Maui.Platform;
+using ObjCRuntime;
 
 namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
@@ -16,18 +15,54 @@ public static class PopupExtensions
 	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
 	public static void SetSize(this MauiPopup mauiPopup, in IPopup popup)
 	{
+		ArgumentNullException.ThrowIfNull(popup.Content);
+
+		CGRect frame;
+
+		if (mauiPopup.ViewController?.View?.Window is UIWindow window)
+		{
+			frame = window.Frame;
+		}
+		else
+		{
+			frame = UIScreen.MainScreen.Bounds;
+		}
+
+		CGSize currentSize;
+
 		if (!popup.Size.IsZero)
 		{
-			mauiPopup.PreferredContentSize = new CGSize(popup.Size.Width, popup.Size.Height);
+			currentSize = new CGSize(popup.Size.Width, popup.Size.Height);
 		}
-		else if (popup.Content is not null)
+		else
 		{
-			var content = popup.Content;
-			var measure = popup.Content.Measure(double.PositiveInfinity, double.PositiveInfinity);
-			var width = content.Width.IsZeroOrNaN() ? measure.Width : content.Width;
-			var height = content.Height.IsZeroOrNaN() ? measure.Height : content.Height;
-			mauiPopup.PreferredContentSize = new CGSize(width, height);
+			if (double.IsNaN(popup.Content.Width) || double.IsNaN(popup.Content.Height))
+			{
+				var content = popup.Content.ToPlatform(popup.Handler?.MauiContext ?? throw new InvalidOperationException($"{nameof(popup.Handler.MauiContext)} Cannot Be Null"));
+				var contentSize = content.SizeThatFits(new CGSize(frame.Width, frame.Height));
+				var width = contentSize.Width;
+				var height = contentSize.Height;
+
+				if (double.IsNaN(popup.Content.Width))
+				{
+					width = popup.HorizontalOptions == Microsoft.Maui.Primitives.LayoutAlignment.Fill ? frame.Size.Width : width;
+				}
+				if (double.IsNaN(popup.Content.Height))
+				{
+					height = popup.VerticalOptions == Microsoft.Maui.Primitives.LayoutAlignment.Fill ? frame.Size.Height : height;
+				}
+
+				currentSize = new CGSize(width, height);
+			}
+			else
+			{
+				currentSize = new CGSize(popup.Content.Width, popup.Content.Height);
+			}
 		}
+
+		currentSize.Width = NMath.Min(currentSize.Width, frame.Size.Width);
+		currentSize.Height = NMath.Min(currentSize.Height, frame.Size.Height);
+		mauiPopup.PreferredContentSize = currentSize;
 	}
 
 	/// <summary>
