@@ -1,22 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFrameworks>$(NetVersion);$(NetVersion)-android;$(NetVersion)-ios;$(NetVersion)-maccatalyst</TargetFrameworks>
-		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);$(NetVersion)-windows10.0.19041.0</TargetFrameworks>
-		<TargetFrameworks Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">$(TargetFrameworks);$(NetVersion)-tizen</TargetFrameworks> 
-		<UseMaui>true</UseMaui>
-		<SingleProject>true</SingleProject>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-    
-		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">11.0</SupportedOSPlatformVersion>
-		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">13.1</SupportedOSPlatformVersion>
-		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
-		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
-		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
-		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+  <PropertyGroup>
+    <TargetFrameworks>$(NetVersion);$(NetVersion)-android;$(NetVersion)-ios;$(NetVersion)-maccatalyst</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);$(NetVersion)-windows10.0.19041.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">$(TargetFrameworks);$(NetVersion)-tizen</TargetFrameworks>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">11.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">13.1</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
     <RootNamespace>CommunityToolkit.Maui</RootNamespace>
     <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
-	</PropertyGroup>
+  </PropertyGroup>
 
   <PropertyGroup>
     <GitInfoReportImportance>high</GitInfoReportImportance>
@@ -53,7 +53,7 @@
     <None Include="ReadMe.txt" pack="true" PackagePath="." />
   </ItemGroup>
 
-    <ItemGroup>
+  <ItemGroup>
     <None Include="..\CommunityToolkit.Maui.MediaElement.Analyzers\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.MediaElement.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="..\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
@@ -61,5 +61,8 @@
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <PackageReference Include="Xam.Plugins.Android.ExoPlayer" Version="2.18.10" />
     <PackageReference Include="Xam.Plugins.Android.ExoPlayer.Transformer" Version="2.18.10" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.0-preview.7.8842" />
   </ItemGroup>
 </Project>

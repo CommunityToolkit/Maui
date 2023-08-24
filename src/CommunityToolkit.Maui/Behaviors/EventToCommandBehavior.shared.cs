@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Globalization;
+using System.Reflection;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Converters;
 
@@ -134,7 +135,7 @@ public class EventToCommandBehavior : BaseBehavior<VisualElement>
 	protected virtual void OnTriggerHandled(object? sender = null, object? eventArgs = null)
 	{
 		var parameter = CommandParameter
-			?? EventArgsConverter?.Convert(eventArgs, typeof(object), null, null);
+			?? EventArgsConverter?.Convert(eventArgs, typeof(object), null, CultureInfo.InvariantCulture);
 
 		var command = Command;
 		if (command?.CanExecute(parameter) ?? false)

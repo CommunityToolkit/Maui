@@ -46,7 +46,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 
 	TaskCompletionSource popupDismissedTaskCompletionSource = new();
 	TaskCompletionSource<object?> resultTaskCompletionSource = new();
-	Window? window;
+	Window window;
 
 	/// <summary>
 	/// Instantiates a new instance of <see cref="Popup"/>.
@@ -56,6 +56,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 		platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Popup>>(() => new(this));
 
 		VerticalOptions = HorizontalOptions = LayoutAlignment.Center;
+		window = Window;
 	}
 
 	/// <summary>
@@ -165,7 +166,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// <summary>
 	/// Property that represents the Window that's showing the Popup.
 	/// </summary>
-	public Window? Window
+	public Window Window
 	{
 		get => window;
 		set

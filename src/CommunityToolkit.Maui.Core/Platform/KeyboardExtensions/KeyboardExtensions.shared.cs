@@ -59,7 +59,9 @@ public static partial class KeyboardExtensions
 		{
 			var showKeyboardTCS = new TaskCompletionSource<bool>();
 
-			handler.Invoke(nameof(IView.Focus), new FocusRequest(false));
+			var focusRequest = new FocusRequest();
+			focusRequest.SetResult(false);
+			handler.Invoke(nameof(IView.Focus), focusRequest);
 
 			handler.GetRequiredService<IDispatcher>().Dispatch(() =>
 			{

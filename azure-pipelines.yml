@@ -5,8 +5,8 @@ variables:
   NugetPackageVersion: '$(CurrentSemanticVersion)'
   NugetPackageVersionMediaElement: '$(CurrentSemanticVersion)'
   NugetPackageVersionMaps: '$(CurrentSemanticVersion)'
-  TOOLKIT_NET_VERSION: '7.0.200'
-  LATEST_NET_VERSION: '7.0.x'
+  TOOLKIT_NET_VERSION: '8.0.100-preview.7.23376.3'
+  LATEST_NET_VERSION: '8.0.x'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
@@ -21,9 +21,9 @@ variables:
   PathToCommunityToolkitAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Analyzers.CodeFixes/CommunityToolkit.Maui.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
-  DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/7.0.59.json'
+  DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/8.0.0-preview.7.8842.json'
   CommunityToolkitSampleApp_Xcode_Version: '14.3.0'
-  CommunityToolkitLibrary_Xcode_Version: '14.0.1'
+  CommunityToolkitLibrary_Xcode_Version: '14.3.0'
 
 trigger:
   branches:
@@ -70,6 +70,7 @@ jobs:
         inputs:
           packageType: 'sdk'
           version: '$(LATEST_NET_VERSION)'
+          includePreviewVersions: true
 
       - powershell: dotnet workload install maui
         displayName: Install Latest .NET MAUI Workload
@@ -117,7 +118,7 @@ jobs:
         'Windows':
           image: 'windows-latest'
         'macOS':
-          image: 'macos-12'
+          image: 'macos-13'
     pool:
       vmImage: $(image)
     steps:
@@ -173,6 +174,7 @@ jobs:
         inputs:
           packageType: 'sdk'
           version: '$(TOOLKIT_NET_VERSION)'
+          includePreviewVersions: true
 
       - task: CmdLine@2
         displayName: 'Install .NET MAUI Workload $(TOOLKIT_NET_VERSION)'
