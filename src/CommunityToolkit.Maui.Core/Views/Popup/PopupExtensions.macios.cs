@@ -30,11 +30,7 @@ public static class PopupExtensions
 
 		CGSize currentSize;
 
-		if (!popup.Size.IsZero)
-		{
-			currentSize = new CGSize(popup.Size.Width, popup.Size.Height);
-		}
-		else
+		if (popup.Size.IsZero)
 		{
 			if (double.IsNaN(popup.Content.Width) || double.IsNaN(popup.Content.Height))
 			{
@@ -58,6 +54,10 @@ public static class PopupExtensions
 			{
 				currentSize = new CGSize(popup.Content.Width, popup.Content.Height);
 			}
+		}
+		else
+		{
+			currentSize = new CGSize(popup.Size.Width, popup.Size.Height);
 		}
 
 		currentSize.Width = NMath.Min(currentSize.Width, frame.Size.Width);

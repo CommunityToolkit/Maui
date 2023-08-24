@@ -171,12 +171,7 @@ public static class PopupExtensions
 
 			var density = context.Resources?.DisplayMetrics?.Density ?? throw new InvalidOperationException($"Unable to determine density. {nameof(context.Resources.DisplayMetrics)} cannot be null");
 
-			if (!popup.Size.IsZero)
-			{
-				realWidth = (int)context.ToPixels(popup.Size.Width);
-				realHeight = (int)context.ToPixels(popup.Size.Height);
-			}
-			else
+			if (popup.Size.IsZero)
 			{
 				if (double.IsNaN(popup.Content.Width) || double.IsNaN(popup.Content.Height))
 				{
@@ -198,6 +193,11 @@ public static class PopupExtensions
 					realContentWidth = (int)context.ToPixels(popup.Content.Width);
 					realContentHeight = (int)context.ToPixels(popup.Content.Height);
 				}
+			}
+			else
+			{
+				realWidth = (int)context.ToPixels(popup.Size.Width);
+				realHeight = (int)context.ToPixels(popup.Size.Height);
 			}
 
 			realWidth = Math.Min(realWidth is 0 ? realContentWidth : realWidth, (int)windowSize.Width);
