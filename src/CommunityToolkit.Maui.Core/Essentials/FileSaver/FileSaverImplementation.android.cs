@@ -15,6 +15,10 @@ public sealed partial class FileSaverImplementation : IFileSaver
 {
 	static async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
+		const string externalStorageBaseUrl = "content://com.android.externalstorage.documents/document/primary%3A";
+
+		AndroidUri? filePath = null;
+
 		if (!OperatingSystem.IsAndroidVersionAtLeast(33))
 		{
 			var status = await Permissions.RequestAsync<Permissions.StorageWrite>().WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -24,20 +28,19 @@ public sealed partial class FileSaverImplementation : IFileSaver
 			}
 		}
 
-		const string baseUrl = "content://com.android.externalstorage.documents/document/primary%3A";
 		if (Android.OS.Environment.ExternalStorageDirectory is not null)
 		{
 			initialPath = initialPath.Replace(Android.OS.Environment.ExternalStorageDirectory.AbsolutePath, string.Empty, StringComparison.InvariantCulture);
 		}
 
-		var initialFolderUri = AndroidUri.Parse(baseUrl + HttpUtility.UrlEncode(initialPath));
+		var initialFolderUri = AndroidUri.Parse(externalStorageBaseUrl + HttpUtility.UrlEncode(initialPath));
 		var intent = new Intent(Intent.ActionCreateDocument);
 
 		intent.AddCategory(Intent.CategoryOpenable);
 		intent.SetType(MimeTypeMap.Singleton?.GetMimeTypeFromExtension(MimeTypeMap.GetFileExtensionFromUrl(fileName)) ?? "*/*");
 		intent.PutExtra(Intent.ExtraTitle, fileName);
 		intent.PutExtra(DocumentsContract.ExtraInitialUri, initialFolderUri);
-		AndroidUri? filePath = null;
+		
 		await IntermediateActivity.StartAsync(intent, (int)AndroidRequestCode.RequestCodeSaveFilePicker, onResult: OnResult).WaitAsync(cancellationToken).ConfigureAwait(false);
 
 		if (filePath is null)
