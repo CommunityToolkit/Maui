@@ -10,6 +10,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 public class MauiPopup : UIViewController
 {
 	readonly IMauiContext mauiContext;
+	UIView overlayView;
 
 	/// <summary>
 	/// Constructor of <see cref="MauiPopup"/>.
@@ -19,6 +20,7 @@ public class MauiPopup : UIViewController
 	public MauiPopup(IMauiContext mauiContext)
 	{
 		this.mauiContext = mauiContext ?? throw new ArgumentNullException(nameof(mauiContext));
+		overlayView = new UIView();
 	}
 
 	/// <summary>
@@ -52,10 +54,7 @@ public class MauiPopup : UIViewController
 	/// <inheritdoc/>
 	public override void ViewWillDisappear(bool animated)
 	{
-		if (ViewController?.View is UIView view)
-		{
-			view.Alpha = 1f;
-		}
+		overlayView.RemoveFromSuperview();
 		base.ViewWillDisappear(animated);
 	}
 
@@ -65,6 +64,10 @@ public class MauiPopup : UIViewController
 		coordinator.AnimateAlongsideTransition((IUIViewControllerTransitionCoordinatorContext obj) =>
 		{
 			// Before screen rotate
+			if (ViewController?.View is UIView view)
+			{
+				overlayView.Frame = new CGRect(view.Frame.X, view.Frame.Y, view.Frame.Width, view.Frame.Height);
+			}
 		}, (IUIViewControllerTransitionCoordinatorContext obj) =>
 		{
 			// After screen rotate
@@ -84,11 +87,6 @@ public class MauiPopup : UIViewController
 	[MemberNotNull(nameof(VirtualView), nameof(ViewController))]
 	public void SetElement(IPopup element)
 	{
-		if (element.Parent?.Handler is not PageHandler)
-		{
-			throw new InvalidOperationException($"The {nameof(element.Parent)} must be of type {typeof(PageHandler)}.");
-		}
-
 		VirtualView = element;
 		ModalPresentationStyle = UIModalPresentationStyle.Popover;
 
@@ -104,7 +102,11 @@ public class MauiPopup : UIViewController
 	{
 		if (ViewController?.View is UIView view)
 		{
-			view.Alpha = 0.4f;
+			overlayView.Bounds = view.Bounds;
+			overlayView.Layer.RemoveAllAnimations();
+			overlayView.Frame = view.Frame;
+			overlayView.BackgroundColor = UIColor.Black.ColorWithAlpha(0.4f);
+			view.AddSubview(overlayView);
 		}
 	}
 
