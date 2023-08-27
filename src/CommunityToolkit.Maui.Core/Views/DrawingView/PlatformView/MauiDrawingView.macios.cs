@@ -49,7 +49,7 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 	public void Initialize()
 	{
 		Drawable = new DrawingViewDrawable(this);
-		Lines.CollectionChanged += OnLinesCollectionChanged;
+		proxy = new(this);
 	}
 
 	/// <inheritdoc/>
@@ -58,6 +58,7 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 		if (disposing)
 		{
 			currentPath.Dispose();
+			proxy?.Dispose();
 		}
 
 		base.Dispose(disposing);
