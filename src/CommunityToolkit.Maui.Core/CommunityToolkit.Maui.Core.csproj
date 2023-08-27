@@ -56,6 +56,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
 
+    <PackageReference Include="MemoryAnalyzers" Version="0.1.0-beta.3">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    
     <PackageReference Include="System.Speech" Version="7.0.0" Condition="'$(TargetFramework)' == '$(NetVersion)-windows10.0.19041.0'" />
   </ItemGroup>
 
