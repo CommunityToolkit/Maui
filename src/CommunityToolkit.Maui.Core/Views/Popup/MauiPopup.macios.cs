@@ -34,15 +34,7 @@ public class MauiPopup : UIViewController
 
 	internal UIViewController? ViewController
 	{
-		get
-		{
-			if (viewControllerReference.TryGetTarget(out var viewController))
-			{
-				return viewController;
-			}
-
-			return null;
-		}
+		get => viewControllerReference.TryGetTarget(out var viewController) ? viewController : null;
 		set => viewControllerReference.SetTarget(value);
 	}
 

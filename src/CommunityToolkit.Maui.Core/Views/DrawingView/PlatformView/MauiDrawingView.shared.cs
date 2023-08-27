@@ -57,15 +57,7 @@ public partial class MauiDrawingView
 	/// </summary>
 	public Action<ICanvas, RectF>? DrawAction
 	{
-		get
-		{
-			if (drawActionReference.TryGetTarget(out var drawAction))
-			{
-				return drawAction;
-			}
-
-			return null;
-		}
+		get => drawActionReference.TryGetTarget(out var drawAction) ? drawAction : null;
 		set => drawActionReference.SetTarget(value);
 	}
 

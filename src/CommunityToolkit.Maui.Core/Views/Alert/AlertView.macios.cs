@@ -32,15 +32,7 @@ public class AlertView : UIView
 	/// </summary>
 	public UIView? AnchorView
 	{
-		get
-		{
-			if (anchorViewReference.TryGetTarget(out var anchorView))
-			{
-				return anchorView;
-			}
-
-			return null;
-		}
+		get => anchorViewReference.TryGetTarget(out var anchorView) ? anchorView : null;
 		set => anchorViewReference.SetTarget(value);
 	}
 
@@ -49,15 +41,7 @@ public class AlertView : UIView
 	/// </summary>
 	protected UIStackView? Container
 	{
-		get
-		{
-			if (containerReference.TryGetTarget(out var container))
-			{
-				return container;
-			}
-
-			return null;
-		}
+		get => containerReference.TryGetTarget(out var container) ? container : null;
 		set => containerReference.SetTarget(value);
 	}
 
