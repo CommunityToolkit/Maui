@@ -10,6 +10,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 public class MauiPopup : UIViewController
 {
 	readonly IMauiContext mauiContext;
+	readonly WeakReference<UIViewController?> viewControllerReference = new(null);
 
 	/// <summary>
 	/// Constructor of <see cref="MauiPopup"/>.
@@ -31,7 +32,19 @@ public class MauiPopup : UIViewController
 	/// </summary>
 	public IPopup? VirtualView { get; private set; }
 
-	internal UIViewController? ViewController { get; private set; }
+	internal UIViewController? ViewController
+	{
+		get
+		{
+			if (viewControllerReference.TryGetTarget(out var viewController))
+			{
+				return viewController;
+			}
+
+			throw new ObjectDisposedException(nameof(viewController));
+		}
+		set => viewControllerReference.SetTarget(value);
+	}
 
 	/// <summary>
 	/// Method to update the Popup's size.
