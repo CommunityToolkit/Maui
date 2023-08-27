@@ -41,7 +41,7 @@ public class MauiPopup : UIViewController
 				return viewController;
 			}
 
-			throw new ObjectDisposedException(nameof(viewController));
+			throw new ObjectDisposedException(nameof(ViewController));
 		}
 		set => viewControllerReference.SetTarget(value);
 	}
@@ -184,13 +184,6 @@ public class MauiPopup : UIViewController
 		presentationController.Delegate = popOverDelegate;
 	}
 
-	[MemberNotNull(nameof(VirtualView))]
-	void HandlePopoverDelegateDismissed(object? sender, UIPresentationController e)
-	{
-		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null.");
-		VirtualView.Handler?.Invoke(nameof(IPopup.OnDismissedByTappingOutsideOfPopup));
-	}
-
 	void AddToCurrentPageViewController(UIViewController viewController)
 	{
 		viewController.PresentViewController(this, true, null);
@@ -199,12 +192,12 @@ public class MauiPopup : UIViewController
 	sealed class PopoverDelegate : UIPopoverPresentationControllerDelegate
 	{
 		readonly WeakEventManager popoverDismissedEventmanager = new();
-		readonly WeakReference<MauiPopup> virtualView;
+		readonly WeakReference<MauiPopup> mauiPopup;
 
-		public PopoverDelegate(MauiPopup virtualView)
+		public PopoverDelegate(MauiPopup mauiPopup)
 		{
-			this.virtualView = new(virtualView);
-			PopoverDismissedEvent += VirtualView.HandlePopoverDelegateDismissed;
+			this.mauiPopup = new(mauiPopup);
+			PopoverDismissedEvent += HandlePopoverDelegateDismissed;
 		}
 
 		public event EventHandler<UIPresentationController> PopoverDismissedEvent
@@ -213,14 +206,19 @@ public class MauiPopup : UIViewController
 			remove => popoverDismissedEventmanager.RemoveEventHandler(value);
 		}
 
-		MauiPopup VirtualView => this.virtualView.TryGetTarget(out var virtualView)
+		MauiPopup MauiPopup => mauiPopup.TryGetTarget(out var virtualView)
 										? virtualView
-										: throw new ObjectDisposedException(nameof(VirtualView));
+										: throw new ObjectDisposedException(nameof(MauiPopup));
 
 		public override UIModalPresentationStyle GetAdaptivePresentationStyle(UIPresentationController forPresentationController) =>
 			UIModalPresentationStyle.None;
 
 		public override void DidDismiss(UIPresentationController presentationController) =>
 			popoverDismissedEventmanager.HandleEvent(this, presentationController, nameof(PopoverDismissedEvent));
+
+		void HandlePopoverDelegateDismissed(object? sender, UIPresentationController e)
+		{
+			MauiPopup.VirtualView?.Handler?.Invoke(nameof(IPopup.OnDismissedByTappingOutsideOfPopup));
+		}
 	}
 }
