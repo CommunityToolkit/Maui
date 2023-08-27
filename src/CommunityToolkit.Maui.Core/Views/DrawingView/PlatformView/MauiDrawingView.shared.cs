@@ -235,15 +235,15 @@ public partial class MauiDrawingView
 	{
 		readonly WeakReference<MauiDrawingView> platformView;
 
-		MauiDrawingView PlatformView => platformView.TryGetTarget(out var drawingView)
-											? drawingView
-											: throw new ObjectDisposedException(nameof(PlatformView));
-
 		public MauiDrawingViewProxy(MauiDrawingView view)
 		{
 			platformView = new(view);
 			SubscribeCollectionChanged();
 		}
+
+		MauiDrawingView PlatformView => platformView.TryGetTarget(out var drawingView)
+											? drawingView
+											: throw new ObjectDisposedException(nameof(PlatformView));
 
 		public void Dispose()
 		{
