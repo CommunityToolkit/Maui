@@ -10,6 +10,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 public class MauiPopup : UIViewController
 {
 	readonly IMauiContext mauiContext;
+	readonly WeakReference<UIViewController?> viewControllerReference = new(null);
 
 	/// <summary>
 	/// Constructor of <see cref="MauiPopup"/>.
@@ -31,7 +32,11 @@ public class MauiPopup : UIViewController
 	/// </summary>
 	public IPopup? VirtualView { get; private set; }
 
-	internal UIViewController? ViewController { get; private set; }
+	internal UIViewController? ViewController
+	{
+		get => viewControllerReference.TryGetTarget(out var viewController) ? viewController : null;
+		set => viewControllerReference.SetTarget(value);
+	}
 
 	/// <summary>
 	/// Method to update the Popup's size.
@@ -163,20 +168,12 @@ public class MauiPopup : UIViewController
 
 	void SetPresentationController()
 	{
-		var popOverDelegate = new PopoverDelegate();
-		popOverDelegate.PopoverDismissedEvent += HandlePopoverDelegateDismissed;
+		var popOverDelegate = new PopoverDelegate(this);
 
 		UIPopoverPresentationController presentationController = (UIPopoverPresentationController)(PresentationController ?? throw new InvalidOperationException($"{nameof(PresentationController)} cannot be null."));
 		presentationController.SourceView = ViewController?.View ?? throw new InvalidOperationException($"{nameof(ViewController.View)} cannot be null.");
 
 		presentationController.Delegate = popOverDelegate;
-	}
-
-	[MemberNotNull(nameof(VirtualView))]
-	void HandlePopoverDelegateDismissed(object? sender, UIPresentationController e)
-	{
-		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null.");
-		VirtualView.Handler?.Invoke(nameof(IPopup.OnDismissedByTappingOutsideOfPopup));
 	}
 
 	void AddToCurrentPageViewController(UIViewController viewController)
@@ -187,6 +184,13 @@ public class MauiPopup : UIViewController
 	sealed class PopoverDelegate : UIPopoverPresentationControllerDelegate
 	{
 		readonly WeakEventManager popoverDismissedEventmanager = new();
+		readonly WeakReference<MauiPopup> mauiPopup;
+
+		public PopoverDelegate(MauiPopup mauiPopup)
+		{
+			this.mauiPopup = new(mauiPopup);
+			PopoverDismissedEvent += HandlePopoverDelegateDismissed;
+		}
 
 		public event EventHandler<UIPresentationController> PopoverDismissedEvent
 		{
@@ -194,10 +198,19 @@ public class MauiPopup : UIViewController
 			remove => popoverDismissedEventmanager.RemoveEventHandler(value);
 		}
 
+		MauiPopup MauiPopup => mauiPopup.TryGetTarget(out var virtualView)
+										? virtualView
+										: throw new ObjectDisposedException(nameof(MauiPopup));
+
 		public override UIModalPresentationStyle GetAdaptivePresentationStyle(UIPresentationController forPresentationController) =>
 			UIModalPresentationStyle.None;
 
 		public override void DidDismiss(UIPresentationController presentationController) =>
 			popoverDismissedEventmanager.HandleEvent(this, presentationController, nameof(PopoverDismissedEvent));
+
+		void HandlePopoverDelegateDismissed(object? sender, UIPresentationController e)
+		{
+			MauiPopup.VirtualView?.Handler?.Invoke(nameof(IPopup.OnDismissedByTappingOutsideOfPopup));
+		}
 	}
 }
