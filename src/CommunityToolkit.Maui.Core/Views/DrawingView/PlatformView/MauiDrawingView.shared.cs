@@ -15,6 +15,7 @@ public partial class MauiDrawingView
 	PointF previousPoint;
 	PathF currentPath = new();
 	MauiDrawingLine? currentLine;
+	MauiDrawingViewProxy? proxy;
 	Paint paint = new SolidPaint(DrawingViewDefaults.BackgroundColor);
 
 	/// <summary>
@@ -116,7 +117,7 @@ public partial class MauiDrawingView
 
 		Redraw();
 
-		Lines.CollectionChanged += OnLinesCollectionChanged;
+		proxy?.SubscribeCollectionChanged();
 	}
 
 	void OnMoving(PointF currentPoint)
@@ -178,7 +179,7 @@ public partial class MauiDrawingView
 		currentPath = new PathF();
 	}
 
-	class DrawingViewDrawable : IDrawable
+	sealed class DrawingViewDrawable : IDrawable
 	{
 		readonly MauiDrawingView drawingView;
 
@@ -233,6 +234,33 @@ public partial class MauiDrawingView
 					canvas.DrawPath(path);
 				}
 			}
+		}
+	}
+
+	// Proxy class required to avoid memory leaks on iOS, resolving MA0003
+	// Inspired by SearchbarHandler.MauiSearchBarProxy https://github.com/dotnet/maui/blob/911ea757e996d1213711f786f81e05461df6fc2f/src/Core/src/Handlers/SearchBar/SearchBarHandler.iOS.cs#L155-L251
+	sealed partial class MauiDrawingViewProxy : IDisposable
+	{
+		readonly WeakReference<MauiDrawingView> platformView;
+
+		MauiDrawingView PlatformView => platformView.TryGetTarget(out var drawingView)
+											? drawingView
+											: throw new ObjectDisposedException(nameof(PlatformView));
+
+		public MauiDrawingViewProxy(MauiDrawingView view)
+		{
+			platformView = new(view);
+			SubscribeCollectionChanged();
+		}
+
+		public void Dispose()
+		{
+			PlatformView.Lines.CollectionChanged -= PlatformView.OnLinesCollectionChanged;
+		}
+
+		public void SubscribeCollectionChanged()
+		{
+			PlatformView.Lines.CollectionChanged += PlatformView.OnLinesCollectionChanged;
 		}
 	}
 }
