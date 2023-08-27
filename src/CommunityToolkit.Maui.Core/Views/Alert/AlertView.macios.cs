@@ -39,7 +39,7 @@ public class AlertView : UIView
 				return anchorView;
 			}
 
-			throw new ObjectDisposedException(nameof(AnchorView));
+			return null;
 		}
 		set => anchorViewReference.SetTarget(value);
 	}
@@ -56,7 +56,7 @@ public class AlertView : UIView
 				return container;
 			}
 
-			throw new ObjectDisposedException(nameof(Container));
+			return null;
 		}
 		set => containerReference.SetTarget(value);
 	}

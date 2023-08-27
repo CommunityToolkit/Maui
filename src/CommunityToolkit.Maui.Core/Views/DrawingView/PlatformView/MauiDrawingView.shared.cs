@@ -64,7 +64,7 @@ public partial class MauiDrawingView
 				return drawAction;
 			}
 
-			throw new ObjectDisposedException(nameof(DrawAction));
+			return null;
 		}
 		set => drawActionReference.SetTarget(value);
 	}

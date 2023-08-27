@@ -41,7 +41,7 @@ public class MauiPopup : UIViewController
 				return viewController;
 			}
 
-			throw new ObjectDisposedException(nameof(ViewController));
+			return null;
 		}
 		set => viewControllerReference.SetTarget(value);
 	}
