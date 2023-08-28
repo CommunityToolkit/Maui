@@ -16,6 +16,10 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public static class PopupExtensions
 {
+	static APoint realSize = new();
+	static APoint displaySize = new();
+	static ARect contentRect = new();
+
 	/// <summary>
 	/// Method to update the <see cref="IPopup.Anchor"/> view.
 	/// </summary>
@@ -236,10 +240,6 @@ public static class PopupExtensions
 			}
 			else
 			{
-				APoint realSize = new();
-				APoint displaySize = new();
-				ARect contentRect = new();
-
 				windowManager.DefaultDisplay.GetRealSize(realSize);
 				windowManager.DefaultDisplay.GetSize(displaySize);
 				decorView.GetWindowVisibleDisplayFrame(contentRect);
