@@ -97,9 +97,12 @@ public partial class MediaManager : IDisposable
 		AddPlayedToEndObserver();
 		AddErrorObservers();
 
-		//Set a SharedInstance to active, and set the category to 'Playback' so we can play on devices that have silent mode turned on.
-		AVAudioSession.SharedInstance().SetActive(true);
-		AVAudioSession.SharedInstance().SetCategory(AVAudioSessionCategory.Playback);
+		if (MediaElement.ShouldBypassSilentMode)
+		{
+			// Set a SharedInstance to active, and set the category to 'Playback' so we can play on devices that have silent mode turned on.
+			AVAudioSession.SharedInstance().SetActive(true);
+			AVAudioSession.SharedInstance().SetCategory(AVAudioSessionCategory.Playback);
+		}
 
 		return (Player, PlayerViewController);
 	}

@@ -64,6 +64,11 @@ public interface IMediaElement : IView
 	bool ShouldMute { get; set; }
 
 	/// <summary>
+	/// Gets or sets if the audio should bypass silent mode if a user has it enabled.
+	/// </summary>
+	bool ShouldBypassSilentMode { get; set; }
+
+	/// <summary>
 	/// Gets or sets whether the player should show the platform playback controls.
 	/// </summary>
 	bool ShouldShowPlaybackControls { get; set; }

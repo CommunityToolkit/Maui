@@ -58,6 +58,12 @@ public class MediaElement : View, IMediaElement
 		  BindableProperty.Create(nameof(ShouldMute), typeof(bool), typeof(MediaElement), false);
 
 	/// <summary>
+	/// Backing store for the <see cref="ShouldBypassSilentMode"/> property.
+	/// </summary>
+	public static readonly BindableProperty ShouldBypassSilentModeProperty =
+		  BindableProperty.Create(nameof(ShouldBypassSilentMode), typeof(bool), typeof(MediaElement), false);
+
+	/// <summary>
 	/// Backing store for the <see cref="Position"/> property.
 	/// </summary>
 	public static readonly BindableProperty PositionProperty =
@@ -235,6 +241,18 @@ public class MediaElement : View, IMediaElement
 	{
 		get => (bool)GetValue(ShouldMuteProperty);
 		set => SetValue(ShouldMuteProperty, value);
+	}
+
+	/// <summary>
+	/// Gets or sets if the audio should bypass silent mode if a user has it enabled.
+	/// </summary>
+	/// <remarks>
+	/// This only affects iOS, other devices will automatically bypass silent mode.
+	/// </remarks>
+	public bool ShouldBypassSilentMode
+	{
+		get => (bool)GetValue(ShouldBypassSilentModeProperty);
+		set => SetValue(ShouldBypassSilentModeProperty, value);
 	}
 
 	/// <summary>
