@@ -27,8 +27,11 @@
      CS1592: Badly formed XML in included comments file 
      CS1598: XML parser could not be loaded. The XML documentation file will not be generated. 
      CS1658: Identifier expected; 'true' is a keyword 
-     CS1734: XML comment has a paramref tag, but there is no parameter by that name -->
-     <WarningsAsErrors>nullable,CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1580,CS1581,CS1584,CS1589,CS1590,CS1592,CS1598,CS1658,CS1734</WarningsAsErrors>
+     CS1734: XML comment has a paramref tag, but there is no parameter by that name 
+     MA0001: Don't define public events in NSObject subclasses
+     MA0002: Don't declare members in NSObject subclasses unless they are WeakReference, WeakReference<T>, or Value types
+     MA0003: Don't subscribe to events inside NSObject subclasses unless it's your event (via this.MyEvent) or inherited from a base type, or the method is static -->
+     <WarningsAsErrors>nullable,CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1580,CS1581,CS1584,CS1589,CS1590,CS1592,CS1598,CS1658,CS1734,MA0001,MA0002,MA0003</WarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
