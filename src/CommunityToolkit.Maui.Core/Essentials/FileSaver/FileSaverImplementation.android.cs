@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Web;
 using Android.Content;
 using Android.Provider;
@@ -40,7 +41,12 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		intent.SetType(MimeTypeMap.Singleton?.GetMimeTypeFromExtension(MimeTypeMap.GetFileExtensionFromUrl(fileName)) ?? "*/*");
 		intent.PutExtra(Intent.ExtraTitle, fileName);
 		intent.PutExtra(DocumentsContract.ExtraInitialUri, initialFolderUri);
-		
+
+		if (!OperatingSystem.IsAndroidVersionAtLeast(26))
+		{
+			Trace.WriteLine("Specifying a folder path is only supported on Android 26 and later");
+		}
+
 		await IntermediateActivity.StartAsync(intent, (int)AndroidRequestCode.RequestCodeSaveFilePicker, onResult: OnResult).WaitAsync(cancellationToken).ConfigureAwait(false);
 
 		if (filePath is null)

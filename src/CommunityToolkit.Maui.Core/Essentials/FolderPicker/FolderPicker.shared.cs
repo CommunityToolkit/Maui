@@ -1,3 +1,5 @@
+using System.Runtime.Versioning;
+
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc cref="IFolderPicker"/> 
@@ -11,6 +13,11 @@ public static class FolderPicker
 	public static IFolderPicker Default => defaultImplementation.Value;
 
 	/// <inheritdoc cref="IFolderPicker.PickAsync(string, CancellationToken)"/> 
+	[SupportedOSPlatform("Android26.0")]
+	[SupportedOSPlatform("iOS")]
+	[SupportedOSPlatform("macOS")]
+	[SupportedOSPlatform("Tizen")]
+	[SupportedOSPlatform("Windows")]
 	public static Task<FolderPickerResult> PickAsync(string initialPath, CancellationToken cancellationToken) =>
 		Default.PickAsync(initialPath, cancellationToken);
 
