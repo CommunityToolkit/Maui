@@ -3,10 +3,6 @@ using Android.Content;
 using Android.Views;
 using CommunityToolkit.Maui.Core.Extensions;
 using Microsoft.Maui.Platform;
-using AColor = Android.Graphics.Color;
-using APaint = Android.Graphics.Paint;
-using APath = Android.Graphics.Path;
-using AView = Android.Views.View;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -26,6 +22,7 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 		if (disposing)
 		{
 			currentPath.Dispose();
+			proxy?.Dispose();
 		}
 
 		base.Dispose(disposing);
@@ -80,7 +77,7 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 	public void Initialize()
 	{
 		Drawable = new DrawingViewDrawable(this);
-		Lines.CollectionChanged += OnLinesCollectionChanged;
+		proxy = new(this);
 	}
 
 	void Redraw()
