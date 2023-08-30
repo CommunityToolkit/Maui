@@ -10,7 +10,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 public class MauiPopup : UIViewController
 {
 	readonly IMauiContext mauiContext;
-	UIView overlayView;
 	readonly WeakReference<UIViewController?> viewControllerReference = new(null);
 
 	/// <summary>
@@ -21,7 +20,6 @@ public class MauiPopup : UIViewController
 	public MauiPopup(IMauiContext mauiContext)
 	{
 		this.mauiContext = mauiContext ?? throw new ArgumentNullException(nameof(mauiContext));
-		overlayView = new UIView();
 	}
 
 	/// <summary>
@@ -59,7 +57,12 @@ public class MauiPopup : UIViewController
 	/// <inheritdoc/>
 	public override void ViewWillDisappear(bool animated)
 	{
-		overlayView.RemoveFromSuperview();
+		if (ViewController?.View is UIView view)
+		{
+			var overlayView = GetOverlayView(view);
+			overlayView.RemoveFromSuperview();
+			overlayView.Dispose();
+		}
 		base.ViewWillDisappear(animated);
 	}
 
@@ -71,6 +74,7 @@ public class MauiPopup : UIViewController
 			// Before screen rotate
 			if (ViewController?.View is UIView view)
 			{
+				var overlayView = GetOverlayView(view);
 				overlayView.Frame = new CGRect(view.Frame.X, view.Frame.Y, view.Frame.Width, view.Frame.Height);
 			}
 		}, (IUIViewControllerTransitionCoordinatorContext obj) =>
@@ -107,6 +111,7 @@ public class MauiPopup : UIViewController
 	{
 		if (ViewController?.View is UIView view)
 		{
+			var overlayView = GetOverlayView(view);
 			overlayView.Bounds = view.Bounds;
 			overlayView.Layer.RemoveAllAnimations();
 			overlayView.Frame = view.Frame;
@@ -181,6 +186,23 @@ public class MauiPopup : UIViewController
 	void AddToCurrentPageViewController(UIViewController viewController)
 	{
 		viewController.PresentViewController(this, true, null);
+	}
+
+	UIView GetOverlayView(UIView view)
+	{
+		var overlayViewTag = new IntPtr(38483);
+		var overlayView = view.Subviews.AsEnumerable()
+			.Where(
+				x => x.Tag == overlayViewTag
+			)
+			.FirstOrDefault();
+		if (overlayView == null)
+		{
+			overlayView = new UIView();
+			overlayView.Tag = overlayViewTag;
+		}
+
+		return overlayView;
 	}
 
 	sealed class PopoverDelegate : UIPopoverPresentationControllerDelegate
