@@ -73,7 +73,7 @@ public class MediaElement : View, IMediaElement
 	/// Backing store for the <see cref="Source"/> property.
 	/// </summary>
 	public static readonly BindableProperty SourceProperty =
-		BindableProperty.Create(nameof(Source), typeof(MediaSource), typeof(MediaElement), null,
+		BindableProperty.Create(nameof(Source), typeof(MediaSource), typeof(MediaElement),
 			propertyChanging: OnSourcePropertyChanging, propertyChanged: OnSourcePropertyChanged);
 
 	/// <summary>
@@ -99,9 +99,9 @@ public class MediaElement : View, IMediaElement
 	/// </summary>
 	public static readonly BindableProperty VolumeProperty =
 		  BindableProperty.Create(nameof(Volume), typeof(double), typeof(MediaElement), 1.0,
-			  BindingMode.TwoWay, new BindableProperty.ValidateValueDelegate(ValidateVolume));
+			  BindingMode.TwoWay, ValidateVolume);
 
-	Microsoft.Maui.Dispatching.IDispatcherTimer? timer;
+	IDispatcherTimer? timer;
 
 	/// <inheritdoc cref="IMediaElement.MediaEnded"/>
 	public event EventHandler MediaEnded
@@ -428,7 +428,7 @@ public class MediaElement : View, IMediaElement
 	{
 		var volume = (double)newValue;
 
-		return volume >= 0.0 && volume <= 1.0;
+		return volume is >= 0.0 and <= 1.0;
 	}
 
 	void OnTimerTick(object? sender, EventArgs e)

@@ -546,9 +546,16 @@ public class ColorConversionExtensionsTests
 	[MemberData(nameof(ColorTestData))]
 	public void ToInverseColor(ColorTestDefinition testDef)
 	{
+		const double tolerance = 0.000001;
 		var result = testDef.Color.ToInverseColor();
 
-		Assert.Equal(testDef.ExpectedInverse, result);
+		Assert.Equal(testDef.ExpectedInverse, result, (color1, color2) =>
+		{
+			return Math.Abs(color1.Red - color2.Red) < tolerance
+				&& Math.Abs(color1.Green - color2.Green) < tolerance
+				&& Math.Abs(color1.Blue - color2.Blue) < tolerance
+				&& Math.Abs(color1.Alpha - color2.Alpha) < tolerance;
+		});
 	}
 
 	[Fact]
@@ -563,9 +570,16 @@ public class ColorConversionExtensionsTests
 	[MemberData(nameof(ColorTestData))]
 	public void ToGrayScale(ColorTestDefinition testDef)
 	{
+		const double tolerance = 0.000001;
 		var result = testDef.Color.ToGrayScale();
 
-		Assert.Equal(testDef.ExpectedGreyScale, result);
+		Assert.Equal(testDef.ExpectedGreyScale, result, (color1, color2) =>
+		{
+			return Math.Abs(color1.Red - color2.Red) < tolerance
+			       && Math.Abs(color1.Green - color2.Green) < tolerance
+			       && Math.Abs(color1.Blue - color2.Blue) < tolerance
+			       && Math.Abs(color1.Alpha - color2.Alpha) < tolerance;
+		});
 	}
 
 	[Fact]

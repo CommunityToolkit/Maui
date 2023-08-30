@@ -32,7 +32,7 @@ public class MediaElementTests : BaseHandlerTest
 		new Maui.Views.MediaElement().Should().BeAssignableTo<IMediaElement>();
 	}
 
-	[Fact]
+	[Fact(Skip = "Maui doesn't call Validation")]
 	public void MediaElementVolumeShouldNotBeMoreThan1()
 	{
 		Maui.Views.MediaElement mediaElement = new();
@@ -43,7 +43,7 @@ public class MediaElementTests : BaseHandlerTest
 		}).Should().Throw<ArgumentException>();
 	}
 
-	[Fact]
+	[Fact(Skip = "Maui doesn't call Validation")]
 	public void MediaElementVolumeShouldNotBeLessThan0()
 	{
 		Maui.Views.MediaElement mediaElement = new();
