@@ -14,6 +14,11 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 {
 	async Task<Folder> InternalPickAsync(string initialPath, CancellationToken cancellationToken)
 	{
+		if (!OperatingSystem.IsAndroidVersionAtLeast(26) && !string.IsNullOrEmpty(initialPath))
+		{
+			Trace.WriteLine("Specifying an initial path is only supported on Android 26 and later.");
+		}
+
 		const string baseExternalStorageUrl = "content://com.android.externalstorage.documents/document/primary%3A";
 		Folder? folder = null;
 
@@ -35,11 +40,6 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 
 		var intent = new Intent(Intent.ActionOpenDocumentTree);
 		intent.PutExtra(DocumentsContract.ExtraInitialUri, initialFolderUri);
-
-		if (!OperatingSystem.IsAndroidVersionAtLeast(26))
-		{
-			Trace.WriteLine("Specifying a folder path is only supported on Android 26 and later");
-		}
 
 		await IntermediateActivity.StartAsync(intent, (int)AndroidRequestCode.RequestCodeFolderPicker, onResult: OnResult).WaitAsync(cancellationToken);
 

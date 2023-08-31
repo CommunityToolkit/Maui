@@ -16,6 +16,11 @@ public sealed partial class FileSaverImplementation : IFileSaver
 {
 	static async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
 	{
+		if (!OperatingSystem.IsAndroidVersionAtLeast(26) && !string.IsNullOrEmpty(initialPath))
+		{
+			Trace.WriteLine("Specifying an initial path is only supported on Android 26 and later.");
+		}
+
 		const string externalStorageBaseUrl = "content://com.android.externalstorage.documents/document/primary%3A";
 
 		AndroidUri? filePath = null;
@@ -41,11 +46,6 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		intent.SetType(MimeTypeMap.Singleton?.GetMimeTypeFromExtension(MimeTypeMap.GetFileExtensionFromUrl(fileName)) ?? "*/*");
 		intent.PutExtra(Intent.ExtraTitle, fileName);
 		intent.PutExtra(DocumentsContract.ExtraInitialUri, initialFolderUri);
-
-		if (!OperatingSystem.IsAndroidVersionAtLeast(26))
-		{
-			Trace.WriteLine("Specifying a folder path is only supported on Android 26 and later");
-		}
 
 		await IntermediateActivity.StartAsync(intent, (int)AndroidRequestCode.RequestCodeSaveFilePicker, onResult: OnResult).WaitAsync(cancellationToken).ConfigureAwait(false);
 
