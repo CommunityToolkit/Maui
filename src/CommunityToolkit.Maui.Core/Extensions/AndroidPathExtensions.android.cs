@@ -1,12 +1,13 @@
 ﻿using CommunityToolkit.Maui.Core.Essentials;
+using Environment = Android.OS.Environment;
 using Uri = Android.Net.Uri;
 
 namespace CommunityToolkit.Maui.Core.Extensions;
 
 /// <summary>
-/// Extensions for <see cref="Uri"/>
+/// Extensions for <see cref="Android.Net.Uri"/>
 /// </summary>
-static class AndroidUriExtensions
+public static class AndroidPathExtensions
 {
 	/// <summary>
 	/// Convert <see cref="Uri"/> to an absolute path (<see cref="string"/>).
@@ -43,12 +44,18 @@ static class AndroidUriExtensions
 		if (pathSplit[0].Equals(AndroidStorageConstants.PrimaryStorage, StringComparison.OrdinalIgnoreCase))
 		{
 			// Example for internal path /storage/emulated/0/DCIM
-			return $"{Android.OS.Environment.ExternalStorageDirectory?.Path}/{pathSplit[1]}";
+			return $"{Environment.ExternalStorageDirectory?.Path}/{pathSplit[1]}";
 		}
-		else
-		{
-			// Example for external path /storage/1B0B-0B1C/DCIM
-			return $"/{AndroidStorageConstants.Storage}/{pathSplit[0]}/{pathSplit[1]}";
-		}
+
+		// Example for external path /storage/1B0B-0B1C/DCIM
+		return $"/{AndroidStorageConstants.Storage}/{pathSplit[0]}/{pathSplit[1]}";
+	}
+
+	/// <summary>
+	/// Get External Directory Path
+	/// </summary>
+	public static string GetExternalDirectory()
+	{
+		return Environment.ExternalStorageDirectory?.Path ?? "/storage/emulated/0";
 	}
 }

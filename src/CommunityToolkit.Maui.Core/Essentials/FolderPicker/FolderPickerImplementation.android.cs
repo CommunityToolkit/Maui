@@ -54,12 +54,7 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 
 	Task<Folder> InternalPickAsync(CancellationToken cancellationToken)
 	{
-		return InternalPickAsync(GetExternalDirectory(), cancellationToken);
-	}
-
-	static string GetExternalDirectory()
-	{
-		return Android.OS.Environment.ExternalStorageDirectory?.Path ?? "/storage/emulated/0";
+		return InternalPickAsync(AndroidPathExtensions.GetExternalDirectory(), cancellationToken);
 	}
 
 	static string EnsurePhysicalPath(AndroidUri? uri)

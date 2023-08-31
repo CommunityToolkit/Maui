@@ -64,19 +64,14 @@ public sealed partial class FileSaverImplementation : IFileSaver
 
 	static Task<string> InternalSaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
 	{
-		return InternalSaveAsync(GetExternalDirectory(), fileName, stream, cancellationToken);
-	}
-
-	static string GetExternalDirectory()
-	{
-		return Android.OS.Environment.ExternalStorageDirectory?.Path ?? "/storage/emulated/0";
+		return InternalSaveAsync(AndroidPathExtensions.GetExternalDirectory(), fileName, stream, cancellationToken);
 	}
 
 	static AndroidUri EnsurePhysicalPath(AndroidUri? uri)
 	{
 		if (uri is null)
 		{
-			throw new FolderPickerException("Path is not selected.");
+			throw new FileSaveException("Path is not selected.");
 		}
 
 		const string uriSchemeFolder = "content";
@@ -85,7 +80,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 			return uri;
 		}
 
-		throw new FolderPickerException($"Unable to resolve absolute path or retrieve contents of URI '{uri}'.");
+		throw new FileSaveException($"Unable to resolve absolute path or retrieve contents of URI '{uri}'.");
 	}
 
 	static async Task<string> SaveDocument(AndroidUri uri, Stream stream, CancellationToken cancellationToken)
