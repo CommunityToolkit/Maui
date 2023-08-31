@@ -3,6 +3,7 @@ using System.Web;
 using Android.Content;
 using Android.Provider;
 using Android.Webkit;
+using CommunityToolkit.Maui.Core.Essentials;
 using CommunityToolkit.Maui.Core.Extensions;
 using Java.IO;
 using Microsoft.Maui.ApplicationModel;
@@ -21,8 +22,6 @@ public sealed partial class FileSaverImplementation : IFileSaver
 			Trace.WriteLine("Specifying an initial path is only supported on Android 26 and later.");
 		}
 
-		const string externalStorageBaseUrl = "content://com.android.externalstorage.documents/document/primary%3A";
-
 		AndroidUri? filePath = null;
 
 		if (!OperatingSystem.IsAndroidVersionAtLeast(33))
@@ -39,7 +38,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 			initialPath = initialPath.Replace(Android.OS.Environment.ExternalStorageDirectory.AbsolutePath, string.Empty, StringComparison.InvariantCulture);
 		}
 
-		var initialFolderUri = AndroidUri.Parse(externalStorageBaseUrl + HttpUtility.UrlEncode(initialPath));
+		var initialFolderUri = AndroidUri.Parse(AndroidStorageConstants.ExternalStorageBaseUrl + HttpUtility.UrlEncode(initialPath));
 		var intent = new Intent(Intent.ActionCreateDocument);
 
 		intent.AddCategory(Intent.CategoryOpenable);

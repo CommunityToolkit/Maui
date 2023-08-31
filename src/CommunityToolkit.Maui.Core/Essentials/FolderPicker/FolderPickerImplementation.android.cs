@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Web;
 using Android.Content;
 using Android.Provider;
+using CommunityToolkit.Maui.Core.Essentials;
 using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Maui.Core.Primitives;
 using Microsoft.Maui.ApplicationModel;
@@ -19,7 +20,6 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 			Trace.WriteLine("Specifying an initial path is only supported on Android 26 and later.");
 		}
 
-		const string baseExternalStorageUrl = "content://com.android.externalstorage.documents/document/primary%3A";
 		Folder? folder = null;
 
 		if (!OperatingSystem.IsAndroidVersionAtLeast(33))
@@ -36,7 +36,7 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 			initialPath = initialPath.Replace(Android.OS.Environment.ExternalStorageDirectory.AbsolutePath, string.Empty, StringComparison.InvariantCulture);
 		}
 
-		var initialFolderUri = AndroidUri.Parse(baseExternalStorageUrl + HttpUtility.UrlEncode(initialPath));
+		var initialFolderUri = AndroidUri.Parse(AndroidStorageConstants.ExternalStorageBaseUrl + HttpUtility.UrlEncode(initialPath));
 
 		var intent = new Intent(Intent.ActionOpenDocumentTree);
 		intent.PutExtra(DocumentsContract.ExtraInitialUri, initialFolderUri);
