@@ -166,6 +166,10 @@ public static class PopupExtensions
 				originX = -frame.GetMidX();
 			}
 
+			if (mauiPopup.ViewController?.PopoverPresentationController is UIPopoverPresentationController popoverPresentationController)
+			{
+				mauiPopup.PopoverPresentationController.SourceView = popoverPresentationController.SourceView;
+			}
 			mauiPopup.PopoverPresentationController.SourceRect = new CGRect(originX, originY, 0, 0);
 			mauiPopup.PopoverPresentationController.PermittedArrowDirections = 0;
 			// From the point of view of usability, the top, bottom, left, and right values of UIEdgeInsets cannot all be 0.
