@@ -9,6 +9,8 @@ namespace CommunityToolkit.Maui.Core.Views;
 public class AlertView : UIView
 {
 	readonly List<UIView> children = Enumerable.Empty<UIView>().ToList();
+	readonly WeakReference<UIView?> anchorViewReference = new(null);
+	readonly WeakReference<UIStackView?> containerReference = new(null);
 
 	/// <summary>
 	/// Parent UIView
@@ -21,19 +23,27 @@ public class AlertView : UIView
 	public IReadOnlyList<UIView> Children => children;
 
 	/// <summary>
-	/// <see cref="UIView"/> on which Alert will appear. When null, <see cref="AlertView"/> will appear at bottom of screen.
-	/// </summary>
-	public UIView? AnchorView { get; set; }
-
-	/// <summary>
 	/// <see cref="AlertViewVisualOptions"/>
 	/// </summary>
 	public AlertViewVisualOptions VisualOptions { get; } = new();
 
 	/// <summary>
+	/// <see cref="UIView"/> on which Alert will appear. When null, <see cref="AlertView"/> will appear at bottom of screen.
+	/// </summary>
+	public UIView? AnchorView
+	{
+		get => anchorViewReference.TryGetTarget(out var anchorView) ? anchorView : null;
+		set => anchorViewReference.SetTarget(value);
+	}
+
+	/// <summary>
 	/// Container of <see cref="AlertView"/>
 	/// </summary>
-	protected UIStackView? Container { get; set; }
+	protected UIStackView? Container
+	{
+		get => containerReference.TryGetTarget(out var container) ? container : null;
+		set => containerReference.SetTarget(value);
+	}
 
 	/// <summary>
 	/// Dismisses the Popup from the screen

@@ -133,6 +133,10 @@ public static class PopupExtensions
 
 			mauiPopup.PopoverPresentationController.SourceRect = new CGRect(originX, originY, 0, 0);
 			mauiPopup.PopoverPresentationController.PermittedArrowDirections = 0;
+			// From the point of view of usability, the top, bottom, left, and right values of UIEdgeInsets cannot all be 0.
+			// If you specify 0 for the top, bottom, left, and right of UIEdgeInsets, the default margins will be added, so 
+			// specify a value as close to 0 here as possible.
+			mauiPopup.PopoverPresentationController.PopoverLayoutMargins = new UIEdgeInsets(0.0001f, 0.0001f, 0.0001f, 0.0001f);
 		}
 		else
 		{

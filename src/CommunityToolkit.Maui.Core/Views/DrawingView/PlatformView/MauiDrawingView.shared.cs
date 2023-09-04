@@ -9,11 +9,13 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MauiDrawingView
 {
 	readonly WeakEventManager weakEventManager = new();
+	readonly WeakReference<Action<ICanvas, RectF>?> drawActionReference = new(null);
 
 	bool isDrawing;
 	PointF previousPoint;
 	PathF currentPath = new();
 	MauiDrawingLine? currentLine;
+	MauiDrawingViewProxy? proxy;
 	Paint paint = new SolidPaint(DrawingViewDefaults.BackgroundColor);
 
 	/// <summary>
@@ -53,7 +55,11 @@ public partial class MauiDrawingView
 	/// <summary>
 	/// Used to draw any shape on the canvas
 	/// </summary>
-	public Action<ICanvas, RectF>? DrawAction { get; set; }
+	public Action<ICanvas, RectF>? DrawAction
+	{
+		get => drawActionReference.TryGetTarget(out var drawAction) ? drawAction : null;
+		set => drawActionReference.SetTarget(value);
+	}
 
 	/// <summary>
 	/// Drawable background
@@ -103,7 +109,7 @@ public partial class MauiDrawingView
 
 		Redraw();
 
-		Lines.CollectionChanged += OnLinesCollectionChanged;
+		proxy?.SubscribeCollectionChanged();
 	}
 
 	void OnMoving(PointF currentPoint)
@@ -165,7 +171,7 @@ public partial class MauiDrawingView
 		currentPath = new PathF();
 	}
 
-	class DrawingViewDrawable : IDrawable
+	sealed class DrawingViewDrawable : IDrawable
 	{
 		readonly MauiDrawingView drawingView;
 
@@ -192,8 +198,8 @@ public partial class MauiDrawingView
 			canvas.StrokeColor = lineColor;
 			canvas.StrokeSize = lineWidth;
 			canvas.StrokeDashOffset = 0;
-			canvas.StrokeLineCap = LineCap.Butt;
-			canvas.StrokeLineJoin = LineJoin.Miter;
+			canvas.StrokeLineCap = LineCap.Round;
+			canvas.StrokeLineJoin = LineJoin.Round;
 			canvas.StrokeDashPattern = Array.Empty<float>();
 		}
 
@@ -221,20 +227,32 @@ public partial class MauiDrawingView
 				}
 			}
 		}
+	}
 
-#if ANDROID
-		static ObservableCollection<PointF> CreateCollectionWithNormalizedPoints(in ObservableCollection<PointF> points, in int drawingViewWidth, in int drawingViewHeight, in float canvasScale)
+	// Proxy class required to avoid memory leaks on iOS, resolving MA0003
+	// Inspired by SearchbarHandler.MauiSearchBarProxy https://github.com/dotnet/maui/blob/911ea757e996d1213711f786f81e05461df6fc2f/src/Core/src/Handlers/SearchBar/SearchBarHandler.iOS.cs#L155-L251
+	sealed partial class MauiDrawingViewProxy : IDisposable
+	{
+		readonly WeakReference<MauiDrawingView> platformView;
+
+		public MauiDrawingViewProxy(MauiDrawingView view)
 		{
-			var newPoints = new List<PointF>();
-			foreach (var point in points)
-			{
-				var pointX = Math.Clamp(point.X, 0, drawingViewWidth / canvasScale);
-				var pointY = Math.Clamp(point.Y, 0, drawingViewHeight / canvasScale);
-				newPoints.Add(new PointF(pointX, pointY));
-			}
-
-			return newPoints.ToObservableCollection();
+			platformView = new(view);
+			SubscribeCollectionChanged();
 		}
-#endif
+
+		MauiDrawingView PlatformView => platformView.TryGetTarget(out var drawingView)
+											? drawingView
+											: throw new ObjectDisposedException(nameof(PlatformView));
+
+		public void Dispose()
+		{
+			PlatformView.Lines.CollectionChanged -= PlatformView.OnLinesCollectionChanged;
+		}
+
+		public void SubscribeCollectionChanged()
+		{
+			PlatformView.Lines.CollectionChanged += PlatformView.OnLinesCollectionChanged;
+		}
 	}
 }

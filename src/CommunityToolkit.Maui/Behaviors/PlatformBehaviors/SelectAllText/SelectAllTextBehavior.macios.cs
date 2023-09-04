@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Text;
@@ -74,7 +75,7 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView>
 	{
 		if (OperatingSystem.IsMacCatalyst())
 		{
-			Console.WriteLine("WARNING: `SelectAllTextBehavior` does not support `Microsoft.Maui.Controls.Editor` on MacCatalyst. For more information, see https://github.com/CommunityToolkit/Maui/issues/432");
+			Trace.WriteLine("WARNING: `SelectAllTextBehavior` does not support `Microsoft.Maui.Controls.Editor` on MacCatalyst. For more information, see https://github.com/CommunityToolkit/Maui/issues/432");
 		}
 
 		if (element is not Editor mauiControl)
