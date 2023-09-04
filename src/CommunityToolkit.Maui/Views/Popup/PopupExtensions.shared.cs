@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Platform;

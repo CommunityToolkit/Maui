@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Views;
+using CommunityToolkit.Maui.Views;
 using Microsoft.UI.Xaml.Controls;
 using Grid = Microsoft.UI.Xaml.Controls.Grid;
 

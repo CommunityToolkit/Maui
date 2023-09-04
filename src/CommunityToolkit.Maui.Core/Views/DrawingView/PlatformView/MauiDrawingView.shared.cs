@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Maui.Core.Extensions;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -9,11 +9,13 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MauiDrawingView
 {
 	readonly WeakEventManager weakEventManager = new();
+	readonly WeakReference<Action<ICanvas, RectF>?> drawActionReference = new(null);
 
 	bool isDrawing;
 	PointF previousPoint;
 	PathF currentPath = new();
 	MauiDrawingLine? currentLine;
+	MauiDrawingViewProxy? proxy;
 	Paint paint = new SolidPaint(DrawingViewDefaults.BackgroundColor);
 
 	/// <summary>
@@ -80,7 +82,11 @@ public partial class MauiDrawingView
 	/// <summary>
 	/// Used to draw any shape on the canvas
 	/// </summary>
-	public Action<ICanvas, RectF>? DrawAction { get; set; }
+	public Action<ICanvas, RectF>? DrawAction
+	{
+		get => drawActionReference.TryGetTarget(out var drawAction) ? drawAction : null;
+		set => drawActionReference.SetTarget(value);
+	}
 
 	/// <summary>
 	/// Drawable background
@@ -204,7 +210,7 @@ public partial class MauiDrawingView
 		currentPath = new PathF();
 	}
 
-	class DrawingViewDrawable : IDrawable
+	sealed class DrawingViewDrawable : IDrawable
 	{
 		readonly MauiDrawingView drawingView;
 
