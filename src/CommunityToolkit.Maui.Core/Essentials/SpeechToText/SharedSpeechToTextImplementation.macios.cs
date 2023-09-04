@@ -10,6 +10,11 @@ public sealed partial class SpeechToTextImplementation
 	SFSpeechRecognitionTask? recognitionTask;
 	SFSpeechAudioBufferRecognitionRequest? liveSpeechRequest;
 
+	/// <inheritdoc/>
+	public SpeechToTextState State => recognitionTask?.State == SFSpeechRecognitionTaskState.Running
+		? SpeechToTextState.Listening
+		: SpeechToTextState.Stopped;
+
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()
 	{
@@ -47,5 +52,11 @@ public sealed partial class SpeechToTextImplementation
 		audioEngine?.Stop();
 		liveSpeechRequest?.EndAudio();
 		recognitionTask?.Cancel();
+	}
+
+	Task InternalStopListeningAsync(CancellationToken cancellationToken)
+	{
+		StopRecording();
+		return Task.CompletedTask;
 	}
 }

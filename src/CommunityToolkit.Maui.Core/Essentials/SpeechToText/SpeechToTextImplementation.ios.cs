@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using AVFoundation;
-using Microsoft.Maui.ApplicationModel;
 using Speech;
 
 namespace CommunityToolkit.Maui.Media;
@@ -9,9 +8,13 @@ namespace CommunityToolkit.Maui.Media;
 /// <inheritdoc />
 public sealed partial class SpeechToTextImplementation
 {
+	IProgress<string>? recognitionProgress;
+	TaskCompletionSource<string>? getRecognitionTaskCompletionSource;
+
 	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest))]
-	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
+	Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
 	{
+		getRecognitionTaskCompletionSource = new TaskCompletionSource<string>();
 		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(culture.Name));
 
 		if (!speechRecognizer.Available)
@@ -43,7 +46,6 @@ public sealed partial class SpeechToTextImplementation
 		}
 
 		var currentIndex = 0;
-		var getRecognitionTaskCompletionSource = new TaskCompletionSource<string>();
 
 		recognitionTask = speechRecognizer.GetRecognitionTask(liveSpeechRequest, (result, err) =>
 		{
@@ -58,6 +60,7 @@ public sealed partial class SpeechToTextImplementation
 				{
 					currentIndex = 0;
 					StopRecording();
+					OnRecognitionResultCompleted(result.BestTranscription.FormattedString);
 					getRecognitionTaskCompletionSource.TrySetResult(result.BestTranscription.FormattedString);
 				}
 				else
@@ -66,12 +69,20 @@ public sealed partial class SpeechToTextImplementation
 					{
 						var s = result.BestTranscription.Segments[i].Substring;
 						currentIndex++;
-						recognitionResult?.Report(s);
+						recognitionProgress?.Report(s);
+						OnRecognitionResultUpdated(s);
 					}
 				}
 			}
 		});
+		return Task.CompletedTask;
+	}
 
+	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
+	{
+		recognitionProgress = recognitionResult;
+		getRecognitionTaskCompletionSource ??= new TaskCompletionSource<string>();
+		await StartListeningAsync(culture, CancellationToken.None);
 		await using (cancellationToken.Register(() =>
 		{
 			StopRecording();

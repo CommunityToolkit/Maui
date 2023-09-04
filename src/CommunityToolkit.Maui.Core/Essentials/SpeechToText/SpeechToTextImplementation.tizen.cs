@@ -13,6 +13,11 @@ public sealed partial class SpeechToTextImplementation
 	IProgress<string>? recognitionProgress;
 	string defaultSttEngineLocale = "ko_KR";
 
+	/// <inheritdoc/>
+	public SpeechToTextState State => sttClient.CurrentState == State.Recording
+		? SpeechToTextState.Listening
+		: SpeechToTextState.Stopped;
+
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()
 	{
@@ -38,6 +43,7 @@ public sealed partial class SpeechToTextImplementation
 		{
 			sttClient.Stop();
 		}
+
 		sttClient.RecognitionResult -= OnRecognitionResult;
 		sttClient.ErrorOccurred -= OnErrorOccurred;
 	}
@@ -48,16 +54,7 @@ public sealed partial class SpeechToTextImplementation
 		this.recognitionProgress = recognitionResult;
 		taskResult ??= new TaskCompletionSource<string>();
 
-		await Initialize();
-
-		sttClient.ErrorOccurred += OnErrorOccurred;
-		sttClient.RecognitionResult += OnRecognitionResult;
-
-		var recognitionType = sttClient.IsRecognitionTypeSupported(RecognitionType.Partial)
-			? RecognitionType.Partial
-			: RecognitionType.Free;
-
-		sttClient.Start(defaultSttEngineLocale, recognitionType);
+		await InternalStartListeningAsync(culture);
 
 		await using (cancellationToken.Register(() =>
 		{
@@ -94,6 +91,7 @@ public sealed partial class SpeechToTextImplementation
 		{
 			foreach(var d in e.Data)
 			{
+				OnSpeechToTextRecognitionResultUpdated(d);
 				recognitionProgress?.Report(d);
 			}
 		}
@@ -103,6 +101,8 @@ public sealed partial class SpeechToTextImplementation
 			{
 				StopRecording(sttClient);
 			}
+
+			OnSpeechToTextRecognitionResultCompleted(e.Data.ToString() ?? string.Empty);
 			taskResult?.TrySetResult(e.Data.ToString() ?? string.Empty);
 		}
 	}
@@ -135,5 +135,26 @@ public sealed partial class SpeechToTextImplementation
 			taskResult?.TrySetException(new Exception("STT is not available - " + ex));
 		}
 		return tcsInitialize.Task;
+	}
+
+	async Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
+	{
+		await Initialize();
+		sttClient.ErrorOccurred += OnErrorOccurred;
+		sttClient.RecognitionResult += OnRecognitionResult;
+
+		var recognitionType = sttClient.IsRecognitionTypeSupported(RecognitionType.Partial)
+			? RecognitionType.Partial
+			: RecognitionType.Free;
+
+		sttClient.Start(defaultSttEngineLocale, recognitionType);
+	}
+
+	async Task InternalStopListeningAsync(CancellationToken cancellationToken)
+	{
+		if (sttClient is not null)
+		{
+			StopRecording(sttClient);
+		}
 	}
 }

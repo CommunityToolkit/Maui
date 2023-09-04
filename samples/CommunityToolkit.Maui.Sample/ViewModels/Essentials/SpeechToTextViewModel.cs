@@ -22,7 +22,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 
 	[ObservableProperty]
 	string? recognitionText = "Welcome to .NET MAUI Community Toolkit!";
-
+	
 	public SpeechToTextViewModel(ITextToSpeech textToSpeech, ISpeechToText speechToText)
 	{
 		this.textToSpeech = textToSpeech;
@@ -98,6 +98,48 @@ public partial class SpeechToTextViewModel : BaseViewModel
 		{
 			RecognitionText = string.Empty;
 		}
+	}
+	
+	[RelayCommand]
+	async Task StartListen(CancellationToken cancellationToken)
+	{
+		var isGranted = await speechToText.RequestPermissions(cancellationToken);
+		if (!isGranted)
+		{
+			await Toast.Make("Permission not granted").Show(CancellationToken.None);
+			return;
+		}
+
+		const string beginSpeakingPrompt = "Begin speaking...";
+
+		RecognitionText = beginSpeakingPrompt;
+
+		await speechToText.StartListeningAsync(CultureInfo.GetCultureInfo(CurrentLocale?.Language ?? defaultLanguage), cancellationToken);
+		speechToText.RecognitionResultUpdated += SpeechToTextOnRecognitionResultUpdated;
+		speechToText.RecognitionResultCompleted += SpeechToTextOnRecognitionResultCompleted;
+		
+		if (RecognitionText is beginSpeakingPrompt)
+		{
+			RecognitionText = string.Empty;
+		}
+	}
+	
+	[RelayCommand]
+	async Task StopListen(CancellationToken cancellationToken)
+	{
+		speechToText.RecognitionResultUpdated -= SpeechToTextOnRecognitionResultUpdated;
+		speechToText.RecognitionResultCompleted -= SpeechToTextOnRecognitionResultCompleted;
+		await speechToText.StopListeningAsync( cancellationToken);
+	}
+
+	void SpeechToTextOnRecognitionResultUpdated(object? sender, OnSpeechToTextRecognitionResultUpdated e)
+	{
+		RecognitionText += e.RecognitionResult;
+	}
+
+	void SpeechToTextOnRecognitionResultCompleted(object? sender, OnSpeechToTextRecognitionResultCompleted e)
+	{
+		RecognitionText = e.RecognitionResult;
 	}
 
 	void HandleLocalesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
