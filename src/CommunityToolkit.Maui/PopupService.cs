@@ -40,7 +40,7 @@ public class PopupService : IPopupService
 	{
 		var popup = GetPopup(typeof(TViewModel));
 
-		var viewModel = AssignBindingContext(popup, GetViewModel<TViewModel>);
+		AssignBindingContext(popup, GetViewModel<TViewModel>);
 
 		CurrentPage.ShowPopup(popup);
 	}
@@ -72,8 +72,14 @@ public class PopupService : IPopupService
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}()"/>
-	public Task<object?> ShowPopupAsync<TViewModel>() where TViewModel : INotifyPropertyChanged =>
-		ShowPopupAsync(GetViewModel<TViewModel>());
+	public Task<object?> ShowPopupAsync<TViewModel>() where TViewModel : INotifyPropertyChanged
+	{
+		var popup = GetPopup(typeof(TViewModel));
+
+		AssignBindingContext(popup, GetViewModel<TViewModel>);
+
+		return CurrentPage.ShowPopupAsync(popup);
+	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(TViewModel)"/>
 	public Task<object?> ShowPopupAsync<TViewModel>(TViewModel viewModel) where TViewModel : INotifyPropertyChanged
