@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.Animations;
+﻿using Microsoft.Maui.Controls;
+
+namespace CommunityToolkit.Maui.Animations;
 
 /// <summary>
 /// Animation that will flip the supplied view horizontally.
@@ -8,7 +10,7 @@ public class FlipHorizontalAnimation : RotateAnimation
 	/// <summary>
 	/// Initializes a new instance of <see cref="FlipHorizontalAnimation"/>.
 	/// </summary>
-	public FlipHorizontalAnimation() : base(300)
+	public FlipHorizontalAnimation() : base(600)
 	{
 
 	}
@@ -21,7 +23,9 @@ public class FlipHorizontalAnimation : RotateAnimation
 	{
 		ArgumentNullException.ThrowIfNull(view);
 
-		await view.RotateYTo(Rotation, Length, Easing);
-		await view.RotateYTo(0, Length, Easing);
+		var duration = Length / 2;
+
+		await view.RotateYTo(Rotation, duration, Easing);
+		await view.RotateYTo(0, duration, Easing);
 	}
 }

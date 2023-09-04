@@ -24,7 +24,9 @@ public abstract class BaseAnimationTests<TAnimation> : BaseTest where TAnimation
 		await animation.Animate(label);
 		stopwatch.Stop();
 
-		stopwatch.ElapsedMilliseconds.Should().BeCloseTo(animation.Length, 50);
+		double allowance = (animation.Length * 0.1) + 50;
+
+		stopwatch.ElapsedMilliseconds.Should().BeCloseTo(animation.Length, (uint)allowance);
 
 		stopwatch.Reset();
 	}

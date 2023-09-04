@@ -8,7 +8,7 @@ public class FlipVerticalAnimation : RotateAnimation
 	/// <summary>
 	/// Initializes a new instance of <see cref="FlipVerticalAnimation"/>.
 	/// </summary>
-	public FlipVerticalAnimation() : base(300)
+	public FlipVerticalAnimation() : base(600)
 	{
 
 	}
@@ -21,7 +21,9 @@ public class FlipVerticalAnimation : RotateAnimation
 	{
 		ArgumentNullException.ThrowIfNull(view);
 
-		await view.RotateXTo(Rotation, Length, Easing);
-		await view.RotateXTo(0, Length, Easing);
+		var duration = Length / 2;
+
+		await view.RotateXTo(Rotation, duration, Easing);
+		await view.RotateXTo(0, duration, Easing);
 	}
 }
