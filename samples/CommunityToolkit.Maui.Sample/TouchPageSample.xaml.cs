@@ -15,10 +15,15 @@ public partial class TouchPageSample : ContentPage
 	}
 
 	public int TouchCount { get; private set; }
-
 	public int LongPressCount { get; private set; }
 
 	public Command TouchCountCommand => new(TouchCountCommandExecute);
+	public Command LongTouchCommand => new(LongTouchCommandExecute);
+
+	public Command ParentCommand => new(ParentClickedCommandExecute);
+	public Command ChildCommand => new(ChildClickedCommandExecute);
+
+
 
 	public TouchPageSample()
 	{
@@ -33,10 +38,25 @@ public partial class TouchPageSample : ContentPage
 		};
 	}
 
+	void ParentClickedCommandExecute()
+	{
+		DisplayAlert("Parent Clicked", null, "Ok");
+	}
+
+	void ChildClickedCommandExecute()
+	{
+		DisplayAlert("Child Clicked", null, "Ok");
+	}
 
 	void TouchCountCommandExecute()
 	{
 		TouchCount++;
 		OnPropertyChanged("TouchCount");
+	}
+
+	void LongTouchCommandExecute()
+	{
+		LongPressCount++;
+		OnPropertyChanged("LongPressCount");
 	}
 }
