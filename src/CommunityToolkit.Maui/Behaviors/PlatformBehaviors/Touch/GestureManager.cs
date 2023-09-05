@@ -359,7 +359,7 @@ sealed class GestureManager : IDisposable
 		var source = normalBackgroundImageSource;
 		if (touchState == TouchState.Pressed)
 		{
-			if (sender.Element?.IsSet(TouchBehavior.PressedBackgroundImageAspectProperty) ?? false)
+			if (sender.IsSet(TouchBehavior.PressedBackgroundImageAspectProperty))
 			{
 				aspect = sender.PressedBackgroundImageAspect;
 			}
@@ -368,19 +368,19 @@ sealed class GestureManager : IDisposable
 		}
 		else if (hoverState == HoverState.Hovered)
 		{
-			if (sender.Element?.IsSet(TouchBehavior.HoveredBackgroundImageAspectProperty) ?? false)
+			if (sender.IsSet(TouchBehavior.HoveredBackgroundImageAspectProperty))
 			{
 				aspect = sender.HoveredBackgroundImageAspect;
 			}
 
-			if (sender.Element?.IsSet(TouchBehavior.HoveredBackgroundImageSourceProperty) ?? false)
+			if (sender.IsSet(TouchBehavior.HoveredBackgroundImageSourceProperty))
 			{
 				source = hoveredBackgroundImageSource;
 			}
 		}
 		else
 		{
-			if (sender.Element?.IsSet(TouchBehavior.NormalBackgroundImageAspectProperty) ?? false)
+			if (sender.IsSet(TouchBehavior.NormalBackgroundImageAspectProperty))
 			{
 				aspect = sender.NormalBackgroundImageAspect;
 			}
@@ -434,7 +434,7 @@ sealed class GestureManager : IDisposable
 		{
 			color = GetBackgroundColor(pressedBackgroundColor);
 		}
-		else if (hoverState == HoverState.Hovered && sender.Element.IsSet(TouchBehavior.HoveredBackgroundColorProperty))
+		else if (hoverState == HoverState.Hovered && sender.IsSet(TouchBehavior.HoveredBackgroundColorProperty))
 		{
 			color = GetBackgroundColor(hoveredBackgroundColor);
 		}
@@ -468,7 +468,7 @@ sealed class GestureManager : IDisposable
 		{
 			opacity = pressedOpacity;
 		}
-		else if (hoverState == HoverState.Hovered && (sender.Element?.IsSet(TouchBehavior.HoveredOpacityProperty) ?? false))
+		else if (hoverState == HoverState.Hovered && sender.IsSet(TouchBehavior.HoveredOpacityProperty))
 		{
 			opacity = hoveredOpacity;
 		}
@@ -505,7 +505,7 @@ sealed class GestureManager : IDisposable
 		{
 			scale = pressedScale;
 		}
-		else if (hoverState == HoverState.Hovered && (sender.Element?.IsSet(TouchBehavior.HoveredScaleProperty) ?? false))
+		else if (hoverState == HoverState.Hovered && sender.IsSet(TouchBehavior.HoveredScaleProperty))
 		{
 			scale = hoveredScale;
 		}
@@ -566,12 +566,12 @@ sealed class GestureManager : IDisposable
 		}
 		else if (hoverState == HoverState.Hovered)
 		{
-			if (sender.Element?.IsSet(TouchBehavior.HoveredTranslationXProperty) ?? false)
+			if (sender.IsSet(TouchBehavior.HoveredTranslationXProperty))
 			{
 				translationX = hoveredTranslationX;
 			}
 
-			if (sender.Element?.IsSet(TouchBehavior.HoveredTranslationYProperty) ?? false)
+			if (sender.IsSet(TouchBehavior.HoveredTranslationYProperty))
 			{
 				translationY = hoveredTranslationY;
 			}
@@ -608,7 +608,7 @@ sealed class GestureManager : IDisposable
 		{
 			rotation = pressedRotation;
 		}
-		else if (hoverState == HoverState.Hovered && (sender.Element?.IsSet(TouchBehavior.HoveredRotationProperty) ?? false))
+		else if (hoverState == HoverState.Hovered && sender.IsSet(TouchBehavior.HoveredRotationProperty))
 		{
 			rotation = hoveredRotation;
 		}
@@ -643,7 +643,7 @@ sealed class GestureManager : IDisposable
 		{
 			rotationX = pressedRotationX;
 		}
-		else if (hoverState == HoverState.Hovered && (sender.Element?.IsSet(TouchBehavior.HoveredRotationXProperty) ?? false))
+		else if (hoverState == HoverState.Hovered && sender.IsSet(TouchBehavior.HoveredRotationXProperty))
 		{
 			rotationX = hoveredRotationX;
 		}
@@ -678,7 +678,7 @@ sealed class GestureManager : IDisposable
 		{
 			rotationY = pressedRotationY;
 		}
-		else if (hoverState == HoverState.Hovered && (sender.Element?.IsSet(TouchBehavior.HoveredRotationYProperty) ?? false))
+		else if (hoverState == HoverState.Hovered && sender.IsSet(TouchBehavior.HoveredRotationYProperty))
 		{
 			rotationY = hoveredRotationY;
 		}
@@ -711,36 +711,36 @@ sealed class GestureManager : IDisposable
 
 		if (touchState == TouchState.Pressed)
 		{
-			if (sender.Element.IsSet(TouchBehavior.PressedAnimationDurationProperty))
+			if (sender.IsSet(TouchBehavior.PressedAnimationDurationProperty))
 			{
 				duration = sender.PressedAnimationDuration;
 			}
 
-			if (sender.Element.IsSet(TouchBehavior.PressedAnimationEasingProperty))
+			if (sender.IsSet(TouchBehavior.PressedAnimationEasingProperty))
 			{
 				easing = sender.PressedAnimationEasing;
 			}
 		}
 		else if (hoverState == HoverState.Hovered)
 		{
-			if (sender.Element.IsSet(TouchBehavior.HoveredAnimationDurationProperty))
+			if (sender.IsSet(TouchBehavior.HoveredAnimationDurationProperty))
 			{
 				duration = sender.HoveredAnimationDuration;
 			}
 
-			if (sender.Element.IsSet(TouchBehavior.HoveredAnimationEasingProperty))
+			if (sender.IsSet(TouchBehavior.HoveredAnimationEasingProperty))
 			{
 				easing = sender.HoveredAnimationEasing;
 			}
 		}
 		else
 		{
-			if (sender.Element.IsSet(TouchBehavior.NormalAnimationDurationProperty))
+			if (sender.IsSet(TouchBehavior.NormalAnimationDurationProperty))
 			{
 				duration = sender.NormalAnimationDuration;
 			}
 
-			if (sender.Element.IsSet(TouchBehavior.NormalAnimationEasingProperty))
+			if (sender.IsSet(TouchBehavior.NormalAnimationEasingProperty))
 			{
 				easing = sender.NormalAnimationEasing;
 			}

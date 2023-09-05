@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
 	x:Class="CommunityToolkit.Maui.Sample.TouchPageSample"
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -9,65 +9,160 @@
 
 	<ContentPage.Resources>
 		<ResourceDictionary>
-			<Style x:Key="GridRowContentStyle" TargetType="StackLayout">
-				<Setter Property="HorizontalOptions" Value="CenterAndExpand" />
-				<Setter Property="VerticalOptions" Value="CenterAndExpand" />
-				<Setter Property="Spacing" Value="10" />
+			<Style x:Key="SectionHeader" TargetType="Label">
+				<Setter Property="HorizontalOptions" Value="Center"/>
+				<Setter Property="FontSize" Value="Large"/>
+				<Setter Property="Margin" Value="10"/>
 			</Style>
 		</ResourceDictionary>
 	</ContentPage.Resources>
-	<VerticalStackLayout>
 
-		<HorizontalStackLayout>
-			<Label
-				FontSize="Title"
-				HorizontalOptions="FillAndExpand"
-				Text="NativeAnimationBorderless"
-				TextColor="Black" />
-			<Switch IsToggled="{Binding NativeAnimationBorderless, Source={x:Reference Page}}" />
-		</HorizontalStackLayout>
-
-		<Label
-			FontSize="Title"
-			HorizontalOptions="CenterAndExpand"
-			Text="{Binding TouchCount, StringFormat='Touches: {0}', Source={x:Reference Page}}"
-			TextColor="Black" />
-
-		<VerticalStackLayout Style="{StaticResource GridRowContentStyle}">
-			<Label Text="Image | Toggle" />
-			<Image
-				x:Name="img"
-				BackgroundColor="Red"
-				HeightRequest="40">
-				<Image.Behaviors>
-					<mct:TouchBehavior
-						Command="{Binding TouchCountCommand, Source={x:Reference Page}}"
-						IsToggled="false"
-						NativeAnimation="True"
-						NormalBackgroundImageSource="shield.png"
-						PressedBackgroundImageSource="avatar_icon.png" />
-				</Image.Behaviors>
-			</Image>
-
-		</VerticalStackLayout>
-
-		<VerticalStackLayout Style="{StaticResource GridRowContentStyle}">
-			<Label Text="Scale | Fade | Animated" />
-
-			<HorizontalStackLayout HorizontalOptions="CenterAndExpand">
-
-				<HorizontalStackLayout.Behaviors>
-					<mct:TouchBehavior
-						AnimationDuration="250"
-						AnimationEasing="{x:Static Easing.CubicInOut}"
-						PressedOpacity="0.6"
-						PressedScale="0.8" />
-				</HorizontalStackLayout.Behaviors>
-
-				<BoxView HeightRequest="100" Color="Gold" />
-				<Label Text="The entire layout receives touches" />
-				<BoxView HeightRequest="100" Color="Gold" />
+	<ScrollView>
+		<VerticalStackLayout>
+			<HorizontalStackLayout HorizontalOptions="Center">
+				<Label
+					Style="{StaticResource SectionHeader}"
+					Text="NativeAnimationBorderless"/>
+					<Switch IsToggled="{Binding NativeAnimationBorderless, Source={x:Reference Page}}"
+							VerticalOptions="Center"/>
 			</HorizontalStackLayout>
+
+			<Label Style="{StaticResource SectionHeader}"
+				   Text="{Binding TouchCount, StringFormat='Touches: {0}', Source={x:Reference Page}}"/>
+			<VerticalStackLayout>
+				<Label Style="{StaticResource SectionHeader}" Text="Image | Toggle" />
+				<Image
+					x:Name="img"
+					WidthRequest="100" HeightRequest="100">
+					<Image.Behaviors>
+						<mct:TouchBehavior
+							Command="{Binding TouchCountCommand, Source={x:Reference Page}}"
+							IsToggled="false"
+							NormalBackgroundImageSource="button.png"
+							PressedBackgroundImageSource="button_pressed.png" />
+					</Image.Behaviors>
+				</Image>
+			</VerticalStackLayout>
+			
+			<VerticalStackLayout>
+				<Label Style="{StaticResource SectionHeader}" Text="Scale | Fade | Animated" />
+				<HorizontalStackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="Center">
+					<HorizontalStackLayout.Behaviors>
+						<mct:TouchBehavior
+							AnimationDuration="250"
+							AnimationEasing="{x:Static Easing.CubicInOut}"
+							PressedOpacity="0.6"
+							PressedScale="0.8"
+							Command="{Binding TouchCountCommand, Source={x:Reference Page}}"/>
+					</HorizontalStackLayout.Behaviors>
+
+					<BoxView HeightRequest="100" Color="Gold" WidthRequest="10"/>
+					<Label Text="The entire layout receives touches" VerticalOptions="Center"/>
+					<BoxView HeightRequest="100" Color="Gold" WidthRequest="10" />
+				</HorizontalStackLayout>
+			</VerticalStackLayout>
+
+		
+			<VerticalStackLayout Padding="20">
+
+				<Label Style="{StaticResource SectionHeader}" Text="Native | Long Press | Hover" />
+
+				<Label HorizontalOptions="CenterAndExpand"
+						FontSize="Body"
+						Text="{Binding LongPressCount, StringFormat='Long press count: {0}', Source={x:Reference Page}}" />
+				<HorizontalStackLayout 
+							HorizontalOptions="CenterAndExpand"
+							Background="Black" 
+							Padding="20">
+ 					<HorizontalStackLayout.Behaviors>
+						<mct:TouchBehavior
+							HoveredScale="1.2"
+							NativeAnimation="True"
+							NativeAnimationBorderless="{Binding NativeAnimationBorderless, Source={x:Reference Page}}"
+							LongPressCommand="{Binding LongTouchCommand, Source={x:Reference Page}}"
+							Command="{Binding TouchCountCommand, Source={x:Reference Page}}">
+						</mct:TouchBehavior>
+					</HorizontalStackLayout.Behaviors>
+						<Label Text="TITLE"
+						TextColor="White" VerticalOptions="Start"
+						FontSize="Large"/>
+				</HorizontalStackLayout>
+			</VerticalStackLayout>
+
+			 <VerticalStackLayout >
+
+					<Label Style="{StaticResource SectionHeader}" Text="Color | Rotation | Pulse | Animated"  />
+
+					<HorizontalStackLayout
+							BackgroundColor="Gold"
+							 HorizontalOptions="CenterAndExpand"
+							 Padding="20">
+
+						<HorizontalStackLayout.Behaviors>
+							<mct:TouchBehavior
+								AnimationDuration="500"
+								PulseCount="2"
+								NormalBackgroundColor="Gold"
+								PressedBackgroundColor="Orange"
+								PressedRotation="15"
+								Command="{Binding TouchCountCommand, Source={x:Reference Page}}">
+							</mct:TouchBehavior>
+
+						</HorizontalStackLayout.Behaviors>
+
+						<Label Text="TITLE"
+							   TextColor="White"
+								FontSize="Large"/>
+					</HorizontalStackLayout>
+				</VerticalStackLayout>
+
+			<VerticalStackLayout >
+				<Label Style="{StaticResource SectionHeader}" Text="Image | Native" />
+				<Border StrokeThickness="1">
+					<Image Source="button.png" WidthRequest="100" HeightRequest="100">
+						<Image.Behaviors>
+							<mct:TouchBehavior
+								NativeAnimation="True"
+								NativeAnimationBorderless="{Binding NativeAnimationBorderless, Source={x:Reference Page}}"
+								NativeAnimationRadius="100"
+								Command="{Binding TouchCountCommand, Source={x:Reference Page}}">
+							</mct:TouchBehavior>
+						</Image.Behaviors>
+					</Image>
+				</Border>	
+			</VerticalStackLayout>
+
+			<VerticalStackLayout>
+				<Label Style="{StaticResource SectionHeader}" Text="Nested effect" />
+				<Grid>
+					<ContentView
+						Background="Yellow"
+						HeightRequest="200"
+						WidthRequest="200"
+						HorizontalOptions="Center"
+						Padding="50">
+						<ContentView.Behaviors>
+							<mct:TouchBehavior
+								NativeAnimation="True"
+								NativeAnimationBorderless="{Binding NativeAnimationBorderless, Source={x:Reference Page}}"
+								Command="{Binding ParentCommand, Source={x:Reference Page}}"/>
+						</ContentView.Behaviors>
+
+						<ContentView BackgroundColor="Red"
+							WidthRequest="100"
+							HorizontalOptions="Center"
+							VerticalOptions="Center"
+							HeightRequest="100">
+									<ContentView.Behaviors>
+										<mct:TouchBehavior
+											NativeAnimation="True"
+											NativeAnimationBorderless="{Binding NativeAnimationBorderless, Source={x:Reference Page}}"
+											Command="{Binding ChildCommand, Source={x:Reference Page}}" />
+									</ContentView.Behaviors>
+						</ContentView>
+					</ContentView>
+				</Grid>
+			</VerticalStackLayout>
 		</VerticalStackLayout>
-	</VerticalStackLayout>
+	</ScrollView>
 </ContentPage>
