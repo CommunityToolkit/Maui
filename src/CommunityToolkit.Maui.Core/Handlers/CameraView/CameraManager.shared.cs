@@ -34,7 +34,7 @@ public partial class CameraManager : IDisposable
 	protected virtual partial void PlatformTakePicture();
 }
 
-#if NET7_0 && !ANDROID
+#if NET7_0 && !ANDROID && !IOS && !MACCATALYST
 public partial class CameraManager
 {
 	protected virtual partial void PlatformConnect() { }
