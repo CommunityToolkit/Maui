@@ -167,4 +167,23 @@ public partial class CameraManager
 			cameraView.OnMediaCapturedFailed();
 		}
 	}
+
+	protected virtual void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			previewView?.Dispose();
+			cameraExecutor?.Dispose();
+			cameraProvider?.Dispose();
+			imageCapture?.Dispose();
+			imageCallback?.Dispose();
+			camera?.Dispose();
+		}
+	}
+
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
 }
