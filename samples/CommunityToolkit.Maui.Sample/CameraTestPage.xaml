@@ -1,19 +1,23 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
+
 <ContentPage
-	x:Class="CommunityToolkit.Maui.Sample.CameraTestPage"
-	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-	Title="CameraTestPage">
-	<ScrollView Padding="20">
-		<VerticalStackLayout>
-			<mct:CameraView
-				x:Name="camera"
-				HorizontalOptions="Fill"
-				VerticalOptions="Fill" />
-			<Button Clicked="Button_Clicked" Text="Shot" />
-			<Button Clicked="Button_Clicked_1" Text="Change the flashMode" />
-			<Image x:Name="img" />
-		</VerticalStackLayout>
-	</ScrollView>
+    x:Class="CommunityToolkit.Maui.Sample.CameraTestPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    Title="CameraTestPage">
+    <ScrollView Padding="20">
+        <VerticalStackLayout>
+            <mct:CameraView
+                x:Name="camera"
+                HorizontalOptions="Fill"
+                HeightRequest="400" />
+            <Button Clicked="Button_Clicked" Text="Shot" />
+            <Button Clicked="Button_Clicked_1" Text="Change the flashMode" />
+            <Image
+                x:Name="img"
+                HorizontalOptions="Fill"
+                HeightRequest="200" />
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>
