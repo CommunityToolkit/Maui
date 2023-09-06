@@ -14,7 +14,7 @@ public sealed partial class SpeechToTextImplementation
 	string defaultSttEngineLocale = "ko_KR";
 
 	/// <inheritdoc/>
-	public SpeechToTextState State => sttClient.CurrentState == State.Recording
+	public SpeechToTextState State => sttClient?.CurrentState is State.Recording
 		? SpeechToTextState.Listening
 		: SpeechToTextState.Stopped;
 
@@ -48,17 +48,21 @@ public sealed partial class SpeechToTextImplementation
 		sttClient.ErrorOccurred -= OnErrorOccurred;
 	}
 
-	[MemberNotNull(nameof(sttClient), nameof(taskResult))]
+	[MemberNotNull(nameof(taskResult))]
 	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
-		this.recognitionProgress = recognitionResult;
+		recognitionProgress = recognitionResult;
 		taskResult ??= new TaskCompletionSource<string>();
 
 		await InternalStartListeningAsync(culture);
 
 		await using (cancellationToken.Register(() =>
 		{
-			StopRecording(sttClient);
+			if (sttClient is not null)
+			{
+				StopRecording(sttClient);
+			}
+
 			taskResult.TrySetCanceled();
 		}))
 		{
