@@ -14,7 +14,7 @@ public sealed partial class SpeechToTextImplementation
 	string defaultSttEngineLocale = "ko_KR";
 
 	/// <inheritdoc/>
-	public SpeechToTextState State => sttClient?.CurrentState is State.Recording
+	public SpeechToTextState State => sttClient?.CurrentState is Tizen.Uix.Stt.State.Recording
 		? SpeechToTextState.Listening
 		: SpeechToTextState.Stopped;
 
@@ -23,7 +23,7 @@ public sealed partial class SpeechToTextImplementation
 	{
 		if (sttClient is not null)
 		{
-			if (sttClient.CurrentState is State.Ready)
+			if (sttClient.CurrentState is Tizen.Uix.Stt.State.Ready)
 			{
 				sttClient.Unprepare();
 			}
@@ -39,7 +39,7 @@ public sealed partial class SpeechToTextImplementation
 
 	void StopRecording(in SttClient sttClient)
 	{
-		if (sttClient.CurrentState is State.Recording)
+		if (sttClient.CurrentState is Tizen.Uix.Stt.State.Recording)
 		{
 			sttClient.Stop();
 		}
@@ -54,7 +54,7 @@ public sealed partial class SpeechToTextImplementation
 		recognitionProgress = recognitionResult;
 		taskResult ??= new TaskCompletionSource<string>();
 
-		await InternalStartListeningAsync(culture);
+		await InternalStartListeningAsync(culture, cancellationToken);
 
 		await using (cancellationToken.Register(() =>
 		{
@@ -95,7 +95,7 @@ public sealed partial class SpeechToTextImplementation
 		{
 			foreach(var d in e.Data)
 			{
-				OnSpeechToTextRecognitionResultUpdated(d);
+				OnRecognitionResultUpdated(d);
 				recognitionProgress?.Report(d);
 			}
 		}
@@ -106,7 +106,7 @@ public sealed partial class SpeechToTextImplementation
 				StopRecording(sttClient);
 			}
 
-			OnSpeechToTextRecognitionResultCompleted(e.Data.ToString() ?? string.Empty);
+			OnRecognitionResultCompleted(e.Data.ToString() ?? string.Empty);
 			taskResult?.TrySetResult(e.Data.ToString() ?? string.Empty);
 		}
 	}
@@ -124,7 +124,7 @@ public sealed partial class SpeechToTextImplementation
 
 		sttClient.StateChanged += (s, e) =>
 		{
-			if (e.Current == State.Ready)
+			if (e.Current == Tizen.Uix.Stt.State.Ready)
 			{
 				tcsInitialize.TrySetResult(true);
 			}
@@ -154,11 +154,13 @@ public sealed partial class SpeechToTextImplementation
 		sttClient.Start(defaultSttEngineLocale, recognitionType);
 	}
 
-	async Task InternalStopListeningAsync(CancellationToken cancellationToken)
+	Task InternalStopListeningAsync(CancellationToken cancellationToken)
 	{
 		if (sttClient is not null)
 		{
 			StopRecording(sttClient);
 		}
+
+		return Task.CompletedTask;
 	}
 }
