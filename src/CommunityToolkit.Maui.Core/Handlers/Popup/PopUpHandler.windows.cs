@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Core.Views;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 
@@ -88,7 +89,7 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapSize(PopupHandler handler, IPopup view)
 	{
-		handler.PlatformView.SetSize(view);
+		handler.PlatformView.SetSize(view, handler.MauiContext);
 	}
 
 	/// <inheritdoc/>
@@ -100,6 +101,10 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 		parent.IsHitTestVisible = true;
 		platformView.IsOpen = false;
 		platformView.Closed -= OnClosed;
+		if (MauiContext is not null)
+		{
+			MauiContext.GetPlatformWindow().SizeChanged -= OnSizeChanged;
+		}
 	}
 
 	/// <inheritdoc/>
@@ -114,6 +119,10 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 	{
 		platformView.Closed += OnClosed;
 		platformView.ConfigureControl(VirtualView, MauiContext);
+		if (MauiContext is not null)
+		{
+			MauiContext.GetPlatformWindow().SizeChanged += OnSizeChanged;
+		}
 		base.ConnectHandler(platformView);
 	}
 
@@ -122,6 +131,15 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 		if (!PlatformView.IsOpen && VirtualView.CanBeDismissedByTappingOutsideOfPopup)
 		{
 			VirtualView.Handler?.Invoke(nameof(IPopup.OnDismissedByTappingOutsideOfPopup));
+		}
+	}
+
+	void OnSizeChanged(object? sender, WindowSizeChangedEventArgs e)
+	{
+		if (VirtualView is not null)
+		{
+			PopupExtensions.SetSize(PlatformView, VirtualView, MauiContext);
+			PopupExtensions.SetLayout(PlatformView, VirtualView, MauiContext);
 		}
 	}
 }
