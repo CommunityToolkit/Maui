@@ -1,3 +1,5 @@
+using System.Runtime.Versioning;
+
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc cref="IFileSaver"/>
@@ -11,13 +13,23 @@ public static class FileSaver
 	public static IFileSaver Default => defaultImplementation.Value;
 
 	/// <inheritdoc cref="IFileSaver.SaveAsync(string, string, Stream, CancellationToken)"/>
+	[SupportedOSPlatform("Android26.0")]
+	[SupportedOSPlatform("iOS14.0")]
+	[SupportedOSPlatform("MacCatalyst14.0")]
+	[SupportedOSPlatform("Tizen")]
+	[SupportedOSPlatform("Windows")]
 	public static Task<FileSaverResult> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken) =>
 		Default.SaveAsync(initialPath, fileName, stream, cancellationToken);
 
 	/// <inheritdoc cref="IFileSaver.SaveAsync(string, Stream, CancellationToken)"/>
+	[SupportedOSPlatform("Android")]
+	[SupportedOSPlatform("iOS14.0")]
+	[SupportedOSPlatform("MacCatalyst14.0")]
+	[SupportedOSPlatform("Tizen")]
+	[SupportedOSPlatform("Windows")]
 	public static Task<FileSaverResult> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken) =>
 		Default.SaveAsync(fileName, stream, cancellationToken);
-
+	
 	internal static void SetDefault(IFileSaver implementation) =>
 		defaultImplementation = new(implementation);
 }

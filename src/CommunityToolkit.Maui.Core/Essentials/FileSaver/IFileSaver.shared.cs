@@ -1,3 +1,5 @@
+using System.Runtime.Versioning;
+
 namespace CommunityToolkit.Maui.Storage;
 
 /// <summary>
@@ -12,6 +14,11 @@ public interface IFileSaver
 	/// <param name="fileName">File name with extension</param>
 	/// <param name="stream"><see cref="Stream"/></param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
+	[SupportedOSPlatform("Android26.0")]
+	[SupportedOSPlatform("iOS14.0")]
+	[SupportedOSPlatform("MacCatalyst14.0")]
+	[SupportedOSPlatform("Tizen")]
+	[SupportedOSPlatform("Windows")]
 	Task<FileSaverResult> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken);
 
 	/// <summary>
@@ -20,5 +27,10 @@ public interface IFileSaver
 	/// <param name="fileName">File name with extension</param>
 	/// <param name="stream"><see cref="Stream"/></param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
+	[SupportedOSPlatform("Android")]
+	[SupportedOSPlatform("iOS14.0")]
+	[SupportedOSPlatform("MacCatalyst14.0")]
+	[SupportedOSPlatform("Tizen")]
+	[SupportedOSPlatform("Windows")]
 	Task<FileSaverResult> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken);
 }
