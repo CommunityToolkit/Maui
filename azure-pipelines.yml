@@ -22,7 +22,7 @@ variables:
   PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
   DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/7.0.59.json'
-  CommunityToolkitSampleApp_Xcode_Version: '14.3.0'
+  CommunityToolkitSampleApp_Xcode_Version: '14.3.1'
   CommunityToolkitLibrary_Xcode_Version: '14.0.1'
 
 trigger:
