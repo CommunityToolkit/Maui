@@ -1,5 +1,4 @@
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
-using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
