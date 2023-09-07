@@ -51,11 +51,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="7.0.86" />
-    
-    <PackageReference Include="MemoryAnalyzers" Version="0.1.0-beta.3">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
   </ItemGroup>
 
 </Project>
