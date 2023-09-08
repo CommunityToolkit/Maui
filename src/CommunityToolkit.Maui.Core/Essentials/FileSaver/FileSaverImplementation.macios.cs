@@ -62,7 +62,7 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 
 	void DocumentPickerViewControllerOnWasCancelled(object? sender, EventArgs e)
 	{
-		taskCompetedSource?.SetException(new FileSaveException("Operation cancelled."));
+		taskCompetedSource?.TrySetException(new FileSaveException("Operation cancelled."));
 		InternalDispose();
 	}
 
