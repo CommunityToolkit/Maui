@@ -16,6 +16,14 @@ public static class SpeechToText
 	public static Task<SpeechToTextResult> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken) =>
 		Default.ListenAsync(culture, recognitionResult, cancellationToken);
 
+	/// <inheritdoc cref="ISpeechToText.StartListeningAsync"/>
+	public static Task StartListenAsync(CultureInfo culture, CancellationToken cancellationToken) =>
+		Default.StartListeningAsync(culture, cancellationToken);
+
+	/// <inheritdoc cref="ISpeechToText.StopListeningAsync"/>
+	public static Task StopListenAsync(CancellationToken cancellationToken) =>
+		Default.StopListeningAsync(cancellationToken);
+
 	/// <inheritdoc cref="ISpeechToText.RequestPermissions"/>
 	public static Task<bool> RequestPermissions(CancellationToken cancellationToken) =>
 		Default.RequestPermissions(cancellationToken);

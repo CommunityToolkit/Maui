@@ -27,6 +27,20 @@ public class SpeechToTextTests
 	}
 
 	[Fact]
+	public async Task StartListenAsyncFailsOnNet()
+	{
+		SpeechToText.SetDefault(new SpeechToTextImplementation());
+		await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => SpeechToText.StartListenAsync(CultureInfo.CurrentCulture, CancellationToken.None));
+	}
+
+	[Fact]
+	public async Task StopListenAsyncFailsOnNet()
+	{
+		SpeechToText.SetDefault(new SpeechToTextImplementation());
+		await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => SpeechToText.StopListenAsync(CancellationToken.None));
+	}
+
+	[Fact]
 	public async Task RequestPermissionsFailsOnNet()
 	{
 		SpeechToText.SetDefault(new SpeechToTextImplementation());
