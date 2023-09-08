@@ -37,7 +37,7 @@ public class SpeechToTextTests
 	public async Task StopListenAsyncFailsOnNet()
 	{
 		SpeechToText.SetDefault(new SpeechToTextImplementation());
-		await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => SpeechToText.StopListenAsync(CancellationToken.None));
+		await Assert.ThrowsAsync<NotImplementedException>(() => SpeechToText.StopListenAsync(CancellationToken.None));
 	}
 
 	[Fact]
