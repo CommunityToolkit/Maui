@@ -29,7 +29,7 @@ public static class FileSaver
 	[SupportedOSPlatform("Windows")]
 	public static Task<FileSaverResult> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken) =>
 		Default.SaveAsync(fileName, stream, cancellationToken);
-	
+
 	internal static void SetDefault(IFileSaver implementation) =>
 		defaultImplementation = new(implementation);
 }
