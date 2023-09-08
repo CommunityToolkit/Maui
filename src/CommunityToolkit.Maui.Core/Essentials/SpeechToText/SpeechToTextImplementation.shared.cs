@@ -51,14 +51,14 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 		var isPermissionGranted = await IsSpeechPermissionAuthorized();
 		if (isPermissionGranted)
 		{
-			await InternalStartListeningAsync(culture, cancellationToken);
+			await InternalStartListeningAsync(culture);
 		}
 
 	}
 	/// <inheritdoc/>
 	public async Task StopListeningAsync(CancellationToken cancellationToken)
 	{
-		await InternalStopListeningAsync(cancellationToken);
+		await InternalStopListeningAsync();
 	}
 
 	void OnRecognitionResultUpdated(string recognitionResult)

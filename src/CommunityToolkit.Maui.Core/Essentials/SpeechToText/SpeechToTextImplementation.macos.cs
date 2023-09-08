@@ -12,7 +12,7 @@ public sealed partial class SpeechToTextImplementation
 	TaskCompletionSource<string>? getRecognitionTaskCompletionSource;
 
 	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest))]
-	Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
+	Task InternalStartListeningAsync(CultureInfo culture)
 	{
 		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(culture.Name));
 
@@ -60,14 +60,13 @@ public sealed partial class SpeechToTextImplementation
 		}
 
 		var currentIndex = 0;
-		var getRecognitionTaskCompletionSource = new TaskCompletionSource<string>();
 
 		recognitionTask = speechRecognizer.GetRecognitionTask(liveSpeechRequest, (result, err) =>
 		{
 			if (err is not null)
 			{
 				StopRecording();
-				getRecognitionTaskCompletionSource.TrySetException(new Exception(err.LocalizedDescription));
+				getRecognitionTaskCompletionSource?.TrySetException(new Exception(err.LocalizedDescription));
 			}
 			else
 			{
@@ -76,7 +75,7 @@ public sealed partial class SpeechToTextImplementation
 					currentIndex = 0;
 					StopRecording();
 					OnRecognitionResultCompleted(result.BestTranscription.FormattedString);
-					getRecognitionTaskCompletionSource.TrySetResult(result.BestTranscription.FormattedString);
+					getRecognitionTaskCompletionSource?.TrySetResult(result.BestTranscription.FormattedString);
 				}
 				else
 				{
@@ -98,7 +97,7 @@ public sealed partial class SpeechToTextImplementation
 	{
 		recognitionProgress = recognitionResult;
 		getRecognitionTaskCompletionSource ??= new TaskCompletionSource<string>();
-		await StartListeningAsync(culture, CancellationToken.None);
+		await InternalStartListeningAsync(culture);
 		await using (cancellationToken.Register(() =>
 		             {
 			             StopRecording();

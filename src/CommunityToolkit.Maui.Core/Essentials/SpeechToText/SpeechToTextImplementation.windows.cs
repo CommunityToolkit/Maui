@@ -33,7 +33,7 @@ public sealed partial class SpeechToTextImplementation
 		speechRecognizer = null;
 	}
 
-	async Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
+	async Task InternalStartListeningAsync(CultureInfo culture)
 	{
 		await Initialize(culture);
 		speechRecognizer.ContinuousRecognitionSession.AutoStopSilenceTimeout = TimeSpan.MaxValue;
@@ -74,7 +74,7 @@ public sealed partial class SpeechToTextImplementation
 		OnRecognitionResultUpdated(args.Result.Text);
 	}
 
-	async Task InternalStopListeningAsync(CancellationToken cancellationToken)
+	async Task InternalStopListeningAsync()
 	{
 		await StopRecording();
 	}

@@ -32,7 +32,7 @@ public sealed partial class SpeechToTextImplementation
 	}
 
 	[MemberNotNull(nameof(speechRecognizer), nameof(listener))]
-	Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
+	Task InternalStartListeningAsync(CultureInfo culture)
 	{
 		cultureInfo = culture;
 		var isSpeechRecognitionAvailable = IsSpeechRecognitionAvailable();
@@ -60,7 +60,7 @@ public sealed partial class SpeechToTextImplementation
 		return Task.CompletedTask;
 	}
 
-	Task InternalStopListeningAsync(CancellationToken cancellationToken)
+	Task InternalStopListeningAsync()
 	{
 		StopRecording();
 		return Task.CompletedTask;
@@ -70,7 +70,7 @@ public sealed partial class SpeechToTextImplementation
 	{
 		recognitionProgress = recognitionResult;
 		speechRecognitionListenerTaskCompletionSource = new();
-		await InternalStartListeningAsync(culture, CancellationToken.None);
+		await InternalStartListeningAsync(culture);
 
 		await using (cancellationToken.Register(() =>
 		{

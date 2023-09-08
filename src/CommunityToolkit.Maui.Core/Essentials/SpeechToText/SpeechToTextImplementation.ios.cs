@@ -12,7 +12,7 @@ public sealed partial class SpeechToTextImplementation
 	TaskCompletionSource<string>? getRecognitionTaskCompletionSource;
 
 	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest))]
-	Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
+	Task InternalStartListeningAsync(CultureInfo culture)
 	{
 		getRecognitionTaskCompletionSource = new TaskCompletionSource<string>();
 		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(culture.Name));
@@ -82,7 +82,7 @@ public sealed partial class SpeechToTextImplementation
 	{
 		recognitionProgress = recognitionResult;
 		getRecognitionTaskCompletionSource ??= new TaskCompletionSource<string>();
-		await StartListeningAsync(culture, CancellationToken.None);
+		await InternalStartListeningAsync(culture);
 		await using (cancellationToken.Register(() =>
 		{
 			StopRecording();

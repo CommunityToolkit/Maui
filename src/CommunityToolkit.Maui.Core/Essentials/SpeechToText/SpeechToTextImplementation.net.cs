@@ -20,12 +20,12 @@ public sealed partial class SpeechToTextImplementation
 		throw new NotImplementedException();
 	}
 
-	Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
+	Task InternalStartListeningAsync(CultureInfo culture)
 	{
 		throw new NotImplementedException();
 	}
 
-	Task InternalStopListeningAsync(CancellationToken cancellationToken)
+	Task InternalStopListeningAsync()
 	{
 		throw new NotImplementedException();
 	}
