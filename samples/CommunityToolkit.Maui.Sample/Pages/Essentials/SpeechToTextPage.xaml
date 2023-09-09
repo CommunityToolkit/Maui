@@ -15,10 +15,12 @@
 
     <ScrollView>
         <VerticalStackLayout
+            Spacing="20"
             Padding="30,0">
 
             <Label
-                Text="SpeechToText allows the user to convert speech to text in real time"/>
+                Text="SpeechToText allows the user to convert speech to text in real time"
+                HorizontalTextAlignment="Center"/>
 
             <Label
                 Text="Locale"
@@ -27,9 +29,7 @@
             <Picker
                 ItemsSource="{Binding Locales}"
                 SelectedItem="{Binding CurrentLocale}"
-                ItemDisplayBinding="{Binding ., Converter={StaticResource PickerLocaleDisplayConverter}}"
-                Margin="0,0,0,20">
-            </Picker>
+                ItemDisplayBinding="{Binding ., Converter={StaticResource PickerLocaleDisplayConverter}}"/>
 
             <Label
                 Text="Language Output"
@@ -40,36 +40,32 @@
                 FontSize="18"
                 HorizontalOptions="Center"
                 HorizontalTextAlignment="Center"
-                MinimumHeightRequest="100"
-                Margin="0,0,0,20" />
+                MinimumHeightRequest="100" />
 
             <Button
                 Text="Play"
                 Command="{Binding PlayCommand}"
-                HorizontalOptions="Center"
-                Margin="0,0,0,20"/>
+                HorizontalOptions="Center" />
 
             <Button
                 Text="Listen"
                 Command="{Binding ListenCommand}"
-                HorizontalOptions="Center"
-                Margin="0,0,0,20"/>
+                HorizontalOptions="Center" />
 
             <Button
-                Text="Stop Listening"
+                Text="Cancel Listening"
                 Command="{Binding ListenCancelCommand}"
-                HorizontalOptions="Center"/>
+                HorizontalOptions="Center" />
 
             <Button
                 Text="Start Listening"
                 Command="{Binding StartListenCommand}"
-                HorizontalOptions="Center"
-                Margin="0,0,0,20"/>
+                HorizontalOptions="Center" />
 
             <Button
                 Text="Stop Listening"
                 Command="{Binding StopListenCommand}"
-                HorizontalOptions="Center"/>
+                HorizontalOptions="Center" />
 
         </VerticalStackLayout>
     </ScrollView>
