@@ -357,7 +357,6 @@ public class MediaElement : View, IMediaElement
 	/// <inheritdoc cref="IMediaElement.Play"/>
 	public void Play()
 	{
-		InitializeTimer();
 		OnPlayRequested();
 		Handler?.Invoke(nameof(PlayRequested));
 	}
@@ -372,14 +371,12 @@ public class MediaElement : View, IMediaElement
 	/// <inheritdoc cref="IMediaElement.Stop"/>
 	public void Stop()
 	{
-		ClearTimer();
 		OnStopRequested();
 		Handler?.Invoke(nameof(StopRequested));
 	}
 
 	internal void OnMediaEnded()
 	{
-		ClearTimer();
 		CurrentState = MediaElementState.Stopped;
 		eventManager.HandleEvent(this, EventArgs.Empty, nameof(MediaEnded));
 	}
@@ -471,6 +468,8 @@ public class MediaElement : View, IMediaElement
 
 	void OnSourcePropertyChanged(MediaSource? newValue)
 	{
+		ClearTimer();
+
 		if (newValue is not null)
 		{
 			newValue.SourceChanged += OnSourceChanged;
