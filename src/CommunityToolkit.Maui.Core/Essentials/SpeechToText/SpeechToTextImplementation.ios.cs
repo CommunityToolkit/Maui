@@ -65,7 +65,7 @@ public sealed partial class SpeechToTextImplementation
 				}
 				else
 				{
-					if(currentIndex <= 0)
+					if (currentIndex <= 0)
 					{
 						OnSpeechToTextStateChanged(CurrentState);
 					}

@@ -54,7 +54,7 @@ public interface ISpeechToText : IAsyncDisposable
 	/// </remarks>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	Task StopListenAsync(CancellationToken cancellationToken);
-	
+
 	/// <summary>
 	/// Request permissions for speech to text.
 	/// </summary>

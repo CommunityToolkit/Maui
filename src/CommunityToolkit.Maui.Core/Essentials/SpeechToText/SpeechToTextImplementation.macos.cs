@@ -107,10 +107,10 @@ public sealed partial class SpeechToTextImplementation
 		getRecognitionTaskCompletionSource ??= new TaskCompletionSource<string>();
 		await InternalStartListeningAsync(culture, cancellationToken);
 		await using (cancellationToken.Register(() =>
-		             {
-			             StopRecording();
-			             getRecognitionTaskCompletionSource.TrySetCanceled();
-		             }))
+					 {
+						 StopRecording();
+						 getRecognitionTaskCompletionSource.TrySetCanceled();
+					 }))
 		{
 			return await getRecognitionTaskCompletionSource.Task;
 		}

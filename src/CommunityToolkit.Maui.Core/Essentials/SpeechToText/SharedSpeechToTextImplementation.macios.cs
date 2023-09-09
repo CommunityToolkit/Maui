@@ -14,7 +14,7 @@ public sealed partial class SpeechToTextImplementation
 	public SpeechToTextState CurrentState => recognitionTask?.State is SFSpeechRecognitionTaskState.Running
 												? SpeechToTextState.Listening
 												: SpeechToTextState.Stopped;
-	
+
 
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()
