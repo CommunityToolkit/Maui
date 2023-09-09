@@ -68,7 +68,7 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 
 	}
 	/// <inheritdoc/>
-	public Task StopListenAsync(CancellationToken cancellationToken) => InternalStopListeningAsync();
+	public Task StopListenAsync(CancellationToken cancellationToken) => InternalStopListeningAsync(cancellationToken);
 
 	void OnRecognitionResultUpdated(string recognitionResult)
 	{

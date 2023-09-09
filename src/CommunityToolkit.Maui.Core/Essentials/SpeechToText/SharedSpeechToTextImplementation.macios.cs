@@ -57,8 +57,9 @@ public sealed partial class SpeechToTextImplementation
 		OnSpeechToTextStateChanged(CurrentState);
 	}
 
-	Task InternalStopListeningAsync()
+	Task InternalStopListeningAsync(CancellationToken cancellationToken)
 	{
+		cancellationToken.ThrowIfCancellationRequested();
 		StopRecording();
 		return Task.CompletedTask;
 	}

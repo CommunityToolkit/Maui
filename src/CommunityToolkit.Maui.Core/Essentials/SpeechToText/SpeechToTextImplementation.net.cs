@@ -22,7 +22,7 @@ public sealed partial class SpeechToTextImplementation
 		throw new NotSupportedException();
 	}
 
-	Task InternalStopListeningAsync()
+	Task InternalStopListeningAsync(CancellationToken cancellationToken)
 	{
 		throw new NotSupportedException();
 	}

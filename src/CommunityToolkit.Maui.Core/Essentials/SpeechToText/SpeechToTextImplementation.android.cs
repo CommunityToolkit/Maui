@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Threading;
 using Android.Content;
 using Android.Runtime;
 using Android.Speech;
@@ -60,8 +61,9 @@ public sealed partial class SpeechToTextImplementation
 		return Task.CompletedTask;
 	}
 
-	Task InternalStopListeningAsync()
+	Task InternalStopListeningAsync(CancellationToken cancellationToken)
 	{
+		cancellationToken.ThrowIfCancellationRequested();
 		StopRecording();
 		return Task.CompletedTask;
 	}
