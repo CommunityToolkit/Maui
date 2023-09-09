@@ -10,6 +10,21 @@ public interface ISpeechToText : IAsyncDisposable
 	/// <summary>
 	/// Converts speech to text in real time.
 	/// </summary>
+	event EventHandler<OnSpeechToTextRecognitionResultUpdated> RecognitionResultUpdated;
+
+	/// <summary>
+	/// Final recognition result.
+	/// </summary>
+	event EventHandler<OnSpeechToTextRecognitionResultCompleted> RecognitionResultCompleted;
+
+	/// <summary>
+	/// Current listening state
+	/// </summary>
+	SpeechToTextState CurrentState { get; }
+
+	/// <summary>
+	/// Converts speech to text in real time.
+	/// </summary>
 	/// <param name="culture">Speak language</param>
 	/// <param name="recognitionResult">Intermediate recognition result.</param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
@@ -28,16 +43,6 @@ public interface ISpeechToText : IAsyncDisposable
 	/// </summary>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	Task StopListeningAsync(CancellationToken cancellationToken);
-
-	/// <summary>
-	/// Converts speech to text in real time.
-	/// </summary>
-	event EventHandler<OnSpeechToTextRecognitionResultUpdated> RecognitionResultUpdated;
-
-	/// <summary>
-	/// Final recognition result.
-	/// </summary>
-	event EventHandler<OnSpeechToTextRecognitionResultCompleted> RecognitionResultCompleted;
 	
 	/// <summary>
 	/// Request permissions for speech to text.
@@ -45,11 +50,6 @@ public interface ISpeechToText : IAsyncDisposable
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns>True if permissions granted</returns>
 	Task<bool> RequestPermissions(CancellationToken cancellationToken);
-
-	/// <summary>
-	/// Current listening state
-	/// </summary>
-	SpeechToTextState State { get; }
 }
 
 /// <summary>

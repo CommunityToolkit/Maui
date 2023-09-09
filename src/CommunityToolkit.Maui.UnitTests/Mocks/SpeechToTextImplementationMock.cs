@@ -22,7 +22,7 @@ class SpeechToTextImplementationMock : ISpeechToText
 		throw new NotImplementedException();
 	}
 
-	public SpeechToTextState State { get; }
+	public SpeechToTextState CurrentState { get; }
 
 	Task<SpeechToTextResult> ISpeechToText.ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{

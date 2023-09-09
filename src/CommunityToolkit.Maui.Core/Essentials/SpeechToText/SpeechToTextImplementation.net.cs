@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Media;
 public sealed partial class SpeechToTextImplementation
 {
 	/// <inheritdoc />
-	public SpeechToTextState State { get; }
+	public SpeechToTextState CurrentState { get; }
 
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()

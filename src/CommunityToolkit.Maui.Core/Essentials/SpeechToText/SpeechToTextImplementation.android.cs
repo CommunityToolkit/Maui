@@ -17,7 +17,7 @@ public sealed partial class SpeechToTextImplementation
 	CultureInfo? cultureInfo;
 
 	/// <inheritdoc/>
-	public SpeechToTextState State { get; private set; }
+	public SpeechToTextState CurrentState { get; private set; }
 
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()
@@ -56,7 +56,7 @@ public sealed partial class SpeechToTextImplementation
 		};
 		speechRecognizer.SetRecognitionListener(listener);
 		speechRecognizer.StartListening(CreateSpeechIntent(cultureInfo));
-		State = SpeechToTextState.Listening;
+		CurrentState = SpeechToTextState.Listening;
 		return Task.CompletedTask;
 	}
 
@@ -119,7 +119,7 @@ public sealed partial class SpeechToTextImplementation
 	{
 		speechRecognizer?.StopListening();
 		speechRecognizer?.Destroy();
-		State = SpeechToTextState.Stopped;
+		CurrentState = SpeechToTextState.Stopped;
 	}
 
 	class SpeechRecognitionListener : Java.Lang.Object, IRecognitionListener

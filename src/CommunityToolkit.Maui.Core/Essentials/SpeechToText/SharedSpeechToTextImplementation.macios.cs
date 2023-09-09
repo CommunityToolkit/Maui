@@ -11,7 +11,7 @@ public sealed partial class SpeechToTextImplementation
 	SFSpeechAudioBufferRecognitionRequest? liveSpeechRequest;
 
 	/// <inheritdoc/>
-	public SpeechToTextState State => recognitionTask?.State == SFSpeechRecognitionTaskState.Running
+	public SpeechToTextState CurrentState => recognitionTask?.State == SFSpeechRecognitionTaskState.Running
 		? SpeechToTextState.Listening
 		: SpeechToTextState.Stopped;
 
