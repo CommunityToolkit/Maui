@@ -52,8 +52,6 @@ public static partial class PopupExtensions
 	/// </returns>
 	public static Task<object?> ShowPopupAsync<TPopup>(this Page page, TPopup popup) where TPopup : Popup
 	{
-		page = PageExtensions.GetCurrentPage(page);
-
 		if (page.IsPlatformEnabled)
 		{
 			return CreateAndShowPopupAsync(page, popup);
