@@ -76,7 +76,7 @@
                         <Label
                             Grid.Row="1"
                             Grid.ColumnSpan="2"
-                            Text="The ListenAsync API allows you to await the final speech recognition results using async/await. ListenAsync is cancelled via CancellationToken"
+                            Text="The `ListenAsync` API allows you to await the final speech recognition results using async/await. `ListenAsync` is cancelled via CancellationToken."
                             HorizontalOptions="Center"
                             HorizontalTextAlignment="Center"
                             FontSize="12"/>
@@ -113,7 +113,7 @@
                         <Label
                             Grid.Row="1"
                             Grid.ColumnSpan="2"
-                            Text="The StartListenAsync API starts SpeechToText and returns the results using `RecognitionResultUpdated` event and `RecognitionResultCompleted` event"
+                            Text="The `StartListenAsync` API starts the speech-to-text service and shares the results using `RecognitionResultUpdated` event and `RecognitionResultCompleted` event."
                             HorizontalOptions="Center"
                             HorizontalTextAlignment="Center"
                             FontSize="12"/>
