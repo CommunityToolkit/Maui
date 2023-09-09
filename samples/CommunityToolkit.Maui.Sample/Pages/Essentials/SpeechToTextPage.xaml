@@ -47,27 +47,82 @@
                 Command="{Binding PlayCommand}"
                 HorizontalOptions="Center" />
 
-            <Button
-                Text="Listen"
-                Command="{Binding ListenCommand}"
-                HorizontalOptions="Center" />
+            <Border
+                StrokeThickness="2"
+                Stroke="#808080"
+                StrokeShape="RoundRectangle 8,8,8,8"
+                Padding="12">
+                <Border.Content>
 
-            <Button
-                Text="Cancel Listening"
-                Command="{Binding ListenCancelCommand}"
-                HorizontalOptions="Center" />
+                    <Grid RowDefinitions="*,60"
+                          ColumnDefinitions="*,*"
+                          RowSpacing="12"
+                          ColumnSpacing="12">
 
-            <Button
-                Text="Start Listening"
-                Command="{Binding StartListenCommand}"
-                HorizontalOptions="Center" />
+                        <Button
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Text="ListenAsync"
+                            Command="{Binding ListenCommand}"
+                            HorizontalOptions="End" />
 
-            <Button
-                Text="Stop Listening"
-                Command="{Binding StopListenCommand}"
-                HorizontalOptions="Center" />
+                        <Button
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Text="Cancel Token"
+                            Command="{Binding ListenCancelCommand}"
+                            HorizontalOptions="Start" />
+
+                        <Label
+                            Grid.Row="1"
+                            Grid.ColumnSpan="2"
+                            Text="The ListenAsync API allows you to await the final speech recognition results using async/await. ListenAsync is cancelled via CancellationToken"
+                            HorizontalOptions="Center"
+                            HorizontalTextAlignment="Center"
+                            FontSize="12"/>
+
+                    </Grid>
+                </Border.Content>
+            </Border>
+
+            <Border
+                StrokeThickness="2"
+                Stroke="#808080"
+                StrokeShape="RoundRectangle 8,8,8,8"
+                Padding="12">
+                <Border.Content>
+                    <Grid RowDefinitions="*,60"
+                          ColumnDefinitions="*,*"
+                          RowSpacing="12"
+                          ColumnSpacing="12">
+
+                        <Button
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Text="StartListenAsync"
+                            Command="{Binding StartListenCommand}"
+                            HorizontalOptions="End" />
+
+                        <Button
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Text="StopListenAsync"
+                            Command="{Binding StopListenCommand}"
+                            HorizontalOptions="Start" />
+
+                        <Label
+                            Grid.Row="1"
+                            Grid.ColumnSpan="2"
+                            Text="The StartListenAsync API starts SpeechToText and returns the results using `RecognitionResultUpdated` event and `RecognitionResultCompleted` event"
+                            HorizontalOptions="Center"
+                            HorizontalTextAlignment="Center"
+                            FontSize="12"/>
+
+                    </Grid>
+                </Border.Content>
+            </Border>
 
         </VerticalStackLayout>
     </ScrollView>
-    
+
 </pages:BasePage>
