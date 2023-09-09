@@ -12,9 +12,9 @@ public sealed partial class SpeechToTextImplementation
 	TaskCompletionSource<string>? getRecognitionTaskCompletionSource;
 
 	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest))]
-	Task InternalStartListeningAsync(CultureInfo culture)
+	Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
 	{
-		getRecognitionTaskCompletionSource = new TaskCompletionSource<string>();
+		getRecognitionTaskCompletionSource = new TaskCompletionSource<string>(cancellationToken);
 		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(culture.Name));
 
 		if (!speechRecognizer.Available)
@@ -65,6 +65,11 @@ public sealed partial class SpeechToTextImplementation
 				}
 				else
 				{
+					if(currentIndex <= 0)
+					{
+						OnSpeechToTextStateChanged(CurrentState);
+					}
+
 					for (var i = currentIndex; i < result.BestTranscription.Segments.Length; i++)
 					{
 						var s = result.BestTranscription.Segments[i].Substring;
@@ -75,6 +80,9 @@ public sealed partial class SpeechToTextImplementation
 				}
 			}
 		});
+
+		cancellationToken.ThrowIfCancellationRequested();
+
 		return Task.CompletedTask;
 	}
 
@@ -82,7 +90,9 @@ public sealed partial class SpeechToTextImplementation
 	{
 		recognitionProgress = recognitionResult;
 		getRecognitionTaskCompletionSource ??= new TaskCompletionSource<string>();
-		await InternalStartListeningAsync(culture);
+
+		await InternalStartListeningAsync(culture, cancellationToken);
+
 		await using (cancellationToken.Register(() =>
 		{
 			StopRecording();

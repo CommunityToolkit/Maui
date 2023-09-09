@@ -11,9 +11,10 @@ public sealed partial class SpeechToTextImplementation
 	SFSpeechAudioBufferRecognitionRequest? liveSpeechRequest;
 
 	/// <inheritdoc/>
-	public SpeechToTextState CurrentState => recognitionTask?.State == SFSpeechRecognitionTaskState.Running
-		? SpeechToTextState.Listening
-		: SpeechToTextState.Stopped;
+	public SpeechToTextState CurrentState => recognitionTask?.State is SFSpeechRecognitionTaskState.Running
+												? SpeechToTextState.Listening
+												: SpeechToTextState.Stopped;
+	
 
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()
@@ -31,11 +32,6 @@ public sealed partial class SpeechToTextImplementation
 		return ValueTask.CompletedTask;
 	}
 
-	static Task<bool> IsSpeechPermissionAuthorized()
-	{
-		return Task.FromResult(SFSpeechRecognizer.AuthorizationStatus is SFSpeechRecognizerAuthorizationStatus.Authorized);
-	}
-
 	/// <inheritdoc />
 	public Task<bool> RequestPermissions(CancellationToken cancellationToken)
 	{
@@ -46,12 +42,19 @@ public sealed partial class SpeechToTextImplementation
 		return taskResult.Task;
 	}
 
+	static Task<bool> IsSpeechPermissionAuthorized(CancellationToken cancellationToken)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		return Task.FromResult(SFSpeechRecognizer.AuthorizationStatus is SFSpeechRecognizerAuthorizationStatus.Authorized);
+	}
+
 	void StopRecording()
 	{
 		audioEngine?.InputNode.RemoveTapOnBus(new nuint(0));
 		audioEngine?.Stop();
 		liveSpeechRequest?.EndAudio();
 		recognitionTask?.Cancel();
+		OnSpeechToTextStateChanged(CurrentState);
 	}
 
 	Task InternalStopListeningAsync()

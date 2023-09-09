@@ -16,9 +16,6 @@ public sealed partial class SpeechToTextImplementation
 	IProgress<string>? recognitionProgress;
 	CultureInfo? cultureInfo;
 
-	/// <inheritdoc/>
-	public SpeechToTextState CurrentState { get; private set; }
-
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()
 	{
@@ -32,7 +29,7 @@ public sealed partial class SpeechToTextImplementation
 	}
 
 	[MemberNotNull(nameof(speechRecognizer), nameof(listener))]
-	Task InternalStartListeningAsync(CultureInfo culture)
+	Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
 	{
 		cultureInfo = culture;
 		var isSpeechRecognitionAvailable = IsSpeechRecognitionAvailable();
@@ -57,6 +54,9 @@ public sealed partial class SpeechToTextImplementation
 		speechRecognizer.SetRecognitionListener(listener);
 		speechRecognizer.StartListening(CreateSpeechIntent(cultureInfo));
 		CurrentState = SpeechToTextState.Listening;
+
+		cancellationToken.ThrowIfCancellationRequested();
+
 		return Task.CompletedTask;
 	}
 
@@ -70,7 +70,7 @@ public sealed partial class SpeechToTextImplementation
 	{
 		recognitionProgress = recognitionResult;
 		speechRecognitionListenerTaskCompletionSource = new();
-		await InternalStartListeningAsync(culture);
+		await InternalStartListeningAsync(culture, cancellationToken);
 
 		await using (cancellationToken.Register(() =>
 		{

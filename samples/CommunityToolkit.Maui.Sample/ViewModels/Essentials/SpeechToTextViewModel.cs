@@ -22,13 +22,14 @@ public partial class SpeechToTextViewModel : BaseViewModel
 
 	[ObservableProperty]
 	string? recognitionText = "Welcome to .NET MAUI Community Toolkit!";
-	
+
 	public SpeechToTextViewModel(ITextToSpeech textToSpeech, ISpeechToText speechToText)
 	{
 		this.textToSpeech = textToSpeech;
 		this.speechToText = speechToText;
 
 		Locales.CollectionChanged += HandleLocalesCollectionChanged;
+		this.speechToText.RecognitionResultCompleted += HandleRecognitionResultCompleted;
 	}
 
 	public ObservableCollection<Locale> Locales { get; } = new();
@@ -99,7 +100,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 			RecognitionText = string.Empty;
 		}
 	}
-	
+
 	[RelayCommand]
 	async Task StartListen(CancellationToken cancellationToken)
 	{
@@ -114,32 +115,39 @@ public partial class SpeechToTextViewModel : BaseViewModel
 
 		RecognitionText = beginSpeakingPrompt;
 
-		await speechToText.StartListeningAsync(CultureInfo.GetCultureInfo(CurrentLocale?.Language ?? defaultLanguage), cancellationToken);
-		speechToText.RecognitionResultUpdated += SpeechToTextOnRecognitionResultUpdated;
-		speechToText.RecognitionResultCompleted += SpeechToTextOnRecognitionResultCompleted;
-		
+		await speechToText.StartListenAsync(CultureInfo.GetCultureInfo(CurrentLocale?.Language ?? defaultLanguage), cancellationToken);
+
+		speechToText.StateChanged += HandleSpeechToTextStateChanged;
+		speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
+
 		if (RecognitionText is beginSpeakingPrompt)
 		{
 			RecognitionText = string.Empty;
 		}
 	}
-	
+
 	[RelayCommand]
-	async Task StopListen(CancellationToken cancellationToken)
+	Task StopListen(CancellationToken cancellationToken)
 	{
-		speechToText.RecognitionResultUpdated -= SpeechToTextOnRecognitionResultUpdated;
-		speechToText.RecognitionResultCompleted -= SpeechToTextOnRecognitionResultCompleted;
-		await speechToText.StopListeningAsync( cancellationToken);
+		speechToText.RecognitionResultUpdated -= HandleRecognitionResultUpdated;
+		speechToText.RecognitionResultCompleted -= HandleRecognitionResultCompleted;
+
+		return speechToText.StopListenAsync(cancellationToken);
 	}
 
-	void SpeechToTextOnRecognitionResultUpdated(object? sender, OnSpeechToTextRecognitionResultUpdated e)
+	void HandleRecognitionResultUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs e)
 	{
 		RecognitionText += e.RecognitionResult;
 	}
 
-	void SpeechToTextOnRecognitionResultCompleted(object? sender, OnSpeechToTextRecognitionResultCompleted e)
+	void HandleRecognitionResultCompleted(object? sender, SpeechToTextRecognitionResultCompletedEventArgs e)
 	{
 		RecognitionText = e.RecognitionResult;
+	}
+
+	async void HandleSpeechToTextStateChanged(object? sender, SpeechToTextStateChangedEventArgs e)
+	{
+		await Toast.Make($"State Changed: {e.State}").Show(CancellationToken.None);
 	}
 
 	void HandleLocalesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

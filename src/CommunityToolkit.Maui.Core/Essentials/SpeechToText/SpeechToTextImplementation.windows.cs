@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Threading;
 using Microsoft.Maui.ApplicationModel;
 using Windows.Globalization;
 using Windows.Media.SpeechRecognition;
@@ -27,13 +28,13 @@ public sealed partial class SpeechToTextImplementation
 	/// <inheritdoc />
 	public async ValueTask DisposeAsync()
 	{
-		await StopRecording();
+		await StopRecording(CancellationToken.None);
 
 		speechRecognizer?.Dispose();
 		speechRecognizer = null;
 	}
 
-	async Task InternalStartListeningAsync(CultureInfo culture)
+	async Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
 	{
 		await Initialize(culture);
 		speechRecognizer.ContinuousRecognitionSession.AutoStopSilenceTimeout = TimeSpan.MaxValue;
@@ -74,9 +75,9 @@ public sealed partial class SpeechToTextImplementation
 		OnRecognitionResultUpdated(args.Result.Text);
 	}
 
-	async Task InternalStopListeningAsync()
+	async Task InternalStopListeningAsync(CancellationToken cancellationToken)
 	{
-		await StopRecording();
+		await StopRecording(cancellationToken);
 	}
 
 	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
@@ -87,14 +88,14 @@ public sealed partial class SpeechToTextImplementation
 
 		await using (cancellationToken.Register(async () =>
 		{
-			await StopRecording();
+			await StopRecording(cancellationToken);
 		}))
 		{
 			return await speechRecognitionTaskCompletionSource.Task;
 		}
 	}
 
-	async Task StopRecording()
+	async Task StopRecording(CancellationToken cancellationToken)
 	{
 		try
 		{
@@ -102,7 +103,7 @@ public sealed partial class SpeechToTextImplementation
 			{
 				speechRecognizer.ContinuousRecognitionSession.ResultGenerated -= ResultGenerated;
 				speechRecognizer.ContinuousRecognitionSession.Completed -= OnCompleted;
-				await speechRecognizer.ContinuousRecognitionSession.StopAsync();
+				await speechRecognizer.ContinuousRecognitionSession.StopAsync().WaitAsync(cancellationToken);
 			}
 		}
 		catch
@@ -113,10 +114,10 @@ public sealed partial class SpeechToTextImplementation
 
 
 	[MemberNotNull(nameof(recognitionText), nameof(speechRecognizer))]
-	async Task Initialize(CultureInfo culture)
+	async Task Initialize(CultureInfo culture, CancellationToken cancellationToken)
 	{
 		recognitionText = string.Empty;
 		speechRecognizer = new SpeechRecognizer(new Language(culture.IetfLanguageTag));
-		await speechRecognizer.CompileConstraintsAsync();
+		await speechRecognizer.CompileConstraintsAsync().WaitAsync(cancellationToken);
 	}
 }

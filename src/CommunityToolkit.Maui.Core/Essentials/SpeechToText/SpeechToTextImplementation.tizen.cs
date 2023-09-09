@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Threading;
 using Tizen.Uix.Stt;
 
 namespace CommunityToolkit.Maui.Media;
@@ -112,14 +113,14 @@ public sealed partial class SpeechToTextImplementation
 	}
 
 	[MemberNotNull(nameof(sttClient))]
-	Task<bool> Initialize()
+	Task<bool> Initialize(CancellationToken cancellationToken)
 	{
 		if (tcsInitialize != null && sttClient != null)
 		{
 			return tcsInitialize.Task;
 		}
 
-		tcsInitialize = new TaskCompletionSource<bool>();
+		tcsInitialize = new TaskCompletionSource<bool>(cancellationToken);
 		sttClient = new SttClient();
 
 		sttClient.StateChanged += (s, e) =>
@@ -138,12 +139,14 @@ public sealed partial class SpeechToTextImplementation
 		{
 			taskResult?.TrySetException(new Exception("STT is not available - " + ex));
 		}
+
 		return tcsInitialize.Task;
 	}
 
 	async Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
 	{
-		await Initialize();
+		await Initialize(cancellationToken);
+
 		sttClient.ErrorOccurred += OnErrorOccurred;
 		sttClient.RecognitionResult += OnRecognitionResult;
 
@@ -152,6 +155,8 @@ public sealed partial class SpeechToTextImplementation
 			: RecognitionType.Free;
 
 		sttClient.Start(defaultSttEngineLocale, recognitionType);
+
+		cancellationToken.ThrowIfCancellationRequested();
 	}
 
 	Task InternalStopListeningAsync(CancellationToken cancellationToken)

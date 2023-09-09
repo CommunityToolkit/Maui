@@ -15,7 +15,9 @@ class SpeechToTextImplementationMock : ISpeechToText
 		throw new NotImplementedException();
 	}
 
-	public event EventHandler<OnSpeechToTextRecognitionResultCompleted>? RecognitionResultCompleted;
+	public event EventHandler<SpeechToTextStateChangedEventArgs>? StateChanged;
+	public event EventHandler<SpeechToTextRecognitionResultUpdatedEventArgs>? RecognitionResultUpdated;
+	public event EventHandler<SpeechToTextRecognitionResultCompletedEventArgs>? RecognitionResultCompleted;
 
 	public Task<bool> RequestPermissions(CancellationToken cancellationToken)
 	{
@@ -29,17 +31,15 @@ class SpeechToTextImplementationMock : ISpeechToText
 		throw new NotImplementedException();
 	}
 
-	public Task StartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
+	public Task StartListenAsync(CultureInfo culture, CancellationToken cancellationToken)
 	{
 		throw new NotImplementedException();
 	}
 
-	public Task StopListeningAsync(CancellationToken cancellationToken)
+	public Task StopListenAsync(CancellationToken cancellationToken)
 	{
 		throw new NotImplementedException();
 	}
-
-	public event EventHandler<OnSpeechToTextRecognitionResultUpdated>? RecognitionResultUpdated;
 
 	public void OnRecognitionResultUpdated(string recognitionResult)
 	{
