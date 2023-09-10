@@ -206,7 +206,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	{
 		get
 		{
-			if (resources != null)
+			if (resources is not null)
 			{
 				return resources;
 			}
