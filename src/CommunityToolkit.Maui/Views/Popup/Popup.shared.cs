@@ -230,7 +230,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 
 			resources = value;
 			OnResourcesChanged(value);
-			if (resources != null)
+			if (resources is not null)
 			{
 				((IResourceDictionary)resources).ValuesChanged += OnResourcesChanged;
 			}
