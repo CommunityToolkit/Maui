@@ -56,7 +56,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	TaskCompletionSource<object?> resultTaskCompletionSource = new();
 	Window? window;
 	ResourceDictionary? resources;
-	bool IResourcesProvider.IsResourcesCreated => resources != null;
+	bool IResourcesProvider.IsResourcesCreated => resources is not null;
 
 	/// <summary>
 	/// Instantiates a new instance of <see cref="Popup"/>.
