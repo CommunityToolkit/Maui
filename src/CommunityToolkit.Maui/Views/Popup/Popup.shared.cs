@@ -374,7 +374,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 
 	internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
 	{
-		if (values == null)
+		if (values is null)
 		{
 			return;
 		}
