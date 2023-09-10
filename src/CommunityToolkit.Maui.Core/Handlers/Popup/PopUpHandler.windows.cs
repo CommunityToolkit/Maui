@@ -95,7 +95,11 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 	/// <inheritdoc/>
 	protected override void DisconnectHandler(Popup platformView)
 	{
-		ArgumentNullException.ThrowIfNull(VirtualView.Parent);
+		if (VirtualView.Parent is null)
+		{
+			return;
+		}
+
 		ArgumentNullException.ThrowIfNull(VirtualView.Handler?.MauiContext);
 		var parent = VirtualView.Parent.ToPlatform(VirtualView.Handler.MauiContext);
 		parent.IsHitTestVisible = true;

@@ -228,6 +228,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	{
 		await OnClosed(result, false);
 		resultTaskCompletionSource.TrySetResult(result);
+		CleanUp();
 	}
 
 	/// <summary>
@@ -248,10 +249,9 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	protected virtual async Task OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup)
 	{
 		((IPopup)this).OnClosed(result);
-
 		await popupDismissedTaskCompletionSource.Task;
-
 		dismissWeakEventManager.HandleEvent(this, new PopupClosedEventArgs(result, wasDismissedByTappingOutsideOfPopup), nameof(Closed));
+		CleanUp();
 	}
 
 	/// <summary>
@@ -261,6 +261,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	{
 		await OnClosed(ResultWhenUserTapsOutsideOfPopup, true);
 		resultTaskCompletionSource.TrySetResult(ResultWhenUserTapsOutsideOfPopup);
+		CleanUp();
 	}
 
 	/// <summary>
@@ -286,6 +287,19 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	static void OnColorChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		ArgumentNullException.ThrowIfNull(newValue);
+	}
+
+	bool didCleanUp;
+
+	void CleanUp()
+	{
+		if (didCleanUp)
+		{
+			return;
+		}
+
+		this.Parent = null;
+		didCleanUp = true;
 	}
 
 	void IPopup.OnClosed(object? result) => Handler.Invoke(nameof(IPopup.OnClosed), result);
