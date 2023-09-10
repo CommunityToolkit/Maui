@@ -15,7 +15,7 @@ public sealed partial class SpeechToTextImplementation
 	string defaultSttEngineLocale = "ko_KR";
 
 	/// <inheritdoc/>
-	public SpeechToTextState State => sttClient?.CurrentState is Tizen.Uix.Stt.State.Recording
+	public SpeechToTextState CurrentState => sttClient?.CurrentState is Tizen.Uix.Stt.State.Recording
 		? SpeechToTextState.Listening
 		: SpeechToTextState.Stopped;
 

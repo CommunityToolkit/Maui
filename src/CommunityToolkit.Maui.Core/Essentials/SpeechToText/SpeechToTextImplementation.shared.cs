@@ -65,8 +65,8 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 		}
 
 		await InternalStartListeningAsync(culture, cancellationToken).ConfigureAwait(false);
-
 	}
+
 	/// <inheritdoc/>
 	public Task StopListenAsync(CancellationToken cancellationToken) => InternalStopListeningAsync(cancellationToken);
 
@@ -86,22 +86,6 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 	}
 
 #if !MACCATALYST && !IOS
-	Lazy<SpeechToTextState> currentStateHolder = new(default(SpeechToTextState));
-
-	/// <inheritdoc/>
-	public SpeechToTextState CurrentState
-	{
-		get => currentStateHolder.Value;
-		private set
-		{
-			if (currentStateHolder.Value != value)
-			{
-				currentStateHolder = new(value);
-				OnSpeechToTextStateChanged(value);
-			}
-		}
-	}
-
 	/// <inheritdoc/>
 	public async Task<bool> RequestPermissions(CancellationToken cancellationToken)
 	{
@@ -115,61 +99,4 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 		return status is PermissionStatus.Granted;
 	}
 #endif
-}
-
-/// <summary>
-/// <see cref="EventArgs"/> for <see cref="ISpeechToText.RecognitionResultUpdated"/>
-/// </summary>
-public class SpeechToTextRecognitionResultUpdatedEventArgs : EventArgs
-{
-	/// <summary>
-	/// Speech recognition result
-	/// </summary>
-	public string RecognitionResult { get; }
-
-	/// <summary>
-	/// Initialize a new instance of <see cref="SpeechToTextRecognitionResultUpdatedEventArgs"/>
-	/// </summary>
-	public SpeechToTextRecognitionResultUpdatedEventArgs(string recognitionResult)
-	{
-		RecognitionResult = recognitionResult;
-	}
-}
-
-/// <summary>
-/// <see cref="EventArgs"/> for <see cref="ISpeechToText.RecognitionResultCompleted"/>
-/// </summary>
-public class SpeechToTextRecognitionResultCompletedEventArgs : EventArgs
-{
-	/// <summary>
-	/// Speech recognition result
-	/// </summary>
-	public string RecognitionResult { get; }
-
-	/// <summary>
-	/// Initialize a new instance of <see cref="SpeechToTextRecognitionResultCompletedEventArgs"/>
-	/// </summary>
-	public SpeechToTextRecognitionResultCompletedEventArgs(string recognitionResult)
-	{
-		RecognitionResult = recognitionResult;
-	}
-}
-
-/// <summary>
-/// <see cref="EventArgs"/> for <see cref="ISpeechToText.StateChanged"/>
-/// </summary>
-public class SpeechToTextStateChangedEventArgs : EventArgs
-{
-	/// <summary>
-	/// Speech To Text State
-	/// </summary>
-	public SpeechToTextState State { get; }
-
-	/// <summary>
-	/// Initialize a new instance of <see cref="SpeechToTextStateChangedEventArgs"/>
-	/// </summary>
-	public SpeechToTextStateChangedEventArgs(SpeechToTextState state)
-	{
-		State = state;
-	}
 }

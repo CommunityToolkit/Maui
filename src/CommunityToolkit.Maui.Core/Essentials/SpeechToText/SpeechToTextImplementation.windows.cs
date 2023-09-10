@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Threading;
 using Microsoft.Maui.ApplicationModel;
 using Windows.Globalization;
 using Windows.Media.SpeechRecognition;
@@ -19,7 +18,7 @@ public sealed partial class SpeechToTextImplementation
 	TaskCompletionSource<string>? speechRecognitionTaskCompletionSource;
 
 	/// <inheritdoc/>
-	public SpeechToTextState State => speechRecognizer?.State switch
+	public SpeechToTextState CurrentState => speechRecognizer?.State switch
 	{
 		SpeechRecognizerState.Idle => SpeechToTextState.Stopped,
 		_ => SpeechToTextState.Listening,
@@ -101,6 +100,7 @@ public sealed partial class SpeechToTextImplementation
 		{
 			if (speechRecognizer is not null)
 			{
+				speechRecognizer.StateChanged -= SpeechRecognizer_StateChanged;
 				speechRecognizer.ContinuousRecognitionSession.ResultGenerated -= ResultGenerated;
 				speechRecognizer.ContinuousRecognitionSession.Completed -= OnCompleted;
 
@@ -122,8 +122,13 @@ public sealed partial class SpeechToTextImplementation
 	{
 		recognitionText = string.Empty;
 		speechRecognizer = new SpeechRecognizer(new Language(culture.IetfLanguageTag));
-
+		speechRecognizer.StateChanged += SpeechRecognizer_StateChanged;
 		cancellationToken.ThrowIfCancellationRequested();
 		await speechRecognizer.CompileConstraintsAsync();
+	}
+
+	void SpeechRecognizer_StateChanged(SpeechRecognizer sender, SpeechRecognizerStateChangedEventArgs args)
+	{
+		OnSpeechToTextStateChanged(CurrentState);
 	}
 }

@@ -62,19 +62,3 @@ public interface ISpeechToText : IAsyncDisposable
 	/// <returns>True if permissions granted</returns>
 	Task<bool> RequestPermissions(CancellationToken cancellationToken);
 }
-
-/// <summary>
-/// Speech To Text listening state
-/// </summary>
-public enum SpeechToTextState
-{
-	/// <summary>
-	/// Listening is active
-	/// </summary>
-	Listening,
-
-	/// <summary>
-	/// Listening is stopped
-	/// </summary>
-	Stopped
-}

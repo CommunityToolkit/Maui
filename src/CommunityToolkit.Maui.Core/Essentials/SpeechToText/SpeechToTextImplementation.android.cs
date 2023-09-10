@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Threading;
 using Android.Content;
 using Android.Runtime;
 using Android.Speech;
@@ -16,6 +15,7 @@ public sealed partial class SpeechToTextImplementation
 	TaskCompletionSource<string>? speechRecognitionListenerTaskCompletionSource;
 	IProgress<string>? recognitionProgress;
 	CultureInfo? cultureInfo;
+	SpeechToTextState currentState = SpeechToTextState.Stopped;
 
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()
@@ -178,6 +178,20 @@ public sealed partial class SpeechToTextImplementation
 			}
 
 			action.Invoke(matches[0]);
+		}
+	}
+
+	/// <inheritdoc />
+	public SpeechToTextState CurrentState
+	{
+		get => currentState;
+		private set
+		{
+			if (currentState != value)
+			{
+				currentState = value;
+				OnSpeechToTextStateChanged(currentState);
+			}
 		}
 	}
 }

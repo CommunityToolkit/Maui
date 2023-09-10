@@ -5,14 +5,19 @@ namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
 class SpeechToTextImplementationMock : ISpeechToText
 {
+	readonly string partialText;
+	readonly string finalText;
+	SpeechToTextState currentState = SpeechToTextState.Stopped;
+
+	public SpeechToTextImplementationMock(string partialText, string finalText)
+	{
+		this.partialText = partialText;
+		this.finalText = finalText;
+	}
+
 	public ValueTask DisposeAsync()
 	{
 		return ValueTask.CompletedTask;
-	}
-
-	public void OnRecognitionResultCompleted(string recognitionResult)
-	{
-		throw new NotImplementedException();
 	}
 
 	public event EventHandler<SpeechToTextStateChangedEventArgs>? StateChanged;
@@ -21,28 +26,35 @@ class SpeechToTextImplementationMock : ISpeechToText
 
 	public Task<bool> RequestPermissions(CancellationToken cancellationToken)
 	{
-		throw new NotImplementedException();
+		return Task.FromResult(true);
 	}
 
-	public SpeechToTextState CurrentState { get; }
+	public SpeechToTextState CurrentState
+	{
+		get => currentState;
+		private set
+		{
+			currentState = value;
+			StateChanged?.Invoke(this, new SpeechToTextStateChangedEventArgs(value));
+		}
+	}
 
 	Task<SpeechToTextResult> ISpeechToText.ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
 		throw new NotImplementedException();
 	}
 
-	public Task StartListenAsync(CultureInfo culture, CancellationToken cancellationToken)
+	public async Task StartListenAsync(CultureInfo culture, CancellationToken cancellationToken)
 	{
-		throw new NotImplementedException();
+		CurrentState = SpeechToTextState.Listening;
+		await Task.Delay(1000, cancellationToken);
+		RecognitionResultUpdated?.Invoke(this, new SpeechToTextRecognitionResultUpdatedEventArgs(partialText));
 	}
 
-	public Task StopListenAsync(CancellationToken cancellationToken)
+	public async Task StopListenAsync(CancellationToken cancellationToken)
 	{
-		throw new NotImplementedException();
-	}
-
-	public void OnRecognitionResultUpdated(string recognitionResult)
-	{
-		throw new NotImplementedException();
+		CurrentState = SpeechToTextState.Stopped;
+		await Task.Delay(1000, cancellationToken);
+		RecognitionResultCompleted?.Invoke(this, new SpeechToTextRecognitionResultCompletedEventArgs(finalText));
 	}
 }

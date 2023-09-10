@@ -26,4 +26,7 @@ public sealed partial class SpeechToTextImplementation
 	{
 		throw new NotSupportedException();
 	}
+
+	/// <inheritdoc />
+	public SpeechToTextState CurrentState { get; } = SpeechToTextState.Stopped;
 }
