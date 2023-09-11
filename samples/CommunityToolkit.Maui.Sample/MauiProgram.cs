@@ -115,6 +115,9 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<UserStoppedTypingBehaviorPage, UserStoppedTypingBehaviorViewModel>();
 		services.AddTransientWithShellRoute<StatusBarBehaviorPage, StatusBarBehaviorViewModel>();
 
+		// Add Camera Pages + ViewModels
+		services.AddTransientWithShellRoute<CameraViewPage, CameraViewModel>();
+
 		// Add Converters Pages + ViewModels
 		services.AddTransientWithShellRoute<BoolToObjectConverterPage, BoolToObjectConverterViewModel>();
 		services.AddTransientWithShellRoute<ByteArrayToImageSourceConverterPage, ByteArrayToImageSourceConverterViewModel>();
