@@ -16,7 +16,6 @@ public static class CameraViewExtensions
 
 	public static void UpdateAvailability(this IAvailability cameraView)
 	{
-		// TODO: Implement :)
-		cameraView.IsAvailable = true;
+		cameraView.IsAvailable = AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Video) != null;
 	}
 }
