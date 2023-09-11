@@ -59,25 +59,25 @@ public partial class CameraManager
 	{
 		ArgumentNullException.ThrowIfNull(photoOutput);
 
-		var avCapturePhotoSettings = AVCapturePhotoSettings.FromFormat(codecSettings);
-		avCapturePhotoSettings.FlashMode = flashMode;
+		var capturePhotoSettings = AVCapturePhotoSettings.FromFormat(codecSettings);
+		capturePhotoSettings.FlashMode = flashMode;
 
 		var wrapper = new AVCapturePhotoCaptureDelegateWrapper();
 
-		photoOutput.CapturePhoto(avCapturePhotoSettings, wrapper);
+		photoOutput.CapturePhoto(capturePhotoSettings, wrapper);
 
 		var result = await wrapper.Task;
-		var nsData = result.Photo.FileDataRepresentation;
+		var data = result.Photo.FileDataRepresentation;
 
-		if (nsData is null)
+		if (data is null)
 		{
 			// TODO: Pass NSError information
 			cameraView.OnMediaCapturedFailed();
 			return;
 		}
 
-		var dataBytes = new byte[nsData.Length];
-		Marshal.Copy(nsData.Bytes, dataBytes, 0, (int) nsData.Length);
+		var dataBytes = new byte[data.Length];
+		Marshal.Copy(data.Bytes, dataBytes, 0, (int) data.Length);
 
 		cameraView.OnMediaCaptured(new MemoryStream(dataBytes));
 	}
