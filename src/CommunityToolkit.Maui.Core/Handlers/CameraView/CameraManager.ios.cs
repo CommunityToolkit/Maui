@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using AVFoundation;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Core.Views.CameraView;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
 
@@ -9,8 +10,10 @@ public partial class CameraManager
 	AVCaptureSession? captureSession;
 	AVCapturePhotoOutput? photoOutput;
 
-	AVCapturePhotoSettings capturePhotoSettings = AVCapturePhotoSettings.FromFormat(new NSDictionary<NSString, NSObject>(
-		new[] { AVVideo.CodecKey }, new[] { (NSObject)new NSString("jpeg") }));
+	// TODO: Check if we really need this
+	NSDictionary<NSString, NSObject> codecSettings = new NSDictionary<NSString, NSObject>(
+		new[] { AVVideo.CodecKey }, new[] { (NSObject)new NSString("jpeg") });
+	AVCaptureFlashMode flashMode;
 
 	// IN the future change the return type to be an alias
 	public UIView CreatePlatformView()
@@ -56,11 +59,14 @@ public partial class CameraManager
 	{
 		ArgumentNullException.ThrowIfNull(photoOutput);
 
+		var avCapturePhotoSettings = AVCapturePhotoSettings.FromFormat(codecSettings);
+		avCapturePhotoSettings.FlashMode = flashMode;
+
 		var wrapper = new AVCapturePhotoCaptureDelegateWrapper();
-		photoOutput.CapturePhoto(capturePhotoSettings, wrapper);
+
+		photoOutput.CapturePhoto(avCapturePhotoSettings, wrapper);
 
 		var result = await wrapper.Task;
-
 		var nsData = result.Photo.FileDataRepresentation;
 
 		if (nsData is null)
@@ -78,7 +84,7 @@ public partial class CameraManager
 
 	public partial void UpdateFlashMode(CameraFlashMode flashMode)
 	{
-		// TODO: Implement :)
+		this.flashMode = flashMode.ToPlatform();
 	}
 
 	protected virtual void Dispose(bool disposing)
