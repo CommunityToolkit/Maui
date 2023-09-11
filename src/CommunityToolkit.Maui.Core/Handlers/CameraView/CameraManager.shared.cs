@@ -13,6 +13,8 @@ public partial class CameraManager : IDisposable
 	readonly CameraLocation cameraLocation;
 	readonly ICameraView cameraView;
 
+	internal Action? Loaded { get; set; }
+
 	public CameraManager(IMauiContext mauiContext, CameraLocation cameraLocation, ICameraView cameraView)
 	{
 		this.mauiContext = mauiContext;

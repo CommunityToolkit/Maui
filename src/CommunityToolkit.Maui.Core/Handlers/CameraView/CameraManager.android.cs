@@ -42,8 +42,6 @@ public partial class CameraManager
 	ImageCallBack? imageCallback;
 	ICamera? camera;
 
-	internal Action? Loaded { get; set; }
-	
 	// IN the future change the return type to be an alias
 	public PreviewView CreatePlatformView()
 	{

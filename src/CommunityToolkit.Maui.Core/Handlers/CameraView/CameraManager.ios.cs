@@ -12,8 +12,6 @@ public partial class CameraManager
 	AVCapturePhotoSettings capturePhotoSettings = AVCapturePhotoSettings.FromFormat(new NSDictionary<NSString, NSObject>(
 		new[] { AVVideo.CodecKey }, new[] { (NSObject)new NSString("jpeg") }));
 
-	internal Action? Loaded { get; set; }
-
 	// IN the future change the return type to be an alias
 	public UIView CreatePlatformView()
 	{
@@ -46,6 +44,8 @@ public partial class CameraManager
 		captureSession.AddInput(new AVCaptureDeviceInput(device, out var err));
 		captureSession.AddOutput(photoOutput);
 		captureSession.StartRunning();
+
+		Loaded?.Invoke();
 	}
 
 	protected virtual partial void PlatformDisconnect()

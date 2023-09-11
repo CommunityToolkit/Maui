@@ -1,16 +1,17 @@
-﻿using Microsoft.Maui.Handlers;
-using CommunityToolkit.Maui.Core.Primitives;
+﻿#if IOS || MACCATALYST || ANDROID
+
+using Microsoft.Maui.Handlers;
 using CommunityToolkit.Maui.Core.Views.CameraView;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
 
-public partial class CameraViewHandler : ViewHandler<ICameraView, UIView>, IDisposable
+public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>, IDisposable
 {
 	public static Action<byte[]>? Picture { get; set; }
 	
 	CameraManager? cameraManager;
 
-	public static IPropertyMapper<ICameraView, CameraViewHandler> Propertymapper = new PropertyMapper<ICameraView, CameraViewHandler>(ViewMapper)
+	public static IPropertyMapper<ICameraView, CameraViewHandler> PropertyMapper = new PropertyMapper<ICameraView, CameraViewHandler>(ViewMapper)
 	{
 		[nameof(ICameraView.CameraFlashMode)] = MapCameraFlashMode,
 		[nameof(IAvailability.IsAvailable)] = MapIsAvailable
@@ -19,10 +20,15 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, UIView>, IDisp
 	public static void MapIsAvailable(CameraViewHandler handler, ICameraView view)
 	{
 		var cameraAvailability = (IAvailability)handler.VirtualView;
+
+#if !ANDROID
 		cameraAvailability.UpdateAvailability();
+#else
+		cameraAvailability.UpdateAvailability(handler.Context);
+#endif
 	}
 
-	public static CommandMapper<ICameraView, CameraViewHandler> Commandmapper = new(ViewCommandMapper)
+	public static CommandMapper<ICameraView, CameraViewHandler> CommandMapper = new(ViewCommandMapper)
 	{
 		[nameof(ICameraView.Shutter)] = MapShutter,
 	};
@@ -37,32 +43,29 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, UIView>, IDisp
 		handler.cameraManager?.UpdateFlashMode(view.CameraFlashMode);
 	}
 
-	protected override UIView CreatePlatformView()
+	protected override NativePlatformCameraPreviewView CreatePlatformView()
 	{
 		ArgumentNullException.ThrowIfNull(MauiContext);
+		cameraManager = new(MauiContext, CameraLocation.Rear, VirtualView)
+		{
+			Loaded = () => Init(VirtualView)
+		};
+		return cameraManager.CreatePlatformView();
 
 		void Init(ICameraView view)
 		{
 			MapCameraFlashMode(this, view);
 		}
-
-		cameraManager = new(MauiContext, CameraLocation.Rear, VirtualView)
-		{
-			Loaded = () => Init(VirtualView)
-		};
-
-		return cameraManager.CreatePlatformView();
 	}
 
-
-	private protected override async void OnConnectHandler(UIView platformView)
+	private protected override async void OnConnectHandler(NativePlatformView platformView)
 	{
 		base.OnConnectHandler(platformView);
 		await cameraManager!.CheckPermissions();
 		cameraManager?.Connect();
 	}
 
-	public CameraViewHandler() : base(Propertymapper, Commandmapper)
+	public CameraViewHandler() : base(PropertyMapper, CommandMapper)
 	{
 	}
 
@@ -80,3 +83,5 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, UIView>, IDisp
 		GC.SuppressFinalize(this);
 	}
 }
+
+#endif
