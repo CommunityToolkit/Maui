@@ -9,6 +9,9 @@ public partial class CameraManager
 	AVCaptureSession? captureSession;
 	AVCapturePhotoOutput? photoOutput;
 
+	AVCapturePhotoSettings capturePhotoSettings = AVCapturePhotoSettings.FromFormat(new NSDictionary<NSString, NSObject>(
+		new[] { AVVideo.CodecKey }, new[] { (NSObject)new NSString("jpeg") }));
+
 	internal Action? Loaded { get; set; }
 
 	// IN the future change the return type to be an alias
@@ -35,7 +38,7 @@ public partial class CameraManager
 
 	protected virtual partial void PlatformConnect()
 	{
-		var device = AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Video) ?? throw new InvalidOperationException();
+		var device = AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Video) ?? throw new InvalidOperationException("There's no camera available on your device.");
 
 		ArgumentNullException.ThrowIfNull(captureSession);
 		ArgumentNullException.ThrowIfNull(photoOutput);
@@ -49,36 +52,28 @@ public partial class CameraManager
 	{
 	}
 
-	protected virtual partial void PlatformTakePicture()
+	protected virtual async partial void PlatformTakePicture()
 	{
 		ArgumentNullException.ThrowIfNull(photoOutput);
 
 		var wrapper = new AVCapturePhotoCaptureDelegateWrapper();
-		var avCapturePhotoSettings = AVCapturePhotoSettings.Create();
+		photoOutput.CapturePhoto(capturePhotoSettings, wrapper);
 
-		AVCapturePhotoSettings.FromFormat(new NSDictionary<NSString, NSObject>(new[] {AVVideo.CodecKey},
-			new[] {(NSObject) new NSString("jpeg")}));
+		var result = await wrapper.Task;
 
-		photoOutput.CapturePhoto(avCapturePhotoSettings, wrapper);
+		var nsData = result.Photo.FileDataRepresentation;
 
-		Task.Run(async () =>
+		if (nsData is null)
 		{
-			var (output, photo, error) = await wrapper.Task;
+			// TODO: Pass NSError information
+			cameraView.OnMediaCapturedFailed();
+			return;
+		}
 
-			var nsData = photo.FileDataRepresentation;
+		var dataBytes = new byte[nsData.Length];
+		Marshal.Copy(nsData.Bytes, dataBytes, 0, (int) nsData.Length);
 
-			if (nsData == null)
-			{
-				// TODO: Pass NSError information
-				cameraView.OnMediaCapturedFailed();
-				return;
-			}
-
-			var dataBytes = new byte[nsData.Length];
-			Marshal.Copy(nsData.Bytes, dataBytes, 0, (int) nsData.Length);
-
-			cameraView.OnMediaCaptured(new MemoryStream(dataBytes));
-		});
+		cameraView.OnMediaCaptured(new MemoryStream(dataBytes));
 	}
 
 	public partial void UpdateFlashMode(CameraFlashMode flashMode)
@@ -95,58 +90,66 @@ public partial class CameraManager
 		}
 	}
 
-	public class AVCapturePhotoCaptureDelegateWrapper : AVCapturePhotoCaptureDelegate
+	class AVCapturePhotoCaptureDelegateWrapper : AVCapturePhotoCaptureDelegate
 	{
-		readonly TaskCompletionSource<(AVCapturePhotoOutput Output, AVCapturePhoto Photo, NSError? Error)>
-			taskCompletionSource = new();
+		readonly TaskCompletionSource<CapturePhotoResult> taskCompletionSource = new();
 
-		public Task<(AVCapturePhotoOutput Output, AVCapturePhoto Photo, NSError? Error)> Task =>
+		public Task<CapturePhotoResult> Task =>
 			taskCompletionSource.Task;
 
 		public override void DidFinishProcessingPhoto(AVCapturePhotoOutput output, AVCapturePhoto photo, NSError? error)
 		{
-			taskCompletionSource.TrySetResult((output, photo, error));
+			taskCompletionSource.TrySetResult(new() { Output = output, Photo = photo, Error = error });
 		}
 	}
-}
 
-public class PreviewView : UIView
-{
-	public PreviewView()
+	record CapturePhotoResult
 	{
-		PreviewLayer.VideoGravity = AVLayerVideoGravity.ResizeAspectFill;
+		public required AVCapturePhotoOutput Output { get; init; }
+
+		public required AVCapturePhoto Photo { get; init; }
+
+		public NSError? Error { get; init; }
 	}
 
-	public AVCaptureVideoPreviewLayer PreviewLayer => (AVCaptureVideoPreviewLayer) Layer;
-
-	public AVCaptureSession? Session
+	class PreviewView : UIView
 	{
-		get => PreviewLayer.Session;
-		set => PreviewLayer.Session = value;
-	}
-
-	[Export("layerClass")]
-	public static ObjCRuntime.Class GetLayerClass()
-	{
-		return new ObjCRuntime.Class(typeof(AVCaptureVideoPreviewLayer));
-	}
-
-	public override void LayoutSubviews()
-	{
-		base.LayoutSubviews();
-
-		if (PreviewLayer?.Connection == null)
+		public PreviewView()
 		{
-			return;
+			PreviewLayer.VideoGravity = AVLayerVideoGravity.ResizeAspectFill;
 		}
 
-		PreviewLayer.Connection.VideoOrientation = UIDevice.CurrentDevice.Orientation switch
+		public AVCaptureVideoPreviewLayer PreviewLayer => (AVCaptureVideoPreviewLayer)Layer;
+
+		public AVCaptureSession? Session
 		{
-			UIDeviceOrientation.Portrait => AVCaptureVideoOrientation.Portrait,
-			UIDeviceOrientation.PortraitUpsideDown => AVCaptureVideoOrientation.PortraitUpsideDown,
-			UIDeviceOrientation.LandscapeLeft => AVCaptureVideoOrientation.LandscapeRight,
-			UIDeviceOrientation.LandscapeRight => AVCaptureVideoOrientation.LandscapeLeft,
-			_ => PreviewLayer.Connection.VideoOrientation
-		};
+			get => PreviewLayer.Session;
+			set => PreviewLayer.Session = value;
+		}
+
+		[Export("layerClass")]
+		public static ObjCRuntime.Class GetLayerClass()
+		{
+			return new ObjCRuntime.Class(typeof(AVCaptureVideoPreviewLayer));
+		}
+
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			if (PreviewLayer?.Connection == null)
+			{
+				return;
+			}
+
+			PreviewLayer.Connection.VideoOrientation = UIDevice.CurrentDevice.Orientation switch
+			{
+				UIDeviceOrientation.Portrait => AVCaptureVideoOrientation.Portrait,
+				UIDeviceOrientation.PortraitUpsideDown => AVCaptureVideoOrientation.PortraitUpsideDown,
+				UIDeviceOrientation.LandscapeLeft => AVCaptureVideoOrientation.LandscapeRight,
+				UIDeviceOrientation.LandscapeRight => AVCaptureVideoOrientation.LandscapeLeft,
+				_ => PreviewLayer.Connection.VideoOrientation
+			};
+		}
 	}
 }
