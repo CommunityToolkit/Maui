@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+             xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+             x:TypeArguments="viewModels:PopupStyleViewModel"
+             x:DataType="viewModels:PopupStyleViewModel"
+             x:Class="CommunityToolkit.Maui.Sample.Pages.Views.PopupStylePage"
+             Title="PopupStylePage">
+
+    <ScrollView Orientation="Vertical">
+        <StackLayout Orientation="Vertical" Spacing="5">
+            <Button
+                Text="Implicit Style"
+                BackgroundColor="Blue"
+                TextColor="White"
+                Command="{Binding DisplayPopup1Command}"/>
+            <Button
+                Text="Explicit Style"
+                BackgroundColor="Blue"
+                TextColor="White"
+                Command="{Binding DisplayPopup2Command}"/>
+            <Button
+                Text="Dynamic Style"
+                BackgroundColor="Blue"
+                TextColor="White"
+                Command="{Binding DisplayPopup3Command}"/>
+            <Button
+                Text="ApplyToDerivedTypes"
+                BackgroundColor="Blue"
+                TextColor="White"
+                Command="{Binding DisplayPopup4Command}"/>
+            <Button
+                Text="Style Inheritance"
+                BackgroundColor="Blue"
+                TextColor="White"
+                Command="{Binding DisplayPopup5Command}"/>
+            <Button
+                Text="Style Class"
+                BackgroundColor="Blue"
+                TextColor="White"
+                Command="{Binding DisplayPopup6Command}"/>
+        </StackLayout>
+    </ScrollView>
+
+</pages:BasePage>

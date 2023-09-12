@@ -65,8 +65,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	{
 		platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Popup>>(() => new(this));
 
-		var type = GetType();
-		mergedStyle = new MergedStyle(type == typeof(Popup) ? type : type.BaseType, this);
+		mergedStyle = new MergedStyle(GetType(), this);
 	}
 
 	/// <summary>

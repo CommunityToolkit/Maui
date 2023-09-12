@@ -76,6 +76,51 @@
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Maps\CommunityToolkit.Maui.Maps.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Views\Popups\ApplyToDerivedTypesPopup.xaml.cs">
+      <DependentUpon>ApplyToDerivedTypesPopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Popups\StyleInheritancePopup.xaml.cs">
+      <DependentUpon>StyleInheritancePopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Popups\ExplicitStylePopup.xaml.cs">
+      <DependentUpon>ExplicitStylePopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Popups\ImplicitStylePopup.xaml.cs">
+      <DependentUpon>ImplicitStylePopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Popups\DynamicStylePopup.xaml.cs">
+      <DependentUpon>DynamicStylePopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Popups\StyleClassPopup.xaml.cs">
+      <DependentUpon>StyleClassPopup.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <MauiXaml Update="Pages\Views\Popup\PopupStylePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\Popups\ApplyToDerivedTypesPopup.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\Popups\StyleInheritancePopup.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\Popups\ExplicitStylePopup.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\Popups\ImplicitStylePopup.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\Popups\DynamicStylePopup.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\Popups\StyleClassPopup.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+  </ItemGroup>
+
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='android'">
     <RuntimeIdentifiers>android-arm;android-arm64;android-x86;android-x64</RuntimeIdentifiers>
   </PropertyGroup>
