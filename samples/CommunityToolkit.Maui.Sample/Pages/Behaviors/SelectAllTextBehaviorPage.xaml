@@ -26,7 +26,7 @@
 
 
             <Label FontAttributes="Italic" Text="Entry without the effect, when focused no text will be selected" />
-            <Border BackgroundColor="{StaticResource SoftFrameBackgroundColor}" >
+            <Border BackgroundColor="{StaticResource SoftBorderBackgroundColor}" >
                 <Entry
 					BackgroundColor="{StaticResource PrimaryColor}"
 					PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}"
@@ -35,7 +35,7 @@
             </Border>
 
             <Label FontAttributes="Italic" Text="Entry with the effect, when focused all text will be selected" />
-            <Border BackgroundColor="{StaticResource SoftFrameBackgroundColor}" >
+            <Border BackgroundColor="{StaticResource SoftBorderBackgroundColor}" >
                 <Entry
 					BackgroundColor="{StaticResource PrimaryColor}"
 					PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}"
@@ -53,7 +53,7 @@
 				TextColor="{StaticResource DarkLabelTextColor}" />
 
             <Label FontAttributes="Italic" Text="Editor without the effect, when focused no text will be selected" />
-            <Border BackgroundColor="{StaticResource SoftFrameBackgroundColor}" >
+            <Border BackgroundColor="{StaticResource SoftBorderBackgroundColor}" >
                 <Editor PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}"
 						TextColor="{StaticResource DarkLabelTextColor}"
 						BackgroundColor="{StaticResource PrimaryColor}">
@@ -65,7 +65,7 @@
             </Border>
 
             <Label FontAttributes="Italic" Text="Editor with the effect, when focused all text will be selected" />
-            <Border BackgroundColor="{StaticResource SoftFrameBackgroundColor}" >
+            <Border BackgroundColor="{StaticResource SoftBorderBackgroundColor}" >
                 <Editor PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}"
 						TextColor="{StaticResource DarkLabelTextColor}"
 						BackgroundColor="{StaticResource PrimaryColor}">
