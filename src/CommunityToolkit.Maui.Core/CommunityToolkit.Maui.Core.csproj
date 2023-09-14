@@ -54,11 +54,6 @@
     <PackageReference Include="Microsoft.Maui.Core" Version="8.0.0-preview.7.8842" />
     <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.0-preview.7.8842" />
 
-    <PackageReference Include="MemoryAnalyzers" Version="0.1.0-beta.3">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    
     <PackageReference Include="System.Speech" Version="7.0.0" Condition="'$(TargetFramework)' == '$(NetVersion)-windows10.0.19041.0'" />
   </ItemGroup>
 
