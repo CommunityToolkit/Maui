@@ -60,7 +60,7 @@ public partial class CameraManager
 		ArgumentNullException.ThrowIfNull(photoOutput);
 
 		var capturePhotoSettings = AVCapturePhotoSettings.FromFormat(codecSettings);
-		capturePhotoSettings.FlashMode = flashMode;
+		capturePhotoSettings.FlashMode = photoOutput.SupportedFlashModes.Contains(flashMode) ? flashMode : photoOutput.SupportedFlashModes.First();
 
 		var wrapper = new AVCapturePhotoCaptureDelegateWrapper();
 
