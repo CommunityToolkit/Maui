@@ -42,8 +42,6 @@ public partial class CameraManager
 	ImageCallBack? imageCallback;
 	ICamera? camera;
 
-	internal Action? Loaded { get; set; }
-	
 	// IN the future change the return type to be an alias
 	public PreviewView CreatePlatformView()
 	{
@@ -166,5 +164,24 @@ public partial class CameraManager
 			base.OnError(exception);
 			cameraView.OnMediaCapturedFailed();
 		}
+	}
+
+	protected virtual void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			previewView?.Dispose();
+			cameraExecutor?.Dispose();
+			cameraProvider?.Dispose();
+			imageCapture?.Dispose();
+			imageCallback?.Dispose();
+			camera?.Dispose();
+		}
+	}
+
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
 	}
 }

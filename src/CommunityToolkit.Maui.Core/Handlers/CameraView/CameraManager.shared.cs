@@ -7,11 +7,13 @@ using CommunityToolkit.Maui.Core.Primitives;
 using Microsoft.Maui.ApplicationModel;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
-public partial class CameraManager
+public partial class CameraManager : IDisposable
 {
 	readonly IMauiContext mauiContext;
 	readonly CameraLocation cameraLocation;
 	readonly ICameraView cameraView;
+
+	internal Action? Loaded { get; set; }
 
 	public CameraManager(IMauiContext mauiContext, CameraLocation cameraLocation, ICameraView cameraView)
 	{
@@ -34,7 +36,7 @@ public partial class CameraManager
 	protected virtual partial void PlatformTakePicture();
 }
 
-#if NET7_0 && !ANDROID
+#if NET7_0 && !ANDROID && !IOS && !MACCATALYST
 public partial class CameraManager
 {
 	protected virtual partial void PlatformConnect() { }
@@ -42,6 +44,16 @@ public partial class CameraManager
 	protected virtual partial void PlatformTakePicture() { }
 	public partial void UpdateFlashMode(CameraFlashMode flashMode)
 	{
+	}
+
+	protected virtual void Dispose(bool disposing)
+	{
+	}
+
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
 	}
 }
 #endif

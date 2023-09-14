@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<pages:BasePage
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Views.CameraViewPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:models="clr-namespace:CommunityToolkit.Maui.Sample.Models"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+    xmlns:primitives="clr-namespace:CommunityToolkit.Maui.Core.Primitives;assembly=CommunityToolkit.Maui.Core"
+    Title="Camera View"
+    x:DataType="vm:CameraViewModel"
+    x:TypeArguments="vm:CameraViewModel"
+    Padding="0">
+    <Grid RowDefinitions="*,200,Auto" ColumnDefinitions="*,200,*">
+        <mct:CameraView x:Name="camera" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Grid.RowSpan="3" CameraFlashMode="{Binding FlashMode}"></mct:CameraView>
+        <ContentView Grid.Column="1" Grid.Row="1" ZIndex="100" BackgroundColor="#80CCCCCC" >
+            <Image x:Name="image" VerticalOptions="Fill" HorizontalOptions="Fill" />
+        </ContentView>
+
+        <HorizontalStackLayout Grid.ColumnSpan="3" Grid.Column="0" Grid.Row="2" Padding="8" Spacing="4" BackgroundColor="#80CCCCCC">
+            <Picker Title="Select a flash mode" ItemsSource="{Binding FlashModes}" SelectedItem="{Binding FlashMode}" BackgroundColor="White">
+            </Picker>
+            <Button Clicked="Shutter" Text="Shot" />
+        </HorizontalStackLayout>
+    </Grid>
+</pages:BasePage>

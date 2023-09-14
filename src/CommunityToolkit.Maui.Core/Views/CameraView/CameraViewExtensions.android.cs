@@ -11,7 +11,7 @@ public static class CameraViewExtensions
 		CameraFlashMode.Off => ImageCapture.FlashModeOff,
 		CameraFlashMode.On => ImageCapture.FlashModeOn,
 		CameraFlashMode.Auto => ImageCapture.FlashModeAuto,
-		_ => throw new NotImplementedException()
+		_ => throw new NotImplementedException(),
 	};
 
 	public static void UpdateAvailability(this IAvailability cameraView, Context context)

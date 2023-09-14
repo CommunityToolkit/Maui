@@ -10,17 +10,14 @@ public partial class CameraTestPage : ContentPage
 	{
 		InitializeComponent();
 		camera.CameraFlashMode = CameraFlashMode.On;
-#if ANDROID
-		CommunityToolkit.Maui.Core.Handlers.CameraViewHandler.Picture = (imgArr) =>
+
+		this.camera.MediaCaptured += (sender, args) =>
 		{
-			img.Dispatcher.Dispatch(() =>
+			Dispatcher.Dispatch(() =>
 			{
-				img.Source = ImageSource.FromStream(() => new MemoryStream(imgArr));
+				img.Source = ImageSource.FromStream(() => args.Media);
 			});
 		};
-
-#endif
-
 
 	}
 
