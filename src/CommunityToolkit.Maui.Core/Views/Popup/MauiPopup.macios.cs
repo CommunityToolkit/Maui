@@ -95,10 +95,50 @@ public class MauiPopup : UIViewController
 		_ = View ?? throw new InvalidOperationException($"{nameof(View)} cannot be null.");
 		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null.");
 
-		var rootViewController = WindowStateManager.Default.GetCurrentUIViewController() ?? throw new InvalidOperationException($"{nameof(PageHandler.ViewController)} cannot be null.");
+		UIViewController? rootViewController;
+
+#if MACCATALYST
+		var popupParentElementUIViewController = GetUIViewControllerHostingPopupParentElement(element);
+		rootViewController = popupParentElementUIViewController ?? WindowStateManager.Default.GetCurrentUIViewController() ?? throw new InvalidOperationException($"{nameof(PageHandler.ViewController)} cannot be null.");
+#else
+		rootViewController = WindowStateManager.Default.GetCurrentUIViewController() ?? throw new InvalidOperationException($"{nameof(PageHandler.ViewController)} cannot be null.");
+#endif
+
 		ViewController ??= rootViewController;
 		SetDimmingBackgroundEffect();
 	}
+
+#if MACCATALYST
+	/// <summary>
+	/// The <see cref="IPopup"/> is associated to a view (e.g. ContentPage). Use this method to locate the UIViewController in the native application that is hosting that view.
+	/// </summary>
+	/// <param name="element">An instance of <see cref="IPopup"/>.</param>
+	/// <returns>The UIViewController that is hosting the <i>element.Parent</i> view or <i>null</i> if UIViewController cannot be located.</returns>
+	UIViewController? GetUIViewControllerHostingPopupParentElement(IPopup element)
+	{
+		var scenes = UIApplication.SharedApplication.ConnectedScenes.OfType<UIWindowScene>().ToList();
+
+		foreach (var scene in scenes)
+		{
+			foreach (var window in scene.Windows)
+			{
+				if (window.RootViewController is not Microsoft.Maui.Platform.ContainerViewController rootViewController)
+				{
+					continue;
+				}
+
+				var isViewMatching = rootViewController?.CurrentView == element.Parent;
+
+				if (isViewMatching)
+				{
+					return window.RootViewController;
+				}
+			}
+		}
+
+		return null;
+	}
+#endif
 
 	void SetDimmingBackgroundEffect()
 	{
