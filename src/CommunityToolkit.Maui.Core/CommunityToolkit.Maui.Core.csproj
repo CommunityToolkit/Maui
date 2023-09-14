@@ -51,10 +51,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Maui.Core" Version="8.0.0-preview.7.8842" />
-    <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.0-preview.7.8842" />
+    <PackageReference Include="Microsoft.Maui.Core" Version="8.0.0-rc.1.9171" />
+    <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.0-rc.1.9171" />
 
     <PackageReference Include="System.Speech" Version="7.0.0" Condition="'$(TargetFramework)' == '$(NetVersion)-windows10.0.19041.0'" />
+
+    <PackageReference Include="System.Speech" Version="8.0.0-rc.1.23419.4" />
   </ItemGroup>
 
 </Project>

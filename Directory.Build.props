@@ -7,7 +7,7 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <NoWarn>NETSDK1023</NoWarn>
+    <NoWarn>NETSDK1023;NU1605</NoWarn>
     <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
