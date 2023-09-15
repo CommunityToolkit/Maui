@@ -64,4 +64,10 @@
     <ProjectReference Include="..\..\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj" />
     <ProjectReference Include="..\..\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <MauiXaml Update="Tests\UITests\StatusBarTestPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+  </ItemGroup>
 </Project>
