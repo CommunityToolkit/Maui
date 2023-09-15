@@ -55,6 +55,13 @@ public class RoundedView : UIView
 		Layer.MasksToBounds = true;
 	}
 
+	/// <inheritdoc />
+	public override void LayoutSubviews()
+	{
+		base.LayoutSubviews();
+		Draw(Frame);
+	}
+
 	static CGPath? GetRoundedPath(CGRect rect, NFloat left, NFloat top, NFloat right, NFloat bottom)
 	{
 		var path = new UIBezierPath();
