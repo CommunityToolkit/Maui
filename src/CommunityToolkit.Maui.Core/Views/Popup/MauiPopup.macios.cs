@@ -116,7 +116,7 @@ public class MauiPopup : UIViewController
 	/// <returns>The UIViewController that is hosting the <i>element.Parent</i> view or <i>null</i> if UIViewController cannot be located.</returns>
 	UIViewController? GetUIViewControllerHostingPopupParentElement(IPopup element)
 	{
-		var scenes = UIApplication.SharedApplication.ConnectedScenes.OfType<UIWindowScene>().ToList();
+		var scenes = UIApplication.SharedApplication.ConnectedScenes.OfType<UIWindowScene>();
 
 		foreach (var scene in scenes)
 		{
