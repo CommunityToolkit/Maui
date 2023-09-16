@@ -8,13 +8,12 @@ namespace CommunityToolkit.Maui.Media;
 /// <inheritdoc />
 public sealed partial class SpeechToTextImplementation
 {
-	IProgress<string>? recognitionProgress;
-	TaskCompletionSource<string>? getRecognitionTaskCompletionSource;
-
-	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest))]
+	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest), nameof(getRecognitionTaskCompletionSource))]
 	Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
 	{
 		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(culture.Name));
+
+		ResetGetRecognitionTaskCompletionSource(cancellationToken);
 
 		if (!speechRecognizer.Available)
 		{
@@ -67,7 +66,7 @@ public sealed partial class SpeechToTextImplementation
 			if (err is not null)
 			{
 				StopRecording();
-				getRecognitionTaskCompletionSource?.TrySetException(new Exception(err.LocalizedDescription));
+				getRecognitionTaskCompletionSource.TrySetException(new Exception(err.LocalizedDescription));
 			}
 			else
 			{
@@ -76,7 +75,7 @@ public sealed partial class SpeechToTextImplementation
 					currentIndex = 0;
 					StopRecording();
 					OnRecognitionResultCompleted(result.BestTranscription.FormattedString);
-					getRecognitionTaskCompletionSource?.TrySetResult(result.BestTranscription.FormattedString);
+					getRecognitionTaskCompletionSource.TrySetResult(result.BestTranscription.FormattedString);
 				}
 				else
 				{
@@ -99,21 +98,5 @@ public sealed partial class SpeechToTextImplementation
 		cancellationToken.ThrowIfCancellationRequested();
 
 		return Task.CompletedTask;
-	}
-
-
-	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
-	{
-		recognitionProgress = recognitionResult;
-		getRecognitionTaskCompletionSource ??= new TaskCompletionSource<string>();
-		await InternalStartListeningAsync(culture, cancellationToken);
-		await using (cancellationToken.Register(() =>
-		             {
-			             StopRecording();
-			             getRecognitionTaskCompletionSource.TrySetCanceled();
-		             }))
-		{
-			return await getRecognitionTaskCompletionSource.Task;
-		}
 	}
 }

@@ -38,6 +38,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 		this.speechToText = speechToText;
 
 		Locales.CollectionChanged += HandleLocalesCollectionChanged;
+		this.speechToText.StateChanged += HandleSpeechToTextStateChanged;
 		this.speechToText.RecognitionResultCompleted += HandleRecognitionResultCompleted;
 	}
 
@@ -139,7 +140,6 @@ public partial class SpeechToTextViewModel : BaseViewModel
 
 		await speechToText.StartListenAsync(CultureInfo.GetCultureInfo(CurrentLocale?.Language ?? defaultLanguage), cancellationToken);
 
-		speechToText.StateChanged += HandleSpeechToTextStateChanged;
 		speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
 
 		if (RecognitionText is beginSpeakingPrompt)
@@ -156,7 +156,6 @@ public partial class SpeechToTextViewModel : BaseViewModel
 		CanStopListenExecute = false;
 
 		speechToText.RecognitionResultUpdated -= HandleRecognitionResultUpdated;
-		speechToText.RecognitionResultCompleted -= HandleRecognitionResultCompleted;
 
 		return speechToText.StopListenAsync(cancellationToken);
 	}

@@ -16,7 +16,7 @@ public sealed partial class SpeechToTextImplementation
 	IProgress<string>? recognitionProgress;
 	CultureInfo? cultureInfo;
 	SpeechToTextState currentState = SpeechToTextState.Stopped;
-	
+
 	/// <inheritdoc />
 	public SpeechToTextState CurrentState
 	{
@@ -34,34 +34,45 @@ public sealed partial class SpeechToTextImplementation
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()
 	{
+		speechRecognitionListenerTaskCompletionSource?.TrySetCanceled();
+
 		listener?.Dispose();
 		speechRecognizer?.Dispose();
 
 		listener = null;
 		speechRecognizer = null;
+		speechRecognitionListenerTaskCompletionSource = null;
 
 		return ValueTask.CompletedTask;
 	}
-	
+
 	static Intent CreateSpeechIntent(CultureInfo culture)
 	{
 		var intent = new Intent(RecognizerIntent.ActionRecognizeSpeech);
 		intent.PutExtra(RecognizerIntent.ExtraLanguagePreference, Java.Util.Locale.Default);
-
-		var javaLocale = Java.Util.Locale.ForLanguageTag(culture.Name);
-		intent.PutExtra(RecognizerIntent.ExtraLanguage, javaLocale);
 		intent.PutExtra(RecognizerIntent.ExtraLanguageModel, RecognizerIntent.LanguageModelFreeForm);
 		intent.PutExtra(RecognizerIntent.ExtraCallingPackage, Application.Context.PackageName);
 		intent.PutExtra(RecognizerIntent.ExtraPartialResults, true);
+
+		var javaLocale = Java.Util.Locale.ForLanguageTag(culture.Name);
+		intent.PutExtra(RecognizerIntent.ExtraLanguage, javaLocale);
 
 		return intent;
 	}
 
 	static bool IsSpeechRecognitionAvailable() => SpeechRecognizer.IsRecognitionAvailable(Application.Context);
 
-	[MemberNotNull(nameof(speechRecognizer), nameof(listener))]
+	[MemberNotNull(nameof(speechRecognizer), nameof(listener), nameof(speechRecognitionListenerTaskCompletionSource))]
 	Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
 	{
+		speechRecognitionListenerTaskCompletionSource?.TrySetCanceled(cancellationToken);
+		speechRecognitionListenerTaskCompletionSource = new();
+		cancellationToken.Register(() =>
+		{
+			StopRecording();
+			speechRecognitionListenerTaskCompletionSource.TrySetCanceled(cancellationToken);
+		});
+
 		cultureInfo = culture;
 		var isSpeechRecognitionAvailable = IsSpeechRecognitionAvailable();
 		if (!isSpeechRecognitionAvailable)
@@ -100,22 +111,15 @@ public sealed partial class SpeechToTextImplementation
 	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
 		recognitionProgress = recognitionResult;
-		speechRecognitionListenerTaskCompletionSource = new();
+
 		await InternalStartListeningAsync(culture, cancellationToken);
 
-		await using (cancellationToken.Register(() =>
-		{
-			StopRecording();
-			speechRecognitionListenerTaskCompletionSource.TrySetCanceled();
-		}))
-		{
-			return await speechRecognitionListenerTaskCompletionSource.Task;
-		}
+		return await speechRecognitionListenerTaskCompletionSource.Task.WaitAsync(cancellationToken);
 	}
 
 	void HandleListenerError(SpeechRecognizerError error)
 	{
-		speechRecognitionListenerTaskCompletionSource?.TrySetException(new Exception("Failure in speech engine - " + error));
+		speechRecognitionListenerTaskCompletionSource?.TrySetException(new Exception($"Failure in speech engine - {error}"));
 	}
 
 	void HandleListenerPartialResults(string sentence)

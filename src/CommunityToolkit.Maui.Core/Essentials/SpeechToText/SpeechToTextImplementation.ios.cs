@@ -8,13 +8,11 @@ namespace CommunityToolkit.Maui.Media;
 /// <inheritdoc />
 public sealed partial class SpeechToTextImplementation
 {
-	IProgress<string>? recognitionProgress;
-	TaskCompletionSource<string>? getRecognitionTaskCompletionSource;
-
-	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest))]
+	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest), nameof(getRecognitionTaskCompletionSource))]
 	Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
 	{
-		getRecognitionTaskCompletionSource = new TaskCompletionSource<string>(cancellationToken);
+		ResetGetRecognitionTaskCompletionSource(cancellationToken);
+
 		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(culture.Name));
 
 		if (!speechRecognizer.Available)
@@ -32,10 +30,7 @@ public sealed partial class SpeechToTextImplementation
 
 		var node = audioEngine.InputNode;
 		var recordingFormat = node.GetBusOutputFormat(0);
-		node.InstallTapOnBus(0, 1024, recordingFormat, (buffer, _) =>
-		{
-			liveSpeechRequest.Append(buffer);
-		});
+		node.InstallTapOnBus(0, 1024, recordingFormat, (buffer, _) => liveSpeechRequest.Append(buffer));
 
 		audioEngine.Prepare();
 		audioEngine.StartAndReturnError(out var error);
@@ -84,22 +79,5 @@ public sealed partial class SpeechToTextImplementation
 		cancellationToken.ThrowIfCancellationRequested();
 
 		return Task.CompletedTask;
-	}
-
-	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
-	{
-		recognitionProgress = recognitionResult;
-		getRecognitionTaskCompletionSource ??= new TaskCompletionSource<string>();
-
-		await InternalStartListeningAsync(culture, cancellationToken);
-
-		await using (cancellationToken.Register(() =>
-		{
-			StopRecording();
-			getRecognitionTaskCompletionSource.TrySetCanceled();
-		}))
-		{
-			return await getRecognitionTaskCompletionSource.Task;
-		}
 	}
 }

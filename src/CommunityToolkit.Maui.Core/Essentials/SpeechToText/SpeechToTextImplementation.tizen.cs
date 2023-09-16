@@ -53,7 +53,9 @@ public sealed partial class SpeechToTextImplementation
 	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
 		recognitionProgress = recognitionResult;
-		taskResult ??= new TaskCompletionSource<string>();
+		
+		taskResult.TrySetCanceled(cancellationToken);
+		taskResult = new TaskCompletionSource<string>();
 
 		await InternalStartListeningAsync(culture, cancellationToken);
 
@@ -64,10 +66,10 @@ public sealed partial class SpeechToTextImplementation
 				StopRecording(sttClient);
 			}
 
-			taskResult.TrySetCanceled();
+			taskResult.TrySetCanceled(cancellationToken);
 		}))
 		{
-			return await taskResult.Task;
+			return await taskResult.Task.WaitAsync(cancellationToken);
 		}
 	}
 
@@ -117,7 +119,7 @@ public sealed partial class SpeechToTextImplementation
 	{
 		if (tcsInitialize != null && sttClient != null)
 		{
-			return tcsInitialize.Task;
+			return tcsInitialize.Task.WaitAsync(cancellationToken);
 		}
 
 		tcsInitialize = new TaskCompletionSource<bool>(cancellationToken);
@@ -140,7 +142,7 @@ public sealed partial class SpeechToTextImplementation
 			taskResult?.TrySetException(new Exception("STT is not available - " + ex));
 		}
 
-		return tcsInitialize.Task;
+		return tcsInitialize.Task.WaitAsync(cancellationToken);
 	}
 
 	async Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)

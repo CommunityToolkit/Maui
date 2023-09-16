@@ -89,7 +89,7 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 	/// <inheritdoc/>
 	public async Task<bool> RequestPermissions(CancellationToken cancellationToken)
 	{
-		var status = await Permissions.RequestAsync<Permissions.Microphone>().ConfigureAwait(false);
+		var status = await Permissions.RequestAsync<Permissions.Microphone>().WaitAsync(cancellationToken).ConfigureAwait(false);
 		return status is PermissionStatus.Granted;
 	}
 
