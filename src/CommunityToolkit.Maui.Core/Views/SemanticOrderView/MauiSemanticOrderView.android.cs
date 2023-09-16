@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 public class MauiSemanticOrderView : ContentViewGroup
 {
 	ISemanticOrderView? virtualView;
-	
+
 	/// <summary>
 	/// Initialize <see cref="MauiSemanticOrderView"/>
 	/// </summary>

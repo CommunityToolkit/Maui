@@ -6,15 +6,15 @@ namespace CommunityToolkit.Maui.Media;
 public class SpeechToTextStateChangedEventArgs : EventArgs
 {
 	/// <summary>
-	/// Speech To Text State
-	/// </summary>
-	public SpeechToTextState State { get; }
-
-	/// <summary>
 	/// Initialize a new instance of <see cref="SpeechToTextStateChangedEventArgs"/>
 	/// </summary>
 	public SpeechToTextStateChangedEventArgs(SpeechToTextState state)
 	{
 		State = state;
 	}
+
+	/// <summary>
+	/// Speech To Text State
+	/// </summary>
+	public SpeechToTextState State { get; }
 }

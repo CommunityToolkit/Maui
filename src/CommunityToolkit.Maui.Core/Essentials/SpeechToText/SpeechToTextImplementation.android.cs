@@ -45,7 +45,6 @@ public sealed partial class SpeechToTextImplementation
 			throw new FeatureNotSupportedException("Speech recognizer is not available on this device");
 		}
 
-
 		listener = new SpeechRecognitionListener
 		{
 			Error = HandleListenerError,

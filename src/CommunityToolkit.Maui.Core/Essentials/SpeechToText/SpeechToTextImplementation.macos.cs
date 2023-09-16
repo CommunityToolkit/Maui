@@ -15,7 +15,7 @@ public sealed partial class SpeechToTextImplementation
 	Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
 	{
 		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(culture.Name));
-		
+
 		if (!speechRecognizer.Available)
 		{
 			throw new ArgumentException("Speech recognizer is not available");

@@ -52,7 +52,7 @@ public class SpeechToTextTests
 		await SpeechToText.StopListenAsync(CancellationToken.None);
 		SpeechToText.Default.CurrentState.Should().Be(SpeechToTextState.Stopped);
 		SpeechToText.Default.StateChanged -= OnStateChanged;
-		void OnStateChanged (object? sender, SpeechToTextStateChangedEventArgs args)
+		void OnStateChanged(object? sender, SpeechToTextStateChangedEventArgs args)
 		{
 			testOutputHelper.WriteLine(args.State.ToString());
 		};
@@ -75,7 +75,7 @@ public class SpeechToTextTests
 		SpeechToText.Default.RecognitionResultCompleted -= OnRecognitionTextCompleted;
 		currentPartialText.Should().Be(expectedPartialText);
 		currentFinalText.Should().Be(expectedFinalText);
-		
+
 		void OnRecognitionTextUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs args)
 		{
 			currentPartialText = args.RecognitionResult;

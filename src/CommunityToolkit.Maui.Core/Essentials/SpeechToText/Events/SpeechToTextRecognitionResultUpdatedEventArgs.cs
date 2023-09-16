@@ -6,15 +6,15 @@ namespace CommunityToolkit.Maui.Media;
 public class SpeechToTextRecognitionResultUpdatedEventArgs : EventArgs
 {
 	/// <summary>
-	/// Speech recognition result
-	/// </summary>
-	public string RecognitionResult { get; }
-
-	/// <summary>
 	/// Initialize a new instance of <see cref="SpeechToTextRecognitionResultUpdatedEventArgs"/>
 	/// </summary>
 	public SpeechToTextRecognitionResultUpdatedEventArgs(string recognitionResult)
 	{
 		RecognitionResult = recognitionResult;
 	}
+
+	/// <summary>
+	/// Speech recognition result
+	/// </summary>
+	public string RecognitionResult { get; }
 }
