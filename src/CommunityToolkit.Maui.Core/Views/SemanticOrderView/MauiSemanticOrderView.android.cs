@@ -9,7 +9,11 @@ namespace CommunityToolkit.Maui.Core.Views;
 public class MauiSemanticOrderView : ContentViewGroup
 {
 	ISemanticOrderView? virtualView;
-
+	
+	/// <summary>
+	/// Initialize <see cref="MauiSemanticOrderView"/>
+	/// </summary>
+	/// <param name="context">Android Context</param>
 	public MauiSemanticOrderView(Context context) : base(context)
 	{
 	}
@@ -61,6 +65,7 @@ public class MauiSemanticOrderView : ContentViewGroup
 		}
 	}
 
+	/// <inheritdoc />
 	protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 	{
 		UpdateViewOrder();
