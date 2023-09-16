@@ -35,7 +35,10 @@ public sealed partial class SpeechToTextImplementation
 
 	async Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
 	{
+		ResetSpeechRecognitionTaskCompletionSource(cancellationToken);
+
 		await Initialize(culture, cancellationToken);
+
 		speechRecognizer.ContinuousRecognitionSession.AutoStopSilenceTimeout = TimeSpan.MaxValue;
 		speechRecognizer.ContinuousRecognitionSession.ResultGenerated += ResultGenerated;
 		speechRecognizer.ContinuousRecognitionSession.Completed += OnCompleted;
@@ -81,17 +84,12 @@ public sealed partial class SpeechToTextImplementation
 
 	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
-		speechRecognitionTaskCompletionSource = new();
+		ResetSpeechRecognitionTaskCompletionSource(cancellationToken);
+
 		recognitionProgress = recognitionResult;
 		await StartListenAsync(culture, cancellationToken);
 
-		await using (cancellationToken.Register(async () =>
-		{
-			await StopRecording(cancellationToken);
-		}))
-		{
-			return await speechRecognitionTaskCompletionSource.Task;
-		}
+		return await speechRecognitionTaskCompletionSource.Task.WaitAsync(cancellationToken);
 	}
 
 	async Task StopRecording(CancellationToken cancellationToken)
@@ -112,8 +110,19 @@ public sealed partial class SpeechToTextImplementation
 		{
 			// ignored. Recording may be already stopped
 		}
+	}
 
-		cancellationToken.ThrowIfCancellationRequested();
+	[MemberNotNull(nameof(speechRecognitionTaskCompletionSource))]
+	void ResetSpeechRecognitionTaskCompletionSource(CancellationToken token)
+	{
+		speechRecognitionTaskCompletionSource?.TrySetCanceled(token);
+		speechRecognitionTaskCompletionSource = new();
+
+		token.Register(async () =>
+		{
+			await StopRecording(token);
+			speechRecognitionTaskCompletionSource.TrySetCanceled(token);
+		});
 	}
 
 
