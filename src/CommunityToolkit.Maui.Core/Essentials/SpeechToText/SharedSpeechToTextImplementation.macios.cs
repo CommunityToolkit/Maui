@@ -12,7 +12,7 @@ public sealed partial class SpeechToTextImplementation
 	IProgress<string>? recognitionProgress;
 	SFSpeechRecognitionTask? recognitionTask;
 	SFSpeechAudioBufferRecognitionRequest? liveSpeechRequest;
-	
+
 	TaskCompletionSource<string>? getRecognitionTaskCompletionSource;
 
 	/// <inheritdoc/>
