@@ -54,7 +54,7 @@ public sealed partial class SpeechToTextImplementation
 	{
 		recognitionProgress = recognitionResult;
 		
-		taskResult.TrySetCanceled(cancellationToken);
+		taskResult?.TrySetCanceled(cancellationToken);
 		taskResult = new TaskCompletionSource<string>();
 
 		await InternalStartListeningAsync(culture, cancellationToken);
