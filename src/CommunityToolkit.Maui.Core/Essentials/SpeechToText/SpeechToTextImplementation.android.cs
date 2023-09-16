@@ -16,6 +16,20 @@ public sealed partial class SpeechToTextImplementation
 	IProgress<string>? recognitionProgress;
 	CultureInfo? cultureInfo;
 	SpeechToTextState currentState = SpeechToTextState.Stopped;
+	
+	/// <inheritdoc />
+	public SpeechToTextState CurrentState
+	{
+		get => currentState;
+		private set
+		{
+			if (currentState != value)
+			{
+				currentState = value;
+				OnSpeechToTextStateChanged(currentState);
+			}
+		}
+	}
 
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()
@@ -28,6 +42,22 @@ public sealed partial class SpeechToTextImplementation
 
 		return ValueTask.CompletedTask;
 	}
+	
+	static Intent CreateSpeechIntent(CultureInfo culture)
+	{
+		var intent = new Intent(RecognizerIntent.ActionRecognizeSpeech);
+		intent.PutExtra(RecognizerIntent.ExtraLanguagePreference, Java.Util.Locale.Default);
+
+		var javaLocale = Java.Util.Locale.ForLanguageTag(culture.Name);
+		intent.PutExtra(RecognizerIntent.ExtraLanguage, javaLocale);
+		intent.PutExtra(RecognizerIntent.ExtraLanguageModel, RecognizerIntent.LanguageModelFreeForm);
+		intent.PutExtra(RecognizerIntent.ExtraCallingPackage, Application.Context.PackageName);
+		intent.PutExtra(RecognizerIntent.ExtraPartialResults, true);
+
+		return intent;
+	}
+
+	static bool IsSpeechRecognitionAvailable() => SpeechRecognizer.IsRecognitionAvailable(Application.Context);
 
 	[MemberNotNull(nameof(speechRecognizer), nameof(listener))]
 	Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
@@ -100,22 +130,6 @@ public sealed partial class SpeechToTextImplementation
 		speechRecognitionListenerTaskCompletionSource?.TrySetResult(result);
 	}
 
-	static Intent CreateSpeechIntent(CultureInfo culture)
-	{
-		var intent = new Intent(RecognizerIntent.ActionRecognizeSpeech);
-		intent.PutExtra(RecognizerIntent.ExtraLanguagePreference, Java.Util.Locale.Default);
-
-		var javaLocale = Java.Util.Locale.ForLanguageTag(culture.Name);
-		intent.PutExtra(RecognizerIntent.ExtraLanguage, javaLocale);
-		intent.PutExtra(RecognizerIntent.ExtraLanguageModel, RecognizerIntent.LanguageModelFreeForm);
-		intent.PutExtra(RecognizerIntent.ExtraCallingPackage, Application.Context.PackageName);
-		intent.PutExtra(RecognizerIntent.ExtraPartialResults, true);
-
-		return intent;
-	}
-
-	static bool IsSpeechRecognitionAvailable() => SpeechRecognizer.IsRecognitionAvailable(Application.Context);
-
 	void StopRecording()
 	{
 		speechRecognizer?.StopListening();
@@ -177,20 +191,6 @@ public sealed partial class SpeechToTextImplementation
 			}
 
 			action.Invoke(matches[0]);
-		}
-	}
-
-	/// <inheritdoc />
-	public SpeechToTextState CurrentState
-	{
-		get => currentState;
-		private set
-		{
-			if (currentState != value)
-			{
-				currentState = value;
-				OnSpeechToTextStateChanged(currentState);
-			}
 		}
 	}
 }

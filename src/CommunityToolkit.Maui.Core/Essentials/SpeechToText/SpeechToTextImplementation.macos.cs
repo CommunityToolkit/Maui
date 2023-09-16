@@ -32,12 +32,16 @@ public sealed partial class SpeechToTextImplementation
 
 		audioSession.SetCategory(AVAudioSessionCategory.Record, AVAudioSessionCategoryOptions.DefaultToSpeaker);
 
-		var mode = audioSession.AvailableModes.Contains(AVAudioSession.ModeMeasurement) ? AVAudioSession.ModeMeasurement : audioSession.AvailableModes[0];
+		var mode = audioSession.AvailableModes.Contains(AVAudioSession.ModeMeasurement)
+			? AVAudioSession.ModeMeasurement
+			: audioSession.AvailableModes[0];
+
 		audioSession.SetMode(new NSString(mode), out var audioSessionError);
 		if (audioSessionError is not null)
 		{
 			throw new Exception(audioSessionError.LocalizedDescription);
 		}
+
 		audioSession.SetActive(true, AVAudioSessionSetActiveOptions.NotifyOthersOnDeactivation, out audioSessionError);
 		if (audioSessionError is not null)
 		{
@@ -46,10 +50,7 @@ public sealed partial class SpeechToTextImplementation
 
 		var node = audioEngine.InputNode;
 		var recordingFormat = node.GetBusOutputFormat(0);
-		node.InstallTapOnBus(0, 1024, recordingFormat, (buffer, _) =>
-		{
-			liveSpeechRequest.Append(buffer);
-		});
+		node.InstallTapOnBus(0, 1024, recordingFormat, (buffer, _) => liveSpeechRequest.Append(buffer));
 
 		audioEngine.Prepare();
 		audioEngine.StartAndReturnError(out var error);
@@ -107,10 +108,10 @@ public sealed partial class SpeechToTextImplementation
 		getRecognitionTaskCompletionSource ??= new TaskCompletionSource<string>();
 		await InternalStartListeningAsync(culture, cancellationToken);
 		await using (cancellationToken.Register(() =>
-					 {
-						 StopRecording();
-						 getRecognitionTaskCompletionSource.TrySetCanceled();
-					 }))
+		             {
+			             StopRecording();
+			             getRecognitionTaskCompletionSource.TrySetCanceled();
+		             }))
 		{
 			return await getRecognitionTaskCompletionSource.Task;
 		}
