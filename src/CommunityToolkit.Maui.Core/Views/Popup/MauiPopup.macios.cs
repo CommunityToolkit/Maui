@@ -97,48 +97,11 @@ public class MauiPopup : UIViewController
 
 		UIViewController? rootViewController;
 
-#if MACCATALYST
-		var popupParentElementUIViewController = GetUIViewControllerHostingPopupParentElement(element);
-		rootViewController = popupParentElementUIViewController ?? WindowStateManager.Default.GetCurrentUIViewController() ?? throw new InvalidOperationException($"{nameof(PageHandler.ViewController)} cannot be null.");
-#else
-		rootViewController = WindowStateManager.Default.GetCurrentUIViewController() ?? throw new InvalidOperationException($"{nameof(PageHandler.ViewController)} cannot be null.");
-#endif
-
+		var pagehandler = VirtualView.Parent.Handler as PageHandler;
+		rootViewController = pagehandler?.ViewController ?? WindowStateManager.Default.GetCurrentUIViewController() ?? throw new InvalidOperationException($"{nameof(PageHandler.ViewController)} cannot be null.");
 		ViewController ??= rootViewController;
 		SetDimmingBackgroundEffect();
 	}
-
-#if MACCATALYST
-	/// <summary>
-	/// The <see cref="IPopup"/> is associated to a view (e.g. ContentPage). Use this method to locate the UIViewController in the native application that is hosting that view.
-	/// </summary>
-	/// <param name="element">An instance of <see cref="IPopup"/>.</param>
-	/// <returns>The UIViewController that is hosting the <i>element.Parent</i> view or <i>null</i> if UIViewController cannot be located.</returns>
-	UIViewController? GetUIViewControllerHostingPopupParentElement(IPopup element)
-	{
-		var scenes = UIApplication.SharedApplication.ConnectedScenes.OfType<UIWindowScene>();
-
-		foreach (var scene in scenes)
-		{
-			foreach (var window in scene.Windows)
-			{
-				if (window.RootViewController is not Microsoft.Maui.Platform.ContainerViewController rootViewController)
-				{
-					continue;
-				}
-
-				var isViewMatching = rootViewController?.CurrentView == element.Parent;
-
-				if (isViewMatching)
-				{
-					return window.RootViewController;
-				}
-			}
-		}
-
-		return null;
-	}
-#endif
 
 	void SetDimmingBackgroundEffect()
 	{
