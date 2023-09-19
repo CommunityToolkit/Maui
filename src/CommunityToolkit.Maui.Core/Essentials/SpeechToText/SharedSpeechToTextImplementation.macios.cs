@@ -14,6 +14,7 @@ public sealed partial class SpeechToTextImplementation
 	SFSpeechAudioBufferRecognitionRequest? liveSpeechRequest;
 
 	TaskCompletionSource<string>? getRecognitionTaskCompletionSource;
+	CancellationTokenRegistration? userProvidedCancellationTokenRegistration;
 
 	/// <inheritdoc/>
 	public SpeechToTextState CurrentState => recognitionTask?.State is SFSpeechRecognitionTaskState.Running
@@ -22,7 +23,7 @@ public sealed partial class SpeechToTextImplementation
 
 
 	/// <inheritdoc />
-	public ValueTask DisposeAsync()
+	public async ValueTask DisposeAsync()
 	{
 		getRecognitionTaskCompletionSource?.TrySetCanceled();
 
@@ -30,14 +31,14 @@ public sealed partial class SpeechToTextImplementation
 		speechRecognizer?.Dispose();
 		liveSpeechRequest?.Dispose();
 		recognitionTask?.Dispose();
+		await (userProvidedCancellationTokenRegistration?.DisposeAsync() ?? ValueTask.CompletedTask);
 
 		audioEngine = null;
 		speechRecognizer = null;
 		liveSpeechRequest = null;
 		recognitionTask = null;
 		getRecognitionTaskCompletionSource = null;
-
-		return ValueTask.CompletedTask;
+		userProvidedCancellationTokenRegistration = null;
 	}
 
 	/// <inheritdoc />
@@ -81,13 +82,13 @@ public sealed partial class SpeechToTextImplementation
 		return Task.CompletedTask;
 	}
 
-	[MemberNotNull(nameof(getRecognitionTaskCompletionSource))]
+	[MemberNotNull(nameof(getRecognitionTaskCompletionSource), nameof(userProvidedCancellationTokenRegistration))]
 	void ResetGetRecognitionTaskCompletionSource(CancellationToken token)
 	{
 		getRecognitionTaskCompletionSource?.TrySetCanceled(token);
 		getRecognitionTaskCompletionSource = new();
 
-		token.Register(() =>
+		userProvidedCancellationTokenRegistration = token.Register(() =>
 		{
 			StopRecording();
 			getRecognitionTaskCompletionSource.TrySetCanceled(token);

@@ -13,6 +13,7 @@ public sealed partial class SpeechToTextImplementation
 	SpeechRecognizer? speechRecognizer;
 	SpeechRecognitionListener? listener;
 	TaskCompletionSource<string>? speechRecognitionListenerTaskCompletionSource;
+	CancellationTokenRegistration? userProvidedCancellationTokenRegistration;
 	IProgress<string>? recognitionProgress;
 	CultureInfo? cultureInfo;
 	SpeechToTextState currentState = SpeechToTextState.Stopped;
@@ -32,18 +33,18 @@ public sealed partial class SpeechToTextImplementation
 	}
 
 	/// <inheritdoc />
-	public ValueTask DisposeAsync()
+	public async ValueTask DisposeAsync()
 	{
 		speechRecognitionListenerTaskCompletionSource?.TrySetCanceled();
 
 		listener?.Dispose();
 		speechRecognizer?.Dispose();
+		await (userProvidedCancellationTokenRegistration?.DisposeAsync() ?? ValueTask.CompletedTask);
 
 		listener = null;
 		speechRecognizer = null;
+		userProvidedCancellationTokenRegistration = null;
 		speechRecognitionListenerTaskCompletionSource = null;
-
-		return ValueTask.CompletedTask;
 	}
 
 	static Intent CreateSpeechIntent(CultureInfo culture)
@@ -67,7 +68,7 @@ public sealed partial class SpeechToTextImplementation
 	{
 		speechRecognitionListenerTaskCompletionSource?.TrySetCanceled(cancellationToken);
 		speechRecognitionListenerTaskCompletionSource = new();
-		cancellationToken.Register(() =>
+		userProvidedCancellationTokenRegistration = cancellationToken.Register(() =>
 		{
 			StopRecording();
 			speechRecognitionListenerTaskCompletionSource.TrySetCanceled(cancellationToken);
