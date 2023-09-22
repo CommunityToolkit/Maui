@@ -28,8 +28,13 @@ public sealed partial class SpeechToTextImplementation
 			{
 				sttClient.Unprepare();
 			}
-			sttClient.RecognitionResult -= OnRecognitionResult;
-			sttClient.ErrorOccurred -= OnErrorOccurred;
+			else
+			{
+				sttClient.Cancel();
+				sttClient.RecognitionResult -= OnRecognitionResult;
+				sttClient.ErrorOccurred -= OnErrorOccurred;
+				sttClient.StateChanged -= OnStateChanged;
+			}
 			sttClient.Dispose();
 
 			sttClient = null;
@@ -47,6 +52,7 @@ public sealed partial class SpeechToTextImplementation
 
 		sttClient.RecognitionResult -= OnRecognitionResult;
 		sttClient.ErrorOccurred -= OnErrorOccurred;
+		sttClient.StateChanged -= OnStateChanged;
 	}
 
 	[MemberNotNull(nameof(taskResult))]
@@ -114,6 +120,11 @@ public sealed partial class SpeechToTextImplementation
 		}
 	}
 
+	void OnStateChanged(object? sender, StateChangedEventArgs e)
+	{
+		OnSpeechToTextStateChanged(CurrentState);
+	}
+
 	[MemberNotNull(nameof(sttClient))]
 	Task<bool> Initialize(CancellationToken cancellationToken)
 	{
@@ -151,6 +162,7 @@ public sealed partial class SpeechToTextImplementation
 
 		sttClient.ErrorOccurred += OnErrorOccurred;
 		sttClient.RecognitionResult += OnRecognitionResult;
+		sttClient.StateChanged += OnStateChanged;
 
 		var recognitionType = sttClient.IsRecognitionTypeSupported(RecognitionType.Partial)
 			? RecognitionType.Partial
