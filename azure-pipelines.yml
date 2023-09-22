@@ -257,7 +257,8 @@ jobs:
 
       # check vulnerabilities
       - powershell: |
-          dotnet list $(PathToLibrarySolution) package --vulnerable --include-transitive | findstr /S /c:"has the following vulnerable packages";
+          dotnet list $(PathToLibrarySolution) package --include-transitive # Print all transitive packages
+          dotnet list $(PathToLibrarySolution) package --vulnerable --include-transitive | findstr /S /c:"has the following vulnerable packages"; # Print all transitive packages with vulnerabilities
           if ($LastExitCode -ne 1)
           {
             dotnet list $(PathToLibrarySolution) package --vulnerable --include-transitive;
