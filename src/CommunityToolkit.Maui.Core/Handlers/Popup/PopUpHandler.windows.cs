@@ -1,9 +1,13 @@
 ﻿using CommunityToolkit.Maui.Core.Views;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
 
-public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
+public partial class PopupHandler : ElementHandler<IPopup, Popup>
 {
 	/// <summary>
 	/// Action that's triggered when the Popup is Dismissed.
@@ -25,7 +29,14 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="result">We don't need to provide the result parameter here.</param>
 	public static void MapOnOpened(PopupHandler handler, IPopup view, object? result)
 	{
-		handler.PlatformView.Show();
+		ArgumentNullException.ThrowIfNull(view.Parent);
+		ArgumentNullException.ThrowIfNull(handler.MauiContext);
+		var parent = view.Parent.ToPlatform(handler.MauiContext);
+		parent.IsHitTestVisible = false;
+		handler.PlatformView.XamlRoot = parent.XamlRoot;
+		handler.PlatformView.IsHitTestVisible = true;
+		handler.PlatformView.IsOpen = true;
+		view.OnOpened();
 	}
 
 	/// <summary>
@@ -47,7 +58,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapAnchor(PopupHandler handler, IPopup view)
 	{
-		handler.PlatformView.ConfigureControl();
+		handler.PlatformView.SetAnchor(view, handler.MauiContext);
 	}
 
 	/// <summary>
@@ -57,7 +68,8 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapCanBeDismissedByTappingOutsideOfPopup(PopupHandler handler, IPopup view)
 	{
-		handler.PlatformView.ConfigureControl();
+		handler.PlatformView.IsLightDismissEnabled = view.CanBeDismissedByTappingOutsideOfPopup;
+		handler.PlatformView.LightDismissOverlayMode = view.CanBeDismissedByTappingOutsideOfPopup ? LightDismissOverlayMode.On : LightDismissOverlayMode.Off;
 	}
 
 	/// <summary>
@@ -68,7 +80,6 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	public static void MapColor(PopupHandler handler, IPopup view)
 	{
 		handler.PlatformView.SetColor(view);
-		handler.PlatformView.ConfigureControl();
 	}
 
 	/// <summary>
@@ -78,26 +89,57 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapSize(PopupHandler handler, IPopup view)
 	{
-		handler.PlatformView.ConfigureControl();
+		handler.PlatformView.SetSize(view, handler.MauiContext);
 	}
 
 	/// <inheritdoc/>
-	protected override void DisconnectHandler(MauiPopup platformView)
+	protected override void DisconnectHandler(Popup platformView)
 	{
-		platformView.CleanUp();
+		ArgumentNullException.ThrowIfNull(VirtualView.Parent);
+		ArgumentNullException.ThrowIfNull(VirtualView.Handler?.MauiContext);
+		var parent = VirtualView.Parent.ToPlatform(VirtualView.Handler.MauiContext);
+		parent.IsHitTestVisible = true;
+		platformView.IsOpen = false;
+		platformView.Closed -= OnClosed;
+		if (MauiContext is not null)
+		{
+			MauiContext.GetPlatformWindow().SizeChanged -= OnSizeChanged;
+		}
 	}
 
 	/// <inheritdoc/>
-	protected override MauiPopup CreatePlatformElement()
+	protected override Popup CreatePlatformElement()
 	{
-		ArgumentNullException.ThrowIfNull(MauiContext);
-		return new MauiPopup(MauiContext);
+		var popup = new Popup();
+		return popup;
 	}
 
 	/// <inheritdoc/>
-	protected override void ConnectHandler(MauiPopup platformView)
+	protected override void ConnectHandler(Popup platformView)
 	{
-		platformView.SetElement(VirtualView);
+		platformView.Closed += OnClosed;
+		platformView.ConfigureControl(VirtualView, MauiContext);
+		if (MauiContext is not null)
+		{
+			MauiContext.GetPlatformWindow().SizeChanged += OnSizeChanged;
+		}
 		base.ConnectHandler(platformView);
+	}
+
+	void OnClosed(object? sender, object e)
+	{
+		if (!PlatformView.IsOpen && VirtualView.CanBeDismissedByTappingOutsideOfPopup)
+		{
+			VirtualView.Handler?.Invoke(nameof(IPopup.OnDismissedByTappingOutsideOfPopup));
+		}
+	}
+
+	void OnSizeChanged(object? sender, WindowSizeChangedEventArgs e)
+	{
+		if (VirtualView is not null)
+		{
+			PopupExtensions.SetSize(PlatformView, VirtualView, MauiContext);
+			PopupExtensions.SetLayout(PlatformView, VirtualView, MauiContext);
+		}
 	}
 }

@@ -93,6 +93,14 @@ public partial class MediaManager : IDisposable
 			Player = Player
 		};
 
+		// Pre-initialize Volume and Muted properties to the player object
+		Player.Muted = MediaElement.ShouldMute;
+		var volumeDiff = Math.Abs(Player.Volume - MediaElement.Volume);
+		if (volumeDiff > 0.01)
+		{
+			Player.Volume = (float)MediaElement.Volume;
+		}
+
 		AddStatusObservers();
 		AddPlayedToEndObserver();
 		AddErrorObservers();

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Diagnostics;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.Dispatching;
 
@@ -58,7 +59,7 @@ public sealed partial class ByteArrayToImageSourceConverterViewModel : BaseViewM
 		}
 		catch (Exception e)
 		{
-			Console.WriteLine(e);
+			Trace.WriteLine(e);
 			OnImageDownloadFailed(e.Message);
 		}
 		finally

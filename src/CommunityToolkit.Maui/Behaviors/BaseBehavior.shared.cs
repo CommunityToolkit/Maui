@@ -47,7 +47,6 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
 		defaultBindingContextBinding = null;
 
 		return true;
-
 	}
 
 	/// <summary>
@@ -116,7 +115,7 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInBehaviors)
 		{
-			Debug.WriteLine(ex);
-		};
+			Trace.WriteLine(ex);
+		}
 	}
 }

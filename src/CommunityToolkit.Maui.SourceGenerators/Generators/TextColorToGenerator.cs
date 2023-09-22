@@ -24,6 +24,7 @@ class TextColorToGenerator : IIncrementalGenerator
 	const string iTextStyleInterface = "Microsoft.Maui.ITextStyle";
 	const string iAnimatableInterface = "Microsoft.Maui.Controls.IAnimatable";
 	const string mauiControlsAssembly = "Microsoft.Maui.Controls";
+	const string mauiColorFullName = "global::Microsoft.Maui.Graphics.Color";
 
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
@@ -132,7 +133,7 @@ namespace {{textStyleClassMetadata.Namespace}};
 	/// <param name="length">The duration, in milliseconds, of the animation</param>
 	/// <param name="easing">The easing function to be used in the animation</param>
 	/// <returns>Value indicating if the animation completed successfully or not</returns>
-	public static Task<bool> TextColorTo{{textStyleClassMetadata.GenericArguments}}(this {{textStyleClassMetadata.Namespace}}.{{textStyleClassMetadata.ClassName}}{{textStyleClassMetadata.GenericArguments}} element, Color color, uint rate = 16u, uint length = 250u, Easing? easing = null)
+	public static Task<bool> TextColorTo{{textStyleClassMetadata.GenericArguments}}(this global::{{textStyleClassMetadata.Namespace}}.{{textStyleClassMetadata.ClassName}}{{textStyleClassMetadata.GenericArguments}} element, {{mauiColorFullName}} color, uint rate = 16u, uint length = 250u, Easing? easing = null)
 {{textStyleClassMetadata.GenericConstraints}}
 	{
 		ArgumentNullException.ThrowIfNull(element);
@@ -162,7 +163,7 @@ namespace {{textStyleClassMetadata.Namespace}};
 		{
 			//When creating an Animation too early in the lifecycle of the Page, i.e. in the OnAppearing method,
 			//the Page might not have an 'IAnimationManager' yet, resulting in an ArgumentException.
-			System.Diagnostics.Debug.WriteLine($"{aex.GetType().Name} thrown in {typeof(ColorAnimationExtensions_{{textStyleClassMetadata.ClassName}}).FullName}: {aex.Message}");
+			System.Diagnostics.Trace.WriteLine($"{aex.GetType().Name} thrown in {typeof(ColorAnimationExtensions_{{textStyleClassMetadata.ClassName}}).FullName}: {aex.Message}");
 			animationCompletionSource.SetResult(false);
 		}
 
