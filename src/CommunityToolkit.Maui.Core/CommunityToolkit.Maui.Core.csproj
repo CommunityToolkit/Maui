@@ -50,6 +50,10 @@
     <None Include="ReadMe.txt" pack="true" PackagePath="." />
   </ItemGroup>
 
+  <ItemGroup Condition="$(TargetFramework.Contains('-tizen'))">
+    <PackageReference Include="SkiaSharp.Views" Version="[2.88.6,)" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="DotNet.ReproducibleBuilds" Version="1.1.1">
       <PrivateAssets>all</PrivateAssets>

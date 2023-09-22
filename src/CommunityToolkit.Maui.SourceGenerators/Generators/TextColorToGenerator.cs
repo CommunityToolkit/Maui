@@ -68,7 +68,24 @@ class TextColorToGenerator : IIncrementalGenerator
 					throw new Exception("There's no .NET MAUI referenced in the project.");
 				}
 
-				var mauiAssembly = compilation.SourceModule.ReferencedAssemblySymbols.Single(q => q.Name == mauiControlsAssembly);
+				var mauiAssembly = default(IAssemblySymbol);
+				foreach (var assemblySymbol in compilation.SourceModule.ReferencedAssemblySymbols)
+				{
+					if (assemblySymbol.Name == mauiControlsAssembly)
+					{
+						if (mauiAssembly is not null)
+						{
+							throw new InvalidOperationException("There can only be one reference to the Maui Controls assembly.");
+						}
+
+						mauiAssembly = assemblySymbol;
+					}
+				}
+				if (mauiAssembly is null)
+				{
+					throw new InvalidOperationException("There is no reference to the Maui Controls assembly.");
+				}
+
 				var symbols = GetMauiInterfaceImplementors(mauiAssembly, iAnimatableInterfaceSymbol, iTextStyleInterfaceSymbol).Where(static x => x is not null);
 
 				return symbols;
