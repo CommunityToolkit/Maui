@@ -402,7 +402,5 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 		PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 
 	IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() =>
-		Content is null
-			? Enumerable.Empty<IVisualTreeElement>().ToList()
-			: new List<IVisualTreeElement> { Content };
+		Content is null ? Array.Empty<IVisualTreeElement>() : new [] { Content };
 }
