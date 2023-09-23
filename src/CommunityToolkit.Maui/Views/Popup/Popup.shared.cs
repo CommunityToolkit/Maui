@@ -55,7 +55,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	TaskCompletionSource popupDismissedTaskCompletionSource = new();
 	TaskCompletionSource<object?> resultTaskCompletionSource = new();
 	Window? window;
-	ResourceDictionary? resources;
+	ResourceDictionary resources = new();
 	bool IResourcesProvider.IsResourcesCreated => resources is not null;
 
 	/// <summary>
@@ -64,7 +64,8 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	public Popup()
 	{
 		platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Popup>>(() => new(this));
-
+		((IResourceDictionary)resources).ValuesChanged += OnResourcesChanged;
+		
 		mergedStyle = new MergedStyle(GetType(), this);
 	}
 
@@ -203,36 +204,23 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// </summary>
 	public ResourceDictionary Resources
 	{
-		get
-		{
-			if (resources is not null)
-			{
-				return resources;
-			}
-
-			resources = new ResourceDictionary();
-			((IResourceDictionary)resources).ValuesChanged += OnResourcesChanged;
-			return resources;
-		}
+		get => resources;
 		set
 		{
+			ArgumentNullException.ThrowIfNull(value);
+			
 			if (resources == value)
 			{
 				return;
 			}
 
 			OnPropertyChanging();
-			if (resources is not null)
-			{
-				((IResourceDictionary)resources).ValuesChanged -= OnResourcesChanged;
-			}
+			((IResourceDictionary)resources).ValuesChanged -= OnResourcesChanged;
 
 			resources = value;
+			
 			OnResourcesChanged(value);
-			if (resources is not null)
-			{
-				((IResourceDictionary)resources).ValuesChanged += OnResourcesChanged;
-			}
+			((IResourceDictionary)resources).ValuesChanged += OnResourcesChanged;
 
 			OnPropertyChanged();
 		}
@@ -244,8 +232,8 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
 	public IList<string> StyleClass
 	{
-		get { return mergedStyle.StyleClass; }
-		set { mergedStyle.StyleClass = value; }
+		get => mergedStyle.StyleClass;
+		set => mergedStyle.StyleClass = value;
 	}
 
 	/// <summary>
@@ -297,6 +285,53 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	{
 		await OnClosed(result, false);
 		resultTaskCompletionSource.TrySetResult(result);
+	}
+	
+	internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
+	{
+		if (values is null)
+		{
+			return;
+		}
+
+		if (!((IResourcesProvider)this).IsResourcesCreated || Resources.Count == 0)
+		{
+			base.OnParentResourcesChanged(values);
+			return;
+		}
+
+		var innerKeys = new HashSet<string>(StringComparer.Ordinal);
+		var changedResources = new List<KeyValuePair<string, object>>();
+		foreach (var keyValuePair in Resources)
+		{
+			innerKeys.Add(keyValuePair.Key);
+		}
+
+		foreach (var keyValuePair in values)
+		{
+			if (innerKeys.Add(keyValuePair.Key))
+			{
+				changedResources.Add(keyValuePair);
+			}
+			else if (keyValuePair.Key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal))
+			{
+				var innerStyle = Resources[keyValuePair.Key] as List<Style>;
+				var parentStyle = keyValuePair.Value as List<Style>;
+				if (innerStyle is not null)
+				{
+					var mergedClassStyles = new List<Style>(innerStyle);
+					if (parentStyle is not null)
+					{
+						mergedClassStyles.AddRange(parentStyle);
+					}
+					changedResources.Add(new KeyValuePair<string, object>(keyValuePair.Key, mergedClassStyles));
+				}
+			}
+		}
+		if (changedResources.Count != 0)
+		{
+			OnResourcesChanged(changedResources);
+		}
 	}
 
 	/// <summary>
@@ -370,51 +405,4 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 		Content is null
 			? Enumerable.Empty<IVisualTreeElement>().ToList()
 			: new List<IVisualTreeElement> { Content };
-
-	internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
-	{
-		if (values is null)
-		{
-			return;
-		}
-
-		if (!((IResourcesProvider)this).IsResourcesCreated || Resources.Count == 0)
-		{
-			base.OnParentResourcesChanged(values);
-			return;
-		}
-
-		var innerKeys = new HashSet<string>(StringComparer.Ordinal);
-		var changedResources = new List<KeyValuePair<string, object>>();
-		foreach (KeyValuePair<string, object> c in Resources)
-		{
-			innerKeys.Add(c.Key);
-		}
-
-		foreach (KeyValuePair<string, object> value in values)
-		{
-			if (innerKeys.Add(value.Key))
-			{
-				changedResources.Add(value);
-			}
-			else if (value.Key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal))
-			{
-				var innerStyle = Resources[value.Key] as List<Style>;
-				var parentStyle = value.Value as List<Style>;
-				if (innerStyle is not null)
-				{
-					var mergedClassStyles = new List<Style>(innerStyle);
-					if (parentStyle is not null)
-					{
-						mergedClassStyles.AddRange(parentStyle);
-					}
-					changedResources.Add(new KeyValuePair<string, object>(value.Key, mergedClassStyles));
-				}
-			}
-		}
-		if (changedResources.Count != 0)
-		{
-			OnResourcesChanged(changedResources);
-		}
-	}
 }
