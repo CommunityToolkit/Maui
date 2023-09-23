@@ -9,7 +9,7 @@
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <Style x:Key="stlImplicitStyle" TargetType="{x:Type popups:ImplicitStylePopup}">
+            <Style x:Key="ImplicitPopupStyle" TargetType="{x:Type popups:ImplicitStylePopup}">
                 <Setter Property="Size" Value="100,100" />
                 <Setter Property="Color" Value="Red" />
                 <Setter Property="HorizontalOptions" Value="Start" />
@@ -25,10 +25,10 @@
                 <Setter Property="CanBeDismissedByTappingOutsideOfPopup" Value="True" />
             </Style>
 
-            <Style x:Key="stlBaseStyle" TargetType="{x:Type popups:StyleInheritancePopup}">
+            <Style x:Key="BasePopupStyle" TargetType="{x:Type popups:StyleInheritancePopup}">
                 <Setter Property="Size" Value="200,200" />
             </Style>
-            <Style x:Key="stlInheritanceStyle" TargetType="{x:Type popups:StyleInheritancePopup}" BasedOn="{StaticResource stlBaseStyle}">
+            <Style x:Key="InheritancePopupStyle" TargetType="{x:Type popups:StyleInheritancePopup}" BasedOn="{StaticResource BasePopupStyle}">
                 <Setter Property="Color" Value="SkyBlue" />
                 <Setter Property="HorizontalOptions" Value="End" />
                 <Setter Property="VerticalOptions" Value="End" />

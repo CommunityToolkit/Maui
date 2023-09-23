@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(NetVersion)-ios;$(NetVersion)-android;$(NetVersion)-maccatalyst</TargetFrameworks>
@@ -75,7 +75,6 @@
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Maps\CommunityToolkit.Maui.Maps.csproj" />
   </ItemGroup>
-
   
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='android'">
     <RuntimeIdentifiers>android-arm;android-arm64;android-x86;android-x64</RuntimeIdentifiers>

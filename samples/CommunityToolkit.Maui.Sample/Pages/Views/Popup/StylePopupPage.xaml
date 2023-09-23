@@ -3,13 +3,18 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
              xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
-             x:TypeArguments="viewModels:PopupStyleViewModel"
-             x:DataType="viewModels:PopupStyleViewModel"
-             x:Class="CommunityToolkit.Maui.Sample.Pages.Views.PopupStylePage"
-             Title="PopupStylePage">
+             x:TypeArguments="viewModels:StylePopupViewModel"
+             x:DataType="viewModels:StylePopupViewModel"
+             x:Class="CommunityToolkit.Maui.Sample.Pages.Views.StylePopupPage"
+             Title="StylePopupPage">
 
     <ScrollView Orientation="Vertical">
         <StackLayout Orientation="Vertical" Spacing="5">
+            <Label Text="Popup can use Styles"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center"
+                   VerticalTextAlignment="Start"/>
+            
             <Button
                 Text="Implicit Style"
                 BackgroundColor="Blue"
