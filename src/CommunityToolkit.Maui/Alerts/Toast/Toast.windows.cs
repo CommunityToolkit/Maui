@@ -32,8 +32,12 @@ public partial class Toast
 		token.ThrowIfCancellationRequested();
 		await AppNotificationManager.Default.RemoveAllAsync();
 
-		PlatformToast.Expiration = DateTimeOffset.Now;
-		PlatformToast = null;
+		// Verify PlatformToast is not null again after `await`
+		if (PlatformToast is not null)
+		{
+			PlatformToast.Expiration = DateTimeOffset.Now;
+			PlatformToast = null;
+		}
 	}
 
 	async Task ShowPlatform(CancellationToken token)
