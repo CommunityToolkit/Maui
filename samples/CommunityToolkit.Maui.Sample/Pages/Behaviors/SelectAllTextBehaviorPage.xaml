@@ -30,7 +30,7 @@
                 <Entry
 					BackgroundColor="{StaticResource PrimaryColor}"
 					PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}"
-					Text="https://github.com/xamarin/XamarinCommunityToolkit"
+					Text="https://github.com/CommunityToolkit/Maui/"
 					TextColor="{StaticResource DarkLabelTextColor}" />
             </Border>
 
@@ -39,7 +39,7 @@
                 <Entry
 					BackgroundColor="{StaticResource PrimaryColor}"
 					PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}"
-					Text="https://github.com/xamarin/XamarinCommunityToolkit"
+					Text="https://github.com/CommunityToolkit/Maui/"
 					TextColor="{StaticResource DarkLabelTextColor}">
                     <Entry.Behaviors>
                         <mct:SelectAllTextBehavior />
@@ -52,20 +52,17 @@
 				Text="Editor"
 				TextColor="{StaticResource DarkLabelTextColor}" />
 
-
             <Label FontAttributes="Italic" Text="Editor without the effect, when focused no text will be selected" />
             <Border BackgroundColor="{StaticResource SoftBorderBackgroundColor}" >
                 <Editor PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}"
 						TextColor="{StaticResource DarkLabelTextColor}"
 						BackgroundColor="{StaticResource PrimaryColor}">
                     <Editor.Text>
-                        Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should. Must go faster... go, go, go, go, go! You know what? It is beets. I've crashed into a beet truck. Is this my espresso machine? Wh-what is-h-how did you get my espresso machine?
-						Just my luck, no ice. I gave it a cold? I gave it a virus. A computer virus. Must go faster... go, go, go, go, go! God creates dinosaurs. God destroys dinosaurs. God creates Man. Man destroys God. Man creates Dinosaurs. Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should.
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+                        Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
                     </Editor.Text>
                 </Editor>
             </Border>
-
-
 
             <Label FontAttributes="Italic" Text="Editor with the effect, when focused all text will be selected" />
             <Border BackgroundColor="{StaticResource SoftBorderBackgroundColor}" >
@@ -76,8 +73,8 @@
                         <mct:SelectAllTextBehavior />
                     </Editor.Behaviors>
                     <Editor.Text>
-                        Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should. Must go faster... go, go, go, go, go! You know what? It is beets. I've crashed into a beet truck. Is this my espresso machine? Wh-what is-h-how did you get my espresso machine?
-						Just my luck, no ice. I gave it a cold? I gave it a virus. A computer virus. Must go faster... go, go, go, go, go! God creates dinosaurs. God destroys dinosaurs. God creates Man. Man destroys God. Man creates Dinosaurs. Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should.
+                       Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+                       Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
                     </Editor.Text>
                 </Editor>
             </Border>
