@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Maui.Dispatching;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 

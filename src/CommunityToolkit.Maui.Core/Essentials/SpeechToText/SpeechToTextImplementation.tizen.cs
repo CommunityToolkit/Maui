@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Threading;
 using Tizen.Uix.Stt;
 
 namespace CommunityToolkit.Maui.Media;
@@ -13,17 +14,27 @@ public sealed partial class SpeechToTextImplementation
 	IProgress<string>? recognitionProgress;
 	string defaultSttEngineLocale = "ko_KR";
 
+	/// <inheritdoc/>
+	public SpeechToTextState CurrentState => sttClient?.CurrentState is Tizen.Uix.Stt.State.Recording
+		? SpeechToTextState.Listening
+		: SpeechToTextState.Stopped;
+
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()
 	{
 		if (sttClient is not null)
 		{
-			if (sttClient.CurrentState is State.Ready)
+			if (sttClient.CurrentState is Tizen.Uix.Stt.State.Ready)
 			{
 				sttClient.Unprepare();
 			}
-			sttClient.RecognitionResult -= OnRecognitionResult;
-			sttClient.ErrorOccurred -= OnErrorOccurred;
+			else
+			{
+				sttClient.Cancel();
+				sttClient.RecognitionResult -= OnRecognitionResult;
+				sttClient.ErrorOccurred -= OnErrorOccurred;
+				sttClient.StateChanged -= OnStateChanged;
+			}
 			sttClient.Dispose();
 
 			sttClient = null;
@@ -34,38 +45,37 @@ public sealed partial class SpeechToTextImplementation
 
 	void StopRecording(in SttClient sttClient)
 	{
-		if (sttClient.CurrentState is State.Recording)
+		if (sttClient.CurrentState is Tizen.Uix.Stt.State.Recording)
 		{
 			sttClient.Stop();
 		}
+
 		sttClient.RecognitionResult -= OnRecognitionResult;
 		sttClient.ErrorOccurred -= OnErrorOccurred;
+		sttClient.StateChanged -= OnStateChanged;
 	}
 
-	[MemberNotNull(nameof(sttClient), nameof(taskResult))]
+	[MemberNotNull(nameof(taskResult))]
 	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
-		this.recognitionProgress = recognitionResult;
-		taskResult ??= new TaskCompletionSource<string>();
+		recognitionProgress = recognitionResult;
+		
+		taskResult?.TrySetCanceled(cancellationToken);
+		taskResult = new TaskCompletionSource<string>();
 
-		await Initialize();
-
-		sttClient.ErrorOccurred += OnErrorOccurred;
-		sttClient.RecognitionResult += OnRecognitionResult;
-
-		var recognitionType = sttClient.IsRecognitionTypeSupported(RecognitionType.Partial)
-			? RecognitionType.Partial
-			: RecognitionType.Free;
-
-		sttClient.Start(defaultSttEngineLocale, recognitionType);
+		await InternalStartListeningAsync(culture, cancellationToken);
 
 		await using (cancellationToken.Register(() =>
 		{
-			StopRecording(sttClient);
-			taskResult.TrySetCanceled();
+			if (sttClient is not null)
+			{
+				StopRecording(sttClient);
+			}
+
+			taskResult.TrySetCanceled(cancellationToken);
 		}))
 		{
-			return await taskResult.Task;
+			return await taskResult.Task.WaitAsync(cancellationToken);
 		}
 	}
 
@@ -94,6 +104,7 @@ public sealed partial class SpeechToTextImplementation
 		{
 			foreach(var d in e.Data)
 			{
+				OnRecognitionResultUpdated(d);
 				recognitionProgress?.Report(d);
 			}
 		}
@@ -103,24 +114,31 @@ public sealed partial class SpeechToTextImplementation
 			{
 				StopRecording(sttClient);
 			}
+
+			OnRecognitionResultCompleted(e.Data.ToString() ?? string.Empty);
 			taskResult?.TrySetResult(e.Data.ToString() ?? string.Empty);
 		}
 	}
 
+	void OnStateChanged(object? sender, StateChangedEventArgs e)
+	{
+		OnSpeechToTextStateChanged(CurrentState);
+	}
+
 	[MemberNotNull(nameof(sttClient))]
-	Task<bool> Initialize()
+	Task<bool> Initialize(CancellationToken cancellationToken)
 	{
 		if (tcsInitialize != null && sttClient != null)
 		{
-			return tcsInitialize.Task;
+			return tcsInitialize.Task.WaitAsync(cancellationToken);
 		}
 
-		tcsInitialize = new TaskCompletionSource<bool>();
+		tcsInitialize = new TaskCompletionSource<bool>(cancellationToken);
 		sttClient = new SttClient();
 
 		sttClient.StateChanged += (s, e) =>
 		{
-			if (e.Current == State.Ready)
+			if (e.Current == Tizen.Uix.Stt.State.Ready)
 			{
 				tcsInitialize.TrySetResult(true);
 			}
@@ -134,6 +152,34 @@ public sealed partial class SpeechToTextImplementation
 		{
 			taskResult?.TrySetException(new Exception("STT is not available - " + ex));
 		}
-		return tcsInitialize.Task;
+
+		return tcsInitialize.Task.WaitAsync(cancellationToken);
+	}
+
+	async Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
+	{
+		await Initialize(cancellationToken);
+
+		sttClient.ErrorOccurred += OnErrorOccurred;
+		sttClient.RecognitionResult += OnRecognitionResult;
+		sttClient.StateChanged += OnStateChanged;
+
+		var recognitionType = sttClient.IsRecognitionTypeSupported(RecognitionType.Partial)
+			? RecognitionType.Partial
+			: RecognitionType.Free;
+
+		sttClient.Start(defaultSttEngineLocale, recognitionType);
+
+		cancellationToken.ThrowIfCancellationRequested();
+	}
+
+	Task InternalStopListeningAsync(CancellationToken cancellationToken)
+	{
+		if (sttClient is not null)
+		{
+			StopRecording(sttClient);
+		}
+
+		return Task.CompletedTask;
 	}
 }
