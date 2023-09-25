@@ -41,10 +41,15 @@
                 TextColor="White"
                 Command="{Binding DisplayPopup5Command}"/>
             <Button
-                Text="Style Class"
+                Text="Dynamic Style Inheritance"
                 BackgroundColor="Blue"
                 TextColor="White"
                 Command="{Binding DisplayPopup6Command}"/>
+            <Button
+                Text="Style Class"
+                BackgroundColor="Blue"
+                TextColor="White"
+                Command="{Binding DisplayPopup7Command}"/>
         </StackLayout>
     </ScrollView>
 

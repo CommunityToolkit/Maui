@@ -46,6 +46,13 @@ public partial class StylePopupViewModel : BaseViewModel
 	[RelayCommand]
 	static void DisplayPopup6()
 	{
+		var popup = new DynamicStyleInheritancePopup();
+		MainPage.ShowPopup(popup);
+	}
+
+	[RelayCommand]
+	static void DisplayPopup7()
+	{
 		var popup = new StyleClassPopup();
 		MainPage.ShowPopup(popup);
 	}

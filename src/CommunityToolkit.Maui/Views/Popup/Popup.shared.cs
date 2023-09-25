@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Views;
 /// Represents a small View that pops up at front the Page. Implements <see cref="IPopup"/>.
 /// </summary>
 [ContentProperty(nameof(Content))]
-public partial class Popup : Element, IPopup, IWindowController, IPropertyPropagationController, IResourcesProvider, IStyleSelectable
+public partial class Popup : Element, IPopup, IWindowController, IPropertyPropagationController, IResourcesProvider, IStyleSelectable, IStyleElement
 {
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="Content"/> property.
