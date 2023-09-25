@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Views.CustomSizeAndPositionPopupPage"
+                Title="Custom Popup Size and Position"
+                x:TypeArguments="viewModels:CustomSizeAndPositionPopupViewModel"
+                x:DataType="viewModels:CustomSizeAndPositionPopupViewModel">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,44,*">
+        <StackLayout Grid.Row="0" Orientation="Horizontal" Spacing="5" HeightRequest="44">
+            <Label Text="Width:"
+                   VerticalOptions="Center" />
+
+            <Entry Text="{Binding Width}"
+                   Placeholder="100"
+                   Keyboard="Numeric"
+                   WidthRequest="100"
+                   HorizontalTextAlignment="End" />
+
+            <Label Text="Height:"
+                   VerticalOptions="Center" />
+
+            <Entry Text="{Binding Height}"
+                   Placeholder="100"
+                   Keyboard="Numeric"
+                   WidthRequest="100"
+                   HorizontalTextAlignment="End" />
+
+        </StackLayout>
+
+        <StackLayout Grid.Row="1" Orientation="Vertical">
+            <Label
+                Text="HorizontalOptions:"
+                VerticalOptions="Center" />
+
+            <StackLayout Orientation="Horizontal" Spacing="5">
+
+                <Label Text="Start"
+                       VerticalOptions="Center" />
+
+                <RadioButton
+                    IsChecked="{Binding IsStartHorizontalOptionSelected}"
+                    GroupName="HorizontalRadioButtonGroup" />
+
+                <Label
+                    Text="Center"
+                    VerticalOptions="Center" />
+
+                <RadioButton
+                    IsChecked="{Binding IsCenterHorizontalOptionSelected}"
+                    GroupName="HorizontalRadioButtonGroup" />
+
+                <Label Text="End"
+                       VerticalOptions="Center" />
+
+                <RadioButton
+                    IsChecked="{Binding IsEndHorizontalOptionSelected}"
+                    GroupName="HorizontalRadioButtonGroup" />
+
+                <Label
+                    Text="Fill"
+                    VerticalOptions="Center" />
+
+                <RadioButton
+                    IsChecked="{Binding IsFillHorizontalOptionSelected}"
+                    GroupName="HorizontalRadioButtonGroup" />
+
+            </StackLayout>
+        </StackLayout>
+
+        <StackLayout Grid.Row="2" Orientation="Vertical">
+            <Label Text="VerticalOptions:" VerticalOptions="Center" />
+            <StackLayout Orientation="Horizontal">
+                <Label
+                    Text="Start"
+                    VerticalOptions="Center" />
+
+                <RadioButton
+                    IsChecked="{Binding IsStartVerticalOptionSelected}"
+                    GroupName="VerticalRadioButtonGroup" />
+
+                <Label
+                    Text="Center"
+                    VerticalOptions="Center" />
+
+                <RadioButton
+                    IsChecked="{Binding IsCenterVerticalOptionSelected}"
+                    GroupName="VerticalRadioButtonGroup" />
+
+                <Label
+                    Text="End"
+                    VerticalOptions="Center" />
+
+                <RadioButton
+                    IsChecked="{Binding IsEndVerticalOptionSelected}"
+                    GroupName="VerticalRadioButtonGroup" />
+
+                <Label Text="Fill"
+                       VerticalOptions="Center" />
+
+                <RadioButton
+                    IsChecked="{Binding IsFillVerticalOptionSelected}"
+                    GroupName="VerticalRadioButtonGroup" />
+
+            </StackLayout>
+        </StackLayout>
+        <Button
+            Grid.Row="3"
+            Text="Show"
+            TextColor="White"
+            Command="{Binding ExecuteShowButtonCommand, Mode=OneTime}" />
+    </Grid>
+</pages:BasePage>
