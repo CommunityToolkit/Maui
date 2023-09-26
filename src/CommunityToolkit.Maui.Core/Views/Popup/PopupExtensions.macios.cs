@@ -60,8 +60,13 @@ public static class PopupExtensions
 			currentSize = new CGSize(popup.Size.Width, popup.Size.Height);
 		}
 
+#if MACCATALYST
+		currentSize.Width = NMath.Min(currentSize.Width, frame.Size.Width - 0.001f * 2 - 20f);
+		currentSize.Height = NMath.Min(currentSize.Height, frame.Size.Height - 0.001f * 2);
+#else
 		currentSize.Width = NMath.Min(currentSize.Width, frame.Size.Width);
 		currentSize.Height = NMath.Min(currentSize.Height, frame.Size.Height);
+#endif
 		mauiPopup.PreferredContentSize = currentSize;
 	}
 
@@ -147,7 +152,7 @@ public static class PopupExtensions
 #if MACCATALYST
 					Microsoft.Maui.Primitives.LayoutAlignment.Start => mauiPopup.PreferredContentSize.Height / 2 - (titleBarHeight + navigationBarHeight),
 					Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Height - mauiPopup.PreferredContentSize.Height / 2 - (titleBarHeight + navigationBarHeight),
-					Microsoft.Maui.Primitives.LayoutAlignment.Center or Microsoft.Maui.Primitives.LayoutAlignment.Fill => frame.GetMidY() - (titleBarHeight + navigationBarHeight) / 2,
+					Microsoft.Maui.Primitives.LayoutAlignment.Center or Microsoft.Maui.Primitives.LayoutAlignment.Fill => frame.GetMidY() - (titleBarHeight + navigationBarHeight),
 #else
 					Microsoft.Maui.Primitives.LayoutAlignment.Start => mauiPopup.PreferredContentSize.Height / 2,
 					Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Height - (mauiPopup.PreferredContentSize.Height / 2),
@@ -169,7 +174,7 @@ public static class PopupExtensions
 #if MACCATALYST
 					Microsoft.Maui.Primitives.LayoutAlignment.Start => 0f,
 					Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Width - mauiPopup.PreferredContentSize.Width - 20f,
-					Microsoft.Maui.Primitives.LayoutAlignment.Center or Microsoft.Maui.Primitives.LayoutAlignment.Fill => frame.GetMidX() - mauiPopup.PreferredContentSize.Width / 2 - 20f,
+					Microsoft.Maui.Primitives.LayoutAlignment.Center or Microsoft.Maui.Primitives.LayoutAlignment.Fill => frame.GetMidX() - mauiPopup.PreferredContentSize.Width / 2 - 10f,
 #else
 					Microsoft.Maui.Primitives.LayoutAlignment.Start => mauiPopup.PreferredContentSize.Width / 2,
 					Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Width - (mauiPopup.PreferredContentSize.Width / 2),
