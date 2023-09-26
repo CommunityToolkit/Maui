@@ -31,7 +31,7 @@ public sealed class ViewsGalleryViewModel : BaseGalleryViewModel
 			SectionModel.Create<PopupLayoutAlignmentViewModel>("Popup Layout Page", Colors.Red, "Popup.Content demonstrated using different layouts"),
 			SectionModel.Create<ShowPopupInOnAppearingPageViewModel>("Show Popup in OnAppearing", Colors.Red, "Proves that we now support showing a popup before the platform is even ready."),
 			SectionModel.Create<SemanticOrderViewPageViewModel>("Semantic Order View", Colors.Red, "SemanticOrderView allows developers to indicate the focus order of visible controls when a user is navigating via TalkBack (Android), VoiceOver (iOS) or Narrator (Windows)."),
-			SectionModel.Create<StylePopupViewModel>("Popup Style Page", Colors.Red, "A page demonstrating Popup Style."),
+			SectionModel.Create<StylePopupViewModel>("Popup Style Page", Colors.Red, "A page demonstrating how Popups can be styled in a .NET MAUI application."),
 		})
 	{
 	}
