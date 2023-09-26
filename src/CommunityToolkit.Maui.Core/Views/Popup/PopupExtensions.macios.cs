@@ -132,6 +132,11 @@ public static class PopupExtensions
 			throw new InvalidOperationException("PopoverPresentationController cannot be null");
 		}
 
+#if MACCATALYST
+		var titleBarHeight = mauiPopup.ViewController?.NavigationController?.NavigationBar.Frame.Y ?? 0;
+		var navigationBarHeight = mauiPopup.ViewController?.NavigationController?.NavigationBar.Frame.Size.Height ?? 0;
+#endif
+
 		if (popup.Anchor is null)
 		{
 			nfloat originY;
@@ -139,9 +144,15 @@ public static class PopupExtensions
 			{
 				originY = popup.VerticalOptions switch
 				{
+#if MACCATALYST
+					Microsoft.Maui.Primitives.LayoutAlignment.Start => mauiPopup.PreferredContentSize.Height / 2 - (titleBarHeight + navigationBarHeight),
+					Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Height - mauiPopup.PreferredContentSize.Height / 2 - (titleBarHeight + navigationBarHeight),
+					Microsoft.Maui.Primitives.LayoutAlignment.Center or Microsoft.Maui.Primitives.LayoutAlignment.Fill => frame.GetMidY() - (titleBarHeight + navigationBarHeight) / 2,
+#else
 					Microsoft.Maui.Primitives.LayoutAlignment.Start => mauiPopup.PreferredContentSize.Height / 2,
 					Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Height - (mauiPopup.PreferredContentSize.Height / 2),
 					Microsoft.Maui.Primitives.LayoutAlignment.Center or Microsoft.Maui.Primitives.LayoutAlignment.Fill => frame.GetMidY(),
+#endif
 					_ => throw new NotSupportedException($"{nameof(Microsoft.Maui.Primitives.LayoutAlignment)} {popup.VerticalOptions} is not yet supported")
 				};
 			}
@@ -155,9 +166,15 @@ public static class PopupExtensions
 			{
 				originX = popup.HorizontalOptions switch
 				{
+#if MACCATALYST
+					Microsoft.Maui.Primitives.LayoutAlignment.Start => 0f,
+					Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Width - mauiPopup.PreferredContentSize.Width - 20f,
+					Microsoft.Maui.Primitives.LayoutAlignment.Center or Microsoft.Maui.Primitives.LayoutAlignment.Fill => frame.GetMidX() - mauiPopup.PreferredContentSize.Width / 2 - 20f,
+#else
 					Microsoft.Maui.Primitives.LayoutAlignment.Start => mauiPopup.PreferredContentSize.Width / 2,
 					Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Width - (mauiPopup.PreferredContentSize.Width / 2),
 					Microsoft.Maui.Primitives.LayoutAlignment.Center or Microsoft.Maui.Primitives.LayoutAlignment.Fill => frame.GetMidX(),
+#endif
 					_ => throw new NotSupportedException($"{nameof(Microsoft.Maui.Primitives.LayoutAlignment)} {popup.VerticalOptions} is not yet supported")
 				};
 			}
