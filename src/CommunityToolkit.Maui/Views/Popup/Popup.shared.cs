@@ -352,6 +352,10 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	protected virtual async Task OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup)
 	{
 		((IPopup)this).OnClosed(result);
+		if (resources is not null)
+		{
+			((IResourceDictionary)resources).ValuesChanged -= OnResourcesChanged;
+		}
 
 		await popupDismissedTaskCompletionSource.Task;
 		Parent = null;

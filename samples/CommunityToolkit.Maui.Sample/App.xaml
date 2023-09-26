@@ -9,7 +9,7 @@
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <Style x:Key="ImplicitPopupStyle" TargetType="{x:Type popups:ImplicitStylePopup}">
+            <Style TargetType="{x:Type popups:ImplicitStylePopup}">
                 <Setter Property="Size" Value="100,100" />
                 <Setter Property="Color" Value="Red" />
                 <Setter Property="HorizontalOptions" Value="Start" />
@@ -17,7 +17,7 @@
                 <Setter Property="CanBeDismissedByTappingOutsideOfPopup" Value="True" />
             </Style>
 
-            <Style TargetType="{x:Type popups:ExplicitStylePopup}">
+            <Style x:Key="ExplicitPopupStyle" TargetType="{x:Type popups:ExplicitStylePopup}">
                 <Setter Property="Size" Value="200,100" />
                 <Setter Property="Color" Value="Yellow" />
                 <Setter Property="HorizontalOptions" Value="End" />

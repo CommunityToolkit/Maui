@@ -9,49 +9,49 @@ public partial class StylePopupViewModel : BaseViewModel
 	static Page MainPage => Application.Current?.MainPage ?? throw new InvalidOperationException("MainPage cannot be null while app is running");
 
 	[RelayCommand]
-	static void DisplayPopup1()
+	static void DisplayImplicitStylePopup()
 	{
 		var popup = new ImplicitStylePopup();
 		MainPage.ShowPopup(popup);
 	}
 
 	[RelayCommand]
-	static void DisplayPopup2()
+	static void DisplayExplicitStylePopup()
 	{
 		var popup = new ExplicitStylePopup();
 		MainPage.ShowPopup(popup);
 	}
 
 	[RelayCommand]
-	static void DisplayPopup3()
+	static void DisplayDynamicStylePopup()
 	{
 		var popup = new DynamicStylePopup();
 		MainPage.ShowPopup(popup);
 	}
 
 	[RelayCommand]
-	static void DisplayPopup4()
+	static void DisplayApplyToDerivedTypesPopup()
 	{
 		var popup = new ApplyToDerivedTypesPopup();
 		MainPage.ShowPopup(popup);
 	}
 
 	[RelayCommand]
-	static void DisplayPopup5()
+	static void DisplayStyleInheritancePopup()
 	{
 		var popup = new StyleInheritancePopup();
 		MainPage.ShowPopup(popup);
 	}
 
 	[RelayCommand]
-	static void DisplayPopup6()
+	static void DisplayDynamicStyleInheritancePopup()
 	{
 		var popup = new DynamicStyleInheritancePopup();
 		MainPage.ShowPopup(popup);
 	}
 
 	[RelayCommand]
-	static void DisplayPopup7()
+	static void DisplayStyleClassPopup()
 	{
 		var popup = new StyleClassPopup();
 		MainPage.ShowPopup(popup);

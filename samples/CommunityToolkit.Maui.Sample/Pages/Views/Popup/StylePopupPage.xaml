@@ -19,37 +19,37 @@
                 Text="Implicit Style"
                 BackgroundColor="Blue"
                 TextColor="White"
-                Command="{Binding DisplayPopup1Command}"/>
+                Command="{Binding DisplayImplicitStylePopupCommand}"/>
             <Button
                 Text="Explicit Style"
                 BackgroundColor="Blue"
                 TextColor="White"
-                Command="{Binding DisplayPopup2Command}"/>
+                Command="{Binding DisplayExplicitStylePopupCommand}"/>
             <Button
                 Text="Dynamic Style"
                 BackgroundColor="Blue"
                 TextColor="White"
-                Command="{Binding DisplayPopup3Command}"/>
+                Command="{Binding DisplayDynamicStylePopupCommand}"/>
             <Button
                 Text="ApplyToDerivedTypes"
                 BackgroundColor="Blue"
                 TextColor="White"
-                Command="{Binding DisplayPopup4Command}"/>
+                Command="{Binding DisplayApplyToDerivedTypesPopupCommand}"/>
             <Button
                 Text="Style Inheritance"
                 BackgroundColor="Blue"
                 TextColor="White"
-                Command="{Binding DisplayPopup5Command}"/>
+                Command="{Binding DisplayStyleInheritancePopupCommand}"/>
             <Button
                 Text="Dynamic Style Inheritance"
                 BackgroundColor="Blue"
                 TextColor="White"
-                Command="{Binding DisplayPopup6Command}"/>
+                Command="{Binding DisplayDynamicStyleInheritancePopupCommand}"/>
             <Button
                 Text="Style Class"
                 BackgroundColor="Blue"
                 TextColor="White"
-                Command="{Binding DisplayPopup7Command}"/>
+                Command="{Binding DisplayStyleClassPopupCommand}"/>
         </StackLayout>
     </ScrollView>
 
