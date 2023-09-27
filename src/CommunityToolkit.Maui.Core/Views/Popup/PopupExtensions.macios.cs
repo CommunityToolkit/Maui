@@ -8,6 +8,14 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public static class PopupExtensions
 {
+
+	static nfloat popoverLayoutMargin = 0.0001f;
+
+#if MACCATALYST
+	static nfloat popupMargin = 18f;
+#endif
+
+
 	/// <summary>
 	/// Method to update the <see cref="IPopup.Size"/> of the Popup.
 	/// </summary>
@@ -61,8 +69,8 @@ public static class PopupExtensions
 		}
 
 #if MACCATALYST
-		currentSize.Width = NMath.Min(currentSize.Width, frame.Size.Width - 0.001f * 2 - 20f);
-		currentSize.Height = NMath.Min(currentSize.Height, frame.Size.Height - 0.001f * 2);
+		currentSize.Width = NMath.Min(currentSize.Width, frame.Size.Width - popoverLayoutMargin * 2 - popupMargin * 2);
+		currentSize.Height = NMath.Min(currentSize.Height, frame.Size.Height - popoverLayoutMargin * 2 - popupMargin * 2);
 #else
 		currentSize.Width = NMath.Min(currentSize.Width, frame.Size.Width);
 		currentSize.Height = NMath.Min(currentSize.Height, frame.Size.Height);
@@ -150,8 +158,8 @@ public static class PopupExtensions
 				originY = popup.VerticalOptions switch
 				{
 #if MACCATALYST
-					Microsoft.Maui.Primitives.LayoutAlignment.Start => mauiPopup.PreferredContentSize.Height / 2 - (titleBarHeight + navigationBarHeight),
-					Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Height - mauiPopup.PreferredContentSize.Height / 2 - (titleBarHeight + navigationBarHeight),
+					Microsoft.Maui.Primitives.LayoutAlignment.Start => mauiPopup.PreferredContentSize.Height / 2 - (titleBarHeight + navigationBarHeight - popupMargin),
+					Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Height - mauiPopup.PreferredContentSize.Height / 2 - (titleBarHeight + navigationBarHeight + popupMargin),
 					Microsoft.Maui.Primitives.LayoutAlignment.Center or Microsoft.Maui.Primitives.LayoutAlignment.Fill => frame.GetMidY() - (titleBarHeight + navigationBarHeight),
 #else
 					Microsoft.Maui.Primitives.LayoutAlignment.Start => mauiPopup.PreferredContentSize.Height / 2,
@@ -173,8 +181,8 @@ public static class PopupExtensions
 				{
 #if MACCATALYST
 					Microsoft.Maui.Primitives.LayoutAlignment.Start => 0f,
-					Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Width - mauiPopup.PreferredContentSize.Width - 20f,
-					Microsoft.Maui.Primitives.LayoutAlignment.Center or Microsoft.Maui.Primitives.LayoutAlignment.Fill => frame.GetMidX() - mauiPopup.PreferredContentSize.Width / 2 - 10f,
+					Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Width - mauiPopup.PreferredContentSize.Width - popupMargin * 2,
+					Microsoft.Maui.Primitives.LayoutAlignment.Center or Microsoft.Maui.Primitives.LayoutAlignment.Fill => frame.GetMidX() - mauiPopup.PreferredContentSize.Width / 2 - popupMargin,
 #else
 					Microsoft.Maui.Primitives.LayoutAlignment.Start => mauiPopup.PreferredContentSize.Width / 2,
 					Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Width - (mauiPopup.PreferredContentSize.Width / 2),
@@ -197,7 +205,7 @@ public static class PopupExtensions
 			// From the point of view of usability, the top, bottom, left, and right values of UIEdgeInsets cannot all be 0.
 			// If you specify 0 for the top, bottom, left, and right of UIEdgeInsets, the default margins will be added, so 
 			// specify a value as close to 0 here as possible.
-			mauiPopup.PopoverPresentationController.PopoverLayoutMargins = new UIEdgeInsets(0.0001f, 0.0001f, 0.0001f, 0.0001f);
+			mauiPopup.PopoverPresentationController.PopoverLayoutMargins = new UIEdgeInsets(popoverLayoutMargin, popoverLayoutMargin, popoverLayoutMargin, popoverLayoutMargin);
 		}
 		else
 		{
