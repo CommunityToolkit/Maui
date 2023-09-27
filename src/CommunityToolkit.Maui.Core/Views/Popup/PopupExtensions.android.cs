@@ -202,6 +202,10 @@ public static class PopupExtensions
 			{
 				realWidth = (int)context.ToPixels(popup.Size.Width);
 				realHeight = (int)context.ToPixels(popup.Size.Height);
+
+				var size = popup.Content.Measure(popup.Size.Width, popup.Size.Height);
+				realContentWidth = (int)context.ToPixels(size.Width);
+				realContentHeight = (int)context.ToPixels(size.Height);
 			}
 
 			realWidth = Math.Min(realWidth is 0 ? realContentWidth : realWidth, (int)windowSize.Width);
@@ -211,9 +215,7 @@ public static class PopupExtensions
 			{
 				realWidth = (int)(context.Resources?.DisplayMetrics?.WidthPixels * 0.8 ?? throw new InvalidOperationException($"Unable to determine width. {nameof(context.Resources.DisplayMetrics)} cannot be null"));
 				realHeight = (int)(context.Resources?.DisplayMetrics?.HeightPixels * 0.6 ?? throw new InvalidOperationException($"Unable to determine height. {nameof(context.Resources.DisplayMetrics)} cannot be null"));
-			}
-
-			popup.Content.Measure(realWidth / density, realHeight / density);
+			}			
 		}
 
 		static Size GetWindowSize(IWindowManager? windowManager, ViewGroup decorView)
