@@ -10,7 +10,7 @@
 
     <ScrollView Orientation="Vertical">
         <StackLayout Orientation="Vertical" Spacing="5">
-            <Label Text="Popup can use Styles"
+            <Label Text="This sample demonstrates various ways of using applying a Style to a Popup"
                    HorizontalOptions="Center"
                    HorizontalTextAlignment="Center"
                    VerticalTextAlignment="Start"/>

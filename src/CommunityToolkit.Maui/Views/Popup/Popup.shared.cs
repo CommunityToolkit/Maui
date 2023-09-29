@@ -65,7 +65,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	{
 		platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Popup>>(() => new(this));
 		((IResourceDictionary)resources).ValuesChanged += OnResourcesChanged;
-		
+
 		mergedStyle = new MergedStyle(GetType(), this);
 	}
 
@@ -208,7 +208,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 		set
 		{
 			ArgumentNullException.ThrowIfNull(value);
-			
+
 			if (resources == value)
 			{
 				return;
@@ -218,7 +218,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 			((IResourceDictionary)resources).ValuesChanged -= OnResourcesChanged;
 
 			resources = value;
-			
+
 			OnResourcesChanged(value);
 			((IResourceDictionary)resources).ValuesChanged += OnResourcesChanged;
 
@@ -286,7 +286,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 		await OnClosed(result, false);
 		resultTaskCompletionSource.TrySetResult(result);
 	}
-	
+
 	internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
 	{
 		if (values is null)
@@ -315,12 +315,10 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 			}
 			else if (keyValuePair.Key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal))
 			{
-				var innerStyle = Resources[keyValuePair.Key] as List<Style>;
-				var parentStyle = keyValuePair.Value as List<Style>;
-				if (innerStyle is not null)
+				if (Resources[keyValuePair.Key] is List<Style> innerStyle)
 				{
 					var mergedClassStyles = new List<Style>(innerStyle);
-					if (parentStyle is not null)
+					if (keyValuePair.Value is List<Style> parentStyle)
 					{
 						mergedClassStyles.AddRange(parentStyle);
 					}
@@ -352,10 +350,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	protected virtual async Task OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup)
 	{
 		((IPopup)this).OnClosed(result);
-		if (resources is not null)
-		{
-			((IResourceDictionary)resources).ValuesChanged -= OnResourcesChanged;
-		}
+		((IResourceDictionary)resources).ValuesChanged -= OnResourcesChanged;
 
 		await popupDismissedTaskCompletionSource.Task;
 		Parent = null;
@@ -407,5 +402,5 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 		PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 
 	IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() =>
-		Content is null ? Array.Empty<IVisualTreeElement>() : new [] { Content };
+		Content is null ? Array.Empty<IVisualTreeElement>() : new[] { Content };
 }

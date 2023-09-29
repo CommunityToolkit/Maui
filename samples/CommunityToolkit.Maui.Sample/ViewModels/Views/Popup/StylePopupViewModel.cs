@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public partial class StylePopupViewModel : BaseViewModel
 {
-	static Page MainPage => Application.Current?.MainPage ?? throw new InvalidOperationException("MainPage cannot be null while app is running");
+	static Page MainPage => Shell.Current;
 
 	[RelayCommand]
 	static void DisplayImplicitStylePopup()
