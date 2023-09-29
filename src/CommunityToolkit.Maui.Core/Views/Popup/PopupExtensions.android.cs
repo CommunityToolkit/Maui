@@ -215,7 +215,7 @@ public static class PopupExtensions
 			{
 				realWidth = (int)(context.Resources?.DisplayMetrics?.WidthPixels * 0.8 ?? throw new InvalidOperationException($"Unable to determine width. {nameof(context.Resources.DisplayMetrics)} cannot be null"));
 				realHeight = (int)(context.Resources?.DisplayMetrics?.HeightPixels * 0.6 ?? throw new InvalidOperationException($"Unable to determine height. {nameof(context.Resources.DisplayMetrics)} cannot be null"));
-			}			
+			}
 		}
 
 		static Size GetWindowSize(IWindowManager? windowManager, ViewGroup decorView)

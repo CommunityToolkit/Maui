@@ -8,10 +8,10 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public static class PopupExtensions
 {
-
-	static nfloat popoverLayoutMargin = 0.0001f;
+	static readonly nfloat defaultPopoverLayoutMargin = 0.0001f;
 
 #if MACCATALYST
+	// https://github.com/CommunityToolkit/Maui/pull/1361#issuecomment-1736487174
 	static nfloat popupMargin = 18f;
 #endif
 
@@ -69,8 +69,8 @@ public static class PopupExtensions
 		}
 
 #if MACCATALYST
-		currentSize.Width = NMath.Min(currentSize.Width, frame.Size.Width - popoverLayoutMargin * 2 - popupMargin * 2);
-		currentSize.Height = NMath.Min(currentSize.Height, frame.Size.Height - popoverLayoutMargin * 2 - popupMargin * 2);
+		currentSize.Width = NMath.Min(currentSize.Width, frame.Size.Width - defaultPopoverLayoutMargin * 2 - popupMargin * 2);
+		currentSize.Height = NMath.Min(currentSize.Height, frame.Size.Height - defaultPopoverLayoutMargin * 2 - popupMargin * 2);
 #else
 		currentSize.Width = NMath.Min(currentSize.Width, frame.Size.Width);
 		currentSize.Height = NMath.Min(currentSize.Height, frame.Size.Height);
@@ -85,7 +85,7 @@ public static class PopupExtensions
 	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
 	public static void SetBackgroundColor(this MauiPopup mauiPopup, in IPopup popup)
 	{
-		if (mauiPopup.PopoverPresentationController is not null && popup.Color == Colors.Transparent)
+		if (mauiPopup.PopoverPresentationController is not null && Equals(popup.Color, Colors.Transparent))
 		{
 			mauiPopup.PopoverPresentationController.PopoverBackgroundViewType = typeof(TransparentPopoverBackgroundView);
 		}
@@ -205,7 +205,7 @@ public static class PopupExtensions
 			// From the point of view of usability, the top, bottom, left, and right values of UIEdgeInsets cannot all be 0.
 			// If you specify 0 for the top, bottom, left, and right of UIEdgeInsets, the default margins will be added, so 
 			// specify a value as close to 0 here as possible.
-			mauiPopup.PopoverPresentationController.PopoverLayoutMargins = new UIEdgeInsets(popoverLayoutMargin, popoverLayoutMargin, popoverLayoutMargin, popoverLayoutMargin);
+			mauiPopup.PopoverPresentationController.PopoverLayoutMargins = new UIEdgeInsets(defaultPopoverLayoutMargin, defaultPopoverLayoutMargin, defaultPopoverLayoutMargin, defaultPopoverLayoutMargin);
 		}
 		else
 		{
