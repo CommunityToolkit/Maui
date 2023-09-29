@@ -1,0 +1,196 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Views.CustomSizeAndPositionPopupPage"
+                Title="Custom Popup Size and Position"
+                x:TypeArguments="viewModels:CustomSizeAndPositionPopupViewModel"
+                x:DataType="viewModels:CustomSizeAndPositionPopupViewModel">
+
+    <ContentPage.Resources>
+        <ControlTemplate x:Key="RadioButtonTemplate">
+            <Border Stroke="#F3F2F1"
+                    StrokeThickness="2"
+                    StrokeShape="RoundRectangle 10"
+                    BackgroundColor="#F3F2F1"
+                    HeightRequest="90"
+                    WidthRequest="90"
+                    HorizontalOptions="Start"
+                    VerticalOptions="Start">
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CheckedStates">
+                            <VisualState x:Name="Checked">
+                                <VisualState.Setters>
+                                    <Setter TargetName="check"
+                                            Property="Opacity"
+                                            Value="1" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Unchecked">
+                                <VisualState.Setters>
+                                    <Setter TargetName="check"
+                                            Property="Opacity"
+                                            Value="0" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </VisualStateManager.VisualStateGroups>
+                <Grid Margin="4"
+                      WidthRequest="90"
+                      BackgroundColor="Transparent">
+                    <Grid Margin="0,0,4,0"
+                          WidthRequest="18"
+                          HeightRequest="18"
+                          HorizontalOptions="End"
+                          VerticalOptions="Start">
+                        <Ellipse Stroke="Blue"
+                                 Fill="White"
+                                 WidthRequest="16"
+                                 HeightRequest="16"
+                                 HorizontalOptions="Center"
+                                 VerticalOptions="Center" />
+                        <Ellipse x:Name="check"
+                                 Fill="Blue"
+                                 WidthRequest="8"
+                                 HeightRequest="8"
+                                 HorizontalOptions="Center"
+                                 VerticalOptions="Center" />
+                    </Grid>
+                    <ContentPresenter />
+                </Grid>
+            </Border>
+        </ControlTemplate>
+
+        <Style TargetType="RadioButton">
+            <Setter Property="ControlTemplate"
+                    Value="{StaticResource RadioButtonTemplate}" />
+        </Style>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="24,100,24,100,24,36,24,36,44"
+          ColumnDefinitions="*,*,*,*"
+          RowSpacing="8"
+          ColumnSpacing="4">
+
+        <Label Grid.Row="0"
+               Grid.ColumnSpan="4"
+               Text="HorizontalOptions"
+               VerticalOptions="Center"
+               FontAttributes="Bold" />
+
+        <RadioButton Grid.Row="1"
+                     Grid.Column="0"
+                     IsChecked="{Binding IsStartHorizontalOptionSelected}"
+                     GroupName="HorizontalRadioButtonGroup">
+            <RadioButton.Content>
+                <Label Text="Start" TextColor="Black" VerticalTextAlignment="Center" Margin="4,0,0,0" />
+            </RadioButton.Content>
+        </RadioButton>
+
+        <RadioButton Grid.Row="1"
+                     Grid.Column="1"
+                     IsChecked="{Binding IsCenterHorizontalOptionSelected}"
+                     GroupName="HorizontalRadioButtonGroup">
+            <RadioButton.Content>
+                <Label Text="Center" TextColor="Black" VerticalTextAlignment="Center" Margin="4,0,0,0" />
+            </RadioButton.Content>
+        </RadioButton>
+
+        <RadioButton Grid.Row="1"
+                     Grid.Column="2"
+                     IsChecked="{Binding IsEndHorizontalOptionSelected}"
+                     GroupName="HorizontalRadioButtonGroup">
+            <RadioButton.Content>
+                <Label Text="End" TextColor="Black" VerticalTextAlignment="Center" Margin="4,0,0,0" />
+            </RadioButton.Content>
+        </RadioButton>
+
+        <RadioButton Grid.Row="1"
+                     Grid.Column="3"
+                     IsChecked="{Binding IsFillHorizontalOptionSelected}"
+                     GroupName="HorizontalRadioButtonGroup">
+            <RadioButton.Content>
+                <Label Text="Fill" TextColor="Black" VerticalTextAlignment="Center" Margin="4,0,0,0" />
+            </RadioButton.Content>
+        </RadioButton>
+
+        <Label Text="VerticalOptions"
+               VerticalOptions="Center"
+               FontAttributes="Bold"
+               Grid.Row="2"
+               Grid.ColumnSpan="4" />
+
+        <RadioButton Grid.Row="3"
+                     Grid.Column="0"
+                     IsChecked="{Binding IsStartVerticalOptionSelected}"
+                     GroupName="VerticalRadioButtonGroup">
+            <RadioButton.Content>
+                <Label Text="Start" TextColor="Black" VerticalTextAlignment="Center" Margin="4,0,0,0" />
+            </RadioButton.Content>
+        </RadioButton>
+
+        <RadioButton Grid.Row="3"
+                     Grid.Column="1"
+                     IsChecked="{Binding IsCenterVerticalOptionSelected}"
+                     GroupName="VerticalRadioButtonGroup">
+            <RadioButton.Content>
+                <Label Text="Center" TextColor="Black" VerticalTextAlignment="Center" Margin="4,0,0,0" />
+            </RadioButton.Content>
+        </RadioButton>
+
+        <RadioButton Grid.Row="3"
+                     Grid.Column="2"
+                     IsChecked="{Binding IsEndVerticalOptionSelected}"
+                     GroupName="VerticalRadioButtonGroup">
+            <RadioButton.Content>
+                <Label Text="End" TextColor="Black" VerticalTextAlignment="Center" Margin="4,0,0,0" />
+            </RadioButton.Content>
+        </RadioButton>
+
+        <RadioButton Grid.Row="3"
+                     Grid.Column="3"
+                     IsChecked="{Binding IsFillVerticalOptionSelected}"
+                     GroupName="VerticalRadioButtonGroup">
+            <RadioButton.Content>
+                <Label Text="Fill" TextColor="Black" VerticalTextAlignment="Center" Margin="4,0,0,0" />
+            </RadioButton.Content>
+        </RadioButton>
+
+        <Label Grid.Row="4"
+               Grid.ColumnSpan="4"
+               Text="Width"
+               VerticalOptions="Center"
+               FontAttributes="Bold" />
+
+        <Entry Grid.Row="5"
+               Grid.Column="0"
+               Text="{Binding Width}"
+               Placeholder="100"
+               Keyboard="Numeric"
+               HorizontalTextAlignment="End" />
+
+        <Label Grid.Row="6"
+               Grid.ColumnSpan="4"
+               Text="Height"
+               VerticalOptions="Center"
+               FontAttributes="Bold" />
+
+        <Entry Grid.Row="7"
+               Grid.Column="0"
+               Text="{Binding Height}"
+               Placeholder="100"
+               Keyboard="Numeric"
+               HorizontalTextAlignment="End" />
+
+        <Button Grid.Row="8"
+                Grid.ColumnSpan="4"
+                Text="Show"
+                TextColor="White"
+                HorizontalOptions="Center"
+                Command="{Binding ExecuteShowButtonCommand, Mode=OneTime}" />
+    </Grid>
+</pages:BasePage>
