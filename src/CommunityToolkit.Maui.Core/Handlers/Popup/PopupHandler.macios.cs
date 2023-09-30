@@ -13,13 +13,10 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="result">The result that should return from this Popup.</param>
 	public static async void MapOnClosed(PopupHandler handler, IPopup view, object? result)
 	{
-		var pc = handler.PlatformView.PresentationController;
-		if (pc is not null)
+		var presentationController = handler.PlatformView.PresentationController;
+		if (presentationController?.PresentedViewController is UIViewController presentationViewController)
 		{
-			if (pc.PresentedViewController is UIViewController pvc)
-			{
-				await pvc.DismissViewControllerAsync(true);
-			}
+			await presentationViewController.DismissViewControllerAsync(true);
 		}
 
 		view.HandlerCompleteTCS.TrySetResult();
