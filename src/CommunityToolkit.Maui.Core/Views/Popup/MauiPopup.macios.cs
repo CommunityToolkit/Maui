@@ -70,7 +70,7 @@ public class MauiPopup : UIViewController
 			if (ViewController?.View is UIView view)
 			{
 				var overlayView = GetOverlayView(view);
-				overlayView.Frame = new CGRect(view.Frame.X, view.Frame.Y, view.Frame.Width, view.Frame.Height);
+				overlayView.Frame = new CGRect(0, 0, view.Frame.Width, view.Frame.Height);
 			}
 		}, (IUIViewControllerTransitionCoordinatorContext obj) =>
 		{
@@ -91,6 +91,13 @@ public class MauiPopup : UIViewController
 	[MemberNotNull(nameof(VirtualView), nameof(ViewController))]
 	public void SetElement(IPopup element)
 	{
+#if MACCATALYST
+		if (element.Parent?.Handler is not PageHandler)
+		{
+			throw new InvalidOperationException($"The {nameof(element.Parent)} must be of type {typeof(PageHandler)}.");
+		}
+#endif
+
 		VirtualView = element;
 		ModalPresentationStyle = UIModalPresentationStyle.Popover;
 
@@ -115,7 +122,7 @@ public class MauiPopup : UIViewController
 			var overlayView = GetOverlayView(view);
 			overlayView.Bounds = view.Bounds;
 			overlayView.Layer.RemoveAllAnimations();
-			overlayView.Frame = view.Frame;
+			overlayView.Frame = new CGRect(0, 0, view.Frame.Width, view.Frame.Height);
 			overlayView.BackgroundColor = UIColor.Black.ColorWithAlpha(0.4f);
 			view.AddSubview(overlayView);
 		}
@@ -205,7 +212,7 @@ public class MauiPopup : UIViewController
 				x => x.Tag == overlayViewTag
 			)
 			.FirstOrDefault();
-		if (overlayView == null)
+		if (overlayView is null)
 		{
 			overlayView = new UIView();
 			overlayView.Tag = overlayViewTag;
