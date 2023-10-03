@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.Sample.Views.Popups;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -14,9 +15,20 @@ public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 	bool isStartHorizontalOptionSelected = true, isCenterHorizontalOptionSelected, isEndHorizontalOptionSelected, isFillHorizontalOptionSelected,
 		isStartVerticalOptionSelected = true, isCenterVerticalOptionSelected, isEndVerticalOptionSelected, isFillVerticalOptionSelected;
 
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
+	int flowDirectionSelectedIndex;
+
+	public IReadOnlyList<string> FlowDirectionOptions { get; } = Enum.GetNames(typeof(FlowDirection));
+
 	[RelayCommand(CanExecute = nameof(CanShowButtonExecute))]
 	public Task ExecuteShowButton()
 	{
+		if(FlowDirectionSelectedIndex > FlowDirectionOptions.Count
+			|| FlowDirectionSelectedIndex < 0)
+		{
+			throw new ArgumentOutOfRangeException("Invalid FlowDirection Selected");
+		}
+
 		Microsoft.Maui.Primitives.LayoutAlignment? verticalOptions = null, horizontalOptions = null;
 
 		if (IsStartVerticalOptionSelected)
@@ -57,7 +69,7 @@ public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 
 		ArgumentNullException.ThrowIfNull(horizontalOptions);
 
-		var popup = new RedBlueBoxPopup
+		var popup = new FlowDirectionPopup((FlowDirection)FlowDirectionSelectedIndex)
 		{
 			Size = new Size(Width, Height),
 			VerticalOptions = verticalOptions.Value,
@@ -67,9 +79,36 @@ public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 		return Shell.Current.ShowPopupAsync(popup);
 	}
 
+	static bool IsFlowDirectionSelectionValid(int flowDirectionSelection, int flowDirectionOptionsCount)
+	{
+		return flowDirectionSelection < flowDirectionOptionsCount
+				&& flowDirectionSelection >= 0;
+	}
+
 	// Ensure at least one Horizontal Option is selected, one Vertical Option is selected, Height > 0, and Width > 0
 	bool CanShowButtonExecute() => (IsStartHorizontalOptionSelected || IsCenterHorizontalOptionSelected || IsEndHorizontalOptionSelected || IsFillHorizontalOptionSelected)
 		&& (IsStartVerticalOptionSelected || IsCenterVerticalOptionSelected || IsEndVerticalOptionSelected || IsFillVerticalOptionSelected)
 		&& Height > 0
-		&& Width > 0;
+		&& Width > 0
+		&& IsFlowDirectionSelectionValid(FlowDirectionSelectedIndex, FlowDirectionOptions.Count);
+
+	class FlowDirectionPopup : RedBlueBoxPopup
+	{
+		readonly FlowDirection flowDirection;
+
+		public FlowDirectionPopup(FlowDirection flowDirection)
+		{
+			this.flowDirection = flowDirection;
+		}
+
+		protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+
+			if (propertyName == ContentProperty.PropertyName && Content is not null)
+			{
+				Content.FlowDirection = flowDirection;
+			}
+		}
+	}
 }

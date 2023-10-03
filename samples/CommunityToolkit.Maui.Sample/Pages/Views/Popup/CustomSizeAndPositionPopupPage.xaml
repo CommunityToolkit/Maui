@@ -71,18 +71,29 @@
         </Style>
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="24,100,24,100,24,36,24,36,44"
+    <Grid RowDefinitions="24,36,24,100,24,100,24,36,24,36,44"
           ColumnDefinitions="*,*,*,*"
           RowSpacing="8"
           ColumnSpacing="4">
 
         <Label Grid.Row="0"
                Grid.ColumnSpan="4"
+               Text="FlowDirection"
+               VerticalOptions="Center"
+               FontAttributes="Bold" />
+
+        <Picker Grid.Row="1"
+                Grid.ColumnSpan="4"
+                SelectedIndex="{Binding FlowDirectionSelectedIndex}"
+                ItemsSource="{Binding FlowDirectionOptions, Mode=OneTime}" />
+
+        <Label Grid.Row="2"
+               Grid.ColumnSpan="4"
                Text="HorizontalOptions"
                VerticalOptions="Center"
                FontAttributes="Bold" />
 
-        <RadioButton Grid.Row="1"
+        <RadioButton Grid.Row="3"
                      Grid.Column="0"
                      IsChecked="{Binding IsStartHorizontalOptionSelected}"
                      GroupName="HorizontalRadioButtonGroup">
@@ -91,7 +102,7 @@
             </RadioButton.Content>
         </RadioButton>
 
-        <RadioButton Grid.Row="1"
+        <RadioButton Grid.Row="3"
                      Grid.Column="1"
                      IsChecked="{Binding IsCenterHorizontalOptionSelected}"
                      GroupName="HorizontalRadioButtonGroup">
@@ -100,7 +111,7 @@
             </RadioButton.Content>
         </RadioButton>
 
-        <RadioButton Grid.Row="1"
+        <RadioButton Grid.Row="3"
                      Grid.Column="2"
                      IsChecked="{Binding IsEndHorizontalOptionSelected}"
                      GroupName="HorizontalRadioButtonGroup">
@@ -109,7 +120,7 @@
             </RadioButton.Content>
         </RadioButton>
 
-        <RadioButton Grid.Row="1"
+        <RadioButton Grid.Row="3"
                      Grid.Column="3"
                      IsChecked="{Binding IsFillHorizontalOptionSelected}"
                      GroupName="HorizontalRadioButtonGroup">
@@ -121,10 +132,10 @@
         <Label Text="VerticalOptions"
                VerticalOptions="Center"
                FontAttributes="Bold"
-               Grid.Row="2"
+               Grid.Row="4"
                Grid.ColumnSpan="4" />
 
-        <RadioButton Grid.Row="3"
+        <RadioButton Grid.Row="5"
                      Grid.Column="0"
                      IsChecked="{Binding IsStartVerticalOptionSelected}"
                      GroupName="VerticalRadioButtonGroup">
@@ -133,7 +144,7 @@
             </RadioButton.Content>
         </RadioButton>
 
-        <RadioButton Grid.Row="3"
+        <RadioButton Grid.Row="5"
                      Grid.Column="1"
                      IsChecked="{Binding IsCenterVerticalOptionSelected}"
                      GroupName="VerticalRadioButtonGroup">
@@ -142,7 +153,7 @@
             </RadioButton.Content>
         </RadioButton>
 
-        <RadioButton Grid.Row="3"
+        <RadioButton Grid.Row="5"
                      Grid.Column="2"
                      IsChecked="{Binding IsEndVerticalOptionSelected}"
                      GroupName="VerticalRadioButtonGroup">
@@ -160,33 +171,33 @@
             </RadioButton.Content>
         </RadioButton>
 
-        <Label Grid.Row="4"
+        <Label Grid.Row="6"
                Grid.ColumnSpan="4"
                Text="Width"
                VerticalOptions="Center"
                FontAttributes="Bold" />
 
-        <Entry Grid.Row="5"
+        <Entry Grid.Row="7"
                Grid.Column="0"
                Text="{Binding Width}"
                Placeholder="100"
                Keyboard="Numeric"
                HorizontalTextAlignment="End" />
 
-        <Label Grid.Row="6"
+        <Label Grid.Row="8"
                Grid.ColumnSpan="4"
                Text="Height"
                VerticalOptions="Center"
                FontAttributes="Bold" />
 
-        <Entry Grid.Row="7"
+        <Entry Grid.Row="9"
                Grid.Column="0"
                Text="{Binding Height}"
                Placeholder="100"
                Keyboard="Numeric"
                HorizontalTextAlignment="End" />
 
-        <Button Grid.Row="8"
+        <Button Grid.Row="10"
                 Grid.ColumnSpan="4"
                 Text="Show"
                 TextColor="White"
