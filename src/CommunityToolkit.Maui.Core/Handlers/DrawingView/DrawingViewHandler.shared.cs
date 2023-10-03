@@ -137,6 +137,9 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 		base.ConnectHandler(platformView);
 		platformView.Initialize();
 
+		platformView.DrawingStarted += OnPlatformViewDrawingStarted;
+		platformView.DrawingCancelled += OnPlatformViewDrawingCancelled;
+		platformView.Drawing += OnPlatformViewDrawing;
 		platformView.DrawingLineCompleted += OnPlatformViewDrawingLineCompleted;
 		VirtualView.Lines.CollectionChanged += OnVirtualViewLinesCollectionChanged;
 		platformView.Lines.CollectionChanged += OnPlatformViewLinesCollectionChanged;
@@ -145,6 +148,9 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	/// <inheritdoc />
 	protected override void DisconnectHandler(MauiDrawingView platformView)
 	{
+		platformView.DrawingStarted -= OnPlatformViewDrawingStarted;
+		platformView.DrawingCancelled -= OnPlatformViewDrawingCancelled;
+		platformView.Drawing -= OnPlatformViewDrawing;
 		platformView.DrawingLineCompleted -= OnPlatformViewDrawingLineCompleted;
 		VirtualView.Lines.CollectionChanged -= OnVirtualViewLinesCollectionChanged;
 		platformView.Lines.CollectionChanged -= OnPlatformViewLinesCollectionChanged;
@@ -165,6 +171,21 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	{
 		var drawingLine = adapter.ConvertMauiDrawingLine(e.Line);
 		VirtualView.DrawingLineCompleted(drawingLine);
+	}
+	
+	void OnPlatformViewDrawing(object? sender, MauiOnDrawingEventArgs e)
+	{
+		VirtualView.OnDrawing(e.Point);
+	}
+	
+	void OnPlatformViewDrawingStarted(object? sender, MauiDrawingStartedEventArgs e)
+	{
+		VirtualView.DrawingStarted(e.Point);
+	}
+	
+	void OnPlatformViewDrawingCancelled(object? sender, EventArgs e)
+	{
+		VirtualView.DrawingCancelled();
 	}
 
 	void OnVirtualViewLinesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

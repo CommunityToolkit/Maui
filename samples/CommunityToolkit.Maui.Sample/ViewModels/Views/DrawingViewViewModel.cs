@@ -21,7 +21,10 @@ public partial class DrawingViewViewModel : BaseViewModel
 	{
 		this.fileSaver = fileSaver;
 
-		DrawingLineCompletedCommand = new Command<IDrawingLine>(line => Logs = "GestureCompletedCommand executed." + Environment.NewLine + $"Line points count: {line.Points.Count}" + Environment.NewLine + Environment.NewLine + Logs);
+		DrawingStartedCommand = new Command<PointF>(point => Logs = "DrawingStartedCommand executed." + Environment.NewLine + $"Point: {point.X}:{point.Y}" + Environment.NewLine + Environment.NewLine + Logs);
+		DrawingCancelledCommand = new Command(_ => Logs = "DrawingCancelledCommand executed." + Environment.NewLine + Environment.NewLine + Logs);
+		OnDrawingCommand = new Command<PointF>(point => Logs = "OnDrawingCommand executed." + Environment.NewLine + $"Point: {point.X}:{point.Y}" + Environment.NewLine + Environment.NewLine + Logs);
+		DrawingLineCompletedCommand = new Command<IDrawingLine>(line => Logs = "DrawingLineCompletedCommand executed." + Environment.NewLine + $"Line points count: {line.Points.Count}" + Environment.NewLine + Environment.NewLine + Logs);
 
 		ClearLinesCommand = new Command(Lines.Clear);
 
@@ -43,6 +46,11 @@ public partial class DrawingViewViewModel : BaseViewModel
 
 	public ObservableCollection<IDrawingLine> Lines { get; } = new();
 
+	public ICommand OnDrawingCommand { get; }
+	
+	public ICommand DrawingStartedCommand { get; }
+	
+	public ICommand DrawingCancelledCommand { get; }
 	public ICommand DrawingLineCompletedCommand { get; }
 	public ICommand ClearLinesCommand { get; }
 	public ICommand AddNewLineCommand { get; }
@@ -62,7 +70,7 @@ public partial class DrawingViewViewModel : BaseViewModel
 	}
 
 	[RelayCommand]
-	public async Task Save(CancellationToken cancellationToken)
+	async Task Save(CancellationToken cancellationToken)
 	{
 		try
 		{

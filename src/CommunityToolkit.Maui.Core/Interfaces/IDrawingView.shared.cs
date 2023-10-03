@@ -54,6 +54,23 @@ public interface IDrawingView : IView
 	void Clear();
 
 	/// <summary>
+	/// Event occurred when drawing started
+	/// </summary>
+	/// <param name="point">Last drawing point</param>
+	void DrawingStarted(PointF point);
+	
+	/// <summary>
+	/// Event occurred when drawing cancelled
+	/// </summary>
+	void DrawingCancelled();
+	
+	/// <summary>
+	/// Event occurred when drawing
+	/// </summary>
+	/// <param name="point">Last drawing point</param>
+	void OnDrawing(PointF point);
+	
+	/// <summary>
 	/// Event occurred when drawing line completed
 	/// </summary>
 	/// <param name="lastDrawingLine">Last drawing line</param>

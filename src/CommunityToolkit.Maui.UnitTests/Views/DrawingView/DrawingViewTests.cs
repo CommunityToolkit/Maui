@@ -226,6 +226,30 @@ public class DrawingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
+	public void DrawingStartedLastPointPassedWithCommand()
+	{
+		var expectedPoint = new PointF(10, 10);
+
+		PointF? point = null;
+		drawingView.DrawingStartedCommand = new Command<PointF>(p => point = p);
+		((IDrawingView)drawingView).DrawingStarted(expectedPoint);
+
+		point.Should().BeEquivalentTo(expectedPoint);
+	}
+	
+	[Fact]
+	public void OnDrawingLastPointPassedWithCommand()
+	{
+		var expectedPoint = new PointF(10, 10);
+
+		PointF? point = null;
+		drawingView.OnDrawingCommand = new Command<PointF>(p => point = p);
+		((IDrawingView)drawingView).OnDrawing(expectedPoint);
+
+		point.Should().BeEquivalentTo(expectedPoint);
+	}
+	
+	[Fact]
 	public void DrawingLineCompletedLastDrawingLinePassedWithCommand()
 	{
 		var expectedDrawingLine = new DrawingLine
@@ -255,6 +279,26 @@ public class DrawingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
+	public void DrawingStarted_CommandIsNull_LastDrawingPointNotPassed()
+	{
+		PointF? currentPoint = null;
+		drawingView.DrawingStartedCommand = null;
+		((IDrawingView)drawingView).DrawingStarted(new PointF());
+
+		currentPoint.Should().BeNull();
+	}
+
+	[Fact]
+	public void OnDrawing_CommandIsNull_LastDrawingPointNotPassed()
+	{
+		PointF? currentPoint = null;
+		drawingView.OnDrawingCommand = null;
+		((IDrawingView)drawingView).OnDrawing(new PointF());
+
+		currentPoint.Should().BeNull();
+	}
+
+	[Fact]
 	public void DrawingLineCompleted_CommandIsNotAllowedExecute_LastDrawingLineNotPassed()
 	{
 		IDrawingLine? currentLine = null;
@@ -262,6 +306,26 @@ public class DrawingViewTests : BaseHandlerTest
 		((IDrawingView)drawingView).DrawingLineCompleted(new DrawingLine());
 
 		currentLine.Should().BeNull();
+	}
+
+	[Fact]
+	public void DrawingStarted_CommandIsNotAllowedExecute_LastDrawingPointNotPassed()
+	{
+		PointF? currentPoint = null;
+		drawingView.DrawingStartedCommand = new Command<PointF>(p => currentPoint = p, _ => false);
+		((IDrawingView)drawingView).DrawingStarted(new PointF());
+
+		currentPoint.Should().BeNull();
+	}
+
+	[Fact]
+	public void OnDrawing_CommandIsNotAllowedExecute_LastDrawingPointNotPassed()
+	{
+		PointF? currentPoint = null;
+		drawingView.OnDrawingCommand = new Command<PointF>(p => currentPoint = p, _ => false);
+		((IDrawingView)drawingView).OnDrawing(new PointF());
+
+		currentPoint.Should().BeNull();
 	}
 
 	[Fact]
@@ -283,5 +347,33 @@ public class DrawingViewTests : BaseHandlerTest
 		drawingView.DrawingLineCompleted -= action;
 
 		currentLine.Should().BeEquivalentTo(expectedDrawingLine);
+	}
+	
+	[Fact]
+	public void DrawingStartedLastDrawingPointPassedWithEvent()
+	{
+		var expectedPoint = new PointF(10, 10);
+
+		PointF? currentPoint = null;
+		var action = new EventHandler<DrawingStartedEventArgs>((_, e) => currentPoint = e.Point);
+		drawingView.DrawingStarted += action;
+		((IDrawingView)drawingView).DrawingStarted(expectedPoint);
+		drawingView.DrawingStarted -= action;
+
+		currentPoint.Should().BeEquivalentTo(expectedPoint);
+	}
+	
+	[Fact]
+	public void OnDrawingLastDrawingPointPassedWithEvent()
+	{
+		var expectedPoint = new PointF(10, 10);
+
+		PointF? currentPoint = null;
+		var action = new EventHandler<OnDrawingEventArgs>((_, e) => currentPoint = e.Point);
+		drawingView.OnDrawing += action;
+		((IDrawingView)drawingView).OnDrawing(expectedPoint);
+		drawingView.OnDrawing -= action;
+
+		currentPoint.Should().BeEquivalentTo(expectedPoint);
 	}
 }
