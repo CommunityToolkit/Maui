@@ -254,7 +254,7 @@ public partial class Expander : ContentView, IExpander
 #if IOS || MACCATALYST
             else if (element is ScrollView scrollView)
 			{
-			    (scrollView as IView).InvalidateMeasure();
+			    ((IView)scrollView).InvalidateMeasure();
 			}
 #endif
 
