@@ -251,6 +251,12 @@ public partial class Expander : ContentView, IExpander
 				ForceUpdateCellSize(collectionView, size, tapLocation);
 			}
 #endif
+#if IOS || MACCATALYST
+            else if (element is ScrollView scrollView)
+			{
+			    (scrollView as IView).InvalidateMeasure();
+			}
+#endif
 
 			element = element.Parent;
 		}
