@@ -264,6 +264,8 @@ public static class PopupExtensions
 
 	static void SetDialogPosition(in IPopup popup, Android.Views.Window window)
 	{
+		var hSign = popup.Content?.FlowDirection == FlowDirection.RightToLeft ? -1 : 1;
+
 		var gravityFlags = popup.VerticalOptions switch
 		{
 			LayoutAlignment.Start => GravityFlags.Top,
@@ -273,8 +275,8 @@ public static class PopupExtensions
 
 		gravityFlags |= popup.HorizontalOptions switch
 		{
-			LayoutAlignment.Start => GravityFlags.Left,
-			LayoutAlignment.End => GravityFlags.Right,
+			LayoutAlignment.Start => hSign == 1 ? GravityFlags.Left : GravityFlags.Right,
+			LayoutAlignment.End => hSign == 1 ? GravityFlags.Right : GravityFlags.Left,
 			_ => GravityFlags.CenterHorizontal,
 		};
 
