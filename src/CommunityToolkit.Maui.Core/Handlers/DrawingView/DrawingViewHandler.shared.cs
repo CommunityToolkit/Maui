@@ -180,12 +180,12 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	
 	void OnPlatformViewDrawingStarted(object? sender, MauiDrawingStartedEventArgs e)
 	{
-		VirtualView.DrawingStarted(e.Point);
+		VirtualView.OnDrawingStarted(e.Point);
 	}
 	
 	void OnPlatformViewDrawingCancelled(object? sender, EventArgs e)
 	{
-		VirtualView.DrawingCancelled();
+		VirtualView.OnDrawingCancelled();
 	}
 
 	void OnVirtualViewLinesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

@@ -57,12 +57,12 @@ public interface IDrawingView : IView
 	/// Event occurred when drawing started
 	/// </summary>
 	/// <param name="point">Last drawing point</param>
-	void DrawingStarted(PointF point);
+	void OnDrawingStarted(PointF point);
 	
 	/// <summary>
 	/// Event occurred when drawing cancelled
 	/// </summary>
-	void DrawingCancelled();
+	void OnDrawingCancelled();
 	
 	/// <summary>
 	/// Event occurred when drawing
@@ -74,5 +74,6 @@ public interface IDrawingView : IView
 	/// Event occurred when drawing line completed
 	/// </summary>
 	/// <param name="lastDrawingLine">Last drawing line</param>
+	[Obsolete("This will be renamed to OnDrawingLineCompleted in a future version of this library.")]
 	void DrawingLineCompleted(IDrawingLine lastDrawingLine);
 }

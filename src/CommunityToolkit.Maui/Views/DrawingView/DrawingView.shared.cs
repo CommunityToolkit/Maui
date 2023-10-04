@@ -256,7 +256,7 @@ public class DrawingView : View, IDrawingView
 	/// <summary>
 	/// Executes DrawingLineCancelled event and DrawingLineCancelledCommand
 	/// </summary>
-	void IDrawingView.DrawingCancelled()
+	void IDrawingView.OnDrawingCancelled()
 	{
 		drawingViewEventManager.HandleEvent(this, EventArgs.Empty, nameof(DrawingCancelled));
 
@@ -269,7 +269,7 @@ public class DrawingView : View, IDrawingView
 	/// <summary>
 	/// Executes DrawingLineStarted event and DrawingLineStartedCommand
 	/// </summary>
-	void IDrawingView.DrawingStarted(PointF point)
+	void IDrawingView.OnDrawingStarted(PointF point)
 	{
 		drawingViewEventManager.HandleEvent(this, new DrawingStartedEventArgs(point), nameof(DrawingStarted));
 
