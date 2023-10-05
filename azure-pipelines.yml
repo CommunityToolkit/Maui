@@ -229,11 +229,11 @@ jobs:
             dotnet tool install Microsoft.DotNet.XHarness.CLI --global --version "8.0.0-prerelease*" --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json
             #dotnet publish $(PathToCommunityToolkitDeviceTestCsproj) -r android-x64 -f net7.0-android -c Release
 
-            android device list --format json
-            android sdk list
-            android sdk install --package emulator --package "system-images;android-33;google_apis;x86_64"
-            android avd create --name TestRunnerEmulator --sdk "system-images;android-33;google_apis;x86_64" --device pixel
-            android avd start --name TestRunnerEmulator --wait-boot
+            # android device list --format json
+            # android sdk list
+            # android sdk install --package emulator --package "system-images;android-33;google_apis;x86_64"
+            # android avd create --name TestRunnerEmulator --sdk "system-images;android-33;google_apis;x86_64" --device pixel
+            # android avd start --name TestRunnerEmulator --wait-boot
 
             #xharness android test --app $(PathToCommunityToolkitDeviceTestBin)/Release/net7.0-android/android-x64/publish/com.companyname.communitytoolkit.maui.devicetests-Signed.apk --package-name com.companyname.communitytoolkit.maui.devicetests --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation --output-directory artifacts
             
