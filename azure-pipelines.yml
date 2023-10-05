@@ -227,7 +227,7 @@ jobs:
           script: |
             dotnet tool install --global AndroidSDK.Tool
             dotnet tool install Microsoft.DotNet.XHarness.CLI --global --version "8.0.0-prerelease*" --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json
-            dotnet publish $(PathToCommunityToolkitDeviceTestCsproj) -r android-arm64 -f net7.0-android -c Release
+            dotnet publish $(PathToCommunityToolkitDeviceTestCsproj) -r android-x64 -f net7.0-android -c Release
 
             android device list --format json
             android sdk list
@@ -235,7 +235,7 @@ jobs:
             android avd create --name TestRunnerEmulator --sdk "system-images;android-33;google_apis;x86_64" --device pixel
             android avd start --name TestRunnerEmulator --wait-boot
 
-            xharness android test --app $(PathToCommunityToolkitDeviceTestBin)/net7.0-android/android-arm64/publish/com.companyname.communitytoolkit.maui.devicetests-Signed.apk --package-name com.companyname.communitytoolkit.maui.devicetests --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation --output-directory artifacts
+            xharness android test --app $(PathToCommunityToolkitDeviceTestBin)/net7.0-android/android-x64/publish/com.companyname.communitytoolkit.maui.devicetests-Signed.apk --package-name com.companyname.communitytoolkit.maui.devicetests --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation --output-directory artifacts
             
             xharness android adb -- emu kill
            
