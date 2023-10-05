@@ -232,7 +232,7 @@ jobs:
             android avd create --name TestRunnerEmulator --sdk "system-images;android-34;google_apis;arm64-v8a" --device pixel_5
             android avd start --name TestRunnerEmulator --wait-boot
 
-            xharness android test --app '$(PathToCommunityToolkitDeviceTestBin)/net7.0-android/android-arm64/publish/com.companyname.communitytoolkit.maui.devicetests-Signed.apk' --package-name com.companyname.communitytoolkit.maui.devicetests --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation --output-directory artifacts
+            xharness android test --app $(PathToCommunityToolkitDeviceTestBin)/net7.0-android/android-arm64/publish/com.companyname.communitytoolkit.maui.devicetests-Signed.apk --package-name com.companyname.communitytoolkit.maui.devicetests --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation --output-directory artifacts
             
             xharness android adb -- emu kill
            
