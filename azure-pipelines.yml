@@ -227,7 +227,7 @@ jobs:
           script: |
             dotnet tool install --global AndroidSDK.Tool
             dotnet tool install Microsoft.DotNet.XHarness.CLI --global --version "8.0.0-prerelease*" --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json
-            dotnet publish $(PathToCommunityToolkitDeviceTestCsproj) -r android-x64 -f net7.0-android -c Release
+            #dotnet publish $(PathToCommunityToolkitDeviceTestCsproj) -r android-x64 -f net7.0-android -c Release
 
             android device list --format json
             android sdk list
@@ -239,12 +239,12 @@ jobs:
             
             #xharness android adb -- emu kill
 
-            dotnet publish $(PathToCommunityToolkitDeviceTestCsproj) -r iossimulator-x64 -f net7.0-ios -c Debug
-            ls $(PathToCommunityToolkitDeviceTestBin)/Debug/net7.0-ios/iossimulator-x64/
-            xharness apple test --target ios-simulator-64 --app $(PathToCommunityToolkitDeviceTestBin)/Debug/net7.0-ios/iossimulator-x64/CommunityToolkit.Maui.DeviceTests.app --output-directory artifacts
+            dotnet publish $(PathToCommunityToolkitDeviceTestCsproj) -r iossimulator-arm64 -f net7.0-ios -c Debug
+            ls $(PathToCommunityToolkitDeviceTestBin)/Debug/net7.0-ios/iossimulator-arm64/
+            xharness apple test --target ios-simulator-64 --app $(PathToCommunityToolkitDeviceTestBin)/Debug/net7.0-ios/iossimulator-arm64/CommunityToolkit.Maui.DeviceTests.app --output-directory artifacts
 
-            dotnet publish $(PathToCommunityToolkitDeviceTestCsproj) -r maccatalyst-x64 -f net7.0-ios -c Debug
-            ls $(PathToCommunityToolkitDeviceTestBin)/Debug/net7.0-ios/maccatalyst-x64/
+            dotnet publish $(PathToCommunityToolkitDeviceTestCsproj) -r maccatalyst-x64 -f net7.0-maccatalyst -c Debug
+            ls $(PathToCommunityToolkitDeviceTestBin)/Debug/net7.0-maccatalyst/maccatalyst-x64/
             xharness apple test --target maccatalyst --app $(PathToCommunityToolkitDeviceTestBin)/Debug/net7.0-maccatalyst/maccatalyst-x64/CommunityToolkit.Maui.DeviceTests.app --output-directory artifacts
           
       - task: PublishTestResults@2
