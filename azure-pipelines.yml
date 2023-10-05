@@ -25,7 +25,7 @@ variables:
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
   DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/7.0.59.json'
   CommunityToolkitSampleApp_Xcode_Version: '14.3.1'
-  CommunityToolkitLibrary_Xcode_Version: '14.0.1'
+  CommunityToolkitLibrary_Xcode_Version: '14.3.1'
 
 trigger:
   branches:
@@ -239,12 +239,10 @@ jobs:
             
             #xharness android adb -- emu kill
 
-            dotnet build $(PathToCommunityToolkitDeviceTestCsproj) -r iossimulator-arm64 -f net7.0-ios -c Debug
-            ls $(PathToCommunityToolkitDeviceTestBin)/Debug/net7.0-ios/iossimulator-arm64/
-            xharness apple test --target ios-simulator-64 --app $(PathToCommunityToolkitDeviceTestBin)/Debug/net7.0-ios/iossimulator-arm64/CommunityToolkit.Maui.DeviceTests.app --output-directory artifacts
+            dotnet build $(PathToCommunityToolkitDeviceTestCsproj) -r iossimulator-x64 -f net7.0-ios -c Debug
+            xharness apple test --target ios-simulator-64 --app $(PathToCommunityToolkitDeviceTestBin)/Debug/net7.0-ios/iossimulator-x64/CommunityToolkit.Maui.DeviceTests.app --output-directory artifacts
 
             dotnet build $(PathToCommunityToolkitDeviceTestCsproj) -r maccatalyst-x64 -f net7.0-maccatalyst -c Debug
-            ls $(PathToCommunityToolkitDeviceTestBin)/Debug/net7.0-maccatalyst/maccatalyst-x64/
             xharness apple test --target maccatalyst --app $(PathToCommunityToolkitDeviceTestBin)/Debug/net7.0-maccatalyst/maccatalyst-x64/CommunityToolkit.Maui.DeviceTests.app --output-directory artifacts
           
       - task: PublishTestResults@2
