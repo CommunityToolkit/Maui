@@ -15,6 +15,8 @@ variables:
   PathToCommunityToolkitMapsCsproj: 'src/CommunityToolkit.Maui.Maps/CommunityToolkit.Maui.Maps.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
+  PathToCommunityToolkitDeviceTestCsproj: 'src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj'
+  PathToCommunityToolkitDeviceTestBin: 'src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests/bin/Release'
   PathToCommunityToolkitAnalyzersCsproj: 'src/CommunityToolkit.Maui.Analyzers/CommunityToolkit.Maui.Analyzers.csproj'
   PathToCommunityToolkitMediaElementAnalyzersCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers/CommunityToolkit.Maui.MediaElement.Analyzers.csproj'
   PathToCommunityToolkitSourceGeneratorsCsproj: 'src/CommunityToolkit.Maui.SourceGenerators/CommunityToolkit.Maui.SourceGenerators.csproj'
@@ -219,6 +221,21 @@ jobs:
         inputs:
           script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory $(Agent.TempDirectory)'
 
+      - task: CmdLine@2
+        displayName: 'Run CommunityToolkit.Maui.DeviceTests'
+        inputs:
+          script: |
+            dotnet tool install Microsoft.DotNet.XHarness.CLI --global --version "8.0.0-prerelease*" --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json
+            dotnet publish $(PathToCommunityToolkitDeviceTestCsproj) -r android-arm64 -f net7.0-android -c Release
+
+            android sdk install --package "system-images;android-34;google_apis;arm64-v8a"
+            android avd create --name TestRunnerEmulator --sdk "system-images;android-34;google_apis;arm64-v8a" --device pixel_5
+            android avd start --name TestRunnerEmulator --wait-boot
+
+            xharness android test --app '$(PathToCommunityToolkitDeviceTestBin)/net7.0-android/android-arm64/publish/com.companyname.communitytoolkit.maui.devicetests-Signed.apk' --package-name com.companyname.communitytoolkit.maui.devicetests --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation --output-directory artifacts
+            
+            xharness android adb -- emu kill
+           
       - task: PublishTestResults@2
         condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
         displayName: 'Publish Test Results'
