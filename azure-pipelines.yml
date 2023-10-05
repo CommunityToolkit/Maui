@@ -225,6 +225,7 @@ jobs:
         displayName: 'Run CommunityToolkit.Maui.DeviceTests'
         inputs:
           script: |
+            dotnet tool install --global AndroidSDK.Tool
             dotnet tool install Microsoft.DotNet.XHarness.CLI --global --version "8.0.0-prerelease*" --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json
             dotnet publish $(PathToCommunityToolkitDeviceTestCsproj) -r android-arm64 -f net7.0-android -c Release
 
