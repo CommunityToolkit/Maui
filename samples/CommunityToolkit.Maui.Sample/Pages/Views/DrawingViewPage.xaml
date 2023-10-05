@@ -72,9 +72,9 @@
                              Lines="{Binding Lines, Mode=TwoWay}"
                              DrawingLineCompleted="OnDrawingLineCompleted"
                              DrawingLineCompletedCommand="{Binding DrawingLineCompletedCommand}"
-                             DrawingStartedCommand="{Binding DrawingStartedCommand}"
-                             DrawingCancelledCommand="{Binding DrawingCancelledCommand}"
-                             OnDrawingCommand="{Binding OnDrawingCommand}"
+                             DrawingLineStartedCommand="{Binding DrawingLineStartedCommand}"
+                             DrawingLineCancelledCommand="{Binding DrawingLineCancelledCommand}"
+                             PointDrawnCommand="{Binding PointDrawnCommand}"
                              ShouldClearOnFinish="{Binding Source={x:Reference ClearOnFinish}, Path=IsToggled}"
                              IsMultiLineModeEnabled="{Binding Source={x:Reference MultiLineMode}, Path=IsToggled}">
                 <mct:DrawingView.Background>

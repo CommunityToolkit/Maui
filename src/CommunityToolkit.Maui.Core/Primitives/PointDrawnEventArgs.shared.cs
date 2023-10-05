@@ -3,13 +3,13 @@ namespace CommunityToolkit.Maui.Core;
 /// <summary>
 /// Contains last drawing point
 /// </summary>
-public class DrawingStartedEventArgs : EventArgs
+public class PointDrawnEventArgs : EventArgs
 {
 	/// <summary>
-	/// Initialize a new instance of <see cref="DrawingStartedEventArgs"/>
+	/// Initialize a new instance of <see cref="PointDrawnEventArgs"/>
 	/// </summary>
 	/// <param name="point"></param>
-	public DrawingStartedEventArgs(PointF point)
+	public PointDrawnEventArgs(PointF point)
 	{
 		Point = point;
 	}

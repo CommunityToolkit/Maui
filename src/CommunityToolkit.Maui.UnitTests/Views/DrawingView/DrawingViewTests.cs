@@ -231,8 +231,8 @@ public class DrawingViewTests : BaseHandlerTest
 		var expectedPoint = new PointF(10, 10);
 
 		PointF? point = null;
-		drawingView.DrawingStartedCommand = new Command<PointF>(p => point = p);
-		((IDrawingView)drawingView).OnDrawingStarted(expectedPoint);
+		drawingView.DrawingLineStartedCommand = new Command<PointF>(p => point = p);
+		((IDrawingView)drawingView).OnDrawingLineStarted(expectedPoint);
 
 		point.Should().BeEquivalentTo(expectedPoint);
 	}
@@ -243,8 +243,8 @@ public class DrawingViewTests : BaseHandlerTest
 		var expectedPoint = new PointF(10, 10);
 
 		PointF? point = null;
-		drawingView.OnDrawingCommand = new Command<PointF>(p => point = p);
-		((IDrawingView)drawingView).OnDrawing(expectedPoint);
+		drawingView.PointDrawnCommand = new Command<PointF>(p => point = p);
+		((IDrawingView)drawingView).OnPointDrawn(expectedPoint);
 
 		point.Should().BeEquivalentTo(expectedPoint);
 	}
@@ -282,8 +282,8 @@ public class DrawingViewTests : BaseHandlerTest
 	public void OnDrawingStarted_CommandIsNull_LastDrawingPointNotPassed()
 	{
 		PointF? currentPoint = null;
-		drawingView.DrawingStartedCommand = null;
-		((IDrawingView)drawingView).OnDrawingStarted(new PointF());
+		drawingView.DrawingLineStartedCommand = null;
+		((IDrawingView)drawingView).OnDrawingLineStarted(new PointF());
 
 		currentPoint.Should().BeNull();
 	}
@@ -292,8 +292,8 @@ public class DrawingViewTests : BaseHandlerTest
 	public void OnDrawing_CommandIsNull_LastDrawingPointNotPassed()
 	{
 		PointF? currentPoint = null;
-		drawingView.OnDrawingCommand = null;
-		((IDrawingView)drawingView).OnDrawing(new PointF());
+		drawingView.PointDrawnCommand = null;
+		((IDrawingView)drawingView).OnPointDrawn(new PointF());
 
 		currentPoint.Should().BeNull();
 	}
@@ -312,8 +312,8 @@ public class DrawingViewTests : BaseHandlerTest
 	public void OnDrawingStarted_CommandIsNotAllowedExecute_LastDrawingPointNotPassed()
 	{
 		PointF? currentPoint = null;
-		drawingView.DrawingStartedCommand = new Command<PointF>(p => currentPoint = p, _ => false);
-		((IDrawingView)drawingView).OnDrawingStarted(new PointF());
+		drawingView.DrawingLineStartedCommand = new Command<PointF>(p => currentPoint = p, _ => false);
+		((IDrawingView)drawingView).OnDrawingLineStarted(new PointF());
 
 		currentPoint.Should().BeNull();
 	}
@@ -322,8 +322,8 @@ public class DrawingViewTests : BaseHandlerTest
 	public void OnDrawing_CommandIsNotAllowedExecute_LastDrawingPointNotPassed()
 	{
 		PointF? currentPoint = null;
-		drawingView.OnDrawingCommand = new Command<PointF>(p => currentPoint = p, _ => false);
-		((IDrawingView)drawingView).OnDrawing(new PointF());
+		drawingView.PointDrawnCommand = new Command<PointF>(p => currentPoint = p, _ => false);
+		((IDrawingView)drawingView).OnPointDrawn(new PointF());
 
 		currentPoint.Should().BeNull();
 	}
@@ -355,10 +355,10 @@ public class DrawingViewTests : BaseHandlerTest
 		var expectedPoint = new PointF(10, 10);
 
 		PointF? currentPoint = null;
-		var action = new EventHandler<DrawingStartedEventArgs>((_, e) => currentPoint = e.Point);
-		drawingView.DrawingStarted += action;
-		((IDrawingView)drawingView).OnDrawingStarted(expectedPoint);
-		drawingView.DrawingStarted -= action;
+		var action = new EventHandler<DrawingLineStartedEventArgs>((_, e) => currentPoint = e.Point);
+		drawingView.DrawingLineStarted += action;
+		((IDrawingView)drawingView).OnDrawingLineStarted(expectedPoint);
+		drawingView.DrawingLineStarted -= action;
 
 		currentPoint.Should().BeEquivalentTo(expectedPoint);
 	}
@@ -369,10 +369,10 @@ public class DrawingViewTests : BaseHandlerTest
 		var expectedPoint = new PointF(10, 10);
 
 		PointF? currentPoint = null;
-		var action = new EventHandler<OnDrawingEventArgs>((_, e) => currentPoint = e.Point);
-		drawingView.OnDrawing += action;
-		((IDrawingView)drawingView).OnDrawing(expectedPoint);
-		drawingView.OnDrawing -= action;
+		var action = new EventHandler<PointDrawnEventArgs>((_, e) => currentPoint = e.Point);
+		drawingView.PointDrawn += action;
+		((IDrawingView)drawingView).OnPointDrawn(expectedPoint);
+		drawingView.PointDrawn -= action;
 
 		currentPoint.Should().BeEquivalentTo(expectedPoint);
 	}
