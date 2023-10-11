@@ -185,6 +185,11 @@ jobs:
         displayName: Install Tizen Workload
 
       - task: CmdLine@2
+        displayName:'Set .NET SDK Version to v$(TOOLKIT_NET_VERSION)
+        inputs:
+          script: 'dotnet new globaljson --force'
+
+      - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.Analyzers'
         inputs:
           script: 'dotnet build -c Release $(PathToCommunityToolkitAnalyzersCsproj)'
