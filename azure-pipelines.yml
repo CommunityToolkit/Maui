@@ -80,6 +80,11 @@ jobs:
         displayName: Install Tizen Workload
 
       - task: CmdLine@2
+        displayName: 'Display dotnet --info'
+        inputs:
+          script: dotnet --info
+
+      - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.Analyzers'
         inputs:
           script: 'dotnet build -c Release $(PathToCommunityToolkitAnalyzersCsproj)'
@@ -177,12 +182,17 @@ jobs:
       - task: CmdLine@2
         displayName: 'Install .NET MAUI Workload $(TOOLKIT_NET_VERSION)'
         inputs:
-          script: dotnet workload install maui --skip-sign-check --source https://api.nuget.org/v3/index.json
+          script: dotnet workload install maui --skip-sign-check --source https://api.nuget.org/v3/index.json 
 
       - pwsh: |
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
           .\workload-install.ps1
         displayName: Install Tizen Workload
+
+      - task: CmdLine@2
+        displayName: 'Display dotnet --info'
+        inputs:
+          script: dotnet --info
 
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.Analyzers'
