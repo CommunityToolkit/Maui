@@ -177,26 +177,12 @@ jobs:
       - task: CmdLine@2
         displayName: 'Install .NET MAUI Workload $(TOOLKIT_NET_VERSION)'
         inputs:
-          script: dotnet workload install maui
+          script: dotnet workload install maui --skip-sign-check --source https://api.nuget.org/v3/index.json
 
       - pwsh: |
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
           .\workload-install.ps1
         displayName: Install Tizen Workload
-
-      - task: CmdLine@2
-        displayName: 'Set .NET SDK Version to v$(TOOLKIT_NET_VERSION)'
-        inputs:
-          script: |
-            cat > global.json <<EOL
-            {
-              "sdk": {
-                "version": "$(TOOLKIT_NET_VERSION)",
-                "allowPrerelease": false
-              }
-            }
-            EOL
-            cat global.json
 
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.Analyzers'
