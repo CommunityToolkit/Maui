@@ -79,6 +79,9 @@ jobs:
           .\workload-install.ps1
         displayName: Install Tizen Workload
 
+      # Print Information on the .NET SDK Used By the CI Build Host
+      # These logs are useful information when debugging CI Builds
+      # Note: This step doesn't execute nor modify any code; it is strictly used for logging + debugging purposes
       - task: CmdLine@2
         displayName: 'Display dotnet --info'
         inputs:
@@ -189,6 +192,9 @@ jobs:
           .\workload-install.ps1
         displayName: Install Tizen Workload
 
+      # Print Information on the .NET SDK Used By the CI Build Host
+      # These logs are useful information when debugging CI Builds
+      # Note: This step doesn't execute nor modify any code; it is strictly used for logging + debugging purposes
       - task: CmdLine@2
         displayName: 'Display dotnet --info'
         inputs:
