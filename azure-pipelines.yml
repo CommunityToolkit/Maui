@@ -187,7 +187,9 @@ jobs:
       - task: CmdLine@2
         displayName: 'Set .NET SDK Version to v$(TOOLKIT_NET_VERSION)'
         inputs:
-          script: 'dotnet new globaljson --force'
+          script: |
+            dotnet new globaljson --force
+            echo global.json
 
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.Analyzers'
