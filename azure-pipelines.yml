@@ -188,8 +188,15 @@ jobs:
         displayName: 'Set .NET SDK Version to v$(TOOLKIT_NET_VERSION)'
         inputs:
           script: |
-            dotnet new globaljson --force
-            echo global.json
+            cat > global.json <<EOL
+            {
+              "sdk": {
+                "version": "$(TOOLKIT_NET_VERSION)",
+                "allowPrerelease": false
+              }
+            }
+            EOL
+            cat global.json
 
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.Analyzers'
