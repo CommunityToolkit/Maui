@@ -79,7 +79,7 @@ public static class PopupExtensions
 		{
 			if (double.IsNaN(popup.Content.Width) || (double.IsNaN(popup.Content.Height)))
 			{
-				currentSize = popup.Content.Measure(popupParent.Bounds.Width, popupParent.Bounds.Height);
+				currentSize = popup.Content.Measure(double.IsNaN(popup.Content.Width) ? popupParent.Bounds.Width : popup.Content.Width, double.IsNaN(popup.Content.Height) ? popupParent.Bounds.Height : popup.Content.Height);
 
 				if (double.IsNaN(popup.Content.Width))
 				{
