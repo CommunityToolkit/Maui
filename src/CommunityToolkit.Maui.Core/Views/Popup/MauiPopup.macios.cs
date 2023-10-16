@@ -59,6 +59,24 @@ public class MauiPopup : UIViewController
 		base.ViewWillDisappear(animated);
 	}
 
+	/// <inheritdoc/>
+	public override void ViewWillTransitionToSize(CGSize toSize, IUIViewControllerTransitionCoordinator coordinator)
+	{
+		coordinator.AnimateAlongsideTransition((IUIViewControllerTransitionCoordinatorContext obj) =>
+		{
+			// Before screen rotate
+		}, (IUIViewControllerTransitionCoordinatorContext obj) =>
+		{
+			// After screen rotate
+			if (VirtualView is not null)
+			{
+				PopupExtensions.SetSize(this, VirtualView);
+				PopupExtensions.SetLayout(this, VirtualView);
+			}
+		});
+		base.ViewWillTransitionToSize(toSize, coordinator);
+	}
+
 	/// <summary>
 	/// Method to initialize the native implementation.
 	/// </summary>
@@ -77,7 +95,13 @@ public class MauiPopup : UIViewController
 		_ = View ?? throw new InvalidOperationException($"{nameof(View)} cannot be null.");
 		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null.");
 
+#if MACCATALYST
+		var pagehandler = VirtualView.Parent.Handler as PageHandler;
+		var rootViewController = pagehandler?.ViewController ?? WindowStateManager.Default.GetCurrentUIViewController() ?? throw new InvalidOperationException($"{nameof(PageHandler.ViewController)} cannot be null.");
+#else
 		var rootViewController = WindowStateManager.Default.GetCurrentUIViewController() ?? throw new InvalidOperationException($"{nameof(PageHandler.ViewController)} cannot be null.");
+#endif
+
 		ViewController ??= rootViewController;
 		SetDimmingBackgroundEffect();
 	}

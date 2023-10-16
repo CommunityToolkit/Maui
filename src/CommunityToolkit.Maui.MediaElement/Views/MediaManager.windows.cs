@@ -15,6 +15,14 @@ partial class MediaManager : IDisposable
 	// The requests to keep display active are cumulative, this bool makes sure it only gets requested once
 	bool displayActiveRequested;
 
+	// States that allow changing position
+	MediaElementState[] allowUpdatePositionStates = new[]
+	{
+		MediaElementState.Playing,
+		MediaElementState.Paused,
+		MediaElementState.Stopped,
+	};
+
 	/// <summary>
 	/// The <see cref="DisplayRequest"/> is used to enable the <see cref="MediaElement.ShouldKeepScreenOn"/> functionality.
 	/// </summary>
@@ -79,11 +87,18 @@ partial class MediaManager : IDisposable
 		}
 	}
 
-	protected virtual partial void PlatformSeek(TimeSpan position)
+	protected virtual async partial ValueTask PlatformSeek(TimeSpan position)
 	{
 		if (Player?.MediaPlayer.CanSeek ?? false)
 		{
-			Player.MediaPlayer.Position = position;
+			if (Dispatcher.IsDispatchRequired)
+			{
+				await Dispatcher.DispatchAsync(() => Player.MediaPlayer.Position = position);
+			}
+			else
+			{
+				Player.MediaPlayer.Position = position;
+			}
 		}
 	}
 
@@ -195,8 +210,9 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdatePosition()
 	{
-		if (MediaElement is not null && Player is not null
-			&& MediaElement.CurrentState == MediaElementState.Playing)
+		if (MediaElement is not null
+			&& Player is not null
+			&& allowUpdatePositionStates.Contains(MediaElement.CurrentState))
 		{
 			MediaElement.Position = Player.MediaPlayer.Position;
 		}
@@ -230,7 +246,8 @@ partial class MediaManager : IDisposable
 
 		if (MediaElement.ShouldKeepScreenOn)
 		{
-			if (MediaElement?.CurrentState == MediaElementState.Playing
+			if (MediaElement != null
+				&& allowUpdatePositionStates.Contains(MediaElement.CurrentState)
 				&& !displayActiveRequested)
 			{
 				DisplayRequest.RequestActive();

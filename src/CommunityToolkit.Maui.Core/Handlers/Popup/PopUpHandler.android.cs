@@ -23,6 +23,8 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 			popup.Dismiss();
 		}
 
+		view.HandlerCompleteTCS.TrySetResult();
+
 		handler.DisconnectHandler(popup);
 	}
 
@@ -107,12 +109,22 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	protected override void ConnectHandler(MauiPopup platformView)
 	{
 		Container = platformView.SetElement(VirtualView);
+
+		if (Container is not null)
+		{
+			Container.LayoutChange += OnLayoutChange;
+		}
 	}
 
 	/// <inheritdoc/>
 	protected override void DisconnectHandler(MauiPopup platformView)
 	{
 		platformView.Dispose();
+
+		if (Container is not null)
+		{
+			Container.LayoutChange -= OnLayoutChange;
+		}
 	}
 
 	void OnShowed(object? sender, EventArgs args)
@@ -120,5 +132,13 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null");
 
 		VirtualView.OnOpened();
+	}
+
+	void OnLayoutChange(object? sender, EventArgs e)
+	{
+		if (VirtualView?.Handler?.PlatformView is Dialog dialog && Container is not null)
+		{
+			PopupExtensions.SetSize(dialog, VirtualView, Container);
+		}
 	}
 }

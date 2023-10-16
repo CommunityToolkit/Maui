@@ -4,14 +4,14 @@ using CoreAnimation;
 namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
-/// A rounded <see cref="UIStackView"/>
+/// A rounded <see cref="UIView"/>
 /// </summary>
-public class RoundedStackView : UIStackView
+public class RoundedView : UIView
 {
 	/// <summary>
-	/// Initialize <see cref="RoundedStackView"/>
+	/// Initialize <see cref="RoundedView"/>
 	/// </summary>
-	public RoundedStackView(NFloat leftPadding, NFloat topPadding, NFloat rightPadding, NFloat bottomPadding)
+	public RoundedView(NFloat leftPadding, NFloat topPadding, NFloat rightPadding, NFloat bottomPadding)
 	{
 		LeftPadding = leftPadding;
 		TopPadding = topPadding;
@@ -53,6 +53,13 @@ public class RoundedStackView : UIStackView
 
 		Layer.Mask = maskLayer;
 		Layer.MasksToBounds = true;
+	}
+
+	/// <inheritdoc />
+	public override void LayoutSubviews()
+	{
+		base.LayoutSubviews();
+		Draw(Frame);
 	}
 
 	static CGPath? GetRoundedPath(CGRect rect, NFloat left, NFloat top, NFloat right, NFloat bottom)

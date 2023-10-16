@@ -9,7 +9,7 @@ public abstract class BaseGalleryViewModel : BaseViewModel
 	{
 		if (DoesItemsArrayContainDuplicates(items, out var duplicatedSectionModels))
 		{
-			throw new InvalidOperationException($"Duplicate {nameof(SectionModel)}.{nameof(SectionModel.ViewModelType)} found for {duplicatedSectionModels.First().ViewModelType}");
+			throw new InvalidOperationException($"Duplicate {nameof(SectionModel)}.{nameof(SectionModel.ViewModelType)} found for {duplicatedSectionModels[0].ViewModelType}");
 		}
 
 		Items = items.OrderBy(x => x.Title).ToList();

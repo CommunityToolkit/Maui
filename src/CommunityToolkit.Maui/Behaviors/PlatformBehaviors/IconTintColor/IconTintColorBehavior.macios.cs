@@ -3,6 +3,7 @@ using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Behaviors;
+
 public partial class IconTintColorBehavior
 {
 	/// <inheritdoc/>
@@ -22,9 +23,9 @@ public partial class IconTintColorBehavior
 
 	void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
-		if (e.PropertyName != ImageButton.IsLoadingProperty.PropertyName
-			|| e.PropertyName != Image.SourceProperty.PropertyName
-			|| e.PropertyName != ImageButton.SourceProperty.PropertyName
+		if ((e.PropertyName != ImageButton.IsLoadingProperty.PropertyName
+			&& e.PropertyName != Image.SourceProperty.PropertyName
+			&& e.PropertyName != ImageButton.SourceProperty.PropertyName)
 			|| sender is not IImageElement element
 			|| (sender as VisualElement)?.Handler?.PlatformView is not UIView platformView)
 		{

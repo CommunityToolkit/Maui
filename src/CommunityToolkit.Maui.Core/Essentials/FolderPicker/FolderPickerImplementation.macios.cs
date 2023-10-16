@@ -41,7 +41,7 @@ public sealed partial class FolderPickerImplementation : IFolderPicker, IDisposa
 		var currentViewController = Platform.GetCurrentUIViewController();
 
 		taskCompetedSource?.TrySetCanceled(CancellationToken.None);
-		var tcs = taskCompetedSource = new ();
+		var tcs = taskCompetedSource = new();
 		if (currentViewController is not null)
 		{
 			currentViewController.PresentViewController(documentPickerViewController, true, null);
@@ -61,12 +61,12 @@ public sealed partial class FolderPickerImplementation : IFolderPicker, IDisposa
 
 	void DocumentPickerViewControllerOnWasCancelled(object? sender, EventArgs e)
 	{
-		taskCompetedSource?.SetException(new FolderPickerException("Operation cancelled."));
+		taskCompetedSource?.TrySetException(new FolderPickerException("Operation cancelled."));
 	}
 
 	void DocumentPickerViewControllerOnDidPickDocumentAtUrls(object? sender, UIDocumentPickedAtUrlsEventArgs e)
 	{
 		var path = e.Urls[0].Path ?? throw new FolderPickerException("Path cannot be null.");
-		taskCompetedSource?.SetResult(new Folder(path, new DirectoryInfo(path).Name));
+		taskCompetedSource?.TrySetResult(new Folder(path, new DirectoryInfo(path).Name));
 	}
 }

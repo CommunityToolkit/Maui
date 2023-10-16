@@ -10,7 +10,10 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	/// <exception cref="NullReferenceException">Thrown if <see cref="MauiContext"/> is <see langword="null"/>.</exception>
 	protected override MauiMediaElement CreatePlatformView()
 	{
-		mediaManager ??= new(MauiContext ?? throw new NullReferenceException(), VirtualView);
+		mediaManager ??= new(MauiContext ?? throw new NullReferenceException(), 
+								VirtualView,
+								Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"));
+
 		var playerView = mediaManager.CreatePlatformView();
 		return new(playerView);
 	}

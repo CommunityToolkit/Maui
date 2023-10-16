@@ -25,7 +25,7 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 		var isDirectoryCreated = fileManager.CreateDirectory(tempDirectoryPath, true, null, out var error);
 		if (!isDirectoryCreated)
 		{
-			throw new Exception(error?.LocalizedDescription ?? "Unable to create temp directory.");
+			throw new FileSaveException(error?.LocalizedDescription ?? "Unable to create temp directory.");
 		}
 
 		var fileUrl = tempDirectoryPath.Append(fileName, false);
@@ -33,7 +33,7 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 
 		cancellationToken.ThrowIfCancellationRequested();
 		taskCompetedSource?.TrySetCanceled(CancellationToken.None);
-		var tcs = taskCompetedSource = new (cancellationToken);
+		var tcs = taskCompetedSource = new(cancellationToken);
 
 		documentPickerViewController = new(new[] { fileUrl })
 		{
@@ -62,7 +62,7 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 
 	void DocumentPickerViewControllerOnWasCancelled(object? sender, EventArgs e)
 	{
-		taskCompetedSource?.SetException(new FileSaveException("Operation cancelled."));
+		taskCompetedSource?.TrySetException(new FileSaveException("Operation cancelled."));
 		InternalDispose();
 	}
 

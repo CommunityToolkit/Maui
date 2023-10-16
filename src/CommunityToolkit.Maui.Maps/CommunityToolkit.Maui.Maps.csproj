@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NetVersion);$(NetVersion)-android;$(NetVersion)-ios;$(NetVersion)-maccatalyst</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);$(NetVersion)-windows10.0.19041.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">$(TargetFrameworks);$(NetVersion)-tizen</TargetFrameworks>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">11.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">13.1</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GitInfoReportImportance>high</GitInfoReportImportance>
+    <PackageId>CommunityToolkit.Maui.Maps</PackageId>
+    <Summary>Community-created toolkit for .NET MAUI Maps</Summary>
+    <Authors>Microsoft</Authors>
+    <Owners>Microsoft</Owners>
+    <NeutralLanguage>en</NeutralLanguage>
+    <Product>CommunityToolkit.Maui ($(NetVersion))</Product>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/CommunityToolkit/Maui</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/CommunityToolkit/Maui</RepositoryUrl>
+    <PackageReleaseNotes>TBD</PackageReleaseNotes>
+    <DefineConstants>$(DefineConstants);</DefineConstants>
+    <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
+    <Title>CommunityToolkit.Maui.Maps</Title>
+    <Description>The .NET MAUI Community Maps Toolkit is a collection of Maps</Description>
+    <PackageIcon>icon.png</PackageIcon>
+    <Product>$(AssemblyName) ($(TargetFramework))</Product>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <AssemblyFileVersion>1.0.0.0</AssemblyFileVersion>
+    <Version>1.0.0-pre1</Version>
+    <PackageVersion>$(Version)$(VersionSuffix)</PackageVersion>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageTags>dotnet,maui,toolkit,kit,communitytoolkit,dotnetcommunitytoolkit,maps</PackageTags>
+    <Configurations>Debug;Release</Configurations>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
+    <None Include="ReadMe.txt" pack="true" PackagePath="." />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="7.0.86" />
+  </ItemGroup>
+
+</Project>

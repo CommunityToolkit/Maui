@@ -19,6 +19,19 @@ public class IsNullConverterTests : BaseTest
 		Assert.Equal(expectedResult, typedResult);
 	}
 
+	[Theory]
+	[ClassData(typeof(FooDataGenerator))]
+	public void IsNullConverter_ShouldConvert_WhenTargetTypeIsNullableBool(object? value, bool expectedResult)
+	{
+		var isNullConverter = new IsNullConverter();
+
+		var result = ((ICommunityToolkitValueConverter)isNullConverter).Convert(value, typeof(bool?), null, CultureInfo.CurrentCulture);
+		var typedResult = isNullConverter.ConvertFrom(value);
+
+		Assert.Equal(expectedResult, result);
+		Assert.Equal(expectedResult, typedResult);
+	}
+
 	public class FooDataGenerator : TheoryData<object?, bool>
 	{
 		public FooDataGenerator()

@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Essentials.BadgePage"
+                xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Essentials"
+                x:TypeArguments="vm:BadgeViewModel"
+                x:DataType="vm:BadgeViewModel"
+                Title="Badge">
+    
+    <Grid
+        RowDefinitions="40,60,*,*,80"
+        ColumnDefinitions="*,*"
+        ColumnSpacing="12"
+        RowSpacing="12">
+
+        <Label
+            Grid.Row="0"
+            Grid.ColumnSpan="2"
+            HorizontalTextAlignment="Center"
+            Text="Badge allows developers to set the app icon badge number on the homescreen" />
+
+        <Label
+            Grid.Row="1"
+            Grid.ColumnSpan="2"
+            HorizontalTextAlignment="Center"
+            Text="Toggle the app icon Badge count using the buttons below, then minimize the application to see its Badge count updated on the home screen" />
+
+        <Button
+            Text="+"
+            Grid.Column="0"
+            Grid.Row="2"
+            SemanticProperties.Hint="Increments AppIcon badge"
+            Command="{Binding IncrementCommand}"
+            VerticalOptions="End"
+            HorizontalOptions="End" />
+
+        <Button
+            Text="-"
+            Grid.Column="1"
+            Grid.Row="2"
+            SemanticProperties.Hint="Decrements AppIcon badge"
+            Command="{Binding DecrementCommand}"
+            VerticalOptions="End"
+            HorizontalOptions="Start" />
+
+        <Label
+            Grid.Row="3"
+            Grid.ColumnSpan="2"
+            VerticalOptions="Start"
+            VerticalTextAlignment="Start"
+            Text="Toggle Home Screen Icon Badge Count"
+            FontSize="18"
+            HorizontalOptions="Center" />
+
+        <Label
+            BackgroundColor="LightYellow"
+            Grid.Row="4"
+            Grid.ColumnSpan="2"
+            HorizontalTextAlignment="Center"
+            FontAttributes="Bold"
+            Text="Note: Android requires device-specific implementation to support app icon badge counts. See the .NET MAUI Community Toolkit documentation for more information" />
+
+    </Grid>
+    
+</pages:BasePage>

@@ -94,6 +94,14 @@ public partial class MediaManager : IDisposable
 			Player = Player
 		};
 
+		// Pre-initialize Volume and Muted properties to the player object
+		Player.Muted = MediaElement.ShouldMute;
+		var volumeDiff = Math.Abs(Player.Volume - MediaElement.Volume);
+		if (volumeDiff > 0.01)
+		{
+			Player.Volume = (float)MediaElement.Volume;
+		}
+
 		AddStatusObservers();
 		AddPlayedToEndObserver();
 		AddErrorObservers();
@@ -141,7 +149,7 @@ public partial class MediaManager : IDisposable
 			|| Player?.CurrentItem is null
 			|| Player?.Status is not AVPlayerStatus.ReadyToPlay)
 		{
-			return;
+			return ValueTask.CompletedTask;
 		}
 
 		var ranges = Player.CurrentItem.SeekableTimeRanges;
@@ -163,6 +171,8 @@ public partial class MediaManager : IDisposable
 				break;
 			}
 		}
+
+		return ValueTask.CompletedTask;
 	}
 
 	protected virtual partial void PlatformStop()

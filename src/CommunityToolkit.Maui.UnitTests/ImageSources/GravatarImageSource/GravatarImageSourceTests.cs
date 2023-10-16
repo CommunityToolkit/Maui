@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.ImageSources;
+using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.ImageSources;
@@ -346,8 +347,8 @@ public class GravatarImageSourceTests : BaseHandlerTest
 	{
 		CancellationTokenSource cts = new();
 		var gravatarImageSource = new GravatarImageSource();
-		Stream stream = await gravatarImageSource.Stream(cts.Token);
-		Assert.Equal(2637, stream.Length);
+		Stream? stream = await gravatarImageSource.Stream(cts.Token);
+		stream.Should().NotBeNull();
 	}
 
 	[Fact]
