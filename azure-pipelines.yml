@@ -80,6 +80,14 @@ jobs:
           .\workload-install.ps1
         displayName: Install Tizen Workload
 
+      # Print Information on the .NET SDK Used By the CI Build Host
+      # These logs are useful information when debugging CI Builds
+      # Note: This step doesn't execute nor modify any code; it is strictly used for logging + debugging purposes
+      - task: CmdLine@2
+        displayName: 'Display dotnet --info'
+        inputs:
+          script: dotnet --info
+
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.Analyzers'
         inputs:
@@ -179,12 +187,20 @@ jobs:
       - task: CmdLine@2
         displayName: 'Install .NET MAUI Workload $(TOOLKIT_NET_VERSION)'
         inputs:
-          script: dotnet workload install maui --skip-sign-check --source https://api.nuget.org/v3/index.json
+          script: dotnet workload install maui --skip-sign-check --source https://api.nuget.org/v3/index.json 
 
       - pwsh: |
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
           .\workload-install.ps1
         displayName: Install Tizen Workload
+
+      # Print Information on the .NET SDK Used By the CI Build Host
+      # These logs are useful information when debugging CI Builds
+      # Note: This step doesn't execute nor modify any code; it is strictly used for logging + debugging purposes
+      - task: CmdLine@2
+        displayName: 'Display dotnet --info'
+        inputs:
+          script: dotnet --info
 
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.Analyzers'
@@ -259,7 +275,8 @@ jobs:
 
       # check vulnerabilities
       - powershell: |
-          dotnet list $(PathToLibrarySolution) package --vulnerable --include-transitive | findstr /S /c:"has the following vulnerable packages";
+          dotnet list $(PathToLibrarySolution) package --include-transitive # Print all transitive packages
+          dotnet list $(PathToLibrarySolution) package --vulnerable --include-transitive | findstr /S /c:"has the following vulnerable packages"; # Print all transitive packages with vulnerabilities
           if ($LastExitCode -ne 1)
           {
             dotnet list $(PathToLibrarySolution) package --vulnerable --include-transitive;
