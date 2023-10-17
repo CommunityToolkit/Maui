@@ -2,8 +2,6 @@
 <Project>
   <PropertyGroup>
     <NetVersion>net8.0</NetVersion>
-    <!-- Fixes https://github.com/dotnet/maui/pull/12114 -->
-    <PublishReadyToRun>false</PublishReadyToRun>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -12,6 +10,8 @@
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
+    <IsTrimmable>false</IsTrimmable>
+
     <!-- WarningsAsErrors
      CS0419: Ambiguous reference in cref attribute 
      CS1570: XML comment has badly formed XML 'Expected an end tag for element [parameter] 
