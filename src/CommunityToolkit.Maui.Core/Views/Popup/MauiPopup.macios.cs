@@ -48,6 +48,7 @@ public class MauiPopup : UIViewController
 		_ = View ?? throw new InvalidOperationException($"{nameof(View)} cannot be null.");
 
 		View.Superview.Layer.CornerRadius = 0.0f;
+		View.Superview.Layer.MasksToBounds = false;
 		PresentationController?.ContainerView?.Subviews.OfType<UIImageView>().FirstOrDefault()?.RemoveFromSuperview();
 
 		SetElementSize(new Size(View.Bounds.Width, View.Bounds.Height));
