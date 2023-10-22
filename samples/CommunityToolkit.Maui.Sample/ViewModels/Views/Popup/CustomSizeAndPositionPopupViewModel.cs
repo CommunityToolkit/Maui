@@ -23,9 +23,9 @@ public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 	[RelayCommand(CanExecute = nameof(CanShowButtonExecute))]
 	public Task ExecuteShowButton()
 	{
-		if(!IsFlowDirectionSelectionValid(FlowDirectionSelectedIndex, FlowDirectionOptions.Count))
+		if (!IsFlowDirectionSelectionValid(FlowDirectionSelectedIndex, FlowDirectionOptions.Count))
 		{
-			throw new ArgumentOutOfRangeException(nameof(FlowDirectionSelectedIndex), FlowDirectionSelectedIndex,  "Invalid FlowDirection Selected");
+			throw new ArgumentOutOfRangeException(nameof(FlowDirectionSelectedIndex), FlowDirectionSelectedIndex, "Invalid FlowDirection Selected");
 		}
 
 		Microsoft.Maui.Primitives.LayoutAlignment? verticalOptions = null, horizontalOptions = null;
@@ -84,7 +84,7 @@ public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 				&& flowDirectionSelection >= 0;
 	}
 
-	// Ensure at least one Horizontal Option is selected, one Vertical Option is selected, Height > 0, and Width > 0
+	// Ensure at least one Horizontal Option is selected, one Vertical Option is selected, Height > 0, Width > 0, and FlowDirection is valid
 	bool CanShowButtonExecute() => (IsStartHorizontalOptionSelected || IsCenterHorizontalOptionSelected || IsEndHorizontalOptionSelected || IsFillHorizontalOptionSelected)
 		&& (IsStartVerticalOptionSelected || IsCenterVerticalOptionSelected || IsEndVerticalOptionSelected || IsFillVerticalOptionSelected)
 		&& Height > 0
