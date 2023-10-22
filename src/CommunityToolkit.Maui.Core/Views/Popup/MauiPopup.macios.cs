@@ -105,8 +105,8 @@ public class MauiPopup : UIViewController
 		_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} cannot be null.");
 
 #if MACCATALYST
-		var pagehandler = VirtualView.Parent.Handler as PageHandler;
-		var rootViewController = pagehandler?.ViewController ?? WindowStateManager.Default.GetCurrentUIViewController() ?? throw new InvalidOperationException($"{nameof(PageHandler.ViewController)} cannot be null.");
+		var pageHandler = VirtualView.Parent.Handler as PageHandler;
+		var rootViewController = pageHandler?.ViewController ?? WindowStateManager.Default.GetCurrentUIViewController() ?? throw new InvalidOperationException($"{nameof(PageHandler.ViewController)} cannot be null.");
 #else
 		var rootViewController = WindowStateManager.Default.GetCurrentUIViewController() ?? throw new InvalidOperationException($"{nameof(PageHandler.ViewController)} cannot be null.");
 #endif
@@ -169,6 +169,24 @@ public class MauiPopup : UIViewController
 		this.SetLayout(virtualView);
 	}
 
+	static UIView GetOverlayView(UIView view)
+	{
+		const int overlayViewTagNumber = 38483;
+
+		var overlayViewTag = new IntPtr(overlayViewTagNumber);
+		var overlayView = view.Subviews
+								.AsEnumerable()
+								.FirstOrDefault(x => x.Tag == overlayViewTag);
+
+		if (overlayView is null)
+		{
+			overlayView = new UIView();
+			overlayView.Tag = overlayViewTag;
+		}
+
+		return overlayView;
+	}
+
 	void SetView(UIView view, PageHandler control)
 	{
 		view.AddSubview(control.ViewController?.View ?? throw new InvalidOperationException($"{nameof(control.ViewController.View)} cannot be null."));
@@ -204,37 +222,20 @@ public class MauiPopup : UIViewController
 		viewController.PresentViewController(this, true, null);
 	}
 
-	UIView GetOverlayView(UIView view)
-	{
-		var overlayViewTag = new IntPtr(38483);
-		var overlayView = view.Subviews.AsEnumerable()
-			.Where(
-				x => x.Tag == overlayViewTag
-			)
-			.FirstOrDefault();
-		if (overlayView is null)
-		{
-			overlayView = new UIView();
-			overlayView.Tag = overlayViewTag;
-		}
-
-		return overlayView;
-	}
-
 	sealed class PopoverDelegate : UIPopoverPresentationControllerDelegate
 	{
-		readonly WeakEventManager popoverDismissedEventmanager = new();
+		readonly WeakEventManager popoverDismissedEventManager = new();
 
 		public event EventHandler<UIPresentationController> PopoverDismissedEvent
 		{
-			add => popoverDismissedEventmanager.AddEventHandler(value);
-			remove => popoverDismissedEventmanager.RemoveEventHandler(value);
+			add => popoverDismissedEventManager.AddEventHandler(value);
+			remove => popoverDismissedEventManager.RemoveEventHandler(value);
 		}
 
 		public override UIModalPresentationStyle GetAdaptivePresentationStyle(UIPresentationController forPresentationController) =>
 			UIModalPresentationStyle.None;
 
 		public override void DidDismiss(UIPresentationController presentationController) =>
-			popoverDismissedEventmanager.HandleEvent(this, presentationController, nameof(PopoverDismissedEvent));
+			popoverDismissedEventManager.HandleEvent(this, presentationController, nameof(PopoverDismissedEvent));
 	}
 }
