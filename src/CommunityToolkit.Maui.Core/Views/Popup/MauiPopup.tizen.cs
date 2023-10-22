@@ -74,7 +74,7 @@ public class MauiPopup : Popup
 			{
 				LinearOrientation = LinearLayout.Orientation.Vertical,
 				VerticalAlignment = ToVerticalAlignment(VirtualView.VerticalOptions),
-				HorizontalAlignment = ToHorizontalAlignment(VirtualView.HorizontalOptions),
+				HorizontalAlignment = ToHorizontalAlignment(VirtualView.Content.FlowDirection, VirtualView.HorizontalOptions),
 			};
 			Content.UpdatePosition(new Tizen.UIExtensions.Common.Point(0, 0));
 		}
@@ -115,10 +115,10 @@ public class MauiPopup : Popup
 		_ => NVerticalAlignment.Center
 	};
 
-	static NHorizontalAlignment ToHorizontalAlignment(LayoutAlignment align) => align switch
+	static NHorizontalAlignment ToHorizontalAlignment(FlowDirection direction, LayoutAlignment align) => align switch
 	{
-		LayoutAlignment.Start => NHorizontalAlignment.Begin,
-		LayoutAlignment.End => NHorizontalAlignment.End,
+		LayoutAlignment.Start => direction == FlowDirection.RightToLeft ? NHorizontalAlignment.End : NHorizontalAlignment.Begin,
+		LayoutAlignment.End => direction == FlowDirection.RightToLeft ? NHorizontalAlignment.Begin : NHorizontalAlignment.End,
 		_ => NHorizontalAlignment.Center
 	};
 
