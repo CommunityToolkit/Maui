@@ -23,8 +23,7 @@ public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 	[RelayCommand(CanExecute = nameof(CanShowButtonExecute))]
 	public Task ExecuteShowButton()
 	{
-		if(FlowDirectionSelectedIndex >= FlowDirectionOptions.Count
-			|| FlowDirectionSelectedIndex < 0)
+		if(!IsFlowDirectionSelectionValid(FlowDirectionSelectedIndex, FlowDirectionOptions.Count))
 		{
 			throw new ArgumentOutOfRangeException(nameof(FlowDirectionSelectedIndex), FlowDirectionSelectedIndex,  "Invalid FlowDirection Selected");
 		}
