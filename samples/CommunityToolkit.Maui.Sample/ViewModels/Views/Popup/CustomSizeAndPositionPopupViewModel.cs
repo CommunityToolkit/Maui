@@ -23,10 +23,10 @@ public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 	[RelayCommand(CanExecute = nameof(CanShowButtonExecute))]
 	public Task ExecuteShowButton()
 	{
-		if(FlowDirectionSelectedIndex > FlowDirectionOptions.Count
+		if(FlowDirectionSelectedIndex >= FlowDirectionOptions.Count
 			|| FlowDirectionSelectedIndex < 0)
 		{
-			throw new ArgumentOutOfRangeException("Invalid FlowDirection Selected");
+			throw new ArgumentOutOfRangeException(nameof(FlowDirectionSelectedIndex), FlowDirectionSelectedIndex,  "Invalid FlowDirection Selected");
 		}
 
 		Microsoft.Maui.Primitives.LayoutAlignment? verticalOptions = null, horizontalOptions = null;
@@ -99,6 +99,11 @@ public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 		public FlowDirectionPopup(FlowDirection flowDirection)
 		{
 			this.flowDirection = flowDirection;
+
+			if (Content is not null)
+			{
+				Content.FlowDirection = flowDirection;
+			}
 		}
 
 		protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)

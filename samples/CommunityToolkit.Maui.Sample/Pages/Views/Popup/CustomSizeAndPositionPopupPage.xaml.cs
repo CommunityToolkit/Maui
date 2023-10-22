@@ -8,4 +8,13 @@ public partial class CustomSizeAndPositionPopupPage : BasePage<CustomSizeAndPosi
 	{
 		InitializeComponent();
 	}
+
+	protected override void OnAppearing()
+	{
+		base.OnAppearing();
+		
+		//Required to ensure the FlowDirection Picker is populated with a default value
+		// Without this, the FlowDirection Picker selection is uninitialized
+		BindingContext.FlowDirectionSelectedIndex = 1;
+	}
 }
