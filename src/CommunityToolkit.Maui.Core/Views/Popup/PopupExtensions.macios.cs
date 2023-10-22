@@ -43,7 +43,7 @@ public static class PopupExtensions
 			if (double.IsNaN(popup.Content.Width) || double.IsNaN(popup.Content.Height))
 			{
 				var content = popup.Content.ToPlatform(popup.Handler?.MauiContext ?? throw new InvalidOperationException($"{nameof(popup.Handler.MauiContext)} Cannot Be Null"));
-				var contentSize = content.SizeThatFits(new CGSize(frame.Width, frame.Height));
+				var contentSize = content.SizeThatFits(new CGSize(double.IsNaN(popup.Content.Width) ? frame.Width : popup.Content.Width, double.IsNaN(popup.Content.Height) ? frame.Height : popup.Content.Height));
 				var width = contentSize.Width;
 				var height = contentSize.Height;
 
@@ -152,6 +152,9 @@ public static class PopupExtensions
 
 		if (popup.Anchor is null)
 		{
+			var isFlowDirectionRightToLeft = popup.Content?.FlowDirection == FlowDirection.RightToLeft;
+			var horizontalOptionsPositiveNegativeMultiplier = isFlowDirectionRightToLeft ? (NFloat)(-1) : (NFloat)1;
+
 			nfloat originY;
 			if (mauiPopup.PreferredContentSize.Height < frame.Height)
 			{
@@ -180,12 +183,12 @@ public static class PopupExtensions
 				originX = popup.HorizontalOptions switch
 				{
 #if MACCATALYST
-					Microsoft.Maui.Primitives.LayoutAlignment.Start => 0f,
-					Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Width - mauiPopup.PreferredContentSize.Width - popupMargin * 2,
+					Microsoft.Maui.Primitives.LayoutAlignment.Start => (frame.Width - frame.Width * horizontalOptionsPositiveNegativeMultiplier) / 2 - (mauiPopup.PreferredContentSize.Width - mauiPopup.PreferredContentSize.Width * horizontalOptionsPositiveNegativeMultiplier) / 2 - (popupMargin - popupMargin * horizontalOptionsPositiveNegativeMultiplier),
+					Microsoft.Maui.Primitives.LayoutAlignment.End => (frame.Width + frame.Width * horizontalOptionsPositiveNegativeMultiplier) / 2 - (mauiPopup.PreferredContentSize.Width + mauiPopup.PreferredContentSize.Width * horizontalOptionsPositiveNegativeMultiplier) / 2 - (popupMargin + popupMargin * horizontalOptionsPositiveNegativeMultiplier),
 					Microsoft.Maui.Primitives.LayoutAlignment.Center or Microsoft.Maui.Primitives.LayoutAlignment.Fill => frame.GetMidX() - mauiPopup.PreferredContentSize.Width / 2 - popupMargin,
 #else
-					Microsoft.Maui.Primitives.LayoutAlignment.Start => mauiPopup.PreferredContentSize.Width / 2,
-					Microsoft.Maui.Primitives.LayoutAlignment.End => frame.Width - (mauiPopup.PreferredContentSize.Width / 2),
+					Microsoft.Maui.Primitives.LayoutAlignment.Start => (frame.Width - frame.Width * horizontalOptionsPositiveNegativeMultiplier) / 2 - (mauiPopup.PreferredContentSize.Width / 2 - mauiPopup.PreferredContentSize.Width / 2 * horizontalOptionsPositiveNegativeMultiplier) / 2,
+					Microsoft.Maui.Primitives.LayoutAlignment.End => (frame.Width + frame.Width * horizontalOptionsPositiveNegativeMultiplier) / 2 - (mauiPopup.PreferredContentSize.Width / 2 + mauiPopup.PreferredContentSize.Width / 2 * horizontalOptionsPositiveNegativeMultiplier) / 2,
 					Microsoft.Maui.Primitives.LayoutAlignment.Center or Microsoft.Maui.Primitives.LayoutAlignment.Fill => frame.GetMidX(),
 #endif
 					_ => throw new NotSupportedException($"{nameof(Microsoft.Maui.Primitives.LayoutAlignment)} {popup.VerticalOptions} is not yet supported")
