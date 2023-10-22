@@ -162,7 +162,7 @@
             </RadioButton.Content>
         </RadioButton>
 
-        <RadioButton Grid.Row="3"
+        <RadioButton Grid.Row="5"
                      Grid.Column="3"
                      IsChecked="{Binding IsFillVerticalOptionSelected}"
                      GroupName="VerticalRadioButtonGroup">
