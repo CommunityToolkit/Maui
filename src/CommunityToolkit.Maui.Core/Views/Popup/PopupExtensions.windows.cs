@@ -132,7 +132,7 @@ public static class PopupExtensions
 		popup.Content.Measure(double.PositiveInfinity, double.PositiveInfinity);
 		var contentSize = popup.Content.ToPlatform(mauiContext).DesiredSize;
 		var popupParentFrame = popupParent.Bounds;
-		
+
 		var isFlowDirectionRightToLeft = popup.Content?.FlowDirection == Microsoft.Maui.FlowDirection.RightToLeft;
 		var horizontalOptionsPositiveNegativeMultiplier = isFlowDirectionRightToLeft ? -1 : 1;
 
