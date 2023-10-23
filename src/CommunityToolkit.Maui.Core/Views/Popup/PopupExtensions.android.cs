@@ -2,7 +2,9 @@
 using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Views;
+using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Platform;
+using static Android.Views.View;
 using AColorRes = Android.Resource.Color;
 using APoint = Android.Graphics.Point;
 using ARect = Android.Graphics.Rect;
@@ -174,14 +176,26 @@ public static class PopupExtensions
 			ArgumentNullException.ThrowIfNull(popup.Content);
 
 			var density = context.Resources?.DisplayMetrics?.Density ?? throw new InvalidOperationException($"Unable to determine density. {nameof(context.Resources.DisplayMetrics)} cannot be null");
+			var view = popup.Content.ToPlatform();
 
 			if (popup.Size.IsZero)
 			{
 				if (double.IsNaN(popup.Content.Width) || double.IsNaN(popup.Content.Height))
 				{
-					var size = popup.Content.Measure(windowSize.Width / density, windowSize.Height / density);
-					realContentWidth = (int)context.ToPixels(size.Width);
-					realContentHeight = (int)context.ToPixels(size.Height);
+					if (view is not null)
+					{
+						bool isRootView = true;
+						Measure(
+							view,
+							(int)(double.IsNaN(popup.Content.Width) ? windowSize.Width : (int)context.ToPixels(popup.Content.Width)),
+							(int)(double.IsNaN(popup.Content.Height) ? windowSize.Height : (int)context.ToPixels(popup.Content.Height)),
+							double.IsNaN(popup.Content.Width) && popup.HorizontalOptions != LayoutAlignment.Fill,
+							double.IsNaN(popup.Content.Height) && popup.VerticalOptions != LayoutAlignment.Fill,
+							ref isRootView
+						);
+						realContentWidth = view.MeasuredWidth;
+						realContentHeight = view.MeasuredHeight;
+					}
 
 					if (double.IsNaN(popup.Content.Width))
 					{
@@ -200,12 +214,20 @@ public static class PopupExtensions
 			}
 			else
 			{
-				realWidth = (int)context.ToPixels(popup.Size.Width);
-				realHeight = (int)context.ToPixels(popup.Size.Height);
-
-				var size = popup.Content.Measure(popup.Size.Width, popup.Size.Height);
-				realContentWidth = (int)context.ToPixels(size.Width);
-				realContentHeight = (int)context.ToPixels(size.Height);
+				if (view is not null)
+				{
+					bool isRootView = true;
+					Measure(
+						view,
+						(int)context.ToPixels(popup.Size.Width),
+						(int)context.ToPixels(popup.Size.Height),
+						false,
+						false,
+						ref isRootView
+					);
+					realContentWidth = view.MeasuredWidth;
+					realContentHeight = view.MeasuredHeight;
+				}
 			}
 
 			realWidth = Math.Min(realWidth is 0 ? realContentWidth : realWidth, (int)windowSize.Width);
@@ -215,6 +237,40 @@ public static class PopupExtensions
 			{
 				realWidth = (int)(context.Resources?.DisplayMetrics?.WidthPixels * 0.8 ?? throw new InvalidOperationException($"Unable to determine width. {nameof(context.Resources.DisplayMetrics)} cannot be null"));
 				realHeight = (int)(context.Resources?.DisplayMetrics?.HeightPixels * 0.6 ?? throw new InvalidOperationException($"Unable to determine height. {nameof(context.Resources.DisplayMetrics)} cannot be null"));
+			}
+		}
+
+		static void Measure(AView view, int width, int height, bool isNanWidth, bool isNanHeight, ref bool isRootView)
+		{
+			if (isRootView)
+			{
+				isRootView = false;
+				view.Measure(
+					MeasureSpec.MakeMeasureSpec(width, !isNanWidth ? MeasureSpecMode.Exactly : MeasureSpecMode.AtMost),
+					MeasureSpec.MakeMeasureSpec(height, !isNanHeight ? MeasureSpecMode.Exactly : MeasureSpecMode.AtMost)
+				);
+			}
+
+			if (view is AppCompatTextView)
+			{
+				// https://github.com/dotnet/maui/issues/2019
+				// https://github.com/dotnet/maui/pull/2059
+				var layoutParams = view.LayoutParameters;
+				view.Measure(
+					MeasureSpec.MakeMeasureSpec(width, (layoutParams?.Width == LinearLayout.LayoutParams.WrapContent && !isNanWidth) ? MeasureSpecMode.Exactly : MeasureSpecMode.Unspecified),
+					MeasureSpec.MakeMeasureSpec(height, (layoutParams?.Height == LinearLayout.LayoutParams.WrapContent && !isNanHeight) ? MeasureSpecMode.Exactly : MeasureSpecMode.Unspecified)
+				);
+			}
+
+			if (view is ViewGroup viewGroup)
+			{
+				for (int i = 0; i < viewGroup.ChildCount; i++)
+				{
+					if (viewGroup.GetChildAt(i) is AView childView)
+					{
+						Measure(childView, width, height, isNanWidth, isNanHeight, ref isRootView);
+					}
+				}
 			}
 		}
 
@@ -264,6 +320,8 @@ public static class PopupExtensions
 
 	static void SetDialogPosition(in IPopup popup, Android.Views.Window window)
 	{
+		var isFlowDirectionRightToLeft = popup.Content?.FlowDirection == FlowDirection.RightToLeft;
+
 		var gravityFlags = popup.VerticalOptions switch
 		{
 			LayoutAlignment.Start => GravityFlags.Top,
@@ -273,8 +331,8 @@ public static class PopupExtensions
 
 		gravityFlags |= popup.HorizontalOptions switch
 		{
-			LayoutAlignment.Start => GravityFlags.Left,
-			LayoutAlignment.End => GravityFlags.Right,
+			LayoutAlignment.Start => isFlowDirectionRightToLeft ? GravityFlags.Right : GravityFlags.Left,
+			LayoutAlignment.End => isFlowDirectionRightToLeft ? GravityFlags.Left : GravityFlags.Right,
 			_ => GravityFlags.CenterHorizontal,
 		};
 
