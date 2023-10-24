@@ -68,7 +68,7 @@ public class StatusBarBehaviorTests : BaseTest
 		var onAttachedTo = statusBarBehavior.GetType().GetMethod("OnAttachedTo", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.DeclaredOnly);
 		if (onAttachedTo is not null)
 		{
-			onAttachedTo!.Invoke(statusBarBehavior, [contentPage, null]);
+			onAttachedTo.Invoke(statusBarBehavior, [contentPage, null]);
 
 			var exception = Assert.Throws<NotSupportedException>(() => contentPage.SendNavigatedTo(new(contentPage)));
 			exception.Message.Should().Be("PlatformSetColor is only supported on iOS and Android 23 and later");
