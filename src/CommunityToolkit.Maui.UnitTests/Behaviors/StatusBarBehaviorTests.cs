@@ -54,4 +54,24 @@ public class StatusBarBehaviorTests : BaseTest
 		var exception = Assert.Throws<NotSupportedException>(() => statusBarBehavior.StatusBarStyle = StatusBarStyle.DarkContent);
 		exception.Message.Should().Be("PlatformSetStyle is only supported on iOS and Android 23 and later");
 	}
+
+	[Fact]
+	public void VerifyStatusBarColorAndStyleCallsOnPageNavigatedToThrowsExceptionOnUnsupportedPlatform()
+	{
+		var statusBarBehavior = new StatusBarBehavior();
+		
+		var contentPage = new Page
+		{
+			Behaviors = { statusBarBehavior }
+		};
+
+		var onAttachedTo = statusBarBehavior.GetType().GetMethod("OnAttachedTo", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.DeclaredOnly);
+		if (onAttachedTo is not null)
+		{
+			onAttachedTo!.Invoke(statusBarBehavior, [contentPage, null]);
+
+			var exception = Assert.Throws<NotSupportedException>(() => contentPage.SendNavigatedTo(new(contentPage)));
+			exception.Message.Should().Be("PlatformSetColor is only supported on iOS and Android 23 and later");
+		}
+	}
 }
