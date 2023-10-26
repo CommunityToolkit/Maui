@@ -2,9 +2,10 @@
 using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Views;
+using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Platform;
+using static Android.Views.View;
 using AColorRes = Android.Resource.Color;
-using AInsets = Android.Graphics.Insets;
 using APoint = Android.Graphics.Point;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
@@ -17,6 +18,10 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public static class PopupExtensions
 {
+	static APoint realSize = new();
+	static APoint displaySize = new();
+	static ARect contentRect = new();
+
 	/// <summary>
 	/// Method to update the <see cref="IPopup.Anchor"/> view.
 	/// </summary>
@@ -114,79 +119,18 @@ public static class PopupExtensions
 			realContentWidth = 0,
 			realContentHeight = 0;
 
-		CalculateSizes(popup, context, ref realWidth, ref realHeight, ref realContentWidth, ref realContentHeight);
+		var windowSize = GetWindowSize(windowManager, decorView);
 
-		if (windowManager is not null)
-		{
-			int windowWidth;
-			int windowHeight;
-			int statusBarHeight;
-			int navigationBarHeight;
-
-			if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.R))
-			{
-				var windowMetrics = windowManager.CurrentWindowMetrics;
-				var windowInsets = windowMetrics.WindowInsets.GetInsetsIgnoringVisibility(WindowInsets.Type.SystemBars());
-				windowWidth = windowMetrics.Bounds.Width();
-				windowHeight = windowMetrics.Bounds.Height();
-				statusBarHeight = windowInsets.Top;
-				navigationBarHeight = windowHeight < windowWidth ? windowInsets.Left + windowInsets.Right : windowInsets.Bottom;
-			}
-			else if (windowManager.DefaultDisplay is null)
-			{
-				throw new InvalidOperationException($"{nameof(IWindowManager)}.{nameof(IWindowManager.DefaultDisplay)} cannot be null");
-			}
-			else
-			{
-				APoint realSize = new();
-				APoint displaySize = new();
-				ARect contentRect = new();
-
-				windowManager.DefaultDisplay.GetRealSize(realSize);
-				windowManager.DefaultDisplay.GetSize(displaySize);
-				decorView.GetWindowVisibleDisplayFrame(contentRect);
-
-				windowWidth = realSize.X;
-				windowHeight = realSize.Y;
-				statusBarHeight = contentRect.Top;
-
-				navigationBarHeight = realSize.Y < realSize.X
-										? (realSize.X - displaySize.X)
-										: (realSize.Y - displaySize.Y);
-			}
-
-			realWidth = realWidth <= (windowWidth - (windowHeight < windowWidth ? navigationBarHeight : 0)) ? realWidth : (int)(windowWidth - (windowHeight < windowWidth ? navigationBarHeight : 0));
-			realHeight = realHeight <= (windowHeight - ((windowHeight < windowWidth ? 0 : navigationBarHeight) + statusBarHeight)) ? realHeight : (int)(windowHeight - ((windowHeight < windowWidth ? 0 : navigationBarHeight) + statusBarHeight));
-			window.SetLayout(realWidth, realHeight);
-		}
+		CalculateSizes(popup, context, windowSize, ref realWidth, ref realHeight, ref realContentWidth, ref realContentHeight);
+		window.SetLayout(realWidth, realHeight);
 
 		var childLayoutParams = (FrameLayout.LayoutParams)(child.LayoutParameters ?? throw new InvalidOperationException($"{nameof(child.LayoutParameters)} cannot be null"));
 		childLayoutParams.Width = realWidth;
 		childLayoutParams.Height = realHeight;
 		child.LayoutParameters = childLayoutParams;
 
-		if (realContentWidth > -1)
-		{
-			var inputMeasuredWidth = realContentWidth > realWidth ? realWidth : realContentWidth;
-			container.Measure(inputMeasuredWidth, (int)MeasureSpecMode.Unspecified);
-			horizontalParams = container.MeasuredWidth;
-		}
-		else
-		{
-			container.Measure(realWidth, (int)MeasureSpecMode.Unspecified);
-			horizontalParams = container.MeasuredWidth > realWidth ? realWidth : container.MeasuredWidth;
-		}
-
-		if (realContentHeight > -1)
-		{
-			verticalParams = realContentHeight;
-		}
-		else
-		{
-			var inputMeasuredWidth = realContentWidth > -1 ? horizontalParams : realWidth;
-			container.Measure(inputMeasuredWidth, (int)MeasureSpecMode.Unspecified);
-			verticalParams = container.MeasuredHeight > realHeight ? realHeight : container.MeasuredHeight;
-		}
+		horizontalParams = realWidth;
+		verticalParams = realHeight;
 
 		var containerLayoutParams = new FrameLayout.LayoutParams(horizontalParams, verticalParams);
 
@@ -227,29 +171,67 @@ public static class PopupExtensions
 		container.LayoutParameters = containerLayoutParams;
 
 
-		static void CalculateSizes(IPopup popup, Context context, ref int realWidth, ref int realHeight, ref int realContentWidth, ref int realContentHeight)
+		static void CalculateSizes(IPopup popup, Context context, Size windowSize, ref int realWidth, ref int realHeight, ref int realContentWidth, ref int realContentHeight)
 		{
 			ArgumentNullException.ThrowIfNull(popup.Content);
 
-			if (!popup.Size.IsZero)
+			var density = context.Resources?.DisplayMetrics?.Density ?? throw new InvalidOperationException($"Unable to determine density. {nameof(context.Resources.DisplayMetrics)} cannot be null");
+			var view = popup.Content.ToPlatform();
+
+			if (popup.Size.IsZero)
 			{
-				realWidth = (int)context.ToPixels(popup.Size.Width);
-				realHeight = (int)context.ToPixels(popup.Size.Height);
-			}
-			if (double.IsNaN(popup.Content.Width) || double.IsNaN(popup.Content.Height))
-			{
-				var size = popup.Content.Measure(double.PositiveInfinity, double.PositiveInfinity);
-				realContentWidth = (int)context.ToPixels(size.Width);
-				realContentHeight = (int)context.ToPixels(size.Height);
+				if (double.IsNaN(popup.Content.Width) || double.IsNaN(popup.Content.Height))
+				{
+					if (view is not null)
+					{
+						bool isRootView = true;
+						Measure(
+							view,
+							(int)(double.IsNaN(popup.Content.Width) ? windowSize.Width : (int)context.ToPixels(popup.Content.Width)),
+							(int)(double.IsNaN(popup.Content.Height) ? windowSize.Height : (int)context.ToPixels(popup.Content.Height)),
+							double.IsNaN(popup.Content.Width) && popup.HorizontalOptions != LayoutAlignment.Fill,
+							double.IsNaN(popup.Content.Height) && popup.VerticalOptions != LayoutAlignment.Fill,
+							ref isRootView
+						);
+						realContentWidth = view.MeasuredWidth;
+						realContentHeight = view.MeasuredHeight;
+					}
+
+					if (double.IsNaN(popup.Content.Width))
+					{
+						realContentWidth = popup.HorizontalOptions == LayoutAlignment.Fill ? (int)windowSize.Width : realContentWidth;
+					}
+					if (double.IsNaN(popup.Content.Height))
+					{
+						realContentHeight = popup.VerticalOptions == LayoutAlignment.Fill ? (int)windowSize.Height : realContentHeight;
+					}
+				}
+				else
+				{
+					realContentWidth = (int)context.ToPixels(popup.Content.Width);
+					realContentHeight = (int)context.ToPixels(popup.Content.Height);
+				}
 			}
 			else
 			{
-				realContentWidth = (int)context.ToPixels(popup.Content.Width);
-				realContentHeight = (int)context.ToPixels(popup.Content.Height);
+				if (view is not null)
+				{
+					bool isRootView = true;
+					Measure(
+						view,
+						(int)context.ToPixels(popup.Size.Width),
+						(int)context.ToPixels(popup.Size.Height),
+						false,
+						false,
+						ref isRootView
+					);
+					realContentWidth = view.MeasuredWidth;
+					realContentHeight = view.MeasuredHeight;
+				}
 			}
 
-			realWidth = realWidth is 0 ? realContentWidth : realWidth;
-			realHeight = realHeight is 0 ? realContentHeight : realHeight;
+			realWidth = Math.Min(realWidth is 0 ? realContentWidth : realWidth, (int)windowSize.Width);
+			realHeight = Math.Min(realHeight is 0 ? realContentHeight : realHeight, (int)windowSize.Height);
 
 			if (realHeight is 0 || realWidth is 0)
 			{
@@ -257,10 +239,89 @@ public static class PopupExtensions
 				realHeight = (int)(context.Resources?.DisplayMetrics?.HeightPixels * 0.6 ?? throw new InvalidOperationException($"Unable to determine height. {nameof(context.Resources.DisplayMetrics)} cannot be null"));
 			}
 		}
+
+		static void Measure(AView view, int width, int height, bool isNanWidth, bool isNanHeight, ref bool isRootView)
+		{
+			if (isRootView)
+			{
+				isRootView = false;
+				view.Measure(
+					MeasureSpec.MakeMeasureSpec(width, !isNanWidth ? MeasureSpecMode.Exactly : MeasureSpecMode.AtMost),
+					MeasureSpec.MakeMeasureSpec(height, !isNanHeight ? MeasureSpecMode.Exactly : MeasureSpecMode.AtMost)
+				);
+			}
+
+			if (view is AppCompatTextView)
+			{
+				// https://github.com/dotnet/maui/issues/2019
+				// https://github.com/dotnet/maui/pull/2059
+				var layoutParams = view.LayoutParameters;
+				view.Measure(
+					MeasureSpec.MakeMeasureSpec(width, (layoutParams?.Width == LinearLayout.LayoutParams.WrapContent && !isNanWidth) ? MeasureSpecMode.Exactly : MeasureSpecMode.Unspecified),
+					MeasureSpec.MakeMeasureSpec(height, (layoutParams?.Height == LinearLayout.LayoutParams.WrapContent && !isNanHeight) ? MeasureSpecMode.Exactly : MeasureSpecMode.Unspecified)
+				);
+			}
+
+			if (view is ViewGroup viewGroup)
+			{
+				for (int i = 0; i < viewGroup.ChildCount; i++)
+				{
+					if (viewGroup.GetChildAt(i) is AView childView)
+					{
+						Measure(childView, width, height, isNanWidth, isNanHeight, ref isRootView);
+					}
+				}
+			}
+		}
+
+		static Size GetWindowSize(IWindowManager? windowManager, ViewGroup decorView)
+		{
+			ArgumentNullException.ThrowIfNull(windowManager);
+
+			int windowWidth;
+			int windowHeight;
+			int statusBarHeight;
+			int navigationBarHeight;
+
+			if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.R))
+			{
+				var windowMetrics = windowManager.CurrentWindowMetrics;
+				var windowInsets = windowMetrics.WindowInsets.GetInsetsIgnoringVisibility(WindowInsets.Type.SystemBars());
+				windowWidth = windowMetrics.Bounds.Width();
+				windowHeight = windowMetrics.Bounds.Height();
+				statusBarHeight = windowInsets.Top;
+				navigationBarHeight = windowHeight < windowWidth ? windowInsets.Left + windowInsets.Right : windowInsets.Bottom;
+			}
+			else if (windowManager.DefaultDisplay is null)
+			{
+				throw new InvalidOperationException($"{nameof(IWindowManager)}.{nameof(IWindowManager.DefaultDisplay)} cannot be null");
+			}
+			else
+			{
+				windowManager.DefaultDisplay.GetRealSize(realSize);
+				windowManager.DefaultDisplay.GetSize(displaySize);
+				decorView.GetWindowVisibleDisplayFrame(contentRect);
+
+				windowWidth = realSize.X;
+				windowHeight = realSize.Y;
+				statusBarHeight = contentRect.Top;
+
+				navigationBarHeight = realSize.Y < realSize.X
+										? (realSize.X - displaySize.X)
+										: (realSize.Y - displaySize.Y);
+			}
+
+			windowWidth = (windowWidth - (windowHeight < windowWidth ? navigationBarHeight : 0));
+			windowHeight = (windowHeight - ((windowHeight < windowWidth ? 0 : navigationBarHeight) + statusBarHeight));
+
+			return new Size(windowWidth, windowHeight);
+		}
 	}
 
 	static void SetDialogPosition(in IPopup popup, Android.Views.Window window)
 	{
+		var isFlowDirectionRightToLeft = popup.Content?.FlowDirection == FlowDirection.RightToLeft;
+
 		var gravityFlags = popup.VerticalOptions switch
 		{
 			LayoutAlignment.Start => GravityFlags.Top,
@@ -270,8 +331,8 @@ public static class PopupExtensions
 
 		gravityFlags |= popup.HorizontalOptions switch
 		{
-			LayoutAlignment.Start => GravityFlags.Left,
-			LayoutAlignment.End => GravityFlags.Right,
+			LayoutAlignment.Start => isFlowDirectionRightToLeft ? GravityFlags.Right : GravityFlags.Left,
+			LayoutAlignment.End => isFlowDirectionRightToLeft ? GravityFlags.Left : GravityFlags.Right,
 			_ => GravityFlags.CenterHorizontal,
 		};
 

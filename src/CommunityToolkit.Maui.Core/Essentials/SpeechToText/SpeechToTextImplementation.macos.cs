@@ -8,10 +8,12 @@ namespace CommunityToolkit.Maui.Media;
 /// <inheritdoc />
 public sealed partial class SpeechToTextImplementation
 {
-	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest))]
-	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
+	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest), nameof(getRecognitionTaskCompletionSource))]
+	Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
 	{
 		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(culture.Name));
+
+		ResetGetRecognitionTaskCompletionSource(cancellationToken);
 
 		if (!speechRecognizer.Available)
 		{
@@ -29,12 +31,16 @@ public sealed partial class SpeechToTextImplementation
 
 		audioSession.SetCategory(AVAudioSessionCategory.Record, AVAudioSessionCategoryOptions.DefaultToSpeaker);
 
-		var mode = audioSession.AvailableModes.Contains(AVAudioSession.ModeMeasurement) ? AVAudioSession.ModeMeasurement : audioSession.AvailableModes[0];
+		var mode = audioSession.AvailableModes.Contains(AVAudioSession.ModeMeasurement)
+			? AVAudioSession.ModeMeasurement
+			: audioSession.AvailableModes[0];
+
 		audioSession.SetMode(new NSString(mode), out var audioSessionError);
 		if (audioSessionError is not null)
 		{
 			throw new Exception(audioSessionError.LocalizedDescription);
 		}
+
 		audioSession.SetActive(true, AVAudioSessionSetActiveOptions.NotifyOthersOnDeactivation, out audioSessionError);
 		if (audioSessionError is not null)
 		{
@@ -43,10 +49,7 @@ public sealed partial class SpeechToTextImplementation
 
 		var node = audioEngine.InputNode;
 		var recordingFormat = node.GetBusOutputFormat(0);
-		node.InstallTapOnBus(0, 1024, recordingFormat, (buffer, _) =>
-		{
-			liveSpeechRequest.Append(buffer);
-		});
+		node.InstallTapOnBus(0, 1024, recordingFormat, (buffer, _) => liveSpeechRequest.Append(buffer));
 
 		audioEngine.Prepare();
 		audioEngine.StartAndReturnError(out var error);
@@ -57,7 +60,6 @@ public sealed partial class SpeechToTextImplementation
 		}
 
 		var currentIndex = 0;
-		var getRecognitionTaskCompletionSource = new TaskCompletionSource<string>();
 
 		recognitionTask = speechRecognizer.GetRecognitionTask(liveSpeechRequest, (result, err) =>
 		{
@@ -72,27 +74,29 @@ public sealed partial class SpeechToTextImplementation
 				{
 					currentIndex = 0;
 					StopRecording();
+					OnRecognitionResultCompleted(result.BestTranscription.FormattedString);
 					getRecognitionTaskCompletionSource.TrySetResult(result.BestTranscription.FormattedString);
 				}
 				else
 				{
+					if (currentIndex <= 0)
+					{
+						OnSpeechToTextStateChanged(CurrentState);
+					}
+
 					for (var i = currentIndex; i < result.BestTranscription.Segments.Length; i++)
 					{
 						var s = result.BestTranscription.Segments[i].Substring;
 						currentIndex++;
-						recognitionResult?.Report(s);
+						recognitionProgress?.Report(s);
+						OnRecognitionResultUpdated(s);
 					}
 				}
 			}
 		});
 
-		await using (cancellationToken.Register(() =>
-		{
-			StopRecording();
-			getRecognitionTaskCompletionSource.TrySetCanceled();
-		}))
-		{
-			return await getRecognitionTaskCompletionSource.Task;
-		}
+		cancellationToken.ThrowIfCancellationRequested();
+
+		return Task.CompletedTask;
 	}
 }
