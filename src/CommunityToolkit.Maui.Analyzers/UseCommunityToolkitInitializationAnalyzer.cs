@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -56,7 +57,7 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 	{
 		foreach (var method in root.DescendantNodes().OfType<MethodDeclarationSyntax>())
 		{
-			if (method.DescendantNodes().OfType<ExpressionStatementSyntax>().Any(x => x.DescendantNodes().Any(x => x.ToString().Contains(".UseMauiCommunityToolkit("))))
+			if (method.DescendantNodes().OfType<ExpressionStatementSyntax>().Any(x => x.DescendantNodes().Any(x => Regex.IsMatch(x.ToString(), @".UseMauiCommunityToolkit[ ]*\("))))
 			{
 				return true;
 			}
