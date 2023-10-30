@@ -260,7 +260,7 @@ public class DrawingView : View, IDrawingView
 	{
 		drawingViewEventManager.HandleEvent(this, EventArgs.Empty, nameof(DrawingLineCancelled));
 
-		if (DrawingLineCancelledCommand?.CanExecute(null) ?? false)
+		if (DrawingLineCancelledCommand?.CanExecute(null) is true)
 		{
 			DrawingLineCancelledCommand.Execute(null);
 		}
@@ -273,7 +273,7 @@ public class DrawingView : View, IDrawingView
 	{
 		drawingViewEventManager.HandleEvent(this, new DrawingLineStartedEventArgs(point), nameof(DrawingLineStarted));
 
-		if (DrawingLineStartedCommand?.CanExecute(point) ?? false)
+		if (DrawingLineStartedCommand?.CanExecute(point) is true)
 		{
 			DrawingLineStartedCommand.Execute(point);
 		}
@@ -286,7 +286,7 @@ public class DrawingView : View, IDrawingView
 	{
 		drawingViewEventManager.HandleEvent(this, new PointDrawnEventArgs(point), nameof(PointDrawn));
 
-		if (PointDrawnCommand?.CanExecute(point) ?? false)
+		if (PointDrawnCommand?.CanExecute(point) is true)
 		{
 			PointDrawnCommand.Execute(point);
 		}
