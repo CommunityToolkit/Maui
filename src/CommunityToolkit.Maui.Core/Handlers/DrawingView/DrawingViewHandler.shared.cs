@@ -170,7 +170,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	void OnPlatformViewDrawingLineCompleted(object? sender, MauiDrawingLineCompletedEventArgs e)
 	{
 		var drawingLine = adapter.ConvertMauiDrawingLine(e.Line);
-		VirtualView.DrawingLineCompleted(drawingLine);
+		VirtualView.OnDrawingLineCompleted(drawingLine);
 	}
 	
 	void OnPlatformViewDrawing(object? sender, MauiOnDrawingEventArgs e)
