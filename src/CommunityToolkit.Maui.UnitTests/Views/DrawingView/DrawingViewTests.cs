@@ -236,7 +236,7 @@ public class DrawingViewTests : BaseHandlerTest
 
 		point.Should().BeEquivalentTo(expectedPoint);
 	}
-	
+
 	[Fact]
 	public void OnDrawingLastPointPassedWithCommand()
 	{
@@ -248,8 +248,9 @@ public class DrawingViewTests : BaseHandlerTest
 
 		point.Should().BeEquivalentTo(expectedPoint);
 	}
-	
+
 	[Fact]
+	[Obsolete]
 	public void OnDrawingLineCompletedLastDrawingLinePassedWithCommand()
 	{
 		var expectedDrawingLine = new DrawingLine
@@ -269,6 +270,7 @@ public class DrawingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void OnDrawingLineCompleted_CommandIsNull_LastDrawingLineNotPassed()
 	{
 		IDrawingLine? currentLine = null;
@@ -299,6 +301,7 @@ public class DrawingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void OnDrawingLineCompleted_CommandIsNotAllowedExecute_LastDrawingLineNotPassed()
 	{
 		IDrawingLine? currentLine = null;
@@ -329,6 +332,7 @@ public class DrawingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void OnDrawingLineCompletedLastDrawingLinePassedWithEvent()
 	{
 		var expectedDrawingLine = new DrawingLine
@@ -348,7 +352,7 @@ public class DrawingViewTests : BaseHandlerTest
 
 		currentLine.Should().BeEquivalentTo(expectedDrawingLine);
 	}
-	
+
 	[Fact]
 	public void OnDrawingStartedLastDrawingPointPassedWithEvent()
 	{
@@ -362,7 +366,7 @@ public class DrawingViewTests : BaseHandlerTest
 
 		currentPoint.Should().BeEquivalentTo(expectedPoint);
 	}
-	
+
 	[Fact]
 	public void OnDrawingLastDrawingPointPassedWithEvent()
 	{

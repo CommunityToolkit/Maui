@@ -47,9 +47,9 @@ public partial class DrawingViewViewModel : BaseViewModel
 	public ObservableCollection<IDrawingLine> Lines { get; } = new();
 
 	public ICommand PointDrawnCommand { get; }
-	
+
 	public ICommand DrawingLineStartedCommand { get; }
-	
+
 	public ICommand DrawingLineCancelledCommand { get; }
 	public ICommand DrawingLineCompletedCommand { get; }
 	public ICommand ClearLinesCommand { get; }

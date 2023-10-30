@@ -24,7 +24,7 @@ public partial class MauiDrawingView
 		add => weakEventManager.AddEventHandler(value);
 		remove => weakEventManager.RemoveEventHandler(value);
 	}
-	
+
 	/// <summary>
 	/// Event raised when drawing started 
 	/// </summary>
@@ -33,7 +33,7 @@ public partial class MauiDrawingView
 		add => weakEventManager.AddEventHandler(value);
 		remove => weakEventManager.RemoveEventHandler(value);
 	}
-	
+
 	/// <summary>
 	/// Event raised when drawing cancelled 
 	/// </summary>
@@ -42,7 +42,7 @@ public partial class MauiDrawingView
 		add => weakEventManager.AddEventHandler(value);
 		remove => weakEventManager.RemoveEventHandler(value);
 	}
-	
+
 	/// <summary>
 	/// Event raised when drawing 
 	/// </summary>
@@ -179,13 +179,13 @@ public partial class MauiDrawingView
 
 	void OnDrawingLineCompleted(MauiDrawingLine lastDrawingLine) =>
 		weakEventManager.HandleEvent(this, new MauiDrawingLineCompletedEventArgs(lastDrawingLine), nameof(DrawingLineCompleted));
-	
+
 	void OnDrawing(PointF point) =>
 		weakEventManager.HandleEvent(this, new MauiOnDrawingEventArgs(point), nameof(Drawing));
-	
+
 	void OnDrawingStarted(PointF point) =>
 		weakEventManager.HandleEvent(this, new MauiDrawingStartedEventArgs(point), nameof(DrawingStarted));
-	
+
 	void OnDrawingCancelled() =>
 		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(DrawingCancelled));
 

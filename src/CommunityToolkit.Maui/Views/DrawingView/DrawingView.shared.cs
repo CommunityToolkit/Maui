@@ -84,7 +84,7 @@ public class DrawingView : View, IDrawingView
 		add => drawingViewEventManager.AddEventHandler(value);
 		remove => drawingViewEventManager.RemoveEventHandler(value);
 	}
-	
+
 	/// <summary>
 	/// Event occurred when drawing line started.
 	/// </summary>
@@ -93,7 +93,7 @@ public class DrawingView : View, IDrawingView
 		add => drawingViewEventManager.AddEventHandler(value);
 		remove => drawingViewEventManager.RemoveEventHandler(value);
 	}
-	
+
 	/// <summary>
 	/// Event occurred when drawing line cancelled.
 	/// </summary>
@@ -102,7 +102,7 @@ public class DrawingView : View, IDrawingView
 		add => drawingViewEventManager.AddEventHandler(value);
 		remove => drawingViewEventManager.RemoveEventHandler(value);
 	}
-	
+
 	/// <summary>
 	/// Event occurred when drawing.
 	/// </summary>
@@ -141,7 +141,7 @@ public class DrawingView : View, IDrawingView
 		get => (ICommand?)GetValue(DrawingLineCompletedCommandProperty);
 		set => SetValue(DrawingLineCompletedCommandProperty, value);
 	}
-	
+
 	/// <summary>
 	/// This command is invoked whenever the drawing of a line on <see cref="DrawingView"/> has started.
 	/// </summary>
@@ -150,7 +150,7 @@ public class DrawingView : View, IDrawingView
 		get => (ICommand?)GetValue(DrawingLineStartedCommandProperty);
 		set => SetValue(DrawingLineStartedCommandProperty, value);
 	}
-	
+
 	/// <summary>
 	/// This command is invoked whenever the drawing of a line on <see cref="DrawingView"/> has cancelled.
 	/// </summary>
@@ -159,7 +159,7 @@ public class DrawingView : View, IDrawingView
 		get => (ICommand?)GetValue(DrawingLineCancelledCommandProperty);
 		set => SetValue(DrawingLineCancelledCommandProperty, value);
 	}
-	
+
 	/// <summary>
 	/// This command is invoked whenever the drawing on <see cref="DrawingView"/>.
 	/// </summary>
