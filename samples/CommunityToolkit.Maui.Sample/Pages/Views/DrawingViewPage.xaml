@@ -19,7 +19,7 @@
                 Grid.Row="2" Grid.Column="0"
                 Grid.ColumnSpan="2"
                 BackgroundColor="White"
-                Command="{Binding AddNewLineCommand}"
+                Command="{Binding AddNewLineCommand, Mode=OneTime}"
                 CommandParameter="{Binding Path=., Source={x:Reference DrawingViewControl}}"
                 Text="Add new line"
                 TextColor="Black" />
@@ -34,7 +34,7 @@
                 Grid.Row="4" Grid.Column="0"
                 Grid.ColumnSpan="2"
                 BackgroundColor="White"
-                Command="{Binding ClearLinesCommand}"
+                Command="{Binding ClearLinesCommand, Mode=OneTime}"
                 Text="Clear all lines"
                 TextColor="Black" />
             <Button
@@ -56,7 +56,7 @@
                 Grid.Row="7" Grid.Column="0"
                 Grid.ColumnSpan="2"
                 BackgroundColor="White"
-                Command="{Binding SaveCommand}"
+                Command="{Binding SaveCommand, Mode=OneTime}"
                 Text="Save image"
                 TextColor="Black" />
 
@@ -71,10 +71,10 @@
                              LineWidth="5"
                              Lines="{Binding Lines, Mode=TwoWay}"
                              DrawingLineCompleted="OnDrawingLineCompleted"
-                             DrawingLineCompletedCommand="{Binding DrawingLineCompletedCommand}"
-                             DrawingLineStartedCommand="{Binding DrawingLineStartedCommand}"
-                             DrawingLineCancelledCommand="{Binding DrawingLineCancelledCommand}"
-                             PointDrawnCommand="{Binding PointDrawnCommand}"
+                             DrawingLineCompletedCommand="{Binding DrawingLineCompletedCommand, Mode=OneTime}"
+                             DrawingLineStartedCommand="{Binding DrawingLineStartedCommand, Mode=OneTime}"
+                             DrawingLineCancelledCommand="{Binding DrawingLineCancelledCommand, Mode=OneTime}"
+                             PointDrawnCommand="{Binding PointDrawnCommand, Mode=OneTime}"
                              ShouldClearOnFinish="{Binding Source={x:Reference ClearOnFinish}, Path=IsToggled}"
                              IsMultiLineModeEnabled="{Binding Source={x:Reference MultiLineMode}, Path=IsToggled}">
                 <mct:DrawingView.Background>
