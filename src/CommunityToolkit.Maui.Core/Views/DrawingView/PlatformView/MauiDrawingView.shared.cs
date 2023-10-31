@@ -26,6 +26,33 @@ public partial class MauiDrawingView
 	}
 
 	/// <summary>
+	/// Event raised when drawing started 
+	/// </summary>
+	public event EventHandler<MauiDrawingStartedEventArgs> DrawingStarted
+	{
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
+	}
+
+	/// <summary>
+	/// Event raised when drawing cancelled 
+	/// </summary>
+	public event EventHandler<MauiDrawingStartedEventArgs> DrawingCancelled
+	{
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
+	}
+
+	/// <summary>
+	/// Event raised when drawing 
+	/// </summary>
+	public event EventHandler<MauiOnDrawingEventArgs> Drawing
+	{
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
+	}
+
+	/// <summary>
 	/// Drawing Lines
 	/// </summary>
 	public ObservableCollection<MauiDrawingLine> Lines { get; } = new();
@@ -104,6 +131,7 @@ public partial class MauiDrawingView
 		Redraw();
 
 		Lines.CollectionChanged += OnLinesCollectionChanged;
+		OnDrawingStarted(point);
 	}
 
 	void OnMoving(PointF currentPoint)
@@ -119,6 +147,7 @@ public partial class MauiDrawingView
 
 		Redraw();
 		currentLine?.Points.Add(currentPoint);
+		OnDrawing(currentPoint);
 	}
 
 	void OnFinish()
@@ -145,10 +174,20 @@ public partial class MauiDrawingView
 		ClearPath();
 		Redraw();
 		isDrawing = false;
+		OnDrawingCancelled();
 	}
 
 	void OnDrawingLineCompleted(MauiDrawingLine lastDrawingLine) =>
 		weakEventManager.HandleEvent(this, new MauiDrawingLineCompletedEventArgs(lastDrawingLine), nameof(DrawingLineCompleted));
+
+	void OnDrawing(PointF point) =>
+		weakEventManager.HandleEvent(this, new MauiOnDrawingEventArgs(point), nameof(Drawing));
+
+	void OnDrawingStarted(PointF point) =>
+		weakEventManager.HandleEvent(this, new MauiDrawingStartedEventArgs(point), nameof(DrawingStarted));
+
+	void OnDrawingCancelled() =>
+		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(DrawingCancelled));
 
 	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => LoadLines();
 

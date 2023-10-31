@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Views;
 /// </summary>
 public class DrawingView : View, IDrawingView
 {
-	readonly WeakEventManager drawingLineCompletedEventManager = new();
+	readonly WeakEventManager drawingViewEventManager = new();
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="DrawingView"/> class.
@@ -50,6 +50,21 @@ public class DrawingView : View, IDrawingView
 	public static readonly BindableProperty DrawingLineCompletedCommandProperty = BindableProperty.Create(nameof(DrawingLineCompletedCommand), typeof(ICommand), typeof(DrawingView));
 
 	/// <summary>
+	/// Backing BindableProperty for the <see cref="DrawingLineStartedCommand"/> property.
+	/// </summary>
+	public static readonly BindableProperty DrawingLineStartedCommandProperty = BindableProperty.Create(nameof(DrawingLineStartedCommand), typeof(ICommand), typeof(DrawingView));
+
+	/// <summary>
+	/// Backing BindableProperty for the <see cref="DrawingLineCancelledCommand"/> property.
+	/// </summary>
+	public static readonly BindableProperty DrawingLineCancelledCommandProperty = BindableProperty.Create(nameof(DrawingLineCancelledCommand), typeof(ICommand), typeof(DrawingView));
+
+	/// <summary>
+	/// Backing BindableProperty for the <see cref="PointDrawnCommand"/> property.
+	/// </summary>
+	public static readonly BindableProperty PointDrawnCommandProperty = BindableProperty.Create(nameof(PointDrawnCommand), typeof(ICommand), typeof(DrawingView));
+
+	/// <summary>
 	/// Backing BindableProperty for the <see cref="LineColor"/> property.
 	/// </summary>
 	public static readonly BindableProperty LineColorProperty =
@@ -66,8 +81,35 @@ public class DrawingView : View, IDrawingView
 	/// </summary>
 	public event EventHandler<DrawingLineCompletedEventArgs> DrawingLineCompleted
 	{
-		add => drawingLineCompletedEventManager.AddEventHandler(value);
-		remove => drawingLineCompletedEventManager.RemoveEventHandler(value);
+		add => drawingViewEventManager.AddEventHandler(value);
+		remove => drawingViewEventManager.RemoveEventHandler(value);
+	}
+
+	/// <summary>
+	/// Event occurred when drawing line started.
+	/// </summary>
+	public event EventHandler<DrawingLineStartedEventArgs> DrawingLineStarted
+	{
+		add => drawingViewEventManager.AddEventHandler(value);
+		remove => drawingViewEventManager.RemoveEventHandler(value);
+	}
+
+	/// <summary>
+	/// Event occurred when drawing line cancelled.
+	/// </summary>
+	public event EventHandler<EventArgs> DrawingLineCancelled
+	{
+		add => drawingViewEventManager.AddEventHandler(value);
+		remove => drawingViewEventManager.RemoveEventHandler(value);
+	}
+
+	/// <summary>
+	/// Event occurred when drawing.
+	/// </summary>
+	public event EventHandler<PointDrawnEventArgs> PointDrawn
+	{
+		add => drawingViewEventManager.AddEventHandler(value);
+		remove => drawingViewEventManager.RemoveEventHandler(value);
 	}
 
 	/// <summary>
@@ -98,6 +140,33 @@ public class DrawingView : View, IDrawingView
 	{
 		get => (ICommand?)GetValue(DrawingLineCompletedCommandProperty);
 		set => SetValue(DrawingLineCompletedCommandProperty, value);
+	}
+
+	/// <summary>
+	/// This command is invoked whenever the drawing of a line on <see cref="DrawingView"/> has started.
+	/// </summary>
+	public ICommand? DrawingLineStartedCommand
+	{
+		get => (ICommand?)GetValue(DrawingLineStartedCommandProperty);
+		set => SetValue(DrawingLineStartedCommandProperty, value);
+	}
+
+	/// <summary>
+	/// This command is invoked whenever the drawing of a line on <see cref="DrawingView"/> has cancelled.
+	/// </summary>
+	public ICommand? DrawingLineCancelledCommand
+	{
+		get => (ICommand?)GetValue(DrawingLineCancelledCommandProperty);
+		set => SetValue(DrawingLineCancelledCommandProperty, value);
+	}
+
+	/// <summary>
+	/// This command is invoked whenever the drawing on <see cref="DrawingView"/>.
+	/// </summary>
+	public ICommand? PointDrawnCommand
+	{
+		get => (ICommand?)GetValue(PointDrawnCommandProperty);
+		set => SetValue(PointDrawnCommandProperty, value);
 	}
 
 	/// <summary>
@@ -174,13 +243,58 @@ public class DrawingView : View, IDrawingView
 	/// Executes DrawingLineCompleted event and DrawingLineCompletedCommand
 	/// </summary>
 	/// <param name="lastDrawingLine">Last drawing line</param>
-	void IDrawingView.DrawingLineCompleted(IDrawingLine lastDrawingLine)
+	void IDrawingView.DrawingLineCompleted(IDrawingLine lastDrawingLine) => ((IDrawingView)this).OnDrawingLineCompleted(lastDrawingLine);
+
+	/// <summary>
+	/// Executes DrawingLineCompleted event and DrawingLineCompletedCommand
+	/// </summary>
+	/// <param name="lastDrawingLine">Last drawing line</param>
+	void IDrawingView.OnDrawingLineCompleted(IDrawingLine lastDrawingLine)
 	{
-		drawingLineCompletedEventManager.HandleEvent(this, new DrawingLineCompletedEventArgs(lastDrawingLine), nameof(DrawingLineCompleted));
+		drawingViewEventManager.HandleEvent(this, new DrawingLineCompletedEventArgs(lastDrawingLine), nameof(DrawingLineCompleted));
 
 		if (DrawingLineCompletedCommand?.CanExecute(lastDrawingLine) ?? false)
 		{
 			DrawingLineCompletedCommand.Execute(lastDrawingLine);
+		}
+	}
+
+	/// <summary>
+	/// Executes DrawingLineCancelled event and DrawingLineCancelledCommand
+	/// </summary>
+	void IDrawingView.OnDrawingLineCancelled()
+	{
+		drawingViewEventManager.HandleEvent(this, EventArgs.Empty, nameof(DrawingLineCancelled));
+
+		if (DrawingLineCancelledCommand?.CanExecute(null) is true)
+		{
+			DrawingLineCancelledCommand.Execute(null);
+		}
+	}
+
+	/// <summary>
+	/// Executes DrawingLineStarted event and DrawingLineStartedCommand
+	/// </summary>
+	void IDrawingView.OnDrawingLineStarted(PointF point)
+	{
+		drawingViewEventManager.HandleEvent(this, new DrawingLineStartedEventArgs(point), nameof(DrawingLineStarted));
+
+		if (DrawingLineStartedCommand?.CanExecute(point) is true)
+		{
+			DrawingLineStartedCommand.Execute(point);
+		}
+	}
+
+	/// <summary>
+	/// Executes PointDrawn event and PointDrawnCommand
+	/// </summary>
+	void IDrawingView.OnPointDrawn(PointF point)
+	{
+		drawingViewEventManager.HandleEvent(this, new PointDrawnEventArgs(point), nameof(PointDrawn));
+
+		if (PointDrawnCommand?.CanExecute(point) is true)
+		{
+			PointDrawnCommand.Execute(point);
 		}
 	}
 
