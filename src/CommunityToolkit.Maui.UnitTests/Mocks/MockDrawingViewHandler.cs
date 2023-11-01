@@ -98,7 +98,7 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawin
 		if (Lines.Count > 0)
 		{
 			var drawingLine = adapter.ConvertMauiDrawingLine(Lines.Last());
-			VirtualView.DrawingLineCompleted(drawingLine);
+			VirtualView.OnDrawingLineCompleted(drawingLine);
 		}
 	}
 
