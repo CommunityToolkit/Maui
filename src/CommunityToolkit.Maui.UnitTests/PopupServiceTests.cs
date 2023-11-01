@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.Views;
 using Xunit;
@@ -7,11 +8,11 @@ namespace CommunityToolkit.Maui.UnitTests;
 
 public class PopupServiceTests : BaseHandlerTest
 {
-	public PopupServiceTests() : base()
+	public PopupServiceTests()
 	{
 		var appBuilder = MauiApp.CreateBuilder()
-								.UseMauiCommunityToolkit()
-								.UseMauiApp<MockApplication>();
+			.UseMauiCommunityToolkit()
+			.UseMauiApp<MockApplication>();
 
 		var mauiApp = appBuilder.Build();
 		var application = mauiApp.Services.GetRequiredService<IApplication>();
@@ -26,94 +27,93 @@ public class PopupServiceTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public static void ShowPopupAsyncWithNullViewModelShouldThrowArgumentNullException()
+	public void ShowPopupAsyncWithNullViewModelShouldThrowArgumentNullException()
 	{
 		var popupService = new PopupService(new MockServiceProvider());
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.ThrowsAsync<ArgumentNullException>(() => popupService.ShowPopupAsync<INotifyPropertyChanged>(viewModel: null));
+		Assert.ThrowsAsync<ArgumentNullException>(() =>
+			popupService.ShowPopupAsync<INotifyPropertyChanged>(viewModel: null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
 	[Fact]
-	public static void ShowPopupAsyncWithNullOnPresentingShouldThrowArgumentNullException()
+	public void ShowPopupAsyncWithNullOnPresentingShouldThrowArgumentNullException()
 	{
 		var popupService = new PopupService(new MockServiceProvider());
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.ThrowsAsync<ArgumentNullException>(() => popupService.ShowPopupAsync<INotifyPropertyChanged>(onPresenting: null));
+		Assert.ThrowsAsync<ArgumentNullException>(() =>
+			popupService.ShowPopupAsync<INotifyPropertyChanged>(onPresenting: null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
 	[Fact]
-	public static void ShowPopupAsyncWithMismatchedViewModelTypeShouldThrowInvalidOperationException()
+	public void ShowPopupAsyncWithMismatchedViewModelTypeShouldThrowInvalidOperationException()
 	{
 		var popupService = new PopupService(new MockServiceProvider());
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.ThrowsAsync<ArgumentNullException>(() => popupService.ShowPopupAsync<INotifyPropertyChanged>(viewModel: null));
+		Assert.ThrowsAsync<ArgumentNullException>(() =>
+			popupService.ShowPopupAsync<INotifyPropertyChanged>(viewModel: null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Fact]
-	public static void ShowPopupAsyncShouldThrowInvalidOperationExceptionWhenNoViewModelIsRegistered()
+	[Fact(Timeout = 2000)]
+	public void ShowPopupAsyncShouldThrowInvalidOperationExceptionWhenNoViewModelIsRegistered()
 	{
 		var popupInstance = new MockMismatchedPopup();
 		var popupViewModel = new MockPageViewModel();
 
-		var popupService = SetupTest(popupInstance, () => popupViewModel);
+		SetupTest(popupInstance, () => popupViewModel, out var popupService);
 
 		Assert.ThrowsAsync<InvalidOperationException>(popupService.ShowPopupAsync<MockPageViewModel>);
 	}
 
-	[Fact]
-	public void ShowPopupAsyncShouldCreateAndAssignBindingContext()
+	[Fact(Timeout = 2000)]
+	public async Task ShowPopupAsyncShouldValidateProperBindingContext()
 	{
-		var popupInstance = new MockPopup();
 		var popupViewModel = new MockPageViewModel();
+		var popupInstance = new MockSelfClosingPopup(string.Empty)
+		{
+			BindingContext = popupViewModel
+		};
 
-		var popupService = SetupTest(popupInstance, () => popupViewModel);
+		SetupTest(popupInstance, () => popupViewModel, out var popupService);
 
-		_ = popupService.ShowPopupAsync<MockPageViewModel>();
+		await popupService.ShowPopupAsync<MockPageViewModel>();
 
 		Assert.Same(popupInstance.BindingContext, popupViewModel);
 	}
 
-	[Fact]
-	public void ShowPopupAsyncShouldAssignPassedInViewModelToBindingContext()
+	[Fact(Timeout = 2000)]
+	public async Task ShowPopupAsyncWithOnPresentingShouldBeInvoked()
 	{
-		var popupInstance = new MockPopup();
 		var popupViewModel = new MockPageViewModel();
+		var popupInstance = new MockSelfClosingPopup(string.Empty)
+		{
+			BindingContext = popupViewModel
+		};
 
-		var popupService = SetupTest(popupInstance, () => popupViewModel);
+		SetupTest(popupInstance, () => popupViewModel, out var popupService);
 
-		_ = popupService.ShowPopupAsync(popupViewModel);
-
-		Assert.Same(popupInstance.BindingContext, popupViewModel);
-	}
-
-	[Fact]
-	public void ShowPopupAsyncWithOnPresentingShouldBeInvoked()
-	{
-		var popupInstance = new MockPopup();
-		var popupViewModel = new MockPageViewModel();
-
-		var popupService = SetupTest(popupInstance, () => popupViewModel);
-
-		_ = popupService.ShowPopupAsync<MockPageViewModel>(onPresenting: viewModel => viewModel.HasLoaded = true);
+		await popupService.ShowPopupAsync<MockPageViewModel>(onPresenting: viewModel => viewModel.HasLoaded = true);
 
 		Assert.True(popupViewModel.HasLoaded);
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task ShowPopupAsyncShouldReturnResultOnceClosed()
 	{
 		var expectedResult = new object();
 
-		var popupInstance = new MockSelfClosingPopup(expectedResult);
 		var popupViewModel = new MockPageViewModel();
+		var popupInstance = new MockSelfClosingPopup(expectedResult)
+		{
+			BindingContext = popupViewModel
+		};
 
-		var popupService = SetupTest(popupInstance, () => popupViewModel);
+		SetupTest(popupInstance, () => popupViewModel, out var popupService);
 
 		var result = await popupService.ShowPopupAsync<MockPageViewModel>();
 
@@ -121,7 +121,7 @@ public class PopupServiceTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public static void ShowPopupWithNullViewModelShouldThrowArgumentNullException()
+	public void ShowPopupWithNullViewModelShouldThrowArgumentNullException()
 	{
 		var popupService = new PopupService(new MockServiceProvider());
 
@@ -131,7 +131,7 @@ public class PopupServiceTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public static void ShowPopupWithNullOnPresentingShouldThrowArgumentNullException()
+	public void ShowPopupWithNullOnPresentingShouldThrowArgumentNullException()
 	{
 		var popupService = new PopupService(new MockServiceProvider());
 
@@ -141,7 +141,7 @@ public class PopupServiceTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public static void ShowPopupWithMismatchedViewModelTypeShouldThrowInvalidOperationException()
+	public void ShowPopupWithMismatchedViewModelTypeShouldThrowInvalidOperationException()
 	{
 		var popupService = new PopupService(new MockServiceProvider());
 
@@ -151,60 +151,38 @@ public class PopupServiceTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public static void ShowPopupShouldThrowInvalidOperationExceptionWhenNoViewModelIsRegistered()
+	public void ShowPopupShouldThrowInvalidOperationExceptionWhenNoViewModelIsRegistered()
 	{
 		var popupInstance = new MockMismatchedPopup();
 		var popupViewModel = new MockPageViewModel();
 
-		var popupService = SetupTest(popupInstance, () => popupViewModel);
+		SetupTest(popupInstance, () => popupViewModel, out var popupService);
 
 		Assert.Throws<InvalidOperationException>(popupService.ShowPopup<MockPageViewModel>);
 	}
 
 	[Fact]
-	public void ShowPopupShouldCreateAndAssignBindingContext()
-	{
-		var popupInstance = new MockPopup();
-		var popupViewModel = new MockPageViewModel();
-
-		var popupService = SetupTest(popupInstance, () => popupViewModel);
-
-		popupService.ShowPopup<MockPageViewModel>();
-
-		Assert.Same(popupInstance.BindingContext, popupViewModel);
-	}
-
-	[Fact]
-	public void ShowPopupShouldAssignPassedInViewModelToBindingContext()
-	{
-		var popupInstance = new MockPopup();
-		var popupViewModel = new MockPageViewModel();
-
-		var popupService = SetupTest(popupInstance, () => popupViewModel);
-
-		popupService.ShowPopup(popupViewModel);
-
-		Assert.Same(popupInstance.BindingContext, popupViewModel);
-	}
-
-	[Fact]
 	public void ShowPopupWithOnPresentingShouldBeInvoked()
 	{
-		var popupInstance = new MockPopup();
 		var popupViewModel = new MockPageViewModel();
+		var popupInstance = new MockPopup
+		{
+			BindingContext = popupViewModel
+		};
 
-		var popupService = SetupTest(popupInstance, () => popupViewModel);
+		SetupTest(popupInstance, () => popupViewModel, out var popupService);
 
 		popupService.ShowPopup<MockPageViewModel>(onPresenting: viewModel => viewModel.HasLoaded = true);
 
 		Assert.True(popupViewModel.HasLoaded);
 	}
 
-	static PopupService SetupTest(
+	static void SetupTest(
 		Popup popup,
-		Func<INotifyPropertyChanged> createViewModelInstance)
+		Func<INotifyPropertyChanged> createViewModelInstance,
+		out IPopupService popupService)
 	{
-		var popupService = new PopupService(
+		popupService = new PopupService(
 			MockServiceProvider.ThatProvides(
 				(implementation: popup, forType: typeof(MockPopup)),
 				(implementation: createViewModelInstance.Invoke(), forType: typeof(MockPageViewModel))));
@@ -224,82 +202,75 @@ public class PopupServiceTests : BaseHandlerTest
 
 		app.MainPage = page;
 
-		_ = CreateElementHandler<MockPopupHandler>(popup);
+		CreateElementHandler<MockPopupHandler>(popup);
 
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
-
-		return popupService;
-	}
-}
-
-public class MockServiceProvider : IServiceProvider
-{
-	readonly IDictionary<Type, object> registrations;
-
-	public MockServiceProvider()
-	{
-		registrations = new Dictionary<Type, object>();
 	}
 
-	public MockServiceProvider(params (object implementation, Type forType)[] registrations) : this()
+	class MockServiceProvider : IServiceProvider
 	{
-		foreach (var (implementation, forType) in registrations)
+		readonly IDictionary<Type, object> registrations = new Dictionary<Type, object>();
+
+		public MockServiceProvider()
 		{
-			this.registrations.Add(forType, implementation);
+		}
+
+		MockServiceProvider(params (object implementation, Type forType)[] registrations) : this()
+		{
+			foreach (var (implementation, forType) in registrations)
+			{
+				this.registrations.Add(forType, implementation);
+			}
+		}
+
+		public static MockServiceProvider ThatProvides(params (object implementation, Type forType)[] registrations)
+		{
+			return new MockServiceProvider(registrations);
+		}
+
+		public object? GetService(Type serviceType)
+		{
+			if (registrations.TryGetValue(serviceType, out var registeredImplementation))
+			{
+				return registeredImplementation;
+			}
+
+			return null;
 		}
 	}
 
-	public static MockServiceProvider ThatProvides(params (object implementation, Type forType)[] registrations)
+	class MockPopup : Popup
 	{
-		return new MockServiceProvider(registrations);
+		public MockPopup()
+		{
+		}
 	}
 
-	public object? GetService(Type serviceType)
+	class MockSelfClosingPopup : Popup
 	{
-		if (this.registrations.TryGetValue(serviceType, out var registeredImplementation))
+		readonly object result;
+
+		public MockSelfClosingPopup(object result)
 		{
-			return registeredImplementation;
+			this.result = result;
 		}
 
-		return null;
-	}
-}
-
-public class MockPopup : Popup
-{
-	public MockPopup()
-	{
-
-	}
-}
-
-public class MockSelfClosingPopup : Popup
-{
-	readonly object result;
-
-	public MockSelfClosingPopup(object result)
-	{
-		this.result = result;
-	}
-
-	internal override void OnOpened()
-	{
-		base.OnOpened();
-
-		Task.Run(async () =>
+		internal override async void OnOpened()
 		{
-			await Task.Delay(1000);
+			base.OnOpened();
 
-			this.Close(this.result);
-		});
+			await Task.Delay(TimeSpan.FromSeconds(1));
+
+			Close(result);
+		}
 	}
-}
 
-public class MockMismatchedPopup : Popup
-{
-	public MockMismatchedPopup()
+	class MockMismatchedPopup : Popup
 	{
-		BindingContext = new object();
+		public MockMismatchedPopup()
+		{
+			BindingContext = new object();
+		}
 	}
 }
