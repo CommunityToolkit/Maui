@@ -4,6 +4,7 @@ using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Windows.UI.ViewManagement;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
 
@@ -17,6 +18,9 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 	/// <param name="result">The result that should return from this Popup.</param>
 	public static void MapOnClosed(PopupHandler handler, IPopup view, object? result)
 	{
+		var window = view.GetWindow();
+		window.RemoveOverlay(window.Overlays.First());
+
 		view.HandlerCompleteTCS.TrySetResult();
 		handler.DisconnectHandler(handler.PlatformView);
 	}
@@ -36,6 +40,12 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 		handler.PlatformView.XamlRoot = parent.XamlRoot;
 		handler.PlatformView.IsHitTestVisible = true;
 		handler.PlatformView.IsOpen = true;
+
+		var uiSetting = new UISettings();
+		Windows.UI.Color backgroundColor = uiSetting.GetColorValue(UIColorType.Background);
+		var window = view.GetWindow();
+		window.AddOverlay(new PopupOverlay(window, IsColorDark(backgroundColor) ? Color.FromRgba(255, 255, 255, 104) : Color.FromRgba(0, 0, 0, 104)));
+
 		view.OnOpened();
 	}
 
@@ -69,7 +79,7 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 	public static void MapCanBeDismissedByTappingOutsideOfPopup(PopupHandler handler, IPopup view)
 	{
 		handler.PlatformView.IsLightDismissEnabled = view.CanBeDismissedByTappingOutsideOfPopup;
-		handler.PlatformView.LightDismissOverlayMode = view.CanBeDismissedByTappingOutsideOfPopup ? LightDismissOverlayMode.On : LightDismissOverlayMode.Off;
+		handler.PlatformView.LightDismissOverlayMode = LightDismissOverlayMode.Off;
 	}
 
 	/// <summary>
@@ -145,5 +155,10 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 			PopupExtensions.SetSize(PlatformView, VirtualView, MauiContext);
 			PopupExtensions.SetLayout(PlatformView, VirtualView, MauiContext);
 		}
+	}
+
+	static bool IsColorDark(Windows.UI.Color clr)
+	{
+		return (((5 * clr.G) + (2 * clr.R) + clr.B) < (8 * 128));
 	}
 }
