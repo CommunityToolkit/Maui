@@ -29,7 +29,7 @@ public class PopupOverlay : WindowOverlay
 	{
 		readonly IWindowOverlay overlay;
 		RectF overlayRect = new RectF();
-		Color overlayColor = Color.FromRgba(255, 255, 255, 125);
+		Color overlayColor = Color.FromRgba(255, 255, 255, 102);
 
 		public PopupOverlayElement(IWindowOverlay overlay, Color? overlayColor = null)
 		{
