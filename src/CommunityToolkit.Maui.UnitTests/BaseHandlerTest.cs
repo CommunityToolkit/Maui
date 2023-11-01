@@ -6,8 +6,11 @@ public abstract class BaseHandlerTest : BaseTest
 {
 	protected BaseHandlerTest()
 	{
-		CreateAndSetMockApplication();
+		CreateAndSetMockApplication(out var serviceProvider);
+		ServiceProvider = serviceProvider;
 	}
+	
+	protected IServiceProvider ServiceProvider { get; } 
 
 	protected static TElementHandler CreateElementHandler<TElementHandler>(Microsoft.Maui.IElement view, bool hasMauiContext = true)
 		where TElementHandler : IElementHandler, new()
@@ -17,7 +20,7 @@ public abstract class BaseHandlerTest : BaseTest
 
 		if (hasMauiContext)
 		{
-			mockElementHandler.SetMauiContext(Application.Current?.Handler.MauiContext ?? throw new NullReferenceException());
+			mockElementHandler.SetMauiContext(Application.Current?.Handler?.MauiContext ?? throw new NullReferenceException());
 		}
 
 		return mockElementHandler;
@@ -31,20 +34,23 @@ public abstract class BaseHandlerTest : BaseTest
 
 		if (hasMauiContext)
 		{
-			mockViewHandler.SetMauiContext(Application.Current?.Handler.MauiContext ?? throw new NullReferenceException());
+			mockViewHandler.SetMauiContext(Application.Current?.Handler?.MauiContext ?? throw new NullReferenceException());
 		}
 
 		return mockViewHandler;
 	}
 
-	static void CreateAndSetMockApplication()
+	static void CreateAndSetMockApplication(out IServiceProvider serviceProvider)
 	{
 		var appBuilder = MauiApp.CreateBuilder()
 								.UseMauiCommunityToolkit()
 								.UseMauiApp<MockApplication>();
 
 		var mauiApp = appBuilder.Build();
+
 		var application = mauiApp.Services.GetRequiredService<IApplication>();
+		serviceProvider = mauiApp.Services;
+		
 		application.Handler = new ApplicationHandlerStub();
 		application.Handler.SetMauiContext(new HandlersContextStub(mauiApp.Services));
 	}
