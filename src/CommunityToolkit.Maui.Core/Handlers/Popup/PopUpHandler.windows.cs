@@ -44,7 +44,7 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 		var uiSetting = new UISettings();
 		Windows.UI.Color backgroundColor = uiSetting.GetColorValue(UIColorType.Background);
 		var window = view.GetWindow();
-		window.AddOverlay(new PopupOverlay(window, IsColorDark(backgroundColor) ? Color.FromRgba(255, 255, 255, 102) : Color.FromRgba(0, 0, 0, 102)));
+		window.AddOverlay(new PopupOverlay(window, IsColorDark(backgroundColor) ? Color.FromRgba(0, 0, 0, 153) : Color.FromRgba(255, 255, 255, 153)));
 
 		view.OnOpened();
 	}
