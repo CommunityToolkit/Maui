@@ -22,7 +22,7 @@ public static partial class PopupExtensions
 	public static void ShowPopup<TPopup>(this Page page, TPopup popup) where TPopup : Popup
 	{
 #if WINDOWS
-		// TODO: This is a workaround for dotnet/maui#12970. Remove when the issue is closed
+		// TODO: This is a workaround for https://github.com/dotnet/maui/issues/12970. Remove this `#if Windows` block when the issue is closed
 		void handler(object? sender, EventArgs args)
 		{
 			page.GetCurrentPage().Loaded -= handler;
@@ -65,7 +65,7 @@ public static partial class PopupExtensions
 	public static Task<object?> ShowPopupAsync<TPopup>(this Page page, TPopup popup) where TPopup : Popup
 	{
 #if WINDOWS
-		// TODO: This is a workaround for dotnet/maui#12970. Remove when the issue is closed        
+		// TODO: This is a workaround for https://github.com/dotnet/maui/issues/12970. Remove this `#if Windows` block when the issue is closed   
 		var taskCompletionSource = new TaskCompletionSource<object?>();
 
 		async void handler(object? sender, EventArgs args)
