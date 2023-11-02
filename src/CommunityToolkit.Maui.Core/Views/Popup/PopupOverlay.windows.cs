@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CommunityToolkit.Maui.Core.Views;
+﻿namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// Displays Overlay in the Popup background.
 /// </summary>
-public class PopupOverlay : WindowOverlay
+class PopupOverlay : WindowOverlay
 {
-	IWindowOverlayElement popupOverlayElement;
+	readonly IWindowOverlayElement popupOverlayElement;
 
 	/// <summary>
 	/// Instantiates a new instance of <see cref="PopupOverlay"/>.
@@ -21,15 +15,18 @@ public class PopupOverlay : WindowOverlay
 	public PopupOverlay(IWindow window, Color? overlayColor = null) : base(window)
 	{
 		popupOverlayElement = new PopupOverlayElement(this, overlayColor);
+
 		AddWindowElement(popupOverlayElement);
+
 		EnableDrawableTouchHandling = true;
 	}
 
 	class PopupOverlayElement : IWindowOverlayElement
 	{
 		readonly IWindowOverlay overlay;
-		RectF overlayRect = new RectF();
-		Color overlayColor = Color.FromRgba(255, 255, 255, 153); // 60% Opacity 
+		readonly Color overlayColor = Color.FromRgba(255, 255, 255, 153); // 60% Opacity 
+
+		RectF overlayRect = new();
 
 		public PopupOverlayElement(IWindowOverlay overlay, Color? overlayColor = null)
 		{
@@ -42,12 +39,12 @@ public class PopupOverlay : WindowOverlay
 
 		public bool Contains(Point point)
 		{
-			return this.overlayRect.Contains(new Point(point.X / overlay.Density, point.Y / overlay.Density));
+			return overlayRect.Contains(new Point(point.X / overlay.Density, point.Y / overlay.Density));
 		}
 
 		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
-			this.overlayRect = dirtyRect;
+			overlayRect = dirtyRect;
 			canvas.FillColor = overlayColor;
 			canvas.FillRectangle(dirtyRect.X, dirtyRect.Y, dirtyRect.Width, dirtyRect.Height);
 		}

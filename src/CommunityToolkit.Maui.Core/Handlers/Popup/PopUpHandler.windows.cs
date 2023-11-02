@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core.Views;
+﻿using CommunityToolkit.Maui.Core.Extensions;
+using CommunityToolkit.Maui.Core.Views;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
@@ -19,7 +20,7 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 	public static void MapOnClosed(PopupHandler handler, IPopup view, object? result)
 	{
 		var window = view.GetWindow();
-		if(window.Overlays.FirstOrDefault() is IWindowOverlay popupOverlay)
+		if (window.Overlays.FirstOrDefault() is IWindowOverlay popupOverlay)
 		{
 			window.RemoveOverlay(popupOverlay);
 		}
@@ -38,7 +39,9 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 	{
 		ArgumentNullException.ThrowIfNull(view.Parent);
 		ArgumentNullException.ThrowIfNull(handler.MauiContext);
+
 		var parent = view.Parent.ToPlatform(handler.MauiContext);
+
 		parent.IsHitTestVisible = false;
 		handler.PlatformView.XamlRoot = parent.XamlRoot;
 		handler.PlatformView.IsHitTestVisible = true;
@@ -48,7 +51,7 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 
 		view.OnOpened();
 	}
-	
+
 
 	/// <summary>
 	/// Action that's triggered when the Popup is dismissed by tapping outside of the Popup.
@@ -140,12 +143,14 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 		}
 		base.ConnectHandler(platformView);
 	}
-	
+
 	static void AddOverlayToWindow(IWindow window)
 	{
 		var uiSetting = new UISettings();
-		Windows.UI.Color backgroundColor = uiSetting.GetColorValue(UIColorType.Background);
-		window.AddOverlay(new PopupOverlay(window, IsColorDark(backgroundColor) ? Color.FromRgba(0, 0, 0, 153) : Color.FromRgba(255, 255, 255, 153))); // 60% Opacity
+		var backgroundColor = uiSetting.GetColorValue(UIColorType.Background).ToColor();
+		window.AddOverlay(new PopupOverlay(window, backgroundColor.IsDark()
+													? Color.FromRgba(0, 0, 0, 153)
+													: Color.FromRgba(255, 255, 255, 153))); // 60% Opacity
 	}
 
 	void OnClosed(object? sender, object e)
@@ -163,10 +168,5 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 			PopupExtensions.SetSize(PlatformView, VirtualView, MauiContext);
 			PopupExtensions.SetLayout(PlatformView, VirtualView, MauiContext);
 		}
-	}
-
-	static bool IsColorDark(Windows.UI.Color clr)
-	{
-		return (((5 * clr.G) + (2 * clr.R) + clr.B) < (8 * 128));
 	}
 }
