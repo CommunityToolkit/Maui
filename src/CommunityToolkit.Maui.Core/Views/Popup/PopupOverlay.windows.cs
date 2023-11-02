@@ -34,7 +34,7 @@ public class PopupOverlay : WindowOverlay
 		public PopupOverlayElement(IWindowOverlay overlay, Color? overlayColor = null)
 		{
 			this.overlay = overlay;
-			if (overlayColor != null)
+			if (overlayColor is not null)
 			{
 				this.overlayColor = overlayColor;
 			}
