@@ -25,13 +25,13 @@ public class PopupService : IPopupService
 	{
 		this.serviceProvider = serviceProvider;
 	}
-	
+
 	/// <summary>
 	/// Creates a new instance of <see cref="PopupService"/>.
 	/// </summary>
 	public PopupService()
 	{
-		serviceProvider = Application.Current?.Handler?.MauiContext?.Services 
+		serviceProvider = Application.Current?.Handler?.MauiContext?.Services
 							?? throw new InvalidOperationException("Could not locate IServiceProvider");
 	}
 
@@ -128,7 +128,7 @@ public class PopupService : IPopupService
 	{
 		if (popup.BindingContext is not TViewModel viewModel)
 		{
-			throw new InvalidOperationException($"Unexpected type has been assigned to the BindingContext of {popup.GetType().FullName}. Expected type {typeof(TViewModel).FullName} but was {popup.BindingContext?.GetType().FullName?? "null"}");
+			throw new InvalidOperationException($"Unexpected type has been assigned to the BindingContext of {popup.GetType().FullName}. Expected type {typeof(TViewModel).FullName} but was {popup.BindingContext?.GetType().FullName ?? "null"}");
 		}
 
 		bindingContext = viewModel;
@@ -137,7 +137,7 @@ public class PopupService : IPopupService
 	Popup GetPopup(Type viewModelType)
 	{
 		var popup = serviceProvider.GetService(viewModelToViewMappings[viewModelType]) as Popup;
-		
+
 		if (popup is null)
 		{
 			throw new InvalidOperationException(

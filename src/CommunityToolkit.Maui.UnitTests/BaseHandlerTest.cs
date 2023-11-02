@@ -9,8 +9,8 @@ public abstract class BaseHandlerTest : BaseTest
 		CreateAndSetMockApplication(out var serviceProvider);
 		ServiceProvider = serviceProvider;
 	}
-	
-	protected IServiceProvider ServiceProvider { get; } 
+
+	protected IServiceProvider ServiceProvider { get; }
 
 	protected static TElementHandler CreateElementHandler<TElementHandler>(Microsoft.Maui.IElement view, bool hasMauiContext = true)
 		where TElementHandler : IElementHandler, new()
@@ -50,7 +50,7 @@ public abstract class BaseHandlerTest : BaseTest
 
 		var application = mauiApp.Services.GetRequiredService<IApplication>();
 		serviceProvider = mauiApp.Services;
-		
+
 		application.Handler = new ApplicationHandlerStub();
 		application.Handler.SetMauiContext(new HandlersContextStub(mauiApp.Services));
 	}
