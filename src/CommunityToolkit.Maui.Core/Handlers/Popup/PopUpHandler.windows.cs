@@ -19,7 +19,10 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 	public static void MapOnClosed(PopupHandler handler, IPopup view, object? result)
 	{
 		var window = view.GetWindow();
-		window.RemoveOverlay(window.Overlays.First());
+		if(window.Overlays.FirstOrDefault() is IWindowOverlay popupOverlay)
+		{
+			window.RemoveOverlay(popupOverlay);
+		}
 
 		view.HandlerCompleteTCS.TrySetResult();
 		handler.DisconnectHandler(handler.PlatformView);
@@ -41,13 +44,11 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 		handler.PlatformView.IsHitTestVisible = true;
 		handler.PlatformView.IsOpen = true;
 
-		var uiSetting = new UISettings();
-		Windows.UI.Color backgroundColor = uiSetting.GetColorValue(UIColorType.Background);
-		var window = view.GetWindow();
-		window.AddOverlay(new PopupOverlay(window, IsColorDark(backgroundColor) ? Color.FromRgba(0, 0, 0, 153) : Color.FromRgba(255, 255, 255, 153)));
+		AddOverlayToWindow(view.GetWindow());
 
 		view.OnOpened();
 	}
+	
 
 	/// <summary>
 	/// Action that's triggered when the Popup is dismissed by tapping outside of the Popup.
@@ -138,6 +139,13 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 			MauiContext.GetPlatformWindow().SizeChanged += OnSizeChanged;
 		}
 		base.ConnectHandler(platformView);
+	}
+	
+	static void AddOverlayToWindow(IWindow window)
+	{
+		var uiSetting = new UISettings();
+		Windows.UI.Color backgroundColor = uiSetting.GetColorValue(UIColorType.Background);
+		window.AddOverlay(new PopupOverlay(window, IsColorDark(backgroundColor) ? Color.FromRgba(0, 0, 0, 153) : Color.FromRgba(255, 255, 255, 153)));
 	}
 
 	void OnClosed(object? sender, object e)
