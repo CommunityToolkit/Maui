@@ -25,7 +25,7 @@ public interface IDrawingView : IView
 	/// <summary>
 	/// Toggles multi-line mode. When true, multiple lines can be drawn on the <see cref="IDrawingView"/> while the tap/click is released in-between lines.
 	/// Note: when <see cref="ShouldClearOnFinish"/> is also enabled, the lines are cleared after the tap/click is released.
-	/// Additionally, <see cref="DrawingLineCompleted"/> will be fired after each line that is drawn.
+	/// Additionally, <see cref="OnDrawingLineCompleted"/> will be fired after each line that is drawn.
 	/// </summary>
 	bool IsMultiLineModeEnabled { get; }
 
@@ -54,8 +54,32 @@ public interface IDrawingView : IView
 	void Clear();
 
 	/// <summary>
+	/// Event occurred when drawing line started
+	/// </summary>
+	/// <param name="point">Last drawing point</param>
+	void OnDrawingLineStarted(PointF point);
+
+	/// <summary>
+	/// Event occurred when drawing line cancelled
+	/// </summary>
+	void OnDrawingLineCancelled();
+
+	/// <summary>
+	/// Event occurred when point drawn
+	/// </summary>
+	/// <param name="point">Last drawing point</param>
+	void OnPointDrawn(PointF point);
+
+	/// <summary>
 	/// Event occurred when drawing line completed
 	/// </summary>
 	/// <param name="lastDrawingLine">Last drawing line</param>
+	void OnDrawingLineCompleted(IDrawingLine lastDrawingLine) => OnDrawingLineCompleted(lastDrawingLine);
+
+	/// <summary>
+	/// Event occurred when drawing line completed
+	/// </summary>
+	/// <param name="lastDrawingLine">Last drawing line</param>
+	[Obsolete($"Use {nameof(OnDrawingLineCompleted)} instead.")]
 	void DrawingLineCompleted(IDrawingLine lastDrawingLine);
 }
