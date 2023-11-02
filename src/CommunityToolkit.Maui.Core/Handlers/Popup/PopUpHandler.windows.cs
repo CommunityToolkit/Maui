@@ -145,7 +145,7 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 	{
 		var uiSetting = new UISettings();
 		Windows.UI.Color backgroundColor = uiSetting.GetColorValue(UIColorType.Background);
-		window.AddOverlay(new PopupOverlay(window, IsColorDark(backgroundColor) ? Color.FromRgba(0, 0, 0, 153) : Color.FromRgba(255, 255, 255, 153)));
+		window.AddOverlay(new PopupOverlay(window, IsColorDark(backgroundColor) ? Color.FromRgba(0, 0, 0, 153) : Color.FromRgba(255, 255, 255, 153))); // 60% Opacity
 	}
 
 	void OnClosed(object? sender, object e)
