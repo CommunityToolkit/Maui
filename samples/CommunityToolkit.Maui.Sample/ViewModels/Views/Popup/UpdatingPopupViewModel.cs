@@ -6,9 +6,9 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 public partial class UpdatingPopupViewModel : BaseViewModel
 {
 	const double finalUpdateProgressValue = 1;
-	
+
 	readonly WeakEventManager finishedEventManager = new();
-	
+
 	[ObservableProperty]
 	string message = "";
 
@@ -32,7 +32,7 @@ public partial class UpdatingPopupViewModel : BaseViewModel
 
 			UpdateProgress = update / updateTotalForPercentage;
 
-			await Task.Delay(TimeSpan.FromSeconds(1));	
+			await Task.Delay(TimeSpan.FromSeconds(1));
 		}
 
 		UpdateProgress = finalUpdateProgressValue;
