@@ -15,7 +15,7 @@
     <PackageReference Include="xunit" Version="2.5.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" PrivateAssets="All" />
     <PackageReference Include="coverlet.collector" Version="6.0.0" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.0-rc.1.9171" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.0-rc.2.9511" />
   </ItemGroup>
 
   <ItemGroup>

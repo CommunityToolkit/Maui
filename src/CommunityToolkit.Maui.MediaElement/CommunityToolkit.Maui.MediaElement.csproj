@@ -63,6 +63,6 @@
     <PackageReference Include="Xam.Plugins.Android.ExoPlayer.Transformer" Version="2.18.10" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.0-rc.1.9171" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.0-rc.2.9511" />
   </ItemGroup>
 </Project>

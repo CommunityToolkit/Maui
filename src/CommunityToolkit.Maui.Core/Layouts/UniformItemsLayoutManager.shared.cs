@@ -32,7 +32,8 @@ public class UniformItemsLayoutManager : LayoutManager
 
 		var columns = GetColumnsCount(visibleChildren.Length, width);
 		var rows = GetRowsCount(visibleChildren.Length, columns);
-		var boundsWidth = width / columns;
+
+		var boundsWidth = columns == 0 ? 0 : width / columns;
 		var boundsHeight = childHeight;
 		var bounds = new Rect(0, 0, boundsWidth, boundsHeight);
 		var count = 0;

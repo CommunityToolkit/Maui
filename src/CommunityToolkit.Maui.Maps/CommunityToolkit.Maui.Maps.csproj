@@ -54,7 +54,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="Microsoft.Maui.Controls" Version="8.0.0-rc.1.9171" />
+    <PackageReference Update="Microsoft.Maui.Controls" Version="8.0.0-rc.2.9511" />
   </ItemGroup>
 
 </Project>
