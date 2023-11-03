@@ -195,8 +195,9 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<StylePopupPage, StylePopupViewModel>();
 
 		// Add Popups
-		services.AddTransient<CsharpBindingPopup, CsharpBindingPopupViewModel>();
-		services.AddTransient<XamlBindingPopup, XamlBindingPopupViewModel>();
+		services.AddTransientPopup<CsharpBindingPopup, CsharpBindingPopupViewModel>();
+		services.AddTransientPopup<UpdatingPopup, UpdatingPopupViewModel>();
+		services.AddTransientPopup<XamlBindingPopup, XamlBindingPopupViewModel>();
 	}
 
 	static void RegisterEssentials(in IServiceCollection services)
