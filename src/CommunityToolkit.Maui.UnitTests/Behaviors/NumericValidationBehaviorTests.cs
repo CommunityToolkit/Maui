@@ -86,7 +86,7 @@ public class NumericValidationBehaviorTests : BaseTest
 		};
 		entry.Behaviors.Add(behavior);
 
-		await Assert.ThrowsAsync<ArgumentNullException>(() => behavior.ForceValidate());
+		await Assert.ThrowsAsync<ArgumentNullException>(async () => await behavior.ForceValidate());
 	}
 
 	[Fact]
