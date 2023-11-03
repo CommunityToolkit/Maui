@@ -18,7 +18,8 @@ public class BehaviorsGalleryPage : BaseGalleryPage<BehaviorsGalleryViewModel>
 		Behaviors.Add(new StatusBarBehavior
 		{
 			StatusBarColor = Color.FromRgb(25, 118, 210),
-			StatusBarStyle = Core.StatusBarStyle.LightContent
+			StatusBarStyle = Core.StatusBarStyle.LightContent,
+			ApplyOn = StatusBarApplyOn.OnPageNavigatedTo,
 		});
 	}
 }
