@@ -426,6 +426,6 @@ sealed class FileFolderDialog : Popup<string>
 		}
 
 		directories.Sort();
-		return directories;
+		return directories.ToFrozenSet();
 	}
 }
