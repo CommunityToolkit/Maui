@@ -115,19 +115,19 @@
             </mct:AvatarView>
             <Label x:Name="LabelEmail" Text="Email:" />
             <Entry
-                AutomationProperties.LabeledBy="{x:Reference LabelEmail}"
+                SemanticProperties.Description="{x:Reference LabelEmail}"
                 Keyboard="Email"
                 SemanticProperties.Hint="Enter your own gravatar registered email address"
                 Text="{Binding Email}" />
             <Label x:Name="LabelDefaultImage" Text="Default Image:" />
             <Picker
-                AutomationProperties.LabeledBy="{x:Reference LabelDefaultImage}"
+                SemanticProperties.Description="{x:Reference LabelDefaultImage}"
                 ItemsSource="{Binding DefaultGravatarItems}"
                 SelectedItem="{Binding DefaultGravatarSelected}"
                 SemanticProperties.Hint="A default image is displayed if there is no image associated with the requested email hash." />
             <Label x:Name="LabelEnableCache" Text="Enable cache:" />
             <Switch
-                AutomationProperties.LabeledBy="{x:Reference LabelEnableCache}"
+                SemanticProperties.Description="{x:Reference LabelEnableCache}"
                 IsToggled="{Binding EnableCache}"
                 SemanticProperties.Hint="Defines whether image caching is enabled.  The default value of this property is: True" />
             <Label
@@ -143,7 +143,7 @@
                 </Label.FormattedText>
             </Label>
             <Slider
-                AutomationProperties.LabeledBy="{x:Reference LabelCacheValidity}"
+                SemanticProperties.Description="{x:Reference LabelCacheValidity}"
                 IsEnabled="{Binding EnableCache}"
                 Maximum="365"
                 Minimum="1"

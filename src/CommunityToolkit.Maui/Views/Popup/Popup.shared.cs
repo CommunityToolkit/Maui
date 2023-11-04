@@ -54,7 +54,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 
 	TaskCompletionSource popupDismissedTaskCompletionSource = new();
 	TaskCompletionSource<object?> resultTaskCompletionSource = new();
-	Window? window;
+	Window window;
 	ResourceDictionary resources = new();
 	bool IResourcesProvider.IsResourcesCreated => resources is not null;
 
@@ -66,6 +66,8 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 		platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Popup>>(() => new(this));
 		((IResourceDictionary)resources).ValuesChanged += OnResourcesChanged;
 
+		VerticalOptions = HorizontalOptions = LayoutAlignment.Center;
+		window = Window;
 		mergedStyle = new MergedStyle(GetType(), this);
 	}
 
@@ -185,7 +187,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// <summary>
 	/// Property that represents the Window that's showing the Popup.
 	/// </summary>
-	public Window? Window
+	public Window Window
 	{
 		get => window;
 		set

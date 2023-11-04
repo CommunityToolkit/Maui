@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters;
@@ -90,7 +91,7 @@ public abstract class CompareConverter<TObject> : BaseConverterOneWay<IComparabl
 
 		if (!Enum.IsDefined(typeof(OperatorType), ComparisonOperator))
 		{
-			throw new ArgumentOutOfRangeException(nameof(ComparisonOperator), ComparingValue, $"is expected to be of type {nameof(OperatorType)}");
+			throw new InvalidEnumArgumentException(nameof(ComparisonOperator), (int)ComparisonOperator, typeof(OperatorType));
 		}
 
 		if (!(TrueObject is null ^ FalseObject is not null))

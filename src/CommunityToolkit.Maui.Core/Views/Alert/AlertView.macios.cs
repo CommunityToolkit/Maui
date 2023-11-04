@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Core.Extensions;
 
@@ -18,7 +19,7 @@ public class AlertView : UIView
 	/// <summary>
 	/// PopupView Children
 	/// </summary>
-	public IReadOnlyList<UIView> Children => children;
+	public FrozenSet<UIView> Children => children.ToFrozenSet();
 
 	/// <summary>
 	/// <see cref="UIView"/> on which Alert will appear. When null, <see cref="AlertView"/> will appear at bottom of screen.

@@ -243,12 +243,6 @@ public class DrawingView : View, IDrawingView
 	/// Executes DrawingLineCompleted event and DrawingLineCompletedCommand
 	/// </summary>
 	/// <param name="lastDrawingLine">Last drawing line</param>
-	void IDrawingView.DrawingLineCompleted(IDrawingLine lastDrawingLine) => ((IDrawingView)this).OnDrawingLineCompleted(lastDrawingLine);
-
-	/// <summary>
-	/// Executes DrawingLineCompleted event and DrawingLineCompletedCommand
-	/// </summary>
-	/// <param name="lastDrawingLine">Last drawing line</param>
 	void IDrawingView.OnDrawingLineCompleted(IDrawingLine lastDrawingLine)
 	{
 		drawingViewEventManager.HandleEvent(this, new DrawingLineCompletedEventArgs(lastDrawingLine), nameof(DrawingLineCompleted));
