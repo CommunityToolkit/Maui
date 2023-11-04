@@ -57,7 +57,7 @@ public static class DrawingViewService
 
 		using var resizedImage = GetMaximumBitmap(image, (float)imageSize.Width, (float)imageSize.Height);
 		var stream = new MemoryStream();
-		var compressResult = resizedImage.Compress(Bitmap.CompressFormat.Png ?? throw new InvalidOperationException($"{nameof(Bitmap)}.{nameof(Bitmap.CompressFormat)}.{nameof(Bitmap.CompressFormat.Png)} cannot be null"), 
+		var compressResult = resizedImage.Compress(Bitmap.CompressFormat.Png ?? throw new InvalidOperationException($"{nameof(Bitmap)}.{nameof(Bitmap.CompressFormat)}.{nameof(Bitmap.CompressFormat.Png)} cannot be null"),
 													100, stream);
 
 		resizedImage.Recycle();

@@ -576,9 +576,9 @@ public class ColorConversionExtensionsTests
 		Assert.Equal(testDef.ExpectedGreyScale, result, (color1, color2) =>
 		{
 			return Math.Abs(color1.Red - color2.Red) < tolerance
-			       && Math.Abs(color1.Green - color2.Green) < tolerance
-			       && Math.Abs(color1.Blue - color2.Blue) < tolerance
-			       && Math.Abs(color1.Alpha - color2.Alpha) < tolerance;
+				   && Math.Abs(color1.Green - color2.Green) < tolerance
+				   && Math.Abs(color1.Blue - color2.Blue) < tolerance
+				   && Math.Abs(color1.Alpha - color2.Alpha) < tolerance;
 		});
 	}
 

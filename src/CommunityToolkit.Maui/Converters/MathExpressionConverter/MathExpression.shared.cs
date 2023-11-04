@@ -69,7 +69,7 @@ sealed partial class MathExpression
 			operators.Add(new MathOperator($"x{i}", 0, MathOperatorPrecedence.Constant, _ => argumentList[index]));
 		}
 
-		this.operators = operators.ToFrozenSet(); 
+		this.operators = operators.ToFrozenSet();
 		this.arguments = argumentList.ToFrozenSet();
 	}
 
