@@ -1,5 +1,4 @@
-﻿using System.Collections.Frozen;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.Maui.Platform;
 using Tizen.NUI;
 using Tizen.NUI.BaseComponents;
@@ -16,6 +15,8 @@ using TColor = Tizen.UIExtensions.Common.Color;
 using View = Tizen.NUI.BaseComponents.View;
 using VerticalAlignment = Tizen.NUI.VerticalAlignment;
 using Window = Tizen.NUI.Window;
+using System;
+using System.IO;
 
 namespace CommunityToolkit.Maui.Storage;
 
@@ -396,7 +397,7 @@ sealed class FileFolderDialog : Popup<string>
 		directoryScrollView.SizeHeight = 30d.ToPixel() * Math.Min(listItems.Count, 5);
 	}
 
-	FrozenSet<string> GetDirectories(string path)
+	IReadOnlyList<string> GetDirectories(string path)
 	{
 		var directories = new List<string>();
 		var directoryPath = IsDirectory(path) ? path : Path.GetDirectoryName(path);
@@ -426,6 +427,6 @@ sealed class FileFolderDialog : Popup<string>
 		}
 
 		directories.Sort();
-		return directories.ToFrozenSet();
+		return directories;
 	}
 }
