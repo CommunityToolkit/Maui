@@ -99,7 +99,7 @@ public class MediaElement : View, IMediaElement
 	/// </summary>
 	public static readonly BindableProperty VolumeProperty =
 		  BindableProperty.Create(nameof(Volume), typeof(double), typeof(MediaElement), 1.0,
-			  BindingMode.TwoWay, ValidateVolume);
+			  BindingMode.TwoWay, propertyChanging: ValidateVolume);
 
 	IDispatcherTimer? timer;
 
@@ -421,11 +421,14 @@ public class MediaElement : View, IMediaElement
 		MediaElement.OnStateChanged(new MediaStateChangedEventArgs(previousState, newState));
 	}
 
-	static bool ValidateVolume(BindableObject o, object newValue)
+	static void ValidateVolume(BindableObject bindable, object oldValue, object newValue)
 	{
-		var volume = (double)newValue;
+		var updatedVolume = (double)newValue;
 
-		return volume is >= 0.0 and <= 1.0;
+		if (updatedVolume is < 0.0 or > 1.0)
+		{
+			throw new ArgumentOutOfRangeException(nameof(newValue), $"{nameof(Volume)} can not be less than 0.0 or greater than 1.0");
+		}
 	}
 
 	void OnTimerTick(object? sender, EventArgs e)

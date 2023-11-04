@@ -95,7 +95,7 @@ public static partial class KeyboardExtensions
 	{
 		if (!targetView.TryGetPlatformView(out var platformView, out _, out _))
 		{
-			return false;
+			throw new SoftKeyboardException($"Unable to retrive {typeof(PlatformView)} to determine soft keyboard status");
 		}
 
 		return platformView.IsSoftKeyboardShowing();
@@ -130,5 +130,9 @@ public static partial class KeyboardExtensions
 		view = iView;
 
 		return true;
+	}
+
+	sealed class SoftKeyboardException(string message) : Exception(message)
+	{
 	}
 }
