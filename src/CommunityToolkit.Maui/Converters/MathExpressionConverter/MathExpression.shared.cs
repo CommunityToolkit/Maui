@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Collections.Frozen;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using CommunityToolkit.Maui.Core;
 
@@ -10,15 +11,16 @@ sealed partial class MathExpression
 
 	static readonly IFormatProvider formatProvider = new CultureInfo("en-US");
 
-	readonly IReadOnlyList<MathOperator> operators;
-	readonly IReadOnlyList<double> arguments;
+	readonly FrozenSet<MathOperator> operators;
+	readonly FrozenSet<double> arguments;
 
 	internal MathExpression(string expression, IEnumerable<double>? arguments = null)
 	{
-		ArgumentNullException.ThrowIfNullOrEmpty(expression, "Expression can't be null or empty.");
+		ArgumentException.ThrowIfNullOrEmpty(expression, "Expression can't be null or empty.");
+
+		var argumentList = arguments?.ToList() ?? new List<double>();
 
 		Expression = expression.ToLower();
-		this.arguments = arguments?.ToList() ?? new List<double>();
 
 		var operators = new List<MathOperator>
 		{
@@ -56,20 +58,19 @@ sealed partial class MathExpression
 			new ("e", 0, MathOperatorPrecedence.Constant, _ => Math.E),
 		};
 
-		var argumentsCount = this.arguments.Count;
-
-		if (argumentsCount > 0)
+		if (argumentList.Count > 0)
 		{
-			operators.Add(new MathOperator("x", 0, MathOperatorPrecedence.Constant, _ => this.arguments[0]));
+			operators.Add(new MathOperator("x", 0, MathOperatorPrecedence.Constant, _ => argumentList[0]));
 		}
 
-		for (var i = 0; i < argumentsCount; i++)
+		for (var i = 0; i < argumentList.Count; i++)
 		{
 			var index = i;
-			operators.Add(new MathOperator($"x{i}", 0, MathOperatorPrecedence.Constant, _ => this.arguments[index]));
+			operators.Add(new MathOperator($"x{i}", 0, MathOperatorPrecedence.Constant, _ => argumentList[index]));
 		}
 
-		this.operators = operators;
+		this.operators = operators.ToFrozenSet(); 
+		this.arguments = argumentList.ToFrozenSet();
 	}
 
 	internal string Expression { get; }

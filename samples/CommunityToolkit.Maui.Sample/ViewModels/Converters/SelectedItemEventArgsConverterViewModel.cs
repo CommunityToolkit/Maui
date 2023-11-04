@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Windows.Input;
+﻿using System.Collections.Frozen;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -14,7 +12,7 @@ public partial class SelectedItemEventArgsConverterViewModel : BaseViewModel
 	[ObservableProperty]
 	string labelText = "This label will display the selected item";
 
-	public IReadOnlyList<string> StringItemSource { get; } = new[]
+	public FrozenSet<string> StringItemSource { get; } = new[]
 	{
 		"Item 0",
 		"Item 1",
@@ -22,7 +20,7 @@ public partial class SelectedItemEventArgsConverterViewModel : BaseViewModel
 		"Item 3",
 		"Item 4",
 		"Item 5",
-	};
+	}.ToFrozenSet();
 
 	[RelayCommand]
 	void HandleItemSelected(string text)

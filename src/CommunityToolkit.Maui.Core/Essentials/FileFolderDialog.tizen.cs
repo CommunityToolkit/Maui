@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Frozen;
+using System.Collections.Generic;
 using Microsoft.Maui.Platform;
 using Tizen.NUI;
 using Tizen.NUI.BaseComponents;
@@ -395,7 +396,7 @@ sealed class FileFolderDialog : Popup<string>
 		directoryScrollView.SizeHeight = 30d.ToPixel() * Math.Min(listItems.Count, 5);
 	}
 
-	IReadOnlyList<string> GetDirectories(string path)
+	FrozenSet<string> GetDirectories(string path)
 	{
 		var directories = new List<string>();
 		var directoryPath = IsDirectory(path) ? path : Path.GetDirectoryName(path);
