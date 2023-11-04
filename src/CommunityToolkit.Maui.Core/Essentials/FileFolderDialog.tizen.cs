@@ -15,8 +15,6 @@ using TColor = Tizen.UIExtensions.Common.Color;
 using View = Tizen.NUI.BaseComponents.View;
 using VerticalAlignment = Tizen.NUI.VerticalAlignment;
 using Window = Tizen.NUI.Window;
-using System;
-using System.IO;
 
 namespace CommunityToolkit.Maui.Storage;
 

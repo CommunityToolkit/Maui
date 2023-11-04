@@ -2,10 +2,11 @@
 <Project>
   <PropertyGroup>
     <NetVersion>net8.0</NetVersion>
+    <MauiPackageVersion>8.0.0-rc.2.9511</MauiPackageVersion>
     <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <NoWarn>NETSDK1023;NU1605</NoWarn>
+    <NoWarn>NETSDK1023</NoWarn>
     <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
