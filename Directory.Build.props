@@ -2,8 +2,8 @@
 <Project>
   <PropertyGroup>
     <NetVersion>net8.0</NetVersion>
-    <MauiPackageVersion>8.0.0-rc.2.9511</MauiPackageVersion>
-    <LangVersion>preview</LangVersion>
+    <MauiPackageVersion>8.0.0</MauiPackageVersion>
+    <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <NoWarn>NETSDK1023</NoWarn>
