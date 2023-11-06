@@ -7,7 +7,6 @@ using Microsoft.Maui.Platform;
 using static Android.Views.View;
 using AColorRes = Android.Resource.Color;
 using APoint = Android.Graphics.Point;
-using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
@@ -20,7 +19,8 @@ public static class PopupExtensions
 {
 	static APoint realSize = new();
 	static APoint displaySize = new();
-	static ARect contentRect = new();
+	static APoint displaySmallSize = new();
+	static APoint displayLargeSize = new();
 
 	/// <summary>
 	/// Method to update the <see cref="IPopup.Anchor"/> view.
@@ -300,11 +300,18 @@ public static class PopupExtensions
 			{
 				windowManager.DefaultDisplay.GetRealSize(realSize);
 				windowManager.DefaultDisplay.GetSize(displaySize);
-				decorView.GetWindowVisibleDisplayFrame(contentRect);
+				windowManager.DefaultDisplay.GetCurrentSizeRange(displaySmallSize, displayLargeSize);
 
 				windowWidth = realSize.X;
 				windowHeight = realSize.Y;
-				statusBarHeight = contentRect.Top;
+				if (displaySize.X > displaySize.Y)
+				{
+					statusBarHeight = displaySize.Y - displaySmallSize.Y;
+				}
+				else
+				{
+					statusBarHeight = displaySize.Y - displayLargeSize.Y;
+				}
 
 				navigationBarHeight = realSize.Y < realSize.X
 										? (realSize.X - displaySize.X)
