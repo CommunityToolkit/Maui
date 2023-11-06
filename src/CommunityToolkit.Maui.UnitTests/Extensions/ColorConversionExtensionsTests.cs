@@ -5,6 +5,8 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions;
 
 public class ColorConversionExtensionsTests
 {
+	const double tolerance = 0.000001;
+
 	public static IReadOnlyList<object[]> ColorTestData { get; } = new[]
 	{
 		new object[] { new ColorTestDefinition((float)0.5019608, 0, 0, 0, 128, 0, 0, 0, (float)0.498039186000824, 0, 1, 1, (float)0.498039215686, 1, 1, (float)0.167320261, true, true, Colors.Black, Colors.White) },
@@ -548,7 +550,13 @@ public class ColorConversionExtensionsTests
 	{
 		var result = testDef.Color.ToInverseColor();
 
-		Assert.Equal(testDef.ExpectedInverse, result);
+		Assert.Equal(testDef.ExpectedInverse, result, (color1, color2) =>
+		{
+			return Math.Abs(color1.Red - color2.Red) < tolerance
+				&& Math.Abs(color1.Green - color2.Green) < tolerance
+				&& Math.Abs(color1.Blue - color2.Blue) < tolerance
+				&& Math.Abs(color1.Alpha - color2.Alpha) < tolerance;
+		});
 	}
 
 	[Fact]
@@ -565,7 +573,13 @@ public class ColorConversionExtensionsTests
 	{
 		var result = testDef.Color.ToGrayScale();
 
-		Assert.Equal(testDef.ExpectedGreyScale, result);
+		Assert.Equal(testDef.ExpectedGreyScale, result, (color1, color2) =>
+		{
+			return Math.Abs(color1.Red - color2.Red) < tolerance
+				   && Math.Abs(color1.Green - color2.Green) < tolerance
+				   && Math.Abs(color1.Blue - color2.Blue) < tolerance
+				   && Math.Abs(color1.Alpha - color2.Alpha) < tolerance;
+		});
 	}
 
 	[Fact]

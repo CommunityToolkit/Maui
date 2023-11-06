@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.Behaviors;
+﻿using System.Globalization;
+
+namespace CommunityToolkit.Maui.Behaviors;
 
 /// <summary>
 /// This <see cref="EventToCommandBehavior"/> cast the sender object to a specific type defined by the user.
@@ -10,7 +12,7 @@ public sealed class EventToCommandBehavior<TType> : EventToCommandBehavior
 	protected override void OnTriggerHandled(object? sender = null, object? eventArgs = null)
 	{
 		var parameter = CommandParameter
-			?? EventArgsConverter?.Convert(eventArgs, typeof(object), null, null)
+			?? EventArgsConverter?.Convert(eventArgs, typeof(object), null, CultureInfo.InvariantCulture)
 			?? eventArgs;
 
 		if (parameter is not TType)

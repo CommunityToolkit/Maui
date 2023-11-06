@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.Sample.Views.Popups;
 using CommunityToolkit.Maui.Views;
@@ -18,7 +19,7 @@ public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
 	int flowDirectionSelectedIndex;
 
-	public IReadOnlyList<string> FlowDirectionOptions { get; } = Enum.GetNames(typeof(FlowDirection));
+	public FrozenSet<string> FlowDirectionOptions { get; } = Enum.GetNames(typeof(FlowDirection)).ToFrozenSet();
 
 	[RelayCommand(CanExecute = nameof(CanShowButtonExecute))]
 	public Task ExecuteShowButton()

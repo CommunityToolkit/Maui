@@ -1,9 +1,11 @@
-﻿using CommunityToolkit.Maui.Core.Views;
+﻿using CommunityToolkit.Maui.Core.Extensions;
+using CommunityToolkit.Maui.Core.Views;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Windows.UI.ViewManagement;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
 
@@ -17,6 +19,12 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 	/// <param name="result">The result that should return from this Popup.</param>
 	public static void MapOnClosed(PopupHandler handler, IPopup view, object? result)
 	{
+		var window = view.GetWindow();
+		if (window.Overlays.FirstOrDefault() is IWindowOverlay popupOverlay)
+		{
+			window.RemoveOverlay(popupOverlay);
+		}
+
 		view.HandlerCompleteTCS.TrySetResult();
 		handler.DisconnectHandler(handler.PlatformView);
 	}
@@ -31,13 +39,19 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 	{
 		ArgumentNullException.ThrowIfNull(view.Parent);
 		ArgumentNullException.ThrowIfNull(handler.MauiContext);
+
 		var parent = view.Parent.ToPlatform(handler.MauiContext);
+
 		parent.IsHitTestVisible = false;
 		handler.PlatformView.XamlRoot = parent.XamlRoot;
 		handler.PlatformView.IsHitTestVisible = true;
 		handler.PlatformView.IsOpen = true;
+
+		AddOverlayToWindow(view.GetWindow());
+
 		view.OnOpened();
 	}
+
 
 	/// <summary>
 	/// Action that's triggered when the Popup is dismissed by tapping outside of the Popup.
@@ -69,7 +83,7 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 	public static void MapCanBeDismissedByTappingOutsideOfPopup(PopupHandler handler, IPopup view)
 	{
 		handler.PlatformView.IsLightDismissEnabled = view.CanBeDismissedByTappingOutsideOfPopup;
-		handler.PlatformView.LightDismissOverlayMode = view.CanBeDismissedByTappingOutsideOfPopup ? LightDismissOverlayMode.On : LightDismissOverlayMode.Off;
+		handler.PlatformView.LightDismissOverlayMode = LightDismissOverlayMode.Off;
 	}
 
 	/// <summary>
@@ -128,6 +142,15 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 			MauiContext.GetPlatformWindow().SizeChanged += OnSizeChanged;
 		}
 		base.ConnectHandler(platformView);
+	}
+
+	static void AddOverlayToWindow(IWindow window)
+	{
+		var uiSetting = new UISettings();
+		var backgroundColor = uiSetting.GetColorValue(UIColorType.Background).ToColor();
+		window.AddOverlay(new PopupOverlay(window, backgroundColor.IsDark()
+													? Color.FromRgba(0, 0, 0, 153)
+													: Color.FromRgba(255, 255, 255, 153))); // 60% Opacity
 	}
 
 	void OnClosed(object? sender, object e)
