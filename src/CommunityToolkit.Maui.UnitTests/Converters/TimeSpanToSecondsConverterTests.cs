@@ -1,11 +1,12 @@
-﻿using CommunityToolkit.Maui.Converters;
+﻿using System.Collections.Frozen;
+using CommunityToolkit.Maui.Converters;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class TimeSpanToSecondsConverterTests : BaseConverterTest<TimeSpanToSecondsConverter>
 {
-	public static readonly IReadOnlyList<object[]> ValidData = new[]
+	public static readonly FrozenSet<object[]> ValidData = new[]
 	{
 		new object[] { TimeSpan.MaxValue, 922337203685.4775 },
 		new object[] { TimeSpan.FromSeconds(100), 100 },
@@ -13,7 +14,7 @@ public class TimeSpanToSecondsConverterTests : BaseConverterTest<TimeSpanToSecon
 		new object[] { TimeSpan.Zero, 0 },
 		new object[] { default(TimeSpan), 0 },
 		new object[] { TimeSpan.MinValue, -922337203685.4775 },
-	};
+	}.ToFrozenSet();
 
 	[Theory]
 	[MemberData(nameof(ValidData))]

@@ -1,17 +1,19 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <Project>
   <PropertyGroup>
-    <NetVersion>net7.0</NetVersion>
-    <!-- Fixes https://github.com/dotnet/maui/pull/12114 -->
-    <PublishReadyToRun>false</PublishReadyToRun>
-    <LangVersion>latest</LangVersion>
+    <NetVersion>net8.0</NetVersion>
+    <MauiPackageVersion>8.0.0-rc.2.9511</MauiPackageVersion>
+    <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <NoWarn>NETSDK1023</NoWarn>
-    <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
+    <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
+    <SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
+    <IsTrimmable>false</IsTrimmable>
+
     <!-- WarningsAsErrors
      CS0419: Ambiguous reference in cref attribute 
      CS1570: XML comment has badly formed XML 'Expected an end tag for element [parameter] 

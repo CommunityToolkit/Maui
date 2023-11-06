@@ -9,14 +9,14 @@ public class MediaElementTests : BaseHandlerTest
 {
 	public MediaElementTests()
 	{
-		Assert.IsAssignableFrom<IMediaElement>(new Maui.Views.MediaElement());
+		Assert.IsAssignableFrom<IMediaElement>(new MediaElement());
 	}
 
 	[Fact]
 	public void BindingContextPropagation()
 	{
 		object context = new();
-		Maui.Views.MediaElement mediaElement = new();
+		MediaElement mediaElement = new();
 		FileMediaSource mediaSource = new();
 
 		mediaElement.Source = mediaSource;
@@ -29,28 +29,30 @@ public class MediaElementTests : BaseHandlerTest
 	[Fact]
 	public void MediaElementShouldBeAssignedToIMediaElement()
 	{
-		new Maui.Views.MediaElement().Should().BeAssignableTo<IMediaElement>();
+		new MediaElement().Should().BeAssignableTo<IMediaElement>();
 	}
 
 	[Fact]
 	public void MediaElementVolumeShouldNotBeMoreThan1()
 	{
-		Maui.Views.MediaElement mediaElement = new();
-
-		mediaElement.Invoking(player =>
+		Assert.Throws<ArgumentOutOfRangeException>(() =>
 		{
-			mediaElement.Volume = 2d;
-		}).Should().Throw<ArgumentException>();
+			MediaElement mediaElement = new()
+			{
+				Volume = 1 + Math.Pow(10, -15)
+			};
+		});
 	}
 
 	[Fact]
 	public void MediaElementVolumeShouldNotBeLessThan0()
 	{
-		Maui.Views.MediaElement mediaElement = new();
-
-		mediaElement.Invoking(player =>
+		Assert.Throws<ArgumentOutOfRangeException>(() =>
 		{
-			mediaElement.Volume = -2d;
-		}).Should().Throw<ArgumentException>();
+			MediaElement mediaElement = new()
+			{
+				Volume = -double.Epsilon
+			};
+		});
 	}
 }

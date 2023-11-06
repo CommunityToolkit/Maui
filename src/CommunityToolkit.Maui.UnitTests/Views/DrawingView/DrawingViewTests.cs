@@ -264,7 +264,7 @@ public class DrawingViewTests : BaseHandlerTest
 
 		IDrawingLine? currentLine = null;
 		drawingView.DrawingLineCompletedCommand = new Command<IDrawingLine>(line => currentLine = line);
-		((IDrawingView)drawingView).DrawingLineCompleted(expectedDrawingLine);
+		((IDrawingView)drawingView).OnDrawingLineCompleted(expectedDrawingLine);
 
 		currentLine.Should().BeEquivalentTo(expectedDrawingLine);
 	}
@@ -275,7 +275,7 @@ public class DrawingViewTests : BaseHandlerTest
 	{
 		IDrawingLine? currentLine = null;
 		drawingView.DrawingLineCompletedCommand = null;
-		((IDrawingView)drawingView).DrawingLineCompleted(new DrawingLine());
+		((IDrawingView)drawingView).OnDrawingLineCompleted(new DrawingLine());
 
 		currentLine.Should().BeNull();
 	}
@@ -306,7 +306,7 @@ public class DrawingViewTests : BaseHandlerTest
 	{
 		IDrawingLine? currentLine = null;
 		drawingView.DrawingLineCompletedCommand = new Command<IDrawingLine>(line => currentLine = line, _ => false);
-		((IDrawingView)drawingView).DrawingLineCompleted(new DrawingLine());
+		((IDrawingView)drawingView).OnDrawingLineCompleted(new DrawingLine());
 
 		currentLine.Should().BeNull();
 	}
@@ -347,7 +347,7 @@ public class DrawingViewTests : BaseHandlerTest
 		IDrawingLine? currentLine = null;
 		var action = new EventHandler<DrawingLineCompletedEventArgs>((_, e) => currentLine = e.LastDrawingLine);
 		drawingView.DrawingLineCompleted += action;
-		((IDrawingView)drawingView).DrawingLineCompleted(expectedDrawingLine);
+		((IDrawingView)drawingView).OnDrawingLineCompleted(expectedDrawingLine);
 		drawingView.DrawingLineCompleted -= action;
 
 		currentLine.Should().BeEquivalentTo(expectedDrawingLine);

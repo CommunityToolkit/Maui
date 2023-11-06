@@ -20,6 +20,8 @@ public static class AppBuilderExtensions
 		// Pass `null` because `options?.Invoke()` will set options on both `CommunityToolkit.Maui` and `CommunityToolkit.Maui.Core`
 		builder.UseMauiCommunityToolkitCore(null);
 
+		builder.Services.AddSingleton<IPopupService, PopupService>();
+
 		// Invokes options for both `CommunityToolkit.Maui` and `CommunityToolkit.Maui.Core`
 		options?.Invoke(new Options());
 

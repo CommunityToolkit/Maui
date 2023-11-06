@@ -74,12 +74,5 @@ public interface IDrawingView : IView
 	/// Event occurred when drawing line completed
 	/// </summary>
 	/// <param name="lastDrawingLine">Last drawing line</param>
-	void OnDrawingLineCompleted(IDrawingLine lastDrawingLine) => OnDrawingLineCompleted(lastDrawingLine);
-
-	/// <summary>
-	/// Event occurred when drawing line completed
-	/// </summary>
-	/// <param name="lastDrawingLine">Last drawing line</param>
-	[Obsolete($"Use {nameof(OnDrawingLineCompleted)} instead.")]
-	void DrawingLineCompleted(IDrawingLine lastDrawingLine);
+	void OnDrawingLineCompleted(IDrawingLine lastDrawingLine);
 }
