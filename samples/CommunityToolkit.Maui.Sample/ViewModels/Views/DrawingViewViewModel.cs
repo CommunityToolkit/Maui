@@ -72,7 +72,7 @@ public partial class DrawingViewViewModel : BaseViewModel
 	{
 		try
 		{
-			await using var stream = await DrawingView.GetImageStream(Lines, new Size(1920, 1080), Brush.Blue);
+			await using var stream = await DrawingView.GetImageStream(Lines, new Size(1920, 1080), Brush.Blue, cancellationToken);
 
 			await Permissions.RequestAsync<Permissions.StorageRead>().WaitAsync(cancellationToken);
 			await Permissions.RequestAsync<Permissions.StorageWrite>().WaitAsync(cancellationToken);

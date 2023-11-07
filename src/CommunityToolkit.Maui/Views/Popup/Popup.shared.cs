@@ -267,12 +267,10 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// <remarks>
 	/// <see cref="Close(object?)"/> is an <see langword="async"/> <see langword="void"/> method, commonly referred to as a fire-and-forget method.
 	/// It will complete and return to the calling thread before the operating system has dismissed the <see cref="Popup"/> from the screen.
-	/// If you need to pause the execution of your method until the operating system has dismissed the <see cref="Popup"/> from the screen, use instead <see cref="CloseAsync(object?)"/>.
+	/// If you need to pause the execution of your method until the operating system has dismissed the <see cref="Popup"/> from the screen, use instead <see cref="CloseAsync(CancellationToken, object?)"/>.
 	/// </remarks>
-	/// <param name="result">
-	/// The result to return.
-	/// </param>
-	public async void Close(object? result = null) => await CloseAsync(result);
+	/// <param name="result">The result to return.</param>
+	public async void Close(object? result = null) => await CloseAsync(CancellationToken.None, result);
 
 	/// <summary>
 	/// Close the current popup.
@@ -280,12 +278,15 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// <remarks>
 	/// Returns once the operating system has dismissed the <see cref="IPopup"/> from the page
 	/// </remarks>
+	/// <param name="token">
+	/// <see cref="CancellationToken"/>
+	/// </param>
 	/// <param name="result">
 	/// The result to return.
 	/// </param>
-	public async Task CloseAsync(object? result = null)
+	public async Task CloseAsync(CancellationToken token, object? result = null)
 	{
-		await OnClosed(result, false);
+		await OnClosed(result, false, token);
 		resultTaskCompletionSource.TrySetResult(result);
 	}
 
@@ -346,15 +347,18 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// <param name="result">
 	/// Sets the <see cref="PopupClosedEventArgs"/> Property of <see cref="PopupClosedEventArgs.Result"/>.
 	/// </param>
-	/// /// <param name="wasDismissedByTappingOutsideOfPopup">
+	/// <param name="wasDismissedByTappingOutsideOfPopup">
 	/// Sets the <see cref="PopupClosedEventArgs"/> Property of <see cref="PopupClosedEventArgs.WasDismissedByTappingOutsideOfPopup"/>/>.
 	/// </param>
-	protected virtual async Task OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup)
+	/// <param name="token">
+	/// <see cref="CancellationToken"/>
+	/// </param>
+	protected virtual async Task OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup, CancellationToken token)
 	{
 		((IPopup)this).OnClosed(result);
 		((IResourceDictionary)resources).ValuesChanged -= OnResourcesChanged;
 
-		await popupDismissedTaskCompletionSource.Task;
+		await popupDismissedTaskCompletionSource.Task.WaitAsync(token);
 		Parent = null;
 
 		dismissWeakEventManager.HandleEvent(this, new PopupClosedEventArgs(result, wasDismissedByTappingOutsideOfPopup), nameof(Closed));
@@ -363,9 +367,9 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// <summary>
 	/// Invoked when the popup is dismissed by tapping outside of the popup.
 	/// </summary>
-	protected internal virtual async Task OnDismissedByTappingOutsideOfPopup()
+	protected internal virtual async Task OnDismissedByTappingOutsideOfPopup(CancellationToken token)
 	{
-		await OnClosed(ResultWhenUserTapsOutsideOfPopup, true);
+		await OnClosed(ResultWhenUserTapsOutsideOfPopup, true, token);
 		resultTaskCompletionSource.TrySetResult(ResultWhenUserTapsOutsideOfPopup);
 	}
 
@@ -398,7 +402,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 
 	void IPopup.OnOpened() => OnOpened();
 
-	async void IPopup.OnDismissedByTappingOutsideOfPopup() => await OnDismissedByTappingOutsideOfPopup();
+	async void IPopup.OnDismissedByTappingOutsideOfPopup() => await OnDismissedByTappingOutsideOfPopup(CancellationToken.None);
 
 	void IPropertyPropagationController.PropagatePropertyChanged(string propertyName) =>
 		PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());

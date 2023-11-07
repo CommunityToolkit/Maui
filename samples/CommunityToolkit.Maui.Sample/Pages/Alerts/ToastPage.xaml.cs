@@ -16,13 +16,17 @@ public partial class ToastPage : BasePage<ToastViewModel>
 	async void ShowToastButtonClicked(object? sender, EventArgs args)
 	{
 		var toast = Toast.Make("This is a default Toast.");
-		await toast.Show();
+		
+		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+		await toast.Show(cts.Token);
 	}
 
 	async void ShowCustomToastButtonClicked(object? sender, EventArgs args)
 	{
 		var toast = Toast.Make("This is a big Toast.", ToastDuration.Long, 30d);
-		await toast.Show();
+		
+		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+		await toast.Show(cts.Token);
 	}
 
 	async void DisplayToastInModalButtonClicked(object? sender, EventArgs e)
@@ -37,7 +41,7 @@ public partial class ToastPage : BasePage<ToastViewModel>
 
 					Children =
 					{
-						new Button { Command = new AsyncRelayCommand(() => Toast.Make("Toast in a Modal Page").Show()) }
+						new Button { Command = new AsyncRelayCommand(token => Toast.Make("Toast in a Modal Page").Show(token)) }
 							.Top().CenterHorizontal()
 							.Text("Display Toast"),
 

@@ -45,8 +45,9 @@ public interface IDrawingView : IView
 	/// </summary>
 	/// <param name="imageSizeWidth">Desired width of the image that is returned. The image will be resized proportionally.</param>
 	/// <param name="imageSizeHeight">Desired height of the image that is returned. The image will be resized proportionally.</param>
+	/// <param name="token"> <see cref="CancellationToken"/>.</param>
 	/// <returns><see cref="Task{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
-	ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight);
+	ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, CancellationToken token);
 
 	/// <summary>
 	/// Clears the <see cref="Lines"/> that are currently drawn on the <see cref="IDrawingView"/>.

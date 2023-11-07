@@ -30,23 +30,29 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 
 	async void GetCurrentDrawingViewImageClicked(object sender, EventArgs e)
 	{
-		var stream = await DrawingViewControl.GetImageStream(GestureImage.Width, GestureImage.Height);
+		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+		var stream = await DrawingViewControl.GetImageStream(GestureImage.Width, GestureImage.Height, cts.Token);
+
 		GestureImage.Source = ImageSource.FromStream(() => stream);
 	}
 
 	async void GenerateImageButtonClicked(object sender, EventArgs e)
 	{
 		var lines = GenerateLines(2);
-		await DrawImage(lines);
+
+		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+		await DrawImage(lines, cts.Token);
 	}
 
-	async Task DrawImage(IEnumerable<DrawingLine> lines)
+	async Task DrawImage(IEnumerable<DrawingLine> lines, CancellationToken token)
 	{
 		var drawingLines = lines.ToList();
 		var points = drawingLines.SelectMany(x => x.Points).ToList();
 		var stream = await DrawingView.GetImageStream(drawingLines,
 			new Size(points.Max(x => x.X) - points.Min(x => x.X), points.Max(x => x.Y) - points.Min(x => x.Y)),
-			Colors.Gray);
+			Colors.Gray,
+			token);
+			
 		GestureImage.Source = ImageSource.FromStream(() => stream);
 	}
 
@@ -71,7 +77,10 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 	{
 		var width = GetSide(GestureImage.Width);
 		var height = GetSide(GestureImage.Height);
-		var stream = await e.LastDrawingLine.GetImageStream(width, height, Colors.Gray.AsPaint());
+
+		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+		var stream = await e.LastDrawingLine.GetImageStream(width, height, Colors.Gray.AsPaint(), cts.Token);
+
 		GestureImage.Source = ImageSource.FromStream(() => stream);
 	}
 }
