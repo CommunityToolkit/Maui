@@ -73,14 +73,14 @@ public class DrawingLineTests : BaseHandlerTest
 	[Fact]
 	public async Task GetImageStreamReturnsNullStream()
 	{
-		var stream = await drawingLine.GetImageStream(10, 10, Colors.Blue.AsPaint());
+		var stream = await drawingLine.GetImageStream(10, 10, Colors.Blue.AsPaint(), CancellationToken.None);
 		Assert.Equal(Stream.Null, stream);
 	}
 
 	[Fact]
 	public async Task GetImageStreamStaticReturnsNullStream()
 	{
-		var stream = await DrawingLine.GetImageStream(Array.Empty<PointF>(), new Size(10, 10), 5, Colors.Yellow, Colors.Blue.AsPaint());
+		var stream = await DrawingLine.GetImageStream(Array.Empty<PointF>(), new Size(10, 10), 5, Colors.Yellow, Colors.Blue.AsPaint(), CancellationToken.None);
 		Assert.Equal(Stream.Null, stream);
 	}
 

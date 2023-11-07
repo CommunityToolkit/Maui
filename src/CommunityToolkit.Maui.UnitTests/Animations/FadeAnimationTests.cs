@@ -12,9 +12,9 @@ public class FadeAnimationTests : BaseTest
 	{
 		FadeAnimation animation = new();
 
-		var performAnimation = () => animation.Animate(null!);
-
-		await performAnimation.Should().ThrowAsync<ArgumentNullException>();
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		await Assert.ThrowsAsync<ArgumentNullException>(() => animation.Animate(null, CancellationToken.None));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
 	[Fact]
@@ -28,7 +28,7 @@ public class FadeAnimationTests : BaseTest
 		};
 		label.EnableAnimations();
 
-		await animation.Animate(label);
+		await animation.Animate(label, CancellationToken.None);
 
 		label.Opacity.Should().Be(0.9);
 	}

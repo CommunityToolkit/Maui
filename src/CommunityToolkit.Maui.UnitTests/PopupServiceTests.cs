@@ -33,7 +33,7 @@ public class PopupServiceTests : BaseHandlerTest
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		Assert.ThrowsAsync<ArgumentNullException>(() =>
-			popupService.ShowPopupAsync<INotifyPropertyChanged>(viewModel: null));
+			popupService.ShowPopupAsync<INotifyPropertyChanged>(viewModel: null, CancellationToken.None));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
@@ -44,7 +44,7 @@ public class PopupServiceTests : BaseHandlerTest
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		Assert.ThrowsAsync<ArgumentNullException>(() =>
-			popupService.ShowPopupAsync<INotifyPropertyChanged>(onPresenting: null));
+			popupService.ShowPopupAsync<INotifyPropertyChanged>(onPresenting: null, CancellationToken.None));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
@@ -55,7 +55,7 @@ public class PopupServiceTests : BaseHandlerTest
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		Assert.ThrowsAsync<ArgumentNullException>(() =>
-			popupService.ShowPopupAsync<INotifyPropertyChanged>(viewModel: null));
+			popupService.ShowPopupAsync<INotifyPropertyChanged>(viewModel: null, CancellationToken.None));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
@@ -67,7 +67,7 @@ public class PopupServiceTests : BaseHandlerTest
 
 		SetupTest(popupInstance, () => popupViewModel, out var popupService);
 
-		Assert.ThrowsAsync<InvalidOperationException>(popupService.ShowPopupAsync<MockPageViewModel>);
+		Assert.ThrowsAsync<InvalidOperationException>(() => popupService.ShowPopupAsync<MockPageViewModel>(CancellationToken.None));
 	}
 
 	[Fact(Timeout = 2000)]
@@ -81,7 +81,7 @@ public class PopupServiceTests : BaseHandlerTest
 
 		SetupTest(popupInstance, () => popupViewModel, out var popupService);
 
-		await popupService.ShowPopupAsync<MockPageViewModel>();
+		await popupService.ShowPopupAsync<MockPageViewModel>(CancellationToken.None);
 
 		Assert.Same(popupInstance.BindingContext, popupViewModel);
 	}
@@ -97,7 +97,7 @@ public class PopupServiceTests : BaseHandlerTest
 
 		SetupTest(popupInstance, () => popupViewModel, out var popupService);
 
-		await popupService.ShowPopupAsync<MockPageViewModel>(onPresenting: viewModel => viewModel.HasLoaded = true);
+		await popupService.ShowPopupAsync<MockPageViewModel>(onPresenting: viewModel => viewModel.HasLoaded = true, CancellationToken.None);
 
 		Assert.True(popupViewModel.HasLoaded);
 	}
@@ -115,7 +115,7 @@ public class PopupServiceTests : BaseHandlerTest
 
 		SetupTest(popupInstance, () => popupViewModel, out var popupService);
 
-		var result = await popupService.ShowPopupAsync<MockPageViewModel>();
+		var result = await popupService.ShowPopupAsync<MockPageViewModel>(CancellationToken.None);
 
 		Assert.Same(expectedResult, result);
 	}

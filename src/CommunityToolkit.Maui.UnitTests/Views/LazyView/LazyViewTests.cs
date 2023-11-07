@@ -18,7 +18,7 @@ public class LazyViewTests : BaseHandlerTest
 	{
 		var lazyView = new LazyView<Button>();
 
-		await lazyView.LoadViewAsync();
+		await lazyView.LoadViewAsync(CancellationToken.None);
 
 		Assert.True(lazyView.HasLazyViewLoaded);
 	}
@@ -28,7 +28,7 @@ public class LazyViewTests : BaseHandlerTest
 	{
 		var lazyView = new LazyView<Button>();
 
-		await lazyView.LoadViewAsync();
+		await lazyView.LoadViewAsync(CancellationToken.None);
 
 		Assert.True(lazyView.HasLazyViewLoaded);
 		Assert.IsAssignableFrom<Button>(lazyView.Content);
@@ -41,7 +41,7 @@ public class LazyViewTests : BaseHandlerTest
 		var bindingContext = new object();
 		lazyView.BindingContext = bindingContext;
 
-		await lazyView.LoadViewAsync();
+		await lazyView.LoadViewAsync(CancellationToken.None);
 
 		Assert.True(lazyView.HasLazyViewLoaded);
 		Assert.IsAssignableFrom<Button>(lazyView.Content);

@@ -35,14 +35,14 @@ public class SnackbarTests : BaseTest
 	[Fact]
 	public async Task SnackbarShow_IsShownTrue()
 	{
-		await snackbar.Show();
+		await snackbar.Show(CancellationToken.None);
 		Assert.True(Snackbar.IsShown);
 	}
 
 	[Fact]
 	public async Task SnackbarDismissed_IsShownFalse()
 	{
-		await snackbar.Dismiss();
+		await snackbar.Dismiss(CancellationToken.None);
 		Assert.False(Snackbar.IsShown);
 	}
 
@@ -54,7 +54,7 @@ public class SnackbarTests : BaseTest
 		{
 			receivedEvents.Add(e);
 		};
-		await snackbar.Show();
+		await snackbar.Show(CancellationToken.None);
 		Assert.Single(receivedEvents);
 	}
 
@@ -66,7 +66,7 @@ public class SnackbarTests : BaseTest
 		{
 			receivedEvents.Add(e);
 		};
-		await snackbar.Dismiss();
+		await snackbar.Dismiss(CancellationToken.None);
 		Assert.Single(receivedEvents);
 	}
 
