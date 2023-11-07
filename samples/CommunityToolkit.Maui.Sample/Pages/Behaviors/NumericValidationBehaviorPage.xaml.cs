@@ -17,7 +17,8 @@ public partial class NumericValidationBehaviorPage : BasePage<NumericValidationB
 #else
 	async void SetEntryValue(object? sender, EventArgs e)
 	{
-		await Toast.Make($"The app will crash because {nameof(Options.SetShouldSuppressExceptionsInBehaviors)} is false", Core.ToastDuration.Long).Show();
+		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+		await Toast.Make($"The app will crash because {nameof(Options.SetShouldSuppressExceptionsInBehaviors)} is false", Core.ToastDuration.Long).Show(cts.Token);
 #endif
 		SafeEntry.Text = null;
 	}

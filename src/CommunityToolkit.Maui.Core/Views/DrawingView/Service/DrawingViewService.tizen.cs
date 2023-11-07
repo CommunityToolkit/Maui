@@ -16,10 +16,15 @@ public static class DrawingViewService
 	/// <param name="lineWidth">Line Width</param>
 	/// <param name="strokeColor">Line color</param>
 	/// <param name="background">Image background</param>
+	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(IList<PointF> points, Size imageSize, float lineWidth, Color strokeColor, Paint? background)
+	public static ValueTask<Stream> GetImageStream(IList<PointF> points, Size imageSize, float lineWidth, Color strokeColor, Paint? background, CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
+
 		var image = GetBitmapForPoints(points, lineWidth, strokeColor, background);
+
+		token.ThrowIfCancellationRequested();
 
 		if (image is null)
 		{
@@ -46,10 +51,15 @@ public static class DrawingViewService
 	/// <param name="lines">Drawing lines</param>
 	/// <param name="imageSize">Maximum image size. The image will be resized proportionally.</param>
 	/// <param name="background">Image background</param>
+	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background)
+	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background, CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
+
 		var image = GetBitmapForLines(lines, background);
+
+		token.ThrowIfCancellationRequested();
 
 		if (image is null)
 		{
@@ -72,6 +82,8 @@ public static class DrawingViewService
 
 	static (SKBitmap?, SizeF offset) GetBitmap(in ICollection<PointF> points, float maxLineWidth)
 	{
+		token.ThrowIfCancellationRequested();
+
 		if (points.Count is 0)
 		{
 			return (null, SizeF.Zero);

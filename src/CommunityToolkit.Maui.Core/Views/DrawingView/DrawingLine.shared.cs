@@ -46,14 +46,16 @@ public class DrawingLine : IDrawingLine
 	/// <param name="lineWidth">The desired line width to be used in the generated image.</param>
 	/// <param name="strokeColor">The desired color of the line to be used in the generated image.</param>
 	/// <param name="background">Background of the generated image.</param>
+	/// <param name="token"><see cref="CancellationToken"/> </param>
 	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's provided through the <paramref name="points"/> parameter.</returns>
 	public static ValueTask<Stream> GetImageStream(IEnumerable<PointF> points,
 										Size imageSize,
 										float lineWidth,
 										Color strokeColor,
-										Paint background)
+										Paint background,
+										CancellationToken token)
 	{
-		return DrawingViewService.GetImageStream(points.ToList(), imageSize, lineWidth, strokeColor, background);
+		return DrawingViewService.GetImageStream(points.ToList(), imageSize, lineWidth, strokeColor, background, token);
 	}
 
 	/// <summary>
@@ -62,7 +64,10 @@ public class DrawingLine : IDrawingLine
 	/// <param name="imageSizeWidth">Desired width of the image that is returned.</param>
 	/// <param name="imageSizeHeight">Desired height of the image that is returned.</param>
 	/// <param name="background">Background of the generated image.</param>
+	/// <param name="token"><see cref="CancellationToken"/> </param>
 	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
-	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Paint background) =>
-		DrawingViewService.GetImageStream(Points.ToList(), new Size(imageSizeWidth, imageSizeHeight), LineWidth, LineColor, background);
+	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Paint background, CancellationToken token)
+	{
+		return DrawingViewService.GetImageStream(Points.ToList(), new Size(imageSizeWidth, imageSizeHeight), LineWidth, LineColor, background, token);
+	}
 }

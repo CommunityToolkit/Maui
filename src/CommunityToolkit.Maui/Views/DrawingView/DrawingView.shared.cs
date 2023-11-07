@@ -217,19 +217,23 @@ public class DrawingView : View, IDrawingView
 	/// <param name="lines">A collection of <see cref="IDrawingLine"/> that a image is generated from.</param>
 	/// <param name="imageSize">The desired dimensions of the generated image. The image will be resized proportionally.</param>
 	/// <param name="background">Background of the generated image. If color is null, default background color is used.</param>
+	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's provided through the <paramref name="lines"/> parameter.</returns>
 	public static ValueTask<Stream> GetImageStream(IEnumerable<IDrawingLine> lines,
-		Size imageSize,
-		Brush? background) =>
-		DrawingViewService.GetImageStream(lines.ToList(), imageSize, background);
+													Size imageSize,
+													Brush? background,
+													CancellationToken token) =>
+		DrawingViewService.GetImageStream(lines.ToList(), imageSize, background, token);
 
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of the <see cref="Lines"/> that are currently drawn on the <see cref="DrawingView"/>.
 	/// </summary>
 	/// <param name="imageSizeWidth">Desired width of the image that is returned. The image will be resized proportionally.</param>
 	/// <param name="imageSizeHeight">Desired height of the image that is returned. The image will be resized proportionally.</param>
+	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="DrawingView"/>.</returns>
-	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight) => DrawingViewService.GetImageStream(Lines.ToList(), new Size(imageSizeWidth, imageSizeHeight), Background);
+	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, CancellationToken token) => 
+		DrawingViewService.GetImageStream(Lines.ToList(), new Size(imageSizeWidth, imageSizeHeight), Background, token);
 
 	/// <summary>
 	/// Clears the <see cref="Lines"/> collection.
