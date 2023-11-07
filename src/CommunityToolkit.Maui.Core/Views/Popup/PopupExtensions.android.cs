@@ -1,4 +1,5 @@
-﻿using Android.Content;
+﻿using System.Diagnostics.CodeAnalysis;
+using Android.Content;
 using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Views;
@@ -107,25 +108,24 @@ public static class PopupExtensions
 		var decorView = (ViewGroup)window.DecorView;
 		var child = decorView.GetChildAt(0) ?? throw new InvalidOperationException($"No child found in {nameof(ViewGroup)}");
 
-		int realWidth = 0,
-			realHeight = 0,
-			realContentWidth = 0,
-			realContentHeight = 0;
-
 		var windowSize = GetWindowSize(windowManager);
 
-		CalculateSizes(popup, context, windowSize, ref realWidth, ref realHeight, ref realContentWidth, ref realContentHeight);
-		window.SetLayout(realWidth, realHeight);
+		if (!TryCalculateSizes(popup, context, windowSize, out var realWidth, out var realHeight, out _, out _))
+		{
+			throw new InvalidOperationException("Unable to calculate screen size");
+		}
+
+		window.SetLayout(realWidth.Value, realHeight.Value);
 
 		var childLayoutParams = (FrameLayout.LayoutParams)(child.LayoutParameters ?? throw new InvalidOperationException($"{nameof(child.LayoutParameters)} cannot be null"));
-		childLayoutParams.Width = realWidth;
-		childLayoutParams.Height = realHeight;
+		childLayoutParams.Width = realWidth.Value;
+		childLayoutParams.Height = realHeight.Value;
 		child.LayoutParameters = childLayoutParams;
 
 		var horizontalParams = realWidth;
 		var verticalParams = realHeight;
 
-		var containerLayoutParams = new FrameLayout.LayoutParams(horizontalParams, verticalParams);
+		var containerLayoutParams = new FrameLayout.LayoutParams(horizontalParams.Value, verticalParams.Value);
 
 		switch (popup.Content.VerticalLayoutAlignment)
 		{
@@ -135,7 +135,7 @@ public static class PopupExtensions
 			case LayoutAlignment.Center:
 			case LayoutAlignment.Fill:
 				containerLayoutParams.Gravity = GravityFlags.FillVertical;
-				containerLayoutParams.Height = realHeight;
+				containerLayoutParams.Height = realHeight.Value;
 				break;
 			case LayoutAlignment.End:
 				containerLayoutParams.Gravity = GravityFlags.Bottom;
@@ -152,7 +152,7 @@ public static class PopupExtensions
 			case LayoutAlignment.Center:
 			case LayoutAlignment.Fill:
 				containerLayoutParams.Gravity |= GravityFlags.FillHorizontal;
-				containerLayoutParams.Width = realWidth;
+				containerLayoutParams.Width = realWidth.Value;
 				break;
 			case LayoutAlignment.End:
 				containerLayoutParams.Gravity |= GravityFlags.Right;
@@ -164,9 +164,17 @@ public static class PopupExtensions
 		container.LayoutParameters = containerLayoutParams;
 
 
-		static void CalculateSizes(IPopup popup, Context context, Size windowSize, ref int realWidth, ref int realHeight, ref int realContentWidth, ref int realContentHeight)
+		static bool TryCalculateSizes(IPopup popup,
+			Context context,
+			Size windowSize,
+			[NotNullWhen(true)] out int? realWidth,
+			[NotNullWhen(true)] out int? realHeight,
+			[NotNullWhen(true)] out int? realContentWidth,
+			[NotNullWhen(true)] out int? realContentHeight)
 		{
 			ArgumentNullException.ThrowIfNull(popup.Content);
+
+			realWidth = realHeight = realContentWidth = realContentHeight = null;
 
 			var view = popup.Content.ToPlatform();
 
@@ -174,25 +182,24 @@ public static class PopupExtensions
 			{
 				if (double.IsNaN(popup.Content.Width) || double.IsNaN(popup.Content.Height))
 				{
-					if (view is not null)
-					{
-						var isRootView = true;
-						Measure(
-							view,
-							(int)(double.IsNaN(popup.Content.Width) ? windowSize.Width : (int)context.ToPixels(popup.Content.Width)),
-							(int)(double.IsNaN(popup.Content.Height) ? windowSize.Height : (int)context.ToPixels(popup.Content.Height)),
-							double.IsNaN(popup.Content.Width) && popup.HorizontalOptions != LayoutAlignment.Fill,
-							double.IsNaN(popup.Content.Height) && popup.VerticalOptions != LayoutAlignment.Fill,
-							ref isRootView
-						);
-						realContentWidth = view.MeasuredWidth;
-						realContentHeight = view.MeasuredHeight;
-					}
+					var isRootView = true;
+					Measure(
+						view,
+						(int)(double.IsNaN(popup.Content.Width) ? windowSize.Width : (int)context.ToPixels(popup.Content.Width)),
+						(int)(double.IsNaN(popup.Content.Height) ? windowSize.Height : (int)context.ToPixels(popup.Content.Height)),
+						double.IsNaN(popup.Content.Width) && popup.HorizontalOptions != LayoutAlignment.Fill,
+						double.IsNaN(popup.Content.Height) && popup.VerticalOptions != LayoutAlignment.Fill,
+						ref isRootView
+					);
+
+					realContentWidth = view.MeasuredWidth;
+					realContentHeight = view.MeasuredHeight;
 
 					if (double.IsNaN(popup.Content.Width))
 					{
 						realContentWidth = popup.HorizontalOptions == LayoutAlignment.Fill ? (int)windowSize.Width : realContentWidth;
 					}
+
 					if (double.IsNaN(popup.Content.Height))
 					{
 						realContentHeight = popup.VerticalOptions == LayoutAlignment.Fill ? (int)windowSize.Height : realContentHeight;
@@ -206,30 +213,30 @@ public static class PopupExtensions
 			}
 			else
 			{
-				if (view is not null)
-				{
-					bool isRootView = true;
-					Measure(
-						view,
-						(int)context.ToPixels(popup.Size.Width),
-						(int)context.ToPixels(popup.Size.Height),
-						false,
-						false,
-						ref isRootView
-					);
-					realContentWidth = view.MeasuredWidth;
-					realContentHeight = view.MeasuredHeight;
-				}
+				var isRootView = true;
+				Measure(
+					view,
+					(int)context.ToPixels(popup.Size.Width),
+					(int)context.ToPixels(popup.Size.Height),
+					false,
+					false,
+					ref isRootView
+				);
+
+				realContentWidth = view.MeasuredWidth;
+				realContentHeight = view.MeasuredHeight;
 			}
 
-			realWidth = Math.Min(realWidth is 0 ? realContentWidth : realWidth, (int)windowSize.Width);
-			realHeight = Math.Min(realHeight is 0 ? realContentHeight : realHeight, (int)windowSize.Height);
+			realWidth = Math.Min(realWidth ?? realContentWidth.Value, (int)windowSize.Width);
+			realHeight = Math.Min(realHeight ?? realContentHeight.Value, (int)windowSize.Height);
 
 			if (realHeight is 0 || realWidth is 0)
 			{
 				realWidth = (int)(context.Resources?.DisplayMetrics?.WidthPixels * 0.8 ?? throw new InvalidOperationException($"Unable to determine width. {nameof(context.Resources.DisplayMetrics)} cannot be null"));
 				realHeight = (int)(context.Resources?.DisplayMetrics?.HeightPixels * 0.6 ?? throw new InvalidOperationException($"Unable to determine height. {nameof(context.Resources.DisplayMetrics)} cannot be null"));
 			}
+
+			return true;
 		}
 
 		static void Measure(AView view, int width, int height, bool isNanWidth, bool isNanHeight, ref bool isRootView)
@@ -290,10 +297,10 @@ public static class PopupExtensions
 			}
 			else
 			{
-				APoint? realSize = null;
-				APoint? displaySize = null;
-				APoint? displaySmallSize = null;
-				APoint? displayLargeSize = null;
+				APoint realSize = new();
+				APoint displaySize = new();
+				APoint displaySmallSize = new();
+				APoint displayLargeSize = new();
 
 				windowManager.DefaultDisplay.GetRealSize(realSize);
 				ArgumentNullException.ThrowIfNull(realSize);
