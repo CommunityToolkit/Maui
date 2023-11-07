@@ -10,12 +10,12 @@ public partial class ItemTappedEventArgsConverterViewModel : BaseViewModel
 	[ObservableProperty]
 	Person? itemSelected = null;
 
-	public FrozenSet<Person> Items { get; } = new[]
+	public IReadOnlyList<Person> Items { get; } = new[]
 	{
 		new Person(1, "John Doe"),
 		new Person(2, "Jane Doe"),
 		new Person(3, "Joe Doe")
-	}.ToFrozenSet();
+	};
 
 	[RelayCommand]
 	Task ItemTapped(Person? person, CancellationToken token)
