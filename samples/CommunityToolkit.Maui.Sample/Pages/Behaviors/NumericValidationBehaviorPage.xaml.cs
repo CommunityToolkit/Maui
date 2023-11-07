@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
@@ -11,15 +12,15 @@ public partial class NumericValidationBehaviorPage : BasePage<NumericValidationB
 		InitializeComponent();
 	}
 
-#if !DEBUG
-	void SetEntryValue(object? sender, EventArgs e)
-	{
-#else
 	async void SetEntryValue(object? sender, EventArgs e)
 	{
-		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-		await Toast.Make($"The app will crash because {nameof(Options.SetShouldSuppressExceptionsInBehaviors)} is false", Core.ToastDuration.Long).Show(cts.Token);
-#endif
+		var toastVisibilityTimeSpan = TimeSpan.FromSeconds(5);
+		var cts = new CancellationTokenSource(toastVisibilityTimeSpan);
+		
+		await Toast.Make($"The app will crash because `null` is an invalid value for {nameof(NumericValidationBehavior)}.\nOptionally, {nameof(Options)}.{nameof(Options.SetShouldSuppressExceptionsInBehaviors)} can be set to true", Core.ToastDuration.Long).Show(cts.Token);
+
+		await Task.Delay(toastVisibilityTimeSpan, cts.Token);
+		
 		SafeEntry.Text = null;
 	}
 }
