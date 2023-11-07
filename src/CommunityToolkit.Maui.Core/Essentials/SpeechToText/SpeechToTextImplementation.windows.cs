@@ -44,7 +44,7 @@ public sealed partial class SpeechToTextImplementation
 		speechRecognizer.ContinuousRecognitionSession.Completed += OnCompleted;
 		try
 		{
-			await speechRecognizer.ContinuousRecognitionSession.StartAsync();
+			await speechRecognizer.ContinuousRecognitionSession.StartAsync().AsTask(cancellationToken);
 		}
 		catch (Exception ex) when ((uint)ex.HResult is privacyStatementDeclinedCode)
 		{
