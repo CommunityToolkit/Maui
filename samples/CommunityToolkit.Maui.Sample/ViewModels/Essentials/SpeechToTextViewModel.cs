@@ -130,7 +130,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 		var isGranted = await speechToText.RequestPermissions(cancellationToken);
 		if (!isGranted)
 		{
-			await Toast.Make("Permission not granted").Show(CancellationToken.None);
+			await Toast.Make("Permission not granted").Show(cancellationToken);
 			return;
 		}
 

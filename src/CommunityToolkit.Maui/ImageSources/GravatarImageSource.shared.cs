@@ -86,7 +86,10 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 	internal int ParentWidth => (int)GetValue(ParentWidthProperty);
 
 	/// <summary>Gets or sets the image size.</summary>
-	/// <remarks>Size is limited to be in the range of 1 to 2048.</remarks>
+	/// <remarks>
+	/// Size is limited to be in the range of 1 to 2048.
+	/// A null value indicates that the size has not yet been set
+	/// </remarks>
 	int? GravatarSize
 	{
 		get => gravatarSize;
@@ -154,13 +157,13 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 	static async void OnDefaultImagePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		GravatarImageSource gravatarImageSource = (GravatarImageSource)bindable;
-		await gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, (DefaultImage)newValue, gravatarImageSource.CancellationTokenSource.Token);
+		await gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, (DefaultImage)newValue, gravatarImageSource.CancellationTokenSource?.Token ?? CancellationToken.None);
 	}
 
 	static async void OnEmailPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		GravatarImageSource gravatarImageSource = (GravatarImageSource)bindable;
-		await gravatarImageSource.HandleNewUriRequested((string?)newValue, gravatarImageSource.Image, gravatarImageSource.CancellationTokenSource.Token);
+		await gravatarImageSource.HandleNewUriRequested((string?)newValue, gravatarImageSource.Image, gravatarImageSource.CancellationTokenSource?.Token ?? CancellationToken.None);
 	}
 
 	static async void OnSizePropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -178,7 +181,7 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 		}
 
 		gravatarImageSource.GravatarSize = Math.Min(gravatarImageSource.ParentWidth, gravatarImageSource.ParentHeight);
-		await gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, gravatarImageSource.Image, gravatarImageSource.CancellationTokenSource.Token);
+		await gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, gravatarImageSource.Image, gravatarImageSource.CancellationTokenSource?.Token ?? CancellationToken.None);
 	}
 
 	Task HandleNewUriRequested(string? email, DefaultImage image, CancellationToken token)
@@ -205,7 +208,7 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 		try
 		{
 			await Task.Delay(cancellationTokenSourceTimeout, token);
-			CancellationTokenSource?.Cancel();
+			await (CancellationTokenSource?.CancelAsync() ?? Task.CompletedTask);
 			lastDispatch = Uri;
 			await Dispatcher.DispatchIfRequiredAsync(OnSourceChanged).WaitAsync(token);
 		}

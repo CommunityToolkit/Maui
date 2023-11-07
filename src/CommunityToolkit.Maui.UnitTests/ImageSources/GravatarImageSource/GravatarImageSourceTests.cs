@@ -434,6 +434,6 @@ public class GravatarImageSourceTests : BaseHandlerTest
 	public void ToStringTest()
 	{
 		var gravatarImageSource = new GravatarImageSource();
-		Assert.Equal("Uri: https://www.gravatar.com/avatar/\nEmail: \nSize: -1\nImage: mp\nCacheValidity: 1.00:00:00\nCachingEnabled: True", gravatarImageSource.ToString());
+		Assert.Equal("Uri: https://www.gravatar.com/avatar/\nEmail: \nSize: \nImage: mp\nCacheValidity: 1.00:00:00\nCachingEnabled: True", gravatarImageSource.ToString());
 	}
 }
