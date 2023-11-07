@@ -82,9 +82,10 @@ public partial class MediaManager
 	/// Invokes the seek operation on the platform element.
 	/// </summary>
 	/// <param name="position">The position to seek to.</param>
-	public ValueTask Seek(TimeSpan position)
+	/// <param name="token"><see cref="CancellationToken"/> ></param>
+	public ValueTask Seek(TimeSpan position, CancellationToken token)
 	{
-		return PlatformSeek(position);
+		return PlatformSeek(position, token);
 	}
 
 	/// <summary>
@@ -182,7 +183,8 @@ public partial class MediaManager
 	/// Invokes the platform seek functionality and seeks to a specific position.
 	/// </summary>
 	/// <param name="position">The position to seek to.</param>
-	protected virtual partial ValueTask PlatformSeek(TimeSpan position);
+	/// <param name="token"><see cref="CancellationToken"/></param>
+	protected virtual partial ValueTask PlatformSeek(TimeSpan position, CancellationToken token);
 
 	/// <summary>
 	/// Invokes the platform stop functionality and stops media playback.
@@ -239,7 +241,11 @@ public partial class MediaManager
 #if !(WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN)
 partial class MediaManager
 {
-	protected virtual partial ValueTask PlatformSeek(TimeSpan position) => ValueTask.CompletedTask;
+	protected virtual partial ValueTask PlatformSeek(TimeSpan position, CancellationToken token)
+	{
+		token.ThrowIfCancellationRequested();
+		return ValueTask.CompletedTask;
+	}
 	protected virtual partial void PlatformPlay() { }
 	protected virtual partial void PlatformPause() { }
 	protected virtual partial void PlatformStop() { }

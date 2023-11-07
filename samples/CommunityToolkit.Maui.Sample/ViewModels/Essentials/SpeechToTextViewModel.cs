@@ -45,11 +45,11 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	public ObservableCollection<Locale> Locales { get; } = new();
 
 	[RelayCommand]
-	async Task SetLocales()
+	async Task SetLocales(CancellationToken token)
 	{
 		Locales.Clear();
 
-		var locales = await textToSpeech.GetLocalesAsync();
+		var locales = await textToSpeech.GetLocalesAsync().WaitAsync(token);
 
 		foreach (var locale in locales.OrderBy(x => x.Language).ThenBy(x => x.Name))
 		{
@@ -80,7 +80,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 			var isGranted = await speechToText.RequestPermissions(cancellationToken);
 			if (!isGranted)
 			{
-				await Toast.Make("Permission not granted").Show(CancellationToken.None);
+				await Toast.Make("Permission not granted").Show(cancellationToken);
 				return;
 			}
 
@@ -106,7 +106,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 			}
 			else
 			{
-				await Toast.Make(recognitionResult.Exception?.Message ?? "Unable to recognize speech").Show(CancellationToken.None);
+				await Toast.Make(recognitionResult.Exception?.Message ?? "Unable to recognize speech").Show(cancellationToken);
 			}
 
 			if (RecognitionText is beginSpeakingPrompt)

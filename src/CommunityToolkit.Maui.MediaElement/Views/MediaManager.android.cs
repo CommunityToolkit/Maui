@@ -243,8 +243,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		Player.Pause();
 	}
 
-	protected virtual partial ValueTask PlatformSeek(TimeSpan position)
+	protected virtual partial ValueTask PlatformSeek(TimeSpan position, CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
+
 		Player?.SeekTo((long)position.TotalMilliseconds);
 
 		return ValueTask.CompletedTask;

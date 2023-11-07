@@ -86,8 +86,10 @@ partial class MediaManager : IDisposable
 		}
 	}
 
-	protected virtual async partial ValueTask PlatformSeek(TimeSpan position)
+	protected virtual async partial ValueTask PlatformSeek(TimeSpan position, CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
+
 		if (Player?.MediaPlayer.CanSeek ?? false)
 		{
 			if (Dispatcher.IsDispatchRequired)

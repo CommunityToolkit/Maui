@@ -307,7 +307,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 
 	static async void OnValuePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		await ((ValidationBehavior)bindable).OnValuePropertyChanged();
+		await ((ValidationBehavior)bindable).OnValuePropertyChanged(CancellationToken.None);
 		OnValidationPropertyChanged(bindable, oldValue, newValue);
 	}
 
@@ -322,9 +322,9 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 
 	void OnIsValidPropertyChanged() => IsNotValid = !IsValid;
 
-	async Task OnValuePropertyChanged()
+	async Task OnValuePropertyChanged(CancellationToken token)
 	{
-		await isAttachingSemaphoreSlim.WaitAsync();
+		await isAttachingSemaphoreSlim.WaitAsync(token);
 
 		try
 		{

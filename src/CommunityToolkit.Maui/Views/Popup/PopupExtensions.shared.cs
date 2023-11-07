@@ -13,12 +13,8 @@ public static partial class PopupExtensions
 	/// <summary>
 	/// Displays a popup.
 	/// </summary>
-	/// <param name="page">
-	/// The current <see cref="Page"/>.
-	/// </param>
-	/// <param name="popup">
-	/// The <see cref="Popup"/> to display.
-	/// </param>
+	/// <param name="page">The current <see cref="Page"/>.</param>
+	/// <param name="popup">The <see cref="Popup"/> to display.</param>
 	public static void ShowPopup<TPopup>(this Page page, TPopup popup) where TPopup : Popup
 	{
 #if WINDOWS
@@ -53,16 +49,13 @@ public static partial class PopupExtensions
 	/// <summary>
 	/// Displays a popup and returns a result.
 	/// </summary>
-	/// <param name="page">
-	/// The current <see cref="Page"/>.
-	/// </param>
-	/// <param name="popup">
-	/// The <see cref="Popup"/> to display.
-	/// </param>
+	/// <param name="page">The current <see cref="Page"/>.</param>
+	/// <param name="popup">The <see cref="Popup"/> to display.</param>
+	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>
 	/// A task that will complete once the <see cref="Popup"/> is dismissed.
 	/// </returns>
-	public static Task<object?> ShowPopupAsync<TPopup>(this Page page, TPopup popup) where TPopup : Popup
+	public static Task<object?> ShowPopupAsync<TPopup>(this Page page, TPopup popup, CancellationToken token) where TPopup : Popup
 	{
 #if WINDOWS
 		// TODO: This is a workaround for https://github.com/dotnet/maui/issues/12970. Remove this `#if Windows` block when the issue is closed   
@@ -74,7 +67,7 @@ public static partial class PopupExtensions
 
 			try
 			{
-				var result = await CreateAndShowPopupAsync(page, popup);
+				var result = await CreateAndShowPopupAsync(page, popup, token);
 
 				taskCompletionSource.TrySetResult(result);
 			}
@@ -85,11 +78,11 @@ public static partial class PopupExtensions
 		}
 		page.GetCurrentPage().Loaded += handler;
 
-		return taskCompletionSource.Task;
+		return taskCompletionSource.Task.WaitAsync(token);
 #else
 		if (page.IsPlatformEnabled)
 		{
-			return CreateAndShowPopupAsync(page, popup);
+			return CreateAndShowPopupAsync(page, popup, token);
 		}
 		else
 		{
@@ -101,7 +94,7 @@ public static partial class PopupExtensions
 
 				try
 				{
-					var result = await CreateAndShowPopupAsync(page, popup);
+					var result = await CreateAndShowPopupAsync(page, popup, token);
 
 					taskCompletionSource.TrySetResult(result);
 				}
@@ -121,7 +114,7 @@ public static partial class PopupExtensions
 	static void CreatePopup(Page page, Popup popup)
 	{
 		var mauiContext = GetMauiContext(page);
-		popup.Parent = PageExtensions.GetCurrentPage(page);
+		popup.Parent = page.GetCurrentPage();
 		var platformPopup = popup.ToHandler(mauiContext);
 		platformPopup.Invoke(nameof(IPopup.OnOpened));
 	}
@@ -141,14 +134,14 @@ public static partial class PopupExtensions
 #endif
 	}
 
-	static Task<object?> CreateAndShowPopupAsync<TPopup>(this Page page, TPopup popup) where TPopup : Popup
+	static Task<object?> CreateAndShowPopupAsync<TPopup>(this Page page, TPopup popup, CancellationToken token) where TPopup : Popup
 	{
 #if WINDOWS
-		return PlatformShowPopupAsync(popup, GetMauiContext(page));
+		return PlatformShowPopupAsync(popup, GetMauiContext(page), token);
 #else
 		CreatePopup(page, popup);
 
-		return popup.Result;
+		return popup.Result.WaitAsync(token);
 #endif
 	}
 }

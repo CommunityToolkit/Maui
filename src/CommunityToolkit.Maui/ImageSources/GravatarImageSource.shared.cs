@@ -31,7 +31,7 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 
 	static readonly Lazy<HttpClient> singletonHttpClientHolder = new();
 
-	int gravatarSize = -1;
+	int? gravatarSize;
 	Uri? lastDispatch;
 
 	/// <summary>Initializes a new instance of the <see cref="GravatarImageSource"/> class.</summary>
@@ -87,10 +87,20 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 
 	/// <summary>Gets or sets the image size.</summary>
 	/// <remarks>Size is limited to be in the range of 1 to 2048.</remarks>
-	int GravatarSize
+	int? GravatarSize
 	{
 		get => gravatarSize;
-		set => gravatarSize = Math.Clamp(value, 1, 2048);
+		set
+		{
+			if (value is null)
+			{
+				gravatarSize = null;
+			}
+			else
+			{
+				gravatarSize = Math.Clamp(value.Value, 1, 2048);
+			}
+		}
 	}
 
 	static HttpClient SingletonHttpClient => singletonHttpClientHolder.Value;
@@ -144,13 +154,13 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 	static async void OnDefaultImagePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		GravatarImageSource gravatarImageSource = (GravatarImageSource)bindable;
-		await gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, (DefaultImage)newValue);
+		await gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, (DefaultImage)newValue, gravatarImageSource.CancellationTokenSource.Token);
 	}
 
 	static async void OnEmailPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		GravatarImageSource gravatarImageSource = (GravatarImageSource)bindable;
-		await gravatarImageSource.HandleNewUriRequested((string?)newValue, gravatarImageSource.Image);
+		await gravatarImageSource.HandleNewUriRequested((string?)newValue, gravatarImageSource.Image, gravatarImageSource.CancellationTokenSource.Token);
 	}
 
 	static async void OnSizePropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -161,19 +171,19 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 		}
 
 		GravatarImageSource gravatarImageSource = (GravatarImageSource)bindable;
-		if (gravatarImageSource.GravatarSize is -1)
+		if (gravatarImageSource.GravatarSize is null)
 		{
 			gravatarImageSource.GravatarSize = intNewValue;
 			return;
 		}
 
 		gravatarImageSource.GravatarSize = Math.Min(gravatarImageSource.ParentWidth, gravatarImageSource.ParentHeight);
-		await gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, gravatarImageSource.Image);
+		await gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, gravatarImageSource.Image, gravatarImageSource.CancellationTokenSource.Token);
 	}
 
-	Task HandleNewUriRequested(string? email, DefaultImage image)
+	Task HandleNewUriRequested(string? email, DefaultImage image, CancellationToken token)
 	{
-		if (GravatarSize is -1)
+		if (GravatarSize is null)
 		{
 			return Task.CompletedTask;
 		}
@@ -182,10 +192,10 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 			? new Uri($"{defaultGravatarImageAddress}?s={GravatarSize}")
 			: new Uri($"{defaultGravatarImageAddress}{email?.GetMd5Hash(string.Empty).ToLowerInvariant()}?s={GravatarSize}&d={DefaultGravatarName(image)}");
 
-		return OnUriChanged();
+		return OnUriChanged(token);
 	}
 
-	async Task OnUriChanged()
+	async Task OnUriChanged(CancellationToken token)
 	{
 		if (Uri.Equals(lastDispatch))
 		{
@@ -194,10 +204,10 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 
 		try
 		{
-			await Task.Delay(cancellationTokenSourceTimeout);
+			await Task.Delay(cancellationTokenSourceTimeout, token);
 			CancellationTokenSource?.Cancel();
 			lastDispatch = Uri;
-			await Dispatcher.DispatchIfRequiredAsync(OnSourceChanged);
+			await Dispatcher.DispatchIfRequiredAsync(OnSourceChanged).WaitAsync(token);
 		}
 		catch (TaskCanceledException)
 		{

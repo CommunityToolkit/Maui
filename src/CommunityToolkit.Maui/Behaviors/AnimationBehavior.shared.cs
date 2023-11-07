@@ -14,7 +14,7 @@ public class AnimationBehavior : EventToCommandBehavior
 	/// </summary>
 	public static readonly BindableProperty AnimationTypeProperty =
 		BindableProperty.Create(nameof(AnimationType), typeof(BaseAnimation), typeof(AnimationBehavior));
-	
+
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="AnimationType"/> property.
 	/// </summary>
@@ -42,7 +42,7 @@ public class AnimationBehavior : EventToCommandBehavior
 		get => (BaseAnimation?)GetValue(AnimationTypeProperty);
 		set => SetValue(AnimationTypeProperty, value);
 	}
-	
+
 	/// <summary>
 	/// <see cref="CancellationToken"/> for animation.
 	/// </summary>
@@ -91,15 +91,18 @@ public class AnimationBehavior : EventToCommandBehavior
 	/// <inheritdoc/>
 	protected override async void OnTriggerHandled(object? sender = null, object? eventArgs = null)
 	{
-		await OnAnimate();
+		await OnAnimate(CancellationToken.None);
 
 		base.OnTriggerHandled(sender, eventArgs);
 	}
 
 	static object CreateAnimateCommand(BindableObject bindable)
-		=> new Command(async () => await ((AnimationBehavior)bindable).OnAnimate().ConfigureAwait(false));
+	{
+		var animationBehavior =  (AnimationBehavior)bindable;
+		return new Command(async () => await animationBehavior.OnAnimate(animationBehavior.AnimationCancellationToken).ConfigureAwait(false));
+	}
 
-	Task OnAnimate()
+	Task OnAnimate(CancellationToken token)
 	{
 		if (View is null || AnimationType is null)
 		{
@@ -110,7 +113,7 @@ public class AnimationBehavior : EventToCommandBehavior
 
 		try
 		{
-			return AnimationType.Animate(View, AnimationCancellationToken);
+			return AnimationType.Animate(View, token);
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInAnimations)
 		{

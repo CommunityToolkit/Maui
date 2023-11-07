@@ -185,12 +185,12 @@ public partial class MediaElementHandler
 	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> should be of type <see cref="MediaSeekRequestedEventArgs"/>, otherwise nothing happens.</remarks>
-	public static void MapSeekRequested(MediaElementHandler handler, MediaElement MediaElement, object? args)
+	public static async void MapSeekRequested(MediaElementHandler handler, MediaElement MediaElement, object? args)
 	{
 		ArgumentNullException.ThrowIfNull(args);
 
 		var positionArgs = (MediaSeekRequestedEventArgs)args;
-		handler.mediaManager?.Seek(positionArgs.RequestedPosition);
+		await (handler.mediaManager?.Seek(positionArgs.RequestedPosition, CancellationToken.None) ?? ValueTask.CompletedTask);
 	}
 
 	/// <summary>

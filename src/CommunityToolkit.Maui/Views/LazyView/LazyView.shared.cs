@@ -10,8 +10,10 @@ public class LazyView<TView> : LazyView where TView : View, new()
 	/// This method initializes <see cref="LazyView{TView}"/>.
 	/// </summary>
 	/// <returns><see cref="ValueTask"/></returns>
-	public override ValueTask LoadViewAsync()
+	public override ValueTask LoadViewAsync(CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
+		
 		Content = new TView { BindingContext = BindingContext };
 
 		SetHasLazyViewLoaded(true);
@@ -41,7 +43,7 @@ public abstract class LazyView : ContentView
 	/// Use this method to do the initialization of the <see cref="View"/> and change the status HasViewLoaded value here.
 	/// </summary>
 	/// <returns><see cref="ValueTask"/></returns>
-	public abstract ValueTask LoadViewAsync();
+	public abstract ValueTask LoadViewAsync(CancellationToken token);
 
 	/// <inheritdoc/>
 	protected override void OnBindingContextChanged()

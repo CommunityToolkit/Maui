@@ -83,8 +83,10 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
-	protected virtual partial ValueTask PlatformSeek(TimeSpan position)
+	protected virtual partial ValueTask PlatformSeek(TimeSpan position, CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
+		
 		if (Player is null)
 		{
 			return ValueTask.CompletedTask;

@@ -207,10 +207,10 @@ public class PopupTests : BaseHandlerTest
 			ResultWhenUserTapsOutsideOfPopup = resultWhenUserTapsOutsideOfPopup;
 		}
 
-		protected override Task OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup)
+		protected override Task OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup, CancellationToken token)
 		{
 			((IPopup)this).HandlerCompleteTCS.TrySetResult();
-			return base.OnClosed(result, wasDismissedByTappingOutsideOfPopup);
+			return base.OnClosed(result, wasDismissedByTappingOutsideOfPopup, token);
 		}
 	}
 

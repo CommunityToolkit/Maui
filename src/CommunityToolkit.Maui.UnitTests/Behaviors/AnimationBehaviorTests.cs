@@ -104,13 +104,13 @@ public class AnimationBehaviorTests : BaseTest
 		public event EventHandler? AnimationStarted;
 		public event EventHandler? AnimationEnded;
 
-		public override async Task Animate(VisualElement element)
+		public override async Task Animate(VisualElement element, CancellationToken token)
 		{
 			ArgumentNullException.ThrowIfNull(element);
 
 			AnimationStarted?.Invoke(this, EventArgs.Empty);
 
-			await element.RotateTo(70);
+			await element.RotateTo(70).WaitAsync(token);
 
 			HasAnimated = true;
 

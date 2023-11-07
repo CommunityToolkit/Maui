@@ -72,7 +72,7 @@ public partial class Toast : IToast
 	/// <summary>
 	/// Show Toast
 	/// </summary>
-	public virtual Task Show(CancellationToken token = default)
+	public virtual Task Show(CancellationToken token)
 	{
 #if WINDOWS
 		return ShowPlatform(token);
@@ -85,7 +85,7 @@ public partial class Toast : IToast
 	/// <summary>
 	/// Dismiss Toast
 	/// </summary>
-	public virtual Task Dismiss(CancellationToken token = default)
+	public virtual Task Dismiss(CancellationToken token)
 	{
 #if WINDOWS
 		return DismissPlatform(token);

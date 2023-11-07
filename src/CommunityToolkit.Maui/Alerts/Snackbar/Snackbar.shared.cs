@@ -110,12 +110,12 @@ public partial class Snackbar : ISnackbar
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
-	public virtual Task Show(CancellationToken token = default) => ShowPlatform(token);
+	public virtual Task Show(CancellationToken token) => ShowPlatform(token);
 
 	/// <summary>
 	/// Dismiss Snackbar
 	/// </summary>
-	public virtual Task Dismiss(CancellationToken token = default) => DismissPlatform(token);
+	public virtual Task Dismiss(CancellationToken token) => DismissPlatform(token);
 
 	internal static TimeSpan GetDefaultTimeSpan() => TimeSpan.FromSeconds(3);
 
