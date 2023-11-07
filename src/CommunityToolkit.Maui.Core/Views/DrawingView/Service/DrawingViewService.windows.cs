@@ -27,8 +27,6 @@ public static class DrawingViewService
 	{
 		var canvas = GetImageInternal(lines, imageSize, background);
 
-		token.ThrowIfCancellationRequested();
-
 		return GetCanvasRenderTargetStream(canvas, token);
 	}
 
@@ -45,8 +43,6 @@ public static class DrawingViewService
 	public static ValueTask<Stream> GetImageStream(IList<PointF> points, Size imageSize, float lineWidth, Color strokeColor, Paint? background, CancellationToken token)
 	{
 		var canvas = GetImageInternal(points, imageSize, lineWidth, strokeColor, background);
-
-		token.ThrowIfCancellationRequested();
 
 		return GetCanvasRenderTargetStream(canvas, token);
 	}
