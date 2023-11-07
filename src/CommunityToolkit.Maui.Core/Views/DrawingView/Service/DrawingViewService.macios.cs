@@ -23,8 +23,11 @@ public static class DrawingViewService
 		{
 			return ValueTask.FromResult(Stream.Null);
 		}
+		
+		var imageAsPng = GetMaximumUIImage(image, imageSize.Width, imageSize.Height)
+							.AsPNG() ?? throw new InvalidOperationException("Unable to convert image to PNG");
 
-		return ValueTask.FromResult(GetMaximumUIImage(image, imageSize.Width, imageSize.Height).AsPNG().AsStream());
+		return ValueTask.FromResult(imageAsPng.AsStream());
 	}
 
 	/// <summary>
@@ -48,7 +51,10 @@ public static class DrawingViewService
 			return ValueTask.FromResult(Stream.Null);
 		}
 
-		return ValueTask.FromResult(GetMaximumUIImage(image, imageSize.Width, imageSize.Height).AsPNG().AsStream());
+		var imageAsPng = GetMaximumUIImage(image, imageSize.Width, imageSize.Height)
+							.AsPNG() ?? throw new InvalidOperationException("Unable to convert image to PNG");
+
+		return ValueTask.FromResult(imageAsPng.AsStream());
 	}
 
 	static UIImage? GetUIImageForPoints(ICollection<PointF> points,
