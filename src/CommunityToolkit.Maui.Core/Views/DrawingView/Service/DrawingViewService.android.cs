@@ -26,8 +26,6 @@ public static class DrawingViewService
 		token.ThrowIfCancellationRequested();
 
 		var image = GetBitmapForLines(lines, background);
-
-		token.ThrowIfCancellationRequested();
 		
 		return ValueTask.FromResult(GetBitmapStream(image, imageSize));
 	}
@@ -47,8 +45,6 @@ public static class DrawingViewService
 		token.ThrowIfCancellationRequested();
 
 		var image = GetBitmapForPoints(points, lineWidth, strokeColor, background);
-
-		token.ThrowIfCancellationRequested();
 
 		return ValueTask.FromResult(GetBitmapStream(image, imageSize));
 	}
