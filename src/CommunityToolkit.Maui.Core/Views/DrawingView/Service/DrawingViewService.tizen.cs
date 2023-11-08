@@ -18,7 +18,7 @@ public static class DrawingViewService
 	/// <param name="background">Image background</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(IList<PointF> points, Size imageSize, float lineWidth, Color strokeColor, Paint? background, CancellationToken token)
+	public static async ValueTask<Stream> GetImageStream(IList<PointF> points, Size imageSize, float lineWidth, Color strokeColor, Paint? background, CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 
@@ -30,7 +30,7 @@ public static class DrawingViewService
 		}
 
 		// Defer to thread pool thread https://github.com/CommunityToolkit/Maui/pull/692#pullrequestreview-1150202727
-		return new ValueTask<Stream>(Task.Run<Stream>(() =>
+		var stream = await Task.Run<Stream>(() =>
 		{
 			var resized = image.Resize(new SKImageInfo((int)imageSize.Width, (int)imageSize.Height, SKColorType.Bgra8888, SKAlphaType.Opaque), SKFilterQuality.High);
 			var data = resized.Encode(SKEncodedImageFormat.Png, 100);
@@ -41,6 +41,8 @@ public static class DrawingViewService
 
 			return stream;
 		}));
+
+		return stream;
 	}
 
 	/// <summary>
@@ -51,7 +53,7 @@ public static class DrawingViewService
 	/// <param name="background">Image background</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background, CancellationToken token)
+	public static async ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background, CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 
@@ -63,7 +65,7 @@ public static class DrawingViewService
 		}
 
 		// Defer to thread pool thread https://github.com/CommunityToolkit/Maui/pull/692#pullrequestreview-1150202727
-		return new ValueTask<Stream>(Task.Run<Stream>(() =>
+		var stream = await Task.Run<Stream>(() =>
 		{
 			var resized = image.Resize(new SKImageInfo((int)imageSize.Width, (int)imageSize.Height, SKColorType.Bgra8888, SKAlphaType.Opaque), SKFilterQuality.High);
 			var data = resized.Encode(SKEncodedImageFormat.Png, 100);
@@ -74,12 +76,12 @@ public static class DrawingViewService
 
 			return stream;
 		}));
+
+		return stream;
 	}
 
 	static (SKBitmap?, SizeF offset) GetBitmap(in ICollection<PointF> points, float maxLineWidth)
 	{
-		token.ThrowIfCancellationRequested();
-
 		if (points.Count is 0)
 		{
 			return (null, SizeF.Zero);
