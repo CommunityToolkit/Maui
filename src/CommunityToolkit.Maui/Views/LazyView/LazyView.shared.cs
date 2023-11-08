@@ -13,7 +13,7 @@ public class LazyView<TView> : LazyView where TView : View, new()
 	public override ValueTask LoadViewAsync(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
-		
+
 		Content = new TView { BindingContext = BindingContext };
 
 		SetHasLazyViewLoaded(true);

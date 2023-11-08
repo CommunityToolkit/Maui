@@ -13,12 +13,12 @@ public class AnimationBehavior : EventToCommandBehavior
 	/// </summary>
 	public static readonly BindableProperty AnimationTypeProperty =
 		BindableProperty.Create(nameof(AnimationType), typeof(BaseAnimation), typeof(AnimationBehavior));
-	
+
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="AnimateCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty AnimateCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(AnimateCommand), typeof(Command<CancellationToken>), typeof(AnimationBehavior), default, BindingMode.OneWayToSource, propertyChanging: OnAnimateCommandChanging,  defaultValueCreator: CreateAnimateCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(AnimateCommand), typeof(Command<CancellationToken>), typeof(AnimationBehavior), default, BindingMode.OneWayToSource, propertyChanging: OnAnimateCommandChanging, defaultValueCreator: CreateAnimateCommand).BindableProperty;
 
 	TapGestureRecognizer? tapGestureRecognizer;
 
@@ -85,12 +85,13 @@ public class AnimationBehavior : EventToCommandBehavior
 		var animationBehavior = (AnimationBehavior)bindable;
 		return new Command<CancellationToken>(async token => await animationBehavior.OnAnimate(token).ConfigureAwait(false));
 	}
-	
+
 	static void OnAnimateCommandChanging(BindableObject bindable, object oldValue, object newValue)
 	{
 		if (newValue is not Command<CancellationToken>)
 		{
-			throw new InvalidOperationException($"{nameof(AnimateCommand)} must of Type {AnimateCommand.GetType()}");
+			var animationBehavior = (AnimationBehavior)bindable;
+			throw new InvalidOperationException($"{nameof(AnimateCommand)} must of Type {animationBehavior.AnimateCommand.GetType().FullName}");
 		}
 	}
 

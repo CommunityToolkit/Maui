@@ -59,7 +59,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 				TimeSpan.FromSeconds(30),
 				options,
 				DisplayCustomSnackbarButton);
-			
+
 			var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 			await customSnackbar.Show(cts.Token);
 
@@ -71,7 +71,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 			{
 				var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 				await customSnackbar.Dismiss(cts.Token);
-				
+
 				customSnackbar.Dispose();
 			}
 

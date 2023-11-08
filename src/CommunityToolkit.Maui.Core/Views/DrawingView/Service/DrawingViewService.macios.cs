@@ -28,7 +28,7 @@ public static class DrawingViewService
 		}
 
 		token.ThrowIfCancellationRequested();
-		
+
 		var imageAsPng = GetMaximumUIImage(image, imageSize.Width, imageSize.Height)
 							.AsPNG() ?? throw new InvalidOperationException("Unable to convert image to PNG");
 

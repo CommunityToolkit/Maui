@@ -52,7 +52,7 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 			new Size(points.Max(x => x.X) - points.Min(x => x.X), points.Max(x => x.Y) - points.Min(x => x.Y)),
 			Colors.Gray,
 			token);
-			
+
 		GestureImage.Source = ImageSource.FromStream(() => stream);
 	}
 

@@ -19,7 +19,7 @@ public static class DrawingViewService
 	{
 		token.ThrowIfCancellationRequested();
 		return ValueTask.FromResult(Stream.Null);
-	} 
+	}
 
 	/// <summary>
 	/// Get image stream from lines
@@ -31,7 +31,7 @@ public static class DrawingViewService
 	/// <returns>Image stream</returns>
 	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background, CancellationToken token)
 	{
-		token.ThrowIfCancellationRequested(); 
+		token.ThrowIfCancellationRequested();
 		return ValueTask.FromResult(Stream.Null);
 	}
 }

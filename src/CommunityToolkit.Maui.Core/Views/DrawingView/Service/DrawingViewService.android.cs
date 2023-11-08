@@ -26,7 +26,7 @@ public static class DrawingViewService
 		token.ThrowIfCancellationRequested();
 
 		var image = GetBitmapForLines(lines, background);
-		
+
 		return ValueTask.FromResult(GetBitmapStream(image, imageSize));
 	}
 

@@ -135,7 +135,7 @@ public partial class MediaManager : IDisposable
 	protected virtual partial ValueTask PlatformSeek(TimeSpan position, CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
-		
+
 		if (PlayerItem is null || Player?.CurrentItem is null
 			|| Player?.Status != AVPlayerStatus.ReadyToPlay)
 		{

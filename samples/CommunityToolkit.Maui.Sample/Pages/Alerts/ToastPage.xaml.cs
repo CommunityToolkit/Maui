@@ -16,7 +16,7 @@ public partial class ToastPage : BasePage<ToastViewModel>
 	async void ShowToastButtonClicked(object? sender, EventArgs args)
 	{
 		var toast = Toast.Make("This is a default Toast.");
-		
+
 		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 		await toast.Show(cts.Token);
 	}
@@ -24,7 +24,7 @@ public partial class ToastPage : BasePage<ToastViewModel>
 	async void ShowCustomToastButtonClicked(object? sender, EventArgs args)
 	{
 		var toast = Toast.Make("This is a big Toast.", ToastDuration.Long, 30d);
-		
+
 		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 		await toast.Show(cts.Token);
 	}
