@@ -27,6 +27,10 @@ public partial class MediaManager
 	/// <param name="dispatcher">The <see cref="IDispatcher"/> instance that allows propagation to the main thread.</param>
 	public MediaManager(IMauiContext context, IMediaElement mediaElement, IDispatcher dispatcher)
 	{
+		ArgumentNullException.ThrowIfNull(context);
+		ArgumentNullException.ThrowIfNull(mediaElement);
+		ArgumentNullException.ThrowIfNull(dispatcher);
+
 		MauiContext = context;
 		Dispatcher = dispatcher;
 		MediaElement = mediaElement;

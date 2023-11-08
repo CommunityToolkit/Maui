@@ -285,7 +285,7 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateSpeed()
 	{
-		if (PlayerViewController?.Player is null || MediaElement is null)
+		if (PlayerViewController?.Player is null)
 		{
 			return;
 		}

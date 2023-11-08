@@ -119,7 +119,7 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateAspect()
 	{
-		if (Player is null || MediaElement is null)
+		if (Player is null)
 		{
 			return;
 		}
@@ -192,7 +192,7 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateSpeed()
 	{
-		if (MediaElement is null || Player is null)
+		if (Player is null)
 		{
 			return;
 		}
@@ -208,7 +208,7 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateShouldShowPlaybackControls()
 	{
-		if (MediaElement is null || VideoView is null)
+		if (VideoView is null)
 		{
 			return;
 		}
@@ -216,7 +216,7 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdatePosition()
 	{
-		if (MediaElement is null || Player is null)
+		if (Player is null)
 		{
 			return;
 		}
@@ -234,7 +234,7 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateVolume()
 	{
-		if (MediaElement is null || Player is null)
+		if (Player is null)
 		{
 			return;
 		}
@@ -268,7 +268,7 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateShouldMute()
 	{
-		if (Player is null || MediaElement is null)
+		if (Player is null)
 		{
 			return;
 		}
@@ -278,7 +278,7 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateShouldLoopPlayback()
 	{
-		if (MediaElement is null || Player is null || VideoView is null)
+		if (Player is null || VideoView is null)
 		{
 			return;
 		}
