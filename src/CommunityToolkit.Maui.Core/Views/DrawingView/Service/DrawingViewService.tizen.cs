@@ -26,7 +26,7 @@ public static class DrawingViewService
 
 		if (image is null)
 		{
-			return ValueTask.FromResult(Stream.Null);
+			return Stream.Null;
 		}
 
 		// Defer to thread pool thread https://github.com/CommunityToolkit/Maui/pull/692#pullrequestreview-1150202727
@@ -40,7 +40,7 @@ public static class DrawingViewService
 			stream.Seek(0, SeekOrigin.Begin);
 
 			return stream;
-		}));
+		}, token);
 
 		return stream;
 	}
@@ -61,7 +61,7 @@ public static class DrawingViewService
 
 		if (image is null)
 		{
-			return ValueTask.FromResult(Stream.Null);
+			return Stream.Null;
 		}
 
 		// Defer to thread pool thread https://github.com/CommunityToolkit/Maui/pull/692#pullrequestreview-1150202727
@@ -75,7 +75,7 @@ public static class DrawingViewService
 			stream.Seek(0, SeekOrigin.Begin);
 
 			return stream;
-		}));
+		}, token);
 
 		return stream;
 	}
