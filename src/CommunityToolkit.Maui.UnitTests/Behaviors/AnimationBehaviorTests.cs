@@ -49,7 +49,7 @@ public class AnimationBehaviorTests : BaseTest
 		addBehavior.Should().Throw<InvalidOperationException>();
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task AnimateCommandStartsAnimation()
 	{
 		bool animationStarted = false, animationEnded = false;

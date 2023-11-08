@@ -16,7 +16,7 @@ public class FolderPickerTests
 		folderPickerInstance.Should().BeSameAs(folderPickerMock);
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task PickAsyncFailsOnNet()
 	{
 		FolderPicker.SetDefault(new FolderPickerImplementation());
@@ -28,7 +28,7 @@ public class FolderPickerTests
 		Assert.Throws<NotImplementedException>(result.EnsureSuccess);
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task PickAsyncWithInitialPathFailsOnNet()
 	{
 		FolderPicker.SetDefault(new FolderPickerImplementation());

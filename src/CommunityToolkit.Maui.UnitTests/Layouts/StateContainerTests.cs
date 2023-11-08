@@ -104,7 +104,7 @@ public class StateContainerTests : BaseTest
 		Assert.True(StateContainer.GetCanStateChange(layout));
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task StateContainer_DefaultAnimation()
 	{
 		layout.EnableAnimations();
@@ -122,7 +122,7 @@ public class StateContainerTests : BaseTest
 		Assert.Equal(StateKey.Error, StateContainer.GetCurrentState(layout));
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task StateContainer_CustomAnimation()
 	{
 		layout.EnableAnimations();
@@ -133,12 +133,12 @@ public class StateContainerTests : BaseTest
 
 		var beforeStateChangeAnimation = new Animation
 		{
-			Duration = 1
+			Duration = 0.5
 		};
 
 		var afterStateChangeAnimation = new Animation
 		{
-			Duration = 1
+			Duration = 0.5
 		};
 
 		var changeStateWithAnimationTask = StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, beforeStateChangeAnimation, afterStateChangeAnimation, CancellationToken.None);
@@ -150,7 +150,7 @@ public class StateContainerTests : BaseTest
 		Assert.Equal(StateKey.Error, StateContainer.GetCurrentState(layout));
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task StateContainer_FuncAnimation()
 	{
 		layout.EnableAnimations();
@@ -168,10 +168,10 @@ public class StateContainerTests : BaseTest
 		Assert.True(StateContainer.GetCanStateChange(layout));
 		Assert.Equal(StateKey.Error, StateContainer.GetCurrentState(layout));
 
-		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateTo(0.75, 1000).WaitAsync(token);
+		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateTo(0.75, 500).WaitAsync(token);
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task StateContainer_DefaultAnimation_Timeout()
 	{
 		layout.EnableAnimations();
@@ -184,7 +184,7 @@ public class StateContainerTests : BaseTest
 		await Assert.ThrowsAsync<TaskCanceledException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, cancelledTokenSource.Token));
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task StateContainer_CustomAnimation_Timeout()
 	{
 		layout.EnableAnimations();
@@ -207,7 +207,7 @@ public class StateContainerTests : BaseTest
 		await Assert.ThrowsAsync<TaskCanceledException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, beforeStateChangeAnimation, afterStateChangeAnimation, cancelledTokenSource.Token));
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task StateContainer_FuncAnimation_Timeout()
 	{
 		layout.EnableAnimations();
@@ -222,7 +222,7 @@ public class StateContainerTests : BaseTest
 		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateTo(0.75, 1000).WaitAsync(token);
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task StateContainer_ChangingStateWhenCanStateChangePropertyIsFalse_DefaultAnimation()
 	{
 		layout.EnableAnimations();
@@ -249,7 +249,7 @@ public class StateContainerTests : BaseTest
 		Assert.True(StateContainer.GetCanStateChange(layout));
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task StateContainer_ChangingStateWhenCanStateChangePropertyIsFalse_CustomBeforeAnimation()
 	{
 		layout.EnableAnimations();
@@ -281,7 +281,7 @@ public class StateContainerTests : BaseTest
 		Assert.True(StateContainer.GetCanStateChange(layout));
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task StateContainer_ChangingStateWhenCanStateChangePropertyIsFalse_CustomAfterAnimation()
 	{
 		layout.EnableAnimations();
@@ -313,7 +313,7 @@ public class StateContainerTests : BaseTest
 		Assert.True(StateContainer.GetCanStateChange(layout));
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task StateContainer_ChangingStateWhenCanStateChangePropertyIsFalse_CustomBeforeAndAfterAnimation()
 	{
 		layout.EnableAnimations();
@@ -350,7 +350,7 @@ public class StateContainerTests : BaseTest
 		Assert.True(StateContainer.GetCanStateChange(layout));
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task StateContainer_ChangingStateWhenCanStateChangePropertyIsFalse_NullAnimations()
 	{
 		var exception = await Assert.ThrowsAsync<ArgumentException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, (Animation?)null, null, CancellationToken.None));
@@ -359,7 +359,7 @@ public class StateContainerTests : BaseTest
 		Assert.True(StateContainer.GetCanStateChange(layout));
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task StateContainer_ChangingStateWhenCanStateChangePropertyIsFalse_NullFuncs()
 	{
 		var exception = await Assert.ThrowsAsync<ArgumentException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, (Func<VisualElement, CancellationToken, Task>?)null, null, CancellationToken.None));
@@ -368,7 +368,7 @@ public class StateContainerTests : BaseTest
 		Assert.True(StateContainer.GetCanStateChange(layout));
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task StateContainer_ChangingStateWhenCanStateChangePropertyIsFalse_CustomBeforeAnimationFuncs()
 	{
 		layout.EnableAnimations();
@@ -394,10 +394,10 @@ public class StateContainerTests : BaseTest
 
 		Assert.True(StateContainer.GetCanStateChange(layout));
 
-		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateTo(0.75, 1000).WaitAsync(token);
+		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateTo(0.75, 500).WaitAsync(token);
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task StateContainer_ChangingStateWhenCanStateChangePropertyIsFalse_CustomAfterAnimationFuncs()
 	{
 		layout.EnableAnimations();
@@ -423,10 +423,10 @@ public class StateContainerTests : BaseTest
 
 		Assert.True(StateContainer.GetCanStateChange(layout));
 
-		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateTo(0.75, 1000).WaitAsync(token);
+		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateTo(0.75, 500).WaitAsync(token);
 	}
 
-	[Fact(Timeout = 5000)]
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task StateContainer_ChangingStateWhenCanStateChangePropertyIsFalse_CustomBeforeAndAfterAnimationFuncs()
 	{
 		layout.EnableAnimations();
@@ -452,7 +452,7 @@ public class StateContainerTests : BaseTest
 
 		Assert.True(StateContainer.GetCanStateChange(layout));
 
-		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateTo(0.75, 1000).WaitAsync(token);
+		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateTo(0.75, 500).WaitAsync(token);
 	}
 
 	[Fact]

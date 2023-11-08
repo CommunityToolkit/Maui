@@ -342,7 +342,7 @@ public class GravatarImageSourceTests : BaseHandlerTest
 		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), ((GravatarImageSource)testControl.Image).Uri);
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task TestDefaultStream()
 	{
 		CancellationTokenSource cts = new();
@@ -351,7 +351,7 @@ public class GravatarImageSourceTests : BaseHandlerTest
 		stream.Should().NotBeNull();
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task TestDefaultStreamCanceled()
 	{
 		CancellationTokenSource cts = new();

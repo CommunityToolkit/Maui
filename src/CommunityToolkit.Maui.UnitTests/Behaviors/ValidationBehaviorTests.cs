@@ -28,7 +28,7 @@ public class ValidationBehaviorTests : BaseTest
 		Assert.True(behavior.IsValid);
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ValidValue_ValidStyle()
 	{
 		// Arrange
@@ -60,7 +60,7 @@ public class ValidationBehaviorTests : BaseTest
 		Assert.Equal(entry.Style, validStyle);
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task InvalidValue_InvalidStyle()
 	{
 		// Arrange
@@ -92,7 +92,7 @@ public class ValidationBehaviorTests : BaseTest
 		Assert.Equal(entry.Style, invalidStyle);
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task IsRunning()
 	{
 		// Arrange

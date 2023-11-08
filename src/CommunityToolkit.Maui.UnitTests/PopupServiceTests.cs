@@ -59,7 +59,7 @@ public class PopupServiceTests : BaseHandlerTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public void ShowPopupAsyncShouldThrowInvalidOperationExceptionWhenNoViewModelIsRegistered()
 	{
 		var popupInstance = new MockMismatchedPopup();
@@ -70,7 +70,7 @@ public class PopupServiceTests : BaseHandlerTest
 		Assert.ThrowsAsync<InvalidOperationException>(() => popupService.ShowPopupAsync<MockPageViewModel>(CancellationToken.None));
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsyncShouldValidateProperBindingContext()
 	{
 		var popupViewModel = new MockPageViewModel();
@@ -86,7 +86,7 @@ public class PopupServiceTests : BaseHandlerTest
 		Assert.Same(popupInstance.BindingContext, popupViewModel);
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsyncWithOnPresentingShouldBeInvoked()
 	{
 		var popupViewModel = new MockPageViewModel();
@@ -102,7 +102,7 @@ public class PopupServiceTests : BaseHandlerTest
 		Assert.True(popupViewModel.HasLoaded);
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsyncShouldReturnResultOnceClosed()
 	{
 		var expectedResult = new object();

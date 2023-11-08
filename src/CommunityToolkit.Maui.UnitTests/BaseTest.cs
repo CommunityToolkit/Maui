@@ -9,6 +9,13 @@ public abstract class BaseTest : IDisposable
 
 	bool isDisposed;
 
+	protected enum TestDuration
+	{
+		Short = 1000,
+		Medium = 5000,
+		Long = 10000
+	}
+
 	protected BaseTest()
 	{
 		defaultCulture = Thread.CurrentThread.CurrentCulture;

@@ -72,7 +72,7 @@ public class NumericValidationBehaviorTests : BaseTest
 		}
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task IsNull()
 	{
 		// Arrange
@@ -89,7 +89,7 @@ public class NumericValidationBehaviorTests : BaseTest
 		await Assert.ThrowsAsync<ArgumentNullException>(async () => await behavior.ForceValidate());
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShouldNotThrowIsNull()
 	{
 		var options = new Options();

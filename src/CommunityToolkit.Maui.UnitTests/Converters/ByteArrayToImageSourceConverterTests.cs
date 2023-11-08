@@ -13,7 +13,7 @@ public class ByteArrayToImageSourceConverterTests : BaseConverterTest<ByteArrayT
 		new object[] { new object() } // objects
 	};
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ByteArrayToImageSourceConverter()
 	{
 		var byteArray = new byte[] { 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20 };

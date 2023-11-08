@@ -26,7 +26,7 @@ public class ImageResourceConverterTests : BaseOneWayConverterTest<ImageResource
 		base.Dispose(isDisposing);
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ImageResourceConverter()
 	{
 		const string resourceToLoad = "CommunityToolkit.Maui.UnitTests.Resources.dotnet-bot.png";

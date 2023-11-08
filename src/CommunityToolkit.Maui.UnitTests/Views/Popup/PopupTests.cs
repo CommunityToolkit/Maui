@@ -29,7 +29,7 @@ public class PopupTests : BaseHandlerTest
 		Assert.Contains("MauiContext", ex.Message);
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task OnOpenedMapperIsCalled()
 	{
 		var app = Application.Current ?? throw new NullReferenceException();
@@ -103,7 +103,7 @@ public class PopupTests : BaseHandlerTest
 		Assert.Equal(resultWhenUserTapsOutsideOfPopup, dismissedByTappingOutsideOfPopupResult);
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task OnDismissedWithResult()
 	{
 		object? result = null;
@@ -145,7 +145,7 @@ public class PopupTests : BaseHandlerTest
 	}
 
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task OnDismissedWithoutResult()
 	{
 		object? result = null;

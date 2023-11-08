@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.UnitTests.Animations;
 
 public class FadeAnimationTests : BaseTest
 {
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task AnimateShouldThrowWithNullView()
 	{
 		FadeAnimation animation = new();
@@ -17,7 +17,7 @@ public class FadeAnimationTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task AnimateShouldReturnToOriginalOpacity()
 	{
 		FadeAnimation animation = new();

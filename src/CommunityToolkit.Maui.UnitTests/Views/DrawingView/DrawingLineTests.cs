@@ -70,14 +70,14 @@ public class DrawingLineTests : BaseHandlerTest
 		drawingLine.Granularity.Should().Be(expectedValue);
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task GetImageStreamReturnsNullStream()
 	{
 		var stream = await drawingLine.GetImageStream(10, 10, Colors.Blue.AsPaint(), CancellationToken.None);
 		Assert.Equal(Stream.Null, stream);
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task GetImageStreamStaticReturnsNullStream()
 	{
 		var stream = await DrawingLine.GetImageStream(Array.Empty<PointF>(), new Size(10, 10), 5, Colors.Yellow, Colors.Blue.AsPaint(), CancellationToken.None);

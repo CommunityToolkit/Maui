@@ -32,21 +32,21 @@ public class SnackbarTests : BaseTest
 		Assert.Equal(AlertDefaults.TextColor, snackbar.VisualOptions.TextColor);
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarShow_IsShownTrue()
 	{
 		await snackbar.Show(CancellationToken.None);
 		Assert.True(Snackbar.IsShown);
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarDismissed_IsShownFalse()
 	{
 		await snackbar.Dismiss(CancellationToken.None);
 		Assert.False(Snackbar.IsShown);
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarShow_ShownEventRaised()
 	{
 		var receivedEvents = new List<EventArgs>();
@@ -58,7 +58,7 @@ public class SnackbarTests : BaseTest
 		Assert.Single(receivedEvents);
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarDismiss_DismissedEventRaised()
 	{
 		var receivedEvents = new List<EventArgs>();
@@ -70,7 +70,7 @@ public class SnackbarTests : BaseTest
 		Assert.Single(receivedEvents);
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task VisualElement_DisplaySnackbar_ShownEventReceived()
 	{
 		var receivedEvents = new List<EventArgs>();
@@ -127,7 +127,7 @@ public class SnackbarTests : BaseTest
 		currentSnackbar.Should().BeEquivalentTo(expectedSnackbar);
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarShow_CancellationTokenCancelled_ReceiveException()
 	{
 		using var cancellationTokenSource = new CancellationTokenSource();
@@ -137,7 +137,7 @@ public class SnackbarTests : BaseTest
 		await snackbar.Invoking(x => x.Show(cancellationTokenSource.Token)).Should().ThrowExactlyAsync<OperationCanceledException>();
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarDismiss_CancellationTokenCancelled_ReceiveException()
 	{
 		using var cancellationTokenSource = new CancellationTokenSource();
@@ -147,27 +147,27 @@ public class SnackbarTests : BaseTest
 		await snackbar.Invoking(x => x.Dismiss(cancellationTokenSource.Token)).Should().ThrowExactlyAsync<OperationCanceledException>();
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarShow_CancellationTokenNotCancelled_NotReceiveException()
 	{
 		using var cancellationTokenSource = new CancellationTokenSource();
 		await snackbar.Invoking(x => x.Show(cancellationTokenSource.Token)).Should().NotThrowAsync<OperationCanceledException>();
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarDismiss_CancellationTokenNotCancelled_NotReceiveException()
 	{
 		using var cancellationTokenSource = new CancellationTokenSource();
 		await snackbar.Invoking(x => x.Dismiss(cancellationTokenSource.Token)).Should().NotThrowAsync<OperationCanceledException>();
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarShow_CancellationTokenNone_NotReceiveException()
 	{
 		await snackbar.Invoking(x => x.Show(CancellationToken.None)).Should().NotThrowAsync<OperationCanceledException>();
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarDismiss_CancellationTokenNone_NotReceiveException()
 	{
 		await snackbar.Invoking(x => x.Dismiss(CancellationToken.None)).Should().NotThrowAsync<OperationCanceledException>();
