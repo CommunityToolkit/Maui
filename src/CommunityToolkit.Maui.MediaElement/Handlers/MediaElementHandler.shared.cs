@@ -70,8 +70,8 @@ public partial class MediaElementHandler
 	/// <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
-	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
-	public static void MapAspect(MediaElementHandler handler, MediaElement MediaElement)
+	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	public static void MapAspect(MediaElementHandler handler, MediaElement mediaElement)
 	{
 		handler.mediaManager?.UpdateAspect();
 	}
@@ -81,8 +81,8 @@ public partial class MediaElementHandler
 	/// <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
-	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
-	public static void MapShouldShowPlaybackControls(MediaElementHandler handler, MediaElement MediaElement)
+	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	public static void MapShouldShowPlaybackControls(MediaElementHandler handler, MediaElement mediaElement)
 	{
 		handler.mediaManager?.UpdateShouldShowPlaybackControls();
 	}
@@ -92,8 +92,8 @@ public partial class MediaElementHandler
 	/// <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
-	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
-	public static void MapSource(MediaElementHandler handler, MediaElement MediaElement)
+	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	public static void MapSource(MediaElementHandler handler, MediaElement mediaElement)
 	{
 		handler.mediaManager?.UpdateSource();
 	}
@@ -103,8 +103,8 @@ public partial class MediaElementHandler
 	/// <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
-	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
-	public static void MapSpeed(MediaElementHandler handler, MediaElement MediaElement)
+	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	public static void MapSpeed(MediaElementHandler handler, MediaElement mediaElement)
 	{
 		handler.mediaManager?.UpdateSpeed();
 	}
@@ -113,10 +113,10 @@ public partial class MediaElementHandler
 	/// Maps the status update between the abstract <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
-	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> is not used.</remarks>
-	public static void MapStatusUpdated(MediaElementHandler handler, MediaElement MediaElement, object? args)
+	public static void MapStatusUpdated(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
 		handler.mediaManager?.UpdateStatus();
 	}
@@ -126,8 +126,8 @@ public partial class MediaElementHandler
 	/// <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
-	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
-	public static void MapVolume(MediaElementHandler handler, MediaElement MediaElement)
+	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	public static void MapVolume(MediaElementHandler handler, MediaElement mediaElement)
 	{
 		handler.mediaManager?.UpdateVolume();
 	}
@@ -137,8 +137,8 @@ public partial class MediaElementHandler
 	/// <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
-	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
-	public static void MapShouldKeepScreenOn(MediaElementHandler handler, MediaElement MediaElement)
+	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	public static void MapShouldKeepScreenOn(MediaElementHandler handler, MediaElement mediaElement)
 	{
 		handler.mediaManager?.UpdateShouldKeepScreenOn();
 	}
@@ -148,8 +148,8 @@ public partial class MediaElementHandler
 	/// <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
-	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
-	public static void MapShouldMute(MediaElementHandler handler, MediaElement MediaElement)
+	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	public static void MapShouldMute(MediaElementHandler handler, MediaElement mediaElement)
 	{
 		handler.mediaManager?.UpdateShouldMute();
 	}
@@ -158,10 +158,10 @@ public partial class MediaElementHandler
 	/// Maps the play operation request between the abstract <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
-	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> is not used.</remarks>
-	public static void MapPlayRequested(MediaElementHandler handler, MediaElement MediaElement, object? args)
+	public static void MapPlayRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
 		handler.mediaManager?.Play();
 	}
@@ -170,10 +170,10 @@ public partial class MediaElementHandler
 	/// Maps the pause operation request between the abstract <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
-	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> is not used.</remarks>
-	public static void MapPauseRequested(MediaElementHandler handler, MediaElement MediaElement, object? args)
+	public static void MapPauseRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
 		handler.mediaManager?.Pause();
 	}
@@ -182,25 +182,27 @@ public partial class MediaElementHandler
 	/// Maps the seek operation request between the abstract <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
-	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> should be of type <see cref="MediaSeekRequestedEventArgs"/>, otherwise nothing happens.</remarks>
-	public static async void MapSeekRequested(MediaElementHandler handler, MediaElement MediaElement, object? args)
+	public static async void MapSeekRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
 		ArgumentNullException.ThrowIfNull(args);
 
 		var positionArgs = (MediaSeekRequestedEventArgs)args;
 		await (handler.mediaManager?.Seek(positionArgs.RequestedPosition, CancellationToken.None) ?? ValueTask.CompletedTask);
+
+		((IMediaElement)mediaElement).HandlerCompleteTCS.TrySetResult();
 	}
 
 	/// <summary>
 	/// Maps the stop operation request between the abstract <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
-	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> is not used.</remarks>
-	public static void MapStopRequested(MediaElementHandler handler, MediaElement MediaElement, object? args)
+	public static void MapStopRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
 		handler.mediaManager?.Stop();
 	}

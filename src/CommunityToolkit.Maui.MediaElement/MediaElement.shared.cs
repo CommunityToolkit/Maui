@@ -19,8 +19,6 @@ public class MediaElement : View, IMediaElement
 	static readonly BindablePropertyKey durationPropertyKey =
 	  BindableProperty.CreateReadOnly(nameof(Duration), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero);
 
-	readonly WeakEventManager eventManager = new();
-
 	/// <summary>
 	/// Backing store for the <see cref="CurrentState"/> property.
 	/// </summary>
@@ -100,8 +98,12 @@ public class MediaElement : View, IMediaElement
 	public static readonly BindableProperty VolumeProperty =
 		  BindableProperty.Create(nameof(Volume), typeof(double), typeof(MediaElement), 1.0,
 			  BindingMode.TwoWay, propertyChanging: ValidateVolume);
+	
+	readonly WeakEventManager eventManager = new();
+	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 
 	IDispatcherTimer? timer;
+	TaskCompletionSource seekCompletedTaskCompletionSource = new();
 
 	/// <inheritdoc cref="IMediaElement.MediaEnded"/>
 	public event EventHandler MediaEnded
@@ -346,6 +348,9 @@ public class MediaElement : View, IMediaElement
 		get => (TimeSpan)GetValue(DurationProperty);
 		set => SetValue(durationPropertyKey, value);
 	}
+	
+	/// <inheritdoc/>
+	TaskCompletionSource IAsynchronousMediaElementHandler.HandlerCompleteTCS => seekCompletedTaskCompletionSource;
 
 	/// <inheritdoc cref="IMediaElement.Pause"/>
 	public void Pause()
@@ -361,11 +366,24 @@ public class MediaElement : View, IMediaElement
 		Handler?.Invoke(nameof(PlayRequested));
 	}
 
-	/// <inheritdoc cref="IMediaElement.SeekTo(TimeSpan)"/>
-	public void SeekTo(TimeSpan position)
+	/// <inheritdoc cref="IMediaElement.SeekTo(TimeSpan, CancellationToken)"/>
+	public async Task SeekTo(TimeSpan position, CancellationToken token)
 	{
-		MediaSeekRequestedEventArgs args = new(position);
-		Handler?.Invoke(nameof(SeekRequested), args);
+		await seekToSemaphoreSlim.WaitAsync(token);
+
+		try
+		{
+			seekCompletedTaskCompletionSource = new();
+
+			MediaSeekRequestedEventArgs args = new(position);
+			Handler?.Invoke(nameof(SeekRequested), args);
+
+			await seekCompletedTaskCompletionSource.Task.WaitAsync(token);
+		}
+		finally
+		{
+			seekToSemaphoreSlim.Release();
+		}
 	}
 
 	/// <inheritdoc cref="IMediaElement.Stop"/>
