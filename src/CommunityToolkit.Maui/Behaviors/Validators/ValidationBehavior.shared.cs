@@ -357,10 +357,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 
 	async ValueTask UpdateStateAsync(VisualElement? view, ValidationFlags flags, bool isForced, CancellationToken? parentToken = null)
 	{
-		if (parentToken?.IsCancellationRequested is true)
-		{
-			return;
-		}
+		parentToken?.ThrowIfCancellationRequested();
 
 		if ((view?.IsFocused ?? false) && flags.HasFlag(ValidationFlags.ForceMakeValidWhenFocused))
 		{

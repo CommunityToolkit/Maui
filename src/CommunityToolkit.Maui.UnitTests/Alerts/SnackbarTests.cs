@@ -16,7 +16,7 @@ public class SnackbarTests : BaseTest
 	}
 
 	[Fact]
-	public void SnackbarDefautValues()
+	public void SnackbarDefaultValues()
 	{
 		Assert.Null(snackbar.Action);
 		Assert.Equal(AlertDefaults.ActionButtonText, snackbar.ActionButtonText);
@@ -30,6 +30,52 @@ public class SnackbarTests : BaseTest
 		Assert.Equal(new CornerRadius(4, 4, 4, 4), snackbar.VisualOptions.CornerRadius);
 		Assert.Equal(Font.SystemFontOfSize(AlertDefaults.FontSize), snackbar.VisualOptions.Font);
 		Assert.Equal(AlertDefaults.TextColor, snackbar.VisualOptions.TextColor);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task SnackbarShow_CancellationTokenExpires()
+	{
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		// Ensure CancellationToken expires
+		await Task.Delay(100, CancellationToken.None);
+
+		await Assert.ThrowsAsync<OperationCanceledException>(() => snackbar.Show(cts.Token));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task SnackbarShow_CancellationTokenCanceled()
+	{
+		var cts = new CancellationTokenSource();
+
+		await Assert.ThrowsAsync<OperationCanceledException>(() =>
+		{
+			cts.Cancel();
+			return snackbar.Show(cts.Token);
+		});
+	}
+	
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task SnackbarDismiss_CancellationTokenExpires()
+	{
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		// Ensure CancellationToken expires
+		await Task.Delay(100, CancellationToken.None);
+
+		await Assert.ThrowsAsync<OperationCanceledException>(() => snackbar.Dismiss(cts.Token));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task SnackbarDismiss_CancellationTokenCanceled()
+	{
+		var cts = new CancellationTokenSource();
+
+		await Assert.ThrowsAsync<OperationCanceledException>(() =>
+		{
+			cts.Cancel();
+			return snackbar.Dismiss(cts.Token);
+		});
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -177,8 +223,14 @@ public class SnackbarTests : BaseTest
 	public void SnackbarNullValuesThrowArgumentNullException()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => new Snackbar { Text = null });
-		Assert.Throws<ArgumentNullException>(() => new Snackbar { ActionButtonText = null });
+		Assert.Throws<ArgumentNullException>(() => new Snackbar
+		{
+			Text = null
+		});
+		Assert.Throws<ArgumentNullException>(() => new Snackbar
+		{
+			ActionButtonText = null
+		});
 		Assert.Throws<ArgumentNullException>(() => Snackbar.Make(null));
 		Assert.Throws<ArgumentNullException>(() => Snackbar.Make(string.Empty, actionButtonText: null));
 		Assert.ThrowsAsync<ArgumentNullException>(() => new Button().DisplaySnackbar(null));

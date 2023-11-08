@@ -27,4 +27,52 @@ public class UriValidationBehaviorTests : BaseTest
 		// Assert
 		Assert.Equal(expectedValue, behavior.IsValid);
 	}
+	
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task CancellationTokenExpired()
+	{
+		// Arrange
+		var behavior = new UriValidationBehavior();
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		var entry = new Entry
+		{
+			Text = "Hello"
+		};
+		entry.Behaviors.Add(behavior);
+
+		// Act
+		
+		// Ensure CancellationToken expires
+		await Task.Delay(100, CancellationToken.None);
+		
+		// Assert
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await behavior.ForceValidate(cts.Token));
+	}
+	
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task CancellationTokenCanceled()
+	{
+		// Arrange
+		var behavior = new UriValidationBehavior();
+		var cts = new CancellationTokenSource();
+
+		var entry = new Entry
+		{
+			Text = "Hello"
+		};
+		entry.Behaviors.Add(behavior);
+
+		// Act
+		
+		// Ensure CancellationToken expires
+		await Task.Delay(100, CancellationToken.None);
+		
+		// Assert
+		await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+		{
+			await cts.CancelAsync();
+			await behavior.ForceValidate(cts.Token);
+		});
+	}
 }
