@@ -83,22 +83,21 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
-	protected virtual partial ValueTask PlatformSeek(TimeSpan position, CancellationToken token)
+	protected virtual async partial Task PlatformSeek(TimeSpan position, CancellationToken token)
 	{
-		token.ThrowIfCancellationRequested();
-		
 		if (Player is null)
 		{
-			return ValueTask.CompletedTask;
+			throw new InvalidOperationException($"{nameof(CommunityToolkit.Maui.Core.Views.TizenPlayer)} is not yet initialized");
 		}
 
-		if (Player.State is PlayerState.Ready or PlayerState.Playing or PlayerState.Paused)
+		if (Player.State is not (PlayerState.Ready or PlayerState.Playing or PlayerState.Paused))
 		{
-			Player.SetPlayPositionAsync((int)position.TotalMilliseconds, false);
-			MediaElement.SeekCompleted();
+			throw new InvalidOperationException($"{nameof(CommunityToolkit.Maui.Core.Views.TizenPlayer)}.{nameof(CommunityToolkit.Maui.Core.Views.TizenPlayer.State)} must first be set to {PlayerState.Ready}, {PlayerState.Playing} or {PlayerState.Paused}");
 		}
 
-		return ValueTask.CompletedTask;
+		await Player.SetPlayPositionAsync((int)position.TotalMilliseconds, false).WaitAsync(token);
+
+		MediaElement.SeekCompleted();
 	}
 
 	protected virtual partial void PlatformStop()

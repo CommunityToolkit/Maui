@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core.Primitives;
+﻿using System.Collections.Frozen;
+using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 using Windows.Media.Playback;
@@ -15,12 +16,12 @@ partial class MediaManager : IDisposable
 	bool displayActiveRequested;
 
 	// States that allow changing position
-	MediaElementState[] allowUpdatePositionStates = new[]
+	readonly FrozenSet<MediaElementState> allowUpdatePositionStates = new[]
 	{
 		MediaElementState.Playing,
 		MediaElementState.Paused,
 		MediaElementState.Stopped,
-	};
+	}.ToFrozenSet();
 
 	/// <summary>
 	/// The <see cref="DisplayRequest"/> is used to enable the <see cref="MediaElement.ShouldKeepScreenOn"/> functionality.
@@ -86,7 +87,7 @@ partial class MediaManager : IDisposable
 		}
 	}
 
-	protected virtual async partial ValueTask PlatformSeek(TimeSpan position, CancellationToken token)
+	protected virtual async partial Task PlatformSeek(TimeSpan position, CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 
@@ -94,7 +95,7 @@ partial class MediaManager : IDisposable
 		{
 			if (Dispatcher.IsDispatchRequired)
 			{
-				await Dispatcher.DispatchAsync(() => Player.MediaPlayer.Position = position);
+				await Dispatcher.DispatchAsync(() => Player.MediaPlayer.Position = position).WaitAsync(token);
 			}
 			else
 			{
