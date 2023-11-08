@@ -16,8 +16,8 @@ public class MauiMediaElement : Grid, IDisposable
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
 	/// </summary>
-	/// <param name="mediaElementElement"></param>
-	public MauiMediaElement(MediaPlayerElement mediaElementElement)
+	/// <param name="mediaPlayerElement"></param>
+	public MauiMediaElement(MediaPlayerElement mediaPlayerElement)
 	{
 		this.mediaPlayerElement = mediaPlayerElement;
 		Children.Add(this.mediaPlayerElement);
