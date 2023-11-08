@@ -28,7 +28,7 @@ public class ValidationBehaviorTests : BaseTest
 		Assert.True(behavior.IsValid);
 	}
 
-	[Fact(Timeout = (int)TestDuration.Short)]
+	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task ValidValue_ValidStyle()
 	{
 		// Arrange
@@ -54,7 +54,7 @@ public class ValidationBehaviorTests : BaseTest
 
 		// Act
 		entry.Text = "321";
-		await behavior.ForceValidate();
+		await behavior.ForceValidate(CancellationToken.None);
 
 		// Assert
 		Assert.Equal(entry.Style, validStyle);
@@ -86,7 +86,7 @@ public class ValidationBehaviorTests : BaseTest
 
 		// Act
 		entry.Text = "321";
-		await behavior.ForceValidate();
+		await behavior.ForceValidate(CancellationToken.None);
 
 		// Assert
 		Assert.Equal(entry.Style, invalidStyle);
@@ -115,7 +115,7 @@ public class ValidationBehaviorTests : BaseTest
 		Assert.False(behavior.IsRunning);
 
 		// Act
-		var forceValidateTask = behavior.ForceValidate();
+		var forceValidateTask = behavior.ForceValidate(CancellationToken.None);
 
 		// Assert
 		Assert.True(behavior.IsRunning);
@@ -135,7 +135,7 @@ public class ValidationBehaviorTests : BaseTest
 		var behavior = new MockValidationBehavior()
 		{
 			ExpectedValue = "321",
-			ForceValidateCommand = new Command(() =>
+			ForceValidateCommand = new Command<CancellationToken>(token =>
 			{
 				entry.Text = "321";
 			})
@@ -152,14 +152,14 @@ public class ValidationBehaviorTests : BaseTest
 
 	class MockValidationBehavior : ValidationBehavior<string>
 	{
-		public string? ExpectedValue { get; set; }
-		public bool SimulateValidationDelay { get; set; } = false;
+		public string? ExpectedValue { get; init; }
+		public bool SimulateValidationDelay { get; init; } = false;
 
 		protected override async ValueTask<bool> ValidateAsync(string? value, CancellationToken token)
 		{
 			if (SimulateValidationDelay)
 			{
-				await Task.Delay(1000, token);
+				await Task.Delay(500, token);
 			}
 
 			return value == ExpectedValue;

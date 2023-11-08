@@ -61,7 +61,7 @@ public class NumericValidationBehaviorTests : BaseTest
 		try
 		{
 			// Act
-			await behavior.ForceValidate();
+			await behavior.ForceValidate(CancellationToken.None);
 
 			// Assert
 			Assert.Equal(expectedValue, behavior.IsValid);
@@ -86,7 +86,7 @@ public class NumericValidationBehaviorTests : BaseTest
 		};
 		entry.Behaviors.Add(behavior);
 
-		await Assert.ThrowsAsync<ArgumentNullException>(async () => await behavior.ForceValidate());
+		await Assert.ThrowsAsync<ArgumentNullException>(async () => await behavior.ForceValidate(CancellationToken.None));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -106,7 +106,7 @@ public class NumericValidationBehaviorTests : BaseTest
 		};
 		entry.Behaviors.Add(behavior);
 
-		var action = (async () => await behavior.ForceValidate());
+		var action = (async () => await behavior.ForceValidate(CancellationToken.None));
 		await action.Should().NotThrowAsync<ArgumentNullException>();
 
 		options.SetShouldSuppressExceptionsInBehaviors(false);

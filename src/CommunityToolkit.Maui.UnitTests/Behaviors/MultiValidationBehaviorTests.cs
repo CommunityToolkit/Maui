@@ -58,7 +58,7 @@ public class MultiValidationBehaviorTests : BaseTest
 		entry.Behaviors.Add(multiBehavior);
 
 		// Act
-		await multiBehavior.ForceValidate();
+		await multiBehavior.ForceValidate(CancellationToken.None);
 
 		// Assert
 		Assert.Equal(expectedValue, multiBehavior.IsValid);

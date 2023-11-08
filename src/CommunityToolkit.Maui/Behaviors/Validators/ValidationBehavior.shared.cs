@@ -89,7 +89,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 	/// Backing BindableProperty for the <see cref="ForceValidateCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty ForceValidateCommandProperty =
-		BindableProperty.Create(nameof(ForceValidateCommand), typeof(ICommand), typeof(ValidationBehavior), defaultValueCreator: GetDefaultForceValidateCommand, defaultBindingMode: BindingMode.OneWayToSource);
+		BindableProperty.Create(nameof(ForceValidateCommand), typeof(Command<CancellationToken>), typeof(ValidationBehavior), defaultValueCreator: GetDefaultForceValidateCommand, defaultBindingMode: BindingMode.OneWayToSource);
 
 	readonly SemaphoreSlim isAttachingSemaphoreSlim = new(1, 1);
 
@@ -104,7 +104,10 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 	/// <summary>
 	/// Initialize a new instance of ValidationBehavior
 	/// </summary>
-	public ValidationBehavior() => DefaultForceValidateCommand = new Command(async () => await ForceValidate().ConfigureAwait(false));
+	protected ValidationBehavior()
+	{
+		DefaultForceValidateCommand = new Command<CancellationToken>(async token => await ForceValidate(token).ConfigureAwait(false));
+	}
 
 	/// <summary>
 	/// Finalizer
@@ -189,9 +192,9 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 	/// <summary>
 	/// Allows the user to provide a custom <see cref="ICommand"/> that handles forcing validation. This is a bindable property.
 	/// </summary>
-	public ICommand? ForceValidateCommand
+	public Command<CancellationToken> ForceValidateCommand
 	{
-		get => (ICommand?)GetValue(ForceValidateCommandProperty);
+		get => (Command<CancellationToken>)GetValue(ForceValidateCommandProperty);
 		set => SetValue(ForceValidateCommandProperty, value);
 	}
 
@@ -203,12 +206,12 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 	/// <summary>
 	/// Default force validate command
 	/// </summary>
-	protected virtual ICommand DefaultForceValidateCommand { get; }
+	protected virtual Command<CancellationToken> DefaultForceValidateCommand { get; }
 
 	/// <summary>
 	/// Forces the behavior to make a validation pass.
 	/// </summary>
-	public ValueTask ForceValidate() => UpdateStateAsync(View, Flags, true);
+	public ValueTask ForceValidate(CancellationToken token) => UpdateStateAsync(View, Flags, true, token);
 
 	/// <inheritdoc/>
 	public void Dispose()

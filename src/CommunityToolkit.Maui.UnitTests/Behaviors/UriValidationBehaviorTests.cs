@@ -22,7 +22,7 @@ public class UriValidationBehaviorTests : BaseTest
 		};
 
 		// Act
-		await behavior.ForceValidate();
+		await behavior.ForceValidate(CancellationToken.None);
 
 		// Assert
 		Assert.Equal(expectedValue, behavior.IsValid);

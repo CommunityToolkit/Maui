@@ -109,7 +109,7 @@ public class EmailValidationBehaviorTests : BaseTest
 		entry.Behaviors.Add(behavior);
 
 		// Act
-		await behavior.ForceValidate();
+		await behavior.ForceValidate(CancellationToken.None);
 
 		// Assert
 		Assert.Equal(expectedValue, behavior.IsValid);
