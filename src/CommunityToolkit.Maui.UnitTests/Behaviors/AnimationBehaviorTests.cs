@@ -71,7 +71,7 @@ public class AnimationBehaviorTests : BaseTest
 			Behaviors = { behavior }
 		}.EnableAnimations();
 
-		behavior.AnimateCommand.Execute(null);
+		behavior.AnimateCommand.Execute(CancellationToken.None);
 
 		await animationStartedTcs.Task;
 		await animationEndedTcs.Task;

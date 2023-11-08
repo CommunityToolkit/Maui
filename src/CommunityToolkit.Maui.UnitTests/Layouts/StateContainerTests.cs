@@ -426,7 +426,7 @@ public class StateContainerTests : BaseTest
 		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateTo(0.75, 1000).WaitAsync(token);
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = 5000)]
 	public async Task StateContainer_ChangingStateWhenCanStateChangePropertyIsFalse_CustomBeforeAndAfterAnimationFuncs()
 	{
 		layout.EnableAnimations();

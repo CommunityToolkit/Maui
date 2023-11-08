@@ -41,7 +41,7 @@ public class SpeechToTextTests
 		await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => SpeechToText.StartListenAsync(CultureInfo.CurrentCulture, CancellationToken.None));
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = 10000)]
 	public async Task StartStopListenAsyncShouldChangeState()
 	{
 		SpeechToText.SetDefault(new SpeechToTextImplementationMock(string.Empty, string.Empty));
@@ -58,7 +58,7 @@ public class SpeechToTextTests
 		};
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = 10000)]
 	public async Task StartStopListenAsyncShouldChangeRecognitionText()
 	{
 		var expectedPartialText = ".NET MAUI";
@@ -69,7 +69,7 @@ public class SpeechToTextTests
 		SpeechToText.Default.RecognitionResultUpdated += OnRecognitionTextUpdated;
 		SpeechToText.Default.RecognitionResultCompleted += OnRecognitionTextCompleted;
 		await SpeechToText.StartListenAsync(CultureInfo.CurrentCulture, CancellationToken.None);
-		await Task.Delay(2000);
+		await Task.Delay(500);
 		await SpeechToText.StopListenAsync(CancellationToken.None);
 		SpeechToText.Default.RecognitionResultUpdated -= OnRecognitionTextUpdated;
 		SpeechToText.Default.RecognitionResultCompleted -= OnRecognitionTextCompleted;

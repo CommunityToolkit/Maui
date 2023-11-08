@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
 public class UserStoppedTypingBehaviorTests : BaseTest
 {
-	const int defaultTimeThreshold = 1000;
+	const int defaultTimeThreshold = 500;
 	const int defaultLengthThreshold = 0;
 	const int defaultTimeoutThreshold = defaultTimeThreshold * 2;
 
