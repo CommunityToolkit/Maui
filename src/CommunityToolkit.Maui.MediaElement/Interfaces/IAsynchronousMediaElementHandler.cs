@@ -8,5 +8,5 @@ public interface IAsynchronousMediaElementHandler
 	/// <summary>
 	/// A <see cref="TaskCompletionSource"/> to provide Handlers an asynchronous way to complete
 	/// </summary>
-	TaskCompletionSource HandlerCompleteTCS { get; }
+	TaskCompletionSource SeekCompletedTCS { get; }
 }

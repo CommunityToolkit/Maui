@@ -356,7 +356,7 @@ public class MediaElement : View, IMediaElement, IDisposable
 	}
 
 	/// <inheritdoc/>
-	TaskCompletionSource IAsynchronousMediaElementHandler.HandlerCompleteTCS => seekCompletedTaskCompletionSource;
+	TaskCompletionSource IAsynchronousMediaElementHandler.SeekCompletedTCS => seekCompletedTaskCompletionSource;
 
 	/// <inheritdoc/>
 	public void Dispose()

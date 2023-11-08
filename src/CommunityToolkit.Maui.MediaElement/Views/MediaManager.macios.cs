@@ -132,7 +132,7 @@ public partial class MediaManager : IDisposable
 		Player?.Pause();
 	}
 
-	protected virtual async partial ValueTask PlatformSeek(TimeSpan position, CancellationToken token)
+	protected virtual async partial Task PlatformSeek(TimeSpan position, CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 

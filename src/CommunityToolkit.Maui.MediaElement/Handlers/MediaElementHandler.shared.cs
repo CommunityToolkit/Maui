@@ -190,9 +190,9 @@ public partial class MediaElementHandler
 		ArgumentNullException.ThrowIfNull(args);
 
 		var positionArgs = (MediaSeekRequestedEventArgs)args;
-		await (handler.mediaManager?.Seek(positionArgs.RequestedPosition, CancellationToken.None) ?? ValueTask.CompletedTask);
+		await (handler.mediaManager?.Seek(positionArgs.RequestedPosition, CancellationToken.None) ?? Task.CompletedTask);
 
-		((IMediaElement)mediaElement).HandlerCompleteTCS.TrySetResult();
+		((IMediaElement)mediaElement).SeekCompletedTCS.TrySetResult();
 	}
 
 	/// <summary>

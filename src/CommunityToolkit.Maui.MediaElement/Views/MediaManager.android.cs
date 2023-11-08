@@ -251,7 +251,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		Player.Pause();
 	}
 
-	protected virtual async partial ValueTask PlatformSeek(TimeSpan position, CancellationToken token)
+	protected virtual async partial Task PlatformSeek(TimeSpan position, CancellationToken token)
 	{
 		if (Player is null)
 		{
