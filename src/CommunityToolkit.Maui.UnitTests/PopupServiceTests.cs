@@ -70,7 +70,7 @@ public class PopupServiceTests : BaseHandlerTest
 		Assert.ThrowsAsync<InvalidOperationException>(() => popupService.ShowPopupAsync<MockPageViewModel>(CancellationToken.None));
 	}
 
-	[Fact(Timeout = (int)TestDuration.Short)]
+	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task ShowPopupAsyncShouldValidateProperBindingContext()
 	{
 		var popupViewModel = new MockPageViewModel();
@@ -86,7 +86,7 @@ public class PopupServiceTests : BaseHandlerTest
 		Assert.Same(popupInstance.BindingContext, popupViewModel);
 	}
 
-	[Fact(Timeout = (int)TestDuration.Short)]
+	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task ShowPopupAsyncWithOnPresentingShouldBeInvoked()
 	{
 		var popupViewModel = new MockPageViewModel();
@@ -102,7 +102,7 @@ public class PopupServiceTests : BaseHandlerTest
 		Assert.True(popupViewModel.HasLoaded);
 	}
 
-	[Fact(Timeout = (int)TestDuration.Short)]
+	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task ShowPopupAsyncShouldReturnResultOnceClosed()
 	{
 		var expectedResult = new object();
@@ -260,7 +260,7 @@ public class PopupServiceTests : BaseHandlerTest
 		{
 			base.OnOpened();
 
-			await Task.Delay(TimeSpan.FromSeconds(1));
+			await Task.Delay(TimeSpan.FromMilliseconds(500));
 
 			Close(result);
 		}

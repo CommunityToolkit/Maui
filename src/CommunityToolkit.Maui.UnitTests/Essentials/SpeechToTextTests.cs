@@ -7,15 +7,8 @@ using Xunit.Abstractions;
 
 namespace CommunityToolkit.Maui.UnitTests.Essentials;
 
-public class SpeechToTextTests
+public class SpeechToTextTests(ITestOutputHelper testOutputHelper) : BaseTest
 {
-	readonly ITestOutputHelper testOutputHelper;
-
-	public SpeechToTextTests(ITestOutputHelper testOutputHelper)
-	{
-		this.testOutputHelper = testOutputHelper;
-	}
-
 	[Fact]
 	public void SpeechToTextTestsSetDefaultUpdatesInstance()
 	{

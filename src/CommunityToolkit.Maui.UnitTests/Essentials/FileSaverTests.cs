@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Essentials;
 
-public class FileSaverTests
+public class FileSaverTests : BaseTest
 {
 	[Fact]
 	public void FileSaverTestsSetDefaultUpdatesInstance()

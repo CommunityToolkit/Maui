@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Essentials;
 
-public class FolderPickerTests
+public class FolderPickerTests : BaseTest
 {
 	[Fact]
 	public void FolderPickerSetDefaultUpdatesInstance()

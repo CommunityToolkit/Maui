@@ -6,7 +6,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class MediaSourceConverterTests
+public class MediaSourceConverterTests : BaseTest
 {
 	[Fact]
 	public void MediaSourceConverterShouldConvertFromStringType()
