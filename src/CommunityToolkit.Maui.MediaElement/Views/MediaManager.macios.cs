@@ -219,10 +219,7 @@ public partial class MediaManager : IDisposable
 
 			if (!string.IsNullOrWhiteSpace(uri))
 			{
-				asset = AVAsset.FromUrl(NSUrl.CreateFileUrl(new[]
-				{
-					uri
-				}));
+				asset = AVAsset.FromUrl(NSUrl.CreateFileUrl(uri));
 			}
 		}
 		else if (MediaElement.Source is ResourceMediaSource resourceMediaSource)
@@ -586,7 +583,7 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		if (AreFloatingPointNumbersEqual(MediaElement.Speed, Player.Rate))
+		if (!AreFloatingPointNumbersEqual(MediaElement.Speed, Player.Rate))
 		{
 			MediaElement.Speed = Player.Rate;
 		}
