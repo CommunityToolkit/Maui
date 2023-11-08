@@ -19,15 +19,15 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		InitializeComponent();
 
 		this.logger = logger;
-		mediaElement.PropertyChanged += MediaElement_PropertyChanged;
+		MediaElement.PropertyChanged += MediaElement_PropertyChanged;
 	}
 
 	void MediaElement_PropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (e.PropertyName == MediaElement.DurationProperty.PropertyName)
 		{
-			logger.LogInformation("Duration: {newDuration}", mediaElement.Duration);
-			positionSlider.Maximum = mediaElement.Duration.TotalSeconds;
+			logger.LogInformation("Duration: {newDuration}", MediaElement.Duration);
+			PositionSlider.Maximum = MediaElement.Duration.TotalSeconds;
 		}
 	}
 
@@ -43,100 +43,101 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	void OnPositionChanged(object? sender, MediaPositionChangedEventArgs e)
 	{
 		logger.LogInformation("Position changed to {position}", e.Position);
-		positionSlider.Value = e.Position.TotalSeconds;
+		PositionSlider.Value = e.Position.TotalSeconds;
 	}
 
 	void OnSeekCompleted(object? sender, EventArgs e) => logger.LogInformation("Seek completed.");
 
 	void OnSpeedMinusClicked(object? sender, EventArgs e)
 	{
-		if (mediaElement.Speed >= 1)
+		if (MediaElement.Speed >= 1)
 		{
-			mediaElement.Speed -= 1;
+			MediaElement.Speed -= 1;
 		}
 	}
 
 	void OnSpeedPlusClicked(object? sender, EventArgs e)
 	{
-		if (mediaElement.Speed < 10)
+		if (MediaElement.Speed < 10)
 		{
-			mediaElement.Speed += 1;
+			MediaElement.Speed += 1;
 		}
 	}
 
 	void OnVolumeMinusClicked(object? sender, EventArgs e)
 	{
-		if (mediaElement.Volume >= 0)
+		if (MediaElement.Volume >= 0)
 		{
-			if (mediaElement.Volume < .1)
+			if (MediaElement.Volume < .1)
 			{
-				mediaElement.Volume = 0;
+				MediaElement.Volume = 0;
 
 				return;
 			}
 
-			mediaElement.Volume -= .1;
+			MediaElement.Volume -= .1;
 		}
 	}
 
 	void OnVolumePlusClicked(object? sender, EventArgs e)
 	{
-		if (mediaElement.Volume < 1)
+		if (MediaElement.Volume < 1)
 		{
-			if (mediaElement.Volume > .9)
+			if (MediaElement.Volume > .9)
 			{
-				mediaElement.Volume = 1;
+				MediaElement.Volume = 1;
 
 				return;
 			}
 
-			mediaElement.Volume += .1;
+			MediaElement.Volume += .1;
 		}
 	}
 
 	void OnPlayClicked(object? sender, EventArgs e)
 	{
-		mediaElement.Play();
+		MediaElement.Play();
 	}
 
 	void OnPauseClicked(object? sender, EventArgs e)
 	{
-		mediaElement.Pause();
+		MediaElement.Pause();
 	}
 
 	void OnStopClicked(object? sender, EventArgs e)
 	{
-		mediaElement.Stop();
+		MediaElement.Stop();
 	}
 
 	void OnMuteClicked(object? sender, EventArgs e)
 	{
-		mediaElement.ShouldMute = !mediaElement.ShouldMute;
+		MediaElement.ShouldMute = !MediaElement.ShouldMute;
 	}
 
 	void BasePage_Unloaded(object? sender, EventArgs e)
 	{
 		// Stop and cleanup MediaElement when we navigate away
-		mediaElement.Handler?.DisconnectHandler();
+		MediaElement.Handler?.DisconnectHandler();
 	}
 
-	void Slider_DragCompleted(object? sender, EventArgs e)
+	async void Slider_DragCompleted(object? sender, EventArgs e)
 	{
 		ArgumentNullException.ThrowIfNull(sender);
 
 		var newValue = ((Slider)sender).Value;
-		mediaElement.SeekTo(TimeSpan.FromSeconds(newValue));
-		mediaElement.Play();
+		await MediaElement.SeekTo(TimeSpan.FromSeconds(newValue), CancellationToken.None);
+		
+		MediaElement.Play();
 	}
 
 	void Slider_DragStarted(object sender, EventArgs e)
 	{
-		mediaElement.Pause();
+		MediaElement.Pause();
 	}
 
 	void Button_Clicked(object? sender, EventArgs e)
 	{
-		if (string.IsNullOrWhiteSpace(customSourceEntry.Text))
+		if (string.IsNullOrWhiteSpace(CustomSourceEntry.Text))
 		{
 			DisplayAlert("Error Loading URL Source", "No value was found to load as a media source. " +
 				"When you do enter a value, make sure it's a valid URL. No additional validation is done.",
@@ -145,10 +146,10 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			return;
 		}
 
-		mediaElement.Source = MediaSource.FromUri(customSourceEntry.Text);
+		MediaElement.Source = MediaSource.FromUri(CustomSourceEntry.Text);
 	}
 
-	async void ChangeSourceClicked(System.Object sender, System.EventArgs e)
+	async void ChangeSourceClicked(Object sender, EventArgs e)
 	{
 		var result = await DisplayActionSheet("Choose a source", "Cancel", null,
 			loadOnlineMp4, loadHls, loadLocalResource, resetSource);
@@ -156,40 +157,40 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		switch (result)
 		{
 			case loadOnlineMp4:
-				mediaElement.Source =
+				MediaElement.Source =
 					MediaSource.FromUri(
 						"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
 				return;
 
 			case loadHls:
-				mediaElement.Source
+				MediaElement.Source
 					= MediaSource.FromUri(
 						"https://wowza.peer5.com/live/smil:bbb_abr.smil/playlist.m3u8");
 				return;
 
 			case resetSource:
-				mediaElement.Source = null;
+				MediaElement.Source = null;
 				return;
 
 			case loadLocalResource:
 				if (DeviceInfo.Platform == DevicePlatform.MacCatalyst
 					|| DeviceInfo.Platform == DevicePlatform.iOS)
 				{
-					mediaElement.Source = MediaSource.FromResource("AppleVideo.mp4");
+					MediaElement.Source = MediaSource.FromResource("AppleVideo.mp4");
 				}
 				else if (DeviceInfo.Platform == DevicePlatform.Android)
 				{
-					mediaElement.Source = MediaSource.FromResource("AndroidVideo.mp4");
+					MediaElement.Source = MediaSource.FromResource("AndroidVideo.mp4");
 				}
 				else if (DeviceInfo.Platform == DevicePlatform.WinUI)
 				{
-					mediaElement.Source = MediaSource.FromResource("WindowsVideo.mp4");
+					MediaElement.Source = MediaSource.FromResource("WindowsVideo.mp4");
 				}
 				return;
 		}
 	}
 
-	async void ChangeAspectClicked(System.Object sender, System.EventArgs e)
+	async void ChangeAspectClicked(Object sender, EventArgs e)
 	{
 		var resultAspect = await DisplayActionSheet("Choose aspect ratio",
 			"Cancel", null, Aspect.AspectFit.ToString(),
@@ -209,6 +210,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			return;
 		}
 
-		mediaElement.Aspect = (Aspect)aspectEnum;
+		MediaElement.Aspect = (Aspect)aspectEnum;
 	}
 }

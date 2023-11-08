@@ -386,8 +386,6 @@ public class MediaElement : View, IMediaElement, IDisposable
 
 		try
 		{
-			seekCompletedTaskCompletionSource = new();
-
 			MediaSeekRequestedEventArgs args = new(position);
 			Handler?.Invoke(nameof(SeekRequested), args);
 
@@ -395,6 +393,7 @@ public class MediaElement : View, IMediaElement, IDisposable
 		}
 		finally
 		{
+			seekCompletedTaskCompletionSource = new();
 			seekToSemaphoreSlim.Release();
 		}
 	}
