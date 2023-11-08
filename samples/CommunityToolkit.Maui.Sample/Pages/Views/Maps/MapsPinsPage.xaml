@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps"
              xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
              xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
              x:DataType="vm:MapsPinsViewModel"
@@ -14,6 +15,6 @@
             <Button Text="Remove Pin" Clicked="RemovePin_Clicked" />
             <Button Text="Add 10 Pins" Clicked="Add10Pins_Clicked" />
         </HorizontalStackLayout>
-        <Map x:Name="PinsMap" Grid.Row="1" MapClicked="PinsMap_MapClicked" />
+        <maps:Map x:Name="PinsMap" Grid.Row="1" MapClicked="PinsMap_MapClicked" />
     </Grid>
 </pages:BasePage>

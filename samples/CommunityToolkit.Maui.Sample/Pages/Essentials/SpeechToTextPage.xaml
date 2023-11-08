@@ -14,62 +14,115 @@
     </ContentPage.Resources>
 
     <ScrollView>
-        <Grid
-            RowDefinitions="64, 24, 64, 24, auto, 60, 60, 60"
+        <VerticalStackLayout
+            Spacing="20"
             Padding="30,0">
 
             <Label
-                Grid.Row="0"
-                Text="SpeechToText allows the user to convert speech to text in real time"/>
+                Text="SpeechToText allows the user to convert speech to text in real time"
+                HorizontalTextAlignment="Center"/>
 
             <Label
-                Grid.Row="1"
                 Text="Locale"
                 FontAttributes="Bold"/>
 
             <Picker
-                Grid.Row="2"
                 ItemsSource="{Binding Locales}"
                 SelectedItem="{Binding CurrentLocale}"
-                ItemDisplayBinding="{Binding ., Converter={StaticResource PickerLocaleDisplayConverter}}"
-                Margin="0,0,0,20">
-            </Picker>
+                ItemDisplayBinding="{Binding ., Converter={StaticResource PickerLocaleDisplayConverter}}"/>
 
             <Label
-                Grid.Row="3"
                 Text="Language Output"
                 FontAttributes="Bold"/>
 
             <Label
-                Grid.Row="4"
                 Text="{Binding RecognitionText}"
                 FontSize="18"
                 HorizontalOptions="Center"
                 HorizontalTextAlignment="Center"
-                MinimumHeightRequest="100"
-                Margin="0,0,0,20" />
+                MinimumHeightRequest="100" />
 
             <Button
-                Grid.Row="5"
                 Text="Play"
                 Command="{Binding PlayCommand}"
-                HorizontalOptions="Center"
-                Margin="0,0,0,20"/>
+                HorizontalOptions="Center" />
 
-            <Button
-                Grid.Row="6"
-                Text="Listen"
-                Command="{Binding ListenCommand}"
-                HorizontalOptions="Center"
-                Margin="0,0,0,20"/>
+            <Border
+                StrokeThickness="2"
+                Stroke="#808080"
+                StrokeShape="RoundRectangle 8,8,8,8"
+                Padding="12">
+                <Border.Content>
 
-            <Button
-                Grid.Row="7"
-                Text="Stop Listening"
-                Command="{Binding ListenCancelCommand}"
-                HorizontalOptions="Center"/>
+                    <Grid RowDefinitions="*,60"
+                          ColumnDefinitions="*,*"
+                          RowSpacing="12"
+                          ColumnSpacing="12">
 
-        </Grid>
+                        <Button
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Text="ListenAsync"
+                            Command="{Binding ListenCommand}"
+                            HorizontalOptions="End" />
+
+                        <Button
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Text="Cancel Token"
+                            Command="{Binding ListenCancelCommand}"
+                            HorizontalOptions="Start" />
+
+                        <Label
+                            Grid.Row="1"
+                            Grid.ColumnSpan="2"
+                            Text="The `ListenAsync` API allows you to await the final speech recognition results using async/await. `ListenAsync` is cancelled via CancellationToken."
+                            HorizontalOptions="Center"
+                            HorizontalTextAlignment="Center"
+                            FontSize="12"/>
+
+                    </Grid>
+                </Border.Content>
+            </Border>
+
+            <Border
+                StrokeThickness="2"
+                Stroke="#808080"
+                StrokeShape="RoundRectangle 8,8,8,8"
+                Padding="12">
+                <Border.Content>
+                    <Grid RowDefinitions="*,60"
+                          ColumnDefinitions="*,*"
+                          RowSpacing="12"
+                          ColumnSpacing="12">
+
+                        <Button
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Text="StartListenAsync"
+                            Command="{Binding StartListenCommand}"
+                            HorizontalOptions="End" />
+
+                        <Button
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Text="StopListenAsync"
+                            Command="{Binding StopListenCommand}"
+                            HorizontalOptions="Start" />
+
+                        <Label
+                            Grid.Row="1"
+                            Grid.ColumnSpan="2"
+                            Text="The `StartListenAsync` API starts the speech-to-text service and shares the results using `RecognitionResultUpdated` event and `RecognitionResultCompleted` event."
+                            HorizontalOptions="Center"
+                            HorizontalTextAlignment="Center"
+                            FontSize="12"/>
+
+                    </Grid>
+                </Border.Content>
+            </Border>
+
+        </VerticalStackLayout>
     </ScrollView>
-    
+
 </pages:BasePage>

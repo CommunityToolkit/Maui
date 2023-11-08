@@ -1,4 +1,4 @@
-﻿using System.Windows.Input;
+﻿using System.Collections.Frozen;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Application = Microsoft.Maui.Controls.Application;
@@ -14,7 +14,7 @@ public partial class ItemTappedEventArgsConverterViewModel : BaseViewModel
 	{
 		new Person(1, "John Doe"),
 		new Person(2, "Jane Doe"),
-		new Person(3, "Joe Doe"),
+		new Person(3, "Joe Doe")
 	};
 
 	[RelayCommand]

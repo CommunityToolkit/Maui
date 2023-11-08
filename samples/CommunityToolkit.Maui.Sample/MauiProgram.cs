@@ -185,16 +185,19 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<LazyViewPage, LazyViewViewModel>();
 		services.AddTransientWithShellRoute<MediaElementPage, MediaElementViewModel>();
 
+		services.AddTransientWithShellRoute<CustomSizeAndPositionPopupPage, CustomSizeAndPositionPopupViewModel>();
 		services.AddTransientWithShellRoute<MultiplePopupPage, MultiplePopupViewModel>();
 		services.AddTransientWithShellRoute<PopupAnchorPage, PopupAnchorViewModel>();
 		services.AddTransientWithShellRoute<PopupLayoutAlignmentPage, PopupLayoutAlignmentViewModel>();
 		services.AddTransientWithShellRoute<PopupPositionPage, PopupPositionViewModel>();
 		services.AddTransientWithShellRoute<SemanticOrderViewPage, SemanticOrderViewPageViewModel>();
 		services.AddTransientWithShellRoute<ShowPopupInOnAppearingPage, ShowPopupInOnAppearingPageViewModel>();
+		services.AddTransientWithShellRoute<StylePopupPage, StylePopupViewModel>();
 
 		// Add Popups
-		services.AddTransient<CsharpBindingPopup, CsharpBindingPopupViewModel>();
-		services.AddTransient<XamlBindingPopup, XamlBindingPopupViewModel>();
+		services.AddTransientPopup<CsharpBindingPopup, CsharpBindingPopupViewModel>();
+		services.AddTransientPopup<UpdatingPopup, UpdatingPopupViewModel>();
+		services.AddTransientPopup<XamlBindingPopup, XamlBindingPopupViewModel>();
 	}
 
 	static void RegisterEssentials(in IServiceCollection services)

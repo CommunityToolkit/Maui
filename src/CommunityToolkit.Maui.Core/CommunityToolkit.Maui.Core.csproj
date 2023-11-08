@@ -4,8 +4,6 @@
     <TargetFrameworks>$(NetVersion);$(NetVersion)-android;$(NetVersion)-ios;$(NetVersion)-maccatalyst</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);$(NetVersion)-windows10.0.19041.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">$(TargetFrameworks);$(NetVersion)-tizen</TargetFrameworks>
-    <UseMauiCore>true</UseMauiCore>
-    <UseMauiEssentials>true</UseMauiEssentials>
     <SingleProject>true</SingleProject>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
@@ -50,18 +48,14 @@
     <None Include="ReadMe.txt" pack="true" PackagePath="." />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="DotNet.ReproducibleBuilds" Version="1.1.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+  <ItemGroup Condition="$(TargetFramework.Contains('-tizen'))">
+    <PackageReference Include="SkiaSharp.Views" Version="[2.88.6,)" />
+  </ItemGroup>
 
-    <PackageReference Include="MemoryAnalyzers" Version="0.1.0-beta.3">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    
-    <PackageReference Include="System.Speech" Version="7.0.0" Condition="'$(TargetFramework)' == '$(NetVersion)-windows10.0.19041.0'" />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Core" Version="$(MauiPackageVersion)"/>
+    <PackageReference Include="Microsoft.Maui.Essentials" Version="$(MauiPackageVersion)"/>
+    <PackageReference Include="System.Speech" Version="[8.0.0-rc.2.23479.6,)" Condition="'$(TargetFramework)' == '$(NetVersion)-windows10.0.19041.0'" />
   </ItemGroup>
 
 </Project>

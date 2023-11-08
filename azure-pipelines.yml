@@ -1,12 +1,12 @@
 variables:
-  CurrentSemanticVersionBase: '1.0.0'
+  CurrentSemanticVersionBase: '99.0.0'
   PreviewNumber: $[counter(variables['CurrentSemanticVersionBase'], 1001)]
   CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(PreviewNumber)'
   NugetPackageVersion: '$(CurrentSemanticVersion)'
   NugetPackageVersionMediaElement: '$(CurrentSemanticVersion)'
   NugetPackageVersionMaps: '$(CurrentSemanticVersion)'
-  TOOLKIT_NET_VERSION: '7.0.200'
-  LATEST_NET_VERSION: '7.0.x'
+  TOOLKIT_NET_VERSION: '8.0.100-rc.2.23502.2'
+  LATEST_NET_VERSION: '8.0.x'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
@@ -21,9 +21,8 @@ variables:
   PathToCommunityToolkitAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Analyzers.CodeFixes/CommunityToolkit.Maui.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
-  DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/7.0.59.json'
-  CommunityToolkitSampleApp_Xcode_Version: '14.3.0'
-  CommunityToolkitLibrary_Xcode_Version: '14.0.1'
+  CommunityToolkitSampleApp_Xcode_Version: '15.0.1'
+  CommunityToolkitLibrary_Xcode_Version: '15.0.1'
 
 trigger:
   branches:
@@ -70,14 +69,23 @@ jobs:
         inputs:
           packageType: 'sdk'
           version: '$(LATEST_NET_VERSION)'
+          includePreviewVersions: true
 
-      - powershell: dotnet workload install maui
+      - powershell: dotnet workload install maui --skip-sign-check --source https://api.nuget.org/v3/index.json
         displayName: Install Latest .NET MAUI Workload
 
       - pwsh: |
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
           .\workload-install.ps1
         displayName: Install Tizen Workload
+
+      # Print Information on the .NET SDK Used By the CI Build Host
+      # These logs are useful information when debugging CI Builds
+      # Note: This step doesn't execute nor modify any code; it is strictly used for logging + debugging purposes
+      - task: CmdLine@2
+        displayName: 'Display dotnet --info'
+        inputs:
+          script: dotnet --info
 
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.Analyzers'
@@ -117,7 +125,7 @@ jobs:
         'Windows':
           image: 'windows-latest'
         'macOS':
-          image: 'macos-12'
+          image: 'macos-13'
     pool:
       vmImage: $(image)
     steps:
@@ -173,16 +181,25 @@ jobs:
         inputs:
           packageType: 'sdk'
           version: '$(TOOLKIT_NET_VERSION)'
+          includePreviewVersions: true
 
       - task: CmdLine@2
         displayName: 'Install .NET MAUI Workload $(TOOLKIT_NET_VERSION)'
         inputs:
-          script: dotnet workload install maui
+          script: dotnet workload install maui --skip-sign-check --source https://api.nuget.org/v3/index.json 
 
       - pwsh: |
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
           .\workload-install.ps1
         displayName: Install Tizen Workload
+
+      # Print Information on the .NET SDK Used By the CI Build Host
+      # These logs are useful information when debugging CI Builds
+      # Note: This step doesn't execute nor modify any code; it is strictly used for logging + debugging purposes
+      - task: CmdLine@2
+        displayName: 'Display dotnet --info'
+        inputs:
+          script: dotnet --info
 
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.Analyzers'
@@ -257,7 +274,8 @@ jobs:
 
       # check vulnerabilities
       - powershell: |
-          dotnet list $(PathToLibrarySolution) package --vulnerable --include-transitive | findstr /S /c:"has the following vulnerable packages";
+          dotnet list $(PathToLibrarySolution) package --include-transitive # Print all transitive packages
+          dotnet list $(PathToLibrarySolution) package --vulnerable --include-transitive | findstr /S /c:"has the following vulnerable packages"; # Print all transitive packages with vulnerabilities
           if ($LastExitCode -ne 1)
           {
             dotnet list $(PathToLibrarySolution) package --vulnerable --include-transitive;

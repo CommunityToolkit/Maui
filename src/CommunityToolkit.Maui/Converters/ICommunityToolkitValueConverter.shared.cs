@@ -48,10 +48,10 @@ public interface ICommunityToolkitValueConverter : IValueConverter
 	new object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo? culture);
 
 	/// <inheritdoc />
-	object? IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
+	object? IValueConverter.Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
 		Convert(value, targetType, parameter, culture);
 
 	/// <inheritdoc />
-	object? IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
+	object? IValueConverter.ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
 		ConvertBack(value, targetType, parameter, culture);
 }

@@ -9,19 +9,44 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MauiDrawingView
 {
 	readonly WeakEventManager weakEventManager = new();
-	readonly WeakReference<Action<ICanvas, RectF>?> drawActionReference = new(null);
 
 	bool isDrawing;
 	PointF previousPoint;
 	PathF currentPath = new();
 	MauiDrawingLine? currentLine;
-	MauiDrawingViewProxy? proxy;
 	Paint paint = new SolidPaint(DrawingViewDefaults.BackgroundColor);
 
 	/// <summary>
 	/// Event raised when drawing line completed 
 	/// </summary>
 	public event EventHandler<MauiDrawingLineCompletedEventArgs> DrawingLineCompleted
+	{
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
+	}
+
+	/// <summary>
+	/// Event raised when drawing started 
+	/// </summary>
+	public event EventHandler<MauiDrawingStartedEventArgs> DrawingStarted
+	{
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
+	}
+
+	/// <summary>
+	/// Event raised when drawing cancelled 
+	/// </summary>
+	public event EventHandler<MauiDrawingStartedEventArgs> DrawingCancelled
+	{
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
+	}
+
+	/// <summary>
+	/// Event raised when drawing 
+	/// </summary>
+	public event EventHandler<MauiOnDrawingEventArgs> Drawing
 	{
 		add => weakEventManager.AddEventHandler(value);
 		remove => weakEventManager.RemoveEventHandler(value);
@@ -55,11 +80,7 @@ public partial class MauiDrawingView
 	/// <summary>
 	/// Used to draw any shape on the canvas
 	/// </summary>
-	public Action<ICanvas, RectF>? DrawAction
-	{
-		get => drawActionReference.TryGetTarget(out var drawAction) ? drawAction : null;
-		set => drawActionReference.SetTarget(value);
-	}
+	public Action<ICanvas, RectF>? DrawAction { get; set; }
 
 	/// <summary>
 	/// Drawable background
@@ -109,7 +130,8 @@ public partial class MauiDrawingView
 
 		Redraw();
 
-		proxy?.SubscribeCollectionChanged();
+		Lines.CollectionChanged += OnLinesCollectionChanged;
+		OnDrawingStarted(point);
 	}
 
 	void OnMoving(PointF currentPoint)
@@ -125,6 +147,7 @@ public partial class MauiDrawingView
 
 		Redraw();
 		currentLine?.Points.Add(currentPoint);
+		OnDrawing(currentPoint);
 	}
 
 	void OnFinish()
@@ -151,10 +174,20 @@ public partial class MauiDrawingView
 		ClearPath();
 		Redraw();
 		isDrawing = false;
+		OnDrawingCancelled();
 	}
 
 	void OnDrawingLineCompleted(MauiDrawingLine lastDrawingLine) =>
 		weakEventManager.HandleEvent(this, new MauiDrawingLineCompletedEventArgs(lastDrawingLine), nameof(DrawingLineCompleted));
+
+	void OnDrawing(PointF point) =>
+		weakEventManager.HandleEvent(this, new MauiOnDrawingEventArgs(point), nameof(Drawing));
+
+	void OnDrawingStarted(PointF point) =>
+		weakEventManager.HandleEvent(this, new MauiDrawingStartedEventArgs(point), nameof(DrawingStarted));
+
+	void OnDrawingCancelled() =>
+		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(DrawingCancelled));
 
 	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => LoadLines();
 
@@ -171,7 +204,7 @@ public partial class MauiDrawingView
 		currentPath = new PathF();
 	}
 
-	sealed class DrawingViewDrawable : IDrawable
+	class DrawingViewDrawable : IDrawable
 	{
 		readonly MauiDrawingView drawingView;
 
@@ -226,33 +259,6 @@ public partial class MauiDrawingView
 					canvas.DrawPath(path);
 				}
 			}
-		}
-	}
-
-	// Proxy class required to avoid memory leaks on iOS, resolving MA0003
-	// Inspired by SearchbarHandler.MauiSearchBarProxy https://github.com/dotnet/maui/blob/911ea757e996d1213711f786f81e05461df6fc2f/src/Core/src/Handlers/SearchBar/SearchBarHandler.iOS.cs#L155-L251
-	sealed partial class MauiDrawingViewProxy : IDisposable
-	{
-		readonly WeakReference<MauiDrawingView> platformView;
-
-		public MauiDrawingViewProxy(MauiDrawingView view)
-		{
-			platformView = new(view);
-			SubscribeCollectionChanged();
-		}
-
-		MauiDrawingView PlatformView => platformView.TryGetTarget(out var drawingView)
-											? drawingView
-											: throw new ObjectDisposedException(nameof(PlatformView));
-
-		public void Dispose()
-		{
-			PlatformView.Lines.CollectionChanged -= PlatformView.OnLinesCollectionChanged;
-		}
-
-		public void SubscribeCollectionChanged()
-		{
-			PlatformView.Lines.CollectionChanged += PlatformView.OnLinesCollectionChanged;
 		}
 	}
 }

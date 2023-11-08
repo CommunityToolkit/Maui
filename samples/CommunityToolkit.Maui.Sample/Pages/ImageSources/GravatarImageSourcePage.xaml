@@ -98,7 +98,7 @@
                 CornerRadius="32,0,0,32"
                 HeightRequest="128"
                 WidthRequest="128"
-                SemanticProperties.Description="GravatarImageSourse used with AvatarView.">
+                SemanticProperties.Description="GravatarImageSource used with AvatarView.">
                 <mct:AvatarView.Stroke>
                     <LinearGradientBrush EndPoint="0,1">
                         <GradientStop Offset="0.1" Color="Blue" />
@@ -115,19 +115,16 @@
             </mct:AvatarView>
             <Label x:Name="LabelEmail" Text="Email:" />
             <Entry
-                AutomationProperties.LabeledBy="{x:Reference LabelEmail}"
                 Keyboard="Email"
                 SemanticProperties.Hint="Enter your own gravatar registered email address"
                 Text="{Binding Email}" />
             <Label x:Name="LabelDefaultImage" Text="Default Image:" />
             <Picker
-                AutomationProperties.LabeledBy="{x:Reference LabelDefaultImage}"
                 ItemsSource="{Binding DefaultGravatarItems}"
                 SelectedItem="{Binding DefaultGravatarSelected}"
                 SemanticProperties.Hint="A default image is displayed if there is no image associated with the requested email hash." />
             <Label x:Name="LabelEnableCache" Text="Enable cache:" />
             <Switch
-                AutomationProperties.LabeledBy="{x:Reference LabelEnableCache}"
                 IsToggled="{Binding EnableCache}"
                 SemanticProperties.Hint="Defines whether image caching is enabled.  The default value of this property is: True" />
             <Label
@@ -143,11 +140,10 @@
                 </Label.FormattedText>
             </Label>
             <Slider
-                AutomationProperties.LabeledBy="{x:Reference LabelCacheValidity}"
                 IsEnabled="{Binding EnableCache}"
                 Maximum="365"
                 Minimum="1"
-                SemanticProperties.Hint="Specify how long the image will be stored locally for.  The default of this property is 1 day."
+                SemanticProperties.Hint="Specify how long the image will be stored locally.  The default of this property is 1 day."
                 Value="{Binding CacheValidityInDays}" />
         </VerticalStackLayout>
     </ScrollView>
