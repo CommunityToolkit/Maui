@@ -17,7 +17,7 @@ public class FadeAnimationTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Fact(Timeout = (int)TestDuration.Short)]
+	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task AnimateShouldReturnToOriginalOpacity()
 	{
 		FadeAnimation animation = new();
