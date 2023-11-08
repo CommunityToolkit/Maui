@@ -291,7 +291,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 			currentStatus = sender.IsFocused switch
 			{
 				true => ValidationFlags.ValidateOnFocusing,
-				_ => ValidationFlags.ValidateOnUnfocusing
+				false => ValidationFlags.ValidateOnUnfocusing
 			};
 
 			await UpdateStateAsync(View, Flags, false).ConfigureAwait(false);
