@@ -10,7 +10,7 @@ public class UserStoppedTypingBehaviorTests : BaseTest
 	const int defaultLengthThreshold = 0;
 	const int defaultTimeoutThreshold = defaultTimeThreshold * 2;
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task ShouldExecuteCommandWhenTimeThresholdHasExpired()
 	{
 		// arrange
@@ -25,7 +25,7 @@ public class UserStoppedTypingBehaviorTests : BaseTest
 		Assert.True(commandHasBeenExecuted);
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task ShouldExecuteCommandWithSpecificParameterWhenSpecified()
 	{
 		// arrange
@@ -41,7 +41,7 @@ public class UserStoppedTypingBehaviorTests : BaseTest
 		Assert.True(commandHasBeenExecuted);
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task ShouldNotExecuteCommandBeforeTimeThresholdHasExpired()
 	{
 		// arrange
@@ -56,7 +56,7 @@ public class UserStoppedTypingBehaviorTests : BaseTest
 		Assert.False(commandHasBeenExecuted);
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task ShouldOnlyExectueCommandOnceWhenTextChangedHasOccurredMultipleTimes()
 	{
 		// arrange
@@ -74,7 +74,7 @@ public class UserStoppedTypingBehaviorTests : BaseTest
 		Assert.Equal(1, timesExecuted);
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task ShouldDismissKeyboardWhenTimeThresholdHasExpired()
 	{
 		// arrange
@@ -90,7 +90,7 @@ public class UserStoppedTypingBehaviorTests : BaseTest
 		Assert.False(entry.IsFocused);
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task ShouldExecuteCommandWhenMinimumLengthThreholdHasBeenReached()
 	{
 		// arrange
@@ -108,7 +108,7 @@ public class UserStoppedTypingBehaviorTests : BaseTest
 		Assert.True(commandHasBeenExecuted);
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task ShouldNotExecuteCommandWhenMinimumLengthThreholdHasNotBeenReached()
 	{
 		// arrange
@@ -124,7 +124,7 @@ public class UserStoppedTypingBehaviorTests : BaseTest
 		Assert.False(commandHasBeenExecuted);
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task ShouldNotDismissKeyboardWhenMinimumLengthThreholdHasNotBeenReached()
 	{
 		// arrange
@@ -141,7 +141,7 @@ public class UserStoppedTypingBehaviorTests : BaseTest
 		Assert.True(entry.IsFocused);
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task ShouldExecuteCommandImmediatelyWhenMinimumLengthThreholdHasNotBeenSet()
 	{
 		// arrange

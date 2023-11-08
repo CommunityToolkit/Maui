@@ -25,7 +25,7 @@ public class SpeechToTextTests
 		speechToText.Should().BeSameAs(speechToTextImplementationMock);
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task ListenAsyncFailsOnNet()
 	{
 		SpeechToText.SetDefault(new SpeechToTextImplementation());
@@ -34,14 +34,14 @@ public class SpeechToTextTests
 		result.Exception.Should().BeOfType<NotImplementedInReferenceAssemblyException>();
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task StartListenAsyncFailsOnNet()
 	{
 		SpeechToText.SetDefault(new SpeechToTextImplementation());
 		await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => SpeechToText.StartListenAsync(CultureInfo.CurrentCulture, CancellationToken.None));
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task StartStopListenAsyncShouldChangeState()
 	{
 		SpeechToText.SetDefault(new SpeechToTextImplementationMock(string.Empty, string.Empty));
@@ -58,7 +58,7 @@ public class SpeechToTextTests
 		};
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task StartStopListenAsyncShouldChangeRecognitionText()
 	{
 		var expectedPartialText = ".NET MAUI";
@@ -86,14 +86,14 @@ public class SpeechToTextTests
 		};
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task StopListenAsyncFailsOnNet()
 	{
 		SpeechToText.SetDefault(new SpeechToTextImplementation());
 		await Assert.ThrowsAsync<NotSupportedException>(() => SpeechToText.StopListenAsync(CancellationToken.None));
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task RequestPermissionsFailsOnNet()
 	{
 		SpeechToText.SetDefault(new SpeechToTextImplementation());

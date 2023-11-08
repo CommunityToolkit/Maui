@@ -16,7 +16,7 @@ public class FileSaverTests
 		fileSaver.Should().BeSameAs(fileSaverImplementationMock);
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task SaveAsyncFailsOnNet()
 	{
 		FileSaver.SetDefault(new FileSaverImplementation());
@@ -28,7 +28,7 @@ public class FileSaverTests
 		Assert.Throws<NotImplementedException>(result.EnsureSuccess);
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task SaveAsyncWithInitialPathFailsOnNet()
 	{
 		FileSaver.SetDefault(new FileSaverImplementation());

@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions;
 
 public class BackgroundColorToTests : BaseTest
 {
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task BackgroundColorTo_VerifyColorChanged()
 	{
 		Color originalBackgroundColor = Colors.Blue, updatedBackgroundColor = Colors.Red;
@@ -22,7 +22,7 @@ public class BackgroundColorToTests : BaseTest
 		Assert.Equal(updatedBackgroundColor, element.BackgroundColor);
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task BackgroundColorTo_VerifyColorChangedForDefaultBackgroundColor()
 	{
 		Color updatedBackgroundColor = Colors.Yellow;
@@ -36,7 +36,7 @@ public class BackgroundColorToTests : BaseTest
 		Assert.Equal(updatedBackgroundColor, element.BackgroundColor);
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task BackgroundColorTo_DoesNotAllowNullVisualElement()
 	{
 		VisualElement? element = null;
@@ -46,7 +46,7 @@ public class BackgroundColorToTests : BaseTest
 #pragma warning restore CS8603 // Possible null reference return.
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task BackgroundColorTo_DoesNotAllowNullColor()
 	{
 		VisualElement element = new Label();

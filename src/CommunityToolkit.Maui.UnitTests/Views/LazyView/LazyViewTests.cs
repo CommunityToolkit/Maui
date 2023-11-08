@@ -13,7 +13,7 @@ public class LazyViewTests : BaseHandlerTest
 		Assert.False(lazyView.HasLazyViewLoaded);
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task CheckHasLoadedTrueAfterCallLoadView()
 	{
 		var lazyView = new LazyView<Button>();
@@ -23,7 +23,7 @@ public class LazyViewTests : BaseHandlerTest
 		Assert.True(lazyView.HasLazyViewLoaded);
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task CheckContentSetAfterLoadView()
 	{
 		var lazyView = new LazyView<Button>();
@@ -34,7 +34,7 @@ public class LazyViewTests : BaseHandlerTest
 		Assert.IsAssignableFrom<Button>(lazyView.Content);
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task CheckBindingContextIsPassedToCreatedView()
 	{
 		var lazyView = new LazyView<Button>();

@@ -33,7 +33,7 @@ public class ToastTests : BaseTest
 		currentToast.Should().BeEquivalentTo(expectedToast);
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task ToastShow_CancellationTokenCancelled_ReceiveException()
 	{
 		var cancellationTokenSource = new CancellationTokenSource();
@@ -42,7 +42,7 @@ public class ToastTests : BaseTest
 		cancellationTokenSource.Dispose();
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task ToastDismiss_CancellationTokenCancelled_ReceiveException()
 	{
 		var cancellationTokenSource = new CancellationTokenSource();
@@ -51,7 +51,7 @@ public class ToastTests : BaseTest
 		cancellationTokenSource.Dispose();
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task ToastShow_CancellationTokenNotCancelled_NotReceiveException()
 	{
 		var cancellationTokenSource = new CancellationTokenSource();
@@ -59,7 +59,7 @@ public class ToastTests : BaseTest
 		cancellationTokenSource.Dispose();
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task ToastDismiss_CancellationTokenNotCancelled_NotReceiveException()
 	{
 		var cancellationTokenSource = new CancellationTokenSource();
@@ -67,13 +67,13 @@ public class ToastTests : BaseTest
 		cancellationTokenSource.Dispose();
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task ToastShow_CancellationTokenNone_NotReceiveException()
 	{
 		await toast.Invoking(x => x.Show(CancellationToken.None)).Should().NotThrowAsync<OperationCanceledException>();
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task ToastDismiss_CancellationTokenNone_NotReceiveException()
 	{
 		await toast.Invoking(x => x.Dismiss(CancellationToken.None)).Should().NotThrowAsync<OperationCanceledException>();

@@ -145,14 +145,14 @@ public class DrawingViewTests : BaseHandlerTest
 		drawingView.Lines.Should().BeEmpty();
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task GetImageStreamReturnsNullStream()
 	{
 		var stream = await drawingView.GetImageStream(10, 10, CancellationToken.None);
 		stream.Should().BeSameAs(Stream.Null);
 	}
 
-	[Fact]
+	[Fact(Timeout = 2000)]
 	public async Task GetImageStreamStaticReturnsNullStream()
 	{
 		var stream = await Maui.Views.DrawingView.GetImageStream(new[] { new DrawingLine() }, Size.Zero, Colors.Blue, CancellationToken.None);
