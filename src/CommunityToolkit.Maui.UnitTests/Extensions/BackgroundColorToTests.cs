@@ -21,6 +21,34 @@ public class BackgroundColorToTests : BaseTest
 		Assert.True(isSuccessful);
 		Assert.Equal(updatedBackgroundColor, element.BackgroundColor);
 	}
+	
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task BackgroundColorTo_CancellationTokenExpired()
+	{
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		VisualElement element = new Label { BackgroundColor = Colors.Blue };
+		element.EnableAnimations();
+		
+		// Ensure CancellationToken has expired
+		await Task.Delay(100, CancellationToken.None);
+
+		await Assert.ThrowsAsync<TaskCanceledException>(() => element.BackgroundColorTo(Colors.Green, token: cts.Token));
+	}
+	
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task BackgroundColorTo_CancellationTokenCanceled()
+	{
+		var cts = new CancellationTokenSource();
+
+		VisualElement element = new Label { BackgroundColor = Colors.Blue };
+		element.EnableAnimations();
+		
+		// Ensure CancellationToken has expired
+		await cts.CancelAsync();
+
+		await Assert.ThrowsAsync<TaskCanceledException>(() => element.BackgroundColorTo(Colors.Green, token: cts.Token));
+	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task BackgroundColorTo_VerifyColorChangedForDefaultBackgroundColor()
