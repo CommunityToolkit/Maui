@@ -259,9 +259,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		}
 
 		await seekToSemaphoreSlim.WaitAsync(token);
-		
+
 		seekToTaskCompletionSource = new();
-		
+
 		try
 		{
 			Player.SeekTo((long)position.TotalMilliseconds);
