@@ -106,6 +106,8 @@ public class AnimationBehavior : EventToCommandBehavior
 
 		try
 		{
+			// We must `await` `AnimationType.Animate()` here in order to properly implement `Options.ShouldSuppressExceptionsInAnimations`
+			// Returning the `Task` would cause the `OnAnimate()` method to return immediately, before `AnimationType.Animate()` has completed. Returning immediately exits our try/catch block and thus negates our opportunity to handle any Exceptions which breaks `Options.ShouldSuppressExceptionsInAnimations`.
 			await AnimationType.Animate(View, token);
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInAnimations)
