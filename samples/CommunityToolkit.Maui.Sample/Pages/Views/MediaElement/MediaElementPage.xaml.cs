@@ -126,7 +126,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 		var newValue = ((Slider)sender).Value;
 		await MediaElement.SeekTo(TimeSpan.FromSeconds(newValue), CancellationToken.None);
-		
+
 		MediaElement.Play();
 	}
 

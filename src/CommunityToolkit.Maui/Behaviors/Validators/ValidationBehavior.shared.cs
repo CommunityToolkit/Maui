@@ -192,6 +192,9 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 	/// <summary>
 	/// Allows the user to provide a custom <see cref="ICommand"/> that handles forcing validation. This is a bindable property.
 	/// </summary>
+	/// <remarks>
+	/// The Default Value for <see cref="ForceValidateCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter"
+	/// </remarks>
 	public ICommand ForceValidateCommand
 	{
 		get => (ICommand)GetValue(ForceValidateCommandProperty);

@@ -47,7 +47,7 @@ public class PopupServiceTests : BaseHandlerTest
 			popupService.ShowPopupAsync<INotifyPropertyChanged>(onPresenting: null, CancellationToken.None));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsync_CancellationTokenExpired()
 	{
@@ -63,10 +63,10 @@ public class PopupServiceTests : BaseHandlerTest
 
 		// Ensure CancellationToken has expired
 		await Task.Delay(100, CancellationToken.None);
-		
+
 		await Assert.ThrowsAsync<TaskCanceledException>(() => popupService.ShowPopupAsync<MockPageViewModel>(cts.Token));
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsync_CancellationTokenCanceled()
 	{
@@ -79,10 +79,10 @@ public class PopupServiceTests : BaseHandlerTest
 		SetupTest(popupInstance, () => popupViewModel, out var popupService);
 
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
-		
+
 		// Ensure CancellationToken has expired
 		await cts.CancelAsync();
-		
+
 		await Assert.ThrowsAsync<TaskCanceledException>(() => popupService.ShowPopupAsync<MockPageViewModel>(cts.Token));
 	}
 
@@ -123,7 +123,7 @@ public class PopupServiceTests : BaseHandlerTest
 
 		Assert.Same(popupInstance.BindingContext, popupViewModel);
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsyncWithOnPresenting_CancellationTokenExpired()
 	{
@@ -139,10 +139,10 @@ public class PopupServiceTests : BaseHandlerTest
 
 		// Ensure CancellationToken has expired
 		await Task.Delay(100, CancellationToken.None);
-		
+
 		await Assert.ThrowsAsync<TaskCanceledException>(() => popupService.ShowPopupAsync<MockPageViewModel>(viewModel => viewModel.HasLoaded = true, cts.Token));
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsyncWithOnPresenting_CancellationTokenCanceled()
 	{
@@ -155,10 +155,10 @@ public class PopupServiceTests : BaseHandlerTest
 		SetupTest(popupInstance, () => popupViewModel, out var popupService);
 
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
-		
+
 		// Ensure CancellationToken has expired
 		await cts.CancelAsync();
-		
+
 		await Assert.ThrowsAsync<TaskCanceledException>(() => popupService.ShowPopupAsync<MockPageViewModel>(viewModel => viewModel.HasLoaded = true, cts.Token));
 	}
 
@@ -225,7 +225,7 @@ public class PopupServiceTests : BaseHandlerTest
 		Assert.Throws<ArgumentNullException>(() => popupService.ShowPopup<INotifyPropertyChanged>(viewModel: null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsyncWithViewModel_CancellationTokenExpired()
 	{
@@ -241,10 +241,10 @@ public class PopupServiceTests : BaseHandlerTest
 
 		// Ensure CancellationToken has expired
 		await Task.Delay(100, CancellationToken.None);
-		
+
 		await Assert.ThrowsAsync<TaskCanceledException>(() => popupService.ShowPopupAsync(popupViewModel, cts.Token));
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsyncWithViewModel_CancellationTokenCanceled()
 	{
@@ -257,10 +257,10 @@ public class PopupServiceTests : BaseHandlerTest
 		SetupTest(popupInstance, () => popupViewModel, out var popupService);
 
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
-		
+
 		// Ensure CancellationToken has expired
 		await cts.CancelAsync();
-		
+
 		await Assert.ThrowsAsync<TaskCanceledException>(() => popupService.ShowPopupAsync(popupViewModel, cts.Token));
 	}
 

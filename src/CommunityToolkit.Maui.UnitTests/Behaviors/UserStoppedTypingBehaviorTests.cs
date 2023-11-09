@@ -64,10 +64,10 @@ public class UserStoppedTypingBehaviorTests : BaseTest
 
 		// assert
 		Assert.False(commandHasBeenExecuted);
-		
+
 		// act
 		await commandTCS.Task;
-		
+
 		Assert.True(commandHasBeenExecuted);
 	}
 
@@ -154,7 +154,7 @@ public class UserStoppedTypingBehaviorTests : BaseTest
 			commandTCS.SetResult();
 		}),
 		minimumLengthThreshold: 2);
-		
+
 		entry.Focused += HandleFocused;
 
 		// act
@@ -164,11 +164,11 @@ public class UserStoppedTypingBehaviorTests : BaseTest
 
 		// assert
 		Assert.False(commandHasBeenExecuted);
-		
+
 		// act
 		entry.Text = "123";
 		await commandTCS.Task;
-		
+
 		// assert
 		Assert.True(commandHasBeenExecuted);
 
@@ -198,7 +198,7 @@ public class UserStoppedTypingBehaviorTests : BaseTest
 
 		// assert
 		Assert.True(entry.IsFocused);
-		
+
 		// act
 		entry.Text = "123";
 		await unfocusTCS.Task;
@@ -211,7 +211,7 @@ public class UserStoppedTypingBehaviorTests : BaseTest
 			entry.Focused -= HandleFocused;
 			focusTCS.SetResult();
 		}
-		
+
 		void HandleUnfocused(object? sender, FocusEventArgs e)
 		{
 			entry.Unfocused -= HandleUnfocused;

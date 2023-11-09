@@ -69,14 +69,14 @@ public class CharactersValidationBehaviorTests : BaseTest
 		entry.Behaviors.Add(behavior);
 
 		// Act
-		
+
 		// Ensure CancellationToken expires
 		await Task.Delay(100, CancellationToken.None);
-		
+
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await behavior.ForceValidate(cts.Token));
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task CancellationTokenCanceled()
 	{
@@ -91,10 +91,10 @@ public class CharactersValidationBehaviorTests : BaseTest
 		entry.Behaviors.Add(behavior);
 
 		// Act
-		
+
 		// Ensure CancellationToken expires
 		await Task.Delay(100, CancellationToken.None);
-		
+
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(async () =>
 		{

@@ -27,7 +27,7 @@ public class UriValidationBehaviorTests : BaseTest
 		// Assert
 		Assert.Equal(expectedValue, behavior.IsValid);
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task CancellationTokenExpired()
 	{
@@ -42,14 +42,14 @@ public class UriValidationBehaviorTests : BaseTest
 		entry.Behaviors.Add(behavior);
 
 		// Act
-		
+
 		// Ensure CancellationToken expires
 		await Task.Delay(100, CancellationToken.None);
-		
+
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await behavior.ForceValidate(cts.Token));
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task CancellationTokenCanceled()
 	{
@@ -64,10 +64,10 @@ public class UriValidationBehaviorTests : BaseTest
 		entry.Behaviors.Add(behavior);
 
 		// Act
-		
+
 		// Ensure CancellationToken expires
 		await Task.Delay(100, CancellationToken.None);
-		
+
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(async () =>
 		{

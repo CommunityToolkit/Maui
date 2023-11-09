@@ -21,7 +21,7 @@ public class BackgroundColorToTests : BaseTest
 		Assert.True(isSuccessful);
 		Assert.Equal(updatedBackgroundColor, element.BackgroundColor);
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task BackgroundColorTo_CancellationTokenExpired()
 	{
@@ -29,13 +29,13 @@ public class BackgroundColorToTests : BaseTest
 
 		VisualElement element = new Label { BackgroundColor = Colors.Blue };
 		element.EnableAnimations();
-		
+
 		// Ensure CancellationToken has expired
 		await Task.Delay(100, CancellationToken.None);
 
 		await Assert.ThrowsAsync<TaskCanceledException>(() => element.BackgroundColorTo(Colors.Green, token: cts.Token));
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task BackgroundColorTo_CancellationTokenCanceled()
 	{
@@ -43,7 +43,7 @@ public class BackgroundColorToTests : BaseTest
 
 		VisualElement element = new Label { BackgroundColor = Colors.Blue };
 		element.EnableAnimations();
-		
+
 		// Ensure CancellationToken has expired
 		await cts.CancelAsync();
 

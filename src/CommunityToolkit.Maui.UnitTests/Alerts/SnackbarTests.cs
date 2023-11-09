@@ -54,7 +54,7 @@ public class SnackbarTests : BaseTest
 			return snackbar.Show(cts.Token);
 		});
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarDismiss_CancellationTokenExpires()
 	{

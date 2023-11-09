@@ -97,7 +97,7 @@ public class AnimationBehaviorTests : BaseTest
 			animationEndedTcs.SetResult();
 		}
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public void AnimateCommandTokenCanceled()
 	{
@@ -141,7 +141,7 @@ public class AnimationBehaviorTests : BaseTest
 			animationEndedTcs.SetResult();
 		}
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public void AnimateCommandTokenExpired()
 	{

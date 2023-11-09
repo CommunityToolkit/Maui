@@ -69,7 +69,7 @@ public class MultiValidationBehaviorTests : BaseTest
 	{
 		// Arrange
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
-		
+
 		var characterValidationBehavior = new CharactersValidationBehavior();
 		var requiredStringValidationBehavior = new RequiredStringValidationBehavior();
 
@@ -91,13 +91,13 @@ public class MultiValidationBehaviorTests : BaseTest
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await multiBehavior.ForceValidate(cts.Token));
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ForceValidateCancellationTokenCanceled()
 	{
 		// Arrange
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
-		
+
 		var characterValidationBehavior = new CharactersValidationBehavior();
 		var requiredStringValidationBehavior = new RequiredStringValidationBehavior();
 

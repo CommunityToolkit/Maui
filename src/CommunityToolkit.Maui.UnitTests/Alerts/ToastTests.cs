@@ -14,7 +14,7 @@ public class ToastTests : BaseTest
 	{
 		Assert.IsAssignableFrom<IAlert>(toast);
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ToastShow_CancellationTokenExpires()
 	{
@@ -37,7 +37,7 @@ public class ToastTests : BaseTest
 			return toast.Show(cts.Token);
 		});
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ToastDismiss_CancellationTokenExpires()
 	{

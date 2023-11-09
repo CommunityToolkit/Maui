@@ -2,7 +2,6 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.Views;
-using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
@@ -34,7 +33,7 @@ public class PopupTests : BaseHandlerTest
 	public async Task ShowPopupAsync_CancellationTokenExpired()
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
-		
+
 		var app = Application.Current ?? throw new NullReferenceException();
 
 		var page = new ContentPage
@@ -54,18 +53,18 @@ public class PopupTests : BaseHandlerTest
 
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
-		
+
 		// Ensure CancellationToken Has Expired
 		await Task.Delay(100, CancellationToken.None);
 
 		await Assert.ThrowsAsync<TaskCanceledException>(() => page.ShowPopupAsync((MockPopup)popup, cts.Token));
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsync_CancellationTokenCancelled()
 	{
 		var cts = new CancellationTokenSource();
-		
+
 		var app = Application.Current ?? throw new NullReferenceException();
 
 		var page = new ContentPage
@@ -85,18 +84,18 @@ public class PopupTests : BaseHandlerTest
 
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
-		
+
 		// Ensure CancellationToken Has Expired
 		await cts.CancelAsync();
 
 		await Assert.ThrowsAsync<TaskCanceledException>(() => page.ShowPopupAsync((MockPopup)popup, cts.Token));
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task CloseAsync_CancellationTokenExpired()
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
-		
+
 		var app = Application.Current ?? throw new NullReferenceException();
 
 		var page = new ContentPage
@@ -116,18 +115,18 @@ public class PopupTests : BaseHandlerTest
 
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
-		
+
 		// Ensure CancellationToken Has Expired
 		await Task.Delay(100, CancellationToken.None);
 
 		await Assert.ThrowsAsync<TaskCanceledException>(() => ((MockPopup)popup).CloseAsync(token: cts.Token));
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task CloseAsync_CancellationTokenCancelled()
 	{
 		var cts = new CancellationTokenSource();
-		
+
 		var app = Application.Current ?? throw new NullReferenceException();
 
 		var page = new ContentPage
@@ -147,7 +146,7 @@ public class PopupTests : BaseHandlerTest
 
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
-		
+
 		// Ensure CancellationToken Has Expired
 		await cts.CancelAsync();
 
@@ -334,9 +333,9 @@ public class PopupTests : BaseHandlerTest
 		protected override async Task OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup, CancellationToken token)
 		{
 			await Task.Delay(100, token);
-			
+
 			((IPopup)this).HandlerCompleteTCS.TrySetResult();
-			
+
 			await base.OnClosed(result, wasDismissedByTappingOutsideOfPopup, token);
 		}
 	}

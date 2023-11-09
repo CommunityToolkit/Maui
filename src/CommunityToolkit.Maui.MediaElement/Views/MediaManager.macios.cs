@@ -162,7 +162,7 @@ public partial class MediaManager : IDisposable
 					{
 						throw new InvalidOperationException("Seek Failed");
 					}
-					
+
 					seekTaskCompletionSource.SetResult();
 				});
 				break;
