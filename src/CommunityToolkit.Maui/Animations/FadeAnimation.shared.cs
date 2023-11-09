@@ -35,7 +35,7 @@ public class FadeAnimation : BaseAnimation
 	}
 
 	/// <inheritdoc />
-	public override async Task Animate(VisualElement view, CancellationToken token)
+	public override async Task Animate(VisualElement view, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(view);
 

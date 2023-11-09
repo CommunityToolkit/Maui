@@ -82,7 +82,7 @@ public class PopupService : IPopupService
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(CancellationToken)"/>
-	public Task<object?> ShowPopupAsync<TViewModel>(CancellationToken token) where TViewModel : INotifyPropertyChanged
+	public Task<object?> ShowPopupAsync<TViewModel>(CancellationToken token = default) where TViewModel : INotifyPropertyChanged
 	{
 		var popup = GetPopup(typeof(TViewModel));
 
@@ -92,7 +92,7 @@ public class PopupService : IPopupService
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(TViewModel, CancellationToken)"/>
-	public Task<object?> ShowPopupAsync<TViewModel>(TViewModel viewModel, CancellationToken token) where TViewModel : INotifyPropertyChanged
+	public Task<object?> ShowPopupAsync<TViewModel>(TViewModel viewModel, CancellationToken token = default) where TViewModel : INotifyPropertyChanged
 	{
 		ArgumentNullException.ThrowIfNull(viewModel);
 
@@ -104,7 +104,7 @@ public class PopupService : IPopupService
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(Action{TViewModel}, CancellationToken)"/>
-	public Task<object?> ShowPopupAsync<TViewModel>(Action<TViewModel> onPresenting, CancellationToken token) where TViewModel : INotifyPropertyChanged
+	public Task<object?> ShowPopupAsync<TViewModel>(Action<TViewModel> onPresenting, CancellationToken token = default) where TViewModel : INotifyPropertyChanged
 	{
 		ArgumentNullException.ThrowIfNull(onPresenting);
 

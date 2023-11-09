@@ -222,7 +222,7 @@ public class DrawingView : View, IDrawingView
 	public static ValueTask<Stream> GetImageStream(IEnumerable<IDrawingLine> lines,
 													Size imageSize,
 													Brush? background,
-													CancellationToken token) =>
+													CancellationToken token = default) =>
 		DrawingViewService.GetImageStream(lines.ToList(), imageSize, background, token);
 
 	/// <summary>
@@ -232,7 +232,7 @@ public class DrawingView : View, IDrawingView
 	/// <param name="imageSizeHeight">Desired height of the image that is returned. The image will be resized proportionally.</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="DrawingView"/>.</returns>
-	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, CancellationToken token) =>
+	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, CancellationToken token = default) =>
 		DrawingViewService.GetImageStream(Lines.ToList(), new Size(imageSizeWidth, imageSizeHeight), Background, token);
 
 	/// <summary>

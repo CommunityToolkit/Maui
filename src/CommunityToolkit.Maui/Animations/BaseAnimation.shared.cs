@@ -49,7 +49,7 @@ public abstract class BaseAnimation<TAnimatable> : BindableObject where TAnimata
 	/// </summary>
 	/// <param name="view">The view to perform the animation on.</param>
 	/// <param name="token"> <see cref="CancellationToken"/>.</param>
-	public abstract Task Animate(TAnimatable view, CancellationToken token);
+	public abstract Task Animate(TAnimatable view, CancellationToken token = default);
 }
 
 /// <inheritdoc/>

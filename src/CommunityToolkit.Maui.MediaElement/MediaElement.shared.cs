@@ -380,7 +380,7 @@ public class MediaElement : View, IMediaElement, IDisposable
 	}
 
 	/// <inheritdoc cref="IMediaElement.SeekTo(TimeSpan, CancellationToken)"/>
-	public async Task SeekTo(TimeSpan position, CancellationToken token)
+	public async Task SeekTo(TimeSpan position, CancellationToken token = default)
 	{
 		await seekToSemaphoreSlim.WaitAsync(token);
 

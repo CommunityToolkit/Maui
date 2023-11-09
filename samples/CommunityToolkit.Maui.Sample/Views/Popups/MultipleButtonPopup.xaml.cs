@@ -15,12 +15,12 @@ public partial class MultipleButtonPopup : Popup
 	async void Cancel_Clicked(object? sender, EventArgs e)
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-		await CloseAsync(cts.Token, false);
+		await CloseAsync(false, cts.Token);
 	}
 
 	async void Okay_Clicked(object? sender, EventArgs e)
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-		await CloseAsync(cts.Token, true);
+		await CloseAsync(true, cts.Token);
 	}
 }

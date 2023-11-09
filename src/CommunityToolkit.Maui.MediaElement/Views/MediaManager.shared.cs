@@ -87,7 +87,7 @@ public partial class MediaManager
 	/// </summary>
 	/// <param name="position">The position to seek to.</param>
 	/// <param name="token"><see cref="CancellationToken"/> ></param>
-	public Task Seek(TimeSpan position, CancellationToken token)
+	public Task Seek(TimeSpan position, CancellationToken token = default)
 	{
 		return PlatformSeek(position, token);
 	}

@@ -13,10 +13,10 @@ public interface IAlert : IDisposable
 	/// <summary>
 	/// Dismiss the alert
 	/// </summary>
-	Task Dismiss(CancellationToken token);
+	Task Dismiss(CancellationToken token = default);
 
 	/// <summary>
 	/// Show the alert
 	/// </summary>
-	Task Show(CancellationToken token);
+	Task Show(CancellationToken token = default);
 }

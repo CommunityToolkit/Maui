@@ -71,7 +71,7 @@ public static class StateContainer
 		string? state,
 		Animation? beforeStateChange,
 		Animation? afterStateChange,
-		CancellationToken token)
+		CancellationToken token = default)
 	{
 		if (beforeStateChange is null && afterStateChange is null)
 		{
@@ -118,7 +118,7 @@ public static class StateContainer
 		string? state,
 		Func<VisualElement, CancellationToken, Task>? beforeStateChange,
 		Func<VisualElement, CancellationToken, Task>? afterStateChange,
-		CancellationToken cancellationToken)
+		CancellationToken cancellationToken = default)
 	{
 		if (beforeStateChange is null && afterStateChange is null)
 		{
@@ -155,7 +155,7 @@ public static class StateContainer
 	/// <summary>
 	/// Change state using the default fade animation.
 	/// </summary>
-	public static async Task ChangeStateWithAnimation(BindableObject bindable, string? state, CancellationToken token)
+	public static async Task ChangeStateWithAnimation(BindableObject bindable, string? state, CancellationToken token = default)
 	{
 		ValidateCanStateChange(bindable);
 		SetCanStateChange(bindable, false);

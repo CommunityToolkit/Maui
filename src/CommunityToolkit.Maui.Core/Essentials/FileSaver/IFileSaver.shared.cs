@@ -19,7 +19,7 @@ public interface IFileSaver
 	[SupportedOSPlatform("MacCatalyst14.0")]
 	[SupportedOSPlatform("Tizen")]
 	[SupportedOSPlatform("Windows")]
-	Task<FileSaverResult> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken);
+	Task<FileSaverResult> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Saves a file to the default folder on the file system
@@ -32,5 +32,5 @@ public interface IFileSaver
 	[SupportedOSPlatform("MacCatalyst14.0")]
 	[SupportedOSPlatform("Tizen")]
 	[SupportedOSPlatform("Windows")]
-	Task<FileSaverResult> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken);
+	Task<FileSaverResult> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken = default);
 }

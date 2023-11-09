@@ -53,7 +53,7 @@ public class DrawingLine : IDrawingLine
 										float lineWidth,
 										Color strokeColor,
 										Paint background,
-										CancellationToken token)
+										CancellationToken token = default)
 	{
 		return DrawingViewService.GetImageStream(points.ToList(), imageSize, lineWidth, strokeColor, background, token);
 	}
@@ -66,7 +66,7 @@ public class DrawingLine : IDrawingLine
 	/// <param name="background">Background of the generated image.</param>
 	/// <param name="token"><see cref="CancellationToken"/> </param>
 	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
-	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Paint background, CancellationToken token)
+	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Paint background, CancellationToken token = default)
 	{
 		return DrawingViewService.GetImageStream(Points.ToList(), new Size(imageSizeWidth, imageSizeHeight), LineWidth, LineColor, background, token);
 	}

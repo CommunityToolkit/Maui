@@ -16,6 +16,6 @@ public partial class ReturnResultPopup : Popup
 	async void Button_Clicked(object? sender, EventArgs e)
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-		await CloseAsync(cts.Token, "Close button tapped");
+		await CloseAsync("Close button tapped", cts.Token);
 	}
 }

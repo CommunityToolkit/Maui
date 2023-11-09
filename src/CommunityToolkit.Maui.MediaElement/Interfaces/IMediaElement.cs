@@ -129,7 +129,7 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// <param name="position">The requested position to seek to.</param>
 	/// <param name="token"><see cref="CancellationToken"/>.</param>
 	/// <remarks>If <paramref name="position"/> is outside of the range of the current media item, nothing will happen.</remarks>
-	Task SeekTo(TimeSpan position, CancellationToken token);
+	Task SeekTo(TimeSpan position, CancellationToken token = default);
 
 	/// <summary>
 	/// Stops playing the currently playing media and resets the <see cref="Position"/>.

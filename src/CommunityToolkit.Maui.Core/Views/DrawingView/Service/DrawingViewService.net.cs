@@ -15,7 +15,7 @@ public static class DrawingViewService
 	/// <param name="background">Image background</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(IList<PointF> points, Size imageSize, float lineWidth, Color strokeColor, Paint? background, CancellationToken token)
+	public static ValueTask<Stream> GetImageStream(IList<PointF> points, Size imageSize, float lineWidth, Color strokeColor, Paint? background, CancellationToken token = default)
 	{
 		token.ThrowIfCancellationRequested();
 		return ValueTask.FromResult(Stream.Null);
@@ -29,7 +29,7 @@ public static class DrawingViewService
 	/// <param name="background">Image background</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background, CancellationToken token)
+	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background, CancellationToken token = default)
 	{
 		token.ThrowIfCancellationRequested();
 		return ValueTask.FromResult(Stream.Null);

@@ -120,7 +120,7 @@ public class PopupTests : BaseHandlerTest
 		// Ensure CancellationToken Has Expired
 		await Task.Delay(100, CancellationToken.None);
 
-		await Assert.ThrowsAsync<TaskCanceledException>(() => ((MockPopup)popup).CloseAsync(cts.Token));
+		await Assert.ThrowsAsync<TaskCanceledException>(() => ((MockPopup)popup).CloseAsync(token: cts.Token));
 	}
 	
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -151,7 +151,7 @@ public class PopupTests : BaseHandlerTest
 		// Ensure CancellationToken Has Expired
 		await cts.CancelAsync();
 
-		await Assert.ThrowsAsync<TaskCanceledException>(() => ((MockPopup)popup).CloseAsync(cts.Token));
+		await Assert.ThrowsAsync<TaskCanceledException>(() => ((MockPopup)popup).CloseAsync(token: cts.Token));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -301,7 +301,7 @@ public class PopupTests : BaseHandlerTest
 			isPopupDismissed = true;
 		};
 
-		await ((MockPopup)popup).CloseAsync(CancellationToken.None);
+		await ((MockPopup)popup).CloseAsync(token: CancellationToken.None);
 
 		Assert.True(isPopupDismissed);
 		Assert.Null(result);

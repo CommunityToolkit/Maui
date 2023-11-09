@@ -55,7 +55,7 @@ public static partial class PopupExtensions
 	/// <returns>
 	/// A task that will complete once the <see cref="Popup"/> is dismissed.
 	/// </returns>
-	public static Task<object?> ShowPopupAsync<TPopup>(this Page page, TPopup popup, CancellationToken token) where TPopup : Popup
+	public static Task<object?> ShowPopupAsync<TPopup>(this Page page, TPopup popup, CancellationToken token = default) where TPopup : Popup
 	{
 #if WINDOWS
 		// TODO: This is a workaround for https://github.com/dotnet/maui/issues/12970. Remove this `#if Windows` block when the issue is closed   

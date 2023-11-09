@@ -18,7 +18,7 @@ public interface IFolderPicker
 	[SupportedOSPlatform("MacCatalyst14.0")]
 	[SupportedOSPlatform("Tizen")]
 	[SupportedOSPlatform("Windows")]
-	Task<FolderPickerResult> PickAsync(string initialPath, CancellationToken cancellationToken);
+	Task<FolderPickerResult> PickAsync(string initialPath, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Allows the user to pick a folder from the file system
@@ -30,5 +30,5 @@ public interface IFolderPicker
 	[SupportedOSPlatform("MacCatalyst14.0")]
 	[SupportedOSPlatform("Tizen")]
 	[SupportedOSPlatform("Windows")]
-	Task<FolderPickerResult> PickAsync(CancellationToken cancellationToken);
+	Task<FolderPickerResult> PickAsync(CancellationToken cancellationToken = default);
 }

@@ -211,7 +211,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 	/// <summary>
 	/// Forces the behavior to make a validation pass.
 	/// </summary>
-	public ValueTask ForceValidate(CancellationToken token) => UpdateStateAsync(View, Flags, true, token);
+	public ValueTask ForceValidate(CancellationToken token = default) => UpdateStateAsync(View, Flags, true, token);
 
 	/// <inheritdoc/>
 	public void Dispose()
