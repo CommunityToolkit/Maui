@@ -11,7 +11,7 @@
 
     <ContentPage.Resources>
         <ResourceDictionary>
-            <mct:ListToStringConverter x:Key="ListToStringConverter" Separator=", " />
+            <mct:ListToStringConverter x:Key="ListToStringConverter" Separator=" " />
         </ResourceDictionary>
     </ContentPage.Resources>
     

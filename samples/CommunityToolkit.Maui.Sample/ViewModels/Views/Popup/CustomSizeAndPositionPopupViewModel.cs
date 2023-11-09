@@ -19,7 +19,7 @@ public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
 	int flowDirectionSelectedIndex;
 
-	public FrozenSet<string> FlowDirectionOptions { get; } = Enum.GetNames(typeof(FlowDirection)).ToFrozenSet();
+	public IReadOnlyList<string> FlowDirectionOptions { get; } = Enum.GetNames(typeof(FlowDirection)).ToList();
 
 	[RelayCommand(CanExecute = nameof(CanShowButtonExecute))]
 	public Task ExecuteShowButton()
