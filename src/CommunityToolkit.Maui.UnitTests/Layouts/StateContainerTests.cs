@@ -103,6 +103,40 @@ public class StateContainerTests : BaseTest
 		Assert.Equal(StateKey.Anything, StateContainer.GetCurrentState(layout));
 		Assert.True(StateContainer.GetCanStateChange(layout));
 	}
+	
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task StateContainer_CancellationTokenExpired()
+	{
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+		
+		layout.EnableAnimations();
+		foreach (var child in layout.Children)
+		{
+			child.EnableAnimations();
+		}
+		
+		// Ensure CancellationToken has expired
+		await Task.Delay(100, CancellationToken.None);
+		
+		await Assert.ThrowsAsync<TaskCanceledException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, cts.Token));
+	}
+	
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task StateContainer_CancellationTokenCanceled()
+	{
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+		
+		layout.EnableAnimations();
+		foreach (var child in layout.Children)
+		{
+			child.EnableAnimations();
+		}
+		
+		// Ensure CancellationToken has expired
+		await cts.CancelAsync();
+		
+		await Assert.ThrowsAsync<TaskCanceledException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, cts.Token));
+	}
 
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task StateContainer_DefaultAnimation()
@@ -355,7 +389,7 @@ public class StateContainerTests : BaseTest
 	{
 		var exception = await Assert.ThrowsAsync<ArgumentException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, (Animation?)null, null, CancellationToken.None));
 
-		Assert.Equal("Anmiation required. Parameters beforeStateChange and afterStateChange cannot both be null", exception.Message);
+		Assert.Equal("Animation required. Parameters beforeStateChange and afterStateChange cannot both be null", exception.Message);
 		Assert.True(StateContainer.GetCanStateChange(layout));
 	}
 
@@ -364,7 +398,7 @@ public class StateContainerTests : BaseTest
 	{
 		var exception = await Assert.ThrowsAsync<ArgumentException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, (Func<VisualElement, CancellationToken, Task>?)null, null, CancellationToken.None));
 
-		Assert.Equal("Anmiation required. Parameters beforeStateChange and afterStateChange cannot both be null", exception.Message);
+		Assert.Equal("Animation required. Parameters beforeStateChange and afterStateChange cannot both be null", exception.Message);
 		Assert.True(StateContainer.GetCanStateChange(layout));
 	}
 

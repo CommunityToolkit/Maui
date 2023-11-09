@@ -75,7 +75,7 @@ public static class StateContainer
 	{
 		if (beforeStateChange is null && afterStateChange is null)
 		{
-			throw new ArgumentException($"Anmiation required. Parameters {nameof(beforeStateChange)} and {nameof(afterStateChange)} cannot both be null");
+			throw new ArgumentException($"Animation required. Parameters {nameof(beforeStateChange)} and {nameof(afterStateChange)} cannot both be null");
 		}
 
 		ValidateCanStateChange(bindable);
@@ -122,7 +122,7 @@ public static class StateContainer
 	{
 		if (beforeStateChange is null && afterStateChange is null)
 		{
-			throw new ArgumentException($"Anmiation required. Parameters {nameof(beforeStateChange)} and {nameof(afterStateChange)} cannot both be null");
+			throw new ArgumentException($"Animation required. Parameters {nameof(beforeStateChange)} and {nameof(afterStateChange)} cannot both be null");
 		}
 
 		ValidateCanStateChange(bindable);
