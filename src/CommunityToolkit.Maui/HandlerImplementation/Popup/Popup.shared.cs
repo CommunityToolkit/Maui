@@ -18,6 +18,5 @@ public partial class Popup
 	internal static new void RemapForControls()
 	{
 		PopupHandler.PopUpCommandMapper = ControlPopUpCommandMapper;
-		Element.RemapForControls();
 	}
 }
