@@ -15,15 +15,20 @@ public static class DrawingViewService
 	/// <param name="lines">Drawing lines</param>
 	/// <param name="imageSize">Maximum image size. The image will be resized proportionally.</param>
 	/// <param name="background">Image background</param>
+	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(in IList<IDrawingLine> lines, in Size imageSize, in Paint? background)
+	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background, CancellationToken token = default)
 	{
+		token.ThrowIfCancellationRequested();
+
 		var image = GetUIImageForLines(lines, background);
 		if (image is null)
 		{
 			return ValueTask.FromResult(Stream.Null);
 		}
-		
+
+		token.ThrowIfCancellationRequested();
+
 		var imageAsPng = GetMaximumUIImage(image, imageSize.Width, imageSize.Height)
 							.AsPNG() ?? throw new InvalidOperationException("Unable to convert image to PNG");
 
@@ -38,18 +43,19 @@ public static class DrawingViewService
 	/// <param name="lineWidth">Line Width</param>
 	/// <param name="strokeColor">Line color</param>
 	/// <param name="background">Image background</param>
+	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(in IList<PointF> points,
-										in Size imageSize,
-										in float lineWidth,
-										in Color strokeColor,
-										in Paint? background)
+	public static ValueTask<Stream> GetImageStream(IList<PointF> points, Size imageSize, float lineWidth, Color strokeColor, Paint? background, CancellationToken token = default)
 	{
+		token.ThrowIfCancellationRequested();
+
 		var image = GetUIImageForPoints(points, lineWidth, strokeColor, background);
 		if (image is null)
 		{
 			return ValueTask.FromResult(Stream.Null);
 		}
+
+		token.ThrowIfCancellationRequested();
 
 		var imageAsPng = GetMaximumUIImage(image, imageSize.Width, imageSize.Height)
 							.AsPNG() ?? throw new InvalidOperationException("Unable to convert image to PNG");
@@ -71,14 +77,20 @@ public static class DrawingViewService
 	static UIImage? GetUIImageForLines(IList<IDrawingLine> lines, in Paint? background)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
-		var maxLineWidth = lines.Select(x => x.LineWidth).Max();
+		var drawingLineWithLargestLineWidth = lines.MaxBy(x => x.LineWidth);
+
+		if (drawingLineWithLargestLineWidth is null)
+		{
+			throw new InvalidOperationException("Unable to generate image. No Lines Found");
+		}
+		
 		return GetUIImage(points, (context, offset) =>
 		{
 			foreach (var line in lines)
 			{
 				DrawStrokes(context, line.Points, line.LineWidth, line.LineColor, offset);
 			}
-		}, background, maxLineWidth);
+		}, background, drawingLineWithLargestLineWidth.LineWidth);
 	}
 
 	static UIImage? GetUIImage(ICollection<PointF> points, Action<CGContext, Size> drawStrokes, Paint? background, NFloat maxLineWidth)

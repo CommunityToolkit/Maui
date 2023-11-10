@@ -49,7 +49,7 @@ public partial class KeyboardExtensionsViewModel : BaseViewModel
 	{
 		try
 		{
-			bool isSuccessful = await view.ShowKeyboardAsync(CancellationToken.None);
+			bool isSuccessful = await view.ShowKeyboardAsync(token);
 
 			if (isSuccessful)
 			{

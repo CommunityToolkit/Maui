@@ -66,8 +66,7 @@
         </ControlTemplate>
 
         <Style TargetType="RadioButton">
-            <Setter Property="ControlTemplate"
-                    Value="{StaticResource RadioButtonTemplate}" />
+            <Setter Property="ControlTemplate" Value="{StaticResource RadioButtonTemplate}" />
         </Style>
     </ContentPage.Resources>
 

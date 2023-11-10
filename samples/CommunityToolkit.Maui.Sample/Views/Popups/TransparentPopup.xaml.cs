@@ -8,6 +8,7 @@ public partial class TransparentPopup : Popup
 
 	public async void CloseButtonClicked(object? sender, EventArgs args)
 	{
-		await CloseAsync();
+		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+		await CloseAsync(cts.Token);
 	}
 }

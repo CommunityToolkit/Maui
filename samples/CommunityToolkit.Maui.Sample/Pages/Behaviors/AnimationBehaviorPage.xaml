@@ -16,7 +16,7 @@
             <Label.FormattedText>
                 <FormattedString>
                     <FormattedString.Spans>
-                        <Span Text="AnimationBehavor is a Behavior that can be attached to any VisualElement, allowing developers to: trigger animations via: ICommand AnimateCommand." />
+                        <Span Text="AnimationBehavior is a Behavior that can be attached to any VisualElement, allowing developers to: trigger animations via: ICommand AnimateCommand." />
                         <Span Text="{x:Static system:Environment.NewLine}" />
                         <Span Text="* use the default of a TapGestureRecognizer being added to the attached VisualElement" />
                         <Span Text="{x:Static system:Environment.NewLine}" />

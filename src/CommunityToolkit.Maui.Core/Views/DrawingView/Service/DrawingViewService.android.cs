@@ -19,13 +19,14 @@ public static class DrawingViewService
 	/// <param name="lines">Drawing lines</param>
 	/// <param name="imageSize">Maximum image size. The image will be resized proportionally.</param>
 	/// <param name="background">Image background</param>
+	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(in IList<IDrawingLine> lines,
-												   in Size imageSize,
-												   in Paint? background)
+	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background, CancellationToken token = default)
 	{
+		token.ThrowIfCancellationRequested();
 
 		var image = GetBitmapForLines(lines, background);
+
 		return ValueTask.FromResult(GetBitmapStream(image, imageSize));
 	}
 
@@ -37,14 +38,14 @@ public static class DrawingViewService
 	/// <param name="lineWidth">Line Width</param>
 	/// <param name="strokeColor">Line color</param>
 	/// <param name="background">Image background</param>
+	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(in IList<PointF> points,
-										in Size imageSize,
-										in float lineWidth,
-										in Color strokeColor,
-										in Paint? background)
+	public static ValueTask<Stream> GetImageStream(IList<PointF> points, Size imageSize, float lineWidth, Color strokeColor, Paint? background, CancellationToken token = default)
 	{
+		token.ThrowIfCancellationRequested();
+
 		var image = GetBitmapForPoints(points, lineWidth, strokeColor, background);
+
 		return ValueTask.FromResult(GetBitmapStream(image, imageSize));
 	}
 

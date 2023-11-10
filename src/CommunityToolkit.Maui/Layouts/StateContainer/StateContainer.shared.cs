@@ -71,11 +71,11 @@ public static class StateContainer
 		string? state,
 		Animation? beforeStateChange,
 		Animation? afterStateChange,
-		CancellationToken token)
+		CancellationToken token = default)
 	{
 		if (beforeStateChange is null && afterStateChange is null)
 		{
-			throw new ArgumentException($"Anmiation required. Parameters {nameof(beforeStateChange)} and {nameof(afterStateChange)} cannot both be null");
+			throw new ArgumentException($"Animation required. Parameters {nameof(beforeStateChange)} and {nameof(afterStateChange)} cannot both be null");
 		}
 
 		ValidateCanStateChange(bindable);
@@ -118,11 +118,11 @@ public static class StateContainer
 		string? state,
 		Func<VisualElement, CancellationToken, Task>? beforeStateChange,
 		Func<VisualElement, CancellationToken, Task>? afterStateChange,
-		CancellationToken cancellationToken)
+		CancellationToken cancellationToken = default)
 	{
 		if (beforeStateChange is null && afterStateChange is null)
 		{
-			throw new ArgumentException($"Anmiation required. Parameters {nameof(beforeStateChange)} and {nameof(afterStateChange)} cannot both be null");
+			throw new ArgumentException($"Animation required. Parameters {nameof(beforeStateChange)} and {nameof(afterStateChange)} cannot both be null");
 		}
 
 		ValidateCanStateChange(bindable);
@@ -155,7 +155,7 @@ public static class StateContainer
 	/// <summary>
 	/// Change state using the default fade animation.
 	/// </summary>
-	public static async Task ChangeStateWithAnimation(BindableObject bindable, string? state, CancellationToken token)
+	public static async Task ChangeStateWithAnimation(BindableObject bindable, string? state, CancellationToken token = default)
 	{
 		ValidateCanStateChange(bindable);
 		SetCanStateChange(bindable, false);

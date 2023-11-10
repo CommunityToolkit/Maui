@@ -133,7 +133,7 @@ public sealed partial class SpeechToTextImplementation
 			return tcsInitialize.Task.WaitAsync(cancellationToken);
 		}
 
-		tcsInitialize = new TaskCompletionSource<bool>(cancellationToken);
+		tcsInitialize = new TaskCompletionSource<bool>();
 		sttClient = new SttClient();
 
 		sttClient.StateChanged += (s, e) =>
@@ -169,12 +169,12 @@ public sealed partial class SpeechToTextImplementation
 			: RecognitionType.Free;
 
 		sttClient.Start(defaultSttEngineLocale, recognitionType);
-
-		cancellationToken.ThrowIfCancellationRequested();
 	}
 
 	Task InternalStopListeningAsync(CancellationToken cancellationToken)
 	{
+		cancellationToken.ThrowIfCancellationRequested();
+
 		if (sttClient is not null)
 		{
 			StopRecording(sttClient);

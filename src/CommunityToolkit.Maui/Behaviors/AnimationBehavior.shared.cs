@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Windows.Input;
 using CommunityToolkit.Maui.Animations;
 
 namespace CommunityToolkit.Maui.Behaviors;
@@ -19,14 +18,17 @@ public class AnimationBehavior : EventToCommandBehavior
 	/// Backing BindableProperty for the <see cref="AnimateCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty AnimateCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(AnimateCommand), typeof(ICommand), typeof(AnimationBehavior), default, BindingMode.OneWayToSource, defaultValueCreator: CreateAnimateCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(AnimateCommand), typeof(Command<CancellationToken>), typeof(AnimationBehavior), default, BindingMode.OneWayToSource, propertyChanging: OnAnimateCommandChanging, defaultValueCreator: CreateAnimateCommand).BindableProperty;
 
 	TapGestureRecognizer? tapGestureRecognizer;
 
 	/// <summary>
 	/// Gets the Command that allows the triggering of the animation.
 	/// </summary>
-	public ICommand AnimateCommand => (ICommand)GetValue(AnimateCommandProperty);
+	/// <remarks>
+ 	/// <see cref="AnimateCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter"
+ 	/// </remarks>
+	public Command<CancellationToken> AnimateCommand => (Command<CancellationToken>)GetValue(AnimateCommandProperty);
 
 	/// <summary>
 	/// The type of animation to perform.
@@ -76,31 +78,44 @@ public class AnimationBehavior : EventToCommandBehavior
 	/// <inheritdoc/>
 	protected override async void OnTriggerHandled(object? sender = null, object? eventArgs = null)
 	{
-		await OnAnimate();
+		await OnAnimate(CancellationToken.None);
 
 		base.OnTriggerHandled(sender, eventArgs);
 	}
 
-	static object CreateAnimateCommand(BindableObject bindable)
-		=> new Command(async () => await ((AnimationBehavior)bindable).OnAnimate().ConfigureAwait(false));
+	static Command<CancellationToken> CreateAnimateCommand(BindableObject bindable)
+	{
+		var animationBehavior = (AnimationBehavior)bindable;
+		return new Command<CancellationToken>(async token => await animationBehavior.OnAnimate(token).ConfigureAwait(false));
+	}
 
-	Task OnAnimate()
+	static void OnAnimateCommandChanging(BindableObject bindable, object oldValue, object newValue)
+	{
+		if (newValue is not Command<CancellationToken>)
+		{
+			var animationBehavior = (AnimationBehavior)bindable;
+			throw new InvalidOperationException($"{nameof(AnimateCommand)} must of Type {animationBehavior.AnimateCommand.GetType().FullName}");
+		}
+	}
+
+	async Task OnAnimate(CancellationToken token)
 	{
 		if (View is null || AnimationType is null)
 		{
-			return Task.CompletedTask;
+			return;
 		}
 
 		View.CancelAnimations();
 
 		try
 		{
-			return AnimationType.Animate(View);
+			// We must `await` `AnimationType.Animate()` here in order to properly implement `Options.ShouldSuppressExceptionsInAnimations`
+			// Returning the `Task` would cause the `OnAnimate()` method to return immediately, before `AnimationType.Animate()` has completed. Returning immediately exits our try/catch block and thus negates our opportunity to handle any Exceptions which breaks `Options.ShouldSuppressExceptionsInAnimations`.
+			await AnimationType.Animate(View, token);
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInAnimations)
 		{
 			Trace.WriteLine(ex);
-			return Task.CompletedTask;
 		}
 	}
 }
