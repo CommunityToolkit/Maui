@@ -10,8 +10,8 @@ public class PopupService : IPopupService
 	static readonly Dictionary<Type, Type> viewModelToViewMappings = new();
 
 	static Page CurrentPage =>
-	  PageExtensions.GetCurrentPage(
-	  Application.Current?.MainPage ?? throw new InvalidOperationException("Application.Current.MainPage cannot be null."));
+		PageExtensions.GetCurrentPage(
+			Application.Current?.MainPage ?? throw new InvalidOperationException("Application.Current.MainPage cannot be null."));
 
 	/// <summary>
 	/// Creates a new instance of <see cref="PopupService"/>.
@@ -33,8 +33,8 @@ public class PopupService : IPopupService
 	}
 
 	internal static void AddTransientPopup<TPopupView, TPopupViewModel>(IServiceCollection services)
-	  where TPopupView : IPopup
-	  where TPopupViewModel : INotifyPropertyChanged
+		where TPopupView : IPopup
+		where TPopupViewModel : INotifyPropertyChanged
 	{
 		viewModelToViewMappings.Add(typeof(TPopupViewModel), typeof(TPopupView));
 
@@ -45,7 +45,7 @@ public class PopupService : IPopupService
 	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}()"/>
 	public void ShowPopup<TViewModel>() where TViewModel : INotifyPropertyChanged
 	{
-		Popup popup = GetPopup(typeof(TViewModel));
+		var popup = GetPopup(typeof(TViewModel));
 
 		ValidateBindingContext<TViewModel>(popup, out _);
 
@@ -57,7 +57,7 @@ public class PopupService : IPopupService
 	{
 		ArgumentNullException.ThrowIfNull(viewModel);
 
-		Popup popup = GetPopup(typeof(TViewModel));
+		var popup = GetPopup(typeof(TViewModel));
 
 		popup.BindingContext = viewModel;
 
@@ -69,7 +69,7 @@ public class PopupService : IPopupService
 	{
 		ArgumentNullException.ThrowIfNull(onPresenting);
 
-		Popup popup = GetPopup(typeof(TViewModel));
+		var popup = GetPopup(typeof(TViewModel));
 
 		ValidateBindingContext(popup, out TViewModel viewModel);
 
@@ -81,7 +81,7 @@ public class PopupService : IPopupService
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}()"/>
 	public Task<object?> ShowPopupAsync<TViewModel>() where TViewModel : INotifyPropertyChanged
 	{
-		Popup popup = GetPopup(typeof(TViewModel));
+		var popup = GetPopup(typeof(TViewModel));
 
 		ValidateBindingContext<TViewModel>(popup, out _);
 
@@ -93,7 +93,7 @@ public class PopupService : IPopupService
 	{
 		ArgumentNullException.ThrowIfNull(viewModel);
 
-		Popup popup = GetPopup(typeof(TViewModel));
+		var popup = GetPopup(typeof(TViewModel));
 
 		popup.BindingContext = viewModel;
 
@@ -105,7 +105,7 @@ public class PopupService : IPopupService
 	{
 		ArgumentNullException.ThrowIfNull(onPresenting);
 
-		Popup popup = GetPopup(typeof(TViewModel));
+		var popup = GetPopup(typeof(TViewModel));
 
 		ValidateBindingContext(popup, out TViewModel viewModel);
 
@@ -133,7 +133,7 @@ public class PopupService : IPopupService
 
 	Popup GetPopup(Type viewModelType)
 	{
-		Popup popup = serviceProvider.GetService(viewModelToViewMappings[viewModelType]) as Popup;
+		var popup = serviceProvider.GetService(viewModelToViewMappings[viewModelType]) as Popup;
 
 		if (popup is null)
 		{
