@@ -125,6 +125,12 @@ Here we will have some:
 ### Debug Logging
 * Always use `Trace.WriteLine()` instead of `Debug.WriteLine` for debug logging because `Debug.WriteLine` is removed by the compiler in Release builds
 
+### Methods Returning Task and ValueTask
+* Always include a `CancellationToken` as a parameter to every method returning `Task` or `ValueTask`
+* If the method is public, provide a the default value for the `CancellationToken` (eg `CancellationToken token = default`)
+  * If the method is not publc, do not provide a default value for the `CancellationToken`
+* Use `CancellationToken.ThrowIfCancellationRequested()` to verify the `CancellationToken`
+
 ### Enums
 * Always use `Unknown` at index 0 for return types that may have a value that is not known
 * Always use `Default` at index 0 for option types that can use the system default option

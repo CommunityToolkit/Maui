@@ -13,5 +13,9 @@ public partial class ReturnResultPopup : Popup
 		ResultWhenUserTapsOutsideOfPopup = "User Tapped Outside of Popup";
 	}
 
-	async void Button_Clicked(object? sender, EventArgs e) => await CloseAsync("Close button tapped");
+	async void Button_Clicked(object? sender, EventArgs e)
+	{
+		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+		await CloseAsync("Close button tapped", cts.Token);
+	}
 }

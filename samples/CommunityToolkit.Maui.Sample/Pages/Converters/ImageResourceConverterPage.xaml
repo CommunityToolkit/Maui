@@ -25,7 +25,13 @@
                    WidthRequest="150"
                    HeightRequest="150"
                    HorizontalOptions="End"/>
-            <Label Grid.Row="1" Grid.Column="1" Text="->" HorizontalOptions="Center" FontSize="Large" TextColor="{StaticResource NormalLabelTextColor}"/>
+            <Label Grid.Row="1" 
+                   Grid.Column="1" 
+                   Text="➡️" 
+                   HorizontalOptions="Center" 
+                   VerticalOptions="Center"
+                   FontSize="Large" 
+                   TextColor="{StaticResource NormalLabelTextColor}"/>
             <Image Grid.Row="1" 
                    Grid.Column="2"  
                    Source="{Binding MauiImageResource, Converter={StaticResource ImageResourceConverter}}"

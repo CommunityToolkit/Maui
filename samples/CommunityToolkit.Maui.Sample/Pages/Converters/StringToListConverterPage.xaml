@@ -1,5 +1,6 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<pages:BasePage 
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<pages:BasePage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
@@ -9,30 +10,28 @@
     x:TypeArguments="vm:StringToListConverterViewModel"
     x:DataType="vm:StringToListConverterViewModel">
 
-    <pages:BasePage.Content>
-        <VerticalStackLayout Spacing="8">
+    <VerticalStackLayout Spacing="8">
+        <Label
+            Text="The StringToListConverter returns a string array that contains the substrings in this string that are delimited by Separator"
+            TextColor="{StaticResource NormalLabelTextColor}" />
 
-            <Label Text="The StringToListConverter returns a string array that contains the substrings in this string that are delimited by Separator"
-                   TextColor="{StaticResource NormalLabelTextColor}"/>
+        <Label
+            FontAttributes="Bold"
+            Text="Enter some text separated by ',' or '.' or ';'" />
 
-            <Label
-                FontAttributes="Bold"
-                Text="Enter some text separated by ',' or '.' or ';'" />
+        <Entry
+            FontSize="Medium"
+            Placeholder="Enter some text separated by ',' or '.' or ';'"
+            Text="{Binding LabelText, Mode=OneWayToSource}" />
 
-            <Entry
-                FontSize="Medium"
-                Placeholder="Enter some text separated by ',' or '.' or ';'"
-                Text="{Binding LabelText, Mode=OneWayToSource}" />
+        <CollectionView
+            ItemsSource="{Binding LabelText, Mode=OneWay, Converter={StaticResource StringToListConverter}}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                    <Label FontSize="Medium" Text="{Binding .}" TextColor="{StaticResource NormalLabelTextColor}" />
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
 
-            <CollectionView
-                ItemsSource="{Binding LabelText, Mode=OneWay, Converter={StaticResource StringToListConverter}}">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="x:String">
-                        <Label FontSize="Medium" Text="{Binding .}" TextColor="{StaticResource NormalLabelTextColor}" />
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-
-        </VerticalStackLayout>
-    </pages:BasePage.Content>
+    </VerticalStackLayout>
 </pages:BasePage>

@@ -145,17 +145,39 @@ public class DrawingViewTests : BaseHandlerTest
 		drawingView.Lines.Should().BeEmpty();
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task GetImageStream_CancellationTokenExpired()
+	{
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		// Ensure CancellationToken Expired
+		await Task.Delay(100, CancellationToken.None);
+
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await Maui.Views.DrawingView.GetImageStream(new[] { new DrawingLine() }, Size.Zero, Colors.Blue, cts.Token));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task GetImageStream_CancellationTokenCanceled()
+	{
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		// Ensure CancellationToken Expired
+		await cts.CancelAsync();
+
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await Maui.Views.DrawingView.GetImageStream(new[] { new DrawingLine() }, Size.Zero, Colors.Blue, cts.Token));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task GetImageStreamReturnsNullStream()
 	{
-		var stream = await drawingView.GetImageStream(10, 10);
+		var stream = await drawingView.GetImageStream(10, 10, CancellationToken.None);
 		stream.Should().BeSameAs(Stream.Null);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task GetImageStreamStaticReturnsNullStream()
 	{
-		var stream = await Maui.Views.DrawingView.GetImageStream(new[] { new DrawingLine() }, Size.Zero, Colors.Blue);
+		var stream = await Maui.Views.DrawingView.GetImageStream(new[] { new DrawingLine() }, Size.Zero, Colors.Blue, CancellationToken.None);
 		stream.Should().BeSameAs(Stream.Null);
 	}
 

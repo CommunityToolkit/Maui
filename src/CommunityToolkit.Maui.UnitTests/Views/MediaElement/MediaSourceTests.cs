@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class MediaSourceTests
+public class MediaSourceTests : BaseTest
 {
 	[Fact]
 	public void MediaSourceFromResourceShouldBeUriMediaSource()

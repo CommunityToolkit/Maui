@@ -43,8 +43,7 @@
                     Grid.Row="0"
                     Grid.Column="1"
                     Title="CharacterType"
-                    ItemsSource="{Binding CharacterTypes, Mode=OneTime}"
-                    SelectedIndex="1" />
+                    ItemsSource="{Binding CharacterTypes, Mode=OneTime}" />
                 <Label Grid.Row="1"
                        Grid.Column="0"
                        VerticalOptions="FillAndExpand"

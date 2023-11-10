@@ -70,17 +70,39 @@ public class DrawingLineTests : BaseHandlerTest
 		drawingLine.Granularity.Should().Be(expectedValue);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task GetImageStream_CancellationTokenExpired()
+	{
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		// Ensure CancellationToken Expired
+		await Task.Delay(100, CancellationToken.None);
+
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await drawingLine.GetImageStream(10, 10, Colors.Blue.AsPaint(), cts.Token));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task GetImageStream_CancellationTokenCanceled()
+	{
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		// Ensure CancellationToken Expired
+		await cts.CancelAsync();
+
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await drawingLine.GetImageStream(10, 10, Colors.Blue.AsPaint(), cts.Token));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task GetImageStreamReturnsNullStream()
 	{
-		var stream = await drawingLine.GetImageStream(10, 10, Colors.Blue.AsPaint());
+		var stream = await drawingLine.GetImageStream(10, 10, Colors.Blue.AsPaint(), CancellationToken.None);
 		Assert.Equal(Stream.Null, stream);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task GetImageStreamStaticReturnsNullStream()
 	{
-		var stream = await DrawingLine.GetImageStream(Array.Empty<PointF>(), new Size(10, 10), 5, Colors.Yellow, Colors.Blue.AsPaint());
+		var stream = await DrawingLine.GetImageStream(Array.Empty<PointF>(), new Size(10, 10), 5, Colors.Yellow, Colors.Blue.AsPaint(), CancellationToken.None);
 		Assert.Equal(Stream.Null, stream);
 	}
 

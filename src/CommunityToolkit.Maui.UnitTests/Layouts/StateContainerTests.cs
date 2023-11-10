@@ -104,7 +104,41 @@ public class StateContainerTests : BaseTest
 		Assert.True(StateContainer.GetCanStateChange(layout));
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task StateContainer_CancellationTokenExpired()
+	{
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		layout.EnableAnimations();
+		foreach (var child in layout.Children)
+		{
+			child.EnableAnimations();
+		}
+
+		// Ensure CancellationToken has expired
+		await Task.Delay(100, CancellationToken.None);
+
+		await Assert.ThrowsAsync<TaskCanceledException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, cts.Token));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task StateContainer_CancellationTokenCanceled()
+	{
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		layout.EnableAnimations();
+		foreach (var child in layout.Children)
+		{
+			child.EnableAnimations();
+		}
+
+		// Ensure CancellationToken has expired
+		await cts.CancelAsync();
+
+		await Assert.ThrowsAsync<TaskCanceledException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, cts.Token));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task StateContainer_DefaultAnimation()
 	{
 		layout.EnableAnimations();
@@ -122,7 +156,7 @@ public class StateContainerTests : BaseTest
 		Assert.Equal(StateKey.Error, StateContainer.GetCurrentState(layout));
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task StateContainer_CustomAnimation()
 	{
 		layout.EnableAnimations();
@@ -133,12 +167,12 @@ public class StateContainerTests : BaseTest
 
 		var beforeStateChangeAnimation = new Animation
 		{
-			Duration = 1
+			Duration = 0.5
 		};
 
 		var afterStateChangeAnimation = new Animation
 		{
-			Duration = 1
+			Duration = 0.5
 		};
 
 		var changeStateWithAnimationTask = StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, beforeStateChangeAnimation, afterStateChangeAnimation, CancellationToken.None);
@@ -150,7 +184,7 @@ public class StateContainerTests : BaseTest
 		Assert.Equal(StateKey.Error, StateContainer.GetCurrentState(layout));
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task StateContainer_FuncAnimation()
 	{
 		layout.EnableAnimations();
@@ -168,10 +202,10 @@ public class StateContainerTests : BaseTest
 		Assert.True(StateContainer.GetCanStateChange(layout));
 		Assert.Equal(StateKey.Error, StateContainer.GetCurrentState(layout));
 
-		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateTo(0.75, 1000).WaitAsync(token);
+		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateTo(0.75, 500).WaitAsync(token);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task StateContainer_DefaultAnimation_Timeout()
 	{
 		layout.EnableAnimations();
@@ -184,7 +218,7 @@ public class StateContainerTests : BaseTest
 		await Assert.ThrowsAsync<TaskCanceledException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, cancelledTokenSource.Token));
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task StateContainer_CustomAnimation_Timeout()
 	{
 		layout.EnableAnimations();
@@ -207,7 +241,7 @@ public class StateContainerTests : BaseTest
 		await Assert.ThrowsAsync<TaskCanceledException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, beforeStateChangeAnimation, afterStateChangeAnimation, cancelledTokenSource.Token));
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task StateContainer_FuncAnimation_Timeout()
 	{
 		layout.EnableAnimations();
@@ -222,7 +256,7 @@ public class StateContainerTests : BaseTest
 		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateTo(0.75, 1000).WaitAsync(token);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task StateContainer_ChangingStateWhenCanStateChangePropertyIsFalse_DefaultAnimation()
 	{
 		layout.EnableAnimations();
@@ -249,7 +283,7 @@ public class StateContainerTests : BaseTest
 		Assert.True(StateContainer.GetCanStateChange(layout));
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task StateContainer_ChangingStateWhenCanStateChangePropertyIsFalse_CustomBeforeAnimation()
 	{
 		layout.EnableAnimations();
@@ -281,7 +315,7 @@ public class StateContainerTests : BaseTest
 		Assert.True(StateContainer.GetCanStateChange(layout));
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task StateContainer_ChangingStateWhenCanStateChangePropertyIsFalse_CustomAfterAnimation()
 	{
 		layout.EnableAnimations();
@@ -313,7 +347,7 @@ public class StateContainerTests : BaseTest
 		Assert.True(StateContainer.GetCanStateChange(layout));
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task StateContainer_ChangingStateWhenCanStateChangePropertyIsFalse_CustomBeforeAndAfterAnimation()
 	{
 		layout.EnableAnimations();
@@ -350,25 +384,25 @@ public class StateContainerTests : BaseTest
 		Assert.True(StateContainer.GetCanStateChange(layout));
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task StateContainer_ChangingStateWhenCanStateChangePropertyIsFalse_NullAnimations()
 	{
 		var exception = await Assert.ThrowsAsync<ArgumentException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, (Animation?)null, null, CancellationToken.None));
 
-		Assert.Equal("Anmiation required. Parameters beforeStateChange and afterStateChange cannot both be null", exception.Message);
+		Assert.Equal("Animation required. Parameters beforeStateChange and afterStateChange cannot both be null", exception.Message);
 		Assert.True(StateContainer.GetCanStateChange(layout));
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task StateContainer_ChangingStateWhenCanStateChangePropertyIsFalse_NullFuncs()
 	{
 		var exception = await Assert.ThrowsAsync<ArgumentException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, (Func<VisualElement, CancellationToken, Task>?)null, null, CancellationToken.None));
 
-		Assert.Equal("Anmiation required. Parameters beforeStateChange and afterStateChange cannot both be null", exception.Message);
+		Assert.Equal("Animation required. Parameters beforeStateChange and afterStateChange cannot both be null", exception.Message);
 		Assert.True(StateContainer.GetCanStateChange(layout));
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task StateContainer_ChangingStateWhenCanStateChangePropertyIsFalse_CustomBeforeAnimationFuncs()
 	{
 		layout.EnableAnimations();
@@ -394,10 +428,10 @@ public class StateContainerTests : BaseTest
 
 		Assert.True(StateContainer.GetCanStateChange(layout));
 
-		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateTo(0.75, 1000).WaitAsync(token);
+		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateTo(0.75, 500).WaitAsync(token);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task StateContainer_ChangingStateWhenCanStateChangePropertyIsFalse_CustomAfterAnimationFuncs()
 	{
 		layout.EnableAnimations();
@@ -423,10 +457,10 @@ public class StateContainerTests : BaseTest
 
 		Assert.True(StateContainer.GetCanStateChange(layout));
 
-		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateTo(0.75, 1000).WaitAsync(token);
+		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateTo(0.75, 500).WaitAsync(token);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task StateContainer_ChangingStateWhenCanStateChangePropertyIsFalse_CustomBeforeAndAfterAnimationFuncs()
 	{
 		layout.EnableAnimations();
@@ -452,7 +486,7 @@ public class StateContainerTests : BaseTest
 
 		Assert.True(StateContainer.GetCanStateChange(layout));
 
-		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateTo(0.75, 1000).WaitAsync(token);
+		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateTo(0.75, 500).WaitAsync(token);
 	}
 
 	[Fact]

@@ -11,5 +11,9 @@ public partial class ButtonPopup : Popup
 		Size = popupSizeConstants.Medium;
 	}
 
-	async void Button_Clicked(object? sender, EventArgs e) => await CloseAsync();
+	async void Button_Clicked(object? sender, EventArgs e)
+	{
+		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+		await CloseAsync(cts.Token);
+	}
 }

@@ -9,17 +9,24 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiMediaElement : Grid, IDisposable
 {
-	readonly MediaPlayerElement mediaElement;
+	readonly MediaPlayerElement mediaPlayerElement;
+
+	bool isDisposed;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
 	/// </summary>
-	/// <param name="mediaElementElement"></param>
-	public MauiMediaElement(MediaPlayerElement mediaElementElement)
+	/// <param name="mediaPlayerElement"></param>
+	public MauiMediaElement(MediaPlayerElement mediaPlayerElement)
 	{
-		this.mediaElement = mediaElementElement;
-		Children.Add(this.mediaElement);
+		this.mediaPlayerElement = mediaPlayerElement;
+		Children.Add(this.mediaPlayerElement);
 	}
+
+	/// <summary>
+	/// Finalizer
+	/// </summary>
+	~MauiMediaElement() => Dispose(false);
 
 	/// <summary>
 	/// Releases the managed and unmanaged resources used by the <see cref="MauiMediaElement"/>.
@@ -35,9 +42,16 @@ public class MauiMediaElement : Grid, IDisposable
 	/// </summary>
 	protected virtual void Dispose(bool disposing)
 	{
+		if(isDisposed)
+		{
+			return;
+		}
+
 		if (disposing)
 		{
-			mediaElement.MediaPlayer.Dispose();
+			mediaPlayerElement.MediaPlayer.Dispose();
 		}
+
+		isDisposed = true;
 	}
 }

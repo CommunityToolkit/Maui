@@ -12,11 +12,14 @@ public partial class LazyViewPage : BasePage<LazyViewViewModel>
 	protected override async void OnAppearing()
 	{
 		base.OnAppearing();
-		await LazyActiviation.LoadViewAsync();
+
+		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+		await LazyActiviation.LoadViewAsync(cts.Token);
 	}
 
 	async void LoadLazyView_Clicked(object sender, EventArgs e)
 	{
-		await LazyUserAction.LoadViewAsync();
+		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+		await LazyUserAction.LoadViewAsync(cts.Token);
 	}
 }
