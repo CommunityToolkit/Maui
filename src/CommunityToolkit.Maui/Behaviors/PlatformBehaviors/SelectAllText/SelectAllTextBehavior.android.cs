@@ -16,5 +16,5 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView, EditText>
 	protected override void OnAttachedTo(InputView bindable, EditText platformView) => platformView.SetSelectAllOnFocus(true);
 
 	/// <inheritdoc/>
-	protected override void OnDetachedFrom(InputView bindable, EditText platformView) => platformView.SetSelectAllOnFocus(true);
+	protected override void OnDetachedFrom(InputView bindable, EditText platformView) => platformView.SetSelectAllOnFocus(false);
 }
