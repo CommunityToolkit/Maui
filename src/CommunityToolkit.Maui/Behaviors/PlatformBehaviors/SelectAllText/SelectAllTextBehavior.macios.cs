@@ -16,7 +16,7 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView>
 	/// <inheritdoc/>
 	protected override void OnDetachedFrom(InputView bindable, UIView platformView) =>
 		ApplyBehaviorToControl(false, bindable, platformView);
-	
+
 	static void ApplyBehaviorToControl<T>(bool apply, InputView inputView, T platformView) where T : UIView
 	{
 		switch (inputView, platformView)
@@ -24,16 +24,16 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView>
 			case (_, UITextField textField):
 				ApplyToTextField(textField, apply);
 				break;
-			
+
 			case (Editor editor, UITextView uiTextView):
 				ApplyToTextView(editor, uiTextView, apply);
 				break;
-			
+
 			default:
 				throw new NotSupportedException($"Control of type: {platformView.GetType().Name} is not supported by this effect.");
 		}
 	}
-	
+
 	static void ApplyToTextField(UITextField textField, bool shouldApply)
 	{
 		if (textField is null)
@@ -49,7 +49,7 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView>
 		{
 			textField.EditingDidBegin -= OnEditingDidBegin;
 		}
-		
+
 		static void OnEditingDidBegin(object? sender, EventArgs e)
 		{
 			if (sender is not UITextField textfield)
@@ -60,7 +60,7 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView>
 			textfield.PerformSelector(new Selector("selectAll"), null, 0.0f);
 		}
 	}
-	
+
 	// MacCatalyst support blocked: https://github.com/xamarin/xamarin-macios/issues/15156
 	static void ApplyToTextView(VisualElement mauiControl, UITextView textView, bool shouldApply)
 	{
@@ -77,7 +77,7 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView>
 		{
 			mauiControl.Focused -= OnTextViewFocussed;
 		}
-		
+
 		void OnTextViewFocussed(object? sender, FocusEventArgs e)
 		{
 			if (e.IsFocused)
