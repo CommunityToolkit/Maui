@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.Versioning;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using ObjCRuntime;
 using UIKit;
 
@@ -15,33 +9,32 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// </summary>
 public class SelectAllTextBehavior : PlatformBehavior<InputView>
 {
-	InputView? element;
-	UIView? control;
+	/// <inheritdoc/>
+	protected override void OnAttachedTo(InputView bindable, UIView platformView) =>
+		ApplyBehaviorToControl(true, bindable, platformView);
 
 	/// <inheritdoc/>
-	protected override void OnAttachedTo(InputView bindable, UIView platformView)
+	protected override void OnDetachedFrom(InputView bindable, UIView platformView) =>
+		ApplyBehaviorToControl(false, bindable, platformView);
+	
+	static void ApplyBehaviorToControl<T>(bool apply, InputView inputView, T platformView) where T : UIView
 	{
-		element = bindable;
-		control = platformView;
-		ApplyBehaviorToControl(true, platformView);
+		switch (inputView, platformView)
+		{
+			case (_, UITextField textField):
+				ApplyToTextField(textField, apply);
+				break;
+			
+			case (Editor editor, UITextView uiTextView):
+				ApplyToTextView(editor, uiTextView, apply);
+				break;
+			
+			default:
+				throw new NotSupportedException($"Control of type: {platformView.GetType().Name} is not supported by this effect.");
+		}
 	}
-
-	/// <inheritdoc/>
-	protected override void OnDetachedFrom(InputView bindable, UIView platformView)
-	{
-		element = bindable;
-		control = platformView;
-		ApplyBehaviorToControl(false, platformView);
-	}
-
-	bool ApplyBehaviorToControl<T>(bool apply, T platformView) => platformView switch
-	{
-		UITextField textField => ApplyToUITextField(textField, apply),
-		UITextView => ApplyToUITextView(apply),
-		_ => throw new NotSupportedException($"Control of type: {platformView?.GetType()?.Name} is not supported by this effect.")
-	};
-
-	bool ApplyToUITextField(UITextField textField, bool shouldApply)
+	
+	static void ApplyToTextField(UITextField textField, bool shouldApply)
 	{
 		if (textField is null)
 		{
@@ -56,31 +49,24 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView>
 		{
 			textField.EditingDidBegin -= OnEditingDidBegin;
 		}
-
-		return true;
-	}
-
-	void OnEditingDidBegin(object? sender, EventArgs e)
-	{
-		if (sender is not UITextField textfield)
+		
+		static void OnEditingDidBegin(object? sender, EventArgs e)
 		{
-			throw new InvalidOperationException($"The Platform View should be of the type {nameof(UITextField)}.");
+			if (sender is not UITextField textfield)
+			{
+				throw new InvalidOperationException($"The Platform View should be of the type {nameof(UITextField)}.");
+			}
+
+			textfield.PerformSelector(new Selector("selectAll"), null, 0.0f);
 		}
-
-		textfield.PerformSelector(new Selector("selectAll"), null, 0.0f);
 	}
-
+	
 	// MacCatalyst support blocked: https://github.com/xamarin/xamarin-macios/issues/15156
-	bool ApplyToUITextView(bool shouldApply)
+	static void ApplyToTextView(VisualElement mauiControl, UITextView textView, bool shouldApply)
 	{
 		if (OperatingSystem.IsMacCatalyst())
 		{
-			Trace.WriteLine("WARNING: `SelectAllTextBehavior` does not support `Microsoft.Maui.Controls.Editor` on MacCatalyst. For more information, see https://github.com/CommunityToolkit/Maui/issues/432");
-		}
-
-		if (element is not Editor mauiControl)
-		{
-			throw new InvalidOperationException($"The Maui control should be of the type {nameof(Editor)}.");
+			Trace.WriteLine($"WARNING: {nameof(SelectAllTextBehavior)} does not support {typeof(Editor).FullName} on MacCatalyst. For more information, see https://github.com/CommunityToolkit/Maui/issues/432");
 		}
 
 		if (shouldApply)
@@ -91,20 +77,13 @@ public class SelectAllTextBehavior : PlatformBehavior<InputView>
 		{
 			mauiControl.Focused -= OnTextViewFocussed;
 		}
-
-		return true;
-	}
-
-	void OnTextViewFocussed(object? sender, FocusEventArgs e)
-	{
-		if (element is not Editor mauiControl || control is not UITextView textView)
+		
+		void OnTextViewFocussed(object? sender, FocusEventArgs e)
 		{
-			throw new InvalidOperationException("The Platform View or the Maui control isn't the right types.");
-		}
-
-		if (mauiControl.IsFocused)
-		{
-			textView.SelectAll(textView);
+			if (e.IsFocused)
+			{
+				textView.SelectAll(textView);
+			}
 		}
 	}
 }
