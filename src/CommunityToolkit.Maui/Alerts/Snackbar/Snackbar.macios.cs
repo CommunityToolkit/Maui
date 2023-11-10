@@ -33,9 +33,10 @@ public partial class Snackbar
 	/// </summary>
 	static Task DismissPlatform(CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
+
 		if (PlatformSnackbar is not null)
 		{
-			token.ThrowIfCancellationRequested();
 			PlatformSnackbar.Dismiss();
 			PlatformSnackbar = null;
 		}

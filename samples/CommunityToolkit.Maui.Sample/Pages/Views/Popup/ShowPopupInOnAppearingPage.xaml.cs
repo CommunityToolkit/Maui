@@ -20,7 +20,9 @@ public partial class ShowPopupInOnAppearingPage : BasePage<ShowPopupInOnAppearin
 
 	protected override async void OnAppearing()
 	{
+		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
 		// Proves that we now support showing a popup before the platform is even ready.
-		await this.ShowPopupAsync(new ReturnResultPopup(popupSizeConstants));
+		await this.ShowPopupAsync(new ReturnResultPopup(popupSizeConstants), cts.Token);
 	}
 }

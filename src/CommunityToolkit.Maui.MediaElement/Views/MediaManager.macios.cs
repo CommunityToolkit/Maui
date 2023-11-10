@@ -132,33 +132,46 @@ public partial class MediaManager : IDisposable
 		Player?.Pause();
 	}
 
-	protected virtual partial ValueTask PlatformSeek(TimeSpan position)
+	protected virtual async partial Task PlatformSeek(TimeSpan position, CancellationToken token)
 	{
-		if (PlayerItem is null || Player?.CurrentItem is null
-			|| Player?.Status != AVPlayerStatus.ReadyToPlay)
+		token.ThrowIfCancellationRequested();
+
+		var seekTaskCompletionSource = new TaskCompletionSource();
+
+		if (Player?.CurrentItem is null)
 		{
-			return ValueTask.CompletedTask;
+			throw new InvalidOperationException($"{nameof(AVPlayer)}.{nameof(AVPlayer.CurrentItem)} is not yet initialized");
+		}
+
+		if (Player?.Status is not AVPlayerStatus.ReadyToPlay)
+		{
+			throw new InvalidOperationException($"{nameof(AVPlayer)}.{nameof(AVPlayer.Status)} must first be set to {AVPlayerStatus.ReadyToPlay}");
 		}
 
 		var ranges = Player.CurrentItem.SeekableTimeRanges;
-		var seekTo = new CMTime(Convert.ToInt64(position.TotalMilliseconds), 1000);
+		var seekToTime = new CMTime(Convert.ToInt64(position.TotalMilliseconds), 1000);
+
 		foreach (var v in ranges)
 		{
-			if (seekTo >= (seekTo - v.CMTimeRangeValue.Start)
-				&& seekTo < (v.CMTimeRangeValue.Start + v.CMTimeRangeValue.Duration))
+			if (seekToTime >= (seekToTime - v.CMTimeRangeValue.Start)
+				&& seekToTime < (v.CMTimeRangeValue.Start + v.CMTimeRangeValue.Duration))
 			{
-				Player.Seek(seekTo + v.CMTimeRangeValue.Start, (complete) =>
+				Player.Seek(seekToTime + v.CMTimeRangeValue.Start, complete =>
 				{
-					if (complete)
+					if (!complete)
 					{
-						MediaElement?.SeekCompleted();
+						throw new InvalidOperationException("Seek Failed");
 					}
+
+					seekTaskCompletionSource.SetResult();
 				});
 				break;
 			}
 		}
 
-		return ValueTask.CompletedTask;
+		await seekTaskCompletionSource.Task.WaitAsync(token);
+
+		MediaElement.SeekCompleted();
 	}
 
 	protected virtual partial void PlatformStop()
@@ -206,7 +219,7 @@ public partial class MediaManager : IDisposable
 
 			if (!string.IsNullOrWhiteSpace(uri))
 			{
-				asset = AVAsset.FromUrl(NSUrl.CreateFileUrl(new[] { uri }));
+				asset = AVAsset.FromUrl(NSUrl.CreateFileUrl(uri));
 			}
 		}
 		else if (MediaElement.Source is ResourceMediaSource resourceMediaSource)
@@ -240,20 +253,20 @@ public partial class MediaManager : IDisposable
 
 		CurrentItemErrorObserver = PlayerItem?.AddObserver("error",
 			valueObserverOptions, (NSObservedChange change) =>
-		{
-			if (Player?.CurrentItem?.Error is null)
 			{
-				return;
-			}
+				if (Player?.CurrentItem?.Error is null)
+				{
+					return;
+				}
 
-			var message = $"{Player?.CurrentItem?.Error?.LocalizedDescription} - " +
-			$"{Player?.CurrentItem?.Error?.LocalizedFailureReason}";
+				var message = $"{Player?.CurrentItem?.Error?.LocalizedDescription} - " +
+					$"{Player?.CurrentItem?.Error?.LocalizedFailureReason}";
 
-			MediaElement.MediaFailed(
-				new MediaFailedEventArgs(message));
+				MediaElement.MediaFailed(
+					new MediaFailedEventArgs(message));
 
-			Logger?.LogError("{logMessage}", message);
-		});
+				Logger.LogError("{logMessage}", message);
+			});
 
 		if (PlayerItem is not null && PlayerItem.Error is null)
 		{
@@ -272,7 +285,7 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateSpeed()
 	{
-		if (PlayerViewController?.Player is null || MediaElement is null)
+		if (PlayerViewController?.Player is null)
 		{
 			return;
 		}
@@ -285,7 +298,6 @@ public partial class MediaManager : IDisposable
 		}
 
 		PlayerViewController.Player.Rate = (float)MediaElement.Speed;
-
 	}
 
 	protected virtual partial void PlatformUpdateShouldShowPlaybackControls()
@@ -347,7 +359,7 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateShouldKeepScreenOn()
 	{
-		if (Player is null || MediaElement is null)
+		if (Player is null)
 		{
 			return;
 		}
@@ -357,7 +369,7 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateShouldMute()
 	{
-		if (Player is null || MediaElement is null)
+		if (Player is null)
 		{
 			return;
 		}
@@ -407,19 +419,16 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		MutedObserver = Player.AddObserver("muted", valueObserverOptions,
-					MutedChanged);
-		VolumeObserver = Player.AddObserver("volume", valueObserverOptions,
-					VolumeChanged);
+		MutedObserver = Player.AddObserver("muted", valueObserverOptions, MutedChanged);
+		VolumeObserver = Player.AddObserver("volume", valueObserverOptions, VolumeChanged);
 		StatusObserver = Player.AddObserver("status", valueObserverOptions, StatusChanged);
-		TimeControlStatusObserver = Player.AddObserver("timeControlStatus",
-			valueObserverOptions, TimeControlStatusChanged);
+		TimeControlStatusObserver = Player.AddObserver("timeControlStatus", valueObserverOptions, TimeControlStatusChanged);
 		RateObserver = AVPlayer.Notifications.ObserveRateDidChange(RateChanged);
 	}
 
 	void VolumeChanged(NSObservedChange e)
 	{
-		if (MediaElement is null || Player is null)
+		if (Player is null)
 		{
 			return;
 		}
@@ -427,13 +436,13 @@ public partial class MediaManager : IDisposable
 		var volumeDiff = Math.Abs(Player.Volume - MediaElement.Volume);
 		if (volumeDiff > 0.01)
 		{
-			MediaElement.Volume = (double)Player.Volume;
+			MediaElement.Volume = Player.Volume;
 		}
 	}
 
 	void MutedChanged(NSObservedChange e)
 	{
-		if (MediaElement is null || Player is null)
+		if (Player is null)
 		{
 			return;
 		}
@@ -562,20 +571,19 @@ public partial class MediaManager : IDisposable
 			}
 			catch (Exception e)
 			{
-				Logger?.LogWarning(e, "{logMessage}",
-					$"Failed to play media to end.");
+				Logger.LogWarning(e, "{logMessage}", $"Failed to play media to end.");
 			}
 		}
 	}
 
 	void RateChanged(object? sender, NSNotificationEventArgs args)
 	{
-		if (MediaElement is null || Player is null)
+		if (Player is null)
 		{
 			return;
 		}
 
-		if (MediaElement.Speed != Player.Rate)
+		if (!AreFloatingPointNumbersEqual(MediaElement.Speed, Player.Rate))
 		{
 			MediaElement.Speed = Player.Rate;
 		}

@@ -104,7 +104,10 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 	/// <summary>
 	/// Initialize a new instance of ValidationBehavior
 	/// </summary>
-	public ValidationBehavior() => DefaultForceValidateCommand = new Command(async () => await ForceValidate().ConfigureAwait(false));
+	protected ValidationBehavior()
+	{
+		DefaultForceValidateCommand = new Command<CancellationToken>(async token => await ForceValidate(token).ConfigureAwait(false));
+	}
 
 	/// <summary>
 	/// Finalizer
@@ -189,9 +192,12 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 	/// <summary>
 	/// Allows the user to provide a custom <see cref="ICommand"/> that handles forcing validation. This is a bindable property.
 	/// </summary>
-	public ICommand? ForceValidateCommand
+	/// <remarks>
+	/// The Default Value for <see cref="ForceValidateCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter"
+	/// </remarks>
+	public ICommand ForceValidateCommand
 	{
-		get => (ICommand?)GetValue(ForceValidateCommandProperty);
+		get => (ICommand)GetValue(ForceValidateCommandProperty);
 		set => SetValue(ForceValidateCommandProperty, value);
 	}
 
@@ -203,12 +209,12 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 	/// <summary>
 	/// Default force validate command
 	/// </summary>
-	protected virtual ICommand DefaultForceValidateCommand { get; }
+	protected virtual Command<CancellationToken> DefaultForceValidateCommand { get; }
 
 	/// <summary>
 	/// Forces the behavior to make a validation pass.
 	/// </summary>
-	public ValueTask ForceValidate() => UpdateStateAsync(View, Flags, true);
+	public ValueTask ForceValidate(CancellationToken token = default) => UpdateStateAsync(View, Flags, true, token);
 
 	/// <inheritdoc/>
 	public void Dispose()
@@ -288,7 +294,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 			currentStatus = sender.IsFocused switch
 			{
 				true => ValidationFlags.ValidateOnFocusing,
-				_ => ValidationFlags.ValidateOnUnfocusing
+				false => ValidationFlags.ValidateOnUnfocusing
 			};
 
 			await UpdateStateAsync(View, Flags, false).ConfigureAwait(false);
@@ -307,7 +313,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 
 	static async void OnValuePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		await ((ValidationBehavior)bindable).OnValuePropertyChanged();
+		await ((ValidationBehavior)bindable).OnValuePropertyChanged(CancellationToken.None);
 		OnValidationPropertyChanged(bindable, oldValue, newValue);
 	}
 
@@ -322,9 +328,9 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 
 	void OnIsValidPropertyChanged() => IsNotValid = !IsValid;
 
-	async Task OnValuePropertyChanged()
+	async Task OnValuePropertyChanged(CancellationToken token)
 	{
-		await isAttachingSemaphoreSlim.WaitAsync();
+		await isAttachingSemaphoreSlim.WaitAsync(token);
 
 		try
 		{
@@ -354,10 +360,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 
 	async ValueTask UpdateStateAsync(VisualElement? view, ValidationFlags flags, bool isForced, CancellationToken? parentToken = null)
 	{
-		if (parentToken?.IsCancellationRequested is true)
-		{
-			return;
-		}
+		parentToken?.ThrowIfCancellationRequested();
 
 		if ((view?.IsFocused ?? false) && flags.HasFlag(ValidationFlags.ForceMakeValidWhenFocused))
 		{

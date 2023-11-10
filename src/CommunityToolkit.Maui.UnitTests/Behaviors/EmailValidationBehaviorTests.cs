@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using CommunityToolkit.Maui.Behaviors;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
@@ -109,10 +110,54 @@ public class EmailValidationBehaviorTests : BaseTest
 		entry.Behaviors.Add(behavior);
 
 		// Act
-		await behavior.ForceValidate();
+		await behavior.ForceValidate(CancellationToken.None);
 
 		// Assert
 		Assert.Equal(expectedValue, behavior.IsValid);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ForceValidateCancellationTokenExpired()
+	{
+		// Arrange
+		var behavior = new EmailValidationBehavior();
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		var entry = new Entry
+		{
+			Text = "Hello"
+		};
+		entry.Behaviors.Add(behavior);
+
+		// Act
+
+		// Ensure CancellationToken expires 
+		await Task.Delay(100, CancellationToken.None);
+
+		// Assert
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await behavior.ForceValidate(cts.Token));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ForceValidateCancellationTokenCanceled()
+	{
+		// Arrange
+		var behavior = new EmailValidationBehavior();
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		var entry = new Entry
+		{
+			Text = "Hello"
+		};
+		entry.Behaviors.Add(behavior);
+
+		// Act
+
+		// Ensure CancellationToken expires 
+		await cts.CancelAsync();
+
+		// Assert
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await behavior.ForceValidate(cts.Token));
 	}
 
 	[Fact]

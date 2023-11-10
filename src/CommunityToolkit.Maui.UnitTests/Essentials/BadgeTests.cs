@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Essentials;
 
-public class BadgeTests
+public class BadgeTests : BaseTest
 {
 	[Fact]
 	public void BadgeTestsSetDefaultUpdatesInstance()

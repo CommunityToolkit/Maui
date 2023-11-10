@@ -8,25 +8,23 @@ namespace CommunityToolkit.Maui.Views;
 /// <summary>
 /// Represents an object that is used to render audio and video to the display.
 /// </summary>
-public class MediaElement : View, IMediaElement
+public class MediaElement : View, IMediaElement, IDisposable
 {
 	/// <summary>
 	/// Backing store for the <see cref="Aspect"/> property.
 	/// </summary>
 	public static readonly BindableProperty AspectProperty =
-		  BindableProperty.Create(nameof(Aspect), typeof(Aspect), typeof(MediaElement), Aspect.AspectFit);
+		BindableProperty.Create(nameof(Aspect), typeof(Aspect), typeof(MediaElement), Aspect.AspectFit);
 
 	static readonly BindablePropertyKey durationPropertyKey =
-	  BindableProperty.CreateReadOnly(nameof(Duration), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero);
-
-	readonly WeakEventManager eventManager = new();
+		BindableProperty.CreateReadOnly(nameof(Duration), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero);
 
 	/// <summary>
 	/// Backing store for the <see cref="CurrentState"/> property.
 	/// </summary>
 	public static readonly BindableProperty CurrentStateProperty =
-		  BindableProperty.Create(nameof(CurrentState), typeof(MediaElementState), typeof(MediaElement),
-			  MediaElementState.None, propertyChanged: OnCurrentStatePropertyChanged);
+		BindableProperty.Create(nameof(CurrentState), typeof(MediaElementState), typeof(MediaElement),
+			MediaElementState.None, propertyChanged: OnCurrentStatePropertyChanged);
 
 	/// <summary>
 	/// Backing store for the <see cref="Duration"/> property.
@@ -43,31 +41,31 @@ public class MediaElement : View, IMediaElement
 	/// Backing store for the <see cref="ShouldLoopPlayback"/> property.
 	/// </summary>
 	public static readonly BindableProperty ShouldLoopPlaybackProperty =
-		  BindableProperty.Create(nameof(ShouldLoopPlayback), typeof(bool), typeof(MediaElement), false);
+		BindableProperty.Create(nameof(ShouldLoopPlayback), typeof(bool), typeof(MediaElement), false);
 
 	/// <summary>
 	/// Backing store for the <see cref="ShouldKeepScreenOn"/> property.
 	/// </summary>
 	public static readonly BindableProperty ShouldKeepScreenOnProperty =
-		  BindableProperty.Create(nameof(ShouldKeepScreenOn), typeof(bool), typeof(MediaElement), false);
+		BindableProperty.Create(nameof(ShouldKeepScreenOn), typeof(bool), typeof(MediaElement), false);
 
 	/// <summary>
 	/// Backing store for the <see cref="ShouldMute"/> property.
 	/// </summary>
 	public static readonly BindableProperty ShouldMuteProperty =
-		  BindableProperty.Create(nameof(ShouldMute), typeof(bool), typeof(MediaElement), false);
+		BindableProperty.Create(nameof(ShouldMute), typeof(bool), typeof(MediaElement), false);
 
 	/// <summary>
 	/// Backing store for the <see cref="Position"/> property.
 	/// </summary>
 	public static readonly BindableProperty PositionProperty =
-		  BindableProperty.Create(nameof(Position), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero);
+		BindableProperty.Create(nameof(Position), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero);
 
 	/// <summary>
 	/// Backing store for the <see cref="ShouldShowPlaybackControls"/> property.
 	/// </summary>
 	public static readonly BindableProperty ShowsPlaybackControlsProperty =
-		  BindableProperty.Create(nameof(ShouldShowPlaybackControls), typeof(bool), typeof(MediaElement), true);
+		BindableProperty.Create(nameof(ShouldShowPlaybackControls), typeof(bool), typeof(MediaElement), true);
 
 	/// <summary>
 	/// Backing store for the <see cref="Source"/> property.
@@ -80,7 +78,7 @@ public class MediaElement : View, IMediaElement
 	/// Backing store for the <see cref="Speed"/> property.
 	/// </summary>
 	public static readonly BindableProperty SpeedProperty =
-		  BindableProperty.Create(nameof(Speed), typeof(double), typeof(MediaElement), 1.0);
+		BindableProperty.Create(nameof(Speed), typeof(double), typeof(MediaElement), 1.0);
 
 	/// <summary>
 	/// Backing store for the <see cref="MediaHeight"/> property.
@@ -98,10 +96,15 @@ public class MediaElement : View, IMediaElement
 	/// Backing store for the <see cref="Volume"/> property.
 	/// </summary>
 	public static readonly BindableProperty VolumeProperty =
-		  BindableProperty.Create(nameof(Volume), typeof(double), typeof(MediaElement), 1.0,
-			  BindingMode.TwoWay, propertyChanging: ValidateVolume);
+		BindableProperty.Create(nameof(Volume), typeof(double), typeof(MediaElement), 1.0,
+			BindingMode.TwoWay, propertyChanging: ValidateVolume);
 
+	readonly WeakEventManager eventManager = new();
+	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
+
+	bool isDisposed;
 	IDispatcherTimer? timer;
+	TaskCompletionSource seekCompletedTaskCompletionSource = new();
 
 	/// <inheritdoc cref="IMediaElement.MediaEnded"/>
 	public event EventHandler MediaEnded
@@ -180,6 +183,11 @@ public class MediaElement : View, IMediaElement
 		add => eventManager.AddEventHandler(value);
 		remove => eventManager.RemoveEventHandler(value);
 	}
+
+	/// <summary>
+	/// Finalizer
+	/// </summary>
+	~MediaElement() => Dispose(false);
 
 	/// <summary>
 	/// The current position of the playing media. This is a bindable property.
@@ -347,6 +355,16 @@ public class MediaElement : View, IMediaElement
 		set => SetValue(durationPropertyKey, value);
 	}
 
+	/// <inheritdoc/>
+	TaskCompletionSource IAsynchronousMediaElementHandler.SeekCompletedTCS => seekCompletedTaskCompletionSource;
+
+	/// <inheritdoc/>
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
 	/// <inheritdoc cref="IMediaElement.Pause"/>
 	public void Pause()
 	{
@@ -361,11 +379,23 @@ public class MediaElement : View, IMediaElement
 		Handler?.Invoke(nameof(PlayRequested));
 	}
 
-	/// <inheritdoc cref="IMediaElement.SeekTo(TimeSpan)"/>
-	public void SeekTo(TimeSpan position)
+	/// <inheritdoc cref="IMediaElement.SeekTo(TimeSpan, CancellationToken)"/>
+	public async Task SeekTo(TimeSpan position, CancellationToken token = default)
 	{
-		MediaSeekRequestedEventArgs args = new(position);
-		Handler?.Invoke(nameof(SeekRequested), args);
+		await seekToSemaphoreSlim.WaitAsync(token);
+
+		try
+		{
+			MediaSeekRequestedEventArgs args = new(position);
+			Handler?.Invoke(nameof(SeekRequested), args);
+
+			await seekCompletedTaskCompletionSource.Task.WaitAsync(token);
+		}
+		finally
+		{
+			seekCompletedTaskCompletionSource = new();
+			seekToSemaphoreSlim.Release();
+		}
 	}
 
 	/// <inheritdoc cref="IMediaElement.Stop"/>
@@ -404,6 +434,22 @@ public class MediaElement : View, IMediaElement
 		}
 
 		base.OnBindingContextChanged();
+	}
+
+	/// <inheritdoc/>
+	protected virtual void Dispose(bool disposing)
+	{
+		if (isDisposed)
+		{
+			return;
+		}
+
+		if (disposing)
+		{
+			seekToSemaphoreSlim.Dispose();
+		}
+
+		isDisposed = true;
 	}
 
 	static void OnSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue) =>

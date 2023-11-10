@@ -2,6 +2,7 @@
 using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
+using Nito.AsyncEx;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
@@ -49,7 +50,7 @@ public class AnimationBehaviorTests : BaseTest
 		addBehavior.Should().Throw<InvalidOperationException>();
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task AnimateCommandStartsAnimation()
 	{
 		bool animationStarted = false, animationEnded = false;
@@ -71,7 +72,7 @@ public class AnimationBehaviorTests : BaseTest
 			Behaviors = { behavior }
 		}.EnableAnimations();
 
-		behavior.AnimateCommand.Execute(null);
+		behavior.AnimateCommand.Execute(CancellationToken.None);
 
 		await animationStartedTcs.Task;
 		await animationEndedTcs.Task;
@@ -97,6 +98,93 @@ public class AnimationBehaviorTests : BaseTest
 		}
 	}
 
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public void AnimateCommandTokenCanceled()
+	{
+		TaskCanceledException? exception = null;
+		var animationEndedTcs = new TaskCompletionSource();
+		var animationCommandCts = new CancellationTokenSource();
+
+		var mockAnimation = new MockAnimation();
+		mockAnimation.AnimationEnded += HandleAnimationEnded;
+
+		var behavior = new AnimationBehavior
+		{
+			AnimationType = mockAnimation
+		};
+
+		new Label
+		{
+			Behaviors = { behavior }
+		}.EnableAnimations();
+
+		try
+		{
+			// Run using AsyncContext to catch Exception thrown by fire-and-forget AnimateCommand (ICommand)
+			AsyncContext.Run(async () =>
+			{
+				await animationCommandCts.CancelAsync();
+				behavior.AnimateCommand.Execute(animationCommandCts.Token);
+				await animationEndedTcs.Task;
+			});
+		}
+		catch (TaskCanceledException e)
+		{
+			exception = e;
+		}
+
+		Assert.NotNull(exception);
+
+		void HandleAnimationEnded(object? sender, EventArgs e)
+		{
+			mockAnimation.AnimationEnded -= HandleAnimationEnded;
+			animationEndedTcs.SetResult();
+		}
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public void AnimateCommandTokenExpired()
+	{
+		TaskCanceledException? exception = null;
+		var animationEndedTcs = new TaskCompletionSource();
+		var animationCommandCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		var mockAnimation = new MockAnimation();
+		mockAnimation.AnimationEnded += HandleAnimationEnded;
+
+		var behavior = new AnimationBehavior
+		{
+			AnimationType = mockAnimation
+		};
+
+		new Label
+		{
+			Behaviors = { behavior }
+		}.EnableAnimations();
+
+		try
+		{
+			// Run using AsyncContext to catch Exception thrown by fire-and-forget AnimateCommand (ICommand)
+			AsyncContext.Run(async () =>
+			{
+				behavior.AnimateCommand.Execute(animationCommandCts.Token);
+				await animationEndedTcs.Task;
+			});
+		}
+		catch (TaskCanceledException e)
+		{
+			exception = e;
+		}
+
+		Assert.NotNull(exception);
+
+		void HandleAnimationEnded(object? sender, EventArgs e)
+		{
+			mockAnimation.AnimationEnded -= HandleAnimationEnded;
+			animationEndedTcs.SetResult();
+		}
+	}
+
 	class MockAnimation : BaseAnimation
 	{
 		public bool HasAnimated { get; private set; }
@@ -104,13 +192,13 @@ public class AnimationBehaviorTests : BaseTest
 		public event EventHandler? AnimationStarted;
 		public event EventHandler? AnimationEnded;
 
-		public override async Task Animate(VisualElement element)
+		public override async Task Animate(VisualElement element, CancellationToken token)
 		{
 			ArgumentNullException.ThrowIfNull(element);
 
 			AnimationStarted?.Invoke(this, EventArgs.Empty);
 
-			await element.RotateTo(70);
+			await element.RotateTo(70).WaitAsync(token);
 
 			HasAnimated = true;
 
