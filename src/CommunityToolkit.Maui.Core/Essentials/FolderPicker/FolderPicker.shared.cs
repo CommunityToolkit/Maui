@@ -18,7 +18,7 @@ public static class FolderPicker
 	[SupportedOSPlatform("MacCatalyst14.0")]
 	[SupportedOSPlatform("Tizen")]
 	[SupportedOSPlatform("Windows")]
-	public static Task<FolderPickerResult> PickAsync(string initialPath, CancellationToken cancellationToken) =>
+	public static Task<FolderPickerResult> PickAsync(string initialPath, CancellationToken cancellationToken = default) =>
 		Default.PickAsync(initialPath, cancellationToken);
 
 	/// <inheritdoc cref="IFolderPicker.PickAsync(CancellationToken)"/>

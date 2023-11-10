@@ -18,6 +18,7 @@
     <Color x:Key="StatusbarColor">#1976D2</Color>
     <Color x:Key="NavBarColor">#1976D2</Color>
 
+    <Color x:Key="Pink">Pink</Color>
     <Color x:Key="White">White</Color>
     <Color x:Key="Black">Black</Color>
     <Color x:Key="Gray100">#E1E1E1</Color>

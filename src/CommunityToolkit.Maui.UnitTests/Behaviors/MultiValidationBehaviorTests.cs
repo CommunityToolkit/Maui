@@ -58,9 +58,65 @@ public class MultiValidationBehaviorTests : BaseTest
 		entry.Behaviors.Add(multiBehavior);
 
 		// Act
-		await multiBehavior.ForceValidate();
+		await multiBehavior.ForceValidate(CancellationToken.None);
 
 		// Assert
 		Assert.Equal(expectedValue, multiBehavior.IsValid);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ForceValidateCancellationTokenExpired()
+	{
+		// Arrange
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		var characterValidationBehavior = new CharactersValidationBehavior();
+		var requiredStringValidationBehavior = new RequiredStringValidationBehavior();
+
+		var multiBehavior = new MultiValidationBehavior();
+		multiBehavior.Children.Add(characterValidationBehavior);
+		multiBehavior.Children.Add(requiredStringValidationBehavior);
+
+		var entry = new Entry
+		{
+			Text = "Hello"
+		};
+		entry.Behaviors.Add(multiBehavior);
+
+		// Act
+
+		// Ensure CancellationToken expires 
+		await Task.Delay(100, CancellationToken.None);
+
+		// Assert
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await multiBehavior.ForceValidate(cts.Token));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ForceValidateCancellationTokenCanceled()
+	{
+		// Arrange
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		var characterValidationBehavior = new CharactersValidationBehavior();
+		var requiredStringValidationBehavior = new RequiredStringValidationBehavior();
+
+		var multiBehavior = new MultiValidationBehavior();
+		multiBehavior.Children.Add(characterValidationBehavior);
+		multiBehavior.Children.Add(requiredStringValidationBehavior);
+
+		var entry = new Entry
+		{
+			Text = "Hello"
+		};
+		entry.Behaviors.Add(multiBehavior);
+
+		// Act
+
+		// Ensure CancellationToken expires 
+		await cts.CancelAsync();
+
+		// Assert
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await multiBehavior.ForceValidate(cts.Token));
 	}
 }

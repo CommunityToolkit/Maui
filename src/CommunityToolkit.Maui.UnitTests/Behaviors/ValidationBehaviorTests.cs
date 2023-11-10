@@ -28,7 +28,7 @@ public class ValidationBehaviorTests : BaseTest
 		Assert.True(behavior.IsValid);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task ValidValue_ValidStyle()
 	{
 		// Arrange
@@ -54,13 +54,13 @@ public class ValidationBehaviorTests : BaseTest
 
 		// Act
 		entry.Text = "321";
-		await behavior.ForceValidate();
+		await behavior.ForceValidate(CancellationToken.None);
 
 		// Assert
 		Assert.Equal(entry.Style, validStyle);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task InvalidValue_InvalidStyle()
 	{
 		// Arrange
@@ -86,13 +86,13 @@ public class ValidationBehaviorTests : BaseTest
 
 		// Act
 		entry.Text = "321";
-		await behavior.ForceValidate();
+		await behavior.ForceValidate(CancellationToken.None);
 
 		// Assert
 		Assert.Equal(entry.Style, invalidStyle);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task IsRunning()
 	{
 		// Arrange
@@ -115,7 +115,7 @@ public class ValidationBehaviorTests : BaseTest
 		Assert.False(behavior.IsRunning);
 
 		// Act
-		var forceValidateTask = behavior.ForceValidate();
+		var forceValidateTask = behavior.ForceValidate(CancellationToken.None);
 
 		// Assert
 		Assert.True(behavior.IsRunning);
@@ -135,7 +135,7 @@ public class ValidationBehaviorTests : BaseTest
 		var behavior = new MockValidationBehavior()
 		{
 			ExpectedValue = "321",
-			ForceValidateCommand = new Command(() =>
+			ForceValidateCommand = new Command<CancellationToken>(token =>
 			{
 				entry.Text = "321";
 			})
@@ -150,16 +150,64 @@ public class ValidationBehaviorTests : BaseTest
 		Assert.True(behavior.IsValid);
 	}
 
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task CancellationTokenExpired()
+	{
+		// Arrange
+		var behavior = new MockValidationBehavior();
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		var entry = new Entry
+		{
+			Text = "Hello"
+		};
+		entry.Behaviors.Add(behavior);
+
+		// Act
+
+		// Ensure CancellationToken expires
+		await Task.Delay(100, CancellationToken.None);
+
+		// Assert
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await behavior.ForceValidate(cts.Token));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task CancellationTokenCanceled()
+	{
+		// Arrange
+		var behavior = new MockValidationBehavior();
+		var cts = new CancellationTokenSource();
+
+		var entry = new Entry
+		{
+			Text = "Hello"
+		};
+		entry.Behaviors.Add(behavior);
+
+		// Act
+
+		// Ensure CancellationToken expires
+		await Task.Delay(100, CancellationToken.None);
+
+		// Assert
+		await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+		{
+			await cts.CancelAsync();
+			await behavior.ForceValidate(cts.Token);
+		});
+	}
+
 	class MockValidationBehavior : ValidationBehavior<string>
 	{
-		public string? ExpectedValue { get; set; }
-		public bool SimulateValidationDelay { get; set; } = false;
+		public string? ExpectedValue { get; init; }
+		public bool SimulateValidationDelay { get; init; } = false;
 
 		protected override async ValueTask<bool> ValidateAsync(string? value, CancellationToken token)
 		{
 			if (SimulateValidationDelay)
 			{
-				await Task.Delay(1000, token);
+				await Task.Delay(500, token);
 			}
 
 			return value == ExpectedValue;

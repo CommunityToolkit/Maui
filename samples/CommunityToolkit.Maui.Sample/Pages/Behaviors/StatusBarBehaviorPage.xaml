@@ -1,18 +1,81 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <pages:BasePage
-	x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.StatusBarBehaviorPage"
-	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-	xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-	xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
-	x:Name="this"
-	Title="StatusBarBehavior"
-	x:DataType="vm:StatusBarBehaviorViewModel"
-	x:TypeArguments="vm:StatusBarBehaviorViewModel">
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.StatusBarBehaviorPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
+    x:Name="Page"
+    Title="StatusBarBehavior"
+    x:DataType="vm:StatusBarBehaviorViewModel"
+    x:TypeArguments="vm:StatusBarBehaviorViewModel">
+
+    <ContentPage.Resources>
+        <ControlTemplate x:Key="RadioButtonTemplate">
+            <Border Stroke="#F3F2F1"
+                    StrokeThickness="2"
+                    StrokeShape="RoundRectangle 10"
+                    BackgroundColor="#F3F2F1"
+                    HeightRequest="90"
+                    WidthRequest="90"
+                    HorizontalOptions="Start"
+                    VerticalOptions="Start">
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CheckedStates">
+                            <VisualState x:Name="Checked">
+                                <VisualState.Setters>
+                                    <Setter TargetName="check"
+                                            Property="Opacity"
+                                            Value="1" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Unchecked">
+                                <VisualState.Setters>
+                                    <Setter TargetName="check"
+                                            Property="Opacity"
+                                            Value="0" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </VisualStateManager.VisualStateGroups>
+                <Grid Margin="4"
+                      WidthRequest="90"
+                      BackgroundColor="Transparent">
+                    <Grid Margin="0,0,4,0"
+                          WidthRequest="18"
+                          HeightRequest="18"
+                          HorizontalOptions="End"
+                          VerticalOptions="Start">
+                        <Ellipse Stroke="Blue"
+                                 Fill="White"
+                                 WidthRequest="16"
+                                 HeightRequest="16"
+                                 HorizontalOptions="Center"
+                                 VerticalOptions="Center" />
+                        <Ellipse x:Name="check"
+                                 Fill="Blue"
+                                 WidthRequest="8"
+                                 HeightRequest="8"
+                                 HorizontalOptions="Center"
+                                 VerticalOptions="Center" />
+                    </Grid>
+                    <ContentPresenter />
+                </Grid>
+            </Border>
+        </ControlTemplate>
+
+        <Style TargetType="RadioButton">
+            <Setter Property="ControlTemplate" Value="{StaticResource RadioButtonTemplate}" />
+        </Style>
+    </ContentPage.Resources>
 
     <Page.Behaviors>
-        <mct:StatusBarBehavior StatusBarColor="{Binding Source={x:Reference this}, Path=BindingContext.StatusBarColor}" StatusBarStyle="{Binding Source={x:Reference this}, Path=BindingContext.StatusBarStyle}" />
+        <mct:StatusBarBehavior
+            StatusBarColor="{Binding Source={x:Reference Page}, Path=BindingContext.StatusBarColor}"
+            StatusBarStyle="{Binding Source={x:Reference Page}, Path=BindingContext.StatusBarStyle}" />
     </Page.Behaviors>
 
     <ScrollView Padding="{StaticResource ContentPadding}">
@@ -22,31 +85,31 @@
             <Label Text="Slide to change StatusBar color" />
 
             <Slider
-				Margin="20,10"
-				Maximum="255"
-				MaximumTrackColor="Red"
-				Minimum="0"
-				MinimumTrackColor="Red"
-				ThumbColor="Red"
-				Value="{Binding RedSliderValue}" />
+                Margin="20,10"
+                Maximum="255"
+                MaximumTrackColor="Red"
+                Minimum="0"
+                MinimumTrackColor="Red"
+                ThumbColor="Red"
+                Value="{Binding RedSliderValue}" />
 
             <Slider
-				Margin="20,10"
-				Maximum="255"
-				MaximumTrackColor="Green"
-				Minimum="0"
-				MinimumTrackColor="Green"
-				ThumbColor="Green"
-				Value="{Binding GreenSliderValue}" />
+                Margin="20,10"
+                Maximum="255"
+                MaximumTrackColor="Green"
+                Minimum="0"
+                MinimumTrackColor="Green"
+                ThumbColor="Green"
+                Value="{Binding GreenSliderValue}" />
 
             <Slider
-				Margin="20,10"
-				Maximum="255"
-				MaximumTrackColor="Blue"
-				Minimum="0"
-				MinimumTrackColor="Blue"
-				ThumbColor="Blue"
-				Value="{Binding BlueSliderValue}" />
+                Margin="20,10"
+                Maximum="255"
+                MaximumTrackColor="Blue"
+                Minimum="0"
+                MinimumTrackColor="Blue"
+                ThumbColor="Blue"
+                Value="{Binding BlueSliderValue}" />
 
             <VerticalStackLayout Spacing="15">
 
@@ -60,13 +123,15 @@
 
                 <RadioButton VerticalOptions="Center" IsChecked="{Binding IsLightContentChecked}">
                     <RadioButton.Content>
-                        <Label Text="Light Content" Margin="10,0,0,0" VerticalTextAlignment="Center" VerticalOptions="Center" />
+                        <Label Text="Light Content" Margin="10,0,0,0" VerticalTextAlignment="Center"
+                               VerticalOptions="Center" />
                     </RadioButton.Content>
                 </RadioButton>
 
                 <RadioButton IsChecked="{Binding IsDarkContentChecked}">
                     <RadioButton.Content>
-                        <Label Text="Dark Content" Margin="10,0,0,0" VerticalTextAlignment="Center" VerticalOptions="Center" />
+                        <Label Text="Dark Content" Margin="10,0,0,0" VerticalTextAlignment="Center"
+                               VerticalOptions="Center" />
                     </RadioButton.Content>
                 </RadioButton>
 

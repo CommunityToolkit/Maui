@@ -3,7 +3,7 @@ namespace CommunityToolkit.Maui.Storage;
 public sealed partial class FileSaverImplementation
 {
 	/// <inheritdoc/>
-	public async Task<FileSaverResult> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
+	public async Task<FileSaverResult> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken = default)
 	{
 		try
 		{
@@ -18,7 +18,7 @@ public sealed partial class FileSaverImplementation
 	}
 
 	/// <inheritdoc/>
-	public async Task<FileSaverResult> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
+	public async Task<FileSaverResult> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken = default)
 	{
 		try
 		{

@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ImageResourceConverterTests : BaseOneWayConverterTest<ImageResourceConverter>
 {
-	public ImageResourceConverterTests() : base()
+	public ImageResourceConverterTests()
 	{
 		Application.Current = new MockApplication();
 	}
@@ -16,7 +16,7 @@ public class ImageResourceConverterTests : BaseOneWayConverterTest<ImageResource
 	{
 		new object[] { 3 }, // primitive type
 		new object[] { DateTime.UtcNow }, // Struct
-		new object[] { new () } // objects
+		new object[] { new() } // objects
 	};
 
 	protected override void Dispose(bool isDisposing)
@@ -26,7 +26,7 @@ public class ImageResourceConverterTests : BaseOneWayConverterTest<ImageResource
 		base.Dispose(isDisposing);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ImageResourceConverter()
 	{
 		const string resourceToLoad = "CommunityToolkit.Maui.UnitTests.Resources.dotnet-bot.png";
@@ -43,6 +43,38 @@ public class ImageResourceConverterTests : BaseOneWayConverterTest<ImageResource
 
 		Assert.True(StreamEquals(expectedMemoryStream, streamResult));
 		Assert.True(StreamEquals(expectedMemoryStream, streamFromResult));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ImageResourceConverter_CancellationTokenExpired()
+	{
+		const string resourceToLoad = "CommunityToolkit.Maui.UnitTests.Resources.dotnet-bot.png";
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		var imageResourceConverter = new ImageResourceConverter();
+
+		var convertFromResult = (StreamImageSource)imageResourceConverter.ConvertFrom(resourceToLoad, CultureInfo.CurrentCulture);
+
+		// Ensure CancellationToken has expired
+		await Task.Delay(100, CancellationToken.None);
+
+		await Assert.ThrowsAsync<TaskCanceledException>(() => GetStreamFromImageSource(convertFromResult, cts.Token));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ImageResourceConverter_CancellationTokenCancelled()
+	{
+		const string resourceToLoad = "CommunityToolkit.Maui.UnitTests.Resources.dotnet-bot.png";
+		var cts = new CancellationTokenSource();
+
+		var imageResourceConverter = new ImageResourceConverter();
+
+		var convertFromResult = (StreamImageSource)imageResourceConverter.ConvertFrom(resourceToLoad, CultureInfo.CurrentCulture);
+
+		// Ensure CancellationToken has expired
+		await cts.CancelAsync();
+
+		await Assert.ThrowsAsync<TaskCanceledException>(() => GetStreamFromImageSource(convertFromResult, cts.Token));
 	}
 
 	[Fact]

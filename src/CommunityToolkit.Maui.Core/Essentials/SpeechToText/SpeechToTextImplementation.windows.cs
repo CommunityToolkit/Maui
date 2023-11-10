@@ -44,7 +44,7 @@ public sealed partial class SpeechToTextImplementation
 		speechRecognizer.ContinuousRecognitionSession.Completed += OnCompleted;
 		try
 		{
-			await speechRecognizer.ContinuousRecognitionSession.StartAsync();
+			await speechRecognizer.ContinuousRecognitionSession.StartAsync().AsTask(cancellationToken);
 		}
 		catch (Exception ex) when ((uint)ex.HResult is privacyStatementDeclinedCode)
 		{
@@ -77,10 +77,7 @@ public sealed partial class SpeechToTextImplementation
 		OnRecognitionResultUpdated(args.Result.Text);
 	}
 
-	async Task InternalStopListeningAsync(CancellationToken cancellationToken)
-	{
-		await StopRecording(cancellationToken);
-	}
+	Task InternalStopListeningAsync(CancellationToken cancellationToken) =>  StopRecording(cancellationToken);
 
 	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
@@ -103,7 +100,7 @@ public sealed partial class SpeechToTextImplementation
 				speechRecognizer.ContinuousRecognitionSession.Completed -= OnCompleted;
 
 				cancellationToken.ThrowIfCancellationRequested();
-				await speechRecognizer.ContinuousRecognitionSession.StopAsync();
+				await speechRecognizer.ContinuousRecognitionSession.StopAsync().AsTask(cancellationToken);
 			}
 		}
 		catch
@@ -133,7 +130,7 @@ public sealed partial class SpeechToTextImplementation
 		speechRecognizer = new SpeechRecognizer(new Language(culture.IetfLanguageTag));
 		speechRecognizer.StateChanged += SpeechRecognizer_StateChanged;
 		cancellationToken.ThrowIfCancellationRequested();
-		await speechRecognizer.CompileConstraintsAsync();
+		await speechRecognizer.CompileConstraintsAsync().AsTask(cancellationToken);
 	}
 
 	void SpeechRecognizer_StateChanged(SpeechRecognizer sender, SpeechRecognizerStateChangedEventArgs args)
