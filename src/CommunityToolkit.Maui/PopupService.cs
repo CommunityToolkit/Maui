@@ -138,7 +138,7 @@ public class PopupService : IPopupService
 		if (popup is null)
 		{
 			throw new InvalidOperationException(
-			  $"Unable to resolve popup type for {viewModelType} please make sure that you have called {nameof(AddTransientPopup)}");
+				$"Unable to resolve popup type for {viewModelType} please make sure that you have called {nameof(AddTransientPopup)}");
 		}
 
 		return popup;
