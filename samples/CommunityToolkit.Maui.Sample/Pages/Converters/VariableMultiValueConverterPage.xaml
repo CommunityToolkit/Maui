@@ -28,7 +28,7 @@
 
                 <!-- The All Condition Type -->
                 <Label Text="The All Condition Type"
-                       Style="{StaticResource label_section_title}"
+                       Style="{StaticResource LabelSectionTitle}"
                        Margin="0, 8, 0, 0"
                        Grid.Row="1"
                        Grid.ColumnSpan="2" />
@@ -72,7 +72,7 @@
 
                 <!-- The Any Condition Type -->
                 <Label Text="The Any Condition Type"
-                       Style="{StaticResource label_section_title}"
+                       Style="{StaticResource LabelSectionTitle}"
                        Margin="0, 8, 0, 0"
                        Grid.Row="6"
                        Grid.ColumnSpan="2" />
@@ -116,7 +116,7 @@
 
                 <!-- The Greater Than Condition Type -->
                 <Label Text="The Greater Than Condition Type"
-                       Style="{StaticResource label_section_title}"
+                       Style="{StaticResource LabelSectionTitle}"
                        Margin="0, 8, 0, 0"
                        Grid.Row="11"
                        Grid.ColumnSpan="2" />

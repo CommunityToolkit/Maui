@@ -12,7 +12,7 @@
                 <Style x:Key="Title" TargetType="Label">
                     <Setter Property="FontSize" Value="26" />
                     <Setter Property="FontAttributes" Value="Bold" />
-                    <Setter Property="TextColor" Value="#000" />
+                    <Setter Property="TextColor" Value="#000000" />
                     <Setter Property="VerticalTextAlignment" Value="Center" />
                     <Setter Property="HorizontalTextAlignment" Value="Center" />
                 </Style>
@@ -25,13 +25,10 @@
                     <Setter Property="HorizontalTextAlignment" Value="Start" />
                     <Setter Property="VerticalTextAlignment" Value="Center" />
                 </Style>
-                <Style x:Key="PopupLayout" TargetType="VerticalStackLayout">
-                    <Setter Property="Padding" Value="{OnPlatform Android=20, WinUI=20, iOS=5, MacCatalyst=5, Tizen=20}" />
-                </Style>
             </ResourceDictionary>
         </VerticalStackLayout.Resources>
 
-        <Label Style="{StaticResource Title}" Text="Simple Popup" />
+        <Label Style="{StaticResource Title}" Text="Simple Popup"/>
         <BoxView Style="{StaticResource Divider}" />
         <Label Style="{StaticResource Content}" Text="This is a platform specific popup with a .NET MAUI View being rendered. " />
         <Image Source="shield.png"

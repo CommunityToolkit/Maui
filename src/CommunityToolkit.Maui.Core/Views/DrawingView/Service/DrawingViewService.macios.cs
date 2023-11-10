@@ -77,14 +77,20 @@ public static class DrawingViewService
 	static UIImage? GetUIImageForLines(IList<IDrawingLine> lines, in Paint? background)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
-		var maxLineWidth = lines.Select(x => x.LineWidth).Max();
+		var drawingLineWithLargestLineWidth = lines.MaxBy(x => x.LineWidth);
+
+		if (drawingLineWithLargestLineWidth is null)
+		{
+			throw new InvalidOperationException("Unable to generate image. No Lines Found");
+		}
+		
 		return GetUIImage(points, (context, offset) =>
 		{
 			foreach (var line in lines)
 			{
 				DrawStrokes(context, line.Points, line.LineWidth, line.LineColor, offset);
 			}
-		}, background, maxLineWidth);
+		}, background, drawingLineWithLargestLineWidth.LineWidth);
 	}
 
 	static UIImage? GetUIImage(ICollection<PointF> points, Action<CGContext, Size> drawStrokes, Paint? background, NFloat maxLineWidth)
