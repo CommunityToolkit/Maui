@@ -21,6 +21,15 @@ public sealed partial class SpeechToTextImplementation
 												? SpeechToTextState.Listening
 												: SpeechToTextState.Stopped;
 
+	/// <summary>
+	/// Initialize <see cref="SpeechToTextImplementation"/>
+	/// </summary>
+	public SpeechToTextImplementation()
+	{
+		var audioSession = AVAudioSession.SharedInstance();
+		audioSession.SetCategory(AVAudioSessionCategory.PlayAndRecord, AVAudioSessionCategoryOptions.DefaultToSpeaker);
+	}
+
 
 	/// <inheritdoc />
 	public async ValueTask DisposeAsync()
