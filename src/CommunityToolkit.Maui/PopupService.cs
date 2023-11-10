@@ -5,142 +5,142 @@ namespace CommunityToolkit.Maui;
 /// <inheritdoc cref="IPopupService"/>
 public class PopupService : IPopupService
 {
-  readonly IServiceProvider serviceProvider;
+	readonly IServiceProvider serviceProvider;
 
-  static readonly Dictionary<Type, Type> viewModelToViewMappings = new();
+	static readonly Dictionary<Type, Type> viewModelToViewMappings = new();
 
-  static Page CurrentPage =>
-    PageExtensions.GetCurrentPage(
-      Application.Current?.MainPage ?? throw new InvalidOperationException("Application.Current.MainPage cannot be null."));
+	static Page CurrentPage =>
+	  PageExtensions.GetCurrentPage(
+	  Application.Current?.MainPage ?? throw new InvalidOperationException("Application.Current.MainPage cannot be null."));
 
-  /// <summary>
-  /// Creates a new instance of <see cref="PopupService"/>.
-  /// </summary>
-  /// <param name="serviceProvider">The <see cref="IServiceProvider"/> implementation.</param>
-  [ActivatorUtilitiesConstructor]
-  public PopupService(IServiceProvider serviceProvider)
-  {
-    this.serviceProvider = serviceProvider;
-  }
+	/// <summary>
+	/// Creates a new instance of <see cref="PopupService"/>.
+	/// </summary>
+	/// <param name="serviceProvider">The <see cref="IServiceProvider"/> implementation.</param>
+	[ActivatorUtilitiesConstructor]
+	public PopupService(IServiceProvider serviceProvider)
+	{
+		this.serviceProvider = serviceProvider;
+	}
 
-  /// <summary>
-  /// Creates a new instance of <see cref="PopupService"/>.
-  /// </summary>
-  public PopupService()
-  {
-    serviceProvider = Application.Current?.Handler?.MauiContext?.Services
-              ?? throw new InvalidOperationException("Could not locate IServiceProvider");
-  }
+	/// <summary>
+	/// Creates a new instance of <see cref="PopupService"/>.
+	/// </summary>
+	public PopupService()
+	{
+		serviceProvider = Application.Current?.Handler?.MauiContext?.Services
+			?? throw new InvalidOperationException("Could not locate IServiceProvider");
+	}
 
-  internal static void AddTransientPopup<TPopupView, TPopupViewModel>(IServiceCollection services)
-    where TPopupView : IPopup
-    where TPopupViewModel : INotifyPropertyChanged
-  {
-    viewModelToViewMappings.Add(typeof(TPopupViewModel), typeof(TPopupView));
+	internal static void AddTransientPopup<TPopupView, TPopupViewModel>(IServiceCollection services)
+	  where TPopupView : IPopup
+	  where TPopupViewModel : INotifyPropertyChanged
+	{
+		viewModelToViewMappings.Add(typeof(TPopupViewModel), typeof(TPopupView));
 
-    services.AddTransient(typeof(TPopupView));
-    services.AddTransient(typeof(TPopupViewModel));
-  }
+		services.AddTransient(typeof(TPopupView));
+		services.AddTransient(typeof(TPopupViewModel));
+	}
 
-  /// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}()"/>
-  public void ShowPopup<TViewModel>() where TViewModel : INotifyPropertyChanged
-  {
-    Popup popup = GetPopup(typeof(TViewModel));
+	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}()"/>
+	public void ShowPopup<TViewModel>() where TViewModel : INotifyPropertyChanged
+	{
+		Popup popup = GetPopup(typeof(TViewModel));
 
-    ValidateBindingContext<TViewModel>(popup, out _);
+		ValidateBindingContext<TViewModel>(popup, out _);
 
-    CurrentPage.ShowPopup(popup);
-  }
+		CurrentPage.ShowPopup(popup);
+	}
 
-  /// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(TViewModel)"/>
-  public void ShowPopup<TViewModel>(TViewModel viewModel) where TViewModel : INotifyPropertyChanged
-  {
-    ArgumentNullException.ThrowIfNull(viewModel);
+	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(TViewModel)"/>
+	public void ShowPopup<TViewModel>(TViewModel viewModel) where TViewModel : INotifyPropertyChanged
+	{
+		ArgumentNullException.ThrowIfNull(viewModel);
 
-    Popup popup = GetPopup(typeof(TViewModel));
+		Popup popup = GetPopup(typeof(TViewModel));
 
-    popup.BindingContext = viewModel;
+		popup.BindingContext = viewModel;
 
-    CurrentPage.ShowPopup(popup);
-  }
+		CurrentPage.ShowPopup(popup);
+	}
 
-  /// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(Action{TViewModel})"/>
-  public void ShowPopup<TViewModel>(Action<TViewModel> onPresenting) where TViewModel : INotifyPropertyChanged
-  {
-    ArgumentNullException.ThrowIfNull(onPresenting);
+	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(Action{TViewModel})"/>
+	public void ShowPopup<TViewModel>(Action<TViewModel> onPresenting) where TViewModel : INotifyPropertyChanged
+	{
+		ArgumentNullException.ThrowIfNull(onPresenting);
 
-    Popup popup = GetPopup(typeof(TViewModel));
+		Popup popup = GetPopup(typeof(TViewModel));
 
-    ValidateBindingContext(popup, out TViewModel viewModel);
+		ValidateBindingContext(popup, out TViewModel viewModel);
 
-    onPresenting.Invoke(viewModel);
+		onPresenting.Invoke(viewModel);
 
-    CurrentPage.ShowPopup(popup);
-  }
+		CurrentPage.ShowPopup(popup);
+	}
 
-  /// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}()"/>
-  public Task<object?> ShowPopupAsync<TViewModel>() where TViewModel : INotifyPropertyChanged
-  {
-    Popup popup = GetPopup(typeof(TViewModel));
+	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}()"/>
+	public Task<object?> ShowPopupAsync<TViewModel>() where TViewModel : INotifyPropertyChanged
+	{
+		Popup popup = GetPopup(typeof(TViewModel));
 
-    ValidateBindingContext<TViewModel>(popup, out _);
+		ValidateBindingContext<TViewModel>(popup, out _);
 
-    return CurrentPage.ShowPopupAsync(popup);
-  }
+		return CurrentPage.ShowPopupAsync(popup);
+	}
 
-  /// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(TViewModel)"/>
-  public Task<object?> ShowPopupAsync<TViewModel>(TViewModel viewModel) where TViewModel : INotifyPropertyChanged
-  {
-    ArgumentNullException.ThrowIfNull(viewModel);
+	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(TViewModel)"/>
+	public Task<object?> ShowPopupAsync<TViewModel>(TViewModel viewModel) where TViewModel : INotifyPropertyChanged
+	{
+		ArgumentNullException.ThrowIfNull(viewModel);
 
-    Popup popup = GetPopup(typeof(TViewModel));
+		Popup popup = GetPopup(typeof(TViewModel));
 
-    popup.BindingContext = viewModel;
+		popup.BindingContext = viewModel;
 
-    return CurrentPage.ShowPopupAsync(popup);
-  }
+		return CurrentPage.ShowPopupAsync(popup);
+	}
 
-  /// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(Action{TViewModel})"/>
-  public Task<object?> ShowPopupAsync<TViewModel>(Action<TViewModel> onPresenting) where TViewModel : INotifyPropertyChanged
-  {
-    ArgumentNullException.ThrowIfNull(onPresenting);
+	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(Action{TViewModel})"/>
+	public Task<object?> ShowPopupAsync<TViewModel>(Action<TViewModel> onPresenting) where TViewModel : INotifyPropertyChanged
+	{
+		ArgumentNullException.ThrowIfNull(onPresenting);
 
-    Popup popup = GetPopup(typeof(TViewModel));
+		Popup popup = GetPopup(typeof(TViewModel));
 
-    ValidateBindingContext(popup, out TViewModel viewModel);
+		ValidateBindingContext(popup, out TViewModel viewModel);
 
-    onPresenting.Invoke(viewModel);
+		onPresenting.Invoke(viewModel);
 
-    return CurrentPage.ShowPopupAsync(popup);
-  }
+		return CurrentPage.ShowPopupAsync(popup);
+	}
 
-  /// <summary>
-  /// Ensures that the BindingContext property of the Popup to present is properly assigned and of the expected type.
-  /// </summary>
-  /// <typeparam name="TViewModel"></typeparam>
-  /// <param name="popup">The popup to be presented.</param>
-  /// <param name="bindingContext">Validated View Model</param>
-  /// <exception cref="InvalidOperationException"></exception>
-  static void ValidateBindingContext<TViewModel>(Popup popup, out TViewModel bindingContext)
-  {
-    if (popup.BindingContext is not TViewModel viewModel)
-    {
-      throw new InvalidOperationException($"Unexpected type has been assigned to the BindingContext of {popup.GetType().FullName}. Expected type {typeof(TViewModel).FullName} but was {popup.BindingContext?.GetType().FullName ?? "null"}");
-    }
+	/// <summary>
+	/// Ensures that the BindingContext property of the Popup to present is properly assigned and of the expected type.
+	/// </summary>
+	/// <typeparam name="TViewModel"></typeparam>
+	/// <param name="popup">The popup to be presented.</param>
+	/// <param name="bindingContext">Validated View Model</param>
+	/// <exception cref="InvalidOperationException"></exception>
+	static void ValidateBindingContext<TViewModel>(Popup popup, out TViewModel bindingContext)
+	{
+		if (popup.BindingContext is not TViewModel viewModel)
+		{
+			throw new InvalidOperationException($"Unexpected type has been assigned to the BindingContext of {popup.GetType().FullName}. Expected type {typeof(TViewModel).FullName} but was {popup.BindingContext?.GetType().FullName ?? "null"}");
+		}
 
-    bindingContext = viewModel;
-  }
+		bindingContext = viewModel;
+	}
 
-  Popup GetPopup(Type viewModelType)
-  {
-    Popup popup = serviceProvider.GetService(viewModelToViewMappings[viewModelType]) as Popup;
+	Popup GetPopup(Type viewModelType)
+	{
+		Popup popup = serviceProvider.GetService(viewModelToViewMappings[viewModelType]) as Popup;
 
-    if (popup is null)
-    {
-      throw new InvalidOperationException(
-        $"Unable to resolve popup type for {viewModelType} please make sure that you have called {nameof(AddTransientPopup)}");
-    }
+		if (popup is null)
+		{
+			throw new InvalidOperationException(
+			  $"Unable to resolve popup type for {viewModelType} please make sure that you have called {nameof(AddTransientPopup)}");
+		}
 
-    return popup;
-  }
+		return popup;
+	}
 }
