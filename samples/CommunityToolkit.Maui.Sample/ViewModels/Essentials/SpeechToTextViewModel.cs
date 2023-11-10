@@ -62,12 +62,24 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	[RelayCommand]
 	async Task Play(CancellationToken cancellationToken)
 	{
-		await textToSpeech.SpeakAsync(RecognitionText ?? "Welcome to .NET MAUI Community Toolkit!", new()
+		var timeoutCancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+		try
 		{
-			Locale = CurrentLocale,
-			Pitch = 2,
-			Volume = 1
-		}, cancellationToken);
+			await textToSpeech.SpeakAsync(RecognitionText ?? "Welcome to .NET MAUI Community Toolkit!", new()
+			{
+				Locale = CurrentLocale,
+				Pitch = 1,
+				Volume = 1
+			}, cancellationToken).WaitAsync(timeoutCancellationTokenSource.Token);
+		}
+		catch (TaskCanceledException)
+		{
+			await Toast.Make("Playback automatically stopped after 5 seconds").Show(cancellationToken);
+#if IOS
+			await Toast.Make("If you did not hear playback, test again on a physical iOS device").Show(cancellationToken);
+#endif
+		}
 	}
 
 	[RelayCommand(IncludeCancelCommand = true, CanExecute = nameof(CanListenExecute))]
@@ -89,16 +101,16 @@ public partial class SpeechToTextViewModel : BaseViewModel
 			RecognitionText = beginSpeakingPrompt;
 
 			var recognitionResult = await speechToText.ListenAsync(
-												CultureInfo.GetCultureInfo(CurrentLocale?.Language ?? defaultLanguage),
-												new Progress<string>(partialText =>
-												{
-													if (RecognitionText is beginSpeakingPrompt)
-													{
-														RecognitionText = string.Empty;
-													}
+				CultureInfo.GetCultureInfo(CurrentLocale?.Language ?? defaultLanguage),
+				new Progress<string>(partialText =>
+				{
+					if (RecognitionText is beginSpeakingPrompt)
+					{
+						RecognitionText = string.Empty;
+					}
 
-													RecognitionText += partialText + " ";
-												}), cancellationToken);
+					RecognitionText += partialText + " ";
+				}), cancellationToken);
 
 			if (recognitionResult.IsSuccessful)
 			{
