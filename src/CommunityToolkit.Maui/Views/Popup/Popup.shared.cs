@@ -56,7 +56,6 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	TaskCompletionSource<object?> resultTaskCompletionSource = new();
 	Window window;
 	ResourceDictionary resources = new();
-	bool IResourcesProvider.IsResourcesCreated => resources is not null;
 
 	/// <summary>
 	/// Instantiates a new instance of <see cref="Popup"/>.
@@ -171,8 +170,8 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// </summary>
 	public Style Style
 	{
-		get { return (Style)GetValue(StyleProperty); }
-		set { SetValue(StyleProperty, value); }
+		get => (Style)GetValue(StyleProperty);
+		set => SetValue(StyleProperty, value);
 	}
 
 	/// <summary>
@@ -251,6 +250,9 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 
 	/// <inheritdoc/>
 	TaskCompletionSource IAsynchronousHandler.HandlerCompleteTCS => popupDismissedTaskCompletionSource;
+	
+	/// <inheritdoc/>
+	bool IResourcesProvider.IsResourcesCreated => resources is not null;
 
 	/// <summary>
 	/// Resets the Popup.
@@ -388,7 +390,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 		ArgumentNullException.ThrowIfNull(newValue);
 	}
 
-	void IPopup.OnClosed(object? result) => Handler.Invoke(nameof(IPopup.OnClosed), result);
+	void IPopup.OnClosed(object? result) => Handler?.Invoke(nameof(IPopup.OnClosed), result);
 
 	void IPopup.OnOpened() => OnOpened();
 

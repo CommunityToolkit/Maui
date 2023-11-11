@@ -8,17 +8,14 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 {
 	readonly PopupSizeConstants popupSizeConstants;
-	readonly CsharpBindingPopupViewModel csharpBindingPopupViewModel;
 
 	public MultiplePopupPage(PopupSizeConstants popupSizeConstants,
-								MultiplePopupViewModel multiplePopupViewModel,
-								CsharpBindingPopupViewModel csharpBindingPopupViewModel)
+								MultiplePopupViewModel multiplePopupViewModel)
 		: base(multiplePopupViewModel)
 	{
 		InitializeComponent();
 
 		this.popupSizeConstants = popupSizeConstants;
-		this.csharpBindingPopupViewModel = csharpBindingPopupViewModel;
 	}
 
 	async void HandleSimplePopupButtonClicked(object sender, EventArgs e)
@@ -75,11 +72,5 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 	{
 		var xamlBindingPopup = new XamlBindingPopup(popupSizeConstants);
 		await this.ShowPopupAsync(xamlBindingPopup, CancellationToken.None);
-	}
-
-	async void HandleCsharpBindingPopupButtonClicked(object sender, EventArgs e)
-	{
-		var csharpBindingPopup = new CsharpBindingPopup(popupSizeConstants, csharpBindingPopupViewModel);
-		await this.ShowPopupAsync(csharpBindingPopup, CancellationToken.None);
 	}
 }

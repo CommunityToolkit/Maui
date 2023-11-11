@@ -32,6 +32,10 @@
                Text="{Binding Title}" />
         <BoxView Style="{StaticResource Divider}" />
         <Label Style="{StaticResource Content}" 
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               HorizontalTextAlignment="Center"
+               VerticalTextAlignment="Center"
                Text="{Binding Message}" />
     </VerticalStackLayout>
 </mct:Popup>
