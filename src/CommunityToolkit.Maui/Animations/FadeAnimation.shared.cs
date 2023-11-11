@@ -35,13 +35,13 @@ public class FadeAnimation : BaseAnimation
 	}
 
 	/// <inheritdoc />
-	public override async Task Animate(VisualElement view)
+	public override async Task Animate(VisualElement view, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(view);
 
 		var originalOpacity = view.Opacity;
 
-		await view.FadeTo(Opacity, Length, Easing);
-		await view.FadeTo(originalOpacity, Length, Easing);
+		await view.FadeTo(Opacity, Length, Easing).WaitAsync(token);
+		await view.FadeTo(originalOpacity, Length, Easing).WaitAsync(token);
 	}
 }

@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Extensions;
 
-public class ColorConversionExtensionsTests
+public class ColorConversionExtensionsTests : BaseTest
 {
 	const double tolerance = 0.000001;
 

@@ -38,6 +38,7 @@ public partial class Snackbar
 	/// <inheritdoc/>
 	Task ShowPlatform(CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
 		var dispatcher = Dispatcher.GetForCurrentThread() ?? Application.Current?.Dispatcher ?? throw new InvalidOperationException($"There is no IDispatcher object, application is not initalized");
 
 		// close and cleanup the previously opened snackbar

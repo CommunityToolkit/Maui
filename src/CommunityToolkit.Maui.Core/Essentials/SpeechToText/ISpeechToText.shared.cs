@@ -34,7 +34,7 @@ public interface ISpeechToText : IAsyncDisposable
 	/// <param name="recognitionResult">Intermediate recognition result.</param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns>Final recognition result</returns>
-	Task<SpeechToTextResult> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken);
+	Task<SpeechToTextResult> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Starts the SpeechToText service
@@ -44,7 +44,7 @@ public interface ISpeechToText : IAsyncDisposable
 	/// </remarks>
 	/// <param name="culture">Speak language</param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
-	Task StartListenAsync(CultureInfo culture, CancellationToken cancellationToken);
+	Task StartListenAsync(CultureInfo culture, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Stops the SpeechToText service
@@ -53,12 +53,12 @@ public interface ISpeechToText : IAsyncDisposable
 	/// Speech recognition results will be surfaced via <see cref="RecognitionResultCompleted"/>
 	/// </remarks>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
-	Task StopListenAsync(CancellationToken cancellationToken);
+	Task StopListenAsync(CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Request permissions for speech to text.
 	/// </summary>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns>True if permissions granted</returns>
-	Task<bool> RequestPermissions(CancellationToken cancellationToken);
+	Task<bool> RequestPermissions(CancellationToken cancellationToken = default);
 }

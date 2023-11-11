@@ -30,7 +30,7 @@
         <Label HorizontalOptions="Center">
             <Label.FormattedText>
                 <FormattedString>
-                    <Span Text="Divided by 2 equals:"/>
+                    <Span Text="Divided by 2 equals: "/>
                     <Span Text="{Binding SliderValue, Converter={StaticResource MathExpressionConverter}, ConverterParameter='x/2'}"/>
                 </FormattedString>
             </Label.FormattedText>
@@ -39,7 +39,7 @@
         <Label HorizontalOptions="Center" >
             <Label.FormattedText>
                 <FormattedString>
-                    <Span Text="Multiplied by 5 equals:"/>
+                    <Span Text="Multiplied by 5 equals: "/>
                     <Span Text="{Binding SliderValue, Converter={StaticResource MathExpressionConverter}, ConverterParameter='x*5'}"/>
                 </FormattedString>
             </Label.FormattedText>

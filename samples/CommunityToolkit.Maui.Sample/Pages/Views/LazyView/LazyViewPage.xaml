@@ -54,7 +54,7 @@
             <Label Text="Lazy Loading Based On User Action" Style="{StaticResource Heading}"/>
             <Label Text="{Binding Source={x:Reference LazyUserAction}, Path=HasLazyViewLoaded, StringFormat='HasLazyViewLoaded = {0}'}" Style="{StaticResource Heading}"/>
             <Button Text="Load View Now" Clicked="LoadLazyView_Clicked" WidthRequest="200" IsVisible="{Binding Source={x:Reference LazyUserAction}, Path=HasLazyViewLoaded, Converter={mct:InvertedBoolConverter}}" />
-            <local:MyLazyView x:Name="LazyUserAction" Style="{StaticResource MyViewStyle}"/>
+            <local:MyViewLazyView x:Name="LazyUserAction" Style="{StaticResource MyViewStyle}"/>
         </VerticalStackLayout>
     </ScrollView>
 </pages:BasePage>

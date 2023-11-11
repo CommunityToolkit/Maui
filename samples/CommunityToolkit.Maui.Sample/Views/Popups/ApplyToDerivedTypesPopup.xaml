@@ -13,7 +13,7 @@
         </Style>
     </mct:Popup.Resources>
     
-    <Grid VerticalOptions="Fill" HorizontalOptions="Fill" BackgroundColor="Transparent">
+    <Grid VerticalOptions="Fill" HorizontalOptions="Fill" BackgroundColor="Transparent" Style="{StaticResource PopupLayout}">
         <Grid WidthRequest="10" HeightRequest="10" VerticalOptions="Start" HorizontalOptions="Start" BackgroundColor="Blue" />
         <Grid WidthRequest="10" HeightRequest="10" VerticalOptions="Start" HorizontalOptions="End" BackgroundColor="Blue" />
         <Grid WidthRequest="10" HeightRequest="10" VerticalOptions="End" HorizontalOptions="Start" BackgroundColor="Blue" />

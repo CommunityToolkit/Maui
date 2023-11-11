@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions;
 
 public class BackgroundColorToTests : BaseTest
 {
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task BackgroundColorTo_VerifyColorChanged()
 	{
 		Color originalBackgroundColor = Colors.Blue, updatedBackgroundColor = Colors.Red;
@@ -22,7 +22,35 @@ public class BackgroundColorToTests : BaseTest
 		Assert.Equal(updatedBackgroundColor, element.BackgroundColor);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task BackgroundColorTo_CancellationTokenExpired()
+	{
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		VisualElement element = new Label { BackgroundColor = Colors.Blue };
+		element.EnableAnimations();
+
+		// Ensure CancellationToken has expired
+		await Task.Delay(100, CancellationToken.None);
+
+		await Assert.ThrowsAsync<TaskCanceledException>(() => element.BackgroundColorTo(Colors.Green, token: cts.Token));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task BackgroundColorTo_CancellationTokenCanceled()
+	{
+		var cts = new CancellationTokenSource();
+
+		VisualElement element = new Label { BackgroundColor = Colors.Blue };
+		element.EnableAnimations();
+
+		// Ensure CancellationToken has expired
+		await cts.CancelAsync();
+
+		await Assert.ThrowsAsync<TaskCanceledException>(() => element.BackgroundColorTo(Colors.Green, token: cts.Token));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task BackgroundColorTo_VerifyColorChangedForDefaultBackgroundColor()
 	{
 		Color updatedBackgroundColor = Colors.Yellow;
@@ -36,7 +64,7 @@ public class BackgroundColorToTests : BaseTest
 		Assert.Equal(updatedBackgroundColor, element.BackgroundColor);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task BackgroundColorTo_DoesNotAllowNullVisualElement()
 	{
 		VisualElement? element = null;
@@ -46,7 +74,7 @@ public class BackgroundColorToTests : BaseTest
 #pragma warning restore CS8603 // Possible null reference return.
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task BackgroundColorTo_DoesNotAllowNullColor()
 	{
 		VisualElement element = new Label();

@@ -33,7 +33,7 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 
 
 	/// <inheritdoc/>
-	public async Task<SpeechToTextResult> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
+	public async Task<SpeechToTextResult> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken = default)
 	{
 		try
 		{
@@ -54,7 +54,7 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 	}
 
 	/// <inheritdoc/>
-	public async Task StartListenAsync(CultureInfo culture, CancellationToken cancellationToken)
+	public async Task StartListenAsync(CultureInfo culture, CancellationToken cancellationToken = default)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 
@@ -68,7 +68,7 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 	}
 
 	/// <inheritdoc/>
-	public Task StopListenAsync(CancellationToken cancellationToken) => InternalStopListeningAsync(cancellationToken);
+	public Task StopListenAsync(CancellationToken cancellationToken = default) => InternalStopListeningAsync(cancellationToken);
 
 	void OnRecognitionResultUpdated(string recognitionResult)
 	{
@@ -87,7 +87,7 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 
 #if !MACCATALYST && !IOS
 	/// <inheritdoc/>
-	public async Task<bool> RequestPermissions(CancellationToken cancellationToken)
+	public async Task<bool> RequestPermissions(CancellationToken cancellationToken = default)
 	{
 		var status = await Permissions.RequestAsync<Permissions.Microphone>().WaitAsync(cancellationToken).ConfigureAwait(false);
 		return status is PermissionStatus.Granted;

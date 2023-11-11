@@ -132,7 +132,7 @@ public class MauiPopup : Popup
 		if (VirtualView.CanBeDismissedByTappingOutsideOfPopup)
 		{
 			Close();
-			VirtualView.Handler.Invoke(nameof(IPopup.OnDismissedByTappingOutsideOfPopup));
+			VirtualView.Handler?.Invoke(nameof(IPopup.OnDismissedByTappingOutsideOfPopup));
 		}
 	}
 }

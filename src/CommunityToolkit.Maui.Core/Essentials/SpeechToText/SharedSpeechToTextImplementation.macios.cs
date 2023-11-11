@@ -42,7 +42,7 @@ public sealed partial class SpeechToTextImplementation
 	}
 
 	/// <inheritdoc />
-	public Task<bool> RequestPermissions(CancellationToken cancellationToken)
+	public Task<bool> RequestPermissions(CancellationToken cancellationToken = default)
 	{
 		var taskResult = new TaskCompletionSource<bool>();
 

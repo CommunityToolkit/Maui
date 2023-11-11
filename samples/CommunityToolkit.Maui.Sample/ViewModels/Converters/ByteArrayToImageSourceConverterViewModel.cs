@@ -37,20 +37,20 @@ public sealed partial class ByteArrayToImageSourceConverterViewModel : BaseViewM
 	bool CanDownloadDotNetBotImageComandExecute => !IsDownloadingImage && DotNetBotImageByteArray is null;
 
 	[RelayCommand(CanExecute = nameof(CanDownloadDotNetBotImageComandExecute))]
-	async Task DownloadDotNetBotImage()
+	async Task DownloadDotNetBotImage(CancellationToken token)
 	{
 		IsDownloadingImage = true;
 
 		var maximumDownloadTime = TimeSpan.FromSeconds(5);
-		var cancellationTokenSource = new CancellationTokenSource(maximumDownloadTime);
+		var maximumDownloadTimeCTS = new CancellationTokenSource(maximumDownloadTime);
 
 		// Ensure Activity Indicator appears on screen for a minumum of 1.5 seconds when the user taps the Download Button
 		var minimumDownloadTime = TimeSpan.FromSeconds(1.5);
-		var minimumDownloadTimeTask = Task.Delay(minimumDownloadTime, cancellationTokenSource.Token);
+		var minimumDownloadTimeTask = Task.Delay(minimumDownloadTime, maximumDownloadTimeCTS.Token).WaitAsync(token);
 
 		try
 		{
-			DotNetBotImageByteArray = await client.GetByteArrayAsync("https://user-images.githubusercontent.com/13558917/137551073-ac8958bf-83e3-4ae3-8623-4db6dce49d02.png", cancellationTokenSource.Token).ConfigureAwait(false);
+			DotNetBotImageByteArray = await client.GetByteArrayAsync("https://user-images.githubusercontent.com/13558917/137551073-ac8958bf-83e3-4ae3-8623-4db6dce49d02.png", maximumDownloadTimeCTS.Token).WaitAsync(token).ConfigureAwait(false);
 
 			await minimumDownloadTimeTask.ConfigureAwait(false);
 
