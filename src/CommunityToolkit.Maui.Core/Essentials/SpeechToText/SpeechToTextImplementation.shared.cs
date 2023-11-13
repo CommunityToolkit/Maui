@@ -37,7 +37,6 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 	{
 		try
 		{
-			cancellationToken.ThrowIfCancellationRequested();
 			var isPermissionGranted = await IsSpeechPermissionAuthorized(cancellationToken).ConfigureAwait(false);
 			if (!isPermissionGranted)
 			{
