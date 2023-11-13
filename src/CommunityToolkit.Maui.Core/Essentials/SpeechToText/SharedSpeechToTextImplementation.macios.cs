@@ -21,20 +21,6 @@ public sealed partial class SpeechToTextImplementation
 												? SpeechToTextState.Listening
 												: SpeechToTextState.Stopped;
 
-	/// <summary>
-	/// Initialize <see cref="SpeechToTextImplementation"/>
-	/// </summary>
-	public SpeechToTextImplementation()
-	{
-		var audioSession = AVAudioSession.SharedInstance();
-		if (UIDevice.CurrentDevice.CheckSystemVersion(15, 0))
-		{
-			audioSession.SetSupportsMultichannelContent(true, out _);
-		}
-
-		audioSession.SetCategory(AVAudioSessionCategory.PlayAndRecord, AVAudioSessionCategoryOptions.DefaultToSpeaker);
-	}
-
 
 	/// <inheritdoc />
 	public async ValueTask DisposeAsync()
@@ -71,13 +57,24 @@ public sealed partial class SpeechToTextImplementation
 		return Task.FromResult(SFSpeechRecognizer.AuthorizationStatus is SFSpeechRecognizerAuthorizationStatus.Authorized);
 	}
 
+	static void InitializeAvAudioSession(out AVAudioSession sharedAvAudioSession)
+	{
+		sharedAvAudioSession = AVAudioSession.SharedInstance();
+		if (UIDevice.CurrentDevice.CheckSystemVersion(15, 0))
+		{
+			sharedAvAudioSession.SetSupportsMultichannelContent(true, out _);
+		}
+
+		sharedAvAudioSession.SetCategory(AVAudioSessionCategory.PlayAndRecord, AVAudioSessionCategoryOptions.DefaultToSpeaker);
+	}
+
 	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{
 		recognitionProgress = recognitionResult;
 
 		await InternalStartListeningAsync(culture, cancellationToken);
 
-		return await getRecognitionTaskCompletionSource.Task.WaitAsync((cancellationToken));
+		return await getRecognitionTaskCompletionSource.Task.WaitAsync(cancellationToken);
 	}
 
 	void StopRecording()
