@@ -27,6 +27,11 @@ public sealed partial class SpeechToTextImplementation
 	public SpeechToTextImplementation()
 	{
 		var audioSession = AVAudioSession.SharedInstance();
+		if (UIDevice.CurrentDevice.CheckSystemVersion(15, 0))
+		{
+			audioSession.SetSupportsMultichannelContent(true, out _);
+		}
+
 		audioSession.SetCategory(AVAudioSessionCategory.PlayAndRecord, AVAudioSessionCategoryOptions.DefaultToSpeaker);
 	}
 

@@ -118,7 +118,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 			}
 			else
 			{
-				await Toast.Make(recognitionResult.Exception?.Message ?? "Unable to recognize speech").Show(cancellationToken);
+				await Toast.Make(recognitionResult.Exception?.Message ?? "Unable to recognize speech").Show(CancellationToken.None);
 			}
 
 			if (RecognitionText is beginSpeakingPrompt)
