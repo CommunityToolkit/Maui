@@ -12,7 +12,7 @@
                 <Style x:Key="Title" TargetType="Label">
                     <Setter Property="FontSize" Value="26" />
                     <Setter Property="FontAttributes" Value="Bold" />
-                    <Setter Property="TextColor" Value="#000000" />
+                    <Setter Property="TextColor" Value="#000" />
                     <Setter Property="VerticalTextAlignment" Value="Center" />
                     <Setter Property="HorizontalTextAlignment" Value="Center" />
                 </Style>

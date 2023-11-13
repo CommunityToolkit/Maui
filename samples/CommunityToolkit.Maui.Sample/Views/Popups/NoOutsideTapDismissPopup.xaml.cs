@@ -17,7 +17,7 @@ public partial class NoOutsideTapDismissPopup : Popup
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
-		await CloseAsync(cts.Token);
+		await CloseAsync(token: cts.Token);
 		await Toast.Make("Popup Dismissed By Button").Show(cts.Token);
 	}
 }
