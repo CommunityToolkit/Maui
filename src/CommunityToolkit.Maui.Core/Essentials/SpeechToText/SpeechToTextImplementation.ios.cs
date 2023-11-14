@@ -20,13 +20,10 @@ public sealed partial class SpeechToTextImplementation
 			throw new ArgumentException("Speech recognizer is not available");
 		}
 
-		if (UIDevice.CurrentDevice.CheckSystemVersion(15, 0))
-		{
-			AVAudioSession.SharedInstance().SetSupportsMultichannelContent(true, out _);
-		}
-
 		audioEngine = new AVAudioEngine();
 		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest();
+		
+		InitializeAvAudioSession(out _);
 
 		var node = audioEngine.InputNode;
 		var recordingFormat = node.GetBusOutputFormat(0);
@@ -40,8 +37,9 @@ public sealed partial class SpeechToTextImplementation
 			throw new ArgumentException("Error starting audio engine - " + error.LocalizedDescription);
 		}
 
-		var currentIndex = 0;
+		cancellationToken.ThrowIfCancellationRequested();
 
+		var currentIndex = 0;
 		recognitionTask = speechRecognizer.GetRecognitionTask(liveSpeechRequest, (result, err) =>
 		{
 			if (err is not null)
@@ -75,8 +73,6 @@ public sealed partial class SpeechToTextImplementation
 				}
 			}
 		});
-
-		cancellationToken.ThrowIfCancellationRequested();
 
 		return Task.CompletedTask;
 	}
