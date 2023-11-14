@@ -5,7 +5,7 @@ variables:
   NugetPackageVersion: '$(CurrentSemanticVersion)'
   NugetPackageVersionMediaElement: '$(CurrentSemanticVersion)'
   NugetPackageVersionMaps: '$(CurrentSemanticVersion)'
-  TOOLKIT_NET_VERSION: '8.0.100-rc.2.23502.2'
+  TOOLKIT_NET_VERSION: '8.0.100'
   LATEST_NET_VERSION: '8.0.x'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
@@ -69,7 +69,7 @@ jobs:
         inputs:
           packageType: 'sdk'
           version: '$(LATEST_NET_VERSION)'
-          includePreviewVersions: true
+          includePreviewVersions: false
 
       - powershell: dotnet workload install maui --skip-sign-check --source https://api.nuget.org/v3/index.json
         displayName: Install Latest .NET MAUI Workload
@@ -181,7 +181,7 @@ jobs:
         inputs:
           packageType: 'sdk'
           version: '$(TOOLKIT_NET_VERSION)'
-          includePreviewVersions: true
+          includePreviewVersions: false
 
       - task: CmdLine@2
         displayName: 'Install .NET MAUI Workload $(TOOLKIT_NET_VERSION)'
