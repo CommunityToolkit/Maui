@@ -7,5 +7,5 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 public partial class AnimationBehaviorViewModel : BaseViewModel
 {
 	[RelayCommand]
-	Task OnAnimation() => Snackbar.Make($"{nameof(AnimationCommand)} is triggered.").Show();
+	Task OnAnimation(CancellationToken token) => Snackbar.Make($"{nameof(AnimationCommand)} is triggered.").Show(token);
 }

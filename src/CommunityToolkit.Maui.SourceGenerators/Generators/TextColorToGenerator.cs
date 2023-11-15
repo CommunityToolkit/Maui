@@ -118,6 +118,7 @@ class TextColorToGenerator : IIncrementalGenerator
 #nullable enable
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Maui.Core.Extensions;
 using Microsoft.Maui;
@@ -138,8 +139,9 @@ namespace {{textStyleClassMetadata.Namespace}};
 	/// <param name="rate">The time, in milliseconds, between the frames of the animation</param>
 	/// <param name="length">The duration, in milliseconds, of the animation</param>
 	/// <param name="easing">The easing function to be used in the animation</param>
+	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Value indicating if the animation completed successfully or not</returns>
-	public static Task<bool> TextColorTo{{textStyleClassMetadata.GenericArguments}}(this global::{{textStyleClassMetadata.Namespace}}.{{textStyleClassMetadata.ClassName}}{{textStyleClassMetadata.GenericArguments}} element, {{mauiColorFullName}} color, uint rate = 16u, uint length = 250u, Easing? easing = null)
+	public static Task<bool> TextColorTo{{textStyleClassMetadata.GenericArguments}}(this global::{{textStyleClassMetadata.Namespace}}.{{textStyleClassMetadata.ClassName}}{{textStyleClassMetadata.GenericArguments}} element, {{mauiColorFullName}} color, uint rate = 16u, uint length = 250u, Easing? easing = null, CancellationToken token = default)
 {{textStyleClassMetadata.GenericConstraints}}
 	{
 		ArgumentNullException.ThrowIfNull(element);
@@ -173,7 +175,7 @@ namespace {{textStyleClassMetadata.Namespace}};
 			animationCompletionSource.SetResult(false);
 		}
 
-		return animationCompletionSource.Task;
+		return animationCompletionSource.Task.WaitAsync(token);
 
 
 		static Animation GetRedTransformAnimation({{textStyleClassMetadata.Namespace}}.{{textStyleClassMetadata.ClassName}}{{textStyleClassMetadata.GenericArguments}} element, float targetRed) =>

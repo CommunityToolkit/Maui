@@ -78,18 +78,18 @@ public class PopupService : IPopupService
 		CurrentPage.ShowPopup(popup);
 	}
 
-	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}()"/>
-	public Task<object?> ShowPopupAsync<TViewModel>() where TViewModel : INotifyPropertyChanged
+	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(CancellationToken)"/>
+	public Task<object?> ShowPopupAsync<TViewModel>(CancellationToken token = default) where TViewModel : INotifyPropertyChanged
 	{
 		var popup = GetPopup(typeof(TViewModel));
 
 		ValidateBindingContext<TViewModel>(popup, out _);
 
-		return CurrentPage.ShowPopupAsync(popup);
+		return CurrentPage.ShowPopupAsync(popup, token);
 	}
 
-	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(TViewModel)"/>
-	public Task<object?> ShowPopupAsync<TViewModel>(TViewModel viewModel) where TViewModel : INotifyPropertyChanged
+	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(TViewModel, CancellationToken)"/>
+	public Task<object?> ShowPopupAsync<TViewModel>(TViewModel viewModel, CancellationToken token = default) where TViewModel : INotifyPropertyChanged
 	{
 		ArgumentNullException.ThrowIfNull(viewModel);
 
@@ -97,11 +97,11 @@ public class PopupService : IPopupService
 
 		popup.BindingContext = viewModel;
 
-		return CurrentPage.ShowPopupAsync(popup);
+		return CurrentPage.ShowPopupAsync(popup, token);
 	}
 
-	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(Action{TViewModel})"/>
-	public Task<object?> ShowPopupAsync<TViewModel>(Action<TViewModel> onPresenting) where TViewModel : INotifyPropertyChanged
+	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(Action{TViewModel}, CancellationToken)"/>
+	public Task<object?> ShowPopupAsync<TViewModel>(Action<TViewModel> onPresenting, CancellationToken token = default) where TViewModel : INotifyPropertyChanged
 	{
 		ArgumentNullException.ThrowIfNull(onPresenting);
 
@@ -111,7 +111,7 @@ public class PopupService : IPopupService
 
 		onPresenting.Invoke(viewModel);
 
-		return CurrentPage.ShowPopupAsync(popup);
+		return CurrentPage.ShowPopupAsync(popup, token);
 	}
 
 	/// <summary>

@@ -28,7 +28,7 @@ public static partial class KeyboardExtensions
 	/// <param name="token">Cancellation token</param>
 	/// <returns>
 	/// Returns <c>true</c> if the platform was able to hide the soft input device.</returns>
-	public static ValueTask<bool> HideKeyboardAsync(this ITextInput targetView, CancellationToken token)
+	public static ValueTask<bool> HideKeyboardAsync(this ITextInput targetView, CancellationToken token = default)
 	{
 		token.ThrowIfCancellationRequested();
 		if (!targetView.TryGetPlatformView(out var platformView, out _, out _))
@@ -46,7 +46,7 @@ public static partial class KeyboardExtensions
 	/// <param name="token">Cancellation token</param>
 	/// <returns>
 	/// Returns <c>true</c> if the platform was able to show the soft input device.</returns>
-	public static Task<bool> ShowKeyboardAsync(this ITextInput targetView, CancellationToken token)
+	public static Task<bool> ShowKeyboardAsync(this ITextInput targetView, CancellationToken token = default)
 	{
 		token.ThrowIfCancellationRequested();
 

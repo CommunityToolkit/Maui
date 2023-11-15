@@ -18,13 +18,13 @@ public partial class ItemTappedEventArgsConverterViewModel : BaseViewModel
 	};
 
 	[RelayCommand]
-	Task ItemTapped(Person? person)
+	Task ItemTapped(Person? person, CancellationToken token)
 	{
 		ArgumentNullException.ThrowIfNull(person);
 
 		ItemSelected = null;
 
-		return Application.Current?.MainPage?.DisplayAlert("Item Tapped", person.Name, "Ok") ?? Task.CompletedTask;
+		return Application.Current?.MainPage?.DisplayAlert("Item Tapped", person.Name, "Ok").WaitAsync(token) ?? Task.CompletedTask;
 	}
 
 }
