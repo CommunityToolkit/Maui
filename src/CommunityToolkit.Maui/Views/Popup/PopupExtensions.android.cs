@@ -140,40 +140,40 @@ public static partial class PopupExtensions
 		if (target.Parent is VerticalStackLayout ||
 		   (target.Parent is StackLayout stackV && stackV.Orientation == StackOrientation.Vertical))
 		{
-			var requestWidth = (!double.IsNaN(target.Width) ? (int)context.ToPixels(target.Width) : width) - paddingH;
-			var requestHeight = (!double.IsNaN(target.Height) ? (int)context.ToPixels(target.Height) : height) - paddingV;
+			var requestWidth = ((target.Width != -1 && target.WidthRequest != -1) ? (int)context.ToPixels(target.Width) : width) - paddingH;
+			var requestHeight = ((target.Height != -1 && target.HeightRequest != -1) ? (int)context.ToPixels(target.Height) : height) - paddingV;
 
 			platformView.Measure(
-				MeasureSpec.MakeMeasureSpec(requestWidth, !double.IsNaN(target.Width) ? MeasureSpecMode.Exactly : isHorizontalFill ? MeasureSpecMode.Exactly : MeasureSpecMode.AtMost),
-				MeasureSpec.MakeMeasureSpec(requestHeight, !double.IsNaN(target.Height) ? MeasureSpecMode.Exactly : MeasureSpecMode.AtMost)
+				MeasureSpec.MakeMeasureSpec(requestWidth, (target.Width != -1 && target.WidthRequest != -1) ? MeasureSpecMode.Exactly : isHorizontalFill ? MeasureSpecMode.Exactly : MeasureSpecMode.AtMost),
+				MeasureSpec.MakeMeasureSpec(requestHeight, (target.Height != -1 && target.HeightRequest != -1) ? MeasureSpecMode.Exactly : MeasureSpecMode.AtMost)
 			);
 		}
 		else if (target.Parent is HorizontalStackLayout ||
 				(target.Parent is StackLayout stackH && stackH.Orientation == StackOrientation.Horizontal))
 		{
-			var requestWidth = (!double.IsNaN(target.Width) ? (int)context.ToPixels(target.Width) : width) - paddingH;
-			var requestHeight = (!double.IsNaN(target.Height) ? (int)context.ToPixels(target.Height) : height) - paddingV;
+			var requestWidth = ((target.Width != -1 && target.WidthRequest != -1) ? (int)context.ToPixels(target.Width) : width) - paddingH;
+			var requestHeight = ((target.Height != -1 && target.HeightRequest != -1) ? (int)context.ToPixels(target.Height) : height) - paddingV;
 
 			platformView.Measure(
-				MeasureSpec.MakeMeasureSpec(requestWidth, !double.IsNaN(target.Width) ? MeasureSpecMode.Exactly : MeasureSpecMode.AtMost),
-				MeasureSpec.MakeMeasureSpec(requestHeight, !double.IsNaN(target.Height) ? MeasureSpecMode.Exactly : isVerticalFill ? MeasureSpecMode.Exactly : MeasureSpecMode.AtMost)
+				MeasureSpec.MakeMeasureSpec(requestWidth, (target.Width != -1 && target.WidthRequest != -1) ? MeasureSpecMode.Exactly : MeasureSpecMode.AtMost),
+				MeasureSpec.MakeMeasureSpec(requestHeight, (target.Height != -1 && target.HeightRequest != -1) ? MeasureSpecMode.Exactly : isVerticalFill ? MeasureSpecMode.Exactly : MeasureSpecMode.AtMost)
 			);
 		}
 		else if (target.Parent is Grid grid)
 		{
 			int requestWidth, requestHeight;
-			MeasureSpecMode measureSepcModeH, measureSpecModeV;
+			MeasureSpecMode measureSpecModeH, measureSpecModeV;
 			if (grid.ColumnDefinitions.Count == 0)
 			{
 				requestWidth = ((target.Width != -1 && target.WidthRequest != -1) ? (int)context.ToPixels(target.Width) : width);
-				measureSepcModeH = (target.Width != -1 && target.WidthRequest != -1) ? MeasureSpecMode.Exactly : isHorizontalFill ? MeasureSpecMode.Exactly : MeasureSpecMode.AtMost;
+				measureSpecModeH = (target.Width != -1 && target.WidthRequest != -1) ? MeasureSpecMode.Exactly : isHorizontalFill ? MeasureSpecMode.Exactly : MeasureSpecMode.AtMost;
 			}
 			else
 			{
 				if (target.Width != -1 && target.WidthRequest != -1)
 				{
 					requestWidth = (int)context.ToPixels(target.Width);
-					measureSepcModeH = MeasureSpecMode.Exactly;
+					measureSpecModeH = MeasureSpecMode.Exactly;
 				}
 				else
 				{
@@ -199,17 +199,17 @@ public static partial class PopupExtensions
 						}
 
 						requestWidth = (int)((width - (int)context.ToPixels(fixWidth)) / totalStar * grid.ColumnDefinitions[grid.GetColumn(target)].Width.Value);
-						measureSepcModeH = isHorizontalFill ? (fixWidth == 0 && isAuto && grid.Width == -1) ? MeasureSpecMode.Unspecified : MeasureSpecMode.Exactly : MeasureSpecMode.AtMost;
+						measureSpecModeH = isHorizontalFill ? (fixWidth == 0 && isAuto && grid.Width == -1) ? MeasureSpecMode.Unspecified : MeasureSpecMode.Exactly : MeasureSpecMode.AtMost;
 					}
 					else if (grid.ColumnDefinitions[grid.GetColumn(target)].Width.IsAuto)
 					{
 						requestWidth = width;
-						measureSepcModeH = MeasureSpecMode.Unspecified;
+						measureSpecModeH = MeasureSpecMode.Unspecified;
 					}
 					else
 					{
 						requestWidth = (int)context.ToPixels(grid.ColumnDefinitions[grid.GetColumn(target)].Width.Value);
-						measureSepcModeH = isHorizontalFill ? MeasureSpecMode.Exactly : MeasureSpecMode.AtMost;
+						measureSpecModeH = isHorizontalFill ? MeasureSpecMode.Exactly : MeasureSpecMode.AtMost;
 					}
 				}
 			}
@@ -249,7 +249,7 @@ public static partial class PopupExtensions
 							}
 						}
 
-						requestHeight = (int)((height - (int)context.ToPixels(fixHeight)) / totalStar * grid.RowDefinitions[grid.GetRow(target)].Height.Value); 				
+						requestHeight = (int)((height - (int)context.ToPixels(fixHeight)) / totalStar * grid.RowDefinitions[grid.GetRow(target)].Height.Value);			
 						measureSpecModeV = isVerticalFill ? (fixHeight == 0 && isAuto && grid.Height == -1) ? MeasureSpecMode.Unspecified : MeasureSpecMode.Exactly : MeasureSpecMode.AtMost;
 					}
 					else if (grid.RowDefinitions[grid.GetRow(target)].Height.IsAuto)
@@ -266,7 +266,7 @@ public static partial class PopupExtensions
 			}
 
 			platformView.Measure(
-				MeasureSpec.MakeMeasureSpec(requestWidth, measureSepcModeH),
+				MeasureSpec.MakeMeasureSpec(requestWidth, measureSpecModeH),
 				MeasureSpec.MakeMeasureSpec(requestHeight, measureSpecModeV)
 			);
 		}
