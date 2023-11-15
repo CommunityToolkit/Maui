@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Views;
@@ -100,6 +101,8 @@ public static partial class PopupExtensions
 	{
 #if WINDOWS
 		PlatformShowPopup(popup, GetMauiContext(page));
+#elif ANDROID
+		PlatformShowPopup(page, popup);
 #else
 		CreatePopup(page, popup);
 #endif
@@ -109,6 +112,8 @@ public static partial class PopupExtensions
 	{
 #if WINDOWS
 		return PlatformShowPopupAsync(popup, GetMauiContext(page));
+#elif ANDROID
+		return PlatformShowPopupAsync(page, popup);
 #else
 		CreatePopup(page, popup);
 
