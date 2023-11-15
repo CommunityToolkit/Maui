@@ -138,7 +138,11 @@ public static class PopupExtensions
 
 		var verticalOptions = popup.VerticalOptions;
 		var horizontalOptions = popup.HorizontalOptions;
-		if (IsTopLeft(verticalOptions, horizontalOptions))
+		if (popup.Anchor is not null)
+		{
+			mauiPopup.DesiredPlacement = PopupPlacementMode.Top;
+		}
+		else if (IsTopLeft(verticalOptions, horizontalOptions))
 		{
 			mauiPopup.DesiredPlacement = PopupPlacementMode.TopEdgeAlignedLeft;
 			mauiPopup.HorizontalOffset = (popupParentFrame.Width - popupParentFrame.Width * horizontalOptionsPositiveNegativeMultiplier) / 2;
@@ -234,15 +238,11 @@ public static class PopupExtensions
 			mauiPopup.HorizontalOffset = (popupParentFrame.Width - contentSize.Width * horizontalOptionsPositiveNegativeMultiplier) / 2;
 			mauiPopup.VerticalOffset = (popupParentFrame.Height - contentSize.Height) / 2;
 		}
-		else if (popup.Anchor is null)
+		else
 		{
 			mauiPopup.DesiredPlacement = PopupPlacementMode.Auto;
 			mauiPopup.HorizontalOffset = (popupParentFrame.Width - contentSize.Width * horizontalOptionsPositiveNegativeMultiplier) / 2;
 			mauiPopup.VerticalOffset = (popupParentFrame.Height - contentSize.Height) / 2;
-		}
-		else
-		{
-			mauiPopup.DesiredPlacement = PopupPlacementMode.Top;
 		}
 
 		static bool IsTopLeft(LayoutAlignment verticalOptions, LayoutAlignment horizontalOptions) => verticalOptions == LayoutAlignment.Start && horizontalOptions == LayoutAlignment.Start;

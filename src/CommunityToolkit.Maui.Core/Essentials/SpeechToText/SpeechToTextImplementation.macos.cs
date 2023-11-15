@@ -22,14 +22,8 @@ public sealed partial class SpeechToTextImplementation
 
 		audioEngine = new AVAudioEngine();
 		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest();
-		var audioSession = AVAudioSession.SharedInstance();
-
-		if (UIDevice.CurrentDevice.CheckSystemVersion(15, 0))
-		{
-			audioSession.SetSupportsMultichannelContent(true, out _);
-		}
-
-		audioSession.SetCategory(AVAudioSessionCategory.Record, AVAudioSessionCategoryOptions.DefaultToSpeaker);
+		
+		InitializeAvAudioSession(out var audioSession);
 
 		var mode = audioSession.AvailableModes.Contains(AVAudioSession.ModeMeasurement)
 			? AVAudioSession.ModeMeasurement
@@ -58,9 +52,10 @@ public sealed partial class SpeechToTextImplementation
 		{
 			throw new Exception(error.LocalizedDescription);
 		}
+		
+		cancellationToken.ThrowIfCancellationRequested();
 
 		var currentIndex = 0;
-
 		recognitionTask = speechRecognizer.GetRecognitionTask(liveSpeechRequest, (result, err) =>
 		{
 			if (err is not null)
@@ -94,8 +89,6 @@ public sealed partial class SpeechToTextImplementation
 				}
 			}
 		});
-
-		cancellationToken.ThrowIfCancellationRequested();
 
 		return Task.CompletedTask;
 	}

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps"
              xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
              xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
              x:Class="CommunityToolkit.Maui.Sample.Pages.Views.BasicMapsPage"
@@ -32,7 +33,7 @@
             <Label Text="Scroll enabled" VerticalOptions="Center"/>
         </HorizontalStackLayout>
         <Button Text="Move to region" Clicked="Button_OnClicked" Grid.Row="3"/>
-        <Map x:Name="BasicMap" Grid.Row="4" 
+        <maps:Map x:Name="BasicMap" Grid.Row="4" 
              IsShowingUser="{Binding IsToggled, Source={x:Reference ShowUserLocationSwitch}}"
              IsTrafficEnabled="{Binding IsToggled, Source={x:Reference ShowTrafficSwitch}}"
              IsZoomEnabled="{Binding IsToggled, Source={x:Reference ZoomEnabledSwitch}}"

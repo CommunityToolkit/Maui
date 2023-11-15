@@ -55,7 +55,7 @@ public class MauiPopup : UIViewController
 	}
 
 	/// <inheritdoc/>
-	public override void ViewWillDisappear(bool animated)
+	public override void ViewDidDisappear(bool animated)
 	{
 		if (ViewController?.View is UIView view)
 		{
@@ -63,13 +63,14 @@ public class MauiPopup : UIViewController
 			overlayView.RemoveFromSuperview();
 			overlayView.Dispose();
 		}
-		base.ViewWillDisappear(animated);
+		
+		base.ViewDidDisappear(animated);
 	}
 
 	/// <inheritdoc/>
 	public override void ViewWillTransitionToSize(CGSize toSize, IUIViewControllerTransitionCoordinator coordinator)
 	{
-		coordinator.AnimateAlongsideTransition((IUIViewControllerTransitionCoordinatorContext obj) =>
+		coordinator.AnimateAlongsideTransition(_ =>
 		{
 			// Before screen rotate
 			if (ViewController?.View is UIView view)
@@ -77,7 +78,7 @@ public class MauiPopup : UIViewController
 				var overlayView = GetOverlayView(view);
 				overlayView.Frame = new CGRect(0, 0, view.Frame.Width, view.Frame.Height);
 			}
-		}, (IUIViewControllerTransitionCoordinatorContext obj) =>
+		}, _ =>
 		{
 			// After screen rotate
 			if (VirtualView is not null)

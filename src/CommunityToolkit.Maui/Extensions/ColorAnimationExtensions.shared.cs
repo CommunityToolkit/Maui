@@ -15,14 +15,15 @@ public static partial class ColorAnimationExtensions
 	/// <param name="rate">The time, in milliseconds, between the frames of the animation</param>
 	/// <param name="length">The duration, in milliseconds, of the animation</param>
 	/// <param name="easing">The easing function to be used in the animation</param>
+	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Value indicating if the animation completed successfully or not</returns>
-	public static Task<bool> BackgroundColorTo(this VisualElement element, Color color, uint rate = 16u, uint length = 250u, Easing? easing = null)
+	public static Task<bool> BackgroundColorTo(this VisualElement element, Color color, uint rate = 16u, uint length = 250u, Easing? easing = null, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(element);
 		ArgumentNullException.ThrowIfNull(color);
 
-		//Although BackgroundColor is defined as not-nullable, it CAN be null
-		//If null => set it to Transparent as Animation will crash on null BackgroundColor
+		// Although BackgroundColor is defined as not-nullable, it CAN be null
+		// If null => set it to Transparent as Animation will crash on null BackgroundColor
 		element.BackgroundColor ??= Colors.Transparent;
 
 		var animationCompletionSource = new TaskCompletionSource<bool>();
@@ -46,7 +47,7 @@ public static partial class ColorAnimationExtensions
 			animationCompletionSource.SetResult(false);
 		}
 
-		return animationCompletionSource.Task;
+		return animationCompletionSource.Task.WaitAsync(token);
 
 
 		static Animation GetRedTransformAnimation(VisualElement element, float targetRed) =>

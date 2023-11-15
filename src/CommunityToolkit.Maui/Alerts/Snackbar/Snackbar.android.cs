@@ -86,7 +86,7 @@ public partial class Snackbar
 
 		if (dismissedTCS is not null)
 		{
-			await dismissedTCS.Task;
+			await dismissedTCS.Task.WaitAsync(token);
 		}
 	}
 

@@ -18,9 +18,9 @@ public static partial class PopupExtensions
 		platform?.Invoke(nameof(IPopup.OnOpened));
 	}
 
-	static Task<object?> PlatformShowPopupAsync(Popup popup, IMauiContext mauiContext)
+	static Task<object?> PlatformShowPopupAsync(Popup popup, IMauiContext mauiContext, CancellationToken token)
 	{
 		PlatformShowPopup(popup, mauiContext);
-		return popup.Result;
+		return popup.Result.WaitAsync(token);
 	}
 }

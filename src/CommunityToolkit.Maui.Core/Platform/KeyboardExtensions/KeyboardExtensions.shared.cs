@@ -28,7 +28,7 @@ public static partial class KeyboardExtensions
 	/// <param name="token">Cancellation token</param>
 	/// <returns>
 	/// Returns <c>true</c> if the platform was able to hide the soft input device.</returns>
-	public static ValueTask<bool> HideKeyboardAsync(this ITextInput targetView, CancellationToken token)
+	public static ValueTask<bool> HideKeyboardAsync(this ITextInput targetView, CancellationToken token = default)
 	{
 		token.ThrowIfCancellationRequested();
 		if (!targetView.TryGetPlatformView(out var platformView, out _, out _))
@@ -46,7 +46,7 @@ public static partial class KeyboardExtensions
 	/// <param name="token">Cancellation token</param>
 	/// <returns>
 	/// Returns <c>true</c> if the platform was able to show the soft input device.</returns>
-	public static Task<bool> ShowKeyboardAsync(this ITextInput targetView, CancellationToken token)
+	public static Task<bool> ShowKeyboardAsync(this ITextInput targetView, CancellationToken token = default)
 	{
 		token.ThrowIfCancellationRequested();
 
@@ -59,7 +59,9 @@ public static partial class KeyboardExtensions
 		{
 			var showKeyboardTCS = new TaskCompletionSource<bool>();
 
-			handler.Invoke(nameof(IView.Focus), new FocusRequest(false));
+			var focusRequest = new FocusRequest();
+			focusRequest.SetResult(false);
+			handler.Invoke(nameof(IView.Focus), focusRequest);
 
 			handler.GetRequiredService<IDispatcher>().Dispatch(() =>
 			{
@@ -93,7 +95,7 @@ public static partial class KeyboardExtensions
 	{
 		if (!targetView.TryGetPlatformView(out var platformView, out _, out _))
 		{
-			return false;
+			throw new SoftKeyboardException($"Unable to retrive {typeof(PlatformView)} to determine soft keyboard status");
 		}
 
 		return platformView.IsSoftKeyboardShowing();
@@ -128,5 +130,9 @@ public static partial class KeyboardExtensions
 		view = iView;
 
 		return true;
+	}
+
+	sealed class SoftKeyboardException(string message) : Exception(message)
+	{
 	}
 }

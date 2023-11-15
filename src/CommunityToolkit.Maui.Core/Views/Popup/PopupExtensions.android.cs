@@ -16,7 +16,7 @@ public static class PopupExtensions
 	/// </summary>
 	/// <param name="dialog">An instance of <see cref="Dialog"/>.</param>
 	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
-	/// <exception cref="InvalidOperationException">if the <see cref="Android.Views.Window"/> is null an exception will be thrown.</exception>
+	/// <exception cref="InvalidOperationException">if the <see cref="Window"/> is null an exception will be thrown.</exception>
 	public static void SetAnchor(this Dialog dialog, in IPopup popup)
 	{
 		var window = GetWindow(dialog);
@@ -89,19 +89,21 @@ public static class PopupExtensions
 		{
 			LayoutAlignment.Start => GravityFlags.Top,
 			LayoutAlignment.End => GravityFlags.Bottom,
-			_ => GravityFlags.CenterVertical,
+			LayoutAlignment.Center or LayoutAlignment.Fill => GravityFlags.CenterVertical,
+			_ => throw new NotSupportedException($"{nameof(IPopup.VerticalOptions)}: {popup.VerticalOptions} is not yet supported")
 		};
 
 		gravityFlags |= popup.HorizontalOptions switch
 		{
 			LayoutAlignment.Start => isFlowDirectionRightToLeft ? GravityFlags.Right : GravityFlags.Left,
 			LayoutAlignment.End => isFlowDirectionRightToLeft ? GravityFlags.Left : GravityFlags.Right,
-			_ => GravityFlags.CenterHorizontal,
+			LayoutAlignment.Center or LayoutAlignment.Fill => GravityFlags.CenterHorizontal,
+			_ => throw new NotSupportedException($"{nameof(IPopup.HorizontalOptions)}: {popup.HorizontalOptions} is not yet supported")
 		};
 
 		window.SetGravity(gravityFlags);
 	}
 
-	static Android.Views.Window GetWindow(in Dialog dialog) =>
+	static Window GetWindow(in Dialog dialog) =>
 		dialog.Window ?? throw new InvalidOperationException($"{nameof(Dialog)}.{nameof(Dialog.Window)} cannot be null");
 }
