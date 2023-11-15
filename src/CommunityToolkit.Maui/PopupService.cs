@@ -48,7 +48,7 @@ public class PopupService : IPopupService
 	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}()"/>
 	public void ShowPopup<TViewModel>() where TViewModel : INotifyPropertyChanged
 	{
-		Popup popup = GetPopup(typeof(TViewModel));
+		var popup = GetPopup(typeof(TViewModel));
 
 		ValidateBindingContext<TViewModel>(popup, out _);
 
@@ -60,7 +60,7 @@ public class PopupService : IPopupService
 	{
 		ArgumentNullException.ThrowIfNull(viewModel);
 
-		Popup popup = GetPopup(typeof(TViewModel));
+		var popup = GetPopup(typeof(TViewModel));
 
 		popup.BindingContext = viewModel;
 
@@ -72,7 +72,7 @@ public class PopupService : IPopupService
 	{
 		ArgumentNullException.ThrowIfNull(onPresenting);
 
-		Popup popup = GetPopup(typeof(TViewModel));
+		var popup = GetPopup(typeof(TViewModel));
 
 		ValidateBindingContext(popup, out TViewModel viewModel);
 
@@ -84,7 +84,7 @@ public class PopupService : IPopupService
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(CancellationToken)"/>
 	public Task<object?> ShowPopupAsync<TViewModel>(CancellationToken token = default) where TViewModel : INotifyPropertyChanged
 	{
-		Popup popup = GetPopup(typeof(TViewModel));
+		var popup = GetPopup(typeof(TViewModel));
 
 		ValidateBindingContext<TViewModel>(popup, out _);
 
@@ -96,7 +96,7 @@ public class PopupService : IPopupService
 	{
 		ArgumentNullException.ThrowIfNull(viewModel);
 
-		Popup popup = GetPopup(typeof(TViewModel));
+		var popup = GetPopup(typeof(TViewModel));
 
 		popup.BindingContext = viewModel;
 
@@ -108,7 +108,7 @@ public class PopupService : IPopupService
 	{
 		ArgumentNullException.ThrowIfNull(onPresenting);
 
-		Popup popup = GetPopup(typeof(TViewModel));
+		var popup = GetPopup(typeof(TViewModel));
 
 		ValidateBindingContext(popup, out TViewModel viewModel);
 
@@ -136,7 +136,7 @@ public class PopupService : IPopupService
 
 	Popup GetPopup(Type viewModelType)
 	{
-		Popup? popup = serviceProvider.GetService(viewModelToViewMappings[viewModelType]) as Popup;
+		var popup = serviceProvider.GetService(viewModelToViewMappings[viewModelType]) as Popup;
 
 		if (popup is null)
 		{
