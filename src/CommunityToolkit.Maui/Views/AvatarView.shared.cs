@@ -328,12 +328,6 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		avatarImage.Source = newValue;
 		if (newValue is not null)
 		{
-			// Work-around for iOS / MacOS bug that paints `Border.BackgroundColor` over top of `Border.Content` when an Image is used for `Border.Content`
-			if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst() || OperatingSystem.IsMacOS())
-			{
-				BackgroundColor = Colors.Transparent;
-			}
-
 			Content = avatarImage;
 		}
 		else
@@ -367,8 +361,14 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 			double imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
 			double imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
 
-			Rect rect = new(offsetX, offsetY, imageWidth, imageHeight);
-
+			Ellipse defaultEllipse = new Ellipse
+			{
+				HeightRequest = imageHeight,
+				MaximumHeightRequest = imageHeight,
+				WidthRequest = imageWidth,
+				MaximumWidthRequest = imageWidth,
+			};
+			
 			avatarImage.Clip = StrokeShape switch
 			{
 				Polyline polyLine => polyLine.Clip,
@@ -376,7 +376,7 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 				Microsoft.Maui.Controls.Shapes.Path path => path.Clip,
 				Polygon polygon => polygon.Clip,
 				Rectangle rectangle => rectangle.Clip,
-				_ => new RoundRectangleGeometry { CornerRadius = CornerRadius, Rect = rect },
+				_ => defaultEllipse.Clip,
 			};
 		}
 	}
