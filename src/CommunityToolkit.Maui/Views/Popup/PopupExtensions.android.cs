@@ -270,6 +270,16 @@ public static partial class PopupExtensions
 				MeasureSpec.MakeMeasureSpec(requestHeight, measureSpecModeV)
 			);
 		}
+		else if (target.Parent is ReorderableItemsView)
+		{
+			var requestWidth = ((target.Width != -1 || target.WidthRequest != -1) ? (int)context.ToPixels(target.Width) : width);
+			var requestHeight = ((target.Height != -1 || target.HeightRequest != -1) ? (int)context.ToPixels(target.Height) : height);
+
+			platformView.Measure(
+				MeasureSpec.MakeMeasureSpec(requestWidth, (target.Width != -1 || target.WidthRequest != -1) ? MeasureSpecMode.Exactly : isHorizontalFill ? MeasureSpecMode.Exactly : MeasureSpecMode.AtMost),
+				MeasureSpec.MakeMeasureSpec(requestHeight, (target.Height != -1 || target.HeightRequest != -1) ? MeasureSpecMode.Exactly : isVerticalFill ? MeasureSpecMode.Exactly : MeasureSpecMode.AtMost)
+			);
+		}
 		else
 		{
 			var requestWidth = ((target.Width != -1 && target.WidthRequest != -1) ? (int)context.ToPixels(target.Width) : width) - paddingH;
