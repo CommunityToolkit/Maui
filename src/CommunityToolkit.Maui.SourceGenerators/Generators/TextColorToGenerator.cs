@@ -25,6 +25,7 @@ class TextColorToGenerator : IIncrementalGenerator
 	const string iAnimatableInterface = "Microsoft.Maui.Controls.IAnimatable";
 	const string mauiControlsAssembly = "Microsoft.Maui.Controls";
 	const string mauiColorFullName = "global::Microsoft.Maui.Graphics.Color";
+	const string mauiColorsFullName = "global::Microsoft.Maui.Graphics.Colors";
 
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
@@ -152,7 +153,7 @@ namespace {{textStyleClassMetadata.Namespace}};
 
 		//Although TextColor is defined as not-nullable, it CAN be null
 		//If null => set it to Transparent as Animation will crash on null BackgroundColor
-		element.TextColor ??= Colors.Transparent;
+		element.TextColor ??= {{mauiColorsFullName}}.Transparent;
 
 		var animationCompletionSource = new TaskCompletionSource<bool>();
 
