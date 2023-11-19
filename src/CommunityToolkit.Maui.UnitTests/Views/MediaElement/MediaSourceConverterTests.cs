@@ -8,6 +8,7 @@ namespace CommunityToolkit.Maui.UnitTests.Views;
 
 public class MediaSourceConverterTests : BaseTest
 {
+	static bool IsAndroid => DeviceInfo.Current.Platform == DevicePlatform.Android;
 	[Fact]
 	public void MediaSourceConverterShouldConvertFromStringType()
 	{
@@ -30,7 +31,7 @@ public class MediaSourceConverterTests : BaseTest
 	public void MediaSourceConverterWithEmbedPrefixShouldBeResourceMediaSource()
 	{
 		var mediaSourceConverter = new MediaSourceConverter();
-		var mediaSource = mediaSourceConverter.ConvertFrom(null, CultureInfo.InvariantCulture, "embed://file.mp4");
+		var mediaSource = mediaSourceConverter.ConvertFrom(null, CultureInfo.InvariantCulture, IsAndroid ? "embed://Assets/file.mp4" : "embed://file.mp4");
 
 		mediaSource.Should().BeAssignableTo<ResourceMediaSource>();
 	}
