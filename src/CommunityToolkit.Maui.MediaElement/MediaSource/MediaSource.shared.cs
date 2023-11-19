@@ -9,6 +9,7 @@ namespace CommunityToolkit.Maui.Views;
 [TypeConverter(typeof(MediaSourceConverter))]
 public abstract class MediaSource : Element
 {
+	static bool IsAndroid => DeviceInfo.Current.Platform == DevicePlatform.Android;
 	readonly WeakEventManager weakEventManager = new();
 
 	internal event EventHandler SourceChanged
@@ -37,7 +38,7 @@ public abstract class MediaSource : Element
 	/// </summary>
 	/// <param name="path">Full path to the resource file, relative to the application's resources folder.</param>
 	/// <returns>A <see cref="ResourceMediaSource"/> instance.</returns>
-	public static MediaSource FromResource(string? path) => new ResourceMediaSource { Path = path };
+	public static MediaSource FromResource(string? path) => new ResourceMediaSource { Path = IsAndroid ? $"Assets/{path}" : path };
 
 	/// <summary>
 	/// Creates a <see cref="UriMediaSource"/> from an string that contains an absolute URI.
