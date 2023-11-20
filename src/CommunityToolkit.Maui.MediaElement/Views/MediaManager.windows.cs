@@ -341,9 +341,11 @@ partial class MediaManager : IDisposable
 		{
 			SetDuration(MediaElement, Player);
 		}
-		MediaElement.MediaOpened();
-
-		static void SetDuration(in IMediaElement mediaElement, in MediaPlayerElement mediaPlayerElement) => mediaElement.Duration = mediaPlayerElement.MediaPlayer.NaturalDuration == TimeSpan.MaxValue
+		if (MediaElement.Duration > TimeSpan.Zero)
+		{
+			MediaElement.MediaOpened();
+		}
+		static void SetDuration(in IMediaElement mediaElement, in MediaPlayerElement mediaPlayerElement) => mediaElement.Duration = (mediaPlayerElement.MediaPlayer.NaturalDuration > TimeSpan.Zero)
 																																		? TimeSpan.Zero
 																																		: mediaPlayerElement.MediaPlayer.NaturalDuration;
 	}
