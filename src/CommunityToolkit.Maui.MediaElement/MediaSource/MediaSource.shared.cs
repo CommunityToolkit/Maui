@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Views;
 [TypeConverter(typeof(MediaSourceConverter))]
 public abstract class MediaSource : Element
 {
-	static bool IsAndroid => DeviceInfo.Current.Platform == DevicePlatform.Android;
+	static bool IsAndroid { get; } =  DeviceInfo.Current.Platform == DevicePlatform.Android;
 	readonly WeakEventManager weakEventManager = new();
 
 	internal event EventHandler SourceChanged
