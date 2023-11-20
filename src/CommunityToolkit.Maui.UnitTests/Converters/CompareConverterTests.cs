@@ -105,7 +105,7 @@ public class CompareConverterTests : BaseOneWayConverterTest<CompareConverter>
 
 	[Theory]
 	[InlineData(20d, null, TrueTestObject, FalseTestObject)]
-	public void CompareConverterInvalidValuesThrowArgumentNullException(IComparable value, IComparable comparingValue, object trueObject, object falseObject)
+	public void CompareConverterInvalidValuesThrowArgumentNullException(IComparable value, IComparable? comparingValue, object trueObject, object falseObject)
 	{
 		var compareConverter = new CompareConverter()
 		{
@@ -121,7 +121,7 @@ public class CompareConverterTests : BaseOneWayConverterTest<CompareConverter>
 	[Theory]
 	[InlineData(20d, 20d, TrueTestObject, null)]
 	[InlineData(20d, 20d, null, FalseTestObject)]
-	public void CompareConverterInvalidValuesThrowInvalidOperationException(IComparable value, IComparable comparingValue, object trueObject, object falseObject)
+	public void CompareConverterInvalidValuesThrowInvalidOperationException(IComparable value, IComparable comparingValue, object? trueObject, object? falseObject)
 	{
 		var compareConverter = new CompareConverter()
 		{

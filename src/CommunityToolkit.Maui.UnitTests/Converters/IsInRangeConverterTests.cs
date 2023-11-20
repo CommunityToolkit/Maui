@@ -197,7 +197,7 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 	[Theory]
 	[InlineData(20d, 1d, 30d, null, FalseTestObject)]
 	[InlineData(20d, 1d, 30d, TrueTestObject, null)]
-	public void InvalidIComparableThrowInvalidOperationException(IComparable value, IComparable comparingMinValue, IComparable comparingMaxValue, object trueObject, object falseObject)
+	public void InvalidIComparableThrowInvalidOperationException(IComparable value, IComparable comparingMinValue, IComparable comparingMaxValue, object? trueObject, object? falseObject)
 	{
 		IsInRangeConverter isInRangeConverter = new()
 		{
@@ -212,7 +212,7 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 
 	[Theory]
 	[InlineData(20d, null, null, TrueTestObject, FalseTestObject)]
-	public void InvalidValuesThrowArgumentException(IComparable value, IComparable comparingMinValue, IComparable comparingMaxValue, object trueObject, object falseObject)
+	public void InvalidValuesThrowArgumentException(IComparable value, IComparable? comparingMinValue, IComparable? comparingMaxValue, object trueObject, object falseObject)
 	{
 		IsInRangeConverter isInRangeConverter = new()
 		{
@@ -250,7 +250,7 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 	[InlineData(20d, 10d, null, TrueTestObject, FalseTestObject, TrueTestObject)]
 	[InlineData(40d, null, 30d, TrueTestObject, FalseTestObject, FalseTestObject)]
 	[InlineData(5d, 10d, null, TrueTestObject, FalseTestObject, FalseTestObject)]
-	public void NullToMinValueIsInRangeConverterConvertFrom(IComparable value, IComparable comparingMinValue, IComparable comparingMaxValue, object trueObject, object falseObject, object expectedResult)
+	public void NullToMinValueIsInRangeConverterConvertFrom(IComparable value, IComparable? comparingMinValue, IComparable? comparingMaxValue, object trueObject, object falseObject, object expectedResult)
 	{
 		IsInRangeConverter isInRangeConverter = new()
 		{
@@ -267,7 +267,7 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 	[Theory]
 	[InlineData(20d, 10d, 30d, null, null, true)]
 	[InlineData(5d, 10d, 30d, null, null, false)]
-	public void ReturnObjectsNullExpectBoolReturn(IComparable value, IComparable comparingMinValue, IComparable comparingMaxValue, object trueObject, object falseObject, object expectedResult)
+	public void ReturnObjectsNullExpectBoolReturn(IComparable value, IComparable comparingMinValue, IComparable comparingMaxValue, object? trueObject, object? falseObject, object expectedResult)
 	{
 		IsInRangeConverter isInRangeConverter = new()
 		{
