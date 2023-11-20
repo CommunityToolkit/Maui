@@ -27,23 +27,23 @@ public class PopupServiceTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void ShowPopupAsyncWithNullViewModelShouldThrowArgumentNullException()
+	public async Task ShowPopupAsyncWithNullViewModelShouldThrowArgumentNullException()
 	{
 		var popupService = new PopupService(new MockServiceProvider());
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.ThrowsAsync<ArgumentNullException>(() =>
+		await Assert.ThrowsAsync<ArgumentNullException>(() =>
 			popupService.ShowPopupAsync<INotifyPropertyChanged>(viewModel: null, CancellationToken.None));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
 	[Fact]
-	public void ShowPopupAsyncWithNullOnPresentingShouldThrowArgumentNullException()
+	public async Task ShowPopupAsyncWithNullOnPresentingShouldThrowArgumentNullException()
 	{
 		var popupService = new PopupService(new MockServiceProvider());
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.ThrowsAsync<ArgumentNullException>(() =>
+		await Assert.ThrowsAsync<ArgumentNullException>(() =>
 			popupService.ShowPopupAsync<INotifyPropertyChanged>(onPresenting: null, CancellationToken.None));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
@@ -87,25 +87,25 @@ public class PopupServiceTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void ShowPopupAsyncWithMismatchedViewModelTypeShouldThrowInvalidOperationException()
+	public async Task ShowPopupAsyncWithMismatchedViewModelTypeShouldThrowInvalidOperationException()
 	{
 		var popupService = new PopupService(new MockServiceProvider());
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.ThrowsAsync<ArgumentNullException>(() =>
+		await Assert.ThrowsAsync<ArgumentNullException>(() =>
 			popupService.ShowPopupAsync<INotifyPropertyChanged>(viewModel: null, CancellationToken.None));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public void ShowPopupAsyncShouldThrowInvalidOperationExceptionWhenNoViewModelIsRegistered()
+	public async Task ShowPopupAsyncShouldThrowInvalidOperationExceptionWhenNoViewModelIsRegistered()
 	{
 		var popupInstance = new MockMismatchedPopup();
 		var popupViewModel = new MockPageViewModel();
 
 		SetupTest(popupInstance, () => popupViewModel, out var popupService);
 
-		Assert.ThrowsAsync<InvalidOperationException>(() => popupService.ShowPopupAsync<MockPageViewModel>(CancellationToken.None));
+		await Assert.ThrowsAsync<InvalidOperationException>(() => popupService.ShowPopupAsync<MockPageViewModel>(CancellationToken.None));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Medium)]
