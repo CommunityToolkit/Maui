@@ -32,7 +32,7 @@ public class MultiValidationBehaviorTests : BaseTest
 	[InlineData(CharacterType.UppercaseLatinLetter, 1, int.MaxValue, "КИРИЛЛИЦА", "aaa", false)]
 	[InlineData(CharacterType.LatinLetter, 1, int.MaxValue, "Это Кириллица!", "!", false)]
 	[InlineData(CharacterType.Whitespace, 0, 0, "WWWWWW WWWWW", "WWW", false)]
-	public async Task IsValid(CharacterType characterType, int minimumCharactersNumber, int maximumCharactersNumber, string value, string requiredString, bool expectedValue, bool exactMatch = false)
+	public async Task IsValid(CharacterType characterType, int minimumCharactersNumber, int maximumCharactersNumber, string? value, string requiredString, bool expectedValue, bool exactMatch = false)
 	{
 		// Arrange
 		var characterValidationBehavior = new CharactersValidationBehavior
