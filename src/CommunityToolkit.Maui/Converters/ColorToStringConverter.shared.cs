@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/>.
 /// </summary>
-public class ColorToRgbStringConverter : BaseConverterOneWay<Color, string>
+public class ColorToRgbStringConverter : BaseConverter<Color, string>
 {
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
@@ -22,7 +22,7 @@ public class ColorToRgbStringConverter : BaseConverterOneWay<Color, string>
 /// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/>.
 /// </summary>
-public class ColorToRgbaStringConverter : BaseConverterOneWay<Color, string>
+public class ColorToRgbaStringConverter : BaseConverter<Color, string>
 {
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
