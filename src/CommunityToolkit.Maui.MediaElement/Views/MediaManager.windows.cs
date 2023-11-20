@@ -343,8 +343,8 @@ partial class MediaManager : IDisposable
 		}
 		MediaElement.MediaOpened();
 		static void SetDuration(in IMediaElement mediaElement, in MediaPlayerElement mediaPlayerElement) => mediaElement.Duration = (mediaPlayerElement.MediaPlayer.NaturalDuration > TimeSpan.Zero)
-																																		? TimeSpan.Zero
-																																		: mediaPlayerElement.MediaPlayer.NaturalDuration;
+																																		? mediaPlayerElement.MediaPlayer.NaturalDuration
+																																		: TimeSpan.Zero;
 	}
 
 	void OnMediaElementMediaEnded(WindowsMediaElement sender, object args)
