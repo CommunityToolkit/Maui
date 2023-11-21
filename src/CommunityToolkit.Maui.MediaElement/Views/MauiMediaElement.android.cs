@@ -12,6 +12,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiMediaElement : CoordinatorLayout
 {
+	[Obsolete]
 	readonly StyledPlayerView playerView;
 
 	/// <summary>
@@ -19,6 +20,7 @@ public class MauiMediaElement : CoordinatorLayout
 	/// </summary>
 	/// <param name="context">The application's <see cref="Context"/>.</param>
 	/// <param name="playerView">The <see cref="StyledPlayerView"/> that acts as the platform media player.</param>
+	[Obsolete]
 	public MauiMediaElement(Context context, StyledPlayerView playerView) : base(context)
 	{
 		this.playerView = playerView;
