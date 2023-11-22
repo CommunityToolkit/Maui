@@ -77,7 +77,7 @@ public sealed partial class SpeechToTextImplementation
 		OnRecognitionResultUpdated(args.Result.Text);
 	}
 
-	Task InternalStopListeningAsync(CancellationToken cancellationToken) =>  StopRecording(cancellationToken);
+	Task InternalStopListeningAsync(CancellationToken cancellationToken) => StopRecording(cancellationToken);
 
 	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{

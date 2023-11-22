@@ -22,7 +22,7 @@ public sealed partial class SpeechToTextImplementation
 
 		audioEngine = new AVAudioEngine();
 		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest();
-		
+
 		InitializeAvAudioSession(out _);
 
 		var node = audioEngine.InputNode;
