@@ -526,6 +526,7 @@ public class MediaElement : View, IMediaElement, IDisposable
 		}
 
 		InvalidateMeasure();
+		InitializeTimer();
 	}
 
 	void OnSourcePropertyChanging(MediaSource? oldValue)
