@@ -31,7 +31,7 @@ public class VariableMultiValueConverterTests : BaseTest
 	[InlineData(null, MultiBindingCondition.GreaterThan, false)]
 	[InlineData(null, MultiBindingCondition.LessThan, false)]
 	[InlineData(null, MultiBindingCondition.None, false)]
-	public void VariableMultiConverter(object[] value, MultiBindingCondition type, object expectedResult, int count = 0)
+	public void VariableMultiConverter(object[]? value, MultiBindingCondition type, object expectedResult, int count = 0)
 	{
 		var variableMultiConverter = new VariableMultiValueConverter() { ConditionType = type, Count = count };
 		var result = variableMultiConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
