@@ -95,6 +95,33 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
+
+            <CollectionView ItemsSource="{Binding ContentCreators}">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical"
+                                     Span="4"
+                                     HorizontalItemSpacing="5"
+                                     VerticalItemSpacing="5" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <mct:Expander x:DataType="viewModels:ContentCreator"
+                                      ExpandedChanged="Expander_ExpandedChanged">
+                            <mct:Expander.Header>
+                                <Label Text="{Binding Name}"/>
+                            </mct:Expander.Header>
+                            <mct:Expander.Content>
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding Resource}" HorizontalOptions="Center"/>
+                                    <Image Source="{Binding Image}"
+                                           WidthRequest="100"
+                                           HeightRequest="100"/>
+                                </VerticalStackLayout>
+                            </mct:Expander.Content>
+                        </mct:Expander>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
         </VerticalStackLayout>
     </ScrollView>
 </pages:BasePage>
