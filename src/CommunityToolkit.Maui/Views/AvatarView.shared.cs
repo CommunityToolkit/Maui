@@ -361,13 +361,13 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 			double imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
 			double imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
 
-			Ellipse defaultEllipse = new Ellipse
+			Rect rect = new(offsetX, offsetY, imageWidth, imageHeight);
+			Geometry? geometry = new RoundRectangleGeometry { CornerRadius = CornerRadius, Rect = rect };
+			
+			if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst() || OperatingSystem.IsMacOS())
 			{
-				HeightRequest = imageHeight,
-				MaximumHeightRequest = imageHeight,
-				WidthRequest = imageWidth,
-				MaximumWidthRequest = imageWidth,
-			};
+				geometry = null;
+			}
 			
 			avatarImage.Clip = StrokeShape switch
 			{
@@ -376,7 +376,7 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 				Microsoft.Maui.Controls.Shapes.Path path => path.Clip,
 				Polygon polygon => polygon.Clip,
 				Rectangle rectangle => rectangle.Clip,
-				_ => defaultEllipse.Clip,
+				_ => geometry
 			};
 		}
 	}
