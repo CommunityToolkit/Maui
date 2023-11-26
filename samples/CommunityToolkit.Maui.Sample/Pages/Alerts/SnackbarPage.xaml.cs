@@ -15,9 +15,9 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 	const string displayCustomSnackbarText = "Display a Custom Snackbar, Anchored to this Button";
 	const string dismissCustomSnackbarText = "Dismiss Custom Snackbar";
 	readonly IReadOnlyList<Color> colors = typeof(Colors)
-		.GetFields(BindingFlags.Static | BindingFlags.Public)
-		.ToDictionary(c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()))
-		.Values.ToList();
+											.GetFields(BindingFlags.Static | BindingFlags.Public)
+											.ToDictionary(c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()))
+											.Values.ToList();
 
 	ISnackbar? customSnackbar;
 
@@ -60,7 +60,8 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 				options,
 				DisplayCustomSnackbarButton);
 
-			await customSnackbar.Show();
+			var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+			await customSnackbar.Show(cts.Token);
 
 			DisplayCustomSnackbarButton.Text = dismissCustomSnackbarText;
 		}
@@ -68,7 +69,9 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 		{
 			if (customSnackbar is not null)
 			{
-				await customSnackbar.Dismiss();
+				var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+				await customSnackbar.Dismiss(cts.Token);
+
 				customSnackbar.Dispose();
 			}
 
@@ -102,7 +105,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 
 					Children =
 					{
-						new Button { Command = new AsyncRelayCommand(() => Snackbar.Make("Snackbar in a Modal Page").Show()) }
+						new Button { Command = new AsyncRelayCommand(token => Snackbar.Make("Snackbar in a Modal Page").Show(token)) }
 							.Top().CenterHorizontal()
 							.Text("Display Snackbar"),
 

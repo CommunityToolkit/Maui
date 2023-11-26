@@ -69,7 +69,7 @@ public class NumericValidationBehavior : ValidationBehavior<string>
 
 	/// <inheritdoc/>
 	protected override string? Decorate(string? value)
-		=> base.Decorate(value)?.ToString()?.Trim();
+		=> base.Decorate(value)?.Trim();
 
 	/// <inheritdoc/>
 	protected override ValueTask<bool> ValidateAsync(string? value, CancellationToken token)
@@ -83,17 +83,17 @@ public class NumericValidationBehavior : ValidationBehavior<string>
 			return new ValueTask<bool>(false);
 		}
 
-		var decimalDelimeterIndex = value.IndexOf(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
-		var hasDecimalDelimeter = decimalDelimeterIndex >= 0;
+		var decimalDelimiterIndex = value.IndexOf(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
+		var hasDecimalDelimiter = decimalDelimiterIndex >= 0;
 
 		// If MaximumDecimalPlaces equals zero, ".5" or "14." should be considered as invalid inputs.
-		if (hasDecimalDelimeter && MaximumDecimalPlaces == 0)
+		if (hasDecimalDelimiter && MaximumDecimalPlaces == 0)
 		{
 			return new ValueTask<bool>(false);
 		}
 
-		var decimalPlaces = hasDecimalDelimeter
-			? value.Substring(decimalDelimeterIndex + 1, value.Length - decimalDelimeterIndex - 1).Length
+		var decimalPlaces = hasDecimalDelimiter
+			? value.Substring(decimalDelimiterIndex + 1, value.Length - decimalDelimiterIndex - 1).Length
 			: 0;
 
 		return new ValueTask<bool>(decimalPlaces >= MinimumDecimalPlaces && decimalPlaces <= MaximumDecimalPlaces);

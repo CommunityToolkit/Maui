@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+﻿using System.Collections.Frozen;
+
+namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
 public class ListToStringConverterViewModel : BaseViewModel
 {

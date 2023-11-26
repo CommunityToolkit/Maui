@@ -32,7 +32,7 @@ public class MultiValidationBehaviorTests : BaseTest
 	[InlineData(CharacterType.UppercaseLatinLetter, 1, int.MaxValue, "КИРИЛЛИЦА", "aaa", false)]
 	[InlineData(CharacterType.LatinLetter, 1, int.MaxValue, "Это Кириллица!", "!", false)]
 	[InlineData(CharacterType.Whitespace, 0, 0, "WWWWWW WWWWW", "WWW", false)]
-	public async Task IsValid(CharacterType characterType, int minimumCharactersNumber, int maximumCharactersNumber, string value, string requiredString, bool expectedValue, bool exactMatch = false)
+	public async Task IsValid(CharacterType characterType, int minimumCharactersNumber, int maximumCharactersNumber, string? value, string requiredString, bool expectedValue, bool exactMatch = false)
 	{
 		// Arrange
 		var characterValidationBehavior = new CharactersValidationBehavior
@@ -58,9 +58,65 @@ public class MultiValidationBehaviorTests : BaseTest
 		entry.Behaviors.Add(multiBehavior);
 
 		// Act
-		await multiBehavior.ForceValidate();
+		await multiBehavior.ForceValidate(CancellationToken.None);
 
 		// Assert
 		Assert.Equal(expectedValue, multiBehavior.IsValid);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ForceValidateCancellationTokenExpired()
+	{
+		// Arrange
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		var characterValidationBehavior = new CharactersValidationBehavior();
+		var requiredStringValidationBehavior = new RequiredStringValidationBehavior();
+
+		var multiBehavior = new MultiValidationBehavior();
+		multiBehavior.Children.Add(characterValidationBehavior);
+		multiBehavior.Children.Add(requiredStringValidationBehavior);
+
+		var entry = new Entry
+		{
+			Text = "Hello"
+		};
+		entry.Behaviors.Add(multiBehavior);
+
+		// Act
+
+		// Ensure CancellationToken expires 
+		await Task.Delay(100, CancellationToken.None);
+
+		// Assert
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await multiBehavior.ForceValidate(cts.Token));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ForceValidateCancellationTokenCanceled()
+	{
+		// Arrange
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		var characterValidationBehavior = new CharactersValidationBehavior();
+		var requiredStringValidationBehavior = new RequiredStringValidationBehavior();
+
+		var multiBehavior = new MultiValidationBehavior();
+		multiBehavior.Children.Add(characterValidationBehavior);
+		multiBehavior.Children.Add(requiredStringValidationBehavior);
+
+		var entry = new Entry
+		{
+			Text = "Hello"
+		};
+		entry.Behaviors.Add(multiBehavior);
+
+		// Act
+
+		// Ensure CancellationToken expires 
+		await cts.CancelAsync();
+
+		// Assert
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await multiBehavior.ForceValidate(cts.Token));
 	}
 }

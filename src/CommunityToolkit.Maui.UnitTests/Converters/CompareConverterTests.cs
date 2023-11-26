@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.ComponentModel;
+using System.Globalization;
 using CommunityToolkit.Maui.Converters;
 using Xunit;
 
@@ -104,7 +105,7 @@ public class CompareConverterTests : BaseOneWayConverterTest<CompareConverter>
 
 	[Theory]
 	[InlineData(20d, null, TrueTestObject, FalseTestObject)]
-	public void CompareConverterInvalidValuesThrowArgumentNullException(IComparable value, IComparable comparingValue, object trueObject, object falseObject)
+	public void CompareConverterInvalidValuesThrowArgumentNullException(IComparable value, IComparable? comparingValue, object trueObject, object falseObject)
 	{
 		var compareConverter = new CompareConverter()
 		{
@@ -120,7 +121,7 @@ public class CompareConverterTests : BaseOneWayConverterTest<CompareConverter>
 	[Theory]
 	[InlineData(20d, 20d, TrueTestObject, null)]
 	[InlineData(20d, 20d, null, FalseTestObject)]
-	public void CompareConverterInvalidValuesThrowInvalidOperationException(IComparable value, IComparable comparingValue, object trueObject, object falseObject)
+	public void CompareConverterInvalidValuesThrowInvalidOperationException(IComparable value, IComparable comparingValue, object? trueObject, object? falseObject)
 	{
 		var compareConverter = new CompareConverter()
 		{
@@ -135,7 +136,7 @@ public class CompareConverterTests : BaseOneWayConverterTest<CompareConverter>
 
 	[Theory]
 	[InlineData(20d, (CompareConverter.OperatorType)10, 20d)]
-	public void CompareConverterInvalidValuesThrowArgumentOutOfRangeException(IComparable value, CompareConverter.OperatorType comparisonOperator, IComparable comparingValue)
+	public void CompareConverterInvalidValuesThrowInvalidEnumArgumentException(IComparable value, CompareConverter.OperatorType comparisonOperator, IComparable comparingValue)
 	{
 		var compareConverter = new CompareConverter
 		{
@@ -143,8 +144,8 @@ public class CompareConverterTests : BaseOneWayConverterTest<CompareConverter>
 			ComparingValue = comparingValue
 		};
 
-		Assert.Throws<ArgumentOutOfRangeException>(() => ((ICommunityToolkitValueConverter)compareConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
-		Assert.Throws<ArgumentOutOfRangeException>(() => compareConverter.ConvertFrom(value));
+		Assert.Throws<InvalidEnumArgumentException>(() => ((ICommunityToolkitValueConverter)compareConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
+		Assert.Throws<InvalidEnumArgumentException>(() => compareConverter.ConvertFrom(value));
 	}
 
 	[Fact]

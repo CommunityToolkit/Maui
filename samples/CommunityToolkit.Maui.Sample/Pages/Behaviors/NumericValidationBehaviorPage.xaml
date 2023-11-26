@@ -28,7 +28,7 @@
 
         <Label Text="Text color will be changed according to the configured style in case of an invalid numeric format or when the numeric value is outside of the configured boundaries (min: 1.0, max: 100.0). Maximum decimal places value equals 2." />
         
-        <Entry x:Name="SafeEntry" Placeholder="Number">
+        <Entry x:Name="SafeEntry" Placeholder="Number" Keyboard="Numeric">
             <Entry.Behaviors>
                 <mct:NumericValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"
                                                ValidStyle="{StaticResource ValidEntryStyle}"

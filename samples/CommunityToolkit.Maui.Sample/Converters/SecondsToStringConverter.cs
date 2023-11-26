@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Sample.Converters;
 
 sealed class SecondsToStringConverter : IValueConverter
 {
-	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+	public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 	{
 		if (value is not double && value is not TimeSpan)
 		{
@@ -42,7 +42,7 @@ sealed class SecondsToStringConverter : IValueConverter
 		return value;
 	}
 
-	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+	public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
 	{
 		throw new NotSupportedException();
 	}

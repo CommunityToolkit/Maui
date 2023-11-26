@@ -26,7 +26,7 @@
         
         <Label
 			HorizontalOptions="Center"
-			Text="{Binding LayoutState, Converter={StaticResource StateToBooleanConverter}, StringFormat='The supplied valie of LayoutState is Success: {0}'}"
+			Text="{Binding LayoutState, Converter={StaticResource StateToBooleanConverter}, StringFormat='The supplied value of LayoutState is Success: {0}'}"
 			VerticalOptions="Center" />            
             
 	</VerticalStackLayout>

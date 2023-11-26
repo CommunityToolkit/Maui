@@ -137,6 +137,9 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 		base.ConnectHandler(platformView);
 		platformView.Initialize();
 
+		platformView.DrawingStarted += OnPlatformViewDrawingStarted;
+		platformView.DrawingCancelled += OnPlatformViewDrawingCancelled;
+		platformView.Drawing += OnPlatformViewDrawing;
 		platformView.DrawingLineCompleted += OnPlatformViewDrawingLineCompleted;
 		VirtualView.Lines.CollectionChanged += OnVirtualViewLinesCollectionChanged;
 		platformView.Lines.CollectionChanged += OnPlatformViewLinesCollectionChanged;
@@ -145,6 +148,9 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	/// <inheritdoc />
 	protected override void DisconnectHandler(MauiDrawingView platformView)
 	{
+		platformView.DrawingStarted -= OnPlatformViewDrawingStarted;
+		platformView.DrawingCancelled -= OnPlatformViewDrawingCancelled;
+		platformView.Drawing -= OnPlatformViewDrawing;
 		platformView.DrawingLineCompleted -= OnPlatformViewDrawingLineCompleted;
 		VirtualView.Lines.CollectionChanged -= OnVirtualViewLinesCollectionChanged;
 		platformView.Lines.CollectionChanged -= OnPlatformViewLinesCollectionChanged;
@@ -164,7 +170,22 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	void OnPlatformViewDrawingLineCompleted(object? sender, MauiDrawingLineCompletedEventArgs e)
 	{
 		var drawingLine = adapter.ConvertMauiDrawingLine(e.Line);
-		VirtualView.DrawingLineCompleted(drawingLine);
+		VirtualView.OnDrawingLineCompleted(drawingLine);
+	}
+	
+	void OnPlatformViewDrawing(object? sender, MauiOnDrawingEventArgs e)
+	{
+		VirtualView.OnPointDrawn(e.Point);
+	}
+	
+	void OnPlatformViewDrawingStarted(object? sender, MauiDrawingStartedEventArgs e)
+	{
+		VirtualView.OnDrawingLineStarted(e.Point);
+	}
+	
+	void OnPlatformViewDrawingCancelled(object? sender, EventArgs e)
+	{
+		VirtualView.OnDrawingLineCancelled();
 	}
 
 	void OnVirtualViewLinesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

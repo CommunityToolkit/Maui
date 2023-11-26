@@ -32,7 +32,7 @@ public class CharactersValidationBehaviorTests : BaseTest
 	[InlineData(CharacterType.UppercaseLatinLetter, 1, int.MaxValue, "КИРИЛЛИЦА", false)]
 	[InlineData(CharacterType.LatinLetter, 1, int.MaxValue, "Это Кириллица!", false)]
 	[InlineData(CharacterType.Whitespace, 0, 0, "WWWWWW WWWWW", false)]
-	public async Task IsValid(CharacterType characterType, int minimumCharactersNumber, int maximumCharactersNumber, string value, bool expectedValue)
+	public async Task IsValid(CharacterType characterType, int minimumCharactersNumber, int maximumCharactersNumber, string? value, bool expectedValue)
 	{
 		// Arrange
 		var behavior = new CharactersValidationBehavior
@@ -49,9 +49,57 @@ public class CharactersValidationBehaviorTests : BaseTest
 		entry.Behaviors.Add(behavior);
 
 		// Act
-		await behavior.ForceValidate();
+		await behavior.ForceValidate(CancellationToken.None);
 
 		// Assert
 		Assert.Equal(expectedValue, behavior.IsValid);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task CancellationTokenExpired()
+	{
+		// Arrange
+		var behavior = new CharactersValidationBehavior();
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		var entry = new Entry
+		{
+			Text = "Hello"
+		};
+		entry.Behaviors.Add(behavior);
+
+		// Act
+
+		// Ensure CancellationToken expires
+		await Task.Delay(100, CancellationToken.None);
+
+		// Assert
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await behavior.ForceValidate(cts.Token));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task CancellationTokenCanceled()
+	{
+		// Arrange
+		var behavior = new CharactersValidationBehavior();
+		var cts = new CancellationTokenSource();
+
+		var entry = new Entry
+		{
+			Text = "Hello"
+		};
+		entry.Behaviors.Add(behavior);
+
+		// Act
+
+		// Ensure CancellationToken expires
+		await Task.Delay(100, CancellationToken.None);
+
+		// Assert
+		await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+		{
+			await cts.CancelAsync();
+			await behavior.ForceValidate(cts.Token);
+		});
 	}
 }

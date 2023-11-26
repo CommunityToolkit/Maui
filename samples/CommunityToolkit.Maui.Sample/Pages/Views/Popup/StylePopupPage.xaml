@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+             xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+             x:TypeArguments="viewModels:StylePopupViewModel"
+             x:DataType="viewModels:StylePopupViewModel"
+             x:Class="CommunityToolkit.Maui.Sample.Pages.Views.StylePopupPage"
+             Title="StylePopupPage">
+
+    <ScrollView Orientation="Vertical">
+        <StackLayout Orientation="Vertical" Spacing="5">
+            <Label Text="This sample demonstrates various ways of using applying a Style to a Popup"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center"
+                   VerticalTextAlignment="Start"/>
+            
+            <Button
+                Text="Implicit Style"
+                BackgroundColor="Blue"
+                TextColor="White"
+                Command="{Binding DisplayImplicitStylePopupCommand}"/>
+            <Button
+                Text="Explicit Style"
+                BackgroundColor="Blue"
+                TextColor="White"
+                Command="{Binding DisplayExplicitStylePopupCommand}"/>
+            <Button
+                Text="Dynamic Style"
+                BackgroundColor="Blue"
+                TextColor="White"
+                Command="{Binding DisplayDynamicStylePopupCommand}"/>
+            <Button
+                Text="ApplyToDerivedTypes"
+                BackgroundColor="Blue"
+                TextColor="White"
+                Command="{Binding DisplayApplyToDerivedTypesPopupCommand}"/>
+            <Button
+                Text="Style Inheritance"
+                BackgroundColor="Blue"
+                TextColor="White"
+                Command="{Binding DisplayStyleInheritancePopupCommand}"/>
+            <Button
+                Text="Dynamic Style Inheritance"
+                BackgroundColor="Blue"
+                TextColor="White"
+                Command="{Binding DisplayDynamicStyleInheritancePopupCommand}"/>
+            <Button
+                Text="Style Class"
+                BackgroundColor="Blue"
+                TextColor="White"
+                Command="{Binding DisplayStyleClassPopupCommand}"/>
+        </StackLayout>
+    </ScrollView>
+
+</pages:BasePage>

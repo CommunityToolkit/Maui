@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.StyleSheets;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
+using Style = Microsoft.Maui.Controls.Style;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -8,7 +10,7 @@ namespace CommunityToolkit.Maui.Views;
 /// Represents a small View that pops up at front the Page. Implements <see cref="IPopup"/>.
 /// </summary>
 [ContentProperty(nameof(Content))]
-public partial class Popup : Element, IPopup, IWindowController, IPropertyPropagationController
+public partial class Popup : Element, IPopup, IWindowController, IPropertyPropagationController, IResourcesProvider, IStyleSelectable, IStyleElement
 {
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="Content"/> property.
@@ -40,13 +42,20 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// </summary>
 	public static readonly BindableProperty HorizontalOptionsProperty = BindableProperty.Create(nameof(HorizontalOptions), typeof(LayoutAlignment), typeof(Popup), LayoutAlignment.Center);
 
+	/// <summary>
+	///  Backing BindableProperty for the <see cref="Style" /> property. 
+	/// </summary>
+	public static readonly BindableProperty StyleProperty = BindableProperty.Create(nameof(Style), typeof(Style), typeof(Popup), default(Style), propertyChanged: (bindable, oldValue, newValue) => ((Popup)bindable).mergedStyle.Style = (Style)newValue);
+
 	readonly WeakEventManager dismissWeakEventManager = new();
 	readonly WeakEventManager openedWeakEventManager = new();
 	readonly Lazy<PlatformConfigurationRegistry<Popup>> platformConfigurationRegistry;
+	readonly MergedStyle mergedStyle;
 
 	TaskCompletionSource popupDismissedTaskCompletionSource = new();
 	TaskCompletionSource<object?> resultTaskCompletionSource = new();
-	Window? window;
+	Window window;
+	ResourceDictionary resources = new();
 
 	/// <summary>
 	/// Instantiates a new instance of <see cref="Popup"/>.
@@ -54,8 +63,11 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	public Popup()
 	{
 		platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Popup>>(() => new(this));
+		((IResourceDictionary)resources).ValuesChanged += OnResourcesChanged;
 
 		VerticalOptions = HorizontalOptions = LayoutAlignment.Center;
+		window = Window;
+		mergedStyle = new MergedStyle(GetType(), this);
 	}
 
 	/// <summary>
@@ -154,6 +166,15 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	}
 
 	/// <summary>
+	/// Gets or sets the <see cref="Style"/> of the Popup.
+	/// </summary>
+	public Style Style
+	{
+		get => (Style)GetValue(StyleProperty);
+		set => SetValue(StyleProperty, value);
+	}
+
+	/// <summary>
 	/// Gets or sets the <see cref="View"/> anchor.
 	/// </summary>
 	/// <remarks>
@@ -165,7 +186,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// <summary>
 	/// Property that represents the Window that's showing the Popup.
 	/// </summary>
-	public Window? Window
+	public Window Window
 	{
 		get => window;
 		set
@@ -177,6 +198,43 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 				controller.Window = value;
 			}
 		}
+	}
+
+	/// <summary>
+	/// Property that represent Resources of Popup.
+	/// </summary>
+	public ResourceDictionary Resources
+	{
+		get => resources;
+		set
+		{
+			ArgumentNullException.ThrowIfNull(value);
+
+			if (resources == value)
+			{
+				return;
+			}
+
+			OnPropertyChanging();
+			((IResourceDictionary)resources).ValuesChanged -= OnResourcesChanged;
+
+			resources = value;
+
+			OnResourcesChanged(value);
+			((IResourceDictionary)resources).ValuesChanged += OnResourcesChanged;
+
+			OnPropertyChanged();
+		}
+	}
+
+	/// <summary>
+	/// Property that represent Style Class of Popup.
+	/// </summary>
+	[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
+	public IList<string> StyleClass
+	{
+		get => mergedStyle.StyleClass;
+		set => mergedStyle.StyleClass = value;
 	}
 
 	/// <summary>
@@ -192,6 +250,9 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 
 	/// <inheritdoc/>
 	TaskCompletionSource IAsynchronousHandler.HandlerCompleteTCS => popupDismissedTaskCompletionSource;
+	
+	/// <inheritdoc/>
+	bool IResourcesProvider.IsResourcesCreated => resources is not null;
 
 	/// <summary>
 	/// Resets the Popup.
@@ -208,12 +269,10 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// <remarks>
 	/// <see cref="Close(object?)"/> is an <see langword="async"/> <see langword="void"/> method, commonly referred to as a fire-and-forget method.
 	/// It will complete and return to the calling thread before the operating system has dismissed the <see cref="Popup"/> from the screen.
-	/// If you need to pause the execution of your method until the operating system has dismissed the <see cref="Popup"/> from the screen, use instead <see cref="CloseAsync(object?)"/>.
+	/// If you need to pause the execution of your method until the operating system has dismissed the <see cref="Popup"/> from the screen, use instead <see cref="CloseAsync(object?, CancellationToken)"/>.
 	/// </remarks>
-	/// <param name="result">
-	/// The result to return.
-	/// </param>
-	public async void Close(object? result = null) => await CloseAsync(result);
+	/// <param name="result">The result to return.</param>
+	public async void Close(object? result = null) => await CloseAsync(result, CancellationToken.None);
 
 	/// <summary>
 	/// Close the current popup.
@@ -221,13 +280,57 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// <remarks>
 	/// Returns once the operating system has dismissed the <see cref="IPopup"/> from the page
 	/// </remarks>
-	/// <param name="result">
-	/// The result to return.
-	/// </param>
-	public async Task CloseAsync(object? result = null)
+	/// <param name="result">The result to return.</param>
+	/// <param name="token"><see cref="CancellationToken"/></param>
+	public async Task CloseAsync(object? result = null, CancellationToken token = default)
 	{
-		await OnClosed(result, false);
+		await OnClosed(result, false, token);
 		resultTaskCompletionSource.TrySetResult(result);
+	}
+
+	internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
+	{
+		if (values is null)
+		{
+			return;
+		}
+
+		if (!((IResourcesProvider)this).IsResourcesCreated || Resources.Count == 0)
+		{
+			base.OnParentResourcesChanged(values);
+			return;
+		}
+
+		var innerKeys = new HashSet<string>(StringComparer.Ordinal);
+		var changedResources = new List<KeyValuePair<string, object>>();
+		foreach (var keyValuePair in Resources)
+		{
+			innerKeys.Add(keyValuePair.Key);
+		}
+
+		foreach (var keyValuePair in values)
+		{
+			if (innerKeys.Add(keyValuePair.Key))
+			{
+				changedResources.Add(keyValuePair);
+			}
+			else if (keyValuePair.Key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal))
+			{
+				if (Resources[keyValuePair.Key] is List<Style> innerStyle)
+				{
+					var mergedClassStyles = new List<Style>(innerStyle);
+					if (keyValuePair.Value is List<Style> parentStyle)
+					{
+						mergedClassStyles.AddRange(parentStyle);
+					}
+					changedResources.Add(new KeyValuePair<string, object>(keyValuePair.Key, mergedClassStyles));
+				}
+			}
+		}
+		if (changedResources.Count != 0)
+		{
+			OnResourcesChanged(changedResources);
+		}
 	}
 
 	/// <summary>
@@ -239,17 +342,15 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// <summary>
 	/// Invokes the <see cref="Closed"/> event.
 	/// </summary>
-	/// <param name="result">
-	/// Sets the <see cref="PopupClosedEventArgs"/> Property of <see cref="PopupClosedEventArgs.Result"/>.
-	/// </param>
-	/// /// <param name="wasDismissedByTappingOutsideOfPopup">
-	/// Sets the <see cref="PopupClosedEventArgs"/> Property of <see cref="PopupClosedEventArgs.WasDismissedByTappingOutsideOfPopup"/>/>.
-	/// </param>
-	protected virtual async Task OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup)
+	/// <param name="result">Sets the <see cref="PopupClosedEventArgs"/> Property of <see cref="PopupClosedEventArgs.Result"/>.</param>
+	/// <param name="wasDismissedByTappingOutsideOfPopup">Sets the <see cref="PopupClosedEventArgs"/> Property of <see cref="PopupClosedEventArgs.WasDismissedByTappingOutsideOfPopup"/>/>.</param>
+	/// <param name="token"><see cref="CancellationToken"/></param>
+	protected virtual async Task OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup, CancellationToken token = default)
 	{
 		((IPopup)this).OnClosed(result);
+		((IResourceDictionary)resources).ValuesChanged -= OnResourcesChanged;
 
-		await popupDismissedTaskCompletionSource.Task;
+		await popupDismissedTaskCompletionSource.Task.WaitAsync(token);
 		Parent = null;
 
 		dismissWeakEventManager.HandleEvent(this, new PopupClosedEventArgs(result, wasDismissedByTappingOutsideOfPopup), nameof(Closed));
@@ -258,9 +359,9 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// <summary>
 	/// Invoked when the popup is dismissed by tapping outside of the popup.
 	/// </summary>
-	protected internal virtual async Task OnDismissedByTappingOutsideOfPopup()
+	protected internal virtual async Task OnDismissedByTappingOutsideOfPopup(CancellationToken token = default)
 	{
-		await OnClosed(ResultWhenUserTapsOutsideOfPopup, true);
+		await OnClosed(ResultWhenUserTapsOutsideOfPopup, true, token);
 		resultTaskCompletionSource.TrySetResult(ResultWhenUserTapsOutsideOfPopup);
 	}
 
@@ -289,17 +390,15 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 		ArgumentNullException.ThrowIfNull(newValue);
 	}
 
-	void IPopup.OnClosed(object? result) => Handler.Invoke(nameof(IPopup.OnClosed), result);
+	void IPopup.OnClosed(object? result) => Handler?.Invoke(nameof(IPopup.OnClosed), result);
 
 	void IPopup.OnOpened() => OnOpened();
 
-	async void IPopup.OnDismissedByTappingOutsideOfPopup() => await OnDismissedByTappingOutsideOfPopup();
+	async void IPopup.OnDismissedByTappingOutsideOfPopup() => await OnDismissedByTappingOutsideOfPopup(CancellationToken.None);
 
 	void IPropertyPropagationController.PropagatePropertyChanged(string propertyName) =>
 		PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 
 	IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() =>
-		Content is null
-			? Enumerable.Empty<IVisualTreeElement>().ToList()
-			: new List<IVisualTreeElement> { Content };
+		Content is null ? Array.Empty<IVisualTreeElement>() : new[] { Content };
 }
