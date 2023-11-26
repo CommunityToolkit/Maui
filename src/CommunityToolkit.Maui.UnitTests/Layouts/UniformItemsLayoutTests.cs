@@ -99,14 +99,14 @@ public class UniformItemsLayoutTests : BaseTest
 	[Fact]
 	public void ArrangeChildrenUniformItemsLayout()
 	{
-		var expectedSize = new Size(childWidth, childHeight);
-		uniformChild = new TestView(expectedSize);
+		var childSize = new Size(childWidth, childHeight);
+		uniformChild = new TestView(childSize);
 		uniformItemsLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
 		var rect = new Rect(0, 0, childWidth * childCount, childHeight * childCount);
 		uniformItemsLayout.Layout(rect);
 		var actualSize = uniformItemsLayout.CrossPlatformArrange(rect);
 
-		Assert.Equal(expectedSize, actualSize);
+		Assert.Equal(childSize * childCount, actualSize);
 	}
 
 	class TestView : View
