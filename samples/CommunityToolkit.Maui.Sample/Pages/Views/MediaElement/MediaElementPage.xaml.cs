@@ -114,12 +114,11 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.ShouldMute = !MediaElement.ShouldMute;
 	}
 
-	void BasePage_Unloaded(object? sender, EventArgs e)
+	protected override void OnDisappearing()
 	{
-		// Stop and cleanup MediaElement when we navigate away
+		base.OnDisappearing();
 		MediaElement.Handler?.DisconnectHandler();
 	}
-
 	async void Slider_DragCompleted(object? sender, EventArgs e)
 	{
 		ArgumentNullException.ThrowIfNull(sender);
