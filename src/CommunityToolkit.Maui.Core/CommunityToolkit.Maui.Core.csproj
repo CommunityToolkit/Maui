@@ -48,10 +48,6 @@
     <None Include="ReadMe.txt" pack="true" PackagePath="." />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework.Contains('-tizen'))">
-    <PackageReference Include="SkiaSharp.Views" Version="[2.88.6,)" />
-  </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.Maui.Core" Version="$(MauiPackageVersion)"/>
     <PackageReference Include="Microsoft.Maui.Essentials" Version="$(MauiPackageVersion)"/>
