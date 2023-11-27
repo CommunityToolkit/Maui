@@ -164,7 +164,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			case loadHls:
 				MediaElement.Source
 					= MediaSource.FromUri(
-						"https://wowza.peer5.com/live/smil:bbb_abr.smil/playlist.m3u8");
+						"https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8");
 				return;
 
 			case resetSource:
