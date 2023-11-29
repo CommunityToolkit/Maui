@@ -22,18 +22,9 @@ public partial class Popup
 
 		static PageHandler CreatePageHandler(IPopup virtualView)
 		{
-			var mauiContext = virtualView.Handler?.MauiContext ?? throw new InvalidOperationException($"Unable to retrieve {nameof(IMauiContext)}");
-			var popupContent = (View)(virtualView.Content ?? throw new InvalidOperationException($"{nameof(IPopup.Content)} cannot be null."));
-
-			if (virtualView is BindableObject bindableObject)
-			{
-				popupContent.SetBinding(BindingContextProperty, BindingBase.Create<BindableObject, object>(static bindable => bindable.BindingContext, source: bindableObject));
-			}
-			else
-			{
-				Trace.TraceInformation($"Unable to set {nameof(BindableObject.BindingContext)} for {nameof(IPopup)}.{nameof(IPopup.Content)} because {nameof(IPopup)} implementation does not inherit from {nameof(BindableObject)}");
-			}
-
+			var mauiContext = virtualView.Handler?.MauiContext ?? throw new NullReferenceException(nameof(IMauiContext));
+			var view = (View?)virtualView.Content ?? throw new InvalidOperationException($"{nameof(IPopup.Content)} can't be null here.");
+			view.SetBinding(BindingContextProperty, new Binding { Source = virtualView, Path = BindingContextProperty.PropertyName });
 			var contentPage = new ContentPage
 			{
 				Content = popupContent

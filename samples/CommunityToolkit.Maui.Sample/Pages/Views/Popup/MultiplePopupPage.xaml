@@ -31,6 +31,8 @@
                 <Button Text="C# Binding Popup" Command="{Binding CsharpBindingPopupCommand}" />
 
                 <Button Text="Updating Popup" Command="{Binding UpdatingPopupCommand}" />
+
+                <Button Text="Show Popup content" Command="{Binding ShowPopupContentCommand}" />
             </VerticalStackLayout>
         </ScrollView>
     </ContentPage.Content>

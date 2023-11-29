@@ -270,6 +270,8 @@ public static class MauiProgram
 		services.AddTransientPopup<CsharpBindingPopup, CsharpBindingPopupViewModel>();
 		services.AddTransientPopup<UpdatingPopup, UpdatingPopupViewModel>();
 		services.AddTransientPopup<XamlBindingPopup, XamlBindingPopupViewModel>();
+
+		services.AddTransientPopupContent<PopupContentView, PopupContentViewModel>();
 	}
 
 	static void RegisterEssentials(in IServiceCollection services)

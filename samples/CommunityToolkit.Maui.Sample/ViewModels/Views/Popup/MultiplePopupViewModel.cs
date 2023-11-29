@@ -20,4 +20,12 @@ public partial class MultiplePopupViewModel(IPopupService popupService) : BaseVi
 			onPresenting: viewModel => viewModel.PerformUpdates(10),
 			token);
 	}
+
+	[RelayCommand]
+	Task OnShowPopupContent(CancellationToken token)
+	{
+		return popupService.ShowPopupAsync<PopupContentViewModel>(
+			onPresenting: viewModel => viewModel.SetMessage("This is a dynamically set message, shown in a popup without the need to create your own Popup subclass."),
+			token);
+	}
 }

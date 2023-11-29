@@ -34,24 +34,10 @@ public class PopupService : IPopupService
 	public PopupService()
 	{
 		serviceProvider = Application.Current?.Handler?.MauiContext?.Services
-			?? throw new InvalidOperationException("Could not locate IServiceProvider");
-
-		dispatcher = Application.Current.Dispatcher
-			?? throw new InvalidOperationException("Could not locate IDispatcher");
+							?? throw new InvalidOperationException("Could not locate IServiceProvider");
 	}
 
-	/// <summary>
-	/// Gets or sets the <see cref="IPopupLifecycleController"/> implementation.
-	/// </summary>
-	public IPopupLifecycleController PopupLifecycleController { get; set; } = new PopupLifecycleController();
-
-	static Page CurrentPage =>
-		PageExtensions.GetCurrentPage(
-			Application.Current?.Windows[0].Page ?? throw new InvalidOperationException("Application.Current?.Windows[0].Page cannot be null."));
-
-	internal static void ClearViewModelToViewMappings() => viewModelToViewMappings.Clear();
-
-	internal static void AddTransientPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>(IServiceCollection services)
+	internal static void AddTransientPopup<TPopupView, TPopupViewModel>(IServiceCollection services)
 		where TPopupView : IPopup
 		where TPopupViewModel : INotifyPropertyChanged
 	{
@@ -181,12 +167,18 @@ public class PopupService : IPopupService
 	/// <exception cref="InvalidOperationException"></exception>
 	static void ValidateBindingContext<TViewModel>(Popup popup, out TViewModel bindingContext)
 	{
-		if (popup.BindingContext is not TViewModel viewModel)
+		if (popup.BindingContext is TViewModel viewModel)
 		{
-			throw new InvalidOperationException($"Unexpected type has been assigned to the BindingContext of {popup.GetType().FullName}. Expected type {typeof(TViewModel).FullName} but was {popup.BindingContext?.GetType().FullName ?? "null"}");
+			bindingContext = viewModel;
+			return;			
+		}
+		else if (popup.Content?.BindingContext is TViewModel contentViewModel)
+		{
+			bindingContext = contentViewModel;
+			return;
 		}
 
-		bindingContext = viewModel;
+		throw new InvalidOperationException($"Unexpected type has been assigned to the BindingContext of {popup.GetType().FullName}. Expected type {typeof(TViewModel).FullName} but was {popup.BindingContext?.GetType().FullName ?? "null"}");
 	}
 
 	static void ShowPopup(Popup popup)
@@ -219,8 +211,14 @@ public class PopupService : IPopupService
 
 	Popup GetPopup(Type viewModelType)
 	{
-		var popup = (Popup)(serviceProvider.GetService(viewModelToViewMappings[viewModelType])
-			?? throw new InvalidOperationException($"Unable to resolve popup type for {viewModelType} please make sure that you have called {nameof(PopupService)}.{nameof(AddTransientPopup)} in MauiProgram.cs"));
+		var popup = serviceProvider.GetService(viewModelToViewMappings[viewModelType]) as Popup;
+
+		if (popup is null)
+		{
+			throw new InvalidOperationException(
+				$"Unable to resolve popup type for {viewModelType} please make sure that you have called {nameof(AddTransientPopup)}");
+		}
+
 		return popup;
 	}
 
