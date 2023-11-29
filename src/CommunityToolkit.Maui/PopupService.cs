@@ -219,6 +219,28 @@ public class PopupService : IPopupService
 				$"Unable to resolve popup type for {viewModelType} please make sure that you have called {nameof(AddTransientPopup)}");
 		}
 
+<<<<<<< HEAD
+=======
+		Popup popup;
+
+		if (view is View visualElement)
+		{
+			popup = new Popup
+			{
+				Content = visualElement
+			};
+		}
+		else if (view is Popup viewPopup)
+		{
+			popup = viewPopup;
+		}
+		else
+		{
+			throw new InvalidOperationException(
+				$"Invalid type of view being used to present a Popup. Expected either IPopup or View.");
+		}
+
+>>>>>>> fdd77156 (Remove commented code)
 		return popup;
 	}
 
