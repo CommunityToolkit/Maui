@@ -6,7 +6,8 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public abstract class BaseOneWayConverterTest<TConverter> : ConverterTest<TConverter> where TConverter : ICommunityToolkitValueConverter, new() {
+public abstract class BaseOneWayConverterTest<TConverter> : ConverterTest<TConverter> where TConverter : ICommunityToolkitValueConverter, new()
+{
 	[Fact]
 	public void ConvertBack_ShouldThrowNotSupportedException() {
 		var options = new Options();
@@ -18,9 +19,11 @@ public abstract class BaseOneWayConverterTest<TConverter> : ConverterTest<TConve
 	}
 }
 
-public abstract class BaseConverterTest<TConverter> : ConverterTest<TConverter> where TConverter : ICommunityToolkitValueConverter, new() {
+public abstract class BaseConverterTest<TConverter> : ConverterTest<TConverter> where TConverter : ICommunityToolkitValueConverter, new()
+{
 	[Fact]
-	public void InvalidConvertBackValue_ShouldThrowException() {
+	public void InvalidConvertBackValue_ShouldThrowException()
+	{
 		var options = new Options();
 		options.SetShouldSuppressExceptionsInConverters(false);
 
@@ -30,7 +33,8 @@ public abstract class BaseConverterTest<TConverter> : ConverterTest<TConverter> 
 	}
 
 	[Fact]
-	public void InvalidConvertBackValue_ShouldSuppressExceptionsInConverters_ShouldReturnDefaultConvertValue() {
+	public void InvalidConvertBackValue_ShouldSuppressExceptionsInConverters_ShouldReturnDefaultConvertValue()
+	{
 		var options = new Options();
 		options.SetShouldSuppressExceptionsInConverters(true);
 
@@ -42,9 +46,11 @@ public abstract class BaseConverterTest<TConverter> : ConverterTest<TConverter> 
 	}
 }
 
-public abstract class ConverterTest<TConverter> : BaseTest where TConverter : ICommunityToolkitValueConverter, new() {
+public abstract class ConverterTest<TConverter> : BaseTest where TConverter : ICommunityToolkitValueConverter, new()
+{
 	[Fact]
-	public void InvalidConvertValue_ShouldThrowException() {
+	public void InvalidConvertValue_ShouldThrowException()
+	{
 		var options = new Options();
 		options.SetShouldSuppressExceptionsInConverters(false);
 
@@ -54,7 +60,8 @@ public abstract class ConverterTest<TConverter> : BaseTest where TConverter : IC
 	}
 
 	[Fact]
-	public void InvalidConverterValue_ShouldSuppressExceptionsInConverters_ShouldReturnDefaultConvertValue() {
+	public void InvalidConverterValue_ShouldSuppressExceptionsInConverters_ShouldReturnDefaultConvertValue()
+	{
 		var options = new Options();
 		options.SetShouldSuppressExceptionsInConverters(true);
 
@@ -69,12 +76,15 @@ public abstract class ConverterTest<TConverter> : BaseTest where TConverter : IC
 	protected virtual object? GetInvalidConvertFromValue() => GetInvalidValue(InitializeConverterForInvalidConverterTests().FromType);
 	protected virtual TConverter InitializeConverterForInvalidConverterTests() => new();
 
-	static object GetInvalidValue(Type type) {
-		if (type != typeof(string)) {
+	static object GetInvalidValue(Type type)
+	{
+		if (type != typeof(string))
+		{
 			return string.Empty;
 		}
 
-		if (type != typeof(bool)) {
+		if (type != typeof(bool))
+		{
 			return true;
 		}
 

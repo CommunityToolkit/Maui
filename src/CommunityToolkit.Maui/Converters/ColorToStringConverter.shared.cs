@@ -7,7 +7,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/>.
 /// </summary>
-public class ColorToRgbStringConverter : BaseConverter<Color, string> {
+public class ColorToRgbStringConverter : BaseConverter<Color, string>
+{
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
 
@@ -15,8 +16,10 @@ public class ColorToRgbStringConverter : BaseConverter<Color, string> {
 	public override Color DefaultConvertBackReturnValue { get; set; } = Colors.Transparent;
 
 	/// <inheritdoc/>
-	public override Color ConvertBackTo(string value, CultureInfo? culture) {
-		if (Color.TryParse(value, out Color color)) {
+	public override Color ConvertBackTo(string value, CultureInfo? culture)
+	{
+		if (Color.TryParse(value, out Color color))
+		{
 			return color;
 		}
 
@@ -25,7 +28,8 @@ public class ColorToRgbStringConverter : BaseConverter<Color, string> {
 
 
 	/// <inheritdoc/>
-	public override string ConvertFrom(Color value, CultureInfo? culture = null) {
+	public override string ConvertFrom(Color value, CultureInfo? culture = null)
+	{
 		ArgumentNullException.ThrowIfNull(value);
 		return value.ToRgbString();
 	}
@@ -34,20 +38,24 @@ public class ColorToRgbStringConverter : BaseConverter<Color, string> {
 /// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/>.
 /// </summary>
-public class ColorToRgbaStringConverter : BaseConverterOneWay<Color, string> {
+public class ColorToRgbaStringConverter : BaseConverterOneWay<Color, string>
+{
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
+
 	/// <inheritdoc/>
-	public override string ConvertFrom(Color value, CultureInfo? culture = null) {
+	public override string ConvertFrom(Color value, CultureInfo? culture = null)
+	{
 		ArgumentNullException.ThrowIfNull(value);
 		return value.ToRgbaString(culture);
 	}
 }
 
 /// <summary>
-/// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/> and virce-versa.
+/// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/> and vice-versa.
 /// </summary>
-public class ColorToHexRgbStringConverter : BaseConverter<Color, string> {
+public class ColorToHexRgbStringConverter : BaseConverter<Color, string>
+{
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
 
@@ -55,7 +63,8 @@ public class ColorToHexRgbStringConverter : BaseConverter<Color, string> {
 	public override Color DefaultConvertBackReturnValue { get; set; } = Colors.Transparent;
 
 	/// <inheritdoc/>
-	public override string ConvertFrom(Color value, CultureInfo? culture = null) {
+	public override string ConvertFrom(Color value, CultureInfo? culture = null)
+	{
 		ArgumentNullException.ThrowIfNull(value);
 		return value.ToRgbaHex(false);
 	}
@@ -68,9 +77,10 @@ public class ColorToHexRgbStringConverter : BaseConverter<Color, string> {
 }
 
 /// <summary>
-/// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/> and virce-versa.
+/// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/> and vice-versa.
 /// </summary>
-public class ColorToHexRgbaStringConverter : BaseConverter<Color, string> {
+public class ColorToHexRgbaStringConverter : BaseConverter<Color, string>
+{
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
 
@@ -78,13 +88,15 @@ public class ColorToHexRgbaStringConverter : BaseConverter<Color, string> {
 	public override Color DefaultConvertBackReturnValue { get; set; } = Colors.Transparent;
 
 	/// <inheritdoc/>
-	public override string ConvertFrom(Color value, CultureInfo? culture = null) {
+	public override string ConvertFrom(Color value, CultureInfo? culture = null)
+	{
 		ArgumentNullException.ThrowIfNull(value);
 		return value.ToRgbaHex(true);
 	}
 
 	/// <inheritdoc/>
-	public override Color ConvertBackTo(string value, CultureInfo? culture = null) {
+	public override Color ConvertBackTo(string value, CultureInfo? culture = null)
+	{
 		ArgumentNullException.ThrowIfNull(value);
 		return Color.FromRgba(value);
 	}
@@ -93,7 +105,8 @@ public class ColorToHexRgbaStringConverter : BaseConverter<Color, string> {
 /// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/>.
 /// </summary>
-public class ColorToCmykStringConverter : BaseConverterOneWay<Color, string> {
+public class ColorToCmykStringConverter : BaseConverterOneWay<Color, string>
+{
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
 
@@ -107,12 +120,14 @@ public class ColorToCmykStringConverter : BaseConverterOneWay<Color, string> {
 /// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/>.
 /// </summary>
-public class ColorToCmykaStringConverter : BaseConverterOneWay<Color, string> {
+public class ColorToCmykaStringConverter : BaseConverterOneWay<Color, string>
+{
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
 
 	/// <inheritdoc/>
-	public override string ConvertFrom(Color value, CultureInfo? culture = null) {
+	public override string ConvertFrom(Color value, CultureInfo? culture = null)
+	{
 		ArgumentNullException.ThrowIfNull(value);
 		return value.ToCmykaString(culture);
 	}
@@ -121,12 +136,14 @@ public class ColorToCmykaStringConverter : BaseConverterOneWay<Color, string> {
 /// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/>.
 /// </summary>
-public class ColorToHslStringConverter : BaseConverterOneWay<Color, string> {
+public class ColorToHslStringConverter : BaseConverterOneWay<Color, string>
+{
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
 
 	/// <inheritdoc/>
-	public override string ConvertFrom(Color value, CultureInfo? culture = null) {
+	public override string ConvertFrom(Color value, CultureInfo? culture = null)
+	{
 		ArgumentNullException.ThrowIfNull(value);
 		return value.ToHslString();
 	}
@@ -135,12 +152,14 @@ public class ColorToHslStringConverter : BaseConverterOneWay<Color, string> {
 /// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/>.
 /// </summary>
-public class ColorToHslaStringConverter : BaseConverterOneWay<Color, string> {
+public class ColorToHslaStringConverter : BaseConverterOneWay<Color, string>
+{
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
 
 	/// <inheritdoc/>
-	public override string ConvertFrom(Color value, CultureInfo? culture = null) {
+	public override string ConvertFrom(Color value, CultureInfo? culture = null)
+	{
 		ArgumentNullException.ThrowIfNull(value);
 		return value.ToHslaString(culture);
 	}
