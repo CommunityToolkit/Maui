@@ -67,7 +67,7 @@ public class EnumToBoolConverterTests : BaseOneWayConverterTest<EnumToBoolConver
 	[InlineData(null, TestFlaggedEnumForEnumToBoolConverter.Two, TestFlaggedEnumForEnumToBoolConverter.One | TestFlaggedEnumForEnumToBoolConverter.Three, false)]
 	[InlineData(null, TestFlaggedEnumForEnumToBoolConverter.One | TestFlaggedEnumForEnumToBoolConverter.Three, TestFlaggedEnumForEnumToBoolConverter.One | TestFlaggedEnumForEnumToBoolConverter.Three, true)]
 	[InlineData(null, TestFlaggedEnumForEnumToBoolConverter.One | TestFlaggedEnumForEnumToBoolConverter.Two | TestFlaggedEnumForEnumToBoolConverter.Three, TestFlaggedEnumForEnumToBoolConverter.One | TestFlaggedEnumForEnumToBoolConverter.Three, false)]
-	public void EnumToBoolConvert_Validation(object?[]? trueValues, Enum value, Enum parameter, bool expectedResult)
+	public void EnumToBoolConvert_Validation(object?[]? trueValues, Enum value, Enum? parameter, bool expectedResult)
 	{
 		var enumToBoolConverter = new EnumToBoolConverter();
 		trueValues?.OfType<Enum>().ToList().ForEach(fe => enumToBoolConverter.TrueValues.Add(fe));
