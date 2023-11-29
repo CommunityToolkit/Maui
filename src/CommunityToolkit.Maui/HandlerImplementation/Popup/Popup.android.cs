@@ -293,8 +293,16 @@ public partial class Popup : Element
 
 		if (platformView is ViewGroup)
 		{
-			width = platformView.MeasuredWidth;
-			height = platformView.MeasuredHeight;
+			if (target is Border border)
+			{
+				width = platformView.MeasuredWidth + paddingH - ((int)context.ToPixels(border.Padding.Left + border.Padding.Right + border.StrokeThickness * 2));
+				height = platformView.MeasuredHeight + paddingV - ((int)context.ToPixels(border.Padding.Top + border.Padding.Bottom + border.StrokeThickness * 2));
+			}
+			else
+			{
+				width = platformView.MeasuredWidth;
+				height = platformView.MeasuredHeight;
+			}
 		}
 
 		foreach (Element element in target.LogicalChildrenInternal)
@@ -504,4 +512,5 @@ public partial class Popup : Element
 	}
 
 	static Android.Views.Window GetWindow(in Dialog dialog) =>
-		dialog.Window ?? throw new InvalidOperationException($"{nameof(Dialog)}.{nameof(Dialog.Window)} cannot be null");}
+		dialog.Window ?? throw new InvalidOperationException($"{nameof(Dialog)}.{nameof(Dialog.Window)} cannot be null");
+}
