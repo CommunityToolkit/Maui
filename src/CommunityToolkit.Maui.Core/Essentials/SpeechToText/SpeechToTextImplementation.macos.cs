@@ -9,7 +9,6 @@ namespace CommunityToolkit.Maui.Media;
 public sealed partial class SpeechToTextImplementation
 {
 	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest), nameof(getRecognitionTaskCompletionSource))]
-	[Obsolete]
 	Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
 	{
 		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(culture.Name));
@@ -23,7 +22,7 @@ public sealed partial class SpeechToTextImplementation
 
 		audioEngine = new AVAudioEngine();
 		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest();
-
+		
 		InitializeAvAudioSession(out var audioSession);
 
 		var mode = audioSession.AvailableModes.Contains(AVAudioSession.ModeMeasurement)
@@ -53,7 +52,7 @@ public sealed partial class SpeechToTextImplementation
 		{
 			throw new Exception(error.LocalizedDescription);
 		}
-
+		
 		cancellationToken.ThrowIfCancellationRequested();
 
 		var currentIndex = 0;

@@ -42,7 +42,7 @@ public class MauiMediaElement : Grid, IDisposable
 	/// </summary>
 	protected virtual void Dispose(bool disposing)
 	{
-		if (isDisposed)
+		if(isDisposed)
 		{
 			return;
 		}
