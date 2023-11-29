@@ -43,9 +43,19 @@ public static class PopupExtensions
 			if (double.IsNaN(popup.Content.Width) || double.IsNaN(popup.Content.Height))
 			{
 				var content = popup.Content.ToPlatform(popup.Handler?.MauiContext ?? throw new InvalidOperationException($"{nameof(popup.Handler.MauiContext)} Cannot Be Null"));
+				var overSize = content.SizeThatFits(new CGSize(double.PositiveInfinity, double.PositiveInfinity));
 				var contentSize = content.SizeThatFits(new CGSize(double.IsNaN(popup.Content.Width) ? frame.Width : popup.Content.Width, double.IsNaN(popup.Content.Height) ? frame.Height : popup.Content.Height));
 				var width = contentSize.Width;
 				var height = contentSize.Height;
+
+				if (overSize.Width >= frame.Width)
+				{
+					width = frame.Width;
+				}
+				if (overSize.Height >= frame.Height)
+				{
+					height = frame.Height;
+				}
 
 				if (double.IsNaN(popup.Content.Width))
 				{

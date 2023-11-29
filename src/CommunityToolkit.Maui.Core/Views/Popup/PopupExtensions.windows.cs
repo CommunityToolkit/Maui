@@ -53,68 +53,6 @@ public static class PopupExtensions
 		{
 			mauiPopup.Child = handler.VirtualView.Content?.ToPlatform(mauiContext);
 		}
-
-		mauiPopup.SetSize(popup, mauiContext);
-		mauiPopup.SetLayout(popup, mauiContext);
-	}
-
-	/// <summary>
-	/// Method to update the popup size based on the <see cref="Maui.Core.IPopup.Size"/>.
-	/// </summary>
-	/// <param name="mauiPopup">An instance of <see cref="Popup"/>.</param>
-	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
-	/// <param name="mauiContext">An instance of <see cref="IMauiContext"/>.</param>
-	public static void SetSize(this Popup mauiPopup, IPopup popup, IMauiContext? mauiContext)
-	{
-		ArgumentNullException.ThrowIfNull(mauiContext);
-		ArgumentNullException.ThrowIfNull(popup.Content);
-
-		const double defaultBorderThickness = 0;
-		const double defaultSize = 600;
-
-		var popupParent = mauiContext.GetPlatformWindow();
-		var currentSize = new Size { Width = defaultSize, Height = defaultSize / 2 };
-
-		if (popup.Size.IsZero)
-		{
-			if (double.IsNaN(popup.Content.Width) || (double.IsNaN(popup.Content.Height)))
-			{
-				currentSize = popup.Content.Measure(double.IsNaN(popup.Content.Width) ? popupParent.Bounds.Width : popup.Content.Width, double.IsNaN(popup.Content.Height) ? popupParent.Bounds.Height : popup.Content.Height);
-
-				if (double.IsNaN(popup.Content.Width))
-				{
-					currentSize.Width = popup.HorizontalOptions == LayoutAlignment.Fill ? popupParent.Bounds.Width : currentSize.Width;
-				}
-				if (double.IsNaN(popup.Content.Height))
-				{
-					currentSize.Height = popup.VerticalOptions == LayoutAlignment.Fill ? popupParent.Bounds.Height : currentSize.Height;
-				}
-			}
-			else
-			{
-				currentSize.Width = popup.Content.Width;
-				currentSize.Height = popup.Content.Height;
-			}
-		}
-		else
-		{
-			currentSize.Width = popup.Size.Width;
-			currentSize.Height = popup.Size.Height;
-		}
-
-		currentSize.Width = Math.Min(currentSize.Width, popupParent.Bounds.Width);
-		currentSize.Height = Math.Min(currentSize.Height, popupParent.Bounds.Height);
-
-		mauiPopup.Width = currentSize.Width;
-		mauiPopup.Height = currentSize.Height;
-		mauiPopup.MinWidth = mauiPopup.MaxWidth = currentSize.Width + (defaultBorderThickness * 2);
-		mauiPopup.MinHeight = mauiPopup.MaxHeight = currentSize.Height + (defaultBorderThickness * 2);
-
-		if (mauiPopup.Child is FrameworkElement control)
-		{
-			control.Width = mauiPopup.Width;
-			control.Height = mauiPopup.Height;
-		}
 	}
 
 	/// <summary>

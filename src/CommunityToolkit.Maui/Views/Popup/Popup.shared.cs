@@ -4,13 +4,6 @@ using Microsoft.Maui.Controls.StyleSheets;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 using Style = Microsoft.Maui.Controls.Style;
 
-#if ANDROID
-using Microsoft.Maui.Platform;
-using System.ComponentModel;
-using Android.App;
-using AView = Android.Views.View;
-#endif
-
 namespace CommunityToolkit.Maui.Views;
 
 /// <summary>
@@ -72,14 +65,16 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 		platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Popup>>(() => new(this));
 		((IResourceDictionary)resources).ValuesChanged += OnResourcesChanged;
 
+#if ANDROID || WINDOWS
+	    AddHandlerChanged();
+		AddPropertyChanged();
+#elif IOS
+		AddHandlerChanged();
+#endif
+
 		VerticalOptions = HorizontalOptions = LayoutAlignment.Center;
 		window = Window;
 		mergedStyle = new MergedStyle(GetType(), this);
-
-#if ANDROID
-		this.HandlerChanged += OnHandlerChanged;
-		this.PropertyChanged += OnPropertyChanged;
-#endif
 	}
 
 	/// <summary>
@@ -348,8 +343,10 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// <summary>
 	/// Invokes the <see cref="Opened"/> event.
 	/// </summary>
-	internal virtual void OnOpened() =>
+	internal virtual void OnOpened()
+	{
 		openedWeakEventManager.HandleEvent(this, PopupOpenedEventArgs.Empty, nameof(Opened));
+	}
 
 	/// <summary>
 	/// Invokes the <see cref="Closed"/> event.
@@ -359,6 +356,13 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	protected virtual async Task OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup, CancellationToken token = default)
 	{
+#if ANDROID || WINDOWS
+	    RemoveHandlerChanged();
+		RemovePropertyChanged();
+#elif IOS
+		RemoveHandlerChanged();
+#endif
+
 		((IPopup)this).OnClosed(result);
 		((IResourceDictionary)resources).ValuesChanged -= OnResourcesChanged;
 
@@ -401,50 +405,6 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	{
 		ArgumentNullException.ThrowIfNull(newValue);
 	}
-
-#if ANDROID
-	void OnHandlerChanged(object? sender, EventArgs e)
-	{
-		if (sender is Popup vPopup)
-		{
-			if (vPopup.Handler?.MauiContext is IMauiContext mauiContext)
-			{
-				var platformPopup = vPopup.ToHandler(mauiContext);
-				if (platformPopup.PlatformView is Dialog dialog &&
-					platformPopup.VirtualView is IPopup pPopup &&
-					pPopup.Content?.ToPlatform(mauiContext) is AView container)
-				{
-					container.LayoutChange += (s, le) =>
-					{
-						PopupExtensions.SetSize(dialog, vPopup, pPopup, container);
-						CommunityToolkit.Maui.Core.Views.PopupExtensions.SetAnchor(dialog, pPopup);
-					};
-				}
-			}
-		}
-	}
-
-	void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
-	{
-		if (e.PropertyName == nameof(Size))
-		{
-			if (sender is Popup vPopup)
-			{
-				if (vPopup.Handler?.MauiContext is IMauiContext mauiContext)
-				{
-					var platformPopup = vPopup.ToHandler(mauiContext);
-					if (platformPopup.PlatformView is Dialog dialog &&
-						platformPopup.VirtualView is IPopup pPopup &&
-						pPopup.Content?.ToPlatform(mauiContext) is AView container)
-					{
-						PopupExtensions.SetSize(dialog, vPopup, pPopup, container);
-						CommunityToolkit.Maui.Core.Views.PopupExtensions.SetAnchor(dialog, pPopup);
-					}
-				}
-			}
-		}
-	}
-#endif
 
 	void IPopup.OnClosed(object? result) => Handler.Invoke(nameof(IPopup.OnClosed), result);
 
