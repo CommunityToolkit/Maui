@@ -302,7 +302,10 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		AvatarView avatarView = (AvatarView)bindable;
 		CornerRadius corderRadius = (CornerRadius)newValue;
 
-		avatarView.StrokeShape = new RoundRectangle { CornerRadius = corderRadius };
+		avatarView.StrokeShape = new RoundRectangle
+		{
+			CornerRadius = corderRadius
+		};
 	}
 
 	static void OnImageSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -328,12 +331,6 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 		avatarImage.Source = newValue;
 		if (newValue is not null)
 		{
-			// Work-around for iOS / MacOS bug that paints `Border.BackgroundColor` over top of `Border.Content` when an Image is used for `Border.Content`
-			if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst() || OperatingSystem.IsMacOS())
-			{
-				BackgroundColor = Colors.Transparent;
-			}
-
 			Content = avatarImage;
 		}
 		else
@@ -357,6 +354,7 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 			&& avatarImage.Source is not null)
 
 		{
+			Geometry? avatarImageClipGeometry = null;
 #if WINDOWS
 			double offsetX = 0;
 			double offsetY = 0;
@@ -367,7 +365,14 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 			double imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
 			double imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
 
-			Rect rect = new(offsetX, offsetY, imageWidth, imageHeight);
+			if (!OperatingSystem.IsIOS() && !OperatingSystem.IsMacCatalyst() && !OperatingSystem.IsMacOS())
+			{
+				avatarImageClipGeometry = new RoundRectangleGeometry
+				{
+					CornerRadius = CornerRadius,
+					Rect = new(offsetX, offsetY, imageWidth, imageHeight)
+				};
+			}
 
 			avatarImage.Clip = StrokeShape switch
 			{
@@ -376,7 +381,7 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 				Microsoft.Maui.Controls.Shapes.Path path => path.Clip,
 				Polygon polygon => polygon.Clip,
 				Rectangle rectangle => rectangle.Clip,
-				_ => new RoundRectangleGeometry { CornerRadius = CornerRadius, Rect = rect },
+				_ => avatarImageClipGeometry
 			};
 		}
 	}
