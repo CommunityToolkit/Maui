@@ -164,212 +164,211 @@ public partial class MapHandlerWindows : MapHandler
 		}
 	}
 
-	static string GetMapHtmlPage(string key)
-	{
-		var str = @$"<!DOCTYPE html>
-				<html>
-					<head>
-						<title></title>
-						<meta http-equiv=""Content-Security-Policy"" content=""default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval' 'unsafe-inline' https://*.bing.com https://*.virtualearth.net; style-src 'self' 'unsafe-inline' https://*.bing.com https://*.virtualearth.net; media-src *"">
-						<meta name=""viewport"" content=""user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width"">
-						<script type='text/javascript' src='https://www.bing.com/api/maps/mapcontrol?key={key}'></script>";
-		str += @"<script type='text/javascript'>
-			                var map;
-							var locationPin;
-							var trafficManager;
-							var infobox;
+	static string GetMapHtmlPage(string key) =>
+		$$"""
+		<!DOCTYPE html>
+		<html>
+			<head>
+				<title></title>
+				<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval' 'unsafe-inline' https://*.bing.com https://*.virtualearth.net; style-src 'self' 'unsafe-inline' https://*.bing.com https://*.virtualearth.net; media-src *">
+				<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+				<script type='text/javascript' src='https://www.bing.com/api/maps/mapcontrol?key={{key}}'></script>
+				<script type='text/javascript'>
+					var map;
+					var locationPin;
+					var trafficManager;
+					var infobox;
 
-			                function loadMap() {
-			                    map = new Microsoft.Maps.Map(document.getElementById('myMap'), {
-									disableBirdseye : true,
-								//	disableZooming: true,
-								//	disablePanning: true,
-									showScalebar: false,
-									showLocateMeButton: false,
-									showDashboard: false,
-									showTermsLink: false,
-									showTrafficButton: false
+					function loadMap() {
+						map = new Microsoft.Maps.Map(document.getElementById('myMap'), {
+							disableBirdseye : true,
+						//	disableZooming: true,
+						//	disablePanning: true,
+							showScalebar: false,
+							showLocateMeButton: false,
+							showDashboard: false,
+							showTermsLink: false,
+							showTrafficButton: false
+						});
+						loadTrafficModule();
+						Microsoft.Maps.Events.addHandler(map, 'viewrendered', function () { var bounds = map.getBounds(); invokeHandlerAction('BoundsChanged', bounds); });
+
+						Microsoft.Maps.Events.addHandler(map, 'click', function (e) {
+							if (!e.isPrimary) {
+								return;
+							}
+
+							var clickedLocation = {
+								latitude: e.location.latitude,
+								longitude: e.location.longitude
+							};
+
+							invokeHandlerAction('MapClicked', clickedLocation);
+						});
+
+						infobox = new Microsoft.Maps.Infobox(map.getCenter(), {
+							visible: false
+						});
+						infobox.setMap(map);
+						Microsoft.Maps.Events.addHandler(infobox, 'click', function (args) {
+							// If not visible, we assume the user pressed the close button
+							if (args.target.getVisible() == false)
+								return;
+
+							var infoWindow = {
+								infoWindowMarkerId: infobox.infoWindowMarkerId									
+							};
+
+							invokeHandlerAction('InfoWindowClicked', infoWindow);
+						});
+					}
+										
+					function loadTrafficModule()
+					{
+						Microsoft.Maps.loadModule('Microsoft.Maps.Traffic', function () {
+								trafficManager = new Microsoft.Maps.Traffic.TrafficManager(map);
+						});
+					}
+
+					function disableTraffic(disable)
+					{
+						if(disable)
+							trafficManager.hide();
+						else
+							trafficManager.show();
+					}
+
+					function disableMapZoom(disable)
+					{
+						map.setOptions({
+							disableZooming: disable,
+						});
+					}
+										
+					function disablePanning(disable)
+					{
+						map.setOptions({
+							disablePanning: disable,
+						});
+					}
+						
+					function setMapType(mauiMapType)
+					{
+						var mapTypeID = Microsoft.Maps.MapTypeId.road;
+						switch(mauiMapType) {
+							case 'Street':
+							mapTypeID = Microsoft.Maps.MapTypeId.road;
+							break;
+							case 'Satellite':
+							mapTypeID = Microsoft.Maps.MapTypeId.aerial;
+							break;
+							case 'Hybrid':
+							mapTypeID = Microsoft.Maps.MapTypeId.aerial;
+							break;
+							default:
+							mapTypeID = Microsoft.Maps.MapTypeId.road;
+						}
+						map.setView({
+							mapTypeId: mapTypeID
+						});
+					}
+
+					function setRegion(latitude, longitude)
+					{
+						map.setView({
+							center: new Microsoft.Maps.Location(latitude, longitude),
+						});
+					}
+
+					function addLocationPin(latitude, longitude)
+					{
+						var location = new Microsoft.Maps.Location(latitude, longitude);
+						locationPin = new Microsoft.Maps.Pushpin(location, null);
+						map.entities.push(locationPin);
+						map.setView({
+							center: location
+						});
+					}
+								
+					function removeLocationPin()
+					{
+						if (locationPin != null)
+						{
+							map.entities.remove(locationPin);
+							locationPin = null;
+						}
+					}
+
+					function removeAllPins()
+					{
+						map.entities.clear();
+						locationPin = null;
+					}
+
+					function addPin(latitude, longitude, label, address, id)
+					{
+						var location = new Microsoft.Maps.Location(latitude, longitude);
+						var pin = new Microsoft.Maps.Pushpin(location, {
+									title: label,
+									subTitle: address
 								});
-								loadTrafficModule();
-								Microsoft.Maps.Events.addHandler(map, 'viewrendered', function () { var bounds = map.getBounds(); invokeHandlerAction('BoundsChanged', bounds); });
 
-								Microsoft.Maps.Events.addHandler(map, 'click', function (e) {
-									if (!e.isPrimary) {
-										return;
-									}
+						pin.markerId = id;
+						map.entities.push(pin);
+						Microsoft.Maps.Events.addHandler(pin, 'click', function (e) 
+						{
+							if (e.targetType !== 'pushpin')
+								return;
 
-									var clickedLocation = {
-										latitude: e.location.latitude,
-										longitude: e.location.longitude
-									};
+							//Set the infobox options with the metadata of the pushpin.
+							infobox.setOptions({
+								location: e.target.getLocation(),
+								title: e.target.getTitle(),
+								description: e.target.getSubTitle(),
+								visible: true
+							});
 
-									invokeHandlerAction('MapClicked', clickedLocation);
-								});
+							infobox.infoWindowMarkerId = id;
 
-								infobox = new Microsoft.Maps.Infobox(map.getCenter(), {
-									visible: false
-								});
-								infobox.setMap(map);
-								Microsoft.Maps.Events.addHandler(infobox, 'click', function (args) {
-									// If not visible, we assume the user pressed the close button
-									if (args.target.getVisible() == false)
-										return;
+							var clickedPin = {
+								label: e.target.getTitle(),
+								address: e.target.getSubTitle(),
+								location: e.target.getLocation(),
+								markerId: e.target.markerId
+							};
+							invokeHandlerAction('PinClicked', clickedPin);
+						});
+					}
 
-									var infoWindow = {
-										infoWindowMarkerId: infobox.infoWindowMarkerId									
-									};
+					function invokeHandlerAction(id, data)
+					{
+						var eventMessage = {
+							id: id,
+							payload: data
+						};
 
-									invokeHandlerAction('InfoWindowClicked', infoWindow);
-								});
-			                }
-							
-							function loadTrafficModule()
-							{
-								Microsoft.Maps.loadModule('Microsoft.Maps.Traffic', function () {
-									 trafficManager = new Microsoft.Maps.Traffic.TrafficManager(map);
-								});
-							}
+						window.chrome.webview.postMessage(eventMessage);
+					}
 
-							function disableTraffic(disable)
-							{
-								if(disable)
-									trafficManager.hide();
-								else
-									trafficManager.show();
-							}
-
-							function disableMapZoom(disable)
-							{
-								map.setOptions({
-									disableZooming: disable,
-								});
-							}
-							
-							function disablePanning(disable)
-							{
-								map.setOptions({
-									disablePanning: disable,
-								});
-							}
-			
-							function setMapType(mauiMapType)
-							{
-								var mapTypeID = Microsoft.Maps.MapTypeId.road;
-								switch(mauiMapType) {
-								  case 'Street':
-								    mapTypeID = Microsoft.Maps.MapTypeId.road;
-								    break;
-								  case 'Satellite':
-								    mapTypeID = Microsoft.Maps.MapTypeId.aerial;
-								    break;
-								  case 'Hybrid':
-								    mapTypeID = Microsoft.Maps.MapTypeId.aerial;
-									break;
-								  default:
-									mapTypeID = Microsoft.Maps.MapTypeId.road;
-								}
-								map.setView({
-									mapTypeId: mapTypeID
-								});
-							}
-
-							function setRegion(latitude, longitude)
-							{
-								map.setView({
-									center: new Microsoft.Maps.Location(latitude, longitude),
-								});
-							}
-
-							function addLocationPin(latitude, longitude)
-							{
-								var location = new Microsoft.Maps.Location(latitude, longitude);
-								locationPin = new Microsoft.Maps.Pushpin(location, null);
-								map.entities.push(locationPin);
-								map.setView({
-									center: location
-								});
-							}
-					
-							function removeLocationPin()
-							{
-								if (locationPin != null)
-								{
-									map.entities.remove(locationPin);
-									locationPin = null;
-								}
-							}
-
-							function removeAllPins()
-							{
-								map.entities.clear();
-								locationPin = null;
-							}
-
-							function addPin(latitude, longitude, label, address, id)
-							{
-								var location = new Microsoft.Maps.Location(latitude, longitude);
-								var pin = new Microsoft.Maps.Pushpin(location, {
-								            title: label,
-											subTitle: address
-								        });
-
-								pin.markerId = id;
-								map.entities.push(pin);
-								Microsoft.Maps.Events.addHandler(pin, 'click', function (e) 
-								{
-									if (e.targetType !== 'pushpin')
-										return;
-
-									//Set the infobox options with the metadata of the pushpin.
-									infobox.setOptions({
-										location: e.target.getLocation(),
-										title: e.target.getTitle(),
-										description: e.target.getSubTitle(),
-										visible: true
-									});
-
-									infobox.infoWindowMarkerId = id;
-
-									var clickedPin = {
-										label: e.target.getTitle(),
-										address: e.target.getSubTitle(),
-										location: e.target.getLocation(),
-										markerId: e.target.markerId
-									};
-									invokeHandlerAction('PinClicked', clickedPin);
-								});
-							}
-
-							function invokeHandlerAction(id, data)
-							{
-								var eventMessage = {
-									id: id,
-									payload: data
-								};
-
-								window.chrome.webview.postMessage(eventMessage);
-							}
-
-							function hideInfoWindow()
-							{
-								infobox.setOptions({
-									visible: false
-								});
-							}
-						</script>
-						<style>
-							body, html{
-								padding:0;
-								margin:0;
-							}
-						</style>
-					</head>
-					<body onload='loadMap();'>
-						<div id=""myMap""></div>
-					</body>
-				</html>";
-		return str;
-	}
+					function hideInfoWindow()
+					{
+						infobox.setOptions({
+							visible: false
+						});
+					}
+				</script>
+				<style>
+					body, html{
+						padding:0;
+						margin:0;
+					}
+				</style>
+			</head>
+			<body onload='loadMap();'>
+				<div id="myMap"></div>
+			</body>
+		</html>
+		""";
 
 	static async Task<Location?> GetCurrentLocation()
 	{
