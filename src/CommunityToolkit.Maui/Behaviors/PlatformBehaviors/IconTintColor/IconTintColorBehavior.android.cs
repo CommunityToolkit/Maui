@@ -52,7 +52,7 @@ public partial class IconTintColorBehavior
 			if (color is null)
 			{
 				image.ClearColorFilter();
-				color = Colors.Transparent;
+				return;
 			}
 
 			image.SetColorFilter(new PorterDuffColorFilter(color.ToPlatform(), PorterDuff.Mode.SrcIn ?? throw new InvalidOperationException("PorterDuff.Mode.SrcIn should not be null at runtime.")));
