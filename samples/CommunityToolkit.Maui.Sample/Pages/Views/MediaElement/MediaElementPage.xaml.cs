@@ -114,9 +114,9 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.ShouldMute = !MediaElement.ShouldMute;
 	}
 
-	void BasePage_Unloaded(object? sender, EventArgs e)
+	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
 	{
-		// Stop and cleanup MediaElement when we navigate away
+		base.OnNavigatedFrom(args);
 		MediaElement.Handler?.DisconnectHandler();
 	}
 
