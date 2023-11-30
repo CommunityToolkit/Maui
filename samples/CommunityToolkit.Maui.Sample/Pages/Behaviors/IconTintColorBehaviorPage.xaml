@@ -8,8 +8,7 @@
 	xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
 	Title="IconTintColorBehaviorPage"
 	x:DataType="vm:IconTintColorBehaviorViewModel"
-	x:TypeArguments="vm:IconTintColorBehaviorViewModel"
-	x:Name="this">
+	x:TypeArguments="vm:IconTintColorBehaviorViewModel">
 	<ScrollView>
 		<Grid
 			Padding="20" 
@@ -73,23 +72,23 @@
 				Source="shield.png" />
 
 			<ImageButton
-				x:Name="UpdateImage"
 				Grid.Row="4"
 				Grid.Column="1"
-				Clicked="ChangeSource_Clicked"
-				Source="shield.png">
+				Command="{Binding ToggleImageButtonCommand, Mode=OneTime}"
+				Source="{Binding ToggleableImageSource}">
 				<ImageButton.Behaviors>
 					<mct:IconTintColorBehavior TintColor="Red" />
 				</ImageButton.Behaviors>
 			</ImageButton>
 
 			<ImageButton
+				x:Name="ToggleColorImageButton"
 				Grid.Row="4"
 				Grid.Column="2"
-				Command="{Binding ChangeCommand}"
+				Command="{Binding ChangeColorCommand}"
 				Source="shield.png">
 				<ImageButton.Behaviors>
-					<mct:IconTintColorBehavior TintColor="{Binding Source={x:Reference this}, Path=BindingContext.ChangedColor}" />
+					<mct:IconTintColorBehavior TintColor="{Binding Source={x:Reference ToggleColorImageButton}, Path=BindingContext.ToggleableIconTintColor}" />
 				</ImageButton.Behaviors>
 			</ImageButton>
 
@@ -98,13 +97,13 @@
 				Grid.Column="2"
 				FontSize="Micro"
 				FontAttributes="Italic"
-				Text="The ImageButton above uses Binding in order to change the TintColor. Click it!"/>
+				Text="This ImageButton uses Bindings to change the TintColor. Click it!"/>
 			<Label
 				Grid.Row="5"
 				Grid.Column="1"
 				FontSize="Micro"
 				FontAttributes="Italic"
-				Text="The ImageButton above updates the image source. Click it!"/>
+				Text="This ImageButton uses Bindings to change the ImageSource. Click it!"/>
 		
 		</Grid>
 		
