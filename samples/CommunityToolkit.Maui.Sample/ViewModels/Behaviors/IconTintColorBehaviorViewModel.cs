@@ -23,7 +23,7 @@ public partial class IconTintColorBehaviorViewModel : BaseViewModel
 		{
 			dotnetBotImageFileName => shieldImageFileName,
 			shieldImageFileName => dotnetBotImageFileName,
-			_ => throw new Exception("Invalid image source")
+			_ => throw new NotSupportedException("Invalid image source")
 		};
 	}
 
