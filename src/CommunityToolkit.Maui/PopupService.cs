@@ -229,6 +229,9 @@ public class PopupService : IPopupService
 			{
 				Content = visualElement
 			};
+
+			// Binding the BindingContext property up from the view to the popup so that it is nicely handled on macOS.
+			popup.SetBinding(Popup.BindingContextProperty, new Binding { Source = view, Path = Popup.BindingContextProperty.PropertyName });
 		}
 		else if (view is Popup viewPopup)
 		{
