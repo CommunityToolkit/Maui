@@ -8,6 +8,19 @@ namespace CommunityToolkit.Maui.Core;
 public interface IPopupService
 {
 	/// <summary>
+	/// Close the currently displayed Popup.
+	/// </summary>
+	/// <param name="result">An optional result to be returned from the popup.</param>
+	void ClosePopup(object? result = null);
+
+	/// <summary>
+	/// Close the currently displayed Popup.
+	/// </summary>
+	/// <param name="result">An optional result to be returned from the popup.</param>
+	/// <returns>A <see cref="Task"/> that can be awaited.</returns>
+	Task ClosePopupAsync(object? result = null);
+
+	/// <summary>
 	/// Resolves and displays a <see cref="CommunityToolkit.Maui.Core.IPopup"/> and <typeparamref name="TViewModel"/> pair that was registered with <c>AddTransientPopup</c>.
 	/// </summary>
 	/// <typeparam name="TViewModel">The type of the view model registered with the <see cref="CommunityToolkit.Maui.Core.IPopup"/>.</typeparam>
