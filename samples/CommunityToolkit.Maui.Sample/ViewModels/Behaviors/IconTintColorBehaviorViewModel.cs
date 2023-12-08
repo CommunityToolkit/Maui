@@ -5,15 +5,37 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
 public partial class IconTintColorBehaviorViewModel : BaseViewModel
 {
-	[RelayCommand]
-	void Change()
-	{
-		IsChanged = !IsChanged;
-	}
+	const string dotnetBotImageFileName = "dotnet_bot.png";
+	const string shieldImageFileName = "shield.png";
+
+	static readonly IEnumerator<Color?> toggleableColorsEnumerator = new List<Color?> { Colors.Red, Colors.Green, null }.GetEnumerator();
+
+	[ObservableProperty] 
+	string toggleableImageSource = shieldImageFileName;
 
 	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(ChangedColor))]
-	bool isChanged;
+	Color? toggleableIconTintColor = toggleableColorsEnumerator.Current;
 
-	public Color ChangedColor => IsChanged ? Colors.Red : Colors.Green;
+	[RelayCommand]
+	void ToggleImageButton()
+	{
+		ToggleableImageSource = ToggleableImageSource switch
+		{
+			dotnetBotImageFileName => shieldImageFileName,
+			shieldImageFileName => dotnetBotImageFileName,
+			_ => throw new NotSupportedException("Invalid image source")
+		};
+	}
+
+	[RelayCommand]
+	void ChangeColor()
+	{
+		if (!toggleableColorsEnumerator.MoveNext())
+		{
+			toggleableColorsEnumerator.Reset();
+			toggleableColorsEnumerator.MoveNext();
+		}
+
+		ToggleableIconTintColor =  toggleableColorsEnumerator.Current;
+	}
 }
