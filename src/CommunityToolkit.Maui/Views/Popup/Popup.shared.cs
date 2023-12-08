@@ -68,7 +68,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 #if ANDROID || WINDOWS
 	    AddHandlerChanged();
 		AddPropertyChanged();
-#elif IOS
+#elif IOS || MACCATALYST
 		AddHandlerChanged();
 #endif
 
@@ -359,7 +359,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 #if ANDROID || WINDOWS
 	    RemoveHandlerChanged();
 		RemovePropertyChanged();
-#elif IOS
+#elif IOS || MACCATALYST
 		RemoveHandlerChanged();
 #endif
 

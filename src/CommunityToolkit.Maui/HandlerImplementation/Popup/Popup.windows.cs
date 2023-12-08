@@ -90,7 +90,9 @@ public partial class Popup : Element
 
 	void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
-		if (e.PropertyName == nameof(Size))
+		if (e.PropertyName == nameof(Size) ||
+			e.PropertyName == nameof(HorizontalOptions) ||
+			e.PropertyName == nameof(VerticalOptions))
 		{
 			if (Handler?.MauiContext is IMauiContext mauiContext)
 			{

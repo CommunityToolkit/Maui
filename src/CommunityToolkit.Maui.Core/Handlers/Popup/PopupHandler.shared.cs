@@ -12,9 +12,11 @@ public partial class PopupHandler
 	{
 		[nameof(IPopup.Anchor)] = MapAnchor,
 		[nameof(IPopup.Color)] = MapColor,
+#if IOS || MACCATALYST || TIZEN
 		[nameof(IPopup.Size)] = MapSize,
 		[nameof(IPopup.VerticalOptions)] = MapSize,
 		[nameof(IPopup.HorizontalOptions)] = MapSize,
+#endif
 		[nameof(IPopup.CanBeDismissedByTappingOutsideOfPopup)] = MapCanBeDismissedByTappingOutsideOfPopup
 	};
 
