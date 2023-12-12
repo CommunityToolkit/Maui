@@ -222,15 +222,17 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement popupMediaElement = new MediaElement
 		{
 			Source = MediaSource.FromResource("AppleVideo.mp4"),
-		    HeightRequest = 600,
+			HeightRequest = 600,
 			WidthRequest = 600,
+			ShouldAutoPlay = true,
+			ShouldShowPlaybackControls = true,
 		};
 		var popup = new Popup
 		{
 			VerticalOptions = LayoutAlignment.Center,
 			HorizontalOptions = LayoutAlignment.Center,
 		};
-		popup.Content = new Grid()
+		popup.Content = new StackLayout
 		{
 			Children =
 			{
@@ -241,7 +243,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		Page.ShowPopup(popup);
 		popup.Closed += (s, e) =>
 		{
-			MediaElement.Play();
 			popupMediaElement.Stop();
 			popupMediaElement.Handler?.DisconnectHandler();
 		};
