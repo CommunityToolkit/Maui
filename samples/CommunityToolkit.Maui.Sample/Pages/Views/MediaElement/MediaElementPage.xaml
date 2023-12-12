@@ -51,29 +51,25 @@
 
             </HorizontalStackLayout>
 
-            <Grid Grid.Row="2" Padding="0,10,0,10" ColumnDefinitions="*,*,*,*,*" ColumnSpacing="5">          
+            <Grid Grid.Row="2" Padding="0,10,0,10" ColumnDefinitions="*,*,*,*,*" ColumnSpacing="5">
                 <Button Grid.Column="0" Text="Play" Clicked="OnPlayClicked" />
                 <Button Grid.Column="1" Text="Pause" Clicked="OnPauseClicked" />
                 <Button Grid.Column="2" Text="Stop" Clicked="OnStopClicked" />
                 <Button Grid.Column="3" Text="Mute" Clicked="OnMuteClicked">
                     <Button.Triggers>
                         <DataTrigger TargetType="Button"
-                                     Binding="{Binding ShouldMute, Source={x:Reference MediaElement}}"
-                                     Value="True">
+                           Binding="{Binding ShouldMute, Source={x:Reference MediaElement}}"
+                           Value="True">
                             <Setter Property="Text" Value="Unmute" />
                         </DataTrigger>
                         <DataTrigger TargetType="Button"
-                                     Binding="{Binding ShouldMute, Source={x:Reference MediaElement}}"
-                                     Value="False">
+                           Binding="{Binding ShouldMute, Source={x:Reference MediaElement}}"
+                           Value="False">
                             <Setter Property="Text" Value="Mute" />
                         </DataTrigger>
                     </Button.Triggers>
                 </Button>
-                <Button Grid.Column="4"
-                        Clicked="DisplayPopup"
-                        FontSize="18"
-                        Text="Popup">
-                        </Button>
+                <Button Grid.Column="4" Text="Popup" Clicked="DisplayPopup" />
             </Grid>
 
             <Slider
