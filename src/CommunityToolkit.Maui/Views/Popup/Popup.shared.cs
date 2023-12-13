@@ -65,7 +65,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 		platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Popup>>(() => new(this));
 		((IResourceDictionary)resources).ValuesChanged += OnResourcesChanged;
 
-#if ANDROID || WINDOWS
+#if ANDROID
 	    AddHandlerChanged();
 		AddPropertyChanged();
 #elif IOS || MACCATALYST
@@ -356,7 +356,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	protected virtual async Task OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup, CancellationToken token = default)
 	{
-#if ANDROID || WINDOWS
+#if ANDROID
 	    RemoveHandlerChanged();
 		RemovePropertyChanged();
 #elif IOS || MACCATALYST

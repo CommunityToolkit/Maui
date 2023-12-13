@@ -56,6 +56,77 @@ public static class PopupExtensions
 	}
 
 	/// <summary>
+	/// Method to update the popup size based on the <see cref="Maui.Core.IPopup.Size"/>.
+	/// </summary>
+	/// <param name="mauiPopup">An instance of <see cref="Popup"/>.</param>
+	/// <param name="popup">An instance of <see cref="IPopup"/>.</param>
+	/// <param name="mauiContext">An instance of <see cref="IMauiContext"/>.</param>
+	public static void SetSize(this Popup mauiPopup, IPopup popup, IMauiContext? mauiContext)
+	{
+		ArgumentNullException.ThrowIfNull(mauiContext);
+		ArgumentNullException.ThrowIfNull(popup.Content);
+		ArgumentNullException.ThrowIfNull(popup.Content.ToPlatform());
+
+		var window = mauiContext.GetPlatformWindow();
+		var windowSize = new Size(window.Bounds.Width, window.Bounds.Height);
+
+		var pView = popup.Content.ToPlatform();
+		if (popup.Size.IsZero)
+		{
+			if (double.IsNaN(popup.Content.Width) || double.IsNaN(popup.Content.Height))
+			{
+				pView.Width = double.NaN;
+				pView.Height = double.NaN;
+
+				pView.Measure(new Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity));
+
+				if (pView.ActualWidth >= windowSize.Width &&
+					pView.ActualHeight >= windowSize.Height)
+				{
+					pView.Width = windowSize.Width;
+					pView.UpdateHeight(popup.Content);
+				}
+				else if (pView.ActualWidth >= windowSize.Width)
+				{
+					pView.Width = windowSize.Width;
+				}
+				else if (pView.ActualHeight >= windowSize.Height)
+				{
+					pView.Height = windowSize.Height;
+				}
+
+				if (popup.HorizontalOptions == LayoutAlignment.Fill)
+				{
+					pView.Width = windowSize.Width;
+				}
+				if (popup.VerticalOptions == LayoutAlignment.Fill)
+				{
+					pView.Height = windowSize.Height;
+				}
+			}
+			else
+			{
+				pView.Width = popup.Content.Width;
+				pView.Height = popup.Content.Height;
+			}
+		}
+		else
+		{
+			pView.Width = popup.Size.Width;
+			pView.Height = popup.Size.Height;
+		}
+
+		if (!double.IsNaN(pView.Width))
+		{
+			pView.Width = Math.Min(pView.Width, window.Bounds.Width);
+		}
+		if (!double.IsNaN(pView.Height))
+		{
+			pView.Height = Math.Min(pView.Height, window.Bounds.Height);
+		}
+	}
+
+	/// <summary>
 	///  Method to update the popup layout.
 	/// </summary>
 	/// <param name="mauiPopup">An instance of <see cref="Popup"/>.</param>

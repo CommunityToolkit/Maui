@@ -12,7 +12,7 @@ public partial class PopupHandler
 	{
 		[nameof(IPopup.Anchor)] = MapAnchor,
 		[nameof(IPopup.Color)] = MapColor,
-#if IOS || MACCATALYST || TIZEN
+#if IOS || MACCATALYST || WINDOWS || TIZEN
 		[nameof(IPopup.Size)] = MapSize,
 		[nameof(IPopup.VerticalOptions)] = MapSize,
 		[nameof(IPopup.HorizontalOptions)] = MapSize,

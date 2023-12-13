@@ -52,7 +52,6 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 		view.OnOpened();
 	}
 
-
 	/// <summary>
 	/// Action that's triggered when the Popup is dismissed by tapping outside of the Popup.
 	/// </summary>
@@ -96,6 +95,16 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 		handler.PlatformView.SetColor(view);
 	}
 
+	/// <summary>
+	/// Action that's triggered when the Popup <see cref="IPopup.Size"/> property changes.
+	/// </summary>
+	/// <param name="handler">An instance of <see cref="PopupHandler"/>.</param>
+	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
+	public static void MapSize(PopupHandler handler, IPopup view)
+	{
+		handler.PlatformView.SetSize(view, handler.MauiContext);
+	}
+
 	/// <inheritdoc/>
 	protected override void DisconnectHandler(Popup platformView)
 	{
@@ -109,6 +118,15 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 		parent.IsHitTestVisible = true;
 		platformView.IsOpen = false;
 		platformView.Closed -= OnClosed;
+
+		if (MauiContext is not null)
+		{
+			MauiContext.GetPlatformWindow().SizeChanged -= OnWindowSizeChanged;
+		}
+		if (VirtualView?.Content is not null)
+		{
+			VirtualView.Content.ToPlatform().SizeChanged -= OnContentSizeChanged;
+		}
 	}
 
 	/// <inheritdoc/>
@@ -123,6 +141,14 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 	{
 		platformView.Closed += OnClosed;
 		platformView.ConfigureControl(VirtualView, MauiContext);
+		if (MauiContext is not null)
+		{
+			MauiContext.GetPlatformWindow().SizeChanged += OnWindowSizeChanged;
+		}
+		if (VirtualView?.Content is not null)
+		{
+			VirtualView.Content.ToPlatform().SizeChanged += OnContentSizeChanged;
+		}
 
 		base.ConnectHandler(platformView);
 	}
@@ -141,6 +167,24 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 		if (!PlatformView.IsOpen && VirtualView.CanBeDismissedByTappingOutsideOfPopup)
 		{
 			VirtualView.Handler?.Invoke(nameof(IPopup.OnDismissedByTappingOutsideOfPopup));
+		}
+	}
+
+	void OnContentSizeChanged(object? sender, SizeChangedEventArgs e)
+	{
+		if (VirtualView is not null)
+		{
+			PopupExtensions.SetSize(PlatformView, VirtualView, MauiContext);
+			PopupExtensions.SetLayout(PlatformView, VirtualView, MauiContext);
+		}
+	}
+
+	void OnWindowSizeChanged(object? sender, WindowSizeChangedEventArgs e)
+	{
+		if (VirtualView is not null)
+		{
+			PopupExtensions.SetSize(PlatformView, VirtualView, MauiContext);
+			PopupExtensions.SetLayout(PlatformView, VirtualView, MauiContext);
 		}
 	}
 }
