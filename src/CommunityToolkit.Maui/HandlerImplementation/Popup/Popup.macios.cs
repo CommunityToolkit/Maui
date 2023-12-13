@@ -18,59 +18,21 @@ public partial class Popup : Element
 	void RemoveHandlerChanged()
 	{
 		HandlerChanged -= OnHandlerChanged;
-		if (Handler?.MauiContext is IMauiContext mauiContext)
+		if (Content is View content)
 		{
-			var platformPopup = this.ToHandler(mauiContext);
-			if (platformPopup.PlatformView is MauiPopup dialog &&
-				platformPopup.VirtualView is IPopup pPopup &&
-				Content is Element content)
-			{
-				RemovePropertyChanged(content, dialog, pPopup);
-			}
+			content.SizeChanged -= OnSizeChanged;
 		}
 	}
 
 	void OnHandlerChanged(object? sender, EventArgs e)
 	{
-		if (Handler?.MauiContext is IMauiContext mauiContext)
+		if (Content is View content)
 		{
-			var platformPopup = this.ToHandler(mauiContext);
-			if (platformPopup.PlatformView is MauiPopup dialog &&
-				platformPopup.VirtualView is IPopup pPopup &&
-				Content is Element content)
-			{
-				AddPropertyChanged(content, dialog, pPopup);
-			}
+			content.SizeChanged += OnSizeChanged;
 		}
 	}
 
-	void RemovePropertyChanged(Element target, MauiPopup dialog, IPopup pPopup)
-	{
-		if (target is View view)
-		{
-			view.PropertyChanged -= OnPropertyChanged;
-		}
-
-		foreach (Element element in target.LogicalChildrenInternal)
-		{
-			RemovePropertyChanged(element, dialog, pPopup);
-		}
-	}
-
-	void AddPropertyChanged(Element target, MauiPopup dialog, IPopup pPopup)
-	{
-		if (target is View view)
-		{
-			view.PropertyChanged += OnPropertyChanged;
-		}
-
-		foreach (Element element in target.LogicalChildrenInternal)
-		{
-			AddPropertyChanged(element, dialog, pPopup);
-		}
-	}
-
-	void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+	void OnSizeChanged(object? sender, EventArgs e)
 	{
 		if (Handler?.MauiContext is IMauiContext mauiContext)
 		{
@@ -78,11 +40,8 @@ public partial class Popup : Element
 			if (platformPopup.PlatformView is MauiPopup dialog &&
 				platformPopup.VirtualView is IPopup pPopup)
 			{
-				if (e.PropertyName == "Text")
-				{
-					CommunityToolkit.Maui.Core.Views.PopupExtensions.SetSize(dialog, pPopup);
-					CommunityToolkit.Maui.Core.Views.PopupExtensions.SetLayout(dialog, pPopup);
-				}
+				CommunityToolkit.Maui.Core.Views.PopupExtensions.SetSize(dialog, pPopup);
+				CommunityToolkit.Maui.Core.Views.PopupExtensions.SetLayout(dialog, pPopup);
 			}
 		}
 	}
