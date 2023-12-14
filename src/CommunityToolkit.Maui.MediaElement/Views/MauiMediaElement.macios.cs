@@ -15,9 +15,8 @@ public class MauiMediaElement : UIView
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
 	/// </summary>
 	/// <param name="playerViewController">The <see cref="AVPlayerViewController"/> that acts as the platform media player.</param>
-	/// <param name="parentViewController">The <see cref="UIViewController"/> that acts as the parent for <paramref name="playerViewController"/>.</param>
 	/// <exception cref="NullReferenceException">Thrown when <paramref name="playerViewController"/><c>.View</c> is <see langword="null"/>.</exception>
-	public MauiMediaElement(AVPlayerViewController playerViewController, UIViewController? parentViewController)
+	public MauiMediaElement(AVPlayerViewController playerViewController)
 	{
 		ArgumentNullException.ThrowIfNull(playerViewController.View);
 		playerViewController.View.Frame = Bounds;
