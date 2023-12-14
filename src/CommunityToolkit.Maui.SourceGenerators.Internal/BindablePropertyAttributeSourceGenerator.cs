@@ -81,7 +81,7 @@ namespace {value.ClassInformation.ContainingNamespace};
 			GenerateProperty(sb, info);
 		}
 
-		sb.AppendLine().Append("}");
+		sb.AppendLine().Append('}');
 		return sb.ToString();
 
 		static void GenerateBindableProperty(StringBuilder sb, BindablePropertyModel info)
