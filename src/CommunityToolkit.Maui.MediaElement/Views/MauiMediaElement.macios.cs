@@ -1,6 +1,7 @@
 ﻿using AVKit;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Platform.Compatibility;
+using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -34,7 +35,7 @@ public class MauiMediaElement : UIView
 				new UIEdgeInsets(insets.Top * -1, insets.Left, insets.Bottom * -1, insets.Right);
 
 			// Add the View from the AVPlayerViewController to the parent ViewController
-			if (viewController is not ShellFlyoutRenderer)
+			if (viewController is not ShellFlyoutRenderer && viewController is not PageViewController)
 			{
 				viewController.AddChildViewController(playerViewController);
 			}
