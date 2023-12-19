@@ -140,7 +140,7 @@ public partial class MediaManager : IDisposable
 	{
 		SetBarStatus(false);
 	}
-	protected virtual partial ValueTask PlatformSeek(TimeSpan position)
+	protected virtual async partial Task PlatformSeek(TimeSpan position, CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 

@@ -36,8 +36,6 @@
                 MediaOpened="OnMediaOpened"
                 PositionChanged="OnPositionChanged"
                 SeekCompleted="OnSeekCompleted"
-                ShouldAutoPlay="True"
-                Source="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
                 StateChanged="OnStateChanged" />
 
             <HorizontalStackLayout Grid.Row="1" Padding="0,0,0,15">
@@ -152,7 +150,6 @@
                 <HorizontalStackLayout Padding="0,0,0,10">
                     <Switch
                         Margin="0,0,5,0"
-                        IsToggled="{Binding Source={x:Reference mediaElement}, Path=ShouldShowPlaybackControls}"
                         OnColor="LimeGreen"
                         IsToggled="{Binding Source={x:Reference MediaElement}, Path=ShouldShowPlaybackControls}" />
                     <Label
@@ -162,7 +159,6 @@
                 <HorizontalStackLayout Padding="0,0,0,10">
                     <Switch
                         Margin="0,0,5,0"
-                        IsToggled="{Binding Source={x:Reference mediaElement}, Path=ShouldLoopPlayback}"
                         OnColor="LimeGreen"
                         IsToggled="{Binding Source={x:Reference MediaElement}, Path=ShouldLoopPlayback}" />
                     <Label
@@ -172,7 +168,6 @@
                 <HorizontalStackLayout>
                     <Switch
                         Margin="0,0,5,0"
-                        IsToggled="{Binding Source={x:Reference mediaElement}, Path=ShouldKeepScreenOn}"
                         OnColor="LimeGreen"
                         IsToggled="{Binding Source={x:Reference MediaElement}, Path=ShouldKeepScreenOn}" />
                     <Label

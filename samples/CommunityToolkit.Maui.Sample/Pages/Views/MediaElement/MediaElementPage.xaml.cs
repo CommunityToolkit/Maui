@@ -221,12 +221,12 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		if (fullScreen)
 		{
 			fullScreen = false;
-			mediaElement.RevertFromFullScreen();
+			MediaElement.RevertFromFullScreen();
 		}
 		else
 		{
 			fullScreen = true;
-			mediaElement.EnlargeVideoToFullScreen();
+			MediaElement.EnlargeVideoToFullScreen();
 		}
     }
 }
