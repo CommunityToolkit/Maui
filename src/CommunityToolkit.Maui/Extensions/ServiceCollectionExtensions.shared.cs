@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using CommunityToolkit.Maui.Views;
 
 // Using root CommunityToolkit.Maui namespace so these extension methods
 // light up in MauiProgram when CommunityToolkit.Maui namespace is imported 
@@ -30,6 +31,25 @@ public static class ServiceCollectionExtensions
 		return services
 			.AddTransient<TViewModel>()
 			.AddTransient<TView>();
+	}
+
+	/// <summary>
+	/// Adds a <see cref="Popup"/> of the type specified in <typeparamref name="TPopupView"/> and a ViewModel
+	/// of the type specified in <typeparamref name="TPopupViewModel"/> to the specified
+	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Transient"/> lifetime.
+	/// </summary>
+	/// <typeparam name="TPopupView">The type of the Popup to add. Constrained to <see cref="Popup"/></typeparam>
+	/// <typeparam name="TPopupViewModel">The type of the ViewModel to add. Constrained to 
+	/// <see cref="INotifyPropertyChanged"/></typeparam>
+	/// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+	/// <returns>A reference to this instance after the operation has completed.</returns>
+	public static IServiceCollection AddTransientPopup<TPopupView, TPopupViewModel>(this IServiceCollection services)
+		where TPopupView : Popup
+		where TPopupViewModel : INotifyPropertyChanged
+	{
+		PopupService.AddTransientPopup<TPopupView, TPopupViewModel>(services);
+
+		return services;
 	}
 
 	/// <summary>

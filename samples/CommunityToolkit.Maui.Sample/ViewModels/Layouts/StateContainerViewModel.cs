@@ -21,16 +21,16 @@ public partial class StateContainerViewModel : BaseViewModel
 	bool canAnimationStateChange = true;
 
 	[RelayCommand(CanExecute = nameof(CanCycleStateChange))]
-	async Task CycleStates()
+	async Task CycleStates(CancellationToken token)
 	{
 		CurrentState = StateKey.Loading;
-		await Task.Delay(2000).ConfigureAwait(false);
+		await Task.Delay(2000, token).ConfigureAwait(false);
 
 		CurrentState = StateKey.Success;
-		await Task.Delay(2000).ConfigureAwait(false);
+		await Task.Delay(2000, token).ConfigureAwait(false);
 
 		CurrentState = StateKey.Anything;
-		await Task.Delay(2000).ConfigureAwait(false);
+		await Task.Delay(2000, token).ConfigureAwait(false);
 
 		// Setting state to empty string or null returns to the default content
 		CurrentState = string.Empty;

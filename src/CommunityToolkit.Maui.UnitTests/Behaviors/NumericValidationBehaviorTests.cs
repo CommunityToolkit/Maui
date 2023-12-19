@@ -61,7 +61,7 @@ public class NumericValidationBehaviorTests : BaseTest
 		try
 		{
 			// Act
-			await behavior.ForceValidate();
+			await behavior.ForceValidate(CancellationToken.None);
 
 			// Assert
 			Assert.Equal(expectedValue, behavior.IsValid);
@@ -72,7 +72,7 @@ public class NumericValidationBehaviorTests : BaseTest
 		}
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task IsNull()
 	{
 		// Arrange
@@ -86,10 +86,10 @@ public class NumericValidationBehaviorTests : BaseTest
 		};
 		entry.Behaviors.Add(behavior);
 
-		await Assert.ThrowsAsync<ArgumentNullException>(async () => await behavior.ForceValidate());
+		await Assert.ThrowsAsync<ArgumentNullException>(async () => await behavior.ForceValidate(CancellationToken.None));
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShouldNotThrowIsNull()
 	{
 		var options = new Options();
@@ -106,9 +106,57 @@ public class NumericValidationBehaviorTests : BaseTest
 		};
 		entry.Behaviors.Add(behavior);
 
-		var action = (async () => await behavior.ForceValidate());
+		var action = (async () => await behavior.ForceValidate(CancellationToken.None));
 		await action.Should().NotThrowAsync<ArgumentNullException>();
 
 		options.SetShouldSuppressExceptionsInBehaviors(false);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task CancellationTokenExpired()
+	{
+		// Arrange
+		var behavior = new NumericValidationBehavior();
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		var entry = new Entry
+		{
+			Text = "Hello"
+		};
+		entry.Behaviors.Add(behavior);
+
+		// Act
+
+		// Ensure CancellationToken expires
+		await Task.Delay(100, CancellationToken.None);
+
+		// Assert
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await behavior.ForceValidate(cts.Token));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task CancellationTokenCanceled()
+	{
+		// Arrange
+		var behavior = new NumericValidationBehavior();
+		var cts = new CancellationTokenSource();
+
+		var entry = new Entry
+		{
+			Text = "Hello"
+		};
+		entry.Behaviors.Add(behavior);
+
+		// Act
+
+		// Ensure CancellationToken expires
+		await Task.Delay(100, CancellationToken.None);
+
+		// Assert
+		await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+		{
+			await cts.CancelAsync();
+			await behavior.ForceValidate(cts.Token);
+		});
 	}
 }

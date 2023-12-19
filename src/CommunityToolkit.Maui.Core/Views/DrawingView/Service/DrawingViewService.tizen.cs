@@ -16,18 +16,21 @@ public static class DrawingViewService
 	/// <param name="lineWidth">Line Width</param>
 	/// <param name="strokeColor">Line color</param>
 	/// <param name="background">Image background</param>
+	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(IList<PointF> points, Size imageSize, float lineWidth, Color strokeColor, Paint? background)
+	public static async ValueTask<Stream> GetImageStream(IList<PointF> points, Size imageSize, float lineWidth, Color strokeColor, Paint? background, CancellationToken token = default)
 	{
+		token.ThrowIfCancellationRequested();
+
 		var image = GetBitmapForPoints(points, lineWidth, strokeColor, background);
 
 		if (image is null)
 		{
-			return ValueTask.FromResult(Stream.Null);
+			return Stream.Null;
 		}
 
 		// Defer to thread pool thread https://github.com/CommunityToolkit/Maui/pull/692#pullrequestreview-1150202727
-		return new ValueTask<Stream>(Task.Run<Stream>(() =>
+		var stream = await Task.Run<Stream>(() =>
 		{
 			var resized = image.Resize(new SKImageInfo((int)imageSize.Width, (int)imageSize.Height, SKColorType.Bgra8888, SKAlphaType.Opaque), SKFilterQuality.High);
 			var data = resized.Encode(SKEncodedImageFormat.Png, 100);
@@ -37,7 +40,9 @@ public static class DrawingViewService
 			stream.Seek(0, SeekOrigin.Begin);
 
 			return stream;
-		}));
+		}, token);
+
+		return stream;
 	}
 
 	/// <summary>
@@ -46,18 +51,21 @@ public static class DrawingViewService
 	/// <param name="lines">Drawing lines</param>
 	/// <param name="imageSize">Maximum image size. The image will be resized proportionally.</param>
 	/// <param name="background">Image background</param>
+	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background)
+	public static async ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background, CancellationToken token = default)
 	{
+		token.ThrowIfCancellationRequested();
+
 		var image = GetBitmapForLines(lines, background);
 
 		if (image is null)
 		{
-			return ValueTask.FromResult(Stream.Null);
+			return Stream.Null;
 		}
 
 		// Defer to thread pool thread https://github.com/CommunityToolkit/Maui/pull/692#pullrequestreview-1150202727
-		return new ValueTask<Stream>(Task.Run<Stream>(() =>
+		var stream = await Task.Run<Stream>(() =>
 		{
 			var resized = image.Resize(new SKImageInfo((int)imageSize.Width, (int)imageSize.Height, SKColorType.Bgra8888, SKAlphaType.Opaque), SKFilterQuality.High);
 			var data = resized.Encode(SKEncodedImageFormat.Png, 100);
@@ -67,7 +75,9 @@ public static class DrawingViewService
 			stream.Seek(0, SeekOrigin.Begin);
 
 			return stream;
-		}));
+		}, token);
+
+		return stream;
 	}
 
 	static (SKBitmap?, SizeF offset) GetBitmap(in ICollection<PointF> points, float maxLineWidth)

@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<toolkit:Popup
+    x:Class="CommunityToolkit.Maui.Sample.Views.Popups.UpdatingPopup"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+    x:DataType="viewModels:UpdatingPopupViewModel"
+    CanBeDismissedByTappingOutsideOfPopup="False">
+
+    <VerticalStackLayout Style="{StaticResource PopupLayout}" Spacing="12">
+        <VerticalStackLayout.Resources>
+            <ResourceDictionary>
+                <Style x:Key="Title" TargetType="Label">
+                    <Setter Property="FontSize" Value="26" />
+                    <Setter Property="FontAttributes" Value="Bold" />
+                    <Setter Property="TextColor" Value="#000" />
+                    <Setter Property="VerticalTextAlignment" Value="Center" />
+                    <Setter Property="HorizontalTextAlignment" Value="Center" />
+                </Style>
+                <Style x:Key="Divider" TargetType="BoxView">
+                    <Setter Property="HeightRequest" Value="1" />
+                    <Setter Property="Margin" Value="50, 25" />
+                    <Setter Property="Color" Value="#c3c3c3" />
+                </Style>
+                <Style x:Key="Content" TargetType="Label">
+                    <Setter Property="HorizontalTextAlignment" Value="Center" />
+                    <Setter Property="VerticalTextAlignment" Value="Center" />
+                </Style>
+                <Style x:Key="ConfirmButton" TargetType="Button">
+                    <Setter Property="VerticalOptions" Value="EndAndExpand" />
+                    <Setter Property="HorizontalOptions" Value="Center" />
+                </Style>
+
+                <x:Double x:Key="ComparingValue">1.0</x:Double>
+            </ResourceDictionary>
+        </VerticalStackLayout.Resources>
+
+        <Label Style="{StaticResource Title}" Text="Updating" />
+
+        <BoxView Style="{StaticResource Divider}" />
+
+        <ActivityIndicator
+            IsRunning="{Binding UpdateProgress, Converter={toolkit:CompareConverter ComparingValue={StaticResource ComparingValue}, ComparisonOperator=Smaller, FalseObject=False, TrueObject=True}}" />
+
+        <Label Style="{StaticResource Content}" Text="{Binding Message}" />
+
+        <ProgressBar Progress="{Binding UpdateProgress}" />
+
+        <Button
+            Command="{Binding FinishCommand}"
+            Style="{StaticResource ConfirmButton}"
+            Text="Finish" />
+    </VerticalStackLayout>
+</toolkit:Popup>

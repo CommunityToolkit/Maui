@@ -1,17 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<pages:BasePage
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Views.MediaElementPage"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Converters"
-    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-    xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
-    xmlns:views="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Views"
-    Title="MediaElement"
-    x:DataType="viewModels:MediaElementViewModel"
-    x:TypeArguments="viewModels:MediaElementViewModel"
-    Unloaded="BasePage_Unloaded">
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+             xmlns:views="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Views"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+             xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Converters"
+             x:TypeArguments="viewModels:MediaElementViewModel"
+             x:DataType="viewModels:MediaElementViewModel"
+             x:Class="CommunityToolkit.Maui.Sample.Pages.Views.MediaElementPage"
+             Title="MediaElement">
     <pages:BasePage.Resources>
         <toolkit:TimeSpanToSecondsConverter x:Key="TimeSpanConverter" />
         <converters:SecondsToStringConverter x:Key="SecondsToStringConverter" />
@@ -30,7 +28,9 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <toolkit:MediaElement
-                x:Name="mediaElement"
+                x:Name="MediaElement"
+                ShouldAutoPlay="True"
+                Source="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
                 MediaEnded="OnMediaEnded"
                 MediaFailed="OnMediaFailed"
                 MediaOpened="OnMediaOpened"
@@ -44,15 +44,9 @@
                 <Label HorizontalOptions="Center">
                     <Label.Text>
                         <MultiBinding StringFormat="{}Position: {0}/{1} - Current State: {2}">
-                            <Binding
-                                Converter="{StaticResource SecondsToStringConverter}"
-                                Path="Position"
-                                Source="{x:Reference mediaElement}" />
-                            <Binding
-                                Converter="{StaticResource SecondsToStringConverter}"
-                                Path="Duration"
-                                Source="{x:Reference mediaElement}" />
-                            <Binding Path="CurrentState" Source="{x:Reference mediaElement}" />
+                            <Binding Path="Position" Source="{x:Reference MediaElement}" Converter="{StaticResource SecondsToStringConverter}" />
+                            <Binding Path="Duration" Source="{x:Reference MediaElement}" Converter="{StaticResource SecondsToStringConverter}" />
+                            <Binding Path="CurrentState" Source="{x:Reference MediaElement}" />
                         </MultiBinding>
                     </Label.Text>
                 </Label>
@@ -81,16 +75,14 @@
                     Clicked="OnMuteClicked"
                     Text="Mute">
                     <Button.Triggers>
-                        <DataTrigger
-                            Binding="{Binding ShouldMute, Source={x:Reference mediaElement}}"
-                            TargetType="Button"
-                            Value="True">
+                        <DataTrigger TargetType="Button"
+                                     Binding="{Binding ShouldMute, Source={x:Reference MediaElement}}"
+                                     Value="True">
                             <Setter Property="Text" Value="Unmute" />
                         </DataTrigger>
-                        <DataTrigger
-                            Binding="{Binding ShouldMute, Source={x:Reference mediaElement}}"
-                            TargetType="Button"
-                            Value="False">
+                        <DataTrigger TargetType="Button"
+                                     Binding="{Binding ShouldMute, Source={x:Reference MediaElement}}"
+                                     Value="False">
                             <Setter Property="Text" Value="Mute" />
                         </DataTrigger>
                     </Button.Triggers>
@@ -102,7 +94,7 @@
             </Grid>
 
             <Slider
-                x:Name="positionSlider"
+                x:Name="PositionSlider"
                 Grid.Row="3"
                 DragCompleted="Slider_DragCompleted"
                 DragStarted="Slider_DragStarted"
@@ -115,14 +107,8 @@
                 <Button Clicked="ChangeSourceClicked" Text="Change Source" />
 
                 <Grid ColumnDefinitions="*, 100" ColumnSpacing="5">
-                    <Entry
-                        x:Name="customSourceEntry"
-                        HorizontalOptions="FillAndExpand"
-                        Placeholder="Enter URL" />
-                    <Button
-                        Grid.Column="1"
-                        Clicked="Button_Clicked"
-                        Text="Load" />
+                    <Entry x:Name="CustomSourceEntry" Placeholder="Enter URL" HorizontalOptions="FillAndExpand" />
+                    <Button Grid.Column="1" Clicked="Button_Clicked" Text="Load" />
                 </Grid>
 
                 <Button Clicked="ChangeAspectClicked" Text="Change Aspect" />
@@ -136,7 +122,7 @@
                     <Label.FormattedText>
                         <FormattedString>
                             <Span Text="Speed:" />
-                            <Span Text="{Binding Source={x:Reference mediaElement}, Path=Speed}" />
+                            <Span Text="{Binding Source={x:Reference MediaElement}, Path=Speed}" />
                         </FormattedString>
                     </Label.FormattedText>
                 </Label>
@@ -153,7 +139,7 @@
                     <Label.FormattedText>
                         <FormattedString>
                             <Span Text="Volume:" />
-                            <Span Text="{Binding Source={x:Reference mediaElement}, Path=Volume, StringFormat='{}{0:P0}'}" />
+                            <Span Text="{Binding Source={x:Reference MediaElement}, Path=Volume, StringFormat='{}{0:P0}'}" />
                         </FormattedString>
                     </Label.FormattedText>
                 </Label>
@@ -168,24 +154,30 @@
                         Margin="0,0,5,0"
                         IsToggled="{Binding Source={x:Reference mediaElement}, Path=ShouldShowPlaybackControls}"
                         OnColor="LimeGreen"
-                        ThumbColor="White" />
-                    <Label Text="Show playback controls" VerticalOptions="Center" />
+                        IsToggled="{Binding Source={x:Reference MediaElement}, Path=ShouldShowPlaybackControls}" />
+                    <Label
+                        VerticalOptions="Center"
+                        Text="Show playback controls" />
                 </HorizontalStackLayout>
                 <HorizontalStackLayout Padding="0,0,0,10">
                     <Switch
                         Margin="0,0,5,0"
                         IsToggled="{Binding Source={x:Reference mediaElement}, Path=ShouldLoopPlayback}"
                         OnColor="LimeGreen"
-                        ThumbColor="White" />
-                    <Label Text="Loop media" VerticalOptions="Center" />
+                        IsToggled="{Binding Source={x:Reference MediaElement}, Path=ShouldLoopPlayback}" />
+                    <Label
+                        VerticalOptions="Center"
+                        Text="Loop media" />
                 </HorizontalStackLayout>
                 <HorizontalStackLayout>
                     <Switch
                         Margin="0,0,5,0"
                         IsToggled="{Binding Source={x:Reference mediaElement}, Path=ShouldKeepScreenOn}"
                         OnColor="LimeGreen"
-                        ThumbColor="White" />
-                    <Label Text="Keep screen on" VerticalOptions="Center" />
+                        IsToggled="{Binding Source={x:Reference MediaElement}, Path=ShouldKeepScreenOn}" />
+                    <Label
+                        VerticalOptions="Center"
+                        Text="Keep screen on" />
                 </HorizontalStackLayout>
             </VerticalStackLayout>
         </Grid>

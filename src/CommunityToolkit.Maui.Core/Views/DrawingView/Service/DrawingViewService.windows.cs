@@ -21,11 +21,13 @@ public static class DrawingViewService
 	/// <param name="lines">Drawing lines</param>
 	/// <param name="imageSize">Maximum image size. The image will be resized proportionally.</param>
 	/// <param name="background">Image background</param>
+	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background)
+	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background, CancellationToken token = default)
 	{
 		var canvas = GetImageInternal(lines, imageSize, background);
-		return GetCanvasRenderTargetStream(canvas);
+
+		return GetCanvasRenderTargetStream(canvas, token);
 	}
 
 	/// <summary>
@@ -36,19 +38,16 @@ public static class DrawingViewService
 	/// <param name="lineWidth">Line Width</param>
 	/// <param name="strokeColor">Line color</param>
 	/// <param name="background">Image background</param>
+	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(
-		IList<PointF> points,
-		Size imageSize,
-		float lineWidth,
-		Color strokeColor,
-		Paint? background)
+	public static ValueTask<Stream> GetImageStream(IList<PointF> points, Size imageSize, float lineWidth, Color strokeColor, Paint? background, CancellationToken token = default)
 	{
 		var canvas = GetImageInternal(points, imageSize, lineWidth, strokeColor, background);
-		return GetCanvasRenderTargetStream(canvas);
+
+		return GetCanvasRenderTargetStream(canvas, token);
 	}
 
-	static async ValueTask<Stream> GetCanvasRenderTargetStream(CanvasRenderTarget? canvas)
+	static async ValueTask<Stream> GetCanvasRenderTargetStream(CanvasRenderTarget? canvas, CancellationToken token)
 	{
 		if (canvas is null)
 		{
@@ -58,7 +57,7 @@ public static class DrawingViewService
 		using (canvas)
 		{
 			var fileStream = new InMemoryRandomAccessStream();
-			await canvas.SaveAsync(fileStream, CanvasBitmapFileFormat.Png);
+			await canvas.SaveAsync(fileStream, CanvasBitmapFileFormat.Png).AsTask(token);
 
 			var stream = fileStream.AsStream();
 			stream.Position = 0;

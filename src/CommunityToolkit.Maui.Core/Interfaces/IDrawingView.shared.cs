@@ -25,7 +25,7 @@ public interface IDrawingView : IView
 	/// <summary>
 	/// Toggles multi-line mode. When true, multiple lines can be drawn on the <see cref="IDrawingView"/> while the tap/click is released in-between lines.
 	/// Note: when <see cref="ShouldClearOnFinish"/> is also enabled, the lines are cleared after the tap/click is released.
-	/// Additionally, <see cref="DrawingLineCompleted"/> will be fired after each line that is drawn.
+	/// Additionally, <see cref="OnDrawingLineCompleted"/> will be fired after each line that is drawn.
 	/// </summary>
 	bool IsMultiLineModeEnabled { get; }
 
@@ -45,8 +45,9 @@ public interface IDrawingView : IView
 	/// </summary>
 	/// <param name="imageSizeWidth">Desired width of the image that is returned. The image will be resized proportionally.</param>
 	/// <param name="imageSizeHeight">Desired height of the image that is returned. The image will be resized proportionally.</param>
+	/// <param name="token"> <see cref="CancellationToken"/>.</param>
 	/// <returns><see cref="Task{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
-	ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight);
+	ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, CancellationToken token = default);
 
 	/// <summary>
 	/// Clears the <see cref="Lines"/> that are currently drawn on the <see cref="IDrawingView"/>.
@@ -54,8 +55,25 @@ public interface IDrawingView : IView
 	void Clear();
 
 	/// <summary>
+	/// Event occurred when drawing line started
+	/// </summary>
+	/// <param name="point">Last drawing point</param>
+	void OnDrawingLineStarted(PointF point);
+
+	/// <summary>
+	/// Event occurred when drawing line cancelled
+	/// </summary>
+	void OnDrawingLineCancelled();
+
+	/// <summary>
+	/// Event occurred when point drawn
+	/// </summary>
+	/// <param name="point">Last drawing point</param>
+	void OnPointDrawn(PointF point);
+
+	/// <summary>
 	/// Event occurred when drawing line completed
 	/// </summary>
 	/// <param name="lastDrawingLine">Last drawing line</param>
-	void DrawingLineCompleted(IDrawingLine lastDrawingLine);
+	void OnDrawingLineCompleted(IDrawingLine lastDrawingLine);
 }

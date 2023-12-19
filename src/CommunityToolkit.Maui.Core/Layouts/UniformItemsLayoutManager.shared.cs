@@ -30,8 +30,14 @@ public class UniformItemsLayoutManager : LayoutManager
 		var width = rectangle.Width - uniformItemsLayout.Padding.HorizontalThickness;
 		var visibleChildren = uniformItemsLayout.Where(x => x.Visibility == Visibility.Visible).ToArray();
 
+		if (visibleChildren.Length == 0 || width == 0)
+		{
+			return rectangle.Size;
+		}
+
 		var columns = GetColumnsCount(visibleChildren.Length, width);
 		var rows = GetRowsCount(visibleChildren.Length, columns);
+
 		var boundsWidth = width / columns;
 		var boundsHeight = childHeight;
 		var bounds = new Rect(0, 0, boundsWidth, boundsHeight);
@@ -50,7 +56,7 @@ public class UniformItemsLayoutManager : LayoutManager
 			}
 		}
 
-		return bounds.Size;
+		return rectangle.Size;
 	}
 
 	/// <summary>

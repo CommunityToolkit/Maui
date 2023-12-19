@@ -2,4 +2,5 @@
 
 public class MockPageViewModel : BindableObject
 {
+	public bool HasLoaded { get; set; }
 }

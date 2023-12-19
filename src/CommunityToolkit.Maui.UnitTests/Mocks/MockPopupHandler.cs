@@ -7,7 +7,8 @@ public class MockPopupHandler : ElementHandler<IPopup, object>
 {
 	public static CommandMapper<IPopup, MockPopupHandler> PopUpCommandMapper = new(ElementCommandMapper)
 	{
-		[nameof(IPopup.OnOpened)] = MapOnOpened
+		[nameof(IPopup.OnOpened)] = MapOnOpened,
+		[nameof(IPopup.OnClosed)] = MapOnClosed,
 	};
 
 	public MockPopupHandler() : base(new PropertyMapper<IView>(), PopUpCommandMapper)
@@ -30,5 +31,11 @@ public class MockPopupHandler : ElementHandler<IPopup, object>
 	static void MapOnOpened(MockPopupHandler arg1, IPopup arg2, object? arg3)
 	{
 		arg1.OnOpenedCount++;
+		arg2.OnOpened();
+	}
+
+	static void MapOnClosed(MockPopupHandler handler, IPopup view, object? result)
+	{
+		view.HandlerCompleteTCS.TrySetResult();
 	}
 }

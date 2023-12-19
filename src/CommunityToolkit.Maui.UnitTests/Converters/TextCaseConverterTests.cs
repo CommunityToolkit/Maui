@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Frozen;
+using System.ComponentModel;
 using System.Globalization;
 using CommunityToolkit.Maui.Converters;
 using Xunit;
@@ -10,7 +11,7 @@ public class TextCaseConverterTests : BaseOneWayConverterTest<TextCaseConverter>
 	const string test = nameof(test);
 	const string t = nameof(t);
 
-	public static IReadOnlyList<object?[]> Data { get; } = new[]
+	public static FrozenSet<object?[]> Data { get; } = new[]
 	{
 		new object?[] { test, TextCaseType.Lower, test },
 		new object?[] { test, TextCaseType.Upper, "TEST" },
@@ -26,7 +27,7 @@ public class TextCaseConverterTests : BaseOneWayConverterTest<TextCaseConverter>
 		new object?[] { MockEnum.Bar, TextCaseType.None, "Bar" },
 		new object?[] { MockEnum.Baz, TextCaseType.Upper, "BAZ" },
 		new object?[] { new MockItem("Test Item", true), TextCaseType.Upper, "TEST ITEM IS COMPLETED" },
-	};
+	}.ToFrozenSet();
 
 	enum MockEnum { Foo, Bar, Baz }
 

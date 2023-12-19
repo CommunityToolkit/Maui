@@ -1,11 +1,12 @@
-﻿using CommunityToolkit.Maui.Converters;
+﻿using System.Collections.Frozen;
+using CommunityToolkit.Maui.Converters;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class StringToListConverterTests : BaseOneWayConverterTest<StringToListConverter>
 {
-	public static IReadOnlyList<object?[]> ListData { get; } = new[]
+	public static FrozenSet<object?[]> ListData { get; } = new[]
 	{
 		new object?[] { "A,B.C;D", new[] { ",", ".", ";" }, new[] { "A", "B", "C", "D" } },
 		new object?[] { "A+_+B+_+C", "+_+", new[] { "A", "B", "C" } },
@@ -15,7 +16,7 @@ public class StringToListConverterTests : BaseOneWayConverterTest<StringToListCo
 		new object?[] { string.Empty, ",", new[] { string.Empty } },
 		new object?[] { null, ",", Array.Empty<string>() },
 		new object?[] { "ABC", null, new[] { "ABC" } },
-	};
+	}.ToFrozenSet();
 
 	[Theory]
 	[MemberData(nameof(ListData))]

@@ -17,6 +17,19 @@ public class BadgeImplementation : IBadge
 			}
 		});
 
-		UIApplication.SharedApplication.ApplicationIconBadgeNumber = (int)count;
+		if (OperatingSystem.IsIOSVersionAtLeast(17))
+		{
+			UNUserNotificationCenter.Current.SetBadgeCount(new IntPtr((int)count), (error) =>
+			{
+				if (error is not null)
+				{
+					Trace.WriteLine($"Error setting the Badge Count: {error.Description}");
+				}
+			});
+		}
+		else
+		{
+			UIApplication.SharedApplication.ApplicationIconBadgeNumber = (int)count;
+		}
 	}
 }

@@ -1,8 +1,17 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+
+namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public sealed partial class CsharpBindingPopupViewModel : BaseViewModel
 {
-	public string Title { get; } = "C# Binding Popup";
+	[ObservableProperty]
+	string title = "C# Binding Popup";
 
-	public string Message { get; } = "This is a platform specific popup with a .NET MAUI View being rendered. The behaviors of the popup will confirm to 100% this platform look and feel, but still allows you to use your .NET MAUI Controls.";
+	[ObservableProperty]
+	string message = "This message uses a ViewModel binding";
+
+	internal void Load(string updatedMessage)
+	{
+		Message = updatedMessage;
+	}
 }
