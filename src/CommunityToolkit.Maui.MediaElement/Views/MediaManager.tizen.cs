@@ -289,13 +289,12 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformEnlargeVideoToFullScreen()
 	{
-		// I have no idea if this is enough for Tizen? I have no way to test?
-		SetBarStatus(true);
+		// Not required on Tizen
 	}
 
 	protected virtual partial void PlatformRevertFromFullScreen()
 	{
-		SetBarStatus(false);
+		// Not required on Tizen
 	}
 
 	/// <summary>

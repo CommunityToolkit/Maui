@@ -133,12 +133,12 @@ public partial class MediaManager : IDisposable
 	}
 	protected virtual partial void PlatformEnlargeVideoToFullScreen()
 	{
-		SetBarStatus(true);
+		// Not required for iOS
 	}
 
 	protected virtual partial void PlatformRevertFromFullScreen()
 	{
-		SetBarStatus(false);
+		// Not required for iOS
 	}
 	protected virtual async partial Task PlatformSeek(TimeSpan position, CancellationToken token)
 	{

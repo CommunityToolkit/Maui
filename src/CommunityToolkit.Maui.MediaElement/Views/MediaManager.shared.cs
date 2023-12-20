@@ -276,44 +276,6 @@ public partial class MediaManager
 	/// </summary>
 	protected virtual partial void PlatformUpdateVolume();
 
-	/// <summary>
-	/// Sets the Navbar and Status Bar.
-	/// </summary>
-	/// <param name="shouldBeFullScreen"></param>
-	protected void SetBarStatus(bool shouldBeFullScreen)
-	{
-#if IOS || MACCATALYST
-		UIKit.UIApplication.SharedApplication.SetStatusBarHidden(shouldBeFullScreen, UIKit.UIStatusBarAnimation.Fade);
-#endif
-		// let's cache the CurrentPage here, since the user can navigate or background the app
-		// while this method is running
-		var currentPage = CurrentPage;
-
-		if (shouldBeFullScreen)
-		{
-			navBarIsVisible = Shell.GetNavBarIsVisible(currentPage);
-			tabBarIsVisible = Shell.GetTabBarIsVisible(currentPage);
-			backButton = NavigationPage.GetHasBackButton(currentPage);
-			backButtonTitle = NavigationPage.GetBackButtonTitle(currentPage);
-			NavigationPage.SetBackButtonTitle(currentPage, string.Empty);
-			NavigationPage.SetHasBackButton(currentPage, false);
-			pageTitle = currentPage.Title;
-			currentPage.Title = string.Empty;
-			Shell.SetNavBarIsVisible(currentPage, false);
-			Shell.SetTabBarIsVisible(currentPage, false);
-			NavigationPage.SetHasNavigationBar(currentPage, false);
-		}
-		else
-		{
-			NavigationPage.SetHasNavigationBar(currentPage, navBarIsVisible);
-			NavigationPage.SetHasBackButton(currentPage, backButton);
-			NavigationPage.SetBackButtonTitle(currentPage, backButtonTitle);
-			Shell.SetNavBarIsVisible(currentPage, navBarIsVisible);
-			Shell.SetTabBarIsVisible(currentPage, tabBarIsVisible);
-			currentPage.Title = pageTitle;
-		}
-	}
-
 	static bool AreFloatingPointNumbersEqual(in double number1, in double number2, double tolerance = 0.01) => Math.Abs(number1 - number2) > tolerance;
 }
 
