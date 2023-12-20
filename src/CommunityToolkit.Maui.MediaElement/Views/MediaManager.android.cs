@@ -293,12 +293,40 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 	protected virtual partial void PlatformEnlargeVideoToFullScreen()
 	{
-		SetScreenStatus(true);
+		var activity = Platform.CurrentActivity;
+
+		if (activity == null || activity.Window == null)
+		{
+			return;
+		}
+
+		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(activity.Window, false);
+
+		var windowInsetsControllerCompat = AndroidX.Core.View.WindowCompat.GetInsetsController(activity.Window, activity.Window.DecorView);
+		var types = AndroidX.Core.View.WindowInsetsCompat.Type.StatusBars()
+					| AndroidX.Core.View.WindowInsetsCompat.Type.NavigationBars();
+
+		windowInsetsControllerCompat.SystemBarsBehavior = AndroidX.Core.View.WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
+		windowInsetsControllerCompat.Hide(types);
 	}
 
 	protected virtual partial void PlatformRevertFromFullScreen()
 	{
-		SetScreenStatus(false);
+		var activity = Platform.CurrentActivity;
+
+		if (activity == null || activity.Window == null)
+		{
+			return;
+		}
+
+		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(activity.Window, false);
+
+		var windowInsetsControllerCompat = AndroidX.Core.View.WindowCompat.GetInsetsController(activity.Window, activity.Window.DecorView);
+		var types = AndroidX.Core.View.WindowInsetsCompat.Type.StatusBars()
+					| AndroidX.Core.View.WindowInsetsCompat.Type.NavigationBars();
+
+		windowInsetsControllerCompat.Show(types);
+		windowInsetsControllerCompat.SystemBarsBehavior = AndroidX.Core.View.WindowInsetsControllerCompat.BehaviorDefault;
 	}
 
 	protected virtual partial void PlatformUpdateSource()
@@ -490,33 +518,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		}
 
 		Player.RepeatMode = MediaElement.ShouldLoopPlayback ? IPlayer.RepeatModeOne : IPlayer.RepeatModeOff;
-	}
-
-	void SetScreenStatus(bool fullScreenStatus)
-	{
-		var activity = Platform.CurrentActivity;
-
-		if (activity?.Window is null)
-		{
-			return;
-		}
-
-		SetBarStatus(fullScreenStatus);
-
-		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(activity.Window, false);
-
-		var windowInsetsControllerCompat = AndroidX.Core.View.WindowCompat.GetInsetsController(activity.Window, activity.Window.DecorView);
-		var types = AndroidX.Core.View.WindowInsetsCompat.Type.StatusBars()
-					| AndroidX.Core.View.WindowInsetsCompat.Type.NavigationBars();
-
-		if (fullScreenStatus)
-		{
-			windowInsetsControllerCompat.SystemBarsBehavior = AndroidX.Core.View.WindowInsetsControllerCompat.BehaviorShowBarsBySwipe;
-			windowInsetsControllerCompat.Hide(types);
-			return;
-		}
-
-		windowInsetsControllerCompat.Show(types);
 	}
 
 	#region IPlayer.IListener implementation method stubs

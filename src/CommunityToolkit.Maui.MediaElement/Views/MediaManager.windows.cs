@@ -129,40 +129,32 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformEnlargeVideoToFullScreen()
 	{
-		SetScreenStatus(true);
-	}
-
-	protected virtual partial void PlatformRevertFromFullScreen()
-	{
-		SetScreenStatus(false);
-	}
-
-	void SetScreenStatus(bool fullScreenStatus)
-	{
 		// let's cache the CurrentPage here, since the user can navigate or background the app
 		// while this method is running
 		var currentPage = CurrentPage;
-		
+
 		if (currentPage?.GetParentWindow().Handler.PlatformView is not MauiWinUIWindow window)
 		{
 			return;
 		}
-
-		SetBarStatus(fullScreenStatus);
 		var currentWindow = GetAppWindow(window);
-		switch (currentWindow.Presenter)
+		var overlappedPresenter = currentWindow.Presenter as OverlappedPresenter;
+		overlappedPresenter?.SetBorderAndTitleBar(false, false);
+		overlappedPresenter?.Maximize();
+	}
+
+	protected virtual partial void PlatformRevertFromFullScreen()
+	{
+		var currentPage = CurrentPage;
+
+		if (currentPage?.GetParentWindow().Handler.PlatformView is not MauiWinUIWindow window)
 		{
-			case OverlappedPresenter overlappedPresenter:
-				if (overlappedPresenter.State == Microsoft.UI.Windowing.OverlappedPresenterState.Maximized)
-				{
-					overlappedPresenter.SetBorderAndTitleBar(true, true);
-					overlappedPresenter.Restore();
-					break;
-				}
-				overlappedPresenter.SetBorderAndTitleBar(false, false);
-				overlappedPresenter.Maximize();
-				break;
+			return;
 		}
+		var currentWindow = GetAppWindow(window);
+		var overlappedPresenter = currentWindow.Presenter as OverlappedPresenter;
+		overlappedPresenter?.SetBorderAndTitleBar(true, true);
+		overlappedPresenter?.Restore();
 	}
 
 	protected virtual partial void PlatformUpdateAspect()

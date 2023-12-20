@@ -8,7 +8,6 @@
              xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Converters"
              x:TypeArguments="viewModels:MediaElementViewModel"
              x:DataType="viewModels:MediaElementViewModel"
-                x:Name="page"
              x:Class="CommunityToolkit.Maui.Sample.Pages.Views.MediaElementPage"
              Title="MediaElement">
     <pages:BasePage.Resources>
@@ -36,8 +35,8 @@
                 MediaFailed="OnMediaFailed"
                 MediaOpened="OnMediaOpened"
                 PositionChanged="OnPositionChanged"
-                SeekCompleted="OnSeekCompleted"
-                StateChanged="OnStateChanged" />
+                StateChanged="OnStateChanged"
+                SeekCompleted="OnSeekCompleted"/>
 
             <HorizontalStackLayout Grid.Row="1" Padding="0,0,0,15">
                 <Label HorizontalOptions="Center">
@@ -52,27 +51,11 @@
 
             </HorizontalStackLayout>
 
-            <Grid
-                Grid.Row="2"
-                Padding="0,10,0,10"
-                ColumnDefinitions="*,*,*,*"
-                ColumnSpacing="5">
-                <Button
-                    Grid.Column="0"
-                    Clicked="OnPlayClicked"
-                    Text="Play" />
-                <Button
-                    Grid.Column="1"
-                    Clicked="OnPauseClicked"
-                    Text="Pause" />
-                <Button
-                    Grid.Column="2"
-                    Clicked="OnStopClicked"
-                    Text="Stop" />
-                <Button
-                    Grid.Column="3"
-                    Clicked="OnMuteClicked"
-                    Text="Mute">
+            <Grid Grid.Row="2" Padding="0,10,0,10" ColumnDefinitions="*,*,*,*,*" ColumnSpacing="5">
+                <Button Grid.Column="0" Text="Play" Clicked="OnPlayClicked" />
+                <Button Grid.Column="1" Text="Pause" Clicked="OnPauseClicked" />
+                <Button Grid.Column="2" Text="Stop" Clicked="OnStopClicked" />
+                <Button Grid.Column="3" Text="Mute" Clicked="OnMuteClicked">
                     <Button.Triggers>
                         <DataTrigger TargetType="Button"
                                      Binding="{Binding ShouldMute, Source={x:Reference MediaElement}}"
@@ -86,37 +69,28 @@
                         </DataTrigger>
                     </Button.Triggers>
                 </Button>
-                <Button
-                    Grid.Column="4"
-                    Clicked="OnFullScreenClicked"
-                    Text="FullScreen" />
+                <Button Grid.Column="4" Text="Popup" Clicked="DisplayPopup" />
             </Grid>
 
             <Slider
                 x:Name="PositionSlider"
                 Grid.Row="3"
-                DragCompleted="Slider_DragCompleted"
+                MinimumTrackColor="Gray"
                 DragStarted="Slider_DragStarted"
-                MinimumTrackColor="Gray" />
+                DragCompleted="Slider_DragCompleted"/>
 
-            <VerticalStackLayout
-                Grid.Row="4"
-                Padding="0,20,0,0"
-                Spacing="5">
-                <Button Clicked="ChangeSourceClicked" Text="Change Source" />
+            <VerticalStackLayout Padding="0,20,0,0" Grid.Row="4" Spacing="5">
+                <Button Text="Change Source" Clicked="ChangeSourceClicked" />
 
                 <Grid ColumnDefinitions="*, 100" ColumnSpacing="5">
                     <Entry x:Name="CustomSourceEntry" Placeholder="Enter URL" HorizontalOptions="FillAndExpand" />
                     <Button Grid.Column="1" Clicked="Button_Clicked" Text="Load" />
                 </Grid>
 
-                <Button Clicked="ChangeAspectClicked" Text="Change Aspect" />
+                <Button Text="Change Aspect" Clicked="ChangeAspectClicked" />
             </VerticalStackLayout>
 
-            <HorizontalStackLayout
-                Grid.Row="5"
-                Padding="0,10,0,10"
-                Spacing="5">
+            <HorizontalStackLayout Grid.Row="5" Padding="0,10,0,10" Spacing="5">
                 <Label Margin="20,10">
                     <Label.FormattedText>
                         <FormattedString>
@@ -126,14 +100,11 @@
                     </Label.FormattedText>
                 </Label>
 
-                <Button Clicked="OnSpeedMinusClicked" Text="-" />
-                <Button Clicked="OnSpeedPlusClicked" Text="+" />
+                <Button Text="-" Clicked="OnSpeedMinusClicked" />
+                <Button Text="+" Clicked="OnSpeedPlusClicked" />
             </HorizontalStackLayout>
 
-            <HorizontalStackLayout
-                Grid.Row="6"
-                Padding="0,10,0,10"
-                Spacing="5">
+            <HorizontalStackLayout Grid.Row="6" Padding="0,10,0,10" Spacing="5">
                 <Label Margin="20,10">
                     <Label.FormattedText>
                         <FormattedString>
@@ -143,14 +114,15 @@
                     </Label.FormattedText>
                 </Label>
 
-                <Button Clicked="OnVolumeMinusClicked" Text="-" />
-                <Button Clicked="OnVolumePlusClicked" Text="+" />
+                <Button Text="-" Clicked="OnVolumeMinusClicked" />
+                <Button Text="+" Clicked="OnVolumePlusClicked" />
             </HorizontalStackLayout>
 
             <VerticalStackLayout Grid.Row="7">
                 <HorizontalStackLayout Padding="0,0,0,10">
                     <Switch
                         Margin="0,0,5,0"
+                        ThumbColor="White"
                         OnColor="LimeGreen"
                         IsToggled="{Binding Source={x:Reference MediaElement}, Path=ShouldShowPlaybackControls}" />
                     <Label
@@ -160,6 +132,7 @@
                 <HorizontalStackLayout Padding="0,0,0,10">
                     <Switch
                         Margin="0,0,5,0"
+                        ThumbColor="White"
                         OnColor="LimeGreen"
                         IsToggled="{Binding Source={x:Reference MediaElement}, Path=ShouldLoopPlayback}" />
                     <Label
@@ -169,6 +142,7 @@
                 <HorizontalStackLayout>
                     <Switch
                         Margin="0,0,5,0"
+                        ThumbColor="White"
                         OnColor="LimeGreen"
                         IsToggled="{Binding Source={x:Reference MediaElement}, Path=ShouldKeepScreenOn}" />
                     <Label

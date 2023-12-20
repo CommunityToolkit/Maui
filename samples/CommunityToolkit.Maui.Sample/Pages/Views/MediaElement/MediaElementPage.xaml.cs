@@ -3,19 +3,19 @@ using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
+using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class MediaElementPage : BasePage<MediaElementViewModel>
 {
+	readonly ILogger logger;
 	const string loadOnlineMp4 = "Load Online MP4";
 	const string loadHls = "Load HTTP Live Stream (HLS)";
 	const string loadLocalResource = "Load Local Resource";
 	const string resetSource = "Reset Source to null";
 
-	readonly ILogger logger;
-
-	bool fullScreen = false;
+	static Page Page => Application.Current?.MainPage ?? throw new NullReferenceException();
 
 	public MediaElementPage(MediaElementViewModel viewModel, ILogger<MediaElementPage> logger) : base(viewModel)
 	{
@@ -221,7 +221,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.Pause();
 		MediaElement popupMediaElement = new MediaElement
 		{
-			Source = MediaSource.FromResource("AppleVideo.mp4"),
+			Source = MediaElement.Source,
 			HorizontalOptions = LayoutOptions.Fill,
 			VerticalOptions = LayoutOptions.Fill,
 			ShouldAutoPlay = true,
@@ -234,17 +234,46 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			Content = new Grid
 			{
 				Children =
-				{
-					popupMediaElement,
-				}
+			{
+				popupMediaElement,
+			}
 			}
 		};
-
-		Page.ShowPopup(popup);
+		MediaElement.EnlargeVideoToFullScreen();
+		
+		bool isPlaying = true;
+		popup.Opened += (s, e) =>
+		{
+			popupMediaElement.StateChanged += async (s, e) =>
+			{
+				if (sender is null)
+				{
+					return;
+				}
+				if (e.NewState == MediaElementState.Playing && isPlaying)
+				{
+					isPlaying = false;
+					_ = MainThread.InvokeOnMainThreadAsync(async () =>
+					{
+						popupMediaElement.Pause();
+						await popupMediaElement.SeekTo(MediaElement.Position);
+						popupMediaElement.Play();
+					});
+				}
+			};
+		};
+		
 		popup.Closed += (s, e) =>
 		{
-			popupMediaElement.Stop();
-			popupMediaElement.Handler?.DisconnectHandler();
+			_ = MainThread.InvokeOnMainThreadAsync(async () =>
+			{
+				popupMediaElement.Pause();
+				MediaElement.RevertFromFullScreen();
+				await MediaElement.SeekTo(popupMediaElement.Position);
+				popupMediaElement.Stop();
+				MediaElement.Play();
+			});
 		};
+		Page.ShowPopup(popup);
 	}
 }
