@@ -72,6 +72,10 @@ public static class PopupExtensions
 		{
 			return;
 		}
+		if (dialog.IsDisposed())
+		{
+			return;
+		}
 
 		var window = GetWindow(dialog);
 		window.SetBackgroundDrawable(new ColorDrawable(popup.Color.ToPlatform(AColorRes.BackgroundLight, dialog.Context)));
