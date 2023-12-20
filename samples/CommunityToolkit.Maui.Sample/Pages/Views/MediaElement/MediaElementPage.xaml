@@ -8,6 +8,7 @@
              xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Converters"
              x:TypeArguments="viewModels:MediaElementViewModel"
              x:DataType="viewModels:MediaElementViewModel"
+                x:Name="page"
              x:Class="CommunityToolkit.Maui.Sample.Pages.Views.MediaElementPage"
              Title="MediaElement">
     <pages:BasePage.Resources>

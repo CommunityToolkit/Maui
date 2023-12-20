@@ -216,17 +216,35 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.Aspect = (Aspect)aspectEnum;
 	}
 
-	void OnFullScreenClicked(object sender, EventArgs e)
+	void DisplayPopup(object sender, EventArgs e)
 	{
-		if (fullScreen)
+		MediaElement.Pause();
+		MediaElement popupMediaElement = new MediaElement
 		{
-			fullScreen = false;
-			MediaElement.RevertFromFullScreen();
-		}
-		else
+			Source = MediaSource.FromResource("AppleVideo.mp4"),
+			HorizontalOptions = LayoutOptions.Fill,
+			VerticalOptions = LayoutOptions.Fill,
+			ShouldAutoPlay = true,
+			ShouldShowPlaybackControls = true,
+		};
+		var popup = new Popup
 		{
-			fullScreen = true;
-			MediaElement.EnlargeVideoToFullScreen();
-		}
-    }
+			VerticalOptions = LayoutAlignment.Fill,
+			HorizontalOptions = LayoutAlignment.Fill,
+			Content = new Grid
+			{
+				Children =
+				{
+					popupMediaElement,
+				}
+			}
+		};
+
+		Page.ShowPopup(popup);
+		popup.Closed += (s, e) =>
+		{
+			popupMediaElement.Stop();
+			popupMediaElement.Handler?.DisconnectHandler();
+		};
+	}
 }
