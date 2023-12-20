@@ -69,7 +69,7 @@
                         </DataTrigger>
                     </Button.Triggers>
                 </Button>
-                <Button Grid.Column="4" Text="Popup" Clicked="DisplayPopup" />
+                <Button Grid.Column="4" Text="Full Screen" Clicked="DisplayPopup" />
             </Grid>
 
             <Slider

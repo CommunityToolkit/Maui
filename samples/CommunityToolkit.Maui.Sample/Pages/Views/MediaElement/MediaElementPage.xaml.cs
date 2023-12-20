@@ -233,6 +233,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			HorizontalOptions = LayoutAlignment.Fill,
 			Content = new Grid
 			{
+				BackgroundColor = Colors.Black,
 				Children =
 			{
 				popupMediaElement,
@@ -244,7 +245,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		bool isPlaying = true;
 		popup.Opened += (s, e) =>
 		{
-			popupMediaElement.StateChanged += async (s, e) =>
+			popupMediaElement.StateChanged += (s, e) =>
 			{
 				if (sender is null)
 				{
