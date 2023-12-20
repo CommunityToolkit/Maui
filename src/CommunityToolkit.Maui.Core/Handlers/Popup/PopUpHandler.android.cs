@@ -60,7 +60,10 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapAnchor(PopupHandler handler, IPopup view)
 	{
-		handler.PlatformView.SetAnchor(view);
+		if (!handler.PlatformView.IsDisposed())
+		{
+			handler.PlatformView.SetAnchor(view);
+		}
 	}
 
 	/// <summary>
@@ -80,7 +83,10 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
 	public static void MapColor(PopupHandler handler, IPopup view)
 	{
-		handler.PlatformView.SetColor(view);
+		if (!handler.PlatformView.IsDisposed())
+		{
+			handler.PlatformView.SetColor(view);
+		}
 	}
 
 	/// <summary>
@@ -92,8 +98,11 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	{
 		ArgumentNullException.ThrowIfNull(handler.Container);
 
-		handler.PlatformView.SetSize(view, handler.Container);
-		handler.PlatformView.SetAnchor(view);
+		if (!handler.PlatformView.IsDisposed())
+		{
+			handler.PlatformView.SetSize(view, handler.Container);
+			handler.PlatformView.SetAnchor(view);
+		}
 	}
 
 	/// <inheritdoc/>
@@ -138,7 +147,10 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	{
 		if (VirtualView?.Handler?.PlatformView is Dialog dialog && Container is not null)
 		{
-			PopupExtensions.SetSize(dialog, VirtualView, Container);
+			if (!dialog.IsDisposed())
+			{
+				PopupExtensions.SetSize(dialog, VirtualView, Container);
+			}
 		}
 	}
 }
