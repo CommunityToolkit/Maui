@@ -52,7 +52,11 @@ public class PopupService : IPopupService
 
 		ValidateBindingContext<TViewModel>(popup, out _);
 
+#if WINDOWS
+		Application.Current!.Windows.First(x => x.IsActivated).Page!.ShowPopup(popup);
+#else
 		CurrentPage.ShowPopup(popup);
+#endif
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(TViewModel)"/>
@@ -64,7 +68,11 @@ public class PopupService : IPopupService
 
 		ValidateBindingContext<TViewModel>(popup, out _);
 
+#if WINDOWS
+		Application.Current!.Windows.First(x => x.IsActivated).Page!.ShowPopup(popup);
+#else
 		CurrentPage.ShowPopup(popup);
+#endif
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(Action{TViewModel})"/>
@@ -78,7 +86,11 @@ public class PopupService : IPopupService
 
 		onPresenting.Invoke(viewModel);
 
+#if WINDOWS
+		Application.Current!.Windows.First(x => x.IsActivated).Page!.ShowPopup(popup);
+#else
 		CurrentPage.ShowPopup(popup);
+#endif
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(CancellationToken)"/>
@@ -88,7 +100,11 @@ public class PopupService : IPopupService
 
 		ValidateBindingContext<TViewModel>(popup, out _);
 
+#if WINDOWS
+		return Application.Current!.Windows.First(x => x.IsActivated).Page!.ShowPopupAsync(popup, token);
+#else
 		return CurrentPage.ShowPopupAsync(popup, token);
+#endif
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(TViewModel, CancellationToken)"/>
@@ -100,7 +116,11 @@ public class PopupService : IPopupService
 
 		ValidateBindingContext<TViewModel>(popup, out _);
 
+#if WINDOWS
+		return Application.Current!.Windows.First(x => x.IsActivated).Page!.ShowPopupAsync(popup, token);
+#else
 		return CurrentPage.ShowPopupAsync(popup, token);
+#endif
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(Action{TViewModel}, CancellationToken)"/>
@@ -114,7 +134,11 @@ public class PopupService : IPopupService
 
 		onPresenting.Invoke(viewModel);
 
+#if WINDOWS
+		return Application.Current!.Windows.First(x => x.IsActivated).Page!.ShowPopupAsync(popup, token);
+#else
 		return CurrentPage.ShowPopupAsync(popup, token);
+#endif
 	}
 
 	/// <summary>
