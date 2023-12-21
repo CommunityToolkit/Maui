@@ -49,7 +49,22 @@ public class MauiPopup : UIViewController
 
 		View.Superview.Layer.CornerRadius = 0.0f;
 		View.Superview.Layer.MasksToBounds = false;
-		PresentationController?.ContainerView?.Subviews.OfType<UIImageView>().FirstOrDefault()?.RemoveFromSuperview();
+
+		if (OperatingSystem.IsIOSVersionAtLeast(17))
+		{
+			if (VirtualView?.Color == Colors.Transparent)
+			{
+				View.Superview?.Superview?.Subviews.OfType<UIImageView>().FirstOrDefault()?.RemoveFromSuperview();
+			}
+			else
+			{
+				View.Superview?.Superview?.Superview?.Subviews.OfType<UIImageView>().FirstOrDefault()?.RemoveFromSuperview();
+			}
+		}
+		else
+		{
+			PresentationController?.ContainerView?.Subviews.OfType<UIImageView>().FirstOrDefault()?.RemoveFromSuperview();
+		}
 
 		SetElementSize(new Size(View.Bounds.Width, View.Bounds.Height));
 	}
