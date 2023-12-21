@@ -53,7 +53,14 @@ public class PopupService : IPopupService
 		ValidateBindingContext<TViewModel>(popup, out _);
 
 #if WINDOWS
-		Application.Current!.Windows.First(x => x.IsActivated).Page!.ShowPopup(popup);
+	    if (Application.Current!.Windows.FirstOrDefault(x => x.IsActivated) is Window activeWindow)
+		{
+			activeWindow.Page!.ShowPopup(popup);
+		}
+		else
+		{
+			CurrentPage.ShowPopup(popup);
+		}
 #else
 		CurrentPage.ShowPopup(popup);
 #endif
@@ -69,7 +76,14 @@ public class PopupService : IPopupService
 		ValidateBindingContext<TViewModel>(popup, out _);
 
 #if WINDOWS
-		Application.Current!.Windows.First(x => x.IsActivated).Page!.ShowPopup(popup);
+	    if (Application.Current!.Windows.FirstOrDefault(x => x.IsActivated) is Window activeWindow)
+		{
+			activeWindow.Page!.ShowPopup(popup);
+		}
+		else
+		{
+			CurrentPage.ShowPopup(popup);
+		}
 #else
 		CurrentPage.ShowPopup(popup);
 #endif
@@ -87,7 +101,14 @@ public class PopupService : IPopupService
 		onPresenting.Invoke(viewModel);
 
 #if WINDOWS
-		Application.Current!.Windows.First(x => x.IsActivated).Page!.ShowPopup(popup);
+	    if (Application.Current!.Windows.FirstOrDefault(x => x.IsActivated) is Window activeWindow)
+		{
+			activeWindow.Page!.ShowPopup(popup);
+		}
+		else
+		{
+			CurrentPage.ShowPopup(popup);
+		}
 #else
 		CurrentPage.ShowPopup(popup);
 #endif
@@ -101,7 +122,14 @@ public class PopupService : IPopupService
 		ValidateBindingContext<TViewModel>(popup, out _);
 
 #if WINDOWS
-		return Application.Current!.Windows.First(x => x.IsActivated).Page!.ShowPopupAsync(popup, token);
+	    if (Application.Current!.Windows.FirstOrDefault(x => x.IsActivated) is Window activeWindow)
+		{
+			return activeWindow.Page!.ShowPopupAsync(popup, token);
+		}
+		else
+		{
+			return CurrentPage.ShowPopupAsync(popup, token);
+		}
 #else
 		return CurrentPage.ShowPopupAsync(popup, token);
 #endif
@@ -117,7 +145,14 @@ public class PopupService : IPopupService
 		ValidateBindingContext<TViewModel>(popup, out _);
 
 #if WINDOWS
-		return Application.Current!.Windows.First(x => x.IsActivated).Page!.ShowPopupAsync(popup, token);
+	    if (Application.Current!.Windows.FirstOrDefault(x => x.IsActivated) is Window activeWindow)
+		{
+			return activeWindow.Page!.ShowPopupAsync(popup, token);
+		}
+		else
+		{
+			return CurrentPage.ShowPopupAsync(popup, token);
+		}
 #else
 		return CurrentPage.ShowPopupAsync(popup, token);
 #endif
@@ -135,7 +170,14 @@ public class PopupService : IPopupService
 		onPresenting.Invoke(viewModel);
 
 #if WINDOWS
-		return Application.Current!.Windows.First(x => x.IsActivated).Page!.ShowPopupAsync(popup, token);
+	    if (Application.Current!.Windows.FirstOrDefault(x => x.IsActivated) is Window activeWindow)
+		{
+			return activeWindow.Page!.ShowPopupAsync(popup, token);
+		}
+		else
+		{
+			return CurrentPage.ShowPopupAsync(popup, token);
+		}
 #else
 		return CurrentPage.ShowPopupAsync(popup, token);
 #endif
