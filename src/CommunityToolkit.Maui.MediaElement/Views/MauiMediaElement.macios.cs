@@ -34,7 +34,7 @@ public class MauiMediaElement : UIView
 				new UIEdgeInsets(insets.Top * -1, insets.Left, insets.Bottom * -1, insets.Right);
 
 			// Add the View from the AVPlayerViewController to the parent ViewController
-			if (viewController is not ShellFlyoutRenderer && viewController is not PageViewController)
+			if (viewController is not ShellFlyoutRenderer && viewController is not PageViewController && viewController is not UICollectionViewController)
 			{
 				viewController.AddChildViewController(playerViewController);
 			}
