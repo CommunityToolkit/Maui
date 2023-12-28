@@ -16,7 +16,12 @@ static partial class StatusBar
 	{
 		if (IsSupported())
 		{
-			Activity.Window?.SetStatusBarColor(color.ToPlatform());
+			if (Activity.Window is not null)
+			{
+				Activity.Window.SetStatusBarColor(color.ToPlatform());
+				bool isColorTransparent = color.ToPlatform() == Android.Graphics.Color.Transparent;
+				WindowCompat.SetDecorFitsSystemWindows(Activity.Window, !isColorTransparent);
+			}
 		}
 	}
 
