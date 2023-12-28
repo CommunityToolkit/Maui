@@ -84,8 +84,9 @@
 
             <Label Text="Slide to change StatusBar color" />
 
+            <Label Text="Red" />
             <Slider
-                Margin="20,10"
+                Margin="20,0"
                 Maximum="255"
                 MaximumTrackColor="Red"
                 Minimum="0"
@@ -93,8 +94,9 @@
                 ThumbColor="Red"
                 Value="{Binding RedSliderValue}" />
 
+            <Label Text="Green" />
             <Slider
-                Margin="20,10"
+                Margin="20,0"
                 Maximum="255"
                 MaximumTrackColor="Green"
                 Minimum="0"
@@ -102,18 +104,32 @@
                 ThumbColor="Green"
                 Value="{Binding GreenSliderValue}" />
 
+            <Label Text="Blue" />
             <Slider
-                Margin="20,10"
+                Margin="20,0"
                 Maximum="255"
                 MaximumTrackColor="Blue"
                 Minimum="0"
                 MinimumTrackColor="Blue"
                 ThumbColor="Blue"
                 Value="{Binding BlueSliderValue}" />
+            <HorizontalStackLayout>
+                <Label Text="Alpha: " />
+                <Label Text="{Binding AlphaSliderValue}"/>
+            </HorizontalStackLayout>
+           
+            <Stepper
+                Margin="20,0"
+                Maximum="1"
+                Increment="0.1"
+                Minimum="0"
+                Value="{Binding AlphaSliderValue}" />
 
-            <VerticalStackLayout Spacing="15">
+            <Label Text="Select StatusBar and NavigationBar style" />
+            
+            <HorizontalStackLayout Spacing="15">
 
-                <Label Text="Select StatusBar and NavigationBar style" />
+                
 
                 <RadioButton VerticalOptions="Center" IsChecked="{Binding IsDefaultChecked}">
                     <RadioButton.Content>
@@ -135,7 +151,7 @@
                     </RadioButton.Content>
                 </RadioButton>
 
-            </VerticalStackLayout>
+            </HorizontalStackLayout>
         </VerticalStackLayout>
     </ScrollView>
 </pages:BasePage>
