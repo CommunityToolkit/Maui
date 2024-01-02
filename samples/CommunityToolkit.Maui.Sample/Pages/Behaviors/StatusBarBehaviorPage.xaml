@@ -119,6 +119,7 @@
             </HorizontalStackLayout>
            
             <Stepper
+                HorizontalOptions="Start"
                 Margin="20,0"
                 Maximum="1"
                 Increment="0.1"

@@ -10,7 +10,7 @@ public partial class StatusBarBehaviorViewModel : BaseViewModel
 
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(StatusBarColor))]
-	double alphaSliderValue;
+	double alphaSliderValue = 1;
 
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(StatusBarStyle))]
