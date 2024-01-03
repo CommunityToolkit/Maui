@@ -4,6 +4,7 @@ using Android.Views;
 using AndroidX.Core.View;
 using Microsoft.Maui.Platform;
 using Activity = Android.App.Activity;
+using PlatformColor = Android.Graphics.Color;
 
 namespace CommunityToolkit.Maui.Core.Platform;
 
@@ -18,8 +19,9 @@ static partial class StatusBar
 		{
 			if (Activity.Window is not null)
 			{
-				Activity.Window.SetStatusBarColor(color.ToPlatform());
-				bool isColorTransparent = color.ToPlatform() == Android.Graphics.Color.Transparent;
+				PlatformColor platformColor = color.ToPlatform();
+				Activity.Window.SetStatusBarColor(platformColor);
+				bool isColorTransparent = platformColor == PlatformColor.Transparent;
 				WindowCompat.SetDecorFitsSystemWindows(Activity.Window, !isColorTransparent);
 			}
 		}
