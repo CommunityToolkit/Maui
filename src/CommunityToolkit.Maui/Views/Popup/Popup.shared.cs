@@ -355,7 +355,6 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 		if (Parent is not null)
 		{
 			Parent.RemoveLogicalChild(this);
-			Parent = null;
 		}
 
 		dismissWeakEventManager.HandleEvent(this, new PopupClosedEventArgs(result, wasDismissedByTappingOutsideOfPopup), nameof(Closed));

@@ -116,7 +116,6 @@ public static partial class PopupExtensions
 		var mauiContext = GetMauiContext(page);
 
 		var parent = page.GetCurrentPage();
-		popup.Parent = parent;
 		parent.AddLogicalChild(popup);
 
 		var platformPopup = popup.ToHandler(mauiContext);
