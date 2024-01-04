@@ -14,7 +14,7 @@ public static partial class PopupExtensions
 		var window = mauiContext.GetPlatformWindow().GetWindow() ?? throw new NullReferenceException("Window is null.");
 
 		Page parent = ((Page)window.Content).GetCurrentPage();
-		parent.AddLogicalChild(popup);
+		parent?.AddLogicalChild(popup);
 
 		var platform = popup.ToHandler(mauiContext);
 		platform?.Invoke(nameof(IPopup.OnOpened));
