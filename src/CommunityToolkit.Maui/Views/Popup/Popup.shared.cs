@@ -351,7 +351,12 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 		((IResourceDictionary)resources).ValuesChanged -= OnResourcesChanged;
 
 		await popupDismissedTaskCompletionSource.Task.WaitAsync(token);
-		Parent = null;
+
+		if (Parent is not null)
+		{
+			Parent.RemoveLogicalChild(this);
+			Parent = null;
+		}
 
 		dismissWeakEventManager.HandleEvent(this, new PopupClosedEventArgs(result, wasDismissedByTappingOutsideOfPopup), nameof(Closed));
 	}
