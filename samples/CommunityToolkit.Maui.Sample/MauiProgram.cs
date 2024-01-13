@@ -215,7 +215,7 @@ public static class MauiProgram
 	{
 		return services.AddTransientWithShellRoute<TPage, TViewModel>(AppShell.GetPageRoute<TViewModel>());
 	}
-	
+
 	class MobileHttpRetryStrategyOptions : HttpRetryStrategyOptions
 	{
 		public MobileHttpRetryStrategyOptions()
