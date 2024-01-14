@@ -10,7 +10,7 @@ public partial class IconTintColorBehaviorViewModel : BaseViewModel
 
 	static readonly IEnumerator<Color?> toggleableColorsEnumerator = new List<Color?> { Colors.Red, Colors.Green, null }.GetEnumerator();
 
-	[ObservableProperty] 
+	[ObservableProperty]
 	string toggleableImageSource = shieldImageFileName;
 
 	[ObservableProperty]
@@ -36,6 +36,6 @@ public partial class IconTintColorBehaviorViewModel : BaseViewModel
 			toggleableColorsEnumerator.MoveNext();
 		}
 
-		ToggleableIconTintColor =  toggleableColorsEnumerator.Current;
+		ToggleableIconTintColor = toggleableColorsEnumerator.Current;
 	}
 }
