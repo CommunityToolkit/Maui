@@ -25,7 +25,7 @@ public class MauiMediaElement : UIView
 
 #if IOS16_0_OR_GREATER || MACCATALYST16_1_OR_GREATER
 		// On iOS 16+ and macOS 13+ the AVPlayerViewController has to be added to a parent ViewController, otherwise the transport controls won't be displayed.
-		var viewController = WindowStateManager.Default.GetCurrentUIViewController();
+		var viewController = parentViewController ?? WindowStateManager.Default.GetCurrentUIViewController();
 
 		// If we don't find the viewController, assume it's not Shell and still continue, the transport controls will still be displayed
 		if (viewController?.View is not null)
