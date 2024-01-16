@@ -1,4 +1,5 @@
-﻿using AVKit;
+﻿using System.ComponentModel;
+using AVKit;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Platform;
@@ -17,7 +18,8 @@ public class MauiMediaElement : UIView
 	/// <param name="playerViewController">The <see cref="AVPlayerViewController"/> that acts as the platform media player.</param>
 	/// <param name="parentViewController">The <see cref="UIViewController"/> that acts as the parent for <paramref name="playerViewController"/>.</param>
 	/// <exception cref="NullReferenceException">Thrown when <paramref name="playerViewController"/><c>.View</c> is <see langword="null"/>.</exception>
-	[Obsolete("Depracated CTOR. UIViewController? parentViewController is obsolete")]
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Obsolete("Deprecated CTOR. UIViewController? parentViewController is obsolete")]
 	public MauiMediaElement(AVPlayerViewController playerViewController, UIViewController? parentViewController)
 	{
 		ArgumentNullException.ThrowIfNull(playerViewController.View);

@@ -63,7 +63,7 @@ public class MauiPopup : UIViewController
 			overlayView.RemoveFromSuperview();
 			overlayView.Dispose();
 		}
-		
+
 		base.ViewDidDisappear(animated);
 	}
 
