@@ -350,6 +350,14 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 		((IPopup)this).OnClosed(result);
 		((IResourceDictionary)resources).ValuesChanged -= OnResourcesChanged;
 
+		RemoveBinding(Popup.ContentProperty);
+		RemoveBinding(Popup.ColorProperty);
+		RemoveBinding(Popup.SizeProperty);
+		RemoveBinding(Popup.CanBeDismissedByTappingOutsideOfPopupProperty);
+		RemoveBinding(Popup.VerticalOptionsProperty);
+		RemoveBinding(Popup.HorizontalOptionsProperty);
+		RemoveBinding(Popup.StyleProperty);
+
 		await popupDismissedTaskCompletionSource.Task.WaitAsync(token);
 		Parent = null;
 
