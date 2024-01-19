@@ -50,35 +50,31 @@ public class MauiPopup : UIViewController
 		View.Superview.Layer.CornerRadius = 0.0f;
 		View.Superview.Layer.MasksToBounds = false;
 
-		if (OperatingSystem.IsIOSVersionAtLeast(17))
-		{
-			if (VirtualView?.Color == Colors.Transparent)
-			{
-				View.Superview?.Superview?.Subviews.OfType<UIImageView>().FirstOrDefault()?.RemoveFromSuperview();
-			}
-			else
-			{
-				View.Superview?.Superview?.Superview?.Subviews.OfType<UIImageView>().FirstOrDefault()?.RemoveFromSuperview();
-			}
-		}
-		else
-		{
-			PresentationController?.ContainerView?.Subviews.OfType<UIImageView>().FirstOrDefault()?.RemoveFromSuperview();
-		}
+		SetShadowView(PresentationController!.ContainerView);
 
 		SetElementSize(new Size(View.Bounds.Width, View.Bounds.Height));
 	}
 
+	void SetShadowView(UIView target)
+	{
+		if (target.Class.Name == "_UICutoutShadowView")
+		{
+			target.RemoveFromSuperview();
+		}
+		if (target.Class.Name == "_UIPopoverDimmingView")
+		{
+			target.BackgroundColor = UIColor.Black.ColorWithAlpha(0.4f);
+		}
+
+		foreach (UIView view in target.Subviews)
+		{
+			SetShadowView(view);
+		}
+	}	
+
 	/// <inheritdoc/>
 	public override void ViewDidDisappear(bool animated)
 	{
-		if (ViewController?.View is UIView view)
-		{
-			var overlayView = GetOverlayView(view);
-			overlayView.RemoveFromSuperview();
-			overlayView.Dispose();
-		}
-		
 		base.ViewDidDisappear(animated);
 	}
 
@@ -88,11 +84,6 @@ public class MauiPopup : UIViewController
 		coordinator.AnimateAlongsideTransition(_ =>
 		{
 			// Before screen rotate
-			if (ViewController?.View is UIView view)
-			{
-				var overlayView = GetOverlayView(view);
-				overlayView.Frame = new CGRect(0, 0, view.Frame.Width, view.Frame.Height);
-			}
 		}, _ =>
 		{
 			// After screen rotate
@@ -133,20 +124,6 @@ public class MauiPopup : UIViewController
 #endif
 
 		ViewController ??= rootViewController;
-		SetDimmingBackgroundEffect();
-	}
-
-	void SetDimmingBackgroundEffect()
-	{
-		if (ViewController?.View is UIView view)
-		{
-			var overlayView = GetOverlayView(view);
-			overlayView.Bounds = view.Bounds;
-			overlayView.Layer.RemoveAllAnimations();
-			overlayView.Frame = new CGRect(0, 0, view.Frame.Width, view.Frame.Height);
-			overlayView.BackgroundColor = UIColor.Black.ColorWithAlpha(0.4f);
-			view.AddSubview(overlayView);
-		}
 	}
 
 	/// <summary>
@@ -188,24 +165,6 @@ public class MauiPopup : UIViewController
 
 		this.SetSize(virtualView);
 		this.SetLayout(virtualView);
-	}
-
-	static UIView GetOverlayView(UIView view)
-	{
-		const int overlayViewTagNumber = 38483;
-
-		var overlayViewTag = new IntPtr(overlayViewTagNumber);
-		var overlayView = view.Subviews
-								.AsEnumerable()
-								.FirstOrDefault(x => x.Tag == overlayViewTag);
-
-		if (overlayView is null)
-		{
-			overlayView = new UIView();
-			overlayView.Tag = overlayViewTag;
-		}
-
-		return overlayView;
 	}
 
 	void SetView(UIView view, PageHandler control)
