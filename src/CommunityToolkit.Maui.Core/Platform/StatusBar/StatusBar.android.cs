@@ -19,7 +19,7 @@ static partial class StatusBar
 		{
 			if (Activity.Window is not null)
 			{
-				PlatformColor platformColor = color.ToPlatform();
+				var platformColor = color.ToPlatform();
 				Activity.Window.SetStatusBarColor(platformColor);
 				bool isColorTransparent = platformColor == PlatformColor.Transparent;
 				WindowCompat.SetDecorFitsSystemWindows(Activity.Window, !isColorTransparent);
