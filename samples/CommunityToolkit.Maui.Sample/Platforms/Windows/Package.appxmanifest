@@ -7,7 +7,7 @@
     xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
     IgnorableNamespaces="uap rescap com desktop">
 
-    <Identity Name="6e919706-2634-4d97-a93c-2213b2acc334" Publisher="CN=Microsoft" Version="0.0.0.0" />
+    <Identity Name="maui-package-name-placeholder" Publisher="CN=Microsoft" Version="0.0.0.0" />
 
     <Properties>
         <DisplayName>$placeholder$</DisplayName>
