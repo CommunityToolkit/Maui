@@ -25,6 +25,7 @@ using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
 using CommunityToolkit.Maui.Sample.Views.Popups;
 using CommunityToolkit.Maui.Storage;
+using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using Polly;
 
@@ -57,7 +58,7 @@ public static class MauiProgram
 								});
 
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>()
-						.AddTransientHttpErrorPolicy(policyBuilder => policyBuilder.WaitAndRetryAsync(3, SleepDurationProvider));
+						.AddStandardResilienceHandler(options => options.Retry = new MobileHttpRetryStrategyOptions());
 
 		builder.Services.AddSingleton<PopupSizeConstants>();
 
@@ -69,8 +70,6 @@ public static class MauiProgram
 #endif
 
 		return builder.Build();
-
-		static TimeSpan SleepDurationProvider(int attemptNumber) => TimeSpan.FromSeconds(Math.Pow(2, attemptNumber));
 	}
 
 	static void RegisterViewsAndViewModels(in IServiceCollection services)
@@ -215,5 +214,16 @@ public static class MauiProgram
 																												where TViewModel : BaseViewModel
 	{
 		return services.AddTransientWithShellRoute<TPage, TViewModel>(AppShell.GetPageRoute<TViewModel>());
+	}
+
+	sealed class MobileHttpRetryStrategyOptions : HttpRetryStrategyOptions
+	{
+		public MobileHttpRetryStrategyOptions()
+		{
+			BackoffType = DelayBackoffType.Exponential;
+			MaxRetryAttempts = 3;
+			UseJitter = true;
+			Delay = TimeSpan.FromSeconds(2);
+		}
 	}
 }
