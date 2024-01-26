@@ -15,7 +15,6 @@
     <Color x:Key="DarkLabelTextColor">#000000</Color>
     <Color x:Key="DarkLabelPlaceholderColor">#333d47</Color>
     <Color x:Key="SoftBorderBackgroundColor">#ecf0f9</Color>
-    <Color x:Key="StatusbarColor">#1976D2</Color>
     <Color x:Key="NavBarColor">#1976D2</Color>
 
     <Color x:Key="Pink">Pink</Color>

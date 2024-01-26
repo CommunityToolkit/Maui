@@ -1,15 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <pages:BasePage
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.StatusBarBehaviorPage"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.SystemNavigationBarBehaviorPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
     x:Name="Page"
-    Title="StatusBarBehavior"
-    x:DataType="vm:StatusBarBehaviorViewModel"
-    x:TypeArguments="vm:StatusBarBehaviorViewModel">
+    Title="SystemNavigationBarBehavior"
+    x:DataType="vm:SystemNavigationBarBehaviorViewModel"
+    x:TypeArguments="vm:SystemNavigationBarBehaviorViewModel">
 
     <ContentPage.Resources>
         <ControlTemplate x:Key="RadioButtonTemplate">
@@ -73,16 +73,16 @@
     </ContentPage.Resources>
 
     <Page.Behaviors>
-        <mct:StatusBarBehavior
-            StatusBarColor="{Binding Source={x:Reference Page}, Path=BindingContext.StatusBarColor}"
-            StatusBarStyle="{Binding Source={x:Reference Page}, Path=BindingContext.StatusBarStyle}" />
+        <mct:SystemNavigationBarBehavior
+            SystemNavigationBarColor="{Binding Source={x:Reference Page}, Path=BindingContext.SystemNavigationBarColor}"
+            SystemNavigationBarStyle="{Binding Source={x:Reference Page}, Path=BindingContext.SystemNavigationBarStyle}" />
     </Page.Behaviors>
 
     <ScrollView Padding="{StaticResource ContentPadding}">
 
         <VerticalStackLayout Padding="15,0" Spacing="30">
 
-            <Label Text="Slide to change StatusBar color" />
+            <Label Text="Slide to change SystemNavigationBar color" />
 
             <Slider
                 Margin="20,10"
@@ -113,7 +113,7 @@
 
             <VerticalStackLayout Spacing="15">
 
-                <Label Text="Select StatusBar style" />
+                <Label Text="Select SystemNavigationBar style" />
 
                 <RadioButton VerticalOptions="Center" IsChecked="{Binding IsDefaultChecked}">
                     <RadioButton.Content>

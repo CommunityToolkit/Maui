@@ -58,6 +58,9 @@ public class BehaviorsGalleryViewModel : BaseGalleryViewModel
 
 			SectionModel.Create<StatusBarBehaviorViewModel>(nameof(StatusBarBehavior),
 				"Change the Status Bar color."),
+
+			SectionModel.Create<SystemNavigationBarBehaviorViewModel>(nameof(SystemNavigationBarBehavior),
+				"Change the System Navigation Bar color."),
 		})
 	{
 	}

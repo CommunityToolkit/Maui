@@ -21,7 +21,7 @@ public class StatusBarBehavior : PlatformBehavior<Page>
 
 
 	/// <summary>
-	/// <see cref="BindableProperty"/> that manages the StatusBarColor property.
+	/// <see cref="BindableProperty"/> that manages the StatusBarStyle property.
 	/// </summary>
 	public static readonly BindableProperty StatusBarStyleProperty =
 		BindableProperty.Create(nameof(StatusBarStyle), typeof(StatusBarStyle), typeof(StatusBarBehavior), StatusBarStyle.Default);
@@ -36,7 +36,7 @@ public class StatusBarBehavior : PlatformBehavior<Page>
 	}
 
 	/// <summary>
-	/// Property that holds the value of the Status bar color. 
+	/// Property that holds the value of the Status bar style. 
 	/// </summary>
 	public StatusBarStyle StatusBarStyle
 	{
