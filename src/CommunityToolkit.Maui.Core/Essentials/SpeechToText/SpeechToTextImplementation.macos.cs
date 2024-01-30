@@ -22,7 +22,7 @@ public sealed partial class SpeechToTextImplementation
 
 		audioEngine = new AVAudioEngine();
 		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest();
-		
+
 		InitializeAvAudioSession(out var audioSession);
 
 		var mode = audioSession.AvailableModes.Contains(AVAudioSession.ModeMeasurement)
@@ -52,7 +52,7 @@ public sealed partial class SpeechToTextImplementation
 		{
 			throw new Exception(error.LocalizedDescription);
 		}
-		
+
 		cancellationToken.ThrowIfCancellationRequested();
 
 		var currentIndex = 0;

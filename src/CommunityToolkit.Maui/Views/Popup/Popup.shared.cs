@@ -250,7 +250,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 
 	/// <inheritdoc/>
 	TaskCompletionSource IAsynchronousHandler.HandlerCompleteTCS => popupDismissedTaskCompletionSource;
-	
+
 	/// <inheritdoc/>
 	bool IResourcesProvider.IsResourcesCreated => resources is not null;
 
