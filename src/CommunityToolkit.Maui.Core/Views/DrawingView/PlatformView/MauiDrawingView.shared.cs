@@ -15,7 +15,6 @@ public partial class MauiDrawingView
 	PointF previousPoint;
 	PathF currentPath = new();
 	MauiDrawingLine? currentLine;
-	MauiDrawingViewProxy? proxy;
 	Paint paint = new SolidPaint(DrawingViewDefaults.BackgroundColor);
 
 	/// <summary>
