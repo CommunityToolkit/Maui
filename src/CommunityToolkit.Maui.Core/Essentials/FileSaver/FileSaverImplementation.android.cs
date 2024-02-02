@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Diagnostics;
 using System.Web;
 using Android.Content;
@@ -8,7 +9,6 @@ using CommunityToolkit.Maui.Core.Extensions;
 using Java.IO;
 using Microsoft.Maui.ApplicationModel;
 using AndroidUri = Android.Net.Uri;
-using Application = Android.App.Application;
 
 namespace CommunityToolkit.Maui.Storage;
 
@@ -84,11 +84,34 @@ public sealed partial class FileSaverImplementation : IFileSaver
 
 	static async Task<string> SaveDocument(AndroidUri uri, Stream stream, CancellationToken cancellationToken)
 	{
+		if (stream.CanSeek)
+		{
+			stream.Seek(0, SeekOrigin.Begin);
+		}
+
 		using var parcelFileDescriptor = Application.Context.ContentResolver?.OpenFileDescriptor(uri, "wt");
 		using var fileOutputStream = new FileOutputStream(parcelFileDescriptor?.FileDescriptor);
-		await using var memoryStream = new MemoryStream();
-		await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
-		await fileOutputStream.WriteAsync(memoryStream.ToArray()).WaitAsync(cancellationToken).ConfigureAwait(false);
+		var buffer = ArrayPool<byte>.Shared.Rent(4096);
+
+		try
+		{
+			int bytesRead;
+			long totalRead = 0;
+			while ((bytesRead = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
+			{
+				await fileOutputStream.WriteAsync(buffer, 0, bytesRead).WaitAsync(cancellationToken).ConfigureAwait(false);
+				totalRead += bytesRead;
+			}
+
+			if (fileOutputStream.Channel is not null)
+			{
+				await fileOutputStream.Channel.TruncateAsync(totalRead).WaitAsync(cancellationToken).ConfigureAwait(false);
+			}
+		}
+		finally
+		{
+			ArrayPool<byte>.Shared.Return(buffer);
+		}
 
 		return uri.ToPhysicalPath() ?? throw new FileSaveException($"Unable to resolve absolute path where the file was saved '{uri}'.");
 	}
