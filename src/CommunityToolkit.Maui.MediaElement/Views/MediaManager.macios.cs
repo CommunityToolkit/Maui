@@ -133,12 +133,12 @@ public partial class MediaManager : IDisposable
 	}
 	protected virtual partial void PlatformEnlargeVideoToFullScreen()
 	{
-		// Not required for iOS
+		UIKit.UIApplication.SharedApplication.SetStatusBarHidden(true, UIKit.UIStatusBarAnimation.Fade);
 	}
 
 	protected virtual partial void PlatformRevertFromFullScreen()
 	{
-		// Not required for iOS
+		UIKit.UIApplication.SharedApplication.SetStatusBarHidden(false, UIKit.UIStatusBarAnimation.Fade);
 	}
 	protected virtual async partial Task PlatformSeek(TimeSpan position, CancellationToken token)
 	{
