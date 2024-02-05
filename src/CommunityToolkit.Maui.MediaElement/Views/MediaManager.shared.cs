@@ -11,6 +11,7 @@ global using PlatformMediaElement = CommunityToolkit.Maui.Core.Views.TizenPlayer
 #endif
 
 using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -20,11 +21,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public partial class MediaManager
 {
-	bool navBarIsVisible = false;
-	bool tabBarIsVisible = false;
-	bool backButton = false;
-	string backButtonTitle = string.Empty;
-	string pageTitle = string.Empty;
+	Popup? Popup { get; set; }
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MediaManager"/> class.
@@ -116,14 +113,91 @@ public partial class MediaManager
 	/// </summary>
 	public void EnlargeVideoToFullScreen()
 	{
+		var currentPage = CurrentPage;
 		PlatformEnlargeVideoToFullScreen();
+		Popup = CreatePopup();
+		currentPage.ShowPopup(Popup);
 	}
+	
 	/// <summary>
 	/// Invokes the Restore Screen operation on the platform element
 	/// </summary>
 	public void RevertFromFullScreen()
 	{
 		PlatformRevertFromFullScreen();
+		Popup?.Close();
+	}
+
+	Popup CreatePopup()
+	{
+		MediaElement.Pause();
+		MediaElement popupMediaElement = new()
+		{
+			Source = MediaElement.Source,
+			HorizontalOptions = LayoutOptions.Fill,
+			VerticalOptions = LayoutOptions.Fill,
+			ShouldAutoPlay = true,
+			ShouldShowPlaybackControls = true,
+		};
+		var btn = new Button()
+		{
+			WidthRequest = 120,
+			HeightRequest = 48,
+			TextColor = Colors.Black,
+			BackgroundColor = Colors.Green,
+			Text = "Restore",
+			Margin = 10,
+			HorizontalOptions = LayoutOptions.End,
+			VerticalOptions = LayoutOptions.Start,
+		};
+		var popup = new Popup()
+		{
+			VerticalOptions = Microsoft.Maui.Primitives.LayoutAlignment.Fill,
+			HorizontalOptions = Microsoft.Maui.Primitives.LayoutAlignment.Fill,
+			Content = new Grid
+			{
+				BackgroundColor = Colors.Black,
+				Children =
+			{
+				popupMediaElement, btn
+			}
+			}
+		};
+
+		bool test = true;
+		btn.Clicked += (s, e) =>
+		{
+			RevertFromFullScreen();
+		};
+		
+		popup.Opened += (s, e) =>
+		{
+			popupMediaElement.StateChanged += (s, e) =>
+			{
+				if (test)
+				{
+					test = false;
+					_ = MainThread.InvokeOnMainThreadAsync(async () =>
+					{
+						popupMediaElement.Pause();
+						await popupMediaElement.SeekTo(MediaElement.Position);
+						popupMediaElement.Play();
+					});
+				}
+				
+			};
+		};
+
+		popup.Closed += (s, e) =>
+		{
+			_ = MainThread.InvokeOnMainThreadAsync(async () =>
+			{
+				popupMediaElement.Stop();
+				await MediaElement.SeekTo(popupMediaElement.Position);
+				MediaElement.Play();
+			});
+		};
+		return popup;
 	}
 	/// <summary>
 	/// Update the media aspect.

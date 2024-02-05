@@ -293,7 +293,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 	protected virtual partial void PlatformEnlargeVideoToFullScreen()
 	{
-		var activity = Platform.CurrentActivity;
+		var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
 
 		if (activity == null || activity.Window == null)
 		{
@@ -312,7 +312,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 	protected virtual partial void PlatformRevertFromFullScreen()
 	{
-		var activity = Platform.CurrentActivity;
+		var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
 
 		if (activity == null || activity.Window == null)
 		{

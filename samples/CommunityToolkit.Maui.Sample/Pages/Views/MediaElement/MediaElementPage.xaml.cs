@@ -3,7 +3,6 @@ using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
-using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
@@ -15,12 +14,9 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	const string loadLocalResource = "Load Local Resource";
 	const string resetSource = "Reset Source to null";
 
-	static Page Page => Application.Current?.MainPage ?? throw new NullReferenceException();
-
 	public MediaElementPage(MediaElementViewModel viewModel, ILogger<MediaElementPage> logger) : base(viewModel)
 	{
 		InitializeComponent();
-
 		this.logger = logger;
 		MediaElement.PropertyChanged += MediaElement_PropertyChanged;
 	}
@@ -218,63 +214,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 	void DisplayPopup(object sender, EventArgs e)
 	{
-		MediaElement.Pause();
-		MediaElement popupMediaElement = new MediaElement
-		{
-			Source = MediaElement.Source,
-			HorizontalOptions = LayoutOptions.Fill,
-			VerticalOptions = LayoutOptions.Fill,
-			ShouldAutoPlay = true,
-			ShouldShowPlaybackControls = true,
-		};
-		var popup = new Popup
-		{
-			VerticalOptions = LayoutAlignment.Fill,
-			HorizontalOptions = LayoutAlignment.Fill,
-			Content = new Grid
-			{
-				BackgroundColor = Colors.Black,
-				Children =
-			{
-				popupMediaElement,
-			}
-			}
-		};
+		
 		MediaElement.EnlargeVideoToFullScreen();
-		
-		bool isPlaying = true;
-		popup.Opened += (s, e) =>
-		{
-			popupMediaElement.StateChanged += (s, e) =>
-			{
-				if (sender is null)
-				{
-					return;
-				}
-				if (e.NewState == MediaElementState.Playing && isPlaying)
-				{
-					isPlaying = false;
-					_ = MainThread.InvokeOnMainThreadAsync(async () =>
-					{
-						popupMediaElement.Pause();
-						await popupMediaElement.SeekTo(MediaElement.Position);
-						popupMediaElement.Play();
-					});
-				}
-			};
-		};
-		
-		popup.Closed += (s, e) =>
-		{
-			_ = MainThread.InvokeOnMainThreadAsync(async () =>
-			{
-				popupMediaElement.Pause();
-				MediaElement.RevertFromFullScreen();
-				await MediaElement.SeekTo(popupMediaElement.Position);
-				popupMediaElement.Stop();
-				MediaElement.Play();
-			});
-		};
-		Page.ShowPopup(popup);
 	}
 }
