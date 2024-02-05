@@ -136,8 +136,10 @@ public partial class MediaManager
 			Source = MediaElement.Source,
 			HorizontalOptions = LayoutOptions.Fill,
 			VerticalOptions = LayoutOptions.Fill,
-			ShouldAutoPlay = true,
-			ShouldShowPlaybackControls = true,
+			ShouldAutoPlay = MediaElement.ShouldAutoPlay,
+			ShouldShowPlaybackControls = MediaElement.ShouldShowPlaybackControls,
+			ShouldKeepScreenOn = MediaElement.ShouldKeepScreenOn,
+			ShouldLoopPlayback = MediaElement.ShouldLoopPlayback,
 		};
 		var btn = new Button()
 		{
