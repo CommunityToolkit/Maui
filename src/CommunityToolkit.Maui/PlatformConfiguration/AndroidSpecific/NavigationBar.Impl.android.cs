@@ -33,7 +33,7 @@ static partial class NavigationBar
 			return;
 		}
 
-		var activity = (Activity?)handler.PlatformView.Context ?? throw new NullReferenceException("Activity is null");
+		var activity = (Activity?)handler.PlatformView.Context ?? throw new NullReferenceException("Activity cannot be null.");
 		var style = GetStyle(page);
 
 		switch (style)
@@ -49,17 +49,9 @@ static partial class NavigationBar
 
 		static void SetSystemNavigationBarAppearance(Activity activity, bool isLightSystemNavigationBars)
 		{
-			var window = GetCurrentWindow(activity);
+			var window = activity.GetCurrentWindow();
 			var windowController = WindowCompat.GetInsetsController(window, window.DecorView);
 			windowController.AppearanceLightNavigationBars = isLightSystemNavigationBars;
-
-			static Android.Views.Window GetCurrentWindow(Activity activity)
-			{
-				var window = activity.Window ?? throw new InvalidOperationException($"{nameof(activity.Window)} cannot be null");
-				window.ClearFlags(WindowManagerFlags.TranslucentStatus);
-				window.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
-				return window;
-			}
 		}
 	}
 
@@ -75,7 +67,7 @@ static partial class NavigationBar
 			return;
 		}
 
-		var activity = (Activity?)handler.PlatformView.Context ?? throw new NullReferenceException("Activity is null");
+		var activity = (Activity?)handler.PlatformView.Context ?? throw new NullReferenceException("Activity cannot be null.");
 		var window = activity.GetCurrentWindow();
 
 		var color = GetColor((Page)view).ToPlatform();
