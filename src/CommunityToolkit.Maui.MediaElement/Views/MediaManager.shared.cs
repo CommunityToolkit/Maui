@@ -163,39 +163,28 @@ public partial class MediaManager
 			}
 			}
 		};
-
 		bool test = true;
 		btn.Clicked += (s, e) =>
 		{
 			RevertFromFullScreen();
 		};
-		
-		popup.Opened += (s, e) =>
+		popupMediaElement.StateChanged += (s, e) =>
 		{
-			popupMediaElement.StateChanged += (s, e) =>
+			if (e.NewState == Primitives.MediaElementState.Playing && test)
 			{
-				if (test)
+				test = false;
+				_ = MainThread.InvokeOnMainThreadAsync(async () =>
 				{
-					test = false;
-					_ = MainThread.InvokeOnMainThreadAsync(async () =>
-					{
-						popupMediaElement.Pause();
-						await popupMediaElement.SeekTo(MediaElement.Position);
-						popupMediaElement.Play();
-					});
-				}
-				
-			};
+					await popupMediaElement.SeekTo(MediaElement.Position);
+				});
+			}
 		};
 
 		popup.Closed += (s, e) =>
 		{
-			_ = MainThread.InvokeOnMainThreadAsync(async () =>
-			{
-				popupMediaElement.Stop();
-				await MediaElement.SeekTo(popupMediaElement.Position);
-				MediaElement.Play();
-			});
+			_ = MediaElement.SeekTo(popupMediaElement.Position);
+			popupMediaElement.Pause();
+			MediaElement.Play();
 		};
 		return popup;
 	}
