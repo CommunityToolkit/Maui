@@ -22,7 +22,8 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MediaManager
 {
 	Popup? Popup { get; set; }
-
+	Color? BackgroundColor { get; set; }
+	Color? PageBackgroundColor { get; set; }
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MediaManager"/> class.
 	/// </summary>
@@ -114,9 +115,13 @@ public partial class MediaManager
 	public void EnlargeVideoToFullScreen()
 	{
 		var currentPage = CurrentPage;
-		PlatformEnlargeVideoToFullScreen();
 		Popup = CreatePopup();
 		currentPage.ShowPopup(Popup);
+		BackgroundColor = currentPage.BackgroundColor;
+		PageBackgroundColor = Shell.GetBackgroundColor(currentPage);
+		Shell.SetBackgroundColor(currentPage, Colors.Black);
+		currentPage.BackgroundColor = Colors.Black;
+		PlatformEnlargeVideoToFullScreen();
 	}
 	
 	/// <summary>
@@ -124,8 +129,11 @@ public partial class MediaManager
 	/// </summary>
 	public void RevertFromFullScreen()
 	{
-		PlatformRevertFromFullScreen();
+		var currentPage = CurrentPage;
 		Popup?.Close();
+		currentPage.BackgroundColor = BackgroundColor;
+		Shell.SetBackgroundColor(currentPage, PageBackgroundColor);
+		PlatformRevertFromFullScreen();
 	}
 
 	Popup CreatePopup()

@@ -299,14 +299,13 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			return;
 		}
-
+		
 		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(activity.Window, false);
-
 		var windowInsetsControllerCompat = AndroidX.Core.View.WindowCompat.GetInsetsController(activity.Window, activity.Window.DecorView);
-		var types = AndroidX.Core.View.WindowInsetsCompat.Type.StatusBars()
-					| AndroidX.Core.View.WindowInsetsCompat.Type.NavigationBars();
-
-		windowInsetsControllerCompat.SystemBarsBehavior = AndroidX.Core.View.WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
+		var types = AndroidX.Core.View.WindowInsetsCompat.Type.StatusBars() |
+			AndroidX.Core.View.WindowInsetsCompat.Type.SystemBars() |
+			AndroidX.Core.View.WindowInsetsCompat.Type.NavigationBars();
+			windowInsetsControllerCompat.SystemBarsBehavior = AndroidX.Core.View.WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
 		windowInsetsControllerCompat.Hide(types);
 	}
 
@@ -319,12 +318,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			return;
 		}
 
-		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(activity.Window, false);
-
+		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(activity.Window, true);
 		var windowInsetsControllerCompat = AndroidX.Core.View.WindowCompat.GetInsetsController(activity.Window, activity.Window.DecorView);
-		var types = AndroidX.Core.View.WindowInsetsCompat.Type.StatusBars()
-					| AndroidX.Core.View.WindowInsetsCompat.Type.NavigationBars();
-
+		var types = AndroidX.Core.View.WindowInsetsCompat.Type.StatusBars() |
+			AndroidX.Core.View.WindowInsetsCompat.Type.SystemBars() |
+			AndroidX.Core.View.WindowInsetsCompat.Type.NavigationBars();
 		windowInsetsControllerCompat.Show(types);
 		windowInsetsControllerCompat.SystemBarsBehavior = AndroidX.Core.View.WindowInsetsControllerCompat.BehaviorDefault;
 	}
