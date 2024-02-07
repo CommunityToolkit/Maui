@@ -30,6 +30,7 @@ public class MauiMediaElement : CoordinatorLayout
 		this.context = context;
 
 		playerView.FullscreenButtonClick += PlayerView_FullscreenButtonClick;
+		this.playerView.SetBackgroundColor(Android.Graphics.Color.Black);
 
 		AddView(playerView);
 	}
