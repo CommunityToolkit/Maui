@@ -4,6 +4,8 @@
 // https://github.com/dotnet/maui/blob/main/src/Controls/src/Core/Platform/PageExtensions.cs
 static class PageExtensions
 {
+	internal static bool isFullScreen { get; set; } = false;
+
 	internal static Page GetCurrentPage(this Page currentPage)
 	{
 		if (currentPage.NavigationProxy.ModalStack.LastOrDefault() is Page modal)

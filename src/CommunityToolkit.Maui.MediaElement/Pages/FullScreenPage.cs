@@ -3,6 +3,8 @@ using Mopups.Services;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Core.Views;
+using Microsoft.Maui.Controls.PlatformConfiguration;
+using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Pages;
 /// <summary>
@@ -20,6 +22,7 @@ public partial class FullScreenPage : PopupPage
 	public FullScreenPage(CurrentVideoState currentVideo)
 	{
 		Video = currentVideo;
+		setStatus();
 		mediaElement = new()
 		{
 			Source = currentVideo.VideoUri,
@@ -39,7 +42,9 @@ public partial class FullScreenPage : PopupPage
 			Source = "whitefs.png",
 			WidthRequest = 30,
 		};
-		
+#if ANDROID
+		fullScreen.IsVisible = false;
+#endif
 		fullScreen.Clicked += async (s, e) =>
 		{
 			MediaManager.FullScreenPosition = mediaElement.Position;
@@ -56,7 +61,15 @@ public partial class FullScreenPage : PopupPage
 			}
 		};
     }
-
+	static void setStatus()
+	{
+		if (PageExtensions.isFullScreen)
+		{
+			PageExtensions.isFullScreen = false;
+			return;
+		}
+		PageExtensions.isFullScreen = true;
+	}
 	/// <summary>
 	/// Sets the correct playback position on Page load.
 	/// </summary>
@@ -76,6 +89,7 @@ public partial class FullScreenPage : PopupPage
 	protected override void OnDisappearing()
 	{
 		base.OnDisappearing();
+		setStatus();
 		mediaElement.Handler?.DisconnectHandler();
 	}
 

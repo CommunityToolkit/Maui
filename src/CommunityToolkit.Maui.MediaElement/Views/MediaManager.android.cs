@@ -1,4 +1,5 @@
 ﻿using Android.Support.V4.Media.Session;
+using Android.Views;
 using Android.Widget;
 using Com.Google.Android.Exoplayer2;
 using Com.Google.Android.Exoplayer2.Audio;
@@ -8,15 +9,16 @@ using Com.Google.Android.Exoplayer2.Trackselection;
 using Com.Google.Android.Exoplayer2.UI;
 using Com.Google.Android.Exoplayer2.Video;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
+using Mopups.Services;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
-
 	double? previousSpeed;
 	float volumeBeforeMute = 1;
 	TaskCompletionSource? seekToTaskCompletionSource;
@@ -45,7 +47,26 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			LayoutParameters = new RelativeLayout.LayoutParams(Android.Views.ViewGroup.LayoutParams.MatchParent, Android.Views.ViewGroup.LayoutParams.MatchParent),
 		};
 
+		PlayerView.FullscreenButtonClick += PlayerView_FullscreenButtonClick;
 		return (Player, PlayerView);
+	}
+
+	async void PlayerView_FullscreenButtonClick(object? sender, StyledPlayerView.FullscreenButtonClickEventArgs e)
+	{
+		// Ensure there is a player view
+		if (PlayerView is null || Platform.CurrentActivity is null || Platform.CurrentActivity.Window is null || Platform.CurrentActivity.Resources is null)
+		{
+			return;
+		}
+		if (PageExtensions.isFullScreen)
+		{
+			await MopupService.Instance.PopAsync();
+			RevertFromFullScreen();
+		}
+		else
+		{
+			EnlargeVideoToFullScreen();
+		}
 	}
 
 	/// <summary>
@@ -312,7 +333,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	protected virtual partial void PlatformRevertFromFullScreen()
 	{
 		var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
-
 		if (activity == null || activity.Window == null)
 		{
 			return;

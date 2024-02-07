@@ -13,7 +13,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 public class MauiMediaElement : CoordinatorLayout
 {
 	readonly StyledPlayerView playerView;
-
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
 	/// </summary>
@@ -22,7 +21,7 @@ public class MauiMediaElement : CoordinatorLayout
 	public MauiMediaElement(Context context, StyledPlayerView playerView) : base(context)
 	{
 		this.playerView = playerView;
-
+		
 		// Create a RelativeLayout for sizing the video
 		RelativeLayout relativeLayout = new(context)
 		{
@@ -31,7 +30,6 @@ public class MauiMediaElement : CoordinatorLayout
 				Gravity = (int)GravityFlags.Center
 			}
 		};
-
 		relativeLayout.AddView(playerView);
 		AddView(relativeLayout);
 	}
