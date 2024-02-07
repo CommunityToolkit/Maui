@@ -76,11 +76,7 @@ public partial class FullScreenPage : PopupPage
 	protected override void OnAppearing()
 	{
 		base.OnAppearing();
-#if IOS
-		mediaElement.StateChanged += IOSStart;
-#else
-		_ = mediaElement.SeekTo(Video.Position);
-#endif
+		mediaElement.StateChanged += MediaElementStateChanged;
 	}
 
 	/// <summary>
@@ -93,11 +89,11 @@ public partial class FullScreenPage : PopupPage
 		mediaElement.Handler?.DisconnectHandler();
 	}
 
-	async void IOSStart(object? sender, MediaStateChangedEventArgs e)
+	async void MediaElementStateChanged(object? sender, MediaStateChangedEventArgs e)
 	{
 		if (e.NewState == MediaElementState.Playing)
 		{ 
-			mediaElement.StateChanged -= IOSStart;
+			mediaElement.StateChanged -= MediaElementStateChanged;
 			await mediaElement.SeekTo(Video.Position);
 		}
 	}
