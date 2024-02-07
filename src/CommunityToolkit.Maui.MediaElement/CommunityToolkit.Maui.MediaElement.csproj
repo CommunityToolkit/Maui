@@ -52,8 +52,10 @@
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
     <None Include="ReadMe.txt" pack="true" PackagePath="." />
   </ItemGroup>
-
-    <ItemGroup>
+  <ItemGroup>
+    <MauiImage Update="whitefs.png" BaseSize="36,36" Resize="true" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="..\CommunityToolkit.Maui.MediaElement.Analyzers\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.MediaElement.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="..\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
@@ -66,6 +68,6 @@
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiPackageVersion)" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
+    <PackageReference Include="Mopups" Version="1.3.0" />
   </ItemGroup>
 </Project>

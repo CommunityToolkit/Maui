@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Views;
+using Mopups.Hosting;
 
 namespace CommunityToolkit.Maui;
 
@@ -15,6 +16,7 @@ public static class AppBuilderExtensions
 	/// <returns><see cref="MauiAppBuilder"/> initialized for <see cref="MediaElement"/>.</returns>
 	public static MauiAppBuilder UseMauiCommunityToolkitMediaElement(this MauiAppBuilder builder)
 	{
+		builder.ConfigureMopups();
 		builder.ConfigureMauiHandlers(h =>
 		{
 			h.AddHandler<MediaElement, MediaElementHandler>();

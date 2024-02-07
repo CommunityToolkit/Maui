@@ -11,8 +11,11 @@ global using PlatformMediaElement = CommunityToolkit.Maui.Core.Views.TizenPlayer
 #endif
 
 using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Pages;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Platform;
+using Mopups.Services;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -21,9 +24,11 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public partial class MediaManager
 {
-	Popup? Popup { get; set; }
-	Color? BackgroundColor { get; set; }
-	Color? PageBackgroundColor { get; set; }
+	/// <summary>
+	/// Current Position of Full Screen MediaElement
+	/// </summary>
+	public static TimeSpan FullScreenPosition { get; set; }
+
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MediaManager"/> class.
 	/// </summary>
@@ -39,7 +44,7 @@ public partial class MediaManager
 		MauiContext = context;
 		Dispatcher = dispatcher;
 		MediaElement = mediaElement;
-
+		FullScreenPosition = TimeSpan.Zero;
 		Logger = MauiContext.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(MediaManager));
 	}
 
@@ -114,90 +119,26 @@ public partial class MediaManager
 	/// </summary>
 	public void EnlargeVideoToFullScreen()
 	{
-		var currentPage = CurrentPage;
-		Popup = CreatePopup();
-		currentPage.ShowPopup(Popup);
-		BackgroundColor = currentPage.BackgroundColor;
-		PageBackgroundColor = Shell.GetBackgroundColor(currentPage);
-		Shell.SetBackgroundColor(currentPage, Colors.Black);
-		currentPage.BackgroundColor = Colors.Black;
 		PlatformEnlargeVideoToFullScreen();
+		FullScreenPage page = new(new CurrentVideoState
+		{
+			Position = MediaElement?.Position ?? TimeSpan.Zero,
+			VideoUri = MediaElement?.Source,
+		});
+
+		_ = MopupService.Instance.PushAsync(page);
 	}
-	
+
 	/// <summary>
 	/// Invokes the Restore Screen operation on the platform element
 	/// </summary>
 	public void RevertFromFullScreen()
 	{
-		var currentPage = CurrentPage;
-		Popup?.Close();
-		currentPage.BackgroundColor = BackgroundColor;
-		Shell.SetBackgroundColor(currentPage, PageBackgroundColor);
+		Seek(FullScreenPosition, CancellationToken.None);
 		PlatformRevertFromFullScreen();
+
 	}
 
-	Popup CreatePopup()
-	{
-		MediaElement.Pause();
-		MediaElement popupMediaElement = new()
-		{
-			Source = MediaElement.Source,
-			HorizontalOptions = LayoutOptions.Fill,
-			VerticalOptions = LayoutOptions.Fill,
-			ShouldAutoPlay = MediaElement.ShouldAutoPlay,
-			ShouldShowPlaybackControls = MediaElement.ShouldShowPlaybackControls,
-			ShouldKeepScreenOn = MediaElement.ShouldKeepScreenOn,
-			ShouldLoopPlayback = MediaElement.ShouldLoopPlayback,
-		};
-		var btn = new Button()
-		{
-			WidthRequest = 120,
-			HeightRequest = 48,
-			TextColor = Colors.Black,
-			BackgroundColor = Colors.Green,
-			Text = "Restore",
-			Margin = 10,
-			HorizontalOptions = LayoutOptions.End,
-			VerticalOptions = LayoutOptions.Start,
-		};
-		var popup = new Popup()
-		{
-			VerticalOptions = Microsoft.Maui.Primitives.LayoutAlignment.Fill,
-			HorizontalOptions = Microsoft.Maui.Primitives.LayoutAlignment.Fill,
-			Content = new Grid
-			{
-				BackgroundColor = Colors.Black,
-				Children =
-			{
-				popupMediaElement, btn
-			}
-			}
-		};
-		bool test = true;
-		btn.Clicked += (s, e) =>
-		{
-			RevertFromFullScreen();
-		};
-		popupMediaElement.StateChanged += (s, e) =>
-		{
-			if (e.NewState == Primitives.MediaElementState.Playing && test)
-			{
-				test = false;
-				_ = MainThread.InvokeOnMainThreadAsync(async () =>
-				{
-					await popupMediaElement.SeekTo(MediaElement.Position);
-				});
-			}
-		};
-
-		popup.Closed += (s, e) =>
-		{
-			_ = MediaElement.SeekTo(popupMediaElement.Position);
-			popupMediaElement.Pause();
-			MediaElement.Play();
-		};
-		return popup;
-	}
 	/// <summary>
 	/// Update the media aspect.
 	/// </summary>
