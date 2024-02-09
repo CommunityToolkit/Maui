@@ -166,8 +166,6 @@ public partial class IconTintColorBehavior
 		// Hide possible visible pixels from original image by replaceing with a transparent image of the same size
 		var b = new WriteableBitmap((int)width, (int)height);
 		image.Source = b;
-
-		//image.Clear();
 	}
 
 	void ApplyTintCompositionEffect(FrameworkElement platformView, Color color, float width, float height, Vector3 offset, Vector2 anchorPoint, Uri surfaceMaskUri)
