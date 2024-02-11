@@ -12,7 +12,6 @@ public class PopupService : IPopupService
 
 	static readonly Dictionary<Type, Type> viewModelToViewMappings = new();
 
-	readonly List<WeakReference<Popup>> popupDisplayList = new();
 	readonly Stack<WeakReference<Popup>> popupDisplayStack = new();
 
 	static Page CurrentPage =>
@@ -48,6 +47,30 @@ public class PopupService : IPopupService
 		services.AddTransient(typeof(TPopupViewModel));
 	}
 
+	/// <inheritdoc cref="IPopupService.ClosePopup(object?)" />
+	public void ClosePopup(object? result = null)
+	{
+		var popupReference = popupDisplayStack.Peek();
+
+		if (popupReference.TryGetTarget(out var popup))
+		{
+			popup.Close(result);
+		}
+	}
+
+	/// <inheritdoc cref="IPopupService.ClosePopupAsync(object?)" />
+	public Task ClosePopupAsync(object? result = null)
+	{
+		var popupReference = popupDisplayStack.Peek();
+
+		if (popupReference.TryGetTarget(out var popup))
+		{
+			return popup.CloseAsync(result);
+		}
+
+		return Task.CompletedTask;
+	}
+
 	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}()"/>
 	public void ShowPopup<TViewModel>() where TViewModel : INotifyPropertyChanged
 	{
@@ -55,7 +78,7 @@ public class PopupService : IPopupService
 
 		ValidateBindingContext<TViewModel>(popup, out _);
 
-		InitialisePopup(popup);
+		InitializePopup(popup);
 
 		CurrentPage.ShowPopup(popup);
 	}
@@ -69,7 +92,7 @@ public class PopupService : IPopupService
 
 		ValidateBindingContext<TViewModel>(popup, out _);
 
-		InitialisePopup(popup);
+		InitializePopup(popup);
 
 		CurrentPage.ShowPopup(popup);
 	}
@@ -85,7 +108,7 @@ public class PopupService : IPopupService
 
 		onPresenting.Invoke(viewModel);
 
-		InitialisePopup(popup);
+		InitializePopup(popup);
 
 		CurrentPage.ShowPopup(popup);
 	}
@@ -97,7 +120,7 @@ public class PopupService : IPopupService
 
 		ValidateBindingContext<TViewModel>(popup, out _);
 
-		InitialisePopup(popup);
+		InitializePopup(popup);
 
 		return CurrentPage.ShowPopupAsync(popup, token);
 	}
@@ -111,7 +134,7 @@ public class PopupService : IPopupService
 
 		ValidateBindingContext<TViewModel>(popup, out _);
 
-		InitialisePopup(popup);
+		InitializePopup(popup);
 
 		return CurrentPage.ShowPopupAsync(popup, token);
 	}
@@ -127,7 +150,7 @@ public class PopupService : IPopupService
 
 		onPresenting.Invoke(viewModel);
 
-		InitialisePopup(popup);
+		InitializePopup(popup);
 
 		return CurrentPage.ShowPopupAsync(popup, token);
 	}
@@ -162,34 +185,10 @@ public class PopupService : IPopupService
 		return popup;
 	}
 
-	void InitialisePopup(Popup popup)
+	void InitializePopup(Popup popup)
 	{
 		popup.Closed += OnPopupClosed;
 		popupDisplayStack.Push(new(popup));
-	}
-
-	/// <inheritdoc cref="IPopupService.ClosePopup(object?)" />
-	public void ClosePopup(object? result = null)
-	{
-		var popupReference = popupDisplayStack.Peek();
-
-		if (popupReference.TryGetTarget(out var popup))
-		{
-			popup.Close(result);
-		}
-	}
-
-	/// <inheritdoc cref="IPopupService.ClosePopupAsync(object?)" />
-	public Task ClosePopupAsync(object? result = null)
-	{
-		var popupReference = popupDisplayStack.Peek();
-
-		if (popupReference.TryGetTarget(out var popup))
-		{
-			return popup.CloseAsync(result);
-		}
-
-		return Task.CompletedTask;
 	}
 
 	void OnPopupClosed(object? sender, PopupClosedEventArgs e)
