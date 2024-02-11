@@ -47,6 +47,7 @@ public class PopupService : IPopupService
 		services.AddTransient(typeof(TPopupViewModel));
 	}
 
+<<<<<<< HEAD
 	internal static void AddTransientPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>(TPopupView popup, TPopupViewModel popupViewModel, IServiceCollection services)
 		where TPopupView : class, IPopup
 		where TPopupViewModel : class, INotifyPropertyChanged
@@ -91,12 +92,58 @@ public class PopupService : IPopupService
 
 	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(Action{TViewModel})"/>
 	public void ShowPopup<TViewModel>(Action<TViewModel> onPresenting) where TViewModel : INotifyPropertyChanged
+=======
+	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(bool, object?, Microsoft.Maui.Primitives.LayoutAlignment, Microsoft.Maui.Primitives.LayoutAlignment, Size, Color?)"/>
+	public void ShowPopup<TViewModel>(
+		bool canBeDismissedByTappingOutsideOfPopup = true,
+		object? resultWhenUserTapsOutsideOfPopup = default,
+		Microsoft.Maui.Primitives.LayoutAlignment verticalOptions = Microsoft.Maui.Primitives.LayoutAlignment.Center,
+		Microsoft.Maui.Primitives.LayoutAlignment horizontalOptions = Microsoft.Maui.Primitives.LayoutAlignment.Center,
+		Size size = default,
+		Color? color = default
+	) where TViewModel : INotifyPropertyChanged
+	{
+		var popup = GetPopup(typeof(TViewModel));
+
+		ApplyPopupProperties(
+			popup,
+			canBeDismissedByTappingOutsideOfPopup,
+			resultWhenUserTapsOutsideOfPopup,
+			verticalOptions,
+			horizontalOptions,
+			size,
+			color);
+
+		ValidateBindingContext<TViewModel>(popup, out _);
+
+		CurrentPage.ShowPopup(popup);
+	}
+
+	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(Action{TViewModel}, bool, object?, Microsoft.Maui.Primitives.LayoutAlignment, Microsoft.Maui.Primitives.LayoutAlignment, Size, Color?)"/>
+	public void ShowPopup<TViewModel>(
+		Action<TViewModel> onPresenting,
+		bool canBeDismissedByTappingOutsideOfPopup = true,
+		object? resultWhenUserTapsOutsideOfPopup = default,
+		Microsoft.Maui.Primitives.LayoutAlignment verticalOptions = Microsoft.Maui.Primitives.LayoutAlignment.Center,
+		Microsoft.Maui.Primitives.LayoutAlignment horizontalOptions = Microsoft.Maui.Primitives.LayoutAlignment.Center,
+		Size size = default,
+		Color? color = default) where TViewModel : INotifyPropertyChanged
+>>>>>>> f7fb5810 (Expand IPopupService API to enable the ability to supply the configurable properties)
 	{
 		EnsureMainThreadIsUsed();
 
 		ArgumentNullException.ThrowIfNull(onPresenting);
 
 		var popup = GetPopup(typeof(TViewModel));
+
+		ApplyPopupProperties(
+			popup,
+			canBeDismissedByTappingOutsideOfPopup,
+			resultWhenUserTapsOutsideOfPopup,
+			verticalOptions,
+			horizontalOptions,
+			size,
+			color);
 
 		ValidateBindingContext(popup, out TViewModel viewModel);
 
@@ -107,9 +154,17 @@ public class PopupService : IPopupService
 		ShowPopup(popup);
 	}
 
-	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(CancellationToken)"/>
-	public Task<object?> ShowPopupAsync<TViewModel>(CancellationToken token = default) where TViewModel : INotifyPropertyChanged
+	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(bool, object?, Microsoft.Maui.Primitives.LayoutAlignment, Microsoft.Maui.Primitives.LayoutAlignment, Size, Color?, CancellationToken)"/>
+	public Task<object?> ShowPopupAsync<TViewModel>(
+		bool canBeDismissedByTappingOutsideOfPopup = true,
+		object? resultWhenUserTapsOutsideOfPopup = default,
+		Microsoft.Maui.Primitives.LayoutAlignment verticalOptions = Microsoft.Maui.Primitives.LayoutAlignment.Center,
+		Microsoft.Maui.Primitives.LayoutAlignment horizontalOptions = Microsoft.Maui.Primitives.LayoutAlignment.Center,
+		Size size = default,
+		Color? color = default,
+		CancellationToken token = default) where TViewModel : INotifyPropertyChanged
 	{
+<<<<<<< HEAD
 		EnsureMainThreadIsUsed();
 
 		var popup = GetPopup(typeof(TViewModel));
@@ -123,12 +178,49 @@ public class PopupService : IPopupService
 
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(Action{TViewModel}, CancellationToken)"/>
 	public Task<object?> ShowPopupAsync<TViewModel>(Action<TViewModel> onPresenting, CancellationToken token = default) where TViewModel : INotifyPropertyChanged
+=======
+		var popup = GetPopup(typeof(TViewModel));
+
+		ApplyPopupProperties(
+			popup,
+			canBeDismissedByTappingOutsideOfPopup,
+			resultWhenUserTapsOutsideOfPopup,
+			verticalOptions,
+			horizontalOptions,
+			size,
+			color);
+
+		ValidateBindingContext<TViewModel>(popup, out _);
+
+		return CurrentPage.ShowPopupAsync(popup, token);
+	}
+
+	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(Action{TViewModel}, bool, object?, Microsoft.Maui.Primitives.LayoutAlignment, Microsoft.Maui.Primitives.LayoutAlignment, Size, Color?, CancellationToken)"/>
+	public Task<object?> ShowPopupAsync<TViewModel>(
+		Action<TViewModel> onPresenting,
+		bool canBeDismissedByTappingOutsideOfPopup = true,
+		object? resultWhenUserTapsOutsideOfPopup = default,
+		Microsoft.Maui.Primitives.LayoutAlignment verticalOptions = Microsoft.Maui.Primitives.LayoutAlignment.Center,
+		Microsoft.Maui.Primitives.LayoutAlignment horizontalOptions = Microsoft.Maui.Primitives.LayoutAlignment.Center,
+		Size size = default,
+		Color? color = default,
+		CancellationToken token = default) where TViewModel : INotifyPropertyChanged
+>>>>>>> f7fb5810 (Expand IPopupService API to enable the ability to supply the configurable properties)
 	{
 		EnsureMainThreadIsUsed();
 
 		ArgumentNullException.ThrowIfNull(onPresenting);
 
 		var popup = GetPopup(typeof(TViewModel));
+
+		ApplyPopupProperties(
+			popup,
+			canBeDismissedByTappingOutsideOfPopup,
+			resultWhenUserTapsOutsideOfPopup,
+			verticalOptions,
+			horizontalOptions,
+			size,
+			color);
 
 		ValidateBindingContext(popup, out TViewModel viewModel);
 
@@ -181,6 +273,7 @@ public class PopupService : IPopupService
 		throw new InvalidOperationException($"Unexpected type has been assigned to the BindingContext of {popup.GetType().FullName}. Expected type {typeof(TViewModel).FullName} but was {popup.BindingContext?.GetType().FullName ?? "null"}");
 	}
 
+<<<<<<< HEAD
 	static void ShowPopup(Popup popup)
 	{
 #if WINDOWS
@@ -206,6 +299,26 @@ public class PopupService : IPopupService
 		if (dispatcher.IsDispatchRequired)
 		{
 			throw new InvalidOperationException($"{callerName} must be called from the main thread.");
+=======
+	static void ApplyPopupProperties(
+		Popup popup,
+		bool canBeDismissedByTappingOutsideOfPopup = true,
+		object? resultWhenUserTapsOutsideOfPopup = default,
+		Microsoft.Maui.Primitives.LayoutAlignment verticalOptions = Microsoft.Maui.Primitives.LayoutAlignment.Center,
+		Microsoft.Maui.Primitives.LayoutAlignment horizontalOptions = Microsoft.Maui.Primitives.LayoutAlignment.Center,
+		Size size = default,
+		Color? color = default)
+	{
+		popup.CanBeDismissedByTappingOutsideOfPopup = canBeDismissedByTappingOutsideOfPopup;
+		popup.ResultWhenUserTapsOutsideOfPopup = resultWhenUserTapsOutsideOfPopup;
+		popup.VerticalOptions = verticalOptions;
+		popup.HorizontalOptions = horizontalOptions;
+		popup.Size = size;
+
+		if (color is not null)
+		{
+			popup.Color = color;
+>>>>>>> f7fb5810 (Expand IPopupService API to enable the ability to supply the configurable properties)
 		}
 	}
 
