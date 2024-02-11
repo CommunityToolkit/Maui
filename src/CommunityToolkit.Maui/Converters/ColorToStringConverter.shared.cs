@@ -124,7 +124,8 @@ public class ColorToCmykStringConverter : BaseConverterOneWay<Color, string>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
 
 	/// <inheritdoc/>
-	public override string ConvertFrom(Color value, CultureInfo? culture = null) {
+	public override string ConvertFrom(Color value, CultureInfo? culture = null)
+	{
 		ArgumentNullException.ThrowIfNull(value);
 		return value.ToCmykString();
 	}
