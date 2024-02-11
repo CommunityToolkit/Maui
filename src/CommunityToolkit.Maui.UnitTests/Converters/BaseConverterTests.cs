@@ -9,7 +9,8 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 public abstract class BaseOneWayConverterTest<TConverter> : ConverterTest<TConverter> where TConverter : ICommunityToolkitValueConverter, new()
 {
 	[Fact]
-	public void ConvertBack_ShouldThrowNotSupportedException() {
+	public void ConvertBack_ShouldThrowNotSupportedException()
+	{
 		var options = new Options();
 		options.SetShouldSuppressExceptionsInConverters(true);
 
