@@ -26,7 +26,6 @@ public class ColorToRgbStringConverter : BaseConverter<Color, string>
 		return DefaultConvertBackReturnValue;
 	}
 
-
 	/// <inheritdoc/>
 	public override string ConvertFrom(Color value, CultureInfo? culture = null)
 	{
@@ -38,10 +37,24 @@ public class ColorToRgbStringConverter : BaseConverter<Color, string>
 /// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/>.
 /// </summary>
-public class ColorToRgbaStringConverter : BaseConverterOneWay<Color, string>
+public class ColorToRgbaStringConverter : BaseConverter<Color, string>
 {
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
+
+	/// <inheritdoc/>
+	public override Color DefaultConvertBackReturnValue { get; set; } = Colors.Transparent;
+
+	/// <inheritdoc/>
+	public override Color ConvertBackTo(string value, CultureInfo? culture)
+	{
+		if (Color.TryParse(value, out Color color))
+		{
+			return color;
+		}
+
+		return DefaultConvertBackReturnValue;
+	}
 
 	/// <inheritdoc/>
 	public override string ConvertFrom(Color value, CultureInfo? culture = null)
