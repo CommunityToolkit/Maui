@@ -254,7 +254,8 @@ partial class MediaManager : IDisposable
 
 			return;
 		}
-
+		MediaElement.Position = TimeSpan.Zero;
+		MediaElement.Duration = TimeSpan.Zero;
 		Player.AutoPlay = MediaElement.ShouldAutoPlay;
 
 		if (MediaElement.Source is UriMediaSource uriMediaSource)
@@ -417,7 +418,6 @@ partial class MediaManager : IDisposable
 		};
 
 		MediaElement?.CurrentStateChanged(newState);
-
 		if (sender.PlaybackState == MediaPlaybackState.Playing && sender.PlaybackRate == 0)
 		{
 			Dispatcher.Dispatch(() =>

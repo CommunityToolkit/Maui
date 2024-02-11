@@ -83,7 +83,7 @@ public static class DrawingViewService
 		{
 			throw new InvalidOperationException("Unable to generate image. No Lines Found");
 		}
-		
+
 		return GetUIImage(points, (context, offset) =>
 		{
 			foreach (var line in lines)

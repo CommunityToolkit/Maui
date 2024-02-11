@@ -138,7 +138,14 @@ public class AvatarViewImageTests : BaseHandlerTest
 		{
 			avatarImage.WidthRequest.Should().Be(73);
 			avatarImage.HeightRequest.Should().Be(37);
-			avatarImage.Clip.Should().BeOfType<RoundRectangleGeometry>();
+			if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst() || OperatingSystem.IsMacOS())
+			{
+				avatarImage.Clip.Should().BeNull();
+			}
+			else
+			{
+				avatarImage.Clip.Should().BeOfType<RoundRectangleGeometry>();
+			}
 		}
 	}
 }
