@@ -70,7 +70,7 @@ static partial class NavigationBar
 		var activity = (Activity?)handler.PlatformView.Context ?? throw new NullReferenceException("Activity cannot be null.");
 		var window = activity.GetCurrentWindow();
 
-		var color = GetColor((Page)view).ToPlatform();
+		var color = GetColor(page).ToPlatform();
 
 		window.SetNavigationBarColor(color);
 	}
