@@ -50,7 +50,10 @@ public class MauiPopup : UIViewController
 		View.Superview.Layer.CornerRadius = 0.0f;
 		View.Superview.Layer.MasksToBounds = false;
 
-		SetShadowView(PresentationController!.ContainerView);
+		if (PresentationController is not null)
+		{
+			SetShadowView(PresentationController.ContainerView);
+		}
 
 		SetElementSize(new Size(View.Bounds.Width, View.Bounds.Height));
 	}
