@@ -52,18 +52,7 @@ public class PopupService : IPopupService
 
 		ValidateBindingContext<TViewModel>(popup, out _);
 
-#if WINDOWS
-	    if (Application.Current!.Windows.FirstOrDefault(x => x.IsActivated) is Window activeWindow)
-		{
-			activeWindow.Page!.ShowPopup(popup);
-		}
-		else
-		{
-			CurrentPage.ShowPopup(popup);
-		}
-#else
-		CurrentPage.ShowPopup(popup);
-#endif
+		ShowPopup(popup);
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(TViewModel)"/>
@@ -75,18 +64,7 @@ public class PopupService : IPopupService
 
 		ValidateBindingContext<TViewModel>(popup, out _);
 
-#if WINDOWS
-	    if (Application.Current!.Windows.FirstOrDefault(x => x.IsActivated) is Window activeWindow)
-		{
-			activeWindow.Page!.ShowPopup(popup);
-		}
-		else
-		{
-			CurrentPage.ShowPopup(popup);
-		}
-#else
-		CurrentPage.ShowPopup(popup);
-#endif
+		ShowPopup(popup);
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(Action{TViewModel})"/>
@@ -100,15 +78,24 @@ public class PopupService : IPopupService
 
 		onPresenting.Invoke(viewModel);
 
+		ShowPopup(popup);
+	}
+
+	static void ShowPopup(Popup popup)
+	{
 #if WINDOWS
-	    if (Application.Current!.Windows.FirstOrDefault(x => x.IsActivated) is Window activeWindow)
+		if (Application.Current is Application app)
 		{
-			activeWindow.Page!.ShowPopup(popup);
+			if (app.Windows.FirstOrDefault(x => x.IsActivated) is Window activeWindow)
+			{
+				if (activeWindow.Page is Page page)
+				{
+					page.ShowPopup(popup);
+					return;
+				}
+			}
 		}
-		else
-		{
-			CurrentPage.ShowPopup(popup);
-		}
+		CurrentPage.ShowPopup(popup);
 #else
 		CurrentPage.ShowPopup(popup);
 #endif
@@ -121,18 +108,7 @@ public class PopupService : IPopupService
 
 		ValidateBindingContext<TViewModel>(popup, out _);
 
-#if WINDOWS
-	    if (Application.Current!.Windows.FirstOrDefault(x => x.IsActivated) is Window activeWindow)
-		{
-			return activeWindow.Page!.ShowPopupAsync(popup, token);
-		}
-		else
-		{
-			return CurrentPage.ShowPopupAsync(popup, token);
-		}
-#else
-		return CurrentPage.ShowPopupAsync(popup, token);
-#endif
+		return ShowPopupAsync(popup, token);
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(TViewModel, CancellationToken)"/>
@@ -144,18 +120,7 @@ public class PopupService : IPopupService
 
 		ValidateBindingContext<TViewModel>(popup, out _);
 
-#if WINDOWS
-	    if (Application.Current!.Windows.FirstOrDefault(x => x.IsActivated) is Window activeWindow)
-		{
-			return activeWindow.Page!.ShowPopupAsync(popup, token);
-		}
-		else
-		{
-			return CurrentPage.ShowPopupAsync(popup, token);
-		}
-#else
-		return CurrentPage.ShowPopupAsync(popup, token);
-#endif
+		return ShowPopupAsync(popup, token);
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(Action{TViewModel}, CancellationToken)"/>
@@ -169,15 +134,23 @@ public class PopupService : IPopupService
 
 		onPresenting.Invoke(viewModel);
 
+		return ShowPopupAsync(popup, token);
+	}
+
+	static Task<object?> ShowPopupAsync(Popup popup, CancellationToken token)
+	{
 #if WINDOWS
-	    if (Application.Current!.Windows.FirstOrDefault(x => x.IsActivated) is Window activeWindow)
+		if (Application.Current is Application app)
 		{
-			return activeWindow.Page!.ShowPopupAsync(popup, token);
+			if (app.Windows.FirstOrDefault(x => x.IsActivated) is Window activeWindow)
+			{
+				if (activeWindow.Page is Page page)
+				{
+					return page.ShowPopupAsync(popup, token);
+				}
+			}
 		}
-		else
-		{
-			return CurrentPage.ShowPopupAsync(popup, token);
-		}
+		return CurrentPage.ShowPopupAsync(popup, token);
 #else
 		return CurrentPage.ShowPopupAsync(popup, token);
 #endif
