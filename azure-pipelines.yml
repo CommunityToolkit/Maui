@@ -74,6 +74,7 @@ jobs:
 
       # Using rollback file is a workaround for a bug in the Azure Hosted Agent. 
       # The rollback file shouldbe removed in a future pull request once the bug has been fixed (likely on the next release of .NET 8)
+      # The subsequent workload installations can also be removed; we should only need to call `dotnet workload install maui --source https://api.nuget.org/v3/index.json``
       - task: CmdLine@2
         displayName: 'Install Latest .NET MAUI Workload'
         inputs:
@@ -81,7 +82,7 @@ jobs:
             dotnet workload install maui --from-rollback-file $(DotNetMauiRollbackFile) --source https://api.nuget.org/v3/index.json
             dotnet workload install wasi-experimental
             dotnet workload install ios
-            dotnet workload update
+            dotnet workload install maui
 
       - pwsh: |
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
