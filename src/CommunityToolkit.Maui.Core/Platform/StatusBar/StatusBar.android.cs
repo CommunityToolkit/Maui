@@ -15,7 +15,7 @@ static partial class StatusBar
 
 	static bool? isSupported;
 
-	static bool IsSupported => isSupported ??= AndroidWindowExtensions.IsSupported(BuildVersionCodes.M);
+	static bool IsSupported => isSupported ??= AndroidSystemExtensions.IsSupported(BuildVersionCodes.M);
 
 	static void PlatformSetColor(Color color)
 	{

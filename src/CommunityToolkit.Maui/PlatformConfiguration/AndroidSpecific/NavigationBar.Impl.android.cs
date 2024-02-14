@@ -13,7 +13,7 @@ static partial class NavigationBar
 {
 	static bool? isSupported;
 
-	static bool IsSupported => isSupported ??= AndroidWindowExtensions.IsSupported(BuildVersionCodes.M);
+	static bool IsSupported => isSupported ??= AndroidSystemExtensions.IsSupported(BuildVersionCodes.M);
 
 	internal static partial void RemapForControls()
 	{
@@ -21,7 +21,7 @@ static partial class NavigationBar
 		PageHandler.Mapper.Add(StyleProperty.PropertyName, MapNavigationStyleProperty);
 	}
 
-	static void MapNavigationStyleProperty(IPageHandler handler, IContentView view)
+	public static void MapNavigationStyleProperty(IPageHandler handler, IContentView view)
 	{
 		if (view is not Page page)
 		{
@@ -55,7 +55,7 @@ static partial class NavigationBar
 		}
 	}
 
-	static void MapNavigationColorProperty(IPageHandler handler, IContentView view)
+	public static void MapNavigationColorProperty(IPageHandler handler, IContentView view)
 	{
 		if (view is not Page page)
 		{
