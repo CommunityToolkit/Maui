@@ -71,8 +71,10 @@ jobs:
           version: '$(LATEST_NET_VERSION)'
           includePreviewVersions: false
 
-      - powershell: dotnet workload install maui
-        displayName: Install Latest .NET MAUI Workload
+      - task: CmdLine@2
+        displayName: 'Install Latest .NET MAUI Workload'
+        inputs:
+          script: dotnet workload install maui
 
       - pwsh: |
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
