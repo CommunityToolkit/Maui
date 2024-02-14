@@ -71,7 +71,7 @@ jobs:
           version: '$(LATEST_NET_VERSION)'
           includePreviewVersions: false
 
-      - powershell: dotnet workload install maui --skip-sign-check --source https://api.nuget.org/v3/index.json
+      - powershell: dotnet workload install maui
         displayName: Install Latest .NET MAUI Workload
 
       - pwsh: |
