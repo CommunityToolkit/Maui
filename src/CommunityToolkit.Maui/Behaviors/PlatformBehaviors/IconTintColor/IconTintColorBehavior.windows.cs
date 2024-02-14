@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using WButton = Microsoft.UI.Xaml.Controls.Button;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
+using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -18,6 +19,7 @@ public partial class IconTintColorBehavior
 	SpriteVisual? currentSpriteVisual;
 	CompositionColorBrush? currentColorBrush;
 	BitmapSource? blankImage;
+	WImageSource? originalImage;
 
 	/// <inheritdoc/>
 	protected override void OnAttachedTo(View bindable, FrameworkElement platformView)
@@ -172,6 +174,7 @@ public partial class IconTintColorBehavior
 			// Source image has changed, update the cached blank image
 			blankImage = new WriteableBitmap(pixelWidth, pixelHeight);
 		}
+		originalImage = image.Source;
 		image.Source = blankImage;
 	}
 
@@ -207,14 +210,14 @@ public partial class IconTintColorBehavior
 		switch (platformView)
 		{
 			case WImage wImage:
-				RestoreOriginalImageSize(wImage);
+				RestoreOriginal(wImage);
 				ElementCompositionPreview.SetElementChildVisual(platformView, null);
 				break;
 
 			case WButton button:
 				if (TryGetButtonImage(button, out var image))
 				{
-					RestoreOriginalImageSize(image);
+					RestoreOriginal(image);
 					ElementCompositionPreview.SetElementChildVisual(image, null);
 				}
 				break;
@@ -225,15 +228,13 @@ public partial class IconTintColorBehavior
 		currentColorBrush = null;
 	}
 
-	void RestoreOriginalImageSize(WImage image)
+	void RestoreOriginal(WImage image)
 	{
 		if (currentSpriteVisual is null)
 		{
 			return;
 		}
 
-		// Restore in Width/Height since ActualSize is readonly
-		image.Width = currentSpriteVisual.Size.X;
-		image.Height = currentSpriteVisual.Size.Y;
+		image.Source = originalImage;
 	}
 }
