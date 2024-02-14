@@ -17,6 +17,7 @@ public partial class IconTintColorBehavior
 {
 	SpriteVisual? currentSpriteVisual;
 	CompositionColorBrush? currentColorBrush;
+	BitmapSource? blankImage;
 
 	/// <inheritdoc/>
 	protected override void OnAttachedTo(View bindable, FrameworkElement platformView)
@@ -164,7 +165,14 @@ public partial class IconTintColorBehavior
 		ApplyTintCompositionEffect(image, color, width, height, offset, anchorPoint, uri);
 
 		// Hide possible visible pixels from original image by replaceing with a transparent image of the same size
-		image.Source = new WriteableBitmap((int)width, (int)height);
+		int pixelWidth = (int)width;
+		int pixelHeight = (int)height;
+		if (blankImage == null || (blankImage.PixelWidth != (int)width && blankImage.PixelHeight != pixelHeight))
+		{
+			// Source image has changed, update the cached blank image
+			blankImage = new WriteableBitmap(pixelWidth, pixelHeight);
+		}
+		image.Source = blankImage;
 	}
 
 	void ApplyTintCompositionEffect(FrameworkElement platformView, Color color, float width, float height, Vector3 offset, Vector2 anchorPoint, Uri surfaceMaskUri)
