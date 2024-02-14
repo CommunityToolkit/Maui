@@ -79,7 +79,7 @@ jobs:
         inputs:
           script: |
             dotnet workload install maui --from-rollback-file $(DotNetMauiRollbackFile) --source https://api.nuget.org/v3/index.json
-            dotnet workload restore
+            dotnet workload install wasi-experimental
 
       - pwsh: |
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
