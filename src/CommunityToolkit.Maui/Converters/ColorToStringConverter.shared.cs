@@ -83,7 +83,8 @@ public class ColorToHexRgbStringConverter : BaseConverter<Color, string>
 	}
 
 	/// <inheritdoc/>
-	public override Color ConvertBackTo(string value, CultureInfo? culture = null) {
+	public override Color ConvertBackTo(string value, CultureInfo? culture = null)
+	{
 		ArgumentNullException.ThrowIfNull(value);
 		return Color.FromRgba(value);
 	}
