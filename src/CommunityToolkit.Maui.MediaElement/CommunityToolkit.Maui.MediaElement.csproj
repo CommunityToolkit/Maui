@@ -48,12 +48,6 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-ios|AnyCPU'">
-    <CreatePackage>false</CreatePackage>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Remove="Extensions\" />
-  </ItemGroup>
   <ItemGroup>
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
     <None Include="ReadMe.txt" pack="true" PackagePath="." />
@@ -69,12 +63,7 @@
     <PackageReference Include="Xam.Plugins.Android.ExoPlayer.Transformer" Version="[2.19.1,)" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiPackageVersion)" />
-  </ItemGroup>
-  <ItemGroup>
-    <MauiImage Include="Resources\whitefs.png" BaseSize="36,36" Resize="true" pack="true" PackagePath="." />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Extensions\" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiPackageVersion)"/>
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiPackageVersion)"/>
   </ItemGroup>
 </Project>
