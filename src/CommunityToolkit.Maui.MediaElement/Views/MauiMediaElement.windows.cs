@@ -31,7 +31,7 @@ public class MauiMediaElement : Grid, IDisposable
 	static readonly AppWindow? appWindow = GetAppWindowForCurrentWindow();
 	readonly MediaPlayerElement mediaPlayerElement;
 
-	static ImageSource source { get; set; } = new BitmapImage(new Uri("ms-appx:///fullscreen.png"));
+	static ImageSource source = new BitmapImage(new Uri("ms-appx:///fullscreen.png"));
 	Button btn;
 	Grid grid = new();
 	Grid buttonContainer;

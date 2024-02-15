@@ -62,9 +62,6 @@ public class MauiMediaElement : CoordinatorLayout
 
 		if (e.IsFullScreen)
 		{
-			// Force the landscape on the device
-			currentActivity.RequestedOrientation = Android.Content.PM.ScreenOrientation.Landscape;
-
 			// Hide the SystemBars and Status bar
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
@@ -99,8 +96,6 @@ public class MauiMediaElement : CoordinatorLayout
 		}
 		else
 		{
-			currentActivity.RequestedOrientation = Android.Content.PM.ScreenOrientation.Portrait;
-			
 			// Show again the SystemBars and Status bar
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
