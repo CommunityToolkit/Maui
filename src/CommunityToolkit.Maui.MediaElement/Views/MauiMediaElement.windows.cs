@@ -34,7 +34,7 @@ public class MauiMediaElement : Grid, IDisposable
 	static ImageSource source { get; set; } = new BitmapImage(new Uri("ms-appx:///whitefs.png"));
 	Button btn;
 	Grid grid = new();
-	Grid ButtonContainer;
+	Grid buttonContainer;
 	Popup popup = new();
 
 	/// <summary>
@@ -63,18 +63,18 @@ public class MauiMediaElement : Grid, IDisposable
 			Source = source,
 		};
 
-		ButtonContainer = new()
+		buttonContainer = new()
 		{
 			HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Right,
 			VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top,
 			Width = 40,
 			Height = 40
 		};
-		ButtonContainer.Children.Add(image);
-		ButtonContainer.Children.Add(btn);
+		buttonContainer.Children.Add(image);
+		buttonContainer.Children.Add(btn);
 
 		Children.Add(this.mediaPlayerElement);
-		Children.Add(ButtonContainer);
+		Children.Add(buttonContainer);
 
 		mediaPlayerElement.PointerMoved += OnMediaPlayerElementPointerMoved;
 	}
@@ -83,9 +83,9 @@ public class MauiMediaElement : Grid, IDisposable
 	{
 		e.Handled = true;
 		mediaPlayerElement.PointerMoved -= OnMediaPlayerElementPointerMoved;
-		ButtonContainer.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+		buttonContainer.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
 		await Task.Delay(TimeSpan.FromSeconds(5));
-		ButtonContainer.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+		buttonContainer.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
 		mediaPlayerElement.PointerMoved += OnMediaPlayerElementPointerMoved;
 	}
 
@@ -110,7 +110,7 @@ public class MauiMediaElement : Grid, IDisposable
 			}
 
 			Children.Add(this.mediaPlayerElement);
-			Children.Add(this.ButtonContainer);
+			Children.Add(this.buttonContainer);
 
 			var parent = mediaPlayerElement.Parent as FrameworkElement;
 			mediaPlayerElement.Width = parent?.Width ?? mediaPlayerElement.Width;
@@ -128,7 +128,7 @@ public class MauiMediaElement : Grid, IDisposable
 
 			Children.Clear();
 			grid.Children.Add(mediaPlayerElement);
-			grid.Children.Add(ButtonContainer);
+			grid.Children.Add(buttonContainer);
 
 			popup.XamlRoot = mediaPlayerElement.XamlRoot;
 			popup.HorizontalOffset = 0;
