@@ -40,7 +40,6 @@ public partial class MapHandlerWindows : MapHandler
 
 	/// <inheritdoc/>
 
-	[Obsolete]
 	protected override FrameworkElement CreatePlatformView()
 	{
 		if (string.IsNullOrEmpty(MapsKey))

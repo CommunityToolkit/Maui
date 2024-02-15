@@ -63,7 +63,6 @@ public partial class MediaManager
 	/// <summary>
 	/// The platform-specific media player.
 	/// </summary>
-	[Obsolete]
 	protected PlatformMediaElement? Player { get; set; }
 #endif
 
