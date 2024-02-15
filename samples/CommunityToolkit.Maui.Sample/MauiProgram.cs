@@ -86,7 +86,7 @@ public static class MauiProgram
 		services.AddTransient<LayoutsGalleryPage, LayoutsGalleryViewModel>();
 		services.AddTransient<ViewsGalleryPage, ViewsGalleryViewModel>();
 		services.AddTransient<PlatformSpecificGalleryPage, PlatformSpecificGalleryViewModel>();
-		
+
 
 		// Add Alerts Pages + ViewModels
 		services.AddTransientWithShellRoute<SnackbarPage, SnackbarViewModel>();
