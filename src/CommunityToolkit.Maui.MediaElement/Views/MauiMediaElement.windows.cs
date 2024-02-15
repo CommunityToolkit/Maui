@@ -31,11 +31,11 @@ public class MauiMediaElement : Grid, IDisposable
 	static readonly AppWindow? appWindow = GetAppWindowForCurrentWindow();
 	readonly MediaPlayerElement mediaPlayerElement;
 
-	ImageSource source { get; set; } = new BitmapImage(new Uri("ms-appx:///whitefs.png"));
-	Button btn { get; set; }
-	Grid grid { get; set; } = new();
-	Grid ButtonContainer { get; set; }
-	Popup popup { get; set; } = new();
+	static ImageSource source { get; set; } = new BitmapImage(new Uri("ms-appx:///whitefs.png"));
+	Button btn;
+	Grid grid = new();
+	Grid ButtonContainer;
+	Popup popup = new();
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
