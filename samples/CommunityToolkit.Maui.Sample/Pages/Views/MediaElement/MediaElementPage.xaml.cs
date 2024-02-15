@@ -14,7 +14,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	const string loadHls = "Load HTTP Live Stream (HLS)";
 	const string loadLocalResource = "Load Local Resource";
 	const string resetSource = "Reset Source to null";
-	
+
 	static Page Page => Application.Current?.MainPage ?? throw new NullReferenceException();
 
 	public MediaElementPage(MediaElementViewModel viewModel, ILogger<MediaElementPage> logger) : base(viewModel)
@@ -239,14 +239,14 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				popupMediaElement,
 			}
 		};
-		
+
 		Page.ShowPopup(popup);
 		popup.Closed += (s, e) =>
 		{
 			popupMediaElement.Stop();
 			popupMediaElement.Handler?.DisconnectHandler();
 		};
- 
+	}
 	void MediaElementUnloaded(object sender, EventArgs e)
 	{
 		MediaElement.Handler?.DisconnectHandler();
