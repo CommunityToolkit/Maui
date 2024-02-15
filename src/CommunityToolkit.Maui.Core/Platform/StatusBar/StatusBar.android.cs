@@ -2,6 +2,7 @@
 using Android.OS;
 using Android.Views;
 using AndroidX.Core.View;
+using CommunityToolkit.Maui.Core.Extensions;
 using Microsoft.Maui.Platform;
 using Activity = Android.App.Activity;
 
@@ -12,9 +13,13 @@ static partial class StatusBar
 {
 	static Activity Activity => Microsoft.Maui.ApplicationModel.Platform.CurrentActivity ?? throw new InvalidOperationException("Android Activity can't be null.");
 
+	static bool? isSupported;
+
+	static bool IsSupported => isSupported ??= AndroidSystemExtensions.IsSupported(BuildVersionCodes.M);
+
 	static void PlatformSetColor(Color color)
 	{
-		if (IsSupported())
+		if (IsSupported)
 		{
 			Activity.Window?.SetStatusBarColor(color.ToPlatform());
 		}
@@ -22,7 +27,7 @@ static partial class StatusBar
 
 	static void PlatformSetStyle(StatusBarStyle style)
 	{
-		if (!IsSupported())
+		if (!IsSupported)
 		{
 			return;
 		}
@@ -45,27 +50,8 @@ static partial class StatusBar
 
 	static void SetStatusBarAppearance(Activity activity, bool isLightStatusBars)
 	{
-		var window = GetCurrentWindow(activity);
+		var window = activity.GetCurrentWindow();
 		var windowController = WindowCompat.GetInsetsController(window, window.DecorView);
 		windowController.AppearanceLightStatusBars = isLightStatusBars;
-
-		static Window GetCurrentWindow(Activity activity)
-		{
-			var window = activity.Window ?? throw new InvalidOperationException($"{nameof(activity.Window)} cannot be null");
-			window.ClearFlags(WindowManagerFlags.TranslucentStatus);
-			window.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
-			return window;
-		}
-	}
-
-	static bool IsSupported()
-	{
-		if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.M))
-		{
-			return true;
-		}
-
-		System.Diagnostics.Trace.WriteLine($"This functionality is not available. Minimum supported API is {(int)BuildVersionCodes.M}");
-		return false;
 	}
 }
