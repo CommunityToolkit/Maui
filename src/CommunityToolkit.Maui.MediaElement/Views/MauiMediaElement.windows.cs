@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.UI;
@@ -29,8 +30,8 @@ public class MauiMediaElement : Grid, IDisposable
 
 	static readonly AppWindow? appWindow = GetAppWindowForCurrentWindow();
 	readonly MediaPlayerElement mediaPlayerElement;
-	DispatcherTimer? timer;
 
+	ImageSource source { get; set; } = new BitmapImage(new Uri("ms-appx:///whitefs.png"));
 	Button btn { get; set; }
 	Grid grid { get; set; } = new();
 	Grid ButtonContainer { get; set; }
@@ -59,7 +60,7 @@ public class MauiMediaElement : Grid, IDisposable
 			Height = 40,
 			HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Right,
 			VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top,
-			Source = new BitmapImage(new Uri("ms-appx:///whitefs.png")),
+			Source = source,
 		};
 
 		ButtonContainer = new()
@@ -75,47 +76,17 @@ public class MauiMediaElement : Grid, IDisposable
 		Children.Add(this.mediaPlayerElement);
 		Children.Add(ButtonContainer);
 
-		mediaPlayerElement.PointerMoved += MediaPlayerElement_PointerMoved;
+		mediaPlayerElement.PointerMoved += OnMediaPlayerElementPointerMoved;
 	}
 
-	void MediaPlayerElement_PointerMoved(object sender, PointerRoutedEventArgs e)
+	async void OnMediaPlayerElementPointerMoved(object sender, PointerRoutedEventArgs e)
 	{
 		e.Handled = true;
-		mediaPlayerElement.PointerMoved -= MediaPlayerElement_PointerMoved;
-		InitializeTimer();
+		mediaPlayerElement.PointerMoved -= OnMediaPlayerElementPointerMoved;
 		ButtonContainer.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-	}
-
-	void InitializeTimer()
-	{
-		if (timer is not null)
-		{
-			return;
-		}
-
-		timer = new();
-		timer.Tick += OnTimer_Tick;
-		timer.Interval = TimeSpan.FromSeconds(5);
-		timer.Start();
-	}
-
-	void OnTimer_Tick(object? sender, object e)
-	{
-		ClearTimer();
+		await Task.Delay(TimeSpan.FromSeconds(5));
 		ButtonContainer.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-		mediaPlayerElement.PointerMoved += MediaPlayerElement_PointerMoved;
-	}
-
-	void ClearTimer()
-	{
-		if (timer is null)
-		{
-			return;
-		}
-
-		timer.Tick -= OnTimer_Tick;
-		timer.Stop();
-		timer = null;
+		mediaPlayerElement.PointerMoved += OnMediaPlayerElementPointerMoved;
 	}
 
 	void ButtonSetFullScreenStatus(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -182,7 +153,7 @@ public class MauiMediaElement : Grid, IDisposable
 
 		if (currentPage?.GetParentWindow().Handler.PlatformView is not MauiWinUIWindow window)
 		{
-			throw new InvalidOperationException();
+			throw new InvalidOperationException($"{nameof(window)} cannot be null.");
 		}
 		var handle = WindowNative.GetWindowHandle(window);
 		var id = Win32Interop.GetWindowIdFromWindow(handle);

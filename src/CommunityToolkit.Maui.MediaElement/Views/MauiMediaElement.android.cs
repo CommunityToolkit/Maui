@@ -6,6 +6,7 @@ using Com.Google.Android.Exoplayer2.UI;
 using CommunityToolkit.Maui.Views;
 using AndroidX.Core.View;
 using Android.Content.Res;
+using Android.App;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -29,7 +30,7 @@ public class MauiMediaElement : CoordinatorLayout
 		this.playerView = playerView;
 		this.context = context;
 
-		playerView.FullscreenButtonClick += PlayerView_FullscreenButtonClick;
+		playerView.FullscreenButtonClick += OnFullscreenButtonClick;
 		this.playerView.SetBackgroundColor(Android.Graphics.Color.Black);
 
 		AddView(playerView);
@@ -40,7 +41,7 @@ public class MauiMediaElement : CoordinatorLayout
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
-	void PlayerView_FullscreenButtonClick(object? sender, StyledPlayerView.FullscreenButtonClickEventArgs e)
+	void OnFullscreenButtonClick(object? sender, StyledPlayerView.FullscreenButtonClickEventArgs e)
 	{
 		// Ensure there is a player view
 		if (this.playerView is null)
@@ -48,29 +49,11 @@ public class MauiMediaElement : CoordinatorLayout
 			return;
 		}
 
-		// Ensure current activity exists
-		var currentActivity = Platform.CurrentActivity;
-		if (currentActivity is null)
-		{
-			return;
-		}
-
-		// Ensure current window is available
-		var currentWindow = currentActivity.Window;
-		if (currentWindow is null)
-		{
-			return;
-		}
-
-		// Ensure current resources exist
-		var currentResources = currentActivity.Resources;
-		if (currentResources is null)
-		{
-			return;
-		}
-
-		// Ensure current resources configuration exist
-		if (currentResources.Configuration is null)
+		// Ensure current activity and window are available
+		if (Platform.CurrentActivity is not Activity currentActivity
+			|| currentActivity.Window is not Android.Views.Window currentWindow
+			|| currentActivity.Resources is not Resources currentResources
+			|| currentResources.Configuration is null)
 		{
 			return;
 		}

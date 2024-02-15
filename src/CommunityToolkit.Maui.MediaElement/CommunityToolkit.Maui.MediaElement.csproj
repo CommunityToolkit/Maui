@@ -66,4 +66,7 @@
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiPackageVersion)"/>
     <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiPackageVersion)"/>
   </ItemGroup>
+  <ItemGroup>
+    <MauiImage Include="Resources\whitefs.png" BaseSize="36,36" Resize="true" pack="true" PackagePath="." />
+  </ItemGroup>
 </Project>
