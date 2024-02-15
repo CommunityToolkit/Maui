@@ -6,6 +6,7 @@ using CommunityToolkit.Maui.Sample.Pages.Essentials;
 using CommunityToolkit.Maui.Sample.Pages.Extensions;
 using CommunityToolkit.Maui.Sample.Pages.ImageSources;
 using CommunityToolkit.Maui.Sample.Pages.Layouts;
+using CommunityToolkit.Maui.Sample.Pages.PlatformSpecific;
 using CommunityToolkit.Maui.Sample.Pages.Views;
 using CommunityToolkit.Maui.Sample.ViewModels;
 using CommunityToolkit.Maui.Sample.ViewModels.Alerts;
@@ -15,6 +16,7 @@ using CommunityToolkit.Maui.Sample.ViewModels.Essentials;
 using CommunityToolkit.Maui.Sample.ViewModels.Extensions;
 using CommunityToolkit.Maui.Sample.ViewModels.ImageSources;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
+using CommunityToolkit.Maui.Sample.ViewModels.PlatformSpecific;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
 
@@ -130,6 +132,9 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<SemanticOrderViewPage, SemanticOrderViewPageViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<ShowPopupInOnAppearingPage, ShowPopupInOnAppearingPageViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<StylePopupPage, StylePopupViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+
+		// Add PlatformSpecific View Models
+		CreateViewModelMapping<NavigationBarPage, NavigationBarAndroidViewModel, PlatformSpecificGalleryPage, PlatformSpecificGalleryViewModel>(),
 	});
 
 	public AppShell() => InitializeComponent();
