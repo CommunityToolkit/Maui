@@ -77,6 +77,13 @@
         <ShellContent ContentTemplate="{DataTemplate layouts:LayoutsGalleryPage}" />
     </FlyoutItem>
 
+    <FlyoutItem
+        Title="Platform-Specific"
+        Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst={x:Null}}"
+        Route="PlatformSpecificGallerypage">
+        <ShellContent ContentTemplate="{DataTemplate pages:PlatformSpecificGalleryPage}" />
+    </FlyoutItem>
+
     <FlyoutItem Title="Views"
                 Route="ViewsGalleryPage"
                 Icon="{OnPlatform Default='dotnet_bot.png', MacCatalyst={x:Null}}">

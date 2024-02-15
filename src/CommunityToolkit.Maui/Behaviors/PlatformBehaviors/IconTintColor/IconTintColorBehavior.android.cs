@@ -16,6 +16,7 @@ public partial class IconTintColorBehavior
 	{
 		ApplyTintColor(bindable, platformView);
 
+		bindable.PropertyChanged += OnElementPropertyChanged;
 		this.PropertyChanged += (s, e) =>
 		{
 			if (e.PropertyName == TintColorProperty.PropertyName)
@@ -26,13 +27,15 @@ public partial class IconTintColorBehavior
 	}
 
 	/// <inheritdoc/>
-	protected override void OnDetachedFrom(View bindable, AView platformView) =>
+	protected override void OnDetachedFrom(View bindable, AView platformView)
+	{
 		ClearTintColor(bindable, platformView);
+		bindable.PropertyChanged -= OnElementPropertyChanged;
+	}
 
 	void ApplyTintColor(View element, AView control)
 	{
 		var color = TintColor;
-		element.PropertyChanged += OnElementPropertyChanged;
 
 		switch (control)
 		{
@@ -98,7 +101,6 @@ public partial class IconTintColorBehavior
 
 	void ClearTintColor(View element, AView control)
 	{
-		element.PropertyChanged -= OnElementPropertyChanged;
 		switch (control)
 		{
 			case ImageView image:
