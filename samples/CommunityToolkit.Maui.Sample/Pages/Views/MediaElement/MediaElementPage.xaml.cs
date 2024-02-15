@@ -246,5 +246,9 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			popupMediaElement.Stop();
 			popupMediaElement.Handler?.DisconnectHandler();
 		};
+ 
+	void MediaElementUnloaded(object sender, EventArgs e)
+	{
+		MediaElement.Handler?.DisconnectHandler();
 	}
 }
