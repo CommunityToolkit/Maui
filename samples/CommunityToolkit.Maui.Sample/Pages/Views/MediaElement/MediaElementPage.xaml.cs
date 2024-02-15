@@ -212,4 +212,9 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 		MediaElement.Aspect = (Aspect)aspectEnum;
 	}
+
+	void MediaElementUnloaded(object sender, EventArgs e)
+	{
+		MediaElement.Handler?.DisconnectHandler();
+	}
 }
