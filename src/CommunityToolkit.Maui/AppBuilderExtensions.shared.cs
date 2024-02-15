@@ -27,6 +27,7 @@ public static class AppBuilderExtensions
 
 		builder.ConfigureMauiHandlers(h =>
 		{
+			h.AddHandler<Expander, ExpanderHandler>();
 			h.AddHandler<DrawingView, DrawingViewHandler>();
 			h.AddHandler<Popup, PopupHandler>();
 			h.AddHandler<SemanticOrderView, SemanticOrderViewHandler>();

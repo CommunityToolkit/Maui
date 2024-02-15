@@ -12,7 +12,7 @@
 
     <ScrollView>
         <VerticalStackLayout Spacing="10">
-            <Button Text="Navigate to C# Sample" Clicked="GoToCSharpSampleClicked"/>
+            <!--<Button Text="Navigate to C# Sample" Clicked="GoToCSharpSampleClicked"/>
 
             <Label Text="Simple expander" FontSize="24" FontAttributes="Bold"/>
 
@@ -45,7 +45,7 @@
                         </mct:Expander.Content>
                     </mct:Expander>
                 </mct:Expander.Content>
-            </mct:Expander>
+            </mct:Expander>-->
 
             <Label Text="Expander in ListView" FontSize="24" FontAttributes="Bold"/>
 
@@ -74,7 +74,7 @@
             </ListView>
 
             <Label Text="Expander in CollectionView" FontSize="24" FontAttributes="Bold"/>
-
+<!--
             <CollectionView ItemsSource="{Binding ContentCreators}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
@@ -94,7 +94,7 @@
                         </mct:Expander>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
-            </CollectionView>
+            </CollectionView>-->
         </VerticalStackLayout>
     </ScrollView>
 </pages:BasePage>

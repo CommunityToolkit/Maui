@@ -6,19 +6,53 @@ namespace CommunityToolkit.Maui.Views;
 
 /// <inheritdoc cref="IExpander"/>
 [ContentProperty(nameof(Content))]
-public partial class Expander : ContentView, IExpander
+public partial class Expander : View, IExpander
 {
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="propertyName"></param>
+	protected override void OnPropertyChanged(string? propertyName = null)
+	{
+		base.OnPropertyChanged(propertyName);
+		if (propertyName == BindingContextProperty.PropertyName)
+		{
+			if (Header is View view)
+			{
+				view.BindingContext = BindingContext;
+			}
+			if (Content is View view2)
+			{
+				view2.BindingContext = BindingContext;
+			}
+		}
+	}
+
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Header"/> property.
 	/// </summary>
 	public static readonly BindableProperty HeaderProperty
-		= BindableProperty.Create(nameof(Header), typeof(IView), typeof(Expander), propertyChanged: OnHeaderPropertyChanged);
+		= BindableProperty.Create(nameof(Header), typeof(IView), typeof(Expander), propertyChanged: HeaderPropertyChanged);
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="bindable"></param>
+	/// <param name="oldvalue"></param>
+	/// <param name="newvalue"></param>
+	static void HeaderPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
+	{
+		if (((IExpander)bindable).Header is View view)
+		{
+			view.BindingContext = bindable.BindingContext;
+		}
+	}
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Content"/> property.
 	/// </summary>
-	public static new readonly BindableProperty ContentProperty
-		= BindableProperty.Create(nameof(Content), typeof(IView), typeof(Expander), propertyChanged: OnContentPropertyChanged);
+	public static readonly BindableProperty ContentProperty
+		= BindableProperty.Create(nameof(Content), typeof(IView), typeof(Expander));
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="IsExpanded"/> property.
@@ -30,7 +64,7 @@ public partial class Expander : ContentView, IExpander
 	/// Backing BindableProperty for the <see cref="Direction"/> property.
 	/// </summary>
 	public static readonly BindableProperty DirectionProperty
-		= BindableProperty.Create(nameof(Direction), typeof(ExpandDirection), typeof(Expander), ExpandDirection.Down, propertyChanged: OnDirectionPropertyChanged);
+		= BindableProperty.Create(nameof(Direction), typeof(ExpandDirection), typeof(Expander), ExpandDirection.Down);
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="CommandParameter"/> property.
@@ -45,25 +79,7 @@ public partial class Expander : ContentView, IExpander
 		= BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(Expander));
 
 	readonly WeakEventManager tappedEventManager = new();
-
-	/// <summary>
-	/// Initialize a new instance of <see cref="Expander"/>.
-	/// </summary>
-	public Expander()
-	{
-		HandleHeaderTapped = ResizeExpanderInItemsView;
-		HeaderTapGestureRecognizer.Tapped += OnHeaderTapGestureRecognizerTapped;
-
-		base.Content = new Grid
-		{
-			RowDefinitions =
-			{
-				new RowDefinition(GridLength.Auto),
-				new RowDefinition(GridLength.Auto)
-			}
-		};
-	}
-
+	
 	/// <summary>
 	///	Triggered when the value of <see cref="IsExpanded"/> changes
 	/// </summary>
@@ -73,17 +89,6 @@ public partial class Expander : ContentView, IExpander
 		remove => tappedEventManager.RemoveEventHandler(value);
 	}
 
-	internal TapGestureRecognizer HeaderTapGestureRecognizer { get; } = new();
-
-	/// <summary>
-	/// The Action that fires when <see cref="Header"/> is tapped.
-	/// By default, this <see cref="Action"/> runs <see cref="ResizeExpanderInItemsView(TappedEventArgs)"/>.
-	/// </summary>
-	/// <remarks>
-	/// Warning: Overriding this <see cref="Action"/> may cause <see cref="Expander"/> to work improperly when placed inside of a <see cref="CollectionView"/> and placed inside of a <see cref="ListView"/>.
-	/// </remarks>
-	public Action<TappedEventArgs>? HandleHeaderTapped { get; set; }
-
 	/// <inheritdoc />
 	public IView? Header
 	{
@@ -92,10 +97,10 @@ public partial class Expander : ContentView, IExpander
 	}
 
 	/// <inheritdoc cref="ContentView.Content" />
-	public new IView? Content
+	public IView? Content
 	{
-		get => (IView?)GetValue(Expander.ContentProperty);
-		set => SetValue(Expander.ContentProperty, value);
+		get => (IView?)GetValue(ContentProperty);
+		set => SetValue(ContentProperty, value);
 	}
 
 	/// <inheritdoc />
@@ -137,129 +142,10 @@ public partial class Expander : ContentView, IExpander
 		get => (ICommand?)GetValue(CommandProperty);
 		set => SetValue(CommandProperty, value);
 	}
-
-	Grid ContentGrid => (Grid)base.Content;
-
-	static void OnContentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		var expander = (Expander)bindable;
-		if (newValue is View view)
-		{
-			view.SetBinding(IsVisibleProperty, new Binding(nameof(IsExpanded), source: bindable));
-
-			expander.ContentGrid.Remove(oldValue);
-			expander.ContentGrid.Add(newValue);
-			expander.ContentGrid.SetRow(view, expander.Direction switch
-			{
-				ExpandDirection.Down => 1,
-				ExpandDirection.Up => 0,
-				_ => throw new NotSupportedException($"{nameof(ExpandDirection)} {expander.Direction} is not yet supported")
-			});
-		}
-	}
-
-	static void OnHeaderPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		var expander = (Expander)bindable;
-		if (newValue is View view)
-		{
-			expander.SetHeaderGestures(view);
-
-			expander.ContentGrid.Remove(oldValue);
-			expander.ContentGrid.Add(newValue);
-
-			expander.ContentGrid.SetRow(view, expander.Direction switch
-			{
-				ExpandDirection.Down => 0,
-				ExpandDirection.Up => 1,
-				_ => throw new NotSupportedException($"{nameof(ExpandDirection)} {expander.Direction} is not yet supported")
-			});
-		}
-	}
-
+	
 	static void OnIsExpandedPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		((IExpander)bindable).ExpandedChanged(((IExpander)bindable).IsExpanded);
-	}
-
-	static void OnDirectionPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
-		((Expander)bindable).HandleDirectionChanged((ExpandDirection)newValue);
-
-	void HandleDirectionChanged(ExpandDirection expandDirection)
-	{
-		if (Header is null || Content is null)
-		{
-			return;
-		}
-
-		switch (expandDirection)
-		{
-			case ExpandDirection.Down:
-				ContentGrid.SetRow(Header, 0);
-				ContentGrid.SetRow(Content, 1);
-				break;
-
-			case ExpandDirection.Up:
-				ContentGrid.SetRow(Header, 1);
-				ContentGrid.SetRow(Content, 0);
-				break;
-
-			default:
-				throw new NotSupportedException($"{nameof(ExpandDirection)} {expandDirection} is not yet supported");
-		}
-	}
-
-	void SetHeaderGestures(in IView header)
-	{
-		var headerView = (View)header;
-		headerView.GestureRecognizers.Remove(HeaderTapGestureRecognizer);
-		headerView.GestureRecognizers.Add(HeaderTapGestureRecognizer);
-	}
-
-	void OnHeaderTapGestureRecognizerTapped(object? sender, TappedEventArgs tappedEventArgs)
-	{
-		IsExpanded = !IsExpanded;
-		HandleHeaderTapped?.Invoke(tappedEventArgs);
-	}
-
-	void ResizeExpanderInItemsView(TappedEventArgs tappedEventArgs)
-	{
-		if (Header is null)
-		{
-			return;
-		}
-
-		Element element = this;
-		var size = IsExpanded
-					? Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins).Request
-					: Header.Measure(double.PositiveInfinity, double.PositiveInfinity);
-
-		while (element is not null)
-		{
-			if (element.Parent is ListView && element is Cell cell)
-			{
-#if IOS || MACCATALYST
-				throw new NotSupportedException($"{nameof(Expander)} is not yet supported in {nameof(ListView)}");
-#else
-				cell.ForceUpdateSize();
-#endif
-			}
-#if IOS || MACCATALYST || WINDOWS
-			else if (element is CollectionView collectionView)
-			{
-				var tapLocation = tappedEventArgs.GetPosition(collectionView);
-				ForceUpdateCellSize(collectionView, size, tapLocation);
-			}
-#endif
-#if IOS || MACCATALYST
-            else if (element is ScrollView scrollView)
-			{
-			    ((IView)scrollView).InvalidateMeasure();
-			}
-#endif
-
-			element = element.Parent;
-		}
 	}
 
 	void IExpander.ExpandedChanged(bool isExpanded)
