@@ -3,6 +3,7 @@ using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
+using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
@@ -13,6 +14,8 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	const string loadHls = "Load HTTP Live Stream (HLS)";
 	const string loadLocalResource = "Load Local Resource";
 	const string resetSource = "Reset Source to null";
+
+	static Page Page => Application.Current?.MainPage ?? throw new NullReferenceException();
 
 	public MediaElementPage(MediaElementViewModel viewModel, ILogger<MediaElementPage> logger) : base(viewModel)
 	{
@@ -211,5 +214,41 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 
 		MediaElement.Aspect = (Aspect)aspectEnum;
+	}
+
+	void DisplayPopup(object sender, EventArgs e)
+	{
+		MediaElement.Pause();
+		MediaElement popupMediaElement = new MediaElement
+		{
+			Source = MediaSource.FromResource("AppleVideo.mp4"),
+			HeightRequest = 600,
+			WidthRequest = 600,
+			ShouldAutoPlay = true,
+			ShouldShowPlaybackControls = true,
+		};
+		var popup = new Popup
+		{
+			VerticalOptions = LayoutAlignment.Center,
+			HorizontalOptions = LayoutAlignment.Center,
+		};
+		popup.Content = new StackLayout
+		{
+			Children =
+			{
+				popupMediaElement,
+			}
+		};
+
+		Page.ShowPopup(popup);
+		popup.Closed += (s, e) =>
+		{
+			popupMediaElement.Stop();
+			popupMediaElement.Handler?.DisconnectHandler();
+		};
+	}
+	void MediaElementUnloaded(object sender, EventArgs e)
+	{
+		MediaElement.Handler?.DisconnectHandler();
 	}
 }

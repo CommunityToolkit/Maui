@@ -9,6 +9,6 @@ public sealed partial class PlatformSpecificGalleryViewModel : BaseGalleryViewMo
 		SectionModel.Create<NavigationBarAndroidViewModel>("NavigationBar (Android)", "Change the Navigation Bar color on Android"),
 	])
 	{
-		
+
 	}
 }
