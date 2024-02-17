@@ -360,10 +360,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 
 		await popupDismissedTaskCompletionSource.Task.WaitAsync(token);
 
-		if (Parent is not null)
-		{
-			Parent.RemoveLogicalChild(this);
-		}
+		Parent?.RemoveLogicalChild(this);
 
 		dismissWeakEventManager.HandleEvent(this, new PopupClosedEventArgs(result, wasDismissedByTappingOutsideOfPopup), nameof(Closed));
 	}
@@ -411,6 +408,5 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	void IPropertyPropagationController.PropagatePropertyChanged(string propertyName) =>
 		PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 
-	IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() =>
-		Content is null ? Array.Empty<IVisualTreeElement>() : new[] { Content };
+	IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Content is null ? [] : [Content];
 }
