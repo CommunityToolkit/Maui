@@ -169,7 +169,7 @@ public partial class IconTintColorBehavior
 		// Hide possible visible pixels from original image by replaceing with a transparent image of the same size
 		int pixelWidth = (int)width;
 		int pixelHeight = (int)height;
-		if (blankImage == null || (blankImage.PixelWidth != (int)width && blankImage.PixelHeight != pixelHeight))
+		if (blankImage is null || (blankImage.PixelWidth != (int)width && blankImage.PixelHeight != pixelHeight))
 		{
 			// Source image has changed, update the cached blank image
 			blankImage = new WriteableBitmap(pixelWidth, pixelHeight);
