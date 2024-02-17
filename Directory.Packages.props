@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <MauiPackageVersion>8.0.7</MauiPackageVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Core" Version="$(MauiPackageVersion)"/>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiPackageVersion)"/>
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiPackageVersion)"/>
+    <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="$(MauiPackageVersion)"/>
+    <PackageReference Include="Microsoft.Maui.Essentials" Version="$(MauiPackageVersion)"/>
+  </ItemGroup>
+</Project>
