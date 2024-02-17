@@ -115,7 +115,7 @@ public partial class IconTintColorBehavior
 				break;
 
 			default:
-				throw new NotSupportedException($"{nameof(IconTintColorBehavior)} only currently supports {typeof(WImage)} and {typeof(WButton)}.");
+				throw new NotSupportedException($"{nameof(IconTintColorBehavior)} only currently supports {typeof(WImage).FullName} and {typeof(WButton).FullName}.");
 		}
 	}
 
@@ -166,14 +166,14 @@ public partial class IconTintColorBehavior
 
 		ApplyTintCompositionEffect(image, color, width, height, offset, anchorPoint, uri);
 
-		// Hide possible visible pixels from original image by replaceing with a transparent image of the same size
-		int pixelWidth = (int)width;
-		int pixelHeight = (int)height;
-		if (blankImage is null || (blankImage.PixelWidth != (int)width && blankImage.PixelHeight != pixelHeight))
+		// Hide possible visible pixels from original image by replacing with a transparent image of the same size
+		if (blankImage is null 
+			|| (blankImage.PixelWidth != (int)width && blankImage.PixelHeight != (int)height))
 		{
 			// Source image has changed, update the cached blank image
-			blankImage = new WriteableBitmap(pixelWidth, pixelHeight);
+			blankImage = new WriteableBitmap((int)width, (int)height);
 		}
+
 		originalImage = image.Source;
 		image.Source = blankImage;
 	}
@@ -210,17 +210,20 @@ public partial class IconTintColorBehavior
 		switch (platformView)
 		{
 			case WImage wImage:
-				RestoreOriginal(wImage);
+				RestoreOriginalImage(wImage);
 				ElementCompositionPreview.SetElementChildVisual(platformView, null);
 				break;
 
 			case WButton button:
 				if (TryGetButtonImage(button, out var image))
 				{
-					RestoreOriginal(image);
+					RestoreOriginalImage(image);
 					ElementCompositionPreview.SetElementChildVisual(image, null);
 				}
 				break;
+
+			default:
+				throw new NotSupportedException($"{nameof(IconTintColorBehavior)} only currently supports {typeof(WImage).FullName} and {typeof(WButton).FullName}.");
 		}
 
 		currentSpriteVisual.Brush = null;
@@ -228,7 +231,7 @@ public partial class IconTintColorBehavior
 		currentColorBrush = null;
 	}
 
-	void RestoreOriginal(WImage image)
+	void RestoreOriginalImage(WImage image)
 	{
 		if (currentSpriteVisual is null)
 		{
