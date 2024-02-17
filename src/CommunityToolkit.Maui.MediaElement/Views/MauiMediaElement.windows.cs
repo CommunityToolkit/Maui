@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using CommunityToolkit.Maui.Extensions;
+﻿using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -8,7 +6,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using WinRT.Interop;
 using Application = Microsoft.Maui.Controls.Application;
@@ -25,17 +22,17 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiMediaElement : Grid, IDisposable
 {
-	bool navbarExist;
-	bool isDisposed;
-
 	static readonly AppWindow? appWindow = GetAppWindowForCurrentWindow();
+	static readonly ImageSource source = new BitmapImage(new Uri("ms-appx:///fullscreen.png"));
+
+	readonly Popup popup = new();
+	readonly Grid fullScreenGrid = new();
+	readonly Grid buttonContainer;
+	readonly Button fullScreenButton;
 	readonly MediaPlayerElement mediaPlayerElement;
 
-	static ImageSource source = new BitmapImage(new Uri("ms-appx:///fullscreen.png"));
-	Button btn;
-	Grid grid = new();
-	Grid buttonContainer;
-	Popup popup = new();
+	bool doesNavigationBarExistBeforeFullScreen;
+	bool isDisposed;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
@@ -45,14 +42,14 @@ public class MauiMediaElement : Grid, IDisposable
 	{
 		this.mediaPlayerElement = mediaPlayerElement;
 
-		btn = new Button
+		fullScreenButton = new Button
 		{
 			Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent),
 			Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent),
 			Width = 40,
 			Height = 40
 		};
-		btn.Click += ButtonSetFullScreenStatus;
+		fullScreenButton.Click += OnFullScreenButtonClick;
 
 		Image image = new()
 		{
@@ -71,100 +68,13 @@ public class MauiMediaElement : Grid, IDisposable
 			Height = 40
 		};
 		buttonContainer.Children.Add(image);
-		buttonContainer.Children.Add(btn);
+		buttonContainer.Children.Add(fullScreenButton);
 
 		Children.Add(this.mediaPlayerElement);
 		Children.Add(buttonContainer);
 
 		mediaPlayerElement.PointerMoved += OnMediaPlayerElementPointerMoved;
 	}
-
-	async void OnMediaPlayerElementPointerMoved(object sender, PointerRoutedEventArgs e)
-	{
-		e.Handled = true;
-		mediaPlayerElement.PointerMoved -= OnMediaPlayerElementPointerMoved;
-		buttonContainer.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-		await Task.Delay(TimeSpan.FromSeconds(5));
-		buttonContainer.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-		mediaPlayerElement.PointerMoved += OnMediaPlayerElementPointerMoved;
-	}
-
-	void ButtonSetFullScreenStatus(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-	{
-		var currentPage = CurrentPage;
-		if (appWindow is null)
-		{
-			return;
-		}
-
-		if (appWindow.Presenter.Kind == AppWindowPresenterKind.FullScreen)
-		{
-			appWindow.SetPresenter(AppWindowPresenterKind.Default);
-			Shell.SetNavBarIsVisible(CurrentPage, navbarExist);
-
-			if (popup.IsOpen)
-			{
-				popup.IsOpen = false;
-				popup.Child = null;
-				grid.Children.Clear();
-			}
-
-			Children.Add(this.mediaPlayerElement);
-			Children.Add(this.buttonContainer);
-
-			var parent = mediaPlayerElement.Parent as FrameworkElement;
-			mediaPlayerElement.Width = parent?.Width ?? mediaPlayerElement.Width;
-			mediaPlayerElement.Height = parent?.Height ?? mediaPlayerElement.Height;
-		}
-		else
-		{
-			appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
-			navbarExist = Shell.GetNavBarIsVisible(currentPage);
-			Shell.SetNavBarIsVisible(CurrentPage, false);
-
-			var displayInfo = DeviceDisplay.Current.MainDisplayInfo;
-			mediaPlayerElement.Width = displayInfo.Width / displayInfo.Density;
-			mediaPlayerElement.Height = displayInfo.Height / displayInfo.Density;
-
-			Children.Clear();
-			grid.Children.Add(mediaPlayerElement);
-			grid.Children.Add(buttonContainer);
-
-			popup.XamlRoot = mediaPlayerElement.XamlRoot;
-			popup.HorizontalOffset = 0;
-			popup.VerticalOffset = 0;
-			popup.ShouldConstrainToRootBounds = false;
-			popup.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center;
-			popup.HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center;
-			popup.Child = grid;
-
-			if (!popup.IsOpen)
-			{
-				popup.IsOpen = true;
-			}
-		}
-	}
-
-	static AppWindow GetAppWindowForCurrentWindow()
-	{
-		// let's cache the CurrentPage here, since the user can navigate or background the app
-		// while this method is running
-		var currentPage = CurrentPage;
-
-		if (currentPage?.GetParentWindow().Handler.PlatformView is not MauiWinUIWindow window)
-		{
-			throw new InvalidOperationException($"{nameof(window)} cannot be null.");
-		}
-		var handle = WindowNative.GetWindowHandle(window);
-		var id = Win32Interop.GetWindowIdFromWindow(handle);
-		return AppWindow.GetFromWindowId(id);
-	}
-
-	/// <summary>
-	/// Gets the presented page.
-	/// </summary>
-	protected static Page CurrentPage =>
-		PageExtensions.GetCurrentPage(Application.Current?.MainPage ?? throw new InvalidOperationException($"{nameof(Application.Current.MainPage)} cannot be null."));
 
 	/// <summary>
 	/// Finalizer
@@ -178,7 +88,13 @@ public class MauiMediaElement : Grid, IDisposable
 	{
 		Dispose(true);
 		GC.SuppressFinalize(this);
-	}
+	}	
+
+	/// <summary>
+	/// Gets the presented page.
+	/// </summary>
+	protected static Page CurrentPage =>
+		PageExtensions.GetCurrentPage(Application.Current?.MainPage ?? throw new InvalidOperationException($"{nameof(Application.Current.MainPage)} cannot be null."));
 
 	/// <summary>
 	/// Releases the managed and unmanaged resources used by the <see cref="MauiMediaElement"/>.
@@ -196,5 +112,88 @@ public class MauiMediaElement : Grid, IDisposable
 		}
 
 		isDisposed = true;
+	}
+
+	static AppWindow GetAppWindowForCurrentWindow()
+	{
+		// let's cache the CurrentPage here, since the user can navigate or background the app
+		// while this method is running
+		var currentPage = CurrentPage;
+
+		if (currentPage?.GetParentWindow().Handler.PlatformView is not MauiWinUIWindow window)
+		{
+			throw new InvalidOperationException($"{nameof(window)} cannot be null.");
+		}
+		var handle = WindowNative.GetWindowHandle(window);
+		var id = Win32Interop.GetWindowIdFromWindow(handle);
+		return AppWindow.GetFromWindowId(id);
+	}
+
+	async void OnMediaPlayerElementPointerMoved(object sender, PointerRoutedEventArgs e)
+	{
+		e.Handled = true;
+		mediaPlayerElement.PointerMoved -= OnMediaPlayerElementPointerMoved;
+		buttonContainer.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+
+		await Task.Delay(TimeSpan.FromSeconds(5));
+
+		buttonContainer.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+		mediaPlayerElement.PointerMoved += OnMediaPlayerElementPointerMoved;
+	}
+
+	void OnFullScreenButtonClick(object sender, RoutedEventArgs e)
+	{
+		var currentPage = CurrentPage;
+		if (appWindow is null)
+		{
+			return;
+		}
+
+		if (appWindow.Presenter.Kind is AppWindowPresenterKind.FullScreen)
+		{
+			appWindow.SetPresenter(AppWindowPresenterKind.Default);
+			Shell.SetNavBarIsVisible(CurrentPage, doesNavigationBarExistBeforeFullScreen);
+
+			if (popup.IsOpen)
+			{
+				popup.IsOpen = false;
+				popup.Child = null;
+				fullScreenGrid.Children.Clear();
+			}
+
+			Children.Add(mediaPlayerElement);
+			Children.Add(buttonContainer);
+
+			var parent = mediaPlayerElement.Parent as FrameworkElement;
+			mediaPlayerElement.Width = parent?.Width ?? mediaPlayerElement.Width;
+			mediaPlayerElement.Height = parent?.Height ?? mediaPlayerElement.Height;
+		}
+		else
+		{
+			appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
+			doesNavigationBarExistBeforeFullScreen = Shell.GetNavBarIsVisible(currentPage);
+			Shell.SetNavBarIsVisible(CurrentPage, false);
+
+			var displayInfo = DeviceDisplay.Current.MainDisplayInfo;
+			mediaPlayerElement.Width = displayInfo.Width / displayInfo.Density;
+			mediaPlayerElement.Height = displayInfo.Height / displayInfo.Density;
+
+			Children.Clear();
+			fullScreenGrid.Children.Add(mediaPlayerElement);
+			fullScreenGrid.Children.Add(buttonContainer);
+
+			popup.XamlRoot = mediaPlayerElement.XamlRoot;
+			popup.HorizontalOffset = 0;
+			popup.VerticalOffset = 0;
+			popup.ShouldConstrainToRootBounds = false;
+			popup.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center;
+			popup.HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center;
+			popup.Child = fullScreenGrid;
+
+			if (!popup.IsOpen)
+			{
+				popup.IsOpen = true;
+			}
+		}
 	}
 }
