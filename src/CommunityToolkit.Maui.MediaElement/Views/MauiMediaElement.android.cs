@@ -16,7 +16,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 public class MauiMediaElement : CoordinatorLayout
 {
 	readonly StyledPlayerView playerView;
-	readonly Context context;
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
 
@@ -28,101 +27,11 @@ public class MauiMediaElement : CoordinatorLayout
 	public MauiMediaElement(Context context, StyledPlayerView playerView) : base(context)
 	{
 		this.playerView = playerView;
-		this.context = context;
 
 		playerView.FullscreenButtonClick += OnFullscreenButtonClick;
 		this.playerView.SetBackgroundColor(Android.Graphics.Color.Black);
 
 		AddView(playerView);
-	}
-
-	/// <summary>
-	/// Allows the video to enter or exist a full screen mode
-	/// </summary>
-	/// <param name="sender"></param>
-	/// <param name="e"></param>
-	void OnFullscreenButtonClick(object? sender, StyledPlayerView.FullscreenButtonClickEventArgs e)
-	{
-		// Ensure there is a player view
-		if (this.playerView is null)
-		{
-			return;
-		}
-
-		// Ensure current activity and window are available
-		if (Platform.CurrentActivity is not Activity currentActivity
-			|| currentActivity.Window is not Android.Views.Window currentWindow
-			|| currentActivity.Resources is not Resources currentResources
-			|| currentResources.Configuration is null)
-		{
-			return;
-		}
-
-		var windowInsetsControllerCompat = WindowCompat.GetInsetsController(currentWindow, currentWindow.DecorView);
-
-		if (e.IsFullScreen)
-		{
-			// Hide the SystemBars and Status bar
-			if (OperatingSystem.IsAndroidVersionAtLeast(30))
-			{
-				currentWindow.SetDecorFitsSystemWindows(false);
-
-				var windowInsets = currentWindow.DecorView.RootWindowInsets;
-				if (windowInsets is not null)
-				{
-					isSystemBarVisible = windowInsets.IsVisible(WindowInsetsCompat.Type.NavigationBars()) || windowInsets.IsVisible(WindowInsetsCompat.Type.StatusBars());
-					
-					if (isSystemBarVisible)
-					{
-						windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
-						currentWindow.InsetsController?.Hide(WindowInsets.Type.SystemBars());
-					}
-				}
-			}
-			else
-			{
-				defaultSystemUiVisibility = (int)currentWindow.DecorView.SystemUiVisibility;
-				int systemUiVisibility = defaultSystemUiVisibility | (int)SystemUiFlags.LayoutStable | (int)SystemUiFlags.LayoutHideNavigation | (int)SystemUiFlags.LayoutHideNavigation |
-					(int)SystemUiFlags.LayoutFullscreen | (int)SystemUiFlags.HideNavigation | (int)SystemUiFlags.Fullscreen | (int)SystemUiFlags.Immersive;
-				currentWindow.DecorView.SystemUiVisibility = (StatusBarVisibility)systemUiVisibility;
-			}
-
-			// Update the PlayerView
-			if (currentWindow.DecorView is FrameLayout layout)
-			{
-				RemoveView(playerView);
-				layout.AddView(playerView, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent));
-			}
-		}
-		else
-		{
-			// Show again the SystemBars and Status bar
-			if (OperatingSystem.IsAndroidVersionAtLeast(30))
-			{
-				currentWindow.SetDecorFitsSystemWindows(true);
-
-				if (isSystemBarVisible)
-				{
-					var types = WindowInsetsCompat.Type.StatusBars() |
-								WindowInsetsCompat.Type.SystemBars() |
-								WindowInsetsCompat.Type.NavigationBars();
-					windowInsetsControllerCompat.Show(types);
-					windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorDefault;
-					currentWindow.InsetsController?.Show(WindowInsets.Type.SystemBars());
-				}
-			}
-			else
-			{
-				currentWindow.DecorView.SystemUiVisibility = (StatusBarVisibility)defaultSystemUiVisibility;
-			}
-
-			// Update the PlayerView
-			if (currentWindow.DecorView is FrameLayout layout)
-			{
-				layout.RemoveView(playerView);
-				AddView(playerView);
-			}
-		}
 	}
 
 	/// <summary>
@@ -140,5 +49,97 @@ public class MauiMediaElement : CoordinatorLayout
 		}
 
 		base.Dispose(disposing);
+	}
+
+	void OnFullscreenButtonClick(object? sender, StyledPlayerView.FullscreenButtonClickEventArgs e)
+	{
+		// Ensure there is a player view
+		if (playerView is null)
+		{
+			return;
+		}
+
+		// Ensure current activity and window are available
+		if (Platform.CurrentActivity is not Activity currentActivity
+			|| currentActivity.Window is not Android.Views.Window currentWindow
+			|| currentActivity.Resources is not Resources currentResources
+			|| currentResources.Configuration is null)
+		{
+			return;
+		}
+
+		var windowInsetsControllerCompat = WindowCompat.GetInsetsController(currentWindow, currentWindow.DecorView);
+
+		// Hide the SystemBars and Status bar
+		if (e.IsFullScreen)
+		{
+			if (OperatingSystem.IsAndroidVersionAtLeast(30))
+			{
+				currentWindow.SetDecorFitsSystemWindows(false);
+
+				var windowInsets = currentWindow.DecorView.RootWindowInsets;
+				if (windowInsets is not null)
+				{
+					isSystemBarVisible = windowInsets.IsVisible(WindowInsetsCompat.Type.NavigationBars()) || windowInsets.IsVisible(WindowInsetsCompat.Type.StatusBars());
+
+					if (isSystemBarVisible)
+					{
+						windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
+						currentWindow.InsetsController?.Hide(WindowInsets.Type.SystemBars());
+					}
+				}
+			}
+			else
+			{
+				defaultSystemUiVisibility = (int)currentWindow.DecorView.SystemUiVisibility;
+				int systemUiVisibility = defaultSystemUiVisibility
+					| (int)SystemUiFlags.LayoutStable
+					| (int)SystemUiFlags.LayoutHideNavigation
+					| (int)SystemUiFlags.LayoutHideNavigation
+					| (int)SystemUiFlags.LayoutFullscreen
+					| (int)SystemUiFlags.HideNavigation
+					| (int)SystemUiFlags.Fullscreen
+					| (int)SystemUiFlags.Immersive;
+
+				currentWindow.DecorView.SystemUiVisibility = (StatusBarVisibility)systemUiVisibility;
+			}
+
+			// Update the PlayerView
+			if (currentWindow.DecorView is FrameLayout layout)
+			{
+				RemoveView(playerView);
+				layout.AddView(playerView, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent));
+			}
+		}
+		// Show again the SystemBars and Status bar
+		else
+		{
+			if (OperatingSystem.IsAndroidVersionAtLeast(30))
+			{
+				currentWindow.SetDecorFitsSystemWindows(true);
+
+				if (isSystemBarVisible)
+				{
+					var types = WindowInsetsCompat.Type.StatusBars()
+						| WindowInsetsCompat.Type.SystemBars()
+						| WindowInsetsCompat.Type.NavigationBars();
+
+					windowInsetsControllerCompat.Show(types);
+					windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorDefault;
+					currentWindow.InsetsController?.Show(WindowInsets.Type.SystemBars());
+				}
+			}
+			else
+			{
+				currentWindow.DecorView.SystemUiVisibility = (StatusBarVisibility)defaultSystemUiVisibility;
+			}
+
+			// Update the PlayerView
+			if (currentWindow.DecorView is FrameLayout layout)
+			{
+				layout.RemoveView(playerView);
+				AddView(playerView);
+			}
+		}
 	}
 }
