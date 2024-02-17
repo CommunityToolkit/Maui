@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
+using CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui;
@@ -33,7 +34,7 @@ public static class AppBuilderExtensions
 		});
 
 		Popup.RemapForControls();
-
+		NavigationBar.RemapForControls();
 		return builder;
 	}
 }
