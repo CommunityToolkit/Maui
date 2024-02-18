@@ -351,7 +351,7 @@ public class PopupTests : BaseHandlerTest
 		page.ShowPopup((MockPopup)popup);
 		Assert.Equal(2, page.LogicalChildrenInternal.Count);
 
-		await((MockPopup)popup).CloseAsync(token: CancellationToken.None);
+		await ((MockPopup)popup).CloseAsync(token: CancellationToken.None);
 		Assert.Single(page.LogicalChildrenInternal);
 	}
 
