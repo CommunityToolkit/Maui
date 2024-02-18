@@ -12,7 +12,10 @@ public class PopupService : IPopupService
 
 	static readonly Dictionary<Type, Type> viewModelToViewMappings = new();
 
-	internal IPopupLifecycleController PopupLifecycleController { get; set; } = new StackBasedPopupLifecycleController();
+	/// <summary>
+	/// Gets or sets the <see cref="IPopupLifecycleController"/> implementation.
+	/// </summary>
+	public IPopupLifecycleController PopupLifecycleController { get; set; } = new StackBasedPopupLifecycleController();
 
 	static Page CurrentPage =>
 		PageExtensions.GetCurrentPage(
