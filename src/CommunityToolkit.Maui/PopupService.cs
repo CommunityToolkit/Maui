@@ -12,7 +12,7 @@ public class PopupService : IPopupService
 
 	static readonly Dictionary<Type, Type> viewModelToViewMappings = new();
 
-	readonly Stack<WeakReference<Popup>> popupDisplayStack = new();
+	internal IPopupLifecycleController PopupLifecycleController { get; set; } = new StackBasedPopupLifecycleController();
 
 	static Page CurrentPage =>
 		PageExtensions.GetCurrentPage(
@@ -50,20 +50,15 @@ public class PopupService : IPopupService
 	/// <inheritdoc cref="IPopupService.ClosePopup(object?)" />
 	public void ClosePopup(object? result = null)
 	{
-		var popupReference = popupDisplayStack.Peek();
-
-		if (popupReference.TryGetTarget(out var popup))
-		{
-			popup.Close(result);
-		}
+		this.PopupLifecycleController.GetCurrentPopup()?.Close(result);
 	}
 
 	/// <inheritdoc cref="IPopupService.ClosePopupAsync(object?)" />
 	public Task ClosePopupAsync(object? result = null)
 	{
-		var popupReference = popupDisplayStack.Peek();
+		var popup = this.PopupLifecycleController.GetCurrentPopup();
 
-		if (popupReference.TryGetTarget(out var popup))
+		if (popup is not null)
 		{
 			return popup.CloseAsync(result);
 		}
@@ -187,18 +182,6 @@ public class PopupService : IPopupService
 
 	void InitializePopup(Popup popup)
 	{
-		popup.Closed += OnPopupClosed;
-		popupDisplayStack.Push(new(popup));
-	}
-
-	void OnPopupClosed(object? sender, PopupClosedEventArgs e)
-	{
-		if (sender is not Popup popup)
-		{
-			return;
-		}
-
-		popup.Closed -= OnPopupClosed;
-		popupDisplayStack.Pop();
+		this.PopupLifecycleController.OnShowPopup(popup);
 	}
 }
