@@ -96,17 +96,16 @@ public class MauiMediaElement : CoordinatorLayout
 			}
 			else
 			{
-				defaultSystemUiVisibility = (int)currentWindow.DecorView.SystemUiVisibility;
-				int systemUiVisibility = defaultSystemUiVisibility
-					| (int)SystemUiFlags.LayoutStable
-					| (int)SystemUiFlags.LayoutHideNavigation
-					| (int)SystemUiFlags.LayoutHideNavigation
-					| (int)SystemUiFlags.LayoutFullscreen
-					| (int)SystemUiFlags.HideNavigation
-					| (int)SystemUiFlags.Fullscreen
-					| (int)SystemUiFlags.Immersive;
-
-				currentWindow.DecorView.SystemUiVisibility = (StatusBarVisibility)systemUiVisibility;
+				defaultSystemUiVisibility = (int)currentWindow.DecorView.SystemUiFlags;
+				
+				currentWindow.DecorView.SystemUiFlags = currentWindow.DecorView.SystemUiFlags 
+					| SystemUiFlags.LayoutStable
+					| SystemUiFlags.LayoutHideNavigation
+					| SystemUiFlags.LayoutHideNavigation
+					| SystemUiFlags.LayoutFullscreen
+					| SystemUiFlags.HideNavigation
+					| SystemUiFlags.Fullscreen
+					| SystemUiFlags.Immersive;
 			}
 
 			// Update the PlayerView
@@ -136,7 +135,7 @@ public class MauiMediaElement : CoordinatorLayout
 			}
 			else
 			{
-				currentWindow.DecorView.SystemUiVisibility = (StatusBarVisibility)defaultSystemUiVisibility;
+				currentWindow.DecorView.SystemUiFlags = (SystemUiFlags)defaultSystemUiVisibility;
 			}
 
 			// Update the PlayerView
