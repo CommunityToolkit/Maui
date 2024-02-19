@@ -84,6 +84,11 @@ public class MauiMediaElement : CoordinatorLayout
 
 					if (isSystemBarVisible)
 					{
+						var types = WindowInsetsCompat.Type.StatusBars()
+							| WindowInsetsCompat.Type.SystemBars()
+							| WindowInsetsCompat.Type.NavigationBars();
+
+						windowInsetsControllerCompat.Hide(types);
 						windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
 						currentWindow.InsetsController?.Hide(WindowInsets.Type.SystemBars());
 					}
