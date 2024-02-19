@@ -13,7 +13,6 @@ using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
-[Obsolete]
 public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
@@ -26,7 +25,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
 	/// </summary>
-	[Obsolete]
 	protected StyledPlayerView? PlayerView { get; set; }
 
 	/// <summary>
@@ -34,7 +32,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// </summary>
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
 	/// <exception cref="NullReferenceException">Thrown when <see cref="Android.Content.Context"/> is <see langword="null"/> or when the platform view could not be created.</exception>
-	[Obsolete]
 	public (PlatformMediaElement platformView, StyledPlayerView PlayerView) CreatePlatformView()
 	{
 		ArgumentNullException.ThrowIfNull(MauiContext.Context);
@@ -59,7 +56,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
 	/// While this method does not seem to have any references, it's invoked at runtime.
 	/// </remarks>
-	[Obsolete]
 	public void OnPlaybackParametersChanged(PlaybackParameters? playbackParameters)
 	{
 		if (playbackParameters is null)
@@ -82,7 +78,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
 	/// While this method does not seem to have any references, it's invoked at runtime.
 	/// </remarks>
-	[Obsolete]
 	public void OnPlayerStateChanged(bool playWhenReady, int playbackState)
 	{
 		if (Player is null || MediaElement.Source is null)
@@ -132,7 +127,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
 	/// While this method does not seem to have any references, it's invoked at runtime.
 	/// </remarks>
-	[Obsolete]
 	public void OnPlaybackStateChanged(int playbackState)
 	{
 		if (MediaElement.Source is null)
@@ -167,7 +161,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
 	/// While this method does not seem to have any references, it's invoked at runtime.
 	/// </remarks>
-	[Obsolete]
 	public void OnPlayerError(PlaybackException? error)
 	{
 		var errorMessage = string.Empty;
@@ -259,7 +252,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		Player.Pause();
 	}
 
-	[Obsolete]
 	protected virtual async partial Task PlatformSeek(TimeSpan position, CancellationToken token)
 	{
 		if (Player is null)
@@ -299,7 +291,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		MediaElement.Position = TimeSpan.Zero;
 	}
 
-	[Obsolete]
 	protected virtual partial void PlatformUpdateSource()
 	{
 		var hasSetSource = false;
@@ -365,7 +356,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		}
 	}
 
-	[Obsolete]
 	protected virtual partial void PlatformUpdateAspect()
 	{
 		if (PlayerView is null)
@@ -482,7 +472,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		Player.Volume = MediaElement.ShouldMute ? 0 : volumeBeforeMute;
 	}
 
-	[Obsolete]
 	protected virtual partial void PlatformUpdateShouldLoopPlayback()
 	{
 		if (Player is null)
@@ -495,49 +484,26 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 	#region IPlayer.IListener implementation method stubs
 
-	[Obsolete]
 	public void OnAudioAttributesChanged(AudioAttributes? audioAttributes) { }
 	public void OnAudioSessionIdChanged(int audioSessionId) { }
-
-	[Obsolete]
 	public void OnAvailableCommandsChanged(IPlayer.Commands? availableCommands) { }
-
-	[Obsolete]
 	public void OnCues(CueGroup? cueGroup) { }
-
-	[Obsolete]
 	public void OnCues(List<Cue> cues) { }
-
-	[Obsolete]
 	public void OnDeviceInfoChanged(Com.Google.Android.Exoplayer2.DeviceInfo? deviceInfo) { }
 	public void OnDeviceVolumeChanged(int volume, bool muted) { }
-
-	[Obsolete]
 	public void OnEvents(IPlayer? player, IPlayer.Events? events) { }
 	public void OnIsLoadingChanged(bool isLoading) { }
 	public void OnIsPlayingChanged(bool isPlaying) { }
 	public void OnLoadingChanged(bool isLoading) { }
 	public void OnMaxSeekToPreviousPositionChanged(long maxSeekToPreviousPositionMs) { }
-
-	[Obsolete]
 	public void OnMediaItemTransition(MediaItem? mediaItem, int transition) { }
-
-	[Obsolete]
 	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata) { }
-
-	[Obsolete]
 	public void OnMetadata(Metadata? metadata) { }
 	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
-
-	[Obsolete]
 	public void OnPlayerErrorChanged(PlaybackException? error) { }
-
-	[Obsolete]
 	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata) { }
 	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason) { }
 	public void OnPositionDiscontinuity(int reason) { }
-
-	[Obsolete]
 	public void OnPositionDiscontinuity(IPlayer.PositionInfo oldPosition, IPlayer.PositionInfo newPosition, int reason) { }
 	public void OnRenderedFirstFrame() { }
 	public void OnRepeatModeChanged(int repeatMode) { }
@@ -546,17 +512,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	public void OnShuffleModeEnabledChanged(bool shuffleModeEnabled) { }
 	public void OnSkipSilenceEnabledChanged(bool skipSilenceEnabled) { }
 	public void OnSurfaceSizeChanged(int width, int height) { }
-
-	[Obsolete]
 	public void OnTimelineChanged(Timeline? timeline, int reason) { }
-
-	[Obsolete]
 	public void OnTracksChanged(Tracks? tracks) { }
-
-	[Obsolete]
 	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? trackSelectionParameters) { }
-
-	[Obsolete]
 	public void OnVideoSizeChanged(VideoSize? videoSize) { }
 
 	#endregion
