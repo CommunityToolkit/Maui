@@ -70,6 +70,10 @@ public class MauiMediaElement : CoordinatorLayout
 
 		var windowInsetsControllerCompat = WindowCompat.GetInsetsController(currentWindow, currentWindow.DecorView);
 
+		var barTypes = WindowInsetsCompat.Type.StatusBars()
+						| WindowInsetsCompat.Type.SystemBars()
+						| WindowInsetsCompat.Type.NavigationBars();
+
 		// Hide the SystemBars and Status bar
 		if (e.IsFullScreen)
 		{
@@ -84,12 +88,6 @@ public class MauiMediaElement : CoordinatorLayout
 
 					if (isSystemBarVisible)
 					{
-						var types = WindowInsetsCompat.Type.StatusBars()
-							| WindowInsetsCompat.Type.SystemBars()
-							| WindowInsetsCompat.Type.NavigationBars();
-
-						windowInsetsControllerCompat.Hide(types);
-						windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
 						currentWindow.InsetsController?.Hide(WindowInsets.Type.SystemBars());
 					}
 				}
@@ -108,6 +106,9 @@ public class MauiMediaElement : CoordinatorLayout
 					| SystemUiFlags.Immersive;
 			}
 
+			windowInsetsControllerCompat.Hide(barTypes);
+			windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
+
 			// Update the PlayerView
 			if (currentWindow.DecorView is FrameLayout layout)
 			{
@@ -124,12 +125,6 @@ public class MauiMediaElement : CoordinatorLayout
 
 				if (isSystemBarVisible)
 				{
-					var types = WindowInsetsCompat.Type.StatusBars()
-						| WindowInsetsCompat.Type.SystemBars()
-						| WindowInsetsCompat.Type.NavigationBars();
-
-					windowInsetsControllerCompat.Show(types);
-					windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorDefault;
 					currentWindow.InsetsController?.Show(WindowInsets.Type.SystemBars());
 				}
 			}
@@ -137,6 +132,9 @@ public class MauiMediaElement : CoordinatorLayout
 			{
 				currentWindow.DecorView.SystemUiFlags = (SystemUiFlags)defaultSystemUiVisibility;
 			}
+
+			windowInsetsControllerCompat.Show(barTypes);
+			windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorDefault;
 
 			// Update the PlayerView
 			if (currentWindow.DecorView is FrameLayout layout)
