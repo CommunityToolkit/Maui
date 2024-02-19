@@ -323,6 +323,38 @@ public class PopupTests : BaseHandlerTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopup_IsLogicalChild()
+	{
+		var app = Application.Current ?? throw new NullReferenceException();
+
+		var page = new ContentPage
+		{
+			Content = new Label
+			{
+				Text = "Hello there"
+			}
+		};
+
+		// Make sure that our page will have a Handler
+		CreateViewHandler<MockPageHandler>(page);
+
+		app.MainPage = page;
+
+		// Make sure that our popup will have a Handler
+		CreateElementHandler<MockPopupHandler>(popup);
+
+		Assert.NotNull(popup.Handler);
+		Assert.NotNull(page.Handler);
+
+		Assert.Single(page.LogicalChildrenInternal);
+		page.ShowPopup((MockPopup)popup);
+		Assert.Equal(2, page.LogicalChildrenInternal.Count);
+
+		await((MockPopup)popup).CloseAsync(token: CancellationToken.None);
+		Assert.Single(page.LogicalChildrenInternal);
+	}
+
 	class MockPopup : Popup
 	{
 		public MockPopup()
