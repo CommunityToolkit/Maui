@@ -3,7 +3,9 @@
     xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
     xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
     xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-    IgnorableNamespaces="uap rescap">
+    xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+    xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+    IgnorableNamespaces="uap rescap com desktop">
 
     <Identity Name="maui-package-name-placeholder" Publisher="CN=Microsoft" Version="0.0.0.0" />
 
@@ -33,6 +35,23 @@
                 <uap:DefaultTile Square71x71Logo="$placeholder$.png" Wide310x150Logo="$placeholder$.png" Square310x310Logo="$placeholder$.png" />
                 <uap:SplashScreen Image="$placeholder$.png" />
             </uap:VisualElements>
+            <Extensions>
+
+                <!--Specify which CLSID to activate when notification is clicked-->
+                <desktop:Extension Category="windows.toastNotificationActivation">
+                    <desktop:ToastNotificationActivation ToastActivatorCLSID="6e919706-2634-4d97-a93c-2213b2acc334" />
+                </desktop:Extension>
+
+                <!--Register COM CLSID-->
+                <com:Extension Category="windows.comServer">
+                    <com:ComServer>
+                        <com:ExeServer Executable="CommunityToolkit.Maui.Sample\CommunityToolkit.Maui.Sample.exe" DisplayName="$targetnametoken$" Arguments="----AppNotificationActivated:">
+                            <com:Class Id="6e919706-2634-4d97-a93c-2213b2acc334" />
+                        </com:ExeServer>
+                    </com:ComServer>
+                </com:Extension>
+
+            </Extensions>
         </Application>
     </Applications>
 
