@@ -7,6 +7,7 @@ using CommunityToolkit.Maui.Views;
 using AndroidX.Core.View;
 using Android.Content.Res;
 using Android.App;
+using Android.Runtime;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -18,6 +19,7 @@ public class MauiMediaElement : CoordinatorLayout
 	readonly StyledPlayerView playerView;
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
+	bool isFullScreen;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
@@ -32,6 +34,20 @@ public class MauiMediaElement : CoordinatorLayout
 		this.playerView.SetBackgroundColor(Android.Graphics.Color.Black);
 
 		AddView(playerView);
+	}
+
+	/// <summary>
+	/// Checks the visibility of the view
+	/// </summary>
+	/// <param name="changedView"></param>
+	/// <param name="visibility"></param>
+	protected override void OnVisibilityChanged(Android.Views.View changedView, [GeneratedEnum] ViewStates visibility)
+	{
+		base.OnVisibilityChanged(changedView, visibility);
+		if (isFullScreen && visibility == ViewStates.Visible)
+		{
+			SetSystemBarsVisibility();
+		}
 	}
 
 	/// <summary>
@@ -68,14 +84,55 @@ public class MauiMediaElement : CoordinatorLayout
 			return;
 		}
 
+		// Hide the SystemBars and Status bar
+		if (e.IsFullScreen)
+		{
+			isFullScreen = true;
+
+			SetSystemBarsVisibility();
+
+			// Update the PlayerView
+			if (currentWindow.DecorView is FrameLayout layout)
+			{
+				RemoveView(playerView);
+				layout.AddView(playerView, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent));
+			}
+		}
+		// Show again the SystemBars and Status bar
+		else
+		{
+			isFullScreen = false;
+			SetSystemBarsVisibility();
+
+			// Update the PlayerView
+			if (currentWindow.DecorView is FrameLayout layout)
+			{
+				layout.RemoveView(playerView);
+				AddView(playerView);
+			}
+		}
+	}
+
+	/// <summary>
+	/// Sets the visibility of the navigation bar and status bar when full screen
+	/// </summary>
+	void SetSystemBarsVisibility()
+	{
+		if (Platform.CurrentActivity is not Activity currentActivity
+			|| currentActivity.Window is not Android.Views.Window currentWindow
+			|| currentActivity.Resources is not Resources currentResources
+			|| currentResources.Configuration is null)
+		{
+			return;
+		}
+
 		var windowInsetsControllerCompat = WindowCompat.GetInsetsController(currentWindow, currentWindow.DecorView);
 
 		var barTypes = WindowInsetsCompat.Type.StatusBars()
 						| WindowInsetsCompat.Type.SystemBars()
 						| WindowInsetsCompat.Type.NavigationBars();
 
-		// Hide the SystemBars and Status bar
-		if (e.IsFullScreen)
+		if (isFullScreen)
 		{
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
@@ -95,10 +152,9 @@ public class MauiMediaElement : CoordinatorLayout
 			else
 			{
 				defaultSystemUiVisibility = (int)currentWindow.DecorView.SystemUiFlags;
-				
-				currentWindow.DecorView.SystemUiFlags = currentWindow.DecorView.SystemUiFlags 
+
+				currentWindow.DecorView.SystemUiFlags = currentWindow.DecorView.SystemUiFlags
 					| SystemUiFlags.LayoutStable
-					| SystemUiFlags.LayoutHideNavigation
 					| SystemUiFlags.LayoutHideNavigation
 					| SystemUiFlags.LayoutFullscreen
 					| SystemUiFlags.HideNavigation
@@ -109,14 +165,7 @@ public class MauiMediaElement : CoordinatorLayout
 			windowInsetsControllerCompat.Hide(barTypes);
 			windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
 
-			// Update the PlayerView
-			if (currentWindow.DecorView is FrameLayout layout)
-			{
-				RemoveView(playerView);
-				layout.AddView(playerView, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent));
-			}
 		}
-		// Show again the SystemBars and Status bar
 		else
 		{
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
@@ -136,12 +185,6 @@ public class MauiMediaElement : CoordinatorLayout
 			windowInsetsControllerCompat.Show(barTypes);
 			windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorDefault;
 
-			// Update the PlayerView
-			if (currentWindow.DecorView is FrameLayout layout)
-			{
-				layout.RemoveView(playerView);
-				AddView(playerView);
-			}
 		}
 	}
 }
