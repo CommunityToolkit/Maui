@@ -10,7 +10,7 @@ public partial class MultiplePopupViewModel(IPopupService popupService) : BaseVi
 	{
 		return popupService.ShowPopupAsync<CsharpBindingPopupViewModel>(
 			onPresenting: viewModel => viewModel.Load("This is a platform specific popup with a .NET MAUI View being rendered. The behaviors of the popup will confirm to 100% this platform look and feel, but still allows you to use your .NET MAUI Controls."),
-			token);
+			token: token);
 	}
 
 	[RelayCommand]
@@ -18,7 +18,7 @@ public partial class MultiplePopupViewModel(IPopupService popupService) : BaseVi
 	{
 		return popupService.ShowPopupAsync<UpdatingPopupViewModel>(
 			onPresenting: viewModel => viewModel.PerformUpdates(10),
-			token);
+			token: token);
 	}
 
 	[RelayCommand]
@@ -26,6 +26,6 @@ public partial class MultiplePopupViewModel(IPopupService popupService) : BaseVi
 	{
 		return popupService.ShowPopupAsync<PopupContentViewModel>(
 			onPresenting: viewModel => viewModel.SetMessage("This is a dynamically set message, shown in a popup without the need to create your own Popup subclass."),
-			token);
+			token: token);
 	}
 }
