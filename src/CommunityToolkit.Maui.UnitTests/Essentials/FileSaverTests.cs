@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Essentials;
 
-public class FileSaverTests
+public class FileSaverTests : BaseTest
 {
 	[Fact]
 	public void FileSaverTestsSetDefaultUpdatesInstance()
@@ -16,7 +16,7 @@ public class FileSaverTests
 		fileSaver.Should().BeSameAs(fileSaverImplementationMock);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SaveAsyncFailsOnNet()
 	{
 		FileSaver.SetDefault(new FileSaverImplementation());
@@ -28,7 +28,7 @@ public class FileSaverTests
 		Assert.Throws<NotImplementedException>(result.EnsureSuccess);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SaveAsyncWithInitialPathFailsOnNet()
 	{
 		FileSaver.SetDefault(new FileSaverImplementation());

@@ -71,7 +71,7 @@ csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
 csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
 csharp_style_inlined_variable_declaration = true:suggestion
 csharp_style_throw_expression = true:suggestion
-csharp_style_conditional_delegate_call = true:suggestions
+csharp_style_conditional_delegate_call = true:suggestion
 
 # Naming rules
 
@@ -121,6 +121,9 @@ dotnet_diagnostic.CA1050.severity = error
 
 # CA2016: Forward the 'cancellationToken' parameter methods that take one
 dotnet_diagnostic.CA2016.severity = error
+
+# CA1068: CancellationToken parameters must come last
+dotnet_diagnostic.CA1068.severity = error
 
 # CA2208: Method passes parameter as the paramName argument to a ArgumentNullException constructor. Replace this argument with one of the method's parameter names. Note that the provided parameter name should have the exact casing as declared on the method.
 dotnet_diagnostic.CA2208.severity = error

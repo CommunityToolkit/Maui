@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using WButton = Microsoft.UI.Xaml.Controls.Button;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
+using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -17,6 +18,8 @@ public partial class IconTintColorBehavior
 {
 	SpriteVisual? currentSpriteVisual;
 	CompositionColorBrush? currentColorBrush;
+	BitmapSource? blankImage;
+	WImageSource? originalImage;
 
 	/// <inheritdoc/>
 	protected override void OnAttachedTo(View bindable, FrameworkElement platformView)
@@ -112,7 +115,7 @@ public partial class IconTintColorBehavior
 				break;
 
 			default:
-				throw new NotSupportedException($"{nameof(IconTintColorBehavior)} only currently supports {typeof(WImage)} and {typeof(WButton)}.");
+				throw new NotSupportedException($"{nameof(IconTintColorBehavior)} only currently supports {typeof(WImage).FullName} and {typeof(WButton).FullName}.");
 		}
 	}
 
@@ -158,15 +161,21 @@ public partial class IconTintColorBehavior
 		var height = (float)image.ActualHeight;
 		var anchorPoint = new Vector2((float)element.AnchorX, (float)element.AnchorY);
 
-		// Hide possible visible pixels from original image.
-		// Workaround since the tinted image is added as a child to the current image and it's not possible to hide a parent without hiding its children using Visibility.Collapsed.
-		image.Width = image.Height = 0;
-
 		// Requested size requires additional offset to re-center tinted image.
-		var requiresAdditionalCenterOffset = element.WidthRequest != -1 || element.HeightRequest != -1;
-		var offset = requiresAdditionalCenterOffset ? new Vector3(width * anchorPoint.X, height * anchorPoint.Y, 0f) : Vector3.Zero;
+		var offset = new Vector3(width * anchorPoint.X, height * anchorPoint.Y, 0f);
 
 		ApplyTintCompositionEffect(image, color, width, height, offset, anchorPoint, uri);
+
+		// Hide possible visible pixels from original image by replacing with a transparent image of the same size
+		if (blankImage is null 
+			|| (blankImage.PixelWidth != (int)width && blankImage.PixelHeight != (int)height))
+		{
+			// Source image has changed, update the cached blank image
+			blankImage = new WriteableBitmap((int)width, (int)height);
+		}
+
+		originalImage = image.Source;
+		image.Source = blankImage;
 	}
 
 	void ApplyTintCompositionEffect(FrameworkElement platformView, Color color, float width, float height, Vector3 offset, Vector2 anchorPoint, Uri surfaceMaskUri)
@@ -201,17 +210,20 @@ public partial class IconTintColorBehavior
 		switch (platformView)
 		{
 			case WImage wImage:
-				RestoreOriginalImageSize(wImage);
+				RestoreOriginalImage(wImage);
 				ElementCompositionPreview.SetElementChildVisual(platformView, null);
 				break;
 
 			case WButton button:
 				if (TryGetButtonImage(button, out var image))
 				{
-					RestoreOriginalImageSize(image);
+					RestoreOriginalImage(image);
 					ElementCompositionPreview.SetElementChildVisual(image, null);
 				}
 				break;
+
+			default:
+				throw new NotSupportedException($"{nameof(IconTintColorBehavior)} only currently supports {typeof(WImage).FullName} and {typeof(WButton).FullName}.");
 		}
 
 		currentSpriteVisual.Brush = null;
@@ -219,15 +231,13 @@ public partial class IconTintColorBehavior
 		currentColorBrush = null;
 	}
 
-	void RestoreOriginalImageSize(WImage image)
+	void RestoreOriginalImage(WImage image)
 	{
 		if (currentSpriteVisual is null)
 		{
 			return;
 		}
 
-		// Restore in Width/Height since ActualSize is readonly
-		image.Width = currentSpriteVisual.Size.X;
-		image.Height = currentSpriteVisual.Size.Y;
+		image.Source = originalImage;
 	}
 }

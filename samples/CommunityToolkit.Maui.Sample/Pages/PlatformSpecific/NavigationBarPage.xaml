@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage
+	x:Class="CommunityToolkit.Maui.Sample.Pages.PlatformSpecific.NavigationBarPage"
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:droid="clr-namespace:CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;assembly=CommunityToolkit.Maui"
+	xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+	xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.PlatformSpecific"
+	Title="NavigationBarPage"
+	droid:NavigationBar.Color="{Binding NavigationBarColor}"
+	droid:NavigationBar.Style="{Binding NavigationBarStyle}"
+	x:DataType="vm:NavigationBarAndroidViewModel"
+	x:TypeArguments="vm:NavigationBarAndroidViewModel">
+
+
+	<ContentPage.Resources>
+		<ControlTemplate x:Key="RadioButtonTemplate">
+			<Border
+				BackgroundColor="#F3F2F1"
+				HeightRequest="90"
+				HorizontalOptions="Start"
+				Stroke="#F3F2F1"
+				StrokeShape="RoundRectangle 10"
+				StrokeThickness="2"
+				VerticalOptions="Start"
+				WidthRequest="90">
+				<Grid
+					Margin="4"
+					BackgroundColor="Transparent"
+					WidthRequest="90">
+					<Grid
+						Margin="0,0,4,0"
+						HeightRequest="18"
+						HorizontalOptions="End"
+						VerticalOptions="Start"
+						WidthRequest="18">
+						<Ellipse
+							Fill="White"
+							HeightRequest="16"
+							HorizontalOptions="Center"
+							Stroke="Blue"
+							VerticalOptions="Center"
+							WidthRequest="16" />
+						<Ellipse
+							x:Name="check"
+							Fill="Blue"
+							HeightRequest="8"
+							HorizontalOptions="Center"
+							VerticalOptions="Center"
+							WidthRequest="8" />
+					</Grid>
+					<ContentPresenter />
+				</Grid>
+				<VisualStateManager.VisualStateGroups>
+					<VisualStateGroupList>
+						<VisualStateGroup x:Name="CheckedStates">
+							<VisualState x:Name="Checked">
+								<VisualState.Setters>
+									<Setter TargetName="check" Property="Opacity" Value="1" />
+								</VisualState.Setters>
+							</VisualState>
+							<VisualState x:Name="Unchecked">
+								<VisualState.Setters>
+									<Setter TargetName="check" Property="Opacity" Value="0" />
+								</VisualState.Setters>
+							</VisualState>
+						</VisualStateGroup>
+					</VisualStateGroupList>
+				</VisualStateManager.VisualStateGroups>
+			</Border>
+		</ControlTemplate>
+
+		<Style TargetType="RadioButton">
+			<Setter Property="ControlTemplate" Value="{StaticResource RadioButtonTemplate}" />
+		</Style>
+	</ContentPage.Resources>
+
+
+	<ScrollView>
+		<VerticalStackLayout Padding="15,0" Spacing="30">
+
+			<Label Text="Slide to change NavigationBar color" />
+
+			<Slider
+				Margin="20,10"
+				Maximum="255"
+				MaximumTrackColor="Red"
+				Minimum="0"
+				MinimumTrackColor="Red"
+				ThumbColor="Red"
+				Value="{Binding RedSliderValue}" />
+
+			<Slider
+				Margin="20,10"
+				Maximum="255"
+				MaximumTrackColor="Green"
+				Minimum="0"
+				MinimumTrackColor="Green"
+				ThumbColor="Green"
+				Value="{Binding GreenSliderValue}" />
+
+			<Slider
+				Margin="20,10"
+				Maximum="255"
+				MaximumTrackColor="Blue"
+				Minimum="0"
+				MinimumTrackColor="Blue"
+				ThumbColor="Blue"
+				Value="{Binding BlueSliderValue}" />
+
+			<VerticalStackLayout Spacing="15">
+				<Label Text="Select NavigationBar style" />
+
+				<RadioButton IsChecked="{Binding IsDefaultChecked}" VerticalOptions="Center">
+					<RadioButton.Content>
+						<Label
+							Margin="10,0,0,0"
+							Text="Default"
+							VerticalOptions="Center"
+							VerticalTextAlignment="Center" />
+					</RadioButton.Content>
+				</RadioButton>
+
+				<RadioButton IsChecked="{Binding IsLightContentChecked}" VerticalOptions="Center">
+					<RadioButton.Content>
+						<Label
+							Margin="10,0,0,0"
+							Text="Light Content"
+							VerticalOptions="Center"
+							VerticalTextAlignment="Center" />
+					</RadioButton.Content>
+				</RadioButton>
+
+				<RadioButton IsChecked="{Binding IsDarkContentChecked}">
+					<RadioButton.Content>
+						<Label
+							Margin="10,0,0,0"
+							Text="Dark Content"
+							VerticalOptions="Center"
+							VerticalTextAlignment="Center" />
+					</RadioButton.Content>
+				</RadioButton>
+			</VerticalStackLayout>
+		</VerticalStackLayout>
+	</ScrollView>
+</pages:BasePage>
