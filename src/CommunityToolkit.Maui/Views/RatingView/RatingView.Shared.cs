@@ -10,11 +10,9 @@ public class RatingView : Border
 {
 	#region Private Properties
 
-	Microsoft.Maui.Controls.Shapes.Path[]? shapes = [];
+	Microsoft.Maui.Controls.Shapes.Path[] shapes;
 
 	string shape = string.Empty;
-
-	PathFigureCollection? converted = null;
 
 	Grid innerContent = new();
 
@@ -109,6 +107,7 @@ public class RatingView : Border
 	public new double StrokeThickness
 	{
 		get => base.StrokeThickness;
+		set => SetValue(StrokeThicknessProperty, value);
 	}
 
 	///<summary></summary>
@@ -219,12 +218,13 @@ public class RatingView : Border
 		for (int i = 0; i < MaximumRating; i++)
 		{
 			innerContent?.ColumnDefinitions.Add(new ColumnDefinition { Width = Size });
+
 			Microsoft.Maui.Controls.Shapes.Path image = new();
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+			image.Data = (Geometry)new PathGeometryConverter().ConvertFromInvariantString(shape);
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 			if (i <= CurrentRating)
 			{
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-				image.Data = (Geometry)new PathGeometryConverter().ConvertFromInvariantString(shape);
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 
 				image.Fill = FilledBackgroundColor;
 				image.Stroke = FilledBackgroundColor;
@@ -232,16 +232,13 @@ public class RatingView : Border
 				image.HeightRequest = Size;
 				image.WidthRequest = Size;
 			}
-			else if (i > MaximumRating)
+			else
 			{
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-				image.Data = (Geometry)new PathGeometryConverter().ConvertFromInvariantString(shape);
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
-
 				image.Fill = EmptyBackgroundColor;
 				image.Stroke = StrokeColor;
 
 				image.StrokeLineJoin = PenLineJoin.Round;
+				image.StrokeLineCap = PenLineCap.Round;
 				image.StrokeThickness = StrokeThickness;
 
 				image.Aspect = Stretch.Uniform;
@@ -260,10 +257,9 @@ public class RatingView : Border
 			innerContent?.Children.Add(image);
 			innerContent?.SetColumn(image, i);
 
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
 			shapes[i] = image;
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
 		}
+
 
 		UpdateDraw();
 	}
@@ -281,11 +277,11 @@ public class RatingView : Border
 			innerContent?.ColumnDefinitions.Add(new ColumnDefinition { Width = Size });
 
 			Microsoft.Maui.Controls.Shapes.Path image = new();
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+			image.Data = (Geometry)new PathGeometryConverter().ConvertFromInvariantString(shape);
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 			if (i <= CurrentRating)
 			{
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-				image.Data = (Geometry)new PathGeometryConverter().ConvertFromInvariantString(shape);
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 
 				image.Fill = FilledBackgroundColor;
 				image.Stroke = FilledBackgroundColor;
@@ -293,12 +289,8 @@ public class RatingView : Border
 				image.HeightRequest = Size;
 				image.WidthRequest = Size;
 			}
-			else if (i > MaximumRating)
+			else
 			{
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-				image.Data = (Geometry)new PathGeometryConverter().ConvertFromInvariantString(shape);
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
-
 				image.Fill = EmptyBackgroundColor;
 				image.Stroke = StrokeColor;
 
@@ -332,9 +324,7 @@ public class RatingView : Border
 	{
 		for (int i = 0; i < MaximumRating; i++)
 		{
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-			Microsoft.Maui.Controls.Shapes.Path? image = shapes[i];
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
+			Microsoft.Maui.Controls.Shapes.Path image = shapes[i];
 
 			if (CurrentRating >= i + 1)
 			{
@@ -346,12 +336,15 @@ public class RatingView : Border
 			}
 			else
 			{
+				image.HeightRequest = Size;
+				image.WidthRequest = Size;
 				if (CurrentRating % 1 == 0)
 				{
 					image.Fill = EmptyBackgroundColor;
 					image.Stroke = StrokeColor;
 					image.StrokeThickness = StrokeThickness;
 					image.StrokeLineJoin = PenLineJoin.Round;
+					image.StrokeLineCap = PenLineCap.Round;
 				}
 				else
 				{
