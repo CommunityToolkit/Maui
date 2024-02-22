@@ -16,7 +16,7 @@ public class MultiConverter : List<ICommunityToolkitValueConverter>, ICommunityT
 	/// <summary>
 	/// Uses the incoming converters to convert the value.
 	/// </summary>
-	/// <param name="value">Value to convert.</param>
+	/// <param name="value">CurrentRating to convert.</param>
 	/// <param name="targetType">The type of the binding target property.</param>
 	/// <param name="parameter">Parameter to pass into subsequent converters.</param>
 	/// <param name="culture">The culture to use in the converter.</param>

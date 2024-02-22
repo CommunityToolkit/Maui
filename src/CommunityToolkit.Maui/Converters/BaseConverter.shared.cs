@@ -50,7 +50,7 @@ public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtensio
 	/// <summary>
 	/// Method that will be called by <see cref="IValueConverter.ConvertBack(object?, Type, object?, CultureInfo?)"/>.
 	/// </summary>
-	/// <param name="value">Value to be converted from <typeparamref name="TTo"/> to <typeparamref name="TFrom"/>.</param>
+	/// <param name="value">CurrentRating to be converted from <typeparamref name="TTo"/> to <typeparamref name="TFrom"/>.</param>
 	/// <param name="parameter">Optional Parameters</param>
 	/// <param name="culture">Culture Info</param>
 	/// <returns>An object of type <typeparamref name="TFrom"/>.</returns>
@@ -134,7 +134,7 @@ public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, IComm
 	/// <summary>
 	/// Method that will be called by <see cref="IValueConverter.ConvertBack(object?, Type, object?, CultureInfo?)"/>.
 	/// </summary>
-	/// <param name="value">Value to be converted from <typeparamref name="TTo"/> to <typeparamref name="TFrom"/>.</param>
+	/// <param name="value">CurrentRating to be converted from <typeparamref name="TTo"/> to <typeparamref name="TFrom"/>.</param>
 	/// <param name="culture">Culture Info</param>
 	/// <returns>An object of type <typeparamref name="TFrom"/>.</returns>
 	public abstract TFrom ConvertBackTo(TTo value, CultureInfo? culture);

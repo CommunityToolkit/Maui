@@ -40,7 +40,7 @@ public abstract class IsInRangeConverter<TObject> : BaseConverterOneWay<ICompara
 		set => SetValue(MinValueProperty, value);
 	}
 
-	/// <summary>Maximum value.</summary>
+	/// <summary>MaximumRating value.</summary>
 	public IComparable? MaxValue
 	{
 		get => (IComparable?)GetValue(MaxValueProperty);
