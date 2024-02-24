@@ -8,7 +8,6 @@ namespace CommunityToolkit.Maui.Views.RatingView;
 /// <summary>RatingView control.</summary>
 public class RatingView : Border
 {
-	#region Private Properties
 
 	Microsoft.Maui.Controls.Shapes.Path[] shapes;
 
@@ -16,9 +15,6 @@ public class RatingView : Border
 
 	Grid innerContent = new();
 
-	#endregion
-
-	#region Bindable Properties
 
 	/// <summary> Rating value bindable property <see cref="CurrentRating"/> </summary>
 	public static readonly BindableProperty CurrentRatingProperty = BindableProperty.Create(nameof(CurrentRating), typeof(double), typeof(RatingView), defaultValue: 0.0, propertyChanged: OnBindablePropertyChanged);
@@ -57,9 +53,6 @@ public class RatingView : Border
 	///<summary></summary>
 	public readonly BindableProperty ShapeProperty = BindableProperty.Create(nameof(Shape), typeof(RatingShape), typeof(RatingView), propertyChanged: OnShapePropertyChanged);
 
-	#endregion
-
-	#region Public Properties
 
 	///<summary></summary>
 	public double CurrentRating
@@ -148,8 +141,6 @@ public class RatingView : Border
 	///<summary></summary>
 	public new View? Content { get => base.Content; internal set => base.Content = value; }
 
-	#endregion
-
 	///<summary></summary>
 	public RatingView()
 	{
@@ -167,8 +158,6 @@ public class RatingView : Border
 
 		this.Stroke = Colors.Transparent;
 	}
-
-	#region Events
 
 	static void OnBindablePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
@@ -209,10 +198,6 @@ public class RatingView : Border
 		}
 	}
 
-	#endregion
-
-	#region Methods
-
 	void DrawBase()
 	{
 		for (int i = 0; i < MaximumRating; i++)
@@ -220,9 +205,7 @@ public class RatingView : Border
 			innerContent?.ColumnDefinitions.Add(new ColumnDefinition { Width = Size });
 
 			Microsoft.Maui.Controls.Shapes.Path image = new();
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
 			image.Data = (Geometry)new PathGeometryConverter().ConvertFromInvariantString(shape);
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 			if (i <= CurrentRating)
 			{
 
@@ -277,9 +260,7 @@ public class RatingView : Border
 			innerContent?.ColumnDefinitions.Add(new ColumnDefinition { Width = Size });
 
 			Microsoft.Maui.Controls.Shapes.Path image = new();
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
 			image.Data = (Geometry)new PathGeometryConverter().ConvertFromInvariantString(shape);
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 			if (i <= CurrentRating)
 			{
 
@@ -375,6 +356,4 @@ public class RatingView : Border
 	{
 		shape = Shape.PathData;
 	}
-
-	#endregion
 }
