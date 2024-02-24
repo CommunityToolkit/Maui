@@ -1,4 +1,5 @@
-﻿using MAndroid = Microsoft.Maui.Controls.PlatformConfiguration.Android;
+﻿using CommunityToolkit.Maui.Core;
+using MAndroid = Microsoft.Maui.Controls.PlatformConfiguration.Android;
 using MauiElement = Microsoft.Maui.Controls.Page;
 
 namespace CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;
@@ -12,6 +13,11 @@ public static partial class NavigationBar
 	/// Identifies the Color bindable property.
 	/// </summary>
 	public static readonly BindableProperty ColorProperty = BindableProperty.CreateAttached("Color", typeof(Color), typeof(NavigationBar), Colors.Transparent);
+
+	/// <summary>
+	/// Identifies the Style bindable property.
+	/// </summary>
+	public static readonly BindableProperty StyleProperty = BindableProperty.CreateAttached("Style", typeof(NavigationBarStyle), typeof(NavigationBar), NavigationBarStyle.Default);
 
 	/// <summary>
 	/// Gets the color of the navigation bar.
@@ -54,11 +60,6 @@ public static partial class NavigationBar
 	{
 		return GetColor(config.Element);
 	}
-
-	/// <summary>
-	/// Identifies the Style bindable property.
-	/// </summary>
-	public static readonly BindableProperty StyleProperty = BindableProperty.CreateAttached("Style", typeof(NavigationBarStyle), typeof(NavigationBar), NavigationBarStyle.Default);
 
 	/// <summary>
 	/// Sets the style of the navigation bar.
