@@ -17,15 +17,15 @@ static partial class StatusBar
 		{
 			return true;
 		}
-		
+
 		System.Diagnostics.Trace.WriteLine($"{nameof(StatusBar)} Color + Style functionality is not supported on this version of the Android operating system. Minimum supported Android API is {BuildVersionCodes.M}");
 
 		return false;
 	});
-	
+
 	static Activity Activity => Microsoft.Maui.ApplicationModel.Platform.CurrentActivity ?? throw new InvalidOperationException("Android Activity can't be null.");
 
-	static bool IsSupported => isSupportedHolder.Value; 
+	static bool IsSupported => isSupportedHolder.Value;
 
 	static void PlatformSetColor(Color color)
 	{

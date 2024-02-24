@@ -13,7 +13,7 @@ public static partial class NavigationBar
 	/// Identifies the Color bindable property.
 	/// </summary>
 	public static readonly BindableProperty ColorProperty = BindableProperty.CreateAttached("Color", typeof(Color), typeof(NavigationBar), Colors.Transparent);
-	
+
 	/// <summary>
 	/// Identifies the Style bindable property.
 	/// </summary>

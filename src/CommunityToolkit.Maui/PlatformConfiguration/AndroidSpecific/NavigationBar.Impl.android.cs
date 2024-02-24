@@ -56,9 +56,9 @@ static partial class NavigationBar
 			case NavigationBarStyle.LightContent:
 				SetSystemNavigationBarAppearance(activity, false);
 				break;
-			
+
 			default:
-				throw new NotSupportedException($"{nameof(NavigationBar)} {style} is not yet supported");	
+				throw new NotSupportedException($"{nameof(NavigationBar)} {style} is not yet supported");
 		}
 
 		static void SetSystemNavigationBarAppearance(Activity activity, bool isLightSystemNavigationBars)
@@ -95,7 +95,7 @@ static partial class NavigationBar
 
 		window.SetNavigationBarColor(color);
 	}
-	
+
 	internal static partial void RemapForControls()
 	{
 		PageHandler.Mapper.Add(ColorProperty.PropertyName, MapNavigationColorProperty);
