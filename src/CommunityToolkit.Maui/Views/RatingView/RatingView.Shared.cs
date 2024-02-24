@@ -205,7 +205,8 @@ public class RatingView : Border
 			innerContent?.ColumnDefinitions.Add(new ColumnDefinition { Width = Size });
 
 			Microsoft.Maui.Controls.Shapes.Path image = new();
-			image.Data = (Geometry)new PathGeometryConverter().ConvertFromInvariantString(shape);
+			image.Data = (Geometry?)new PathGeometryConverter().ConvertFromInvariantString(shape);
+			
 			if (i <= CurrentRating)
 			{
 
@@ -260,7 +261,8 @@ public class RatingView : Border
 			innerContent?.ColumnDefinitions.Add(new ColumnDefinition { Width = Size });
 
 			Microsoft.Maui.Controls.Shapes.Path image = new();
-			image.Data = (Geometry)new PathGeometryConverter().ConvertFromInvariantString(shape);
+			image.Data = (Geometry?)new PathGeometryConverter().ConvertFromInvariantString(shape);
+			
 			if (i <= CurrentRating)
 			{
 
