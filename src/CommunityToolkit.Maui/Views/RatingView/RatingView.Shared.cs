@@ -350,7 +350,7 @@ public class RatingView : Border
 				{
 					var fraction = CurrentRating - Math.Floor(CurrentRating);
 					var element = shapes[(int)(CurrentRating - fraction)];
-					if (element != null)
+					if (element is not null)
 					{
 						var colors = new GradientStopCollection
 						{

@@ -43,7 +43,7 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 		// Ensure TTo can be assigned to the given Target Type
 		if (!typeof(TTarget).IsAssignableFrom(targetType) // Ensure TTarget can be assigned from targetType. Eg TTarget is IEnumerable and targetType is IList
 			&& !IsValidTargetType<TTarget>(targetType) // Ensure targetType be converted to TTarget? Eg `Convert.ChangeType()` returns a non-null value
-			&& !(shouldAllowNullableValueTypes && typeof(TTarget).IsValueType && IsValidNullableValueType(targetType))) // Is TTarget a CurrentRating Type and targetType a Nullable CurrentRating Type? Eg TTarget is bool and targetType is bool?
+			&& !(shouldAllowNullableValueTypes && typeof(TTarget).IsValueType && IsValidNullableValueType(targetType))) // Is TTarget a Value Type and targetType a Nullable Value Type? Eg TTarget is bool and targetType is bool?
 		{
 			throw new ArgumentException($"targetType needs to be assignable from {typeof(TTarget)}.", nameof(targetType));
 		}
@@ -65,7 +65,7 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 	private protected static TParam ConvertParameter<TParam>(object? parameter) => parameter switch
 	{
 		null when IsNullable<TParam>() => default,
-		null when !IsNullable<TParam>() => throw new ArgumentNullException(nameof(parameter), $"CurrentRating cannot be null because {nameof(TParam)} is not nullable."),
+		null when !IsNullable<TParam>() => throw new ArgumentNullException(nameof(parameter), $"Value cannot be null because {nameof(TParam)} is not nullable."),
 		TParam convertedParameter => convertedParameter,
 		_ => throw new ArgumentException($"Parameter needs to be of type {typeof(TParam)}", nameof(parameter))
 	};
@@ -75,9 +75,9 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 	private protected static TValue ConvertValue<TValue>(object? value) => value switch
 	{
 		null when IsNullable<TValue>() => default,
-		null when !IsNullable<TValue>() => throw new ArgumentNullException(nameof(value), $"CurrentRating cannot be null because {nameof(TValue)} is not nullable"),
+		null when !IsNullable<TValue>() => throw new ArgumentNullException(nameof(value), $"Value cannot be null because {nameof(TValue)} is not nullable"),
 		TValue convertedValue => convertedValue,
-		_ => throw new ArgumentException($"CurrentRating needs to be of type {typeof(TValue)}", nameof(value))
+		_ => throw new ArgumentException($"Value needs to be of type {typeof(TValue)}", nameof(value))
 	};
 #pragma warning restore CS8603 // Possible null reference return.
 

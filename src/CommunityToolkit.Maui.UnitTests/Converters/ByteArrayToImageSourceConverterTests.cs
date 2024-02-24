@@ -31,7 +31,7 @@ public class ByteArrayToImageSourceConverterTests : BaseConverterTest<ByteArrayT
 	}
 
 	[Theory]
-	[InlineData("Random String CurrentRating")]
+	[InlineData("Random String Value")]
 	[InlineData(3)]
 	[InlineData(5.5)]
 	[InlineData('c')]

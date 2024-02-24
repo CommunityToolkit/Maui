@@ -52,6 +52,6 @@ public class IndexToArrayItemConverter : BaseConverter<int, object?, Array>
 			}
 		}
 
-		throw new ArgumentException("CurrentRating does not exist in the array.", nameof(value));
+		throw new ArgumentException("Value does not exist in the array.", nameof(value));
 	}
 }
