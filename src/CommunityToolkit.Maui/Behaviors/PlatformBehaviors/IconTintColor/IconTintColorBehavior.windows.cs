@@ -167,7 +167,7 @@ public partial class IconTintColorBehavior
 		ApplyTintCompositionEffect(image, color, width, height, offset, anchorPoint, uri);
 
 		// Hide possible visible pixels from original image by replacing with a transparent image of the same size
-		if (blankImage is null 
+		if (blankImage is null
 			|| (blankImage.PixelWidth != (int)width && blankImage.PixelHeight != (int)height))
 		{
 			// Source image has changed, update the cached blank image
