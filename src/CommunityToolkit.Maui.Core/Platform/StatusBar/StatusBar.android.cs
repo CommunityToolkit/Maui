@@ -11,11 +11,21 @@ namespace CommunityToolkit.Maui.Core.Platform;
 [SupportedOSPlatform("Android23.0")] // StatusBar is only supported on Android 23.0+
 static partial class StatusBar
 {
+	static readonly Lazy<bool> isSupportedHolder = new(() =>
+	{
+		if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.M))
+		{
+			return true;
+		}
+
+		System.Diagnostics.Trace.WriteLine($"{nameof(StatusBar)} Color + Style functionality is not supported on this version of the Android operating system. Minimum supported Android API is {BuildVersionCodes.M}");
+
+		return false;
+	});
+
 	static Activity Activity => Microsoft.Maui.ApplicationModel.Platform.CurrentActivity ?? throw new InvalidOperationException("Android Activity can't be null.");
 
-	static bool? isSupported;
-
-	static bool IsSupported => isSupported ??= AndroidSystemExtensions.IsSupported(BuildVersionCodes.M);
+	static bool IsSupported => isSupportedHolder.Value;
 
 	static void PlatformSetColor(Color color)
 	{
