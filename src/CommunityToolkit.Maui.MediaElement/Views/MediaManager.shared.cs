@@ -27,6 +27,10 @@ public partial class MediaManager
 	/// <param name="dispatcher">The <see cref="IDispatcher"/> instance that allows propagation to the main thread.</param>
 	public MediaManager(IMauiContext context, IMediaElement mediaElement, IDispatcher dispatcher)
 	{
+		ArgumentNullException.ThrowIfNull(context);
+		ArgumentNullException.ThrowIfNull(mediaElement);
+		ArgumentNullException.ThrowIfNull(dispatcher);
+
 		MauiContext = context;
 		Dispatcher = dispatcher;
 		MediaElement = mediaElement;
@@ -82,9 +86,10 @@ public partial class MediaManager
 	/// Invokes the seek operation on the platform element.
 	/// </summary>
 	/// <param name="position">The position to seek to.</param>
-	public ValueTask Seek(TimeSpan position)
+	/// <param name="token"><see cref="CancellationToken"/> ></param>
+	public Task Seek(TimeSpan position, CancellationToken token = default)
 	{
-		return PlatformSeek(position);
+		return PlatformSeek(position, token);
 	}
 
 	/// <summary>
@@ -182,7 +187,8 @@ public partial class MediaManager
 	/// Invokes the platform seek functionality and seeks to a specific position.
 	/// </summary>
 	/// <param name="position">The position to seek to.</param>
-	protected virtual partial ValueTask PlatformSeek(TimeSpan position);
+	/// <param name="token"><see cref="CancellationToken"/></param>
+	protected virtual partial Task PlatformSeek(TimeSpan position, CancellationToken token);
 
 	/// <summary>
 	/// Invokes the platform stop functionality and stops media playback.
@@ -234,12 +240,18 @@ public partial class MediaManager
 	/// Invokes the platform functionality to update the media playback volume.
 	/// </summary>
 	protected virtual partial void PlatformUpdateVolume();
+
+	static bool AreFloatingPointNumbersEqual(in double number1, in double number2, double tolerance = 0.01) => Math.Abs(number1 - number2) > tolerance;
 }
 
 #if !(WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN)
 partial class MediaManager
 {
-	protected virtual partial ValueTask PlatformSeek(TimeSpan position) => ValueTask.CompletedTask;
+	protected virtual partial Task PlatformSeek(TimeSpan position, CancellationToken token)
+	{
+		token.ThrowIfCancellationRequested();
+		return Task.CompletedTask;
+	}
 	protected virtual partial void PlatformPlay() { }
 	protected virtual partial void PlatformPause() { }
 	protected virtual partial void PlatformStop() { }

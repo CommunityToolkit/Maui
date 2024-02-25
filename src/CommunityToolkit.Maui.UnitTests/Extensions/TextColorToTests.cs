@@ -25,6 +25,34 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 			Assert.Equal(updatedTextColor, textStyleView.TextColor);
 		}
 
+		[Fact(Timeout = (int)TestDuration.Short)]
+		public async Task TextColorTo_CancellationTokenExpired()
+		{
+			var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+			var label = new Label { TextColor = Colors.Blue };
+			label.EnableAnimations();
+
+			// Ensure CancellationToken has expired
+			await Task.Delay(100, CancellationToken.None);
+
+			await Assert.ThrowsAsync<TaskCanceledException>(() => label.TextColorTo(Colors.Green, token: cts.Token));
+		}
+
+		[Fact(Timeout = (int)TestDuration.Short)]
+		public async Task TextColorTo_CancellationTokenCanceled()
+		{
+			var cts = new CancellationTokenSource();
+
+			var label = new Label { TextColor = Colors.Blue };
+			label.EnableAnimations();
+
+			// Ensure CancellationToken has expired
+			await cts.CancelAsync();
+
+			await Assert.ThrowsAsync<TaskCanceledException>(() => label.TextColorTo(Colors.Green, token: cts.Token));
+		}
+
 		[Fact]
 		public async Task InternalTextColorTo_VerifyColorChanged()
 		{

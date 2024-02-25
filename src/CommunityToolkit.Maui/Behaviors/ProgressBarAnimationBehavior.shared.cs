@@ -72,16 +72,16 @@ public class ProgressBarAnimationBehavior : BaseBehavior<ProgressBar>
 			await AnimateProgress(progressBarAnimationBehavior.View,
 									progressBarAnimationBehavior.Progress,
 									progressBarAnimationBehavior.Length,
-									progressBarAnimationBehavior.Easing);
+									progressBarAnimationBehavior.Easing,
+									CancellationToken.None);
 
 			progressBarAnimationBehavior.OnAnimationCompleted();
 		}
 	}
 
-	static Task AnimateProgress(in ProgressBar progressBar, in double progress, in uint animationLength, in Easing animationEasing, in CancellationToken token = default)
+	static Task AnimateProgress(in ProgressBar progressBar, in double progress, in uint animationLength, in Easing animationEasing, in CancellationToken token)
 	{
-		token.ThrowIfCancellationRequested();
-		return progressBar.ProgressTo(progress, animationLength, animationEasing);
+		return progressBar.ProgressTo(progress, animationLength, animationEasing).WaitAsync(token);
 	}
 
 	void OnAnimationCompleted() => animationCompletedEventManager.HandleEvent(this, EventArgs.Empty, nameof(AnimationCompleted));
