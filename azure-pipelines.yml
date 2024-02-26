@@ -5,7 +5,7 @@ variables:
   NugetPackageVersion: '$(CurrentSemanticVersion)'
   NugetPackageVersionMediaElement: '$(CurrentSemanticVersion)'
   NugetPackageVersionMaps: '$(CurrentSemanticVersion)'
-  TOOLKIT_NET_VERSION: '8.0.100-rc.2.23502.2'
+  TOOLKIT_NET_VERSION: '8.0.100'
   LATEST_NET_VERSION: '8.0.x'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
@@ -21,7 +21,8 @@ variables:
   PathToCommunityToolkitAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Analyzers.CodeFixes/CommunityToolkit.Maui.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
-  CommunityToolkitSampleApp_Xcode_Version: '15.0.1'
+  DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/8.0.6.json'
+  CommunityToolkitSampleApp_Xcode_Version: '15.1.0'
   CommunityToolkitLibrary_Xcode_Version: '15.0.1'
 
 trigger:
@@ -69,10 +70,12 @@ jobs:
         inputs:
           packageType: 'sdk'
           version: '$(LATEST_NET_VERSION)'
-          includePreviewVersions: true
+          includePreviewVersions: false
 
-      - powershell: dotnet workload install maui --skip-sign-check --source https://api.nuget.org/v3/index.json
-        displayName: Install Latest .NET MAUI Workload
+      - task: CmdLine@2
+        displayName: 'Install Latest .NET MAUI Workload'
+        inputs:
+          script: 'dotnet workload install maui'
 
       - pwsh: |
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
@@ -181,7 +184,7 @@ jobs:
         inputs:
           packageType: 'sdk'
           version: '$(TOOLKIT_NET_VERSION)'
-          includePreviewVersions: true
+          includePreviewVersions: false
 
       - task: CmdLine@2
         displayName: 'Install .NET MAUI Workload $(TOOLKIT_NET_VERSION)'
@@ -274,11 +277,12 @@ jobs:
 
       # check vulnerabilities
       - powershell: |
-          dotnet list $(PathToLibrarySolution) package --include-transitive # Print all transitive packages
-          dotnet list $(PathToLibrarySolution) package --vulnerable --include-transitive | findstr /S /c:"has the following vulnerable packages"; # Print all transitive packages with vulnerabilities
+          cd src
+          dotnet list package --include-transitive # Print all transitive packages
+          dotnet list package --vulnerable --include-transitive | findstr /S /c:"has the following vulnerable packages"; # Print all transitive packages with vulnerabilities
           if ($LastExitCode -ne 1)
           {
-            dotnet list $(PathToLibrarySolution) package --vulnerable --include-transitive;
+            dotnet list package --vulnerable --include-transitive;
             exit 1;
           }
 

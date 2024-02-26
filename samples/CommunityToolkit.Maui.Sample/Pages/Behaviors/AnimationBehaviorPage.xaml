@@ -16,7 +16,7 @@
             <Label.FormattedText>
                 <FormattedString>
                     <FormattedString.Spans>
-                        <Span Text="AnimationBehavor is a Behavior that can be attached to any VisualElement, allowing developers to: trigger animations via: ICommand AnimateCommand." />
+                        <Span Text="AnimationBehavior is a Behavior that can be attached to any VisualElement, allowing developers to: trigger animations via: ICommand AnimateCommand." />
                         <Span Text="{x:Static system:Environment.NewLine}" />
                         <Span Text="* use the default of a TapGestureRecognizer being added to the attached VisualElement" />
                         <Span Text="{x:Static system:Environment.NewLine}" />
@@ -80,7 +80,7 @@
 
         <Frame BackgroundColor="LightGreen" Margin="16,0">
             <Frame.Behaviors>
-                <mct:AnimationBehavior Command="{Binding AnimationCommand}">
+                <mct:AnimationBehavior AnimateCommand="{Binding AnimateFromViewModelCommand}">
                     <mct:AnimationBehavior.AnimationType>
                         <mct:FadeAnimation Opacity="0.2" />
                     </mct:AnimationBehavior.AnimationType>
@@ -88,5 +88,7 @@
             </Frame.Behaviors>
             <Label Text="Click this Frame" HorizontalOptions="Center"/>
         </Frame>
+
+        <Button Text="Animate the frame above" Command="{Binding TriggerAnimationCommand}" />
     </VerticalStackLayout>
 </pages:BasePage>

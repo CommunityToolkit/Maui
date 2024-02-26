@@ -27,9 +27,10 @@ public partial class Popup
 			view.SetBinding(BindingContextProperty, new Binding { Source = virtualView, Path = BindingContextProperty.PropertyName });
 			var contentPage = new ContentPage
 			{
-				Content = view,
-				Parent = virtualView.Parent as Element
+				Content = view
 			};
+			var parent = virtualView.Parent as Element;
+			parent?.AddLogicalChild(contentPage);
 
 			return (PageHandler)contentPage.ToHandler(mauiContext);
 		}

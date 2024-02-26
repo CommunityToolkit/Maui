@@ -10,21 +10,21 @@ public partial class ItemTappedEventArgsConverterViewModel : BaseViewModel
 	[ObservableProperty]
 	Person? itemSelected = null;
 
-	public FrozenSet<Person> Items { get; } = new[]
+	public IReadOnlyList<Person> Items { get; } = new[]
 	{
 		new Person(1, "John Doe"),
 		new Person(2, "Jane Doe"),
 		new Person(3, "Joe Doe")
-	}.ToFrozenSet();
+	};
 
 	[RelayCommand]
-	Task ItemTapped(Person? person)
+	Task ItemTapped(Person? person, CancellationToken token)
 	{
 		ArgumentNullException.ThrowIfNull(person);
 
 		ItemSelected = null;
 
-		return Application.Current?.MainPage?.DisplayAlert("Item Tapped", person.Name, "Ok") ?? Task.CompletedTask;
+		return Application.Current?.MainPage?.DisplayAlert("Item Tapped", person.Name, "Ok").WaitAsync(token) ?? Task.CompletedTask;
 	}
 
 }

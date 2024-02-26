@@ -10,4 +10,10 @@ public partial class CharactersValidationBehaviorPage : BasePage<CharactersValid
 	{
 		InitializeComponent();
 	}
+	protected override void OnAppearing()
+	{
+		base.OnAppearing();
+
+		CharacterTypePicker.SelectedIndex = 3;
+	}
 }

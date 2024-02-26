@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Views;
 public partial class Popup
 {
 	/// <summary>
-	/// 
+	/// Popup CommandMapper
 	/// </summary>
 	public static CommandMapper<IPopup, PopupHandler> ControlPopUpCommandMapper = new(PopupHandler.PopUpCommandMapper)
 	{
@@ -15,7 +15,7 @@ public partial class Popup
 #endif
 	};
 
-	internal static void RemapForControls()
+	internal static new void RemapForControls()
 	{
 		PopupHandler.PopUpCommandMapper = ControlPopUpCommandMapper;
 	}

@@ -3,7 +3,7 @@ namespace CommunityToolkit.Maui.Storage;
 public sealed partial class FolderPickerImplementation
 {
 	/// <inheritdoc/>
-	public async Task<FolderPickerResult> PickAsync(string initialPath, CancellationToken cancellationToken)
+	public async Task<FolderPickerResult> PickAsync(string initialPath, CancellationToken cancellationToken = default)
 	{
 		try
 		{
@@ -18,7 +18,7 @@ public sealed partial class FolderPickerImplementation
 	}
 
 	/// <inheritdoc/>
-	public async Task<FolderPickerResult> PickAsync(CancellationToken cancellationToken)
+	public async Task<FolderPickerResult> PickAsync(CancellationToken cancellationToken = default)
 	{
 		try
 		{

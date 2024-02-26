@@ -19,14 +19,14 @@ public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
 	int flowDirectionSelectedIndex;
 
-	public FrozenSet<string> FlowDirectionOptions { get; } = Enum.GetNames(typeof(FlowDirection)).ToFrozenSet();
+	public IReadOnlyList<string> FlowDirectionOptions { get; } = Enum.GetNames(typeof(FlowDirection)).ToList();
 
 	[RelayCommand(CanExecute = nameof(CanShowButtonExecute))]
-	public Task ExecuteShowButton()
+	public Task ExecuteShowButton(CancellationToken token)
 	{
 		if (!IsFlowDirectionSelectionValid(FlowDirectionSelectedIndex, FlowDirectionOptions.Count))
 		{
-			throw new ArgumentOutOfRangeException(nameof(FlowDirectionSelectedIndex), FlowDirectionSelectedIndex, "Invalid FlowDirection Selected");
+			throw new IndexOutOfRangeException("Invalid FlowDirection Selected");
 		}
 
 		Microsoft.Maui.Primitives.LayoutAlignment? verticalOptions = null, horizontalOptions = null;
@@ -76,7 +76,7 @@ public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 			HorizontalOptions = horizontalOptions.Value
 		};
 
-		return Shell.Current.ShowPopupAsync(popup);
+		return Shell.Current.ShowPopupAsync(popup, token);
 	}
 
 	static bool IsFlowDirectionSelectionValid(int flowDirectionSelection, int flowDirectionOptionsCount)

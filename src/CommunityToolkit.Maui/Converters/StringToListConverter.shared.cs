@@ -25,10 +25,7 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable, o
 		get => separator;
 		set
 		{
-			if (value is null)
-			{
-				throw new ArgumentNullException(nameof(value));
-			}
+			ArgumentNullException.ThrowIfNull(value);
 
 			if (string.IsNullOrEmpty(value))
 			{
@@ -95,13 +92,11 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable, o
 			case string separator:
 				return Split(value, separator);
 
-			default:
-				if (parameter is not null)
-				{
-					throw new ArgumentException("Parameter cannot be cast to string nor string[].", nameof(parameter));
-				}
-
+			case null:
 				break;
+
+			default:
+				throw new ArgumentException("Parameter cannot be cast to string nor string[].", nameof(parameter));
 		}
 
 		return Separators.Count > 1 ? Split(value, Separators.ToArray()) : Split(value, Separator);

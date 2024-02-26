@@ -21,7 +21,7 @@ public partial class GravatarImageSourceViewModel : BaseViewModel
 
 	public TimeSpan CacheValidityTimespan => TimeSpan.FromDays(CacheValidityInDays);
 
-	public FrozenSet<DefaultImage> DefaultGravatarItems { get; } = new[]
+	public IReadOnlyList<DefaultImage> DefaultGravatarItems { get; } = new[]
 	{
 		DefaultImage.MysteryPerson,
 		DefaultImage.FileNotFound,
@@ -31,5 +31,5 @@ public partial class GravatarImageSourceViewModel : BaseViewModel
 		DefaultImage.Robohash,
 		DefaultImage.Wavatar,
 		DefaultImage.Blank
-	}.ToFrozenSet();
+	};
 }

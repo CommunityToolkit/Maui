@@ -19,13 +19,8 @@
 
             <Label Text="The SelectAllTextBehavior is an effect that will select all text in an Entry / Editor when it becomes focused. Useful applications for this effect would be custom url address bars, a copy paste button etc." />
 
-            <Label
-				FontAttributes="Bold"
-				Text="Entry"
-				TextColor="{StaticResource DarkLabelTextColor}" />
-
-
-            <Label FontAttributes="Italic" Text="Entry without the effect, when focused no text will be selected" />
+            <Label FontAttributes="Bold" Text="Entry without the Behavior"/>
+            <Label FontAttributes="Italic" Text="When focused no text will be selected" />
             <Border BackgroundColor="{StaticResource SoftBorderBackgroundColor}" >
                 <Entry
 					BackgroundColor="{StaticResource PrimaryColor}"
@@ -33,8 +28,9 @@
 					Text="https://github.com/CommunityToolkit/Maui/"
 					TextColor="{StaticResource DarkLabelTextColor}" />
             </Border>
-
-            <Label FontAttributes="Italic" Text="Entry with the effect, when focused all text will be selected" />
+            
+            <Label FontAttributes="Bold" Text="Entry with the Behavior"/>
+            <Label FontAttributes="Italic" Text="When focused all text will be selected" />
             <Border BackgroundColor="{StaticResource SoftBorderBackgroundColor}" >
                 <Entry
 					BackgroundColor="{StaticResource PrimaryColor}"
@@ -47,12 +43,8 @@
                 </Entry>
             </Border>
 
-            <Label
-				FontAttributes="Bold"
-				Text="Editor"
-				TextColor="{StaticResource DarkLabelTextColor}" />
-
-            <Label FontAttributes="Italic" Text="Editor without the effect, when focused no text will be selected" />
+            <Label FontAttributes="Bold" Text="Editor without the Behavior" />
+            <Label FontAttributes="Italic" Text="When focused no text will be selected" />
             <Border BackgroundColor="{StaticResource SoftBorderBackgroundColor}" >
                 <Editor PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}"
 						TextColor="{StaticResource DarkLabelTextColor}"
@@ -64,7 +56,8 @@
                 </Editor>
             </Border>
 
-            <Label FontAttributes="Italic" Text="Editor with the effect, when focused all text will be selected" />
+            <Label FontAttributes="Bold" Text="Editor with the Behavior" />
+            <Label FontAttributes="Italic" Text="When focused all text will be selected" />
             <Border BackgroundColor="{StaticResource SoftBorderBackgroundColor}" >
                 <Editor PlaceholderColor="{StaticResource DarkLabelPlaceholderColor}"
 						TextColor="{StaticResource DarkLabelTextColor}"
