@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class ColorToRgbaStringConverterTests : BaseOneWayConverterTest<ColorToRgbaStringConverter>
+public class ColorToRgbaStringConverterTests : BaseConverterTest<ColorToRgbaStringConverter>
 {
 	public static readonly IReadOnlyList<object[]> ValidInputData = new[]
 	{
@@ -65,6 +65,20 @@ public class ColorToRgbaStringConverterTests : BaseOneWayConverterTest<ColorToRg
 		Assert.Equal(expectedResult, resultConvertFrom);
 	}
 
+	[Theory]
+	[MemberData(nameof(ValidInputData))]
+	public void ColorToRgbStringConverterConvertBackValidInputTest(float red, float green, float blue, float alpha, string colorString)
+	{
+		var converter = new ColorToRgbaStringConverter();
+		var expectedResult = new Color(red, green, blue, alpha);
+
+		var resultConvertBack = ((ICommunityToolkitValueConverter)converter).ConvertBack(colorString, typeof(Color), null, null);
+		var resultConvertBackTo = converter.ConvertBackTo(colorString, System.Globalization.CultureInfo.InvariantCulture);
+
+		AssertColorComparison(expectedResult, resultConvertBack as Color);
+		AssertColorComparison(expectedResult, resultConvertBackTo);
+	}
+
 	[Fact]
 	public void ColorToRgbStringConverterCultureTest()
 	{
@@ -87,5 +101,15 @@ public class ColorToRgbaStringConverterTests : BaseOneWayConverterTest<ColorToRg
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToRgbaStringConverter()).Convert(null, typeof(string), null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToRgbaStringConverter()).Convert(new Color(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	static void AssertColorComparison(Color expectedResult, Color? result)
+	{
+		const int precision = 2;
+
+		Assert.NotNull(result);
+		Assert.Equal(expectedResult.Red, result.Red, precision);
+		Assert.Equal(expectedResult.Green, result.Green, precision);
+		Assert.Equal(expectedResult.Blue, result.Blue, precision);
 	}
 }
