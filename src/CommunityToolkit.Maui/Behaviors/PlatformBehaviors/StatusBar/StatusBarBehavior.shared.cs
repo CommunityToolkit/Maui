@@ -72,7 +72,7 @@ public class StatusBarBehavior : PlatformBehavior<Page>
 		get => (StatusBarApplyOn)GetValue(ApplyOnProperty);
 		set => SetValue(ApplyOnProperty, value);
 	}
-	
+
 
 #if !(WINDOWS || MACCATALYST || TIZEN)
 
