@@ -143,10 +143,9 @@ public class MauiMediaElement : CoordinatorLayout
 
 		if (isFullScreen)
 		{
+			WindowCompat.SetDecorFitsSystemWindows(currentWindow, false);
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
-				currentWindow.SetDecorFitsSystemWindows(false);
-
 				var windowInsets = currentWindow.DecorView.RootWindowInsets;
 				if (windowInsets is not null)
 				{
@@ -177,10 +176,9 @@ public class MauiMediaElement : CoordinatorLayout
 		}
 		else
 		{
+			WindowCompat.SetDecorFitsSystemWindows(currentWindow, true);
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
-				currentWindow.SetDecorFitsSystemWindows(true);
-
 				if (isSystemBarVisible)
 				{
 					currentWindow.InsetsController?.Show(WindowInsets.Type.SystemBars());
