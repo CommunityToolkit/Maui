@@ -9,12 +9,4 @@ public partial class StatusBarBehaviorPage : BasePage<StatusBarBehaviorViewModel
 	{
 		InitializeComponent();
 	}
-
-	protected override void OnNavigatedTo(NavigatedToEventArgs args)
-	{
-		base.OnNavigatedTo(args);
-
-		var statusBarColor = Color.FromRgb(BindingContext.RedSliderValue, BindingContext.GreenSliderValue, BindingContext.BlueSliderValue);
-		CommunityToolkit.Maui.Core.Platform.StatusBar.SetColor(statusBarColor);
-	}
 }
