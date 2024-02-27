@@ -1,6 +1,5 @@
 ﻿using System.Runtime.Versioning;
 using Android.OS;
-using Android.Views;
 using AndroidX.Core.View;
 using CommunityToolkit.Maui.Core.Extensions;
 using Microsoft.Maui.Platform;
