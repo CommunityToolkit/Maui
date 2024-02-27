@@ -123,6 +123,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<UriValidationBehaviorPage, UriValidationBehaviorViewModel>();
 		services.AddTransientWithShellRoute<UserStoppedTypingBehaviorPage, UserStoppedTypingBehaviorViewModel>();
 		services.AddTransientWithShellRoute<StatusBarBehaviorPage, StatusBarBehaviorViewModel>();
+		services.AddTransientWithShellRoute<TouchBehaviorPage, TouchBehaviorViewModel>();
 
 		// Add Converters Pages + ViewModels
 		services.AddTransientWithShellRoute<BoolToObjectConverterPage, BoolToObjectConverterViewModel>();
