@@ -132,11 +132,10 @@
 
                 
 
-                <RadioButton VerticalOptions="Center" IsChecked="{Binding IsDefaultChecked}">
-                    <RadioButton.Content>
-                        <Label Text="Default" Margin="10,0,0,0" VerticalTextAlignment="Center" VerticalOptions="Center" />
-                    </RadioButton.Content>
-                </RadioButton>
+                <RadioButton
+                    Content="Default"
+                    IsChecked="{Binding IsDefaultChecked}"
+                    VerticalOptions="Center" />
 
                 <RadioButton VerticalOptions="Center" IsChecked="{Binding IsLightContentChecked}">
                     <RadioButton.Content>
