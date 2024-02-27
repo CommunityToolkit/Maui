@@ -20,6 +20,8 @@ public partial class TouchBehavior
 	{
 		Element = bindable;
 
+		BindingContext = Element.BindingContext;
+		
 		touchGesture = new TouchUITapGestureRecognizer(this);
 
 		if (((platformView as IVisualNativeElementRenderer)?.Control ?? platformView) is UIButton button)
