@@ -9,7 +9,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MauiDrawingView
 {
 	readonly WeakEventManager weakEventManager = new();
-	readonly WeakReference<Action<ICanvas, RectF>?> drawActionReference = new(null);
 
 	bool isDrawing;
 	PointF previousPoint;
@@ -81,11 +80,7 @@ public partial class MauiDrawingView
 	/// <summary>
 	/// Used to draw any shape on the canvas
 	/// </summary>
-	public Action<ICanvas, RectF>? DrawAction
-	{
-		get => drawActionReference.TryGetTarget(out var drawAction) ? drawAction : null;
-		set => drawActionReference.SetTarget(value);
-	}
+	public Action<ICanvas, RectF>? DrawAction { get; set; }
 
 	/// <summary>
 	/// Drawable background
@@ -209,7 +204,7 @@ public partial class MauiDrawingView
 		currentPath = new PathF();
 	}
 
-	sealed class DrawingViewDrawable : IDrawable
+	class DrawingViewDrawable : IDrawable
 	{
 		readonly MauiDrawingView drawingView;
 
