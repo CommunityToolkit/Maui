@@ -171,6 +171,41 @@
                     </ContentView>
                 </ContentView>
             </VerticalStackLayout>
+
+            <VerticalStackLayout BackgroundColor="#F0F0F0">
+                <Label Style="{StaticResource SectionHeader}" Text="Input transparency for nested layouts" />
+
+                <Border
+                    Margin="20"
+                    Padding="20,10"
+                    BackgroundColor="White"
+                    StrokeShape="RoundRectangle, 10"
+                    StrokeThickness="0">
+                    <Border.Behaviors>
+                        <mct:TouchBehavior
+                            AnimationDuration="150"
+                            AnimationEasing="{x:Static Easing.CubicInOut}"
+                            Command="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseTouchCountCommand}"
+                            PressedBackgroundColor="LightGray"
+                            PressedOpacity="0.8"
+                            PressedScale="0.9"
+                            ShouldMakeChildrenInputTransparent="True" />
+                    </Border.Behaviors>
+                    <Grid
+                        BackgroundColor="Transparent"
+                        ColumnDefinitions="Auto, *"
+                        ColumnSpacing="10">
+                        <Ellipse
+                            BackgroundColor="#A4CF5B"
+                            HeightRequest="40"
+                            WidthRequest="40" />
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                            <Label FontSize="20" Text="Lorem Ipsum" />
+                            <Label FontSize="12" Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam gravida, sapien in volutpat ornare, magna dui condimentum dui, quis egestas tellus leo non nulla. Quisque sit amet neque dapibus, congue justo non, dapibus dolor." />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+            </VerticalStackLayout>
         </VerticalStackLayout>
     </ScrollView>
 </pages:BasePage>
