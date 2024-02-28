@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace CommunityToolkit.Maui.Behaviors;
 
-namespace CommunityToolkit.Maui.Behaviors;
 public partial class TouchBehavior : IDisposable
 {
 	readonly NullReferenceException nre = new(nameof(Element));

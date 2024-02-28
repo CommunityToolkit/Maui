@@ -6,6 +6,7 @@
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
+    x:Name="Page"
     x:DataType="vm:TouchBehaviorViewModel"
     x:TypeArguments="vm:TouchBehaviorViewModel">
 
@@ -32,7 +33,7 @@
                 <Image HeightRequest="100" WidthRequest="100">
                     <Image.Behaviors>
                         <mct:TouchBehavior
-                            Command="{Binding IncreaseTouchCountCommand}"
+                            Command="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseTouchCountCommand}"
                             IsToggled="false"
                             NormalBackgroundImageSource="button.png"
                             PressedBackgroundImageSource="button_pressed.png" />
@@ -47,7 +48,7 @@
                         <mct:TouchBehavior
                             AnimationDuration="250"
                             AnimationEasing="{x:Static Easing.CubicInOut}"
-                            Command="{Binding IncreaseTouchCountCommand}"
+                            Command="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseTouchCountCommand}"
                             PressedOpacity="0.6"
                             PressedScale="0.8" />
                     </HorizontalStackLayout.Behaviors>
@@ -79,11 +80,12 @@
                     HorizontalOptions="CenterAndExpand">
                     <HorizontalStackLayout.Behaviors>
                         <mct:TouchBehavior
-                            Command="{Binding IncreaseTouchCountCommand}"
+                            Command="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseTouchCountCommand}"
+                            HoveredBackgroundColor="{StaticResource Gray900}"
                             HoveredScale="1.2"
-                            LongPressCommand="{Binding IncreaseLongPressCountCommand}"
+                            LongPressCommand="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseLongPressCountCommand}"
                             NativeAnimation="True"
-                            NativeAnimationBorderless="{Binding NativeAnimationBorderless}" />
+                            NativeAnimationBorderless="{Binding Source={x:Reference Page}, Path=BindingContext.NativeAnimationBorderless}" />
                     </HorizontalStackLayout.Behaviors>
                     <Label
                         FontSize="Large"
@@ -105,7 +107,7 @@
                     <HorizontalStackLayout.Behaviors>
                         <mct:TouchBehavior
                             AnimationDuration="500"
-                            Command="{Binding IncreaseTouchCountCommand}"
+                            Command="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseTouchCountCommand}"
                             NormalBackgroundColor="Gold"
                             PressedBackgroundColor="Orange"
                             PressedRotation="15"
@@ -129,9 +131,9 @@
                         WidthRequest="100">
                         <Image.Behaviors>
                             <mct:TouchBehavior
-                                Command="{Binding IncreaseTouchCountCommand}"
+                                Command="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseTouchCountCommand}"
                                 NativeAnimation="True"
-                                NativeAnimationBorderless="{Binding NativeAnimationBorderless}"
+                                NativeAnimationBorderless="{Binding Source={x:Reference Page}, Path=BindingContext.NativeAnimationBorderless}"
                                 NativeAnimationRadius="100" />
                         </Image.Behaviors>
                     </Image>
@@ -140,35 +142,34 @@
 
             <VerticalStackLayout>
                 <Label Style="{StaticResource SectionHeader}" Text="Nested effect" />
-                <Grid>
+
+                <ContentView
+                    Padding="50"
+                    Background="Yellow"
+                    HeightRequest="200"
+                    HorizontalOptions="Center"
+                    WidthRequest="200">
+                    <ContentView.Behaviors>
+                        <mct:TouchBehavior
+                            Command="{Binding Source={x:Reference Page}, Path=BindingContext.ParentClickedCommand}"
+                            NativeAnimation="True"
+                            NativeAnimationBorderless="{Binding Source={x:Reference Page}, Path=BindingContext.NativeAnimationBorderless}" />
+                    </ContentView.Behaviors>
+
                     <ContentView
-                        Padding="50"
-                        Background="Yellow"
-                        HeightRequest="200"
+                        BackgroundColor="Red"
+                        HeightRequest="100"
                         HorizontalOptions="Center"
-                        WidthRequest="200">
+                        VerticalOptions="Center"
+                        WidthRequest="100">
                         <ContentView.Behaviors>
                             <mct:TouchBehavior
-                                Command="{Binding ParentClickedCommand}"
+                                Command="{Binding Source={x:Reference Page}, Path=BindingContext.ChildClickedCommand}"
                                 NativeAnimation="True"
-                                NativeAnimationBorderless="{Binding NativeAnimationBorderless}" />
+                                NativeAnimationBorderless="{Binding Source={x:Reference Page}, Path=BindingContext.NativeAnimationBorderless}" />
                         </ContentView.Behaviors>
-
-                        <ContentView
-                            BackgroundColor="Red"
-                            HeightRequest="100"
-                            HorizontalOptions="Center"
-                            VerticalOptions="Center"
-                            WidthRequest="100">
-                            <ContentView.Behaviors>
-                                <mct:TouchBehavior
-                                    Command="{Binding ChildClickedCommand}"
-                                    NativeAnimation="True"
-                                    NativeAnimationBorderless="{Binding NativeAnimationBorderless}" />
-                            </ContentView.Behaviors>
-                        </ContentView>
                     </ContentView>
-                </Grid>
+                </ContentView>
             </VerticalStackLayout>
         </VerticalStackLayout>
     </ScrollView>

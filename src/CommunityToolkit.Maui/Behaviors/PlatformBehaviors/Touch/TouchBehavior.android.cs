@@ -57,7 +57,6 @@ public partial class TouchBehavior
 	protected override void OnAttachedTo(VisualElement bindable, AView platformView)
 	{
 		Element = bindable;
-		BindingContext = Element.BindingContext;
 		view = platformView;
 		viewGroup = Microsoft.Maui.Platform.ViewExtensions.GetParentOfType<ViewGroup>(platformView);
 		if (IsDisabled)

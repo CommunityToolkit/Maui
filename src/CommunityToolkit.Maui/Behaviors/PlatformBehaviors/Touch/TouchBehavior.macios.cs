@@ -19,8 +19,6 @@ public partial class TouchBehavior
 	protected override void OnAttachedTo(VisualElement bindable, UIView platformView)
 	{
 		Element = bindable;
-
-		BindingContext = Element.BindingContext;
 		
 		touchGesture = new TouchUITapGestureRecognizer(this);
 
