@@ -89,11 +89,21 @@ public partial class TouchBehavior : IDisposable
 
 	void SetChildrenInputTransparent(bool value)
 	{
-		if (Element is not Layout layout)
+		if (Element is Layout layout)
 		{
+			SetChildrenInputTransparent(value, layout);
 			return;
 		}
 
+		if (Element is IContentView { Content: Layout contentLayout })
+		{
+			SetChildrenInputTransparent(value, contentLayout);
+			return;
+		}
+	}
+
+	void SetChildrenInputTransparent(bool value, Layout layout)
+	{
 		layout.ChildAdded -= OnLayoutChildAdded;
 
 		if (!value)
