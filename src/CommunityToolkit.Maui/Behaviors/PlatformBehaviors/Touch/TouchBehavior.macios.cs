@@ -298,8 +298,8 @@ internal sealed class TouchUITapGestureRecognizer : UIGestureRecognizer
 			{
 				return true;
 			}
-
-			return recognizer.View.Subviews.Any(view => view == touch.View);
+ 
+			return touch.View.IsDescendantOfView(recognizer.View) && (touch.View.GestureRecognizers is null || touch.View.GestureRecognizers.Length == 0);
 		}
 	}
 }
