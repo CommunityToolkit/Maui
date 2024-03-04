@@ -79,7 +79,7 @@ public class TouchBehaviorTests : BaseTest
 		Assert.Equal(HoverState.Normal, touchBehavior.HoverState);
 
 		Assert.Equal(TouchStatus.Completed, touchBehavior.Status);
-		Assert.Equal(HoverStatus.Entered, touchBehavior.HoverStatus);
+		Assert.Equal(HoverStatus.Exited, touchBehavior.HoverStatus);
 
 		Assert.Equal(TouchInteractionStatus.Completed, touchBehavior.InteractionStatus);
 

@@ -11,6 +11,8 @@ public partial class TouchBehavior : IDisposable
 
 	internal void RaiseHoverStateChanged()
 	{
+		ForceUpdateState();
+		
 		weakEventManager.HandleEvent(Element ?? throw nre, new HoverStateChangedEventArgs(HoverState), nameof(HoverStateChanged));
 	}
 
