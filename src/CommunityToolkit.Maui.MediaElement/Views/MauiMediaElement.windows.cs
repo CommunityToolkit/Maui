@@ -22,7 +22,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiMediaElement : Grid, IDisposable
 {
-	static readonly AppWindow? appWindow = GetAppWindowForCurrentWindow();
+	static readonly AppWindow appWindow = GetAppWindowForCurrentWindow();
 	static readonly ImageSource source = new BitmapImage(new Uri("ms-appx:///fullscreen.png"));
 
 	readonly Popup popup = new();
@@ -88,7 +88,7 @@ public class MauiMediaElement : Grid, IDisposable
 	{
 		Dispose(true);
 		GC.SuppressFinalize(this);
-	}	
+	}
 
 	/// <summary>
 	/// Gets the presented page.
@@ -124,8 +124,10 @@ public class MauiMediaElement : Grid, IDisposable
 		{
 			throw new InvalidOperationException($"{nameof(window)} cannot be null.");
 		}
+
 		var handle = WindowNative.GetWindowHandle(window);
 		var id = Win32Interop.GetWindowIdFromWindow(handle);
+
 		return AppWindow.GetFromWindowId(id);
 	}
 
@@ -144,10 +146,6 @@ public class MauiMediaElement : Grid, IDisposable
 	void OnFullScreenButtonClick(object sender, RoutedEventArgs e)
 	{
 		var currentPage = CurrentPage;
-		if (appWindow is null)
-		{
-			return;
-		}
 
 		if (appWindow.Presenter.Kind is AppWindowPresenterKind.FullScreen)
 		{
