@@ -1,4 +1,4 @@
-﻿using Android.Content;
+using Android.Content;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.OS;
@@ -281,8 +281,15 @@ public partial class TouchBehavior
 				Enabled = false
 			};
 
+			bool rippleAtFront = !(viewGroup?.ChildCount > 0);
+			
 			viewGroup?.AddView(rippleView);
-			rippleView.BringToFront();
+
+			if (!rippleAtFront)
+			{
+				var child = viewGroup?.GetChildAt(0);
+				child?.BringToFront();
+			}
 		}
 
 		viewGroup?.SetClipChildren(!isBorderless);
@@ -501,7 +508,6 @@ public partial class TouchBehavior
 			if (rippleView is not null)
 			{
 				rippleView.Enabled = true;
-				rippleView.BringToFront();
 				ripple?.SetHotspot(x, y);
 				rippleView.Pressed = true;
 			}
