@@ -1,13 +1,13 @@
-﻿using Android.Content;
+﻿using Android.App;
+using Android.Content;
+using Android.Content.Res;
+using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Core.View;
 using Com.Google.Android.Exoplayer2.UI;
 using CommunityToolkit.Maui.Views;
-using AndroidX.Core.View;
-using Android.Content.Res;
-using Android.App;
-using Android.Runtime;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -82,7 +82,7 @@ public class MauiMediaElement : CoordinatorLayout
 
 		base.Dispose(disposing);
 	}
-	
+
 	static (Activity CurrentActivity, Android.Views.Window CurrentWindow, Resources CurrentWindowResources, Configuration CurrentWindowConfiguration) VerifyAndRetrieveCurrentWindowResources()
 	{
 		// Ensure current activity and window are available
@@ -99,7 +99,7 @@ public class MauiMediaElement : CoordinatorLayout
 		{
 			throw new InvalidOperationException("CurrentActivity Resources cannot be null when the FullScreen button is tapped");
 		}
-		
+
 		if (currentResources.Configuration is not Configuration configuration)
 		{
 			throw new InvalidOperationException("CurrentActivity Configuration cannot be null when the FullScreen button is tapped");
@@ -116,7 +116,7 @@ public class MauiMediaElement : CoordinatorLayout
 			throw new InvalidOperationException("PlayerView cannot be null when the FullScreen button is tapped");
 		}
 
-		var (_, currentWindow, _, _)  = VerifyAndRetrieveCurrentWindowResources();
+		var (_, currentWindow, _, _) = VerifyAndRetrieveCurrentWindowResources();
 
 		// Hide the SystemBars and Status bar
 		if (e.IsFullScreen)
@@ -146,10 +146,10 @@ public class MauiMediaElement : CoordinatorLayout
 			}
 		}
 	}
-	
+
 	void SetSystemBarsVisibility()
 	{
-		var (_, currentWindow, _, _)  = VerifyAndRetrieveCurrentWindowResources();
+		var (_, currentWindow, _, _) = VerifyAndRetrieveCurrentWindowResources();
 
 		var windowInsetsControllerCompat = WindowCompat.GetInsetsController(currentWindow, currentWindow.DecorView);
 
