@@ -25,7 +25,7 @@ public class MauiMediaElement : CoordinatorLayout
 #pragma warning disable IDE0060 // Remove unused parameter
 	public MauiMediaElement(nint ptr, JniHandleOwnership jni) : base(Platform.AppContext)
 	{
-		//Fixes no constructor found exception
+		//Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/pull/1692#issuecomment-1955099758
 	}
 #pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 #pragma warning restore IDE0060 // Remove unused parameter
