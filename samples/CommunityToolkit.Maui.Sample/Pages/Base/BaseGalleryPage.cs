@@ -25,7 +25,9 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 
 	async void HandleSelectionChanged(object? sender, SelectionChangedEventArgs e)
 	{
-		ArgumentNullException.ThrowIfNull(sender);
+		try
+		{
+			ArgumentNullException.ThrowIfNull(sender);
 
 		var collectionView = (CollectionView)sender;
 		collectionView.SelectedItem = null;
@@ -34,6 +36,12 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 		{
 			await Shell.Current.GoToAsync(AppShell.GetPageRoute(sectionModel.ViewModelType));
 		}
+		}
+		catch (Exception ex)
+		{
+			_ = ex;
+		}
+		
 	}
 
 	class GalleryDataTemplate : DataTemplate
