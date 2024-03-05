@@ -67,10 +67,17 @@ public class MauiMediaElement : CoordinatorLayout
 	{
 		if (disposing)
 		{
-			// https://github.com/google/ExoPlayer/issues/1855#issuecomment-251041500
-			playerView.Player?.Release();
-			playerView.Player?.Dispose();
-			playerView.Dispose();
+			try
+			{
+				// https://github.com/google/ExoPlayer/issues/1855#issuecomment-251041500
+				playerView.Player?.Release();
+				playerView.Player?.Dispose();
+				playerView.Dispose();
+			}
+			catch (ObjectDisposedException)
+			{
+				// playerView already disposed
+			}
 		}
 
 		base.Dispose(disposing);
