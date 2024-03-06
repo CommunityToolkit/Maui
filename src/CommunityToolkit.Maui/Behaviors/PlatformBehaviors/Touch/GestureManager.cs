@@ -241,7 +241,7 @@ sealed class GestureManager : IDisposable
 		});
 	}
 
-	internal void SetCustomAnimationTask(Func<TouchBehavior, TouchState, HoverState, int, Easing?, CancellationToken, Task>? animationTaskFactory)
+	void SetCustomAnimationTask(Func<TouchBehavior, TouchState, HoverState, int, Easing?, CancellationToken, Task>? animationTaskFactory)
 		=> this.animationTaskFactory = animationTaskFactory;
 
 	internal void Reset()
@@ -250,7 +250,7 @@ sealed class GestureManager : IDisposable
 		defaultBackgroundColor = default;
 	}
 
-	internal void OnTapped(TouchBehavior sender)
+	void OnTapped(TouchBehavior sender)
 	{
 		if (!sender.CanExecute || (sender.LongPressCommand != null && sender.InteractionStatus == TouchInteractionStatus.Completed))
 		{

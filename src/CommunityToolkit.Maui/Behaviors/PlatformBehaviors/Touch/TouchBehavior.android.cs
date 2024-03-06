@@ -18,29 +18,29 @@ namespace CommunityToolkit.Maui.Behaviors;
 
 public partial class TouchBehavior
 {
-	private static readonly MColor defaultNativeAnimationColor = MColor.FromRgba(128, 128, 128, 64);
-	private bool isHoverSupported;
-	private RippleDrawable? ripple;
-	private AView? rippleView;
-	private float startX;
-	private float startY;
-	private MColor? rippleColor;
-	private int rippleRadius = -1;
-	private AView? view = null;
-	private ViewGroup? viewGroup;
+	static readonly MColor defaultNativeAnimationColor = MColor.FromRgba(128, 128, 128, 64);
+	bool isHoverSupported;
+	RippleDrawable? ripple;
+	AView? rippleView;
+	float startX;
+	float startY;
+	MColor? rippleColor;
+	int rippleRadius = -1;
+	AView? view = null;
+	ViewGroup? viewGroup;
 
-	private AccessibilityManager? accessibilityManager;
-	private AccessibilityListener? accessibilityListener;
+	AccessibilityManager? accessibilityManager;
+	AccessibilityListener? accessibilityListener;
 
-	private bool IsAccessibilityMode => accessibilityManager is not null
+	bool IsAccessibilityMode => accessibilityManager is not null
 	                                    && accessibilityManager.IsEnabled
 	                                    && accessibilityManager.IsTouchExplorationEnabled;
 
-	private readonly bool isAtLeastM = IsAndroidVersionAtLeast((int) BuildVersionCodes.M);
+	readonly bool isAtLeastM = IsAndroidVersionAtLeast((int) BuildVersionCodes.M);
 
 	internal bool IsCanceled { get; set; }
 
-	private bool IsForegroundRippleWithTapGestureRecognizer =>
+	bool IsForegroundRippleWithTapGestureRecognizer =>
 		ripple is not null &&
 		this.view is not null &&
 		ripple.IsAlive() &&
@@ -140,7 +140,7 @@ public partial class TouchBehavior
 		isHoverSupported = false;
 	}
 
-	private void OnLayoutChange(object? sender, AView.LayoutChangeEventArgs e)
+	void OnLayoutChange(object? sender, AView.LayoutChangeEventArgs e)
 	{
 		if (sender is not AView view || rippleView is null)
 		{
@@ -151,7 +151,7 @@ public partial class TouchBehavior
 		rippleView.Bottom = view.Height;
 	}
 
-	private void CreateRipple()
+	void CreateRipple()
 	{
 		RemoveRipple();
 
@@ -178,7 +178,7 @@ public partial class TouchBehavior
 		UpdateRipple(color);
 	}
 
-	private void RemoveRipple()
+	void RemoveRipple()
 	{
 		if (ripple is null)
 		{
@@ -207,7 +207,7 @@ public partial class TouchBehavior
 		ripple = null;
 	}
 
-	private void UpdateRipple(MColor color)
+	void UpdateRipple(MColor color)
 	{
 		if (IsDisabled || (color == rippleColor && NativeAnimationRadius == rippleRadius))
 		{
@@ -223,7 +223,7 @@ public partial class TouchBehavior
 		}
 	}
 
-	private ColorStateList GetColorStateList(MColor? color)
+	ColorStateList GetColorStateList(MColor? color)
 	{
 		var animationColor = color;
 		animationColor ??= defaultNativeAnimationColor;
@@ -233,7 +233,7 @@ public partial class TouchBehavior
 			new[] {(int) animationColor.ToAndroid()});
 	}
 
-	private void UpdateClickHandler()
+	void UpdateClickHandler()
 	{
 		if (view is null || !view.IsAlive())
 		{
@@ -248,7 +248,7 @@ public partial class TouchBehavior
 		}
 	}
 
-	private void ApplyRipple()
+	void ApplyRipple()
 	{
 		if (ripple is null)
 		{
@@ -306,7 +306,7 @@ public partial class TouchBehavior
 		}
 	}
 
-	private void OnClick(object? sender, EventArgs args)
+	void OnClick(object? sender, EventArgs args)
 	{
 		if (IsDisabled)
 		{
@@ -322,7 +322,7 @@ public partial class TouchBehavior
 		HandleEnd(TouchStatus.Completed);
 	}
 
-	private void HandleEnd(TouchStatus status)
+	void HandleEnd(TouchStatus status)
 	{
 		if (IsCanceled)
 		{
@@ -342,7 +342,7 @@ public partial class TouchBehavior
 		EndRipple();
 	}
 
-	private void EndRipple()
+	void EndRipple()
 	{
 		if (IsDisabled)
 		{
@@ -367,7 +367,7 @@ public partial class TouchBehavior
 	}
 
 
-	private void OnTouch(object? sender, AView.TouchEventArgs e)
+	void OnTouch(object? sender, AView.TouchEventArgs e)
 	{
 		e.Handled = false;
 
@@ -404,7 +404,7 @@ public partial class TouchBehavior
 		}
 	}
 
-	private void OnTouchDown(AView.TouchEventArgs e)
+	void OnTouchDown(AView.TouchEventArgs e)
 	{
 		_ = e.Event ?? throw new NullReferenceException();
 
@@ -424,17 +424,17 @@ public partial class TouchBehavior
 		}
 	}
 
-	private void OnTouchUp()
+	void OnTouchUp()
 	{
 		HandleEnd(Status == TouchStatus.Started ? TouchStatus.Completed : TouchStatus.Canceled);
 	}
 
-	private void OnTouchCancel()
+	void OnTouchCancel()
 	{
 		HandleEnd(TouchStatus.Canceled);
 	}
 
-	private void OnTouchMove(object? sender, AView.TouchEventArgs e)
+	void OnTouchMove(object? sender, AView.TouchEventArgs e)
 	{
 		if (IsCanceled || e.Event == null)
 		{
@@ -483,19 +483,19 @@ public partial class TouchBehavior
 		}
 	}
 
-	private void OnHoverEnter()
+	void OnHoverEnter()
 	{
 		isHoverSupported = true;
 		HandleHover(HoverStatus.Entered);
 	}
 
-	private void OnHoverExit()
+	void OnHoverExit()
 	{
 		isHoverSupported = true;
 		HandleHover(HoverStatus.Exited);
 	}
 
-	private void StartRipple(float x, float y)
+	void StartRipple(float x, float y)
 	{
 		if (IsDisabled || !NativeAnimation)
 		{
@@ -523,11 +523,11 @@ public partial class TouchBehavior
 		}
 	}
 
-	private sealed class AccessibilityListener : Java.Lang.Object,
+	sealed class AccessibilityListener : Java.Lang.Object,
 		AccessibilityManager.IAccessibilityStateChangeListener,
 		AccessibilityManager.ITouchExplorationStateChangeListener
 	{
-		private TouchBehavior? platformTouchEffect;
+		TouchBehavior? platformTouchEffect;
 
 		internal AccessibilityListener(TouchBehavior platformTouchEffect)
 		{

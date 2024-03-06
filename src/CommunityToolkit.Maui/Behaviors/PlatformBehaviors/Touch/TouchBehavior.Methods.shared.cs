@@ -22,7 +22,7 @@ public partial class TouchBehavior : IDisposable
 	internal void RaiseCompleted()
 	{
 		var element = Element;
-		if (element is null)
+		if (Element is null)
 		{
 			return;
 		}
@@ -79,7 +79,7 @@ public partial class TouchBehavior : IDisposable
 		weakEventManager.HandleEvent(Element ?? throw nre, new TouchStateChangedEventArgs(State), nameof(StateChanged));
 	}
 
-	internal void HandleLongPress()
+	void HandleLongPress()
 	{
 		if (Element is null)
 		{
@@ -100,7 +100,6 @@ public partial class TouchBehavior : IDisposable
 		if (Element is IContentView { Content: Layout contentLayout })
 		{
 			SetChildrenInputTransparent(value, contentLayout);
-			return;
 		}
 	}
 

@@ -8,8 +8,8 @@ namespace CommunityToolkit.Maui.Behaviors;
 
 public partial class TouchBehavior
 {
-	private UIGestureRecognizer? touchGesture;
-	private UIGestureRecognizer? hoverGesture;
+	UIGestureRecognizer? touchGesture;
+	UIGestureRecognizer? hoverGesture;
 
 	/// <summary>
 	/// Attaches the behavior to the platform view.
@@ -68,7 +68,7 @@ public partial class TouchBehavior
 		Element = null;
 	}
 
-	private void OnHover()
+	void OnHover()
 	{
 		if (IsDisabled)
 		{
@@ -87,7 +87,7 @@ public partial class TouchBehavior
 		}
 	}
 
-	private void PreventButtonHighlight(object? sender, EventArgs args)
+	void PreventButtonHighlight(object? sender, EventArgs args)
 	{
 		if (sender is not UIButton button)
 		{
@@ -98,13 +98,13 @@ public partial class TouchBehavior
 	}
 }
 
-internal sealed class TouchUITapGestureRecognizer : UIGestureRecognizer
+sealed class TouchUITapGestureRecognizer : UIGestureRecognizer
 {
-	private TouchBehavior behavior;
-	private float? defaultRadius;
-	private float? defaultShadowRadius;
-	private float? defaultShadowOpacity;
-	private CGPoint? startPoint;
+	readonly TouchBehavior behavior;
+	float? defaultRadius;
+	float? defaultShadowRadius;
+	float? defaultShadowOpacity;
+	CGPoint? startPoint;
 
 	public TouchUITapGestureRecognizer(TouchBehavior behavior)
 	{
@@ -119,7 +119,7 @@ internal sealed class TouchUITapGestureRecognizer : UIGestureRecognizer
 
 	public override void TouchesBegan(NSSet touches, UIEvent evt)
 	{
-		if (behavior?.IsDisabled ?? true)
+		if (behavior.IsDisabled)
 		{
 			return;
 		}
@@ -134,12 +134,12 @@ internal sealed class TouchUITapGestureRecognizer : UIGestureRecognizer
 
 	public override void TouchesEnded(NSSet touches, UIEvent evt)
 	{
-		if (behavior?.IsDisabled ?? true)
+		if (behavior.IsDisabled)
 		{
 			return;
 		}
 
-		HandleTouch(behavior?.Status == TouchStatus.Started ? TouchStatus.Completed : TouchStatus.Canceled, TouchInteractionStatus.Completed).SafeFireAndForget();
+		HandleTouch(behavior.Status == TouchStatus.Started ? TouchStatus.Completed : TouchStatus.Canceled, TouchInteractionStatus.Completed).SafeFireAndForget();
 
 		IsCanceled = true;
 
@@ -148,7 +148,7 @@ internal sealed class TouchUITapGestureRecognizer : UIGestureRecognizer
 
 	public override void TouchesCancelled(NSSet touches, UIEvent evt)
 	{
-		if (behavior?.IsDisabled ?? true)
+		if (behavior.IsDisabled)
 		{
 			return;
 		}
@@ -162,7 +162,7 @@ internal sealed class TouchUITapGestureRecognizer : UIGestureRecognizer
 
 	public override void TouchesMoved(NSSet touches, UIEvent evt)
 	{
-		if (behavior?.IsDisabled ?? true)
+		if (behavior.IsDisabled)
 		{
 			return;
 		}
@@ -187,7 +187,7 @@ internal sealed class TouchUITapGestureRecognizer : UIGestureRecognizer
 			? TouchStatus.Started
 			: TouchStatus.Canceled;
 
-		if (behavior?.Status != status)
+		if (behavior.Status != status)
 		{
 			HandleTouch(status).SafeFireAndForget();
 		}
@@ -202,12 +202,12 @@ internal sealed class TouchUITapGestureRecognizer : UIGestureRecognizer
 
 	public async Task HandleTouch(TouchStatus status, TouchInteractionStatus? interactionStatus = null)
 	{
-		if (IsCanceled || behavior == null)
+		if (IsCanceled)
 		{
 			return;
 		}
 
-		if (behavior?.IsDisabled ?? true)
+		if (behavior.IsDisabled)
 		{
 			return;
 		}
@@ -216,17 +216,17 @@ internal sealed class TouchUITapGestureRecognizer : UIGestureRecognizer
 
 		if (interactionStatus == TouchInteractionStatus.Started)
 		{
-			behavior?.HandleUserInteraction(TouchInteractionStatus.Started);
+			behavior.HandleUserInteraction(TouchInteractionStatus.Started);
 			interactionStatus = null;
 		}
 
-		behavior?.HandleTouch(status);
+		behavior.HandleTouch(status);
 		if (interactionStatus.HasValue)
 		{
-			behavior?.HandleUserInteraction(interactionStatus.Value);
+			behavior.HandleUserInteraction(interactionStatus.Value);
 		}
 
-		if (behavior == null || behavior.Element is null || (!behavior.NativeAnimation && !IsButton) || (!canExecuteAction && status == TouchStatus.Started))
+		if (behavior.Element is null || (!behavior.NativeAnimation && !IsButton) || (!canExecuteAction && status == TouchStatus.Started))
 		{
 			return;
 		}
@@ -273,12 +273,12 @@ internal sealed class TouchUITapGestureRecognizer : UIGestureRecognizer
 		base.Dispose(disposing);
 	}
 
-	private CGPoint? GetTouchPoint(NSSet touches)
+	CGPoint? GetTouchPoint(NSSet touches)
 	{
 		return (touches?.AnyObject as UITouch)?.LocationInView(View);
 	}
 
-	private class TouchUITapGestureRecognizerDelegate : UIGestureRecognizerDelegate
+	sealed class TouchUITapGestureRecognizerDelegate : UIGestureRecognizerDelegate
 	{
 		public override bool ShouldRecognizeSimultaneously(UIGestureRecognizer gestureRecognizer, UIGestureRecognizer otherGestureRecognizer)
 		{

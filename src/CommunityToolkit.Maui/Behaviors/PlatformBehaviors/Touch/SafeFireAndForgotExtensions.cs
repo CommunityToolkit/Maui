@@ -1,10 +1,10 @@
 namespace CommunityToolkit.Maui.Behaviors;
 
-internal static class SafeFireAndForgetExtensions
+static class SafeFireAndForgetExtensions
 {
     #region Private Methods
 
-    private static async void HandleSafeFireAndForget<TException>(ValueTask valueTask, bool continueOnCapturedContext, Action<TException>? onException) where TException : Exception
+    static async void HandleSafeFireAndForget<TException>(ValueTask valueTask, bool continueOnCapturedContext, Action<TException>? onException) where TException : Exception
     {
         try
         {
@@ -16,7 +16,7 @@ internal static class SafeFireAndForgetExtensions
         }
     }
 
-    private static async void HandleSafeFireAndForget<TException>(Task task, bool continueOnCapturedContext, Action<TException>? onException) where TException : Exception
+    static async void HandleSafeFireAndForget<TException>(Task task, bool continueOnCapturedContext, Action<TException>? onException) where TException : Exception
     {
         try
         {
@@ -45,7 +45,7 @@ internal static class SafeFireAndForgetExtensions
     ///     Synchronization Context returns to the calling thread. If set to <c>false</c>, continue on a different context;
     ///     this will allow the Synchronization Context to continue on a different thread
     /// </param>
-    internal static void SafeFireAndForget(this ValueTask task, in Action<Exception>? onException = null, in bool continueOnCapturedContext = false)
+	internal static void SafeFireAndForget(this ValueTask task, in Action<Exception>? onException = null, in bool continueOnCapturedContext = false)
     {
         HandleSafeFireAndForget(task, continueOnCapturedContext, onException);
     }
@@ -66,7 +66,7 @@ internal static class SafeFireAndForgetExtensions
     ///     this will allow the Synchronization Context to continue on a different thread
     /// </param>
     /// <typeparam name="TException">Exception type. If an exception is thrown of a different type, it will not be handled</typeparam>
-    internal static void SafeFireAndForget<TException>(this ValueTask task, in Action<TException>? onException = null, in bool continueOnCapturedContext = false) where TException : Exception
+	internal static void SafeFireAndForget<TException>(this ValueTask task, in Action<TException>? onException = null, in bool continueOnCapturedContext = false) where TException : Exception
     {
         HandleSafeFireAndForget(task, continueOnCapturedContext, onException);
     }
@@ -86,7 +86,7 @@ internal static class SafeFireAndForgetExtensions
     ///     Synchronization Context returns to the calling thread. If set to <c>false</c>, continue on a different context;
     ///     this will allow the Synchronization Context to continue on a different thread
     /// </param>
-    internal static void SafeFireAndForget(this Task task, in Action<Exception>? onException = null, in bool continueOnCapturedContext = false)
+	internal static void SafeFireAndForget(this Task task, in Action<Exception>? onException = null, in bool continueOnCapturedContext = false)
     {
         HandleSafeFireAndForget(task, continueOnCapturedContext, onException);
     }
