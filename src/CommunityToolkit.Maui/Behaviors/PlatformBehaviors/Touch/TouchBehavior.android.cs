@@ -11,8 +11,8 @@ using AView = Android.Views.View;
 using Color = Android.Graphics.Color;
 using MColor = Microsoft.Maui.Graphics.Color;
 using MView = Microsoft.Maui.Controls.View;
-using PlatformView = Android.Views.View;
 using ParentView = Android.Views.IViewParent;
+using PlatformView = Android.Views.View;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -33,10 +33,10 @@ public partial class TouchBehavior
 	AccessibilityListener? accessibilityListener;
 
 	bool IsAccessibilityMode => accessibilityManager is not null
-	                                    && accessibilityManager.IsEnabled
-	                                    && accessibilityManager.IsTouchExplorationEnabled;
+										&& accessibilityManager.IsEnabled
+										&& accessibilityManager.IsTouchExplorationEnabled;
 
-	readonly bool isAtLeastM = IsAndroidVersionAtLeast((int) BuildVersionCodes.M);
+	readonly bool isAtLeastM = IsAndroidVersionAtLeast((int)BuildVersionCodes.M);
 
 	internal bool IsCanceled { get; set; }
 
@@ -75,7 +75,7 @@ public partial class TouchBehavior
 			accessibilityManager.AddTouchExplorationStateChangeListener(accessibilityListener);
 		}
 
-		if (!IsAndroidVersionAtLeast((int) BuildVersionCodes.Lollipop) || !NativeAnimation)
+		if (!IsAndroidVersionAtLeast((int)BuildVersionCodes.Lollipop) || !NativeAnimation)
 		{
 			return;
 		}
@@ -165,7 +165,7 @@ public partial class TouchBehavior
 
 		if (drawable is RippleDrawable rippleDrawable && rippleDrawable.GetConstantState() is Drawable.ConstantState constantState)
 		{
-			ripple = (RippleDrawable) constantState.NewDrawable();
+			ripple = (RippleDrawable)constantState.NewDrawable();
 		}
 		else
 		{
@@ -219,7 +219,7 @@ public partial class TouchBehavior
 		ripple?.SetColor(GetColorStateList(color));
 		if (isAtLeastM && ripple is not null)
 		{
-			ripple.Radius = (int) (view?.Context?.Resources?.DisplayMetrics?.Density * NativeAnimationRadius ?? throw new NullReferenceException());
+			ripple.Radius = (int)(view?.Context?.Resources?.DisplayMetrics?.Density * NativeAnimationRadius ?? throw new NullReferenceException());
 		}
 	}
 
@@ -229,8 +229,8 @@ public partial class TouchBehavior
 		animationColor ??= defaultNativeAnimationColor;
 
 		return new ColorStateList(
-			new[] {Array.Empty<int>()},
-			new[] {(int) animationColor.ToAndroid()});
+			new[] { Array.Empty<int>() },
+			new[] { (int)animationColor.ToAndroid() });
 	}
 
 	void UpdateClickHandler()
@@ -259,7 +259,7 @@ public partial class TouchBehavior
 
 		if (viewGroup is null && view is not null)
 		{
-			if (IsAndroidVersionAtLeast((int) BuildVersionCodes.M))
+			if (IsAndroidVersionAtLeast((int)BuildVersionCodes.M))
 			{
 				view.Foreground = ripple;
 			}
@@ -282,7 +282,7 @@ public partial class TouchBehavior
 			};
 
 			bool rippleAtFront = !(viewGroup?.ChildCount > 0);
-			
+
 			viewGroup?.AddView(rippleView);
 
 			if (!rippleAtFront)
@@ -462,7 +462,7 @@ public partial class TouchBehavior
 		var status = viewRect.Contains(screenPointerCoords) ? TouchStatus.Started : TouchStatus.Canceled;
 
 		if (isHoverSupported && ((status == TouchStatus.Canceled && HoverStatus == HoverStatus.Entered)
-		                         || (status == TouchStatus.Started && HoverStatus == HoverStatus.Exited)))
+								 || (status == TouchStatus.Started && HoverStatus == HoverStatus.Exited)))
 		{
 			HandleHover(status == TouchStatus.Started ? HoverStatus.Entered : HoverStatus.Exited);
 		}

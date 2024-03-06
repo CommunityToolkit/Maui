@@ -4,7 +4,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
 public partial class TouchBehaviorPage : BasePage<TouchBehaviorViewModel>
 {
-	public TouchBehaviorPage(TouchBehaviorViewModel viewModel) 
+	public TouchBehaviorPage(TouchBehaviorViewModel viewModel)
 		: base(viewModel)
 	{
 		InitializeComponent();

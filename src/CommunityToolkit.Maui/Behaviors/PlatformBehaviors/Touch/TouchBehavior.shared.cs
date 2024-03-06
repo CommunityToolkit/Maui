@@ -573,7 +573,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// </summary>
 	public double NormalTranslationY
 	{
-		get => (double)GetValue(NormalTranslationYProperty); 
+		get => (double)GetValue(NormalTranslationYProperty);
 		set => SetValue(NormalTranslationYProperty, value);
 	}
 
@@ -591,7 +591,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// </summary>
 	public double HoveredTranslationY
 	{
-		get => (double)GetValue(HoveredTranslationYProperty); 
+		get => (double)GetValue(HoveredTranslationYProperty);
 		set => SetValue(HoveredTranslationYProperty, value);
 	}
 
@@ -717,7 +717,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// </summary>
 	public double PressedRotationX
 	{
-		get => (double)GetValue(PressedRotationXProperty); 
+		get => (double)GetValue(PressedRotationXProperty);
 		set => SetValue(PressedRotationXProperty, value);
 	}
 

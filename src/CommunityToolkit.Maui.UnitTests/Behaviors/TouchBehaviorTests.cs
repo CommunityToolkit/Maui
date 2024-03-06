@@ -112,7 +112,7 @@ public class TouchBehaviorTests : BaseTest
 		var touchBehavior = AttachMockPlatformTouchBehavior(view);
 		touchBehavior.NormalOpacity = .9;
 		touchBehavior.HoveredOpacity = 0.7;
-		
+
 		touchBehavior.ForceUpdateState(false);
 		Assert.Equal(.9, view.Opacity);
 
@@ -152,7 +152,7 @@ public class TouchBehaviorTests : BaseTest
 
 		touchBehavior.NormalBackgroundImageSource = normalImageSource;
 		touchBehavior.PressedBackgroundImageSource = pressedImageSource;
-		
+
 		touchBehavior.ForceUpdateState(false);
 		Assert.Same(normalImageSource, view.Source);
 
@@ -223,7 +223,7 @@ public class TouchBehaviorTests : BaseTest
 		var hoverImageSource = new FileImageSource();
 		touchBehavior.HoveredBackgroundImageSource = hoverImageSource;
 		touchBehavior.HoveredBackgroundImageAspect = Aspect.AspectFill;
-		
+
 		touchBehavior.ForceUpdateState(false);
 		Assert.Equal(Aspect.AspectFit, view.Aspect);
 
@@ -232,7 +232,7 @@ public class TouchBehaviorTests : BaseTest
 
 		touchBehavior.HandleHover(HoverStatus.Exited);
 		Assert.Equal(Aspect.AspectFit, view.Aspect);
-	}	
+	}
 
 	// unit tests for touchBehavior
 	[Fact]

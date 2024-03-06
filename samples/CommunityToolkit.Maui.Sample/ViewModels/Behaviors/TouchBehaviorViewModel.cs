@@ -12,10 +12,10 @@ public partial class TouchBehaviorViewModel : BaseViewModel
 
 	[ObservableProperty]
 	int longPressCount;
-	
+
 	[RelayCommand]
 	void ParentClicked()
-	{ 
+	{
 		DisplayAlert("Parent Clicked");
 	}
 

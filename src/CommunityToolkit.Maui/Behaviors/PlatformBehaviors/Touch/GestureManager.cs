@@ -229,7 +229,7 @@ sealed class GestureManager : IDisposable
 				sender.HandleUserInteraction(TouchInteractionStatus.Completed);
 				sender.RaiseLongPressCompleted();
 			});
-			
+
 			if (sender.Dispatcher.IsDispatchRequired)
 			{
 				sender.Dispatcher.Dispatch(longPressAction);
@@ -481,8 +481,8 @@ sealed class GestureManager : IDisposable
 			return Task.FromResult(true);
 		}
 
-		return element is null ? 
-			Task.FromResult(false) : 
+		return element is null ?
+			Task.FromResult(false) :
 			element.FadeTo(opacity, (uint)Abs(duration), easing);
 	}
 

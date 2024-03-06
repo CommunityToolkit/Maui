@@ -19,13 +19,13 @@ public partial class TouchBehavior
 	protected override void OnAttachedTo(VisualElement bindable, UIView platformView)
 	{
 		Element = bindable;
-		
+
 		touchGesture = new TouchUITapGestureRecognizer(this);
 
 		if (((platformView as IVisualNativeElementRenderer)?.Control ?? platformView) is UIButton button)
 		{
 			button.AllTouchEvents += PreventButtonHighlight;
-			((TouchUITapGestureRecognizer) touchGesture).IsButton = true;
+			((TouchUITapGestureRecognizer)touchGesture).IsButton = true;
 		}
 
 		platformView.AddGestureRecognizer(touchGesture);
@@ -235,8 +235,8 @@ sealed class TouchUITapGestureRecognizer : UIGestureRecognizer
 		var radius = behavior.NativeAnimationRadius;
 		var shadowRadius = behavior.NativeAnimationShadowRadius;
 		var isStarted = status == TouchStatus.Started;
-		defaultRadius = (float?) (defaultRadius ?? View.Layer.CornerRadius);
-		defaultShadowRadius = (float?) (defaultShadowRadius ?? View.Layer.ShadowRadius);
+		defaultRadius = (float?)(defaultRadius ?? View.Layer.CornerRadius);
+		defaultShadowRadius = (float?)(defaultShadowRadius ?? View.Layer.ShadowRadius);
 		defaultShadowOpacity ??= View.Layer.ShadowOpacity;
 
 		var tcs = new TaskCompletionSource<UIViewAnimatingPosition>();
@@ -245,7 +245,7 @@ sealed class TouchUITapGestureRecognizer : UIGestureRecognizer
 			{
 				if (color == default(Color))
 				{
-					View.Layer.Opacity = isStarted ? 0.5f : (float) behavior.Element.Opacity;
+					View.Layer.Opacity = isStarted ? 0.5f : (float)behavior.Element.Opacity;
 				}
 				else
 				{
@@ -283,7 +283,7 @@ sealed class TouchUITapGestureRecognizer : UIGestureRecognizer
 		public override bool ShouldRecognizeSimultaneously(UIGestureRecognizer gestureRecognizer, UIGestureRecognizer otherGestureRecognizer)
 		{
 			if (gestureRecognizer is TouchUITapGestureRecognizer touchGesture && otherGestureRecognizer is UIPanGestureRecognizer &&
-			    otherGestureRecognizer.State == UIGestureRecognizerState.Began)
+				otherGestureRecognizer.State == UIGestureRecognizerState.Began)
 			{
 				touchGesture.HandleTouch(TouchStatus.Canceled, TouchInteractionStatus.Completed).SafeFireAndForget();
 				touchGesture.IsCanceled = true;
@@ -298,7 +298,7 @@ sealed class TouchUITapGestureRecognizer : UIGestureRecognizer
 			{
 				return true;
 			}
- 
+
 			return touch.View.IsDescendantOfView(recognizer.View) && (touch.View.GestureRecognizers is null || touch.View.GestureRecognizers.Length == 0);
 		}
 	}

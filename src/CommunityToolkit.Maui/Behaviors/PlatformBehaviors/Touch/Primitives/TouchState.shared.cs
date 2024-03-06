@@ -9,7 +9,7 @@ public enum TouchState
 	/// The pointer is not over the element.
 	/// </summary>
 	Normal,
-	
+
 	/// <summary>
 	/// The pointer is over the element.
 	/// </summary>
