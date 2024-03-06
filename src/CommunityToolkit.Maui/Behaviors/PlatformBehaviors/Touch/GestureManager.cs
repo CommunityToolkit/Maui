@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CommunityToolkit.Maui.Extensions;
 using static System.Math;
 
@@ -215,7 +210,7 @@ sealed class GestureManager : IDisposable
 		longPressTokenSource = new CancellationTokenSource();
 		Task.Delay(sender.LongPressDuration, longPressTokenSource.Token).ContinueWith(t =>
 		{
-			if (t.IsFaulted && t.Exception != null)
+			if (t.IsFaulted && t.Exception is not null)
 			{
 				throw t.Exception;
 			}
@@ -290,7 +285,7 @@ sealed class GestureManager : IDisposable
 				collectionView.SelectedItem = item;
 				break;
 			case SelectionMode.Multiple:
-				var selectedItems = collectionView.SelectedItems?.ToList() ?? new List<object>();
+				var selectedItems = collectionView.SelectedItems ?? [];
 
 				if (selectedItems.Contains(item))
 				{
@@ -312,7 +307,7 @@ sealed class GestureManager : IDisposable
 		animationTokenSource?.Dispose();
 		animationTokenSource = null;
 		var element = sender.Element;
-		if (element == null)
+		if (element is null)
 		{
 			return;
 		}
@@ -415,7 +410,7 @@ sealed class GestureManager : IDisposable
 		var pressedBackgroundColor = sender.PressedBackgroundColor;
 		var hoveredBackgroundColor = sender.HoveredBackgroundColor;
 
-		if (sender.Element == null
+		if (sender.Element is null
 			|| (normalBackgroundColor is null
 				&& pressedBackgroundColor is null
 				&& hoveredBackgroundColor is null))
@@ -579,7 +574,7 @@ sealed class GestureManager : IDisposable
 		}
 
 		var element = sender.Element;
-		if (duration <= 0 && element != null)
+		if (duration <= 0 && element is not null)
 		{
 			element.AbortAnimations();
 			element.TranslationX = translationX;
@@ -615,7 +610,7 @@ sealed class GestureManager : IDisposable
 		}
 
 		var element = sender.Element;
-		if (duration <= 0 && element != null)
+		if (duration <= 0 && element is not null)
 		{
 			element.AbortAnimations();
 			element.Rotation = rotation;
@@ -650,7 +645,7 @@ sealed class GestureManager : IDisposable
 		}
 
 		var element = sender.Element;
-		if (duration <= 0 && element != null)
+		if (duration <= 0 && element is not null)
 		{
 			element.AbortAnimations();
 			element.RotationX = rotationX;
@@ -685,7 +680,7 @@ sealed class GestureManager : IDisposable
 		}
 
 		var element = sender.Element;
-		if (duration <= 0 && element != null)
+		if (duration <= 0 && element is not null)
 		{
 			element.AbortAnimations();
 			element.RotationY = rotationY;
@@ -702,7 +697,7 @@ sealed class GestureManager : IDisposable
 
 	Task RunAnimationTask(TouchBehavior sender, TouchState touchState, HoverState hoverState, CancellationToken token, double? durationMultiplier = null)
 	{
-		if (sender.Element == null)
+		if (sender.Element is null)
 		{
 			return Task.FromResult(false);
 		}

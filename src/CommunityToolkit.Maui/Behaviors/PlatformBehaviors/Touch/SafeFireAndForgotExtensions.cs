@@ -10,7 +10,7 @@ static class SafeFireAndForgetExtensions
 		{
 			await valueTask.ConfigureAwait(continueOnCapturedContext);
 		}
-		catch (TException ex) when (onException != null)
+		catch (TException ex) when (onException is not null)
 		{
 			onException(ex);
 		}
@@ -22,7 +22,7 @@ static class SafeFireAndForgetExtensions
 		{
 			await task.ConfigureAwait(continueOnCapturedContext);
 		}
-		catch (TException ex) when (onException != null)
+		catch (TException ex) when (onException is not null)
 		{
 			onException(ex);
 		}

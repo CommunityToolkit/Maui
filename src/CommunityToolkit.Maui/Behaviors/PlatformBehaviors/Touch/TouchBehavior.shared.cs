@@ -31,7 +31,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		get => element;
 		set
 		{
-			if (element != null)
+			if (element is not null)
 			{
 				IsUsed = false;
 				gestureManager.Reset();
@@ -39,7 +39,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 			}
 			gestureManager.AbortAnimations(this);
 			element = value;
-			if (value != null)
+			if (value is not null)
 			{
 				SetChildrenInputTransparent(ShouldMakeChildrenInputTransparent);
 				IsUsed = true;

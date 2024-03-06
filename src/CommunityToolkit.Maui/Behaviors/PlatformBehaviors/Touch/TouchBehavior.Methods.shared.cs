@@ -3,7 +3,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 
 public partial class TouchBehavior : IDisposable
 {
-	readonly NullReferenceException nre = new(nameof(Element));
+	static readonly NullReferenceException nre = new(nameof(Element));
 	internal void RaiseInteractionStatusChanged()
 		=> weakEventManager.HandleEvent(Element ?? throw nre, new TouchInteractionStatusChangedEventArgs(InteractionStatus), nameof(InteractionStatusChanged));
 

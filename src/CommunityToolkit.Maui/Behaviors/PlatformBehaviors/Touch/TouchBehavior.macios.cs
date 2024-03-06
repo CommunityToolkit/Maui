@@ -51,14 +51,14 @@ public partial class TouchBehavior
 			button.AllTouchEvents -= PreventButtonHighlight;
 		}
 
-		if (touchGesture != null)
+		if (touchGesture is not null)
 		{
 			platformView?.RemoveGestureRecognizer(touchGesture);
 			touchGesture?.Dispose();
 			touchGesture = null;
 		}
 
-		if (hoverGesture != null)
+		if (hoverGesture is not null)
 		{
 			platformView?.RemoveGestureRecognizer(hoverGesture);
 			hoverGesture?.Dispose();
@@ -169,7 +169,7 @@ sealed class TouchUITapGestureRecognizer : UIGestureRecognizer
 
 		var disallowTouchThreshold = behavior.DisallowTouchThreshold;
 		var point = GetTouchPoint(touches);
-		if (point != null && startPoint != null && disallowTouchThreshold > 0)
+		if (point is not null && startPoint is not null && disallowTouchThreshold > 0)
 		{
 			var diffX = Math.Abs(point.Value.X - startPoint.Value.X);
 			var diffY = Math.Abs(point.Value.Y - startPoint.Value.Y);
@@ -183,7 +183,7 @@ sealed class TouchUITapGestureRecognizer : UIGestureRecognizer
 			}
 		}
 
-		var status = point != null && View?.Bounds.Contains(point.Value) is true
+		var status = point is not null && View?.Bounds.Contains(point.Value) is true
 			? TouchStatus.Started
 			: TouchStatus.Canceled;
 

@@ -11,8 +11,7 @@ using AView = Android.Views.View;
 using Color = Android.Graphics.Color;
 using MColor = Microsoft.Maui.Graphics.Color;
 using MView = Microsoft.Maui.Controls.View;
-using ParentView = Android.Views.IViewParent;
-using PlatformView = Android.Views.View;
+using Trace = System.Diagnostics.Trace;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -36,7 +35,7 @@ public partial class TouchBehavior
 										&& accessibilityManager.IsEnabled
 										&& accessibilityManager.IsTouchExplorationEnabled;
 
-	readonly bool isAtLeastM = IsAndroidVersionAtLeast((int)BuildVersionCodes.M);
+	static readonly bool isAtLeastM = IsAndroidVersionAtLeast((int)BuildVersionCodes.M);
 
 	internal bool IsCanceled { get; set; }
 
@@ -135,6 +134,7 @@ public partial class TouchBehavior
 		catch (ObjectDisposedException)
 		{
 			// Suppress exception
+			Trace.WriteLine("TouchBehavior is already disposed.");
 		}
 
 		isHoverSupported = false;
@@ -349,7 +349,7 @@ public partial class TouchBehavior
 			return;
 		}
 
-		if (rippleView != null)
+		if (rippleView is not null)
 		{
 			if (rippleView.Pressed)
 			{
@@ -436,7 +436,7 @@ public partial class TouchBehavior
 
 	void OnTouchMove(object? sender, AView.TouchEventArgs e)
 	{
-		if (IsCanceled || e.Event == null)
+		if (IsCanceled || e.Event is null)
 		{
 			return;
 		}
