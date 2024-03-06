@@ -1,4 +1,5 @@
-﻿namespace CommunityToolkit.Maui.Behaviors;
+﻿using System.Diagnostics;
+namespace CommunityToolkit.Maui.Behaviors;
 
 public partial class TouchBehavior : IDisposable
 {
@@ -59,7 +60,7 @@ public partial class TouchBehavior : IDisposable
 				return;
 			}
 
-			Console.WriteLine($"Failed to force update state, with the {t.Exception} exception and the {t.Exception.Message} message.");
+			Trace.WriteLine($"Failed to force update state, with the {t.Exception} exception and the {t.Exception.Message} message.");
 		}, TaskContinuationOptions.OnlyOnFaulted);
 	}
 

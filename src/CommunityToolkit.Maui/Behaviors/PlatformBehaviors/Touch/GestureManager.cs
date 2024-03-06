@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -160,7 +161,7 @@ sealed class GestureManager : IDisposable
 		{
 			if (isToggled.HasValue)
 			{
-				Console.WriteLine($"Touch state: {status}");
+				Trace.WriteLine($"Touch state: {status}");
 				var r = (status == TouchStatus.Started && isToggled.Value) ||
 					(status != TouchStatus.Started && !isToggled.Value);
 				state = r
