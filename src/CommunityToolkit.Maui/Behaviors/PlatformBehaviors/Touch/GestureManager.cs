@@ -253,7 +253,7 @@ sealed class GestureManager : IDisposable
 
 	void OnTapped(TouchBehavior sender)
 	{
-		if (!sender.CanExecute || (sender.LongPressCommand != null && sender.InteractionStatus == TouchInteractionStatus.Completed))
+		if (!sender.CanExecute || (sender.LongPressCommand is not null && sender.InteractionStatus is TouchInteractionStatus.Completed))
 		{
 			return;
 		}
