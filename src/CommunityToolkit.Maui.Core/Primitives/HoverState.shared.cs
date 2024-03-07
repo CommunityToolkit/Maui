@@ -1,17 +1,16 @@
-﻿namespace CommunityToolkit.Maui.Behaviors;
+﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
-/// Provides data for the <see cref="TouchBehavior.StatusChanged"/> event.
+/// <see cref="HoverState"/>
 /// </summary>
-public enum TouchState
+public enum HoverState
 {
 	/// <summary>
 	/// The pointer is not over the element.
 	/// </summary>
 	Normal,
-
 	/// <summary>
 	/// The pointer is over the element.
 	/// </summary>
-	Pressed
+	Hovered
 }

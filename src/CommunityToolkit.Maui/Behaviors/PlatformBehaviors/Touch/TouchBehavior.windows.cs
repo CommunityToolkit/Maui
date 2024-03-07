@@ -173,7 +173,7 @@ public partial class TouchBehavior
 			return;
 		}
 
-		if (isPressed && (HoverStatus == HoverStatus.Entered))
+		if (isPressed && (HoverStatus is HoverStatus.Entered))
 		{
 			HandleTouch(TouchStatus.Completed);
 			AnimateTilt(pointerUpStoryboard);

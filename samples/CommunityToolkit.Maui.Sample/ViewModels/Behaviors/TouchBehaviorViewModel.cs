@@ -1,17 +1,23 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+
 namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
 public partial class TouchBehaviorViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	bool nativeAnimationBorderless;
+	bool isNativeAnimationBorderless;
 
 	[ObservableProperty]
 	int touchCount;
 
 	[ObservableProperty]
 	int longPressCount;
+	
+	static void DisplayAlert(string title)
+	{
+		Shell.Current.DisplayAlert(title, null, "Ok");
+	}
 
 	[RelayCommand]
 	void ParentClicked()
@@ -35,10 +41,5 @@ public partial class TouchBehaviorViewModel : BaseViewModel
 	void IncreaseLongPressCount()
 	{
 		LongPressCount++;
-	}
-
-	void DisplayAlert(string title)
-	{
-		Shell.Current.DisplayAlert(title, null, "Ok");
 	}
 }

@@ -1,7 +1,7 @@
-﻿namespace CommunityToolkit.Maui.Behaviors;
+﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
-/// Provides data for the <see cref="TouchBehavior.Completed"/> event.
+/// <see cref="TouchInteractionStatus"/>
 /// </summary>
 public enum TouchInteractionStatus
 {

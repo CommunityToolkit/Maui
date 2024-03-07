@@ -1,29 +1,38 @@
 ﻿using System.Diagnostics;
+using CommunityToolkit.Maui.Core;
 namespace CommunityToolkit.Maui.Behaviors;
 
 public partial class TouchBehavior : IDisposable
 {
-	static readonly NullReferenceException nre = new(nameof(Element));
+	bool isDisposed;
+
+	/// <inheritdoc/>
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
 	internal void RaiseInteractionStatusChanged()
-		=> weakEventManager.HandleEvent(Element ?? throw nre, new TouchInteractionStatusChangedEventArgs(InteractionStatus), nameof(InteractionStatusChanged));
+		=> weakEventManager.HandleEvent(this, new TouchInteractionStatusChangedEventArgs(InteractionStatus), nameof(InteractionStatusChanged));
 
 	internal void RaiseStatusChanged()
-		=> weakEventManager.HandleEvent(Element ?? throw nre, new TouchStatusChangedEventArgs(Status), nameof(StatusChanged));
+		=> weakEventManager.HandleEvent(this, new TouchStatusChangedEventArgs(Status), nameof(StatusChanged));
 
-	internal void RaiseHoverStateChanged()
+	internal async Task RaiseHoverStateChanged(CancellationToken token)
 	{
-		ForceUpdateState();
+		await ForceUpdateState(token);
 
-		weakEventManager.HandleEvent(Element ?? throw nre, new HoverStateChangedEventArgs(HoverState), nameof(HoverStateChanged));
+		weakEventManager.HandleEvent(this, new HoverStateChangedEventArgs(HoverState), nameof(HoverStateChanged));
 	}
 
 	internal void RaiseHoverStatusChanged()
-		=> weakEventManager.HandleEvent(Element ?? throw nre, new HoverStatusChangedEventArgs(HoverStatus), nameof(HoverStatusChanged));
+		=> weakEventManager.HandleEvent(this, new HoverStatusChangedEventArgs(HoverStatus), nameof(HoverStatusChanged));
 
 	internal void RaiseCompleted()
 	{
 		var element = Element;
-		if (Element is null)
+		if (element is null)
 		{
 			return;
 		}
@@ -46,69 +55,87 @@ public partial class TouchBehavior : IDisposable
 		weakEventManager.HandleEvent(element, new LongPressCompletedEventArgs(parameter), nameof(LongPressCompleted));
 	}
 
-	internal void ForceUpdateState(bool animated = true)
+	internal async Task ForceUpdateState(CancellationToken token, bool animated = true)
 	{
 		if (element is null)
 		{
 			return;
 		}
 
-		gestureManager.ChangeStateAsync(this, animated).ContinueWith(t =>
+		try
 		{
-			if (t.Exception is null)
-			{
-				return;
-			}
-
-			Trace.WriteLine($"Failed to force update state, with the {t.Exception} exception and the {t.Exception.Message} message.");
-		}, TaskContinuationOptions.OnlyOnFaulted);
+			await gestureManager.ChangeStateAsync(this, animated, token).ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+		}
+		catch (TaskCanceledException ex)
+		{
+			Trace.WriteLine(ex);
+		}
 	}
 
-	internal void HandleTouch(TouchStatus status)
-	=> gestureManager.HandleTouch(this, status);
+	internal ValueTask HandleTouch(TouchStatus status, CancellationToken token)
+		=> gestureManager.HandleTouch(this, status, token);
 
 	internal void HandleUserInteraction(TouchInteractionStatus interactionStatus)
-		=> gestureManager.HandleUserInteraction(this, interactionStatus);
+		=> GestureManager.HandleUserInteraction(this, interactionStatus);
 
-	internal void HandleHover(HoverStatus status)
-		=> gestureManager.HandleHover(this, status);
+	internal ValueTask HandleHover(HoverStatus status, CancellationToken token)
+		=> gestureManager.HandleHover(this, status, token);
 
-	internal void RaiseStateChanged()
+	internal async Task RaiseStateChanged(CancellationToken token)
 	{
-		ForceUpdateState();
-		HandleLongPress();
-		weakEventManager.HandleEvent(Element ?? throw nre, new TouchStateChangedEventArgs(State), nameof(StateChanged));
+		await ForceUpdateState(token);
+		await HandleLongPress(token);
+		weakEventManager.HandleEvent(this, new TouchStateChangedEventArgs(State), nameof(StateChanged));
 	}
 
-	void HandleLongPress()
+	/// <summary>
+	/// Dispose the object.
+	/// </summary>
+	protected virtual void Dispose(bool disposing)
+	{
+		if (isDisposed)
+		{
+			return;
+		}
+
+		if (disposing)
+		{
+			// free managed resources
+			gestureManager.Dispose();
+			PlatformDispose();
+		}
+
+		isDisposed = true;
+	}
+
+	async Task HandleLongPress(CancellationToken token)
 	{
 		if (Element is null)
 		{
 			return;
 		}
 
-		gestureManager.HandleLongPress(this);
+		await gestureManager.HandleLongPress(this, token);
 	}
 
-	void SetChildrenInputTransparent(bool value)
+	void SetChildrenInputTransparent(bool shouldSetTransparant)
 	{
-		if (Element is Layout layout)
+		switch (Element)
 		{
-			SetChildrenInputTransparent(value, layout);
-			return;
-		}
-
-		if (Element is IContentView { Content: Layout contentLayout })
-		{
-			SetChildrenInputTransparent(value, contentLayout);
+			case Layout layout:
+				SetChildrenInputTransparent(shouldSetTransparant, layout);
+				return;
+			case IContentView { Content: Layout contentLayout }:
+				SetChildrenInputTransparent(shouldSetTransparant, contentLayout);
+				break;
 		}
 	}
 
-	void SetChildrenInputTransparent(bool value, Layout layout)
+	void SetChildrenInputTransparent(bool shouldSetTransparent, Layout layout)
 	{
 		layout.ChildAdded -= OnLayoutChildAdded;
 
-		if (!value)
+		if (!shouldSetTransparent)
 		{
 			return;
 		}
@@ -138,31 +165,5 @@ public partial class TouchBehavior : IDisposable
 		view.InputTransparent = IsAvailable;
 	}
 
-	/// <inheritdoc/>
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
-	}
-
-	bool isDisposed;
-
-	/// <summary>
-	/// Dispose the object.
-	/// </summary>
-	protected virtual void Dispose(bool disposing)
-	{
-		if (isDisposed)
-		{
-			return;
-		}
-
-		if (disposing)
-		{
-			// free managed resources
-			gestureManager.Dispose();
-		}
-
-		isDisposed = true;
-	}
+	partial void PlatformDispose();
 }

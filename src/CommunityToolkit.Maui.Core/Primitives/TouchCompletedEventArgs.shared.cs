@@ -1,7 +1,7 @@
-﻿namespace CommunityToolkit.Maui.Behaviors;
+﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
-/// Provides data for the <see cref="TouchBehavior.Completed"/> event.
+/// <see cref="TouchCompletedEventArgs"/>
 /// </summary>
 public class TouchCompletedEventArgs : EventArgs
 
@@ -9,7 +9,7 @@ public class TouchCompletedEventArgs : EventArgs
 	/// <summary>
 	/// Initializes a new instance of the <see cref="TouchCompletedEventArgs"/> class.
 	/// </summary>
-	internal TouchCompletedEventArgs(object? parameter)
+	public TouchCompletedEventArgs(object? parameter)
 		=> Parameter = parameter;
 
 	/// <summary>

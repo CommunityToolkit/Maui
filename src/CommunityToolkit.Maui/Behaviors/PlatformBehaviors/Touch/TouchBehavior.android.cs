@@ -5,6 +5,7 @@ using Android.OS;
 using Android.Views;
 using Android.Views.Accessibility;
 using Android.Widget;
+using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using static System.OperatingSystem;
 using AView = Android.Views.View;
@@ -18,35 +19,33 @@ namespace CommunityToolkit.Maui.Behaviors;
 public partial class TouchBehavior
 {
 	static readonly MColor defaultNativeAnimationColor = MColor.FromRgba(128, 128, 128, 64);
+
 	bool isHoverSupported;
 	RippleDrawable? ripple;
 	AView? rippleView;
 	float startX;
 	float startY;
 	MColor? rippleColor;
-	int rippleRadius = -1;
-	AView? view = null;
+	int? rippleRadius;
+	AView? view;
 	ViewGroup? viewGroup;
 
 	AccessibilityManager? accessibilityManager;
 	AccessibilityListener? accessibilityListener;
 
 	bool IsAccessibilityMode => accessibilityManager is not null
-										&& accessibilityManager.IsEnabled
-										&& accessibilityManager.IsTouchExplorationEnabled;
-
-	static readonly bool isAtLeastM = IsAndroidVersionAtLeast((int)BuildVersionCodes.M);
+		&& accessibilityManager.IsEnabled
+		&& accessibilityManager.IsTouchExplorationEnabled;
 
 	internal bool IsCanceled { get; set; }
 
-	bool IsForegroundRippleWithTapGestureRecognizer =>
-		ripple is not null &&
-		this.view is not null &&
-		ripple.IsAlive() &&
-		this.view.IsAlive() &&
-		(isAtLeastM ? this.view.Foreground : this.view.Background) == ripple &&
-		element is MView view &&
-		view.GestureRecognizers.Any(gesture => gesture is TapGestureRecognizer);
+	bool IsForegroundRippleWithTapGestureRecognizer => ripple is not null
+		&& this.view is not null
+		&& ripple.IsAlive()
+		&& this.view.IsAlive()
+		&& (IsAndroidVersionAtLeast(23) ? this.view.Foreground : this.view.Background) == ripple
+		&& element is MView view
+		&& view.GestureRecognizers.Any(gesture => gesture is TapGestureRecognizer);
 
 	/// <summary>
 	/// Attaches the behavior to the platform view.
@@ -140,6 +139,14 @@ public partial class TouchBehavior
 		isHoverSupported = false;
 	}
 
+	static ColorStateList GetColorStateList(MColor? color)
+	{
+		var animationColor = color;
+		animationColor ??= defaultNativeAnimationColor;
+
+		return new ColorStateList([Array.Empty<int>()], [animationColor.ToAndroid()]);
+	}
+
 	void OnLayoutChange(object? sender, AView.LayoutChangeEventArgs e)
 	{
 		if (sender is not AView view || rippleView is null)
@@ -155,11 +162,12 @@ public partial class TouchBehavior
 	{
 		RemoveRipple();
 
-		var drawable = isAtLeastM && viewGroup is null
-			? view?.Foreground
-			: view?.Background;
+		var drawable = IsAndroidVersionAtLeast(23)
+			&& viewGroup is null
+				? view?.Foreground
+				: view?.Background;
 
-		var isBorderLess = NativeAnimationBorderless;
+		var isBorderLess = IsNativeAnimationBorderless;
 		var isEmptyDrawable = Element is Layout || drawable is null;
 		var color = NativeAnimationColor;
 
@@ -187,7 +195,7 @@ public partial class TouchBehavior
 
 		if (view is not null)
 		{
-			if (isAtLeastM && view.Foreground == ripple)
+			if (IsAndroidVersionAtLeast(23) && view.Foreground == ripple)
 			{
 				view.Foreground = null;
 			}
@@ -199,7 +207,11 @@ public partial class TouchBehavior
 
 		if (rippleView is not null)
 		{
-			rippleView.Foreground = null;
+			if (IsAndroidVersionAtLeast(23))
+			{
+				rippleView.Foreground = null;
+			}
+
 			rippleView.Background = null;
 		}
 
@@ -207,9 +219,10 @@ public partial class TouchBehavior
 		ripple = null;
 	}
 
-	void UpdateRipple(MColor color)
+	void UpdateRipple(MColor? color)
 	{
-		if (IsDisabled || (color == rippleColor && NativeAnimationRadius == rippleRadius))
+		if (IsDisabled
+			|| color?.Equals(rippleColor) is true && NativeAnimationRadius == rippleRadius)
 		{
 			return;
 		}
@@ -217,20 +230,10 @@ public partial class TouchBehavior
 		rippleColor = color;
 		rippleRadius = NativeAnimationRadius;
 		ripple?.SetColor(GetColorStateList(color));
-		if (isAtLeastM && ripple is not null)
+		if (IsAndroidVersionAtLeast(23) && ripple is not null)
 		{
-			ripple.Radius = (int)(view?.Context?.Resources?.DisplayMetrics?.Density * NativeAnimationRadius ?? throw new NullReferenceException());
+			ripple.Radius = (int)(view?.Context?.Resources?.DisplayMetrics?.Density * NativeAnimationRadius ?? 1);
 		}
-	}
-
-	ColorStateList GetColorStateList(MColor? color)
-	{
-		var animationColor = color;
-		animationColor ??= defaultNativeAnimationColor;
-
-		return new ColorStateList(
-			new[] { Array.Empty<int>() },
-			new[] { (int)animationColor.ToAndroid() });
 	}
 
 	void UpdateClickHandler()
@@ -255,11 +258,11 @@ public partial class TouchBehavior
 			return;
 		}
 
-		var isBorderless = NativeAnimationBorderless;
+		var isBorderless = IsNativeAnimationBorderless;
 
 		if (viewGroup is null && view is not null)
 		{
-			if (IsAndroidVersionAtLeast((int)BuildVersionCodes.M))
+			if (IsAndroidVersionAtLeast(23))
 			{
 				view.Foreground = ripple;
 			}
@@ -297,16 +300,24 @@ public partial class TouchBehavior
 		if (isBorderless)
 		{
 			rippleView.Background = null;
-			rippleView.Foreground = ripple;
+
+			if (IsAndroidVersionAtLeast(23))
+			{
+				rippleView.Foreground = ripple;
+			}
 		}
 		else
 		{
-			rippleView.Foreground = null;
+			if (IsAndroidVersionAtLeast(23))
+			{
+				rippleView.Foreground = null;
+			}
+
 			rippleView.Background = ripple;
 		}
 	}
 
-	void OnClick(object? sender, EventArgs args)
+	async void OnClick(object? sender, EventArgs args)
 	{
 		if (IsDisabled)
 		{
@@ -319,10 +330,10 @@ public partial class TouchBehavior
 		}
 
 		IsCanceled = false;
-		HandleEnd(TouchStatus.Completed);
+		await HandleEnd(TouchStatus.Completed, CancellationToken.None);
 	}
 
-	void HandleEnd(TouchStatus status)
+	async Task HandleEnd(TouchStatus status, CancellationToken token)
 	{
 		if (IsCanceled)
 		{
@@ -335,7 +346,7 @@ public partial class TouchBehavior
 			viewGroup?.Parent?.RequestDisallowInterceptTouchEvent(false);
 		}
 
-		HandleTouch(status);
+		await HandleTouch(status, token);
 
 		HandleUserInteraction(TouchInteractionStatus.Completed);
 
@@ -367,16 +378,13 @@ public partial class TouchBehavior
 	}
 
 
-	void OnTouch(object? sender, AView.TouchEventArgs e)
+	async void OnTouch(object? sender, AView.TouchEventArgs e)
 	{
+		ArgumentNullException.ThrowIfNull(sender);
+
 		e.Handled = false;
 
-		if (IsDisabled)
-		{
-			return;
-		}
-
-		if (IsAccessibilityMode)
+		if (IsDisabled || IsAccessibilityMode)
 		{
 			return;
 		}
@@ -384,39 +392,39 @@ public partial class TouchBehavior
 		switch (e.Event?.ActionMasked)
 		{
 			case MotionEventActions.Down:
-				OnTouchDown(e);
+				await OnTouchDown(e, CancellationToken.None);
 				break;
 			case MotionEventActions.Up:
-				OnTouchUp();
+				await OnTouchUp(CancellationToken.None);
 				break;
 			case MotionEventActions.Cancel:
-				OnTouchCancel();
+				await OnTouchCancel(CancellationToken.None);
 				break;
 			case MotionEventActions.Move:
-				OnTouchMove(sender, e);
+				await OnTouchMove((AView)sender, e, CancellationToken.None);
 				break;
 			case MotionEventActions.HoverEnter:
-				OnHoverEnter();
+				await OnHoverEnter(CancellationToken.None);
 				break;
 			case MotionEventActions.HoverExit:
-				OnHoverExit();
+				await OnHoverExit(CancellationToken.None);
 				break;
 		}
 	}
 
-	void OnTouchDown(AView.TouchEventArgs e)
+	async Task OnTouchDown(AView.TouchEventArgs touchEventArgs, CancellationToken token)
 	{
-		_ = e.Event ?? throw new NullReferenceException();
+		ArgumentNullException.ThrowIfNull(touchEventArgs.Event);
 
 		IsCanceled = false;
 
-		startX = e.Event.GetX();
-		startY = e.Event.GetY();
+		startX = touchEventArgs.Event.GetX();
+		startY = touchEventArgs.Event.GetY();
 
 		HandleUserInteraction(TouchInteractionStatus.Started);
-		HandleTouch(TouchStatus.Started);
+		await HandleTouch(TouchStatus.Started, token);
 
-		StartRipple(e.Event.GetX(), e.Event.GetY());
+		StartRipple(touchEventArgs.Event.GetX(), touchEventArgs.Event.GetY());
 
 		if (DisallowTouchThreshold > 0)
 		{
@@ -424,75 +432,70 @@ public partial class TouchBehavior
 		}
 	}
 
-	void OnTouchUp()
+	Task OnTouchUp(CancellationToken token)
 	{
-		HandleEnd(Status == TouchStatus.Started ? TouchStatus.Completed : TouchStatus.Canceled);
+		return HandleEnd(Status is TouchStatus.Started ? TouchStatus.Completed : TouchStatus.Canceled, token);
 	}
 
-	void OnTouchCancel()
+	Task OnTouchCancel(CancellationToken token)
 	{
-		HandleEnd(TouchStatus.Canceled);
+		return HandleEnd(TouchStatus.Canceled, token);
 	}
 
-	void OnTouchMove(object? sender, AView.TouchEventArgs e)
+	async Task OnTouchMove(AView view, AView.TouchEventArgs touchEventArgs, CancellationToken token)
 	{
-		if (IsCanceled || e.Event is null)
+		if (IsCanceled || touchEventArgs.Event is null)
 		{
 			return;
 		}
 
-		var diffX = Math.Abs(e.Event.GetX() - startX) / this.view?.Context?.Resources?.DisplayMetrics?.Density ?? throw new NullReferenceException();
-		var diffY = Math.Abs(e.Event.GetY() - startY) / this.view?.Context?.Resources?.DisplayMetrics?.Density ?? throw new NullReferenceException();
+		var diffX = Math.Abs(touchEventArgs.Event.GetX() - startX) / this.view?.Context?.Resources?.DisplayMetrics?.Density ?? throw new NullReferenceException();
+		var diffY = Math.Abs(touchEventArgs.Event.GetY() - startY) / this.view?.Context?.Resources?.DisplayMetrics?.Density ?? throw new NullReferenceException();
 		var maxDiff = Math.Max(diffX, diffY);
 
 		var disallowTouchThreshold = DisallowTouchThreshold;
 		if (disallowTouchThreshold > 0 && maxDiff > disallowTouchThreshold)
 		{
-			HandleEnd(TouchStatus.Canceled);
+			await HandleEnd(TouchStatus.Canceled, token);
 			return;
 		}
 
-		if (sender is not AView view)
-		{
-			return;
-		}
-
-		var screenPointerCoords = new Point(view.Left + e.Event.GetX(), view.Top + e.Event.GetY());
+		var screenPointerCoords = new Point(view.Left + touchEventArgs.Event.GetX(), view.Top + touchEventArgs.Event.GetY());
 		var viewRect = new Rect(view.Left, view.Top, view.Right - view.Left, view.Bottom - view.Top);
 		var status = viewRect.Contains(screenPointerCoords) ? TouchStatus.Started : TouchStatus.Canceled;
 
-		if (isHoverSupported && ((status == TouchStatus.Canceled && HoverStatus == HoverStatus.Entered)
-								 || (status == TouchStatus.Started && HoverStatus == HoverStatus.Exited)))
+		if (isHoverSupported && ((status is TouchStatus.Canceled && HoverStatus is HoverStatus.Entered)
+			|| (status is TouchStatus.Started && HoverStatus is HoverStatus.Exited)))
 		{
-			HandleHover(status == TouchStatus.Started ? HoverStatus.Entered : HoverStatus.Exited);
+			await HandleHover(status is TouchStatus.Started ? HoverStatus.Entered : HoverStatus.Exited, token);
 		}
 
 		if (Status != status)
 		{
-			HandleTouch(status);
+			await HandleTouch(status, token);
 
-			if (status == TouchStatus.Started)
+			switch (status)
 			{
-				StartRipple(e.Event.GetX(), e.Event.GetY());
-			}
-
-			if (status == TouchStatus.Canceled)
-			{
-				EndRipple();
+				case TouchStatus.Started:
+					StartRipple(touchEventArgs.Event.GetX(), touchEventArgs.Event.GetY());
+					break;
+				case TouchStatus.Canceled:
+					EndRipple();
+					break;
 			}
 		}
 	}
 
-	void OnHoverEnter()
+	ValueTask OnHoverEnter(CancellationToken token)
 	{
 		isHoverSupported = true;
-		HandleHover(HoverStatus.Entered);
+		return HandleHover(HoverStatus.Entered, token);
 	}
 
-	void OnHoverExit()
+	ValueTask OnHoverExit(CancellationToken token)
 	{
 		isHoverSupported = true;
-		HandleHover(HoverStatus.Exited);
+		return HandleHover(HoverStatus.Exited, token);
 	}
 
 	void StartRipple(float x, float y)
@@ -521,6 +524,27 @@ public partial class TouchBehavior
 		{
 			UpdateRipple(Colors.Transparent);
 		}
+	}
+
+	partial void PlatformDispose()
+	{
+		ripple?.Dispose();
+		ripple = null;
+			
+		rippleView?.Dispose();
+		rippleView = null;
+			
+		view?.Dispose();
+		view = null;
+			
+		viewGroup?.Dispose();
+		viewGroup = null;
+			
+		accessibilityListener?.Dispose();
+		accessibilityListener = null;
+			
+		accessibilityManager?.Dispose();
+		accessibilityManager = null;
 	}
 
 	sealed class AccessibilityListener : Java.Lang.Object,

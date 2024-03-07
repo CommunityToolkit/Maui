@@ -2,34 +2,6 @@ namespace CommunityToolkit.Maui.Behaviors;
 
 static class SafeFireAndForgetExtensions
 {
-	#region Private Methods
-
-	static async void HandleSafeFireAndForget<TException>(ValueTask valueTask, bool continueOnCapturedContext, Action<TException>? onException) where TException : Exception
-	{
-		try
-		{
-			await valueTask.ConfigureAwait(continueOnCapturedContext);
-		}
-		catch (TException ex) when (onException is not null)
-		{
-			onException(ex);
-		}
-	}
-
-	static async void HandleSafeFireAndForget<TException>(Task task, bool continueOnCapturedContext, Action<TException>? onException) where TException : Exception
-	{
-		try
-		{
-			await task.ConfigureAwait(continueOnCapturedContext);
-		}
-		catch (TException ex) when (onException is not null)
-		{
-			onException(ex);
-		}
-	}
-
-	#endregion
-
 	/// <summary>
 	///     Safely execute the ValueTask without waiting for it to complete before moving to the next line of code; commonly
 	///     known as "Fire And Forget". Inspired by John Thiriet's blog post, "Removing Async Void":
@@ -97,6 +69,43 @@ static class SafeFireAndForgetExtensions
 	///     https://johnthiriet.com/removing-async-void/.
 	/// </summary>
 	/// <param name="task">Task.</param>
+	/// <param name="configureAwaitOptions">
+	///		<see cref="ConfigureAwaitOptions"/>
+	/// </param>
+	/// <param name="onException">
+	///     If an exception is thrown in the Task, <c>onException</c> will execute. If onException is
+	///     null, the exception will be re-thrown
+	/// </param>
+	internal static void SafeFireAndForget(this Task task, in ConfigureAwaitOptions configureAwaitOptions, in Action<Exception>? onException = null)
+	{
+		HandleSafeFireAndForget(task, configureAwaitOptions, onException);
+	}
+
+	/// <summary>
+	///     Safely execute the Task without waiting for it to complete before moving to the next line of code; commonly known
+	///     as "Fire And Forget". Inspired by John Thiriet's blog post, "Removing Async Void":
+	///     https://johnthiriet.com/removing-async-void/.
+	/// </summary>
+	/// <param name="task">Task.</param>
+	/// <param name="configureAwaitOptions">
+	///		<see cref="ConfigureAwaitOptions"/>
+	/// </param>
+	/// <param name="onException">
+	///     If an exception is thrown in the Task, <c>onException</c> will execute. If onException is
+	///     null, the exception will be re-thrown
+	/// </param>
+	/// <typeparam name="TException">Exception type. If an exception is thrown of a different type, it will not be handled</typeparam>
+	internal static void SafeFireAndForget<TException>(this Task task, in ConfigureAwaitOptions configureAwaitOptions, in Action<TException>? onException = null) where TException : Exception
+	{
+		HandleSafeFireAndForget(task, configureAwaitOptions, onException);
+	}
+
+	/// <summary>
+	///     Safely execute the Task without waiting for it to complete before moving to the next line of code; commonly known
+	///     as "Fire And Forget". Inspired by John Thiriet's blog post, "Removing Async Void":
+	///     https://johnthiriet.com/removing-async-void/.
+	/// </summary>
+	/// <param name="task">Task.</param>
 	/// <param name="onException">
 	///     If an exception is thrown in the Task, <c>onException</c> will execute. If onException is
 	///     null, the exception will be re-thrown
@@ -110,5 +119,41 @@ static class SafeFireAndForgetExtensions
 	internal static void SafeFireAndForget<TException>(this Task task, in Action<TException>? onException = null, in bool continueOnCapturedContext = false) where TException : Exception
 	{
 		HandleSafeFireAndForget(task, continueOnCapturedContext, onException);
+	}
+
+	static async void HandleSafeFireAndForget<TException>(ValueTask valueTask, bool continueOnCapturedContext, Action<TException>? onException) where TException : Exception
+	{
+		try
+		{
+			await valueTask.ConfigureAwait(continueOnCapturedContext);
+		}
+		catch (TException ex) when (onException is not null)
+		{
+			onException(ex);
+		}
+	}
+
+	static async void HandleSafeFireAndForget<TException>(Task task, bool continueOnCapturedContext, Action<TException>? onException) where TException : Exception
+	{
+		try
+		{
+			await task.ConfigureAwait(continueOnCapturedContext);
+		}
+		catch (TException ex) when (onException is not null)
+		{
+			onException(ex);
+		}
+	}
+
+	static async void HandleSafeFireAndForget<TException>(Task task, ConfigureAwaitOptions configureAwaitOptions, Action<TException>? onException) where TException : Exception
+	{
+		try
+		{
+			await task.ConfigureAwait(configureAwaitOptions);
+		}
+		catch (TException ex) when (onException is not null)
+		{
+			onException(ex);
+		}
 	}
 }
