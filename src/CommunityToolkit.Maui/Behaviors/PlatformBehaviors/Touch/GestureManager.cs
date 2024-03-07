@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
 using static System.Math;
@@ -261,53 +262,17 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 		SetCustomAnimationTask(null);
 		defaultBackgroundColor = default;
 	}
-
-	static void HandleCollectionViewSelection(TouchBehavior sender)
+	
+	internal void AbortAnimations(TouchBehavior touchBehavior)
 	{
-		CollectionView? parent = null;
-		VisualElement? result = null;
-		if (!sender.Element?.TryFindParentElementWithParentOfType(out result, out parent) ?? true)
-		{
-			return;
-		}
+		animationTokenSource?.Cancel();
+		animationTokenSource?.Dispose();
+		animationTokenSource = null;
 
-		var collectionView = parent ?? throw new NullReferenceException();
-
-		var item = result?.BindingContext ?? result ?? throw new NullReferenceException();
-
-		switch (collectionView.SelectionMode)
-		{
-			case SelectionMode.Single:
-				collectionView.SelectedItem = item;
-				break;
-
-			case SelectionMode.Multiple:
-				var selectedItems = collectionView.SelectedItems ?? [];
-
-				if (selectedItems.Contains(item))
-				{
-					selectedItems.Remove(item);
-				}
-				else
-				{
-					selectedItems.Add(item);
-				}
-
-				collectionView.UpdateSelectedItems(selectedItems);
-				break;
-
-			case SelectionMode.None:
-				break;
-
-			default:
-				throw new NotSupportedException($"{nameof(SelectionMode)} {collectionView.SelectionMode} is not yet supported");
-		}
+		touchBehavior.Element?.AbortAnimations();
 	}
-
-	void SetCustomAnimationTask(Func<TouchBehavior, TouchState, HoverState, TimeSpan, Easing?, CancellationToken, Task>? animationTaskFactory)
-		=> this.animationTaskFactory = animationTaskFactory;
-
-	void OnTapped(TouchBehavior sender)
+	
+	static void OnTapped(TouchBehavior sender)
 	{
 		if (!sender.CanExecute || (sender.LongPressCommand is not null && sender.InteractionStatus is TouchInteractionStatus.Completed))
 		{
@@ -327,13 +292,65 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 		sender.RaiseCompleted();
 	}
 
-	internal void AbortAnimations(TouchBehavior touchBehavior)
+	static void HandleCollectionViewSelection(TouchBehavior sender)
 	{
-		animationTokenSource?.Cancel();
-		animationTokenSource?.Dispose();
-		animationTokenSource = null;
+		if (sender.Element is null 
+			|| !TryFindParentElementWithParentOfType(sender.Element, out var child, out CollectionView? collectionView))
+		{
+			return;
+		}
 
-		touchBehavior.Element?.AbortAnimations();
+		var selectedItem = child.BindingContext;
+
+		switch (collectionView.SelectionMode)
+		{
+			case SelectionMode.Single:
+				collectionView.SelectedItem = selectedItem;
+				break;
+
+			case SelectionMode.Multiple:
+				var selectedItems = collectionView.SelectedItems ?? [];
+
+				if (!selectedItems.Remove(selectedItem))
+				{
+					selectedItems.Add(selectedItem);
+				}
+
+				collectionView.UpdateSelectedItems(selectedItems);
+				break;
+
+			case SelectionMode.None:
+				break;
+
+			default:
+				throw new NotSupportedException($"{nameof(SelectionMode)} {collectionView.SelectionMode} is not yet supported");
+		}
+		
+		static bool TryFindParentElementWithParentOfType<T>(in VisualElement element, [NotNullWhen(true)] out VisualElement? child, [NotNullWhen(true)] out T? parent) where T : VisualElement
+		{
+			ArgumentNullException.ThrowIfNull(element);
+
+			VisualElement? searchingElement = element;
+		
+			child = null;
+			parent = null;
+
+			while (searchingElement?.Parent is not null)
+			{
+				if (searchingElement.Parent is not T parentElement)
+				{
+					searchingElement = searchingElement.Parent as VisualElement;
+					continue;
+				}
+
+				child = searchingElement;
+				parent = parentElement;
+
+				return true;
+			}
+
+			return false;
+		}
 	}
 
 	static async Task SetBackgroundImage(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, CancellationToken token)
@@ -719,8 +736,11 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			return true;
 		}
 
-		return await element.ColorTo(color ?? Colors.Transparent, (uint)duration.TotalMilliseconds, easing).WaitAsync(token).ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+		return await element.BackgroundColorTo(color ?? Colors.Transparent, length: (uint)duration.TotalMilliseconds, easing: easing, token: token).ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
 	}
+	
+	void SetCustomAnimationTask(Func<TouchBehavior, TouchState, HoverState, TimeSpan, Easing?, CancellationToken, Task>? animationTaskFactory)
+		=> this.animationTaskFactory = animationTaskFactory;
 
 	Color? GetBackgroundColor(Color? color) => color ?? defaultBackgroundColor;
 
