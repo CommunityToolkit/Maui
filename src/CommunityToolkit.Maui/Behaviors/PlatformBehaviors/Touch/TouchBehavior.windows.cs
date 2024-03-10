@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using CommunityToolkit.Maui.Core;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
 
@@ -96,11 +97,11 @@ public partial class TouchBehavior
 			return;
 		}
 
-		HandleHover(HoverStatus.Entered);
+		HandleHover(HoverStatus.Entered, CancellationToken.None);
 
 		if (isPressed)
 		{
-			HandleTouch(TouchStatus.Started);
+			HandleTouch(TouchStatus.Started, CancellationToken.None);
 			AnimateTilt(pointerDownStoryboard);
 		}
 	}
@@ -114,11 +115,11 @@ public partial class TouchBehavior
 
 		if (isPressed)
 		{
-			HandleTouch(TouchStatus.Canceled);
+			HandleTouch(TouchStatus.Canceled, CancellationToken.None);
 			AnimateTilt(pointerUpStoryboard);
 		}
 
-		HandleHover(HoverStatus.Exited);
+		HandleHover(HoverStatus.Exited, CancellationToken.None);
 	}
 
 	void OnPointerCanceled(object? sender, PointerRoutedEventArgs e)
@@ -130,9 +131,9 @@ public partial class TouchBehavior
 
 		isPressed = false;
 
-		HandleTouch(TouchStatus.Canceled);
+		HandleTouch(TouchStatus.Canceled, CancellationToken.None);
 		HandleUserInteraction(TouchInteractionStatus.Completed);
-		HandleHover(HoverStatus.Exited);
+		HandleHover(HoverStatus.Exited, CancellationToken.None	);
 
 		AnimateTilt(pointerUpStoryboard);
 	}
@@ -153,14 +154,14 @@ public partial class TouchBehavior
 
 		if (Status != TouchStatus.Canceled)
 		{
-			HandleTouch(TouchStatus.Canceled);
+			HandleTouch(TouchStatus.Canceled, CancellationToken.None);
 		}
 
 		HandleUserInteraction(TouchInteractionStatus.Completed);
 
 		if (HoverStatus != HoverStatus.Exited)
 		{
-			HandleHover(HoverStatus.Exited);
+			HandleHover(HoverStatus.Exited, CancellationToken.None);
 		}
 
 		AnimateTilt(pointerUpStoryboard);
@@ -175,12 +176,12 @@ public partial class TouchBehavior
 
 		if (isPressed && (HoverStatus is HoverStatus.Entered))
 		{
-			HandleTouch(TouchStatus.Completed);
+			HandleTouch(TouchStatus.Completed, CancellationToken.None);
 			AnimateTilt(pointerUpStoryboard);
 		}
 		else if (HoverStatus != HoverStatus.Exited)
 		{
-			HandleTouch(TouchStatus.Canceled);
+			HandleTouch(TouchStatus.Canceled, CancellationToken.None);
 			AnimateTilt(pointerUpStoryboard);
 		}
 
@@ -201,7 +202,7 @@ public partial class TouchBehavior
 		container.CapturePointer(e.Pointer);
 
 		HandleUserInteraction(TouchInteractionStatus.Started);
-		HandleTouch(TouchStatus.Started);
+		HandleTouch(TouchStatus.Started, CancellationToken.None);
 
 		AnimateTilt(pointerDownStoryboard);
 
