@@ -1217,7 +1217,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 
 	internal bool CanExecute => IsAvailable
 		&& (element?.IsEnabled ?? false)
-		&& (Command?.CanExecute(CommandParameter) ?? false);
+		&& (Command?.CanExecute(CommandParameter) ?? true);
 
 	internal VisualElement? Element
 	{
