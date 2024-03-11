@@ -37,7 +37,7 @@ public static class FileSaver
 	[SupportedOSPlatform("Tizen")]
 	[SupportedOSPlatform("Windows")]
 	public static Task<FileSaverResult> SaveAsync(string initialPath, string fileName, Stream stream, IProgress<double> progress, CancellationToken cancellationToken = default) =>
-		Default.SaveAsync(initialPath, fileName, stream, cancellationToken);
+		Default.SaveAsync(initialPath, fileName, stream, progress, cancellationToken);
 
 	/// <inheritdoc cref="IFileSaver.SaveAsync(string, Stream, IProgress{double}, CancellationToken)"/>
 	[SupportedOSPlatform("Android")]
@@ -46,7 +46,7 @@ public static class FileSaver
 	[SupportedOSPlatform("Tizen")]
 	[SupportedOSPlatform("Windows")]
 	public static Task<FileSaverResult> SaveAsync(string fileName, Stream stream, IProgress<double> progress, CancellationToken cancellationToken = default) =>
-		Default.SaveAsync(fileName, stream, cancellationToken);
+		Default.SaveAsync(fileName, stream, progress, cancellationToken);
 
 	internal static void SetDefault(IFileSaver implementation) =>
 		defaultImplementation = new(implementation);

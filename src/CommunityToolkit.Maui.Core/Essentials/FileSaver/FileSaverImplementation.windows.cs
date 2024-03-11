@@ -8,7 +8,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 {
 	readonly List<string> allFilesExtension = new() { "." };
 
-	async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, IProgress<double> progress, CancellationToken cancellationToken)
+	async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
 	{
 		var savePicker = new FileSavePicker
 		{
@@ -43,7 +43,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		}
 	}
 
-	Task<string> InternalSaveAsync(string fileName, Stream stream, IProgress<double> progress, CancellationToken cancellationToken)
+	Task<string> InternalSaveAsync(string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
 	{
 		return InternalSaveAsync(string.Empty, fileName, stream, progress, cancellationToken);
 	}

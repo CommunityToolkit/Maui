@@ -10,7 +10,7 @@ public sealed partial class FileSaverImplementation
 		try
 		{
 			cancellationToken.ThrowIfCancellationRequested();
-			var path = await InternalSaveAsync(initialPath, fileName, stream, new Progress<double>(), cancellationToken);
+			var path = await InternalSaveAsync(initialPath, fileName, stream, null, cancellationToken);
 			return new FileSaverResult(path, null);
 		}
 		catch (Exception e)
@@ -25,7 +25,7 @@ public sealed partial class FileSaverImplementation
 		try
 		{
 			cancellationToken.ThrowIfCancellationRequested();
-			var path = await InternalSaveAsync(fileName, stream, new Progress<double>(), cancellationToken);
+			var path = await InternalSaveAsync(fileName, stream, null, cancellationToken);
 			return new FileSaverResult(path, null);
 		}
 		catch (Exception e)
@@ -64,7 +64,7 @@ public sealed partial class FileSaverImplementation
 		}
 	}
 
-	static async Task WriteStream(Stream stream, string filePath, IProgress<double> progress, CancellationToken cancellationToken)
+	static async Task WriteStream(Stream stream, string filePath, IProgress<double>? progress, CancellationToken cancellationToken)
 	{
 		await using var fileStream = new FileStream(filePath, FileMode.OpenOrCreate);
 		fileStream.SetLength(0);
@@ -83,12 +83,12 @@ public sealed partial class FileSaverImplementation
 			{
 				await fileStream.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
 				totalRead += bytesRead;
-				progress.Report(totalRead / stream.Length);
+				progress?.Report(totalRead / stream.Length);
 			}
 		}
 		finally
 		{
-			progress.Report(100);
+			progress?.Report(100);
 			ArrayPool<byte>.Shared.Return(buffer);
 		}
 	}

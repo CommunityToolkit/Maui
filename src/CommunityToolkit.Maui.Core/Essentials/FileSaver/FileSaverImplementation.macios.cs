@@ -17,7 +17,7 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 		InternalDispose();
 	}
 
-	async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, IProgress<double> progress, CancellationToken cancellationToken)
+	async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 		var fileManager = NSFileManager.DefaultManager;
@@ -55,7 +55,7 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 		return await tcs.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
 	}
 
-	Task<string> InternalSaveAsync(string fileName, Stream stream, IProgress<double> progress, CancellationToken cancellationToken)
+	Task<string> InternalSaveAsync(string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
 	{
 		return InternalSaveAsync("/", fileName, stream, progress, cancellationToken);
 	}
