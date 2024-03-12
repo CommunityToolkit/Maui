@@ -113,6 +113,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 			ArrayPool<byte>.Shared.Return(buffer);
 		}
 
+		parcelFileDescriptor?.Close();
 		return uri.ToPhysicalPath() ?? throw new FileSaveException($"Unable to resolve absolute path where the file was saved '{uri}'.");
 	}
 }
