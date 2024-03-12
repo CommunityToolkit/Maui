@@ -64,7 +64,8 @@ public class MauiMediaElement : Grid, IDisposable
 		{
 			HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Right,
 			VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top,
-			Width = 40,
+			Visibility = Microsoft.UI.Xaml.Visibility.Collapsed,
+		Width = 40,
 			Height = 40
 		};
 		buttonContainer.Children.Add(image);
@@ -134,6 +135,11 @@ public class MauiMediaElement : Grid, IDisposable
 	async void OnMediaPlayerElementPointerMoved(object sender, PointerRoutedEventArgs e)
 	{
 		e.Handled = true;
+		if (mediaPlayerElement.TransportControls.Visibility == Microsoft.UI.Xaml.Visibility.Collapsed)
+		{
+			buttonContainer.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+			return;
+		}
 		mediaPlayerElement.PointerMoved -= OnMediaPlayerElementPointerMoved;
 		buttonContainer.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
 
