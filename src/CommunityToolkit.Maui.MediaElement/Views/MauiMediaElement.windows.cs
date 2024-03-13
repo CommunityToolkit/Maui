@@ -65,7 +65,7 @@ public class MauiMediaElement : Grid, IDisposable
 			HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Right,
 			VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top,
 			Visibility = mediaPlayerElement.TransportControls.Visibility,
-		Width = 40,
+			Width = 40,
 			Height = 40
 		};
 		buttonContainer.Children.Add(image);
