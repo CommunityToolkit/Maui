@@ -25,11 +25,11 @@ public sealed partial class SpeechToTextImplementation
 
 		InitializeAvAudioSession(out var audioSession);
 
-		var mode = audioSession.AvailableModes.Contains(AVAudioSession.ModeMeasurement)
-			? AVAudioSession.ModeMeasurement
-			: audioSession.AvailableModes[0];
-
-		audioSession.SetMode(new NSString(mode), out var audioSessionError);
+		var mode = audioSession.AvailableModes.Contains("AVAudioSessionModeMeasurement")
+			? AVAudioSessionMode.Measurement
+			: AVAudioSessionMode.Default;
+		
+		audioSession.SetMode(mode, out var audioSessionError);
 		if (audioSessionError is not null)
 		{
 			throw new Exception(audioSessionError.LocalizedDescription);
