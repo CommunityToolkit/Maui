@@ -1,7 +1,7 @@
 using System.Buffers;
-using System.Diagnostics;
 using System.Web;
 using Android.Content;
+using Android.OS;
 using Android.Provider;
 using Android.Webkit;
 using CommunityToolkit.Maui.Core.Essentials;
@@ -9,6 +9,7 @@ using CommunityToolkit.Maui.Core.Extensions;
 using Java.IO;
 using Microsoft.Maui.ApplicationModel;
 using AndroidUri = Android.Net.Uri;
+using Trace = System.Diagnostics.Trace;
 
 namespace CommunityToolkit.Maui.Storage;
 
@@ -90,7 +91,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		}
 
 		using var parcelFileDescriptor = Application.Context.ContentResolver?.OpenFileDescriptor(uri, "wt");
-		using var fileOutputStream = new FileOutputStream(parcelFileDescriptor?.FileDescriptor);
+		using var fileOutputStream = new ParcelFileDescriptor.AutoCloseOutputStream(parcelFileDescriptor);
 		var buffer = ArrayPool<byte>.Shared.Rent(4096);
 
 		try
