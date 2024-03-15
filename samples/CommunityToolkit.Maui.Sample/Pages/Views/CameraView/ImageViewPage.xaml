@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CommunityToolkit.Maui.Sample.Pages.Views.ImageViewPage"
+             Title="ImageView">
+
+    <Grid RowDefinitions="Auto, *" >
+        <ContentView Grid.Row="0" Grid.RowSpan="3" BackgroundColor="#80CCCCCC" >
+            <Image x:Name="image" VerticalOptions="Fill" HorizontalOptions="Fill" />
+        </ContentView>
+
+        <VerticalStackLayout Grid.Row="0" Margin="10,10" Spacing="5">
+            <Label x:Name="debugText" BackgroundColor="#80CCCCCC"/>
+        </VerticalStackLayout>
+
+    </Grid>
+</ContentPage>

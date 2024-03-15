@@ -34,5 +34,7 @@
 	<string>ISpeechToText Uses Speech Recognition</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>ISpeechToText Uses Microphone</string>
+    <key>NSCameraUsageDescription</key>
+    <string>This app uses camera</string>
 </dict>
 </plist>
