@@ -28,7 +28,7 @@ public sealed partial class SpeechToTextImplementation
 		var mode = audioSession.AvailableModes.Contains("AVAudioSessionModeMeasurement")
 			? AVAudioSessionMode.Measurement
 			: AVAudioSessionMode.Default;
-		
+
 		audioSession.SetMode(mode, out var audioSessionError);
 		if (audioSessionError is not null)
 		{
