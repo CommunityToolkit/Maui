@@ -6,8 +6,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 public class BehaviorsGalleryViewModel : BaseGalleryViewModel
 {
 	public BehaviorsGalleryViewModel()
-		: base(new[]
-		{
+		: base([
 			SectionModel.Create<EventToCommandBehaviorViewModel>(nameof(EventToCommandBehavior),
 				"Turns any event into a command that can be bound to"),
 
@@ -60,8 +59,8 @@ public class BehaviorsGalleryViewModel : BaseGalleryViewModel
 				"Change the CurrentTouchStatus Bar color."),
 
 			SectionModel.Create<TouchBehaviorViewModel>(nameof(TouchBehavior),
-				"Alter a views appearance when responding to touch events (normal, pressed, hovered, long press)."),
-		})
+				"Alter a views appearance when responding to touch events (normal, pressed, hovered, long press).")
+		])
 	{
 	}
 }

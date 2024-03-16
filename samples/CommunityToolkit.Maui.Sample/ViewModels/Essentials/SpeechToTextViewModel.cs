@@ -184,7 +184,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 
 	async void HandleSpeechToTextStateChanged(object? sender, SpeechToTextStateChangedEventArgs e)
 	{
-		await Toast.Make($"CurrentTouchState Changed: {e.State}").Show(CancellationToken.None);
+		await Toast.Make($"State Changed: {e.State}").Show(CancellationToken.None);
 	}
 
 	void HandleLocalesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

@@ -9,26 +9,23 @@ public partial class TouchBehaviorViewModel : BaseViewModel
 	bool isNativeAnimationBorderless;
 
 	[ObservableProperty]
-	int touchCount;
+	int touchCount, longPressCount;
 
-	[ObservableProperty]
-	int longPressCount;
-
-	static void DisplayAlert(string title)
+	static Task DisplayAlert(string title, CancellationToken token)
 	{
-		Shell.Current.DisplayAlert(title, null, "Ok");
+		return Shell.Current.DisplayAlert(title, null, "Ok").WaitAsync(token);
 	}
 
 	[RelayCommand]
-	void ParentClicked()
+	async Task ParentClicked(CancellationToken token)
 	{
-		DisplayAlert("Parent Clicked");
+		await DisplayAlert("Parent Clicked", token);
 	}
 
 	[RelayCommand]
-	void ChildClicked()
+	async Task ChildClicked(CancellationToken token)
 	{
-		DisplayAlert("Child Clicked");
+		await DisplayAlert("Child Clicked", token);
 	}
 
 	[RelayCommand]

@@ -1,8 +1,5 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.Versioning;
+﻿using System.Runtime.Versioning;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Platform;
-using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -23,7 +20,7 @@ public enum StatusBarApplyOn
 }
 
 /// <summary>
-/// <see cref="PlatformBehavior{TView,TPlatformView}"/> that controls the CurrentTouchStatus bar color
+/// <see cref="PlatformBehavior{TView,TPlatformView}"/> that controls the Status bar color
 /// </summary>
 [UnsupportedOSPlatform("Windows"), UnsupportedOSPlatform("MacCatalyst"), UnsupportedOSPlatform("MacOS"), UnsupportedOSPlatform("Tizen")]
 public class StatusBarBehavior : PlatformBehavior<Page>
@@ -47,7 +44,7 @@ public class StatusBarBehavior : PlatformBehavior<Page>
 		BindableProperty.Create(nameof(ApplyOn), typeof(StatusBarApplyOn), typeof(StatusBarBehavior), StatusBarApplyOn.OnBehaviorAttachedTo);
 
 	/// <summary>
-	/// Property that holds the value of the CurrentTouchStatus bar color. 
+	/// Property that holds the value of the Status bar color. 
 	/// </summary>
 	public Color StatusBarColor
 	{
@@ -56,7 +53,7 @@ public class StatusBarBehavior : PlatformBehavior<Page>
 	}
 
 	/// <summary>
-	/// Property that holds the value of the CurrentTouchStatus bar color. 
+	/// Property that holds the value of the Status bar color. 
 	/// </summary>
 	public StatusBarStyle StatusBarStyle
 	{
