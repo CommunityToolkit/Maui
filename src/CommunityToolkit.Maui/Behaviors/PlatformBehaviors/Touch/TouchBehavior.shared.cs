@@ -758,9 +758,9 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Gets or sets the background color of the element when the touch is in the pressed state.
 	/// </summary>
-	public Color PressedBackgroundColor
+	public Color? PressedBackgroundColor
 	{
-		get => (Color)GetValue(PressedBackgroundColorProperty);
+		get => (Color?)GetValue(PressedBackgroundColorProperty);
 		set => SetValue(PressedBackgroundColorProperty, value);
 	}
 
