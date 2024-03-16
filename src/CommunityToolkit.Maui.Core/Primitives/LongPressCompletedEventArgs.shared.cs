@@ -3,17 +3,10 @@
 /// <summary>
 /// <see cref="LongPressCompletedEventArgs"/>
 /// </summary>
-public class LongPressCompletedEventArgs : EventArgs
+public class LongPressCompletedEventArgs(object? parameter) : EventArgs
 {
-	/// <summary>
-	/// Constructor for <see cref="LongPressCompletedEventArgs"/>
-	/// </summary>
-	/// <param name="parameter"></param>
-	public LongPressCompletedEventArgs(object? parameter)
-		=> Parameter = parameter;
-
 	/// <summary>
 	/// Parameter
 	/// </summary>
-	public object? Parameter { get; }
+	public object? Parameter { get; } = parameter;
 }

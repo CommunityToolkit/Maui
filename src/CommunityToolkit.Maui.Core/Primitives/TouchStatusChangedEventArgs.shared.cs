@@ -3,17 +3,10 @@
 /// <summary>
 /// <see cref="TouchStatusChangedEventArgs"/>
 /// </summary>
-public class TouchStatusChangedEventArgs : EventArgs
+public class TouchStatusChangedEventArgs(TouchStatus status) : EventArgs
 {
-	/// <summary>
-	/// Constructor for <see cref="TouchStatusChangedEventArgs"/>
-	/// </summary>
-	/// <param name="status"></param>
-	public TouchStatusChangedEventArgs(TouchStatus status)
-		=> Status = status;
-
 	/// <summary>
 	/// Gets the current touch status.
 	/// </summary>
-	public TouchStatus Status { get; }
+	public TouchStatus Status { get; } = status;
 }
