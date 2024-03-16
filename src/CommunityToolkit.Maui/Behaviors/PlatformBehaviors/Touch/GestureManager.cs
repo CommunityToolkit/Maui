@@ -394,7 +394,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 		{
 			if (sender.ShouldSetImageOnAnimationEnd && duration > TimeSpan.Zero)
 			{
-				await Task.Delay(duration, token).ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+				await Task.Delay(duration, token);
 			}
 		}
 		catch (TaskCanceledException)
@@ -470,7 +470,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 		}
 
 		return element is not null 
-			&& await element.FadeTo(opacity, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token).ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+			&& await element.FadeTo(opacity, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
 	}
 
 	static async Task<bool> SetScale(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
@@ -522,7 +522,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			element.Scale = v;
 		}, element.Scale, scale, 16, (uint)Abs(duration.TotalMilliseconds), easing, (v, b) => animationCompletionSource.SetResult(b));
 
-		return await animationCompletionSource.Task.WaitAsync(token).ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+		return await animationCompletionSource.Task.WaitAsync(token);
 	}
 
 	static async Task<bool> SetTranslation(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
@@ -580,7 +580,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			return false;
 		}
 
-		return await element.TranslateTo(translationX, translationY, (uint)Abs(duration.Milliseconds), easing).WaitAsync(token).ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+		return await element.TranslateTo(translationX, translationY, (uint)Abs(duration.Milliseconds), easing).WaitAsync(token);
 	}
 
 	static async Task<bool> SetRotation(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
@@ -619,8 +619,8 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 		{
 			return false;
 		}
-		
-		return await element.RotateTo(rotation, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token).ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+
+		return await element.RotateTo(rotation, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
 	}
 
 	static async Task<bool> SetRotationX(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
@@ -660,7 +660,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			return false;
 		}
 
-		return await element.RotateXTo(rotationX, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token).ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+		return await element.RotateXTo(rotationX, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
 	}
 
 	static async Task<bool> SetRotationY(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
@@ -700,7 +700,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			return false;
 		}
 
-		return await element.RotateYTo(rotationY, (uint)Abs(duration.Milliseconds), easing).WaitAsync(token).ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+		return await element.RotateYTo(rotationY, (uint)Abs(duration.Milliseconds), easing).WaitAsync(token);
 	}
 
 	async Task<bool> SetBackgroundColor(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
@@ -718,15 +718,15 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 		var element = sender.Element;
 		defaultBackgroundColor ??= element.BackgroundColor;
 
-		var color = GetBackgroundColor(normalBackgroundColor);
+		var color = normalBackgroundColor ?? defaultBackgroundColor;
 
 		if (touchState is TouchState.Pressed)
 		{
-			color = GetBackgroundColor(pressedBackgroundColor);
+			color = pressedBackgroundColor ?? defaultBackgroundColor;
 		}
 		else if (hoverState is HoverState.Hovered && sender.IsSet(TouchBehavior.HoveredBackgroundColorProperty))
 		{
-			color = GetBackgroundColor(hoveredBackgroundColor);
+			color = hoveredBackgroundColor ?? defaultBackgroundColor;
 		}
 
 		if (duration <= TimeSpan.Zero)
@@ -736,10 +736,8 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			return true;
 		}
 
-		return await element.BackgroundColorTo(color ?? Colors.Transparent, length: (uint)duration.TotalMilliseconds, easing: easing, token: token).ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+		return await element.BackgroundColorTo(color ?? Colors.Transparent, length: (uint)duration.TotalMilliseconds, easing: easing, token: token);
 	}
-
-	Color? GetBackgroundColor(Color? color) => color ?? defaultBackgroundColor;
 
 	async Task<bool> RunAnimationTask(TouchBehavior sender, TouchState touchState, HoverState hoverState, CancellationToken token, double? durationMultiplier = null)
 	{
