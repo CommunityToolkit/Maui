@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters;
 
-/// <summary>State used by <see cref="StateToBooleanConverter"/> </summary>
+/// <summary>CurrentTouchState used by <see cref="StateToBooleanConverter"/> </summary>
 public enum LayoutState
 {
 	/// <summary>Default; will show the initial view</summary>

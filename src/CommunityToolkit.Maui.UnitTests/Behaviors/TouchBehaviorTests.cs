@@ -1,10 +1,9 @@
-﻿using System.Text.RegularExpressions;
-using CommunityToolkit.Maui.Behaviors;
+﻿using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Core;
-using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
+
 public class TouchBehaviorTests : BaseTest
 {
 	[Fact]
@@ -14,10 +13,17 @@ public class TouchBehaviorTests : BaseTest
 
 		var view = new View
 		{
-			Behaviors = { touchBehavior }
+			Behaviors =
+			{
+				touchBehavior
+			}
 		};
 
 		Assert.Single(view.Behaviors.OfType<TouchBehavior>());
+
+		view.Behaviors.Remove(touchBehavior);
+
+		Assert.Empty(view.Behaviors.OfType<TouchBehavior>());
 	}
 
 	[Fact]
@@ -25,85 +31,87 @@ public class TouchBehaviorTests : BaseTest
 	{
 		var touchBehavior = new TouchBehavior();
 
-		Assert.Equal(1, touchBehavior.HoveredOpacity);
-		Assert.Equal(1, touchBehavior.PressedOpacity);
-		Assert.Equal(1, touchBehavior.NormalOpacity);
+		Assert.Equal(TouchBehaviorDefaults.HoveredOpacity, touchBehavior.HoveredOpacity);
+		Assert.Equal(TouchBehaviorDefaults.PressedOpacity, touchBehavior.PressedOpacity);
+		Assert.Equal(TouchBehaviorDefaults.NormalOpacity, touchBehavior.NormalOpacity);
 
-		Assert.Equal(1, touchBehavior.HoveredScale);
-		Assert.Equal(1, touchBehavior.PressedScale);
-		Assert.Equal(1, touchBehavior.NormalScale);
+		Assert.Equal(TouchBehaviorDefaults.HoveredScale, touchBehavior.HoveredScale);
+		Assert.Equal(TouchBehaviorDefaults.PressedOpacity, touchBehavior.PressedScale);
+		Assert.Equal(TouchBehaviorDefaults.NormalOpacity, touchBehavior.NormalScale);
 
-		Assert.Equal(0, touchBehavior.HoveredTranslationX);
-		Assert.Equal(0, touchBehavior.PressedTranslationX);
-		Assert.Equal(0, touchBehavior.NormalTranslationX);
+		Assert.Equal(TouchBehaviorDefaults.HoveredTranslationX, touchBehavior.HoveredTranslationX);
+		Assert.Equal(TouchBehaviorDefaults.PressedTranslationX, touchBehavior.PressedTranslationX);
+		Assert.Equal(TouchBehaviorDefaults.NormalTranslationX, touchBehavior.NormalTranslationX);
 
-		Assert.Equal(0, touchBehavior.HoveredTranslationY);
-		Assert.Equal(0, touchBehavior.PressedTranslationY);
-		Assert.Equal(0, touchBehavior.NormalTranslationY);
+		Assert.Equal(TouchBehaviorDefaults.HoveredTranslationY, touchBehavior.HoveredTranslationY);
+		Assert.Equal(TouchBehaviorDefaults.PressedTranslationY, touchBehavior.PressedTranslationY);
+		Assert.Equal(TouchBehaviorDefaults.NormalTranslationY, touchBehavior.NormalTranslationY);
 
-		Assert.Equal(0, touchBehavior.HoveredRotation);
-		Assert.Equal(0, touchBehavior.PressedRotation);
-		Assert.Equal(0, touchBehavior.NormalRotation);
+		Assert.Equal(TouchBehaviorDefaults.HoveredRotation, touchBehavior.HoveredRotation);
+		Assert.Equal(TouchBehaviorDefaults.PressedRotation, touchBehavior.PressedRotation);
+		Assert.Equal(TouchBehaviorDefaults.NormalRotation, touchBehavior.NormalRotation);
 
-		Assert.Equal(0, touchBehavior.HoveredRotationX);
-		Assert.Equal(0, touchBehavior.PressedRotationX);
-		Assert.Equal(0, touchBehavior.NormalRotationX);
+		Assert.Equal(TouchBehaviorDefaults.HoveredRotationX, touchBehavior.HoveredRotationX);
+		Assert.Equal(TouchBehaviorDefaults.PressedRotationX, touchBehavior.PressedRotationX);
+		Assert.Equal(TouchBehaviorDefaults.NormalRotationX, touchBehavior.NormalRotationX);
 
-		Assert.Equal(0, touchBehavior.HoveredRotationY);
-		Assert.Equal(0, touchBehavior.PressedRotationY);
-		Assert.Equal(0, touchBehavior.NormalRotationY);
+		Assert.Equal(TouchBehaviorDefaults.HoveredRotationY, touchBehavior.HoveredRotationY);
+		Assert.Equal(TouchBehaviorDefaults.PressedRotationY, touchBehavior.PressedRotationY);
+		Assert.Equal(TouchBehaviorDefaults.NormalRotationY, touchBehavior.NormalRotationY);
 
-		Assert.Equal(0, touchBehavior.AnimationDuration);
-		Assert.Equal(0, touchBehavior.NormalAnimationDuration);
-		Assert.Equal(0, touchBehavior.HoveredAnimationDuration);
-		Assert.Equal(0, touchBehavior.PressedAnimationDuration);
+		Assert.Equal(TouchBehaviorDefaults.AnimationDuration, touchBehavior.AnimationDuration);
+		Assert.Equal(TouchBehaviorDefaults.NormalAnimationDuration, touchBehavior.NormalAnimationDuration);
+		Assert.Equal(TouchBehaviorDefaults.HoveredAnimationDuration, touchBehavior.HoveredAnimationDuration);
+		Assert.Equal(TouchBehaviorDefaults.PressedAnimationDuration, touchBehavior.PressedAnimationDuration);
 
-		Assert.Null(touchBehavior.AnimationEasing);
-		Assert.Null(touchBehavior.NormalAnimationEasing);
-		Assert.Null(touchBehavior.HoveredAnimationEasing);
-		Assert.Null(touchBehavior.PressedAnimationEasing);
+		Assert.Equal(TouchBehaviorDefaults.AnimationEasing, touchBehavior.AnimationEasing);
+		Assert.Equal(TouchBehaviorDefaults.NormalAnimationEasing, touchBehavior.NormalAnimationEasing);
+		Assert.Equal(TouchBehaviorDefaults.HoveredAnimationEasing, touchBehavior.HoveredAnimationEasing);
+		Assert.Equal(TouchBehaviorDefaults.PressedAnimationEasing, touchBehavior.PressedAnimationEasing);
 
 		Assert.Null(touchBehavior.Command);
 		Assert.Null(touchBehavior.CommandParameter);
 
 		Assert.Null(touchBehavior.LongPressCommand);
 		Assert.Null(touchBehavior.LongPressCommandParameter);
-		Assert.Equal(500, touchBehavior.LongPressDuration);
 
-		Assert.True(touchBehavior.IsAvailable);
-		Assert.Null(touchBehavior.IsToggled);
-		Assert.Equal(0, touchBehavior.DisallowTouchThreshold);
-		Assert.True(touchBehavior.ShouldMakeChildrenInputTransparent);
-		Assert.Equal(0, touchBehavior.PulseCount);
+		Assert.Equal(TouchBehaviorDefaults.LongPressDuration, touchBehavior.LongPressDuration);
 
-		Assert.Equal(TouchState.Normal, touchBehavior.State);
-		Assert.Equal(HoverState.Normal, touchBehavior.HoverState);
+		Assert.Equal(TouchBehaviorDefaults.IsEnabled, touchBehavior.IsEnabled);
+		Assert.Equal(TouchBehaviorDefaults.IsToggled, touchBehavior.IsToggled);
 
-		Assert.Equal(TouchStatus.Completed, touchBehavior.Status);
-		Assert.Equal(HoverStatus.Exited, touchBehavior.HoverStatus);
+		Assert.Equal(TouchBehaviorDefaults.DisallowTouchThreshold, touchBehavior.DisallowTouchThreshold);
+		Assert.Equal(TouchBehaviorDefaults.ShouldMakeChildrenInputTransparent, touchBehavior.ShouldMakeChildrenInputTransparent);
+		Assert.Equal(TouchBehaviorDefaults.PulseCount, touchBehavior.PulseCount);
 
-		Assert.Equal(TouchInteractionStatus.Completed, touchBehavior.InteractionStatus);
+		Assert.Equal(TouchBehaviorDefaults.CurrentTouchState, touchBehavior.CurrentTouchState);
+		Assert.Equal(TouchBehaviorDefaults.CurrentTouchStatus, touchBehavior.CurrentTouchStatus);
 
-		Assert.False(touchBehavior.NativeAnimation);
-		Assert.Null(touchBehavior.NativeAnimationColor);
-		Assert.Null(touchBehavior.NativeAnimationRadius);
-		Assert.Null(touchBehavior.NativeAnimationShadowRadius);
-		Assert.False(touchBehavior.IsNativeAnimationBorderless);
+		Assert.Equal(TouchBehaviorDefaults.CurrentHoverState, touchBehavior.CurrentHoverState);
+		Assert.Equal(TouchBehaviorDefaults.CurrentHoverStatus, touchBehavior.CurrentHoverStatus);
 
-		Assert.Null(touchBehavior.NormalBackgroundColor);
-		Assert.Null(touchBehavior.HoveredBackgroundColor);
-		Assert.Null(touchBehavior.PressedBackgroundColor);
+		Assert.Equal(TouchBehaviorDefaults.CurrentInteractionStatus, touchBehavior.CurrentInteractionStatus);
 
-		Assert.Null(touchBehavior.NormalBackgroundImageSource);
-		Assert.Null(touchBehavior.HoveredBackgroundImageSource);
-		Assert.Null(touchBehavior.PressedBackgroundImageSource);
+		Assert.Equal(TouchBehaviorDefaults.ShouldUseNativeAnimation, touchBehavior.ShouldUseNativeAnimation);
+		Assert.Equal(TouchBehaviorDefaults.NativeAnimationColor, touchBehavior.NativeAnimationColor);
+		Assert.Equal(TouchBehaviorDefaults.NativeAnimationRadius, touchBehavior.NativeAnimationRadius);
+		Assert.Equal(TouchBehaviorDefaults.NativeAnimationShadowRadius, touchBehavior.NativeAnimationShadowRadius);
+		Assert.Equal(TouchBehaviorDefaults.IsNativeAnimationBorderless, touchBehavior.IsNativeAnimationBorderless);
 
-		Assert.Equal(Aspect.AspectFit, touchBehavior.NormalBackgroundImageAspect);
-		Assert.Equal(Aspect.AspectFit, touchBehavior.HoveredBackgroundImageAspect);
-		Assert.Equal(Aspect.AspectFit, touchBehavior.PressedBackgroundImageAspect);
-		Assert.Equal(Aspect.AspectFit, touchBehavior.BackgroundImageAspect);
+		Assert.Equal(TouchBehaviorDefaults.NormalBackgroundColor, touchBehavior.NormalBackgroundColor);
+		Assert.Equal(TouchBehaviorDefaults.HoveredBackgroundColor, touchBehavior.HoveredBackgroundColor);
+		Assert.Equal(TouchBehaviorDefaults.PressedBackgroundColor, touchBehavior.PressedBackgroundColor);
 
-		Assert.False(touchBehavior.ShouldSetImageOnAnimationEnd);
+		Assert.Equal(TouchBehaviorDefaults.NormalBackgroundImageSource, touchBehavior.NormalBackgroundImageSource);
+		Assert.Equal(TouchBehaviorDefaults.HoveredBackgroundImageSource, touchBehavior.HoveredBackgroundImageSource);
+		Assert.Equal(TouchBehaviorDefaults.PressedBackgroundImageSource, touchBehavior.PressedBackgroundImageSource);
+
+		Assert.Equal(TouchBehaviorDefaults.NormalBackgroundImageAspect, touchBehavior.NormalBackgroundImageAspect);
+		Assert.Equal(TouchBehaviorDefaults.HoveredBackgroundImageAspect, touchBehavior.HoveredBackgroundImageAspect);
+		Assert.Equal(TouchBehaviorDefaults.PressedBackgroundImageAspect, touchBehavior.PressedBackgroundImageAspect);
+		Assert.Equal(TouchBehaviorDefaults.BackgroundImageAspect, touchBehavior.BackgroundImageAspect);
+
+		Assert.Equal(TouchBehaviorDefaults.ShouldSetImageOnAnimationEnd, touchBehavior.ShouldSetImageOnAnimationEnd);
 	}
 
 	[Fact]

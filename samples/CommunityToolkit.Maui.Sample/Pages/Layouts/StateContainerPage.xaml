@@ -89,7 +89,7 @@
 
             </VerticalStackLayout>
 
-            <Button Command="{Binding ToggleGridStateCommand}" Text="Toggle State in Grid Without Animation" />
+            <Button Command="{Binding ToggleGridStateCommand}" Text="Toggle CurrentTouchState in Grid Without Animation" />
             <Label Text="A state inside a Grid spans its rows and columns." />
 
             <Grid
@@ -104,7 +104,7 @@
                         mct:StateView.StateKey="ReplaceGrid"
                         Stroke="Green"
                         Style="{StaticResource BorderStyle}">
-                        <Label Text="State replacing the Grid content" VerticalTextAlignment="Center" />
+                        <Label Text="CurrentTouchState replacing the Grid content" VerticalTextAlignment="Center" />
                     </Border>
                 </mct:StateContainer.StateViews>
 
@@ -135,11 +135,11 @@
             </Grid>
 
             <Button Clicked="ChangeStateWithFadeAnimation"
-                    Text="Change State with default fade animation"
+                    Text="Change CurrentTouchState with default fade animation"
                     IsEnabled="{Binding CanAnimationStateChange}"/>
 
             <Button Clicked="ChangeStateWithCustomAnimation"
-                    Text="Change State with custom animation"
+                    Text="Change CurrentTouchState with custom animation"
                     IsEnabled="{Binding CanAnimationStateChange}"/>
             <Grid
                 x:Name="GridWithAnimation"
@@ -153,7 +153,7 @@
                         mct:StateView.StateKey="ReplaceGrid"
                         Stroke="Green"
                         Style="{StaticResource BorderStyle}">
-                        <Label Text="State replacing the Grid content" VerticalTextAlignment="Center" />
+                        <Label Text="CurrentTouchState replacing the Grid content" VerticalTextAlignment="Center" />
                     </Border>
                 </mct:StateContainer.StateViews>
 
@@ -183,7 +183,7 @@
                     BackgroundColor="Orange" />
             </Grid>
 
-            <Button Command="{Binding ToggleNotFoundStateCommand}" Text="Toggle Nonexistent State" />
+            <Button Command="{Binding ToggleNotFoundStateCommand}" Text="Toggle Nonexistent CurrentTouchState" />
             <Label TextColor="Red">
                 <Label.FormattedText>
                     <FormattedString >

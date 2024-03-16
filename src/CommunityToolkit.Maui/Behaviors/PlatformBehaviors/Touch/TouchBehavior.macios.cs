@@ -151,7 +151,7 @@ public partial class TouchBehavior
 				return;
 			}
 
-			await HandleTouch(behavior.Status is TouchStatus.Started ? TouchStatus.Completed : TouchStatus.Canceled, 
+			await HandleTouch(behavior.CurrentTouchStatus is TouchStatus.Started ? TouchStatus.Completed : TouchStatus.Canceled, 
 				CancellationToken.None,
 				TouchInteractionStatus.Completed);
 
@@ -200,7 +200,7 @@ public partial class TouchBehavior
 				? TouchStatus.Started
 				: TouchStatus.Canceled;
 
-			if (behavior.Status != status)
+			if (behavior.CurrentTouchStatus != status)
 			{
 				await HandleTouch(status, CancellationToken.None);
 			}
@@ -239,7 +239,7 @@ public partial class TouchBehavior
 			}
 
 			if (behavior.Element is null
-				|| (!behavior.NativeAnimation && !IsButton)
+				|| (!behavior.ShouldUseNativeAnimation && !IsButton)
 				|| (!canExecuteAction && status is TouchStatus.Started))
 			{
 				return;

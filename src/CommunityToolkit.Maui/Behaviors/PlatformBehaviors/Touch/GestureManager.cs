@@ -48,9 +48,9 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 	internal static void HandleUserInteraction(TouchBehavior sender, TouchInteractionStatus interactionStatus)
 	{
-		if (sender.InteractionStatus != interactionStatus)
+		if (sender.CurrentInteractionStatus != interactionStatus)
 		{
-			sender.InteractionStatus = interactionStatus;
+			sender.CurrentInteractionStatus = interactionStatus;
 			sender.RaiseInteractionStatusChanged();
 		}
 	}
@@ -128,24 +128,24 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			? HoverState.Hovered
 			: HoverState.Normal;
 
-		if (sender.HoverState != hoverState)
+		if (sender.CurrentHoverState != hoverState)
 		{
-			sender.HoverState = hoverState;
+			sender.CurrentHoverState = hoverState;
 			await sender.RaiseHoverStateChanged(token);
 		}
 
-		if (sender.HoverStatus != status)
+		if (sender.CurrentHoverStatus != status)
 		{
-			sender.HoverStatus = status;
+			sender.CurrentHoverStatus = status;
 			sender.RaiseHoverStatusChanged();
 		}
 	}
 
 	internal async Task ChangeStateAsync(TouchBehavior sender, bool animated, CancellationToken token)
 	{
-		var status = sender.Status;
-		var state = sender.State;
-		var hoverState = sender.HoverState;
+		var status = sender.CurrentTouchStatus;
+		var state = sender.CurrentTouchState;
+		var hoverState = sender.CurrentHoverState;
 
 		AbortAnimations(sender);
 		animationTokenSource = new CancellationTokenSource();
@@ -217,7 +217,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 	internal async Task HandleLongPress(TouchBehavior sender, CancellationToken token)
 	{
-		if (sender.State is TouchState.Normal)
+		if (sender.CurrentTouchState is TouchState.Normal)
 		{
 			longPressTokenSource?.CancelAsync();
 			longPressTokenSource?.Dispose();
@@ -225,7 +225,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			return;
 		}
 
-		if (sender.LongPressCommand is null || sender.InteractionStatus is TouchInteractionStatus.Completed)
+		if (sender.LongPressCommand is null || sender.CurrentInteractionStatus is TouchInteractionStatus.Completed)
 		{
 			return;
 		}
@@ -274,7 +274,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 	
 	static void OnTapped(TouchBehavior sender)
 	{
-		if (!sender.CanExecute || (sender.LongPressCommand is not null && sender.InteractionStatus is TouchInteractionStatus.Completed))
+		if (!sender.CanExecute || (sender.LongPressCommand is not null && sender.CurrentInteractionStatus is TouchInteractionStatus.Completed))
 		{
 			return;
 		}
@@ -416,12 +416,12 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 	static async Task UpdateStatusAndState(TouchBehavior sender, TouchStatus status, TouchState state, CancellationToken token)
 	{
-		sender.Status = status;
+		sender.CurrentTouchStatus = status;
 		sender.RaiseStatusChanged();
 
-		if (sender.State != state || status != TouchStatus.Canceled)
+		if (sender.CurrentTouchState != state || status != TouchStatus.Canceled)
 		{
-			sender.State = state;
+			sender.CurrentTouchState = state;
 			await sender.RaiseStateChanged(token);
 		}
 	}

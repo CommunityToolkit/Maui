@@ -73,7 +73,7 @@ public partial class TouchBehavior
 			accessibilityManager.AddTouchExplorationStateChangeListener(accessibilityListener);
 		}
 
-		if (!IsAndroidVersionAtLeast((int)BuildVersionCodes.Lollipop) || !NativeAnimation)
+		if (!IsAndroidVersionAtLeast((int)BuildVersionCodes.Lollipop) || !ShouldUseNativeAnimation)
 		{
 			return;
 		}
@@ -244,7 +244,7 @@ public partial class TouchBehavior
 		}
 
 		view.Click -= OnClick;
-		if (IsAccessibilityMode || (IsAvailable && (element?.IsEnabled ?? false)))
+		if (IsAccessibilityMode || (IsEnabled && (element?.IsEnabled ?? false)))
 		{
 			view.Click += OnClick;
 			return;
@@ -434,7 +434,7 @@ public partial class TouchBehavior
 
 	Task OnTouchUp(CancellationToken token)
 	{
-		return HandleEnd(Status is TouchStatus.Started ? TouchStatus.Completed : TouchStatus.Canceled, token);
+		return HandleEnd(CurrentTouchStatus is TouchStatus.Started ? TouchStatus.Completed : TouchStatus.Canceled, token);
 	}
 
 	Task OnTouchCancel(CancellationToken token)
@@ -464,13 +464,13 @@ public partial class TouchBehavior
 		var viewRect = new Rect(view.Left, view.Top, view.Right - view.Left, view.Bottom - view.Top);
 		var status = viewRect.Contains(screenPointerCoords) ? TouchStatus.Started : TouchStatus.Canceled;
 
-		if (isHoverSupported && ((status is TouchStatus.Canceled && HoverStatus is HoverStatus.Entered)
-			|| (status is TouchStatus.Started && HoverStatus is HoverStatus.Exited)))
+		if (isHoverSupported && ((status is TouchStatus.Canceled && CurrentHoverStatus is HoverStatus.Entered)
+			|| (status is TouchStatus.Started && CurrentHoverStatus is HoverStatus.Exited)))
 		{
 			await HandleHover(status is TouchStatus.Started ? HoverStatus.Entered : HoverStatus.Exited, token);
 		}
 
-		if (Status != status)
+		if (CurrentTouchStatus != status)
 		{
 			await HandleTouch(status, token);
 
@@ -500,7 +500,7 @@ public partial class TouchBehavior
 
 	void StartRipple(float x, float y)
 	{
-		if (IsDisabled || !NativeAnimation)
+		if (IsDisabled || !ShouldUseNativeAnimation)
 		{
 			return;
 		}

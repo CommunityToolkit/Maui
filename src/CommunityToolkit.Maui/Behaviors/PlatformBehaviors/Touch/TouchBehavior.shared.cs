@@ -25,13 +25,13 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	public const string HoveredVisualState = "Hovered";
 
 	/// <summary>
-	/// Bindable property for <see cref="IsAvailable"/>
+	/// Bindable property for <see cref="IsEnabled"/>
 	/// </summary>
-	public static readonly BindableProperty IsAvailableProperty = BindableProperty.Create(
-		nameof(IsAvailable),
+	public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(
+		nameof(IsEnabled),
 		typeof(bool),
 		typeof(TouchBehavior),
-		true);
+		TouchBehaviorDefaults.IsEnabled);
 
 	/// <summary>
 	/// Bindable property for <see cref="Command"/>
@@ -49,7 +49,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(ShouldMakeChildrenInputTransparent),
 		typeof(bool),
 		typeof(TouchBehavior),
-		true);
+		TouchBehaviorDefaults.ShouldMakeChildrenInputTransparent);
 
 	/// <summary>
 	/// Bindable property for <see cref="IsToggled"/>
@@ -58,7 +58,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(IsToggled),
 		typeof(bool?),
 		typeof(TouchBehavior),
-		default(bool?),
+		TouchBehaviorDefaults.IsToggled,
 		BindingMode.TwoWay);
 
 	/// <summary>
@@ -68,16 +68,16 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(DisallowTouchThreshold),
 		typeof(int),
 		typeof(TouchBehavior),
-		default(int));
+		TouchBehaviorDefaults.DisallowTouchThreshold);
 
 	/// <summary>
-	/// Bindable property for <see cref="NativeAnimation"/>
+	/// Bindable property for <see cref="ShouldUseNativeAnimation"/>
 	/// </summary>
-	public static readonly BindableProperty NativeAnimationProperty = BindableProperty.Create(
-		nameof(NativeAnimation),
+	public static readonly BindableProperty ShouldUseNativeAnimationProperty = BindableProperty.Create(
+		nameof(ShouldUseNativeAnimation),
 		typeof(bool),
 		typeof(TouchBehavior),
-		false);
+		TouchBehaviorDefaults.ShouldUseNativeAnimation);
 
 	/// <summary>
 	/// Bindable property for <see cref="NativeAnimationColor"/>
@@ -86,7 +86,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(NativeAnimationColor),
 		typeof(Color),
 		typeof(TouchBehavior),
-		null);
+		TouchBehaviorDefaults.NativeAnimationColor);
 
 	/// <summary>
 	/// Bindable property for <see cref="NativeAnimationRadius"/>
@@ -95,7 +95,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(NativeAnimationRadius),
 		typeof(int?),
 		typeof(TouchBehavior),
-		null);
+		TouchBehaviorDefaults.NativeAnimationRadius);
 
 	/// <summary>
 	/// Bindable property for <see cref="NativeAnimationShadowRadius"/>
@@ -104,7 +104,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(NativeAnimationShadowRadius),
 		typeof(int?),
 		typeof(TouchBehavior),
-		null);
+		TouchBehaviorDefaults.NativeAnimationShadowRadius);
 
 	/// <summary>
 	/// Bindable property for <see cref="IsNativeAnimationBorderless"/>
@@ -113,7 +113,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(IsNativeAnimationBorderless),
 		typeof(bool),
 		typeof(TouchBehavior),
-		false);
+		TouchBehaviorDefaults.IsNativeAnimationBorderless);
 
 	/// <summary>
 	/// Bindable property for <see cref="NormalBackgroundImageSource"/>
@@ -122,7 +122,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(NormalBackgroundImageSource),
 		typeof(ImageSource),
 		typeof(TouchBehavior),
-		default(ImageSource));
+		TouchBehaviorDefaults.NormalBackgroundImageSource);
 
 	/// <summary>
 	/// Bindable property for <see cref="HoveredBackgroundImageSource"/>
@@ -131,7 +131,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(HoveredBackgroundImageSource),
 		typeof(ImageSource),
 		typeof(TouchBehavior),
-		default(ImageSource));
+		TouchBehaviorDefaults.HoveredBackgroundImageSource);
 
 	/// <summary>
 	/// Bindable property for <see cref="PressedBackgroundImageSource"/>
@@ -140,7 +140,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(PressedBackgroundImageSource),
 		typeof(ImageSource),
 		typeof(TouchBehavior),
-		default(ImageSource));
+		TouchBehaviorDefaults.PressedBackgroundImageSource);
 
 	/// <summary>
 	/// Bindable property for <see cref="BackgroundImageAspect"/>
@@ -149,7 +149,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(BackgroundImageAspect),
 		typeof(Aspect),
 		typeof(TouchBehavior),
-		default(Aspect));
+		TouchBehaviorDefaults.BackgroundImageAspect);
 
 	/// <summary>
 	/// Bindable property for <see cref="NormalBackgroundImageAspect"/>
@@ -158,7 +158,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(NormalBackgroundImageAspect),
 		typeof(Aspect),
 		typeof(TouchBehavior),
-		default(Aspect));
+		TouchBehaviorDefaults.NormalBackgroundImageAspect);
 
 	/// <summary>
 	/// Bindable property for <see cref="HoveredBackgroundImageAspect"/>
@@ -167,7 +167,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(HoveredBackgroundImageAspect),
 		typeof(Aspect),
 		typeof(TouchBehavior),
-		default(Aspect));
+		TouchBehaviorDefaults.HoveredBackgroundImageAspect);
 
 	/// <summary>
 	/// Bindable property for <see cref="PressedBackgroundImageAspect"/>
@@ -176,7 +176,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(PressedBackgroundImageAspect),
 		typeof(Aspect),
 		typeof(TouchBehavior),
-		default(Aspect));
+		TouchBehaviorDefaults.PressedBackgroundImageAspect);
 
 	/// <summary>
 	/// Bindable property for <see cref="LongPressCommand"/>
@@ -188,13 +188,13 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		null);
 
 	/// <summary>
-	/// Bindable property for <see cref="Status"/>
+	/// Bindable property for <see cref="CurrentTouchStatus"/>
 	/// </summary>
-	public static readonly BindableProperty StatusProperty = BindableProperty.Create(
-		nameof(Status),
+	public static readonly BindableProperty CurrentTouchStatusProperty = BindableProperty.Create(
+		nameof(CurrentTouchStatus),
 		typeof(TouchStatus),
 		typeof(TouchBehavior),
-		TouchStatus.Completed,
+		TouchBehaviorDefaults.CurrentTouchStatus,
 		BindingMode.OneWayToSource);
 
 	/// <summary>
@@ -204,7 +204,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(LongPressDuration),
 		typeof(int),
 		typeof(TouchBehavior),
-		500);
+		TouchBehaviorDefaults.LongPressDuration);
 
 	/// <summary>
 	/// Bindable property for <see cref="LongPressCommandParameter"/>
@@ -216,33 +216,33 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		default);
 
 	/// <summary>
-	/// Bindable property for <see cref="HoverStatus"/>
+	/// Bindable property for <see cref="CurrentHoverStatus"/>
 	/// </summary>
-	public static readonly BindableProperty HoverStatusProperty = BindableProperty.Create(
-		nameof(HoverStatus),
+	public static readonly BindableProperty CurrentHoverStatusProperty = BindableProperty.Create(
+		nameof(CurrentHoverStatus),
 		typeof(HoverStatus),
 		typeof(TouchBehavior),
-		HoverStatus.Exited,
+		TouchBehaviorDefaults.CurrentHoverStatus,
 		BindingMode.OneWayToSource);
 
 	/// <summary>
-	/// Bindable property for <see cref="InteractionStatus"/>
+	/// Bindable property for <see cref="CurrentInteractionStatus"/>
 	/// </summary>
-	public static readonly BindableProperty InteractionStatusProperty = BindableProperty.Create(
-		nameof(InteractionStatus),
+	public static readonly BindableProperty CurrentInteractionStatusProperty = BindableProperty.Create(
+		nameof(CurrentInteractionStatus),
 		typeof(TouchInteractionStatus),
 		typeof(TouchBehavior),
-		TouchInteractionStatus.Completed,
+		TouchBehaviorDefaults.CurrentInteractionStatus,
 		BindingMode.OneWayToSource);
 
 	/// <summary>
-	/// Bindable property for <see cref="State"/>
+	/// Bindable property for <see cref="CurrentTouchState"/>
 	/// </summary>
-	public static readonly BindableProperty StateProperty = BindableProperty.Create(
-		nameof(State),
+	public static readonly BindableProperty CurrentTouchStateProperty = BindableProperty.Create(
+		nameof(CurrentTouchState),
 		typeof(TouchState),
 		typeof(TouchBehavior),
-		TouchState.Normal,
+		TouchBehaviorDefaults.CurrentTouchState,
 		BindingMode.OneWayToSource);
 
 	/// <summary>
@@ -252,16 +252,16 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(NormalBackgroundColor),
 		typeof(Color),
 		typeof(TouchBehavior),
-		null);
+		TouchBehaviorDefaults.NormalBackgroundColor);
 
 	/// <summary>
-	/// Bindable property for <see cref="HoverState"/>
+	/// Bindable property for <see cref="CurrentHoverState"/>
 	/// </summary>
-	public static readonly BindableProperty HoverStateProperty = BindableProperty.Create(
-		nameof(HoverState),
+	public static readonly BindableProperty CurrentHoverStateProperty = BindableProperty.Create(
+		nameof(CurrentHoverState),
 		typeof(HoverState),
 		typeof(TouchBehavior),
-		HoverState.Normal,
+		TouchBehaviorDefaults.CurrentHoverState,
 		BindingMode.OneWayToSource);
 
 	/// <summary>
@@ -280,7 +280,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(NormalScale),
 		typeof(double),
 		typeof(TouchBehavior),
-		1.0);
+		TouchBehaviorDefaults.NormalScale);
 
 	/// <summary>
 	/// Bindable property for <see cref="PressedOpacity"/>
@@ -289,7 +289,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(PressedOpacity),
 		typeof(double),
 		typeof(TouchBehavior),
-		1.0);
+		TouchBehaviorDefaults.PressedOpacity);
 
 	/// <summary>
 	/// Bindable property for <see cref="HoveredOpacity"/>
@@ -298,7 +298,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(HoveredOpacity),
 		typeof(double),
 		typeof(TouchBehavior),
-		1.0);
+		TouchBehaviorDefaults.HoveredOpacity);
 
 	/// <summary>
 	/// Bindable property for <see cref="NormalOpacity"/>
@@ -307,7 +307,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(NormalOpacity),
 		typeof(double),
 		typeof(TouchBehavior),
-		1.0);
+		TouchBehaviorDefaults.NormalOpacity);
 
 	/// <summary>
 	/// Bindable property for <see cref="PressedScale"/>
@@ -316,7 +316,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(PressedScale),
 		typeof(double),
 		typeof(TouchBehavior),
-		1.0);
+		TouchBehaviorDefaults.PressedScale);
 
 	/// <summary>
 	/// Bindable property for <see cref="HoveredScale"/>
@@ -325,7 +325,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(HoveredScale),
 		typeof(double),
 		typeof(TouchBehavior),
-		1.0);
+		TouchBehaviorDefaults.HoveredScale);
 
 	/// <summary>
 	/// Bindable property for <see cref="PressedBackgroundColor"/>
@@ -334,7 +334,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(PressedBackgroundColor),
 		typeof(Color),
 		typeof(TouchBehavior),
-		null);
+		TouchBehaviorDefaults.PressedBackgroundColor);
 
 	/// <summary>
 	/// Bindable property for <see cref="HoveredBackgroundColor"/>
@@ -343,7 +343,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(HoveredBackgroundColor),
 		typeof(Color),
 		typeof(TouchBehavior),
-		null);
+		TouchBehaviorDefaults.HoveredBackgroundColor);
 
 	/// <summary>
 	/// Bindable property for <see cref="PressedTranslationX"/>
@@ -352,7 +352,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(PressedTranslationX),
 		typeof(double),
 		typeof(TouchBehavior),
-		0.0);
+		TouchBehaviorDefaults.PressedTranslationX);
 
 	/// <summary>
 	/// Bindable property for <see cref="HoveredTranslationX"/>
@@ -361,7 +361,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(HoveredTranslationX),
 		typeof(double),
 		typeof(TouchBehavior),
-		0.0);
+		TouchBehaviorDefaults.HoveredTranslationX);
 
 	/// <summary>
 	/// Bindable property for <see cref="NormalTranslationX"/>
@@ -370,7 +370,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(NormalTranslationX),
 		typeof(double),
 		typeof(TouchBehavior),
-		0.0);
+		TouchBehaviorDefaults.NormalTranslationX);
 
 	/// <summary>
 	/// Bindable property for <see cref="PressedRotationX"/>
@@ -379,7 +379,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(PressedRotationX),
 		typeof(double),
 		typeof(TouchBehavior),
-		0.0);
+		TouchBehaviorDefaults.PressedRotationX);
 
 	/// <summary>
 	/// Bindable property for <see cref="HoveredRotationX"/>
@@ -388,7 +388,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(HoveredRotationX),
 		typeof(double),
 		typeof(TouchBehavior),
-		0.0);
+		TouchBehaviorDefaults.HoveredRotationX);
 
 	/// <summary>
 	/// Bindable property for <see cref="NormalRotationX"/>
@@ -397,7 +397,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(NormalRotationX),
 		typeof(double),
 		typeof(TouchBehavior),
-		0.0);
+		TouchBehaviorDefaults.NormalRotationX);
 
 	/// <summary>
 	/// Bindable property for <see cref="PressedRotation"/>
@@ -406,7 +406,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(PressedRotation),
 		typeof(double),
 		typeof(TouchBehavior),
-		0.0);
+		TouchBehaviorDefaults.PressedRotation);
 
 	/// <summary>
 	/// Bindable property for <see cref="AnimationEasing"/>
@@ -415,7 +415,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(AnimationEasing),
 		typeof(Easing),
 		typeof(TouchBehavior),
-		null);
+		TouchBehaviorDefaults.AnimationEasing);
 
 	/// <summary>
 	/// Bindable property for <see cref="AnimationDuration"/>
@@ -424,7 +424,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(AnimationDuration),
 		typeof(int),
 		typeof(TouchBehavior),
-		0);
+		TouchBehaviorDefaults.AnimationDuration);
 
 	/// <summary>
 	/// Bindable property for <see cref="PressedRotationY"/>
@@ -433,7 +433,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(PressedRotationY),
 		typeof(double),
 		typeof(TouchBehavior),
-		0.0);
+		TouchBehaviorDefaults.PressedRotationY);
 
 	/// <summary>
 	/// Bindable property for <see cref="NormalRotationY"/>
@@ -442,7 +442,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(NormalRotationY),
 		typeof(double),
 		typeof(TouchBehavior),
-		0.0);
+		TouchBehaviorDefaults.NormalRotationY);
 
 	/// <summary>
 	/// Bindable property for <see cref="HoveredRotation"/>
@@ -451,7 +451,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(HoveredRotation),
 		typeof(double),
 		typeof(TouchBehavior),
-		0.0);
+		TouchBehaviorDefaults.HoveredRotation);
 
 	/// <summary>
 	/// Bindable property for <see cref="NormalRotation"/>
@@ -460,7 +460,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(NormalRotation),
 		typeof(double),
 		typeof(TouchBehavior),
-		0.0);
+		TouchBehaviorDefaults.NormalRotation);
 
 	/// <summary>
 	/// Bindable property for <see cref="PressedTranslationY"/>
@@ -469,7 +469,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(PressedTranslationY),
 		typeof(double),
 		typeof(TouchBehavior),
-		0.0);
+		TouchBehaviorDefaults.PressedTranslationY);
 
 	/// <summary>
 	/// Bindable property for <see cref="ShouldSetImageOnAnimationEnd"/>
@@ -478,7 +478,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(ShouldSetImageOnAnimationEnd),
 		typeof(bool),
 		typeof(TouchBehavior),
-		default(bool));
+		TouchBehaviorDefaults.ShouldSetImageOnAnimationEnd);
 
 	/// <summary>
 	/// Bindable property for <see cref="PulseCount"/>
@@ -487,7 +487,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(PulseCount),
 		typeof(int),
 		typeof(TouchBehavior),
-		default(int));
+		TouchBehaviorDefaults.PulseCount);
 
 	/// <summary>
 	/// Bindable property for <see cref="HoveredAnimationEasing"/>
@@ -496,7 +496,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(HoveredAnimationEasing),
 		typeof(Easing),
 		typeof(TouchBehavior),
-		null);
+		TouchBehaviorDefaults.HoveredAnimationEasing);
 
 	/// <summary>
 	/// Bindable property for <see cref="HoveredRotationY"/>
@@ -505,7 +505,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(HoveredRotationY),
 		typeof(double),
 		typeof(TouchBehavior),
-		0.0);
+		TouchBehaviorDefaults.HoveredRotationY);
 
 	/// <summary>
 	/// Bindable property for <see cref="NormalTranslationY"/>
@@ -514,7 +514,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(NormalTranslationY),
 		typeof(double),
 		typeof(TouchBehavior),
-		0.0);
+		TouchBehaviorDefaults.NormalTranslationY);
 
 	/// <summary>
 	/// Bindable property for <see cref="PressedAnimationDuration"/>
@@ -523,7 +523,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(PressedAnimationDuration),
 		typeof(int),
 		typeof(TouchBehavior),
-		0);
+		TouchBehaviorDefaults.PressedAnimationDuration);
 
 	/// <summary>
 	/// Bindable property for <see cref="HoveredAnimationDuration"/>
@@ -532,7 +532,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(HoveredAnimationDuration),
 		typeof(int),
 		typeof(TouchBehavior),
-		0);
+		TouchBehaviorDefaults.HoveredAnimationDuration);
 
 	/// <summary>
 	/// Bindable property for <see cref="NormalAnimationEasing"/>
@@ -541,7 +541,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(NormalAnimationEasing),
 		typeof(Easing),
 		typeof(TouchBehavior),
-		null);
+		TouchBehaviorDefaults.NormalAnimationEasing);
 
 	/// <summary>
 	/// Bindable property for <see cref="NormalAnimationDuration"/>
@@ -550,7 +550,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(NormalAnimationDuration),
 		typeof(int),
 		typeof(TouchBehavior),
-		0);
+		TouchBehaviorDefaults.NormalAnimationDuration);
 
 	/// <summary>
 	/// Bindable property for <see cref="PressedAnimationEasing"/>
@@ -559,7 +559,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		nameof(PressedAnimationEasing),
 		typeof(Easing),
 		typeof(TouchBehavior),
-		null);
+		TouchBehaviorDefaults.PressedAnimationEasing);
 
 	readonly WeakEventManager weakEventManager = new();
 	readonly GestureManager gestureManager = new();
@@ -632,10 +632,10 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Gets or sets a value indicating whether the touch is available.
 	/// </summary>
-	public bool IsAvailable
+	public bool IsEnabled
 	{
-		get => (bool)GetValue(IsAvailableProperty);
-		set => SetValue(IsAvailableProperty, value);
+		get => (bool)GetValue(IsEnabledProperty);
+		set => SetValue(IsEnabledProperty, value);
 	}
 
 	/// <summary>
@@ -695,46 +695,46 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Gets the current status of the touch.
 	/// </summary>
-	public TouchStatus Status
+	public TouchStatus CurrentTouchStatus
 	{
-		get => (TouchStatus)GetValue(StatusProperty);
-		set => SetValue(StatusProperty, value);
+		get => (TouchStatus)GetValue(CurrentTouchStatusProperty);
+		set => SetValue(CurrentTouchStatusProperty, value);
 	}
 
 	/// <summary>
 	/// Gets the current state of the touch.
 	/// </summary>
-	public TouchState State
+	public TouchState CurrentTouchState
 	{
-		get => (TouchState)GetValue(StateProperty);
-		set => SetValue(StateProperty, value);
+		get => (TouchState)GetValue(CurrentTouchStateProperty);
+		set => SetValue(CurrentTouchStateProperty, value);
 	}
 
 	/// <summary>
 	/// Gets the current interaction status of the touch.
 	/// </summary>
-	public TouchInteractionStatus InteractionStatus
+	public TouchInteractionStatus CurrentInteractionStatus
 	{
-		get => (TouchInteractionStatus)GetValue(InteractionStatusProperty);
-		set => SetValue(InteractionStatusProperty, value);
+		get => (TouchInteractionStatus)GetValue(CurrentInteractionStatusProperty);
+		set => SetValue(CurrentInteractionStatusProperty, value);
 	}
 
 	/// <summary>
 	/// Gets the current hover status of the touch.
 	/// </summary>
-	public HoverStatus HoverStatus
+	public HoverStatus CurrentHoverStatus
 	{
-		get => (HoverStatus)GetValue(HoverStatusProperty);
-		set => SetValue(HoverStatusProperty, value);
+		get => (HoverStatus)GetValue(CurrentHoverStatusProperty);
+		set => SetValue(CurrentHoverStatusProperty, value);
 	}
 
 	/// <summary>
 	/// Gets the current hover state of the touch.
 	/// </summary>
-	public HoverState HoverState
+	public HoverState CurrentHoverState
 	{
-		get => (HoverState)GetValue(HoverStateProperty);
-		set => SetValue(HoverStateProperty, value);
+		get => (HoverState)GetValue(CurrentHoverStateProperty);
+		set => SetValue(CurrentHoverStateProperty, value);
 	}
 
 	/// <summary>
@@ -1011,9 +1011,9 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Gets or sets the easing of the animation.
 	/// </summary>
-	public Easing AnimationEasing
+	public Easing? AnimationEasing
 	{
-		get => (Easing)GetValue(AnimationEasingProperty);
+		get => (Easing?)GetValue(AnimationEasingProperty);
 		set => SetValue(AnimationEasingProperty, value);
 	}
 
@@ -1029,9 +1029,9 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Gets or sets the easing of the pressed animation.
 	/// </summary>
-	public Easing PressedAnimationEasing
+	public Easing? PressedAnimationEasing
 	{
-		get => (Easing)GetValue(PressedAnimationEasingProperty);
+		get => (Easing?)GetValue(PressedAnimationEasingProperty);
 		set => SetValue(PressedAnimationEasingProperty, value);
 	}
 
@@ -1047,9 +1047,9 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Gets or sets the easing of the normal animation.
 	/// </summary>
-	public Easing NormalAnimationEasing
+	public Easing? NormalAnimationEasing
 	{
-		get => (Easing)GetValue(NormalAnimationEasingProperty);
+		get => (Easing?)GetValue(NormalAnimationEasingProperty);
 		set => SetValue(NormalAnimationEasingProperty, value);
 	}
 
@@ -1065,9 +1065,9 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Gets or sets the easing of the hovered animation.
 	/// </summary>
-	public Easing HoveredAnimationEasing
+	public Easing? HoveredAnimationEasing
 	{
-		get => (Easing)GetValue(HoveredAnimationEasingProperty);
+		get => (Easing?)GetValue(HoveredAnimationEasingProperty);
 		set => SetValue(HoveredAnimationEasingProperty, value);
 	}
 
@@ -1101,10 +1101,10 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Gets or sets a value indicating whether the animation should be native.
 	/// </summary>
-	public bool NativeAnimation
+	public bool ShouldUseNativeAnimation
 	{
-		get => (bool)GetValue(NativeAnimationProperty);
-		set => SetValue(NativeAnimationProperty, value);
+		get => (bool)GetValue(ShouldUseNativeAnimationProperty);
+		set => SetValue(ShouldUseNativeAnimationProperty, value);
 	}
 
 	/// <summary>
@@ -1146,27 +1146,27 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Gets or sets the normal background image source.
 	/// </summary>
-	public ImageSource NormalBackgroundImageSource
+	public ImageSource? NormalBackgroundImageSource
 	{
-		get => (ImageSource)GetValue(NormalBackgroundImageSourceProperty);
+		get => (ImageSource?)GetValue(NormalBackgroundImageSourceProperty);
 		set => SetValue(NormalBackgroundImageSourceProperty, value);
 	}
 
 	/// <summary>
 	/// Gets or sets the hovered background image source.
 	/// </summary>
-	public ImageSource HoveredBackgroundImageSource
+	public ImageSource? HoveredBackgroundImageSource
 	{
-		get => (ImageSource)GetValue(HoveredBackgroundImageSourceProperty);
+		get => (ImageSource?)GetValue(HoveredBackgroundImageSourceProperty);
 		set => SetValue(HoveredBackgroundImageSourceProperty, value);
 	}
 
 	/// <summary>
 	/// Gets or sets the pressed background image source.
 	/// </summary>
-	public ImageSource PressedBackgroundImageSource
+	public ImageSource? PressedBackgroundImageSource
 	{
-		get => (ImageSource)GetValue(PressedBackgroundImageSourceProperty);
+		get => (ImageSource?)GetValue(PressedBackgroundImageSourceProperty);
 		set => SetValue(PressedBackgroundImageSourceProperty, value);
 	}
 
@@ -1215,7 +1215,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		set => SetValue(ShouldSetImageOnAnimationEndProperty, value);
 	}
 
-	internal bool CanExecute => IsAvailable
+	internal bool CanExecute => IsEnabled
 		&& (element?.IsEnabled ?? false)
 		&& (Command?.CanExecute(CommandParameter) ?? true);
 

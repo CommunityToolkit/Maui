@@ -57,7 +57,7 @@ public class BehaviorsGalleryViewModel : BaseGalleryViewModel
 				"Tint an icon with the selected color."),
 
 			SectionModel.Create<StatusBarBehaviorViewModel>(nameof(StatusBarBehavior),
-				"Change the Status Bar color."),
+				"Change the CurrentTouchStatus Bar color."),
 
 			SectionModel.Create<TouchBehaviorViewModel>(nameof(TouchBehavior),
 				"Alter a views appearance when responding to touch events (normal, pressed, hovered, long press)."),

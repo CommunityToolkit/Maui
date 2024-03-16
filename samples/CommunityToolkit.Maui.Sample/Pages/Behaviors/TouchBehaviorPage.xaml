@@ -84,7 +84,7 @@
                             HoveredBackgroundColor="{StaticResource Gray900}"
                             HoveredScale="1.2"
                             LongPressCommand="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseLongPressCountCommand}"
-                            NativeAnimation="True"
+                            ShouldUseNativeAnimation="True"
                             IsNativeAnimationBorderless="{Binding Source={x:Reference Page}, Path=BindingContext.IsNativeAnimationBorderless}" />
                     </HorizontalStackLayout.Behaviors>
                     <Label
@@ -132,7 +132,7 @@
                         <Image.Behaviors>
                             <mct:TouchBehavior
                                 Command="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseTouchCountCommand}"
-                                NativeAnimation="True"
+                                ShouldUseNativeAnimation="True"
                                 IsNativeAnimationBorderless="{Binding Source={x:Reference Page}, Path=BindingContext.IsNativeAnimationBorderless}"
                                 NativeAnimationRadius="100" />
                         </Image.Behaviors>
@@ -152,7 +152,7 @@
                     <ContentView.Behaviors>
                         <mct:TouchBehavior
                             Command="{Binding Source={x:Reference Page}, Path=BindingContext.ParentClickedCommand}"
-                            NativeAnimation="True"
+                            ShouldUseNativeAnimation="True"
                             IsNativeAnimationBorderless="{Binding Source={x:Reference Page}, Path=BindingContext.IsNativeAnimationBorderless}" />
                     </ContentView.Behaviors>
 
@@ -165,7 +165,7 @@
                         <ContentView.Behaviors>
                             <mct:TouchBehavior
                                 Command="{Binding Source={x:Reference Page}, Path=BindingContext.ChildClickedCommand}"
-                                NativeAnimation="True"
+                                ShouldUseNativeAnimation="True"
                                 IsNativeAnimationBorderless="{Binding Source={x:Reference Page}, Path=BindingContext.IsNativeAnimationBorderless}" />
                         </ContentView.Behaviors>
                     </ContentView>
