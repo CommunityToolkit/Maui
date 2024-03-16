@@ -45,6 +45,7 @@ public partial class TouchBehavior : IDisposable
 	internal void RaiseLongPressCompleted()
 	{
 		var element = Element;
+		
 		if (element is null)
 		{
 			return;

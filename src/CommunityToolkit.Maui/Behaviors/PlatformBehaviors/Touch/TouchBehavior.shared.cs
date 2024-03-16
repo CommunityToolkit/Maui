@@ -202,9 +202,9 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// </summary>
 	public static readonly BindableProperty LongPressDurationProperty = BindableProperty.Create(
 		nameof(LongPressDuration),
-		typeof(TimeSpan),
+		typeof(uint),
 		typeof(TouchBehavior),
-		TimeSpan.FromMilliseconds(500));
+		500);
 
 	/// <summary>
 	/// Bindable property for <see cref="LongPressCommandParameter"/>
@@ -422,9 +422,9 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// </summary>
 	public static readonly BindableProperty AnimationDurationProperty = BindableProperty.Create(
 		nameof(AnimationDuration),
-		typeof(TimeSpan),
+		typeof(uint),
 		typeof(TouchBehavior),
-		TimeSpan.Zero);
+		0);
 
 	/// <summary>
 	/// Bindable property for <see cref="PressedRotationY"/>
@@ -521,18 +521,18 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// </summary>
 	public static readonly BindableProperty PressedAnimationDurationProperty = BindableProperty.Create(
 		nameof(PressedAnimationDuration),
-		typeof(TimeSpan),
+		typeof(uint),
 		typeof(TouchBehavior),
-		TimeSpan.Zero);
+		0);
 
 	/// <summary>
 	/// Bindable property for <see cref="HoveredAnimationDuration"/>
 	/// </summary>
 	public static readonly BindableProperty HoveredAnimationDurationProperty = BindableProperty.Create(
 		nameof(HoveredAnimationDuration),
-		typeof(TimeSpan),
+		typeof(uint),
 		typeof(TouchBehavior),
-		TimeSpan.Zero);
+		0);
 
 	/// <summary>
 	/// Bindable property for <see cref="NormalAnimationEasing"/>
@@ -548,9 +548,9 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// </summary>
 	public static readonly BindableProperty NormalAnimationDurationProperty = BindableProperty.Create(
 		nameof(NormalAnimationDuration),
-		typeof(TimeSpan),
+		typeof(uint),
 		typeof(TouchBehavior),
-		TimeSpan.Zero);
+		0);
 
 	/// <summary>
 	/// Bindable property for <see cref="PressedAnimationEasing"/>
@@ -686,9 +686,9 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Gets or sets the duration of the long press.
 	/// </summary>
-	public TimeSpan LongPressDuration
+	public uint LongPressDuration
 	{
-		get => (TimeSpan)GetValue(LongPressDurationProperty);
+		get => (uint)GetValue(LongPressDurationProperty);
 		set => SetValue(LongPressDurationProperty, value);
 	}
 
@@ -1002,9 +1002,9 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Gets or sets the duration
 	/// </summary>
-	public TimeSpan AnimationDuration
+	public uint AnimationDuration
 	{
-		get => (TimeSpan)GetValue(AnimationDurationProperty);
+		get => (uint)GetValue(AnimationDurationProperty);
 		set => SetValue(AnimationDurationProperty, value);
 	}
 
@@ -1020,9 +1020,9 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Gets or sets the duration of the pressed animation.
 	/// </summary>
-	public TimeSpan PressedAnimationDuration
+	public uint PressedAnimationDuration
 	{
-		get => (TimeSpan)GetValue(PressedAnimationDurationProperty);
+		get => (uint)GetValue(PressedAnimationDurationProperty);
 		set => SetValue(PressedAnimationDurationProperty, value);
 	}
 
@@ -1038,9 +1038,9 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Gets or sets the duration of the normal animation.
 	/// </summary>
-	public TimeSpan NormalAnimationDuration
+	public uint NormalAnimationDuration
 	{
-		get => (TimeSpan)GetValue(NormalAnimationDurationProperty);
+		get => (uint)GetValue(NormalAnimationDurationProperty);
 		set => SetValue(NormalAnimationDurationProperty, value);
 	}
 
@@ -1056,9 +1056,9 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Gets or sets the duration of the hovered animation.
 	/// </summary>
-	public TimeSpan HoveredAnimationDuration
+	public uint HoveredAnimationDuration
 	{
-		get => (TimeSpan)GetValue(HoveredAnimationDurationProperty);
+		get => (uint)GetValue(HoveredAnimationDurationProperty);
 		set => SetValue(HoveredAnimationDurationProperty, value);
 	}
 
