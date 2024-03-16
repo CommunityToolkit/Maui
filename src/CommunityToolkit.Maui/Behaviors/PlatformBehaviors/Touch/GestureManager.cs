@@ -57,7 +57,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 	internal async ValueTask HandleTouch(TouchBehavior sender, TouchStatus status, CancellationToken token)
 	{
-		if (sender.IsDisabled)
+		if (!sender.IsEnabled)
 		{
 			return;
 		}

@@ -57,7 +57,7 @@ public partial class TouchBehavior
 		Element = bindable;
 		view = platformView;
 		viewGroup = Microsoft.Maui.Platform.ViewExtensions.GetParentOfType<ViewGroup>(platformView);
-		if (IsDisabled)
+		if (!IsEnabled)
 		{
 			return;
 		}
@@ -221,7 +221,7 @@ public partial class TouchBehavior
 
 	void UpdateRipple(MColor? color)
 	{
-		if (IsDisabled
+		if (!IsEnabled
 			|| color?.Equals(rippleColor) is true && NativeAnimationRadius == rippleRadius)
 		{
 			return;
@@ -319,7 +319,7 @@ public partial class TouchBehavior
 
 	async void OnClick(object? sender, EventArgs args)
 	{
-		if (IsDisabled)
+		if (!IsEnabled)
 		{
 			return;
 		}
@@ -355,7 +355,7 @@ public partial class TouchBehavior
 
 	void EndRipple()
 	{
-		if (IsDisabled)
+		if (!IsEnabled)
 		{
 			return;
 		}
@@ -384,7 +384,7 @@ public partial class TouchBehavior
 
 		e.Handled = false;
 
-		if (IsDisabled || IsAccessibilityMode)
+		if (!IsEnabled || IsAccessibilityMode)
 		{
 			return;
 		}
@@ -500,7 +500,7 @@ public partial class TouchBehavior
 
 	void StartRipple(float x, float y)
 	{
-		if (IsDisabled || !ShouldUseNativeAnimation)
+		if (!IsEnabled || !ShouldUseNativeAnimation)
 		{
 			return;
 		}

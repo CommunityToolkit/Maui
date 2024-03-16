@@ -81,7 +81,7 @@ public partial class TouchBehavior
 
 	async ValueTask OnHover(CancellationToken token)
 	{
-		if (IsDisabled)
+		if (!IsEnabled)
 		{
 			return;
 		}
@@ -131,7 +131,7 @@ public partial class TouchBehavior
 		{
 			base.TouchesBegan(touches, evt);
 
-			if (behavior.IsDisabled)
+			if (!behavior.IsEnabled)
 			{
 				return;
 			}
@@ -146,7 +146,7 @@ public partial class TouchBehavior
 		{
 			base.TouchesEnded(touches, evt);
 
-			if (behavior.IsDisabled)
+			if (!behavior.IsEnabled)
 			{
 				return;
 			}
@@ -162,7 +162,7 @@ public partial class TouchBehavior
 		{
 			base.TouchesCancelled(touches, evt);
 
-			if (behavior.IsDisabled)
+			if (!behavior.IsEnabled)
 			{
 				return;
 			}
@@ -176,7 +176,7 @@ public partial class TouchBehavior
 		{
 			base.TouchesMoved(touches, evt);
 
-			if (behavior.IsDisabled)
+			if (!behavior.IsEnabled)
 			{
 				return;
 			}
@@ -213,12 +213,7 @@ public partial class TouchBehavior
 
 		async Task HandleTouch(TouchStatus status, CancellationToken token, TouchInteractionStatus? interactionStatus = null)
 		{
-			if (isCanceled)
-			{
-				return;
-			}
-
-			if (behavior.IsDisabled)
+			if (isCanceled || !behavior.IsEnabled)
 			{
 				return;
 			}

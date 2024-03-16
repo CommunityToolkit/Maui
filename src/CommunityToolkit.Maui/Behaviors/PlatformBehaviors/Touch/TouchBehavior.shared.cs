@@ -1226,7 +1226,6 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		{
 			if (element is not null)
 			{
-				IsUsed = false;
 				gestureManager.Reset();
 				SetChildrenInputTransparent(false);
 			}
@@ -1236,13 +1235,8 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 			if (value is not null)
 			{
 				SetChildrenInputTransparent(ShouldMakeChildrenInputTransparent);
-				IsUsed = true;
 				ForceUpdateState(CancellationToken.None).SafeFireAndForget<TaskCanceledException>(ex => Trace.WriteLine(ex));
 			}
 		}
 	}
-
-	internal bool IsDisabled { get; set; }
-
-	internal bool IsUsed { get; set; }
 }
