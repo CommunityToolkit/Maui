@@ -13,7 +13,7 @@ public partial class TouchBehaviorViewModel : BaseViewModel
 
 	[ObservableProperty]
 	int longPressCount;
-	
+
 	static void DisplayAlert(string title)
 	{
 		Shell.Current.DisplayAlert(title, null, "Ok");

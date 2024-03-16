@@ -102,7 +102,7 @@ public partial class TouchBehavior
 	{
 		touchGesture?.Dispose();
 		touchGesture = null;
-		
+
 		hoverGesture?.Dispose();
 		hoverGesture = null;
 	}
@@ -151,7 +151,7 @@ public partial class TouchBehavior
 				return;
 			}
 
-			await HandleTouch(behavior.CurrentTouchStatus is TouchStatus.Started ? TouchStatus.Completed : TouchStatus.Canceled, 
+			await HandleTouch(behavior.CurrentTouchStatus is TouchStatus.Started ? TouchStatus.Completed : TouchStatus.Canceled,
 				CancellationToken.None,
 				TouchInteractionStatus.Completed);
 

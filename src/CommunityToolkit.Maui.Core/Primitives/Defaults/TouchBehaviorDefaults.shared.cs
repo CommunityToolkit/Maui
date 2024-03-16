@@ -253,61 +253,61 @@ public static class TouchBehaviorDefaults
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const Color? NativeAnimationColor = null;
-	
+
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="NormalBackgroundColor"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const Color? NormalBackgroundColor = null;
-	
+
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="HoveredBackgroundColor"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const Color? HoveredBackgroundColor = null;
-	
+
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="PressedBackgroundColor"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const Color? PressedBackgroundColor = null;
-	
+
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="NormalBackgroundImageSource"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const object? NormalBackgroundImageSource = null;
-	
+
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="HoveredBackgroundImageSource"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const object? HoveredBackgroundImageSource = null;
-	
+
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="PressedBackgroundImageSource"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const object? PressedBackgroundImageSource = null;
-	
+
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="NormalBackgroundImageAspect"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const Aspect NormalBackgroundImageAspect = Aspect.AspectFit;
-	
+
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="HoveredBackgroundImageAspect"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const Aspect HoveredBackgroundImageAspect = Aspect.AspectFit;
-	
+
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="PressedBackgroundImageAspect"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const Aspect PressedBackgroundImageAspect = Aspect.AspectFit;
-	
+
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="BackgroundImageAspect"/>
 	/// </summary>
@@ -319,7 +319,7 @@ public static class TouchBehaviorDefaults
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const bool IsNativeAnimationBorderless = false;
-	
+
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="ShouldSetImageOnAnimationEnd"/>
 	/// </summary>
@@ -331,7 +331,7 @@ public static class TouchBehaviorDefaults
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static int? NativeAnimationRadius { get; } = null;
-	
+
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="NativeAnimationShadowRadius"/>
 	/// </summary>

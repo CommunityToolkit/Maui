@@ -530,19 +530,19 @@ public partial class TouchBehavior
 	{
 		ripple?.Dispose();
 		ripple = null;
-			
+
 		rippleView?.Dispose();
 		rippleView = null;
-			
+
 		view?.Dispose();
 		view = null;
-			
+
 		viewGroup?.Dispose();
 		viewGroup = null;
-			
+
 		accessibilityListener?.Dispose();
 		accessibilityListener = null;
-			
+
 		accessibilityManager?.Dispose();
 		accessibilityManager = null;
 	}

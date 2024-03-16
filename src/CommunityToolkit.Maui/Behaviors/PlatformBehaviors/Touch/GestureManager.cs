@@ -175,9 +175,9 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			}
 			catch (TaskCanceledException ex)
 			{
-				Trace.WriteLine(ex);				
+				Trace.WriteLine(ex);
 			}
-			
+
 			return;
 		}
 
@@ -262,7 +262,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 		animationTaskFactory = null;
 		defaultBackgroundColor = default;
 	}
-	
+
 	internal void AbortAnimations(TouchBehavior touchBehavior)
 	{
 		animationTokenSource?.Cancel();
@@ -271,7 +271,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 		touchBehavior.Element?.AbortAnimations();
 	}
-	
+
 	static void OnTapped(TouchBehavior sender)
 	{
 		if (!sender.CanExecute || (sender.LongPressCommand is not null && sender.CurrentInteractionStatus is TouchInteractionStatus.Completed))
@@ -294,7 +294,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 	static void HandleCollectionViewSelection(TouchBehavior sender)
 	{
-		if (sender.Element is null 
+		if (sender.Element is null
 			|| !TryFindParentElementWithParentOfType(sender.Element, out var child, out CollectionView? collectionView))
 		{
 			return;
@@ -325,13 +325,13 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			default:
 				throw new NotSupportedException($"{nameof(SelectionMode)} {collectionView.SelectionMode} is not yet supported");
 		}
-		
+
 		static bool TryFindParentElementWithParentOfType<T>(in VisualElement element, [NotNullWhen(true)] out VisualElement? child, [NotNullWhen(true)] out T? parent) where T : VisualElement
 		{
 			ArgumentNullException.ThrowIfNull(element);
 
 			VisualElement? searchingElement = element;
-		
+
 			child = null;
 			parent = null;
 
@@ -469,7 +469,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			return true;
 		}
 
-		return element is not null 
+		return element is not null
 			&& await element.FadeTo(opacity, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
 	}
 
