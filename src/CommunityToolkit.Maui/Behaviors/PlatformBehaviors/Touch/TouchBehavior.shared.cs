@@ -202,7 +202,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// </summary>
 	public static readonly BindableProperty LongPressDurationProperty = BindableProperty.Create(
 		nameof(LongPressDuration),
-		typeof(uint),
+		typeof(int),
 		typeof(TouchBehavior),
 		500);
 
@@ -422,7 +422,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// </summary>
 	public static readonly BindableProperty AnimationDurationProperty = BindableProperty.Create(
 		nameof(AnimationDuration),
-		typeof(uint),
+		typeof(int),
 		typeof(TouchBehavior),
 		0);
 
@@ -521,7 +521,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// </summary>
 	public static readonly BindableProperty PressedAnimationDurationProperty = BindableProperty.Create(
 		nameof(PressedAnimationDuration),
-		typeof(uint),
+		typeof(int),
 		typeof(TouchBehavior),
 		0);
 
@@ -530,7 +530,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// </summary>
 	public static readonly BindableProperty HoveredAnimationDurationProperty = BindableProperty.Create(
 		nameof(HoveredAnimationDuration),
-		typeof(uint),
+		typeof(int),
 		typeof(TouchBehavior),
 		0);
 
@@ -548,7 +548,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// </summary>
 	public static readonly BindableProperty NormalAnimationDurationProperty = BindableProperty.Create(
 		nameof(NormalAnimationDuration),
-		typeof(uint),
+		typeof(int),
 		typeof(TouchBehavior),
 		0);
 
@@ -686,9 +686,9 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Gets or sets the duration of the long press.
 	/// </summary>
-	public uint LongPressDuration
+	public int LongPressDuration
 	{
-		get => (uint)GetValue(LongPressDurationProperty);
+		get => (int)GetValue(LongPressDurationProperty);
 		set => SetValue(LongPressDurationProperty, value);
 	}
 
@@ -1002,9 +1002,9 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Gets or sets the duration
 	/// </summary>
-	public uint AnimationDuration
+	public int AnimationDuration
 	{
-		get => (uint)GetValue(AnimationDurationProperty);
+		get => (int)GetValue(AnimationDurationProperty);
 		set => SetValue(AnimationDurationProperty, value);
 	}
 
@@ -1020,9 +1020,9 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Gets or sets the duration of the pressed animation.
 	/// </summary>
-	public uint PressedAnimationDuration
+	public int PressedAnimationDuration
 	{
-		get => (uint)GetValue(PressedAnimationDurationProperty);
+		get => (int)GetValue(PressedAnimationDurationProperty);
 		set => SetValue(PressedAnimationDurationProperty, value);
 	}
 
@@ -1038,9 +1038,9 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Gets or sets the duration of the normal animation.
 	/// </summary>
-	public uint NormalAnimationDuration
+	public int NormalAnimationDuration
 	{
-		get => (uint)GetValue(NormalAnimationDurationProperty);
+		get => (int)GetValue(NormalAnimationDurationProperty);
 		set => SetValue(NormalAnimationDurationProperty, value);
 	}
 
@@ -1056,9 +1056,9 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Gets or sets the duration of the hovered animation.
 	/// </summary>
-	public uint HoveredAnimationDuration
+	public int HoveredAnimationDuration
 	{
-		get => (uint)GetValue(HoveredAnimationDurationProperty);
+		get => (int)GetValue(HoveredAnimationDurationProperty);
 		set => SetValue(HoveredAnimationDurationProperty, value);
 	}
 

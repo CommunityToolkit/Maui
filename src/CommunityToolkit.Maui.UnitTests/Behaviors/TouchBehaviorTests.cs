@@ -53,10 +53,10 @@ public class TouchBehaviorTests : BaseTest
 		Assert.Equal(0, touchBehavior.PressedRotationY);
 		Assert.Equal(0, touchBehavior.NormalRotationY);
 
-		Assert.Equal(TimeSpan.Zero, touchBehavior.AnimationDuration);
-		Assert.Equal(TimeSpan.Zero, touchBehavior.NormalAnimationDuration);
-		Assert.Equal(TimeSpan.Zero, touchBehavior.HoveredAnimationDuration);
-		Assert.Equal(TimeSpan.Zero, touchBehavior.PressedAnimationDuration);
+		Assert.Equal(0, touchBehavior.AnimationDuration);
+		Assert.Equal(0, touchBehavior.NormalAnimationDuration);
+		Assert.Equal(0, touchBehavior.HoveredAnimationDuration);
+		Assert.Equal(0, touchBehavior.PressedAnimationDuration);
 
 		Assert.Null(touchBehavior.AnimationEasing);
 		Assert.Null(touchBehavior.NormalAnimationEasing);
@@ -68,7 +68,7 @@ public class TouchBehaviorTests : BaseTest
 
 		Assert.Null(touchBehavior.LongPressCommand);
 		Assert.Null(touchBehavior.LongPressCommandParameter);
-		Assert.Equal(TimeSpan.FromMilliseconds(500), touchBehavior.LongPressDuration);
+		Assert.Equal(500, touchBehavior.LongPressDuration);
 
 		Assert.True(touchBehavior.IsAvailable);
 		Assert.Null(touchBehavior.IsToggled);

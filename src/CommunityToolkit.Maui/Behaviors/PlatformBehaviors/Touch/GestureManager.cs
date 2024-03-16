@@ -16,7 +16,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 	CancellationTokenSource? animationTokenSource;
 
-	Func<TouchBehavior, TouchState, HoverState, TimeSpan, Easing?, CancellationToken, Task>? animationTaskFactory;
+	Func<TouchBehavior, TouchState, HoverState, int, Easing?, CancellationToken, Task>? animationTaskFactory;
 
 	double? durationMultiplier;
 
@@ -259,7 +259,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 	internal void Reset()
 	{
-		SetCustomAnimationTask(null);
+		animationTaskFactory = null;
 		defaultBackgroundColor = default;
 	}
 	
@@ -738,9 +738,6 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 		return await element.BackgroundColorTo(color ?? Colors.Transparent, length: (uint)duration.TotalMilliseconds, easing: easing, token: token).ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
 	}
-	
-	void SetCustomAnimationTask(Func<TouchBehavior, TouchState, HoverState, TimeSpan, Easing?, CancellationToken, Task>? animationTaskFactory)
-		=> this.animationTaskFactory = animationTaskFactory;
 
 	Color? GetBackgroundColor(Color? color) => color ?? defaultBackgroundColor;
 
@@ -796,28 +793,28 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			duration = (int)durationMultiplier.Value * duration;
 		}
 
-		duration = TimeSpan.FromMilliseconds(Max(duration.TotalMilliseconds, 0));
+		duration = Max(duration, 0);
 
 		await Task.WhenAll(
 			animationTaskFactory?.Invoke(sender, touchState, hoverState, duration, easing, token) ?? Task.FromResult(true),
-			SetBackgroundImage(sender, touchState, hoverState, duration, token),
-			SetBackgroundColor(sender, touchState, hoverState, duration, easing, token),
-			SetOpacity(sender, touchState, hoverState, duration, easing, token),
-			SetScale(sender, touchState, hoverState, duration, easing, token),
-			SetTranslation(sender, touchState, hoverState, duration, easing, token),
-			SetRotation(sender, touchState, hoverState, duration, easing, token),
-			SetRotationX(sender, touchState, hoverState, duration, easing, token),
-			SetRotationY(sender, touchState, hoverState, duration, easing, token),
+			SetBackgroundImage(sender, touchState, hoverState, TimeSpan.FromMilliseconds(duration), token),
+			SetBackgroundColor(sender, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
+			SetOpacity(sender, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
+			SetScale(sender, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
+			SetTranslation(sender, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
+			SetRotation(sender, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
+			SetRotationX(sender, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
+			SetRotationY(sender, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
 			Task.Run(async () =>
 			{
 				animationProgress = 0;
 				animationState = touchState;
 
-				for (var progress = animationProgressDelay.Milliseconds; progress < duration.TotalMilliseconds; progress += animationProgressDelay.Milliseconds)
+				for (var progress = animationProgressDelay.Milliseconds; progress < duration; progress += animationProgressDelay.Milliseconds)
 				{
 					await Task.Delay(animationProgressDelay, token).ConfigureAwait(false);
 
-					animationProgress = progress / duration.TotalMilliseconds;
+					animationProgress = progress / (double)duration;
 				}
 
 				animationProgress = 1;
