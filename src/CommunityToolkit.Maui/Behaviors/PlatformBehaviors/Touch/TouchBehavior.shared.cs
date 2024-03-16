@@ -614,7 +614,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Occurs when a touch gesture is completed.
 	/// </summary>
-	public event EventHandler<TouchCompletedEventArgs> Completed
+	public event EventHandler<TouchCompletedEventArgs> TouchGestureCompleted
 	{
 		add => weakEventManager.AddEventHandler(value);
 		remove => weakEventManager.RemoveEventHandler(value);

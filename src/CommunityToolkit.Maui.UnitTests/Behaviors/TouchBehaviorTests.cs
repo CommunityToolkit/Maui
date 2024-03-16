@@ -11,13 +11,8 @@ public class TouchBehaviorTests : BaseTest
 	{
 		var touchBehavior = new TouchBehavior();
 
-		var view = new View
-		{
-			Behaviors =
-			{
-				touchBehavior
-			}
-		};
+		var view = new View();
+		view.Behaviors.Add(touchBehavior);
 
 		Assert.Single(view.Behaviors.OfType<TouchBehavior>());
 
@@ -117,58 +112,80 @@ public class TouchBehaviorTests : BaseTest
 	[Fact]
 	public async Task VerifyHoverOpacityChange()
 	{
+		const double updatedNormalOpacity = 0.9;
+		const double updatedHoveredOpacity = 0.7;
+		
 		var view = new View();
-		var touchBehavior = AttachMockPlatformTouchBehavior(view);
-		touchBehavior.NormalOpacity = .9;
-		touchBehavior.HoveredOpacity = 0.7;
+		AttachMockPlatformTouchBehaviorToVisualElement(view, out var touchBehavior);
+		Assert.Equal(TouchBehaviorDefaults.NormalOpacity, touchBehavior.NormalOpacity);
+		Assert.Equal(TouchBehaviorDefaults.HoveredOpacity, touchBehavior.HoveredOpacity);
+		
+		touchBehavior.NormalOpacity = updatedNormalOpacity;
+		touchBehavior.HoveredOpacity = updatedHoveredOpacity;
+		
+		Assert.Equal(updatedNormalOpacity, touchBehavior.NormalOpacity);
+		Assert.Equal(updatedHoveredOpacity, touchBehavior.HoveredOpacity);
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
-		Assert.Equal(.9, view.Opacity);
+		Assert.Equal(updatedNormalOpacity, view.Opacity);
 
 		await touchBehavior.HandleHover(HoverStatus.Entered, CancellationToken.None);
-		Assert.Equal(0.7, view.Opacity);
+		Assert.Equal(updatedHoveredOpacity, view.Opacity);
 
 		await touchBehavior.HandleHover(HoverStatus.Exited, CancellationToken.None);
-		Assert.Equal(.9, view.Opacity);
+		Assert.Equal(updatedNormalOpacity, view.Opacity);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task VerifyPressedOpacityChange()
 	{
+		const double updatedNormalOpacity = 0.9;
+		const double updatedHoveredOpacity = 0.7;
+		
 		var view = new View();
-		var touchBehavior = AttachMockPlatformTouchBehavior(view);
-		touchBehavior.NormalOpacity = .9;
-		touchBehavior.PressedOpacity = 0.7;
+		AttachMockPlatformTouchBehaviorToVisualElement(view, out var touchBehavior);
+		Assert.Equal(TouchBehaviorDefaults.NormalOpacity, touchBehavior.NormalOpacity);
+		Assert.Equal(TouchBehaviorDefaults.PressedOpacity, touchBehavior.HoveredOpacity);
+		
+		touchBehavior.NormalOpacity = updatedNormalOpacity;
+		touchBehavior.PressedOpacity = updatedHoveredOpacity;
+		
+		Assert.Equal(TouchBehaviorDefaults.NormalOpacity, view.Opacity);
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
-		Assert.Equal(.9, view.Opacity);
+		Assert.Equal(updatedNormalOpacity, view.Opacity);
 
 		await touchBehavior.HandleTouch(TouchStatus.Started, CancellationToken.None);
-		Assert.Equal(0.7, view.Opacity);
+		Assert.Equal(updatedHoveredOpacity, view.Opacity);
 
 		await touchBehavior.HandleTouch(TouchStatus.Canceled, CancellationToken.None);
-		Assert.Equal(.9, view.Opacity);
+		Assert.Equal(updatedNormalOpacity, view.Opacity);
 	}
 
 	[Fact]
 	public async Task VerifyPressedBackgroundImageChange()
 	{
 		var view = new Image();
-		var touchBehavior = AttachMockPlatformTouchBehavior(view);
+		AttachMockPlatformTouchBehaviorToVisualElement(view, out var touchBehavior);
 
 		var normalImageSource = new FileImageSource();
 		var pressedImageSource = new FileImageSource();
 
 		touchBehavior.NormalBackgroundImageSource = normalImageSource;
 		touchBehavior.PressedBackgroundImageSource = pressedImageSource;
+		
+		Assert.Null(view.Source);
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
+		Assert.Equal(normalImageSource, view.Source);
 		Assert.Same(normalImageSource, view.Source);
 
 		await touchBehavior.HandleTouch(TouchStatus.Started, CancellationToken.None);
+		Assert.Equal(pressedImageSource, view.Source);
 		Assert.Same(pressedImageSource, view.Source);
 
 		await touchBehavior.HandleTouch(TouchStatus.Canceled, CancellationToken.None);
+		Assert.Equal(normalImageSource, view.Source);
 		Assert.Same(normalImageSource, view.Source);
 	}
 
@@ -176,7 +193,7 @@ public class TouchBehaviorTests : BaseTest
 	public async Task VerifyPressedBackgroundImageAspectChange()
 	{
 		var view = new Image();
-		var touchBehavior = AttachMockPlatformTouchBehavior(view);
+		AttachMockPlatformTouchBehaviorToVisualElement(view, out var touchBehavior);
 
 		var normalImageSource = new FileImageSource();
 		touchBehavior.NormalBackgroundImageSource = normalImageSource;
@@ -185,6 +202,8 @@ public class TouchBehaviorTests : BaseTest
 		var pressedImageSource = new FileImageSource();
 		touchBehavior.PressedBackgroundImageSource = pressedImageSource;
 		touchBehavior.PressedBackgroundImageAspect = Aspect.AspectFill;
+		
+		Assert.Equal(Aspect.AspectFit, view.Aspect);
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
 		Assert.Equal(Aspect.AspectFit, view.Aspect);
@@ -201,7 +220,7 @@ public class TouchBehaviorTests : BaseTest
 	public async Task VerifyHoverBackgroundImageChange()
 	{
 		var view = new Image();
-		var touchBehavior = AttachMockPlatformTouchBehavior(view);
+		AttachMockPlatformTouchBehaviorToVisualElement(view, out var touchBehavior);
 
 		var normalImageSource = new FileImageSource();
 		var hoveredImageSource = new FileImageSource();
@@ -211,19 +230,22 @@ public class TouchBehaviorTests : BaseTest
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
 		Assert.Same(normalImageSource, view.Source);
+		Assert.Equal(normalImageSource, view.Source);
 
 		await touchBehavior.HandleHover(HoverStatus.Entered, CancellationToken.None);
 		Assert.Same(hoveredImageSource, view.Source);
+		Assert.Equal(hoveredImageSource, view.Source);
 
 		await touchBehavior.HandleHover(HoverStatus.Exited, CancellationToken.None);
 		Assert.Same(normalImageSource, view.Source);
+		Assert.Equal(normalImageSource, view.Source);
 	}
 
 	[Fact]
 	public async Task VerifyHoverBackgroundImageAspectChange()
 	{
 		var view = new Image();
-		var touchBehavior = AttachMockPlatformTouchBehavior(view);
+		AttachMockPlatformTouchBehaviorToVisualElement(view, out var touchBehavior);
 
 		var normalImageSource = new FileImageSource();
 		touchBehavior.NormalBackgroundImageSource = normalImageSource;
@@ -242,155 +264,193 @@ public class TouchBehaviorTests : BaseTest
 		await touchBehavior.HandleHover(HoverStatus.Exited, CancellationToken.None);
 		Assert.Equal(Aspect.AspectFit, view.Aspect);
 	}
-
-	// unit tests for touchBehavior
+	
 	[Fact]
 	public async Task VerifyHoverTranslationChange()
 	{
+		const int updatedNormalTranslation = 10;
+		const int updatedHoveredTranslation = 20;
+		
 		var view = new View();
-		var touchBehavior = AttachMockPlatformTouchBehavior(view);
-		touchBehavior.NormalTranslationX = 10;
-		touchBehavior.NormalTranslationY = 10;
-		touchBehavior.HoveredTranslationX = 20;
-		touchBehavior.HoveredTranslationY = 20;
+		AttachMockPlatformTouchBehaviorToVisualElement(view, out var touchBehavior);
+		touchBehavior.NormalTranslationX = updatedNormalTranslation;
+		touchBehavior.NormalTranslationY = updatedNormalTranslation;
+		touchBehavior.HoveredTranslationX = updatedHoveredTranslation;
+		touchBehavior.HoveredTranslationY = updatedHoveredTranslation;
+		
+		Assert.Equal(TouchBehaviorDefaults.NormalTranslationX, view.TranslationX);
+		Assert.Equal(TouchBehaviorDefaults.NormalTranslationY, view.TranslationY);
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
-		Assert.Equal(10, view.TranslationX);
-		Assert.Equal(10, view.TranslationY);
+		Assert.Equal(updatedNormalTranslation, view.TranslationX);
+		Assert.Equal(updatedNormalTranslation, view.TranslationY);
 
 		await touchBehavior.HandleHover(HoverStatus.Entered, CancellationToken.None);
-		Assert.Equal(20, view.TranslationX);
-		Assert.Equal(20, view.TranslationY);
+		Assert.Equal(updatedHoveredTranslation, view.TranslationX);
+		Assert.Equal(updatedHoveredTranslation, view.TranslationY);
 
 		await touchBehavior.HandleHover(HoverStatus.Exited, CancellationToken.None);
-		Assert.Equal(10, view.TranslationX);
-		Assert.Equal(10, view.TranslationY);
+		Assert.Equal(updatedNormalTranslation, view.TranslationX);
+		Assert.Equal(updatedNormalTranslation, view.TranslationY);
 	}
 
 	[Fact]
 	public async Task VerifyPressedTranslationChange()
 	{
+		const int updatedNormalTranslation = 10;
+		const int updatedPressedTranslation = 20;
+		
 		var view = new View();
-		var touchBehavior = AttachMockPlatformTouchBehavior(view);
-		touchBehavior.NormalTranslationX = 10;
-		touchBehavior.NormalTranslationY = 10;
-		touchBehavior.PressedTranslationX = 20;
-		touchBehavior.PressedTranslationY = 20;
+		AttachMockPlatformTouchBehaviorToVisualElement(view, out var touchBehavior);
+		touchBehavior.NormalTranslationX = updatedNormalTranslation;
+		touchBehavior.NormalTranslationY = updatedNormalTranslation;
+		touchBehavior.PressedTranslationX = updatedPressedTranslation;
+		touchBehavior.PressedTranslationY = updatedPressedTranslation;
+		
+		Assert.Equal(TouchBehaviorDefaults.PressedTranslationX, view.TranslationX);
+		Assert.Equal(TouchBehaviorDefaults.PressedTranslationY, view.TranslationY);
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
-		Assert.Equal(10, view.TranslationX);
-		Assert.Equal(10, view.TranslationY);
+		Assert.Equal(updatedNormalTranslation, view.TranslationX);
+		Assert.Equal(updatedNormalTranslation, view.TranslationY);
 
 		await touchBehavior.HandleTouch(TouchStatus.Started, CancellationToken.None);
-		Assert.Equal(20, view.TranslationX);
-		Assert.Equal(20, view.TranslationY);
+		Assert.Equal(updatedPressedTranslation, view.TranslationX);
+		Assert.Equal(updatedPressedTranslation, view.TranslationY);
 
 		await touchBehavior.HandleTouch(TouchStatus.Canceled, CancellationToken.None);
-		Assert.Equal(10, view.TranslationX);
-		Assert.Equal(10, view.TranslationY);
+		Assert.Equal(updatedNormalTranslation, view.TranslationX);
+		Assert.Equal(updatedNormalTranslation, view.TranslationY);
 	}
 
 	[Fact]
 	public async Task VerifyHoverScaleChange()
 	{
+		const int updatedNormalScale = 10;
+		const int updatedHoveredScale = 20;
+		
 		var view = new View();
-		var touchBehavior = AttachMockPlatformTouchBehavior(view);
-		touchBehavior.NormalScale = 10;
-		touchBehavior.HoveredScale = 20;
+		AttachMockPlatformTouchBehaviorToVisualElement(view, out var touchBehavior);
+		touchBehavior.NormalScale = updatedNormalScale;
+		touchBehavior.HoveredScale = updatedHoveredScale;
+		
+		Assert.Equal(TouchBehaviorDefaults.NormalScale, view.Scale);
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
-		Assert.Equal(10, view.Scale);
+		Assert.Equal(updatedNormalScale, view.Scale);
 
 		await touchBehavior.HandleHover(HoverStatus.Entered, CancellationToken.None);
-		Assert.Equal(20, view.Scale);
+		Assert.Equal(updatedHoveredScale, view.Scale);
 
 		await touchBehavior.HandleHover(HoverStatus.Exited, CancellationToken.None);
-		Assert.Equal(10, view.Scale);
+		Assert.Equal(updatedNormalScale, view.Scale);
 	}
 
 	[Fact]
 	public async Task VerifyPressedScaleChange()
 	{
+		const int updatedNormalScale = 10;
+		const int updatedPressedScale = 20;
+		
 		var view = new View();
-		var touchBehavior = AttachMockPlatformTouchBehavior(view);
-		touchBehavior.NormalScale = 10;
-		touchBehavior.PressedScale = 20;
+		AttachMockPlatformTouchBehaviorToVisualElement(view, out var touchBehavior);
+		touchBehavior.NormalScale = updatedNormalScale;
+		touchBehavior.PressedScale = updatedPressedScale;
+		
+		Assert.Equal(TouchBehaviorDefaults.NormalScale, view.Scale);
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
-		Assert.Equal(10, view.Scale);
+		Assert.Equal(updatedNormalScale, view.Scale);
 
 		await touchBehavior.HandleTouch(TouchStatus.Started, CancellationToken.None);
-		Assert.Equal(20, view.Scale);
+		Assert.Equal(updatedPressedScale, view.Scale);
 
 		await touchBehavior.HandleTouch(TouchStatus.Canceled, CancellationToken.None);
-		Assert.Equal(10, view.Scale);
+		Assert.Equal(updatedNormalScale, view.Scale);
 	}
 	[Fact]
 	public async Task VerifyHoverRotationChange()
 	{
+		const int updatedNormalRotation = 10;
+		const int updatedHoveredRotation = 20;
+		
 		var view = new View();
-		var touchBehavior = AttachMockPlatformTouchBehavior(view);
-		touchBehavior.NormalRotation = 10;
-		touchBehavior.NormalRotationX = 10;
-		touchBehavior.NormalRotationY = 10;
+		AttachMockPlatformTouchBehaviorToVisualElement(view, out var touchBehavior);
+		touchBehavior.NormalRotation = updatedNormalRotation;
+		touchBehavior.NormalRotationX = updatedNormalRotation;
+		touchBehavior.NormalRotationY = updatedNormalRotation;
 		touchBehavior.HoveredRotation = 20;
 		touchBehavior.HoveredRotationX = 20;
 		touchBehavior.HoveredRotationY = 20;
+		
+		Assert.Equal(TouchBehaviorDefaults.NormalRotation, view.Rotation);
+		Assert.Equal(TouchBehaviorDefaults.NormalRotationX, view.RotationX);
+		Assert.Equal(TouchBehaviorDefaults.NormalRotationY, view.RotationY);
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
-		Assert.Equal(10, view.Rotation);
-		Assert.Equal(10, view.RotationX);
-		Assert.Equal(10, view.RotationY);
+		Assert.Equal(updatedNormalRotation, view.Rotation);
+		Assert.Equal(updatedNormalRotation, view.RotationX);
+		Assert.Equal(updatedNormalRotation, view.RotationY);
 
 		await touchBehavior.HandleHover(HoverStatus.Entered, CancellationToken.None);
-		Assert.Equal(20, view.Rotation);
-		Assert.Equal(20, view.RotationX);
-		Assert.Equal(20, view.RotationY);
+		Assert.Equal(updatedHoveredRotation, view.Rotation);
+		Assert.Equal(updatedHoveredRotation, view.RotationX);
+		Assert.Equal(updatedHoveredRotation, view.RotationY);
 
 		await touchBehavior.HandleHover(HoverStatus.Exited, CancellationToken.None);
-		Assert.Equal(10, view.Rotation);
-		Assert.Equal(10, view.RotationX);
-		Assert.Equal(10, view.RotationY);
+		Assert.Equal(updatedNormalRotation, view.Rotation);
+		Assert.Equal(updatedNormalRotation, view.RotationX);
+		Assert.Equal(updatedNormalRotation, view.RotationY);
 	}
+	
 	[Fact]
 	public async Task VerifyPressedRotationChange()
 	{
+		const int updatedNormalRotation = 10;
+		const int updatedPressedRotation = 20;
+		
 		var view = new View();
-		var touchBehavior = AttachMockPlatformTouchBehavior(view);
-		touchBehavior.NormalRotation = 10;
-		touchBehavior.NormalRotationX = 10;
-		touchBehavior.NormalRotationY = 10;
+		AttachMockPlatformTouchBehaviorToVisualElement(view, out var touchBehavior);
+		touchBehavior.NormalRotation = updatedNormalRotation;
+		touchBehavior.NormalRotationX = updatedNormalRotation;
+		touchBehavior.NormalRotationY = updatedNormalRotation;
 
-		touchBehavior.PressedRotation = 20;
-		touchBehavior.PressedRotationX = 20;
-		touchBehavior.PressedRotationY = 20;
+		touchBehavior.PressedRotation = updatedPressedRotation;
+		touchBehavior.PressedRotationX = updatedPressedRotation;
+		touchBehavior.PressedRotationY = updatedPressedRotation;
+		
+		Assert.Equal(TouchBehaviorDefaults.NormalRotation, view.Rotation);
+		Assert.Equal(TouchBehaviorDefaults.NormalRotationX, view.RotationX);
+		Assert.Equal(TouchBehaviorDefaults.NormalRotationY, view.RotationY);
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
-		Assert.Equal(10, view.Rotation);
-		Assert.Equal(10, view.RotationX);
-		Assert.Equal(10, view.RotationY);
+		Assert.Equal(updatedNormalRotation, view.Rotation);
+		Assert.Equal(updatedNormalRotation, view.RotationX);
+		Assert.Equal(updatedNormalRotation, view.RotationY);
 
 		await touchBehavior.HandleTouch(TouchStatus.Started, CancellationToken.None);
-		Assert.Equal(20, view.Rotation);
-		Assert.Equal(20, view.RotationX);
-		Assert.Equal(20, view.RotationY);
+		Assert.Equal(updatedPressedRotation, view.Rotation);
+		Assert.Equal(updatedPressedRotation, view.RotationX);
+		Assert.Equal(updatedPressedRotation, view.RotationY);
 
 		await touchBehavior.HandleTouch(TouchStatus.Canceled, CancellationToken.None);
-		Assert.Equal(10, view.Rotation);
-		Assert.Equal(10, view.RotationX);
-		Assert.Equal(10, view.RotationY);
+		Assert.Equal(updatedNormalRotation, view.Rotation);
+		Assert.Equal(updatedNormalRotation, view.RotationX);
+		Assert.Equal(updatedNormalRotation, view.RotationY);
 	}
 
 	[Fact]
 	public async Task VerifyHoverBackgroundColorChange()
 	{
 		var view = new View();
-		var touchBehavior = AttachMockPlatformTouchBehavior(view);
+		AttachMockPlatformTouchBehaviorToVisualElement(view, out var touchBehavior);
 		var normalColor = Colors.Red;
 		var hoverColor = Colors.Blue;
 
 		touchBehavior.NormalBackgroundColor = normalColor;
 		touchBehavior.HoveredBackgroundColor = hoverColor;
+		
+		Assert.Equal(TouchBehaviorDefaults.NormalBackgroundColor, view.BackgroundColor);
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
 		Assert.Equal(normalColor, view.BackgroundColor);
@@ -406,12 +466,14 @@ public class TouchBehaviorTests : BaseTest
 	public async Task VerifyPressedBackgroundColorChange()
 	{
 		var view = new View();
-		var touchBehavior = AttachMockPlatformTouchBehavior(view);
+		AttachMockPlatformTouchBehaviorToVisualElement(view, out var touchBehavior);
 		var normalColor = Colors.Red;
 		var pressedColor = Colors.Green;
 
 		touchBehavior.NormalBackgroundColor = normalColor;
 		touchBehavior.PressedBackgroundColor = pressedColor;
+		
+		Assert.Equal(TouchBehaviorDefaults.NormalBackgroundColor, view.BackgroundColor);
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
 		Assert.Equal(normalColor, view.BackgroundColor);
@@ -423,35 +485,59 @@ public class TouchBehaviorTests : BaseTest
 		Assert.Equal(normalColor, view.BackgroundColor);
 	}
 
-	[Fact]
-	public void TestRaiseLongPressCompleted()
+	[Fact(Timeout = (int) TestDuration.Short)]
+	public async Task TestRaiseLongPressCompleted()
 	{
 		var view = new View();
-		var touchBehavior = AttachMockPlatformTouchBehavior(view);
-		var longPressCompleted = false;
-		touchBehavior.LongPressCompleted += (sender, args) => longPressCompleted = true;
+		AttachMockPlatformTouchBehaviorToVisualElement(view, out var touchBehavior);
+		var hasLongPressCompleted = false;
+		var longPressCompletedTCS = new TaskCompletionSource<bool>();
+		touchBehavior.LongPressCompleted += HandleLongPressCompleted;
 
 		touchBehavior.RaiseLongPressCompleted();
-		Assert.True(longPressCompleted);
+		hasLongPressCompleted = await longPressCompletedTCS.Task;
+		
+		Assert.True(hasLongPressCompleted);
+
+		void HandleLongPressCompleted(object? sender, LongPressCompletedEventArgs e)
+		{
+			ArgumentNullException.ThrowIfNull(sender);
+			
+			touchBehavior.LongPressCompleted -= HandleLongPressCompleted;
+			longPressCompletedTCS.SetResult(true);
+		}
 	}
 
-	[Fact]
-	public void TestRaiseCompletedEvent()
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TestRaiseCompletedEvent()
 	{
 		var view = new View();
-		var touchBehavior = AttachMockPlatformTouchBehavior(view);
-		var completed = false;
-		touchBehavior.Completed += (sender, args) => completed = true;
+		AttachMockPlatformTouchBehaviorToVisualElement(view, out var touchBehavior);
+		var hasTouchCompleted = false;
+		var touchCompletedTCS = new TaskCompletionSource<bool>();
+		touchBehavior.TouchGestureCompleted += HandleCompleted; 
+		
+		Assert.False(hasTouchCompleted);
 
 		touchBehavior.RaiseCompleted();
-		Assert.True(completed);
+		hasTouchCompleted = await touchCompletedTCS.Task; 
+		
+		Assert.True(hasTouchCompleted);
+
+		void HandleCompleted(object? sender, TouchCompletedEventArgs e)
+		{
+			ArgumentNullException.ThrowIfNull(sender);
+			touchBehavior.TouchGestureCompleted -= HandleCompleted;
+
+			touchCompletedTCS.SetResult(true);
+		}
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task VerifyIsToggledChangesState()
 	{
 		var view = new View();
-		var touchBehavior = AttachMockPlatformTouchBehavior(view);
+		AttachMockPlatformTouchBehaviorToVisualElement(view, out var touchBehavior);
 		touchBehavior.IsToggled = true;
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
@@ -470,12 +556,10 @@ public class TouchBehaviorTests : BaseTest
 		Assert.True(touchBehavior.IsToggled);
 	}
 
-	static TouchBehavior AttachMockPlatformTouchBehavior(View view)
+	static void AttachMockPlatformTouchBehaviorToVisualElement(in VisualElement element, out TouchBehavior touchBehavior)
 	{
-		var touchBehavior = new TouchBehavior();
-		view.Behaviors.Add(touchBehavior);
-		touchBehavior.Element = view;
-
-		return touchBehavior;
+		touchBehavior = new TouchBehavior();
+		element.Behaviors.Add(touchBehavior);
+		touchBehavior.Element = element;
 	}
 }

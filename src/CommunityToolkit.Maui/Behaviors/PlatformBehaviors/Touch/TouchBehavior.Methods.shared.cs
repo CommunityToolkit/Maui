@@ -39,7 +39,7 @@ public partial class TouchBehavior : IDisposable
 
 		var parameter = CommandParameter;
 		Command?.Execute(parameter);
-		weakEventManager.HandleEvent(element, new TouchCompletedEventArgs(parameter), nameof(Completed));
+		weakEventManager.HandleEvent(element, new TouchCompletedEventArgs(parameter), nameof(TouchGestureCompleted));
 	}
 
 	internal void RaiseLongPressCompleted()
