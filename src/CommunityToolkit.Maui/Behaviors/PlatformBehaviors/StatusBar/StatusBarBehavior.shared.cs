@@ -1,5 +1,8 @@
-﻿using System.Runtime.Versioning;
+﻿using System.Runtime.CompilerServices;
+using System.Runtime.Versioning;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Platform;
+using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -16,7 +19,7 @@ public enum StatusBarApplyOn
 	/// <summary>
 	/// Apply color and style when the page has been navigated to.
 	/// </summary>
-	OnPageNavigatedTo,
+	OnPageNavigatedTo
 }
 
 /// <summary>
