@@ -135,7 +135,7 @@ public partial class TouchBehavior
 
 		await HandleTouch(TouchStatus.Canceled, CancellationToken.None);
 		HandleUserInteraction(TouchInteractionStatus.Completed);
-		await HandleHover(HoverStatus.Exited, CancellationToken.None	);
+		await HandleHover(HoverStatus.Exited, CancellationToken.None);
 
 		AnimateTilt(pointerUpStoryboard);
 	}
@@ -220,7 +220,7 @@ public partial class TouchBehavior
 				storyboard.Stop();
 				storyboard.Begin();
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				Trace.WriteLine(e);
 			}
