@@ -99,7 +99,7 @@ public partial class TouchBehavior
 			return;
 		}
 
-		await HandleHover(HoverStatus.Entered, CancellationToken.None);
+		HandleHover(HoverStatus.Entered);
 
 		if (isPressed)
 		{
@@ -121,7 +121,7 @@ public partial class TouchBehavior
 			AnimateTilt(pointerUpStoryboard);
 		}
 
-		await HandleHover(HoverStatus.Exited, CancellationToken.None);
+		HandleHover(HoverStatus.Exited);
 	}
 
 	async void OnPointerCanceled(object? sender, PointerRoutedEventArgs e)
@@ -135,7 +135,7 @@ public partial class TouchBehavior
 
 		await HandleTouch(TouchStatus.Canceled, CancellationToken.None);
 		HandleUserInteraction(TouchInteractionStatus.Completed);
-		await HandleHover(HoverStatus.Exited, CancellationToken.None);
+		HandleHover(HoverStatus.Exited);
 
 		AnimateTilt(pointerUpStoryboard);
 	}
@@ -163,7 +163,7 @@ public partial class TouchBehavior
 
 		if (CurrentHoverStatus is not HoverStatus.Exited)
 		{
-			await HandleHover(HoverStatus.Exited, CancellationToken.None);
+			HandleHover(HoverStatus.Exited);
 		}
 
 		AnimateTilt(pointerUpStoryboard);
@@ -215,15 +215,8 @@ public partial class TouchBehavior
 	{
 		if (storyboard is not null && Element is not null && ShouldUseNativeAnimation)
 		{
-			try
-			{
-				storyboard.Stop();
-				storyboard.Begin();
-			}
-			catch (Exception e)
-			{
-				Trace.WriteLine(e);
-			}
+			storyboard.Stop();
+			storyboard.Begin();
 		}
 	}
 }
