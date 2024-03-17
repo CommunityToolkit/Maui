@@ -30,8 +30,6 @@ public class TouchBehaviorTests : BaseTest
 	[Fact]
 	public void VerifyDefaults()
 	{
-		var touchBehavior = new TouchBehavior();
-
 		Assert.Equal(TouchBehaviorDefaults.HoveredOpacity, touchBehavior.HoveredOpacity);
 		Assert.Equal(TouchBehaviorDefaults.PressedOpacity, touchBehavior.PressedOpacity);
 		Assert.Equal(TouchBehaviorDefaults.NormalOpacity, touchBehavior.NormalOpacity);
@@ -516,7 +514,7 @@ public class TouchBehaviorTests : BaseTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task TestRaiseCompletedEvent()
+	public async Task TestRaiseEvent()
 	{
 		var view = new View();
 		AttachTouchBehaviorToVisualElement(view);
@@ -655,6 +653,7 @@ public class TouchBehaviorTests : BaseTest
 	public async Task TestRaiseTouchGestureCompletedEvent()
 	{
 		object? completedTouchGestureCompletedCommandParameter = null, canceledTouchGestureCompletedCommandParameter = null;
+		TouchState? startedTouchStateChanged = null, completedTouchStateChanged = null, canceledTouchStateChanged = null;
 
 		const bool commandParameter = true;
 		touchBehavior.CommandParameter = commandParameter;
@@ -663,30 +662,52 @@ public class TouchBehaviorTests : BaseTest
 		AttachTouchBehaviorToVisualElement(view);
 
 		var touchGestureCompletedTCS = new TaskCompletionSource<object?>();
+		var touchStateChangedTCS = new TaskCompletionSource<TouchState>();
 		touchBehavior.TouchGestureCompleted += HandleTouchGestureCompleted;
+		touchBehavior.CurrentTouchStateChanged += HandleCurrentTouchStateChanged;
 
 		Assert.Null(completedTouchGestureCompletedCommandParameter);
 
 		await touchBehavior.HandleTouch(TouchStatus.Started, CancellationToken.None);
+		startedTouchStateChanged = await touchStateChangedTCS.Task;
+		Assert.Equal(TouchState.Pressed, startedTouchStateChanged);
+		
+		touchStateChangedTCS = new TaskCompletionSource<TouchState>();
 		await touchBehavior.HandleTouch(TouchStatus.Completed, CancellationToken.None);
 		completedTouchGestureCompletedCommandParameter = await touchGestureCompletedTCS.Task;
+		completedTouchStateChanged = await touchStateChangedTCS.Task;
 
 		Assert.Equal(commandParameter, completedTouchGestureCompletedCommandParameter);
 		Assert.Equal(completedTouchGestureCompletedCommandParameter, touchBehavior.CommandParameter);
+		Assert.Equal(TouchState.Normal, completedTouchStateChanged);
 
 		touchGestureCompletedTCS = new TaskCompletionSource<object?>();
-
+		touchStateChangedTCS = new TaskCompletionSource<TouchState>();
+		
 		await touchBehavior.HandleTouch(TouchStatus.Started, CancellationToken.None);
+		await touchStateChangedTCS.Task;
+		
+		touchStateChangedTCS = new TaskCompletionSource<TouchState>();
 		await touchBehavior.HandleTouch(TouchStatus.Canceled, CancellationToken.None);
+		
+		canceledTouchStateChanged = await touchStateChangedTCS.Task;
 
 		Assert.Equal(TouchStatus.Canceled, touchBehavior.CurrentTouchStatus);
+		Assert.Equal(TouchState.Normal, canceledTouchStateChanged);
 
 		touchBehavior.TouchGestureCompleted -= HandleTouchGestureCompleted;
+		touchBehavior.CurrentTouchStateChanged -= HandleCurrentTouchStateChanged;
 
 		void HandleTouchGestureCompleted(object? sender, TouchGestureCompletedEventArgs e)
 		{
 			ArgumentNullException.ThrowIfNull(sender);
 			touchGestureCompletedTCS.SetResult(e.TouchCommandParameter);
+		}
+
+		void HandleCurrentTouchStateChanged(object? sender, TouchStateChangedEventArgs e)
+		{
+			ArgumentNullException.ThrowIfNull(sender);
+			touchStateChangedTCS.SetResult(e.State);
 		}
 	}
 
