@@ -27,7 +27,7 @@ public partial class TouchBehavior : IDisposable
 		{
 			Command?.Execute(parameter);
 		}
-		
+
 		weakEventManager.HandleEvent(element, new TouchGestureCompletedEventArgs(parameter), nameof(TouchGestureCompleted));
 	}
 
@@ -46,7 +46,7 @@ public partial class TouchBehavior : IDisposable
 		{
 			LongPressCommand?.Execute(parameter);
 		}
-		
+
 		weakEventManager.HandleEvent(element, new LongPressCompletedEventArgs(parameter), nameof(LongPressCompleted));
 	}
 
@@ -152,14 +152,14 @@ public partial class TouchBehavior : IDisposable
 
 		view.InputTransparent = IsEnabled;
 	}
-	
+
 	async Task RaiseCurrentTouchStateChanged(CancellationToken token)
 	{
 		await ForceUpdateState(token);
 		await HandleLongPress(token);
 		weakEventManager.HandleEvent(this, new TouchStateChangedEventArgs(CurrentTouchState), nameof(CurrentTouchStateChanged));
 	}
-	
+
 	void RaiseInteractionStatusChanged()
 		=> weakEventManager.HandleEvent(this, new TouchInteractionStatusChangedEventArgs(CurrentInteractionStatus), nameof(InteractionStatusChanged));
 

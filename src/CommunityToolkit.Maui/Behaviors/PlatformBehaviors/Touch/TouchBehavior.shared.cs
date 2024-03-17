@@ -196,7 +196,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		typeof(TouchBehavior),
 		TouchBehaviorDefaults.CurrentTouchStatus,
 		BindingMode.OneWayToSource,
-		propertyChanged: static (bindable, _,_) => ((TouchBehavior)bindable).RaiseCurrentTouchStatusChanged());
+		propertyChanged: static (bindable, _, _) => ((TouchBehavior)bindable).RaiseCurrentTouchStatusChanged());
 
 	/// <summary>
 	/// Bindable property for <see cref="LongPressDuration"/>
@@ -267,7 +267,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		typeof(TouchBehavior),
 		TouchBehaviorDefaults.CurrentHoverState,
 		BindingMode.OneWayToSource,
-		propertyChanged: static async (bindable, _, _) => await ((TouchBehavior) bindable).RaiseHoverStateChanged(CancellationToken.None));
+		propertyChanged: static async (bindable, _, _) => await ((TouchBehavior)bindable).RaiseHoverStateChanged(CancellationToken.None));
 
 	/// <summary>
 	/// Bindable property for <see cref="CommandParameter"/>

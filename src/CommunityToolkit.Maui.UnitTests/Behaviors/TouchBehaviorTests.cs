@@ -694,7 +694,7 @@ public class TouchBehaviorTests : BaseTest
 	public async Task TestRaiseLongPressCompletedEvent()
 	{
 		object? raiseLongPressCompletedCommandParameter = null,
-			longPressCompletedCommandParameter = null, 
+			longPressCompletedCommandParameter = null,
 			longPressCanceledTouchGestureCompletedCommandParameter = null;
 
 		const bool longPressCompletedParameter = true;
@@ -708,7 +708,7 @@ public class TouchBehaviorTests : BaseTest
 		var longPressCommandTCS = new TaskCompletionSource();
 		touchBehavior.LongPressCommand = new Command(HandleLongPressCommand);
 		touchBehavior.LongPressCompleted += HandleLongPressCompleted;
-		
+
 		Assert.Null(longPressCompletedCommandParameter);
 
 		touchBehavior.RaiseLongPressCompleted();
@@ -716,10 +716,10 @@ public class TouchBehaviorTests : BaseTest
 		raiseLongPressCompletedCommandParameter = await longPressCompletedTCS.Task;
 
 		Assert.Equal(longPressCompletedParameter, raiseLongPressCompletedCommandParameter);
-		
+
 		longPressCompletedTCS = new TaskCompletionSource<object?>();
 		longPressCommandTCS = new TaskCompletionSource();
-		
+
 		await touchBehavior.HandleTouch(TouchStatus.Started, CancellationToken.None);
 		longPressCompletedCommandParameter = await longPressCompletedTCS.Task;
 		await longPressCommandTCS.Task;
@@ -731,7 +731,7 @@ public class TouchBehaviorTests : BaseTest
 		longPressCompletedTCS = new TaskCompletionSource<object?>();
 		longPressCommandTCS = new TaskCompletionSource();
 		touchBehavior.HandleUserInteraction(TouchInteractionStatus.Started);
-		
+
 		await touchBehavior.HandleTouch(TouchStatus.Started, CancellationToken.None);
 		longPressCanceledTouchGestureCompletedCommandParameter = await longPressCompletedTCS.Task;
 		await longPressCommandTCS.Task;
@@ -747,7 +747,7 @@ public class TouchBehaviorTests : BaseTest
 			ArgumentNullException.ThrowIfNull(sender);
 			longPressCompletedTCS.TrySetResult(e.LongPressCommandParameter);
 		}
-		
+
 		void HandleLongPressCommand()
 		{
 			longPressCommandTCS.TrySetResult();
