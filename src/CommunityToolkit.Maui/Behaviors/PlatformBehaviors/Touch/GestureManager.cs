@@ -235,25 +235,30 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 		try
 		{
 			await Task.Delay(sender.LongPressDuration, longPressTokenSource.Token).WaitAsync(token);
+
+			if (sender.CurrentTouchState is not TouchState.Pressed)
+			{
+				return;
+			}
+
+			var longPressAction = new Action(() =>
+			{
+				sender.HandleUserInteraction(TouchInteractionStatus.Completed);
+				sender.RaiseLongPressCompleted();
+			});
+
+			if (sender.Dispatcher.IsDispatchRequired)
+			{
+				await sender.Dispatcher.DispatchAsync(longPressAction);
+			}
+			else
+			{
+				longPressAction.Invoke();
+			}
 		}
 		catch (TaskCanceledException)
 		{
 			return;
-		}
-
-		var longPressAction = new Action(() =>
-		{
-			sender.HandleUserInteraction(TouchInteractionStatus.Completed);
-			sender.RaiseLongPressCompleted();
-		});
-
-		if (sender.Dispatcher.IsDispatchRequired)
-		{
-			sender.Dispatcher.Dispatch(longPressAction);
-		}
-		else
-		{
-			longPressAction.Invoke();
 		}
 	}
 
