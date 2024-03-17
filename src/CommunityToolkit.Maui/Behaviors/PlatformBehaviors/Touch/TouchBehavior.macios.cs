@@ -31,9 +31,9 @@ public partial class TouchBehavior
 
 		platformView.AddGestureRecognizer(touchGesture);
 
-		if (UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
+		if (OperatingSystem.IsIOSVersionAtLeast(13))
 		{
-			hoverGesture = new UIHoverGestureRecognizer(async () => await OnHover(CancellationToken.None));
+			hoverGesture = new UIHoverGestureRecognizer(OnHover);
 			platformView.AddGestureRecognizer(hoverGesture);
 		}
 
@@ -79,7 +79,7 @@ public partial class TouchBehavior
 		button.Highlighted = false;
 	}
 
-	async ValueTask OnHover(CancellationToken token)
+	void OnHover()
 	{
 		if (!IsEnabled)
 		{
@@ -90,10 +90,10 @@ public partial class TouchBehavior
 		{
 			case UIGestureRecognizerState.Began:
 			case UIGestureRecognizerState.Changed:
-				await HandleHover(HoverStatus.Entered, token);
+				HandleHover(HoverStatus.Entered);
 				break;
 			case UIGestureRecognizerState.Ended:
-				await HandleHover(HoverStatus.Exited, token);
+				HandleHover(HoverStatus.Exited);
 				break;
 		}
 	}
@@ -196,7 +196,7 @@ public partial class TouchBehavior
 				}
 			}
 
-			var status = point is not null && View?.Bounds.Contains(point.Value) is true
+			var status = point is not null && View.Bounds.Contains(point.Value) is true
 				? TouchStatus.Started
 				: TouchStatus.Canceled;
 

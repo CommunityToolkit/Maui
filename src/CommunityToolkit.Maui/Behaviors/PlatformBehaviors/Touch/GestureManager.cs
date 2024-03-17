@@ -12,9 +12,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 	Color? defaultBackgroundColor;
 
-	CancellationTokenSource? longPressTokenSource;
-
-	CancellationTokenSource? animationTokenSource;
+	CancellationTokenSource? longPressTokenSource, animationTokenSource;
 
 	Func<TouchBehavior, TouchState, HoverState, int, Easing?, CancellationToken, Task>? animationTaskFactory;
 
@@ -46,12 +44,36 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 		longPressTokenSource = animationTokenSource = null;
 	}
 
-	internal static void HandleUserInteraction(TouchBehavior sender, TouchInteractionStatus interactionStatus)
+	internal static void HandleUserInteraction(in TouchBehavior sender, in TouchInteractionStatus interactionStatus)
 	{
 		if (sender.CurrentInteractionStatus != interactionStatus)
 		{
 			sender.CurrentInteractionStatus = interactionStatus;
-			sender.RaiseInteractionStatusChanged();
+		}
+	}
+
+	internal static void HandleHover(TouchBehavior sender, HoverStatus hoverStatus)
+	{
+		if (!sender.Element?.IsEnabled ?? true)
+		{
+			return;
+		}
+
+		var hoverState = hoverStatus switch
+		{
+			HoverStatus.Entered => HoverState.Hovered,
+			HoverStatus.Exited => HoverState.Normal,
+			_ => throw new NotSupportedException($"{nameof(HoverStatus)} {hoverStatus} not yet supported")
+		};
+
+		if (sender.CurrentHoverState != hoverState)
+		{
+			sender.CurrentHoverState = hoverState;
+		}
+
+		if (sender.CurrentHoverStatus != hoverStatus)
+		{
+			sender.CurrentHoverStatus = hoverStatus;
 		}
 	}
 
@@ -63,7 +85,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 		}
 
 		var canExecuteAction = sender.CanExecute;
-		if (status != TouchStatus.Started || canExecuteAction)
+		if (status is not TouchStatus.Started || canExecuteAction)
 		{
 			if (!canExecuteAction)
 			{
@@ -83,14 +105,14 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			var isToggled = sender.IsToggled;
 			if (isToggled.HasValue)
 			{
-				if (status != TouchStatus.Started)
+				if (status is not TouchStatus.Started)
 				{
 					durationMultiplier = (animationState is TouchState.Pressed && !isToggled.Value) ||
 						(animationState is TouchState.Normal && isToggled.Value)
 							? 1 - animationProgress
 							: animationProgress;
 
-					await UpdateStatusAndState(sender, status, state, token);
+					UpdateStatusAndState(sender, status, state);
 
 					if (status is TouchStatus.Canceled)
 					{
@@ -98,7 +120,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 						return;
 					}
 
-					OnTapped(sender);
+					OnTappedCompleted(sender);
 					sender.IsToggled = !isToggled;
 					return;
 				}
@@ -108,36 +130,12 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 					: TouchState.Pressed;
 			}
 
-			await UpdateStatusAndState(sender, status, state, token);
+			UpdateStatusAndState(sender, status, state);
 		}
 
 		if (status is TouchStatus.Completed)
 		{
-			OnTapped(sender);
-		}
-	}
-
-	internal async ValueTask HandleHover(TouchBehavior sender, HoverStatus status, CancellationToken token)
-	{
-		if (!sender.Element?.IsEnabled ?? true)
-		{
-			return;
-		}
-
-		var hoverState = status is HoverStatus.Entered
-			? HoverState.Hovered
-			: HoverState.Normal;
-
-		if (sender.CurrentHoverState != hoverState)
-		{
-			sender.CurrentHoverState = hoverState;
-			await sender.RaiseHoverStateChanged(token);
-		}
-
-		if (sender.CurrentHoverStatus != status)
-		{
-			sender.CurrentHoverStatus = status;
-			sender.RaiseHoverStatusChanged();
+			OnTappedCompleted(sender);
 		}
 	}
 
@@ -147,7 +145,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 		var state = sender.CurrentTouchState;
 		var hoverState = sender.CurrentHoverState;
 
-		AbortAnimations(sender);
+		await AbortAnimations(sender, token);
 		animationTokenSource = new CancellationTokenSource();
 
 		var isToggled = sender.IsToggled;
@@ -171,7 +169,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 			try
 			{
-				await RunAnimationTask(sender, state, hoverState, animationTokenSource.Token, durationMultiplier.GetValueOrDefault()).ConfigureAwait(false);
+				await RunAnimationTask(sender, state, hoverState, animationTokenSource.Token, durationMultiplier.GetValueOrDefault()).WaitAsync(token).ConfigureAwait(false);
 			}
 			catch (TaskCanceledException ex)
 			{
@@ -183,7 +181,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 		var pulseCount = sender.PulseCount;
 
-		if (pulseCount == 0 || (state is TouchState.Normal && !isToggled.HasValue))
+		if (pulseCount is 0 || (state is TouchState.Normal && !isToggled.HasValue))
 		{
 			if (isToggled.HasValue)
 			{
@@ -212,7 +210,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 			await RunAnimationTask(sender, rippleState, hoverState, animationTokenSource.Token);
 
-		} while (--pulseCount != 0);
+		} while (--pulseCount > 0);
 	}
 
 	internal async Task HandleLongPress(TouchBehavior sender, CancellationToken token)
@@ -268,36 +266,36 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 		defaultBackgroundColor = default;
 	}
 
-	internal void AbortAnimations(TouchBehavior touchBehavior)
+	internal async ValueTask AbortAnimations(TouchBehavior touchBehavior, CancellationToken token)
 	{
-		animationTokenSource?.Cancel();
+		await (animationTokenSource?.CancelAsync().WaitAsync(token) ?? Task.CompletedTask);
 		animationTokenSource?.Dispose();
 		animationTokenSource = null;
 
 		touchBehavior.Element?.AbortAnimations();
 	}
 
-	static void OnTapped(TouchBehavior sender)
+	static void OnTappedCompleted(in TouchBehavior sender)
 	{
 		if (!sender.CanExecute || (sender.LongPressCommand is not null && sender.CurrentInteractionStatus is TouchInteractionStatus.Completed))
 		{
 			return;
 		}
 
-		if (DeviceInfo.Platform == DevicePlatform.Android)
-		{
-			HandleCollectionViewSelection(sender);
-		}
+#if ANDROID
+		HandleCollectionViewSelection(sender);
+#endif
 
 		if (sender.Element is IButtonController button)
 		{
 			button.SendClicked();
 		}
 
-		sender.RaiseCompleted();
+		sender.RaiseTouchGestureCompleted();
 	}
 
-	static void HandleCollectionViewSelection(TouchBehavior sender)
+#if ANDROID
+	static void HandleCollectionViewSelection(in TouchBehavior sender)
 	{
 		if (sender.Element is null
 			|| !TryFindParentElementWithParentOfType(sender.Element, out var child, out CollectionView? collectionView))
@@ -357,6 +355,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			return false;
 		}
 	}
+#endif
 
 	static async Task SetBackgroundImage(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, CancellationToken token)
 	{
@@ -419,15 +418,13 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 		await Task.Yield();
 	}
 
-	static async Task UpdateStatusAndState(TouchBehavior sender, TouchStatus status, TouchState state, CancellationToken token)
+	static void UpdateStatusAndState(TouchBehavior sender, TouchStatus status, TouchState state)
 	{
 		sender.CurrentTouchStatus = status;
-		sender.RaiseStatusChanged();
 
-		if (sender.CurrentTouchState != state || status != TouchStatus.Canceled)
+		if (sender.CurrentTouchState != state)
 		{
 			sender.CurrentTouchState = state;
-			await sender.RaiseStateChanged(token);
 		}
 	}
 

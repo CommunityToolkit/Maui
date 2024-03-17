@@ -1,12 +1,12 @@
 ﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
-/// <see cref="TouchCompletedEventArgs"/>
+/// <see cref="TouchGestureCompletedEventArgs"/>
 /// </summary>
-public class TouchCompletedEventArgs(object? parameter) : EventArgs
+public class TouchGestureCompletedEventArgs(object? touchCommandParameter) : EventArgs
 {
 	/// <summary>
 	/// Gets the parameter associated with the touch event.
 	/// </summary>
-	public object? Parameter { get; } = parameter;
+	public object? TouchCommandParameter { get; } = touchCommandParameter;
 }

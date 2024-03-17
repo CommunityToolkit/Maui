@@ -3,10 +3,10 @@
 /// <summary>
 /// <see cref="LongPressCompletedEventArgs"/>
 /// </summary>
-public class LongPressCompletedEventArgs(object? parameter) : EventArgs
+public class LongPressCompletedEventArgs(object? longPressCommandParameter) : EventArgs
 {
 	/// <summary>
 	/// Parameter
 	/// </summary>
-	public object? Parameter { get; } = parameter;
+	public object? LongPressCommandParameter { get; } = longPressCommandParameter;
 }

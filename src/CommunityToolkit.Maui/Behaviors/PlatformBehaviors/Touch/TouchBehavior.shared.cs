@@ -195,7 +195,8 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		typeof(TouchStatus),
 		typeof(TouchBehavior),
 		TouchBehaviorDefaults.CurrentTouchStatus,
-		BindingMode.OneWayToSource);
+		BindingMode.OneWayToSource,
+		propertyChanged: static (bindable, _,_) => ((TouchBehavior)bindable).RaiseCurrentTouchStatusChanged());
 
 	/// <summary>
 	/// Bindable property for <see cref="LongPressDuration"/>
@@ -223,7 +224,8 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		typeof(HoverStatus),
 		typeof(TouchBehavior),
 		TouchBehaviorDefaults.CurrentHoverStatus,
-		BindingMode.OneWayToSource);
+		BindingMode.OneWayToSource,
+		propertyChanged: static (bindable, _, _) => ((TouchBehavior)bindable).RaiseHoverStatusChanged());
 
 	/// <summary>
 	/// Bindable property for <see cref="CurrentInteractionStatus"/>
@@ -233,7 +235,8 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		typeof(TouchInteractionStatus),
 		typeof(TouchBehavior),
 		TouchBehaviorDefaults.CurrentInteractionStatus,
-		BindingMode.OneWayToSource);
+		BindingMode.OneWayToSource,
+		propertyChanged: static (bindable, _, _) => ((TouchBehavior)bindable).RaiseInteractionStatusChanged());
 
 	/// <summary>
 	/// Bindable property for <see cref="CurrentTouchState"/>
@@ -243,7 +246,8 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		typeof(TouchState),
 		typeof(TouchBehavior),
 		TouchBehaviorDefaults.CurrentTouchState,
-		BindingMode.OneWayToSource);
+		BindingMode.OneWayToSource,
+		propertyChanged: static async (bindable, _, _) => await ((TouchBehavior)bindable).RaiseCurrentTouchStateChanged(CancellationToken.None));
 
 	/// <summary>
 	/// Bindable property for <see cref="NormalBackgroundColor"/>
@@ -262,7 +266,8 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		typeof(HoverState),
 		typeof(TouchBehavior),
 		TouchBehaviorDefaults.CurrentHoverState,
-		BindingMode.OneWayToSource);
+		BindingMode.OneWayToSource,
+		propertyChanged: static async (bindable, _, _) => await ((TouchBehavior) bindable).RaiseHoverStateChanged(CancellationToken.None));
 
 	/// <summary>
 	/// Bindable property for <see cref="CommandParameter"/>
@@ -569,7 +574,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Occurs when the touch status changes.
 	/// </summary>
-	public event EventHandler<TouchStatusChangedEventArgs> StatusChanged
+	public event EventHandler<TouchStatusChangedEventArgs> CurrentTouchStatusChanged
 	{
 		add => weakEventManager.AddEventHandler(value);
 		remove => weakEventManager.RemoveEventHandler(value);
@@ -578,7 +583,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Occurs when the touch state changes.
 	/// </summary>
-	public event EventHandler<TouchStateChangedEventArgs> StateChanged
+	public event EventHandler<TouchStateChangedEventArgs> CurrentTouchStateChanged
 	{
 		add => weakEventManager.AddEventHandler(value);
 		remove => weakEventManager.RemoveEventHandler(value);
@@ -614,7 +619,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Occurs when a touch gesture is completed.
 	/// </summary>
-	public event EventHandler<TouchCompletedEventArgs> TouchGestureCompleted
+	public event EventHandler<TouchGestureCompletedEventArgs> TouchGestureCompleted
 	{
 		add => weakEventManager.AddEventHandler(value);
 		remove => weakEventManager.RemoveEventHandler(value);
@@ -1229,7 +1234,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 				gestureManager.Reset();
 				SetChildrenInputTransparent(false);
 			}
-			gestureManager.AbortAnimations(this);
+			gestureManager.AbortAnimations(this, CancellationToken.None).SafeFireAndForget<TaskCanceledException>(ex => Trace.WriteLine(ex));
 			element = value;
 
 			if (value is not null)

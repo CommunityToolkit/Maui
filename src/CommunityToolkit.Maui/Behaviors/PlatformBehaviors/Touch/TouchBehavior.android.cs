@@ -404,10 +404,10 @@ public partial class TouchBehavior
 				await OnTouchMove((AView)sender, e, CancellationToken.None);
 				break;
 			case MotionEventActions.HoverEnter:
-				await OnHoverEnter(CancellationToken.None);
+				OnHoverEnter();
 				break;
 			case MotionEventActions.HoverExit:
-				await OnHoverExit(CancellationToken.None);
+				OnHoverExit();
 				break;
 		}
 	}
@@ -467,7 +467,7 @@ public partial class TouchBehavior
 		if (isHoverSupported && ((status is TouchStatus.Canceled && CurrentHoverStatus is HoverStatus.Entered)
 			|| (status is TouchStatus.Started && CurrentHoverStatus is HoverStatus.Exited)))
 		{
-			await HandleHover(status is TouchStatus.Started ? HoverStatus.Entered : HoverStatus.Exited, token);
+			HandleHover(status is TouchStatus.Started ? HoverStatus.Entered : HoverStatus.Exited);
 		}
 
 		if (CurrentTouchStatus != status)
@@ -486,16 +486,16 @@ public partial class TouchBehavior
 		}
 	}
 
-	ValueTask OnHoverEnter(CancellationToken token)
+	void OnHoverEnter()
 	{
 		isHoverSupported = true;
-		return HandleHover(HoverStatus.Entered, token);
+		HandleHover(HoverStatus.Entered);
 	}
 
-	ValueTask OnHoverExit(CancellationToken token)
+	void OnHoverExit()
 	{
 		isHoverSupported = true;
-		return HandleHover(HoverStatus.Exited, token);
+		HandleHover(HoverStatus.Exited);
 	}
 
 	void StartRipple(float x, float y)
