@@ -68,6 +68,8 @@ public class TouchBehaviorTests : BaseTest
 		Assert.Equal(TouchBehaviorDefaults.HoveredAnimationEasing, touchBehavior.HoveredAnimationEasing);
 		Assert.Equal(TouchBehaviorDefaults.PressedAnimationEasing, touchBehavior.PressedAnimationEasing);
 
+		Assert.False(touchBehavior.CanExecute);
+
 		Assert.Null(touchBehavior.Command);
 		Assert.Null(touchBehavior.CommandParameter);
 
@@ -824,6 +826,54 @@ public class TouchBehaviorTests : BaseTest
 			ArgumentNullException.ThrowIfNull(sender);
 			touchStatusChangedTCS.SetResult(e.Status);
 		}
+	}
+
+	[Fact]
+	public void CanExecuteTest()
+	{
+		var canExecute = false;
+		var view = new View();
+
+		var touchBehaviorCommandTCS = new TaskCompletionSource();
+
+		// TouchBehavior.Element is null
+		Assert.False(touchBehavior.CanExecute);
+
+		AttachTouchBehaviorToVisualElement(view);
+
+		// TouchBehavior.Element is not null
+		Assert.True(touchBehavior.CanExecute);
+
+		view.IsEnabled = false;
+		
+		// TouchBehavior.Element.IsEnabled is false
+		Assert.False(touchBehavior.CanExecute);
+
+		view.IsEnabled = true;
+
+		// TouchBehavior.Element.IsEnabled is true
+		Assert.True(touchBehavior.CanExecute);
+
+		touchBehavior.Command = new Command(ExecuteTouchBehaviorCommand, CommandCanExecute);
+
+		// TouchBehavior.Command.CanExecute is false
+		Assert.False(touchBehavior.CanExecute);
+
+		canExecute = true;
+
+		// TouchBehavior.Command.CanExecute is true
+		Assert.True(touchBehavior.CanExecute);
+
+		touchBehavior.IsEnabled = false;
+
+		// TouchBehavior.IsEnabled is false
+		Assert.False(touchBehavior.CanExecute);
+
+		void ExecuteTouchBehaviorCommand()
+		{
+		}
+
+		bool CommandCanExecute() => canExecute;
 	}
 
 	void AttachTouchBehaviorToVisualElement(in VisualElement element)
