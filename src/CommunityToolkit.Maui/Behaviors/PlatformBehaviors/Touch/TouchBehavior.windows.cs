@@ -24,50 +24,48 @@ public partial class TouchBehavior
 	protected override void OnAttachedTo(VisualElement bindable, FrameworkElement platformView)
 	{
 		Element = bindable;
-		if (ShouldUseNativeAnimation)
+
+		if (string.IsNullOrEmpty(platformView.Name))
 		{
-			if (string.IsNullOrEmpty(platformView.Name))
-			{
-				platformView.Name = Guid.NewGuid().ToString();
-			}
-
-			if (platformView.Resources.ContainsKey(pointerDownAnimationKey))
-			{
-				pointerDownStoryboard = (Storyboard)platformView.Resources[pointerDownAnimationKey];
-			}
-			else
-			{
-				pointerDownStoryboard = new();
-				var downThemeAnimation = new PointerDownThemeAnimation();
-
-				Storyboard.SetTargetName(downThemeAnimation, platformView.Name);
-				pointerDownStoryboard.Children.Add(downThemeAnimation);
-				platformView.Resources.Add(new KeyValuePair<object, object>(pointerDownAnimationKey, pointerDownStoryboard));
-			}
-
-			if (platformView.Resources.ContainsKey(pointerUpAnimationKey))
-			{
-				pointerUpStoryboard = (Storyboard)platformView.Resources[pointerUpAnimationKey];
-			}
-			else
-			{
-				pointerUpStoryboard = new();
-				var upThemeAnimation = new PointerUpThemeAnimation();
-
-				Storyboard.SetTargetName(upThemeAnimation, platformView.Name);
-
-				pointerUpStoryboard.Children.Add(upThemeAnimation);
-
-				platformView.Resources.Add(new KeyValuePair<object, object>(pointerUpAnimationKey, pointerUpStoryboard));
-			}
-
-			platformView.PointerPressed += OnPointerPressed;
-			platformView.PointerReleased += OnPointerReleased;
-			platformView.PointerCanceled += OnPointerCanceled;
-			platformView.PointerExited += OnPointerExited;
-			platformView.PointerEntered += OnPointerEntered;
-			platformView.PointerCaptureLost += OnPointerCaptureLost;
+			platformView.Name = Guid.NewGuid().ToString();
 		}
+
+		if (platformView.Resources.ContainsKey(pointerDownAnimationKey))
+		{
+			pointerDownStoryboard = (Storyboard)platformView.Resources[pointerDownAnimationKey];
+		}
+		else
+		{
+			pointerDownStoryboard = new();
+			var downThemeAnimation = new PointerDownThemeAnimation();
+
+			Storyboard.SetTargetName(downThemeAnimation, platformView.Name);
+			pointerDownStoryboard.Children.Add(downThemeAnimation);
+			platformView.Resources.Add(new KeyValuePair<object, object>(pointerDownAnimationKey, pointerDownStoryboard));
+		}
+
+		if (platformView.Resources.ContainsKey(pointerUpAnimationKey))
+		{
+			pointerUpStoryboard = (Storyboard)platformView.Resources[pointerUpAnimationKey];
+		}
+		else
+		{
+			pointerUpStoryboard = new();
+			var upThemeAnimation = new PointerUpThemeAnimation();
+
+			Storyboard.SetTargetName(upThemeAnimation, platformView.Name);
+
+			pointerUpStoryboard.Children.Add(upThemeAnimation);
+
+			platformView.Resources.Add(new KeyValuePair<object, object>(pointerUpAnimationKey, pointerUpStoryboard));
+		}
+
+		platformView.PointerPressed += OnPointerPressed;
+		platformView.PointerReleased += OnPointerReleased;
+		platformView.PointerCanceled += OnPointerCanceled;
+		platformView.PointerExited += OnPointerExited;
+		platformView.PointerEntered += OnPointerEntered;
+		platformView.PointerCaptureLost += OnPointerCaptureLost;
 	}
 
 	/// <inheritdoc/>
