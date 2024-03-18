@@ -23,9 +23,9 @@ public partial class TouchBehavior : IDisposable
 
 		var parameter = CommandParameter;
 
-		if (Command?.CanExecute(CommandParameter) is true)
+		if (Command?.CanExecute(parameter) is true)
 		{
-			Command?.Execute(parameter);
+			Command.Execute(parameter);
 		}
 
 		weakEventManager.HandleEvent(element, new TouchGestureCompletedEventArgs(parameter), nameof(TouchGestureCompleted));
@@ -44,7 +44,7 @@ public partial class TouchBehavior : IDisposable
 
 		if (LongPressCommand?.CanExecute(parameter) is true)
 		{
-			LongPressCommand?.Execute(parameter);
+			LongPressCommand.Execute(parameter);
 		}
 
 		weakEventManager.HandleEvent(element, new LongPressCompletedEventArgs(parameter), nameof(LongPressCompleted));
