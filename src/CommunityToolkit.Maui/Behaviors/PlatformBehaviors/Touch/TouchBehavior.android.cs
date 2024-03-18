@@ -144,7 +144,7 @@ public partial class TouchBehavior
 		var animationColor = color;
 		animationColor ??= defaultNativeAnimationColor;
 
-		return new ColorStateList([Array.Empty<int>()], [animationColor.ToAndroid()]);
+		return new ColorStateList([[]], [animationColor.ToAndroid()]);
 	}
 
 	void OnLayoutChange(object? sender, AView.LayoutChangeEventArgs e)
