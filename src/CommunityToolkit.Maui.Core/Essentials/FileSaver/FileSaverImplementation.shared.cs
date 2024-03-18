@@ -33,7 +33,7 @@ public sealed partial class FileSaverImplementation
 			return new FileSaverResult(null, e);
 		}
 	}
-	
+
 	/// <inheritdoc/>
 	public async Task<FileSaverResult> SaveAsync(string initialPath, string fileName, Stream stream, IProgress<double> progress, CancellationToken cancellationToken = default)
 	{

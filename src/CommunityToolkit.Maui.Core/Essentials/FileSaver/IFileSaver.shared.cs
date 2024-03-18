@@ -33,7 +33,7 @@ public interface IFileSaver
 	[SupportedOSPlatform("Tizen")]
 	[SupportedOSPlatform("Windows")]
 	Task<FileSaverResult> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken = default);
-	
+
 	/// <summary>
 	/// Saves a file to a target folder on the file system
 	/// </summary>
