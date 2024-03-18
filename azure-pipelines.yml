@@ -247,7 +247,7 @@ jobs:
           testResultsFiles: '**/*.trx'
           searchFolder: $(Agent.TempDirectory)
 
-      - task: PublishCodeCoverageResults@1
+      - task: PublishCodeCoverageResults@2
         condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
         displayName: 'Publish Code Coverage Results'
         inputs:
