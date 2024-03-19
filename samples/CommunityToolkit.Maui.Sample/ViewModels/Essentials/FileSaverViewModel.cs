@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Essentials;
 public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 {
 	[ObservableProperty]
-double progress;
+	double progress;
 
 	[RelayCommand]
 	async Task SaveFile(CancellationToken cancellationToken)
