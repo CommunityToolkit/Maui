@@ -1,4 +1,3 @@
-using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Core.Extensions;
 
@@ -15,11 +14,6 @@ public class AlertView : UIView
 	/// Parent UIView
 	/// </summary>
 	public static UIView ParentView => Microsoft.Maui.Platform.UIApplicationExtensions.GetKeyWindow(UIApplication.SharedApplication) ?? throw new InvalidOperationException("KeyWindow is not found");
-
-	/// <summary>
-	/// PopupView Children
-	/// </summary>
-	public FrozenSet<UIView> Children => children.ToFrozenSet();
 
 	/// <summary>
 	/// <see cref="UIView"/> on which Alert will appear. When null, <see cref="AlertView"/> will appear at bottom of screen.
@@ -42,7 +36,7 @@ public class AlertView : UIView
 	public void Dismiss() => RemoveFromSuperview();
 
 	/// <summary>
-	/// Adds a <see cref="UIView"/> to <see cref="Children"/>
+	/// Adds a <see cref="UIView"/> as a child of this view.
 	/// </summary>
 	/// <param name="child"></param>
 	public void AddChild(UIView child) => children.Add(child);
@@ -92,7 +86,7 @@ public class AlertView : UIView
 			TranslatesAutoresizingMaskIntoConstraints = false
 		};
 
-		foreach (var view in Children)
+		foreach (var view in children)
 		{
 			Container.AddArrangedSubview(view);
 		}
