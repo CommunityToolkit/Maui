@@ -6,13 +6,14 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public partial class PopupSizingIssuesViewModel : BaseViewModel
 {
-    public IList<ContainerViewModel> Containers { get; } = new List<ContainerViewModel>
-    {
-        new ("HorizontalStackLayout", new ControlTemplate(() => new HorizontalStackLayout())),
+    public IList<ContainerViewModel> Containers { get; } =
+	[
+		new ("HorizontalStackLayout", new ControlTemplate(() => new HorizontalStackLayout())),
         new ("VerticalStackLayout", new ControlTemplate(() => new VerticalStackLayout())),
         new ("Border", new ControlTemplate(() => new Border())),
-        new ("Grid", new ControlTemplate(() => new Grid()))
-    };
+        new ("Grid", new ControlTemplate(() => new Grid())),
+        new ("CollectionView", new ControlTemplate(() => new CollectionView()))
+    ];
 
     [ObservableProperty, NotifyCanExecuteChangedFor(nameof(ShowPopupCommand))]
     ContainerViewModel? selectedContainer;
@@ -32,23 +33,33 @@ public partial class PopupSizingIssuesViewModel : BaseViewModel
 
 		container.GetType().GetProperty(nameof(IPaddingElement.Padding))?.SetValue(container, new Thickness(Padding));
 
-        var label = new Label
-        {
-            Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-            HorizontalOptions = LayoutOptions.Center,
-            VerticalOptions = LayoutOptions.Center
-        };
+        const string longText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 
-        container.GetType().GetProperty(nameof(IContentView.Content))?.SetValue(container, label);
+        container.GetType().GetProperty(nameof(IContentView.Content))?.SetValue(container, GetContentLabel(longText));
 
         if (container is Layout layout)
         {
-            layout.Children.Add(label);
+            layout.Children.Add(GetContentLabel(longText));
+        }
+        else if (container is ItemsView itemsView)
+        {
+            itemsView.ItemsSource = Enumerable.Repeat(longText, 10);
+            itemsView.ItemTemplate = new DataTemplate(() => GetContentLabel(longText));
         }
 
         popup.Content = container;
 
         page.ShowPopup(popup);
+    }
+
+	static Label GetContentLabel(string text)
+    {
+        return new Label
+        {
+            Text = text,
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center
+        };
     }
 
     bool CanShowPopup(Page page) => SelectedContainer != null;
