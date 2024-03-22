@@ -13,7 +13,6 @@ public static class AppHostBuilderExtensions
 	/// <returns><see cref="MauiAppBuilder"/></returns>
 	public static MauiAppBuilder UseMauiCommunityToolkitMaps(this MauiAppBuilder builder, string key)
 	{
-		builder.UseMauiMaps();
 		builder.ConfigureMauiHandlers(handlers =>
 		{
 #if WINDOWS
