@@ -18,8 +18,6 @@ public static class AppHostBuilderExtensions
 #if WINDOWS
 			CommunityToolkit.Maui.Maps.Handlers.MapHandlerWindows.MapsKey = key;
 			handlers.AddHandler<Microsoft.Maui.Controls.Maps.Map, CommunityToolkit.Maui.Maps.Handlers.MapHandlerWindows>();
-			handlersCollection.AddHandler<Pin, MapPinHandler>();
-			handlersCollection.AddHandler<MapElement, MapElementHandler>();
 #endif
 		});
 
