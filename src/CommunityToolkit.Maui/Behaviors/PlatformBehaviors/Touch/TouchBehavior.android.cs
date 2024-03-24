@@ -57,10 +57,6 @@ public partial class TouchBehavior
 		Element = bindable;
 		view = platformView;
 		viewGroup = Microsoft.Maui.Platform.ViewExtensions.GetParentOfType<ViewGroup>(platformView);
-		if (!IsEnabled)
-		{
-			return;
-		}
 
 		platformView.Touch += OnTouch;
 		UpdateClickHandler();
@@ -93,11 +89,10 @@ public partial class TouchBehavior
 	/// <param name="bindable">Maui Visual Element</param>
 	/// <param name="platformView">Native View</param>
 	protected override void OnDetachedFrom(VisualElement bindable, AView platformView)
-	{
-		element = bindable;
+	{ 
 		view = platformView;
 
-		if (element is null)
+		if (Element is null)
 		{
 			return;
 		}
@@ -129,6 +124,8 @@ public partial class TouchBehavior
 				rippleView.Dispose();
 				rippleView = null;
 			}
+			
+			Element = null;
 		}
 		catch (ObjectDisposedException)
 		{
@@ -330,10 +327,10 @@ public partial class TouchBehavior
 		}
 
 		IsCanceled = false;
-		await HandleEnd(TouchStatus.Completed, CancellationToken.None);
+		await HandleTouchEnded(TouchStatus.Completed, CancellationToken.None);
 	}
 
-	async Task HandleEnd(TouchStatus status, CancellationToken token)
+	async Task HandleTouchEnded(TouchStatus status, CancellationToken token)
 	{
 		if (IsCanceled)
 		{
@@ -434,12 +431,12 @@ public partial class TouchBehavior
 
 	Task OnTouchUp(CancellationToken token)
 	{
-		return HandleEnd(CurrentTouchStatus is TouchStatus.Started ? TouchStatus.Completed : TouchStatus.Canceled, token);
+		return HandleTouchEnded(CurrentTouchStatus is TouchStatus.Started ? TouchStatus.Completed : TouchStatus.Canceled, token);
 	}
 
 	Task OnTouchCancel(CancellationToken token)
 	{
-		return HandleEnd(TouchStatus.Canceled, token);
+		return HandleTouchEnded(TouchStatus.Canceled, token);
 	}
 
 	async Task OnTouchMove(AView view, AView.TouchEventArgs touchEventArgs, CancellationToken token)
@@ -456,7 +453,7 @@ public partial class TouchBehavior
 		var disallowTouchThreshold = DisallowTouchThreshold;
 		if (disallowTouchThreshold > 0 && maxDiff > disallowTouchThreshold)
 		{
-			await HandleEnd(TouchStatus.Canceled, token);
+			await HandleTouchEnded(TouchStatus.Canceled, token);
 			return;
 		}
 

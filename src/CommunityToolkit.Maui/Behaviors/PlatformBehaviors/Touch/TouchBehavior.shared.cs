@@ -568,7 +568,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 
 	readonly WeakEventManager weakEventManager = new();
 	readonly GestureManager gestureManager = new();
-
+	
 	VisualElement? element;
 
 	/// <summary>
@@ -1221,7 +1221,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	internal bool CanExecute => IsEnabled
-		&& (element?.IsEnabled ?? false)
+		&& Element?.IsEnabled is true
 		&& (Command?.CanExecute(CommandParameter) ?? true);
 
 	internal VisualElement? Element

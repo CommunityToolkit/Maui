@@ -25,7 +25,7 @@ public partial class TouchBehavior
 
 		if (((platformView as IVisualNativeElementRenderer)?.Control ?? platformView) is UIButton button)
 		{
-			button.AllTouchEvents += PreventButtonHighlight;
+			button.AllTouchEvents += HandleAllTouchEvents;
 			((TouchUITapGestureRecognizer)touchGesture).IsButton = true;
 		}
 
@@ -49,7 +49,7 @@ public partial class TouchBehavior
 	{
 		if (((platformView as IVisualNativeElementRenderer)?.Control ?? platformView) is UIButton button)
 		{
-			button.AllTouchEvents -= PreventButtonHighlight;
+			button.AllTouchEvents -= HandleAllTouchEvents;
 		}
 
 		if (touchGesture is not null)
@@ -69,13 +69,14 @@ public partial class TouchBehavior
 		Element = null;
 	}
 
-	static void PreventButtonHighlight(object? sender, EventArgs args)
+	static void HandleAllTouchEvents(object? sender, EventArgs args)
 	{
 		if (sender is not UIButton button)
 		{
 			throw new ArgumentException($"{nameof(sender)} must be Type {nameof(UIButton)}", nameof(sender));
 		}
-
+		
+		// Prevent Button Highlight
 		button.Highlighted = false;
 	}
 
@@ -196,7 +197,7 @@ public partial class TouchBehavior
 				}
 			}
 
-			var status = point is not null && View.Bounds.Contains(point.Value) is true
+			var status = point is not null && View.Bounds.Contains(point.Value)
 				? TouchStatus.Started
 				: TouchStatus.Canceled;
 

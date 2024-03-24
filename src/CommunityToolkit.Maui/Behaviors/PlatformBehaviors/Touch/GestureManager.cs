@@ -245,14 +245,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 				sender.RaiseLongPressCompleted();
 			});
 
-			if (sender.Dispatcher.IsDispatchRequired)
-			{
-				await sender.Dispatcher.DispatchAsync(longPressAction);
-			}
-			else
-			{
-				longPressAction.Invoke();
-			}
+			await sender.Dispatcher.DispatchIfRequiredAsync(longPressAction).WaitAsync(token);
 		}
 		catch (TaskCanceledException)
 		{
@@ -359,6 +352,11 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 	static async Task SetBackgroundImage(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, CancellationToken token)
 	{
+		if (sender.Element is not Image image)
+		{
+			return;
+		}
+
 		var normalBackgroundImageSource = sender.NormalBackgroundImageSource;
 		var pressedBackgroundImageSource = sender.PressedBackgroundImageSource;
 		var hoveredBackgroundImageSource = sender.HoveredBackgroundImageSource;
@@ -406,16 +404,8 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			return;
 		}
 
-		if (sender.Element is Image image)
-		{
-			using (image.Batch())
-			{
-				image.Aspect = aspect;
-				image.Source = source;
-			}
-		}
-
-		await Task.Yield();
+		image.Aspect = aspect;
+		image.Source = source;
 	}
 
 	static void UpdateStatusAndState(TouchBehavior sender, TouchStatus status, TouchState state)
@@ -735,6 +725,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 		{
 			element.AbortAnimations();
 			element.BackgroundColor = color;
+
 			return true;
 		}
 
@@ -796,7 +787,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 		duration = Max(duration, 0);
 
 		await Task.WhenAll(
-			animationTaskFactory?.Invoke(sender, touchState, hoverState, duration, easing, token) ?? Task.FromResult(true),
+			animationTaskFactory?.Invoke(sender, touchState, hoverState, duration, easing, token) ?? Task.CompletedTask,
 			SetBackgroundImage(sender, touchState, hoverState, TimeSpan.FromMilliseconds(duration), token),
 			SetBackgroundColor(sender, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
 			SetOpacity(sender, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
