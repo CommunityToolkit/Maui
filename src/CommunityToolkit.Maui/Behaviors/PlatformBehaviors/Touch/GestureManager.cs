@@ -142,7 +142,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			return;
 		}
 
-		var pulseCount = sender.PulseCount;
+		var pulseCount = sender.RepeatAnimationCount;
 
 		if (pulseCount is 0)
 		{

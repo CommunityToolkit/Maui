@@ -207,10 +207,10 @@ public static class TouchBehaviorDefaults
 	public const bool ShouldMakeChildrenInputTransparent = true;
 
 	/// <summary>
-	/// Default Value for TouchBehavior <see cref="PulseCount"/>
+	/// Default Value for TouchBehavior <see cref="RepeatAnimationCount"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const int PulseCount = 0;
+	public const int RepeatAnimationCount = 0;
 
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="CurrentTouchState"/>

@@ -476,13 +476,13 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		TouchBehaviorDefaults.ShouldSetImageOnAnimationEnd);
 
 	/// <summary>
-	/// Bindable property for <see cref="PulseCount"/>
+	/// Bindable property for <see cref="RepeatAnimationCount"/>
 	/// </summary>
-	public static readonly BindableProperty PulseCountProperty = BindableProperty.Create(
-		nameof(PulseCount),
+	public static readonly BindableProperty RepeatAnimationCountProperty = BindableProperty.Create(
+		nameof(RepeatAnimationCount),
 		typeof(int),
 		typeof(TouchBehavior),
-		TouchBehaviorDefaults.PulseCount);
+		TouchBehaviorDefaults.RepeatAnimationCount);
 
 	/// <summary>
 	/// Bindable property for <see cref="HoveredAnimationEasing"/>
@@ -1069,10 +1069,10 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	/// <summary>
 	/// Gets or sets the number of times the element should pulse.
 	/// </summary>
-	public int PulseCount
+	public int RepeatAnimationCount
 	{
-		get => (int)GetValue(PulseCountProperty);
-		set => SetValue(PulseCountProperty, value);
+		get => (int)GetValue(RepeatAnimationCountProperty);
+		set => SetValue(RepeatAnimationCountProperty, value);
 	}
 
 	/// <summary>

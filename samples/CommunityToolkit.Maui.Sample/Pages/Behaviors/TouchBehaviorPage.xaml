@@ -89,7 +89,7 @@
                     VerticalOptions="Start" />
             </HorizontalStackLayout>
 
-            <Label Style="{StaticResource SectionHeader}" Text="Color | Rotation | Pulse | Animated" />
+            <Label Style="{StaticResource SectionHeader}" Text="Color | Rotation | RepeatAnimation | Animated" />
 
             <HorizontalStackLayout
                 Padding="20"
@@ -103,7 +103,7 @@
                         NormalBackgroundColor="Gold"
                         PressedBackgroundColor="Orange"
                         PressedRotation="15"
-                        PulseCount="2" />
+                        RepeatAnimationCount="2" />
 
                 </HorizontalStackLayout.Behaviors>
 
