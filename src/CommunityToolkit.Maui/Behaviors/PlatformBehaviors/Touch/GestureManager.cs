@@ -102,7 +102,6 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 				animationState = state;
 			}
 
-							: animationProgress;
 			UpdateStatusAndState(sender, status, state);
 		}
 
