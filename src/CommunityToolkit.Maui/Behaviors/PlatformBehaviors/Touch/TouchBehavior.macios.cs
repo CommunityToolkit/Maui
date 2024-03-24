@@ -212,11 +212,11 @@ public partial class TouchBehavior
 			}
 		}
 
-		async Task HandleTouch(TouchStatus status, CancellationToken token, TouchInteractionStatus? interactionStatus = null)
+		Task HandleTouch(TouchStatus status, CancellationToken token, TouchInteractionStatus? interactionStatus = null)
 		{
 			if (isCanceled || !behavior.IsEnabled)
 			{
-				return;
+				return Task.CompletedTask;
 			}
 
 			var canExecuteAction = behavior.CanExecute;
@@ -227,7 +227,7 @@ public partial class TouchBehavior
 				interactionStatus = null;
 			}
 
-			await behavior.HandleTouch(status, token);
+			behavior.HandleTouch(status);
 
 			if (interactionStatus.HasValue)
 			{
@@ -238,7 +238,7 @@ public partial class TouchBehavior
 				|| (!behavior.ShouldUseNativeAnimation && !IsButton)
 				|| (!canExecuteAction && status is TouchStatus.Started))
 			{
-				return;
+				return Task.CompletedTask;
 			}
 
 			var color = behavior.NativeAnimationColor;
@@ -272,7 +272,7 @@ public partial class TouchBehavior
 					}
 				}, endPos => tcs.SetResult(endPos));
 
-			await tcs.Task;
+			return tcs.Task.WaitAsync(token);
 		}
 
 		protected override void Dispose(bool disposing)

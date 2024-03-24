@@ -67,11 +67,11 @@ public partial class TouchBehavior : IDisposable
 		}
 	}
 
-	internal ValueTask HandleTouch(TouchStatus status, CancellationToken token)
+	internal void HandleTouch(TouchStatus status)
 	{
 		ObjectDisposedException.ThrowIf(isDisposed, this);
 		
-		return gestureManager.HandleTouch(this, status, token);
+		gestureManager.HandleTouch(this, status);
 	}
 
 	internal void HandleUserInteraction(TouchInteractionStatus interactionStatus)

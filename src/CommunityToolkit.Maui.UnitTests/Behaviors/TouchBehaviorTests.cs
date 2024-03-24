@@ -8,12 +8,12 @@ public class TouchBehaviorTests : BaseTest
 {
 	readonly TouchBehavior touchBehavior = new();
 
-	protected override async void Dispose(bool isDisposing)
+	protected override void Dispose(bool isDisposing)
 	{
 		base.Dispose(isDisposing);
 		touchBehavior.Dispose();
 
-		await Assert.ThrowsAsync<ObjectDisposedException>(async () => await touchBehavior.HandleTouch(TouchStatus.Canceled, CancellationToken.None));
+		Assert.Throws<ObjectDisposedException>(() => touchBehavior.HandleTouch(TouchStatus.Canceled));
 		Assert.Throws<ObjectDisposedException>(() => touchBehavior.HandleHover(HoverStatus.Entered));
 		Assert.Throws<ObjectDisposedException>(() => touchBehavior.HandleUserInteraction(TouchInteractionStatus.Started));
 	}
@@ -83,7 +83,6 @@ public class TouchBehaviorTests : BaseTest
 		Assert.Equal(TouchBehaviorDefaults.LongPressDuration, touchBehavior.LongPressDuration);
 
 		Assert.Equal(TouchBehaviorDefaults.IsEnabled, touchBehavior.IsEnabled);
-		Assert.Equal(TouchBehaviorDefaults.IsToggled, touchBehavior.IsToggled);
 
 		Assert.Equal(TouchBehaviorDefaults.DisallowTouchThreshold, touchBehavior.DisallowTouchThreshold);
 		Assert.Equal(TouchBehaviorDefaults.ShouldMakeChildrenInputTransparent, touchBehavior.ShouldMakeChildrenInputTransparent);
@@ -184,10 +183,10 @@ public class TouchBehaviorTests : BaseTest
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
 		Assert.Equal(updatedNormalOpacity, view.Opacity);
 
-		await touchBehavior.HandleTouch(TouchStatus.Started, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Started);
 		Assert.Equal(updatedHoveredOpacity, view.Opacity);
 
-		await touchBehavior.HandleTouch(TouchStatus.Canceled, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Canceled);
 		Assert.Equal(updatedNormalOpacity, view.Opacity);
 	}
 
@@ -209,11 +208,11 @@ public class TouchBehaviorTests : BaseTest
 		Assert.Equal(normalImageSource, view.Source);
 		Assert.Same(normalImageSource, view.Source);
 
-		await touchBehavior.HandleTouch(TouchStatus.Started, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Started);
 		Assert.Equal(pressedImageSource, view.Source);
 		Assert.Same(pressedImageSource, view.Source);
 
-		await touchBehavior.HandleTouch(TouchStatus.Canceled, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Canceled);
 		Assert.Equal(normalImageSource, view.Source);
 		Assert.Same(normalImageSource, view.Source);
 	}
@@ -237,10 +236,10 @@ public class TouchBehaviorTests : BaseTest
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
 		Assert.Equal(Aspect.AspectFit, view.Aspect);
 
-		await touchBehavior.HandleTouch(TouchStatus.Started, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Started);
 		Assert.Equal(Aspect.AspectFill, view.Aspect);
 
-		await touchBehavior.HandleTouch(TouchStatus.Canceled, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Canceled);
 		Assert.Equal(Aspect.AspectFit, view.Aspect);
 	}
 
@@ -343,11 +342,11 @@ public class TouchBehaviorTests : BaseTest
 		Assert.Equal(updatedNormalTranslation, view.TranslationX);
 		Assert.Equal(updatedNormalTranslation, view.TranslationY);
 
-		await touchBehavior.HandleTouch(TouchStatus.Started, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Started);
 		Assert.Equal(updatedPressedTranslation, view.TranslationX);
 		Assert.Equal(updatedPressedTranslation, view.TranslationY);
 
-		await touchBehavior.HandleTouch(TouchStatus.Canceled, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Canceled);
 		Assert.Equal(updatedNormalTranslation, view.TranslationX);
 		Assert.Equal(updatedNormalTranslation, view.TranslationY);
 	}
@@ -392,10 +391,10 @@ public class TouchBehaviorTests : BaseTest
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
 		Assert.Equal(updatedNormalScale, view.Scale);
 
-		await touchBehavior.HandleTouch(TouchStatus.Started, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Started);
 		Assert.Equal(updatedPressedScale, view.Scale);
 
-		await touchBehavior.HandleTouch(TouchStatus.Canceled, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Canceled);
 		Assert.Equal(updatedNormalScale, view.Scale);
 	}
 	[Fact]
@@ -458,12 +457,12 @@ public class TouchBehaviorTests : BaseTest
 		Assert.Equal(updatedNormalRotation, view.RotationX);
 		Assert.Equal(updatedNormalRotation, view.RotationY);
 
-		await touchBehavior.HandleTouch(TouchStatus.Started, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Started);
 		Assert.Equal(updatedPressedRotation, view.Rotation);
 		Assert.Equal(updatedPressedRotation, view.RotationX);
 		Assert.Equal(updatedPressedRotation, view.RotationY);
 
-		await touchBehavior.HandleTouch(TouchStatus.Canceled, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Canceled);
 		Assert.Equal(updatedNormalRotation, view.Rotation);
 		Assert.Equal(updatedNormalRotation, view.RotationX);
 		Assert.Equal(updatedNormalRotation, view.RotationY);
@@ -508,10 +507,10 @@ public class TouchBehaviorTests : BaseTest
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
 		Assert.Equal(normalColor, view.BackgroundColor);
 
-		await touchBehavior.HandleTouch(TouchStatus.Started, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Started);
 		Assert.Equal(pressedColor, view.BackgroundColor);
 
-		await touchBehavior.HandleTouch(TouchStatus.Canceled, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Canceled);
 		Assert.Equal(normalColor, view.BackgroundColor);
 	}
 
@@ -693,12 +692,12 @@ public class TouchBehaviorTests : BaseTest
 
 		Assert.Null(completedTouchGestureCompletedCommandParameter);
 
-		await touchBehavior.HandleTouch(TouchStatus.Started, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Started);
 		startedTouchStateChanged = await touchStateChangedTCS.Task;
 		Assert.Equal(TouchState.Pressed, startedTouchStateChanged);
 
 		touchStateChangedTCS = new TaskCompletionSource<TouchState>();
-		await touchBehavior.HandleTouch(TouchStatus.Completed, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Completed);
 		completedTouchGestureCompletedCommandParameter = await touchGestureCompletedTCS.Task;
 		completedTouchStateChanged = await touchStateChangedTCS.Task;
 
@@ -709,11 +708,11 @@ public class TouchBehaviorTests : BaseTest
 		touchGestureCompletedTCS = new TaskCompletionSource<object?>();
 		touchStateChangedTCS = new TaskCompletionSource<TouchState>();
 
-		await touchBehavior.HandleTouch(TouchStatus.Started, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Started);
 		await touchStateChangedTCS.Task;
 
 		touchStateChangedTCS = new TaskCompletionSource<TouchState>();
-		await touchBehavior.HandleTouch(TouchStatus.Canceled, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Canceled);
 
 		canceledTouchStateChanged = await touchStateChangedTCS.Task;
 
@@ -766,10 +765,10 @@ public class TouchBehaviorTests : BaseTest
 		longPressCompletedTCS = new TaskCompletionSource<object?>();
 		longPressCommandTCS = new TaskCompletionSource();
 
-		await touchBehavior.HandleTouch(TouchStatus.Started, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Started);
 		longPressCompletedCommandParameter = await longPressCompletedTCS.Task;
 		await longPressCommandTCS.Task;
-		await touchBehavior.HandleTouch(TouchStatus.Completed, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Completed);
 
 		Assert.Equal(longPressCompletedParameter, longPressCompletedCommandParameter);
 		Assert.Equal(longPressCompletedCommandParameter, touchBehavior.LongPressCommandParameter);
@@ -778,10 +777,10 @@ public class TouchBehaviorTests : BaseTest
 		longPressCommandTCS = new TaskCompletionSource();
 		touchBehavior.HandleUserInteraction(TouchInteractionStatus.Started);
 
-		await touchBehavior.HandleTouch(TouchStatus.Started, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Started);
 		longPressCanceledTouchGestureCompletedCommandParameter = await longPressCompletedTCS.Task;
 		await longPressCommandTCS.Task;
-		await touchBehavior.HandleTouch(TouchStatus.Canceled, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Canceled);
 
 		Assert.Equal(longPressCompletedParameter, longPressCanceledTouchGestureCompletedCommandParameter);
 		Assert.Equal(longPressCanceledTouchGestureCompletedCommandParameter, touchBehavior.LongPressCommandParameter);
@@ -806,40 +805,34 @@ public class TouchBehaviorTests : BaseTest
 		TouchStatus? touchStatus;
 		var view = new View();
 		AttachTouchBehaviorToVisualElement(view);
-		touchBehavior.IsToggled = true;
 
 		var touchStatusChangedTCS = new TaskCompletionSource<TouchStatus>();
 		touchBehavior.CurrentTouchStatusChanged += HandleTouchStatusChanged;
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
-		Assert.True(touchBehavior.IsToggled);
 
 		touchStatusChangedTCS = new TaskCompletionSource<TouchStatus>();
-		await touchBehavior.HandleTouch(TouchStatus.Started, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Started);
 		touchStatus = await touchStatusChangedTCS.Task;
-
-		Assert.True(touchBehavior.IsToggled);
+		
 		Assert.Equal(TouchStatus.Started, touchStatus);
 
 		touchStatusChangedTCS = new TaskCompletionSource<TouchStatus>();
-		await touchBehavior.HandleTouch(TouchStatus.Completed, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Completed);
 		touchStatus = await touchStatusChangedTCS.Task;
-
-		Assert.False(touchBehavior.IsToggled);
+		
 		Assert.Equal(TouchStatus.Completed, touchStatus);
 
 		touchStatusChangedTCS = new TaskCompletionSource<TouchStatus>();
-		await touchBehavior.HandleTouch(TouchStatus.Started, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Started);
 		touchStatus = await touchStatusChangedTCS.Task;
-
-		Assert.False(touchBehavior.IsToggled);
+		
 		Assert.Equal(TouchStatus.Started, touchStatus);
 
 		touchStatusChangedTCS = new TaskCompletionSource<TouchStatus>();
-		await touchBehavior.HandleTouch(TouchStatus.Completed, CancellationToken.None);
+		touchBehavior.HandleTouch(TouchStatus.Completed);
 		touchStatus = await touchStatusChangedTCS.Task;
-
-		Assert.True(touchBehavior.IsToggled);
+		
 		Assert.Equal(TouchStatus.Completed, touchStatus);
 
 		touchBehavior.CurrentTouchStatusChanged -= HandleTouchStatusChanged;

@@ -314,7 +314,7 @@ public partial class TouchBehavior
 		}
 	}
 
-	async void OnClick(object? sender, EventArgs args)
+	void OnClick(object? sender, EventArgs args)
 	{
 		if (!IsEnabled)
 		{
@@ -327,10 +327,10 @@ public partial class TouchBehavior
 		}
 
 		IsCanceled = false;
-		await HandleTouchEnded(TouchStatus.Completed, CancellationToken.None);
+		HandleTouchEnded(TouchStatus.Completed);
 	}
 
-	async Task HandleTouchEnded(TouchStatus status, CancellationToken token)
+	void HandleTouchEnded(TouchStatus status)
 	{
 		if (IsCanceled)
 		{
@@ -343,7 +343,7 @@ public partial class TouchBehavior
 			viewGroup?.Parent?.RequestDisallowInterceptTouchEvent(false);
 		}
 
-		await HandleTouch(status, token);
+		HandleTouch(status);
 
 		HandleUserInteraction(TouchInteractionStatus.Completed);
 
@@ -375,7 +375,7 @@ public partial class TouchBehavior
 	}
 
 
-	async void OnTouch(object? sender, AView.TouchEventArgs e)
+	void OnTouch(object? sender, AView.TouchEventArgs e)
 	{
 		ArgumentNullException.ThrowIfNull(sender);
 
@@ -389,16 +389,16 @@ public partial class TouchBehavior
 		switch (e.Event?.ActionMasked)
 		{
 			case MotionEventActions.Down:
-				await OnTouchDown(e, CancellationToken.None);
+				OnTouchDown(e);
 				break;
 			case MotionEventActions.Up:
-				await OnTouchUp(CancellationToken.None);
+				OnTouchUp();
 				break;
 			case MotionEventActions.Cancel:
-				await OnTouchCancel(CancellationToken.None);
+				OnTouchCancel();
 				break;
 			case MotionEventActions.Move:
-				await OnTouchMove((AView)sender, e, CancellationToken.None);
+				OnTouchMove((AView)sender, e);
 				break;
 			case MotionEventActions.HoverEnter:
 				OnHoverEnter();
@@ -409,7 +409,7 @@ public partial class TouchBehavior
 		}
 	}
 
-	async Task OnTouchDown(AView.TouchEventArgs touchEventArgs, CancellationToken token)
+	void OnTouchDown(AView.TouchEventArgs touchEventArgs)
 	{
 		ArgumentNullException.ThrowIfNull(touchEventArgs.Event);
 
@@ -419,7 +419,7 @@ public partial class TouchBehavior
 		startY = touchEventArgs.Event.GetY();
 
 		HandleUserInteraction(TouchInteractionStatus.Started);
-		await HandleTouch(TouchStatus.Started, token);
+		HandleTouch(TouchStatus.Started);
 
 		StartRipple(touchEventArgs.Event.GetX(), touchEventArgs.Event.GetY());
 
@@ -429,17 +429,13 @@ public partial class TouchBehavior
 		}
 	}
 
-	Task OnTouchUp(CancellationToken token)
-	{
-		return HandleTouchEnded(CurrentTouchStatus is TouchStatus.Started ? TouchStatus.Completed : TouchStatus.Canceled, token);
-	}
+	void OnTouchUp() 
+		=> HandleTouchEnded(CurrentTouchStatus is TouchStatus.Started ? TouchStatus.Completed : TouchStatus.Canceled);
 
-	Task OnTouchCancel(CancellationToken token)
-	{
-		return HandleTouchEnded(TouchStatus.Canceled, token);
-	}
+	void OnTouchCancel() 
+		=> HandleTouchEnded(TouchStatus.Canceled);
 
-	async Task OnTouchMove(AView view, AView.TouchEventArgs touchEventArgs, CancellationToken token)
+	void OnTouchMove(AView view, AView.TouchEventArgs touchEventArgs)
 	{
 		if (IsCanceled || touchEventArgs.Event is null)
 		{
@@ -453,7 +449,7 @@ public partial class TouchBehavior
 		var disallowTouchThreshold = DisallowTouchThreshold;
 		if (disallowTouchThreshold > 0 && maxDiff > disallowTouchThreshold)
 		{
-			await HandleTouchEnded(TouchStatus.Canceled, token);
+			HandleTouchEnded(TouchStatus.Canceled);
 			return;
 		}
 
@@ -469,7 +465,7 @@ public partial class TouchBehavior
 
 		if (CurrentTouchStatus != status)
 		{
-			await HandleTouch(status, token);
+			HandleTouch(status);
 
 			switch (status)
 			{
@@ -479,6 +475,10 @@ public partial class TouchBehavior
 				case TouchStatus.Canceled:
 					EndRipple();
 					break;
+				case TouchStatus.Completed:
+					break;
+				default:
+					throw new NotSupportedException($"{nameof(TouchStatus)} {status} not yet supported");
 			}
 		}
 	}

@@ -337,10 +337,4 @@ public static class TouchBehaviorDefaults
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static int? NativeAnimationShadowRadius { get; } = null;
-
-	/// <summary>
-	/// Default Value for TouchBehavior <see cref="IsToggled"/>
-	/// </summary>
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static bool? IsToggled { get; } = null;
 }

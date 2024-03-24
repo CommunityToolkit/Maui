@@ -52,16 +52,6 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		TouchBehaviorDefaults.ShouldMakeChildrenInputTransparent);
 
 	/// <summary>
-	/// Bindable property for <see cref="IsToggled"/>
-	/// </summary>
-	public static readonly BindableProperty IsToggledProperty = BindableProperty.Create(
-		nameof(IsToggled),
-		typeof(bool?),
-		typeof(TouchBehavior),
-		TouchBehaviorDefaults.IsToggled,
-		BindingMode.TwoWay);
-
-	/// <summary>
 	/// Bindable property for <see cref="DisallowTouchThreshold"/>
 	/// </summary>
 	public static readonly BindableProperty DisallowTouchThresholdProperty = BindableProperty.Create(
@@ -1083,15 +1073,6 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	{
 		get => (int)GetValue(PulseCountProperty);
 		set => SetValue(PulseCountProperty, value);
-	}
-
-	/// <summary>
-	/// Gets or sets a value indicating whether the element is toggled.
-	/// </summary>
-	public bool? IsToggled
-	{
-		get => (bool?)GetValue(IsToggledProperty);
-		set => SetValue(IsToggledProperty, value);
 	}
 
 	/// <summary>

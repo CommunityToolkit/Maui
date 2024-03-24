@@ -77,7 +77,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 		}
 	}
 
-	internal async ValueTask HandleTouch(TouchBehavior sender, TouchStatus status, CancellationToken token)
+	internal void HandleTouch(TouchBehavior sender, TouchStatus status)
 	{
 		if (!sender.IsEnabled)
 		{
@@ -102,34 +102,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 				animationState = state;
 			}
 
-			var isToggled = sender.IsToggled;
-			if (isToggled.HasValue)
-			{
-				if (status is not TouchStatus.Started)
-				{
-					durationMultiplier = (animationState is TouchState.Pressed && !isToggled.Value) ||
-						(animationState is TouchState.Normal && isToggled.Value)
-							? 1 - animationProgress
 							: animationProgress;
-
-					UpdateStatusAndState(sender, status, state);
-
-					if (status is TouchStatus.Canceled)
-					{
-						await sender.ForceUpdateState(token, false);
-						return;
-					}
-
-					OnTappedCompleted(sender);
-					sender.IsToggled = !isToggled;
-					return;
-				}
-
-				state = isToggled.Value
-					? TouchState.Normal
-					: TouchState.Pressed;
-			}
-
 			UpdateStatusAndState(sender, status, state);
 		}
 
@@ -140,36 +113,27 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 	}
 
 	internal async Task ChangeStateAsync(TouchBehavior sender, bool animated, CancellationToken token)
-	{
-		var status = sender.CurrentTouchStatus;
-		var state = sender.CurrentTouchState;
+	{	
+		var touchStatus = sender.CurrentTouchStatus;
+		var touchState = sender.CurrentTouchState;
 		var hoverState = sender.CurrentHoverState;
 
 		await AbortAnimations(sender, token);
 		animationTokenSource = new CancellationTokenSource();
 
-		var isToggled = sender.IsToggled;
-
 		if (sender.Element is not null)
 		{
-			UpdateVisualState(sender.Element, state, hoverState);
+			UpdateVisualState(sender.Element, touchState, hoverState);
 		}
 
 		if (!animated)
 		{
-			if (isToggled.HasValue)
-			{
-				state = isToggled.Value
-					? TouchState.Pressed
-					: TouchState.Normal;
-			}
-
 			var durationMultiplier = this.durationMultiplier;
 			this.durationMultiplier = null;
 
 			try
 			{
-				await RunAnimationTask(sender, state, hoverState, animationTokenSource.Token, durationMultiplier.GetValueOrDefault()).WaitAsync(token).ConfigureAwait(false);
+				await RunAnimationTask(sender, touchState, hoverState, animationTokenSource.Token, durationMultiplier.GetValueOrDefault()).WaitAsync(token).ConfigureAwait(false);
 			}
 			catch (TaskCanceledException ex)
 			{
@@ -181,35 +145,16 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 		var pulseCount = sender.PulseCount;
 
-		if (pulseCount is 0 || (state is TouchState.Normal && !isToggled.HasValue))
+		if (pulseCount is 0)
 		{
-			if (isToggled.HasValue)
-			{
-				Trace.WriteLine($"Touch state: {status}");
-				var r = (status is TouchStatus.Started && isToggled.Value) ||
-					(status != TouchStatus.Started && !isToggled.Value);
-				state = r
-					? TouchState.Normal
-					: TouchState.Pressed;
-			}
-
-			await RunAnimationTask(sender, state, hoverState, animationTokenSource.Token).ConfigureAwait(false);
+			await RunAnimationTask(sender, touchState, hoverState, animationTokenSource.Token).ConfigureAwait(false);
 			return;
 		}
+
 		do
 		{
-			var rippleState = isToggled.HasValue && isToggled.Value
-				? TouchState.Normal
-				: TouchState.Pressed;
-
-			await RunAnimationTask(sender, rippleState, hoverState, animationTokenSource.Token);
-
-			rippleState = isToggled.HasValue && isToggled.Value
-				? TouchState.Pressed
-				: TouchState.Normal;
-
-			await RunAnimationTask(sender, rippleState, hoverState, animationTokenSource.Token);
-
+			await RunAnimationTask(sender, TouchState.Pressed, hoverState, animationTokenSource.Token);
+			await RunAnimationTask(sender, TouchState.Normal, hoverState, animationTokenSource.Token);
 		} while (--pulseCount > 0);
 	}
 
