@@ -52,7 +52,7 @@ public partial class TouchBehavior : IDisposable
 
 	internal async Task ForceUpdateState(CancellationToken token, bool animated = true)
 	{
-		if (element is null)
+		if (Element is null)
 		{
 			return;
 		}
@@ -68,13 +68,25 @@ public partial class TouchBehavior : IDisposable
 	}
 
 	internal ValueTask HandleTouch(TouchStatus status, CancellationToken token)
-		=> gestureManager.HandleTouch(this, status, token);
+	{
+		ObjectDisposedException.ThrowIf(isDisposed, this);
+		
+		return gestureManager.HandleTouch(this, status, token);
+	}
 
 	internal void HandleUserInteraction(TouchInteractionStatus interactionStatus)
-		=> GestureManager.HandleUserInteraction(this, interactionStatus);
+	{
+		ObjectDisposedException.ThrowIf(isDisposed, this);
+
+		GestureManager.HandleUserInteraction(this, interactionStatus);
+	}
 
 	internal void HandleHover(HoverStatus status)
-		=> GestureManager.HandleHover(this, status);
+	{
+		ObjectDisposedException.ThrowIf(isDisposed, this);
+
+		GestureManager.HandleHover(this, status);
+	}
 
 	/// <summary>
 	/// Dispose the object.

@@ -8,10 +8,14 @@ public class TouchBehaviorTests : BaseTest
 {
 	readonly TouchBehavior touchBehavior = new();
 
-	protected override void Dispose(bool isDisposing)
+	protected override async void Dispose(bool isDisposing)
 	{
 		base.Dispose(isDisposing);
 		touchBehavior.Dispose();
+
+		await Assert.ThrowsAsync<ObjectDisposedException>(async () => await touchBehavior.HandleTouch(TouchStatus.Canceled, CancellationToken.None));
+		Assert.Throws<ObjectDisposedException>(() => touchBehavior.HandleHover(HoverStatus.Entered));
+		Assert.Throws<ObjectDisposedException>(() => touchBehavior.HandleUserInteraction(TouchInteractionStatus.Started));
 	}
 
 	[Fact]
@@ -155,7 +159,7 @@ public class TouchBehaviorTests : BaseTest
 		Assert.Throws<NotSupportedException>(() => touchBehavior.HandleHover((HoverStatus)(-1)));
 		Assert.Throws<NotSupportedException>(() => touchBehavior.HandleHover((HoverStatus)(Enum.GetValues<HoverStatus>().Length + 1)));
 
-		//HoverStatus should not change when Elemend is not enabled
+		//HoverStatus should not change when Element is not enabled
 		touchBehavior.Element.IsEnabled = false;
 		touchBehavior.HandleHover(HoverStatus.Entered);
 		Assert.Equal(HoverStatus.Exited, touchBehavior.CurrentHoverStatus);
