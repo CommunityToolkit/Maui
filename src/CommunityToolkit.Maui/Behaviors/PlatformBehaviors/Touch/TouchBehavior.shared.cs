@@ -414,15 +414,6 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		TouchBehaviorDefaults.PressedTranslationY);
 
 	/// <summary>
-	/// Bindable property for <see cref="RepeatAnimationCount"/>
-	/// </summary>
-	public static readonly BindableProperty RepeatAnimationCountProperty = BindableProperty.Create(
-		nameof(RepeatAnimationCount),
-		typeof(int),
-		typeof(TouchBehavior),
-		TouchBehaviorDefaults.RepeatAnimationCount);
-
-	/// <summary>
 	/// Bindable property for <see cref="HoveredAnimationEasing"/>
 	/// </summary>
 	public static readonly BindableProperty HoveredAnimationEasingProperty = BindableProperty.Create(
@@ -993,15 +984,6 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	{
 		get => (Easing?)GetValue(HoveredAnimationEasingProperty);
 		set => SetValue(HoveredAnimationEasingProperty, value);
-	}
-
-	/// <summary>
-	/// Gets or sets the number of times the element should pulse.
-	/// </summary>
-	public int RepeatAnimationCount
-	{
-		get => (int)GetValue(RepeatAnimationCountProperty);
-		set => SetValue(RepeatAnimationCountProperty, value);
 	}
 
 	/// <summary>

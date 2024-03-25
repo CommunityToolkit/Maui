@@ -59,7 +59,7 @@ public partial class TouchBehavior : IDisposable
 
 		try
 		{
-			await gestureManager.ChangeStateAsync(this, animated, token).ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+			await gestureManager.ChangeStateAsync(this, animated, token);
 		}
 		catch (TaskCanceledException ex)
 		{

@@ -86,7 +86,6 @@ public class TouchBehaviorTests : BaseTest
 
 		Assert.Equal(TouchBehaviorDefaults.DisallowTouchThreshold, touchBehavior.DisallowTouchThreshold);
 		Assert.Equal(TouchBehaviorDefaults.ShouldMakeChildrenInputTransparent, touchBehavior.ShouldMakeChildrenInputTransparent);
-		Assert.Equal(TouchBehaviorDefaults.RepeatAnimationCount, touchBehavior.RepeatAnimationCount);
 
 		Assert.Equal(TouchBehaviorDefaults.CurrentTouchState, touchBehavior.CurrentTouchState);
 		Assert.Equal(TouchBehaviorDefaults.CurrentTouchStatus, touchBehavior.CurrentTouchStatus);
@@ -1108,20 +1107,6 @@ public class TouchBehaviorTests : BaseTest
 		touchBehavior.PressedAnimationEasing = pressedAnimationEasing;
 
 		Assert.Equal(pressedAnimationEasing, viewModel.PressedAnimationEasing);
-	}
-
-	[Fact]
-	public void SetPulseCountTest()
-	{
-		const int pulseCount = 5;
-		var viewModel = new TouchBehaviorViewModel();
-		touchBehavior.BindingContext = viewModel;
-
-		touchBehavior.SetBinding(TouchBehavior.RepeatAnimationCountProperty, nameof(TouchBehaviorViewModel.PulseCount), mode: BindingMode.TwoWay);
-
-		touchBehavior.RepeatAnimationCount = pulseCount;
-
-		Assert.Equal(pulseCount, viewModel.PulseCount);
 	}
 
 	[Fact]

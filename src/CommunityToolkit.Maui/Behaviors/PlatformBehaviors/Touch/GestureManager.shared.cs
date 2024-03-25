@@ -141,20 +141,8 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 			return;
 		}
-
-		var repeatAnimationCount = sender.RepeatAnimationCount;
-
-		if (repeatAnimationCount is 0)
-		{
-			await RunAnimationTask(sender, touchState, hoverState, animationTokenSource.Token).ConfigureAwait(false);
-			return;
-		}
-
-		do
-		{
-			await RunAnimationTask(sender, TouchState.Pressed, hoverState, animationTokenSource.Token).WaitAsync(token);
-			await RunAnimationTask(sender, TouchState.Default, hoverState, animationTokenSource.Token).WaitAsync(token);
-		} while (--repeatAnimationCount > 0);
+		
+		await RunAnimationTask(sender, touchState, hoverState, animationTokenSource.Token).ConfigureAwait(false);
 	}
 
 	internal async Task HandleLongPress(TouchBehavior sender, CancellationToken token)
@@ -373,7 +361,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 					bindable.SetValue(ImageElement.SourceProperty, imageTouchBehavior.DefaultImageSource);
 				}
 				break;
-			
+
 			default:
 				throw new NotSupportedException($"{nameof(HoverState)} {hoverState} is not yet supported");
 		}
