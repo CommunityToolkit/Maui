@@ -106,60 +106,6 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		TouchBehaviorDefaults.IsNativeAnimationBorderless);
 
 	/// <summary>
-	/// Bindable property for <see cref="DefaultBackgroundImageSource"/>
-	/// </summary>
-	public static readonly BindableProperty DefaultBackgroundImageSourceProperty = BindableProperty.Create(
-		nameof(DefaultBackgroundImageSource),
-		typeof(ImageSource),
-		typeof(TouchBehavior),
-		TouchBehaviorDefaults.DefaultBackgroundImageSource);
-
-	/// <summary>
-	/// Bindable property for <see cref="HoveredBackgroundImageSource"/>
-	/// </summary>
-	public static readonly BindableProperty HoveredBackgroundImageSourceProperty = BindableProperty.Create(
-		nameof(HoveredBackgroundImageSource),
-		typeof(ImageSource),
-		typeof(TouchBehavior),
-		TouchBehaviorDefaults.HoveredBackgroundImageSource);
-
-	/// <summary>
-	/// Bindable property for <see cref="PressedBackgroundImageSource"/>
-	/// </summary>
-	public static readonly BindableProperty PressedBackgroundImageSourceProperty = BindableProperty.Create(
-		nameof(PressedBackgroundImageSource),
-		typeof(ImageSource),
-		typeof(TouchBehavior),
-		TouchBehaviorDefaults.PressedBackgroundImageSource);
-
-	/// <summary>
-	/// Bindable property for <see cref="DefaultBackgroundImageAspect"/>
-	/// </summary>
-	public static readonly BindableProperty DefaultBackgroundImageAspectProperty = BindableProperty.Create(
-		nameof(DefaultBackgroundImageAspect),
-		typeof(Aspect),
-		typeof(TouchBehavior),
-		TouchBehaviorDefaults.DefaultBackgroundImageAspect);
-
-	/// <summary>
-	/// Bindable property for <see cref="HoveredBackgroundImageAspect"/>
-	/// </summary>
-	public static readonly BindableProperty HoveredBackgroundImageAspectProperty = BindableProperty.Create(
-		nameof(HoveredBackgroundImageAspect),
-		typeof(Aspect),
-		typeof(TouchBehavior),
-		TouchBehaviorDefaults.HoveredBackgroundImageAspect);
-
-	/// <summary>
-	/// Bindable property for <see cref="PressedBackgroundImageAspect"/>
-	/// </summary>
-	public static readonly BindableProperty PressedBackgroundImageAspectProperty = BindableProperty.Create(
-		nameof(PressedBackgroundImageAspect),
-		typeof(Aspect),
-		typeof(TouchBehavior),
-		TouchBehaviorDefaults.PressedBackgroundImageAspect);
-
-	/// <summary>
 	/// Bindable property for <see cref="LongPressCommand"/>
 	/// </summary>
 	public static readonly BindableProperty LongPressCommandProperty = BindableProperty.Create(
@@ -456,15 +402,6 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		typeof(double),
 		typeof(TouchBehavior),
 		TouchBehaviorDefaults.PressedTranslationY);
-
-	/// <summary>
-	/// Bindable property for <see cref="ShouldSetImageOnAnimationEnd"/>
-	/// </summary>
-	public static readonly BindableProperty ShouldSetImageOnAnimationEndProperty = BindableProperty.Create(
-		nameof(ShouldSetImageOnAnimationEnd),
-		typeof(bool),
-		typeof(TouchBehavior),
-		TouchBehaviorDefaults.ShouldSetImageOnAnimationEnd);
 
 	/// <summary>
 	/// Bindable property for <see cref="RepeatAnimationCount"/>
@@ -1118,69 +1055,6 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	{
 		get => (bool)GetValue(IsNativeAnimationBorderlessProperty);
 		set => SetValue(IsNativeAnimationBorderlessProperty, value);
-	}
-
-	/// <summary>
-	/// Gets or sets the <see cref="ImageSource"/> when <see cref="TouchState"/> is <see cref="TouchState.Default"/>.
-	/// </summary>
-	public ImageSource? DefaultBackgroundImageSource
-	{
-		get => (ImageSource?)GetValue(DefaultBackgroundImageSourceProperty);
-		set => SetValue(DefaultBackgroundImageSourceProperty, value);
-	}
-
-	/// <summary>
-	/// Gets or sets the hovered background image source.
-	/// </summary>
-	public ImageSource? HoveredBackgroundImageSource
-	{
-		get => (ImageSource?)GetValue(HoveredBackgroundImageSourceProperty);
-		set => SetValue(HoveredBackgroundImageSourceProperty, value);
-	}
-
-	/// <summary>
-	/// Gets or sets the pressed background image source.
-	/// </summary>
-	public ImageSource? PressedBackgroundImageSource
-	{
-		get => (ImageSource?)GetValue(PressedBackgroundImageSourceProperty);
-		set => SetValue(PressedBackgroundImageSourceProperty, value);
-	}
-
-	/// <summary>
-	/// Gets or sets the <see cref="ImageSource"/> <see cref="Aspect"/> when <see cref="TouchState"/> is <see cref="TouchState.Default"/>.
-	/// </summary>
-	public Aspect DefaultBackgroundImageAspect
-	{
-		get => (Aspect)GetValue(DefaultBackgroundImageAspectProperty);
-		set => SetValue(DefaultBackgroundImageAspectProperty, value);
-	}
-
-	/// <summary>
-	/// Gets or sets the hovered background image aspect.
-	/// </summary>
-	public Aspect HoveredBackgroundImageAspect
-	{
-		get => (Aspect)GetValue(HoveredBackgroundImageAspectProperty);
-		set => SetValue(HoveredBackgroundImageAspectProperty, value);
-	}
-
-	/// <summary>
-	/// Gets or sets the pressed background image aspect.
-	/// </summary>
-	public Aspect PressedBackgroundImageAspect
-	{
-		get => (Aspect)GetValue(PressedBackgroundImageAspectProperty);
-		set => SetValue(PressedBackgroundImageAspectProperty, value);
-	}
-
-	/// <summary>
-	/// Gets or sets a value indicating whether the image should be set on animation end.
-	/// </summary>
-	public bool ShouldSetImageOnAnimationEnd
-	{
-		get => (bool)GetValue(ShouldSetImageOnAnimationEndProperty);
-		set => SetValue(ShouldSetImageOnAnimationEndProperty, value);
 	}
 
 	internal bool CanExecute => IsEnabled

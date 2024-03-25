@@ -296,14 +296,19 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 	static async Task SetBackgroundImage(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, CancellationToken token)
 	{
-		if (sender.Element is not Image image)
+		if (sender is not ImageTouchBehavior imageTouchBehavior)
 		{
 			return;
 		}
 
+		if (sender.Element is not (BindableObject bindable and Microsoft.Maui.IImage))
+		{
+			throw new InvalidOperationException($"{nameof(ImageTouchBehavior)} can only be attached to an {nameof(Microsoft.Maui.IImage)}");
+		}
+
 		try
 		{
-			if (sender.ShouldSetImageOnAnimationEnd && duration > TimeSpan.Zero)
+			if (imageTouchBehavior.ShouldSetImageOnAnimationEnd && duration > TimeSpan.Zero)
 			{
 				await Task.Delay(duration, token);
 			}
@@ -315,38 +320,38 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 		if (touchState is TouchState.Pressed)
 		{
-			if (sender.IsSet(TouchBehavior.PressedBackgroundImageAspectProperty))
+			if (sender.IsSet(ImageTouchBehavior.PressedImageAspectProperty))
 			{
-				image.Aspect = sender.PressedBackgroundImageAspect;
+				bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.PressedImageAspect);
 			}
 
-			if (sender.IsSet(TouchBehavior.PressedBackgroundImageSourceProperty))
+			if (sender.IsSet(ImageTouchBehavior.PressedBackgroundImageSourceProperty))
 			{
-				image.Source = sender.PressedBackgroundImageSource;
+				bindable.SetValue(ImageElement.SourceProperty, imageTouchBehavior.PressedImageSource);
 			}
 		}
 		else if (hoverState is HoverState.Hovered)
 		{
-			if (sender.IsSet(TouchBehavior.HoveredBackgroundImageAspectProperty))
+			if (sender.IsSet(ImageTouchBehavior.HoveredImageAspectProperty))
 			{
-				image.Aspect = sender.HoveredBackgroundImageAspect;
+				bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.HoveredImageAspect);
 			}
 
-			if (sender.IsSet(TouchBehavior.HoveredBackgroundImageSourceProperty))
+			if (sender.IsSet(ImageTouchBehavior.HoveredBackgroundImageSourceProperty))
 			{
-				image.Source = sender.HoveredBackgroundImageSource;
+				bindable.SetValue(ImageElement.SourceProperty, imageTouchBehavior.HoveredImageSource);
 			}
 		}
 		else
 		{
-			if (sender.IsSet(TouchBehavior.DefaultBackgroundImageAspectProperty))
+			if (sender.IsSet(ImageTouchBehavior.DefaultImageAspectProperty))
 			{
-				image.Aspect = sender.DefaultBackgroundImageAspect;
+				bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.DefaultImageAspect);
 			}
 
-			if (sender.IsSet(TouchBehavior.DefaultBackgroundImageSourceProperty))
+			if (sender.IsSet(ImageTouchBehavior.DefaultImageSourceProperty))
 			{
-				image.Source = sender.DefaultBackgroundImageSource;
+				bindable.SetValue(ImageElement.SourceProperty, imageTouchBehavior.DefaultImageSource);
 			}
 		}
 	}

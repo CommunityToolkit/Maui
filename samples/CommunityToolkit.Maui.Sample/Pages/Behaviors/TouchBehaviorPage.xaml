@@ -41,10 +41,10 @@
             <Label Style="{StaticResource SectionHeader}" Text="Image | Toggle" />
             <Image HeightRequest="100" WidthRequest="100">
                 <Image.Behaviors>
-                    <mct:TouchBehavior
+                    <mct:ImageTouchBehavior
                         Command="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseTouchCountCommand}"
-                        DefaultBackgroundImageSource="button.png"
-                        PressedBackgroundImageSource="button_pressed.png" />
+                        DefaultImageSource="button.png"
+                        PressedImageSource="button_pressed.png" />
                 </Image.Behaviors>
             </Image>
 

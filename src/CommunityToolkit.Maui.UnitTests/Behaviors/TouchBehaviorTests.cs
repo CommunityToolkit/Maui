@@ -105,16 +105,6 @@ public class TouchBehaviorTests : BaseTest
 		Assert.Equal(TouchBehaviorDefaults.DefaultBackgroundColor, touchBehavior.DefaultBackgroundColor);
 		Assert.Equal(TouchBehaviorDefaults.HoveredBackgroundColor, touchBehavior.HoveredBackgroundColor);
 		Assert.Equal(TouchBehaviorDefaults.PressedBackgroundColor, touchBehavior.PressedBackgroundColor);
-
-		Assert.Equal(TouchBehaviorDefaults.DefaultBackgroundImageSource, touchBehavior.DefaultBackgroundImageSource);
-		Assert.Equal(TouchBehaviorDefaults.HoveredBackgroundImageSource, touchBehavior.HoveredBackgroundImageSource);
-		Assert.Equal(TouchBehaviorDefaults.PressedBackgroundImageSource, touchBehavior.PressedBackgroundImageSource);
-
-		Assert.Equal(TouchBehaviorDefaults.DefaultBackgroundImageAspect, touchBehavior.DefaultBackgroundImageAspect);
-		Assert.Equal(TouchBehaviorDefaults.HoveredBackgroundImageAspect, touchBehavior.HoveredBackgroundImageAspect);
-		Assert.Equal(TouchBehaviorDefaults.PressedBackgroundImageAspect, touchBehavior.PressedBackgroundImageAspect);
-
-		Assert.Equal(TouchBehaviorDefaults.ShouldSetImageOnAnimationEnd, touchBehavior.ShouldSetImageOnAnimationEnd);
 	}
 
 	[Fact]
@@ -187,109 +177,6 @@ public class TouchBehaviorTests : BaseTest
 
 		touchBehavior.HandleTouch(TouchStatus.Canceled);
 		Assert.Equal(updatedNormalOpacity, view.Opacity);
-	}
-
-	[Fact]
-	public async Task VerifyPressedBackgroundImageChange()
-	{
-		var view = new Image();
-		AttachTouchBehaviorToVisualElement(view);
-
-		var normalImageSource = new FileImageSource();
-		var pressedImageSource = new FileImageSource();
-
-		touchBehavior.DefaultBackgroundImageSource = normalImageSource;
-		touchBehavior.PressedBackgroundImageSource = pressedImageSource;
-
-		Assert.Null(view.Source);
-
-		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
-		Assert.Equal(normalImageSource, view.Source);
-		Assert.Same(normalImageSource, view.Source);
-
-		touchBehavior.HandleTouch(TouchStatus.Started);
-		Assert.Equal(pressedImageSource, view.Source);
-		Assert.Same(pressedImageSource, view.Source);
-
-		touchBehavior.HandleTouch(TouchStatus.Canceled);
-		Assert.Equal(normalImageSource, view.Source);
-		Assert.Same(normalImageSource, view.Source);
-	}
-
-	[Fact]
-	public async Task VerifyPressedBackgroundImageAspectChange()
-	{
-		var view = new Image();
-		AttachTouchBehaviorToVisualElement(view);
-
-		var normalImageSource = new FileImageSource();
-		touchBehavior.DefaultBackgroundImageSource = normalImageSource;
-		touchBehavior.DefaultBackgroundImageAspect = Aspect.AspectFit;
-
-		var pressedImageSource = new FileImageSource();
-		touchBehavior.PressedBackgroundImageSource = pressedImageSource;
-		touchBehavior.PressedBackgroundImageAspect = Aspect.AspectFill;
-
-		Assert.Equal(Aspect.AspectFit, view.Aspect);
-
-		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
-		Assert.Equal(Aspect.AspectFit, view.Aspect);
-
-		touchBehavior.HandleTouch(TouchStatus.Started);
-		Assert.Equal(Aspect.AspectFill, view.Aspect);
-
-		touchBehavior.HandleTouch(TouchStatus.Canceled);
-		Assert.Equal(Aspect.AspectFit, view.Aspect);
-	}
-
-
-	[Fact]
-	public async Task VerifyHoverBackgroundImageChange()
-	{
-		var view = new Image();
-		AttachTouchBehaviorToVisualElement(view);
-
-		var normalImageSource = new FileImageSource();
-		var hoveredImageSource = new FileImageSource();
-
-		touchBehavior.DefaultBackgroundImageSource = normalImageSource;
-		touchBehavior.HoveredBackgroundImageSource = hoveredImageSource;
-
-		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
-		Assert.Same(normalImageSource, view.Source);
-		Assert.Equal(normalImageSource, view.Source);
-
-		touchBehavior.HandleHover(HoverStatus.Entered);
-		Assert.Same(hoveredImageSource, view.Source);
-		Assert.Equal(hoveredImageSource, view.Source);
-
-		touchBehavior.HandleHover(HoverStatus.Exited);
-		Assert.Same(normalImageSource, view.Source);
-		Assert.Equal(normalImageSource, view.Source);
-	}
-
-	[Fact]
-	public async Task VerifyHoverBackgroundImageAspectChange()
-	{
-		var view = new Image();
-		AttachTouchBehaviorToVisualElement(view);
-
-		var normalImageSource = new FileImageSource();
-		touchBehavior.DefaultBackgroundImageSource = normalImageSource;
-		touchBehavior.DefaultBackgroundImageAspect = Aspect.AspectFit;
-
-		var hoverImageSource = new FileImageSource();
-		touchBehavior.HoveredBackgroundImageSource = hoverImageSource;
-		touchBehavior.HoveredBackgroundImageAspect = Aspect.AspectFill;
-
-		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
-		Assert.Equal(Aspect.AspectFit, view.Aspect);
-
-		touchBehavior.HandleHover(HoverStatus.Entered);
-		Assert.Equal(Aspect.AspectFill, view.Aspect);
-
-		touchBehavior.HandleHover(HoverStatus.Exited);
-		Assert.Equal(Aspect.AspectFit, view.Aspect);
 	}
 
 	[Fact]
@@ -1252,20 +1139,6 @@ public class TouchBehaviorTests : BaseTest
 	}
 
 	[Fact]
-	public void SetShouldSetImageOnAnimationEndTest()
-	{
-		const bool shouldSetImageOnAnimationEnd = true;
-		var viewModel = new TouchBehaviorViewModel();
-		touchBehavior.BindingContext = viewModel;
-
-		touchBehavior.SetBinding(TouchBehavior.ShouldSetImageOnAnimationEndProperty, nameof(TouchBehaviorViewModel.ShouldSetImageOnAnimationEnd), mode: BindingMode.TwoWay);
-
-		touchBehavior.ShouldSetImageOnAnimationEnd = shouldSetImageOnAnimationEnd;
-
-		Assert.Equal(shouldSetImageOnAnimationEnd, viewModel.ShouldSetImageOnAnimationEnd);
-	}
-
-	[Fact]
 	public void SetShouldUseNativeAnimationTest()
 	{
 		const bool shouldUseNativeAnimation = true;
@@ -1287,7 +1160,6 @@ public class TouchBehaviorTests : BaseTest
 
 	sealed class TouchBehaviorViewModel
 	{
-		public Aspect BackgroundImageAspect { get; set; }
 		public int AnimationDuration { get; set; }
 		public int NormalAnimationDuration { get; set; }
 		public int HoveredAnimationDuration { get; set; }
@@ -1306,7 +1178,6 @@ public class TouchBehaviorTests : BaseTest
 		public int? NativeAnimationShadowRadius { get; set; }
 		public int PulseCount { get; set; }
 		public bool ShouldMakeChildrenInputTransparent { get; set; }
-		public bool ShouldSetImageOnAnimationEnd { get; set; }
 		public bool ShouldUseNativeAnimation { get; set; }
 	}
 }
