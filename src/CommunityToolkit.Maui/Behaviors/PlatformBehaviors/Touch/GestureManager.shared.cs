@@ -141,7 +141,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 			return;
 		}
-		
+
 		await RunAnimationTask(sender, touchState, hoverState, animationTokenSource.Token).ConfigureAwait(false);
 	}
 
@@ -306,9 +306,9 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			return;
 		}
 
-		switch (touchState)
+		switch (touchState, hoverState)
 		{
-			case TouchState.Pressed:
+			case (TouchState.Pressed, _):
 				if (imageTouchBehavior.IsSet(ImageTouchBehavior.PressedImageAspectProperty))
 				{
 					bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.PressedImageAspect);
@@ -320,7 +320,28 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 				}
 				break;
 
-			case TouchState.Default:
+			case (TouchState.Default, HoverState.Hovered):
+				if (imageTouchBehavior.IsSet(ImageTouchBehavior.HoveredImageAspectProperty))
+				{
+					bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.HoveredImageAspect);
+				}
+				else if (imageTouchBehavior.IsSet(ImageTouchBehavior.DefaultImageAspectProperty))
+				{
+					bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.DefaultImageAspect);
+				}
+
+				if (imageTouchBehavior.IsSet(ImageTouchBehavior.HoveredBackgroundImageSourceProperty))
+				{
+					bindable.SetValue(ImageElement.SourceProperty, imageTouchBehavior.HoveredImageSource);
+				}
+				else if (imageTouchBehavior.IsSet(ImageTouchBehavior.DefaultImageSourceProperty))
+				{
+					bindable.SetValue(ImageElement.SourceProperty, imageTouchBehavior.DefaultImageSource);
+				}
+
+				break;
+
+			case (TouchState.Default, HoverState.Default):
 				if (imageTouchBehavior.IsSet(ImageTouchBehavior.DefaultImageAspectProperty))
 				{
 					bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.DefaultImageAspect);
@@ -333,40 +354,14 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 				break;
 
 			default:
-				throw new NotSupportedException($"{nameof(TouchState)} {touchState} is not yet supported");
-		}
-
-		switch (hoverState)
-		{
-			case HoverState.Hovered:
-				if (imageTouchBehavior.IsSet(ImageTouchBehavior.HoveredImageAspectProperty))
-				{
-					bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.HoveredImageAspect);
-				}
-
-				if (imageTouchBehavior.IsSet(ImageTouchBehavior.HoveredBackgroundImageSourceProperty))
-				{
-					bindable.SetValue(ImageElement.SourceProperty, imageTouchBehavior.HoveredImageSource);
-				}
-				break;
-
-			// Handled in TouchState.Default
-			case HoverState.Default:
-				break;
-
-			default:
-				throw new NotSupportedException($"{nameof(HoverState)} {hoverState} is not yet supported");
+				throw new NotSupportedException($"The combination of {nameof(TouchState)} {touchState} and {nameof(HoverState)} {hoverState} is not yet supported");
 		}
 	}
 
 	static void UpdateStatusAndState(TouchBehavior sender, TouchStatus status, TouchState state)
 	{
 		sender.CurrentTouchStatus = status;
-
-		if (sender.CurrentTouchState != state)
-		{
-			sender.CurrentTouchState = state;
-		}
+		sender.CurrentTouchState = state;
 	}
 
 	static void UpdateVisualState(VisualElement visualElement, TouchState touchState, HoverState hoverState)
