@@ -110,7 +110,7 @@ public class TouchBehaviorTests : BaseTest
 	[Fact]
 	public async Task VerifyHoverOpacityChange()
 	{
-		const double updatedNormalOpacity = 0.9;
+		const double updatedDefaultOpacity = 0.9;
 		const double updatedHoveredOpacity = 0.7;
 
 		var view = new View();
@@ -118,20 +118,20 @@ public class TouchBehaviorTests : BaseTest
 		Assert.Equal(TouchBehaviorDefaults.DefaultOpacity, touchBehavior.DefaultOpacity);
 		Assert.Equal(TouchBehaviorDefaults.HoveredOpacity, touchBehavior.HoveredOpacity);
 
-		touchBehavior.DefaultOpacity = updatedNormalOpacity;
+		touchBehavior.DefaultOpacity = updatedDefaultOpacity;
 		touchBehavior.HoveredOpacity = updatedHoveredOpacity;
 
-		Assert.Equal(updatedNormalOpacity, touchBehavior.DefaultOpacity);
+		Assert.Equal(updatedDefaultOpacity, touchBehavior.DefaultOpacity);
 		Assert.Equal(updatedHoveredOpacity, touchBehavior.HoveredOpacity);
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
-		Assert.Equal(updatedNormalOpacity, view.Opacity);
+		Assert.Equal(updatedDefaultOpacity, view.Opacity);
 
 		touchBehavior.HandleHover(HoverStatus.Entered);
 		Assert.Equal(updatedHoveredOpacity, view.Opacity);
 
 		touchBehavior.HandleHover(HoverStatus.Exited);
-		Assert.Equal(updatedNormalOpacity, view.Opacity);
+		Assert.Equal(updatedDefaultOpacity, view.Opacity);
 	}
 
 	[Fact]
@@ -156,7 +156,7 @@ public class TouchBehaviorTests : BaseTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task VerifyPressedOpacityChange()
 	{
-		const double updatedNormalOpacity = 0.9;
+		const double updatedDefaultOpacity = 0.9;
 		const double updatedHoveredOpacity = 0.7;
 
 		var view = new View();
@@ -164,31 +164,31 @@ public class TouchBehaviorTests : BaseTest
 		Assert.Equal(TouchBehaviorDefaults.DefaultOpacity, touchBehavior.DefaultOpacity);
 		Assert.Equal(TouchBehaviorDefaults.PressedOpacity, touchBehavior.HoveredOpacity);
 
-		touchBehavior.DefaultOpacity = updatedNormalOpacity;
+		touchBehavior.DefaultOpacity = updatedDefaultOpacity;
 		touchBehavior.PressedOpacity = updatedHoveredOpacity;
 
 		Assert.Equal(TouchBehaviorDefaults.DefaultOpacity, view.Opacity);
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
-		Assert.Equal(updatedNormalOpacity, view.Opacity);
+		Assert.Equal(updatedDefaultOpacity, view.Opacity);
 
 		touchBehavior.HandleTouch(TouchStatus.Started);
 		Assert.Equal(updatedHoveredOpacity, view.Opacity);
 
 		touchBehavior.HandleTouch(TouchStatus.Canceled);
-		Assert.Equal(updatedNormalOpacity, view.Opacity);
+		Assert.Equal(updatedDefaultOpacity, view.Opacity);
 	}
 
 	[Fact]
 	public async Task VerifyHoverTranslationChange()
 	{
-		const int updatedNormalTranslation = 10;
+		const int updatedDefaultTranslation = 10;
 		const int updatedHoveredTranslation = 20;
 
 		var view = new View();
 		AttachTouchBehaviorToVisualElement(view);
-		touchBehavior.DefaultTranslationX = updatedNormalTranslation;
-		touchBehavior.DefaultTranslationY = updatedNormalTranslation;
+		touchBehavior.DefaultTranslationX = updatedDefaultTranslation;
+		touchBehavior.DefaultTranslationY = updatedDefaultTranslation;
 		touchBehavior.HoveredTranslationX = updatedHoveredTranslation;
 		touchBehavior.HoveredTranslationY = updatedHoveredTranslation;
 
@@ -196,28 +196,28 @@ public class TouchBehaviorTests : BaseTest
 		Assert.Equal(TouchBehaviorDefaults.DefaultTranslationY, view.TranslationY);
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
-		Assert.Equal(updatedNormalTranslation, view.TranslationX);
-		Assert.Equal(updatedNormalTranslation, view.TranslationY);
+		Assert.Equal(updatedDefaultTranslation, view.TranslationX);
+		Assert.Equal(updatedDefaultTranslation, view.TranslationY);
 
 		touchBehavior.HandleHover(HoverStatus.Entered);
 		Assert.Equal(updatedHoveredTranslation, view.TranslationX);
 		Assert.Equal(updatedHoveredTranslation, view.TranslationY);
 
 		touchBehavior.HandleHover(HoverStatus.Exited);
-		Assert.Equal(updatedNormalTranslation, view.TranslationX);
-		Assert.Equal(updatedNormalTranslation, view.TranslationY);
+		Assert.Equal(updatedDefaultTranslation, view.TranslationX);
+		Assert.Equal(updatedDefaultTranslation, view.TranslationY);
 	}
 
 	[Fact]
 	public async Task VerifyPressedTranslationChange()
 	{
-		const int updatedNormalTranslation = 10;
+		const int updatedDefaultTranslation = 10;
 		const int updatedPressedTranslation = 20;
 
 		var view = new View();
 		AttachTouchBehaviorToVisualElement(view);
-		touchBehavior.DefaultTranslationX = updatedNormalTranslation;
-		touchBehavior.DefaultTranslationY = updatedNormalTranslation;
+		touchBehavior.DefaultTranslationX = updatedDefaultTranslation;
+		touchBehavior.DefaultTranslationY = updatedDefaultTranslation;
 		touchBehavior.PressedTranslationX = updatedPressedTranslation;
 		touchBehavior.PressedTranslationY = updatedPressedTranslation;
 
@@ -225,75 +225,75 @@ public class TouchBehaviorTests : BaseTest
 		Assert.Equal(TouchBehaviorDefaults.PressedTranslationY, view.TranslationY);
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
-		Assert.Equal(updatedNormalTranslation, view.TranslationX);
-		Assert.Equal(updatedNormalTranslation, view.TranslationY);
+		Assert.Equal(updatedDefaultTranslation, view.TranslationX);
+		Assert.Equal(updatedDefaultTranslation, view.TranslationY);
 
 		touchBehavior.HandleTouch(TouchStatus.Started);
 		Assert.Equal(updatedPressedTranslation, view.TranslationX);
 		Assert.Equal(updatedPressedTranslation, view.TranslationY);
 
 		touchBehavior.HandleTouch(TouchStatus.Canceled);
-		Assert.Equal(updatedNormalTranslation, view.TranslationX);
-		Assert.Equal(updatedNormalTranslation, view.TranslationY);
+		Assert.Equal(updatedDefaultTranslation, view.TranslationX);
+		Assert.Equal(updatedDefaultTranslation, view.TranslationY);
 	}
 
 	[Fact]
 	public async Task VerifyHoverScaleChange()
 	{
-		const int updatedNormalScale = 10;
+		const int updatedDefaultScale = 10;
 		const int updatedHoveredScale = 20;
 
 		var view = new View();
 		AttachTouchBehaviorToVisualElement(view);
 
-		touchBehavior.DefaultScale = updatedNormalScale;
+		touchBehavior.DefaultScale = updatedDefaultScale;
 		touchBehavior.HoveredScale = updatedHoveredScale;
 
 		Assert.Equal(TouchBehaviorDefaults.DefaultScale, view.Scale);
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
-		Assert.Equal(updatedNormalScale, view.Scale);
+		Assert.Equal(updatedDefaultScale, view.Scale);
 
 		touchBehavior.HandleHover(HoverStatus.Entered);
 		Assert.Equal(updatedHoveredScale, view.Scale);
 
 		touchBehavior.HandleHover(HoverStatus.Exited);
-		Assert.Equal(updatedNormalScale, view.Scale);
+		Assert.Equal(updatedDefaultScale, view.Scale);
 	}
 
 	[Fact]
 	public async Task VerifyPressedScaleChange()
 	{
-		const int updatedNormalScale = 10;
+		const int updatedDefaultScale = 10;
 		const int updatedPressedScale = 20;
 
 		var view = new View();
 		AttachTouchBehaviorToVisualElement(view);
-		touchBehavior.DefaultScale = updatedNormalScale;
+		touchBehavior.DefaultScale = updatedDefaultScale;
 		touchBehavior.PressedScale = updatedPressedScale;
 
 		Assert.Equal(TouchBehaviorDefaults.DefaultScale, view.Scale);
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
-		Assert.Equal(updatedNormalScale, view.Scale);
+		Assert.Equal(updatedDefaultScale, view.Scale);
 
 		touchBehavior.HandleTouch(TouchStatus.Started);
 		Assert.Equal(updatedPressedScale, view.Scale);
 
 		touchBehavior.HandleTouch(TouchStatus.Canceled);
-		Assert.Equal(updatedNormalScale, view.Scale);
+		Assert.Equal(updatedDefaultScale, view.Scale);
 	}
 	[Fact]
 	public async Task VerifyHoverRotationChange()
 	{
-		const int updatedNormalRotation = 10;
+		const int updatedDefaultRotation = 10;
 		const int updatedHoveredRotation = 20;
 
 		var view = new View();
 		AttachTouchBehaviorToVisualElement(view);
-		touchBehavior.DefaultRotation = updatedNormalRotation;
-		touchBehavior.DefaultRotationX = updatedNormalRotation;
-		touchBehavior.DefaultRotationY = updatedNormalRotation;
+		touchBehavior.DefaultRotation = updatedDefaultRotation;
+		touchBehavior.DefaultRotationX = updatedDefaultRotation;
+		touchBehavior.DefaultRotationY = updatedDefaultRotation;
 		touchBehavior.HoveredRotation = 20;
 		touchBehavior.HoveredRotationX = 20;
 		touchBehavior.HoveredRotationY = 20;
@@ -303,9 +303,9 @@ public class TouchBehaviorTests : BaseTest
 		Assert.Equal(TouchBehaviorDefaults.DefaultRotationY, view.RotationY);
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
-		Assert.Equal(updatedNormalRotation, view.Rotation);
-		Assert.Equal(updatedNormalRotation, view.RotationX);
-		Assert.Equal(updatedNormalRotation, view.RotationY);
+		Assert.Equal(updatedDefaultRotation, view.Rotation);
+		Assert.Equal(updatedDefaultRotation, view.RotationX);
+		Assert.Equal(updatedDefaultRotation, view.RotationY);
 
 		touchBehavior.HandleHover(HoverStatus.Entered);
 		Assert.Equal(updatedHoveredRotation, view.Rotation);
@@ -313,22 +313,22 @@ public class TouchBehaviorTests : BaseTest
 		Assert.Equal(updatedHoveredRotation, view.RotationY);
 
 		touchBehavior.HandleHover(HoverStatus.Exited);
-		Assert.Equal(updatedNormalRotation, view.Rotation);
-		Assert.Equal(updatedNormalRotation, view.RotationX);
-		Assert.Equal(updatedNormalRotation, view.RotationY);
+		Assert.Equal(updatedDefaultRotation, view.Rotation);
+		Assert.Equal(updatedDefaultRotation, view.RotationX);
+		Assert.Equal(updatedDefaultRotation, view.RotationY);
 	}
 
 	[Fact]
 	public async Task VerifyPressedRotationChange()
 	{
-		const int updatedNormalRotation = 10;
+		const int updatedDefaultRotation = 10;
 		const int updatedPressedRotation = 20;
 
 		var view = new View();
 		AttachTouchBehaviorToVisualElement(view);
-		touchBehavior.DefaultRotation = updatedNormalRotation;
-		touchBehavior.DefaultRotationX = updatedNormalRotation;
-		touchBehavior.DefaultRotationY = updatedNormalRotation;
+		touchBehavior.DefaultRotation = updatedDefaultRotation;
+		touchBehavior.DefaultRotationX = updatedDefaultRotation;
+		touchBehavior.DefaultRotationY = updatedDefaultRotation;
 
 		touchBehavior.PressedRotation = updatedPressedRotation;
 		touchBehavior.PressedRotationX = updatedPressedRotation;
@@ -339,9 +339,9 @@ public class TouchBehaviorTests : BaseTest
 		Assert.Equal(TouchBehaviorDefaults.DefaultRotationY, view.RotationY);
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
-		Assert.Equal(updatedNormalRotation, view.Rotation);
-		Assert.Equal(updatedNormalRotation, view.RotationX);
-		Assert.Equal(updatedNormalRotation, view.RotationY);
+		Assert.Equal(updatedDefaultRotation, view.Rotation);
+		Assert.Equal(updatedDefaultRotation, view.RotationX);
+		Assert.Equal(updatedDefaultRotation, view.RotationY);
 
 		touchBehavior.HandleTouch(TouchStatus.Started);
 		Assert.Equal(updatedPressedRotation, view.Rotation);
@@ -349,9 +349,9 @@ public class TouchBehaviorTests : BaseTest
 		Assert.Equal(updatedPressedRotation, view.RotationY);
 
 		touchBehavior.HandleTouch(TouchStatus.Canceled);
-		Assert.Equal(updatedNormalRotation, view.Rotation);
-		Assert.Equal(updatedNormalRotation, view.RotationX);
-		Assert.Equal(updatedNormalRotation, view.RotationY);
+		Assert.Equal(updatedDefaultRotation, view.Rotation);
+		Assert.Equal(updatedDefaultRotation, view.RotationX);
+		Assert.Equal(updatedDefaultRotation, view.RotationY);
 	}
 
 	[Fact]
@@ -359,22 +359,22 @@ public class TouchBehaviorTests : BaseTest
 	{
 		var view = new View();
 		AttachTouchBehaviorToVisualElement(view);
-		var normalColor = Colors.Red;
+		var defaultColor = Colors.Red;
 		var hoverColor = Colors.Blue;
 
-		touchBehavior.DefaultBackgroundColor = normalColor;
+		touchBehavior.DefaultBackgroundColor = defaultColor;
 		touchBehavior.HoveredBackgroundColor = hoverColor;
 
 		Assert.Equal(TouchBehaviorDefaults.DefaultBackgroundColor, view.BackgroundColor);
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
-		Assert.Equal(normalColor, view.BackgroundColor);
+		Assert.Equal(defaultColor, view.BackgroundColor);
 
 		touchBehavior.HandleHover(HoverStatus.Entered);
 		Assert.Equal(hoverColor, view.BackgroundColor);
 
 		touchBehavior.HandleHover(HoverStatus.Exited);
-		Assert.Equal(normalColor, view.BackgroundColor);
+		Assert.Equal(defaultColor, view.BackgroundColor);
 	}
 
 	[Fact]
@@ -382,22 +382,22 @@ public class TouchBehaviorTests : BaseTest
 	{
 		var view = new View();
 		AttachTouchBehaviorToVisualElement(view);
-		var normalColor = Colors.Red;
+		var defaultColor = Colors.Red;
 		var pressedColor = Colors.Green;
 
-		touchBehavior.DefaultBackgroundColor = normalColor;
+		touchBehavior.DefaultBackgroundColor = defaultColor;
 		touchBehavior.PressedBackgroundColor = pressedColor;
 
 		Assert.Equal(TouchBehaviorDefaults.DefaultBackgroundColor, view.BackgroundColor);
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
-		Assert.Equal(normalColor, view.BackgroundColor);
+		Assert.Equal(defaultColor, view.BackgroundColor);
 
 		touchBehavior.HandleTouch(TouchStatus.Started);
 		Assert.Equal(pressedColor, view.BackgroundColor);
 
 		touchBehavior.HandleTouch(TouchStatus.Canceled);
-		Assert.Equal(normalColor, view.BackgroundColor);
+		Assert.Equal(defaultColor, view.BackgroundColor);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -925,21 +925,21 @@ public class TouchBehaviorTests : BaseTest
 	}
 
 	[Fact]
-	public void SetPressedNormalTest()
+	public void SetPressedDefaultTest()
 	{
-		const double normalOpacity = 0.2;
+		const double defaultOpacity = 0.2;
 		var viewModel = new TouchBehaviorViewModel();
 		touchBehavior.BindingContext = viewModel;
 
-		touchBehavior.SetBinding(TouchBehavior.DefaultOpacityProperty, nameof(TouchBehaviorViewModel.NormalOpacity), mode: BindingMode.TwoWay);
+		touchBehavior.SetBinding(TouchBehavior.DefaultOpacityProperty, nameof(TouchBehaviorViewModel.DefaultOpacity), mode: BindingMode.TwoWay);
 
 		Assert.Throws<ArgumentOutOfRangeException>(() => touchBehavior.DefaultOpacity = 1.01);
 		Assert.Throws<ArgumentOutOfRangeException>(() => touchBehavior.DefaultOpacity = -0.01);
-		Assert.Equal(default, viewModel.NormalOpacity);
+		Assert.Equal(default, viewModel.DefaultOpacity);
 
-		touchBehavior.DefaultOpacity = normalOpacity;
+		touchBehavior.DefaultOpacity = defaultOpacity;
 
-		Assert.Equal(normalOpacity, viewModel.NormalOpacity);
+		Assert.Equal(defaultOpacity, viewModel.DefaultOpacity);
 	}
 
 	[Fact]
@@ -1013,31 +1013,31 @@ public class TouchBehaviorTests : BaseTest
 	}
 
 	[Fact]
-	public void SetNormalAnimationDurationTest()
+	public void SetDefaultAnimationDurationTest()
 	{
-		const int normalAnimationDuration = 2;
+		const int defaultAnimationDuration = 2;
 		var viewModel = new TouchBehaviorViewModel();
 		touchBehavior.BindingContext = viewModel;
 
-		touchBehavior.SetBinding(TouchBehavior.DefaultAnimationDurationProperty, nameof(TouchBehaviorViewModel.NormalAnimationDuration), mode: BindingMode.TwoWay);
+		touchBehavior.SetBinding(TouchBehavior.DefaultAnimationDurationProperty, nameof(TouchBehaviorViewModel.DefaultAnimationDuration), mode: BindingMode.TwoWay);
 
-		touchBehavior.DefaultAnimationDuration = normalAnimationDuration;
+		touchBehavior.DefaultAnimationDuration = defaultAnimationDuration;
 
-		Assert.Equal(normalAnimationDuration, viewModel.NormalAnimationDuration);
+		Assert.Equal(defaultAnimationDuration, viewModel.DefaultAnimationDuration);
 	}
 
 	[Fact]
-	public void SetNormalAnimationEasingTest()
+	public void SetDefaultAnimationEasingTest()
 	{
-		Easing normalAnimationEasing = Easing.Linear;
+		Easing defaultAnimationEasing = Easing.Linear;
 		var viewModel = new TouchBehaviorViewModel();
 		touchBehavior.BindingContext = viewModel;
 
-		touchBehavior.SetBinding(TouchBehavior.DefaultAnimationEasingProperty, nameof(TouchBehaviorViewModel.NormalAnimationEasing), mode: BindingMode.TwoWay);
+		touchBehavior.SetBinding(TouchBehavior.DefaultAnimationEasingProperty, nameof(TouchBehaviorViewModel.DefaultAnimationEasing), mode: BindingMode.TwoWay);
 
-		touchBehavior.DefaultAnimationEasing = normalAnimationEasing;
+		touchBehavior.DefaultAnimationEasing = defaultAnimationEasing;
 
-		Assert.Equal(normalAnimationEasing, viewModel.NormalAnimationEasing);
+		Assert.Equal(defaultAnimationEasing, viewModel.DefaultAnimationEasing);
 	}
 
 	[Fact]
@@ -1161,16 +1161,16 @@ public class TouchBehaviorTests : BaseTest
 	sealed class TouchBehaviorViewModel
 	{
 		public int AnimationDuration { get; set; }
-		public int NormalAnimationDuration { get; set; }
+		public int DefaultAnimationDuration { get; set; }
 		public int HoveredAnimationDuration { get; set; }
 		public int PressedAnimationDuration { get; set; }
 		public int LongPressDuration { get; set; }
 		public Easing? AnimationEasing { get; set; }
-		public Easing? NormalAnimationEasing { get; set; }
+		public Easing? DefaultAnimationEasing { get; set; }
 		public Easing? HoveredAnimationEasing { get; set; }
 		public Easing? PressedAnimationEasing { get; set; }
 		public double HoveredOpacity { get; set; }
-		public double NormalOpacity { get; set; }
+		public double DefaultOpacity { get; set; }
 		public double PressedOpacity { get; set; }
 		public bool IsNativeAnimationBorderLess { get; set; }
 		public Color? NativeAnimationColor { get; set; }
