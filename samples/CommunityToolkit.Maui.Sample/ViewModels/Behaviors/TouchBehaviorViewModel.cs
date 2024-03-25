@@ -6,9 +6,6 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 public partial class TouchBehaviorViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	bool isNativeAnimationBorderless;
-
-	[ObservableProperty]
 	int touchCount, longPressCount;
 
 	static Task DisplayAlert(string title, CancellationToken token)
