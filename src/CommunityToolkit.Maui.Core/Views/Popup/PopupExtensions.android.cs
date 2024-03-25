@@ -1,12 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Android.Content;
 using Android.Graphics.Drawables;
-using Android.OS;
 using Android.Views;
-using AndroidX.AppCompat.Widget;
 using CommunityToolkit.Maui.Core.Handlers;
 using Microsoft.Maui.Platform;
-using static Android.Views.View;
 using static Android.Views.ViewGroup;
 using AColorRes = Android.Resource.Color;
 using APoint = Android.Graphics.Point;
@@ -36,7 +32,7 @@ public static class PopupExtensions
 		var statusBarHeight = GetStatusBarHeight(windowManager);
 		var navigationBarHeight = GetNavigationBarHeight(windowManager);
 		var windowSize = GetWindowSize(windowManager);
-		var rotation = windowManager!.DefaultDisplay!.Rotation;
+		var rotation = windowManager.DefaultDisplay!.Rotation;
 		navigationBarHeight = windowSize.Height < windowSize.Width ? (rotation == SurfaceOrientation.Rotation270 ? navigationBarHeight : 0) : 0;
 
 		if (popup.Handler?.MauiContext is null)
@@ -122,7 +118,7 @@ public static class PopupExtensions
 	{
 		ArgumentNullException.ThrowIfNull(dialog);
 		ArgumentNullException.ThrowIfNull(container);
-		ArgumentNullException.ThrowIfNull(popup?.Content);
+		ArgumentNullException.ThrowIfNull(popup.Content);
 		ArgumentNullException.ThrowIfNull(handler);
 
 		var window = GetWindow(dialog);
@@ -130,7 +126,6 @@ public static class PopupExtensions
 		var windowManager = window.WindowManager;
 
 		var decorView = (ViewGroup)window.DecorView;
-		var child = decorView.GetChildAt(0) ?? throw new InvalidOperationException($"No child found in {nameof(ViewGroup)}");
 
 		var windowSize = GetWindowSize(windowManager);
 		int width = LayoutParams.WrapContent;
@@ -140,18 +135,18 @@ public static class PopupExtensions
 		{
 			if (double.IsNaN(popup.Content.Width) || double.IsNaN(popup.Content.Height))
 			{
-				if ((handler.LastPopupWidth == decorView.MeasuredWidth &&
-					 handler.LastPopupHeight == decorView.MeasuredHeight) &&
-					(handler.LastWindowWidth == windowSize.Width &&
-					 handler.LastWindowHeight == windowSize.Height))
+				if ((handler.LastPopupWidth == decorView.MeasuredWidth 
+					&& handler.LastPopupHeight == decorView.MeasuredHeight) 
+					&& Math.Abs(handler.LastWindowWidth - windowSize.Width) < 0.01 // Allow for floating point variation 
+					&& Math.Abs(handler.LastWindowHeight - windowSize.Height) < 0.01) // Allow for floating point variation
 				{
 					SetAnchor(dialog, popup, handler.LastPopupWidth, handler.LastPopupHeight);
 					return;
 				}
 
 				decorView.Measure(
-					MeasureSpecExtensions.MakeMeasureSpec(MeasureSpecMode.AtMost, (int)windowSize.Width),
-					MeasureSpecExtensions.MakeMeasureSpec(MeasureSpecMode.AtMost, (int)windowSize.Height)
+					MeasureSpecMode.AtMost.MakeMeasureSpec((int)windowSize.Width),
+					MeasureSpecMode.AtMost.MakeMeasureSpec((int)windowSize.Height)
 				);
 
 				if (double.IsNaN(popup.Content.Width))
@@ -223,10 +218,10 @@ public static class PopupExtensions
 				width = width > windowSize.Width ? (int)windowSize.Width : width;
 				height = height > windowSize.Height ? (int)windowSize.Height : height;
 
-				if ((handler.LastPopupWidth == width &&
-					 handler.LastPopupHeight == height) &&
-					(handler.LastWindowWidth == windowSize.Width &&
-					 handler.LastWindowHeight == windowSize.Height))
+				if (handler.LastPopupWidth == width 
+					&& handler.LastPopupHeight == height 
+					&& Math.Abs(handler.LastWindowWidth - windowSize.Width) < 0.01  // Allow for floating point variation 
+					&& Math.Abs(handler.LastWindowHeight - windowSize.Height) < 0.01)// Allow for floating point variation
 				{
 					SetAnchor(dialog, popup, handler.LastPopupWidth, handler.LastPopupHeight);
 					return;
@@ -247,10 +242,10 @@ public static class PopupExtensions
 			width = width > windowSize.Width ? (int)windowSize.Width : width;
 			height = height > windowSize.Height ? (int)windowSize.Height : height;
 
-			if ((handler.LastPopupWidth == width &&
-				 handler.LastPopupHeight == height) &&
-				(handler.LastWindowWidth == windowSize.Width &&
-				 handler.LastWindowHeight == windowSize.Height))
+			if (handler.LastPopupWidth == width 
+				&& handler.LastPopupHeight == height
+				&& Math.Abs(handler.LastWindowWidth - windowSize.Width) < 0.01  // Allow for floating point variation
+				&& Math.Abs(handler.LastWindowHeight - windowSize.Height) < 0.01)  // Allow for floating point variation
 			{
 				SetAnchor(dialog, popup, handler.LastPopupWidth, handler.LastPopupHeight);
 				return;
@@ -293,7 +288,7 @@ public static class PopupExtensions
 	static Window GetWindow(in Dialog dialog) =>
 		dialog.Window ?? throw new InvalidOperationException($"{nameof(Dialog)}.{nameof(Dialog.Window)} cannot be null");
 
-	static Size GetWindowSize(IWindowManager? windowManager)
+	static Size GetWindowSize([NotNull] IWindowManager? windowManager)
 	{
 		ArgumentNullException.ThrowIfNull(windowManager);
 
@@ -302,7 +297,7 @@ public static class PopupExtensions
 		int statusBarHeight;
 		int navigationBarHeight;
 
-		if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.R))
+		if (OperatingSystem.IsAndroidVersionAtLeast(30))
 		{
 			var windowMetrics = windowManager.CurrentWindowMetrics;
 			var windowInsets = windowMetrics.WindowInsets.GetInsetsIgnoringVisibility(WindowInsets.Type.SystemBars());
@@ -349,8 +344,14 @@ public static class PopupExtensions
 									: (realSize.Y - displaySize.Y);
 		}
 
-		windowWidth = (windowWidth - (windowHeight < windowWidth ? navigationBarHeight : 0));
-		windowHeight = (windowHeight - ((windowHeight < windowWidth ? 0 : navigationBarHeight) + statusBarHeight));
+		windowWidth -= windowHeight < windowWidth 
+			? navigationBarHeight 
+			: 0;
+		
+		windowHeight -= (windowHeight < windowWidth 
+			? 0 
+			: navigationBarHeight) 
+			+ statusBarHeight;
 
 		return new Size(windowWidth, windowHeight);
 	}
@@ -358,17 +359,15 @@ public static class PopupExtensions
 	static int GetNavigationBarHeight(IWindowManager? windowManager)
 	{
 		ArgumentNullException.ThrowIfNull(windowManager);
-
-		int windowWidth;
-		int windowHeight;
+		
 		int navigationBarHeight;
 
-		if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.R))
+		if (OperatingSystem.IsAndroidVersionAtLeast(30))
 		{
 			var windowMetrics = windowManager.CurrentWindowMetrics;
 			var windowInsets = windowMetrics.WindowInsets.GetInsetsIgnoringVisibility(WindowInsets.Type.SystemBars());
-			windowWidth = windowMetrics.Bounds.Width();
-			windowHeight = windowMetrics.Bounds.Height();
+			var windowWidth = windowMetrics.Bounds.Width();
+			var windowHeight = windowMetrics.Bounds.Height();
 			navigationBarHeight = windowHeight < windowWidth ? windowInsets.Left + windowInsets.Right : windowInsets.Bottom;
 		}
 		else if (windowManager.DefaultDisplay is null)
@@ -392,9 +391,6 @@ public static class PopupExtensions
 			ArgumentNullException.ThrowIfNull(displaySmallSize);
 			ArgumentNullException.ThrowIfNull(displayLargeSize);
 
-			windowWidth = realSize.X;
-			windowHeight = realSize.Y;
-
 			navigationBarHeight = realSize.Y < realSize.X
 									? (realSize.X - displaySize.X)
 									: (realSize.Y - displaySize.Y);
@@ -409,7 +405,7 @@ public static class PopupExtensions
 
 		int statusBarHeight;
 
-		if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.R))
+		if (OperatingSystem.IsAndroidVersionAtLeast(30))
 		{
 			var windowMetrics = windowManager.CurrentWindowMetrics;
 			var windowInsets = windowMetrics.WindowInsets.GetInsetsIgnoringVisibility(WindowInsets.Type.SystemBars());
