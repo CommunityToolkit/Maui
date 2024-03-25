@@ -350,16 +350,8 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 				}
 				break;
 
+			// Handled in TouchState.Default
 			case HoverState.Default:
-				if (imageTouchBehavior.IsSet(ImageTouchBehavior.DefaultImageAspectProperty))
-				{
-					bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.DefaultImageAspect);
-				}
-
-				if (imageTouchBehavior.IsSet(ImageTouchBehavior.DefaultImageSourceProperty))
-				{
-					bindable.SetValue(ImageElement.SourceProperty, imageTouchBehavior.DefaultImageSource);
-				}
 				break;
 
 			default:
