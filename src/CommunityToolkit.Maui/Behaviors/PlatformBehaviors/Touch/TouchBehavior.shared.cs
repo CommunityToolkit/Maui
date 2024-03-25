@@ -1221,7 +1221,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 			if (value is not null)
 			{
 				SetChildrenInputTransparent(ShouldMakeChildrenInputTransparent);
-				ForceUpdateState(CancellationToken.None).SafeFireAndForget<TaskCanceledException>(ex => Trace.WriteLine(ex));
+				ForceUpdateState(CancellationToken.None, false).SafeFireAndForget<TaskCanceledException>(ex => Trace.WriteLine(ex));
 			}
 		}
 	}

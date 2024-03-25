@@ -24,12 +24,19 @@
 
     <ScrollView>
         <VerticalStackLayout>
-            <HorizontalStackLayout HorizontalOptions="Center">
-                <Label FontAttributes="Bold" HorizontalOptions="Center" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" Text="IsNativeAnimationBorderless" />
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
+                <Label FontAttributes="Bold" 
+                       HorizontalOptions="Center" 
+                       HorizontalTextAlignment="Center"
+                       VerticalOptions="Center"
+                       VerticalTextAlignment="Center" Text="IsNativeAnimationBorderless" 
+                       FontSize="Body"/>
                 <Switch IsToggled="{Binding IsNativeAnimationBorderless}" VerticalOptions="Center" />
             </HorizontalStackLayout>
 
-            <Label HorizontalOptions="Center" HorizontalTextAlignment="Center" Text="{Binding TouchCount, StringFormat='Touches: {0}'}" />
+            <Label HorizontalOptions="Center" HorizontalTextAlignment="Center"
+                   FontSize="Body"
+                   Text="{Binding TouchCount, StringFormat='Touches: {0}'}" />
 
             <Label Style="{StaticResource SectionHeader}" Text="Image | Toggle" />
             <Image HeightRequest="100" WidthRequest="100">
@@ -68,7 +75,8 @@
             <Label
                 FontSize="Body"
                 HorizontalOptions="CenterAndExpand"
-                Text="{Binding LongPressCount, StringFormat='Long press count: {0}'}" />
+                Text="{Binding LongPressCount, StringFormat='Long press count: {0}'}"
+                Margin="0,0,0,6" />
             <HorizontalStackLayout
                 Padding="20"
                 Background="Black"

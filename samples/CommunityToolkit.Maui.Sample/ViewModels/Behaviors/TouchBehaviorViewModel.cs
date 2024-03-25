@@ -12,21 +12,15 @@ public partial class TouchBehaviorViewModel : BaseViewModel
 	int touchCount, longPressCount;
 
 	static Task DisplayAlert(string title, CancellationToken token)
-	{
-		return Shell.Current.DisplayAlert(title, null, "Ok").WaitAsync(token);
-	}
+		=> Shell.Current.DisplayAlert(title, null, "Ok").WaitAsync(token);
 
 	[RelayCommand]
-	async Task ParentClicked(CancellationToken token)
-	{
-		await DisplayAlert("Parent Clicked", token);
-	}
+	static Task ParentClicked(CancellationToken token) 
+		=> DisplayAlert("Parent Clicked", token);
 
 	[RelayCommand]
-	async Task ChildClicked(CancellationToken token)
-	{
-		await DisplayAlert("Child Clicked", token);
-	}
+	static Task ChildClicked(CancellationToken token) 
+		=> DisplayAlert("Child Clicked", token);
 
 	[RelayCommand]
 	void IncreaseTouchCount()

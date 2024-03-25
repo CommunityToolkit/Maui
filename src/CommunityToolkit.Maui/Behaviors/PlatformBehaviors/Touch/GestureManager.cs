@@ -142,9 +142,9 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			return;
 		}
 
-		var pulseCount = sender.RepeatAnimationCount;
+		var repeatAnimationCount = sender.RepeatAnimationCount;
 
-		if (pulseCount is 0)
+		if (repeatAnimationCount is 0)
 		{
 			await RunAnimationTask(sender, touchState, hoverState, animationTokenSource.Token).ConfigureAwait(false);
 			return;
@@ -152,9 +152,9 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 		do
 		{
-			await RunAnimationTask(sender, TouchState.Pressed, hoverState, animationTokenSource.Token);
-			await RunAnimationTask(sender, TouchState.Normal, hoverState, animationTokenSource.Token);
-		} while (--pulseCount > 0);
+			await RunAnimationTask(sender, TouchState.Pressed, hoverState, animationTokenSource.Token).WaitAsync(token);
+			await RunAnimationTask(sender, TouchState.Normal, hoverState, animationTokenSource.Token).WaitAsync(token);
+		} while (--repeatAnimationCount > 0);
 	}
 
 	internal async Task HandleLongPress(TouchBehavior sender, CancellationToken token)
