@@ -1,7 +1,7 @@
 using System.Buffers;
-using System.Diagnostics;
 using System.Web;
 using Android.Content;
+using Android.OS;
 using Android.Provider;
 using Android.Webkit;
 using CommunityToolkit.Maui.Core.Essentials;
@@ -9,13 +9,14 @@ using CommunityToolkit.Maui.Core.Extensions;
 using Java.IO;
 using Microsoft.Maui.ApplicationModel;
 using AndroidUri = Android.Net.Uri;
+using Trace = System.Diagnostics.Trace;
 
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc />
 public sealed partial class FileSaverImplementation : IFileSaver
 {
-	static async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
+	static async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
 	{
 		if (!OperatingSystem.IsAndroidVersionAtLeast(26) && !string.IsNullOrEmpty(initialPath))
 		{
@@ -53,7 +54,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 			throw new FileSaveException("Path doesn't exist.");
 		}
 
-		return await SaveDocument(filePath, stream, cancellationToken).ConfigureAwait(false);
+		return await SaveDocument(filePath, stream, progress, cancellationToken).ConfigureAwait(false);
 
 		void OnResult(Intent resultIntent)
 		{
@@ -61,9 +62,9 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		}
 	}
 
-	static Task<string> InternalSaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
+	static Task<string> InternalSaveAsync(string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
 	{
-		return InternalSaveAsync(AndroidPathExtensions.GetExternalDirectory(), fileName, stream, cancellationToken);
+		return InternalSaveAsync(AndroidPathExtensions.GetExternalDirectory(), fileName, stream, progress, cancellationToken);
 	}
 
 	static AndroidUri EnsurePhysicalPath(AndroidUri? uri)
@@ -82,7 +83,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		throw new FileSaveException($"Unable to resolve absolute path or retrieve contents of URI '{uri}'.");
 	}
 
-	static async Task<string> SaveDocument(AndroidUri uri, Stream stream, CancellationToken cancellationToken)
+	static async Task<string> SaveDocument(AndroidUri uri, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
 	{
 		if (stream.CanSeek)
 		{
@@ -90,7 +91,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		}
 
 		using var parcelFileDescriptor = Application.Context.ContentResolver?.OpenFileDescriptor(uri, "wt");
-		using var fileOutputStream = new FileOutputStream(parcelFileDescriptor?.FileDescriptor);
+		using var fileOutputStream = new ParcelFileDescriptor.AutoCloseOutputStream(parcelFileDescriptor);
 		var buffer = ArrayPool<byte>.Shared.Rent(4096);
 
 		try
@@ -101,6 +102,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 			{
 				await fileOutputStream.WriteAsync(buffer, 0, bytesRead).WaitAsync(cancellationToken).ConfigureAwait(false);
 				totalRead += bytesRead;
+				progress?.Report(totalRead / stream.Length);
 			}
 
 			if (fileOutputStream.Channel is not null)
@@ -110,6 +112,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		}
 		finally
 		{
+			progress?.Report(100);
 			ArrayPool<byte>.Shared.Return(buffer);
 		}
 

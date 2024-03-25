@@ -28,6 +28,8 @@
         <Button Command="{Binding SaveFileInstanceCommand}"
                 Text="Save using new instance of FileSaver"
                 HorizontalOptions="Center"/>
+        
+        <ProgressBar Progress="{Binding Progress}" />
 
     </VerticalStackLayout>
     
