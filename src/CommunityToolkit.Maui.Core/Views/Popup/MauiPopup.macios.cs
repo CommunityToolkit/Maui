@@ -58,29 +58,6 @@ public class MauiPopup : UIViewController
 		SetElementSize(new Size(View.Bounds.Width, View.Bounds.Height));
 	}
 
-	void SetShadowView(UIView target)
-	{
-		if (target.Class.Name == "_UICutoutShadowView")
-		{
-			target.RemoveFromSuperview();
-		}
-		if (target.Class.Name == "_UIPopoverDimmingView")
-		{
-			target.BackgroundColor = UIColor.Black.ColorWithAlpha(0.4f);
-		}
-
-		foreach (UIView view in target.Subviews)
-		{
-			SetShadowView(view);
-		}
-	}	
-
-	/// <inheritdoc/>
-	public override void ViewDidDisappear(bool animated)
-	{
-		base.ViewDidDisappear(animated);
-	}
-
 	/// <inheritdoc/>
 	public override void ViewWillTransitionToSize(CGSize toSize, IUIViewControllerTransitionCoordinator coordinator)
 	{
@@ -170,10 +147,28 @@ public class MauiPopup : UIViewController
 		this.SetLayout(virtualView);
 	}
 
-	void SetView(UIView view, PageHandler control)
+	static void SetShadowView(in UIView target)
+	{
+		if (target.Class.Name is "_UICutoutShadowView")
+		{
+			target.RemoveFromSuperview();
+		}
+
+		if (target.Class.Name is "_UIPopoverDimmingView")
+		{
+			target.BackgroundColor = UIColor.Black.ColorWithAlpha(0.4f);
+		}
+
+		foreach (var view in target.Subviews)
+		{
+			SetShadowView(view);
+		}
+	}
+
+	void SetView(UIView view, IPlatformViewHandler control)
 	{
 		view.AddSubview(control.ViewController?.View ?? throw new InvalidOperationException($"{nameof(control.ViewController.View)} cannot be null."));
-		view.Bounds = new(0, 0, PreferredContentSize.Width, PreferredContentSize.Height);
+		view.Bounds = new CGRect(0, 0, PreferredContentSize.Width, PreferredContentSize.Height);
 		AddChildViewController(control.ViewController);
 
 		if (VirtualView is not null)
@@ -187,7 +182,7 @@ public class MauiPopup : UIViewController
 		var popOverDelegate = new PopoverDelegate();
 		popOverDelegate.PopoverDismissedEvent += HandlePopoverDelegateDismissed;
 
-		UIPopoverPresentationController presentationController = (UIPopoverPresentationController)(PresentationController ?? throw new InvalidOperationException($"{nameof(PresentationController)} cannot be null."));
+		var presentationController = (UIPopoverPresentationController)(PresentationController ?? throw new InvalidOperationException($"{nameof(PresentationController)} cannot be null."));
 		presentationController.SourceView = ViewController?.View ?? throw new InvalidOperationException($"{nameof(ViewController.View)} cannot be null.");
 
 		presentationController.Delegate = popOverDelegate;
