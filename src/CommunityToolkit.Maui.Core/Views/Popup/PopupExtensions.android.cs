@@ -60,10 +60,10 @@ public static class PopupExtensions
 			// 3. Calculate the top-left point of where the dialog should be positioned by subtracting the Width / 2 and height / 2
 			//    of the dialog that is about to be drawn.
 			var attribute = window.Attributes ?? throw new InvalidOperationException($"{nameof(window.Attributes)} cannot be null");
-			
+
 			var newX = locationOnScreen[0] - navigationBarHeight + (anchorView.Width / 2) - (popupWidth == null ? (window.DecorView.Width / 2) : (int)(popupWidth / 2));
 			var newY = locationOnScreen[1] - statusBarHeight + (anchorView.Height / 2) - (popupHeight == null ? (window.DecorView.Height / 2) : (int)(popupHeight / 2));
-			
+
 			if (!(newX == attribute.X &&
 				  newY == attribute.Y))
 			{
@@ -135,8 +135,8 @@ public static class PopupExtensions
 		{
 			if (double.IsNaN(popup.Content.Width) || double.IsNaN(popup.Content.Height))
 			{
-				if ((handler.LastPopupWidth == decorView.MeasuredWidth 
-					&& handler.LastPopupHeight == decorView.MeasuredHeight) 
+				if ((handler.LastPopupWidth == decorView.MeasuredWidth
+					&& handler.LastPopupHeight == decorView.MeasuredHeight)
 					&& Math.Abs(handler.LastWindowWidth - windowSize.Width) < 0.01 // Allow for floating point variation 
 					&& Math.Abs(handler.LastWindowHeight - windowSize.Height) < 0.01) // Allow for floating point variation
 				{
@@ -218,8 +218,8 @@ public static class PopupExtensions
 				width = width > windowSize.Width ? (int)windowSize.Width : width;
 				height = height > windowSize.Height ? (int)windowSize.Height : height;
 
-				if (handler.LastPopupWidth == width 
-					&& handler.LastPopupHeight == height 
+				if (handler.LastPopupWidth == width
+					&& handler.LastPopupHeight == height
 					&& Math.Abs(handler.LastWindowWidth - windowSize.Width) < 0.01  // Allow for floating point variation 
 					&& Math.Abs(handler.LastWindowHeight - windowSize.Height) < 0.01)// Allow for floating point variation
 				{
@@ -242,7 +242,7 @@ public static class PopupExtensions
 			width = width > windowSize.Width ? (int)windowSize.Width : width;
 			height = height > windowSize.Height ? (int)windowSize.Height : height;
 
-			if (handler.LastPopupWidth == width 
+			if (handler.LastPopupWidth == width
 				&& handler.LastPopupHeight == height
 				&& Math.Abs(handler.LastWindowWidth - windowSize.Width) < 0.01  // Allow for floating point variation
 				&& Math.Abs(handler.LastWindowHeight - windowSize.Height) < 0.01)  // Allow for floating point variation
@@ -344,13 +344,13 @@ public static class PopupExtensions
 									: (realSize.Y - displaySize.Y);
 		}
 
-		windowWidth -= windowHeight < windowWidth 
-			? navigationBarHeight 
+		windowWidth -= windowHeight < windowWidth
+			? navigationBarHeight
 			: 0;
-		
-		windowHeight -= (windowHeight < windowWidth 
-			? 0 
-			: navigationBarHeight) 
+
+		windowHeight -= (windowHeight < windowWidth
+			? 0
+			: navigationBarHeight)
 			+ statusBarHeight;
 
 		return new Size(windowWidth, windowHeight);
@@ -359,7 +359,7 @@ public static class PopupExtensions
 	static int GetNavigationBarHeight(IWindowManager? windowManager)
 	{
 		ArgumentNullException.ThrowIfNull(windowManager);
-		
+
 		int navigationBarHeight;
 
 		if (OperatingSystem.IsAndroidVersionAtLeast(30))
