@@ -172,7 +172,7 @@
             <Border
                 Margin="20"
                 Padding="20,10"
-                BackgroundColor="White"
+                BackgroundColor="Transparent"
                 StrokeShape="RoundRectangle, 10"
                 StrokeThickness="0">
                 <Border.Behaviors>
