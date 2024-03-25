@@ -59,15 +59,15 @@
                         PressedScale="0.8" />
                 </HorizontalStackLayout.Behaviors>
 
-                <BoxView
+                <ContentView
                     HeightRequest="100"
                     WidthRequest="10"
-                    Color="Gold" />
+                    BackgroundColor="Gold" />
                 <Label Text="The entire layout receives touches" VerticalOptions="Center" LineBreakMode="TailTruncation"/>
-                <BoxView
+                <ContentView
                     HeightRequest="100"
                     WidthRequest="10"
-                    Color="Gold" />
+                    BackgroundColor="Gold" />
             </HorizontalStackLayout>
 
             <Label Style="{StaticResource SectionHeader}" Text="Native | Long Press | Hover" />
@@ -151,19 +151,19 @@
                         IsNativeAnimationBorderless="{Binding Source={x:Reference Page}, Path=BindingContext.IsNativeAnimationBorderless}" />
                 </ContentView.Behaviors>
 
-                <BoxView
+                <ContentView
                     BackgroundColor="Red"
                     HeightRequest="100"
                     HorizontalOptions="Center"
                     VerticalOptions="Center"
                     WidthRequest="100">
-                    <BoxView.Behaviors>
+                    <ContentView.Behaviors>
                         <mct:TouchBehavior
                             Command="{Binding Source={x:Reference Page}, Path=BindingContext.ChildClickedCommand}"
                             ShouldUseNativeAnimation="True"
                             IsNativeAnimationBorderless="{Binding Source={x:Reference Page}, Path=BindingContext.IsNativeAnimationBorderless}" />
-                    </BoxView.Behaviors>
-                </BoxView>
+                    </ContentView.Behaviors>
+                </ContentView>
             </ContentView>
 
             <Label Style="{StaticResource SectionHeader}" Text="Input transparency for nested layouts" />
