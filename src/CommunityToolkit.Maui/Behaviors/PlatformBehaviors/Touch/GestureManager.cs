@@ -62,7 +62,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 		var hoverState = hoverStatus switch
 		{
 			HoverStatus.Entered => HoverState.Hovered,
-			HoverStatus.Exited => HoverState.Normal,
+			HoverStatus.Exited => HoverState.Default,
 			_ => throw new NotSupportedException($"{nameof(HoverStatus)} {hoverStatus} not yet supported")
 		};
 
@@ -94,7 +94,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 			var state = status is TouchStatus.Started
 				? TouchState.Pressed
-				: TouchState.Normal;
+				: TouchState.Default;
 
 			if (status is TouchStatus.Started)
 			{
@@ -112,7 +112,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 	}
 
 	internal async Task ChangeStateAsync(TouchBehavior sender, bool animated, CancellationToken token)
-	{	
+	{
 		var touchStatus = sender.CurrentTouchStatus;
 		var touchState = sender.CurrentTouchState;
 		var hoverState = sender.CurrentHoverState;
@@ -153,13 +153,13 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 		do
 		{
 			await RunAnimationTask(sender, TouchState.Pressed, hoverState, animationTokenSource.Token).WaitAsync(token);
-			await RunAnimationTask(sender, TouchState.Normal, hoverState, animationTokenSource.Token).WaitAsync(token);
+			await RunAnimationTask(sender, TouchState.Default, hoverState, animationTokenSource.Token).WaitAsync(token);
 		} while (--repeatAnimationCount > 0);
 	}
 
 	internal async Task HandleLongPress(TouchBehavior sender, CancellationToken token)
 	{
-		if (sender.CurrentTouchState is TouchState.Normal)
+		if (sender.CurrentTouchState is TouchState.Default)
 		{
 			longPressTokenSource?.CancelAsync();
 			longPressTokenSource?.Dispose();
@@ -301,41 +301,6 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			return;
 		}
 
-		var normalBackgroundImageSource = sender.NormalBackgroundImageSource;
-		var pressedBackgroundImageSource = sender.PressedBackgroundImageSource;
-		var hoveredBackgroundImageSource = sender.HoveredBackgroundImageSource;
-
-		var aspect = sender.BackgroundImageAspect;
-		var source = normalBackgroundImageSource;
-		if (touchState is TouchState.Pressed)
-		{
-			if (sender.IsSet(TouchBehavior.PressedBackgroundImageAspectProperty))
-			{
-				aspect = sender.PressedBackgroundImageAspect;
-			}
-
-			source = pressedBackgroundImageSource;
-		}
-		else if (hoverState is HoverState.Hovered)
-		{
-			if (sender.IsSet(TouchBehavior.HoveredBackgroundImageAspectProperty))
-			{
-				aspect = sender.HoveredBackgroundImageAspect;
-			}
-
-			if (sender.IsSet(TouchBehavior.HoveredBackgroundImageSourceProperty))
-			{
-				source = hoveredBackgroundImageSource;
-			}
-		}
-		else
-		{
-			if (sender.IsSet(TouchBehavior.NormalBackgroundImageAspectProperty))
-			{
-				aspect = sender.NormalBackgroundImageAspect;
-			}
-		}
-
 		try
 		{
 			if (sender.ShouldSetImageOnAnimationEnd && duration > TimeSpan.Zero)
@@ -348,8 +313,42 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			return;
 		}
 
-		image.Aspect = aspect;
-		image.Source = source;
+		if (touchState is TouchState.Pressed)
+		{
+			if (sender.IsSet(TouchBehavior.PressedBackgroundImageAspectProperty))
+			{
+				image.Aspect = sender.PressedBackgroundImageAspect;
+			}
+
+			if (sender.IsSet(TouchBehavior.PressedBackgroundImageSourceProperty))
+			{
+				image.Source = sender.PressedBackgroundImageSource;
+			}
+		}
+		else if (hoverState is HoverState.Hovered)
+		{
+			if (sender.IsSet(TouchBehavior.HoveredBackgroundImageAspectProperty))
+			{
+				image.Aspect = sender.HoveredBackgroundImageAspect;
+			}
+
+			if (sender.IsSet(TouchBehavior.HoveredBackgroundImageSourceProperty))
+			{
+				image.Source = sender.HoveredBackgroundImageSource;
+			}
+		}
+		else
+		{
+			if (sender.IsSet(TouchBehavior.DefaultBackgroundImageAspectProperty))
+			{
+				image.Aspect = sender.DefaultBackgroundImageAspect;
+			}
+
+			if (sender.IsSet(TouchBehavior.DefaultBackgroundImageSourceProperty))
+			{
+				image.Source = sender.DefaultBackgroundImageSource;
+			}
+		}
 	}
 
 	static void UpdateStatusAndState(TouchBehavior sender, TouchStatus status, TouchState state)
@@ -375,7 +374,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 	static async Task<bool> SetOpacity(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
-		var normalOpacity = sender.NormalOpacity;
+		var normalOpacity = sender.DefaultOpacity;
 		var pressedOpacity = sender.PressedOpacity;
 		var hoveredOpacity = sender.HoveredOpacity;
 
@@ -411,7 +410,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 	static async Task<bool> SetScale(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
-		var normalScale = sender.NormalScale;
+		var normalScale = sender.DefaultScale;
 		var pressedScale = sender.PressedScale;
 		var hoveredScale = sender.HoveredScale;
 
@@ -463,11 +462,11 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 	static async Task<bool> SetTranslation(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
-		var normalTranslationX = sender.NormalTranslationX;
+		var normalTranslationX = sender.DefaultTranslationX;
 		var pressedTranslationX = sender.PressedTranslationX;
 		var hoveredTranslationX = sender.HoveredTranslationX;
 
-		var normalTranslationY = sender.NormalTranslationY;
+		var normalTranslationY = sender.DefaultTranslationY;
 		var pressedTranslationY = sender.PressedTranslationY;
 		var hoveredTranslationY = sender.HoveredTranslationY;
 
@@ -521,7 +520,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 	static async Task<bool> SetRotation(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
-		var normalRotation = sender.NormalRotation;
+		var normalRotation = sender.DefaultRotation;
 		var pressedRotation = sender.PressedRotation;
 		var hoveredRotation = sender.HoveredRotation;
 
@@ -561,7 +560,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 	static async Task<bool> SetRotationX(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
-		var normalRotationX = sender.NormalRotationX;
+		var normalRotationX = sender.DefaultRotationX;
 		var pressedRotationX = sender.PressedRotationX;
 		var hoveredRotationX = sender.HoveredRotationX;
 
@@ -601,7 +600,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 	static async Task<bool> SetRotationY(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
-		var normalRotationY = sender.NormalRotationY;
+		var normalRotationY = sender.DefaultRotationY;
 		var pressedRotationY = sender.PressedRotationY;
 		var hoveredRotationY = sender.HoveredRotationY;
 
@@ -641,7 +640,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 	async Task<bool> SetBackgroundColor(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
-		var normalBackgroundColor = sender.NormalBackgroundColor;
+		var normalBackgroundColor = sender.DefaultBackgroundColor;
 		var pressedBackgroundColor = sender.PressedBackgroundColor;
 		var hoveredBackgroundColor = sender.HoveredBackgroundColor;
 
@@ -712,14 +711,14 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 		}
 		else
 		{
-			if (sender.IsSet(TouchBehavior.NormalAnimationDurationProperty))
+			if (sender.IsSet(TouchBehavior.DefaultAnimationDurationProperty))
 			{
-				duration = sender.NormalAnimationDuration;
+				duration = sender.DefaultAnimationDuration;
 			}
 
-			if (sender.IsSet(TouchBehavior.NormalAnimationEasingProperty))
+			if (sender.IsSet(TouchBehavior.DefaultAnimationEasingProperty))
 			{
-				easing = sender.NormalAnimationEasing;
+				easing = sender.DefaultAnimationEasing;
 			}
 		}
 

@@ -21,10 +21,10 @@ public static class TouchBehaviorDefaults
 	public const double PressedOpacity = 1;
 
 	/// <summary>
-	/// Default Value for TouchBehavior <see cref="NormalOpacity"/>
+	/// Default Value for TouchBehavior <see cref="DefaultOpacity"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const double NormalOpacity = 1;
+	public const double DefaultOpacity = 1;
 
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="HoveredScale"/>
@@ -39,10 +39,10 @@ public static class TouchBehaviorDefaults
 	public const double PressedScale = 1;
 
 	/// <summary>
-	/// Default Value for TouchBehavior <see cref="NormalScale"/>
+	/// Default Value for TouchBehavior <see cref="DefaultScale"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const double NormalScale = 1;
+	public const double DefaultScale = 1;
 
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="HoveredTranslationX"/>
@@ -57,10 +57,10 @@ public static class TouchBehaviorDefaults
 	public const double PressedTranslationX = 0;
 
 	/// <summary>
-	/// Default Value for TouchBehavior <see cref="NormalTranslationX"/>
+	/// Default Value for TouchBehavior <see cref="DefaultTranslationX"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const double NormalTranslationX = 0;
+	public const double DefaultTranslationX = 0;
 
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="HoveredTranslationY"/>
@@ -75,10 +75,10 @@ public static class TouchBehaviorDefaults
 	public const double PressedTranslationY = 0;
 
 	/// <summary>
-	/// Default Value for TouchBehavior <see cref="NormalTranslationY"/>
+	/// Default Value for TouchBehavior <see cref="DefaultTranslationY"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const double NormalTranslationY = 0;
+	public const double DefaultTranslationY = 0;
 
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="HoveredRotation"/>
@@ -93,10 +93,10 @@ public static class TouchBehaviorDefaults
 	public const double PressedRotation = 0;
 
 	/// <summary>
-	/// Default Value for TouchBehavior <see cref="NormalRotation"/>
+	/// Default Value for TouchBehavior <see cref="DefaultRotation"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const double NormalRotation = 0;
+	public const double DefaultRotation = 0;
 
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="HoveredRotationX"/>
@@ -111,10 +111,10 @@ public static class TouchBehaviorDefaults
 	public const double PressedRotationX = 0;
 
 	/// <summary>
-	/// Default Value for TouchBehavior <see cref="NormalRotationX"/>
+	/// Default Value for TouchBehavior <see cref="DefaultRotationX"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const double NormalRotationX = 0;
+	public const double DefaultRotationX = 0;
 
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="HoveredRotationY"/>
@@ -129,10 +129,10 @@ public static class TouchBehaviorDefaults
 	public const double PressedRotationY = 0;
 
 	/// <summary>
-	/// Default Value for TouchBehavior <see cref="NormalRotationY"/>
+	/// Default Value for TouchBehavior <see cref="DefaultRotationY"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const double NormalRotationY = 0;
+	public const double DefaultRotationY = 0;
 
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="AnimationDuration"/>
@@ -141,10 +141,10 @@ public static class TouchBehaviorDefaults
 	public const int AnimationDuration = 0;
 
 	/// <summary>
-	/// Default Value for TouchBehavior <see cref="NormalAnimationDuration"/>
+	/// Default Value for TouchBehavior <see cref="DefaultAnimationDuration"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const int NormalAnimationDuration = 0;
+	public const int DefaultAnimationDuration = 0;
 
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="HoveredAnimationDuration"/>
@@ -165,10 +165,10 @@ public static class TouchBehaviorDefaults
 	public const Easing? AnimationEasing = null;
 
 	/// <summary>
-	/// Default Value for TouchBehavior <see cref="NormalAnimationEasing"/>
+	/// Default Value for TouchBehavior <see cref="DefaultAnimationEasing"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const Easing? NormalAnimationEasing = null;
+	public const Easing? DefaultAnimationEasing = null;
 
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="HoveredAnimationEasing"/>
@@ -216,7 +216,7 @@ public static class TouchBehaviorDefaults
 	/// Default Value for TouchBehavior <see cref="CurrentTouchState"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const TouchState CurrentTouchState = TouchState.Normal;
+	public const TouchState CurrentTouchState = TouchState.Default;
 
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="CurrentTouchStatus"/>
@@ -228,7 +228,7 @@ public static class TouchBehaviorDefaults
 	/// Default Value for TouchBehavior <see cref="CurrentHoverState"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const HoverState CurrentHoverState = HoverState.Normal;
+	public const HoverState CurrentHoverState = HoverState.Default;
 
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="CurrentHoverStatus"/>
@@ -255,10 +255,10 @@ public static class TouchBehaviorDefaults
 	public const Color? NativeAnimationColor = null;
 
 	/// <summary>
-	/// Default Value for TouchBehavior <see cref="NormalBackgroundColor"/>
+	/// Default Value for TouchBehavior <see cref="DefaultBackgroundColor"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const Color? NormalBackgroundColor = null;
+	public const Color? DefaultBackgroundColor = null;
 
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="HoveredBackgroundColor"/>
@@ -273,10 +273,10 @@ public static class TouchBehaviorDefaults
 	public const Color? PressedBackgroundColor = null;
 
 	/// <summary>
-	/// Default Value for TouchBehavior <see cref="NormalBackgroundImageSource"/>
+	/// Default Value for TouchBehavior <see cref="DefaultBackgroundImageSource"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const object? NormalBackgroundImageSource = null;
+	public const object? DefaultBackgroundImageSource = null;
 
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="HoveredBackgroundImageSource"/>
@@ -291,10 +291,10 @@ public static class TouchBehaviorDefaults
 	public const object? PressedBackgroundImageSource = null;
 
 	/// <summary>
-	/// Default Value for TouchBehavior <see cref="NormalBackgroundImageAspect"/>
+	/// Default Value for TouchBehavior <see cref="DefaultBackgroundImageAspect"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const Aspect NormalBackgroundImageAspect = Aspect.AspectFit;
+	public const Aspect DefaultBackgroundImageAspect = Aspect.AspectFit;
 
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="HoveredBackgroundImageAspect"/>
@@ -307,12 +307,6 @@ public static class TouchBehaviorDefaults
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const Aspect PressedBackgroundImageAspect = Aspect.AspectFit;
-
-	/// <summary>
-	/// Default Value for TouchBehavior <see cref="BackgroundImageAspect"/>
-	/// </summary>
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const Aspect BackgroundImageAspect = Aspect.AspectFit;
 
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="IsNativeAnimationBorderless"/>

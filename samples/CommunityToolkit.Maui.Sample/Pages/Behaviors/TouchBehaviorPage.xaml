@@ -43,7 +43,7 @@
                 <Image.Behaviors>
                     <mct:TouchBehavior
                         Command="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseTouchCountCommand}"
-                        NormalBackgroundImageSource="button.png"
+                        DefaultBackgroundImageSource="button.png"
                         PressedBackgroundImageSource="button_pressed.png" />
                 </Image.Behaviors>
             </Image>
@@ -63,7 +63,7 @@
                     HeightRequest="100"
                     WidthRequest="10"
                     Color="Gold" />
-                <Label Text="The entire layout receives touches" VerticalOptions="Center" />
+                <Label Text="The entire layout receives touches" VerticalOptions="Center" LineBreakMode="TailTruncation"/>
                 <BoxView
                     HeightRequest="100"
                     WidthRequest="10"
@@ -108,7 +108,7 @@
                     <mct:TouchBehavior
                         AnimationDuration="500"
                         Command="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseTouchCountCommand}"
-                        NormalBackgroundColor="Gold"
+                        DefaultBackgroundColor="Gold"
                         PressedBackgroundColor="Orange"
                         PressedRotation="15"
                         RepeatAnimationCount="2" />

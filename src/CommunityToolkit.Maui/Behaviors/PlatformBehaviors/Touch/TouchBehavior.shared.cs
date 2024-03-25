@@ -106,13 +106,13 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		TouchBehaviorDefaults.IsNativeAnimationBorderless);
 
 	/// <summary>
-	/// Bindable property for <see cref="NormalBackgroundImageSource"/>
+	/// Bindable property for <see cref="DefaultBackgroundImageSource"/>
 	/// </summary>
-	public static readonly BindableProperty NormalBackgroundImageSourceProperty = BindableProperty.Create(
-		nameof(NormalBackgroundImageSource),
+	public static readonly BindableProperty DefaultBackgroundImageSourceProperty = BindableProperty.Create(
+		nameof(DefaultBackgroundImageSource),
 		typeof(ImageSource),
 		typeof(TouchBehavior),
-		TouchBehaviorDefaults.NormalBackgroundImageSource);
+		TouchBehaviorDefaults.DefaultBackgroundImageSource);
 
 	/// <summary>
 	/// Bindable property for <see cref="HoveredBackgroundImageSource"/>
@@ -133,22 +133,13 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		TouchBehaviorDefaults.PressedBackgroundImageSource);
 
 	/// <summary>
-	/// Bindable property for <see cref="BackgroundImageAspect"/>
+	/// Bindable property for <see cref="DefaultBackgroundImageAspect"/>
 	/// </summary>
-	public static readonly BindableProperty BackgroundImageAspectProperty = BindableProperty.Create(
-		nameof(BackgroundImageAspect),
+	public static readonly BindableProperty DefaultBackgroundImageAspectProperty = BindableProperty.Create(
+		nameof(DefaultBackgroundImageAspect),
 		typeof(Aspect),
 		typeof(TouchBehavior),
-		TouchBehaviorDefaults.BackgroundImageAspect);
-
-	/// <summary>
-	/// Bindable property for <see cref="NormalBackgroundImageAspect"/>
-	/// </summary>
-	public static readonly BindableProperty NormalBackgroundImageAspectProperty = BindableProperty.Create(
-		nameof(NormalBackgroundImageAspect),
-		typeof(Aspect),
-		typeof(TouchBehavior),
-		TouchBehaviorDefaults.NormalBackgroundImageAspect);
+		TouchBehaviorDefaults.DefaultBackgroundImageAspect);
 
 	/// <summary>
 	/// Bindable property for <see cref="HoveredBackgroundImageAspect"/>
@@ -240,13 +231,13 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		propertyChanged: static async (bindable, _, _) => await ((TouchBehavior)bindable).RaiseCurrentTouchStateChanged(CancellationToken.None));
 
 	/// <summary>
-	/// Bindable property for <see cref="NormalBackgroundColor"/>
+	/// Bindable property for <see cref="DefaultBackgroundColor"/>
 	/// </summary>
-	public static readonly BindableProperty NormalBackgroundColorProperty = BindableProperty.Create(
-		nameof(NormalBackgroundColor),
+	public static readonly BindableProperty DefaultBackgroundColorProperty = BindableProperty.Create(
+		nameof(DefaultBackgroundColor),
 		typeof(Color),
 		typeof(TouchBehavior),
-		TouchBehaviorDefaults.NormalBackgroundColor);
+		TouchBehaviorDefaults.DefaultBackgroundColor);
 
 	/// <summary>
 	/// Bindable property for <see cref="CurrentHoverState"/>
@@ -269,13 +260,13 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		default);
 
 	/// <summary>
-	/// Bindable property for <see cref="NormalScale"/>
+	/// Bindable property for <see cref="DefaultScale"/>
 	/// </summary>
-	public static readonly BindableProperty NormalScaleProperty = BindableProperty.Create(
-		nameof(NormalScale),
+	public static readonly BindableProperty DefaultScaleProperty = BindableProperty.Create(
+		nameof(DefaultScale),
 		typeof(double),
 		typeof(TouchBehavior),
-		TouchBehaviorDefaults.NormalScale);
+		TouchBehaviorDefaults.DefaultScale);
 
 	/// <summary>
 	/// Bindable property for <see cref="PressedOpacity"/>
@@ -296,13 +287,13 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		TouchBehaviorDefaults.HoveredOpacity);
 
 	/// <summary>
-	/// Bindable property for <see cref="NormalOpacity"/>
+	/// Bindable property for <see cref="DefaultOpacity"/>
 	/// </summary>
-	public static readonly BindableProperty NormalOpacityProperty = BindableProperty.Create(
-		nameof(NormalOpacity),
+	public static readonly BindableProperty DefaultOpacityProperty = BindableProperty.Create(
+		nameof(DefaultOpacity),
 		typeof(double),
 		typeof(TouchBehavior),
-		TouchBehaviorDefaults.NormalOpacity);
+		TouchBehaviorDefaults.DefaultOpacity);
 
 	/// <summary>
 	/// Bindable property for <see cref="PressedScale"/>
@@ -359,13 +350,13 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		TouchBehaviorDefaults.HoveredTranslationX);
 
 	/// <summary>
-	/// Bindable property for <see cref="NormalTranslationX"/>
+	/// Bindable property for <see cref="DefaultTranslationX"/>
 	/// </summary>
-	public static readonly BindableProperty NormalTranslationXProperty = BindableProperty.Create(
-		nameof(NormalTranslationX),
+	public static readonly BindableProperty DefaultTranslationXProperty = BindableProperty.Create(
+		nameof(DefaultTranslationX),
 		typeof(double),
 		typeof(TouchBehavior),
-		TouchBehaviorDefaults.NormalTranslationX);
+		TouchBehaviorDefaults.DefaultTranslationX);
 
 	/// <summary>
 	/// Bindable property for <see cref="PressedRotationX"/>
@@ -386,13 +377,13 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		TouchBehaviorDefaults.HoveredRotationX);
 
 	/// <summary>
-	/// Bindable property for <see cref="NormalRotationX"/>
+	/// Bindable property for <see cref="DefaultRotationX"/>
 	/// </summary>
-	public static readonly BindableProperty NormalRotationXProperty = BindableProperty.Create(
-		nameof(NormalRotationX),
+	public static readonly BindableProperty DefaultRotationXProperty = BindableProperty.Create(
+		nameof(DefaultRotationX),
 		typeof(double),
 		typeof(TouchBehavior),
-		TouchBehaviorDefaults.NormalRotationX);
+		TouchBehaviorDefaults.DefaultRotationX);
 
 	/// <summary>
 	/// Bindable property for <see cref="PressedRotation"/>
@@ -431,13 +422,13 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		TouchBehaviorDefaults.PressedRotationY);
 
 	/// <summary>
-	/// Bindable property for <see cref="NormalRotationY"/>
+	/// Bindable property for <see cref="DefaultRotationY"/>
 	/// </summary>
-	public static readonly BindableProperty NormalRotationYProperty = BindableProperty.Create(
-		nameof(NormalRotationY),
+	public static readonly BindableProperty DefaultRotationYProperty = BindableProperty.Create(
+		nameof(DefaultRotationY),
 		typeof(double),
 		typeof(TouchBehavior),
-		TouchBehaviorDefaults.NormalRotationY);
+		TouchBehaviorDefaults.DefaultRotationY);
 
 	/// <summary>
 	/// Bindable property for <see cref="HoveredRotation"/>
@@ -449,13 +440,13 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		TouchBehaviorDefaults.HoveredRotation);
 
 	/// <summary>
-	/// Bindable property for <see cref="NormalRotation"/>
+	/// Bindable property for <see cref="DefaultRotation"/>
 	/// </summary>
-	public static readonly BindableProperty NormalRotationProperty = BindableProperty.Create(
-		nameof(NormalRotation),
+	public static readonly BindableProperty DefaultRotationProperty = BindableProperty.Create(
+		nameof(DefaultRotation),
 		typeof(double),
 		typeof(TouchBehavior),
-		TouchBehaviorDefaults.NormalRotation);
+		TouchBehaviorDefaults.DefaultRotation);
 
 	/// <summary>
 	/// Bindable property for <see cref="PressedTranslationY"/>
@@ -503,13 +494,13 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		TouchBehaviorDefaults.HoveredRotationY);
 
 	/// <summary>
-	/// Bindable property for <see cref="NormalTranslationY"/>
+	/// Bindable property for <see cref="DefaultTranslationY"/>
 	/// </summary>
-	public static readonly BindableProperty NormalTranslationYProperty = BindableProperty.Create(
-		nameof(NormalTranslationY),
+	public static readonly BindableProperty DefaultTranslationYProperty = BindableProperty.Create(
+		nameof(DefaultTranslationY),
 		typeof(double),
 		typeof(TouchBehavior),
-		TouchBehaviorDefaults.NormalTranslationY);
+		TouchBehaviorDefaults.DefaultTranslationY);
 
 	/// <summary>
 	/// Bindable property for <see cref="PressedAnimationDuration"/>
@@ -530,22 +521,22 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		TouchBehaviorDefaults.HoveredAnimationDuration);
 
 	/// <summary>
-	/// Bindable property for <see cref="NormalAnimationEasing"/>
+	/// Bindable property for <see cref="DefaultAnimationEasing"/>
 	/// </summary>
-	public static readonly BindableProperty NormalAnimationEasingProperty = BindableProperty.Create(
-		nameof(NormalAnimationEasing),
+	public static readonly BindableProperty DefaultAnimationEasingProperty = BindableProperty.Create(
+		nameof(DefaultAnimationEasing),
 		typeof(Easing),
 		typeof(TouchBehavior),
-		TouchBehaviorDefaults.NormalAnimationEasing);
+		TouchBehaviorDefaults.DefaultAnimationEasing);
 
 	/// <summary>
-	/// Bindable property for <see cref="NormalAnimationDuration"/>
+	/// Bindable property for <see cref="DefaultAnimationDuration"/>
 	/// </summary>
-	public static readonly BindableProperty NormalAnimationDurationProperty = BindableProperty.Create(
-		nameof(NormalAnimationDuration),
+	public static readonly BindableProperty DefaultAnimationDurationProperty = BindableProperty.Create(
+		nameof(DefaultAnimationDuration),
 		typeof(int),
 		typeof(TouchBehavior),
-		TouchBehaviorDefaults.NormalAnimationDuration);
+		TouchBehaviorDefaults.DefaultAnimationDuration);
 
 	/// <summary>
 	/// Bindable property for <see cref="PressedAnimationEasing"/>
@@ -733,12 +724,12 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the background color of the element when the touch is in the normal state.
+	/// Gets or sets the background color of the element when when the <see cref="TouchState" /> is <see cref="TouchState.Default" />.
 	/// </summary>
-	public Color? NormalBackgroundColor
+	public Color? DefaultBackgroundColor
 	{
-		get => (Color?)GetValue(NormalBackgroundColorProperty);
-		set => SetValue(NormalBackgroundColorProperty, value);
+		get => (Color?)GetValue(DefaultBackgroundColorProperty);
+		set => SetValue(DefaultBackgroundColorProperty, value);
 	}
 
 	/// <summary>
@@ -760,22 +751,22 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the opacity of the element when the touch is in the normal state.
+	/// Gets or sets the opacity of the element when when the <see cref="TouchState" /> is <see cref="TouchState.Default" />.
 	/// </summary>
 	/// <exception cref="ArgumentOutOfRangeException"></exception>
-	public double NormalOpacity
+	public double DefaultOpacity
 	{
-		get => (double)GetValue(NormalOpacityProperty);
+		get => (double)GetValue(DefaultOpacityProperty);
 		set
 		{
 			switch (value)
 			{
 				case < 0:
-					throw new ArgumentOutOfRangeException(nameof(value), value, $"{nameof(NormalOpacity)} must be greater than 0");
+					throw new ArgumentOutOfRangeException(nameof(value), value, $"{nameof(DefaultOpacity)} must be greater than 0");
 				case > 1:
-					throw new ArgumentOutOfRangeException(nameof(value), value, $"{nameof(NormalOpacity)} must be less than 1");
+					throw new ArgumentOutOfRangeException(nameof(value), value, $"{nameof(DefaultOpacity)} must be less than 1");
 				default:
-					SetValue(NormalOpacityProperty, value);
+					SetValue(DefaultOpacityProperty, value);
 					break;
 			}
 		}
@@ -824,12 +815,12 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the scale of the element when the touch is in the normal state.
+	/// Gets or sets the scale of the element when when the <see cref="TouchState" /> is <see cref="TouchState.Default" />.
 	/// </summary>
-	public double NormalScale
+	public double DefaultScale
 	{
-		get => (double)GetValue(NormalScaleProperty);
-		set => SetValue(NormalScaleProperty, value);
+		get => (double)GetValue(DefaultScaleProperty);
+		set => SetValue(DefaultScaleProperty, value);
 	}
 
 	/// <summary>
@@ -851,12 +842,12 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the translation X of the element when the touch is in the normal state.
+	/// Gets or sets the translation X of the element when when the <see cref="TouchState" /> is <see cref="TouchState.Default" />.
 	/// </summary>
-	public double NormalTranslationX
+	public double DefaultTranslationX
 	{
-		get => (double)GetValue(NormalTranslationXProperty);
-		set => SetValue(NormalTranslationXProperty, value);
+		get => (double)GetValue(DefaultTranslationXProperty);
+		set => SetValue(DefaultTranslationXProperty, value);
 	}
 
 	/// <summary>
@@ -878,12 +869,12 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the translation Y of the element when the touch is in the normal state.
+	/// Gets or sets the translation Y of the element when when the <see cref="TouchState" /> is <see cref="TouchState.Default" />.
 	/// </summary>
-	public double NormalTranslationY
+	public double DefaultTranslationY
 	{
-		get => (double)GetValue(NormalTranslationYProperty);
-		set => SetValue(NormalTranslationYProperty, value);
+		get => (double)GetValue(DefaultTranslationYProperty);
+		set => SetValue(DefaultTranslationYProperty, value);
 	}
 
 	/// <summary>
@@ -914,12 +905,12 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the rotation of the element when the touch is in the normal state.
+	/// Gets or sets the rotation of the element when when the <see cref="TouchState" /> is <see cref="TouchState.Default" />.
 	/// </summary>
-	public double NormalRotation
+	public double DefaultRotation
 	{
-		get => (double)GetValue(NormalRotationProperty);
-		set => SetValue(NormalRotationProperty, value);
+		get => (double)GetValue(DefaultRotationProperty);
+		set => SetValue(DefaultRotationProperty, value);
 	}
 
 	/// <summary>
@@ -941,12 +932,12 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the rotation X of the element when the touch is in the normal state.
+	/// Gets or sets the rotation X of the element when when the <see cref="TouchState" /> is <see cref="TouchState.Default" />.
 	/// </summary>
-	public double NormalRotationX
+	public double DefaultRotationX
 	{
-		get => (double)GetValue(NormalRotationXProperty);
-		set => SetValue(NormalRotationXProperty, value);
+		get => (double)GetValue(DefaultRotationXProperty);
+		set => SetValue(DefaultRotationXProperty, value);
 	}
 
 	/// <summary>
@@ -968,12 +959,12 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the rotation Y of the element when the touch is in the normal state.
+	/// Gets or sets the rotation Y of the element when when the <see cref="TouchState" /> is <see cref="TouchState.Default" />.
 	/// </summary>
-	public double NormalRotationY
+	public double DefaultRotationY
 	{
-		get => (double)GetValue(NormalRotationYProperty);
-		set => SetValue(NormalRotationYProperty, value);
+		get => (double)GetValue(DefaultRotationYProperty);
+		set => SetValue(DefaultRotationYProperty, value);
 	}
 
 	/// <summary>
@@ -1031,21 +1022,21 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the duration of the normal animation.
+	/// Gets or sets the duration of the animation when <see cref="TouchState"/> is <see cref="TouchState.Default"/>.
 	/// </summary>
-	public int NormalAnimationDuration
+	public int DefaultAnimationDuration
 	{
-		get => (int)GetValue(NormalAnimationDurationProperty);
-		set => SetValue(NormalAnimationDurationProperty, value);
+		get => (int)GetValue(DefaultAnimationDurationProperty);
+		set => SetValue(DefaultAnimationDurationProperty, value);
 	}
 
 	/// <summary>
-	/// Gets or sets the easing of the normal animation.
+	/// Gets or sets the <see cref="Easing"/> of the animation when <see cref="TouchState"/> is <see cref="TouchState.Default"/>.
 	/// </summary>
-	public Easing? NormalAnimationEasing
+	public Easing? DefaultAnimationEasing
 	{
-		get => (Easing?)GetValue(NormalAnimationEasingProperty);
-		set => SetValue(NormalAnimationEasingProperty, value);
+		get => (Easing?)GetValue(DefaultAnimationEasingProperty);
+		set => SetValue(DefaultAnimationEasingProperty, value);
 	}
 
 	/// <summary>
@@ -1130,12 +1121,12 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the normal background image source.
+	/// Gets or sets the <see cref="ImageSource"/> when <see cref="TouchState"/> is <see cref="TouchState.Default"/>.
 	/// </summary>
-	public ImageSource? NormalBackgroundImageSource
+	public ImageSource? DefaultBackgroundImageSource
 	{
-		get => (ImageSource?)GetValue(NormalBackgroundImageSourceProperty);
-		set => SetValue(NormalBackgroundImageSourceProperty, value);
+		get => (ImageSource?)GetValue(DefaultBackgroundImageSourceProperty);
+		set => SetValue(DefaultBackgroundImageSourceProperty, value);
 	}
 
 	/// <summary>
@@ -1157,21 +1148,12 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the background image aspect.
+	/// Gets or sets the <see cref="ImageSource"/> <see cref="Aspect"/> when <see cref="TouchState"/> is <see cref="TouchState.Default"/>.
 	/// </summary>
-	public Aspect BackgroundImageAspect
+	public Aspect DefaultBackgroundImageAspect
 	{
-		get => (Aspect)GetValue(BackgroundImageAspectProperty);
-		set => SetValue(BackgroundImageAspectProperty, value);
-	}
-
-	/// <summary>
-	/// Gets or sets the normal background image aspect.
-	/// </summary>
-	public Aspect NormalBackgroundImageAspect
-	{
-		get => (Aspect)GetValue(NormalBackgroundImageAspectProperty);
-		set => SetValue(NormalBackgroundImageAspectProperty, value);
+		get => (Aspect)GetValue(DefaultBackgroundImageAspectProperty);
+		set => SetValue(DefaultBackgroundImageAspectProperty, value);
 	}
 
 	/// <summary>
