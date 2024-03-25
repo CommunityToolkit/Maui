@@ -100,7 +100,6 @@ public partial class TouchBehavior
 		if (isPressed)
 		{
 			HandleTouch(TouchStatus.Started);
-			AnimateTilt(pointerDownStoryboard);
 		}
 	}
 
@@ -114,7 +113,6 @@ public partial class TouchBehavior
 		if (isPressed)
 		{
 			HandleTouch(TouchStatus.Canceled);
-			AnimateTilt(pointerUpStoryboard);
 		}
 
 		HandleHover(HoverStatus.Exited);
@@ -132,8 +130,6 @@ public partial class TouchBehavior
 		HandleTouch(TouchStatus.Canceled);
 		HandleUserInteraction(TouchInteractionStatus.Completed);
 		HandleHover(HoverStatus.Exited);
-
-		AnimateTilt(pointerUpStoryboard);
 	}
 
 	void OnPointerCaptureLost(object? sender, PointerRoutedEventArgs e)
@@ -161,8 +157,6 @@ public partial class TouchBehavior
 		{
 			HandleHover(HoverStatus.Exited);
 		}
-
-		AnimateTilt(pointerUpStoryboard);
 	}
 
 	void OnPointerReleased(object? sender, PointerRoutedEventArgs e)
@@ -175,12 +169,10 @@ public partial class TouchBehavior
 		if (isPressed && (CurrentHoverStatus is HoverStatus.Entered))
 		{
 			HandleTouch(TouchStatus.Completed);
-			AnimateTilt(pointerUpStoryboard);
 		}
 		else if (CurrentHoverStatus is not HoverStatus.Exited)
 		{
 			HandleTouch(TouchStatus.Canceled);
-			AnimateTilt(pointerUpStoryboard);
 		}
 
 		HandleUserInteraction(TouchInteractionStatus.Completed);
@@ -203,18 +195,7 @@ public partial class TouchBehavior
 		HandleUserInteraction(TouchInteractionStatus.Started);
 		HandleTouch(TouchStatus.Started);
 
-		AnimateTilt(pointerDownStoryboard);
-
 		isIntentionalCaptureLoss = false;
 		e.Handled = true;
-	}
-
-	void AnimateTilt(Storyboard? storyboard)
-	{
-		if (storyboard is not null && Element is not null && ShouldUseNativeAnimation)
-		{
-			storyboard.Stop();
-			storyboard.Begin();
-		}
 	}
 }
