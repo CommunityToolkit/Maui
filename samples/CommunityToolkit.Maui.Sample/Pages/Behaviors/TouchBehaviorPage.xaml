@@ -52,8 +52,8 @@
             <HorizontalStackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="Center">
                 <HorizontalStackLayout.Behaviors>
                     <mct:TouchBehavior
-                        AnimationDuration="250"
-                        AnimationEasing="{x:Static Easing.CubicInOut}"
+                        DefaultAnimationDuration="250"
+                        DefaultAnimationEasing="{x:Static Easing.CubicInOut}"
                         Command="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseTouchCountCommand}"
                         PressedOpacity="0.6"
                         PressedScale="0.8" />
@@ -106,7 +106,7 @@
 
                 <HorizontalStackLayout.Behaviors>
                     <mct:TouchBehavior
-                        AnimationDuration="500"
+                        DefaultAnimationDuration="500"
                         Command="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseTouchCountCommand}"
                         DefaultBackgroundColor="Gold"
                         PressedBackgroundColor="Orange"
@@ -176,8 +176,8 @@
                 StrokeThickness="0">
                 <Border.Behaviors>
                     <mct:TouchBehavior
-                        AnimationDuration="150"
-                        AnimationEasing="{x:Static Easing.CubicInOut}"
+                        DefaultAnimationDuration="150"
+                        DefaultAnimationEasing="{x:Static Easing.CubicInOut}"
                         Command="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseTouchCountCommand}"
                         PressedBackgroundColor="LightGray"
                         PressedOpacity="0.8"

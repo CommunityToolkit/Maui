@@ -61,13 +61,11 @@ public class TouchBehaviorTests : BaseTest
 		Assert.Equal(TouchBehaviorDefaults.HoveredRotationY, touchBehavior.HoveredRotationY);
 		Assert.Equal(TouchBehaviorDefaults.PressedRotationY, touchBehavior.PressedRotationY);
 		Assert.Equal(TouchBehaviorDefaults.DefaultRotationY, touchBehavior.DefaultRotationY);
-
-		Assert.Equal(TouchBehaviorDefaults.AnimationDuration, touchBehavior.AnimationDuration);
+		
 		Assert.Equal(TouchBehaviorDefaults.DefaultAnimationDuration, touchBehavior.DefaultAnimationDuration);
 		Assert.Equal(TouchBehaviorDefaults.HoveredAnimationDuration, touchBehavior.HoveredAnimationDuration);
 		Assert.Equal(TouchBehaviorDefaults.PressedAnimationDuration, touchBehavior.PressedAnimationDuration);
-
-		Assert.Equal(TouchBehaviorDefaults.AnimationEasing, touchBehavior.AnimationEasing);
+		
 		Assert.Equal(TouchBehaviorDefaults.DefaultAnimationEasing, touchBehavior.DefaultAnimationEasing);
 		Assert.Equal(TouchBehaviorDefaults.HoveredAnimationEasing, touchBehavior.HoveredAnimationEasing);
 		Assert.Equal(TouchBehaviorDefaults.PressedAnimationEasing, touchBehavior.PressedAnimationEasing);
@@ -856,32 +854,6 @@ public class TouchBehaviorTests : BaseTest
 		}
 
 		bool CanLongPressCommandExecute() => true;
-	}
-
-	[Fact]
-	public void SetAnimationDurationTest()
-	{
-		const int animationDuration = 1750;
-		var viewModel = new TouchBehaviorViewModel();
-		touchBehavior.BindingContext = viewModel;
-
-		touchBehavior.SetBinding(TouchBehavior.AnimationDurationProperty, nameof(TouchBehaviorViewModel.AnimationDuration), mode: BindingMode.TwoWay);
-		touchBehavior.AnimationDuration = animationDuration;
-
-		Assert.Equal(animationDuration, viewModel.AnimationDuration);
-	}
-
-	[Fact]
-	public void SetAnimationEasingTest()
-	{
-		Easing animationEasing = Easing.BounceIn;
-		var viewModel = new TouchBehaviorViewModel();
-		touchBehavior.BindingContext = viewModel;
-
-		touchBehavior.SetBinding(TouchBehavior.AnimationEasingProperty, nameof(TouchBehaviorViewModel.AnimationEasing), mode: BindingMode.TwoWay);
-		touchBehavior.AnimationEasing = animationEasing;
-
-		Assert.Equal(animationEasing, viewModel.AnimationEasing);
 	}
 
 	[Fact]

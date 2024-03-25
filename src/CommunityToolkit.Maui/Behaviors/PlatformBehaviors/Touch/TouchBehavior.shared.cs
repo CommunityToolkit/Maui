@@ -351,24 +351,6 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		TouchBehaviorDefaults.PressedRotation);
 
 	/// <summary>
-	/// Bindable property for <see cref="AnimationEasing"/>
-	/// </summary>
-	public static readonly BindableProperty AnimationEasingProperty = BindableProperty.Create(
-		nameof(AnimationEasing),
-		typeof(Easing),
-		typeof(TouchBehavior),
-		TouchBehaviorDefaults.AnimationEasing);
-
-	/// <summary>
-	/// Bindable property for <see cref="AnimationDuration"/>
-	/// </summary>
-	public static readonly BindableProperty AnimationDurationProperty = BindableProperty.Create(
-		nameof(AnimationDuration),
-		typeof(int),
-		typeof(TouchBehavior),
-		TouchBehaviorDefaults.AnimationDuration);
-
-	/// <summary>
 	/// Bindable property for <see cref="PressedRotationY"/>
 	/// </summary>
 	public static readonly BindableProperty PressedRotationYProperty = BindableProperty.Create(
@@ -912,24 +894,6 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	{
 		get => (double)GetValue(PressedRotationYProperty);
 		set => SetValue(PressedRotationYProperty, value);
-	}
-
-	/// <summary>
-	/// Gets or sets the duration
-	/// </summary>
-	public int AnimationDuration
-	{
-		get => (int)GetValue(AnimationDurationProperty);
-		set => SetValue(AnimationDurationProperty, value);
-	}
-
-	/// <summary>
-	/// Gets or sets the easing of the animation.
-	/// </summary>
-	public Easing? AnimationEasing
-	{
-		get => (Easing?)GetValue(AnimationEasingProperty);
-		set => SetValue(AnimationEasingProperty, value);
 	}
 
 	/// <summary>

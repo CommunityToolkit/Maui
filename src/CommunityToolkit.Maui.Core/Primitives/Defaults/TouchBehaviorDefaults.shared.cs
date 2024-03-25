@@ -135,12 +135,6 @@ public static class TouchBehaviorDefaults
 	public const double DefaultRotationY = 0;
 
 	/// <summary>
-	/// Default Value for TouchBehavior <see cref="AnimationDuration"/>
-	/// </summary>
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const int AnimationDuration = 0;
-
-	/// <summary>
 	/// Default Value for TouchBehavior <see cref="DefaultAnimationDuration"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
@@ -157,12 +151,6 @@ public static class TouchBehaviorDefaults
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const int PressedAnimationDuration = 0;
-
-	/// <summary>
-	/// Default Value for TouchBehavior <see cref="AnimationEasing"/>
-	/// </summary>
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const Easing? AnimationEasing = null;
 
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="DefaultAnimationEasing"/>
