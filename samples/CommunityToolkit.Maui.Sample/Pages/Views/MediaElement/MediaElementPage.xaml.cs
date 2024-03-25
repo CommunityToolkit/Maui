@@ -3,6 +3,7 @@ using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
+using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
@@ -211,5 +212,42 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 
 		MediaElement.Aspect = (Aspect)aspectEnum;
+	}
+
+	void DisplayPopup(object sender, EventArgs e)
+	{
+		MediaElement.Pause();
+		MediaElement popupMediaElement = new MediaElement
+		{
+			Source = MediaSource.FromResource("AppleVideo.mp4"),
+			HeightRequest = 600,
+			WidthRequest = 600,
+			ShouldAutoPlay = true,
+			ShouldShowPlaybackControls = true,
+		};
+		var popup = new Popup
+		{
+			VerticalOptions = LayoutAlignment.Center,
+			HorizontalOptions = LayoutAlignment.Center,
+		};
+		popup.Content = new StackLayout
+		{
+			Children =
+			{
+				popupMediaElement,
+			}
+		};
+
+		this.ShowPopup(popup);
+		popup.Closed += (s, e) =>
+		{
+			popupMediaElement.Stop();
+			popupMediaElement.Handler?.DisconnectHandler();
+		};
+	}
+
+	void MediaElementUnloaded(object sender, EventArgs e)
+	{
+		MediaElement.Handler?.DisconnectHandler();
 	}
 }

@@ -22,7 +22,7 @@ variables:
   PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
   DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/8.0.6.json'
-  CommunityToolkitSampleApp_Xcode_Version: '15.1.0'
+  CommunityToolkitSampleApp_Xcode_Version: '15.2.0'
   CommunityToolkitLibrary_Xcode_Version: '15.0.1'
 
 trigger:
@@ -72,15 +72,10 @@ jobs:
           version: '$(LATEST_NET_VERSION)'
           includePreviewVersions: false
 
-      # Using rollback file is a workaround for a bug in the Azure Hosted Agent; it being used to force the latest MAUI workload manifest
-      # The rollback file should be removed in a future pull request once the bug has been fixed (likely on the next release of .NET 8)
-      # The subsequent workload installations can also be removed; we should only need to call `dotnet workload install maui --source https://api.nuget.org/v3/index.json``
       - task: CmdLine@2
         displayName: 'Install Latest .NET MAUI Workload'
         inputs:
-          script: |
-            dotnet workload install maui --from-rollback-file $(DotNetMauiRollbackFile) --source https://api.nuget.org/v3/index.json
-            dotnet workload install maui
+          script: 'dotnet workload install maui'
 
       - pwsh: |
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
@@ -174,6 +169,7 @@ jobs:
           Write-Host("GitHub PR = $prNumber, Commit = $commitId");
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$fullVersionString")
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersionMediaElement;]$fullVersionString")
+          Write-Host ("##vso[task.setvariable variable=NugetPackageVersionMaps;]$fullVersionString")
           Write-Host "##vso[build.updatebuildnumber]$fullVersionString"
         displayName: Set NuGet Version to PR Version
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['build.reason'], 'PullRequest')) # Only run this step on Windows when a Pull Request has triggered the CI Pipeline
@@ -252,7 +248,7 @@ jobs:
           testResultsFiles: '**/*.trx'
           searchFolder: $(Agent.TempDirectory)
 
-      - task: PublishCodeCoverageResults@1
+      - task: PublishCodeCoverageResults@2
         condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
         displayName: 'Publish Code Coverage Results'
         inputs:
