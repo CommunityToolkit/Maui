@@ -1,3 +1,4 @@
+using Microsoft.UI.Xaml;
 using IImage = Microsoft.Maui.IImage;
 
 namespace CommunityToolkit.Maui.Behaviors;

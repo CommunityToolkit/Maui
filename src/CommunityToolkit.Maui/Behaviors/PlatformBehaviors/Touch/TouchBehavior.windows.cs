@@ -90,7 +90,7 @@ public partial class TouchBehavior
 
 
 
-	async void OnPointerEntered(object? sender, PointerRoutedEventArgs e)
+	void OnPointerEntered(object? sender, PointerRoutedEventArgs e)
 	{
 		if (Element is null || !IsEnabled)
 		{
@@ -101,12 +101,12 @@ public partial class TouchBehavior
 
 		if (isPressed)
 		{
-			await HandleTouch(TouchStatus.Started, CancellationToken.None);
+			HandleTouch(TouchStatus.Started);
 			AnimateTilt(pointerDownStoryboard);
 		}
 	}
 
-	async void OnPointerExited(object? sender, PointerRoutedEventArgs e)
+	void OnPointerExited(object? sender, PointerRoutedEventArgs e)
 	{
 		if (Element is null || !IsEnabled)
 		{
@@ -115,14 +115,14 @@ public partial class TouchBehavior
 
 		if (isPressed)
 		{
-			await HandleTouch(TouchStatus.Canceled, CancellationToken.None);
+			HandleTouch(TouchStatus.Canceled);
 			AnimateTilt(pointerUpStoryboard);
 		}
 
 		HandleHover(HoverStatus.Exited);
 	}
 
-	async void OnPointerCanceled(object? sender, PointerRoutedEventArgs e)
+	void OnPointerCanceled(object? sender, PointerRoutedEventArgs e)
 	{
 		if (Element is null || !IsEnabled)
 		{
@@ -131,14 +131,14 @@ public partial class TouchBehavior
 
 		isPressed = false;
 
-		await HandleTouch(TouchStatus.Canceled, CancellationToken.None);
+		HandleTouch(TouchStatus.Canceled);
 		HandleUserInteraction(TouchInteractionStatus.Completed);
 		HandleHover(HoverStatus.Exited);
 
 		AnimateTilt(pointerUpStoryboard);
 	}
 
-	async void OnPointerCaptureLost(object? sender, PointerRoutedEventArgs e)
+	void OnPointerCaptureLost(object? sender, PointerRoutedEventArgs e)
 	{
 		if (Element is null || !IsEnabled)
 		{
@@ -154,7 +154,7 @@ public partial class TouchBehavior
 
 		if (CurrentTouchStatus is not TouchStatus.Canceled)
 		{
-			await HandleTouch(TouchStatus.Canceled, CancellationToken.None);
+			HandleTouch(TouchStatus.Canceled);
 		}
 
 		HandleUserInteraction(TouchInteractionStatus.Completed);
@@ -167,7 +167,7 @@ public partial class TouchBehavior
 		AnimateTilt(pointerUpStoryboard);
 	}
 
-	async void OnPointerReleased(object? sender, PointerRoutedEventArgs e)
+	void OnPointerReleased(object? sender, PointerRoutedEventArgs e)
 	{
 		if (Element is null || !IsEnabled)
 		{
@@ -176,12 +176,12 @@ public partial class TouchBehavior
 
 		if (isPressed && (CurrentHoverStatus is HoverStatus.Entered))
 		{
-			await HandleTouch(TouchStatus.Completed, CancellationToken.None);
+			HandleTouch(TouchStatus.Completed);
 			AnimateTilt(pointerUpStoryboard);
 		}
 		else if (CurrentHoverStatus is not HoverStatus.Exited)
 		{
-			await HandleTouch(TouchStatus.Canceled, CancellationToken.None);
+			HandleTouch(TouchStatus.Canceled);
 			AnimateTilt(pointerUpStoryboard);
 		}
 
@@ -191,7 +191,7 @@ public partial class TouchBehavior
 		isIntentionalCaptureLoss = true;
 	}
 
-	async void OnPointerPressed(object? sender, PointerRoutedEventArgs e)
+	void OnPointerPressed(object? sender, PointerRoutedEventArgs e)
 	{
 		if (Element is null || !IsEnabled || sender is not FrameworkElement container)
 		{
@@ -202,7 +202,7 @@ public partial class TouchBehavior
 		container.CapturePointer(e.Pointer);
 
 		HandleUserInteraction(TouchInteractionStatus.Started);
-		await HandleTouch(TouchStatus.Started, CancellationToken.None);
+		HandleTouch(TouchStatus.Started);
 
 		AnimateTilt(pointerDownStoryboard);
 
