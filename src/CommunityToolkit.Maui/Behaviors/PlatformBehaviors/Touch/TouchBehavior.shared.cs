@@ -6,22 +6,22 @@ using CommunityToolkit.Maui.Extensions;
 namespace CommunityToolkit.Maui.Behaviors;
 
 /// <summary>
-/// 
+/// <see cref="PlatformBehavior{TView,TPlatformView}"/> that adds additional actions for user interactions 
 /// </summary>
 public partial class TouchBehavior : PlatformBehavior<VisualElement>
 {
 	/// <summary>
-	/// The visual state for when the touch is unpressed.
+	/// The visual state for when the <see cref="TouchState"/> is <see cref="TouchState.Default"/>.
 	/// </summary>
 	public const string UnpressedVisualState = "Unpressed";
 
 	/// <summary>
-	/// The visual state for when the touch is pressed.
+	/// The visual state for when the <see cref="TouchState"/> is <see cref="TouchState.Pressed"/>.
 	/// </summary>
 	public const string PressedVisualState = "Pressed";
 
 	/// <summary>
-	/// The visual state for when the touch is hovered.
+	/// The visual state for when the <see cref="HoverState"/> is <see cref="HoverState.Hovered"/>.
 	/// </summary>
 	public const string HoveredVisualState = "Hovered";
 
@@ -295,6 +295,15 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		typeof(double),
 		typeof(TouchBehavior),
 		TouchBehaviorDefaults.HoveredTranslationX);
+	
+	/// <summary>
+	/// Bindable property for <see cref="HoveredTranslationY"/>
+	/// </summary>
+	public static readonly BindableProperty HoveredTranslationYProperty = BindableProperty.Create(
+		nameof(HoveredTranslationY),
+		typeof(double),
+		typeof(TouchBehavior),
+		0.0);
 
 	/// <summary>
 	/// Bindable property for <see cref="DefaultTranslationX"/>
@@ -491,7 +500,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	VisualElement? element;
 
 	/// <summary>
-	/// Occurs when the touch status changes.
+	/// Fires when <see cref="CurrentTouchStatus"/> changes.
 	/// </summary>
 	public event EventHandler<TouchStatusChangedEventArgs> CurrentTouchStatusChanged
 	{
@@ -500,7 +509,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Occurs when the touch state changes.
+	/// Fires when <see cref="CurrentTouchState"/> changes.
 	/// </summary>
 	public event EventHandler<TouchStateChangedEventArgs> CurrentTouchStateChanged
 	{
@@ -509,7 +518,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Occurs when the touch interaction status changes.
+	/// Fires when <see cref="CurrentInteractionStatus"/> changes.
 	/// </summary>
 	public event EventHandler<TouchInteractionStatusChangedEventArgs> InteractionStatusChanged
 	{
@@ -518,7 +527,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Occurs when the hover status changes.
+	/// Fires when <see cref="CurrentHoverStatus"/> changes.
 	/// </summary>
 	public event EventHandler<HoverStatusChangedEventArgs> HoverStatusChanged
 	{
@@ -527,7 +536,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Occurs when the hover state changes.
+	/// Fires when <see cref="CurrentHoverState"/> changes.
 	/// </summary>
 	public event EventHandler<HoverStateChangedEventArgs> HoverStateChanged
 	{
@@ -536,7 +545,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Occurs when a touch gesture is completed.
+	/// Fires when a touch gesture has completed.
 	/// </summary>
 	public event EventHandler<TouchGestureCompletedEventArgs> TouchGestureCompleted
 	{
@@ -545,7 +554,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Occurs when a long press gesture is completed.
+	/// Fires when a long press gesture has completed.
 	/// </summary>
 	public event EventHandler<LongPressCompletedEventArgs> LongPressCompleted
 	{
@@ -554,7 +563,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets a value indicating whether the touch is available.
+	/// Gets or sets a value indicating whether the behavior is enabled.
 	/// </summary>
 	public bool IsEnabled
 	{
@@ -572,7 +581,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the command to invoke when the user has completed a touch gesture.
+	/// Gets or sets the <see cref="ICommand"/> to invoke when the user has completed a touch gesture.
 	/// </summary>
 	public ICommand? Command
 	{
@@ -581,7 +590,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the command to invoke when the user has completed a long press.
+	/// Gets or sets the <see cref="ICommand"/> to invoke when the user has completed a long press.
 	/// </summary>
 	public ICommand? LongPressCommand
 	{
@@ -608,7 +617,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the duration of the long press.
+	/// Gets or sets the duration required to trigger the long press gesture.
 	/// </summary>
 	public int LongPressDuration
 	{
@@ -617,7 +626,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets the current status of the touch.
+	/// Gets the current <see cref="TouchStatus"/> of the behavior.
 	/// </summary>
 	public TouchStatus CurrentTouchStatus
 	{
@@ -626,7 +635,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets the current state of the touch.
+	/// Gets the current <see cref="TouchState"/> of the behavior.
 	/// </summary>
 	public TouchState CurrentTouchState
 	{
@@ -635,7 +644,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets the current interaction status of the touch.
+	/// Gets the current <see cref="TouchInteractionStatus"/> of the behavior.
 	/// </summary>
 	public TouchInteractionStatus CurrentInteractionStatus
 	{
@@ -644,7 +653,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets the current hover status of the touch.
+	/// Gets the current <see cref="HoverStatus"/> of the behavior.
 	/// </summary>
 	public HoverStatus CurrentHoverStatus
 	{
@@ -653,7 +662,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets the current hover state of the touch.
+	/// Gets the current <see cref="HoverState"/> of the behavior.
 	/// </summary>
 	public HoverState CurrentHoverState
 	{
@@ -662,7 +671,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the background color of the element when when the <see cref="TouchState" /> is <see cref="TouchState.Default" />.
+	/// Gets or sets the background color of the element when the <see cref="TouchState" /> is <see cref="TouchState.Default" />.
 	/// </summary>
 	public Color? DefaultBackgroundColor
 	{
@@ -671,7 +680,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the background color of the element when the touch is in the hovered state.
+	/// Gets or sets the background color of the element when the <see cref="HoverState" /> is <see cref="HoverState.Hovered" />.
 	/// </summary>
 	public Color? HoveredBackgroundColor
 	{
@@ -680,7 +689,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the background color of the element when the touch is in the pressed state.
+	/// Gets or sets the background color of the element when the <see cref="TouchState" /> is <see cref="TouchState.Pressed" />.
 	/// </summary>
 	public Color? PressedBackgroundColor
 	{
@@ -689,7 +698,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the opacity of the element when when the <see cref="TouchState" /> is <see cref="TouchState.Default" />.
+	/// Gets or sets the opacity of the element when the <see cref="TouchState" /> is <see cref="TouchState.Default" />.
 	/// </summary>
 	/// <exception cref="ArgumentOutOfRangeException"></exception>
 	public double DefaultOpacity
@@ -711,7 +720,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the opacity of the element when the touch is in the hovered state.
+	/// Gets or sets the opacity of the element when the <see cref="HoverState" /> is <see cref="HoverState.Hovered" />.
 	/// </summary>
 	public double HoveredOpacity
 	{
@@ -732,7 +741,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the opacity of the element when the touch is in the pressed state.
+	/// Gets or sets the opacity of the element when the <see cref="TouchState" /> is <see cref="TouchState.Pressed" />.
 	/// </summary>
 	public double PressedOpacity
 	{
@@ -753,7 +762,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the scale of the element when when the <see cref="TouchState" /> is <see cref="TouchState.Default" />.
+	/// Gets or sets the scale of the element when the <see cref="TouchState" /> is <see cref="TouchState.Default" />.
 	/// </summary>
 	public double DefaultScale
 	{
@@ -762,7 +771,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the scale of the element when the touch is in the hovered state.
+	/// Gets or sets the scale of the element when the <see cref="HoverState" /> is <see cref="HoverState.Hovered" />.
 	/// </summary>
 	public double HoveredScale
 	{
@@ -771,7 +780,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the scale of the element when the touch is in the pressed state.
+	/// Gets or sets the scale of the element when the <see cref="TouchState"/> is <see cref="TouchState.Pressed"/>.
 	/// </summary>
 	public double PressedScale
 	{
@@ -789,7 +798,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the translation X of the element when the touch is in the hovered state.
+	/// Gets or sets the translation X of the element when the <see cref="HoverState" /> is <see cref="HoverState.Hovered" />.
 	/// </summary>
 	public double HoveredTranslationX
 	{
@@ -798,7 +807,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the translation X of the element when the touch is in the pressed state.
+	/// Gets or sets the translation X of the element when the <see cref="TouchState"/> is <see cref="TouchState.Pressed"/>.
 	/// </summary>
 	public double PressedTranslationX
 	{
@@ -816,16 +825,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Bindable property for <see cref="HoveredTranslationY"/>
-	/// </summary>
-	public static readonly BindableProperty HoveredTranslationYProperty = BindableProperty.Create(
-		nameof(HoveredTranslationY),
-		typeof(double),
-		typeof(TouchBehavior),
-		0.0);
-
-	/// <summary>
-	/// Gets or sets the translation Y of the element when the touch is in the hovered state.
+	/// Gets or sets the translation Y of the element when the <see cref="HoverState" /> is <see cref="HoverState.Hovered" />.
 	/// </summary>
 	public double HoveredTranslationY
 	{
@@ -834,7 +834,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the translation Y of the element when the touch is in the pressed state.
+	/// Gets or sets the translation Y of the element when the <see cref="TouchState"/> is <see cref="TouchState.Pressed"/>.
 	/// </summary>
 	public double PressedTranslationY
 	{
@@ -852,7 +852,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the rotation of the element when the touch is in the hovered state.
+	/// Gets or sets the rotation of the element when the <see cref="HoverState" /> is <see cref="HoverState.Hovered" />.
 	/// </summary>
 	public double HoveredRotation
 	{
@@ -861,7 +861,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the rotation of the element when the touch is in the pressed state.
+	/// Gets or sets the rotation of the element when the <see cref="TouchState"/> is <see cref="TouchState.Pressed"/>.
 	/// </summary>
 	public double PressedRotation
 	{
@@ -879,7 +879,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the rotation X of the element when the touch is in the hovered state.
+	/// Gets or sets the rotation X of the element when the <see cref="HoverState" /> is <see cref="HoverState.Hovered" />.
 	/// </summary>
 	public double HoveredRotationX
 	{
@@ -888,7 +888,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the rotation X of the element when the touch is in the pressed state.
+	/// Gets or sets the rotation X of the element when the <see cref="TouchState"/> is <see cref="TouchState.Pressed"/>.
 	/// </summary>
 	public double PressedRotationX
 	{
@@ -906,7 +906,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the rotation Y of the element when the touch is in the hovered state.
+	/// Gets or sets the rotation Y of the element when the <see cref="HoverState" /> is <see cref="HoverState.Hovered" />.
 	/// </summary>
 	public double HoveredRotationY
 	{
@@ -915,7 +915,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the rotation Y of the element when the touch is in the pressed state.
+	/// Gets or sets the rotation Y of the element when the <see cref="TouchState"/> is <see cref="TouchState.Pressed"/>.
 	/// </summary>
 	public double PressedRotationY
 	{
@@ -942,7 +942,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the duration of the pressed animation.
+	/// Gets or sets the duration of the animation when the <see cref="TouchState"/> is <see cref="TouchState.Pressed"/>.
 	/// </summary>
 	public int PressedAnimationDuration
 	{
@@ -951,7 +951,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the easing of the pressed animation.
+	/// Gets or sets the easing of the animation when the <see cref="TouchState"/> is <see cref="TouchState.Pressed"/>.
 	/// </summary>
 	public Easing? PressedAnimationEasing
 	{
@@ -978,7 +978,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the duration of the hovered animation.
+	/// Gets or sets the duration of the animation when the <see cref="HoverState" /> is <see cref="HoverState.Hovered" />.
 	/// </summary>
 	public int HoveredAnimationDuration
 	{
@@ -987,7 +987,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	}
 
 	/// <summary>
-	/// Gets or sets the easing of the hovered animation.
+	/// Gets or sets the easing of the animation when the <see cref="HoverState" /> is <see cref="HoverState.Hovered" />.
 	/// </summary>
 	public Easing? HoveredAnimationEasing
 	{

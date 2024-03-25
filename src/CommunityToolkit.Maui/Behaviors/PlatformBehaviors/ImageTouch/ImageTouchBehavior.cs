@@ -80,7 +80,7 @@ public partial class ImageTouchBehavior : TouchBehavior
 	}
 
 	/// <summary>
-	/// Gets or sets the hovered background image source.
+	/// Gets or sets the <see cref="ImageSource"/> when the <see cref="HoverState"/> is <see cref="HoverState.Hovered"/>
 	/// </summary>
 	public ImageSource? HoveredImageSource
 	{
@@ -89,7 +89,7 @@ public partial class ImageTouchBehavior : TouchBehavior
 	}
 
 	/// <summary>
-	/// Gets or sets the pressed background image source.
+	/// Gets or sets the <see cref="ImageSource"/> when the <see cref="TouchState"/> is <see cref="TouchState.Pressed"/>
 	/// </summary>
 	public ImageSource? PressedImageSource
 	{
@@ -107,7 +107,7 @@ public partial class ImageTouchBehavior : TouchBehavior
 	}
 
 	/// <summary>
-	/// Gets or sets the hovered background image aspect.
+	/// Gets or sets the <see cref="ImageSource"/> <see cref="Aspect"/> when <see cref="HoverState"/> is <see cref="HoverState.Hovered"/>.
 	/// </summary>
 	public Aspect HoveredImageAspect
 	{
@@ -116,7 +116,7 @@ public partial class ImageTouchBehavior : TouchBehavior
 	}
 
 	/// <summary>
-	/// Gets or sets the pressed background image aspect.
+	/// Gets or sets the <see cref="ImageSource"/> <see cref="Aspect"/> when the <see cref="TouchState"/> is <see cref="TouchState.Pressed"/>
 	/// </summary>
 	public Aspect PressedImageAspect
 	{
@@ -125,7 +125,7 @@ public partial class ImageTouchBehavior : TouchBehavior
 	}
 
 	/// <summary>
-	/// Gets or sets a value indicating whether the image should be set on animation end.
+	/// Gets or sets a value indicating whether the image should be set when the animation ends.
 	/// </summary>
 	public bool ShouldSetImageOnAnimationEnd
 	{
