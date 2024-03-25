@@ -184,6 +184,7 @@ public partial class TouchBehavior
 		}
 
 		HandleUserInteraction(TouchInteractionStatus.Completed);
+		e.Handled = true;
 
 		isPressed = false;
 		isIntentionalCaptureLoss = true;
@@ -205,6 +206,7 @@ public partial class TouchBehavior
 		AnimateTilt(pointerDownStoryboard);
 
 		isIntentionalCaptureLoss = false;
+		e.Handled = true;
 	}
 
 	void AnimateTilt(Storyboard? storyboard)
