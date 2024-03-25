@@ -39,8 +39,8 @@ public class TouchBehaviorTests : BaseTest
 		Assert.Equal(TouchBehaviorDefaults.DefaultOpacity, touchBehavior.DefaultOpacity);
 
 		Assert.Equal(TouchBehaviorDefaults.HoveredScale, touchBehavior.HoveredScale);
-		Assert.Equal(TouchBehaviorDefaults.PressedOpacity, touchBehavior.PressedScale);
-		Assert.Equal(TouchBehaviorDefaults.DefaultOpacity, touchBehavior.DefaultScale);
+		Assert.Equal(TouchBehaviorDefaults.PressedScale, touchBehavior.PressedScale);
+		Assert.Equal(TouchBehaviorDefaults.DefaultScale, touchBehavior.DefaultScale);
 
 		Assert.Equal(TouchBehaviorDefaults.HoveredTranslationX, touchBehavior.HoveredTranslationX);
 		Assert.Equal(TouchBehaviorDefaults.PressedTranslationX, touchBehavior.PressedTranslationX);
@@ -125,10 +125,11 @@ public class TouchBehaviorTests : BaseTest
 
 		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
 		Assert.Equal(updatedDefaultOpacity, view.Opacity);
-
+		
 		touchBehavior.HandleHover(HoverStatus.Entered);
 		Assert.Equal(updatedHoveredOpacity, view.Opacity);
 
+		touchBehavior.HandleTouch(TouchStatus.Completed);
 		touchBehavior.HandleHover(HoverStatus.Exited);
 		Assert.Equal(updatedDefaultOpacity, view.Opacity);
 	}
@@ -136,18 +137,13 @@ public class TouchBehaviorTests : BaseTest
 	[Fact]
 	public void HoverEdgeCaseTests()
 	{
-		//HoverStatus should not change when Element is null
-		touchBehavior.Element = null;
-		touchBehavior.HandleHover(HoverStatus.Entered);
-		Assert.Equal(HoverStatus.Exited, touchBehavior.CurrentHoverStatus);
-
 		AttachTouchBehaviorToVisualElement(new View());
 		Assert.NotNull(touchBehavior.Element);
 		Assert.Throws<NotSupportedException>(() => touchBehavior.HandleHover((HoverStatus)(-1)));
 		Assert.Throws<NotSupportedException>(() => touchBehavior.HandleHover((HoverStatus)(Enum.GetValues<HoverStatus>().Length + 1)));
 
-		//HoverStatus should not change when Element is not enabled
-		touchBehavior.Element.IsEnabled = false;
+		//HoverStatus should not change when not enabled
+		touchBehavior.IsEnabled = false;
 		touchBehavior.HandleHover(HoverStatus.Entered);
 		Assert.Equal(HoverStatus.Exited, touchBehavior.CurrentHoverStatus);
 	}
@@ -376,11 +372,12 @@ public class TouchBehaviorTests : BaseTest
 		Assert.Equal(defaultColor, view.BackgroundColor);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task VerifyPressedBackgroundColorChange()
 	{
 		var view = new View();
 		AttachTouchBehaviorToVisualElement(view);
+
 		var defaultColor = Colors.Red;
 		var pressedColor = Colors.Green;
 
@@ -924,7 +921,7 @@ public class TouchBehaviorTests : BaseTest
 	}
 
 	[Fact]
-	public void SetPressedDefaultTest()
+	public void SetDefaultOpacityTest()
 	{
 		const double defaultOpacity = 0.2;
 		var viewModel = new TouchBehaviorViewModel();
@@ -1135,6 +1132,216 @@ public class TouchBehaviorTests : BaseTest
 		touchBehavior.ShouldUseNativeAnimation = shouldUseNativeAnimation;
 
 		Assert.Equal(shouldUseNativeAnimation, viewModel.ShouldUseNativeAnimation);
+	}
+	
+	[Fact]
+	public void VerifyBackgroundColorStateMachine()
+	{
+		var image = new Image();
+		AttachTouchBehaviorToVisualElement(image);
+
+		touchBehavior.DefaultBackgroundColor = Colors.Black;
+		touchBehavior.PressedBackgroundColor = Colors.Green;
+		
+		// Verify Default is set when Hover Active but not set
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.DefaultBackgroundColor, image.BackgroundColor);
+
+		touchBehavior.HoveredBackgroundColor = Colors.RosyBrown;
+		
+		// Verify Pressed is set when Hover + Press simultaneously active
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.PressedBackgroundColor, image.BackgroundColor);
+		
+		// Verify Hovered is set when Hover active
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(touchBehavior.HoveredBackgroundColor, image.BackgroundColor);
+
+		// Verify Default is set when neither active
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(touchBehavior.DefaultBackgroundColor, image.BackgroundColor);
+	}
+	
+	[Fact]
+	public void VerifyOpacityStateMachine()
+	{
+		var image = new Image();
+		AttachTouchBehaviorToVisualElement(image);
+
+		touchBehavior.DefaultOpacity = 0.4;
+		touchBehavior.PressedOpacity = 0.5;
+		
+		// Verify Default is set when Hover Active but not set
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.DefaultOpacity, image.Opacity);
+
+		touchBehavior.HoveredOpacity = 0.1;
+		
+		// Verify Pressed is set when Hover + Press simultaneously active
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.PressedOpacity, image.Opacity);
+		
+		// Verify Hovered is set when Hover active
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(touchBehavior.HoveredOpacity, image.Opacity);
+
+		// Verify Default is set when neither active
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(touchBehavior.DefaultOpacity, image.Opacity);
+	}
+	
+	[Fact]
+	public void VerifyScaleStateMachine()
+	{
+		var image = new Image();
+		AttachTouchBehaviorToVisualElement(image);
+
+		touchBehavior.DefaultScale = 0.4;
+		touchBehavior.PressedScale = 0.5;
+		
+		// Verify Default is set when Hover Active but not set
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.DefaultScale, image.Scale);
+
+		touchBehavior.HoveredScale = 0.1;
+		
+		// Verify Pressed is set when Hover + Press simultaneously active
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.PressedScale, image.Scale);
+		
+		// Verify Hovered is set when Hover active
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(touchBehavior.HoveredScale, image.Scale);
+
+		// Verify Default is set when neither active
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(touchBehavior.DefaultScale, image.Scale);
+	}
+	
+	[Fact]
+	public void VerifyTranslationStateMachine()
+	{
+		var image = new Image();
+		AttachTouchBehaviorToVisualElement(image);
+
+		touchBehavior.DefaultTranslationX = 0.1;
+		touchBehavior.DefaultTranslationY = 0.2;
+		touchBehavior.PressedTranslationX = 0.3;
+		touchBehavior.PressedTranslationY = 0.4;
+		
+		// Verify Default is set when Hover Active but not set
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.DefaultTranslationX, image.TranslationX);
+		Assert.Equal(touchBehavior.DefaultTranslationY, image.TranslationY);
+
+		touchBehavior.HoveredTranslationX = 0.5;
+		touchBehavior.HoveredTranslationY = 0.6;
+		
+		// Verify Pressed is set when Hover + Press simultaneously active
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.PressedTranslationX, image.TranslationX);
+		Assert.Equal(touchBehavior.PressedTranslationY, image.TranslationY);
+		
+		// Verify Hovered is set when Hover active
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(touchBehavior.HoveredTranslationX, image.TranslationX);
+		Assert.Equal(touchBehavior.HoveredTranslationY, image.TranslationY);
+
+		// Verify Default is set when neither active
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(touchBehavior.DefaultTranslationX, image.TranslationX);
+		Assert.Equal(touchBehavior.DefaultTranslationY, image.TranslationY);
+	}
+	
+	[Fact]
+	public void VerifyRotationStateMachine()
+	{
+		var image = new Image();
+		AttachTouchBehaviorToVisualElement(image);
+
+		touchBehavior.DefaultRotation = 0.4;
+		touchBehavior.PressedRotation = 0.5;
+		
+		// Verify Default is set when Hover Active but not set
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.DefaultRotation, image.Rotation);
+
+		touchBehavior.HoveredRotation = 0.1;
+		
+		// Verify Pressed is set when Hover + Press simultaneously active
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.PressedRotation, image.Rotation);
+		
+		// Verify Hovered is set when Hover active
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(touchBehavior.HoveredRotation, image.Rotation);
+
+		// Verify Default is set when neither active
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(touchBehavior.DefaultRotation, image.Rotation);
+	}
+	
+	[Fact]
+	public void VerifyRotationXStateMachine()
+	{
+		var image = new Image();
+		AttachTouchBehaviorToVisualElement(image);
+
+		touchBehavior.DefaultRotationX = 0.4;
+		touchBehavior.PressedRotationX = 0.5;
+		
+		// Verify Default is set when Hover Active but not set
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.DefaultRotationX, image.RotationX);
+
+		touchBehavior.HoveredRotationX = 0.1;
+		
+		// Verify Pressed is set when Hover + Press simultaneously active
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.PressedRotationX, image.RotationX);
+		
+		// Verify Hovered is set when Hover active
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(touchBehavior.HoveredRotationX, image.RotationX);
+
+		// Verify Default is set when neither active
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(touchBehavior.DefaultRotationX, image.RotationX);
+	}
+	
+	[Fact]
+	public void VerifyRotationYStateMachine()
+	{
+		var image = new Image();
+		AttachTouchBehaviorToVisualElement(image);
+
+		touchBehavior.DefaultRotationY = 0.4;
+		touchBehavior.PressedRotationY = 0.5;
+		
+		// Verify Default is set when Hover Active but not set
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.DefaultRotationY, image.RotationY);
+
+		touchBehavior.HoveredRotationY = 0.1;
+		
+		// Verify Pressed is set when Hover + Press simultaneously active
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.PressedRotationY, image.RotationY);
+		
+		// Verify Hovered is set when Hover active
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(touchBehavior.HoveredRotationY, image.RotationY);
+
+		// Verify Default is set when neither active
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(touchBehavior.DefaultRotationY, image.RotationY);
 	}
 
 	void AttachTouchBehaviorToVisualElement(in VisualElement element)

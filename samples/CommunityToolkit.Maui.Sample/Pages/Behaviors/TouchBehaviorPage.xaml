@@ -97,7 +97,7 @@
                     VerticalOptions="Start" />
             </HorizontalStackLayout>
 
-            <Label Style="{StaticResource SectionHeader}" Text="Color | Rotation | RepeatAnimation | Animated" />
+            <Label Style="{StaticResource SectionHeader}" Text="Color | Rotation | Animated" />
 
             <HorizontalStackLayout
                 Padding="20"

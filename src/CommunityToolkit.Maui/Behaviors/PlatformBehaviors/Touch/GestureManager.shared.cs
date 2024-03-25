@@ -46,15 +46,12 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 	internal static void HandleUserInteraction(in TouchBehavior sender, in TouchInteractionStatus interactionStatus)
 	{
-		if (sender.CurrentInteractionStatus != interactionStatus)
-		{
-			sender.CurrentInteractionStatus = interactionStatus;
-		}
+		sender.CurrentInteractionStatus = interactionStatus;
 	}
 
-	internal static void HandleHover(TouchBehavior sender, HoverStatus hoverStatus)
+	internal static void HandleHover(in TouchBehavior sender, in HoverStatus hoverStatus)
 	{
-		if (!sender.Element?.IsEnabled ?? true)
+		if (!sender.IsEnabled)
 		{
 			return;
 		}
@@ -66,46 +63,41 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			_ => throw new NotSupportedException($"{nameof(HoverStatus)} {hoverStatus} not yet supported")
 		};
 
-		if (sender.CurrentHoverState != hoverState)
-		{
-			sender.CurrentHoverState = hoverState;
-		}
-
-		if (sender.CurrentHoverStatus != hoverStatus)
-		{
-			sender.CurrentHoverStatus = hoverStatus;
-		}
+		sender.CurrentHoverState = hoverState;
+		sender.CurrentHoverStatus = hoverStatus;
 	}
 
-	internal void HandleTouch(TouchBehavior sender, TouchStatus status)
+	internal void HandleTouch(in TouchBehavior sender, in TouchStatus status)
 	{
 		if (!sender.IsEnabled)
 		{
 			return;
 		}
 
+		TouchStatus updatedTouchStatus = status;
+
 		var canExecuteAction = sender.CanExecute;
 		if (status is not TouchStatus.Started || canExecuteAction)
 		{
 			if (!canExecuteAction)
 			{
-				status = TouchStatus.Canceled;
+				updatedTouchStatus = TouchStatus.Canceled;
 			}
 
-			var state = status is TouchStatus.Started
+			var state = updatedTouchStatus is TouchStatus.Started
 				? TouchState.Pressed
 				: TouchState.Default;
 
-			if (status is TouchStatus.Started)
+			if (updatedTouchStatus is TouchStatus.Started)
 			{
 				animationProgress = 0;
 				animationState = state;
 			}
 
-			UpdateStatusAndState(sender, status, state);
+			UpdateStatusAndState(sender, updatedTouchStatus, state);
 		}
 
-		if (status is TouchStatus.Completed)
+		if (updatedTouchStatus is TouchStatus.Completed)
 		{
 			OnTappedCompleted(sender);
 		}
@@ -358,93 +350,133 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 		}
 	}
 
-	static void UpdateStatusAndState(TouchBehavior sender, TouchStatus status, TouchState state)
+	static void UpdateStatusAndState(in TouchBehavior sender, in TouchStatus status, in TouchState state)
 	{
 		sender.CurrentTouchStatus = status;
 		sender.CurrentTouchState = state;
 	}
 
-	static void UpdateVisualState(VisualElement visualElement, TouchState touchState, HoverState hoverState)
+	static void UpdateVisualState(in VisualElement visualElement, in TouchState touchState, in HoverState hoverState)
 	{
-		var state = touchState is TouchState.Pressed
-			? TouchBehavior.PressedVisualState
-			: hoverState is HoverState.Hovered
-				? TouchBehavior.HoveredVisualState
-				: TouchBehavior.UnpressedVisualState;
+		var state = (touchState, hoverState) switch
+		{
+			(TouchState.Pressed, _) => TouchBehavior.PressedVisualState,
+			(TouchState.Default, HoverState.Hovered) => TouchBehavior.HoveredVisualState,
+			(TouchState.Default, HoverState.Default) => TouchBehavior.UnpressedVisualState,
+			_ => throw new NotSupportedException($"The combination of {nameof(TouchState)} {touchState} and {nameof(HoverState)} {hoverState} is not yet supported")
+		};
 
 		VisualStateManager.GoToState(visualElement, state);
 	}
 
 	static async Task<bool> SetOpacity(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
-		var normalOpacity = sender.DefaultOpacity;
-		var pressedOpacity = sender.PressedOpacity;
-		var hoveredOpacity = sender.HoveredOpacity;
-
-		if (Abs(normalOpacity - 1) <= double.Epsilon &&
-			Abs(pressedOpacity - 1) <= double.Epsilon &&
-			Abs(hoveredOpacity - 1) <= double.Epsilon)
+		if (Abs(sender.DefaultOpacity - 1) <= double.Epsilon &&
+			Abs(sender.PressedOpacity - 1) <= double.Epsilon &&
+			Abs(sender.HoveredOpacity - 1) <= double.Epsilon)
 		{
 			return false;
 		}
 
-		var opacity = normalOpacity;
-
-		if (touchState is TouchState.Pressed)
+		if (sender.Element is not VisualElement element)
 		{
-			opacity = pressedOpacity;
-		}
-		else if (hoverState is HoverState.Hovered && sender.IsSet(TouchBehavior.HoveredOpacityProperty))
-		{
-			opacity = hoveredOpacity;
+			return false;
 		}
 
-		var element = sender.Element;
-		if (duration <= TimeSpan.Zero && element is not null)
+		var updatedOpacity = TouchBehaviorDefaults.DefaultOpacity;
+
+		switch (touchState, hoverState)
+		{
+			case (TouchState.Pressed, _):
+				if (sender.IsSet(TouchBehavior.PressedOpacityProperty))
+				{
+					updatedOpacity = sender.PressedOpacity;
+				}
+				break;
+
+			case (TouchState.Default, HoverState.Hovered):
+				if (sender.IsSet(TouchBehavior.HoveredOpacityProperty))
+				{
+					updatedOpacity = sender.HoveredOpacity;
+				}
+				else if (sender.IsSet(TouchBehavior.DefaultOpacityProperty))
+				{
+					updatedOpacity = sender.DefaultOpacity;
+				}
+				break;
+
+			case (TouchState.Default, HoverState.Default):
+				if (sender.IsSet(TouchBehavior.DefaultOpacityProperty))
+				{
+					updatedOpacity = sender.DefaultOpacity;
+				}
+				break;
+
+			default:
+				throw new NotSupportedException($"The combination of {nameof(TouchState)} {touchState} and {nameof(HoverState)} {hoverState} is not yet supported");
+		}
+
+		if (duration <= TimeSpan.Zero)
 		{
 			element.AbortAnimations();
-			element.Opacity = opacity;
+			element.Opacity = updatedOpacity;
 			return true;
 		}
 
-		return element is not null
-			&& await element.FadeTo(opacity, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
+		return await element.FadeTo(updatedOpacity, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
 	}
 
 	static async Task<bool> SetScale(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
-		var normalScale = sender.DefaultScale;
-		var pressedScale = sender.PressedScale;
-		var hoveredScale = sender.HoveredScale;
-
-		if (Abs(normalScale - 1) <= double.Epsilon &&
-			Abs(pressedScale - 1) <= double.Epsilon &&
-			Abs(hoveredScale - 1) <= double.Epsilon)
+		if (Abs(sender.DefaultScale - 1) <= double.Epsilon &&
+			Abs(sender.PressedScale - 1) <= double.Epsilon &&
+			Abs(sender.HoveredScale - 1) <= double.Epsilon)
 		{
 			return false;
 		}
 
-		var scale = normalScale;
-
-		if (touchState is TouchState.Pressed)
-		{
-			scale = pressedScale;
-		}
-		else if (hoverState is HoverState.Hovered && sender.IsSet(TouchBehavior.HoveredScaleProperty))
-		{
-			scale = hoveredScale;
-		}
-
-		var element = sender.Element;
-		if (element is null)
+		if (sender.Element is not VisualElement element)
 		{
 			return false;
+		}
+
+		var updatedScale = TouchBehaviorDefaults.DefaultScale;
+
+		switch (touchState, hoverState)
+		{
+			case (TouchState.Pressed, _):
+				if (sender.IsSet(TouchBehavior.PressedScaleProperty))
+				{
+					updatedScale = sender.PressedScale;
+				}
+				break;
+
+			case (TouchState.Default, HoverState.Hovered):
+				if (sender.IsSet(TouchBehavior.HoveredScaleProperty))
+				{
+					updatedScale = sender.HoveredScale;
+				}
+				else if (sender.IsSet(TouchBehavior.DefaultScaleProperty))
+				{
+					updatedScale = sender.DefaultScale;
+				}
+				break;
+
+			case (TouchState.Default, HoverState.Default):
+				if (sender.IsSet(TouchBehavior.DefaultScaleProperty))
+				{
+					updatedScale = sender.DefaultScale;
+				}
+				break;
+
+			default:
+				throw new NotSupportedException($"The combination of {nameof(TouchState)} {touchState} and {nameof(HoverState)} {hoverState} is not yet supported");
 		}
 
 		if (duration <= TimeSpan.Zero)
 		{
 			element.AbortAnimations(nameof(SetScale));
-			element.Scale = scale;
+			element.Scale = updatedScale;
 
 			return false;
 		}
@@ -458,272 +490,324 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			}
 
 			element.Scale = v;
-		}, element.Scale, scale, 16, (uint)Abs(duration.TotalMilliseconds), easing, (v, b) => animationCompletionSource.SetResult(b));
+		}, element.Scale, updatedScale, 16, (uint)Abs(duration.TotalMilliseconds), easing, (v, b) => animationCompletionSource.SetResult(b));
 
 		return await animationCompletionSource.Task.WaitAsync(token);
 	}
 
 	static async Task<bool> SetTranslation(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
-		var normalTranslationX = sender.DefaultTranslationX;
-		var pressedTranslationX = sender.PressedTranslationX;
-		var hoveredTranslationX = sender.HoveredTranslationX;
-
-		var normalTranslationY = sender.DefaultTranslationY;
-		var pressedTranslationY = sender.PressedTranslationY;
-		var hoveredTranslationY = sender.HoveredTranslationY;
-
-		if (Abs(normalTranslationX) <= double.Epsilon
-			&& Abs(pressedTranslationX) <= double.Epsilon
-			&& Abs(hoveredTranslationX) <= double.Epsilon
-			&& Abs(normalTranslationY) <= double.Epsilon
-			&& Abs(pressedTranslationY) <= double.Epsilon
-			&& Abs(hoveredTranslationY) <= double.Epsilon)
+		if (Abs(sender.DefaultTranslationX) <= double.Epsilon
+			&& Abs(sender.PressedTranslationX) <= double.Epsilon
+			&& Abs(sender.HoveredTranslationX) <= double.Epsilon
+			&& Abs(sender.DefaultTranslationY) <= double.Epsilon
+			&& Abs(sender.PressedTranslationY) <= double.Epsilon
+			&& Abs(sender.HoveredTranslationY) <= double.Epsilon)
 		{
 			return false;
 		}
 
-		var translationX = normalTranslationX;
-		var translationY = normalTranslationY;
-
-		if (touchState is TouchState.Pressed)
-		{
-			translationX = pressedTranslationX;
-			translationY = pressedTranslationY;
-		}
-		else if (hoverState is HoverState.Hovered)
-		{
-			if (sender.IsSet(TouchBehavior.HoveredTranslationXProperty))
-			{
-				translationX = hoveredTranslationX;
-			}
-
-			if (sender.IsSet(TouchBehavior.HoveredTranslationYProperty))
-			{
-				translationY = hoveredTranslationY;
-			}
-		}
-
-		var element = sender.Element;
-		if (duration <= TimeSpan.Zero && element is not null)
-		{
-			element.AbortAnimations();
-			element.TranslationX = translationX;
-			element.TranslationY = translationY;
-			return true;
-		}
-
-		if (element is null)
+		if (sender.Element is not VisualElement element)
 		{
 			return false;
 		}
 
-		return await element.TranslateTo(translationX, translationY, (uint)Abs(duration.Milliseconds), easing).WaitAsync(token);
-	}
+		var updatedTranslationX = TouchBehaviorDefaults.DefaultTranslationY;
+		var updatedTranslationY = TouchBehaviorDefaults.DefaultTranslationX;
 
-	static async Task<bool> SetRotation(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
-	{
-		var normalRotation = sender.DefaultRotation;
-		var pressedRotation = sender.PressedRotation;
-		var hoveredRotation = sender.HoveredRotation;
-
-		if (Abs(normalRotation) <= double.Epsilon
-			&& Abs(pressedRotation) <= double.Epsilon
-			&& Abs(hoveredRotation) <= double.Epsilon)
+		switch (touchState, hoverState)
 		{
-			return false;
-		}
+			case (TouchState.Pressed, _):
+				if (sender.IsSet(TouchBehavior.PressedTranslationXProperty))
+				{
+					updatedTranslationX = sender.PressedTranslationX;
+				}
 
-		var rotation = normalRotation;
+				if (sender.IsSet(TouchBehavior.PressedTranslationYProperty))
+				{
+					updatedTranslationY = sender.PressedTranslationY;
+				}
+				break;
 
-		if (touchState is TouchState.Pressed)
-		{
-			rotation = pressedRotation;
-		}
-		else if (hoverState is HoverState.Hovered && sender.IsSet(TouchBehavior.HoveredRotationProperty))
-		{
-			rotation = hoveredRotation;
-		}
+			case (TouchState.Default, HoverState.Hovered):
+				if (sender.IsSet(TouchBehavior.HoveredTranslationXProperty))
+				{
+					updatedTranslationX = sender.HoveredTranslationX;
+				}
+				else if (sender.IsSet(TouchBehavior.DefaultTranslationXProperty))
+				{
+					updatedTranslationX = sender.DefaultTranslationX;
+				}
 
-		var element = sender.Element;
-		if (duration <= TimeSpan.Zero && element is not null)
-		{
-			element.AbortAnimations();
-			element.Rotation = rotation;
-			return true;
-		}
+				if (sender.IsSet(TouchBehavior.HoveredTranslationYProperty))
+				{
+					updatedTranslationY = sender.HoveredTranslationY;
+				}
+				else if (sender.IsSet(TouchBehavior.DefaultTranslationYProperty))
+				{
+					updatedTranslationY = sender.DefaultTranslationY;
+				}
+				break;
 
-		if (element is null)
-		{
-			return false;
-		}
+			case (TouchState.Default, HoverState.Default):
+				if (sender.IsSet(TouchBehavior.DefaultTranslationXProperty))
+				{
+					updatedTranslationX = sender.DefaultTranslationX;
+				}
 
-		return await element.RotateTo(rotation, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
-	}
+				if (sender.IsSet(TouchBehavior.DefaultTranslationYProperty))
+				{
+					updatedTranslationY = sender.DefaultTranslationY;
+				}
+				break;
 
-	static async Task<bool> SetRotationX(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
-	{
-		var normalRotationX = sender.DefaultRotationX;
-		var pressedRotationX = sender.PressedRotationX;
-		var hoveredRotationX = sender.HoveredRotationX;
-
-		if (Abs(normalRotationX) <= double.Epsilon &&
-			Abs(pressedRotationX) <= double.Epsilon &&
-			Abs(hoveredRotationX) <= double.Epsilon)
-		{
-			return false;
-		}
-
-		var rotationX = normalRotationX;
-
-		if (touchState is TouchState.Pressed)
-		{
-			rotationX = pressedRotationX;
-		}
-		else if (hoverState is HoverState.Hovered && sender.IsSet(TouchBehavior.HoveredRotationXProperty))
-		{
-			rotationX = hoveredRotationX;
-		}
-
-		var element = sender.Element;
-		if (duration <= TimeSpan.Zero && element is not null)
-		{
-			element.AbortAnimations();
-			element.RotationX = rotationX;
-			return true;
-		}
-
-		if (element is null)
-		{
-			return false;
-		}
-
-		return await element.RotateXTo(rotationX, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
-	}
-
-	static async Task<bool> SetRotationY(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
-	{
-		var normalRotationY = sender.DefaultRotationY;
-		var pressedRotationY = sender.PressedRotationY;
-		var hoveredRotationY = sender.HoveredRotationY;
-
-		if (Abs(normalRotationY) <= double.Epsilon &&
-			Abs(pressedRotationY) <= double.Epsilon &&
-			Abs(hoveredRotationY) <= double.Epsilon)
-		{
-			return false;
-		}
-
-		var rotationY = normalRotationY;
-
-		if (touchState is TouchState.Pressed)
-		{
-			rotationY = pressedRotationY;
-		}
-		else if (hoverState is HoverState.Hovered && sender.IsSet(TouchBehavior.HoveredRotationYProperty))
-		{
-			rotationY = hoveredRotationY;
-		}
-
-		var element = sender.Element;
-		if (duration <= TimeSpan.Zero && element is not null)
-		{
-			element.AbortAnimations();
-			element.RotationY = rotationY;
-			return true;
-		}
-
-		if (element is null)
-		{
-			return false;
-		}
-
-		return await element.RotateYTo(rotationY, (uint)Abs(duration.Milliseconds), easing).WaitAsync(token);
-	}
-
-	async Task<bool> SetBackgroundColor(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
-	{
-		var normalBackgroundColor = sender.DefaultBackgroundColor;
-		var pressedBackgroundColor = sender.PressedBackgroundColor;
-		var hoveredBackgroundColor = sender.HoveredBackgroundColor;
-
-		if (sender.Element is null
-			|| (normalBackgroundColor is null && pressedBackgroundColor is null && hoveredBackgroundColor is null))
-		{
-			return false;
-		}
-
-		var element = sender.Element;
-		defaultBackgroundColor ??= element.BackgroundColor;
-
-		var color = normalBackgroundColor ?? defaultBackgroundColor;
-
-		if (touchState is TouchState.Pressed)
-		{
-			color = pressedBackgroundColor ?? defaultBackgroundColor;
-		}
-		else if (hoverState is HoverState.Hovered && sender.IsSet(TouchBehavior.HoveredBackgroundColorProperty))
-		{
-			color = hoveredBackgroundColor ?? defaultBackgroundColor;
+			default:
+				throw new NotSupportedException($"The combination of {nameof(TouchState)} {touchState} and {nameof(HoverState)} {hoverState} is not yet supported");
 		}
 
 		if (duration <= TimeSpan.Zero)
 		{
 			element.AbortAnimations();
-			element.BackgroundColor = color;
-
+			element.TranslationX = updatedTranslationX;
+			element.TranslationY = updatedTranslationY;
 			return true;
 		}
 
-		return await element.BackgroundColorTo(color ?? Colors.Transparent, length: (uint)duration.TotalMilliseconds, easing: easing, token: token);
+		return await element.TranslateTo(updatedTranslationX, updatedTranslationY, (uint)Abs(duration.Milliseconds), easing).WaitAsync(token);
 	}
 
-	async Task<bool> RunAnimationTask(TouchBehavior sender, TouchState touchState, HoverState hoverState, CancellationToken token, double? durationMultiplier = null)
+	static async Task<bool> SetRotation(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
-		if (sender.Element is null)
+		if (Abs(sender.DefaultRotation) <= double.Epsilon
+			&& Abs(sender.PressedRotation) <= double.Epsilon
+			&& Abs(sender.HoveredRotation) <= double.Epsilon)
 		{
 			return false;
 		}
 
-		var duration = sender.AnimationDuration;
-		var easing = sender.AnimationEasing;
-
-		if (touchState is TouchState.Pressed)
+		if (sender.Element is not VisualElement element)
 		{
-			if (sender.IsSet(TouchBehavior.PressedAnimationDurationProperty))
-			{
-				duration = sender.PressedAnimationDuration;
-			}
-
-			if (sender.IsSet(TouchBehavior.PressedAnimationEasingProperty))
-			{
-				easing = sender.PressedAnimationEasing;
-			}
+			return false;
 		}
-		else if (hoverState is HoverState.Hovered)
+
+		var updatedRotation = TouchBehaviorDefaults.DefaultRotation;
+
+		switch (touchState, hoverState)
 		{
-			if (sender.IsSet(TouchBehavior.HoveredAnimationDurationProperty))
-			{
-				duration = sender.HoveredAnimationDuration;
-			}
+			case (TouchState.Pressed, _):
+				if (sender.IsSet(TouchBehavior.PressedRotationProperty))
+				{
+					updatedRotation = sender.PressedRotation;
+				}
+				break;
 
-			if (sender.IsSet(TouchBehavior.HoveredAnimationEasingProperty))
-			{
-				easing = sender.HoveredAnimationEasing;
-			}
+			case (TouchState.Default, HoverState.Hovered):
+				if (sender.IsSet(TouchBehavior.HoveredRotationProperty))
+				{
+					updatedRotation = sender.HoveredRotation;
+				}
+				else if (sender.IsSet(TouchBehavior.DefaultRotationProperty))
+				{
+					updatedRotation = sender.DefaultRotation;
+				}
+				break;
+
+			case (TouchState.Default, HoverState.Default):
+				if (sender.IsSet(TouchBehavior.DefaultRotationProperty))
+				{
+					updatedRotation = sender.DefaultRotation;
+				}
+				break;
+
+			default:
+				throw new NotSupportedException($"The combination of {nameof(TouchState)} {touchState} and {nameof(HoverState)} {hoverState} is not yet supported");
 		}
-		else
+
+		if (duration <= TimeSpan.Zero)
 		{
-			if (sender.IsSet(TouchBehavior.DefaultAnimationDurationProperty))
-			{
-				duration = sender.DefaultAnimationDuration;
-			}
-
-			if (sender.IsSet(TouchBehavior.DefaultAnimationEasingProperty))
-			{
-				easing = sender.DefaultAnimationEasing;
-			}
+			element.AbortAnimations();
+			element.Rotation = updatedRotation;
+			return true;
 		}
+
+		return await element.RotateTo(updatedRotation, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
+	}
+
+	static async Task<bool> SetRotationX(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
+	{
+		if (Abs(sender.DefaultRotationX) <= double.Epsilon &&
+			Abs(sender.PressedRotationX) <= double.Epsilon &&
+			Abs(sender.HoveredRotationX) <= double.Epsilon)
+		{
+			return false;
+		}
+
+		if (sender.Element is not VisualElement element)
+		{
+			return false;
+		}
+
+		var updatedRotationX = TouchBehaviorDefaults.DefaultRotationX;
+
+		switch (touchState, hoverState)
+		{
+			case (TouchState.Pressed, _):
+				if (sender.IsSet(TouchBehavior.PressedRotationXProperty))
+				{
+					updatedRotationX = sender.PressedRotationX;
+				}
+				break;
+
+			case (TouchState.Default, HoverState.Hovered):
+				if (sender.IsSet(TouchBehavior.HoveredRotationXProperty))
+				{
+					updatedRotationX = sender.HoveredRotationX;
+				}
+				else if (sender.IsSet(TouchBehavior.DefaultRotationXProperty))
+				{
+					updatedRotationX = sender.DefaultRotationX;
+				}
+				break;
+
+			case (TouchState.Default, HoverState.Default):
+				if (sender.IsSet(TouchBehavior.DefaultRotationXProperty))
+				{
+					updatedRotationX = sender.DefaultRotationX;
+				}
+				break;
+
+			default:
+				throw new NotSupportedException($"The combination of {nameof(TouchState)} {touchState} and {nameof(HoverState)} {hoverState} is not yet supported");
+		}
+
+		if (duration <= TimeSpan.Zero)
+		{
+			element.AbortAnimations();
+			element.RotationX = updatedRotationX;
+			return true;
+		}
+
+		return await element.RotateXTo(updatedRotationX, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
+	}
+
+	static async Task<bool> SetRotationY(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
+	{
+		if (Abs(sender.DefaultRotationY) <= double.Epsilon &&
+			Abs(sender.PressedRotationY) <= double.Epsilon &&
+			Abs(sender.HoveredRotationY) <= double.Epsilon)
+		{
+			return false;
+		}
+
+		if (sender.Element is not VisualElement element)
+		{
+			return false;
+		}
+
+		double updatedRotationY = TouchBehaviorDefaults.DefaultRotationY;
+
+		switch (touchState, hoverState)
+		{
+			case (TouchState.Pressed, _):
+				if (sender.IsSet(TouchBehavior.PressedRotationYProperty))
+				{
+					updatedRotationY = sender.PressedRotationY;
+				}
+				break;
+
+			case (TouchState.Default, HoverState.Hovered):
+				if (sender.IsSet(TouchBehavior.HoveredRotationYProperty))
+				{
+					updatedRotationY = sender.HoveredRotationY;
+				}
+				else if (sender.IsSet(TouchBehavior.DefaultRotationYProperty))
+				{
+					updatedRotationY = sender.DefaultRotationY;
+				}
+				break;
+
+			case (TouchState.Default, HoverState.Default):
+				if (sender.IsSet(TouchBehavior.DefaultRotationYProperty))
+				{
+					updatedRotationY = sender.DefaultRotationY;
+				}
+				break;
+
+			default:
+				throw new NotSupportedException($"The combination of {nameof(TouchState)} {touchState} and {nameof(HoverState)} {hoverState} is not yet supported");
+		}
+
+		if (duration <= TimeSpan.Zero)
+		{
+			element.AbortAnimations();
+			element.RotationY = updatedRotationY;
+			return true;
+		}
+
+		return await element.RotateYTo(updatedRotationY, (uint)Abs(duration.Milliseconds), easing).WaitAsync(token);
+	}
+
+	async Task<bool> SetBackgroundColor(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
+	{
+		if (sender.Element is not VisualElement element)
+		{
+			return false;
+		}
+
+		defaultBackgroundColor ??= element.BackgroundColor;
+
+		var updatedBackgroundColor = defaultBackgroundColor;
+
+		switch (touchState, hoverState)
+		{
+			case (TouchState.Pressed, _):
+				if (sender.IsSet(TouchBehavior.PressedBackgroundColorProperty))
+				{
+					updatedBackgroundColor = sender.PressedBackgroundColor;
+				}
+				break;
+
+			case (TouchState.Default, HoverState.Hovered):
+				if (sender.IsSet(TouchBehavior.HoveredBackgroundColorProperty))
+				{
+					updatedBackgroundColor = sender.HoveredBackgroundColor;
+				}
+				else if (sender.IsSet(TouchBehavior.DefaultBackgroundColorProperty))
+				{
+					updatedBackgroundColor = sender.DefaultBackgroundColor;
+				}
+				break;
+
+			case (TouchState.Default, HoverState.Default):
+				if (sender.IsSet(TouchBehavior.DefaultBackgroundColorProperty))
+				{
+					updatedBackgroundColor = sender.DefaultBackgroundColor;
+				}
+				break;
+
+			default:
+				throw new NotSupportedException($"The combination of {nameof(TouchState)} {touchState} and {nameof(HoverState)} {hoverState} is not yet supported");
+		}
+
+		if (duration <= TimeSpan.Zero)
+		{
+			element.AbortAnimations();
+			element.BackgroundColor = updatedBackgroundColor;
+
+			return true;
+		}
+
+		return await element.BackgroundColorTo(updatedBackgroundColor ?? Colors.Transparent, length: (uint)duration.TotalMilliseconds, easing: easing, token: token);
+	}
+
+	async Task<bool> RunAnimationTask(TouchBehavior sender, TouchState touchState, HoverState hoverState, CancellationToken token, double? durationMultiplier = null)
+	{
+		if (sender.Element is null || !sender.IsEnabled)
+		{
+			return false;
+		}
+
+		var (easing, duration) = GetEasingAndDurationForCurrentState(touchState, hoverState, sender);
 
 		if (durationMultiplier.HasValue)
 		{
@@ -758,5 +842,65 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			}, token)).ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
 
 		return true;
+
+
+		static (Easing? Easing, int Duration) GetEasingAndDurationForCurrentState(in TouchState touchState, in HoverState hoverState, in TouchBehavior sender)
+		{
+			Easing? easing = sender.AnimationEasing;
+			int duration = sender.AnimationDuration;
+
+			switch (touchState, hoverState)
+			{
+				case (TouchState.Pressed, _):
+					if (sender.IsSet(TouchBehavior.PressedAnimationDurationProperty))
+					{
+						duration = sender.PressedAnimationDuration;
+					}
+
+					if (sender.IsSet(TouchBehavior.PressedAnimationEasingProperty))
+					{
+						easing = sender.PressedAnimationEasing;
+					}
+
+					break;
+
+				case (TouchState.Default, HoverState.Hovered):
+					if (sender.IsSet(TouchBehavior.HoveredAnimationDurationProperty))
+					{
+						duration = sender.HoveredAnimationDuration;
+					}
+					else if (sender.IsSet(TouchBehavior.DefaultAnimationDurationProperty))
+					{
+						duration = sender.DefaultAnimationDuration;
+					}
+
+					if (sender.IsSet(TouchBehavior.HoveredAnimationEasingProperty))
+					{
+						easing = sender.HoveredAnimationEasing;
+					}
+					else if (sender.IsSet(TouchBehavior.DefaultAnimationEasingProperty))
+					{
+						easing = sender.DefaultAnimationEasing;
+					}
+					break;
+
+				case (TouchState.Default, HoverState.Default):
+					if (sender.IsSet(TouchBehavior.DefaultAnimationDurationProperty))
+					{
+						duration = sender.DefaultAnimationDuration;
+					}
+
+					if (sender.IsSet(TouchBehavior.DefaultAnimationEasingProperty))
+					{
+						easing = sender.DefaultAnimationEasing;
+					}
+					break;
+
+				default:
+					throw new NotSupportedException($"The combination of {nameof(TouchState)} {touchState} and {nameof(HoverState)} {hoverState} is not yet supported");
+			}
+
+			return (easing, duration);
+		}
 	}
 }
