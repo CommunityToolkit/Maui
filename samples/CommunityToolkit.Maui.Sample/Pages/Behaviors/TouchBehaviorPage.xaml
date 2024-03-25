@@ -110,8 +110,7 @@
                         Command="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseTouchCountCommand}"
                         DefaultBackgroundColor="Gold"
                         PressedBackgroundColor="Orange"
-                        PressedRotation="15"
-                        RepeatAnimationCount="2" />
+                        PressedRotation="15" />
 
                 </HorizontalStackLayout.Behaviors>
 
