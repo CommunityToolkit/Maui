@@ -65,7 +65,9 @@ public sealed partial class SpeechToTextImplementation
 			sharedAvAudioSession.SetSupportsMultichannelContent(true, out _);
 		}
 
-		sharedAvAudioSession.SetCategory(AVAudioSessionCategory.PlayAndRecord, AVAudioSessionCategoryOptions.DefaultToSpeaker);
+		sharedAvAudioSession.SetCategory(
+			AVAudioSessionCategory.PlayAndRecord,
+			AVAudioSessionCategoryOptions.DefaultToSpeaker | AVAudioSessionCategoryOptions.AllowBluetooth | AVAudioSessionCategoryOptions.AllowAirPlay | AVAudioSessionCategoryOptions.AllowBluetoothA2DP);
 	}
 
 	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)

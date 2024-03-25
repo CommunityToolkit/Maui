@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Storage;
 /// <inheritdoc />
 public sealed partial class FileSaverImplementation : IFileSaver
 {
-	async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
+	async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
 	{
 		var status = await Permissions.RequestAsync<Permissions.StorageRead>().WaitAsync(cancellationToken);
 		if (status is not PermissionStatus.Granted)
@@ -21,12 +21,12 @@ public sealed partial class FileSaverImplementation : IFileSaver
 			throw new FileSaveException("Path doesn't exist.");
 		}
 
-		await WriteStream(stream, path, cancellationToken).ConfigureAwait(false);
+		await WriteStream(stream, path, progress, cancellationToken).ConfigureAwait(false);
 		return path;
 	}
 
-	Task<string> InternalSaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
+	Task<string> InternalSaveAsync(string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
 	{
-		return InternalSaveAsync(FileFolderDialog.GetExternalDirectory(), fileName, stream, cancellationToken);
+		return InternalSaveAsync(FileFolderDialog.GetExternalDirectory(), fileName, stream, progress, cancellationToken);
 	}
 }
