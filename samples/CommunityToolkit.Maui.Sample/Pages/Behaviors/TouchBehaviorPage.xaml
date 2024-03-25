@@ -157,12 +157,12 @@
                     HorizontalOptions="Center"
                     VerticalOptions="Center"
                     WidthRequest="100">
-                    <ContentView.Behaviors>
+                    <BoxView.Behaviors>
                         <mct:TouchBehavior
                             Command="{Binding Source={x:Reference Page}, Path=BindingContext.ChildClickedCommand}"
                             ShouldUseNativeAnimation="True"
                             IsNativeAnimationBorderless="{Binding Source={x:Reference Page}, Path=BindingContext.IsNativeAnimationBorderless}" />
-                    </ContentView.Behaviors>
+                    </BoxView.Behaviors>
                 </BoxView>
             </ContentView>
 

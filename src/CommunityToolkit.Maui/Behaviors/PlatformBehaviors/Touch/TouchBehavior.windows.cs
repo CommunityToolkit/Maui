@@ -88,8 +88,6 @@ public partial class TouchBehavior
 		isPressed = false;
 	}
 
-
-
 	void OnPointerEntered(object? sender, PointerRoutedEventArgs e)
 	{
 		if (Element is null || !IsEnabled)
