@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Behaviors;
 

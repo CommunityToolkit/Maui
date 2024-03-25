@@ -1,4 +1,4 @@
-namespace CommunityToolkit.Maui.Behaviors;
+namespace CommunityToolkit.Maui.Extensions;
 
 static class SafeFireAndForgetExtensions
 {
