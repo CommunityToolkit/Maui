@@ -7,6 +7,10 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 {
 	internal AView? Container { get; set; }
+	internal int LastPopupWidth { get; set; }
+	internal int LastPopupHeight { get; set; }
+	internal double LastWindowWidth { get; set; }
+	internal double LastWindowHeight { get; set; }
 
 	/// <summary>
 	/// Action that's triggered when the Popup is closed
@@ -92,8 +96,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	{
 		ArgumentNullException.ThrowIfNull(handler.Container);
 
-		handler.PlatformView.SetSize(view, handler.Container);
-		handler.PlatformView.SetAnchor(view);
+		handler.PlatformView.SetSize(view, handler.Container, handler);
 	}
 
 	/// <inheritdoc/>
@@ -138,7 +141,7 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	{
 		if (VirtualView?.Handler?.PlatformView is Dialog dialog && Container is not null)
 		{
-			PopupExtensions.SetSize(dialog, VirtualView, Container);
+			PopupExtensions.SetSize(dialog, VirtualView, Container, this);
 		}
 	}
 }
