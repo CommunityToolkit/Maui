@@ -93,12 +93,6 @@ public class TouchBehaviorTests : BaseTest
 
 		Assert.Equal(TouchBehaviorDefaults.CurrentInteractionStatus, touchBehavior.CurrentInteractionStatus);
 
-		Assert.Equal(TouchBehaviorDefaults.ShouldUseNativeAnimation, touchBehavior.ShouldUseNativeAnimation);
-		Assert.Equal(TouchBehaviorDefaults.NativeAnimationColor, touchBehavior.NativeAnimationColor);
-		Assert.Equal(TouchBehaviorDefaults.NativeAnimationRadius, touchBehavior.NativeAnimationRadius);
-		Assert.Equal(TouchBehaviorDefaults.NativeAnimationShadowRadius, touchBehavior.NativeAnimationShadowRadius);
-		Assert.Equal(TouchBehaviorDefaults.IsNativeAnimationBorderless, touchBehavior.IsNativeAnimationBorderless);
-
 		Assert.Equal(TouchBehaviorDefaults.DefaultBackgroundColor, touchBehavior.DefaultBackgroundColor);
 		Assert.Equal(TouchBehaviorDefaults.HoveredBackgroundColor, touchBehavior.HoveredBackgroundColor);
 		Assert.Equal(TouchBehaviorDefaults.PressedBackgroundColor, touchBehavior.PressedBackgroundColor);
@@ -911,20 +905,6 @@ public class TouchBehaviorTests : BaseTest
 	}
 
 	[Fact]
-	public void SetIsNativeAnimationBorderlessTest()
-	{
-		const bool isNativeAnimationBorderless = true;
-		var viewModel = new TouchBehaviorViewModel();
-		touchBehavior.BindingContext = viewModel;
-
-		touchBehavior.SetBinding(TouchBehavior.IsNativeAnimationBorderlessProperty, nameof(TouchBehaviorViewModel.IsNativeAnimationBorderLess), mode: BindingMode.TwoWay);
-
-		touchBehavior.IsNativeAnimationBorderless = isNativeAnimationBorderless;
-
-		Assert.Equal(isNativeAnimationBorderless, viewModel.IsNativeAnimationBorderLess);
-	}
-
-	[Fact]
 	public void SetLongPressDurationTest()
 	{
 		const int longPressDuration = 1250;
@@ -936,48 +916,6 @@ public class TouchBehaviorTests : BaseTest
 		touchBehavior.LongPressDuration = longPressDuration;
 
 		Assert.Equal(longPressDuration, viewModel.LongPressDuration);
-	}
-
-	[Fact]
-	public void SetNativeAnimationColorTest()
-	{
-		Color nativeAnimationColor = Colors.Blue;
-		var viewModel = new TouchBehaviorViewModel();
-		touchBehavior.BindingContext = viewModel;
-
-		touchBehavior.SetBinding(TouchBehavior.NativeAnimationColorProperty, nameof(TouchBehaviorViewModel.NativeAnimationColor), mode: BindingMode.TwoWay);
-
-		touchBehavior.NativeAnimationColor = nativeAnimationColor;
-
-		Assert.Equal(nativeAnimationColor, viewModel.NativeAnimationColor);
-	}
-
-	[Fact]
-	public void SetNativeAnimationRadiusTest()
-	{
-		const int nativeAnimationRadius = 2;
-		var viewModel = new TouchBehaviorViewModel();
-		touchBehavior.BindingContext = viewModel;
-
-		touchBehavior.SetBinding(TouchBehavior.NativeAnimationRadiusProperty, nameof(TouchBehaviorViewModel.NativeAnimationRadius), mode: BindingMode.TwoWay);
-
-		touchBehavior.NativeAnimationRadius = nativeAnimationRadius;
-
-		Assert.Equal(nativeAnimationRadius, viewModel.NativeAnimationRadius);
-	}
-
-	[Fact]
-	public void SetNativeAnimationShadowRadiusTest()
-	{
-		const int nativeAnimationShadowRadius = 2;
-		var viewModel = new TouchBehaviorViewModel();
-		touchBehavior.BindingContext = viewModel;
-
-		touchBehavior.SetBinding(TouchBehavior.NativeAnimationShadowRadiusProperty, nameof(TouchBehaviorViewModel.NativeAnimationShadowRadius), mode: BindingMode.TwoWay);
-
-		touchBehavior.NativeAnimationShadowRadius = nativeAnimationShadowRadius;
-
-		Assert.Equal(nativeAnimationShadowRadius, viewModel.NativeAnimationShadowRadius);
 	}
 
 	[Fact]
@@ -1090,20 +1028,6 @@ public class TouchBehaviorTests : BaseTest
 		touchBehavior.ShouldMakeChildrenInputTransparent = shouldMakeChildrenInputTransparent;
 
 		Assert.Equal(shouldMakeChildrenInputTransparent, viewModel.ShouldMakeChildrenInputTransparent);
-	}
-
-	[Fact]
-	public void SetShouldUseNativeAnimationTest()
-	{
-		const bool shouldUseNativeAnimation = true;
-		var viewModel = new TouchBehaviorViewModel();
-		touchBehavior.BindingContext = viewModel;
-
-		touchBehavior.SetBinding(TouchBehavior.ShouldUseNativeAnimationProperty, nameof(TouchBehaviorViewModel.ShouldUseNativeAnimation), mode: BindingMode.TwoWay);
-
-		touchBehavior.ShouldUseNativeAnimation = shouldUseNativeAnimation;
-
-		Assert.Equal(shouldUseNativeAnimation, viewModel.ShouldUseNativeAnimation);
 	}
 	
 	[Fact]

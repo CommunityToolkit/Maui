@@ -225,18 +225,6 @@ public static class TouchBehaviorDefaults
 	public const TouchInteractionStatus CurrentInteractionStatus = TouchInteractionStatus.Completed;
 
 	/// <summary>
-	/// Default Value for TouchBehavior <see cref="ShouldUseNativeAnimation"/>
-	/// </summary>
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const bool ShouldUseNativeAnimation = false;
-
-	/// <summary>
-	/// Default Value for TouchBehavior <see cref="NativeAnimationColor"/>
-	/// </summary>
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const Color? NativeAnimationColor = null;
-
-	/// <summary>
 	/// Default Value for TouchBehavior <see cref="DefaultBackgroundColor"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
@@ -253,24 +241,4 @@ public static class TouchBehaviorDefaults
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const Color? PressedBackgroundColor = null;
-
-	
-
-	/// <summary>
-	/// Default Value for TouchBehavior <see cref="IsNativeAnimationBorderless"/>
-	/// </summary>
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const bool IsNativeAnimationBorderless = false;
-
-	/// <summary>
-	/// Default Value for TouchBehavior <see cref="NativeAnimationRadius"/>
-	/// </summary>
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static int? NativeAnimationRadius { get; } = null;
-
-	/// <summary>
-	/// Default Value for TouchBehavior <see cref="NativeAnimationShadowRadius"/>
-	/// </summary>
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static int? NativeAnimationShadowRadius { get; } = null;
 }

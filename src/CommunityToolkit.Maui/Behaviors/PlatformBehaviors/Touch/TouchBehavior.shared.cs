@@ -62,51 +62,6 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		TouchBehaviorDefaults.DisallowTouchThreshold);
 
 	/// <summary>
-	/// Bindable property for <see cref="ShouldUseNativeAnimation"/>
-	/// </summary>
-	public static readonly BindableProperty ShouldUseNativeAnimationProperty = BindableProperty.Create(
-		nameof(ShouldUseNativeAnimation),
-		typeof(bool),
-		typeof(TouchBehavior),
-		TouchBehaviorDefaults.ShouldUseNativeAnimation);
-
-	/// <summary>
-	/// Bindable property for <see cref="NativeAnimationColor"/>
-	/// </summary>
-	public static readonly BindableProperty NativeAnimationColorProperty = BindableProperty.Create(
-		nameof(NativeAnimationColor),
-		typeof(Color),
-		typeof(TouchBehavior),
-		TouchBehaviorDefaults.NativeAnimationColor);
-
-	/// <summary>
-	/// Bindable property for <see cref="NativeAnimationRadius"/>
-	/// </summary>
-	public static readonly BindableProperty NativeAnimationRadiusProperty = BindableProperty.Create(
-		nameof(NativeAnimationRadius),
-		typeof(int?),
-		typeof(TouchBehavior),
-		TouchBehaviorDefaults.NativeAnimationRadius);
-
-	/// <summary>
-	/// Bindable property for <see cref="NativeAnimationShadowRadius"/>
-	/// </summary>
-	public static readonly BindableProperty NativeAnimationShadowRadiusProperty = BindableProperty.Create(
-		nameof(NativeAnimationShadowRadius),
-		typeof(int?),
-		typeof(TouchBehavior),
-		TouchBehaviorDefaults.NativeAnimationShadowRadius);
-
-	/// <summary>
-	/// Bindable property for <see cref="IsNativeAnimationBorderless"/>
-	/// </summary>
-	public static readonly BindableProperty IsNativeAnimationBorderlessProperty = BindableProperty.Create(
-		nameof(IsNativeAnimationBorderless),
-		typeof(bool),
-		typeof(TouchBehavior),
-		TouchBehaviorDefaults.IsNativeAnimationBorderless);
-
-	/// <summary>
 	/// Bindable property for <see cref="LongPressCommand"/>
 	/// </summary>
 	public static readonly BindableProperty LongPressCommandProperty = BindableProperty.Create(
@@ -957,51 +912,6 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 	{
 		get => (int)GetValue(DisallowTouchThresholdProperty);
 		set => SetValue(DisallowTouchThresholdProperty, value);
-	}
-
-	/// <summary>
-	/// Gets or sets a value indicating whether the animation should be native.
-	/// </summary>
-	public bool ShouldUseNativeAnimation
-	{
-		get => (bool)GetValue(ShouldUseNativeAnimationProperty);
-		set => SetValue(ShouldUseNativeAnimationProperty, value);
-	}
-
-	/// <summary>
-	/// Gets or sets the color of the native animation.
-	/// </summary>
-	public Color? NativeAnimationColor
-	{
-		get => (Color?)GetValue(NativeAnimationColorProperty);
-		set => SetValue(NativeAnimationColorProperty, value);
-	}
-
-	/// <summary>
-	/// Gets or sets the radius of the native animation.
-	/// </summary>
-	public int? NativeAnimationRadius
-	{
-		get => (int?)GetValue(NativeAnimationRadiusProperty);
-		set => SetValue(NativeAnimationRadiusProperty, value);
-	}
-
-	/// <summary>
-	/// Gets or sets the shadow radius of the native animation.
-	/// </summary>
-	public int? NativeAnimationShadowRadius
-	{
-		get => (int?)GetValue(NativeAnimationShadowRadiusProperty);
-		set => SetValue(NativeAnimationShadowRadiusProperty, value);
-	}
-
-	/// <summary>
-	/// Gets or sets a value indicating whether the native animation should be borderless.
-	/// </summary>
-	public bool IsNativeAnimationBorderless
-	{
-		get => (bool)GetValue(IsNativeAnimationBorderlessProperty);
-		set => SetValue(IsNativeAnimationBorderlessProperty, value);
 	}
 
 	internal bool CanExecute => IsEnabled

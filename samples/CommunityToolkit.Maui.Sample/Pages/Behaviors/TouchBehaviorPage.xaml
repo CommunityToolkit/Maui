@@ -24,15 +24,6 @@
 
     <ScrollView>
         <VerticalStackLayout>
-            <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
-                <Label FontAttributes="Bold" 
-                       HorizontalOptions="Center" 
-                       HorizontalTextAlignment="Center"
-                       VerticalOptions="Center"
-                       VerticalTextAlignment="Center" Text="IsNativeAnimationBorderless" 
-                       FontSize="Body"/>
-                <Switch IsToggled="{Binding IsNativeAnimationBorderless}" VerticalOptions="Center" />
-            </HorizontalStackLayout>
 
             <Label HorizontalOptions="Center" HorizontalTextAlignment="Center"
                    FontSize="Body"
@@ -70,7 +61,7 @@
                     BackgroundColor="Gold" />
             </HorizontalStackLayout>
 
-            <Label Style="{StaticResource SectionHeader}" Text="Native | Long Press | Hover" />
+            <Label Style="{StaticResource SectionHeader}" Text="Long Press | Hover" />
 
             <Label
                 FontSize="Body"
@@ -86,9 +77,7 @@
                         Command="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseTouchCountCommand}"
                         HoveredBackgroundColor="{StaticResource Gray900}"
                         HoveredScale="1.2"
-                        LongPressCommand="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseLongPressCountCommand}"
-                        ShouldUseNativeAnimation="True"
-                        IsNativeAnimationBorderless="{Binding Source={x:Reference Page}, Path=BindingContext.IsNativeAnimationBorderless}" />
+                        LongPressCommand="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseLongPressCountCommand}" />
                 </HorizontalStackLayout.Behaviors>
                 <Label
                     FontSize="Large"
@@ -128,10 +117,7 @@
                     WidthRequest="100">
                     <Image.Behaviors>
                         <mct:TouchBehavior
-                            Command="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseTouchCountCommand}"
-                            ShouldUseNativeAnimation="True"
-                            IsNativeAnimationBorderless="{Binding Source={x:Reference Page}, Path=BindingContext.IsNativeAnimationBorderless}"
-                            NativeAnimationRadius="100" />
+                            Command="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseTouchCountCommand}" />
                     </Image.Behaviors>
                 </Image>
             </Border>
@@ -146,9 +132,7 @@
                 WidthRequest="200">
                 <ContentView.Behaviors>
                     <mct:TouchBehavior
-                        Command="{Binding Source={x:Reference Page}, Path=BindingContext.ParentClickedCommand}"
-                        ShouldUseNativeAnimation="True"
-                        IsNativeAnimationBorderless="{Binding Source={x:Reference Page}, Path=BindingContext.IsNativeAnimationBorderless}" />
+                        Command="{Binding Source={x:Reference Page}, Path=BindingContext.ParentClickedCommand}"/>
                 </ContentView.Behaviors>
 
                 <ContentView
@@ -159,9 +143,7 @@
                     WidthRequest="100">
                     <ContentView.Behaviors>
                         <mct:TouchBehavior
-                            Command="{Binding Source={x:Reference Page}, Path=BindingContext.ChildClickedCommand}"
-                            ShouldUseNativeAnimation="True"
-                            IsNativeAnimationBorderless="{Binding Source={x:Reference Page}, Path=BindingContext.IsNativeAnimationBorderless}" />
+                            Command="{Binding Source={x:Reference Page}, Path=BindingContext.ChildClickedCommand}" />
                     </ContentView.Behaviors>
                 </ContentView>
             </ContentView>

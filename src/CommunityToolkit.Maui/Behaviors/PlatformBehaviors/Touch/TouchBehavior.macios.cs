@@ -75,7 +75,7 @@ public partial class TouchBehavior
 		{
 			throw new ArgumentException($"{nameof(sender)} must be Type {nameof(UIButton)}", nameof(sender));
 		}
-		
+
 		// Prevent Button Highlight
 		button.Highlighted = false;
 	}
@@ -128,7 +128,7 @@ public partial class TouchBehavior
 
 		public bool IsButton { get; set; }
 
-		public override async void TouchesBegan(NSSet touches, UIEvent evt)
+		public override void TouchesBegan(NSSet touches, UIEvent evt)
 		{
 			base.TouchesBegan(touches, evt);
 
@@ -140,10 +140,10 @@ public partial class TouchBehavior
 			isCanceled = false;
 			startPoint = GetTouchPoint(touches);
 
-			await HandleTouch(TouchStatus.Started, CancellationToken.None, TouchInteractionStatus.Started);
+			HandleTouch(TouchStatus.Started, TouchInteractionStatus.Started);
 		}
 
-		public override async void TouchesEnded(NSSet touches, UIEvent evt)
+		public override void TouchesEnded(NSSet touches, UIEvent evt)
 		{
 			base.TouchesEnded(touches, evt);
 
@@ -152,14 +152,13 @@ public partial class TouchBehavior
 				return;
 			}
 
-			await HandleTouch(behavior.CurrentTouchStatus is TouchStatus.Started ? TouchStatus.Completed : TouchStatus.Canceled,
-				CancellationToken.None,
+			HandleTouch(behavior.CurrentTouchStatus is TouchStatus.Started ? TouchStatus.Completed : TouchStatus.Canceled,
 				TouchInteractionStatus.Completed);
 
 			isCanceled = true;
 		}
 
-		public override async void TouchesCancelled(NSSet touches, UIEvent evt)
+		public override void TouchesCancelled(NSSet touches, UIEvent evt)
 		{
 			base.TouchesCancelled(touches, evt);
 
@@ -168,12 +167,12 @@ public partial class TouchBehavior
 				return;
 			}
 
-			await HandleTouch(TouchStatus.Canceled, CancellationToken.None, TouchInteractionStatus.Completed);
+			HandleTouch(TouchStatus.Canceled, TouchInteractionStatus.Completed);
 
 			isCanceled = true;
 		}
 
-		public override async void TouchesMoved(NSSet touches, UIEvent evt)
+		public override void TouchesMoved(NSSet touches, UIEvent evt)
 		{
 			base.TouchesMoved(touches, evt);
 
@@ -191,7 +190,7 @@ public partial class TouchBehavior
 				var maxDiff = Math.Max(diffX, diffY);
 				if (maxDiff > disallowTouchThreshold)
 				{
-					await HandleTouch(TouchStatus.Canceled, CancellationToken.None, TouchInteractionStatus.Completed);
+					HandleTouch(TouchStatus.Canceled, TouchInteractionStatus.Completed);
 					isCanceled = true;
 					return;
 				}
@@ -203,7 +202,7 @@ public partial class TouchBehavior
 
 			if (behavior.CurrentTouchStatus != status)
 			{
-				await HandleTouch(status, CancellationToken.None);
+				HandleTouch(status);
 			}
 
 			if (status is TouchStatus.Canceled)
@@ -212,14 +211,12 @@ public partial class TouchBehavior
 			}
 		}
 
-		Task HandleTouch(TouchStatus status, CancellationToken token, TouchInteractionStatus? interactionStatus = null)
+		void HandleTouch(TouchStatus status, TouchInteractionStatus? interactionStatus = null)
 		{
 			if (isCanceled || !behavior.IsEnabled)
 			{
-				return Task.CompletedTask;
+				return;
 			}
-
-			var canExecuteAction = behavior.CanExecute;
 
 			if (interactionStatus is TouchInteractionStatus.Started)
 			{
@@ -233,46 +230,6 @@ public partial class TouchBehavior
 			{
 				behavior.HandleUserInteraction(interactionStatus.Value);
 			}
-
-			if (behavior.Element is null
-				|| (!behavior.ShouldUseNativeAnimation && !IsButton)
-				|| (!canExecuteAction && status is TouchStatus.Started))
-			{
-				return Task.CompletedTask;
-			}
-
-			var color = behavior.NativeAnimationColor;
-			var radius = behavior.NativeAnimationRadius;
-			var shadowRadius = behavior.NativeAnimationShadowRadius;
-			var isStarted = status is TouchStatus.Started;
-
-			defaultRadius = (float?)(defaultRadius ?? View.Layer.CornerRadius);
-			defaultShadowRadius = (float?)(defaultShadowRadius ?? View.Layer.ShadowRadius);
-			defaultShadowOpacity ??= View.Layer.ShadowOpacity;
-
-			var tcs = new TaskCompletionSource<UIViewAnimatingPosition>();
-			UIViewPropertyAnimator.CreateRunningPropertyAnimator(.2, 0, UIViewAnimationOptions.AllowUserInteraction,
-				() =>
-				{
-					if (color is null)
-					{
-						View.Layer.Opacity = isStarted ? 0.5f : (float)behavior.Element.Opacity;
-					}
-					else
-					{
-						View.Layer.BackgroundColor = (isStarted ? color : behavior.Element.BackgroundColor).ToCGColor();
-					}
-
-					View.Layer.CornerRadius = isStarted ? (nfloat)radius.GetValueOrDefault() : defaultRadius.GetValueOrDefault();
-
-					if (shadowRadius >= 0)
-					{
-						View.Layer.ShadowRadius = isStarted ? (nfloat)shadowRadius : defaultShadowRadius.GetValueOrDefault();
-						View.Layer.ShadowOpacity = isStarted ? 0.7f : defaultShadowOpacity.GetValueOrDefault();
-					}
-				}, endPos => tcs.SetResult(endPos));
-
-			return tcs.Task.WaitAsync(token);
 		}
 
 		protected override void Dispose(bool disposing)
@@ -297,16 +254,11 @@ public partial class TouchBehavior
 				if (gestureRecognizer is TouchUITapGestureRecognizer touchGesture && otherGestureRecognizer is UIPanGestureRecognizer &&
 					otherGestureRecognizer.State is UIGestureRecognizerState.Began)
 				{
-					HandleTouch();
+					touchGesture.HandleTouch(TouchStatus.Canceled, TouchInteractionStatus.Completed);
+					touchGesture.isCanceled = true;
 				}
 
 				return true;
-
-				async void HandleTouch()
-				{
-					await touchGesture.HandleTouch(TouchStatus.Canceled, CancellationToken.None, TouchInteractionStatus.Completed);
-					touchGesture.isCanceled = true;
-				}
 			}
 
 			public override bool ShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
