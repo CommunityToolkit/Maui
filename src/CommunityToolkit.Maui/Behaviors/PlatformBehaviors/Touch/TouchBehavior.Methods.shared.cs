@@ -167,8 +167,7 @@ public partial class TouchBehavior : IDisposable
 
 	async Task RaiseCurrentTouchStateChanged(CancellationToken token)
 	{
-		await ForceUpdateState(token);
-		await HandleLongPress(token);
+		await Task.WhenAll(ForceUpdateState(token), HandleLongPress(token));
 		weakEventManager.HandleEvent(this, new TouchStateChangedEventArgs(CurrentTouchState), nameof(CurrentTouchStateChanged));
 	}
 

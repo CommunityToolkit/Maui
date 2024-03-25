@@ -294,7 +294,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 	}
 #endif
 
-	static async Task SetBackgroundImage(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, CancellationToken token)
+	static async Task SetImageSource(TouchBehavior sender, TouchState touchState, HoverState hoverState, TimeSpan duration, CancellationToken token)
 	{
 		if (sender is not ImageTouchBehavior imageTouchBehavior)
 		{
@@ -318,41 +318,64 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			return;
 		}
 
-		if (touchState is TouchState.Pressed)
+		switch (touchState)
 		{
-			if (sender.IsSet(ImageTouchBehavior.PressedImageAspectProperty))
-			{
-				bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.PressedImageAspect);
-			}
+			case TouchState.Pressed:
+				if (imageTouchBehavior.IsSet(ImageTouchBehavior.PressedImageAspectProperty))
+				{
+					bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.PressedImageAspect);
+				}
 
-			if (sender.IsSet(ImageTouchBehavior.PressedBackgroundImageSourceProperty))
-			{
-				bindable.SetValue(ImageElement.SourceProperty, imageTouchBehavior.PressedImageSource);
-			}
+				if (imageTouchBehavior.IsSet(ImageTouchBehavior.PressedBackgroundImageSourceProperty))
+				{
+					bindable.SetValue(ImageElement.SourceProperty, imageTouchBehavior.PressedImageSource);
+				}
+				break;
+
+			case TouchState.Default:
+				if (imageTouchBehavior.IsSet(ImageTouchBehavior.DefaultImageAspectProperty))
+				{
+					bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.DefaultImageAspect);
+				}
+
+				if (imageTouchBehavior.IsSet(ImageTouchBehavior.DefaultImageSourceProperty))
+				{
+					bindable.SetValue(ImageElement.SourceProperty, imageTouchBehavior.DefaultImageSource);
+				}
+				break;
+
+			default:
+				throw new NotSupportedException($"{nameof(TouchState)} {touchState} is not yet supported");
 		}
-		else if (hoverState is HoverState.Hovered)
-		{
-			if (sender.IsSet(ImageTouchBehavior.HoveredImageAspectProperty))
-			{
-				bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.HoveredImageAspect);
-			}
 
-			if (sender.IsSet(ImageTouchBehavior.HoveredBackgroundImageSourceProperty))
-			{
-				bindable.SetValue(ImageElement.SourceProperty, imageTouchBehavior.HoveredImageSource);
-			}
-		}
-		else
+		switch (hoverState)
 		{
-			if (sender.IsSet(ImageTouchBehavior.DefaultImageAspectProperty))
-			{
-				bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.DefaultImageAspect);
-			}
+			case HoverState.Hovered:
+				if (imageTouchBehavior.IsSet(ImageTouchBehavior.HoveredImageAspectProperty))
+				{
+					bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.HoveredImageAspect);
+				}
 
-			if (sender.IsSet(ImageTouchBehavior.DefaultImageSourceProperty))
-			{
-				bindable.SetValue(ImageElement.SourceProperty, imageTouchBehavior.DefaultImageSource);
-			}
+				if (imageTouchBehavior.IsSet(ImageTouchBehavior.HoveredBackgroundImageSourceProperty))
+				{
+					bindable.SetValue(ImageElement.SourceProperty, imageTouchBehavior.HoveredImageSource);
+				}
+				break;
+
+			case HoverState.Default:
+				if (imageTouchBehavior.IsSet(ImageTouchBehavior.DefaultImageAspectProperty))
+				{
+					bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.DefaultImageAspect);
+				}
+
+				if (imageTouchBehavior.IsSet(ImageTouchBehavior.DefaultImageSourceProperty))
+				{
+					bindable.SetValue(ImageElement.SourceProperty, imageTouchBehavior.DefaultImageSource);
+				}
+				break;
+			
+			default:
+				throw new NotSupportedException($"{nameof(HoverState)} {hoverState} is not yet supported");
 		}
 	}
 
@@ -736,7 +759,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 
 		await Task.WhenAll(
 			animationTaskFactory?.Invoke(sender, touchState, hoverState, duration, easing, token) ?? Task.CompletedTask,
-			SetBackgroundImage(sender, touchState, hoverState, TimeSpan.FromMilliseconds(duration), token),
+			SetImageSource(sender, touchState, hoverState, TimeSpan.FromMilliseconds(duration), token),
 			SetBackgroundColor(sender, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
 			SetOpacity(sender, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
 			SetScale(sender, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
