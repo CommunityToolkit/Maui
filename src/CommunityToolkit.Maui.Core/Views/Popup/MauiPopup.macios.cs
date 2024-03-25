@@ -73,6 +73,12 @@ public class MauiPopup : UIViewController
 				PopupExtensions.SetLayout(this, VirtualView);
 			}
 		});
+
+		if (View is not null)
+		{
+			View.Bounds = new CGRect(0, 0, PreferredContentSize.Width, PreferredContentSize.Height);
+		}
+
 		base.ViewWillTransitionToSize(toSize, coordinator);
 	}
 
