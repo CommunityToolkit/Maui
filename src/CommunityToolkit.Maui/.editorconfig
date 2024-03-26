@@ -1,5 +1,3 @@
-root = false
-
 [*.cs]
 
 # Missing XML comment for publicly visible type or member

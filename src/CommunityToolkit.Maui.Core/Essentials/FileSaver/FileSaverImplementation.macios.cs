@@ -17,7 +17,7 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 		InternalDispose();
 	}
 
-	async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken)
+	async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 		var fileManager = NSFileManager.DefaultManager;
@@ -29,7 +29,7 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 		}
 
 		var fileUrl = tempDirectoryPath.Append(fileName, false);
-		await WriteStream(stream, fileUrl.Path ?? throw new Exception("Path cannot be null."), cancellationToken);
+		await WriteStream(stream, fileUrl.Path ?? throw new Exception("Path cannot be null."), progress, cancellationToken);
 
 		cancellationToken.ThrowIfCancellationRequested();
 		taskCompetedSource?.TrySetCanceled(CancellationToken.None);
@@ -55,9 +55,9 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 		return await tcs.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
 	}
 
-	Task<string> InternalSaveAsync(string fileName, Stream stream, CancellationToken cancellationToken)
+	Task<string> InternalSaveAsync(string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
 	{
-		return InternalSaveAsync("/", fileName, stream, cancellationToken);
+		return InternalSaveAsync("/", fileName, stream, progress, cancellationToken);
 	}
 
 	void DocumentPickerViewControllerOnWasCancelled(object? sender, EventArgs e)

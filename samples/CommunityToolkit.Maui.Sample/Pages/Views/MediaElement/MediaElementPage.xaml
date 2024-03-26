@@ -9,6 +9,7 @@
              x:TypeArguments="viewModels:MediaElementViewModel"
              x:DataType="viewModels:MediaElementViewModel"
              x:Class="CommunityToolkit.Maui.Sample.Pages.Views.MediaElementPage"
+             Unloaded="MediaElementUnloaded"
              Title="MediaElement">
     <pages:BasePage.Resources>
         <toolkit:TimeSpanToSecondsConverter x:Key="TimeSpanConverter" />
@@ -29,6 +30,7 @@
             </Grid.RowDefinitions>
             <toolkit:MediaElement
                 x:Name="MediaElement"
+                WidthRequest="{OnIdiom Tablet=410, Default=380}"
                 ShouldAutoPlay="True"
                 Source="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
                 MediaEnded="OnMediaEnded"
@@ -51,7 +53,7 @@
 
             </HorizontalStackLayout>
 
-            <Grid Grid.Row="2" Padding="0,10,0,10" ColumnDefinitions="*,*,*,*" ColumnSpacing="5">          
+            <Grid Grid.Row="2" Padding="0,10,0,10" ColumnDefinitions="*,*,*,*,*" ColumnSpacing="5">
                 <Button Grid.Column="0" Text="Play" Clicked="OnPlayClicked" />
                 <Button Grid.Column="1" Text="Pause" Clicked="OnPauseClicked" />
                 <Button Grid.Column="2" Text="Stop" Clicked="OnStopClicked" />
@@ -69,6 +71,7 @@
                         </DataTrigger>
                     </Button.Triggers>
                 </Button>
+                <Button Grid.Column="4" Text="Popup" Clicked="DisplayPopup" />
             </Grid>
 
             <Slider

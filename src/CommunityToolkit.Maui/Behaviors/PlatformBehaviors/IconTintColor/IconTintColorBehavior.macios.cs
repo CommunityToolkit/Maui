@@ -39,12 +39,14 @@ public partial class IconTintColorBehavior
 	}
 
 	/// <inheritdoc/>
-	protected override void OnDetachedFrom(View bindable, UIView platformView) =>
+	protected override void OnDetachedFrom(View bindable, UIView platformView)
+	{
+		bindable.PropertyChanged -= OnElementPropertyChanged;
 		ClearTintColor(platformView, bindable);
+	}
 
 	void ClearTintColor(UIView platformView, View element)
 	{
-		element.PropertyChanged -= OnElementPropertyChanged;
 		switch (platformView)
 		{
 			case UIImageView imageView:
