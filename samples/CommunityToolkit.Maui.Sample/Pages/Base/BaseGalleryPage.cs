@@ -14,9 +14,9 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 		Padding = 0;
 
 		Content = new CollectionView
-			{
-				SelectionMode = SelectionMode.Single,
-			}.ItemTemplate(new GalleryDataTemplate())
+		{
+			SelectionMode = SelectionMode.Single,
+		}.ItemTemplate(new GalleryDataTemplate())
 			.Bind(ItemsView.ItemsSourceProperty,
 				static (BaseGalleryViewModel vm) => vm.Items,
 				mode: BindingMode.OneTime)
