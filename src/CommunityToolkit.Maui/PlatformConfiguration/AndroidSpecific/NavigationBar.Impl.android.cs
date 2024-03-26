@@ -12,7 +12,7 @@ static partial class NavigationBar
 {
 	static readonly Lazy<bool> isSupportedHandler = new(() =>
 	{
-		if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.M))
+		if (OperatingSystem.IsAndroidVersionAtLeast(23))
 		{
 			return true;
 		}
