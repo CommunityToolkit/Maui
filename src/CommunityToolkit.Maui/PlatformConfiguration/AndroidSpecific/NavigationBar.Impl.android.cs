@@ -1,9 +1,8 @@
 ﻿using Android.App;
 using Android.OS;
-using Android.Views;
 using AndroidX.Core.View;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Extensions;
-using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 
@@ -11,16 +10,27 @@ namespace CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;
 
 static partial class NavigationBar
 {
-	static bool? isSupported;
-
-	static bool IsSupported => isSupported ??= AndroidSystemExtensions.IsSupported(BuildVersionCodes.M);
-
-	internal static partial void RemapForControls()
+	static readonly Lazy<bool> isSupportedHandler = new(() =>
 	{
-		PageHandler.Mapper.Add(ColorProperty.PropertyName, MapNavigationColorProperty);
-		PageHandler.Mapper.Add(StyleProperty.PropertyName, MapNavigationStyleProperty);
-	}
+		if (OperatingSystem.IsAndroidVersionAtLeast(23))
+		{
+			return true;
+		}
 
+		System.Diagnostics.Trace.WriteLine($"{nameof(NavigationBar)} {nameof(Style)} + {nameof(Color)} functionality is not supported on this version of the Android operating system. Minimum supported Android API is {BuildVersionCodes.M}");
+
+		return false;
+	});
+
+	static bool IsSupported => isSupportedHandler.Value;
+
+	/// <summary>
+	/// Map Navigation Style Property
+	/// </summary>
+	/// <param name="handler"></param>
+	/// <param name="view"></param>
+	/// <exception cref="NullReferenceException"></exception>
+	/// <exception cref="NotSupportedException"></exception>
 	public static void MapNavigationStyleProperty(IPageHandler handler, IContentView view)
 	{
 		if (view is not Page page)
@@ -33,7 +43,7 @@ static partial class NavigationBar
 			return;
 		}
 
-		var activity = (Activity?)handler.PlatformView.Context ?? throw new NullReferenceException("Activity cannot be null.");
+		var activity = (Activity?)handler.PlatformView.Context ?? throw new InvalidOperationException("Activity cannot be null.");
 		var style = GetStyle(page);
 
 		switch (style)
@@ -42,9 +52,13 @@ static partial class NavigationBar
 				SetSystemNavigationBarAppearance(activity, true);
 				break;
 
-			default:
+			case NavigationBarStyle.Default:
+			case NavigationBarStyle.LightContent:
 				SetSystemNavigationBarAppearance(activity, false);
 				break;
+
+			default:
+				throw new NotSupportedException($"{nameof(NavigationBar)} {style} is not yet supported");
 		}
 
 		static void SetSystemNavigationBarAppearance(Activity activity, bool isLightSystemNavigationBars)
@@ -55,6 +69,13 @@ static partial class NavigationBar
 		}
 	}
 
+	/// <summary>
+	/// Map Navigation Color Property
+	/// </summary>
+	/// <param name="handler"></param>
+	/// <param name="view"></param>
+	/// <exception cref="NullReferenceException"></exception>
+	/// <exception cref="NotSupportedException"></exception>
 	public static void MapNavigationColorProperty(IPageHandler handler, IContentView view)
 	{
 		if (view is not Page page)
@@ -67,7 +88,7 @@ static partial class NavigationBar
 			return;
 		}
 
-		var activity = (Activity?)handler.PlatformView.Context ?? throw new NullReferenceException("Activity cannot be null.");
+		var activity = (Activity?)handler.PlatformView.Context ?? throw new InvalidOperationException("Activity cannot be null.");
 		var window = activity.GetCurrentWindow();
 
 		var color = GetColor(page).ToPlatform();
@@ -75,4 +96,9 @@ static partial class NavigationBar
 		window.SetNavigationBarColor(color);
 	}
 
+	internal static partial void RemapForControls()
+	{
+		PageHandler.Mapper.Add(ColorProperty.PropertyName, MapNavigationColorProperty);
+		PageHandler.Mapper.Add(StyleProperty.PropertyName, MapNavigationStyleProperty);
+	}
 }
