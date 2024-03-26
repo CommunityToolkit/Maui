@@ -50,6 +50,7 @@ public static class MauiProgram
 									options.SetShouldSuppressExceptionsInAnimations(true);
 								})
 #endif
+								.UseMauiCommunityToolkitCameraView()
 								.UseMauiCommunityToolkitMarkup()
 								.UseMauiCommunityToolkitMediaElement()
 								.UseMauiCommunityToolkitMaps("KEY") // You should add your own key here from bingmapsportal.com
@@ -123,6 +124,9 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<UriValidationBehaviorPage, UriValidationBehaviorViewModel>();
 		services.AddTransientWithShellRoute<UserStoppedTypingBehaviorPage, UserStoppedTypingBehaviorViewModel>();
 		services.AddTransientWithShellRoute<StatusBarBehaviorPage, StatusBarBehaviorViewModel>();
+
+		// Add Camera Pages + ViewModels
+		services.AddTransientWithShellRoute<CameraViewPage, CameraViewModel>();
 
 		// Add Converters Pages + ViewModels
 		services.AddTransientWithShellRoute<BoolToObjectConverterPage, BoolToObjectConverterViewModel>();

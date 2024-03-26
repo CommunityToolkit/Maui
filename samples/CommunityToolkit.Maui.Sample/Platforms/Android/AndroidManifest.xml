@@ -10,6 +10,7 @@
   <uses-permission android:name="com.sec.android.provider.badge.permission.WRITE" />
 
 	<uses-permission android:name="android.permission.RECORD_AUDIO" />
+	<uses-permission android:name="android.permission.CAMERA" />
 	<queries>
 		<intent>
 			<action android:name="android.intent.action.TTS_SERVICE" />
