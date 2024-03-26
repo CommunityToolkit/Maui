@@ -1,9 +1,10 @@
-﻿using CommunityToolkit.Maui.Converters;
+﻿using System.Globalization;
+using CommunityToolkit.Maui.Converters;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class ColorToRgbStringConverterTests : BaseOneWayConverterTest<ColorToRgbStringConverter>
+public class ColorToRgbStringConverterTests : BaseConverterTest<ColorToRgbStringConverter>
 {
 	public static readonly IReadOnlyList<object[]> ValidInputData = new[]
 	{
@@ -62,6 +63,30 @@ public class ColorToRgbStringConverterTests : BaseOneWayConverterTest<ColorToRgb
 
 		Assert.Equal(expectedResult, resultConvert);
 		Assert.Equal(expectedResult, resultConvertFrom);
+	}
+
+	[Theory]
+	[MemberData(nameof(ValidInputData))]
+	public void ColorToRgbStringConverterConvertBackValidInputTest(float red, float green, float blue, float alpha, string colorString)
+	{
+		var converter = new ColorToRgbStringConverter();
+		var expectedResult = new Color(red, green, blue, alpha);
+
+		var resultConvertBack = ((ICommunityToolkitValueConverter)converter).ConvertBack(colorString, typeof(Color), null, null);
+		var resultConvertBackTo = converter.ConvertBackTo(colorString, CultureInfo.InvariantCulture);
+
+		AssertColorComparison(expectedResult, resultConvertBack as Color);
+		AssertColorComparison(expectedResult, resultConvertBackTo);
+	}
+
+	static void AssertColorComparison(Color expectedResult, Color? result)
+	{
+		const int precision = 2;
+
+		Assert.NotNull(result);
+		Assert.Equal(expectedResult.Red, result.Red, precision);
+		Assert.Equal(expectedResult.Green, result.Green, precision);
+		Assert.Equal(expectedResult.Blue, result.Blue, precision);
 	}
 
 	[Fact]

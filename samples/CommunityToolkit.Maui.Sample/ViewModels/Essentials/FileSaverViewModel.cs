@@ -1,18 +1,15 @@
 using System.Text;
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Essentials;
 
-public partial class FileSaverViewModel : BaseViewModel
+public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 {
-	readonly IFileSaver fileSaver;
-
-	public FileSaverViewModel(IFileSaver fileSaver)
-	{
-		this.fileSaver = fileSaver;
-	}
+	[ObservableProperty]
+	double progress;
 
 	[RelayCommand]
 	async Task SaveFile(CancellationToken cancellationToken)
@@ -55,7 +52,7 @@ public partial class FileSaverViewModel : BaseViewModel
 		try
 		{
 			var fileSaverInstance = new FileSaverImplementation();
-			var fileSaverResult = await fileSaverInstance.SaveAsync("communitytoolkit.maui.5.0.0.nupkg", stream, cancellationToken);
+			var fileSaverResult = await fileSaverInstance.SaveAsync("communitytoolkit.maui.5.0.0.nupkg", stream, new Progress<double>(p => Progress = p), cancellationToken);
 			fileSaverResult.EnsureSuccess();
 
 			await Toast.Make($"File is saved: {fileSaverResult.FilePath}").Show(cancellationToken);
