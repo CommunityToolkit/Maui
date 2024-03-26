@@ -1,0 +1,104 @@
+id: 
+name: GitOps.PullRequestIssueManagement
+description: GitOps.PullRequestIssueManagement primitive
+owner: 
+resource: repository
+disabled: false
+where: 
+configuration:
+  resourceManagementConfiguration:
+    scheduledSearches:
+    - description: Add Stale Label
+      frequencies:
+      - daily:
+          time: 16:0
+      filters:
+      - isPullRequest
+      - noActivitySince:
+          days: 30
+      - isOpen
+      actions:
+      - addLabel:
+          label: stale
+      - addLabel:
+          label: help wanted
+    - description: "[Idle Issue Management] Notify about 'needs reproduction' issues"
+      frequencies:
+      - weekday:
+          day: Monday
+          time: 0:0
+      - weekday:
+          day: Tuesday
+          time: 0:0
+      - weekday:
+          day: Wednesday
+          time: 0:0
+      - weekday:
+          day: Thursday
+          time: 0:0
+      - weekday:
+          day: Friday
+          time: 0:0
+      filters:
+      - isIssue
+      - isOpen
+      - hasLabel:
+          label: needs reproduction
+      - noActivitySince:
+          days: 3
+      actions:
+      - addReply:
+          reply: This issue has been automatically marked as stale because it has been marked as requiring author feedback but has not had any activity for **3 days**. It will be closed if no further activity occurs **within 2 days of this comment**. If it *is* closed, feel free to comment when you are able to provide the additional information and we will re-investigate.
+      - addLabel:
+          label: stale
+    - description: "[Idle Issue Management] Close stale 'needs reproduction' issues"
+      frequencies:
+      - weekday:
+          day: Monday
+          time: 0:0
+      - weekday:
+          day: Tuesday
+          time: 0:0
+      - weekday:
+          day: Wednesday
+          time: 0:0
+      - weekday:
+          day: Thursday
+          time: 0:0
+      - weekday:
+          day: Friday
+          time: 0:0
+      filters:
+      - isIssue
+      - isOpen
+      - hasLabel:
+          label: needs reproduction
+      - hasLabel:
+          label: stale
+      - noActivitySince:
+          days: 2
+      actions:
+      - closeIssue
+      - addReply:
+          reply: We haven't received a reproduction sample from you. The issue is closed.
+    eventResponderTasks:
+    - if:
+      - payloadType: Issues
+      - labelAdded:
+          label: needs reproduction
+      then:
+      - addReply:
+          reply: Hi @${issueAuthor}. We have added the "needs reproduction" label to this issue, which indicates that we cannot take further action. This issue will be closed automatically in 5 days if we do not hear back from you by then - please feel free to re-open it if you come back to this issue after that time.
+      description: Add comment when 'needs reproduction' is applied to issue
+    - if:
+      - payloadType: Issues
+      - hasLabel:
+          label: stale
+      - isActivitySender:
+          issueAuthor: True
+      then:
+      - removeLabel:
+          label: stale
+      description: Remove stale label
+onFailure: 
+onSuccess: 
