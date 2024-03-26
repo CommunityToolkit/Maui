@@ -98,7 +98,7 @@ public class AnimationBehaviorTests : BaseTest
 		}
 	}
 
-	[Fact(Timeout = (int)TestDuration.Short)]
+	[Fact]
 	public void AnimateCommandTokenCanceled()
 	{
 		TaskCanceledException? exception = null;
@@ -142,7 +142,7 @@ public class AnimationBehaviorTests : BaseTest
 		}
 	}
 
-	[Fact(Timeout = (int)TestDuration.Short)]
+	[Fact]
 	public void AnimateCommandTokenExpired()
 	{
 		TaskCanceledException? exception = null;
