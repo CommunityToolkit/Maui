@@ -5,7 +5,7 @@ variables:
   NugetPackageVersion: '$(CurrentSemanticVersion)'
   NugetPackageVersionMediaElement: '$(CurrentSemanticVersion)'
   NugetPackageVersionMaps: '$(CurrentSemanticVersion)'
-  TOOLKIT_NET_VERSION: '8.0.100'
+  TOOLKIT_NET_VERSION: '8.0.203'
   LATEST_NET_VERSION: '8.0.x'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
@@ -22,8 +22,8 @@ variables:
   PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
   DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/8.0.6.json'
-  CommunityToolkitSampleApp_Xcode_Version: '15.1.0'
-  CommunityToolkitLibrary_Xcode_Version: '15.0.1'
+  CommunityToolkitSampleApp_Xcode_Version: '15.2.0'
+  CommunityToolkitLibrary_Xcode_Version: '15.2.0'
 
 trigger:
   branches:
@@ -169,6 +169,7 @@ jobs:
           Write-Host("GitHub PR = $prNumber, Commit = $commitId");
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersion;]$fullVersionString")
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersionMediaElement;]$fullVersionString")
+          Write-Host ("##vso[task.setvariable variable=NugetPackageVersionMaps;]$fullVersionString")
           Write-Host "##vso[build.updatebuildnumber]$fullVersionString"
         displayName: Set NuGet Version to PR Version
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['build.reason'], 'PullRequest')) # Only run this step on Windows when a Pull Request has triggered the CI Pipeline
@@ -247,7 +248,7 @@ jobs:
           testResultsFiles: '**/*.trx'
           searchFolder: $(Agent.TempDirectory)
 
-      - task: PublishCodeCoverageResults@1
+      - task: PublishCodeCoverageResults@2
         condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
         displayName: 'Publish Code Coverage Results'
         inputs:
