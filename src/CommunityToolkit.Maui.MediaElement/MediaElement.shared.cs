@@ -446,6 +446,7 @@ public class MediaElement : View, IMediaElement, IDisposable
 
 		if (disposing)
 		{
+			ClearTimer();
 			seekToSemaphoreSlim.Dispose();
 		}
 
