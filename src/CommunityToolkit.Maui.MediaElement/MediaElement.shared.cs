@@ -2,6 +2,7 @@
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Primitives;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -98,6 +99,35 @@ public class MediaElement : View, IMediaElement, IDisposable
 	public static readonly BindableProperty VolumeProperty =
 		BindableProperty.Create(nameof(Volume), typeof(double), typeof(MediaElement), 1.0,
 			BindingMode.TwoWay, propertyChanging: ValidateVolume);
+
+	/// <summary>
+	/// Backing store for the <see cref="MetadataTitle"/> property.
+	/// </summary>
+	public static readonly BindableProperty MetadataTitleProperty = BindableProperty.Create(nameof(MetadataTitle), typeof(string), typeof(MediaElement), string.Empty);
+
+	/// <summary>
+	/// Backing store for the <see cref="MetadataAlbum"/> property.
+	/// </summary>
+	public static readonly BindableProperty MetadataAlbumProperty = BindableProperty.Create(nameof(MetadataAlbum), typeof(string), typeof(MediaElement), string.Empty);
+
+	/// <summary>
+	/// Backing store for the <see cref="MetadataArtist"/> property.
+	/// </summary>
+	public static readonly BindableProperty MetadataArtistProperty = BindableProperty.Create(nameof(MetadataArtist), typeof(string), typeof(MediaElement), string.Empty);
+	/// <summary>
+	/// Backing store for the <see cref="MetadataGenre"/> property."/>
+	/// </summary>
+	public static readonly BindableProperty MetadataGenreProperty = BindableProperty.Create(nameof(MetadataGenre), typeof(string), typeof(MediaElement), string.Empty);
+
+	/// <summary>
+	/// Backing store for the <see cref="MetadataArtwork"/> property.
+	/// </summary>
+	public static readonly BindableProperty MetadataArtworkProperty = BindableProperty.Create(nameof(MetadataArtwork), typeof(string), typeof(MediaElement), string.Empty);
+
+	/// <summary>
+	/// Backing store for the <see cref="MediaElementSourceType"/> property.
+	/// </summary>
+	public static readonly BindableProperty MediaElementSourceTypeProperty = BindableProperty.Create(nameof(MediaElementSourceType), typeof(MediaElementSourceType), typeof(MediaElement), MediaElementSourceType.Video);
 
 	readonly WeakEventManager eventManager = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
@@ -316,6 +346,67 @@ public class MediaElement : View, IMediaElement, IDisposable
 	}
 
 	/// <summary>
+	/// Gets or sets the title of the media.
+	/// This is a bindable property.
+	/// </summary>
+	public string MetadataTitle
+	{
+		get => (string)GetValue(MetadataTitleProperty);
+		set => SetValue(MetadataTitleProperty, value);
+	}
+
+	/// <summary>
+	/// Gets or sets the artist of the media.
+	/// This is a bindable property.
+	/// </summary>
+	public string MetadataAlbum
+	{
+		get => (string)GetValue(MetadataAlbumProperty);
+		set => SetValue(MetadataAlbumProperty, value);
+	}
+
+	/// <summary>
+	/// Gets or sets the genre of the media.
+	/// This is a bindable property.
+	/// </summary>
+	public string MetadataArtist
+	{
+		get => (string)GetValue(MetadataArtistProperty);
+		set => SetValue(MetadataArtistProperty, value);
+	}
+
+	/// <summary>
+	/// Gets or sets the genre of the media.
+	/// This is a bindable property.
+	/// </summary>
+	public string MetadataGenre
+	{
+		get => (string)GetValue(MetadataGenreProperty);
+		set => SetValue(MetadataGenreProperty, value);
+	}
+
+	/// <summary>
+	/// Gets or sets the artwork of the media.
+	/// This is a bindable property.
+	/// </summary>
+	public string MetadataArtwork
+	{
+		get => (string)GetValue(MetadataArtworkProperty);
+		set => SetValue(MetadataArtworkProperty, value);
+
+	}
+
+	/// <summary>
+	/// Gets or sets the source type of the media.
+	/// This is a bindable property.
+	/// </summary>
+	public MediaElementSourceType SourceType
+	{
+		get => (MediaElementSourceType)GetValue(MediaElementSourceTypeProperty);
+		set => SetValue(MediaElementSourceTypeProperty, value);
+	}
+
+	/// <summary>
 	/// Gets or sets how the media will be scaled to fit the display area.
 	/// Default value is <see cref="Aspect.AspectFit"/>. This is a bindable property.
 	/// </summary>
@@ -353,6 +444,12 @@ public class MediaElement : View, IMediaElement, IDisposable
 	{
 		get => (TimeSpan)GetValue(DurationProperty);
 		set => SetValue(durationPropertyKey, value);
+	}
+
+	MediaElementSourceType IMediaElement.SourceType
+	{
+		get => (MediaElementSourceType)GetValue(MediaElementSourceTypeProperty);
+		set => SetValue(MediaElementSourceTypeProperty, value);
 	}
 
 	/// <inheritdoc/>

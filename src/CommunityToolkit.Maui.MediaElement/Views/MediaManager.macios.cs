@@ -1,16 +1,22 @@
 ﻿using AVFoundation;
 using AVKit;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using CoreFoundation;
 using CoreMedia;
 using Foundation;
+using MediaPlayer;
 using Microsoft.Extensions.Logging;
+using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : IDisposable
 {
+	//TODO: Implement Metadata for iOS and macOS
+	MetaDataExtensions? MetaData { get; set; }
+
 	// Media would still start playing when Speed was set although ShouldAutoPlay=False
 	// This field was added to overcome that.
 	bool initialSpeedSet;
@@ -100,6 +106,16 @@ public partial class MediaManager : IDisposable
 		{
 			Player.Volume = (float)MediaElement.Volume;
 		}
+
+		Player.InvokeOnMainThread(() =>
+		{
+			UIApplication.SharedApplication.BeginReceivingRemoteControlEvents();
+		});
+		PlayerViewController.UpdatesNowPlayingInfoCenter = false;
+
+		var avSession = AVAudioSession.SharedInstance();
+		avSession.SetCategory(AVAudioSessionCategory.Playback);
+		avSession.SetActive(true);
 
 		AddStatusObservers();
 		AddPlayedToEndObserver();
@@ -203,11 +219,17 @@ public partial class MediaManager : IDisposable
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 
 		AVAsset? asset = null;
+		if (Player is null)
+		{
+			return;
+		}
+
+		MetaData ??= new(MediaElement, Player);		
+		MetaData.ClearNowPlaying();
 
 		if (MediaElement.Source is UriMediaSource uriMediaSource)
 		{
 			var uri = uriMediaSource.Uri;
-
 			if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
 			{
 				asset = AVAsset.FromUrl(new NSUrl(uri.AbsoluteUri));
@@ -246,7 +268,7 @@ public partial class MediaManager : IDisposable
 		{
 			PlayerItem = null;
 		}
-
+		MetaData.SetMetaData(PlayerItem, MediaElement);
 		CurrentItemErrorObserver?.Dispose();
 
 		Player?.ReplaceCurrentItemWithPlayerItem(PlayerItem);
@@ -393,6 +415,13 @@ public partial class MediaManager : IDisposable
 			if (Player is not null)
 			{
 				Player.Pause();
+				Player.InvokeOnMainThread(() =>
+				{
+					UIApplication.SharedApplication.EndReceivingRemoteControlEvents();
+				});
+				var audioSession = AVAudioSession.SharedInstance();
+				audioSession.SetActive(false);
+
 				DestroyErrorObservers();
 				DestroyPlayedToEndObserver();
 
@@ -525,6 +554,13 @@ public partial class MediaManager : IDisposable
 				newState = MediaElementState.Buffering;
 				break;
 		}
+		if (MetaData is not null)
+		{
+			MetaData.NowPlayingInfo.PlaybackRate = (float)MediaElement.Speed;
+			MetaData.NowPlayingInfo.ElapsedPlaybackTime = PlayerItem?.CurrentTime.Seconds ?? 0;
+			MetaData.NowPlayingInfo.PlaybackDuration = PlayerItem?.Duration.Seconds ?? 0;
+			MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = MetaData.NowPlayingInfo;
+		}
 
 		MediaElement.CurrentStateChanged(newState);
 	}
@@ -586,6 +622,11 @@ public partial class MediaManager : IDisposable
 		if (!AreFloatingPointNumbersEqual(MediaElement.Speed, Player.Rate))
 		{
 			MediaElement.Speed = Player.Rate;
+			if (MetaData is not null)
+			{
+				MetaData.NowPlayingInfo.PlaybackRate = (float)MediaElement.Speed;
+				MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = MetaData.NowPlayingInfo;
+			}
 		}
 	}
 }

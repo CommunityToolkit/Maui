@@ -1,8 +1,10 @@
 ﻿using System.Collections.Frozen;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Media;
 using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.System.Display;
@@ -13,6 +15,9 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 partial class MediaManager : IDisposable
 {
+	MetaDataExtensions? metaDataExtensions;
+	SystemMediaTransportControls? systemMediaControls;
+
 	// States that allow changing position
 	readonly FrozenSet<MediaElementState> allowUpdatePositionStates = new[]
 	{
@@ -44,7 +49,7 @@ partial class MediaManager : IDisposable
 		MediaElement.MediaOpened += OnMediaElementMediaOpened;
 
 		Player.SetMediaPlayer(MediaElement);
-
+		
 		Player.MediaPlayer.PlaybackSession.PlaybackRateChanged += OnPlaybackSessionPlaybackRateChanged;
 		Player.MediaPlayer.PlaybackSession.PlaybackStateChanged += OnPlaybackSessionPlaybackStateChanged;
 		Player.MediaPlayer.PlaybackSession.SeekCompleted += OnPlaybackSessionSeekCompleted;
@@ -53,6 +58,7 @@ partial class MediaManager : IDisposable
 		Player.MediaPlayer.VolumeChanged += OnMediaElementVolumeChanged;
 		Player.MediaPlayer.IsMutedChanged += OnMediaElementIsMutedChanged;
 
+		systemMediaControls = Player.MediaPlayer.SystemMediaTransportControls;
 		return Player;
 	}
 
@@ -282,7 +288,7 @@ partial class MediaManager : IDisposable
 			{
 				Player.Source = WinMediaSource.CreateFromUri(new Uri(path));
 			}
-		}
+		}	
 	}
 
 	protected virtual partial void PlatformUpdateShouldLoopPlayback()
@@ -327,6 +333,16 @@ partial class MediaManager : IDisposable
 		}
 	}
 
+	void UpdateMetaData()
+	{
+		if (systemMediaControls is null)
+		{
+			return;
+		}
+
+		metaDataExtensions ??= new(systemMediaControls, MediaElement);
+		metaDataExtensions.SetMetaData(MediaElement);
+	}
 	void OnMediaElementMediaOpened(WindowsMediaElement sender, object args)
 	{
 		if (Player is null)
@@ -347,6 +363,7 @@ partial class MediaManager : IDisposable
 		static void SetDuration(in IMediaElement mediaElement, in MediaPlayerElement mediaPlayerElement) => mediaElement.Duration = mediaPlayerElement.MediaPlayer.NaturalDuration == TimeSpan.MaxValue
 																																		? TimeSpan.Zero
 																																		: mediaPlayerElement.MediaPlayer.NaturalDuration;
+		UpdateMetaData();
 	}
 
 	void OnMediaElementMediaEnded(WindowsMediaElement sender, object args)

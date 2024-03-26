@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
@@ -14,11 +15,10 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	const string loadHls = "Load HTTP Live Stream (HLS)";
 	const string loadLocalResource = "Load Local Resource";
 	const string resetSource = "Reset Source to null";
-
 	public MediaElementPage(MediaElementViewModel viewModel, ILogger<MediaElementPage> logger) : base(viewModel)
 	{
 		InitializeComponent();
-
+		
 		this.logger = logger;
 		MediaElement.PropertyChanged += MediaElement_PropertyChanged;
 	}
@@ -158,22 +158,48 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		switch (result)
 		{
 			case loadOnlineMp4:
+				MediaElement.MetadataTitle = "Big Buck Bunny";
+				MediaElement.MetadataGenre = "Animation";
+				MediaElement.MetadataArtwork = "https://michellevella.com/cdn/shop/products/BeatlesLonelyHearts4UP_1728x.jpg?v=1660582971";
+				MediaElement.MetadataAlbum = "Big Buck Bunny Album";
+				MediaElement.MetadataArtist = "Big Buck Bunny Artist";
+				MediaElement.MetadataGenre = "Big Buck Bunny Genre";
+				MediaElement.SourceType = Primitives.MediaElementSourceType.Audio;
 				MediaElement.Source =
 					MediaSource.FromUri(
 						"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
 				return;
 
 			case loadHls:
+				MediaElement.MetadataAlbum = "HLS Album";
+				MediaElement.MetadataArtist = "HLS Artist";
+				MediaElement.MetadataArtwork = "https://michellevella.com/cdn/shop/products/BeatlesLonelyHearts4UP_1728x.jpg?v=1660582971";
+				MediaElement.MetadataGenre = "HLS Genre";
+				MediaElement.MetadataTitle = "HLS Title";
+				MediaElement.SourceType = Primitives.MediaElementSourceType.Audio;
 				MediaElement.Source
 					= MediaSource.FromUri(
 						"https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8");
 				return;
 
 			case resetSource:
+				MediaElement.MetadataArtwork = string.Empty;
+				MediaElement.MetadataTitle = string.Empty;
+				MediaElement.MetadataAlbum = string.Empty;
+				MediaElement.MetadataArtist = string.Empty;
+				MediaElement.MetadataGenre = string.Empty;
+				MediaElement.SourceType = Primitives.MediaElementSourceType.Unknown;
 				MediaElement.Source = null;
 				return;
 
 			case loadLocalResource:
+				MediaElement.MetadataArtwork = "https://michellevella.com/cdn/shop/products/BeatlesLonelyHearts4UP_1728x.jpg?v=1660582971";
+				MediaElement.MetadataTitle = "Local Resource";
+				MediaElement.MetadataAlbum = "Local Resource Album";
+				MediaElement.MetadataArtist = "Local Resource Artist";
+				MediaElement.MetadataGenre = "Local Resource Genre";
+				MediaElement.SourceType = Primitives.MediaElementSourceType.Audio;
+
 				if (DeviceInfo.Platform == DevicePlatform.MacCatalyst
 					|| DeviceInfo.Platform == DevicePlatform.iOS)
 				{
