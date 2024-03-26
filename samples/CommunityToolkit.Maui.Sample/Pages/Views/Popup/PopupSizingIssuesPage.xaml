@@ -19,6 +19,9 @@
 
                 <Label Text="Padding" />
                 <Entry Text="{Binding Padding}" />
+                
+                <Label Text="Margin" />
+                <Entry Text="{Binding Margin}" />
 
                 <Button Text="Show Popup" Command="{Binding ShowPopupCommand}" CommandParameter="{Binding Source={x:Reference Self}}" />
             </VerticalStackLayout>

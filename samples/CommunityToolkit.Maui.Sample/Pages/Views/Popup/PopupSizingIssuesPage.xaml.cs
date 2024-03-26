@@ -4,8 +4,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class PopupSizingIssuesPage : BasePage<PopupSizingIssuesViewModel>
 {
-	public PopupSizingIssuesPage(
-		PopupSizingIssuesViewModel popupSizingIssuesViewModel)
+	public PopupSizingIssuesPage(PopupSizingIssuesViewModel popupSizingIssuesViewModel)
 		: base(popupSizingIssuesViewModel)
 	{
 		InitializeComponent();
