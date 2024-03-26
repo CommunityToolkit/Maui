@@ -20,10 +20,10 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 			.Bind(ItemsView.ItemsSourceProperty,
 				static (BaseGalleryViewModel vm) => vm.Items,
 				mode: BindingMode.OneTime)
-			.Invoke(collectionView => collectionView.SelectionChanged += HandleSelectionChanged);
+			.Invoke(static collectionView => collectionView.SelectionChanged += HandleSelectionChanged);
 	}
 
-	async void HandleSelectionChanged(object? sender, SelectionChangedEventArgs e)
+	static async void HandleSelectionChanged(object? sender, SelectionChangedEventArgs e)
 	{
 		ArgumentNullException.ThrowIfNull(sender);
 
@@ -35,76 +35,71 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 			await Shell.Current.GoToAsync(AppShell.GetPageRoute(sectionModel.ViewModelType));
 		}
 	}
-}
 
-class GalleryDataTemplate : DataTemplate
-{
-	public GalleryDataTemplate() : base(CreateDataTemplate)
+	sealed class GalleryDataTemplate() : DataTemplate(CreateDataTemplate)
 	{
 
-	}
+		enum Row { TopPadding, Content, BottomPadding }
+		enum Column { LeftPadding, Content, RightPadding }
 
-	enum Row { TopPadding, Content, BottomPadding }
-	enum Column { LeftPadding, Content, RightPadding }
-
-	static Grid CreateDataTemplate() => new()
-	{
-		RowDefinitions = Rows.Define(
-			(Row.TopPadding, 12),
-			(Row.Content, Star),
-			(Row.BottomPadding, 12)),
-
-		ColumnDefinitions = Columns.Define(
-			(Column.LeftPadding, 24),
-			(Column.Content, Star),
-			(Column.RightPadding, 24)),
-
-		Children =
+		static Grid CreateDataTemplate() => new()
 		{
-			new Card().Row(Row.Content).Column(Column.Content).DynamicResource(Border.StyleProperty, "BorderGalleryCard")
-		}
-	};
+			RowDefinitions = Rows.Define(
+				(Row.TopPadding, 12),
+				(Row.Content, Star),
+				(Row.BottomPadding, 12)),
 
-	class Card : Border
-	{
-		public Card()
-		{
-			Content = new Grid
+			ColumnDefinitions = Columns.Define(
+				(Column.LeftPadding, 24),
+				(Column.Content, Star),
+				(Column.RightPadding, 24)),
+
+			Children =
 			{
-				BackgroundColor = Colors.Transparent,
+				new Card().Row(Row.Content).Column(Column.Content).DynamicResource(StyleProperty, "BorderGalleryCard")
+			}
+		};
 
-				RowSpacing = 4,
-
-				RowDefinitions = Rows.Define(
-					(CardRow.Title, 24),
-					(CardRow.Description, Auto)),
-
-				ColumnDefinitions = Columns.Define(Star),
-
-				Children =
+		sealed class Card : Border
+		{
+			public Card()
+			{
+				Content = new Grid
 				{
-					new Label()
-						.Row(CardRow.Title)
-						.Bind(Label.TextProperty,
-							static (SectionModel section) => section.Title,
-							mode: BindingMode.OneTime)
-						.DynamicResource(Label.StyleProperty, "LabelSectionTitle"),
+					BackgroundColor = Colors.Transparent,
 
-					new Label
-						{
-							MaxLines = 4,
-							LineBreakMode = LineBreakMode.WordWrap
-						}
-						.Row(CardRow.Description).TextStart().TextTop()
-						.Bind(Label.TextProperty,
-							static (SectionModel section) => section.Description,
-							mode: BindingMode.OneTime)
-						.DynamicResource(Label.StyleProperty, "LabelSectionText")
-				}
-			};
+					RowSpacing = 4,
+
+					RowDefinitions = Rows.Define(
+						(CardRow.Title, 24),
+						(CardRow.Description, Auto)),
+
+					ColumnDefinitions = Columns.Define(Star),
+
+					Children =
+					{
+						new Label()
+							.Row(CardRow.Title)
+							.Bind(Label.TextProperty,
+								static (SectionModel section) => section.Title,
+								mode: BindingMode.OneTime)
+							.DynamicResource(Label.StyleProperty, "LabelSectionTitle"),
+
+						new Label
+							{
+								MaxLines = 4,
+								LineBreakMode = LineBreakMode.WordWrap
+							}
+							.Row(CardRow.Description).TextStart().TextTop()
+							.Bind(Label.TextProperty,
+								static (SectionModel section) => section.Description,
+								mode: BindingMode.OneTime)
+							.DynamicResource(Label.StyleProperty, "LabelSectionText")
+					}
+				};
+			}
 		}
-	}
 
-	enum CardRow { Title, Description }
-}
+		enum CardRow { Title, Description }
+	}
 }
