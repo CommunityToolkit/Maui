@@ -142,7 +142,7 @@ public class ImageTouchBehaviorTests : BaseTest
 		Assert.Equal(normalImageSource, view.Source);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task VerifyHoverBackgroundImageAspectChange()
 	{
 		var view = new Image();
