@@ -91,7 +91,7 @@ public class ImageTouchBehaviorTests : BaseTest
 		Assert.Same(normalImageSource, view.Source);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task VerifyPressedBackgroundImageAspectChange()
 	{
 		var view = new Image();
