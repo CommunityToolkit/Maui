@@ -200,6 +200,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<SemanticOrderViewPage, SemanticOrderViewPageViewModel>();
 		services.AddTransientWithShellRoute<ShowPopupInOnAppearingPage, ShowPopupInOnAppearingPageViewModel>();
 		services.AddTransientWithShellRoute<StylePopupPage, StylePopupViewModel>();
+		services.AddTransientWithShellRoute<PopupSizingIssuesPage, PopupSizingIssuesViewModel>();
 
 		// Add Popups
 		services.AddTransientPopup<CsharpBindingPopup, CsharpBindingPopupViewModel>();
