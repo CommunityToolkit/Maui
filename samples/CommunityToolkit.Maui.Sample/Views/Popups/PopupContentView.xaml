@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Grid
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="CommunityToolkit.Maui.Sample.Views.Popups.PopupContentView"
+    xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+    x:DataType="viewModels:PopupContentViewModel">
+
+    <Label
+        Text="{Binding Message}"
+        HorizontalTextAlignment="Center"
+        VerticalTextAlignment="Center"
+        Margin="20" />
+
+</Grid>

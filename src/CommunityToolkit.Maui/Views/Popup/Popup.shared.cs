@@ -240,7 +240,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// <summary>
 	/// Gets or sets the result that will return when user taps outside of the Popup.
 	/// </summary>
-	protected object? ResultWhenUserTapsOutsideOfPopup { get; set; }
+	public object? ResultWhenUserTapsOutsideOfPopup { get; set; }
 
 	/// <inheritdoc/>
 	IView? IPopup.Anchor => Anchor;
