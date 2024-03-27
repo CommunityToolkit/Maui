@@ -36,7 +36,7 @@ public class ImageTouchBehaviorTests : BaseTest
 		Assert.Equal(ImageTouchBehaviorDefaults.ShouldSetImageOnAnimationEnd, imageTouchBehavior.ShouldSetImageOnAnimationEnd);
 	}
 
-	[Fact(Timeout = (int)TestDuration.Short)]
+	[Fact]
 	public void VerifyCanOnlyBeAttachedToIImageText()
 	{
 		InvalidOperationException? exception = null;
