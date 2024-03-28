@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Platform;
@@ -9,7 +10,7 @@ namespace CommunityToolkit.Maui;
 public class PopupService : IPopupService
 {
 	readonly IServiceProvider serviceProvider;
-
+	readonly IDispatcher dispatcher;
 	static readonly Dictionary<Type, Type> viewModelToViewMappings = new();
 
 	/// <summary>
@@ -25,10 +26,12 @@ public class PopupService : IPopupService
 	/// Creates a new instance of <see cref="PopupService"/>.
 	/// </summary>
 	/// <param name="serviceProvider">The <see cref="IServiceProvider"/> implementation.</param>
+	/// <param name="dispatcher"></param>
 	[ActivatorUtilitiesConstructor]
-	public PopupService(IServiceProvider serviceProvider)
+	public PopupService(IServiceProvider serviceProvider, IDispatcher dispatcher)
 	{
 		this.serviceProvider = serviceProvider;
+		this.dispatcher = dispatcher;
 	}
 
 	/// <summary>
@@ -38,6 +41,9 @@ public class PopupService : IPopupService
 	{
 		serviceProvider = Application.Current?.Handler?.MauiContext?.Services
 							?? throw new InvalidOperationException("Could not locate IServiceProvider");
+
+		dispatcher = Application.Current?.Dispatcher
+							?? throw new InvalidOperationException("Could not locate IDispatcher");
 	}
 
 	internal static void AddTransientPopup<TPopupView, TPopupViewModel>(IServiceCollection services)
@@ -53,12 +59,16 @@ public class PopupService : IPopupService
 	/// <inheritdoc cref="IPopupService.ClosePopup(object?)" />
 	public void ClosePopup(object? result = null)
 	{
+		EnsureMainThreadIsUsed();
+
 		this.PopupLifecycleController.GetCurrentPopup()?.Close(result);
 	}
 
 	/// <inheritdoc cref="IPopupService.ClosePopupAsync(object?)" />
 	public Task ClosePopupAsync(object? result = null)
 	{
+		EnsureMainThreadIsUsed();
+
 		var popup = this.PopupLifecycleController.GetCurrentPopup();
 
 		if (popup is not null)
@@ -72,6 +82,8 @@ public class PopupService : IPopupService
 	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}()"/>
 	public void ShowPopup<TViewModel>() where TViewModel : INotifyPropertyChanged
 	{
+		EnsureMainThreadIsUsed();
+
 		var popup = GetPopup(typeof(TViewModel));
 
 		ValidateBindingContext<TViewModel>(popup, out _);
@@ -84,6 +96,8 @@ public class PopupService : IPopupService
 	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(TViewModel)"/>
 	public void ShowPopup<TViewModel>(TViewModel viewModel) where TViewModel : INotifyPropertyChanged
 	{
+		EnsureMainThreadIsUsed();
+
 		ArgumentNullException.ThrowIfNull(viewModel);
 
 		var popup = GetPopup(typeof(TViewModel));
@@ -98,6 +112,8 @@ public class PopupService : IPopupService
 	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(Action{TViewModel})"/>
 	public void ShowPopup<TViewModel>(Action<TViewModel> onPresenting) where TViewModel : INotifyPropertyChanged
 	{
+		EnsureMainThreadIsUsed();
+
 		ArgumentNullException.ThrowIfNull(onPresenting);
 
 		var popup = GetPopup(typeof(TViewModel));
@@ -134,6 +150,8 @@ public class PopupService : IPopupService
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(CancellationToken)"/>
 	public Task<object?> ShowPopupAsync<TViewModel>(CancellationToken token = default) where TViewModel : INotifyPropertyChanged
 	{
+		EnsureMainThreadIsUsed();
+
 		var popup = GetPopup(typeof(TViewModel));
 
 		ValidateBindingContext<TViewModel>(popup, out _);
@@ -146,6 +164,8 @@ public class PopupService : IPopupService
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(TViewModel, CancellationToken)"/>
 	public Task<object?> ShowPopupAsync<TViewModel>(TViewModel viewModel, CancellationToken token = default) where TViewModel : INotifyPropertyChanged
 	{
+		EnsureMainThreadIsUsed();
+
 		ArgumentNullException.ThrowIfNull(viewModel);
 
 		var popup = GetPopup(typeof(TViewModel));
@@ -160,6 +180,8 @@ public class PopupService : IPopupService
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(Action{TViewModel}, CancellationToken)"/>
 	public Task<object?> ShowPopupAsync<TViewModel>(Action<TViewModel> onPresenting, CancellationToken token = default) where TViewModel : INotifyPropertyChanged
 	{
+		EnsureMainThreadIsUsed();
+
 		ArgumentNullException.ThrowIfNull(onPresenting);
 
 		var popup = GetPopup(typeof(TViewModel));
@@ -207,6 +229,14 @@ public class PopupService : IPopupService
 		}
 
 		bindingContext = viewModel;
+	}
+
+	void EnsureMainThreadIsUsed([CallerMemberName] string? callerName = default)
+	{
+		if (this.dispatcher.IsDispatchRequired)
+		{
+			throw new InvalidOperationException($"{callerName} must be called from the main thread.");
+		}
 	}
 
 	Popup GetPopup(Type viewModelType)
