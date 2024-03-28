@@ -18,7 +18,7 @@ public partial class Snackbar : ISnackbar
 	{
 		if (OperatingSystem.IsWindows() && !Options.ShouldEnableSnackbarOnWindows)
 		{
-			throw new InvalidOperationException($"Additional setup is required in the Package.appxmanifest file to enable {nameof(Snackbar)} on Windows. Additonally, `{nameof(AppBuilderExtensions.UseMauiCommunityToolkit)}(options => options.{nameof(Options.SetShouldEnableSnackbarOnWindows)}({true.ToString().ToLower()});` must be called to enable Snackbar on Windows. Additonally, Platform Specific Initialization section of the {nameof(Snackbar)} documentaion for more information: https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar")
+			throw new InvalidOperationException($"Additional setup is required in the Package.appxmanifest file to enable {nameof(Snackbar)} on Windows. Additonally, `{nameof(AppBuilderExtensions.UseMauiCommunityToolkit)}(options => options.{nameof(Options.SetShouldEnableSnackbarOnWindows)}({true.ToString().ToLower()});` must be called to enable Snackbar on Windows. See the Platform Specific Initialization section of the {nameof(Snackbar)} documentaion for more information: https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar")
 			{
 				HelpLink = "https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar"
 			};
