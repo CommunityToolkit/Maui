@@ -9,7 +9,6 @@
              x:TypeArguments="viewModels:MediaElementViewModel"
              x:DataType="viewModels:MediaElementViewModel"
              x:Class="CommunityToolkit.Maui.Sample.Pages.Views.MediaElementPage"
-             Unloaded="MediaElementUnloaded"
              Title="MediaElement">
     <pages:BasePage.Resources>
         <toolkit:TimeSpanToSecondsConverter x:Key="TimeSpanConverter" />
@@ -30,6 +29,7 @@
             </Grid.RowDefinitions>
             <toolkit:MediaElement
                 x:Name="MediaElement"
+                WidthRequest="{OnIdiom Tablet=410, Default=380}"
                 ShouldAutoPlay="True"
                 Source="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
                 MediaEnded="OnMediaEnded"

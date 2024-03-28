@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;
+﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// Represents the style of the navigation bar on Android.

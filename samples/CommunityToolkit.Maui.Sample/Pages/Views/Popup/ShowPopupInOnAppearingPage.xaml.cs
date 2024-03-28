@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Sample.Models;
+using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.Views.Popups;
 using CommunityToolkit.Maui.Views;

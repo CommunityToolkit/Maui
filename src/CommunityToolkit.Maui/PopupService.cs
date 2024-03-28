@@ -78,7 +78,7 @@ public class PopupService : IPopupService
 
 		InitializePopup(popup);
 
-		CurrentPage.ShowPopup(popup);
+		ShowPopup(popup);
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(TViewModel)"/>
@@ -92,7 +92,7 @@ public class PopupService : IPopupService
 
 		InitializePopup(popup);
 
-		CurrentPage.ShowPopup(popup);
+		ShowPopup(popup);
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(Action{TViewModel})"/>
@@ -108,7 +108,27 @@ public class PopupService : IPopupService
 
 		InitializePopup(popup);
 
+		ShowPopup(popup);
+	}
+
+	static void ShowPopup(Popup popup)
+	{
+#if WINDOWS
+		if (Application.Current is Application app)
+		{
+			if (app.Windows.FirstOrDefault(x => x.IsActivated) is Window activeWindow)
+			{
+				if (activeWindow.Page is Page page)
+				{
+					page.ShowPopup(popup);
+					return;
+				}
+			}
+		}
 		CurrentPage.ShowPopup(popup);
+#else
+		CurrentPage.ShowPopup(popup);
+#endif
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(CancellationToken)"/>
@@ -120,7 +140,7 @@ public class PopupService : IPopupService
 
 		InitializePopup(popup);
 
-		return CurrentPage.ShowPopupAsync(popup, token);
+		return ShowPopupAsync(popup, token);
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(TViewModel, CancellationToken)"/>
@@ -134,7 +154,7 @@ public class PopupService : IPopupService
 
 		InitializePopup(popup);
 
-		return CurrentPage.ShowPopupAsync(popup, token);
+		return ShowPopupAsync(popup, token);
 	}
 
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(Action{TViewModel}, CancellationToken)"/>
@@ -149,8 +169,25 @@ public class PopupService : IPopupService
 		onPresenting.Invoke(viewModel);
 
 		InitializePopup(popup);
+	}
 
+	static Task<object?> ShowPopupAsync(Popup popup, CancellationToken token)
+	{
+#if WINDOWS
+		if (Application.Current is Application app)
+		{
+			if (app.Windows.FirstOrDefault(x => x.IsActivated) is Window activeWindow)
+			{
+				if (activeWindow.Page is Page page)
+				{
+					return page.ShowPopupAsync(popup, token);
+				}
+			}
+		}
 		return CurrentPage.ShowPopupAsync(popup, token);
+#else
+		return CurrentPage.ShowPopupAsync(popup, token);
+#endif
 	}
 
 	/// <summary>

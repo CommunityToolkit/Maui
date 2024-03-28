@@ -15,8 +15,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	const string loadLocalResource = "Load Local Resource";
 	const string resetSource = "Reset Source to null";
 
-	static Page Page => Application.Current?.MainPage ?? throw new NullReferenceException();
-
 	public MediaElementPage(MediaElementViewModel viewModel, ILogger<MediaElementPage> logger) : base(viewModel)
 	{
 		InitializeComponent();
@@ -120,6 +118,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
 	{
 		base.OnNavigatedFrom(args);
+		MediaElement.Stop();
 		MediaElement.Handler?.DisconnectHandler();
 	}
 
@@ -240,15 +239,11 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			}
 		};
 
-		Page.ShowPopup(popup);
+		this.ShowPopup(popup);
 		popup.Closed += (s, e) =>
 		{
 			popupMediaElement.Stop();
 			popupMediaElement.Handler?.DisconnectHandler();
 		};
-	}
-	void MediaElementUnloaded(object sender, EventArgs e)
-	{
-		MediaElement.Handler?.DisconnectHandler();
 	}
 }
