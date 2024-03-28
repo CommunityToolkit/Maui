@@ -11,7 +11,7 @@ public class Options() : Core.Options
 {
 	readonly MauiAppBuilder? builder;
 
-	internal Options(MauiAppBuilder builder) : this()
+	internal Options(in MauiAppBuilder builder) : this()
 	{
 		this.builder = builder;
 	}
@@ -53,30 +53,35 @@ public class Options() : Core.Options
 	/// </remarks>
 	public void SetShouldEnableSnackbarOnWindows(bool value)
 	{
-
 #if WINDOWS
-		builder?.ConfigureLifecycleEvents(events =>
+		if (value is true && builder is null)
 		{
-			events.AddWindows(windows => windows
-				.OnLaunched((_, _) =>
-				{
-					Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked += OnSnackbarNotificationInvoked;
-					Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Register();
-				})
-				.OnClosed((_, _) =>
-				{
-					Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked -= OnSnackbarNotificationInvoked;
-					Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Unregister();
-				}));
-		});
+			throw new InvalidOperationException($"{nameof(SetShouldEnableSnackbarOnWindows)} must be called using the {nameof(AppBuilderExtensions.UseMauiCommunityToolkit)} extension method. See the Platform Specific Initialization section of the {nameof(Alerts.Snackbar)} documentaion for more inforamtion: https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar)");
+		}
+		else if (value is true && builder is not null)
+		{
+			builder.ConfigureLifecycleEvents(events =>
+			{
+				events.AddWindows(windows => windows
+					.OnLaunched((_, _) =>
+					{
+						Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked += OnSnackbarNotificationInvoked;
+						Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Register();
+					})
+					.OnClosed((_, _) =>
+					{
+						Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked -= OnSnackbarNotificationInvoked;
+						Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Unregister();
+					}));
+			});
 
-		static void OnSnackbarNotificationInvoked(Microsoft.Windows.AppNotifications.AppNotificationManager sender,
-													Microsoft.Windows.AppNotifications.AppNotificationActivatedEventArgs args)
-		{
-			Alerts.Snackbar.HandleSnackbarAction(args);
+			static void OnSnackbarNotificationInvoked(Microsoft.Windows.AppNotifications.AppNotificationManager sender,
+														Microsoft.Windows.AppNotifications.AppNotificationActivatedEventArgs args)
+			{
+				Alerts.Snackbar.HandleSnackbarAction(args);
+			}
 		}
 #endif
-
 
 		ShouldEnableSnackbarOnWindows = value;
 	}
