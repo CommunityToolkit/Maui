@@ -49,7 +49,7 @@ public class Options() : Core.Options
 	/// Enables <see cref="Alerts.Snackbar"/> for Windows
 	/// </summary>
 	/// <remarks>
-	/// Additional setup is required in the Package.appxmanifest file to enable Snackbar on Windows. See the <see cref="Alerts.Snackbar"/> <a href="https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar">Platform Specific Initialization Documentation</a> for more information. Default value is false.
+	/// Additional setup is required in the Package.appxmanifest file to enable <see cref="Alerts.Snackbar"/> on Windows. See the <a href="https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar">Snackbar Platform Specific Initialization Documentation</a> for more information. Default value is false.
 	/// </remarks>
 	public void SetShouldEnableSnackbarOnWindows(bool value)
 	{
