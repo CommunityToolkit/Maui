@@ -78,6 +78,6 @@ public class Options() : Core.Options
 #endif
 
 
-		ShouldEnableSnackbarOnWindows = true;
+		ShouldEnableSnackbarOnWindows = value;
 	}
 }
