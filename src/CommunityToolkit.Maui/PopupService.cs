@@ -169,6 +169,8 @@ public class PopupService : IPopupService
 		onPresenting.Invoke(viewModel);
 
 		InitializePopup(popup);
+
+		return ShowPopupAsync(popup, token);
 	}
 
 	static Task<object?> ShowPopupAsync(Popup popup, CancellationToken token)
