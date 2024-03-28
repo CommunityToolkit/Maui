@@ -46,6 +46,12 @@ csharp_style_namespace_declarations = file_scoped:error
 # CS4014: Because this call is not awaited, execution of the current method continues before the call is completed
 dotnet_diagnostic.CS4014.severity = error
 
+# CS2012: ValueTask instances returned from member invocations are intended to be directly awaited. Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption. Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.
+dotnet_diagnostic.CS2012.severity = error
+
+# CS1998 : This async method lacks 'await' operators and will run synchronously. Consider using the 'await' operator to await non-blocking API calls, or 'await Task.Run(...)' to do CPU-bound work on a background thread.
+dotnet_diagnostic.CS1998.severity = error
+
 # Remove explicit default access modifiers
 dotnet_style_require_accessibility_modifiers = omit_if_default:error
 

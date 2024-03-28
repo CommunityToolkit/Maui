@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Core.Handlers;
+using CommunityToolkit.Maui.Core.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.Primitives;
 using Microsoft.UI.Xaml;
