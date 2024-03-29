@@ -1,4 +1,8 @@
-﻿using CommunityToolkit.Maui.Core.Handlers;
+﻿#if ANDROID
+using CommunityToolkit.Maui.Services;
+#endif
+
+using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui;
@@ -19,6 +23,10 @@ public static class AppBuilderExtensions
 		{
 			h.AddHandler<MediaElement, MediaElementHandler>();
 		});
+		
+#if ANDROID
+		builder.Services.AddSingleton<MediaControlsService>();
+#endif
 
 		return builder;
 	}

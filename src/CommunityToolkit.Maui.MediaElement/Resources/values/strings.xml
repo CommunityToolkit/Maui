@@ -1,0 +1,176 @@
+<!--
+  ~ Copyright 2017 Google Inc. All rights reserved.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<resources>
+    <string name="app_name">Media Controller Tester</string>
+    <string name="app_icon_desc">App icon for %1$s.</string>
+    <string name="no_apps_found">No Media Apps Found</string>
+    <string name="no_apps_reason_no_media_browser_service">Could not locate any apps implementing a MediaBrowserService.</string>
+    <string name="no_apps_reason_no_active_sessions">Could not locate any apps with active media sessions.</string>
+    <string name="no_apps_reason_missing_permission">Notification Listener permission is required to scan for active media sessions.</string>
+    <string name="action_notification_permissions_settings">Settings</string>
+    <string name="no_app_for_package">Could not find a media browser for package "%1$s".</string>
+
+    <string name="app_control_button">Control</string>
+    <string name="app_test_button">Test</string>
+
+    <string name="app_auto_compat_text">a</string>
+    <string name="app_automotive_compat_text">A</string>
+    <string name="app_both_compat_text">aA</string>
+
+    <string name="media_app_header_browse">MediaBrowserService Implementations</string>
+    <string name="media_app_automotive_header_browse">MediaBrowserService Implementations (Automotive supported)</string>
+    <string name="media_app_auto_header_browse">MediaBrowserService Implementations (Auto supported)</string>
+    <string name="media_app_both_header_browse">MediaBrowserService Implementations (Auto and Automotive supported)</string>
+    <string name="media_app_header_session">Active MediaSessions</string>
+
+    <string name="monkey_buttons_txt">PUSH BUTTONS!</string>
+    <string name="default_pkg">com.example.android.uamp</string>
+    <string name="default_cls">com.example.android.uamp.MusicService</string>
+    <string name="reconnect">Reconnect</string>
+    <string name="package_name_hint">Media app package name</string>
+    <string name="class_name_hint">Class name of MediaBrowserService</string>
+    <string name="connection_failed_hint_reject">MediaBrowser connection failed for %s\n\nService [%s] refused to connect</string>
+    <string name="connection_failed_hint_setup">MediaBrowser connection failed for %s\n\nPlease ensure you have exactly one (1) MediaBrowserService and that you are setting the session token with MediaBrowserService.setSessionToken() in MediaBrowserService.onCreate()</string>
+    <string name="connection_failed_msg">MediaBrowser connection failed for %s</string>
+    <string name="connection_lost_msg">MediaBrowser connection lost for %s</string>
+    <string name="media_controller_created">MediaControllerCompat created</string>
+    <string name="media_controller_failed_msg">Failed to create a MediaController from session token</string>
+    <string name="setup_media_controller_error_msg">setupMediaController() called with null %s object</string>
+    <string name="setup_media_controller_error_hint">Missing MediaSession Token from %s object</string>
+    <string name="setup_media_error_msg">setupMedia() called with null MediaAppDetails object</string>
+    <string name="setup_tests_error_msg">Unable to setup tests, MediaController is null</string>
+    <string name="media_app_details_update_failed">Couldn\'t update MediaAppDetails object</string>
+    <string name="id_hint">URI, Media ID, or Query</string>
+    <string name="search_hint">Query</string>
+    <string name="update_media_info">Update Media Info</string>
+    <string name="media_info_default">Empty Media Info</string>
+    <string name="default_uri" />
+    <string name="custom_actions_header">App-provided Custom Actions</string>
+
+    <string name="info_state_string">PlaybackState</string>
+    <string name="info_title_string">Title</string>
+    <string name="info_artist_string">Artist</string>
+    <string name="info_album_string">Album</string>
+
+    <!--
+    The order of these must be reflected in the Actions list created by
+    createPreparePlayActions(Context) in Action.java.
+    -->
+    <string-array name="input_options">
+        <item>Search</item>
+        <item>Media ID</item>
+        <item>URI</item>
+        <item>No Input</item>
+    </string-array>
+
+    <string name="action_prepare">Prepare</string>
+    <string name="action_prepare_uri">Prepare URI</string>
+    <string name="action_prepare_id">Prepare media ID</string>
+    <string name="action_prepare_search">Prepare from search</string>
+
+    <string name="action_play">Play</string>
+    <string name="action_play_uri">Play URI</string>
+    <string name="action_play_id">Play media ID</string>
+    <string name="action_play_search">Play from search</string>
+
+    <string name="action_pause">Pause</string>
+    <string name="action_resume">Resume</string>
+    <string name="action_stop">Stop</string>
+    <string name="action_skip_previous">Previous</string>
+    <string name="action_skip_next">Next</string>
+    <string name="action_fast_forward">Fast forward</string>
+    <string name="action_fast_rewind">Rewind</string>
+
+    <string name="action_thumbs_up">Thumbs up</string>
+    <string name="action_thumbs_down">Thumbs down</string>
+
+    <string name="action_skip_30s_forward">Skip 30s</string>
+    <string name="action_skip_30s_backward">Skip back 30s</string>
+
+    <string name="action_set_shuffle">Set shuffle mode</string>
+    <string name="action_set_repeat">Set repeat mode</string>
+
+    <string name="audio_focus_title">Audio Focus</string>
+    <string name="audio_focus_gain_focus">Gain</string>
+    <string name="audio_focus_abandon_focus">Abandon</string>
+
+    <string name="start_session_activity">Start Session Activity</string>
+    <string name="no_session">Media session does not contain an Activity to start</string>
+    <string name="session_start_failed">Failed to open app by session activity</string>
+
+    <string name="media_browse_tree_top">Top</string>
+    <string name="media_browse_tree_up">Up</string>
+    <string name="media_browse_tree_header">App-provided MediaItems</string>
+    <string name="media_browse_tree_extra_suggested_header">App-provided MediaItems Extra Suggested Flag</string>
+    <string name="media_no_browser">No Browser</string>
+    <string name="media_browse_tree_loading">Loading…</string>
+    <string name="media_browse_tree_empty">Empty.</string>
+    <string name="media_browse_tree_save">Save to file</string>
+    <string name="search_media">Search</string>
+
+    <string name="rating_thumb_up">Thumb Up</string>
+    <string name="rating_thumb_down">Thumb Down</string>
+
+    <string name="rating_heart">Heart</string>
+
+    <string name="rating_star_1">1 star</string>
+    <string name="rating_star_2">2 stars</string>
+    <string name="rating_star_3">3 stars</string>
+    <string name="rating_star_4">4 stars</string>
+    <string name="rating_star_5">5 stars</string>
+
+    <string name="rating_percentage">Rating %</string>
+    <string name="rating_set_percentage">Set</string>
+
+
+    <string name="bottom_nav_info_text">Info</string>
+    <string name="bottom_nav_test_text">Tests</string>
+    <string name="test_suite_nav_text">Test Suites</string>
+
+    <string name="notification_message">Running media controller test</string>
+
+    <!--
+    The order of these strings must match the order of the constants
+    declared in MediaAppControllerActivity.AudioFocusHelper (FOCUS_TYPES).
+    -->
+    <string-array name="audio_focus_types">
+        <item>GAIN</item>
+        <item>GAIN_TRANSIENT</item>
+        <item>GAIN_TRANSIENT_MAY_DUCK</item>
+    </string-array>
+
+    <!--
+    The order of these strings must match the order of the constants
+    declared in MediaAppControllerActivity.RepeatModeHelper's constructor.
+    -->
+    <string-array name="repeat_modes">
+        <item>None</item>
+        <item>One</item>
+        <item>Group</item>
+        <item>All</item>
+    </string-array>
+
+    <!--
+    The order of these strings must match the order of the constants
+    declared in MediaAppControllerActivity.ShuffleModeHelper's constructor.
+    -->
+    <string-array name="shuffle_modes">
+        <item>None</item>
+        <item>Group</item>
+        <item>All</item>
+    </string-array>
+</resources>
