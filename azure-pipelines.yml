@@ -23,7 +23,7 @@ variables:
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
   DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/8.0.6.json'
   CommunityToolkitSampleApp_Xcode_Version: '15.2.0'
-  CommunityToolkitLibrary_Xcode_Version: '15.0.1'
+  CommunityToolkitLibrary_Xcode_Version: '15.2.0'
 
 trigger:
   branches:
