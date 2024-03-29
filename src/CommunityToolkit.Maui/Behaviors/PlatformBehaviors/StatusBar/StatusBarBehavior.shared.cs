@@ -19,7 +19,7 @@ public enum StatusBarApplyOn
 	/// <summary>
 	/// Apply color and style when the page has been navigated to.
 	/// </summary>
-	OnPageNavigatedTo,
+	OnPageNavigatedTo
 }
 
 /// <summary>

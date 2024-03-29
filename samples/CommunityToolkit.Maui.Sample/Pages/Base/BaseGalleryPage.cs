@@ -17,13 +17,13 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 		{
 			SelectionMode = SelectionMode.Single,
 		}.ItemTemplate(new GalleryDataTemplate())
-		 .Bind(ItemsView.ItemsSourceProperty,
-					static (BaseGalleryViewModel vm) => vm.Items,
-					mode: BindingMode.OneTime)
-		 .Invoke(collectionView => collectionView.SelectionChanged += HandleSelectionChanged);
+			.Bind(ItemsView.ItemsSourceProperty,
+				static (BaseGalleryViewModel vm) => vm.Items,
+				mode: BindingMode.OneTime)
+			.Invoke(static collectionView => collectionView.SelectionChanged += HandleSelectionChanged);
 	}
 
-	async void HandleSelectionChanged(object? sender, SelectionChangedEventArgs e)
+	static async void HandleSelectionChanged(object? sender, SelectionChangedEventArgs e)
 	{
 		ArgumentNullException.ThrowIfNull(sender);
 
@@ -36,12 +36,8 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 		}
 	}
 
-	class GalleryDataTemplate : DataTemplate
+	sealed class GalleryDataTemplate() : DataTemplate(CreateDataTemplate)
 	{
-		public GalleryDataTemplate() : base(CreateDataTemplate)
-		{
-
-		}
 
 		enum Row { TopPadding, Content, BottomPadding }
 		enum Column { LeftPadding, Content, RightPadding }
@@ -60,11 +56,11 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 
 			Children =
 			{
-				new Card().Row(Row.Content).Column(Column.Content).DynamicResource(Border.StyleProperty, "BorderGalleryCard")
+				new Card().Row(Row.Content).Column(Column.Content).DynamicResource(StyleProperty, "BorderGalleryCard")
 			}
 		};
 
-		class Card : Border
+		sealed class Card : Border
 		{
 			public Card()
 			{
@@ -85,15 +81,19 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 						new Label()
 							.Row(CardRow.Title)
 							.Bind(Label.TextProperty,
-									static (SectionModel section) => section.Title,
-									mode: BindingMode.OneTime)
+								static (SectionModel section) => section.Title,
+								mode: BindingMode.OneTime)
 							.DynamicResource(Label.StyleProperty, "LabelSectionTitle"),
 
-						new Label { MaxLines = 4, LineBreakMode = LineBreakMode.WordWrap }
+						new Label
+							{
+								MaxLines = 4,
+								LineBreakMode = LineBreakMode.WordWrap
+							}
 							.Row(CardRow.Description).TextStart().TextTop()
 							.Bind(Label.TextProperty,
-									static (SectionModel section) => section.Description,
-									mode: BindingMode.OneTime)
+								static (SectionModel section) => section.Description,
+								mode: BindingMode.OneTime)
 							.DynamicResource(Label.StyleProperty, "LabelSectionText")
 					}
 				};

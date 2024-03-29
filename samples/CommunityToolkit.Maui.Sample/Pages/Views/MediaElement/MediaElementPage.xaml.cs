@@ -118,6 +118,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
 	{
 		base.OnNavigatedFrom(args);
+		MediaElement.Stop();
 		MediaElement.Handler?.DisconnectHandler();
 	}
 
@@ -270,10 +271,5 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			popupMediaElement.Stop();
 			popupMediaElement.Handler?.DisconnectHandler();
 		};
-	}
-
-	void MediaElementUnloaded(object sender, EventArgs e)
-	{
-		MediaElement.Handler?.DisconnectHandler();
 	}
 }
