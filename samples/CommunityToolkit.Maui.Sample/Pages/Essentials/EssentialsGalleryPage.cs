@@ -2,10 +2,7 @@
 
 namespace CommunityToolkit.Maui.Sample.Pages.Essentials;
 
-public class EssentialsGalleryPage : BaseGalleryPage<EssentialsGalleryViewModel>
+public class EssentialsGalleryPage(IDeviceInfo deviceInfo, EssentialsGalleryViewModel essentialsGalleryViewModel) : BaseGalleryPage<EssentialsGalleryViewModel>("Essentials", deviceInfo, essentialsGalleryViewModel)
 {
-	public EssentialsGalleryPage(IDeviceInfo deviceInfo, EssentialsGalleryViewModel essentialsGalleryViewModel)
-		: base("Essentials", deviceInfo, essentialsGalleryViewModel)
-	{
-	}
+
 }
