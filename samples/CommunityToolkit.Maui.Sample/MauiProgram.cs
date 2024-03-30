@@ -41,10 +41,14 @@ public static class MauiProgram
 	{
 		var builder = MauiApp.CreateBuilder()
 #if DEBUG
-								.UseMauiCommunityToolkit()
+								.UseMauiCommunityToolkit(options =>
+								{
+									options.SetShouldEnableSnackbarOnWindows(true);
+								})
 #else
 								.UseMauiCommunityToolkit(options =>
 								{
+									options.SetShouldEnableSnackbarOnWindows(true);
 									options.SetShouldSuppressExceptionsInConverters(true);
 									options.SetShouldSuppressExceptionsInBehaviors(true);
 									options.SetShouldSuppressExceptionsInAnimations(true);
