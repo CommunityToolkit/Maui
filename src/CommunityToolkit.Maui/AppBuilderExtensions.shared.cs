@@ -23,27 +23,10 @@ public static class AppBuilderExtensions
 		// Pass `null` because `options?.Invoke()` will set options on both `CommunityToolkit.Maui` and `CommunityToolkit.Maui.Core`
 		builder.UseMauiCommunityToolkitCore(null);
 
-#if WINDOWS
-		builder.ConfigureLifecycleEvents(events =>
-		{
-			events.AddWindows(windows => windows
-				.OnLaunched((_, _) =>
-				{
-					Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked += OnSnackbarNotificationInvoked;
-					Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Register();
-				})
-				.OnClosed((_, _) =>
-				{
-					Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked -= OnSnackbarNotificationInvoked;
-					Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Unregister();
-				}));
-		});
-#endif
-
 		builder.Services.AddSingleton<IPopupService, PopupService>();
 
 		// Invokes options for both `CommunityToolkit.Maui` and `CommunityToolkit.Maui.Core`
-		options?.Invoke(new Options());
+		options?.Invoke(new Options(builder));
 
 		builder.ConfigureMauiHandlers(h =>
 		{
@@ -56,12 +39,4 @@ public static class AppBuilderExtensions
 		NavigationBar.RemapForControls();
 		return builder;
 	}
-#if WINDOWS
-	static void OnSnackbarNotificationInvoked(
-		Microsoft.Windows.AppNotifications.AppNotificationManager sender,
-		Microsoft.Windows.AppNotifications.AppNotificationActivatedEventArgs args)
-	{
-		Snackbar.HandleSnackbarAction(args);
-	}
-#endif
 }
