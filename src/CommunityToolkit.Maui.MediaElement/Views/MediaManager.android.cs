@@ -1,13 +1,8 @@
-﻿using System.Reflection.Metadata.Ecma335;
-using Android.App;
-using Android.Content;
+﻿using Android.Content;
 using Android.OS;
-using Android.Support.V4.Media;
 using Android.Support.V4.Media.Session;
 using Android.Views;
 using Android.Widget;
-using AndroidX.CoordinatorLayout.Widget;
-using AndroidX.Core.App;
 using Com.Google.Android.Exoplayer2;
 using Com.Google.Android.Exoplayer2.Audio;
 using Com.Google.Android.Exoplayer2.Ext.Mediasession;
@@ -15,33 +10,24 @@ using Com.Google.Android.Exoplayer2.Metadata;
 using Com.Google.Android.Exoplayer2.Text;
 using Com.Google.Android.Exoplayer2.Trackselection;
 using Com.Google.Android.Exoplayer2.UI;
-using Com.Google.Android.Exoplayer2.Util;
 using Com.Google.Android.Exoplayer2.Video;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+
 namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
-
-	Android.Support.V4.Media.Session.MediaControllerCompat? mediaController;
-	Com.Google.Android.Exoplayer2.Ext.Mediasession.MediaSessionConnector? mediaSessionConnector;
-	Android.Support.V4.Media.Session.MediaSessionCompat? mediaSession;
-	Android.Support.V4.Media.Session.PlaybackStateCompat.Builder? stateBuilder;
-	MediaMetadataCompat.Builder? metadataBuilder;
-
-	readonly string nOTIFICATION_CHANNEL_ID = "1000";
-	readonly int nOTIFICATION_ID = 1;
-	readonly string nOTIFICATION_CHANNEL_NAME = "notification";
-
 	double? previousSpeed;
 	float volumeBeforeMute = 1;
+
 	TaskCompletionSource? seekToTaskCompletionSource;
+	MediaSessionConnector? mediaSessionConnector;
+	MediaSessionCompat? mediaSession;
 
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
@@ -62,7 +48,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		mediaSessionConnector = new MediaSessionConnector(mediaSession);
 		mediaSession.SetFlags(MediaSessionCompat.FlagHandlesMediaButtons | MediaSessionCompat.FlagHandlesTransportControls);
 		mediaSessionConnector.SetPlayer(Player);
-		mediaSession.Active = true;
 
 		PlayerView = new StyledPlayerView(MauiContext.Context)
 		{
@@ -76,22 +61,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		return (Player, PlayerView);
 	}
 
-	public void OnMediaSessionStop()
-	{
-		if (mediaSession is null || Player is null || mediaSessionConnector is null)
-		{
-			return;
-		}
-		mediaSessionConnector.SetPlayer(null);
-		mediaSession.Active = false;
-		mediaSession.Release();
-	}
-
 	/// <summary>
 	/// Method checks for required Permission for Android Notifications and requests them if needed
 	/// </summary>
 	/// <returns></returns>
-	public async Task CheckAndRequestForeGroundPermission()
+	protected static async Task CheckAndRequestForeGroundPermission()
 	{
 		var status = await Permissions.CheckStatusAsync<AndroidPermissions>();
 		if (status == PermissionStatus.Granted)
@@ -102,25 +76,24 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			await Shell.Current.DisplayAlert("Permission Required", "Notification permission is required to show media controls.", "Ok");
 		}
-		status = await Permissions.RequestAsync<AndroidPermissions>();
+		_ = await Permissions.RequestAsync<AndroidPermissions>();
 	}
 
-	void StartService()
+	protected void StartService()
 	{
 		var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
 		intent.PutExtra("token", mediaSession?.SessionToken);
 		intent.PutExtra("title", MediaElement.MetadataTitle);
 		intent.PutExtra("artist", MediaElement.MetadataArtist);
 		intent.PutExtra("album", MediaElement.MetadataAlbum);
-		intent.PutExtra("artwork", MediaElement.MetadataArtwork);
-		intent.PutExtra("duration", (long)MediaElement.Duration.TotalMilliseconds);
-
+		intent.PutExtra("albumArtUri", MediaElement.MetadataArtwork);
+		intent.PutExtra("position", ((int)MediaElement.Position.TotalNanoseconds));
+		intent.PutExtra("currentTime", ((int)SystemClock.ElapsedRealtime()));
 		Android.App.Application.Context.StartForegroundService(intent);
 	}
-	
-	void StopService()
+
+	protected static void StopService()
 	{
-		System.Diagnostics.Debug.WriteLine("Stopping service");
 		var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
 		Android.App.Application.Context.StopService(serviceIntent);
 	}
@@ -193,6 +166,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			MediaElement.Duration = TimeSpan.FromMilliseconds(Player.Duration < 0 ? 0 : Player.Duration);
 			MediaElement.Position = TimeSpan.FromMilliseconds(Player.CurrentPosition < 0 ? 0 : Player.CurrentPosition);
+			
+			if (mediaSession is not null)
+			{
+				mediaSession.Active = true;
+			}
+			StartService();
 		}
 	}
 
@@ -203,8 +182,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		if (disposing)
 		{
 			StopService();
-			stateBuilder?.Dispose();
-			stateBuilder = null;
 
 			mediaSessionConnector?.SetPlayer(null);
 			mediaSessionConnector?.Dispose();
@@ -213,9 +190,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			mediaSession?.Release();
 			mediaSession?.Dispose();
 			mediaSession = null;
-			
-			mediaController?.Dispose();
-			mediaController = null;
 		}
 	}
 
@@ -232,8 +206,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		if (MediaElement.Source is null)
 		{
 			return;
-		}
-
+		}	
 		MediaElementState newState = MediaElement.CurrentState;
 
 		switch (playbackState)
@@ -398,7 +371,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			return;
 		}
-		//OnMediaSessionStartOnResume();
+
 		StopService();
 		if (mediaSession is not null)
 		{
@@ -457,12 +430,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		if (hasSetSource && Player.PlayerError is null)
 		{
 			MediaElement.MediaOpened();
-			if (mediaSession is not null)
-			{
-				mediaSession.Active = true;
-				StartService();
-			}
-			//UpdateService();
 		}
 	}
 
