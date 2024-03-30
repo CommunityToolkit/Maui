@@ -87,8 +87,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		intent.PutExtra("artist", MediaElement.MetadataArtist);
 		intent.PutExtra("album", MediaElement.MetadataAlbum);
 		intent.PutExtra("albumArtUri", MediaElement.MetadataArtwork);
-		intent.PutExtra("position", ((int)MediaElement.Position.TotalNanoseconds));
-		intent.PutExtra("currentTime", ((int)SystemClock.ElapsedRealtime()));
+		intent.PutExtra("position", ((long)MediaElement.Position.TotalSeconds));
+		intent.PutExtra("currentTime", SystemClock.ElapsedRealtime());
+		intent.PutExtra("duration", ((long)MediaElement.Duration.TotalSeconds));
 		Android.App.Application.Context.StartForegroundService(intent);
 	}
 

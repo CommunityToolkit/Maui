@@ -19,7 +19,7 @@ public class MediaControlsService : Service
 	{
 	}
 
-	public async Task startForegroundServiceAsync(MediaSessionCompat.Token token,string title,string artist,string album,string albumArtUri, int position, int currentTime)
+	public async Task startForegroundServiceAsync(MediaSessionCompat.Token token,string title,string artist,string album,string albumArtUri, long position, long currentTime, long duration)
 	{
 		mediaSession = new MediaSessionCompat(this, "notification")
 		{
@@ -35,8 +35,8 @@ public class MediaControlsService : Service
 		var pendingIntent = PendingIntent.GetActivity(this, 2, intent, pendingIntentFlags);
 		var notificationManager = GetSystemService(Context.NotificationService) as NotificationManager;
 		
-		var notification = MetaDataExtensions.SetNotifications(Platform.AppContext, "1", token, title, artist, album, bitmap, pendingIntent);
-		var metadataBuilder = MetaDataExtensions.SetMetadata(album, artist, title, bitmap);
+		var notification = MetaDataExtensions.SetNotifications(Platform.AppContext, "1", token, title, artist, album, bitmap, pendingIntent, duration);
+		var metadataBuilder = MetaDataExtensions.SetMetadata(album, artist, title, bitmap, duration, position);
 		stateBuilder = new PlaybackStateCompat.Builder().SetActions(PlaybackStateCompat.ActionPlay | PlaybackStateCompat.ActionPause | PlaybackStateCompat.ActionStop);
 		stateBuilder?.SetState(PlaybackStateCompat.StatePlaying, position, 1.0f, currentTime);
 
@@ -45,7 +45,6 @@ public class MediaControlsService : Service
 		mediaSession?.SetPlaybackState(stateBuilder?.Build());
 
 		mediaSession?.SetSessionActivity(pendingIntent);
-		System.Diagnostics.Debug.WriteLine($"StateBuilder: current: {position} && current time is {currentTime}");
 
 		if (Build.VERSION.SdkInt >= BuildVersionCodes.O && notificationManager is not null)
 		{
@@ -77,8 +76,9 @@ public class MediaControlsService : Service
 	public override StartCommandResult OnStartCommand(Intent? intent, StartCommandFlags flags, int startId)
 	{
 		var token = intent?.GetParcelableExtra("token") as MediaSessionCompat.Token;
-		var position = intent?.GetIntExtra("position", 0) ?? 0;
-		var currentTime = intent?.GetIntExtra("currentTime", 0) ?? 0;
+		var position = intent?.GetLongExtra("position", 0) ?? 0;
+		var currentTime = intent?.GetLongExtra("currentTime", 0) ?? 0;
+		var duration = intent?.GetLongExtra("duration", 0) ?? 0;
 		var title = intent?.GetStringExtra("title") as string ?? string.Empty;
 		var artist = intent?.GetStringExtra("artist") as string ?? string.Empty;
 		var album = intent?.GetStringExtra("album") as string ?? string.Empty;
@@ -86,7 +86,7 @@ public class MediaControlsService : Service
 
 		if (token is not null)
 		{
-			_ = startForegroundServiceAsync(token, title, artist, album, albumArtUri, position, currentTime);
+			_ = startForegroundServiceAsync(token, title, artist, album, albumArtUri, position, currentTime, duration);
 		}
 		return StartCommandResult.NotSticky;
 	}

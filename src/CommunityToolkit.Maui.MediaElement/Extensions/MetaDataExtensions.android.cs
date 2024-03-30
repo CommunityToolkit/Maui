@@ -5,12 +5,13 @@ using Android.Support.V4.Media.Session;
 using Android.Graphics;
 using Android.Content.Res;
 using Android.App;
+using Android.Media;
 
 namespace CommunityToolkit.Maui.Extensions;
 
 public partial class MetaDataExtensions
 {
-	public static AndroidX.Core.App.NotificationCompat.Builder SetNotifications(Context context, string nOTIFICATION_CHANNEL_ID, MediaSessionCompat.Token token, string title, string artist, string album, Bitmap? bitmap, PendingIntent? pendingIntent)
+	public static AndroidX.Core.App.NotificationCompat.Builder SetNotifications(Context context, string nOTIFICATION_CHANNEL_ID, MediaSessionCompat.Token token, string title, string artist, string album, Bitmap? bitmap, PendingIntent? pendingIntent,long duration)
 	{
 		var style = new AndroidX.Media.App.NotificationCompat.MediaStyle();
 		style.SetMediaSession(token);
@@ -19,6 +20,7 @@ public partial class MetaDataExtensions
 		notification.SetStyle(style); 
 		notification.SetContentTitle(title);
 		notification.SetContentText(artist);
+		notification.Extras.PutLong(MediaMetadata.MetadataKeyDuration, duration);
 		notification.SetAllowSystemGeneratedContextualActions(true);
 		notification.SetContentIntent(pendingIntent);
 		notification.SetSubText(album);
@@ -30,13 +32,14 @@ public partial class MetaDataExtensions
 		return notification;
 	}
 
-	public static Android.Support.V4.Media.MediaMetadataCompat.Builder SetMetadata(string album, string artist,string title, Bitmap? bitmap)
+	public static Android.Support.V4.Media.MediaMetadataCompat.Builder SetMetadata(string album, string artist,string title, Bitmap? bitmap, long duration, long position)
 	{
 		var metadataBuilder = new MediaMetadataCompat.Builder();
-		metadataBuilder.PutString(MediaMetadataCompat.MetadataKeyAlbum, album);
-		metadataBuilder.PutString(MediaMetadataCompat.MetadataKeyArtist, artist);
-		metadataBuilder.PutString(MediaMetadataCompat.MetadataKeyTitle, title);
-		metadataBuilder.PutBitmap(MediaMetadataCompat.MetadataKeyAlbumArt, bitmap);
+		metadataBuilder.PutString(MediaMetadata.MetadataKeyAlbumArtist, album);
+		metadataBuilder.PutString(MediaMetadata.MetadataKeyArtist, artist);
+		metadataBuilder.PutString(MediaMetadata.MetadataKeyTitle, title);
+		metadataBuilder.PutLong(MediaMetadata.MetadataKeyDuration, duration);
+		metadataBuilder.PutBitmap(MediaMetadata.MetadataKeyAlbumArt, bitmap);
 		return metadataBuilder;
 	}
 
