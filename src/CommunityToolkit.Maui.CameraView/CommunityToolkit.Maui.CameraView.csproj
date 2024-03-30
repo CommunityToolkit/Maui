@@ -74,4 +74,9 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\CommunityToolkit.Maui.CameraView.Analyzers\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.CameraView.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+    <None Include="..\CommunityToolkit.Maui.CameraView.Analyzers.CodeFixes\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.CameraView.Analyzers.CodeFixes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+  </ItemGroup>
+
 </Project>
