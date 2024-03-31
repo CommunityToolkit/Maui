@@ -1,4 +1,5 @@
-﻿using Android.Content;
+﻿using System.Net;
+using Android.Content;
 using Android.OS;
 using Android.Support.V4.Media.Session;
 using Android.Views;
@@ -46,9 +47,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		Player.AddListener(this);				
 		mediaSession = new MediaSessionCompat(Platform.AppContext, "notification");
 		mediaSessionConnector = new MediaSessionConnector(mediaSession);
-		mediaSession.SetFlags(MediaSessionCompat.FlagHandlesMediaButtons | MediaSessionCompat.FlagHandlesTransportControls);
+		mediaSessionConnector.SetEnabledPlaybackActions(PlaybackStateCompat.ActionPlay | PlaybackStateCompat.ActionPause | PlaybackStateCompat.ActionStop | PlaybackStateCompat.ActionSetPlaybackSpeed | PlaybackStateCompat.ActionFastForward | PlaybackStateCompat.ActionSeekTo | PlaybackStateCompat.ActionRewind);
+		mediaSession.SetFlags(MediaSessionCompat.FlagHandlesMediaButtons | MediaSessionCompat.FlagHandlesTransportControls | MediaSessionCompat.FlagHandlesQueueCommands);
 		mediaSessionConnector.SetPlayer(Player);
-
+		
 		PlayerView = new StyledPlayerView(MauiContext.Context)
 		{
 			Player = Player,

@@ -15,17 +15,24 @@ public partial class MetaDataExtensions
 	{
 		var style = new AndroidX.Media.App.NotificationCompat.MediaStyle();
 		style.SetMediaSession(token);
-		style.SetShowActionsInCompactView(0, 1, 2);
+		style.SetShowActionsInCompactView(0,1,2);
+		style.SetShowCancelButton(true);
 		var notification = new AndroidX.Core.App.NotificationCompat.Builder(context, nOTIFICATION_CHANNEL_ID);
 		notification.SetStyle(style); 
 		notification.SetContentTitle(title);
 		notification.SetContentText(artist);
 		notification.Extras.PutLong(MediaMetadata.MetadataKeyDuration, duration);
+		notification.AddAction(Resource.Drawable.exo_controls_previous, "Previous", pendingIntent);
+		notification.AddAction(Resource.Drawable.exo_controls_pause, "Pause", pendingIntent);
+		notification.AddAction(Resource.Drawable.exo_controls_play, "Play", pendingIntent);
+		notification.AddAction(Resource.Drawable.exo_controls_next, "Next", pendingIntent);
+		notification.AddAction(Resource.Drawable.exo_controls_fastforward, "FastForward", pendingIntent);
+		notification.AddAction(Resource.Drawable.exo_controls_rewind, "Rewind", pendingIntent);
 		notification.SetAllowSystemGeneratedContextualActions(true);
 		notification.SetContentIntent(pendingIntent);
 		notification.SetSubText(album);
 		notification.SetLargeIcon(bitmap);
-		notification.SetSmallIcon(Resource.Drawable.exo_ic_audiotrack);
+		notification.SetSmallIcon(Resource.Drawable.exo_styled_controls_audiotrack);
 		notification.SetColor(AndroidX.Core.Content.ContextCompat.GetColor(Platform.AppContext, Resource.Color.notification_icon_bg_color));
 		notification.SetOnlyAlertOnce(true);
 		notification.SetVisibility(AndroidX.Core.App.NotificationCompat.VisibilityPublic);

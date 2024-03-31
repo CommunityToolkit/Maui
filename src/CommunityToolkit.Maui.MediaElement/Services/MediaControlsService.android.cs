@@ -14,7 +14,7 @@ namespace CommunityToolkit.Maui.Services;
 public class MediaControlsService : Service	
 {
 	Bitmap? bitmap = null;
-	Android.Support.V4.Media.Session.PlaybackStateCompat.Builder? stateBuilder;
+	PlaybackStateCompat.Builder? stateBuilder;
 	MediaSessionCompat? mediaSession;
 
 	public MediaControlsService()
@@ -27,6 +27,7 @@ public class MediaControlsService : Service
 		{
 			Active = true
 		};
+		
 		await Task.Run(async () => bitmap = await MetaDataExtensions.GetBitmapFromUrl(albumArtUri, Resources));
 
 		var intent = new Intent(this, typeof(MediaControlsService));
@@ -44,7 +45,7 @@ public class MediaControlsService : Service
 
 		var notification = MetaDataExtensions.SetNotifications(Platform.AppContext, "1", token, title, artist, album, bitmap, pendingIntent, duration);
 		var metadataBuilder = MetaDataExtensions.SetMetadata(album, artist, title, bitmap, duration, position);
-		stateBuilder = new PlaybackStateCompat.Builder().SetActions(PlaybackStateCompat.ActionPlay | PlaybackStateCompat.ActionPause | PlaybackStateCompat.ActionStop | PlaybackStateCompat.ActionSetPlaybackSpeed | PlaybackStateCompat.ActionFastForward | PlaybackStateCompat.ActionSeekTo | PlaybackStateCompat.ActionStop);
+		stateBuilder = new PlaybackStateCompat.Builder().SetActions(PlaybackStateCompat.ActionPlayPause | PlaybackStateCompat.ActionStop | PlaybackStateCompat.ActionSetPlaybackSpeed | PlaybackStateCompat.ActionFastForward | PlaybackStateCompat.ActionSeekTo);
 
 		stateBuilder?.SetState(PlaybackStateCompat.StatePlaying, position, 1.0f, currentTime);
 		mediaSession.SetExtras(intent.Extras);
