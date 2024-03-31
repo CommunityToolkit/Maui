@@ -5,6 +5,8 @@ using Android.OS;
 using Android.Support.V4.Media.Session;
 using Android.Graphics;
 using CommunityToolkit.Maui.Extensions;
+using Android.Media;
+using Stream = Android.Media.Stream;
 
 namespace CommunityToolkit.Maui.Services;
 
@@ -34,21 +36,27 @@ public class MediaControlsService : Service
 			: PendingIntentFlags.UpdateCurrent;
 		var pendingIntent = PendingIntent.GetActivity(this, 2, intent, pendingIntentFlags);
 		var notificationManager = GetSystemService(Context.NotificationService) as NotificationManager;
-		
+		var audioManager = GetSystemService(Context.AudioService) as AudioManager;
+
+		audioManager?.RequestAudioFocus(null, Stream.Music, AudioFocus.Gain);
+		audioManager?.SetParameters("Ducking=true");
+		audioManager?.SetStreamVolume(Stream.Music, audioManager.GetStreamVolume(Stream.Music), VolumeNotificationFlags.ShowUi);
+
 		var notification = MetaDataExtensions.SetNotifications(Platform.AppContext, "1", token, title, artist, album, bitmap, pendingIntent, duration);
 		var metadataBuilder = MetaDataExtensions.SetMetadata(album, artist, title, bitmap, duration, position);
-		stateBuilder = new PlaybackStateCompat.Builder().SetActions(PlaybackStateCompat.ActionPlay | PlaybackStateCompat.ActionPause | PlaybackStateCompat.ActionStop);
+		stateBuilder = new PlaybackStateCompat.Builder().SetActions(PlaybackStateCompat.ActionPlay | PlaybackStateCompat.ActionPause | PlaybackStateCompat.ActionStop | PlaybackStateCompat.ActionSetPlaybackSpeed | PlaybackStateCompat.ActionFastForward | PlaybackStateCompat.ActionSeekTo | PlaybackStateCompat.ActionStop);
+
 		stateBuilder?.SetState(PlaybackStateCompat.StatePlaying, position, 1.0f, currentTime);
-
-		mediaSession?.SetMetadata(metadataBuilder.Build());
-		mediaSession?.SetMetadata(metadataBuilder.Build());
-		mediaSession?.SetPlaybackState(stateBuilder?.Build());
-
-		mediaSession?.SetSessionActivity(pendingIntent);
-
+		mediaSession.SetExtras(intent.Extras);
+		mediaSession.SetMetadata(metadataBuilder.Build());
+		mediaSession.SetMetadata(metadataBuilder.Build());
+		mediaSession.SetPlaybackState(stateBuilder?.Build());
+		mediaSession.SetPlaybackToLocal(AudioManager.AudioSessionIdGenerate);
+		mediaSession.SetSessionActivity(pendingIntent);
+		
 		if (Build.VERSION.SdkInt >= BuildVersionCodes.O && notificationManager is not null)
 		{
-			createNotificationChannel(notificationManager);
+			CreateNotificationChannel(notificationManager);
 		}
 	
 		if (Build.VERSION.SdkInt >= BuildVersionCodes.Q)
@@ -56,13 +64,14 @@ public class MediaControlsService : Service
 			StartForeground(1, notification.Build(), ForegroundService.TypeMediaPlayback);
 			return;
 		}
+
 		if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
 		{
 			StartForeground(1, notification.Build());
 		}
 	}
 
-	void createNotificationChannel(NotificationManager notificationMnaManager)
+	static void CreateNotificationChannel(NotificationManager notificationMnaManager)
 	{
 		var channel = new NotificationChannel("1", "notification", NotificationImportance.Low);
 		notificationMnaManager.CreateNotificationChannel(channel);

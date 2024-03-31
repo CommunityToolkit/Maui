@@ -235,8 +235,8 @@ public partial class MetaDataExtensions
 		}
 		catch
 		{
+			return null;
 		}
-		return null;
 	}
 }
 

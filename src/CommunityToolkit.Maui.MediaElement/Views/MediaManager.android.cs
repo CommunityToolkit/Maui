@@ -43,7 +43,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	{
 		ArgumentNullException.ThrowIfNull(MauiContext.Context);
 		Player = new IExoPlayer.Builder(MauiContext.Context).Build() ?? throw new NullReferenceException();
-		Player.AddListener(this);
+		Player.AddListener(this);				
 		mediaSession = new MediaSessionCompat(Platform.AppContext, "notification");
 		mediaSessionConnector = new MediaSessionConnector(mediaSession);
 		mediaSession.SetFlags(MediaSessionCompat.FlagHandlesMediaButtons | MediaSessionCompat.FlagHandlesTransportControls);
