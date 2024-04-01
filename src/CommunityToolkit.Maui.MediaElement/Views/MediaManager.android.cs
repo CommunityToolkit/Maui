@@ -1,6 +1,7 @@
-﻿using System.Net;
-using Android.Content;
-using Android.OS;
+﻿using Android.Content;
+using Android.Content.Res;
+using Android.Graphics;
+using Android.Support.V4.Media;
 using Android.Support.V4.Media.Session;
 using Android.Views;
 using Android.Widget;
@@ -17,6 +18,7 @@ using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
+using Resource = Microsoft.Maui.Resource;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -80,19 +82,37 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		}
 		_ = await Permissions.RequestAsync<AndroidPermissions>();
 	}
-
-	protected void StartService()
+	
+	async Task StartService()
 	{
+		var bitmap = await GetBitmapFromUrl(MediaElement.MetadataArtwork, Platform.AppContext.Resources);
+		var mediaMetaData = new MediaMetadataCompat.Builder();
+		mediaMetaData.PutString(MediaMetadataCompat.MetadataKeyArtist, MediaElement.MetadataArtist);
+		mediaMetaData.PutString(MediaMetadataCompat.MetadataKeyTitle, MediaElement.MetadataTitle);
+		mediaMetaData.PutBitmap(MediaMetadataCompat.MetadataKeyAlbumArt, bitmap);
+		mediaMetaData.PutLong(MediaMetadataCompat.MetadataKeyDuration, Player?.Duration ?? 0);
+		mediaMetaData.Build();
+		mediaSession?.SetMetadata(mediaMetaData.Build());
+		
 		var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
 		intent.PutExtra("token", mediaSession?.SessionToken);
-		intent.PutExtra("title", MediaElement.MetadataTitle);
-		intent.PutExtra("artist", MediaElement.MetadataArtist);
-		intent.PutExtra("album", MediaElement.MetadataAlbum);
-		intent.PutExtra("albumArtUri", MediaElement.MetadataArtwork);
-		intent.PutExtra("position", ((long)MediaElement.Position.TotalSeconds));
-		intent.PutExtra("currentTime", SystemClock.ElapsedRealtime());
-		intent.PutExtra("duration", ((long)MediaElement.Duration.TotalSeconds));
 		Android.App.Application.Context.StartForegroundService(intent);
+	}
+
+	public static async Task<Bitmap?> GetBitmapFromUrl(string? url, Resources? resources)
+	{
+		var temp = BitmapFactory.DecodeResource(resources, Resource.Drawable.exo_ic_default_album_image);
+		try
+		{
+			var client = new HttpClient();
+			var response = await client.GetAsync(url);
+			var stream = response.IsSuccessStatusCode ? await response.Content.ReadAsStreamAsync() : null;
+			return stream is not null ? await BitmapFactory.DecodeStreamAsync(stream) : temp;
+		}
+		catch
+		{
+			return temp;
+		}
 	}
 
 	protected static void StopService()
@@ -174,7 +194,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			{
 				mediaSession.Active = true;
 			}
-			StartService();
+			_ = StartService();
 		}
 	}
 
@@ -421,7 +441,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			var path = resourceMediaSource.Path;
 			if (!string.IsNullOrWhiteSpace(path))
 			{
-				var assetFilePath = $"asset://{package}{Path.PathSeparator}{path}";
+				var assetFilePath = $"asset://{package}{System.IO.Path.PathSeparator}{path}";
 
 				Player.SetMediaItem(MediaItem.FromUri(assetFilePath));
 				Player.Prepare();

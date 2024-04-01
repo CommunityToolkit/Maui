@@ -11,7 +11,7 @@ namespace CommunityToolkit.Maui.Extensions;
 /// <summary>
 /// The class that provides methods to update the system UI for media transport controls to display media metadata.
 /// </summary>
-public partial class MetaDataExtensions
+public class MetaDataExtensions
 {
 
 	/// <summary>
