@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 
 <pages:BasePage
     x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.TouchBehaviorPage"
@@ -24,9 +24,11 @@
     <ScrollView>
         <VerticalStackLayout>
 
-            <Label HorizontalOptions="Center" HorizontalTextAlignment="Center"
-                   FontSize="Body"
-                   Text="{Binding TouchCount, StringFormat='Touches: {0}'}" />
+            <Label
+                FontSize="Body"
+                HorizontalOptions="Center"
+                HorizontalTextAlignment="Center"
+                Text="{Binding TouchCount, StringFormat='Touches: {0}'}" />
 
             <Label Style="{StaticResource SectionHeader}" Text="Image | Toggle" />
             <Image HeightRequest="100" WidthRequest="100">
@@ -42,6 +44,8 @@
             <HorizontalStackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="Center">
                 <HorizontalStackLayout.Behaviors>
                     <mct:TouchBehavior
+                        BindingContext="{Binding Source={x:Reference Page}, Path=BindingContext}"
+                        Command="{Binding IncreaseTouchCountCommand}"
                         DefaultAnimationDuration="250"
                         DefaultAnimationEasing="{x:Static Easing.CubicInOut}"
                         Command="{Binding IncreaseTouchCountCommand}"
@@ -50,23 +54,26 @@
                 </HorizontalStackLayout.Behaviors>
 
                 <ContentView
+                    BackgroundColor="Gold"
                     HeightRequest="100"
-                    WidthRequest="10"
-                    BackgroundColor="Gold" />
-                <Label Text="The entire layout receives touches" VerticalOptions="Center" LineBreakMode="TailTruncation"/>
+                    WidthRequest="10" />
+                <Label
+                    LineBreakMode="TailTruncation"
+                    Text="The entire layout receives touches"
+                    VerticalOptions="Center" />
                 <ContentView
+                    BackgroundColor="Gold"
                     HeightRequest="100"
-                    WidthRequest="10"
-                    BackgroundColor="Gold" />
+                    WidthRequest="10" />
             </HorizontalStackLayout>
 
             <Label Style="{StaticResource SectionHeader}" Text="Long Press | Hover" />
 
             <Label
+                Margin="0,0,0,6"
                 FontSize="Body"
                 HorizontalOptions="CenterAndExpand"
-                Text="{Binding LongPressCount, StringFormat='Long press count: {0}'}"
-                Margin="0,0,0,6" />
+                Text="{Binding LongPressCount, StringFormat='Long press count: {0}'}" />
             <HorizontalStackLayout
                 Padding="20"
                 Background="Black"
@@ -94,6 +101,8 @@
 
                 <HorizontalStackLayout.Behaviors>
                     <mct:TouchBehavior
+                        BindingContext="{Binding Source={x:Reference Page}, Path=BindingContext}"
+                        Command="{Binding IncreaseTouchCountCommand}"
                         DefaultAnimationDuration="500"
                         Command="{Binding IncreaseTouchCountCommand}"
                         DefaultBackgroundColor="Gold"
@@ -157,6 +166,8 @@
                 StrokeThickness="0">
                 <Border.Behaviors>
                     <mct:TouchBehavior
+                        BindingContext="{Binding Source={x:Reference Page}, Path=BindingContext}"
+                        Command="{Binding IncreaseTouchCountCommand}"
                         DefaultAnimationDuration="150"
                         DefaultAnimationEasing="{x:Static Easing.CubicInOut}"
                         Command="{Binding IncreaseTouchCountCommand}"
@@ -175,8 +186,7 @@
                         WidthRequest="40" />
                     <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
                         <Label FontSize="20" Text="Lorem Ipsum" />
-                        <Label FontSize="12"
-                               Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam gravida, sapien in volutpat ornare, magna dui condimentum dui, quis egestas tellus leo non nulla. Quisque sit amet neque dapibus, congue justo non, dapibus dolor." />
+                        <Label FontSize="12" Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam gravida, sapien in volutpat ornare, magna dui condimentum dui, quis egestas tellus leo non nulla. Quisque sit amet neque dapibus, congue justo non, dapibus dolor." />
                     </VerticalStackLayout>
                 </Grid>
             </Border>
