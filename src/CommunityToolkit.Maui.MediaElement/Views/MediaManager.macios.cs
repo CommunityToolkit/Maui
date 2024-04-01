@@ -111,8 +111,11 @@ public partial class MediaManager : IDisposable
 		{
 			UIApplication.SharedApplication.BeginReceivingRemoteControlEvents();
 		});
+#if IOS
 		PlayerViewController.UpdatesNowPlayingInfoCenter = false;
-
+#else
+		PlayerViewController.UpdatesNowPlayingInfoCenter = true;
+#endif
 		var avSession = AVAudioSession.SharedInstance();
 		avSession.SetCategory(AVAudioSessionCategory.Playback);
 		avSession.SetActive(true);
@@ -224,7 +227,7 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		MetaData ??= new(MediaElement, Player);		
+		MetaData ??= new(MediaElement, Player);
 		MetaData.ClearNowPlaying();
 
 		if (MediaElement.Source is UriMediaSource uriMediaSource)
@@ -556,9 +559,10 @@ public partial class MediaManager : IDisposable
 		}
 		if (MetaData is not null)
 		{
-			MetaData.NowPlayingInfo.PlaybackRate = (float)MediaElement.Speed;
+			MetaData.NowPlayingInfo.PlaybackRate = MediaElement.Speed;
 			MetaData.NowPlayingInfo.ElapsedPlaybackTime = PlayerItem?.CurrentTime.Seconds ?? 0;
 			MetaData.NowPlayingInfo.PlaybackDuration = PlayerItem?.Duration.Seconds ?? 0;
+			MetaData.NowPlayingInfo.IsLiveStream = false;
 			MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = MetaData.NowPlayingInfo;
 		}
 

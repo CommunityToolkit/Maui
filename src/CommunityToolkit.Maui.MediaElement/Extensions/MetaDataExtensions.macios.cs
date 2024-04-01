@@ -188,7 +188,7 @@ public partial class MetaDataExtensions
 		NowPlayingInfo.Genre = MediaElement.MetadataGenre;
 		NowPlayingInfo.PlaybackDuration = PlayerItem?.Duration.Seconds ?? 0;
 		NowPlayingInfo.IsLiveStream = false;
-		NowPlayingInfo.PlaybackRate = (float)MediaElement.Speed;
+		NowPlayingInfo.PlaybackRate = (double)MediaElement.Speed;
 		NowPlayingInfo.ElapsedPlaybackTime = PlayerItem?.CurrentTime.Seconds ?? 0;
 		MPMediaItemArtwork? artwork = GetArtwork(MediaElement.MetadataArtwork);
 		if (artwork is not null)
