@@ -156,6 +156,46 @@
                 </ContentView>
             </ContentView>
 
+            <VerticalStackLayout Spacing="10">
+                <Label Style="{StaticResource SectionHeader}" Text="Command with parameter example" />
+
+                <Picker x:Name="MonkeyPicker" Title="Pick a monkey">
+                    <Picker.ItemsSource>
+                        <x:Array Type="{x:Type x:String}">
+                            <x:String>Baboon</x:String>
+                            <x:String>Capuchin Monkey</x:String>
+                            <x:String>Blue Monkey</x:String>
+                            <x:String>Squirrel Monkey</x:String>
+                            <x:String>Golden Lion Tamarin</x:String>
+                            <x:String>Howler Monkey</x:String>
+                            <x:String>Japanese Macaque</x:String>
+                        </x:Array>
+                    </Picker.ItemsSource>
+                </Picker>
+
+                <Border
+                    Padding="20"
+                    BackgroundColor="Orange"
+                    HeightRequest="200"
+                    HorizontalOptions="Fill"
+                    StrokeShape="RoundRectangle, 20"
+                    StrokeThickness="0">
+                    <ContentView.Behaviors>
+                        <mct:TouchBehavior
+                            BindingContext="{Binding Source={x:Reference Page}, Path=BindingContext}"
+                            Command="{Binding MonkeySelectedCommand}"
+                            CommandParameter="{Binding Source={x:Reference MonkeyPicker}, Path=SelectedItem}" />
+                    </ContentView.Behaviors>
+                    <Label
+                        FontAttributes="Bold"
+                        FontSize="18"
+                        HorizontalTextAlignment="Center"
+                        Text="Press me to announce the selected monkey!"
+                        TextColor="White"
+                        VerticalTextAlignment="Center" />
+                </Border>
+            </VerticalStackLayout>
+
             <Label Style="{StaticResource SectionHeader}" Text="Input transparency for nested layouts" />
 
             <Border
