@@ -381,6 +381,7 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 				Microsoft.Maui.Controls.Shapes.Path path => path.Clip,
 				Polygon polygon => polygon.Clip,
 				Rectangle rectangle => rectangle.Clip,
+				RoundRectangle r => r.Clip,
 				_ => avatarImageClipGeometry
 			};
 		}
