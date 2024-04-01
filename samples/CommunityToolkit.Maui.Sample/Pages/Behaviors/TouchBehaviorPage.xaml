@@ -12,6 +12,8 @@
 
     <ContentPage.Resources>
         <ResourceDictionary>
+            <x:Double x:Key="SectionSpacing">10</x:Double>
+
             <Style x:Key="SectionHeader" TargetType="Label">
                 <Setter Property="Margin" Value="0,16,0,6" />
                 <Setter Property="FontAttributes" Value="Bold" />
@@ -22,13 +24,14 @@
     </ContentPage.Resources>
 
     <ScrollView>
-        <VerticalStackLayout>
+        <VerticalStackLayout Spacing="20">
 
-            <Label
-                FontSize="Body"
-                HorizontalOptions="Center"
-                HorizontalTextAlignment="Center"
-                Text="{Binding TouchCount, StringFormat='Touches: {0}'}" />
+            <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
+                <Label
+                    FontSize="Body"
+                    HorizontalOptions="Center"
+                    HorizontalTextAlignment="Center"
+                    Text="{Binding TouchCount, StringFormat='Touches: {0}'}" />
 
             <Label Style="{StaticResource SectionHeader}" Text="Image | Toggle" />
             <Image HeightRequest="100" WidthRequest="100">
@@ -53,21 +56,23 @@
                         PressedScale="0.8" />
                 </HorizontalStackLayout.Behaviors>
 
-                <ContentView
-                    BackgroundColor="Gold"
-                    HeightRequest="100"
-                    WidthRequest="10" />
-                <Label
-                    LineBreakMode="TailTruncation"
-                    Text="The entire layout receives touches"
-                    VerticalOptions="Center" />
-                <ContentView
-                    BackgroundColor="Gold"
-                    HeightRequest="100"
-                    WidthRequest="10" />
-            </HorizontalStackLayout>
+                    <ContentView
+                        BackgroundColor="Gold"
+                        HeightRequest="100"
+                        WidthRequest="10" />
+                    <Label
+                        LineBreakMode="TailTruncation"
+                        Text="The entire layout receives touches"
+                        VerticalOptions="Center" />
+                    <ContentView
+                        BackgroundColor="Gold"
+                        HeightRequest="100"
+                        WidthRequest="10" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
 
-            <Label Style="{StaticResource SectionHeader}" Text="Long Press | Hover" />
+            <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
+                <Label Style="{StaticResource SectionHeader}" Text="Long Press | Hover" />
 
             <Label
                 Margin="0,0,0,6"
@@ -86,18 +91,37 @@
                         LongPressCommand="{Binding IncreaseLongPressCountCommand}" />
                 </HorizontalStackLayout.Behaviors>
                 <Label
-                    FontSize="Large"
-                    Text="TITLE"
-                    TextColor="White"
-                    VerticalOptions="Start" />
-            </HorizontalStackLayout>
+                    Margin="0,0,0,6"
+                    FontSize="Body"
+                    HorizontalOptions="CenterAndExpand"
+                    Text="{Binding LongPressCount, StringFormat='Long press count: {0}'}" />
+                <HorizontalStackLayout
+                    Padding="20"
+                    Background="Black"
+                    HorizontalOptions="CenterAndExpand">
+                    <HorizontalStackLayout.Behaviors>
+                        <mct:TouchBehavior
+                            BindingContext="{Binding Source={x:Reference Page}, Path=BindingContext}"
+                            Command="{Binding IncreaseTouchCountCommand}"
+                            HoveredBackgroundColor="{StaticResource Gray900}"
+                            HoveredScale="1.2"
+                            LongPressCommand="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseLongPressCountCommand}" />
+                    </HorizontalStackLayout.Behaviors>
+                    <Label
+                        FontSize="Large"
+                        Text="TITLE"
+                        TextColor="White"
+                        VerticalOptions="Start" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
 
-            <Label Style="{StaticResource SectionHeader}" Text="Color | Rotation | Animated" />
+            <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
+                <Label Style="{StaticResource SectionHeader}" Text="Color | Rotation | Animated" />
 
-            <HorizontalStackLayout
-                Padding="20"
-                BackgroundColor="Gold"
-                HorizontalOptions="CenterAndExpand">
+                <HorizontalStackLayout
+                    Padding="20"
+                    BackgroundColor="Gold"
+                    HorizontalOptions="CenterAndExpand">
 
                 <HorizontalStackLayout.Behaviors>
                     <mct:TouchBehavior
@@ -109,13 +133,14 @@
                         PressedBackgroundColor="Orange"
                         PressedRotation="15" />
 
-                </HorizontalStackLayout.Behaviors>
+                    </HorizontalStackLayout.Behaviors>
 
-                <Label
-                    FontSize="Large"
-                    Text="TITLE"
-                    TextColor="White" />
-            </HorizontalStackLayout>
+                    <Label
+                        FontSize="Large"
+                        Text="TITLE"
+                        TextColor="White" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
 
             <Label Style="{StaticResource SectionHeader}" Text="Image | Native" />
             <Border StrokeThickness="1">
@@ -130,7 +155,8 @@
                 </Image>
             </Border>
 
-            <Label Style="{StaticResource SectionHeader}" Text="Nested effect" />
+            <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
+                <Label Style="{StaticResource SectionHeader}" Text="Nested effect" />
 
             <ContentView
                 Padding="50"
@@ -144,19 +170,30 @@
                 </ContentView.Behaviors>
 
                 <ContentView
-                    BackgroundColor="Red"
-                    HeightRequest="100"
+                    Padding="50"
+                    Background="Yellow"
+                    HeightRequest="200"
                     HorizontalOptions="Center"
-                    VerticalOptions="Center"
-                    WidthRequest="100">
+                    WidthRequest="200">
                     <ContentView.Behaviors>
                         <mct:TouchBehavior
                             Command="{Binding ChildClickedCommand}" />
                     </ContentView.Behaviors>
-                </ContentView>
-            </ContentView>
 
-            <VerticalStackLayout Spacing="10">
+                    <ContentView
+                        BackgroundColor="Red"
+                        HeightRequest="100"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                        WidthRequest="100">
+                        <ContentView.Behaviors>
+                            <mct:TouchBehavior BindingContext="{Binding Source={x:Reference Page}, Path=BindingContext}" Command="{Binding ChildClickedCommand}" />
+                        </ContentView.Behaviors>
+                    </ContentView>
+                </ContentView>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
                 <Label Style="{StaticResource SectionHeader}" Text="Command with parameter example" />
 
                 <Picker x:Name="MonkeyPicker" Title="Pick a monkey">
@@ -196,7 +233,8 @@
                 </Border>
             </VerticalStackLayout>
 
-            <Label Style="{StaticResource SectionHeader}" Text="Input transparency for nested layouts" />
+            <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
+                <Label Style="{StaticResource SectionHeader}" Text="Input transparency for nested layouts" />
 
             <Border
                 Margin="20"
@@ -218,18 +256,34 @@
                 </Border.Behaviors>
                 <Grid
                     BackgroundColor="Transparent"
-                    ColumnDefinitions="Auto, *"
-                    ColumnSpacing="10">
-                    <Ellipse
-                        BackgroundColor="#A4CF5B"
-                        HeightRequest="40"
-                        WidthRequest="40" />
-                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
-                        <Label FontSize="20" Text="Lorem Ipsum" />
-                        <Label FontSize="12" Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam gravida, sapien in volutpat ornare, magna dui condimentum dui, quis egestas tellus leo non nulla. Quisque sit amet neque dapibus, congue justo non, dapibus dolor." />
-                    </VerticalStackLayout>
-                </Grid>
-            </Border>
+                    StrokeShape="RoundRectangle, 10"
+                    StrokeThickness="0">
+                    <Border.Behaviors>
+                        <mct:TouchBehavior
+                            BindingContext="{Binding Source={x:Reference Page}, Path=BindingContext}"
+                            Command="{Binding IncreaseTouchCountCommand}"
+                            DefaultAnimationDuration="150"
+                            DefaultAnimationEasing="{x:Static Easing.CubicInOut}"
+                            PressedBackgroundColor="LightGray"
+                            PressedOpacity="0.8"
+                            PressedScale="0.9"
+                            ShouldMakeChildrenInputTransparent="True" />
+                    </Border.Behaviors>
+                    <Grid
+                        BackgroundColor="Transparent"
+                        ColumnDefinitions="Auto, *"
+                        ColumnSpacing="10">
+                        <Ellipse
+                            BackgroundColor="#A4CF5B"
+                            HeightRequest="40"
+                            WidthRequest="40" />
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                            <Label FontSize="20" Text="Lorem Ipsum" />
+                            <Label FontSize="12" Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam gravida, sapien in volutpat ornare, magna dui condimentum dui, quis egestas tellus leo non nulla. Quisque sit amet neque dapibus, congue justo non, dapibus dolor." />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+            </VerticalStackLayout>
         </VerticalStackLayout>
     </ScrollView>
 </pages:BasePage>
