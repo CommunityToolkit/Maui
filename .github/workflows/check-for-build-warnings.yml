@@ -18,4 +18,4 @@ jobs:
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         docs_path: "docs"
-        url_base_path: "dotnet/maui"
+        url_base_path: "dotnet/communitytoolkit"
