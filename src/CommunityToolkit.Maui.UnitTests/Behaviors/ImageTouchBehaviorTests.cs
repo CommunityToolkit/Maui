@@ -7,7 +7,7 @@ using View = Microsoft.Maui.Controls.View;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class ImageTouchBehaviorTests : BaseTest
+public class ImageTouchBehaviorTests : BaseBehaviorTest<ImageTouchBehavior, VisualElement>
 {
 	readonly ImageTouchBehavior imageTouchBehavior = new();
 

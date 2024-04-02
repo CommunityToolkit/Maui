@@ -6,7 +6,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class ProgressBarAnimationBehaviorTests : BaseTest
+public class ProgressBarAnimationBehaviorTests : BaseBehaviorTest<ProgressBarAnimationBehavior, ProgressBar>
 {
 	public static readonly FrozenSet<object[]> ValidData = new[]
 	{

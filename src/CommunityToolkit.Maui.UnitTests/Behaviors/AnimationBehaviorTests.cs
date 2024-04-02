@@ -7,7 +7,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class AnimationBehaviorTests : BaseTest
+public class AnimationBehaviorTests : BaseBehaviorTest<AnimationBehavior, VisualElement>
 {
 	[Fact]
 	public void TapGestureRecognizerAttachedWhenNoEventSpecified()

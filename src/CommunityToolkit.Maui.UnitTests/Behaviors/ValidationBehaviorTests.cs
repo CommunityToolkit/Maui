@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class ValidationBehaviorTests : BaseTest
+public class ValidationBehaviorTests : BaseBehaviorTest<ValidationBehavior, VisualElement>
 {
 	[Fact]
 	public void ValidateOnValueChanged()

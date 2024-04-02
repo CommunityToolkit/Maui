@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class MaskedBehaviorTests : BaseTest
+public class MaskedBehaviorTests : BaseBehaviorTest<MaskedBehavior, InputView>
 {
 	[Theory]
 	[InlineData(null, null, null)]

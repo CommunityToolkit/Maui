@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class TouchBehaviorTests : BaseTest
+public class TouchBehaviorTests : BaseBehaviorTest<TouchBehavior, VisualElement>
 {
 	readonly TouchBehavior touchBehavior = new();
 
