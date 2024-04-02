@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// <summary>
 /// A behavior that selects all text when the view is focused.
 /// </summary>
-public class SelectAllTextBehavior : PlatformBehavior<InputView>
+public class SelectAllTextBehavior : BasePlatformBehavior<InputView>
 {
 	/// <inheritdoc/>
 	protected override void OnAttachedTo(InputView bindable, UIView platformView) =>

@@ -65,7 +65,7 @@ public class MultiValidationBehavior : ValidationBehavior
 			return c.ValidateNestedAsync(token).AsTask();
 		})).ConfigureAwait(false);
 
-		var errors = children.Where(c => c.IsNotValid).Select(GetError);
+		var errors = children.Where(c => c.IsNotValid).Select(GetError).ToList();
 
 		if (!errors.Any())
 		{
@@ -75,7 +75,7 @@ public class MultiValidationBehavior : ValidationBehavior
 
 		if (!Errors?.SequenceEqual(errors) ?? true)
 		{
-			Errors = errors.ToList();
+			Errors = errors;
 		}
 
 		return false;
@@ -83,11 +83,11 @@ public class MultiValidationBehavior : ValidationBehavior
 
 	void OnChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 	{
-		if (e.NewItems != null)
+		if (e.NewItems is not null)
 		{
 			foreach (var child in e.NewItems.OfType<ValidationBehavior>())
 			{
-				child.TrySetBindingContext(new Binding
+				((ICommunityToolkitBehavior<VisualElement>)child).TrySetBindingContext(this, new Binding
 				{
 					Path = BindingContextProperty.PropertyName,
 					Source = this
@@ -95,11 +95,11 @@ public class MultiValidationBehavior : ValidationBehavior
 			}
 		}
 
-		if (e.OldItems != null)
+		if (e.OldItems is not null)
 		{
 			foreach (var child in e.OldItems.OfType<ValidationBehavior>())
 			{
-				child.TryRemoveBindingContext();
+				((ICommunityToolkitBehavior<VisualElement>)child).TryRemoveBindingContext(this);
 			}
 		}
 	}

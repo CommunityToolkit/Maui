@@ -26,7 +26,7 @@ public enum StatusBarApplyOn
 /// <see cref="PlatformBehavior{TView,TPlatformView}"/> that controls the Status bar color
 /// </summary>
 [UnsupportedOSPlatform("Windows"), UnsupportedOSPlatform("MacCatalyst"), UnsupportedOSPlatform("MacOS"), UnsupportedOSPlatform("Tizen")]
-public class StatusBarBehavior : PlatformBehavior<Page>
+public class StatusBarBehavior : BasePlatformBehavior<Page>
 {
 	/// <summary>
 	/// <see cref="BindableProperty"/> that manages the StatusBarColor property.

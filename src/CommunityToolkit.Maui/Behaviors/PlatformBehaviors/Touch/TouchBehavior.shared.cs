@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// <summary>
 /// <see cref="PlatformBehavior{TView,TPlatformView}"/> that adds additional actions for user interactions 
 /// </summary>
-public partial class TouchBehavior : PlatformBehavior<VisualElement>
+public partial class TouchBehavior : BasePlatformBehavior<VisualElement>
 {
 	/// <summary>
 	/// The visual state for when the <see cref="TouchState"/> is <see cref="TouchState.Default"/>.
