@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class ImpliedOrderGridBehaviorTests : BaseBehaviorTest<ImpliedOrderGridBehavior, Grid>
+public class ImpliedOrderGridBehaviorTests() : BaseBehaviorTest<ImpliedOrderGridBehavior, Grid>(new ImpliedOrderGridBehavior(), new Grid())
 {
 	[Fact]
 	public void CorrectRowColumnAssignment()

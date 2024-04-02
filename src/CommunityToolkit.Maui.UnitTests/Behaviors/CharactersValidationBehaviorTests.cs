@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class CharactersValidationBehaviorTests : BaseBehaviorTest<CharactersValidationBehavior, VisualElement>
+public class CharactersValidationBehaviorTests() : BaseBehaviorTest<CharactersValidationBehavior, VisualElement>(new CharactersValidationBehavior(), new View())
 {
 	[Theory]
 	[InlineData(CharacterType.Any, 1, 2, "A", true)]

@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class EmailValidationBehaviorTests : BaseBehaviorTest<EmailValidationBehavior, VisualElement>
+public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBehavior, VisualElement>(new EmailValidationBehavior(), new View())
 {
 	public static IReadOnlyList<object[]> NonDefaultKeyboardData { get; } = new[]
 	{

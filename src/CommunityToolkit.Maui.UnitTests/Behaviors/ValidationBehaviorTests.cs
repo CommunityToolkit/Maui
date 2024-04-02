@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class ValidationBehaviorTests : BaseBehaviorTest<ValidationBehavior, VisualElement>
+public class ValidationBehaviorTests() : BaseBehaviorTest<ValidationBehavior, VisualElement>(new MockValidationBehavior(), new View())
 {
 	[Fact]
 	public void ValidateOnValueChanged()
@@ -230,21 +230,5 @@ public class ValidationBehaviorTests : BaseBehaviorTest<ValidationBehavior, Visu
 		view.Behaviors.Remove(behavior);
 		
 		Assert.Empty(view.Behaviors);
-	}
-
-	class MockValidationBehavior : ValidationBehavior<string>
-	{
-		public string? ExpectedValue { get; init; }
-		public bool SimulateValidationDelay { get; init; } = false;
-
-		protected override async ValueTask<bool> ValidateAsync(string? value, CancellationToken token)
-		{
-			if (SimulateValidationDelay)
-			{
-				await Task.Delay(500, token);
-			}
-
-			return value == ExpectedValue;
-		}
 	}
 }

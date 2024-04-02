@@ -16,27 +16,27 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 
 	internal bool TrySetBindingContext(in BindableObject bindable, in Binding binding)
 	{
-		if (bindable.BindingContext is null)
+		if (bindable.IsSet(BindableObject.BindingContextProperty))
 		{
-			bindable.SetBinding(BindableObject.BindingContextProperty, binding);
+			return false;
+		}
+
+		bindable.SetBinding(BindableObject.BindingContextProperty, binding);
+		return true;
+
+	}
+
+	internal bool TryRemoveBindingContext(in BindableObject bindable)
+	{
+		if (bindable.IsSet(BindableObject.BindingContextProperty))
+		{
+			bindable.RemoveBinding(BindableObject.BindingContextProperty);
 			return true;
 		}
 
 		return false;
 	}
 
-	internal bool TryRemoveBindingContext(in BindableObject bindable)
-	{
-		if (bindable.BindingContext is null)
-		{
-			return false;
-		}
-
-		bindable.RemoveBinding(BindableObject.BindingContextProperty);
-
-		return true;
-	}
-	
 	[MemberNotNull(nameof(View))]
 	internal void AssignViewAndBingingContext(TView bindable)
 	{
@@ -49,7 +49,7 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 			Source = bindable
 		});
 	}
-	
+
 	internal void UnassignViewAndBingingContext(TView bindable)
 	{
 		TryRemoveBindingContext(bindable);
@@ -58,7 +58,7 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 
 		View = null;
 	}
-	
+
 	internal void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (sender is not TView view)
