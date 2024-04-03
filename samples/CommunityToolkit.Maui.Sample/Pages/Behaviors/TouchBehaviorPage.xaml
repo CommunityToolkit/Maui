@@ -7,7 +7,6 @@
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
-    x:Name="Page"
     x:DataType="vm:TouchBehaviorViewModel"
     x:TypeArguments="vm:TouchBehaviorViewModel">
 
@@ -33,7 +32,7 @@
             <Image HeightRequest="100" WidthRequest="100">
                 <Image.Behaviors>
                     <mct:ImageTouchBehavior
-                        Command="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseTouchCountCommand}"
+                        Command="{Binding IncreaseTouchCountCommand}"
                         DefaultImageSource="button.png"
                         PressedImageSource="button_pressed.png" />
                 </Image.Behaviors>
@@ -45,7 +44,7 @@
                     <mct:TouchBehavior
                         DefaultAnimationDuration="250"
                         DefaultAnimationEasing="{x:Static Easing.CubicInOut}"
-                        Command="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseTouchCountCommand}"
+                        Command="{Binding IncreaseTouchCountCommand}"
                         PressedOpacity="0.6"
                         PressedScale="0.8" />
                 </HorizontalStackLayout.Behaviors>
@@ -74,10 +73,10 @@
                 HorizontalOptions="CenterAndExpand">
                 <HorizontalStackLayout.Behaviors>
                     <mct:TouchBehavior
-                        Command="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseTouchCountCommand}"
+                        Command="{Binding IncreaseTouchCountCommand}"
                         HoveredBackgroundColor="{StaticResource Gray900}"
                         HoveredScale="1.2"
-                        LongPressCommand="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseLongPressCountCommand}" />
+                        LongPressCommand="{Binding IncreaseLongPressCountCommand}" />
                 </HorizontalStackLayout.Behaviors>
                 <Label
                     FontSize="Large"
@@ -96,7 +95,7 @@
                 <HorizontalStackLayout.Behaviors>
                     <mct:TouchBehavior
                         DefaultAnimationDuration="500"
-                        Command="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseTouchCountCommand}"
+                        Command="{Binding IncreaseTouchCountCommand}"
                         DefaultBackgroundColor="Gold"
                         PressedBackgroundColor="Orange"
                         PressedRotation="15" />
@@ -117,7 +116,7 @@
                     WidthRequest="100">
                     <Image.Behaviors>
                         <mct:TouchBehavior
-                            Command="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseTouchCountCommand}" />
+                            Command="{Binding IncreaseTouchCountCommand}" />
                     </Image.Behaviors>
                 </Image>
             </Border>
@@ -132,7 +131,7 @@
                 WidthRequest="200">
                 <ContentView.Behaviors>
                     <mct:TouchBehavior
-                        Command="{Binding Source={x:Reference Page}, Path=BindingContext.ParentClickedCommand}"/>
+                        Command="{Binding ParentClickedCommand}"/>
                 </ContentView.Behaviors>
 
                 <ContentView
@@ -143,7 +142,7 @@
                     WidthRequest="100">
                     <ContentView.Behaviors>
                         <mct:TouchBehavior
-                            Command="{Binding Source={x:Reference Page}, Path=BindingContext.ChildClickedCommand}" />
+                            Command="{Binding ChildClickedCommand}" />
                     </ContentView.Behaviors>
                 </ContentView>
             </ContentView>
@@ -160,7 +159,7 @@
                     <mct:TouchBehavior
                         DefaultAnimationDuration="150"
                         DefaultAnimationEasing="{x:Static Easing.CubicInOut}"
-                        Command="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseTouchCountCommand}"
+                        Command="{Binding IncreaseTouchCountCommand}"
                         PressedBackgroundColor="LightGray"
                         PressedOpacity="0.8"
                         PressedScale="0.9"
