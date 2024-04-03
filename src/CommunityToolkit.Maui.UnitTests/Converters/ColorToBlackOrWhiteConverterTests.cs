@@ -5,8 +5,8 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToBlackOrWhiteConverterTests : BaseOneWayConverterTest<ColorToBlackOrWhiteConverter>
 {
-	public static IReadOnlyList<object[]> ColorToBlackOrWhiteData { get; } = new[]
-	{
+	public static IReadOnlyList<object[]> ColorToBlackOrWhiteData { get; } =
+	[
 		[Colors.Black, Colors.Black],
 		[Colors.DarkBlue, Colors.Black],
 		[Colors.DarkCyan, Colors.Black],
@@ -21,8 +21,8 @@ public class ColorToBlackOrWhiteConverterTests : BaseOneWayConverterTest<ColorTo
 		[Colors.Yellow, Colors.White],
 		[Colors.Pink, Colors.White],
 		[Colors.LightBlue, Colors.White],
-		new[] { Colors.Wheat, Colors.White }
-	};
+		[Colors.Wheat, Colors.White]
+	];
 
 	[Theory]
 	[MemberData(nameof(ColorToBlackOrWhiteData))]

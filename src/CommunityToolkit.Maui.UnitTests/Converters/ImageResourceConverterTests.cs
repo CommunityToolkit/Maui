@@ -12,12 +12,12 @@ public class ImageResourceConverterTests : BaseOneWayConverterTest<ImageResource
 		Application.Current = new MockApplication();
 	}
 
-	public static IReadOnlyList<object[]> NonStringData { get; } = new[]
-	{
+	public static IReadOnlyList<object[]> NonStringData { get; } =
+	[
 		[3], // primitive type
 		[DateTime.UtcNow], // Struct
-		new object[] { new() } // objects
-	};
+		[new()] // objects
+	];
 
 	protected override void Dispose(bool isDisposing)
 	{

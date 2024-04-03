@@ -5,8 +5,8 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToDegreeHueConverterTests : BaseOneWayConverterTest<ColorToDegreeHueConverter>
 {
-	public static readonly IReadOnlyList<object[]> ValidInputData = new[]
-	{
+	public static readonly IReadOnlyList<object[]> ValidInputData =
+	[
 		[0, 0, 0, 0, 0],
 		[0, 0, 0, 1, 0],
 		[0, 0, 1, 0, 240],
@@ -38,8 +38,8 @@ public class ColorToDegreeHueConverterTests : BaseOneWayConverterTest<ColorToDeg
 		[0.75, 1, 0.25, 1, 80],
 		[0.75, 1, 0.25, 0, 80],
 		[0.75, 0, 1, 1, 285],
-		new object[] { 0.75, 0, 1, 0, 285 },
-	};
+		[0.75, 0, 1, 0, 285],
+	];
 
 	[Theory]
 	[MemberData(nameof(ValidInputData))]

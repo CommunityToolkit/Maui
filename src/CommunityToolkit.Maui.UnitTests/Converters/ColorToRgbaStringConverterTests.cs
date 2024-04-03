@@ -5,8 +5,8 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToRgbaStringConverterTests : BaseConverterTest<ColorToRgbaStringConverter>
 {
-	public static readonly IReadOnlyList<object[]> ValidInputData = new[]
-	{
+	public static readonly IReadOnlyList<object[]> ValidInputData =
+	[
 		[int.MinValue, int.MinValue, int.MinValue, int.MinValue, "RGBA(0,0,0,0)"],
 		[int.MinValue, int.MinValue, int.MinValue, int.MaxValue, "RGBA(0,0,0,1)"],
 		[0, 0, 0, int.MinValue, "RGBA(0,0,0,0)"],
@@ -48,8 +48,8 @@ public class ColorToRgbaStringConverterTests : BaseConverterTest<ColorToRgbaStri
 		[0.75, 1, 0.25, 1, "RGBA(191,255,64,1)"],
 		[0.75, 1, 0.25, 0, "RGBA(191,255,64,0)"],
 		[0.75, 0, 1, 1, "RGBA(191,0,255,1)"],
-		new object[] { 0.75, 0, 1, 0, "RGBA(191,0,255,0)" },
-	};
+		[0.75, 0, 1, 0, "RGBA(191,0,255,0)"],
+	];
 
 	[Theory]
 	[MemberData(nameof(ValidInputData))]

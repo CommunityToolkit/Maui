@@ -5,8 +5,8 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToCmykaStringConverterTests : BaseOneWayConverterTest<ColorToCmykaStringConverter>
 {
-	public static readonly IReadOnlyList<object[]> ValidInputData = new[]
-	{
+	public static readonly IReadOnlyList<object[]> ValidInputData =
+	[
 		[int.MinValue, int.MinValue, int.MinValue, int.MinValue, "CMYKA(0%,0%,0%,100%,0)"],
 		[int.MinValue, int.MinValue, int.MinValue, int.MaxValue, "CMYKA(0%,0%,0%,100%,1)"],
 		[0, 0, 0, int.MinValue, "CMYKA(0%,0%,0%,100%,0)"],
@@ -48,8 +48,8 @@ public class ColorToCmykaStringConverterTests : BaseOneWayConverterTest<ColorToC
 		[0.75, 1, 0.25, 1, "CMYKA(25%,0%,75%,0%,1)"],
 		[0.75, 1, 0.25, 0, "CMYKA(25%,0%,75%,0%,0)"],
 		[0.75, 0, 1, 1, "CMYKA(25%,100%,0%,0%,1)"],
-		new object[] { 0.75, 0, 1, 0, "CMYKA(25%,100%,0%,0%,0)" },
-	};
+		[0.75, 0, 1, 0, "CMYKA(25%,100%,0%,0%,0)"],
+	];
 
 	[Theory]
 	[MemberData(nameof(ValidInputData))]

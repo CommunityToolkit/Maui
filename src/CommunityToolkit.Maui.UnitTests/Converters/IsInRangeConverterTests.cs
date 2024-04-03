@@ -11,8 +11,8 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 
 	public enum Days { Sun, Mon, Tue, Wed, Thu, Fri, Sat };
 
-	public static IReadOnlyList<object?[]> TestData { get; } = new[]
-	{
+	public static IReadOnlyList<object?[]> TestData { get; } =
+	[
 		// System.Byte
 		[Convert.ToByte('C'), Convert.ToByte('B'), Convert.ToByte('D'), TrueTestObject, FalseTestObject, TrueTestObject],
 		[Convert.ToByte('B'), Convert.ToByte('B'), Convert.ToByte('D'), TrueTestObject, FalseTestObject, TrueTestObject],
@@ -38,11 +38,11 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 		[new DateTime(2022, 01, 02), new DateTime(2022, 5, 5), new DateTime(2022, 12, 25), TrueTestObject, FalseTestObject, FalseTestObject],
 		[new DateTime(2022, 12, 26), new DateTime(2022, 5, 5), new DateTime(2022, 12, 25), TrueTestObject, FalseTestObject, FalseTestObject],
 		// System.DateTimeOffset
-		[new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(3,0,0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, TrueTestObject],
-		[new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4,0,0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, TrueTestObject],
-		[new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2,0,0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, TrueTestObject],
-		[new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(1,0,0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, FalseTestObject],
-		[new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(5,0,0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, FalseTestObject],
+		[new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(3, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, TrueTestObject],
+		[new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, TrueTestObject],
+		[new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, TrueTestObject],
+		[new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(1, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, FalseTestObject],
+		[new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(5, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, FalseTestObject],
 		// System.Decimal
 		[new decimal(037.73), new decimal(7.73), new decimal(73.37), TrueTestObject, FalseTestObject, TrueTestObject],
 		[new decimal(007.73), new decimal(7.73), new decimal(73.37), TrueTestObject, FalseTestObject, TrueTestObject],
@@ -170,12 +170,12 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 		[(UIntPtr)003, (UIntPtr)7, (UIntPtr)73, TrueTestObject, FalseTestObject, FalseTestObject],
 		[(UIntPtr)373, (UIntPtr)7, (UIntPtr)73, TrueTestObject, FalseTestObject, FalseTestObject],
 		//System.Version
-		[new Version(07, 37, 07, 03), new Version(3, 37, 3, 7), new Version(37, 7, 3 ,37), TrueTestObject, FalseTestObject, TrueTestObject],
+		[new Version(07, 37, 07, 03), new Version(3, 37, 3, 7), new Version(37, 7, 3, 37), TrueTestObject, FalseTestObject, TrueTestObject],
 		[new Version(03, 37, 03, 07), new Version(3, 37, 3, 7), new Version(37, 7, 3, 37), TrueTestObject, FalseTestObject, TrueTestObject],
 		[new Version(37, 07, 03, 37), new Version(3, 37, 3, 7), new Version(37, 7, 3, 37), TrueTestObject, FalseTestObject, TrueTestObject],
 		[new Version(03, 03, 07, 07), new Version(3, 37, 3, 7), new Version(37, 7, 3, 37), TrueTestObject, FalseTestObject, FalseTestObject],
-		new object?[] { new Version(73, 73, 37, 37), new Version(3, 37, 3, 7), new Version(37, 7, 3, 37), TrueTestObject, FalseTestObject, FalseTestObject },
-	};
+		[new Version(73, 73, 37, 37), new Version(3, 37, 3, 7), new Version(37, 7, 3, 37), TrueTestObject, FalseTestObject, FalseTestObject],
+	];
 
 	[Theory]
 	[InlineData(20d, "A", 'B', TrueTestObject, FalseTestObject)]

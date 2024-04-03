@@ -11,8 +11,8 @@ public class TextCaseConverterTests : BaseOneWayConverterTest<TextCaseConverter>
 	const string test = nameof(test);
 	const string t = nameof(t);
 
-	public static FrozenSet<object?[]> Data { get; } = new[]
-	{
+	public static IReadOnlyList<object?[]> Data { get; } =
+	[
 		[test, TextCaseType.Lower, test],
 		[test, TextCaseType.Upper, "TEST"],
 		[test, TextCaseType.None, test],
@@ -26,8 +26,8 @@ public class TextCaseConverterTests : BaseOneWayConverterTest<TextCaseConverter>
 		[MockEnum.Foo, TextCaseType.Lower, "foo"],
 		[MockEnum.Bar, TextCaseType.None, "Bar"],
 		[MockEnum.Baz, TextCaseType.Upper, "BAZ"],
-		new object?[] { new MockItem("Test Item", true), TextCaseType.Upper, "TEST ITEM IS COMPLETED" },
-	}.ToFrozenSet();
+		[new MockItem("Test Item", true), TextCaseType.Upper, "TEST ITEM IS COMPLETED"],
+	];
 
 	enum MockEnum { Foo, Bar, Baz }
 

@@ -22,8 +22,7 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 	[InlineData("(x + x) * x", 2d, 8d)]
 	[InlineData("3 + x * 2 / (1 - 5)^2", 4d, 3.5d)]
 	[InlineData("3 + 4 * 2 + cos(100 + x) / (1 - 5)^2 + pow(x0, 2)", 20d, 411.05088631065792d)]
-	public void MathExpressionConverter_ReturnsCorrectResult(
-		string expression, double x, double expectedResult)
+	public void MathExpressionConverter_ReturnsCorrectResult(string expression, double x, double expectedResult)
 	{
 		var mathExpressionConverter = new MathExpressionConverter();
 

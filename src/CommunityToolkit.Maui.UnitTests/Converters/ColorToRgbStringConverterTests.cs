@@ -6,8 +6,8 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToRgbStringConverterTests : BaseConverterTest<ColorToRgbStringConverter>
 {
-	public static readonly IReadOnlyList<object[]> ValidInputData = new[]
-	{
+	public static readonly IReadOnlyList<object[]> ValidInputData =
+	[
 		[int.MinValue, int.MinValue, int.MinValue, int.MinValue, "RGB(0,0,0)"],
 		[0, 0, 0, int.MinValue, "RGB(0,0,0)"],
 		[0, 0, 0, -0.5, "RGB(0,0,0)"],
@@ -48,8 +48,8 @@ public class ColorToRgbStringConverterTests : BaseConverterTest<ColorToRgbString
 		[0.75, 1, 0.25, 1, "RGB(191,255,64)"],
 		[0.75, 1, 0.25, 0, "RGB(191,255,64)"],
 		[0.75, 0, 1, 1, "RGB(191,0,255)"],
-		new object[] { 0.75, 0, 1, 0, "RGB(191,0,255)" },
-	};
+		[0.75, 0, 1, 0, "RGB(191,0,255)"],
+	];
 
 	[Theory]
 	[MemberData(nameof(ValidInputData))]

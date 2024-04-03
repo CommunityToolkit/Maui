@@ -6,8 +6,8 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class StringToListConverterTests : BaseOneWayConverterTest<StringToListConverter>
 {
-	public static FrozenSet<object?[]> ListData { get; } = new[]
-	{
+	public static IReadOnlyList<object?[]> ListData { get; } =
+	[
 		["A,B.C;D", new[] { ",", ".", ";" }, new[] { "A", "B", "C", "D" }],
 		["A+_+B+_+C", "+_+", new[] { "A", "B", "C" }],
 		["A,,C", ",", new[] { "A", string.Empty, "C" }],
@@ -15,8 +15,8 @@ public class StringToListConverterTests : BaseOneWayConverterTest<StringToListCo
 		["A", ":-:", new[] { "A" }],
 		[string.Empty, ",", new[] { string.Empty }],
 		[null, ",", Array.Empty<string>()],
-		new object?[] { "ABC", null, new[] { "ABC" } },
-	}.ToFrozenSet();
+		["ABC", null, new[] { "ABC" }],
+	];
 
 	[Theory]
 	[MemberData(nameof(ListData))]

@@ -15,8 +15,8 @@ public class DateTimeOffsetConverterTests : BaseConverterTest<DateTimeOffsetConv
 	static readonly DateTimeOffset testDateTimeOffsetLocal = new(2020, 08, 25, 13, 37, 00, DateTimeOffset.Now.Offset);
 	static readonly DateTimeOffset testDateTimeOffsetUtc = new(2020, 08, 25, 13, 37, 00, DateTimeOffset.UtcNow.Offset);
 
-	public static IReadOnlyList<object[]> Data { get; } = new[]
-	{
+	public static IReadOnlyList<object[]> Data { get; } =
+	[
 		[testDateTimeOffsetNow, testDateTimeNow],
 		[DateTimeOffset.MinValue, DateTime.MinValue],
 		[DateTimeOffset.MaxValue, DateTime.MaxValue],
@@ -28,11 +28,11 @@ public class DateTimeOffsetConverterTests : BaseConverterTest<DateTimeOffsetConv
 		[DateTimeOffset.MaxValue, DateTime.MaxValue, CultureInfo.CurrentCulture],
 		[testDateTimeOffsetLocal, testDateTimeLocal, CultureInfo.CurrentCulture],
 		[testDateTimeOffsetUtc, testDateTimeUtc, CultureInfo.CurrentCulture],
-		new object[] { testDateTimeOffsetUtc, testDateTimeUnspecified, CultureInfo.CurrentCulture },
-	};
+		[testDateTimeOffsetUtc, testDateTimeUnspecified, CultureInfo.CurrentCulture],
+	];
 
-	public static IReadOnlyList<object[]> DataReverse { get; } = new[]
-	{
+	public static IReadOnlyList<object[]> DataReverse { get; } =
+	[
 		[testDateTimeNow, testDateTimeOffsetNow],
 		[DateTime.MinValue, DateTimeOffset.MinValue],
 		[DateTime.MaxValue, DateTimeOffset.MaxValue],
@@ -44,8 +44,8 @@ public class DateTimeOffsetConverterTests : BaseConverterTest<DateTimeOffsetConv
 		[DateTime.MaxValue, DateTimeOffset.MaxValue, CultureInfo.CurrentCulture],
 		[testDateTimeLocal, testDateTimeOffsetLocal, CultureInfo.CurrentCulture],
 		[testDateTimeUtc, testDateTimeOffsetUtc, CultureInfo.CurrentCulture],
-		new object[] { testDateTimeUnspecified, testDateTimeOffsetUtc, CultureInfo.CurrentCulture },
-	};
+		[testDateTimeUnspecified, testDateTimeOffsetUtc, CultureInfo.CurrentCulture],
+	];
 
 	[Theory]
 	[MemberData(nameof(Data))]

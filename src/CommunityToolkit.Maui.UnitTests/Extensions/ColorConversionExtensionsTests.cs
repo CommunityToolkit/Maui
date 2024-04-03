@@ -7,8 +7,8 @@ public class ColorConversionExtensionsTests : BaseTest
 {
 	const double tolerance = 0.000001;
 
-	public static IReadOnlyList<object[]> ColorTestData { get; } = new[]
-	{
+	public static IReadOnlyList<object[]> ColorTestData { get; } =
+	[
 		[new ColorTestDefinition((float)0.5019608, 0, 0, 0, 128, 0, 0, 0, (float)0.498039186000824, 0, 1, 1, (float)0.498039215686, 1, 1, (float)0.167320261, true, true, Colors.Black, Colors.White)],
 		[new ColorTestDefinition((float)0.54509807, 0, 0, 0, 139, 0, 0, 0, (float)0.45490193367004395, 0, 1, 1, (float)0.454901961, 1, 1, (float)0.181699346, true, true, Colors.Black, Colors.White)],
 		[new ColorTestDefinition((float)0.64705884, (float)0.16470589, (float)0.16470589, 0, 165, 42, 42, 0, (float)0.3529411554336548, 0, (float)0.7454545689023223, (float)0.7454545689023223, (float)0.352941176, (float)0.835294118, (float)0.835294118, (float)0.325490196, true, true, Colors.Black, Colors.White)],
@@ -286,8 +286,8 @@ public class ColorConversionExtensionsTests : BaseTest
 		[new ColorTestDefinition((float)0.827451, (float)0.827451, (float)0.827451, (float)0.9882353, 211, 211, 211, 252, (float)0.17254900932312012, 0, 0, 0, (float)0.17254902, (float)0.17254902, (float)0.17254902, (float)0.82745098, false, false, Colors.White, Colors.Black)],
 		[new ColorTestDefinition((float)0.8627451, (float)0.8627451, (float)0.8627451, (float)0.627451, 220, 220, 220, 160, (float)0.13725489377975464, 0, 0, 0, (float)0.137254902, (float)0.137254902, (float)0.137254902, (float)0.862745098, false, false, Colors.White, Colors.Black)],
 		[new ColorTestDefinition((float)0.9607843, (float)0.9607843, (float)0.9607843, (float)0.69411767, 245, 245, 245, 177, (float)0.039215683937072754, 0, 0, 0, (float)0.039215686, (float)0.039215686, (float)0.039215686, (float)0.960784314, false, false, Colors.White, Colors.Black)],
-		new object[] { new ColorTestDefinition(1, 1, 1, (float)0.84705883, 255, 255, 255, 216, 0, 0, 0, 0, 0, 0, 0, 1, false, false, Colors.White, Colors.Black) },
-	};
+		[new ColorTestDefinition(1, 1, 1, (float)0.84705883, 255, 255, 255, 216, 0, 0, 0, 0, 0, 0, 0, 1, false, false, Colors.White, Colors.Black)],
+	];
 
 	[Theory]
 	[MemberData(nameof(ColorTestData))]

@@ -5,15 +5,15 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ListToStringConverterTests : BaseOneWayConverterTest<ListToStringConverter>
 {
-	public static IReadOnlyList<object?[]> TestData { get; } = new[]
-	{
+	public static IReadOnlyList<object?[]> TestData { get; } =
+	[
 		[new[] { "A", "B", "C" }, "+_+", "A+_+B+_+C"],
 		[new[] { "A", string.Empty, "C" }, ",", "A,C"],
 		[new[] { "A", null, "C" }, ",", "A,C"],
 		[new[] { "A" }, ":-:", "A"],
 		[Array.Empty<string>(), ",", string.Empty],
-		new object?[] { new[] { "A", "B", "C" }, null, "ABC" },
-	};
+		[new[] { "A", "B", "C" }, null, "ABC"],
+	];
 
 	[Theory]
 	[MemberData(nameof(TestData))]

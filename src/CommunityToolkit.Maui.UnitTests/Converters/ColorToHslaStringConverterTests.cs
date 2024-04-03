@@ -5,8 +5,8 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToHslaStringConverterTests : BaseOneWayConverterTest<ColorToHslaStringConverter>
 {
-	public static readonly IReadOnlyList<object[]> ValidInputData = new[]
-	{
+	public static readonly IReadOnlyList<object[]> ValidInputData =
+	[
 		[int.MinValue, int.MinValue, int.MinValue, int.MinValue, "HSLA(0,0%,0%,0)"],
 		[0, 0, 0, int.MinValue, "HSLA(0,0%,0%,0)"],
 		[0, 0, 0, -0.5, "HSLA(0,0%,0%,0)"],
@@ -47,8 +47,8 @@ public class ColorToHslaStringConverterTests : BaseOneWayConverterTest<ColorToHs
 		[0.75, 1, 0.25, 1, "HSLA(80,100%,62%,1)"],
 		[0.75, 1, 0.25, 0, "HSLA(80,100%,62%,0)"],
 		[0.75, 0, 1, 1, "HSLA(285,100%,50%,1)"],
-		new object[] { 0.75, 0, 1, 0, "HSLA(285,100%,50%,0)" },
-	};
+		[0.75, 0, 1, 0, "HSLA(285,100%,50%,0)"],
+	];
 
 	[Theory]
 	[MemberData(nameof(ValidInputData))]

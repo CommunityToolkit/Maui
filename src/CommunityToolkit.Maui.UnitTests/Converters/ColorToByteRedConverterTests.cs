@@ -5,8 +5,8 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToByteRedConverterTests : BaseOneWayConverterTest<ColorToByteRedConverter>
 {
-	public static readonly IReadOnlyList<object[]> ValidInputData = new[]
-	{
+	public static readonly IReadOnlyList<object[]> ValidInputData =
+	[
 		[float.MinValue, (byte)0],
 		[-0.01f, (byte)0],
 		[-0f, (byte)0],
@@ -16,8 +16,8 @@ public class ColorToByteRedConverterTests : BaseOneWayConverterTest<ColorToByteR
 		[0.75f, (byte)191],
 		[1f, (byte)255],
 		[1.001f, (byte)255],
-		new object[] { float.MaxValue, (byte)255 },
-	};
+		[float.MaxValue, (byte)255],
+	];
 
 	[Theory]
 	[MemberData(nameof(ValidInputData))]

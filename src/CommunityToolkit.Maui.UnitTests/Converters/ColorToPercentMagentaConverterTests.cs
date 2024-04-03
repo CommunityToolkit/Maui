@@ -5,8 +5,8 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToPercentMagentaConverterTests : BaseOneWayConverterTest<ColorToPercentMagentaConverter>
 {
-	public static readonly IReadOnlyList<object[]> ValidInputData = new[]
-	{
+	public static readonly IReadOnlyList<object[]> ValidInputData =
+	[
 		[0, 0, 0, 0, 0],
 		[0, 0, 0, 1, 0],
 		[0, 0, 1, 0, 1],
@@ -38,8 +38,8 @@ public class ColorToPercentMagentaConverterTests : BaseOneWayConverterTest<Color
 		[0.75, 1, 0.25, 1, 0],
 		[0.75, 1, 0.25, 0, 0],
 		[0.75, 0, 1, 1, 1],
-		new object[] { 0.75, 0, 1, 0, 1 },
-	};
+		[0.75, 0, 1, 0, 1],
+	];
 
 	[Theory]
 	[MemberData(nameof(ValidInputData))]

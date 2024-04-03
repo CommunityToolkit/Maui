@@ -5,10 +5,10 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToGrayScaleColorConverterTests : BaseOneWayConverterTest<ColorToGrayScaleColorConverter>
 {
-	public static IReadOnlyList<object[]> ColorToGrayScaleColorData { get; } = new[]
-	{
+	public static IReadOnlyList<object[]> ColorToGrayScaleColorData { get; } =
+	[
 		[Colors.White, Colors.White],
-		[Colors.Yellow, new Color(2f/3f, 2f/3f, 2f/3f, 1)],
+		[Colors.Yellow, new Color(2f / 3f, 2f / 3f, 2f / 3f, 1)],
 		[Colors.Pink, new Color(0.8496732f, 0.8496732f, 0.8496732f, 1)],
 		[Colors.LightBlue, new Color(0.8091503f, 0.8091503f, 0.8091503f, 1)],
 		[Colors.Wheat, new Color(0.84444445f, 0.84444445f, 0.84444445f, 1)],
@@ -21,8 +21,8 @@ public class ColorToGrayScaleColorConverterTests : BaseOneWayConverterTest<Color
 		[Colors.Transparent, Colors.Black],
 		[Colors.DarkSalmon, new Color(0.66013074f, 0.66013074f, 0.66013074f, 1)],
 		[Colors.DarkOrchid, new Color(0.5320262f, 0.5320262f, 0.5320262f, 1)],
-		new[] { Colors.DarkGrey, new Color(0.6627451f, 0.6627451f, 0.6627451f, 1) }
-	};
+		[Colors.DarkGrey, new Color(0.6627451f, 0.6627451f, 0.6627451f, 1)]
+	];
 
 	[Theory]
 	[MemberData(nameof(ColorToGrayScaleColorData))]

@@ -5,8 +5,8 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToHexRgbStringConverterTestsTests : BaseConverterTest<ColorToHexRgbStringConverter>
 {
-	public static readonly IReadOnlyList<object[]> ValidInputData = new[]
-	{
+	public static readonly IReadOnlyList<object[]> ValidInputData =
+	[
 		[int.MinValue, int.MinValue, int.MinValue, int.MinValue, "#00000000"],
 		[int.MinValue, int.MinValue, int.MinValue, int.MaxValue, "#000000"],
 		[0, 0, 0, int.MinValue, "#00000000"],
@@ -48,8 +48,8 @@ public class ColorToHexRgbStringConverterTestsTests : BaseConverterTest<ColorToH
 		[0.75, 1, 0.25, 1, "#BFFF3F"],
 		[0.75, 1, 0.25, 0, "#BFFF3F00"],
 		[0.75, 0, 1, 1, "#BF00FF"],
-		new object[] { 0.75, 0, 1, 0, "#BF00FF00" },
-	};
+		[0.75, 0, 1, 0, "#BF00FF00"],
+	];
 
 	[Theory]
 	[MemberData(nameof(ValidInputData))]
