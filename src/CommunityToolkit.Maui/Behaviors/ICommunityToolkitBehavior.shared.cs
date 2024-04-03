@@ -75,7 +75,7 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 	/// </summary>
 	/// <param name="sender"><see cref="Behavior"/></param>
 	/// <param name="e"><see cref="PropertyChangedEventArgs"/> </param>
-	/// <exception cref="ArgumentException">Throws when <param name="sender"/> is not of type <see cref="TView"/></exception>
+	/// <exception cref="ArgumentException">Throws when <paramref name="sender"/> is not of type <typeparamref name="TView"/></exception>
 	protected void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (sender is not TView view)
