@@ -29,7 +29,7 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 		behavior.SetBinding(BindableObject.BindingContextProperty, new Binding
 		{
 			Source = View,
-			Path = nameof(BindableObject.BindingContext)
+			Path = BindableObject.BindingContextProperty.PropertyName
 		});
 
 		return true;
