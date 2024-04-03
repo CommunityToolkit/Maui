@@ -22,7 +22,10 @@ namespace CommunityToolkit.Maui.Behaviors;
 public abstract class BasePlatformBehavior<TView> : BasePlatformBehavior<TView, PlatformView>
 	where TView : Element
 {
-
+	private protected BasePlatformBehavior()
+	{
+		
+	}
 }
 
 /// <summary>
@@ -34,6 +37,11 @@ public abstract class BasePlatformBehavior<TView, TPlatformView> : PlatformBehav
 	where TView : Element
 	where TPlatformView : class
 {
+	private protected BasePlatformBehavior()
+	{
+		
+	}
+	
 	/// <summary>
 	/// View used by the Behavior
 	/// </summary>
