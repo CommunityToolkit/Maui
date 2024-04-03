@@ -52,6 +52,7 @@ public abstract class BaseBehavior<TView> : Behavior<TView>, ICommunityToolkitBe
 	/// <param name="property"></param>
 	/// <param name="defaultBinding"></param>
 	/// <returns></returns>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	[Obsolete($"{nameof(IsBound)} is no longer used by {nameof(CommunityToolkit)}.{nameof(CommunityToolkit.Maui)} and will be removed in a future release")]
 	protected bool IsBound(BindableProperty property, BindingBase? defaultBinding = null)
 	{
