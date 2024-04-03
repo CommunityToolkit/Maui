@@ -20,7 +20,7 @@ public partial class TouchBehavior
 	protected override void OnAttachedTo(VisualElement bindable, UIView platformView)
 	{
 		base.OnAttachedTo(bindable, platformView);
-		
+
 		Element = bindable;
 
 		touchGesture = new TouchUITapGestureRecognizer(this);
@@ -50,7 +50,7 @@ public partial class TouchBehavior
 	protected override void OnDetachedFrom(VisualElement bindable, UIView platformView)
 	{
 		base.OnDetachedFrom(bindable, platformView);
-		
+
 		if (((platformView as IVisualNativeElementRenderer)?.Control ?? platformView) is UIButton button)
 		{
 			button.AllTouchEvents -= HandleAllTouchEvents;

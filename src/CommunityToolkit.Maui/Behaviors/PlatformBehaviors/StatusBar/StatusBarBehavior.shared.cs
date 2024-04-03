@@ -112,7 +112,7 @@ public class StatusBarBehavior : BasePlatformBehavior<Page>
 		bindable.SizeChanged -= OnPageSizeChanged;
 #endif
 		base.OnDetachedFrom(bindable, platformView);
-		
+
 		bindable.NavigatedTo -= OnPageNavigatedTo;
 	}
 

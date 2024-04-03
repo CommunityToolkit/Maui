@@ -59,7 +59,7 @@ public abstract partial class BasePlatformBehavior<TView, TPlatformView> : Platf
 	protected override void OnAttachedTo(TView bindable, TPlatformView platformView)
 	{
 		base.OnAttachedTo(bindable, platformView);
-	
+
 		((ICommunityToolkitBehavior<TView>)this).AssignViewAndBingingContext(bindable);
 	}
 

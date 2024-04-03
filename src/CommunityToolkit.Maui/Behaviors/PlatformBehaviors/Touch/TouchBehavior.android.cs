@@ -39,7 +39,7 @@ public partial class TouchBehavior
 	protected override void OnAttachedTo(VisualElement bindable, AView platformView)
 	{
 		base.OnAttachedTo(bindable, platformView);
-		
+
 		Element = bindable;
 		view = platformView;
 		viewGroup = Microsoft.Maui.Platform.ViewExtensions.GetParentOfType<ViewGroup>(platformView);
@@ -72,7 +72,7 @@ public partial class TouchBehavior
 	protected override void OnDetachedFrom(VisualElement bindable, AView platformView)
 	{
 		base.OnDetachedFrom(bindable, platformView);
-		
+
 		view = platformView;
 
 		if (Element is null)

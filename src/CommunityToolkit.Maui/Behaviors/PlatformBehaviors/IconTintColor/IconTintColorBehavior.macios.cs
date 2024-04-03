@@ -10,7 +10,7 @@ public partial class IconTintColorBehavior
 	protected override void OnAttachedTo(View bindable, UIView platformView)
 	{
 		base.OnAttachedTo(bindable, platformView);
-		
+
 		ApplyTintColor(platformView, bindable, TintColor);
 
 		bindable.PropertyChanged += OnElementPropertyChanged;
@@ -22,12 +22,12 @@ public partial class IconTintColorBehavior
 			}
 		};
 	}
-	
+
 	/// <inheritdoc/>
 	protected override void OnDetachedFrom(View bindable, UIView platformView)
 	{
 		base.OnDetachedFrom(bindable, platformView);
-		
+
 		bindable.PropertyChanged -= OnElementPropertyChanged;
 		ClearTintColor(platformView, bindable);
 	}
@@ -105,7 +105,7 @@ public partial class IconTintColorBehavior
 		imageView.Image = imageView.Image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
 		imageView.TintColor = color.ToPlatform();
 	}
-	
+
 	void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if ((e.PropertyName != ImageButton.IsLoadingProperty.PropertyName

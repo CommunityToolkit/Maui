@@ -33,7 +33,7 @@ public abstract class BaseBehaviorTest<TBehavior, TView> : BaseTest
 			// I.e. OnAttached is called on net8.0-ios, but not on net8.0 for Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>
 			return;
 		}
-		
+
 		view.Behaviors.Add((Behavior)behavior);
 
 		var falseResult = behavior.TrySetBindingContextToAttachedViewBindingContext();
@@ -51,7 +51,7 @@ public abstract class BaseBehaviorTest<TBehavior, TView> : BaseTest
 			// I.e. OnAttached is called on net8.0-ios, but not on net8.0 for Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>
 			return;
 		}
-		
+
 		// Ensure false by default
 		var falseResult = behavior.TryRemoveBindingContext();
 		Assert.False(falseResult);

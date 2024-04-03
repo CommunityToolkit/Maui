@@ -13,7 +13,7 @@ public class SelectAllTextBehavior : BasePlatformBehavior<InputView>
 	protected override void OnAttachedTo(InputView bindable, UIView platformView)
 	{
 		base.OnAttachedTo(bindable, platformView);
-		
+
 		ApplyBehaviorToControl(true, bindable, platformView);
 	}
 
@@ -21,7 +21,7 @@ public class SelectAllTextBehavior : BasePlatformBehavior<InputView>
 	protected override void OnDetachedFrom(InputView bindable, UIView platformView)
 	{
 		base.OnDetachedFrom(bindable, platformView);
-		
+
 		ApplyBehaviorToControl(false, bindable, platformView);
 	}
 
