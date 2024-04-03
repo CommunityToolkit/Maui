@@ -32,7 +32,7 @@ public partial class IconTintColorBehavior
 		base.OnAttachedTo(bindable, platformView);
 
 		ApplyTintColor(platformView, bindable, TintColor);
-		
+
 		this.PropertyChanged += (s, e) =>
 		{
 			if (e.PropertyName == TintColorProperty.PropertyName)

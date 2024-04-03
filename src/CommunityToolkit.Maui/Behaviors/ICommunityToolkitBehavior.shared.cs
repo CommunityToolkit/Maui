@@ -70,7 +70,13 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 		View = null;
 	}
 
-	internal void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
+	/// <summary>
+	/// Executes when <see cref="BindableObject.OnPropertyChanged"/> fires
+	/// </summary>
+	/// <param name="sender"><see cref="Behavior"/></param>
+	/// <param name="e"><see cref="PropertyChangedEventArgs"/> </param>
+	/// <exception cref="ArgumentException">Throws when <param name="sender"/> is not of type <see cref="TView"/></exception>
+	protected void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (sender is not TView view)
 		{

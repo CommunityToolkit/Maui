@@ -24,7 +24,7 @@ public abstract class BasePlatformBehavior<TView> : BasePlatformBehavior<TView, 
 {
 	private protected BasePlatformBehavior()
 	{
-		
+
 	}
 }
 
@@ -39,9 +39,9 @@ public abstract class BasePlatformBehavior<TView, TPlatformView> : PlatformBehav
 {
 	private protected BasePlatformBehavior()
 	{
-		
+
 	}
-	
+
 	/// <summary>
 	/// View used by the Behavior
 	/// </summary>
