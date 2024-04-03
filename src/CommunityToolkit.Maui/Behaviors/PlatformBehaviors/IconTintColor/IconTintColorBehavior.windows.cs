@@ -49,7 +49,7 @@ public partial class IconTintColorBehavior
 	protected override void OnDetachedFrom(View bindable, FrameworkElement platformView)
 	{
 		base.OnDetachedFrom(bindable, platformView);
-		
+
 		bindable.PropertyChanged -= OnElementPropertyChanged;
 		RemoveTintColor(platformView);
 	}

@@ -74,7 +74,7 @@ public partial class TouchBehavior
 	protected override void OnDetachedFrom(VisualElement bindable, FrameworkElement platformView)
 	{
 		base.OnDetachedFrom(bindable, platformView);
-		
+
 		if (!IsEnabled)
 		{
 			return;

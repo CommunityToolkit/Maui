@@ -14,7 +14,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 public class SelectAllTextBehavior : PlatformBehavior<InputView, TextBox>
 {
 	/// <inheritdoc/>
-	protected override void OnAttachedTo(InputView bindable, TextBox platformView) 
+	protected override void OnAttachedTo(InputView bindable, TextBox platformView)
 	{
 		base.OnAttachedTo(bindable, platformView);
 
