@@ -425,8 +425,6 @@ public partial class TouchBehavior : BasePlatformBehavior<VisualElement>
 	readonly WeakEventManager weakEventManager = new();
 	readonly GestureManager gestureManager = new();
 
-	VisualElement? element;
-
 	/// <summary>
 	/// Fires when <see cref="CurrentTouchStatus"/> changes.
 	/// </summary>
@@ -920,16 +918,16 @@ public partial class TouchBehavior : BasePlatformBehavior<VisualElement>
 
 	internal VisualElement? Element
 	{
-		get => element;
+		get => View;
 		set
 		{
-			if (element is not null)
+			if (View is not null)
 			{
 				gestureManager.Reset();
 				SetChildrenInputTransparent(false);
 			}
 			gestureManager.AbortAnimations(this, CancellationToken.None).SafeFireAndForget<TaskCanceledException>(ex => Trace.WriteLine(ex));
-			element = value;
+			View = value;
 
 			if (value is not null)
 			{

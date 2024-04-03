@@ -34,11 +34,10 @@ public abstract partial class BasePlatformBehavior<TView, TPlatformView> : Platf
 	where TView : Element
 	where TPlatformView : class
 {
-
 	/// <summary>
 	/// View used by the Behavior
 	/// </summary>
-	protected TView? View { get; private set; }
+	protected TView? View { get; set; }
 
 	TView? ICommunityToolkitBehavior<TView>.View
 	{

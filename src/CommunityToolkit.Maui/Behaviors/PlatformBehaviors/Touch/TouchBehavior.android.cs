@@ -124,7 +124,7 @@ public partial class TouchBehavior
 		}
 
 		view.Click -= OnClick;
-		if (IsAccessibilityMode || (IsEnabled && (element?.IsEnabled ?? false)))
+		if (IsAccessibilityMode || (IsEnabled && (Element?.IsEnabled ?? false)))
 		{
 			view.Click += OnClick;
 			return;
