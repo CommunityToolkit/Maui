@@ -8,8 +8,18 @@ namespace CommunityToolkit.Maui.Behaviors;
 public class SelectAllTextBehavior : BasePlatformBehavior<InputView, EditText>
 {
 	/// <inheritdoc/>
-	protected override void OnAttachedTo(InputView bindable, EditText platformView) => platformView.SetSelectAllOnFocus(true);
+	protected override void OnAttachedTo(InputView bindable, EditText platformView)
+	{
+		base.OnAttachedTo(bindable, platformView);
+		
+		platformView.SetSelectAllOnFocus(true);
+	}
 
 	/// <inheritdoc/>
-	protected override void OnDetachedFrom(InputView bindable, EditText platformView) => platformView.SetSelectAllOnFocus(false);
+	protected override void OnDetachedFrom(InputView bindable, EditText platformView)
+	{
+		base.OnDetachedFrom(bindable, platformView);
+		
+		platformView.SetSelectAllOnFocus(false);
+	}
 }

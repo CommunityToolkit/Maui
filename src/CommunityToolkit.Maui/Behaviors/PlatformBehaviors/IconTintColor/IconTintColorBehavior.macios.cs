@@ -9,6 +9,8 @@ public partial class IconTintColorBehavior
 	/// <inheritdoc/>
 	protected override void OnAttachedTo(View bindable, UIView platformView)
 	{
+		base.OnAttachedTo(bindable, platformView);
+		
 		ApplyTintColor(platformView, bindable, TintColor);
 
 		bindable.PropertyChanged += OnElementPropertyChanged;
@@ -20,32 +22,17 @@ public partial class IconTintColorBehavior
 			}
 		};
 	}
-
-	void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
-	{
-		if ((e.PropertyName != ImageButton.IsLoadingProperty.PropertyName
-			&& e.PropertyName != Image.SourceProperty.PropertyName
-			&& e.PropertyName != ImageButton.SourceProperty.PropertyName)
-			|| sender is not IImageElement element
-			|| (sender as VisualElement)?.Handler?.PlatformView is not UIView platformView)
-		{
-			return;
-		}
-
-		if (!element.IsLoading)
-		{
-			ApplyTintColor(platformView, (View)element, TintColor);
-		}
-	}
-
+	
 	/// <inheritdoc/>
 	protected override void OnDetachedFrom(View bindable, UIView platformView)
 	{
+		base.OnDetachedFrom(bindable, platformView);
+		
 		bindable.PropertyChanged -= OnElementPropertyChanged;
 		ClearTintColor(platformView, bindable);
 	}
 
-	void ClearTintColor(UIView platformView, View element)
+	static void ClearTintColor(UIView platformView, View element)
 	{
 		switch (platformView)
 		{
@@ -70,7 +57,7 @@ public partial class IconTintColorBehavior
 		}
 	}
 
-	void ApplyTintColor(UIView platformView, View element, Color? color)
+	static void ApplyTintColor(UIView platformView, View element, Color? color)
 	{
 		if (color is null)
 		{
@@ -118,5 +105,21 @@ public partial class IconTintColorBehavior
 		imageView.Image = imageView.Image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
 		imageView.TintColor = color.ToPlatform();
 	}
+	
+	void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
+	{
+		if ((e.PropertyName != ImageButton.IsLoadingProperty.PropertyName
+			&& e.PropertyName != Image.SourceProperty.PropertyName
+			&& e.PropertyName != ImageButton.SourceProperty.PropertyName)
+			|| sender is not IImageElement element
+			|| (sender as VisualElement)?.Handler?.PlatformView is not UIView platformView)
+		{
+			return;
+		}
 
+		if (!element.IsLoading)
+		{
+			ApplyTintColor(platformView, (View)element, TintColor);
+		}
+	}
 }

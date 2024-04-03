@@ -85,6 +85,8 @@ public class StatusBarBehavior : BasePlatformBehavior<Page>
 	protected override void OnAttachedTo(Page bindable, object platformView)
 #endif
 	{
+		base.OnAttachedTo(bindable, platformView);
+
 		if (ApplyOn == StatusBarApplyOn.OnBehaviorAttachedTo)
 		{
 			StatusBar.SetColor(StatusBarColor);
@@ -109,6 +111,8 @@ public class StatusBarBehavior : BasePlatformBehavior<Page>
 #if IOS
 		bindable.SizeChanged -= OnPageSizeChanged;
 #endif
+		base.OnDetachedFrom(bindable, platformView);
+		
 		bindable.NavigatedTo -= OnPageNavigatedTo;
 	}
 

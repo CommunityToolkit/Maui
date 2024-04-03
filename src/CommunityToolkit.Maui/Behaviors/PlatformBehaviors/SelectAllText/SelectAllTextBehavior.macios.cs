@@ -10,12 +10,20 @@ namespace CommunityToolkit.Maui.Behaviors;
 public class SelectAllTextBehavior : BasePlatformBehavior<InputView>
 {
 	/// <inheritdoc/>
-	protected override void OnAttachedTo(InputView bindable, UIView platformView) =>
+	protected override void OnAttachedTo(InputView bindable, UIView platformView)
+	{
+		base.OnAttachedTo(bindable, platformView);
+		
 		ApplyBehaviorToControl(true, bindable, platformView);
+	}
 
 	/// <inheritdoc/>
-	protected override void OnDetachedFrom(InputView bindable, UIView platformView) =>
+	protected override void OnDetachedFrom(InputView bindable, UIView platformView)
+	{
+		base.OnDetachedFrom(bindable, platformView);
+		
 		ApplyBehaviorToControl(false, bindable, platformView);
+	}
 
 	static void ApplyBehaviorToControl<T>(bool apply, InputView inputView, T platformView) where T : UIView
 	{
