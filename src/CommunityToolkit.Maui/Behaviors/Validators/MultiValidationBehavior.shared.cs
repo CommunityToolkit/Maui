@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -87,7 +88,11 @@ public class MultiValidationBehavior : ValidationBehavior
 		{
 			foreach (var child in e.NewItems.OfType<ValidationBehavior>())
 			{
-				((ICommunityToolkitBehavior<VisualElement>)child).TrySetBindingContextToAttachedViewBindingContext();
+				var isSuccessful = ((ICommunityToolkitBehavior<VisualElement>)child).TrySetBindingContextToAttachedViewBindingContext();
+				if (!isSuccessful)
+				{
+					Trace.WriteLine($"Setting {nameof(BindingContext)} for {child.GetType()} failed");
+				}
 			}
 		}
 
