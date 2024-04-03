@@ -14,7 +14,7 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 	/// </summary>
 	protected TView? View { get; set; }
 
-	internal bool TrySetBindingContext()
+	internal bool TrySetBindingContextToAttachedViewBindingContext()
 	{
 		if (this is not Behavior behavior)
 		{
@@ -58,7 +58,7 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 		View = bindable;
 		bindable.PropertyChanged += OnViewPropertyChanged;
 
-		TrySetBindingContext();
+		TrySetBindingContextToAttachedViewBindingContext();
 	}
 
 	internal void UnassignViewAndBingingContext(TView bindable)

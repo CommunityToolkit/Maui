@@ -87,7 +87,7 @@ public class MultiValidationBehavior : ValidationBehavior
 		{
 			foreach (var child in e.NewItems.OfType<ValidationBehavior>())
 			{
-				((ICommunityToolkitBehavior<VisualElement>)child).TrySetBindingContext();
+				((ICommunityToolkitBehavior<VisualElement>)child).TrySetBindingContextToAttachedViewBindingContext();
 			}
 		}
 
