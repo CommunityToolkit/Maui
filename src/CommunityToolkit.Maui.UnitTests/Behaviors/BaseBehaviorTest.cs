@@ -3,29 +3,33 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public abstract class BaseBehaviorTest<TBehavior, TView>(TBehavior behavior, TView view) : BaseTest
+public abstract class BaseBehaviorTest<TBehavior, TView> : BaseTest
 	where TBehavior : ICommunityToolkitBehavior<TView>
 	where TView : VisualElement
 {
-	readonly ICommunityToolkitBehavior<TView> behavior = behavior;
-	readonly TView view = view;
+	readonly ICommunityToolkitBehavior<TView> behavior;
+	readonly TView view;
+
+	protected BaseBehaviorTest(TBehavior behavior, TView view)
+	{
+		view.BindingContext = new MockViewModel();
+		this.view = view;
+
+		this.behavior = behavior;
+	}
 
 	[Fact]
-	public void EnsureTrySetBindingContext()
+	public void EnsureICommunityToolkitBehaviorIsBehavior()
 	{
-		var trueResult = behavior.TrySetBindingContext(view, new Binding
-		{
-			Path = BindableObject.BindingContextProperty.PropertyName,
-			Source = view
-		});
-		
-		Assert.True(trueResult);
-		
-		var falseResult = behavior.TrySetBindingContext(view, new Binding
-		{
-			Path = BindableObject.BindingContextProperty.PropertyName,
-			Source = view
-		});
+		Assert.IsAssignableFrom<Behavior>(behavior);
+	}
+
+	[Fact]
+	public void VerifyTrySetBindingContextIsCalledWhenViewAttached()
+	{
+		view.Behaviors.Add((Behavior)behavior);
+
+		var falseResult = behavior.TrySetBindingContext();
 		
 		Assert.False(falseResult);
 	}
@@ -33,17 +37,15 @@ public abstract class BaseBehaviorTest<TBehavior, TView>(TBehavior behavior, TVi
 	[Fact]
 	public void EnsureTryRemoveBindingContext()
 	{
-		var falseResult = behavior.TryRemoveBindingContext(view);
-		
+		// Ensure false by default
+		var falseResult = behavior.TryRemoveBindingContext();
 		Assert.False(falseResult);
 		
-		behavior.TrySetBindingContext(view, new Binding
-		{
-			Path = BindableObject.BindingContextProperty.PropertyName,
-			Source = view
-		});
+		view.Behaviors.Add((Behavior)behavior);
+
+		Assert.False(behavior.TrySetBindingContext());
 		
-		var trueResult = behavior.TryRemoveBindingContext(view);
+		var trueResult = behavior.TryRemoveBindingContext();
 		
 		Assert.True(trueResult);
 	}
@@ -62,5 +64,10 @@ public abstract class BaseBehaviorTest<TBehavior, TView>(TBehavior behavior, TVi
 
 			return value == ExpectedValue;
 		}
+	}
+
+	class MockViewModel
+	{
+		
 	}
 }

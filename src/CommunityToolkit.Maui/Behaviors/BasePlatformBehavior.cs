@@ -11,7 +11,9 @@ using PlatformView = System.Object;
 #endif
 
 using System.ComponentModel;
+
 namespace CommunityToolkit.Maui.Behaviors;
+
 
 /// <summary>
 /// Abstract class for our behaviors to inherit.
@@ -58,7 +60,7 @@ public abstract class BasePlatformBehavior<TView, TPlatformView> : PlatformBehav
 	protected override void OnAttachedTo(TView bindable, TPlatformView platformView)
 	{
 		base.OnAttachedTo(bindable, platformView);
-
+		
 		((ICommunityToolkitBehavior<TView>)this).AssignViewAndBingingContext(bindable);
 	}
 

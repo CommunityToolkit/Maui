@@ -87,11 +87,7 @@ public class MultiValidationBehavior : ValidationBehavior
 		{
 			foreach (var child in e.NewItems.OfType<ValidationBehavior>())
 			{
-				((ICommunityToolkitBehavior<VisualElement>)child).TrySetBindingContext(this, new Binding
-				{
-					Path = BindingContextProperty.PropertyName,
-					Source = this
-				});
+				((ICommunityToolkitBehavior<VisualElement>)child).TrySetBindingContext();
 			}
 		}
 
@@ -99,7 +95,7 @@ public class MultiValidationBehavior : ValidationBehavior
 		{
 			foreach (var child in e.OldItems.OfType<ValidationBehavior>())
 			{
-				((ICommunityToolkitBehavior<VisualElement>)child).TryRemoveBindingContext(this);
+				((ICommunityToolkitBehavior<VisualElement>)child).TryRemoveBindingContext();
 			}
 		}
 	}

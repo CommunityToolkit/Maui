@@ -14,23 +14,38 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 	/// </summary>
 	protected TView? View { get; set; }
 
-	internal bool TrySetBindingContext(in BindableObject bindable, in Binding binding)
+	internal bool TrySetBindingContext()
 	{
-		if (bindable.IsSet(BindableObject.BindingContextProperty))
+		if (this is not Behavior behavior)
+		{
+			throw new InvalidOperationException($"{nameof(ICommunityToolkitBehavior<TView>)} can only be used for a {nameof(Behavior)}");
+		}
+		
+		if (behavior.IsSet(BindableObject.BindingContextProperty) || View is null)
 		{
 			return false;
 		}
 
-		bindable.SetBinding(BindableObject.BindingContextProperty, binding);
+		behavior.SetBinding(BindableObject.BindingContextProperty, new Binding
+		{
+			Source = View,
+			Path = nameof(BindableObject.BindingContext)
+		});
+		
 		return true;
 
 	}
 
-	internal bool TryRemoveBindingContext(in BindableObject bindable)
+	internal bool TryRemoveBindingContext()
 	{
-		if (bindable.IsSet(BindableObject.BindingContextProperty))
+		if (this is not Behavior behavior)
 		{
-			bindable.RemoveBinding(BindableObject.BindingContextProperty);
+			throw new InvalidOperationException($"{nameof(ICommunityToolkitBehavior<TView>)} can only be used for a {nameof(Behavior)}");
+		}
+		
+		if (behavior.IsSet(BindableObject.BindingContextProperty))
+		{
+			behavior.RemoveBinding(BindableObject.BindingContextProperty);
 			return true;
 		}
 
@@ -43,16 +58,12 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 		View = bindable;
 		bindable.PropertyChanged += OnViewPropertyChanged;
 
-		TrySetBindingContext(bindable, new Binding
-		{
-			Path = BindableObject.BindingContextProperty.PropertyName,
-			Source = bindable
-		});
+		TrySetBindingContext();
 	}
 
 	internal void UnassignViewAndBingingContext(TView bindable)
 	{
-		TryRemoveBindingContext(bindable);
+		TryRemoveBindingContext();
 
 		bindable.PropertyChanged -= OnViewPropertyChanged;
 
