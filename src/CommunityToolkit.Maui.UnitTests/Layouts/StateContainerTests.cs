@@ -270,7 +270,7 @@ public class StateContainerTests : BaseTest
 		Assert.False(StateContainer.GetCanStateChange(layout));
 		var exception = Assert.Throws<StateContainerException>(() => StateContainer.SetCurrentState(layout, StateKey.Anything));
 		var exception2 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, CancellationToken.None));
-		var exception3 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, new Animation(), null, CancellationToken.None));
+		var exception3 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, [], null, CancellationToken.None));
 		var exception4 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, (layout, _) => layout.FadeTo(1), null, CancellationToken.None));
 
 		await changeStateWithAnimationTask;
@@ -302,7 +302,7 @@ public class StateContainerTests : BaseTest
 		Assert.False(StateContainer.GetCanStateChange(layout));
 		var exception = Assert.Throws<StateContainerException>(() => StateContainer.SetCurrentState(layout, StateKey.Anything));
 		var exception2 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, CancellationToken.None));
-		var exception3 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, new Animation(), null, CancellationToken.None));
+		var exception3 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, [], null, CancellationToken.None));
 		var exception4 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, (layout, _) => layout.FadeTo(1), null, CancellationToken.None));
 
 		await changeStateWithAnimationTask;
@@ -334,7 +334,7 @@ public class StateContainerTests : BaseTest
 		Assert.False(StateContainer.GetCanStateChange(layout));
 		var exception = Assert.Throws<StateContainerException>(() => StateContainer.SetCurrentState(layout, StateKey.Anything));
 		var exception2 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, CancellationToken.None));
-		var exception3 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, new Animation(), null, CancellationToken.None));
+		var exception3 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, [], null, CancellationToken.None));
 		var exception4 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, (layout, _) => layout.FadeTo(1), null, CancellationToken.None));
 
 		await changeStateWithAnimationTask;
@@ -371,7 +371,7 @@ public class StateContainerTests : BaseTest
 		Assert.False(StateContainer.GetCanStateChange(layout));
 		var exception = Assert.Throws<StateContainerException>(() => StateContainer.SetCurrentState(layout, StateKey.Anything));
 		var exception2 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, CancellationToken.None));
-		var exception3 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, new Animation(), null, CancellationToken.None));
+		var exception3 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, [], null, CancellationToken.None));
 		var exception4 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, (layout, _) => layout.FadeTo(1), null, CancellationToken.None));
 
 		await changeStateWithAnimationTask;
@@ -416,7 +416,7 @@ public class StateContainerTests : BaseTest
 		Assert.False(StateContainer.GetCanStateChange(layout));
 		var exception = Assert.Throws<StateContainerException>(() => StateContainer.SetCurrentState(layout, StateKey.Anything));
 		var exception2 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, CancellationToken.None));
-		var exception3 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, new Animation(), null, CancellationToken.None));
+		var exception3 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, [], null, CancellationToken.None));
 		var exception4 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, (layout, _) => layout.FadeTo(1), null, CancellationToken.None));
 
 		await changeStateWithAnimationTask;
@@ -445,7 +445,7 @@ public class StateContainerTests : BaseTest
 		Assert.False(StateContainer.GetCanStateChange(layout));
 		var exception = Assert.Throws<StateContainerException>(() => StateContainer.SetCurrentState(layout, StateKey.Anything));
 		var exception2 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, CancellationToken.None));
-		var exception3 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, new Animation(), null, CancellationToken.None));
+		var exception3 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, [], null, CancellationToken.None));
 		var exception4 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, (layout, _) => layout.FadeTo(1), null, CancellationToken.None));
 
 		await changeStateWithAnimationTask;
@@ -474,7 +474,7 @@ public class StateContainerTests : BaseTest
 		Assert.False(StateContainer.GetCanStateChange(layout));
 		var exception = Assert.Throws<StateContainerException>(() => StateContainer.SetCurrentState(layout, StateKey.Anything));
 		var exception2 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, CancellationToken.None));
-		var exception3 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, new Animation(), null, CancellationToken.None));
+		var exception3 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, [], null, CancellationToken.None));
 		var exception4 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, (layout, _) => layout.FadeTo(1), null, CancellationToken.None));
 
 		await changeStateWithAnimationTask;

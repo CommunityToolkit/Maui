@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.ApplicationModel;
 /// </summary>
 public static class BadgeFactory
 {
-	static readonly Dictionary<string, IBadgeProvider> providers = new();
+	static readonly Dictionary<string, IBadgeProvider> providers = [];
 	static readonly DefaultBadgeProvider defaultBadgeProvider = new();
 
 	/// <summary>

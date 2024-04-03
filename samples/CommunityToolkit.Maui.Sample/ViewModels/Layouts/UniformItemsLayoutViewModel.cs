@@ -12,5 +12,5 @@ public partial class UniformItemsLayoutViewModel : BaseViewModel
 		Items.Add(Path.GetRandomFileName());
 	}
 
-	public ObservableCollection<string> Items { get; } = new();
+	public ObservableCollection<string> Items { get; } = [];
 }

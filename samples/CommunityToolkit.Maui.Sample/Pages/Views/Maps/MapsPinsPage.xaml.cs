@@ -11,7 +11,7 @@ public partial class MapsPinsPage : BasePage<MapsPinsViewModel>
 
 	// TODO generate actual random pins
 	readonly Location[] randomLocations =
-	{
+	[
 			new Location(51.8833333333333, 176.65),
 			new Location(21.3166666666667, 157.833333333333),
 			new Location(71.3, 156.766666666667),
@@ -47,7 +47,7 @@ public partial class MapsPinsPage : BasePage<MapsPinsViewModel>
 			new Location(53.5333333333333, 113.5),
 			new Location(33.45, 112.066666666667),
 			new Location(46.6, 112.033333333333),
-		};
+		];
 
 	public MapsPinsPage(MapsPinsViewModel mapsPinsViewModel) : base(mapsPinsViewModel)
 	{
