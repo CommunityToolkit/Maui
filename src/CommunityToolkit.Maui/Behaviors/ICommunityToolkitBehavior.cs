@@ -20,7 +20,7 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 		{
 			throw new InvalidOperationException($"{nameof(ICommunityToolkitBehavior<TView>)} can only be used for a {nameof(Behavior)}");
 		}
-		
+
 		if (behavior.IsSet(BindableObject.BindingContextProperty) || View is null)
 		{
 			return false;
@@ -31,7 +31,7 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 			Source = View,
 			Path = nameof(BindableObject.BindingContext)
 		});
-		
+
 		return true;
 
 	}
@@ -42,7 +42,7 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 		{
 			throw new InvalidOperationException($"{nameof(ICommunityToolkitBehavior<TView>)} can only be used for a {nameof(Behavior)}");
 		}
-		
+
 		if (behavior.IsSet(BindableObject.BindingContextProperty))
 		{
 			behavior.RemoveBinding(BindableObject.BindingContextProperty);

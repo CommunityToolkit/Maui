@@ -250,7 +250,7 @@ public partial class TouchBehavior : BasePlatformBehavior<VisualElement>
 		typeof(double),
 		typeof(TouchBehavior),
 		TouchBehaviorDefaults.HoveredTranslationX);
-	
+
 	/// <summary>
 	/// Bindable property for <see cref="HoveredTranslationY"/>
 	/// </summary>
@@ -424,7 +424,7 @@ public partial class TouchBehavior : BasePlatformBehavior<VisualElement>
 
 	readonly WeakEventManager weakEventManager = new();
 	readonly GestureManager gestureManager = new();
-	
+
 	VisualElement? element;
 
 	/// <summary>

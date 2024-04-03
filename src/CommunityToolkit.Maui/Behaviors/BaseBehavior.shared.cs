@@ -63,6 +63,6 @@ public abstract class BaseBehavior<TView> : Behavior<TView>, ICommunityToolkitBe
 			&& bindingField?.GetValue(context) is BindingBase binding
 			&& binding != defaultBinding;
 	}
-	
+
 	void ICommunityToolkitBehavior<TView>.OnViewPropertyChanged(TView sender, PropertyChangedEventArgs e) => OnViewPropertyChanged(sender, e);
 }

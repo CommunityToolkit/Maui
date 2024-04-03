@@ -12,11 +12,11 @@ public partial class TouchBehaviorViewModel : BaseViewModel
 		=> Shell.Current.DisplayAlert(title, null, "Ok").WaitAsync(token);
 
 	[RelayCommand]
-	static Task ParentClicked(CancellationToken token) 
+	static Task ParentClicked(CancellationToken token)
 		=> DisplayAlert("Parent Clicked", token);
 
 	[RelayCommand]
-	static Task ChildClicked(CancellationToken token) 
+	static Task ChildClicked(CancellationToken token)
 		=> DisplayAlert("Child Clicked", token);
 
 	[RelayCommand]

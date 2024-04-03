@@ -207,28 +207,28 @@ public class ValidationBehaviorTests() : BaseBehaviorTest<ValidationBehavior, Vi
 		{
 			BindingContext = new MockPageViewModel()
 		};
-		
+
 		view.Behaviors.Add(behavior);
 
 		Assert.IsAssignableFrom<MockValidationBehavior>(Assert.Single(view.Behaviors));
-		
+
 		view.Behaviors.Remove(behavior);
-		
+
 		Assert.Empty(view.Behaviors);
 	}
-	
+
 	[Fact]
 	public void TestRemoveValidationBindingWithoutBindingContext()
 	{
 		var behavior = new MockValidationBehavior();
 		var view = new View();
-		
+
 		view.Behaviors.Add(behavior);
 
 		Assert.IsAssignableFrom<MockValidationBehavior>(Assert.Single(view.Behaviors));
-		
+
 		view.Behaviors.Remove(behavior);
-		
+
 		Assert.Empty(view.Behaviors);
 	}
 }

@@ -22,7 +22,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 public abstract class BasePlatformBehavior<TView> : BasePlatformBehavior<TView, PlatformView>
 	where TView : Element
 {
-	
+
 }
 
 /// <summary>
@@ -34,7 +34,7 @@ public abstract class BasePlatformBehavior<TView, TPlatformView> : PlatformBehav
 	where TView : Element
 	where TPlatformView : class
 {
-	
+
 	/// <summary>
 	/// View used by the Behavior
 	/// </summary>
@@ -45,7 +45,7 @@ public abstract class BasePlatformBehavior<TView, TPlatformView> : PlatformBehav
 		get => View;
 		set => View = value;
 	}
-	
+
 	/// <summary>
 	/// Virtual method that executes when a property on the View has changed
 	/// </summary>
@@ -60,7 +60,7 @@ public abstract class BasePlatformBehavior<TView, TPlatformView> : PlatformBehav
 	protected override void OnAttachedTo(TView bindable, TPlatformView platformView)
 	{
 		base.OnAttachedTo(bindable, platformView);
-		
+
 		((ICommunityToolkitBehavior<TView>)this).AssignViewAndBingingContext(bindable);
 	}
 
@@ -68,7 +68,7 @@ public abstract class BasePlatformBehavior<TView, TPlatformView> : PlatformBehav
 	protected override void OnDetachedFrom(TView bindable, TPlatformView platformView)
 	{
 		base.OnDetachedFrom(bindable, platformView);
-		
+
 		((ICommunityToolkitBehavior<TView>)this).UnassignViewAndBingingContext(bindable);
 	}
 

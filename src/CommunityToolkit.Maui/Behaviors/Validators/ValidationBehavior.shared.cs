@@ -297,7 +297,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 			await UpdateStateAsync(View, Flags, false).ConfigureAwait(false);
 		}
 	}
-	
+
 	/// <summary>
 	/// Used when a property in <see cref="ValidationBehavior"/> changes to update the validation state
 	/// </summary>

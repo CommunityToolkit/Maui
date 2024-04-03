@@ -30,23 +30,23 @@ public abstract class BaseBehaviorTest<TBehavior, TView> : BaseTest
 		view.Behaviors.Add((Behavior)behavior);
 
 		var falseResult = behavior.TrySetBindingContext();
-		
+
 		Assert.False(falseResult);
 	}
-	
+
 	[Fact]
 	public void EnsureTryRemoveBindingContext()
 	{
 		// Ensure false by default
 		var falseResult = behavior.TryRemoveBindingContext();
 		Assert.False(falseResult);
-		
+
 		view.Behaviors.Add((Behavior)behavior);
 
 		Assert.False(behavior.TrySetBindingContext());
-		
+
 		var trueResult = behavior.TryRemoveBindingContext();
-		
+
 		Assert.True(trueResult);
 	}
 
@@ -68,6 +68,6 @@ public abstract class BaseBehaviorTest<TBehavior, TView> : BaseTest
 
 	class MockViewModel
 	{
-		
+
 	}
 }

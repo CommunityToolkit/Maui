@@ -60,7 +60,7 @@ public partial class ImageTouchBehavior : TouchBehavior
 		typeof(Aspect),
 		typeof(TouchBehavior),
 		ImageTouchBehaviorDefaults.PressedBackgroundImageAspect);
-	
+
 	/// <summary>
 	/// Bindable property for <see cref="ShouldSetImageOnAnimationEnd"/>
 	/// </summary>
@@ -69,7 +69,7 @@ public partial class ImageTouchBehavior : TouchBehavior
 		typeof(bool),
 		typeof(TouchBehavior),
 		ImageTouchBehaviorDefaults.ShouldSetImageOnAnimationEnd);
-	
+
 	/// <summary>
 	/// Gets or sets the <see cref="ImageSource"/> when <see cref="TouchState"/> is <see cref="TouchState.Default"/>.
 	/// </summary>
