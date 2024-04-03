@@ -144,7 +144,7 @@ public class AvatarViewImageTests : BaseHandlerTest
 			}
 			else
 			{
-				avatarImage.Clip.Should().BeOfType<RoundRectangleGeometry>();
+				avatarImage.Clip.Should().BeOfType<RoundRectangle>();
 			}
 		}
 	}
