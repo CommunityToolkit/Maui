@@ -19,7 +19,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// Abstract class for our behaviors to inherit.
 /// </summary>
 /// <typeparam name="TView">The <see cref="VisualElement"/> that the behavior can be applied to</typeparam>
-public abstract class BasePlatformBehavior<TView> : BasePlatformBehavior<TView, PlatformView>
+public abstract partial class BasePlatformBehavior<TView> : BasePlatformBehavior<TView, PlatformView>
 	where TView : Element
 {
 
@@ -30,7 +30,7 @@ public abstract class BasePlatformBehavior<TView> : BasePlatformBehavior<TView, 
 /// </summary>
 /// <typeparam name="TView">The <see cref="VisualElement"/> that the behavior can be applied to</typeparam>
 /// <typeparam name="TPlatformView">The <see langword="class"/> that the behavior can be applied to</typeparam>
-public abstract class BasePlatformBehavior<TView, TPlatformView> : PlatformBehavior<TView, TPlatformView>, ICommunityToolkitBehavior<TView>
+public abstract partial class BasePlatformBehavior<TView, TPlatformView> : PlatformBehavior<TView, TPlatformView>, ICommunityToolkitBehavior<TView>
 	where TView : Element
 	where TPlatformView : class
 {
@@ -60,7 +60,7 @@ public abstract class BasePlatformBehavior<TView, TPlatformView> : PlatformBehav
 	protected override void OnAttachedTo(TView bindable, TPlatformView platformView)
 	{
 		base.OnAttachedTo(bindable, platformView);
-
+	
 		((ICommunityToolkitBehavior<TView>)this).AssignViewAndBingingContext(bindable);
 	}
 
