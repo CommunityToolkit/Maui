@@ -7,13 +7,32 @@ namespace CommunityToolkit.Maui.Behaviors;
 public partial class IconTintColorBehavior
 {
 	/// <inheritdoc/>
+	protected override void OnViewPropertyChanged(View sender, PropertyChangedEventArgs e)
+	{
+		base.OnViewPropertyChanged(sender, e);
+
+		if ((e.PropertyName != ImageButton.IsLoadingProperty.PropertyName
+			&& e.PropertyName != Image.SourceProperty.PropertyName
+			&& e.PropertyName != ImageButton.SourceProperty.PropertyName)
+			|| sender is not IImageElement element
+			|| sender.Handler?.PlatformView is not UIView platformView)
+		{
+			return;
+		}
+
+		if (!element.IsLoading)
+		{
+			ApplyTintColor(platformView, (View)element, TintColor);
+		}
+	}
+
+	/// <inheritdoc/>
 	protected override void OnAttachedTo(View bindable, UIView platformView)
 	{
 		base.OnAttachedTo(bindable, platformView);
 
 		ApplyTintColor(platformView, bindable, TintColor);
-
-		bindable.PropertyChanged += OnElementPropertyChanged;
+		
 		this.PropertyChanged += (s, e) =>
 		{
 			if (e.PropertyName == TintColorProperty.PropertyName)
@@ -28,7 +47,6 @@ public partial class IconTintColorBehavior
 	{
 		base.OnDetachedFrom(bindable, platformView);
 
-		bindable.PropertyChanged -= OnElementPropertyChanged;
 		ClearTintColor(platformView, bindable);
 	}
 
@@ -44,7 +62,7 @@ public partial class IconTintColorBehavior
 
 				break;
 			case UIButton button:
-				if (button.ImageView?.Image is not null)
+				if (button.ImageView.Image is not null)
 				{
 					var originalImage = button.CurrentImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 					button.SetImage(originalImage, UIControlState.Normal);
@@ -92,7 +110,6 @@ public partial class IconTintColorBehavior
 		button.TintColor = platformColor;
 		button.ImageView.TintColor = platformColor;
 		button.SetImage(templatedImage, UIControlState.Normal);
-
 	}
 
 	static void SetUIImageViewTintColor(UIImageView imageView, View element, Color color)
@@ -104,22 +121,5 @@ public partial class IconTintColorBehavior
 
 		imageView.Image = imageView.Image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
 		imageView.TintColor = color.ToPlatform();
-	}
-
-	void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
-	{
-		if ((e.PropertyName != ImageButton.IsLoadingProperty.PropertyName
-			&& e.PropertyName != Image.SourceProperty.PropertyName
-			&& e.PropertyName != ImageButton.SourceProperty.PropertyName)
-			|| sender is not IImageElement element
-			|| (sender as VisualElement)?.Handler?.PlatformView is not UIView platformView)
-		{
-			return;
-		}
-
-		if (!element.IsLoading)
-		{
-			ApplyTintColor(platformView, (View)element, TintColor);
-		}
 	}
 }
