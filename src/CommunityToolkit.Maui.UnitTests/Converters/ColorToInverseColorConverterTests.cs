@@ -7,15 +7,15 @@ public class ColorToInverseColorConverterTests : BaseOneWayConverterTest<ColorTo
 {
 	public static IReadOnlyList<object[]> ColorToInverseColorConverterData { get; } = new[]
 	{
-		new[] { Colors.White, Colors.Black},
-		new[] { new Color(0f,0f,0f), new Color(1f,1f,1f) },
-		new[] { new Color(0f,0f,1f), new Color(1f,1f,0f) },
-		new[] { new Color(0f,1f,0f), new Color(1f,0f,1f) },
-		new[] { new Color(0f,1f,1f), new Color(1f,0f,0f) },
-		new[] { new Color(1f,0f,0f), new Color(0f,1f,1f) },
-		new[] { new Color(1f,0f,1f), new Color(0f,1f,0f) },
-		new[] { new Color(1f,1f,0f), new Color(0f,0f,1f) },
-		new[] { new Color(1f,1f,1f), new Color(0f,0f,0f) },
+		[Colors.White, Colors.Black],
+		[new Color(0f,0f,0f), new Color(1f,1f,1f)],
+		[new Color(0f,0f,1f), new Color(1f,1f,0f)],
+		[new Color(0f,1f,0f), new Color(1f,0f,1f)],
+		[new Color(0f,1f,1f), new Color(1f,0f,0f)],
+		[new Color(1f,0f,0f), new Color(0f,1f,1f)],
+		[new Color(1f,0f,1f), new Color(0f,1f,0f)],
+		[new Color(1f,1f,0f), new Color(0f,0f,1f)],
+		[new Color(1f,1f,1f), new Color(0f,0f,0f)],
 		new[] { Colors.Black, Colors.White },
 	};
 

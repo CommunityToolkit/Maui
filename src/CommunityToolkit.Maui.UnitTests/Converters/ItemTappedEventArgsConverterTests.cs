@@ -8,9 +8,9 @@ public class ItemTappedEventArgsConverterTests : BaseOneWayConverterTest<ItemTap
 {
 	public static IReadOnlyList<object?[]> Data { get; } = new[]
 	{
-		new object?[] { null, null },
-		new object?[] { new ItemTappedEventArgs("", 1, 1), 1},
-		new object?[] { new ItemTappedEventArgs("", 'c', 1), 'c'},
+		[null, null],
+		[new ItemTappedEventArgs("", 1, 1), 1],
+		[new ItemTappedEventArgs("", 'c', 1), 'c'],
 		new object?[] { new ItemTappedEventArgs("", Colors.Black, 1), Colors.Black},
 	};
 

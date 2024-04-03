@@ -10,7 +10,7 @@ public class ProgressBarAnimationBehaviorTests() : BaseBehaviorTest<ProgressBarA
 {
 	public static readonly FrozenSet<object[]> ValidData = new[]
 	{
-		new object[] { 1, 500, Easing.Default },
+		[1, 500, Easing.Default],
 		new object[] { 0, 750, Easing.CubicOut }
 	}.ToFrozenSet();
 

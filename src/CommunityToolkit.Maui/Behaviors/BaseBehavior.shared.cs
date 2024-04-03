@@ -11,9 +11,9 @@ public abstract class BaseBehavior<TView> : Behavior<TView>, ICommunityToolkitBe
 {
 	private protected BaseBehavior()
 	{
-		
+
 	}
-	
+
 	/// <summary>
 	/// View used by the Behavior
 	/// </summary>

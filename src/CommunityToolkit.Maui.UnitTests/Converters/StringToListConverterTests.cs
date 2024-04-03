@@ -8,13 +8,13 @@ public class StringToListConverterTests : BaseOneWayConverterTest<StringToListCo
 {
 	public static FrozenSet<object?[]> ListData { get; } = new[]
 	{
-		new object?[] { "A,B.C;D", new[] { ",", ".", ";" }, new[] { "A", "B", "C", "D" } },
-		new object?[] { "A+_+B+_+C", "+_+", new[] { "A", "B", "C" } },
-		new object?[] { "A,,C", ",", new[] { "A", string.Empty, "C" }, },
-		new object?[] { "A,C", ",", new[] { "A", "C" } },
-		new object?[] { "A", ":-:", new[] { "A" } },
-		new object?[] { string.Empty, ",", new[] { string.Empty } },
-		new object?[] { null, ",", Array.Empty<string>() },
+		["A,B.C;D", new[] { ",", ".", ";" }, new[] { "A", "B", "C", "D" }],
+		["A+_+B+_+C", "+_+", new[] { "A", "B", "C" }],
+		["A,,C", ",", new[] { "A", string.Empty, "C" }],
+		["A,C", ",", new[] { "A", "C" }],
+		["A", ":-:", new[] { "A" }],
+		[string.Empty, ",", new[] { string.Empty }],
+		[null, ",", Array.Empty<string>()],
 		new object?[] { "ABC", null, new[] { "ABC" } },
 	}.ToFrozenSet();
 

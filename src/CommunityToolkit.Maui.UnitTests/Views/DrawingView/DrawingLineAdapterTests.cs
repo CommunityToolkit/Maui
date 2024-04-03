@@ -17,10 +17,7 @@ public class DrawingLineAdapterTests : BaseTest
 			LineWidth = 10f,
 			ShouldSmoothPathWhenDrawn = false,
 			Granularity = 15,
-			Points = new ObservableCollection<PointF>
-			{
-				new (10, 10)
-			}
+			Points = [new(10, 10)]
 		};
 
 		var expectedDrawingLine = new DrawingLine
@@ -29,10 +26,7 @@ public class DrawingLineAdapterTests : BaseTest
 			LineWidth = 10f,
 			ShouldSmoothPathWhenDrawn = false,
 			Granularity = 15,
-			Points = new ObservableCollection<PointF>
-			{
-				new (10, 10)
-			}
+			Points = [new(10, 10)]
 		};
 
 		var drawingLineAdapter = new DrawingLineAdapter();

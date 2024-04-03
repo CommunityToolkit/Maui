@@ -8,11 +8,11 @@ public class TimeSpanToSecondsConverterTests : BaseConverterTest<TimeSpanToSecon
 {
 	public static readonly FrozenSet<object[]> ValidData = new[]
 	{
-		new object[] { TimeSpan.MaxValue, 922337203685.4775 },
-		new object[] { TimeSpan.FromSeconds(100), 100 },
-		new object[] { new TimeSpan(), 0 },
-		new object[] { TimeSpan.Zero, 0 },
-		new object[] { default(TimeSpan), 0 },
+		[TimeSpan.MaxValue, 922337203685.4775],
+		[TimeSpan.FromSeconds(100), 100],
+		[new TimeSpan(), 0],
+		[TimeSpan.Zero, 0],
+		[default(TimeSpan), 0],
 		new object[] { TimeSpan.MinValue, -922337203685.4775 },
 	}.ToFrozenSet();
 

@@ -7,11 +7,11 @@ public class ListToStringConverterTests : BaseOneWayConverterTest<ListToStringCo
 {
 	public static IReadOnlyList<object?[]> TestData { get; } = new[]
 	{
-		new object[] { new[] { "A", "B", "C" }, "+_+", "A+_+B+_+C" },
-		new object[] { new[] { "A", string.Empty, "C" }, ",", "A,C" },
-		new object?[] { new[] { "A", null, "C" }, ",", "A,C" },
-		new object[] { new[] { "A" }, ":-:", "A" },
-		new object[] { Array.Empty<string>(), ",", string.Empty },
+		[new[] { "A", "B", "C" }, "+_+", "A+_+B+_+C"],
+		[new[] { "A", string.Empty, "C" }, ",", "A,C"],
+		[new[] { "A", null, "C" }, ",", "A,C"],
+		[new[] { "A" }, ":-:", "A"],
+		[Array.Empty<string>(), ",", string.Empty],
 		new object?[] { new[] { "A", "B", "C" }, null, "ABC" },
 	};
 

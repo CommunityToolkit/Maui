@@ -9,9 +9,9 @@ public class IsListNullOrEmptyConverterTests : BaseOneWayConverterTest<IsListNul
 {
 	public static IReadOnlyList<object?[]> Data { get; } = new[]
 	{
-		new object[] { new List<string>(), true },
-		new object[] { new List<string>() { "TestValue" }, false },
-		new object?[] { null, true },
+		[new List<string>(), true],
+		[new List<string>() { "TestValue" }, false],
+		[null, true],
 		new object[] { Enumerable.Range(1, 3), false },
 	};
 

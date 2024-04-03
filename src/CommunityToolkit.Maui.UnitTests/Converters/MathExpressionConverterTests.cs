@@ -68,14 +68,14 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 	{
 		var mathExpressionConverter = new MultiMathExpressionConverter();
 
-		Assert.Throws<ArgumentException>(() => mathExpressionConverter.Convert(new object[] { 0d }, mathExpressionTargetType, parameter, cultureInfo));
+		Assert.Throws<ArgumentException>(() => mathExpressionConverter.Convert([0d], mathExpressionTargetType, parameter, cultureInfo));
 	}
 
 	[Fact]
 	public void MultiMathExpressionConverterInvalidValuesReturnsNull()
 	{
 		var mathExpressionConverter = new MultiMathExpressionConverter();
-		var result = mathExpressionConverter.Convert(new object?[] { 0d, null }, mathExpressionTargetType, "x", cultureInfo);
+		var result = mathExpressionConverter.Convert([0d, null], mathExpressionTargetType, "x", cultureInfo);
 		result.Should().BeNull();
 	}
 
@@ -95,8 +95,8 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 	public void MultiMathExpressionConverterNullInputTest()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => new MultiMathExpressionConverter().Convert(new object[] { 0.0, 7 }, null, "x", null));
+		Assert.Throws<ArgumentNullException>(() => new MultiMathExpressionConverter().Convert([0.0, 7], null, "x", null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => new MultiMathExpressionConverter().Convert(new object[] { 0.0, 7 }, typeof(bool), null, null));
+		Assert.Throws<ArgumentNullException>(() => new MultiMathExpressionConverter().Convert([0.0, 7], typeof(bool), null, null));
 	}
 }
