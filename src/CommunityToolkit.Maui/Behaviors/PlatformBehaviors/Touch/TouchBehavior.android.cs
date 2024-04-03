@@ -38,6 +38,8 @@ public partial class TouchBehavior
 	/// <param name="platformView">Native View</param>
 	protected override void OnAttachedTo(VisualElement bindable, AView platformView)
 	{
+		base.OnAttachedTo(bindable, platformView);
+
 		Element = bindable;
 		view = platformView;
 		viewGroup = Microsoft.Maui.Platform.ViewExtensions.GetParentOfType<ViewGroup>(platformView);
@@ -68,7 +70,9 @@ public partial class TouchBehavior
 	/// <param name="bindable">Maui Visual Element</param>
 	/// <param name="platformView">Native View</param>
 	protected override void OnDetachedFrom(VisualElement bindable, AView platformView)
-	{ 
+	{
+		base.OnDetachedFrom(bindable, platformView);
+
 		view = platformView;
 
 		if (Element is null)
@@ -92,7 +96,7 @@ public partial class TouchBehavior
 				view.Touch -= OnTouch;
 				view.Click -= OnClick;
 			}
-			
+
 			Element = null;
 		}
 		catch (ObjectDisposedException)
@@ -120,7 +124,7 @@ public partial class TouchBehavior
 		}
 
 		view.Click -= OnClick;
-		if (IsAccessibilityMode || (IsEnabled && (element?.IsEnabled ?? false)))
+		if (IsAccessibilityMode || (IsEnabled && (Element?.IsEnabled ?? false)))
 		{
 			view.Click += OnClick;
 			return;
@@ -214,10 +218,10 @@ public partial class TouchBehavior
 		}
 	}
 
-	void OnTouchUp() 
+	void OnTouchUp()
 		=> HandleTouchEnded(CurrentTouchStatus is TouchStatus.Started ? TouchStatus.Completed : TouchStatus.Canceled);
 
-	void OnTouchCancel() 
+	void OnTouchCancel()
 		=> HandleTouchEnded(TouchStatus.Canceled);
 
 	void OnTouchMove(AView view, AView.TouchEventArgs touchEventArgs)

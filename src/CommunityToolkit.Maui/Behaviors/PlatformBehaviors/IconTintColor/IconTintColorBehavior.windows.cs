@@ -24,6 +24,8 @@ public partial class IconTintColorBehavior
 	/// <inheritdoc/>
 	protected override void OnAttachedTo(View bindable, FrameworkElement platformView)
 	{
+		base.OnAttachedTo(bindable, platformView);
+
 		ApplyTintColor(platformView, bindable, TintColor);
 
 		bindable.PropertyChanged += OnElementPropertyChanged;
@@ -46,6 +48,8 @@ public partial class IconTintColorBehavior
 	/// <inheritdoc/>
 	protected override void OnDetachedFrom(View bindable, FrameworkElement platformView)
 	{
+		base.OnDetachedFrom(bindable, platformView);
+
 		bindable.PropertyChanged -= OnElementPropertyChanged;
 		RemoveTintColor(platformView);
 	}
