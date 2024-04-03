@@ -115,7 +115,7 @@ public class DrawingLineTests : BaseHandlerTest
 			LineWidth = DrawingViewDefaults.LineWidth,
 			ShouldSmoothPathWhenDrawn = DrawingViewDefaults.ShouldSmoothPathWhenDrawn,
 			Granularity = DrawingViewDefaults.MinimumGranularity,
-			Points = new ObservableCollection<PointF>()
+			Points = []
 		};
 
 		drawingLine.Should().BeEquivalentTo(expectedDefaultValue);

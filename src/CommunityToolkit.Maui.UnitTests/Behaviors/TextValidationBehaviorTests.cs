@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class TextValidationBehaviorTests : BaseTest
+public class TextValidationBehaviorTests() : BaseBehaviorTest<TextValidationBehavior, VisualElement>(new CharactersValidationBehavior(), new View())
 {
 	[Theory]
 	[InlineData("mi.....ft", RegexOptions.IgnoreCase, 5, 25, TextDecorationFlags.None, "Microsoft", true)]

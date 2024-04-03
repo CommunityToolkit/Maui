@@ -5,24 +5,24 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToBlackOrWhiteConverterTests : BaseOneWayConverterTest<ColorToBlackOrWhiteConverter>
 {
-	public static IReadOnlyList<object[]> ColorToBlackOrWhiteData { get; } = new[]
-	{
-		new[] { Colors.Black, Colors.Black },
-		new[] { Colors.DarkBlue, Colors.Black },
-		new[] { Colors.DarkCyan, Colors.Black },
-		new[] { Colors.Brown, Colors.Black },
-		new[] { Colors.DarkGreen, Colors.Black },
-		new[] { Colors.DarkSlateGray, Colors.Black },
-		new[] { Colors.Transparent, Colors.Black},
-		new[] { Colors.White, Colors.White},
-		new[] { Colors.DarkSalmon, Colors.White },
-		new[] { Colors.DarkOrchid, Colors.White },
-		new[] { Colors.DarkGrey, Colors.White },
-		new[] { Colors.Yellow, Colors.White },
-		new[] { Colors.Pink, Colors.White },
-		new[] { Colors.LightBlue, Colors.White },
-		new[] { Colors.Wheat, Colors.White }
-	};
+	public static IReadOnlyList<object[]> ColorToBlackOrWhiteData { get; } =
+	[
+		[Colors.Black, Colors.Black],
+		[Colors.DarkBlue, Colors.Black],
+		[Colors.DarkCyan, Colors.Black],
+		[Colors.Brown, Colors.Black],
+		[Colors.DarkGreen, Colors.Black],
+		[Colors.DarkSlateGray, Colors.Black],
+		[Colors.Transparent, Colors.Black],
+		[Colors.White, Colors.White],
+		[Colors.DarkSalmon, Colors.White],
+		[Colors.DarkOrchid, Colors.White],
+		[Colors.DarkGrey, Colors.White],
+		[Colors.Yellow, Colors.White],
+		[Colors.Pink, Colors.White],
+		[Colors.LightBlue, Colors.White],
+		[Colors.Wheat, Colors.White]
+	];
 
 	[Theory]
 	[MemberData(nameof(ColorToBlackOrWhiteData))]

@@ -6,7 +6,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class EventToCommandBehaviorGenericTests : BaseTest
+public class EventToCommandBehaviorGenericTests() : BaseBehaviorTest<EventToCommandBehavior<Coffee>, VisualElement>(new EventToCommandBehavior<Coffee>(), new View())
 {
 	[Fact]
 	public void ArgumentExceptionIfSpecifiedEventDoesNotExist()
@@ -53,14 +53,21 @@ public class EventToCommandBehaviorGenericTests : BaseTest
 		};
 
 		Assert.Null(vm.CoffeeName);
-		var coffe = new Coffee { Id = 1, Name = "Café" };
-		var eventArgs = new SelectedItemChangedEventArgs(coffe, 1);
+		var coffee = new Coffee
+		{
+			Id = 1,
+			Name = "Café"
+		};
+		var eventArgs = new SelectedItemChangedEventArgs(coffee, 1);
 
-		var notNullArgs = new object?[] { null, eventArgs };
+		var notNullArgs = new object?[]
+		{
+			null, eventArgs
+		};
 
 		TriggerEventToCommandBehavior(behavior, notNullArgs);
 
-		Assert.Equal(coffe.Name, vm.CoffeeName);
+		Assert.Equal(coffee.Name, vm.CoffeeName);
 	}
 
 	[Fact]
@@ -75,14 +82,21 @@ public class EventToCommandBehaviorGenericTests : BaseTest
 		};
 
 		Assert.Null(vm.CoffeeName);
-		var coffe = new Starbucks { Id = 1, Name = "Latte" };
-		var eventArgs = new SelectedItemChangedEventArgs(coffe, 1);
+		var coffee = new Starbucks
+		{
+			Id = 1,
+			Name = "Latte"
+		};
+		var eventArgs = new SelectedItemChangedEventArgs(coffee, 1);
 
-		var notNullArgs = new object?[] { null, eventArgs };
+		var notNullArgs = new object?[]
+		{
+			null, eventArgs
+		};
 
 		TriggerEventToCommandBehavior(behavior, notNullArgs);
 
-		Assert.Equal(coffe.Name, vm.CoffeeName);
+		Assert.Equal(coffee.Name, vm.CoffeeName);
 	}
 
 	[Fact]
@@ -96,7 +110,10 @@ public class EventToCommandBehaviorGenericTests : BaseTest
 			CommandParameter = 2
 		};
 
-		var nullArgs = new object?[] { null, null };
+		var nullArgs = new object?[]
+		{
+			null, null
+		};
 
 		TriggerEventToCommandBehavior(behavior, nullArgs);
 	}
@@ -113,8 +130,11 @@ public class EventToCommandBehaviorGenericTests : BaseTest
 		};
 
 		Assert.Null(vm.CoffeeName);
-		var coffeNull = default(Coffee);
-		var notNullArgs = new object?[] { null, new SelectedItemChangedEventArgs(coffeNull, -1) };
+		var coffeeNull = default(Coffee);
+		var notNullArgs = new object?[]
+		{
+			null, new SelectedItemChangedEventArgs(coffeeNull, -1)
+		};
 
 		TriggerEventToCommandBehavior(behavior, notNullArgs);
 
@@ -135,7 +155,10 @@ public class EventToCommandBehaviorGenericTests : BaseTest
 			Command = new Command((parameter) => convertedValue = parameter)
 		};
 
-		var nullArgs = new object?[] { null, null };
+		var nullArgs = new object?[]
+		{
+			null, null
+		};
 
 		TriggerEventToCommandBehavior(behavior, nullArgs);
 
@@ -147,41 +170,41 @@ public class EventToCommandBehaviorGenericTests : BaseTest
 		var method = eventToCommand.GetType().GetMethod("OnTriggerHandled", BindingFlags.Instance | BindingFlags.NonPublic);
 		method?.Invoke(eventToCommand, args);
 	}
+}
 
-	public class Starbucks : Coffee
+class Starbucks : Coffee
+{
+}
+
+public class Coffee
+{
+	public int Id { get; set; }
+
+	public string Roaster { get; set; } = string.Empty;
+
+	public string? Name { get; set; }
+
+	public string Image { get; set; } = string.Empty;
+}
+
+public class ViewModelCoffee
+{
+	public Command<Coffee> SelectedCommand { get; set; }
+
+	public string? CoffeeName { get; set; }
+
+	public ViewModelCoffee()
 	{
+		SelectedCommand = new Command<Coffee>(Selected);
 	}
 
-	public class Coffee
+	void Selected(Coffee coffee)
 	{
-		public int Id { get; set; }
-
-		public string Roaster { get; set; } = string.Empty;
-
-		public string? Name { get; set; }
-
-		public string Image { get; set; } = string.Empty;
-	}
-
-	public class ViewModelCoffee
-	{
-		public Command<Coffee> SelectedCommand { get; set; }
-
-		public string? CoffeeName { get; set; }
-
-		public ViewModelCoffee()
+		if (coffee is null)
 		{
-			SelectedCommand = new Command<Coffee>(Selected);
+			return;
 		}
 
-		void Selected(Coffee coffee)
-		{
-			if (coffee == null)
-			{
-				return;
-			}
-
-			CoffeeName = coffee?.Name;
-		}
+		CoffeeName = coffee.Name;
 	}
 }
