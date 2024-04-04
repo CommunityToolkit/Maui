@@ -82,13 +82,12 @@
 			</ImageButton>
 
 			<ImageButton
-				x:Name="ToggleColorImageButton"
 				Grid.Row="4"
 				Grid.Column="2"
 				Command="{Binding ChangeColorCommand}"
 				Source="shield.png">
 				<ImageButton.Behaviors>
-					<mct:IconTintColorBehavior TintColor="{Binding Source={x:Reference ToggleColorImageButton}, Path=BindingContext.ToggleableIconTintColor}" />
+					<mct:IconTintColorBehavior TintColor="{Binding ToggleableIconTintColor}" />
 				</ImageButton.Behaviors>
 			</ImageButton>
 

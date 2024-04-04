@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class IconTintColorBehaviorTests : BaseTest
+public class IconTintColorBehaviorTests() : BaseBehaviorTest<IconTintColorBehavior, View>(new IconTintColorBehavior(), new View())
 {
 	[Fact]
 	public void VerifyDefaultColor()
