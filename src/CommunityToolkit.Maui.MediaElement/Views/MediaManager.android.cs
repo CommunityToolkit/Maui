@@ -1,6 +1,7 @@
 ﻿using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
+using Android.OS;
 using Android.Support.V4.Media;
 using Android.Support.V4.Media.Session;
 using Android.Views;
@@ -28,6 +29,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	double? previousSpeed;
 	float volumeBeforeMute = 1;
 
+	public static MediaControllerCompat? MediaControllerCompat;
 	TaskCompletionSource? seekToTaskCompletionSource;
 	MediaSessionConnector? mediaSessionConnector;
 	MediaSessionCompat? mediaSession;
@@ -48,9 +50,16 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		Player = new IExoPlayer.Builder(MauiContext.Context).Build() ?? throw new NullReferenceException();
 		Player.AddListener(this);				
 		mediaSession = new MediaSessionCompat(Platform.AppContext, "notification");
+		mediaSession.Active = true;
 		mediaSessionConnector = new MediaSessionConnector(mediaSession);
-		mediaSessionConnector.SetEnabledPlaybackActions(PlaybackStateCompat.ActionPlay | PlaybackStateCompat.ActionPause | PlaybackStateCompat.ActionStop | PlaybackStateCompat.ActionSetPlaybackSpeed | PlaybackStateCompat.ActionFastForward | PlaybackStateCompat.ActionSeekTo | PlaybackStateCompat.ActionRewind);
-		mediaSession.SetFlags(MediaSessionCompat.FlagHandlesMediaButtons | MediaSessionCompat.FlagHandlesTransportControls | MediaSessionCompat.FlagHandlesQueueCommands);
+		if (Platform.CurrentActivity is not null && mediaSession?.SessionToken is not null)
+		{
+			MediaControllerCompat = new MediaControllerCompat(Platform.CurrentActivity, mediaSession.SessionToken);
+		}
+		
+		mediaSessionConnector.SetEnabledPlaybackActions(PlaybackStateCompat.ActionPlay | PlaybackStateCompat.ActionPause | PlaybackStateCompat.ActionStop | PlaybackStateCompat.ActionSetPlaybackSpeed | PlaybackStateCompat.ActionFastForward | PlaybackStateCompat.ActionSeekTo | PlaybackStateCompat.ActionRewind | PlaybackStateCompat.ActionPlayFromUri | PlaybackStateCompat.ActionPrepareFromMediaId | PlaybackStateCompat.ActionPrepare);
+		mediaSessionConnector.SetDispatchUnsupportedActionsEnabled(true);
+		mediaSession?.SetFlags(MediaSessionCompat.FlagHandlesMediaButtons | MediaSessionCompat.FlagHandlesTransportControls | MediaSessionCompat.FlagHandlesQueueCommands);
 		mediaSessionConnector.SetPlayer(Player);
 		
 		PlayerView = new StyledPlayerView(MauiContext.Context)
@@ -76,7 +85,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			return;
 		}
-		else
+		else if (status == PermissionStatus.Denied && Build.VERSION.SdkInt > BuildVersionCodes.O)
 		{
 			await Shell.Current.DisplayAlert("Permission Required", "Notification permission is required to show media controls.", "Ok");
 		}
@@ -92,9 +101,20 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		mediaMetaData.PutBitmap(MediaMetadataCompat.MetadataKeyAlbumArt, bitmap);
 		mediaMetaData.PutLong(MediaMetadataCompat.MetadataKeyDuration, Player?.Duration ?? 0);
 		mediaMetaData.Build();
-		mediaSession?.SetMetadata(mediaMetaData.Build());
 		
+		mediaSession?.SetMetadata(mediaMetaData.Build());
 		var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
+		if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+		{
+			intent.PutExtra("title", MediaElement.MetadataTitle);
+			intent.PutExtra("artist", MediaElement.MetadataArtist);
+			intent.PutExtra("album", MediaElement.MetadataAlbum);
+			intent.PutExtra("albumArtUri", MediaElement.MetadataArtwork);
+			intent.PutExtra("position", ((long)MediaElement.Position.TotalSeconds));
+			intent.PutExtra("currentTime", SystemClock.ElapsedRealtime());
+			intent.PutExtra("duration", ((long)MediaElement.Duration.TotalSeconds));
+		}
+		
 		intent.PutExtra("token", mediaSession?.SessionToken);
 		Android.App.Application.Context.StartForegroundService(intent);
 	}
