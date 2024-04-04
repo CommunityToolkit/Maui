@@ -70,7 +70,7 @@ public partial class TouchBehavior : IDisposable
 	internal void HandleTouch(TouchStatus status)
 	{
 		ObjectDisposedException.ThrowIf(isDisposed, this);
-		
+
 		gestureManager.HandleTouch(this, status);
 	}
 

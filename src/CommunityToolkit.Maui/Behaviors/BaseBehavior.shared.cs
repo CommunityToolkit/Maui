@@ -1,6 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace CommunityToolkit.Maui.Behaviors;
@@ -9,44 +7,22 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// Abstract class for our behaviors to inherit.
 /// </summary>
 /// <typeparam name="TView">The <see cref="VisualElement"/> that the behavior can be applied to</typeparam>
-public abstract class BaseBehavior<TView> : Behavior<TView> where TView : VisualElement
+public abstract class BaseBehavior<TView> : Behavior<TView>, ICommunityToolkitBehavior<TView> where TView : VisualElement
 {
-	static readonly MethodInfo? getContextMethod
-		= typeof(BindableObject).GetRuntimeMethods().FirstOrDefault(m => m.Name is "GetContext");
+	private protected BaseBehavior()
+	{
 
-	static readonly FieldInfo? bindingField
-		= getContextMethod?.ReturnType.GetRuntimeField("Binding");
-
-	BindingBase? defaultBindingContextBinding;
+	}
 
 	/// <summary>
 	/// View used by the Behavior
 	/// </summary>
 	protected TView? View { get; private set; }
 
-	[MemberNotNullWhen(true, nameof(defaultBindingContextBinding))]
-	internal bool TrySetBindingContext(Binding binding)
+	TView? ICommunityToolkitBehavior<TView>.View
 	{
-		if (!IsBound(BindingContextProperty))
-		{
-			SetBinding(BindingContextProperty, defaultBindingContextBinding = binding);
-			return true;
-		}
-
-		return false;
-	}
-
-	internal bool TryRemoveBindingContext()
-	{
-		if (defaultBindingContextBinding is null)
-		{
-			return false;
-		}
-
-		RemoveBinding(BindingContextProperty);
-		defaultBindingContextBinding = null;
-
-		return true;
+		get => View;
+		set => View = value;
 	}
 
 	/// <summary>
@@ -60,19 +36,11 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
 	}
 
 	/// <inheritdoc/>
-	[MemberNotNull(nameof(View))]
 	protected override void OnAttachedTo(TView bindable)
 	{
 		base.OnAttachedTo(bindable);
 
-		View = bindable;
-		bindable.PropertyChanged += OnViewPropertyChanged;
-
-		TrySetBindingContext(new Binding
-		{
-			Path = BindingContextProperty.PropertyName,
-			Source = bindable
-		});
+		((ICommunityToolkitBehavior<TView>)this).AssignViewAndBingingContext(bindable);
 	}
 
 	/// <inheritdoc/>
@@ -80,11 +48,7 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
 	{
 		base.OnDetachingFrom(bindable);
 
-		TryRemoveBindingContext();
-
-		bindable.PropertyChanged -= OnViewPropertyChanged;
-
-		View = null;
+		((ICommunityToolkitBehavior<TView>)this).UnassignViewAndBingingContext(bindable);
 	}
 
 	/// <summary>
@@ -93,29 +57,18 @@ public abstract class BaseBehavior<TView> : Behavior<TView> where TView : Visual
 	/// <param name="property"></param>
 	/// <param name="defaultBinding"></param>
 	/// <returns></returns>
-	[MemberNotNullWhen(true, nameof(bindingField), nameof(getContextMethod))]
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Obsolete($"{nameof(IsBound)} is no longer used by {nameof(CommunityToolkit)}.{nameof(CommunityToolkit.Maui)} and will be removed in a future release")]
 	protected bool IsBound(BindableProperty property, BindingBase? defaultBinding = null)
 	{
-		var context = getContextMethod?.Invoke(this, new object[] { property });
-		return context != null
+		var getContextMethod = typeof(BindableObject).GetRuntimeMethods().FirstOrDefault(m => m.Name is "GetContext");
+		var bindingField = getContextMethod?.ReturnType.GetRuntimeField("Binding");
+
+		var context = getContextMethod?.Invoke(this, [property]);
+		return context is not null
 			&& bindingField?.GetValue(context) is BindingBase binding
 			&& binding != defaultBinding;
 	}
 
-	void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
-	{
-		if (sender is not TView view)
-		{
-			throw new ArgumentException($"Behavior can only be attached to {typeof(TView)}");
-		}
-
-		try
-		{
-			OnViewPropertyChanged(view, e);
-		}
-		catch (Exception ex) when (Options.ShouldSuppressExceptionsInBehaviors)
-		{
-			Trace.WriteLine(ex);
-		}
-	}
+	void ICommunityToolkitBehavior<TView>.OnViewPropertyChanged(TView sender, PropertyChangedEventArgs e) => OnViewPropertyChanged(sender, e);
 }

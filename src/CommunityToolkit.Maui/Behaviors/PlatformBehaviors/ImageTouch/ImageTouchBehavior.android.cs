@@ -12,7 +12,7 @@ public partial class ImageTouchBehavior
 		{
 			throw new InvalidOperationException($"{nameof(ImageTouchBehavior)} can only be attached to an {nameof(IImage)}");
 		}
-		
+
 		base.OnAttachedTo(bindable, platformView);
 	}
 }

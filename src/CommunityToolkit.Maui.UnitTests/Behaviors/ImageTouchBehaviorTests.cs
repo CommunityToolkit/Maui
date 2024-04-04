@@ -7,7 +7,7 @@ using View = Microsoft.Maui.Controls.View;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class ImageTouchBehaviorTests : BaseTest
+public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, VisualElement>(new ImageTouchBehavior(), new View())
 {
 	readonly ImageTouchBehavior imageTouchBehavior = new();
 
@@ -40,7 +40,7 @@ public class ImageTouchBehaviorTests : BaseTest
 	public void VerifyCanOnlyBeAttachedToIImageText()
 	{
 		InvalidOperationException? exception = null;
-		
+
 		var view = new View();
 
 		try
@@ -51,7 +51,7 @@ public class ImageTouchBehaviorTests : BaseTest
 				AttachTouchBehaviorToVisualElement(view);
 			});
 		}
-		catch(InvalidOperationException e)
+		catch (InvalidOperationException e)
 		{
 			exception = e;
 		}
@@ -179,34 +179,34 @@ public class ImageTouchBehaviorTests : BaseTest
 
 		Assert.Equal(shouldSetImageOnAnimationEnd, viewModel.ShouldSetImageOnAnimationEnd);
 	}
-	
+
 	[Fact]
 	public void VerifyImageSourceStateMachine()
 	{
 		var image = new Image();
 		AttachTouchBehaviorToVisualElement(image);
-		
+
 		imageTouchBehavior.DefaultImageSource = new UriImageSource
 		{
 			Uri = new Uri("https://www.google.com/images/branding/googlelogo/2x/googlelogo_light_color_272x92dp.png")
 		};
-		
+
 		imageTouchBehavior.PressedImageSource = new UriImageSource
 		{
 			Uri = new Uri("https://www.google.com/images/branding/googlelogo/2x/googlelogo_dark_color_272x92dp.png")
 		};
-		
+
 		// Verify Default Source appears when Hover Active but not set
 		imageTouchBehavior.HandleHover(HoverStatus.Entered);
 		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);
 
 		imageTouchBehavior.HoveredImageSource = null;
-		
+
 		// Verify Pressed Source appears when Hover + Press simultaneously active
 		imageTouchBehavior.HandleTouch(TouchStatus.Started);
 		imageTouchBehavior.HandleHover(HoverStatus.Entered);
 		Assert.Equal(imageTouchBehavior.PressedImageSource, image.Source);
-		
+
 		// Verify Hovered Source appears when Hover active
 		imageTouchBehavior.HandleTouch(TouchStatus.Completed);
 		Assert.Equal(imageTouchBehavior.HoveredImageSource, image.Source);
@@ -215,7 +215,7 @@ public class ImageTouchBehaviorTests : BaseTest
 		imageTouchBehavior.HandleHover(HoverStatus.Exited);
 		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);
 	}
-	
+
 	[Fact]
 	public void VerifyImageAspectStateMachine()
 	{
@@ -224,18 +224,18 @@ public class ImageTouchBehaviorTests : BaseTest
 
 		imageTouchBehavior.DefaultImageAspect = Aspect.Center;
 		imageTouchBehavior.PressedImageAspect = Aspect.Fill;
-		
+
 		// Verify Default Aspect appears when Hover Active but not set
 		imageTouchBehavior.HandleHover(HoverStatus.Entered);
 		Assert.Equal(imageTouchBehavior.DefaultImageAspect, image.Aspect);
 
 		imageTouchBehavior.HoveredImageAspect = Aspect.AspectFit;
-		
+
 		// Verify Pressed Aspect appears when Hover + Press simultaneously active
 		imageTouchBehavior.HandleTouch(TouchStatus.Started);
 		imageTouchBehavior.HandleHover(HoverStatus.Entered);
 		Assert.Equal(imageTouchBehavior.PressedImageAspect, image.Aspect);
-		
+
 		// Verify Hovered Aspect appears when Hover active
 		imageTouchBehavior.HandleTouch(TouchStatus.Completed);
 		Assert.Equal(imageTouchBehavior.HoveredImageAspect, image.Aspect);
