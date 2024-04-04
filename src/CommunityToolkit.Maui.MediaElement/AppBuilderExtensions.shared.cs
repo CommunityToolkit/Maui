@@ -23,11 +23,9 @@ public static class AppBuilderExtensions
 		{
 			h.AddHandler<MediaElement, MediaElementHandler>();
 		});
-		
 #if ANDROID
 		builder.Services.AddSingleton<MediaControlsService>();
 #endif
-
 		return builder;
 	}
 }
