@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Handlers;
 

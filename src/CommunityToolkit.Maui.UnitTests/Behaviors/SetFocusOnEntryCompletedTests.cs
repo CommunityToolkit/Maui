@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class SetFocusOnEntryCompletedTests : BaseTest
+public class SetFocusOnEntryCompletedTests() : BaseBehaviorTest<SetFocusOnEntryCompletedBehavior, VisualElement>(new SetFocusOnEntryCompletedBehavior(), new View())
 {
 	[Fact]
 	public void DoesNotSetFocusBeforeCompletion()

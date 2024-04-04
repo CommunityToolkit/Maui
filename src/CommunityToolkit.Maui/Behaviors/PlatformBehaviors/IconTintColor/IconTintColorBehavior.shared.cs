@@ -3,7 +3,7 @@
 /// <summary>
 /// A behavior that allows you to tint an icon with a specified <see cref="Color"/>.
 /// </summary>
-public partial class IconTintColorBehavior : PlatformBehavior<View>
+public partial class IconTintColorBehavior : BasePlatformBehavior<View>
 {
 	/// <summary>
 	/// Attached Bindable Property for the <see cref="TintColor"/>.

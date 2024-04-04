@@ -1,0 +1,31 @@
+﻿<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Views.PopupSizingIssuesPage"
+                Title="MultiplePopupPage"
+                x:TypeArguments="viewModels:PopupSizingIssuesViewModel"
+                x:DataType="viewModels:PopupSizingIssuesViewModel"
+                x:Name="Self">
+
+    <ContentPage.Content>
+        <ScrollView>
+            <VerticalStackLayout Spacing="12">
+                <Label Text="Select a container to show a popup" />
+                <Picker 
+                    ItemsSource="{Binding Containers}" 
+                    SelectedItem="{Binding SelectedContainer}" 
+                    ItemDisplayBinding="{Binding Name}"/>
+
+                <Label Text="Padding" />
+                <Entry Text="{Binding Padding}" />
+                
+                <Label Text="Margin" />
+                <Entry Text="{Binding Margin}" />
+
+                <Button Text="Show Popup" Command="{Binding ShowPopupCommand}" CommandParameter="{Binding Source={x:Reference Self}}" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </ContentPage.Content>
+
+</pages:BasePage>

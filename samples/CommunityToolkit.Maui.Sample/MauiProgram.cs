@@ -41,10 +41,14 @@ public static class MauiProgram
 	{
 		var builder = MauiApp.CreateBuilder()
 #if DEBUG
-								.UseMauiCommunityToolkit()
+								.UseMauiCommunityToolkit(options =>
+								{
+									options.SetShouldEnableSnackbarOnWindows(true);
+								})
 #else
 								.UseMauiCommunityToolkit(options =>
 								{
+									options.SetShouldEnableSnackbarOnWindows(true);
 									options.SetShouldSuppressExceptionsInConverters(true);
 									options.SetShouldSuppressExceptionsInBehaviors(true);
 									options.SetShouldSuppressExceptionsInAnimations(true);
@@ -119,10 +123,11 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<RequiredStringValidationBehaviorPage, RequiredStringValidationBehaviorViewModel>();
 		services.AddTransientWithShellRoute<SelectAllTextBehaviorPage, SelectAllTextBehaviorViewModel>();
 		services.AddTransientWithShellRoute<SetFocusOnEntryCompletedBehaviorPage, SetFocusOnEntryCompletedBehaviorViewModel>();
+		services.AddTransientWithShellRoute<StatusBarBehaviorPage, StatusBarBehaviorViewModel>();
 		services.AddTransientWithShellRoute<TextValidationBehaviorPage, TextValidationBehaviorViewModel>();
+		services.AddTransientWithShellRoute<TouchBehaviorPage, TouchBehaviorViewModel>();
 		services.AddTransientWithShellRoute<UriValidationBehaviorPage, UriValidationBehaviorViewModel>();
 		services.AddTransientWithShellRoute<UserStoppedTypingBehaviorPage, UserStoppedTypingBehaviorViewModel>();
-		services.AddTransientWithShellRoute<StatusBarBehaviorPage, StatusBarBehaviorViewModel>();
 
 		// Add Converters Pages + ViewModels
 		services.AddTransientWithShellRoute<BoolToObjectConverterPage, BoolToObjectConverterViewModel>();
@@ -199,6 +204,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<SemanticOrderViewPage, SemanticOrderViewPageViewModel>();
 		services.AddTransientWithShellRoute<ShowPopupInOnAppearingPage, ShowPopupInOnAppearingPageViewModel>();
 		services.AddTransientWithShellRoute<StylePopupPage, StylePopupViewModel>();
+		services.AddTransientWithShellRoute<PopupSizingIssuesPage, PopupSizingIssuesViewModel>();
 
 		// Add Popups
 		services.AddTransientPopup<CsharpBindingPopup, CsharpBindingPopupViewModel>();

@@ -21,7 +21,7 @@ public class FontElementHandlerStub : ViewHandler<IView, object>
 	{
 	}
 
-	public List<string> Updates { get; set; } = new List<string>();
+	public List<string> Updates { get; set; } = [];
 
 	protected override object CreatePlatformView() => new object();
 
