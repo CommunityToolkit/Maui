@@ -48,7 +48,7 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawin
 	public int MapShouldSmoothPathWhenDrawnCount { get; private set; }
 	public int MapIsMultiLineModeEnabledCount { get; private set; }
 	public int MapDrawCount { get; private set; }
-	public List<MauiDrawingLine> Lines { get; } = new();
+	public List<MauiDrawingLine> Lines { get; } = [];
 
 	static void MapLineWidth(MockDrawingViewHandler arg1, IDrawingView arg2)
 	{
@@ -128,7 +128,7 @@ class MockDrawingLine : IDrawingLine
 	public int Granularity { get; set; }
 	public Color LineColor { get; set; } = Colors.Blue;
 	public float LineWidth { get; set; }
-	public ObservableCollection<PointF> Points { get; set; } = new();
+	public ObservableCollection<PointF> Points { get; set; } = [];
 	public bool ShouldSmoothPathWhenDrawn { get; set; }
 	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Paint background, CancellationToken token)
 	{

@@ -2,10 +2,7 @@
 
 namespace CommunityToolkit.Maui.Sample.Pages.Extensions;
 
-public class ExtensionsGalleryPage : BaseGalleryPage<ExtensionsGalleryViewModel>
+public class ExtensionsGalleryPage(IDeviceInfo deviceInfo, ExtensionsGalleryViewModel extensionsGalleryViewModel) : BaseGalleryPage<ExtensionsGalleryViewModel>("Extensions", deviceInfo, extensionsGalleryViewModel)
 {
-	public ExtensionsGalleryPage(IDeviceInfo deviceInfo, ExtensionsGalleryViewModel extensionsGalleryViewModel)
-		: base("Extensions", deviceInfo, extensionsGalleryViewModel)
-	{
-	}
+
 }

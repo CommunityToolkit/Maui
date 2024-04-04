@@ -1,9 +1,10 @@
 ﻿using CommunityToolkit.Maui.Behaviors;
+using CommunityToolkit.Maui.UnitTests.Mocks;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class ValidationBehaviorTests : BaseTest
+public class ValidationBehaviorTests() : BaseBehaviorTest<ValidationBehavior, VisualElement>(new MockValidationBehavior(), new View())
 {
 	[Fact]
 	public void ValidateOnValueChanged()
@@ -198,19 +199,36 @@ public class ValidationBehaviorTests : BaseTest
 		});
 	}
 
-	class MockValidationBehavior : ValidationBehavior<string>
+	[Fact]
+	public void TestRemoveValidationBindingWithBindingContext()
 	{
-		public string? ExpectedValue { get; init; }
-		public bool SimulateValidationDelay { get; init; } = false;
-
-		protected override async ValueTask<bool> ValidateAsync(string? value, CancellationToken token)
+		var behavior = new MockValidationBehavior();
+		var view = new View
 		{
-			if (SimulateValidationDelay)
-			{
-				await Task.Delay(500, token);
-			}
+			BindingContext = new MockPageViewModel()
+		};
 
-			return value == ExpectedValue;
-		}
+		view.Behaviors.Add(behavior);
+
+		Assert.IsAssignableFrom<MockValidationBehavior>(Assert.Single(view.Behaviors));
+
+		view.Behaviors.Remove(behavior);
+
+		Assert.Empty(view.Behaviors);
+	}
+
+	[Fact]
+	public void TestRemoveValidationBindingWithoutBindingContext()
+	{
+		var behavior = new MockValidationBehavior();
+		var view = new View();
+
+		view.Behaviors.Add(behavior);
+
+		Assert.IsAssignableFrom<MockValidationBehavior>(Assert.Single(view.Behaviors));
+
+		view.Behaviors.Remove(behavior);
+
+		Assert.Empty(view.Behaviors);
 	}
 }

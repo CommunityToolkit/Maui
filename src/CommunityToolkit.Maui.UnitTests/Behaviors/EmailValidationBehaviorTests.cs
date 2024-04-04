@@ -5,96 +5,96 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class EmailValidationBehaviorTests : BaseTest
+public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBehavior, VisualElement>(new EmailValidationBehavior(), new View())
 {
-	public static IReadOnlyList<object[]> NonDefaultKeyboardData { get; } = new[]
-	{
-		new[] { Keyboard.Plain },
-		new[] { Keyboard.Numeric },
-		new[] { Keyboard.Chat },
-		new[] { Keyboard.Telephone },
-		new[] { Keyboard.Text },
-		new[] { Keyboard.Url },
-	};
+	public static IReadOnlyList<object[]> NonDefaultKeyboardData { get; } =
+	[
+		[Keyboard.Plain],
+		[Keyboard.Numeric],
+		[Keyboard.Chat],
+		[Keyboard.Telephone],
+		[Keyboard.Text],
+		[Keyboard.Url],
+	];
 
 	// Data from https://codefool.tumblr.com/post/15288874550/list-of-valid-and-invalid-email-addresses
-	public static IReadOnlyList<object?[]> ForceValidateData { get; } = new[]
-	{
-		new object[] { @"email@example.com", true },
-		new object[] { @"firstname.lastname@example.com", true },
-		new object[] { @"email@subdomain.example.com", true },
-		new object[] { @"firstname+lastname@example.com", true },
-		new object[] { @"email@123.123.123.123", true },
-		new object[] { @"email@[123.123.123.123]", true },
-		new object[] { @"email@[IPv6:2001:db8:3333:4444:5555:6666:7777:8888]", true },
-		new object[] { @"""email""@example.com", true },
-		new object[] { @"1234567890@example.com", true },
-		new object[] { @"email@example-one.com", true },
-		new object[] { @"_______@example.com", true },
-		new object[] { @"email@example.name", true },
-		new object[] { @"email@example.museum", true },
-		new object[] { @"email@example.co.jp", true },
-		new object[] { @"firstname-lastname@example.com", true },
-		new object[] { @"email@😃.example-one.com", true },
-		new object[] { @"email@IPv6:2001:db8:3333:4444:5555:6666:7777:8888", false },
-		new object[] { @"email@2001:db8:3333:4444:5555:6666:7777:8888", false },
-		new object[] { @"plainaddress", false },
-		new object[] { @"#@%^%#$@#$@#.com", false },
-		new object[] { @"@example.com", false },
-		new object[] { @"Joe Smith<email@example.com>", false },
-		new object[] { @"email.example.com", false },
-		new object[] { @"email@example@example.com", false },
-		new object[] { @".email@example.com", false },
-		new object[] { @"email.@example.com", false },
-		new object[] { @"email..email@example.com", false },
-		new object[] { @"email@example.com (Joe Smith)", false },
-		new object[] { @"email@example", false },
-		new object[] { @"email@-example.com", false },
-		new object[] { @"email@111.222.333.44444", false },
-		new object[] { @"email@example..com", false },
-		new object[] { @"Abc..123@example.com", false },
-		new object[] { @"""(),:;<>[\]", false },
-		new object[] { @"this\ is""really""not\allowed@example.co", false },
-		new object[] { "", false },
-	};
+	public static IReadOnlyList<object?[]> ForceValidateData { get; } =
+	[
+		[@"email@example.com", true],
+		[@"firstname.lastname@example.com", true],
+		[@"email@subdomain.example.com", true],
+		[@"firstname+lastname@example.com", true],
+		[@"email@123.123.123.123", true],
+		[@"email@[123.123.123.123]", true],
+		[@"email@[IPv6:2001:db8:3333:4444:5555:6666:7777:8888]", true],
+		[@"""email""@example.com", true],
+		[@"1234567890@example.com", true],
+		[@"email@example-one.com", true],
+		[@"_______@example.com", true],
+		[@"email@example.name", true],
+		[@"email@example.museum", true],
+		[@"email@example.co.jp", true],
+		[@"firstname-lastname@example.com", true],
+		[@"email@😃.example-one.com", true],
+		[@"email@IPv6:2001:db8:3333:4444:5555:6666:7777:8888", false],
+		[@"email@2001:db8:3333:4444:5555:6666:7777:8888", false],
+		[@"plainaddress", false],
+		[@"#@%^%#$@#$@#.com", false],
+		[@"@example.com", false],
+		[@"Joe Smith<email@example.com>", false],
+		[@"email.example.com", false],
+		[@"email@example@example.com", false],
+		[@".email@example.com", false],
+		[@"email.@example.com", false],
+		[@"email..email@example.com", false],
+		[@"email@example.com (Joe Smith)", false],
+		[@"email@example", false],
+		[@"email@-example.com", false],
+		[@"email@111.222.333.44444", false],
+		[@"email@example..com", false],
+		[@"Abc..123@example.com", false],
+		[@"""(),:;<>[\]", false],
+		[@"this\ is""really""not\allowed@example.co", false],
+		["", false],
+	];
 
-	public static IReadOnlyList<object?[]> EmailRegexTestData { get; } = new[]
-	{
-		new object[] { @"email@example.com", true },
-		new object[] { @"firstname.lastname@example.com", true },
-		new object[] { @"email@subdomain.example.com", true },
-		new object[] { @"firstname+lastname@example.com", true },
-		new object[] { @"email@123.123.123.123", true },
-		new object[] { @"email@[123.123.123.123]", true },
-		new object[] { @"""email""@example.com", true },
-		new object[] { @"1234567890@example.com", true },
-		new object[] { @"email@example-one.com", true },
-		new object[] { @"_______@example.com", true },
-		new object[] { @"email@example.name", true },
-		new object[] { @"email@example.museum", true },
-		new object[] { @"email@example.co.jp", true },
-		new object[] { @"firstname-lastname@example.com", true },
-		new object[] { @"email@😃.example-one.com", true },
-		new object[] { @"plainaddress", false },
-		new object[] { @"#@%^%#$@#$@#.com", false },
-		new object[] { @"@example.com", false },
-		new object[] { @"Joe Smith<email@example.com>", false },
-		new object[] { @"email.example.com", false },
-		new object[] { @"email@example@example.com", false },
-		new object[] { @"email@example.com (Joe Smith)", false },
-		new object[] { @"email@example", false },
-		new object[] { @"""(),:;<>[\]", false },
-		new object[] { @"this\ is""really""not\allowed@example.co", false },
-		new object[] { "", false },
-	};
+	public static IReadOnlyList<object?[]> EmailRegexTestData { get; } =
+	[
+		[@"email@example.com", true],
+		[@"firstname.lastname@example.com", true],
+		[@"email@subdomain.example.com", true],
+		[@"firstname+lastname@example.com", true],
+		[@"email@123.123.123.123", true],
+		[@"email@[123.123.123.123]", true],
+		[@"""email""@example.com", true],
+		[@"1234567890@example.com", true],
+		[@"email@example-one.com", true],
+		[@"_______@example.com", true],
+		[@"email@example.name", true],
+		[@"email@example.museum", true],
+		[@"email@example.co.jp", true],
+		[@"firstname-lastname@example.com", true],
+		[@"email@😃.example-one.com", true],
+		[@"plainaddress", false],
+		[@"#@%^%#$@#$@#.com", false],
+		[@"@example.com", false],
+		[@"Joe Smith<email@example.com>", false],
+		[@"email.example.com", false],
+		[@"email@example@example.com", false],
+		[@"email@example.com (Joe Smith)", false],
+		[@"email@example", false],
+		[@"""(),:;<>[\]", false],
+		[@"this\ is""really""not\allowed@example.co", false],
+		["", false],
+	];
 
-	public static IReadOnlyList<object?[]> NonAsciiEmailAddress { get; } = new[]
-	{
-		new object?[] { "example@😃.co.jp", "example@xn--h28h.co.jp" },
-		new object?[] { "example@≡.com", "example@xn--2ch.com" },
-		new object?[] { "example@111.222.111.222", "example@111.222.111.222" },
-		new object?[] { "firstname@example.com", "firstname@example.com" },
-	};
+	public static IReadOnlyList<object?[]> NonAsciiEmailAddress { get; } =
+	[
+		["example@😃.co.jp", "example@xn--h28h.co.jp"],
+		["example@≡.com", "example@xn--2ch.com"],
+		["example@111.222.111.222", "example@111.222.111.222"],
+		["firstname@example.com", "firstname@example.com"],
+	];
 
 	[Theory]
 	[MemberData(nameof(ForceValidateData))]
