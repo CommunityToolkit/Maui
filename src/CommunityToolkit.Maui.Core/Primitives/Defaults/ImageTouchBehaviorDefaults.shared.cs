@@ -42,7 +42,7 @@ public static class ImageTouchBehaviorDefaults
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const Aspect PressedBackgroundImageAspect = Aspect.AspectFit;
-	
+
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="ShouldSetImageOnAnimationEnd"/>
 	/// </summary>

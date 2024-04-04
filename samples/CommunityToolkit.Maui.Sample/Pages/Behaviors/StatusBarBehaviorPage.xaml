@@ -6,7 +6,6 @@
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
-    x:Name="Page"
     Title="StatusBarBehavior"
     x:DataType="vm:StatusBarBehaviorViewModel"
     x:TypeArguments="vm:StatusBarBehaviorViewModel">
@@ -74,8 +73,8 @@
 
     <Page.Behaviors>
         <mct:StatusBarBehavior
-            StatusBarColor="{Binding Source={x:Reference Page}, Path=BindingContext.StatusBarColor}"
-            StatusBarStyle="{Binding Source={x:Reference Page}, Path=BindingContext.StatusBarStyle}" />
+            StatusBarColor="{Binding StatusBarColor}"
+            StatusBarStyle="{Binding StatusBarStyle}" />
     </Page.Behaviors>
 
     <ScrollView Padding="{StaticResource ContentPadding}">
