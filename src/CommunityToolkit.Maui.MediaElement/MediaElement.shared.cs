@@ -101,19 +101,19 @@ public class MediaElement : View, IMediaElement, IDisposable
 			BindingMode.TwoWay, propertyChanging: ValidateVolume);
 
 	/// <summary>
-	/// Backing store for the <see cref="ContentTitle"/> property.
+	/// Backing store for the <see cref="MetaDataTitle"/> property.
 	/// </summary>
-	public static readonly BindableProperty ContentTitleProperty = BindableProperty.Create(nameof(ContentTitle), typeof(string), typeof(MediaElement), string.Empty);
+	public static readonly BindableProperty MetaDataTitleProperty = BindableProperty.Create(nameof(MetaDataTitle), typeof(string), typeof(MediaElement), string.Empty);
 
 	/// <summary>
-	/// Backing store for the <see cref="ContentText"/> property.
+	/// Backing store for the <see cref="MetaDataArtist"/> property.
 	/// </summary>
-	public static readonly BindableProperty ContentTextProperty = BindableProperty.Create(nameof(ContentText), typeof(string), typeof(MediaElement), string.Empty);
+	public static readonly BindableProperty MetaDataArtistProperty = BindableProperty.Create(nameof(MetaDataArtist), typeof(string), typeof(MediaElement), string.Empty);
 	
 	/// <summary>
-	/// Backing store for the <see cref="LargeImageUrl"/> property.
+	/// Backing store for the <see cref="MetaDataArtworkUrl"/> property.
 	/// </summary>
-	public static readonly BindableProperty LargeImageUrlProperty = BindableProperty.Create(nameof(LargeImageUrl), typeof(string), typeof(MediaElement), string.Empty);
+	public static readonly BindableProperty MetaDataArtworkUrlProperty = BindableProperty.Create(nameof(MetaDataArtworkUrl), typeof(string), typeof(MediaElement), string.Empty);
 
 	/// <summary>
 	/// Backing store for the <see cref="MediaElementSourceType"/> property.
@@ -337,34 +337,33 @@ public class MediaElement : View, IMediaElement, IDisposable
 	}
 
 	/// <summary>
-	/// Gets or sets the Content Title of the media.
+	/// Gets or sets the Title of the media.
 	/// This is a bindable property.
 	/// </summary>
-	public string ContentTitle
+	public string MetaDataTitle
 	{
-		get => (string)GetValue(ContentTitleProperty);
-		set => SetValue(ContentTitleProperty, value);
+		get => (string)GetValue(MetaDataTitleProperty);
+		set => SetValue(MetaDataTitleProperty, value);
 	}
 
 	/// <summary>
-	/// Gets or sets the Content Text of the media.
+	/// Gets or sets the Artist of the media.
 	/// This is a bindable property.
 	/// </summary>
-	public string ContentText
+	public string MetaDataArtist
 	{
-		get => (string)GetValue(ContentTextProperty);
-		set => SetValue(ContentTextProperty, value);
+		get => (string)GetValue(MetaDataArtistProperty);
+		set => SetValue(MetaDataArtistProperty, value);
 	}
 
 	/// <summary>
-	/// Gets or sets the Image Url of the media.
+	/// Gets or sets the Artwork Image Url of the media.
 	/// This is a bindable property.
 	/// </summary>
-	public string LargeImageUrl
+	public string MetaDataArtworkUrl
 	{
-		get => (string)GetValue(LargeImageUrlProperty);
-		set => SetValue(LargeImageUrlProperty, value);
-
+		get => (string)GetValue(MetaDataArtworkUrlProperty);
+		set => SetValue(MetaDataArtworkUrlProperty, value);
 	}
 
 	/// <summary>

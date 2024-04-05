@@ -181,13 +181,13 @@ public class MetaDataExtensions
 		}
 		NowPlayingInfo ??= new();
 
-		NowPlayingInfo.Title = MediaElement.ContentTitle;
-		NowPlayingInfo.Artist = MediaElement.ContentText;
+		NowPlayingInfo.Title = MediaElement.MetaDataTitle;
+		NowPlayingInfo.Artist = MediaElement.MetaDataArtist;
 		NowPlayingInfo.PlaybackDuration = PlayerItem?.Duration.Seconds ?? 0;
 		NowPlayingInfo.IsLiveStream = false;
 		NowPlayingInfo.PlaybackRate = (double)MediaElement.Speed;
 		NowPlayingInfo.ElapsedPlaybackTime = PlayerItem?.CurrentTime.Seconds ?? 0;
-		MPMediaItemArtwork? artwork = GetArtwork(MediaElement.LargeImageUrl);
+		MPMediaItemArtwork? artwork = GetArtwork(MediaElement.MetaDataArtworkUrl);
 		if (artwork is not null)
 		{
 			NowPlayingInfo.Artwork = artwork;
