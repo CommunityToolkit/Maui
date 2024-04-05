@@ -94,10 +94,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	
 	async Task StartService()
 	{
-		var bitmap = await GetBitmapFromUrl(MediaElement.MetadataArtwork, Platform.AppContext.Resources);
+		var bitmap = await GetBitmapFromUrl(MediaElement.LargeImageUrl, Platform.AppContext.Resources);
 		var mediaMetaData = new MediaMetadataCompat.Builder();
-		mediaMetaData.PutString(MediaMetadataCompat.MetadataKeyArtist, MediaElement.MetadataArtist);
-		mediaMetaData.PutString(MediaMetadataCompat.MetadataKeyTitle, MediaElement.MetadataTitle);
+		mediaMetaData.PutString(MediaMetadataCompat.MetadataKeyArtist, MediaElement.ContentText);
+		mediaMetaData.PutString(MediaMetadataCompat.MetadataKeyTitle, MediaElement.ContentTitle);
 		mediaMetaData.PutBitmap(MediaMetadataCompat.MetadataKeyAlbumArt, bitmap);
 		mediaMetaData.PutLong(MediaMetadataCompat.MetadataKeyDuration, Player?.Duration ?? 0);
 		mediaMetaData.Build();
@@ -106,10 +106,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
 		if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
 		{
-			intent.PutExtra("title", MediaElement.MetadataTitle);
-			intent.PutExtra("artist", MediaElement.MetadataArtist);
-			intent.PutExtra("album", MediaElement.MetadataAlbum);
-			intent.PutExtra("albumArtUri", MediaElement.MetadataArtwork);
+			intent.PutExtra("title", MediaElement.ContentTitle);
+			intent.PutExtra("artist", MediaElement.ContentText);
+			intent.PutExtra("albumArtUri", MediaElement.LargeImageUrl);
 			intent.PutExtra("position", ((long)MediaElement.Position.TotalSeconds));
 			intent.PutExtra("currentTime", SystemClock.ElapsedRealtime());
 			intent.PutExtra("duration", ((long)MediaElement.Duration.TotalSeconds));

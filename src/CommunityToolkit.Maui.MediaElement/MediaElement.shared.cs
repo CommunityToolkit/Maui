@@ -101,28 +101,19 @@ public class MediaElement : View, IMediaElement, IDisposable
 			BindingMode.TwoWay, propertyChanging: ValidateVolume);
 
 	/// <summary>
-	/// Backing store for the <see cref="MetadataTitle"/> property.
+	/// Backing store for the <see cref="ContentTitle"/> property.
 	/// </summary>
-	public static readonly BindableProperty MetadataTitleProperty = BindableProperty.Create(nameof(MetadataTitle), typeof(string), typeof(MediaElement), string.Empty);
+	public static readonly BindableProperty ContentTitleProperty = BindableProperty.Create(nameof(ContentTitle), typeof(string), typeof(MediaElement), string.Empty);
 
 	/// <summary>
-	/// Backing store for the <see cref="MetadataAlbum"/> property.
+	/// Backing store for the <see cref="ContentText"/> property.
 	/// </summary>
-	public static readonly BindableProperty MetadataAlbumProperty = BindableProperty.Create(nameof(MetadataAlbum), typeof(string), typeof(MediaElement), string.Empty);
-
+	public static readonly BindableProperty ContentTextProperty = BindableProperty.Create(nameof(ContentText), typeof(string), typeof(MediaElement), string.Empty);
+	
 	/// <summary>
-	/// Backing store for the <see cref="MetadataArtist"/> property.
+	/// Backing store for the <see cref="LargeImageUrl"/> property.
 	/// </summary>
-	public static readonly BindableProperty MetadataArtistProperty = BindableProperty.Create(nameof(MetadataArtist), typeof(string), typeof(MediaElement), string.Empty);
-	/// <summary>
-	/// Backing store for the <see cref="MetadataGenre"/> property."/>
-	/// </summary>
-	public static readonly BindableProperty MetadataGenreProperty = BindableProperty.Create(nameof(MetadataGenre), typeof(string), typeof(MediaElement), string.Empty);
-
-	/// <summary>
-	/// Backing store for the <see cref="MetadataArtwork"/> property.
-	/// </summary>
-	public static readonly BindableProperty MetadataArtworkProperty = BindableProperty.Create(nameof(MetadataArtwork), typeof(string), typeof(MediaElement), string.Empty);
+	public static readonly BindableProperty LargeImageUrlProperty = BindableProperty.Create(nameof(LargeImageUrl), typeof(string), typeof(MediaElement), string.Empty);
 
 	/// <summary>
 	/// Backing store for the <see cref="MediaElementSourceType"/> property.
@@ -346,53 +337,33 @@ public class MediaElement : View, IMediaElement, IDisposable
 	}
 
 	/// <summary>
-	/// Gets or sets the title of the media.
+	/// Gets or sets the Content Title of the media.
 	/// This is a bindable property.
 	/// </summary>
-	public string MetadataTitle
+	public string ContentTitle
 	{
-		get => (string)GetValue(MetadataTitleProperty);
-		set => SetValue(MetadataTitleProperty, value);
+		get => (string)GetValue(ContentTitleProperty);
+		set => SetValue(ContentTitleProperty, value);
 	}
 
 	/// <summary>
-	/// Gets or sets the artist of the media.
+	/// Gets or sets the Content Text of the media.
 	/// This is a bindable property.
 	/// </summary>
-	public string MetadataAlbum
+	public string ContentText
 	{
-		get => (string)GetValue(MetadataAlbumProperty);
-		set => SetValue(MetadataAlbumProperty, value);
+		get => (string)GetValue(ContentTextProperty);
+		set => SetValue(ContentTextProperty, value);
 	}
 
 	/// <summary>
-	/// Gets or sets the genre of the media.
+	/// Gets or sets the Image Url of the media.
 	/// This is a bindable property.
 	/// </summary>
-	public string MetadataArtist
+	public string LargeImageUrl
 	{
-		get => (string)GetValue(MetadataArtistProperty);
-		set => SetValue(MetadataArtistProperty, value);
-	}
-
-	/// <summary>
-	/// Gets or sets the genre of the media.
-	/// This is a bindable property.
-	/// </summary>
-	public string MetadataGenre
-	{
-		get => (string)GetValue(MetadataGenreProperty);
-		set => SetValue(MetadataGenreProperty, value);
-	}
-
-	/// <summary>
-	/// Gets or sets the artwork of the media.
-	/// This is a bindable property.
-	/// </summary>
-	public string MetadataArtwork
-	{
-		get => (string)GetValue(MetadataArtworkProperty);
-		set => SetValue(MetadataArtworkProperty, value);
+		get => (string)GetValue(LargeImageUrlProperty);
+		set => SetValue(LargeImageUrlProperty, value);
 
 	}
 

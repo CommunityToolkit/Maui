@@ -56,23 +56,21 @@ public class MetaDataExtensions
 			return;
 		}
 
-		if (!string.IsNullOrEmpty(mp.MetadataArtwork))
+		if (!string.IsNullOrEmpty(mp.LargeImageUrl))
 		{
-			SystemMediaControls.DisplayUpdater.Thumbnail = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromUri(new Uri(mp.MetadataArtwork ?? string.Empty));
+			SystemMediaControls.DisplayUpdater.Thumbnail = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromUri(new Uri(mp.LargeImageUrl ?? string.Empty));
 		}
 		if (mp.SourceType == Primitives.MediaElementSourceType.Video)
 		{
 			SystemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Video;
-			SystemMediaControls.DisplayUpdater.VideoProperties.Title = mp.MetadataTitle;
+			SystemMediaControls.DisplayUpdater.VideoProperties.Title = mp.ContentTitle;
+			SystemMediaControls.DisplayUpdater.VideoProperties.Subtitle = mp.ContentText;
 		}
 		else if (mp.SourceType == Primitives.MediaElementSourceType.Audio)
 		{
 			SystemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Music;
-			SystemMediaControls.DisplayUpdater.MusicProperties.AlbumTitle = mp.MetadataAlbum;
-			SystemMediaControls.DisplayUpdater.MusicProperties.Title = mp.MetadataTitle;
-			SystemMediaControls.DisplayUpdater.MusicProperties.AlbumArtist = mp.MetadataArtist;
-			SystemMediaControls.DisplayUpdater.MusicProperties.Artist = mp.MetadataArtist;
-			SystemMediaControls.DisplayUpdater.MusicProperties.Genres.Add(mp.MetadataGenre);
+			SystemMediaControls.DisplayUpdater.MusicProperties.Artist = mp.ContentText;
+			SystemMediaControls.DisplayUpdater.MusicProperties.Title = mp.ContentTitle;
 		}
 		SystemMediaControls.DisplayUpdater.Update();
 	}

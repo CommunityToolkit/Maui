@@ -12,27 +12,17 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// <summary>
 	/// Gets or sets the title of the media.
 	/// </summary>
-	string MetadataTitle { get; set; }
+	string ContentTitle { get; set; }
 
 	/// <summary>
 	/// Gets or sets the album of the media.
 	/// </summary>
-	string MetadataAlbum { get; set; }
-
-	/// <summary>
-	/// Gets or sets the artist of the media.
-	/// </summary>
-	string MetadataArtist { get; set; }
-
-	/// <summary>
-	/// Gets or sets the genre of the media.
-	/// </summary>
-	string MetadataGenre { get; set; }
+	string ContentText { get; set; }
 
 	/// <summary>
 	/// Gets or sets the artwork of the media.
 	/// </summary>
-	string MetadataArtwork { get; set; }
+	string LargeImageUrl { get; set; }
 
 	/// <summary>
 	/// Gets or sets the source type of the media.

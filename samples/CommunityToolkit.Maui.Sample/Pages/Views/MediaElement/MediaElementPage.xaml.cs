@@ -159,12 +159,9 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		switch (result)
 		{
 			case loadOnlineMp4:
-				MediaElement.MetadataTitle = "Big Buck Bunny";
-				MediaElement.MetadataGenre = "Animation";
-				MediaElement.MetadataArtwork = "https://michellevella.com/cdn/shop/products/BeatlesLonelyHearts4UP_1728x.jpg?v=1660582971";
-				MediaElement.MetadataAlbum = "Big Buck Bunny Album";
-				MediaElement.MetadataArtist = "Big Buck Bunny Artist";
-				MediaElement.MetadataGenre = "Big Buck Bunny Genre";
+				MediaElement.ContentTitle = "Big Buck Bunny";
+				MediaElement.LargeImageUrl = "https://michellevella.com/cdn/shop/products/BeatlesLonelyHearts4UP_1728x.jpg?v=1660582971";
+				MediaElement.ContentText = "Big Buck Bunny Album";
 				MediaElement.SourceType = Primitives.MediaElementSourceType.Audio;
 				MediaElement.Source =
 					MediaSource.FromUri(
@@ -172,11 +169,9 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				return;
 
 			case loadHls:
-				MediaElement.MetadataAlbum = "HLS Album";
-				MediaElement.MetadataArtist = "HLS Artist";
-				MediaElement.MetadataArtwork = "https://michellevella.com/cdn/shop/products/BeatlesLonelyHearts4UP_1728x.jpg?v=1660582971";
-				MediaElement.MetadataGenre = "HLS Genre";
-				MediaElement.MetadataTitle = "HLS Title";
+				MediaElement.ContentText = "HLS Album";
+				MediaElement.LargeImageUrl = "https://michellevella.com/cdn/shop/products/BeatlesLonelyHearts4UP_1728x.jpg?v=1660582971";
+				MediaElement.ContentTitle = "HLS Title";
 				MediaElement.SourceType = Primitives.MediaElementSourceType.Audio;
 				MediaElement.Source
 					= MediaSource.FromUri(
@@ -184,21 +179,17 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				return;
 
 			case resetSource:
-				MediaElement.MetadataArtwork = string.Empty;
-				MediaElement.MetadataTitle = string.Empty;
-				MediaElement.MetadataAlbum = string.Empty;
-				MediaElement.MetadataArtist = string.Empty;
-				MediaElement.MetadataGenre = string.Empty;
+				MediaElement.LargeImageUrl = string.Empty;
+				MediaElement.ContentTitle = string.Empty;
+				MediaElement.ContentText = string.Empty;
 				MediaElement.SourceType = Primitives.MediaElementSourceType.Unknown;
 				MediaElement.Source = null;
 				return;
 
 			case loadLocalResource:
-				MediaElement.MetadataArtwork = "https://michellevella.com/cdn/shop/products/BeatlesLonelyHearts4UP_1728x.jpg?v=1660582971";
-				MediaElement.MetadataTitle = "Local Resource";
-				MediaElement.MetadataAlbum = "Local Resource Album";
-				MediaElement.MetadataArtist = "Local Resource Artist";
-				MediaElement.MetadataGenre = "Local Resource Genre";
+				MediaElement.LargeImageUrl = "https://michellevella.com/cdn/shop/products/BeatlesLonelyHearts4UP_1728x.jpg?v=1660582971";
+				MediaElement.ContentTitle = "Local Resource Title";
+				MediaElement.ContentText = "Local Resource Album";
 				MediaElement.SourceType = Primitives.MediaElementSourceType.Audio;
 
 				if (DeviceInfo.Platform == DevicePlatform.MacCatalyst
