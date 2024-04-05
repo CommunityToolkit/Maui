@@ -33,28 +33,26 @@
                     HorizontalTextAlignment="Center"
                     Text="{Binding TouchCount, StringFormat='Touches: {0}'}" />
 
-            <Label Style="{StaticResource SectionHeader}" Text="Image | Toggle" />
-            <Image HeightRequest="100" WidthRequest="100">
-                <Image.Behaviors>
-                    <mct:ImageTouchBehavior
-                        Command="{Binding IncreaseTouchCountCommand}"
-                        DefaultImageSource="button.png"
-                        PressedImageSource="button_pressed.png" />
-                </Image.Behaviors>
-            </Image>
+                <Label Style="{StaticResource SectionHeader}" Text="Image | Toggle" />
+                <Image HeightRequest="100" WidthRequest="100">
+                    <Image.Behaviors>
+                        <mct:ImageTouchBehavior
+                            Command="{Binding IncreaseTouchCountCommand}"
+                            DefaultImageSource="button.png"
+                            PressedImageSource="button_pressed.png" />
+                    </Image.Behaviors>
+                </Image>
 
-            <Label Style="{StaticResource SectionHeader}" Text="Scale | Fade | Animated" />
-            <HorizontalStackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="Center">
-                <HorizontalStackLayout.Behaviors>
-                    <mct:TouchBehavior
-                        BindingContext="{Binding Source={x:Reference Page}, Path=BindingContext}"
-                        Command="{Binding IncreaseTouchCountCommand}"
-                        DefaultAnimationDuration="250"
-                        DefaultAnimationEasing="{x:Static Easing.CubicInOut}"
-                        Command="{Binding IncreaseTouchCountCommand}"
-                        PressedOpacity="0.6"
-                        PressedScale="0.8" />
-                </HorizontalStackLayout.Behaviors>
+                <Label Style="{StaticResource SectionHeader}" Text="Scale | Fade | Animated" />
+                <HorizontalStackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="Center">
+                    <HorizontalStackLayout.Behaviors>
+                        <mct:TouchBehavior
+                            Command="{Binding IncreaseTouchCountCommand}"
+                            DefaultAnimationDuration="250"
+                            DefaultAnimationEasing="{x:Static Easing.CubicInOut}"
+                            PressedOpacity="0.6"
+                            PressedScale="0.8" />
+                    </HorizontalStackLayout.Behaviors>
 
                     <ContentView
                         BackgroundColor="Gold"
@@ -74,44 +72,33 @@
             <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
                 <Label Style="{StaticResource SectionHeader}" Text="Long Press | Hover" />
 
-            <Label
-                Margin="0,0,0,6"
-                FontSize="Body"
-                HorizontalOptions="CenterAndExpand"
-                Text="{Binding LongPressCount, StringFormat='Long press count: {0}'}" />
-            <HorizontalStackLayout
-                Padding="20"
-                Background="Black"
-                HorizontalOptions="CenterAndExpand">
-                <HorizontalStackLayout.Behaviors>
-                    <mct:TouchBehavior
-                        Command="{Binding IncreaseTouchCountCommand}"
-                        HoveredBackgroundColor="{StaticResource Gray900}"
-                        HoveredScale="1.2"
-                        LongPressCommand="{Binding IncreaseLongPressCountCommand}" />
-                </HorizontalStackLayout.Behaviors>
                 <Label
                     Margin="0,0,0,6"
                     FontSize="Body"
                     HorizontalOptions="CenterAndExpand"
                     Text="{Binding LongPressCount, StringFormat='Long press count: {0}'}" />
-                <HorizontalStackLayout
-                    Padding="20"
-                    Background="Black"
-                    HorizontalOptions="CenterAndExpand">
+                <HorizontalStackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="Center">
                     <HorizontalStackLayout.Behaviors>
                         <mct:TouchBehavior
-                            BindingContext="{Binding Source={x:Reference Page}, Path=BindingContext}"
                             Command="{Binding IncreaseTouchCountCommand}"
-                            HoveredBackgroundColor="{StaticResource Gray900}"
-                            HoveredScale="1.2"
-                            LongPressCommand="{Binding Source={x:Reference Page}, Path=BindingContext.IncreaseLongPressCountCommand}" />
+                            DefaultAnimationDuration="250"
+                            DefaultAnimationEasing="{x:Static Easing.CubicInOut}"
+                            PressedOpacity="0.6"
+                            PressedScale="0.8" />
                     </HorizontalStackLayout.Behaviors>
+
+                    <ContentView
+                        BackgroundColor="Gold"
+                        HeightRequest="100"
+                        WidthRequest="10" />
                     <Label
-                        FontSize="Large"
-                        Text="TITLE"
-                        TextColor="White"
-                        VerticalOptions="Start" />
+                        LineBreakMode="TailTruncation"
+                        Text="The entire layout receives touches"
+                        VerticalOptions="Center" />
+                    <ContentView
+                        BackgroundColor="Gold"
+                        HeightRequest="100"
+                        WidthRequest="10" />
                 </HorizontalStackLayout>
             </VerticalStackLayout>
 
@@ -123,15 +110,13 @@
                     BackgroundColor="Gold"
                     HorizontalOptions="CenterAndExpand">
 
-                <HorizontalStackLayout.Behaviors>
-                    <mct:TouchBehavior
-                        BindingContext="{Binding Source={x:Reference Page}, Path=BindingContext}"
-                        Command="{Binding IncreaseTouchCountCommand}"
-                        DefaultAnimationDuration="500"
-                        Command="{Binding IncreaseTouchCountCommand}"
-                        DefaultBackgroundColor="Gold"
-                        PressedBackgroundColor="Orange"
-                        PressedRotation="15" />
+                    <HorizontalStackLayout.Behaviors>
+                        <mct:TouchBehavior
+                            Command="{Binding IncreaseTouchCountCommand}"
+                            DefaultAnimationDuration="500"
+                            DefaultBackgroundColor="Gold"
+                            PressedBackgroundColor="Orange"
+                            PressedRotation="15" />
 
                     </HorizontalStackLayout.Behaviors>
 
@@ -149,25 +134,13 @@
                     Source="button.png"
                     WidthRequest="100">
                     <Image.Behaviors>
-                        <mct:TouchBehavior
-                            Command="{Binding IncreaseTouchCountCommand}" />
+                        <mct:TouchBehavior Command="{Binding IncreaseTouchCountCommand}" />
                     </Image.Behaviors>
                 </Image>
             </Border>
 
             <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
                 <Label Style="{StaticResource SectionHeader}" Text="Nested effect" />
-
-            <ContentView
-                Padding="50"
-                Background="Yellow"
-                HeightRequest="200"
-                HorizontalOptions="Center"
-                WidthRequest="200">
-                <ContentView.Behaviors>
-                    <mct:TouchBehavior
-                        Command="{Binding ParentClickedCommand}"/>
-                </ContentView.Behaviors>
 
                 <ContentView
                     Padding="50"
@@ -176,8 +149,7 @@
                     HorizontalOptions="Center"
                     WidthRequest="200">
                     <ContentView.Behaviors>
-                        <mct:TouchBehavior
-                            Command="{Binding ChildClickedCommand}" />
+                        <mct:TouchBehavior Command="{Binding ParentClickedCommand}" />
                     </ContentView.Behaviors>
 
                     <ContentView
@@ -187,7 +159,7 @@
                         VerticalOptions="Center"
                         WidthRequest="100">
                         <ContentView.Behaviors>
-                            <mct:TouchBehavior BindingContext="{Binding Source={x:Reference Page}, Path=BindingContext}" Command="{Binding ChildClickedCommand}" />
+                            <mct:TouchBehavior Command="{Binding ChildClickedCommand}" />
                         </ContentView.Behaviors>
                     </ContentView>
                 </ContentView>
@@ -218,10 +190,7 @@
                     StrokeShape="RoundRectangle, 20"
                     StrokeThickness="0">
                     <ContentView.Behaviors>
-                        <mct:TouchBehavior
-                            BindingContext="{Binding Source={x:Reference Page}, Path=BindingContext}"
-                            Command="{Binding MonkeySelectedCommand}"
-                            CommandParameter="{Binding Source={x:Reference MonkeyPicker}, Path=SelectedItem}" />
+                        <mct:TouchBehavior Command="{Binding MonkeySelectedCommand}" CommandParameter="{Binding Source={x:Reference MonkeyPicker}, Path=SelectedItem}" />
                     </ContentView.Behaviors>
                     <Label
                         FontAttributes="Bold"
@@ -236,38 +205,20 @@
             <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
                 <Label Style="{StaticResource SectionHeader}" Text="Input transparency for nested layouts" />
 
-            <Border
-                Margin="20"
-                Padding="20,10"
-                BackgroundColor="Transparent"
-                StrokeShape="RoundRectangle, 10"
-                StrokeThickness="0">
-                <Border.Behaviors>
-                    <mct:TouchBehavior
-                        BindingContext="{Binding Source={x:Reference Page}, Path=BindingContext}"
-                        Command="{Binding IncreaseTouchCountCommand}"
-                        DefaultAnimationDuration="150"
-                        DefaultAnimationEasing="{x:Static Easing.CubicInOut}"
-                        Command="{Binding IncreaseTouchCountCommand}"
-                        PressedBackgroundColor="LightGray"
-                        PressedOpacity="0.8"
-                        PressedScale="0.9"
-                        ShouldMakeChildrenInputTransparent="True" />
-                </Border.Behaviors>
-                <Grid
+                <Border
+                    Margin="20"
+                    Padding="20,10"
                     BackgroundColor="Transparent"
                     StrokeShape="RoundRectangle, 10"
                     StrokeThickness="0">
                     <Border.Behaviors>
                         <mct:TouchBehavior
-                            BindingContext="{Binding Source={x:Reference Page}, Path=BindingContext}"
                             Command="{Binding IncreaseTouchCountCommand}"
                             DefaultAnimationDuration="150"
                             DefaultAnimationEasing="{x:Static Easing.CubicInOut}"
                             PressedBackgroundColor="LightGray"
                             PressedOpacity="0.8"
-                            PressedScale="0.9"
-                            ShouldMakeChildrenInputTransparent="True" />
+                            PressedScale="0.9" />
                     </Border.Behaviors>
                     <Grid
                         BackgroundColor="Transparent"
