@@ -69,7 +69,6 @@ public class MediaControlsService : Service
 		
 		notification.SetAutoCancel(false);
 		notification.SetVisibility(NotificationCompat.VisibilityPublic);
-		mediaSession?.SetSessionActivity(pendingIntent);
 		mediaSession?.SetExtras(intent.Extras);
 		mediaSession?.SetPlaybackToLocal(AudioManager.AudioSessionIdGenerate);
 		mediaSession?.SetSessionActivity(pendingIntent);
