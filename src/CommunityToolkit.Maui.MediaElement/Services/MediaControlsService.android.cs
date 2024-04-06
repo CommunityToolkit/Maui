@@ -196,6 +196,7 @@ public class MediaControlsService : Service
 			_ = (audioManager?.AbandonAudioFocus(null));
 			audioManager?.SetParameters("Ducking=false");
 			audioManager?.Dispose();
+			mediaSession?.Release();
 			mediaSession?.Dispose();
 			mediaSession = null;
 			stateBuilder?.Dispose();
