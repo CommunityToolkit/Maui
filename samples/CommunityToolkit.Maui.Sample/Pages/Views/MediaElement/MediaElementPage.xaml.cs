@@ -19,6 +19,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	public MediaElementPage(MediaElementViewModel viewModel, ILogger<MediaElementPage> logger) : base(viewModel)
 	{
 		InitializeComponent();
+
 		this.logger = logger;
 		MediaElement.PropertyChanged += MediaElement_PropertyChanged;
 	}

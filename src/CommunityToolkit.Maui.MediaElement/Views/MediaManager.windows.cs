@@ -287,7 +287,7 @@ partial class MediaManager : IDisposable
 			{
 				Player.Source = WinMediaSource.CreateFromUri(new Uri(path));
 			}
-		}	
+		}
 	}
 
 	protected virtual partial void PlatformUpdateShouldLoopPlayback()

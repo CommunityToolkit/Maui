@@ -675,32 +675,32 @@ class UIUpdateReceiver : BroadcastReceiver
 	IExoPlayer? player;
 	public UIUpdateReceiver(IExoPlayer player)
 	{
-		this.player ??= player;
+		this.player = player;
 	}
 	public override void OnReceive(Context? context, Intent? intent)
 	{
 		ArgumentNullException.ThrowIfNull(intent);
 		ArgumentNullException.ThrowIfNull(intent.Action);
+		ArgumentNullException.ThrowIfNull(player);
 		if (intent.Action.Equals(MediaControlsService.ACTION_UPDATE_UI))
 		{
 			var action = intent.GetStringExtra("ACTION");
-			if (action?.Equals(MediaControlsService.ACTION_PLAY) ?? false)
+			switch(action)
 			{
-				player?.Play();
-			}
-			else if (action?.Equals(MediaControlsService.ACTION_PAUSE) ?? false)
-			{
-				player?.Pause();
-			}
-			else if (action?.Equals(MediaControlsService.ACTION_FORWARD) ?? false)
-			{
-				player?.SeekTo(player.CurrentPosition + 30000);
-				player?.Play();
-			}
-			else if (action?.Equals(MediaControlsService.ACTION_BACK) ?? false)
-			{
-				player?.SeekTo(player.CurrentPosition - 10000);
-				player?.Play();
+				case MediaControlsService.ACTION_PLAY:
+					player.Play();
+					break;
+				case MediaControlsService.ACTION_PAUSE:
+					player.Pause();
+					break;
+				case MediaControlsService.ACTION_FORWARD:
+					player.SeekTo(player.CurrentPosition + 30000);
+					player.Play();
+					break;
+				case MediaControlsService.ACTION_BACK:
+					player.SeekTo(player.CurrentPosition - 10000);
+					player.Play();
+					break;
 			}
 		}
 

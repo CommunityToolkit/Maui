@@ -67,7 +67,7 @@
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <PackageReference Include="Xam.Plugins.Android.ExoPlayer" Version="[2.19.1,)"/>
     <PackageReference Include="Xam.Plugins.Android.ExoPlayer.Transformer" Version="[2.19.1,)"/>
-   <PackageReference Include="Xam.Plugins.Android.ExoPlayer.MediaSession" Version="2.19.1"/>
+    <PackageReference Include="Xam.Plugins.Android.ExoPlayer.MediaSession" Version="2.19.1"/>
   </ItemGroup>
 
   <ItemGroup>

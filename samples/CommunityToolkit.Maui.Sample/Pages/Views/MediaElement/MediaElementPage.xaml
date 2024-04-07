@@ -36,7 +36,7 @@
                 MetaDataTitle="Big Buck Bunny"
                 MetaDataArtist="Blender Foundation"
                 SourceType="Audio"
-              MediaEnded="OnMediaEnded"
+                MediaEnded="OnMediaEnded"
                 MediaFailed="OnMediaFailed"
                 MediaOpened="OnMediaOpened"
                 PositionChanged="OnPositionChanged"
