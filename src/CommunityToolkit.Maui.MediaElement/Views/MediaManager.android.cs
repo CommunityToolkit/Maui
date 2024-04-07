@@ -56,6 +56,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		mediaSessionConnector ??= new MediaSessionConnector(mediaSession);
 		uiUpdateReceiver ??= new UIUpdateReceiver(Player);
 		LocalBroadcastManager.GetInstance(Platform.AppContext).RegisterReceiver(uiUpdateReceiver, new IntentFilter(MediaControlsService.ACTION_UPDATE_UI));
+		
 		ArgumentNullException.ThrowIfNull(mediaSessionConnector);
 		ArgumentNullException.ThrowIfNull(Platform.CurrentActivity);
 		ArgumentNullException.ThrowIfNull(mediaSession.SessionToken);
@@ -88,7 +89,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// Method checks for required Permission for Android Notifications and requests them if needed
 	/// </summary>
 	/// <returns></returns>
-	protected static async Task CheckAndRequestForeGroundPermission()
+	static async Task CheckAndRequestForeGroundPermission()
 	{
 		var status = await Permissions.CheckStatusAsync<AndroidPermissions>();
 		if (status == PermissionStatus.Granted)
@@ -155,7 +156,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		}
 	}
 
-	protected static void StopService()
+	static void StopService()
 	{
 		var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
 		Android.App.Application.Context.StopService(serviceIntent);

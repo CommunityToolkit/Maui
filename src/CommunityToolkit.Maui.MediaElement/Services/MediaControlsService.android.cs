@@ -6,10 +6,8 @@ using Android.Content.PM;
 using Android.Media;
 using Android.OS;
 using Android.Support.V4.Media.Session;
-using Android.Views;
 using AndroidX.Core.App;
 using AndroidX.LocalBroadcastManager.Content;
-using Com.Google.Android.Exoplayer2;
 using CommunityToolkit.Maui.Core.Views;
 using Microsoft.Win32.SafeHandles;
 using Resource = Microsoft.Maui.Resource;
@@ -43,7 +41,7 @@ public class MediaControlsService : Service
 	{
 	}
 
-	public async Task startForegroundServiceAsync(Intent mediaManagerIntent)
+	async Task startForegroundServiceAsync(Intent mediaManagerIntent)
 	{
 		ArgumentNullException.ThrowIfNull(mediaManagerIntent);
 		token ??= mediaManagerIntent.GetParcelableExtra("token") as MediaSessionCompat.Token;
@@ -148,10 +146,7 @@ public class MediaControlsService : Service
 
 	public override StartCommandResult OnStartCommand(Intent? intent, StartCommandFlags flags, int startId)
 	{
-		if (intent is null)
-		{
-			return StartCommandResult.NotSticky;
-		}
+		ArgumentNullException.ThrowIfNull(intent);
 		switch (intent.Action)
 		{
 			case "MediaAction.pause":
@@ -175,6 +170,7 @@ public class MediaControlsService : Service
 		_ = startForegroundServiceAsync(intent);
 		return StartCommandResult.NotSticky;
 	}
+
 	void HandleNotificationEvent(bool isPlaying)
 	{
 		if (notification is null)
@@ -187,6 +183,7 @@ public class MediaControlsService : Service
 		notification.AddAction(actionNext);
 		notification.Build();
 	}
+
 	void OnSetupAudioServices()
 	{
 		audioManager = GetSystemService(Context.AudioService) as AudioManager;
@@ -237,6 +234,7 @@ public class MediaControlsService : Service
 			notification?.AddAction(actionNext);
 		}
 	}
+
 	void BroadcastUpdate(string action)
 	{
 		if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
@@ -247,6 +245,7 @@ public class MediaControlsService : Service
 		intent.PutExtra("ACTION", action);
 		LocalBroadcastManager.GetInstance(this).SendBroadcast(intent);
 	}
+
 	protected override void Dispose(bool disposing)
 	{
 		if (!disposedValue)
@@ -292,12 +291,13 @@ class ReceiveUpdates : BroadcastReceiver
 				action = value;
 				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Action)));
 			}
-		
 		}
 	}
+	
 	public event PropertyChangedEventHandler? PropertyChanged;
+
 	/// <summary>
-	/// 
+	/// Method that is called when a broadcast is received.
 	/// </summary>
 	/// <param name="context"></param>
 	/// <param name="intent"></param>
@@ -305,8 +305,9 @@ class ReceiveUpdates : BroadcastReceiver
 	{
 		Action = intent?.GetStringExtra("ACTION") ?? string.Empty;
 	}
+	
 	public string GetAction()
 	{
-		return Action ?? string.Empty;
+		return Action;
 	}
 }
