@@ -109,12 +109,12 @@ public class MediaControlsService : Service
 		var intent = new Intent(this, typeof(MediaControlsService));
 		var pendingIntent = PendingIntent.GetActivity(this, 2, intent, pendingIntentFlags);
 		notification ??= new NotificationCompat.Builder(Platform.AppContext, "1");
-
+		
 		var style = new AndroidX.Media.App.NotificationCompat.MediaStyle();
 		style.SetMediaSession(token);
 		if (Build.VERSION.SdkInt >= BuildVersionCodes.S)
 		{
-			style.SetShowActionsInCompactView(1, 2, 3);
+			style.SetShowActionsInCompactView(0, 1, 2, 3);
 		}
 
 		notification.SetStyle(style);

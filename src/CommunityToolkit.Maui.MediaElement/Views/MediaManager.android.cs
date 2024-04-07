@@ -72,7 +72,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		mediaSession.Active = true;
 		
 		mediaSessionConnector ??= new MediaSessionConnector(mediaSession);
-		mediaSessionConnector.SetEnabledPlaybackActions(PlaybackStateCompat.ActionPlay | PlaybackStateCompat.ActionPause | PlaybackStateCompat.ActionSkipToNext | PlaybackStateCompat.ActionSkipToPrevious);
+		mediaSessionConnector.SetEnabledPlaybackActions(PlaybackStateCompat.ActionSkipToPrevious | PlaybackStateCompat.ActionPlayPause | PlaybackStateCompat.ActionSkipToNext | PlaybackStateCompat.ActionSeekTo);
 		mediaSessionConnector.SetDispatchUnsupportedActionsEnabled(true);
 		mediaSessionConnector.SetPlayer(Player);
 
@@ -86,12 +86,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		mediaControllerCompat ??= new MediaControllerCompat(Platform.CurrentActivity, mediaSession.SessionToken);
 		ArgumentNullException.ThrowIfNull(mediaControllerCompat);
 		
-		PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder();
-		stateBuilder.SetActions(PlaybackStateCompat.ActionPlay | PlaybackStateCompat.ActionPause | PlaybackStateCompat.ActionSkipToNext | PlaybackStateCompat.ActionSkipToPrevious);
+		var stateBuilder = new PlaybackStateCompat.Builder();
+		stateBuilder.SetActions(PlaybackStateCompat.ActionSkipToPrevious | PlaybackStateCompat.ActionPlayPause | PlaybackStateCompat.ActionSkipToNext | PlaybackStateCompat.ActionSeekTo);
 		stateBuilder.SetState(PlaybackStateCompat.StateNone, 0, 1.0f, SystemClock.ElapsedRealtime());
 		mediaSession.SetPlaybackState(stateBuilder.Build());
 		mediaSession.SetFlags(MediaSessionCompat.FlagHandlesMediaButtons | MediaSessionCompat.FlagHandlesTransportControls);
-		
 	}
 
 	/// <summary>
