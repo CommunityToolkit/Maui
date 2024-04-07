@@ -13,31 +13,20 @@ namespace CommunityToolkit.Maui.Extensions;
 /// </summary>
 public class MetaDataExtensions
 {
-
 	/// <summary>
-	/// Provides the metadata for the currently playing media.
+	/// The metadata for the currently playing media.
 	/// </summary>
-	public MPNowPlayingInfo NowPlayingInfo { get; set; } = new();
-
-	/// <summary>
-	/// The media element that is currently playing.
-	/// </summary>
-	protected IMediaElement? MediaElement { get; set; }
-
-	/// <summary>
-	/// The platform-specific media player.
-	/// </summary>
-	protected PlatformMediaElement? Player { get; set; }
+	public readonly MPNowPlayingInfo NowPlayingInfo;
+	readonly PlatformMediaElement? player;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MetaDataExtensions"/> class.
 	/// </summary>
-	/// <param name="mediaElement"></param>
 	/// <param name="player"></param>
-	public MetaDataExtensions(IMediaElement mediaElement, PlatformMediaElement player)
+	public MetaDataExtensions(PlatformMediaElement player)
 	{
-		MediaElement = mediaElement;
-		Player = player;
+		this.player = player;
+		NowPlayingInfo = new();
 		MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = NowPlayingInfo;
 		var commandCenter = MPRemoteCommandCenter.Shared;
 		commandCenter.TogglePlayPauseCommand.Enabled = true;
@@ -59,93 +48,58 @@ public class MetaDataExtensions
 		commandCenter.SeekForwardCommand.AddTarget(SeekForwardCommand);
 	}
 
-	/// <summary>
-	/// Remote command to seek to a specific position in the media.
-	/// </summary>
-	/// <param name="commandEvent"></param>
-	/// <returns></returns>
-	protected MPRemoteCommandHandlerStatus SeekCommand(MPRemoteCommandEvent commandEvent)
+	MPRemoteCommandHandlerStatus SeekCommand(MPRemoteCommandEvent commandEvent)
 	{
-		if (Player is not null)
+		var eventArgs = commandEvent as MPChangePlaybackPositionCommandEvent;
+		if (eventArgs is not null)
 		{
-			var eventArgs = commandEvent as MPChangePlaybackPositionCommandEvent;
-			if (eventArgs is not null)
-			{
-				var seekTime = CMTime.FromSeconds(eventArgs.PositionTime, 1);
-				Player.Seek(seekTime);
-			}
+			var seekTime = CMTime.FromSeconds(eventArgs.PositionTime, 1);
+			player?.Seek(seekTime);
 		}
 		return MPRemoteCommandHandlerStatus.Success;
 	}
-	/// <summary>
-	/// Remote command to seek backward 10 seconds.
-	/// </summary>
-	/// <param name="commandEvent"></param>
-	/// <returns></returns>
-	protected MPRemoteCommandHandlerStatus SeekBackwardCommand(MPRemoteCommandEvent commandEvent)
+	
+	MPRemoteCommandHandlerStatus SeekBackwardCommand(MPRemoteCommandEvent commandEvent)
 	{
-		if (Player is not null)
+		if (player is not null)
 		{
-			var seekTime = Player.CurrentTime - CMTime.FromSeconds(10, 1);
-			Player.Seek(seekTime);
+			var seekTime = player.CurrentTime - CMTime.FromSeconds(10, 1);
+			player.Seek(seekTime);
 		}
 		return MPRemoteCommandHandlerStatus.Success;
 	}
 
-	/// <summary>
-	/// Remote command to seek forward 10 seconds.
-	/// </summary>
-	/// <param name="commandEvent"></param>
-	/// <returns></returns>
-	protected MPRemoteCommandHandlerStatus SeekForwardCommand(MPRemoteCommandEvent commandEvent)
+	MPRemoteCommandHandlerStatus SeekForwardCommand(MPRemoteCommandEvent commandEvent)
 	{
-		if (Player is not null)
+		if (player is not null)
 		{
-			var seekTime = Player.CurrentTime + CMTime.FromSeconds(10, 1);
-			Player.Seek(seekTime);
+			var seekTime = player.CurrentTime + CMTime.FromSeconds(10, 1);
+			player.Seek(seekTime);
 		}
 		return MPRemoteCommandHandlerStatus.Success;
 	}
 
-	/// <summary>
-	/// Remote command to play the media.
-	/// </summary>
-	/// <param name="commandEvent"></param>
-	/// <returns></returns>
-	protected MPRemoteCommandHandlerStatus PlayCommand(MPRemoteCommandEvent commandEvent)
+	MPRemoteCommandHandlerStatus PlayCommand(MPRemoteCommandEvent commandEvent)
 	{
-		Player?.Play();
+		player?.Play();
 		return MPRemoteCommandHandlerStatus.Success;
 	}
 
-	/// <summary>
-	/// Remote command to pause the media.
-	/// </summary>
-	/// <param name="commandEvent"></param>
-	/// <returns></returns>
-	protected MPRemoteCommandHandlerStatus PauseCommand(MPRemoteCommandEvent commandEvent)
+	MPRemoteCommandHandlerStatus PauseCommand(MPRemoteCommandEvent commandEvent)
 	{
-		Player?.Pause();
+		player?.Pause();
 		return MPRemoteCommandHandlerStatus.Success;
 	}
 
-	/// <summary>
-	/// Remote command to toggle between play and pause.
-	/// </summary>
-	/// <param name="commandEvent"></param>
-	/// <returns></returns>
-	protected MPRemoteCommandHandlerStatus ToggleCommand(MPRemoteCommandEvent commandEvent)
+	MPRemoteCommandHandlerStatus ToggleCommand(MPRemoteCommandEvent commandEvent)
 	{
-		if (Player is not null)
+		if (player?.Rate == 0)
 		{
-			if (Player.Rate == 0)
-			{
-				Player?.Play();
-			}
-			else
-			{
-				Player?.Pause();
-			}
+			player?.Play();
+		}
+		else
+		{
+			player?.Pause();
 		}
 		return MPRemoteCommandHandlerStatus.Success;
 	}
@@ -177,63 +131,50 @@ public class MetaDataExtensions
 	{
 		if (MediaElement is null)
 		{
+			ClearNowPlaying();
 			return;
 		}
-		NowPlayingInfo ??= new();
-
 		NowPlayingInfo.Title = MediaElement.MetaDataTitle;
 		NowPlayingInfo.Artist = MediaElement.MetaDataArtist;
 		NowPlayingInfo.PlaybackDuration = PlayerItem?.Duration.Seconds ?? 0;
 		NowPlayingInfo.IsLiveStream = false;
-		NowPlayingInfo.PlaybackRate = (double)MediaElement.Speed;
+		NowPlayingInfo.PlaybackRate = MediaElement.Speed;
 		NowPlayingInfo.ElapsedPlaybackTime = PlayerItem?.CurrentTime.Seconds ?? 0;
-		MPMediaItemArtwork? artwork = GetArtwork(MediaElement.MetaDataArtworkUrl);
-		if (artwork is not null)
-		{
-			NowPlayingInfo.Artwork = artwork;
-		}
-		else
-		{
-			NowPlayingInfo.Artwork = new MPMediaItemArtwork(new UIImage());
-		}
+		NowPlayingInfo.Artwork = GetArtwork(MediaElement.MetaDataArtworkUrl);
 		MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = NowPlayingInfo;
 	}
 
-	static MPMediaItemArtwork? GetArtwork(string? ImageUri)
+	static MPMediaItemArtwork GetArtwork(string? ImageUri)
 	{
-		if (!string.IsNullOrWhiteSpace(ImageUri))
-		{
-			UIImage? image = GetImage(ImageUri);
-			return new MPMediaItemArtwork(image ?? new UIImage());
-		}
-		return null;
-	}
-
-	static UIImage? GetImage(string? ImageUri)
-	{
-		object? image = null;
+		var defaultImage = new MPMediaItemArtwork(new UIImage());
 		try
 		{
-			if (!string.IsNullOrEmpty(ImageUri))
+			if (!string.IsNullOrWhiteSpace(ImageUri))
 			{
-				if (ImageUri.StartsWith("http", StringComparison.CurrentCulture))
+				UIImage? image = GetImage(ImageUri);
+				if (image is not null)
 				{
-					image = UIImage.LoadFromData(NSData.FromUrl(new NSUrl(ImageUri)));
+					return new MPMediaItemArtwork(image);
 				}
-				else
-				{
-					if (UIDevice.CurrentDevice.CheckSystemVersion(9, 0))
-					{
-						image = UIImage.FromBundle(ImageUri);
-					}
-				}
+				return defaultImage;
 			}
-			return image as UIImage;
+			return defaultImage;
 		}
 		catch
 		{
-			return null;
+			return defaultImage;
 		}
+		
+	}
+
+	static UIImage GetImage(string ImageUri)
+	{
+		return ImageUri switch
+		{
+			_ when ImageUri.StartsWith("http", StringComparison.CurrentCulture) 
+			=> (UIImage.LoadFromData(NSData.FromUrl(new NSUrl(ImageUri))) ?? new UIImage()),
+			_ => new UIImage()
+		};
 	}
 }
 

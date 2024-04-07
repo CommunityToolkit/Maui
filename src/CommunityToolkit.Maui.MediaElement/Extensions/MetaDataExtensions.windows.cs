@@ -8,15 +8,8 @@ namespace CommunityToolkit.Maui.Extensions;
 /// </summary>
 public class MetaDataExtensions
 {
-	/// <summary>
-	/// The media player to which the metadata will be applied.
-	/// </summary>
-	protected IMediaElement? mediaElement { get; set; }
-
-	/// <summary>
-	/// The system media transport controls for the current app.
-	/// </summary>
-	public SystemMediaTransportControls? SystemMediaControls { get; set; }
+	readonly IMediaElement? mediaElement;
+	readonly SystemMediaTransportControls? systemMediaControls;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MetaDataExtensions"/> class.
@@ -24,8 +17,8 @@ public class MetaDataExtensions
 	public MetaDataExtensions(SystemMediaTransportControls systemMediaTransportControls, IMediaElement MediaElement)
 	{
 		mediaElement = MediaElement;
-		SystemMediaControls = systemMediaTransportControls;
-		this.SystemMediaControls.ButtonPressed += SystemMediaControls_ButtonPressed;
+		systemMediaControls = systemMediaTransportControls;
+		this.systemMediaControls.ButtonPressed += SystemMediaControls_ButtonPressed;
 	}
 
 
@@ -51,27 +44,27 @@ public class MetaDataExtensions
 	/// </summary>
 	public void SetMetaData(IMediaElement mp)
 	{
-		if (SystemMediaControls is null || mediaElement is null)
+		if (systemMediaControls is null || mediaElement is null)
 		{
 			return;
 		}
 
 		if (!string.IsNullOrEmpty(mp.MetaDataArtworkUrl))
 		{
-			SystemMediaControls.DisplayUpdater.Thumbnail = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromUri(new Uri(mp.MetaDataArtworkUrl ?? string.Empty));
+			systemMediaControls.DisplayUpdater.Thumbnail = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromUri(new Uri(mp.MetaDataArtworkUrl ?? string.Empty));
 		}
 		if (mp.SourceType == Primitives.MediaElementSourceType.Video)
 		{
-			SystemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Video;
-			SystemMediaControls.DisplayUpdater.VideoProperties.Title = mp.MetaDataTitle;
-			SystemMediaControls.DisplayUpdater.VideoProperties.Subtitle = mp.MetaDataArtist;
+			systemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Video;
+			systemMediaControls.DisplayUpdater.VideoProperties.Title = mp.MetaDataTitle;
+			systemMediaControls.DisplayUpdater.VideoProperties.Subtitle = mp.MetaDataArtist;
 		}
 		else if (mp.SourceType == Primitives.MediaElementSourceType.Audio)
 		{
-			SystemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Music;
-			SystemMediaControls.DisplayUpdater.MusicProperties.Artist = mp.MetaDataTitle;
-			SystemMediaControls.DisplayUpdater.MusicProperties.Title = mp.MetaDataArtist;
+			systemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Music;
+			systemMediaControls.DisplayUpdater.MusicProperties.Artist = mp.MetaDataTitle;
+			systemMediaControls.DisplayUpdater.MusicProperties.Title = mp.MetaDataArtist;
 		}
-		SystemMediaControls.DisplayUpdater.Update();
+		systemMediaControls.DisplayUpdater.Update();
 	}
 }

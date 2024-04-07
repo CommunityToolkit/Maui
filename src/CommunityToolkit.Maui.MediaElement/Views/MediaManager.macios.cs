@@ -14,8 +14,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : IDisposable
 {
-	//TODO: Implement Metadata for iOS and macOS
-	MetaDataExtensions? MetaData { get; set; }
+	MetaDataExtensions? metaData;
 
 	// Media would still start playing when Speed was set although ShouldAutoPlay=False
 	// This field was added to overcome that.
@@ -227,8 +226,8 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		MetaData ??= new(MediaElement, Player);
-		MetaData.ClearNowPlaying();
+		metaData ??= new(Player);
+		metaData.ClearNowPlaying();
 
 		if (MediaElement.Source is UriMediaSource uriMediaSource)
 		{
@@ -271,7 +270,7 @@ public partial class MediaManager : IDisposable
 		{
 			PlayerItem = null;
 		}
-		MetaData.SetMetaData(PlayerItem, MediaElement);
+		metaData?.SetMetaData(PlayerItem, MediaElement);
 		CurrentItemErrorObserver?.Dispose();
 
 		Player?.ReplaceCurrentItemWithPlayerItem(PlayerItem);
@@ -557,13 +556,13 @@ public partial class MediaManager : IDisposable
 				newState = MediaElementState.Buffering;
 				break;
 		}
-		if (MetaData is not null)
+		if (metaData is not null)
 		{
-			MetaData.NowPlayingInfo.PlaybackRate = MediaElement.Speed;
-			MetaData.NowPlayingInfo.ElapsedPlaybackTime = PlayerItem?.CurrentTime.Seconds ?? 0;
-			MetaData.NowPlayingInfo.PlaybackDuration = PlayerItem?.Duration.Seconds ?? 0;
-			MetaData.NowPlayingInfo.IsLiveStream = false;
-			MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = MetaData.NowPlayingInfo;
+			metaData.NowPlayingInfo.PlaybackRate = MediaElement.Speed;
+			metaData.NowPlayingInfo.ElapsedPlaybackTime = PlayerItem?.CurrentTime.Seconds ?? 0;
+			metaData.NowPlayingInfo.PlaybackDuration = PlayerItem?.Duration.Seconds ?? 0;
+			metaData.NowPlayingInfo.IsLiveStream = false;
+			MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = metaData.NowPlayingInfo;
 		}
 
 		MediaElement.CurrentStateChanged(newState);
@@ -626,10 +625,10 @@ public partial class MediaManager : IDisposable
 		if (!AreFloatingPointNumbersEqual(MediaElement.Speed, Player.Rate))
 		{
 			MediaElement.Speed = Player.Rate;
-			if (MetaData is not null)
+			if (metaData is not null)
 			{
-				MetaData.NowPlayingInfo.PlaybackRate = (float)MediaElement.Speed;
-				MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = MetaData.NowPlayingInfo;
+				metaData.NowPlayingInfo.PlaybackRate = (float)MediaElement.Speed;
+				MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = metaData.NowPlayingInfo;
 			}
 		}
 	}
