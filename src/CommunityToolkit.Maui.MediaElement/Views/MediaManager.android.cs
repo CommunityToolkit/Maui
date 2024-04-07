@@ -51,27 +51,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		ArgumentNullException.ThrowIfNull(MauiContext.Context);
 		Player = new IExoPlayer.Builder(MauiContext.Context).Build() ?? throw new NullReferenceException();
 		Player.AddListener(this);				
-		mediaSession ??= new MediaSessionCompat(Platform.AppContext, "notification");
-		mediaSession.Active = true;
-		mediaSessionConnector ??= new MediaSessionConnector(mediaSession);
-		uiUpdateReceiver ??= new UIUpdateReceiver(Player);
-		LocalBroadcastManager.GetInstance(Platform.AppContext).RegisterReceiver(uiUpdateReceiver, new IntentFilter(MediaControlsService.ACTION_UPDATE_UI));
-		
-		ArgumentNullException.ThrowIfNull(mediaSessionConnector);
-		ArgumentNullException.ThrowIfNull(Platform.CurrentActivity);
-		ArgumentNullException.ThrowIfNull(mediaSession.SessionToken);
-
-		mediaControllerCompat ??= new MediaControllerCompat(Platform.CurrentActivity, mediaSession.SessionToken);
-		ArgumentNullException.ThrowIfNull(mediaControllerCompat);
-		PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder();
-		stateBuilder.SetActions(PlaybackStateCompat.ActionPlay | PlaybackStateCompat.ActionPause | PlaybackStateCompat.ActionSkipToNext | PlaybackStateCompat.ActionSkipToPrevious);
-		mediaSession.SetPlaybackState(stateBuilder.Build());
-
-		mediaSessionConnector.SetEnabledPlaybackActions(PlaybackStateCompat.ActionPlay | PlaybackStateCompat.ActionPause | PlaybackStateCompat.ActionSkipToNext | PlaybackStateCompat.ActionSkipToPrevious);
-		mediaSessionConnector.SetDispatchUnsupportedActionsEnabled(true);
-		
-		mediaSession.SetFlags(MediaSessionCompat.FlagHandlesMediaButtons | MediaSessionCompat.FlagHandlesTransportControls);
-		mediaSessionConnector.SetPlayer(Player);
+		InitializeMediaSession();
 		
 		PlayerView = new StyledPlayerView(MauiContext.Context)
 		{
@@ -83,6 +63,35 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		_ = CheckAndRequestForeGroundPermission();
 
 		return (Player, PlayerView);
+	}
+
+	void InitializeMediaSession()
+	{
+		ArgumentNullException.ThrowIfNull(Player);
+		mediaSession ??= new MediaSessionCompat(Platform.AppContext, "notification");
+		mediaSession.Active = true;
+		
+		mediaSessionConnector ??= new MediaSessionConnector(mediaSession);
+		mediaSessionConnector.SetEnabledPlaybackActions(PlaybackStateCompat.ActionPlay | PlaybackStateCompat.ActionPause | PlaybackStateCompat.ActionSkipToNext | PlaybackStateCompat.ActionSkipToPrevious);
+		mediaSessionConnector.SetDispatchUnsupportedActionsEnabled(true);
+		mediaSessionConnector.SetPlayer(Player);
+
+		uiUpdateReceiver ??= new UIUpdateReceiver(Player);
+		LocalBroadcastManager.GetInstance(Platform.AppContext).RegisterReceiver(uiUpdateReceiver, new IntentFilter(MediaControlsService.ACTION_UPDATE_UI));
+
+		ArgumentNullException.ThrowIfNull(mediaSessionConnector);
+		ArgumentNullException.ThrowIfNull(Platform.CurrentActivity);
+		ArgumentNullException.ThrowIfNull(mediaSession.SessionToken);
+
+		mediaControllerCompat ??= new MediaControllerCompat(Platform.CurrentActivity, mediaSession.SessionToken);
+		ArgumentNullException.ThrowIfNull(mediaControllerCompat);
+		
+		PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder();
+		stateBuilder.SetActions(PlaybackStateCompat.ActionPlay | PlaybackStateCompat.ActionPause | PlaybackStateCompat.ActionSkipToNext | PlaybackStateCompat.ActionSkipToPrevious);
+		stateBuilder.SetState(PlaybackStateCompat.StateNone, 0, 1.0f, SystemClock.ElapsedRealtime());
+		mediaSession.SetPlaybackState(stateBuilder.Build());
+		mediaSession.SetFlags(MediaSessionCompat.FlagHandlesMediaButtons | MediaSessionCompat.FlagHandlesTransportControls);
+		
 	}
 
 	/// <summary>
@@ -225,7 +234,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		};
 
 		MediaElement.CurrentStateChanged(newState);
-		
+
 		if (playbackState is IPlayer.StateReady)
 		{
 			MediaElement.Duration = TimeSpan.FromMilliseconds(Player.Duration < 0 ? 0 : Player.Duration);

@@ -25,6 +25,7 @@ public class MediaControlsService : Service
 	public const string ACTION_BACK = "MediaAction.advance_backward_10";
 	public const string ACTION_UPDATE_UI = "CommunityToolkit.Maui.Services.action.UPDATE_UI";
 	bool notificationExists = false;
+	PendingIntentFlags pendingIntentFlags;
 
 	SafeHandle? safeHandle = new SafeFileHandle(IntPtr.Zero, true);
 	MediaSessionCompat? mediaSession;
@@ -39,104 +40,6 @@ public class MediaControlsService : Service
 
 	public MediaControlsService()
 	{
-	}
-
-	async Task startForegroundServiceAsync(Intent mediaManagerIntent)
-	{
-		ArgumentNullException.ThrowIfNull(mediaManagerIntent);
-		token ??= mediaManagerIntent.GetParcelableExtra("token") as MediaSessionCompat.Token;
-		ArgumentNullException.ThrowIfNull(token);
-		
-		mediaSession ??= new MediaSessionCompat(Platform.AppContext, "notification")
-		{
-			Active = true,
-		};
-		ArgumentNullException.ThrowIfNull(mediaSession);
-		receiveUpdates ??= new ReceiveUpdates();
-		LocalBroadcastManager.GetInstance(this).RegisterReceiver(receiveUpdates, new IntentFilter(MediaControlsService.ACTION_UPDATE_UI));
-		receiveUpdates.PropertyChanged += ReceiveUpdates_PropertyChanged;
-
-		OnSetupAudioServices();
-
-		var pendingIntentFlags = Build.VERSION.SdkInt >= BuildVersionCodes.S
-		? PendingIntentFlags.UpdateCurrent |
-		  PendingIntentFlags.Immutable
-		: PendingIntentFlags.UpdateCurrent;
-
-		if (notification is not null)
-		{
-			notificationExists = true;
-		}
-		var notificationManager = GetSystemService(Context.NotificationService) as NotificationManager;
-		var intent = new Intent(this, typeof(MediaControlsService));
-		var pendingIntent = PendingIntent.GetActivity(this, 2, intent, pendingIntentFlags);
-		notification ??= new NotificationCompat.Builder(Platform.AppContext, "1");
-
-		var style = new AndroidX.Media.App.NotificationCompat.MediaStyle();
-		style.SetMediaSession(token);
-		if (Build.VERSION.SdkInt >= BuildVersionCodes.S)
-		{
-			style.SetShowActionsInCompactView(1,2,3);
-		}
-
-		notification.SetStyle(style);
-		notification.SetSmallIcon(Resource.Drawable.exo_styled_controls_audiotrack);
-
-		if (Build.VERSION.SdkInt < BuildVersionCodes.Tiramisu)
-		{
-			OnSetIntents();
-			await OnSetContent(mediaManagerIntent);
-		}
-		
-		notification.SetAutoCancel(false);
-		notification.SetVisibility(NotificationCompat.VisibilityPublic);
-		mediaSession.SetExtras(intent.Extras);
-		mediaSession.SetPlaybackToLocal(AudioManager.AudioSessionIdGenerate);
-		mediaSession.SetSessionActivity(pendingIntent);
-
-		if (Build.VERSION.SdkInt >= BuildVersionCodes.O && notificationManager is not null)
-		{ 
-			CreateNotificationChannel(notificationManager);
-		}
-
-		if (Build.VERSION.SdkInt >= BuildVersionCodes.Q)
-		{
-			StartForeground(1, notification.Build(), ForegroundService.TypeMediaPlayback);
-			return;
-		}
-
-		if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
-		{
-			StartForeground(1, notification.Build());
-		}
-	}
-
-	void ReceiveUpdates_PropertyChanged(object? sender, PropertyChangedEventArgs e)
-	{
-		if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
-		{
-			return;
-		}
-		
-		if (e.PropertyName == "Action")
-		{
-			var action = receiveUpdates?.GetAction();
-			switch (action)
-			{
-				case "MediaAction.pause":
-					HandleNotificationEvent(false);
-					break;
-				case "MediaAction.play":
-					HandleNotificationEvent(true);
-					break;
-			}
-		}
-	}
-
-	static void CreateNotificationChannel(NotificationManager notificationMnaManager)
-	{
-		var channel = new NotificationChannel("1", "notification", NotificationImportance.Low);
-		notificationMnaManager.CreateNotificationChannel(channel);
 	}
 
 	public override IBinder? OnBind(Intent? intent)
@@ -169,6 +72,109 @@ public class MediaControlsService : Service
 
 		_ = startForegroundServiceAsync(intent);
 		return StartCommandResult.NotSticky;
+	}
+
+	async Task startForegroundServiceAsync(Intent mediaManagerIntent)
+	{
+		ArgumentNullException.ThrowIfNull(mediaManagerIntent);
+		token ??= mediaManagerIntent.GetParcelableExtra("token") as MediaSessionCompat.Token;
+		ArgumentNullException.ThrowIfNull(token);
+		
+		mediaSession ??= new MediaSessionCompat(Platform.AppContext, "notification")
+		{
+			Active = true,
+		};
+		ArgumentNullException.ThrowIfNull(mediaSession);
+		receiveUpdates ??= new ReceiveUpdates();
+		LocalBroadcastManager.GetInstance(this).RegisterReceiver(receiveUpdates, new IntentFilter(MediaControlsService.ACTION_UPDATE_UI));
+		receiveUpdates.PropertyChanged += ReceiveUpdates_PropertyChanged;
+
+		OnSetupAudioServices();
+
+		pendingIntentFlags = Build.VERSION.SdkInt >= BuildVersionCodes.S
+		? PendingIntentFlags.UpdateCurrent |
+		  PendingIntentFlags.Immutable
+		: PendingIntentFlags.UpdateCurrent;
+
+		await InitializeNotification(mediaSession, mediaManagerIntent);
+	}
+
+	async Task InitializeNotification(MediaSessionCompat mediaSession, Intent mediaManagerIntent)
+	{
+		if (notification is not null)
+		{
+			notificationExists = true;
+		}
+		var notificationManager = GetSystemService(Context.NotificationService) as NotificationManager;
+		var intent = new Intent(this, typeof(MediaControlsService));
+		var pendingIntent = PendingIntent.GetActivity(this, 2, intent, pendingIntentFlags);
+		notification ??= new NotificationCompat.Builder(Platform.AppContext, "1");
+
+		var style = new AndroidX.Media.App.NotificationCompat.MediaStyle();
+		style.SetMediaSession(token);
+		if (Build.VERSION.SdkInt >= BuildVersionCodes.S)
+		{
+			style.SetShowActionsInCompactView(1, 2, 3);
+		}
+
+		notification.SetStyle(style);
+		notification.SetSmallIcon(Resource.Drawable.exo_styled_controls_audiotrack);
+
+		if (Build.VERSION.SdkInt < BuildVersionCodes.Tiramisu)
+		{
+			OnSetIntents();
+			await OnSetContent(mediaManagerIntent);
+		}
+
+		notification.SetAutoCancel(false);
+		notification.SetVisibility(NotificationCompat.VisibilityPublic);
+		mediaSession.SetExtras(intent.Extras);
+		mediaSession.SetPlaybackToLocal(AudioManager.AudioSessionIdGenerate);
+		mediaSession.SetSessionActivity(pendingIntent);
+
+		if (Build.VERSION.SdkInt >= BuildVersionCodes.O && notificationManager is not null)
+		{
+			CreateNotificationChannel(notificationManager);
+		}
+
+		if (Build.VERSION.SdkInt >= BuildVersionCodes.Q)
+		{
+			StartForeground(1, notification.Build(), ForegroundService.TypeMediaPlayback);
+			return;
+		}
+
+		if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+		{
+			StartForeground(1, notification.Build());
+		}
+	}
+
+	static void CreateNotificationChannel(NotificationManager notificationMnaManager)
+	{
+		var channel = new NotificationChannel("1", "notification", NotificationImportance.Low);
+		notificationMnaManager.CreateNotificationChannel(channel);
+	}
+
+	void ReceiveUpdates_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+	{
+		if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
+		{
+			return;
+		}
+
+		if (e.PropertyName == "Action")
+		{
+			var action = receiveUpdates?.GetAction();
+			switch (action)
+			{
+				case "MediaAction.pause":
+					HandleNotificationEvent(false);
+					break;
+				case "MediaAction.play":
+					HandleNotificationEvent(true);
+					break;
+			}
+		}
 	}
 
 	void HandleNotificationEvent(bool isPlaying)
