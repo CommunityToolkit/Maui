@@ -29,11 +29,12 @@ public partial class MapHandlerWindows : MapHandler
 	public MapHandlerWindows() : base(Mapper, CommandMapper)
 	{
 		Mapper.ModifyMapping(nameof(IMap.MapType), (handler, map, _) => MapMapType(handler, map));
-		Mapper.ModifyMapping(nameof(IMap.IsShowingUser), (handler, map, _) => MapIsShowingUser(handler, map));
+
 		Mapper.ModifyMapping(nameof(IMap.IsScrollEnabled), (handler, map, _) => MapIsScrollEnabled(handler, map));
 		Mapper.ModifyMapping(nameof(IMap.IsTrafficEnabled), (handler, map, _) => MapIsTrafficEnabled(handler, map));
 		Mapper.ModifyMapping(nameof(IMap.IsZoomEnabled), (handler, map, _) => MapIsZoomEnabled(handler, map));
-		Mapper.ModifyMapping(nameof(IMap.Pins), (handler, map, _) => MapPins(handler, map));
+		Mapper.ModifyMapping(nameof(IMap.Pins), (handler, map, _) => MapPins(handler, map))
+		Mapper.ModifyMapping(nameof(IMap.IsShowingUser), (handler, map, _) => MapIsShowingUser(handler, map));
 		Mapper.ModifyMapping(nameof(IMap.Elements), (handler, map, _) => MapElements(handler, map));
 		CommandMapper.ModifyMapping(nameof(IMap.MoveToRegion), (handler, map, args, _) => MapMoveToRegion(handler, map, args));
 	}
@@ -302,7 +303,10 @@ public partial class MapHandlerWindows : MapHandler
 							function removeAllPins()
 							{
 								map.entities.clear();
-								locationPin = null;
+								if (locationPin != null)
+								{
+									map.entities.push(locationPin);
+								}	
 							}
 
 							function addPin(latitude, longitude, label, address, id)
