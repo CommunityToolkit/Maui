@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class UserStoppedTypingBehaviorTests : BaseTest
+public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypingBehavior, InputView>(new UserStoppedTypingBehavior(), new Entry())
 {
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShouldExecuteCommandWhenTimeThresholdHasExpired()

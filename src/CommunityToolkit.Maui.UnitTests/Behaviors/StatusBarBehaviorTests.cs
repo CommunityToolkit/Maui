@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class StatusBarBehaviorTests : BaseTest
+public class StatusBarBehaviorTests() : BaseBehaviorTest<StatusBarBehavior, Page>(new StatusBarBehavior(), new ContentPage())
 {
 	[Fact]
 	public void VerifyDefaults()

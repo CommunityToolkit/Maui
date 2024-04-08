@@ -126,7 +126,7 @@ public class DrawingViewTests : BaseHandlerTest
 			LineWidth = DrawingViewDefaults.LineWidth,
 			IsMultiLineModeEnabled = DrawingViewDefaults.IsMultiLineModeEnabled,
 			ShouldClearOnFinish = DrawingViewDefaults.ShouldClearOnFinish,
-			Lines = new ObservableCollection<IDrawingLine>(),
+			Lines = [],
 			DrawAction = null,
 			DrawingLineCompletedCommand = null,
 		};
@@ -137,7 +137,7 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void ClearShouldClearLines()
 	{
-		drawingView.Lines = new ObservableCollection<IDrawingLine> { new DrawingLine() };
+		drawingView.Lines = [new DrawingLine()];
 		drawingView.Lines.Should().HaveCount(1);
 
 		drawingView.Clear();
