@@ -47,12 +47,11 @@ public class MauiMediaElement : CoordinatorLayout
 
 	public override void OnDetachedFromWindow()
 	{
-		base.OnDetachedFromWindow();
 		if (isFullScreen)
 		{
 			OnFullscreenButtonClick(this, new StyledPlayerView.FullscreenButtonClickEventArgs(!isFullScreen));
-			playerView?.Player?.Stop();
 		}
+		base.OnDetachedFromWindow();
 	}
 
 	/// <summary>
