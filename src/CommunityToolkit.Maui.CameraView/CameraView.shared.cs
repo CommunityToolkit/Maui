@@ -41,20 +41,20 @@ public partial class CameraView : View, ICameraView
 
     public CameraInfo? SelectedCamera
     {
-        get { return (CameraInfo?)GetValue(SelectedCameraProperty); }
-        set { SetValue(SelectedCameraProperty, value); }
+        get => (CameraInfo?)GetValue(SelectedCameraProperty);
+        set => SetValue(SelectedCameraProperty, value);
     }
 
     public float ZoomFactor
     {
-        get { return (float)GetValue(ZoomFactorProperty); }
-        set { SetValue(ZoomFactorProperty, value); }
+        get => (float)GetValue(ZoomFactorProperty);
+        set => SetValue(ZoomFactorProperty, value);
     }
 
     public Size CaptureResolution
     {
-        get { return (Size)GetValue(CaptureResolutionProperty); }
-        set { SetValue(CaptureResolutionProperty, value); }
+        get => (Size)GetValue(CaptureResolutionProperty);
+        set => SetValue(CaptureResolutionProperty, value);
     }
 
     static object CoerceZoom(BindableObject bindable, object value)

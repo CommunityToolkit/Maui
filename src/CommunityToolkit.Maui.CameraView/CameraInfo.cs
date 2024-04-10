@@ -15,9 +15,9 @@ namespace CommunityToolkit.Maui.Core;
 
 public partial class CameraInfo : ObservableObject
 {
-    public string? Name { get; internal set; }
-    public string? DeviceId { get; internal set; }
-    public CameraPosition? Position { get; internal set; }
+	public string Name { get; internal set; } = string.Empty;
+    public string DeviceId { get; internal set; } = string.Empty;
+    public CameraPosition Position { get; internal set; } = CameraPosition.Unknown;
 
     internal bool Updated { get; set; } = false;
 
@@ -30,17 +30,17 @@ public partial class CameraInfo : ObservableObject
         internal set => SetProperty(ref isFlashSupported, value);
     }
 
-    float? minZoomFactor;
+    float minZoomFactor = 1.0f;
 
-    public float? MinZoomFactor
+    public float MinZoomFactor
     {
         get => minZoomFactor;
         internal set => SetProperty(ref minZoomFactor, value);
     }
 
-    float? maxZoomFactor;
+    float maxZoomFactor = 1.0f;
 
-    public float? MaxZoomFactor
+    public float MaxZoomFactor
     {
         get => maxZoomFactor;
         internal set => SetProperty(ref maxZoomFactor, value);

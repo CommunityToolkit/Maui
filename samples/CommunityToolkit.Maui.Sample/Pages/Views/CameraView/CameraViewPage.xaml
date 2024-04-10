@@ -24,8 +24,6 @@
 
             <VerticalStackLayout Spacing="5" Padding="5" >
                 <Label Text="{Binding CameraNameText}" />
-                <Label Text="{Binding IsAvailable, Source={Reference camera}}" />
-                <Label Text="{Binding Source={Reference camera}, Path=IsCameraBusy}" />
                 <Label Text="{Binding FlashModeText}" />
                 <Label Text="{Binding ZoomRangeText}" />
                 <Label Text="{Binding CurrentZoomText}" />
