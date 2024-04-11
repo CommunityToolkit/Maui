@@ -163,7 +163,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetaDataTitle = "Big Buck Bunny";
 				MediaElement.MetaDataArtworkUrl = "https://michellevella.com/cdn/shop/products/BeatlesLonelyHearts4UP_1728x.jpg?v=1660582971";
 				MediaElement.MetaDataArtist = "Big Buck Bunny Album";
-				MediaElement.SourceType = Primitives.MediaElementSourceType.Audio;
 				MediaElement.Source =
 					MediaSource.FromUri(
 						"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
@@ -173,7 +172,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetaDataArtist = "HLS Album";
 				MediaElement.MetaDataArtworkUrl = "https://michellevella.com/cdn/shop/products/BeatlesLonelyHearts4UP_1728x.jpg?v=1660582971";
 				MediaElement.MetaDataTitle = "HLS Title";
-				MediaElement.SourceType = Primitives.MediaElementSourceType.Audio;
 				MediaElement.Source
 					= MediaSource.FromUri(
 						"https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8");
@@ -183,7 +181,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetaDataArtworkUrl = string.Empty;
 				MediaElement.MetaDataTitle = string.Empty;
 				MediaElement.MetaDataArtist = string.Empty;
-				MediaElement.SourceType = Primitives.MediaElementSourceType.Unknown;
 				MediaElement.Source = null;
 				return;
 
@@ -191,8 +188,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetaDataArtworkUrl = "https://michellevella.com/cdn/shop/products/BeatlesLonelyHearts4UP_1728x.jpg?v=1660582971";
 				MediaElement.MetaDataTitle = "Local Resource Title";
 				MediaElement.MetaDataArtist = "Local Resource Album";
-				MediaElement.SourceType = Primitives.MediaElementSourceType.Audio;
-
+			
 				if (DeviceInfo.Platform == DevicePlatform.MacCatalyst
 					|| DeviceInfo.Platform == DevicePlatform.iOS)
 				{

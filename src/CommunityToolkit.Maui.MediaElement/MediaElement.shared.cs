@@ -2,7 +2,6 @@
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
-using CommunityToolkit.Maui.Primitives;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -114,11 +113,6 @@ public class MediaElement : View, IMediaElement, IDisposable
 	/// Backing store for the <see cref="MetaDataArtworkUrl"/> property.
 	/// </summary>
 	public static readonly BindableProperty MetaDataArtworkUrlProperty = BindableProperty.Create(nameof(MetaDataArtworkUrl), typeof(string), typeof(MediaElement), string.Empty);
-
-	/// <summary>
-	/// Backing store for the <see cref="MediaElementSourceType"/> property.
-	/// </summary>
-	public static readonly BindableProperty MediaElementSourceTypeProperty = BindableProperty.Create(nameof(MediaElementSourceType), typeof(MediaElementSourceType), typeof(MediaElement), MediaElementSourceType.Video);
 
 	readonly WeakEventManager eventManager = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
@@ -367,16 +361,6 @@ public class MediaElement : View, IMediaElement, IDisposable
 	}
 
 	/// <summary>
-	/// Gets or sets the source type of the media.
-	/// This is a bindable property.
-	/// </summary>
-	public MediaElementSourceType SourceType
-	{
-		get => (MediaElementSourceType)GetValue(MediaElementSourceTypeProperty);
-		set => SetValue(MediaElementSourceTypeProperty, value);
-	}
-
-	/// <summary>
 	/// Gets or sets how the media will be scaled to fit the display area.
 	/// Default value is <see cref="Aspect.AspectFit"/>. This is a bindable property.
 	/// </summary>
@@ -416,11 +400,6 @@ public class MediaElement : View, IMediaElement, IDisposable
 		set => SetValue(durationPropertyKey, value);
 	}
 
-	MediaElementSourceType IMediaElement.SourceType
-	{
-		get => (MediaElementSourceType)GetValue(MediaElementSourceTypeProperty);
-		set => SetValue(MediaElementSourceTypeProperty, value);
-	}
 
 	/// <inheritdoc/>
 	TaskCompletionSource IAsynchronousMediaElementHandler.SeekCompletedTCS => seekCompletedTaskCompletionSource;

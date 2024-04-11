@@ -52,19 +52,10 @@ public class MetaDataExtensions
 		if (!string.IsNullOrEmpty(mp.MetaDataArtworkUrl))
 		{
 			systemMediaControls.DisplayUpdater.Thumbnail = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromUri(new Uri(mp.MetaDataArtworkUrl ?? string.Empty));
-		}
-		if (mp.SourceType == Primitives.MediaElementSourceType.Video)
-		{
-			systemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Video;
-			systemMediaControls.DisplayUpdater.VideoProperties.Title = mp.MetaDataTitle;
-			systemMediaControls.DisplayUpdater.VideoProperties.Subtitle = mp.MetaDataArtist;
-		}
-		else if (mp.SourceType == Primitives.MediaElementSourceType.Audio)
-		{
-			systemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Music;
-			systemMediaControls.DisplayUpdater.MusicProperties.Artist = mp.MetaDataTitle;
-			systemMediaControls.DisplayUpdater.MusicProperties.Title = mp.MetaDataArtist;
-		}
+		}		
+		systemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Music;
+		systemMediaControls.DisplayUpdater.MusicProperties.Artist = mp.MetaDataTitle;
+		systemMediaControls.DisplayUpdater.MusicProperties.Title = mp.MetaDataArtist;
 		systemMediaControls.DisplayUpdater.Update();
 	}
 }

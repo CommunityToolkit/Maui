@@ -35,7 +35,6 @@
                 MetaDataArtworkUrl="https://michellevella.com/cdn/shop/products/BeatlesLonelyHearts4UP_1728x.jpg?v=1660582971"
                 MetaDataTitle="Big Buck Bunny"
                 MetaDataArtist="Blender Foundation"
-                SourceType="Audio"
                 MediaEnded="OnMediaEnded"
                 MediaFailed="OnMediaFailed"
                 MediaOpened="OnMediaOpened"

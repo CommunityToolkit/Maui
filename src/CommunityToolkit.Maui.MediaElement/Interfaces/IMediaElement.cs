@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Core.Primitives;
-using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Core;
@@ -23,11 +22,6 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// Gets or sets the artwork Image Url.
 	/// </summary>
 	string MetaDataArtworkUrl { get; set; }
-
-	/// <summary>
-	/// Gets or sets the source type of the media.
-	/// </summary>
-	MediaElementSourceType SourceType { get; set; }
 
 	/// <summary>
 	/// Gets the media aspect ratio.
