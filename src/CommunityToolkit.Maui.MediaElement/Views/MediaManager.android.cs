@@ -115,7 +115,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	{
 		var bitmap = await GetBitmapFromUrl(MediaElement.MetaDataArtworkUrl, Platform.AppContext.Resources);
 		var mediaMetaData = new MediaMetadataCompat.Builder();
-		mediaMetaData.PutString(MediaMetadataCompat.MetadataKeyArtist, MediaElement.MetaDataTitle);
+		mediaMetaData.PutString(MediaMetadataCompat.MetadataKeyArtist, MediaElement.MetaDataArtist);
 		mediaMetaData.PutString(MediaMetadataCompat.MetadataKeyTitle, MediaElement.MetaDataTitle);
 		mediaMetaData.PutBitmap(MediaMetadataCompat.MetadataKeyAlbumArt, bitmap);
 		mediaMetaData.PutLong(MediaMetadataCompat.MetadataKeyDuration, Player?.Duration ?? 0);

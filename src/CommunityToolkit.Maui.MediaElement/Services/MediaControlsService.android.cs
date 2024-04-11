@@ -205,10 +205,8 @@ public class MediaControlsService : Service
 		var bitmap = await MediaManager.GetBitmapFromUrl(albumArtUri, Platform.AppContext.Resources);
 		var title = mediaManagerIntent.GetStringExtra("title") as string ?? string.Empty;
 		var artist = mediaManagerIntent.GetStringExtra("artist") as string ?? string.Empty;
-		var album = mediaManagerIntent.GetStringExtra("album") as string ?? string.Empty;
 		notification?.SetContentTitle(title);
 		notification?.SetContentText(artist);
-		notification?.SetSubText(album);
 		notification?.SetLargeIcon(bitmap);
 	}
 
