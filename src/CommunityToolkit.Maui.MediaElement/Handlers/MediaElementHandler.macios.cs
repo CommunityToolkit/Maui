@@ -44,12 +44,12 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 }
 
 /// <summary>
-/// Gets the parent page of a <see cref="VisualElement"/>.
+/// An extension class for finding the Parent of <see cref="VisualElement"/>.
 /// </summary>
 public static class ParentPage
 {
 	/// <summary>
-	/// Extension method for <see cref="VisualElement"/>.
+	/// Extension method to find the Parent of <see cref="VisualElement"/>.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	/// <param name="child"></param>
