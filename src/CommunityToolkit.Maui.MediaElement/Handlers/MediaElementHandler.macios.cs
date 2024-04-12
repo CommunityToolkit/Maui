@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core.Views;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
@@ -21,7 +22,10 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 								Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"));
 
 		var (_, playerViewController) = mediaManager.CreatePlatformView();
-		return new(playerViewController);
+		var page = VirtualView.FindParent<Page>();
+		var parentViewController = (page?.Handler as PageHandler)?.ViewController;
+
+		return new(playerViewController, parentViewController);
 	}
 
 	/// <inheritdoc/>
@@ -36,5 +40,33 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		platformView.Dispose();
 		Dispose();
 		base.DisconnectHandler(platformView);
+	}
+}
+
+/// <summary>
+/// Gets the parent page of a <see cref="VisualElement"/>.
+/// </summary>
+public static class ParentPage
+{
+	/// <summary>
+	/// Extension method for <see cref="VisualElement"/>.
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
+	/// <param name="child"></param>
+	/// <returns></returns>
+	public static T? FindParent<T>(this VisualElement? child) where T : VisualElement
+	{
+		while (true)
+		{
+			if (child == null)
+			{
+				return null;
+			}
+			if (child.Parent is T parent)
+			{
+				return parent;
+			}
+			child = child.Parent as VisualElement;
+		}
 	}
 }
