@@ -1,5 +1,5 @@
 ﻿#if ANDROID
-using CommunityToolkit.Maui.Services;
+using CommunityToolkit.Maui.Media.Services;
 #endif
 
 using CommunityToolkit.Maui.Core.Handlers;

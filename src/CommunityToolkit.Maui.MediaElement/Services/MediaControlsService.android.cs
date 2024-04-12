@@ -13,7 +13,7 @@ using Microsoft.Win32.SafeHandles;
 using Resource = Microsoft.Maui.Resource;
 using Stream = Android.Media.Stream;
 
-namespace CommunityToolkit.Maui.Services;
+namespace CommunityToolkit.Maui.Media.Services;
 
 [Service(Exported = true,Enabled = true, Name = "CommunityToolkit.Maui.Services", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
 public class MediaControlsService : Service	
