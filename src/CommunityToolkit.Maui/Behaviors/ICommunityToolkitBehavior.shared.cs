@@ -21,7 +21,7 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 			throw new InvalidOperationException($"{nameof(ICommunityToolkitBehavior<TView>)} can only be used for a {nameof(Behavior)}");
 		}
 
-		if (behavior.IsSet(BindableObject.BindingContextProperty) || View is null)
+		if (View is null)
 		{
 			return false;
 		}
@@ -33,7 +33,6 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 		});
 
 		return true;
-
 	}
 
 	internal bool TryRemoveBindingContext()
