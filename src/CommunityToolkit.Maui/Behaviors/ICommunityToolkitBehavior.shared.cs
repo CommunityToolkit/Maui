@@ -26,6 +26,11 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 			return false;
 		}
 
+		if (View.BindingContext == behavior.BindingContext)
+		{
+			return false;
+		}
+
 		behavior.SetBinding(BindableObject.BindingContextProperty, new Binding
 		{
 			Source = View,
