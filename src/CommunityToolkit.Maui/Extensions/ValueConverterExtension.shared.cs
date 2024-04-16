@@ -13,18 +13,19 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 
 	private protected static bool IsValidTargetType<T>(in Type targetType)
 	{
-		if (IsConvertingToString(targetType) && CanBeConvertedToString())
+		if (IsConvertingToString(targetType))
+		{
+			return true;
+		}
+
+		if (typeof(T).IsAssignableFrom(targetType))
 		{
 			return true;
 		}
 
 		try
 		{
-			var instanceOfT = default(T);
-			instanceOfT ??= (T?)Activator.CreateInstance(targetType);
-
-			var result = Convert.ChangeType(instanceOfT, targetType);
-
+			var result = Convert.ChangeType(default(T), targetType);
 			return result is not null;
 		}
 		catch
@@ -33,7 +34,6 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 		}
 
 		static bool IsConvertingToString(in Type targetType) => targetType == typeof(string);
-		static bool CanBeConvertedToString() => typeof(T).GetMethods().Any(x => x.Name is nameof(ToString) && x.ReturnType == typeof(string));
 	}
 
 	private protected static void ValidateTargetType<TTarget>(Type targetType, bool shouldAllowNullableValueTypes)
@@ -45,7 +45,7 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 			&& !IsValidTargetType<TTarget>(targetType) // Ensure targetType be converted to TTarget? Eg `Convert.ChangeType()` returns a non-null value
 			&& !(shouldAllowNullableValueTypes && typeof(TTarget).IsValueType && IsValidNullableValueType(targetType))) // Is TTarget a Value Type and targetType a Nullable Value Type? Eg TTarget is bool and targetType is bool?
 		{
-			throw new ArgumentException($"targetType needs to be assignable from {typeof(TTarget)}.", nameof(targetType));
+			throw new ArgumentException($"{targetType} needs to be assignable from {typeof(TTarget)}.", nameof(targetType));
 		}
 
 		static bool IsValidNullableValueType(Type targetType)
