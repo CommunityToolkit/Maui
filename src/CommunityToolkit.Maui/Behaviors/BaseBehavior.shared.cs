@@ -41,6 +41,26 @@ public abstract class BaseBehavior<TView> : Behavior<TView>, ICommunityToolkitBe
 		base.OnAttachedTo(bindable);
 
 		((ICommunityToolkitBehavior<TView>)this).AssignViewAndBingingContext(bindable);
+
+		bindable.PropertyChanging += (sender, args) =>
+		{
+			var currentViewBindingContext = ((TView)sender).BindingContext;
+			
+			if (args.PropertyName == nameof(BindingContext) && 
+			    ReferenceEquals(this.BindingContext, currentViewBindingContext))
+			{
+				this.BindingContext = null;
+			}
+		};
+		
+		bindable.PropertyChanged += (sender, args) =>
+		{
+			if (args.PropertyName == nameof(BindingContext) &&
+			    this.BindingContext is null)
+			{
+				this.BindingContext = ((TView?)sender)?.BindingContext;				
+			}
+		};
 	}
 
 	/// <inheritdoc/>
