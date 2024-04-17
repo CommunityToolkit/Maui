@@ -138,11 +138,11 @@ public class AvatarViewImageTests : BaseHandlerTest
 		{
 			avatarImage.WidthRequest.Should().Be(73);
 			avatarImage.HeightRequest.Should().Be(37);
-      
+
 			avatarImage.Clip.Should().BeNull();
 		}
 	}
-  
+
 	[Fact]
 	public void ImageSourceParentSize_WhenStrokeShapeSet()
 	{
@@ -167,7 +167,7 @@ public class AvatarViewImageTests : BaseHandlerTest
 		{
 			avatarImage.WidthRequest.Should().Be(73);
 			avatarImage.HeightRequest.Should().Be(37);
-      
+
 			avatarImage.Clip.Should().BeOfType<RectangleGeometry>();
 		}
 	}
