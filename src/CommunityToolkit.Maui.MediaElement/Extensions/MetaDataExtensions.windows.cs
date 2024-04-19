@@ -10,15 +10,16 @@ public class MetaDataExtensions
 {
 	readonly IMediaElement? mediaElement;
 	readonly SystemMediaTransportControls? systemMediaControls;
-
+	readonly IDispatcher dispatcher;
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MetaDataExtensions"/> class.
 	/// </summary>
-	public MetaDataExtensions(SystemMediaTransportControls systemMediaTransportControls, IMediaElement MediaElement)
+	public MetaDataExtensions(SystemMediaTransportControls systemMediaTransportControls, IMediaElement MediaElement, IDispatcher Dispatcher)
 	{
 		mediaElement = MediaElement;
+		this.dispatcher = Dispatcher;
 		systemMediaControls = systemMediaTransportControls;
-		this.systemMediaControls.ButtonPressed += SystemMediaControls_ButtonPressed;
+		systemMediaControls.ButtonPressed += SystemMediaControls_ButtonPressed;
 	}
 
 
@@ -28,14 +29,28 @@ public class MetaDataExtensions
 		{
 			return;
 		}
-
+		
 		if (args.Button == SystemMediaTransportControlsButton.Play)
 		{
-			MainThread.InvokeOnMainThreadAsync(() => mediaElement.Play());
+			if (dispatcher.IsDispatchRequired)
+			{
+				dispatcher.Dispatch(() => mediaElement.Play());
+			}
+			else
+			{
+				mediaElement.Play();
+			}
 		}
 		else if (args.Button == SystemMediaTransportControlsButton.Pause)
 		{
-			MainThread.InvokeOnMainThreadAsync(() => mediaElement.Pause());
+			if (dispatcher.IsDispatchRequired)
+			{
+				dispatcher.Dispatch(() => mediaElement.Pause());
+			}
+			else
+			{
+				mediaElement.Pause();
+			}
 		}
 	}
 

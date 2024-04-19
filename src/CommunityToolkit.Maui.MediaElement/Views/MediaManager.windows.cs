@@ -339,7 +339,7 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
-		metaDataExtensions ??= new(systemMediaControls, MediaElement);
+		metaDataExtensions ??= new(systemMediaControls, MediaElement, Dispatcher);
 		metaDataExtensions.SetMetaData(MediaElement);
 	}
 	void OnMediaElementMediaOpened(WindowsMediaElement sender, object args)

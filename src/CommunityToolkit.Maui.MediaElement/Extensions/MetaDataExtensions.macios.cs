@@ -41,7 +41,7 @@ public class MetaDataExtensions : IDisposable
 			IsLiveStream = false,
 			PlaybackRate = 0,
 			ElapsedPlaybackTime = 0,
-			Artwork = new MPMediaItemArtwork(new UIImage())
+			Artwork = defaultImage
 		};
 		var commandCenter = MPRemoteCommandCenter.Shared;
 
