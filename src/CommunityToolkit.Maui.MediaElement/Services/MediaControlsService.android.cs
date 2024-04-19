@@ -259,7 +259,7 @@ public class MediaControlsService : Service
 				safeHandle?.Dispose();
 				safeHandle = null;
 			}
-			_ = (audioManager?.AbandonAudioFocus(null));
+			audioManager?.AbandonAudioFocus(null);
 			audioManager?.SetParameters("Ducking=false");
 			audioManager?.Dispose();
 			mediaSession?.Release();
@@ -282,7 +282,7 @@ public class MediaControlsService : Service
 /// <summary>
 /// A <see cref="BroadcastReceiver"/> that listens for updates from the <see cref="MediaManager"/>. 
 /// </summary>
-class ReceiveUpdates : BroadcastReceiver
+sealed class ReceiveUpdates : BroadcastReceiver
 {
 	string action = string.Empty;
 	public string Action
