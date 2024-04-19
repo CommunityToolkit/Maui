@@ -97,7 +97,6 @@ public partial class MediaManager : IDisposable
 		{
 			Player = Player
 		};
-
 		// Pre-initialize Volume and Muted properties to the player object
 		Player.Muted = MediaElement.ShouldMute;
 		var volumeDiff = Math.Abs(Player.Volume - MediaElement.Volume);
@@ -105,11 +104,17 @@ public partial class MediaManager : IDisposable
 		{
 			Player.Volume = (float)MediaElement.Volume;
 		}
-
-		Player.InvokeOnMainThread(() =>
+		if (Dispatcher.IsDispatchRequired)
+		{
+			Dispatcher.Dispatch(() =>
+			{
+				UIApplication.SharedApplication.BeginReceivingRemoteControlEvents();
+			});
+		}
+		else
 		{
 			UIApplication.SharedApplication.BeginReceivingRemoteControlEvents();
-		});
+		}
 #if IOS
 		PlayerViewController.UpdatesNowPlayingInfoCenter = false;
 #else

@@ -11,13 +11,16 @@ namespace CommunityToolkit.Maui.Extensions;
 /// <summary>
 /// The class that provides methods to update the system UI for media transport controls to display media metadata.
 /// </summary>
-public class MetaDataExtensions
+public class MetaDataExtensions : IDisposable
 {
 	/// <summary>
 	/// The metadata for the currently playing media.
 	/// </summary>
 	public readonly MPNowPlayingInfo NowPlayingInfo;
+	readonly MPNowPlayingInfo nowPlayingInfoDefault;
 	readonly PlatformMediaElement? player;
+	readonly MPMediaItemArtwork defaultImage;
+	bool disposedValue;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MetaDataExtensions"/> class.
@@ -27,8 +30,21 @@ public class MetaDataExtensions
 	{
 		this.player = player;
 		NowPlayingInfo = new();
+		defaultImage = new MPMediaItemArtwork(new UIImage());
 		MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = NowPlayingInfo;
+		nowPlayingInfoDefault = new()
+		{
+			AlbumTitle = string.Empty,
+			Title = string.Empty,
+			Artist = string.Empty,
+			PlaybackDuration = 0,
+			IsLiveStream = false,
+			PlaybackRate = 0,
+			ElapsedPlaybackTime = 0,
+			Artwork = new MPMediaItemArtwork(new UIImage())
+		};
 		var commandCenter = MPRemoteCommandCenter.Shared;
+
 		commandCenter.TogglePlayPauseCommand.Enabled = true;
 		commandCenter.TogglePlayPauseCommand.AddTarget(ToggleCommand);
 
@@ -95,7 +111,7 @@ public class MetaDataExtensions
 	{
 		if (player?.Rate == 0)
 		{
-			player?.Play();
+			player.Play();
 		}
 		else
 		{
@@ -107,20 +123,7 @@ public class MetaDataExtensions
 	/// <summary>
 	/// Clears the metadata for the currently playing media.
 	/// </summary>
-	public void ClearNowPlaying()
-	{
-		NowPlayingInfo.AlbumTitle = string.Empty;
-		NowPlayingInfo.Title = string.Empty;
-		NowPlayingInfo.Artist = string.Empty;
-		NowPlayingInfo.AlbumTitle = string.Empty;
-		NowPlayingInfo.PlaybackDuration = 0;
-		NowPlayingInfo.IsLiveStream = false;
-		NowPlayingInfo.PlaybackRate = 0;
-		NowPlayingInfo.ElapsedPlaybackTime = 0;
-		NowPlayingInfo.Artwork = new MPMediaItemArtwork(new UIImage());
-		MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = NowPlayingInfo;
-	}
-
+	public void ClearNowPlaying() => MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = nowPlayingInfoDefault;
 
 	/// <summary>
 	/// Sets the data for the currently playing media from the media element.
@@ -144,9 +147,8 @@ public class MetaDataExtensions
 		MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = NowPlayingInfo;
 	}
 
-	static MPMediaItemArtwork GetArtwork(string? ImageUri)
+	MPMediaItemArtwork GetArtwork(string? ImageUri)
 	{
-		var defaultImage = new MPMediaItemArtwork(new UIImage());
 		try
 		{
 			if (!string.IsNullOrWhiteSpace(ImageUri))
@@ -154,7 +156,7 @@ public class MetaDataExtensions
 				UIImage? image = GetImage(ImageUri);
 				if (image is not null)
 				{
-					return new MPMediaItemArtwork(image);
+					return defaultImage;
 				}
 				return defaultImage;
 			}
@@ -175,6 +177,31 @@ public class MetaDataExtensions
 			=> (UIImage.LoadFromData(NSData.FromUrl(new NSUrl(ImageUri))) ?? new UIImage()),
 			_ => new UIImage()
 		};
+	}
+
+	/// <summary>
+	/// Cleans up the resources used by the <see cref="MetaDataExtensions"/>.
+	/// </summary>
+	/// <param name="disposing"></param>
+	protected virtual void Dispose(bool disposing)
+	{
+		if (!disposedValue)
+		{
+			if (disposing)
+			{
+				defaultImage.Dispose();
+			}
+			disposedValue = true;
+		}
+	}
+
+	/// <summary>
+	/// Cleans up the resources used by the <see cref="MetaDataExtensions"/>.
+	/// </summary>
+	public void Dispose()
+	{
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
 	}
 }
 

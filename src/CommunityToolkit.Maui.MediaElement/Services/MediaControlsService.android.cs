@@ -70,8 +70,8 @@ public class MediaControlsService : Service
 				break;
 		}
 
-		_ = startForegroundServiceAsync(intent);
-		return StartCommandResult.NotSticky;
+		startForegroundServiceAsync(intent).ConfigureAwait(false);
+		return StartCommandResult.Sticky;
 	}
 
 	async Task startForegroundServiceAsync(Intent mediaManagerIntent)
@@ -96,7 +96,7 @@ public class MediaControlsService : Service
 		  PendingIntentFlags.Immutable
 		: PendingIntentFlags.UpdateCurrent;
 
-		await InitializeNotification(mediaSession, mediaManagerIntent);
+		await InitializeNotification(mediaSession, mediaManagerIntent).ConfigureAwait(false);
 	}
 
 	async Task InitializeNotification(MediaSessionCompat mediaSession, Intent mediaManagerIntent)
@@ -164,7 +164,7 @@ public class MediaControlsService : Service
 
 		if (e.PropertyName == "Action")
 		{
-			var action = receiveUpdates?.GetAction();
+			var action = receiveUpdates?.Action;
 			switch (action)
 			{
 				case "MediaAction.pause":
@@ -308,10 +308,5 @@ class ReceiveUpdates : BroadcastReceiver
 	public override void OnReceive(Context? context, Intent? intent)
 	{
 		Action = intent?.GetStringExtra("ACTION") ?? string.Empty;
-	}
-	
-	public string GetAction()
-	{
-		return Action;
 	}
 }

@@ -29,7 +29,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 	double? previousSpeed;
 	float volumeBeforeMute = 1;
-
+	static HttpClient? client = new HttpClient();
 	MediaControllerCompat? mediaControllerCompat;
 	TaskCompletionSource? seekToTaskCompletionSource;
 	MediaSessionConnector? mediaSessionConnector;
@@ -52,7 +52,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		Player = new IExoPlayer.Builder(MauiContext.Context).Build() ?? throw new NullReferenceException();
 		Player.AddListener(this);				
 		InitializeMediaSession();
-		
+
 		PlayerView = new StyledPlayerView(MauiContext.Context)
 		{
 			Player = Player,
@@ -151,10 +151,14 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	public static async Task<Bitmap?> GetBitmapFromUrl(string? url, Resources? resources)
 	{
 		var temp = BitmapFactory.DecodeResource(resources, Resource.Drawable.exo_ic_default_album_image);
+		if (client is null)
+		{
+			return temp;
+		}
+		
 		try
 		{
-			var client = new HttpClient();
-			var response = await client.GetAsync(url);
+			var response = await client.GetAsync(url).ConfigureAwait(false);
 			var stream = response.IsSuccessStatusCode ? await response.Content.ReadAsStreamAsync() : null;
 			return stream is not null ? await BitmapFactory.DecodeStreamAsync(stream) : temp;
 		}
