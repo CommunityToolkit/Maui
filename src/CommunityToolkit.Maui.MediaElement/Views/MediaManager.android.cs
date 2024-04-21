@@ -706,7 +706,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 /// <summary>
 /// A <see cref="BroadcastReceiver"/> that listens for updates from the <see cref="MediaControlsService"/>.
 /// </summary>
-class UIUpdateReceiver : BroadcastReceiver
+sealed class UIUpdateReceiver : BroadcastReceiver
 {
 	IExoPlayer? player;
 
