@@ -160,7 +160,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		LocalBroadcastManager.GetInstance(Platform.AppContext).SendBroadcast(intent);
 	}
 	
-	public static async Task<Bitmap?> GetBitmapFromUrl(string? url, Resources? resources, CancellationToken cancellationToken)
+	public static async Task<Bitmap?> GetBitmapFromUrl(string? url, Resources? resources, CancellationToken cancellationToken = default)
 	{
 		var temp = BitmapFactory.DecodeResource(resources, Resource.Drawable.exo_ic_default_album_image);
 		if (client is null)
