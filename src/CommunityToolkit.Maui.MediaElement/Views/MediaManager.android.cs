@@ -29,7 +29,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 	double? previousSpeed;
 	float volumeBeforeMute = 1;
-	static HttpClient? client = new HttpClient();
+	static readonly HttpClient? client = new();
 	MediaControllerCompat? mediaControllerCompat;
 	TaskCompletionSource? seekToTaskCompletionSource;
 	MediaSessionConnector? mediaSessionConnector;
@@ -155,7 +155,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			Logger?.LogError("{LocalBroadcastManager} not supported on Android 13 and above.", typeof(LocalBroadcastManager));
 			return;
 		}
-		Intent intent = new Intent(MediaControlsService.ACTION_UPDATE_UI);
+		Intent intent = new(MediaControlsService.ACTION_UPDATE_UI);
 		intent.PutExtra("ACTION", action);
 		LocalBroadcastManager.GetInstance(Platform.AppContext).SendBroadcast(intent);
 	}

@@ -17,9 +17,11 @@ public class MetaDataExtensions : IDisposable
 	/// The metadata for the currently playing media.
 	/// </summary>
 	public readonly MPNowPlayingInfo NowPlayingInfo;
-	static readonly MPNowPlayingInfo nowPlayingInfoDefault;
+	static readonly UIImage defaultUIImage =  new();
+	static readonly MPNowPlayingInfo nowPlayingInfoDefault = InitNowPlayingInfo();
 	readonly PlatformMediaElement? player;
-	static readonly MPMediaItemArtwork defaultImage;
+	static readonly MPMediaItemArtwork defaultImage = InitItemArtWork();
+
 	bool disposedValue;
 
 	/// <summary>
@@ -30,19 +32,8 @@ public class MetaDataExtensions : IDisposable
 	{
 		this.player = player;
 		NowPlayingInfo = new();
-		defaultImage = new MPMediaItemArtwork(new UIImage());
 		MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = NowPlayingInfo;
-		nowPlayingInfoDefault = new()
-		{
-			AlbumTitle = string.Empty,
-			Title = string.Empty,
-			Artist = string.Empty,
-			PlaybackDuration = 0,
-			IsLiveStream = false,
-			PlaybackRate = 0,
-			ElapsedPlaybackTime = 0,
-			Artwork = defaultImage
-		};
+
 		var commandCenter = MPRemoteCommandCenter.Shared;
 
 		commandCenter.TogglePlayPauseCommand.Enabled = true;
@@ -62,6 +53,26 @@ public class MetaDataExtensions : IDisposable
 
 		commandCenter.SeekForwardCommand.Enabled = false;
 		commandCenter.SeekForwardCommand.AddTarget(SeekForwardCommand);
+	}
+
+	static MPNowPlayingInfo InitNowPlayingInfo()
+	{
+		return new()
+		{
+			AlbumTitle = string.Empty,
+			Title = string.Empty,
+			Artist = string.Empty,
+			PlaybackDuration = 0,
+			IsLiveStream = false,
+			PlaybackRate = 0,
+			ElapsedPlaybackTime = 0,
+			Artwork = defaultImage
+		};
+	}
+
+	static MPMediaItemArtwork InitItemArtWork()
+	{
+		return new MPMediaItemArtwork(new UIImage());
 	}
 
 	MPRemoteCommandHandlerStatus SeekCommand(MPRemoteCommandEvent commandEvent)
@@ -161,7 +172,7 @@ public class MetaDataExtensions : IDisposable
 		MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = NowPlayingInfo;
 	}
 
-	MPMediaItemArtwork GetArtwork(string? ImageUri)
+	static MPMediaItemArtwork GetArtwork(string? ImageUri)
 	{
 		try
 		{
@@ -188,8 +199,8 @@ public class MetaDataExtensions : IDisposable
 		return ImageUri switch
 		{
 			_ when ImageUri.StartsWith("http", StringComparison.CurrentCulture) 
-			=> (UIImage.LoadFromData(NSData.FromUrl(new NSUrl(ImageUri))) ?? new UIImage()),
-			_ => new UIImage()
+			=> (UIImage.LoadFromData(NSData.FromUrl(new NSUrl(ImageUri))) ?? defaultUIImage),
+			_ => defaultUIImage
 		};
 	}
 

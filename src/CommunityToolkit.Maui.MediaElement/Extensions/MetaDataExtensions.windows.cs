@@ -23,7 +23,7 @@ public class MetaDataExtensions
 	}
 
 
-	void SystemMediaControls_ButtonPressed(SystemMediaTransportControls sender, SystemMediaTransportControlsButtonPressedEventArgs args)
+	void OnSystemMediaControlsButtonPressed(SystemMediaTransportControls sender, SystemMediaTransportControlsButtonPressedEventArgs args)
 	{
 		if (mediaElement is null)
 		{
