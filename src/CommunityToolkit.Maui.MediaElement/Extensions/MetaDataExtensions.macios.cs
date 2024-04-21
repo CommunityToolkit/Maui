@@ -66,56 +66,70 @@ public class MetaDataExtensions : IDisposable
 
 	MPRemoteCommandHandlerStatus SeekCommand(MPRemoteCommandEvent commandEvent)
 	{
-		var eventArgs = commandEvent as MPChangePlaybackPositionCommandEvent;
-		if (eventArgs is not null)
+		if (player is null || commandEvent is not MPChangePlaybackPositionCommandEvent eventArgs)
 		{
-			var seekTime = CMTime.FromSeconds(eventArgs.PositionTime, 1);
-			player?.Seek(seekTime);
+			return MPRemoteCommandHandlerStatus.CommandFailed;
 		}
+		var seekTime = CMTime.FromSeconds(eventArgs.PositionTime, 1);
+		player.Seek(seekTime);
 		return MPRemoteCommandHandlerStatus.Success;
 	}
 	
 	MPRemoteCommandHandlerStatus SeekBackwardCommand(MPRemoteCommandEvent commandEvent)
 	{
-		if (player is not null)
+		if (commandEvent is null || player is null)
 		{
-			var seekTime = player.CurrentTime - CMTime.FromSeconds(10, 1);
-			player.Seek(seekTime);
+			return MPRemoteCommandHandlerStatus.CommandFailed;
 		}
+		var seekTime = player.CurrentTime - CMTime.FromSeconds(10, 1);
+		player.Seek(seekTime);
 		return MPRemoteCommandHandlerStatus.Success;
 	}
 
 	MPRemoteCommandHandlerStatus SeekForwardCommand(MPRemoteCommandEvent commandEvent)
 	{
-		if (player is not null)
+		if (player is null || commandEvent is null)
 		{
-			var seekTime = player.CurrentTime + CMTime.FromSeconds(10, 1);
-			player.Seek(seekTime);
+			return MPRemoteCommandHandlerStatus.CommandFailed;
 		}
+		var seekTime = player.CurrentTime + CMTime.FromSeconds(10, 1);
+		player.Seek(seekTime);
 		return MPRemoteCommandHandlerStatus.Success;
 	}
 
 	MPRemoteCommandHandlerStatus PlayCommand(MPRemoteCommandEvent commandEvent)
 	{
-		player?.Play();
+		if (player is null || commandEvent is null)
+		{
+			return MPRemoteCommandHandlerStatus.CommandFailed;
+		}
+		player.Play();
 		return MPRemoteCommandHandlerStatus.Success;
 	}
 
 	MPRemoteCommandHandlerStatus PauseCommand(MPRemoteCommandEvent commandEvent)
 	{
-		player?.Pause();
+		if (player is null || commandEvent is null)
+		{
+			return MPRemoteCommandHandlerStatus.CommandFailed;
+		}
+		player.Pause();
 		return MPRemoteCommandHandlerStatus.Success;
 	}
 
 	MPRemoteCommandHandlerStatus ToggleCommand(MPRemoteCommandEvent commandEvent)
 	{
-		if (player?.Rate == 0)
+		if (player is null || commandEvent is not null)
+		{
+			return MPRemoteCommandHandlerStatus.CommandFailed;
+		}
+		if (player.Rate == 0)
 		{
 			player.Play();
 		}
 		else
 		{
-			player?.Pause();
+			player.Pause();
 		}
 		return MPRemoteCommandHandlerStatus.Success;
 	}
@@ -156,7 +170,7 @@ public class MetaDataExtensions : IDisposable
 				UIImage? image = GetImage(ImageUri);
 				if (image is not null)
 				{
-					return defaultImage;
+					return new MPMediaItemArtwork(image);
 				}
 				return defaultImage;
 			}

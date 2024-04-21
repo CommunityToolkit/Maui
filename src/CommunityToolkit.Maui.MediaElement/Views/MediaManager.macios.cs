@@ -561,14 +561,7 @@ public partial class MediaManager : IDisposable
 				newState = MediaElementState.Buffering;
 				break;
 		}
-		if (metaData is not null)
-		{
-			metaData.NowPlayingInfo.PlaybackRate = MediaElement.Speed;
-			metaData.NowPlayingInfo.ElapsedPlaybackTime = PlayerItem?.CurrentTime.Seconds ?? 0;
-			metaData.NowPlayingInfo.PlaybackDuration = PlayerItem?.Duration.Seconds ?? 0;
-			metaData.NowPlayingInfo.IsLiveStream = false;
-			MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = metaData.NowPlayingInfo;
-		}
+		metaData?.SetMetaData(PlayerItem, MediaElement);
 
 		MediaElement.CurrentStateChanged(newState);
 	}

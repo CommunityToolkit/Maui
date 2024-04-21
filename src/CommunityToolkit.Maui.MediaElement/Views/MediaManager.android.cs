@@ -35,6 +35,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	MediaSessionConnector? mediaSessionConnector;
 	MediaSessionCompat? mediaSession;
 	UIUpdateReceiver? uiUpdateReceiver;
+	MediaElementState currentState;
 
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
@@ -50,7 +51,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	{
 		ArgumentNullException.ThrowIfNull(MauiContext.Context);
 		Player = new IExoPlayer.Builder(MauiContext.Context).Build() ?? throw new NullReferenceException();
-		Player.AddListener(this);				
+		Player.AddListener(this);			
 		InitializeMediaSession();
 
 		PlayerView = new StyledPlayerView(MauiContext.Context)
@@ -60,8 +61,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			ControllerAutoShow = false,
 			LayoutParameters = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent, GravityFlags.CenterHorizontal)
 		};
-		_ = CheckAndRequestForeGroundPermission();
-
+		Task Result = CheckAndRequestForeGroundPermission(CancellationToken.None);
+		if(Result.IsFaulted)
+		{
+			Logger?.LogError(Result.Exception, "Failed to get Foreground Permission.");
+		}
 		return (Player, PlayerView);
 	}
 
@@ -72,12 +76,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		mediaSession.Active = true;
 		
 		mediaSessionConnector ??= new MediaSessionConnector(mediaSession);
-		mediaSessionConnector.SetEnabledPlaybackActions(PlaybackStateCompat.ActionSkipToPrevious | PlaybackStateCompat.ActionPlayPause | PlaybackStateCompat.ActionSkipToNext | PlaybackStateCompat.ActionSeekTo);
+		mediaSessionConnector.SetEnabledPlaybackActions(PlaybackStateCompat.ActionRewind | PlaybackStateCompat.ActionPlayPause | PlaybackStateCompat.ActionFastForward | PlaybackStateCompat.ActionSeekTo);
 		mediaSessionConnector.SetDispatchUnsupportedActionsEnabled(true);
 		mediaSessionConnector.SetPlayer(Player);
 
 		uiUpdateReceiver ??= new UIUpdateReceiver(Player);
-		LocalBroadcastManager.GetInstance(Platform.AppContext).RegisterReceiver(uiUpdateReceiver, new IntentFilter(MediaControlsService.ACTION_UPDATE_UI));
+		LocalBroadcastManager.GetInstance(Platform.AppContext).RegisterReceiver(uiUpdateReceiver, new IntentFilter(MediaControlsService.ACTION_UPDATE_PLAYER));
 
 		ArgumentNullException.ThrowIfNull(mediaSessionConnector);
 		ArgumentNullException.ThrowIfNull(Platform.CurrentActivity);
@@ -87,7 +91,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		ArgumentNullException.ThrowIfNull(mediaControllerCompat);
 		
 		var stateBuilder = new PlaybackStateCompat.Builder();
-		stateBuilder.SetActions(PlaybackStateCompat.ActionSkipToPrevious | PlaybackStateCompat.ActionPlayPause | PlaybackStateCompat.ActionSkipToNext | PlaybackStateCompat.ActionSeekTo);
+		stateBuilder.SetActions(PlaybackStateCompat.ActionRewind | PlaybackStateCompat.ActionPlayPause | PlaybackStateCompat.ActionFastForward | PlaybackStateCompat.ActionSeekTo);
 		stateBuilder.SetState(PlaybackStateCompat.StateNone, 0, 1.0f, SystemClock.ElapsedRealtime());
 		mediaSession.SetPlaybackState(stateBuilder.Build());
 		mediaSession.SetFlags(MediaSessionCompat.FlagHandlesMediaButtons | MediaSessionCompat.FlagHandlesTransportControls);
@@ -97,9 +101,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// Method checks for required Permission for Android Notifications and requests them if needed
 	/// </summary>
 	/// <returns></returns>
-	static async Task CheckAndRequestForeGroundPermission()
+	static async Task CheckAndRequestForeGroundPermission(CancellationToken cancellationToken)
 	{
-		var status = await Permissions.CheckStatusAsync<AndroidPermissions>();
+		var status = await Permissions.CheckStatusAsync<AndroidPermissions>().WaitAsync(cancellationToken).ConfigureAwait(false);
 		if (status == PermissionStatus.Granted)
 		{
 			return;
@@ -108,12 +112,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			await Shell.Current.DisplayAlert("Permission Required", "Notification permission is required to show media controls.", "Ok");
 		}
-		_ = await Permissions.RequestAsync<AndroidPermissions>();
+		await Permissions.RequestAsync<AndroidPermissions>().WaitAsync(cancellationToken).ConfigureAwait(false);
 	}
 	
-	async Task StartService()
+	async Task StartService(CancellationToken cancellationToken)
 	{
-		var bitmap = await GetBitmapFromUrl(MediaElement.MetaDataArtworkUrl, Platform.AppContext.Resources);
+		var bitmap = await GetBitmapFromUrl(MediaElement.MetaDataArtworkUrl, Platform.AppContext.Resources, cancellationToken);
 		var mediaMetaData = new MediaMetadataCompat.Builder();
 		mediaMetaData.PutString(MediaMetadataCompat.MetadataKeyArtist, MediaElement.MetaDataArtist);
 		mediaMetaData.PutString(MediaMetadataCompat.MetadataKeyTitle, MediaElement.MetaDataTitle);
@@ -134,21 +138,29 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		}
 		
 		intent.PutExtra("token", mediaSession?.SessionToken);
-		Android.App.Application.Context.StartForegroundService(intent);
+		if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+		{
+			Android.App.Application.Context.StartForegroundService(intent);
+		}
+		else
+		{
+			Android.App.Application.Context.StartService(intent);
+		}
 	}
-
-	static void BroadcastUpdate(string action)
+	
+	void BroadcastUpdate(string action)
 	{
 		if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
 		{
+			Logger?.LogError("{LocalBroadcastManager} not supported on Android 13 and above.", typeof(LocalBroadcastManager));
 			return;
 		}
 		Intent intent = new Intent(MediaControlsService.ACTION_UPDATE_UI);
 		intent.PutExtra("ACTION", action);
 		LocalBroadcastManager.GetInstance(Platform.AppContext).SendBroadcast(intent);
 	}
-
-	public static async Task<Bitmap?> GetBitmapFromUrl(string? url, Resources? resources)
+	
+	public static async Task<Bitmap?> GetBitmapFromUrl(string? url, Resources? resources, CancellationToken cancellationToken)
 	{
 		var temp = BitmapFactory.DecodeResource(resources, Resource.Drawable.exo_ic_default_album_image);
 		if (client is null)
@@ -158,8 +170,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		
 		try
 		{
-			var response = await client.GetAsync(url).ConfigureAwait(false);
-			var stream = response.IsSuccessStatusCode ? await response.Content.ReadAsStreamAsync() : null;
+			var response = await client.GetAsync(url, cancellationToken).ConfigureAwait(false);
+			var stream = response.IsSuccessStatusCode ? await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false) : null;
 			return stream is not null ? await BitmapFactory.DecodeStreamAsync(stream) : temp;
 		}
 		catch
@@ -237,7 +249,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		};
 
 		MediaElement.CurrentStateChanged(newState);
-
+		
 		if (playbackState is IPlayer.StateReady)
 		{
 			MediaElement.Duration = TimeSpan.FromMilliseconds(Player.Duration < 0 ? 0 : Player.Duration);
@@ -246,8 +258,20 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			{
 				mediaSession.Active = true;
 			}
-			_ = StartService();
+			CancellationToken cancellationToken = new();
+			Task result = StartService(cancellationToken);
+			if (result.IsFaulted) 
+			{
+				Logger?.LogError(result.Exception, "Failed to get Artwork for Notification.");
+			}
 		}
+		if(MediaElement.CurrentState == currentState)
+		{
+			return;
+		}
+		currentState = MediaElement.CurrentState;
+		BroadcastUpdate(newState == MediaElementState.Playing ? MediaControlsService.ACTION_PLAY : MediaControlsService.ACTION_PAUSE);
+
 	}
 
 	protected override void Dispose(bool disposing)
@@ -685,6 +709,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 class UIUpdateReceiver : BroadcastReceiver
 {
 	IExoPlayer? player;
+
 	public UIUpdateReceiver(IExoPlayer player)
 	{
 		this.player = player;
@@ -694,9 +719,9 @@ class UIUpdateReceiver : BroadcastReceiver
 		ArgumentNullException.ThrowIfNull(intent);
 		ArgumentNullException.ThrowIfNull(intent.Action);
 		ArgumentNullException.ThrowIfNull(player);
-		if (intent.Action.Equals(MediaControlsService.ACTION_UPDATE_UI))
+		if (intent.Action.Equals(MediaControlsService.ACTION_UPDATE_PLAYER))
 		{
-			var action = intent.GetStringExtra("ACTION");
+			var action = intent.GetStringExtra("ACTION") ?? string.Empty;
 			switch(action)
 			{
 				case MediaControlsService.ACTION_PLAY:
@@ -704,17 +729,16 @@ class UIUpdateReceiver : BroadcastReceiver
 					break;
 				case MediaControlsService.ACTION_PAUSE:
 					player.Pause();
-					break;
-				case MediaControlsService.ACTION_FORWARD:
+					break; 
+				case MediaControlsService.ACTION_FASTFORWARD:
 					player.SeekTo(player.CurrentPosition + 30000);
 					player.Play();
 					break;
-				case MediaControlsService.ACTION_BACK:
+				case MediaControlsService.ACTION_REWIND:
 					player.SeekTo(player.CurrentPosition - 10000);
 					player.Play();
 					break;
 			}
 		}
-
 	}
 }
