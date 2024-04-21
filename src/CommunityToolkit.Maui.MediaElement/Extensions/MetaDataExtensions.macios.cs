@@ -17,9 +17,9 @@ public class MetaDataExtensions : IDisposable
 	/// The metadata for the currently playing media.
 	/// </summary>
 	public readonly MPNowPlayingInfo NowPlayingInfo;
-	readonly MPNowPlayingInfo nowPlayingInfoDefault;
+	static readonly MPNowPlayingInfo nowPlayingInfoDefault;
 	readonly PlatformMediaElement? player;
-	readonly MPMediaItemArtwork defaultImage;
+	static readonly MPMediaItemArtwork defaultImage;
 	bool disposedValue;
 
 	/// <summary>
