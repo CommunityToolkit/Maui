@@ -26,6 +26,10 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
+	Task checkPermissions = null!;
+	Task startService = null!;
+	CancellationTokenSource checkPermissionSourceToken = new();
+	CancellationTokenSource startServiceSourceToken = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 	double? previousSpeed;
 	float volumeBeforeMute = 1;
@@ -61,11 +65,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			ControllerAutoShow = false,
 			LayoutParameters = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent, GravityFlags.CenterHorizontal)
 		};
-		Task Result = CheckAndRequestForeGroundPermission(CancellationToken.None);
-		if(Result.IsFaulted)
-		{
-			Logger?.LogError(Result.Exception, "Failed to get Foreground Permission.");
-		}
+		
+		CancellationToken token = checkPermissionSourceToken.Token;
+		checkPermissions =  CheckAndRequestForeGroundPermission(token);
 		return (Player, PlayerView);
 	}
 
@@ -258,12 +260,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			{
 				mediaSession.Active = true;
 			}
-			CancellationToken cancellationToken = new();
-			Task result = StartService(cancellationToken);
-			if (result.IsFaulted) 
-			{
-				Logger?.LogError(result.Exception, "Failed to get Artwork for Notification.");
-			}
+			CancellationToken token = startServiceSourceToken.Token;
+			startService = StartService(token);
 		}
 		if(MediaElement.CurrentState == currentState)
 		{
@@ -295,6 +293,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			}
 			uiUpdateReceiver?.Dispose();
 			uiUpdateReceiver = null;
+			checkPermissionSourceToken?.Dispose();
+			startServiceSourceToken?.Dispose();
 		}
 	}
 
