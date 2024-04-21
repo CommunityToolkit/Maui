@@ -19,7 +19,7 @@ public class MetaDataExtensions
 		mediaElement = MediaElement;
 		this.dispatcher = Dispatcher;
 		systemMediaControls = systemMediaTransportControls;
-		systemMediaControls.ButtonPressed += SystemMediaControls_ButtonPressed;
+		systemMediaControls.ButtonPressed += OnSystemMediaControlsButtonPressed;
 	}
 
 
