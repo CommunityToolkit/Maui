@@ -90,7 +90,7 @@ public class MauiMediaElement : Grid, IDisposable
 		Dispose(true);
 		GC.SuppressFinalize(this);
 	}
-
+	
 	/// <summary>
 	/// Gets the presented page.
 	/// </summary>
@@ -110,6 +110,7 @@ public class MauiMediaElement : Grid, IDisposable
 		if (disposing)
 		{
 			mediaPlayerElement.MediaPlayer.Dispose();
+			mediaPlayerElement.PointerMoved -= OnMediaPlayerElementPointerMoved;
 		}
 
 		isDisposed = true;
