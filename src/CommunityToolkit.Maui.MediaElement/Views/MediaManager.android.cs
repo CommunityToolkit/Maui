@@ -26,7 +26,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
-	Task checkPermissions;
+	Task? checkPermissions;
 	CancellationTokenSource checkPermissionSourceToken = new();
 	CancellationTokenSource startServiceSourceToken = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
@@ -118,7 +118,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 	async Task StartService(CancellationToken cancellationToken = default)
 	{
-		await checkPermissions;
+		if (checkPermissions is not null)
+		{
+			await checkPermissions;
+		}
 		var bitmap = await GetBitmapFromUrl(MediaElement.MetaDataArtworkUrl, Platform.AppContext.Resources, cancellationToken);
 		var mediaMetaData = new MediaMetadataCompat.Builder();
 		mediaMetaData.PutString(MediaMetadataCompat.MetadataKeyArtist, MediaElement.MetaDataArtist);
