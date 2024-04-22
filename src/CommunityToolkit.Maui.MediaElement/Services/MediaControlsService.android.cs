@@ -56,17 +56,15 @@ public class MediaControlsService : Service
 			BroadcastUpdate(ACTION_UPDATE_PLAYER, intent.Action);
 		}
 
-		startForegroundServiceAsync(intent).ContinueWith(OnTaskFaulted, TaskContinuationOptions.OnlyOnFaulted);
+		startForegroundServiceAsync(intent).ContinueWith(t =>
+		{
+			foreach (var exception in t.Exception!.InnerExceptions)
+			{
+				System.Diagnostics.Trace.WriteLine($"[error] {exception}, {exception.Message}");
+			}
+		}, TaskContinuationOptions.OnlyOnFaulted);
 
 		return StartCommandResult.Sticky;
-	}
-
-	static void OnTaskFaulted(Task t)
-	{
-		foreach (var exception in t.Exception!.InnerExceptions)
-		{
-			System.Diagnostics.Trace.WriteLine($"[error] {exception}, {exception.Message}");
-		}
 	}
 
 	async Task startForegroundServiceAsync(Intent mediaManagerIntent, CancellationToken cancellationToken = default)
