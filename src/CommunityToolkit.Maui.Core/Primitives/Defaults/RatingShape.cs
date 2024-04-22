@@ -16,27 +16,27 @@ public partial struct RatingShape
 	/// <summary>
 	/// the default star shape
 	/// </summary>
-	public static RatingShape Star => new(PathShapes.Star);
+	public static RatingShape Star { get; } = new(PathShapes.Star);
 
 	/// <summary>
 	/// The default heart shape
 	/// </summary>
-	public static RatingShape Heart => new(PathShapes.Heart);
+	public static RatingShape Heart { get; } = new(PathShapes.Heart);
 
 	/// <summary>
 	/// The cirle shape
 	/// </summary>
-	public static RatingShape Circle => new(PathShapes.Circle);
+	public static RatingShape Circle { get; } = new(PathShapes.Circle);
 
 	/// <summary>
 	/// The Like shapes
 	/// </summary>
-	public static RatingShape Like => new(PathShapes.Like);
+	public static RatingShape Like { get; } = new(PathShapes.Like);
 
 	/// <summary>
 	/// The Dislike
 	/// </summary>
-	public static RatingShape DisLike => new(PathShapes.Dislike);
+	public static RatingShape Dislike { get; } = new(PathShapes.Dislike);
 }
 
 /// <summary>
