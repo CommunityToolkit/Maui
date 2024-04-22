@@ -20,7 +20,6 @@ using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
-using Resource = Microsoft.Maui.Resource;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -122,7 +121,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			await checkPermissions;
 		}
-		var bitmap = await GetBitmapFromUrl(MediaElement.MetaDataArtworkUrl, Platform.AppContext.Resources, cancellationToken);
+		var bitmap = await GetBitmapFromUrl(MediaElement.MetaDataArtworkUrl, cancellationToken);
 		var mediaMetaData = new MediaMetadataCompat.Builder();
 		mediaMetaData.PutString(MediaMetadataCompat.MetadataKeyArtist, MediaElement.MetaDataArtist);
 		mediaMetaData.PutString(MediaMetadataCompat.MetadataKeyTitle, MediaElement.MetaDataTitle);
@@ -165,23 +164,27 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		LocalBroadcastManager.GetInstance(Platform.AppContext).SendBroadcast(intent);
 	}
 
-	public static async Task<Bitmap?> GetBitmapFromUrl(string? url, Resources? resources, CancellationToken cancellationToken = default)
+	public static async Task<Bitmap?> GetBitmapFromUrl(string? url, CancellationToken cancellationToken = default)
 	{
-		var temp = BitmapFactory.DecodeResource(resources, Resource.Drawable.exo_ic_default_album_image);
+		Bitmap bitmap = Bitmap.CreateBitmap(1024, 768, Bitmap.Config.Argb8888!, true);
+		Canvas canvas = new();
+		canvas.SetBitmap(bitmap);
+		canvas.DrawColor(Android.Graphics.Color.White);
+		canvas.Save();
 		if (client is null)
 		{
-			return temp;
+			return bitmap;
 		}
 
 		try
 		{
 			var response = await client.GetAsync(url, cancellationToken).ConfigureAwait(false);
 			var stream = response.IsSuccessStatusCode ? await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false) : null;
-			return stream is not null ? await BitmapFactory.DecodeStreamAsync(stream) : temp;
+			return stream is not null ? await BitmapFactory.DecodeStreamAsync(stream) : bitmap;
 		}
 		catch
 		{
-			return temp;
+			return bitmap;
 		}
 	}
 
