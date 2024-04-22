@@ -1,16 +1,18 @@
 ﻿using static Microsoft.Maui.ApplicationModel.Permissions;
 
 namespace CommunityToolkit.Maui.Extensions;
-sealed class AndroidPermissions : BasePlatformPermission
+sealed class AndroidMediaPermissions : BasePlatformPermission
 {
-	public override (string androidPermission, bool isRuntime)[] RequiredPermissions =>
-		new List<(string androidPermission, bool isRuntime)>
-		{
+
+	static readonly (string androidPermission, bool isRuntime)[] permissions = [
 #if ANDROID28_0_OR_GREATER
 			(global::Android.Manifest.Permission.ForegroundService, true),
 #endif
 #if ANDROID33_0_OR_GREATER
 			(global::Android.Manifest.Permission.PostNotifications, true),
 #endif
-		}.ToArray();
+		];
+
+	public override (string androidPermission, bool isRuntime)[] RequiredPermissions => permissions;
+
 }
