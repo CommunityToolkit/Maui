@@ -149,7 +149,7 @@ public class MediaControlsService : Service
 
 	void OnReceiveUpdatesPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
-		if (notification is null || String.IsNullOrEmpty(receiveUpdates?.Action))
+		if (notification is null || string.IsNullOrEmpty(receiveUpdates?.Action))
 		{
 			return;
 		}
