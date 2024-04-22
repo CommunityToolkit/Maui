@@ -26,8 +26,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
-	Task checkPermissions = null!;
-	Task startService = null!;
+	Task checkPermissions;
 	CancellationTokenSource checkPermissionSourceToken = new();
 	CancellationTokenSource startServiceSourceToken = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
@@ -55,7 +54,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	{
 		ArgumentNullException.ThrowIfNull(MauiContext.Context);
 		Player = new IExoPlayer.Builder(MauiContext.Context).Build() ?? throw new NullReferenceException();
-		Player.AddListener(this);			
+		Player.AddListener(this);
 		InitializeMediaSession();
 
 		PlayerView = new StyledPlayerView(MauiContext.Context)
@@ -65,9 +64,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			ControllerAutoShow = false,
 			LayoutParameters = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent, GravityFlags.CenterHorizontal)
 		};
-		
+
 		CancellationToken token = checkPermissionSourceToken.Token;
-		checkPermissions =  CheckAndRequestForeGroundPermission(token);
+		checkPermissions = CheckAndRequestForeGroundPermission(token);
 		return (Player, PlayerView);
 	}
 
@@ -76,7 +75,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		ArgumentNullException.ThrowIfNull(Player);
 		mediaSession ??= new MediaSessionCompat(Platform.AppContext, "notification");
 		mediaSession.Active = true;
-		
+
 		mediaSessionConnector ??= new MediaSessionConnector(mediaSession);
 		mediaSessionConnector.SetEnabledPlaybackActions(PlaybackStateCompat.ActionRewind | PlaybackStateCompat.ActionPlayPause | PlaybackStateCompat.ActionFastForward | PlaybackStateCompat.ActionSeekTo);
 		mediaSessionConnector.SetDispatchUnsupportedActionsEnabled(true);
@@ -91,7 +90,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		mediaControllerCompat ??= new MediaControllerCompat(Platform.CurrentActivity, mediaSession.SessionToken);
 		ArgumentNullException.ThrowIfNull(mediaControllerCompat);
-		
+
 		var stateBuilder = new PlaybackStateCompat.Builder();
 		stateBuilder.SetActions(PlaybackStateCompat.ActionRewind | PlaybackStateCompat.ActionPlayPause | PlaybackStateCompat.ActionFastForward | PlaybackStateCompat.ActionSeekTo);
 		stateBuilder.SetState(PlaybackStateCompat.StateNone, 0, 1.0f, SystemClock.ElapsedRealtime());
@@ -105,7 +104,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// <returns></returns>
 	static async Task CheckAndRequestForeGroundPermission(CancellationToken cancellationToken)
 	{
-		var status = await Permissions.CheckStatusAsync<AndroidPermissions>().WaitAsync(cancellationToken).ConfigureAwait(false);
+		var status = await Permissions.CheckStatusAsync<AndroidMediaPermissions>().WaitAsync(cancellationToken).ConfigureAwait(false);
 		if (status == PermissionStatus.Granted)
 		{
 			return;
@@ -114,11 +113,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			await Shell.Current.DisplayAlert("Permission Required", "Notification permission is required to show media controls.", "Ok");
 		}
-		await Permissions.RequestAsync<AndroidPermissions>().WaitAsync(cancellationToken).ConfigureAwait(false);
+		await Permissions.RequestAsync<AndroidMediaPermissions>().WaitAsync(cancellationToken).ConfigureAwait(false);
 	}
-	
+
 	async Task StartService(CancellationToken cancellationToken)
 	{
+		await checkPermissions;
 		var bitmap = await GetBitmapFromUrl(MediaElement.MetaDataArtworkUrl, Platform.AppContext.Resources, cancellationToken);
 		var mediaMetaData = new MediaMetadataCompat.Builder();
 		mediaMetaData.PutString(MediaMetadataCompat.MetadataKeyArtist, MediaElement.MetaDataArtist);
@@ -126,7 +126,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		mediaMetaData.PutBitmap(MediaMetadataCompat.MetadataKeyAlbumArt, bitmap);
 		mediaMetaData.PutLong(MediaMetadataCompat.MetadataKeyDuration, Player?.Duration ?? 0);
 		mediaMetaData.Build();
-		
+
 		mediaSession?.SetMetadata(mediaMetaData.Build());
 		var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
 		if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
@@ -138,7 +138,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			intent.PutExtra("currentTime", SystemClock.ElapsedRealtime());
 			intent.PutExtra("duration", ((long)MediaElement.Duration.TotalSeconds));
 		}
-		
+
 		intent.PutExtra("token", mediaSession?.SessionToken);
 		if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
 		{
@@ -149,7 +149,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			Android.App.Application.Context.StartService(intent);
 		}
 	}
-	
+
 	void BroadcastUpdate(string action)
 	{
 		if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
@@ -161,7 +161,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		intent.PutExtra("ACTION", action);
 		LocalBroadcastManager.GetInstance(Platform.AppContext).SendBroadcast(intent);
 	}
-	
+
 	public static async Task<Bitmap?> GetBitmapFromUrl(string? url, Resources? resources, CancellationToken cancellationToken = default)
 	{
 		var temp = BitmapFactory.DecodeResource(resources, Resource.Drawable.exo_ic_default_album_image);
@@ -169,7 +169,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			return temp;
 		}
-		
+
 		try
 		{
 			var response = await client.GetAsync(url, cancellationToken).ConfigureAwait(false);
@@ -218,7 +218,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
 	/// While this method does not seem to have any references, it's invoked at runtime.
 	/// </remarks>
-	public void OnPlayerStateChanged(bool playWhenReady, int playbackState)
+	public async void OnPlayerStateChanged(bool playWhenReady, int playbackState)
 	{
 		if (Player is null || MediaElement.Source is null)
 		{
@@ -251,7 +251,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		};
 
 		MediaElement.CurrentStateChanged(newState);
-		
+
 		if (playbackState is IPlayer.StateReady)
 		{
 			MediaElement.Duration = TimeSpan.FromMilliseconds(Player.Duration < 0 ? 0 : Player.Duration);
@@ -261,9 +261,16 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 				mediaSession.Active = true;
 			}
 			CancellationToken token = startServiceSourceToken.Token;
-			startService = StartService(token);
+			try
+			{
+				await StartService(token);
+			}
+			catch (Exception e)
+			{
+				System.Diagnostics.Trace.WriteLine($"[error] {e}, {e.Message}");
+			}
 		}
-		if(MediaElement.CurrentState == currentState)
+		if (MediaElement.CurrentState == currentState)
 		{
 			return;
 		}
@@ -275,7 +282,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	protected override void Dispose(bool disposing)
 	{
 		base.Dispose(disposing);
-		
+
 		if (disposing)
 		{
 			StopService();
@@ -311,7 +318,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		if (MediaElement.Source is null)
 		{
 			return;
-		}	
+		}
 		MediaElementState newState = MediaElement.CurrentState;
 
 		switch (playbackState)
@@ -722,14 +729,14 @@ sealed class UIUpdateReceiver : BroadcastReceiver
 		if (intent.Action.Equals(MediaControlsService.ACTION_UPDATE_PLAYER))
 		{
 			var action = intent.GetStringExtra("ACTION") ?? string.Empty;
-			switch(action)
+			switch (action)
 			{
 				case MediaControlsService.ACTION_PLAY:
 					player.Play();
 					break;
 				case MediaControlsService.ACTION_PAUSE:
 					player.Pause();
-					break; 
+					break;
 				case MediaControlsService.ACTION_FASTFORWARD:
 					player.SeekTo(player.CurrentPosition + 30000);
 					player.Play();
