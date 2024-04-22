@@ -15,8 +15,8 @@ using Stream = Android.Media.Stream;
 
 namespace CommunityToolkit.Maui.Media.Services;
 
-[Service(Exported = false,Enabled = true, Name = "CommunityToolkit.Maui.Services", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
-public class MediaControlsService : Service	
+[Service(Exported = false, Enabled = true, Name = "CommunityToolkit.Maui.Services", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
+public class MediaControlsService : Service
 {
 	bool disposedValue;
 	public const string ACTION_PLAY = "MediaAction.play";
@@ -51,31 +51,36 @@ public class MediaControlsService : Service
 	{
 		ArgumentNullException.ThrowIfNull(intent);
 
-		if (!String.IsNullOrEmpty(intent.Action) && receiveUpdates is not null)
+		if (!string.IsNullOrEmpty(intent.Action) && receiveUpdates is not null)
 		{
 			BroadcastUpdate(ACTION_UPDATE_PLAYER, intent.Action);
 		}
-		Task result = startForegroundServiceAsync(intent, CancellationToken.None);
-		if (result.IsFaulted)
-		{
-			System.Diagnostics.Trace.WriteLine(result.Exception?.Message);
-		}
-		startForegroundServiceAsync(intent, CancellationToken.None).ConfigureAwait(false);
+
+		startForegroundServiceAsync(intent).ContinueWith(OnTaskFaulted, TaskContinuationOptions.OnlyOnFaulted);
+
 		return StartCommandResult.Sticky;
 	}
 
-	async Task startForegroundServiceAsync(Intent mediaManagerIntent, CancellationToken cancellationToken)
+	static void OnTaskFaulted(Task t)
+	{
+		foreach (var exception in t.Exception!.InnerExceptions)
+		{
+			System.Diagnostics.Trace.WriteLine($"[error] {exception}, {exception.Message}");
+		}
+	}
+
+	async Task startForegroundServiceAsync(Intent mediaManagerIntent, CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(mediaManagerIntent);
 		token ??= mediaManagerIntent.GetParcelableExtra("token") as MediaSessionCompat.Token;
 		ArgumentNullException.ThrowIfNull(token);
-		
+
 		mediaSession ??= new MediaSessionCompat(Platform.AppContext, "notification")
 		{
 			Active = true,
 		};
 		ArgumentNullException.ThrowIfNull(mediaSession);
-		if(receiveUpdates is null)
+		if (receiveUpdates is null)
 		{
 			receiveUpdates = new ReceiveUpdates();
 			receiveUpdates.PropertyChanged += ReceiveUpdates_PropertyChanged;
@@ -238,7 +243,7 @@ public class MediaControlsService : Service
 			mediaSession?.Release();
 			mediaSession?.Dispose();
 			mediaSession = null;
-			
+
 			if (receiveUpdates is not null)
 			{
 				receiveUpdates.PropertyChanged -= ReceiveUpdates_PropertyChanged;
@@ -258,7 +263,7 @@ public class MediaControlsService : Service
 sealed class ReceiveUpdates : BroadcastReceiver
 {
 	public string Action = string.Empty;
-	
+
 	public event PropertyChangedEventHandler? PropertyChanged;
 
 	/// <summary>
