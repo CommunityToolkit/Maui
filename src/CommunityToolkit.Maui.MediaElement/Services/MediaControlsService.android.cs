@@ -81,7 +81,7 @@ public class MediaControlsService : Service
 		if (receiveUpdates is null)
 		{
 			receiveUpdates = new ReceiveUpdates();
-			receiveUpdates.PropertyChanged += ReceiveUpdates_PropertyChanged;
+			receiveUpdates.PropertyChanged += OnReceiveUpdatesPropertyChanged;
 			LocalBroadcastManager.GetInstance(this).RegisterReceiver(receiveUpdates, new IntentFilter(ACTION_UPDATE_UI));
 		}
 		OnSetupAudioServices();
@@ -147,7 +147,7 @@ public class MediaControlsService : Service
 		notificationMnaManager.CreateNotificationChannel(channel);
 	}
 
-	void ReceiveUpdates_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+	void OnReceiveUpdatesPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (notification is null || String.IsNullOrEmpty(receiveUpdates?.Action))
 		{
@@ -244,7 +244,7 @@ public class MediaControlsService : Service
 
 			if (receiveUpdates is not null)
 			{
-				receiveUpdates.PropertyChanged -= ReceiveUpdates_PropertyChanged;
+				receiveUpdates.PropertyChanged -= OnReceiveUpdatesPropertyChanged;
 				LocalBroadcastManager.GetInstance(Platform.AppContext).UnregisterReceiver(receiveUpdates);
 			}
 			receiveUpdates?.Dispose();
