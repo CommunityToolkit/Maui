@@ -175,10 +175,10 @@ public class MediaControlsService : Service
 
 	async Task OnSetContent(Intent mediaManagerIntent, CancellationToken cancellationToken)
 	{
-		var albumArtUri = mediaManagerIntent.GetStringExtra("albumArtUri") as string ?? string.Empty;
+		var albumArtUri = mediaManagerIntent.GetStringExtra("albumArtUri") ?? string.Empty;
 		var bitmap = await MediaManager.GetBitmapFromUrl(albumArtUri, Platform.AppContext.Resources, cancellationToken).ConfigureAwait(false);
-		var title = mediaManagerIntent.GetStringExtra("title") as string ?? string.Empty;
-		var artist = mediaManagerIntent.GetStringExtra("artist") as string ?? string.Empty;
+		var title = mediaManagerIntent.GetStringExtra("title") ?? string.Empty;
+		var artist = mediaManagerIntent.GetStringExtra("artist") ?? string.Empty;
 		notification?.SetContentTitle(title);
 		notification?.SetContentText(artist);
 		notification?.SetLargeIcon(bitmap);
