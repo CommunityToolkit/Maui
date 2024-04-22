@@ -102,7 +102,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// Method checks for required Permission for Android Notifications and requests them if needed
 	/// </summary>
 	/// <returns></returns>
-	static async Task CheckAndRequestForeGroundPermission(CancellationToken cancellationToken)
+	static async Task CheckAndRequestForeGroundPermission(CancellationToken cancellationToken = default)
 	{
 		var status = await Permissions.CheckStatusAsync<AndroidMediaPermissions>().WaitAsync(cancellationToken).ConfigureAwait(false);
 		if (status == PermissionStatus.Granted)
@@ -116,7 +116,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		await Permissions.RequestAsync<AndroidMediaPermissions>().WaitAsync(cancellationToken).ConfigureAwait(false);
 	}
 
-	async Task StartService(CancellationToken cancellationToken)
+	async Task StartService(CancellationToken cancellationToken = default)
 	{
 		await checkPermissions;
 		var bitmap = await GetBitmapFromUrl(MediaElement.MetaDataArtworkUrl, Platform.AppContext.Resources, cancellationToken);
@@ -438,7 +438,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		BroadcastUpdate(MediaControlsService.ACTION_PAUSE);
 	}
 
-	protected virtual async partial Task PlatformSeek(TimeSpan position, CancellationToken token)
+	protected virtual async partial Task PlatformSeek(TimeSpan position, CancellationToken token = default)
 	{
 		if (Player is null)
 		{
@@ -453,7 +453,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			Player.SeekTo((long)position.TotalMilliseconds);
 
-			await seekToTaskCompletionSource.Task.WaitAsync(token);
+			// Here, we don't want to throw an exception
+			// and to keep the execution on the thread that called this method
+			await seekToTaskCompletionSource.Task.WaitAsync(TimeSpan.FromMinutes(2), token).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing | ConfigureAwaitOptions.ContinueOnCapturedContext);
 
 			MediaElement.SeekCompleted();
 		}
