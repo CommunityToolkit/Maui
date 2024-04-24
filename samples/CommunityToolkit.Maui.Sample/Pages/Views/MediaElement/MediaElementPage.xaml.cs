@@ -161,7 +161,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		{
 			case loadOnlineMp4:
 				MediaElement.MetaDataTitle = "Big Buck Bunny";
-				MediaElement.MetaDataArtworkUrl = "https://michellevella.com/cdn/shop/products/BeatlesLonelyHearts4UP_1728x.jpg?v=1660582971";
+				MediaElement.MetaDataArtworkUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
 				MediaElement.MetaDataArtist = "Big Buck Bunny Album";
 				MediaElement.Source =
 					MediaSource.FromUri(
@@ -170,7 +170,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 			case loadHls:
 				MediaElement.MetaDataArtist = "HLS Album";
-				MediaElement.MetaDataArtworkUrl = "https://michellevella.com/cdn/shop/products/BeatlesLonelyHearts4UP_1728x.jpg?v=1660582971";
+				MediaElement.MetaDataArtworkUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
 				MediaElement.MetaDataTitle = "HLS Title";
 				MediaElement.Source
 					= MediaSource.FromUri(
@@ -185,7 +185,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				return;
 
 			case loadLocalResource:
-				MediaElement.MetaDataArtworkUrl = "https://michellevella.com/cdn/shop/products/BeatlesLonelyHearts4UP_1728x.jpg?v=1660582971";
+				MediaElement.MetaDataArtworkUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
 				MediaElement.MetaDataTitle = "Local Resource Title";
 				MediaElement.MetaDataArtist = "Local Resource Album";
 			

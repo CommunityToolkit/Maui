@@ -32,7 +32,7 @@
                 WidthRequest="{OnIdiom Tablet=410, Default=380}"
                 ShouldAutoPlay="True"
                 Source="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-                MetaDataArtworkUrl="https://michellevella.com/cdn/shop/products/BeatlesLonelyHearts4UP_1728x.jpg?v=1660582971"
+                MetaDataArtworkUrl="https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm"
                 MetaDataTitle="Big Buck Bunny"
                 MetaDataArtist="Blender Foundation"
                 MediaEnded="OnMediaEnded"
