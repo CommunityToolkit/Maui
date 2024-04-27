@@ -18,7 +18,7 @@ sealed partial class MathExpression
 	{
 		ArgumentException.ThrowIfNullOrEmpty(expression, "Expression can't be null or empty.");
 
-		var argumentList = arguments?.ToList() ?? new List<double>();
+		var argumentList = arguments?.ToList() ?? [];
 
 		Expression = expression.ToLower();
 
@@ -94,7 +94,7 @@ sealed partial class MathExpression
 
 			if (mathOperator.Precedence is MathOperatorPrecedence.Constant)
 			{
-				stack.Push(mathOperator.CalculateFunc(Array.Empty<double>()));
+				stack.Push(mathOperator.CalculateFunc([]));
 				continue;
 			}
 
@@ -113,7 +113,7 @@ sealed partial class MathExpression
 
 			args.Reverse();
 
-			stack.Push(mathOperator.CalculateFunc(args.ToArray()));
+			stack.Push(mathOperator.CalculateFunc([.. args]));
 		}
 
 		if (stack.Count != 1)
