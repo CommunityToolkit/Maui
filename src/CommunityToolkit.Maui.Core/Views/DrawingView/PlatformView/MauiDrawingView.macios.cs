@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MauiDrawingView : PlatformTouchGraphicsView
 {
-	readonly List<UIScrollView> scrollViewParents = new();
+	readonly List<UIScrollView> scrollViewParents = [];
 
 	/// <inheritdoc />
 	public override void TouchesBegan(NSSet touches, UIEvent? evt)

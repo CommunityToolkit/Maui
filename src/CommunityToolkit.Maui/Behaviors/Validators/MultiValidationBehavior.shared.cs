@@ -22,7 +22,7 @@ public class MultiValidationBehavior : ValidationBehavior
 	public static readonly BindableProperty ErrorProperty =
 		BindableProperty.CreateAttached(nameof(GetError), typeof(object), typeof(MultiValidationBehavior), null);
 
-	readonly ObservableCollection<ValidationBehavior> children = new();
+	readonly ObservableCollection<ValidationBehavior> children = [];
 
 	/// <summary>
 	/// Constructor for this behavior.
