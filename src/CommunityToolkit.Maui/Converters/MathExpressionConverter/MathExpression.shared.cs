@@ -1,5 +1,4 @@
-﻿using System.Collections.Frozen;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using CommunityToolkit.Maui.Core;
 

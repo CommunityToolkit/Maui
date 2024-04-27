@@ -1,4 +1,3 @@
-using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Core.Extensions;
 
