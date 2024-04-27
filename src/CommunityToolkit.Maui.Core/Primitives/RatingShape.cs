@@ -1,18 +1,15 @@
-﻿namespace CommunityToolkit.Maui.Core.Primitives.Defaults;
+﻿namespace CommunityToolkit.Maui.Core.Primitives;
 
 /// <summary>
 /// The type of the shape to display on the rating view
 /// </summary>
-public readonly partial struct RatingShape(string pathData)
+public readonly struct RatingShape(string pathData)
 {
 	/// <summary>
 	/// the data path data from the svg
 	/// </summary>
 	public string PathData { get; } = pathData;
-}
 
-public partial struct RatingShape
-{
 	/// <summary>
 	/// the default star shape
 	/// </summary>
@@ -24,7 +21,7 @@ public partial struct RatingShape
 	public static RatingShape Heart { get; } = new(PathShapes.Heart);
 
 	/// <summary>
-	/// The cirle shape
+	/// The circle shape
 	/// </summary>
 	public static RatingShape Circle { get; } = new(PathShapes.Circle);
 

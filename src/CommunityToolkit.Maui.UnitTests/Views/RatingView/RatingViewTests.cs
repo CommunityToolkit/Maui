@@ -1,3 +1,5 @@
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Core.Primitives.Defaults;
 using FluentAssertions;
 using Microsoft.Maui.Controls.Shapes;
@@ -15,14 +17,14 @@ public class RatingViewTests : BaseHandlerTest
 		var ratingView = new Maui.Views.RatingView.RatingView();
 
 		// Assert
-		ratingView.CurrentRating.Should().Be(0.0);
-		ratingView.MaximumRating.Should().Be(5);
-		ratingView.Size.Should().Be(20.0);
-		ratingView.FilledBackgroundColor.Should().BeEquivalentTo(Colors.Yellow);
-		ratingView.EmptyBackgroundColor.Should().BeEquivalentTo(Colors.White);
-		ratingView.StrokeThickness.Should().Be(7.0);
-		ratingView.Spacing.Should().Be(10.0);
-		ratingView.ShouldAllowRating.Should().BeFalse();
+		Assert.Equal(RatingViewDefaults.CurrentRating, ratingView.CurrentRating);
+		Assert.Equal(RatingViewDefaults.MaximumRating, ratingView.MaximumRating);
+		Assert.Equal(RatingViewDefaults.Size, ratingView.Size);
+		Assert.Equal(RatingViewDefaults.FilledBackgroundColor, ratingView.FilledBackgroundColor);
+		Assert.Equal(RatingViewDefaults.EmptyBackgroundColor, ratingView.EmptyBackgroundColor);
+		Assert.Equal(RatingViewDefaults.StrokeThickness, ratingView.StrokeThickness);
+		Assert.Equal(RatingViewDefaults.Spacing, ratingView.Spacing);
+		Assert.Equal(RatingViewDefaults.IsEnabled, ratingView.IsEnabled);
 	}
 
 	[Fact]
@@ -130,7 +132,7 @@ public class RatingViewTests : BaseHandlerTest
 		var ratingView = new Maui.Views.RatingView.RatingView
 		{
 			MaximumRating = 3,
-			ShouldAllowRating = true
+			IsEnabled = true
 		};
 
 		Path tappedShape = new()

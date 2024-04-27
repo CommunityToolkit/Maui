@@ -1,65 +1,95 @@
-﻿using System.Windows.Input;
+﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
-using CommunityToolkit.Maui.Core.Primitives.Defaults;
 using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui.Views.RatingView;
 
 /// <summary>RatingView control.</summary>
-public class RatingView : BaseTemplatedView<Grid>
+public class RatingView : TemplatedView
 {
-	Microsoft.Maui.Controls.Shapes.Path[] shapes;
-
-	string shape = string.Empty;
-
-
 	/// <summary> Rating value bindable property <see cref="CurrentRating"/> </summary>
 	public static readonly BindableProperty CurrentRatingProperty = BindableProperty.Create(nameof(CurrentRating),
-		typeof(double), typeof(RatingView), defaultValue: 0.0, propertyChanged: OnBindablePropertyChanged);
+		typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.CurrentRating, propertyChanged: OnBindablePropertyChanged);
 
 
 	/// <summary>MaximumRating rating value Bindable property </summary>
 	public static readonly BindableProperty MaximumRatingProperty = BindableProperty.Create(nameof(MaximumRating),
-		typeof(int), typeof(RatingView), defaultValue: 5, propertyChanged: OnBindablePropertyChanged);
+		typeof(int), typeof(RatingView), defaultValue: RatingViewDefaults.MaximumRating, propertyChanged: OnBindablePropertyChanged);
 
 
 	/// <summary>Shape size Bindable property</summary>
 	public static readonly BindableProperty SizeProperty = BindableProperty.Create(nameof(Size), typeof(double),
-		typeof(RatingView), defaultValue: 20.0, propertyChanged: OnBindablePropertyChanged);
+		typeof(RatingView), defaultValue: RatingViewDefaults.Size, propertyChanged: OnBindablePropertyChanged);
 
 
 	/// <summary>Shape filled Color Bindable property.</summary>
-	public static readonly BindableProperty FilledBackgroundColorProperty =
-		BindableProperty.Create(nameof(FilledBackgroundColor), typeof(Color), typeof(RatingView),
-			defaultValue: Colors.Yellow, propertyChanged: OnBindablePropertyChanged);
+	public static readonly BindableProperty FilledBackgroundColorProperty = BindableProperty.Create(nameof(FilledBackgroundColor), 
+		typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.FilledBackgroundColor, propertyChanged: OnBindablePropertyChanged);
 
 	///<summary>Shape empty Color Bindable property.</summary>
-	public static readonly BindableProperty EmptyBackgroundColorProperty =
-		BindableProperty.Create(nameof(EmptyBackgroundColor), typeof(Color), typeof(RatingView),
-			defaultValue: Colors.White, propertyChanged: OnBindablePropertyChanged);
+	public static readonly BindableProperty EmptyBackgroundColorProperty = BindableProperty.Create(nameof(EmptyBackgroundColor), 
+		typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.EmptyBackgroundColor, propertyChanged: OnBindablePropertyChanged);
 
 	///<summary>Shape stroke color bindable property.</summary>
 	public static readonly BindableProperty StrokeColorProperty = BindableProperty.Create(nameof(StrokeColor),
-		typeof(Color), typeof(RatingView), defaultValue: Colors.Gray, propertyChanged: OnBindablePropertyChanged);
-
+		typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.StrokeColor, propertyChanged: OnBindablePropertyChanged);
 
 	///<summary>Shapes space between bindable property.</summary>
 	public static readonly BindableProperty SpacingProperty = BindableProperty.Create(nameof(Spacing), typeof(double),
-		typeof(RatingView), defaultValue: 10.0, propertyChanged: OnBindablePropertyChanged);
+		typeof(RatingView), defaultValue: RatingViewDefaults.Spacing, propertyChanged: OnBindablePropertyChanged);
 
 	///<summary>Shape clickable property.</summary>
-	public static readonly BindableProperty ShouldAllowRatingProperty =
-		BindableProperty.Create(nameof(ShouldAllowRating), typeof(bool), typeof(RatingView), defaultValue: false,
-			propertyChanged: OnBindablePropertyChanged);
+	public static new readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), 
+		typeof(bool), typeof(RatingView), defaultValue: false, propertyChanged: OnIsEnabledChanged);
 
 	///<summary>The shape to be drawn bindable property.</summary>
 	public readonly BindableProperty ShapeProperty = BindableProperty.Create(nameof(Shape), typeof(RatingShape),
 		typeof(RatingView), propertyChanged: OnShapePropertyChanged);
 
-	///<summary>Shape stroke thinckness bindable property.</summary>
+	///<summary>Shape stroke thickness bindable property.</summary>
 	public static readonly BindableProperty StrokeThicknessProperty = BindableProperty.Create(nameof(StrokeThickness),
-		typeof(double), typeof(RatingView), defaultValue: 7.0, propertyChanged: OnBindablePropertyChanged);
+		typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.StrokeThickness, propertyChanged: OnBindablePropertyChanged);
+	
+	Microsoft.Maui.Controls.Shapes.Path[] shapes;
 
+	string shape = string.Empty;
+	
+	///<summary>The default constructor of the control.</summary>
+	public RatingView()
+	{
+		ControlTemplate = new ControlTemplate(typeof(Grid));
+		
+		shapes = new Microsoft.Maui.Controls.Shapes.Path[MaximumRating];
+
+		HorizontalOptions = LayoutOptions.CenterAndExpand;
+
+		InitializeShape();
+
+		Draw();
+	}
+
+	///<summary>Method called everytime the control's Binding Context is changed.</summary>
+	protected override void OnBindingContextChanged()
+	{
+		base.OnBindingContextChanged();
+
+		if (Control is not null)
+		{
+			Control.BindingContext = BindingContext;
+		}
+	}
+
+	///<summary>Called everytime a child is added to the control.</summary>
+	protected override void OnChildAdded(Element child)
+	{
+		if (Control is null && child is Grid grid)
+		{
+			Control = grid;
+			OnControlInitialized();
+		}
+
+		base.OnChildAdded(child);
+	}
 
 	///<summary>Defines the current rating value.</summary>
 	public double CurrentRating
@@ -117,11 +147,11 @@ public class RatingView : BaseTemplatedView<Grid>
 		set => SetValue(SpacingProperty, value);
 	}
 
-	///<summary>Defines if the drwan shapes can be clickable to rate.</summary>
-	public bool ShouldAllowRating
+	///<summary>Defines if the drawn shapes can be clickable to rate.</summary>
+	public new bool IsEnabled
 	{
-		get => (bool)GetValue(ShouldAllowRatingProperty);
-		set => SetValue(ShouldAllowRatingProperty, value);
+		get => (bool)GetValue(IsEnabledProperty);
+		set => SetValue(IsEnabledProperty, value);
 	}
 
 	///<summary>Defines the shape to be drawn.</summary>
@@ -130,44 +160,31 @@ public class RatingView : BaseTemplatedView<Grid>
 		get => (RatingShape)GetValue(ShapeProperty);
 		set => SetValue(ShapeProperty, value);
 	}
-
-
-	///<summary>The default constructor of the control.</summary>
-	public RatingView()
+	
+	///<summary>The control to be displayed</summary>
+	public Grid? Control { get; private set; }
+	
+	static void OnIsEnabledChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		shapes = new Microsoft.Maui.Controls.Shapes.Path[MaximumRating];
-
-
-		HorizontalOptions = LayoutOptions.CenterAndExpand;
-
-		InitializeShape();
-
-		Draw();
+		var ratingView = (RatingView)bindable;
+		ratingView.HandleIsEnabledChanged();
+		ratingView.ReDraw();
 	}
-
-	///<summary>Event raised whenever the bindable property changes.</summary>
-	public static void OnBindablePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	
+	static void OnBindablePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		//re-draw forms.
 		((RatingView)bindable).ReDraw();
 	}
-
-
-	///<summary>Event raised whenever the shape bindable property changes.</summary>
-	public static void OnShapePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	
+	static void OnShapePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		((RatingView)bindable).InitializeShape();
 		((RatingView)bindable).ReDraw();
 	}
-
-
-	///<summary>Event raised whenever the Shape is tapped or clicked.</summary>
-	public void OnShapeTapped(object? sender, TappedEventArgs? e)
+	
+	void OnShapeTapped(object? sender, TappedEventArgs? e)
 	{
-		var tappedShape = sender as Microsoft.Maui.Controls.Shapes.Path;
-
-
-		if (tappedShape is null)
+		if (sender is not Microsoft.Maui.Controls.Shapes.Path tappedShape)
 		{
 			return;
 		}
@@ -175,18 +192,15 @@ public class RatingView : BaseTemplatedView<Grid>
 		if (Control is not null)
 		{
 			int columnIndex = Control.GetColumn(tappedShape);
-
-
+			
 			if (MaximumRating > 1)
 			{
 				CurrentRating = columnIndex + 1;
 			}
 		}
 	}
-
-
-	///<summary>The base method that draw the shape at the control initialization state.</summary>
-	public void Draw()
+	
+	void Draw()
 	{
 		for (int i = 0; i < MaximumRating; i++)
 		{
@@ -220,7 +234,7 @@ public class RatingView : BaseTemplatedView<Grid>
 			}
 
 
-			if (ShouldAllowRating)
+			if (IsEnabled)
 			{
 				var tapGestureRecognizer = new TapGestureRecognizer();
 				tapGestureRecognizer.Tapped += OnShapeTapped;
@@ -236,9 +250,8 @@ public class RatingView : BaseTemplatedView<Grid>
 
 		UpdateDraw();
 	}
-
-	///<summary>Redraw the shapes on bindable changed event raised.</summary>
-	public void ReDraw()
+	
+	void ReDraw()
 	{
 		Control?.Children.Clear();
 
@@ -251,12 +264,11 @@ public class RatingView : BaseTemplatedView<Grid>
 		UpdateDraw();
 	}
 
-	///<summary>Called everytime the shape is tapped to fill it or empty depending on the rating value.</summary>
-	public void UpdateDraw()
+	void UpdateDraw()
 	{
 		for (int i = 0; i < MaximumRating; i++)
 		{
-			Microsoft.Maui.Controls.Shapes.Path image = shapes[i];
+			var image = shapes[i];
 
 			if (CurrentRating >= i + 1)
 			{
@@ -270,7 +282,7 @@ public class RatingView : BaseTemplatedView<Grid>
 			{
 				image.HeightRequest = Size;
 				image.WidthRequest = Size;
-				if (CurrentRating % 1 == 0)
+				if (CurrentRating % 1 is 0)
 				{
 					image.Fill = EmptyBackgroundColor;
 					image.Stroke = StrokeColor;
@@ -299,32 +311,34 @@ public class RatingView : BaseTemplatedView<Grid>
 			}
 		}
 	}
-
-	///<summary>Initialize the shapes and the control.</summary>
-	public void InitializeShape()
+	
+	void InitializeShape()
 	{
 		if (Control is not null)
 		{
-			this.Control.ColumnSpacing = Spacing;
+			Control.ColumnSpacing = Spacing;
 		}
 
-		this.StrokeColor = Colors.Transparent;
+		StrokeColor = Colors.Transparent;
 
 		shape = Shape.PathData;
 	}
 
-
-	///<inheritdoc cref="BaseTemplatedView{TControl}"/>
-	protected override void OnControlInitialized(Grid control)
+	// Ensure VisualElement.IsEnabled always matches RatingView.IsEnabled 
+	void HandleIsEnabledChanged()
+	{
+		base.IsEnabled = IsEnabled;
+	}
+	
+	void OnControlInitialized()
 	{
 		shapes = new Microsoft.Maui.Controls.Shapes.Path[MaximumRating];
 
-
 		HorizontalOptions = LayoutOptions.CenterAndExpand;
 
-		if (this.Control is not null)
+		if (Control is not null)
 		{
-			this.Control.ColumnSpacing = Spacing;
+			Control.ColumnSpacing = Spacing;
 		}
 
 		Draw();
