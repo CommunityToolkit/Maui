@@ -128,13 +128,17 @@ public partial class Snackbar
 				VisualOptions.CornerRadius.TopRight * density,
 				VisualOptions.CornerRadius.BottomRight * density);
 
-			shape.SetCornerRadii(new[]
-			{
-				(float)cornerRadius.Left, (float)cornerRadius.Left,
-				(float)cornerRadius.Top, (float)cornerRadius.Top,
-				(float)cornerRadius.Right, (float)cornerRadius.Right,
-				(float)cornerRadius.Bottom, (float)cornerRadius.Bottom
-			});
+			shape.SetCornerRadii(
+			[
+				(float)cornerRadius.Left,
+				(float)cornerRadius.Left,
+				(float)cornerRadius.Top,
+				(float)cornerRadius.Top,
+				(float)cornerRadius.Right,
+				(float)cornerRadius.Right,
+				(float)cornerRadius.Bottom,
+				(float)cornerRadius.Bottom
+			]);
 
 			snackbarView.SetBackground(shape);
 		}

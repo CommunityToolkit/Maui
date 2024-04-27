@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public partial class ExpanderViewModel : BaseViewModel
 {
-	public ObservableCollection<ContentCreator> ContentCreators { get; } = new();
+	public ObservableCollection<ContentCreator> ContentCreators { get; } = [];
 
 	public ExpanderViewModel()
 	{
