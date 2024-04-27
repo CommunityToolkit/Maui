@@ -1,8 +1,7 @@
-﻿using CommunityToolkit.Maui.Core.Views;
-using CommunityToolkit.Maui.Extensions;
+﻿using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
 
@@ -22,10 +21,14 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 								Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"));
 
 		var (_, playerViewController) = mediaManager.CreatePlatformView();
-		var page = VirtualView.FindParent<Page>();
-		var parentViewController = (page?.Handler as PageHandler)?.ViewController;
+		
+		if (VirtualView.TryFindParent<Page>(out var page))
+		{
+			var parentViewController = (page.Handler as PageHandler)?.ViewController;
+			return new(playerViewController, parentViewController);
+		}
 
-		return new(playerViewController, parentViewController);
+		return new(playerViewController, null);
 	}
 
 	/// <inheritdoc/>
@@ -43,29 +46,30 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	}
 }
 
-/// <summary>
-/// An extension class for finding the Parent of <see cref="VisualElement"/>.
-/// </summary>
-public static class ParentPage
+static class ParentPage
 {
 	/// <summary>
 	/// Extension method to find the Parent of <see cref="VisualElement"/>.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	/// <param name="child"></param>
+	/// <param name="parent"></param>
 	/// <returns></returns>
-	public static T? FindParent<T>(this VisualElement? child) where T : VisualElement
+	public static bool TryFindParent<T>(this VisualElement? child, [NotNullWhen(true)] out T? parent) where T : VisualElement
 	{
 		while (true)
 		{
-			if (child == null)
+			if (child is null)
 			{
-				return null;
+				parent = null;
+				return false;
 			}
-			if (child.Parent is T parent)
+			if (child.Parent is T element)
 			{
-				return parent;
+				parent = element;
+				return true;
 			}
+			
 			child = child.Parent as VisualElement;
 		}
 	}
