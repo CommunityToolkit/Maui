@@ -92,7 +92,7 @@ public class AlertView : UIView
 			TranslatesAutoresizingMaskIntoConstraints = false
 		};
 
-		foreach (var view in Children)
+		foreach (var view in children)
 		{
 			Container.AddArrangedSubview(view);
 		}

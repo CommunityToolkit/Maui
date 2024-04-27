@@ -119,7 +119,7 @@ public class AvatarViewImageTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void ImageSourceParentSize()
+	public void ImageSourceParentSize_WhenStrokeShapeNotSet()
 	{
 		var source = new UriImageSource()
 		{
@@ -138,14 +138,37 @@ public class AvatarViewImageTests : BaseHandlerTest
 		{
 			avatarImage.WidthRequest.Should().Be(73);
 			avatarImage.HeightRequest.Should().Be(37);
-			if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst() || OperatingSystem.IsMacOS())
+
+			avatarImage.Clip.Should().BeNull();
+		}
+	}
+
+	[Fact]
+	public void ImageSourceParentSize_WhenStrokeShapeSet()
+	{
+		var source = new UriImageSource()
+		{
+			Uri = new Uri("https://aka.ms/campus.jpg"),
+		};
+		var avatarView = new Maui.Views.AvatarView
+		{
+			WidthRequest = 73,
+			HeightRequest = 37,
+			ImageSource = source,
+			StrokeShape = new Rectangle
 			{
-				avatarImage.Clip.Should().BeNull();
+				Clip = new RectangleGeometry()
 			}
-			else
-			{
-				avatarImage.Clip.Should().BeOfType<RoundRectangleGeometry>();
-			}
+		};
+		avatarView.Layout(new Rect(0, 0, 73, 73));
+		avatarView.ImageSource.Should().NotBeNull();
+		avatarView.Content.Should().BeOfType<Image>();
+		if (avatarView.Content is Image avatarImage)
+		{
+			avatarImage.WidthRequest.Should().Be(73);
+			avatarImage.HeightRequest.Should().Be(37);
+
+			avatarImage.Clip.Should().BeOfType<RectangleGeometry>();
 		}
 	}
 }
