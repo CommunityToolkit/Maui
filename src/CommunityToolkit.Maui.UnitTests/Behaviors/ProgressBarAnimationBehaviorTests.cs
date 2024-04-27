@@ -8,11 +8,11 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
 public class ProgressBarAnimationBehaviorTests() : BaseBehaviorTest<ProgressBarAnimationBehavior, ProgressBar>(new ProgressBarAnimationBehavior(), new ProgressBar())
 {
-	public static readonly FrozenSet<object[]> ValidData = new[]
-	{
+	public static readonly IReadOnlyList<object[]> ValidData =
+	[
 		[1, 500, Easing.Default],
-		new object[] { 0, 750, Easing.CubicOut }
-	}.ToFrozenSet();
+		[0, 750, Easing.CubicOut]
+	];
 
 	[Theory(Timeout = 5000)]
 	[MemberData(nameof(ValidData))]
@@ -74,15 +74,15 @@ public class ProgressBarAnimationBehaviorTests() : BaseBehaviorTest<ProgressBarA
 	[Fact]
 	public void AttachedToInvalidElementTest()
 	{
-		FrozenSet<VisualElement> invalidVisualElements = new[]
-		{
+		IReadOnlyList<VisualElement> invalidVisualElements =
+		[
 			new Button(),
 			new Frame(),
 			new Label(),
 			new VisualElement(),
 			new View(),
 			new Entry(),
-		}.ToFrozenSet();
+		];
 
 		foreach (var invalidVisualElement in invalidVisualElements)
 		{

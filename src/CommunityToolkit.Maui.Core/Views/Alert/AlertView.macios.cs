@@ -19,7 +19,7 @@ public class AlertView : UIView
 	/// <summary>
 	/// PopupView Children
 	/// </summary>
-	public FrozenSet<UIView> Children => children.ToFrozenSet();
+	public IReadOnlyList<UIView> Children => children;
 
 	/// <summary>
 	/// <see cref="UIView"/> on which Alert will appear. When null, <see cref="AlertView"/> will appear at bottom of screen.

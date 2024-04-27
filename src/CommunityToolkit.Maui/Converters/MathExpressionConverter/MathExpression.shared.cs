@@ -11,8 +11,8 @@ sealed partial class MathExpression
 
 	static readonly IFormatProvider formatProvider = new CultureInfo("en-US");
 
-	readonly FrozenSet<MathOperator> operators;
-	readonly FrozenSet<double> arguments;
+	readonly IReadOnlyList<MathOperator> operators;
+	readonly IReadOnlyList<double> arguments;
 
 	internal MathExpression(string expression, IEnumerable<double>? arguments = null)
 	{
@@ -69,8 +69,8 @@ sealed partial class MathExpression
 			operators.Add(new MathOperator($"x{i}", 0, MathOperatorPrecedence.Constant, _ => argumentList[index]));
 		}
 
-		this.operators = operators.ToFrozenSet();
-		this.arguments = argumentList.ToFrozenSet();
+		this.operators = operators;
+		this.arguments = argumentList;
 	}
 
 	internal string Expression { get; }
