@@ -20,7 +20,7 @@ namespace CommunityToolkit.Maui.Analyzers;
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseCommunityToolkitMediaElementInitializationAnalyzerCodeFixProvider)), Shared]
 public class UseCommunityToolkitMediaElementInitializationAnalyzerCodeFixProvider : CodeFixProvider
 {
-	public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(UseCommunityToolkitMediaElementInitializationAnalyzer.DiagnosticId);
+	public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = [UseCommunityToolkitMediaElementInitializationAnalyzer.DiagnosticId];
 
 	public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 

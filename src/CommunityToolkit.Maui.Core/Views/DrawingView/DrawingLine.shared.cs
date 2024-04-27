@@ -22,7 +22,7 @@ public class DrawingLine : IDrawingLine
 	/// <summary>
 	/// The collection of <see cref="PointF"/> that makes up this line on the <see cref="IDrawingView"/>.
 	/// </summary>
-	public ObservableCollection<PointF> Points { get; set; } = new();
+	public ObservableCollection<PointF> Points { get; set; } = [];
 
 	/// <summary>
 	/// The granularity of this line. Min value is 5. The higher the value, the smoother the line, the slower the program. Value clamped between <see cref="DrawingViewDefaults.MinimumGranularity"/> and <see cref="int.MaxValue"/>

@@ -181,7 +181,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		if (!string.IsNullOrWhiteSpace(error?.ErrorCodeName))
 		{
-			errorCode = $"Error codename: {error?.ErrorCodeName}";
+			errorCodeName = $"Error codename: {error?.ErrorCodeName}";
 		}
 
 		var message = string.Join(", ", new[]
