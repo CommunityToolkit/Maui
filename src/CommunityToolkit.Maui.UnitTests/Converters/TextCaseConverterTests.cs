@@ -1,5 +1,4 @@
-﻿using System.Collections.Frozen;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Globalization;
 using CommunityToolkit.Maui.Converters;
 using Xunit;
