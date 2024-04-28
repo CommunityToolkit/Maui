@@ -302,7 +302,13 @@ public partial class MapHandlerWindows : MapHandler
 							function removeAllPins()
 							{
 								map.entities.clear();
-								locationPin = null;
+								if (locationPin != null )
+								{
+									map.entities.push(locationPin);
+									map.setView({
+										center: location
+									});
+								}
 							}
 
 							function addPin(latitude, longitude, label, address, id)
