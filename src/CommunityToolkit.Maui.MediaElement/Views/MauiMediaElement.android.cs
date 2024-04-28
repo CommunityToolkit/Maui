@@ -48,6 +48,15 @@ public class MauiMediaElement : CoordinatorLayout
 		AddView(playerView);
 	}
 
+	public override void OnDetachedFromWindow()
+	{
+		if (isFullScreen)
+		{
+			OnFullscreenButtonClick(this, new StyledPlayerView.FullscreenButtonClickEventArgs(!isFullScreen));
+		}
+		base.OnDetachedFromWindow();
+	}
+
 	/// <summary>
 	/// Checks the visibility of the view
 	/// </summary>
