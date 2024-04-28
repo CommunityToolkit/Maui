@@ -21,7 +21,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 								Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"));
 
 		var (_, playerViewController) = mediaManager.CreatePlatformView();
-		
+
 		if (VirtualView.TryFindParent<Page>(out var page))
 		{
 			var parentViewController = (page.Handler as PageHandler)?.ViewController;
@@ -69,7 +69,7 @@ static class ParentPage
 				parent = element;
 				return true;
 			}
-			
+
 			child = child.Parent as VisualElement;
 		}
 	}
