@@ -83,7 +83,7 @@ public class AlertView : UIView
 	[MemberNotNull(nameof(Container))]
 	void Initialize()
 	{
-		Container = new UIStackView()
+		Container = new UIStackView
 		{
 			Alignment = UIStackViewAlignment.Fill,
 			Distribution = UIStackViewDistribution.EqualSpacing,
@@ -91,7 +91,7 @@ public class AlertView : UIView
 			TranslatesAutoresizingMaskIntoConstraints = false
 		};
 
-		foreach (var view in children)
+		foreach (var view in Children)
 		{
 			Container.AddArrangedSubview(view);
 		}
