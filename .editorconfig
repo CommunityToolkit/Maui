@@ -79,6 +79,9 @@ csharp_style_inlined_variable_declaration = true:suggestion
 csharp_style_throw_expression = true:suggestion
 csharp_style_conditional_delegate_call = true:suggestion
 
+# Collection Expressions
+dotnet_style_prefer_collection_expression = when_types_loosely_match:suggestion
+
 # Naming rules
 
 dotnet_diagnostic.IDE1006.severity = error
