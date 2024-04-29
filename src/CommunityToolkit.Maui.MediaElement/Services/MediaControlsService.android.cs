@@ -15,7 +15,7 @@ using Stream = Android.Media.Stream;
 
 namespace CommunityToolkit.Maui.Media.Services;
 
-[Service(Exported = false, Enabled = true, Name = "CommunityToolkit.Maui.Services", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
+[Service(Exported = false, Enabled = true, Name = "CommunityToolkit.Maui.Media.Services", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
 public class MediaControlsService : Service
 {
 	bool disposedValue;
