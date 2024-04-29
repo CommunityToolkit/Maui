@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.CompareConverterPage"
              xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
+             xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Converters"
              xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
              x:TypeArguments="vm:CompareConverterViewModel"
@@ -12,6 +13,13 @@
             <x:Double x:Key="ComparingValue">0.5</x:Double>
             <Color x:Key="LightGreen">LightGreen</Color>
             <Color x:Key="PaleVioletRed">PaleVioletRed</Color>
+            
+            <converters:CompareDoubleToColorConverter
+                x:Key="isLargerThanOneConverter"
+                ComparingValue="1"
+                ComparisonOperator="Greater"
+                TrueObject="LightGreen"
+                FalseObject="PaleVioletRed" />
         </ResourceDictionary>
     </pages:BasePage.Resources>
     
@@ -22,14 +30,14 @@
             TextColor="{StaticResource NormalLabelTextColor}"/>
 
         <Slider
-            Maximum="1"
+            Maximum="10"
             Minimum="0"
             Value="{Binding SliderValue, Mode=TwoWay}"
             HorizontalOptions="FillAndExpand"/>
 
         <Label 
-            Text="The background of this label will be green if the value of the slider is greater than or equal to 50%, and red otherwise."
-            BackgroundColor="{Binding SliderValue, Mode=OneWay, Converter={mct:CompareConverter ComparingValue={StaticResource ComparingValue}, ComparisonOperator=GreaterOrEqual, TrueObject={StaticResource LightGreen}, FalseObject={StaticResource PaleVioletRed}}}"
+            Text="The background of this label will be green if the value of the slider is greater than 1, and red otherwise."
+            BackgroundColor="{Binding SliderValue, Mode=OneWay, Converter={StaticResource isLargerThanOneConverter}}"
             TextColor="Black"
             Padding="4, 0"/>
 

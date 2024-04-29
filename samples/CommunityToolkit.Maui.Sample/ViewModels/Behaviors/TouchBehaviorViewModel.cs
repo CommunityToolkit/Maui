@@ -30,7 +30,7 @@ public partial class TouchBehaviorViewModel : BaseViewModel
 
 		await DisplayAlert($"Selected monkey: {monkey}", token);
 	}
-	
+
 	[RelayCommand]
 	void IncreaseTouchCount()
 	{
