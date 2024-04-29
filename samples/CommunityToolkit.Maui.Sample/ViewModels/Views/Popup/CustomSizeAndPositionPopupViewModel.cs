@@ -1,4 +1,3 @@
-using System.Collections.Frozen;
 using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.Sample.Views.Popups;
 using CommunityToolkit.Maui.Views;
