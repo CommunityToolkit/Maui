@@ -61,7 +61,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			Player = Player,
 			UseController = false,
 			ControllerAutoShow = false,
-			LayoutParameters = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent, GravityFlags.CenterHorizontal)
+			LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 		};
 
 		CancellationToken token = checkPermissionSourceToken.Token;
