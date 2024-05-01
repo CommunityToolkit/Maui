@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Storage;
 [SupportedOSPlatform("MacCatalyst14.0")]
 public sealed partial class FolderPickerImplementation : IFolderPicker, IDisposable
 {
-	readonly UIDocumentPickerViewController documentPickerViewController = new(new[] { UTTypes.Folder })
+	readonly UIDocumentPickerViewController documentPickerViewController = new([UTTypes.Folder])
 	{
 		AllowsMultipleSelection = false
 	};

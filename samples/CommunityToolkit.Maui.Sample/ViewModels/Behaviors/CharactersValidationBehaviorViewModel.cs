@@ -1,5 +1,4 @@
-﻿using System.Collections.Frozen;
-using CommunityToolkit.Maui.Behaviors;
+﻿using CommunityToolkit.Maui.Behaviors;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
