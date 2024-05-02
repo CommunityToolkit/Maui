@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Core.Primitives;
-using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 #if IOS || MACCATALYST
 using AVFoundation;
@@ -13,13 +14,11 @@ using Windows.Media.MediaProperties;
 
 namespace CommunityToolkit.Maui.Core;
 
-public partial class CameraInfo : ObservableObject
+public partial class CameraInfo : INotifyPropertyChanged
 {
     public string? Name { get; internal set; }
     public string? DeviceId { get; internal set; }
     public CameraPosition? Position { get; internal set; }
-
-    internal bool Updated { get; set; } = false;
 
     bool isFlashSupported = false;
 
@@ -40,7 +39,7 @@ public partial class CameraInfo : ObservableObject
 
     float? maxZoomFactor;
 
-    public float? MaxZoomFactor
+	public float? MaxZoomFactor
     {
         get => maxZoomFactor;
         internal set => SetProperty(ref maxZoomFactor, value);
@@ -77,4 +76,21 @@ public partial class CameraInfo : ObservableObject
         return $"Camera Info => Name:{Name}, id:{DeviceId}, position:{Position}, hasFlash:{IsFlashSupported}, minZoom:{MinZoomFactor}, maxZoom:{MaxZoomFactor}" +
             $"\nresolutions {s} ";
     }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string? propertyName = null)
+    {
+        if (EqualityComparer<T>.Default.Equals(storage, value))
+        {
+            return false;
+        }
+
+        storage = value;
+        OnPropertyChanged(propertyName);
+        return true;
+    }
+
+    void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
+        PropertyChanged?.Invoke(null, new PropertyChangedEventArgs(propertyName));
 }
