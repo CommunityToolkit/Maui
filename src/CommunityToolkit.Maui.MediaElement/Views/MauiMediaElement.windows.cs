@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;

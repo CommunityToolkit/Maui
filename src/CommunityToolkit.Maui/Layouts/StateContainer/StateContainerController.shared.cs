@@ -48,12 +48,7 @@ sealed class StateContainerController
 		// Put the original content somewhere where we can restore it.
 		if (previousState is null)
 		{
-			originalContent = new List<IView>();
-
-			foreach (var item in layout.Children)
-			{
-				originalContent.Add(item);
-			}
+			originalContent = [.. layout.Children];
 		}
 
 		previousState = state;

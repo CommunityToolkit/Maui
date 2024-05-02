@@ -1,5 +1,4 @@
-﻿using System.Collections.Frozen;
-using System.Globalization;
+﻿using System.Globalization;
 using CommunityToolkit.Maui.Converters;
 using Xunit;
 
@@ -7,10 +6,10 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class MultiConverterTests : BaseTest
 {
-	public static FrozenSet<object[]> Data { get; } = new[]
-	{
-		new object[] { new List<MultiConverterParameter> { new() { Value = "Param 1", }, new() { Value = "Param 2", }} },
-	}.ToFrozenSet();
+	public static IReadOnlyList<object[]> Data { get; } =
+	[
+		[new List<MultiConverterParameter> { new() { Value = "Param 1", }, new() { Value = "Param 2", } }],
+	];
 
 	[Theory]
 	[MemberData(nameof(Data))]

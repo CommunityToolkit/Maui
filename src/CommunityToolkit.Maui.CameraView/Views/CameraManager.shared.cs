@@ -19,7 +19,7 @@ public partial class CameraManager : IDisposable
         this.mauiContext = mauiContext;
         this.cameraView = cameraView;
         this.cameraProvider = IPlatformApplication.Current?.Services.GetService<CameraProvider>() ?? throw new NullReferenceException();
-		this.currentCamera = cameraView.SelectedCamera ??= cameraProvider.AvailableCameras.First();
+        this.currentCamera = cameraView.SelectedCamera ??= cameraProvider.AvailableCameras.First() ?? throw new InvalidOperationException("No available camera found.");
     }
 
     public async Task<bool> CheckPermissions()
