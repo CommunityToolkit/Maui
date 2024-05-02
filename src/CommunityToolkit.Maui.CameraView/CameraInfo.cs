@@ -14,17 +14,31 @@ using Windows.Media.MediaProperties;
 
 namespace CommunityToolkit.Maui.Core;
 
-public partial class CameraInfo : INotifyPropertyChanged
+/// <summary>
+/// Represents information about a camera device.
+/// </summary>
+public class CameraInfo : INotifyPropertyChanged
 {
+    /// <summary>
+    /// Gets the name of the camera device.
+    /// </summary>
 	public string Name { get; internal set; } = string.Empty;
-    public string DeviceId { get; internal set; } = string.Empty;
-    public CameraPosition Position { get; internal set; } = CameraPosition.Unknown;
 
-    internal bool Updated { get; set; } = false;
+    /// <summary>
+    /// Gets the unique identifier of the camera device.
+    /// </summary>
+    public string DeviceId { get; internal set; } = string.Empty;
+
+    /// <summary>
+    /// Gets the <see cref="CameraPosition"/> of the camera device.
+    /// </summary>
+    public CameraPosition Position { get; internal set; } = CameraPosition.Unknown;
 
     bool isFlashSupported = false;
 
-	// TODO: Consider other capabilities like auto focus, etc.
+	/// <summary>
+    /// Gets a value indicating whether the camera device supports flash.
+    /// </summary>
     public bool IsFlashSupported
     {
         get => isFlashSupported;
@@ -33,6 +47,9 @@ public partial class CameraInfo : INotifyPropertyChanged
 
     float minZoomFactor = 1.0f;
 
+    /// <summary>
+    /// Gets the minimum zoom factor supported by the camera device.
+    /// </summary>
     public float MinZoomFactor
     {
         get => minZoomFactor;
@@ -41,13 +58,19 @@ public partial class CameraInfo : INotifyPropertyChanged
 
     float maxZoomFactor = 1.0f;
 
+    /// <summary>
+    /// Gets the maximum zoom factor supported by the camera device.
+    /// </summary>
     public float MaxZoomFactor
     {
         get => maxZoomFactor;
         internal set => SetProperty(ref maxZoomFactor, value);
     }
 
-    public ObservableCollection<Size> SupportedResolutions { get; internal set; } = new();
+    /// <summary>
+    /// Gets the supported resolutions of the camera device.
+    /// </summary>
+    public ObservableCollection<Size> SupportedResolutions { get; internal set; } = [];
 
 #if ANDROID
     internal CameraSelector? CameraSelector { get; set; }
@@ -63,6 +86,7 @@ public partial class CameraInfo : INotifyPropertyChanged
 	internal List<ImageEncodingProperties> ImageEncodingProperties { get; set; } = new();
 #endif
 
+    /// <inheritdoc cref="object.ToString" />
     public override string ToString()
     {
         string s = string.Empty;
@@ -79,6 +103,7 @@ public partial class CameraInfo : INotifyPropertyChanged
             $"\nresolutions {s} ";
     }
 
+    /// <inheritdoc cref="INotifyPropertyChanged.PropertyChanged" />
     public event PropertyChangedEventHandler? PropertyChanged;
 
     bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string? propertyName = null)
