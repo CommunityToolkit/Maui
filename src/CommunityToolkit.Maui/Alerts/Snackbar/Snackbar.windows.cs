@@ -9,7 +9,7 @@ public partial class Snackbar
 
 	static AppNotification? PlatformSnackbar { get; set; }
 
-	static Dictionary<string, Action?> actions = new();
+	static Dictionary<string, Action?> actions = [];
 
 	TaskCompletionSource<bool>? dismissedTCS;
 

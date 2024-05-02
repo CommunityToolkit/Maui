@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Sample;
 class SamsungBadgeProvider : IBadgeProvider
 {
 	const string contentStringUri = "content://com.sec.badge/apps?notify=true";
-	static readonly string[] contentProjection = { "_id", "class" };
+	static readonly string[] contentProjection = ["_id", "class"];
 	static readonly string[] packageNameArray = new string[1];
 
 	public void SetCount(uint count)
