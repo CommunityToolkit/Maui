@@ -56,7 +56,7 @@ public interface ICameraView : IView, IAvailability
     /// </summary>
     /// <remarks>
     /// To customize the behavior of the camera when capturing an image, consider overriding the behavior through
-    /// <c>CameraViewHandler.CommandMapper[nameof(ICameraView.Shutter)] = ADD YOUR METHOD</c>.
+    /// <c>CameraViewHandler.CommandMapper.ReplaceMapping(nameof(ICameraView.Shutter), ADD YOUR METHOD);</c>.
     /// </remarks>
     void Shutter();
 
@@ -65,7 +65,7 @@ public interface ICameraView : IView, IAvailability
     /// </summary>
     /// <remarks>
     /// To customize the behavior of starting the camera preview, consider overriding the behavior through
-    /// <c>CameraViewHandler.CommandMapper[nameof(ICameraView.Start)] = ADD YOUR METHOD</c>.
+    /// <c>CameraViewHandler.CommandMapper.ReplaceMapping(nameof(ICameraView.Start), ADD YOUR METHOD);</c>.
     /// </remarks>
     void Start();
 
@@ -74,7 +74,7 @@ public interface ICameraView : IView, IAvailability
     /// </summary>
     /// <remarks>
     /// To customize the behavior of stopping the camera preview, consider overriding the behavior through
-    /// <c>CameraViewHandler.CommandMapper[nameof(ICameraView.Stop)] = ADD YOUR METHOD</c>.
+    /// <c>CameraViewHandler.CommandMapper.ReplaceMapping(nameof(ICameraView.Stop), ADD YOUR METHOD);</c>.
     /// </remarks>
     void Stop();
 }
