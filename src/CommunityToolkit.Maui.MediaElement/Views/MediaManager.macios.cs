@@ -225,8 +225,8 @@ public partial class MediaManager : IDisposable
 		else if (MediaElement.Source is ResourceMediaSource resourceMediaSource)
 		{
 			var path = resourceMediaSource.Path;
-
-			if (!string.IsNullOrWhiteSpace(path))
+		
+			if (!string.IsNullOrWhiteSpace(path) && Path.HasExtension(path))
 			{
 				string directory = Path.GetDirectoryName(path) ?? "";
 				string filename = Path.GetFileNameWithoutExtension(path);
