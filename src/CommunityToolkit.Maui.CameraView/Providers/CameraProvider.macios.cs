@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Core;
 
 public partial class CameraProvider
 {
-    public partial void RefreshAvailableCameras()
+    public partial ValueTask RefreshAvailableCameras(CancellationToken token)
     {
 		AVCaptureDeviceType[] deviceTypes = 
 			[
@@ -86,6 +86,8 @@ public partial class CameraProvider
         }
 
 		AvailableCameras = availableCameras;
+
+		return ValueTask.CompletedTask;
 	}
 
 }

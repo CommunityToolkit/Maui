@@ -1,6 +1,4 @@
-﻿using System.Collections.ObjectModel;
-
-namespace CommunityToolkit.Maui.Core;
+﻿namespace CommunityToolkit.Maui.Core;
 
 public partial class CameraProvider
 {
@@ -9,8 +7,10 @@ public partial class CameraProvider
 	public CameraProvider()
 	{
 		RefreshAvailableCameras();
+
+		async void RefreshAvailableCameras() => await this.RefreshAvailableCameras(CancellationToken.None);
 	}
 
-    public partial void RefreshAvailableCameras();
+    public partial ValueTask RefreshAvailableCameras(CancellationToken token);
 	
 }

@@ -71,7 +71,7 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
     {
         base.ConnectHandler(platformView);
         await (cameraManager?.ArePermissionsGranted() ?? Task.CompletedTask);
-        cameraManager?.Connect();
+        await (cameraManager?.Connect(CancellationToken.None) ?? ValueTask.CompletedTask);
     }
 
     protected override void DisconnectHandler(NativePlatformCameraPreviewView platformView)
@@ -100,14 +100,24 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 #endif
 	}
 
-	static void MapShutter(CameraViewHandler handler, ICameraView view, object? arg3)
+	static async void MapShutter(CameraViewHandler handler, ICameraView view, object? arg3)
 	{
-		handler.cameraManager?.TakePicture();
+		await (handler.cameraManager?.TakePicture(CancellationToken.None) ?? ValueTask.CompletedTask);
 	}
 
-	static void MapStart(CameraViewHandler handler, ICameraView view, object? arg3)
+	static async void MapStart(CameraViewHandler handler, ICameraView view, object? arg3)
 	{
-		handler.cameraManager?.Start();
+		await (handler.cameraManager?.Start(CancellationToken.None) ?? ValueTask.CompletedTask);
+	}
+
+	static async void MapCaptureResolution(CameraViewHandler handler, ICameraView view)
+	{
+		await (handler.cameraManager?.UpdateCaptureResolution(view.CaptureResolution, CancellationToken.None) ?? ValueTask.CompletedTask);
+	}
+
+	static async void MapSelectedCamera(CameraViewHandler handler, ICameraView view)
+	{
+		await (handler.cameraManager?.UpdateCurrentCamera(view.SelectedCamera, CancellationToken.None) ?? ValueTask.CompletedTask);
 	}
 
 	static void MapStop(CameraViewHandler handler, ICameraView view, object? arg3)
@@ -123,15 +133,5 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 	static void MapZoomFactor(CameraViewHandler handler, ICameraView view)
 	{
 		handler.cameraManager?.UpdateZoom(view.ZoomFactor);
-	}
-
-	static void MapCaptureResolution(CameraViewHandler handler, ICameraView view)
-	{
-		handler.cameraManager?.UpdateCaptureResolution(view.CaptureResolution);
-	}
-
-	static void MapSelectedCamera(CameraViewHandler handler, ICameraView view)
-	{
-		handler.cameraManager?.UpdateCurrentCamera(view.SelectedCamera);
 	}
 }

@@ -16,7 +16,7 @@ public partial class CameraProvider
 {
     readonly Context context = Android.App.Application.Context;
 
-    public partial void RefreshAvailableCameras()
+    public partial ValueTask RefreshAvailableCameras(CancellationToken token)
     {
         var cameraProviderFuture = ProcessCameraProvider.GetInstance(context);
 
@@ -80,5 +80,7 @@ public partial class CameraProvider
 			AvailableCameras = availableCameras;
 			
 		}), ContextCompat.GetMainExecutor(context));
+
+		return ValueTask.CompletedTask;
     }
 }

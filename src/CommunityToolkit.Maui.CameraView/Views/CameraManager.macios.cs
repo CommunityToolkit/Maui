@@ -6,6 +6,7 @@ using UIKit;
 using CoreMedia;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Extensions;
+using static UIKit.UIGestureRecognizer;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -13,7 +14,7 @@ public partial class CameraManager
 {
 	// TODO: Check if we really need this
 	readonly NSDictionary<NSString, NSObject> codecSettings = new([AVVideo.CodecKey], [new NSString("jpeg")]);
-	
+
 	AVCaptureSession? captureSession;
 	AVCapturePhotoOutput? photoOutput;
 	AVCaptureInput? captureInput;
@@ -40,7 +41,7 @@ public partial class CameraManager
 		Dispose(true);
 		GC.SuppressFinalize(this);
 	}
-	
+
 	public partial void UpdateFlashMode(CameraFlashMode flashMode)
 	{
 		this.flashMode = flashMode.ToPlatform();
@@ -70,20 +71,18 @@ public partial class CameraManager
 		captureDevice.UnlockForConfiguration();
 	}
 
-	public partial void UpdateCaptureResolution(Size resolution)
+	public partial ValueTask UpdateCaptureResolution(Size resolution, CancellationToken token)
 	{
 		if (captureDevice is null || currentCamera is null)
 		{
-			return;
+			return ValueTask.CompletedTask;
 		}
 
 		captureDevice.LockForConfiguration(out NSError error);
 		if (error is not null)
 		{
-			Console.WriteLine(error);
-
-			Debug.WriteLine(error);
-			return;
+			Trace.WriteLine(error);
+			return ValueTask.CompletedTask;
 		}
 
 		var filteredFormatList = currentCamera.SupportedFormats.Where(f =>
@@ -105,19 +104,21 @@ public partial class CameraManager
 		}
 
 		captureDevice.UnlockForConfiguration();
+
+		return ValueTask.CompletedTask;
 	}
 
-	protected virtual partial void PlatformConnect()
+	protected virtual partial ValueTask PlatformConnect(CancellationToken token)
 	{
 		if (cameraProvider.AvailableCameras.Count < 1)
 		{
 			throw new InvalidOperationException("There's no camera available on your device.");
 		}
 
-		PlatformStart();
+		return PlatformStart(token);
 	}
 
-	protected virtual partial void PlatformStart()
+	protected virtual async partial ValueTask PlatformStart(CancellationToken token)
 	{
 		if (currentCamera is null || captureSession is null)
 		{
@@ -142,12 +143,12 @@ public partial class CameraManager
 			captureSession.AddOutput(photoOutput);
 		}
 
-		UpdateCaptureResolution(cameraView.CaptureResolution);
+		await UpdateCaptureResolution(cameraView.CaptureResolution, token);
 
 		captureSession.CommitConfiguration();
 		captureSession.StartRunning();
 		IsInitialized = true;
-		OnLoaded?.Invoke();
+		OnLoaded.Invoke();
 	}
 
 	protected virtual partial void PlatformStop()
@@ -169,7 +170,7 @@ public partial class CameraManager
 	{
 	}
 
-	protected virtual async partial void PlatformTakePicture()
+	protected virtual async partial ValueTask PlatformTakePicture(CancellationToken token)
 	{
 		ArgumentNullException.ThrowIfNull(photoOutput);
 
@@ -180,7 +181,7 @@ public partial class CameraManager
 
 		photoOutput.CapturePhoto(capturePhotoSettings, wrapper);
 
-		var result = await wrapper.Task;
+		var result = await wrapper.Task.WaitAsync(token);
 		var data = result.Photo.FileDataRepresentation;
 
 		if (data is null)
@@ -240,7 +241,7 @@ public partial class CameraManager
 		{
 			PreviewLayer.VideoGravity = AVLayerVideoGravity.ResizeAspectFill;
 		}
-		
+
 		[Export("layerClass")]
 		public static ObjCRuntime.Class GetLayerClass()
 		{
@@ -252,7 +253,7 @@ public partial class CameraManager
 			get => PreviewLayer.Session;
 			set => PreviewLayer.Session = value;
 		}
-		
+
 		AVCaptureVideoPreviewLayer PreviewLayer => (AVCaptureVideoPreviewLayer)Layer;
 
 		public override void LayoutSubviews()
