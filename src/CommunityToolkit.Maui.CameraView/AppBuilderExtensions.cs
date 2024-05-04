@@ -1,8 +1,6 @@
 ﻿using CommunityToolkit.Maui.Views;
-#if IOS || ANDROID || WINDOWS
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
-#endif
 
 namespace CommunityToolkit.Maui;
 
@@ -18,14 +16,9 @@ public static class AppBuilderExtensions
 	/// <returns><see cref="MauiAppBuilder"/> initialized for <see cref="CameraView"/>.</returns>
 	public static MauiAppBuilder UseMauiCommunityToolkitCameraView(this MauiAppBuilder builder)
 	{
-#if ANDROID || IOS || WINDOWS
-		builder.ConfigureMauiHandlers(h =>
-		{
-			h.AddHandler<CameraView, CameraViewHandler>();
-		});
-
 		builder.Services.AddSingleton<CameraProvider>();
-#endif
+
+		builder.ConfigureMauiHandlers(h => h.AddHandler<CameraView, CameraViewHandler>());
 
 		return builder;
 	}

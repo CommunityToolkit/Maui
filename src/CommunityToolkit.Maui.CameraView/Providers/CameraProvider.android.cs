@@ -18,45 +18,26 @@ public partial class CameraProvider
 
     public partial void RefreshAvailableCameras()
     {
-        AvailableCameras.Clear();
-
         var cameraProviderFuture = ProcessCameraProvider.GetInstance(context);
 
         cameraProviderFuture.AddListener(new Runnable(() =>
         {
             var processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ?? throw new NullReferenceException());
-
+			var availableCameras = new List<CameraInfo>();
+			
             foreach (var cameraXInfo in processCameraProvider.AvailableCameraInfos)
             {
-                var cameraInfo = new CameraInfo();
                 var camera2Info = Camera2CameraInfo.From(cameraXInfo);
-                cameraInfo.DeviceId = camera2Info.CameraId;
-
-                switch (cameraXInfo.LensFacing)
-                {
-                    case CameraSelector.LensFacingBack:
-                        cameraInfo.Name = "Back Camera";
-                        cameraInfo.Position = CameraPosition.Rear;
-                        break;
-                    case CameraSelector.LensFacingFront:
-                        cameraInfo.Name = "Front Camera";
-                        cameraInfo.Position = CameraPosition.Front;
-                        break;
-                    default:
-                        cameraInfo.Name = "Unknown Position Camera";
-                        cameraInfo.Position = CameraPosition.Unknown;
-                        break;
-                }
-
-                cameraInfo.IsFlashSupported = cameraXInfo.HasFlashUnit;
-
-				if (cameraXInfo.ZoomState.Value is IZoomState zoomState)
+				
+				var (name, position) = cameraXInfo.LensFacing switch
 				{
-					cameraInfo.MinZoomFactor = zoomState.MinZoomRatio;
-					cameraInfo.MaxZoomFactor = zoomState.MaxZoomRatio;
-				}
+					CameraSelector.LensFacingBack => ("Back Camera", CameraPosition.Rear),
+					CameraSelector.LensFacingFront => ("Front Camera", CameraPosition.Front),
+					CameraSelector.LensFacingExternal or CameraSelector.LensFacingUnknown => ("Unknown Position Camera", CameraPosition.Unknown),
+					_ => throw new NotSupportedException($"{cameraXInfo.LensFacing} not yet supported")
+				};
 
-				cameraInfo.CameraSelector = cameraXInfo.CameraSelector;
+				var supportedResolutions = new List<Size>();
 
                 if (CameraCharacteristics.ScalerStreamConfigurationMap is not null)
                 {
@@ -69,7 +50,7 @@ public partial class CameraProvider
 						{
 							foreach (var r in highResolutions)
 							{
-								cameraInfo.SupportedResolutions.Add(new(r.Width, r.Height));
+								supportedResolutions.Add(new(r.Width, r.Height));
 							}
 						}
 					}
@@ -79,14 +60,25 @@ public partial class CameraProvider
                     {
                         foreach (var r in resolutions)
                         {
-                            cameraInfo.SupportedResolutions.Add(new(r.Width, r.Height));
+							supportedResolutions.Add(new(r.Width, r.Height));
                         }
                     }
                 }
+				
+				var cameraInfo = new CameraInfo(name, 
+					camera2Info.CameraId,
+					position,
+					cameraXInfo.HasFlashUnit,
+					(cameraXInfo.ZoomState.Value as IZoomState)?.MinZoomRatio ?? 1.0f,
+					(cameraXInfo.ZoomState.Value as IZoomState)?.MaxZoomRatio ?? 1.0f,
+					supportedResolutions,
+					cameraXInfo.CameraSelector);
 
-                AvailableCameras.Add(cameraInfo);
+				availableCameras.Add(cameraInfo);
             }
-        }), ContextCompat.GetMainExecutor(context));
+			
+			AvailableCameras = availableCameras;
+			
+		}), ContextCompat.GetMainExecutor(context));
     }
-
 }

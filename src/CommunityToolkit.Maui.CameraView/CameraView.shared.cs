@@ -9,7 +9,8 @@ namespace CommunityToolkit.Maui.Views;
 /// </summary>
 public class CameraView : View, ICameraView
 {
-    static readonly WeakEventManager weakEventManager = new();
+	static readonly BindablePropertyKey isAvailablePropertyKey =
+		BindableProperty.CreateReadOnly(nameof(IsAvailable), typeof(bool), typeof(CameraView), false);
 
     /// <summary>
 	/// Backing <see cref="BindableProperty"/> for the <see cref="CameraFlashMode"/> property.
@@ -22,9 +23,6 @@ public class CameraView : View, ICameraView
 	/// </summary>
     public static readonly BindableProperty IsTorchOnProperty =
         BindableProperty.Create(nameof(IsTorchOn), typeof(bool), typeof(CameraView), false);
-
-    static readonly BindablePropertyKey isAvailablePropertyKey =
-        BindableProperty.CreateReadOnly(nameof(IsAvailable), typeof(bool), typeof(CameraView), false);
 
     /// <summary>
 	/// Backing <see cref="BindableProperty"/> for the <see cref="IsAvailable"/> property.
@@ -56,6 +54,40 @@ public class CameraView : View, ICameraView
 	/// </summary>
     public static readonly BindableProperty CaptureResolutionProperty = BindableProperty.Create(nameof(CaptureResolution),
         typeof(Size), typeof(CameraView), Size.Zero, defaultBindingMode: BindingMode.TwoWay);
+	
+	readonly WeakEventManager weakEventManager = new();
+	
+	
+	/// <summary>
+	/// Event that is raised when the camera capture fails.
+	/// </summary>
+	public event EventHandler<MediaCaptureFailedEventArgs> MediaCaptureFailed
+	{
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
+	}
+
+	/// <summary>
+	/// Event that is raised when the camera captures an image.
+	/// </summary>
+	/// <remarks>
+	/// The <see cref="MediaCapturedEventArgs"/> contains the captured image data.
+	/// </remarks>
+	public event EventHandler<MediaCapturedEventArgs> MediaCaptured
+	{
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
+	}
+	
+	/// <summary>
+	/// Gets a value indicating whether the camera feature is available on the current device.
+	/// </summary>
+	public bool IsAvailable => (bool)GetValue(IsAvailableProperty);
+
+	/// <summary>
+	/// Gets a value indicating whether the camera is currently busy.
+	/// </summary>
+	public bool IsCameraBusy => (bool)GetValue(IsCameraBusyProperty);
 
     /// <summary>
     /// Gets or sets the <see cref="CameraFlashMode"/>.
@@ -87,27 +119,6 @@ public class CameraView : View, ICameraView
         set => SetValue(CaptureResolutionProperty, value);
     }
 
-    static object CoerceZoom(BindableObject bindable, object value)
-    {
-        CameraView view = (CameraView)bindable;
-        float input = (float)value;
-
-        if (view.SelectedCamera is null)
-        {
-            return input;
-        }
-
-        if (input < view.SelectedCamera.MinZoomFactor)
-        {
-            input = (float)view.SelectedCamera.MinZoomFactor;
-        }
-        else if (input > view.SelectedCamera.MaxZoomFactor)
-        {
-            input = (float)view.SelectedCamera.MaxZoomFactor;
-        }
-        return input;
-    }
-
     /// <summary>
     /// Gets or sets a value indicating whether the torch is on.
     /// </summary>
@@ -116,51 +127,20 @@ public class CameraView : View, ICameraView
         get => (bool)GetValue(IsTorchOnProperty);
         set => SetValue(IsTorchOnProperty, value);
     }
+	
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	bool IAvailability.IsAvailable
+	{
+		get => IsAvailable;
+		set => SetValue(isAvailablePropertyKey, value);
+	}
 
-    /// <summary>
-    /// Gets a value indicating whether the camera feature is available on the current device.
-    /// </summary>
-    public bool IsAvailable => (bool)GetValue(IsAvailableProperty);
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    bool IAvailability.IsAvailable
-    {
-        get => IsAvailable;
-        set => SetValue(isAvailablePropertyKey, value);
-    }
-
-    /// <summary>
-    /// Gets a value indicating whether the camera is currently busy.
-    /// </summary>
-    public bool IsCameraBusy => (bool)GetValue(IsCameraBusyProperty);
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    bool IAvailability.IsBusy
-    {
-        get => IsCameraBusy;
-        set => SetValue(isCameraBusyPropertyKey, value);
-    }
-
-    /// <summary>
-    /// Event that is raised when the camera capture fails.
-    /// </summary>
-    public event EventHandler<MediaCaptureFailedEventArgs> MediaCaptureFailed
-    {
-        add => weakEventManager.AddEventHandler(value);
-        remove => weakEventManager.RemoveEventHandler(value);
-    }
-
-    /// <summary>
-    /// Event that is raised when the camera captures an image.
-    /// </summary>
-    /// <remarks>
-    /// The <see cref="MediaCapturedEventArgs"/> contains the captured image data.
-    /// </remarks>
-    public event EventHandler<MediaCapturedEventArgs> MediaCaptured
-    {
-        add => weakEventManager.AddEventHandler(value);
-        remove => weakEventManager.RemoveEventHandler(value);
-    }
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	bool IAvailability.IsBusy
+	{
+		get => IsCameraBusy;
+		set => SetValue(isCameraBusyPropertyKey, value);
+	}
 
     /// <inheritdoc cref="ICameraView.OnMediaCaptured"/>
     public void OnMediaCaptured(Stream imageData)
@@ -191,4 +171,26 @@ public class CameraView : View, ICameraView
     {
         Handler?.Invoke(nameof(ICameraView.Stop));
     }
+	
+	static object CoerceZoom(BindableObject bindable, object value)
+	{
+		CameraView view = (CameraView)bindable;
+		float input = (float)value;
+
+		if (view.SelectedCamera is null)
+		{
+			return input;
+		}
+
+		if (input < view.SelectedCamera.MinZoomFactor)
+		{
+			input = view.SelectedCamera.MinZoomFactor;
+		}
+		else if (input > view.SelectedCamera.MaxZoomFactor)
+		{
+			input = view.SelectedCamera.MaxZoomFactor;
+		}
+		
+		return input;
+	}
 }

@@ -1,11 +1,6 @@
 ﻿namespace CommunityToolkit.Maui.Core.Primitives;
 
-public class MediaCapturedEventArgs : EventArgs
+public class MediaCapturedEventArgs(Stream stream) : EventArgs
 {
-    public Stream Media { get; }
-
-    public MediaCapturedEventArgs(Stream stream)
-    {
-        Media = stream;
-    }
+    public Stream Media { get; } = stream;
 }

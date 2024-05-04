@@ -1,17 +1,12 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
 
-using System.ComponentModel;
-
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public partial class CameraViewModel : BaseViewModel
+public partial class CameraViewModel(CameraProvider cameraProvider) : BaseViewModel
 {
-    public CameraProvider CameraProvider { get; } = IPlatformApplication.Current?.Services.GetService<CameraProvider>() ?? throw new NullReferenceException();
-
-    public ICollection<CameraFlashMode> FlashModes => Enum.GetValues<CameraFlashMode>();
-
     [ObservableProperty]
     CameraFlashMode flashMode;
 
@@ -38,6 +33,10 @@ public partial class CameraViewModel : BaseViewModel
 
     [ObservableProperty]
     string resolutionText = "";
+	
+	public CameraProvider CameraProvider { get; } = cameraProvider;
+
+	public ICollection<CameraFlashMode> FlashModes { get; } = Enum.GetValues<CameraFlashMode>();
 
     partial void OnFlashModeChanged(CameraFlashMode value)
     {
@@ -52,19 +51,6 @@ public partial class CameraViewModel : BaseViewModel
     partial void OnSelectedResolutionChanged(Size value)
     {
         UpdateResolutionText();
-    }
-
-    partial void OnSelectedCameraChanged(CameraInfo? oldValue, CameraInfo? newValue)
-    {
-        if (oldValue is not null)
-        {
-            oldValue.PropertyChanged -= OnCameraInfoPropertyChanged;
-        }
-        if (newValue is not null)
-        {
-            UpdateCameraInfoText();
-            newValue.PropertyChanged += OnCameraInfoPropertyChanged;
-        }
     }
 
     void OnCameraInfoPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -101,5 +87,4 @@ public partial class CameraViewModel : BaseViewModel
     {
         ResolutionText = $"Selected Resolution: {SelectedResolution.Width} x {SelectedResolution.Height}";
     }
-
 }

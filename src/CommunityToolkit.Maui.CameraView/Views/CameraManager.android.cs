@@ -16,9 +16,10 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class CameraManager
 {
-    PreviewView? previewView;
+    readonly Context context = mauiContext.Context ?? throw new InvalidOperationException("Invalid context");
+	
+    NativePlatformCameraPreviewView? previewView;
     IExecutorService? cameraExecutor;
-    Context Context => mauiContext.Context ?? throw new NullReferenceException();
     ProcessCameraProvider? processCameraProvider;
     ImageCapture? imageCapture;
     ImageCallBack? imageCallback;
@@ -28,23 +29,65 @@ public partial class CameraManager
     ResolutionSelector? resolutionSelector;
     ResolutionFilter? resolutionFilter;
 
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
     // IN the future change the return type to be an alias
-    public PreviewView CreatePlatformView()
+    public NativePlatformCameraPreviewView CreatePlatformView()
     {
         imageCallback = new ImageCallBack(cameraView);
-        previewView = new PreviewView(Context);
-        if (PreviewView.ScaleType.FitCenter is not null)
+        previewView = new NativePlatformCameraPreviewView(context);
+        if (NativePlatformCameraPreviewView.ScaleType.FitCenter is not null)
         {
-            previewView.SetScaleType(PreviewView.ScaleType.FitCenter);
+            previewView.SetScaleType(NativePlatformCameraPreviewView.ScaleType.FitCenter);
         }
         cameraExecutor = Executors.NewSingleThreadExecutor() ?? throw new NullReferenceException();
 
         return previewView;
     }
+	
+	protected virtual void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			camera?.Dispose();
+			camera = null;
+			
+			cameraControl?.Dispose();
+			cameraControl = null;
+			
+			cameraPreview?.Dispose();
+			cameraPreview = null;
+			
+			cameraExecutor?.Dispose();
+			cameraExecutor = null;
+			
+			imageCapture?.Dispose();
+			imageCapture = null;
+			
+			imageCallback?.Dispose();
+			imageCallback = null;
+			
+			previewView?.Dispose();
+			previewView = null;
+			
+			processCameraProvider?.Dispose();
+			processCameraProvider = null;
+			
+			resolutionSelector?.Dispose();
+			resolutionSelector = null;
+			
+			resolutionFilter?.Dispose();
+			resolutionFilter = null;
+		}
+	}
 
     protected virtual partial void PlatformConnect()
     {
-        var cameraProviderFuture = ProcessCameraProvider.GetInstance(Context);
+        var cameraProviderFuture = ProcessCameraProvider.GetInstance(context);
         if (previewView is null)
         {
             return;
@@ -61,7 +104,7 @@ public partial class CameraManager
 
             StartUseCase();
 
-        }), ContextCompat.GetMainExecutor(Context));
+        }), ContextCompat.GetMainExecutor(context));
     }
 
     protected void StartUseCase()
@@ -96,7 +139,7 @@ public partial class CameraManager
 
         var cameraSelector = currentCamera.CameraSelector ?? throw new NullReferenceException();
 
-        var owner = (ILifecycleOwner)Context;
+        var owner = (ILifecycleOwner)context;
         camera = processCameraProvider.BindToLifecycle(owner, cameraSelector, cameraPreview, imageCapture);
 
         cameraControl = camera.CameraControl;
@@ -108,8 +151,8 @@ public partial class CameraManager
                                                             .Build();
         camera.CameraControl.StartFocusAndMetering(action);
 
-        Initialized = true;
-        Loaded?.Invoke();
+        IsInitialized = true;
+        OnLoaded?.Invoke();
     }
 
     protected virtual partial void PlatformStop()
@@ -120,7 +163,7 @@ public partial class CameraManager
         }
 
         processCameraProvider.UnbindAll();
-        Initialized = false;
+        IsInitialized = false;
     }
 
     protected virtual partial void PlatformDisconnect()
@@ -178,44 +221,28 @@ public partial class CameraManager
         .SetResolutionFilter(resolutionFilter)
         .Build();
 
-        if (Initialized)
+        if (IsInitialized)
         {
             StartUseCase();
         }
     }
 
-    public class FutureCallback : Java.Lang.Object, IFutureCallback
-    {
-        Action<Java.Lang.Object?> successAction;
-        Action<Throwable?> failureAction;
-
-        public FutureCallback(Action<Java.Lang.Object?> action, Action<Throwable?> failure)
+    sealed class FutureCallback(Action<Java.Lang.Object?> action, Action<Throwable?> failure) : Java.Lang.Object, IFutureCallback
+	{
+		public void OnSuccess(Java.Lang.Object? value)
         {
-            successAction = action;
-            failureAction = failure;
-        }
-
-        public void OnSuccess(Java.Lang.Object? value)
-        {
-            successAction?.Invoke(value);
+            action.Invoke(value);
         }
 
         public void OnFailure(Throwable? throwable)
         {
-            failureAction?.Invoke(throwable);
+            failure.Invoke(throwable);
         }
     }
 
-    sealed class ImageCallBack : ImageCapture.OnImageCapturedCallback
-    {
-        readonly ICameraView cameraView;
-
-        public ImageCallBack(ICameraView cameraView)
-        {
-            this.cameraView = cameraView;
-        }
-
-        public override void OnCaptureSuccess(IImageProxy image)
+    sealed class ImageCallBack(ICameraView cameraView) : ImageCapture.OnImageCapturedCallback
+	{
+		public override void OnCaptureSuccess(IImageProxy image)
         {
             base.OnCaptureSuccess(image);
             var img = image.Image;
@@ -245,7 +272,6 @@ public partial class CameraManager
                 image.Close();
             }
 
-
             static Plane? GetFirstPlane(Plane[]? planes)
             {
                 if (planes is null || planes.Length is 0)
@@ -263,30 +289,6 @@ public partial class CameraManager
             cameraView.OnMediaCapturedFailed();
         }
     }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            camera?.Dispose();
-            cameraControl?.Dispose();
-            cameraPreview?.Dispose();
-            cameraExecutor?.Dispose();
-            imageCapture?.Dispose();
-            imageCallback?.Dispose();
-            previewView?.Dispose();
-            processCameraProvider?.Dispose();
-            resolutionSelector?.Dispose();
-            resolutionFilter?.Dispose();
-        }
-    }
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
 }
 
 public class ResolutionFilter : Java.Lang.Object, IResolutionFilter

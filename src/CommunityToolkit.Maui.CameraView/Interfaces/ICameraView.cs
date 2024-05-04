@@ -7,6 +7,21 @@ namespace CommunityToolkit.Maui.Core;
 /// </summary>
 public interface ICameraView : IView, IAvailability
 {
+	/// <summary>
+	/// Gets the <see cref="CameraFlashMode"/>.
+	/// </summary>
+	CameraFlashMode CameraFlashMode { get; }
+	
+	/// <summary>
+	/// Gets or sets the resolution at which the camera will capture images.
+	/// </summary>
+	Size CaptureResolution { get; }
+
+	/// <summary>
+	/// Gets a value indicating whether the torch is on.
+	/// </summary>
+	bool IsTorchOn { get; }
+	
     /// <summary>
     /// Gets or sets the currently selected camera.
     /// </summary>
@@ -14,11 +29,6 @@ public interface ICameraView : IView, IAvailability
     /// This property will be <c>null</c> if no camera is selected.
     /// </remarks>
     CameraInfo? SelectedCamera { get; set; }
-
-    /// <summary>
-    /// Gets the <see cref="CameraFlashMode"/>.
-    /// </summary>
-    CameraFlashMode CameraFlashMode { get; }
 
     /// <summary>
     /// Gets or sets the current zoom factor of the camera.
@@ -29,16 +39,6 @@ public interface ICameraView : IView, IAvailability
     /// If no camera is selected, the value will be set as-is.
     /// </remarks>
     float ZoomFactor { get; set; }
-
-    /// <summary>
-    /// Gets or sets the resolution at which the camera will capture images.
-    /// </summary>
-    Size CaptureResolution { get; set; }
-
-    /// <summary>
-    /// Gets a value indicating whether the torch is on.
-    /// </summary>
-    bool IsTorchOn { get; }
 
     /// <summary>
     /// Occurs when an image is captured by the camera.

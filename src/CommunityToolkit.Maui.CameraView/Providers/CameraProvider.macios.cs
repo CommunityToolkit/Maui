@@ -8,11 +8,8 @@ namespace CommunityToolkit.Maui.Core;
 
 public partial class CameraProvider
 {
-
     public partial void RefreshAvailableCameras()
     {
-        AvailableCameras.Clear();
-
 		AVCaptureDeviceType[] deviceTypes = 
 			[
 				AVCaptureDeviceType.BuiltInWideAngleCamera, 
@@ -41,46 +38,54 @@ public partial class CameraProvider
 		}
 
 		var discoverySession = AVCaptureDeviceDiscoverySession.Create(deviceTypes, AVMediaTypes.Video, AVCaptureDevicePosition.Unspecified);
-
+		var availableCameras = new List<CameraInfo>();
+		
         foreach (var device in discoverySession.Devices)
         {
-            var cameraInfo = new CameraInfo();
-
-            cameraInfo.DeviceId = device.UniqueID;
-            cameraInfo.Name = device.LocalizedName;
-
-            cameraInfo.Position = device.Position switch
+            var position = device.Position switch
             {
                 AVCaptureDevicePosition.Front => CameraPosition.Front,
                 AVCaptureDevicePosition.Back => CameraPosition.Rear,
-                _ => CameraPosition.Unknown
+				AVCaptureDevicePosition.Unspecified => CameraPosition.Unknown,
+                _ => throw new NotSupportedException($"{device.Position} is not yet supported")
             };
 
-            cameraInfo.IsFlashSupported = device.HasFlash;
-            cameraInfo.MinZoomFactor = (float)device.MinAvailableVideoZoomFactor;
-            cameraInfo.MaxZoomFactor = (float)device.MaxAvailableVideoZoomFactor;
-            cameraInfo.CaptureDevice = device;
+			var supportedFormats = new List<AVCaptureDeviceFormat>();
+			var supportedResolutions = new List<Size>();
 
             foreach (var format in device.Formats)
             {
                 var dimension = ((CMVideoFormatDescription)format.FormatDescription).Dimensions;
 
-                if (((int)format.FormatDescription.VideoCodecType) == ((int)CVPixelFormatType.CV420YpCbCr8BiPlanarVideoRange))
+                if ((int)format.FormatDescription.VideoCodecType == (int)CVPixelFormatType.CV420YpCbCr8BiPlanarVideoRange)
                 {
                     continue;
                 }
 
-                if (cameraInfo.SupportedResolutions.Contains(new(dimension.Width, dimension.Height)))
+                if (supportedResolutions.Contains(new(dimension.Width, dimension.Height)))
                 {
                     continue;
                 }
 
-                cameraInfo.formats.Add(format);
-                cameraInfo.SupportedResolutions.Add(new(dimension.Width, dimension.Height));
+				supportedFormats.Add(format);
+				supportedResolutions.Add(new(dimension.Width, dimension.Height));
             }
+			
+			var cameraInfo = new CameraInfo(device.LocalizedName, 
+				device.UniqueID, 
+				position, 
+				device.HasFlash,
+				(float)device.MinAvailableVideoZoomFactor,
+				(float)device.MaxAvailableVideoZoomFactor,
+				supportedResolutions,
+				device,
+				supportedFormats
+			);
 
-            AvailableCameras.Add(cameraInfo);
+			availableCameras.Add(cameraInfo);
         }
-    }
+
+		AvailableCameras = availableCameras;
+	}
 
 }
