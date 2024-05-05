@@ -28,7 +28,12 @@ partial class CameraManager
 
 	public partial void UpdateFlashMode(CameraFlashMode flashMode)
 	{
-		if (!IsInitialized || mediaCapture is null || (mediaCapture?.VideoDeviceController.FlashControl.Supported is false))
+		if (!IsInitialized || (mediaCapture?.VideoDeviceController.FlashControl.Supported is false))
+		{
+			return;
+		}
+
+		if (mediaCapture is null)
 		{
 			return;
 		}
