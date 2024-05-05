@@ -38,7 +38,7 @@
      CS1734: XML comment has a paramref tag, but there is no parameter by that name 
      xUnit1012: Null should not be used for type parameter
      xUnit2021: Assert.ThrowsAsync is async. The resulting task should be awaited -->
-     <!--<WarningsAsErrors>nullable,CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1580,CS1581,CS1584,CS1587,CS1589,CS1590,CS1591,CS1592,CS1598,CS1658,CS1710,CS1711,CS1712,CS1723,CS1734,xUnit1012,xUnit2021</WarningsAsErrors>-->
+     <WarningsAsErrors>nullable,CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1580,CS1581,CS1584,CS1587,CS1589,CS1590,CS1591,CS1592,CS1598,CS1658,CS1710,CS1711,CS1712,CS1723,CS1734,xUnit1012,xUnit2021</WarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
