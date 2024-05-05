@@ -1,10 +1,10 @@
-﻿using Microsoft.UI.Xaml.Controls;
-using Windows.Media.Capture.Frames;
+﻿using CommunityToolkit.Maui.Core.Primitives;
+using Microsoft.Maui.Controls.PlatformConfiguration;
+using Microsoft.UI.Xaml.Controls;
 using Windows.Media.Capture;
+using Windows.Media.Capture.Frames;
 using Windows.Media.Core;
 using Windows.Media.MediaProperties;
-using CommunityToolkit.Maui.Core.Primitives;
-using Microsoft.Maui.Controls.PlatformConfiguration;
 
 namespace CommunityToolkit.Maui.Core;
 
@@ -87,7 +87,7 @@ partial class CameraManager
 		MemoryStream memoryStream = new();
 
 		await mediaCapture.CapturePhotoToStreamAsync(ImageEncodingProperties.CreateJpeg(), memoryStream.AsRandomAccessStream());
-		
+
 		memoryStream.Position = 0;
 
 		cameraView.OnMediaCaptured(memoryStream);
@@ -141,7 +141,7 @@ partial class CameraManager
 
 		IsInitialized = true;
 
-		await PlatformUpdateResolution(cameraView.CaptureResolution, token);
+		await PlatformUpdateResolution(cameraView.ImageCaptureResolution, token);
 
 		OnLoaded.Invoke();
 	}
