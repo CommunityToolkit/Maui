@@ -7,7 +7,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public partial class CameraViewModel(CameraProvider cameraProvider) : BaseViewModel
+public partial class CameraViewModel() : BaseViewModel
 {
 	[ObservableProperty]
 	CameraFlashMode flashMode;
@@ -23,8 +23,6 @@ public partial class CameraViewModel(CameraProvider cameraProvider) : BaseViewMo
 
 	[ObservableProperty]
 	string cameraNameText = "", zoomRangeText = "", currentZoomText = "", flashModeText = "", resolutionText = "";
-
-	public CameraProvider CameraProvider { get; } = cameraProvider;
 
 	public ICollection<CameraFlashMode> FlashModes { get; } = Enum.GetValues<CameraFlashMode>();
 

@@ -57,7 +57,7 @@ public class CameraView : View, ICameraView
 
 	readonly WeakEventManager weakEventManager = new();
 
-	TaskCompletionSource handlerCompletedTCS = new TaskCompletionSource();
+	TaskCompletionSource handlerCompletedTCS = new();
 
 	/// <summary>
 	/// Event that is raised when the camera capture fails.
@@ -79,6 +79,9 @@ public class CameraView : View, ICameraView
 		add => weakEventManager.AddEventHandler(value);
 		remove => weakEventManager.RemoveEventHandler(value);
 	}
+
+	/// <inheritdoc cref="ICameraView.AvailableCameras"/>
+	public IReadOnlyList<CameraInfo> AvailableCameras => cameraProvider.AvailableCameras;
 
 	/// <summary>
 	/// Gets a value indicating whether the camera feature is available on the current device.
@@ -129,6 +132,8 @@ public class CameraView : View, ICameraView
 		set => SetValue(IsTorchOnProperty, value);
 	}
 
+	static CameraProvider cameraProvider => IPlatformApplication.Current?.Services.GetRequiredService<CameraProvider>() ?? throw new CameraViewException("Unable to retrieve CameraProvider");
+
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	bool IAvailability.IsAvailable
 	{
@@ -142,6 +147,9 @@ public class CameraView : View, ICameraView
 		get => IsCameraBusy;
 		set => SetValue(isCameraBusyPropertyKey, value);
 	}
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	TaskCompletionSource IAsynchronousHandler.HandlerCompleteTCS => handlerCompletedTCS;
 
 	/// <inheritdoc cref="ICameraView.OnMediaCaptured"/>
 	public void OnMediaCaptured(Stream imageData)
@@ -204,7 +212,4 @@ public class CameraView : View, ICameraView
 
 		return input;
 	}
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	TaskCompletionSource IAsynchronousHandler.HandlerCompleteTCS => handlerCompletedTCS;
 }

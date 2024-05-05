@@ -65,7 +65,7 @@
                 <Picker 
                     x:Name="cameraPicker"
                     Title="Cameras" 
-                    ItemsSource="{Binding CameraProvider.AvailableCameras}"
+                    ItemsSource="{Binding Path=AvailableCameras, Source={x:Reference Camera}}"
                     ItemDisplayBinding="{Binding Name}"
                     SelectedItem="{Binding SelectedCamera}" />
 

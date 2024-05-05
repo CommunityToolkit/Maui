@@ -6,7 +6,7 @@ using Windows.Media.MediaProperties;
 
 namespace CommunityToolkit.Maui.Core;
 
-public partial class CameraProvider
+partial class CameraProvider
 {
 	public async partial ValueTask RefreshAvailableCameras(CancellationToken token)
 	{

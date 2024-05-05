@@ -6,7 +6,7 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.Core;
 
-public partial class CameraProvider
+partial class CameraProvider
 {
 	public partial ValueTask RefreshAvailableCameras(CancellationToken token)
 	{

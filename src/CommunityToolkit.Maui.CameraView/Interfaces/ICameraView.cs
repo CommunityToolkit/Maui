@@ -23,6 +23,11 @@ public interface ICameraView : IView, IAvailability, IAsynchronousHandler
 	bool IsTorchOn { get; }
 
 	/// <summary>
+	/// Enumerable of cameras available on the current device
+	/// </summary>
+	IReadOnlyList<CameraInfo> AvailableCameras { get; }
+
+	/// <summary>
 	/// Gets or sets the currently selected camera.
 	/// </summary>
 	/// <remarks>
