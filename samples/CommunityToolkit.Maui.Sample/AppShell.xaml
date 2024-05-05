@@ -23,8 +23,8 @@
 
     <Shell.FlyoutHeader>
         <Label Margin="{OnPlatform Default='0,0,0,12',
-                                iOS='0',
-                                MacCatalyst='0'}"
+                                   iOS='0',
+                                   MacCatalyst='0'}"
                Padding="{OnPlatform Default='4,0',
                                     iOS='4, 100, 4, 0',
                                     WinUI='20, 0',
