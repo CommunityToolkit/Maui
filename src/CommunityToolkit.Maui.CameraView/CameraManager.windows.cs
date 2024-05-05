@@ -130,7 +130,7 @@ partial class CameraManager
 
 		token.ThrowIfCancellationRequested();
 
-		await mediaCapture.InitializeCameraForCameraView(currentCamera.DeviceId);
+		await mediaCapture.InitializeCameraForCameraView(currentCamera.DeviceId, token);
 
 		await UpdateCameraInfo(token);
 

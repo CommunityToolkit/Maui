@@ -22,7 +22,7 @@ partial class CameraProvider
 		{
 			token.ThrowIfCancellationRequested();
 
-			await mediaCapture.InitializeCameraForCameraView(sourceGroup.Id);
+			await mediaCapture.InitializeCameraForCameraView(sourceGroup.Id, token);
 
 			CameraPosition position = CameraPosition.Unknown;
 			var device = deviceInfoCollection.FirstOrDefault(deviceInfo => deviceInfo.Id == sourceGroup.Id);
