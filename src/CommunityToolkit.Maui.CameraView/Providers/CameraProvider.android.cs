@@ -22,7 +22,7 @@ public partial class CameraProvider
 
         cameraProviderFuture.AddListener(new Runnable(() =>
         {
-            var processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ?? throw new NullReferenceException());
+            var processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ?? throw new CameraViewException($"Unable to retrieve {nameof(ProcessCameraProvider)}"));
 			var availableCameras = new List<CameraInfo>();
 			
             foreach (var cameraXInfo in processCameraProvider.AvailableCameraInfos)

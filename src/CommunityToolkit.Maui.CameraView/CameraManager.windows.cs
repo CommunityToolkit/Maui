@@ -6,9 +6,9 @@ using Windows.Media.MediaProperties;
 using CommunityToolkit.Maui.Core.Primitives;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 
-namespace CommunityToolkit.Maui.Core.Views;
+namespace CommunityToolkit.Maui.Core;
 
-public partial class CameraManager
+partial class CameraManager
 {
 	MediaPlayerElement? mediaElement;
 	MediaCapture? mediaCapture;
@@ -106,7 +106,7 @@ public partial class CameraManager
 	{
 		if (cameraProvider.AvailableCameras.Count < 1)
 		{
-			throw new InvalidOperationException("There's no camera available on your device.");
+			throw new CameraViewException("No camera available on device");
 		}
 
 		return PlatformStart(token);

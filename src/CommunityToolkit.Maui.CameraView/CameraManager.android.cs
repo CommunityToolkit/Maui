@@ -12,11 +12,11 @@ using AndroidX.Camera.Core.ResolutionSelector;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Core.Primitives;
 
-namespace CommunityToolkit.Maui.Core.Views;
+namespace CommunityToolkit.Maui.Core;
 
-public partial class CameraManager
+partial class CameraManager
 {
-	readonly Context context = mauiContext.Context ?? throw new InvalidOperationException("Invalid context");
+	readonly Context context = mauiContext.Context ?? throw new CameraViewException($"Unable to retrieve {nameof(Context)}");
 
 	NativePlatformCameraPreviewView? previewView;
 	IExecutorService? cameraExecutor;
@@ -44,7 +44,7 @@ public partial class CameraManager
 		{
 			previewView.SetScaleType(NativePlatformCameraPreviewView.ScaleType.FitCenter);
 		}
-		cameraExecutor = Executors.NewSingleThreadExecutor() ?? throw new NullReferenceException();
+		cameraExecutor = Executors.NewSingleThreadExecutor() ?? throw new CameraViewException($"Unable to retrieve {nameof(IExecutorService)}");
 
 		return previewView;
 	}
@@ -146,11 +146,11 @@ public partial class CameraManager
 
 		cameraProviderFuture.AddListener(new Runnable(async () =>
 		{
-			processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ?? throw new NullReferenceException());
+			processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ?? throw new CameraViewException($"Unable to retrieve {nameof(ProcessCameraProvider)}"));
 
 			if (cameraProvider.AvailableCameras.Count < 1)
 			{
-				throw new InvalidOperationException("There's no camera available on your device.");
+				throw new CameraViewException("No camera available on device");
 			}
 
 			await StartUseCase(token);
@@ -185,12 +185,12 @@ public partial class CameraManager
 
 	protected virtual partial ValueTask PlatformStart(CancellationToken token)
 	{
-		if (currentCamera is null || previewView is null || processCameraProvider is null || cameraPreview is null || imageCapture is null)
+		if (previewView is null || processCameraProvider is null || cameraPreview is null || imageCapture is null)
 		{
 			return ValueTask.CompletedTask;
 		}
 
-		var cameraSelector = currentCamera.CameraSelector ?? throw new NullReferenceException();
+		var cameraSelector = currentCamera.CameraSelector ?? throw new CameraViewException($"Unable to retrieve {nameof(CameraSelector)}");
 
 		var owner = (ILifecycleOwner)context;
 		camera = processCameraProvider.BindToLifecycle(owner, cameraSelector, cameraPreview, imageCapture);

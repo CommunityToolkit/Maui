@@ -1,11 +1,14 @@
 using System.Diagnostics;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
+using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class CameraViewPage : BasePage<CameraViewModel>
 {
+	static readonly string imagePath = Path.Combine(FileSystem.CacheDirectory, "camera-view-image.jpg");
+	
     int pageCount;
 
     public CameraViewPage(CameraViewModel viewModel) : base(viewModel)
@@ -20,9 +23,7 @@ public partial class CameraViewPage : BasePage<CameraViewModel>
         };
     }
 
-    string ImagePath { get; set; } = Path.Combine(FileSystem.CacheDirectory, "camera-view-image.jpg");
-
-    public ICollection<CameraFlashMode> FlashModes => Enum.GetValues<CameraFlashMode>();
+    public ICollection<CameraFlashMode> FlashModes { get; } = Enum.GetValues<CameraFlashMode>();
 
     void Cleanup()
     {
@@ -70,12 +71,12 @@ public partial class CameraViewPage : BasePage<CameraViewModel>
         {
             return;
         }
-        await Navigation.PushAsync(new ImageViewPage(ImagePath));
+        await Navigation.PushAsync(new ImageViewPage(imagePath));
     }
 
     void OnMediaCaptured(object? sender, MediaCapturedEventArgs e)
     {
-        using FileStream localFileStream = File.Create(ImagePath);
+        using FileStream localFileStream = File.Create(imagePath);
 
         e.Media.CopyTo(localFileStream);
 
@@ -83,12 +84,12 @@ public partial class CameraViewPage : BasePage<CameraViewModel>
         {
             // workaround for https://github.com/dotnet/maui/issues/13858
 #if ANDROID
-            image.Source = ImageSource.FromStream(() => File.OpenRead(ImagePath));
+            image.Source = ImageSource.FromStream(() => File.OpenRead(imagePath));
 #else
-            image.Source = ImageSource.FromFile(ImagePath);
+            image.Source = ImageSource.FromFile(imagePath);
 #endif
 
-            debugText.Text = $"Image saved to {ImagePath}";
+            debugText.Text = $"Image saved to {imagePath}";
         });
 
     }

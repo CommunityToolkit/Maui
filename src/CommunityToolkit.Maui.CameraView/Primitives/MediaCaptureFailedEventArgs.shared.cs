@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.Core.Primitives;
+﻿namespace CommunityToolkit.Maui.Views;
 
 public class MediaCaptureFailedEventArgs : EventArgs
 {

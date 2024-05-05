@@ -1,5 +1,4 @@
 ﻿using Microsoft.Maui.Handlers;
-using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
@@ -22,7 +21,7 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 		[nameof(ICameraView.Stop)] = MapStop
 	};
 
-	readonly CameraProvider cameraProvider = IPlatformApplication.Current?.Services.GetRequiredService<CameraProvider>() ?? throw new InvalidOperationException($"{nameof(CameraProvider)} not found");
+	readonly CameraProvider cameraProvider = IPlatformApplication.Current?.Services.GetRequiredService<CameraProvider>() ?? throw new CameraViewException($"{nameof(CameraProvider)} not found");
 	
 	CameraManager? cameraManager; 
 	

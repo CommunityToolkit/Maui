@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Primitives;
 
-namespace CommunityToolkit.Maui.Core.Views;
+namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// A class that manages the camera functionality.
@@ -20,7 +21,7 @@ partial class CameraManager(
 	CameraProvider cameraProvider,
 	Action onLoaded) : IDisposable
 {
-	CameraInfo currentCamera = cameraView.SelectedCamera ??= cameraProvider.AvailableCameras.FirstOrDefault() ?? throw new InvalidOperationException("No available camera found.");
+	CameraInfo currentCamera = cameraView.SelectedCamera ??= cameraProvider.AvailableCameras.FirstOrDefault() ?? throw new CameraViewException("No available camera found.");
 
 	internal Action OnLoaded { get; } = onLoaded;
 

@@ -8,9 +8,9 @@ using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Extensions;
 using static UIKit.UIGestureRecognizer;
 
-namespace CommunityToolkit.Maui.Core.Views;
+namespace CommunityToolkit.Maui.Core;
 
-public partial class CameraManager
+partial class CameraManager
 {
 	// TODO: Check if we really need this
 	readonly NSDictionary<NSString, NSObject> codecSettings = new([AVVideo.CodecKey], [new NSString("jpeg")]);
