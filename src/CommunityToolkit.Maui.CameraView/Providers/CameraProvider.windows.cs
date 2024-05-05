@@ -1,24 +1,24 @@
-﻿using Windows.Devices.Enumeration;
-using Windows.Media.Capture.Frames;
-using CommunityToolkit.Maui.Core.Primitives;
+﻿using CommunityToolkit.Maui.Core.Primitives;
+using Windows.Devices.Enumeration;
 using Windows.Media.Capture;
+using Windows.Media.Capture.Frames;
 using Windows.Media.MediaProperties;
 
 namespace CommunityToolkit.Maui.Core;
 
 public partial class CameraProvider
 {
-    public async partial ValueTask RefreshAvailableCameras(CancellationToken token)
-    {
-        var deviceInfoCollection = DeviceInformation.FindAllAsync(DeviceClass.VideoCapture).GetAwaiter().GetResult();
-        var mediaFrameSourceGroup = MediaFrameSourceGroup.FindAllAsync().GetAwaiter().GetResult();
-        var videoCaptureSourceGroup = mediaFrameSourceGroup.Where(sourceGroup => deviceInfoCollection.Any(deviceInfo => deviceInfo.Id == sourceGroup.Id)).ToList();
+	public async partial ValueTask RefreshAvailableCameras(CancellationToken token)
+	{
+		var deviceInfoCollection = DeviceInformation.FindAllAsync(DeviceClass.VideoCapture).GetAwaiter().GetResult();
+		var mediaFrameSourceGroup = MediaFrameSourceGroup.FindAllAsync().GetAwaiter().GetResult();
+		var videoCaptureSourceGroup = mediaFrameSourceGroup.Where(sourceGroup => deviceInfoCollection.Any(deviceInfo => deviceInfo.Id == sourceGroup.Id)).ToList();
 		var mediaCapture = new MediaCapture();
 
 		var availableCameras = new List<CameraInfo>();
 
 		foreach (var sourceGroup in videoCaptureSourceGroup)
-        {
+		{
 			token.ThrowIfCancellationRequested();
 
 			await mediaCapture.InitializeAsync(new MediaCaptureInitializationSettings
@@ -28,16 +28,16 @@ public partial class CameraProvider
 			});
 
 			CameraPosition position = CameraPosition.Unknown;
-            var device = deviceInfoCollection.FirstOrDefault(deviceInfo => deviceInfo.Id == sourceGroup.Id);
-            if (device?.EnclosureLocation is not null)
-            {
+			var device = deviceInfoCollection.FirstOrDefault(deviceInfo => deviceInfo.Id == sourceGroup.Id);
+			if (device?.EnclosureLocation is not null)
+			{
 				position = device.EnclosureLocation.Panel switch
 				{
 					Panel.Front => CameraPosition.Front,
 					Panel.Back => CameraPosition.Rear,
 					_ => CameraPosition.Unknown
 				};
-            }
+			}
 
 
 
@@ -70,9 +70,9 @@ public partial class CameraProvider
 				imageEncodingPropertiesList);
 
 			availableCameras.Add(cameraInfo);
-        }
+		}
 
 		AvailableCameras = availableCameras;
-    }
+	}
 
 }

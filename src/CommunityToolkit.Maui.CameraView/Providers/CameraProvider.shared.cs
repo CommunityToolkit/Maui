@@ -2,8 +2,8 @@
 
 public partial class CameraProvider
 {
-    public IReadOnlyList<CameraInfo> AvailableCameras { get; private set; } = [];
-	
+	public IReadOnlyList<CameraInfo> AvailableCameras { get; private set; } = [];
+
 	public CameraProvider()
 	{
 		RefreshAvailableCameras();
@@ -12,6 +12,6 @@ public partial class CameraProvider
 		async void RefreshAvailableCameras() => await this.RefreshAvailableCameras(CancellationToken.None);
 	}
 
-    public partial ValueTask RefreshAvailableCameras(CancellationToken token);
-	
+	public partial ValueTask RefreshAvailableCameras(CancellationToken token);
+
 }

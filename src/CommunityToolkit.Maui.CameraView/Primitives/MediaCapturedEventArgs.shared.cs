@@ -2,5 +2,5 @@
 
 public class MediaCapturedEventArgs(Stream stream) : EventArgs
 {
-    public Stream Media { get; } = stream;
+	public Stream Media { get; } = stream;
 }

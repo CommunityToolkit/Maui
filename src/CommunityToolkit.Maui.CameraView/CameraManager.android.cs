@@ -1,16 +1,16 @@
-﻿using Java.Lang;
-using Java.Util.Concurrent;
-using Android.Content;
-using AndroidX.Core.Content;
-using AndroidX.Lifecycle;
+﻿using Android.Content;
 using AndroidX.Camera.Core;
+using AndroidX.Camera.Core.Impl.Utils.Futures;
+using AndroidX.Camera.Core.ResolutionSelector;
 using AndroidX.Camera.Lifecycle;
 using AndroidX.Camera.View;
-using AndroidX.Camera.Core.Impl.Utils.Futures;
-using static Android.Media.Image;
-using AndroidX.Camera.Core.ResolutionSelector;
-using CommunityToolkit.Maui.Extensions;
+using AndroidX.Core.Content;
+using AndroidX.Lifecycle;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Extensions;
+using Java.Lang;
+using Java.Util.Concurrent;
+using static Android.Media.Image;
 
 namespace CommunityToolkit.Maui.Core;
 

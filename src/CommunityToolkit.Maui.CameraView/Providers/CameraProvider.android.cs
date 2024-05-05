@@ -1,34 +1,34 @@
 ﻿using System.Diagnostics;
-using Java.Lang;
 using Android.Content;
 using Android.Graphics;
 using Android.Hardware.Camera2;
 using Android.Hardware.Camera2.Params;
-using AndroidX.Core.Content;
-using AndroidX.Camera.Core;
 using AndroidX.Camera.Camera2.InterOp;
+using AndroidX.Camera.Core;
 using AndroidX.Camera.Lifecycle;
+using AndroidX.Core.Content;
 using CommunityToolkit.Maui.Core.Primitives;
+using Java.Lang;
 
 namespace CommunityToolkit.Maui.Core;
 
 public partial class CameraProvider
 {
-    readonly Context context = Android.App.Application.Context;
+	readonly Context context = Android.App.Application.Context;
 
-    public partial ValueTask RefreshAvailableCameras(CancellationToken token)
-    {
-        var cameraProviderFuture = ProcessCameraProvider.GetInstance(context);
+	public partial ValueTask RefreshAvailableCameras(CancellationToken token)
+	{
+		var cameraProviderFuture = ProcessCameraProvider.GetInstance(context);
 
-        cameraProviderFuture.AddListener(new Runnable(() =>
-        {
-            var processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ?? throw new CameraViewException($"Unable to retrieve {nameof(ProcessCameraProvider)}"));
+		cameraProviderFuture.AddListener(new Runnable(() =>
+		{
+			var processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ?? throw new CameraViewException($"Unable to retrieve {nameof(ProcessCameraProvider)}"));
 			var availableCameras = new List<CameraInfo>();
-			
-            foreach (var cameraXInfo in processCameraProvider.AvailableCameraInfos)
-            {
-                var camera2Info = Camera2CameraInfo.From(cameraXInfo);
-				
+
+			foreach (var cameraXInfo in processCameraProvider.AvailableCameraInfos)
+			{
+				var camera2Info = Camera2CameraInfo.From(cameraXInfo);
+
 				var (name, position) = cameraXInfo.LensFacing switch
 				{
 					CameraSelector.LensFacingBack => ("Back Camera", CameraPosition.Rear),
@@ -39,9 +39,9 @@ public partial class CameraProvider
 
 				var supportedResolutions = new List<Size>();
 
-                if (CameraCharacteristics.ScalerStreamConfigurationMap is not null)
-                {
-                    var streamConfigMap = camera2Info.GetCameraCharacteristic(CameraCharacteristics.ScalerStreamConfigurationMap) as StreamConfigurationMap;
+				if (CameraCharacteristics.ScalerStreamConfigurationMap is not null)
+				{
+					var streamConfigMap = camera2Info.GetCameraCharacteristic(CameraCharacteristics.ScalerStreamConfigurationMap) as StreamConfigurationMap;
 
 					if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.M)
 					{
@@ -57,15 +57,15 @@ public partial class CameraProvider
 
 					var resolutions = streamConfigMap?.GetOutputSizes((int)ImageFormatType.Jpeg);
 					if (resolutions is not null)
-                    {
-                        foreach (var r in resolutions)
-                        {
+					{
+						foreach (var r in resolutions)
+						{
 							supportedResolutions.Add(new(r.Width, r.Height));
-                        }
-                    }
-                }
-				
-				var cameraInfo = new CameraInfo(name, 
+						}
+					}
+				}
+
+				var cameraInfo = new CameraInfo(name,
 					camera2Info.CameraId,
 					position,
 					cameraXInfo.HasFlashUnit,
@@ -75,12 +75,12 @@ public partial class CameraProvider
 					cameraXInfo.CameraSelector);
 
 				availableCameras.Add(cameraInfo);
-            }
-			
+			}
+
 			AvailableCameras = availableCameras;
-			
+
 		}), ContextCompat.GetMainExecutor(context));
 
 		return ValueTask.CompletedTask;
-    }
+	}
 }

@@ -2,6 +2,6 @@
 
 public interface IAvailability
 {
-    bool IsAvailable { get; set; }
-    bool IsBusy { get; set; }
+	bool IsAvailable { get; set; }
+	bool IsBusy { get; set; }
 }

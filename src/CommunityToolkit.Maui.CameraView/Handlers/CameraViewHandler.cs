@@ -1,19 +1,19 @@
-﻿using Microsoft.Maui.Handlers;
-using CommunityToolkit.Maui.Extensions;
+﻿using CommunityToolkit.Maui.Extensions;
+using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
 
 public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>, IDisposable
 {
-    public static IPropertyMapper<ICameraView, CameraViewHandler> PropertyMapper = new PropertyMapper<ICameraView, CameraViewHandler>(ViewMapper)
-    {
-        [nameof(ICameraView.CameraFlashMode)] = MapCameraFlashMode,
-        [nameof(IAvailability.IsAvailable)] = MapIsAvailable,
-        [nameof(ICameraView.ZoomFactor)] = MapZoomFactor,
-        [nameof(ICameraView.ImageCaptureResolution)] = MapImageCaptureResolution,
-        [nameof(ICameraView.SelectedCamera)] = MapSelectedCamera
-    };
-	
+	public static IPropertyMapper<ICameraView, CameraViewHandler> PropertyMapper = new PropertyMapper<ICameraView, CameraViewHandler>(ViewMapper)
+	{
+		[nameof(ICameraView.CameraFlashMode)] = MapCameraFlashMode,
+		[nameof(IAvailability.IsAvailable)] = MapIsAvailable,
+		[nameof(ICameraView.ZoomFactor)] = MapZoomFactor,
+		[nameof(ICameraView.ImageCaptureResolution)] = MapImageCaptureResolution,
+		[nameof(ICameraView.SelectedCamera)] = MapSelectedCamera
+	};
+
 	public static CommandMapper<ICameraView, CameraViewHandler> CommandMapper = new(ViewCommandMapper)
 	{
 		[nameof(ICameraView.CaptureImage)] = MapCaptureImage,
@@ -22,9 +22,9 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 	};
 
 	readonly CameraProvider cameraProvider = IPlatformApplication.Current?.Services.GetRequiredService<CameraProvider>() ?? throw new CameraViewException($"{nameof(CameraProvider)} not found");
-	
-	CameraManager? cameraManager; 
-	
+
+	CameraManager? cameraManager;
+
 	/// <summary>
 	/// Initializes a new instance of the <see cref="CameraViewHandler	"/> class.
 	/// </summary>
@@ -43,57 +43,57 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 	{
 
 	}
-	
+
 	public void Dispose()
 	{
 		Dispose(true);
 		GC.SuppressFinalize(this);
 	}
 
-    protected override NativePlatformCameraPreviewView CreatePlatformView()
-    {
-        ArgumentNullException.ThrowIfNull(MauiContext);
+	protected override NativePlatformCameraPreviewView CreatePlatformView()
+	{
+		ArgumentNullException.ThrowIfNull(MauiContext);
 		cameraManager = new(MauiContext, VirtualView, cameraProvider, () => Init(VirtualView));
-		
-        return cameraManager.CreatePlatformView();
+
+		return cameraManager.CreatePlatformView();
 
 		// When camera is loaded(switched), map the current flash mode to the platform view,
 		// reset the zoom factor to 1
-        void Init(ICameraView view)
-        {
-            MapCameraFlashMode(this, view);
-            view.ZoomFactor = 1.0f;
-        }
-    }
+		void Init(ICameraView view)
+		{
+			MapCameraFlashMode(this, view);
+			view.ZoomFactor = 1.0f;
+		}
+	}
 
-    protected override async void ConnectHandler(NativePlatformCameraPreviewView platformView)
-    {
-        base.ConnectHandler(platformView);
-        await (cameraManager?.ArePermissionsGranted() ?? Task.CompletedTask);
-        await (cameraManager?.ConnectCamera(CancellationToken.None) ?? ValueTask.CompletedTask);
-    }
+	protected override async void ConnectHandler(NativePlatformCameraPreviewView platformView)
+	{
+		base.ConnectHandler(platformView);
+		await (cameraManager?.ArePermissionsGranted() ?? Task.CompletedTask);
+		await (cameraManager?.ConnectCamera(CancellationToken.None) ?? ValueTask.CompletedTask);
+	}
 
-    protected override void DisconnectHandler(NativePlatformCameraPreviewView platformView)
-    {
-        base.DisconnectHandler(platformView);
-        Dispose();
-    }
+	protected override void DisconnectHandler(NativePlatformCameraPreviewView platformView)
+	{
+		base.DisconnectHandler(platformView);
+		Dispose();
+	}
 
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            cameraManager?.Dispose();
+	protected virtual void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			cameraManager?.Dispose();
 			cameraManager = null;
 		}
-    }
-	
+	}
+
 	static void MapIsAvailable(CameraViewHandler handler, ICameraView view)
 	{
 		var cameraAvailability = (IAvailability)handler.VirtualView;
 
 #if ANDROID
-        cameraAvailability.UpdateAvailability(handler.Context);
+		cameraAvailability.UpdateAvailability(handler.Context);
 #else
 		cameraAvailability.UpdateAvailability();
 #endif

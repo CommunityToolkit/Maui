@@ -1,11 +1,11 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 using AVFoundation;
-using Foundation;
-using UIKit;
-using CoreMedia;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Extensions;
+using CoreMedia;
+using Foundation;
+using UIKit;
 using static UIKit.UIGestureRecognizer;
 
 namespace CommunityToolkit.Maui.Core;
@@ -204,10 +204,10 @@ partial class CameraManager
 			captureSession?.StopRunning();
 			captureSession?.Dispose();
 			captureSession = null;
-			
+
 			captureInput?.Dispose();
 			captureInput = null;
-			
+
 			photoOutput?.Dispose();
 			photoOutput = null;
 		}

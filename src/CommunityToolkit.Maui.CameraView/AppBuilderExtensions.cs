@@ -1,6 +1,6 @@
-﻿using CommunityToolkit.Maui.Views;
-using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
+using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui;
 
