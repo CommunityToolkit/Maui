@@ -3,11 +3,14 @@ using Windows.Devices.Enumeration;
 
 namespace CommunityToolkit.Maui.Extensions;
 
-public static class CameraViewExtensions
+static class CameraViewExtensions
 {
-
-	public static void UpdateAvailability(this IAvailability cameraView)
+	public static async Task UpdateAvailability(this IAvailability cameraView, CancellationToken token)
 	{
-		cameraView.IsAvailable = DeviceInformation.FindAllAsync(DeviceClass.VideoCapture).GetAwaiter().GetResult().Count > 0;
+		var videoCaptureDevices = await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture);
+
+		token.ThrowIfCancellationRequested();
+
+		cameraView.IsAvailable = videoCaptureDevices.Count > 0;
 	}
 }

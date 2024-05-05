@@ -4,7 +4,7 @@ using CommunityToolkit.Maui.Core.Primitives;
 
 namespace CommunityToolkit.Maui.Extensions;
 
-public static class CameraViewExtensions
+static class CameraViewExtensions
 {
 	public static AVCaptureFlashMode ToPlatform(this CameraFlashMode flashMode) => flashMode switch
 	{

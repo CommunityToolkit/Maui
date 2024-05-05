@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Extensions;
 /// <summary>
 /// Extension methods for the CameraView on Android.
 /// </summary>
-public static class CameraViewExtensions
+static class CameraViewExtensions
 {
 	/// <summary>
 	/// Converts a <see cref="CameraFlashMode"/> to the platform-specific flash mode.
