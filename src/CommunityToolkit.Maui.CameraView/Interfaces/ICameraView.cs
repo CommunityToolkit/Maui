@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Core;
 /// <summary>
 /// Represents a visual element that provides the ability to show a camera preview and capture images.
 /// </summary>
-public interface ICameraView : IView, IAvailability
+public interface ICameraView : IView, IAvailability, IAsynchronousHandler
 {
 	/// <summary>
 	/// Gets the <see cref="CameraFlashMode"/>.
@@ -15,7 +15,7 @@ public interface ICameraView : IView, IAvailability
 	/// <summary>
 	/// Gets or sets the resolution at which the camera will capture images.
 	/// </summary>
-	Size CaptureResolution { get; }
+	Size ImageCaptureResolution { get; }
 
 	/// <summary>
 	/// Gets a value indicating whether the torch is on.
@@ -56,25 +56,25 @@ public interface ICameraView : IView, IAvailability
     /// </summary>
     /// <remarks>
     /// To customize the behavior of the camera when capturing an image, consider overriding the behavior through
-    /// <c>CameraViewHandler.CommandMapper.ReplaceMapping(nameof(ICameraView.Shutter), ADD YOUR METHOD);</c>.
+    /// <c>CameraViewHandler.CommandMapper.ReplaceMapping(nameof(ICameraView.CaptureImage), ADD YOUR METHOD);</c>.
     /// </remarks>
-    void Shutter();
+    ValueTask CaptureImage(CancellationToken token);
 
     /// <summary>
     /// Starts the camera preview.
     /// </summary>
     /// <remarks>
     /// To customize the behavior of starting the camera preview, consider overriding the behavior through
-    /// <c>CameraViewHandler.CommandMapper.ReplaceMapping(nameof(ICameraView.Start), ADD YOUR METHOD);</c>.
+    /// <c>CameraViewHandler.CommandMapper.ReplaceMapping(nameof(ICameraView.StartCameraPreview), ADD YOUR METHOD);</c>.
     /// </remarks>
-    void Start();
+	ValueTask StartCameraPreview(CancellationToken token);
 
     /// <summary>
     /// Stops the camera preview.
     /// </summary>
     /// <remarks>
     /// To customize the behavior of stopping the camera preview, consider overriding the behavior through
-    /// <c>CameraViewHandler.CommandMapper.ReplaceMapping(nameof(ICameraView.Stop), ADD YOUR METHOD);</c>.
+    /// <c>CameraViewHandler.CommandMapper.ReplaceMapping(nameof(ICameraView.StopCameraPreview), ADD YOUR METHOD);</c>.
     /// </remarks>
-    void Stop();
+    void StopCameraPreview();
 }

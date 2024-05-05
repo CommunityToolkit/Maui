@@ -95,24 +95,24 @@ partial class CameraManager
 
 	protected virtual void Dispose(bool disposing)
 	{
-		PlatformStop();
+		PlatformStopCameraPreview();
 		if (disposing)
 		{
 			mediaCapture?.Dispose();
 		}
 	}
 
-	protected virtual partial ValueTask PlatformConnect(CancellationToken token)
+	protected virtual partial ValueTask PlatformConnectCamera(CancellationToken token)
 	{
 		if (cameraProvider.AvailableCameras.Count < 1)
 		{
 			throw new CameraViewException("No camera available on device");
 		}
 
-		return PlatformStart(token);
+		return StartCameraPreview(token);
 	}
 
-	protected virtual async partial ValueTask PlatformStart(CancellationToken token)
+	protected virtual async partial ValueTask PlatformStartCameraPreview(CancellationToken token)
 	{
 		if (currentCamera is null || mediaElement is null)
 		{
@@ -146,7 +146,7 @@ partial class CameraManager
 		OnLoaded.Invoke();
 	}
 
-	protected virtual partial void PlatformStop()
+	protected virtual partial void PlatformStopCameraPreview()
 	{
 		if (mediaElement is null)
 		{

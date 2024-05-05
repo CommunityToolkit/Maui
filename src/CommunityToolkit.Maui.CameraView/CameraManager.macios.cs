@@ -108,19 +108,19 @@ partial class CameraManager
 		return ValueTask.CompletedTask;
 	}
 
-	protected virtual partial ValueTask PlatformConnect(CancellationToken token)
+	protected virtual partial ValueTask PlatformConnectCamera(CancellationToken token)
 	{
 		if (cameraProvider.AvailableCameras.Count < 1)
 		{
-			throw new InvalidOperationException("There's no camera available on your device.");
+			throw new CameraViewException("No camera available on device");
 		}
 
-		return PlatformStart(token);
+		return PlatformStartCameraPreview(token);
 	}
 
-	protected virtual async partial ValueTask PlatformStart(CancellationToken token)
+	protected virtual async partial ValueTask PlatformStartCameraPreview(CancellationToken token)
 	{
-		if (currentCamera is null || captureSession is null)
+		if (captureSession is null)
 		{
 			return;
 		}
@@ -133,7 +133,7 @@ partial class CameraManager
 			input.Dispose();
 		}
 
-		captureDevice = currentCamera.CaptureDevice ?? throw new NullReferenceException();
+		captureDevice = currentCamera.CaptureDevice ?? throw new CameraViewException($"No Camera found");
 		captureInput = new AVCaptureDeviceInput(captureDevice, out var err);
 		captureSession.AddInput(captureInput);
 
@@ -143,7 +143,7 @@ partial class CameraManager
 			captureSession.AddOutput(photoOutput);
 		}
 
-		await UpdateCaptureResolution(cameraView.CaptureResolution, token);
+		await UpdateCaptureResolution(cameraView.ImageCaptureResolution, token);
 
 		captureSession.CommitConfiguration();
 		captureSession.StartRunning();
@@ -151,7 +151,7 @@ partial class CameraManager
 		OnLoaded.Invoke();
 	}
 
-	protected virtual partial void PlatformStop()
+	protected virtual partial void PlatformStopCameraPreview()
 	{
 		if (captureSession is null)
 		{
@@ -203,8 +203,13 @@ partial class CameraManager
 		{
 			captureSession?.StopRunning();
 			captureSession?.Dispose();
+			captureSession = null;
+			
 			captureInput?.Dispose();
+			captureInput = null;
+			
 			photoOutput?.Dispose();
+			photoOutput = null;
 		}
 	}
 

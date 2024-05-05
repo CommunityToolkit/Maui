@@ -50,13 +50,14 @@ public class CameraView : View, ICameraView
         BindableProperty.Create(nameof(ZoomFactor), typeof(float), typeof(CameraView), 1.0f, coerceValue: CoerceZoom, defaultBindingMode: BindingMode.TwoWay);
 
     /// <summary>
-	/// Backing <see cref="BindableProperty"/> for the <see cref="CaptureResolution"/> property.
+	/// Backing <see cref="BindableProperty"/> for the <see cref="ImageCaptureResolution"/> property.
 	/// </summary>
-    public static readonly BindableProperty CaptureResolutionProperty = BindableProperty.Create(nameof(CaptureResolution),
+    public static readonly BindableProperty ImageCaptureResolutionProperty = BindableProperty.Create(nameof(ImageCaptureResolution),
         typeof(Size), typeof(CameraView), Size.Zero, defaultBindingMode: BindingMode.TwoWay);
 	
 	readonly WeakEventManager weakEventManager = new();
-	
+
+	TaskCompletionSource handlerCompletedTCS = new TaskCompletionSource();
 	
 	/// <summary>
 	/// Event that is raised when the camera capture fails.
@@ -112,11 +113,11 @@ public class CameraView : View, ICameraView
         set => SetValue(ZoomFactorProperty, value);
     }
 
-    /// <inheritdoc cref="ICameraView.CaptureResolution"/>
-    public Size CaptureResolution
+    /// <inheritdoc cref="ICameraView.ImageCaptureResolution"/>
+    public Size ImageCaptureResolution
     {
-        get => (Size)GetValue(CaptureResolutionProperty);
-        set => SetValue(CaptureResolutionProperty, value);
+        get => (Size)GetValue(ImageCaptureResolutionProperty);
+        set => SetValue(ImageCaptureResolutionProperty, value);
     }
 
     /// <summary>
@@ -154,22 +155,32 @@ public class CameraView : View, ICameraView
         weakEventManager.HandleEvent(this, new MediaCaptureFailedEventArgs(), nameof(MediaCaptureFailed));
     }
 
-    /// <inheritdoc cref="ICameraView.Shutter"/>
-    public void Shutter()
+    /// <inheritdoc cref="ICameraView.CaptureImage"/>
+    public async ValueTask CaptureImage(CancellationToken token)
+	{
+		handlerCompletedTCS.TrySetCanceled(token);
+
+		handlerCompletedTCS = new();
+        Handler?.Invoke(nameof(ICameraView.CaptureImage));
+
+		await handlerCompletedTCS.Task.WaitAsync(token);
+	}
+
+    /// <inheritdoc cref="ICameraView.StartCameraPreview"/>
+    public async ValueTask StartCameraPreview(CancellationToken token)
     {
-        Handler?.Invoke(nameof(ICameraView.Shutter));
+		handlerCompletedTCS.TrySetCanceled(token);
+
+		handlerCompletedTCS = new();
+        Handler?.Invoke(nameof(ICameraView.StartCameraPreview));
+		
+		await handlerCompletedTCS.Task.WaitAsync(token);
     }
 
-    /// <inheritdoc cref="ICameraView.Start"/>
-    public void Start()
+    /// <inheritdoc cref="ICameraView.StopCameraPreview"/>
+    public void StopCameraPreview()
     {
-        Handler?.Invoke(nameof(ICameraView.Start));
-    }
-
-    /// <inheritdoc cref="ICameraView.Stop"/>
-    public void Stop()
-    {
-        Handler?.Invoke(nameof(ICameraView.Stop));
+        Handler?.Invoke(nameof(ICameraView.StopCameraPreview));
     }
 	
 	static object CoerceZoom(BindableObject bindable, object value)
@@ -193,4 +204,7 @@ public class CameraView : View, ICameraView
 		
 		return input;
 	}
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	TaskCompletionSource IAsynchronousHandler.HandlerCompleteTCS => handlerCompletedTCS;
 }

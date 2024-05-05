@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Core.Primitives;
-using CommunityToolkit.Maui.Primitives;
 
 namespace CommunityToolkit.Maui.Core;
 
@@ -37,7 +36,7 @@ partial class CameraManager(
 	/// <summary>
 	/// Connects to the camera.
 	/// </summary>
-	public ValueTask Connect(CancellationToken token) => PlatformConnect(token);
+	public ValueTask ConnectCamera(CancellationToken token) => PlatformConnectCamera(token);
 
 	/// <summary>
 	/// Disconnects from the camera.
@@ -52,12 +51,12 @@ partial class CameraManager(
 	/// <summary>
 	/// Starts the camera preview.
 	/// </summary>
-	public ValueTask Start(CancellationToken token) => PlatformStart(token);
+	public ValueTask StartCameraPreview(CancellationToken token) => PlatformStartCameraPreview(token);
 
 	/// <summary>
 	/// Stops the camera preview.
 	/// </summary>
-	public void Stop() => PlatformStop();
+	public void StopCameraPreview() => PlatformStopCameraPreview();
 
 	/// <summary>
 	/// Updates the current camera.
@@ -78,8 +77,8 @@ partial class CameraManager(
 
 		if (IsInitialized)
 		{
-			PlatformStop();
-			await PlatformStart(token);
+			PlatformStopCameraPreview();
+			await PlatformStartCameraPreview(token);
 		}
 	}
 
@@ -101,8 +100,8 @@ partial class CameraManager(
 	/// <param name="resolution">The <see cref="Size" /> resolution to use when capturing an image from the current camera.</param>
 	public partial ValueTask UpdateCaptureResolution(Size resolution, CancellationToken token);
 	protected virtual partial ValueTask PlatformTakePicture(CancellationToken token);
-	protected virtual partial ValueTask PlatformStart(CancellationToken token);
-	protected virtual partial ValueTask PlatformConnect(CancellationToken token);
+	protected virtual partial ValueTask PlatformStartCameraPreview(CancellationToken token);
+	protected virtual partial ValueTask PlatformConnectCamera(CancellationToken token);
 	protected virtual partial void PlatformDisconnect();
-	protected virtual partial void PlatformStop();
+	protected virtual partial void PlatformStopCameraPreview();
 }

@@ -15,7 +15,7 @@ public partial class CameraViewPage : BasePage<CameraViewModel>
 	{
         InitializeComponent();
 
-		camera.MediaCaptured += OnMediaCaptured;
+		Camera.MediaCaptured += OnMediaCaptured;
 
         Loaded += (s, e) =>
         {
@@ -27,8 +27,8 @@ public partial class CameraViewPage : BasePage<CameraViewModel>
 
     void Cleanup()
     {
-        camera.MediaCaptured -= OnMediaCaptured;
-        camera.Handler?.DisconnectHandler();
+        Camera.MediaCaptured -= OnMediaCaptured;
+        Camera.Handler?.DisconnectHandler();
     }
 
     void OnUnloaded(object? sender, EventArgs e)
@@ -48,21 +48,6 @@ public partial class CameraViewPage : BasePage<CameraViewModel>
         {
             Cleanup();
         }
-    }
-
-    void Shutter(object? sender, EventArgs e)
-    {
-        camera.Shutter();
-    }
-
-    void Start(object? sender, EventArgs e)
-    {
-        camera.Start();
-    }
-
-    void Stop(object? sender, EventArgs e)
-    {
-        camera.Stop();
     }
 
     async void OnImageTapped(object? sender, TappedEventArgs args)
@@ -96,11 +81,11 @@ public partial class CameraViewPage : BasePage<CameraViewModel>
 
     void ZoomIn(object? sender, EventArgs e)
     {
-        camera.ZoomFactor += 1.0f;
+        Camera.ZoomFactor += 1.0f;
     }
 
     void ZoomOut(object? sender, EventArgs e)
     {
-        camera.ZoomFactor -= 1.0f;
+        Camera.ZoomFactor -= 1.0f;
     }
 }

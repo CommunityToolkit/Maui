@@ -10,15 +10,15 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
         [nameof(ICameraView.CameraFlashMode)] = MapCameraFlashMode,
         [nameof(IAvailability.IsAvailable)] = MapIsAvailable,
         [nameof(ICameraView.ZoomFactor)] = MapZoomFactor,
-        [nameof(ICameraView.CaptureResolution)] = MapCaptureResolution,
+        [nameof(ICameraView.ImageCaptureResolution)] = MapImageCaptureResolution,
         [nameof(ICameraView.SelectedCamera)] = MapSelectedCamera
     };
 	
 	public static CommandMapper<ICameraView, CameraViewHandler> CommandMapper = new(ViewCommandMapper)
 	{
-		[nameof(ICameraView.Shutter)] = MapShutter,
-		[nameof(ICameraView.Start)] = MapStart,
-		[nameof(ICameraView.Stop)] = MapStop
+		[nameof(ICameraView.CaptureImage)] = MapCaptureImage,
+		[nameof(ICameraView.StartCameraPreview)] = MapStartCameraPreview,
+		[nameof(ICameraView.StopCameraPreview)] = MapStopCameraPreview
 	};
 
 	readonly CameraProvider cameraProvider = IPlatformApplication.Current?.Services.GetRequiredService<CameraProvider>() ?? throw new CameraViewException($"{nameof(CameraProvider)} not found");
@@ -70,7 +70,7 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
     {
         base.ConnectHandler(platformView);
         await (cameraManager?.ArePermissionsGranted() ?? Task.CompletedTask);
-        await (cameraManager?.Connect(CancellationToken.None) ?? ValueTask.CompletedTask);
+        await (cameraManager?.ConnectCamera(CancellationToken.None) ?? ValueTask.CompletedTask);
     }
 
     protected override void DisconnectHandler(NativePlatformCameraPreviewView platformView)
@@ -99,19 +99,21 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 #endif
 	}
 
-	static async void MapShutter(CameraViewHandler handler, ICameraView view, object? arg3)
+	static async void MapCaptureImage(CameraViewHandler handler, ICameraView view, object? arg3)
 	{
 		await (handler.cameraManager?.TakePicture(CancellationToken.None) ?? ValueTask.CompletedTask);
+		view.HandlerCompleteTCS.SetResult();
 	}
 
-	static async void MapStart(CameraViewHandler handler, ICameraView view, object? arg3)
+	static async void MapStartCameraPreview(CameraViewHandler handler, ICameraView view, object? arg3)
 	{
-		await (handler.cameraManager?.Start(CancellationToken.None) ?? ValueTask.CompletedTask);
+		await (handler.cameraManager?.StartCameraPreview(CancellationToken.None) ?? ValueTask.CompletedTask);
+		view.HandlerCompleteTCS.SetResult();
 	}
 
-	static async void MapCaptureResolution(CameraViewHandler handler, ICameraView view)
+	static async void MapImageCaptureResolution(CameraViewHandler handler, ICameraView view)
 	{
-		await (handler.cameraManager?.UpdateCaptureResolution(view.CaptureResolution, CancellationToken.None) ?? ValueTask.CompletedTask);
+		await (handler.cameraManager?.UpdateCaptureResolution(view.ImageCaptureResolution, CancellationToken.None) ?? ValueTask.CompletedTask);
 	}
 
 	static async void MapSelectedCamera(CameraViewHandler handler, ICameraView view)
@@ -119,9 +121,9 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 		await (handler.cameraManager?.UpdateCurrentCamera(view.SelectedCamera, CancellationToken.None) ?? ValueTask.CompletedTask);
 	}
 
-	static void MapStop(CameraViewHandler handler, ICameraView view, object? arg3)
+	static void MapStopCameraPreview(CameraViewHandler handler, ICameraView view, object? arg3)
 	{
-		handler.cameraManager?.Stop();
+		handler.cameraManager?.StopCameraPreview();
 	}
 
 	static void MapCameraFlashMode(CameraViewHandler handler, ICameraView view)

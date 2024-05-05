@@ -2,6 +2,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Views;
+using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
@@ -20,19 +22,7 @@ public partial class CameraViewModel(CameraProvider cameraProvider) : BaseViewMo
     float currentZoom;
 
     [ObservableProperty]
-    string cameraNameText = "";
-
-    [ObservableProperty]
-    string zoomRangeText = "";
-
-    [ObservableProperty]
-    string currentZoomText = "";
-
-    [ObservableProperty]
-    string flashModeText = "";
-
-    [ObservableProperty]
-    string resolutionText = "";
+    string cameraNameText = "", zoomRangeText = "", currentZoomText = "", flashModeText = "", resolutionText = "";
 	
 	public CameraProvider CameraProvider { get; } = cameraProvider;
 
@@ -52,6 +42,24 @@ public partial class CameraViewModel(CameraProvider cameraProvider) : BaseViewMo
     {
         UpdateResolutionText();
     }
+	
+	[RelayCommand]
+	async Task CaptureImage(CameraView cameraView, CancellationToken token)
+	{
+		await cameraView.CaptureImage(token);
+	}
+
+	[RelayCommand]
+	async Task StartCameraPreview(CameraView cameraView, CancellationToken token)
+	{
+		await cameraView.StartCameraPreview(token);
+	}
+
+	[RelayCommand]
+	void StopCameraPreview(CameraView cameraView)
+	{
+		cameraView.StopCameraPreview();
+	}
 
     void OnCameraInfoPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -64,7 +72,7 @@ public partial class CameraViewModel(CameraProvider cameraProvider) : BaseViewMo
 		{
 			return;
 		}
-        CameraNameText = $"{SelectedCamera.Name}";
+        CameraNameText = SelectedCamera.Name;
         ZoomRangeText = $"Min Zoom: {SelectedCamera.MinZoomFactor}, Max Zoom: {SelectedCamera.MaxZoomFactor}";
         UpdateFlashModeText();
     }

@@ -136,7 +136,7 @@ partial class CameraManager
 		}
 	}
 
-	protected virtual partial ValueTask PlatformConnect(CancellationToken token)
+	protected virtual partial ValueTask PlatformConnectCamera(CancellationToken token)
 	{
 		var cameraProviderFuture = ProcessCameraProvider.GetInstance(context);
 		if (previewView is null)
@@ -167,7 +167,7 @@ partial class CameraManager
 			return;
 		}
 
-		PlatformStop();
+		PlatformStopCameraPreview();
 
 		cameraPreview?.Dispose();
 		imageCapture?.Dispose();
@@ -180,10 +180,10 @@ partial class CameraManager
 		.SetResolutionSelector(resolutionSelector)
 		.Build();
 
-		await PlatformStart(token);
+		await StartCameraPreview(token);
 	}
 
-	protected virtual partial ValueTask PlatformStart(CancellationToken token)
+	protected virtual partial ValueTask PlatformStartCameraPreview(CancellationToken token)
 	{
 		if (previewView is null || processCameraProvider is null || cameraPreview is null || imageCapture is null)
 		{
@@ -210,7 +210,7 @@ partial class CameraManager
 		return ValueTask.CompletedTask;
 	}
 
-	protected virtual partial void PlatformStop()
+	protected virtual partial void PlatformStopCameraPreview()
 	{
 		if (processCameraProvider is null)
 		{

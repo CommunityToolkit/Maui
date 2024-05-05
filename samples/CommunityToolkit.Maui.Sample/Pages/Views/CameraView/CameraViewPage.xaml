@@ -13,11 +13,11 @@
 
     <Grid RowDefinitions="200,*,Auto,Auto" ColumnDefinitions="3*,*">
         <cv:CameraView
-            x:Name="camera"
+            x:Name="Camera"
             Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Grid.RowSpan="3"
             CameraFlashMode="{Binding FlashMode}"
             ZoomFactor="{Binding CurrentZoom}"
-            CaptureResolution="{Binding SelectedResolution}"
+            ImageCaptureResolution="{Binding SelectedResolution}"
             SelectedCamera="{Binding SelectedCamera}"/>
 
         <Grid Grid.Column="0" Grid.Row="0" RowDefinitions="Auto" BackgroundColor="#80CCCCCC">
@@ -52,8 +52,8 @@
             <Slider 
                 x:Name="slider" Grid.Column="1"
                 Value="{Binding CurrentZoom}"
-                Maximum="{Binding SelectedCamera.MaxZoomFactor}"
-                Minimum="{Binding SelectedCamera.MinZoomFactor}"/>
+                Maximum="{Binding SelectedCamera.MaxZoomFactor, FallbackValue=1}"
+                Minimum="{Binding SelectedCamera.MinZoomFactor, FallbackValue=1}"/>
 
             <Button Clicked="ZoomIn" Text="Zoom +" Grid.Column="2"/>
         </Grid>
@@ -71,14 +71,13 @@
 
                 <Picker 
                     Title="Flash"
-                    IsVisible="{Binding SelectedCamera.IsFlashSupported}"
+                    IsVisible="{Binding Path=SelectedCamera.IsFlashSupported, FallbackValue=false}"
                     ItemsSource="{Binding FlashModes}"
                     SelectedItem="{Binding FlashMode}" />
 
-                <Button Clicked="Shutter" Text="Shot" />
-
-                <Button Clicked="Start" Text="Start" IsVisible="false"/>
-                <Button Clicked="Stop" Text="Stop" IsVisible="false"/>
+                <Button Command="{Binding CaptureImageCommand}" CommandParameter="{Binding Source={x:Reference Camera}, Path='.'}" Text="Capture Image" />
+                <Button Command="{Binding StartCameraPreviewCommand}" Text="StartCameraPreview" CommandParameter="{Binding Source={x:Reference Camera}, Path='.'}" />
+                <Button Command="{Binding StopCameraPreviewCommand}" Text="StopCameraPreview" CommandParameter="{Binding Source={x:Reference Camera}, Path='.'}" />
 
             </FlexLayout>
         </Grid>
