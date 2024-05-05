@@ -88,12 +88,18 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 		}
 	}
 
+#if WINDOWS
+	static async void MapIsAvailable(CameraViewHandler handler, ICameraView view)
+#else
 	static void MapIsAvailable(CameraViewHandler handler, ICameraView view)
+#endif
 	{
 		var cameraAvailability = (IAvailability)handler.VirtualView;
 
 #if ANDROID
 		cameraAvailability.UpdateAvailability(handler.Context);
+#elif WINDOWS
+		await cameraAvailability.UpdateAvailability(CancellationToken.None);
 #else
 		cameraAvailability.UpdateAvailability();
 #endif
