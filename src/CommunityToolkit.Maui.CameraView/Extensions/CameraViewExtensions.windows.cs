@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Core;
 using Windows.Devices.Enumeration;
+using Windows.Media.Capture;
 
 namespace CommunityToolkit.Maui.Extensions;
 
@@ -12,5 +13,14 @@ static class CameraViewExtensions
 		token.ThrowIfCancellationRequested();
 
 		cameraView.IsAvailable = videoCaptureDevices.Count > 0;
+	}
+
+	public static async Task InitializeCameraForCameraView(this MediaCapture mediaCapture, string deviceId)
+	{
+		await mediaCapture.InitializeAsync(new MediaCaptureInitializationSettings
+		{
+			VideoDeviceId = deviceId,
+			PhotoCaptureSource = PhotoCaptureSource.Photo
+		});
 	}
 }

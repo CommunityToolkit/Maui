@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Media.Capture;
@@ -38,20 +39,21 @@ partial class CameraManager
 			return;
 		}
 
-		switch (flashMode)
+		var (updatedFlashControlEnabled, updatedFlashControlAuto) = flashMode switch
 		{
-			case CameraFlashMode.Off:
-				mediaCapture.VideoDeviceController.FlashControl.Enabled = false;
-				break;
-			case CameraFlashMode.On:
-				mediaCapture.VideoDeviceController.FlashControl.Enabled = true;
-				mediaCapture.VideoDeviceController.FlashControl.Auto = false;
-				break;
-			case CameraFlashMode.Auto:
-				mediaCapture.VideoDeviceController.FlashControl.Enabled = true;
-				mediaCapture.VideoDeviceController.FlashControl.Auto = true;
-				break;
+			CameraFlashMode.Off => (false, (bool?)null),
+			CameraFlashMode.On => (true, false),
+			CameraFlashMode.Auto => (true, true),
+			_ => throw new NotSupportedException($"{flashMode} is not yet supported")
+		};
+
+		mediaCapture.VideoDeviceController.FlashControl.Enabled = updatedFlashControlEnabled;
+
+		if (updatedFlashControlAuto.HasValue)
+		{
+			mediaCapture.VideoDeviceController.FlashControl.Auto = updatedFlashControlAuto.Value;
 		}
+
 	}
 
 	public partial void UpdateZoom(float zoomLevel)
@@ -128,11 +130,7 @@ partial class CameraManager
 
 		token.ThrowIfCancellationRequested();
 
-		await mediaCapture.InitializeAsync(new MediaCaptureInitializationSettings
-		{
-			VideoDeviceId = currentCamera.DeviceId,
-			PhotoCaptureSource = PhotoCaptureSource.Photo
-		});
+		await mediaCapture.InitializeCameraForCameraView(currentCamera.DeviceId);
 
 		await UpdateCameraInfo(token);
 

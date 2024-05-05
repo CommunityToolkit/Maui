@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Extensions;
 using Windows.Devices.Enumeration;
 using Windows.Media.Capture;
 using Windows.Media.Capture.Frames;
@@ -21,11 +22,7 @@ partial class CameraProvider
 		{
 			token.ThrowIfCancellationRequested();
 
-			await mediaCapture.InitializeAsync(new MediaCaptureInitializationSettings
-			{
-				VideoDeviceId = sourceGroup.Id,
-				PhotoCaptureSource = PhotoCaptureSource.Photo
-			});
+			await mediaCapture.InitializeCameraForCameraView(sourceGroup.Id);
 
 			CameraPosition position = CameraPosition.Unknown;
 			var device = deviceInfoCollection.FirstOrDefault(deviceInfo => deviceInfo.Id == sourceGroup.Id);
