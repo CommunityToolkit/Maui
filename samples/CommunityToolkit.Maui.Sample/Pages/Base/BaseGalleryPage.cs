@@ -45,9 +45,9 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 		static Grid CreateDataTemplate() => new()
 		{
 			RowDefinitions = Rows.Define(
-				(Row.TopPadding, 12),
+				(Row.TopPadding, 4),
 				(Row.Content, Star),
-				(Row.BottomPadding, 12)),
+				(Row.BottomPadding, 4)),
 
 			ColumnDefinitions = Columns.Define(
 				(Column.LeftPadding, 24),
