@@ -16,7 +16,7 @@ public partial class SubtitleExtensions : Grid, IDisposable
 	List<SubtitleCue> cues;
 	bool disposedValue;
 	IMediaElement? mediaElement;
-	Microsoft.UI.Xaml.Controls.TextBlock? xamlTextBlock;
+	readonly Microsoft.UI.Xaml.Controls.TextBlock? xamlTextBlock;
 	MauiMediaElement? mauiMediaElement;
 
 	/// <summary>
@@ -27,6 +27,17 @@ public partial class SubtitleExtensions : Grid, IDisposable
 		httpClient = new();
 		cues = [];
 		MauiMediaElement.WindowsChanged += MauiMediaElement_WindowsChanged;
+		xamlTextBlock = new()
+		{
+			Text = string.Empty,
+			Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 10),
+			Visibility = Microsoft.UI.Xaml.Visibility.Collapsed,
+			HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
+			VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Bottom,
+			Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.White),
+			FontSize = 16,
+			TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap,
+		};
 	}
 	void MauiMediaElement_WindowsChanged(object? sender, WindowsEventArgs e)
 	{
@@ -67,17 +78,7 @@ public partial class SubtitleExtensions : Grid, IDisposable
 			System.Diagnostics.Trace.TraceError(ex.Message);
 			return;
 		}
-		xamlTextBlock ??= new()
-		{
-			Text = string.Empty,
-			Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 10),
-			Visibility = Microsoft.UI.Xaml.Visibility.Collapsed,
-			HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
-			VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Bottom,
-			Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.White),
-			FontSize = 16,
-			TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap,
-		};
+		
 		cues = mediaElement.SubtitleUrl switch
 		{
 			var url when url.EndsWith("srt") => SrtParser.ParseSrtContent(vttContent),
