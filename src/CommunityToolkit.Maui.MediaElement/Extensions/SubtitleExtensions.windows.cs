@@ -24,36 +24,27 @@ public partial class SubtitleExtensions : Grid, IDisposable
 	/// </summary>
 	public SubtitleExtensions()
 	{
-		httpClient = new HttpClient();
+		httpClient = new();
 		cues = [];
 		MauiMediaElement.WindowsChanged += MauiMediaElement_WindowsChanged;
 	}
 	void MauiMediaElement_WindowsChanged(object? sender, WindowsEventArgs e)
 	{
-		System.Diagnostics.Trace.TraceInformation("Windows Changed");
 		if (mauiMediaElement is null || e.data is not Microsoft.UI.Xaml.Controls.Grid gridItem || string.IsNullOrEmpty(mediaElement?.SubtitleUrl))
 		{
 			return;
 		}
 		this.item = gridItem;
-
-		if (!isFullScreen)
+		switch(isFullScreen)
 		{
-			if (mauiMediaElement.Children.Contains(xamlTextBlock))
-			{
-				Dispatcher.Dispatch(() => mauiMediaElement.Children.Remove(xamlTextBlock));
-			}
-			Dispatcher.Dispatch(() => item.Children.Add(xamlTextBlock));
-			isFullScreen = true;
-		}
-		else
-		{
-			if (item.Children.Contains(xamlTextBlock))
-			{
-				Dispatcher.Dispatch(() => item.Children.Remove(xamlTextBlock));
-			}
-			Dispatcher.Dispatch(() => mauiMediaElement.Children.Add(xamlTextBlock));
-			isFullScreen = false;
+			case true:
+				Dispatcher.Dispatch(() => { item.Children.Remove(xamlTextBlock); mauiMediaElement.Children.Add(xamlTextBlock); });
+				isFullScreen = false;
+				break;
+			case false:
+				Dispatcher.Dispatch(() => { mauiMediaElement.Children.Remove(xamlTextBlock); item.Children.Add(xamlTextBlock); });
+				isFullScreen = true;
+				break;
 		}
 	}
 
@@ -108,7 +99,7 @@ public partial class SubtitleExtensions : Grid, IDisposable
 
 	void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
 	{
-		if (mediaElement?.Position is null || cues.Count == 0 || string.IsNullOrEmpty(mediaElement.SubtitleUrl))
+		if (mediaElement?.Position is null || cues.Count == 0 || string.IsNullOrEmpty(mediaElement.SubtitleUrl) || xamlTextBlock is null)
 		{
 			return;
 		}
@@ -117,20 +108,14 @@ public partial class SubtitleExtensions : Grid, IDisposable
 		{
 			if (cue is not null)
 			{
-				if (xamlTextBlock is not null)
-				{
-					xamlTextBlock.Text = cue.Text;
-					System.Diagnostics.Trace.TraceInformation("Cue Text: {0}", cue.Text);
-					xamlTextBlock.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-				}
+				xamlTextBlock.Text = cue.Text;
+				System.Diagnostics.Trace.TraceInformation("Cue Text: {0}", cue.Text);
+				xamlTextBlock.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
 			}
 			else
 			{
-				if (xamlTextBlock is not null)
-				{
-					xamlTextBlock.Text = string.Empty;
-					xamlTextBlock.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-				}
+				xamlTextBlock.Text = string.Empty;
+				xamlTextBlock.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
 			}
 		});
 	}
@@ -151,7 +136,6 @@ public partial class SubtitleExtensions : Grid, IDisposable
 			return;
 		}
 		Dispatcher.Dispatch(() => mauiMediaElement.Children.Remove(xamlTextBlock));
-		System.Diagnostics.Trace.TraceInformation("Removed text block from player parent");
 	}
 
 	/// <summary>
