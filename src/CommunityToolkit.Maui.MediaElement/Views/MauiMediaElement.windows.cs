@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -22,6 +23,10 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiMediaElement : Grid, IDisposable
 {
+	/// <summary>
+	/// Handles the event when the windows change.
+	/// </summary>
+	public static event EventHandler<WindowsEventArgs>? WindowsChanged;
 	static readonly AppWindow appWindow = GetAppWindowForCurrentWindow();
 	static readonly ImageSource source = new BitmapImage(new Uri("ms-appx:///fullscreen.png"));
 
@@ -81,6 +86,14 @@ public class MauiMediaElement : Grid, IDisposable
 	/// Finalizer
 	/// </summary>
 	~MauiMediaElement() => Dispose(false);
+
+	/// <summary>
+	/// A method that raises the WindowsChanged event.
+	/// </summary>
+	protected virtual void OnWindowsChanged(WindowsEventArgs e)
+	{
+		WindowsChanged?.Invoke(null, e);
+	}
 
 	/// <summary>
 	/// Releases the managed and unmanaged resources used by the <see cref="MauiMediaElement"/>.
@@ -160,6 +173,7 @@ public class MauiMediaElement : Grid, IDisposable
 			appWindow.SetPresenter(AppWindowPresenterKind.Default);
 			Shell.SetNavBarIsVisible(CurrentPage, doesNavigationBarExistBeforeFullScreen);
 
+			OnWindowsChanged(new Maui.Primitives.WindowsEventArgs(fullScreenGrid));
 			if (popup.IsOpen)
 			{
 				popup.IsOpen = false;
@@ -169,7 +183,6 @@ public class MauiMediaElement : Grid, IDisposable
 
 			Children.Add(mediaPlayerElement);
 			Children.Add(buttonContainer);
-
 			var parent = mediaPlayerElement.Parent as FrameworkElement;
 			mediaPlayerElement.Width = parent?.Width ?? mediaPlayerElement.Width;
 			mediaPlayerElement.Height = parent?.Height ?? mediaPlayerElement.Height;
@@ -187,7 +200,7 @@ public class MauiMediaElement : Grid, IDisposable
 			Children.Clear();
 			fullScreenGrid.Children.Add(mediaPlayerElement);
 			fullScreenGrid.Children.Add(buttonContainer);
-
+			
 			popup.XamlRoot = mediaPlayerElement.XamlRoot;
 			popup.HorizontalOffset = 0;
 			popup.VerticalOffset = 0;
@@ -200,6 +213,7 @@ public class MauiMediaElement : Grid, IDisposable
 			{
 				popup.IsOpen = true;
 			}
+			OnWindowsChanged(new Maui.Primitives.WindowsEventArgs(fullScreenGrid));
 		}
 	}
 }

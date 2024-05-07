@@ -75,6 +75,10 @@ public class MediaElement : View, IMediaElement, IDisposable
 			propertyChanging: OnSourcePropertyChanging, propertyChanged: OnSourcePropertyChanged);
 
 	/// <summary>
+	/// Backing store for the <see cref="SubtitleUrl"/> property.
+	/// </summary>
+	public static readonly BindableProperty SubtitleProperty = BindableProperty.Create(nameof(SubtitleUrl), typeof(string), typeof(MediaElement), string.Empty);
+	/// <summary>
 	/// Backing store for the <see cref="Speed"/> property.
 	/// </summary>
 	public static readonly BindableProperty SpeedProperty =
@@ -264,6 +268,15 @@ public class MediaElement : View, IMediaElement, IDisposable
 	{
 		get => (MediaSource)GetValue(SourceProperty);
 		set => SetValue(SourceProperty, value);
+	}
+
+	/// <summary>
+	/// Gets or sets the URL of the subtitle file to display.
+	/// </summary>
+	public string SubtitleUrl
+	{
+		get => (string)GetValue(SubtitleProperty);
+		set => SetValue(SubtitleProperty, value);
 	}
 
 	/// <summary>

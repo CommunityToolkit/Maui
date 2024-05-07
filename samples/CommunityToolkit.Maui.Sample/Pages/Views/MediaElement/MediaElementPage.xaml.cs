@@ -14,6 +14,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	const string loadHls = "Load HTTP Live Stream (HLS)";
 	const string loadLocalResource = "Load Local Resource";
 	const string resetSource = "Reset Source to null";
+	const string loadSubTitles = "Load Subtitles";
 
 	public MediaElementPage(MediaElementViewModel viewModel, ILogger<MediaElementPage> logger) : base(viewModel)
 	{
@@ -154,23 +155,26 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	async void ChangeSourceClicked(Object sender, EventArgs e)
 	{
 		var result = await DisplayActionSheet("Choose a source", "Cancel", null,
-			loadOnlineMp4, loadHls, loadLocalResource, resetSource);
+			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadSubTitles);
 
 		switch (result)
 		{
 			case loadOnlineMp4:
+				MediaElement.SubtitleUrl = string.Empty;
 				MediaElement.Source =
 					MediaSource.FromUri(
 						"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
 				return;
 
 			case loadHls:
+				MediaElement.SubtitleUrl = string.Empty;
 				MediaElement.Source
 					= MediaSource.FromUri(
 						"https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8");
 				return;
 
 			case resetSource:
+				MediaElement.SubtitleUrl = string.Empty;
 				MediaElement.Source = null;
 				return;
 
@@ -178,16 +182,23 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				if (DeviceInfo.Platform == DevicePlatform.MacCatalyst
 					|| DeviceInfo.Platform == DevicePlatform.iOS)
 				{
+					MediaElement.SubtitleUrl = string.Empty;
 					MediaElement.Source = MediaSource.FromResource("AppleVideo.mp4");
 				}
 				else if (DeviceInfo.Platform == DevicePlatform.Android)
 				{
+					MediaElement.SubtitleUrl = string.Empty;
 					MediaElement.Source = MediaSource.FromResource("AndroidVideo.mp4");
 				}
 				else if (DeviceInfo.Platform == DevicePlatform.WinUI)
 				{
+					MediaElement.SubtitleUrl = string.Empty;
 					MediaElement.Source = MediaSource.FromResource("WindowsVideo.mp4");
 				}
+				return;
+			case loadSubTitles:
+				MediaElement.SubtitleUrl = "https://raw.githubusercontent.com/ne0rrmatrix/SampleVideo/main/SRT/WindowsVideo.srt";
+				MediaElement.Source = MediaSource.FromResource("WindowsVideo.mp4");
 				return;
 		}
 	}
@@ -214,7 +225,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 		MediaElement.Aspect = (Aspect)aspectEnum;
 	}
-
 	void DisplayPopup(object sender, EventArgs e)
 	{
 		MediaElement.Pause();

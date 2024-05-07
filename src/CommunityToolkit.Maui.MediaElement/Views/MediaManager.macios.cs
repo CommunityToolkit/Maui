@@ -1,6 +1,7 @@
 ﻿using AVFoundation;
 using AVKit;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using CoreFoundation;
 using CoreMedia;
@@ -11,6 +12,10 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : IDisposable
 {
+	SubtitleExtensions? subtitleExtensions;
+	CancellationTokenSource subTitles = new();
+	Task? startSubtitles;
+
 	// Media would still start playing when Speed was set although ShouldAutoPlay=False
 	// This field was added to overcome that.
 	bool initialSpeedSet;
@@ -201,8 +206,9 @@ public partial class MediaManager : IDisposable
 	protected virtual partial void PlatformUpdateSource()
 	{
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
-
+		
 		AVAsset? asset = null;
+		subtitleExtensions?.StopSubtitleDisplay();
 
 		if (MediaElement.Source is UriMediaSource uriMediaSource)
 		{
@@ -250,7 +256,7 @@ public partial class MediaManager : IDisposable
 		CurrentItemErrorObserver?.Dispose();
 
 		Player?.ReplaceCurrentItemWithPlayerItem(PlayerItem);
-
+		subtitleExtensions ??= new(Player, PlayerViewController);
 		CurrentItemErrorObserver = PlayerItem?.AddObserver("error",
 			valueObserverOptions, (NSObservedChange change) =>
 			{
@@ -276,11 +282,24 @@ public partial class MediaManager : IDisposable
 			{
 				Player?.Play();
 			}
+			CancellationToken token = subTitles.Token;
+			startSubtitles = LoadSubtitles(token);
 		}
 		else if (PlayerItem is null)
 		{
 			MediaElement.CurrentStateChanged(MediaElementState.None);
 		}
+	}
+
+	async Task LoadSubtitles(CancellationToken cancellationToken = default)
+	{
+		subtitleExtensions?.StopSubtitleDisplay();
+		if (subtitleExtensions is null || string.IsNullOrEmpty(MediaElement.SubtitleUrl))
+		{
+			return;
+		}
+		await subtitleExtensions.LoadSubtitles(MediaElement).WaitAsync(cancellationToken).ConfigureAwait(false);
+		subtitleExtensions.StartSubtitleDisplay();
 	}
 
 	protected virtual partial void PlatformUpdateSpeed()
@@ -395,7 +414,9 @@ public partial class MediaManager : IDisposable
 				Player.Pause();
 				DestroyErrorObservers();
 				DestroyPlayedToEndObserver();
-
+				subtitleExtensions?.StopSubtitleDisplay();
+				subtitleExtensions?.Dispose();
+				subTitles.Dispose();
 				RateObserver?.Dispose();
 				CurrentItemErrorObserver?.Dispose();
 				Player.ReplaceCurrentItemWithPlayerItem(null);

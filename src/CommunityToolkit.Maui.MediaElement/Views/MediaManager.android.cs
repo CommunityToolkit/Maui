@@ -9,6 +9,7 @@ using Com.Google.Android.Exoplayer2.Trackselection;
 using Com.Google.Android.Exoplayer2.UI;
 using Com.Google.Android.Exoplayer2.Video;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 
@@ -21,6 +22,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	double? previousSpeed;
 	float volumeBeforeMute = 1;
 	TaskCompletionSource? seekToTaskCompletionSource;
+	SubtitleExtensions? subtitleExtensions;
+	CancellationTokenSource subTitles = new();
+	Task? startSubtitles;
 
 
 	/// <summary>
@@ -47,6 +51,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 		};
 
+		subtitleExtensions = new(Platform.AppContext, PlayerView, Dispatcher);
 		return (Player, PlayerView);
 	}
 
@@ -301,6 +306,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			return;
 		}
+		subtitleExtensions?.StopSubtitleDisplay();
 
 		if (MediaElement.Source is null)
 		{
@@ -355,9 +361,20 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		if (hasSetSource && Player.PlayerError is null)
 		{
 			MediaElement.MediaOpened();
+			CancellationToken token = subTitles.Token;
+			startSubtitles = LoadSubtitles(token);
 		}
 	}
-
+	async Task LoadSubtitles(CancellationToken cancellationToken = default)
+	{
+		subtitleExtensions?.StopSubtitleDisplay();
+		if (subtitleExtensions is null || string.IsNullOrEmpty(MediaElement.SubtitleUrl))
+		{
+			return;
+		}
+		await subtitleExtensions.LoadSubtitles(MediaElement).WaitAsync(cancellationToken).ConfigureAwait(false);
+		subtitleExtensions.StartSubtitleDisplay();
+	}
 	protected virtual partial void PlatformUpdateAspect()
 	{
 		if (PlayerView is null)

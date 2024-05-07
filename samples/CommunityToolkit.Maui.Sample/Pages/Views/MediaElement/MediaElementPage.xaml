@@ -29,7 +29,9 @@
             </Grid.RowDefinitions>
             <toolkit:MediaElement
                 x:Name="MediaElement"
+                WidthRequest="{OnIdiom Tablet=410, Default=380}"
                 ShouldAutoPlay="True"
+                SubtitleUrl=""
                 Source="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
                 MediaEnded="OnMediaEnded"
                 MediaFailed="OnMediaFailed"

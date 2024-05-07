@@ -87,6 +87,11 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	double Volume { get; set; }
 
 	/// <summary>
+	/// Gets or sets the URL of the subtitle file to display.
+	/// </summary>
+	string SubtitleUrl { get; set; }
+
+	/// <summary>
 	/// Occurs when <see cref="CurrentState"/> changed.
 	/// </summary>
 	event EventHandler<MediaStateChangedEventArgs> StateChanged;

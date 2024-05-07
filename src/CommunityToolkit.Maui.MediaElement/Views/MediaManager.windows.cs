@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Controls;
@@ -12,6 +13,9 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 partial class MediaManager : IDisposable
 {
+	SubtitleExtensions? subtitleExtensions;
+	readonly CancellationTokenSource subTitles = new();
+	Task? startSubtitles;
 	// States that allow changing position
 	readonly IReadOnlyList<MediaElementState> allowUpdatePositionStates =
 	[
@@ -43,6 +47,7 @@ partial class MediaManager : IDisposable
 		MediaElement.MediaOpened += OnMediaElementMediaOpened;
 
 		Player.SetMediaPlayer(MediaElement);
+		subtitleExtensions = [];
 
 		Player.MediaPlayer.PlaybackSession.PlaybackRateChanged += OnPlaybackSessionPlaybackRateChanged;
 		Player.MediaPlayer.PlaybackSession.PlaybackStateChanged += OnPlaybackSessionPlaybackStateChanged;
@@ -245,7 +250,7 @@ partial class MediaManager : IDisposable
 		{
 			return;
 		}
-
+		subtitleExtensions?.StopSubtitleDisplay();
 		if (MediaElement.Source is null)
 		{
 			Player.Source = null;
@@ -282,8 +287,21 @@ partial class MediaManager : IDisposable
 				Player.Source = WinMediaSource.CreateFromUri(new Uri(path));
 			}
 		}
+		
+		CancellationToken token = subTitles.Token;
+		startSubtitles = LoadSubtitles(token);
 	}
 
+	async Task LoadSubtitles(CancellationToken cancellationToken = default)
+	{
+		subtitleExtensions?.StopSubtitleDisplay();
+		if (subtitleExtensions is null || string.IsNullOrEmpty(MediaElement.SubtitleUrl))
+		{
+			return;
+		}
+		await subtitleExtensions.LoadSubtitles(MediaElement).WaitAsync(cancellationToken).ConfigureAwait(false);
+		subtitleExtensions.StartSubtitleDisplay();
+	}
 	protected virtual partial void PlatformUpdateShouldLoopPlayback()
 	{
 		if (Player is null)
@@ -302,6 +320,11 @@ partial class MediaManager : IDisposable
 	{
 		if (disposing)
 		{
+			if(subtitleExtensions is not null)
+			{
+				subtitleExtensions.Dispose();
+				subtitleExtensions = null;
+			}
 			if (Player?.MediaPlayer is not null)
 			{
 				if (displayActiveRequested)
@@ -309,7 +332,7 @@ partial class MediaManager : IDisposable
 					DisplayRequest.RequestRelease();
 					displayActiveRequested = false;
 				}
-
+				subTitles.Dispose();
 				Player.MediaPlayer.MediaOpened -= OnMediaElementMediaOpened;
 				Player.MediaPlayer.MediaFailed -= OnMediaElementMediaFailed;
 				Player.MediaPlayer.MediaEnded -= OnMediaElementMediaEnded;

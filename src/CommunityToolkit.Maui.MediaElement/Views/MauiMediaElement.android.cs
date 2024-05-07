@@ -8,6 +8,7 @@ using Android.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using Com.Google.Android.Exoplayer2.UI;
+using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -17,6 +18,10 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiMediaElement : CoordinatorLayout
 {
+	/// <summary>
+	/// Handles the event when the windows change.
+	/// </summary>
+	public static event EventHandler<WindowsEventArgs>? WindowsChanged;
 	readonly StyledPlayerView playerView;
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
@@ -48,6 +53,13 @@ public class MauiMediaElement : CoordinatorLayout
 		AddView(playerView);
 	}
 
+	/// <summary>
+	/// A method that raises the WindowsChanged event.
+	/// </summary>
+	protected virtual void OnWindowsChanged(WindowsEventArgs e)
+	{
+		WindowsChanged?.Invoke(null, e);
+	}
 	public override void OnDetachedFromWindow()
 	{
 		if (isFullScreen)
@@ -146,6 +158,7 @@ public class MauiMediaElement : CoordinatorLayout
 			item.Height = displayMetrics.HeightPixels;
 			layout?.AddView(playerView, item);
 			SetSystemBarsVisibility();
+			OnWindowsChanged(new Maui.Primitives.WindowsEventArgs(layout));
 		}
 		else
 		{
@@ -158,6 +171,7 @@ public class MauiMediaElement : CoordinatorLayout
 			layout?.RemoveView(playerView);
 			AddView(playerView, item);
 			SetSystemBarsVisibility();
+			OnWindowsChanged(new Maui.Primitives.WindowsEventArgs(layout));
 		}
 	}
 
