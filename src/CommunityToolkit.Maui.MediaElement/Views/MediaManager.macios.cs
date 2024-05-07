@@ -13,7 +13,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MediaManager : IDisposable
 {
 	SubtitleExtensions? subtitleExtensions;
-	CancellationTokenSource subTitles = new();
+	readonly CancellationTokenSource subTitles = new();
 	Task? startSubtitles;
 
 	// Media would still start playing when Speed was set although ShouldAutoPlay=False

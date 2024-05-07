@@ -1,4 +1,6 @@
 ﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Views;
+using CommunityToolkit.Maui.Primitives;
 using CoreFoundation;
 using CoreGraphics;
 using CoreMedia;
@@ -34,7 +36,7 @@ public partial class SubtitleExtensions : UIViewController
 		httpClient = new HttpClient();
 		subtitleLabel = new UILabel
 		{
-			Frame = CalculateSubtitleFrame(),
+			Frame = CalculateSubtitleFrame(playerViewController),
 			TextColor = UIColor.White,
 			TextAlignment = UITextAlignment.Center,
 			Font = UIFont.SystemFontOfSize(16),
@@ -42,7 +44,6 @@ public partial class SubtitleExtensions : UIViewController
 			Lines = 0,
 			AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleTopMargin | UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleBottomMargin
 		};
-		playerViewController.View.AddSubview(subtitleLabel);
 	}
 
 	/// <summary>
@@ -51,29 +52,23 @@ public partial class SubtitleExtensions : UIViewController
 	/// <param name="mediaElement"></param>
 	public async Task LoadSubtitles(IMediaElement mediaElement)
 	{
-		string vttContent = string.Empty;
+		string? vttContent;
 		try
 		{
-			vttContent = await httpClient.GetStringAsync(mediaElement.SubtitleUrl).ConfigureAwait(true) ?? string.Empty;
+			vttContent = await httpClient.GetStringAsync(mediaElement.SubtitleUrl);
 		}
 		catch (Exception ex)
 		{
 			System.Diagnostics.Trace.TraceError(ex.Message);
-		}
-
-		if (string.IsNullOrEmpty(vttContent))
-		{
-			System.Diagnostics.Trace.TraceError("VTT Subtitle Content is Empty");
 			return;
 		}
-		if (mediaElement.SubtitleUrl.EndsWith("srt"))
+
+		cues = mediaElement.SubtitleUrl switch
 		{
-			cues = SrtParser.ParseSrtContent(vttContent);
-		}
-		else if (mediaElement.SubtitleUrl.EndsWith("vtt"))
-		{
-			cues = VttParser.ParseVttContent(vttContent);
-		}
+			var url when url.EndsWith("srt") => SrtParser.ParseSrtContent(vttContent),
+			var url when url.EndsWith("vtt") => VttParser.ParseVttContent(vttContent),
+			_ => throw new NotSupportedException("Unsupported subtitle format"),
+		};
 	}
 
 	/// <summary>
@@ -81,19 +76,13 @@ public partial class SubtitleExtensions : UIViewController
 	/// </summary>
 	public void StartSubtitleDisplay()
 	{
-		ArgumentNullException.ThrowIfNull(player);
-		if(cues?.Count == 0)
-		{
-			return;
-		}
-		if (playerObserver is not null)
-		{
-			StopSubtitleDisplay();
-		}
-		playerObserver = player.AddPeriodicTimeObserver(CMTime.FromSeconds(1, 1), null, (time) =>
+		DispatchQueue.MainQueue.DispatchAsync(() => playerViewController.View?.AddSubview(subtitleLabel));
+		playerObserver = player?.AddPeriodicTimeObserver(CMTime.FromSeconds(1, 1), null, (time) =>
 		{
 			TimeSpan currentPlaybackTime = TimeSpan.FromSeconds(time.Seconds);
 			ArgumentNullException.ThrowIfNull(subtitleLabel);
+			subtitleLabel.Frame = CalculateSubtitleFrame(playerViewController);
+			playerViewController.View?.AddSubview(subtitleLabel);
 			DispatchQueue.MainQueue.DispatchAsync(() => UpdateSubtitle(currentPlaybackTime));
 		});
 	}
@@ -116,7 +105,6 @@ public partial class SubtitleExtensions : UIViewController
 	{
 		ArgumentNullException.ThrowIfNull(subtitleLabel);
 		ArgumentNullException.ThrowIfNull(playerViewController.View);
-		subtitleLabel.RemoveFromSuperview();
 		foreach (var cue in cues)
 		{
 			if (currentPlaybackTime >= cue.StartTime && currentPlaybackTime <= cue.EndTime)
@@ -131,13 +119,12 @@ public partial class SubtitleExtensions : UIViewController
 				subtitleLabel.BackgroundColor = UIColor.FromRGBA(0, 0, 0, 0);
 			}
 		}
-		subtitleLabel.Frame = CalculateSubtitleFrame();
-		playerViewController.View.AddSubview(subtitleLabel);
 	}
-	CGRect CalculateSubtitleFrame()
+
+	static CGRect CalculateSubtitleFrame(UIViewController uIViewController)
 	{
-		ArgumentNullException.ThrowIfNull(playerViewController?.View?.Bounds);
-		return new CGRect(0, playerViewController.View.Bounds.Height - 60, playerViewController.View.Bounds.Width, 50);
+		ArgumentNullException.ThrowIfNull(uIViewController?.View?.Bounds);
+		return new CGRect(0, uIViewController.View.Bounds.Height - 60, uIViewController.View.Bounds.Width, 50);
 	}
 	
 }
