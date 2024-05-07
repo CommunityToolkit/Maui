@@ -9,14 +9,15 @@ namespace CommunityToolkit.Maui.Extensions;
 /// </summary>
 public partial class SubtitleExtensions : Grid, IDisposable
 {
+	bool isFullScreen = false;
 	readonly HttpClient httpClient;
 	Microsoft.UI.Xaml.Controls.Grid? item;
 	System.Timers.Timer? timer;
 	List<SubtitleCue> cues;
 	bool disposedValue;
 	IMediaElement? mediaElement;
-	readonly Label textBlock;
 	Microsoft.UI.Xaml.Controls.TextBlock? xamlTextBlock;
+	MauiMediaElement? mauiMediaElement;
 
 	/// <summary>
 	/// The SubtitleExtensions class provides a way to display subtitles on a video player.
@@ -26,46 +27,45 @@ public partial class SubtitleExtensions : Grid, IDisposable
 		httpClient = new HttpClient();
 		cues = [];
 		MauiMediaElement.WindowsChanged += MauiMediaElement_WindowsChanged;
-		textBlock = new()
-		{
-			Text = string.Empty,
-			IsVisible = false,
-			HorizontalOptions = LayoutOptions.Center,
-			VerticalOptions = LayoutOptions.End,
-			TextColor = Microsoft.Maui.Graphics.Colors.White,
-			FontSize = 16,
-			LineBreakMode = LineBreakMode.WordWrap,
-		};
 	}
 	void MauiMediaElement_WindowsChanged(object? sender, WindowsEventArgs e)
 	{
 		System.Diagnostics.Trace.TraceInformation("Windows Changed");
-		if (mediaElement?.Parent is not Grid mediaElementParent || e.data is not Microsoft.UI.Xaml.Controls.Grid gridItem || string.IsNullOrEmpty(mediaElement.SubtitleUrl))
+		if (mauiMediaElement is null || e.data is not Microsoft.UI.Xaml.Controls.Grid gridItem || string.IsNullOrEmpty(mediaElement?.SubtitleUrl))
 		{
 			return;
 		}
 		this.item = gridItem;
-		if (mediaElementParent.Children.Contains(textBlock))
+
+		if (!isFullScreen)
 		{
-			Dispatcher.Dispatch(() => mediaElementParent.Children.Remove(textBlock));
+			if (mauiMediaElement.Children.Contains(xamlTextBlock))
+			{
+				Dispatcher.Dispatch(() => mauiMediaElement.Children.Remove(xamlTextBlock));
+			}
+			Dispatcher.Dispatch(() => item.Children.Add(xamlTextBlock));
+			isFullScreen = true;
 		}
-		if (item.Children.Contains(xamlTextBlock))
+		else
 		{
-			Dispatcher.Dispatch(() => item.Children.Remove(xamlTextBlock));
-			Dispatcher.Dispatch(() => mediaElementParent.Children.Add(textBlock));
-			xamlTextBlock = null;
-			return;
+			if (item.Children.Contains(xamlTextBlock))
+			{
+				Dispatcher.Dispatch(() => item.Children.Remove(xamlTextBlock));
+			}
+			Dispatcher.Dispatch(() => mauiMediaElement.Children.Add(xamlTextBlock));
+			isFullScreen = false;
 		}
-		Dispatcher.Dispatch(() => item.Children.Add(xamlTextBlock));
 	}
 
 	/// <summary>
 	/// Loads the subtitles from the provided URL.
 	/// </summary>
 	/// <param name="mediaElement"></param>
-	public async Task LoadSubtitles(IMediaElement mediaElement)
+	/// <param name="player"></param>
+	public async Task LoadSubtitles(IMediaElement mediaElement, Microsoft.UI.Xaml.Controls.MediaPlayerElement player)
 	{
 		this.mediaElement = mediaElement;
+		mauiMediaElement = player?.Parent as MauiMediaElement;
 		string? vttContent;
 		try
 		{
@@ -79,6 +79,7 @@ public partial class SubtitleExtensions : Grid, IDisposable
 		xamlTextBlock ??= new()
 		{
 			Text = string.Empty,
+			Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 10),
 			Visibility = Microsoft.UI.Xaml.Visibility.Collapsed,
 			HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
 			VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Bottom,
@@ -99,12 +100,7 @@ public partial class SubtitleExtensions : Grid, IDisposable
 	/// </summary>
 	public void StartSubtitleDisplay()
 	{
-		if(mediaElement?.Parent is not Grid parent)
-		{
-			return;
-		}
-		
-		Dispatcher.Dispatch(() => parent.Children.Add(textBlock));
+		Dispatcher.Dispatch(() => mauiMediaElement?.Children.Add(xamlTextBlock));
 		timer = new System.Timers.Timer(1000);
 		timer.Elapsed += Timer_Elapsed;
 		timer.Start();
@@ -124,10 +120,9 @@ public partial class SubtitleExtensions : Grid, IDisposable
 				if (xamlTextBlock is not null)
 				{
 					xamlTextBlock.Text = cue.Text;
+					System.Diagnostics.Trace.TraceInformation("Cue Text: {0}", cue.Text);
 					xamlTextBlock.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
 				}
-				textBlock.Text = cue.Text;
-				textBlock.IsVisible = true;
 			}
 			else
 			{
@@ -136,8 +131,6 @@ public partial class SubtitleExtensions : Grid, IDisposable
 					xamlTextBlock.Text = string.Empty;
 					xamlTextBlock.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
 				}
-				textBlock.Text = string.Empty;
-				textBlock.IsVisible = false;
 			}
 		});
 	}
@@ -153,11 +146,12 @@ public partial class SubtitleExtensions : Grid, IDisposable
 		}
 		timer.Stop();
 		timer.Elapsed -= Timer_Elapsed;
-		if (mediaElement?.Parent is not Grid parent)
+		if(mauiMediaElement is null)
 		{
 			return;
 		}
-		Dispatcher.Dispatch(() => parent.Children.Remove(textBlock));
+		Dispatcher.Dispatch(() => mauiMediaElement.Children.Remove(xamlTextBlock));
+		System.Diagnostics.Trace.TraceInformation("Removed text block from player parent");
 	}
 
 	/// <summary>

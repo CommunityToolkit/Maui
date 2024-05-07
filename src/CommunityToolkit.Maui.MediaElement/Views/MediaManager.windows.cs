@@ -295,11 +295,12 @@ partial class MediaManager : IDisposable
 	async Task LoadSubtitles(CancellationToken cancellationToken = default)
 	{
 		subtitleExtensions?.StopSubtitleDisplay();
-		if (subtitleExtensions is null || string.IsNullOrEmpty(MediaElement.SubtitleUrl))
+		if (subtitleExtensions is null || string.IsNullOrEmpty(MediaElement.SubtitleUrl) || Player is null)
 		{
+			System.Diagnostics.Trace.TraceError("SubtitleExtensions is null or SubtitleUrl is null or Player is null");
 			return;
 		}
-		await subtitleExtensions.LoadSubtitles(MediaElement).WaitAsync(cancellationToken).ConfigureAwait(false);
+		await subtitleExtensions.LoadSubtitles(MediaElement, Player).WaitAsync(cancellationToken).ConfigureAwait(false);
 		subtitleExtensions.StartSubtitleDisplay();
 	}
 	protected virtual partial void PlatformUpdateShouldLoopPlayback()
