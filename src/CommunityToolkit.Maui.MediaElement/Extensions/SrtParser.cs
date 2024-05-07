@@ -31,7 +31,7 @@ public static partial class SrtParser
 			var match = timecodePattern.Match(line);
 			if (match.Success)
 			{
-				if (currentCue != null)
+				if (currentCue is not null)
 				{
 					cues.Add(currentCue);
 				}
