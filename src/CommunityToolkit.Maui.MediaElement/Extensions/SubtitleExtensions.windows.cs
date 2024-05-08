@@ -109,6 +109,7 @@ public partial class SubtitleExtensions : Grid, IDisposable
 		{
 			if (cue is not null)
 			{
+				xamlTextBlock.FontSize = isFullScreen ? 24 : 16;
 				xamlTextBlock.Text = cue.Text;
 				xamlTextBlock.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
 			}
