@@ -82,7 +82,6 @@ public partial class SubtitleExtensions : UIViewController
 			TimeSpan currentPlaybackTime = TimeSpan.FromSeconds(time.Seconds);
 			ArgumentNullException.ThrowIfNull(subtitleLabel);
 			subtitleLabel.Frame = CalculateSubtitleFrame(playerViewController);
-			playerViewController.View?.AddSubview(subtitleLabel);
 			DispatchQueue.MainQueue.DispatchAsync(() => UpdateSubtitle(currentPlaybackTime));
 		});
 	}
