@@ -225,7 +225,7 @@ public partial class MediaManager : IDisposable
 		else if (MediaElement.Source is ResourceMediaSource resourceMediaSource)
 		{
 			var path = resourceMediaSource.Path;
-		
+
 			if (!string.IsNullOrWhiteSpace(path) && Path.HasExtension(path))
 			{
 				string directory = Path.GetDirectoryName(path) ?? "";
@@ -235,6 +235,10 @@ public partial class MediaManager : IDisposable
 					extension, directory);
 
 				asset = AVAsset.FromUrl(url);
+			}
+			else
+			{
+				Logger.LogWarning("Invalid file path for ResourceMediaSource.");
 			}
 		}
 
