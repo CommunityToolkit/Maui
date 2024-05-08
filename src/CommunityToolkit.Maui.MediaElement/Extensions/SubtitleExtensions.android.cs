@@ -13,18 +13,22 @@ namespace CommunityToolkit.Maui.Extensions;
 /// </summary>
 public partial class SubtitleExtensions : CoordinatorLayout
 {
-	readonly HttpClient httpClient;
-	System.Timers.Timer? timer;
-	List<SubtitleCue> cues;
 	bool disposedValue;
 	bool isFullScreen = false;
-	IMediaElement? mediaElement;
-	TextView? textBlock;
+	
+	readonly HttpClient httpClient;
+	readonly TextView textBlock;
 	readonly StyledPlayerView styledPlayerView;
 	readonly IDispatcher dispatcher;
+
+	System.Timers.Timer? timer;
+	List<SubtitleCue> cues;
+	
+	IMediaElement? mediaElement;
+	
 	RelativeLayout? relativeLayout;
 	RelativeLayout? fullScreenLayout;
-
+	
 	/// <summary>
 	/// The SubtitleExtensions class provides a way to display subtitles on a video player.
 	/// </summary>
@@ -36,6 +40,19 @@ public partial class SubtitleExtensions : CoordinatorLayout
 		this.dispatcher = dispatcher;
 		this.styledPlayerView = styledPlayerView;
 		cues = [];
+		textBlock = new(Platform.AppContext)
+		{
+			Text = string.Empty,
+			HorizontalScrollBarEnabled = false,
+			VerticalScrollBarEnabled = false,
+			TextSize = 16,
+			TextAlignment = Android.Views.TextAlignment.Center,
+			Visibility = Android.Views.ViewStates.Gone,
+		};
+		textBlock.SetBackgroundColor(Android.Graphics.Color.Argb(150, 0, 0, 0));
+		textBlock.SetPadding(10, 10, 10, 10);
+		textBlock.SetTextColor(Android.Graphics.Color.White);
+
 		MauiMediaElement.WindowsChanged += MauiMediaElement_WindowsChanged;
 	}
 
@@ -45,40 +62,36 @@ public partial class SubtitleExtensions : CoordinatorLayout
 		{
 			return;
 		}
-		if(isFullScreen)
+		if (isFullScreen)
 		{
 			relativeLayout = new(Platform.AppContext)
 			{
 				LayoutParameters = new CoordinatorLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent)
 				{
-					Gravity = (int)GravityFlags.Bottom
+					Gravity = (int)GravityFlags.Bottom,
+					BottomMargin = 10,
 				}
 			};
-			dispatcher.Dispatch(() =>
-			{
-				viewGroup.RemoveView(fullScreenLayout);
-				fullScreenLayout?.RemoveView(textBlock);
-				relativeLayout?.AddView(textBlock);
-				parent.AddView(relativeLayout);
-			});
+			viewGroup.RemoveView(fullScreenLayout);
+			fullScreenLayout?.RemoveView(textBlock);
+			relativeLayout.AddView(textBlock);
+			parent.AddView(relativeLayout);
 			isFullScreen = false;
 			return;
 		}
-
-		dispatcher.Dispatch(() =>
+		parent.RemoveView(relativeLayout);
+		relativeLayout?.RemoveView(textBlock);
+		fullScreenLayout = new(Platform.AppContext)
 		{
-			parent.RemoveView(relativeLayout);
-			relativeLayout?.RemoveView(textBlock);
-			fullScreenLayout = new(Platform.AppContext)
+			LayoutParameters = new CoordinatorLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent)
 			{
-				LayoutParameters = new CoordinatorLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent)
-				{
-					Gravity = (int)GravityFlags.Bottom
-				}
-			};
-			fullScreenLayout.AddView(textBlock);
-			viewGroup.AddView(fullScreenLayout);
-		});
+				Gravity = (int)GravityFlags.Bottom,
+				BottomMargin = 10,
+			}
+		};
+		fullScreenLayout.AddView(textBlock);
+
+		viewGroup.AddView(fullScreenLayout);
 		isFullScreen = true;
 	}
 
@@ -112,28 +125,16 @@ public partial class SubtitleExtensions : CoordinatorLayout
 	/// </summary>
 	public void StartSubtitleDisplay()
 	{
-		textBlock = new(Platform.AppContext)
-		{
-			Text = string.Empty,
-			HorizontalScrollBarEnabled = false,
-			VerticalScrollBarEnabled = false,
-			TextSize = 16,
-			TextAlignment = Android.Views.TextAlignment.Center,
-			Visibility = Android.Views.ViewStates.Gone,
-		};
-
-		textBlock.SetBackgroundColor(Android.Graphics.Color.Argb(150, 0, 0, 0));
-		textBlock.SetPadding(10, 10, 10, 10);
-		textBlock.SetTextColor(Android.Graphics.Color.White);
-		if (styledPlayerView.Parent is not ViewGroup parent)
+		if(textBlock is null || styledPlayerView.Parent is not ViewGroup parent)
 		{
 			return;
 		}
-		relativeLayout = new(Platform.AppContext)
+		relativeLayout = new RelativeLayout(Platform.AppContext)
 		{
 			LayoutParameters = new CoordinatorLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent)
 			{
-				Gravity = (int)GravityFlags.Bottom
+				Gravity = (int)GravityFlags.Bottom,
+				BottomMargin = 10,
 			}
 		};
 		relativeLayout.AddView(textBlock);
@@ -183,6 +184,7 @@ public partial class SubtitleExtensions : CoordinatorLayout
 				relativeLayout?.RemoveView(textBlock);
 			});
 		}
+		textBlock.Text = string.Empty;
 		timer.Stop();
 		timer.Elapsed -= Timer_Elapsed;
 	}
