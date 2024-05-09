@@ -121,6 +121,17 @@ public class MauiMediaElement : Grid, IDisposable
 			return;
 		}
 
+		switch (appWindow.Presenter.Kind)
+		{
+			case AppWindowPresenterKind.FullScreen:
+				fullScreenButton.Click -= OnFullScreenButtonClick;
+				break;
+			case AppWindowPresenterKind.Default:
+				exitFullScreenButton.Click -= OnFullScreenButtonClick;
+				break;
+		}
+		mediaPlayerElement.PointerMoved -= OnMediaPlayerElementPointerMoved;
+		
 		if (disposing)
 		{
 			mediaPlayerElement.MediaPlayer.Dispose();
