@@ -88,6 +88,7 @@ public class MediaElement : View, IMediaElement, IDisposable
 	/// Backing store for the <see cref="SubtitleUrl"/> property.
 	/// </summary>
 	public static readonly BindableProperty SubtitleProperty = BindableProperty.Create(nameof(SubtitleUrl), typeof(string), typeof(MediaElement), string.Empty);
+
 	/// <summary>
 	/// Backing store for the <see cref="Speed"/> property.
 	/// </summary>
