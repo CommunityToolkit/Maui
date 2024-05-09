@@ -35,7 +35,6 @@ public partial class SubtitleExtensions : Grid, IDisposable
 			HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
 			VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Bottom,
 			Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.White),
-			FontSize = 16,
 			TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap,
 		};
 	}
@@ -109,7 +108,8 @@ public partial class SubtitleExtensions : Grid, IDisposable
 		{
 			if (cue is not null)
 			{
-				xamlTextBlock.FontSize = isFullScreen ? 24 : 16;
+				xamlTextBlock.FontFamily = !string.IsNullOrEmpty(mediaElement.SubtitleFont) ? new Microsoft.UI.Xaml.Media.FontFamily(mediaElement.SubtitleFont) : default;
+				xamlTextBlock.FontSize = isFullScreen ? (mediaElement.SubtitleFontSize + 8.0) : mediaElement.SubtitleFontSize;
 				xamlTextBlock.Text = cue.Text;
 				xamlTextBlock.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
 			}

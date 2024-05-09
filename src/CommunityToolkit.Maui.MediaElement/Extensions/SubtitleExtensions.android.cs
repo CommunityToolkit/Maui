@@ -45,7 +45,6 @@ public partial class SubtitleExtensions : CoordinatorLayout
 			Text = string.Empty,
 			HorizontalScrollBarEnabled = false,
 			VerticalScrollBarEnabled = false,
-			TextSize = 16,
 			TextAlignment = Android.Views.TextAlignment.Center,
 			Visibility = Android.Views.ViewStates.Gone,
 		};
@@ -156,7 +155,9 @@ public partial class SubtitleExtensions : CoordinatorLayout
 		{
 			if (cue is not null)
 			{
+				textBlock.FontFeatureSettings = !string.IsNullOrEmpty(mediaElement.SubtitleFont) ? mediaElement.SubtitleFont : default;
 				textBlock.Text = cue.Text;
+				textBlock.TextSize = (float)mediaElement.SubtitleFontSize;
 				textBlock.Visibility = Android.Views.ViewStates.Visible;
 			}
 			else

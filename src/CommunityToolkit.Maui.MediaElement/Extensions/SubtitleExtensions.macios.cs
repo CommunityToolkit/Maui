@@ -1,6 +1,4 @@
 ﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Views;
-using CommunityToolkit.Maui.Primitives;
 using CoreFoundation;
 using CoreGraphics;
 using CoreMedia;
@@ -20,6 +18,7 @@ public partial class SubtitleExtensions : UIViewController
 	readonly UILabel subtitleLabel;
 	List<SubtitleCue> cues;
 	NSObject? playerObserver;
+	IMediaElement? mediaElement;
 
 	/// <summary>
 	/// The SubtitleExtensions class provides a way to display subtitles on a video player.
@@ -52,6 +51,7 @@ public partial class SubtitleExtensions : UIViewController
 	/// <param name="mediaElement"></param>
 	public async Task LoadSubtitles(IMediaElement mediaElement)
 	{
+		this.mediaElement = mediaElement;
 		string? vttContent;
 		try
 		{
@@ -104,11 +104,13 @@ public partial class SubtitleExtensions : UIViewController
 	{
 		ArgumentNullException.ThrowIfNull(subtitleLabel);
 		ArgumentNullException.ThrowIfNull(playerViewController.View);
+		ArgumentNullException.ThrowIfNull(mediaElement);
 		foreach (var cue in cues)
 		{
 			if (currentPlaybackTime >= cue.StartTime && currentPlaybackTime <= cue.EndTime)
 			{
 				subtitleLabel.Text = cue.Text;
+				subtitleLabel.Font = !string.IsNullOrEmpty(mediaElement.SubtitleFont) ? UIFont.FromName(mediaElement.SubtitleFont, (int)mediaElement.SubtitleFontSize) : UIFont.SystemFontOfSize((int)mediaElement.SubtitleFontSize);
 				subtitleLabel.BackgroundColor = UIColor.FromRGBA(0, 0, 0, 128);
 				break;
 			}

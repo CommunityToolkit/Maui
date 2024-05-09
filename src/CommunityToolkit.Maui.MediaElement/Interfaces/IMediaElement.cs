@@ -69,6 +69,15 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	bool ShouldShowPlaybackControls { get; set; }
 
 	/// <summary>
+	/// Gets or sets the font to use for the subtitle text.
+	/// </summary>
+	string SubtitleFont { get; set; }
+	/// <summary>
+	/// Gets or sets the URL of the subtitle file to display.
+	/// </summary>
+	string SubtitleUrl { get; set; }
+
+	/// <summary>
 	/// Gets or sets the source of the media to play.
 	/// </summary>
 	MediaSource? Source { get; set; }
@@ -81,15 +90,14 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	double Speed { get; set; }
 
 	/// <summary>
+	/// Gets or sets the font size of the subtitle text.
+	/// </summary>
+	double SubtitleFontSize { get; set; }
+	/// <summary>
 	/// Gets or sets the volume of the audio for the media.
 	/// </summary>
 	/// <remarks>A value of 1 means full volume, 0 is silence.</remarks>
 	double Volume { get; set; }
-
-	/// <summary>
-	/// Gets or sets the URL of the subtitle file to display.
-	/// </summary>
-	string SubtitleUrl { get; set; }
 
 	/// <summary>
 	/// Occurs when <see cref="CurrentState"/> changed.
