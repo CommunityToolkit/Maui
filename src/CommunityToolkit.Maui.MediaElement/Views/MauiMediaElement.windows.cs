@@ -32,7 +32,8 @@ public class MauiMediaElement : Grid, IDisposable
 	readonly Button fullScreenButton;
 	readonly Button exitFullScreenButton;
 	readonly MediaPlayerElement mediaPlayerElement;
-
+	static readonly FontIcon fullScreenIcon = new() { Glyph = "\uE740", FontFamily = new FontFamily("Segoe Fluent Icons")};
+	static readonly FontIcon exitFullScreenIcon = new() { Glyph = "\uE73F", FontFamily = new FontFamily("Segoe Fluent Icons") };
 	bool doesNavigationBarExistBeforeFullScreen;
 	bool isDisposed;
 
@@ -43,17 +44,6 @@ public class MauiMediaElement : Grid, IDisposable
     public MauiMediaElement(MediaPlayerElement mediaPlayerElement)
     {
         this.mediaPlayerElement = mediaPlayerElement;
-
-        var fullScreenIcon = new FontIcon
-        {
-            Glyph = "\uE740",
-            FontFamily = new FontFamily("Segoe Fluent Icons")
-        };
-        var exitFullScreenIcon = new FontIcon
-        {
-            Glyph = "\uE73F",
-            FontFamily = new FontFamily("Segoe Fluent Icons")
-        };
 
         fullScreenButton = new Button
         {
