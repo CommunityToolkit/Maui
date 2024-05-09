@@ -1,4 +1,6 @@
 ﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Views;
+using CommunityToolkit.Maui.Primitives;
 using CoreFoundation;
 using CoreGraphics;
 using CoreMedia;
@@ -14,11 +16,13 @@ public partial class SubtitleExtensions : UIViewController
 {
 	readonly HttpClient httpClient;
 	readonly UIViewController playerViewController;
-	readonly PlatformMediaElement? player;
-	readonly UILabel subtitleLabel;
+	readonly PlatformMediaElement player;
+	UILabel? subtitleLabel;
 	List<SubtitleCue> cues;
 	NSObject? playerObserver;
 	IMediaElement? mediaElement;
+	UIViewController? viewController;
+	UIFont? font;
 
 	/// <summary>
 	/// The SubtitleExtensions class provides a way to display subtitles on a video player.
@@ -31,6 +35,7 @@ public partial class SubtitleExtensions : UIViewController
 		ArgumentNullException.ThrowIfNull(playerViewController?.View?.Bounds);
 		this.playerViewController = playerViewController;
 		this.player = player;
+		MediaManagerDelegate.WindowsChanged += MauiMediaElement_WindowsChanged;
 		cues = [];
 		httpClient = new HttpClient();
 		subtitleLabel = new UILabel
@@ -45,13 +50,47 @@ public partial class SubtitleExtensions : UIViewController
 		};
 	}
 
+	void MauiMediaElement_WindowsChanged(object? sender, WindowsEventArgs e)
+	{
+		ArgumentNullException.ThrowIfNull(font);
+		if (string.IsNullOrEmpty(mediaElement?.SubtitleUrl) || e.data is null)
+		{
+			return;
+		}
+		subtitleLabel = new UILabel
+		{
+			TextColor = UIColor.White,
+			TextAlignment = UITextAlignment.Center,
+			Font = font,
+			Text = "",
+			Lines = 0,
+			AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleTopMargin | UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleBottomMargin
+		};
+		switch (e.data.Equals(true))
+		{
+			case true:
+				viewController = WindowStateManager.Default.GetCurrentUIViewController();
+				ArgumentNullException.ThrowIfNull(viewController?.View);
+				subtitleLabel.Frame = CalculateSubtitleFrame(viewController);
+				viewController.View.AddSubview(subtitleLabel);
+				break;
+			case false:
+				subtitleLabel.Frame = CalculateSubtitleFrame(playerViewController);
+				viewController = null;
+				break;
+		}
+	}
+
 	/// <summary>
 	/// Loads the subtitles from the provided URL.
 	/// </summary>
 	/// <param name="mediaElement"></param>
 	public async Task LoadSubtitles(IMediaElement mediaElement)
 	{
+		ArgumentNullException.ThrowIfNull(subtitleLabel);
 		this.mediaElement = mediaElement;
+		font = UIFont.FromName(mediaElement.SubtitleFont, (float)mediaElement.SubtitleFontSize) ?? UIFont.SystemFontOfSize((float)mediaElement.SubtitleFontSize);
+		subtitleLabel.Font = font;
 		string? vttContent;
 		try
 		{
@@ -76,12 +115,20 @@ public partial class SubtitleExtensions : UIViewController
 	/// </summary>
 	public void StartSubtitleDisplay()
 	{
-		DispatchQueue.MainQueue.DispatchAsync(() => playerViewController.View?.AddSubview(subtitleLabel));
+		ArgumentNullException.ThrowIfNull(subtitleLabel);
 		playerObserver = player?.AddPeriodicTimeObserver(CMTime.FromSeconds(1, 1), null, (time) =>
 		{
 			TimeSpan currentPlaybackTime = TimeSpan.FromSeconds(time.Seconds);
-			ArgumentNullException.ThrowIfNull(subtitleLabel);
-			subtitleLabel.Frame = CalculateSubtitleFrame(playerViewController);
+			if (viewController is not null)
+			{
+				DispatchQueue.MainQueue.DispatchAsync(() => viewController?.View?.AddSubview(subtitleLabel));
+				subtitleLabel.Frame = CalculateSubtitleFrame(viewController);
+			}
+			else
+			{
+				DispatchQueue.MainQueue.DispatchAsync(() => playerViewController.View?.AddSubview(subtitleLabel));
+				subtitleLabel.Frame = CalculateSubtitleFrame(playerViewController);
+			}
 			DispatchQueue.MainQueue.DispatchAsync(() => UpdateSubtitle(currentPlaybackTime));
 		});
 	}
@@ -92,6 +139,7 @@ public partial class SubtitleExtensions : UIViewController
 	public void StopSubtitleDisplay()
 	{
 		ArgumentNullException.ThrowIfNull(player);
+		ArgumentNullException.ThrowIfNull(subtitleLabel);
 		if (playerObserver is not null)
 		{
 			player.RemoveTimeObserver(playerObserver);
@@ -103,14 +151,11 @@ public partial class SubtitleExtensions : UIViewController
 	void UpdateSubtitle(TimeSpan currentPlaybackTime)
 	{
 		ArgumentNullException.ThrowIfNull(subtitleLabel);
-		ArgumentNullException.ThrowIfNull(playerViewController.View);
-		ArgumentNullException.ThrowIfNull(mediaElement);
 		foreach (var cue in cues)
 		{
 			if (currentPlaybackTime >= cue.StartTime && currentPlaybackTime <= cue.EndTime)
 			{
 				subtitleLabel.Text = cue.Text;
-				subtitleLabel.Font = !string.IsNullOrEmpty(mediaElement.SubtitleFont) ? UIFont.FromName(mediaElement.SubtitleFont, (int)mediaElement.SubtitleFontSize) : UIFont.SystemFontOfSize((int)mediaElement.SubtitleFontSize);
 				subtitleLabel.BackgroundColor = UIColor.FromRGBA(0, 0, 0, 128);
 				break;
 			}
