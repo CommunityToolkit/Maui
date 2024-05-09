@@ -38,58 +38,56 @@ public class MauiMediaElement : Grid, IDisposable
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
-	/// </summary>
-	/// <param name="mediaPlayerElement"></param>
-	public MauiMediaElement(MediaPlayerElement mediaPlayerElement)
-	{
-		this.mediaPlayerElement = mediaPlayerElement;
+    /// </summary>
+    /// <param name="mediaPlayerElement"></param>
+    public MauiMediaElement(MediaPlayerElement mediaPlayerElement)
+    {
+        this.mediaPlayerElement = mediaPlayerElement;
 
-		var fullScreenIcon = new FontIcon
-		{
-			Glyph = "\uE740",
-			Foreground = new SolidColorBrush(Colors.White),
-			FontFamily = new FontFamily("Segoe MDL2 Assets")
-		};
-		var exitFullScreenIcon = new FontIcon
-		{
-			Glyph = "\uE73F",
-			Foreground = new SolidColorBrush(Colors.White),
-			FontFamily = new FontFamily("Segoe MDL2 Assets")
-		};
+        var fullScreenIcon = new FontIcon
+        {
+            Glyph = "\uE740",
+            FontFamily = new FontFamily("Segoe Fluent Icons")
+        };
+        var exitFullScreenIcon = new FontIcon
+        {
+            Glyph = "\uE73F",
+            FontFamily = new FontFamily("Segoe Fluent Icons")
+        };
 
-		fullScreenButton = new Button
-		{
-			Content = fullScreenIcon,
-			Background = new SolidColorBrush(Colors.Transparent),
-			Width = 45,
-			Height = 45
-		};
-		exitFullScreenButton = new Button
-		{
-			Content = exitFullScreenIcon,
-			Background = new SolidColorBrush(Colors.Transparent),
-			Width = 45,
-			Height = 45
-		};
+        fullScreenButton = new Button
+        {
+            Content = fullScreenIcon,
+            Background = new SolidColorBrush(Colors.Transparent),
+            Width = 45,
+            Height = 45
+        };
+        exitFullScreenButton = new Button
+        {
+            Content = exitFullScreenIcon,
+            Background = new SolidColorBrush(Colors.Transparent),
+            Width = 45,
+            Height = 45
+        };
 
-		buttonContainer = new Grid
-		{
-			HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Right,
-			VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top,
-			Visibility = mediaPlayerElement.TransportControls.Visibility,
-			Width = 45,
-			Height = 45,
-			Margin = new Thickness(0, 20, 30, 0)
-		};
+        buttonContainer = new Grid
+        {
+            HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Right,
+            VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top,
+            Visibility = mediaPlayerElement.TransportControls.Visibility,
+            Width = 45,
+            Height = 45,
+            Margin = new Thickness(0, 20, 30, 0)
+        };
 
-		fullScreenButton.Click += OnFullScreenButtonClick;
-		buttonContainer.Children.Add(fullScreenButton);
+        fullScreenButton.Click += OnFullScreenButtonClick;
+        buttonContainer.Children.Add(fullScreenButton);
 
-		Children.Add(this.mediaPlayerElement);
-		Children.Add(buttonContainer);
+        Children.Add(this.mediaPlayerElement);
+        Children.Add(buttonContainer);
 
-		mediaPlayerElement.PointerMoved += OnMediaPlayerElementPointerMoved;
-	}
+        mediaPlayerElement.PointerMoved += OnMediaPlayerElementPointerMoved;
+    }
 
 	/// <summary>
 	/// Finalizer
