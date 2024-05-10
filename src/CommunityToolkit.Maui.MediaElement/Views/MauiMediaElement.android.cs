@@ -52,7 +52,6 @@ public class MauiMediaElement : CoordinatorLayout
 		{
 			LayoutParameters = layout,
 		};
-		relativeLayout.LayoutParameters = layout;
 		relativeLayout.AddView(playerView);
 
 		AddView(relativeLayout);
