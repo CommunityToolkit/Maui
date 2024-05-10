@@ -44,15 +44,17 @@ public class MauiMediaElement : CoordinatorLayout
 		playerView.FullscreenButtonClick += OnFullscreenButtonClick;
 		this.playerView.SetBackgroundColor(Android.Graphics.Color.Black);
 
-		relativeLayout = new(context)
+		var layout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
+		layout.AddRule(LayoutRules.CenterInParent);
+		layout.AddRule(LayoutRules.CenterVertical);
+		layout.AddRule(LayoutRules.CenterHorizontal);
+		relativeLayout = new RelativeLayout(Platform.AppContext)
 		{
-			LayoutParameters = new CoordinatorLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent)
-			{
-				Gravity = (int)GravityFlags.Center
-			}
+			LayoutParameters = layout,
 		};
-
+		relativeLayout.LayoutParameters = layout;
 		relativeLayout.AddView(playerView);
+
 		AddView(relativeLayout);
 	}
 	public override void OnDetachedFromWindow()
@@ -136,26 +138,22 @@ public class MauiMediaElement : CoordinatorLayout
 		}
 
 		var (_, currentWindow, _, _) = VerifyAndRetrieveCurrentWindowResources();
-
-		// Hide the SystemBars and Status bar
+		var layout = currentWindow?.DecorView as ViewGroup;
+		
 		if (e.IsFullScreen)
 		{
 			isFullScreen = true;
-			var layout = currentWindow?.DecorView as ViewGroup;
 			RemoveView(relativeLayout);
-			relativeLayout.RemoveView(playerView);
-			layout?.AddView(playerView);
-			SetSystemBarsVisibility();
+			layout?.AddView(relativeLayout);
 		}
 		else
 		{
 			isFullScreen = false;
-			var layout = currentWindow?.DecorView as ViewGroup;
-			layout?.RemoveView(playerView);
-			relativeLayout.AddView(playerView);
+			layout?.RemoveView(relativeLayout);
 			AddView(relativeLayout);
-			SetSystemBarsVisibility();
 		}
+		// Hide/Show the SystemBars and Status bar
+		SetSystemBarsVisibility();
 	}
 
 	void SetSystemBarsVisibility()
