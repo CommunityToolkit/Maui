@@ -21,8 +21,7 @@ public class MauiMediaElement : CoordinatorLayout
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
 	bool isFullScreen;
-	int playerHeight;
-	int playerWidth;
+	readonly RelativeLayout relativeLayout;
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 #pragma warning disable IDE0060 // Remove unused parameter
@@ -45,9 +44,17 @@ public class MauiMediaElement : CoordinatorLayout
 		playerView.FullscreenButtonClick += OnFullscreenButtonClick;
 		this.playerView.SetBackgroundColor(Android.Graphics.Color.Black);
 
-		AddView(playerView);
-	}
+		relativeLayout = new(context)
+		{
+			LayoutParameters = new CoordinatorLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent)
+			{
+				Gravity = (int)GravityFlags.Center
+			}
+		};
 
+		relativeLayout.AddView(playerView);
+		AddView(relativeLayout);
+	}
 	public override void OnDetachedFromWindow()
 	{
 		if (isFullScreen)
@@ -134,29 +141,19 @@ public class MauiMediaElement : CoordinatorLayout
 		if (e.IsFullScreen)
 		{
 			isFullScreen = true;
-			playerHeight = playerView.Height;
-			playerWidth = playerView.Width;
-			DisplayMetrics displayMetrics = new DisplayMetrics();
-			currentWindow?.WindowManager?.DefaultDisplay?.GetMetrics(displayMetrics);
 			var layout = currentWindow?.DecorView as ViewGroup;
-
-			RemoveView(playerView);
-			RelativeLayout.LayoutParams item = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
-			item.Width = displayMetrics.WidthPixels;
-			item.Height = displayMetrics.HeightPixels;
-			layout?.AddView(playerView, item);
+			RemoveView(relativeLayout);
+			relativeLayout.RemoveView(playerView);
+			layout?.AddView(playerView);
 			SetSystemBarsVisibility();
 		}
 		else
 		{
 			isFullScreen = false;
 			var layout = currentWindow?.DecorView as ViewGroup;
-			RelativeLayout.LayoutParams item = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
-			item.Width = playerWidth;
-			item.Height = playerHeight;
-
 			layout?.RemoveView(playerView);
-			AddView(playerView, item);
+			relativeLayout.AddView(playerView);
+			AddView(relativeLayout);
 			SetSystemBarsVisibility();
 		}
 	}
