@@ -1,4 +1,5 @@
-﻿using Android.Content;
+﻿// Works if PR# 1873 merged
+using Android.Content;
 using Android.Views;
 using Android.Widget;
 using AndroidX.CoordinatorLayout.Widget;
@@ -17,18 +18,15 @@ public partial class SubtitleExtensions : CoordinatorLayout
 	bool isFullScreen = false;
 	
 	readonly HttpClient httpClient;
-	readonly TextView textBlock;
-	readonly StyledPlayerView styledPlayerView;
 	readonly IDispatcher dispatcher;
+	readonly RelativeLayout.LayoutParams? textBlockLayout;
+	readonly StyledPlayerView styledPlayerView;
+	readonly TextView textBlock;
 
-	System.Timers.Timer? timer;
-	List<SubtitleCue> cues;
-	
 	IMediaElement? mediaElement;
-	
-	RelativeLayout? relativeLayout;
-	RelativeLayout? fullScreenLayout;
-	
+	List<SubtitleCue> cues;
+	System.Timers.Timer? timer;
+
 	/// <summary>
 	/// The SubtitleExtensions class provides a way to display subtitles on a video player.
 	/// </summary>
@@ -40,6 +38,10 @@ public partial class SubtitleExtensions : CoordinatorLayout
 		this.dispatcher = dispatcher;
 		this.styledPlayerView = styledPlayerView;
 		cues = [];
+		
+		textBlockLayout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
+		textBlockLayout.AddRule(LayoutRules.AlignParentBottom);
+		textBlockLayout.AddRule(LayoutRules.CenterHorizontal);
 		textBlock = new(Platform.AppContext)
 		{
 			Text = string.Empty,
@@ -47,11 +49,12 @@ public partial class SubtitleExtensions : CoordinatorLayout
 			VerticalScrollBarEnabled = false,
 			TextAlignment = Android.Views.TextAlignment.Center,
 			Visibility = Android.Views.ViewStates.Gone,
+			LayoutParameters = textBlockLayout
 		};
 		textBlock.SetBackgroundColor(Android.Graphics.Color.Argb(150, 0, 0, 0));
 		textBlock.SetPadding(10, 10, 10, 10);
 		textBlock.SetTextColor(Android.Graphics.Color.White);
-
+		
 		MauiMediaElement.WindowsChanged += MauiMediaElement_WindowsChanged;
 	}
 
@@ -61,39 +64,21 @@ public partial class SubtitleExtensions : CoordinatorLayout
 		{
 			return;
 		}
-		if (isFullScreen)
+		switch(isFullScreen)
 		{
-			relativeLayout = new(Platform.AppContext)
-			{
-				LayoutParameters = new CoordinatorLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent)
-				{
-					Gravity = (int)GravityFlags.Bottom,
-					BottomMargin = 10,
-				}
-			};
-			viewGroup.RemoveView(fullScreenLayout);
-			fullScreenLayout?.RemoveView(textBlock);
-			relativeLayout.AddView(textBlock);
-			parent.AddView(relativeLayout);
-			isFullScreen = false;
-			return;
+			case true:
+				viewGroup.RemoveView(textBlock);
+				parent.AddView(textBlock);
+				isFullScreen = false;
+				break;
+			case false:
+				parent.RemoveView(textBlock);
+				viewGroup.AddView(textBlock);
+				isFullScreen = true;
+				break;
 		}
-		parent.RemoveView(relativeLayout);
-		relativeLayout?.RemoveView(textBlock);
-		fullScreenLayout = new(Platform.AppContext)
-		{
-			LayoutParameters = new CoordinatorLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent)
-			{
-				Gravity = (int)GravityFlags.Bottom,
-				BottomMargin = 10,
-			}
-		};
-		fullScreenLayout.AddView(textBlock);
-
-		viewGroup.AddView(fullScreenLayout);
-		isFullScreen = true;
 	}
-
+	
 	/// <summary>
 	/// Loads the subtitles from the provided URL.
 	/// </summary>
@@ -128,16 +113,7 @@ public partial class SubtitleExtensions : CoordinatorLayout
 		{
 			return;
 		}
-		relativeLayout = new RelativeLayout(Platform.AppContext)
-		{
-			LayoutParameters = new CoordinatorLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent)
-			{
-				Gravity = (int)GravityFlags.Bottom,
-				BottomMargin = 10,
-			}
-		};
-		relativeLayout.AddView(textBlock);
-		dispatcher.Dispatch(() => parent.AddView(relativeLayout));
+		dispatcher.Dispatch(() => parent.AddView(textBlock));
 		timer = new System.Timers.Timer(1000);
 		timer.Elapsed += Timer_Elapsed;
 		timer.Start();
@@ -181,8 +157,7 @@ public partial class SubtitleExtensions : CoordinatorLayout
 		{
 			dispatcher.Dispatch(() =>
 			{
-				parent.RemoveView(relativeLayout);
-				relativeLayout?.RemoveView(textBlock);
+				parent.RemoveView(textBlock);
 			});
 		}
 		textBlock.Text = string.Empty;
