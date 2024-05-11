@@ -38,7 +38,7 @@ public partial class SubtitleExtensions : CoordinatorLayout
 		this.dispatcher = dispatcher;
 		this.styledPlayerView = styledPlayerView;
 		cues = [];
-		
+
 		textBlockLayout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
 		textBlockLayout.AddRule(LayoutRules.AlignParentBottom);
 		textBlockLayout.AddRule(LayoutRules.CenterHorizontal);
@@ -52,7 +52,7 @@ public partial class SubtitleExtensions : CoordinatorLayout
 			LayoutParameters = textBlockLayout
 		};
 		textBlock.SetBackgroundColor(Android.Graphics.Color.Argb(150, 0, 0, 0));
-		textBlock.SetPadding(10, 10, 10, 10);
+		textBlock.SetPaddingRelative(10, 10, 10, 10);
 		textBlock.SetTextColor(Android.Graphics.Color.White);
 		
 		MauiMediaElement.WindowsChanged += MauiMediaElement_WindowsChanged;
