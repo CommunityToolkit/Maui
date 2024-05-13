@@ -22,7 +22,7 @@ static class CameraViewExtensions
 		await mediaCapture.InitializeAsync(new MediaCaptureInitializationSettings
 		{
 			VideoDeviceId = deviceId,
-			PhotoCaptureSource = PhotoCaptureSource.Photo
+			PhotoCaptureSource = PhotoCaptureSource.Auto
 		});
 	}
 }
