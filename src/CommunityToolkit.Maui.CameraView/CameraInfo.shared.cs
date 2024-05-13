@@ -25,13 +25,16 @@ public class CameraInfo(
 	bool isFlashSupported,
 	float minZoomFactor,
 	float maxZoomFactor,
-	IEnumerable<Size> supportedResolutions,
+	IEnumerable<Size> supportedResolutions
 #if ANDROID
+,
 	CameraSelector cameraSelector
 #elif IOS || MACCATALYST
+,
 	AVCaptureDevice captureDevice,
 	IEnumerable<AVCaptureDeviceFormat> supportedFormats
 #elif WINDOWS
+,
     MediaFrameSourceGroup frameSourceGroup,
 	IEnumerable<ImageEncodingProperties> imageEncodingProperties
 #endif
