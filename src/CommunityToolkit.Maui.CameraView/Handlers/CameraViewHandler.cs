@@ -3,8 +3,15 @@ using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
 
+/// <summary>
+/// Handler definition for the <see cref="ICameraView"/> implementation on each platform.
+/// </summary>
 public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>, IDisposable
 {
+	/// <summary>
+	/// The currently defined mappings between properties on the <see cref="ICameraView"/> and
+	/// properties on the <see cref="NativePlatformCameraPreviewView"/>. 
+	/// </summary>
 	public static IPropertyMapper<ICameraView, CameraViewHandler> PropertyMapper = new PropertyMapper<ICameraView, CameraViewHandler>(ViewMapper)
 	{
 		[nameof(ICameraView.CameraFlashMode)] = MapCameraFlashMode,
@@ -14,6 +21,10 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 		[nameof(ICameraView.SelectedCamera)] = MapSelectedCamera
 	};
 
+	/// <summary>
+	/// The currently defined mappings between commands on the <see cref="ICameraView"/> and
+	/// commands on the <see cref="NativePlatformCameraPreviewView"/>. 
+	/// </summary>
 	public static CommandMapper<ICameraView, CameraViewHandler> CommandMapper = new(ViewCommandMapper)
 	{
 		[nameof(ICameraView.CaptureImage)] = MapCaptureImage,
@@ -44,12 +55,16 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 
 	}
 
+	/// <inheritdoc/>
 	public void Dispose()
 	{
 		Dispose(true);
 		GC.SuppressFinalize(this);
 	}
 
+	/// <summary>
+	/// Creates a platform specific view that will be rendered on that platform.
+	/// </summary>
 	protected override NativePlatformCameraPreviewView CreatePlatformView()
 	{
 		ArgumentNullException.ThrowIfNull(MauiContext);
@@ -66,6 +81,7 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 		}
 	}
 
+	/// <inheritdoc/>
 	protected override async void ConnectHandler(NativePlatformCameraPreviewView platformView)
 	{
 		base.ConnectHandler(platformView);
@@ -73,12 +89,17 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 		await (cameraManager?.ConnectCamera(CancellationToken.None) ?? ValueTask.CompletedTask);
 	}
 
+	/// <inheritdoc/>
 	protected override void DisconnectHandler(NativePlatformCameraPreviewView platformView)
 	{
 		base.DisconnectHandler(platformView);
 		Dispose();
 	}
 
+	/// <summary>
+	/// Releases the unmanaged resources used by the <see cref="CameraViewHandler"/> and optionally releases the managed resources.
+	/// </summary>
+	/// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
 	protected virtual void Dispose(bool disposing)
 	{
 		if (disposing)

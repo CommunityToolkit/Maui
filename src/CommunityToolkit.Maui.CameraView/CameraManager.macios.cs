@@ -36,6 +36,7 @@ partial class CameraManager
 		return previewView;
 	}
 
+	/// <inheritdoc/>
 	public void Dispose()
 	{
 		Dispose(true);

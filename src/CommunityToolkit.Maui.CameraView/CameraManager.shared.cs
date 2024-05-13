@@ -36,6 +36,7 @@ partial class CameraManager(
 	/// <summary>
 	/// Connects to the camera.
 	/// </summary>
+	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
 	public ValueTask ConnectCamera(CancellationToken token) => PlatformConnectCamera(token);
 
 	/// <summary>
@@ -46,11 +47,13 @@ partial class CameraManager(
 	/// <summary>
 	/// Takes a picture using the camera.
 	/// </summary>
+	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
 	public ValueTask TakePicture(CancellationToken token) => PlatformTakePicture(token);
 
 	/// <summary>
 	/// Starts the camera preview.
 	/// </summary>
+	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
 	public ValueTask StartCameraPreview(CancellationToken token) => PlatformStartCameraPreview(token);
 
 	/// <summary>
@@ -62,10 +65,12 @@ partial class CameraManager(
 	/// Updates the current camera.
 	/// </summary>
 	/// <param name="cameraInfo">The new <see cref="CameraInfo"/> to set as current.</param>
+	/// <param name="token">A <see cref="CancellationToken"/> that can be used to cancel the work.</param>
 	/// <remarks>
 	/// If the <see cref="CameraManager"/> is initialized the old camera preview will be stopped
 	/// and the new camera preview will be started.
 	/// </remarks>
+	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
 	public async ValueTask UpdateCurrentCamera(CameraInfo? cameraInfo, CancellationToken token)
 	{
 		if (cameraInfo is null || cameraInfo == currentCamera)
@@ -98,10 +103,38 @@ partial class CameraManager(
 	/// Updates the capture resolution of the camera.
 	/// </summary>
 	/// <param name="resolution">The <see cref="Size" /> resolution to use when capturing an image from the current camera.</param>
+	/// <param name="token">A <see cref="CancellationToken"/> that can be used to cancel the work.</param>
+	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
 	public partial ValueTask UpdateCaptureResolution(Size resolution, CancellationToken token);
+	
+	/// <summary>
+	/// Performs the capturing of a picture at the platform specific level. 
+	/// </summary>
+	/// <param name="token">A <see cref="CancellationToken"/> that can be used to cancel the work.</param>
+	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
 	protected virtual partial ValueTask PlatformTakePicture(CancellationToken token);
+	
+	/// <summary>
+	/// Starts the preview from the camera, at the platform specific level.
+	/// </summary>
+	/// <param name="token">A <see cref="CancellationToken"/> that can be used to cancel the work.</param>
+	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
 	protected virtual partial ValueTask PlatformStartCameraPreview(CancellationToken token);
+	
+	/// <summary>
+	/// Connects to the camera, at the platform specific level.
+	/// </summary>
+	/// <param name="token">A <see cref="CancellationToken"/> that can be used to cancel the work.</param>
+	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
 	protected virtual partial ValueTask PlatformConnectCamera(CancellationToken token);
+	
+	/// <summary>
+	/// Disconnects from the camera, at the platform specific level.
+	/// </summary>
 	protected virtual partial void PlatformDisconnect();
+	
+	/// <summary>
+	/// Stops the preview from the camera, at the platform specific level.
+	/// </summary>
 	protected virtual partial void PlatformStopCameraPreview();
 }
