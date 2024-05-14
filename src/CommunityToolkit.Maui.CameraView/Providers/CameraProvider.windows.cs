@@ -11,8 +11,8 @@ partial class CameraProvider
 {
 	public async partial ValueTask RefreshAvailableCameras(CancellationToken token)
 	{
-		var deviceInfoCollection = DeviceInformation.FindAllAsync(DeviceClass.VideoCapture).GetAwaiter().GetResult();
-		var mediaFrameSourceGroup = MediaFrameSourceGroup.FindAllAsync().GetAwaiter().GetResult();
+		var deviceInfoCollection = await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture).AsTask(token);
+		var mediaFrameSourceGroup = await MediaFrameSourceGroup.FindAllAsync().AsTask(token);
 		var videoCaptureSourceGroup = mediaFrameSourceGroup.Where(sourceGroup => deviceInfoCollection.Any(deviceInfo => deviceInfo.Id == sourceGroup.Id)).ToList();
 		var mediaCapture = new MediaCapture();
 
@@ -20,8 +20,6 @@ partial class CameraProvider
 
 		foreach (var sourceGroup in videoCaptureSourceGroup)
 		{
-			token.ThrowIfCancellationRequested();
-
 			await mediaCapture.InitializeCameraForCameraView(sourceGroup.Id, token);
 
 			CameraPosition position = CameraPosition.Unknown;
