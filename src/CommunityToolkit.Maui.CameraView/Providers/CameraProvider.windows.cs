@@ -36,17 +36,15 @@ partial class CameraProvider
 				};
 			}
 
-
-
 			var mediaEncodingPropertiesList = mediaCapture.VideoDeviceController.GetAvailableMediaStreamProperties(MediaStreamType.Photo)
-				.Where(p => p is ImageEncodingProperties).OrderByDescending(p => ((ImageEncodingProperties)p).Width * ((ImageEncodingProperties)p).Height);
+				.OfType< ImageEncodingProperties>().OrderByDescending(p => p.Width * p.Height);
 
 			var supportedResolutionsList = new List<Size>();
 			var imageEncodingPropertiesList = new List<ImageEncodingProperties>();
 
 			foreach (var mediaEncodingProperties in mediaEncodingPropertiesList)
 			{
-				var imageEncodingProperties = (ImageEncodingProperties)mediaEncodingProperties;
+				var imageEncodingProperties = mediaEncodingProperties;
 				if (supportedResolutionsList.Contains(new(imageEncodingProperties.Width, imageEncodingProperties.Height)))
 				{
 					continue;
