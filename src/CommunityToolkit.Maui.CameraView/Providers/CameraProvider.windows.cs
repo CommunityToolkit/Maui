@@ -37,7 +37,7 @@ partial class CameraProvider
 			}
 
 			var mediaEncodingPropertiesList = mediaCapture.VideoDeviceController.GetAvailableMediaStreamProperties(MediaStreamType.Photo)
-				.OfType< ImageEncodingProperties>().OrderByDescending(p => p.Width * p.Height);
+				.OfType<ImageEncodingProperties>().OrderByDescending(p => p.Width * p.Height);
 
 			var supportedResolutionsList = new List<Size>();
 			var imageEncodingPropertiesList = new List<ImageEncodingProperties>();

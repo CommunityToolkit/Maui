@@ -9,7 +9,7 @@ public interface IAvailability
 	/// Gets whether the implementation is available.
 	/// </summary>
 	bool IsAvailable { get; internal set; }
-	
+
 	/// <summary>
 	/// Gets whether the implementation is busy.
 	/// </summary>

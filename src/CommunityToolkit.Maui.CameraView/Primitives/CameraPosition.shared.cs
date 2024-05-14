@@ -9,7 +9,7 @@ public enum CameraPosition
 	/// The camera is in an unknown position.
 	/// </summary>
 	Unknown,
-	
+
 	/// <summary>
 	/// The camera is located at the rear of the device.
 	/// </summary>
@@ -17,7 +17,7 @@ public enum CameraPosition
 	/// This is typically the better quality camera.
 	/// </remarks>
 	Rear,
-	
+
 	/// <summary>
 	/// The camera is located at the front of the device.
 	/// </summary>
