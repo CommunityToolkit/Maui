@@ -36,7 +36,20 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	public (PlatformMediaElement platformView, StyledPlayerView PlayerView) CreatePlatformView()
 	{
 		ArgumentNullException.ThrowIfNull(MauiContext.Context);
-		Player = new IExoPlayer.Builder(MauiContext.Context).Build() ?? throw new NullReferenceException();
+		var builder = new IExoPlayer.Builder(MauiContext.Context);
+		//https://github.com/CommunityToolkit/Maui/issues/972
+		var loadControlBuilder = new DefaultLoadControl.Builder();
+		loadControlBuilder.SetBufferDurationsMs(
+			MediaElement.MinBufferMs, 
+			MediaElement.MaxBufferMs, 
+			MediaElement.BufferForPlaybackMs, 
+			MediaElement.BufferForPlaybackAfterRebufferMs
+		);
+		var customLoadControl = loadControlBuilder.Build();
+
+		builder.SetLoadControl(customLoadControl); //attach custom load control
+
+		Player = builder.Build() ?? throw new NullReferenceException();
 		Player.AddListener(this);
 
 		PlayerView = new StyledPlayerView(MauiContext.Context)

@@ -85,6 +85,38 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// </summary>
 	/// <remarks>A value of 1 means full volume, 0 is silence.</remarks>
 	double Volume { get; set; }
+	
+	/// <summary>
+	/// Gets or sets the minimum milliseconds of media the underlying ExoPlayer should aim to keep buffered.
+	/// </summary>
+	/// <remarks>
+	/// This property only affects functionality on the android platform.
+	/// </remarks>
+	int MinBufferMs { get; set; }
+
+	/// <summary>
+	/// Gets or sets the maximum milliseconds of media the underlying ExoPlayer should aim to keep buffered.
+	/// </summary>
+	/// <remarks>
+	/// This property only affects functionality on the android platform.
+	/// </remarks>
+	int MaxBufferMs { get; set; }
+
+	/// <summary>
+	/// Gets or sets the minimum milliseconds of media the underlying ExoPlayer should have buffered before playing.
+	/// </summary>
+	/// <remarks>
+	/// This property only affects functionality on the android platform.
+	/// </remarks>
+	int BufferForPlaybackMs { get; set; }
+
+	/// <summary>
+	/// Gets or sets the minimum milliseconds of media the underlying ExoPlayer should buffered before playing after a rebuffer.
+	/// </summary>
+	/// <remarks>
+	/// This property only affects functionality on the android platform.
+	/// </remarks>
+	int BufferForPlaybackAfterRebufferMs { get; set; }
 
 	/// <summary>
 	/// Occurs when <see cref="CurrentState"/> changed.

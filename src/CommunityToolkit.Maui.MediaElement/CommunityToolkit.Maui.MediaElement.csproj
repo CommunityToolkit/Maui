@@ -16,13 +16,14 @@
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
     <RootNamespace>CommunityToolkit.Maui</RootNamespace>
     <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup>
     <GitInfoReportImportance>high</GitInfoReportImportance>
     <PackageId>CommunityToolkit.Maui.MediaElement</PackageId>
     <Summary>MediaElement is a view for playing video and audio in your .NET MAUI app.</Summary>
-    <Authors>Microsoft</Authors>
+    <Authors>Intramotev</Authors>
     <Owners>Microsoft</Owners>
     <NeutralLanguage>en</NeutralLanguage>
     <Product>CommunityToolkit.Maui ($(NetVersion))</Product>
@@ -39,7 +40,7 @@
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <AssemblyFileVersion>1.0.0.0</AssemblyFileVersion>
-    <Version>1.0.0-pre1</Version>
+    <Version>1.0.1</Version>
     <PackageVersion>$(Version)$(VersionSuffix)</PackageVersion>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>dotnet,maui,toolkit,kit,communitytoolkit,dotnetcommunitytoolkit,mediaelement,mediaplayer,audio,video</PackageTags>
@@ -54,7 +55,7 @@
   
   <ItemGroup>
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true"/>
-    <None Include="ReadMe.txt" pack="true" PackagePath="."/>
+    <Content Include="ReadMe.md" pack="true" PackagePath="." />
     <None Include="Resources\Images\fullscreen.svg" Pack="True" PackagePath="buildTransitive\Images\" />
     <None Include="CommunityToolkit.Maui.MediaElement.targets" Pack="True" PackagePath="buildTransitive\" />
   </ItemGroup>

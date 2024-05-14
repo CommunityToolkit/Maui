@@ -99,6 +99,35 @@ public class MediaElement : View, IMediaElement, IDisposable
 		BindableProperty.Create(nameof(Volume), typeof(double), typeof(MediaElement), 1.0,
 			BindingMode.TwoWay, propertyChanging: ValidateVolume);
 
+	/// <summary>
+	/// Backing store for the <see cref="MinBufferMs"/> property.
+	/// </summary>
+	public static readonly BindableProperty MinBufferMsProperty =
+		BindableProperty.Create(nameof(MinBufferMs), typeof(int), typeof(MediaElement), 50000,
+			BindingMode.TwoWay, new BindableProperty.ValidateValueDelegate(ValidateBufferMs));
+
+	/// <summary>
+	/// Backing store for the <see cref="MaxBufferMs"/> property.
+	/// </summary>
+	public static readonly BindableProperty MaxBufferMsProperty =
+		BindableProperty.Create(nameof(MaxBufferMs), typeof(int), typeof(MediaElement), 50000,
+			BindingMode.TwoWay, new BindableProperty.ValidateValueDelegate(ValidateBufferMs));
+
+	/// <summary>
+	/// Backing store for the <see cref="BufferForPlaybackMs"/> property.
+	/// </summary>
+	public static readonly BindableProperty BufferForPlaybackMsProperty =
+		BindableProperty.Create(nameof(BufferForPlaybackMs), typeof(int), typeof(MediaElement), 2500,
+			BindingMode.TwoWay, new BindableProperty.ValidateValueDelegate(ValidateBufferMs));
+
+	/// <summary>
+	/// Backing store for the <see cref="BufferForPlaybackAfterRebufferMs"/> property.
+	/// </summary>
+	public static readonly BindableProperty BufferForPlaybackAfterRebufferMsProperty =
+		BindableProperty.Create(nameof(BufferForPlaybackAfterRebufferMs), typeof(int), typeof(MediaElement), 5000,
+			BindingMode.TwoWay, new BindableProperty.ValidateValueDelegate(ValidateBufferMs));
+
+	
 	readonly WeakEventManager eventManager = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 
@@ -280,7 +309,55 @@ public class MediaElement : View, IMediaElement, IDisposable
 		get => (double)GetValue(VolumeProperty);
 		set => SetValue(VolumeProperty, value);
 	}
+	
+	/// <summary>
+	/// Gets or sets the minimum milliseconds of media the underlying ExoPlayer should aim to keep buffered.
+	/// </summary>
+	/// <remarks>
+	/// This property only affects functionality on the android platform.
+	/// </remarks>
+	public int MinBufferMs
+	{
+		get => (int)GetValue(MinBufferMsProperty);
+		set => SetValue(MinBufferMsProperty, value);
+	}
 
+	/// <summary>
+	/// Gets or sets the maximum milliseconds of media the underlying ExoPlayer should aim to keep buffered.
+	/// </summary>
+	/// <remarks>
+	/// This property only affects functionality on the android platform.
+	/// </remarks>
+	public int MaxBufferMs
+	{
+		get => (int)GetValue(MaxBufferMsProperty);
+		set => SetValue(MaxBufferMsProperty, value);
+	}
+
+	/// <summary>
+	/// Gets or sets the minimum milliseconds of media the underlying ExoPlayer should have buffered before playing.
+	/// </summary>
+	/// <remarks>
+	/// This property only affects functionality on the android platform.
+	/// </remarks>
+	public int BufferForPlaybackMs
+	{
+		get => (int)GetValue(BufferForPlaybackMsProperty);
+		set => SetValue(BufferForPlaybackMsProperty, value);
+	}
+
+	/// <summary>
+	/// Gets or sets the minimum milliseconds of media the underlying ExoPlayer should buffered before playing after a rebuffer.
+	/// </summary>
+	/// <remarks>
+	/// This property only affects functionality on the android platform.
+	/// </remarks>
+	public int BufferForPlaybackAfterRebufferMs
+	{
+		get => (int)GetValue(BufferForPlaybackAfterRebufferMsProperty);
+		set => SetValue(BufferForPlaybackAfterRebufferMsProperty, value);
+	}
+	
 	/// <summary>
 	/// Gets or sets the speed with which the media should be played.
 	/// This is a bindable property.
@@ -478,6 +555,13 @@ public class MediaElement : View, IMediaElement, IDisposable
 		}
 	}
 
+	static bool ValidateBufferMs(BindableObject o, object newValue)
+	{
+		var bufferMs = (int)newValue;
+
+		return bufferMs >= 0;
+	}
+	
 	void OnTimerTick(object? sender, EventArgs e)
 	{
 		OnPositionRequested();
