@@ -11,21 +11,28 @@ namespace CommunityToolkit.Maui.Behaviors;
 
 public partial class IconTintColorBehavior
 {
+	View? mauiView;
+	AView? nativeView;
+	
 	/// <inheritdoc/>
 	protected override void OnAttachedTo(View bindable, AView platformView)
 	{
 		base.OnAttachedTo(bindable, platformView);
+		mauiView = bindable;
+		nativeView = platformView;
 
-		ApplyTintColor(bindable, platformView);
+		ApplyTintColor(platformView);
 
 		bindable.PropertyChanged += OnElementPropertyChanged;
-		this.PropertyChanged += (s, e) =>
+		PropertyChanged += OnTintedImagePropertyChanged;
+	}
+	
+	void OnTintedImagePropertyChanged(object? sender, PropertyChangedEventArgs e)
+	{
+		if (e.PropertyName == TintColorProperty.PropertyName && mauiView is not null && nativeView is not null)
 		{
-			if (e.PropertyName == TintColorProperty.PropertyName)
-			{
-				ApplyTintColor(bindable, platformView);
-			}
-		};
+			ApplyTintColor(nativeView);
+		}
 	}
 
 	/// <inheritdoc/>
@@ -35,9 +42,10 @@ public partial class IconTintColorBehavior
 
 		ClearTintColor(bindable, platformView);
 		bindable.PropertyChanged -= OnElementPropertyChanged;
+		PropertyChanged -= OnTintedImagePropertyChanged;
 	}
 
-	void ApplyTintColor(View element, AView control)
+	void ApplyTintColor(AView control)
 	{
 		var color = TintColor;
 
@@ -100,7 +108,7 @@ public partial class IconTintColorBehavior
 			return;
 		}
 
-		ApplyTintColor(bindable, platformView);
+		ApplyTintColor(platformView);
 	}
 
 	void ClearTintColor(View element, AView control)
