@@ -3,6 +3,7 @@ variables:
   PreviewNumber: $[counter(variables['CurrentSemanticVersionBase'], 1001)]
   CurrentSemanticVersion: '$(CurrentSemanticVersionBase)-preview$(PreviewNumber)'
   NugetPackageVersion: '$(CurrentSemanticVersion)'
+  NugetPackageVersionCameraView: '$(CurrentSemanticVersion)'
   NugetPackageVersionMediaElement: '$(CurrentSemanticVersion)'
   NugetPackageVersionMaps: '$(CurrentSemanticVersion)'
   TOOLKIT_NET_VERSION: '8.0.203'
@@ -11,14 +12,17 @@ variables:
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
   PathToCommunityToolkitCoreCsproj: 'src/CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj'
+  PathToCommunityToolkitCameraViewCsproj: 'src/CommunityToolkit.Maui.CameraView/CommunityToolkit.Maui.CameraView.csproj'
   PathToCommunityToolkitMediaElementCsproj: 'src/CommunityToolkit.Maui.MediaElement/CommunityToolkit.Maui.MediaElement.csproj'
   PathToCommunityToolkitMapsCsproj: 'src/CommunityToolkit.Maui.Maps/CommunityToolkit.Maui.Maps.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
   PathToCommunityToolkitAnalyzersCsproj: 'src/CommunityToolkit.Maui.Analyzers/CommunityToolkit.Maui.Analyzers.csproj'
+  PathToCommunityToolkitCameraViewAnalyzersCsproj: 'src/CommunityToolkit.Maui.CameraView.Analyzers/CommunityToolkit.Maui.CameraView.Analyzers.csproj'
   PathToCommunityToolkitMediaElementAnalyzersCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers/CommunityToolkit.Maui.MediaElement.Analyzers.csproj'
   PathToCommunityToolkitSourceGeneratorsCsproj: 'src/CommunityToolkit.Maui.SourceGenerators/CommunityToolkit.Maui.SourceGenerators.csproj'
   PathToCommunityToolkitAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Analyzers.CodeFixes/CommunityToolkit.Maui.Analyzers.CodeFixes.csproj'
+  PathToCommunityToolkitCameraViewAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.CameraView.Analyzers.CodeFixes/CommunityToolkit.Maui.CameraView.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
   DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/8.0.6.json'
@@ -141,6 +145,16 @@ jobs:
         displayName: Set NuGet Version to Tag Number
         condition: and(startsWith(variables['Build.SourceBranch'], 'refs/tags/'), not(endsWith(variables['Build.SourceBranch'], '-mediaelement'))) # Only run this step when a Tag has triggered the CI Pipeline
 
+      # if this is a tagged build for CommunityToolkit.Maui.CameraView, then update the version number
+      - powershell: |
+          $buildSourceBranch = "$(Build.SourceBranch)"
+          $tagVersion = $buildSourceBranch.Substring($buildSourceBranch.LastIndexOf("/") + 1)
+          $tagVersion = $tagVersion.Substring(0, $tagVersion.LastIndexOf("-"))
+          Write-Host("Branch = $buildSourceBranch, Version = $tagVersion");
+          Write-Host ("##vso[task.setvariable variable=NugetPackageVersionCameraView;]$tagVersion")
+        displayName: Set NuGet Version to Tag Number
+        condition: and(startsWith(variables['Build.SourceBranch'], 'refs/tags/'), endsWith(variables['Build.SourceBranch'], '-cameraview')) # Only run this step when a Tag has triggered the CI Pipeline
+
       # if this is a tagged build for CommunityToolkit.Maui.MediaElement, then update the version number
       - powershell: |
           $buildSourceBranch = "$(Build.SourceBranch)"
@@ -149,7 +163,7 @@ jobs:
           Write-Host("Branch = $buildSourceBranch, Version = $tagVersion");
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersionMediaElement;]$tagVersion")
         displayName: Set NuGet Version to Tag Number
-        condition: and(startsWith(variables['Build.SourceBranch'], 'refs/tags/'), endsWith(variables['Build.SourceBranch'], '-mediaelement')) # Only run this step when a Tag has triggered the CI Pipeline        
+        condition: and(startsWith(variables['Build.SourceBranch'], 'refs/tags/'), endsWith(variables['Build.SourceBranch'], '-mediaelement')) # Only run this step when a Tag has triggered the CI Pipeline
 
       # if this is a tagged build for CommunityToolkit.Maui.Maps, then update the version number
       - powershell: |
@@ -159,7 +173,7 @@ jobs:
           Write-Host("Branch = $buildSourceBranch, Version = $tagVersion");
           Write-Host ("##vso[task.setvariable variable=NugetPackageVersionMaps;]$tagVersion")
         displayName: Set NuGet Version to Tag Number
-        condition: and(startsWith(variables['Build.SourceBranch'], 'refs/tags/'), endsWith(variables['Build.SourceBranch'], '-maps')) # Only run this step when a Tag has triggered the CI Pipeline        
+        condition: and(startsWith(variables['Build.SourceBranch'], 'refs/tags/'), endsWith(variables['Build.SourceBranch'], '-maps')) # Only run this step when a Tag has triggered the CI Pipeline
 
       # if this is a PR build, then update the version number
       - powershell: |
@@ -216,6 +230,16 @@ jobs:
           script: 'dotnet build -c Release $(PathToCommunityToolkitAnalyzersCodeFixCsproj)'
 
       - task: CmdLine@2
+        displayName: 'Build CommunityToolkit.Maui.CameraView.Analyzers'
+        inputs:
+          script: 'dotnet build -c Release $(PathToCommunityToolkitCameraViewAnalyzersCsproj)'
+
+      - task: CmdLine@2
+        displayName: 'Build CommunityToolkit.Maui.CameraView.Analyzers.CodeFixes'
+        inputs:
+          script: 'dotnet build -c Release $(PathToCommunityToolkitCameraViewAnalyzersCodeFixCsproj)'
+
+      - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.MediaElement.Analyzers'
         inputs:
           script: 'dotnet build -c Release $(PathToCommunityToolkitMediaElementAnalyzersCsproj)'
@@ -267,6 +291,11 @@ jobs:
           script: 'dotnet pack $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
 
       - task: CmdLine@2
+        displayName: 'Pack CommunityToolkit.Maui.CameraView NuGet'
+        inputs:
+          script: 'dotnet pack $(PathToCommunityToolkitCameraViewCsproj) -c Release -p:PackageVersion=$(NugetPackageVersionCameraView)'
+
+      - task: CmdLine@2
         displayName: 'Pack CommunityToolkit.Maui.MediaElement NuGet'
         inputs:
           script: 'dotnet pack $(PathToCommunityToolkitMediaElementCsproj) -c Release -p:PackageVersion=$(NugetPackageVersionMediaElement)'
@@ -315,6 +344,18 @@ jobs:
           script: |
             $source = ".\src"
             $filter = "CommunityToolkit.Maui.(Core.)*[0-9]+.[0-9]+.[0-9]+(-[a-zA-Z0-9]*)*.nupkg"
+            Get-ChildItem -Path $source -Recurse | Where-Object { $_.Name -match $filter } | Copy-Item -Destination "$(Build.ArtifactStagingDirectory)"
+          pwsh: true
+
+      # Copy CommunityToolkit.Maui.CameraView package
+      - task: PowerShell@2
+        condition: and(eq(variables['Agent.OS'], 'Windows_NT'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), endsWith(variables['Build.SourceBranch'], '-cameraview')) # Only run this step on Windows and when it's a tagged build and the tag ends with -cameraview
+        displayName: 'Copy CommunityToolkit.Maui.CameraView NuGet Package to Staging Directory'
+        inputs:
+          targetType: 'inline'
+          script: |
+            $source = ".\src"
+            $filter = "CommunityToolkit.Maui.CameraView.[0-9]+.[0-9]+.[0-9]+(-[a-zA-Z0-9]*)*.nupkg"
             Get-ChildItem -Path $source -Recurse | Where-Object { $_.Name -match $filter } | Copy-Item -Destination "$(Build.ArtifactStagingDirectory)"
           pwsh: true
 
