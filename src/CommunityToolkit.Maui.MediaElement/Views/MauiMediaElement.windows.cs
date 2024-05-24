@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -30,6 +31,11 @@ public class MauiMediaElement : Grid, IDisposable
 	readonly Grid buttonContainer;
 	readonly Button fullScreenButton;
 	readonly MediaPlayerElement mediaPlayerElement;
+
+	/// <summary>
+	/// An event that is raised when the full screen state of the media element has changed.
+	/// </summary>
+	public static event EventHandler<FullScreenStateChangedEventArgs>? WindowsChanged;
 
 	bool doesNavigationBarExistBeforeFullScreen;
 	bool isDisposed;
@@ -90,6 +96,7 @@ public class MauiMediaElement : Grid, IDisposable
 		Dispose(true);
 		GC.SuppressFinalize(this);
 	}
+	static void OnWindowsChanged(FullScreenStateChangedEventArgs e) => WindowsChanged?.Invoke(null, e);
 
 	/// <summary>
 	/// Gets the presented page.
@@ -173,6 +180,7 @@ public class MauiMediaElement : Grid, IDisposable
 			var parent = mediaPlayerElement.Parent as FrameworkElement;
 			mediaPlayerElement.Width = parent?.Width ?? mediaPlayerElement.Width;
 			mediaPlayerElement.Height = parent?.Height ?? mediaPlayerElement.Height;
+			MauiMediaElement.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
 		}
 		else
 		{
@@ -200,6 +208,7 @@ public class MauiMediaElement : Grid, IDisposable
 			{
 				popup.IsOpen = true;
 			}
+			MauiMediaElement.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
 		}
 	}
 }

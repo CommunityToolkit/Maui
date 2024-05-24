@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Core;
@@ -18,6 +19,11 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// The current state of the <see cref="MediaElement"/>.
 	/// </summary>
 	MediaElementState CurrentState { get; }
+
+	/// <summary>
+	/// Gets the full screen state of the media element.
+	/// </summary>
+	MediaElementScreenState FullScreenState { get;}
 
 	/// <summary>
 	/// Gets the height (in pixels) of the loaded media in pixels.
@@ -97,6 +103,11 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	event EventHandler<MediaPositionChangedEventArgs> PositionChanged;
 
 	/// <summary>
+	/// Occurs when the <see cref="FullScreenState"/> changes.
+	/// </summary>
+	event EventHandler<FullScreenStateChangedEventArgs> FullScreenStateChanged;
+
+	/// <summary>
 	/// Occurs when the media has ended playing successfully.
 	/// </summary>
 	/// <remarks>This does not trigger when the media has failed during playback.</remarks>
@@ -146,4 +157,10 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// </summary>
 	/// <param name="newState">The new state the <see cref="MediaElement"/> transitioned to.</param>
 	internal void CurrentStateChanged(MediaElementState newState);
+
+	/// <summary>
+	/// Triggers a <see cref="FullScreenState"/> change.
+	/// </summary>
+	/// <param name="newState"></param>
+	internal void FullScreenChanged(MediaElementScreenState newState);
 }

@@ -1,11 +1,13 @@
 ﻿using AVFoundation;
 using AVKit;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
 using CoreFoundation;
 using CoreMedia;
 using Foundation;
 using Microsoft.Extensions.Logging;
+using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -90,7 +92,8 @@ public partial class MediaManager : IDisposable
 		Player = new();
 		PlayerViewController = new()
 		{
-			Player = Player
+			Player = Player,
+			Delegate = new MediaManagerDelegate()
 		};
 
 		// Pre-initialize Volume and Muted properties to the player object
@@ -588,4 +591,22 @@ public partial class MediaManager : IDisposable
 			MediaElement.Speed = Player.Rate;
 		}
 	}
+}
+
+sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
+{
+	/// <summary>
+	/// Handles the event when the windows change.
+	/// </summary>
+	public static event EventHandler<FullScreenStateChangedEventArgs>? WindowsChanged;
+	public override void WillBeginFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
+	{
+		MediaManagerDelegate.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
+	}
+	public override void WillEndFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
+	{
+		MediaManagerDelegate.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
+	}
+
+	static void OnWindowsChanged(FullScreenStateChangedEventArgs e) => WindowsChanged?.Invoke(null, e);
 }

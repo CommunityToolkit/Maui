@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Controls;
@@ -41,7 +42,6 @@ partial class MediaManager : IDisposable
 		Player = new();
 		WindowsMediaElement MediaElement = new();
 		MediaElement.MediaOpened += OnMediaElementMediaOpened;
-
 		Player.SetMediaPlayer(MediaElement);
 
 		Player.MediaPlayer.PlaybackSession.PlaybackRateChanged += OnPlaybackSessionPlaybackRateChanged;
@@ -52,7 +52,20 @@ partial class MediaManager : IDisposable
 		Player.MediaPlayer.VolumeChanged += OnMediaElementVolumeChanged;
 		Player.MediaPlayer.IsMutedChanged += OnMediaElementIsMutedChanged;
 
+		MauiMediaElement.WindowsChanged += OnWindowsChanged;
 		return Player;
+	}
+
+	void OnWindowsChanged(object? sender, FullScreenStateChangedEventArgs e)
+	{
+		if(MediaElement is not null)
+		{
+			MediaElement.FullScreenChanged(e.NewState);
+		}
+		else
+		{
+			Logger?.LogWarning("MediaElement is null");
+		}
 	}
 
 	/// <summary>

@@ -34,7 +34,6 @@ public partial class MediaManager
 		MauiContext = context;
 		Dispatcher = dispatcher;
 		MediaElement = mediaElement;
-
 		Logger = MauiContext.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(MediaManager));
 	}
 

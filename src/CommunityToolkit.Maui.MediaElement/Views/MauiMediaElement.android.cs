@@ -9,6 +9,7 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using Com.Google.Android.Exoplayer2.UI;
 using CommunityToolkit.Maui.Views;
+using CommunityToolkit.Maui.Primitives;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -17,6 +18,11 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiMediaElement : CoordinatorLayout
 {
+	/// <summary>
+	/// An event that is raised when the full screen state of the media element has changed.
+	/// </summary>
+	public static event EventHandler<FullScreenStateChangedEventArgs>? WindowsChanged;
+
 	readonly StyledPlayerView playerView;
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
@@ -47,6 +53,8 @@ public class MauiMediaElement : CoordinatorLayout
 
 		AddView(playerView);
 	}
+
+	static void OnWindowsChanged(FullScreenStateChangedEventArgs e) => WindowsChanged?.Invoke(null, e);
 
 	public override void OnDetachedFromWindow()
 	{
@@ -146,6 +154,7 @@ public class MauiMediaElement : CoordinatorLayout
 			item.Height = displayMetrics.HeightPixels;
 			layout?.AddView(playerView, item);
 			SetSystemBarsVisibility();
+			MauiMediaElement.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
 		}
 		else
 		{
@@ -158,6 +167,7 @@ public class MauiMediaElement : CoordinatorLayout
 			layout?.RemoveView(playerView);
 			AddView(playerView, item);
 			SetSystemBarsVisibility();
+			MauiMediaElement.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
 		}
 	}
 
