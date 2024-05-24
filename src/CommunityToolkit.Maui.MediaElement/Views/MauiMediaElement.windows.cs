@@ -30,7 +30,6 @@ public class MauiMediaElement : Grid, IDisposable
 	readonly Grid fullScreenGrid = new();
 	readonly Grid buttonContainer;
 	readonly Button fullScreenButton;
-	readonly Button exitFullScreenButton;
 	readonly MediaPlayerElement mediaPlayerElement;
 	static readonly FontIcon fullScreenIcon = new() { Glyph = "\uE740", FontFamily = new FontFamily("Segoe Fluent Icons")};
 	static readonly FontIcon exitFullScreenIcon = new() { Glyph = "\uE73F", FontFamily = new FontFamily("Segoe Fluent Icons") };
@@ -52,15 +51,8 @@ public class MauiMediaElement : Grid, IDisposable
             Width = 45,
             Height = 45
         };
-        exitFullScreenButton = new Button
-        {
-            Content = exitFullScreenIcon,
-            Background = new SolidColorBrush(Colors.Transparent),
-            Width = 45,
-            Height = 45
-        };
-
-        buttonContainer = new Grid
+        
+		buttonContainer = new Grid
         {
             HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Right,
             VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top,
@@ -109,15 +101,7 @@ public class MauiMediaElement : Grid, IDisposable
 			return;
 		}
 
-		switch (appWindow.Presenter.Kind)
-		{
-			case AppWindowPresenterKind.FullScreen:
-				fullScreenButton.Click -= OnFullScreenButtonClick;
-				break;
-			case AppWindowPresenterKind.Default:
-				exitFullScreenButton.Click -= OnFullScreenButtonClick;
-				break;
-		}
+		fullScreenButton.Click -= OnFullScreenButtonClick;
 		mediaPlayerElement.PointerMoved -= OnMediaPlayerElementPointerMoved;
 		
 		if (disposing)
@@ -179,10 +163,7 @@ public class MauiMediaElement : Grid, IDisposable
 				popup.Child = null;
 				fullScreenGrid.Children.Clear();
 			}
-			exitFullScreenButton.Click -= OnFullScreenButtonClick;
-			fullScreenButton.Click += OnFullScreenButtonClick;
-			buttonContainer.Children.Remove(exitFullScreenButton);
-			buttonContainer.Children.Add(fullScreenButton);
+			fullScreenButton.Content = exitFullScreenIcon;
 			Children.Add(mediaPlayerElement);
 			Children.Add(buttonContainer);
 
@@ -201,10 +182,7 @@ public class MauiMediaElement : Grid, IDisposable
 			mediaPlayerElement.Height = displayInfo.Height / displayInfo.Density;
 
 			Children.Clear();
-			fullScreenButton.Click -= OnFullScreenButtonClick;
-			exitFullScreenButton.Click += OnFullScreenButtonClick;
-			buttonContainer.Children.Remove(fullScreenButton);
-			buttonContainer.Children.Add(exitFullScreenButton);
+			fullScreenButton.Content = fullScreenIcon;
 			fullScreenGrid.Children.Add(mediaPlayerElement);
 			fullScreenGrid.Children.Add(buttonContainer);
 
