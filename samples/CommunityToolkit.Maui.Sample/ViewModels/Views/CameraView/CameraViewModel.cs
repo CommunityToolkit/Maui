@@ -41,40 +41,6 @@ public partial class CameraViewModel() : BaseViewModel
 		UpdateResolutionText();
 	}
 
-	[RelayCommand]
-	async Task CaptureImage(CameraView cameraView, CancellationToken token)
-	{
-		await cameraView.CaptureImage(token);
-	}
-
-	[RelayCommand]
-	async Task StartCameraPreview(CameraView cameraView, CancellationToken token)
-	{
-		await cameraView.StartCameraPreview(token);
-	}
-
-	[RelayCommand]
-	void StopCameraPreview(CameraView cameraView)
-	{
-		cameraView.StopCameraPreview();
-	}
-
-	void OnCameraInfoPropertyChanged(object? sender, PropertyChangedEventArgs e)
-	{
-		UpdateCameraInfoText();
-	}
-
-	void UpdateCameraInfoText()
-	{
-		if (SelectedCamera is null)
-		{
-			return;
-		}
-		CameraNameText = SelectedCamera.Name;
-		ZoomRangeText = $"Min Zoom: {SelectedCamera.MinZoomFactor}, Max Zoom: {SelectedCamera.MaxZoomFactor}";
-		UpdateFlashModeText();
-	}
-
 	void UpdateFlashModeText()
 	{
 		if (SelectedCamera is null)

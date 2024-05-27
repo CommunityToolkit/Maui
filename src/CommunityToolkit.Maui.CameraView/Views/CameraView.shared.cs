@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
 
@@ -54,6 +55,24 @@ public class CameraView : View, ICameraView
 	/// </summary>
 	public static readonly BindableProperty ImageCaptureResolutionProperty = BindableProperty.Create(nameof(ImageCaptureResolution),
 		typeof(Size), typeof(CameraView), Size.Zero, defaultBindingMode: BindingMode.TwoWay);
+	
+	/// <summary>
+	/// Backing BindableProperty for the <see cref="CaptureImageCommand"/> property.
+	/// </summary>
+	public static readonly BindableProperty CaptureImageCommandProperty =
+		BindableProperty.CreateReadOnly(nameof(CaptureImageCommand), typeof(ICommand), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CreateCaptureImageCommand).BindableProperty;
+	
+	/// <summary>
+	/// Backing BindableProperty for the <see cref="StartCameraPreviewCommand"/> property.
+	/// </summary>
+	public static readonly BindableProperty StartCameraPreviewCommandProperty =
+		BindableProperty.CreateReadOnly(nameof(StartCameraPreviewCommand), typeof(ICommand), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CreateStartCameraPreviewCommand).BindableProperty;
+	
+	/// <summary>
+	/// Backing BindableProperty for the <see cref="StopCameraPreviewCommand"/> property.
+	/// </summary>
+	public static readonly BindableProperty StopCameraPreviewCommandProperty =
+		BindableProperty.CreateReadOnly(nameof(StopCameraPreviewCommand), typeof(ICommand), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CreateStopCameraPreviewCommand).BindableProperty;
 
 	readonly WeakEventManager weakEventManager = new();
 
@@ -101,6 +120,14 @@ public class CameraView : View, ICameraView
 		get => (CameraFlashMode)GetValue(CameraFlashModeProperty);
 		set => SetValue(CameraFlashModeProperty, value);
 	}
+	
+	/// <summary>
+	/// Gets the Command that triggers an image capture.
+	/// </summary>
+	/// <remarks>
+	/// <see cref="CaptureImageCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter"
+	/// </remarks>
+	public ICommand CaptureImageCommand => (ICommand)GetValue(CaptureImageCommandProperty);
 
 	/// <inheritdoc cref="ICameraView.SelectedCamera"/>
 	public CameraInfo? SelectedCamera
@@ -108,6 +135,16 @@ public class CameraView : View, ICameraView
 		get => (CameraInfo?)GetValue(SelectedCameraProperty);
 		set => SetValue(SelectedCameraProperty, value);
 	}
+	
+	/// <summary>
+	/// Gets the Command that starts the camera preview.
+	/// </summary>
+	public ICommand StartCameraPreviewCommand => (ICommand)GetValue(StartCameraPreviewCommandProperty);
+	
+	/// <summary>
+	/// Gets the Command that stops the camera preview.
+	/// </summary>
+	public ICommand StopCameraPreviewCommand => (ICommand)GetValue(StopCameraPreviewCommandProperty);
 
 	/// <inheritdoc cref="ICameraView.ZoomFactor"/>
 	public float ZoomFactor
@@ -211,5 +248,23 @@ public class CameraView : View, ICameraView
 		}
 
 		return input;
+	}
+	
+	static Command CreateCaptureImageCommand(BindableObject bindable)
+	{
+		var cameraView = (CameraView)bindable;
+		return new Command(async token => await cameraView.CaptureImage(CancellationToken.None).ConfigureAwait(false));
+	}
+	
+	static Command CreateStartCameraPreviewCommand(BindableObject bindable)
+	{
+		var cameraView = (CameraView)bindable;
+		return new Command(async token => await cameraView.StartCameraPreview(CancellationToken.None).ConfigureAwait(false));
+	}
+	
+	static Command CreateStopCameraPreviewCommand(BindableObject bindable)
+	{
+		var cameraView = (CameraView)bindable;
+		return new Command(token => cameraView.StopCameraPreview());
 	}
 }

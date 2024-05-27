@@ -74,9 +74,9 @@
                     ItemsSource="{Binding FlashModes}"
                     SelectedItem="{Binding FlashMode}" />
 
-                <Button Command="{Binding CaptureImageCommand}" CommandParameter="{Binding Source={x:Reference Camera}, Path='.'}" Text="Capture Image" />
-                <Button Command="{Binding StartCameraPreviewCommand}" Text="StartCameraPreview" CommandParameter="{Binding Source={x:Reference Camera}, Path='.'}" />
-                <Button Command="{Binding StopCameraPreviewCommand}" Text="StopCameraPreview" CommandParameter="{Binding Source={x:Reference Camera}, Path='.'}" />
+                <Button Command="{Binding CaptureImageCommand, Source={x:Reference Camera}}" Text="Capture Image" />
+                <Button Command="{Binding StartCameraPreviewCommand, Source={x:Reference Camera}}" Text="StartCameraPreview" />
+                <Button Command="{Binding StopCameraPreviewCommand, Source={x:Reference Camera}}" Text="StopCameraPreview" />
 
             </FlexLayout>
         </Grid>
