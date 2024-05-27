@@ -47,16 +47,10 @@
     <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
-
-  <ItemGroup>
-    <MauiImage Include="Resources\Images\fullscreen.svg" Pack="True" PackagePath="buildTransitive\Images\" />
-  </ItemGroup>
   
   <ItemGroup>
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true"/>
     <None Include="ReadMe.txt" pack="true" PackagePath="."/>
-    <None Include="Resources\Images\fullscreen.svg" Pack="True" PackagePath="buildTransitive\Images\" />
-    <None Include="CommunityToolkit.Maui.MediaElement.targets" Pack="True" PackagePath="buildTransitive\" />
   </ItemGroup>
 
   <ItemGroup>
