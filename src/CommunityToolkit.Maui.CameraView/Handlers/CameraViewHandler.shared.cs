@@ -3,6 +3,11 @@ using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
 
+#if TIZEN
+public class CameraViewHandler
+{
+}
+#else
 /// <summary>
 /// Handler definition for the <see cref="ICameraView"/> implementation on each platform.
 /// </summary>
@@ -163,3 +168,4 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 		handler.cameraManager?.UpdateZoom(view.ZoomFactor);
 	}
 }
+#endif

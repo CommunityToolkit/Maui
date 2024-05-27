@@ -1,4 +1,3 @@
-[assembly: XmlnsDefinition(Constants.XamlNamespace, Constants.CommunityToolkitNamespacePrefix + nameof(CommunityToolkit.Maui.Extensions))]
 [assembly: XmlnsDefinition(Constants.XamlNamespace, Constants.CommunityToolkitNamespacePrefix + nameof(CommunityToolkit.Maui.Views))]
 [assembly: XmlnsDefinition(Constants.XamlNamespace, Constants.CommunityToolkitNamespace)]
 
