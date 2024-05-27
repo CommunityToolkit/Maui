@@ -67,7 +67,7 @@ public class AlertView : UIView
 		}
 		else
 		{
-			this.SafeBottomAnchor().ConstraintEqualTo(AnchorView.SafeBottomAnchor(), -defaultSpacing).Active = true;
+			this.SafeBottomAnchor().ConstraintEqualTo(AnchorView.SafeTopAnchor(), -defaultSpacing).Active = true;
 		}
 
 		this.SafeLeadingAnchor().ConstraintGreaterThanOrEqualTo(ParentView.SafeLeadingAnchor(), defaultSpacing).Active = true;
