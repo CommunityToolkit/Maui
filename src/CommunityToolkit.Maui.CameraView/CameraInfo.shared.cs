@@ -23,8 +23,8 @@ public class CameraInfo(
 	string deviceId,
 	CameraPosition cameraPosition,
 	bool isFlashSupported,
-	float minZoomFactor,
-	float maxZoomFactor,
+	float minimumZoomFactor,
+	float maximumZoomFactor,
 	IEnumerable<Size> supportedResolutions
 #if ANDROID
 ,
@@ -63,12 +63,12 @@ public class CameraInfo(
 	/// <summary>
 	/// Gets the minimum zoom factor supported by the camera device.
 	/// </summary>
-	public float MinZoomFactor { get; } = minZoomFactor;
+	public float MinimumZoomFactor { get; } = minimumZoomFactor;
 
 	/// <summary>
 	/// Gets the maximum zoom factor supported by the camera device.
 	/// </summary>
-	public float MaxZoomFactor { get; } = maxZoomFactor;
+	public float MaximumZoomFactor { get; } = maximumZoomFactor;
 
 	/// <summary>
 	/// Gets the supported resolutions of the camera device.
@@ -103,6 +103,6 @@ public class CameraInfo(
 			resolutionStringBuilder.Append($"{resolutionSize.Width}x{resolutionSize.Height}{endString}");
 		}
 
-		return $"Camera Info => Name:{Name}, id:{DeviceId}, position:{Position}, hasFlash:{IsFlashSupported}, minZoom:{MinZoomFactor}, maxZoom:{MaxZoomFactor}\nresolutions {resolutionStringBuilder} ";
+		return $"Camera Info => Name:{Name}, id:{DeviceId}, position:{Position}, hasFlash:{IsFlashSupported}, minZoom:{MinimumZoomFactor}, maxZoom:{MaximumZoomFactor}\nresolutions {resolutionStringBuilder} ";
 	}
 }

@@ -51,8 +51,8 @@
             <Slider 
                 x:Name="slider" Grid.Column="1"
                 Value="{Binding CurrentZoom}"
-                Maximum="{Binding SelectedCamera.MaxZoomFactor, FallbackValue=1}"
-                Minimum="{Binding SelectedCamera.MinZoomFactor, FallbackValue=1}"/>
+                Maximum="{Binding SelectedCamera.MaximumZoomFactor, FallbackValue=1}"
+                Minimum="{Binding SelectedCamera.MinimumZoomFactor, FallbackValue=1}"/>
 
             <Button Clicked="ZoomIn" Text="Zoom +" Grid.Column="2"/>
         </Grid>

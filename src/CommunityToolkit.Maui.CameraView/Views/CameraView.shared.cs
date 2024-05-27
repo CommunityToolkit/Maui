@@ -238,13 +238,13 @@ public class CameraView : View, ICameraView
 			return input;
 		}
 
-		if (input < view.SelectedCamera.MinZoomFactor)
+		if (input < view.SelectedCamera.MinimumZoomFactor)
 		{
-			input = view.SelectedCamera.MinZoomFactor;
+			input = view.SelectedCamera.MinimumZoomFactor;
 		}
-		else if (input > view.SelectedCamera.MaxZoomFactor)
+		else if (input > view.SelectedCamera.MaximumZoomFactor)
 		{
-			input = view.SelectedCamera.MaxZoomFactor;
+			input = view.SelectedCamera.MaximumZoomFactor;
 		}
 
 		return input;
