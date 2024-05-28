@@ -19,6 +19,8 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public partial class MediaManager
 {
+	internal static MediaOptions DefaultMediaOptions { get; set; } = new();
+	
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MediaManager"/> class.
 	/// </summary>
