@@ -1,4 +1,4 @@
-namespace CommunityToolkit.Maui;
+namespace CommunityToolkit.Maui.Core;
 
 partial class CameraManager
 {
