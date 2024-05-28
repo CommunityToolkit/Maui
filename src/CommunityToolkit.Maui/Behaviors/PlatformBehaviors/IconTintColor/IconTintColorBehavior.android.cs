@@ -12,7 +12,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 public partial class IconTintColorBehavior
 {
 	AView? nativeView;
-	
+
 	/// <inheritdoc/>
 	protected override void OnAttachedTo(View bindable, AView platformView)
 	{
@@ -24,7 +24,7 @@ public partial class IconTintColorBehavior
 		bindable.PropertyChanged += OnElementPropertyChanged;
 		PropertyChanged += OnTintedImagePropertyChanged;
 	}
-	
+
 	void OnTintedImagePropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (e.PropertyName == TintColorProperty.PropertyName)
