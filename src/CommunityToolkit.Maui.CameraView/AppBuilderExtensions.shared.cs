@@ -16,10 +16,11 @@ public static class AppBuilderExtensions
 	/// <returns><see cref="MauiAppBuilder"/> initialized for <see cref="CameraView"/>.</returns>
 	public static MauiAppBuilder UseMauiCommunityToolkitCameraView(this MauiAppBuilder builder)
 	{
+#if !TIZEN
 		builder.Services.AddSingleton<CameraProvider>();
 
 		builder.ConfigureMauiHandlers(h => h.AddHandler<CameraView, CameraViewHandler>());
-
+#endif
 		return builder;
 	}
 }
