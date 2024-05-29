@@ -1,9 +1,9 @@
-﻿using Android.Content;
+﻿using System.Runtime.Versioning;
+using Android.Content;
 using AndroidX.Camera.Core;
 using AndroidX.Camera.Core.Impl.Utils.Futures;
 using AndroidX.Camera.Core.ResolutionSelector;
 using AndroidX.Camera.Lifecycle;
-using AndroidX.Camera.View;
 using AndroidX.Core.Content;
 using AndroidX.Lifecycle;
 using CommunityToolkit.Maui.Core.Primitives;
@@ -14,6 +14,7 @@ using static Android.Media.Image;
 
 namespace CommunityToolkit.Maui.Core;
 
+[SupportedOSPlatform("android21.0")]
 partial class CameraManager
 {
 	readonly Context context = mauiContext.Context ?? throw new CameraViewException($"Unable to retrieve {nameof(Context)}");
@@ -136,28 +137,38 @@ partial class CameraManager
 		}
 	}
 
-	protected virtual partial ValueTask PlatformConnectCamera(CancellationToken token)
+	protected virtual async partial Task PlatformConnectCamera(CancellationToken token)
 	{
 		var cameraProviderFuture = ProcessCameraProvider.GetInstance(context);
 		if (previewView is null)
 		{
-			return ValueTask.CompletedTask;
+			return;
 		}
+
+		var cameraProviderTCS = new TaskCompletionSource();
+
 
 		cameraProviderFuture.AddListener(new Runnable(async () =>
 		{
 			processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ?? throw new CameraViewException($"Unable to retrieve {nameof(ProcessCameraProvider)}"));
 
-			if (cameraProvider.AvailableCameras.Count < 1)
+			if (cameraProvider.AvailableCameras is null)
 			{
-				throw new CameraViewException("No camera available on device");
+				await cameraProvider.RefreshAvailableCameras(token);
+
+				if (cameraProvider.AvailableCameras is null || cameraProvider.AvailableCameras.Count < 1)
+				{
+					throw new CameraViewException("No camera available on device");
+				}
 			}
 
 			await StartUseCase(token);
 
+			cameraProviderTCS.SetResult();
+
 		}), ContextCompat.GetMainExecutor(context));
 
-		return ValueTask.CompletedTask;
+		await cameraProviderTCS.Task;
 	}
 
 	protected async Task StartUseCase(CancellationToken token)
@@ -183,14 +194,24 @@ partial class CameraManager
 		await StartCameraPreview(token);
 	}
 
-	protected virtual partial ValueTask PlatformStartCameraPreview(CancellationToken token)
+	protected virtual async partial Task PlatformStartCameraPreview(CancellationToken token)
 	{
 		if (previewView is null || processCameraProvider is null || cameraPreview is null || imageCapture is null)
 		{
-			return ValueTask.CompletedTask;
+			return;
 		}
 
-		var cameraSelector = currentCamera.CameraSelector ?? throw new CameraViewException($"Unable to retrieve {nameof(CameraSelector)}");
+		if (cameraView.SelectedCamera is null)
+		{
+			if (cameraProvider.AvailableCameras is null)
+			{
+				await cameraProvider.RefreshAvailableCameras(token);
+			}
+
+			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraViewException("No camera available on device");
+		}
+
+		var cameraSelector = cameraView.SelectedCamera.CameraSelector ?? throw new CameraViewException($"Unable to retrieve {nameof(CameraSelector)}");
 
 		var owner = (ILifecycleOwner)context;
 		camera = processCameraProvider.BindToLifecycle(owner, cameraSelector, cameraPreview, imageCapture);
@@ -206,8 +227,6 @@ partial class CameraManager
 
 		IsInitialized = true;
 		OnLoaded.Invoke();
-
-		return ValueTask.CompletedTask;
 	}
 
 	protected virtual partial void PlatformStopCameraPreview()

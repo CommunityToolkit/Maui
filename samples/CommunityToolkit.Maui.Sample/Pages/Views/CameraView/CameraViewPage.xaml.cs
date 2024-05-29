@@ -7,13 +7,14 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class CameraViewPage : BasePage<CameraViewModel>
 {
-	static readonly string imagePath = Path.Combine(FileSystem.CacheDirectory, "camera-view-image.jpg");
-
+	readonly string imagePath;
 	int pageCount;
 
-	public CameraViewPage(CameraViewModel viewModel) : base(viewModel)
+	public CameraViewPage(CameraViewModel viewModel, IFileSystem fileSystem) : base(viewModel)
 	{
 		InitializeComponent();
+
+		imagePath = Path.Combine(fileSystem.CacheDirectory, "camera-view-image.jpg");
 
 		Camera.MediaCaptured += OnMediaCaptured;
 

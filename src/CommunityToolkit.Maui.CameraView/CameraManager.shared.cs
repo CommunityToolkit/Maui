@@ -20,8 +20,6 @@ partial class CameraManager(
 	CameraProvider cameraProvider,
 	Action onLoaded) : IDisposable
 {
-	CameraInfo currentCamera = cameraView.SelectedCamera ??= cameraProvider.AvailableCameras.FirstOrDefault() ?? throw new CameraViewException("No available camera found.");
-
 	internal Action OnLoaded { get; } = onLoaded;
 
 	internal bool IsInitialized { get; private set; }
@@ -37,7 +35,7 @@ partial class CameraManager(
 	/// Connects to the camera.
 	/// </summary>
 	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
-	public ValueTask ConnectCamera(CancellationToken token) => PlatformConnectCamera(token);
+	public Task ConnectCamera(CancellationToken token) => PlatformConnectCamera(token);
 
 	/// <summary>
 	/// Disconnects from the camera.
@@ -54,7 +52,7 @@ partial class CameraManager(
 	/// Starts the camera preview.
 	/// </summary>
 	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
-	public ValueTask StartCameraPreview(CancellationToken token) => PlatformStartCameraPreview(token);
+	public Task StartCameraPreview(CancellationToken token) => PlatformStartCameraPreview(token);
 
 	/// <summary>
 	/// Stops the camera preview.
@@ -73,12 +71,10 @@ partial class CameraManager(
 	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
 	public async ValueTask UpdateCurrentCamera(CameraInfo? cameraInfo, CancellationToken token)
 	{
-		if (cameraInfo is null || cameraInfo == currentCamera)
+		if (cameraInfo is null)
 		{
 			return;
 		}
-
-		currentCamera = cameraInfo;
 
 		if (IsInitialized)
 		{
@@ -118,15 +114,15 @@ partial class CameraManager(
 	/// Starts the preview from the camera, at the platform specific level.
 	/// </summary>
 	/// <param name="token">A <see cref="CancellationToken"/> that can be used to cancel the work.</param>
-	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
-	protected virtual partial ValueTask PlatformStartCameraPreview(CancellationToken token);
+	/// <returns>A <see cref="Task"/> that can be awaited.</returns>
+	protected virtual partial Task PlatformStartCameraPreview(CancellationToken token);
 
 	/// <summary>
 	/// Connects to the camera, at the platform specific level.
 	/// </summary>
 	/// <param name="token">A <see cref="CancellationToken"/> that can be used to cancel the work.</param>
 	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
-	protected virtual partial ValueTask PlatformConnectCamera(CancellationToken token);
+	protected virtual partial Task PlatformConnectCamera(CancellationToken token);
 
 	/// <summary>
 	/// Disconnects from the camera, at the platform specific level.

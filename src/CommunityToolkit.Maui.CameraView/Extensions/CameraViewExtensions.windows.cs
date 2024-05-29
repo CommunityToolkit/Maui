@@ -15,10 +15,18 @@ static class CameraViewExtensions
 
 	public static Task InitializeCameraForCameraView(this MediaCapture mediaCapture, string deviceId, CancellationToken token)
 	{
-		return mediaCapture.InitializeAsync(new MediaCaptureInitializationSettings
+		try
 		{
-			VideoDeviceId = deviceId,
-			PhotoCaptureSource = PhotoCaptureSource.Auto
-		}).AsTask(token);
+			return mediaCapture.InitializeAsync(new MediaCaptureInitializationSettings
+			{
+				VideoDeviceId = deviceId,
+				PhotoCaptureSource = PhotoCaptureSource.Auto
+			}).AsTask(token);
+		}
+		catch(System.Runtime.InteropServices.COMException)
+		{
+			// Camera already initialized
+			return Task.CompletedTask;
+		}
 	}
 }

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core.Primitives;
+﻿using System.Runtime.Versioning;
+using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.UI.Xaml.Controls;
@@ -9,6 +10,7 @@ using Windows.Media.MediaProperties;
 
 namespace CommunityToolkit.Maui.Core;
 
+[SupportedOSPlatform("windows10.0.10240.0")]
 partial class CameraManager
 {
 	MediaPlayerElement? mediaElement;
@@ -109,28 +111,37 @@ partial class CameraManager
 		}
 	}
 
-	protected virtual partial ValueTask PlatformConnectCamera(CancellationToken token)
+	protected virtual async partial Task PlatformConnectCamera(CancellationToken token)
 	{
-		if (cameraProvider.AvailableCameras.Count < 1)
+		if (cameraProvider.AvailableCameras is null)
 		{
-			throw new CameraViewException("No camera available on device");
+			await cameraProvider.RefreshAvailableCameras(token);
+
+			if (cameraProvider.AvailableCameras is null || cameraProvider.AvailableCameras.Count < 1)
+			{
+				throw new CameraViewException("No camera available on device");
+			}
 		}
 
-		return StartCameraPreview(token);
+		await StartCameraPreview(token);
 	}
 
-	protected virtual async partial ValueTask PlatformStartCameraPreview(CancellationToken token)
+	protected virtual async partial Task PlatformStartCameraPreview(CancellationToken token)
 	{
-		if (currentCamera is null || mediaElement is null)
+		if (mediaElement is null)
 		{
 			return;
 		}
 
 		mediaCapture = new MediaCapture();
 
-		token.ThrowIfCancellationRequested();
+		if(cameraView.SelectedCamera is null)
+		{
+			await cameraProvider.RefreshAvailableCameras(token);
+			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraViewException("No camera available on device");
+		}
 
-		await mediaCapture.InitializeCameraForCameraView(currentCamera.DeviceId, token);
+		await mediaCapture.InitializeCameraForCameraView(cameraView.SelectedCamera.DeviceId, token);
 
 		await UpdateCameraInfo(token);
 
@@ -174,20 +185,25 @@ partial class CameraManager
 
 	protected async Task PlatformUpdateResolution(Size resolution, CancellationToken token)
 	{
-		if (!IsInitialized || mediaCapture is null || currentCamera is null)
+		if (!IsInitialized || mediaCapture is null)
 		{
 			return;
 		}
 
-		var filteredPropertiesList = currentCamera.ImageEncodingProperties.Where(p => p.Width <= resolution.Width && p.Height <= resolution.Height);
+		if (cameraView.SelectedCamera is null)
+		{
+			await cameraProvider.RefreshAvailableCameras(token);
+			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraViewException("No camera available on device");
+		}
 
-		filteredPropertiesList = filteredPropertiesList.Any() ? filteredPropertiesList : currentCamera.ImageEncodingProperties
+		var filteredPropertiesList = cameraView.SelectedCamera.ImageEncodingProperties.Where(p => p.Width <= resolution.Width && p.Height <= resolution.Height);
+
+		filteredPropertiesList = filteredPropertiesList.Any() ? filteredPropertiesList : cameraView.SelectedCamera.ImageEncodingProperties
 			.OrderByDescending(p => p.Width * p.Height);
 
 		if (filteredPropertiesList.Any())
 		{
-			token.ThrowIfCancellationRequested();
-			await mediaCapture.VideoDeviceController.SetMediaStreamPropertiesAsync(MediaStreamType.Photo, filteredPropertiesList.First());
+			await mediaCapture.VideoDeviceController.SetMediaStreamPropertiesAsync(MediaStreamType.Photo, filteredPropertiesList.First()).AsTask(token);
 		}
 	}
 }

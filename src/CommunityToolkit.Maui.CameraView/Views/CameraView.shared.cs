@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Runtime.Versioning;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
@@ -8,6 +9,10 @@ namespace CommunityToolkit.Maui.Views;
 /// <summary>
 /// A visual element that provides the ability to show a camera preview and capture images.
 /// </summary>
+[SupportedOSPlatform("windows10.0.10240.0")]
+[SupportedOSPlatform("android21.0")]
+[SupportedOSPlatform("ios")]
+[SupportedOSPlatform("maccatalyst")]
 public class CameraView : View, ICameraView
 {
 	static readonly BindablePropertyKey isAvailablePropertyKey =
@@ -55,19 +60,19 @@ public class CameraView : View, ICameraView
 	/// </summary>
 	public static readonly BindableProperty ImageCaptureResolutionProperty = BindableProperty.Create(nameof(ImageCaptureResolution),
 		typeof(Size), typeof(CameraView), Size.Zero, defaultBindingMode: BindingMode.TwoWay);
-	
+
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="CaptureImageCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty CaptureImageCommandProperty =
 		BindableProperty.CreateReadOnly(nameof(CaptureImageCommand), typeof(ICommand), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CreateCaptureImageCommand).BindableProperty;
-	
+
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="StartCameraPreviewCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty StartCameraPreviewCommandProperty =
 		BindableProperty.CreateReadOnly(nameof(StartCameraPreviewCommand), typeof(ICommand), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CreateStartCameraPreviewCommand).BindableProperty;
-	
+
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="StopCameraPreviewCommand"/> property.
 	/// </summary>
@@ -99,9 +104,6 @@ public class CameraView : View, ICameraView
 		remove => weakEventManager.RemoveEventHandler(value);
 	}
 
-	/// <inheritdoc cref="ICameraView.AvailableCameras"/>
-	public IReadOnlyList<CameraInfo> AvailableCameras => cameraProvider.AvailableCameras;
-
 	/// <summary>
 	/// Gets a value indicating whether the camera feature is available on the current device.
 	/// </summary>
@@ -120,7 +122,7 @@ public class CameraView : View, ICameraView
 		get => (CameraFlashMode)GetValue(CameraFlashModeProperty);
 		set => SetValue(CameraFlashModeProperty, value);
 	}
-	
+
 	/// <summary>
 	/// Gets the Command that triggers an image capture.
 	/// </summary>
@@ -135,12 +137,12 @@ public class CameraView : View, ICameraView
 		get => (CameraInfo?)GetValue(SelectedCameraProperty);
 		set => SetValue(SelectedCameraProperty, value);
 	}
-	
+
 	/// <summary>
 	/// Gets the Command that starts the camera preview.
 	/// </summary>
 	public ICommand StartCameraPreviewCommand => (ICommand)GetValue(StartCameraPreviewCommandProperty);
-	
+
 	/// <summary>
 	/// Gets the Command that stops the camera preview.
 	/// </summary>
@@ -200,6 +202,22 @@ public class CameraView : View, ICameraView
 		weakEventManager.HandleEvent(this, new MediaCaptureFailedEventArgs(), nameof(MediaCaptureFailed));
 	}
 
+	/// <inheritdoc cref="ICameraView.GetAvailableCameras"/>
+	public async ValueTask<IReadOnlyList<CameraInfo>> GetAvailableCameras(CancellationToken token)
+	{
+		if (cameraProvider.AvailableCameras is null)
+		{
+			await cameraProvider.RefreshAvailableCameras(token);
+
+			if(cameraProvider.AvailableCameras is null)
+			{
+				throw new CameraViewException("No cameras found on device");
+			}
+		}
+
+		return cameraProvider.AvailableCameras;
+	}
+
 	/// <inheritdoc cref="ICameraView.CaptureImage"/>
 	public async ValueTask CaptureImage(CancellationToken token)
 	{
@@ -249,19 +267,19 @@ public class CameraView : View, ICameraView
 
 		return input;
 	}
-	
+
 	static Command CreateCaptureImageCommand(BindableObject bindable)
 	{
 		var cameraView = (CameraView)bindable;
 		return new Command(async token => await cameraView.CaptureImage(CancellationToken.None).ConfigureAwait(false));
 	}
-	
+
 	static Command CreateStartCameraPreviewCommand(BindableObject bindable)
 	{
 		var cameraView = (CameraView)bindable;
 		return new Command(async token => await cameraView.StartCameraPreview(CancellationToken.None).ConfigureAwait(false));
 	}
-	
+
 	static Command CreateStopCameraPreviewCommand(BindableObject bindable)
 	{
 		var cameraView = (CameraView)bindable;

@@ -72,27 +72,33 @@ partial class CameraManager
 		captureDevice.UnlockForConfiguration();
 	}
 
-	public partial ValueTask UpdateCaptureResolution(Size resolution, CancellationToken token)
+	public async partial ValueTask UpdateCaptureResolution(Size resolution, CancellationToken token)
 	{
-		if (captureDevice is null || currentCamera is null)
+		if (captureDevice is null)
 		{
-			return ValueTask.CompletedTask;
+			return;
 		}
 
 		captureDevice.LockForConfiguration(out NSError error);
 		if (error is not null)
 		{
 			Trace.WriteLine(error);
-			return ValueTask.CompletedTask;
+			return;
 		}
 
-		var filteredFormatList = currentCamera.SupportedFormats.Where(f =>
+		if (cameraView.SelectedCamera is null)
+		{
+			await cameraProvider.RefreshAvailableCameras(token);
+			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraViewException("No camera available on device");
+		}
+
+		var filteredFormatList = cameraView.SelectedCamera.SupportedFormats.Where(f =>
 		{
 			var d = ((CMVideoFormatDescription)f.FormatDescription).Dimensions;
 			return d.Width <= resolution.Width && d.Height <= resolution.Height;
 		});
 
-		filteredFormatList = (filteredFormatList.Any() ? filteredFormatList : currentCamera.SupportedFormats)
+		filteredFormatList = (filteredFormatList.Any() ? filteredFormatList : cameraView.SelectedCamera.SupportedFormats)
 			.OrderByDescending(f =>
 			{
 				var d = ((CMVideoFormatDescription)f.FormatDescription).Dimensions;
@@ -105,21 +111,24 @@ partial class CameraManager
 		}
 
 		captureDevice.UnlockForConfiguration();
-
-		return ValueTask.CompletedTask;
 	}
 
-	protected virtual partial ValueTask PlatformConnectCamera(CancellationToken token)
+	protected virtual async partial Task PlatformConnectCamera(CancellationToken token)
 	{
-		if (cameraProvider.AvailableCameras.Count < 1)
+		if (cameraProvider.AvailableCameras is null)
 		{
-			throw new CameraViewException("No camera available on device");
+			await cameraProvider.RefreshAvailableCameras(token);
+
+			if (cameraProvider.AvailableCameras is null || cameraProvider.AvailableCameras.Count < 1)
+			{
+				throw new CameraViewException("No camera available on device");
+			}
 		}
 
-		return PlatformStartCameraPreview(token);
+		await PlatformStartCameraPreview(token);
 	}
 
-	protected virtual async partial ValueTask PlatformStartCameraPreview(CancellationToken token)
+	protected virtual async partial Task PlatformStartCameraPreview(CancellationToken token)
 	{
 		if (captureSession is null)
 		{
@@ -134,7 +143,13 @@ partial class CameraManager
 			input.Dispose();
 		}
 
-		captureDevice = currentCamera.CaptureDevice ?? throw new CameraViewException($"No Camera found");
+		if (cameraView.SelectedCamera is null)
+		{
+			await cameraProvider.RefreshAvailableCameras(token);
+			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraViewException("No camera available on device");
+		}
+
+		captureDevice = cameraView.SelectedCamera.CaptureDevice ?? throw new CameraViewException($"No Camera found");
 		captureInput = new AVCaptureDeviceInput(captureDevice, out var err);
 		captureSession.AddInput(captureInput);
 

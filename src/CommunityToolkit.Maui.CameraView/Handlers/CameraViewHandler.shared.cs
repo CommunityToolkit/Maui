@@ -93,8 +93,10 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 	protected override async void ConnectHandler(NativePlatformCameraPreviewView platformView)
 	{
 		base.ConnectHandler(platformView);
+
 		await (cameraManager?.ArePermissionsGranted() ?? Task.CompletedTask);
-		await (cameraManager?.ConnectCamera(CancellationToken.None) ?? ValueTask.CompletedTask);
+		await (cameraManager?.ConnectCamera(CancellationToken.None) ?? Task.CompletedTask);
+		await (cameraProvider?.RefreshAvailableCameras(CancellationToken.None) ?? ValueTask.CompletedTask);
 	}
 
 	/// <inheritdoc/>
@@ -142,7 +144,7 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 
 	static async void MapStartCameraPreview(CameraViewHandler handler, ICameraView view, object? arg3)
 	{
-		await (handler.cameraManager?.StartCameraPreview(CancellationToken.None) ?? ValueTask.CompletedTask);
+		await (handler.cameraManager?.StartCameraPreview(CancellationToken.None) ?? Task.CompletedTask);
 		view.HandlerCompleteTCS.SetResult();
 	}
 

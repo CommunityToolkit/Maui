@@ -23,11 +23,6 @@ public interface ICameraView : IView, IAvailability, IAsynchronousHandler
 	bool IsTorchOn { get; }
 
 	/// <summary>
-	/// Enumerable of cameras available on the current device
-	/// </summary>
-	IReadOnlyList<CameraInfo> AvailableCameras { get; }
-
-	/// <summary>
 	/// Gets or sets the currently selected camera.
 	/// </summary>
 	/// <remarks>
@@ -82,4 +77,11 @@ public interface ICameraView : IView, IAvailability, IAsynchronousHandler
 	/// <c>CameraViewHandler.CommandMapper.ReplaceMapping(nameof(ICameraView.StopCameraPreview), ADD YOUR METHOD);</c>.
 	/// </remarks>
 	void StopCameraPreview();
+
+	/// <summary>
+	/// Retrieves the cameras available on the current device.
+	/// </summary>
+	/// <param name="token"></param>
+	/// <returns></returns>
+	ValueTask<IReadOnlyList<CameraInfo>> GetAvailableCameras(CancellationToken token);
 }

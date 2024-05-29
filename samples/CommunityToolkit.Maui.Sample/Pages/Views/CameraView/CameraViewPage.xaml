@@ -62,13 +62,6 @@
             <FlexLayout Margin="5" JustifyContent="SpaceBetween" Wrap="Wrap">
 
                 <Picker 
-                    x:Name="cameraPicker"
-                    Title="Cameras" 
-                    ItemsSource="{Binding Path=AvailableCameras, Source={x:Reference Camera}}"
-                    ItemDisplayBinding="{Binding Name}"
-                    SelectedItem="{Binding SelectedCamera}" />
-
-                <Picker 
                     Title="Flash"
                     IsVisible="{Binding Path=SelectedCamera.IsFlashSupported, FallbackValue=false}"
                     ItemsSource="{Binding FlashModes}"

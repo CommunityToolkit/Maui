@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+﻿using System.Runtime.Versioning;
 using Android.Content;
 using Android.Graphics;
 using Android.Hardware.Camera2;
@@ -12,6 +12,7 @@ using Java.Lang;
 
 namespace CommunityToolkit.Maui.Core;
 
+[SupportedOSPlatform("android21.0")]
 partial class CameraProvider
 {
 	readonly Context context = Android.App.Application.Context;
