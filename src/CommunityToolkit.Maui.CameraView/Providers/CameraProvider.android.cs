@@ -17,9 +17,11 @@ partial class CameraProvider
 {
 	readonly Context context = Android.App.Application.Context;
 
-	public partial ValueTask RefreshAvailableCameras(CancellationToken token)
+	public async partial ValueTask RefreshAvailableCameras(CancellationToken token)
 	{
 		var cameraProviderFuture = ProcessCameraProvider.GetInstance(context);
+
+		var cameraFutureTCS = new TaskCompletionSource();
 
 		cameraProviderFuture.AddListener(new Runnable(() =>
 		{
@@ -79,9 +81,11 @@ partial class CameraProvider
 			}
 
 			AvailableCameras = availableCameras;
+			
+			cameraFutureTCS.SetResult();
 
 		}), ContextCompat.GetMainExecutor(context));
 
-		return ValueTask.CompletedTask;
+		await cameraFutureTCS.Task;
 	}
 }

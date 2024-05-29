@@ -96,7 +96,7 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 
 		await (cameraManager?.ArePermissionsGranted() ?? Task.CompletedTask);
 		await (cameraManager?.ConnectCamera(CancellationToken.None) ?? Task.CompletedTask);
-		await (cameraProvider?.RefreshAvailableCameras(CancellationToken.None) ?? ValueTask.CompletedTask);
+		await cameraProvider.RefreshAvailableCameras(CancellationToken.None);
 	}
 
 	/// <inheritdoc/>

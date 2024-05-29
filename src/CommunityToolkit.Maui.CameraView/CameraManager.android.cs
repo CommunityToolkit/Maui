@@ -147,7 +147,6 @@ partial class CameraManager
 
 		var cameraProviderTCS = new TaskCompletionSource();
 
-
 		cameraProviderFuture.AddListener(new Runnable(async () =>
 		{
 			processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ?? throw new CameraViewException($"Unable to retrieve {nameof(ProcessCameraProvider)}"));
