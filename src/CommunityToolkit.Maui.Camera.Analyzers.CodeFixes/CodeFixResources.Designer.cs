@@ -58,7 +58,7 @@ namespace CommunityToolkit.Maui.CameraView.Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Add `.UseMauiCommunityToolkitCameraView()`.
+        ///   Looks up a localized string similar to Add `.UseMauiCommunityToolkitCamera()`.
         /// </summary>
         internal static string Initialize__NET_MAUI_Community_Toolkit_CameraView_Before_UseMauiApp {
             get {

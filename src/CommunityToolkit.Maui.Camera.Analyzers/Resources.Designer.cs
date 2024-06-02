@@ -58,7 +58,7 @@ namespace CommunityToolkit.Maui.CameraView.Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to `.UseMauiCommunityToolkitCameraView()` must be chained to `.UseMauiApp&lt;T&gt;()`.
+        ///   Looks up a localized string similar to `.UseMauiCommunityToolkitCamera()` must be chained to `.UseMauiApp&lt;T&gt;()`.
         /// </summary>
         internal static string InitalizationMessageFormat {
             get {
@@ -67,7 +67,7 @@ namespace CommunityToolkit.Maui.CameraView.Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to `.UseMauiCommunityToolkitCameraView()` is required to initalize .NET MAUI Community Toolkit CameraView.
+        ///   Looks up a localized string similar to `.UseMauiCommunityToolkitCamera()` is required to initalize .NET MAUI Community Toolkit CameraView.
         /// </summary>
         internal static string InitializationErrorMessage {
             get {
@@ -76,7 +76,7 @@ namespace CommunityToolkit.Maui.CameraView.Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to `.UseMauiCommunityToolkitCameraView()` Not Found on MauiAppBuilder.
+        ///   Looks up a localized string similar to `.UseMauiCommunityToolkitCamera()` Not Found on MauiAppBuilder.
         /// </summary>
         internal static string InitializationErrorTitle {
             get {

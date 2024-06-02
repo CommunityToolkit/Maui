@@ -47,7 +47,7 @@ public class UseCommunityToolkitCameraViewInitializationAnalyzerCodeFixProvider 
 		var updatedInvocationExpression =
 			InvocationExpression(
 				MemberAccessExpression(
-					SyntaxKind.SimpleMemberAccessExpression, invocationExpression, IdentifierName("UseMauiCommunityToolkitCameraView")));
+					SyntaxKind.SimpleMemberAccessExpression, invocationExpression, IdentifierName("UseMauiCommunityToolkitCamera")));
 
 		var mauiCommunityToolkitUsingStatement =
 			UsingDirective(

@@ -56,7 +56,7 @@ public class UseCommunityToolkitCameraInitializationAnalyzer : DiagnosticAnalyze
 	{
 		foreach (var method in root.DescendantNodes().OfType<MethodDeclarationSyntax>())
 		{
-			if (method.DescendantNodes().OfType<ExpressionStatementSyntax>().Any(x => x.DescendantNodes().Any(x => x.ToString().Contains(".UseMauiCommunityToolkitCameraView("))))
+			if (method.DescendantNodes().OfType<ExpressionStatementSyntax>().Any(x => x.DescendantNodes().Any(x => x.ToString().Contains(".UseMauiCommunityToolkitCamera("))))
 			{
 				return true;
 			}
