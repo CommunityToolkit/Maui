@@ -1,7 +1,4 @@
 ﻿using CommunityToolkit.Maui.Core.Primitives;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 #if IOS || MACCATALYST

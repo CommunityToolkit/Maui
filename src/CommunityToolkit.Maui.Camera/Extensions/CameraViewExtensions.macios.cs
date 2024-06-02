@@ -26,8 +26,8 @@ static class CameraViewExtensions
 	/// <summary>
 	/// Updates whether the camera feature is available on iOS/macOS.
 	/// </summary>
-	/// <param name="cameraView">An <see cref="IAvailability"/> implementation.</param>
-	public static void UpdateAvailability(this IAvailability cameraView)
+	/// <param name="cameraView">An <see cref="ICameraView"/> implementation.</param>
+	public static void UpdateAvailability(this ICameraView cameraView)
 	{
 		cameraView.IsAvailable = AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Video) is not null;
 	}

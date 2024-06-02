@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Core;
 /// <summary>
 /// Represents a visual element that provides the ability to show a camera preview and capture images.
 /// </summary>
-public interface ICameraView : IView, IAvailability, IAsynchronousHandler
+public interface ICameraView : IView, IAsynchronousHandler
 {
 	/// <summary>
 	/// Gets the <see cref="CameraFlashMode"/>.
@@ -39,6 +39,16 @@ public interface ICameraView : IView, IAvailability, IAsynchronousHandler
 	/// If no camera is selected, the value will be set as-is.
 	/// </remarks>
 	float ZoomFactor { get; internal set; }
+	
+	/// <summary>
+	/// Gets whether the implementation is available.
+	/// </summary>
+	bool IsAvailable { get; internal set; }
+
+	/// <summary>
+	/// Gets whether the implementation is busy.
+	/// </summary>
+	bool IsBusy { get; internal set; }
 
 	/// <summary>
 	/// Occurs when an image is captured by the camera.

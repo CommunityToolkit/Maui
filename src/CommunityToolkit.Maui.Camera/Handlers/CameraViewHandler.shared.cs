@@ -23,7 +23,7 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 	public static IPropertyMapper<ICameraView, CameraViewHandler> PropertyMapper = new PropertyMapper<ICameraView, CameraViewHandler>(ViewMapper)
 	{
 		[nameof(ICameraView.CameraFlashMode)] = MapCameraFlashMode,
-		[nameof(IAvailability.IsAvailable)] = MapIsAvailable,
+		[nameof(ICameraView.IsAvailable)] = MapIsAvailable,
 		[nameof(ICameraView.ZoomFactor)] = MapZoomFactor,
 		[nameof(ICameraView.ImageCaptureResolution)] = MapImageCaptureResolution,
 		[nameof(ICameraView.SelectedCamera)] = MapSelectedCamera
@@ -125,7 +125,7 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 	static void MapIsAvailable(CameraViewHandler handler, ICameraView view)
 #endif
 	{
-		var cameraAvailability = (IAvailability)handler.VirtualView;
+		var cameraAvailability = (ICameraView)handler.VirtualView;
 
 #if ANDROID
 		cameraAvailability.UpdateAvailability(handler.Context);

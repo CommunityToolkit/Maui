@@ -28,9 +28,9 @@ static class CameraViewExtensions
 	/// <summary>
 	/// Updates whether the camera feature is available on Android.
 	/// </summary>
-	/// <param name="cameraView">An <see cref="IAvailability"/> implementation.</param>
+	/// <param name="cameraView">An <see cref="ICameraView"/> implementation.</param>
 	/// <param name="context">The <see cref="Context"/> used to determine whether the environment supports camera access.</param>
-	public static void UpdateAvailability(this IAvailability cameraView, Context context)
+	public static void UpdateAvailability(this ICameraView cameraView, Context context)
 	{
 		cameraView.IsAvailable = context.PackageManager?.HasSystemFeature(PackageManager.FeatureCamera) ?? false;
 	}

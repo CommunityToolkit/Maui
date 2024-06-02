@@ -174,14 +174,14 @@ public class CameraView : View, ICameraView
 	static CameraProvider cameraProvider => IPlatformApplication.Current?.Services.GetRequiredService<CameraProvider>() ?? throw new CameraViewException("Unable to retrieve CameraProvider");
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	bool IAvailability.IsAvailable
+	bool ICameraView.IsAvailable
 	{
 		get => IsAvailable;
 		set => SetValue(isAvailablePropertyKey, value);
 	}
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	bool IAvailability.IsBusy
+	bool ICameraView.IsBusy
 	{
 		get => IsCameraBusy;
 		set => SetValue(isCameraBusyPropertyKey, value);
