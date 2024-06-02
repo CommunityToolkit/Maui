@@ -19,7 +19,7 @@
 
   <PropertyGroup>
     <GitInfoReportImportance>high</GitInfoReportImportance>
-    <PackageId>CommunityToolkit.Maui.CameraView</PackageId>
+    <PackageId>CommunityToolkit.Maui.Camera</PackageId>
     <Summary>CameraView is a view for displaying a preview of the camera output and other camera related functionalities in your .NET MAUI app.</Summary>
     <Authors>Microsoft</Authors>
     <Owners>Microsoft</Owners>

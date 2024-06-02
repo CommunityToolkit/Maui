@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <IsRoslynComponent>true</IsRoslynComponent>
-    <RootNamespace>CommunityToolkit.Maui.CameraView.Analyzers</RootNamespace>
+    <RootNamespace>CommunityToolkit.Maui.Camera.Analyzers</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CommunityToolkit.Maui.CameraView.Analyzers\CommunityToolkit.Maui.CameraView.Analyzers.csproj" />
+    <ProjectReference Include="..\CommunityToolkit.Maui.Camera.Analyzers\CommunityToolkit.Maui.Camera.Analyzers.csproj" />
   </ItemGroup>
 
   <ItemGroup>

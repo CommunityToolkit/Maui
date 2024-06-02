@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace CommunityToolkit.Maui.CameraView.Analyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class UseCommunityToolkitCameraViewInitializationAnalyzer : DiagnosticAnalyzer
+public class UseCommunityToolkitCameraInitializationAnalyzer : DiagnosticAnalyzer
 {
 	public const string DiagnosticId = "MCTME001";
 

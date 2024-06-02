@@ -7,8 +7,8 @@
                 Title="CameraView"
                 Unloaded="OnUnloaded"
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Views.CameraViewPage"
-                x:TypeArguments="viewModels:CameraViewModel"
-                x:DataType="viewModels:CameraViewModel">
+                x:TypeArguments="viewModels:CameraViewViewModel"
+                x:DataType="viewModels:CameraViewViewModel">
 
     <Grid RowDefinitions="200,*,Auto,Auto" ColumnDefinitions="3*,*">
         <toolkit:CameraView

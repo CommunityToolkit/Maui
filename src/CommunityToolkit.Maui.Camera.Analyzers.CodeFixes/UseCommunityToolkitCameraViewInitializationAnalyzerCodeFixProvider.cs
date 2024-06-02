@@ -1,26 +1,19 @@
-﻿using System;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Composition;
-using System.Linq.Expressions;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.InteropServices.ComTypes;
-using System.Threading;
-using System.Threading.Tasks;
 using CommunityToolkit.Maui.CameraView.Analyzers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Rename;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace CommunityToolkit.Maui.Analyzers;
+namespace CommunityToolkit.Maui.Camera.Analyzers;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseCommunityToolkitCameraViewInitializationAnalyzerCodeFixProvider)), Shared]
 public class UseCommunityToolkitCameraViewInitializationAnalyzerCodeFixProvider : CodeFixProvider
 {
-	public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(UseCommunityToolkitCameraViewInitializationAnalyzer.DiagnosticId);
+	public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(UseCommunityToolkitCameraInitializationAnalyzer.DiagnosticId);
 
 	public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 

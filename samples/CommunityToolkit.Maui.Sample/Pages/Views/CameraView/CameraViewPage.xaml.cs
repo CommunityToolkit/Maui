@@ -5,12 +5,12 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
-public partial class CameraViewPage : BasePage<CameraViewModel>
+public partial class CameraViewPage : BasePage<CameraViewViewModel>
 {
 	readonly string imagePath;
 	int pageCount;
 
-	public CameraViewPage(CameraViewModel viewModel, IFileSystem fileSystem) : base(viewModel)
+	public CameraViewPage(CameraViewViewModel viewModel, IFileSystem fileSystem) : base(viewModel)
 	{
 		InitializeComponent();
 

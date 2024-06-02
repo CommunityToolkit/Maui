@@ -37,11 +37,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Media
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes", "CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj", "{DC82CAA2-90F9-4BA5-98F4-2232660DECF1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.CameraView", "CommunityToolkit.Maui.CameraView\CommunityToolkit.Maui.CameraView.csproj", "{338A9CC3-0B5C-4191-AA13-D3A9B599805E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.Camera", "CommunityToolkit.Maui.Camera\CommunityToolkit.Maui.Camera.csproj", "{338A9CC3-0B5C-4191-AA13-D3A9B599805E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.CameraView.Analyzers", "CommunityToolkit.Maui.CameraView.Analyzers\CommunityToolkit.Maui.CameraView.Analyzers.csproj", "{40BC4B5C-DF0B-4C95-9155-AFBF617F2E99}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.Camera.Analyzers", "CommunityToolkit.Maui.Camera.Analyzers\CommunityToolkit.Maui.Camera.Analyzers.csproj", "{40BC4B5C-DF0B-4C95-9155-AFBF617F2E99}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.CameraView.Analyzers.CodeFixes", "CommunityToolkit.Maui.CameraView.Analyzers.CodeFixes\CommunityToolkit.Maui.CameraView.Analyzers.CodeFixes.csproj", "{97B77E28-FA3C-4827-9893-4E934312234A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.Camera.Analyzers.CodeFixes", "CommunityToolkit.Maui.Camera.Analyzers.CodeFixes\CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.csproj", "{97B77E28-FA3C-4827-9893-4E934312234A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -4,7 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public partial class CameraViewModel() : BaseViewModel
+public partial class CameraViewViewModel() : BaseViewModel
 {
 	[ObservableProperty]
 	CameraFlashMode flashMode;
