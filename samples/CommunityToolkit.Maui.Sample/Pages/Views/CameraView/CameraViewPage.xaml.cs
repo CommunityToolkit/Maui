@@ -24,19 +24,6 @@ public partial class CameraViewPage : BasePage<CameraViewModel>
 		};
 	}
 
-	public ICollection<CameraFlashMode> FlashModes { get; } = Enum.GetValues<CameraFlashMode>();
-
-	void Cleanup()
-	{
-		Camera.MediaCaptured -= OnMediaCaptured;
-		Camera.Handler?.DisconnectHandler();
-	}
-
-	void OnUnloaded(object? sender, EventArgs e)
-	{
-		//Cleanup();
-	}
-
 	// https://github.com/dotnet/maui/issues/16697
 	// https://github.com/dotnet/maui/issues/15833
 	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
@@ -59,10 +46,21 @@ public partial class CameraViewPage : BasePage<CameraViewModel>
 		}
 		await Navigation.PushAsync(new ImageViewPage(imagePath));
 	}
+	
+	void Cleanup()
+	{
+		Camera.MediaCaptured -= OnMediaCaptured;
+		Camera.Handler?.DisconnectHandler();
+	}
+
+	void OnUnloaded(object? sender, EventArgs e)
+	{
+		//Cleanup();
+	}
 
 	void OnMediaCaptured(object? sender, MediaCapturedEventArgs e)
 	{
-		using FileStream localFileStream = File.Create(imagePath);
+		using var localFileStream = File.Create(imagePath);
 
 		e.Media.CopyTo(localFileStream);
 

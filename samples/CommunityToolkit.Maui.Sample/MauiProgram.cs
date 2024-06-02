@@ -54,8 +54,8 @@ public static class MauiProgram
 									options.SetShouldSuppressExceptionsInAnimations(true);
 								})
 #endif
-								.UseMauiCommunityToolkitCameraView()
 								.UseMauiCommunityToolkitMarkup()
+								.UseMauiCommunityToolkitCameraView()
 								.UseMauiCommunityToolkitMediaElement()
 								.UseMauiCommunityToolkitMaps("KEY") // You should add your own key here from bingmapsportal.com
 								.UseMauiApp<App>()
