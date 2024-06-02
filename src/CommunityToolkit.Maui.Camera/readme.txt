@@ -15,7 +15,7 @@ public static class MauiProgram
 		builder
 			.UseMauiApp<App>()
 			// Initialize the .NET MAUI Community Toolkit CameraView by adding the below line of code
-			.UseMauiCommunityToolkitCameraView()
+			.UseMauiCommunityToolkitCamera()
 			// After initializing the .NET MAUI Community Toolkit, optionally add additional fonts
 			.ConfigureFonts(fonts =>
 			{

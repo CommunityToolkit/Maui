@@ -248,39 +248,39 @@ public class CameraView : View, ICameraView
 
 	static object CoerceZoom(BindableObject bindable, object value)
 	{
-		CameraView view = (CameraView)bindable;
-		float input = (float)value;
+		var cameraView = (CameraView)bindable;
+		var input = (float)value;
 
-		if (view.SelectedCamera is null)
+		if (cameraView.SelectedCamera is null)
 		{
 			return input;
 		}
 
-		if (input < view.SelectedCamera.MinimumZoomFactor)
+		if (input < cameraView.SelectedCamera.MinimumZoomFactor)
 		{
-			input = view.SelectedCamera.MinimumZoomFactor;
+			input = cameraView.SelectedCamera.MinimumZoomFactor;
 		}
-		else if (input > view.SelectedCamera.MaximumZoomFactor)
+		else if (input > cameraView.SelectedCamera.MaximumZoomFactor)
 		{
-			input = view.SelectedCamera.MaximumZoomFactor;
+			input = cameraView.SelectedCamera.MaximumZoomFactor;
 		}
 
 		return input;
 	}
 
-	static Command CreateCaptureImageCommand(BindableObject bindable)
+	static ICommand CreateCaptureImageCommand(BindableObject bindable)
 	{
 		var cameraView = (CameraView)bindable;
 		return new Command(async token => await cameraView.CaptureImage(CancellationToken.None).ConfigureAwait(false));
 	}
 
-	static Command CreateStartCameraPreviewCommand(BindableObject bindable)
+	static ICommand CreateStartCameraPreviewCommand(BindableObject bindable)
 	{
 		var cameraView = (CameraView)bindable;
 		return new Command(async token => await cameraView.StartCameraPreview(CancellationToken.None).ConfigureAwait(false));
 	}
 
-	static Command CreateStopCameraPreviewCommand(BindableObject bindable)
+	static ICommand CreateStopCameraPreviewCommand(BindableObject bindable)
 	{
 		var cameraView = (CameraView)bindable;
 		return new Command(token => cameraView.StopCameraPreview());

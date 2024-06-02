@@ -1,10 +1,4 @@
-﻿
-global using Microsoft.Maui;
-global using Microsoft.Maui.Devices;
-global using Microsoft.Maui.Graphics;
-global using Microsoft.Maui.Hosting;
-
-#if IOS || MACCATALYST
+﻿#if IOS || MACCATALYST
 global using NativePlatformCameraPreviewView = global::UIKit.UIView;
 global using NativePlatformView = global::UIKit.UIView;
 #elif ANDROID
