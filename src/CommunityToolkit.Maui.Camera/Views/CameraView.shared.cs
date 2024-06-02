@@ -65,13 +65,13 @@ public class CameraView : View, ICameraView
 	/// Backing BindableProperty for the <see cref="CaptureImageCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty CaptureImageCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(CaptureImageCommand), typeof(ICommand), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CreateCaptureImageCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(CaptureImageCommand), typeof(Command<CancellationToken>), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CreateCaptureImageCommand).BindableProperty;
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="StartCameraPreviewCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty StartCameraPreviewCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(StartCameraPreviewCommand), typeof(ICommand), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CreateStartCameraPreviewCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(StartCameraPreviewCommand), typeof(Command<CancellationToken>), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CreateStartCameraPreviewCommand).BindableProperty;
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="StopCameraPreviewCommand"/> property.
@@ -113,6 +113,27 @@ public class CameraView : View, ICameraView
 	/// Gets a value indicating whether the camera is currently busy.
 	/// </summary>
 	public bool IsCameraBusy => (bool)GetValue(IsCameraBusyProperty);
+	
+	/// <summary>
+	/// Gets the Command that triggers an image capture.
+	/// </summary>
+	/// <remarks>
+	/// <see cref="CaptureImageCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter"
+	/// </remarks>
+	public Command<CancellationToken> CaptureImageCommand => (Command<CancellationToken>)GetValue(CaptureImageCommandProperty);
+	
+	/// <summary>
+	/// Gets the Command that starts the camera preview.
+	/// </summary>
+	/// /// <remarks>
+	/// <see cref="StartCameraPreviewCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter"
+	/// </remarks>
+	public Command<CancellationToken> StartCameraPreviewCommand => (Command<CancellationToken>)GetValue(StartCameraPreviewCommandProperty);
+
+	/// <summary>
+	/// Gets the Command that stops the camera preview.
+	/// </summary>
+	public ICommand StopCameraPreviewCommand => (ICommand)GetValue(StopCameraPreviewCommandProperty);
 
 	/// <summary>
 	/// Gets or sets the <see cref="CameraFlashMode"/>.
@@ -123,30 +144,12 @@ public class CameraView : View, ICameraView
 		set => SetValue(CameraFlashModeProperty, value);
 	}
 
-	/// <summary>
-	/// Gets the Command that triggers an image capture.
-	/// </summary>
-	/// <remarks>
-	/// <see cref="CaptureImageCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter"
-	/// </remarks>
-	public ICommand CaptureImageCommand => (ICommand)GetValue(CaptureImageCommandProperty);
-
 	/// <inheritdoc cref="ICameraView.SelectedCamera"/>
 	public CameraInfo? SelectedCamera
 	{
 		get => (CameraInfo?)GetValue(SelectedCameraProperty);
 		set => SetValue(SelectedCameraProperty, value);
 	}
-
-	/// <summary>
-	/// Gets the Command that starts the camera preview.
-	/// </summary>
-	public ICommand StartCameraPreviewCommand => (ICommand)GetValue(StartCameraPreviewCommandProperty);
-
-	/// <summary>
-	/// Gets the Command that stops the camera preview.
-	/// </summary>
-	public ICommand StopCameraPreviewCommand => (ICommand)GetValue(StopCameraPreviewCommandProperty);
 
 	/// <inheritdoc cref="ICameraView.ZoomFactor"/>
 	public float ZoomFactor
@@ -163,7 +166,7 @@ public class CameraView : View, ICameraView
 	}
 
 	/// <summary>
-	/// Gets or sets a value indicating whether the torch is on.
+	/// Gets or sets a value indicating whether the torch (flash) is on.
 	/// </summary>
 	public bool IsTorchOn
 	{
@@ -171,7 +174,7 @@ public class CameraView : View, ICameraView
 		set => SetValue(IsTorchOnProperty, value);
 	}
 
-	static CameraProvider cameraProvider => IPlatformApplication.Current?.Services.GetRequiredService<CameraProvider>() ?? throw new CameraViewException("Unable to retrieve CameraProvider");
+	static CameraProvider CameraProvider => IPlatformApplication.Current?.Services.GetRequiredService<CameraProvider>() ?? throw new CameraViewException("Unable to retrieve CameraProvider");
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	bool ICameraView.IsAvailable
@@ -205,17 +208,17 @@ public class CameraView : View, ICameraView
 	/// <inheritdoc cref="ICameraView.GetAvailableCameras"/>
 	public async ValueTask<IReadOnlyList<CameraInfo>> GetAvailableCameras(CancellationToken token)
 	{
-		if (cameraProvider.AvailableCameras is null)
+		if (CameraProvider.AvailableCameras is null)
 		{
-			await cameraProvider.RefreshAvailableCameras(token);
+			await CameraProvider.RefreshAvailableCameras(token);
 
-			if(cameraProvider.AvailableCameras is null)
+			if(CameraProvider.AvailableCameras is null)
 			{
 				throw new CameraViewException("No cameras found on device");
 			}
 		}
 
-		return cameraProvider.AvailableCameras;
+		return CameraProvider.AvailableCameras;
 	}
 
 	/// <inheritdoc cref="ICameraView.CaptureImage"/>
@@ -268,16 +271,16 @@ public class CameraView : View, ICameraView
 		return input;
 	}
 
-	static ICommand CreateCaptureImageCommand(BindableObject bindable)
+	static Command<CancellationToken> CreateCaptureImageCommand(BindableObject bindable)
 	{
 		var cameraView = (CameraView)bindable;
-		return new Command(async token => await cameraView.CaptureImage(CancellationToken.None).ConfigureAwait(false));
+		return new(async token => await cameraView.CaptureImage(token).ConfigureAwait(false));
 	}
 
-	static ICommand CreateStartCameraPreviewCommand(BindableObject bindable)
+	static Command<CancellationToken> CreateStartCameraPreviewCommand(BindableObject bindable)
 	{
 		var cameraView = (CameraView)bindable;
-		return new Command(async token => await cameraView.StartCameraPreview(CancellationToken.None).ConfigureAwait(false));
+		return new(async token => await cameraView.StartCameraPreview(token).ConfigureAwait(false));
 	}
 
 	static ICommand CreateStopCameraPreviewCommand(BindableObject bindable)
