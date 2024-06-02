@@ -20,7 +20,7 @@
   <PropertyGroup>
     <GitInfoReportImportance>high</GitInfoReportImportance>
     <PackageId>CommunityToolkit.Maui.Camera</PackageId>
-    <Summary>CameraView is a view for displaying a preview of the camera output and other camera related functionalities in your .NET MAUI app.</Summary>
+    <Summary>Camera contains CameraView, a view for displaying a preview of the camera output and other camera related functionalities in your .NET MAUI app.</Summary>
     <Authors>Microsoft</Authors>
     <Owners>Microsoft</Owners>
     <NeutralLanguage>en</NeutralLanguage>
@@ -32,8 +32,8 @@
     <PackageReleaseNotes>See https://github.com/CommunityToolkit/Maui/releases</PackageReleaseNotes>
     <DefineConstants>$(DefineConstants);</DefineConstants>
     <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
-    <Title>.NET MAUI CameraView</Title>
-    <Description>CameraView is a view for displaying a preview of the camera output and other camera related functionalities in your .NET MAUI app.</Description>
+    <Title>.NET MAUI Camera</Title>
+    <Description>Camera contains CameraView, a view for displaying a preview of the camera output and other camera related functionalities in your .NET MAUI app.</Description>
     <PackageIcon>icon.png</PackageIcon>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -41,7 +41,7 @@
     <Version>1.0.0-pre1</Version>
     <PackageVersion>$(Version)$(VersionSuffix)</PackageVersion>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageTags>dotnet,maui,toolkit,kit,communitytoolkit,dotnetcommunitytoolkit,cameraview,photo</PackageTags>
+    <PackageTags>dotnet,maui,toolkit,kit,communitytoolkit,dotnetcommunitytoolkit,cameraview,camera,photo</PackageTags>
     <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
@@ -77,8 +77,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\CommunityToolkit.Maui.CameraView.Analyzers\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.CameraView.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
-    <None Include="..\CommunityToolkit.Maui.CameraView.Analyzers.CodeFixes\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.CameraView.Analyzers.CodeFixes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+    <None Include="..\CommunityToolkit.Maui.Camera.Analyzers\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.Camera.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+    <None Include="..\CommunityToolkit.Maui.Camera.Analyzers.CodeFixes\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
   </ItemGroup>
 
   <ItemGroup>
