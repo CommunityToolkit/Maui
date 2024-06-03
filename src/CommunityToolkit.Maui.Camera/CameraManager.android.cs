@@ -351,7 +351,7 @@ partial class CameraManager
 
 		public void OnChanged(Java.Lang.Object? value)
 		{
-			observerAction?.Invoke(value);
+			observerAction.Invoke(value);
 		}
 	}
 }
