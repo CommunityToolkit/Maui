@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using AVFoundation;
 using CommunityToolkit.Maui.Core.Primitives;
@@ -206,10 +207,18 @@ partial class CameraManager
 			return;
 		}
 
-		var dataBytes = new byte[data.Length];
-		Marshal.Copy(data.Bytes, dataBytes, 0, (int)data.Length);
+		var dataBytes = ArrayPool<byte>.Shared.Rent((int)data.Length);
 
-		cameraView.OnMediaCaptured(new MemoryStream(dataBytes));
+		try
+		{
+			Marshal.Copy(data.Bytes, dataBytes, 0, (int)data.Length);
+
+			cameraView.OnMediaCaptured(new MemoryStream(dataBytes));
+		}
+		finally
+		{
+			ArrayPool<byte>.Shared.Return(dataBytes);
+		}
 	}
 
 	protected virtual void Dispose(bool disposing)
