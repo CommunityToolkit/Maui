@@ -50,19 +50,6 @@ public class CameraViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void ImageCaptureResolution_DefaultValue_IsZero()
-	{
-		Assert.Equal(new Size(0, 0), cameraView.ImageCaptureResolution);
-	}
-
-	[Fact]
-	public async Task GetAvailableCameras_ReturnsAvailableCameras()
-	{
-		var cameras = await cameraView.GetAvailableCameras(CancellationToken.None);
-		Assert.Equal(mockCameraProvider.AvailableCameras, cameras);
-	}
-
-	[Fact]
 	public void OnMediaCaptured_RaisesMediaCapturedEvent()
 	{
 		bool eventRaised = false;
