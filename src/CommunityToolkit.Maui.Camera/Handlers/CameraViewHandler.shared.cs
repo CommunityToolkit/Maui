@@ -6,7 +6,10 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 /// <summary>
 /// Handler definition for the <see cref="ICameraView"/> implementation on each platform.
 /// </summary>
-public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>, IDisposable
+public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>
+#if !TIZEN
+, IDisposable
+#endif
 {
 	/// <summary>
 	/// The currently defined mappings between properties on the <see cref="ICameraView"/> and
@@ -123,6 +126,8 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 		cameraAvailability.UpdateAvailability(handler.Context);
 #elif WINDOWS
 		await cameraAvailability.UpdateAvailability(CancellationToken.None);
+#elif TIZEN
+		throw new NotSupportedException("Tizen is not yet supported");
 #else
 		cameraAvailability.UpdateAvailability();
 #endif

@@ -8,6 +8,8 @@ partial class CameraManager
 	
 	public void Dispose() => throw new NotSupportedException(notSupportedMessage);
 
+	public NativePlatformCameraPreviewView CreatePlatformView() => throw new NotSupportedException(notSupportedMessage);
+
 	public partial void UpdateFlashMode(CameraFlashMode flashMode) => throw new NotSupportedException(notSupportedMessage);
 
 	public partial void UpdateZoom(float zoomLevel) => throw new NotSupportedException(notSupportedMessage);
