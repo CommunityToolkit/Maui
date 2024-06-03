@@ -72,9 +72,13 @@ partial class CameraManager
 
 	public async partial ValueTask UpdateCaptureResolution(Size resolution, CancellationToken token)
 	{
-		if (resolutionFilter?.TargetSize.Width == resolution.Width && resolutionFilter?.TargetSize.Height == resolution.Height)
+		if (resolutionFilter is not null)
 		{
-			return;
+			if (Math.Abs(resolutionFilter.TargetSize.Width - resolution.Width) < double.Epsilon &&
+			    Math.Abs(resolutionFilter.TargetSize.Height - resolution.Height) < double.Epsilon)
+			{
+				return;
+			}	
 		}
 
 		var targetSize = new Android.Util.Size((int)resolution.Width, (int)resolution.Height);
