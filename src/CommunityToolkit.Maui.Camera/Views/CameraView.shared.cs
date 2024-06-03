@@ -16,19 +16,19 @@ namespace CommunityToolkit.Maui.Views;
 public class CameraView : View, ICameraView
 {
 	static readonly BindablePropertyKey isAvailablePropertyKey =
-		BindableProperty.CreateReadOnly(nameof(IsAvailable), typeof(bool), typeof(CameraView), false);
+		BindableProperty.CreateReadOnly(nameof(IsAvailable), typeof(bool), typeof(CameraView), CameraViewDefaults.IsAvailable);
 
 	/// <summary>
 	/// Backing <see cref="BindableProperty"/> for the <see cref="CameraFlashMode"/> property.
 	/// </summary>
 	public static readonly BindableProperty CameraFlashModeProperty =
-		BindableProperty.Create(nameof(CameraFlashMode), typeof(CameraFlashMode), typeof(CameraView), CameraFlashMode.Off);
+		BindableProperty.Create(nameof(CameraFlashMode), typeof(CameraFlashMode), typeof(CameraView), CameraViewDefaults.CameraFlashMode);
 
 	/// <summary>
 	/// Backing <see cref="BindableProperty"/> for the <see cref="IsTorchOn"/> property.
 	/// </summary>
 	public static readonly BindableProperty IsTorchOnProperty =
-		BindableProperty.Create(nameof(IsTorchOn), typeof(bool), typeof(CameraView), false);
+		BindableProperty.Create(nameof(IsTorchOn), typeof(bool), typeof(CameraView), CameraViewDefaults.IsTorchOn);
 
 	/// <summary>
 	/// Backing <see cref="BindableProperty"/> for the <see cref="IsAvailable"/> property.
@@ -36,7 +36,7 @@ public class CameraView : View, ICameraView
 	public static readonly BindableProperty IsAvailableProperty = isAvailablePropertyKey.BindableProperty;
 
 	static readonly BindablePropertyKey isCameraBusyPropertyKey =
-		BindableProperty.CreateReadOnly(nameof(IsCameraBusy), typeof(bool), typeof(CameraView), false);
+		BindableProperty.CreateReadOnly(nameof(IsCameraBusy), typeof(bool), typeof(CameraView), CameraViewDefaults.IsCameraBusy);
 
 	/// <summary>
 	/// Backing <see cref="BindableProperty"/> for the <see cref="IsCameraBusy"/> property.
@@ -53,31 +53,31 @@ public class CameraView : View, ICameraView
 	/// Backing <see cref="BindableProperty"/> for the <see cref="ZoomFactor"/> property.
 	/// </summary>
 	public static readonly BindableProperty ZoomFactorProperty =
-		BindableProperty.Create(nameof(ZoomFactor), typeof(float), typeof(CameraView), 1.0f, coerceValue: CoerceZoom, defaultBindingMode: BindingMode.TwoWay);
+		BindableProperty.Create(nameof(ZoomFactor), typeof(float), typeof(CameraView), CameraViewDefaults.ZoomFactor, coerceValue: CoerceZoom, defaultBindingMode: BindingMode.TwoWay);
 
 	/// <summary>
 	/// Backing <see cref="BindableProperty"/> for the <see cref="ImageCaptureResolution"/> property.
 	/// </summary>
 	public static readonly BindableProperty ImageCaptureResolutionProperty = BindableProperty.Create(nameof(ImageCaptureResolution),
-		typeof(Size), typeof(CameraView), Size.Zero, defaultBindingMode: BindingMode.TwoWay);
+		typeof(Size), typeof(CameraView), CameraViewDefaults.ImageCaptureResolution, defaultBindingMode: BindingMode.TwoWay);
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="CaptureImageCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty CaptureImageCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(CaptureImageCommand), typeof(Command<CancellationToken>), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CreateCaptureImageCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(CaptureImageCommand), typeof(Command<CancellationToken>), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateCaptureImageCommand).BindableProperty;
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="StartCameraPreviewCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty StartCameraPreviewCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(StartCameraPreviewCommand), typeof(Command<CancellationToken>), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CreateStartCameraPreviewCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(StartCameraPreviewCommand), typeof(Command<CancellationToken>), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStartCameraPreviewCommand).BindableProperty;
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="StopCameraPreviewCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty StopCameraPreviewCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(StopCameraPreviewCommand), typeof(ICommand), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CreateStopCameraPreviewCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(StopCameraPreviewCommand), typeof(ICommand), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopCameraPreviewCommand).BindableProperty;
 
 	readonly WeakEventManager weakEventManager = new();
 
@@ -269,23 +269,5 @@ public class CameraView : View, ICameraView
 		}
 
 		return input;
-	}
-
-	static Command<CancellationToken> CreateCaptureImageCommand(BindableObject bindable)
-	{
-		var cameraView = (CameraView)bindable;
-		return new(async token => await cameraView.CaptureImage(token).ConfigureAwait(false));
-	}
-
-	static Command<CancellationToken> CreateStartCameraPreviewCommand(BindableObject bindable)
-	{
-		var cameraView = (CameraView)bindable;
-		return new(async token => await cameraView.StartCameraPreview(token).ConfigureAwait(false));
-	}
-
-	static ICommand CreateStopCameraPreviewCommand(BindableObject bindable)
-	{
-		var cameraView = (CameraView)bindable;
-		return new Command(token => cameraView.StopCameraPreview());
 	}
 }
