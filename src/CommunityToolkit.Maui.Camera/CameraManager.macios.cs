@@ -63,8 +63,7 @@ partial class CameraManager
 		captureDevice.LockForConfiguration(out NSError error);
 		if (error is not null)
 		{
-			Console.WriteLine(error);
-			Debug.WriteLine(error);
+			System.Diagnostics.Trace.WriteLine(error);
 			return;
 		}
 
