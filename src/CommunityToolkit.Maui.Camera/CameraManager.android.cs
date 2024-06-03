@@ -328,7 +328,7 @@ partial class CameraManager
 
 		public IList<Android.Util.Size> Filter(IList<Android.Util.Size> supportedSizes, int rotationDegrees)
 		{
-			var filteredList = supportedSizes.Where(size => size.Width <= TargetSize.Width && size.Height <= TargetSize.Height)
+			var filteredList = supportedSizes.Where(size => size.Width <= TargetSize.Width && size.Height <= TargetSize.Height).ToList();
 				.OrderByDescending(size => size.Width * size.Height);
 
 			if (!filteredList.Any())
