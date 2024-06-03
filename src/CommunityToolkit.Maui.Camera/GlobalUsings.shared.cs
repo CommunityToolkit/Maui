@@ -8,6 +8,6 @@ global using NativePlatformView = global::Android.Views.View;
 global using NativePlatformCameraPreviewView = global::Microsoft.UI.Xaml.FrameworkElement;
 global using NativePlatformView = global::Microsoft.UI.Xaml.FrameworkElement;
 #elif TIZEN
-global using NativePlatformCameraPreviewView = object;
-global using NativePlatformView = object;
+global using NativePlatformCameraPreviewView = global::Tizen.NUI.BaseComponents.View;
+global using NativePlatformView = global::Tizen.NUI.BaseComponents.View;
 #endif
