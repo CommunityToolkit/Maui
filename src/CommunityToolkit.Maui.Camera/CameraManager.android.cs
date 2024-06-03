@@ -11,6 +11,7 @@ using CommunityToolkit.Maui.Extensions;
 using Java.Lang;
 using Java.Util.Concurrent;
 using static Android.Media.Image;
+using Math = System.Math;
 
 namespace CommunityToolkit.Maui.Core;
 
