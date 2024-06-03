@@ -1,4 +1,5 @@
-﻿using System.Runtime.Versioning;
+﻿using System.Buffers;
+using System.Runtime.Versioning;
 using Android.Content;
 using AndroidX.Camera.Core;
 using AndroidX.Camera.Core.Impl.Utils.Futures;
@@ -288,7 +289,7 @@ partial class CameraManager
 				return;
 			}
 
-			var imgData = new byte[buffer.Capacity()];
+			var imgData = ArrayPool<byte>.Shared.Rent(buffer.Capacity());
 			try
 			{
 				buffer.Get(imgData);
@@ -298,6 +299,7 @@ partial class CameraManager
 			finally
 			{
 				image.Close();
+				ArrayPool<byte>.Shared.Return(imgData);
 			}
 
 			static Plane? GetFirstPlane(Plane[]? planes)
