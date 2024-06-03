@@ -81,7 +81,7 @@ partial class CameraProvider
 			}
 
 			AvailableCameras = availableCameras;
-			
+
 			cameraFutureTCS.SetResult();
 
 		}), ContextCompat.GetMainExecutor(context));

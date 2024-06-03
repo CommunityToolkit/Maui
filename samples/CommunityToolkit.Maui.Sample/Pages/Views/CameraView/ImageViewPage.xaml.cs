@@ -7,7 +7,7 @@ public partial class ImageViewPage : ContentPage
 	public ImageViewPage(string imagePath)
 	{
 		InitializeComponent();
-		
+
 		// workaround for https://github.com/dotnet/maui/issues/13858
 #if ANDROID
 		image.Source = ImageSource.FromStream(() => File.OpenRead(imagePath));
@@ -19,7 +19,7 @@ public partial class ImageViewPage : ContentPage
 
 		debugLabel.Text = $"Resolution: {imageWidth} x {imageHeight}\nPath: {imagePath}";
 	}
-	
+
 	static (double width, double height) GetImageDimensions(in string imagePath)
 	{
 		using var stream = File.OpenRead(imagePath);

@@ -23,7 +23,7 @@ static class CameraViewExtensions
 				PhotoCaptureSource = PhotoCaptureSource.Auto
 			}).AsTask(token);
 		}
-		catch(System.Runtime.InteropServices.COMException)
+		catch (System.Runtime.InteropServices.COMException)
 		{
 			// Camera already initialized
 			return Task.CompletedTask;

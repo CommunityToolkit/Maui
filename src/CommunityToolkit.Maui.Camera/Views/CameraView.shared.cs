@@ -113,7 +113,7 @@ public class CameraView : View, ICameraView
 	/// Gets a value indicating whether the camera is currently busy.
 	/// </summary>
 	public bool IsCameraBusy => (bool)GetValue(IsCameraBusyProperty);
-	
+
 	/// <summary>
 	/// Gets the Command that triggers an image capture.
 	/// </summary>
@@ -121,7 +121,7 @@ public class CameraView : View, ICameraView
 	/// <see cref="CaptureImageCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter"
 	/// </remarks>
 	public Command<CancellationToken> CaptureImageCommand => (Command<CancellationToken>)GetValue(CaptureImageCommandProperty);
-	
+
 	/// <summary>
 	/// Gets the Command that starts the camera preview.
 	/// </summary>
@@ -212,7 +212,7 @@ public class CameraView : View, ICameraView
 		{
 			await CameraProvider.RefreshAvailableCameras(token);
 
-			if(CameraProvider.AvailableCameras is null)
+			if (CameraProvider.AvailableCameras is null)
 			{
 				throw new CameraViewException("No cameras found on device");
 			}

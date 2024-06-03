@@ -135,7 +135,7 @@ partial class CameraManager
 
 		mediaCapture = new MediaCapture();
 
-		if(cameraView.SelectedCamera is null)
+		if (cameraView.SelectedCamera is null)
 		{
 			await cameraProvider.RefreshAvailableCameras(token);
 			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraViewException("No camera available on device");

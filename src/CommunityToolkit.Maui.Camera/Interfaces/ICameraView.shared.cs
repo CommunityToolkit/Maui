@@ -39,7 +39,7 @@ public interface ICameraView : IView, IAsynchronousHandler
 	/// If no camera is selected, the value will be set as-is.
 	/// </remarks>
 	float ZoomFactor { get; internal set; }
-	
+
 	/// <summary>
 	/// Gets whether the implementation is available.
 	/// </summary>

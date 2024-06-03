@@ -20,7 +20,7 @@ public partial class CameraViewViewModel : BaseViewModel
 
 	[ObservableProperty]
 	string cameraNameText = "", zoomRangeText = "", currentZoomText = "", flashModeText = "", resolutionText = "";
-	
+
 	public CancellationToken Token => CancellationToken.None;
 
 	public ICollection<CameraFlashMode> FlashModes { get; } = Enum.GetValues<CameraFlashMode>();

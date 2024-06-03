@@ -46,7 +46,7 @@ public partial class CameraViewPage : BasePage<CameraViewViewModel>
 		}
 		await Navigation.PushAsync(new ImageViewPage(imagePath));
 	}
-	
+
 	void Cleanup()
 	{
 		Camera.MediaCaptured -= OnMediaCaptured;

@@ -18,7 +18,7 @@ public static class AppBuilderExtensions
 	{
 		builder.Services.AddSingleton<CameraProvider>();
 		builder.ConfigureMauiHandlers(h => h.AddHandler<CameraView, CameraViewHandler>());
-		
+
 		return builder;
 	}
 }

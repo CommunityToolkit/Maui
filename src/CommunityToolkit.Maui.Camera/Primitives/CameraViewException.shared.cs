@@ -7,5 +7,5 @@ namespace CommunityToolkit.Maui.Core;
 /// <param name="message">The specific error message indicating what error has occurred.</param>
 public class CameraViewException(string message) : Exception(message)
 {
-	
+
 }
