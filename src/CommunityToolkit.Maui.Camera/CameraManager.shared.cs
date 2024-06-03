@@ -17,7 +17,7 @@ namespace CommunityToolkit.Maui.Core;
 partial class CameraManager(
 	IMauiContext mauiContext,
 	ICameraView cameraView,
-	CameraProvider cameraProvider,
+	ICameraProvider cameraProvider,
 	Action onLoaded) : IDisposable
 {
 	internal Action OnLoaded { get; } = onLoaded;

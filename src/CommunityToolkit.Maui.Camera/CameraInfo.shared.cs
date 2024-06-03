@@ -1,5 +1,5 @@
-﻿using CommunityToolkit.Maui.Core.Primitives;
-using System.Text;
+﻿using System.Text;
+using CommunityToolkit.Maui.Core.Primitives;
 
 #if IOS || MACCATALYST
 using AVFoundation;

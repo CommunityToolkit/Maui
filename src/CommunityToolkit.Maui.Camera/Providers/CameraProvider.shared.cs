@@ -1,6 +1,6 @@
 ﻿namespace CommunityToolkit.Maui.Core;
 
-partial class CameraProvider
+partial class CameraProvider : ICameraProvider
 {
 	public IReadOnlyList<CameraInfo>? AvailableCameras { get; private set; }
 

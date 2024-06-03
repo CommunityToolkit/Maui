@@ -174,7 +174,7 @@ public class CameraView : View, ICameraView
 		set => SetValue(IsTorchOnProperty, value);
 	}
 
-	static CameraProvider CameraProvider => IPlatformApplication.Current?.Services.GetRequiredService<CameraProvider>() ?? throw new CameraViewException("Unable to retrieve CameraProvider");
+	static ICameraProvider CameraProvider => IPlatformApplication.Current?.Services.GetRequiredService<ICameraProvider>() ?? throw new CameraViewException("Unable to retrieve CameraProvider");
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	bool ICameraView.IsAvailable

@@ -10,4 +10,7 @@ global using NativePlatformView = global::Microsoft.UI.Xaml.FrameworkElement;
 #elif TIZEN
 global using NativePlatformCameraPreviewView = global::Tizen.NUI.BaseComponents.View;
 global using NativePlatformView = global::Tizen.NUI.BaseComponents.View;
+#else
+global using NativePlatformCameraPreviewView = global::Microsoft.Maui.IView;
+global using NativePlatformView = global::Microsoft.Maui.IView;
 #endif

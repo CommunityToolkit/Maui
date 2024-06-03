@@ -16,7 +16,7 @@ public static class AppBuilderExtensions
 	/// <returns><see cref="MauiAppBuilder"/> initialized for <see cref="CameraView"/>.</returns>
 	public static MauiAppBuilder UseMauiCommunityToolkitCamera(this MauiAppBuilder builder)
 	{
-		builder.Services.AddSingleton<CameraProvider>();
+		builder.Services.AddSingleton<ICameraProvider, CameraProvider>();
 		builder.ConfigureMauiHandlers(h => h.AddHandler<CameraView, CameraViewHandler>());
 
 		return builder;

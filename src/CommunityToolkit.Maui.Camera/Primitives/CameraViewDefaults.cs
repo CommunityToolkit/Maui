@@ -12,22 +12,22 @@ public static class CameraViewDefaults
 	/// Default value for <see cref="ICameraView.IsAvailable"/>
 	/// </summary>
 	public const bool IsAvailable = false;
-	
+
 	/// <summary>
 	/// Default value for <see cref="ICameraView.IsTorchOn"/>
 	/// </summary>
 	public const bool IsTorchOn = false;
-	
+
 	/// <summary>
 	/// Default value for <see cref="ICameraView.IsBusy"/>
 	/// </summary>
 	public const bool IsCameraBusy = false;
-	
+
 	/// <summary>
 	/// Default value for <see cref="ICameraView.ZoomFactor"/>
 	/// </summary>
 	public const float ZoomFactor = 1.0f;
-	
+
 	/// <summary>
 	/// Default value for <see cref="ICameraView.ImageCaptureResolution"/>
 	/// </summary>
@@ -37,7 +37,7 @@ public static class CameraViewDefaults
 	/// Default value for <see cref="ICameraView.CameraFlashMode"/>
 	/// </summary>
 	public static CameraFlashMode CameraFlashMode { get; } = CameraFlashMode.Off;
-	
+
 	internal static Command<CancellationToken> CreateCaptureImageCommand(BindableObject bindable)
 	{
 		var cameraView = (CameraView)bindable;
