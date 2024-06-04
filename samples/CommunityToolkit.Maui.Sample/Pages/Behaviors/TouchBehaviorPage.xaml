@@ -25,62 +25,7 @@
 
     <ScrollView>
         <VerticalStackLayout Spacing="20">
-            
             <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
-
-            <Label HorizontalOptions="Center" HorizontalTextAlignment="Center"
-                   FontSize="Body"
-                   Text="{Binding TouchCount, StringFormat='Touches: {0}'}" />
-
-            <Label Style="{StaticResource SectionHeader}" Text="Image | Toggle" />
-            <Image HeightRequest="100" WidthRequest="100">
-                <Image.Behaviors>
-                    <mct:ImageTouchBehavior
-                        Command="{Binding IncreaseTouchCountCommand}"
-                        DefaultImageSource="button.png"
-                        PressedImageSource="button_pressed.png" />
-                </Image.Behaviors>
-            </Image>
-            <Label Style="{StaticResource SectionHeader}" Text="Scale | Fade | Animated" />
-            <HorizontalStackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="Center">
-                <HorizontalStackLayout.Behaviors>
-                    <mct:TouchBehavior
-                        DefaultAnimationDuration="250"
-                        DefaultAnimationEasing="{x:Static Easing.CubicInOut}"
-                        Command="{Binding IncreaseTouchCountCommand}"
-                        PressedOpacity="0.6"
-                        PressedScale="0.8" />
-                </HorizontalStackLayout.Behaviors>
-
-                <ContentView
-                    HeightRequest="100"
-                    WidthRequest="10"
-                    BackgroundColor="Gold" />
-                <Label Text="The entire layout receives touches" VerticalOptions="Center" LineBreakMode="TailTruncation"/>
-                <ContentView
-                    HeightRequest="100"
-                    WidthRequest="10"
-                    BackgroundColor="Gold" />
-            </HorizontalStackLayout>
-
-            <Label Style="{StaticResource SectionHeader}" Text="Long Press | Hover" />
-
-            <Label
-                FontSize="Body"
-                HorizontalOptions="CenterAndExpand"
-                Text="{Binding LongPressCount, StringFormat='Long press count: {0}'}"
-                Margin="0,0,0,6" />
-            <HorizontalStackLayout
-                Padding="20"
-                Background="Black"
-                HorizontalOptions="CenterAndExpand">
-                <HorizontalStackLayout.Behaviors>
-                    <mct:TouchBehavior
-                        Command="{Binding IncreaseTouchCountCommand}"
-                        HoveredBackgroundColor="{StaticResource Gray900}"
-                        HoveredScale="1.2"
-                        LongPressCommand="{Binding IncreaseLongPressCountCommand}" />
-                </HorizontalStackLayout.Behaviors>
                 <Label
                     FontSize="Body"
                     HorizontalOptions="Center"
@@ -257,19 +202,32 @@
                     Margin="20"
                     Padding="20,10"
                     BackgroundColor="Transparent"
-                    ColumnDefinitions="Auto, *"
-                    ColumnSpacing="10">
-                    <Ellipse
-                        BackgroundColor="#A4CF5B"
-                        HeightRequest="40"
-                        WidthRequest="40" />
-                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
-                        <Label FontSize="20" Text="Lorem Ipsum" />
-                        <Label FontSize="12"
-                               Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam gravida, sapien in volutpat ornare, magna dui condimentum dui, quis egestas tellus leo non nulla. Quisque sit amet neque dapibus, congue justo non, dapibus dolor." />
-                    </VerticalStackLayout>
-                </Grid>
-            </Border>
+                    StrokeShape="RoundRectangle, 10"
+                    StrokeThickness="0">
+                    <Border.Behaviors>
+                        <mct:TouchBehavior
+                            Command="{Binding IncreaseTouchCountCommand}"
+                            DefaultAnimationDuration="150"
+                            DefaultAnimationEasing="{x:Static Easing.CubicInOut}"
+                            PressedBackgroundColor="LightGray"
+                            PressedOpacity="0.8"
+                            PressedScale="0.9" />
+                    </Border.Behaviors>
+                    <Grid
+                        BackgroundColor="Transparent"
+                        ColumnDefinitions="Auto, *"
+                        ColumnSpacing="10">
+                        <Ellipse
+                            BackgroundColor="#A4CF5B"
+                            HeightRequest="40"
+                            WidthRequest="40" />
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                            <Label FontSize="20" Text="Lorem Ipsum" />
+                            <Label FontSize="12" Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam gravida, sapien in volutpat ornare, magna dui condimentum dui, quis egestas tellus leo non nulla. Quisque sit amet neque dapibus, congue justo non, dapibus dolor." />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+            </VerticalStackLayout>
             
             <CollectionView ItemsSource="{Binding Items}"
                             MaximumHeightRequest="250">
