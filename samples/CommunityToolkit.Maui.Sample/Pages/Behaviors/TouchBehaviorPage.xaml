@@ -1,4 +1,3 @@
-
 <?xml version="1.0" encoding="utf-8" ?>
 
 <pages:BasePage
@@ -26,6 +25,8 @@
 
     <ScrollView>
         <VerticalStackLayout Spacing="20">
+            
+            <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
 
             <Label HorizontalOptions="Center" HorizontalTextAlignment="Center"
                    FontSize="Body"
