@@ -19,7 +19,7 @@ public class UseCommunityToolkitMediaElementInitializationAnalyzer : DiagnosticA
 
 	static readonly DiagnosticDescriptor rule = new(DiagnosticId, title, messageFormat, category, DiagnosticSeverity.Error, isEnabledByDefault: true, description: description);
 
-	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(rule);
+	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = [rule];
 
 	public override void Initialize(AnalysisContext context)
 	{

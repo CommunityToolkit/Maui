@@ -32,6 +32,18 @@ public partial class TouchBehaviorViewModel : BaseViewModel
 	}
 
 	[RelayCommand]
+	async Task MonkeySelected(string? monkey, CancellationToken token)
+	{
+		if (string.IsNullOrEmpty(monkey))
+		{
+			await DisplayAlert("No monkey selected", token);
+			return;
+		}
+
+		await DisplayAlert($"Selected monkey: {monkey}", token);
+	}
+
+	[RelayCommand]
 	void IncreaseTouchCount()
 	{
 		TouchCount++;

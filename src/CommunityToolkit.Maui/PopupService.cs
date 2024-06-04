@@ -10,7 +10,7 @@ public class PopupService : IPopupService
 {
 	readonly IServiceProvider serviceProvider;
 
-	static readonly Dictionary<Type, Type> viewModelToViewMappings = new();
+	static readonly Dictionary<Type, Type> viewModelToViewMappings = [];
 
 	static Page CurrentPage =>
 		PageExtensions.GetCurrentPage(

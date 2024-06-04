@@ -1,5 +1,4 @@
-﻿using System.Collections.Frozen;
-using CommunityToolkit.Maui.Core.Primitives;
+﻿using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Controls;
@@ -14,12 +13,12 @@ namespace CommunityToolkit.Maui.Core.Views;
 partial class MediaManager : IDisposable
 {
 	// States that allow changing position
-	readonly FrozenSet<MediaElementState> allowUpdatePositionStates = new[]
-	{
+	readonly IReadOnlyList<MediaElementState> allowUpdatePositionStates =
+	[
 		MediaElementState.Playing,
 		MediaElementState.Paused,
 		MediaElementState.Stopped,
-	}.ToFrozenSet();
+	];
 
 	// The requests to keep display active are cumulative, this bool makes sure it only gets requested once
 	bool displayActiveRequested;
