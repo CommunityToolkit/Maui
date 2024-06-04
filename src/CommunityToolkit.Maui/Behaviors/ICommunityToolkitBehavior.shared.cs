@@ -21,12 +21,7 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 			throw new InvalidOperationException($"{nameof(ICommunityToolkitBehavior<TView>)} can only be used for a {nameof(Behavior)}");
 		}
 
-		if (View is null)
-		{
-			return false;
-		}
-
-		if (View.BindingContext == behavior.BindingContext)
+		if (behavior.IsSet(BindableObject.BindingContextProperty) || View is null)
 		{
 			return false;
 		}
