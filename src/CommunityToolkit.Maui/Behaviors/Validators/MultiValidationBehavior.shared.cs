@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -21,7 +22,7 @@ public class MultiValidationBehavior : ValidationBehavior
 	public static readonly BindableProperty ErrorProperty =
 		BindableProperty.CreateAttached(nameof(GetError), typeof(object), typeof(MultiValidationBehavior), null);
 
-	readonly ObservableCollection<ValidationBehavior> children = new();
+	readonly ObservableCollection<ValidationBehavior> children = [];
 
 	/// <summary>
 	/// Constructor for this behavior.
@@ -65,7 +66,7 @@ public class MultiValidationBehavior : ValidationBehavior
 			return c.ValidateNestedAsync(token).AsTask();
 		})).ConfigureAwait(false);
 
-		var errors = children.Where(c => c.IsNotValid).Select(GetError);
+		var errors = children.Where(c => c.IsNotValid).Select(GetError).ToList();
 
 		if (!errors.Any())
 		{
@@ -75,7 +76,7 @@ public class MultiValidationBehavior : ValidationBehavior
 
 		if (!Errors?.SequenceEqual(errors) ?? true)
 		{
-			Errors = errors.ToList();
+			Errors = errors;
 		}
 
 		return false;
@@ -83,23 +84,23 @@ public class MultiValidationBehavior : ValidationBehavior
 
 	void OnChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 	{
-		if (e.NewItems != null)
+		if (e.NewItems is not null)
 		{
 			foreach (var child in e.NewItems.OfType<ValidationBehavior>())
 			{
-				child.TrySetBindingContext(new Binding
+				var isSuccessful = ((ICommunityToolkitBehavior<VisualElement>)child).TrySetBindingContextToAttachedViewBindingContext();
+				if (!isSuccessful)
 				{
-					Path = BindingContextProperty.PropertyName,
-					Source = this
-				});
+					Trace.WriteLine($"Setting {nameof(BindingContext)} for {child.GetType()} failed");
+				}
 			}
 		}
 
-		if (e.OldItems != null)
+		if (e.OldItems is not null)
 		{
 			foreach (var child in e.OldItems.OfType<ValidationBehavior>())
 			{
-				child.TryRemoveBindingContext();
+				((ICommunityToolkitBehavior<VisualElement>)child).TryRemoveBindingContext();
 			}
 		}
 	}

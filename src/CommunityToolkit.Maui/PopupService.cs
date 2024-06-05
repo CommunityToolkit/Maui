@@ -11,7 +11,7 @@ public class PopupService : IPopupService
 {
 	readonly IServiceProvider serviceProvider;
 	readonly IDispatcher dispatcher;
-	static readonly Dictionary<Type, Type> viewModelToViewMappings = new();
+	static readonly Dictionary<Type, Type> viewModelToViewMappings = [];
 
 	/// <summary>
 	/// Gets or sets the <see cref="IPopupLifecycleController"/> implementation.

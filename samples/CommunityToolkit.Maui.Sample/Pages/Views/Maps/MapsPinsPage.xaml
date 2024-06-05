@@ -15,6 +15,6 @@
             <Button Text="Remove Pin" Clicked="RemovePin_Clicked" />
             <Button Text="Add 10 Pins" Clicked="Add10Pins_Clicked" />
         </HorizontalStackLayout>
-        <maps:Map x:Name="PinsMap" Grid.Row="1" MapClicked="PinsMap_MapClicked" />
+        <maps:Map x:Name="PinsMap" Grid.Row="1"  IsShowingUser="True" MapClicked="PinsMap_MapClicked" />
     </Grid>
 </pages:BasePage>

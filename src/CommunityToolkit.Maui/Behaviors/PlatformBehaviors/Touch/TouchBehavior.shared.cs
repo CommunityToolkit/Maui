@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// <summary>
 /// <see cref="PlatformBehavior{TView,TPlatformView}"/> that adds additional actions for user interactions 
 /// </summary>
-public partial class TouchBehavior : PlatformBehavior<VisualElement>
+public partial class TouchBehavior : BasePlatformBehavior<VisualElement>
 {
 	/// <summary>
 	/// The visual state for when the <see cref="TouchState"/> is <see cref="TouchState.Default"/>.
@@ -250,7 +250,7 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 		typeof(double),
 		typeof(TouchBehavior),
 		TouchBehaviorDefaults.HoveredTranslationX);
-	
+
 	/// <summary>
 	/// Bindable property for <see cref="HoveredTranslationY"/>
 	/// </summary>
@@ -424,8 +424,6 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 
 	readonly WeakEventManager weakEventManager = new();
 	readonly GestureManager gestureManager = new();
-	
-	VisualElement? element;
 
 	/// <summary>
 	/// Fires when <see cref="CurrentTouchStatus"/> changes.
@@ -920,16 +918,16 @@ public partial class TouchBehavior : PlatformBehavior<VisualElement>
 
 	internal VisualElement? Element
 	{
-		get => element;
+		get => View;
 		set
 		{
-			if (element is not null)
+			if (View is not null)
 			{
 				gestureManager.Reset();
 				SetChildrenInputTransparent(false);
 			}
 			gestureManager.AbortAnimations(this, CancellationToken.None).SafeFireAndForget<TaskCanceledException>(ex => Trace.WriteLine(ex));
-			element = value;
+			View = value;
 
 			if (value is not null)
 			{

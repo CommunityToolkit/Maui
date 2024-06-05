@@ -1,7 +1,6 @@
 ﻿using Android.Support.V4.Media.Session;
 using Android.Views;
 using Android.Widget;
-using AndroidX.CoordinatorLayout.Widget;
 using Com.Google.Android.Exoplayer2;
 using Com.Google.Android.Exoplayer2.Audio;
 using Com.Google.Android.Exoplayer2.Metadata;
@@ -45,7 +44,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			Player = Player,
 			UseController = false,
 			ControllerAutoShow = false,
-			LayoutParameters = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent, GravityFlags.CenterHorizontal)
+			LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 		};
 
 		return (Player, PlayerView);
@@ -182,7 +181,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		if (!string.IsNullOrWhiteSpace(error?.ErrorCodeName))
 		{
-			errorCode = $"Error codename: {error?.ErrorCodeName}";
+			errorCodeName = $"Error codename: {error?.ErrorCodeName}";
 		}
 
 		var message = string.Join(", ", new[]

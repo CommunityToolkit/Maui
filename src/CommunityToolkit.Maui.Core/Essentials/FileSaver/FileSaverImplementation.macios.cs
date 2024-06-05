@@ -35,7 +35,7 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 		taskCompetedSource?.TrySetCanceled(CancellationToken.None);
 		var tcs = taskCompetedSource = new(cancellationToken);
 
-		documentPickerViewController = new(new[] { fileUrl })
+		documentPickerViewController = new([fileUrl])
 		{
 			DirectoryUrl = NSUrl.FromString(initialPath)
 		};

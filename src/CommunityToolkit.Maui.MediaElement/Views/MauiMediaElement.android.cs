@@ -2,6 +2,7 @@
 using Android.Content;
 using Android.Content.Res;
 using Android.Runtime;
+using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AndroidX.CoordinatorLayout.Widget;
@@ -20,6 +21,8 @@ public class MauiMediaElement : CoordinatorLayout
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
 	bool isFullScreen;
+	int playerHeight;
+	int playerWidth;
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 #pragma warning disable IDE0060 // Remove unused parameter
@@ -43,6 +46,15 @@ public class MauiMediaElement : CoordinatorLayout
 		this.playerView.SetBackgroundColor(Android.Graphics.Color.Black);
 
 		AddView(playerView);
+	}
+
+	public override void OnDetachedFromWindow()
+	{
+		if (isFullScreen)
+		{
+			OnFullscreenButtonClick(this, new StyledPlayerView.FullscreenButtonClickEventArgs(!isFullScreen));
+		}
+		base.OnDetachedFromWindow();
 	}
 
 	/// <summary>
@@ -122,28 +134,30 @@ public class MauiMediaElement : CoordinatorLayout
 		if (e.IsFullScreen)
 		{
 			isFullScreen = true;
+			playerHeight = playerView.Height;
+			playerWidth = playerView.Width;
+			DisplayMetrics displayMetrics = new DisplayMetrics();
+			currentWindow?.WindowManager?.DefaultDisplay?.GetMetrics(displayMetrics);
+			var layout = currentWindow?.DecorView as ViewGroup;
 
+			RemoveView(playerView);
+			RelativeLayout.LayoutParams item = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
+			item.Width = displayMetrics.WidthPixels;
+			item.Height = displayMetrics.HeightPixels;
+			layout?.AddView(playerView, item);
 			SetSystemBarsVisibility();
-
-			// Update the PlayerView
-			if (currentWindow.DecorView is FrameLayout layout)
-			{
-				RemoveView(playerView);
-				layout.AddView(playerView, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent));
-			}
 		}
-		// Show again the SystemBars and Status bar
 		else
 		{
 			isFullScreen = false;
-			SetSystemBarsVisibility();
+			var layout = currentWindow?.DecorView as ViewGroup;
+			RelativeLayout.LayoutParams item = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
+			item.Width = playerWidth;
+			item.Height = playerHeight;
 
-			// Update the PlayerView
-			if (currentWindow.DecorView is FrameLayout layout)
-			{
-				layout.RemoveView(playerView);
-				AddView(playerView);
-			}
+			layout?.RemoveView(playerView);
+			AddView(playerView, item);
+			SetSystemBarsVisibility();
 		}
 	}
 
