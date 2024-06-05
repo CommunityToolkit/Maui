@@ -28,7 +28,7 @@ public class Metadata
 		{
 			return;
 		}
-		
+
 		if (args.Button == SystemMediaTransportControlsButton.Play)
 		{
 			if (dispatcher.IsDispatchRequired)
@@ -66,7 +66,7 @@ public class Metadata
 		if (!string.IsNullOrEmpty(mp.MetadataArtworkUrl))
 		{
 			systemMediaControls.DisplayUpdater.Thumbnail = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromUri(new Uri(mp.MetadataArtworkUrl ?? string.Empty));
-		}		
+		}
 		systemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Music;
 		systemMediaControls.DisplayUpdater.MusicProperties.Artist = mp.MetadataTitle;
 		systemMediaControls.DisplayUpdater.MusicProperties.Title = mp.MetadataArtist;

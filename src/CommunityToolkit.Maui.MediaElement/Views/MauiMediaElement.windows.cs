@@ -84,7 +84,7 @@ public class MauiMediaElement : Grid, IDisposable
 		Dispose(true);
 		GC.SuppressFinalize(this);
 	}
-	
+
 	/// <summary>
 	/// Gets the presented page.
 	/// </summary>

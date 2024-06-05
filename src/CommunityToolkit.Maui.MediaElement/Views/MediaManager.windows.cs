@@ -361,11 +361,11 @@ partial class MediaManager : IDisposable
 
 		UpdateMetadata();
 
-		static void SetDuration(in IMediaElement mediaElement, in MediaPlayerElement mediaPlayerElement) 
+		static void SetDuration(in IMediaElement mediaElement, in MediaPlayerElement mediaPlayerElement)
 		{
 			mediaElement.Duration = mediaPlayerElement.MediaPlayer.NaturalDuration == TimeSpan.MaxValue
 				? TimeSpan.Zero
-				: mediaPlayerElement.MediaPlayer.NaturalDuration;		
+				: mediaPlayerElement.MediaPlayer.NaturalDuration;
 		}
 	}
 
