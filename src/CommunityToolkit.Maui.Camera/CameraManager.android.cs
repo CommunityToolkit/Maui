@@ -252,7 +252,10 @@ partial class CameraManager
 
 	protected virtual partial ValueTask PlatformTakePicture(CancellationToken token)
 	{
-		imageCapture?.TakePicture(cameraExecutor!, imageCallback!);
+		ArgumentNullException.ThrowIfNull(cameraExecutor);
+		ArgumentNullException.ThrowIfNull(imageCallback);
+		
+		imageCapture?.TakePicture(cameraExecutor, imageCallback);
 		return ValueTask.CompletedTask;
 	}
 
