@@ -206,7 +206,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	async void ChangeAspectClicked(Object sender, EventArgs e)
+	async void ChangeAspectClicked(object? sender, EventArgs e)
 	{
 		var resultAspect = await DisplayActionSheet("Choose aspect ratio",
 			"Cancel", null, Aspect.AspectFit.ToString(),
@@ -217,11 +217,9 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			return;
 		}
 
-		if (!Enum.TryParse(typeof(Aspect), resultAspect, true, out var aspectEnum)
-			|| aspectEnum is null)
+		if (!Enum.TryParse(typeof(Aspect), resultAspect, true, out var aspectEnum))
 		{
-			await DisplayAlert("Error", "There was an error determining the selected aspect",
-				"OK");
+			await DisplayAlert("Error", "There was an error determining the selected aspect", "OK");
 
 			return;
 		}

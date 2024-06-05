@@ -34,11 +34,6 @@
 	<string>ISpeechToText Uses Speech Recognition</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>ISpeechToText Uses Microphone</string>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoadsInMedia</key>
-		<true/>
-	</dict>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>

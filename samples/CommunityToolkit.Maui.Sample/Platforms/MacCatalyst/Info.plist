@@ -32,13 +32,6 @@
 	<string></string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>ISpeechToText Uses Microphone</string>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoadsInMedia</key>
-		<true/>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-	</dict>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-central</string>
