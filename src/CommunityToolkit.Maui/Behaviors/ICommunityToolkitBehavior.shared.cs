@@ -21,11 +21,40 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 			throw new InvalidOperationException($"{nameof(ICommunityToolkitBehavior<TView>)} can only be used for a {nameof(Behavior)}");
 		}
 
-		if (behavior.IsSet(BindableObject.BindingContextProperty) || View is null)
+		if (View is null)
 		{
 			return false;
 		}
 
+		var parent = View.Parent;
+		var assignBindingContext = behavior.IsSet(BindableObject.BindingContextProperty) is false;
+		
+		// If we have a BindingContext, the type is the same as the Views BindingContext and we are inside a CollectionView
+		// then we can assume that we are recycling views and need to assign the BindingContext again.
+		if (View.BindingContext?.GetType() == behavior.BindingContext?.GetType())
+		{
+			for (var i = 0; i < 10; i++)
+			{
+				if (parent is null)
+				{
+					break;
+				}
+
+				if (parent is CollectionView)
+				{
+					assignBindingContext = true;
+					break;
+				}
+			
+				parent = parent.Parent;
+			}			
+		}
+
+		if (assignBindingContext is false)
+		{
+			return false;
+		}
+		
 		behavior.SetBinding(BindableObject.BindingContextProperty, new Binding
 		{
 			Source = View,
